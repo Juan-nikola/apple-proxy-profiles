@@ -56,7 +56,29 @@ test("beginner docs contain every operational checkpoint and warning", async () 
 
   const defaultParameters = "output=config&type=collection&name=shadowrocket-sources&subscriptionName=Shadowrocket-Nodes&platform=macos&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=ipv4-only&autoGroupMode=auto&clientChain=off";
   assert.ok(docs["docs/deployment.md"].includes(defaultParameters), "deployment: missing exact default parameter string");
-  for (const phrase of ["显示名可以任意填写", "include-all-proxies=true", "PROXY", "ChinaMax_Domain", "问道手游"]) {
+  for (const phrase of [
+    "subscriptionName",
+    "完全一致",
+    "Shadowrocket-Nodes,use=true",
+    "policy-select-name=🚀 节点选择",
+    "policy-select-name=DIRECT",
+  ]) assert.ok(text.includes(phrase), `missing named-subscription guidance: ${phrase}`);
+  assert.doesNotMatch(text, /兼容占位参数/);
+  for (const phrase of [
+    "macOS、iPhone、iPad 三个 Profile File Operator",
+    "`SHADOWROCKET-NODES`",
+    "三个 Profile File Operator 的 `subscriptionName` 都必须精确填写 `SHADOWROCKET-NODES`",
+  ]) assert.ok(docs["docs/deployment.md"].includes(phrase), `deployment: missing exact subscription-name guidance: ${phrase}`);
+  assert.ok(docs["README.md"].includes("`🚀 节点选择 = select,PROXY`"), "README.md: missing exact homepage-follow root group");
+  for (const phrase of ["显式选择仍会出现", "不会显示该订阅的具体服务器"]) {
+    assert.ok(docs["docs/troubleshooting.md"].includes(phrase), `troubleshooting: missing name-mismatch outcome: ${phrase}`);
+  }
+  for (const phrase of [
+    "打开 `🐙 GitHub` 和 `🍎 Apple`",
+    "所有显式选择及匹配订阅的具体服务器都存在",
+    "在 Shadowrocket 首页切换节点后，`🐙 GitHub` 仍选择 `🚀 节点选择`",
+  ]) assert.ok(docs["docs/canary-checklist.md"].includes(phrase), `canary: missing named-subscription validation: ${phrase}`);
+  for (const phrase of ["include-all-proxies=true", "PROXY", "ChinaMax_Domain", "问道手游"]) {
     assert.ok(text.includes(phrase), `missing enhanced-routing documentation phrase: ${phrase}`);
   }
   for (const phrase of [
@@ -74,16 +96,20 @@ test("beginner docs contain every operational checkpoint and warning", async () 
     assert.ok(docs["docs/maintenance.md"].includes(phrase), `maintenance: missing versioned Profile safety phrase: ${phrase}`);
   }
   const chainSection = docs["docs/maintenance.md"].split("## 打开客户端链式\n", 2)[1]?.split("\n## ", 1)[0] ?? "";
+  const chainSubscriptionName = "Shadowrocket-Nodes-Chain-Test-YYYYMMDD";
   for (const phrase of [
     "shadowrocket-sources-chain-test-YYYYMMDD",
     "output=nodes&clientChain=off",
     "output=nodes&clientChain=on",
     "shadowrocket-nodes-chain-test-YYYYMMDD",
     "name=shadowrocket-sources-chain-test-YYYYMMDD",
-    "subscriptionName=Shadowrocket-Nodes-Chain-Test-YYYYMMDD",
     "原来的 `shadowrocket-nodes` 保持不变",
-    "兼容占位参数",
   ]) assert.ok(chainSection.includes(phrase), `maintenance chain procedure: missing isolated-stack phrase: ${phrase}`);
+  assert.match(
+    chainSection,
+    new RegExp(`显示名准确填写 \`${chainSubscriptionName}\`[\\s\\S]*subscriptionName=${chainSubscriptionName}`),
+    "maintenance chain procedure: test subscription display name must match subscriptionName",
+  );
   assert.ok(chainSection.includes("[已有链]"), "maintenance: missing reserved existing-chain marker guidance");
   assert.ok(docs["docs/troubleshooting.md"].includes("[已有链]"), "troubleshooting: missing reserved existing-chain marker guidance");
   assert.doesNotMatch(chainSection, /将节点 Script Operator 参数改为/, "maintenance chain procedure must not mutate the shared node Script Operator");

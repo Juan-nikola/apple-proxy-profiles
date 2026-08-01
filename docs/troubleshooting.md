@@ -39,6 +39,12 @@ DNS、QUIC、IPv6、`blockMode`或测速参数排障使用下面的 File 副本�
 
 如果节点名出现 `[已有链]`，表示脚本检测到了既有 `chain`、`underlying-proxy` 等链路字段，并主动阻止它再次成为客户端入口；不要手工删除或伪造该标记。若判断不符合预期，应检查原始节点的链路字段，而不是改生成后的名称。
 
+## 策略组没有具体服务器
+
+先确认 Shadowrocket 中节点订阅的显示名与当前平台 Profile File 参数的 `subscriptionName` **完全一致**，包括大小写、emoji、空格和标点。显示名可以自由命名；`Shadowrocket-Nodes` 只是示例，对应动态候选 `Shadowrocket-Nodes,use=true`，不是必须固定使用的名称。若截图显示 `SHADOWROCKET-NODES`，该设备所用 File 的 `subscriptionName` 必须精确填 `SHADOWROCKET-NODES`；三台设备使用同一个显示名时，三个 File 都填同一值。
+
+名称不匹配时，`DIRECT`、`🚀 节点选择`、自动/故障转移和地区等显式选择仍会出现，但动态组不会显示该订阅的具体服务器。改正参数后重新发布并更新对应平台 Profile，再检查一个境外组的 `policy-select-name=🚀 节点选择` 默认项和一个国内组的 `policy-select-name=DIRECT` 默认项，以及各自的具体服务器。
+
 ## 规则下载失败
 
 运行 `npm run check:rules`。首次部署有任何规则失败就停止灰度；已安装设备先保留 Shadowrocket 上一次可用缓存和旧 Profile。不要用空规则覆盖现有配置。

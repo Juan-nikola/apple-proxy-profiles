@@ -38,12 +38,12 @@
 2. 新建带日期的测试组合，例如 `shadowrocket-sources-chain-test-YYYYMMDD`。复制正式组合的来源成员和必要的非节点脚本处理，但不要把正式节点 Script Operator 挂到测试组合。如果某个来源必须把标签改为 `[落地]`，先复制该来源条目，只在副本上改显示名，不重命名生产来源。
 3. 为测试组合新建一份独立的节点 Script Operator，粘贴同一份 `dist/substore-node-operator.js`，参数填 `output=nodes&clientChain=on`。不要编辑正式组合正在使用的脚本或参数。
 4. 从测试组合发布一份新的版本化节点订阅，例如 `shadowrocket-nodes-chain-test-YYYYMMDD`；原来的 `shadowrocket-nodes` 保持不变。
-5. 在 Shadowrocket 中给新节点订阅一个便于识别的显示名。显示名不参与 Profile 绑定；为了隔离测试，测试期间应暂停或移除其他会被相同正则匹配的节点订阅。
+5. 在 Shadowrocket 中给新节点订阅一个便于识别的显示名，显示名准确填写 `Shadowrocket-Nodes-Chain-Test-YYYYMMDD`。这是测试示例，不是固定名称；若自定义名称，后续 `subscriptionName` 必须逐字相同，包括大小写、emoji、空格和标点。为了隔离测试，测试期间应暂停或移除其他会被相同正则匹配的节点订阅。
 6. 先只复制 macOS Profile File，名称加同一天的链式测试后缀。参数中的三个关键值填写为：
    - `name=shadowrocket-sources-chain-test-YYYYMMDD`
    - `subscriptionName=Shadowrocket-Nodes-Chain-Test-YYYYMMDD`
    - `clientChain=on`
-7. `name` 对应第 2 步测试组合，`clientChain` 为 `on`；`subscriptionName` 是兼容占位参数，不再与客户端显示名绑定。其他参数先保持正式 macOS Profile 的值。
+7. `name` 对应第 2 步测试组合，`clientChain` 为 `on`；`subscriptionName` 必须与第 5 步的 Shadowrocket 节点订阅显示名完全一致。因此本例的显示名和参数都是 `Shadowrocket-Nodes-Chain-Test-YYYYMMDD`；不匹配时显式选项仍可选择，但动态组不会列出该订阅的具体服务器。其他参数先保持正式 macOS Profile 的值。
    如果正式 Profile 仍使用默认参数，可复制下面整行，再把所有 `YYYYMMDD` 换成同一天：
 
    `output=config&type=collection&name=shadowrocket-sources-chain-test-YYYYMMDD&subscriptionName=Shadowrocket-Nodes-Chain-Test-YYYYMMDD&platform=macos&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=ipv4-only&autoGroupMode=auto&clientChain=on`

@@ -71,7 +71,7 @@ iPhone 和 iPad 将 `platform` 分别改成 `iphone`、`ipad`，并把 `ipv6Mode
 5. iPad 文件名填 `shadowrocket-config-ipad`，使用 `platform=ipad`、`quicMode=proxy-block`、`ipv6Mode=auto`。
 6. 三份都设为每天更新，并分别保存远程 Profile URL。不要公开这些 URL。
 
-`name=shadowrocket-sources` 必须与第 1 节的组合名完全一致。`subscriptionName=Shadowrocket-Nodes` 目前只是旧 URL 的兼容占位参数，保留任意非空值即可；Shadowrocket 中的节点订阅显示名可以任意填写，不需要与它一致。动态组使用 `include-all-proxies=true` 和名称正则筛选当前可用代理。参数拼写错误、缺少必填参数或使用未知值时，生成器会直接报错。
+`name=shadowrocket-sources` 必须与第 1 节的组合名完全一致。`subscriptionName` 不是占位参数：它必须与 Shadowrocket 中节点订阅的显示名**完全一致**，包括大小写、emoji、空格和标点。显示名可以由你自由命名；本手册仅以 `Shadowrocket-Nodes` 为示例，所以三个 File 的参数都写 `subscriptionName=Shadowrocket-Nodes`，动态候选会显示为 `Shadowrocket-Nodes,use=true`。如果截图中实际显示名是 `SHADOWROCKET-NODES`，macOS、iPhone、iPad 三个 Profile File Operator 的 `subscriptionName` 都必须精确填写 `SHADOWROCKET-NODES`（大小写也一致），不要把它当作必须固定使用的名字。名称不匹配时，`DIRECT`、`🚀 节点选择`、自动/故障转移和地区等显式选择仍在，但动态组不会显示该订阅的具体服务器。参数拼写错误、缺少必填参数或使用未知值时，生成器会直接报错。
 
 如果预览不是三个 INI 段、包含实际节点凭据或为空，立即停止。不要把错误结果覆盖到任何设备。
 
@@ -91,12 +91,12 @@ iPhone 和 iPad 将 `platform` 分别改成 `iphone`、`ipad`，并把 `ipv6Mode
 
 ## 4. Intel Mac 灰度
 
-先导入 `shadowrocket-nodes`，显示名可以任意填写；再导入 `shadowrocket-config-macos`。不要覆盖旧 Profile。保持 HTTPS 解密关闭。
+先导入输出文件 `shadowrocket-nodes`，在 Shadowrocket 中将它的显示名填写为与三个 File 参数相同的名称（本例为 `Shadowrocket-Nodes`）；再导入 `shadowrocket-config-macos`。不要覆盖旧 Profile。保持 HTTPS 解密关闭。
 
 开始前再次确认 Intel Mac 已完成“灰度前的客户端设置”全部 7 项；缺一项就停止。
 
 1. 在 Intel Mac 的 Shadowrocket 中，进入用于添加远程节点订阅的页面，添加 `shadowrocket-nodes` 的私密 URL。
-2. 显示名按自己的习惯填写，手动更新一次并确认节点数量不为 0。
+2. 显示名可按自己的习惯命名，但必须把同一名称逐字填入 macOS、iPhone、iPad File 参数的 `subscriptionName`；手动更新一次并确认节点数量不为 0。
 3. 再进入用于添加远程配置/Profile 的页面，添加 `shadowrocket-config-macos` 的 URL，并手动更新一次当前平台（macOS）Profile。
 4. 核对节点订阅和 macOS Profile 都显示新的更新时间；只更新其中一个不算完成。
 5. 保留旧 Profile；新旧 Profile 必须能在列表中分别选中。
@@ -111,11 +111,11 @@ iPhone 和 iPad 将 `platform` 分别改成 `iphone`、`ipad`，并把 `ipv6Mode
 按相同顺序导入共同的 `shadowrocket-nodes`，再分别导入 `shadowrocket-config-iphone` 和 `shadowrocket-config-ipad`。每台设备都保留旧 Profile。
 
 1. Intel Mac 灰度通过后，先在 iPhone 完成“灰度前的客户端设置”全部 7 项，再导入任何新内容。
-2. 在 iPhone 添加同一 `shadowrocket-nodes`；显示名可以与 Mac 不同，并手动更新。
+2. 在 iPhone 添加同一 `shadowrocket-nodes`；显示名必须与 iPhone File 参数的 `subscriptionName` 完全一致。建议三台设备使用同一个显示名，避免三个 File 参数混淆；然后手动更新。
 3. iPhone 只导入 `shadowrocket-config-iphone`，不要误用 macOS 或 iPad Profile；手动更新 iPhone Profile。
 4. 核对节点订阅和 iPhone Profile 都显示新的更新时间，再完成基础联网、局域网、DNS 和策略组测试。
 5. iPhone 稳定后，先在 iPad 完成“灰度前的客户端设置”全部 7 项。
-6. 在 iPad 添加并更新 `shadowrocket-nodes`，只导入并更新 `shadowrocket-config-ipad`。
+6. 在 iPad 添加并更新 `shadowrocket-nodes`，其显示名必须与 iPad File 参数的 `subscriptionName` 完全一致；只导入并更新 `shadowrocket-config-ipad`。
 7. 核对节点订阅和 iPad Profile 都显示新的更新时间，再开始测试。
 8. 每台设备分别实际切回旧 Profile 一次，再切回新 Profile，确认回滚入口有效。
 
@@ -148,7 +148,7 @@ Sub-Store 中先找“订阅/组合订阅”，再找“脚本操作/Script Oper
 ## 8. 首次使用策略组
 
 1. 本次恢复服务组时，设备端只需替换 `dist/substore-profile-generator.js` 并更新当前平台 Profile；无需替换节点 Script Operator，也无需改动节点订阅。仓库中的 `dist/` 与 `examples/` 已随源码重建校验，规则和节点 Operator 内容未改变。打开 `🚀 节点选择`，确认它只有 `PROXY`，摘要显示 `SELECT > PROXY`。以后直接在 Shadowrocket 首页选择节点，这个组会自动跟随；如果这里仍显示国旗或具体节点名，当前设备使用的还是旧 Profile。
-2. 16 个常用业务组都提供自动测速、故障转移、地区和具体节点选择。GitHub、YouTube、Netflix、Disney+、Spotify、国际媒体、Telegram、海外社交、TikTok 和游戏平台这 10 个境外组首项为 `🚀 节点选择`；Apple、Microsoft、哔哩哔哩、抖音、小红书和微博这 6 个国内组首项为 `DIRECT`。检查至少一个境外组和一个国内组，确认各自首项及上述选择均可见。
+2. 16 个常用业务组都提供自动测速、故障转移、地区和具体节点选择。GitHub、YouTube、Netflix、Disney+、Spotify、国际媒体、Telegram、海外社交、TikTok 和游戏平台这 10 个境外组以 `policy-select-name=🚀 节点选择` 设为首项；Apple、Microsoft、哔哩哔哩、抖音、小红书和微博这 6 个国内组以 `policy-select-name=DIRECT` 设为首项。检查至少一个境外组和一个国内组，确认各自首项、完整显式候选和匹配订阅中的具体服务器均可见。
 3. 打开 `🤖 AI 专用`，可选择独立 AI 洲组或符合筛选条件的具体节点。AI 组的选择不会改变主线路。
 4. Apple、Microsoft 和国内平台默认直连；需要时可在对应平台组选择 `🚀 节点选择`或具体节点。
 5. `☣️ 安全威胁`、`🧱 常见广告`、`🕵️ 严格跟踪`可以在客户端即时切换。

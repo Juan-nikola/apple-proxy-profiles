@@ -3,15 +3,16 @@
 开始前确认旧 Profile 可用，新 Profile 只是并存导入。每完成一项再勾选；关键联网、DNS、局域网或回滚项失败时立即切回旧 Profile，停止向 iPhone 和 iPad 推广。
 
 - [ ] 旧节点订阅和旧 Profile 均可立即选回。
-- [ ] `shadowrocket-nodes` 手动更新成功，节点数量不是 0。
+- [ ] `shadowrocket-nodes` 手动更新成功，节点数量不是 0；Shadowrocket 显示名与本平台 File 参数的 `subscriptionName` 完全一致（本例 `Shadowrocket-Nodes`，动态候选显示 `Shadowrocket-Nodes,use=true`）。显示名可自由命名，但大小写、emoji、空格和标点必须匹配；截图若为 `SHADOWROCKET-NODES`，三个 Profile File Operator 都填写该精确名称。
 - [ ] 常用中国网站直连，常用境外网站经 `🚀 节点选择`。
 - [ ] 一个未列规则但解析为中国 IP 的测试目标命中 `GEOIP,CN,DIRECT`。
 - [ ] 一个未列规则的境外目标命中 `FINAL,🚀 节点选择`。
 - [ ] `🚀 节点选择`只有跟随首页节点的 `PROXY`，摘要显示 `SELECT > PROXY`；首页切换节点后，此处不再保存或显示具体节点名。
-- [ ] 节点订阅显示名可以任意填写；动态组含 `include-all-proxies=true` 且仍能显示具体节点。
+- [ ] 动态组按匹配的 `subscriptionName` 显示具体节点；若名称不匹配，`DIRECT`、`🚀 节点选择`、自动/故障转移和地区等显式选择仍可用，但不会显示该订阅的服务器。
 - [ ] 已替换 `dist/substore-profile-generator.js` 并更新当前平台 Profile；设备端无需替换节点 Script Operator 或改动节点订阅。仓库内 `dist/`、`examples/` 已重建校验，规则和节点 Operator 内容未改变。
 - [ ] 16 个常用业务组都有自动测速、故障转移、固定顺序地区组和符合筛选条件的具体节点；没有国家组。
-- [ ] 已检查一个境外组（如 GitHub）：10 个境外组首项均为 `🚀 节点选择`；已检查一个国内直连优先组（如 Apple）：6 个国内组首项均为 `DIRECT`。
+- [ ] 打开 `🐙 GitHub` 和 `🍎 Apple`：确认两组的自动、故障转移、地区、`DIRECT`、`🚀 节点选择`等所有显式选择及匹配订阅的具体服务器都存在；GitHub 的 `policy-select-name=🚀 节点选择`，Apple 的 `policy-select-name=DIRECT`。
+- [ ] 在 Shadowrocket 首页切换节点后，`🐙 GitHub` 仍选择 `🚀 节点选择`并继续联网；Apple 保持其已选择的显式策略。
 - [ ] 常用业务组的摘要已逐个核对。Shadowrocket 若保留仍有效的旧选择，生成器的首项不会自动覆盖：希望境外组跟随首页时手动选第一项 `🚀 节点选择`；希望国内组恢复直连时手动选第一项 `DIRECT`，没有误留在具体节点、自动组、故障转移或地区组。
 - [ ] `🤖 AI 专用`有独立 AI 洲组和具体节点；更改 AI 节点不改变主线路，OpenAI、Claude、Gemini、Copilot 与常用其他 AI 分流正确。
 - [ ] GitHub 命中 `🐙 GitHub`，早于 Microsoft 规则。
