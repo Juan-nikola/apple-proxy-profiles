@@ -97,10 +97,10 @@ iPhone 和 iPad 将 `platform` 分别改成 `iphone`、`ipad`，并把 `ipv6Mode
 
 1. 在 Intel Mac 的 Shadowrocket 中，进入用于添加远程节点订阅的页面，添加 `shadowrocket-nodes` 的私密 URL。
 2. 显示名按自己的习惯填写，手动更新一次并确认节点数量不为 0。
-3. 再进入用于添加远程配置/Profile 的页面，添加 `shadowrocket-config-macos` 的 URL，并手动更新一次 macOS Profile。
+3. 再进入用于添加远程配置/Profile 的页面，添加 `shadowrocket-config-macos` 的 URL，并手动更新一次当前平台（macOS）Profile。
 4. 核对节点订阅和 macOS Profile 都显示新的更新时间；只更新其中一个不算完成。
 5. 保留旧 Profile；新旧 Profile 必须能在列表中分别选中。
-6. 选择新 Profile，连接后先测试一个中国网站、一个境外网站和路由器管理页。
+6. 选择新 Profile，连接后先测试一个中国网站、一个境外网站和路由器管理页；再按第 8 节检查一个境外业务组和一个国内直连优先业务组。
 
 逐项执行 `docs/canary-checklist.md`，也就是这份 [Intel Mac 灰度清单](canary-checklist.md)。全部通过并稳定使用后再继续。
 
@@ -147,15 +147,15 @@ Sub-Store 中先找“订阅/组合订阅”，再找“脚本操作/Script Oper
 
 ## 8. 首次使用策略组
 
-1. 打开 `🚀 节点选择`，确认它只有 `PROXY`，摘要显示 `SELECT > PROXY`。以后直接在 Shadowrocket 首页选择节点，这个组会自动跟随；如果这里仍显示国旗或具体节点名，当前设备使用的还是旧 Profile。
-2. GitHub、YouTube、Netflix、Disney+、Spotify、国际媒体、Telegram、海外社交、TikTok 和游戏平台默认选择 `🚀 节点选择`。需要自动线路时，在对应业务组内改选 `⚡ 全部自动`、`🛟 全部故障转移`或地区组，不要修改 `🚀 节点选择`。
+1. 本次恢复服务组只更新 Profile generator 和当前平台 Profile；节点 Script Operator、节点订阅、示例、构建产物和规则均不更新。打开 `🚀 节点选择`，确认它只有 `PROXY`，摘要显示 `SELECT > PROXY`。以后直接在 Shadowrocket 首页选择节点，这个组会自动跟随；如果这里仍显示国旗或具体节点名，当前设备使用的还是旧 Profile。
+2. 16 个常用业务组都提供自动测速、故障转移、地区和具体节点选择。GitHub、YouTube、Netflix、Disney+、Spotify、国际媒体、Telegram、海外社交、TikTok 和游戏平台这 10 个境外组首项为 `🚀 节点选择`；Apple、Microsoft、哔哩哔哩、抖音、小红书和微博这 6 个国内组首项为 `DIRECT`。检查至少一个境外组和一个国内组，确认各自首项及上述选择均可见。
 3. 打开 `🤖 AI 专用`，可选择独立 AI 洲组或符合筛选条件的具体节点。AI 组的选择不会改变主线路。
 4. Apple、Microsoft 和国内平台默认直连；需要时可在对应平台组选择 `🚀 节点选择`或具体节点。
 5. `☣️ 安全威胁`、`🧱 常见广告`、`🕵️ 严格跟踪`可以在客户端即时切换。
 6. `⬇️ 下载/P2P`和`🎮 游戏连接`默认 DIRECT；不了解节点服务条款时不要切换。
 
-从旧版升级时必须同时更新节点订阅和当前平台 Profile。只更新节点订阅后，旧 Profile 仍会让 `🚀 节点选择`保存具体节点。先在 Intel Mac 更新并核对 Profile 时间和 `SELECT > PROXY`，通过后再依次更新 iPhone、iPad。
+本次从旧版恢复服务组时，只更新当前平台 Profile；只更新节点订阅不会改变分组，且不需要更新节点 Script Operator。先在 Intel Mac 更新并核对 Profile 时间和 `SELECT > PROXY`，通过后再依次更新 iPhone、iPad。
 
-Shadowrocket 可能保留业务组里仍有效的旧选择。更新后逐个查看常用境外业务组：如果摘要是具体节点、`⚡ 全部自动`、`🛟 全部故障转移`或地区组，该业务会继续使用独立出口；希望它跟随首页时，在该业务组中选择一次 `🚀 节点选择`。国内组继续保持 `DIRECT`。
+Shadowrocket 可能保留业务组里仍有效的旧选择，生成器写入的首项默认值不会自动覆盖它。更新后检查常用组：境外组希望跟随首页时，手动选择第一项 `🚀 节点选择`；国内组希望恢复默认直连时，手动选择第一项 `DIRECT`。如果摘要仍是具体节点、`⚡ 全部自动`、`🛟 全部故障转移`或地区组，该业务会继续按这个旧选择工作。
 
 全部检查完成后，才把新 Profile 作为日常使用配置。任何时候都不要为了“清理”而删除旧 Profile；等三台设备稳定一段时间并完成维护记录后再自行决定是否归档。
