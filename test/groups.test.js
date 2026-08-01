@@ -139,7 +139,15 @@ test("keeps service manual access and gates special service groups by eligibilit
   ];
   for (const name of foreignGroups) assert.deepEqual(named(groups, name).items, foreignItems, name);
   for (const name of domesticGroups) {
-    assert.deepEqual(named(groups, name).items, ["DIRECT", "🚀 节点选择"], name);
+    assert.deepEqual(named(groups, name).items, [
+      "DIRECT",
+      "🚀 节点选择",
+      "⚡ 全部自动",
+      "🛟 全部故障转移",
+      "🌏 亚太",
+      "🌍 欧洲",
+      "🌎 美洲",
+    ], name);
   }
   assert.deepEqual(named(groups, "🧭 DNS 与规则下载").items, ["🚀 节点选择", "DIRECT"]);
   assert.equal(named(groups, "🧭 DNS 与规则下载").useSubscription, undefined);

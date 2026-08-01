@@ -39,30 +39,31 @@ const SOURCE_GROUPS = Object.freeze([
 ]);
 
 const PROXY_THEN_DIRECT = Object.freeze(["🚀 节点选择", "DIRECT"]);
-const AUTO_PROXY_THEN_DIRECT = Object.freeze([
-  "🚀 节点选择",
-  "⚡ 全部自动",
-  "🛟 全部故障转移",
-  "DIRECT",
-]);
-const DIRECT_THEN_PROXY = Object.freeze(["DIRECT", "🚀 节点选择"]);
+const PROXY_FIRST_SERVICE_DEFAULTS = Object.freeze({
+  beforeCandidates: ["🚀 节点选择"],
+  afterCandidates: ["DIRECT"],
+});
+const DIRECT_FIRST_SERVICE_DEFAULTS = Object.freeze({
+  beforeCandidates: ["DIRECT", "🚀 节点选择"],
+  afterCandidates: [],
+});
 const SERVICE_GROUPS = Object.freeze([
-  ["🐙 GitHub", AUTO_PROXY_THEN_DIRECT],
-  ["📺 YouTube", AUTO_PROXY_THEN_DIRECT],
-  ["🎬 Netflix", AUTO_PROXY_THEN_DIRECT],
-  ["🏰 Disney+", AUTO_PROXY_THEN_DIRECT],
-  ["🎵 Spotify", AUTO_PROXY_THEN_DIRECT],
-  ["🌍 国际媒体", AUTO_PROXY_THEN_DIRECT],
-  ["✈️ Telegram", AUTO_PROXY_THEN_DIRECT],
-  ["💬 海外社交", AUTO_PROXY_THEN_DIRECT],
-  ["🎶 TikTok", AUTO_PROXY_THEN_DIRECT],
-  ["🍎 Apple", DIRECT_THEN_PROXY],
-  ["🪟 Microsoft", DIRECT_THEN_PROXY],
-  ["📺 哔哩哔哩", DIRECT_THEN_PROXY],
-  ["🎵 抖音", DIRECT_THEN_PROXY],
-  ["📕 小红书", DIRECT_THEN_PROXY],
-  ["🧣 微博", DIRECT_THEN_PROXY],
-  ["🕹️ 游戏平台", AUTO_PROXY_THEN_DIRECT],
+  ["🐙 GitHub", PROXY_FIRST_SERVICE_DEFAULTS],
+  ["📺 YouTube", PROXY_FIRST_SERVICE_DEFAULTS],
+  ["🎬 Netflix", PROXY_FIRST_SERVICE_DEFAULTS],
+  ["🏰 Disney+", PROXY_FIRST_SERVICE_DEFAULTS],
+  ["🎵 Spotify", PROXY_FIRST_SERVICE_DEFAULTS],
+  ["🌍 国际媒体", PROXY_FIRST_SERVICE_DEFAULTS],
+  ["✈️ Telegram", PROXY_FIRST_SERVICE_DEFAULTS],
+  ["💬 海外社交", PROXY_FIRST_SERVICE_DEFAULTS],
+  ["🎶 TikTok", PROXY_FIRST_SERVICE_DEFAULTS],
+  ["🍎 Apple", DIRECT_FIRST_SERVICE_DEFAULTS],
+  ["🪟 Microsoft", DIRECT_FIRST_SERVICE_DEFAULTS],
+  ["📺 哔哩哔哩", DIRECT_FIRST_SERVICE_DEFAULTS],
+  ["🎵 抖音", DIRECT_FIRST_SERVICE_DEFAULTS],
+  ["📕 小红书", DIRECT_FIRST_SERVICE_DEFAULTS],
+  ["🧣 微博", DIRECT_FIRST_SERVICE_DEFAULTS],
+  ["🕹️ 游戏平台", PROXY_FIRST_SERVICE_DEFAULTS],
 ]);
 
 function continentFilter(continent) {
@@ -104,6 +105,16 @@ function continentHelperItems(continent, mode) {
   if (mode === "full") return [automaticHelperName(continent), fallbackHelperName(continent)];
   if (mode === "balanced") return [automaticHelperName(continent)];
   return [];
+}
+
+function serviceChoiceItems(defaults, presentContinentNames) {
+  return [
+    ...defaults.beforeCandidates,
+    "⚡ 全部自动",
+    "🛟 全部故障转移",
+    ...presentContinentNames,
+    ...defaults.afterCandidates,
+  ];
 }
 
 function securityGroups(blockMode) {
@@ -170,17 +181,9 @@ export function buildGroups(options, nodes) {
   }));
   groups.push(...aiContinentGroups);
   groups.push(subscriptionGroup("🤖 AI 专用", ALL_NODES_FILTER, aiContinentGroups.map((group) => group.name)));
-  for (const [name, items] of SERVICE_GROUPS) {
-    const serviceItems = items === AUTO_PROXY_THEN_DIRECT
-      ? [
-        "🚀 节点选择",
-        "⚡ 全部自动",
-        "🛟 全部故障转移",
-        ...presentContinents.map((continent) => continent.name),
-        "DIRECT",
-      ]
-      : items;
-    groups.push(subscriptionGroup(name, ALL_NODES_FILTER, serviceItems));
+  const presentContinentNames = presentContinents.map((continent) => continent.name);
+  for (const [name, defaults] of SERVICE_GROUPS) {
+    groups.push(subscriptionGroup(name, ALL_NODES_FILTER, serviceChoiceItems(defaults, presentContinentNames)));
   }
   if (normalizedNodes.some((node) => node?._sr?.udp === true && !node?._sr?.chained)) {
     groups.push(subscriptionGroup("🎮 游戏连接", GAME_FILTER));
