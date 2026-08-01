@@ -11,7 +11,7 @@ const rules = Object.freeze([
   },
   {
     id: "credential-assignment",
-    pattern: /\b(?:password|psk|private[_ -]?key|token|api[_ -]?key|secret)\b\s*[:=]\s*["']?(?:<)?[^\s,"'}\]]{16,}/i,
+    pattern: /\b(?:authorization|auth(?:[_ -]?(?:token|key))?|access[_ -]?token|id[_ -]?token|refresh[_ -]?token|password|psk|private[_ -]?key|token|api[_ -]?key|secret)\b[ \t]*[:=][ \t]*["']?(?:<)?[^\s,"'}\]]{16,}/i,
   },
   {
     id: "uuid-assignment",
@@ -22,13 +22,17 @@ const rules = Object.freeze([
     pattern: /https?:\/\/[^\s"']+[?&](?:token|subscription|subscribe|sub|auth|key|password)=[^\s&"']+/i,
   },
   {
+    id: "subscription-path",
+    pattern: /https?:\/\/[^\s"']+\/(?:link|sub|subscribe)\/[A-Za-z0-9_-]{32,}(?=$|[/?#\s"'])/i,
+  },
+  {
     id: "credential-high-entropy",
     matches: containsHighEntropyCredential,
   },
 ]);
 
 const approvedSyntheticPlaceholders = /\b(?:TEST_ONLY[A-Z0-9_]*|DIFFERENT_TEST_VALUE|00000000-0000-4000-8000-000000000001)\b/g;
-const highEntropyCredential = /\b(?:token|password|psk|private[_ -]?key|uuid|auth)\b\s*[:=]\s*(?:["'<({\[]\s*)?([A-Za-z0-9+/_-]{32,}={0,2})(?=$|[\s,;"'})\]>])/i;
+const highEntropyCredential = /\b(?:authorization|auth(?:[_ -]?(?:token|key))?|access[_ -]?token|id[_ -]?token|refresh[_ -]?token|token|password|psk|private[_ -]?key|uuid)\b[ \t]*[:=][ \t]*(?:bearer[ \t]+)?(?:["'<({\[]?[ \t]*)?([A-Za-z0-9+/_-]{32,}={0,2})(?=$|[\s,;"'})\]>])/i;
 
 function containsHighEntropyCredential(text) {
   return highEntropyCredential.test(text);
@@ -40,10 +44,11 @@ export function sanitizeSyntheticPlaceholders(text) {
 
 export function scanText(name, text) {
   const sanitized = sanitizeSyntheticPlaceholders(text);
+  const lines = sanitized.split(/\r?\n/);
   const findings = [];
 
   for (const rule of rules) {
-    if ((rule.matches ?? ((value) => rule.pattern.test(value)))(sanitized)) {
+    if (lines.some((line) => (rule.matches ?? ((value) => rule.pattern.test(value)))(line))) {
       findings.push({ file: name, ruleId: rule.id });
     }
   }

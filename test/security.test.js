@@ -95,3 +95,36 @@ test("findings expose only paths and rule IDs", async () => {
     await rm(directory, { recursive: true, force: true });
   }
 });
+
+test("subscription paths reject only credential-bearing path segments", () => {
+  const token = ["aB3dE5gH7jK9mN1pR3sT5vX7zY9", "_-Abc"].join("");
+  const link = ["li", "nk"].join("");
+  const subscription = ["su", "b"].join("");
+  const subscribe = ["sub", "scribe"].join("");
+
+  assert.equal(containsSecret(`https://example.com/${link}/${token}`), true);
+  assert.equal(containsSecret(`https://example.com/${subscription}/${token}`), true);
+  assert.equal(containsSecret(`https://example.com/${subscribe}/${token}`), true);
+  assert.equal(containsSecret("https://juan-nikola.github.io/apple-proxy-profiles/current/rules/x.arrs"), false);
+  assert.equal(containsSecret(`https://juan-nikola.github.io/apple-proxy-profiles/current/${token}`), false);
+  assert.equal(containsSecret(`https://example.com/public/${token}`), false);
+});
+
+test("auth-like credential keys detect base64 and base64url values", () => {
+  const base64url = ["aB3dE5gH7jK9mN1pR3sT5vX7zY9", "_-Abc"].join("");
+  const base64 = ["QWxhZGRpbjpvcGVuIHNlc2FtZQ", "MTIz", "+/="].join("");
+  const authorization = ["author", "ization"].join("");
+  const bearer = ["Bea", "rer"].join("");
+  const authToken = ["auth", "_token"].join("");
+  const accessToken = ["access", "_token"].join("");
+
+  assert.equal(containsSecret(`${authorization}: ${base64url}`), true);
+  assert.equal(containsSecret(`${authorization}: ${bearer} ${base64}`), true);
+  assert.equal(containsSecret(`${authToken}: ${base64url}`), true);
+  assert.equal(containsSecret(`${accessToken}: ${base64url}`), true);
+  assert.equal(containsSecret(`${authorization}: TEST_ONLY_AUTH_TOKEN`), false);
+});
+
+test("credential patterns do not cross line boundaries", () => {
+  assert.equal(containsSecret("token\n================================"), false);
+});
