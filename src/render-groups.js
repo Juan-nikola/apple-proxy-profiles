@@ -4,12 +4,21 @@ function escapeValue(value) {
   return string.replaceAll(",", "\\,");
 }
 
+function escapeSubscriptionName(value) {
+  const string = String(value);
+  if (/[\r\n]/.test(string)) throw new Error("Subscription display name must not contain CR or LF");
+  if (string.trim() !== string) {
+    throw new Error("Subscription display name must not have leading or trailing whitespace");
+  }
+  return string.replaceAll("\\", "\\\\").replaceAll(",", "\\,");
+}
+
 export function renderGroups(groups, subscriptionName) {
   return groups.map((group) => {
     const items = (group.items ?? []).map(escapeValue);
     const fields = [escapeValue(group.type), ...items];
     if (group.useSubscription) {
-      fields.push(escapeValue(subscriptionName), "use=true");
+      fields.push(escapeSubscriptionName(subscriptionName), "use=true");
     }
     if (group.filter !== undefined) fields.push(`policy-regex-filter=${escapeValue(group.filter)}`);
     if (group.policySelectName !== undefined) {

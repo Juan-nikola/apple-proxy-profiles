@@ -43,6 +43,27 @@ test("parseOptions rejects a missing or empty collection name", () => {
   assert.throws(() => parseOptions(withoutName), /name/i);
 });
 
+test("parseOptions preserves an exact subscription display name", () => {
+  const subscriptionName = "中文 Nodes=Prod,主订阅\\";
+
+  assert.equal(parseOptions({ ...required, subscriptionName }).subscriptionName, subscriptionName);
+});
+
+test("parseOptions rejects ambiguous subscription display names", () => {
+  for (const subscriptionName of [" Shadowrocket-Nodes", "Shadowrocket-Nodes "]) {
+    assert.throws(
+      () => parseOptions({ ...required, subscriptionName }),
+      /subscriptionName.*leading or trailing whitespace/i,
+    );
+  }
+  for (const subscriptionName of ["Nodes\nInjected", "Nodes\rInjected"]) {
+    assert.throws(
+      () => parseOptions({ ...required, subscriptionName }),
+      /subscriptionName.*CR or LF/i,
+    );
+  }
+});
+
 test("parseOptions rejects unknown enum values", () => {
   assert.throws(() => parseOptions({ ...required, dnsMode: "fastest" }), /dnsMode/i);
 });

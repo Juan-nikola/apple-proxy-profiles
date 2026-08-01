@@ -15,7 +15,7 @@
 - Six direct-first service groups must declare `policy-select-name=DIRECT`.
 - All 16 service groups must retain automatic, fallback, present-continent, and concrete-server choices.
 - Dynamic groups must render `<subscriptionName>,use=true`; generated mixed service groups must not render `include-all-proxies=true`.
-- `subscriptionName` may contain arbitrary nonblank text but must exactly match the Shadowrocket subscription display name.
+- `subscriptionName` preserves exact supported text (including Chinese, internal spaces, ordinary punctuation, `=`, comma, and backslash) and must exactly match the Shadowrocket subscription display name; reject leading/trailing whitespace and CR/LF.
 - Do not change Blackmatrix7 rules, Wendao direct rules, DNS, QUIC, IPv6, TUN, node normalization, client-chain eligibility, or the node bundle.
 
 ---
@@ -104,11 +104,11 @@ groups.push({
 });
 ```
 
-In `src/render-groups.js`, replace the dynamic source and serialize the optional default after the filter:
+In `src/render-groups.js`, replace the dynamic source, encoding only the subscription field by doubling backslashes before escaping commas, and serialize the optional default after the filter:
 
 ```js
 if (group.useSubscription) {
-  fields.push(escapeValue(subscriptionName), "use=true");
+  fields.push(escapeSubscriptionName(subscriptionName), "use=true");
 }
 if (group.filter !== undefined) fields.push(`policy-regex-filter=${escapeValue(group.filter)}`);
 if (group.policySelectName !== undefined) {

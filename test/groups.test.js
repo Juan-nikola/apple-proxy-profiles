@@ -312,6 +312,24 @@ test("renders policy groups deterministically and escapes comma-delimited values
   );
 });
 
+test("renders subscription display names as one safely encoded field", () => {
+  const group = { name: "订阅测试", type: "select", useSubscription: true, filter: "^.+$" };
+  const cases = [
+    ["Nodes=Prod", "Nodes=Prod"],
+    ["末尾反斜杠\\", "末尾反斜杠\\\\"],
+    ["中文 内部 空格,普通=标点", "中文 内部 空格\\,普通=标点"],
+    ["use=true", "use=true"],
+  ];
+
+  for (const [subscriptionName, encodedName] of cases) {
+    assert.equal(
+      renderGroups([group], subscriptionName)[0],
+      `订阅测试 = select,${encodedName},use=true,policy-regex-filter=^.+$`,
+      subscriptionName,
+    );
+  }
+});
+
 test("rejects CR/LF in every rendered field before an INI line can be injected", () => {
   const group = { name: "安全组", type: "select", items: ["DIRECT"], useSubscription: true, filter: "^.+$" };
 

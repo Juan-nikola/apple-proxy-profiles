@@ -69,6 +69,21 @@ test("renders a complete, valid macOS profile without node credentials", () => {
   assert.deepEqual(validateProfile(profile), { valid: true, errors: [] });
 });
 
+test("renders and validates exact named subscription sources", () => {
+  const cases = [
+    ["Nodes=Prod", "Nodes=Prod"],
+    ["末尾反斜杠\\", "末尾反斜杠\\\\"],
+    ["中文 内部 空格,普通=标点", "中文 内部 空格\\,普通=标点"],
+    ["use=true", "use=true"],
+  ];
+
+  for (const [subscriptionName, encodedName] of cases) {
+    const profile = renderProfile({ ...baseOptions, subscriptionName }, inventory(25));
+    assert.equal(profile.includes(`,${encodedName},use=true,policy-regex-filter=`), true, subscriptionName);
+    assert.deepEqual(validateProfile(profile), { valid: true, errors: [] }, subscriptionName);
+  }
+});
+
 test("fails closed when client-chain inventory disagrees with Profile mode", () => {
   const eligibleEntry = {
     ...inventory(1)[0],

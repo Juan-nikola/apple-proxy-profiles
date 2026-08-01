@@ -87,6 +87,22 @@ var ShadowrocketProfileBundle = (() => {
     }
     return value.trim();
   }
+  function subscriptionDisplayName(raw) {
+    if (!Object.hasOwn(raw, "subscriptionName")) {
+      throw new Error("Option 'subscriptionName' must be a non-empty string");
+    }
+    const value = raw.subscriptionName;
+    if (typeof value !== "string" || value.length === 0) {
+      throw new Error("Option 'subscriptionName' must be a non-empty string");
+    }
+    if (/[\r\n]/.test(value)) {
+      throw new Error("Option 'subscriptionName' must not contain CR or LF");
+    }
+    if (value.trim() !== value) {
+      throw new Error("Option 'subscriptionName' must not have leading or trailing whitespace");
+    }
+    return value;
+  }
   function enumValue(raw, key) {
     const value = requiredString(raw, key);
     if (!OPTION_VALUES[key].includes(value)) {
@@ -105,7 +121,7 @@ var ShadowrocketProfileBundle = (() => {
     }
     const options = {};
     for (const key of REQUIRED_KEYS) {
-      options[key] = OPTION_VALUES[key] ? enumValue(raw, key) : requiredString(raw, key);
+      options[key] = key === "subscriptionName" ? subscriptionDisplayName(raw) : OPTION_VALUES[key] ? enumValue(raw, key) : requiredString(raw, key);
     }
     for (const [key, defaultValue] of Object.entries(DEFAULTS)) {
       const platformDefault = key === "ipv6Mode" && options.platform === "macos" ? "ipv4-only" : defaultValue;
@@ -423,12 +439,20 @@ var ShadowrocketProfileBundle = (() => {
     if (/[\r\n]/.test(string)) throw new Error("Group field values must not contain CR or LF");
     return string.replaceAll(",", "\\,");
   }
+  function escapeSubscriptionName(value) {
+    const string = String(value);
+    if (/[\r\n]/.test(string)) throw new Error("Subscription display name must not contain CR or LF");
+    if (string.trim() !== string) {
+      throw new Error("Subscription display name must not have leading or trailing whitespace");
+    }
+    return string.replaceAll("\\", "\\\\").replaceAll(",", "\\,");
+  }
   function renderGroups(groups, subscriptionName) {
     return groups.map((group) => {
       const items = (group.items ?? []).map(escapeValue);
       const fields = [escapeValue(group.type), ...items];
       if (group.useSubscription) {
-        fields.push(escapeValue(subscriptionName), "use=true");
+        fields.push(escapeSubscriptionName(subscriptionName), "use=true");
       }
       if (group.filter !== void 0) fields.push(`policy-regex-filter=${escapeValue(group.filter)}`);
       if (group.policySelectName !== void 0) {
@@ -952,8 +976,8 @@ ${renderRules().join("\n")}`
   function groupReferences(groups, errors) {
     const graph = new Map([...groups.keys()].map((name) => [name, []]));
     for (const [name, fields] of groups) {
-      const useIndex = fields.findIndex((field) => field === "use=true");
-      const staticEnd = useIndex > 1 ? useIndex - 1 : fields.length;
+      const useIndex = fields.lastIndexOf("use=true");
+      const staticEnd = useIndex > 1 ? useIndex - 1 : useIndex === -1 ? fields.length : 1;
       const staticItems = [];
       for (let index = 1; index < staticEnd; index += 1) {
         const item = fields[index];
@@ -967,7 +991,7 @@ ${renderRules().join("\n")}`
         }
       }
       const subscriptionSource = useIndex > 1 ? fields[useIndex - 1] : "";
-      const hasSubscription = subscriptionSource.length > 0 && !subscriptionSource.includes("=");
+      const hasSubscription = subscriptionSource.length > 0;
       const includesAllProxies = fields.includes("include-all-proxies=true");
       const filtersDynamicPolicies = fields.some((field) => field.startsWith("policy-regex-filter="));
       if (filtersDynamicPolicies && !hasSubscription && !includesAllProxies) {

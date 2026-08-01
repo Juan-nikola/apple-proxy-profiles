@@ -39,6 +39,23 @@ function requiredString(raw, key) {
   return value.trim();
 }
 
+function subscriptionDisplayName(raw) {
+  if (!Object.hasOwn(raw, "subscriptionName")) {
+    throw new Error("Option 'subscriptionName' must be a non-empty string");
+  }
+  const value = raw.subscriptionName;
+  if (typeof value !== "string" || value.length === 0) {
+    throw new Error("Option 'subscriptionName' must be a non-empty string");
+  }
+  if (/[\r\n]/.test(value)) {
+    throw new Error("Option 'subscriptionName' must not contain CR or LF");
+  }
+  if (value.trim() !== value) {
+    throw new Error("Option 'subscriptionName' must not have leading or trailing whitespace");
+  }
+  return value;
+}
+
 function enumValue(raw, key) {
   const value = requiredString(raw, key);
   if (!OPTION_VALUES[key].includes(value)) {
@@ -60,7 +77,11 @@ export function parseOptions(raw) {
 
   const options = {};
   for (const key of REQUIRED_KEYS) {
-    options[key] = OPTION_VALUES[key] ? enumValue(raw, key) : requiredString(raw, key);
+    options[key] = key === "subscriptionName"
+      ? subscriptionDisplayName(raw)
+      : OPTION_VALUES[key]
+        ? enumValue(raw, key)
+        : requiredString(raw, key);
   }
   for (const [key, defaultValue] of Object.entries(DEFAULTS)) {
     const platformDefault = key === "ipv6Mode" && options.platform === "macos"

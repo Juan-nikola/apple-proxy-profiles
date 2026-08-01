@@ -26,7 +26,7 @@ Restore Shadowrocket's subscription-aware group syntax:
 <explicit policies>,<subscription display name>,use=true,policy-regex-filter=<filter>
 ```
 
-`subscriptionName` is no longer a compatibility placeholder. It is the exact Shadowrocket subscription display name used by every dynamic group. The name remains user-configurable and may be changed freely, but the same value must be supplied to each Sub-Store File operator.
+`subscriptionName` is no longer a compatibility placeholder. It is the exact Shadowrocket subscription display name used by every dynamic group. It remains user-configurable, including Chinese, internal spaces, and ordinary punctuation, but must not begin or end with whitespace or contain CR/LF. The same exact value must be supplied to each Sub-Store File operator.
 
 Add `policy-select-name` to the 16 common service groups so a freshly compiled Profile declares the intended default explicitly:
 
@@ -53,7 +53,7 @@ Both categories expose concrete servers from the named subscription in the same 
 
 ## Data Flow
 
-1. The user gives the Shadowrocket node subscription any display name.
+1. The user gives the Shadowrocket node subscription an allowed display name (no leading/trailing whitespace or CR/LF).
 2. The same exact text is supplied as `subscriptionName` in all three Sub-Store File operator arguments.
 3. The Profile generator passes `subscriptionName` to `renderGroups`.
 4. Dynamic groups render `<subscriptionName>,use=true` plus their filter.
@@ -62,12 +62,12 @@ Both categories expose concrete servers from the named subscription in the same 
 
 ## Validation and Failure Handling
 
-- `subscriptionName` remains required and nonblank.
+- `subscriptionName` remains required and nonblank; it preserves exact text rather than trimming, rejects leading/trailing whitespace and CR/LF, and encodes only its backslashes and commas for the group field.
 - Generated Profile validation requires dynamic groups to have either `<subscriptionName>,use=true` or another supported dynamic source.
 - Tests must reject a regression back to `include-all-proxies=true` for mixed service groups.
 - Tests must assert the exact proxy-first and direct-first rendered prefixes, named subscription source, filter, and `policy-select-name` values.
 - Generated macOS, iPhone, and iPad examples must use `Shadowrocket-Nodes` as the fixture display name.
-- Documentation must state that capitalization and punctuation must match the Shadowrocket subscription display name exactly.
+- Documentation must state that capitalization, punctuation, and allowed internal spacing must match the Shadowrocket subscription display name exactly.
 - If the subscription name does not match, explicit policies remain available but concrete servers from the subscription will be absent.
 - After updating a real device, the user must verify one proxy-first group and one direct-first group. If Shadowrocket retains a prior manual choice despite `policy-select-name`, select the desired first policy once; this does not affect homepage following afterward.
 
@@ -92,5 +92,5 @@ Both categories expose concrete servers from the named subscription in the same 
 - Ten proxy-first groups default to `🚀 节点选择`.
 - Six direct-first groups default to `DIRECT`.
 - All 16 groups show automatic, fallback, present-continent, and concrete-server choices.
-- The configured subscription display name can be arbitrary, provided `subscriptionName` matches it exactly.
+- The configured subscription display name may use supported characters, provided it has no leading/trailing whitespace or CR/LF and `subscriptionName` matches it exactly.
 - Full tests, generated-artifact drift checks, secret scanning, and remote rule checks pass before publication.

@@ -85,10 +85,10 @@ function parseGroups(lines, errors) {
 function groupReferences(groups, errors) {
   const graph = new Map([...groups.keys()].map((name) => [name, []]));
   for (const [name, fields] of groups) {
-    const useIndex = fields.findIndex((field) => field === "use=true");
+    const useIndex = fields.lastIndexOf("use=true");
     // The field immediately before use=true is the subscription source, not a
     // selectable group. Every preceding non-control item is structural.
-    const staticEnd = useIndex > 1 ? useIndex - 1 : fields.length;
+    const staticEnd = useIndex > 1 ? useIndex - 1 : useIndex === -1 ? fields.length : 1;
     const staticItems = [];
     for (let index = 1; index < staticEnd; index += 1) {
       const item = fields[index];
@@ -102,7 +102,7 @@ function groupReferences(groups, errors) {
       }
     }
     const subscriptionSource = useIndex > 1 ? fields[useIndex - 1] : "";
-    const hasSubscription = subscriptionSource.length > 0 && !subscriptionSource.includes("=");
+    const hasSubscription = subscriptionSource.length > 0;
     const includesAllProxies = fields.includes("include-all-proxies=true");
     const filtersDynamicPolicies = fields.some((field) => field.startsWith("policy-regex-filter="));
     if (filtersDynamicPolicies && !hasSubscription && !includesAllProxies) {
