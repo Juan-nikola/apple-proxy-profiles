@@ -51,7 +51,7 @@ Profile 使用职责分开的两层结构：
 1. 仅当发布说明写明节点 Operator 有变化时，才在 GitHub 打开最新的 `dist/substore-node-operator.js`，复制完整内容并替换 Sub-Store 节点 Script Operator 的脚本正文；否则跳过本步。
 2. 如果执行了上一步，再预览节点输出，确认数量正常、国旗不重复、名称排序正常；异常就恢复旧脚本，不发布。
 3. 打开最新的 `dist/substore-profile-generator.js`，复制完整内容，分别替换 macOS、iPhone、iPad 三个 File Script Operator 的脚本正文，并按部署手册更新 QUIC/IPv6 参数。
-4. 先预览 macOS Profile，确认整行是 `🚀 节点选择 = select,PROXY`；16 个常用业务组都有自动/故障转移/地区/具体节点选择，10 个境外组首项为 `🚀 节点选择`，6 个国内组首项为 `DIRECT`；动态组含 `include-all-proxies=true`、AI 洲组仍存在，再发布并只在 Intel Mac 更新测试。
+4. 先预览 macOS Profile，确认整行是 `🚀 节点选择 = select,PROXY`；16 个常用业务组都有自动/故障转移/地区/具体节点选择，10 个境外组首项为 `🚀 节点选择`，6 个国内组首项为 `DIRECT`；动态组只含与 `subscriptionName` 完全匹配的 `<subscriptionName>,use=true`，AI 洲组仍存在，再发布并只在 Intel Mac 更新测试。
 5. Intel Mac 验收通过后，才按 iPhone、iPad 顺序更新。整个过程中保留旧 Profile 作为回滚入口。
 
 本次恢复服务组时，设备端只需替换 `dist/substore-profile-generator.js` 并更新当前平台的 Profile；无需替换节点 Script Operator，也无需改动节点订阅。仓库中的 `dist/` 与 `examples/` 已随源码重建并通过校验，规则和节点 Operator 内容未改变。必须在 Shadowrocket 中手动更新或重新导入新 Profile；只更新节点订阅不会改变分组。更新后打开 `🚀 节点选择`，摘要应显示 `SELECT > PROXY`，不能再显示某个国旗或具体节点名。如果仍显示具体节点，说明当前设备还在使用旧 Profile，先停止向其他设备推广并按部署手册核对 Profile 的更新时间。

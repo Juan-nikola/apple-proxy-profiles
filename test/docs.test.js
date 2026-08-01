@@ -78,9 +78,14 @@ test("beginner docs contain every operational checkpoint and warning", async () 
     "所有显式选择及匹配订阅的具体服务器都存在",
     "在 Shadowrocket 首页切换节点后，`🐙 GitHub` 仍选择 `🚀 节点选择`",
   ]) assert.ok(docs["docs/canary-checklist.md"].includes(phrase), `canary: missing named-subscription validation: ${phrase}`);
-  for (const phrase of ["include-all-proxies=true", "PROXY", "ChinaMax_Domain", "问道手游"]) {
+  for (const phrase of ["Shadowrocket-Nodes,use=true", "PROXY", "ChinaMax_Domain", "问道手游"]) {
     assert.ok(text.includes(phrase), `missing enhanced-routing documentation phrase: ${phrase}`);
   }
+  assert.doesNotMatch(text, /include-all-proxies=true/, "documentation must not describe legacy all-proxy dynamic groups");
+  assert.ok(
+    docs["README.md"].includes("动态组只含与 `subscriptionName` 完全匹配的 `<subscriptionName>,use=true`"),
+    "README.md: generated-profile check must use the named subscription source",
+  );
   for (const phrase of [
     "`🚀 节点选择`只包含 `PROXY`",
     "境外业务分组默认跟随 `🚀 节点选择`",
@@ -110,6 +115,11 @@ test("beginner docs contain every operational checkpoint and warning", async () 
     new RegExp(`显示名准确填写 \`${chainSubscriptionName}\`[\\s\\S]*subscriptionName=${chainSubscriptionName}`),
     "maintenance chain procedure: test subscription display name must match subscriptionName",
   );
+  for (const phrase of [
+    "动态组只从 `subscriptionName` 精确指定的测试订阅读取",
+    "无需因防混入而暂停生产订阅",
+  ]) assert.ok(chainSection.includes(phrase), `maintenance chain procedure: missing named-subscription isolation: ${phrase}`);
+  assert.doesNotMatch(chainSection, /同一正则匹配|筛选客户端全部当前代理|不会混入正式订阅节点/);
   assert.ok(chainSection.includes("[已有链]"), "maintenance: missing reserved existing-chain marker guidance");
   assert.ok(docs["docs/troubleshooting.md"].includes("[已有链]"), "troubleshooting: missing reserved existing-chain marker guidance");
   assert.doesNotMatch(chainSection, /将节点 Script Operator 参数改为/, "maintenance chain procedure must not mutate the shared node Script Operator");

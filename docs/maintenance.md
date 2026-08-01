@@ -38,7 +38,7 @@
 2. 新建带日期的测试组合，例如 `shadowrocket-sources-chain-test-YYYYMMDD`。复制正式组合的来源成员和必要的非节点脚本处理，但不要把正式节点 Script Operator 挂到测试组合。如果某个来源必须把标签改为 `[落地]`，先复制该来源条目，只在副本上改显示名，不重命名生产来源。
 3. 为测试组合新建一份独立的节点 Script Operator，粘贴同一份 `dist/substore-node-operator.js`，参数填 `output=nodes&clientChain=on`。不要编辑正式组合正在使用的脚本或参数。
 4. 从测试组合发布一份新的版本化节点订阅，例如 `shadowrocket-nodes-chain-test-YYYYMMDD`；原来的 `shadowrocket-nodes` 保持不变。
-5. 在 Shadowrocket 中给新节点订阅一个便于识别的显示名，显示名准确填写 `Shadowrocket-Nodes-Chain-Test-YYYYMMDD`。这是测试示例，不是固定名称；若自定义名称，后续 `subscriptionName` 必须逐字相同，包括大小写、emoji、空格和标点。为了隔离测试，测试期间应暂停或移除其他会被相同正则匹配的节点订阅。
+5. 在 Shadowrocket 中给新节点订阅一个便于识别的显示名，显示名准确填写 `Shadowrocket-Nodes-Chain-Test-YYYYMMDD`。这是测试示例，不是固定名称；若自定义名称，后续 `subscriptionName` 必须逐字相同，包括大小写、emoji、空格和标点。动态组只从 `subscriptionName` 精确指定的测试订阅读取，无需因防混入而暂停生产订阅；正式订阅与测试订阅仍应分别保留，便于独立回滚和复测。
 6. 先只复制 macOS Profile File，名称加同一天的链式测试后缀。参数中的三个关键值填写为：
    - `name=shadowrocket-sources-chain-test-YYYYMMDD`
    - `subscriptionName=Shadowrocket-Nodes-Chain-Test-YYYYMMDD`
@@ -48,7 +48,7 @@
 
    `output=config&type=collection&name=shadowrocket-sources-chain-test-YYYYMMDD&subscriptionName=Shadowrocket-Nodes-Chain-Test-YYYYMMDD&platform=macos&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=ipv4-only&autoGroupMode=auto&clientChain=on`
 
-8. 预览 macOS 测试 Profile 后发布新的 URL，在 Intel Mac 中把新节点订阅和新 Profile 并排导入。新 Profile 会筛选客户端全部当前代理，因此开始测试前确认不会混入正式订阅节点。
+8. 预览 macOS 测试 Profile 后发布新的 URL，在 Intel Mac 中把新节点订阅和新 Profile 并排导入。新 Profile 的动态组只读取第 5 步 `subscriptionName` 指定的测试订阅；测试时无需停用或移除正式节点订阅。
 9. 先在 Intel Mac 验证：普通落地仍在、允许的 `🔗` 链式副本出现、入口失败时连接关闭而不是绕过入口。Hysteria2 不生成客户端链式副本；`[realm]` 和 `[链式代理]`是已完成链路，也不会再次克隆。
    节点名中的 `[已有链]` 由脚本在检测到 `chain`、`underlying-proxy` 等既有链路字段时自动添加，表示该节点不会再次用作客户端入口。不要手工删除或伪造这个标记；原节点名里手写的同名标记会先被清除，再按真实字段重新判断。
 10. macOS 通过后，才在同一隔离测试栈中复制 iPhone、iPad Profile File；分别只改 `platform=iphone`、`platform=ipad`，并保持第 6 步三个关键值一致。每份都发布新的 URL，按 iPhone、iPad 顺序测试。
