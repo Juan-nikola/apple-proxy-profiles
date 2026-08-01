@@ -8,11 +8,11 @@
 - 客户端链式：只有落地标 `[落地]`；必须按下文创建完整隔离的版本化测试栈，不修改正式组合、节点脚本、节点订阅或 Profile；Hysteria2 不生成链式副本。
 - DNS：修改 `dnsMode`、`chinaDns`、`globalDns` 后重新生成并更新 Profile，不是热切换。
 - QUIC：修改 `quicMode=allow|proxy-block|all-block` 后更新 Profile，不是热切换。
-- IPv6：正常使用 `ipv6Mode=auto`；只在排障时临时改 `ipv4-only`。
+- IPv6：iPhone/iPad 使用 `ipv6Mode=auto`；macOS 稳定优先使用 `ipv4-only`。
 - 广告：`☣️ 安全威胁`、`🧱 常见广告`、`🕵️ 严格跟踪`可在客户端热切换；`blockMode`只决定首次默认值。
 - HTTPS 解密：始终关闭；广告规则中的域名/IP 项仍会工作，需要解密 HTTPS 路径的 URL 正则不会生效，不为提高拦截率安装证书。
-- AI：在 `🤖 AI 专用`里可通过独立 AI 洲组选节点，也可从 `SHADOWROCKET-NODES` 入口直接选择任意节点；它可以与主线路使用不同节点，更新后确认选择仍保留。
-- 四个国内平台：各自策略组默认 DIRECT，需要时可切到 `🚀 节点选择`，也可从 `SHADOWROCKET-NODES` 入口固定具体节点。代理不能保证评论地区改变。
+- AI：在 `🤖 AI 专用`里可通过独立 AI 洲组或具体节点选择出口；它可以与主线路使用不同节点，更新后确认选择仍保留。
+- 国内平台：各自策略组默认 DIRECT，需要时可切到 `🚀 节点选择`或具体节点。抖音使用 Blackmatrix7 `ByteDance` 增强规则；代理不能保证评论地区改变。
 - 游戏连接：默认 DIRECT，只显示明确 `[UDP]` 节点；游戏网页由 `🕹️ 游戏平台`控制。
 - 下载/P2P：默认 DIRECT，候选不含 `[机场]`。
 
@@ -38,17 +38,17 @@
 2. 新建带日期的测试组合，例如 `shadowrocket-sources-chain-test-YYYYMMDD`。复制正式组合的来源成员和必要的非节点脚本处理，但不要把正式节点 Script Operator 挂到测试组合。如果某个来源必须把标签改为 `[落地]`，先复制该来源条目，只在副本上改显示名，不重命名生产来源。
 3. 为测试组合新建一份独立的节点 Script Operator，粘贴同一份 `dist/substore-node-operator.js`，参数填 `output=nodes&clientChain=on`。不要编辑正式组合正在使用的脚本或参数。
 4. 从测试组合发布一份新的版本化节点订阅，例如 `shadowrocket-nodes-chain-test-YYYYMMDD`；原来的 `shadowrocket-nodes` 保持不变。
-5. 在 Shadowrocket 中给新节点订阅一个不同的显示名，例如 `Shadowrocket-Nodes-Chain-Test-YYYYMMDD`。它不能仍叫 `Shadowrocket-Nodes`，否则测试 Profile 可能引用正式订阅。
+5. 在 Shadowrocket 中给新节点订阅一个便于识别的显示名。显示名不参与 Profile 绑定；为了隔离测试，测试期间应暂停或移除其他会被相同正则匹配的节点订阅。
 6. 先只复制 macOS Profile File，名称加同一天的链式测试后缀。参数中的三个关键值填写为：
    - `name=shadowrocket-sources-chain-test-YYYYMMDD`
    - `subscriptionName=Shadowrocket-Nodes-Chain-Test-YYYYMMDD`
    - `clientChain=on`
-7. 三个值必须属于同一套隔离测试栈：`name` 对应第 2 步的测试组合，`subscriptionName` 与第 5 步 Shadowrocket 中的新节点订阅显示名完全一致，`clientChain` 为 `on`。其他参数先保持正式 macOS Profile 的值。
+7. `name` 对应第 2 步测试组合，`clientChain` 为 `on`；`subscriptionName` 是兼容占位参数，不再与客户端显示名绑定。其他参数先保持正式 macOS Profile 的值。
    如果正式 Profile 仍使用默认参数，可复制下面整行，再把所有 `YYYYMMDD` 换成同一天：
 
-   `output=config&type=collection&name=shadowrocket-sources-chain-test-YYYYMMDD&subscriptionName=Shadowrocket-Nodes-Chain-Test-YYYYMMDD&platform=macos&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=allow&ipv6Mode=auto&autoGroupMode=auto&clientChain=on`
+   `output=config&type=collection&name=shadowrocket-sources-chain-test-YYYYMMDD&subscriptionName=Shadowrocket-Nodes-Chain-Test-YYYYMMDD&platform=macos&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=ipv4-only&autoGroupMode=auto&clientChain=on`
 
-8. 预览 macOS 测试 Profile 后发布新的 URL，在 Intel Mac 中把新节点订阅和新 Profile 并排导入。旧 Profile 继续引用原来的 `Shadowrocket-Nodes`，不要替换其节点订阅。
+8. 预览 macOS 测试 Profile 后发布新的 URL，在 Intel Mac 中把新节点订阅和新 Profile 并排导入。新 Profile 会筛选客户端全部当前代理，因此开始测试前确认不会混入正式订阅节点。
 9. 先在 Intel Mac 验证：普通落地仍在、允许的 `🔗` 链式副本出现、入口失败时连接关闭而不是绕过入口。Hysteria2 不生成客户端链式副本；`[realm]` 和 `[链式代理]`是已完成链路，也不会再次克隆。
    节点名中的 `[已有链]` 由脚本在检测到 `chain`、`underlying-proxy` 等既有链路字段时自动添加，表示该节点不会再次用作客户端入口。不要手工删除或伪造这个标记；原节点名里手写的同名标记会先被清除，再按真实字段重新判断。
 10. macOS 通过后，才在同一隔离测试栈中复制 iPhone、iPad Profile File；分别只改 `platform=iphone`、`platform=ipad`，并保持第 6 步三个关键值一致。每份都发布新的 URL，按 iPhone、iPad 顺序测试。
@@ -64,8 +64,8 @@
 | `dnsMode` | `stable`、`privacy`、`speed` | 日常使用 `stable` |
 | `chinaDns` | `alidns`、`dnspod`、`system` | 日常使用 `alidns` |
 | `globalDns` | `cloudflare`、`google`、`quad9` | 日常使用 `cloudflare` |
-| `quicMode` | `allow`、`proxy-block`、`all-block` | 日常使用 `allow` |
-| `ipv6Mode` | `auto`、`ipv4-only` | 日常使用 `auto` |
+| `quicMode` | `allow`、`proxy-block`、`all-block` | 日常使用 `proxy-block`；只阻止代理侧应用 QUIC |
+| `ipv6Mode` | `auto`、`ipv4-only` | iPhone/iPad 用 `auto`；macOS 稳定优先用 `ipv4-only` |
 | `blockMode` | `balanced`、`security`、`strict`、`off` | 只决定首次默认值，日常在客户端热切换 |
 | `autoGroupMode` | `auto`、`full`、`balanced`、`minimal` | 使用 `auto`，节点增多会自动降低测速负担 |
 | `clientChain` | `off`、`on` | 无明确客户端落地时保持 `off` |
@@ -99,4 +99,3 @@
 - 更新生成器代码后：维护者先运行 `npm ci`、`npm run verify` 和联网的 `npm run check:rules`，再上传新的 `dist/` 内容。
 
 如发现规则、节点、DNS 或局域网异常，立即按[故障排查与回滚](troubleshooting.md)处理。
-

@@ -1,6 +1,6 @@
 import { isValidRuleLine, isValidRuleTarget } from "./rule-validator.js";
 
-const BUILTIN_POLICIES = new Set(["DIRECT", "REJECT"]);
+const BUILTIN_POLICIES = new Set(["DIRECT", "REJECT", "PROXY"]);
 const GROUP_TYPES = new Set(["select", "url-test", "fallback", "load-balance", "random"]);
 const REQUIRED_SECTIONS = new Set(["General", "Proxy Group", "Rule"]);
 const SIMPLE_RULE_TYPES = new Set([
@@ -103,7 +103,8 @@ function groupReferences(groups, errors) {
     }
     const subscriptionSource = useIndex > 1 ? fields[useIndex - 1] : "";
     const hasSubscription = subscriptionSource.length > 0 && !subscriptionSource.includes("=");
-    if (staticItems.length === 0 && !hasSubscription) {
+    const includesAllProxies = fields.includes("include-all-proxies=true");
+    if (staticItems.length === 0 && !hasSubscription && !includesAllProxies) {
       errors.add(`Group requires a selectable item or subscription source: ${name}`);
     }
   }
@@ -216,10 +217,10 @@ function validateRules(lines, groups, errors) {
     const type = fields[0];
     if (SIMPLE_RULE_TYPES.has(type)) {
       validateSimpleRule(type, fields, groups, errors);
-    } else if (type === "RULE-SET") {
-      if (fields.length < 3 || !fields[1]) errors.add("Malformed RULE-SET rule");
-      validatePolicy("RULE-SET", fields[2], groups, errors);
-      if (fields.slice(3).some((field) => !field.includes("="))) errors.add("Malformed RULE-SET rule");
+    } else if (type === "RULE-SET" || type === "DOMAIN-SET") {
+      if (fields.length < 3 || !fields[1]) errors.add(`Malformed ${type} rule`);
+      validatePolicy(type, fields[2], groups, errors);
+      if (fields.slice(3).some((field) => !field.includes("="))) errors.add(`Malformed ${type} rule`);
     } else if (type === "FINAL") {
       if (fields.length !== 2) errors.add("Malformed FINAL rule");
       validatePolicy("FINAL", fields[1], groups, errors);
@@ -245,4 +246,3 @@ export function validateProfile(profile) {
   const result = [...errors];
   return { valid: result.length === 0, errors: result };
 }
-

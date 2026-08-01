@@ -7,16 +7,17 @@
 - [ ] 常用中国网站直连，常用境外网站经 `🚀 节点选择`。
 - [ ] 一个未列规则但解析为中国 IP 的测试目标命中 `GEOIP,CN,DIRECT`。
 - [ ] 一个未列规则的境外目标命中 `FINAL,🚀 节点选择`。
-- [ ] `🚀 节点选择`显示自动/故障转移、固定顺序的洲组和 `SHADOWROCKET-NODES` 订阅入口；入口下能访问全部具体节点，同时没有国家组。
-- [ ] `🤖 AI 专用`既有独立 AI 洲组，也有 `SHADOWROCKET-NODES` 全节点入口；更改 AI 节点不改变 `🚀 节点选择`的主线路节点，OpenAI、Claude、Gemini、Copilot 与常用其他 AI 分流正确。
+- [ ] `🚀 节点选择`第一项是跟随首页节点的 `PROXY`，并显示自动/故障转移、固定顺序洲组和符合筛选条件的具体节点；没有国家组。
+- [ ] 节点订阅显示名可以任意填写；动态组含 `include-all-proxies=true` 且仍能显示具体节点。
+- [ ] `🤖 AI 专用`有独立 AI 洲组和具体节点；更改 AI 节点不改变主线路，OpenAI、Claude、Gemini、Copilot 与常用其他 AI 分流正确。
 - [ ] GitHub 命中 `🐙 GitHub`，早于 Microsoft 规则。
-- [ ] 哔哩哔哩、抖音、小红书、微博各自能在 DIRECT、`🚀 节点选择`或 `SHADOWROCKET-NODES` 下的具体节点间单独切换。
+- [ ] 哔哩哔哩、抖音、小红书、微博各自能在 DIRECT、`🚀 节点选择`或具体节点间单独切换；抖音视频和评论加载正常。
 - [ ] `☣️ 安全威胁`、`🧱 常见广告`、`🕵️ 严格跟踪`各自能在 REJECT 与 DIRECT 间热切换。
 - [ ] 连接、规则和 DNS 日志可查看，且自动删除 7 天前日志。
 - [ ] IPv4 网络正常。
 - [ ] 双栈网络的 IPv4 和 IPv6 都不绕过规则。
 - [ ] 有条件时验证 IPv6-only 网络；无条件时保留未勾选并注明网络不可用。
-- [ ] `quicMode=allow` 正常；另存测试 Profile 验证 `proxy-block` 与 `all-block` 后切回 `allow`。
+- [ ] 正式 Profile 为 `quicMode=proxy-block`；如需对照，另存测试 Profile 验证 `allow` 与 `all-block` 后切回 `proxy-block`。
 - [ ] 路由器管理页和其他局域网目标 DIRECT。
 - [ ] AirPlay 正常。
 - [ ] HomeKit 正常。
@@ -24,6 +25,8 @@
 - [ ] 打印机正常。
 - [ ] `⬇️ 下载/P2P`候选没有 `[机场]`。
 - [ ] `🎮 游戏连接`只出现明确带 `[UDP]` 的节点，默认 DIRECT。
+- [ ] iPhone 在 Wi-Fi 和蜂窝网络分别测试《问道手游》登录、换线、战斗和资源加载；雷霆/吉比特域名命中 DIRECT。
+- [ ] macOS 的 `ipv6Mode=ipv4-only`，并完成休眠唤醒与 Wi-Fi 切换测试，无持续断流。
 - [ ] 更新一次 Profile 后，AI 和其他手动策略选择仍保留；若未保留，在推广前记录并处理。
 - [ ] 实际切回旧 Profile 一次，确认回滚无需删除新 Profile。
 
@@ -60,4 +63,3 @@ macOS 版本：
 ```
 
 全部勾选后继续观察稳定性，再按顺序导入 iPhone、iPad。不要把含订阅 URL、Profile URL、Token、节点详情、二维码或完整地址栏的截图附在记录中。HTTPS 解密和 iCloud 节点自动同步应始终保持关闭，Shadowrocket 运行时不要叠加 iCloud 私密转送。
-

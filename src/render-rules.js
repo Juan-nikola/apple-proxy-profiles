@@ -27,12 +27,23 @@ const CUSTOM_RULES = Object.freeze([
 ]);
 
 const PRE_GAME_RULE_IDS = Object.freeze([
-  "Hijacking", "BlockHttpDNS", "AdvertisingLite", "Privacy", "BiliBili", "DouYin", "XiaoHongShu", "Weibo",
+  "Hijacking", "BlockHttpDNS", "AdvertisingLite", "Privacy", "BiliBili", "ByteDance", "XiaoHongShu", "Weibo",
   "OpenAI", "Claude", "Gemini", "Copilot", "GitHub", "YouTube", "Netflix", "Disney", "Spotify", "GlobalMedia",
   "Telegram", "Facebook", "Instagram", "Twitter", "TikTok", "Apple", "Microsoft",
 ]);
+const GAME_DIRECT_RULES = Object.freeze([
+  "DOMAIN-SUFFIX,leiting.com,DIRECT",
+  "DOMAIN-SUFFIX,leitingcn.com,DIRECT",
+  "DOMAIN-SUFFIX,g-bits.com,DIRECT",
+]);
+const DOMESTIC_BEFORE_GAME_RULE_IDS = Object.freeze(["SteamCN", "ChinaMax_Domain"]);
 const POST_GAME_RULE_IDS = Object.freeze(["Download", "PrivateTracker", "ChinaMax"]);
-const REQUIRED_RULE_IDS = Object.freeze([...PRE_GAME_RULE_IDS, "Game", ...POST_GAME_RULE_IDS]);
+const REQUIRED_RULE_IDS = Object.freeze([
+  ...PRE_GAME_RULE_IDS,
+  ...DOMESTIC_BEFORE_GAME_RULE_IDS,
+  "Game",
+  ...POST_GAME_RULE_IDS,
+]);
 
 function isSafeCustomField(value) {
   return typeof value === "string"
@@ -79,7 +90,7 @@ function catalogRule(entriesById, id) {
 }
 
 function renderRuleSet(entry) {
-  return `RULE-SET,${entry.url},${entry.policy},update-interval=86400`;
+  return `${entry.type},${entry.url},${entry.policy},update-interval=86400`;
 }
 
 export function renderRules() {
@@ -93,6 +104,8 @@ export function renderRules() {
   }
 
   lines.push(...PRE_GAME_RULE_IDS.map((id) => renderRuleSet(catalogRule(entriesById, id))));
+  lines.push(...GAME_DIRECT_RULES);
+  lines.push(...DOMESTIC_BEFORE_GAME_RULE_IDS.map((id) => renderRuleSet(catalogRule(entriesById, id))));
 
   const game = catalogRule(entriesById, "Game");
   lines.push(`AND,((PROTOCOL,UDP),(RULE-SET,${game.url})),🎮 游戏连接`);
@@ -101,4 +114,3 @@ export function renderRules() {
   lines.push("GEOIP,CN,DIRECT", "FINAL,🚀 节点选择");
   return lines;
 }
-

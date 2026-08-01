@@ -4,12 +4,12 @@ function escapeValue(value) {
   return string.replaceAll(",", "\\,");
 }
 
-export function renderGroups(groups, subscriptionName) {
+export function renderGroups(groups, _subscriptionName) {
   return groups.map((group) => {
     const items = (group.items ?? []).map(escapeValue);
     const fields = [escapeValue(group.type), ...items];
     if (group.useSubscription) {
-      fields.push(escapeValue(subscriptionName), "use=true");
+      fields.push("include-all-proxies=true");
     }
     if (group.filter !== undefined) fields.push(`policy-regex-filter=${escapeValue(group.filter)}`);
     if (group.url !== undefined) fields.push(`url=${escapeValue(group.url)}`);
@@ -20,4 +20,3 @@ export function renderGroups(groups, subscriptionName) {
     return `${escapeValue(group.name)} = ${fields.join(",")}`;
   });
 }
-

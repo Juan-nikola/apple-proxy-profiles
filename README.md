@@ -15,8 +15,8 @@
 
 - 一份所有设备共用、每 6 小时更新的私密节点订阅 `shadowrocket-nodes`。
 - 三份每天更新的平台 Profile：`shadowrocket-config-macos`、`shadowrocket-config-iphone`、`shadowrocket-config-ipad`。
-- 简洁的主节点选择和洲组，以及 AI、流媒体、国内平台、游戏、下载/P2P 等策略组。
-- 中国大陆规则和 `GEOIP,CN` 直连，其他未识别流量最终进入 `🚀 节点选择`。
+- 默认跟随 Shadowrocket 首页节点、同时保留自动/故障转移/洲组/具体节点的主节点选择，以及 AI、流媒体、国内平台、游戏、下载/P2P 等策略组。
+- Blackmatrix7 `ChinaMax_Domain + ChinaMax` 完整增强国内规则、抖音 `ByteDance` 和 SteamCN；其他未识别流量最终进入 `🚀 节点选择`。
 
 Apple TV 已在生成器中预留参数，但不属于本轮部署范围。首轮顺序必须是 Intel Mac、iPhone、iPad；每台设备都保留原来的可用 Profile。
 
@@ -24,10 +24,10 @@ Apple TV 已在生成器中预留参数，但不属于本轮部署范围。首�
 
 Profile 使用固定的两层结构：
 
-1. `🚀 节点选择`先显示“全部自动、全部故障转移、亚太、欧洲、美洲、其他/未分类”，并保留一个名为 `SHADOWROCKET-NODES`（实际文字由 `subscriptionName` 决定）的订阅入口；点它仍可访问全部具体节点。
+1. `🚀 节点选择`第一项是 `PROXY`，表示跟随 Shadowrocket 首页当前节点；后面仍显示全部自动、全部故障转移、亚太、欧洲、美洲、其他/未分类及符合筛选条件的具体节点。
 2. 点进某个洲组后才显示该洲的节点。洲顺序固定为亚太、欧洲、美洲、其他；没有节点的洲不会显示。
 
-GitHub、流媒体、社交、Apple、Microsoft 和四个国内平台等原本允许任意选节点的业务组，也保留 `SHADOWROCKET-NODES` 订阅入口。`🤖 AI 专用`同时提供独立 AI 洲组和全部节点入口：使用 AI 洲组时，它与主线路的洲组选择互不影响；也可以直接从订阅入口选择任意具体节点。
+动态组通过 `include-all-proxies=true` 从 Shadowrocket 当前可用代理中筛选节点，因此节点订阅显示名可以任意填写，不再要求叫 `Shadowrocket-Nodes` 或 `shadowsocks-nodes`。GitHub、流媒体、社交、Apple、Microsoft 和国内平台仍可直接选择符合筛选条件的具体节点；`🤖 AI 专用`的独立洲组与主线路互不影响。
 
 地区识别覆盖 ISO 3166-1 的 249 个国家和地区国旗。中东与大洋洲归入亚太，俄罗斯归入欧洲，美洲含加勒比，非洲、南极洲以及无法识别的国旗归入其他。不会因此生成任何国家策略组。节点已有国旗时以最左侧国旗为准；没有国旗时才使用内置的常见国家/地区、城市、机场代码和缩写推断，仍无法确认就进入 `🌐 其他/未分类`。
 
@@ -46,8 +46,8 @@ GitHub、流媒体、社交、Apple、Microsoft 和四个国内平台等原本�
 
 1. 在 GitHub 打开本仓库最新的 `dist/substore-node-operator.js`，复制完整内容，替换 Sub-Store 节点 Script Operator 的脚本正文，参数保持不变。
 2. 预览节点输出，确认数量正常、国旗不重复、名称排序正常；异常就恢复旧脚本，不发布。
-3. 打开最新的 `dist/substore-profile-generator.js`，复制完整内容，分别替换 macOS、iPhone、iPad 三个 File Script Operator 的脚本正文，三份原参数保持不变。
-4. 先预览 macOS Profile，确认 `🚀 节点选择`和 `🤖 AI 专用`都能看到 `SHADOWROCKET-NODES` 订阅入口，同时 AI 还能看到独立 AI 洲组，再发布并只在 Intel Mac 更新测试。
+3. 打开最新的 `dist/substore-profile-generator.js`，复制完整内容，分别替换 macOS、iPhone、iPad 三个 File Script Operator 的脚本正文，并按部署手册更新 QUIC/IPv6 参数。
+4. 先预览 macOS Profile，确认 `🚀 节点选择`第一项是 `PROXY`、动态组含 `include-all-proxies=true`、AI 洲组仍存在，再发布并只在 Intel Mac 更新测试。
 5. Intel Mac 验收通过后，才按 iPhone、iPad 顺序更新。整个过程中保留旧 Profile 作为回滚入口。
 
 完整页面操作与成功标志见[零基础部署手册](docs/deployment.md)，更新后的逐项检查见[Intel Mac 灰度清单](docs/canary-checklist.md)。
@@ -62,7 +62,7 @@ npm run verify
 npm run check:rules
 ```
 
-`npm run verify` 会运行测试、重新构建两个脚本、生成脱敏示例并扫描敏感信息。`npm run check:rules` 会联网检查 29 份远程规则；网络受限时它可能失败，这不等于本地代码错误，但首次部署时仍必须等规则检查全部通过。
+`npm run verify` 会运行测试、重新构建两个脚本、生成脱敏示例并扫描敏感信息。`npm run check:rules` 会联网检查 31 份远程规则；网络受限时它可能失败，这不等于本地代码错误，但首次部署时仍必须等规则检查全部通过。
 
 ## 部署入口
 
@@ -71,4 +71,3 @@ npm run check:rules
 - [日常维护速查](docs/maintenance.md)
 - [故障排查与回滚](docs/troubleshooting.md)
 - [发布检查](RELEASE_CHECKLIST.md)
-

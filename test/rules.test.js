@@ -6,10 +6,10 @@ import { renderRules, validateCustomRules } from "../src/render-rules.js";
 
 const BLACKMATRIX7_ROOT = "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/";
 const EXPECTED_CATALOG_IDS = [
-  "Hijacking", "BlockHttpDNS", "AdvertisingLite", "Privacy", "BiliBili", "DouYin", "XiaoHongShu", "Weibo",
+  "Hijacking", "BlockHttpDNS", "AdvertisingLite", "Privacy", "BiliBili", "ByteDance", "XiaoHongShu", "Weibo",
   "OpenAI", "Claude", "Gemini", "Copilot", "GitHub", "YouTube", "Netflix", "Disney", "Spotify", "GlobalMedia",
-  "Telegram", "Facebook", "Instagram", "Twitter", "TikTok", "Apple", "Microsoft", "Game", "Download", "PrivateTracker",
-  "ChinaMax",
+  "Telegram", "Facebook", "Instagram", "Twitter", "TikTok", "Apple", "Microsoft", "SteamCN", "ChinaMax_Domain",
+  "Game", "Download", "PrivateTracker", "ChinaMax",
 ];
 
 function indexOf(lines, fragment) {
@@ -25,6 +25,12 @@ test("renders local and remote rules in routing precedence order", () => {
   assert.ok(indexOf(lines, "BiliBili/BiliBili.list") < indexOf(lines, "ChinaMax/ChinaMax.list"));
   assert.ok(indexOf(lines, "OpenAI/OpenAI.list") < indexOf(lines, "Microsoft/Microsoft.list"));
   assert.ok(indexOf(lines, "GitHub/GitHub.list") < indexOf(lines, "Microsoft/Microsoft.list"));
+  assert.ok(indexOf(lines, "ByteDance/ByteDance.list,🎵 抖音") < indexOf(lines, "ChinaMax/ChinaMax_Domain.list,DIRECT"));
+  for (const domain of ["leiting.com", "leitingcn.com", "g-bits.com"]) {
+    assert.ok(indexOf(lines, `DOMAIN-SUFFIX,${domain},DIRECT`) < indexOf(lines, "SteamCN/SteamCN.list"));
+  }
+  assert.ok(indexOf(lines, "SteamCN/SteamCN.list") < indexOf(lines, "ChinaMax/ChinaMax_Domain.list"));
+  assert.ok(indexOf(lines, "ChinaMax/ChinaMax_Domain.list") < indexOf(lines, "PROTOCOL,UDP"));
   assert.ok(indexOf(lines, "PROTOCOL,UDP") < indexOf(lines, "Game/Game.list,🕹️ 游戏平台"));
   assert.ok(indexOf(lines, "Download/Download.list") < indexOf(lines, "ChinaMax/ChinaMax.list"));
   assert.ok(indexOf(lines, "GEOIP,CN,DIRECT") < indexOf(lines, "FINAL,🚀 节点选择"));
@@ -36,17 +42,23 @@ test("uses official Blackmatrix7 catalog URLs with positive coverage thresholds"
     assert.match(rule.url, new RegExp(`^${BLACKMATRIX7_ROOT}`));
     assert.ok(rule.minEntries > 0, `${rule.id} must have a positive minEntries`);
   }
+  assert.equal(RULE_CATALOG.find((rule) => rule.id === "ChinaMax_Domain").type, "DOMAIN-SET");
+  assert.equal(
+    RULE_CATALOG.find((rule) => rule.id === "ChinaMax_Domain").url,
+    `${BLACKMATRIX7_ROOT}master/rule/Shadowrocket/ChinaMax/ChinaMax_Domain.list`,
+  );
 });
 
 test("renders every remote catalog entry in its explicit routing order", () => {
   const lines = renderRules();
   const renderedRuleSetIds = lines
-    .filter((line) => line.startsWith("RULE-SET,"))
+    .filter((line) => /^(?:RULE-SET|DOMAIN-SET),/.test(line))
     .map((line) => RULE_CATALOG.find((rule) => line.includes(rule.url))?.id);
 
   assert.deepEqual(renderedRuleSetIds, EXPECTED_CATALOG_IDS);
   assert.equal(lines.filter((line) => line.includes("Game/Game.list")).length, 2);
   assert.deepEqual(renderedRuleSetIds.slice(-4), ["Game", "Download", "PrivateTracker", "ChinaMax"]);
+  assert.equal(lines.filter((line) => line.startsWith("DOMAIN-SET,")).length, 1);
 });
 
 test("rejects invalid custom rules without reflecting CR/LF payloads", () => {
@@ -91,4 +103,3 @@ test("rejects invalid custom rules without reflecting CR/LF payloads", () => {
     });
   }
 });
-

@@ -54,8 +54,11 @@ test("beginner docs contain every operational checkpoint and warning", async () 
     "## 可以分享什么",
   ]);
 
-  const defaultParameters = "output=config&type=collection&name=shadowrocket-sources&subscriptionName=Shadowrocket-Nodes&platform=macos&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=allow&ipv6Mode=auto&autoGroupMode=auto&clientChain=off";
+  const defaultParameters = "output=config&type=collection&name=shadowrocket-sources&subscriptionName=Shadowrocket-Nodes&platform=macos&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=ipv4-only&autoGroupMode=auto&clientChain=off";
   assert.ok(docs["docs/deployment.md"].includes(defaultParameters), "deployment: missing exact default parameter string");
+  for (const phrase of ["显示名可以任意填写", "include-all-proxies=true", "PROXY", "ChinaMax_Domain", "问道手游"]) {
+    assert.ok(text.includes(phrase), `missing enhanced-routing documentation phrase: ${phrase}`);
+  }
 
   for (const phrase of ["本项目不配置服务器端认证、TLS 或管理页面加固", "秘密 URL 不是访问控制"]) {
     assert.ok(docs["README.md"].includes(phrase), `README.md: missing public Sub-Store warning: ${phrase}`);
@@ -70,11 +73,10 @@ test("beginner docs contain every operational checkpoint and warning", async () 
     "output=nodes&clientChain=off",
     "output=nodes&clientChain=on",
     "shadowrocket-nodes-chain-test-YYYYMMDD",
-    "Shadowrocket-Nodes-Chain-Test-YYYYMMDD",
     "name=shadowrocket-sources-chain-test-YYYYMMDD",
     "subscriptionName=Shadowrocket-Nodes-Chain-Test-YYYYMMDD",
     "原来的 `shadowrocket-nodes` 保持不变",
-    "三个值必须属于同一套隔离测试栈",
+    "兼容占位参数",
   ]) assert.ok(chainSection.includes(phrase), `maintenance chain procedure: missing isolated-stack phrase: ${phrase}`);
   assert.ok(chainSection.includes("[已有链]"), "maintenance: missing reserved existing-chain marker guidance");
   assert.ok(docs["docs/troubleshooting.md"].includes("[已有链]"), "troubleshooting: missing reserved existing-chain marker guidance");
@@ -99,4 +101,3 @@ test("beginner docs contain every operational checkpoint and warning", async () 
     }
   }
 });
-

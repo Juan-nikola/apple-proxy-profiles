@@ -1,7 +1,16 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { checkRule, isValidRuleLine } from "../scripts/check-rules.mjs";
+import { checkRule, isValidDomainSetLine, isValidRuleLine } from "../scripts/check-rules.mjs";
+
+test("accepts only normalized Shadowrocket domain-set entries", () => {
+  for (const line of [".example.com", ".sub-domain.example", "exact.example.com"]) {
+    assert.equal(isValidDomainSetLine(line), true, line);
+  }
+  for (const line of ["", ".", "..example.com", "*.example.com", "https://example.com", "example.com,PROXY"]) {
+    assert.equal(isValidDomainSetLine(line), false, line);
+  }
+});
 
 test("accepts representative valid Shadowrocket rule-set lines", () => {
   for (const line of [
@@ -101,3 +110,17 @@ test("accepts the text/plain content type served by the live rule catalog", asyn
   }
 });
 
+test("validates domain-set catalogs with domain-set syntax", async () => {
+  const previousFetch = globalThis.fetch;
+  globalThis.fetch = async () => new Response(".example.com\nexact.example.net\n", {
+    status: 200,
+    headers: { "content-type": "text/plain; charset=utf-8" },
+  });
+  try {
+    await assert.doesNotReject(
+      checkRule({ url: "https://example.invalid/domains", minEntries: 2, type: "DOMAIN-SET" }),
+    );
+  } finally {
+    globalThis.fetch = previousFetch;
+  }
+});

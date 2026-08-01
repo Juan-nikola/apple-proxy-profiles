@@ -147,7 +147,7 @@ export function buildGroups(options, nodes) {
   groups.push(subscriptionGroup(
     "🚀 节点选择",
     ALL_NODES_FILTER,
-    ["⚡ 全部自动", "🛟 全部故障转移", ...presentContinents.map((continent) => continent.name)],
+    ["PROXY", "⚡ 全部自动", "🛟 全部故障转移", ...presentContinents.map((continent) => continent.name)],
   ));
   for (const continent of presentContinents) {
     groups.push(subscriptionGroup(continent.name, continentFilter(continent), continentHelperItems(continent, mode)));
@@ -186,4 +186,3 @@ export function buildGroups(options, nodes) {
   }
   return groups;
 }
-

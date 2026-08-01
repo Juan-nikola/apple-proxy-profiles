@@ -19,11 +19,21 @@ test("parseOptions applies the generator defaults", () => {
     chinaDns: "alidns",
     globalDns: "cloudflare",
     blockMode: "balanced",
-    quicMode: "allow",
-    ipv6Mode: "auto",
+    quicMode: "proxy-block",
+    ipv6Mode: "ipv4-only",
     autoGroupMode: "auto",
     clientChain: "off",
   });
+});
+
+test("parseOptions derives stable network defaults by platform and preserves explicit overrides", () => {
+  for (const platform of ["iphone", "ipad", "appletv"]) {
+    const options = parseOptions({ ...required, platform });
+    assert.equal(options.ipv6Mode, "auto", platform);
+    assert.equal(options.quicMode, "proxy-block", platform);
+  }
+  assert.equal(parseOptions({ ...required, ipv6Mode: "auto", quicMode: "allow" }).ipv6Mode, "auto");
+  assert.equal(parseOptions({ ...required, ipv6Mode: "auto", quicMode: "allow" }).quicMode, "allow");
 });
 
 test("parseOptions rejects a missing or empty collection name", () => {
@@ -71,4 +81,3 @@ test("platformPreset rejects prototype property names", () => {
     assert.throws(() => platformPreset(platform), /platform/i);
   }
 });
-

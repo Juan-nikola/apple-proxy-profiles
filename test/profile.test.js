@@ -99,6 +99,9 @@ test("fails closed when client-chain inventory disagrees with Profile mode", () 
     [eligibleEntry, chained],
   );
   assert.deepEqual(validateProfile(valid), { valid: true, errors: [] });
+
+  const homepageProxy = valid.replace("A = select,DIRECT", "A = select,PROXY,include-all-proxies=true,policy-regex-filter=^.+$");
+  assert.deepEqual(validateProfile(homepageProxy), { valid: true, errors: [] });
 });
 
 test("client-chain Profiles never serialize raw normalized node names or transport details", () => {
@@ -254,6 +257,7 @@ test("rejects malformed sections, group declarations, and all rule policy forms"
     "IP-ASN,13335,A",
     "GEOIP,US,A",
     "RULE-SET,https://example.invalid/list,A,update-interval=86400",
+    "DOMAIN-SET,https://example.invalid/domains,A,update-interval=86400",
     "OR,((PROTOCOL,TCP),(PROTOCOL,UDP)),A",
     "NOT,(PROTOCOL,UDP),A",
     "AND,((PROTOCOL,UDP),(DST-PORT,443)),A",
@@ -319,4 +323,3 @@ test("rejects malformed sections, group declarations, and all rule policy forms"
   assert.equal(validateProfile(duplicateUnknown).valid, false);
   assert.match(validateProfile(duplicateUnknown).errors.join("\n"), /duplicate section/i);
 });
-

@@ -12,6 +12,9 @@
 - [x] `npm run check:rules` reports every catalog rule healthy.
 - [x] `npm run check:secrets` reports no potential secret.
 - [x] macOS, iPhone, and iPad Profiles contain `[General]`, `[Proxy Group]`, and `[Rule]`.
+- [x] Root selector starts with `PROXY`; dynamic groups use `include-all-proxies=true` and contain no fixed subscription-name reference.
+- [x] Blackmatrix7 `ByteDance`, `SteamCN`, `ChinaMax_Domain`, and `ChinaMax` are present in the approved order.
+- [x] macOS renders IPv4-only and proxy QUIC blocking; iPhone/iPad retain IPv6 with proxy QUIC blocking.
 - [x] No Profile contains a server, port/credential pair, UUID, PSK, key, Token, subscription URL, or Profile URL.
 
 ## 用户完成：Sub-Store 功能预览
@@ -24,4 +27,3 @@
 
 - [ ] Old Intel Mac subscription and Profile remain available before canary import.
 - [ ] User, not the build process, confirms the Intel Mac canary checklist.
-

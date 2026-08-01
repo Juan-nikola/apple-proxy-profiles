@@ -2,9 +2,15 @@ import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { RULE_CATALOG } from "../src/rule-catalog.js";
-import { isValidRuleLine } from "../src/rule-validator.js";
+import { isValidRuleLine, isValidRuleTarget } from "../src/rule-validator.js";
 
 export { isValidRuleLine };
+
+export function isValidDomainSetLine(line) {
+  if (typeof line !== "string" || !line || line.trim() !== line || /[\r\n,*/]/.test(line)) return false;
+  const domain = line.startsWith(".") ? line.slice(1) : line;
+  return isValidRuleTarget("DOMAIN-SUFFIX", domain);
+}
 
 const timeoutMs = 20_000;
 const userAgent = "shadowrocket-profile-rule-check/1.0";
@@ -24,7 +30,8 @@ export async function checkRule(rule) {
   if (entries.length < rule.minEntries) {
     throw new Error(`only ${entries.length} entries; requires at least ${rule.minEntries}`);
   }
-  if (entries.some((line) => !isValidRuleLine(line))) throw new Error("invalid Shadowrocket rule line");
+  const validator = rule.type === "DOMAIN-SET" ? isValidDomainSetLine : isValidRuleLine;
+  if (entries.some((line) => !validator(line))) throw new Error(`invalid Shadowrocket ${rule.type ?? "RULE-SET"} line`);
 }
 
 async function main() {
@@ -44,4 +51,3 @@ async function main() {
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   await main();
 }
-

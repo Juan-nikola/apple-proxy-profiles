@@ -56,22 +56,22 @@
 
 ## 3. 创建三个配置 File Script Operator
 
-分别创建 `shadowrocket-config-macos`、`shadowrocket-config-iphone`、`shadowrocket-config-ipad`，脚本都粘贴 `dist/substore-profile-generator.js` 全文。三份参数只改变 `platform`：
+分别创建 `shadowrocket-config-macos`、`shadowrocket-config-iphone`、`shadowrocket-config-ipad`，脚本都粘贴 `dist/substore-profile-generator.js` 全文。macOS 使用稳定优先参数：
 
-`output=config&type=collection&name=shadowrocket-sources&subscriptionName=Shadowrocket-Nodes&platform=macos&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=allow&ipv6Mode=auto&autoGroupMode=auto&clientChain=off`
+`output=config&type=collection&name=shadowrocket-sources&subscriptionName=Shadowrocket-Nodes&platform=macos&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=ipv4-only&autoGroupMode=auto&clientChain=off`
 
-把 `platform=macos` 分别改成 `iphone`、`ipad`。配置更新间隔设为每天。成功标志：预览首行附近出现 `[General]`，随后出现 `[Proxy Group]` 和 `[Rule]`，且没有节点密码。
+iPhone 和 iPad 将 `platform` 分别改成 `iphone`、`ipad`，并把 `ipv6Mode` 改成 `auto`；`quicMode=proxy-block` 保持不变。配置更新间隔设为每天。成功标志：预览首行附近出现 `[General]`，随后出现 `[Proxy Group]` 和 `[Rule]`，且没有节点密码。
 
 按下面顺序逐份创建：
 
 1. 在 Sub-Store 中找到用于生成文本文件的 File/文件功能，选择 Script Operator。
 2. 粘贴 `dist/substore-profile-generator.js` 全文。
 3. macOS 文件名填 `shadowrocket-config-macos`，使用上面的完整参数。
-4. iPhone 文件名填 `shadowrocket-config-iphone`，仅将参数中的 `platform=macos` 改为 `platform=iphone`。
-5. iPad 文件名填 `shadowrocket-config-ipad`，仅将参数中的 `platform=macos` 改为 `platform=ipad`。
+4. iPhone 文件名填 `shadowrocket-config-iphone`，使用 `platform=iphone`、`quicMode=proxy-block`、`ipv6Mode=auto`。
+5. iPad 文件名填 `shadowrocket-config-ipad`，使用 `platform=ipad`、`quicMode=proxy-block`、`ipv6Mode=auto`。
 6. 三份都设为每天更新，并分别保存远程 Profile URL。不要公开这些 URL。
 
-`name=shadowrocket-sources` 必须与第 1 节的组合名完全一致；`subscriptionName=Shadowrocket-Nodes` 必须与稍后在 Shadowrocket 中设置的远程订阅显示名完全一致，包括大小写和连字符。参数拼写错误、缺少必填参数或使用未知值时，生成器会直接报错；不要为了绕过错误删掉参数。
+`name=shadowrocket-sources` 必须与第 1 节的组合名完全一致。`subscriptionName=Shadowrocket-Nodes` 目前只是旧 URL 的兼容占位参数，保留任意非空值即可；Shadowrocket 中的节点订阅显示名可以任意填写，不需要与它一致。动态组使用 `include-all-proxies=true` 和名称正则筛选当前可用代理。参数拼写错误、缺少必填参数或使用未知值时，生成器会直接报错。
 
 如果预览不是三个 INI 段、包含实际节点凭据或为空，立即停止。不要把错误结果覆盖到任何设备。
 
@@ -91,12 +91,12 @@
 
 ## 4. Intel Mac 灰度
 
-先导入 `shadowrocket-nodes`，在 Shadowrocket 中把这个远程订阅显示名设为 `Shadowrocket-Nodes`；再导入 `shadowrocket-config-macos`。不要覆盖旧 Profile。保持 HTTPS 解密关闭。
+先导入 `shadowrocket-nodes`，显示名可以任意填写；再导入 `shadowrocket-config-macos`。不要覆盖旧 Profile。保持 HTTPS 解密关闭。
 
 开始前再次确认 Intel Mac 已完成“灰度前的客户端设置”全部 7 项；缺一项就停止。
 
 1. 在 Intel Mac 的 Shadowrocket 中，进入用于添加远程节点订阅的页面，添加 `shadowrocket-nodes` 的私密 URL。
-2. 将它的显示名准确设为 `Shadowrocket-Nodes`，手动更新一次并确认节点数量不为 0。
+2. 显示名按自己的习惯填写，手动更新一次并确认节点数量不为 0。
 3. 再进入用于添加远程配置/Profile 的页面，添加 `shadowrocket-config-macos` 的 URL，并手动更新一次 macOS Profile。
 4. 核对节点订阅和 macOS Profile 都显示新的更新时间；只更新其中一个不算完成。
 5. 保留旧 Profile；新旧 Profile 必须能在列表中分别选中。
@@ -111,7 +111,7 @@
 按相同顺序导入共同的 `shadowrocket-nodes`，再分别导入 `shadowrocket-config-iphone` 和 `shadowrocket-config-ipad`。每台设备都保留旧 Profile。
 
 1. Intel Mac 灰度通过后，先在 iPhone 完成“灰度前的客户端设置”全部 7 项，再导入任何新内容。
-2. 在 iPhone 添加同一 `shadowrocket-nodes`，显示名仍为 `Shadowrocket-Nodes`，并手动更新。
+2. 在 iPhone 添加同一 `shadowrocket-nodes`；显示名可以与 Mac 不同，并手动更新。
 3. iPhone 只导入 `shadowrocket-config-iphone`，不要误用 macOS 或 iPad Profile；手动更新 iPhone Profile。
 4. 核对节点订阅和 iPhone Profile 都显示新的更新时间，再完成基础联网、局域网、DNS 和策略组测试。
 5. iPhone 稳定后，先在 iPad 完成“灰度前的客户端设置”全部 7 项。
@@ -147,11 +147,10 @@ Sub-Store 中先找“订阅/组合订阅”，再找“脚本操作/Script Oper
 
 ## 8. 首次使用策略组
 
-1. 打开 `🚀 节点选择`，可选择自动/故障转移、固定洲组，或点 `SHADOWROCKET-NODES` 订阅入口访问全部具体节点。
-2. 打开 `🤖 AI 专用`，可先选择独立的 AI 洲组，再点进该组固定节点；也可通过 `SHADOWROCKET-NODES` 直接选择任意具体节点。AI 组的选择不会改变主线路。
-3. Apple 与 Microsoft 默认直连，国内四个平台也各自默认 DIRECT；需要时可在对应平台组选择 `🚀 节点选择`，或通过 `SHADOWROCKET-NODES` 直接固定具体节点。
+1. 打开 `🚀 节点选择`，默认选择第一项 `PROXY` 跟随 Shadowrocket 首页节点；也可改选自动/故障转移、固定洲组或具体节点。
+2. 打开 `🤖 AI 专用`，可选择独立 AI 洲组或符合筛选条件的具体节点。AI 组的选择不会改变主线路。
+3. Apple、Microsoft 和国内平台默认直连；需要时可在对应平台组选择 `🚀 节点选择`或具体节点。
 4. `☣️ 安全威胁`、`🧱 常见广告`、`🕵️ 严格跟踪`可以在客户端即时切换。
 5. `⬇️ 下载/P2P`和`🎮 游戏连接`默认 DIRECT；不了解节点服务条款时不要切换。
 
 全部检查完成后，才把新 Profile 作为日常使用配置。任何时候都不要为了“清理”而删除旧 Profile；等三台设备稳定一段时间并完成维护记录后再自行决定是否归档。
-

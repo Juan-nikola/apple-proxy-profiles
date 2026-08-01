@@ -601,4 +601,3 @@ var ShadowrocketNodeBundle = (() => {
 async function operator(proxies, targetPlatform) {
   return ShadowrocketNodeBundle.operator(proxies, targetPlatform, { arguments: $arguments, logger: console });
 }
-

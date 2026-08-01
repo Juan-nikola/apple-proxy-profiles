@@ -65,7 +65,7 @@ var ShadowrocketProfileBundle = (() => {
     chinaDns: "alidns",
     globalDns: "cloudflare",
     blockMode: "balanced",
-    quicMode: "allow",
+    quicMode: "proxy-block",
     ipv6Mode: "auto",
     autoGroupMode: "auto",
     clientChain: "off"
@@ -108,7 +108,8 @@ var ShadowrocketProfileBundle = (() => {
       options[key] = OPTION_VALUES[key] ? enumValue(raw, key) : requiredString(raw, key);
     }
     for (const [key, defaultValue] of Object.entries(DEFAULTS)) {
-      options[key] = Object.hasOwn(raw, key) && raw[key] !== void 0 ? enumValue(raw, key) : defaultValue;
+      const platformDefault = key === "ipv6Mode" && options.platform === "macos" ? "ipv4-only" : defaultValue;
+      options[key] = Object.hasOwn(raw, key) && raw[key] !== void 0 ? enumValue(raw, key) : platformDefault;
     }
     return options;
   }
@@ -358,7 +359,7 @@ var ShadowrocketProfileBundle = (() => {
     groups.push(subscriptionGroup(
       "\u{1F680} \u8282\u70B9\u9009\u62E9",
       ALL_NODES_FILTER,
-      ["\u26A1 \u5168\u90E8\u81EA\u52A8", "\u{1F6DF} \u5168\u90E8\u6545\u969C\u8F6C\u79FB", ...presentContinents.map((continent) => continent.name)]
+      ["PROXY", "\u26A1 \u5168\u90E8\u81EA\u52A8", "\u{1F6DF} \u5168\u90E8\u6545\u969C\u8F6C\u79FB", ...presentContinents.map((continent) => continent.name)]
     ));
     for (const continent of presentContinents) {
       groups.push(subscriptionGroup(continent.name, continentFilter(continent), continentHelperItems(continent, mode)));
@@ -402,12 +403,12 @@ var ShadowrocketProfileBundle = (() => {
     if (/[\r\n]/.test(string)) throw new Error("Group field values must not contain CR or LF");
     return string.replaceAll(",", "\\,");
   }
-  function renderGroups(groups, subscriptionName) {
+  function renderGroups(groups, _subscriptionName) {
     return groups.map((group) => {
       const items = (group.items ?? []).map(escapeValue);
       const fields = [escapeValue(group.type), ...items];
       if (group.useSubscription) {
-        fields.push(escapeValue(subscriptionName), "use=true");
+        fields.push("include-all-proxies=true");
       }
       if (group.filter !== void 0) fields.push(`policy-regex-filter=${escapeValue(group.filter)}`);
       if (group.url !== void 0) fields.push(`url=${escapeValue(group.url)}`);
@@ -434,12 +435,13 @@ var ShadowrocketProfileBundle = (() => {
 
   // src/rule-catalog.js
   var RULE_ROOT = "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Shadowrocket";
-  function rule(id, policy, minEntries) {
+  function rule(id, policy, minEntries, type = "RULE-SET", directory = id) {
     return Object.freeze({
       id,
-      url: `${RULE_ROOT}/${id}/${id}.list`,
+      url: `${RULE_ROOT}/${directory}/${id}.list`,
       policy,
-      minEntries
+      minEntries,
+      type
     });
   }
   var RULE_CATALOG = Object.freeze([
@@ -448,7 +450,7 @@ var ShadowrocketProfileBundle = (() => {
     rule("AdvertisingLite", "\u{1F9F1} \u5E38\u89C1\u5E7F\u544A", 250),
     rule("Privacy", "\u{1F575}\uFE0F \u4E25\u683C\u8DDF\u8E2A", 15),
     rule("BiliBili", "\u{1F4FA} \u54D4\u54E9\u54D4\u54E9", 80),
-    rule("DouYin", "\u{1F3B5} \u6296\u97F3", 8),
+    rule("ByteDance", "\u{1F3B5} \u6296\u97F3", 300),
     rule("XiaoHongShu", "\u{1F4D5} \u5C0F\u7EA2\u4E66", 3),
     rule("Weibo", "\u{1F9E3} \u5FAE\u535A", 3),
     rule("OpenAI", "\u{1F916} AI \u4E13\u7528", 20),
@@ -468,6 +470,8 @@ var ShadowrocketProfileBundle = (() => {
     rule("TikTok", "\u{1F3B6} TikTok", 20),
     rule("Apple", "\u{1F34E} Apple", 25),
     rule("Microsoft", "\u{1FA9F} Microsoft", 400),
+    rule("SteamCN", "DIRECT", 10),
+    rule("ChinaMax_Domain", "DIRECT", 1e5, "DOMAIN-SET", "ChinaMax"),
     rule("Game", "\u{1F579}\uFE0F \u6E38\u620F\u5E73\u53F0", 400),
     rule("Download", "\u2B07\uFE0F \u4E0B\u8F7D/P2P", 5),
     rule("PrivateTracker", "\u2B07\uFE0F \u4E0B\u8F7D/P2P", 150),
@@ -709,7 +713,7 @@ var ShadowrocketProfileBundle = (() => {
     "AdvertisingLite",
     "Privacy",
     "BiliBili",
-    "DouYin",
+    "ByteDance",
     "XiaoHongShu",
     "Weibo",
     "OpenAI",
@@ -730,8 +734,19 @@ var ShadowrocketProfileBundle = (() => {
     "Apple",
     "Microsoft"
   ]);
+  var GAME_DIRECT_RULES = Object.freeze([
+    "DOMAIN-SUFFIX,leiting.com,DIRECT",
+    "DOMAIN-SUFFIX,leitingcn.com,DIRECT",
+    "DOMAIN-SUFFIX,g-bits.com,DIRECT"
+  ]);
+  var DOMESTIC_BEFORE_GAME_RULE_IDS = Object.freeze(["SteamCN", "ChinaMax_Domain"]);
   var POST_GAME_RULE_IDS = Object.freeze(["Download", "PrivateTracker", "ChinaMax"]);
-  var REQUIRED_RULE_IDS = Object.freeze([...PRE_GAME_RULE_IDS, "Game", ...POST_GAME_RULE_IDS]);
+  var REQUIRED_RULE_IDS = Object.freeze([
+    ...PRE_GAME_RULE_IDS,
+    ...DOMESTIC_BEFORE_GAME_RULE_IDS,
+    "Game",
+    ...POST_GAME_RULE_IDS
+  ]);
   function isSafeCustomField(value) {
     return typeof value === "string" && value.length > 0 && value.trim() === value && !/[\r\n,=]/.test(value);
   }
@@ -770,7 +785,7 @@ var ShadowrocketProfileBundle = (() => {
     return entriesById.get(id)[0];
   }
   function renderRuleSet(entry) {
-    return `RULE-SET,${entry.url},${entry.policy},update-interval=86400`;
+    return `${entry.type},${entry.url},${entry.policy},update-interval=86400`;
   }
   function renderRules() {
     validateCustomRules(CUSTOM_RULES);
@@ -781,6 +796,8 @@ var ShadowrocketProfileBundle = (() => {
       lines.push(...rules.map((rule2) => `${rule2},${policy}`));
     }
     lines.push(...PRE_GAME_RULE_IDS.map((id) => renderRuleSet(catalogRule(entriesById, id))));
+    lines.push(...GAME_DIRECT_RULES);
+    lines.push(...DOMESTIC_BEFORE_GAME_RULE_IDS.map((id) => renderRuleSet(catalogRule(entriesById, id))));
     const game = catalogRule(entriesById, "Game");
     lines.push(`AND,((PROTOCOL,UDP),(RULE-SET,${game.url})),\u{1F3AE} \u6E38\u620F\u8FDE\u63A5`);
     lines.push(renderRuleSet(game));
@@ -820,7 +837,7 @@ ${renderRules().join("\n")}`
   }
 
   // src/validate-profile.js
-  var BUILTIN_POLICIES = /* @__PURE__ */ new Set(["DIRECT", "REJECT"]);
+  var BUILTIN_POLICIES = /* @__PURE__ */ new Set(["DIRECT", "REJECT", "PROXY"]);
   var GROUP_TYPES = /* @__PURE__ */ new Set(["select", "url-test", "fallback", "load-balance", "random"]);
   var REQUIRED_SECTIONS = /* @__PURE__ */ new Set(["General", "Proxy Group", "Rule"]);
   var SIMPLE_RULE_TYPES = /* @__PURE__ */ new Set([
@@ -928,7 +945,8 @@ ${renderRules().join("\n")}`
       }
       const subscriptionSource = useIndex > 1 ? fields[useIndex - 1] : "";
       const hasSubscription = subscriptionSource.length > 0 && !subscriptionSource.includes("=");
-      if (staticItems.length === 0 && !hasSubscription) {
+      const includesAllProxies = fields.includes("include-all-proxies=true");
+      if (staticItems.length === 0 && !hasSubscription && !includesAllProxies) {
         errors.add(`Group requires a selectable item or subscription source: ${name}`);
       }
     }
@@ -1031,10 +1049,10 @@ ${renderRules().join("\n")}`
       const type = fields[0];
       if (SIMPLE_RULE_TYPES.has(type)) {
         validateSimpleRule(type, fields, groups, errors);
-      } else if (type === "RULE-SET") {
-        if (fields.length < 3 || !fields[1]) errors.add("Malformed RULE-SET rule");
-        validatePolicy("RULE-SET", fields[2], groups, errors);
-        if (fields.slice(3).some((field) => !field.includes("="))) errors.add("Malformed RULE-SET rule");
+      } else if (type === "RULE-SET" || type === "DOMAIN-SET") {
+        if (fields.length < 3 || !fields[1]) errors.add(`Malformed ${type} rule`);
+        validatePolicy(type, fields[2], groups, errors);
+        if (fields.slice(3).some((field) => !field.includes("="))) errors.add(`Malformed ${type} rule`);
       } else if (type === "FINAL") {
         if (fields.length !== 2) errors.add("Malformed FINAL rule");
         validatePolicy("FINAL", fields[1], groups, errors);
@@ -1088,4 +1106,3 @@ ${renderRules().join("\n")}`
 async function operator(input, targetPlatform) {
   return ShadowrocketProfileBundle.operator(input, targetPlatform, { arguments: $arguments, produceArtifact, logger: console });
 }
-

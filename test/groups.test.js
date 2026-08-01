@@ -42,7 +42,7 @@ function matches(group, node) {
 function auditGroupGraph(groups, nodes) {
   const groupNames = new Set(groups.map((group) => group.name));
   const nodeNames = new Set(nodes.map((node) => node.name));
-  const builtins = new Set(["DIRECT", "REJECT"]);
+  const builtins = new Set(["DIRECT", "REJECT", "PROXY"]);
   const edges = new Map(groups.map((group) => [group.name, []]));
 
   for (const group of groups) {
@@ -93,11 +93,12 @@ test("uses continent-only visible grouping while keeping helpers hidden", () => 
 
   assert.match(lines.find((line) => line.startsWith("🌏 亚太 =")), /^🌏 亚太 = select,/);
   assert.deepEqual(named(groups, "🌏 亚太").items, ["⚡ 亚太自动"]);
-  assert.deepEqual(named(groups, "🚀 节点选择").items, ["⚡ 全部自动", "🛟 全部故障转移", "🌏 亚太"]);
+  assert.deepEqual(named(groups, "🚀 节点选择").items, ["PROXY", "⚡ 全部自动", "🛟 全部故障转移", "🌏 亚太"]);
   assert.match(
     lines.find((line) => line.startsWith("🚀 节点选择 =")),
-    /订阅\\,名称,use=true,policy-regex-filter=\^\.\+\$$/,
+    /include-all-proxies=true,policy-regex-filter=\^\.\+\$$/,
   );
+  assert.equal(lines.some((line) => line.includes("订阅\\,名称,use=true")), false);
   assert.equal(named(groups, "🌍 欧洲"), undefined);
   assert.equal(groups.some((group) => group.hidden === true), true);
   assert.equal(groups.some((group) => /(?:日本|美国|德国|Japan|US|Germany)/.test(group.name)), false);
@@ -230,7 +231,8 @@ test("filters entry candidates by a reserved eligibility marker without serializ
   assert.deepEqual(selectorGroup.items, ["⚡ 入口自动"]);
   assert.equal(rendered.includes(validName), false);
   assert.equal(rendered.includes(preChainedName), false);
-  assert.match(rendered, /use=true/);
+  assert.match(rendered, /include-all-proxies=true/);
+  assert.doesNotMatch(rendered, /use=true/);
   assert.match(rendered, /policy-regex-filter=\^\(\?!\.\*\\\[已有链\\\]\)/);
 });
 
@@ -253,7 +255,7 @@ test("keeps root and AI continent order stable as inventories change", () => {
   ];
   const groups = buildGroups(options(), mixed);
 
-  assert.deepEqual(named(groups, "🚀 节点选择").items.slice(2), [
+  assert.deepEqual(named(groups, "🚀 节点选择").items.slice(3), [
     "🌏 亚太",
     "🌍 欧洲",
     "🌎 美洲",
@@ -283,17 +285,14 @@ test("renders policy groups deterministically and escapes comma-delimited values
 
   assert.equal(
     line,
-    "测试组 = url-test,DIRECT,节点\\,一,订阅\\,名称,use=true,policy-regex-filter=^节点\\,一$,url=https://example.invalid/a\\,b,interval=600,timeout=5,tolerance=100,hidden=1",
+    "测试组 = url-test,DIRECT,节点\\,一,include-all-proxies=true,policy-regex-filter=^节点\\,一$,url=https://example.invalid/a\\,b,interval=600,timeout=5,tolerance=100,hidden=1",
   );
 });
 
 test("rejects CR/LF in every rendered field before an INI line can be injected", () => {
   const group = { name: "安全组", type: "select", items: ["DIRECT"], useSubscription: true, filter: "^.+$" };
 
-  assert.throws(
-    () => renderGroups([group], "Nodes\nInjected = select,DIRECT"),
-    /CR or LF/,
-  );
+  assert.doesNotThrow(() => renderGroups([group], "Nodes\nIgnored compatibility value"));
   assert.throws(
     () => renderGroups([{ ...group, items: ["node\r\ninjected"] }], "Nodes"),
     /CR or LF/,
@@ -354,4 +353,3 @@ test("keeps every catalog variant free of duplicates, dangling references, and c
     }
   }
 });
-

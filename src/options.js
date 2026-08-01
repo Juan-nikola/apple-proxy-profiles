@@ -13,7 +13,7 @@ const DEFAULTS = Object.freeze({
   chinaDns: "alidns",
   globalDns: "cloudflare",
   blockMode: "balanced",
-  quicMode: "allow",
+  quicMode: "proxy-block",
   ipv6Mode: "auto",
   autoGroupMode: "auto",
   clientChain: "off",
@@ -63,9 +63,12 @@ export function parseOptions(raw) {
     options[key] = OPTION_VALUES[key] ? enumValue(raw, key) : requiredString(raw, key);
   }
   for (const [key, defaultValue] of Object.entries(DEFAULTS)) {
+    const platformDefault = key === "ipv6Mode" && options.platform === "macos"
+      ? "ipv4-only"
+      : defaultValue;
     options[key] = Object.hasOwn(raw, key) && raw[key] !== undefined
       ? enumValue(raw, key)
-      : defaultValue;
+      : platformDefault;
   }
   return options;
 }
@@ -76,4 +79,3 @@ export function platformPreset(platform) {
   }
   return PLATFORM_PRESETS[platform];
 }
-

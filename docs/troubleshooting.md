@@ -43,7 +43,7 @@ DNS、QUIC、IPv6、`blockMode`或测速参数排障使用下面的 File 副本�
 
 运行 `npm run check:rules`。首次部署有任何规则失败就停止灰度；已安装设备先保留 Shadowrocket 上一次可用缓存和旧 Profile。不要用空规则覆盖现有配置。
 
-成功时命令会报告 29 份规则均通过。若出现 HTTP、条目数量或格式错误，记录规则名称和健康状态即可；不要把临时失败误当成需要删除旧缓存的理由。
+成功时命令会报告 31 份规则均通过，其中包括 `ByteDance`、`SteamCN`、`ChinaMax_Domain` 与 `ChinaMax`。若出现 HTTP、条目数量或格式错误，记录规则名称和健康状态即可；不要把临时失败误当成需要删除旧缓存的理由。
 
 ## DNS 污染或网站指向异常
 
@@ -69,11 +69,12 @@ DNS、QUIC、IPv6、`blockMode`或测速参数排障使用下面的 File 副本�
 
 ## QUIC 或游戏异常
 
-1. 日常先保持 `quicMode=allow`。
-2. 只为定位代理路径中的应用 UDP/443 问题，复制 File 并发布新的 URL，生成 `proxy-block` 测试 Profile；仍有问题时才另复制一份测试 `all-block`。
+1. 日常保持 `quicMode=proxy-block`，它只阻止代理路径中的应用 QUIC，国内 DIRECT QUIC 不受影响。
+2. 对照排障时可复制 File，分别测试 `allow`；仍有问题时才另复制一份 `all-block`。
 3. 每种模式都要重新生成和更新 Profile，它不是热切换。
-4. 测试后恢复 `allow`。此开关不等同于禁用 Hysteria2/TUIC 节点传输。
+4. 测试后恢复 `proxy-block`。此开关不等同于禁用 Hysteria2/TUIC 节点传输。
 5. 游戏实时连接组只应显示明确带 `[UDP]` 的节点；没有合适节点时保持 DIRECT。
+6. 《问道手游》应确认 `leiting.com`、`leitingcn.com`、`g-bits.com` 命中 DIRECT；iPhone 分别在 Wi-Fi 和蜂窝网络测试登录、换线、战斗和资源加载。
 
 ## AI 登录或风控
 
@@ -106,4 +107,3 @@ DNS、QUIC、IPv6、`blockMode`或测速参数排障使用下面的 File 副本�
 ```
 
 发送前逐行检查并删除服务器、端口组合和完整链接。不要发送 Sub-Store 后台截图、浏览器地址栏、Shadowrocket 节点详情、二维码或原始日志全文。
-
