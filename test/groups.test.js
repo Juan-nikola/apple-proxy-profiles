@@ -96,7 +96,7 @@ test("uses continent-only visible grouping while keeping helpers hidden", () => 
   assert.deepEqual(named(groups, "🌏 亚太").items, ["⚡ 亚太自动"]);
   assert.deepEqual(named(groups, "🚀 节点选择").items, ["PROXY"]);
   assert.equal(lines.find((line) => line.startsWith("🚀 节点选择 =")), "🚀 节点选择 = select,PROXY");
-  assert.equal(lines.some((line) => line.includes("订阅\\,名称,use=true")), false);
+  assert.equal(lines.some((line) => line.includes("订阅\\,名称,use=true")), true);
   assert.equal(named(groups, "🌍 欧洲"), undefined);
   assert.equal(groups.some((group) => group.hidden === true), true);
   assert.equal(groups.some((group) => /(?:日本|美国|德国|Japan|US|Germany)/.test(group.name)), false);
@@ -137,9 +137,14 @@ test("keeps service manual access and gates special service groups by eligibilit
   const domesticGroups = [
     "🍎 Apple", "🪟 Microsoft", "📺 哔哩哔哩", "🎵 抖音", "📕 小红书", "🧣 微博",
   ];
-  for (const name of foreignGroups) assert.deepEqual(named(groups, name).items, foreignItems, name);
+  for (const name of foreignGroups) {
+    const group = named(groups, name);
+    assert.deepEqual(group.items, foreignItems, name);
+    assert.equal(group.policySelectName, "🚀 节点选择", name);
+  }
   for (const name of domesticGroups) {
-    assert.deepEqual(named(groups, name).items, [
+    const group = named(groups, name);
+    assert.deepEqual(group.items, [
       "DIRECT",
       "🚀 节点选择",
       "⚡ 全部自动",
@@ -148,6 +153,7 @@ test("keeps service manual access and gates special service groups by eligibilit
       "🌍 欧洲",
       "🌎 美洲",
     ], name);
+    assert.equal(group.policySelectName, "DIRECT", name);
   }
   assert.deepEqual(named(groups, "🧭 DNS 与规则下载").items, ["🚀 节点选择", "DIRECT"]);
   assert.equal(named(groups, "🧭 DNS 与规则下载").useSubscription, undefined);
@@ -172,6 +178,11 @@ test("keeps service manual access and gates special service groups by eligibilit
     assert.equal(group.useSubscription, true, group.name);
     assert.equal(group.filter, "^.+$", group.name);
   }
+
+  const github = named(groups, "🐙 GitHub");
+  const [githubLine] = renderGroups([github], "SHADOWROCKET-NODES");
+  assert.match(githubLine, /,SHADOWROCKET-NODES,use=true,policy-regex-filter=\^\.\+\$,policy-select-name=🚀 节点选择$/);
+  assert.doesNotMatch(githubLine, /include-all-proxies/);
 
   const ineligible = buildGroups(options(), [node("🇯🇵 [机场] TCP")]);
   for (const name of ["🎮 游戏连接", "⬇️ 下载/P2P"]) {
@@ -248,8 +259,8 @@ test("filters entry candidates by a reserved eligibility marker without serializ
   assert.deepEqual(selectorGroup.items, ["⚡ 入口自动"]);
   assert.equal(rendered.includes(validName), false);
   assert.equal(rendered.includes(preChainedName), false);
-  assert.match(rendered, /include-all-proxies=true/);
-  assert.doesNotMatch(rendered, /use=true/);
+  assert.match(rendered, /,Shadowrocket-Nodes,use=true/);
+  assert.doesNotMatch(rendered, /include-all-proxies/);
   assert.match(rendered, /policy-regex-filter=\^\(\?!\.\*\\\[已有链\\\]\)/);
 });
 
@@ -297,14 +308,14 @@ test("renders policy groups deterministically and escapes comma-delimited values
 
   assert.equal(
     line,
-    "测试组 = url-test,DIRECT,节点\\,一,include-all-proxies=true,policy-regex-filter=^节点\\,一$,url=https://example.invalid/a\\,b,interval=600,timeout=5,tolerance=100,hidden=1",
+    "测试组 = url-test,DIRECT,节点\\,一,订阅\\,名称,use=true,policy-regex-filter=^节点\\,一$,url=https://example.invalid/a\\,b,interval=600,timeout=5,tolerance=100,hidden=1",
   );
 });
 
 test("rejects CR/LF in every rendered field before an INI line can be injected", () => {
   const group = { name: "安全组", type: "select", items: ["DIRECT"], useSubscription: true, filter: "^.+$" };
 
-  assert.doesNotThrow(() => renderGroups([group], "Nodes\nIgnored compatibility value"));
+  assert.throws(() => renderGroups([group], "Nodes\nInjected"), /CR or LF/);
   assert.throws(
     () => renderGroups([{ ...group, items: ["node\r\ninjected"] }], "Nodes"),
     /CR or LF/,

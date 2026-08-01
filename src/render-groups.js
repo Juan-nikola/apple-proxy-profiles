@@ -4,14 +4,17 @@ function escapeValue(value) {
   return string.replaceAll(",", "\\,");
 }
 
-export function renderGroups(groups, _subscriptionName) {
+export function renderGroups(groups, subscriptionName) {
   return groups.map((group) => {
     const items = (group.items ?? []).map(escapeValue);
     const fields = [escapeValue(group.type), ...items];
     if (group.useSubscription) {
-      fields.push("include-all-proxies=true");
+      fields.push(escapeValue(subscriptionName), "use=true");
     }
     if (group.filter !== undefined) fields.push(`policy-regex-filter=${escapeValue(group.filter)}`);
+    if (group.policySelectName !== undefined) {
+      fields.push(`policy-select-name=${escapeValue(group.policySelectName)}`);
+    }
     if (group.url !== undefined) fields.push(`url=${escapeValue(group.url)}`);
     if (group.interval !== undefined) fields.push(`interval=${escapeValue(group.interval)}`);
     if (group.timeout !== undefined) fields.push(`timeout=${escapeValue(group.timeout)}`);

@@ -42,10 +42,12 @@ const PROXY_THEN_DIRECT = Object.freeze(["🚀 节点选择", "DIRECT"]);
 const PROXY_FIRST_SERVICE_DEFAULTS = Object.freeze({
   beforeCandidates: ["🚀 节点选择"],
   afterCandidates: ["DIRECT"],
+  policySelectName: "🚀 节点选择",
 });
 const DIRECT_FIRST_SERVICE_DEFAULTS = Object.freeze({
   beforeCandidates: ["DIRECT", "🚀 节点选择"],
   afterCandidates: [],
+  policySelectName: "DIRECT",
 });
 const SERVICE_GROUPS = Object.freeze([
   ["🐙 GitHub", PROXY_FIRST_SERVICE_DEFAULTS],
@@ -183,7 +185,10 @@ export function buildGroups(options, nodes) {
   groups.push(subscriptionGroup("🤖 AI 专用", ALL_NODES_FILTER, aiContinentGroups.map((group) => group.name)));
   const presentContinentNames = presentContinents.map((continent) => continent.name);
   for (const [name, defaults] of SERVICE_GROUPS) {
-    groups.push(subscriptionGroup(name, ALL_NODES_FILTER, serviceChoiceItems(defaults, presentContinentNames)));
+    groups.push({
+      ...subscriptionGroup(name, ALL_NODES_FILTER, serviceChoiceItems(defaults, presentContinentNames)),
+      policySelectName: defaults.policySelectName,
+    });
   }
   if (normalizedNodes.some((node) => node?._sr?.udp === true && !node?._sr?.chained)) {
     groups.push(subscriptionGroup("🎮 游戏连接", GAME_FILTER));
