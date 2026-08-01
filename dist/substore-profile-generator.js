@@ -267,30 +267,31 @@ var ShadowrocketProfileBundle = (() => {
     { kind: SOURCE_KIND.serverChain, name: "\u26D3\uFE0F \u94FE\u5F0F\u4EE3\u7406", filter: "^\\S+ \\[\u94FE\u5F0F\u4EE3\u7406\\] .+$" }
   ]);
   var PROXY_THEN_DIRECT = Object.freeze(["\u{1F680} \u8282\u70B9\u9009\u62E9", "DIRECT"]);
-  var AUTO_PROXY_THEN_DIRECT = Object.freeze([
-    "\u{1F680} \u8282\u70B9\u9009\u62E9",
-    "\u26A1 \u5168\u90E8\u81EA\u52A8",
-    "\u{1F6DF} \u5168\u90E8\u6545\u969C\u8F6C\u79FB",
-    "DIRECT"
-  ]);
-  var DIRECT_THEN_PROXY = Object.freeze(["DIRECT", "\u{1F680} \u8282\u70B9\u9009\u62E9"]);
+  var PROXY_FIRST_SERVICE_DEFAULTS = Object.freeze({
+    beforeCandidates: ["\u{1F680} \u8282\u70B9\u9009\u62E9"],
+    afterCandidates: ["DIRECT"]
+  });
+  var DIRECT_FIRST_SERVICE_DEFAULTS = Object.freeze({
+    beforeCandidates: ["DIRECT", "\u{1F680} \u8282\u70B9\u9009\u62E9"],
+    afterCandidates: []
+  });
   var SERVICE_GROUPS = Object.freeze([
-    ["\u{1F419} GitHub", AUTO_PROXY_THEN_DIRECT],
-    ["\u{1F4FA} YouTube", AUTO_PROXY_THEN_DIRECT],
-    ["\u{1F3AC} Netflix", AUTO_PROXY_THEN_DIRECT],
-    ["\u{1F3F0} Disney+", AUTO_PROXY_THEN_DIRECT],
-    ["\u{1F3B5} Spotify", AUTO_PROXY_THEN_DIRECT],
-    ["\u{1F30D} \u56FD\u9645\u5A92\u4F53", AUTO_PROXY_THEN_DIRECT],
-    ["\u2708\uFE0F Telegram", AUTO_PROXY_THEN_DIRECT],
-    ["\u{1F4AC} \u6D77\u5916\u793E\u4EA4", AUTO_PROXY_THEN_DIRECT],
-    ["\u{1F3B6} TikTok", AUTO_PROXY_THEN_DIRECT],
-    ["\u{1F34E} Apple", DIRECT_THEN_PROXY],
-    ["\u{1FA9F} Microsoft", DIRECT_THEN_PROXY],
-    ["\u{1F4FA} \u54D4\u54E9\u54D4\u54E9", DIRECT_THEN_PROXY],
-    ["\u{1F3B5} \u6296\u97F3", DIRECT_THEN_PROXY],
-    ["\u{1F4D5} \u5C0F\u7EA2\u4E66", DIRECT_THEN_PROXY],
-    ["\u{1F9E3} \u5FAE\u535A", DIRECT_THEN_PROXY],
-    ["\u{1F579}\uFE0F \u6E38\u620F\u5E73\u53F0", AUTO_PROXY_THEN_DIRECT]
+    ["\u{1F419} GitHub", PROXY_FIRST_SERVICE_DEFAULTS],
+    ["\u{1F4FA} YouTube", PROXY_FIRST_SERVICE_DEFAULTS],
+    ["\u{1F3AC} Netflix", PROXY_FIRST_SERVICE_DEFAULTS],
+    ["\u{1F3F0} Disney+", PROXY_FIRST_SERVICE_DEFAULTS],
+    ["\u{1F3B5} Spotify", PROXY_FIRST_SERVICE_DEFAULTS],
+    ["\u{1F30D} \u56FD\u9645\u5A92\u4F53", PROXY_FIRST_SERVICE_DEFAULTS],
+    ["\u2708\uFE0F Telegram", PROXY_FIRST_SERVICE_DEFAULTS],
+    ["\u{1F4AC} \u6D77\u5916\u793E\u4EA4", PROXY_FIRST_SERVICE_DEFAULTS],
+    ["\u{1F3B6} TikTok", PROXY_FIRST_SERVICE_DEFAULTS],
+    ["\u{1F34E} Apple", DIRECT_FIRST_SERVICE_DEFAULTS],
+    ["\u{1FA9F} Microsoft", DIRECT_FIRST_SERVICE_DEFAULTS],
+    ["\u{1F4FA} \u54D4\u54E9\u54D4\u54E9", DIRECT_FIRST_SERVICE_DEFAULTS],
+    ["\u{1F3B5} \u6296\u97F3", DIRECT_FIRST_SERVICE_DEFAULTS],
+    ["\u{1F4D5} \u5C0F\u7EA2\u4E66", DIRECT_FIRST_SERVICE_DEFAULTS],
+    ["\u{1F9E3} \u5FAE\u535A", DIRECT_FIRST_SERVICE_DEFAULTS],
+    ["\u{1F579}\uFE0F \u6E38\u620F\u5E73\u53F0", PROXY_FIRST_SERVICE_DEFAULTS]
   ]);
   function continentFilter(continent) {
     if (continent.key === CONTINENT.other) {
@@ -326,6 +327,15 @@ var ShadowrocketProfileBundle = (() => {
     if (mode === "full") return [automaticHelperName(continent), fallbackHelperName(continent)];
     if (mode === "balanced") return [automaticHelperName(continent)];
     return [];
+  }
+  function serviceChoiceItems(defaults, presentContinentNames) {
+    return [
+      ...defaults.beforeCandidates,
+      "\u26A1 \u5168\u90E8\u81EA\u52A8",
+      "\u{1F6DF} \u5168\u90E8\u6545\u969C\u8F6C\u79FB",
+      ...presentContinentNames,
+      ...defaults.afterCandidates
+    ];
   }
   function securityGroups(blockMode) {
     const defaults = {
@@ -380,15 +390,9 @@ var ShadowrocketProfileBundle = (() => {
     }));
     groups.push(...aiContinentGroups);
     groups.push(subscriptionGroup("\u{1F916} AI \u4E13\u7528", ALL_NODES_FILTER, aiContinentGroups.map((group) => group.name)));
-    for (const [name, items] of SERVICE_GROUPS) {
-      const serviceItems = items === AUTO_PROXY_THEN_DIRECT ? [
-        "\u{1F680} \u8282\u70B9\u9009\u62E9",
-        "\u26A1 \u5168\u90E8\u81EA\u52A8",
-        "\u{1F6DF} \u5168\u90E8\u6545\u969C\u8F6C\u79FB",
-        ...presentContinents.map((continent) => continent.name),
-        "DIRECT"
-      ] : items;
-      groups.push(subscriptionGroup(name, ALL_NODES_FILTER, serviceItems));
+    const presentContinentNames = presentContinents.map((continent) => continent.name);
+    for (const [name, defaults] of SERVICE_GROUPS) {
+      groups.push(subscriptionGroup(name, ALL_NODES_FILTER, serviceChoiceItems(defaults, presentContinentNames)));
     }
     if (normalizedNodes.some((node) => node?._sr?.udp === true && !node?._sr?.chained)) {
       groups.push(subscriptionGroup("\u{1F3AE} \u6E38\u620F\u8FDE\u63A5", GAME_FILTER));
