@@ -1,0 +1,27 @@
+# Release Checklist
+
+自动发布检查由本地构建完成；只有命令实际成功后才勾选。Sub-Store 预览和设备灰度必须由用户完成，本地构建不会代替勾选。
+
+## 自动发布检查
+
+- [x] `node --version` is 22 or newer.
+- [x] `npm ci` succeeds from a clean dependency directory.
+- [x] `npm test` passes.
+- [x] `npm run build` succeeds twice with byte-identical `dist/` output.
+- [x] `npm run fixtures` succeeds twice with byte-identical `examples/` output.
+- [x] `npm run check:rules` reports every catalog rule healthy.
+- [x] `npm run check:secrets` reports no potential secret.
+- [x] macOS, iPhone, and iPad Profiles contain `[General]`, `[Proxy Group]`, and `[Rule]`.
+- [x] No Profile contains a server, port/credential pair, UUID, PSK, key, Token, subscription URL, or Profile URL.
+
+## 用户完成：Sub-Store 功能预览
+
+- [ ] Node bundle executes through a Sub-Store functional Script Operator preview.
+- [ ] Profile bundle executes through a Sub-Store File Script Operator preview.
+- [ ] Preview diagnostics contain only totals and category counts.
+
+## 用户完成：Intel Mac 灰度
+
+- [ ] Old Intel Mac subscription and Profile remain available before canary import.
+- [ ] User, not the build process, confirms the Intel Mac canary checklist.
+

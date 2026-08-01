@@ -1,0 +1,12 @@
+.DS_Store
+.serena/
+.superpowers/
+.worktrees/
+*.log
+secrets/
+node_modules/
+coverage/
+*.local
+*.secret
+diagnostics/private/
+
