@@ -1,7 +1,8 @@
 # Apple 多客户端代理配置系统设计
 
 日期：2026-08-01  
-状态：用户已批准设计，等待书面规格审阅  
+状态：用户已批准完整书面设计，可进入实施
+
 目标仓库：`Juan-nikola/apple-proxy-profiles`（Public）  
 目标客户端：最新稳定版 Shadowrocket、Egern、Anywhere；测试版新增能力仅以显式参数试用
 
