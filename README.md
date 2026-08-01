@@ -15,19 +15,21 @@
 
 - 一份所有设备共用、每 6 小时更新的私密节点订阅 `shadowrocket-nodes`。
 - 三份每天更新的平台 Profile：`shadowrocket-config-macos`、`shadowrocket-config-iphone`、`shadowrocket-config-ipad`。
-- 默认跟随 Shadowrocket 首页节点、同时保留自动/故障转移/洲组/具体节点的主节点选择，以及 AI、流媒体、国内平台、游戏、下载/P2P 等策略组。
+- 一个只负责跟随 Shadowrocket 首页节点的 `🚀 节点选择`，以及分别提供自动测速、故障转移、洲组、具体节点、AI、流媒体、国内平台、游戏和下载/P2P 的业务策略组。
 - Blackmatrix7 `ChinaMax_Domain + ChinaMax` 完整增强国内规则、抖音 `ByteDance` 和 SteamCN；其他未识别流量最终进入 `🚀 节点选择`。
 
 Apple TV 已在生成器中预留参数，但不属于本轮部署范围。首轮顺序必须是 Intel Mac、iPhone、iPad；每台设备都保留原来的可用 Profile。
 
-## 分组为什么不会再铺满节点
+## 分组如何跟随首页节点
 
-Profile 使用固定的两层结构：
+Profile 使用职责分开的两层结构：
 
-1. `🚀 节点选择`第一项是 `PROXY`，表示跟随 Shadowrocket 首页当前节点；后面仍显示全部自动、全部故障转移、亚太、欧洲、美洲、其他/未分类及符合筛选条件的具体节点。
-2. 点进某个洲组后才显示该洲的节点。洲顺序固定为亚太、欧洲、美洲、其他；没有节点的洲不会显示。
+1. `🚀 节点选择`只包含 `PROXY`。`PROXY` 是 Shadowrocket 内建的首页当前节点，因此这个分组不能再保存某个具体节点；在首页红框位置换节点后，使用它的业务分组会一起换出口。
+2. 境外业务分组默认跟随 `🚀 节点选择`，并可改选 `⚡ 全部自动`、`🛟 全部故障转移`、亚太/欧洲/美洲等地区组、`DIRECT` 或符合筛选条件的具体节点。自动测速和故障转移已移到境外业务分组，不再放进 `🚀 节点选择`。
+3. 国内业务分组默认 `DIRECT`，需要时仍可切换到 `🚀 节点选择`或具体节点，避免国内 App 因误走代理而变慢。
+4. `🤖 AI 专用`继续使用独立洲组和具体节点，不会跟着首页主线路一起变化。
 
-动态组通过 `include-all-proxies=true` 从 Shadowrocket 当前可用代理中筛选节点，因此节点订阅显示名可以任意填写，不再要求叫 `Shadowrocket-Nodes` 或 `shadowsocks-nodes`。GitHub、流媒体、社交、Apple、Microsoft 和国内平台仍可直接选择符合筛选条件的具体节点；`🤖 AI 专用`的独立洲组与主线路互不影响。
+除 `🚀 节点选择`外，需要枚举节点的动态组仍通过 `include-all-proxies=true` 从 Shadowrocket 当前可用代理中筛选，因此节点订阅显示名可以任意填写，不要求叫 `Shadowrocket-Nodes`、`shadowrocket-nodes` 或 `shadowsocks-nodes`。洲顺序固定为亚太、欧洲、美洲、其他；没有节点的洲不会显示。地区识别不会生成大量国家策略组。
 
 地区识别覆盖 ISO 3166-1 的 249 个国家和地区国旗。中东与大洋洲归入亚太，俄罗斯归入欧洲，美洲含加勒比，非洲、南极洲以及无法识别的国旗归入其他。不会因此生成任何国家策略组。节点已有国旗时以最左侧国旗为准；没有国旗时才使用内置的常见国家/地区、城市、机场代码和缩写推断，仍无法确认就进入 `🌐 其他/未分类`。
 
@@ -47,8 +49,12 @@ Profile 使用固定的两层结构：
 1. 在 GitHub 打开本仓库最新的 `dist/substore-node-operator.js`，复制完整内容，替换 Sub-Store 节点 Script Operator 的脚本正文，参数保持不变。
 2. 预览节点输出，确认数量正常、国旗不重复、名称排序正常；异常就恢复旧脚本，不发布。
 3. 打开最新的 `dist/substore-profile-generator.js`，复制完整内容，分别替换 macOS、iPhone、iPad 三个 File Script Operator 的脚本正文，并按部署手册更新 QUIC/IPv6 参数。
-4. 先预览 macOS Profile，确认 `🚀 节点选择`第一项是 `PROXY`、动态组含 `include-all-proxies=true`、AI 洲组仍存在，再发布并只在 Intel Mac 更新测试。
+4. 先预览 macOS Profile，确认整行是 `🚀 节点选择 = select,PROXY`，境外业务组仍有自动/故障转移/洲组选项、动态组含 `include-all-proxies=true`、AI 洲组仍存在，再发布并只在 Intel Mac 更新测试。
 5. Intel Mac 验收通过后，才按 iPhone、iPad 顺序更新。整个过程中保留旧 Profile 作为回滚入口。
+
+这次从旧版更新时，必须在 Shadowrocket 中手动更新或重新导入新 Profile；只更新节点订阅不会改变分组。更新后打开 `🚀 节点选择`，摘要应显示 `SELECT > PROXY`，不能再显示某个国旗或具体节点名。如果仍显示具体节点，说明当前设备还在使用旧 Profile，先停止向其他设备推广并按部署手册核对 Profile 的更新时间。
+
+Shadowrocket 可能保留其他业务分组中仍然有效的旧选择。某个境外业务组如果仍显示具体节点、自动组或地区组，它会按该选择工作，并不会跟随首页；希望它跟随首页时，在该业务组里手动选择一次 `🚀 节点选择`。国内业务组继续选择 `DIRECT` 即可。
 
 完整页面操作与成功标志见[零基础部署手册](docs/deployment.md)，更新后的逐项检查见[Intel Mac 灰度清单](docs/canary-checklist.md)。
 

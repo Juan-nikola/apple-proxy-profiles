@@ -59,6 +59,12 @@ test("beginner docs contain every operational checkpoint and warning", async () 
   for (const phrase of ["显示名可以任意填写", "include-all-proxies=true", "PROXY", "ChinaMax_Domain", "问道手游"]) {
     assert.ok(text.includes(phrase), `missing enhanced-routing documentation phrase: ${phrase}`);
   }
+  for (const phrase of [
+    "`🚀 节点选择`只包含 `PROXY`",
+    "境外业务分组默认跟随 `🚀 节点选择`",
+    "国内业务分组默认 `DIRECT`",
+    "自动测速和故障转移已移到境外业务分组",
+  ]) assert.ok(docs["README.md"].includes(phrase), `README.md: missing homepage-follow phrase: ${phrase}`);
 
   for (const phrase of ["本项目不配置服务器端认证、TLS 或管理页面加固", "秘密 URL 不是访问控制"]) {
     assert.ok(docs["README.md"].includes(phrase), `README.md: missing public Sub-Store warning: ${phrase}`);

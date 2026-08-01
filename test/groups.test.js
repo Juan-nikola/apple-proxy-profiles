@@ -76,8 +76,9 @@ test("selects effective automatic group detail by normalized node count", () => 
 
   for (const count of [10, 50, 300]) {
     const groups = buildGroups(options(), Array.from({ length: count }, (_, index) => node(`🇯🇵 [机场] JP ${index}`)));
-    assert.equal(named(groups, "🚀 节点选择").useSubscription, true);
-    assert.equal(named(groups, "🚀 节点选择").filter, "^.+$");
+    assert.equal(named(groups, "🚀 节点选择").useSubscription, undefined);
+    assert.equal(named(groups, "🚀 节点选择").filter, undefined);
+    assert.deepEqual(named(groups, "🚀 节点选择").items, ["PROXY"]);
   }
 
   const fallback = named(buildGroups(options(), [node("🇯🇵 [机场] JP")]), "🛟 全部故障转移");
@@ -93,11 +94,8 @@ test("uses continent-only visible grouping while keeping helpers hidden", () => 
 
   assert.match(lines.find((line) => line.startsWith("🌏 亚太 =")), /^🌏 亚太 = select,/);
   assert.deepEqual(named(groups, "🌏 亚太").items, ["⚡ 亚太自动"]);
-  assert.deepEqual(named(groups, "🚀 节点选择").items, ["PROXY", "⚡ 全部自动", "🛟 全部故障转移", "🌏 亚太"]);
-  assert.match(
-    lines.find((line) => line.startsWith("🚀 节点选择 =")),
-    /include-all-proxies=true,policy-regex-filter=\^\.\+\$$/,
-  );
+  assert.deepEqual(named(groups, "🚀 节点选择").items, ["PROXY"]);
+  assert.equal(lines.find((line) => line.startsWith("🚀 节点选择 =")), "🚀 节点选择 = select,PROXY");
   assert.equal(lines.some((line) => line.includes("订阅\\,名称,use=true")), false);
   assert.equal(named(groups, "🌍 欧洲"), undefined);
   assert.equal(groups.some((group) => group.hidden === true), true);
@@ -123,11 +121,26 @@ test("keeps service manual access and gates special service groups by eligibilit
   assert.equal(named(groups, "🤖 AI 亚太").hidden, true);
   assert.equal(named(groups, "🤖 AI 欧洲").useSubscription, true);
   assert.equal(named(groups, "🤖 AI 美洲").useSubscription, true);
-  assert.deepEqual(named(groups, "🐙 GitHub").items, ["🚀 节点选择", "DIRECT"]);
-  assert.equal(named(groups, "🐙 GitHub").useSubscription, true);
-  assert.equal(named(groups, "🐙 GitHub").filter, "^.+$");
-  assert.equal(named(groups, "🍎 Apple").items[0], "DIRECT");
-  assert.deepEqual(named(groups, "🍎 Apple").items, ["DIRECT", "🚀 节点选择"]);
+  const foreignItems = [
+    "🚀 节点选择",
+    "⚡ 全部自动",
+    "🛟 全部故障转移",
+    "🌏 亚太",
+    "🌍 欧洲",
+    "🌎 美洲",
+    "DIRECT",
+  ];
+  const foreignGroups = [
+    "🐙 GitHub", "📺 YouTube", "🎬 Netflix", "🏰 Disney+", "🎵 Spotify", "🌍 国际媒体",
+    "✈️ Telegram", "💬 海外社交", "🎶 TikTok", "🕹️ 游戏平台",
+  ];
+  const domesticGroups = [
+    "🍎 Apple", "🪟 Microsoft", "📺 哔哩哔哩", "🎵 抖音", "📕 小红书", "🧣 微博",
+  ];
+  for (const name of foreignGroups) assert.deepEqual(named(groups, name).items, foreignItems, name);
+  for (const name of domesticGroups) {
+    assert.deepEqual(named(groups, name).items, ["DIRECT", "🚀 节点选择"], name);
+  }
   assert.deepEqual(named(groups, "🧭 DNS 与规则下载").items, ["🚀 节点选择", "DIRECT"]);
   assert.equal(named(groups, "🧭 DNS 与规则下载").useSubscription, undefined);
   assert.equal(named(groups, "🧭 DNS 与规则下载").filter, undefined);
@@ -146,11 +159,7 @@ test("keeps service manual access and gates special service groups by eligibilit
   assert.ok(named(groups, "⚡ 入口自动"));
   assert.ok(groups.indexOf(named(groups, "🔗 入口节点")) > groups.indexOf(named(groups, "🕵️ 严格跟踪")));
 
-  for (const name of [
-    "🐙 GitHub", "📺 YouTube", "🎬 Netflix", "🏰 Disney+", "🎵 Spotify", "🌍 国际媒体",
-    "✈️ Telegram", "💬 海外社交", "🎶 TikTok", "🍎 Apple", "🪟 Microsoft",
-    "📺 哔哩哔哩", "🎵 抖音", "📕 小红书", "🧣 微博", "🕹️ 游戏平台",
-  ]) {
+  for (const name of [...foreignGroups, ...domesticGroups]) {
     const group = named(groups, name);
     assert.equal(group.useSubscription, true, group.name);
     assert.equal(group.filter, "^.+$", group.name);
@@ -246,7 +255,7 @@ test("references every available continent helper from its visible selector", ()
   assert.deepEqual(named(buildGroups(options({ autoGroupMode: "minimal" }), nodes), "🌏 亚太").items, []);
 });
 
-test("keeps root and AI continent order stable as inventories change", () => {
+test("keeps the root locked to the homepage while AI continent order stays stable", () => {
   const mixed = [
     node("🇿🇦 [自建] ZA", { continent: "other" }),
     node("🇺🇸 [自建] US", { continent: "americas" }),
@@ -255,12 +264,7 @@ test("keeps root and AI continent order stable as inventories change", () => {
   ];
   const groups = buildGroups(options(), mixed);
 
-  assert.deepEqual(named(groups, "🚀 节点选择").items.slice(3), [
-    "🌏 亚太",
-    "🌍 欧洲",
-    "🌎 美洲",
-    "🌐 其他/未分类",
-  ]);
+  assert.deepEqual(named(groups, "🚀 节点选择").items, ["PROXY"]);
   assert.deepEqual(named(groups, "🤖 AI 专用").items, [
     "🤖 AI 亚太",
     "🤖 AI 欧洲",

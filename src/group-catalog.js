@@ -39,24 +39,30 @@ const SOURCE_GROUPS = Object.freeze([
 ]);
 
 const PROXY_THEN_DIRECT = Object.freeze(["🚀 节点选择", "DIRECT"]);
+const AUTO_PROXY_THEN_DIRECT = Object.freeze([
+  "🚀 节点选择",
+  "⚡ 全部自动",
+  "🛟 全部故障转移",
+  "DIRECT",
+]);
 const DIRECT_THEN_PROXY = Object.freeze(["DIRECT", "🚀 节点选择"]);
 const SERVICE_GROUPS = Object.freeze([
-  ["🐙 GitHub", PROXY_THEN_DIRECT],
-  ["📺 YouTube", PROXY_THEN_DIRECT],
-  ["🎬 Netflix", PROXY_THEN_DIRECT],
-  ["🏰 Disney+", PROXY_THEN_DIRECT],
-  ["🎵 Spotify", PROXY_THEN_DIRECT],
-  ["🌍 国际媒体", PROXY_THEN_DIRECT],
-  ["✈️ Telegram", PROXY_THEN_DIRECT],
-  ["💬 海外社交", PROXY_THEN_DIRECT],
-  ["🎶 TikTok", PROXY_THEN_DIRECT],
+  ["🐙 GitHub", AUTO_PROXY_THEN_DIRECT],
+  ["📺 YouTube", AUTO_PROXY_THEN_DIRECT],
+  ["🎬 Netflix", AUTO_PROXY_THEN_DIRECT],
+  ["🏰 Disney+", AUTO_PROXY_THEN_DIRECT],
+  ["🎵 Spotify", AUTO_PROXY_THEN_DIRECT],
+  ["🌍 国际媒体", AUTO_PROXY_THEN_DIRECT],
+  ["✈️ Telegram", AUTO_PROXY_THEN_DIRECT],
+  ["💬 海外社交", AUTO_PROXY_THEN_DIRECT],
+  ["🎶 TikTok", AUTO_PROXY_THEN_DIRECT],
   ["🍎 Apple", DIRECT_THEN_PROXY],
   ["🪟 Microsoft", DIRECT_THEN_PROXY],
   ["📺 哔哩哔哩", DIRECT_THEN_PROXY],
   ["🎵 抖音", DIRECT_THEN_PROXY],
   ["📕 小红书", DIRECT_THEN_PROXY],
   ["🧣 微博", DIRECT_THEN_PROXY],
-  ["🕹️ 游戏平台", PROXY_THEN_DIRECT],
+  ["🕹️ 游戏平台", AUTO_PROXY_THEN_DIRECT],
 ]);
 
 function continentFilter(continent) {
@@ -144,11 +150,7 @@ export function buildGroups(options, nodes) {
     }
   }
 
-  groups.push(subscriptionGroup(
-    "🚀 节点选择",
-    ALL_NODES_FILTER,
-    ["PROXY", "⚡ 全部自动", "🛟 全部故障转移", ...presentContinents.map((continent) => continent.name)],
-  ));
+  groups.push({ name: "🚀 节点选择", type: "select", items: ["PROXY"] });
   for (const continent of presentContinents) {
     groups.push(subscriptionGroup(continent.name, continentFilter(continent), continentHelperItems(continent, mode)));
   }
@@ -168,7 +170,18 @@ export function buildGroups(options, nodes) {
   }));
   groups.push(...aiContinentGroups);
   groups.push(subscriptionGroup("🤖 AI 专用", ALL_NODES_FILTER, aiContinentGroups.map((group) => group.name)));
-  for (const [name, items] of SERVICE_GROUPS) groups.push(subscriptionGroup(name, ALL_NODES_FILTER, items));
+  for (const [name, items] of SERVICE_GROUPS) {
+    const serviceItems = items === AUTO_PROXY_THEN_DIRECT
+      ? [
+        "🚀 节点选择",
+        "⚡ 全部自动",
+        "🛟 全部故障转移",
+        ...presentContinents.map((continent) => continent.name),
+        "DIRECT",
+      ]
+      : items;
+    groups.push(subscriptionGroup(name, ALL_NODES_FILTER, serviceItems));
+  }
   if (normalizedNodes.some((node) => node?._sr?.udp === true && !node?._sr?.chained)) {
     groups.push(subscriptionGroup("🎮 游戏连接", GAME_FILTER));
   } else {
