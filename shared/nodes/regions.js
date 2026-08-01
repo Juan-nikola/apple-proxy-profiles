@@ -1,4 +1,4 @@
-import { CONTINENT } from "./contracts.js";
+import { CONTINENT } from "../contracts.js";
 import { continentForFlag } from "./country-regions.js";
 
 const FLAG_PATTERN = /[\u{1F1E6}-\u{1F1FF}]{2}/gu;
@@ -89,4 +89,3 @@ export function classifyRegion(name) {
 
   return { flag: "🌐", continent: CONTINENT.other, warning: null };
 }
-

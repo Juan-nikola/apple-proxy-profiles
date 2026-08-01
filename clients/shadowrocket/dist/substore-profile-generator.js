@@ -23,7 +23,12 @@ var ShadowrocketProfileBundle = (() => {
     operator: () => operator
   });
 
-  // src/contracts.js
+  // ../../shared/contracts.js
+  var CLIENT = Object.freeze({
+    shadowrocket: "shadowrocket",
+    egern: "egern",
+    anywhere: "anywhere"
+  });
   var OPTION_VALUES = Object.freeze({
     output: Object.freeze(["nodes", "config"]),
     type: Object.freeze(["collection"]),
@@ -51,6 +56,12 @@ var ShadowrocketProfileBundle = (() => {
     americas: "americas",
     other: "other"
   });
+  function nodeMetadata(node) {
+    if (!node?._profile || typeof node._profile !== "object") {
+      throw new Error("Normalized node is missing _profile metadata");
+    }
+    return node._profile;
+  }
 
   // src/options.js
   var REQUIRED_KEYS = Object.freeze([
@@ -210,7 +221,7 @@ var ShadowrocketProfileBundle = (() => {
     ];
   }
 
-  // src/country-regions.js
+  // ../../shared/nodes/country-regions.js
   var REGION_CODES = Object.freeze({
     [CONTINENT.asiaPacific]: Object.freeze(`
     AE AF AM AS AU AZ BD BH BN BT CC CK CN CX CY FJ FM GE GU HK HM ID IL IN
@@ -377,8 +388,8 @@ var ShadowrocketProfileBundle = (() => {
     const normalizedNodes = Array.isArray(nodes) ? nodes : [];
     const preset = platformPreset(options.platform);
     const mode = effectiveAutoMode(options.autoGroupMode, normalizedNodes.length);
-    const presentContinents = CONTINENTS.filter((continent) => normalizedNodes.some((node) => node?._sr?.continent === continent.key && !node?._sr?.chained));
-    const chainEligible = options.clientChain === "on" && normalizedNodes.some((node) => node?._sr?.entry === true && !node?._sr?.chained) && normalizedNodes.some((node) => node?._sr?.chained === true);
+    const presentContinents = CONTINENTS.filter((continent) => normalizedNodes.some((node) => nodeMetadata(node).continent === continent.key && !nodeMetadata(node).chained));
+    const chainEligible = options.clientChain === "on" && normalizedNodes.some((node) => nodeMetadata(node).entry === true && !nodeMetadata(node).chained) && normalizedNodes.some((node) => nodeMetadata(node).chained === true);
     const groups = [
       helper("\u26A1 \u5168\u90E8\u81EA\u52A8", "url-test", preset, NON_CHAINED_FILTER),
       helper("\u{1F6DF} \u5168\u90E8\u6545\u969C\u8F6C\u79FB", "fallback", preset, NON_CHAINED_FILTER)
@@ -395,7 +406,7 @@ var ShadowrocketProfileBundle = (() => {
       groups.push(subscriptionGroup(continent.name, continentFilter(continent), continentHelperItems(continent, mode)));
     }
     for (const source of SOURCE_GROUPS) {
-      if (normalizedNodes.some((node) => node?._sr?.sourceKind === source.kind && !node?._sr?.chained)) {
+      if (normalizedNodes.some((node) => nodeMetadata(node).sourceKind === source.kind && !nodeMetadata(node).chained)) {
         groups.push(subscriptionGroup(source.name, source.filter));
       }
     }
@@ -415,12 +426,12 @@ var ShadowrocketProfileBundle = (() => {
         policySelectName: defaults.policySelectName
       });
     }
-    if (normalizedNodes.some((node) => node?._sr?.udp === true && !node?._sr?.chained)) {
+    if (normalizedNodes.some((node) => nodeMetadata(node).udp === true && !nodeMetadata(node).chained)) {
       groups.push(subscriptionGroup("\u{1F3AE} \u6E38\u620F\u8FDE\u63A5", GAME_FILTER));
     } else {
       groups.push({ name: "\u{1F3AE} \u6E38\u620F\u8FDE\u63A5", type: "select", items: ["DIRECT"] });
     }
-    if (normalizedNodes.some((node) => node?._sr?.p2p === true && !node?._sr?.chained)) {
+    if (normalizedNodes.some((node) => nodeMetadata(node).p2p === true && !nodeMetadata(node).chained)) {
       groups.push(subscriptionGroup("\u2B07\uFE0F \u4E0B\u8F7D/P2P", P2P_FILTER));
     } else {
       groups.push({ name: "\u2B07\uFE0F \u4E0B\u8F7D/P2P", type: "select", items: ["DIRECT"] });
@@ -859,8 +870,8 @@ var ShadowrocketProfileBundle = (() => {
   function renderProfile(rawOptions, nodes) {
     const options = parseOptions(rawOptions);
     const inventory = Array.isArray(nodes) ? nodes : [];
-    const hasChainedNodes = inventory.some((node) => node?._sr?.chained === true);
-    const hasEligibleEntry = inventory.some((node) => node?._sr?.entry === true && node?._sr?.chained !== true);
+    const hasChainedNodes = inventory.some((node) => nodeMetadata(node).chained === true);
+    const hasEligibleEntry = inventory.some((node) => nodeMetadata(node).entry === true && nodeMetadata(node).chained !== true);
     if (options.clientChain === "off" && hasChainedNodes) {
       throw new Error("clientChain=off rejects an inventory containing chained nodes");
     }

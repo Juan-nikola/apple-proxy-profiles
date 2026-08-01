@@ -57,7 +57,7 @@ test("profile bundle is self-contained and runs with Sub-Store globals", async (
 
   const inventory = Array.from({ length: 25 }, (_, index) => ({
     name: `Safe ${index + 1}`,
-    _sr: { continent: "asiaPacific", sourceKind: "airport", udp: true, p2p: false, entry: true, chained: false },
+    _profile: { continent: "asiaPacific", sourceKind: "airport", udp: true, p2p: false, entry: true, chained: false },
   }));
   const { context } = loadBundle(source, {
     $arguments: profileArguments,
@@ -75,4 +75,3 @@ test("profile bundle is self-contained and runs with Sub-Store globals", async (
   assert.match(result.$content, /#proxy=%F0%9F%A7%AD%20DNS%20%E4%B8%8E%E8%A7%84%E5%88%99%E4%B8%8B%E8%BD%BD/);
   assert.doesNotMatch(result.$content, /#proxy=🧭 DNS 与规则下载/);
 });
-

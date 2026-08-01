@@ -1,4 +1,5 @@
 import { increment } from "./diagnostics.js";
+import { nodeMetadata } from "../contracts.js";
 
 const SUPPORTED_LANDING_PROTOCOLS = new Set([
   "ss",
@@ -25,7 +26,7 @@ export function hasExistingChain(node) {
 export function addClientChainClones(nodes, diagnostics, enabled) {
   if (!enabled) return nodes;
 
-  const landings = nodes.filter((node) => node._sr?.sourceKind === "landing");
+  const landings = nodes.filter((node) => nodeMetadata(node).sourceKind === "landing");
   const existingLandings = landings.filter((node) => hasExistingChain(node));
   const chainableLandings = landings.filter((node) => !hasExistingChain(node));
   if (existingLandings.length > 0) {
@@ -33,7 +34,7 @@ export function addClientChainClones(nodes, diagnostics, enabled) {
   }
   if (chainableLandings.length === 0) return nodes;
 
-  if (!nodes.some((node) => node._sr?.entry === true)) {
+  if (!nodes.some((node) => nodeMetadata(node).entry === true)) {
     increment(diagnostics.excluded, "chain-entry-missing", chainableLandings.length);
     return nodes;
   }
@@ -47,9 +48,8 @@ export function addClientChainClones(nodes, diagnostics, enabled) {
     const clone = structuredClone(landing);
     clone.name = `🔗 ${clone.name}`;
     clone["underlying-proxy"] = "🔗 入口节点";
-    clone._sr = { ...clone._sr, chained: true };
+    clone._profile = { ...nodeMetadata(clone), chained: true };
     clones.push(clone);
   }
   return [...nodes, ...clones];
 }
-

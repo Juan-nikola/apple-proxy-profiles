@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { normalizeNodes, resolveNameCollisions } from "../src/normalize-nodes.js";
+import { normalizeNodes, resolveNameCollisions } from "../../../shared/nodes/normalize-nodes.js";
 import { fakeNodes } from "./fixtures/nodes.js";
 
 test("normalizes names, preserves credential-distinct nodes, and removes spoofed UDP labels", () => {
@@ -42,8 +42,8 @@ test("chooses exact-duplicate provenance deterministically with least privilege"
 
   assert.deepEqual(forward, reversed);
   assert.equal(forward.nodes.length, 1);
-  assert.equal(forward.nodes[0]._sr.sourceKind, "airport");
-  assert.equal(forward.nodes[0]._sr.p2p, false);
+  assert.equal(forward.nodes[0]._profile.sourceKind, "airport");
+  assert.equal(forward.nodes[0]._profile.p2p, false);
   assert.equal(forward.nodes[0].name.includes("[机场]"), true);
   assert.equal(JSON.stringify(forward.diagnostics).includes("TEST_ONLY_NOT_A_SECRET"), false);
 });
@@ -56,20 +56,20 @@ test("creates only supported landing client-chain clones", () => {
     clientChain: "on",
   });
 
-  const clones = result.nodes.filter((node) => node._sr.chained);
+  const clones = result.nodes.filter((node) => node._profile.chained);
   assert.equal(clones.length, 1);
   assert.equal(clones[0]["underlying-proxy"], "🔗 入口节点");
   assert.equal(result.diagnostics.excluded["chain-protocol-unsupported"], 1);
-  assert.equal(result.nodes.some((node) => node._sr.sourceKind === "realm" && node._sr.chained), false);
-  assert.equal(result.nodes.some((node) => node._sr.sourceKind === "serverChain" && node._sr.chained), false);
-  assert.equal(result.nodes.some((node) => node.type === "hysteria2" && node._sr.chained), false);
+  assert.equal(result.nodes.some((node) => node._profile.sourceKind === "realm" && node._profile.chained), false);
+  assert.equal(result.nodes.some((node) => node._profile.sourceKind === "serverChain" && node._profile.chained), false);
+  assert.equal(result.nodes.some((node) => node.type === "hysteria2" && node._profile.chained), false);
 });
 
 test("reports landing nodes when an eligible chain entry is unavailable", () => {
   const landing = { ...fakeNodes[0], _subDisplayName: undefined, _subName: "[落地] SS" };
   const result = normalizeNodes([landing], { clientChain: "on" });
 
-  assert.equal(result.nodes.some((node) => node._sr.chained), false);
+  assert.equal(result.nodes.some((node) => node._profile.chained), false);
   assert.equal(result.diagnostics.excluded["chain-entry-missing"], 1);
 });
 
@@ -102,7 +102,7 @@ test("creates chain clones for supported protocol types with surrounding whitesp
   };
   const result = normalizeNodes([fakeNodes[0], landing], { clientChain: "on" });
 
-  assert.equal(result.nodes.filter((node) => node._sr.chained).length, 1);
+  assert.equal(result.nodes.filter((node) => node._profile.chained).length, 1);
 });
 
 test("keeps semantic underscore fields in identity", () => {
@@ -139,8 +139,8 @@ test("does not use pre-chained nodes as entries or chain them again", () => {
   };
   const result = normalizeNodes([preChainedEntry, fakeNodes[1], preChainedLanding], { clientChain: "on" });
 
-  assert.equal(result.nodes.filter((node) => node._sr.chained).length, 0);
-  assert.equal(result.nodes.find((node) => node["underlying-proxy"] === "existing-entry")._sr.entry, false);
+  assert.equal(result.nodes.filter((node) => node._profile.chained).length, 0);
+  assert.equal(result.nodes.find((node) => node["underlying-proxy"] === "existing-entry")._profile.entry, false);
   assert.equal(result.nodes.find((node) => node.detour === "existing-detour").detour, "existing-detour");
 });
 
@@ -157,8 +157,8 @@ test("strips spoofed existing-chain markers and re-derives them before the UDP s
     chain: "existing-hop",
   };
   const { nodes } = normalizeNodes([spoofed, preChained]);
-  const eligible = nodes.find((node) => node._sr.entry);
-  const restricted = nodes.find((node) => !node._sr.entry);
+  const eligible = nodes.find((node) => node._profile.entry);
+  const restricted = nodes.find((node) => !node._profile.entry);
 
   assert.equal(eligible.name.includes("[已有链]"), false);
   assert.match(restricted.name, /\[已有链\] \[UDP\]$/);
@@ -191,8 +191,7 @@ test("fails closed on malformed but present chain aliases", () => {
   };
   const result = normalizeNodes([malformedEntry, fakeNodes[1], malformedLanding], { clientChain: "on" });
 
-  assert.equal(result.nodes.find((node) => node["underlying-proxy"] instanceof Array)._sr.entry, false);
-  assert.equal(result.nodes.filter((node) => node._sr.chained).length, 0);
+  assert.equal(result.nodes.find((node) => node["underlying-proxy"] instanceof Array)._profile.entry, false);
+  assert.equal(result.nodes.filter((node) => node._profile.chained).length, 0);
   assert.equal(result.diagnostics.excluded["chain-existing"], 1);
 });
-

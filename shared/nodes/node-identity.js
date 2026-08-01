@@ -13,6 +13,7 @@ const EXCLUDED_TOP_LEVEL_KEYS = new Set([
   "_subDisplayName",
   "_collectionName",
   "_collectionDisplayName",
+  "_profile",
   "_sr",
   "_resolved",
   "_IPv4",
@@ -83,4 +84,3 @@ export function containsSecretKey(value, seen = new Set()) {
   }
   return false;
 }
-

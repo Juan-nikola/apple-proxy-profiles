@@ -8,7 +8,7 @@ const root = resolve(import.meta.dirname, "..");
 const platforms = Object.freeze(["macos", "iphone", "ipad"]);
 const inventory = Object.freeze(Array.from({ length: 25 }, (_, index) => Object.freeze({
   name: `Synthetic ${String(index + 1).padStart(2, "0")}`,
-  _sr: Object.freeze({
+  _profile: Object.freeze({
     continent: ["asiaPacific", "americas", "europe"][index % 3],
     sourceKind: index % 4 === 0 ? "selfHosted" : "airport",
     udp: index % 2 === 0,
@@ -34,4 +34,3 @@ for (const platform of platforms) {
   await mkdir(dirname(destination), { recursive: true });
   await writeFile(destination, profile, "utf8");
 }
-

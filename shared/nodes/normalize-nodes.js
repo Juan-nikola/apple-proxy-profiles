@@ -1,5 +1,5 @@
 import { addClientChainClones, hasExistingChain } from "./client-chain.js";
-import { CONTINENT, SOURCE_KIND } from "./contracts.js";
+import { CONTINENT, SOURCE_KIND, nodeMetadata } from "../contracts.js";
 import { createDiagnostics, increment } from "./diagnostics.js";
 import { fingerprint, identityKey } from "./node-identity.js";
 import { hasExplicitUdp, validateNode } from "./node-validation.js";
@@ -38,13 +38,13 @@ function cleanDisplayName(name) {
 }
 
 function compareNodes(left, right) {
-  const continent = (CONTINENT_ORDER.get(left._sr.continent) ?? 99) - (CONTINENT_ORDER.get(right._sr.continent) ?? 99);
+  const continent = (CONTINENT_ORDER.get(nodeMetadata(left).continent) ?? 99) - (CONTINENT_ORDER.get(nodeMetadata(right).continent) ?? 99);
   if (continent !== 0) return continent;
-  const flag = left._sr.flag.localeCompare(right._sr.flag, "zh-Hans-CN");
+  const flag = nodeMetadata(left).flag.localeCompare(nodeMetadata(right).flag, "zh-Hans-CN");
   if (flag !== 0) return flag;
   const name = left.name.localeCompare(right.name, "zh-Hans-CN");
   if (name !== 0) return name;
-  return left._sr.id.localeCompare(right._sr.id, "zh-Hans-CN");
+  return nodeMetadata(left).id.localeCompare(nodeMetadata(right).id, "zh-Hans-CN");
 }
 
 function isP2pSource(kind) {
@@ -140,6 +140,7 @@ export function normalizeNodes(nodes, { clientChain = "off" } = {}) {
     }
 
     const cloned = structuredClone(original);
+    Reflect.deleteProperty(cloned, "_sr");
     cloned.type = original.type.trim().toLowerCase();
     cloned.port = Number(original.port);
     const identity = identityKey(cloned);
@@ -180,7 +181,7 @@ export function normalizeNodes(nodes, { clientChain = "off" } = {}) {
     const udp = hasExplicitUdp(original);
     const id = `sr-${fingerprint(cloned)}`;
     cloned.name = `${region.flag} ${source.label} ${cleanDisplayName(original.name)}${existingChain ? ` ${EXISTING_CHAIN_MARKER}` : ""}${udp ? " [UDP]" : ""}`;
-    cloned._sr = {
+    cloned._profile = {
       id,
       sourceKind: source.kind,
       continent: region.continent,
@@ -206,4 +207,3 @@ export function normalizeNodes(nodes, { clientChain = "off" } = {}) {
     diagnostics,
   };
 }
-

@@ -1,3 +1,9 @@
+export const CLIENT = Object.freeze({
+  shadowrocket: "shadowrocket",
+  egern: "egern",
+  anywhere: "anywhere",
+});
+
 export const OPTION_VALUES = Object.freeze({
   output: Object.freeze(["nodes", "config"]),
   type: Object.freeze(["collection"]),
@@ -13,18 +19,17 @@ export const OPTION_VALUES = Object.freeze({
 });
 
 export const SOURCE_KIND = Object.freeze({
-  airport: "airport",
-  selfHosted: "selfHosted",
-  realm: "realm",
-  serverChain: "serverChain",
-  landing: "landing",
-  unknown: "unknown",
+  airport: "airport", selfHosted: "selfHosted", realm: "realm",
+  serverChain: "serverChain", landing: "landing", unknown: "unknown",
 });
 
 export const CONTINENT = Object.freeze({
-  asiaPacific: "asiaPacific",
-  europe: "europe",
-  americas: "americas",
-  other: "other",
+  asiaPacific: "asiaPacific", europe: "europe", americas: "americas", other: "other",
 });
 
+export function nodeMetadata(node) {
+  if (!node?._profile || typeof node._profile !== "object") {
+    throw new Error("Normalized node is missing _profile metadata");
+  }
+  return node._profile;
+}

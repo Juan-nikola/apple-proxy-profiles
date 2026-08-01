@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { OPTION_VALUES } from "../src/contracts.js";
+import { OPTION_VALUES } from "../../../shared/contracts.js";
 import { parseOptions, platformPreset } from "../src/options.js";
 
 const required = {

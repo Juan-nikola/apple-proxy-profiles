@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { hasExplicitUdp, validateNode } from "../src/node-validation.js";
+import { hasExplicitUdp, validateNode } from "../../../shared/nodes/node-validation.js";
 import { fakeNodes } from "./fixtures/nodes.js";
 
 test("validates all synthetic fixtures", () => {
@@ -112,4 +112,3 @@ test("requires nonblank string TLS identities", () => {
   assert.deepEqual(validateNode({ ...node, sni: "example.invalid" }).warnings, []);
   assert.deepEqual(validateNode({ ...node, "allow-insecure": true }).warnings, []);
 });
-

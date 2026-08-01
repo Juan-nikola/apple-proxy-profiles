@@ -3,6 +3,7 @@ import { buildGroups } from "./group-catalog.js";
 import { parseOptions } from "./options.js";
 import { renderGroups } from "./render-groups.js";
 import { renderRules } from "./render-rules.js";
+import { nodeMetadata } from "../../../shared/contracts.js";
 
 const NODE_REFRESH_SECONDS = 21600;
 const RULE_REFRESH_SECONDS = 86400;
@@ -15,8 +16,8 @@ const RULE_REFRESH_SECONDS = 86400;
 export function renderProfile(rawOptions, nodes) {
   const options = parseOptions(rawOptions);
   const inventory = Array.isArray(nodes) ? nodes : [];
-  const hasChainedNodes = inventory.some((node) => node?._sr?.chained === true);
-  const hasEligibleEntry = inventory.some((node) => node?._sr?.entry === true && node?._sr?.chained !== true);
+  const hasChainedNodes = inventory.some((node) => nodeMetadata(node).chained === true);
+  const hasEligibleEntry = inventory.some((node) => nodeMetadata(node).entry === true && nodeMetadata(node).chained !== true);
   if (options.clientChain === "off" && hasChainedNodes) {
     throw new Error("clientChain=off rejects an inventory containing chained nodes");
   }
@@ -36,4 +37,3 @@ export function renderProfile(rawOptions, nodes) {
     `[Rule]\n${renderRules().join("\n")}`,
   ].join("\n\n") + "\n";
 }
-

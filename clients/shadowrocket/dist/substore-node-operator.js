@@ -23,7 +23,7 @@ var ShadowrocketNodeBundle = (() => {
     operator: () => operator
   });
 
-  // src/diagnostics.js
+  // ../../shared/nodes/diagnostics.js
   function createDiagnostics() {
     return {
       total: 0,
@@ -45,55 +45,12 @@ var ShadowrocketNodeBundle = (() => {
     });
   }
 
-  // src/client-chain.js
-  var SUPPORTED_LANDING_PROTOCOLS = /* @__PURE__ */ new Set([
-    "ss",
-    "shadowsocks",
-    "ssr",
-    "snell",
-    "vmess",
-    "vless",
-    "trojan",
-    "socks5",
-    "http"
-  ]);
-  var CHAIN_ALIASES = ["underlying-proxy", "chain", "dialer-proxy", "detour", "prev_hop"];
-  function hasExistingChain(node) {
-    return CHAIN_ALIASES.some((key) => {
-      if (!Object.hasOwn(node ?? {}, key)) return false;
-      const value = node[key];
-      return value !== void 0 && value !== null && value !== "";
-    });
-  }
-  function addClientChainClones(nodes, diagnostics, enabled) {
-    if (!enabled) return nodes;
-    const landings = nodes.filter((node) => node._sr?.sourceKind === "landing");
-    const existingLandings = landings.filter((node) => hasExistingChain(node));
-    const chainableLandings = landings.filter((node) => !hasExistingChain(node));
-    if (existingLandings.length > 0) {
-      increment(diagnostics.excluded, "chain-existing", existingLandings.length);
-    }
-    if (chainableLandings.length === 0) return nodes;
-    if (!nodes.some((node) => node._sr?.entry === true)) {
-      increment(diagnostics.excluded, "chain-entry-missing", chainableLandings.length);
-      return nodes;
-    }
-    const clones = [];
-    for (const landing of chainableLandings) {
-      if (!SUPPORTED_LANDING_PROTOCOLS.has(String(landing.type).trim().toLowerCase())) {
-        increment(diagnostics.excluded, "chain-protocol-unsupported");
-        continue;
-      }
-      const clone = structuredClone(landing);
-      clone.name = `\u{1F517} ${clone.name}`;
-      clone["underlying-proxy"] = "\u{1F517} \u5165\u53E3\u8282\u70B9";
-      clone._sr = { ...clone._sr, chained: true };
-      clones.push(clone);
-    }
-    return [...nodes, ...clones];
-  }
-
-  // src/contracts.js
+  // ../../shared/contracts.js
+  var CLIENT = Object.freeze({
+    shadowrocket: "shadowrocket",
+    egern: "egern",
+    anywhere: "anywhere"
+  });
   var OPTION_VALUES = Object.freeze({
     output: Object.freeze(["nodes", "config"]),
     type: Object.freeze(["collection"]),
@@ -121,14 +78,69 @@ var ShadowrocketNodeBundle = (() => {
     americas: "americas",
     other: "other"
   });
+  function nodeMetadata(node) {
+    if (!node?._profile || typeof node._profile !== "object") {
+      throw new Error("Normalized node is missing _profile metadata");
+    }
+    return node._profile;
+  }
 
-  // src/node-identity.js
+  // ../../shared/nodes/client-chain.js
+  var SUPPORTED_LANDING_PROTOCOLS = /* @__PURE__ */ new Set([
+    "ss",
+    "shadowsocks",
+    "ssr",
+    "snell",
+    "vmess",
+    "vless",
+    "trojan",
+    "socks5",
+    "http"
+  ]);
+  var CHAIN_ALIASES = ["underlying-proxy", "chain", "dialer-proxy", "detour", "prev_hop"];
+  function hasExistingChain(node) {
+    return CHAIN_ALIASES.some((key) => {
+      if (!Object.hasOwn(node ?? {}, key)) return false;
+      const value = node[key];
+      return value !== void 0 && value !== null && value !== "";
+    });
+  }
+  function addClientChainClones(nodes, diagnostics, enabled) {
+    if (!enabled) return nodes;
+    const landings = nodes.filter((node) => nodeMetadata(node).sourceKind === "landing");
+    const existingLandings = landings.filter((node) => hasExistingChain(node));
+    const chainableLandings = landings.filter((node) => !hasExistingChain(node));
+    if (existingLandings.length > 0) {
+      increment(diagnostics.excluded, "chain-existing", existingLandings.length);
+    }
+    if (chainableLandings.length === 0) return nodes;
+    if (!nodes.some((node) => nodeMetadata(node).entry === true)) {
+      increment(diagnostics.excluded, "chain-entry-missing", chainableLandings.length);
+      return nodes;
+    }
+    const clones = [];
+    for (const landing of chainableLandings) {
+      if (!SUPPORTED_LANDING_PROTOCOLS.has(String(landing.type).trim().toLowerCase())) {
+        increment(diagnostics.excluded, "chain-protocol-unsupported");
+        continue;
+      }
+      const clone = structuredClone(landing);
+      clone.name = `\u{1F517} ${clone.name}`;
+      clone["underlying-proxy"] = "\u{1F517} \u5165\u53E3\u8282\u70B9";
+      clone._profile = { ...nodeMetadata(clone), chained: true };
+      clones.push(clone);
+    }
+    return [...nodes, ...clones];
+  }
+
+  // ../../shared/nodes/node-identity.js
   var EXCLUDED_TOP_LEVEL_KEYS = /* @__PURE__ */ new Set([
     "name",
     "_subName",
     "_subDisplayName",
     "_collectionName",
     "_collectionDisplayName",
+    "_profile",
     "_sr",
     "_resolved",
     "_IPv4",
@@ -182,7 +194,7 @@ var ShadowrocketNodeBundle = (() => {
     return (hash >>> 0).toString(36).padStart(7, "0");
   }
 
-  // src/node-validation.js
+  // ../../shared/nodes/node-validation.js
   var PSEUDO_NODE_PATTERN = /剩余|流量|到期|套餐|官网|公告|通知|traffic|expire|website/i;
   var AUTH_FIELDS = {
     ss: ["cipher", "password"],
@@ -237,7 +249,7 @@ var ShadowrocketNodeBundle = (() => {
     return { valid: true, reason: null, warnings };
   }
 
-  // src/country-regions.js
+  // ../../shared/nodes/country-regions.js
   var REGION_CODES = Object.freeze({
     [CONTINENT.asiaPacific]: Object.freeze(`
     AE AF AM AS AU AZ BD BH BN BT CC CK CN CX CY FJ FM GE GU HK HM ID IL IN
@@ -278,7 +290,7 @@ var ShadowrocketNodeBundle = (() => {
     return FLAG_CONTINENTS.get(flag) ?? null;
   }
 
-  // src/regions.js
+  // ../../shared/nodes/regions.js
   var FLAG_PATTERN = /[\u{1F1E6}-\u{1F1FF}]{2}/gu;
   var RAW_REGIONS = [
     {
@@ -352,7 +364,7 @@ var ShadowrocketNodeBundle = (() => {
     return { flag: "\u{1F310}", continent: CONTINENT.other, warning: null };
   }
 
-  // src/source-labels.js
+  // ../../shared/nodes/source-labels.js
   var PROVENANCE_FIELDS = [
     "_subDisplayName",
     "_subName",
@@ -384,7 +396,7 @@ var ShadowrocketNodeBundle = (() => {
     };
   }
 
-  // src/normalize-nodes.js
+  // ../../shared/nodes/normalize-nodes.js
   var CONTINENT_ORDER = /* @__PURE__ */ new Map([
     [CONTINENT.asiaPacific, 0],
     [CONTINENT.europe, 1],
@@ -412,13 +424,13 @@ var ShadowrocketNodeBundle = (() => {
     return cleaned || "\u672A\u547D\u540D\u8282\u70B9";
   }
   function compareNodes(left, right) {
-    const continent = (CONTINENT_ORDER.get(left._sr.continent) ?? 99) - (CONTINENT_ORDER.get(right._sr.continent) ?? 99);
+    const continent = (CONTINENT_ORDER.get(nodeMetadata(left).continent) ?? 99) - (CONTINENT_ORDER.get(nodeMetadata(right).continent) ?? 99);
     if (continent !== 0) return continent;
-    const flag = left._sr.flag.localeCompare(right._sr.flag, "zh-Hans-CN");
+    const flag = nodeMetadata(left).flag.localeCompare(nodeMetadata(right).flag, "zh-Hans-CN");
     if (flag !== 0) return flag;
     const name = left.name.localeCompare(right.name, "zh-Hans-CN");
     if (name !== 0) return name;
-    return left._sr.id.localeCompare(right._sr.id, "zh-Hans-CN");
+    return nodeMetadata(left).id.localeCompare(nodeMetadata(right).id, "zh-Hans-CN");
   }
   function isP2pSource(kind) {
     return kind === SOURCE_KIND.selfHosted || kind === SOURCE_KIND.realm || kind === SOURCE_KIND.serverChain;
@@ -496,6 +508,7 @@ var ShadowrocketNodeBundle = (() => {
         continue;
       }
       const cloned = structuredClone(original);
+      Reflect.deleteProperty(cloned, "_sr");
       cloned.type = original.type.trim().toLowerCase();
       cloned.port = Number(original.port);
       const identity = identityKey(cloned);
@@ -534,7 +547,7 @@ var ShadowrocketNodeBundle = (() => {
       const udp = hasExplicitUdp(original);
       const id = `sr-${fingerprint(cloned)}`;
       cloned.name = `${region.flag} ${source.label} ${cleanDisplayName(original.name)}${existingChain ? ` ${EXISTING_CHAIN_MARKER}` : ""}${udp ? " [UDP]" : ""}`;
-      cloned._sr = {
+      cloned._profile = {
         id,
         sourceKind: source.kind,
         continent: region.continent,

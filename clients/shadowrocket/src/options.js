@@ -1,4 +1,4 @@
-import { OPTION_VALUES } from "./contracts.js";
+import { OPTION_VALUES } from "../../../shared/contracts.js";
 
 const REQUIRED_KEYS = Object.freeze([
   "output",

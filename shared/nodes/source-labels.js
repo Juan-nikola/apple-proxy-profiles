@@ -1,4 +1,4 @@
-import { SOURCE_KIND } from "./contracts.js";
+import { SOURCE_KIND } from "../contracts.js";
 
 const PROVENANCE_FIELDS = [
   "_subDisplayName",
@@ -35,4 +35,3 @@ export function classifySource(node) {
     warning: "missing-source-label",
   };
 }
-

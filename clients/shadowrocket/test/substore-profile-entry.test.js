@@ -13,7 +13,7 @@ const argumentsForProfile = Object.freeze({
 
 const nodes = Object.freeze([{
   name: "node",
-  _sr: { continent: "asiaPacific", sourceKind: "airport", udp: true, p2p: false, entry: true, chained: false },
+  _profile: { continent: "asiaPacific", sourceKind: "airport", udp: true, p2p: false, entry: true, chained: false },
 }]);
 
 test("file operator produces a Profile artifact and preserves the input", async () => {
@@ -49,4 +49,3 @@ test("file operator fails closed for invalid integration input", async () => {
     async produceArtifact() { return nodes; },
   }), /quicMode/i);
 });
-

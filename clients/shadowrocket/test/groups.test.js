@@ -2,14 +2,14 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { buildGroups, effectiveAutoMode } from "../src/group-catalog.js";
-import { normalizeNodes } from "../src/normalize-nodes.js";
+import { normalizeNodes } from "../../../shared/nodes/normalize-nodes.js";
 import { renderGroups } from "../src/render-groups.js";
 import { fakeNodes } from "./fixtures/nodes.js";
 
 function node(name, metadata = {}) {
   return {
     name,
-    _sr: {
+    _profile: {
       continent: "asiaPacific",
       sourceKind: "airport",
       udp: false,
@@ -369,7 +369,7 @@ test("matches group filters against real normalized edge-case node names", () =>
   const collisions = nodes.filter((node) => node.name.includes("JP collision [UDP] #"));
   const unknown = nodes.find((node) => node.name.startsWith("🇿🇦"));
   const udp = nodes.find((node) => node.name.includes("JP, comma"));
-  const clone = nodes.find((node) => node._sr.chained);
+  const clone = nodes.find((node) => node._profile.chained);
 
   assert.equal(collisions.length, 2);
   assert.equal(matches(named(groups, "🌏 亚太"), commaNode), true);
@@ -378,7 +378,7 @@ test("matches group filters against real normalized edge-case node names", () =>
   assert.equal(collisions.every((node) => matches(named(groups, "🏢 机场节点"), node)), true);
   assert.equal(matches(named(groups, "🌐 其他/未分类"), unknown), true);
   assert.equal(matches(named(groups, "🎮 游戏连接"), udp), true);
-  assert.equal(matches(named(groups, "⬇️ 下载/P2P"), nodes.find((node) => node._sr.p2p)), true);
+  assert.equal(matches(named(groups, "⬇️ 下载/P2P"), nodes.find((node) => node._profile.p2p)), true);
   assert.equal(matches(named(groups, "🎯 客户端落地"), clone), true);
   assert.equal(matches(named(groups, "🎮 游戏连接"), clone), false);
   assert.equal(matches(named(groups, "🏢 机场节点"), clone), false);

@@ -1,10 +1,10 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { CONTINENT, SOURCE_KIND } from "../src/contracts.js";
-import { CONTINENT_FLAGS, COUNTRY_CODE_COUNT, continentForFlag } from "../src/country-regions.js";
-import { classifySource, sourceName } from "../src/source-labels.js";
-import { classifyRegion, removeFlags } from "../src/regions.js";
+import { CONTINENT, SOURCE_KIND } from "../../../shared/contracts.js";
+import { CONTINENT_FLAGS, COUNTRY_CODE_COUNT, continentForFlag } from "../../../shared/nodes/country-regions.js";
+import { classifySource, sourceName } from "../../../shared/nodes/source-labels.js";
+import { classifyRegion, removeFlags } from "../../../shared/nodes/regions.js";
 
 test("classifies leading source labels using provenance priority", () => {
   for (const [name, kind, label] of [
@@ -90,4 +90,3 @@ test("maps all ISO 3166-1 country and territory flags into fixed continent group
     warning: null,
   });
 });
-

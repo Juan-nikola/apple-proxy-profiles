@@ -1,4 +1,4 @@
-import { normalizeNodes } from "./normalize-nodes.js";
+import { normalizeNodes } from "../../../shared/nodes/normalize-nodes.js";
 
 const ALLOWED_OPTIONS = new Set(["output", "clientChain"]);
 
@@ -46,4 +46,3 @@ export async function operator(proxies = [], targetPlatform, context = {}) {
   logDiagnostics(context, result.diagnostics);
   return result.nodes;
 }
-

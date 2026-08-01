@@ -1,5 +1,5 @@
-import { CONTINENT, SOURCE_KIND } from "./contracts.js";
-import { CONTINENT_FLAGS } from "./country-regions.js";
+import { CONTINENT, SOURCE_KIND, nodeMetadata } from "../../../shared/contracts.js";
+import { CONTINENT_FLAGS } from "../../../shared/nodes/country-regions.js";
 import { platformPreset } from "./options.js";
 
 const TEST_URL = "http://www.gstatic.com/generate_204";
@@ -144,11 +144,11 @@ export function buildGroups(options, nodes) {
   const preset = platformPreset(options.platform);
   const mode = effectiveAutoMode(options.autoGroupMode, normalizedNodes.length);
   const presentContinents = CONTINENTS.filter((continent) => (
-    normalizedNodes.some((node) => node?._sr?.continent === continent.key && !node?._sr?.chained)
+    normalizedNodes.some((node) => nodeMetadata(node).continent === continent.key && !nodeMetadata(node).chained)
   ));
   const chainEligible = options.clientChain === "on"
-    && normalizedNodes.some((node) => node?._sr?.entry === true && !node?._sr?.chained)
-    && normalizedNodes.some((node) => node?._sr?.chained === true);
+    && normalizedNodes.some((node) => nodeMetadata(node).entry === true && !nodeMetadata(node).chained)
+    && normalizedNodes.some((node) => nodeMetadata(node).chained === true);
   const groups = [
     helper("⚡ 全部自动", "url-test", preset, NON_CHAINED_FILTER),
     helper("🛟 全部故障转移", "fallback", preset, NON_CHAINED_FILTER),
@@ -169,7 +169,7 @@ export function buildGroups(options, nodes) {
   }
 
   for (const source of SOURCE_GROUPS) {
-    if (normalizedNodes.some((node) => node?._sr?.sourceKind === source.kind && !node?._sr?.chained)) {
+    if (normalizedNodes.some((node) => nodeMetadata(node).sourceKind === source.kind && !nodeMetadata(node).chained)) {
       groups.push(subscriptionGroup(source.name, source.filter));
     }
   }
@@ -190,12 +190,12 @@ export function buildGroups(options, nodes) {
       policySelectName: defaults.policySelectName,
     });
   }
-  if (normalizedNodes.some((node) => node?._sr?.udp === true && !node?._sr?.chained)) {
+  if (normalizedNodes.some((node) => nodeMetadata(node).udp === true && !nodeMetadata(node).chained)) {
     groups.push(subscriptionGroup("🎮 游戏连接", GAME_FILTER));
   } else {
     groups.push({ name: "🎮 游戏连接", type: "select", items: ["DIRECT"] });
   }
-  if (normalizedNodes.some((node) => node?._sr?.p2p === true && !node?._sr?.chained)) {
+  if (normalizedNodes.some((node) => nodeMetadata(node).p2p === true && !nodeMetadata(node).chained)) {
     groups.push(subscriptionGroup("⬇️ 下载/P2P", P2P_FILTER));
   } else {
     groups.push({ name: "⬇️ 下载/P2P", type: "select", items: ["DIRECT"] });

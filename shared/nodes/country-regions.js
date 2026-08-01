@@ -1,4 +1,4 @@
-import { CONTINENT } from "./contracts.js";
+import { CONTINENT } from "../contracts.js";
 
 // ISO 3166-1 alpha-2 country and territory codes, grouped for this Profile's
 // deliberately compact four-continent UI. The grouping follows Unicode CLDR
@@ -49,4 +49,3 @@ const FLAG_CONTINENTS = new Map(
 export function continentForFlag(flag) {
   return FLAG_CONTINENTS.get(flag) ?? null;
 }
-

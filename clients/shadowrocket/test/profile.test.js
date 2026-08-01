@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { buildGroups } from "../src/group-catalog.js";
-import { normalizeNodes } from "../src/normalize-nodes.js";
+import { normalizeNodes } from "../../../shared/nodes/normalize-nodes.js";
 import { renderProfile } from "../src/render-profile.js";
 import { validateProfile } from "../src/validate-profile.js";
 
@@ -28,7 +28,7 @@ function inventory(count) {
     // Credentials and transport fields must not be rendered in a Profile.
     name: `node-${index}`,
     password: `TEST_ONLY_NOT_FOR_PROFILE_${index}`,
-    _sr: {
+    _profile: {
       continent: continents[index % continents.length],
       sourceKind: ["airport", "selfHosted", "realm"][index % 3],
       udp: index % 2 === 0,
@@ -91,7 +91,7 @@ test("fails closed when client-chain inventory disagrees with Profile mode", () 
   };
   const chained = {
     name: "🔗 landing",
-    _sr: {
+    _profile: {
       continent: "asiaPacific",
       sourceKind: "landing",
       udp: true,
@@ -154,7 +154,7 @@ test("client-chain Profiles never serialize raw normalized node names or transpo
   const profile = renderProfile({ ...baseOptions, clientChain: "on" }, nodes);
   const entryFilter = buildGroups({ ...baseOptions, clientChain: "on" }, nodes)
     .find((group) => group.name === "🔗 入口节点").filter;
-  const eligibleNode = nodes.find((node) => node._sr.entry);
+  const eligibleNode = nodes.find((node) => node._profile.entry);
   const restrictedNode = nodes.find((node) => node.chain === "existing-hop");
 
   for (const privateValue of [
