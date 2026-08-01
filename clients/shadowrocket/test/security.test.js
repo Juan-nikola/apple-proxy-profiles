@@ -3,10 +3,10 @@ import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 import test from "node:test";
 
-import { containsSecret, sanitizeSyntheticPlaceholders } from "../scripts/check-secrets.mjs";
+import { containsSecret, sanitizeSyntheticPlaceholders } from "../../../shared/security/secret-scan.js";
 
 const execFileAsync = promisify(execFile);
-const root = new URL("../", import.meta.url);
+const root = new URL("../../../", import.meta.url);
 
 test("the tracked workspace passes the secret scanner", async () => {
   const { stdout, stderr } = await execFileAsync(process.execPath, ["scripts/check-secrets.mjs"], {
@@ -44,4 +44,3 @@ test("UUID credential assignments are detected without exempting real UUIDs", ()
   assert.equal(containsSecret(`uuid: 00000000-0000-4000-8000-000000000001 uuid=${realUuid}`), true);
   assert.equal(containsSecret(`uuid: <00000000-0000-4000-8000-000000000001> uuid=<${realUuid}>`), true);
 });
-
