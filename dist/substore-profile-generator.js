@@ -946,6 +946,10 @@ ${renderRules().join("\n")}`
       const subscriptionSource = useIndex > 1 ? fields[useIndex - 1] : "";
       const hasSubscription = subscriptionSource.length > 0 && !subscriptionSource.includes("=");
       const includesAllProxies = fields.includes("include-all-proxies=true");
+      const filtersDynamicPolicies = fields.some((field) => field.startsWith("policy-regex-filter="));
+      if (filtersDynamicPolicies && !hasSubscription && !includesAllProxies) {
+        errors.add(`Filtered group requires include-all-proxies=true or a subscription source: ${name}`);
+      }
       if (staticItems.length === 0 && !hasSubscription && !includesAllProxies) {
         errors.add(`Group requires a selectable item or subscription source: ${name}`);
       }

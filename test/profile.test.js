@@ -100,8 +100,13 @@ test("fails closed when client-chain inventory disagrees with Profile mode", () 
   );
   assert.deepEqual(validateProfile(valid), { valid: true, errors: [] });
 
-  const homepageProxy = valid.replace("A = select,DIRECT", "A = select,PROXY,include-all-proxies=true,policy-regex-filter=^.+$");
+  const homepageProxy = structuralProfile({
+    groups: ["A = select,PROXY,include-all-proxies=true,policy-regex-filter=^.+$"],
+  });
   assert.deepEqual(validateProfile(homepageProxy), { valid: true, errors: [] });
+  const missingDynamicSource = homepageProxy.replace(",include-all-proxies=true", "");
+  assert.equal(validateProfile(missingDynamicSource).valid, false);
+  assert.match(validateProfile(missingDynamicSource).errors.join("\n"), /include-all-proxies/i);
 });
 
 test("client-chain Profiles never serialize raw normalized node names or transport details", () => {
