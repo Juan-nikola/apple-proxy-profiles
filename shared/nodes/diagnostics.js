@@ -10,6 +10,13 @@ export function createDiagnostics() {
   };
 }
 
+export function createClientFilterDiagnostics() {
+  return {
+    accepted: 0,
+    excluded: {},
+  };
+}
+
 export function increment(bucket, key, amount = 1) {
   const current = Object.hasOwn(bucket, key) ? bucket[key] : 0;
   Object.defineProperty(bucket, key, {
@@ -19,4 +26,3 @@ export function increment(bucket, key, amount = 1) {
     configurable: true,
   });
 }
-
