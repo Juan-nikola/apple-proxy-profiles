@@ -269,11 +269,13 @@ var ShadowrocketProfileBundle = (() => {
   var PROXY_THEN_DIRECT = Object.freeze(["\u{1F680} \u8282\u70B9\u9009\u62E9", "DIRECT"]);
   var PROXY_FIRST_SERVICE_DEFAULTS = Object.freeze({
     beforeCandidates: ["\u{1F680} \u8282\u70B9\u9009\u62E9"],
-    afterCandidates: ["DIRECT"]
+    afterCandidates: ["DIRECT"],
+    policySelectName: "\u{1F680} \u8282\u70B9\u9009\u62E9"
   });
   var DIRECT_FIRST_SERVICE_DEFAULTS = Object.freeze({
     beforeCandidates: ["DIRECT", "\u{1F680} \u8282\u70B9\u9009\u62E9"],
-    afterCandidates: []
+    afterCandidates: [],
+    policySelectName: "DIRECT"
   });
   var SERVICE_GROUPS = Object.freeze([
     ["\u{1F419} GitHub", PROXY_FIRST_SERVICE_DEFAULTS],
@@ -392,7 +394,10 @@ var ShadowrocketProfileBundle = (() => {
     groups.push(subscriptionGroup("\u{1F916} AI \u4E13\u7528", ALL_NODES_FILTER, aiContinentGroups.map((group) => group.name)));
     const presentContinentNames = presentContinents.map((continent) => continent.name);
     for (const [name, defaults] of SERVICE_GROUPS) {
-      groups.push(subscriptionGroup(name, ALL_NODES_FILTER, serviceChoiceItems(defaults, presentContinentNames)));
+      groups.push({
+        ...subscriptionGroup(name, ALL_NODES_FILTER, serviceChoiceItems(defaults, presentContinentNames)),
+        policySelectName: defaults.policySelectName
+      });
     }
     if (normalizedNodes.some((node) => node?._sr?.udp === true && !node?._sr?.chained)) {
       groups.push(subscriptionGroup("\u{1F3AE} \u6E38\u620F\u8FDE\u63A5", GAME_FILTER));
@@ -418,14 +423,17 @@ var ShadowrocketProfileBundle = (() => {
     if (/[\r\n]/.test(string)) throw new Error("Group field values must not contain CR or LF");
     return string.replaceAll(",", "\\,");
   }
-  function renderGroups(groups, _subscriptionName) {
+  function renderGroups(groups, subscriptionName) {
     return groups.map((group) => {
       const items = (group.items ?? []).map(escapeValue);
       const fields = [escapeValue(group.type), ...items];
       if (group.useSubscription) {
-        fields.push("include-all-proxies=true");
+        fields.push(escapeValue(subscriptionName), "use=true");
       }
       if (group.filter !== void 0) fields.push(`policy-regex-filter=${escapeValue(group.filter)}`);
+      if (group.policySelectName !== void 0) {
+        fields.push(`policy-select-name=${escapeValue(group.policySelectName)}`);
+      }
       if (group.url !== void 0) fields.push(`url=${escapeValue(group.url)}`);
       if (group.interval !== void 0) fields.push(`interval=${escapeValue(group.interval)}`);
       if (group.timeout !== void 0) fields.push(`timeout=${escapeValue(group.timeout)}`);

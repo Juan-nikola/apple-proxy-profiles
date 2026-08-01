@@ -101,10 +101,10 @@ test("fails closed when client-chain inventory disagrees with Profile mode", () 
   assert.deepEqual(validateProfile(valid), { valid: true, errors: [] });
 
   const homepageProxy = structuralProfile({
-    groups: ["A = select,PROXY,include-all-proxies=true,policy-regex-filter=^.+$"],
+    groups: ["A = select,PROXY,Nodes,use=true,policy-regex-filter=^.+$"],
   });
   assert.deepEqual(validateProfile(homepageProxy), { valid: true, errors: [] });
-  const missingDynamicSource = homepageProxy.replace(",include-all-proxies=true", "");
+  const missingDynamicSource = homepageProxy.replace(",Nodes,use=true", "");
   assert.equal(validateProfile(missingDynamicSource).valid, false);
   assert.match(validateProfile(missingDynamicSource).errors.join("\n"), /include-all-proxies/i);
 });
