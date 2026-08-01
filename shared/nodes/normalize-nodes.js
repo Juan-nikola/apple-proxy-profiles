@@ -1,7 +1,7 @@
 import { addClientChainClones, hasExistingChain } from "./client-chain.js";
 import { CONTINENT, SOURCE_KIND, nodeMetadata } from "../contracts.js";
 import { createDiagnostics, increment } from "./diagnostics.js";
-import { fingerprint, identityKey } from "./node-identity.js";
+import { fingerprint, identityKey, isSemanticUnderscoreKey } from "./node-identity.js";
 import { hasExplicitUdp, validateNode } from "./node-validation.js";
 import { classifyRegion, removeFlags } from "./regions.js";
 import { classifySource } from "./source-labels.js";
@@ -35,6 +35,23 @@ function cleanDisplayName(name) {
     .replace(/\[\s*已有链\s*\]/g, " ");
   const cleaned = withoutMarkers.replace(/[\r\n\t]+/g, " ").replace(/\s+/g, " ").trim();
   return cleaned || "未命名节点";
+}
+
+function sanitizeInternalMetadata(node) {
+  for (const key of Object.keys(node)) {
+    if (!key.startsWith("_") || key === "_profile") continue;
+    if (isSemanticUnderscoreKey(key)) {
+      Object.defineProperty(node, key, {
+        value: node[key],
+        writable: true,
+        enumerable: false,
+        configurable: true,
+      });
+    } else {
+      Reflect.deleteProperty(node, key);
+    }
+  }
+  return node;
 }
 
 function compareNodes(left, right) {
@@ -140,7 +157,6 @@ export function normalizeNodes(nodes, { clientChain = "off" } = {}) {
     }
 
     const cloned = structuredClone(original);
-    Reflect.deleteProperty(cloned, "_sr");
     cloned.type = original.type.trim().toLowerCase();
     cloned.port = Number(original.port);
     const identity = identityKey(cloned);
@@ -202,8 +218,10 @@ export function normalizeNodes(nodes, { clientChain = "off" } = {}) {
   resolveNameCollisions(normalized);
 
   normalized.sort(compareNodes);
+  const outputNodes = addClientChainClones(normalized, diagnostics, clientChain === "on")
+    .map(sanitizeInternalMetadata);
   return {
-    nodes: addClientChainClones(normalized, diagnostics, clientChain === "on"),
+    nodes: outputNodes,
     diagnostics,
   };
 }

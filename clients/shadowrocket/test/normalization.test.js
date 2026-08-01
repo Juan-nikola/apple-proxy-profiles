@@ -105,13 +105,39 @@ test("creates chain clones for supported protocol types with surrounding whitesp
   assert.equal(result.nodes.filter((node) => node._profile.chained).length, 1);
 });
 
-test("keeps semantic underscore fields in identity", () => {
+test("removes parser underscore metadata from output and identity", () => {
+  const first = {
+    ...fakeNodes[0],
+    _resolved: true,
+    _IPv4: "198.51.100.10",
+    _parserMetadata: { provider: "first" },
+  };
+  const second = {
+    ...fakeNodes[0],
+    _resolved: false,
+    _IPv4: "203.0.113.10",
+    _parserMetadata: { provider: "second" },
+  };
+  const result = normalizeNodes([first, second]);
+
+  assert.equal(result.nodes.length, 1);
+  assert.equal(result.diagnostics.excluded["exact-duplicate"], 1);
+  assert.deepEqual(Object.keys(result.nodes[0]).filter((key) => key.startsWith("_")), ["_profile"]);
+  assert.equal(Object.hasOwn(result.nodes[0], "_resolved"), false);
+  assert.equal(Object.hasOwn(result.nodes[0], "_IPv4"), false);
+  assert.equal(Object.hasOwn(result.nodes[0], "_parserMetadata"), false);
+});
+
+test("keeps semantic underscore fields in identity without enumerating them", () => {
   const tcp = { ...fakeNodes[0], _network: "tcp" };
   const udp = { ...fakeNodes[0], _network: "udp" };
   const result = normalizeNodes([tcp, udp]);
 
   assert.equal(result.nodes.length, 2);
   assert.equal(result.diagnostics.excluded["exact-duplicate"], undefined);
+  assert.deepEqual(result.nodes.map((node) => node._network).sort(), ["tcp", "udp"]);
+  assert.equal(result.nodes.every((node) => Object.hasOwn(node, "_network")), true);
+  assert.equal(result.nodes.every((node) => !Object.prototype.propertyIsEnumerable.call(node, "_network")), true);
 });
 
 test("canonicalizes protocol and port before identity and output", () => {

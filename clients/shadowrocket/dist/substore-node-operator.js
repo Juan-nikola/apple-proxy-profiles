@@ -134,22 +134,14 @@ var ShadowrocketNodeBundle = (() => {
   }
 
   // ../../shared/nodes/node-identity.js
-  var EXCLUDED_TOP_LEVEL_KEYS = /* @__PURE__ */ new Set([
-    "name",
-    "_subName",
-    "_subDisplayName",
-    "_collectionName",
-    "_collectionDisplayName",
-    "_profile",
-    "_sr",
-    "_resolved",
-    "_IPv4",
-    "_IPv6",
-    "_IP",
-    "_IP4P",
-    "_domain",
-    "_resolved_ips"
-  ]);
+  var EXCLUDED_TOP_LEVEL_KEYS = /* @__PURE__ */ new Set(["name"]);
+  var SEMANTIC_UNDERSCORE_KEYS = /* @__PURE__ */ new Set(["_network"]);
+  function isSemanticUnderscoreKey(key) {
+    return SEMANTIC_UNDERSCORE_KEYS.has(key);
+  }
+  function isExcludedTopLevelKey(key) {
+    return EXCLUDED_TOP_LEVEL_KEYS.has(key) || key.startsWith("_") && !isSemanticUnderscoreKey(key);
+  }
   function stableValue(value, stack = /* @__PURE__ */ new Set(), topLevel = false) {
     if (value === null) return "null";
     switch (typeof value) {
@@ -175,7 +167,7 @@ var ShadowrocketNodeBundle = (() => {
     if (Array.isArray(value)) {
       result = `[${value.map((item) => stableValue(item, stack)).join(",")}]`;
     } else {
-      const entries = Object.keys(value).filter((key) => !(topLevel && EXCLUDED_TOP_LEVEL_KEYS.has(key))).sort().map((key) => `${JSON.stringify(key)}:${stableValue(value[key], stack)}`);
+      const entries = Object.keys(value).filter((key) => !(topLevel && isExcludedTopLevelKey(key))).sort().map((key) => `${JSON.stringify(key)}:${stableValue(value[key], stack)}`);
       result = `{${entries.join(",")}}`;
     }
     stack.delete(value);
@@ -423,6 +415,22 @@ var ShadowrocketNodeBundle = (() => {
     const cleaned = withoutMarkers.replace(/[\r\n\t]+/g, " ").replace(/\s+/g, " ").trim();
     return cleaned || "\u672A\u547D\u540D\u8282\u70B9";
   }
+  function sanitizeInternalMetadata(node) {
+    for (const key of Object.keys(node)) {
+      if (!key.startsWith("_") || key === "_profile") continue;
+      if (isSemanticUnderscoreKey(key)) {
+        Object.defineProperty(node, key, {
+          value: node[key],
+          writable: true,
+          enumerable: false,
+          configurable: true
+        });
+      } else {
+        Reflect.deleteProperty(node, key);
+      }
+    }
+    return node;
+  }
   function compareNodes(left, right) {
     const continent = (CONTINENT_ORDER.get(nodeMetadata(left).continent) ?? 99) - (CONTINENT_ORDER.get(nodeMetadata(right).continent) ?? 99);
     if (continent !== 0) return continent;
@@ -508,7 +516,6 @@ var ShadowrocketNodeBundle = (() => {
         continue;
       }
       const cloned = structuredClone(original);
-      Reflect.deleteProperty(cloned, "_sr");
       cloned.type = original.type.trim().toLowerCase();
       cloned.port = Number(original.port);
       const identity = identityKey(cloned);
@@ -565,8 +572,9 @@ var ShadowrocketNodeBundle = (() => {
     }
     resolveNameCollisions(normalized);
     normalized.sort(compareNodes);
+    const outputNodes = addClientChainClones(normalized, diagnostics, clientChain === "on").map(sanitizeInternalMetadata);
     return {
-      nodes: addClientChainClones(normalized, diagnostics, clientChain === "on"),
+      nodes: outputNodes,
       diagnostics
     };
   }

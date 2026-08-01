@@ -7,22 +7,16 @@ const SECRET_KEYS = new Set([
   "token",
 ]);
 
-const EXCLUDED_TOP_LEVEL_KEYS = new Set([
-  "name",
-  "_subName",
-  "_subDisplayName",
-  "_collectionName",
-  "_collectionDisplayName",
-  "_profile",
-  "_sr",
-  "_resolved",
-  "_IPv4",
-  "_IPv6",
-  "_IP",
-  "_IP4P",
-  "_domain",
-  "_resolved_ips",
-]);
+const EXCLUDED_TOP_LEVEL_KEYS = new Set(["name"]);
+const SEMANTIC_UNDERSCORE_KEYS = new Set(["_network"]);
+
+export function isSemanticUnderscoreKey(key) {
+  return SEMANTIC_UNDERSCORE_KEYS.has(key);
+}
+
+function isExcludedTopLevelKey(key) {
+  return EXCLUDED_TOP_LEVEL_KEYS.has(key) || (key.startsWith("_") && !isSemanticUnderscoreKey(key));
+}
 
 function stableValue(value, stack = new Set(), topLevel = false) {
   if (value === null) return "null";
@@ -52,7 +46,7 @@ function stableValue(value, stack = new Set(), topLevel = false) {
     result = `[${value.map((item) => stableValue(item, stack)).join(",")}]`;
   } else {
     const entries = Object.keys(value)
-      .filter((key) => !(topLevel && EXCLUDED_TOP_LEVEL_KEYS.has(key)))
+      .filter((key) => !(topLevel && isExcludedTopLevelKey(key)))
       .sort()
       .map((key) => `${JSON.stringify(key)}:${stableValue(value[key], stack)}`);
     result = `{${entries.join(",")}}`;
