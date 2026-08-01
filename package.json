@@ -1,17 +1,17 @@
 {
-  "name": "shadowrocket-profile",
+  "name": "apple-proxy-profiles",
   "private": true,
   "version": "0.1.0",
   "type": "module",
   "engines": { "node": ">=22" },
+  "workspaces": ["clients/*"],
   "scripts": {
-    "test": "node --test",
-    "build": "node scripts/build.mjs",
-    "fixtures": "node scripts/render-fixtures.mjs",
-    "check:rules": "node scripts/check-rules.mjs",
+    "test": "node --test test/*.test.js && npm --workspaces --if-present test",
+    "build": "npm --workspaces --if-present run build",
+    "fixtures": "npm --workspaces --if-present run fixtures",
     "check:secrets": "node scripts/check-secrets.mjs",
-    "verify": "npm test && npm run build && npm run fixtures && npm run check:secrets"
+    "verify:shadowrocket": "npm --workspace @apple-proxy-profiles/shadowrocket run verify",
+    "verify": "node scripts/verify.mjs"
   },
   "devDependencies": { "esbuild": "0.28.1" }
 }
-
