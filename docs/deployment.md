@@ -147,7 +147,7 @@ Sub-Store 中先找“订阅/组合订阅”，再找“脚本操作/Script Oper
 
 ## 8. 首次使用策略组
 
-1. 本次恢复服务组只更新 Profile generator 和当前平台 Profile；节点 Script Operator、节点订阅、示例、构建产物和规则均不更新。打开 `🚀 节点选择`，确认它只有 `PROXY`，摘要显示 `SELECT > PROXY`。以后直接在 Shadowrocket 首页选择节点，这个组会自动跟随；如果这里仍显示国旗或具体节点名，当前设备使用的还是旧 Profile。
+1. 本次恢复服务组时，设备端只需替换 `dist/substore-profile-generator.js` 并更新当前平台 Profile；无需替换节点 Script Operator，也无需改动节点订阅。仓库中的 `dist/` 与 `examples/` 已随源码重建校验，规则和节点 Operator 内容未改变。打开 `🚀 节点选择`，确认它只有 `PROXY`，摘要显示 `SELECT > PROXY`。以后直接在 Shadowrocket 首页选择节点，这个组会自动跟随；如果这里仍显示国旗或具体节点名，当前设备使用的还是旧 Profile。
 2. 16 个常用业务组都提供自动测速、故障转移、地区和具体节点选择。GitHub、YouTube、Netflix、Disney+、Spotify、国际媒体、Telegram、海外社交、TikTok 和游戏平台这 10 个境外组首项为 `🚀 节点选择`；Apple、Microsoft、哔哩哔哩、抖音、小红书和微博这 6 个国内组首项为 `DIRECT`。检查至少一个境外组和一个国内组，确认各自首项及上述选择均可见。
 3. 打开 `🤖 AI 专用`，可选择独立 AI 洲组或符合筛选条件的具体节点。AI 组的选择不会改变主线路。
 4. Apple、Microsoft 和国内平台默认直连；需要时可在对应平台组选择 `🚀 节点选择`或具体节点。
