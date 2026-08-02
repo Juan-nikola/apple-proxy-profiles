@@ -41,6 +41,11 @@ function formatExcludedCounts(excluded) {
 }
 
 export function renderEgernSubscription(nodes, { clientChain = "off", onDiagnostics } = {}) {
+  const prepared = prepareEgernInventory(nodes, { clientChain, onDiagnostics });
+  return renderYaml({ proxies: prepared.proxies });
+}
+
+export function prepareEgernInventory(nodes, { clientChain = "off", onDiagnostics } = {}) {
   if (clientChain !== "off" && clientChain !== "on") {
     throw new Error("clientChain must be off or on");
   }
@@ -76,5 +81,9 @@ export function renderEgernSubscription(nodes, { clientChain = "off", onDiagnost
   });
 
   onDiagnostics?.(structuredClone(filtered.diagnostics));
-  return renderYaml({ proxies });
+  return {
+    nodes: withEgernSshChains,
+    proxies,
+    diagnostics: structuredClone(filtered.diagnostics),
+  };
 }
