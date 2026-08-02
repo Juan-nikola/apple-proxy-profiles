@@ -1326,6 +1326,9 @@ var ShadowrocketNodeBundle = (() => {
     const { clientChain } = parseArguments(context.arguments ?? {});
     const result = normalizeNodes(proxies, { clientChain });
     const filtered = filterNodesForClient(result.nodes, CLIENT.shadowrocket);
+    if (filtered.nodes.length === 0) {
+      throw new Error("No compatible Shadowrocket nodes");
+    }
     result.diagnostics.accepted = filtered.diagnostics.accepted;
     for (const [reason, count] of Object.entries(filtered.diagnostics.excluded)) {
       increment(result.diagnostics.excluded, reason, count);

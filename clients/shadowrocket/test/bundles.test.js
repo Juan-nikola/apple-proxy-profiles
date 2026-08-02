@@ -26,6 +26,38 @@ function loadBundle(source, globals) {
   return { context, lines };
 }
 
+function egernOnlyNodes() {
+  return [
+    {
+      name: "SSH landing",
+      type: "ssh",
+      server: "ssh.example.invalid",
+      port: 22,
+      username: "TEST_ONLY_SSH_USERNAME",
+      password: "TEST_ONLY_SSH_PASSWORD",
+      _subName: "[落地] SSH",
+    },
+    {
+      name: "AnyTLS landing",
+      type: "anytls",
+      server: "anytls.example.invalid",
+      port: 443,
+      password: "TEST_ONLY_ANYTLS_PASSWORD",
+      _subName: "[落地] AnyTLS",
+    },
+    {
+      name: "WireGuard landing",
+      type: "wireguard",
+      server: "wireguard.example.invalid",
+      port: 443,
+      "private-key": "TEST_ONLY_WIREGUARD_PRIVATE_KEY",
+      "public-key": "TEST_ONLY_WIREGUARD_PUBLIC_KEY",
+      ip: "192.0.2.23/32",
+      _subName: "[落地] WireGuard",
+    },
+  ];
+}
+
 test("node bundle is self-contained and runs with Sub-Store globals", async () => {
   const source = await readFile(nodeBundlePath, "utf8");
   assert.match(source, /function operator/);
@@ -65,33 +97,7 @@ test("node bundle excludes Egern-only nodes with client chaining enabled", async
       password: "TEST_ONLY_ENTRY_PASSWORD",
       _subName: "[自建] Entry",
     },
-    {
-      name: "SSH landing",
-      type: "ssh",
-      server: "ssh.example.invalid",
-      port: 22,
-      username: "TEST_ONLY_SSH_USERNAME",
-      password: "TEST_ONLY_SSH_PASSWORD",
-      _subName: "[落地] SSH",
-    },
-    {
-      name: "AnyTLS landing",
-      type: "anytls",
-      server: "anytls.example.invalid",
-      port: 443,
-      password: "TEST_ONLY_ANYTLS_PASSWORD",
-      _subName: "[落地] AnyTLS",
-    },
-    {
-      name: "WireGuard landing",
-      type: "wireguard",
-      server: "wireguard.example.invalid",
-      port: 443,
-      "private-key": "TEST_ONLY_WIREGUARD_PRIVATE_KEY",
-      "public-key": "TEST_ONLY_WIREGUARD_PUBLIC_KEY",
-      ip: "192.0.2.23/32",
-      _subName: "[落地] WireGuard",
-    },
+    ...egernOnlyNodes(),
   ], "Shadowrocket");
 
   assert.deepEqual(Array.from(nodes, (node) => node.type), ["ss"]);
@@ -99,6 +105,29 @@ test("node bundle excludes Egern-only nodes with client chaining enabled", async
   const diagnostics = JSON.parse(lines[0].replace(/^\[shadowrocket-profile\] /, ""));
   assert.equal(diagnostics.accepted, 1);
   assert.equal(diagnostics.excluded["unsupported-protocol"], 3);
+});
+
+test("node bundle fails closed without diagnostics for all-Egern inventories", async () => {
+  const source = await readFile(nodeBundlePath, "utf8");
+  const unsupported = egernOnlyNodes();
+  const inventories = [...unsupported.map((node) => [node]), [unsupported[0], unsupported[1], unsupported[2]]];
+
+  for (const inventory of inventories) {
+    const { context, lines } = loadBundle(source, {
+      $arguments: { output: "nodes", clientChain: "on" },
+    });
+    let message = "";
+    await assert.rejects(context.operator(inventory, "Shadowrocket"), (error) => {
+      message = error.message;
+      return message === "No compatible Shadowrocket nodes";
+    });
+    assert.deepEqual(lines, []);
+    for (const node of inventory) {
+      for (const value of [node.name, node.server, node.password, node["private-key"], node["public-key"]]) {
+        if (value !== undefined) assert.equal(message.includes(value), false);
+      }
+    }
+  }
 });
 
 test("profile bundle is self-contained and runs with Sub-Store globals", async () => {

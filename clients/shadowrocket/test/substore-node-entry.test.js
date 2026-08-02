@@ -4,6 +4,38 @@ import test from "node:test";
 import { operator } from "../src/substore-node-entry.js";
 import { fakeNodes } from "./fixtures/nodes.js";
 
+function egernOnlyNodes() {
+  return [
+    {
+      name: "SSH landing",
+      type: "ssh",
+      server: "ssh-landing.example.invalid",
+      port: 22,
+      username: "TEST_ONLY_SSH_USERNAME",
+      password: "TEST_ONLY_SSH_PASSWORD",
+      _subName: "[落地] SSH",
+    },
+    {
+      name: "AnyTLS landing",
+      type: "anytls",
+      server: "anytls-landing.example.invalid",
+      port: 443,
+      password: "TEST_ONLY_ANYTLS_PASSWORD",
+      _subName: "[落地] AnyTLS",
+    },
+    {
+      name: "WireGuard landing",
+      type: "wireguard",
+      server: "wireguard-landing.example.invalid",
+      port: 443,
+      "private-key": "TEST_ONLY_WIREGUARD_PRIVATE_KEY",
+      "public-key": "TEST_ONLY_WIREGUARD_PUBLIC_KEY",
+      ip: "192.0.2.22/32",
+      _subName: "[落地] WireGuard",
+    },
+  ];
+}
+
 test("operator returns normalized nodes for the Shadowrocket node output", async () => {
   const result = await operator(fakeNodes, "Shadowrocket", {
     arguments: { output: "nodes", clientChain: "off" },
@@ -68,35 +100,7 @@ test("operator logs one aggregate diagnostics line without node values", async (
 });
 
 test("operator excludes every Egern-only protocol before Shadowrocket output and chaining", async () => {
-  const unsupported = [
-    {
-      name: "SSH landing",
-      type: "ssh",
-      server: "ssh-landing.example.invalid",
-      port: 22,
-      username: "TEST_ONLY_SSH_USERNAME",
-      password: "TEST_ONLY_SSH_PASSWORD",
-      _subName: "[落地] SSH",
-    },
-    {
-      name: "AnyTLS landing",
-      type: "anytls",
-      server: "anytls-landing.example.invalid",
-      port: 443,
-      password: "TEST_ONLY_ANYTLS_PASSWORD",
-      _subName: "[落地] AnyTLS",
-    },
-    {
-      name: "WireGuard landing",
-      type: "wireguard",
-      server: "wireguard-landing.example.invalid",
-      port: 443,
-      "private-key": "TEST_ONLY_WIREGUARD_PRIVATE_KEY",
-      "public-key": "TEST_ONLY_WIREGUARD_PUBLIC_KEY",
-      ip: "192.0.2.22/32",
-      _subName: "[落地] WireGuard",
-    },
-  ];
+  const unsupported = egernOnlyNodes();
   const lines = [];
   const result = await operator([fakeNodes[0], ...unsupported], "Shadowrocket", {
     arguments: { output: "nodes", clientChain: "on" },
@@ -115,4 +119,30 @@ test("operator excludes every Egern-only protocol before Shadowrocket output and
   assert.equal(diagnostics.excluded["chain-protocol-unsupported"], 3);
   assert.equal(diagnostics.excluded["unsupported-protocol"], 3);
   assert.equal(JSON.stringify(diagnostics).includes("example.invalid"), false);
+});
+
+test("operator fails closed without logging when only Egern protocols survive normalization", async () => {
+  const unsupported = egernOnlyNodes();
+  const inventories = [...unsupported.map((node) => [node]), [unsupported[0], unsupported[1], unsupported[2]]];
+
+  for (const inventory of inventories) {
+    const lines = [];
+    let message = "";
+    await assert.rejects(
+      operator(inventory, "Shadowrocket", {
+        arguments: { output: "nodes", clientChain: "on" },
+        logger: { info(line) { lines.push(line); } },
+      }),
+      (error) => {
+        message = error.message;
+        return message === "No compatible Shadowrocket nodes";
+      },
+    );
+    assert.deepEqual(lines, []);
+    for (const node of inventory) {
+      for (const value of [node.name, node.server, node.password, node["private-key"], node["public-key"]]) {
+        if (value !== undefined) assert.equal(message.includes(value), false);
+      }
+    }
+  }
 });
