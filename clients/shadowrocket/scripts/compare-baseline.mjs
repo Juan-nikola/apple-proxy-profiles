@@ -172,7 +172,7 @@ function profileScenarios() {
     acceptedScenario("accepts required arguments", PROFILE_ARGUMENTS, input),
     acceptedScenario("accepts internal argument key", { ...PROFILE_ARGUMENTS, _trace: "synthetic" }, input),
     acceptedScenario("accepts trimmed collection name", { ...PROFILE_ARGUMENTS, name: " synthetic-collection " }, input),
-    acceptedScenario("accepts trimmed enum value", { ...PROFILE_ARGUMENTS, platform: " appletv " }, input),
+    acceptedScenario("accepts CRLF collection name", { ...PROFILE_ARGUMENTS, name: "synthetic\r\ncollection" }, input),
     acceptedScenario("accepts the complete optional combination", {
       ...PROFILE_ARGUMENTS,
       platform: "iphone",
@@ -200,6 +200,11 @@ function profileScenarios() {
     for (const value of values) {
       scenarios.push(acceptedScenario(`accepts ${key}=${value}`, { ...PROFILE_ARGUMENTS, [key]: value }, input));
     }
+    scenarios.push(acceptedScenario(
+      `accepts trimmed ${key}`,
+      { ...PROFILE_ARGUMENTS, [key]: ` ${values[0]} ` },
+      input,
+    ));
   }
 
   for (const key of ["output", "type", "name", "subscriptionName", "platform"]) {
