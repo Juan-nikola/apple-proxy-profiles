@@ -29,7 +29,7 @@
 - 参数原样复制：`output=config&type=collection&name=shadowrocket-sources&nodeSubscriptionUrl=https://example.invalid/private/egern-nodes&platform=macos&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=ipv4-only&autoGroupMode=auto&clientChain=off`
 - 只在这个私密 Profile File 任务的参数编辑器里，把 `https://example.invalid/private/egern-nodes` 替换为第 1 步得到的真实 `egern-nodes` 输出 URL。
 
-保存并运行，确认输出含 `policy_groups`、`rules`、`dns`、`url_rewrites` 和 `auto_update: {}`，且没有把真实节点内嵌进 Profile。
+保存并运行。生成的 Profile 根结构包含且只包含以下根键：`auto_update`、`ipv6`、`block_quic`、`close_connections_on_policy_change`、`bypass_tunnel_proxy`、`real_ip_domains`、`hijack_dns`、`dns`、`policy_groups`、`rules`、`default_subscription_group`。它不含 `url_rewrites`，也没有把真实节点内嵌进 Profile；本项目不会生成且不依赖 URL 重写。
 
 ## 3. 创建 iPhone 任务 `egern-iphone`
 

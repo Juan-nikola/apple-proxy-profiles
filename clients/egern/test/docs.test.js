@@ -11,6 +11,12 @@ const FILES = Object.freeze({
   troubleshooting: new URL("../docs/troubleshooting.md", import.meta.url),
 });
 
+const EGERN_PROFILE_ROOT_KEYS = Object.freeze([
+  "auto_update", "ipv6", "block_quic", "close_connections_on_policy_change",
+  "bypass_tunnel_proxy", "real_ip_domains", "hijack_dns", "dns",
+  "policy_groups", "rules", "default_subscription_group",
+]);
+
 async function loadDocs() {
   return Object.fromEntries(await Promise.all(Object.entries(FILES).map(async ([name, url]) => (
     [name, await readFile(url, "utf8")]
@@ -30,6 +36,14 @@ function codeArguments(text, output) {
   return [...text.matchAll(/`([^`\r\n]+)`/gu)]
     .map((match) => match[1])
     .filter((value) => value.startsWith(`output=${output}&`));
+}
+
+function markdownSection(text, heading, nextHeading) {
+  const start = text.indexOf(heading);
+  assert.notEqual(start, -1, heading);
+  const end = nextHeading === undefined ? text.length : text.indexOf(nextHeading, start + heading.length);
+  assert.notEqual(end, -1, nextHeading);
+  return text.slice(start, end);
 }
 
 test("all beginner documents exist, use portable Markdown, and are linked from README", async () => {
@@ -94,6 +108,20 @@ test("copy-safe arguments use the exact collection and three distinct platform c
   for (const platform of ["iphone", "ipad"]) {
     assert.match(profiles.find((line) => line.includes(`platform=${platform}`)), /ipv6Mode=auto/u);
   }
+});
+
+test("deployment documents only the exact generated Profile root structure", async () => {
+  const { deployment } = await loadDocs();
+  const rootContract = deployment.match(/生成的 Profile 根结构[^：\n]*：([^。\n]+)。/u);
+  assert.ok(rootContract, "generated Profile root contract");
+  const documentedKeys = [...rootContract[1].matchAll(/`([^`]+)`/gu)].map((match) => match[1]);
+  assert.deepEqual(documentedKeys, EGERN_PROFILE_ROOT_KEYS);
+  assert.match(deployment, /(?:不含|不会生成|不存在).{0,24}`url_rewrites`/u);
+  assert.doesNotMatch(
+    deployment,
+    /(?:输出|Profile\s*(?:的\s*)?根结构)[^。\n]{0,24}(?:含|包含|包括)[^。\n]{0,180}`url_rewrites`/u,
+  );
+  assert.match(deployment, /(?:URL )?重写.{0,40}(?:不需要|不依赖|不会生成)/u);
 });
 
 test("refresh, auto-update, stable, and beta behavior are stated without conflation", async () => {
@@ -172,9 +200,28 @@ test("canary covers policies, traffic families, DNS, refresh, network, IPv6, QUI
     /`allow`[\s\S]{0,120}`proxy-block`[\s\S]{0,120}`all-block`/u,
     /HTTP\/3.{0,30}(?:不保证|不假设|不一定)/u,
     /clientChain=off|`clientChain`.{0,20}`off`/u,
-    /prev_hop/u,
-    /入口.{0,20}落地|落地.{0,20}入口/u,
+    /(?:生成的)?落地(?:节点|\s*clone).{0,40}`prev_hop`.{0,40}`🔗 入口节点`/u,
   ]) assert.match(canary, pattern);
+  assert.doesNotMatch(canary, /入口(?:节点)?.{0,30}`prev_hop`.{0,30}(?:指向|引用).{0,20}落地/u);
+});
+
+test("canary proves both IPv4-only and available IPv6 paths on every device", async () => {
+  const { canary } = await loadDocs();
+  assert.match(canary, /每台(?:适用)?设备.{0,30}(?:分别|都).{0,30}`ipv4-only`.{0,50}(?:可用|真实|原生).{0,12}IPv6/u);
+  assert.match(canary, /默认值.{0,30}(?:不是|不等于).{0,20}(?:测试结果|验证结果|通过)/u);
+  assert.match(canary, /(?:ISP|运营商|当前网络).{0,30}(?:没有|无|不提供).{0,15}IPv6.{0,40}(?:未覆盖|不可验证)/u);
+  assert.match(canary, /(?:未覆盖|不可验证).{0,40}(?:不能|不得).{0,20}(?:通过|算作通过|视为通过)/u);
+  assert.match(canary, /(?:不得|不能).{0,30}假设.{0,20}(?:存在|具备|有).{0,10}IPv6/u);
+
+  const deviceSections = [
+    markdownSection(canary, "## 1. Intel Mac", "## 2. iPhone"),
+    markdownSection(canary, "## 2. iPhone", "## 3. iPad"),
+    markdownSection(canary, "## 3. iPad", "## 立即停止的条件"),
+  ];
+  for (const section of deviceSections) {
+    assert.match(section, /`ipv4-only`/u);
+    assert.match(section, /(?:可用|真实|原生).{0,12}IPv6/u);
+  }
 });
 
 test("every device performs a real old-Profile rollback drill before promotion", async () => {
@@ -212,6 +259,8 @@ test("troubleshooting is a safe decision tree covering every fixed failure famil
     /断开新 Profile/u,
     /选择旧 Profile/u,
   ]) assert.match(troubleshooting, pattern);
+  assert.match(troubleshooting, /(?:生成的)?落地(?:节点|\s*clone).{0,40}`prev_hop`.{0,40}`🔗 入口节点`/u);
+  assert.doesNotMatch(troubleshooting, /入口(?:节点)?.{0,30}`prev_hop`.{0,30}(?:指向|引用).{0,20}落地/u);
 });
 
 test("docs forbid unsafe recovery and distinguish private-node from public-rule refresh", async () => {
