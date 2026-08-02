@@ -34,15 +34,25 @@ function syntheticNodeBundle({
   acceptInvalidOutput = false,
   returnObject = false,
   extraPublicField = false,
+  extraUnderscoreField = false,
   realmOwnedArray = false,
   privateMetadataName = "_profile",
   privateId = "baseline-private-id",
+  privateContinent = "asiaPacific",
+  loggerMethod = "info",
+  loggerMessage = "synthetic diagnostics",
+  loggerCount = 1,
+  escapeHost = false,
+  hangMode = "",
+  rejectClientChainValue = "",
+  coerceRawArguments = false,
 } = {}) {
   return `
 var ${globalName} = {
   async operator(proxies = [], targetPlatform, context = {}) {
     void targetPlatform;
-    const args = context.arguments;
+    let args = context.arguments;
+    if ((!args || typeof args !== "object" || Array.isArray(args)) && ${coerceRawArguments ? "true" : "false"}) args = { output: "nodes" };
     if (!args || typeof args !== "object" || Array.isArray(args)) throw new Error("arguments must be an object");
     if (${rejectValidArguments ? "true" : "false"} && args.output === "nodes") throw new Error("synthetic valid rejection");
     for (const key of Object.keys(args)) {
@@ -53,10 +63,20 @@ var ${globalName} = {
     if (args.output !== "nodes" && !(${acceptInvalidOutput ? "true" : "false"} && args.output === "config")) throw new Error("output must be nodes");
     const clientChain = Object.hasOwn(args, "clientChain") ? args.clientChain : "off";
     if (clientChain !== "off" && clientChain !== "on") throw new Error("clientChain must be off or on");
+    if (clientChain === ${JSON.stringify(rejectClientChainValue)}) throw new Error("synthetic removed clientChain value");
+    if (${hangMode === "sync" ? "true" : "false"}) while (true) {}
+    if (${hangMode === "async" ? "true" : "false"}) await new Promise(() => {});
+    if (${escapeHost ? "true" : "false"}) context.logger.info.constructor("return process")();
+    for (let index = 0; index < ${loggerCount}; index += 1) context.logger[${JSON.stringify(loggerMethod)}](${JSON.stringify(loggerMessage)});
     const result = proxies.map((proxy) => ({
       ...proxy,
       ${extraPublicField ? "compatibilityChanged: true," : ""}
-      ${privateMetadataName}: { id: ${JSON.stringify(privateId)}, sourceKind: "airport" },
+      ${extraUnderscoreField ? "_compatibilityChanged: true," : ""}
+      ${privateMetadataName}: {
+        id: ${JSON.stringify(privateId)},
+        sourceKind: "airport",
+        continent: ${JSON.stringify(privateContinent)},
+      },
     }));
     return ${returnObject ? "{ nodes: result }" : realmOwnedArray ? "Array.from(result)" : "result"};
   },
@@ -77,14 +97,21 @@ function syntheticProfileBundle({
   acceptUnknownArguments = false,
   acceptInvalidKey = "",
   acceptMissingKey = "",
+  rejectAcceptedKey = "",
+  rejectAcceptedValue = "",
   artifactPlatform = "JSON",
+  artifactCallCount = 1,
   extraPublicField = false,
+  coerceRawArguments = false,
 } = {}) {
   return `
 var ${globalName} = {
   async operator(input, targetPlatform, context = {}) {
     void targetPlatform;
-    const args = context.arguments;
+    let args = context.arguments;
+    if ((!args || typeof args !== "object" || Array.isArray(args)) && ${coerceRawArguments ? "true" : "false"}) args = {
+      output: "config", type: "collection", name: "synthetic-collection", subscriptionName: "Synthetic-Nodes", platform: "macos"
+    };
     if (!args || typeof args !== "object" || Array.isArray(args)) throw new TypeError("Options must be an object");
     const allowed = ["output", "type", "name", "subscriptionName", "platform", "dnsMode", "chinaDns", "globalDns", "blockMode", "quicMode", "ipv6Mode", "autoGroupMode", "clientChain"];
     for (const key of Object.keys(args)) {
@@ -124,19 +151,28 @@ var ${globalName} = {
       autoGroupMode: ["auto", "full", "balanced", "minimal"],
       clientChain: ["off", "on"],
     };
+    for (const key of [...Object.keys(accepted), "name"]) {
+      if (typeof values[key] === "string") values[key] = values[key].trim();
+    }
     for (const [key, allowedValues] of Object.entries(accepted)) {
       if (key !== ${JSON.stringify(acceptInvalidKey)} && !allowedValues.includes(values[key])) throw new Error(\`invalid \${key}\`);
     }
     for (const key of ["name", "subscriptionName"]) {
       if (key !== ${JSON.stringify(acceptInvalidKey)} && (typeof values[key] !== "string" || !values[key])) throw new Error(\`invalid \${key}\`);
     }
+    if (${JSON.stringify(acceptInvalidKey)} !== "subscriptionName" && (values.subscriptionName.trim() !== values.subscriptionName || /[\\r\\n]/.test(values.subscriptionName))) throw new Error("invalid subscriptionName");
+    if (${JSON.stringify(acceptInvalidKey)} !== "name" && /[\\r\\n]/.test(values.name)) throw new Error("invalid name");
+    if (values[${JSON.stringify(rejectAcceptedKey)}] === ${JSON.stringify(rejectAcceptedValue)}) throw new Error("synthetic removed accepted value");
     if (typeof context.produceArtifact !== "function") throw new Error("produceArtifact is unavailable");
-    const nodes = await context.produceArtifact({
-      type: values.type,
-      name: values.name,
-      platform: ${JSON.stringify(artifactPlatform)},
-      produceType: "internal",
-    });
+    let nodes;
+    for (let index = 0; index < ${artifactCallCount}; index += 1) {
+      nodes = await context.produceArtifact({
+        type: values.type,
+        name: values.name,
+        platform: ${JSON.stringify(artifactPlatform)},
+        produceType: "internal",
+      });
+    }
     if (!Array.isArray(nodes) || nodes.length === 0) throw new Error("produceArtifact must return a non-empty node array");
     return { ...input, $content: "synthetic-profile"${extraPublicField ? ", compatibilityChanged: true" : ""} };
   },
@@ -179,6 +215,11 @@ test("profile compatibility permits only the Advertising replacement and generat
   );
 
   assert.doesNotThrow(() => compareProfileText(current, baseline, "synthetic.conf"));
+  assert.doesNotThrow(() => compareProfileText(
+    syntheticProfile().replace("2026-08-01T00:00:00.000Z", "2024-02-29T23:59:59.999+14:00"),
+    baseline,
+    "synthetic-offset.conf",
+  ));
 });
 
 test("profile compatibility rejects every unapproved section and rule change", async (t) => {
@@ -192,6 +233,13 @@ test("profile compatibility rejects every unapproved section and rule change", a
     ["Proxy Group", current.replace("Synthetic = select,DIRECT", "Synthetic = select,REJECT")],
     ["Rule", current.replace("FINAL,Synthetic", "FINAL,DIRECT")],
     ["non-timestamp header value", current.replace("2026-08-01T00:00:00.000Z", "not-a-timestamp")],
+    ["impossible calendar date", current.replace("2026-08-01T00:00:00.000Z", "2026-02-30T00:00:00.000Z")],
+    ["impossible non-leap date", current.replace("2026-08-01T00:00:00.000Z", "2026-02-29T00:00:00.000Z")],
+    ["impossible hour", current.replace("2026-08-01T00:00:00.000Z", "2026-08-01T24:00:00.000Z")],
+    ["impossible minute", current.replace("2026-08-01T00:00:00.000Z", "2026-08-01T00:60:00.000Z")],
+    ["impossible second", current.replace("2026-08-01T00:00:00.000Z", "2026-08-01T00:00:60.000Z")],
+    ["impossible offset", current.replace("2026-08-01T00:00:00.000Z", "2026-08-01T00:00:00.000+15:00")],
+    ["impossible maximum offset minutes", current.replace("2026-08-01T00:00:00.000Z", "2026-08-01T00:00:00.000+14:30")],
     ["additional section", `${current}\n[MITM]\nenable = true\n`],
     ["section order", current.replace("[Host]", "[Host Renamed]")],
   ];
@@ -217,12 +265,28 @@ test("bundle compatibility ignores private IDs and rejects public contract chang
   const { compareBundleSources } = await import(comparatorUrl);
   const current = syntheticNodeBundle({
     privateId: "rebuilt-private-id",
+    privateMetadataName: "_profile",
+    realmOwnedArray: true,
+  });
+  const baseline = syntheticNodeBundle({
+    privateId: "legacy-private-id",
     privateMetadataName: "_sr",
     realmOwnedArray: true,
   });
-  const baseline = syntheticNodeBundle({ realmOwnedArray: true });
 
   await assert.doesNotReject(() => compareBundleSources("node", current, baseline, "synthetic-node.js"));
+  await assert.doesNotReject(() => compareBundleSources(
+    "node",
+    syntheticNodeBundle({ privateId: "current-only-id" }),
+    syntheticNodeBundle({ privateId: "baseline-only-id" }),
+    "synthetic-id-only.js",
+  ));
+  await assert.doesNotReject(() => compareBundleSources(
+    "node",
+    syntheticNodeBundle({ privateMetadataName: "_profile", privateId: "same-id" }),
+    syntheticNodeBundle({ privateMetadataName: "_sr", privateId: "same-id" }),
+    "synthetic-metadata-key.js",
+  ));
 
   const mutations = [
     ["exported global name", syntheticNodeBundle({ globalName: "RenamedNodeBundle" })],
@@ -232,6 +296,15 @@ test("bundle compatibility ignores private IDs and rejects public contract chang
     ["invalid output value", syntheticNodeBundle({ acceptInvalidOutput: true })],
     ["returned shape", syntheticNodeBundle({ returnObject: true })],
     ["public returned field", syntheticNodeBundle({ extraPublicField: true })],
+    ["private metadata value", syntheticNodeBundle({ privateContinent: "europe" })],
+    ["arbitrary underscore field", syntheticNodeBundle({ extraUnderscoreField: true })],
+    ["renamed private metadata", syntheticNodeBundle({ privateMetadataName: "_metadata" })],
+    ["removed diagnostics logging", syntheticNodeBundle({ loggerCount: 0 })],
+    ["changed diagnostics logger method", syntheticNodeBundle({ loggerMethod: "log" })],
+    ["changed diagnostics logger arguments", syntheticNodeBundle({ loggerMessage: "changed diagnostics" })],
+    ["changed diagnostics count", syntheticNodeBundle({ loggerCount: 2 })],
+    ["removed accepted node option", syntheticNodeBundle({ rejectClientChainValue: "on" })],
+    ["accepted raw arguments", syntheticNodeBundle({ coerceRawArguments: true })],
   ];
 
   for (const [name, mutation] of mutations) {
@@ -239,6 +312,45 @@ test("bundle compatibility ignores private IDs and rejects public contract chang
       await assert.rejects(() => compareBundleSources("node", mutation, baseline, "synthetic-node.js"));
     });
   }
+});
+
+test("bundle compatibility contains VM escapes and terminates hung operators", async (t) => {
+  const { compareBundleSources } = await import(comparatorUrl);
+  const baseline = syntheticNodeBundle({ privateMetadataName: "_sr" });
+
+  await t.test("host constructor escape", async () => {
+    await assert.rejects(() => compareBundleSources(
+      "node",
+      syntheticNodeBundle({ escapeHost: true }),
+      baseline,
+      "escape-node.js",
+      { timeoutMs: 500 },
+    ));
+  });
+  await t.test("synchronous infinite loop", async () => {
+    await assert.rejects(
+      () => compareBundleSources(
+        "node",
+        syntheticNodeBundle({ hangMode: "sync" }),
+        baseline,
+        "sync-hang-node.js",
+        { timeoutMs: 500 },
+      ),
+      /timed out/,
+    );
+  });
+  await t.test("never-resolving promise", async () => {
+    await assert.rejects(
+      () => compareBundleSources(
+        "node",
+        syntheticNodeBundle({ hangMode: "async" }),
+        baseline,
+        "async-hang-node.js",
+        { timeoutMs: 500 },
+      ),
+      /timed out/,
+    );
+  });
 });
 
 test("profile bundle compatibility rejects profile-specific contract changes", async (t) => {
@@ -253,6 +365,7 @@ test("profile bundle compatibility rejects profile-specific contract changes", a
     ["accepted arguments", syntheticProfileBundle({ rejectValidArguments: true })],
     ["rejected arguments", syntheticProfileBundle({ acceptUnknownArguments: true })],
     ["artifact request", syntheticProfileBundle({ artifactPlatform: "YAML" })],
+    ["artifact request count", syntheticProfileBundle({ artifactCallCount: 2 })],
     ["returned shape", syntheticProfileBundle({ extraPublicField: true })],
   ];
   for (const [name, mutation] of contractMutations) {
@@ -260,6 +373,31 @@ test("profile bundle compatibility rejects profile-specific contract changes", a
       await assert.rejects(() => compareBundleSources("profile", mutation, baseline, "synthetic-profile.js"));
     });
   }
+
+  for (const [key, value] of [
+    ["platform", "appletv"],
+    ["dnsMode", "speed"],
+    ["globalDns", "google"],
+    ["clientChain", "off"],
+  ]) {
+    await t.test(`removed accepted ${key}=${value}`, async () => {
+      await assert.rejects(() => compareBundleSources(
+        "profile",
+        syntheticProfileBundle({ rejectAcceptedKey: key, rejectAcceptedValue: value }),
+        baseline,
+        "synthetic-profile.js",
+      ));
+    });
+  }
+
+  await t.test("accepted raw profile arguments", async () => {
+    await assert.rejects(() => compareBundleSources(
+      "profile",
+      syntheticProfileBundle({ coerceRawArguments: true }),
+      baseline,
+      "synthetic-profile.js",
+    ));
+  });
 
   for (const key of [
     "output", "type", "name", "subscriptionName", "platform", "dnsMode", "chinaDns",
