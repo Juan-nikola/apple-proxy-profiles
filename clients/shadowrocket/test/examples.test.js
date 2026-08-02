@@ -35,6 +35,8 @@ function syntheticNodeBundle({
   returnObject = false,
   extraPublicField = false,
   extraUnderscoreField = false,
+  extraUnderscoreValue = true,
+  structuredCloneExtraArgument = false,
   realmOwnedArray = false,
   privateMetadataName = "_profile",
   privateId = "baseline-private-id",
@@ -68,10 +70,11 @@ var ${globalName} = {
     if (${hangMode === "async" ? "true" : "false"}) await new Promise(() => {});
     if (${escapeHost ? "true" : "false"}) context.logger.info.constructor("return process")();
     for (let index = 0; index < ${loggerCount}; index += 1) context.logger[${JSON.stringify(loggerMethod)}](${JSON.stringify(loggerMessage)});
-    const result = proxies.map((proxy) => ({
+    const clonedProxies = structuredClone(proxies${structuredCloneExtraArgument ? ", \"synthetic-extra\"" : ""});
+    const result = clonedProxies.map((proxy) => ({
       ...proxy,
       ${extraPublicField ? "compatibilityChanged: true," : ""}
-      ${extraUnderscoreField ? "_compatibilityChanged: true," : ""}
+      ${extraUnderscoreField ? `_compatibilityChanged: ${JSON.stringify(extraUnderscoreValue)},` : ""}
       ${privateMetadataName}: {
         id: ${JSON.stringify(privateId)},
         sourceKind: "airport",
@@ -101,8 +104,11 @@ function syntheticProfileBundle({
   rejectAcceptedValue = "",
   artifactPlatform = "JSON",
   artifactCallCount = 1,
+  artifactExtraArgument = false,
   extraPublicField = false,
   coerceRawArguments = false,
+  acceptPrimitiveKey = "",
+  acceptArrayKey = "",
 } = {}) {
   return `
 var ${globalName} = {
@@ -151,17 +157,20 @@ var ${globalName} = {
       autoGroupMode: ["auto", "full", "balanced", "minimal"],
       clientChain: ["off", "on"],
     };
+    const acceptsSyntheticInvalidValue = (key, value) =>
+      (key === ${JSON.stringify(acceptPrimitiveKey)} && value === false) ||
+      (key === ${JSON.stringify(acceptArrayKey)} && Array.isArray(value));
     for (const key of [...Object.keys(accepted), "name"]) {
       if (typeof values[key] === "string") values[key] = values[key].trim();
     }
     for (const [key, allowedValues] of Object.entries(accepted)) {
-      if (key !== ${JSON.stringify(acceptInvalidKey)} && !allowedValues.includes(values[key])) throw new Error(\`invalid \${key}\`);
+      if (key !== ${JSON.stringify(acceptInvalidKey)} && !acceptsSyntheticInvalidValue(key, values[key]) && !allowedValues.includes(values[key])) throw new Error(\`invalid \${key}\`);
     }
     for (const key of ["name", "subscriptionName"]) {
-      if (key !== ${JSON.stringify(acceptInvalidKey)} && (typeof values[key] !== "string" || !values[key])) throw new Error(\`invalid \${key}\`);
+      if (key !== ${JSON.stringify(acceptInvalidKey)} && !acceptsSyntheticInvalidValue(key, values[key]) && (typeof values[key] !== "string" || !values[key])) throw new Error(\`invalid \${key}\`);
     }
-    if (${JSON.stringify(acceptInvalidKey)} !== "subscriptionName" && (values.subscriptionName.trim() !== values.subscriptionName || /[\\r\\n]/.test(values.subscriptionName))) throw new Error("invalid subscriptionName");
-    if (${JSON.stringify(acceptInvalidKey)} !== "name" && /[\\r\\n]/.test(values.name)) throw new Error("invalid name");
+    if (${JSON.stringify(acceptInvalidKey)} !== "subscriptionName" && !acceptsSyntheticInvalidValue("subscriptionName", values.subscriptionName) && (values.subscriptionName.trim() !== values.subscriptionName || /[\\r\\n]/.test(values.subscriptionName))) throw new Error("invalid subscriptionName");
+    if (${JSON.stringify(acceptInvalidKey)} !== "name" && !acceptsSyntheticInvalidValue("name", values.name) && /[\\r\\n]/.test(values.name)) throw new Error("invalid name");
     if (values[${JSON.stringify(rejectAcceptedKey)}] === ${JSON.stringify(rejectAcceptedValue)}) throw new Error("synthetic removed accepted value");
     if (typeof context.produceArtifact !== "function") throw new Error("produceArtifact is unavailable");
     let nodes;
@@ -171,7 +180,7 @@ var ${globalName} = {
         name: values.name,
         platform: ${JSON.stringify(artifactPlatform)},
         produceType: "internal",
-      });
+      }${artifactExtraArgument ? ", \"synthetic-extra\"" : ""});
     }
     if (!Array.isArray(nodes) || nodes.length === 0) throw new Error("produceArtifact must return a non-empty node array");
     return { ...input, $content: "synthetic-profile"${extraPublicField ? ", compatibilityChanged: true" : ""} };
@@ -287,6 +296,18 @@ test("bundle compatibility ignores private IDs and rejects public contract chang
     syntheticNodeBundle({ privateMetadataName: "_sr", privateId: "same-id" }),
     "synthetic-metadata-key.js",
   ));
+  await assert.rejects(() => compareBundleSources(
+    "node",
+    syntheticNodeBundle({ extraUnderscoreField: true, extraUnderscoreValue: false }),
+    syntheticNodeBundle({ extraUnderscoreField: true, extraUnderscoreValue: true }),
+    "synthetic-underscore-value.js",
+  ));
+  await assert.rejects(() => compareBundleSources(
+    "node",
+    syntheticNodeBundle({ structuredCloneExtraArgument: true }),
+    syntheticNodeBundle(),
+    "synthetic-structured-clone-arguments.js",
+  ));
 
   const mutations = [
     ["exported global name", syntheticNodeBundle({ globalName: "RenamedNodeBundle" })],
@@ -366,6 +387,7 @@ test("profile bundle compatibility rejects profile-specific contract changes", a
     ["rejected arguments", syntheticProfileBundle({ acceptUnknownArguments: true })],
     ["artifact request", syntheticProfileBundle({ artifactPlatform: "YAML" })],
     ["artifact request count", syntheticProfileBundle({ artifactCallCount: 2 })],
+    ["artifact extra argument", syntheticProfileBundle({ artifactExtraArgument: true })],
     ["returned shape", syntheticProfileBundle({ extraPublicField: true })],
   ];
   for (const [name, mutation] of contractMutations) {
@@ -407,6 +429,28 @@ test("profile bundle compatibility rejects profile-specific contract changes", a
       await assert.rejects(() => compareBundleSources(
         "profile",
         syntheticProfileBundle({ acceptInvalidKey: key }),
+        baseline,
+        "synthetic-profile.js",
+      ));
+    });
+  }
+
+  for (const key of [
+    "output", "type", "name", "subscriptionName", "platform", "dnsMode", "chinaDns",
+    "globalDns", "blockMode", "quicMode", "ipv6Mode", "autoGroupMode", "clientChain",
+  ]) {
+    await t.test(`primitive ${key}`, async () => {
+      await assert.rejects(() => compareBundleSources(
+        "profile",
+        syntheticProfileBundle({ acceptPrimitiveKey: key }),
+        baseline,
+        "synthetic-profile.js",
+      ));
+    });
+    await t.test(`array ${key}`, async () => {
+      await assert.rejects(() => compareBundleSources(
+        "profile",
+        syntheticProfileBundle({ acceptArrayKey: key }),
         baseline,
         "synthetic-profile.js",
       ));

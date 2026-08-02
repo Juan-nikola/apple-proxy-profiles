@@ -150,6 +150,8 @@ function nodeScenarios() {
     rejectedScenario("rejects config output", { output: "config" }, input),
     rejectedScenario("rejects empty output", { output: "" }, input),
     rejectedScenario("rejects whitespace output", { output: " nodes " }, input),
+    rejectedScenario("rejects boolean output", { output: false }, input),
+    rejectedScenario("rejects array output", { output: [] }, input),
     rejectedScenario("rejects unknown argument", { output: "nodes", unknown: true }, input),
     rejectedScenario("rejects invalid clientChain", { output: "nodes", clientChain: "invalid" }, input),
     rejectedScenario("rejects empty clientChain", { output: "nodes", clientChain: "" }, input),
@@ -223,16 +225,14 @@ function profileScenarios() {
   };
   for (const [key, value] of Object.entries(invalidValues)) {
     scenarios.push(rejectedScenario(`rejects invalid ${key}`, { ...PROFILE_ARGUMENTS, [key]: value }, {}));
+    scenarios.push(rejectedScenario(`rejects primitive ${key}`, { ...PROFILE_ARGUMENTS, [key]: false }, {}));
+    scenarios.push(rejectedScenario(`rejects array ${key}`, { ...PROFILE_ARGUMENTS, [key]: [] }, {}));
   }
 
   for (const [name, overrides] of [
     ["rejects whitespace name", { name: "   " }],
     ["rejects whitespace subscriptionName", { subscriptionName: " Synthetic-Nodes " }],
     ["rejects CRLF subscriptionName", { subscriptionName: "Synthetic-Nodes\r\ninjected" }],
-    ["rejects primitive name", { name: 0 }],
-    ["rejects array name", { name: [] }],
-    ["rejects primitive optional value", { dnsMode: false }],
-    ["rejects array optional value", { blockMode: [] }],
   ]) {
     scenarios.push(rejectedScenario(name, { ...PROFILE_ARGUMENTS, ...overrides }, {}));
   }

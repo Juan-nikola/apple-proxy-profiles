@@ -47,9 +47,9 @@ function bootstrapSource(kind, scenario) {
   function record(interfaceName, method, args) {
     calls.push({ interface: interfaceName, method, arguments: sanitize(args) });
   }
-  function realmStructuredClone(value) {
-    record("structuredClone", "call", [value]);
-    return clone(value);
+  function realmStructuredClone(...args) {
+    record("structuredClone", "call", args);
+    return clone(args[0]);
   }
   const realmConsole = Object.freeze({
     debug(...args) { record("console", "debug", args); },
@@ -59,8 +59,8 @@ function bootstrapSource(kind, scenario) {
     warn(...args) { record("console", "warn", args); },
   });
   const realmProduceArtifact = configuration.kind === "profile" && configuration.artifactMode !== "unavailable"
-    ? async function produceArtifact(request) {
-      record("produceArtifact", "call", [request]);
+    ? async function produceArtifact(...args) {
+      record("produceArtifact", "call", args);
       return configuration.artifactMode === "empty" ? [] : clone(configuration.inventory);
     }
     : undefined;
@@ -118,7 +118,9 @@ function valueShape(value, role) {
         const canonicalKey = role === "baseline" && key === "_sr" ? "_profile" : key;
         const description = canonicalKey === "_profile"
           ? metadataDescription(value[key])
-          : valueShape(value[key], role);
+          : canonicalKey.startsWith("_")
+            ? exactDescription(value[key])
+            : valueShape(value[key], role);
         return [canonicalKey, description];
       }).sort(([left], [right]) => left.localeCompare(right, "en")),
     };
