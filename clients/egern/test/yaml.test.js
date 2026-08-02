@@ -46,6 +46,83 @@ test("renders scalars, nested sequences, empty collections, and unsafe keys", ()
   );
 });
 
+test("escapes YAML-forbidden C1 controls and Unicode separators in values and keys", () => {
+  const forbidden = "\u007f\u0085\u009f\u2028\u2029";
+  const output = renderYaml({ [`key${forbidden}`]: `value${forbidden}` });
+
+  assert.equal(
+    output,
+    '"key\\u007f\\u0085\\u009f\\u2028\\u2029": "value\\u007f\\u0085\\u009f\\u2028\\u2029"\n',
+  );
+  for (const character of forbidden) {
+    assert.equal(output.includes(character), false);
+  }
+});
+
+test("preserves valid surrogate pairs and astral Unicode", () => {
+  assert.equal(renderYaml({ "🌐": "🚀" }), '"🌐": "🚀"\n');
+});
+
+test("rejects lone surrogate values at safe paths without leaking them", () => {
+  const cases = [
+    [{ payload: "\ud800" }, /Ill-formed UTF-16 string at payload/],
+    [{ items: ["\udfff"] }, /Ill-formed UTF-16 string at items\[0\]/],
+  ];
+
+  for (const [value, pattern] of cases) {
+    assert.throws(
+      () => renderYaml(value),
+      (error) => {
+        assert.match(error.message, pattern);
+        assert.doesNotMatch(error.message, /\\ud800|\\udfff/i);
+        assert.equal(/[\ud800-\udfff]/u.test(error.message), false);
+        return true;
+      },
+    );
+  }
+});
+
+test("rejects lone surrogate keys without leaking key contents", () => {
+  for (const surrogate of ["\ud800", "\udfff"]) {
+    const privateKeyName = `TEST_ONLY_KEY_${surrogate}`;
+
+    assert.throws(
+      () => renderYaml({ [privateKeyName]: true }),
+      (error) => {
+        assert.match(error.message, /Ill-formed UTF-16 property key at <root>/);
+        assert.doesNotMatch(error.message, /TEST_ONLY_KEY|\\ud800|\\udfff/i);
+        assert.equal(/[\ud800-\udfff]/u.test(error.message), false);
+        return true;
+      },
+    );
+  }
+});
+
+test("renders negative zero without losing its sign", () => {
+  assert.equal(renderYaml(-0), "-0\n");
+  assert.equal(renderYaml({ offset: -0 }), "offset: -0\n");
+});
+
+test("keeps structural error paths single-line and escaped", () => {
+  const unsafeControls = "\n\r\u007f\u0085\u009f\u2028\u2029";
+  const key = `unsafe${unsafeControls}key`;
+
+  assert.throws(
+    () => renderYaml({ [key]: undefined }),
+    (error) => {
+      assert.equal(
+        error.message,
+        'Unsupported YAML value at ["unsafe\\n\\r\\u007f\\u0085\\u009f\\u2028\\u2029key"]',
+      );
+      assert.equal(error.message.split("\n").length, 1);
+      for (const character of unsafeControls) {
+        assert.equal(error.message.includes(character), false);
+      }
+      return true;
+    },
+  );
+});
+
 test("preserves object insertion order and allows repeated acyclic references", () => {
   const repeated = { second: 2, first: 1 };
   assert.equal(

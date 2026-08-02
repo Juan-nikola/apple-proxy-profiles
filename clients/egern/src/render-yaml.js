@@ -1,9 +1,33 @@
 const INDENT_WIDTH = 2;
 const PLAIN_KEY = /^[A-Za-z_][A-Za-z0-9_-]*$/;
 const YAML_BOOLEAN_OR_NULL = /^(?:false|null|true)$/i;
+const RAW_YAML_LINE_OR_C1_CHARACTER = /[\u007f-\u009f\u2028\u2029]/g;
 
 function displayPath(path) {
   return path || "<root>";
+}
+
+function encodeYamlDoubleQuotedString(value, path, { propertyKey = false } = {}) {
+  for (let index = 0; index < value.length; index += 1) {
+    const codeUnit = value.charCodeAt(index);
+    if (codeUnit >= 0xd800 && codeUnit <= 0xdbff) {
+      const nextCodeUnit = value.charCodeAt(index + 1);
+      if (nextCodeUnit >= 0xdc00 && nextCodeUnit <= 0xdfff) {
+        index += 1;
+        continue;
+      }
+    } else if (codeUnit < 0xdc00 || codeUnit > 0xdfff) {
+      continue;
+    }
+
+    const subject = propertyKey ? "property key" : "string";
+    throw new TypeError(`Ill-formed UTF-16 ${subject} at ${displayPath(path)}`);
+  }
+
+  return JSON.stringify(value).replace(
+    RAW_YAML_LINE_OR_C1_CHARACTER,
+    (character) => `\\u${character.charCodeAt(0).toString(16).padStart(4, "0")}`,
+  );
 }
 
 function propertyPath(path, key) {
@@ -11,19 +35,19 @@ function propertyPath(path, key) {
     return path ? `${path}.${key}` : key;
   }
 
-  return `${path}[${JSON.stringify(key)}]`;
+  return `${path}[${encodeYamlDoubleQuotedString(key, path, { propertyKey: true })}]`;
 }
 
 function indexPath(path, index) {
   return `${path}[${index}]`;
 }
 
-function renderKey(key) {
+function renderKey(key, path) {
   if (PLAIN_KEY.test(key) && !YAML_BOOLEAN_OR_NULL.test(key)) {
     return key;
   }
 
-  return JSON.stringify(key);
+  return encodeYamlDoubleQuotedString(key, path, { propertyKey: true });
 }
 
 function scalarText(value, path) {
@@ -38,9 +62,9 @@ function scalarText(value, path) {
       if (!Number.isFinite(value)) {
         throw new TypeError(`Expected finite number at ${displayPath(path)}`);
       }
-      return JSON.stringify(value);
+      return Object.is(value, -0) ? "-0" : JSON.stringify(value);
     case "string":
-      return JSON.stringify(value);
+      return encodeYamlDoubleQuotedString(value, path);
     case "undefined":
     case "function":
     case "symbol":
@@ -183,7 +207,7 @@ function renderNode(value, path, indent, active) {
       const child = descriptor.value;
       const childPath = propertyPath(path, key);
       const childScalar = scalarText(child, childPath);
-      const prefix = `${" ".repeat(indent)}${renderKey(key)}:`;
+      const prefix = `${" ".repeat(indent)}${renderKey(key, path)}:`;
       if (childScalar !== null) {
         lines.push(`${prefix} ${childScalar}`);
         continue;
