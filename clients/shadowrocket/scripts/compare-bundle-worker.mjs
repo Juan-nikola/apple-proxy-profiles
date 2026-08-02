@@ -3,6 +3,8 @@ import { isDeepStrictEqual } from "node:util";
 import vm from "node:vm";
 import { parentPort, workerData } from "node:worker_threads";
 
+import { expandLegacyAdvertisingProfile } from "./compatibility-advertising.mjs";
+
 function syntheticInventory(role) {
   const metadataKey = role === "baseline" ? "_sr" : "_profile";
   return Array.from({ length: 25 }, (_, index) => ({
@@ -84,18 +86,10 @@ function primitiveType(value) {
   return typeof value;
 }
 
-const APPROVED_ADVERTISING = "Advertising/Advertising.list";
-const APPROVED_ADVERTISING_DOMAIN = "Advertising/Advertising_Domain.list";
-const LEGACY_ADVERTISING = "AdvertisingLite/AdvertisingLite.list";
-
 function exactScalar(value, role, kind, path) {
   if (typeof value === "string") {
     if (kind === "profile" && path.length === 1 && path[0] === "$content") {
-      if (role === "baseline") return value.replaceAll(LEGACY_ADVERTISING, APPROVED_ADVERTISING);
-      return value
-        .split(/(?<=\n)/)
-        .filter((line) => !line.includes(APPROVED_ADVERTISING_DOMAIN))
-        .join("");
+      return role === "baseline" ? expandLegacyAdvertisingProfile(value) : value;
     }
     return value;
   }

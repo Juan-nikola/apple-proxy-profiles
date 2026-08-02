@@ -4,10 +4,9 @@ import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { Worker } from "node:worker_threads";
 
+import { expandLegacyAdvertisingProfile } from "./compatibility-advertising.mjs";
+
 const DEFAULT_BASELINE_DIR = "/Users/sunyuze/Documents/代理软件/shadowrocket-profile";
-const APPROVED_ADVERTISING = "Advertising/Advertising.list";
-const APPROVED_ADVERTISING_DOMAIN = "Advertising/Advertising_Domain.list";
-const LEGACY_ADVERTISING = "AdvertisingLite/AdvertisingLite.list";
 const PROFILE_NAMES = Object.freeze(["macos", "iphone", "ipad"]);
 const BUNDLES = Object.freeze([
   Object.freeze({ kind: "node", file: "substore-node-operator.js" }),
@@ -108,32 +107,16 @@ export function compareProfileText(currentSource, baselineSource, label = "profi
       continue;
     }
 
+    let expectedCurrentSection;
+    try {
+      expectedCurrentSection = expandLegacyAdvertisingProfile(baselineSection);
+    } catch {
+      assert.fail(`${label}: rollback baseline has an invalid Advertising migration contract`);
+    }
     assert.equal(
-      currentSection.includes(APPROVED_ADVERTISING),
+      currentSection === expectedCurrentSection,
       true,
-      `${label}: approved Advertising replacement is absent`,
-    );
-    const advertisingDomainLines = currentSection
-      .split(/\r?\n/)
-      .filter((line) => line.includes(APPROVED_ADVERTISING_DOMAIN));
-    assert.equal(
-      advertisingDomainLines.length,
-      1,
-      `${label}: approved Advertising_Domain source must appear exactly once`,
-    );
-    assert.match(
-      advertisingDomainLines[0],
-      /^DOMAIN-SET,/,
-      `${label}: approved Advertising_Domain source must use DOMAIN-SET`,
-    );
-    const currentWithoutAdvertisingDomain = currentSection.replace(
-      `${advertisingDomainLines[0]}\n`,
-      "",
-    );
-    assert.equal(
-      currentWithoutAdvertisingDomain.replaceAll(APPROVED_ADVERTISING, LEGACY_ADVERTISING),
-      baselineSection,
-      `${label}: [Rule] contains an unapproved change`,
+      `${label}: approved Advertising replacement or Advertising_Domain companion is absent or altered`,
     );
   }
 }
