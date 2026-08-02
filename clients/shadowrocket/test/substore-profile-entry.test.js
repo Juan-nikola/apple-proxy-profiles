@@ -34,6 +34,27 @@ test("file operator produces a Profile artifact and preserves the input", async 
   assert.match(result.$content, /\[Proxy Group\]/);
 });
 
+test("file operator accepts the full documented option set", async () => {
+  const result = await operator({}, "Shadowrocket", {
+    arguments: {
+      ...argumentsForProfile,
+      platform: "iphone",
+      dnsMode: "privacy",
+      chinaDns: "dnspod",
+      globalDns: "google",
+      blockMode: "strict",
+      quicMode: "allow",
+      ipv6Mode: "auto",
+      autoGroupMode: "full",
+      clientChain: "on",
+      _internal: "ignored",
+    },
+    async produceArtifact() { return nodes; },
+  });
+
+  assert.equal(typeof result.$content, "string");
+});
+
 test("file operator fails closed for invalid integration input", async () => {
   await assert.rejects(operator({}, "Shadowrocket", { arguments: argumentsForProfile }), /produceArtifact/i);
   await assert.rejects(operator({}, "Shadowrocket", {
@@ -48,4 +69,12 @@ test("file operator fails closed for invalid integration input", async () => {
     arguments: { ...argumentsForProfile, quicMode: "invalid" },
     async produceArtifact() { return nodes; },
   }), /quicMode/i);
+  await assert.rejects(operator({}, "Shadowrocket", {
+    arguments: { ...argumentsForProfile, unexpected: "x" },
+    async produceArtifact() { return nodes; },
+  }), /Unknown option: unexpected/);
+});
+
+test("file operator retains its JavaScript function arity", () => {
+  assert.equal(operator.length, 2);
 });

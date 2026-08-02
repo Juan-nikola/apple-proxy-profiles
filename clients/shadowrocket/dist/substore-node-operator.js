@@ -17,13 +17,13 @@ var ShadowrocketNodeBundle = (() => {
   };
   var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
-  // src/substore-node-entry.js
+  // substore-node-entry.js
   var substore_node_entry_exports = {};
   __export(substore_node_entry_exports, {
     operator: () => operator
   });
 
-  // ../../shared/nodes/diagnostics.js
+  // ../../../shared/nodes/diagnostics.js
   function createDiagnostics() {
     return {
       total: 0,
@@ -45,7 +45,7 @@ var ShadowrocketNodeBundle = (() => {
     });
   }
 
-  // ../../shared/contracts.js
+  // ../../../shared/contracts.js
   var CLIENT = Object.freeze({
     shadowrocket: "shadowrocket",
     egern: "egern",
@@ -85,7 +85,7 @@ var ShadowrocketNodeBundle = (() => {
     return node._profile;
   }
 
-  // ../../shared/nodes/client-chain.js
+  // ../../../shared/nodes/client-chain.js
   var SUPPORTED_LANDING_PROTOCOLS = /* @__PURE__ */ new Set([
     "ss",
     "shadowsocks",
@@ -133,7 +133,7 @@ var ShadowrocketNodeBundle = (() => {
     return [...nodes, ...clones];
   }
 
-  // ../../shared/nodes/node-identity.js
+  // ../../../shared/nodes/node-identity.js
   var EXCLUDED_TOP_LEVEL_KEYS = /* @__PURE__ */ new Set(["name"]);
   var SEMANTIC_UNDERSCORE_KEYS = /* @__PURE__ */ new Set(["_network"]);
   function isSemanticUnderscoreKey(key) {
@@ -186,7 +186,7 @@ var ShadowrocketNodeBundle = (() => {
     return (hash >>> 0).toString(36).padStart(7, "0");
   }
 
-  // ../../shared/nodes/protocol-registry.js
+  // ../../../shared/nodes/protocol-registry.js
   function protocol(names, clients, { requiredFields = [], tls = false } = {}) {
     return Object.freeze({
       names: Object.freeze(names),
@@ -251,7 +251,7 @@ var ShadowrocketNodeBundle = (() => {
     return registry.has(normalized) ? normalized : "unknown";
   }
 
-  // ../../shared/nodes/node-validation.js
+  // ../../../shared/nodes/node-validation.js
   var PSEUDO_NODE_PATTERN = /剩余|流量|到期|套餐|官网|公告|通知|traffic|expire|website/i;
   function isNonblankString(value) {
     return typeof value === "string" && value.trim().length > 0;
@@ -295,7 +295,7 @@ var ShadowrocketNodeBundle = (() => {
     return { valid: true, reason: null, warnings };
   }
 
-  // ../../shared/nodes/country-regions.js
+  // ../../../shared/nodes/country-regions.js
   var REGION_CODES = Object.freeze({
     [CONTINENT.asiaPacific]: Object.freeze(`
     AE AF AM AS AU AZ BD BH BN BT CC CK CN CX CY FJ FM GE GU HK HM ID IL IN
@@ -336,7 +336,7 @@ var ShadowrocketNodeBundle = (() => {
     return FLAG_CONTINENTS.get(flag) ?? null;
   }
 
-  // ../../shared/nodes/regions.js
+  // ../../../shared/nodes/regions.js
   var FLAG_PATTERN = /[\u{1F1E6}-\u{1F1FF}]{2}/gu;
   var RAW_REGIONS = [
     {
@@ -410,7 +410,7 @@ var ShadowrocketNodeBundle = (() => {
     return { flag: "\u{1F310}", continent: CONTINENT.other, warning: null };
   }
 
-  // ../../shared/nodes/source-labels.js
+  // ../../../shared/nodes/source-labels.js
   var PROVENANCE_FIELDS = [
     "_subDisplayName",
     "_subName",
@@ -442,7 +442,7 @@ var ShadowrocketNodeBundle = (() => {
     };
   }
 
-  // ../../shared/nodes/normalize-nodes.js
+  // ../../../shared/nodes/normalize-nodes.js
   var CONTINENT_ORDER = /* @__PURE__ */ new Map([
     [CONTINENT.asiaPacific, 0],
     [CONTINENT.europe, 1],
@@ -617,7 +617,7 @@ var ShadowrocketNodeBundle = (() => {
     };
   }
 
-  // src/substore-node-entry.js
+  // substore-node-entry.js
   var ALLOWED_OPTIONS = /* @__PURE__ */ new Set(["output", "clientChain"]);
   function parseArguments(rawArguments) {
     if (!rawArguments || typeof rawArguments !== "object" || Array.isArray(rawArguments)) {

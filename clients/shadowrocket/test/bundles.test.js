@@ -32,7 +32,9 @@ test("node bundle is self-contained and runs with Sub-Store globals", async () =
   assert.doesNotMatch(source, /^\s*(?:import|export)\s/m);
 
   const { context, lines } = loadBundle(source, { $arguments: nodeArguments });
+  assert.equal(typeof context.ShadowrocketNodeBundle, "object");
   assert.equal(typeof context.operator, "function");
+  assert.equal(context.operator.length, 2);
   const nodes = await context.operator([{
     name: "Safe synthetic node",
     type: "ss",
@@ -66,7 +68,9 @@ test("profile bundle is self-contained and runs with Sub-Store globals", async (
       return inventory;
     },
   });
+  assert.equal(typeof context.ShadowrocketProfileBundle, "object");
   assert.equal(typeof context.operator, "function");
+  assert.equal(context.operator.length, 2);
   const result = await context.operator({ url: "https://example.invalid/sub" }, "Shadowrocket");
   assert.match(result.$content, /\[General\]/);
   assert.match(result.$content, /\[Proxy Group\]/);

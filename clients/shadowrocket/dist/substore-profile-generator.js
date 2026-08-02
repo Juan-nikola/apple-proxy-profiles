@@ -17,13 +17,13 @@ var ShadowrocketProfileBundle = (() => {
   };
   var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
-  // src/substore-profile-entry.js
+  // substore-profile-entry.js
   var substore_profile_entry_exports = {};
   __export(substore_profile_entry_exports, {
     operator: () => operator
   });
 
-  // ../../shared/contracts.js
+  // ../../../shared/contracts.js
   var CLIENT = Object.freeze({
     shadowrocket: "shadowrocket",
     egern: "egern",
@@ -63,7 +63,7 @@ var ShadowrocketProfileBundle = (() => {
     return node._profile;
   }
 
-  // src/options.js
+  // options.js
   var REQUIRED_KEYS = Object.freeze([
     "output",
     "type",
@@ -147,7 +147,7 @@ var ShadowrocketProfileBundle = (() => {
     return PLATFORM_PRESETS[platform];
   }
 
-  // src/dns.js
+  // dns.js
   var CHINA_DNS = Object.freeze({
     alidns: "https://dns.alidns.com/dns-query",
     dnspod: "https://doh.pub/dns-query",
@@ -183,7 +183,7 @@ var ShadowrocketProfileBundle = (() => {
     ];
   }
 
-  // src/general.js
+  // general.js
   var IPV6_MODES = /* @__PURE__ */ new Set(["auto", "ipv4-only"]);
   var QUIC_MODES = Object.freeze({
     allow: "always-allow",
@@ -221,7 +221,7 @@ var ShadowrocketProfileBundle = (() => {
     ];
   }
 
-  // ../../shared/nodes/country-regions.js
+  // ../../../shared/nodes/country-regions.js
   var REGION_CODES = Object.freeze({
     [CONTINENT.asiaPacific]: Object.freeze(`
     AE AF AM AS AU AZ BD BH BN BT CC CK CN CX CY FJ FM GE GU HK HM ID IL IN
@@ -259,68 +259,43 @@ var ShadowrocketProfileBundle = (() => {
     Object.entries(CONTINENT_FLAGS).flatMap(([continent, flags]) => flags.map((flag) => [flag, continent]))
   );
 
-  // src/group-catalog.js
-  var TEST_URL = "http://www.gstatic.com/generate_204";
+  // ../../../shared/policies/filters.js
   var ALL_NODES_FILTER = "^.+$";
   var NON_CHAINED_FILTER = "^(?!\u{1F517} ).+$";
   var ENTRY_FILTER = "^(?!.*\\[\u5DF2\u6709\u94FE\\])\\S+ \\[(?:\u673A\u573A|\u81EA\u5EFA|Realm)\\] .+$";
   var P2P_FILTER = "^\\S+ \\[(?:\u81EA\u5EFA|Realm|\u94FE\u5F0F\u4EE3\u7406)\\] .+$";
   var GAME_FILTER = "^(?!\u{1F517} )\\S+ .+ \\[UDP\\]$";
   var CONTINENTS = Object.freeze([
-    {
+    Object.freeze({
       key: CONTINENT.asiaPacific,
       name: "\u{1F30F} \u4E9A\u592A",
       helperName: "\u4E9A\u592A",
       flags: CONTINENT_FLAGS[CONTINENT.asiaPacific]
-    },
-    {
+    }),
+    Object.freeze({
       key: CONTINENT.europe,
       name: "\u{1F30D} \u6B27\u6D32",
       helperName: "\u6B27\u6D32",
       flags: CONTINENT_FLAGS[CONTINENT.europe]
-    },
-    {
+    }),
+    Object.freeze({
       key: CONTINENT.americas,
       name: "\u{1F30E} \u7F8E\u6D32",
       helperName: "\u7F8E\u6D32",
       flags: CONTINENT_FLAGS[CONTINENT.americas]
-    },
-    { key: CONTINENT.other, name: "\u{1F310} \u5176\u4ED6/\u672A\u5206\u7C7B", helperName: "\u5176\u4ED6/\u672A\u5206\u7C7B", flags: [] }
+    }),
+    Object.freeze({
+      key: CONTINENT.other,
+      name: "\u{1F310} \u5176\u4ED6/\u672A\u5206\u7C7B",
+      helperName: "\u5176\u4ED6/\u672A\u5206\u7C7B",
+      flags: Object.freeze([])
+    })
   ]);
   var SOURCE_GROUPS = Object.freeze([
-    { kind: SOURCE_KIND.selfHosted, name: "\u{1F3E0} \u81EA\u5EFA\u8282\u70B9", filter: "^\\S+ \\[\u81EA\u5EFA\\] .+$" },
-    { kind: SOURCE_KIND.airport, name: "\u{1F3E2} \u673A\u573A\u8282\u70B9", filter: "^\\S+ \\[\u673A\u573A\\] .+$" },
-    { kind: SOURCE_KIND.realm, name: "\u21AA\uFE0F Realm \u8F6C\u53D1", filter: "^\\S+ \\[Realm\\] .+$" },
-    { kind: SOURCE_KIND.serverChain, name: "\u26D3\uFE0F \u94FE\u5F0F\u4EE3\u7406", filter: "^\\S+ \\[\u94FE\u5F0F\u4EE3\u7406\\] .+$" }
-  ]);
-  var PROXY_THEN_DIRECT = Object.freeze(["\u{1F680} \u8282\u70B9\u9009\u62E9", "DIRECT"]);
-  var PROXY_FIRST_SERVICE_DEFAULTS = Object.freeze({
-    beforeCandidates: ["\u{1F680} \u8282\u70B9\u9009\u62E9"],
-    afterCandidates: ["DIRECT"],
-    policySelectName: "\u{1F680} \u8282\u70B9\u9009\u62E9"
-  });
-  var DIRECT_FIRST_SERVICE_DEFAULTS = Object.freeze({
-    beforeCandidates: ["DIRECT", "\u{1F680} \u8282\u70B9\u9009\u62E9"],
-    afterCandidates: [],
-    policySelectName: "DIRECT"
-  });
-  var SERVICE_GROUPS = Object.freeze([
-    ["\u{1F419} GitHub", PROXY_FIRST_SERVICE_DEFAULTS],
-    ["\u{1F4FA} YouTube", PROXY_FIRST_SERVICE_DEFAULTS],
-    ["\u{1F3AC} Netflix", PROXY_FIRST_SERVICE_DEFAULTS],
-    ["\u{1F3F0} Disney+", PROXY_FIRST_SERVICE_DEFAULTS],
-    ["\u{1F3B5} Spotify", PROXY_FIRST_SERVICE_DEFAULTS],
-    ["\u{1F30D} \u56FD\u9645\u5A92\u4F53", PROXY_FIRST_SERVICE_DEFAULTS],
-    ["\u2708\uFE0F Telegram", PROXY_FIRST_SERVICE_DEFAULTS],
-    ["\u{1F4AC} \u6D77\u5916\u793E\u4EA4", PROXY_FIRST_SERVICE_DEFAULTS],
-    ["\u{1F3B6} TikTok", PROXY_FIRST_SERVICE_DEFAULTS],
-    ["\u{1F34E} Apple", DIRECT_FIRST_SERVICE_DEFAULTS],
-    ["\u{1FA9F} Microsoft", DIRECT_FIRST_SERVICE_DEFAULTS],
-    ["\u{1F4FA} \u54D4\u54E9\u54D4\u54E9", DIRECT_FIRST_SERVICE_DEFAULTS],
-    ["\u{1F3B5} \u6296\u97F3", DIRECT_FIRST_SERVICE_DEFAULTS],
-    ["\u{1F4D5} \u5C0F\u7EA2\u4E66", DIRECT_FIRST_SERVICE_DEFAULTS],
-    ["\u{1F9E3} \u5FAE\u535A", DIRECT_FIRST_SERVICE_DEFAULTS],
-    ["\u{1F579}\uFE0F \u6E38\u620F\u5E73\u53F0", PROXY_FIRST_SERVICE_DEFAULTS]
+    Object.freeze({ kind: SOURCE_KIND.selfHosted, name: "\u{1F3E0} \u81EA\u5EFA\u8282\u70B9", filter: "^\\S+ \\[\u81EA\u5EFA\\] .+$" }),
+    Object.freeze({ kind: SOURCE_KIND.airport, name: "\u{1F3E2} \u673A\u573A\u8282\u70B9", filter: "^\\S+ \\[\u673A\u573A\\] .+$" }),
+    Object.freeze({ kind: SOURCE_KIND.realm, name: "\u21AA\uFE0F Realm \u8F6C\u53D1", filter: "^\\S+ \\[Realm\\] .+$" }),
+    Object.freeze({ kind: SOURCE_KIND.serverChain, name: "\u26D3\uFE0F \u94FE\u5F0F\u4EE3\u7406", filter: "^\\S+ \\[\u94FE\u5F0F\u4EE3\u7406\\] .+$" })
   ]);
   function continentFilter(continent) {
     if (continent.key === CONTINENT.other) {
@@ -329,22 +304,84 @@ var ShadowrocketProfileBundle = (() => {
     }
     return `^(?:${continent.flags.join("|")}) .+$`;
   }
-  function helper(name, type, preset, filter, items = []) {
-    return {
-      name,
-      type,
-      items,
-      useSubscription: true,
-      filter,
-      url: TEST_URL,
-      interval: preset.testInterval,
-      timeout: preset.timeout,
-      tolerance: preset.tolerance,
-      hidden: true
-    };
+
+  // ../../../shared/policies/catalog.js
+  var TEST_URL = "http://www.gstatic.com/generate_204";
+  var STRATEGY = Object.freeze({
+    select: "select",
+    autoTest: "auto-test",
+    fallback: "fallback"
+  });
+  var GROUP_KIND = Object.freeze({
+    helper: "helper",
+    primary: "primary",
+    continent: "continent",
+    source: "source",
+    ai: "ai",
+    service: "service",
+    special: "special",
+    security: "security",
+    chain: "chain"
+  });
+  var PROXY_THEN_DIRECT = Object.freeze(["\u{1F680} \u8282\u70B9\u9009\u62E9", "DIRECT"]);
+  var PROXY_FIRST_SERVICE_DEFAULTS = Object.freeze({
+    beforeCandidates: Object.freeze(["\u{1F680} \u8282\u70B9\u9009\u62E9"]),
+    afterCandidates: Object.freeze(["DIRECT"]),
+    defaultChoice: "\u{1F680} \u8282\u70B9\u9009\u62E9"
+  });
+  var DIRECT_FIRST_SERVICE_DEFAULTS = Object.freeze({
+    beforeCandidates: Object.freeze(["DIRECT", "\u{1F680} \u8282\u70B9\u9009\u62E9"]),
+    afterCandidates: Object.freeze([]),
+    defaultChoice: "DIRECT"
+  });
+  var SERVICE_GROUPS = Object.freeze([
+    Object.freeze(["\u{1F419} GitHub", PROXY_FIRST_SERVICE_DEFAULTS]),
+    Object.freeze(["\u{1F4FA} YouTube", PROXY_FIRST_SERVICE_DEFAULTS]),
+    Object.freeze(["\u{1F3AC} Netflix", PROXY_FIRST_SERVICE_DEFAULTS]),
+    Object.freeze(["\u{1F3F0} Disney+", PROXY_FIRST_SERVICE_DEFAULTS]),
+    Object.freeze(["\u{1F3B5} Spotify", PROXY_FIRST_SERVICE_DEFAULTS]),
+    Object.freeze(["\u{1F30D} \u56FD\u9645\u5A92\u4F53", PROXY_FIRST_SERVICE_DEFAULTS]),
+    Object.freeze(["\u2708\uFE0F Telegram", PROXY_FIRST_SERVICE_DEFAULTS]),
+    Object.freeze(["\u{1F4AC} \u6D77\u5916\u793E\u4EA4", PROXY_FIRST_SERVICE_DEFAULTS]),
+    Object.freeze(["\u{1F3B6} TikTok", PROXY_FIRST_SERVICE_DEFAULTS]),
+    Object.freeze(["\u{1F34E} Apple", DIRECT_FIRST_SERVICE_DEFAULTS]),
+    Object.freeze(["\u{1FA9F} Microsoft", DIRECT_FIRST_SERVICE_DEFAULTS]),
+    Object.freeze(["\u{1F4FA} \u54D4\u54E9\u54D4\u54E9", DIRECT_FIRST_SERVICE_DEFAULTS]),
+    Object.freeze(["\u{1F3B5} \u6296\u97F3", DIRECT_FIRST_SERVICE_DEFAULTS]),
+    Object.freeze(["\u{1F4D5} \u5C0F\u7EA2\u4E66", DIRECT_FIRST_SERVICE_DEFAULTS]),
+    Object.freeze(["\u{1F9E3} \u5FAE\u535A", DIRECT_FIRST_SERVICE_DEFAULTS]),
+    Object.freeze(["\u{1F579}\uFE0F \u6E38\u620F\u5E73\u53F0", PROXY_FIRST_SERVICE_DEFAULTS])
+  ]);
+  function policyGroup({
+    kind,
+    name,
+    strategy = STRATEGY.select,
+    candidates = [],
+    nodeFilter = null,
+    test = null,
+    hidden,
+    defaultChoice
+  }) {
+    return { kind, name, strategy, candidates, nodeFilter, test, hidden, defaultChoice };
   }
-  function subscriptionGroup(name, filter, items = ["DIRECT"]) {
-    return { name, type: "select", items, useSubscription: true, filter };
+  function helper(kind, name, strategy, preset, nodeFilter, candidates = []) {
+    return policyGroup({
+      kind,
+      name,
+      strategy,
+      candidates,
+      nodeFilter,
+      test: {
+        url: TEST_URL,
+        interval: preset.testInterval,
+        timeout: preset.timeout,
+        tolerance: preset.tolerance
+      },
+      hidden: true
+    });
+  }
+  function subscriptionGroup(kind, name, nodeFilter, candidates = ["DIRECT"], options = {}) {
+    return policyGroup({ kind, name, candidates, nodeFilter, ...options });
   }
   function automaticHelperName(continent) {
     return `\u26A1 ${continent.helperName}\u81EA\u52A8`;
@@ -375,7 +412,11 @@ var ShadowrocketProfileBundle = (() => {
     }[blockMode] ?? ["REJECT", "REJECT", "DIRECT"];
     return ["\u2623\uFE0F \u5B89\u5168\u5A01\u80C1", "\u{1F9F1} \u5E38\u89C1\u5E7F\u544A", "\u{1F575}\uFE0F \u4E25\u683C\u8DDF\u8E2A"].map((name, index) => {
       const primary = defaults[index];
-      return { name, type: "select", items: [primary, primary === "REJECT" ? "DIRECT" : "REJECT"] };
+      return policyGroup({
+        kind: GROUP_KIND.security,
+        name,
+        candidates: [primary, primary === "REJECT" ? "DIRECT" : "REJECT"]
+      });
     });
   }
   function effectiveAutoMode(requested, nodeCount) {
@@ -384,67 +425,120 @@ var ShadowrocketProfileBundle = (() => {
     if (nodeCount <= 100) return "balanced";
     return "minimal";
   }
-  function buildGroups(options, nodes) {
+  function buildPolicyGroups(options, nodes) {
     const normalizedNodes = Array.isArray(nodes) ? nodes : [];
     const preset = platformPreset(options.platform);
     const mode = effectiveAutoMode(options.autoGroupMode, normalizedNodes.length);
     const presentContinents = CONTINENTS.filter((continent) => normalizedNodes.some((node) => nodeMetadata(node).continent === continent.key && !nodeMetadata(node).chained));
     const chainEligible = options.clientChain === "on" && normalizedNodes.some((node) => nodeMetadata(node).entry === true && !nodeMetadata(node).chained) && normalizedNodes.some((node) => nodeMetadata(node).chained === true);
     const groups = [
-      helper("\u26A1 \u5168\u90E8\u81EA\u52A8", "url-test", preset, NON_CHAINED_FILTER),
-      helper("\u{1F6DF} \u5168\u90E8\u6545\u969C\u8F6C\u79FB", "fallback", preset, NON_CHAINED_FILTER)
+      helper(GROUP_KIND.helper, "\u26A1 \u5168\u90E8\u81EA\u52A8", STRATEGY.autoTest, preset, NON_CHAINED_FILTER),
+      helper(GROUP_KIND.helper, "\u{1F6DF} \u5168\u90E8\u6545\u969C\u8F6C\u79FB", STRATEGY.fallback, preset, NON_CHAINED_FILTER)
     ];
-    if (chainEligible) groups.push(helper("\u26A1 \u5165\u53E3\u81EA\u52A8", "url-test", preset, ENTRY_FILTER));
+    if (chainEligible) {
+      groups.push(helper(GROUP_KIND.chain, "\u26A1 \u5165\u53E3\u81EA\u52A8", STRATEGY.autoTest, preset, ENTRY_FILTER));
+    }
     if (mode !== "minimal") {
       for (const continent of presentContinents) {
-        groups.push(helper(automaticHelperName(continent), "url-test", preset, continentFilter(continent)));
-        if (mode === "full") groups.push(helper(fallbackHelperName(continent), "fallback", preset, continentFilter(continent)));
+        groups.push(helper(
+          GROUP_KIND.helper,
+          automaticHelperName(continent),
+          STRATEGY.autoTest,
+          preset,
+          continentFilter(continent)
+        ));
+        if (mode === "full") {
+          groups.push(helper(
+            GROUP_KIND.helper,
+            fallbackHelperName(continent),
+            STRATEGY.fallback,
+            preset,
+            continentFilter(continent)
+          ));
+        }
       }
     }
-    groups.push({ name: "\u{1F680} \u8282\u70B9\u9009\u62E9", type: "select", items: ["PROXY"] });
+    groups.push(policyGroup({ kind: GROUP_KIND.primary, name: "\u{1F680} \u8282\u70B9\u9009\u62E9", candidates: ["PROXY"] }));
     for (const continent of presentContinents) {
-      groups.push(subscriptionGroup(continent.name, continentFilter(continent), continentHelperItems(continent, mode)));
+      groups.push(subscriptionGroup(
+        GROUP_KIND.continent,
+        continent.name,
+        continentFilter(continent),
+        continentHelperItems(continent, mode)
+      ));
     }
     for (const source of SOURCE_GROUPS) {
       if (normalizedNodes.some((node) => nodeMetadata(node).sourceKind === source.kind && !nodeMetadata(node).chained)) {
-        groups.push(subscriptionGroup(source.name, source.filter));
+        groups.push(subscriptionGroup(GROUP_KIND.source, source.name, source.filter));
       }
     }
     if (chainEligible) {
-      groups.push(subscriptionGroup("\u{1F3AF} \u5BA2\u6237\u7AEF\u843D\u5730", "^\u{1F517} .+$"));
+      groups.push(subscriptionGroup(GROUP_KIND.chain, "\u{1F3AF} \u5BA2\u6237\u7AEF\u843D\u5730", "^\u{1F517} .+$"));
     }
-    const aiContinentGroups = presentContinents.map((continent) => ({
-      ...subscriptionGroup(`\u{1F916} AI ${continent.helperName}`, continentFilter(continent), continentHelperItems(continent, mode)),
-      hidden: true
-    }));
+    const aiContinentGroups = presentContinents.map((continent) => subscriptionGroup(
+      GROUP_KIND.ai,
+      `\u{1F916} AI ${continent.helperName}`,
+      continentFilter(continent),
+      continentHelperItems(continent, mode),
+      { hidden: true }
+    ));
     groups.push(...aiContinentGroups);
-    groups.push(subscriptionGroup("\u{1F916} AI \u4E13\u7528", ALL_NODES_FILTER, aiContinentGroups.map((group) => group.name)));
+    groups.push(subscriptionGroup(
+      GROUP_KIND.ai,
+      "\u{1F916} AI \u4E13\u7528",
+      ALL_NODES_FILTER,
+      aiContinentGroups.map((group) => group.name)
+    ));
     const presentContinentNames = presentContinents.map((continent) => continent.name);
     for (const [name, defaults] of SERVICE_GROUPS) {
-      groups.push({
-        ...subscriptionGroup(name, ALL_NODES_FILTER, serviceChoiceItems(defaults, presentContinentNames)),
-        policySelectName: defaults.policySelectName
-      });
+      groups.push(subscriptionGroup(
+        GROUP_KIND.service,
+        name,
+        ALL_NODES_FILTER,
+        serviceChoiceItems(defaults, presentContinentNames),
+        { defaultChoice: defaults.defaultChoice }
+      ));
     }
     if (normalizedNodes.some((node) => nodeMetadata(node).udp === true && !nodeMetadata(node).chained)) {
-      groups.push(subscriptionGroup("\u{1F3AE} \u6E38\u620F\u8FDE\u63A5", GAME_FILTER));
+      groups.push(subscriptionGroup(GROUP_KIND.special, "\u{1F3AE} \u6E38\u620F\u8FDE\u63A5", GAME_FILTER));
     } else {
-      groups.push({ name: "\u{1F3AE} \u6E38\u620F\u8FDE\u63A5", type: "select", items: ["DIRECT"] });
+      groups.push(policyGroup({ kind: GROUP_KIND.special, name: "\u{1F3AE} \u6E38\u620F\u8FDE\u63A5", candidates: ["DIRECT"] }));
     }
     if (normalizedNodes.some((node) => nodeMetadata(node).p2p === true && !nodeMetadata(node).chained)) {
-      groups.push(subscriptionGroup("\u2B07\uFE0F \u4E0B\u8F7D/P2P", P2P_FILTER));
+      groups.push(subscriptionGroup(GROUP_KIND.special, "\u2B07\uFE0F \u4E0B\u8F7D/P2P", P2P_FILTER));
     } else {
-      groups.push({ name: "\u2B07\uFE0F \u4E0B\u8F7D/P2P", type: "select", items: ["DIRECT"] });
+      groups.push(policyGroup({ kind: GROUP_KIND.special, name: "\u2B07\uFE0F \u4E0B\u8F7D/P2P", candidates: ["DIRECT"] }));
     }
-    groups.push({ name: "\u{1F9ED} DNS \u4E0E\u89C4\u5219\u4E0B\u8F7D", type: "select", items: [...PROXY_THEN_DIRECT] });
+    groups.push(policyGroup({
+      kind: GROUP_KIND.special,
+      name: "\u{1F9ED} DNS \u4E0E\u89C4\u5219\u4E0B\u8F7D",
+      candidates: [...PROXY_THEN_DIRECT]
+    }));
     groups.push(...securityGroups(options.blockMode));
     if (chainEligible) {
-      groups.push(subscriptionGroup("\u{1F517} \u5165\u53E3\u8282\u70B9", ENTRY_FILTER, ["\u26A1 \u5165\u53E3\u81EA\u52A8"]));
+      groups.push(subscriptionGroup(GROUP_KIND.chain, "\u{1F517} \u5165\u53E3\u8282\u70B9", ENTRY_FILTER, ["\u26A1 \u5165\u53E3\u81EA\u52A8"]));
     }
     return groups;
   }
 
-  // src/render-groups.js
+  // group-catalog.js
+  function buildGroups(options, nodes) {
+    return buildPolicyGroups(options, nodes).map((group) => ({
+      name: group.name,
+      type: group.strategy === "auto-test" ? "url-test" : group.strategy,
+      items: group.candidates,
+      useSubscription: group.nodeFilter === null ? void 0 : true,
+      filter: group.nodeFilter ?? void 0,
+      url: group.test?.url,
+      interval: group.test?.interval,
+      timeout: group.test?.timeout,
+      tolerance: group.test?.tolerance,
+      hidden: group.hidden,
+      policySelectName: group.defaultChoice
+    }));
+  }
+
+  // render-groups.js
   function escapeValue(value) {
     const string = String(value);
     if (/[\r\n]/.test(string)) throw new Error("Group field values must not contain CR or LF");
@@ -478,34 +572,46 @@ var ShadowrocketProfileBundle = (() => {
     });
   }
 
-  // src/custom-rules.js
-  var CUSTOM_BLOCK = Object.freeze([]);
-  var CUSTOM_DIRECT = Object.freeze([]);
-  var CUSTOM_PROXY = Object.freeze([]);
-  var CUSTOM_AI = Object.freeze([
-    "DOMAIN-SUFFIX,perplexity.ai",
-    "DOMAIN-SUFFIX,pplx.ai",
-    "DOMAIN-SUFFIX,x.ai",
-    "DOMAIN-SUFFIX,grok.com",
-    "DOMAIN-SUFFIX,poe.com",
-    "DOMAIN-SUFFIX,poecdn.net"
-  ]);
+  // ../../../shared/rules/custom-rules.js
+  var CUSTOM_RULES = Object.freeze({
+    block: Object.freeze([]),
+    direct: Object.freeze([]),
+    proxy: Object.freeze([]),
+    ai: Object.freeze([
+      "DOMAIN-SUFFIX,perplexity.ai",
+      "DOMAIN-SUFFIX,pplx.ai",
+      "DOMAIN-SUFFIX,x.ai",
+      "DOMAIN-SUFFIX,grok.com",
+      "DOMAIN-SUFFIX,poe.com",
+      "DOMAIN-SUFFIX,poecdn.net"
+    ])
+  });
 
-  // src/rule-catalog.js
+  // custom-rules.js
+  var {
+    block: CUSTOM_BLOCK,
+    direct: CUSTOM_DIRECT,
+    proxy: CUSTOM_PROXY,
+    ai: CUSTOM_AI
+  } = CUSTOM_RULES;
+
+  // ../../../shared/rules/catalog.js
   var RULE_ROOT = "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Shadowrocket";
-  function rule(id, policy, minEntries, type = "RULE-SET", directory = id) {
+  function rule(id, policy, minEntries, inputFormat = "RULE-SET", directory = id) {
+    const sourcePath = `${directory}/${id}.list`;
     return Object.freeze({
       id,
-      url: `${RULE_ROOT}/${directory}/${id}.list`,
+      sourcePath,
+      upstreamUrl: `${RULE_ROOT}/${sourcePath}`,
       policy,
       minEntries,
-      type
+      inputFormat
     });
   }
-  var RULE_CATALOG = Object.freeze([
+  var RULE_SOURCE_CATALOG = Object.freeze([
     rule("Hijacking", "\u2623\uFE0F \u5B89\u5168\u5A01\u80C1", 150),
     rule("BlockHttpDNS", "\u2623\uFE0F \u5B89\u5168\u5A01\u80C1", 40),
-    rule("AdvertisingLite", "\u{1F9F1} \u5E38\u89C1\u5E7F\u544A", 250),
+    rule("Advertising", "\u{1F9F1} \u5E38\u89C1\u5E7F\u544A", 1e4),
     rule("Privacy", "\u{1F575}\uFE0F \u4E25\u683C\u8DDF\u8E2A", 15),
     rule("BiliBili", "\u{1F4FA} \u54D4\u54E9\u54D4\u54E9", 80),
     rule("ByteDance", "\u{1F3B5} \u6296\u97F3", 300),
@@ -535,8 +641,11 @@ var ShadowrocketProfileBundle = (() => {
     rule("PrivateTracker", "\u2B07\uFE0F \u4E0B\u8F7D/P2P", 150),
     rule("ChinaMax", "DIRECT", 8e3)
   ]);
+  function orderedRuleAssignments() {
+    return RULE_SOURCE_CATALOG.map(({ id, policy }) => Object.freeze({ sourceId: id, policy }));
+  }
 
-  // src/rule-validator.js
+  // rule-validator.js
   var ALLOWED_TYPES = /* @__PURE__ */ new Set([
     "DOMAIN",
     "DOMAIN-SUFFIX",
@@ -742,7 +851,7 @@ var ShadowrocketProfileBundle = (() => {
     return tail.length === 0 && isValidRuleTarget(type, target);
   }
 
-  // src/render-rules.js
+  // render-rules.js
   var LOCAL_RULES = Object.freeze([
     "DOMAIN-SUFFIX,local,DIRECT",
     "DOMAIN-SUFFIX,home.arpa,DIRECT",
@@ -759,51 +868,16 @@ var ShadowrocketProfileBundle = (() => {
     "IP-CIDR6,fe80::/10,DIRECT,no-resolve",
     "IP-CIDR6,ff00::/8,DIRECT,no-resolve"
   ]);
-  var CUSTOM_RULES = Object.freeze([
+  var CUSTOM_RULES2 = Object.freeze([
     Object.freeze(["CUSTOM_BLOCK", CUSTOM_BLOCK, "REJECT"]),
     Object.freeze(["CUSTOM_DIRECT", CUSTOM_DIRECT, "DIRECT"]),
     Object.freeze(["CUSTOM_PROXY", CUSTOM_PROXY, "\u{1F680} \u8282\u70B9\u9009\u62E9"]),
     Object.freeze(["CUSTOM_AI", CUSTOM_AI, "\u{1F916} AI \u4E13\u7528"])
   ]);
-  var PRE_GAME_RULE_IDS = Object.freeze([
-    "Hijacking",
-    "BlockHttpDNS",
-    "AdvertisingLite",
-    "Privacy",
-    "BiliBili",
-    "ByteDance",
-    "XiaoHongShu",
-    "Weibo",
-    "OpenAI",
-    "Claude",
-    "Gemini",
-    "Copilot",
-    "GitHub",
-    "YouTube",
-    "Netflix",
-    "Disney",
-    "Spotify",
-    "GlobalMedia",
-    "Telegram",
-    "Facebook",
-    "Instagram",
-    "Twitter",
-    "TikTok",
-    "Apple",
-    "Microsoft"
-  ]);
   var GAME_DIRECT_RULES = Object.freeze([
     "DOMAIN-SUFFIX,leiting.com,DIRECT",
     "DOMAIN-SUFFIX,leitingcn.com,DIRECT",
     "DOMAIN-SUFFIX,g-bits.com,DIRECT"
-  ]);
-  var DOMESTIC_BEFORE_GAME_RULE_IDS = Object.freeze(["SteamCN", "ChinaMax_Domain"]);
-  var POST_GAME_RULE_IDS = Object.freeze(["Download", "PrivateTracker", "ChinaMax"]);
-  var REQUIRED_RULE_IDS = Object.freeze([
-    ...PRE_GAME_RULE_IDS,
-    ...DOMESTIC_BEFORE_GAME_RULE_IDS,
-    "Game",
-    ...POST_GAME_RULE_IDS
   ]);
   function isSafeCustomField(value) {
     return typeof value === "string" && value.length > 0 && value.trim() === value && !/[\r\n,=]/.test(value);
@@ -827,44 +901,55 @@ var ShadowrocketProfileBundle = (() => {
       }
     }
   }
-  function validatedCatalog() {
+  function validatedCatalog(assignments) {
     const entriesById = /* @__PURE__ */ new Map();
-    for (const entry of RULE_CATALOG) {
+    for (const entry of RULE_SOURCE_CATALOG) {
       const entries = entriesById.get(entry.id) ?? [];
       entries.push(entry);
       entriesById.set(entry.id, entries);
     }
-    for (const id of REQUIRED_RULE_IDS) {
-      if (entriesById.get(id)?.length !== 1) throw new Error(`Invalid rule catalog entry: ${id}`);
+    for (const { sourceId, policy } of assignments) {
+      const entries = entriesById.get(sourceId);
+      if (entries?.length !== 1 || entries[0].policy !== policy) {
+        throw new Error(`Invalid rule catalog entry: ${sourceId}`);
+      }
     }
     return entriesById;
   }
-  function catalogRule(entriesById, id) {
-    return entriesById.get(id)[0];
+  function catalogRule(entriesById, assignment) {
+    return entriesById.get(assignment.sourceId)[0];
   }
   function renderRuleSet(entry) {
-    return `${entry.type},${entry.url},${entry.policy},update-interval=86400`;
+    return `${entry.inputFormat},${entry.upstreamUrl},${entry.policy},update-interval=86400`;
   }
   function renderRules() {
-    validateCustomRules(CUSTOM_RULES);
-    const entriesById = validatedCatalog();
+    validateCustomRules(CUSTOM_RULES2);
+    const assignments = orderedRuleAssignments();
+    const entriesById = validatedCatalog(assignments);
+    const steamIndex = assignments.findIndex(({ sourceId }) => sourceId === "SteamCN");
+    const gameIndex = assignments.findIndex(({ sourceId }) => sourceId === "Game");
+    if (steamIndex < 0 || gameIndex <= steamIndex) throw new Error("Invalid rule assignment order");
+    const preGameAssignments = assignments.slice(0, steamIndex);
+    const domesticBeforeGameAssignments = assignments.slice(steamIndex, gameIndex);
+    const gameAssignment = assignments[gameIndex];
+    const postGameAssignments = assignments.slice(gameIndex + 1);
     const lines = [...LOCAL_RULES, "# Custom rules"];
-    for (const [name, rules, policy] of CUSTOM_RULES) {
+    for (const [name, rules, policy] of CUSTOM_RULES2) {
       lines.push(`# ${name}`);
       lines.push(...rules.map((rule2) => `${rule2},${policy}`));
     }
-    lines.push(...PRE_GAME_RULE_IDS.map((id) => renderRuleSet(catalogRule(entriesById, id))));
+    lines.push(...preGameAssignments.map((assignment) => renderRuleSet(catalogRule(entriesById, assignment))));
     lines.push(...GAME_DIRECT_RULES);
-    lines.push(...DOMESTIC_BEFORE_GAME_RULE_IDS.map((id) => renderRuleSet(catalogRule(entriesById, id))));
-    const game = catalogRule(entriesById, "Game");
-    lines.push(`AND,((PROTOCOL,UDP),(RULE-SET,${game.url})),\u{1F3AE} \u6E38\u620F\u8FDE\u63A5`);
+    lines.push(...domesticBeforeGameAssignments.map((assignment) => renderRuleSet(catalogRule(entriesById, assignment))));
+    const game = catalogRule(entriesById, gameAssignment);
+    lines.push(`AND,((PROTOCOL,UDP),(RULE-SET,${game.upstreamUrl})),\u{1F3AE} \u6E38\u620F\u8FDE\u63A5`);
     lines.push(renderRuleSet(game));
-    lines.push(...POST_GAME_RULE_IDS.map((id) => renderRuleSet(catalogRule(entriesById, id))));
+    lines.push(...postGameAssignments.map((assignment) => renderRuleSet(catalogRule(entriesById, assignment))));
     lines.push("GEOIP,CN,DIRECT", "FINAL,\u{1F680} \u8282\u70B9\u9009\u62E9");
     return lines;
   }
 
-  // src/render-profile.js
+  // render-profile.js
   var NODE_REFRESH_SECONDS = 21600;
   var RULE_REFRESH_SECONDS = 86400;
   function renderProfile(rawOptions, nodes) {
@@ -894,7 +979,7 @@ ${renderRules().join("\n")}`
     ].join("\n\n") + "\n";
   }
 
-  // src/validate-profile.js
+  // validate-profile.js
   var BUILTIN_POLICIES = /* @__PURE__ */ new Set(["DIRECT", "REJECT", "PROXY"]);
   var GROUP_TYPES = /* @__PURE__ */ new Set(["select", "url-test", "fallback", "load-balance", "random"]);
   var REQUIRED_SECTIONS = /* @__PURE__ */ new Set(["General", "Proxy Group", "Rule"]);
@@ -1139,7 +1224,7 @@ ${renderRules().join("\n")}`
     return { valid: result.length === 0, errors: result };
   }
 
-  // src/substore-profile-entry.js
+  // substore-profile-entry.js
   async function operator(input, targetPlatform, context = {}) {
     void targetPlatform;
     const options = parseOptions(context.arguments ?? {});
