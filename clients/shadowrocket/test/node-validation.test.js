@@ -77,6 +77,45 @@ test("requires string credentials and a positive integer Snell version", () => {
   }
 });
 
+test("requires every protocol's authentication and security fields", () => {
+  const common = {
+    name: "Protocol contract",
+    server: "contract.example.invalid",
+    port: 443,
+  };
+  const contracts = [
+    ["ss", { cipher: "aes-128-gcm", password: "TEST_ONLY_PASSWORD" }, ["cipher", "password"]],
+    ["shadowsocks", { cipher: "aes-128-gcm", password: "TEST_ONLY_PASSWORD" }, ["cipher", "password"]],
+    ["ssr", { cipher: "aes-128-ctr", password: "TEST_ONLY_PASSWORD", protocol: "auth_sha1_v4", obfs: "tls1.2_ticket_auth" }, ["cipher", "password", "protocol", "obfs"]],
+    ["snell", { psk: "TEST_ONLY_PSK", version: 4 }, ["psk", "version"]],
+    ["vmess", { uuid: "TEST_ONLY_UUID" }, ["uuid"]],
+    ["vless", { uuid: "TEST_ONLY_UUID" }, ["uuid"]],
+    ["trojan", { password: "TEST_ONLY_PASSWORD", sni: "tls.example.invalid" }, ["password"]],
+    ["anytls", { password: "TEST_ONLY_PASSWORD", sni: "tls.example.invalid" }, ["password"]],
+    ["hysteria2", { password: "TEST_ONLY_PASSWORD", sni: "tls.example.invalid" }, ["password"]],
+    ["hy2", { password: "TEST_ONLY_PASSWORD", sni: "tls.example.invalid" }, ["password"]],
+    ["tuic", { uuid: "TEST_ONLY_UUID", password: "TEST_ONLY_PASSWORD", sni: "tls.example.invalid" }, ["uuid", "password"]],
+    ["wireguard", { "private-key": "TEST_ONLY_PRIVATE_KEY", "public-key": "TEST_ONLY_PUBLIC_KEY" }, ["private-key", "public-key"]],
+    ["sudoku", { key: "TEST_ONLY_SUDOKU_KEY" }, ["key"]],
+  ];
+
+  for (const [type, fields, required] of contracts) {
+    const valid = { ...common, type, ...fields };
+    assert.equal(validateNode(valid).valid, true, `${type} complete`);
+    for (const field of required) {
+      assert.deepEqual(
+        validateNode({ ...valid, [field]: " " }),
+        { valid: false, reason: "missing-auth", warnings: [] },
+        `${type} missing ${field}`,
+      );
+    }
+  }
+
+  for (const type of ["socks5", "http"]) {
+    assert.equal(validateNode({ ...common, type }).valid, true, `${type} supports unauthenticated endpoints`);
+  }
+});
+
 test("reports UDP only when explicit and warns for unclear TLS verification", () => {
   assert.equal(hasExplicitUdp({ udp: true }), true);
   assert.equal(hasExplicitUdp({ type: "hysteria2" }), false);

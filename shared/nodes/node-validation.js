@@ -1,18 +1,6 @@
+import { protocolDefinition } from "./protocol-registry.js";
+
 const PSEUDO_NODE_PATTERN = /剩余|流量|到期|套餐|官网|公告|通知|traffic|expire|website/i;
-
-const AUTH_FIELDS = {
-  ss: ["cipher", "password"],
-  shadowsocks: ["cipher", "password"],
-  snell: ["psk", "version"],
-  vless: ["uuid"],
-  vmess: ["uuid"],
-  trojan: ["password"],
-  hysteria2: ["password"],
-  hy2: ["password"],
-  tuic: ["uuid", "password"],
-};
-
-const TLS_PROTOCOLS = new Set(["trojan", "hysteria2", "hy2", "tuic"]);
 
 function isNonblankString(value) {
   return typeof value === "string" && value.trim().length > 0;
@@ -68,12 +56,12 @@ export function validateNode(node) {
   }
 
   const type = node.type.trim().toLowerCase();
-  if (AUTH_FIELDS[type]?.some((field) => !isValidAuthField(field, node[field]))) {
+  const definition = protocolDefinition(type);
+  if (definition?.requiredFields.some((field) => !isValidAuthField(field, node[field]))) {
     return { valid: false, reason: "missing-auth", warnings: [] };
   }
 
-  const tls = node.tls === true || TLS_PROTOCOLS.has(type);
+  const tls = node.tls === true || definition?.tls === true;
   const warnings = tls && !hasTlsIdentity(node) ? ["tls-verification-unclear"] : [];
   return { valid: true, reason: null, warnings };
 }
-

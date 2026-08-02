@@ -3,7 +3,7 @@ import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
 import { resolve } from "node:path";
 
-import { scanFiles } from "../shared/security/secret-scan.js";
+import { scanRepositoryFiles } from "../shared/security/secret-scan.js";
 
 export {
   containsSecret,
@@ -13,10 +13,24 @@ export {
 
 const execFileAsync = promisify(execFile);
 
-async function main() {
-  const { stdout } = await execFileAsync("git", ["ls-files", "-co", "--exclude-standard"]);
-  const files = stdout.split("\n").filter((file) => file && file !== "package-lock.json");
-  const findings = await scanFiles(files);
+export async function listRepositoryFiles(cwd = process.cwd()) {
+  const { stdout: rootOutput } = await execFileAsync("git", ["rev-parse", "--show-toplevel"], {
+    cwd,
+    maxBuffer: 16 * 1024 * 1024,
+  });
+  const repositoryRoot = rootOutput.trim();
+  const { stdout } = await execFileAsync("git", ["-C", repositoryRoot, "ls-files", "-co", "--exclude-standard", "-z"], {
+    maxBuffer: 16 * 1024 * 1024,
+  });
+  return {
+    repositoryRoot,
+    files: stdout.split("\0").filter(Boolean),
+  };
+}
+
+export async function main({ cwd = process.cwd() } = {}) {
+  const { repositoryRoot, files } = await listRepositoryFiles(cwd);
+  const findings = await scanRepositoryFiles(repositoryRoot, files);
 
   if (findings.length > 0) {
     for (const finding of findings) console.error(`SECRET ${finding.file} ${finding.ruleId}`);

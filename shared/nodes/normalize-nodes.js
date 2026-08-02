@@ -3,6 +3,7 @@ import { CONTINENT, SOURCE_KIND, nodeMetadata } from "../contracts.js";
 import { createDiagnostics, increment } from "./diagnostics.js";
 import { fingerprint, identityKey, isSemanticUnderscoreKey } from "./node-identity.js";
 import { hasExplicitUdp, validateNode } from "./node-validation.js";
+import { diagnosticProtocol } from "./protocol-registry.js";
 import { classifyRegion, removeFlags } from "./regions.js";
 import { classifySource } from "./source-labels.js";
 
@@ -13,20 +14,6 @@ const CONTINENT_ORDER = new Map([
   [CONTINENT.other, 3],
 ]);
 
-const DIAGNOSTIC_PROTOCOLS = new Set([
-  "ss",
-  "shadowsocks",
-  "ssr",
-  "snell",
-  "vmess",
-  "vless",
-  "trojan",
-  "hysteria2",
-  "hy2",
-  "tuic",
-  "socks5",
-  "http",
-]);
 const EXISTING_CHAIN_MARKER = "[已有链]";
 
 function cleanDisplayName(name) {
@@ -185,9 +172,7 @@ export function normalizeNodes(nodes, { clientChain = "off" } = {}) {
     group.sort(compareDuplicateCandidates);
     const { original, cloned, source, region, validation, existingChain } = group[0];
     if (group.length > 1) increment(diagnostics.excluded, "exact-duplicate", group.length - 1);
-    const candidateProtocol = cloned.type;
-    const protocol = DIAGNOSTIC_PROTOCOLS.has(candidateProtocol) ? candidateProtocol : "unknown";
-    increment(diagnostics.protocol, protocol);
+    increment(diagnostics.protocol, diagnosticProtocol(cloned.type));
     increment(diagnostics.source, source.kind);
     increment(diagnostics.region, region.continent);
     for (const warning of [...validation.warnings, source.warning, region.warning]) {

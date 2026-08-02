@@ -1,17 +1,8 @@
 import { CLIENT } from "../contracts.js";
 import { createClientFilterDiagnostics, increment } from "./diagnostics.js";
-
-const PROTOCOLS = Object.freeze({
-  [CLIENT.shadowrocket]: new Set(["ss", "shadowsocks", "ssr", "snell", "vmess", "vless", "trojan", "hysteria2", "hy2", "tuic", "socks5", "http"]),
-  [CLIENT.egern]: new Set(["ss", "shadowsocks", "snell", "vmess", "vless", "trojan", "anytls", "hysteria2", "hy2", "tuic", "socks5", "http", "wireguard"]),
-  [CLIENT.anywhere]: new Set(["ss", "shadowsocks", "vless", "trojan", "anytls", "hysteria2", "hy2", "socks5", "sudoku"]),
-});
+import { normalizeProtocol, protocolSupportsClient } from "./protocol-registry.js";
 
 const ANYWHERE_VLESS_NETWORKS = new Set(["tcp", "ws"]);
-
-function normalizedProtocol(node) {
-  return typeof node?.type === "string" ? node.type.trim().toLowerCase() : "";
-}
 
 function hasOption(node, key) {
   return Object.hasOwn(node, key);
@@ -43,11 +34,10 @@ function supportsAnywhereTransport(node, protocol) {
 }
 
 export function evaluateNodeForClient(node, client) {
-  const protocols = PROTOCOLS[client];
-  if (!protocols) return { supported: false, reason: "unsupported-client" };
+  if (!Object.values(CLIENT).includes(client)) return { supported: false, reason: "unsupported-client" };
 
-  const protocol = normalizedProtocol(node);
-  if (!protocols.has(protocol)) return { supported: false, reason: "unsupported-protocol" };
+  const protocol = normalizeProtocol(node?.type);
+  if (!protocolSupportsClient(protocol, client)) return { supported: false, reason: "unsupported-protocol" };
 
   const transportReason = client === CLIENT.anywhere
     ? supportsAnywhereTransport(node ?? {}, protocol)

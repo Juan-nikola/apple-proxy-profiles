@@ -82,6 +82,27 @@ test("diagnostics never include fixture endpoints or credentials", () => {
   }
 });
 
+test("categorizes AnyTLS, WireGuard, and Sudoku without exposing node values", () => {
+  const common = { server: "diagnostics.example.invalid", port: 443 };
+  const input = [
+    { ...common, name: "PRIVATE_ANYTLS_NAME", type: "anytls", password: "TEST_ONLY_ANYTLS_PASSWORD", sni: "tls.example.invalid" },
+    { ...common, name: "PRIVATE_WIREGUARD_NAME", type: "wireguard", "private-key": "TEST_ONLY_WG_PRIVATE_KEY", "public-key": "TEST_ONLY_WG_PUBLIC_KEY" },
+    { ...common, name: "PRIVATE_SUDOKU_NAME", type: "sudoku", key: "TEST_ONLY_SUDOKU_KEY" },
+  ];
+
+  const { diagnostics } = normalizeNodes(input);
+  assert.deepEqual(diagnostics.protocol, { anytls: 1, wireguard: 1, sudoku: 1 });
+
+  const diagnosticsJson = JSON.stringify(diagnostics);
+  for (const node of input) {
+    assert.equal(diagnosticsJson.includes(node.name), false);
+    assert.equal(diagnosticsJson.includes(node.server), false);
+    for (const value of [node.password, node.key, node["private-key"], node["public-key"]]) {
+      if (value) assert.equal(diagnosticsJson.includes(value), false);
+    }
+  }
+});
+
 test("aggregates normalized nodes by continent instead of their display flags", () => {
   const { diagnostics } = normalizeNodes(fakeNodes);
 

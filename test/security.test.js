@@ -1,8 +1,11 @@
 import assert from "node:assert/strict";
+import { execFile } from "node:child_process";
 import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
 import test from "node:test";
+import { fileURLToPath } from "node:url";
+import { promisify } from "node:util";
 
 import {
   containsSecret,
@@ -15,6 +18,17 @@ import {
   sanitizeSyntheticPlaceholders as sanitizeSyntheticPlaceholdersFromScript,
   scanFiles as scanFilesFromScript,
 } from "../scripts/check-secrets.mjs";
+import {
+  containsSecret as containsSecretFromWorkspaceScript,
+  sanitizeSyntheticPlaceholders as sanitizeSyntheticPlaceholdersFromWorkspaceScript,
+  scanFiles as scanFilesFromWorkspaceScript,
+} from "../clients/shadowrocket/scripts/check-secrets.mjs";
+
+const execFileAsync = promisify(execFile);
+const repositoryRoot = dirname(fileURLToPath(new URL("../package.json", import.meta.url)));
+const rootScanner = fileURLToPath(new URL("../scripts/check-secrets.mjs", import.meta.url));
+const workspaceRoot = fileURLToPath(new URL("../clients/shadowrocket/", import.meta.url));
+const workspaceScanner = fileURLToPath(new URL("../clients/shadowrocket/scripts/check-secrets.mjs", import.meta.url));
 
 test("public output rejects private URLs and endpoint credentials", () => {
   const credential = ["runtime", "constructed", "credential", "value"].join("_");
@@ -30,6 +44,89 @@ test("the CLI wrapper preserves the scanner's public exports", () => {
   assert.equal(containsSecretFromScript, containsSecret);
   assert.equal(sanitizeSyntheticPlaceholdersFromScript, sanitizeSyntheticPlaceholders);
   assert.equal(scanFilesFromScript, scanFiles);
+  assert.equal(containsSecretFromWorkspaceScript, containsSecret);
+  assert.equal(sanitizeSyntheticPlaceholdersFromWorkspaceScript, sanitizeSyntheticPlaceholders);
+  assert.equal(scanFilesFromWorkspaceScript, scanFiles);
+});
+
+test("detects every supported credential-bearing URI scheme and HTTP userinfo", () => {
+  const credential = ["runtime", "constructed", "uri", "credential"].join("_");
+  const uri = (scheme) => `${scheme}${"://"}${credential}@example.invalid:443`;
+
+  for (const scheme of [
+    "ss",
+    "shadowsocks",
+    "ssr",
+    "snell",
+    "vmess",
+    "vless",
+    "trojan",
+    "anytls",
+    "hysteria",
+    "hysteria2",
+    "hy2",
+    "tuic",
+    "socks",
+    "socks5",
+    "socks5+tls",
+    "sudoku",
+    "wireguard",
+    "wg",
+  ]) {
+    assert.deepEqual(scanText("public/subscription.txt", uri(scheme)), [
+      { file: "public/subscription.txt", ruleId: "proxy-uri" },
+    ], scheme);
+  }
+
+  for (const scheme of ["http", "https"]) {
+    assert.deepEqual(scanText("public/subscription.txt", uri(scheme)), [
+      { file: "public/subscription.txt", ruleId: "http-userinfo" },
+    ], scheme);
+  }
+
+  assert.equal(containsSecret("https://juan-nikola.github.io/apple-proxy-profiles/current/rules/x.arrs"), false);
+  assert.equal(containsSecret("password: TEST_ONLY_SYNTHETIC_PASSWORD"), false);
+});
+
+test("root and workspace scanner entrypoints use the same repository scope", async () => {
+  const root = await execFileAsync(process.execPath, [rootScanner], { cwd: repositoryRoot });
+  const workspace = await execFileAsync(process.execPath, [workspaceScanner], { cwd: workspaceRoot });
+
+  assert.deepEqual(workspace, root);
+  assert.match(root.stdout, /^OK \d+ files scanned; no secrets found\n$/);
+});
+
+test("both scanner entrypoints include tracked package-lock files with redacted findings", async () => {
+  const directory = await mkdtemp(join(tmpdir(), "apple-proxy-profiles-scope-"));
+  const credential = ["runtime", "constructed", "package", "credential"].join("_");
+  const proxyUri = `${"anytls"}${"://"}${credential}@example.invalid:443`;
+  await execFileAsync("git", ["init", "-q"], { cwd: directory });
+  await writeFile(join(directory, "package-lock.json"), `${JSON.stringify({ resolved: proxyUri })}\n`, "utf8");
+  await execFileAsync("git", ["add", "package-lock.json"], { cwd: directory });
+
+  async function runFailingScanner(script) {
+    try {
+      await execFileAsync(process.execPath, [script], { cwd: directory });
+    } catch (error) {
+      assert.equal(error.code, 1);
+      return { stdout: error.stdout, stderr: error.stderr };
+    }
+    assert.fail("scanner unexpectedly accepted package-lock credential");
+  }
+
+  try {
+    const root = await runFailingScanner(rootScanner);
+    const workspace = await runFailingScanner(workspaceScanner);
+    assert.deepEqual(workspace, root);
+    assert.equal(root.stdout, "");
+    assert.equal(root.stderr, [
+      "SECRET package-lock.json proxy-uri",
+      "",
+    ].join("\n"));
+    assert.equal(JSON.stringify(root).includes(credential), false);
+  } finally {
+    await rm(directory, { recursive: true, force: true });
+  }
 });
 
 test("secret scanning does not trust broad prose markers", () => {

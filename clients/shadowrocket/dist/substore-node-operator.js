@@ -186,20 +186,73 @@ var ShadowrocketNodeBundle = (() => {
     return (hash >>> 0).toString(36).padStart(7, "0");
   }
 
+  // ../../shared/nodes/protocol-registry.js
+  function protocol(names, clients, { requiredFields = [], tls = false } = {}) {
+    return Object.freeze({
+      names: Object.freeze(names),
+      clients: Object.freeze(clients),
+      requiredFields: Object.freeze(requiredFields),
+      tls
+    });
+  }
+  var definitions = Object.freeze([
+    protocol(["ss", "shadowsocks"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere], {
+      requiredFields: ["cipher", "password"]
+    }),
+    protocol(["ssr"], [CLIENT.shadowrocket], {
+      requiredFields: ["cipher", "password", "protocol", "obfs"]
+    }),
+    protocol(["snell"], [CLIENT.shadowrocket, CLIENT.egern], {
+      requiredFields: ["psk", "version"]
+    }),
+    protocol(["vmess"], [CLIENT.shadowrocket, CLIENT.egern], {
+      requiredFields: ["uuid"]
+    }),
+    protocol(["vless"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere], {
+      requiredFields: ["uuid"]
+    }),
+    protocol(["trojan"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere], {
+      requiredFields: ["password"],
+      tls: true
+    }),
+    protocol(["anytls"], [CLIENT.egern, CLIENT.anywhere], {
+      requiredFields: ["password"],
+      tls: true
+    }),
+    protocol(["hysteria2", "hy2"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere], {
+      requiredFields: ["password"],
+      tls: true
+    }),
+    protocol(["tuic"], [CLIENT.shadowrocket, CLIENT.egern], {
+      requiredFields: ["uuid", "password"],
+      tls: true
+    }),
+    protocol(["socks5"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere]),
+    protocol(["http"], [CLIENT.shadowrocket, CLIENT.egern]),
+    protocol(["wireguard"], [CLIENT.egern], {
+      requiredFields: ["private-key", "public-key"]
+    }),
+    protocol(["sudoku"], [CLIENT.anywhere], {
+      requiredFields: ["key"]
+    })
+  ]);
+  var registry = /* @__PURE__ */ new Map();
+  for (const definition of definitions) {
+    for (const name of definition.names) registry.set(name, definition);
+  }
+  function normalizeProtocol(value) {
+    return typeof value === "string" ? value.trim().toLowerCase() : "";
+  }
+  function protocolDefinition(value) {
+    return registry.get(normalizeProtocol(value)) ?? null;
+  }
+  function diagnosticProtocol(value) {
+    const normalized = normalizeProtocol(value);
+    return registry.has(normalized) ? normalized : "unknown";
+  }
+
   // ../../shared/nodes/node-validation.js
   var PSEUDO_NODE_PATTERN = /剩余|流量|到期|套餐|官网|公告|通知|traffic|expire|website/i;
-  var AUTH_FIELDS = {
-    ss: ["cipher", "password"],
-    shadowsocks: ["cipher", "password"],
-    snell: ["psk", "version"],
-    vless: ["uuid"],
-    vmess: ["uuid"],
-    trojan: ["password"],
-    hysteria2: ["password"],
-    hy2: ["password"],
-    tuic: ["uuid", "password"]
-  };
-  var TLS_PROTOCOLS = /* @__PURE__ */ new Set(["trojan", "hysteria2", "hy2", "tuic"]);
   function isNonblankString(value) {
     return typeof value === "string" && value.trim().length > 0;
   }
@@ -233,10 +286,11 @@ var ShadowrocketNodeBundle = (() => {
       return { valid: false, reason: "missing-endpoint", warnings: [] };
     }
     const type = node.type.trim().toLowerCase();
-    if (AUTH_FIELDS[type]?.some((field) => !isValidAuthField(field, node[field]))) {
+    const definition = protocolDefinition(type);
+    if (definition?.requiredFields.some((field) => !isValidAuthField(field, node[field]))) {
       return { valid: false, reason: "missing-auth", warnings: [] };
     }
-    const tls = node.tls === true || TLS_PROTOCOLS.has(type);
+    const tls = node.tls === true || definition?.tls === true;
     const warnings = tls && !hasTlsIdentity(node) ? ["tls-verification-unclear"] : [];
     return { valid: true, reason: null, warnings };
   }
@@ -395,20 +449,6 @@ var ShadowrocketNodeBundle = (() => {
     [CONTINENT.americas, 2],
     [CONTINENT.other, 3]
   ]);
-  var DIAGNOSTIC_PROTOCOLS = /* @__PURE__ */ new Set([
-    "ss",
-    "shadowsocks",
-    "ssr",
-    "snell",
-    "vmess",
-    "vless",
-    "trojan",
-    "hysteria2",
-    "hy2",
-    "tuic",
-    "socks5",
-    "http"
-  ]);
   var EXISTING_CHAIN_MARKER = "[\u5DF2\u6709\u94FE]";
   function cleanDisplayName(name) {
     const withoutMarkers = removeFlags(name).replace(/\[\s*udp\s*\]/gi, " ").replace(/\[\s*已有链\s*\]/g, " ");
@@ -543,9 +583,7 @@ var ShadowrocketNodeBundle = (() => {
       group.sort(compareDuplicateCandidates);
       const { original, cloned, source, region, validation, existingChain } = group[0];
       if (group.length > 1) increment(diagnostics.excluded, "exact-duplicate", group.length - 1);
-      const candidateProtocol = cloned.type;
-      const protocol = DIAGNOSTIC_PROTOCOLS.has(candidateProtocol) ? candidateProtocol : "unknown";
-      increment(diagnostics.protocol, protocol);
+      increment(diagnostics.protocol, diagnosticProtocol(cloned.type));
       increment(diagnostics.source, source.kind);
       increment(diagnostics.region, region.continent);
       for (const warning of [...validation.warnings, source.warning, region.warning]) {

@@ -1,9 +1,14 @@
 import { readFile } from "node:fs/promises";
+import { resolve } from "node:path";
 
 const rules = Object.freeze([
   {
     id: "proxy-uri",
-    pattern: /(?:ss|ssr|vmess|vless|trojan|hysteria2?|tuic):\/\/[^\s"'`]+/i,
+    pattern: /(?:ss|shadowsocks|ssr|snell|vmess|vless|trojan|anytls|hysteria|hysteria2|hy2|tuic|socks|socks5(?:\+tls)?|sudoku|wireguard|wg):\/\/[^\s"'`]+/i,
+  },
+  {
+    id: "http-userinfo",
+    pattern: /https?:\/\/[^\s\/"'`@]+(?::[^\s\/"'`@]+)?@[^\s"'`]+/i,
   },
   {
     id: "private-key",
@@ -65,6 +70,18 @@ export async function scanFiles(files) {
 
   for (const file of files) {
     const text = await readFile(file, "utf8");
+    if (text.includes("\0")) continue;
+    findings.push(...scanText(file, text));
+  }
+
+  return findings;
+}
+
+export async function scanRepositoryFiles(repositoryRoot, files) {
+  const findings = [];
+
+  for (const file of files) {
+    const text = await readFile(resolve(repositoryRoot, file), "utf8");
     if (text.includes("\0")) continue;
     findings.push(...scanText(file, text));
   }
