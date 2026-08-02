@@ -18,6 +18,17 @@
 - Default the Egern `🚀 节点选择` to a manual group that directly mounts the private node subscription.
 - Filter unsupported nodes before rendering and fail if no compatible node remains.
 
+## 2026-08-02 Official-Documentation Preflight Resolution
+
+- The current official Egern proxy reference explicitly documents Shadowsocks, Snell, Trojan, AnyTLS, Hysteria2, TUIC, SOCKS5, HTTP/HTTPS, VMess, VLESS, and WireGuard: <https://egernapp.com/docs/configuration/proxies/>.
+- The foundation registry already admits VMess, HTTP, and WireGuard for Egern. Task 2 must therefore map and test those protocols in addition to the originally enumerated fixtures; it must not silently filter them after the shared capability gate accepts them.
+- HTTP maps to Egern `http` with optional `username` and `password`. A source that explicitly requests TLS maps to documented `https` only when its TLS/SNI/certificate fields can be preserved without downgrade.
+- VMess maps to Egern `vmess` with `user_id`, documented `security`, `legacy`, `udp_relay`, and the same verified transport mapper used by VLESS (`http1`, `http2`, `tls`, `ws`, `wss`, or `grpc`). Unknown transports fail closed.
+- WireGuard maps to Egern `wireguard` with `private_key`, `peer_public_key`, at least one of `local_ipv4`/`local_ipv6`, and verified optional `preshared_key`, `reserved`, `dns_servers`, `mtu`, and `keepalive`. Missing local addresses or malformed multi-peer input fails closed.
+- The shared `primary-proxy` semantic candidate introduced by the completed Shadowrocket review is mapped by the Egern policy adapter to the private node-subscription URL mounted by `🚀 节点选择`; literal Shadowrocket `PROXY` must never enter shared intent or Egern YAML.
+- Use `node --test` for workspace test scripts. Node 24 does not accept the stale directory form `node --test test` used in the original draft.
+- All mappings must be pinned by synthetic reserved-address fixtures and checked against the official reference again during final milestone review because the user explicitly prefers the newest stable behavior, with beta behavior only as an opt-in.
+
 ---
 
 ## Target File Structure
@@ -128,7 +139,7 @@ git commit -m "feat: add deterministic Egern YAML rendering"
 
 - [ ] **Step 1: Add explicit protocol fixtures and failing tests**
 
-Create fake reserved-address fixtures for Shadowsocks 2022, Snell v4, VLESS TCP+Reality, VLESS WSS, VLESS gRPC+Reality, Trojan, AnyTLS, Hysteria2, TUIC, SOCKS5, and one unsupported VLESS transport.
+Create fake reserved-address fixtures for Shadowsocks 2022, Snell v4, VMess, VLESS TCP+Reality, VLESS WSS, VLESS gRPC+Reality, Trojan, AnyTLS, Hysteria2, TUIC, SOCKS5, HTTP/HTTPS, WireGuard, and unsupported transport/multi-peer cases.
 
 ```js
 test("maps VLESS Reality into Egern TLS transport", () => {
@@ -165,7 +176,10 @@ Common output fields are `name`, `server`, and numeric `port`. Map:
 - `hysteria2|hy2` → `hysteria2` with `auth`, `sni`, `obfs=salamander`, `obfs_password`, `skip_tls_verify`, `port_hopping`, `port_hopping_interval`, `bandwidth`.
 - `tuic` → `tuic` with `uuid`, `password`, `udp_relay_mode`, `alpn`, `sni`, `skip_tls_verify`, hopping fields.
 - `socks5` → `socks5` with optional `username`, `password`, `udp_relay`.
+- `http` → `http` or documented `https` with optional `username`, `password`, SNI, and certificate verification fields; reject an unrepresentable TLS shape.
+- `vmess` → `vmess` with `user_id`, `security`, `legacy`, `udp_relay`, and the verified Vmess/Vless transport mapping.
 - `vless` → `vless` with `user_id`, `flow`, `udp_relay`, and transport mapping below.
+- `wireguard` → `wireguard` with the documented keys and exactly one verified peer; require a local IPv4 or IPv6 address.
 
 - [ ] **Step 4: Implement VLESS transports without downgrades**
 
