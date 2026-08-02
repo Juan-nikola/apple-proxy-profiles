@@ -149,6 +149,88 @@ test("strictly translates supported shared custom rules with safe failures", () 
   }
 });
 
+test("rejects hostile custom-rule arrays without invoking getters or reflecting traps", () => {
+  const fixed = /^Invalid Egern custom rule configuration$/;
+  const config = (block) => ({ block, direct: [], proxy: [], ai: [] });
+  const trapText = "TEST_ONLY_HOSTILE_ARRAY_TRAP";
+
+  const hostile = [
+    new Proxy([], {
+      getPrototypeOf() { throw new Error(trapText); },
+    }),
+    new Proxy([], {
+      ownKeys() { throw new Error(trapText); },
+    }),
+    new Proxy([], {
+      getOwnPropertyDescriptor(target, key) {
+        if (key === "length") throw new Error(trapText);
+        return Reflect.getOwnPropertyDescriptor(target, key);
+      },
+    }),
+    new Proxy(["DOMAIN,blocked.example"], {
+      getOwnPropertyDescriptor(target, key) {
+        if (key === "0") throw new Error(trapText);
+        return Reflect.getOwnPropertyDescriptor(target, key);
+      },
+    }),
+    new Array(1),
+    Object.assign([], { extra: "DOMAIN,blocked.example" }),
+    Object.assign([], { [Symbol("hostile")]: "DOMAIN,blocked.example" }),
+    Object.setPrototypeOf([], null),
+  ];
+  const revoked = Proxy.revocable([], {});
+  revoked.revoke();
+  hostile.push(revoked.proxy);
+
+  let getterInvoked = false;
+  const accessor = [];
+  Object.defineProperty(accessor, "0", {
+    enumerable: true,
+    configurable: true,
+    get() {
+      getterInvoked = true;
+      throw new Error(trapText);
+    },
+  });
+  hostile.push(accessor);
+  const hiddenItem = [];
+  Object.defineProperty(hiddenItem, "0", {
+    value: "DOMAIN,blocked.example",
+    enumerable: false,
+    configurable: true,
+  });
+  hostile.push(hiddenItem);
+
+  for (const value of hostile) {
+    assert.throws(() => renderEgernCustomRules(config(value)), (error) => {
+      assert.match(error.message, fixed);
+      assert.equal(error.message.includes(trapText), false);
+      return true;
+    });
+  }
+  assert.equal(getterInvoked, false);
+
+  let lengthGetterInvoked = false;
+  const guardedLength = new Proxy(["DOMAIN,blocked.example"], {
+    get(target, key, receiver) {
+      if (key === "length") {
+        lengthGetterInvoked = true;
+        throw new Error(trapText);
+      }
+      return Reflect.get(target, key, receiver);
+    },
+  });
+  assert.deepEqual(renderEgernCustomRules(config(guardedLength)), [
+    { domain: { match: "blocked.example", policy: "REJECT" } },
+  ]);
+  assert.equal(lengthGetterInvoked, false);
+  assert.deepEqual(renderEgernCustomRules(config(Object.freeze([
+    "DOMAIN,blocked.example",
+  ]))), [
+    { domain: { match: "blocked.example", policy: "REJECT" } },
+  ]);
+});
+
 test("renders the complete root without inline proxies or private node material", () => {
   const yaml = renderEgernProfile(rawOptions(), allCompatibleNodes);
   const validation = validateEgernProfile(yaml);

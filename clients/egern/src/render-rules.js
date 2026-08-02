@@ -76,21 +76,41 @@ function ownDataRecord(value, expectedKeys) {
 }
 
 function ownArray(value) {
-  if (!Array.isArray(value)) invalidCustom();
+  let prototype;
   let keys;
+  let lengthDescriptor;
   try {
-    if (Object.getPrototypeOf(value) !== Array.prototype) invalidCustom();
+    if (!Array.isArray(value)) invalidCustom();
+    prototype = Object.getPrototypeOf(value);
     keys = Reflect.ownKeys(value);
+    lengthDescriptor = Object.getOwnPropertyDescriptor(value, "length");
   } catch {
     invalidCustom();
   }
-  if (keys.some((key) => key !== "length" && (
-    typeof key !== "string"
-    || !/^(?:0|[1-9][0-9]*)$/u.test(key)
-    || Number(key) >= value.length
-  ))) invalidCustom();
+  if (
+    prototype !== Array.prototype
+    || !lengthDescriptor
+    || "get" in lengthDescriptor
+    || "set" in lengthDescriptor
+    || !Number.isSafeInteger(lengthDescriptor.value)
+    || lengthDescriptor.value < 0
+  ) invalidCustom();
+
+  const length = lengthDescriptor.value;
+  const itemKeys = [];
+  for (const key of keys) {
+    if (key === "length") continue;
+    if (
+      typeof key !== "string"
+      || !/^(?:0|[1-9][0-9]*)$/u.test(key)
+      || Number(key) >= length
+    ) invalidCustom();
+    itemKeys.push(key);
+  }
+  if (itemKeys.length !== length) invalidCustom();
+
   const result = [];
-  for (let index = 0; index < value.length; index += 1) {
+  for (let index = 0; index < length; index += 1) {
     let descriptor;
     try {
       descriptor = Object.getOwnPropertyDescriptor(value, String(index));
