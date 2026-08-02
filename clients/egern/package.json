@@ -6,6 +6,12 @@
   "engines": { "node": ">=22" },
   "scripts": {
     "test": "node --test",
-    "verify": "npm run test"
+    "build": "node scripts/build.mjs",
+    "fixtures": "node scripts/render-fixtures.mjs",
+    "check:secrets": "node ../../scripts/check-secrets.mjs",
+    "verify": "npm run test && npm run build && npm run fixtures && npm run check:secrets && node --test test/bundles.test.js"
+  },
+  "devDependencies": {
+    "esbuild": "0.28.1"
   }
 }

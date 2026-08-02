@@ -73,9 +73,12 @@ function applyProxyQuicOverrides(rendered, shared, quicMode) {
   });
 }
 
-export function renderEgernProfile(rawOptions, nodes) {
+export function renderEgernProfile(rawOptions, nodes, { onDiagnostics } = {}) {
   const options = parseEgernOptions(rawOptions);
-  const prepared = prepareEgernInventory(nodes, { clientChain: options.clientChain });
+  const prepared = prepareEgernInventory(nodes, {
+    clientChain: options.clientChain,
+    onDiagnostics,
+  });
   const sharedGroups = buildPolicyGroups(options, prepared.nodes);
   const renderedGroups = renderEgernGroups(sharedGroups, options.nodeSubscriptionUrl);
   const root = {
