@@ -147,7 +147,7 @@ test("beginner docs contain every operational checkpoint and warning", async () 
 });
 
 test("migration documentation keeps Sub-Store objects stable while using monorepo script paths", async () => {
-  const paths = ["README.md", "docs/deployment.md", "docs/maintenance.md", "docs/troubleshooting.md", "RELEASE_CHECKLIST.md"];
+  const paths = ["README.md", "docs/deployment.md", "docs/maintenance.md", "docs/troubleshooting.md", "docs/canary-checklist.md", "RELEASE_CHECKLIST.md"];
   const files = await Promise.all(paths.map((file) => readFile(resolve(shadowrocketRoot, file), "utf8")));
   const docs = Object.fromEntries(paths.map((file, index) => [file, files[index]]));
 
@@ -158,6 +158,16 @@ test("migration documentation keeps Sub-Store objects stable while using monorep
     assert.ok(docs["docs/deployment.md"].includes(scriptPath), `deployment: missing operator installation path: ${scriptPath}`);
   }
   assert.ok(docs["docs/maintenance.md"].includes(nodeOperatorPath), "maintenance: missing isolated-chain node operator path");
+  assert.ok(docs["docs/canary-checklist.md"].includes(profileGeneratorPath), "canary: missing current Profile generator path");
+  assert.ok(docs["docs/canary-checklist.md"].includes("clients/shadowrocket/dist/"), "canary: missing current generated-output directory");
+  assert.ok(docs["docs/canary-checklist.md"].includes("clients/shadowrocket/examples/"), "canary: missing current generated-example directory");
+  for (const [file, markdown] of Object.entries(docs)) {
+    assert.doesNotMatch(
+      markdown,
+      /(?<!clients\/shadowrocket\/)dist\/(?:substore-node-operator|substore-profile-generator)\.js/,
+      `${file}: contains an obsolete root-level operator path`,
+    );
+  }
   assert.match(docs["docs/deployment.md"], /shadowrocket-sources[\s\S]*已发布 URL 都不要重命名/);
   assert.ok(docs["docs/deployment.md"].includes("HTTPS 解密保持关闭"), "deployment: HTTPS decryption must remain off");
   assert.ok(docs["docs/troubleshooting.md"].includes("旧 Profile"), "troubleshooting: missing old Profile rollback guidance");
