@@ -1,0 +1,228 @@
+import assert from "node:assert/strict";
+import { access, readFile } from "node:fs/promises";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+import test from "node:test";
+
+const FILES = Object.freeze({
+  readme: new URL("../README.md", import.meta.url),
+  deployment: new URL("../docs/deployment.md", import.meta.url),
+  canary: new URL("../docs/canary.md", import.meta.url),
+  troubleshooting: new URL("../docs/troubleshooting.md", import.meta.url),
+});
+
+async function loadDocs() {
+  return Object.fromEntries(await Promise.all(Object.entries(FILES).map(async ([name, url]) => (
+    [name, await readFile(url, "utf8")]
+  ))));
+}
+
+function ordered(text, values, label) {
+  let previous = -1;
+  for (const value of values) {
+    const index = text.indexOf(value, previous + 1);
+    assert.ok(index > previous, `${label}: ${value}`);
+    previous = index;
+  }
+}
+
+function codeArguments(text, output) {
+  return [...text.matchAll(/`([^`\r\n]+)`/gu)]
+    .map((match) => match[1])
+    .filter((value) => value.startsWith(`output=${output}&`));
+}
+
+test("all beginner documents exist, use portable Markdown, and are linked from README", async () => {
+  const docs = await loadDocs();
+  for (const [name, text] of Object.entries(docs)) {
+    assert.equal(text.endsWith("\n"), true, `${name} must end with LF`);
+    assert.equal(text.includes("\r"), false, `${name} must use LF only`);
+    assert.doesNotMatch(text, /\/Users\/|\/home\/|[A-Za-z]:\\/u, name);
+  }
+  for (const target of ["docs/deployment.md", "docs/canary.md", "docs/troubleshooting.md"]) {
+    assert.match(docs.readme, new RegExp(`\\]\\(${target.replace(".", "\\.")}\\)`, "u"), target);
+  }
+
+  for (const [name, text] of Object.entries(docs)) {
+    const sourcePath = fileURLToPath(FILES[name]);
+    for (const match of text.matchAll(/\[[^\]]+\]\(([^)]+)\)/gu)) {
+      const target = match[1].split("#", 1)[0];
+      if (target === "" || /^(?:https?:|egern:)/u.test(target)) continue;
+      await access(resolve(dirname(sourcePath), decodeURIComponent(target)));
+    }
+  }
+});
+
+test("documents define the four private Sub-Store tasks in dependency order", async () => {
+  const docs = await loadDocs();
+  ordered(docs.deployment, ["`egern-nodes`", "`egern-macos`", "`egern-iphone`", "`egern-ipad`"], "task order");
+  assert.match(docs.deployment, /egern-nodes[\s\S]*dist\/substore-node-generator\.js/u);
+  for (const name of ["egern-macos", "egern-iphone", "egern-ipad"]) {
+    assert.match(docs.deployment, new RegExp(`${name}[\\s\\S]*dist/substore-profile-generator\\.js`, "u"), name);
+  }
+  for (const platform of ["macos", "iphone", "ipad"]) {
+    assert.match(docs.readme, new RegExp(`examples/egern-${platform}\\.yaml`, "u"), platform);
+  }
+  assert.match(docs.deployment, /已有|现有/u);
+  assert.match(docs.deployment, /`shadowrocket-sources`/u);
+  assert.match(docs.deployment, /不要.{0,12}(?:重命名|改名).{0,20}shadowrocket-sources/u);
+});
+
+test("copy-safe arguments use the exact collection and three distinct platform contracts", async () => {
+  const { deployment } = await loadDocs();
+  assert.ok(codeArguments(deployment, "nodes").includes(
+    "output=nodes&type=collection&name=shadowrocket-sources&clientChain=off",
+  ));
+
+  const profiles = codeArguments(deployment, "config");
+  assert.equal(profiles.length, 3);
+  const platforms = new Set();
+  for (const line of profiles) {
+    const values = new URLSearchParams(line);
+    assert.equal(values.get("output"), "config");
+    assert.equal(values.get("type"), "collection");
+    assert.equal(values.get("name"), "shadowrocket-sources");
+    assert.equal(values.get("nodeSubscriptionUrl"), "https://example.invalid/private/egern-nodes");
+    for (const key of [
+      "dnsMode", "chinaDns", "globalDns", "blockMode", "quicMode",
+      "ipv6Mode", "autoGroupMode", "clientChain",
+    ]) assert.equal(values.has(key), true, `${values.get("platform")}: ${key}`);
+    platforms.add(values.get("platform"));
+  }
+  assert.deepEqual(platforms, new Set(["macos", "iphone", "ipad"]));
+  assert.match(profiles.find((line) => line.includes("platform=macos")), /ipv6Mode=ipv4-only/u);
+  for (const platform of ["iphone", "ipad"]) {
+    assert.match(profiles.find((line) => line.includes(`platform=${platform}`)), /ipv6Mode=auto/u);
+  }
+});
+
+test("refresh, auto-update, stable, and beta behavior are stated without conflation", async () => {
+  const docs = await loadDocs();
+  const text = `${docs.readme}\n${docs.deployment}`;
+  assert.match(text, /21600.{0,24}(?:6\s*小时|六小时)|(?:6\s*小时|六小时).{0,24}21600/u);
+  assert.match(text, /86400.{0,24}(?:24\s*小时|二十四小时)|(?:24\s*小时|二十四小时).{0,24}86400/u);
+  assert.match(text, /节点.{0,30}21600/u);
+  assert.match(text, /规则.{0,30}86400/u);
+  assert.match(text, /`auto_update`.{0,40}(?:空|`\{\}`)/u);
+  assert.match(text, /(?:重新运行|重新生成|刷新).{0,30}(?:Profile|配置).{0,30}(?:任务|File)/u);
+  assert.match(text, /稳定版.{0,30}(?:基线|默认)/u);
+  assert.match(text, /(?:beta|Beta|TestFlight).{0,40}(?:主动选择|自愿|可选|opt-in)/u);
+  assert.match(text, /(?:beta|Beta|TestFlight)[\s\S]{0,180}同一份\s*Profile/u);
+  assert.match(text, /feature flag|功能开关/u);
+});
+
+test("imports are private, percent-encoded, structure-only, and do not require MITM", async () => {
+  const docs = await loadDocs();
+  const text = Object.values(docs).join("\n");
+  assert.match(docs.deployment, /(?:界面|UI).{0,30}(?:导入|添加).{0,30}(?:Profile|配置)/u);
+  assert.match(docs.deployment, /egern:\/profiles\/new\?name=/u);
+  assert.match(docs.deployment, /url=https%3A%2F%2Fexample\.invalid%2Fprivate%2Fegern-/u);
+  assert.match(docs.deployment, /(?:name|url).{0,40}(?:百分号编码|URL 编码|percent-encode)/u);
+  assert.match(text, /example\.invalid.{0,80}(?:占位|保留域名)/u);
+  assert.match(text, /(?:结构示例|只用于检查结构).{0,80}(?:不能|不可).{0,30}(?:实际|直接|在线|联网)/u);
+  assert.match(text, /(?:可用|实际使用).{0,40}(?:私密|自己的).{0,40}Sub-Store/u);
+  assert.doesNotMatch(text, /TEST_ONLY/u);
+  assert.doesNotMatch(text, /[?&](?:token|key|auth|password|secret)=/iu);
+  assert.doesNotMatch(text, /https?:\/\/[^\s/"'`@]+(?::[^\s/"'`@]+)?@/iu);
+  for (const match of text.matchAll(/https:\/\/([^\s/)<>"'`]+)/gu)) {
+    assert.ok(["example.invalid", "egernapp.com"].includes(match[1]), match[0]);
+  }
+  assert.match(text, /(?:HTTPS 解密|MITM).{0,28}(?:不需要|无需|保持关闭)/u);
+  assert.match(text, /(?:CA 证书|解密证书).{0,28}(?:不要|不得|不安装)/u);
+  assert.match(text, /(?:脚本|重写|抓包|捕获).{0,50}(?:不需要|不要|不得)/u);
+  assert.match(text, /egernapp\.com\/zh-CN\/docs\/(?:configuration\/(?:url_rewrites|http_captures)|url-scheme)/u);
+});
+
+test("canary is an exact one-device-at-a-time Intel Mac to iPhone to iPad gate", async () => {
+  const { canary } = await loadDocs();
+  ordered(canary, ["Intel Mac", "iPhone", "iPad"], "canary order");
+  assert.match(canary, /(?:一次只|每次只).{0,10}(?:一台|1 台)|不得同时.{0,20}(?:设备|更新)/u);
+  assert.match(canary, /旧\s*Profile.{0,50}(?:保留|不要覆盖|不要删除)/u);
+  assert.match(canary, /(?:记录|记下).{0,30}(?:当前|现在).{0,30}(?:策略|节点)/u);
+  assert.match(canary, /iCloud|同步/u);
+  assert.match(canary, /(?:节点 URL|私密节点).{0,30}(?:规则 URL|公开规则).{0,30}(?:分别|独立)/u);
+  assert.match(canary, /(?:total|normalized|归一化).{0,40}(?:accepted|接受)/u);
+  assert.match(canary, /accepted.{0,24}(?:至少为 1|不小于 1|>=\s*1|不是 0)/u);
+  assert.match(canary, /后续设备.{0,30}(?:不变|不要更新|保持原样)|停止.{0,30}(?:iPhone|iPad|后续)/u);
+});
+
+test("canary covers policies, traffic families, DNS, refresh, network, IPv6, QUIC, and chain", async () => {
+  const { canary } = await loadDocs();
+  for (const pattern of [
+    /🚀 节点选择/u,
+    /境外.{0,24}(?:代理优先|🚀 节点选择)/u,
+    /国内.{0,24}(?:直连优先|DIRECT)/u,
+    /`blockMode`|blockMode/u,
+    /🧭 DNS 与规则下载.{0,30}(?:代理优先|🚀 节点选择)/u,
+    /(?:悬空|dangling).{0,18}(?:空|策略组)|(?:空|缺失).{0,18}(?:必需|必要).{0,12}策略组/u,
+    /局域网|路由器/u,
+    /中国.{0,20}(?:网站|应用).{0,20}DIRECT/u,
+    /境外.{0,20}🚀 节点选择/u,
+    /🤖 AI 专用/u,
+    /广告|安全规则/u,
+    /🎮 游戏连接/u,
+    /⬇️ 下载\/P2P/u,
+    /DNS.{0,30}(?:解析|bootstrap|upstream)/u,
+    /规则.{0,16}刷新/u,
+    /节点.{0,16}刷新/u,
+    /Wi-Fi.{0,20}(?:蜂窝|移动网络)/u,
+    /macOS.{0,30}ipv4-only/u,
+    /iPhone.{0,30}auto/u,
+    /iPad.{0,30}auto/u,
+    /`allow`[\s\S]{0,120}`proxy-block`[\s\S]{0,120}`all-block`/u,
+    /HTTP\/3.{0,30}(?:不保证|不假设|不一定)/u,
+    /clientChain=off|`clientChain`.{0,20}`off`/u,
+    /prev_hop/u,
+    /入口.{0,20}落地|落地.{0,20}入口/u,
+  ]) assert.match(canary, pattern);
+});
+
+test("every device performs a real old-Profile rollback drill before promotion", async () => {
+  const { canary } = await loadDocs();
+  assert.match(canary, /每台设备.{0,30}(?:实际|真的).{0,20}回滚/u);
+  ordered(canary, ["断开新 Profile", "选择旧 Profile", "启动旧 Profile"], "rollback actions");
+  assert.match(canary, /中国.{0,20}(?:直连|DIRECT)/u);
+  assert.match(canary, /境外.{0,20}(?:代理|🚀 节点选择)/u);
+  assert.match(canary, /回滚.{0,30}(?:成功|通过).{0,40}(?:才|方可).{0,30}(?:新 Profile|继续)/u);
+});
+
+test("troubleshooting is a safe decision tree covering every fixed failure family", async () => {
+  const { troubleshooting } = await loadDocs();
+  for (const pattern of [
+    /produceArtifact|producer/u,
+    /不可用|unavailable/u,
+    /拒绝|rejected/u,
+    /非数组|不是数组|non-array/u,
+    /空数组|空结果|empty/u,
+    /没有兼容|无兼容/u,
+    /excluded|排除原因/u,
+    /401/u, /403/u, /404/u, /TLS/u, /可达/u,
+    /主组.{0,20}空|🚀 节点选择.{0,20}空/u,
+    /名称冲突|重名/u,
+    /fingerprint|指纹/u,
+    /不支持.{0,20}协议|协议.{0,20}不支持/u,
+    /字段.{0,20}(?:错误|畸形|不完整)/u,
+    /规则.{0,30}(?:节点文件|节点订阅).{0,30}(?:分别|独立)/u,
+    /bootstrap/u, /upstream/u, /rule.?set|规则集/iu,
+    /QUIC/u, /UDP/u,
+    /IPv6-only/u, /双栈/u,
+    /入口/u, /落地/u, /SSH/u, /clone|克隆/iu,
+    /6\s*小时/u, /24\s*小时/u,
+    /立即回滚/u,
+    /断开新 Profile/u,
+    /选择旧 Profile/u,
+  ]) assert.match(troubleshooting, pattern);
+});
+
+test("docs forbid unsafe recovery and distinguish private-node from public-rule refresh", async () => {
+  const docs = await loadDocs();
+  const text = Object.values(docs).join("\n");
+  assert.doesNotMatch(text, /建议.{0,20}(?:关闭|跳过).{0,20}(?:证书验证|TLS 验证)/u);
+  assert.match(text, /(?:不要|不得).{0,30}(?:关闭|跳过).{0,20}(?:证书验证|TLS 验证)/u);
+  assert.match(text, /(?:不要|不得).{0,30}(?:公开|发布|粘贴|上传).{0,30}(?:私密 URL|订阅 URL|Profile URL)/u);
+  assert.match(text, /(?:不要|不得).{0,20}(?:开启|启用).{0,20}(?:MITM|HTTPS 解密)/u);
+  assert.match(text, /(?:不要|不得).{0,30}(?:删除|覆盖).{0,20}旧\s*Profile/u);
+  assert.match(text, /(?:不要|不得).{0,30}(?:绕过|削弱|关闭).{0,20}(?:fail-closed|失败即停止|校验)/u);
+  assert.match(text, /节点.{0,40}(?:21600|6\s*小时)[\s\S]{0,160}规则.{0,40}(?:86400|24\s*小时)/u);
+  assert.doesNotMatch(text, /节点.{0,20}规则.{0,20}(?:同一|相同).{0,12}(?:刷新|更新)间隔/u);
+});
