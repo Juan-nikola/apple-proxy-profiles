@@ -43,7 +43,7 @@ const DIRECT_FIRST_SERVICE_DEFAULTS = Object.freeze({
   afterCandidates: Object.freeze([]),
   defaultChoice: "DIRECT",
 });
-const SERVICE_GROUPS = Object.freeze([
+export const SERVICE_GROUPS = Object.freeze([
   Object.freeze(["🐙 GitHub", PROXY_FIRST_SERVICE_DEFAULTS]),
   Object.freeze(["📺 YouTube", PROXY_FIRST_SERVICE_DEFAULTS]),
   Object.freeze(["🎬 Netflix", PROXY_FIRST_SERVICE_DEFAULTS]),
@@ -96,11 +96,11 @@ function subscriptionGroup(kind, name, nodeFilter, candidates = ["DIRECT"], opti
   return policyGroup({ kind, name, candidates, nodeFilter, ...options });
 }
 
-function automaticHelperName(continent) {
+export function automaticHelperName(continent) {
   return `⚡ ${continent.helperName}自动`;
 }
 
-function fallbackHelperName(continent) {
+export function fallbackHelperName(continent) {
   return `\u{1F6DF} ${continent.helperName}故障转移`;
 }
 

@@ -6,6 +6,7 @@ export const NON_CHAINED_FILTER = "^(?!🔗 ).+$";
 export const ENTRY_FILTER = "^(?!.*\\[已有链\\])\\S+ \\[(?:机场|自建|Realm)\\] .+$";
 export const P2P_FILTER = "^\\S+ \\[(?:自建|Realm|链式代理)\\] .+$";
 export const GAME_FILTER = "^(?!🔗 )\\S+ .+ \\[UDP\\]$";
+export const CHAINED_NODES_FILTER = "^🔗 .+$";
 
 export const CONTINENTS = Object.freeze([
   Object.freeze({

@@ -3,6 +3,7 @@ import {
   STRATEGY,
 } from "../../../shared/policies/catalog.js";
 import { POLICY_TARGET } from "../../../shared/policies/intents.js";
+import { POLICY_GROUP_SCHEMA } from "../../../shared/policies/schema.js";
 import { validateEgernNodeSubscriptionUrl } from "./options.js";
 
 const PRIMARY_GROUP_NAME = "🚀 节点选择";
@@ -10,6 +11,7 @@ const UPDATE_INTERVAL = 21600;
 const BUILTIN_POLICIES = new Set(["DIRECT", "REJECT"]);
 const GROUP_KINDS = new Set(Object.values(GROUP_KIND));
 const STRATEGIES = new Set(Object.values(STRATEGY));
+const RESERVED_GROUP_NAMES = new Set([...POLICY_GROUP_SCHEMA.reservedNames, "PROXY"]);
 const GROUP_FIELDS = new Set([
   "kind",
   "name",
@@ -39,14 +41,17 @@ function ownArrayValues(value, reason, index = null) {
 
   let keys;
   let lengthDescriptor;
+  let prototype;
   try {
+    prototype = Object.getPrototypeOf(value);
     keys = Reflect.ownKeys(value);
     lengthDescriptor = Object.getOwnPropertyDescriptor(value, "length");
   } catch {
     throw error("must be an ordinary array");
   }
   if (
-    !lengthDescriptor
+    prototype !== Array.prototype
+    || !lengthDescriptor
     || "get" in lengthDescriptor
     || "set" in lengthDescriptor
     || !Number.isSafeInteger(lengthDescriptor.value)
@@ -186,11 +191,6 @@ function validateFilter(value, index) {
   ) {
     throw groupError(index, "has an invalid filter");
   }
-  try {
-    new RegExp(value);
-  } catch {
-    throw groupError(index, "has an invalid filter regular expression");
-  }
   return value;
 }
 
@@ -263,6 +263,49 @@ function validateSharedGraph(input) {
     names.add(group.name);
   }
 
+  for (let index = 0; index < groups.length; index += 1) {
+    const group = groups[index];
+    if (RESERVED_GROUP_NAMES.has(group.name)) {
+      throw groupError(index, "uses a reserved group name");
+    }
+    if (!Object.hasOwn(POLICY_GROUP_SCHEMA.groups, group.name)) {
+      throw groupError(index, "has an undocumented group name");
+    }
+    const schema = POLICY_GROUP_SCHEMA.groups[group.name];
+    if (group.kind !== schema.kind || group.strategy !== schema.strategy) {
+      throw groupError(index, "does not match the shared kind and strategy schema");
+    }
+    if (!schema.nodeFilters.includes(group.nodeFilter)) {
+      throw groupError(index, "does not use the exact shared filter");
+    }
+    if (group.hidden !== schema.hidden) {
+      throw groupError(index, "does not match the shared hidden schema");
+    }
+    if (group.defaultChoice !== schema.defaultChoice) {
+      throw groupError(index, "does not match the shared default choice schema");
+    }
+  }
+  for (const requiredName of POLICY_GROUP_SCHEMA.requiredNames) {
+    if (!names.has(requiredName)) throw graphError("is missing a required shared group");
+  }
+  for (const family of POLICY_GROUP_SCHEMA.continentFamilies) {
+    const selectorPresent = names.has(family.selector);
+    const automaticPresent = names.has(family.automatic);
+    const fallbackPresent = names.has(family.fallback);
+    const aiPresent = names.has(family.ai);
+    if (
+      selectorPresent !== aiPresent
+      || (!selectorPresent && (automaticPresent || fallbackPresent))
+      || (fallbackPresent && !automaticPresent)
+    ) {
+      throw graphError("contains an incomplete conditional continent family");
+    }
+  }
+  const presentChainNames = POLICY_GROUP_SCHEMA.chainNames.filter((name) => names.has(name));
+  if (presentChainNames.length !== 0 && presentChainNames.length !== POLICY_GROUP_SCHEMA.chainNames.length) {
+    throw graphError("contains an incomplete conditional chain family");
+  }
+
   const rootGroups = groups.filter((group) => group.name === PRIMARY_GROUP_NAME);
   if (rootGroups.length !== 1) throw graphError("must contain exactly one primary group");
   const root = rootGroups[0];
@@ -310,6 +353,7 @@ function renderGroup(group, nodeSubscriptionUrl) {
 
   if (group.name === PRIMARY_GROUP_NAME) {
     fields.urls = [nodeSubscriptionUrl];
+    fields.update_interval = UPDATE_INTERVAL;
     return { [type]: fields };
   }
   if (group.candidates.length > 0) fields.policies = [...group.candidates];
@@ -351,7 +395,12 @@ function validateRenderedGraph(rendered, sharedGroups, nodeSubscriptionUrl) {
     groups.set(fields.name, fields);
 
     if (fields.name === PRIMARY_GROUP_NAME) {
-      if (Object.keys(fields).length !== 2 || fields.urls?.length !== 1 || fields.urls[0] !== nodeSubscriptionUrl) {
+      if (
+        Object.keys(fields).length !== 3
+        || fields.urls?.length !== 1
+        || fields.urls[0] !== nodeSubscriptionUrl
+        || fields.update_interval !== UPDATE_INTERVAL
+      ) {
         throw graphError("has an invalid rendered primary group");
       }
     } else if (fields.urls !== undefined) {

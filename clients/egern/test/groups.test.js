@@ -2,8 +2,13 @@ import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import test from "node:test";
 
-import { buildPolicyGroups, GROUP_KIND, STRATEGY } from "../../../shared/policies/catalog.js";
+import {
+  buildPolicyGroups,
+  GROUP_KIND,
+  STRATEGY,
+} from "../../../shared/policies/catalog.js";
 import { POLICY_TARGET } from "../../../shared/policies/intents.js";
+import { POLICY_GROUP_SCHEMA } from "../../../shared/policies/schema.js";
 import { parseEgernOptions } from "../src/options.js";
 import { renderEgernGroups } from "../src/render-groups.js";
 import { renderYaml } from "../src/render-yaml.js";
@@ -159,7 +164,11 @@ test("renders every shared catalog variant with exact names, order, and document
 
             if (group.name === "🚀 节点选择") {
               assert.equal(type, "select");
-              assert.deepEqual(fields, { name: group.name, urls: [PRIVATE_URL] });
+              assert.deepEqual(fields, {
+                name: group.name,
+                urls: [PRIVATE_URL],
+                update_interval: 21600,
+              });
               continue;
             }
 
@@ -204,7 +213,11 @@ test("mounts the private subscription without leaking semantic or raw node value
   const root = renderedFields(rendered, "🚀 节点选择");
   assert.deepEqual(root, {
     type: "select",
-    fields: { name: "🚀 节点选择", urls: [PRIVATE_URL] },
+    fields: {
+      name: "🚀 节点选择",
+      urls: [PRIVATE_URL],
+      update_interval: 21600,
+    },
   });
 
   const serialized = JSON.stringify(rendered);
@@ -311,6 +324,14 @@ test("rejects malformed group containers and fields without invoking accessors",
   const inherited = Object.assign(Object.create({ inherited: true }), cloneGroup(valid[0]));
   assertSafeFailure([inherited, ...valid.slice(1)], privateUrl(), /plain object/i);
 
+  const customOuter = valid.map(cloneGroup);
+  Object.setPrototypeOf(customOuter, Object.create(Array.prototype));
+  assertSafeFailure(customOuter, privateUrl(), /ordinary array|Array\.prototype/i);
+
+  const customCandidates = valid.map(cloneGroup);
+  Object.setPrototypeOf(customCandidates[0].candidates, Object.create(Array.prototype));
+  assertSafeFailure(customCandidates, privateUrl(), /candidate.*ordinary array|candidate.*Array\.prototype/i);
+
   const accessorCandidates = cloneGroup(valid[0]);
   let candidateCalls = 0;
   Object.defineProperty(accessorCandidates.candidates, "0", {
@@ -383,6 +404,59 @@ test("rejects duplicate, missing, cyclic, and semantic-token graph mutations", (
   const wrongRoot = valid.map(cloneGroup);
   wrongRoot.find((group) => group.name === "🚀 节点选择").candidates.push("DIRECT");
   assertSafeFailure(wrongRoot, privateUrl(), /sole|primary/i);
+});
+
+test("enforces the finite shared policy name, kind, and unconditional-group schema", () => {
+  const valid = buildPolicyGroups(options(), INVENTORY);
+
+  assert.equal(Object.isFrozen(POLICY_GROUP_SCHEMA), true);
+  assert.equal(Object.isFrozen(POLICY_GROUP_SCHEMA.groups), true);
+  assert.equal(Object.isFrozen(POLICY_GROUP_SCHEMA.requiredNames), true);
+
+  const relabeled = valid.map(cloneGroup);
+  relabeled.find((group) => group.name === "🐙 GitHub").kind = GROUP_KIND.ai;
+  assertSafeFailure(relabeled, privateUrl(), /kind|schema/i);
+
+  const missingRequired = valid
+    .filter((group) => group.name !== "🐙 GitHub")
+    .map(cloneGroup);
+  assertSafeFailure(missingRequired, privateUrl(), /required|schema/i);
+
+  const renamed = valid.map(cloneGroup);
+  renamed.find((group) => group.name === "☣️ 安全威胁").name = "TEST_ONLY_RAW_NODE_RENAMED_GROUP";
+  assertSafeFailure(renamed, privateUrl(), /name|schema|documented/i);
+
+  for (const reserved of ["PROXY", POLICY_TARGET.primaryProxy, "DIRECT", "REJECT"]) {
+    const mutation = valid.map(cloneGroup);
+    mutation.find((group) => group.name === "☣️ 安全威胁").name = reserved;
+    assertSafeFailure(mutation, privateUrl(), /reserved|name|schema/i);
+  }
+});
+
+test("accepts only the exact shared filter assigned to each documented group", () => {
+  const valid = buildPolicyGroups(options(), INVENTORY);
+  const mutations = [];
+
+  for (const filter of ["^(a+)+$", " ^(?!🔗 ).+$", "(?<TEST_ONLY_FILTER_PAYLOAD>a)"]) {
+    const groups = valid.map(cloneGroup);
+    groups.find((group) => group.name === "⚡ 全部自动").nodeFilter = filter;
+    mutations.push(groups);
+  }
+
+  const swapped = valid.map(cloneGroup);
+  const asia = swapped.find((group) => group.name === "🌏 亚太");
+  const europe = swapped.find((group) => group.name === "🌍 欧洲");
+  [asia.nodeFilter, europe.nodeFilter] = [europe.nodeFilter, asia.nodeFilter];
+  mutations.push(swapped);
+
+  const ineligible = buildPolicyGroups(
+    options({ clientChain: "off" }),
+    [normalizedNode("🇯🇵 [机场] TEST_ONLY_TCP_NODE")],
+  ).map(cloneGroup);
+  ineligible.find((group) => group.name === "🎮 游戏连接").nodeFilter = "^.+$";
+  mutations.push(ineligible);
+
+  for (const groups of mutations) assertSafeFailure(groups, privateUrl(), /filter/i);
 });
 
 test("reuses the strict private HTTPS URL validator and never exposes rejected URLs", () => {
