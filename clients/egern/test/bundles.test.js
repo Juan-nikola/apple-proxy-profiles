@@ -354,6 +354,73 @@ test("restricted profile URL validation rejects authority tricks, ports, control
   }
 });
 
+test("source and restricted profile bundles close over strict ASCII host classification", async () => {
+  const source = await readFile(PROFILE_BUNDLE, "utf8");
+  const accepted = [
+    "https://example.invalid/private/nodes",
+    "https://subdomain.example.test:443/private/%65?value=%2F",
+    "https://192.0.2.1/private/nodes",
+    "https://[2001:db8::1]:8443/private/nodes",
+    "https://example.invalid:65535/private/nodes",
+  ];
+  for (const nodeSubscriptionUrl of accepted) {
+    const arguments_ = { ...PROFILE_ARGUMENTS, nodeSubscriptionUrl };
+    const native = await sourceRun(sourceProfileOperator, arguments_, rawInventory());
+    const restricted = loadRestrictedBundle(source, { arguments: arguments_, produced: rawInventory() });
+    const bundled = await restricted.context.operator({}, "Egern");
+    assert.equal(bundled.$content, native.result.$content, nodeSubscriptionUrl);
+    assert.deepEqual(restricted.requests, native.requests, nodeSubscriptionUrl);
+    assert.deepEqual(restricted.lines, native.lines, nodeSubscriptionUrl);
+  }
+
+  const rejected = [
+    "https://example.1/private/nodes",
+    "https://example.9/private/nodes",
+    "https://example.0x/private/nodes",
+    "https://example.0x1/private/nodes",
+    "https://example.010/private/nodes",
+    "https://example.09/private/nodes",
+    "https://127.1/private/nodes",
+    "https://127.0.1/private/nodes",
+    "https://2130706433/private/nodes",
+    "https://0x7f000001/private/nodes",
+    "https://0177.0.0.1/private/nodes",
+    "https://256.256.256.256/private/nodes",
+    "https://4294967296/private/nodes",
+    "https://example.invalid:65536/private/nodes",
+    "https://example.invalid/private/%zz",
+    ["https:", "//user:TEST_ONLY_NUMERIC_PARITY_SECRET@", "example.invalid/private/nodes"].join(""),
+  ];
+  for (const nodeSubscriptionUrl of rejected) {
+    const arguments_ = { ...PROFILE_ARGUMENTS, nodeSubscriptionUrl };
+    let nativeCalls = 0;
+    let nativeMessage = "";
+    await assert.rejects(sourceProfileOperator({}, "Egern", {
+      arguments: arguments_,
+      async produceArtifact() {
+        nativeCalls += 1;
+        return rawInventory();
+      },
+    }), (error) => {
+      nativeMessage = error.message;
+      assert.equal(error.message.includes(nodeSubscriptionUrl), false);
+      return true;
+    });
+    assert.equal(nativeCalls, 0, nodeSubscriptionUrl);
+
+    const restricted = loadRestrictedBundle(source, { arguments: arguments_, produced: rawInventory() });
+    let restrictedMessage = "";
+    await assert.rejects(restricted.context.operator({}, "Egern"), (error) => {
+      restrictedMessage = error.message;
+      assert.equal(error.message.includes(nodeSubscriptionUrl), false);
+      return true;
+    });
+    assert.equal(restrictedMessage, nativeMessage, nodeSubscriptionUrl);
+    assert.equal(restricted.requests.length, 0, nodeSubscriptionUrl);
+    assert.deepEqual(restricted.lines, [], nodeSubscriptionUrl);
+  }
+});
+
 test("restricted profile argument accessors are rejected without execution", async () => {
   const source = await readFile(PROFILE_BUNDLE, "utf8");
   const restricted = loadRestrictedBundle(source, {

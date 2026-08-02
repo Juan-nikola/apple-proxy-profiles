@@ -96,3 +96,27 @@ test("URL fallback rejects malformed hosts, credentials, ports, brackets, contro
     assert.throws(() => new EgernUrlFallback(value), { message: URL_ERROR }, value);
   }
 });
+
+test("URL fallback applies WHATWG ends-in-a-number classification generically", () => {
+  for (const hostname of [
+    "example.1",
+    "example.0009",
+    "example.0x",
+    "example.0Xdeaf",
+    "example.0177",
+    "127.1",
+    "2130706433",
+    "0x7f000001",
+    "0177.0.0.1",
+    "4294967296",
+  ]) {
+    assert.throws(
+      () => new EgernUrlFallback(`https://${hostname}/private/nodes`),
+      { message: URL_ERROR },
+      hostname,
+    );
+  }
+  for (const hostname of ["example.1a", "example.0xg", "1.example", "192.0.2.1"]) {
+    assert.doesNotThrow(() => new EgernUrlFallback(`https://${hostname}/private/nodes`), hostname);
+  }
+});

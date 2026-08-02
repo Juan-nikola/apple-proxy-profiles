@@ -1551,6 +1551,12 @@ var EgernNodeBundle = (() => {
     const parts = value.split(".");
     return parts.length === 4 && parts.every((part) => /^(?:0|[1-9]\d{0,2})$/u.test(part) && Number(part) <= 255);
   }
+  function endsInNumber(value) {
+    const parts = value.split(".");
+    if (parts.at(-1) === "") parts.pop();
+    const last = parts.at(-1) ?? "";
+    return /^[0-9]+$/u.test(last) || /^0x[0-9a-f]*$/iu.test(last);
+  }
   function ipv6Units(parts, allowIpv4) {
     let units = 0;
     for (let index = 0; index < parts.length; index += 1) {
@@ -1599,7 +1605,8 @@ var EgernNodeBundle = (() => {
   function validDnsName(value) {
     const comparable = value.endsWith(".") ? value.slice(0, -1) : value;
     if (comparable.length === 0 || comparable.length > 253) return false;
-    if (/^[\d.]+$/u.test(comparable)) return validIpv4(comparable);
+    if (validIpv4(comparable)) return true;
+    if (endsInNumber(value)) return false;
     return comparable.split(".").every((label) => label.length >= 1 && label.length <= 63 && /^[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?$/u.test(label));
   }
   function parsedHost(hostPort) {
