@@ -43,7 +43,7 @@ function publicBaseUrl(options) {
 function chinaRule(baseUrl) {
   return {
     proxy_rule_set: {
-      match: `${baseUrl}/egern/china-domains.yaml`,
+      match: `${baseUrl}/egern/rules/ChinaMax_Domain.yaml`,
       value: "china",
       update_interval: 86400,
     },

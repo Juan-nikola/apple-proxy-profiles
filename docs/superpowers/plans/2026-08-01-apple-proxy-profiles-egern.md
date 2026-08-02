@@ -246,7 +246,7 @@ For stable mode render:
     global: ["https://cloudflare-dns.com/dns-query"],
   },
   forward: [
-    { proxy_rule_set: { match: `${publicBaseUrl}/egern/china-domains.yaml`, value: "china", update_interval: 86400 } },
+    { proxy_rule_set: { match: `${publicBaseUrl}/egern/rules/ChinaMax_Domain.yaml`, value: "china", update_interval: 86400 } },
     { domain_wildcard: { match: "*", value: "global" } },
   ],
 }

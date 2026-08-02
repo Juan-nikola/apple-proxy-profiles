@@ -156,6 +156,8 @@ test("validates the private node URL without normalizing its path or query token
     "https://example.invalid/private/egern-nodes#fragment",
     "https://example.invalid/private/%0degern-nodes",
     `https://example.invalid/private/egern-nodes?${queryKey}=%0Avalue`,
+    String.raw`https://example.invalid/private\egern-nodes`,
+    ["https://example.invalid", "\\", "@evil.invalid/private/egern-nodes"].join(""),
     " https://example.invalid/private/egern-nodes",
   ];
 
@@ -169,6 +171,36 @@ test("validates the private node URL without normalizing its path or query token
         return true;
       },
     );
+  }
+});
+
+test("rejects every raw and percent-encoded ASCII C0 or DEL URL control", () => {
+  const queryKey = ["to", "ken"].join("");
+  const codes = [...Array.from({ length: 0x20 }, (_, code) => code), 0x7f];
+
+  for (const code of codes) {
+    const rawControl = String.fromCharCode(code);
+    const encodedControl = `%${code.toString(16).padStart(2, "0")}`;
+    const cases = [
+      `https://example.invalid/private/${rawControl}egern-nodes`,
+      `https://example.invalid/private/egern-nodes?${queryKey}=before${rawControl}after`,
+      `https://example.invalid/private/${encodedControl}egern-nodes`,
+      `https://example.invalid/private/egern-nodes?${queryKey}=before${encodedControl}after`,
+    ];
+
+    for (const nodeSubscriptionUrl of cases) {
+      assert.throws(
+        () => parseEgernOptions({ ...required, nodeSubscriptionUrl }),
+        (error) => {
+          assert.match(error.message, /nodeSubscriptionUrl/);
+          assert.equal(error.message.includes(nodeSubscriptionUrl), false);
+          assert.equal(/[\u0000-\u001f\u007f]/u.test(error.message), false);
+          assert.doesNotMatch(error.message, /example\.invalid|egern-nodes|before|after/i);
+          return true;
+        },
+        `control U+${code.toString(16).padStart(4, "0")}`,
+      );
+    }
   }
 });
 

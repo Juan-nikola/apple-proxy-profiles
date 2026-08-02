@@ -36,7 +36,8 @@ const ALLOWED_KEYS = new Set([...REQUIRED_KEYS, ...ENUM_KEYS]);
 const SUPPORTED_PLATFORMS = new Set(["macos", "iphone", "ipad"]);
 const PROTOTYPE_KEYS = new Set(["__proto__", "constructor", "prototype"]);
 const AMBIGUOUS_WHITESPACE = /[\t\v\f\u00a0\u1680\u2000-\u200b\u2028\u2029\u202f\u205f\u3000\ufeff]/u;
-const ENCODED_LINE_BREAK = /%0[ad]/iu;
+const FORBIDDEN_URL_CHARACTER = /[\u0000-\u001f\u007f\\]/u;
+const ENCODED_URL_CONTROL = /%(?:0[0-9a-f]|1[0-9a-f]|7f)/iu;
 
 function optionError(key, reason) {
   return new Error(`Option '${key}' ${reason}`);
@@ -155,12 +156,12 @@ function privateNodeUrl(values) {
   }
   if (
     value.trim() !== value
-    || /[\r\n]/u.test(value)
-    || ENCODED_LINE_BREAK.test(value)
+    || FORBIDDEN_URL_CHARACTER.test(value)
+    || ENCODED_URL_CONTROL.test(value)
     || !/^https:\/\//iu.test(value)
     || (typeof value.isWellFormed === "function" && !value.isWellFormed())
   ) {
-    throw optionError("nodeSubscriptionUrl", "must be an absolute HTTPS URL without line breaks");
+    throw optionError("nodeSubscriptionUrl", "must be an absolute HTTPS URL without forbidden characters");
   }
 
   let parsed;

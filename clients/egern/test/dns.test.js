@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
+import { readFileSync } from "node:fs";
 import test from "node:test";
 
 import { renderEgernDns } from "../src/render-dns.js";
@@ -10,7 +11,11 @@ import {
 } from "../src/options.js";
 
 const PRIVATE_URL = "https://example.invalid/private/egern-nodes";
-const CHINA_RULE_URL = `${PUBLIC_SNAPSHOT_BASE_URL}/egern/china-domains.yaml`;
+const CHINA_RULE_URL = `${PUBLIC_SNAPSHOT_BASE_URL}/egern/rules/ChinaMax_Domain.yaml`;
+const PUBLISHING_PLAN = readFileSync(
+  new URL("../../../docs/superpowers/plans/2026-08-01-apple-proxy-profiles-publishing.md", import.meta.url),
+  "utf8",
+);
 
 function options(overrides = {}) {
   return parseEgernOptions({
@@ -51,6 +56,20 @@ test("renders the exact stable DNS object in documented declaration order", () =
   assert.deepEqual(Object.keys(dns), ["bootstrap", "upstreams", "forward", "proxy_nameservers"]);
   assert.deepEqual(Object.keys(dns.upstreams), ["china", "global"]);
   assert.deepEqual(Object.keys(dns.forward[0].proxy_rule_set), ["match", "value", "update_interval"]);
+});
+
+test("closes the China DNS rule URL over the publishing snapshot contract", () => {
+  assert.match(
+    PUBLISHING_PLAN,
+    /Egern uses `current\/egern\/rules\/\$\{id\}\.yaml`/,
+  );
+  assert.equal(CHINA_RULE_URL.endsWith("/egern/rules/ChinaMax_Domain.yaml"), true);
+
+  for (const dnsMode of ["stable", "speed"]) {
+    const serialized = JSON.stringify(renderEgernDns(options({ dnsMode })));
+    assert.equal(serialized.includes(CHINA_RULE_URL), true, dnsMode);
+    assert.equal(serialized.includes("china-domains"), false, dnsMode);
+  }
 });
 
 test("renders privacy without a China exception and speed with a direct system catch-all", () => {
