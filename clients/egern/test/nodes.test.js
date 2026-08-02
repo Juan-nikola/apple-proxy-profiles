@@ -13,6 +13,7 @@ import {
   https,
   hysteria2,
   shadowsocks2022,
+  ssh,
   snellV4,
   socks5Tls,
   trojanReality,
@@ -111,7 +112,7 @@ test("maps all admitted protocol aliases and major verified transports", () => {
     "vless", "vless", "vless", "vless", "vless",
     "trojan", "trojan", "trojan", "anytls",
     "hysteria2", "hysteria2", "tuic",
-    "socks5", "socks5_tls", "http", "https", "wireguard", "wireguard",
+    "socks5", "socks5_tls", "http", "https", "ssh", "wireguard", "wireguard",
   ]);
 
   assert.deepEqual(toEgernProxy(vmessWss, { clientChain: "off" }).vmess.transport, {
@@ -170,6 +171,16 @@ test("maps all admitted protocol aliases and major verified transports", () => {
   assert.equal(Object.keys(toEgernProxy(http, { clientChain: "off" }))[0], "http");
   assert.deepEqual(toEgernProxy(https, { clientChain: "off" }).https.headers, {
     "User-Agent": "TEST_ONLY_HTTP_AGENT",
+  });
+  assert.deepEqual(toEgernProxy(ssh, { clientChain: "off" }).ssh, {
+    name: "SSH",
+    server: "ssh.example.invalid",
+    port: 443,
+    username: "TEST_ONLY_SSH_USERNAME",
+    password: "TEST_ONLY_SSH_PASSWORD",
+    private_key: "TEST_ONLY_SSH_PRIVATE_KEY",
+    host_keys: ["ssh-ed25519 TEST_ONLY_SSH_HOST_KEY"],
+    tfo: true,
   });
   assert.equal(toEgernProxy(wireguardIpv6, { clientChain: "off" }).wireguard.local_ipv6, "2001:db8::2/128");
   assert.equal(toEgernProxy(anytls, { clientChain: "off" }).anytls.skip_tls_verify, false);

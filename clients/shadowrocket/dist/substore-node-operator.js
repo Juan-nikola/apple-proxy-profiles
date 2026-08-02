@@ -95,7 +95,8 @@ var ShadowrocketNodeBundle = (() => {
     "vless",
     "trojan",
     "socks5",
-    "http"
+    "http",
+    "ssh"
   ]);
   var CHAIN_ALIASES = ["underlying-proxy", "chain", "dialer-proxy", "detour", "prev_hop"];
   function hasExistingChain(node) {
@@ -229,6 +230,9 @@ var ShadowrocketNodeBundle = (() => {
     }),
     protocol(["socks5"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere]),
     protocol(["http"], [CLIENT.shadowrocket, CLIENT.egern]),
+    protocol(["ssh"], [CLIENT.egern], {
+      requiredFields: ["username"]
+    }),
     protocol(["wireguard"], [CLIENT.egern], {
       requiredFields: ["private-key", "public-key"]
     }),
@@ -272,6 +276,15 @@ var ShadowrocketNodeBundle = (() => {
       isNonblankString(node.sni) || isNonblankString(node.servername) || node["skip-cert-verify"] === true || node["allow-insecure"] === true || isNonblankString(node["reality-opts"]?.["public-key"])
     );
   }
+  function wireGuardPublicKey(node) {
+    if (isNonblankString(node["public-key"])) return node["public-key"];
+    if (!Array.isArray(node.peers) || node.peers.length !== 1) return void 0;
+    const peer = node.peers[0];
+    return peer && typeof peer === "object" && !Array.isArray(peer) ? peer["public-key"] : void 0;
+  }
+  function hasSshAuthentication(node) {
+    return isNonblankString(node.password) || isNonblankString(node["private-key"]) || isNonblankString(node.private_key);
+  }
   function hasExplicitUdp(node) {
     return node?.udp === true;
   }
@@ -287,7 +300,10 @@ var ShadowrocketNodeBundle = (() => {
     }
     const type = node.type.trim().toLowerCase();
     const definition = protocolDefinition(type);
-    if (definition?.requiredFields.some((field) => !isValidAuthField(field, node[field]))) {
+    if (definition?.requiredFields.some((field) => {
+      const value = type === "wireguard" && field === "public-key" ? wireGuardPublicKey(node) : node[field];
+      return !isValidAuthField(field, value);
+    }) || type === "ssh" && !hasSshAuthentication(node)) {
       return { valid: false, reason: "missing-auth", warnings: [] };
     }
     const tls = node.tls === true || definition?.tls === true;

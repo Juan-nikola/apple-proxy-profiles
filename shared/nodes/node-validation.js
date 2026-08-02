@@ -33,6 +33,21 @@ function hasTlsIdentity(node) {
   );
 }
 
+function wireGuardPublicKey(node) {
+  if (isNonblankString(node["public-key"])) return node["public-key"];
+  if (!Array.isArray(node.peers) || node.peers.length !== 1) return undefined;
+  const peer = node.peers[0];
+  return peer && typeof peer === "object" && !Array.isArray(peer)
+    ? peer["public-key"]
+    : undefined;
+}
+
+function hasSshAuthentication(node) {
+  return isNonblankString(node.password)
+    || isNonblankString(node["private-key"])
+    || isNonblankString(node.private_key);
+}
+
 export function hasExplicitUdp(node) {
   return node?.udp === true;
 }
@@ -57,7 +72,12 @@ export function validateNode(node) {
 
   const type = node.type.trim().toLowerCase();
   const definition = protocolDefinition(type);
-  if (definition?.requiredFields.some((field) => !isValidAuthField(field, node[field]))) {
+  if (definition?.requiredFields.some((field) => {
+    const value = type === "wireguard" && field === "public-key"
+      ? wireGuardPublicKey(node)
+      : node[field];
+    return !isValidAuthField(field, value);
+  }) || type === "ssh" && !hasSshAuthentication(node)) {
     return { valid: false, reason: "missing-auth", warnings: [] };
   }
 

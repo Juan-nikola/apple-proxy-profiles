@@ -220,6 +220,14 @@ export const https = fixture("HTTPS", "http", {
   headers: { "User-Agent": "TEST_ONLY_HTTP_AGENT" },
 });
 
+export const ssh = fixture("SSH", "ssh", {
+  username: "TEST_ONLY_SSH_USERNAME",
+  password: "TEST_ONLY_SSH_PASSWORD",
+  "private-key": "TEST_ONLY_SSH_PRIVATE_KEY",
+  "host-keys": ["ssh-ed25519 TEST_ONLY_SSH_HOST_KEY"],
+  tfo: true,
+});
+
 export const wireguardIpv4 = fixture("WireGuard IPv4", "wireguard", {
   "private-key": "TEST_ONLY_WIREGUARD_PRIVATE_KEY",
   "public-key": "TEST_ONLY_WIREGUARD_PUBLIC_KEY",
@@ -262,6 +270,7 @@ export const allCompatibleNodes = Object.freeze([
   socks5Tls,
   http,
   https,
+  ssh,
   wireguardIpv4,
   wireguardIpv6,
 ]);

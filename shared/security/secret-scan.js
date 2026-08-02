@@ -4,7 +4,7 @@ import { resolve } from "node:path";
 const rules = Object.freeze([
   {
     id: "proxy-uri",
-    pattern: /(?:ss|shadowsocks|ssr|snell|vmess|vless|trojan|anytls|hysteria|hysteria2|hy2|tuic|socks|socks5(?:\+tls)?|sudoku|wireguard|wg):\/\/[^\s"'`]+/i,
+    pattern: /(?:ss|shadowsocks|ssr|snell|vmess|vless|trojan|anytls|hysteria|hysteria2|hy2|tuic|socks|socks5(?:\+tls)?|ssh|sudoku|wireguard|wg):\/\/[^\s"'`]+/i,
   },
   {
     id: "http-userinfo",

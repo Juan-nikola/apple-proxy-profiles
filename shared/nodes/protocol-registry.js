@@ -43,6 +43,9 @@ const definitions = Object.freeze([
   }),
   protocol(["socks5"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere]),
   protocol(["http"], [CLIENT.shadowrocket, CLIENT.egern]),
+  protocol(["ssh"], [CLIENT.egern], {
+    requiredFields: ["username"],
+  }),
   protocol(["wireguard"], [CLIENT.egern], {
     requiredFields: ["private-key", "public-key"],
   }),

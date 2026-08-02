@@ -1,4 +1,8 @@
-import { egernNodeExclusionReason } from "../../../shared/nodes/capabilities.js";
+import {
+  egernNodeExclusionReason,
+  normalizeEgernHeaders,
+  resolveEgernNodeOptions,
+} from "../../../shared/nodes/capabilities.js";
 import { normalizeProtocol } from "../../../shared/nodes/protocol-registry.js";
 
 export const EGERN_CHAIN_POLICY = "🔗 入口节点";
@@ -25,6 +29,9 @@ const REASON_MESSAGES = Object.freeze({
   "unsupported-egern-hysteria2-shape": "Unsupported Egern Hysteria2 shape",
   "unsupported-egern-tuic-shape": "Unsupported Egern TUIC shape",
   "unsupported-egern-socks5-shape": "Unsupported Egern SOCKS5 shape",
+  "invalid-egern-node-shape": "Invalid Egern proxy shape",
+  "conflicting-egern-alias": "Conflicting Egern proxy aliases",
+  "unsupported-egern-option": "Unsupported Egern proxy option",
 });
 
 function hasOwn(value, key) {
@@ -70,7 +77,7 @@ function normalizedPath(value) {
 
 function normalizedHeaders(value) {
   if (value === undefined) return undefined;
-  return Object.fromEntries(Object.entries(value).map(([key, item]) => [key, Array.isArray(item) ? item[0] : item]));
+  return normalizeEgernHeaders(value);
 }
 
 function tlsRequested(node) {
@@ -89,11 +96,12 @@ function realityFields(node) {
 }
 
 function appendTlsFields(target, node, { includeReality = true } = {}) {
-  const sni = firstOwn(node, ["sni", "servername"]);
+  const resolved = resolveEgernNodeOptions(node);
+  const sni = resolved.sni;
   if (sni !== undefined) target.sni = sni;
-  const skipTlsVerify = firstOwn(node, ["skip-cert-verify", "allow-insecure"]);
+  const skipTlsVerify = resolved.skipTlsVerify;
   if (skipTlsVerify !== undefined) target.skip_tls_verify = skipTlsVerify;
-  const fingerprint = firstOwn(node, ["fingerprint-sha256", "fingerprint_sha256"]);
+  const fingerprint = resolved.fingerprint;
   if (fingerprint !== undefined) target.fingerprint_sha256 = fingerprint;
   if (includeReality) {
     const reality = realityFields(node);
@@ -154,7 +162,21 @@ function renderVmessVlessTransport(node) {
 
 function appendCommonTcpOptions(target, node, { udp = false } = {}) {
   copyOptional(target, "tfo", node);
-  if (udp) copyOptional(target, "udp_relay", node, "udp");
+  const resolvedUdp = resolveEgernNodeOptions(node).udp;
+  if (udp && resolvedUdp !== undefined) target.udp_relay = resolvedUdp;
+  return target;
+}
+
+function appendLatestCommonOptions(target, node) {
+  const resolved = resolveEgernNodeOptions(node);
+  if (resolved.blockQuic !== undefined) target.block_quic = resolved.blockQuic;
+  if (resolved.shadowTls !== undefined) {
+    const shadowTls = {};
+    setCredentialField(shadowTls, "password", resolved.shadowTls.password);
+    if (resolved.shadowTls.sni !== undefined) shadowTls.sni = resolved.shadowTls.sni;
+    target.shadow_tls = shadowTls;
+  }
+  if (resolved.ipVersion !== undefined) target.ip_version = resolved.ipVersion;
   return target;
 }
 
@@ -165,10 +187,11 @@ function renderShadowsocks(node) {
   };
   setCredentialField(fields, "password", requiredString(node.password));
   appendCommonTcpOptions(fields, node, { udp: true });
-  copyOptional(fields, "udp_port", node, "udp-port");
+  const resolved = resolveEgernNodeOptions(node);
+  if (resolved.udpPort !== undefined) fields.udp_port = resolved.udpPort;
   copyOptional(fields, "obfs", node);
-  copyOptional(fields, "obfs_host", node, "obfs-host");
-  copyOptional(fields, "obfs_uri", node, "obfs-uri");
+  if (resolved.obfsHost !== undefined) fields.obfs_host = resolved.obfsHost;
+  if (resolved.obfsUri !== undefined) fields.obfs_uri = resolved.obfsUri;
   return { shadowsocks: fields };
 }
 
@@ -179,7 +202,8 @@ function renderSnell(node) {
   appendCommonTcpOptions(fields, node, { udp: true });
   copyOptional(fields, "reuse", node);
   copyOptional(fields, "obfs", node);
-  copyOptional(fields, "obfs_host", node, "obfs-host");
+  const obfsHost = resolveEgernNodeOptions(node).obfsHost;
+  if (obfsHost !== undefined) fields.obfs_host = obfsHost;
   return { snell: fields };
 }
 
@@ -216,7 +240,6 @@ function websocketFields(node) {
   if (hasOwn(options, "headers")) {
     const headers = normalizedHeaders(options.headers);
     if (hasOwn(headers, "Host")) fields.host = headers.Host;
-    else if (hasOwn(headers, "host")) fields.host = headers.host;
   }
   return fields;
 }
@@ -243,12 +266,14 @@ function renderHysteria2(node) {
   setCredentialField(fields, "auth", requiredString(node.password));
   appendTlsFields(fields, node, { includeReality: false });
   copyOptional(fields, "obfs", node);
-  copyOptional(fields, "obfs_password", node, "obfs-password");
-  const hopping = firstOwn(node, ["port-hopping", "ports"]);
+  const resolved = resolveEgernNodeOptions(node);
+  const obfsPassword = firstOwn(node, ["obfs-password", "obfs_password"]);
+  if (obfsPassword !== undefined) fields.obfs_password = obfsPassword;
+  const hopping = resolved.portHopping;
   if (hopping !== undefined) fields.port_hopping = hopping;
-  const hoppingInterval = firstOwn(node, ["port-hopping-interval", "hop-interval"]);
+  const hoppingInterval = resolved.portHoppingInterval;
   if (hoppingInterval !== undefined) fields.port_hopping_interval = hoppingInterval;
-  const bandwidth = firstOwn(node, ["bandwidth", "up"]);
+  const bandwidth = resolved.bandwidth;
   if (bandwidth !== undefined) fields.bandwidth = bandwidth;
   return { hysteria2: fields };
 }
@@ -259,11 +284,13 @@ function renderTuic(node) {
     uuid: requiredString(node.uuid),
   };
   setCredentialField(fields, "password", requiredString(node.password));
-  copyOptional(fields, "udp_relay_mode", node, "udp-relay-mode");
+  const udpRelayMode = firstOwn(node, ["udp-relay-mode", "udp_relay_mode"]);
+  if (udpRelayMode !== undefined) fields.udp_relay_mode = udpRelayMode;
   if (hasOwn(node, "alpn")) fields.alpn = [...node.alpn];
   appendTlsFields(fields, node, { includeReality: false });
-  copyOptional(fields, "port_hopping", node, "port-hopping");
-  copyOptional(fields, "port_hopping_interval", node, "port-hopping-interval");
+  const resolved = resolveEgernNodeOptions(node);
+  if (resolved.portHopping !== undefined) fields.port_hopping = resolved.portHopping;
+  if (resolved.portHoppingInterval !== undefined) fields.port_hopping_interval = resolved.portHoppingInterval;
   return { tuic: fields };
 }
 
@@ -282,6 +309,17 @@ function renderHttp(node) {
   if (hasOwn(node, "headers")) fields.headers = normalizedHeaders(node.headers);
   if (tlsRequested(node)) appendTlsFields(fields, node);
   return { [tlsRequested(node) ? "https" : "http"]: fields };
+}
+
+function renderSsh(node) {
+  const resolved = resolveEgernNodeOptions(node);
+  const fields = commonFields(node);
+  fields.username = node.username;
+  if (node.password !== undefined) setCredentialField(fields, "password", node.password);
+  if (resolved.sshPrivateKey !== undefined) setCredentialField(fields, "private_key", resolved.sshPrivateKey);
+  if (resolved.sshHostKeys !== undefined) fields.host_keys = [...resolved.sshHostKeys];
+  copyOptional(fields, "tfo", node);
+  return { ssh: fields };
 }
 
 function wireGuardAddresses(node) {
@@ -354,8 +392,11 @@ export function toEgernProxy(node, { clientChain = "off" } = {}) {
     case "tuic": proxy = renderTuic(node); break;
     case "socks5": proxy = renderSocks5(node); break;
     case "http": proxy = renderHttp(node); break;
+    case "ssh": proxy = renderSsh(node); break;
     case "wireguard": proxy = renderWireGuard(node); break;
     default: throw new Error("Unsupported Egern protocol");
   }
+  const fields = proxy[Object.keys(proxy)[0]];
+  appendLatestCommonOptions(fields, node);
   return appendClientChain(proxy, node, clientChain);
 }

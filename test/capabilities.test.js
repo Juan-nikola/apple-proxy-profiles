@@ -5,7 +5,7 @@ import { evaluateNodeForClient, filterNodesForClient } from "../shared/nodes/cap
 
 const ALLOWED_PROTOCOLS = Object.freeze({
   [CLIENT.shadowrocket]: ["ss", "shadowsocks", "ssr", "snell", "vmess", "vless", "trojan", "hysteria2", "hy2", "tuic", "socks5", "http"],
-  [CLIENT.egern]: ["ss", "shadowsocks", "snell", "vmess", "vless", "trojan", "anytls", "hysteria2", "hy2", "tuic", "socks5", "http", "wireguard"],
+  [CLIENT.egern]: ["ss", "shadowsocks", "snell", "vmess", "vless", "trojan", "anytls", "hysteria2", "hy2", "tuic", "socks5", "http", "ssh", "wireguard"],
   [CLIENT.anywhere]: ["ss", "shadowsocks", "vless", "trojan", "anytls", "hysteria2", "hy2", "socks5", "sudoku"],
 });
 
@@ -15,17 +15,45 @@ function nodeForCapability(protocol, client) {
   if (client === CLIENT.anywhere && protocol === "vless") return { type: protocol, network: "tcp" };
   if (client === CLIENT.anywhere && protocol === "trojan") return { type: protocol, network: "tcp" };
   if (client === CLIENT.egern) {
-    if (protocol === "ss" || protocol === "shadowsocks") return { type: protocol, cipher: "aes-128-gcm" };
-    if (protocol === "snell") return { type: protocol, version: 4 };
-    if (protocol === "vmess" || protocol === "vless") return { type: protocol, network: "tcp" };
+    const common = {
+      name: `Capability ${protocol}`,
+      type: protocol,
+      server: "capability.example.invalid",
+      port: 443,
+    };
+    if (protocol === "ss" || protocol === "shadowsocks") {
+      return { ...common, cipher: "aes-128-gcm", password: "TEST_ONLY_CAPABILITY_PASSWORD" };
+    }
+    if (protocol === "snell") return { ...common, psk: "TEST_ONLY_CAPABILITY_PSK", version: 4 };
+    if (protocol === "vmess" || protocol === "vless") {
+      return { ...common, uuid: "00000000-0000-4000-8000-000000000001", network: "tcp" };
+    }
+    if (["trojan", "anytls", "hysteria2", "hy2"].includes(protocol)) {
+      return { ...common, password: "TEST_ONLY_CAPABILITY_PASSWORD" };
+    }
+    if (protocol === "tuic") {
+      return {
+        ...common,
+        uuid: "00000000-0000-4000-8000-000000000001",
+        password: "TEST_ONLY_CAPABILITY_PASSWORD",
+      };
+    }
+    if (protocol === "ssh") {
+      return {
+        ...common,
+        username: "TEST_ONLY_CAPABILITY_USERNAME",
+        password: "TEST_ONLY_CAPABILITY_PASSWORD",
+      };
+    }
     if (protocol === "wireguard") {
       return {
-        type: protocol,
+        ...common,
         "private-key": "TEST_ONLY_CAPABILITY_PRIVATE_KEY",
         "public-key": "TEST_ONLY_CAPABILITY_PUBLIC_KEY",
         ip: "192.0.2.2/32",
       };
     }
+    return common;
   }
   return { type: protocol };
 }
@@ -126,16 +154,36 @@ test("normalizes valid nodes before applying AnyTLS and WireGuard client capabil
 });
 
 test("filters unrepresentable Egern shapes per node with aggregate stable reasons", () => {
+  const common = {
+    server: "capability-filter.example.invalid",
+    port: 443,
+  };
   const accepted = {
+    ...common,
+    name: "Accepted VLESS",
     type: "vless",
     uuid: "00000000-0000-4000-8000-000000000001",
     network: "tcp",
   };
   const result = filterNodesForClient([
     accepted,
-    { type: "vless", network: "PRIVATE_TRANSPORT" },
-    { type: "ss", cipher: "PRIVATE_METHOD" },
     {
+      ...common,
+      name: "Rejected VLESS",
+      type: "vless",
+      uuid: "00000000-0000-4000-8000-000000000001",
+      network: "PRIVATE_TRANSPORT",
+    },
+    {
+      ...common,
+      name: "Rejected Shadowsocks",
+      type: "ss",
+      cipher: "PRIVATE_METHOD",
+      password: "TEST_ONLY_REJECTED_PASSWORD",
+    },
+    {
+      ...common,
+      name: "Rejected WireGuard",
       type: "wireguard",
       "private-key": "TEST_ONLY_WG_PRIVATE_KEY",
       "public-key": "TEST_ONLY_WG_PUBLIC_KEY",
