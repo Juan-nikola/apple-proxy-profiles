@@ -4,18 +4,15 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import test from "node:test";
 
+import { renderEgernProfile } from "../src/render-profile.js";
+import { shadowsocks2022 } from "./fixtures/nodes.js";
+
 const FILES = Object.freeze({
   readme: new URL("../README.md", import.meta.url),
   deployment: new URL("../docs/deployment.md", import.meta.url),
   canary: new URL("../docs/canary.md", import.meta.url),
   troubleshooting: new URL("../docs/troubleshooting.md", import.meta.url),
 });
-
-const EGERN_PROFILE_ROOT_KEYS = Object.freeze([
-  "auto_update", "ipv6", "block_quic", "close_connections_on_policy_change",
-  "bypass_tunnel_proxy", "real_ip_domains", "hijack_dns", "dns",
-  "policy_groups", "rules", "default_subscription_group",
-]);
 
 async function loadDocs() {
   return Object.fromEntries(await Promise.all(Object.entries(FILES).map(async ([name, url]) => (
@@ -44,6 +41,29 @@ function markdownSection(text, heading, nextHeading) {
   const end = nextHeading === undefined ? text.length : text.indexOf(nextHeading, start + heading.length);
   assert.notEqual(end, -1, nextHeading);
   return text.slice(start, end);
+}
+
+function generatedProfile(platform) {
+  return renderEgernProfile({
+    output: "config",
+    type: "collection",
+    name: "shadowrocket-sources",
+    nodeSubscriptionUrl: "https://example.invalid/private/egern-nodes",
+    platform,
+  }, [shadowsocks2022]);
+}
+
+function strictProfileRootKeys(profile) {
+  const keys = [];
+  for (const line of profile.split("\n")) {
+    if (line === "" || line.startsWith(" ")) continue;
+    const match = line.match(/^([a-z][a-z0-9_]*):(?: |$)/u);
+    assert.ok(match, `unexpected generated root line: ${line}`);
+    keys.push(match[1]);
+  }
+  assert.ok(keys.length > 0, "generated Profile root must not be empty");
+  assert.equal(new Set(keys).size, keys.length, "generated Profile root keys must be unique");
+  return keys;
 }
 
 test("all beginner documents exist, use portable Markdown, and are linked from README", async () => {
@@ -115,7 +135,14 @@ test("deployment documents only the exact generated Profile root structure", asy
   const rootContract = deployment.match(/生成的 Profile 根结构[^：\n]*：([^。\n]+)。/u);
   assert.ok(rootContract, "generated Profile root contract");
   const documentedKeys = [...rootContract[1].matchAll(/`([^`]+)`/gu)].map((match) => match[1]);
-  assert.deepEqual(documentedKeys, EGERN_PROFILE_ROOT_KEYS);
+  const generatedRoots = ["macos", "iphone", "ipad"].map((platform) => ({
+    platform,
+    keys: strictProfileRootKeys(generatedProfile(platform)),
+  }));
+  for (const { platform, keys } of generatedRoots.slice(1)) {
+    assert.deepEqual(keys, generatedRoots[0].keys, `${platform} generated Profile root`);
+  }
+  assert.deepEqual(documentedKeys, generatedRoots[0].keys);
   assert.match(deployment, /(?:不含|不会生成|不存在).{0,24}`url_rewrites`/u);
   assert.doesNotMatch(
     deployment,
@@ -220,7 +247,7 @@ test("canary proves both IPv4-only and available IPv6 paths on every device", as
   ];
   for (const section of deviceSections) {
     assert.match(section, /`ipv4-only`/u);
-    assert.match(section, /(?:可用|真实|原生).{0,12}IPv6/u);
+    assert.match(section, /`auto`[^。\n]{0,100}(?:可用|真实|原生)[^。\n]{0,16}IPv6(?:\s*路径)?/u);
   }
 });
 
