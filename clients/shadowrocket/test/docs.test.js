@@ -6,7 +6,7 @@ import { dirname, resolve } from "node:path";
 const shadowrocketRoot = resolve(import.meta.dirname, "..");
 
 test("beginner docs contain every operational checkpoint and warning", async () => {
-  const paths = ["README.md", "docs/deployment.md", "docs/maintenance.md", "docs/troubleshooting.md", "docs/canary-checklist.md"];
+  const paths = ["README.md", "RELEASE_CHECKLIST.md", "docs/deployment.md", "docs/maintenance.md", "docs/troubleshooting.md", "docs/canary-checklist.md"];
   const files = await Promise.all(paths.map((file) => readFile(resolve(shadowrocketRoot, file), "utf8")));
   const docs = Object.fromEntries(paths.map((file, index) => [file, files[index]]));
   const text = files.join("\n");
@@ -84,6 +84,16 @@ test("beginner docs contain every operational checkpoint and warning", async () 
     assert.ok(text.includes(phrase), `missing enhanced-routing documentation phrase: ${phrase}`);
   }
   assert.doesNotMatch(text, /include-all-proxies=true/, "documentation must not describe legacy all-proxy dynamic groups");
+  assert.doesNotMatch(text, /规则(?:和节点 Operator )?内容未改变/, "documentation must disclose the approved rule delta");
+  for (const file of ["README.md", "RELEASE_CHECKLIST.md"]) {
+    assert.ok(docs[file].includes("AdvertisingLite"), `${file}: missing legacy AdvertisingLite migration note`);
+    assert.ok(docs[file].includes("Advertising"), `${file}: missing full Advertising migration note`);
+    assert.ok(docs[file].includes("Advertising_Domain.list"), `${file}: missing split domain source guidance`);
+  }
+  const ruleCommand = "npm --workspace @apple-proxy-profiles/shadowrocket run check:rules";
+  for (const file of ["README.md", "RELEASE_CHECKLIST.md", "docs/maintenance.md", "docs/troubleshooting.md"]) {
+    assert.ok(docs[file].includes(ruleCommand), `${file}: missing repository-root rule-check command`);
+  }
   assert.ok(
     docs["README.md"].includes("动态组只含与 `subscriptionName` 完全匹配的 `<subscriptionName>,use=true`"),
     "README.md: generated-profile check must use the named subscription source",

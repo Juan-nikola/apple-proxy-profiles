@@ -16,7 +16,7 @@
 - 一份所有设备共用、每 6 小时更新的私密节点订阅 `shadowrocket-nodes`。
 - 三份每天更新的平台 Profile：`shadowrocket-config-macos`、`shadowrocket-config-iphone`、`shadowrocket-config-ipad`。
 - 一个只负责跟随 Shadowrocket 首页节点的 `🚀 节点选择`，以及 16 个常用业务组：每组都有自动测速、故障转移、地区和具体节点选择；其中 10 个境外组首项为 `🚀 节点选择`，6 个国内组首项为 `DIRECT`。
-- Blackmatrix7 `ChinaMax_Domain + ChinaMax` 完整增强国内规则、抖音 `ByteDance` 和 SteamCN；其他未识别流量最终进入 `🚀 节点选择`。
+- Blackmatrix7 `ChinaMax_Domain + ChinaMax` 完整增强国内规则、抖音 `ByteDance` 和 SteamCN；广告源已从精简的 `AdvertisingLite` 升级为完整 `Advertising`，同时引用 `Advertising.list` 与 `Advertising_Domain.list` 以覆盖非域名和域名规则；其他未识别流量最终进入 `🚀 节点选择`。
 
 Apple TV 已在生成器中预留参数，但不属于本轮部署范围。首轮顺序必须是 Intel Mac、iPhone、iPad；每台设备都保留原来的可用 Profile。
 
@@ -57,7 +57,7 @@ Profile 使用职责分开的两层结构：
 5. 先预览 macOS Profile，确认整行是 `🚀 节点选择 = select,PROXY`；16 个常用业务组都有自动/故障转移/地区/具体节点选择，10 个境外组首项为 `🚀 节点选择`，6 个国内组首项为 `DIRECT`；动态组只含与 `subscriptionName` 完全匹配的 `<subscriptionName>,use=true`，AI 洲组仍存在，再发布并只在 Intel Mac 更新测试。
 6. Intel Mac 验收通过后，才按 iPhone、iPad 顺序更新。整个过程中保留旧 Profile 作为回滚入口。
 
-本次恢复服务组时，设备端只需替换 `clients/shadowrocket/dist/substore-profile-generator.js` 并更新当前平台的 Profile；无需替换节点 Script Operator，也无需改动节点订阅。仓库中的 `clients/shadowrocket/dist/` 与 `clients/shadowrocket/examples/` 已随源码重建并通过校验，规则和节点 Operator 内容未改变。必须在 Shadowrocket 中手动更新或重新导入新 Profile；只更新节点订阅不会改变分组。更新后打开 `🚀 节点选择`，摘要应显示 `SELECT > PROXY`，不能再显示某个国旗或具体节点名。如果仍显示具体节点，说明当前设备还在使用旧 Profile，先停止向其他设备推广并按部署手册核对 Profile 的更新时间。
+本次恢复服务组时，设备端只需替换 `clients/shadowrocket/dist/substore-profile-generator.js` 并更新当前平台的 Profile；无需替换节点 Script Operator，也无需改动节点订阅。仓库中的 `clients/shadowrocket/dist/` 与 `clients/shadowrocket/examples/` 已随源码重建并通过校验，节点 Operator 内容未改变；规则的唯一批准变更是用完整 `Advertising` 取代 `AdvertisingLite`，并按官方 Shadowrocket 拆分同时引用 `Advertising.list` 与 `Advertising_Domain.list`。必须在 Shadowrocket 中手动更新或重新导入新 Profile；只更新节点订阅不会改变分组。更新后打开 `🚀 节点选择`，摘要应显示 `SELECT > PROXY`，不能再显示某个国旗或具体节点名。如果仍显示具体节点，说明当前设备还在使用旧 Profile，先停止向其他设备推广并按部署手册核对 Profile 的更新时间。
 
 Shadowrocket 可能保留其他业务分组中仍然有效的旧选择，生成时的首项默认值不会自动覆盖它。逐个查看常用业务组：境外组希望跟随首页时，手动选择第一项 `🚀 节点选择`；国内组希望恢复默认直连时，手动选择第一项 `DIRECT`。如果摘要仍显示具体节点、自动组、故障转移或地区组，业务会继续按该旧选择工作。
 
@@ -70,10 +70,10 @@ Shadowrocket 可能保留其他业务分组中仍然有效的旧选择，生成�
 ```bash
 npm ci
 npm run verify
-npm run check:rules
+npm --workspace @apple-proxy-profiles/shadowrocket run check:rules
 ```
 
-`npm run verify` 会运行测试、重新构建两个脚本、生成脱敏示例并扫描敏感信息。`npm run check:rules` 会联网检查 31 份远程规则；网络受限时它可能失败，这不等于本地代码错误，但首次部署时仍必须等规则检查全部通过。
+`npm run verify` 会运行测试、重新构建两个脚本、生成脱敏示例并扫描敏感信息。`npm --workspace @apple-proxy-profiles/shadowrocket run check:rules` 会从仓库根目录联网检查 32 份远程规则；网络受限时它可能失败，这不等于本地代码错误，但首次部署时仍必须等规则检查全部通过。
 
 ## 部署入口
 

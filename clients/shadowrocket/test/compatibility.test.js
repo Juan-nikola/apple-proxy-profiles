@@ -1,10 +1,14 @@
 import assert from "node:assert/strict";
+import { readFile, readdir } from "node:fs/promises";
 import test from "node:test";
 
 import { buildPolicyGroups } from "../../../shared/policies/catalog.js";
+import { POLICY_TARGET } from "../../../shared/policies/intents.js";
 import { normalizeNodes } from "../../../shared/nodes/normalize-nodes.js";
 import { buildGroups as buildLegacyGroups } from "../src/group-catalog.js";
 import { fakeNodes } from "./fixtures/nodes.js";
+
+const sharedRoot = new URL("../../../shared/", import.meta.url);
 
 const EXPECTED_16_SERVICE_NAMES = Object.freeze([
   "🐙 GitHub",
@@ -40,7 +44,10 @@ test("shared policy records preserve the Shadowrocket catalog", () => {
   const shared = buildPolicyGroups(options, nodes);
   const shadowrocket = buildLegacyGroups(options, nodes);
 
-  assert.equal(shared.find((group) => group.name === "🚀 节点选择").candidates[0], "PROXY");
+  assert.equal(Object.isFrozen(POLICY_TARGET), true);
+  assert.equal(shared.find((group) => group.name === "🚀 节点选择").candidates[0], POLICY_TARGET.primaryProxy);
+  assert.notEqual(POLICY_TARGET.primaryProxy, "PROXY");
+  assert.deepEqual(shadowrocket.find((group) => group.name === "🚀 节点选择").items, ["PROXY"]);
   assert.deepEqual(
     shared.filter((group) => group.kind === "service").map((group) => group.name),
     EXPECTED_16_SERVICE_NAMES,
@@ -48,4 +55,20 @@ test("shared policy records preserve the Shadowrocket catalog", () => {
   assert.deepEqual(shared.find((group) => group.name === "☣️ 安全威胁").candidates, ["REJECT", "DIRECT"]);
   assert.equal(shadowrocket.length, shared.length);
   assert.equal(Object.hasOwn(shadowrocket.find((group) => group.name === "🐙 GitHub"), "kind"), false);
+});
+
+test("shared modules never import a Shadowrocket client module", async () => {
+  const paths = (await readdir(sharedRoot, { recursive: true }))
+    .filter((path) => path.endsWith(".js"));
+  const sources = await Promise.all(paths.map((path) => readFile(new URL(path, sharedRoot), "utf8")));
+
+  for (let index = 0; index < paths.length; index += 1) {
+    assert.doesNotMatch(
+      sources[index],
+      /(?:from\s+|import\s*\()["'][^"']*clients\/shadowrocket\//,
+      `shared/${paths[index]} imports the Shadowrocket client`,
+    );
+  }
+  const catalog = await readFile(new URL("policies/catalog.js", sharedRoot), "utf8");
+  assert.doesNotMatch(catalog, /["']PROXY["']/, "shared catalog embeds a Shadowrocket policy literal");
 });

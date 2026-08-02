@@ -63,6 +63,20 @@ var ShadowrocketProfileBundle = (() => {
     return node._profile;
   }
 
+  // ../../../shared/policies/platform-presets.js
+  var POLICY_PLATFORM_PRESETS = Object.freeze({
+    macos: Object.freeze({ testInterval: 600, timeout: 5, tolerance: 100 }),
+    iphone: Object.freeze({ testInterval: 1800, timeout: 7, tolerance: 150 }),
+    ipad: Object.freeze({ testInterval: 1800, timeout: 7, tolerance: 150 }),
+    appletv: Object.freeze({ testInterval: 3600, timeout: 8, tolerance: 200 })
+  });
+  function platformPolicyPreset(platform) {
+    if (typeof platform !== "string" || !Object.hasOwn(POLICY_PLATFORM_PRESETS, platform)) {
+      throw new Error(`Unsupported platform: ${platform}`);
+    }
+    return POLICY_PLATFORM_PRESETS[platform];
+  }
+
   // options.js
   var REQUIRED_KEYS = Object.freeze([
     "output",
@@ -82,12 +96,6 @@ var ShadowrocketProfileBundle = (() => {
     clientChain: "off"
   });
   var ALLOWED_KEYS = /* @__PURE__ */ new Set([...REQUIRED_KEYS, ...Object.keys(DEFAULTS)]);
-  var PLATFORM_PRESETS = Object.freeze({
-    macos: Object.freeze({ testInterval: 600, timeout: 5, tolerance: 100 }),
-    iphone: Object.freeze({ testInterval: 1800, timeout: 7, tolerance: 150 }),
-    ipad: Object.freeze({ testInterval: 1800, timeout: 7, tolerance: 150 }),
-    appletv: Object.freeze({ testInterval: 3600, timeout: 8, tolerance: 200 })
-  });
   function requiredString(raw, key) {
     if (!Object.hasOwn(raw, key)) {
       throw new Error(`Option '${key}' must be a non-empty string`);
@@ -139,12 +147,6 @@ var ShadowrocketProfileBundle = (() => {
       options[key] = Object.hasOwn(raw, key) && raw[key] !== void 0 ? enumValue(raw, key) : platformDefault;
     }
     return options;
-  }
-  function platformPreset(platform) {
-    if (typeof platform !== "string" || !Object.hasOwn(PLATFORM_PRESETS, platform)) {
-      throw new Error(`Unsupported platform: ${platform}`);
-    }
-    return PLATFORM_PRESETS[platform];
   }
 
   // dns.js
@@ -305,6 +307,11 @@ var ShadowrocketProfileBundle = (() => {
     return `^(?:${continent.flags.join("|")}) .+$`;
   }
 
+  // ../../../shared/policies/intents.js
+  var POLICY_TARGET = Object.freeze({
+    primaryProxy: "primary-proxy"
+  });
+
   // ../../../shared/policies/catalog.js
   var TEST_URL = "http://www.gstatic.com/generate_204";
   var STRATEGY = Object.freeze({
@@ -427,7 +434,7 @@ var ShadowrocketProfileBundle = (() => {
   }
   function buildPolicyGroups(options, nodes) {
     const normalizedNodes = Array.isArray(nodes) ? nodes : [];
-    const preset = platformPreset(options.platform);
+    const preset = platformPolicyPreset(options.platform);
     const mode = effectiveAutoMode(options.autoGroupMode, normalizedNodes.length);
     const presentContinents = CONTINENTS.filter((continent) => normalizedNodes.some((node) => nodeMetadata(node).continent === continent.key && !nodeMetadata(node).chained));
     const chainEligible = options.clientChain === "on" && normalizedNodes.some((node) => nodeMetadata(node).entry === true && !nodeMetadata(node).chained) && normalizedNodes.some((node) => nodeMetadata(node).chained === true);
@@ -458,7 +465,11 @@ var ShadowrocketProfileBundle = (() => {
         }
       }
     }
-    groups.push(policyGroup({ kind: GROUP_KIND.primary, name: "\u{1F680} \u8282\u70B9\u9009\u62E9", candidates: ["PROXY"] }));
+    groups.push(policyGroup({
+      kind: GROUP_KIND.primary,
+      name: "\u{1F680} \u8282\u70B9\u9009\u62E9",
+      candidates: [POLICY_TARGET.primaryProxy]
+    }));
     for (const continent of presentContinents) {
       groups.push(subscriptionGroup(
         GROUP_KIND.continent,
@@ -522,11 +533,14 @@ var ShadowrocketProfileBundle = (() => {
   }
 
   // group-catalog.js
+  function shadowrocketPolicyTarget(candidate) {
+    return candidate === POLICY_TARGET.primaryProxy ? "PROXY" : candidate;
+  }
   function buildGroups(options, nodes) {
     return buildPolicyGroups(options, nodes).map((group) => ({
       name: group.name,
       type: group.strategy === "auto-test" ? "url-test" : group.strategy,
-      items: group.candidates,
+      items: group.candidates.map(shadowrocketPolicyTarget),
       useSubscription: group.nodeFilter === null ? void 0 : true,
       filter: group.nodeFilter ?? void 0,
       url: group.test?.url,
@@ -611,7 +625,8 @@ var ShadowrocketProfileBundle = (() => {
   var RULE_SOURCE_CATALOG = Object.freeze([
     rule("Hijacking", "\u2623\uFE0F \u5B89\u5168\u5A01\u80C1", 150),
     rule("BlockHttpDNS", "\u2623\uFE0F \u5B89\u5168\u5A01\u80C1", 40),
-    rule("Advertising", "\u{1F9F1} \u5E38\u89C1\u5E7F\u544A", 1e4),
+    rule("Advertising", "\u{1F9F1} \u5E38\u89C1\u5E7F\u544A", 700),
+    rule("Advertising_Domain", "\u{1F9F1} \u5E38\u89C1\u5E7F\u544A", 25e4, "DOMAIN-SET", "Advertising"),
     rule("Privacy", "\u{1F575}\uFE0F \u4E25\u683C\u8DDF\u8E2A", 15),
     rule("BiliBili", "\u{1F4FA} \u54D4\u54E9\u54D4\u54E9", 80),
     rule("ByteDance", "\u{1F3B5} \u6296\u97F3", 300),

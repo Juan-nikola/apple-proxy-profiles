@@ -6,6 +6,7 @@ import { Worker } from "node:worker_threads";
 
 const DEFAULT_BASELINE_DIR = "/Users/sunyuze/Documents/代理软件/shadowrocket-profile";
 const APPROVED_ADVERTISING = "Advertising/Advertising.list";
+const APPROVED_ADVERTISING_DOMAIN = "Advertising/Advertising_Domain.list";
 const LEGACY_ADVERTISING = "AdvertisingLite/AdvertisingLite.list";
 const PROFILE_NAMES = Object.freeze(["macos", "iphone", "ipad"]);
 const BUNDLES = Object.freeze([
@@ -112,8 +113,25 @@ export function compareProfileText(currentSource, baselineSource, label = "profi
       true,
       `${label}: approved Advertising replacement is absent`,
     );
+    const advertisingDomainLines = currentSection
+      .split(/\r?\n/)
+      .filter((line) => line.includes(APPROVED_ADVERTISING_DOMAIN));
     assert.equal(
-      currentSection.replaceAll(APPROVED_ADVERTISING, LEGACY_ADVERTISING),
+      advertisingDomainLines.length,
+      1,
+      `${label}: approved Advertising_Domain source must appear exactly once`,
+    );
+    assert.match(
+      advertisingDomainLines[0],
+      /^DOMAIN-SET,/,
+      `${label}: approved Advertising_Domain source must use DOMAIN-SET`,
+    );
+    const currentWithoutAdvertisingDomain = currentSection.replace(
+      `${advertisingDomainLines[0]}\n`,
+      "",
+    );
+    assert.equal(
+      currentWithoutAdvertisingDomain.replaceAll(APPROVED_ADVERTISING, LEGACY_ADVERTISING),
       baselineSection,
       `${label}: [Rule] contains an unapproved change`,
     );

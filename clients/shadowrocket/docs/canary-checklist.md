@@ -10,7 +10,7 @@
 - [ ] 一个未列规则的境外目标命中 `FINAL,🚀 节点选择`。
 - [ ] `🚀 节点选择`只有跟随首页节点的 `PROXY`，摘要显示 `SELECT > PROXY`；首页切换节点后，此处不再保存或显示具体节点名。
 - [ ] 动态组按匹配的 `subscriptionName` 显示具体节点；若名称不匹配，`DIRECT`、`🚀 节点选择`、自动/故障转移和地区等显式选择仍可用，但不会显示该订阅的服务器。
-- [ ] 已替换 `clients/shadowrocket/dist/substore-profile-generator.js` 并更新当前平台 Profile；设备端无需替换节点 Script Operator 或改动节点订阅。仓库内 `clients/shadowrocket/dist/`、`clients/shadowrocket/examples/` 已重建校验，规则和节点 Operator 内容未改变。
+- [ ] 已替换 `clients/shadowrocket/dist/substore-profile-generator.js` 并更新当前平台 Profile；设备端无需替换节点 Script Operator 或改动节点订阅。仓库内 `clients/shadowrocket/dist/`、`clients/shadowrocket/examples/` 已重建校验，节点 Operator 内容未改变；规则的唯一批准变更是用完整 `Advertising` 取代 `AdvertisingLite`，同时引用 `Advertising.list` 与 `Advertising_Domain.list`。
 - [ ] 16 个常用业务组都有自动测速、故障转移、固定顺序地区组和符合筛选条件的具体节点；没有国家组。
 - [ ] 打开 `🐙 GitHub` 和 `🍎 Apple`：确认两组的自动、故障转移、地区、`DIRECT`、`🚀 节点选择`等所有显式选择及匹配订阅的具体服务器都存在；GitHub 的 `policy-select-name=🚀 节点选择`，Apple 的 `policy-select-name=DIRECT`。
 - [ ] 在 Shadowrocket 首页切换节点后，`🐙 GitHub` 仍选择 `🚀 节点选择`并继续联网；Apple 保持其已选择的显式策略。

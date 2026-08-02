@@ -1,11 +1,13 @@
 import assert from "node:assert/strict";
+import { isDeepStrictEqual } from "node:util";
 import vm from "node:vm";
 import { parentPort, workerData } from "node:worker_threads";
 
-function syntheticInventory() {
+function syntheticInventory(role) {
+  const metadataKey = role === "baseline" ? "_sr" : "_profile";
   return Array.from({ length: 25 }, (_, index) => ({
     name: `Synthetic ${index + 1}`,
-    _profile: {
+    [metadataKey]: {
       id: `synthetic-${index + 1}`,
       continent: "asiaPacific",
       sourceKind: "airport",
@@ -17,13 +19,13 @@ function syntheticInventory() {
   }));
 }
 
-function bootstrapSource(kind, scenario) {
+function bootstrapSource(kind, scenario, role) {
   const configuration = JSON.stringify({
     kind,
     arguments: scenario.arguments,
     input: scenario.input,
     artifactMode: scenario.artifactMode ?? "inventory",
-    inventory: syntheticInventory(),
+    inventory: syntheticInventory(role),
   });
   return `
 (() => {
@@ -82,18 +84,28 @@ function primitiveType(value) {
   return typeof value;
 }
 
-function exactDescription(value) {
-  if (value === null || typeof value === "string" || typeof value === "boolean") return value;
+const APPROVED_ADVERTISING = "Advertising/Advertising.list";
+const APPROVED_ADVERTISING_DOMAIN = "Advertising/Advertising_Domain.list";
+const LEGACY_ADVERTISING = "AdvertisingLite/AdvertisingLite.list";
+
+function exactScalar(value, role, kind, path) {
+  if (typeof value === "string") {
+    if (kind === "profile" && path.length === 1 && path[0] === "$content") {
+      if (role === "baseline") return value.replaceAll(LEGACY_ADVERTISING, APPROVED_ADVERTISING);
+      return value
+        .split(/(?<=\n)/)
+        .filter((line) => !line.includes(APPROVED_ADVERTISING_DOMAIN))
+        .join("");
+    }
+    return value;
+  }
+  if (value === null || typeof value === "boolean") return value;
   if (typeof value === "number") return Number.isFinite(value) ? value : String(value);
   if (typeof value === "undefined") return { type: "undefined" };
-  if (Array.isArray(value)) return Array.from(value, (item) => exactDescription(item));
-  if (typeof value === "object") {
-    return Object.keys(value).sort().map((key) => [key, exactDescription(value[key])]);
-  }
   return { type: typeof value };
 }
 
-function metadataDescription(value) {
+function metadataDescription(value, role, kind, path) {
   if (!value || typeof value !== "object" || Array.isArray(value)) return { type: primitiveType(value) };
   return {
     type: "object",
@@ -101,31 +113,31 @@ function metadataDescription(value) {
       key,
       key === "id"
         ? { type: primitiveType(value[key]), value: "<ignored-private-id>" }
-        : exactDescription(value[key]),
+        : valueDescription(value[key], role, kind, [...path, key]),
     ]),
   };
 }
 
-function valueShape(value, role) {
-  if (value === null) return "null";
+function valueDescription(value, role, kind, path = []) {
   if (Array.isArray(value)) {
-    return { type: "array", items: Array.from(value, (item) => valueShape(item, role)) };
+    return {
+      type: "array",
+      items: Array.from(value, (item, index) => valueDescription(item, role, kind, [...path, index])),
+    };
   }
-  if (typeof value === "object") {
+  if (value !== null && typeof value === "object") {
     return {
       type: "object",
       entries: Object.keys(value).sort().map((key) => {
         const canonicalKey = role === "baseline" && key === "_sr" ? "_profile" : key;
         const description = canonicalKey === "_profile"
-          ? metadataDescription(value[key])
-          : canonicalKey.startsWith("_")
-            ? exactDescription(value[key])
-            : valueShape(value[key], role);
+          ? metadataDescription(value[key], role, kind, [...path, canonicalKey])
+          : valueDescription(value[key], role, kind, [...path, canonicalKey]);
         return [canonicalKey, description];
       }).sort(([left], [right]) => left.localeCompare(right, "en")),
     };
   }
-  return typeof value;
+  return { type: primitiveType(value), value: exactScalar(value, role, kind, path) };
 }
 
 function publicGlobalSignature(context, names) {
@@ -150,12 +162,43 @@ function publicGlobalSignature(context, names) {
   });
 }
 
-function loadBundle(kind, source, scenario, label, timeoutMs) {
+function firstMismatchPath(left, right, path = "result") {
+  if (Object.is(left, right)) return null;
+  if (typeof left === "string" && typeof right === "string") {
+    const leftLines = left.split(/\r?\n/);
+    const rightLines = right.split(/\r?\n/);
+    const limit = Math.max(leftLines.length, rightLines.length);
+    let line = 0;
+    while (line < limit && leftLines[line] === rightLines[line]) line += 1;
+    return `${path} (string line ${line + 1}; lengths ${left.length}/${right.length})`;
+  }
+  if (Array.isArray(left) || Array.isArray(right)) {
+    if (!Array.isArray(left) || !Array.isArray(right)) return path;
+    if (left.length !== right.length) return `${path}.length`;
+    for (let index = 0; index < left.length; index += 1) {
+      const mismatch = firstMismatchPath(left[index], right[index], `${path}[${index}]`);
+      if (mismatch) return mismatch;
+    }
+    return null;
+  }
+  if (left && right && typeof left === "object" && typeof right === "object") {
+    const leftKeys = Object.keys(left).sort();
+    const rightKeys = Object.keys(right).sort();
+    if (!isDeepStrictEqual(leftKeys, rightKeys)) return `${path}.keys`;
+    for (const key of leftKeys) {
+      const mismatch = firstMismatchPath(left[key], right[key], `${path}.${key}`);
+      if (mismatch) return mismatch;
+    }
+  }
+  return left && right && typeof left === "object" && typeof right === "object" ? null : path;
+}
+
+function loadBundle(kind, source, scenario, label, role, timeoutMs) {
   const context = vm.createContext(Object.create(null), {
     codeGeneration: { strings: false, wasm: false },
     name: label,
   });
-  vm.runInContext(bootstrapSource(kind, scenario), context, {
+  vm.runInContext(bootstrapSource(kind, scenario, role), context, {
     filename: `${label}:bootstrap`,
     timeout: timeoutMs,
   });
@@ -170,7 +213,7 @@ function loadBundle(kind, source, scenario, label, timeoutMs) {
 async function characterizeScenario(kind, source, scenario, label, role, timeoutMs) {
   let context;
   try {
-    ({ context } = loadBundle(kind, source, scenario, `${label}:${scenario.name}`, timeoutMs));
+    ({ context } = loadBundle(kind, source, scenario, `${label}:${scenario.name}`, role, timeoutMs));
     assert.equal(typeof context.operator, "function", `${label}: operator global is unavailable`);
     const value = await vm.runInContext('operator(__compatInput, "Shadowrocket")', context, {
       filename: `${label}:${scenario.name}:operator`,
@@ -178,7 +221,7 @@ async function characterizeScenario(kind, source, scenario, label, role, timeout
     });
     return {
       status: "fulfilled",
-      shape: valueShape(value, role),
+      value: valueDescription(value, role, kind),
       calls: JSON.parse(vm.runInContext("__compatCallsJson()", context, { timeout: timeoutMs })),
     };
   } catch (error) {
@@ -201,8 +244,22 @@ async function characterizeScenario(kind, source, scenario, label, role, timeout
 async function compare() {
   const { kind, currentSource, baselineSource, label, scenarios, timeoutMs } = workerData;
   const signatureScenario = scenarios[0];
-  const currentSignature = loadBundle(kind, currentSource, signatureScenario, `${label}:current`, timeoutMs).signature;
-  const baselineSignature = loadBundle(kind, baselineSource, signatureScenario, `${label}:baseline`, timeoutMs).signature;
+  const currentSignature = loadBundle(
+    kind,
+    currentSource,
+    signatureScenario,
+    `${label}:current`,
+    "current",
+    timeoutMs,
+  ).signature;
+  const baselineSignature = loadBundle(
+    kind,
+    baselineSource,
+    signatureScenario,
+    `${label}:baseline`,
+    "baseline",
+    timeoutMs,
+  ).signature;
   assert.deepEqual(currentSignature, baselineSignature, `${label}: exported globals or operator arity changed`);
 
   for (const scenario of scenarios) {
@@ -210,7 +267,8 @@ async function compare() {
     const baseline = await characterizeScenario(kind, baselineSource, scenario, `${label}:baseline`, "baseline", timeoutMs);
     assert.equal(baseline.status, scenario.expectedStatus, `${label}: baseline ${scenario.name} characterization is invalid`);
     assert.equal(current.status, scenario.expectedStatus, `${label}: current ${scenario.name} characterization changed`);
-    assert.deepEqual(current, baseline, `${label}: ${scenario.name} behavior changed`);
+    const mismatch = firstMismatchPath(current, baseline);
+    assert.equal(mismatch, null, `${label}: ${scenario.name} behavior changed at ${mismatch}`);
   }
 }
 

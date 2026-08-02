@@ -1,5 +1,4 @@
 import { nodeMetadata } from "../contracts.js";
-import { platformPreset } from "../../clients/shadowrocket/src/options.js";
 import {
   ALL_NODES_FILTER,
   CONTINENTS,
@@ -10,6 +9,8 @@ import {
   SOURCE_GROUPS,
   continentFilter,
 } from "./filters.js";
+import { POLICY_TARGET } from "./intents.js";
+import { platformPolicyPreset } from "./platform-presets.js";
 
 const TEST_URL = "http://www.gstatic.com/generate_204";
 
@@ -145,7 +146,7 @@ export function effectiveAutoMode(requested, nodeCount) {
 
 export function buildPolicyGroups(options, nodes) {
   const normalizedNodes = Array.isArray(nodes) ? nodes : [];
-  const preset = platformPreset(options.platform);
+  const preset = platformPolicyPreset(options.platform);
   const mode = effectiveAutoMode(options.autoGroupMode, normalizedNodes.length);
   const presentContinents = CONTINENTS.filter((continent) => (
     normalizedNodes.some((node) => nodeMetadata(node).continent === continent.key && !nodeMetadata(node).chained)
@@ -183,7 +184,11 @@ export function buildPolicyGroups(options, nodes) {
     }
   }
 
-  groups.push(policyGroup({ kind: GROUP_KIND.primary, name: "🚀 节点选择", candidates: ["PROXY"] }));
+  groups.push(policyGroup({
+    kind: GROUP_KIND.primary,
+    name: "🚀 节点选择",
+    candidates: [POLICY_TARGET.primaryProxy],
+  }));
   for (const continent of presentContinents) {
     groups.push(subscriptionGroup(
       GROUP_KIND.continent,

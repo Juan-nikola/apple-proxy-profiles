@@ -15,7 +15,8 @@ function rule(id, policy, minEntries, inputFormat = "RULE-SET", directory = id) 
 export const RULE_SOURCE_CATALOG = Object.freeze([
   rule("Hijacking", "☣️ 安全威胁", 150),
   rule("BlockHttpDNS", "☣️ 安全威胁", 40),
-  rule("Advertising", "🧱 常见广告", 10_000),
+  rule("Advertising", "🧱 常见广告", 700),
+  rule("Advertising_Domain", "🧱 常见广告", 250_000, "DOMAIN-SET", "Advertising"),
   rule("Privacy", "🕵️ 严格跟踪", 15),
   rule("BiliBili", "📺 哔哩哔哩", 80),
   rule("ByteDance", "🎵 抖音", 300),

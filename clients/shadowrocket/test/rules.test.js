@@ -9,7 +9,7 @@ import { renderRules, validateCustomRules } from "../src/render-rules.js";
 
 const BLACKMATRIX7_ROOT = "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Shadowrocket";
 const EXPECTED_CATALOG_IDS = [
-  "Hijacking", "BlockHttpDNS", "Advertising", "Privacy", "BiliBili", "ByteDance", "XiaoHongShu", "Weibo",
+  "Hijacking", "BlockHttpDNS", "Advertising", "Advertising_Domain", "Privacy", "BiliBili", "ByteDance", "XiaoHongShu", "Weibo",
   "OpenAI", "Claude", "Gemini", "Copilot", "GitHub", "YouTube", "Netflix", "Disney", "Spotify", "GlobalMedia",
   "Telegram", "Facebook", "Instagram", "Twitter", "TikTok", "Apple", "Microsoft", "SteamCN", "ChinaMax_Domain",
   "Game", "Download", "PrivateTracker", "ChinaMax",
@@ -18,6 +18,7 @@ const EXPECTED_ASSIGNMENTS = [
   { sourceId: "Hijacking", policy: "☣️ 安全威胁" },
   { sourceId: "BlockHttpDNS", policy: "☣️ 安全威胁" },
   { sourceId: "Advertising", policy: "🧱 常见广告" },
+  { sourceId: "Advertising_Domain", policy: "🧱 常见广告" },
   { sourceId: "Privacy", policy: "🕵️ 严格跟踪" },
   { sourceId: "BiliBili", policy: "📺 哔哩哔哩" },
   { sourceId: "ByteDance", policy: "🎵 抖音" },
@@ -58,7 +59,8 @@ const EXPECTED_CUSTOM_AI = [
 const EXPECTED_SOURCE_DETAILS = [
   ["Hijacking/Hijacking.list", 150, "RULE-SET"],
   ["BlockHttpDNS/BlockHttpDNS.list", 40, "RULE-SET"],
-  ["Advertising/Advertising.list", 10_000, "RULE-SET"],
+  ["Advertising/Advertising.list", 700, "RULE-SET"],
+  ["Advertising/Advertising_Domain.list", 250_000, "DOMAIN-SET"],
   ["Privacy/Privacy.list", 15, "RULE-SET"],
   ["BiliBili/BiliBili.list", 80, "RULE-SET"],
   ["ByteDance/ByteDance.list", 300, "RULE-SET"],
@@ -147,7 +149,18 @@ test("shared rule intent includes complete domestic and advertising sources", ()
   assert.deepEqual(ids.filter((id) => id.startsWith("China")), ["ChinaMax_Domain", "ChinaMax"]);
   assert.ok(ids.indexOf("ChinaMax_Domain") < ids.indexOf("ChinaMax"));
   assert.equal(ids.includes("AdvertisingLite"), false);
-  assert.equal(RULE_SOURCE_CATALOG.find((rule) => rule.id === "Advertising").minEntries, 10_000);
+  assert.deepEqual(
+    RULE_SOURCE_CATALOG.filter((rule) => rule.id.startsWith("Advertising")).map((rule) => [
+      rule.id,
+      rule.sourcePath,
+      rule.minEntries,
+      rule.inputFormat,
+    ]),
+    [
+      ["Advertising", "Advertising/Advertising.list", 700, "RULE-SET"],
+      ["Advertising_Domain", "Advertising/Advertising_Domain.list", 250_000, "DOMAIN-SET"],
+    ],
+  );
   assert.deepEqual(CUSTOM_RULES.ai, EXPECTED_CUSTOM_AI);
   assert.deepEqual(Object.keys(CUSTOM_RULES), ["block", "direct", "proxy", "ai"]);
   assert.strictEqual(CUSTOM_BLOCK, CUSTOM_RULES.block);
@@ -165,7 +178,7 @@ test("renders every remote catalog entry in its explicit routing order", () => {
   assert.deepEqual(renderedRuleSetIds, EXPECTED_CATALOG_IDS);
   assert.equal(lines.filter((line) => line.includes("Game/Game.list")).length, 2);
   assert.deepEqual(renderedRuleSetIds.slice(-4), ["Game", "Download", "PrivateTracker", "ChinaMax"]);
-  assert.equal(lines.filter((line) => line.startsWith("DOMAIN-SET,")).length, 1);
+  assert.equal(lines.filter((line) => line.startsWith("DOMAIN-SET,")).length, 2);
 });
 
 test("rejects invalid custom rules without reflecting CR/LF payloads", () => {

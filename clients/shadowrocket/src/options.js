@@ -1,4 +1,5 @@
 import { OPTION_VALUES } from "../../../shared/contracts.js";
+import { platformPolicyPreset } from "../../../shared/policies/platform-presets.js";
 
 const REQUIRED_KEYS = Object.freeze([
   "output",
@@ -20,13 +21,6 @@ const DEFAULTS = Object.freeze({
 });
 
 const ALLOWED_KEYS = new Set([...REQUIRED_KEYS, ...Object.keys(DEFAULTS)]);
-
-const PLATFORM_PRESETS = Object.freeze({
-  macos: Object.freeze({ testInterval: 600, timeout: 5, tolerance: 100 }),
-  iphone: Object.freeze({ testInterval: 1800, timeout: 7, tolerance: 150 }),
-  ipad: Object.freeze({ testInterval: 1800, timeout: 7, tolerance: 150 }),
-  appletv: Object.freeze({ testInterval: 3600, timeout: 8, tolerance: 200 }),
-});
 
 function requiredString(raw, key) {
   if (!Object.hasOwn(raw, key)) {
@@ -95,8 +89,5 @@ export function parseOptions(raw) {
 }
 
 export function platformPreset(platform) {
-  if (typeof platform !== "string" || !Object.hasOwn(PLATFORM_PRESETS, platform)) {
-    throw new Error(`Unsupported platform: ${platform}`);
-  }
-  return PLATFORM_PRESETS[platform];
+  return platformPolicyPreset(platform);
 }

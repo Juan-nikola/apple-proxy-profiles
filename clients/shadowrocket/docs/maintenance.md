@@ -96,6 +96,6 @@
 - 每月：实际切回旧 Profile 一次；检查日志仍只保留 7 天；确认 iCloud 节点自动同步和 HTTPS 解密仍关闭。
 - 新增大量节点后：预览诊断计数，检查 `autoGroupMode=auto` 是否适合，不要因测速频繁而手工删除节点。
 - Shadowrocket 或 Sub-Store 升级后：先在 Intel Mac 手动更新和预览，再检查 iPhone、iPad；界面文字变化时按页面用途寻找，不随意打开证书、重写或解密功能。
-- 更新生成器代码后：维护者先运行 `npm ci`、`npm run verify` 和联网的 `npm run check:rules`，再上传新的 `clients/shadowrocket/dist/` 内容。
+- 更新生成器代码后：维护者从仓库根目录先运行 `npm ci`、`npm run verify` 和联网的 `npm --workspace @apple-proxy-profiles/shadowrocket run check:rules`，再上传新的 `clients/shadowrocket/dist/` 内容。
 
 如发现规则、节点、DNS 或局域网异常，立即按[故障排查与回滚](troubleshooting.md)处理。
