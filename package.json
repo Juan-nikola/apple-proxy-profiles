@@ -10,6 +10,7 @@
     "build": "npm --workspaces --if-present run build",
     "fixtures": "npm --workspaces --if-present run fixtures",
     "check:secrets": "node scripts/check-secrets.mjs",
+    "verify:egern": "npm --workspace @apple-proxy-profiles/egern run verify",
     "verify:shadowrocket": "npm --workspace @apple-proxy-profiles/shadowrocket run verify",
     "verify": "node scripts/verify.mjs"
   },
