@@ -73,6 +73,8 @@ async function operator(${wrapperParameters}) {
 function syntheticProfileBundle({
   globalName = "ShadowrocketProfileBundle",
   wrapperParameters = "input, targetPlatform",
+  rejectValidArguments = false,
+  acceptUnknownArguments = false,
   acceptInvalidKey = "",
   acceptMissingKey = "",
   artifactPlatform = "JSON",
@@ -86,8 +88,9 @@ var ${globalName} = {
     if (!args || typeof args !== "object" || Array.isArray(args)) throw new TypeError("Options must be an object");
     const allowed = ["output", "type", "name", "subscriptionName", "platform", "dnsMode", "chinaDns", "globalDns", "blockMode", "quicMode", "ipv6Mode", "autoGroupMode", "clientChain"];
     for (const key of Object.keys(args)) {
-      if (!key.startsWith("_") && !allowed.includes(key)) throw new Error(\`Unknown option: \${key}\`);
+      if (!key.startsWith("_") && !allowed.includes(key) && !${acceptUnknownArguments ? "true" : "false"}) throw new Error(\`Unknown option: \${key}\`);
     }
+    if (${rejectValidArguments ? "true" : "false"} && args.output === "config" && !Object.hasOwn(args, "unknown")) throw new Error("synthetic valid rejection");
     const defaults = {
       output: "config",
       type: "collection",
@@ -247,6 +250,8 @@ test("profile bundle compatibility rejects profile-specific contract changes", a
   const contractMutations = [
     ["exported global name", syntheticProfileBundle({ globalName: "RenamedProfileBundle" })],
     ["operator arity", syntheticProfileBundle({ wrapperParameters: "input" })],
+    ["accepted arguments", syntheticProfileBundle({ rejectValidArguments: true })],
+    ["rejected arguments", syntheticProfileBundle({ acceptUnknownArguments: true })],
     ["artifact request", syntheticProfileBundle({ artifactPlatform: "YAML" })],
     ["returned shape", syntheticProfileBundle({ extraPublicField: true })],
   ];
