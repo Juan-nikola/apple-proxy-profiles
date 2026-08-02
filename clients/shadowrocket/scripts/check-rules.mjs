@@ -15,7 +15,7 @@ export function isValidDomainSetLine(line) {
 const timeoutMs = 20_000;
 const userAgent = "shadowrocket-profile-rule-check/1.0";
 export async function checkRule(rule) {
-  const response = await fetch(rule.url, {
+  const response = await fetch(rule.upstreamUrl, {
     headers: { "user-agent": userAgent },
     signal: AbortSignal.timeout(timeoutMs),
   });
@@ -30,8 +30,10 @@ export async function checkRule(rule) {
   if (entries.length < rule.minEntries) {
     throw new Error(`only ${entries.length} entries; requires at least ${rule.minEntries}`);
   }
-  const validator = rule.type === "DOMAIN-SET" ? isValidDomainSetLine : isValidRuleLine;
-  if (entries.some((line) => !validator(line))) throw new Error(`invalid Shadowrocket ${rule.type ?? "RULE-SET"} line`);
+  const validator = rule.inputFormat === "DOMAIN-SET" ? isValidDomainSetLine : isValidRuleLine;
+  if (entries.some((line) => !validator(line))) {
+    throw new Error(`invalid Shadowrocket ${rule.inputFormat ?? "RULE-SET"} line`);
+  }
 }
 
 async function main() {

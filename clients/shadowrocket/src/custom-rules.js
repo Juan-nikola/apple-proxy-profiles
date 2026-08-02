@@ -1,12 +1,8 @@
-export const CUSTOM_BLOCK = Object.freeze([]);
-export const CUSTOM_DIRECT = Object.freeze([]);
-export const CUSTOM_PROXY = Object.freeze([]);
-export const CUSTOM_AI = Object.freeze([
-  "DOMAIN-SUFFIX,perplexity.ai",
-  "DOMAIN-SUFFIX,pplx.ai",
-  "DOMAIN-SUFFIX,x.ai",
-  "DOMAIN-SUFFIX,grok.com",
-  "DOMAIN-SUFFIX,poe.com",
-  "DOMAIN-SUFFIX,poecdn.net",
-]);
+import { CUSTOM_RULES } from "../../../shared/rules/custom-rules.js";
 
+export const {
+  block: CUSTOM_BLOCK,
+  direct: CUSTOM_DIRECT,
+  proxy: CUSTOM_PROXY,
+  ai: CUSTOM_AI,
+} = CUSTOM_RULES;

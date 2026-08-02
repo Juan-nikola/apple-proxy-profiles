@@ -1,5 +1,6 @@
 import { CUSTOM_AI, CUSTOM_BLOCK, CUSTOM_DIRECT, CUSTOM_PROXY } from "./custom-rules.js";
 import { RULE_CATALOG } from "./rule-catalog.js";
+import { orderedRuleAssignments } from "../../../shared/rules/catalog.js";
 import { isValidRuleLine } from "./rule-validator.js";
 
 const LOCAL_RULES = Object.freeze([
@@ -26,23 +27,10 @@ const CUSTOM_RULES = Object.freeze([
   Object.freeze(["CUSTOM_AI", CUSTOM_AI, "🤖 AI 专用"]),
 ]);
 
-const PRE_GAME_RULE_IDS = Object.freeze([
-  "Hijacking", "BlockHttpDNS", "AdvertisingLite", "Privacy", "BiliBili", "ByteDance", "XiaoHongShu", "Weibo",
-  "OpenAI", "Claude", "Gemini", "Copilot", "GitHub", "YouTube", "Netflix", "Disney", "Spotify", "GlobalMedia",
-  "Telegram", "Facebook", "Instagram", "Twitter", "TikTok", "Apple", "Microsoft",
-]);
 const GAME_DIRECT_RULES = Object.freeze([
   "DOMAIN-SUFFIX,leiting.com,DIRECT",
   "DOMAIN-SUFFIX,leitingcn.com,DIRECT",
   "DOMAIN-SUFFIX,g-bits.com,DIRECT",
-]);
-const DOMESTIC_BEFORE_GAME_RULE_IDS = Object.freeze(["SteamCN", "ChinaMax_Domain"]);
-const POST_GAME_RULE_IDS = Object.freeze(["Download", "PrivateTracker", "ChinaMax"]);
-const REQUIRED_RULE_IDS = Object.freeze([
-  ...PRE_GAME_RULE_IDS,
-  ...DOMESTIC_BEFORE_GAME_RULE_IDS,
-  "Game",
-  ...POST_GAME_RULE_IDS,
 ]);
 
 function isSafeCustomField(value) {
@@ -72,30 +60,41 @@ export function validateCustomRules(customRules) {
   }
 }
 
-function validatedCatalog() {
+function validatedCatalog(assignments) {
   const entriesById = new Map();
   for (const entry of RULE_CATALOG) {
     const entries = entriesById.get(entry.id) ?? [];
     entries.push(entry);
     entriesById.set(entry.id, entries);
   }
-  for (const id of REQUIRED_RULE_IDS) {
-    if (entriesById.get(id)?.length !== 1) throw new Error(`Invalid rule catalog entry: ${id}`);
+  for (const { sourceId, policy } of assignments) {
+    const entries = entriesById.get(sourceId);
+    if (entries?.length !== 1 || entries[0].policy !== policy) {
+      throw new Error(`Invalid rule catalog entry: ${sourceId}`);
+    }
   }
   return entriesById;
 }
 
-function catalogRule(entriesById, id) {
-  return entriesById.get(id)[0];
+function catalogRule(entriesById, assignment) {
+  return entriesById.get(assignment.sourceId)[0];
 }
 
 function renderRuleSet(entry) {
-  return `${entry.type},${entry.url},${entry.policy},update-interval=86400`;
+  return `${entry.inputFormat},${entry.upstreamUrl},${entry.policy},update-interval=86400`;
 }
 
 export function renderRules() {
   validateCustomRules(CUSTOM_RULES);
-  const entriesById = validatedCatalog();
+  const assignments = orderedRuleAssignments();
+  const entriesById = validatedCatalog(assignments);
+  const steamIndex = assignments.findIndex(({ sourceId }) => sourceId === "SteamCN");
+  const gameIndex = assignments.findIndex(({ sourceId }) => sourceId === "Game");
+  if (steamIndex < 0 || gameIndex <= steamIndex) throw new Error("Invalid rule assignment order");
+  const preGameAssignments = assignments.slice(0, steamIndex);
+  const domesticBeforeGameAssignments = assignments.slice(steamIndex, gameIndex);
+  const gameAssignment = assignments[gameIndex];
+  const postGameAssignments = assignments.slice(gameIndex + 1);
   const lines = [...LOCAL_RULES, "# Custom rules"];
 
   for (const [name, rules, policy] of CUSTOM_RULES) {
@@ -103,14 +102,14 @@ export function renderRules() {
     lines.push(...rules.map((rule) => `${rule},${policy}`));
   }
 
-  lines.push(...PRE_GAME_RULE_IDS.map((id) => renderRuleSet(catalogRule(entriesById, id))));
+  lines.push(...preGameAssignments.map((assignment) => renderRuleSet(catalogRule(entriesById, assignment))));
   lines.push(...GAME_DIRECT_RULES);
-  lines.push(...DOMESTIC_BEFORE_GAME_RULE_IDS.map((id) => renderRuleSet(catalogRule(entriesById, id))));
+  lines.push(...domesticBeforeGameAssignments.map((assignment) => renderRuleSet(catalogRule(entriesById, assignment))));
 
-  const game = catalogRule(entriesById, "Game");
-  lines.push(`AND,((PROTOCOL,UDP),(RULE-SET,${game.url})),🎮 游戏连接`);
+  const game = catalogRule(entriesById, gameAssignment);
+  lines.push(`AND,((PROTOCOL,UDP),(RULE-SET,${game.upstreamUrl})),🎮 游戏连接`);
   lines.push(renderRuleSet(game));
-  lines.push(...POST_GAME_RULE_IDS.map((id) => renderRuleSet(catalogRule(entriesById, id))));
+  lines.push(...postGameAssignments.map((assignment) => renderRuleSet(catalogRule(entriesById, assignment))));
   lines.push("GEOIP,CN,DIRECT", "FINAL,🚀 节点选择");
   return lines;
 }

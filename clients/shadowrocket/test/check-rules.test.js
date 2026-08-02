@@ -87,7 +87,7 @@ test("rejects HTML rule responses even when their body resembles valid rules", a
   });
   try {
     await assert.rejects(
-      checkRule({ url: "https://example.invalid/rules", minEntries: 1 }),
+      checkRule({ upstreamUrl: "https://example.invalid/rules", minEntries: 1, inputFormat: "RULE-SET" }),
       /content-type/i,
     );
   } finally {
@@ -103,7 +103,7 @@ test("accepts the text/plain content type served by the live rule catalog", asyn
   });
   try {
     await assert.doesNotReject(
-      checkRule({ url: "https://example.invalid/rules", minEntries: 1 }),
+      checkRule({ upstreamUrl: "https://example.invalid/rules", minEntries: 1, inputFormat: "RULE-SET" }),
     );
   } finally {
     globalThis.fetch = previousFetch;
@@ -112,14 +112,23 @@ test("accepts the text/plain content type served by the live rule catalog", asyn
 
 test("validates domain-set catalogs with domain-set syntax", async () => {
   const previousFetch = globalThis.fetch;
-  globalThis.fetch = async () => new Response(".example.com\nexact.example.net\n", {
-    status: 200,
-    headers: { "content-type": "text/plain; charset=utf-8" },
-  });
+  let requestedUrl;
+  globalThis.fetch = async (url) => {
+    requestedUrl = url;
+    return new Response(".example.com\nexact.example.net\n", {
+      status: 200,
+      headers: { "content-type": "text/plain; charset=utf-8" },
+    });
+  };
   try {
     await assert.doesNotReject(
-      checkRule({ url: "https://example.invalid/domains", minEntries: 2, type: "DOMAIN-SET" }),
+      checkRule({
+        upstreamUrl: "https://example.invalid/domains",
+        minEntries: 2,
+        inputFormat: "DOMAIN-SET",
+      }),
     );
+    assert.equal(requestedUrl, "https://example.invalid/domains");
   } finally {
     globalThis.fetch = previousFetch;
   }
