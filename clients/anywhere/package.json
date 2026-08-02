@@ -1,0 +1,12 @@
+{
+  "name": "@apple-proxy-profiles/anywhere",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "test": "node --test",
+    "check:secrets": "node ../../scripts/check-secrets.mjs",
+    "verify": "npm run test && npm run check:secrets"
+  }
+}

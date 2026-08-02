@@ -164,6 +164,33 @@ var EgernNodeBundle = (() => {
 
   // ../../../shared/nodes/capabilities.js
   var ANYWHERE_VLESS_NETWORKS = /* @__PURE__ */ new Set(["tcp", "ws"]);
+  var ANYWHERE_SHADOWSOCKS_METHODS = /* @__PURE__ */ new Set([
+    "aes-128-gcm",
+    "aes-256-gcm",
+    "chacha20-ietf-poly1305",
+    "chacha20-poly1305",
+    "none",
+    "plain",
+    "2022-blake3-aes-128-gcm",
+    "2022-blake3-aes-256-gcm",
+    "2022-blake3-chacha20-poly1305"
+  ]);
+  var ANYWHERE_HYSTERIA_OBFS = /* @__PURE__ */ new Set(["salamander", "gecko"]);
+  var ANYWHERE_FINGERPRINTS = /* @__PURE__ */ new Set([
+    "chrome",
+    "firefox",
+    "safari",
+    "ios",
+    "edge",
+    "random",
+    "chrome_133",
+    "chrome_120",
+    "chrome_106",
+    "firefox_148",
+    "firefox_120",
+    "safari_26",
+    "edge_106"
+  ]);
   var EGERN_SHADOWSOCKS_METHODS = /* @__PURE__ */ new Set([
     "2022-blake3-aes-128-gcm",
     "2022-blake3-aes-256-gcm",
@@ -793,23 +820,189 @@ var EgernNodeBundle = (() => {
     if (protocol2 === "ssh") return egernSshReason(node);
     return null;
   }
-  function supportsAnywhereTransport(node, protocol2) {
-    if (protocol2 === "vless" && !ANYWHERE_VLESS_NETWORKS.has(node.network)) {
-      return "unsupported-vless-network";
+  function hasAnyChain(node) {
+    return CHAIN_ALIASES.some((key) => hasOption(node, key) && node[key] !== void 0 && node[key] !== null && node[key] !== "") || node?._profile?.chained === true;
+  }
+  function anywhereTlsWeakeningReason(node) {
+    for (const key of ["skip-cert-verify", "allow-insecure"]) {
+      if (hasOption(node, key) && typeof node[key] !== "boolean") return "invalid-anywhere-node-shape";
+      if (node[key] === true) return "unsupported-anywhere-tls-weakening";
     }
-    if (protocol2 === "trojan" && (node.network !== "tcp" || hasOption(node, "grpc-opts") || hasOption(node, "reality-opts") || node["ss-opts"]?.enabled === true)) {
-      return "unsupported-trojan-transport";
-    }
-    if ((protocol2 === "ss" || protocol2 === "shadowsocks") && hasShadowsocksPlugin(node)) {
-      return "unsupported-shadowsocks-plugin";
+    if (conflictingAliases(node, ["skip-cert-verify", "allow-insecure"])) {
+      return "conflicting-anywhere-alias";
     }
     return null;
+  }
+  function validAnywhereFingerprint(node) {
+    return !hasOption(node, "client-fingerprint") || isNonblankString(node["client-fingerprint"]) && ANYWHERE_FINGERPRINTS.has(node["client-fingerprint"].toLowerCase());
+  }
+  function validAnywhereAlpn(node) {
+    return !hasOption(node, "alpn") || Array.isArray(node.alpn) && node.alpn.length > 0 && node.alpn.every(isNonblankString);
+  }
+  function validAnywhereEch(node) {
+    if (!hasOption(node, "ech-opts")) return true;
+    const options = node["ech-opts"];
+    return isPlainObject(options) && Object.keys(options).every((key) => ["enable", "config", "query-server-name"].includes(key)) && (!hasOption(options, "enable") || typeof options.enable === "boolean") && (!hasOption(options, "config") || isNonblankString(options.config)) && (!hasOption(options, "query-server-name") || isNonblankString(options["query-server-name"]));
+  }
+  function anywhereTlsShapeReason(node) {
+    const weakening = anywhereTlsWeakeningReason(node);
+    if (weakening) return weakening;
+    if (conflictingAliases(node, ["sni", "servername"]) || !optionalStringAliasesAreValid(node, ["sni", "servername"]) || !validAnywhereFingerprint(node) || !validAnywhereAlpn(node) || !validAnywhereEch(node) || hasOption(node, "fingerprint-sha256") || hasOption(node, "fingerprint_sha256")) {
+      return "unsupported-anywhere-tls-shape";
+    }
+    return null;
+  }
+  function validVlessUserId(value) {
+    if (!isNonblankString(value) || !/^[\u0021-\u007e]+$/u.test(value)) return false;
+    if (value.length >= 1 && value.length <= 30) return true;
+    return value.length === 32 && /^[0-9A-Fa-f]{32}$/u.test(value) || value.length === 36 && /^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$/u.test(value);
+  }
+  function isAnywhereRealityPublicKey(value) {
+    return isNonblankString(value) && /^(?:[A-Za-z0-9_-]{43}|[A-Za-z0-9_-]{43}=)$/u.test(value);
+  }
+  function isAnywhereVlessEncryptionKey(value) {
+    return /^(?:[A-Za-z0-9_-]{43}|[A-Za-z0-9_-]{43}=)$/u.test(value) || /^(?:[A-Za-z0-9_-]{1579}|[A-Za-z0-9_-]{1579}=)$/u.test(value);
+  }
+  function validAnywhereVlessEncryption(value) {
+    if (value === void 0 || value === "" || value === "none") return true;
+    if (!isNonblankString(value)) return false;
+    const segments = value.split(".");
+    if (segments.length < 4 || segments[0] !== "mlkem768x25519plus" || !["native", "xorpub", "random"].includes(segments[1]) || !["1rtt", "0rtt"].includes(segments[2])) return false;
+    let keyCount = 0;
+    for (const segment of segments.slice(3)) {
+      if (segment.length < 20) continue;
+      if (!isAnywhereVlessEncryptionKey(segment)) return false;
+      keyCount += 1;
+    }
+    return keyCount > 0;
+  }
+  function validAnywhereBandwidth(value) {
+    if (value === void 0) return true;
+    const text = typeof value === "number" && Number.isInteger(value) ? String(value) : value;
+    if (typeof text !== "string" || !/^\d+(?:\s+Mbps)?$/u.test(text)) return false;
+    const amount = Number(text.split(/\s+/u, 1)[0]);
+    return Number.isSafeInteger(amount) && amount >= 0 && amount <= 1e3;
+  }
+  function validAnywhereWsOptions(value) {
+    if (!isPlainObject(value)) return false;
+    if (Object.keys(value).some((key) => ![
+      "path",
+      "headers",
+      "v2ray-http-upgrade",
+      "max-early-data",
+      "early-data-header-name"
+    ].includes(key))) return false;
+    if (hasOption(value, "path") && !isNonblankString(value.path) || hasOption(value, "v2ray-http-upgrade") && typeof value["v2ray-http-upgrade"] !== "boolean" || hasOption(value, "max-early-data") && (!Number.isInteger(value["max-early-data"]) || value["max-early-data"] < 0) || hasOption(value, "early-data-header-name") && !isNonblankString(value["early-data-header-name"])) {
+      return false;
+    }
+    if (!hasOption(value, "headers")) return true;
+    return isPlainObject(value.headers) && Object.entries(value.headers).every(([key, field]) => isNonblankString(key) && isNonblankString(field));
+  }
+  function anywhereCommonReason(node) {
+    if (!isPlainObject(node) || !isNonblankString(node.name) || !isNonblankString(node.server) || !isValidPort(node.port)) return "invalid-anywhere-node-shape";
+    if (hasAnyChain(node)) return "unsupported-existing-chain";
+    return anywhereTlsWeakeningReason(node);
+  }
+  function anywhereNodeExclusionReason(node) {
+    const protocol2 = normalizeProtocol(node?.type);
+    const commonReason = anywhereCommonReason(node);
+    if (commonReason) return commonReason;
+    const network = normalizeTransport(node);
+    const transportFields = ["ws-opts", "grpc-opts", "h2-opts", "http-opts", "xhttp-opts"];
+    if (protocol2 === "ss" || protocol2 === "shadowsocks") {
+      if (!isNonblankOpaqueString(node.password) || !isNonblankString(node.cipher)) return "invalid-anywhere-node-shape";
+      if (!ANYWHERE_SHADOWSOCKS_METHODS.has(node.cipher.toLowerCase())) return "unsupported-anywhere-shadowsocks-method";
+      if (network !== "tcp" || hasShadowsocksPlugin(node) || node.tls === true || node.security === "tls" || transportFields.some((key) => hasOption(node, key))) {
+        return "unsupported-anywhere-shadowsocks-shape";
+      }
+      return null;
+    }
+    if (protocol2 === "vless") {
+      if (!validVlessUserId(node.uuid)) return "invalid-anywhere-node-shape";
+      if (!ANYWHERE_VLESS_NETWORKS.has(network)) return "unsupported-anywhere-vless-network";
+      if (!validAnywhereVlessEncryption(node.encryption)) return "unsupported-anywhere-vless-encryption";
+      if (hasOption(node, "flow") && node.flow !== "" && node.flow !== "xtls-rprx-vision") {
+        return "unsupported-anywhere-vless-flow";
+      }
+      if (network === "ws") {
+        if (hasOption(node, "ws-opts") && !validAnywhereWsOptions(node["ws-opts"]) || transportFields.some((key) => key !== "ws-opts" && hasOption(node, key))) {
+          return "unsupported-anywhere-vless-transport";
+        }
+      } else if (transportFields.some((key) => hasOption(node, key))) {
+        return "unsupported-anywhere-vless-transport";
+      }
+      const tlsReason = anywhereTlsShapeReason(node);
+      if (tlsReason) return tlsReason;
+      const reality = node["reality-opts"];
+      if (reality !== void 0) {
+        if (!isPlainObject(reality) || Object.keys(reality).some((key) => !["public-key", "short-id"].includes(key)) || !isAnywhereRealityPublicKey(reality["public-key"]) || hasOption(reality, "short-id") && !/^(?:[0-9A-Fa-f]{2}){1,8}$/u.test(reality["short-id"])) {
+          return "unsupported-anywhere-reality";
+        }
+      }
+      if (node.security === "reality" && reality === void 0 || node.security === "tls" && node.tls === false || node.security === "reality" && node.tls === false) {
+        return "unsupported-anywhere-tls-shape";
+      }
+      return null;
+    }
+    if (protocol2 === "trojan") {
+      if (!isNonblankOpaqueString(node.password)) return "invalid-anywhere-node-shape";
+      const tlsReason = anywhereTlsShapeReason(node);
+      if (tlsReason) return tlsReason;
+      const ssOptions = node["ss-opts"];
+      if (network !== "tcp" || node.tls === false || node.security === "none" || hasOption(node, "reality-opts") || transportFields.some((key) => hasOption(node, key)) || hasOption(node, "ss-opts") && (!isPlainObject(ssOptions) || ssOptions.enabled === true)) {
+        return "unsupported-anywhere-trojan-shape";
+      }
+      return null;
+    }
+    if (protocol2 === "anytls") {
+      if (!isNonblankOpaqueString(node.password)) return "invalid-anywhere-node-shape";
+      const tlsReason = anywhereTlsShapeReason(node);
+      if (tlsReason) return tlsReason;
+      if (network !== "tcp" || node.tls === false || node.security === "none" || hasOption(node, "reality-opts") || transportFields.some((key) => hasOption(node, key)) || ["idle-session-check-interval", "idle-session-timeout"].some((key) => hasOption(node, key) && (!Number.isInteger(node[key]) || node[key] < 30)) || hasOption(node, "min-idle-session") && (!Number.isInteger(node["min-idle-session"]) || node["min-idle-session"] < 0)) {
+        return "unsupported-anywhere-anytls-shape";
+      }
+      return null;
+    }
+    if (protocol2 === "hysteria2" || protocol2 === "hy2") {
+      if (!isNonblankOpaqueString(node.password)) return "invalid-anywhere-node-shape";
+      const hysteriaNetwork = hasOption(node, "network") ? network : "quic";
+      if (!["udp", "quic"].includes(hysteriaNetwork)) return "unsupported-anywhere-hysteria2-shape";
+      if (hasOption(node, "reality-opts") || hasOption(node, "alpn") || hasOption(node, "bandwidth") || ["port-hopping", "port_hopping", "ports", "port-hopping-interval", "port_hopping_interval", "hop-interval"].some((key) => hasOption(node, key))) return "unsupported-anywhere-hysteria2-shape";
+      const minAliases = ["obfs-min-packet-size", "obfs_min_packet_size"];
+      const maxAliases = ["obfs-max-packet-size", "obfs_max_packet_size"];
+      const obfsMin = firstAliasValue(node, minAliases);
+      const obfsMax = firstAliasValue(node, maxAliases);
+      if (!validAnywhereBandwidth(node.up) || !validAnywhereBandwidth(node.down) || conflictingAliases(node, minAliases) || conflictingAliases(node, maxAliases) || [...minAliases, ...maxAliases].some((key) => hasOption(node, key) && (!Number.isInteger(node[key]) || node[key] <= 0 || node[key] > 2048)) || obfsMin !== void 0 && obfsMax !== void 0 && obfsMax < obfsMin) {
+        return "unsupported-anywhere-hysteria2-shape";
+      }
+      const tlsReason = anywhereTlsShapeReason(node);
+      if (tlsReason) return tlsReason;
+      if (conflictingAliases(node, ["obfs-password", "obfs_password"])) return "conflicting-anywhere-alias";
+      const obfs = node.obfs;
+      const obfsPassword = firstAliasValue(node, ["obfs-password", "obfs_password"]);
+      if (obfs !== void 0 && (!ANYWHERE_HYSTERIA_OBFS.has(String(obfs).toLowerCase()) || !isNonblankOpaqueString(obfsPassword)) || obfs === void 0 && obfsPassword !== void 0 || String(obfs).toLowerCase() !== "gecko" && (obfsMin !== void 0 || obfsMax !== void 0)) {
+        return "unsupported-anywhere-hysteria2-obfs";
+      }
+      return null;
+    }
+    if (protocol2 === "socks5") {
+      if (network !== "tcp" || node.tls === true || node.security === "tls" || node.security === "reality") {
+        return "unsupported-anywhere-socks5-tls";
+      }
+      if (!validOptionalAuthentication(node) || hasOption(node, "username") !== hasOption(node, "password")) return "invalid-anywhere-node-shape";
+      return null;
+    }
+    if (protocol2 === "sudoku") {
+      if (!isNonblankOpaqueString(node.key) || network !== "tcp") return "invalid-anywhere-node-shape";
+      return null;
+    }
+    return "unsupported-protocol";
   }
   function evaluateNodeForClient(node, client) {
     if (!Object.values(CLIENT).includes(client)) return { supported: false, reason: "unsupported-client" };
     const protocol2 = normalizeProtocol(node?.type);
     if (!protocolSupportsClient(protocol2, client)) return { supported: false, reason: "unsupported-protocol" };
-    const transportReason = client === CLIENT.anywhere ? supportsAnywhereTransport(node ?? {}, protocol2) : client === CLIENT.egern ? egernNodeExclusionReason(node ?? {}) : null;
+    const transportReason = client === CLIENT.anywhere ? anywhereNodeExclusionReason(node ?? {}) : client === CLIENT.egern ? egernNodeExclusionReason(node ?? {}) : null;
     return transportReason ? { supported: false, reason: transportReason } : { supported: true, reason: null };
   }
   function filterNodesForClient(nodes, client) {

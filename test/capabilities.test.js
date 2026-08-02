@@ -12,8 +12,28 @@ const ALLOWED_PROTOCOLS = Object.freeze({
 const ALL_PROTOCOLS = [...new Set(Object.values(ALLOWED_PROTOCOLS).flat())];
 
 function nodeForCapability(protocol, client) {
-  if (client === CLIENT.anywhere && protocol === "vless") return { type: protocol, network: "tcp" };
-  if (client === CLIENT.anywhere && protocol === "trojan") return { type: protocol, network: "tcp" };
+  if (client === CLIENT.anywhere) {
+    const common = {
+      name: `Anywhere ${protocol}`,
+      type: protocol,
+      server: "anywhere-capability.example.invalid",
+      port: 443,
+    };
+    if (protocol === "ss" || protocol === "shadowsocks") {
+      return { ...common, cipher: "aes-128-gcm", password: "TEST_ONLY_ANYWHERE_SS_PASSWORD" };
+    }
+    if (protocol === "vless") {
+      return { ...common, uuid: "00000000-0000-4000-8000-000000000001", network: "tcp" };
+    }
+    if (["trojan", "anytls"].includes(protocol)) {
+      return { ...common, password: "TEST_ONLY_ANYWHERE_PASSWORD", network: "tcp" };
+    }
+    if (["hysteria2", "hy2"].includes(protocol)) {
+      return { ...common, password: "TEST_ONLY_ANYWHERE_PASSWORD", network: "quic" };
+    }
+    if (protocol === "sudoku") return { ...common, key: "TEST_ONLY_ANYWHERE_SUDOKU_KEY" };
+    return common;
+  }
   if (client === CLIENT.egern) {
     const common = {
       name: `Capability ${protocol}`,
@@ -77,14 +97,238 @@ test("enforces the complete client protocol contracts including aliases", () => 
 });
 
 test("allows only verified Anywhere transports and Shadowsocks forms", () => {
-  assert.deepEqual(evaluateNodeForClient({ type: "vless", network: "tcp" }, CLIENT.anywhere), { supported: true, reason: null });
-  assert.deepEqual(evaluateNodeForClient({ type: "vless", network: "ws" }, CLIENT.anywhere), { supported: true, reason: null });
-  assert.deepEqual(evaluateNodeForClient({ type: "vless" }, CLIENT.anywhere), { supported: false, reason: "unsupported-vless-network" });
-  assert.deepEqual(evaluateNodeForClient({ type: "trojan", network: "tcp" }, CLIENT.anywhere), { supported: true, reason: null });
-  assert.deepEqual(evaluateNodeForClient({ type: "trojan", network: "tcp", "grpc-opts": {} }, CLIENT.anywhere), { supported: false, reason: "unsupported-trojan-transport" });
-  assert.deepEqual(evaluateNodeForClient({ type: "trojan", network: "tcp", "reality-opts": {} }, CLIENT.anywhere), { supported: false, reason: "unsupported-trojan-transport" });
-  assert.deepEqual(evaluateNodeForClient({ type: "trojan", network: "tcp", "ss-opts": { enabled: true } }, CLIENT.anywhere), { supported: false, reason: "unsupported-trojan-transport" });
-  assert.deepEqual(evaluateNodeForClient({ type: "ss", plugin: "v2ray-plugin" }, CLIENT.anywhere), { supported: false, reason: "unsupported-shadowsocks-plugin" });
+  const common = { name: "Anywhere", server: "anywhere.example.invalid", port: 443 };
+  const password = "TEST_ONLY_ANYWHERE_PASSWORD";
+  const uuid = "00000000-0000-4000-8000-000000000001";
+
+  for (const network of [undefined, "tcp", "ws"]) {
+    const node = { ...common, type: "vless", uuid };
+    if (network !== undefined) node.network = network;
+    assert.deepEqual(evaluateNodeForClient(node, CLIENT.anywhere), { supported: true, reason: null });
+  }
+  for (const network of ["h2", "grpc", "xhttp", "unknown"]) {
+    assert.deepEqual(
+      evaluateNodeForClient({ ...common, type: "vless", uuid, network }, CLIENT.anywhere),
+      { supported: false, reason: "unsupported-anywhere-vless-network" },
+    );
+  }
+
+  assert.deepEqual(
+    evaluateNodeForClient({ ...common, type: "trojan", password }, CLIENT.anywhere),
+    { supported: true, reason: null },
+  );
+  for (const mutation of [
+    { network: "ws" },
+    { network: "tcp", "grpc-opts": {} },
+    { network: "tcp", "reality-opts": {} },
+    { network: "tcp", "ss-opts": { enabled: true } },
+  ]) {
+    assert.deepEqual(
+      evaluateNodeForClient({ ...common, type: "trojan", password, ...mutation }, CLIENT.anywhere),
+      { supported: false, reason: "unsupported-anywhere-trojan-shape" },
+    );
+  }
+
+  for (const cipher of [
+    "aes-128-gcm", "aes-256-gcm", "chacha20-ietf-poly1305", "chacha20-poly1305",
+    "none", "plain", "2022-blake3-aes-128-gcm", "2022-blake3-aes-256-gcm",
+    "2022-blake3-chacha20-poly1305",
+  ]) {
+    assert.deepEqual(
+      evaluateNodeForClient({ ...common, type: "ss", cipher, password }, CLIENT.anywhere),
+      { supported: true, reason: null },
+      cipher,
+    );
+  }
+  for (const mutation of [
+    { cipher: "aes-128-cfb" },
+    { cipher: "aes-128-gcm", plugin: "v2ray-plugin" },
+    { cipher: "aes-128-gcm", network: "udp" },
+    { cipher: "aes-128-gcm", tls: true },
+  ]) {
+    assert.equal(
+      evaluateNodeForClient({ ...common, type: "ss", password, ...mutation }, CLIENT.anywhere).supported,
+      false,
+    );
+  }
+});
+
+test("rejects Anywhere fields that its Clash parser would silently weaken or discard", () => {
+  const common = { name: "Anywhere", server: "anywhere.example.invalid", port: 443 };
+  const password = "TEST_ONLY_ANYWHERE_PASSWORD";
+  const uuid = "00000000-0000-4000-8000-000000000001";
+
+  for (const type of ["vless", "trojan", "anytls", "hysteria2"]) {
+    const auth = type === "vless" ? { uuid } : { password };
+    assert.deepEqual(
+      evaluateNodeForClient({ ...common, type, ...auth, "skip-cert-verify": true }, CLIENT.anywhere),
+      { supported: false, reason: "unsupported-anywhere-tls-weakening" },
+      type,
+    );
+    assert.deepEqual(
+      evaluateNodeForClient({ ...common, type, ...auth, "allow-insecure": true }, CLIENT.anywhere),
+      { supported: false, reason: "unsupported-anywhere-tls-weakening" },
+      type,
+    );
+  }
+
+  for (const mutation of [
+    { obfs: "unknown", "obfs-password": password },
+    { obfs: "salamander" },
+    { ports: "443,8443" },
+    { "port-hopping": "443-8443" },
+    { alpn: ["h3"] },
+  ]) {
+    assert.equal(
+      evaluateNodeForClient({ ...common, type: "hysteria2", password, ...mutation }, CLIENT.anywhere).supported,
+      false,
+    );
+  }
+
+  assert.deepEqual(
+    evaluateNodeForClient({ ...common, type: "socks5", tls: true }, CLIENT.anywhere),
+    { supported: false, reason: "unsupported-anywhere-socks5-tls" },
+  );
+  assert.deepEqual(
+    evaluateNodeForClient({ ...common, type: "ss", cipher: "aes-128-gcm", password, "underlying-proxy": "hop" }, CLIENT.anywhere),
+    { supported: false, reason: "unsupported-existing-chain" },
+  );
+});
+
+test("validates Anywhere VLESS Reality, WebSocket, and post-quantum wire shapes", () => {
+  const common = {
+    name: "Anywhere VLESS",
+    type: "vless",
+    server: "vless.example.invalid",
+    port: 443,
+    uuid: "00000000-0000-4000-8000-000000000001",
+  };
+  const publicKey = "A".repeat(43);
+  const pqKey = "A".repeat(43);
+
+  assert.deepEqual(evaluateNodeForClient({
+    ...common,
+    network: "ws",
+    tls: true,
+    "ws-opts": {
+      path: "/proxy",
+      headers: { Host: "edge.example.invalid" },
+      "max-early-data": 2048,
+      "early-data-header-name": "Sec-WebSocket-Protocol",
+    },
+  }, CLIENT.anywhere), { supported: true, reason: null });
+
+  assert.deepEqual(evaluateNodeForClient({
+    ...common,
+    security: "reality",
+    "reality-opts": { "public-key": publicKey, "short-id": "0123abcd" },
+  }, CLIENT.anywhere), { supported: true, reason: null });
+  for (const reality of [
+    { "public-key": "TEST_ONLY_NOT_BASE64" },
+    { "public-key": "A".repeat(42) },
+    { "public-key": publicKey, "short-id": "abc" },
+  ]) {
+    assert.deepEqual(
+      evaluateNodeForClient({ ...common, security: "reality", "reality-opts": reality }, CLIENT.anywhere),
+      { supported: false, reason: "unsupported-anywhere-reality" },
+    );
+  }
+
+  const encryption = `mlkem768x25519plus.native.1rtt.100-200.${pqKey}`;
+  assert.deepEqual(evaluateNodeForClient({ ...common, encryption }, CLIENT.anywhere), { supported: true, reason: null });
+  for (const invalid of [
+    "mlkem768x25519plus.bad.1rtt.AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+    "mlkem768x25519plus.native.bad.AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+    "mlkem768x25519plus.native.1rtt.short",
+    "unsupported.native.1rtt.AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+  ]) {
+    assert.deepEqual(
+      evaluateNodeForClient({ ...common, encryption: invalid }, CLIENT.anywhere),
+      { supported: false, reason: "unsupported-anywhere-vless-encryption" },
+    );
+  }
+});
+
+test("validates Anywhere Hysteria2 fields that otherwise fall back silently", () => {
+  const common = {
+    name: "Anywhere Hysteria2",
+    type: "hysteria2",
+    server: "hysteria.example.invalid",
+    port: 443,
+    password: "TEST_ONLY_HYSTERIA_PASSWORD",
+  };
+  assert.deepEqual(evaluateNodeForClient({
+    ...common,
+    obfs: "salamander",
+    "obfs-password": "TEST_ONLY_OBFS_PASSWORD",
+    up: "30 Mbps",
+    down: 100,
+  }, CLIENT.anywhere), { supported: true, reason: null });
+  assert.deepEqual(evaluateNodeForClient({
+    ...common,
+    obfs: "gecko",
+    "obfs-password": "TEST_ONLY_GECKO_PASSWORD",
+    "obfs-min-packet-size": 64,
+    "obfs-max-packet-size": 128,
+  }, CLIENT.anywhere), { supported: true, reason: null });
+  for (const network of [undefined, "udp", "quic"]) {
+    const node = { ...common };
+    if (network !== undefined) node.network = network;
+    assert.deepEqual(
+      evaluateNodeForClient(node, CLIENT.anywhere),
+      { supported: true, reason: null },
+      `Hysteria2 network ${network ?? "absent"}`,
+    );
+  }
+  for (const mutation of [
+    { network: "tcp" },
+    { up: "fast" },
+    { down: -1 },
+    { obfs: "gecko", "obfs-password": "TEST_ONLY", "obfs-min-packet-size": 0 },
+    { obfs: "gecko", "obfs-password": "TEST_ONLY", "obfs-max-packet-size": 2049 },
+    { obfs: "gecko", "obfs-password": "TEST_ONLY", "obfs-min-packet-size": 1000, "obfs-max-packet-size": 500 },
+    { "obfs-min-packet-size": "64" },
+  ]) {
+    assert.deepEqual(
+      evaluateNodeForClient({ ...common, ...mutation }, CLIENT.anywhere),
+      { supported: false, reason: "unsupported-anywhere-hysteria2-shape" },
+    );
+  }
+  assert.deepEqual(
+    evaluateNodeForClient({
+      ...common,
+      obfs: "salamander",
+      "obfs-password": "TEST_ONLY",
+      "obfs-min-packet-size": 64,
+    }, CLIENT.anywhere),
+    { supported: false, reason: "unsupported-anywhere-hysteria2-obfs" },
+  );
+});
+
+test("rejects Anywhere AnyTLS warm-pool values that its runtime would clamp", () => {
+  const common = {
+    name: "Anywhere AnyTLS",
+    type: "anytls",
+    server: "anytls.example.invalid",
+    port: 443,
+    password: "TEST_ONLY_ANYTLS_PASSWORD",
+  };
+  assert.deepEqual(evaluateNodeForClient({
+    ...common,
+    "idle-session-check-interval": 30,
+    "idle-session-timeout": 60,
+    "min-idle-session": 0,
+  }, CLIENT.anywhere), { supported: true, reason: null });
+  for (const mutation of [
+    { "idle-session-check-interval": 29 },
+    { "idle-session-timeout": -1 },
+    { "min-idle-session": -1 },
+  ]) {
+    assert.deepEqual(
+      evaluateNodeForClient({ ...common, ...mutation }, CLIENT.anywhere),
+      { supported: false, reason: "unsupported-anywhere-anytls-shape" },
+    );
+  }
 });
 
 test("normalizes valid nodes before applying AnyTLS and WireGuard client capabilities", async () => {
@@ -206,14 +450,17 @@ test("reports only accepted and excluded counts for client filtering", () => {
   const accepted = {
     name: "COUNT_SAFE_ACCEPTED_NODE",
     type: "vless",
+    uuid: "00000000-0000-4000-8000-000000000001",
     network: "tcp",
     server: "accepted.example.invalid",
+    port: 443,
     password: "TEST_ONLY_ACCEPTED_PASSWORD",
   };
   const excludedProtocol = {
     name: "COUNT_SAFE_EXCLUDED_PROTOCOL",
     type: "snell",
     server: "excluded-protocol.example.invalid",
+    port: 443,
     password: "TEST_ONLY_EXCLUDED_PROTOCOL_PASSWORD",
   };
   const excludedTransport = {
@@ -221,6 +468,7 @@ test("reports only accepted and excluded counts for client filtering", () => {
     type: "trojan",
     network: "ws",
     server: "excluded-transport.example.invalid",
+    port: 443,
     password: "TEST_ONLY_EXCLUDED_TRANSPORT_PASSWORD",
   };
 
@@ -234,7 +482,7 @@ test("reports only accepted and excluded counts for client filtering", () => {
     accepted: 1,
     excluded: {
       "unsupported-protocol": 1,
-      "unsupported-trojan-transport": 1,
+      "unsupported-anywhere-trojan-shape": 1,
     },
   });
   const diagnosticsJson = JSON.stringify(result.diagnostics);
