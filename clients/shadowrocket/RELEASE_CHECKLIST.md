@@ -7,8 +7,8 @@
 - [x] `node --version` is 22 or newer.
 - [x] `npm ci` succeeds from a clean dependency directory.
 - [x] `npm test` passes.
-- [x] `npm run build` succeeds twice with byte-identical `dist/` output.
-- [x] `npm run fixtures` succeeds twice with byte-identical `examples/` output.
+- [x] `npm run build` succeeds twice with byte-identical `clients/shadowrocket/dist/` output.
+- [x] `npm run fixtures` succeeds twice with byte-identical `clients/shadowrocket/examples/` output.
 - [x] `npm run check:rules` reports every catalog rule healthy.
 - [x] `npm run check:secrets` reports no potential secret.
 - [x] macOS, iPhone, and iPad Profiles contain `[General]`, `[Proxy Group]`, and `[Rule]`.

@@ -10,7 +10,7 @@
 - QUIC：修改 `quicMode=allow|proxy-block|all-block` 后更新 Profile，不是热切换。
 - IPv6：iPhone/iPad 使用 `ipv6Mode=auto`；macOS 稳定优先使用 `ipv4-only`。
 - 广告：`☣️ 安全威胁`、`🧱 常见广告`、`🕵️ 严格跟踪`可在客户端热切换；`blockMode`只决定首次默认值。
-- HTTPS 解密：始终关闭；广告规则中的域名/IP 项仍会工作，需要解密 HTTPS 路径的 URL 正则不会生效，不为提高拦截率安装证书。
+- HTTPS 解密：保持关闭；广告规则中的域名/IP 项仍会工作，需要解密 HTTPS 路径的 URL 正则不会生效，不为提高拦截率安装证书。
 - AI：在 `🤖 AI 专用`里可通过独立 AI 洲组或具体节点选择出口；它可以与主线路使用不同节点，更新后确认选择仍保留。
 - 国内平台：各自策略组默认 DIRECT，需要时可切到 `🚀 节点选择`或具体节点。抖音使用 Blackmatrix7 `ByteDance` 增强规则；代理不能保证评论地区改变。
 - 游戏连接：默认 DIRECT，只显示明确 `[UDP]` 节点；游戏网页由 `🕹️ 游戏平台`控制。
@@ -36,7 +36,7 @@
 
 1. 保持原来的 `shadowrocket-sources`、参数为 `output=nodes&clientChain=off` 的原节点 Script Operator、`shadowrocket-nodes`、三个正式 Profile File 及其 URL 全部不变。
 2. 新建带日期的测试组合，例如 `shadowrocket-sources-chain-test-YYYYMMDD`。复制正式组合的来源成员和必要的非节点脚本处理，但不要把正式节点 Script Operator 挂到测试组合。如果某个来源必须把标签改为 `[落地]`，先复制该来源条目，只在副本上改显示名，不重命名生产来源。
-3. 为测试组合新建一份独立的节点 Script Operator，粘贴同一份 `dist/substore-node-operator.js`，参数填 `output=nodes&clientChain=on`。不要编辑正式组合正在使用的脚本或参数。
+3. 为测试组合新建一份独立的节点 Script Operator，粘贴同一份 `clients/shadowrocket/dist/substore-node-operator.js`，参数填 `output=nodes&clientChain=on`。不要编辑正式组合正在使用的脚本或参数。
 4. 从测试组合发布一份新的版本化节点订阅，例如 `shadowrocket-nodes-chain-test-YYYYMMDD`；原来的 `shadowrocket-nodes` 保持不变。
 5. 在 Shadowrocket 中给新节点订阅一个便于识别的显示名，显示名准确填写 `Shadowrocket-Nodes-Chain-Test-YYYYMMDD`。这是测试示例，不是固定名称；若自定义名称，后续 `subscriptionName` 必须逐字相同，包括大小写、emoji、空格和标点。动态组只从 `subscriptionName` 精确指定的测试订阅读取，无需因防混入而暂停生产订阅；正式订阅与测试订阅仍应分别保留，便于独立回滚和复测。
 6. 先只复制 macOS Profile File，名称加同一天的链式测试后缀。参数中的三个关键值填写为：
@@ -96,6 +96,6 @@
 - 每月：实际切回旧 Profile 一次；检查日志仍只保留 7 天；确认 iCloud 节点自动同步和 HTTPS 解密仍关闭。
 - 新增大量节点后：预览诊断计数，检查 `autoGroupMode=auto` 是否适合，不要因测速频繁而手工删除节点。
 - Shadowrocket 或 Sub-Store 升级后：先在 Intel Mac 手动更新和预览，再检查 iPhone、iPad；界面文字变化时按页面用途寻找，不随意打开证书、重写或解密功能。
-- 更新生成器代码后：维护者先运行 `npm ci`、`npm run verify` 和联网的 `npm run check:rules`，再上传新的 `dist/` 内容。
+- 更新生成器代码后：维护者先运行 `npm ci`、`npm run verify` 和联网的 `npm run check:rules`，再上传新的 `clients/shadowrocket/dist/` 内容。
 
 如发现规则、节点、DNS 或局域网异常，立即按[故障排查与回滚](troubleshooting.md)处理。

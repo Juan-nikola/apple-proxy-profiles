@@ -13,6 +13,8 @@
 
 成功标志：旧 Profile 仍在列表中，切回后可以恢复联网。做不到就停止部署，先修复备份或回滚入口。
 
+迁移说明：仓库文件现位于 `clients/shadowrocket/`，但已创建的 Sub-Store 对象名和 URL 不变。`shadowrocket-sources`、`shadowrocket-nodes`、`shadowrocket-config-macos`、`shadowrocket-config-iphone`、`shadowrocket-config-ipad` 及其已发布 URL 都不要重命名；保留旧 Profile 并继续使用本手册的既有顺序。
+
 ### 公网 Sub-Store 安全检查
 
 本项目不配置服务器端认证、TLS 或管理页面加固。公网中未认证的 Sub-Store 管理页面可能让他人看到订阅和节点；秘密 URL 不是访问控制，也不能替代登录认证。
@@ -38,11 +40,11 @@
 
 ## 2. 创建节点 Script Operator
 
-新建脚本，粘贴 `dist/substore-node-operator.js` 全文；把它放到 `shadowrocket-sources` 的脚本操作中。参数先填 `output=nodes&clientChain=off`。目标平台选 Shadowrocket。输出文件命名 `shadowrocket-nodes`，更新间隔设为每 6 小时。
+新建脚本，粘贴 `clients/shadowrocket/dist/substore-node-operator.js` 全文；把它放到 `shadowrocket-sources` 的脚本操作中。参数先填 `output=nodes&clientChain=off`。目标平台选 Shadowrocket。输出文件命名 `shadowrocket-nodes`，更新间隔设为每 6 小时。
 
 具体操作：
 
-1. 从本项目打开 `dist/substore-node-operator.js`，全选并完整复制。不要只复制开头，也不要自行添加 `import`。
+1. 从本项目打开 `clients/shadowrocket/dist/substore-node-operator.js`，全选并完整复制。不要只复制开头，也不要自行添加 `import`。
 2. 在 Sub-Store 中新建 Script Operator，把完整脚本粘贴进去。
 3. 将脚本操作加入组合 `shadowrocket-sources` 的处理链。
 4. 参数准确填写 `output=nodes&clientChain=off`，不要加引号或空格。
@@ -56,7 +58,7 @@
 
 ## 3. 创建三个配置 File Script Operator
 
-分别创建 `shadowrocket-config-macos`、`shadowrocket-config-iphone`、`shadowrocket-config-ipad`，脚本都粘贴 `dist/substore-profile-generator.js` 全文。macOS 使用稳定优先参数：
+分别创建 `shadowrocket-config-macos`、`shadowrocket-config-iphone`、`shadowrocket-config-ipad`，脚本都粘贴 `clients/shadowrocket/dist/substore-profile-generator.js` 全文。macOS 使用稳定优先参数：
 
 `output=config&type=collection&name=shadowrocket-sources&subscriptionName=Shadowrocket-Nodes&platform=macos&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=ipv4-only&autoGroupMode=auto&clientChain=off`
 
@@ -65,7 +67,7 @@ iPhone 和 iPad 将 `platform` 分别改成 `iphone`、`ipad`，并把 `ipv6Mode
 按下面顺序逐份创建：
 
 1. 在 Sub-Store 中找到用于生成文本文件的 File/文件功能，选择 Script Operator。
-2. 粘贴 `dist/substore-profile-generator.js` 全文。
+2. 粘贴 `clients/shadowrocket/dist/substore-profile-generator.js` 全文。
 3. macOS 文件名填 `shadowrocket-config-macos`，使用上面的完整参数。
 4. iPhone 文件名填 `shadowrocket-config-iphone`，使用 `platform=iphone`、`quicMode=proxy-block`、`ipv6Mode=auto`。
 5. iPad 文件名填 `shadowrocket-config-ipad`，使用 `platform=ipad`、`quicMode=proxy-block`、`ipv6Mode=auto`。
@@ -88,7 +90,7 @@ iPhone 和 iPad 将 `platform` 分别改成 `iphone`、`ipad`，并把 `ipv6Mode
 3. 开启连接、规则命中和 DNS 日志，并设置自动删除 7 天前日志。
 4. 关闭 Shadowrocket iCloud 节点自动同步，让 Sub-Store 成为唯一节点来源。
 5. Shadowrocket 运行期间不要叠加 iCloud 私密转送；断开 Shadowrocket 后可恢复系统原设置。
-6. 保持 HTTPS 解密关闭，不安装解密证书，不开启重写。
+6. HTTPS 解密保持关闭，不安装解密证书，不开启重写。
 7. 确认第 2、3 节已在 Sub-Store 中把节点订阅更新间隔设为每 6 小时、平台 Profile 更新间隔设为每天。
 
 先在 Intel Mac 完成以上 7 项并逐项核对，才能进入第 4 节。以后轮到 iPhone、iPad 时，也必须先在对应设备完成这些设置，再导入和测试。
@@ -151,7 +153,7 @@ Sub-Store 中先找“订阅/组合订阅”，再找“脚本操作/Script Oper
 
 ## 8. 首次使用策略组
 
-1. 本次恢复服务组时，设备端只需替换 `dist/substore-profile-generator.js` 并更新当前平台 Profile；无需替换节点 Script Operator，也无需改动节点订阅。仓库中的 `dist/` 与 `examples/` 已随源码重建校验，规则和节点 Operator 内容未改变。打开 `🚀 节点选择`，确认它只有 `PROXY`，摘要显示 `SELECT > PROXY`。以后直接在 Shadowrocket 首页选择节点，这个组会自动跟随；如果这里仍显示国旗或具体节点名，当前设备使用的还是旧 Profile。
+1. 本次恢复服务组时，设备端只需替换 `clients/shadowrocket/dist/substore-profile-generator.js` 并更新当前平台 Profile；无需替换节点 Script Operator，也无需改动节点订阅。仓库中的 `clients/shadowrocket/dist/` 与 `clients/shadowrocket/examples/` 已随源码重建校验，规则和节点 Operator 内容未改变。打开 `🚀 节点选择`，确认它只有 `PROXY`，摘要显示 `SELECT > PROXY`。以后直接在 Shadowrocket 首页选择节点，这个组会自动跟随；如果这里仍显示国旗或具体节点名，当前设备使用的还是旧 Profile。
 2. 16 个常用业务组都提供自动测速、故障转移、地区和具体节点选择。GitHub、YouTube、Netflix、Disney+、Spotify、国际媒体、Telegram、海外社交、TikTok 和游戏平台这 10 个境外组以 `policy-select-name=🚀 节点选择` 设为首项；Apple、Microsoft、哔哩哔哩、抖音、小红书和微博这 6 个国内组以 `policy-select-name=DIRECT` 设为首项。检查至少一个境外组和一个国内组，确认各自首项、完整显式候选和匹配订阅中的具体服务器均可见。
 3. 打开 `🤖 AI 专用`，可选择独立 AI 洲组或符合筛选条件的具体节点。AI 组的选择不会改变主线路。
 4. Apple、Microsoft 和国内平台默认直连；需要时可在对应平台组选择 `🚀 节点选择`或具体节点。

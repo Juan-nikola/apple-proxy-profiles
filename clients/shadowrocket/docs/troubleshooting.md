@@ -1,6 +1,6 @@
 # 故障排查与回滚
 
-固定顺序：切回旧 Profile → 判断节点/规则/DNS/局域网/IPv6 → 生成脱敏统计 → 只分享统计。先恢复可用网络，再排查；不要删除旧 Profile。
+固定顺序：切回旧 Profile → 判断节点/规则/DNS/局域网/IPv6 → 生成脱敏统计 → 只分享统计。先恢复可用网络，再排查；不要删除旧 Profile。仓库路径迁移到 `clients/shadowrocket/` 不改变任何 Sub-Store 对象名或 URL；不要重命名 `shadowrocket-sources`、节点订阅、Profile File 或保留的旧 Profile。
 
 ## 先回滚
 

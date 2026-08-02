@@ -3,9 +3,11 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 
+const shadowrocketRoot = resolve(import.meta.dirname, "..");
+
 test("beginner docs contain every operational checkpoint and warning", async () => {
   const paths = ["README.md", "docs/deployment.md", "docs/maintenance.md", "docs/troubleshooting.md", "docs/canary-checklist.md"];
-  const files = await Promise.all(paths.map((file) => readFile(file, "utf8")));
+  const files = await Promise.all(paths.map((file) => readFile(resolve(shadowrocketRoot, file), "utf8")));
   const docs = Object.fromEntries(paths.map((file, index) => [file, files[index]]));
   const text = files.join("\n");
   for (const phrase of [
@@ -138,8 +140,25 @@ test("beginner docs contain every operational checkpoint and warning", async () 
     for (const match of markdown.matchAll(/\[[^\]]+\]\(([^)]+)\)/g)) {
       const target = match[1].split("#", 1)[0];
       if (!target || /^[a-z][a-z0-9+.-]*:/i.test(target)) continue;
-      const linkedPath = resolve(dirname(file), target);
+      const linkedPath = resolve(shadowrocketRoot, dirname(file), target);
       await assert.doesNotReject(readFile(linkedPath), `${file}: broken local Markdown link: ${match[1]}`);
     }
   }
+});
+
+test("migration documentation keeps Sub-Store objects stable while using monorepo script paths", async () => {
+  const paths = ["README.md", "docs/deployment.md", "docs/maintenance.md", "docs/troubleshooting.md", "RELEASE_CHECKLIST.md"];
+  const files = await Promise.all(paths.map((file) => readFile(resolve(shadowrocketRoot, file), "utf8")));
+  const docs = Object.fromEntries(paths.map((file, index) => [file, files[index]]));
+
+  const nodeOperatorPath = "clients/shadowrocket/dist/substore-node-operator.js";
+  const profileGeneratorPath = "clients/shadowrocket/dist/substore-profile-generator.js";
+  for (const scriptPath of [nodeOperatorPath, profileGeneratorPath]) {
+    assert.ok(docs["README.md"].includes(scriptPath), `README.md: missing monorepo script path: ${scriptPath}`);
+    assert.ok(docs["docs/deployment.md"].includes(scriptPath), `deployment: missing operator installation path: ${scriptPath}`);
+  }
+  assert.ok(docs["docs/maintenance.md"].includes(nodeOperatorPath), "maintenance: missing isolated-chain node operator path");
+  assert.match(docs["docs/deployment.md"], /shadowrocket-sources[\s\S]*已发布 URL 都不要重命名/);
+  assert.ok(docs["docs/deployment.md"].includes("HTTPS 解密保持关闭"), "deployment: HTTPS decryption must remain off");
+  assert.ok(docs["docs/troubleshooting.md"].includes("旧 Profile"), "troubleshooting: missing old Profile rollback guidance");
 });
