@@ -14,6 +14,19 @@ const ALL_PROTOCOLS = [...new Set(Object.values(ALLOWED_PROTOCOLS).flat())];
 function nodeForCapability(protocol, client) {
   if (client === CLIENT.anywhere && protocol === "vless") return { type: protocol, network: "tcp" };
   if (client === CLIENT.anywhere && protocol === "trojan") return { type: protocol, network: "tcp" };
+  if (client === CLIENT.egern) {
+    if (protocol === "ss" || protocol === "shadowsocks") return { type: protocol, cipher: "aes-128-gcm" };
+    if (protocol === "snell") return { type: protocol, version: 4 };
+    if (protocol === "vmess" || protocol === "vless") return { type: protocol, network: "tcp" };
+    if (protocol === "wireguard") {
+      return {
+        type: protocol,
+        "private-key": "TEST_ONLY_CAPABILITY_PRIVATE_KEY",
+        "public-key": "TEST_ONLY_CAPABILITY_PUBLIC_KEY",
+        ip: "192.0.2.2/32",
+      };
+    }
+  }
   return { type: protocol };
 }
 
@@ -75,6 +88,7 @@ test("normalizes valid nodes before applying AnyTLS and WireGuard client capabil
       type: "wireguard",
       "private-key": "TEST_ONLY_WIREGUARD_PRIVATE_KEY",
       "public-key": "TEST_ONLY_WIREGUARD_PUBLIC_KEY",
+      ip: "192.0.2.2/32",
     },
     {
       ...common,
@@ -109,6 +123,35 @@ test("normalizes valid nodes before applying AnyTLS and WireGuard client capabil
       if (value) assert.equal(diagnosticsJson.includes(value), false);
     }
   }
+});
+
+test("filters unrepresentable Egern shapes per node with aggregate stable reasons", () => {
+  const accepted = {
+    type: "vless",
+    uuid: "00000000-0000-4000-8000-000000000001",
+    network: "tcp",
+  };
+  const result = filterNodesForClient([
+    accepted,
+    { type: "vless", network: "PRIVATE_TRANSPORT" },
+    { type: "ss", cipher: "PRIVATE_METHOD" },
+    {
+      type: "wireguard",
+      "private-key": "TEST_ONLY_WG_PRIVATE_KEY",
+      "public-key": "TEST_ONLY_WG_PUBLIC_KEY",
+    },
+  ], CLIENT.egern);
+
+  assert.deepEqual(result.nodes, [accepted]);
+  assert.deepEqual(result.diagnostics, {
+    accepted: 1,
+    excluded: {
+      "unsupported-egern-transport": 1,
+      "unsupported-egern-method": 1,
+      "unsupported-egern-wireguard-shape": 1,
+    },
+  });
+  assert.equal(JSON.stringify(result.diagnostics).includes("PRIVATE_"), false);
 });
 
 test("reports only accepted and excluded counts for client filtering", () => {
