@@ -391,3 +391,9 @@ export function validateEgernProfile(profile) {
     return { valid: false, errors: [message] };
   }
 }
+
+export function assertValidEgernProfile(profile) {
+  if (!validateEgernProfile(profile).valid) {
+    throw new Error("Generated Egern profile failed validation");
+  }
+}

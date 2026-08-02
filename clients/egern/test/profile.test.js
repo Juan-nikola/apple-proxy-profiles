@@ -13,7 +13,10 @@ import {
   renderEgernCustomRules,
   renderEgernRules,
 } from "../src/render-rules.js";
-import { renderEgernProfile } from "../src/render-profile.js";
+import {
+  renderEgernProfile,
+  renderEgernProfileFromOptions,
+} from "../src/render-profile.js";
 import { validateEgernProfile } from "../src/validate-profile.js";
 import {
   allCompatibleNodes,
@@ -54,6 +57,15 @@ function namedGroup(profile, name) {
   }
   return undefined;
 }
+
+test("parsed-options renderer rejects objects that did not pass the canonical parser", () => {
+  const parsed = parseEgernOptions(rawOptions());
+  assert.doesNotThrow(() => renderEgernProfileFromOptions(parsed, allCompatibleNodes));
+  assert.throws(
+    () => renderEgernProfileFromOptions({ ...parsed }, allCompatibleNodes),
+    { message: "Parsed Egern options are required" },
+  );
+});
 
 test("renders exact Egern-native rule parity and terminal ordering", () => {
   const rules = renderEgernRules({ publicBaseUrl: PUBLIC_SNAPSHOT_BASE_URL });

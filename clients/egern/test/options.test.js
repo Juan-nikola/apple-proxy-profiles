@@ -159,6 +159,10 @@ test("validates the private node URL without normalizing its path or query token
     String.raw`https://example.invalid/private\egern-nodes`,
     ["https://example.invalid", "\\", "@evil.invalid/private/egern-nodes"].join(""),
     " https://example.invalid/private/egern-nodes",
+    "https://例子.invalid/private/egern-nodes",
+    "https://127.1/private/egern-nodes",
+    "https://example.invalid/private/%zz",
+    "https://example.invalid:65536/private/egern-nodes",
   ];
 
   for (const nodeSubscriptionUrl of rejected) {

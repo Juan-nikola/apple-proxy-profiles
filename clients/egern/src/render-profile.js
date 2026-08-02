@@ -2,11 +2,11 @@ import { buildPolicyGroups } from "../../../shared/policies/catalog.js";
 import { POLICY_TARGET } from "../../../shared/policies/intents.js";
 import { renderEgernDns } from "./render-dns.js";
 import { renderEgernGroups } from "./render-groups.js";
-import { parseEgernOptions } from "./options.js";
+import { isParsedEgernOptions, parseEgernOptions } from "./options.js";
 import { renderEgernRules } from "./render-rules.js";
 import { prepareEgernInventory } from "./render-subscription.js";
 import { renderYaml } from "./render-yaml.js";
-import { validateEgernProfile } from "./validate-profile.js";
+import { assertValidEgernProfile } from "./validate-profile.js";
 
 const BYPASS_TUNNEL_PROXY = Object.freeze([
   "localhost",
@@ -73,8 +73,8 @@ function applyProxyQuicOverrides(rendered, shared, quicMode) {
   });
 }
 
-export function renderEgernProfile(rawOptions, nodes, { onDiagnostics } = {}) {
-  const options = parseEgernOptions(rawOptions);
+export function renderEgernProfileFromOptions(options, nodes, { onDiagnostics } = {}) {
+  if (!isParsedEgernOptions(options)) throw new Error("Parsed Egern options are required");
   const prepared = prepareEgernInventory(nodes, {
     clientChain: options.clientChain,
     onDiagnostics,
@@ -95,9 +95,10 @@ export function renderEgernProfile(rawOptions, nodes, { onDiagnostics } = {}) {
     default_subscription_group: "🚀 节点选择",
   };
   const yaml = renderYaml(root);
-  const validation = validateEgernProfile(yaml);
-  if (!validation.valid) {
-    throw new Error(`Generated Egern profile failed validation: ${validation.errors[0]}`);
-  }
+  assertValidEgernProfile(yaml);
   return yaml;
+}
+
+export function renderEgernProfile(rawOptions, nodes, context = {}) {
+  return renderEgernProfileFromOptions(parseEgernOptions(rawOptions), nodes, context);
 }

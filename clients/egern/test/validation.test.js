@@ -2,7 +2,10 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { renderEgernProfile } from "../src/render-profile.js";
-import { validateEgernProfile } from "../src/validate-profile.js";
+import {
+  assertValidEgernProfile,
+  validateEgernProfile,
+} from "../src/validate-profile.js";
 import { allCompatibleNodes } from "./fixtures/nodes.js";
 
 const PRIVATE_URL = "https://example.invalid/private/egern-nodes?key=TEST_ONLY_VALIDATION_QUERY";
@@ -35,6 +38,18 @@ test("validates the actual deterministic YAML string", () => {
   assert.deepEqual(validateEgernProfile(profile), { valid: true, errors: [] });
   assertInvalid(null, /string/i);
   assertInvalid({ profile }, /string/i);
+});
+
+test("generated-profile assertion uses one fixed non-reflective error", () => {
+  const secret = "TEST_ONLY_INVALID_GENERATED_PROFILE_SECRET";
+  assert.throws(
+    () => assertValidEgernProfile(`password: "${secret}"\n`),
+    (error) => {
+      assert.equal(error.message, "Generated Egern profile failed validation");
+      assert.equal(error.message.includes(secret), false);
+      return true;
+    },
+  );
 });
 
 test("rejects missing, extra, duplicate, forbidden, and credential root keys", () => {

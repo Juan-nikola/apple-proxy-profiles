@@ -1,4 +1,5 @@
 import { OPTION_VALUES } from "../../../shared/contracts.js";
+import { EgernUrlFallback } from "./runtime-fallbacks.js";
 
 export const PUBLIC_SNAPSHOT_BASE_URL =
   "https://juan-nikola.github.io/apple-proxy-profiles/current";
@@ -38,6 +39,7 @@ const PROTOTYPE_KEYS = new Set(["__proto__", "constructor", "prototype"]);
 const AMBIGUOUS_WHITESPACE = /[\t\v\f\u00a0\u1680\u2000-\u200b\u2028\u2029\u202f\u205f\u3000\ufeff]/u;
 const FORBIDDEN_URL_CHARACTER = /[\u0000-\u001f\u007f\\]/u;
 const ENCODED_URL_CONTROL = /%(?:0[0-9a-f]|1[0-9a-f]|7f)/iu;
+const PARSED_OPTIONS = new WeakSet();
 
 function optionError(key, reason) {
   return new Error(`Option '${key}' ${reason}`);
@@ -165,6 +167,7 @@ export function validateEgernNodeSubscriptionUrl(value) {
 
   let parsed;
   try {
+    new EgernUrlFallback(value);
     parsed = new URL(value);
   } catch {
     throw optionError("nodeSubscriptionUrl", "must be an absolute HTTPS URL");
@@ -215,5 +218,11 @@ export function parseEgernOptions(raw) {
     ),
   };
 
-  return Object.freeze(options);
+  Object.freeze(options);
+  PARSED_OPTIONS.add(options);
+  return options;
+}
+
+export function isParsedEgernOptions(value) {
+  return value !== null && typeof value === "object" && PARSED_OPTIONS.has(value);
 }

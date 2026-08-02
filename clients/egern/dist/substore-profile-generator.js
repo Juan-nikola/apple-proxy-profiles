@@ -63,6 +63,218 @@ var EgernProfileBundle = (() => {
     return node._profile;
   }
 
+  // runtime-fallbacks.js
+  var CLONE_ERROR = "Egern structured clone fallback rejected unsupported data";
+  var URL_ERROR = "Invalid Egern fallback URL";
+  var RAW_URL_FORBIDDEN = /[\u0000-\u0020\u007f-\u009f\\\u00a0\u1680\u2000-\u200b\u2028\u2029\u202f\u205f\u3000\ufeff]/u;
+  var ENCODED_URL_CONTROL = /%(?:0[0-9a-f]|1[0-9a-f]|7f|[89][0-9a-f])/iu;
+  var HEX = /^[0-9a-f]+$/iu;
+  function cloneFailure() {
+    return new TypeError(CLONE_ERROR);
+  }
+  function arrayIndex(key, length) {
+    if (!/^(?:0|[1-9]\d*)$/u.test(key)) return false;
+    const index = Number(key);
+    return Number.isSafeInteger(index) && index >= 0 && index < length && index <= 4294967294 && String(index) === key;
+  }
+  function cloneData(value, seen) {
+    if (value === null || typeof value !== "object") {
+      if (["undefined", "boolean", "string", "number", "bigint"].includes(typeof value)) return value;
+      throw cloneFailure();
+    }
+    if (seen.has(value)) return seen.get(value);
+    const prototype = Object.getPrototypeOf(value);
+    const isArray = Array.isArray(value);
+    if (isArray ? prototype !== Array.prototype : prototype !== Object.prototype && prototype !== null) {
+      throw cloneFailure();
+    }
+    const keys = Reflect.ownKeys(value);
+    const result = isArray ? [] : Object.create(prototype === null ? null : Object.prototype);
+    seen.set(value, result);
+    const length = isArray ? value.length : 0;
+    for (const key of keys) {
+      if (typeof key !== "string") throw cloneFailure();
+      if (isArray && key === "length") continue;
+      if (isArray && !arrayIndex(key, length)) throw cloneFailure();
+      const descriptor = Object.getOwnPropertyDescriptor(value, key);
+      if (!descriptor || "get" in descriptor || "set" in descriptor || !descriptor.enumerable) {
+        throw cloneFailure();
+      }
+      Object.defineProperty(result, key, {
+        value: cloneData(descriptor.value, seen),
+        enumerable: true,
+        configurable: true,
+        writable: true
+      });
+    }
+    if (isArray) result.length = length;
+    return result;
+  }
+  function egernStructuredCloneFallback(value) {
+    try {
+      return cloneData(value, /* @__PURE__ */ new WeakMap());
+    } catch {
+      throw cloneFailure();
+    }
+  }
+  function wellFormed(value) {
+    for (let index = 0; index < value.length; index += 1) {
+      const code = value.charCodeAt(index);
+      if (code >= 55296 && code <= 56319) {
+        const next = value.charCodeAt(index + 1);
+        if (next < 56320 || next > 57343) return false;
+        index += 1;
+      } else if (code >= 56320 && code <= 57343) {
+        return false;
+      }
+    }
+    return true;
+  }
+  function validPercentEncoding(value) {
+    for (let index = 0; index < value.length; index += 1) {
+      if (value[index] !== "%") continue;
+      if (!/^[0-9a-f]{2}$/iu.test(value.slice(index + 1, index + 3))) return false;
+      index += 2;
+    }
+    return !ENCODED_URL_CONTROL.test(value);
+  }
+  function validIpv4(value) {
+    const parts = value.split(".");
+    return parts.length === 4 && parts.every((part) => /^(?:0|[1-9]\d{0,2})$/u.test(part) && Number(part) <= 255);
+  }
+  function ipv6Units(parts, allowIpv4) {
+    let units = 0;
+    for (let index = 0; index < parts.length; index += 1) {
+      const part = parts[index];
+      if (part.includes(".")) {
+        if (!allowIpv4 || index !== parts.length - 1 || !validIpv4(part)) return -1;
+        units += 2;
+      } else {
+        if (part.length < 1 || part.length > 4 || !HEX.test(part)) return -1;
+        units += 1;
+      }
+    }
+    return units;
+  }
+  function validIpv6(value) {
+    if (value.length === 0 || value.includes("%") || value.includes(":::")) return false;
+    const compression = value.indexOf("::");
+    if (compression === -1) return ipv6Units(value.split(":"), true) === 8;
+    if (compression !== value.lastIndexOf("::")) return false;
+    const left = value.slice(0, compression);
+    const right = value.slice(compression + 2);
+    const leftParts = left === "" ? [] : left.split(":");
+    const rightParts = right === "" ? [] : right.split(":");
+    const leftUnits = ipv6Units(leftParts, false);
+    const rightUnits = ipv6Units(rightParts, true);
+    return leftUnits >= 0 && rightUnits >= 0 && leftUnits + rightUnits < 8;
+  }
+  function parsedCredentials(authority) {
+    const marker = authority.indexOf("@");
+    if (marker === -1) return { username: "", passcode: "", hostPort: authority };
+    if (marker !== authority.lastIndexOf("@")) throw new TypeError(URL_ERROR);
+    const userInfo = authority.slice(0, marker);
+    if (!/^[A-Za-z0-9._~!$&'()*+,;=:-]*$/u.test(userInfo)) throw new TypeError(URL_ERROR);
+    const separator = userInfo.indexOf(":");
+    return {
+      username: separator === -1 ? userInfo : userInfo.slice(0, separator),
+      passcode: separator === -1 ? "" : userInfo.slice(separator + 1),
+      hostPort: authority.slice(marker + 1)
+    };
+  }
+  function parsedPort(value) {
+    if (value === "") throw new TypeError(URL_ERROR);
+    if (!/^\d{1,5}$/u.test(value) || Number(value) > 65535) throw new TypeError(URL_ERROR);
+    return String(Number(value));
+  }
+  function validDnsName(value) {
+    const comparable = value.endsWith(".") ? value.slice(0, -1) : value;
+    if (comparable.length === 0 || comparable.length > 253) return false;
+    if (/^[\d.]+$/u.test(comparable)) return validIpv4(comparable);
+    return comparable.split(".").every((label) => label.length >= 1 && label.length <= 63 && /^[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?$/u.test(label));
+  }
+  function parsedHost(hostPort) {
+    if (hostPort.length === 0 || hostPort.includes("%")) throw new TypeError(URL_ERROR);
+    if (hostPort.startsWith("[")) {
+      const close = hostPort.indexOf("]");
+      if (close === -1 || close !== hostPort.lastIndexOf("]")) throw new TypeError(URL_ERROR);
+      const address = hostPort.slice(1, close);
+      const remainder = hostPort.slice(close + 1);
+      if (!validIpv6(address) || remainder !== "" && !remainder.startsWith(":")) {
+        throw new TypeError(URL_ERROR);
+      }
+      return {
+        hostname: `[${address.toLowerCase()}]`,
+        port: remainder === "" ? "" : parsedPort(remainder.slice(1))
+      };
+    }
+    if (hostPort.includes("[") || hostPort.includes("]")) throw new TypeError(URL_ERROR);
+    const separators = hostPort.match(/:/gu)?.length ?? 0;
+    if (separators > 1) throw new TypeError(URL_ERROR);
+    const separator = hostPort.lastIndexOf(":");
+    const hostname = separator === -1 ? hostPort : hostPort.slice(0, separator);
+    const port = separator === -1 ? "" : parsedPort(hostPort.slice(separator + 1));
+    if (!validDnsName(hostname)) throw new TypeError(URL_ERROR);
+    return { hostname: hostname.toLowerCase(), port };
+  }
+  var EgernUrlFallback = class {
+    constructor(value) {
+      try {
+        if (typeof value !== "string" || value.length === 0 || !wellFormed(value) || RAW_URL_FORBIDDEN.test(value) || !validPercentEncoding(value)) throw new TypeError(URL_ERROR);
+        const match = /^(https?):\/\/([^/?#]+)([/?#].*)?$/iu.exec(value);
+        if (!match) throw new TypeError(URL_ERROR);
+        const credentials = parsedCredentials(match[2]);
+        const host = parsedHost(credentials.hostPort);
+        this.protocol = `${match[1].toLowerCase()}:`;
+        this.hostname = host.hostname;
+        this.username = credentials.username;
+        Object.defineProperty(this, "password", {
+          value: credentials.passcode,
+          configurable: true,
+          enumerable: true,
+          writable: true
+        });
+        this.port = host.port;
+      } catch {
+        throw new TypeError(URL_ERROR);
+      }
+    }
+  };
+  function install(name, value) {
+    try {
+      Object.defineProperty(globalThis, name, {
+        value,
+        configurable: true,
+        enumerable: false,
+        writable: true
+      });
+    } catch {
+      throw new Error("Egern runtime compatibility unavailable");
+    }
+  }
+  function installEgernRuntimeFallbacks() {
+    let cloneImplementation;
+    let urlImplementation;
+    try {
+      cloneImplementation = globalThis.structuredClone;
+      urlImplementation = globalThis.URL;
+      if (cloneImplementation !== void 0 && typeof cloneImplementation !== "function") {
+        throw new Error("Invalid structured clone global");
+      }
+      if (urlImplementation !== void 0 && typeof urlImplementation !== "function") {
+        throw new Error("Invalid URL global");
+      }
+    } catch {
+      throw new Error("Egern runtime compatibility unavailable");
+    }
+    if (cloneImplementation === void 0) {
+      install("structuredClone", egernStructuredCloneFallback);
+    }
+    if (urlImplementation === void 0) {
+      install("URL", EgernUrlFallback);
+    }
+  }
+
   // options.js
   var PUBLIC_SNAPSHOT_BASE_URL = "https://juan-nikola.github.io/apple-proxy-profiles/current";
   var REQUIRED_KEYS = Object.freeze([
@@ -96,7 +308,8 @@ var EgernProfileBundle = (() => {
   var PROTOTYPE_KEYS = /* @__PURE__ */ new Set(["__proto__", "constructor", "prototype"]);
   var AMBIGUOUS_WHITESPACE = /[\t\v\f\u00a0\u1680\u2000-\u200b\u2028\u2029\u202f\u205f\u3000\ufeff]/u;
   var FORBIDDEN_URL_CHARACTER = /[\u0000-\u001f\u007f\\]/u;
-  var ENCODED_URL_CONTROL = /%(?:0[0-9a-f]|1[0-9a-f]|7f)/iu;
+  var ENCODED_URL_CONTROL2 = /%(?:0[0-9a-f]|1[0-9a-f]|7f)/iu;
+  var PARSED_OPTIONS = /* @__PURE__ */ new WeakSet();
   function optionError(key, reason) {
     return new Error(`Option '${key}' ${reason}`);
   }
@@ -195,11 +408,12 @@ var EgernProfileBundle = (() => {
     if (typeof value !== "string" || value.length === 0) {
       throw optionError("nodeSubscriptionUrl", "must be an absolute HTTPS URL");
     }
-    if (value.trim() !== value || FORBIDDEN_URL_CHARACTER.test(value) || ENCODED_URL_CONTROL.test(value) || !/^https:\/\//iu.test(value) || typeof value.isWellFormed === "function" && !value.isWellFormed()) {
+    if (value.trim() !== value || FORBIDDEN_URL_CHARACTER.test(value) || ENCODED_URL_CONTROL2.test(value) || !/^https:\/\//iu.test(value) || typeof value.isWellFormed === "function" && !value.isWellFormed()) {
       throw optionError("nodeSubscriptionUrl", "must be an absolute HTTPS URL without forbidden characters");
     }
     let parsed;
     try {
+      new EgernUrlFallback(value);
       parsed = new URL(value);
     } catch {
       throw optionError("nodeSubscriptionUrl", "must be an absolute HTTPS URL");
@@ -239,7 +453,12 @@ var EgernProfileBundle = (() => {
         platform === "macos" ? "ipv4-only" : "auto"
       )
     };
-    return Object.freeze(options);
+    Object.freeze(options);
+    PARSED_OPTIONS.add(options);
+    return options;
+  }
+  function isParsedEgernOptions(value) {
+    return value !== null && typeof value === "object" && PARSED_OPTIONS.has(value);
   }
 
   // ../../../shared/nodes/country-regions.js
@@ -1316,7 +1535,7 @@ var EgernProfileBundle = (() => {
     const labels = value.split(".");
     return labels.every((label) => DOMAIN_LABEL.test(label));
   }
-  function validIpv4(value) {
+  function validIpv42(value) {
     const parts = value.split(".");
     return parts.length === 4 && parts.every((part) => /^(?:0|[1-9][0-9]{0,2})$/u.test(part) && Number(part) <= 255);
   }
@@ -1327,7 +1546,7 @@ var EgernProfileBundle = (() => {
     for (let index = 0; index < parts.length; index += 1) {
       const part = parts[index];
       if (part.includes(".")) {
-        if (index !== parts.length - 1 || !validIpv4(part)) return -1;
+        if (index !== parts.length - 1 || !validIpv42(part)) return -1;
         units += 2;
       } else if (/^[0-9A-Fa-f]{1,4}$/u.test(part)) {
         units += 1;
@@ -1337,7 +1556,7 @@ var EgernProfileBundle = (() => {
     }
     return units;
   }
-  function validIpv6(value) {
+  function validIpv62(value) {
     if (value.length === 0 || value.includes("%")) return false;
     const compressed = value.indexOf("::");
     if (compressed !== value.lastIndexOf("::")) return false;
@@ -1353,7 +1572,7 @@ var EgernProfileBundle = (() => {
     const parts = value.split("/");
     if (parts.length !== 2 || !/^(?:0|[1-9][0-9]{0,2})$/u.test(parts[1])) return false;
     const prefix = Number(parts[1]);
-    return version === 4 ? prefix <= 32 && validIpv4(parts[0]) : prefix <= 128 && validIpv6(parts[0]);
+    return version === 4 ? prefix <= 32 && validIpv42(parts[0]) : prefix <= 128 && validIpv62(parts[0]);
   }
   function validValue(type, value) {
     if (typeof value !== "string" || value.length === 0 || value.trim() !== value || UNSAFE_TEXT.test(value)) {
@@ -3198,6 +3417,11 @@ var EgernProfileBundle = (() => {
       return { valid: false, errors: [message] };
     }
   }
+  function assertValidEgernProfile(profile) {
+    if (!validateEgernProfile(profile).valid) {
+      throw new Error("Generated Egern profile failed validation");
+    }
+  }
 
   // render-profile.js
   var BYPASS_TUNNEL_PROXY2 = Object.freeze([
@@ -3259,8 +3483,8 @@ var EgernProfileBundle = (() => {
       return { [type]: { ...fields, block_quic: true } };
     });
   }
-  function renderEgernProfile(rawOptions, nodes, { onDiagnostics } = {}) {
-    const options = parseEgernOptions(rawOptions);
+  function renderEgernProfileFromOptions(options, nodes, { onDiagnostics } = {}) {
+    if (!isParsedEgernOptions(options)) throw new Error("Parsed Egern options are required");
     const prepared = prepareEgernInventory(nodes, {
       clientChain: options.clientChain,
       onDiagnostics
@@ -3281,10 +3505,7 @@ var EgernProfileBundle = (() => {
       default_subscription_group: "\u{1F680} \u8282\u70B9\u9009\u62E9"
     };
     const yaml = renderYaml(root);
-    const validation = validateEgernProfile(yaml);
-    if (!validation.valid) {
-      throw new Error(`Generated Egern profile failed validation: ${validation.errors[0]}`);
-    }
+    assertValidEgernProfile(yaml);
     return yaml;
   }
 
@@ -3816,11 +4037,11 @@ var EgernProfileBundle = (() => {
   // substore-profile-entry.js
   async function operator(input, targetPlatform, context = {}) {
     void targetPlatform;
-    const rawArguments = argumentsFrom(context);
-    const options = parseEgernOptions(rawArguments);
+    installEgernRuntimeFallbacks();
+    const options = parseEgernOptions(argumentsFrom(context));
     const normalized = await produceNormalizedNodes(options, context);
     let egernDiagnostics;
-    const content = renderEgernProfile(rawArguments, normalized.nodes, {
+    const content = renderEgernProfileFromOptions(options, normalized.nodes, {
       onDiagnostics(value) {
         egernDiagnostics = value;
       }

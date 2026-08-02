@@ -192,6 +192,70 @@ test("profile File Operator accepts every documented option and platform", async
   }
 });
 
+test("profile File Operator uses one immutable pre-await option snapshot", async () => {
+  const arguments_ = {
+    ...PROFILE_ARGUMENTS,
+    nodeSubscriptionUrl: "https://initial.example.invalid/private/nodes",
+    platform: "macos",
+  };
+  const mutatedSecret = "TEST_ONLY_MUTATED_OPTION_SECRET";
+  const calls = [];
+  const lines = [];
+  const context = {
+    arguments: arguments_,
+    async produceArtifact(request) {
+      calls.push(request);
+      arguments_.platform = "iphone";
+      arguments_.nodeSubscriptionUrl = `https://mutated.example.invalid/${mutatedSecret}`;
+      arguments_.dnsMode = "privacy";
+      arguments_.clientChain = "on";
+      arguments_.name = mutatedSecret;
+      context.arguments = {
+        ...PROFILE_ARGUMENTS,
+        platform: "ipad",
+        nodeSubscriptionUrl: `https://replacement.example.invalid/${mutatedSecret}`,
+      };
+      return structuredClone(rawInventory());
+    },
+    logger: logger(lines),
+  };
+  const result = await profileOperator({}, "Egern", context);
+  assert.match(result.$content, /^ipv6: false$/mu);
+  assert.equal(result.$content.includes("https://initial.example.invalid/private/nodes"), true);
+  assert.equal(result.$content.includes(mutatedSecret), false);
+  assert.deepEqual(calls, [{
+    type: "collection",
+    name: "egern-sources",
+    platform: "JSON",
+    produceType: "internal",
+  }]);
+  const diagnostics = JSON.parse(lines[0].replace(/^\[egern-profile\] /u, ""));
+  assert.equal(diagnostics.accepted, 2);
+  assert.equal(lines[0].includes(mutatedSecret), false);
+});
+
+test("profile File Operator rejects option accessors before producer execution", async () => {
+  let getterCalls = 0;
+  let producerCalls = 0;
+  const arguments_ = { ...PROFILE_ARGUMENTS };
+  Object.defineProperty(arguments_, "dnsMode", {
+    enumerable: true,
+    get() {
+      getterCalls += 1;
+      throw new Error("TEST_ONLY_PROFILE_ACCESSOR_SECRET");
+    },
+  });
+  await assertSafeRejection(profileOperator({}, "Egern", {
+    arguments: arguments_,
+    async produceArtifact() {
+      producerCalls += 1;
+      return rawInventory();
+    },
+  }), ["TEST_ONLY_PROFILE_ACCESSOR_SECRET"]);
+  assert.equal(getterCalls, 0);
+  assert.equal(producerCalls, 0);
+});
+
 test("node argument parser rejects hostile and undocumented shapes without access", async () => {
   const accepted = [
     { output: "nodes", type: "collection", name: "egern-sources" },

@@ -98,6 +98,46 @@ function loadBundle(source, { arguments: arguments_, produced, producerError } =
   return { context, lines, requests };
 }
 
+function loadRestrictedBundle(source, {
+  arguments: arguments_,
+  produced,
+  onProduce,
+} = {}) {
+  const lines = [];
+  const requests = [];
+  const context = vm.createContext({
+    console: {
+      info(value) { lines.push(String(value)); },
+      log(value) { lines.push(String(value)); },
+    },
+  });
+  context.__argumentsJson = JSON.stringify(arguments_);
+  context.__producedJson = JSON.stringify(produced);
+  context.__producerHook = (request) => {
+    requests.push({ ...request });
+    onProduce?.(context);
+  };
+  vm.runInContext([
+    "{",
+    "  const produced = JSON.parse(globalThis.__producedJson);",
+    "  const producerHook = globalThis.__producerHook;",
+    "  globalThis.$arguments = JSON.parse(globalThis.__argumentsJson);",
+    "  globalThis.produceArtifact = async (request) => { producerHook(request); return produced; };",
+    "}",
+    "delete globalThis.__argumentsJson;",
+    "delete globalThis.__producedJson;",
+    "delete globalThis.__producerHook;",
+  ].join("\n"), context);
+  assert.deepEqual(
+    Array.from(vm.runInContext("Object.keys(globalThis).sort()", context)),
+    ["$arguments", "console", "produceArtifact"],
+  );
+  assert.equal(vm.runInContext("typeof URL", context), "undefined");
+  assert.equal(vm.runInContext("typeof structuredClone", context), "undefined");
+  vm.runInContext(source, context, { timeout: 2_000 });
+  return { context, lines, requests };
+}
+
 async function sourceRun(operator, arguments_, produced) {
   const lines = [];
   const requests = [];
@@ -120,7 +160,9 @@ test("generated bundles are self-contained two-argument IIFEs with exact globals
     const source = await readFile(url, "utf8");
     assert.match(source, new RegExp(`^var ${globalName} = \\(\\(\\) => \\{`, "u"));
     assert.doesNotMatch(source, /^\s*(?:import|export)\s/mu);
-    assert.doesNotMatch(source, /\bprocess\.env\b|\bnode:|\brequire\s*\(/u);
+    assert.doesNotMatch(source, /\bprocess\b|\bnode:|\brequire\s*\(/u);
+    assert.doesNotMatch(source, /\beval\s*\(|\bFunction\s*\(|\b(?:fetch|XMLHttpRequest|WebSocket)\s*\(/u);
+    assert.doesNotMatch(source, /JSON\.parse\s*\(\s*JSON\.stringify\s*\(/u);
     assert.equal(source.endsWith("\n"), true);
     assert.equal(source.includes("\r"), false);
     assert.doesNotMatch(source, /\/Users\/|\\\\Users\\|[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:/u);
@@ -177,6 +219,196 @@ test("profile bundle matches source and never inlines nodes or private diagnosti
       if (value !== undefined) assert.equal(actual.$content.includes(value), false, value);
     }
   }
+});
+
+test("bundles succeed in a restricted Egern realm without injected URL or structuredClone", async () => {
+  const cases = [
+    [NODE_BUNDLE, NODE_ARGUMENTS, /^proxies:\n/u],
+    [PROFILE_BUNDLE, PROFILE_ARGUMENTS, /^auto_update: \{\}\n/u],
+  ];
+  for (const [url, arguments_, outputPattern] of cases) {
+    const source = await readFile(url, "utf8");
+    const restricted = loadRestrictedBundle(source, { arguments: arguments_, produced: rawInventory() });
+    const result = await restricted.context.operator({}, "Egern");
+    assert.match(result.$content, outputPattern);
+    assert.equal(restricted.requests.length, 1);
+    assert.equal(restricted.lines.length, 1);
+  }
+});
+
+test("restricted profile bundle keeps the pre-await option snapshot when globals mutate", async () => {
+  const source = await readFile(PROFILE_BUNDLE, "utf8");
+  const initialUrl = "https://initial.example.invalid/private/nodes";
+  const mutatedSecret = "TEST_ONLY_MUTATED_PROFILE_SECRET";
+  const restricted = loadRestrictedBundle(source, {
+    arguments: { ...PROFILE_ARGUMENTS, nodeSubscriptionUrl: initialUrl, platform: "macos" },
+    produced: rawInventory(),
+    onProduce(context) {
+      vm.runInContext(`
+        globalThis.$arguments.platform = "iphone";
+        globalThis.$arguments.nodeSubscriptionUrl = "https://mutated.example.invalid/${mutatedSecret}";
+        globalThis.$arguments.dnsMode = "privacy";
+        globalThis.$arguments = {
+          output: "config", type: "collection", name: "replacement",
+          nodeSubscriptionUrl: "https://replacement.example.invalid/${mutatedSecret}", platform: "ipad"
+        };
+      `, context);
+    },
+  });
+  const result = await restricted.context.operator({}, "Egern");
+  assert.match(result.$content, /^ipv6: false$/mu);
+  assert.equal(result.$content.includes(initialUrl), true);
+  assert.equal(result.$content.includes(mutatedSecret), false);
+  assert.equal(restricted.lines.some((line) => line.includes(mutatedSecret)), false);
+});
+
+test("restricted node bundle keeps frozen pre-await arguments and chain diagnostics", async () => {
+  const source = await readFile(NODE_BUNDLE, "utf8");
+  const restricted = loadRestrictedBundle(source, {
+    arguments: { ...NODE_ARGUMENTS, clientChain: "off" },
+    produced: rawInventory(),
+    onProduce(context) {
+      vm.runInContext(`
+        globalThis.$arguments.clientChain = "on";
+        globalThis.$arguments.name = "TEST_ONLY_MUTATED_NODE_SECRET";
+        globalThis.$arguments = {
+          output: "nodes", type: "collection",
+          name: "TEST_ONLY_REPLACEMENT_NODE_SECRET", clientChain: "on"
+        };
+      `, context);
+    },
+  });
+  const result = await restricted.context.operator({}, "Egern");
+  assert.doesNotMatch(result.$content, /prev_hop/u);
+  const diagnostics = JSON.parse(restricted.lines[0].replace(/^\[egern-profile\] /u, ""));
+  assert.equal(diagnostics.accepted, 2);
+  assert.deepEqual(restricted.requests, [{
+    type: "collection",
+    name: "egern-sources",
+    platform: "JSON",
+    produceType: "internal",
+  }]);
+  assert.equal(restricted.lines.some((line) => line.includes("TEST_ONLY_MUTATED_NODE_SECRET")), false);
+});
+
+test("restricted bundles support valid WireGuard IPv6 and reject malformed forms safely", async () => {
+  const source = await readFile(NODE_BUNDLE, "utf8");
+  const wireguard = (ipv6) => [{
+    name: "WireGuard IPv6",
+    type: "wireguard",
+    server: "wireguard.example.invalid",
+    port: 51820,
+    "private-key": "TEST_ONLY_WIREGUARD_PRIVATE_KEY",
+    "public-key": "TEST_ONLY_WIREGUARD_PUBLIC_KEY",
+    ipv6,
+  }];
+  const valid = loadRestrictedBundle(source, {
+    arguments: NODE_ARGUMENTS,
+    produced: wireguard("2001:db8::2/128"),
+  });
+  const result = await valid.context.operator({}, "Egern");
+  assert.match(result.$content, /local_ipv6: "2001:db8::2\/128"/u);
+
+  for (const value of [
+    "2001:db8:::2/128",
+    "2001:db8::gg/128",
+    "2001:db8::2/129",
+    "[2001:db8::2]/128",
+  ]) {
+    const malformed = loadRestrictedBundle(source, {
+      arguments: NODE_ARGUMENTS,
+      produced: wireguard(value),
+    });
+    await assert.rejects(malformed.context.operator({}, "Egern"), (error) => {
+      assert.equal(error.message.includes(value), false);
+      return true;
+    });
+    assert.deepEqual(malformed.lines, []);
+  }
+});
+
+test("restricted profile URL validation rejects authority tricks, ports, controls, and brackets", async () => {
+  const source = await readFile(PROFILE_BUNDLE, "utf8");
+  const secret = "TEST_ONLY_RESTRICTED_PRIVATE_URL";
+  const rejected = [
+    ["https:", "//user:", secret, "@example.invalid/nodes"].join(""),
+    ["https:", "//user%40", secret, "@example.invalid/nodes"].join(""),
+    `https://example.invalid:65536/${secret}`,
+    `https://example.invalid:/${secret}`,
+    `https://example.invalid/%0a${secret}`,
+    ["https:", "//example.invalid\\@attacker.invalid/", secret].join(""),
+    `https://[2001:db8:::2]/${secret}`,
+    `https://2001:db8::2/${secret}`,
+  ];
+  for (const nodeSubscriptionUrl of rejected) {
+    const restricted = loadRestrictedBundle(source, {
+      arguments: { ...PROFILE_ARGUMENTS, nodeSubscriptionUrl },
+      produced: rawInventory(),
+    });
+    await assert.rejects(restricted.context.operator({}, "Egern"), (error) => {
+      assert.equal(error.message.includes(secret), false);
+      return true;
+    });
+    assert.deepEqual(restricted.lines, []);
+    assert.equal(restricted.requests.length, 0);
+  }
+});
+
+test("restricted profile argument accessors are rejected without execution", async () => {
+  const source = await readFile(PROFILE_BUNDLE, "utf8");
+  const restricted = loadRestrictedBundle(source, {
+    arguments: PROFILE_ARGUMENTS,
+    produced: rawInventory(),
+  });
+  vm.runInContext(`
+    globalThis.__getterCalls = 0;
+    Object.defineProperty(globalThis.$arguments, "dnsMode", {
+      enumerable: true,
+      get() {
+        globalThis.__getterCalls += 1;
+        throw new Error("TEST_ONLY_ACCESSOR_SECRET");
+      }
+    });
+  `, restricted.context);
+  await assert.rejects(restricted.context.operator({}, "Egern"), (error) => {
+    assert.equal(error.message.includes("TEST_ONLY_ACCESSOR_SECRET"), false);
+    return true;
+  });
+  assert.equal(vm.runInContext("globalThis.__getterCalls", restricted.context), 0);
+  assert.equal(restricted.requests.length, 0);
+});
+
+test("restricted installer fails closed on hostile or non-function runtime globals", async () => {
+  const source = await readFile(NODE_BUNDLE, "utf8");
+  const getterSecret = "TEST_ONLY_RUNTIME_GLOBAL_GETTER";
+  const throwing = loadRestrictedBundle(source, {
+    arguments: NODE_ARGUMENTS,
+    produced: rawInventory(),
+  });
+  vm.runInContext(`
+    Object.defineProperty(globalThis, "URL", {
+      configurable: true,
+      get() { throw new Error("${getterSecret}"); }
+    });
+  `, throwing.context);
+  await assert.rejects(throwing.context.operator({}, "Egern"), (error) => {
+    assert.equal(error.message, "Egern runtime compatibility unavailable");
+    assert.equal(error.message.includes(getterSecret), false);
+    return true;
+  });
+  assert.equal(vm.runInContext("typeof structuredClone", throwing.context), "undefined");
+  assert.equal(throwing.requests.length, 0);
+
+  const nonFunction = loadRestrictedBundle(source, {
+    arguments: NODE_ARGUMENTS,
+    produced: rawInventory(),
+  });
+  vm.runInContext("globalThis.structuredClone = Object.freeze({});", nonFunction.context);
+  await assert.rejects(nonFunction.context.operator({}, "Egern"), {
+    message: "Egern runtime compatibility unavailable",
+  });
+  assert.equal(vm.runInContext("typeof URL", nonFunction.context), "undefined");
+  assert.equal(nonFunction.requests.length, 0);
 });
 
 test("bundle failures match source and never reflect producer or node values", async () => {

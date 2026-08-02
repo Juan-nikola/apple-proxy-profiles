@@ -1,5 +1,6 @@
 import { parseEgernOptions } from "./options.js";
-import { renderEgernProfile } from "./render-profile.js";
+import { renderEgernProfileFromOptions } from "./render-profile.js";
+import { installEgernRuntimeFallbacks } from "./runtime-fallbacks.js";
 import {
   argumentsFrom,
   logEgernDiagnostics,
@@ -9,11 +10,11 @@ import {
 
 export async function operator(input, targetPlatform, context = {}) {
   void targetPlatform;
-  const rawArguments = argumentsFrom(context);
-  const options = parseEgernOptions(rawArguments);
+  installEgernRuntimeFallbacks();
+  const options = parseEgernOptions(argumentsFrom(context));
   const normalized = await produceNormalizedNodes(options, context);
   let egernDiagnostics;
-  const content = renderEgernProfile(rawArguments, normalized.nodes, {
+  const content = renderEgernProfileFromOptions(options, normalized.nodes, {
     onDiagnostics(value) { egernDiagnostics = value; },
   });
   const diagnostics = mergedEgernDiagnostics(normalized.diagnostics, egernDiagnostics);

@@ -1,4 +1,5 @@
 import { renderEgernSubscription } from "./render-subscription.js";
+import { installEgernRuntimeFallbacks } from "./runtime-fallbacks.js";
 import {
   argumentsFrom,
   logEgernDiagnostics,
@@ -63,6 +64,7 @@ function nodeArguments(raw) {
 
 export async function operator(input, targetPlatform, context = {}) {
   void targetPlatform;
+  installEgernRuntimeFallbacks();
   const options = nodeArguments(argumentsFrom(context));
   const normalized = await produceNormalizedNodes(options, context);
   let egernDiagnostics;
