@@ -149,8 +149,7 @@ function enumValue(values, key, defaultValue) {
   return value;
 }
 
-function privateNodeUrl(values) {
-  const value = ownValue(values, "nodeSubscriptionUrl");
+export function validateEgernNodeSubscriptionUrl(value) {
   if (typeof value !== "string" || value.length === 0) {
     throw optionError("nodeSubscriptionUrl", "must be an absolute HTTPS URL");
   }
@@ -185,6 +184,10 @@ function privateNodeUrl(values) {
     throw optionError("nodeSubscriptionUrl", "must not contain a fragment");
   }
   return value;
+}
+
+function privateNodeUrl(values) {
+  return validateEgernNodeSubscriptionUrl(ownValue(values, "nodeSubscriptionUrl"));
 }
 
 export function parseEgernOptions(raw) {
