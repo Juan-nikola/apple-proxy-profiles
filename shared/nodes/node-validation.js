@@ -2,9 +2,15 @@ import { protocolDefinition } from "./protocol-registry.js";
 
 const PSEUDO_NODE_PATTERN = /剩余|流量|到期|套餐|官网|公告|通知|traffic|expire|website/i;
 
-function isNonblankString(value) {
+function isNonblankOpaqueString(value) {
   return typeof value === "string" && value.trim().length > 0;
 }
+
+function isNonblankIdentifier(value) {
+  return isNonblankOpaqueString(value) && value.trim() === value;
+}
+
+const OPAQUE_AUTH_FIELDS = new Set(["password", "psk", "private-key", "public-key", "key"]);
 
 function isValidPort(value) {
   const port = typeof value === "string" && /^\d+$/.test(value)
@@ -20,21 +26,23 @@ function isValidAuthField(field, value) {
       : value;
     return Number.isInteger(version) && version >= 1;
   }
-  return isNonblankString(value);
+  return OPAQUE_AUTH_FIELDS.has(field)
+    ? isNonblankOpaqueString(value)
+    : isNonblankIdentifier(value);
 }
 
 function hasTlsIdentity(node) {
   return Boolean(
-    isNonblankString(node.sni) ||
-    isNonblankString(node.servername) ||
+    isNonblankIdentifier(node.sni) ||
+    isNonblankIdentifier(node.servername) ||
     node["skip-cert-verify"] === true ||
     node["allow-insecure"] === true ||
-    isNonblankString(node["reality-opts"]?.["public-key"]),
+    isNonblankIdentifier(node["reality-opts"]?.["public-key"]),
   );
 }
 
 function wireGuardPublicKey(node) {
-  if (isNonblankString(node["public-key"])) return node["public-key"];
+  if (isNonblankOpaqueString(node["public-key"])) return node["public-key"];
   if (!Array.isArray(node.peers) || node.peers.length !== 1) return undefined;
   const peer = node.peers[0];
   return peer && typeof peer === "object" && !Array.isArray(peer)
@@ -43,9 +51,9 @@ function wireGuardPublicKey(node) {
 }
 
 function hasSshAuthentication(node) {
-  return isNonblankString(node.password)
-    || isNonblankString(node["private-key"])
-    || isNonblankString(node.private_key);
+  return isNonblankOpaqueString(node.password)
+    || isNonblankOpaqueString(node["private-key"])
+    || isNonblankOpaqueString(node.private_key);
 }
 
 export function hasExplicitUdp(node) {
@@ -64,7 +72,7 @@ export function validateNode(node) {
   if (
     typeof node.type !== "string" ||
     !node.type.trim() ||
-    !isNonblankString(node.server) ||
+    !isNonblankIdentifier(node.server) ||
     !isValidPort(node.port)
   ) {
     return { valid: false, reason: "missing-endpoint", warnings: [] };

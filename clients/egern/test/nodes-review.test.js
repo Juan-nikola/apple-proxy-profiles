@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { CLIENT } from "../../../shared/contracts.js";
-import { evaluateNodeForClient } from "../../../shared/nodes/capabilities.js";
+import { evaluateNodeForClient, filterNodesForClient } from "../../../shared/nodes/capabilities.js";
 import { normalizeNodes } from "../../../shared/nodes/normalize-nodes.js";
 import { validateNode } from "../../../shared/nodes/node-validation.js";
 import { toEgernProxy } from "../src/render-node.js";
@@ -71,6 +71,40 @@ test("capability filtering is total for malformed normalized common and optional
     });
   }
   assert.doesNotThrow(() => renderEgernSubscription([shadowsocks2022, ...malformed], { clientChain: "off" }));
+});
+
+test("validates every TUIC hopping alias before mapping a mixed inventory", () => {
+  const good = fixture("TUIC aliases", "tuic", {
+    uuid: "00000000-0000-4000-8000-000000000001",
+    password: "TEST_ONLY_TUIC_ALIAS_PASSWORD",
+    ports: "443,445-447",
+    "hop-interval": 30,
+  });
+  const invalid = [
+    fixture("TUIC bad ports", "tuic", {
+      uuid: "00000000-0000-4000-8000-000000000001",
+      password: "TEST_ONLY_TUIC_BAD_PORTS_PASSWORD",
+      ports: { start: 443 },
+    }),
+    fixture("TUIC bad interval", "tuic", {
+      uuid: "00000000-0000-4000-8000-000000000001",
+      password: "TEST_ONLY_TUIC_BAD_INTERVAL_PASSWORD",
+      "hop-interval": "30",
+    }),
+  ];
+  const diagnostics = [];
+  const yaml = renderEgernSubscription([good, ...invalid], {
+    clientChain: "off",
+    onDiagnostics(value) { diagnostics.push(value); },
+  });
+
+  assert.match(yaml, /port_hopping: "443,445-447"/);
+  assert.match(yaml, /port_hopping_interval: 30/);
+  assert.equal(yaml.includes("start"), false);
+  assert.deepEqual(diagnostics, [{
+    accepted: 1,
+    excluded: { "invalid-egern-node-shape": 2 },
+  }]);
 });
 
 test("rejects semantic alias conflicts and case-insensitive HTTP header duplicates", () => {
@@ -155,6 +189,82 @@ test("raw WireGuard accepts one peer public key without a redundant top-level al
   const yaml = renderEgernSubscription(normalized.nodes, { clientChain: "off" });
   assert.match(yaml, /peer_public_key: "TEST_ONLY_PEER_ONLY_PUBLIC_KEY"/);
   assert.equal(yaml.includes("public-key"), false);
+});
+
+test("accepts equal WireGuard DNS aliases once and rejects unequal or malformed aliases", () => {
+  const base = fixture("WireGuard DNS aliases", "wireguard", {
+    "private-key": "TEST_ONLY_DNS_PRIVATE_KEY",
+    "public-key": "TEST_ONLY_DNS_PUBLIC_KEY",
+    ip: "192.0.2.10/32",
+  });
+  const equal = {
+    ...base,
+    dns_servers: ["192.0.2.53", "2001:db8::53"],
+    dns: ["192.0.2.53", "2001:db8::53"],
+  };
+  assert.deepEqual(evaluateNodeForClient(equal, CLIENT.egern), { supported: true, reason: null });
+  assert.deepEqual(toEgernProxy(equal, { clientChain: "off" }).wireguard.dns_servers, [
+    "192.0.2.53",
+    "2001:db8::53",
+  ]);
+
+  assert.deepEqual(evaluateNodeForClient({
+    ...base,
+    dns_servers: ["192.0.2.53"],
+    dns: ["192.0.2.54"],
+  }, CLIENT.egern), {
+    supported: false,
+    reason: "conflicting-egern-alias",
+  });
+
+  for (const node of [
+    { ...base, dns: "192.0.2.53" },
+    { ...base, dns: ["192.0.2.53", { nested: true }] },
+    { ...base, dns_servers: ["192.0.2.53"], dns: ["192.0.2.53", {}] },
+  ]) {
+    assert.equal(evaluateNodeForClient(node, CLIENT.egern).supported, false);
+  }
+});
+
+test("preserves opaque passwords and an inline SSH key byte-exact through the raw pipeline", () => {
+  const opaquePassword = "  TEST_ONLY_OPAQUE_PASSWORD \n";
+  const inlineKey = [
+    ["-----BEGIN", "OPENSSH PRIVATE KEY-----"].join(" "),
+    "TEST_ONLY_INLINE_SSH_KEY_MATERIAL",
+    ["-----END", "OPENSSH PRIVATE KEY-----"].join(" "),
+    "",
+  ].join("\n");
+  const source = [
+    raw("Opaque Shadowsocks", "ss", {
+      cipher: "aes-128-gcm",
+      password: opaquePassword,
+    }),
+    raw("Opaque SSH", "ssh", {
+      username: "TEST_ONLY_SSH_USERNAME",
+      password: opaquePassword,
+      "private-key": inlineKey,
+    }),
+  ];
+
+  const normalized = normalizeNodes(source).nodes;
+  const filtered = filterNodesForClient(normalized, CLIENT.egern);
+  assert.equal(filtered.nodes.length, 2);
+  const mapped = filtered.nodes.map((node) => toEgernProxy(node, { clientChain: "off" }));
+  const shadowsocks = mapped.find((proxy) => proxy.shadowsocks)?.shadowsocks;
+  const ssh = mapped.find((proxy) => proxy.ssh)?.ssh;
+  assert.equal(shadowsocks.password, opaquePassword);
+  assert.equal(ssh.password, opaquePassword);
+  assert.equal(ssh.private_key, inlineKey);
+  assert.equal(ssh.private_key.endsWith("\n"), true);
+
+  for (const invalid of [
+    { ...source[0], password: " \n\t " },
+    { ...source[1], "private-key": "\n\t" },
+    { ...source[1], username: " TEST_ONLY_SSH_USERNAME " },
+    { ...source[1], server: " review.example.invalid " },
+  ]) {
+    assert.equal(evaluateNodeForClient({ ...invalid, _profile: undefined }, CLIENT.egern).supported, false);
+  }
 });
 
 test("maps latest common Egern options and rejects unsupported appearances", () => {
@@ -329,7 +439,7 @@ test("supports current official SSH only for Egern with complete authentication"
   });
 });
 
-test("normalization can generate an Egern SSH landing chain safely", () => {
+test("only Egern subscription rendering generates one eligible SSH landing chain", () => {
   const entry = raw("SSH chain entry", "ss", {
     cipher: "aes-128-gcm",
     password: "TEST_ONLY_CHAIN_ENTRY_PASSWORD",
@@ -341,7 +451,33 @@ test("normalization can generate an Egern SSH landing chain safely", () => {
     _subName: "[落地] SSH",
   });
   const result = normalizeNodes([entry, landing], { clientChain: "on" });
-  const chained = result.nodes.find((node) => node.type === "ssh" && node._profile.chained);
-  assert.ok(chained);
-  assert.equal(toEgernProxy(chained, { clientChain: "on" }).ssh.prev_hop, "🔗 入口节点");
+  assert.equal(result.nodes.some((node) => node.type === "ssh" && node._profile.chained), false);
+  assert.equal(result.diagnostics.excluded["chain-protocol-unsupported"], 1);
+
+  const diagnostics = [];
+  const yaml = renderEgernSubscription(result.nodes, {
+    clientChain: "on",
+    onDiagnostics(value) { diagnostics.push(value); },
+  });
+  assert.equal((yaml.match(/^  - ssh:$/gm) ?? []).length, 2);
+  assert.equal((yaml.match(/prev_hop: "🔗 入口节点"/g) ?? []).length, 1);
+  assert.deepEqual(diagnostics, [{ accepted: 3, excluded: {} }]);
+
+  const noEntry = normalizeNodes([landing], { clientChain: "on" });
+  const noEntryYaml = renderEgernSubscription(noEntry.nodes, { clientChain: "on" });
+  assert.equal(noEntryYaml.includes("prev_hop"), false);
+
+  const unsupportedEntry = raw("Unsupported entry", "sudoku", {
+    key: "TEST_ONLY_SUDOKU_KEY",
+    _subName: "[自建] Unsupported Entry",
+  });
+  const unsupported = normalizeNodes([unsupportedEntry, landing], { clientChain: "on" });
+  const unsupportedYaml = renderEgernSubscription(unsupported.nodes, { clientChain: "on" });
+  assert.equal(unsupportedYaml.includes("prev_hop"), false);
+
+  const arbitraryLanding = { ...landing, chain: "PRIVATE_EXISTING_CHAIN" };
+  const arbitrary = normalizeNodes([entry, arbitraryLanding], { clientChain: "on" });
+  const arbitraryYaml = renderEgernSubscription(arbitrary.nodes, { clientChain: "on" });
+  assert.equal(arbitraryYaml.includes("PRIVATE_EXISTING_CHAIN"), false);
+  assert.equal(arbitraryYaml.includes("prev_hop"), false);
 });

@@ -11,7 +11,6 @@ const SUPPORTED_LANDING_PROTOCOLS = new Set([
   "trojan",
   "socks5",
   "http",
-  "ssh",
 ]);
 
 const CHAIN_ALIASES = ["underlying-proxy", "chain", "dialer-proxy", "detour", "prev_hop"];

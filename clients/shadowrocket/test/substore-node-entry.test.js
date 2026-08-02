@@ -66,3 +66,53 @@ test("operator logs one aggregate diagnostics line without node values", async (
     assert.equal(lines[0].includes(secret), false);
   }
 });
+
+test("operator excludes every Egern-only protocol before Shadowrocket output and chaining", async () => {
+  const unsupported = [
+    {
+      name: "SSH landing",
+      type: "ssh",
+      server: "ssh-landing.example.invalid",
+      port: 22,
+      username: "TEST_ONLY_SSH_USERNAME",
+      password: "TEST_ONLY_SSH_PASSWORD",
+      _subName: "[落地] SSH",
+    },
+    {
+      name: "AnyTLS landing",
+      type: "anytls",
+      server: "anytls-landing.example.invalid",
+      port: 443,
+      password: "TEST_ONLY_ANYTLS_PASSWORD",
+      _subName: "[落地] AnyTLS",
+    },
+    {
+      name: "WireGuard landing",
+      type: "wireguard",
+      server: "wireguard-landing.example.invalid",
+      port: 443,
+      "private-key": "TEST_ONLY_WIREGUARD_PRIVATE_KEY",
+      "public-key": "TEST_ONLY_WIREGUARD_PUBLIC_KEY",
+      ip: "192.0.2.22/32",
+      _subName: "[落地] WireGuard",
+    },
+  ];
+  const lines = [];
+  const result = await operator([fakeNodes[0], ...unsupported], "Shadowrocket", {
+    arguments: { output: "nodes", clientChain: "on" },
+    logger: { info(line) { lines.push(line); } },
+  });
+
+  assert.deepEqual(result.map((node) => node.type), ["ss"]);
+  assert.equal(result.some((node) => node?._profile?.chained), false);
+  assert.equal(lines.length, 1);
+  const diagnostics = JSON.parse(lines[0].replace(/^\[shadowrocket-profile\] /, ""));
+  assert.deepEqual(Object.keys(diagnostics), [
+    "total", "accepted", "protocol", "source", "region", "excluded", "warnings",
+  ]);
+  assert.equal(diagnostics.total, 4);
+  assert.equal(diagnostics.accepted, 1);
+  assert.equal(diagnostics.excluded["chain-protocol-unsupported"], 3);
+  assert.equal(diagnostics.excluded["unsupported-protocol"], 3);
+  assert.equal(JSON.stringify(diagnostics).includes("example.invalid"), false);
+});

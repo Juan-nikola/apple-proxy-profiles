@@ -76,6 +76,10 @@ function isNonblankString(value) {
   return typeof value === "string" && value.length > 0 && value.trim() === value;
 }
 
+function isNonblankOpaqueString(value) {
+  return typeof value === "string" && value.trim().length > 0;
+}
+
 function isValidPort(value) {
   return Number.isInteger(value) && value >= 1 && value <= 65535;
 }
@@ -143,12 +147,16 @@ function hasHeaderAliasConflict(value) {
 function validShadowTls(value) {
   return isPlainObject(value)
     && Object.keys(value).every((key) => key === "password" || key === "sni")
-    && isNonblankString(value.password)
+    && isNonblankOpaqueString(value.password)
     && (!hasOption(value, "sni") || isNonblankString(value.sni));
 }
 
 function validOptionalString(node, key) {
   return !hasOption(node, key) || isNonblankString(node[key]);
+}
+
+function validOptionalOpaqueString(node, key) {
+  return !hasOption(node, key) || isNonblankOpaqueString(node[key]);
 }
 
 function resolvedUdp(node) {
@@ -527,6 +535,7 @@ function hasEgernAliasConflict(node, protocol) {
     ["udp-relay-mode", "udp_relay_mode"],
   ];
   if (groups.some((keys) => conflictingAliases(node, keys))) return true;
+  if (protocol === "wireguard" && conflictingAliases(node, ["dns_servers", "dns"])) return true;
   if (headersInNode(node).some(hasHeaderAliasConflict) || hasHttp2HostConflict(node)) return true;
   if (protocol === "vmess"
     && hasOption(node, "cipher")
@@ -564,7 +573,7 @@ function egernCommonReason(node, protocol) {
 }
 
 function validOptionalAuthentication(node) {
-  return validOptionalString(node, "username") && validOptionalString(node, "password");
+  return validOptionalString(node, "username") && validOptionalOpaqueString(node, "password");
 }
 
 function validSshHostKey(value) {
@@ -582,9 +591,9 @@ function egernSshReason(node) {
   if (conflictingAliases(node, ["private-key", "private_key"]) || !isNonblankString(node.username)) {
     return "invalid-egern-node-shape";
   }
-  if (!validOptionalString(node, "password")
-    || sshKeyMaterial !== undefined && !isNonblankString(sshKeyMaterial)
-    || !isNonblankString(node.password) && !isNonblankString(sshKeyMaterial)) {
+  if (!validOptionalOpaqueString(node, "password")
+    || sshKeyMaterial !== undefined && !isNonblankOpaqueString(sshKeyMaterial)
+    || !isNonblankOpaqueString(node.password) && !isNonblankOpaqueString(sshKeyMaterial)) {
     return "invalid-egern-node-shape";
   }
   if (hostKeys !== undefined && (!Array.isArray(hostKeys) || hostKeys.some((value) => !validSshHostKey(value)))) {
@@ -613,7 +622,7 @@ export function egernNodeExclusionReason(node) {
   if (hasArbitraryChain(node)) return "unsupported-existing-chain";
 
   if (protocol === "ss" || protocol === "shadowsocks") {
-    if (!isNonblankString(node.cipher) || !isNonblankString(node.password)) return "invalid-egern-node-shape";
+    if (!isNonblankString(node.cipher) || !isNonblankOpaqueString(node.password)) return "invalid-egern-node-shape";
     if (!EGERN_SHADOWSOCKS_METHODS.has(node.cipher)) return "unsupported-egern-method";
     if (hasShadowsocksPlugin(node) || unsupportedPlainTransport(node)) return "unsupported-egern-shadowsocks-shape";
     if (!isOptionalBoolean(node, "udp") || !isOptionalBoolean(node, "tfo")) return "unsupported-egern-shadowsocks-shape";
@@ -627,7 +636,7 @@ export function egernNodeExclusionReason(node) {
   }
 
   if (protocol === "snell") {
-    if (!isNonblankString(node.psk)) return "invalid-egern-node-shape";
+    if (!isNonblankOpaqueString(node.psk)) return "invalid-egern-node-shape";
     const version = typeof node.version === "string" && /^\d+$/.test(node.version) ? Number(node.version) : node.version;
     if (!EGERN_SNELL_VERSIONS.has(version)) return "unsupported-egern-version";
     if (hasOption(node, "obfs") && !EGERN_OBFS.has(node.obfs)) return "unsupported-egern-obfs";
@@ -666,7 +675,7 @@ export function egernNodeExclusionReason(node) {
   }
 
   if (protocol === "trojan") {
-    if (!isNonblankString(node.password)) return "invalid-egern-node-shape";
+    if (!isNonblankOpaqueString(node.password)) return "invalid-egern-node-shape";
     if (node.tls === false || node.security === "none") return "unsupported-egern-tls-shape";
     const network = normalizeTransport(node);
     if (!new Set(["tcp", "raw", "ws"]).has(network)) return "unsupported-egern-transport";
@@ -688,7 +697,7 @@ export function egernNodeExclusionReason(node) {
   }
 
   if (protocol === "anytls") {
-    if (!isNonblankString(node.password)) return "invalid-egern-node-shape";
+    if (!isNonblankOpaqueString(node.password)) return "invalid-egern-node-shape";
     if (node.tls === false || node.security === "none") return "unsupported-egern-tls-shape";
     if (unsupportedPlainTransport(node)) return "unsupported-egern-transport";
     return egernTlsReason(node, { implicitTls: true }) || (!isOptionalBoolean(node, "udp") || !isOptionalBoolean(node, "tfo")
@@ -696,14 +705,14 @@ export function egernNodeExclusionReason(node) {
   }
 
   if (protocol === "hysteria2" || protocol === "hy2") {
-    if (!isNonblankString(node.password)) return "invalid-egern-node-shape";
+    if (!isNonblankOpaqueString(node.password)) return "invalid-egern-node-shape";
     const tlsReason = egernTlsReason(node, { allowReality: false, implicitTls: true });
     if (tlsReason) return tlsReason;
     if (unsupportedPlainTransport(node, new Set(["udp", "quic"]))) return "unsupported-egern-transport";
     if (hasOption(node, "obfs") && node.obfs !== "salamander") return "unsupported-egern-obfs";
     const obfsPassword = firstAliasValue(node, ["obfs-password", "obfs_password"]);
-    if (obfsPassword !== undefined && (!isNonblankString(obfsPassword) || node.obfs !== "salamander")) {
-      return isNonblankString(obfsPassword) ? "unsupported-egern-obfs" : "invalid-egern-node-shape";
+    if (obfsPassword !== undefined && (!isNonblankOpaqueString(obfsPassword) || node.obfs !== "salamander")) {
+      return isNonblankOpaqueString(obfsPassword) ? "unsupported-egern-obfs" : "invalid-egern-node-shape";
     }
     const hopping = firstAliasValue(node, ["port-hopping", "port_hopping", "ports"]);
     if (hopping !== undefined && !isPortHopping(hopping)
@@ -723,7 +732,7 @@ export function egernNodeExclusionReason(node) {
   }
 
   if (protocol === "tuic") {
-    if (!isNonblankString(node.uuid) || !isNonblankString(node.password)) return "invalid-egern-node-shape";
+    if (!isNonblankString(node.uuid) || !isNonblankOpaqueString(node.password)) return "invalid-egern-node-shape";
     const tlsReason = egernTlsReason(node, { allowReality: false, allowAlpn: true, implicitTls: true });
     if (tlsReason) return tlsReason;
     if (unsupportedPlainTransport(node, new Set(["udp", "quic"]))) return "unsupported-egern-transport";
@@ -732,11 +741,13 @@ export function egernNodeExclusionReason(node) {
     if (hasOption(node, "alpn") && (!Array.isArray(node.alpn) || node.alpn.length === 0 || node.alpn.some((item) => !isNonblankString(item)))) {
       return "invalid-egern-node-shape";
     }
-    const tuicHopping = firstAliasValue(node, ["port-hopping", "port_hopping"]);
+    const tuicHopping = firstAliasValue(node, ["port-hopping", "port_hopping", "ports"]);
     if (tuicHopping !== undefined && !isPortHopping(tuicHopping)
-      || !isOptionalPositiveInteger(node, "port-hopping-interval")
-      || !isOptionalPositiveInteger(node, "port_hopping_interval")
-      || ["congestion-controller", "reduce-rtt", "disable-sni"].some((key) => hasOption(node, key))
+      || ["port-hopping-interval", "port_hopping_interval", "hop-interval"]
+        .some((key) => !isOptionalPositiveInteger(node, key))) {
+      return "invalid-egern-node-shape";
+    }
+    if (["congestion-controller", "reduce-rtt", "disable-sni"].some((key) => hasOption(node, key))
       || resolvedUdp(node) === false) {
       return "unsupported-egern-tuic-shape";
     }

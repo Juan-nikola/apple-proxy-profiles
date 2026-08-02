@@ -1,3 +1,6 @@
+import { CLIENT } from "../../../shared/contracts.js";
+import { filterNodesForClient } from "../../../shared/nodes/capabilities.js";
+import { increment } from "../../../shared/nodes/diagnostics.js";
 import { normalizeNodes } from "../../../shared/nodes/normalize-nodes.js";
 
 const ALLOWED_OPTIONS = new Set(["output", "clientChain"]);
@@ -43,6 +46,11 @@ export async function operator(proxies = [], targetPlatform, context = {}) {
   void targetPlatform;
   const { clientChain } = parseArguments(context.arguments ?? {});
   const result = normalizeNodes(proxies, { clientChain });
+  const filtered = filterNodesForClient(result.nodes, CLIENT.shadowrocket);
+  result.diagnostics.accepted = filtered.diagnostics.accepted;
+  for (const [reason, count] of Object.entries(filtered.diagnostics.excluded)) {
+    increment(result.diagnostics.excluded, reason, count);
+  }
   logDiagnostics(context, result.diagnostics);
-  return result.nodes;
+  return filtered.nodes;
 }

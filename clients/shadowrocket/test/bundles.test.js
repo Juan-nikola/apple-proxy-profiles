@@ -50,6 +50,57 @@ test("node bundle is self-contained and runs with Sub-Store globals", async () =
   assert.equal(lines.length, 1);
 });
 
+test("node bundle excludes Egern-only nodes with client chaining enabled", async () => {
+  const source = await readFile(nodeBundlePath, "utf8");
+  const { context, lines } = loadBundle(source, {
+    $arguments: { output: "nodes", clientChain: "on" },
+  });
+  const nodes = await context.operator([
+    {
+      name: "Supported entry",
+      type: "ss",
+      server: "entry.example.invalid",
+      port: 443,
+      cipher: "aes-128-gcm",
+      password: "TEST_ONLY_ENTRY_PASSWORD",
+      _subName: "[自建] Entry",
+    },
+    {
+      name: "SSH landing",
+      type: "ssh",
+      server: "ssh.example.invalid",
+      port: 22,
+      username: "TEST_ONLY_SSH_USERNAME",
+      password: "TEST_ONLY_SSH_PASSWORD",
+      _subName: "[落地] SSH",
+    },
+    {
+      name: "AnyTLS landing",
+      type: "anytls",
+      server: "anytls.example.invalid",
+      port: 443,
+      password: "TEST_ONLY_ANYTLS_PASSWORD",
+      _subName: "[落地] AnyTLS",
+    },
+    {
+      name: "WireGuard landing",
+      type: "wireguard",
+      server: "wireguard.example.invalid",
+      port: 443,
+      "private-key": "TEST_ONLY_WIREGUARD_PRIVATE_KEY",
+      "public-key": "TEST_ONLY_WIREGUARD_PUBLIC_KEY",
+      ip: "192.0.2.23/32",
+      _subName: "[落地] WireGuard",
+    },
+  ], "Shadowrocket");
+
+  assert.deepEqual(Array.from(nodes, (node) => node.type), ["ss"]);
+  assert.equal(nodes.some((node) => node?._profile?.chained), false);
+  const diagnostics = JSON.parse(lines[0].replace(/^\[shadowrocket-profile\] /, ""));
+  assert.equal(diagnostics.accepted, 1);
+  assert.equal(diagnostics.excluded["unsupported-protocol"], 3);
+});
+
 test("profile bundle is self-contained and runs with Sub-Store globals", async () => {
   const source = await readFile(profileBundlePath, "utf8");
   assert.match(source, /function operator/);
