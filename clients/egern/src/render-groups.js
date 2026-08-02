@@ -305,7 +305,6 @@ function validateSharedGraph(input) {
   if (presentChainNames.length !== 0 && presentChainNames.length !== POLICY_GROUP_SCHEMA.chainNames.length) {
     throw graphError("contains an incomplete conditional chain family");
   }
-
   const rootGroups = groups.filter((group) => group.name === PRIMARY_GROUP_NAME);
   if (rootGroups.length !== 1) throw graphError("must contain exactly one primary group");
   const root = rootGroups[0];
@@ -339,6 +338,9 @@ function validateSharedGraph(input) {
 
   const byName = new Map(groups.map((group) => [group.name, group]));
   assertAcyclic(names, byName, "candidates");
+  if (!POLICY_GROUP_SCHEMA.matchesCanonicalSemantics(groups)) {
+    throw graphError("does not match canonical candidate order and semantics");
+  }
   return groups;
 }
 

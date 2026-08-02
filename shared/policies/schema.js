@@ -3,6 +3,7 @@ import {
   SERVICE_GROUPS,
   STRATEGY,
   automaticHelperName,
+  buildPolicyGroups,
   fallbackHelperName,
 } from "./catalog.js";
 import {
@@ -17,6 +18,7 @@ import {
   continentFilter,
 } from "./filters.js";
 import { POLICY_TARGET } from "./intents.js";
+import { OPTION_VALUES, SOURCE_KIND } from "../contracts.js";
 
 function policySchema(kind, strategy, nodeFilters, { hidden, defaultChoice } = {}) {
   return Object.freeze({
@@ -77,16 +79,106 @@ const POLICY_SCHEMA_ENTRIES = [
   ["🔗 入口节点", policySchema(GROUP_KIND.chain, STRATEGY.select, [ENTRY_FILTER])],
 ];
 
+const CONTINENT_FAMILIES = Object.freeze(CONTINENTS.map((continent) => Object.freeze({
+  key: continent.key,
+  selector: continent.name,
+  automatic: automaticHelperName(continent),
+  fallback: fallbackHelperName(continent),
+  ai: `🤖 AI ${continent.helperName}`,
+})));
+const CHAIN_NAMES = Object.freeze(["⚡ 入口自动", "🎯 客户端落地", "🔗 入口节点"]);
+
+function syntheticNode(index, continent, sourceKind = SOURCE_KIND.unknown) {
+  return {
+    name: `schema-node-${index}`,
+    _profile: {
+      continent,
+      sourceKind,
+      udp: false,
+      p2p: false,
+      entry: false,
+      chained: false,
+    },
+  };
+}
+
+function inferredInventory(groups) {
+  const names = new Set(groups.map((group) => group.name));
+  const presentContinents = CONTINENT_FAMILIES.filter((family) => names.has(family.selector));
+  const presentSources = SOURCE_GROUPS.filter((source) => names.has(source.name));
+  const game = groups.find((group) => group.name === "🎮 游戏连接");
+  const p2p = groups.find((group) => group.name === "⬇️ 下载/P2P");
+  const chainEnabled = CHAIN_NAMES.every((name) => names.has(name));
+  const needsNonChainedNode = presentSources.length > 0
+    || game?.nodeFilter === GAME_FILTER
+    || p2p?.nodeFilter === P2P_FILTER
+    || chainEnabled;
+  if (presentContinents.length === 0 && needsNonChainedNode) return null;
+
+  const nodes = presentContinents.map((family, index) => syntheticNode(index, family.key));
+  const sourceContinent = presentContinents[0]?.key;
+  for (const source of presentSources) {
+    nodes.push(syntheticNode(nodes.length, sourceContinent, source.kind));
+  }
+  if (nodes.length > 0) {
+    nodes[0]._profile.udp = game?.nodeFilter === GAME_FILTER;
+    nodes[0]._profile.p2p = p2p?.nodeFilter === P2P_FILTER;
+    nodes[0]._profile.entry = chainEnabled;
+  }
+  if (chainEnabled) {
+    const chained = syntheticNode(nodes.length, presentContinents[0].key, SOURCE_KIND.landing);
+    chained._profile.chained = true;
+    nodes.push(chained);
+  }
+  return nodes;
+}
+
+function sameCanonicalSemantics(actual, expected) {
+  if (actual.length !== expected.length) return false;
+  for (let index = 0; index < expected.length; index += 1) {
+    const actualGroup = actual[index];
+    const expectedGroup = expected[index];
+    if (
+      actualGroup.name !== expectedGroup.name
+      || actualGroup.defaultChoice !== expectedGroup.defaultChoice
+      || actualGroup.candidates.length !== expectedGroup.candidates.length
+    ) {
+      return false;
+    }
+    for (let candidateIndex = 0; candidateIndex < expectedGroup.candidates.length; candidateIndex += 1) {
+      if (actualGroup.candidates[candidateIndex] !== expectedGroup.candidates[candidateIndex]) return false;
+    }
+  }
+  return true;
+}
+
+function matchesCanonicalSemantics(groups) {
+  if (!Array.isArray(groups)) return false;
+  const nodes = inferredInventory(groups);
+  if (nodes === null) return false;
+  const names = new Set(groups.map((group) => group.name));
+  const clientChain = CHAIN_NAMES.every((name) => names.has(name)) ? "on" : "off";
+
+  for (const autoGroupMode of ["full", "balanced", "minimal"]) {
+    for (const blockMode of OPTION_VALUES.blockMode) {
+      const expected = buildPolicyGroups({
+        platform: "macos",
+        autoGroupMode,
+        blockMode,
+        clientChain,
+      }, nodes);
+      if (sameCanonicalSemantics(groups, expected)) return true;
+    }
+  }
+  return false;
+}
+
 /** Finite client-neutral policy schema used by platform adapters for fail-closed validation. */
 export const POLICY_GROUP_SCHEMA = Object.freeze({
   groups: Object.freeze(Object.fromEntries(POLICY_SCHEMA_ENTRIES)),
   requiredNames: REQUIRED_POLICY_GROUP_NAMES,
   reservedNames: Object.freeze([POLICY_TARGET.primaryProxy, "DIRECT", "REJECT"]),
-  continentFamilies: Object.freeze(CONTINENTS.map((continent) => Object.freeze({
-    selector: continent.name,
-    automatic: automaticHelperName(continent),
-    fallback: fallbackHelperName(continent),
-    ai: `🤖 AI ${continent.helperName}`,
-  }))),
-  chainNames: Object.freeze(["⚡ 入口自动", "🎯 客户端落地", "🔗 入口节点"]),
+  continentFamilies: CONTINENT_FAMILIES,
+  chainNames: CHAIN_NAMES,
+  matchesCanonicalSemantics,
 });

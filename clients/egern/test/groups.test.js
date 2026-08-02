@@ -459,6 +459,100 @@ test("accepts only the exact shared filter assigned to each documented group", (
   for (const groups of mutations) assertSafeFailure(groups, privateUrl(), /filter/i);
 });
 
+test("accepts every generated conditional subset in canonical shared order", () => {
+  const continents = ["asiaPacific", "europe", "americas", "other"];
+  const sources = ["airport", "selfHosted", "realm", "serverChain"];
+
+  for (let mask = 0; mask < 2 ** continents.length; mask += 1) {
+    const nodes = continents
+      .filter((_, index) => (mask & (1 << index)) !== 0)
+      .map((continent, index) => normalizedNode(`TEST_ONLY_CONTINENT_${index}`, {
+        continent,
+        sourceKind: "unknown",
+      }));
+    for (const autoGroupMode of ["full", "balanced", "minimal"]) {
+      renderEgernGroups(
+        buildPolicyGroups(options({ autoGroupMode, clientChain: "off" }), nodes),
+        privateUrl(),
+      );
+    }
+  }
+
+  for (let mask = 0; mask < 2 ** sources.length; mask += 1) {
+    const nodes = [normalizedNode("TEST_ONLY_SOURCE_BASE", { sourceKind: "unknown" })];
+    sources.forEach((sourceKind, index) => {
+      if ((mask & (1 << index)) !== 0) {
+        nodes.push(normalizedNode(`TEST_ONLY_SOURCE_${index}`, { sourceKind }));
+      }
+    });
+    renderEgernGroups(buildPolicyGroups(options({ clientChain: "off" }), nodes), privateUrl());
+  }
+
+  for (const udp of [false, true]) {
+    for (const p2p of [false, true]) {
+      const base = normalizedNode("TEST_ONLY_SPECIAL_BASE", { udp, p2p, entry: true });
+      for (const clientChain of ["off", "on"]) {
+        const nodes = clientChain === "on"
+          ? [base, normalizedNode("TEST_ONLY_SPECIAL_CHAIN", { chained: true, sourceKind: "landing" })]
+          : [base];
+        for (const blockMode of ["off", "security", "balanced", "strict"]) {
+          renderEgernGroups(
+            buildPolicyGroups(options({ blockMode, clientChain }), nodes),
+            privateUrl(),
+          );
+        }
+      }
+    }
+  }
+});
+
+test("rejects record swaps and every known-reference candidate semantic drift", () => {
+  const valid = buildPolicyGroups(options({ blockMode: "security" }), INVENTORY);
+  const mutations = [];
+
+  const helperSwap = valid.map(cloneGroup);
+  [helperSwap[0], helperSwap[1]] = [helperSwap[1], helperSwap[0]];
+  mutations.push(helperSwap);
+
+  const securityNameSwap = valid.map(cloneGroup);
+  const threat = securityNameSwap.find((group) => group.name === "☣️ 安全威胁");
+  const advertising = securityNameSwap.find((group) => group.name === "🧱 常见广告");
+  [threat.name, advertising.name] = [advertising.name, threat.name];
+  mutations.push(securityNameSwap);
+
+  const impossibleSecurityMode = valid.map(cloneGroup);
+  impossibleSecurityMode.find((group) => group.name === "🕵️ 严格跟踪").candidates = [
+    "REJECT",
+    "DIRECT",
+  ];
+  mutations.push(impossibleSecurityMode);
+
+  const reversedDns = valid.map(cloneGroup);
+  reversedDns.find((group) => group.name === "🧭 DNS 与规则下载").candidates.reverse();
+  mutations.push(reversedDns);
+
+  const reorderedService = valid.map(cloneGroup);
+  const github = reorderedService.find((group) => group.name === "🐙 GitHub");
+  [github.candidates[1], github.candidates[2]] = [github.candidates[2], github.candidates[1]];
+  mutations.push(reorderedService);
+
+  const removedCandidate = valid.map(cloneGroup);
+  removedCandidate.find((group) => group.name === "🐙 GitHub").candidates.pop();
+  mutations.push(removedCandidate);
+
+  const addedCandidate = valid.map(cloneGroup);
+  addedCandidate.find((group) => group.name === "🐙 GitHub").candidates.push("REJECT");
+  mutations.push(addedCandidate);
+
+  const defaultDrift = valid.map(cloneGroup);
+  defaultDrift.find((group) => group.name === "🐙 GitHub").defaultChoice = "DIRECT";
+  mutations.push(defaultDrift);
+
+  for (const groups of mutations) {
+    assertSafeFailure(groups, privateUrl(), /candidate|default|order|schema|semantic/i);
+  }
+});
+
 test("reuses the strict private HTTPS URL validator and never exposes rejected URLs", () => {
   const valid = buildPolicyGroups(options(), INVENTORY);
   const rejected = [
