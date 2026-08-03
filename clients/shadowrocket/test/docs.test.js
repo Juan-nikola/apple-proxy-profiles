@@ -66,6 +66,7 @@ test("beginner docs contain every operational checkpoint and warning", async () 
     "policy-select-name=DIRECT",
   ]) assert.ok(text.includes(phrase), `missing named-subscription guidance: ${phrase}`);
   assert.doesNotMatch(text, /兼容占位参数/);
+  assert.match(text, /远程链接模式[\s\S]*URL[\s\S]*#\.\.\.[\s\S]*读取 `\$arguments`/u);
   for (const phrase of [
     "macOS、iPhone、iPad 三个 Profile File Operator",
     "`SHADOWROCKET-NODES`",
@@ -205,4 +206,16 @@ test("README is independently copyable for the two-layer Sub-Store setup", async
   assert.match(readme, /JS_URL#arg1=value1&arg2=value2[^\n]+不能使用 `\?`/u);
   assert.match(deployment, /File\/文件[^\n]+Script\/脚本操作[^\n]+链接模式[^\n]+参数/u);
   assert.match(deployment, /subscriptionName[^\n]+百分号编码/u);
+});
+
+test("README explains the current File action controls for beginners", async () => {
+  const readme = await readFile(resolve(shadowrocketRoot, "README.md"), "utf8");
+  for (const phrase of [
+    "## 新手照填：从备份到导入",
+    "单条脚本右侧都要勾选“启用”和“预览”",
+    "只控制全部展开/收起，不是运行总开关",
+    "Intel Mac",
+    "iPhone",
+    "iPad",
+  ]) assert.ok(readme.includes(phrase), `README.md: missing beginner UI phrase: ${phrase}`);
 });

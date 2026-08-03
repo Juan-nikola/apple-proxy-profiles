@@ -96,6 +96,7 @@ test("documents define the four private Sub-Store tasks in dependency order", as
   }
   assert.match(docs.deployment, /substore-node-generator\.js[\s\S]*兼容/u);
   assert.match(docs.deployment, /链接\/远程脚本[\s\S]*Pages URL[\s\S]*参数/u);
+  assert.match(docs.readme, /远程链接模式[\s\S]*URL[\s\S]*#\.\.\.[\s\S]*读取 `\$arguments`/u);
   for (const platform of ["macos", "iphone", "ipad"]) {
     assert.match(docs.readme, new RegExp(`examples/egern-${platform}\\.yaml`, "u"), platform);
   }
@@ -121,6 +122,28 @@ test("README is independently copyable for the two-layer Sub-Store setup", async
   assert.match(docs.readme, /JS_URL#arg1=value1&arg2=value2[^\n]+不能使用 `\?`/u);
   assert.match(docs.deployment, /File `egern-nodes`[\s\S]*Script\/脚本操作[\s\S]*链接模式[\s\S]*参数/u);
   assert.match(docs.deployment, /nodeSubscriptionUrl[^\n]+百分号编码/u);
+});
+
+test("README contains a complete current-UI beginner deployment path", async () => {
+  const { readme } = await loadDocs();
+  ordered(readme, [
+    "### 1. 确认公共节点来源",
+    "### 2. 创建 `egern-nodes`",
+    "### 3. 创建三个 Egern Profile File",
+    "### 4. 导入、灰度与回滚",
+  ], "README beginner order");
+  for (const phrase of [
+    "单条脚本右侧的“启用”和“预览”都要勾选",
+    "只用于全部展开/收起，不是运行总开关",
+    "“关闭缓存”和“不验证服务器证书”保持未勾选",
+    "<EGERN_NODES_PRIVATE_URL>",
+    "顶层不出现 `proxies:` 是正确结构",
+    "Intel Mac → iPhone → iPad",
+  ]) assert.ok(readme.includes(phrase), `README missing beginner phrase: ${phrase}`);
+  for (const key of [
+    "nodeSubscriptionUrl", "dnsMode", "chinaDns", "globalDns", "blockMode",
+    "quicMode", "ipv6Mode", "autoGroupMode", "clientChain",
+  ]) assert.ok(readme.includes(`| \`${key}\` |`), `README missing parameter row: ${key}`);
 });
 
 test("copy-safe arguments use the exact collection and three distinct platform contracts", async () => {

@@ -34,7 +34,97 @@ Egern Node Generator 通过稳定 URL 复用：File `egern-nodes` 直接引用 `
 
 先运行 `egern-nodes`，取得自己的私密输出 URL，再只在三个 Profile File 的参数编辑器里替换 `https://example.invalid/private/egern-nodes`。可视化参数编辑器填写原始 URL；旧版只有单行链接时，把真实 URL 当作一个参数值进行百分号编码。不要编码整条 JS URL，也不要把真实 URL 写入公开脚本、仓库或文档。
 
-旧版单行链接写法是 `JS_URL#arg1=value1&arg2=value2`，不能使用 `?` 连接脚本参数。创建、预览、导入、可选参数和回滚的完整步骤见[部署指南](docs/deployment.md)。
+远程链接模式必须使用 `JS_URL#arg1=value1&arg2=value2`，不能使用 `?` 连接脚本参数。当前 Sub-Store 后端从 URL 的 `#...` 读取 `$arguments`；即使界面显示了独立 key/value 参数行，也要确认远程链接本身保留相同的 hash 参数，不能只保存无 hash 的 JS URL。创建、预览、导入、可选参数和回滚的完整步骤见[部署指南](docs/deployment.md)。
+
+## 新手部署：按 Sub-Store 界面逐项填写
+
+下面以当前 Sub-Store 中文界面为准。开始前先在 Egern 保留一份能联网的旧 Profile，并备份 Sub-Store；新任务不要覆盖旧任务。真实订阅、节点及 File 输出 URL 只允许留在自己的 Sub-Store 和设备中。
+
+### 1. 确认公共节点来源
+
+1. 打开 Sub-Store 的“订阅”页面，找到“组合订阅”中的 `shadowrocket-sources`。
+2. 确认它包含你的全部私密来源，并且预览节点数大于 0。
+3. 不要把来源 URL、节点服务器、UUID、密码或预览内容贴到 GitHub、Issue、截图或聊天。
+
+成功标志：组合名逐字等于 `shadowrocket-sources`，预览非空，原有 sing-box 或其他客户端组合没有被改动。
+
+### 2. 创建 `egern-nodes`
+
+1. 进入“文件”→左上角“+”→“文件”。
+2. 依次填写：
+
+   | 字段 | 填写内容 |
+   | --- | --- |
+   | 名称 | `egern-nodes` |
+   | 显示名称 | `Egern 节点订阅` |
+   | 来源 | `本地` |
+   | 本地内容 | 保留默认占位内容即可，最终会由脚本替换 |
+
+3. 打开“操作”，点击“脚本操作”。脚本来源选“远程链接”，填入：
+
+   ```text
+   https://juan-nikola.github.io/apple-proxy-profiles/current/egern/scripts/egern-node-generator.js
+   ```
+
+4. 展开参数并添加四行：
+
+   | key | value |
+   | --- | --- |
+   | `output` | `nodes` |
+   | `type` | `collection` |
+   | `name` | `shadowrocket-sources` |
+   | `clientChain` | `off` |
+
+5. 单条脚本右侧的“启用”和“预览”都要勾选。“关闭缓存”和“不验证服务器证书”保持未勾选。标题“文件操作”旁的开关图标只用于全部展开/收起，不是运行总开关。
+6. 点击“即时预览”。成功输出必须包含顶层 `proxies:`，且至少有一个节点；如果仍显示“填入文件内容”，先确认单条脚本已启用，再看[排障指南](docs/troubleshooting.md)。
+7. 保存，回到文件列表，复制 `egern-nodes` 的私密直链。后文把它记作 `<EGERN_NODES_PRIVATE_URL>`；不要把真实值写入仓库。
+
+### 3. 创建三个 Egern Profile File
+
+依次新建 `egern-macos`、`egern-iphone`、`egern-ipad`。三个任务的“来源”都选“本地”，各添加一条已启用且参与预览的“脚本操作”，远程链接统一填写：
+
+```text
+https://juan-nikola.github.io/apple-proxy-profiles/current/egern/scripts/egern-profile-generator.js
+```
+
+任务基础字段：
+
+| 名称 | 显示名称 | 用途 |
+| --- | --- | --- |
+| `egern-macos` | `Egern macOS Profile` | Intel Mac 首轮灰度 |
+| `egern-iphone` | `Egern iPhone Profile` | Mac 通过后部署 |
+| `egern-ipad` | `Egern iPad Profile` | 最后部署 |
+
+参数按下表逐行添加：
+
+| key | macOS | iPhone | iPad |
+| --- | --- | --- | --- |
+| `output` | `config` | `config` | `config` |
+| `type` | `collection` | `collection` | `collection` |
+| `name` | `shadowrocket-sources` | `shadowrocket-sources` | `shadowrocket-sources` |
+| `nodeSubscriptionUrl` | `<EGERN_NODES_PRIVATE_URL>` | `<EGERN_NODES_PRIVATE_URL>` | `<EGERN_NODES_PRIVATE_URL>` |
+| `platform` | `macos` | `iphone` | `ipad` |
+| `dnsMode` | `stable` | `stable` | `stable` |
+| `chinaDns` | `alidns` | `alidns` | `alidns` |
+| `globalDns` | `cloudflare` | `cloudflare` | `cloudflare` |
+| `blockMode` | `balanced` | `balanced` | `balanced` |
+| `quicMode` | `proxy-block` | `proxy-block` | `proxy-block` |
+| `ipv6Mode` | `ipv4-only` | `auto` | `auto` |
+| `autoGroupMode` | `auto` | `auto` | `auto` |
+| `clientChain` | `off` | `off` | `off` |
+
+`nodeSubscriptionUrl` 直接填第 2 步复制的原始私密 URL。只有旧版“单行脚本 URL”界面才需要百分号编码这个参数值；不能编码整条 JS URL，也不能把参数之间的 `&`、`=` 一起编码。
+
+三个任务都保持“关闭缓存”未勾选、“不验证服务器证书”未勾选。逐个即时预览：输出应包含 `auto_update:`、`dns:`、`policy_groups:`、`rules:` 和 `default_subscription_group:`。Profile 通过私密 URL 挂载 `egern-nodes`，因此顶层不出现 `proxies:` 是正确结构；任何一个仍显示占位内容或错误时都不要导入设备。
+
+### 4. 导入、灰度与回滚
+
+1. 复制三个 Profile File 各自的私密直链；不要把 `egern-nodes` 节点文件当成完整 Profile 导入。
+2. 先在 Intel Mac 的 Egern 新增远程 Profile，粘贴 `egern-macos` 的私密直链，旧 Profile 保留并排可选。
+3. 按[灰度清单](docs/canary.md)验证 DNS、规则、自动选择、节点切换和真实联网；通过后才依次导入 iPhone、iPad 对应的 Profile。
+4. 任一步失败，立即切回旧 Profile；Sub-Store 中保留失败任务供排查，不改任务名、不改私密直链。修复后从 Intel Mac 重新开始。
+
+升级公开 `/current/` JS 时，四个任务名、参数和私密直链都不用改变；只需重新预览并按 Intel Mac → iPhone → iPad 的顺序更新。正式任务默认关闭 `noCache`；只有排查发布缓存时才临时开启，验收结束后恢复关闭。
 
 ## 安全与更新边界
 

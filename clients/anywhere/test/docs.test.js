@@ -51,9 +51,25 @@ test("README is independently copyable for the two-layer Sub-Store node setup", 
     "accepted",
   ]) assert.ok(readme.includes(phrase), `README missing ${phrase}`);
   assert.match(readme, /JS_URL#output=nodes[^\n]+不能使用 `\?`/u);
+  assert.match(readme, /远程链接[\s\S]*URL[\s\S]*#\.\.\.[\s\S]*读取 `\$arguments`/u);
   assert.match(deployment, /File\/文件[^\n]+Script\/脚本操作[^\n]+链接模式[^\n]+参数/u);
   assert.match(readme, /不会创建[^\n]+`anywhere-profile-generator\.js`/u);
   assert.match(deployment, /不要创建 `anywhere-profile-generator\.js`/u);
+});
+
+test("README contains the complete current-UI beginner deployment path", async () => {
+  const { readme } = await docs();
+  for (const phrase of [
+    "## 新手部署：从节点 File 到规则导入",
+    "单条脚本的“启用”和“预览”都勾选",
+    "只是全部展开/收起，不是运行总开关",
+    "“关闭缓存”和“不验证服务器证书”都不勾选",
+    "确认 34 个规则分片全部出现",
+    "iPhone 全部通过后才在 iPad",
+  ]) assert.ok(readme.includes(phrase), `README missing beginner phrase: ${phrase}`);
+  for (const key of ["output", "type", "name", "clientChain"]) {
+    assert.ok(readme.includes(`| \`${key}\` |`), `README missing parameter row: ${key}`);
+  }
 });
 
 test("canary and troubleshooting lock safe order, UUID risks, and real rollback", async () => {

@@ -2,6 +2,7 @@ import { CLIENT } from "../../../shared/contracts.js";
 import { filterNodesForClient } from "../../../shared/nodes/capabilities.js";
 import { increment } from "../../../shared/nodes/diagnostics.js";
 import { normalizeProtocol } from "../../../shared/nodes/protocol-registry.js";
+import { adaptEgernSubStoreNodes } from "./adapt-substore-nodes.js";
 import { renderYaml } from "./render-yaml.js";
 import { EGERN_CHAIN_POLICY, toEgernProxy } from "./render-node.js";
 
@@ -53,7 +54,11 @@ export function prepareEgernInventory(nodes, { clientChain = "off", onDiagnostic
     throw new Error("onDiagnostics must be a function");
   }
 
-  const filtered = filterNodesForClient(nodes, CLIENT.egern);
+  const adapted = adaptEgernSubStoreNodes(nodes);
+  const filtered = filterNodesForClient(adapted.nodes, CLIENT.egern);
+  for (const [reason, count] of Object.entries(adapted.excluded)) {
+    increment(filtered.diagnostics.excluded, reason, count);
+  }
   const compatible = [];
   for (const node of filtered.nodes) {
     if (isGeneratedChain(node) && clientChain === "off") {

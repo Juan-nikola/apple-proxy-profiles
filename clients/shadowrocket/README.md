@@ -31,7 +31,7 @@
 
 创建顺序：先打开组合 `shadowrocket-sources` 并添加直接引用节点 JS URL 的 Script Operator → 生成私密节点订阅 `shadowrocket-nodes` → 再创建三个直接引用 Profile JS URL 的 File。Profile 脚本不能挂到组合处理链；节点脚本也不能代替 Profile File。
 
-推荐展开可视化参数编辑器逐项添加表中的键和值。旧版只有单行脚本链接时，使用 `JS_URL#arg1=value1&arg2=value2`，不能使用 `?`。`subscriptionName=Shadowrocket-Nodes` 必须改成 Shadowrocket 中私密节点订阅的真实显示名；单行链接模式只对包含中文、emoji、空格、`&`、`#` 或 `%` 的参数值进行百分号编码。完整页面操作、成功标志和回滚方法见[零基础部署手册](docs/deployment.md)。
+推荐先粘贴完整的 `JS_URL#参数`，再展开可视化参数编辑器逐项核对表中的键和值。当前 Sub-Store 的远程链接模式由后端从 URL 的 `#...` 读取 `$arguments`；即使界面已经显示 key/value 参数行，也必须确认远程链接本身仍包含相同的 hash 参数，不能只留下无 hash 的 JS URL。不能使用 `?` 连接脚本参数。`subscriptionName=Shadowrocket-Nodes` 必须改成 Shadowrocket 中私密节点订阅的真实显示名；只对包含中文、emoji、空格、`&`、`#` 或 `%` 的参数值进行百分号编码。完整页面操作、成功标志和回滚方法见[零基础部署手册](docs/deployment.md)。
 
 ## 你会得到什么
 
@@ -67,6 +67,125 @@ Profile 使用职责分开的两层结构：
 旧的 `substore-node-operator.js` 与 `substore-profile-generator.js` 文件和 Pages URL 保留为字节一致的兼容别名，既有 Sub-Store 任务无需因改名而迁移。新建任务统一选择上面的 `shadowrocket-*` 名称；不要把同一脚本的新旧 URL 当成两个不同版本。
 
 不要手工编辑 `clients/shadowrocket/dist/` 或生成后的 Profile。日常改动只应发生在 Sub-Store 来源、File 参数或 Shadowrocket 策略组选择中。
+
+## 新手照填：从备份到导入
+
+下面按 Sub-Store 常见界面的用途写步骤；如果按钮名称略有差异，就寻找“组合订阅”“脚本操作/Script Operation”“文件/File”“链接/远程脚本”和“参数/Arguments”这些同用途入口。Sub-Store 不需要先创建独立脚本记录：节点 Operator 和三个 File 都直接引用稳定的公开 JavaScript URL，参数只保存在各自任务中，不把脚本正文复制进任务。
+
+### 第 0 步：先备份，不覆盖现有配置
+
+1. 在 Shadowrocket 保留当前能联网的旧 Profile，不删除、不改名。
+2. 在 Sub-Store 备份当前来源、组合订阅、Script Operation 和 File；另外记下任务名、用途、更新间隔和参数，但不要把任何私密 URL 或节点凭据写进公开笔记、截图或聊天。
+3. 确认 Sub-Store 管理页面已经放在私有网络/VPN 后面，或已有带认证和 TLS 的反向代理。未完成保护时停止，不生成私密输出 URL。
+4. 首轮只准备 Intel Mac；它通过后再依次处理 iPhone、iPad。
+
+成功标志：旧 Profile 仍可随时切回，Sub-Store 备份可以恢复，且本次操作不会覆盖已有任务或私密输出。
+
+### 第 1 步：进入 Sub-Store 并确认来源组合
+
+1. 登录自己的 Sub-Store，进入“订阅/组合订阅”页面。
+2. 找到组合 `shadowrocket-sources`。如果还没有，就新建同名组合，并在自己的私密环境中加入原始节点来源。
+3. 先预览原始组合；节点数必须大于 0，并与各来源数量大致相符。原始组合为空时停止，不继续添加脚本。
+4. 组合名称必须逐字为 `shadowrocket-sources`；后面的三个 Profile File 会用 `name=shadowrocket-sources` 读取它。
+
+成功标志：`shadowrocket-sources` 能稳定预览出节点，且没有把来源地址、服务器、UUID 或密码复制到公开位置。
+
+### 第 2 步：给组合添加节点 Script Operation
+
+1. 打开 `shadowrocket-sources` 的处理链，新增“脚本操作/Script Operation”。这里是组合订阅的节点 Operator，不是 File。
+2. 脚本来源选择“链接/远程脚本”，不要选择“本地脚本正文”。
+3. JavaScript URL 填：
+
+   ```text
+   https://juan-nikola.github.io/apple-proxy-profiles/current/shadowrocket/scripts/shadowrocket-node-operator.js
+   ```
+
+4. 在可视化参数编辑器中逐项填写：
+
+   | 参数名 | 参数值 |
+   | --- | --- |
+   | `output` | `nodes` |
+   | `clientChain` | `off` |
+
+   完整参数表示为 `output=nodes&clientChain=off`。如果旧版只有一个脚本链接框，使用 `JS_URL#arg1=value1&arg2=value2` 的形式，即在上述公开 JS URL 后接 `#output=nodes&clientChain=off`；不能使用 `?` 连接参数。
+5. “不使用缓存/noCache”关闭；“不验证证书/insecure”关闭。目标平台选择 Shadowrocket。
+6. 预览处理后的组合。至少应返回一个节点；节点名称应有统一来源标签，国旗不应重复，日志只能出现聚合计数，不能出现服务器、UUID 或密码。
+7. 保存处理链，将组合处理后的私密节点订阅命名为 `shadowrocket-nodes`，建议每 6 小时更新。
+8. 复制 Sub-Store 生成的 `<Shadowrocket 节点私密输出 URL>`，只保存在自己的设备中；不要把它粘贴回仓库或文档。
+
+成功标志：Script Operation 预览非空且保存成功，重新打开任务仍能看到规范 JS URL、`output=nodes`、`clientChain=off`，并且 noCache 与 insecure 都是关闭状态。
+
+### 第 3 步：分别创建三个 Profile File
+
+进入 Sub-Store 的“文件/File”页面，按 macOS、iPhone、iPad 的顺序分别新建 File。每个 File 都添加“脚本操作/Script”，选择“链接/远程脚本”，使用同一个 Profile JavaScript URL：
+
+```text
+https://juan-nikola.github.io/apple-proxy-profiles/current/shadowrocket/scripts/shadowrocket-profile-generator.js
+```
+
+三个 File 都保持“不使用缓存/noCache”关闭、“不验证证书/insecure”关闭，不粘贴 JavaScript 正文，也不要把 Profile 脚本挂到 `shadowrocket-sources` 的组合处理链。
+
+每个 File 的单条脚本右侧都要勾选“启用”和“预览”。标题“文件操作”旁的开关图标只控制全部展开/收起，不是运行总开关；不要用它判断脚本是否执行。
+
+先填写任务字段：
+
+| File 任务名 | 设备 | 更新间隔 | 预期输出 |
+| --- | --- | --- | --- |
+| `shadowrocket-config-macos` | Intel Mac | 每天 | Shadowrocket INI Profile |
+| `shadowrocket-config-iphone` | iPhone | 每天 | Shadowrocket INI Profile |
+| `shadowrocket-config-ipad` | iPad | 每天 | Shadowrocket INI Profile |
+
+再在每个 File 自己的参数编辑器中逐项填写：
+
+| 参数名 | macOS | iPhone | iPad | 说明 |
+| --- | --- | --- | --- | --- |
+| `output` | `config` | `config` | `config` | 固定值 |
+| `type` | `collection` | `collection` | `collection` | 从组合读取 |
+| `name` | `shadowrocket-sources` | `shadowrocket-sources` | `shadowrocket-sources` | 必须等于第 1 步组合名 |
+| `subscriptionName` | `Shadowrocket-Nodes` | `Shadowrocket-Nodes` | `Shadowrocket-Nodes` | 必须逐字等于客户端节点订阅显示名 |
+| `platform` | `macos` | `iphone` | `ipad` | 每个平台不同 |
+| `dnsMode` | `stable` | `stable` | `stable` | 稳定 DNS 预设 |
+| `chinaDns` | `alidns` | `alidns` | `alidns` | 国内 DNS |
+| `globalDns` | `cloudflare` | `cloudflare` | `cloudflare` | 境外 DNS |
+| `blockMode` | `balanced` | `balanced` | `balanced` | 平衡拦截 |
+| `quicMode` | `proxy-block` | `proxy-block` | `proxy-block` | 代理流量阻止 QUIC |
+| `ipv6Mode` | `ipv4-only` | `auto` | `auto` | macOS 与移动端不同 |
+| `autoGroupMode` | `auto` | `auto` | `auto` | 自动选择分组规模 |
+| `clientChain` | `off` | `off` | `off` | 正式任务关闭客户端链式 |
+
+用于复制核对的三条完整参数如下；不要加引号、前导 `?` 或换行：
+
+- macOS：`output=config&type=collection&name=shadowrocket-sources&subscriptionName=Shadowrocket-Nodes&platform=macos&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=ipv4-only&autoGroupMode=auto&clientChain=off`
+- iPhone：`output=config&type=collection&name=shadowrocket-sources&subscriptionName=Shadowrocket-Nodes&platform=iphone&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&autoGroupMode=auto&clientChain=off`
+- iPad：`output=config&type=collection&name=shadowrocket-sources&subscriptionName=Shadowrocket-Nodes&platform=ipad&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&autoGroupMode=auto&clientChain=off`
+
+`Shadowrocket-Nodes` 只是便于首次照填的 ASCII 示例。它必须与稍后添加到 Shadowrocket 的节点订阅显示名完全一致，包括大小写、emoji、空格和标点。如果界面提供参数名/值输入框，直接填写显示名；如果旧版只有单行链接，包含中文、emoji、空格、`&`、`#` 或 `%` 的值必须先进行百分号编码，不能编码分隔参数的 `&` 和 `=`。
+
+逐个点击预览。成功输出应在开头附近出现 `[General]`，后面同时出现 `[Proxy Group]` 和 `[Rule]`，且不能包含真实服务器、密码或 UUID。确认后保存 File，并分别取得 `<macOS Profile 私密输出 URL>`、`<iPhone Profile 私密输出 URL>`、`<iPad Profile 私密输出 URL>`；这些占位符代表你自己的私密输出，不是需要照抄的地址。
+
+成功标志：三个 File 都能独立预览和保存；任务名、平台、IPv6 值正确；重新打开后规范 JS URL、全部参数、每天更新、noCache 关闭和 insecure 关闭都未丢失。
+
+### 第 4 步：复制私密输出并导入对应客户端
+
+1. 先在 Intel Mac 的 Shadowrocket 中进入节点订阅页面，添加 `<Shadowrocket 节点私密输出 URL>`，显示名设为 `Shadowrocket-Nodes`；如果你使用其他显示名，必须先把三个 File 的 `subscriptionName` 同步改成完全相同的文字。手动更新后节点数必须大于 0。
+2. 在 Intel Mac 的配置/Profile 页面添加 `<macOS Profile 私密输出 URL>`。不要覆盖旧 Profile；让新旧 Profile 并排保留，再选择新 Profile 做 canary。
+3. macOS Profile 通过 [Intel Mac 灰度清单](docs/canary-checklist.md) 后，才在 iPhone 添加同一节点私密输出和 `<iPhone Profile 私密输出 URL>`。
+4. iPhone 通过后，最后在 iPad 添加同一节点私密输出和 `<iPad Profile 私密输出 URL>`。
+5. 每台设备都保持 HTTPS 解密关闭；任一设备失败立即停止，不继续推广。
+
+成功标志：节点订阅能手动更新，平台 Profile 能显示新的更新时间；`🚀 节点选择`摘要为 `SELECT > PROXY`，策略组和规则存在，旧 Profile 仍可立即选回。
+
+### 第 5 步：升级与回滚
+
+升级时保持任务名、参数和私密输出 URL 不变：
+
+1. 先备份 Sub-Store，并保留每台设备的旧 Profile。
+2. 规范 `/current/` JS URL 不变。依次重新预览节点 Operator、macOS File、iPhone File、iPad File；正式任务的 noCache 与 insecure 仍保持关闭。
+3. 先只在 Intel Mac 更新并完成 canary，再按 iPhone、iPad 顺序推广。脚本升级不会自动更新客户端中的 Profile，仍需在客户端手动更新。
+4. 若升级失败，立即在客户端切回旧 Profile，并在 Sub-Store 恢复备份或把测试任务脚本改回 `<已验证的旧版公开 JS URL>`。不要覆盖旧 File，不要更改任何私密输出 URL。
+5. 回滚后再次预览节点与 Profile；确认旧配置恢复联网后才结束处理，并保留失败版本和日期供排查。
+
+回滚成功标志：设备选回旧 Profile 后恢复联网；生产任务名称、参数和私密输出 URL 均保持原样，失败版本没有继续推广到下一台设备。
 
 迁移说明：仓库布局已改为 `clients/shadowrocket/`，但现有 Sub-Store 对象名和已发布 URL 不变。`shadowrocket-sources`、`shadowrocket-nodes`、三个 `shadowrocket-config-*` 及其 URL 都不要重命名；继续按原顺序操作，并保留旧 Profile 作为回滚入口。
 

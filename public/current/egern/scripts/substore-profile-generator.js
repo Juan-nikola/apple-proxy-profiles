@@ -2683,6 +2683,109 @@ var EgernProfileBundle = (() => {
     return { nodes: supportedNodes, diagnostics };
   }
 
+  // adapt-substore-nodes.js
+  var CERTIFICATE_FINGERPRINT = /^[0-9a-f]{64}$/iu;
+  function hasOwn(value, key) {
+    return Object.hasOwn(value, key);
+  }
+  function isPlainObject2(value) {
+    if (!value || typeof value !== "object" || Array.isArray(value)) return false;
+    const prototype = Object.getPrototypeOf(value);
+    return prototype === Object.prototype || prototype === null;
+  }
+  function cloneForUpdate(node, cloned) {
+    return cloned ?? structuredClone(node);
+  }
+  function adaptSnell(node) {
+    const version = typeof node.version === "string" && /^\d+$/u.test(node.version) ? Number(node.version) : node.version;
+    if (version !== 5) return { value: node };
+    const cloned = structuredClone(node);
+    cloned.version = 4;
+    return { value: cloned };
+  }
+  function adaptRealityVless(node) {
+    if (!hasOwn(node, "reality-opts")) return { value: node };
+    let cloned;
+    if (hasOwn(node, "client-fingerprint")) {
+      if (node["client-fingerprint"] !== "chrome") {
+        return { reason: "unsupported-egern-tls-shape" };
+      }
+      cloned = cloneForUpdate(node, cloned);
+      delete cloned["client-fingerprint"];
+    }
+    if (hasOwn(node, "encryption")) {
+      if (node.encryption !== "none") return { reason: "unsupported-egern-security" };
+      cloned = cloneForUpdate(node, cloned);
+      delete cloned.encryption;
+    }
+    if (hasOwn(node, "packet-encoding")) {
+      if (node["packet-encoding"] !== "xudp") return { reason: "unsupported-egern-option" };
+      cloned = cloneForUpdate(node, cloned);
+      delete cloned["packet-encoding"];
+    }
+    if (hasOwn(node, "_h2")) {
+      if (node._h2 !== false) return { reason: "unsupported-egern-option" };
+      cloned = cloneForUpdate(node, cloned);
+      delete cloned._h2;
+    }
+    const reality = node["reality-opts"];
+    if (isPlainObject2(reality) && hasOwn(reality, "_spider-x")) {
+      if (typeof reality["_spider-x"] !== "string" || reality["_spider-x"].length === 0) {
+        return { reason: "unsupported-egern-tls-shape" };
+      }
+      cloned = cloneForUpdate(node, cloned);
+      delete cloned["reality-opts"]["_spider-x"];
+    }
+    return { value: cloned ?? node };
+  }
+  function adaptHysteria2(node) {
+    let cloned;
+    if (hasOwn(node, "alpn")) {
+      if (!Array.isArray(node.alpn) || node.alpn.length !== 1 || node.alpn[0] !== "h3") {
+        return { reason: "unsupported-egern-tls-shape" };
+      }
+      cloned = cloneForUpdate(node, cloned);
+      delete cloned.alpn;
+    }
+    const hasFingerprint = hasOwn(node, "fingerprint");
+    const hasTlsFingerprint = hasOwn(node, "tls-fingerprint");
+    if (hasFingerprint || hasTlsFingerprint) {
+      if (!hasFingerprint || !hasTlsFingerprint || typeof node.fingerprint !== "string" || typeof node["tls-fingerprint"] !== "string" || !CERTIFICATE_FINGERPRINT.test(node.fingerprint) || !CERTIFICATE_FINGERPRINT.test(node["tls-fingerprint"]) || node.fingerprint.toLowerCase() !== node["tls-fingerprint"].toLowerCase()) {
+        return { reason: "unsupported-egern-tls-shape" };
+      }
+      const normalized = node.fingerprint.toLowerCase();
+      for (const key of ["fingerprint-sha256", "fingerprint_sha256"]) {
+        if (hasOwn(node, key) && (typeof node[key] !== "string" || node[key].toLowerCase() !== normalized)) {
+          return { reason: "conflicting-egern-alias" };
+        }
+      }
+      cloned = cloneForUpdate(node, cloned);
+      delete cloned.fingerprint;
+      delete cloned["tls-fingerprint"];
+      delete cloned.fingerprint_sha256;
+      cloned["fingerprint-sha256"] = normalized;
+    }
+    return { value: cloned ?? node };
+  }
+  function adaptNode(node) {
+    if (!isPlainObject2(node)) return { value: node };
+    const protocol2 = normalizeProtocol(node.type);
+    if (protocol2 === "snell") return adaptSnell(node);
+    if (protocol2 === "vless") return adaptRealityVless(node);
+    if (protocol2 === "hysteria2" || protocol2 === "hy2") return adaptHysteria2(node);
+    return { value: node };
+  }
+  function adaptEgernSubStoreNodes(nodes) {
+    const adapted = [];
+    const excluded = {};
+    for (const node of Array.isArray(nodes) ? nodes : []) {
+      const result = adaptNode(node);
+      if (result.reason) increment(excluded, result.reason);
+      else adapted.push(result.value);
+    }
+    return { nodes: adapted, excluded };
+  }
+
   // ../../../shared/serialization/render-yaml.js
   var INDENT_WIDTH = 2;
   var PLAIN_KEY = /^[A-Za-z_][A-Za-z0-9_-]*$/;
@@ -2917,11 +3020,11 @@ var EgernProfileBundle = (() => {
     "conflicting-egern-alias": "Conflicting Egern proxy aliases",
     "unsupported-egern-option": "Unsupported Egern proxy option"
   });
-  function hasOwn(value, key) {
+  function hasOwn2(value, key) {
     return Object.hasOwn(value, key);
   }
   function copyOptional(target, outputKey, source, sourceKey = outputKey) {
-    if (hasOwn(source, sourceKey)) target[outputKey] = source[sourceKey];
+    if (hasOwn2(source, sourceKey)) target[outputKey] = source[sourceKey];
   }
   function setCredentialField(target, key, value) {
     target[key] = value;
@@ -2929,7 +3032,7 @@ var EgernProfileBundle = (() => {
   }
   function firstOwn(source, keys) {
     for (const key of keys) {
-      if (hasOwn(source, key)) return source[key];
+      if (hasOwn2(source, key)) return source[key];
     }
     return void 0;
   }
@@ -2953,7 +3056,7 @@ var EgernProfileBundle = (() => {
     return normalizeEgernHeaders(value);
   }
   function tlsRequested(node) {
-    return node.tls === true || node.security === "tls" || node.security === "reality" || hasOwn(node, "reality-opts");
+    return node.tls === true || node.security === "tls" || node.security === "reality" || hasOwn2(node, "reality-opts");
   }
   function realityFields(node) {
     const source = node["reality-opts"];
@@ -2982,9 +3085,9 @@ var EgernProfileBundle = (() => {
   function httpTransportFields(options = {}) {
     const result = {};
     copyOptional(result, "method", options);
-    if (hasOwn(options, "path")) result.path = normalizedPath(options.path);
-    if (hasOwn(options, "headers")) result.headers = normalizedHeaders(options.headers);
-    if (hasOwn(options, "host")) {
+    if (hasOwn2(options, "path")) result.path = normalizedPath(options.path);
+    if (hasOwn2(options, "headers")) result.headers = normalizedHeaders(options.headers);
+    if (hasOwn2(options, "host")) {
       result.headers = { ...result.headers ?? {}, Host: normalizedPath(options.host) };
     }
     return result;
@@ -2998,7 +3101,7 @@ var EgernProfileBundle = (() => {
     if (network === "ws") {
       const source = node["ws-opts"];
       const fields = { path: normalizedPath(source.path) };
-      if (hasOwn(source, "headers")) fields.headers = normalizedHeaders(source.headers);
+      if (hasOwn2(source, "headers")) fields.headers = normalizedHeaders(source.headers);
       if (tlsRequested(node)) appendTlsFields(fields, node, { includeReality: false });
       return { [tlsRequested(node) ? "wss" : "ws"]: fields };
     }
@@ -3068,7 +3171,7 @@ var EgernProfileBundle = (() => {
       user_id: requiredString(node.uuid),
       security
     }, node, { udp: true });
-    if (hasOwn(node, "legacy")) fields.legacy = node.legacy;
+    if (hasOwn2(node, "legacy")) fields.legacy = node.legacy;
     else if (node["alter-id"] === 0 || node.alterId === 0) fields.legacy = false;
     const transport = renderVmessVlessTransport(node);
     if (transport !== void 0) fields.transport = transport;
@@ -3087,9 +3190,9 @@ var EgernProfileBundle = (() => {
   function websocketFields(node) {
     const options = node["ws-opts"];
     const fields = { path: normalizedPath(options.path) };
-    if (hasOwn(options, "headers")) {
+    if (hasOwn2(options, "headers")) {
       const headers = normalizedHeaders(options.headers);
-      if (hasOwn(headers, "Host")) fields.host = headers.Host;
+      if (hasOwn2(headers, "Host")) fields.host = headers.Host;
     }
     return fields;
   }
@@ -3132,7 +3235,7 @@ var EgernProfileBundle = (() => {
     setCredentialField(fields, "password", requiredString(node.password));
     const udpRelayMode = firstOwn(node, ["udp-relay-mode", "udp_relay_mode"]);
     if (udpRelayMode !== void 0) fields.udp_relay_mode = udpRelayMode;
-    if (hasOwn(node, "alpn")) fields.alpn = [...node.alpn];
+    if (hasOwn2(node, "alpn")) fields.alpn = [...node.alpn];
     appendTlsFields(fields, node, { includeReality: false });
     const resolved = resolveEgernNodeOptions(node);
     if (resolved.portHopping !== void 0) fields.port_hopping = resolved.portHopping;
@@ -3150,7 +3253,7 @@ var EgernProfileBundle = (() => {
     const fields = appendCommonTcpOptions(commonFields(node), node);
     copyOptional(fields, "username", node);
     copyOptional(fields, "password", node);
-    if (hasOwn(node, "headers")) fields.headers = normalizedHeaders(node.headers);
+    if (hasOwn2(node, "headers")) fields.headers = normalizedHeaders(node.headers);
     if (tlsRequested(node)) appendTlsFields(fields, node);
     return { [tlsRequested(node) ? "https" : "http"]: fields };
   }
@@ -3167,7 +3270,7 @@ var EgernProfileBundle = (() => {
   function wireGuardAddresses(node) {
     const values = [];
     for (const key of ["local_ipv4", "local-ipv4", "local_ipv6", "local-ipv6", "ip", "ipv6", "local-address"]) {
-      if (!hasOwn(node, key)) continue;
+      if (!hasOwn2(node, key)) continue;
       values.push(...Array.isArray(node[key]) ? node[key] : [node[key]]);
     }
     return {
@@ -3196,7 +3299,7 @@ var EgernProfileBundle = (() => {
     return { wireguard: fields };
   }
   function appendClientChain(proxy, node, clientChain) {
-    const presentAliases = CHAIN_ALIASES2.filter((key) => hasOwn(node, key) && node[key] !== void 0 && node[key] !== null && node[key] !== "");
+    const presentAliases = CHAIN_ALIASES2.filter((key) => hasOwn2(node, key) && node[key] !== void 0 && node[key] !== null && node[key] !== "");
     const generated = presentAliases.length === 1 && presentAliases[0] === "underlying-proxy" && node["underlying-proxy"] === EGERN_CHAIN_POLICY && node?._profile?.chained === true;
     if (presentAliases.length === 0) return proxy;
     if (!generated) throw new Error("Unsupported existing Egern proxy chain");
@@ -3294,7 +3397,11 @@ var EgernProfileBundle = (() => {
     if (onDiagnostics !== void 0 && typeof onDiagnostics !== "function") {
       throw new Error("onDiagnostics must be a function");
     }
-    const filtered = filterNodesForClient(nodes, CLIENT.egern);
+    const adapted = adaptEgernSubStoreNodes(nodes);
+    const filtered = filterNodesForClient(adapted.nodes, CLIENT.egern);
+    for (const [reason, count] of Object.entries(adapted.excluded)) {
+      increment(filtered.diagnostics.excluded, reason, count);
+    }
     const compatible = [];
     for (const node of filtered.nodes) {
       if (isGeneratedChain(node) && clientChain === "off") {
