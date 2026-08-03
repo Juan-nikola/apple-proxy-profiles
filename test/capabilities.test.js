@@ -331,6 +331,116 @@ test("rejects Anywhere AnyTLS warm-pool values that its runtime would clamp", ()
   }
 });
 
+test("validates every admitted Anywhere Sudoku option without silent defaults", () => {
+  const common = {
+    name: "Anywhere Sudoku",
+    type: "sudoku",
+    server: "sudoku.example.invalid",
+    port: 443,
+    key: "TEST_ONLY_SUDOKU_KEY",
+  };
+  assert.deepEqual(evaluateNodeForClient({
+    ...common,
+    "aead-method": "aes-128-gcm",
+    "table-type": "up_ascii_down_entropy",
+    "custom-tables": ["table-one", "table-two"],
+    "padding-min": 5,
+    "padding-max": 20,
+    "enable-pure-downlink": false,
+    multiplex: "auto",
+    httpmask: {
+      disable: false,
+      mode: "ws",
+      tls: true,
+      host: "mask.example.invalid",
+      "path-root": "edge_path",
+    },
+  }, CLIENT.anywhere), { supported: true, reason: null });
+
+  for (const mutation of [
+    { "aead-method": "invalid" },
+    { "table-type": "invalid" },
+    { "padding-min": -1 },
+    { "padding-min": 30, "padding-max": 20 },
+    { multiplex: "invalid" },
+    { "custom-tables": ["duplicate", "duplicate"] },
+    { "custom-tables": ["valid"], "custom-table": "ignored" },
+    { httpmask: { mode: "invalid" } },
+    { httpmask: { mode: "ws", "path-root": "unsafe/path" } },
+  ]) {
+    assert.deepEqual(
+      evaluateNodeForClient({ ...common, ...mutation }, CLIENT.anywhere),
+      { supported: false, reason: "unsupported-anywhere-sudoku-shape" },
+    );
+  }
+});
+
+test("rejects Anywhere Hysteria2 TLS fields its parser ignores", () => {
+  const common = {
+    name: "Anywhere Hysteria2",
+    type: "hysteria2",
+    server: "hysteria.example.invalid",
+    port: 443,
+    password: "TEST_ONLY_HYSTERIA_PASSWORD",
+  };
+  for (const mutation of [
+    { tls: false },
+    { security: "none" },
+    { security: "reality" },
+    { "client-fingerprint": "chrome" },
+    { "ech-opts": { enable: true } },
+  ]) {
+    assert.deepEqual(
+      evaluateNodeForClient({ ...common, ...mutation }, CLIENT.anywhere),
+      { supported: false, reason: "unsupported-anywhere-hysteria2-shape" },
+    );
+  }
+});
+
+test("rejects ambiguous Anywhere TLS flags before mapping", () => {
+  const common = { name: "Anywhere", server: "tls.example.invalid", port: 443 };
+  const cases = [
+    { ...common, type: "vless", uuid: "00000000-0000-4000-8000-000000000001", tls: "true" },
+    { ...common, type: "vless", uuid: "00000000-0000-4000-8000-000000000001", tls: true, security: "none" },
+    { ...common, type: "trojan", password: "TEST_ONLY", security: "reality" },
+    { ...common, type: "anytls", password: "TEST_ONLY", security: "reality" },
+    { ...common, type: "ss", cipher: "aes-128-gcm", password: "TEST_ONLY", security: "reality" },
+    { ...common, type: "socks5", security: "reality" },
+    { ...common, type: "sudoku", key: "TEST_ONLY", tls: true },
+  ];
+  for (const node of cases) assert.equal(evaluateNodeForClient(node, CLIENT.anywhere).supported, false);
+});
+
+test("preserves only effective Anywhere ECH and Sudoku values", () => {
+  const common = { name: "Anywhere", server: "effective.example.invalid", port: 443 };
+  const vless = { ...common, type: "vless", uuid: "00000000-0000-4000-8000-000000000001", tls: true };
+  assert.deepEqual(
+    evaluateNodeForClient({ ...vless, "client-fingerprint": "non_browser", "ech-opts": { enable: true } }, CLIENT.anywhere),
+    { supported: true, reason: null },
+  );
+  for (const options of [
+    { config: "TEST_ONLY_ECH_CONFIG" },
+    { enable: false, config: "TEST_ONLY_ECH_CONFIG" },
+    { enable: true, "query-server-name": "ignored.example.invalid" },
+  ]) {
+    assert.deepEqual(
+      evaluateNodeForClient({ ...vless, "ech-opts": options }, CLIENT.anywhere),
+      { supported: false, reason: "unsupported-anywhere-tls-shape" },
+    );
+  }
+  assert.deepEqual(
+    evaluateNodeForClient({ ...common, type: "sudoku", key: "TEST_ONLY", "padding-max": 3 }, CLIENT.anywhere),
+    { supported: false, reason: "unsupported-anywhere-sudoku-shape" },
+  );
+  const reality = { "public-key": "A".repeat(43), "short-id": "0123abcd" };
+  for (const ignored of [{ alpn: ["h2"] }, { "ech-opts": { enable: true } }]) {
+    assert.deepEqual(
+      evaluateNodeForClient({ ...vless, "reality-opts": reality, ...ignored }, CLIENT.anywhere),
+      { supported: false, reason: "unsupported-anywhere-reality" },
+    );
+  }
+});
+
 test("normalizes valid nodes before applying AnyTLS and WireGuard client capabilities", async () => {
   const { normalizeNodes } = await import("../shared/nodes/normalize-nodes.js");
   const common = { server: "integration.example.invalid", port: 443 };

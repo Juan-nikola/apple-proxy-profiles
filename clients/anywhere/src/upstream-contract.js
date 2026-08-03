@@ -12,6 +12,11 @@ export const ANYWHERE_SUBSCRIPTION_CONTRACT = Object.freeze({
   ]),
   vlessNetworks: Object.freeze(["tcp", "ws"]),
   trojanNetworks: Object.freeze(["tcp"]),
+  hysteria2Obfuscation: Object.freeze(["salamander", "gecko"]),
+  tlsFingerprints: Object.freeze([
+    "chrome_133", "chrome_120", "chrome_106", "firefox_148", "firefox_120",
+    "safari_26", "edge_106", "non_browser",
+  ]),
   shadowsocksMethods: Object.freeze([
     "aes-128-gcm",
     "aes-256-gcm",
@@ -23,6 +28,15 @@ export const ANYWHERE_SUBSCRIPTION_CONTRACT = Object.freeze({
     "2022-blake3-aes-256-gcm",
     "2022-blake3-chacha20-poly1305",
   ]),
+  sudoku: Object.freeze({
+    aeadMethods: Object.freeze(["chacha20-poly1305", "aes-128-gcm", "none"]),
+    asciiModes: Object.freeze([
+      "prefer_entropy", "prefer_ascii", "up_ascii_down_entropy", "up_entropy_down_ascii",
+    ]),
+    multiplex: Object.freeze(["off", "auto", "on"]),
+    httpMaskModes: Object.freeze(["legacy", "stream", "poll", "auto", "ws"]),
+    paddingRange: Object.freeze([0, 100]),
+  }),
   remoteFullProfile: false,
   remoteChains: false,
   mitmRequired: false,

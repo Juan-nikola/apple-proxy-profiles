@@ -1,0 +1,265 @@
+import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
+import test from "node:test";
+
+import { normalizeNodes } from "../../../shared/nodes/normalize-nodes.js";
+import { toAnywhereProxy } from "../src/render-node.js";
+import {
+  prepareAnywhereInventory,
+  renderAnywhereSubscription,
+} from "../src/render-subscription.js";
+import { assertAnywhereSubscription } from "../src/validate-subscription.js";
+
+const BASE = Object.freeze({
+  name: "Anywhere Node",
+  server: "node.example.invalid",
+  port: 443,
+});
+
+test("maps exact representative Anywhere Clash proxy objects", () => {
+  assert.deepEqual(toAnywhereProxy({
+    ...BASE,
+    type: "vless",
+    uuid: "00000000-0000-4000-8000-000000000001",
+    network: "ws",
+    tls: true,
+    servername: "front.example.invalid",
+    alpn: ["h2", "http/1.1"],
+    "client-fingerprint": "chrome",
+    "ech-opts": { enable: true, config: "TEST_ONLY_ECH_CONFIG" },
+    "ws-opts": {
+      path: "/edge",
+      headers: { Host: "front.example.invalid" },
+      "v2ray-http-upgrade": false,
+      "max-early-data": 2048,
+      "early-data-header-name": "Sec-WebSocket-Protocol",
+    },
+  }), {
+    name: "Anywhere Node",
+    type: "vless",
+    server: "node.example.invalid",
+    port: 443,
+    uuid: "00000000-0000-4000-8000-000000000001",
+    network: "ws",
+    encryption: "none",
+    tls: true,
+    servername: "front.example.invalid",
+    alpn: ["h2", "http/1.1"],
+    "client-fingerprint": "chrome",
+    "ech-opts": { enable: true, config: "TEST_ONLY_ECH_CONFIG" },
+    "ws-opts": {
+      path: "/edge",
+      headers: { Host: "front.example.invalid" },
+      "v2ray-http-upgrade": false,
+      "max-early-data": 2048,
+      "early-data-header-name": "Sec-WebSocket-Protocol",
+    },
+  });
+
+  assert.deepEqual(toAnywhereProxy({
+    ...BASE,
+    type: "hy2",
+    password: "TEST_ONLY_HYSTERIA_PASSWORD",
+    network: "quic",
+    sni: "hysteria.example.invalid",
+    up: "30 Mbps",
+    down: 100,
+    obfs: "gecko",
+    obfs_password: "TEST_ONLY_GECKO_PASSWORD",
+    obfs_min_packet_size: 512,
+    obfs_max_packet_size: 1200,
+  }), {
+    name: "Anywhere Node",
+    type: "hysteria2",
+    server: "node.example.invalid",
+    port: 443,
+    password: "TEST_ONLY_HYSTERIA_PASSWORD",
+    sni: "hysteria.example.invalid",
+    up: "30 Mbps",
+    down: 100,
+    obfs: "gecko",
+    "obfs-password": "TEST_ONLY_GECKO_PASSWORD",
+    "obfs-min-packet-size": 512,
+    "obfs-max-packet-size": 1200,
+  });
+
+  assert.deepEqual(toAnywhereProxy({
+    ...BASE,
+    type: "trojan",
+    password: "TEST_ONLY_TROJAN_PASSWORD",
+    sni: "trojan.example.invalid",
+  }), {
+    ...BASE,
+    type: "trojan",
+    password: "TEST_ONLY_TROJAN_PASSWORD",
+    network: "tcp",
+    tls: true,
+    servername: "trojan.example.invalid",
+  });
+
+  assert.deepEqual(toAnywhereProxy({
+    ...BASE,
+    type: "anytls",
+    password: "TEST_ONLY_ANYTLS_PASSWORD",
+    "idle-session-check-interval": 30,
+    "idle-session-timeout": 60,
+    "min-idle-session": 1,
+  }), {
+    ...BASE,
+    type: "anytls",
+    password: "TEST_ONLY_ANYTLS_PASSWORD",
+    network: "tcp",
+    tls: true,
+    "idle-session-check-interval": 30,
+    "idle-session-timeout": 60,
+    "min-idle-session": 1,
+  });
+
+  assert.deepEqual(toAnywhereProxy({
+    ...BASE,
+    type: "shadowsocks",
+    cipher: "2022-blake3-aes-256-gcm",
+    password: "TEST_ONLY_SS_PASSWORD",
+  }), {
+    ...BASE,
+    type: "ss",
+    cipher: "2022-blake3-aes-256-gcm",
+    password: "TEST_ONLY_SS_PASSWORD",
+    network: "tcp",
+  });
+
+  assert.deepEqual(toAnywhereProxy({
+    ...BASE,
+    type: "socks5",
+    username: "TEST_ONLY_SOCKS_USER",
+    password: "TEST_ONLY_SOCKS_PASSWORD",
+  }), {
+    ...BASE,
+    type: "socks5",
+    username: "TEST_ONLY_SOCKS_USER",
+    password: "TEST_ONLY_SOCKS_PASSWORD",
+  });
+});
+
+test("canonicalizes every verified Sudoku alias without losing semantics", () => {
+  assert.deepEqual(toAnywhereProxy({
+    ...BASE,
+    type: "sudoku",
+    key: "TEST_ONLY_SUDOKU_KEY",
+    aead: "aes-128-gcm",
+    ascii: "ascii",
+    custom_tables: ["one", "two"],
+    padding_min: 5,
+    padding_max: 25,
+    enable_pure_downlink: false,
+    multiplex: "on",
+    httpmask: { disable: false, mode: "ws", tls: true, host: "mask.example.invalid", path_root: "edge" },
+  }), {
+    ...BASE,
+    type: "sudoku",
+    key: "TEST_ONLY_SUDOKU_KEY",
+    "aead-method": "aes-128-gcm",
+    "table-type": "prefer_ascii",
+    "custom-tables": ["one", "two"],
+    "padding-min": 5,
+    "padding-max": 25,
+    "enable-pure-downlink": false,
+    multiplex: "on",
+    httpmask: { disable: false, mode: "ws", tls: true, host: "mask.example.invalid", "path-root": "edge" },
+  });
+});
+
+test("filters a mixed inventory with count-only diagnostics and deterministic YAML", () => {
+  const nodes = [
+    { ...BASE, name: "Good", type: "ss", cipher: "aes-128-gcm", password: "TEST_ONLY_GOOD_PASSWORD" },
+    { ...BASE, name: "Bad protocol", type: "snell", psk: "TEST_ONLY_BAD_PSK", version: 4 },
+    { ...BASE, name: "Bad transport", type: "trojan", password: "TEST_ONLY_BAD_PASSWORD", network: "grpc" },
+  ];
+  let diagnostics;
+  const prepared = prepareAnywhereInventory(nodes, { onDiagnostics: (value) => { diagnostics = value; } });
+  assert.deepEqual(diagnostics, {
+    accepted: 1,
+    excluded: {
+      "unsupported-protocol": 1,
+      "unsupported-anywhere-trojan-shape": 1,
+    },
+  });
+  const yaml = renderAnywhereSubscription(nodes);
+  assert.equal(yaml, renderAnywhereSubscription(structuredClone(nodes)));
+  assert.equal(yaml, 'proxies:\n  - name: "Good"\n    type: "ss"\n    server: "node.example.invalid"\n    port: 443\n    cipher: "aes-128-gcm"\n    password: "TEST_ONLY_GOOD_PASSWORD"\n    network: "tcp"\n');
+  assert.deepEqual(assertAnywhereSubscription(yaml, prepared.proxies), { proxyCount: 1 });
+  assert.equal(JSON.stringify(diagnostics).includes("Good"), false);
+  assert.equal(JSON.stringify(diagnostics).includes("example.invalid"), false);
+  assert.equal(JSON.stringify(diagnostics).includes("TEST_ONLY"), false);
+});
+
+test("independently round-trips the actual YAML and exposes only proxies at root", (t) => {
+  const yaml = renderAnywhereSubscription([
+    { ...BASE, type: "ss", cipher: "aes-128-gcm", password: "TEST_ONLY_ROUNDTRIP_PASSWORD" },
+  ]);
+  const ruby = spawnSync(
+    "ruby",
+    ["-e", "require 'json'; require 'yaml'; puts JSON.generate(YAML.safe_load(STDIN.read, aliases: false))"],
+    { input: yaml, encoding: "utf8" },
+  );
+  if (ruby.error?.code === "ENOENT") {
+    t.skip("Ruby/Psych independent YAML parser is unavailable");
+    return;
+  }
+  assert.equal(ruby.status, 0, ruby.stderr);
+  const parsed = JSON.parse(ruby.stdout);
+  assert.deepEqual(Object.keys(parsed), ["proxies"]);
+  assert.equal(parsed.proxies.length, 1);
+  assert.equal(parsed.proxies[0].type, "ss");
+});
+
+test("fails closed for duplicate names, empty compatibility, and mutated YAML", () => {
+  const good = { ...BASE, type: "ss", cipher: "aes-128-gcm", password: "TEST_ONLY_PASSWORD" };
+  assert.throws(() => renderAnywhereSubscription([good, { ...good, server: "other.example.invalid" }]), /Duplicate Anywhere proxy name/);
+  assert.throws(() => renderAnywhereSubscription([{ ...BASE, type: "snell" }]), /No compatible Anywhere nodes/);
+  const yaml = renderAnywhereSubscription([good]);
+  const proxies = prepareAnywhereInventory([good]).proxies;
+  for (const mutation of [
+    `${yaml}dns: {}\n`,
+    yaml.replace("proxies:", "proxies: &nodes"),
+    yaml.replace('type: "ss"', 'type: "trojan"'),
+    yaml.replace('password: "TEST_ONLY_PASSWORD"', 'password: "TEST_ONLY_CHANGED_PASSWORD"'),
+  ]) {
+    assert.throws(() => assertAnywhereSubscription(mutation, proxies), /Invalid Anywhere subscription/);
+  }
+});
+
+test("renders the shared normalized inventory and contains hostile failures", () => {
+  const normalized = normalizeNodes([{
+    ...BASE,
+    name: "机场 香港",
+    type: "ss",
+    cipher: "aes-128-gcm",
+    password: "TEST_ONLY_NORMALIZED_PASSWORD",
+    _subDisplayName: "机场订阅",
+  }]);
+  const yaml = renderAnywhereSubscription(normalized.nodes);
+  assert.match(yaml, /^proxies:\n/u);
+  assert.match(yaml, /type: "ss"/u);
+
+  const hostileMarker = "SHOULD_NOT_ESCAPE_ANYWHERE_ERRORS";
+  const hostile = {};
+  Object.defineProperty(hostile, "type", { get() { throw new Error(hostileMarker); } });
+  assert.throws(
+    () => renderAnywhereSubscription([hostile]),
+    (error) => error.message === "Invalid Anywhere node inventory" && !error.message.includes(hostileMarker),
+  );
+  assert.throws(
+    () => toAnywhereProxy(hostile),
+    (error) => error.message === "Unsupported Anywhere proxy node" && !error.message.includes(hostileMarker),
+  );
+
+  const hostileOptions = {};
+  Object.defineProperty(hostileOptions, "onDiagnostics", { get() { throw new Error(hostileMarker); } });
+  for (const options of [null, [], { unknown: true }, hostileOptions]) {
+    assert.throws(
+      () => renderAnywhereSubscription(normalized.nodes, options),
+      (error) => error.message === "Invalid Anywhere render options" && !error.message.includes(hostileMarker),
+    );
+  }
+});

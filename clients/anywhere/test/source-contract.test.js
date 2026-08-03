@@ -23,6 +23,11 @@ test("pins the audited Clash subscription surface without widening it to app int
   ]);
   assert.deepEqual(ANYWHERE_SUBSCRIPTION_CONTRACT.vlessNetworks, ["tcp", "ws"]);
   assert.deepEqual(ANYWHERE_SUBSCRIPTION_CONTRACT.trojanNetworks, ["tcp"]);
+  assert.deepEqual(ANYWHERE_SUBSCRIPTION_CONTRACT.hysteria2Obfuscation, ["salamander", "gecko"]);
+  assert.deepEqual(ANYWHERE_SUBSCRIPTION_CONTRACT.tlsFingerprints, [
+    "chrome_133", "chrome_120", "chrome_106", "firefox_148", "firefox_120",
+    "safari_26", "edge_106", "non_browser",
+  ]);
   assert.deepEqual(ANYWHERE_SUBSCRIPTION_CONTRACT.shadowsocksMethods, [
     "aes-128-gcm",
     "aes-256-gcm",
@@ -34,6 +39,13 @@ test("pins the audited Clash subscription surface without widening it to app int
     "2022-blake3-aes-256-gcm",
     "2022-blake3-chacha20-poly1305",
   ]);
+  assert.deepEqual(ANYWHERE_SUBSCRIPTION_CONTRACT.sudoku, {
+    aeadMethods: ["chacha20-poly1305", "aes-128-gcm", "none"],
+    asciiModes: ["prefer_entropy", "prefer_ascii", "up_ascii_down_entropy", "up_entropy_down_ascii"],
+    multiplex: ["off", "auto", "on"],
+    httpMaskModes: ["legacy", "stream", "poll", "auto", "ws"],
+    paddingRange: [0, 100],
+  });
   assert.equal(ANYWHERE_SUBSCRIPTION_CONTRACT.remoteFullProfile, false);
   assert.equal(ANYWHERE_SUBSCRIPTION_CONTRACT.remoteChains, false);
   assert.equal(ANYWHERE_SUBSCRIPTION_CONTRACT.mitmRequired, false);

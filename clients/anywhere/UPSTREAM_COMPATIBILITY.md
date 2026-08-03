@@ -32,3 +32,16 @@ The pinned machine-readable facts live in
 [`src/upstream-contract.js`](src/upstream-contract.js). Update that contract
 only after auditing a newer official commit and rerunning the compatibility,
 determinism, privacy, and physical-device canary gates.
+
+## Generated subscription contract
+
+The renderer emits one deterministic Clash YAML document with exactly one
+root key, `proxies`. Protocol aliases are canonicalized to `ss` and
+`hysteria2`; every emitted field has a verified consumer in the pinned parser.
+Duplicate names, an empty compatible inventory, unsupported field fallbacks,
+ambiguous TLS flags, existing chains, and non-canonical output fail closed.
+
+The generated document contains private endpoints and credentials by design.
+It must stay in the user's private Sub-Store path and must never be committed,
+published through GitHub Pages, pasted into an issue, or used as a public test
+fixture. Diagnostics contain only aggregate accepted/excluded counts.

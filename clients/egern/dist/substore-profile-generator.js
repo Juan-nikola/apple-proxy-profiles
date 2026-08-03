@@ -1788,6 +1788,17 @@ var EgernProfileBundle = (() => {
     "2022-blake3-chacha20-poly1305"
   ]);
   var ANYWHERE_HYSTERIA_OBFS = /* @__PURE__ */ new Set(["salamander", "gecko"]);
+  var ANYWHERE_SUDOKU_AEAD = /* @__PURE__ */ new Set(["chacha20-poly1305", "aes-128-gcm", "none"]);
+  var ANYWHERE_SUDOKU_ASCII = /* @__PURE__ */ new Set([
+    "",
+    "entropy",
+    "prefer_entropy",
+    "ascii",
+    "prefer_ascii",
+    "up_ascii_down_entropy",
+    "up_entropy_down_ascii"
+  ]);
+  var ANYWHERE_SUDOKU_HTTP_MASK_MODES = /* @__PURE__ */ new Set(["legacy", "stream", "poll", "auto", "ws"]);
   var ANYWHERE_FINGERPRINTS = /* @__PURE__ */ new Set([
     "chrome",
     "firefox",
@@ -1801,7 +1812,8 @@ var EgernProfileBundle = (() => {
     "firefox_148",
     "firefox_120",
     "safari_26",
-    "edge_106"
+    "edge_106",
+    "non_browser"
   ]);
   var EGERN_SHADOWSOCKS_METHODS = /* @__PURE__ */ new Set([
     "2022-blake3-aes-128-gcm",
@@ -2454,7 +2466,7 @@ var EgernProfileBundle = (() => {
   function validAnywhereEch(node) {
     if (!hasOption(node, "ech-opts")) return true;
     const options = node["ech-opts"];
-    return isPlainObject(options) && Object.keys(options).every((key) => ["enable", "config", "query-server-name"].includes(key)) && (!hasOption(options, "enable") || typeof options.enable === "boolean") && (!hasOption(options, "config") || isNonblankString(options.config)) && (!hasOption(options, "query-server-name") || isNonblankString(options["query-server-name"]));
+    return isPlainObject(options) && Object.keys(options).every((key) => ["enable", "config"].includes(key)) && (!hasOption(options, "enable") || typeof options.enable === "boolean") && (!hasOption(options, "config") || isNonblankString(options.config)) && (!hasOption(options, "config") || options.enable === true);
   }
   function anywhereTlsShapeReason(node) {
     const weakening = anywhereTlsWeakeningReason(node);
@@ -2510,8 +2522,45 @@ var EgernProfileBundle = (() => {
     if (!hasOption(value, "headers")) return true;
     return isPlainObject(value.headers) && Object.entries(value.headers).every(([key, field]) => isNonblankString(key) && isNonblankString(field));
   }
+  function validAnywhereSudokuAliases(node, keys, predicate) {
+    if (conflictingAliases(node, keys)) return false;
+    return keys.every((key) => !hasOption(node, key) || predicate(node[key]));
+  }
+  function validAnywhereSudokuTables(node) {
+    const pluralKeys = ["custom-tables", "custom_tables", "customTables"];
+    const legacyKeys = ["custom-table", "custom_table", "table"];
+    const pluralPresent = pluralKeys.filter((key) => hasOption(node, key));
+    const legacyPresent = legacyKeys.filter((key) => hasOption(node, key));
+    if (pluralPresent.length > 1 || legacyPresent.length > 1 || pluralPresent.length > 0 && legacyPresent.length > 0) return false;
+    if (pluralPresent.length > 0) {
+      const tables = node[pluralPresent[0]];
+      if (!Array.isArray(tables) || tables.length === 0 || !tables.every((value) => isNonblankString(value))) return false;
+      return new Set(tables).size === tables.length;
+    }
+    return legacyPresent.length === 0 || isNonblankString(node[legacyPresent[0]]);
+  }
+  function validAnywhereSudokuHttpMask(value) {
+    if (!isPlainObject(value) || Object.keys(value).some((key) => !["disable", "mode", "tls", "host", "path-root", "path_root"].includes(key)) || !validAnywhereSudokuAliases(value, ["path-root", "path_root"], (field) => typeof field === "string") || hasOption(value, "disable") && typeof value.disable !== "boolean" || hasOption(value, "tls") && typeof value.tls !== "boolean" || hasOption(value, "mode") && (!isNonblankString(value.mode) || !ANYWHERE_SUDOKU_HTTP_MASK_MODES.has(value.mode)) || hasOption(value, "host") && typeof value.host === "string" && value.host.trim() !== value.host || hasOption(value, "host") && typeof value.host !== "string") return false;
+    const pathRoot = firstAliasValue(value, ["path-root", "path_root"]);
+    return pathRoot === void 0 || pathRoot === "" || /^[A-Za-z0-9_-]+$/u.test(pathRoot);
+  }
+  function validAnywhereSudoku(node) {
+    if (!validAnywhereSudokuAliases(node, ["aead-method", "aead"], (value) => isNonblankString(value) && ANYWHERE_SUDOKU_AEAD.has(value))) return false;
+    if (!validAnywhereSudokuAliases(node, ["table-type", "ascii"], (value) => typeof value === "string" && value.trim() === value && ANYWHERE_SUDOKU_ASCII.has(value.toLowerCase()))) return false;
+    if (!validAnywhereSudokuAliases(node, ["padding-min", "padding_min"], (value) => Number.isInteger(value) && value >= 0 && value <= 100)) return false;
+    if (!validAnywhereSudokuAliases(node, ["padding-max", "padding_max"], (value) => Number.isInteger(value) && value >= 0 && value <= 100)) return false;
+    if (!validAnywhereSudokuAliases(node, ["enable-pure-downlink", "enable_pure_downlink"], (value) => typeof value === "boolean")) return false;
+    const paddingMin = firstAliasValue(node, ["padding-min", "padding_min"]);
+    const paddingMax = firstAliasValue(node, ["padding-max", "padding_max"]);
+    if (paddingMax !== void 0 && paddingMax < (paddingMin ?? 5)) return false;
+    if (hasOption(node, "multiplex") && (!isNonblankString(node.multiplex) || !(/* @__PURE__ */ new Set(["off", "auto", "on"])).has(node.multiplex.toLowerCase()))) return false;
+    return validAnywhereSudokuTables(node) && (!hasOption(node, "httpmask") || validAnywhereSudokuHttpMask(node.httpmask));
+  }
   function anywhereCommonReason(node) {
     if (!isPlainObject(node) || !isNonblankString(node.name) || !isNonblankString(node.server) || !isValidPort(node.port)) return "invalid-anywhere-node-shape";
+    if (hasOption(node, "tls") && typeof node.tls !== "boolean" || hasOption(node, "security") && !isNonblankString(node.security)) {
+      return "invalid-anywhere-node-shape";
+    }
     if (hasAnyChain(node)) return "unsupported-existing-chain";
     return anywhereTlsWeakeningReason(node);
   }
@@ -2524,7 +2573,7 @@ var EgernProfileBundle = (() => {
     if (protocol2 === "ss" || protocol2 === "shadowsocks") {
       if (!isNonblankOpaqueString(node.password) || !isNonblankString(node.cipher)) return "invalid-anywhere-node-shape";
       if (!ANYWHERE_SHADOWSOCKS_METHODS.has(node.cipher.toLowerCase())) return "unsupported-anywhere-shadowsocks-method";
-      if (network !== "tcp" || hasShadowsocksPlugin(node) || node.tls === true || node.security === "tls" || transportFields.some((key) => hasOption(node, key))) {
+      if (network !== "tcp" || hasShadowsocksPlugin(node) || node.tls === true || hasOption(node, "security") && node.security !== "none" || transportFields.some((key) => hasOption(node, key))) {
         return "unsupported-anywhere-shadowsocks-shape";
       }
       return null;
@@ -2547,11 +2596,11 @@ var EgernProfileBundle = (() => {
       if (tlsReason) return tlsReason;
       const reality = node["reality-opts"];
       if (reality !== void 0) {
-        if (!isPlainObject(reality) || Object.keys(reality).some((key) => !["public-key", "short-id"].includes(key)) || !isAnywhereRealityPublicKey(reality["public-key"]) || hasOption(reality, "short-id") && !/^(?:[0-9A-Fa-f]{2}){1,8}$/u.test(reality["short-id"])) {
+        if (!isPlainObject(reality) || Object.keys(reality).some((key) => !["public-key", "short-id"].includes(key)) || !isAnywhereRealityPublicKey(reality["public-key"]) || hasOption(reality, "short-id") && !/^(?:[0-9A-Fa-f]{2}){1,8}$/u.test(reality["short-id"]) || hasOption(node, "alpn") || hasOption(node, "ech-opts")) {
           return "unsupported-anywhere-reality";
         }
       }
-      if (node.security === "reality" && reality === void 0 || node.security === "tls" && node.tls === false || node.security === "reality" && node.tls === false) {
+      if (node.security === "reality" && reality === void 0 || node.security === "none" && node.tls === true || node.security === "tls" && node.tls === false || node.security === "reality" && node.tls === false) {
         return "unsupported-anywhere-tls-shape";
       }
       return null;
@@ -2561,7 +2610,7 @@ var EgernProfileBundle = (() => {
       const tlsReason = anywhereTlsShapeReason(node);
       if (tlsReason) return tlsReason;
       const ssOptions = node["ss-opts"];
-      if (network !== "tcp" || node.tls === false || node.security === "none" || hasOption(node, "reality-opts") || transportFields.some((key) => hasOption(node, key)) || hasOption(node, "ss-opts") && (!isPlainObject(ssOptions) || ssOptions.enabled === true)) {
+      if (network !== "tcp" || node.tls === false || hasOption(node, "security") && node.security !== "tls" || hasOption(node, "reality-opts") || transportFields.some((key) => hasOption(node, key)) || hasOption(node, "ss-opts") && (!isPlainObject(ssOptions) || ssOptions.enabled === true)) {
         return "unsupported-anywhere-trojan-shape";
       }
       return null;
@@ -2570,7 +2619,7 @@ var EgernProfileBundle = (() => {
       if (!isNonblankOpaqueString(node.password)) return "invalid-anywhere-node-shape";
       const tlsReason = anywhereTlsShapeReason(node);
       if (tlsReason) return tlsReason;
-      if (network !== "tcp" || node.tls === false || node.security === "none" || hasOption(node, "reality-opts") || transportFields.some((key) => hasOption(node, key)) || ["idle-session-check-interval", "idle-session-timeout"].some((key) => hasOption(node, key) && (!Number.isInteger(node[key]) || node[key] < 30)) || hasOption(node, "min-idle-session") && (!Number.isInteger(node["min-idle-session"]) || node["min-idle-session"] < 0)) {
+      if (network !== "tcp" || node.tls === false || hasOption(node, "security") && node.security !== "tls" || hasOption(node, "reality-opts") || transportFields.some((key) => hasOption(node, key)) || ["idle-session-check-interval", "idle-session-timeout"].some((key) => hasOption(node, key) && (!Number.isInteger(node[key]) || node[key] < 30)) || hasOption(node, "min-idle-session") && (!Number.isInteger(node["min-idle-session"]) || node["min-idle-session"] < 0)) {
         return "unsupported-anywhere-anytls-shape";
       }
       return null;
@@ -2579,7 +2628,7 @@ var EgernProfileBundle = (() => {
       if (!isNonblankOpaqueString(node.password)) return "invalid-anywhere-node-shape";
       const hysteriaNetwork = hasOption(node, "network") ? network : "quic";
       if (!["udp", "quic"].includes(hysteriaNetwork)) return "unsupported-anywhere-hysteria2-shape";
-      if (hasOption(node, "reality-opts") || hasOption(node, "alpn") || hasOption(node, "bandwidth") || ["port-hopping", "port_hopping", "ports", "port-hopping-interval", "port_hopping_interval", "hop-interval"].some((key) => hasOption(node, key))) return "unsupported-anywhere-hysteria2-shape";
+      if (node.tls === false || hasOption(node, "security") && node.security !== "tls" || hasOption(node, "reality-opts") || hasOption(node, "alpn") || hasOption(node, "bandwidth") || hasOption(node, "client-fingerprint") || hasOption(node, "ech-opts") || ["port-hopping", "port_hopping", "ports", "port-hopping-interval", "port_hopping_interval", "hop-interval"].some((key) => hasOption(node, key))) return "unsupported-anywhere-hysteria2-shape";
       const minAliases = ["obfs-min-packet-size", "obfs_min_packet_size"];
       const maxAliases = ["obfs-max-packet-size", "obfs_max_packet_size"];
       const obfsMin = firstAliasValue(node, minAliases);
@@ -2598,14 +2647,16 @@ var EgernProfileBundle = (() => {
       return null;
     }
     if (protocol2 === "socks5") {
-      if (network !== "tcp" || node.tls === true || node.security === "tls" || node.security === "reality") {
+      if (network !== "tcp" || node.tls === true || hasOption(node, "security") && node.security !== "none") {
         return "unsupported-anywhere-socks5-tls";
       }
       if (!validOptionalAuthentication(node) || hasOption(node, "username") !== hasOption(node, "password")) return "invalid-anywhere-node-shape";
       return null;
     }
     if (protocol2 === "sudoku") {
-      if (!isNonblankOpaqueString(node.key) || network !== "tcp") return "invalid-anywhere-node-shape";
+      if (!isNonblankString(node.key) || network !== "tcp") return "invalid-anywhere-node-shape";
+      if (["tls", "security", "sni", "servername", "alpn", "client-fingerprint", "ech-opts", "reality-opts"].some((key) => hasOption(node, key))) return "unsupported-anywhere-sudoku-shape";
+      if (!validAnywhereSudoku(node)) return "unsupported-anywhere-sudoku-shape";
       return null;
     }
     return "unsupported-protocol";
@@ -2632,7 +2683,7 @@ var EgernProfileBundle = (() => {
     return { nodes: supportedNodes, diagnostics };
   }
 
-  // render-yaml.js
+  // ../../../shared/serialization/render-yaml.js
   var INDENT_WIDTH = 2;
   var PLAIN_KEY = /^[A-Za-z_][A-Za-z0-9_-]*$/;
   var YAML_BOOLEAN_OR_NULL = /^(?:false|null|true)$/i;
