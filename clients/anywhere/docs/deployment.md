@@ -1,6 +1,6 @@
 # Anywhere 部署指南
 
-先读 [Sub-Store 两层部署总指南](../../../docs/substore-two-layer-setup.md)。Anywhere Node Generator 必须先在脚本管理中保存为一条共享记录，再由 File `anywhere-nodes` 引用；File 只保存参数，不直接粘贴第二份 JavaScript。
+先读 [Sub-Store 外置 JS + 任务引用总指南](../../../docs/substore-two-layer-setup.md)。File `anywhere-nodes` 选择链接模式，直接引用 Anywhere Node Generator 的规范 Pages URL，并在自己的可视化参数编辑器中保存参数；不要粘贴 JavaScript 正文。
 
 ## 0. 先记录，不删除
 
@@ -8,13 +8,13 @@
 
 ## 1. 创建私密节点任务
 
-先在 Sub-Store 的脚本管理/脚本库中新建共享记录 `anywhere-node-generator.js`，规范 Pages URL 为：
+Anywhere Node Generator 的规范 Pages URL 为：
 
 ```text
 https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/scripts/anywhere-node-generator.js
 ```
 
-保存共享脚本后，再创建 File 任务 `anywhere-nodes`，选择已保存的 `anywhere-node-generator.js`，不要在 File 中再次粘贴 JavaScript。File 参数逐字为：
+创建 File 任务 `anywhere-nodes`，按 File/文件 → Script/脚本操作 → 链接模式 → 粘贴上述 URL → 展开参数的顺序操作。不要粘贴 JavaScript 正文；推荐用可视化参数编辑器逐项添加下面参数：
 
 新任务统一选择 `anywhere-node-generator.js`。旧 `substore-node-generator.js` Pages URL 继续保留为字节一致的兼容别名；既有任务无需仅为改名替换 URL，也不要同时添加新旧两个别名。
 
@@ -22,7 +22,9 @@ https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/scripts/anyw
 output=nodes&type=collection&name=shadowrocket-sources&clientChain=off
 ```
 
-以后更新 Anywhere Node Generator 只更新脚本管理中的共享记录；`anywhere-nodes` 的任务名、私密输出 URL和上述参数保持不动。更新共享脚本后先重新预览，再在一台 canary 设备手动 Refresh。
+旧版只有单行链接时使用 `JS_URL#output=nodes&type=collection&name=shadowrocket-sources&clientChain=off`，不能使用 `?` 连接脚本参数。以后更新 Anywhere Node Generator 不复制脚本正文；`anywhere-nodes` 的 JS URL、任务名、私密输出 URL和上述参数保持不动。发布后先重新预览，再在一台 canary 设备手动 Refresh。
+
+Anywhere 没有与 Shadowrocket/Egern 等价的完整 Profile File，不要创建 `anywhere-profile-generator.js`。这个 File 只完成私密节点层；规则、绑定和设备设置必须继续完成第 2—5 节。
 
 预览应显示至少一个 accepted 节点，诊断只有计数。私密输出 URL 不得进入仓库、Issue、截图或共享终端记录。可以手动粘贴私密 HTTPS URL，也可在本地构造 `anywhere://add-proxy?link=<百分号编码私密URL>`；不要把真实 deep link 写进文档。
 

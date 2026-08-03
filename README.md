@@ -4,7 +4,17 @@
 
 > 当前状态：三个客户端的生成器与确定性示例已通过本地自动验证，GitHub Pages 已上线；真实设备 canary 尚未完成。没有设备验收记录时，不应把本项目描述为已完成真机验证。
 
-首次配置 Sub-Store 请先看 **[两层部署总指南](docs/substore-two-layer-setup.md)**：先建立 5 条共享脚本记录，再让组合订阅 Operator/File 引用脚本并只填写参数。脚本升级只改共享记录一次。
+首次配置 Sub-Store 请先看 **[外置 JS + 任务引用总指南](docs/substore-two-layer-setup.md)**：仓库在 GitHub Pages 维护 5 个客户端专属 JS，Sub-Store 的组合订阅 Operator/File 选择链接模式直接引用对应 URL，并在任务的可视化参数编辑器中填写参数。不要把 JavaScript 正文复制进每个任务。
+
+三个客户端现在统一使用同一套维护方式：代码层由仓库集中更新，任务层只保存稳定 JS URL、参数和自己的私密输出 URL。当前通用流程不依赖 Sub-Store 的独立脚本库功能。
+
+| 客户端 | 外置 JS | Sub-Store 引用任务 |
+| --- | --- | --- |
+| Shadowrocket | `shadowrocket-node-operator.js`、`shadowrocket-profile-generator.js` | 1 个组合订阅 Script Operator + 3 个 Profile File |
+| Egern | `egern-node-generator.js`、`egern-profile-generator.js` | 1 个节点 File + 3 个 Profile File |
+| Anywhere | `anywhere-node-generator.js` | 1 个节点 File；公开规则和设备设置走独立链路 |
+
+可直接复制的 URL、参数、创建顺序、成功标志、升级和回滚方法分别写在三个客户端 README 中；根目录总指南用于统一理解链接模式、可视化参数和旧版 `#arg=value` 写法。
 
 ## 三个客户端
 

@@ -37,9 +37,23 @@ test("deployment pins private arguments, all import layers, and manual refresh",
   assert.match(deployment, /Sub-Store.*6 小时[\s\S]*Anywhere.*手动 Refresh/u);
   assert.match(deployment, /anywhere-node-generator\.js/u);
   assert.match(deployment, /substore-node-generator\.js[\s\S]*兼容/u);
-  assert.match(deployment, /共享脚本[\s\S]*(?:引用|选择)[\s\S]*参数/u);
+  assert.match(deployment, /链接模式[\s\S]*规范 Pages URL[\s\S]*参数/u);
   assert.match(deployment, /MITM\/HTTPS 解密.*Allow Insecure.*关闭/u);
   for (const ai of ["OpenAI", "Claude", "Gemini", "Copilot"]) assert.ok(deployment.includes(ai));
+});
+
+test("README is independently copyable for the two-layer Sub-Store node setup", async () => {
+  const { readme, deployment } = await docs();
+  for (const phrase of [
+    "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/scripts/anywhere-node-generator.js",
+    "output=nodes&type=collection&name=shadowrocket-sources&clientChain=off",
+    "Sub-Store 不需要先创建独立脚本记录",
+    "accepted",
+  ]) assert.ok(readme.includes(phrase), `README missing ${phrase}`);
+  assert.match(readme, /JS_URL#output=nodes[^\n]+不能使用 `\?`/u);
+  assert.match(deployment, /File\/文件[^\n]+Script\/脚本操作[^\n]+链接模式[^\n]+参数/u);
+  assert.match(readme, /不会创建[^\n]+`anywhere-profile-generator\.js`/u);
+  assert.match(deployment, /不要创建 `anywhere-profile-generator\.js`/u);
 });
 
 test("canary and troubleshooting lock safe order, UUID risks, and real rollback", async () => {

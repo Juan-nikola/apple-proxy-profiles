@@ -171,7 +171,7 @@ test("migration documentation keeps Sub-Store objects stable while using monorep
   assert.ok(docs["docs/maintenance.md"].includes("shadowrocket-node-operator.js"), "maintenance: missing isolated-chain node operator name");
   assert.ok(docs["docs/canary-checklist.md"].includes("shadowrocket-profile-generator.js"), "canary: missing current Profile generator name");
   assert.match(docs["docs/deployment.md"], /substore-node-operator\.js[\s\S]*兼容/u);
-  assert.match(docs["docs/deployment.md"], /共享脚本[\s\S]*(?:引用|选择)[\s\S]*参数/u);
+  assert.match(docs["docs/deployment.md"], /链接\/远程脚本[\s\S]*Pages URL[\s\S]*参数/u);
   assert.ok(docs["docs/canary-checklist.md"].includes("clients/shadowrocket/dist/"), "canary: missing current generated-output directory");
   assert.ok(docs["docs/canary-checklist.md"].includes("clients/shadowrocket/examples/"), "canary: missing current generated-example directory");
   for (const [file, markdown] of Object.entries(docs)) {
@@ -184,4 +184,25 @@ test("migration documentation keeps Sub-Store objects stable while using monorep
   assert.match(docs["docs/deployment.md"], /shadowrocket-sources[\s\S]*已发布 URL 都不要重命名/);
   assert.ok(docs["docs/deployment.md"].includes("HTTPS 解密保持关闭"), "deployment: HTTPS decryption must remain off");
   assert.ok(docs["docs/troubleshooting.md"].includes("旧 Profile"), "troubleshooting: missing old Profile rollback guidance");
+});
+
+test("README is independently copyable for the two-layer Sub-Store setup", async () => {
+  const readme = await readFile(resolve(shadowrocketRoot, "README.md"), "utf8");
+  const deployment = await readFile(resolve(shadowrocketRoot, "docs/deployment.md"), "utf8");
+  for (const url of [
+    "https://juan-nikola.github.io/apple-proxy-profiles/current/shadowrocket/scripts/shadowrocket-node-operator.js",
+    "https://juan-nikola.github.io/apple-proxy-profiles/current/shadowrocket/scripts/shadowrocket-profile-generator.js",
+  ]) assert.ok(readme.includes(url), `README.md: missing canonical Pages URL: ${url}`);
+  for (const task of [
+    "shadowrocket-config-macos",
+    "shadowrocket-config-iphone",
+    "shadowrocket-config-ipad",
+  ]) assert.ok(readme.includes(task), `README.md: missing task: ${task}`);
+  for (const platform of ["macos", "iphone", "ipad"]) {
+    assert.match(readme, new RegExp(`output=config[^\n]+platform=${platform}`, "u"), `README.md: ${platform} arguments`);
+  }
+  assert.match(readme, /Sub-Store 不需要先创建独立脚本记录/u);
+  assert.match(readme, /JS_URL#arg1=value1&arg2=value2[^\n]+不能使用 `\?`/u);
+  assert.match(deployment, /File\/文件[^\n]+Script\/脚本操作[^\n]+链接模式[^\n]+参数/u);
+  assert.match(deployment, /subscriptionName[^\n]+百分号编码/u);
 });

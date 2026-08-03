@@ -95,13 +95,32 @@ test("documents define the four private Sub-Store tasks in dependency order", as
     assert.match(docs.deployment, new RegExp(`${name}[\\s\\S]*egern-profile-generator\\.js`, "u"), name);
   }
   assert.match(docs.deployment, /substore-node-generator\.js[\s\S]*兼容/u);
-  assert.match(docs.deployment, /共享脚本[\s\S]*(?:引用|选择)[\s\S]*参数/u);
+  assert.match(docs.deployment, /链接\/远程脚本[\s\S]*Pages URL[\s\S]*参数/u);
   for (const platform of ["macos", "iphone", "ipad"]) {
     assert.match(docs.readme, new RegExp(`examples/egern-${platform}\\.yaml`, "u"), platform);
   }
   assert.match(docs.deployment, /已有|现有/u);
   assert.match(docs.deployment, /`shadowrocket-sources`/u);
   assert.match(docs.deployment, /不要.{0,12}(?:重命名|改名).{0,20}shadowrocket-sources/u);
+});
+
+test("README is independently copyable for the two-layer Sub-Store setup", async () => {
+  const docs = await loadDocs();
+  for (const url of [
+    "https://juan-nikola.github.io/apple-proxy-profiles/current/egern/scripts/egern-node-generator.js",
+    "https://juan-nikola.github.io/apple-proxy-profiles/current/egern/scripts/egern-profile-generator.js",
+  ]) assert.ok(docs.readme.includes(url), `README missing canonical Pages URL: ${url}`);
+  for (const task of ["egern-nodes", "egern-macos", "egern-iphone", "egern-ipad"]) {
+    assert.ok(docs.readme.includes(task), `README missing task: ${task}`);
+  }
+  assert.ok(codeArguments(docs.readme, "nodes").includes(
+    "output=nodes&type=collection&name=shadowrocket-sources&clientChain=off",
+  ));
+  assert.equal(codeArguments(docs.readme, "config").length, 3);
+  assert.match(docs.readme, /Sub-Store 不需要先创建独立脚本记录/u);
+  assert.match(docs.readme, /JS_URL#arg1=value1&arg2=value2[^\n]+不能使用 `\?`/u);
+  assert.match(docs.deployment, /File `egern-nodes`[\s\S]*Script\/脚本操作[\s\S]*链接模式[\s\S]*参数/u);
+  assert.match(docs.deployment, /nodeSubscriptionUrl[^\n]+百分号编码/u);
 });
 
 test("copy-safe arguments use the exact collection and three distinct platform contracts", async () => {

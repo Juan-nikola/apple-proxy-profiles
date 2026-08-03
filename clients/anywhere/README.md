@@ -19,7 +19,25 @@ Anywhere 不能用一个远程文件表达 Shadowrocket/Egern 的完整 Profile�
 
 新任务统一使用 `anywhere-node-generator.js`。旧 `substore-node-generator.js` 文件和 Pages URL 保留为字节一致的兼容别名，既有 Sub-Store 任务不必仅为改名更换 URL；新旧名称不是两个不同版本。
 
-先按根目录的 [Sub-Store 两层部署总指南](../../docs/substore-two-layer-setup.md)在脚本管理中保存一条 `anywhere-node-generator.js` 共享记录，再让 File `anywhere-nodes` 引用它并只保存参数。以后升级 JS 只更新共享记录，File 的任务名、私密输出 URL和参数都不动。
+先按根目录的 [Sub-Store 外置 JS + 任务引用总指南](../../docs/substore-two-layer-setup.md)，再让 File `anywhere-nodes` 选择链接模式，直接引用 `anywhere-node-generator.js` 的规范 Pages URL，并在自己的参数编辑器中保存参数。以后升级 JS 不复制脚本正文，File 的脚本 URL、任务名、私密输出 URL和参数都不动。
+
+## Sub-Store 两层创建清单（可直接照填）
+
+仓库在 GitHub Pages 维护一条 Anywhere 外置 JS；Sub-Store 不需要先创建独立脚本记录：
+
+| 外置 JS 文件名 | JavaScript URL |
+| --- | --- |
+| `anywhere-node-generator.js` | `https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/scripts/anywhere-node-generator.js` |
+
+新建 File `anywhere-nodes`，脚本来源选择“链接/远程脚本”，直接粘贴上面的 URL，然后在这个 File 的可视化参数编辑器中填写：
+
+```text
+output=nodes&type=collection&name=shadowrocket-sources&clientChain=off
+```
+
+旧版只有单行链接时使用 `JS_URL#output=nodes&type=collection&name=shadowrocket-sources&clientChain=off`，不能使用 `?` 连接脚本参数。保存后先预览，确认 `accepted` 至少为 1，再把这个 File 的私密输出 URL 加入 Anywhere；不要在 File 中粘贴 JavaScript 正文。以后脚本升级不改 JS URL、File 名称、参数或私密 URL。
+
+Anywhere 只有这一条 Sub-Store 节点生成链。它不能用一个远程文件表达完整 Profile，所以本项目不会创建虚假的 `anywhere-profile-generator.js`：公开 `.arrs` 规则、规则目标绑定、DNS、IPv6、QUIC、链和 Rule 模式必须继续在 Anywhere 部署链路中完成。完整步骤见[部署指南](docs/deployment.md)。
 
 当前固定 Blackmatrix7 提交为 `dab47069a30c4ae70f7f5f4c919d639d9aaf79dc`：32 个输入共 393,743 条候选，376,477 条可转换，跨来源去重和优先级编译后输出 375,265 条。完整 Advertising 由 `Advertising` 与 `Advertising_Domain` 两个独立输入共同组成。
 
