@@ -115,7 +115,7 @@ https://juan-nikola.github.io/apple-proxy-profiles/current/egern/scripts/egern-p
 
 `nodeSubscriptionUrl` 直接填第 2 步复制的原始私密 URL。只有旧版“单行脚本 URL”界面才需要百分号编码这个参数值；不能编码整条 JS URL，也不能把参数之间的 `&`、`=` 一起编码。
 
-三个任务都保持“关闭缓存”未勾选、“不验证服务器证书”未勾选。逐个即时预览：输出应包含 `auto_update:`、`dns:`、`policy_groups:`、`rules:` 和 `default_subscription_group:`。Profile 通过私密 URL 挂载 `egern-nodes`，因此顶层不出现 `proxies:` 是正确结构；任何一个仍显示占位内容或错误时都不要导入设备。
+三个任务都保持“关闭缓存”未勾选、“不验证服务器证书”未勾选。逐个即时预览：输出应以 `ipv6:` 开头，并包含 `dns:`、`policy_groups:`、`rules:` 和 `default_subscription_group:`。Profile 通过私密 URL 挂载 `egern-nodes`，因此顶层不出现 `proxies:` 是正确结构；没有自更新 URL 时也不会输出 `auto_update:`，这是为了避免 Egern 将空对象判定为缺少必填的 `url`。任何一个仍显示占位内容或错误时都不要导入设备。
 
 ### 4. 导入、灰度与回滚
 
@@ -131,7 +131,7 @@ https://juan-nikola.github.io/apple-proxy-profiles/current/egern/scripts/egern-p
 - 私密节点 URL、Profile URL、订阅 URL 只能保存在自己的 Sub-Store 与 Egern 中。不得公开、发布、粘贴或上传私密 URL 到 GitHub、Issue、截图、聊天或日志。
 - 本项目不需要 HTTPS 解密或 MITM，CA 证书不要安装；也不得启用 MITM。脚本、重写和抓包不是此配置的运行依赖，不需要开启。
 - 节点挂载组的刷新周期是 `21600` 秒，即 6 小时；公开规则的刷新周期是 `86400` 秒，即 24 小时。两者不是同一刷新源。
-- 生成配置中的 `auto_update` 保持空的 `{}` 是有意设计：仓库不知道你的私密 Profile URL。参数变化后，应重新运行或刷新私密 Sub-Store Profile File 任务，再在 Egern 中更新。
+- 生成配置默认省略 `auto_update`：仓库不知道你的私密 Profile URL，而 Egern 不接受缺少 `url` 的空 `auto_update` 对象。参数变化后，应重新运行或刷新私密 Sub-Store Profile File 任务，再在 Egern 中手动更新对应的远程 Profile。
 - Egern 稳定版是默认发布基线。Beta 或 TestFlight 仅供主动选择的用户验证，并继续使用同一份 Profile；除非以后仓库提交明确的 feature flag（功能开关），不要假设测试版专属行为。
 
 所有生成器都采用 fail-closed（失败即停止）校验。不得绕过或削弱 fail-closed 校验，也不得删除或覆盖旧 Profile 来“修复”导入问题。

@@ -251,7 +251,6 @@ test("renders the complete root without inline proxies or private node material"
   if (profile === null) return;
 
   assert.deepEqual(Object.keys(profile), [
-    "auto_update",
     "ipv6",
     "block_quic",
     "close_connections_on_policy_change",
@@ -263,7 +262,7 @@ test("renders the complete root without inline proxies or private node material"
     "rules",
     "default_subscription_group",
   ]);
-  assert.deepEqual(profile.auto_update, {});
+  assert.equal(Object.hasOwn(profile, "auto_update"), false);
   assert.equal(profile.ipv6, false);
   assert.equal(profile.block_quic, false);
   assert.equal(profile.close_connections_on_policy_change, true);

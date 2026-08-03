@@ -1,4 +1,3 @@
-auto_update: {}
 ipv6: false
 block_quic: false
 close_connections_on_policy_change: true

@@ -40,7 +40,7 @@
 - 参数原样复制：`output=config&type=collection&name=shadowrocket-sources&nodeSubscriptionUrl=https://example.invalid/private/egern-nodes&platform=macos&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=ipv4-only&autoGroupMode=auto&clientChain=off`
 - 只在这个私密 Profile File 任务的参数编辑器里，把 `https://example.invalid/private/egern-nodes` 替换为第 1 步得到的真实 `egern-nodes` 输出 URL。
 
-保存并运行。生成的 Profile 根结构包含且只包含以下根键：`auto_update`、`ipv6`、`block_quic`、`close_connections_on_policy_change`、`bypass_tunnel_proxy`、`real_ip_domains`、`hijack_dns`、`dns`、`policy_groups`、`rules`、`default_subscription_group`。它不含 `url_rewrites`，也没有把真实节点内嵌进 Profile；本项目不会生成且不依赖 URL 重写。
+保存并运行。生成的 Profile 根结构包含且只包含以下根键：`ipv6`、`block_quic`、`close_connections_on_policy_change`、`bypass_tunnel_proxy`、`real_ip_domains`、`hijack_dns`、`dns`、`policy_groups`、`rules`、`default_subscription_group`。它默认省略 `auto_update`，因为仓库不知道你的私密 Profile URL，而 Egern 不接受缺少必填 `url` 的空对象；它也不含 `url_rewrites`，没有把真实节点内嵌进 Profile。本项目不会生成且不依赖 URL 重写。
 
 ## 3. 创建 iPhone 任务 `egern-iphone`
 
@@ -85,7 +85,7 @@
 
 如果界面提供可视化参数名/参数值输入框，真实 URL 填原值并让界面编码；如果只有单行脚本链接，把完整真实 URL 作为 `nodeSubscriptionUrl` 的一个参数值进行百分号编码，尤其是其中的 `?`、`&`、`=`、`#` 和 `%`。不要编码脚本 URL 或整段 `#arg1=value1&arg2=value2`。
 
-节点挂载 URL 每 `21600` 秒（6 小时）刷新；公开规则 URL 每 `86400` 秒（24 小时）刷新。它们分别更新，节点失败不等于规则失败。`auto_update` 为空 `{}` 并非遗漏：没有可写入仓库的私密自更新 URL。修改参数后，请重新运行或刷新对应的 Sub-Store Profile File 任务，然后在 Egern 更新 Profile。
+节点挂载 URL 每 `21600` 秒（6 小时）刷新；公开规则 URL 每 `86400` 秒（24 小时）刷新。它们分别更新，节点失败不等于规则失败。默认省略 `auto_update` 是因为没有可安全写入生成器的私密 Profile 自更新 URL；修改参数后，请重新运行或刷新对应的 Sub-Store Profile File 任务，然后在 Egern 手动更新 Profile。
 
 规范 `/current/` Pages URL 保持不变。脚本版本升级时四个 File 继续直接引用原 URL，任务名、File 参数和私密输出 URL均不修改；发布后逐个重新预览并按 canary 顺序验证。
 

@@ -3435,7 +3435,6 @@ var EgernProfileBundle = (() => {
 
   // validate-profile.js
   var ROOT_KEYS = Object.freeze([
-    "auto_update",
     "ipv6",
     "block_quic",
     "close_connections_on_policy_change",
@@ -3612,7 +3611,7 @@ var EgernProfileBundle = (() => {
     if (keys.length !== ROOT_KEYS.length || keys.some((key, index) => key !== ROOT_KEYS[index])) {
       throw new Error("Invalid Egern root fields");
     }
-    if (root.auto_update === null || typeof root.auto_update !== "object" || Array.isArray(root.auto_update) || Object.keys(root.auto_update).length !== 0 || typeof root.ipv6 !== "boolean" || typeof root.block_quic !== "boolean" || root.close_connections_on_policy_change !== true || !sameValue(root.bypass_tunnel_proxy, BYPASS_TUNNEL_PROXY) || !sameValue(root.real_ip_domains, REAL_IP_DOMAINS) || !sameValue(root.hijack_dns, ["*"]) || root.default_subscription_group !== "\u{1F680} \u8282\u70B9\u9009\u62E9") throw new Error("Invalid Egern root field values");
+    if (typeof root.ipv6 !== "boolean" || typeof root.block_quic !== "boolean" || root.close_connections_on_policy_change !== true || !sameValue(root.bypass_tunnel_proxy, BYPASS_TUNNEL_PROXY) || !sameValue(root.real_ip_domains, REAL_IP_DOMAINS) || !sameValue(root.hijack_dns, ["*"]) || root.default_subscription_group !== "\u{1F680} \u8282\u70B9\u9009\u62E9") throw new Error("Invalid Egern root field values");
   }
   function validDns(dns) {
     for (const dnsMode of OPTION_VALUES.dnsMode) {
@@ -3852,7 +3851,6 @@ var EgernProfileBundle = (() => {
     const sharedGroups = buildPolicyGroups(options, prepared.nodes);
     const renderedGroups = renderEgernGroups(sharedGroups, options.nodeSubscriptionUrl);
     const root = {
-      auto_update: {},
       ipv6: options.ipv6Mode === "auto",
       block_quic: options.quicMode === "all-block",
       close_connections_on_policy_change: true,

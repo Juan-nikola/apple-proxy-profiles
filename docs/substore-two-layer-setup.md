@@ -85,7 +85,7 @@ https://juan-nikola.github.io/apple-proxy-profiles/current/shadowrocket/scripts/
 | `egern-iphone` | `https://juan-nikola.github.io/apple-proxy-profiles/current/egern/scripts/egern-profile-generator.js` | `output=config&type=collection&name=shadowrocket-sources&nodeSubscriptionUrl=https://example.invalid/private/egern-nodes&platform=iphone&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&autoGroupMode=auto&clientChain=off` |
 | `egern-ipad` | `https://juan-nikola.github.io/apple-proxy-profiles/current/egern/scripts/egern-profile-generator.js` | `output=config&type=collection&name=shadowrocket-sources&nodeSubscriptionUrl=https://example.invalid/private/egern-nodes&platform=ipad&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&autoGroupMode=auto&clientChain=off` |
 
-先运行 `egern-nodes`。随后只在三个私密 Profile File 的参数编辑器中，把 `https://example.invalid/private/egern-nodes` 替换成自己的 `egern-nodes` 输出 URL；不要把真实值写回公开 JS、仓库文档或示例。可视化参数编辑器填写原始 URL；旧版单行链接模式对整个 URL 参数值进行百分号编码。Egern 应导入三个平台 Profile 之一，不直接导入 `egern-nodes`。
+先运行 `egern-nodes`。随后只在三个私密 Profile File 的参数编辑器中，把 `https://example.invalid/private/egern-nodes` 替换成自己的 `egern-nodes` 输出 URL；不要把真实值写回公开 JS、仓库文档或示例。可视化参数编辑器填写原始 URL；旧版单行链接模式对整个 URL 参数值进行百分号编码。Egern 应导入三个平台 Profile 之一，不直接导入 `egern-nodes`。三个 Profile 的预览必须以 `ipv6:` 开头，不能包含无效的 `auto_update: {}`；参数或结构变化后，先重新运行对应的 Sub-Store Profile File，再在 Egern 手动更新远程 Profile。
 
 ## 5. Anywhere
 

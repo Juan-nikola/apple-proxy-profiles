@@ -54,6 +54,7 @@ test("generated-profile assertion uses one fixed non-reflective error", () => {
 
 test("rejects missing, extra, duplicate, forbidden, and credential root keys", () => {
   const profile = validProfile();
+  assertInvalid(`auto_update: {}\n${profile}`, /root|field|auto_update/i);
   assertInvalid(profile.replace(/^ipv6:.*\n/mu, ""), /root|ipv6|required/i);
   assertInvalid(`${profile}unexpected: true\n`, /root|field/i);
   assertInvalid(`${profile}ipv6: false\n`, /duplicate|YAML/i);

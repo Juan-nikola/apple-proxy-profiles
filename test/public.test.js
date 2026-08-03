@@ -84,7 +84,16 @@ test("public client entrypoints close over current and never raw master", async 
     "egern/examples/egern-ipad.yaml",
   ]) {
     const content = await readFile(new URL(path, currentRoot), "utf8");
+    assert.match(content, /^ipv6:/u);
+    assert.doesNotMatch(content, /^auto_update: \{\}$/mu);
     assert.match(content, /current\/egern\/rules\/Advertising_Domain\.yaml/u);
+  }
+  for (const path of [
+    "egern/scripts/egern-profile-generator.js",
+    "egern/scripts/substore-profile-generator.js",
+  ]) {
+    const content = await readFile(new URL(path, currentRoot), "utf8");
+    assert.doesNotMatch(content, /auto_update:\s*\{\}/u);
   }
   assert.match(await readFile(new URL("anywhere/import.html", currentRoot), "utf8"), /导入批次 3/u);
 

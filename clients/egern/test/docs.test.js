@@ -202,7 +202,7 @@ test("refresh, auto-update, stable, and beta behavior are stated without conflat
   assert.match(text, /86400.{0,24}(?:24\s*小时|二十四小时)|(?:24\s*小时|二十四小时).{0,24}86400/u);
   assert.match(text, /节点.{0,30}21600/u);
   assert.match(text, /规则.{0,30}86400/u);
-  assert.match(text, /`auto_update`.{0,40}(?:空|`\{\}`)/u);
+  assert.match(text, /`auto_update`.{0,80}(?:省略|缺少.{0,20}`url`)/u);
   assert.match(text, /(?:重新运行|重新生成|刷新).{0,30}(?:Profile|配置).{0,30}(?:任务|File)/u);
   assert.match(text, /稳定版.{0,30}(?:基线|默认)/u);
   assert.match(text, /(?:beta|Beta|TestFlight).{0,40}(?:主动选择|自愿|可选|opt-in)/u);

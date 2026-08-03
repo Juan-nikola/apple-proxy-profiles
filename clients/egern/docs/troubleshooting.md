@@ -77,7 +77,7 @@
 
 ## 9. 缓存与陈旧输出
 
-节点超过 6 小时未更新时，重跑 `egern-nodes` 并检查其私密 URL；规则超过 24 小时未更新时，检查公开规则 URL 和下载策略。Profile 参数变化不会被空的 `auto_update: {}` 自动发现，需要重新运行或刷新私密 Sub-Store Profile File 任务。
+节点超过 6 小时未更新时，重跑 `egern-nodes` 并检查其私密 URL；规则超过 24 小时未更新时，检查公开规则 URL 和下载策略。Profile 默认省略 `auto_update`，参数变化后需要重新运行或刷新私密 Sub-Store Profile File 任务，再在 Egern 手动更新远程 Profile。不要自行添加空的 `auto_update: {}`，Egern 会报缺少 `url`。
 
 ## 10. 安全回滚与求助
 

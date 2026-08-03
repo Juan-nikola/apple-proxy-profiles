@@ -1210,19 +1210,19 @@
       "sha256": "5bcfd14ebebe477008e6704edda750bad6875d75e4f8cc3bdd0deba0cc70e9f2"
     },
     {
-      "bytes": 29284,
+      "bytes": 29268,
       "path": "egern/examples/egern-ipad.yaml",
-      "sha256": "42d0708ab6000ebba087bd3a3c990cf8caf6849c91120b511c3451ecf154c877"
+      "sha256": "a5a753202eb7e515c3deaaec1e2475b0425ea8d973e3f285a5a59fb14b3661df"
     },
     {
-      "bytes": 29284,
+      "bytes": 29268,
       "path": "egern/examples/egern-iphone.yaml",
-      "sha256": "42d0708ab6000ebba087bd3a3c990cf8caf6849c91120b511c3451ecf154c877"
+      "sha256": "a5a753202eb7e515c3deaaec1e2475b0425ea8d973e3f285a5a59fb14b3661df"
     },
     {
-      "bytes": 29279,
+      "bytes": 29263,
       "path": "egern/examples/egern-macos.yaml",
-      "sha256": "5d57082bedb5977252f7759712b52259471117b184a9b2256930d10bef15385c"
+      "sha256": "3e5c03f315094778cd1c1eff93cae0c09afdf92e0624639021eb3a806425e6b5"
     },
     {
       "bytes": 18128,
@@ -1390,9 +1390,9 @@
       "sha256": "22dea4b9a5aa8f557f4d95f89b40f8cdc157078bdc166c0217dc7a0eabd958f8"
     },
     {
-      "bytes": 198765,
+      "bytes": 198573,
       "path": "egern/scripts/egern-profile-generator.js",
-      "sha256": "b284fda366896bc1c454466a31b21c14ad95b0579093bdbae85ba369e8c64e39"
+      "sha256": "3bcbce0fb1be0719732aaadd041d17131f6e9fba315e41e40cac95264a0a4c35"
     },
     {
       "bytes": 126907,
@@ -1400,9 +1400,9 @@
       "sha256": "22dea4b9a5aa8f557f4d95f89b40f8cdc157078bdc166c0217dc7a0eabd958f8"
     },
     {
-      "bytes": 198765,
+      "bytes": 198573,
       "path": "egern/scripts/substore-profile-generator.js",
-      "sha256": "b284fda366896bc1c454466a31b21c14ad95b0579093bdbae85ba369e8c64e39"
+      "sha256": "3bcbce0fb1be0719732aaadd041d17131f6e9fba315e41e40cac95264a0a4c35"
     },
     {
       "bytes": 19629,
@@ -1601,7 +1601,7 @@
     }
   ],
   "generatedAt": "2026-08-01T19:07:21Z",
-  "manifestHash": "9777a0efc4705d59531322e2d31627566b56ce29de8b777f30ac2b1cfa11eae3",
+  "manifestHash": "e75f4cdadadd9a29d2949ac55a412b3fe5fe0acb2a6055ac7daecc9712905224",
   "schemaVersion": 1,
   "upstream": {
     "branch": "master",

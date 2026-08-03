@@ -153,7 +153,8 @@ test("profile File Operator normalizes once and emits a validated credential-fre
   });
   assert.equal(result.unchanged, "yes");
   assert.deepEqual(Object.keys(result).sort(), ["$content", "unchanged"]);
-  assert.match(result.$content, /^auto_update:/u);
+  assert.match(result.$content, /^ipv6:/u);
+  assert.doesNotMatch(result.$content, /^auto_update:/mu);
   assert.match(result.$content, /policy_groups:/u);
   assert.match(result.$content, /rules:/u);
   assert.doesNotMatch(result.$content, /^proxies:/mu);

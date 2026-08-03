@@ -1385,24 +1385,24 @@
       "sha256": "083263066a203fc7f21110bf33ac6c551b6b646899f99a723bb84d7b9abf8574"
     },
     {
-      "bytes": 122351,
+      "bytes": 126907,
       "path": "egern/scripts/egern-node-generator.js",
-      "sha256": "7c198a983b230e58ef2f7467fed89311529630ab6a301ecbc44e112a791cea71"
+      "sha256": "22dea4b9a5aa8f557f4d95f89b40f8cdc157078bdc166c0217dc7a0eabd958f8"
     },
     {
-      "bytes": 194209,
+      "bytes": 198765,
       "path": "egern/scripts/egern-profile-generator.js",
-      "sha256": "cb2542abd82f343a59c3e34aaaf921f3e95c63f265ee980d4a381c8e3bcffb15"
+      "sha256": "b284fda366896bc1c454466a31b21c14ad95b0579093bdbae85ba369e8c64e39"
     },
     {
-      "bytes": 122351,
+      "bytes": 126907,
       "path": "egern/scripts/substore-node-generator.js",
-      "sha256": "7c198a983b230e58ef2f7467fed89311529630ab6a301ecbc44e112a791cea71"
+      "sha256": "22dea4b9a5aa8f557f4d95f89b40f8cdc157078bdc166c0217dc7a0eabd958f8"
     },
     {
-      "bytes": 194209,
+      "bytes": 198765,
       "path": "egern/scripts/substore-profile-generator.js",
-      "sha256": "cb2542abd82f343a59c3e34aaaf921f3e95c63f265ee980d4a381c8e3bcffb15"
+      "sha256": "b284fda366896bc1c454466a31b21c14ad95b0579093bdbae85ba369e8c64e39"
     },
     {
       "bytes": 19629,
@@ -1601,7 +1601,7 @@
     }
   ],
   "generatedAt": "2026-08-01T19:07:21Z",
-  "manifestHash": "79a7ce043951d978d73880f14606a6ac7e8e1d1e91e4841d6ad5bdebeb04c467",
+  "manifestHash": "9777a0efc4705d59531322e2d31627566b56ce29de8b777f30ac2b1cfa11eae3",
   "schemaVersion": 1,
   "upstream": {
     "branch": "master",

@@ -8,7 +8,6 @@ import { renderEgernRules } from "./render-rules.js";
 import { renderYaml } from "./render-yaml.js";
 
 const ROOT_KEYS = Object.freeze([
-  "auto_update",
   "ipv6",
   "block_quic",
   "close_connections_on_policy_change",
@@ -194,11 +193,7 @@ function validateRoot(root) {
     throw new Error("Invalid Egern root fields");
   }
   if (
-    root.auto_update === null
-    || typeof root.auto_update !== "object"
-    || Array.isArray(root.auto_update)
-    || Object.keys(root.auto_update).length !== 0
-    || typeof root.ipv6 !== "boolean"
+    typeof root.ipv6 !== "boolean"
     || typeof root.block_quic !== "boolean"
     || root.close_connections_on_policy_change !== true
     || !sameValue(root.bypass_tunnel_proxy, BYPASS_TUNNEL_PROXY)

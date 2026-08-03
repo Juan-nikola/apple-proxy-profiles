@@ -82,7 +82,6 @@ export function renderEgernProfileFromOptions(options, nodes, { onDiagnostics } 
   const sharedGroups = buildPolicyGroups(options, prepared.nodes);
   const renderedGroups = renderEgernGroups(sharedGroups, options.nodeSubscriptionUrl);
   const root = {
-    auto_update: {},
     ipv6: options.ipv6Mode === "auto",
     block_quic: options.quicMode === "all-block",
     close_connections_on_policy_change: true,

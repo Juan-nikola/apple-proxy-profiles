@@ -231,7 +231,7 @@ test("profile bundle matches source and never inlines nodes or private diagnosti
 test("bundles succeed in a restricted Egern realm without injected URL or structuredClone", async () => {
   const cases = [
     [NODE_BUNDLE, NODE_ARGUMENTS, /^proxies:\n/u],
-    [PROFILE_BUNDLE, PROFILE_ARGUMENTS, /^auto_update: \{\}\n/u],
+    [PROFILE_BUNDLE, PROFILE_ARGUMENTS, /^ipv6: false\n/u],
   ];
   for (const [url, arguments_, outputPattern] of cases) {
     const source = await readFile(url, "utf8");
