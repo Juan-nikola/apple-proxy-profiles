@@ -39,6 +39,7 @@ test("canonicalizes bare hosts, host-bit CIDRs, and IPv6 text", () => {
   assert.equal(parseCanonicalCidr("192.0.2.9/24", 4).value, "192.0.2.0/24");
   assert.equal(parseCanonicalCidr("2001:0DB8:0:0:1:0:0:1/64", 6).value, "2001:db8::/64");
   assert.equal(parseCanonicalCidr("2001:db8::1", 6).value, "2001:db8::1/128");
+  assert.equal(parseCanonicalCidr("::ffff:113.248.172.245/128", 6).value, "::ffff:71f8:acf5/128");
 });
 
 test("rejects malformed and delimiter-bearing normalized values", () => {

@@ -79,8 +79,17 @@ function expandIPv6(address) {
   if (extra !== undefined) throw new TypeError("Rule CIDR address is malformed");
   const left = leftText ? leftText.split(":") : [];
   const right = rightText ? rightText.split(":") : [];
-  if (left.at(-1)?.includes(".") || right.at(-1)?.includes(".")) {
-    throw new TypeError("Embedded IPv4 IPv6 rules are not supported");
+  const dottedSide = right.at(-1)?.includes(".") ? right : left.at(-1)?.includes(".") ? left : null;
+  if (dottedSide) {
+    const embedded = dottedSide.pop();
+    if (isIP(embedded) !== 4 || left.some((part) => part.includes(".")) || right.some((part) => part.includes("."))) {
+      throw new TypeError("Rule CIDR address is malformed");
+    }
+    const octets = embedded.split(".").map(Number);
+    dottedSide.push(
+      ((octets[0] << 8) | octets[1]).toString(16),
+      ((octets[2] << 8) | octets[3]).toString(16),
+    );
   }
   const missing = 8 - left.length - right.length;
   if ((address.includes("::") && missing < 1) || (!address.includes("::") && missing !== 0)) {
