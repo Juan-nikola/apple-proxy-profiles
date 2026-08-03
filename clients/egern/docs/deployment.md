@@ -1,6 +1,6 @@
 # Egern 部署指南
 
-本指南把已有的 Sub-Store 节点集合生成三份设备 Profile。先完整读一遍，再开始操作；四个任务存在依赖关系，必须按顺序完成。
+本指南把已有的 Sub-Store 节点集合生成三份设备 Profile。先读 [Sub-Store 两层部署总指南](../../../docs/substore-two-layer-setup.md)，再完整读一遍并开始操作；先保存两条共享脚本记录，再让四个 File 引用它们。四个任务存在依赖关系，必须按顺序完成。
 
 ## 0. 开始前
 
@@ -9,13 +9,22 @@
 - 准备仅自己可访问的 Sub-Store File 输出地址。不得公开、发布、粘贴或上传私密 URL、订阅 URL 或 Profile URL。
 - 以下 `example.invalid` 是 IANA 保留域名，只是占位符；结构示例不能直接联网或实际使用。
 
-## 1. 创建私密节点任务 `egern-nodes`
+## 1. 创建共享脚本记录与私密节点任务 `egern-nodes`
 
-在 Sub-Store 中新建一个 File 任务，名称设为 `egern-nodes`：
+先在 Sub-Store 的脚本管理/脚本库中保存两条共享记录：
 
-- 生成器使用 `dist/substore-node-generator.js` 的完整内容。
+- `egern-node-generator.js` → `https://juan-nikola.github.io/apple-proxy-profiles/current/egern/scripts/egern-node-generator.js`
+- `egern-profile-generator.js` → `https://juan-nikola.github.io/apple-proxy-profiles/current/egern/scripts/egern-profile-generator.js`
+
+随后在 Sub-Store 中新建 File 任务 `egern-nodes`：
+
+- 引用已保存的共享脚本记录 `egern-node-generator.js`，不要在 File 中再次粘贴 JavaScript。
 - 参数原样复制：`output=nodes&type=collection&name=shadowrocket-sources&clientChain=off`
 - 来源类型是已有 collection，名称必须仍是 `shadowrocket-sources`。
+
+两层操作顺序是：脚本管理中新建并保存 Egern Node Generator → 新建 File `egern-nodes` → 在 File 中选择该共享脚本 → 只填写上述参数。以后更新 Node Generator 只更新共享脚本记录；`egern-nodes` 的任务名、私密输出 URL和参数保持不动。
+
+旧 `substore-node-generator.js`、`substore-profile-generator.js` Pages URL 继续作为字节一致兼容别名；既有共享记录无需仅为改名迁移。新任务使用 `egern-*` 规范 URL，不要同时引用新旧别名。
 
 保存并运行。预览诊断中的 `total` 和 `accepted` 应为数字，且 `accepted` 至少为 1。若输出为空，不要继续创建 Profile；先按排障指南处理。
 
@@ -25,7 +34,7 @@
 
 在 Sub-Store 中新建第二个 File 任务，名称设为 `egern-macos`：
 
-- 生成器使用 `dist/substore-profile-generator.js` 的完整内容。
+- 引用第 1 节保存的共享脚本记录 `egern-profile-generator.js`，不要再次粘贴 JavaScript。
 - 参数原样复制：`output=config&type=collection&name=shadowrocket-sources&nodeSubscriptionUrl=https://example.invalid/private/egern-nodes&platform=macos&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=ipv4-only&autoGroupMode=auto&clientChain=off`
 - 只在这个私密 Profile File 任务的参数编辑器里，把 `https://example.invalid/private/egern-nodes` 替换为第 1 步得到的真实 `egern-nodes` 输出 URL。
 
@@ -35,7 +44,7 @@
 
 在 Sub-Store 中新建第三个 File 任务，名称设为 `egern-iphone`：
 
-- 生成器仍使用 `dist/substore-profile-generator.js` 的完整内容。
+- 继续引用共享脚本记录 `egern-profile-generator.js`，不要创建第二份脚本。
 - 参数原样复制：`output=config&type=collection&name=shadowrocket-sources&nodeSubscriptionUrl=https://example.invalid/private/egern-nodes&platform=iphone&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&autoGroupMode=auto&clientChain=off`
 - 同样只在这个私密任务的参数编辑器中替换节点占位 URL。
 
@@ -45,7 +54,7 @@
 
 在 Sub-Store 中新建第四个 File 任务，名称设为 `egern-ipad`：
 
-- 生成器仍使用 `dist/substore-profile-generator.js` 的完整内容。
+- 继续引用共享脚本记录 `egern-profile-generator.js`，不要创建第二份脚本。
 - 参数原样复制：`output=config&type=collection&name=shadowrocket-sources&nodeSubscriptionUrl=https://example.invalid/private/egern-nodes&platform=ipad&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&autoGroupMode=auto&clientChain=off`
 - 同样只在这个私密任务的参数编辑器中替换节点占位 URL。
 
@@ -73,6 +82,8 @@
 `https://example.invalid/private/egern-nodes` 是固定的文档占位值。只允许在三个私密 Profile File 任务的参数编辑器内替换它；不要改公开示例，不要提交真实值，也不要在公开文档、GitHub、Issue、截图、聊天或日志中出现真实值。实际可用配置必须由自己的私密 Sub-Store 任务产生。
 
 节点挂载 URL 每 `21600` 秒（6 小时）刷新；公开规则 URL 每 `86400` 秒（24 小时）刷新。它们分别更新，节点失败不等于规则失败。`auto_update` 为空 `{}` 并非遗漏：没有可写入仓库的私密自更新 URL。修改参数后，请重新运行或刷新对应的 Sub-Store Profile File 任务，然后在 Egern 更新 Profile。
+
+脚本版本升级时只更新脚本管理中的 `egern-node-generator.js` 或 `egern-profile-generator.js` 共享记录。四个 File 继续引用原记录，任务名、File 参数和私密输出 URL均不修改；更新共享脚本后逐个重新预览并按 canary 顺序验证。
 
 ## 导入 Egern
 

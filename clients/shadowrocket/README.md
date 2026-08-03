@@ -5,7 +5,7 @@
 1. `shadowrocket-nodes`：私密节点订阅，含节点凭据，只在自己的 Sub-Store 与设备之间使用。
 2. `shadowrocket-config-*`：macOS、iPhone、iPad 的配置 Profile，不含节点凭据。
 
-第一次使用请严格按 [零基础部署手册](docs/deployment.md) 操作。日常增加节点或切换 DNS、QUIC、IPv6 时看 [维护速查](docs/maintenance.md)。出现网络、局域网、AI、评论地区或更新异常时看 [故障排查与回滚](docs/troubleshooting.md)。
+第一次使用先读根目录的 [Sub-Store 两层部署总指南](../../docs/substore-two-layer-setup.md)，再严格按 [零基础部署手册](docs/deployment.md) 操作：共享脚本在脚本管理中只保存一份；节点组合 Operator 与三个 Profile File 只引用脚本并填写参数。日常增加节点或切换 DNS、QUIC、IPv6 时看 [维护速查](docs/maintenance.md)。出现网络、局域网、AI、评论地区或更新异常时看 [故障排查与回滚](docs/troubleshooting.md)。
 
 安全边界：HTTPS 解密保持关闭；不要公开 Sub-Store 管理地址、订阅地址、Profile 地址、Token、节点二维码或带完整 URL 的截图。代理只能改变网络出口，不能保证改变哔哩哔哩、抖音、小红书或微博显示的评论地区。
 
@@ -37,10 +37,12 @@ Profile 使用职责分开的两层结构：
 
 ## 项目文件
 
-- `clients/shadowrocket/dist/substore-node-operator.js`：粘贴到组合订阅的 Script Operator。
-- `clients/shadowrocket/dist/substore-profile-generator.js`：粘贴到三个 File Script Operator。
+- `clients/shadowrocket/dist/shadowrocket-node-operator.js`：在脚本管理中保存为共享记录，由组合订阅的 Script Operator 引用。
+- `clients/shadowrocket/dist/shadowrocket-profile-generator.js`：在脚本管理中保存为共享记录，由三个 Profile File 引用。
 - `clients/shadowrocket/examples/`：使用脱敏假节点生成的配置示例，只用于检查结构，不能当作节点订阅。
 - `docs/canary-checklist.md`：Intel Mac 首轮灰度逐项验收表。
+
+旧的 `substore-node-operator.js` 与 `substore-profile-generator.js` 文件和 Pages URL 保留为字节一致的兼容别名，既有 Sub-Store 任务无需因改名而迁移。新建任务统一选择上面的 `shadowrocket-*` 名称；不要把同一脚本的新旧 URL 当成两个不同版本。
 
 不要手工编辑 `clients/shadowrocket/dist/` 或生成后的 Profile。日常改动只应发生在 Sub-Store 来源、File 参数或 Shadowrocket 策略组选择中。
 
@@ -50,14 +52,14 @@ Profile 使用职责分开的两层结构：
 
 更新代码不会自动改变你正在使用的 Sub-Store。安全更新顺序如下：
 
-1. 仅当发布说明写明节点 Operator 有变化时，才在 GitHub 打开最新的 `clients/shadowrocket/dist/substore-node-operator.js`，复制完整内容并替换 Sub-Store 节点 Script Operator 的脚本正文；否则跳过本步。
+1. 仅当发布说明写明节点 Operator 有变化时，才在 Sub-Store 脚本管理中更新共享记录 `shadowrocket-node-operator.js`；组合 `shadowrocket-sources` 中引用该记录的 Operator、参数和私密节点 URL 都不改。否则跳过本步。
 2. 如果执行了上一步，再预览节点输出，确认数量正常、国旗不重复、名称排序正常；异常就恢复旧脚本，不发布。
-3. 打开最新的 `clients/shadowrocket/dist/substore-profile-generator.js`，复制完整内容，分别替换 macOS、iPhone、iPad 三个 File Script Operator 的脚本正文，并按部署手册更新 QUIC/IPv6 参数。
+3. 在脚本管理中只更新一次共享记录 `shadowrocket-profile-generator.js`；macOS、iPhone、iPad 三个 File 继续引用它，不重复粘贴脚本，也不因脚本升级改参数。只有主动改变 QUIC/IPv6 策略时才按部署手册修改对应 File 参数。
 4. 升级已有安装前，逐一核对 macOS、iPhone、iPad 三个 Profile File Operator 的 `subscriptionName`。节点 URL 和节点 Script Operator 无需更换；若旧占位值与 Shadowrocket 当前显示名不一致，就改成该现有显示名，或先在客户端重命名订阅，再重新发布 File 并更新对应 Profile。
 5. 先预览 macOS Profile，确认整行是 `🚀 节点选择 = select,PROXY`；16 个常用业务组都有自动/故障转移/地区/具体节点选择，10 个境外组首项为 `🚀 节点选择`，6 个国内组首项为 `DIRECT`；动态组只含与 `subscriptionName` 完全匹配的 `<subscriptionName>,use=true`，AI 洲组仍存在，再发布并只在 Intel Mac 更新测试。
 6. Intel Mac 验收通过后，才按 iPhone、iPad 顺序更新。整个过程中保留旧 Profile 作为回滚入口。
 
-本次恢复服务组时，设备端只需替换 `clients/shadowrocket/dist/substore-profile-generator.js` 并更新当前平台的 Profile；无需替换节点 Script Operator，也无需改动节点订阅。仓库中的 `clients/shadowrocket/dist/` 与 `clients/shadowrocket/examples/` 已随源码重建并通过校验，节点 Operator 内容未改变；规则的唯一批准变更是用完整 `Advertising` 取代 `AdvertisingLite`，并按官方 Shadowrocket 拆分同时引用 `Advertising.list` 与 `Advertising_Domain.list`。必须在 Shadowrocket 中手动更新或重新导入新 Profile；只更新节点订阅不会改变分组。更新后打开 `🚀 节点选择`，摘要应显示 `SELECT > PROXY`，不能再显示某个国旗或具体节点名。如果仍显示具体节点，说明当前设备还在使用旧 Profile，先停止向其他设备推广并按部署手册核对 Profile 的更新时间。
+本次恢复服务组时，只需在脚本管理中更新共享记录 `shadowrocket-profile-generator.js` 一次，再重新运行当前平台 File 并更新 Profile；无需更新节点共享脚本、节点组合 Operator 或节点订阅。三个 Profile File 的任务名、私密 URL和参数保持不动。仓库中的 `clients/shadowrocket/dist/` 与 `clients/shadowrocket/examples/` 已随源码重建并通过校验，节点 Operator 内容未改变；规则的唯一批准变更是用完整 `Advertising` 取代 `AdvertisingLite`，并按官方 Shadowrocket 拆分同时引用 `Advertising.list` 与 `Advertising_Domain.list`。必须在 Shadowrocket 中手动更新或重新导入新 Profile；只更新节点订阅不会改变分组。更新后打开 `🚀 节点选择`，摘要应显示 `SELECT > PROXY`，不能再显示某个国旗或具体节点名。如果仍显示具体节点，说明当前设备还在使用旧 Profile，先停止向其他设备推广并按部署手册核对 Profile 的更新时间。
 
 Shadowrocket 可能保留其他业务分组中仍然有效的旧选择，生成时的首项默认值不会自动覆盖它。逐个查看常用业务组：境外组希望跟随首页时，手动选择第一项 `🚀 节点选择`；国内组希望恢复默认直连时，手动选择第一项 `DIRECT`。如果摘要仍显示具体节点、自动组、故障转移或地区组，业务会继续按该旧选择工作。
 

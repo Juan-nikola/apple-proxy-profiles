@@ -39,6 +39,21 @@ test("publishes one hash-closed three-client current snapshot", async () => {
   assert.equal(manifest.clients.shadowrocket.sourceCount, 32);
   assert.equal(manifest.clients.egern.sourceCount, 32);
   assert.equal(manifest.clients.anywhere.sourceCount, 32);
+  const manifestPaths = new Set(manifest.files.map(({ path }) => path));
+  for (const path of [
+    "shadowrocket/scripts/shadowrocket-node-operator.js",
+    "shadowrocket/scripts/shadowrocket-profile-generator.js",
+    "shadowrocket/scripts/substore-node-operator.js",
+    "shadowrocket/scripts/substore-profile-generator.js",
+    "egern/scripts/egern-node-generator.js",
+    "egern/scripts/egern-profile-generator.js",
+    "egern/scripts/substore-node-generator.js",
+    "egern/scripts/substore-profile-generator.js",
+    "anywhere/scripts/anywhere-node-generator.js",
+    "anywhere/scripts/substore-node-generator.js",
+  ]) {
+    assert.equal(manifestPaths.has(path), true, path);
+  }
   for (const file of manifest.files) {
     const content = await readFile(new URL(file.path, currentRoot));
     assert.equal(content.byteLength, file.bytes, file.path);
@@ -48,6 +63,7 @@ test("publishes one hash-closed three-client current snapshot", async () => {
 
 test("public client entrypoints close over current and never raw master", async () => {
   for (const path of [
+    "shadowrocket/scripts/shadowrocket-profile-generator.js",
     "shadowrocket/scripts/substore-profile-generator.js",
     "shadowrocket/examples/shadowrocket-macos.conf",
     "shadowrocket/examples/shadowrocket-iphone.conf",
@@ -71,6 +87,20 @@ test("public client entrypoints close over current and never raw master", async 
     assert.match(content, /current\/egern\/rules\/Advertising_Domain\.yaml/u);
   }
   assert.match(await readFile(new URL("anywhere/import.html", currentRoot), "utf8"), /导入批次 3/u);
+
+  for (const [canonical, legacy] of [
+    ["shadowrocket/scripts/shadowrocket-node-operator.js", "shadowrocket/scripts/substore-node-operator.js"],
+    ["shadowrocket/scripts/shadowrocket-profile-generator.js", "shadowrocket/scripts/substore-profile-generator.js"],
+    ["egern/scripts/egern-node-generator.js", "egern/scripts/substore-node-generator.js"],
+    ["egern/scripts/egern-profile-generator.js", "egern/scripts/substore-profile-generator.js"],
+    ["anywhere/scripts/anywhere-node-generator.js", "anywhere/scripts/substore-node-generator.js"],
+  ]) {
+    assert.equal(
+      await readFile(new URL(canonical, currentRoot), "utf8"),
+      await readFile(new URL(legacy, currentRoot), "utf8"),
+      canonical,
+    );
+  }
 
   const rawBranchUrl = /raw\.githubusercontent\.com\/blackmatrix7\/ios_rule_script\/(?:master|main)\//u;
   for (const [path, url] of await relativeFiles(currentRoot)) {

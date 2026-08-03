@@ -90,10 +90,12 @@ test("all beginner documents exist, use portable Markdown, and are linked from R
 test("documents define the four private Sub-Store tasks in dependency order", async () => {
   const docs = await loadDocs();
   ordered(docs.deployment, ["`egern-nodes`", "`egern-macos`", "`egern-iphone`", "`egern-ipad`"], "task order");
-  assert.match(docs.deployment, /egern-nodes[\s\S]*dist\/substore-node-generator\.js/u);
+  assert.match(docs.deployment, /egern-nodes[\s\S]*egern-node-generator\.js/u);
   for (const name of ["egern-macos", "egern-iphone", "egern-ipad"]) {
-    assert.match(docs.deployment, new RegExp(`${name}[\\s\\S]*dist/substore-profile-generator\\.js`, "u"), name);
+    assert.match(docs.deployment, new RegExp(`${name}[\\s\\S]*egern-profile-generator\\.js`, "u"), name);
   }
+  assert.match(docs.deployment, /substore-node-generator\.js[\s\S]*兼容/u);
+  assert.match(docs.deployment, /共享脚本[\s\S]*(?:引用|选择)[\s\S]*参数/u);
   for (const platform of ["macos", "iphone", "ipad"]) {
     assert.match(docs.readme, new RegExp(`examples/egern-${platform}\\.yaml`, "u"), platform);
   }
@@ -180,7 +182,7 @@ test("imports are private, percent-encoded, structure-only, and do not require M
   assert.doesNotMatch(text, /[?&](?:token|key|auth|password|secret)=/iu);
   assert.doesNotMatch(text, /https?:\/\/[^\s/"'`@]+(?::[^\s/"'`@]+)?@/iu);
   for (const match of text.matchAll(/https:\/\/([^\s/)<>"'`]+)/gu)) {
-    assert.ok(["example.invalid", "egernapp.com"].includes(match[1]), match[0]);
+    assert.ok(["example.invalid", "egernapp.com", "juan-nikola.github.io"].includes(match[1]), match[0]);
   }
   assert.match(text, /(?:HTTPS 解密|MITM).{0,28}(?:不需要|无需|保持关闭)/u);
   assert.match(text, /(?:CA 证书|解密证书).{0,28}(?:不要|不得|不安装)/u);

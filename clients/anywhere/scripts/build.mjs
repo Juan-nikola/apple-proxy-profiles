@@ -16,7 +16,13 @@ const result = await build({
   write: false,
 });
 if (result.outputFiles.length !== 1) throw new Error("Unexpected Anywhere bundle output count");
-const destination = resolve(sourceRoot, "../dist/substore-node-generator.js");
 const wrapper = "\nasync function operator(input, targetPlatform) {\n  return AnywhereNodeBundle.operator(input, targetPlatform, { arguments: $arguments, produceArtifact, logger: console });\n}\n";
-await mkdir(dirname(destination), { recursive: true });
-await writeFile(destination, `${result.outputFiles[0].text.trimEnd()}\n${wrapper}`, "utf8");
+const content = `${result.outputFiles[0].text.trimEnd()}\n${wrapper}`;
+for (const destinationPath of [
+  "../dist/anywhere-node-generator.js",
+  "../dist/substore-node-generator.js",
+]) {
+  const destination = resolve(sourceRoot, destinationPath);
+  await mkdir(dirname(destination), { recursive: true });
+  await writeFile(destination, content, "utf8");
+}

@@ -9,8 +9,8 @@ import { expandLegacyAdvertisingProfile } from "./compatibility-advertising.mjs"
 const DEFAULT_BASELINE_DIR = "/Users/sunyuze/Documents/代理软件/shadowrocket-profile";
 const PROFILE_NAMES = Object.freeze(["macos", "iphone", "ipad"]);
 const BUNDLES = Object.freeze([
-  Object.freeze({ kind: "node", file: "substore-node-operator.js" }),
-  Object.freeze({ kind: "profile", file: "substore-profile-generator.js" }),
+  Object.freeze({ kind: "node", current: "shadowrocket-node-operator.js", baseline: "substore-node-operator.js" }),
+  Object.freeze({ kind: "profile", current: "shadowrocket-profile-generator.js", baseline: "substore-profile-generator.js" }),
 ]);
 const WORKER_URL = new URL("./compare-bundle-worker.mjs", import.meta.url);
 
@@ -324,12 +324,12 @@ export async function verifyCompatibility({
     compareProfileText(currentSource, baselineSource, file);
   }
 
-  for (const { kind, file } of BUNDLES) {
+  for (const { kind, current, baseline } of BUNDLES) {
     const [currentSource, baselineSource] = await Promise.all([
-      readFile(resolve(targetDir, "dist", file), "utf8"),
-      readFile(resolve(baselineDir, "dist", file), "utf8"),
+      readFile(resolve(targetDir, "dist", current), "utf8"),
+      readFile(resolve(baselineDir, "dist", baseline), "utf8"),
     ]);
-    await compareBundleSources(kind, currentSource, baselineSource, file);
+    await compareBundleSources(kind, currentSource, baselineSource, current);
   }
 }
 

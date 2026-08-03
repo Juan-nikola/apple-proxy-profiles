@@ -4,7 +4,7 @@ Anywhere 不能用一个远程文件表达 Shadowrocket/Egern 的完整 Profile�
 
 | 层 | 本项目提供 | 必须留在本地 |
 |---|---|---|
-| 私密节点订阅 | `dist/substore-node-generator.js` 生成仅含 `proxies` 的 Clash YAML | 私密订阅 URL、节点凭据、当前节点 |
+| 私密节点订阅 | `dist/anywhere-node-generator.js` 生成仅含 `proxies` 的 Clash YAML | 私密订阅 URL、节点凭据、当前节点 |
 | 公开规则 | 32 个 Blackmatrix7 Surge 输入转换成 34 个 `.arrs` 分片及 Manifest | 每个规则集最终绑定到 DIRECT、REJECT、节点或链 |
 | 设备设置 | 部署、灰度和回滚说明 | Rule/Global、DNS、链、IPv6、QUIC、Purify 等 |
 
@@ -12,10 +12,14 @@ Anywhere 不能用一个远程文件表达 Shadowrocket/Egern 的完整 Profile�
 
 ## 已生成产物
 
-- `dist/substore-node-generator.js`：自包含私密节点 File Operator。
+- `dist/anywhere-node-generator.js`：自包含私密节点 File Operator。
 - `examples/rules/manifest.json`：固定提交、输入哈希、计数、优先级归并和分片闭包。
 - `examples/rules/*.arrs`：每片最多 95,000 条，低于源码 100,000 条上限。
 - `examples/import.html`：34 个分片分成 3 个不超过 1,800 字符的 deep-link 批次。
+
+新任务统一使用 `anywhere-node-generator.js`。旧 `substore-node-generator.js` 文件和 Pages URL 保留为字节一致的兼容别名，既有 Sub-Store 任务不必仅为改名更换 URL；新旧名称不是两个不同版本。
+
+先按根目录的 [Sub-Store 两层部署总指南](../../docs/substore-two-layer-setup.md)在脚本管理中保存一条 `anywhere-node-generator.js` 共享记录，再让 File `anywhere-nodes` 引用它并只保存参数。以后升级 JS 只更新共享记录，File 的任务名、私密输出 URL和参数都不动。
 
 当前固定 Blackmatrix7 提交为 `dab47069a30c4ae70f7f5f4c919d639d9aaf79dc`：32 个输入共 393,743 条候选，376,477 条可转换，跨来源去重和优先级编译后输出 375,265 条。完整 Advertising 由 `Advertising` 与 `Advertising_Domain` 两个独立输入共同组成。
 

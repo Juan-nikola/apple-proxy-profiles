@@ -23,26 +23,32 @@ async function loadText(path) {
 
 async function staticFiles() {
   const paths = [
+    ["shadowrocket/scripts/shadowrocket-node-operator.js", "clients/shadowrocket/dist/shadowrocket-node-operator.js"],
+    ["shadowrocket/scripts/shadowrocket-profile-generator.js", "clients/shadowrocket/dist/shadowrocket-profile-generator.js"],
     ["shadowrocket/scripts/substore-node-operator.js", "clients/shadowrocket/dist/substore-node-operator.js"],
     ["shadowrocket/scripts/substore-profile-generator.js", "clients/shadowrocket/dist/substore-profile-generator.js"],
     ["shadowrocket/examples/shadowrocket-macos.conf", "clients/shadowrocket/examples/shadowrocket-macos.conf"],
     ["shadowrocket/examples/shadowrocket-iphone.conf", "clients/shadowrocket/examples/shadowrocket-iphone.conf"],
     ["shadowrocket/examples/shadowrocket-ipad.conf", "clients/shadowrocket/examples/shadowrocket-ipad.conf"],
+    ["egern/scripts/egern-node-generator.js", "clients/egern/dist/egern-node-generator.js"],
+    ["egern/scripts/egern-profile-generator.js", "clients/egern/dist/egern-profile-generator.js"],
     ["egern/scripts/substore-node-generator.js", "clients/egern/dist/substore-node-generator.js"],
     ["egern/scripts/substore-profile-generator.js", "clients/egern/dist/substore-profile-generator.js"],
     ["egern/examples/egern-macos.yaml", "clients/egern/examples/egern-macos.yaml"],
     ["egern/examples/egern-iphone.yaml", "clients/egern/examples/egern-iphone.yaml"],
     ["egern/examples/egern-ipad.yaml", "clients/egern/examples/egern-ipad.yaml"],
+    ["anywhere/scripts/anywhere-node-generator.js", "clients/anywhere/dist/anywhere-node-generator.js"],
     ["anywhere/scripts/substore-node-generator.js", "clients/anywhere/dist/substore-node-generator.js"],
     ["LICENSE", "LICENSE"],
     ["THIRD_PARTY_NOTICES.md", "THIRD_PARTY_NOTICES.md"],
   ];
   const loaded = new Map(await Promise.all(paths.map(async ([publicPath, localPath]) => [publicPath, await loadText(localPath)])));
-  const shadowrocketBundlePath = "shadowrocket/scripts/substore-profile-generator.js";
   const rawRoot = "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Shadowrocket";
   const publicRoot = "https://juan-nikola.github.io/apple-proxy-profiles/current/shadowrocket/rules";
   for (const bundlePath of [
-    shadowrocketBundlePath,
+    "shadowrocket/scripts/shadowrocket-profile-generator.js",
+    "shadowrocket/scripts/substore-profile-generator.js",
+    "egern/scripts/egern-profile-generator.js",
     "egern/scripts/substore-profile-generator.js",
   ]) {
     const bundle = loaded.get(bundlePath);
@@ -76,6 +82,18 @@ async function staticFiles() {
       throw new Error(`Shadowrocket public snapshot URL closure failed for ${path}`);
     }
     loaded.set(path, content);
+  }
+
+  for (const [canonical, legacy] of [
+    ["shadowrocket/scripts/shadowrocket-node-operator.js", "shadowrocket/scripts/substore-node-operator.js"],
+    ["shadowrocket/scripts/shadowrocket-profile-generator.js", "shadowrocket/scripts/substore-profile-generator.js"],
+    ["egern/scripts/egern-node-generator.js", "egern/scripts/substore-node-generator.js"],
+    ["egern/scripts/egern-profile-generator.js", "egern/scripts/substore-profile-generator.js"],
+    ["anywhere/scripts/anywhere-node-generator.js", "anywhere/scripts/substore-node-generator.js"],
+  ]) {
+    if (loaded.get(canonical) !== loaded.get(legacy)) {
+      throw new Error(`Public compatibility alias drifted for ${canonical}`);
+    }
   }
   return loaded;
 }

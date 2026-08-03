@@ -3,8 +3,10 @@ import { readFile } from "node:fs/promises";
 import test from "node:test";
 import vm from "node:vm";
 
-const nodeBundlePath = new URL("../dist/substore-node-operator.js", import.meta.url);
-const profileBundlePath = new URL("../dist/substore-profile-generator.js", import.meta.url);
+const nodeBundlePath = new URL("../dist/shadowrocket-node-operator.js", import.meta.url);
+const profileBundlePath = new URL("../dist/shadowrocket-profile-generator.js", import.meta.url);
+const legacyNodeBundlePath = new URL("../dist/substore-node-operator.js", import.meta.url);
+const legacyProfileBundlePath = new URL("../dist/substore-profile-generator.js", import.meta.url);
 
 const nodeArguments = { output: "nodes", clientChain: "off" };
 const profileArguments = {
@@ -57,6 +59,11 @@ function egernOnlyNodes() {
     },
   ];
 }
+
+test("Shadowrocket client-prefixed bundles match their legacy compatibility aliases", async () => {
+  assert.equal(await readFile(nodeBundlePath, "utf8"), await readFile(legacyNodeBundlePath, "utf8"));
+  assert.equal(await readFile(profileBundlePath, "utf8"), await readFile(legacyProfileBundlePath, "utf8"));
+});
 
 test("node bundle is self-contained and runs with Sub-Store globals", async () => {
   const source = await readFile(nodeBundlePath, "utf8");

@@ -9,8 +9,10 @@ import { operator as sourceNodeOperator } from "../src/substore-nodes-entry.js";
 import { operator as sourceProfileOperator } from "../src/substore-profile-entry.js";
 import { validateEgernProfile } from "../src/validate-profile.js";
 
-const NODE_BUNDLE = new URL("../dist/substore-node-generator.js", import.meta.url);
-const PROFILE_BUNDLE = new URL("../dist/substore-profile-generator.js", import.meta.url);
+const NODE_BUNDLE = new URL("../dist/egern-node-generator.js", import.meta.url);
+const PROFILE_BUNDLE = new URL("../dist/egern-profile-generator.js", import.meta.url);
+const LEGACY_NODE_BUNDLE = new URL("../dist/substore-node-generator.js", import.meta.url);
+const LEGACY_PROFILE_BUNDLE = new URL("../dist/substore-profile-generator.js", import.meta.url);
 const BUILD_SCRIPT = new URL("../scripts/build.mjs", import.meta.url);
 const FIXTURE_SCRIPT = new URL("../scripts/render-fixtures.mjs", import.meta.url);
 const PRIVATE_URL = "https://example.invalid/private/egern-nodes";
@@ -47,6 +49,11 @@ function rawInventory() {
     },
   ];
 }
+
+test("Egern client-prefixed bundles match their legacy compatibility aliases", async () => {
+  assert.equal(await readFile(NODE_BUNDLE, "utf8"), await readFile(LEGACY_NODE_BUNDLE, "utf8"));
+  assert.equal(await readFile(PROFILE_BUNDLE, "utf8"), await readFile(LEGACY_PROFILE_BUNDLE, "utf8"));
+});
 
 function incompatibleInventory() {
   return [{
@@ -556,9 +563,17 @@ test("build and fixture outputs are byte deterministic", async () => {
   const first = run(BUILD_SCRIPT);
   assert.equal(first.status, 0, first.stderr);
   const firstOutputs = await Promise.all([NODE_BUNDLE, PROFILE_BUNDLE].map((url) => readFile(url, "utf8")));
+  assert.deepEqual(
+    await Promise.all([LEGACY_NODE_BUNDLE, LEGACY_PROFILE_BUNDLE].map((url) => readFile(url, "utf8"))),
+    firstOutputs,
+  );
   const second = run(BUILD_SCRIPT);
   assert.equal(second.status, 0, second.stderr);
   const secondOutputs = await Promise.all([NODE_BUNDLE, PROFILE_BUNDLE].map((url) => readFile(url, "utf8")));
+  assert.deepEqual(
+    await Promise.all([LEGACY_NODE_BUNDLE, LEGACY_PROFILE_BUNDLE].map((url) => readFile(url, "utf8"))),
+    secondOutputs,
+  );
   assert.deepEqual(secondOutputs, firstOutputs);
 
   const exampleUrls = ["macos", "iphone", "ipad"]

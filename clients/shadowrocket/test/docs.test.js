@@ -161,14 +161,17 @@ test("migration documentation keeps Sub-Store objects stable while using monorep
   const files = await Promise.all(paths.map((file) => readFile(resolve(shadowrocketRoot, file), "utf8")));
   const docs = Object.fromEntries(paths.map((file, index) => [file, files[index]]));
 
-  const nodeOperatorPath = "clients/shadowrocket/dist/substore-node-operator.js";
-  const profileGeneratorPath = "clients/shadowrocket/dist/substore-profile-generator.js";
+  const nodeOperatorPath = "clients/shadowrocket/dist/shadowrocket-node-operator.js";
+  const profileGeneratorPath = "clients/shadowrocket/dist/shadowrocket-profile-generator.js";
   for (const scriptPath of [nodeOperatorPath, profileGeneratorPath]) {
     assert.ok(docs["README.md"].includes(scriptPath), `README.md: missing monorepo script path: ${scriptPath}`);
-    assert.ok(docs["docs/deployment.md"].includes(scriptPath), `deployment: missing operator installation path: ${scriptPath}`);
+    const fileName = scriptPath.split("/").at(-1);
+    assert.ok(docs["docs/deployment.md"].includes(fileName), `deployment: missing operator installation name: ${fileName}`);
   }
-  assert.ok(docs["docs/maintenance.md"].includes(nodeOperatorPath), "maintenance: missing isolated-chain node operator path");
-  assert.ok(docs["docs/canary-checklist.md"].includes(profileGeneratorPath), "canary: missing current Profile generator path");
+  assert.ok(docs["docs/maintenance.md"].includes("shadowrocket-node-operator.js"), "maintenance: missing isolated-chain node operator name");
+  assert.ok(docs["docs/canary-checklist.md"].includes("shadowrocket-profile-generator.js"), "canary: missing current Profile generator name");
+  assert.match(docs["docs/deployment.md"], /substore-node-operator\.js[\s\S]*兼容/u);
+  assert.match(docs["docs/deployment.md"], /共享脚本[\s\S]*(?:引用|选择)[\s\S]*参数/u);
   assert.ok(docs["docs/canary-checklist.md"].includes("clients/shadowrocket/dist/"), "canary: missing current generated-output directory");
   assert.ok(docs["docs/canary-checklist.md"].includes("clients/shadowrocket/examples/"), "canary: missing current generated-example directory");
   for (const [file, markdown] of Object.entries(docs)) {

@@ -35,6 +35,9 @@ test("deployment pins private arguments, all import layers, and manual refresh",
     "Advertise IPv6 to Apps", "Hide VPN Icon", "Blocked", "Automatic", "Unblocked", "Block UDP",
   ]) assert.ok(deployment.includes(phrase), `deployment missing ${phrase}`);
   assert.match(deployment, /Sub-Store.*6 小时[\s\S]*Anywhere.*手动 Refresh/u);
+  assert.match(deployment, /anywhere-node-generator\.js/u);
+  assert.match(deployment, /substore-node-generator\.js[\s\S]*兼容/u);
+  assert.match(deployment, /共享脚本[\s\S]*(?:引用|选择)[\s\S]*参数/u);
   assert.match(deployment, /MITM\/HTTPS 解密.*Allow Insecure.*关闭/u);
   for (const ai of ["OpenAI", "Claude", "Gemini", "Copilot"]) assert.ok(deployment.includes(ai));
 });

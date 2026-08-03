@@ -1201,6 +1201,11 @@
     },
     {
       "bytes": 105540,
+      "path": "anywhere/scripts/anywhere-node-generator.js",
+      "sha256": "5bcfd14ebebe477008e6704edda750bad6875d75e4f8cc3bdd0deba0cc70e9f2"
+    },
+    {
+      "bytes": 105540,
       "path": "anywhere/scripts/substore-node-generator.js",
       "sha256": "5bcfd14ebebe477008e6704edda750bad6875d75e4f8cc3bdd0deba0cc70e9f2"
     },
@@ -1378,6 +1383,16 @@
       "bytes": 4141,
       "path": "egern/rules/YouTube.yaml",
       "sha256": "083263066a203fc7f21110bf33ac6c551b6b646899f99a723bb84d7b9abf8574"
+    },
+    {
+      "bytes": 122351,
+      "path": "egern/scripts/egern-node-generator.js",
+      "sha256": "7c198a983b230e58ef2f7467fed89311529630ab6a301ecbc44e112a791cea71"
+    },
+    {
+      "bytes": 194209,
+      "path": "egern/scripts/egern-profile-generator.js",
+      "sha256": "cb2542abd82f343a59c3e34aaaf921f3e95c63f265ee980d4a381c8e3bcffb15"
     },
     {
       "bytes": 122351,
@@ -1566,6 +1581,16 @@
     },
     {
       "bytes": 81536,
+      "path": "shadowrocket/scripts/shadowrocket-node-operator.js",
+      "sha256": "fe6b695b9171c37e58018c8d93e418b5e932883fac32ed646081a1803d6e40ed"
+    },
+    {
+      "bytes": 51943,
+      "path": "shadowrocket/scripts/shadowrocket-profile-generator.js",
+      "sha256": "ff00d0036395530c350ccbde2bb596a95707bdcbc2d7a06228ae2904efddbf63"
+    },
+    {
+      "bytes": 81536,
       "path": "shadowrocket/scripts/substore-node-operator.js",
       "sha256": "fe6b695b9171c37e58018c8d93e418b5e932883fac32ed646081a1803d6e40ed"
     },
@@ -1576,7 +1601,7 @@
     }
   ],
   "generatedAt": "2026-08-01T19:07:21Z",
-  "manifestHash": "acddb7e1e5304cadc69a835030e196d4cd718477dca03c3bfcd764380ea094b4",
+  "manifestHash": "79a7ce043951d978d73880f14606a6ac7e8e1d1e91e4841d6ad5bdebeb04c467",
   "schemaVersion": 1,
   "upstream": {
     "branch": "master",

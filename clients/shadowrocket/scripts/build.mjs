@@ -7,13 +7,19 @@ const sourceRoot = resolve(import.meta.dirname, "..", "src");
 const targets = Object.freeze([
   {
     entry: "substore-node-entry.js",
-    output: "../dist/substore-node-operator.js",
+    outputs: Object.freeze([
+      "../dist/shadowrocket-node-operator.js",
+      "../dist/substore-node-operator.js",
+    ]),
     globalName: "ShadowrocketNodeBundle",
     wrapper: `\nasync function operator(proxies, targetPlatform) {\n  return ShadowrocketNodeBundle.operator(proxies, targetPlatform, { arguments: $arguments, logger: console });\n}\n`,
   },
   {
     entry: "substore-profile-entry.js",
-    output: "../dist/substore-profile-generator.js",
+    outputs: Object.freeze([
+      "../dist/shadowrocket-profile-generator.js",
+      "../dist/substore-profile-generator.js",
+    ]),
     globalName: "ShadowrocketProfileBundle",
     wrapper: `\nasync function operator(input, targetPlatform) {\n  return ShadowrocketProfileBundle.operator(input, targetPlatform, { arguments: $arguments, produceArtifact, logger: console });\n}\n`,
   },
@@ -33,7 +39,10 @@ for (const target of targets) {
     write: false,
   });
   const [output] = result.outputFiles;
-  const destination = resolve(sourceRoot, target.output);
-  await mkdir(dirname(destination), { recursive: true });
-  await writeFile(destination, `${output.text.trimEnd()}\n${target.wrapper}`, "utf8");
+  const content = `${output.text.trimEnd()}\n${target.wrapper}`;
+  for (const destinationPath of target.outputs) {
+    const destination = resolve(sourceRoot, destinationPath);
+    await mkdir(dirname(destination), { recursive: true });
+    await writeFile(destination, content, "utf8");
+  }
 }

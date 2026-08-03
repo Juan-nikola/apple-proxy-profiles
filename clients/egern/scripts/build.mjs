@@ -6,13 +6,19 @@ const sourceRoot = resolve(import.meta.dirname, "..", "src");
 const targets = Object.freeze([
   Object.freeze({
     entry: "substore-nodes-entry.js",
-    output: "../dist/substore-node-generator.js",
+    outputs: Object.freeze([
+      "../dist/egern-node-generator.js",
+      "../dist/substore-node-generator.js",
+    ]),
     globalName: "EgernNodeBundle",
     wrapper: `\nasync function operator(input, targetPlatform) {\n  return EgernNodeBundle.operator(input, targetPlatform, { arguments: $arguments, produceArtifact, logger: console });\n}\n`,
   }),
   Object.freeze({
     entry: "substore-profile-entry.js",
-    output: "../dist/substore-profile-generator.js",
+    outputs: Object.freeze([
+      "../dist/egern-profile-generator.js",
+      "../dist/substore-profile-generator.js",
+    ]),
     globalName: "EgernProfileBundle",
     wrapper: `\nasync function operator(input, targetPlatform) {\n  return EgernProfileBundle.operator(input, targetPlatform, { arguments: $arguments, produceArtifact, logger: console });\n}\n`,
   }),
@@ -32,11 +38,10 @@ for (const target of targets) {
     write: false,
   });
   if (result.outputFiles.length !== 1) throw new Error("Unexpected Egern bundle output count");
-  const destination = resolve(sourceRoot, target.output);
-  await mkdir(dirname(destination), { recursive: true });
-  await writeFile(
-    destination,
-    `${result.outputFiles[0].text.trimEnd()}\n${target.wrapper}`,
-    "utf8",
-  );
+  const content = `${result.outputFiles[0].text.trimEnd()}\n${target.wrapper}`;
+  for (const destinationPath of target.outputs) {
+    const destination = resolve(sourceRoot, destinationPath);
+    await mkdir(dirname(destination), { recursive: true });
+    await writeFile(destination, content, "utf8");
+  }
 }

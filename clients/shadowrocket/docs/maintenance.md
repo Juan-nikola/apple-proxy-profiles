@@ -36,7 +36,7 @@
 
 1. 保持原来的 `shadowrocket-sources`、参数为 `output=nodes&clientChain=off` 的原节点 Script Operator、`shadowrocket-nodes`、三个正式 Profile File 及其 URL 全部不变。
 2. 新建带日期的测试组合，例如 `shadowrocket-sources-chain-test-YYYYMMDD`。复制正式组合的来源成员和必要的非节点脚本处理，但不要把正式节点 Script Operator 挂到测试组合。如果某个来源必须把标签改为 `[落地]`，先复制该来源条目，只在副本上改显示名，不重命名生产来源。
-3. 为测试组合新建一份独立的节点 Script Operator，粘贴同一份 `clients/shadowrocket/dist/substore-node-operator.js`，参数填 `output=nodes&clientChain=on`。不要编辑正式组合正在使用的脚本或参数。
+3. 在脚本管理中新建隔离的测试共享记录，使用规范 `shadowrocket-node-operator.js` Pages URL；测试组合新增 Script Operator 并引用这条记录，参数填 `output=nodes&clientChain=on`。不要编辑正式组合正在使用的共享脚本、Operator 或参数。既有正式任务继续使用旧 `substore-node-operator.js` URL 也兼容，不要仅为改名触碰正式任务。
 4. 从测试组合发布一份新的版本化节点订阅，例如 `shadowrocket-nodes-chain-test-YYYYMMDD`；原来的 `shadowrocket-nodes` 保持不变。
 5. 在 Shadowrocket 中给新节点订阅一个便于识别的显示名，显示名准确填写 `Shadowrocket-Nodes-Chain-Test-YYYYMMDD`。这是测试示例，不是固定名称；若自定义名称，后续 `subscriptionName` 必须逐字相同，包括大小写、emoji、空格和标点。动态组只从 `subscriptionName` 精确指定的测试订阅读取，无需因防混入而暂停生产订阅；正式订阅与测试订阅仍应分别保留，便于独立回滚和复测。
 6. 先只复制 macOS Profile File，名称加同一天的链式测试后缀。参数中的三个关键值填写为：

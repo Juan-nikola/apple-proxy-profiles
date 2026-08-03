@@ -2,7 +2,9 @@
 
 这是 `Juan-nikola/apple-proxy-profiles` 的公开生成器仓库：用同一套节点能力、策略意图与 Blackmatrix7 增强规则，为 Shadowrocket、Egern 和 Anywhere 生成尽可能功能等价、可验证、可回滚的配置产物。
 
-> 当前状态：三个客户端的生成器与确定性示例已通过本地自动验证；GitHub Pages 发布和真实设备 canary 仍是发布门槛。没有设备验收记录时，不应把本项目描述为已完成真机验证。
+> 当前状态：三个客户端的生成器与确定性示例已通过本地自动验证，GitHub Pages 已上线；真实设备 canary 尚未完成。没有设备验收记录时，不应把本项目描述为已完成真机验证。
+
+首次配置 Sub-Store 请先看 **[两层部署总指南](docs/substore-two-layer-setup.md)**：先建立 5 条共享脚本记录，再让组合订阅 Operator/File 引用脚本并只填写参数。脚本升级只改共享记录一次。
 
 ## 三个客户端
 
@@ -13,6 +15,8 @@
 | Anywhere | 节点生成器、公开 `.arrs` 规则分片、Manifest 与批量导入页 | 节点订阅 URL、节点凭据，以及 App 内的规则绑定、DNS、链和模式 | [说明](clients/anywhere/README.md) · [部署](clients/anywhere/docs/deployment.md) · [canary](clients/anywhere/docs/canary.md) |
 
 Shadowrocket 和 Egern 能从私密 Sub-Store File 生成平台 Profile；Anywhere 没有等价的远程完整 Profile 格式，因此不能把它伪装成同一种部署结构。
+
+新部署统一使用带客户端前缀的脚本名：`shadowrocket-node-operator.js`、`shadowrocket-profile-generator.js`、`egern-node-generator.js`、`egern-profile-generator.js`、`anywhere-node-generator.js`。已经部署的旧 `substore-*` Pages URL 继续作为字节一致的兼容别名保留，现有 Sub-Store 任务不必仅为改名而更换 URL；新文档和新任务不要再选旧名。
 
 ## 公开与私密边界
 
@@ -31,7 +35,7 @@ Shadowrocket 和 Egern 能从私密 Sub-Store File 生成平台 Profile；Anywhe
 
 Anywhere 的功能等价方案必须同时完成三层，少一层都不是完整配置：
 
-1. **私密节点订阅**：`clients/anywhere/dist/substore-node-generator.js` 在私密 Sub-Store 中生成仅含 `proxies` 的 Clash YAML；真实 URL 和节点留在私密链路。
+1. **私密节点订阅**：`clients/anywhere/dist/anywhere-node-generator.js` 在私密 Sub-Store 中生成仅含 `proxies` 的 Clash YAML；真实 URL 和节点留在私密链路。
 2. **公开规则集**：Blackmatrix7 的 32 个固定 Surge 输入被转换为有哈希、计数与来源信息的 `.arrs` 分片；发布后通过导入页加入 App。
 3. **设备本地设置**：逐个绑定规则集目标，并在 App 中设置默认节点/链、Rule/Global 模式、DNS、IPv6、QUIC 等。远程节点或规则刷新不会替代这些本地设置。
 
@@ -78,7 +82,7 @@ npm run check:secrets
 - [上一已知良好版本](https://juan-nikola.github.io/apple-proxy-profiles/previous/manifest.json)
 - 内容哈希版本：读取当前 Manifest 的 `manifestHash`，再访问 `https://juan-nikola.github.io/apple-proxy-profiles/versions/<manifestHash>/manifest.json`
 
-这些 URL 在 GitHub Pages 正式发布前可能返回 404，不应提前写入生产配置。`current/` 是当前快照，`previous/` 是更新前的 `current/`（首次构建时两者相同）。在线 `versions/` 最多保留 8 个内容哈希快照；整个 `public/` 树（包括 `current/`、`previous/` 和 `versions/`）不得超过 750 MiB。构建器先把 `versions/` 裁到最多 8 个；若整棵树仍超过 750 MiB，则继续从最旧哈希快照开始删除，但不会因容量清理而把已有在线窗口降到 2 个以下。若保留 `current/`、`previous/` 和最多 2 个哈希快照后仍超限，构建直接失败。需要长期保存的更老版本必须在清理前通过 Git tag/Release 归档；当前工作流不会自动创建 tag 或 Release，不能把 Pages 当成无限历史仓库。
+这些 Pages URL 已上线；使用前仍应检查 Manifest 和文件哈希。`current/` 是当前快照，`previous/` 是更新前的 `current/`（首次构建时两者相同）。在线 `versions/` 最多保留 8 个内容哈希快照；整个 `public/` 树（包括 `current/`、`previous/` 和 `versions/`）不得超过 750 MiB。构建器先把 `versions/` 裁到最多 8 个；若整棵树仍超过 750 MiB，则继续从最旧哈希快照开始删除，但不会因容量清理而把已有在线窗口降到 2 个以下。若保留 `current/`、`previous/` 和最多 2 个哈希快照后仍超限，构建直接失败。需要长期保存的更老版本必须在清理前通过 Git tag/Release 归档；当前工作流不会自动创建 tag 或 Release，不能把 Pages 当成无限历史仓库。
 
 跨客户端发布 canary 固定为：Intel Mac Egern → iPhone Egern → iPad Egern → iPhone Anywhere → iPad Anywhere；Shadowrocket 继续按自己的 Intel Mac → iPhone → iPad 清单验收。任一阶段失败都停止推广并保留后续设备旧配置。
 

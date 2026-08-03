@@ -7,7 +7,8 @@ import vm from "node:vm";
 
 import { operator as sourceOperator } from "../src/substore-nodes-entry.js";
 
-const BUNDLE = new URL("../dist/substore-node-generator.js", import.meta.url);
+const BUNDLE = new URL("../dist/anywhere-node-generator.js", import.meta.url);
+const LEGACY_BUNDLE = new URL("../dist/substore-node-generator.js", import.meta.url);
 const BUILD = new URL("../scripts/build.mjs", import.meta.url);
 const ARGUMENTS = { output: "nodes", type: "collection", name: "shadowrocket-sources", clientChain: "off" };
 
@@ -22,6 +23,10 @@ function inventory() {
     _subName: "[自建] Tokyo",
   }];
 }
+
+test("Anywhere client-prefixed bundle matches the legacy compatibility alias", async () => {
+  assert.equal(await readFile(BUNDLE, "utf8"), await readFile(LEGACY_BUNDLE, "utf8"));
+});
 
 function loadBundle(source, { restricted = false, produced = inventory(), onProduce } = {}) {
   const lines = [];
@@ -140,9 +145,11 @@ test("Anywhere bundle build is byte deterministic", async () => {
   const result = spawnSync(process.execPath, [fileURLToPath(BUILD)], { encoding: "utf8" });
   assert.equal(result.status, 0, result.stderr);
   const middle = await readFile(BUNDLE);
+  assert.deepEqual(await readFile(LEGACY_BUNDLE), middle);
   const repeated = spawnSync(process.execPath, [fileURLToPath(BUILD)], { encoding: "utf8" });
   assert.equal(repeated.status, 0, repeated.stderr);
   const after = await readFile(BUNDLE);
+  assert.deepEqual(await readFile(LEGACY_BUNDLE), after);
   assert.deepEqual(middle, before);
   assert.deepEqual(after, middle);
 });
