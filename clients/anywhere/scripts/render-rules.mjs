@@ -17,11 +17,13 @@ import {
 } from "../../../automation/src/source-catalog.js";
 import { fetchSnapshot } from "../../../automation/src/fetch-snapshot.js";
 import { buildAnywhereRuleSnapshot } from "../../../automation/src/render-anywhere-rules.js";
+import { buildImportBatches, renderImportPage } from "../src/build-import-page.js";
 
 const scriptDirectory = dirname(fileURLToPath(import.meta.url));
 const workspaceDirectory = dirname(scriptDirectory);
 const examplesDirectory = join(workspaceDirectory, "examples");
 const outputDirectory = join(examplesDirectory, "rules");
+const importPagePath = join(examplesDirectory, "import.html");
 const baselinePath = join(workspaceDirectory, "compatibility", "rule-baseline.json");
 
 async function exists(path) {
@@ -67,6 +69,13 @@ try {
     throw error;
   }
   if (hadPriorOutput) await rm(backupDirectory, { recursive: true, force: true });
+  const importPage = renderImportPage(
+    buildImportBatches(built.manifest.shards.map(({ url }) => url)),
+    built.manifest,
+  );
+  const importPageStagingPath = `${importPagePath}.staging-${randomUUID()}`;
+  await writeFile(importPageStagingPath, importPage, "utf8");
+  await rename(importPageStagingPath, importPagePath);
 } catch (error) {
   await rm(stagingDirectory, { recursive: true, force: true });
   throw error;
