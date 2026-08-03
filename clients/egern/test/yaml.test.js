@@ -188,6 +188,13 @@ test("rejects symbol keys without exposing the symbol description", () => {
   );
 });
 
+test("renders publication-scale arrays without argument-spread stack overflow", () => {
+  const values = Array.from({ length: 150_000 }, (_, index) => `rule-${index}`);
+  const rendered = renderYaml({ domain_set: values });
+  assert.match(rendered, /^domain_set:\n  - "rule-0"/u);
+  assert.match(rendered, /  - "rule-149999"\n$/u);
+});
+
 test("rejects accessors without invoking their getters", () => {
   let getterCalls = 0;
   const value = { nested: {} };

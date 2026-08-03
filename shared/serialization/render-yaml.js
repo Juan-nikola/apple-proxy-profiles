@@ -185,13 +185,14 @@ function renderNode(value, path, indent, active) {
         if (isEmptyCollection(item)) {
           lines.push(`${" ".repeat(indent)}- ${emptyCollectionText(item)}`);
         } else if (Array.isArray(item)) {
-          lines.push(`${" ".repeat(indent)}-`, ...itemLines);
+          lines.push(`${" ".repeat(indent)}-`);
+          for (const line of itemLines) lines.push(line);
         } else {
           const itemIndent = " ".repeat(indent + INDENT_WIDTH);
-          lines.push(
-            `${" ".repeat(indent)}- ${itemLines[0].slice(itemIndent.length)}`,
-            ...itemLines.slice(1),
-          );
+          lines.push(`${" ".repeat(indent)}- ${itemLines[0].slice(itemIndent.length)}`);
+          for (let lineIndex = 1; lineIndex < itemLines.length; lineIndex += 1) {
+            lines.push(itemLines[lineIndex]);
+          }
         }
       }
       return lines;
@@ -222,7 +223,8 @@ function renderNode(value, path, indent, active) {
       if (isEmptyCollection(child)) {
         lines.push(`${prefix} ${emptyCollectionText(child)}`);
       } else {
-        lines.push(prefix, ...childLines);
+        lines.push(prefix);
+        for (const line of childLines) lines.push(line);
       }
     }
     return lines;

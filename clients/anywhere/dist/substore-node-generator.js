@@ -1209,13 +1209,14 @@ var AnywhereNodeBundle = (() => {
           if (isEmptyCollection(item)) {
             lines2.push(`${" ".repeat(indent)}- ${emptyCollectionText(item)}`);
           } else if (Array.isArray(item)) {
-            lines2.push(`${" ".repeat(indent)}-`, ...itemLines);
+            lines2.push(`${" ".repeat(indent)}-`);
+            for (const line of itemLines) lines2.push(line);
           } else {
             const itemIndent = " ".repeat(indent + INDENT_WIDTH);
-            lines2.push(
-              `${" ".repeat(indent)}- ${itemLines[0].slice(itemIndent.length)}`,
-              ...itemLines.slice(1)
-            );
+            lines2.push(`${" ".repeat(indent)}- ${itemLines[0].slice(itemIndent.length)}`);
+            for (let lineIndex = 1; lineIndex < itemLines.length; lineIndex += 1) {
+              lines2.push(itemLines[lineIndex]);
+            }
           }
         }
         return lines2;
@@ -1243,7 +1244,8 @@ var AnywhereNodeBundle = (() => {
         if (isEmptyCollection(child)) {
           lines.push(`${prefix} ${emptyCollectionText(child)}`);
         } else {
-          lines.push(prefix, ...childLines);
+          lines.push(prefix);
+          for (const line of childLines) lines.push(line);
         }
       }
       return lines;
