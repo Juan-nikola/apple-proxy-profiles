@@ -1,0 +1,69 @@
+import assert from "node:assert/strict";
+import test from "node:test";
+
+import { buildAnywhereRuleSnapshot } from "../src/render-anywhere-rules.js";
+
+const upstream = {
+  repository: "https://github.com/blackmatrix7/ios_rule_script",
+  branch: "master",
+  commit: "dab47069a30c4ae70f7f5f4c919d639d9aaf79dc",
+  committedAt: "2026-08-01T19:07:21Z",
+  license: "GPL-2.0-only",
+};
+
+const catalog = [
+  {
+    id: "High", familyId: "High", componentId: "rules", order: 1, priority: 10,
+    canonicalPath: "rule/Surge/High/High.list", inputFormat: "RULE-SET", policy: "REJECT",
+    routing: 2, intendedTarget: "reject", minEntries: 1,
+  },
+  {
+    id: "Low", familyId: "Low", componentId: "rules", order: 2, priority: 20,
+    canonicalPath: "rule/Surge/Low/Low.list", inputFormat: "RULE-SET", policy: "DIRECT",
+    routing: 1, intendedTarget: "direct", minEntries: 1,
+  },
+];
+
+function input(text) {
+  return { text, rawUrl: "https://raw.githubusercontent.com/example", sourceBytes: Buffer.byteLength(text), sourceSha256: "a".repeat(64) };
+}
+
+test("compiles across sources before sharding and closes manifest accounting", () => {
+  const snapshot = new Map([
+    ["High", input("DOMAIN-SUFFIX,example.com\n")],
+    ["Low", input("DOMAIN-SUFFIX,api.example.com\nDOMAIN-KEYWORD,other\nDOMAIN,only.example\n")],
+  ]);
+  const result = buildAnywhereRuleSnapshot({
+    snapshot,
+    catalog,
+    upstream,
+    logicalRuleSets: catalog.map(({ id }) => ({ id, sourceIds: [id], required: true })),
+  });
+  assert.equal(result.manifest.totals.sourceCount, 2);
+  assert.equal(result.manifest.totals.convertibleCount, 3);
+  assert.equal(result.manifest.totals.unsupportedCount, 1);
+  assert.equal(result.manifest.totals.shadowedCount, 1);
+  assert.equal(result.manifest.totals.outputCount, 2);
+  assert.equal(result.manifest.totals.shardCount, 2);
+  assert.deepEqual(result.manifest.sources[1].counts, {
+    candidate: 3, parsed: 3, convertible: 2, unsupported: 1,
+    duplicates: 0, shadowed: 1, unresolved: 0, output: 1,
+  });
+  assert.equal(result.files.has("anywhere/rules/High-001.arrs"), true);
+  assert.equal(result.files.has("anywhere/rules/Low-001.arrs"), true);
+});
+
+test("produces byte-identical files and manifests for identical immutable inputs", () => {
+  const snapshot = new Map([
+    ["High", input("DOMAIN-SUFFIX,example.com\n")],
+    ["Low", input("DOMAIN-KEYWORD,other\n")],
+  ]);
+  const options = {
+    snapshot, catalog, upstream,
+    logicalRuleSets: catalog.map(({ id }) => ({ id, sourceIds: [id], required: true })),
+  };
+  const first = buildAnywhereRuleSnapshot(options);
+  const second = buildAnywhereRuleSnapshot(options);
+  assert.deepEqual([...first.files], [...second.files]);
+  assert.deepEqual(first.manifest, second.manifest);
+});

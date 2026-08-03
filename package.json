@@ -6,7 +6,7 @@
   "engines": { "node": ">=22" },
   "workspaces": ["clients/*"],
   "scripts": {
-    "test": "node --test test/*.test.js && npm --workspaces --if-present test",
+    "test": "node --test test/*.test.js automation/test/*.test.js && npm --workspaces --if-present test",
     "build": "npm --workspaces --if-present run build",
     "fixtures": "npm --workspaces --if-present run fixtures",
     "check:secrets": "node scripts/check-secrets.mjs",
