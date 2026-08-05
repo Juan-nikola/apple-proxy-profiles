@@ -33,6 +33,6 @@ export async function operator(input, targetPlatform, context = {}) {
   if (!Array.isArray(nodes) || nodes.length === 0) throw new Error("produceArtifact must return a non-empty node array");
   logDiagnostics(context, options, nodes);
   const ruleBaseUrl = `${PUBLIC_RULE_ROOT}/${options.channel}/sing-box/rules`;
-  const config = renderSingBoxConfig(options, nodes, { ruleBaseUrl, ruleSetFormat: "binary" });
+  const config = renderSingBoxConfig(options, nodes, { ruleBaseUrl, ruleSetFormat: "source" });
   return { ...input, $content: `${JSON.stringify(config, null, 2)}\n` };
 }

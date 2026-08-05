@@ -23,7 +23,7 @@ const nodes = Object.freeze([
     type: "vmess",
     server: "fixture-vmess.example.invalid",
     port: 443,
-    uuid: "00000000-0000-4000-8000-000000000000",
+    uuid: "00000000-0000-4000-8000-000000000001",
     security: "auto",
     tls: true,
     sni: "fixture-vmess.example.invalid",

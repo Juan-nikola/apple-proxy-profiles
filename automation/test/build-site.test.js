@@ -84,3 +84,17 @@ test("pins a bounded online version window below the Pages capacity budget", () 
     minVersions: 2,
   });
 });
+
+test("publishes frontier channel files without overwriting the stable snapshot", async () => {
+  const root = await mkdtemp(join(tmpdir(), "apple-proxy-site-frontier-"));
+  const publicDirectory = join(root, "public");
+  const stable = artifact("a", "stable");
+  const frontierFiles = new Map([
+    ["edge/surge/scripts/profile.js", "edge surge\n"],
+    ["edge/sing-box/scripts/config.js", "edge sing-box\n"],
+  ]);
+  await buildSite({ publicDirectory, ...stable, frontierFiles });
+  assert.equal(await readFile(join(publicDirectory, "current/rules/x.txt"), "utf8"), "stable\n");
+  assert.equal(await readFile(join(publicDirectory, "edge/surge/scripts/profile.js"), "utf8"), "edge surge\n");
+  assert.equal(await readFile(join(publicDirectory, "edge/sing-box/scripts/config.js"), "utf8"), "edge sing-box\n");
+});

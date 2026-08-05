@@ -42,6 +42,26 @@ async function writeSnapshot(directory, files) {
   }
 }
 
+async function subsetMatches(directory, files) {
+  for (const [path, content] of files) {
+    if (!safeRelativePath(path) || typeof content !== "string") return false;
+    try {
+      if (await readFile(join(directory, path), "utf8") !== content) return false;
+    } catch {
+      return false;
+    }
+  }
+  return true;
+}
+
+async function fileMatches(path, content) {
+  try {
+    return await readFile(path, "utf8") === content;
+  } catch {
+    return false;
+  }
+}
+
 async function directoryBytes(directory) {
   let total = 0;
   for (const entry of await readdir(directory, { withFileTypes: true })) {
@@ -90,7 +110,7 @@ async function enforceRetention(stagingDirectory) {
 function indexHtml(manifest) {
   return `<!doctype html>
 <html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Apple Proxy Profiles</title></head>
-<body><main><h1>Apple Proxy Profiles</h1><p>Blackmatrix7 commit: <code>${manifest.upstream.commit}</code></p><ul><li><a href="current/manifest.json">Current manifest</a></li><li><a href="previous/manifest.json">Previous manifest</a></li><li><a href="current/anywhere/import.html">Anywhere import</a></li></ul></main></body></html>
+<body><main><h1>Apple Proxy Profiles</h1><p>Blackmatrix7 commit: <code>${manifest.upstream.commit}</code></p><ul><li><a href="current/manifest.json">Current manifest</a></li><li><a href="edge/manifest.json">Frontier edge manifest</a></li><li><a href="current/frontier-manifest.json">Current frontier manifest</a></li><li><a href="previous/manifest.json">Previous manifest</a></li><li><a href="current/anywhere/import.html">Anywhere import</a></li><li><a href="current/surge/scripts/surge-profile-generator.js">Surge Sub-Store script</a></li><li><a href="current/sing-box/scripts/sing-box-config-generator.js">sing-box Sub-Store script</a></li></ul></main></body></html>
 `;
 }
 
@@ -117,12 +137,23 @@ export async function snapshotMatches(directory, files) {
   return JSON.stringify(actual) === JSON.stringify(expected);
 }
 
-export async function buildSite({ publicDirectory, files, manifest }) {
+export async function buildSite({ publicDirectory, files, manifest, frontierFiles = null }) {
   if (!(files instanceof Map) || !manifest || !/^[0-9a-f]{64}$/u.test(manifest.manifestHash)) {
     throw new TypeError("Verified public artifacts are required");
   }
+  if (frontierFiles !== null && !(frontierFiles instanceof Map)) {
+    throw new TypeError("Frontier public artifacts must be a Map");
+  }
+  if (frontierFiles !== null) {
+    for (const [path, content] of frontierFiles) {
+      if (!safeRelativePath(path) || typeof content !== "string") throw new TypeError("Frontier public artifact is invalid");
+      if (!/^(?:edge|current)\//u.test(path)) throw new Error("Frontier public artifact must be scoped to edge or current");
+    }
+  }
   const currentDirectory = join(publicDirectory, "current");
-  if (await exists(currentDirectory) && await snapshotMatches(currentDirectory, files)) {
+  if (await exists(currentDirectory) && await snapshotMatches(currentDirectory, files)
+    && (frontierFiles === null || await subsetMatches(publicDirectory, frontierFiles))
+    && await fileMatches(join(publicDirectory, "index.html"), indexHtml(manifest))) {
     const versionsDirectory = join(publicDirectory, "versions");
     const versionDirectory = join(versionsDirectory, manifest.manifestHash);
     if (!await exists(versionDirectory) || !await snapshotMatches(versionDirectory, files)) {
@@ -139,10 +170,13 @@ export async function buildSite({ publicDirectory, files, manifest }) {
       const versions = join(publicDirectory, "versions");
       if (await exists(versions)) await cp(versions, join(staging, "versions"), { recursive: true, errorOnExist: true });
       await cp(join(publicDirectory, "current"), join(staging, "previous"), { recursive: true, errorOnExist: true });
+      const edge = join(publicDirectory, "edge");
+      if (await exists(edge)) await cp(edge, join(staging, "edge"), { recursive: true, errorOnExist: true });
     } else {
       await writeSnapshot(join(staging, "previous"), files);
     }
     await writeSnapshot(join(staging, "current"), files);
+    if (frontierFiles !== null) await writeSnapshot(staging, frontierFiles);
     const versionDirectory = join(staging, "versions", manifest.manifestHash);
     if (await exists(versionDirectory)) {
       if (!await snapshotMatches(versionDirectory, files)) throw new Error("Immutable public version bytes changed");

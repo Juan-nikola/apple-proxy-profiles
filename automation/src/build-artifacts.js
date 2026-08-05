@@ -3,6 +3,7 @@ import { createHash } from "node:crypto";
 import { buildAnywhereRuleSnapshot, canonicalJson } from "./render-anywhere-rules.js";
 import { renderEgernRuleSource } from "./render-egern-rules.js";
 import { renderShadowrocketRuleSource } from "./render-shadowrocket-rules.js";
+import { renderSingBoxRuleSource } from "./render-sing-box-rules.js";
 import { parseSurgeRules } from "./parse-surge.js";
 import { BLACKMATRIX7_BASELINE, catalogSha256 } from "./source-catalog.js";
 
@@ -26,15 +27,20 @@ export function buildClientArtifacts({
     return [source.id, parseSurgeRules(fetched.text, source)];
   }));
   const files = new Map();
-  const clientSources = { shadowrocket: [], egern: [] };
+  const clientSources = { shadowrocket: [], surge: [], egern: [], singbox: [] };
   for (const source of catalog) {
     const input = { source, parsed: parsed.get(source.id), fetched: snapshot.get(source.id), upstream };
     const shadowrocket = renderShadowrocketRuleSource(input);
     const egern = renderEgernRuleSource(input);
+    const singbox = renderSingBoxRuleSource(input);
     files.set(`shadowrocket/rules/${source.id}.list`, shadowrocket.content);
+    files.set(`surge/rules/${source.id}.list`, shadowrocket.content);
     files.set(`egern/rules/${source.id}.yaml`, egern.content);
+    files.set(`sing-box/rules/${source.id}.json`, singbox.content);
     clientSources.shadowrocket.push({ id: source.id, ...shadowrocket.counts });
+    clientSources.surge.push({ id: source.id, ...shadowrocket.counts });
     clientSources.egern.push({ id: source.id, ...egern.counts });
+    clientSources.singbox.push({ id: source.id, ...singbox.counts });
   }
   const anywhere = buildAnywhereRuleSnapshot({
     snapshot,
@@ -83,7 +89,9 @@ export function buildClientArtifacts({
     catalogSha256: catalogSha256(catalog),
     clients: {
       shadowrocket: { sourceCount: catalog.length, sources: clientSources.shadowrocket },
+      surge: { sourceCount: catalog.length, sources: clientSources.surge },
       egern: { sourceCount: catalog.length, sources: clientSources.egern },
+      singbox: { sourceCount: catalog.length, sources: clientSources.singbox },
       anywhere: { ...anywhere.manifest.totals, manifestSha256: anywhere.manifest.manifestSha256 },
     },
     files: fileRecords,

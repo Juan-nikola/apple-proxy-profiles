@@ -26,14 +26,18 @@ test("fans one immutable input out to all three native clients and one closed ma
   }]]);
   const result = buildClientArtifacts({ snapshot, catalog: [source], upstream });
   assert.equal(result.files.has("shadowrocket/rules/Fixture.list"), true);
+  assert.equal(result.files.has("surge/rules/Fixture.list"), true);
   assert.equal(result.files.has("egern/rules/Fixture.yaml"), true);
+  assert.equal(result.files.has("sing-box/rules/Fixture.json"), true);
   assert.equal(result.files.has("anywhere/rules/Fixture-001.arrs"), true);
   assert.equal(result.files.has("manifest.json"), true);
-  assert.equal(result.manifest.files.length, 4);
+  assert.equal(result.manifest.files.length, 6);
   assert.deepEqual(result.manifest.clients.shadowrocket.sources[0], {
     id: "Fixture", input: 2, parsed: 2, output: 2, omitted: 0,
   });
+  assert.equal(result.manifest.clients.surge.sources[0].output, 2);
   assert.equal(result.manifest.clients.egern.sources[0].output, 2);
+  assert.equal(result.manifest.clients.singbox.sources[0].output, 2);
   assert.equal(result.manifest.clients.anywhere.outputCount, 1);
 });
 

@@ -135,6 +135,11 @@ test("secret scanning does not trust broad prose markers", () => {
   assert.equal(containsSecret(`test fake fixture password: ${realPassword}`), true);
 });
 
+test("generator code that reads credential fields is not mistaken for a credential", () => {
+  assert.equal(containsSecret('const outbound = { password: requiredString(node, "password") };'), false);
+  assert.equal(containsSecret('const outbound = { uuid: requiredString(node, "uuid") };'), false);
+});
+
 test("secret scanning removes only approved synthetic placeholders", () => {
   assert.equal(containsSecret("password: TEST_ONLY_SYNTHETIC_PASSWORD"), false);
   assert.equal(sanitizeSyntheticPlaceholders("password: DIFFERENT_TEST_VALUE"), "password: ");

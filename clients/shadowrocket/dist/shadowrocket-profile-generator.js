@@ -27,7 +27,9 @@ var ShadowrocketProfileBundle = (() => {
   var CLIENT = Object.freeze({
     shadowrocket: "shadowrocket",
     egern: "egern",
-    anywhere: "anywhere"
+    anywhere: "anywhere",
+    surge: "surge",
+    singbox: "singbox"
   });
   var OPTION_VALUES = Object.freeze({
     output: Object.freeze(["nodes", "config"]),
@@ -68,6 +70,8 @@ var ShadowrocketProfileBundle = (() => {
     macos: Object.freeze({ testInterval: 600, timeout: 5, tolerance: 100 }),
     iphone: Object.freeze({ testInterval: 1800, timeout: 7, tolerance: 150 }),
     ipad: Object.freeze({ testInterval: 1800, timeout: 7, tolerance: 150 }),
+    android: Object.freeze({ testInterval: 1800, timeout: 7, tolerance: 150 }),
+    openwrt: Object.freeze({ testInterval: 600, timeout: 5, tolerance: 100 }),
     appletv: Object.freeze({ testInterval: 3600, timeout: 8, tolerance: 200 })
   });
   function platformPolicyPreset(platform) {

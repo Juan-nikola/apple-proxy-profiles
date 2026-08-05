@@ -7,11 +7,15 @@ test("monorepo exposes all client workspaces and root verification", async () =>
   await access(new URL("../clients/shadowrocket/package.json", import.meta.url));
   await access(new URL("../clients/egern/package.json", import.meta.url));
   await access(new URL("../clients/anywhere/package.json", import.meta.url));
+  await access(new URL("../clients/surge/package.json", import.meta.url));
+  await access(new URL("../clients/sing-box/package.json", import.meta.url));
   const root = JSON.parse(await readFile(new URL("../package.json", import.meta.url), "utf8"));
   assert.deepEqual(root.workspaces, ["clients/*"]);
   assert.equal(root.scripts["verify:shadowrocket"], "npm --workspace @apple-proxy-profiles/shadowrocket run verify");
   assert.equal(root.scripts["verify:egern"], "npm --workspace @apple-proxy-profiles/egern run verify");
   assert.equal(root.scripts["verify:anywhere"], "npm --workspace @apple-proxy-profiles/anywhere run verify");
+  assert.equal(root.scripts["verify:surge"], "npm --workspace @apple-proxy-profiles/surge run verify");
+  assert.equal(root.scripts["verify:singbox"], "npm --workspace @apple-proxy-profiles/sing-box run verify");
 });
 
 test("normalized nodes expose neutral metadata only", () => {

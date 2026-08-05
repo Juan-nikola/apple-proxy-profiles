@@ -1,0 +1,19 @@
+# Upstream: https://github.com/blackmatrix7/ios_rule_script
+# Source: Gemini
+# Commit: b807e9f8b55f6fcfb2cb26f52b77fa1d3b0c4e6b
+# Converted at upstream commit time: 2026-08-03T19:30:42Z
+# License: GPL-2.0-only
+# Converted by: Juan-nikola/apple-proxy-profiles
+name = 🤖 AI 专用 · Gemini
+routing = 0
+
+2, apis.google.com
+2, bard.google.com
+2, deepmind.com
+2, deepmind.google
+2, gemini.google.com
+2, generativeai.google
+2, proactivebackend-pa.googleapis.com
+3, colab
+3, developerprofiles
+3, generativelanguage

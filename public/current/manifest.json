@@ -1009,6 +1009,769 @@
           "parsed": 12586
         }
       ]
+    },
+    "singbox": {
+      "sourceCount": 32,
+      "sources": [
+        {
+          "emittedByKind": {
+            "domain": 1,
+            "domainSuffix": 185,
+            "ipv4Cidr": 42
+          },
+          "id": "Hijacking",
+          "input": 228,
+          "omitted": 0,
+          "omittedByKind": {},
+          "output": 228,
+          "parsed": 228,
+          "sourceSha256": "47bffe4e8d4f56e736e43f1ed5f639f0b909591de09c5908df6cddad4b9e4e5b",
+          "upstreamCommit": "b807e9f8b55f6fcfb2cb26f52b77fa1d3b0c4e6b"
+        },
+        {
+          "emittedByKind": {
+            "domain": 18,
+            "domainSuffix": 4,
+            "ipv4Cidr": 37,
+            "ipv6Cidr": 4
+          },
+          "id": "BlockHttpDNS",
+          "input": 63,
+          "omitted": 0,
+          "omittedByKind": {},
+          "output": 63,
+          "parsed": 63,
+          "sourceSha256": "52753614063eff40364dcbdbbcea14f974409e197c0fe71fa716baa6fb518051",
+          "upstreamCommit": "b807e9f8b55f6fcfb2cb26f52b77fa1d3b0c4e6b"
+        },
+        {
+          "emittedByKind": {
+            "domainKeyword": 278,
+            "ipv4Cidr": 486,
+            "ipv6Cidr": 3
+          },
+          "id": "Advertising",
+          "input": 782,
+          "omitted": 15,
+          "omittedByKind": {
+            "logicalAnd": 1,
+            "urlRegex": 14
+          },
+          "output": 767,
+          "parsed": 782,
+          "sourceSha256": "6ade866f2f91b709f37b38474d1ad97c3cb923ba80d464e62bb8ee011ff53410",
+          "upstreamCommit": "b807e9f8b55f6fcfb2cb26f52b77fa1d3b0c4e6b"
+        },
+        {
+          "emittedByKind": {
+            "domain": 16448,
+            "domainSuffix": 246665
+          },
+          "id": "Advertising_Domain",
+          "input": 263113,
+          "omitted": 0,
+          "omittedByKind": {},
+          "output": 263113,
+          "parsed": 263113,
+          "sourceSha256": "9655bb556b303112e0b2b8435bed518628e76bd50d957b793c0c1b0b2de7bdd9",
+          "upstreamCommit": "b807e9f8b55f6fcfb2cb26f52b77fa1d3b0c4e6b"
+        },
+        {
+          "emittedByKind": {
+            "domainKeyword": 9,
+            "ipv4Cidr": 11
+          },
+          "id": "Privacy",
+          "input": 20,
+          "omitted": 0,
+          "omittedByKind": {},
+          "output": 20,
+          "parsed": 20,
+          "sourceSha256": "a29ccca1b7052f6fc28981646d3bb50daaee1ade27869a2f01e695d0c8d27320",
+          "upstreamCommit": "b807e9f8b55f6fcfb2cb26f52b77fa1d3b0c4e6b"
+        },
+        {
+          "emittedByKind": {
+            "domain": 53,
+            "domainSuffix": 62,
+            "ipv4Cidr": 8
+          },
+          "id": "BiliBili",
+          "input": 133,
+          "omitted": 10,
+          "omittedByKind": {
+            "processName": 6,
+            "userAgent": 4
+          },
+          "output": 123,
+          "parsed": 133,
+          "sourceSha256": "8537129301d5e4040d9f2b2255217458a16c96eef850ec22367352c512bc3988",
+          "upstreamCommit": "b807e9f8b55f6fcfb2cb26f52b77fa1d3b0c4e6b"
+        },
+        {
+          "emittedByKind": {
+            "domainSuffix": 369,
+            "ipv4Cidr": 1
+          },
+          "id": "ByteDance",
+          "input": 372,
+          "omitted": 2,
+          "omittedByKind": {
+            "processName": 1,
+            "userAgent": 1
+          },
+          "output": 370,
+          "parsed": 372,
+          "sourceSha256": "eff7a9defee6cf1f6fd91d8bc87659a3e7fb1a6f420c3793a7ba8867aeb81116",
+          "upstreamCommit": "b807e9f8b55f6fcfb2cb26f52b77fa1d3b0c4e6b"
+        },
+        {
+          "emittedByKind": {
+            "domainSuffix": 4
+          },
+          "id": "XiaoHongShu",
+          "input": 4,
+          "omitted": 0,
+          "omittedByKind": {},
+          "output": 4,
+          "parsed": 4,
+          "sourceSha256": "9fb20e80dc0962cfdf410ffbd72d6bf2a6a0ac0d930951880f98164ff229e8ff",
+          "upstreamCommit": "b807e9f8b55f6fcfb2cb26f52b77fa1d3b0c4e6b"
+        },
+        {
+          "emittedByKind": {
+            "domainKeyword": 1,
+            "domainSuffix": 3
+          },
+          "id": "Weibo",
+          "input": 4,
+          "omitted": 0,
+          "omittedByKind": {},
+          "output": 4,
+          "parsed": 4,
+          "sourceSha256": "54f8a08d7f89498f4f5ec29737c0c82feff1c69faadbd0d4722e1cbd72156f75",
+          "upstreamCommit": "b807e9f8b55f6fcfb2cb26f52b77fa1d3b0c4e6b"
+        },
+        {
+          "emittedByKind": {
+            "domain": 7,
+            "domainKeyword": 1,
+            "domainSuffix": 24,
+            "ipv4Cidr": 2
+          },
+          "id": "OpenAI",
+          "input": 35,
+          "omitted": 1,
+          "omittedByKind": {
+            "ipAsn": 1
+          },
+          "output": 34,
+          "parsed": 35,
+          "sourceSha256": "6f4047cdbf6953cf5d9b38c4ccd6da7bc6f1acb91b7a87134f25d5b8f5d2408b",
+          "upstreamCommit": "b807e9f8b55f6fcfb2cb26f52b77fa1d3b0c4e6b"
+        },
+        {
+          "emittedByKind": {
+            "domain": 1,
+            "domainSuffix": 2
+          },
+          "id": "Claude",
+          "input": 3,
+          "omitted": 0,
+          "omittedByKind": {},
+          "output": 3,
+          "parsed": 3,
+          "sourceSha256": "870e7e25d798e7f00338507f773b0eea4dfd15e25e9df0a27d5ae421ae1ab378",
+          "upstreamCommit": "b807e9f8b55f6fcfb2cb26f52b77fa1d3b0c4e6b"
+        },
+        {
+          "emittedByKind": {
+            "domain": 3,
+            "domainKeyword": 3,
+            "domainSuffix": 7
+          },
+          "id": "Gemini",
+          "input": 13,
+          "omitted": 0,
+          "omittedByKind": {},
+          "output": 13,
+          "parsed": 13,
+          "sourceSha256": "db8f69154426dca76792ab80b3ad6b0e2d078ebe0e52e76faec1724245a4ec49",
+          "upstreamCommit": "b807e9f8b55f6fcfb2cb26f52b77fa1d3b0c4e6b"
+        },
+        {
+          "emittedByKind": {
+            "domain": 20,
+            "domainKeyword": 1,
+            "domainSuffix": 26,
+            "ipv4Cidr": 2
+          },
+          "id": "Copilot",
+          "input": 51,
+          "omitted": 2,
+          "omittedByKind": {
+            "ipAsn": 2
+          },
+          "output": 49,
+          "parsed": 51,
+          "sourceSha256": "12773330de34b84b7fd2f3f2af598480ea62d8574d8e9b8ae9d011a53c044d39",
+          "upstreamCommit": "b807e9f8b55f6fcfb2cb26f52b77fa1d3b0c4e6b"
+        },
+        {
+          "emittedByKind": {
+            "domainKeyword": 1,
+            "domainSuffix": 30
+          },
+          "id": "GitHub",
+          "input": 31,
+          "omitted": 0,
+          "omittedByKind": {},
+          "output": 31,
+          "parsed": 31,
+          "sourceSha256": "ced8ab0ecda5775d04ec8ee6a57b282181108565331a6a1d85e9a26fee25d79b",
+          "upstreamCommit": "b807e9f8b55f6fcfb2cb26f52b77fa1d3b0c4e6b"
+        },
+        {
+          "emittedByKind": {
+            "domainKeyword": 1,
+            "domainSuffix": 179,
+            "ipv4Cidr": 2,
+            "ipv6Cidr": 1
+          },
+          "id": "YouTube",
+          "input": 190,
+          "omitted": 7,
+          "omittedByKind": {
+            "userAgent": 7
+          },
+          "output": 183,
+          "parsed": 190,
+          "sourceSha256": "42274e143447066e26e1ebbf21ae03ce6efb40827f41e2775a84fb16d390713d",
+          "upstreamCommit": "b807e9f8b55f6fcfb2cb26f52b77fa1d3b0c4e6b"
+        },
+        {
+          "emittedByKind": {
+            "domain": 3,
+            "domainKeyword": 4,
+            "domainSuffix": 30,
+            "ipv4Cidr": 1115,
+            "ipv6Cidr": 4
+          },
+          "id": "Netflix",
+          "input": 1158,
+          "omitted": 2,
+          "omittedByKind": {
+            "processName": 1,
+            "userAgent": 1
+          },
+          "output": 1156,
+          "parsed": 1158,
+          "sourceSha256": "aa03f015949e8f6f981d90a7d8b1acf7e88472ee48601632bd964b0bb740f8aa",
+          "upstreamCommit": "b807e9f8b55f6fcfb2cb26f52b77fa1d3b0c4e6b"
+        },
+        {
+          "emittedByKind": {
+            "domainSuffix": 172
+          },
+          "id": "Disney",
+          "input": 175,
+          "omitted": 3,
+          "omittedByKind": {
+            "processName": 2,
+            "userAgent": 1
+          },
+          "output": 172,
+          "parsed": 175,
+          "sourceSha256": "d0cfd6aee89d9d3075aef9dfadd98a2a3c6a2dba487f5091c801d1bcd70e9884",
+          "upstreamCommit": "b807e9f8b55f6fcfb2cb26f52b77fa1d3b0c4e6b"
+        },
+        {
+          "emittedByKind": {
+            "domain": 6,
+            "domainKeyword": 1,
+            "domainSuffix": 20,
+            "ipv4Cidr": 2
+          },
+          "id": "Spotify",
+          "input": 31,
+          "omitted": 2,
+          "omittedByKind": {
+            "processName": 1,
+            "userAgent": 1
+          },
+          "output": 29,
+          "parsed": 31,
+          "sourceSha256": "33bd52e8f23cda9374876259621c8fba21554035e20fa55daffbfcaee2109079",
+          "upstreamCommit": "b807e9f8b55f6fcfb2cb26f52b77fa1d3b0c4e6b"
+        },
+        {
+          "emittedByKind": {
+            "domainKeyword": 26,
+            "domainSuffix": 1,
+            "ipv4Cidr": 918,
+            "ipv6Cidr": 6
+          },
+          "id": "GlobalMedia",
+          "input": 1024,
+          "omitted": 73,
+          "omittedByKind": {
+            "processName": 3,
+            "urlRegex": 1,
+            "userAgent": 69
+          },
+          "output": 951,
+          "parsed": 1024,
+          "sourceSha256": "3d66863f40954e018e4c57675f9e531c2bb921d7fc76d82a91dde16d70f80e70",
+          "upstreamCommit": "b807e9f8b55f6fcfb2cb26f52b77fa1d3b0c4e6b"
+        },
+        {
+          "emittedByKind": {
+            "domain": 2,
+            "domainKeyword": 1,
+            "domainSuffix": 22,
+            "ipv4Cidr": 6,
+            "ipv6Cidr": 4
+          },
+          "id": "Telegram",
+          "input": 46,
+          "omitted": 11,
+          "omittedByKind": {
+            "ipAsn": 5,
+            "logicalOr": 1,
+            "processName": 5
+          },
+          "output": 35,
+          "parsed": 46,
+          "sourceSha256": "3b375bee8b2ff16d6c955804a5a3638e6e8fdfcc58d209506a928bdd4cc9891a",
+          "upstreamCommit": "b807e9f8b55f6fcfb2cb26f52b77fa1d3b0c4e6b"
+        },
+        {
+          "emittedByKind": {
+            "domainKeyword": 2,
+            "domainSuffix": 544,
+            "ipv4Cidr": 23
+          },
+          "id": "Facebook",
+          "input": 570,
+          "omitted": 1,
+          "omittedByKind": {
+            "ipAsn": 1
+          },
+          "output": 569,
+          "parsed": 570,
+          "sourceSha256": "747563c96825bbd5f868be955543b0ca1979064e7b094f8aab08aafbce577c36",
+          "upstreamCommit": "b807e9f8b55f6fcfb2cb26f52b77fa1d3b0c4e6b"
+        },
+        {
+          "emittedByKind": {
+            "domainKeyword": 1,
+            "domainSuffix": 3
+          },
+          "id": "Instagram",
+          "input": 4,
+          "omitted": 0,
+          "omittedByKind": {},
+          "output": 4,
+          "parsed": 4,
+          "sourceSha256": "65f28f9253b0dbb2a81485c788537896a0817766685e7bd91b2f90ec7aa19548",
+          "upstreamCommit": "b807e9f8b55f6fcfb2cb26f52b77fa1d3b0c4e6b"
+        },
+        {
+          "emittedByKind": {
+            "domainKeyword": 1,
+            "domainSuffix": 26,
+            "ipv4Cidr": 6
+          },
+          "id": "Twitter",
+          "input": 33,
+          "omitted": 0,
+          "omittedByKind": {},
+          "output": 33,
+          "parsed": 33,
+          "sourceSha256": "64c836f2431ca0d4728cc545bb74280ee50c886e346040012e6cdd2f3eee3f97",
+          "upstreamCommit": "b807e9f8b55f6fcfb2cb26f52b77fa1d3b0c4e6b"
+        },
+        {
+          "emittedByKind": {
+            "domain": 4,
+            "domainKeyword": 2,
+            "domainSuffix": 25
+          },
+          "id": "TikTok",
+          "input": 33,
+          "omitted": 2,
+          "omittedByKind": {
+            "processName": 1,
+            "userAgent": 1
+          },
+          "output": 31,
+          "parsed": 33,
+          "sourceSha256": "b44559153af1e15e49ea1f2e161230276aee0fd29d697f2a4d635f4a484e2220",
+          "upstreamCommit": "b807e9f8b55f6fcfb2cb26f52b77fa1d3b0c4e6b"
+        },
+        {
+          "emittedByKind": {
+            "domainKeyword": 7,
+            "ipv4Cidr": 10,
+            "ipv6Cidr": 3
+          },
+          "id": "Apple",
+          "input": 56,
+          "omitted": 36,
+          "omittedByKind": {
+            "processName": 13,
+            "userAgent": 23
+          },
+          "output": 20,
+          "parsed": 56,
+          "sourceSha256": "903b2282b621320e3ad3143ddcd30b01821e6d0aad82f3e61f2e5c2610925b8a",
+          "upstreamCommit": "b807e9f8b55f6fcfb2cb26f52b77fa1d3b0c4e6b"
+        },
+        {
+          "emittedByKind": {
+            "domain": 1,
+            "domainKeyword": 4,
+            "domainSuffix": 663
+          },
+          "id": "Microsoft",
+          "input": 673,
+          "omitted": 5,
+          "omittedByKind": {
+            "processName": 2,
+            "userAgent": 3
+          },
+          "output": 668,
+          "parsed": 673,
+          "sourceSha256": "a2854b28dc9f903a64933c74fff5b50166e9bbebc70fdfce18c592f75793ff14",
+          "upstreamCommit": "b807e9f8b55f6fcfb2cb26f52b77fa1d3b0c4e6b"
+        },
+        {
+          "emittedByKind": {
+            "domain": 12,
+            "domainSuffix": 5
+          },
+          "id": "SteamCN",
+          "input": 17,
+          "omitted": 0,
+          "omittedByKind": {},
+          "output": 17,
+          "parsed": 17,
+          "sourceSha256": "82c144434e9199c524d95caa8e3659c9f6f1de9fd23b223a58b5d3c821923936",
+          "upstreamCommit": "b807e9f8b55f6fcfb2cb26f52b77fa1d3b0c4e6b"
+        },
+        {
+          "emittedByKind": {
+            "domain": 297,
+            "domainSuffix": 111269
+          },
+          "id": "ChinaMax_Domain",
+          "input": 111566,
+          "omitted": 0,
+          "omittedByKind": {},
+          "output": 111566,
+          "parsed": 111566,
+          "sourceSha256": "61502a008c045b852b8fcbdcb01c7d93035868435591c5bebc2988f38161170e",
+          "upstreamCommit": "b807e9f8b55f6fcfb2cb26f52b77fa1d3b0c4e6b"
+        },
+        {
+          "emittedByKind": {
+            "domain": 8,
+            "domainKeyword": 4,
+            "domainSuffix": 539,
+            "ipv4Cidr": 46
+          },
+          "id": "Game",
+          "input": 597,
+          "omitted": 0,
+          "omittedByKind": {},
+          "output": 597,
+          "parsed": 597,
+          "sourceSha256": "b146576a2dd8aad74634bb70aa345eeee82e013445c598bb8585ef5e60f48222",
+          "upstreamCommit": "b807e9f8b55f6fcfb2cb26f52b77fa1d3b0c4e6b"
+        },
+        {
+          "emittedByKind": {
+            "domainKeyword": 5,
+            "domainSuffix": 1
+          },
+          "id": "Download",
+          "input": 20,
+          "omitted": 14,
+          "omittedByKind": {
+            "processName": 13,
+            "urlRegex": 1
+          },
+          "output": 6,
+          "parsed": 20,
+          "sourceSha256": "32bb1052491936ed42c1a7f2d783c1b711086541eedf2bb0f027c4c3106dfbf5",
+          "upstreamCommit": "b807e9f8b55f6fcfb2cb26f52b77fa1d3b0c4e6b"
+        },
+        {
+          "emittedByKind": {
+            "domain": 118,
+            "domainKeyword": 4,
+            "domainSuffix": 123,
+            "ipv4Cidr": 3
+          },
+          "id": "PrivateTracker",
+          "input": 248,
+          "omitted": 0,
+          "omittedByKind": {},
+          "output": 248,
+          "parsed": 248,
+          "sourceSha256": "910ad846c9a866e523372d02dd8d9518fa96256f337f19d34174c5d07699397f",
+          "upstreamCommit": "b807e9f8b55f6fcfb2cb26f52b77fa1d3b0c4e6b"
+        },
+        {
+          "emittedByKind": {
+            "domainKeyword": 13,
+            "domainSuffix": 51,
+            "ipv4Cidr": 8245,
+            "ipv6Cidr": 4199
+          },
+          "id": "ChinaMax",
+          "input": 12586,
+          "omitted": 78,
+          "omittedByKind": {
+            "ipAsn": 1,
+            "processName": 12,
+            "userAgent": 65
+          },
+          "output": 12508,
+          "parsed": 12586,
+          "sourceSha256": "230c819c029e33c3bea7df7e13da76107359d327f4ca3e358cd5edf20cce7c43",
+          "upstreamCommit": "b807e9f8b55f6fcfb2cb26f52b77fa1d3b0c4e6b"
+        }
+      ]
+    },
+    "surge": {
+      "sourceCount": 32,
+      "sources": [
+        {
+          "id": "Hijacking",
+          "input": 228,
+          "omitted": 0,
+          "output": 228,
+          "parsed": 228
+        },
+        {
+          "id": "BlockHttpDNS",
+          "input": 63,
+          "omitted": 0,
+          "output": 63,
+          "parsed": 63
+        },
+        {
+          "id": "Advertising",
+          "input": 782,
+          "omitted": 0,
+          "output": 782,
+          "parsed": 782
+        },
+        {
+          "id": "Advertising_Domain",
+          "input": 263113,
+          "omitted": 0,
+          "output": 263113,
+          "parsed": 263113
+        },
+        {
+          "id": "Privacy",
+          "input": 20,
+          "omitted": 0,
+          "output": 20,
+          "parsed": 20
+        },
+        {
+          "id": "BiliBili",
+          "input": 133,
+          "omitted": 0,
+          "output": 133,
+          "parsed": 133
+        },
+        {
+          "id": "ByteDance",
+          "input": 372,
+          "omitted": 0,
+          "output": 372,
+          "parsed": 372
+        },
+        {
+          "id": "XiaoHongShu",
+          "input": 4,
+          "omitted": 0,
+          "output": 4,
+          "parsed": 4
+        },
+        {
+          "id": "Weibo",
+          "input": 4,
+          "omitted": 0,
+          "output": 4,
+          "parsed": 4
+        },
+        {
+          "id": "OpenAI",
+          "input": 35,
+          "omitted": 0,
+          "output": 35,
+          "parsed": 35
+        },
+        {
+          "id": "Claude",
+          "input": 3,
+          "omitted": 0,
+          "output": 3,
+          "parsed": 3
+        },
+        {
+          "id": "Gemini",
+          "input": 13,
+          "omitted": 0,
+          "output": 13,
+          "parsed": 13
+        },
+        {
+          "id": "Copilot",
+          "input": 51,
+          "omitted": 0,
+          "output": 51,
+          "parsed": 51
+        },
+        {
+          "id": "GitHub",
+          "input": 31,
+          "omitted": 0,
+          "output": 31,
+          "parsed": 31
+        },
+        {
+          "id": "YouTube",
+          "input": 190,
+          "omitted": 0,
+          "output": 190,
+          "parsed": 190
+        },
+        {
+          "id": "Netflix",
+          "input": 1158,
+          "omitted": 0,
+          "output": 1158,
+          "parsed": 1158
+        },
+        {
+          "id": "Disney",
+          "input": 175,
+          "omitted": 0,
+          "output": 175,
+          "parsed": 175
+        },
+        {
+          "id": "Spotify",
+          "input": 31,
+          "omitted": 0,
+          "output": 31,
+          "parsed": 31
+        },
+        {
+          "id": "GlobalMedia",
+          "input": 1024,
+          "omitted": 0,
+          "output": 1024,
+          "parsed": 1024
+        },
+        {
+          "id": "Telegram",
+          "input": 46,
+          "omitted": 0,
+          "output": 46,
+          "parsed": 46
+        },
+        {
+          "id": "Facebook",
+          "input": 570,
+          "omitted": 0,
+          "output": 570,
+          "parsed": 570
+        },
+        {
+          "id": "Instagram",
+          "input": 4,
+          "omitted": 0,
+          "output": 4,
+          "parsed": 4
+        },
+        {
+          "id": "Twitter",
+          "input": 33,
+          "omitted": 0,
+          "output": 33,
+          "parsed": 33
+        },
+        {
+          "id": "TikTok",
+          "input": 33,
+          "omitted": 0,
+          "output": 33,
+          "parsed": 33
+        },
+        {
+          "id": "Apple",
+          "input": 56,
+          "omitted": 0,
+          "output": 56,
+          "parsed": 56
+        },
+        {
+          "id": "Microsoft",
+          "input": 673,
+          "omitted": 0,
+          "output": 673,
+          "parsed": 673
+        },
+        {
+          "id": "SteamCN",
+          "input": 17,
+          "omitted": 0,
+          "output": 17,
+          "parsed": 17
+        },
+        {
+          "id": "ChinaMax_Domain",
+          "input": 111566,
+          "omitted": 0,
+          "output": 111566,
+          "parsed": 111566
+        },
+        {
+          "id": "Game",
+          "input": 597,
+          "omitted": 0,
+          "output": 597,
+          "parsed": 597
+        },
+        {
+          "id": "Download",
+          "input": 20,
+          "omitted": 0,
+          "output": 20,
+          "parsed": 20
+        },
+        {
+          "id": "PrivateTracker",
+          "input": 248,
+          "omitted": 0,
+          "output": 248,
+          "parsed": 248
+        },
+        {
+          "id": "ChinaMax",
+          "input": 12586,
+          "omitted": 0,
+          "output": 12586,
+          "parsed": 12586
+        }
+      ]
     }
   },
   "files": [
@@ -1203,14 +1966,14 @@
       "sha256": "c4b6b9a9cb1f30df59596b12c39658b5f4d26da91100d1c373ee2df1e08155cc"
     },
     {
-      "bytes": 105540,
+      "bytes": 105916,
       "path": "anywhere/scripts/anywhere-node-generator.js",
-      "sha256": "5bcfd14ebebe477008e6704edda750bad6875d75e4f8cc3bdd0deba0cc70e9f2"
+      "sha256": "212f9116590c29f9c198c341ce02722f1c632a616576a873dbfdd7f024a8c37a"
     },
     {
-      "bytes": 105540,
+      "bytes": 105916,
       "path": "anywhere/scripts/substore-node-generator.js",
-      "sha256": "5bcfd14ebebe477008e6704edda750bad6875d75e4f8cc3bdd0deba0cc70e9f2"
+      "sha256": "212f9116590c29f9c198c341ce02722f1c632a616576a873dbfdd7f024a8c37a"
     },
     {
       "bytes": 31812,
@@ -1388,24 +2151,24 @@
       "sha256": "f0e39d51024a425a62f5b8eb681af44316c2467669ed75280aa37023c6f991eb"
     },
     {
-      "bytes": 126907,
+      "bytes": 127283,
       "path": "egern/scripts/egern-node-generator.js",
-      "sha256": "22dea4b9a5aa8f557f4d95f89b40f8cdc157078bdc166c0217dc7a0eabd958f8"
+      "sha256": "3db17e530b1577bd7d1d966a9a65464343145d67ee362dfbeb1aa914ed71ee72"
     },
     {
-      "bytes": 199568,
+      "bytes": 200103,
       "path": "egern/scripts/egern-profile-generator.js",
-      "sha256": "a92ba4e048cfed1ece1c6de7223c5f76d56218e2dfe45a3adcd71cd90456f90a"
+      "sha256": "fff5c2334ac2491ca7f98959d7564b09a4cfb5bd94264dd87f75704cb370bfa6"
     },
     {
-      "bytes": 126907,
+      "bytes": 127283,
       "path": "egern/scripts/substore-node-generator.js",
-      "sha256": "22dea4b9a5aa8f557f4d95f89b40f8cdc157078bdc166c0217dc7a0eabd958f8"
+      "sha256": "3db17e530b1577bd7d1d966a9a65464343145d67ee362dfbeb1aa914ed71ee72"
     },
     {
-      "bytes": 199568,
+      "bytes": 200103,
       "path": "egern/scripts/substore-profile-generator.js",
-      "sha256": "a92ba4e048cfed1ece1c6de7223c5f76d56218e2dfe45a3adcd71cd90456f90a"
+      "sha256": "fff5c2334ac2491ca7f98959d7564b09a4cfb5bd94264dd87f75704cb370bfa6"
     },
     {
       "bytes": 19629,
@@ -1583,28 +2346,408 @@
       "sha256": "3bdb543fe9f6bc290fe3958a6a8b37058e6223f9c0c8342cd8aa5a4cfb193c9b"
     },
     {
-      "bytes": 81536,
+      "bytes": 81912,
       "path": "shadowrocket/scripts/shadowrocket-node-operator.js",
-      "sha256": "fe6b695b9171c37e58018c8d93e418b5e932883fac32ed646081a1803d6e40ed"
+      "sha256": "53cf94951fee177b68e06bd76d6fa42ff85ba4ee7f7abc8289599476fada0bdd"
     },
     {
-      "bytes": 51943,
+      "bytes": 52146,
       "path": "shadowrocket/scripts/shadowrocket-profile-generator.js",
-      "sha256": "ff00d0036395530c350ccbde2bb596a95707bdcbc2d7a06228ae2904efddbf63"
+      "sha256": "ed9aca3c3bca44d26900d9c154f52ba3db3507925dbb7b558a1fbd12a52cf19c"
     },
     {
-      "bytes": 81536,
+      "bytes": 81912,
       "path": "shadowrocket/scripts/substore-node-operator.js",
-      "sha256": "fe6b695b9171c37e58018c8d93e418b5e932883fac32ed646081a1803d6e40ed"
+      "sha256": "53cf94951fee177b68e06bd76d6fa42ff85ba4ee7f7abc8289599476fada0bdd"
     },
     {
-      "bytes": 51943,
+      "bytes": 52146,
       "path": "shadowrocket/scripts/substore-profile-generator.js",
-      "sha256": "ff00d0036395530c350ccbde2bb596a95707bdcbc2d7a06228ae2904efddbf63"
+      "sha256": "ed9aca3c3bca44d26900d9c154f52ba3db3507925dbb7b558a1fbd12a52cf19c"
+    },
+    {
+      "bytes": 27377,
+      "path": "sing-box/examples/sing-box-android.json",
+      "sha256": "1dbcd4f618f18194ef8af90ffa38e74fcd38a9e885167d469f664d62f59915c9"
+    },
+    {
+      "bytes": 27385,
+      "path": "sing-box/examples/sing-box-ipad.json",
+      "sha256": "2331fc646ae63739b57d9cc44a61cd7dd9d0457fb47541d10655d8e06e58f4b9"
+    },
+    {
+      "bytes": 27385,
+      "path": "sing-box/examples/sing-box-iphone.json",
+      "sha256": "2331fc646ae63739b57d9cc44a61cd7dd9d0457fb47541d10655d8e06e58f4b9"
+    },
+    {
+      "bytes": 27377,
+      "path": "sing-box/examples/sing-box-macos.json",
+      "sha256": "d6e93b92f945c6543c849ffb1da96be2706165f861186d2acd0337c6389f24d0"
+    },
+    {
+      "bytes": 27513,
+      "path": "sing-box/examples/sing-box-openwrt.json",
+      "sha256": "6ee7f77e6d7ec2b476f0e70070c65dbcc7d89cc46ff326c7a83bf41f16c08e0a"
+    },
+    {
+      "bytes": 52805,
+      "path": "sing-box/rules/Advertising.json",
+      "sha256": "32cd8e38e92a2f25156656cc93f30daa60792baa7187455188f842fc0410f957"
+    },
+    {
+      "bytes": 19625452,
+      "path": "sing-box/rules/Advertising_Domain.json",
+      "sha256": "15aed90812ece58e8089125b73c1c9bd144a90daf119e2212a2330041e4e5fc0"
+    },
+    {
+      "bytes": 1417,
+      "path": "sing-box/rules/Apple.json",
+      "sha256": "06e9b54db4429acb7e38e88af4471c548b0d2f50dbb55880df53466051cbbb62"
+    },
+    {
+      "bytes": 9356,
+      "path": "sing-box/rules/BiliBili.json",
+      "sha256": "5cad85b8d4af4dd19d890ef4e4869014c1c3f6d82fe4c06c61b980f27529a6bb"
+    },
+    {
+      "bytes": 4431,
+      "path": "sing-box/rules/BlockHttpDNS.json",
+      "sha256": "0b3b1e56c46d14644ebc8479545f804341a86d441dc5da12547d1c1cdc237255"
+    },
+    {
+      "bytes": 26085,
+      "path": "sing-box/rules/ByteDance.json",
+      "sha256": "3d22dbec67186c2e0ffd493f72affc228e9d4089919bc742fac7dc4cdceb9de5"
+    },
+    {
+      "bytes": 839506,
+      "path": "sing-box/rules/ChinaMax.json",
+      "sha256": "402b6563e7ef0109633b5a0e63741948a4adc59906a8eb452dd7e45c9905d4a8"
+    },
+    {
+      "bytes": 7662099,
+      "path": "sing-box/rules/ChinaMax_Domain.json",
+      "sha256": "7aadf06c59b0c488df0adeb4b4e7f4df68531bf0e6e887a2d6c80d2e773594db"
+    },
+    {
+      "bytes": 239,
+      "path": "sing-box/rules/Claude.json",
+      "sha256": "ffe8961ffcf134dbabf82899ea3e7a83b455101b1a6c6020ef414eefac7cade5"
+    },
+    {
+      "bytes": 3630,
+      "path": "sing-box/rules/Copilot.json",
+      "sha256": "f80d133dae5bd17b5b06e16fb75a14f06ee0601e2a5a11da5f59828fff7421ce"
+    },
+    {
+      "bytes": 12630,
+      "path": "sing-box/rules/Disney.json",
+      "sha256": "7d8bd607c021189d9972d93f6d3095e97650da069c34a545af3f933eaf991a5b"
+    },
+    {
+      "bytes": 430,
+      "path": "sing-box/rules/Download.json",
+      "sha256": "65b668d6044edeaeb9f057ed94a3a89aaed2ed7ac1b2a99a648f5a96cb937b52"
+    },
+    {
+      "bytes": 40849,
+      "path": "sing-box/rules/Facebook.json",
+      "sha256": "96c6ef2e9b940a0735c66dc5f945afc12e9fa506cd445f461aa2700d408004b3"
+    },
+    {
+      "bytes": 43624,
+      "path": "sing-box/rules/Game.json",
+      "sha256": "b872f833c699a792df9b02cba81c7887cd9bf1c8819c2e74ba44aa1d6aab6375"
+    },
+    {
+      "bytes": 999,
+      "path": "sing-box/rules/Gemini.json",
+      "sha256": "ef74e784dc41c7e148c4d8f165e85c611ffa2851d1e2c536a4bf727b4e360f2a"
+    },
+    {
+      "bytes": 2278,
+      "path": "sing-box/rules/GitHub.json",
+      "sha256": "9e79f9761097ddbe6548c5c423d992a7a0d43d5eadcfa219fc03208c276e9843"
+    },
+    {
+      "bytes": 63542,
+      "path": "sing-box/rules/GlobalMedia.json",
+      "sha256": "571a381857bb13490ce9410c7051b60cb492d580aa9deb2c231d572e48e23d2d"
+    },
+    {
+      "bytes": 15696,
+      "path": "sing-box/rules/Hijacking.json",
+      "sha256": "9b4e3215b1826b0645c73a9bdaaec41b6b64db30cb5078122b8e5f09d4ec21e7"
+    },
+    {
+      "bytes": 313,
+      "path": "sing-box/rules/Instagram.json",
+      "sha256": "a8f37f56f621e3c7580327b205c2c3d466064cd03689794af00aa711ba1b0078"
+    },
+    {
+      "bytes": 48348,
+      "path": "sing-box/rules/Microsoft.json",
+      "sha256": "d53aa111e7a40dfcfa13b5b42caabd05928274461613cf332f3ed917ee96d089"
+    },
+    {
+      "bytes": 76393,
+      "path": "sing-box/rules/Netflix.json",
+      "sha256": "6640f6a8e2cf17c566eb9152949f2c87e3c5e13ecdb9714d01cd911df3c35137"
+    },
+    {
+      "bytes": 2557,
+      "path": "sing-box/rules/OpenAI.json",
+      "sha256": "d354cae7fe9324daed0fa3d4dab22354b89be173956a2916c256a98083613c93"
+    },
+    {
+      "bytes": 1365,
+      "path": "sing-box/rules/Privacy.json",
+      "sha256": "9df436c64273ea9a0956250c2334ef5724b371583c70a560d573a4fadeac2d39"
+    },
+    {
+      "bytes": 17039,
+      "path": "sing-box/rules/PrivateTracker.json",
+      "sha256": "b474cce523a458446135c70de868f3b5b4511d694f69cafb1f863ab6737db4a8"
+    },
+    {
+      "bytes": 2190,
+      "path": "sing-box/rules/Spotify.json",
+      "sha256": "90e253b4fb2836497b7f67b37ada1fd9c7b8d53e962e35c23908f7e3073088a7"
+    },
+    {
+      "bytes": 1242,
+      "path": "sing-box/rules/SteamCN.json",
+      "sha256": "b4fda90ad68cf0cb5815d9cf700b234d0c5471983adb2770eaa10c747125d44e"
+    },
+    {
+      "bytes": 2400,
+      "path": "sing-box/rules/Telegram.json",
+      "sha256": "d926814637ac5e7f22c34333ff919daff46bb38925893c5843ac2ec4d0728689"
+    },
+    {
+      "bytes": 2214,
+      "path": "sing-box/rules/TikTok.json",
+      "sha256": "946115f7b14a703d356721c687f854f4e39779df79edc004a1f76ce0e4ac88ce"
+    },
+    {
+      "bytes": 2281,
+      "path": "sing-box/rules/Twitter.json",
+      "sha256": "dec51ab42a61c7e027689e77610e3c62744dd50c117e234095990359cf2ee80a"
+    },
+    {
+      "bytes": 299,
+      "path": "sing-box/rules/Weibo.json",
+      "sha256": "6e2607f6b6dd48e03ba72dc60e7dc658b9bcca8e14e05c6c13dccbec5e7d1108"
+    },
+    {
+      "bytes": 316,
+      "path": "sing-box/rules/XiaoHongShu.json",
+      "sha256": "4e6fb2e9f37f3e6bad52ce28ac548d129112cf6b14a528369609ffd2e98b8591"
+    },
+    {
+      "bytes": 12709,
+      "path": "sing-box/rules/YouTube.json",
+      "sha256": "ca3a49e383d63ea7f4e3c3899bb6bad4204cb3b282771fc8f7916ed6f54040e1"
+    },
+    {
+      "bytes": 46836,
+      "path": "sing-box/scripts/sing-box-config-generator.js",
+      "sha256": "9e4b6c75f859b69d4be0f4f5d7f237f3c1f513676f54812654c9d35282425333"
+    },
+    {
+      "bytes": 46836,
+      "path": "sing-box/scripts/substore-config-generator.js",
+      "sha256": "9e4b6c75f859b69d4be0f4f5d7f237f3c1f513676f54812654c9d35282425333"
+    },
+    {
+      "bytes": 10529,
+      "path": "surge/examples/surge-ipad.conf",
+      "sha256": "f23df80332deea11c03f8653a72103431707dff66ecfad2316aee63425538cec"
+    },
+    {
+      "bytes": 10529,
+      "path": "surge/examples/surge-iphone.conf",
+      "sha256": "f23df80332deea11c03f8653a72103431707dff66ecfad2316aee63425538cec"
+    },
+    {
+      "bytes": 10524,
+      "path": "surge/examples/surge-macos.conf",
+      "sha256": "9344da306d4ece96290e3bbfa043b90ea6d78d9b842417530387a0a9ad33986f"
+    },
+    {
+      "bytes": 27237,
+      "path": "surge/rules/Advertising.list",
+      "sha256": "3628d6e77d789f51770c88dad837a6aa21e30ac0b0d992b4cb33f2eb08d9200a"
+    },
+    {
+      "bytes": 5253548,
+      "path": "surge/rules/Advertising_Domain.list",
+      "sha256": "fd3a4549ae233bcd48854128e962c5154d48cb8e9fe28d7f4b5cc9a955a2549c"
+    },
+    {
+      "bytes": 2102,
+      "path": "surge/rules/Apple.list",
+      "sha256": "c241eb4c1108bb762cd2bcd15162aa83232ce3912db4543ae6bca2bcc90912a5"
+    },
+    {
+      "bytes": 5046,
+      "path": "surge/rules/BiliBili.list",
+      "sha256": "5f9fa8950b099f06de6a0417cf7c00a1b4343f627bff84944c785e73136e8ae0"
+    },
+    {
+      "bytes": 2714,
+      "path": "surge/rules/BlockHttpDNS.list",
+      "sha256": "127747f4f7428999df350e073b0698a0eed3c89b87b5ae5422f7dab6488501ea"
+    },
+    {
+      "bytes": 11092,
+      "path": "surge/rules/ByteDance.list",
+      "sha256": "3af01e54c203480752cf7428345d43cec5ae4624fa2e77b46681f169b127af0c"
+    },
+    {
+      "bytes": 453815,
+      "path": "surge/rules/ChinaMax.list",
+      "sha256": "939bf8d2210fcf48eb3b7681f0d7efd0496a5e7409d7f89c1485c0811f828537"
+    },
+    {
+      "bytes": 1528312,
+      "path": "surge/rules/ChinaMax_Domain.list",
+      "sha256": "df3ed2a105a9edba1b15f885f75cb78d8d6838575866db37e5a2a58004b3a73d"
+    },
+    {
+      "bytes": 542,
+      "path": "surge/rules/Claude.list",
+      "sha256": "143beb5e99a3e72d49f8eacb758f2c3108374b4838858f17132aedd867623e4b"
+    },
+    {
+      "bytes": 2123,
+      "path": "surge/rules/Copilot.list",
+      "sha256": "649d9d1357482628518fd030fad6eda43661312b3eb6ccc363fd66a335056148"
+    },
+    {
+      "bytes": 5974,
+      "path": "surge/rules/Disney.list",
+      "sha256": "5df669706b352d2ece9b3a295c02acb75c60402cbfb0dcab103ae8603e574203"
+    },
+    {
+      "bytes": 1074,
+      "path": "surge/rules/Download.list",
+      "sha256": "3c0bd82c0a4eaf2184cfd5572e3c96328f9c29c0705bfb7e15b93d61ba8dfa79"
+    },
+    {
+      "bytes": 17703,
+      "path": "surge/rules/Facebook.list",
+      "sha256": "a4969c9cd28b08f824c59f730706f8d66b9adcd62299ee8d9a3aa2d4ba5f203e"
+    },
+    {
+      "bytes": 19519,
+      "path": "surge/rules/Game.list",
+      "sha256": "6997e6e2ce3ad254c894ba31443ba39f62903b0d4653c907980d7671ab8f4c3f"
+    },
+    {
+      "bytes": 904,
+      "path": "surge/rules/Gemini.list",
+      "sha256": "ec5459b56d8ac0e540b7d22ec0d7e75dff964567a8e5101d4b2c6f5739afd405"
+    },
+    {
+      "bytes": 1416,
+      "path": "surge/rules/GitHub.list",
+      "sha256": "f2b1a43858138cd9c5ca6eb69919891ec8fa25e701541fce5741fbb45e4fd5ff"
+    },
+    {
+      "bytes": 36033,
+      "path": "surge/rules/GlobalMedia.list",
+      "sha256": "3bd20861c061079e3c1e9a11ca54937e96b365ea4daeffa0ae439acee8e6399e"
+    },
+    {
+      "bytes": 7040,
+      "path": "surge/rules/Hijacking.list",
+      "sha256": "655fe21368b1ea0c8c7a58f81324d5aaec59b7d7539a164600fb85d238032dd0"
+    },
+    {
+      "bytes": 591,
+      "path": "surge/rules/Instagram.list",
+      "sha256": "5a10c76f4e351bd85f9555b3e61d62aa2b7e39df7b0a99090042908383d6daf4"
+    },
+    {
+      "bytes": 20911,
+      "path": "surge/rules/Microsoft.list",
+      "sha256": "09ddad1e35f89c93e8efa40495eb0abddfd302c1b1493f0ec1f25cddd48449d3"
+    },
+    {
+      "bytes": 40727,
+      "path": "surge/rules/Netflix.list",
+      "sha256": "def23a64c25c79a1e59aa569219c40a3f47c4582ec1b3f77e545276e430e21dc"
+    },
+    {
+      "bytes": 1652,
+      "path": "surge/rules/OpenAI.list",
+      "sha256": "8ef00f55406ced640f377d8400c7ea7388856cdfbbe237cd732f87b6e49dccf9"
+    },
+    {
+      "bytes": 1122,
+      "path": "surge/rules/Privacy.list",
+      "sha256": "e51b69ab19158ba6a66b56bf1b32f56202e57e7d91840740fe960daf538348c5"
+    },
+    {
+      "bytes": 7150,
+      "path": "surge/rules/PrivateTracker.list",
+      "sha256": "080fa9d4ffa93de9eb3e6a5a93e380b2c974742aefb0b6c20ee9a84977b8b334"
+    },
+    {
+      "bytes": 1547,
+      "path": "surge/rules/Spotify.list",
+      "sha256": "487940b04ca564e3c99e7a649e3dac39d743aa3033348a7292dec475c9162c23"
+    },
+    {
+      "bytes": 963,
+      "path": "surge/rules/SteamCN.list",
+      "sha256": "685d95c3ee9f7c293e32f389e5d983ee814c6ca05ac09984a1cb4828efa041cf"
+    },
+    {
+      "bytes": 1983,
+      "path": "surge/rules/Telegram.list",
+      "sha256": "69183f4392880526917e6e2aa72d2037bcb85999b85809d34af0477faae77bfa"
+    },
+    {
+      "bytes": 1455,
+      "path": "surge/rules/TikTok.list",
+      "sha256": "da6fa417178378b60674ee5b97df9a2b7bed76e7094c855850f1ec58776d2181"
+    },
+    {
+      "bytes": 1417,
+      "path": "surge/rules/Twitter.list",
+      "sha256": "10c9b68d526e3feabbbbc364cab0e346f9baa30c11b78137cd8334c858893e3a"
+    },
+    {
+      "bytes": 565,
+      "path": "surge/rules/Weibo.list",
+      "sha256": "1f56827a7dc16ace3e4bf69747d6f9be33d3d230cc00801fc97c9d2e7dbb4907"
+    },
+    {
+      "bytes": 580,
+      "path": "surge/rules/XiaoHongShu.list",
+      "sha256": "fd664e286cbea63457f2b86b34fa34ca31f79b6bbfbd5913dc0f370acbf4f77b"
+    },
+    {
+      "bytes": 5753,
+      "path": "surge/rules/YouTube.list",
+      "sha256": "3bdb543fe9f6bc290fe3958a6a8b37058e6223f9c0c8342cd8aa5a4cfb193c9b"
+    },
+    {
+      "bytes": 45143,
+      "path": "surge/scripts/substore-profile-generator.js",
+      "sha256": "bbc16fe2e004c317f3d407711e4ec8042058bc5769c5b8b9489bc2a1ed51a563"
+    },
+    {
+      "bytes": 45143,
+      "path": "surge/scripts/surge-profile-generator.js",
+      "sha256": "bbc16fe2e004c317f3d407711e4ec8042058bc5769c5b8b9489bc2a1ed51a563"
     }
   ],
   "generatedAt": "2026-08-03T19:30:42Z",
-  "manifestHash": "5214cece9813ddd190de8758184dc68a5852e594c2f8564f9e4ab1ac8a427994",
+  "manifestHash": "7ecf6b3b2953e8e61984e5b783de401f7eb52eb1e49abbc66ddd5da1c2318a35",
   "schemaVersion": 1,
   "upstream": {
     "branch": "master",

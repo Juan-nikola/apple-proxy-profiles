@@ -1,0 +1,48 @@
+# Upstream: https://github.com/blackmatrix7/ios_rule_script
+# Path: rule/Surge/TikTok/TikTok.list
+# Commit: b807e9f8b55f6fcfb2cb26f52b77fa1d3b0c4e6b
+# Committed at: 2026-08-03T19:30:42Z
+# License: GPL-2.0-only
+# Changed by: Juan-nikola/apple-proxy-profiles
+# Output entries: 32
+# Omitted entries: 1
+domain_set:
+  - "lf16-effectcdn.byteeffecttos-g.com"
+  - "lf16-pkgcdn.pitaya-clientai.com"
+  - "p16-tiktokcdn-com.akamaized.net"
+  - "trae-api-sg.mchost.guru"
+domain_suffix_set:
+  - "bytedapm.com"
+  - "bytegecko-i18n.com"
+  - "byteintlapi.com"
+  - "byteoversea.com"
+  - "capcut.com"
+  - "ibytedtos.com"
+  - "ibyteimg.com"
+  - "ipstatp.com"
+  - "isnssdk.com"
+  - "marscode.com"
+  - "muscdn.com"
+  - "musical.ly"
+  - "sgpstatp.com"
+  - "snssdk.com"
+  - "tik-tokapi.com"
+  - "tiktok.com"
+  - "tiktokcdn-us.com"
+  - "tiktokcdn.com"
+  - "tiktokd.net"
+  - "tiktokd.org"
+  - "tiktokmusic.app"
+  - "tiktokv.com"
+  - "tiktokv.us"
+  - "trae.ai"
+  - "ttwebview.com"
+domain_keyword_set:
+  - "musical.ly"
+  - "tiktok"
+ip_cidr_set: []
+ip_cidr6_set: []
+asn_set: []
+url_regex_set: []
+user_agent_set:
+  - "TikTok*"

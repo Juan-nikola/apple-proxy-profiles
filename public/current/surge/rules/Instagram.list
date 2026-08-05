@@ -1,0 +1,19 @@
+# Upstream: https://github.com/blackmatrix7/ios_rule_script
+# Path: rule/Surge/Instagram/Instagram.list
+# Commit: b807e9f8b55f6fcfb2cb26f52b77fa1d3b0c4e6b
+# Committed at: 2026-08-03T19:30:42Z
+# License: GPL-2.0-only
+# Changed by: Juan-nikola/apple-proxy-profiles
+# Output entries: 4
+# Omitted entries: 0
+# NAME: Instagram
+# AUTHOR: blackmatrix7
+# REPO: https://github.com/blackmatrix7/ios_rule_script
+# UPDATED: 2025-06-06 09:16:56
+# DOMAIN-KEYWORD: 1
+# DOMAIN-SUFFIX: 3
+# TOTAL: 4
+DOMAIN-SUFFIX,cdninstagram.com
+DOMAIN-SUFFIX,instagr.am
+DOMAIN-SUFFIX,instagram.com
+DOMAIN-KEYWORD,instagram

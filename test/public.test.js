@@ -33,7 +33,7 @@ async function relativeFiles(url, prefix = "") {
   return files;
 }
 
-test("publishes one hash-closed three-client current snapshot", async () => {
+test("publishes one hash-closed multi-client current snapshot", async () => {
   const manifest = JSON.parse(await readFile(new URL("manifest.json", currentRoot), "utf8"));
   assert.match(manifest.upstream.commit, /^[0-9a-f]{40}$/u);
   assert.equal(manifest.generatedAt, manifest.upstream.committedAt);
@@ -43,6 +43,8 @@ test("publishes one hash-closed three-client current snapshot", async () => {
   assert.equal(manifest.clients.shadowrocket.sourceCount, 32);
   assert.equal(manifest.clients.egern.sourceCount, 32);
   assert.equal(manifest.clients.anywhere.sourceCount, 32);
+  assert.equal(manifest.clients.surge.sourceCount, 32);
+  assert.equal(manifest.clients.singbox.sourceCount, 32);
   const manifestPaths = new Set(manifest.files.map(({ path }) => path));
   for (const path of [
     "shadowrocket/scripts/shadowrocket-node-operator.js",
@@ -55,6 +57,10 @@ test("publishes one hash-closed three-client current snapshot", async () => {
     "egern/scripts/substore-profile-generator.js",
     "anywhere/scripts/anywhere-node-generator.js",
     "anywhere/scripts/substore-node-generator.js",
+    "surge/scripts/surge-profile-generator.js",
+    "surge/scripts/substore-profile-generator.js",
+    "sing-box/scripts/sing-box-config-generator.js",
+    "sing-box/scripts/substore-config-generator.js",
   ]) {
     assert.equal(manifestPaths.has(path), true, path);
   }
@@ -81,6 +87,16 @@ test("public client entrypoints close over current and never raw master", async 
     } else {
       assert.match(content, /current\/shadowrocket\/rules\/Advertising_Domain\.list/u);
     }
+  }
+  for (const [path, marker] of [
+    ["surge/scripts/surge-profile-generator.js", "current/surge/rules"],
+    ["surge/scripts/substore-profile-generator.js", "current/surge/rules"],
+    ["sing-box/scripts/sing-box-config-generator.js", "sing-box/rules"],
+    ["sing-box/scripts/substore-config-generator.js", "sing-box/rules"],
+  ]) {
+    const content = await readFile(new URL(path, currentRoot), "utf8");
+    assert.equal(content.includes("raw.githubusercontent.com/blackmatrix7"), false, path);
+    assert.match(content, new RegExp(marker.replaceAll("/", "\\/"), "u"), path);
   }
   for (const path of [
     "egern/examples/egern-macos.yaml",
@@ -120,6 +136,16 @@ test("public client entrypoints close over current and never raw master", async 
     const content = await readFile(url, "utf8");
     assert.doesNotMatch(content, rawBranchUrl, path);
   }
+});
+
+test("publishes independent frontier manifests for edge and current", async () => {
+  const edge = JSON.parse(await readFile(new URL("edge/manifest.json", publicRoot), "utf8"));
+  const current = JSON.parse(await readFile(new URL("current/manifest.json", publicRoot), "utf8"));
+  assert.equal(edge.channel, "edge");
+  assert.equal(current.upstream.commit.length, 40);
+  assert.ok(edge.records.some((record) => record.platformKey === "surge/macos"));
+  assert.ok(edge.records.some((record) => record.platformKey === "singbox/openwrt"));
+  assert.equal(await readFile(new URL("edge/surge/scripts/surge-profile-generator.js", publicRoot), "utf8").then((text) => text.includes("edge/surge/rules")), true);
 });
 
 test("keeps current, previous, and an online version within the hard Pages budget", async () => {

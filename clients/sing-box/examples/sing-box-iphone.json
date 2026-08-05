@@ -101,7 +101,7 @@
       "tag": "示例 · Frankfurt",
       "server": "fixture-vmess.example.invalid",
       "server_port": 443,
-      "uuid": "00000000-0000-4000-8000-000000000000",
+      "uuid": "00000000-0000-4000-8000-000000000001",
       "security": "auto",
       "tls": {
         "enabled": true,
