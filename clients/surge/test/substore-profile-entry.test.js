@@ -1,0 +1,54 @@
+import assert from "node:assert/strict";
+import test from "node:test";
+
+import { operator } from "../src/substore-profile-entry.js";
+
+const nodes = [{
+  name: "🇯🇵 [机场] Tokyo A",
+  type: "ss",
+  server: "198.51.100.10",
+  port: 443,
+  cipher: "aes-256-gcm",
+  password: "TEST_ONLY_PASSWORD",
+  _profile: {
+    id: "fixture",
+    continent: "asiaPacific",
+    sourceKind: "airport",
+    flag: "🇯🇵",
+    udp: true,
+    p2p: false,
+    entry: true,
+    chained: false,
+  },
+}];
+
+test("Sub-Store Surge entry requests a private JSON collection and returns Profile content", async () => {
+  const calls = [];
+  const result = await operator(
+    { id: "input", $content: "old" },
+    "macos",
+    {
+      arguments: {
+        output: "config",
+        type: "collection",
+        name: "surge-sources",
+        subscriptionName: "Surge-Nodes",
+        platform: "macos",
+      },
+      async produceArtifact(request) {
+        calls.push(request);
+        return nodes;
+      },
+    },
+  );
+  assert.deepEqual(calls, [{
+    type: "collection",
+    name: "surge-sources",
+    platform: "JSON",
+    produceType: "internal",
+  }]);
+  assert.equal(result.id, "input");
+  assert.match(result.$content, /^\[General\]/mu);
+  assert.match(result.$content, /current\/surge\/rules/u);
+  assert.doesNotMatch(result.$content, /_profile|_subName/u);
+});
