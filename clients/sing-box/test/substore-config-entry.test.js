@@ -55,7 +55,7 @@ test("Sub-Store sing-box entry requests a private collection and returns JSON co
 });
 
 test("Sub-Store sing-box entry normalizes raw collection nodes before rendering", async () => {
-  const rawNodes = nodes.map(({ _profile, ...node }) => ({ ...node, reuse: true, tfo: true, udp_relay: true }));
+  const rawNodes = nodes.map(({ _profile, ...node }) => ({ ...node, reuse: true, tfo: true, udp_relay: true, provider_metadata: "ignored" }));
   const result = await operator(
     { id: "input" },
     "macos",

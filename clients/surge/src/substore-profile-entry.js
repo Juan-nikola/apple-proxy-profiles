@@ -3,6 +3,7 @@ import { filterNodesForClient } from "../../../shared/nodes/capabilities.js";
 import { normalizeNodes } from "../../../shared/nodes/normalize-nodes.js";
 import { parseSurgeOptions } from "./options.js";
 import { renderSurgeProfile } from "./render-profile.js";
+import { sanitizeSurgeNode } from "./render-node.js";
 
 export const PUBLIC_RULE_BASE_URL = "https://juan-nikola.github.io/apple-proxy-profiles/current/surge/rules";
 
@@ -38,6 +39,6 @@ export async function operator(input, targetPlatform, context = {}) {
   const filtered = filterNodesForClient(normalized.nodes, CLIENT.surge);
   if (filtered.nodes.length === 0) throw new Error("No compatible Surge nodes");
   logDiagnostics(context, options, filtered.nodes);
-  const profile = renderSurgeProfile(options, filtered.nodes, { ruleBaseUrl: PUBLIC_RULE_BASE_URL });
+  const profile = renderSurgeProfile(options, filtered.nodes.map(sanitizeSurgeNode), { ruleBaseUrl: PUBLIC_RULE_BASE_URL });
   return { ...input, $content: profile };
 }

@@ -41,6 +41,10 @@ function validateNodeShape(node) {
   }
 }
 
+export function sanitizeSurgeNode(node) {
+  return Object.fromEntries(Object.entries(node).filter(([key]) => key.startsWith("_") || COMMON_KEYS.has(key)));
+}
+
 function option(target, key, value) {
   if (value !== undefined && value !== null && value !== "") target.push(`${key}=${escapeValue(value)}`);
 }

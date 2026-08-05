@@ -41,6 +41,10 @@ function validateNodeShape(node) {
   }
 }
 
+export function sanitizeSingBoxNode(node) {
+  return Object.fromEntries(Object.entries(node).filter(([key]) => key.startsWith("_") || ALLOWED_KEYS.has(key)));
+}
+
 function setIf(target, key, value) {
   if (value !== undefined && value !== null && value !== "") target[key] = value;
 }

@@ -3,6 +3,7 @@ import { filterNodesForClient } from "../../../shared/nodes/capabilities.js";
 import { normalizeNodes } from "../../../shared/nodes/normalize-nodes.js";
 import { parseSingBoxOptions } from "./options.js";
 import { renderSingBoxConfig } from "./render-config.js";
+import { sanitizeSingBoxNode } from "./render-node.js";
 
 export const PUBLIC_RULE_ROOT = "https://juan-nikola.github.io/apple-proxy-profiles";
 
@@ -39,6 +40,6 @@ export async function operator(input, targetPlatform, context = {}) {
   if (filtered.nodes.length === 0) throw new Error("No compatible sing-box nodes");
   logDiagnostics(context, options, filtered.nodes);
   const ruleBaseUrl = `${PUBLIC_RULE_ROOT}/${options.channel}/sing-box/rules`;
-  const config = renderSingBoxConfig(options, filtered.nodes, { ruleBaseUrl, ruleSetFormat: "source" });
+  const config = renderSingBoxConfig(options, filtered.nodes.map(sanitizeSingBoxNode), { ruleBaseUrl, ruleSetFormat: "source" });
   return { ...input, $content: `${JSON.stringify(config, null, 2)}\n` };
 }

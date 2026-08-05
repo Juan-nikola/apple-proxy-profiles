@@ -2551,14 +2551,14 @@
       "sha256": "ca3a49e383d63ea7f4e3c3899bb6bad4204cb3b282771fc8f7916ed6f54040e1"
     },
     {
-      "bytes": 46877,
+      "bytes": 120115,
       "path": "sing-box/scripts/sing-box-config-generator.js",
-      "sha256": "2d8782e0c1f66e6ee3ed0f50e336f28a227b32af6ed41f484e0eb8dcf81dd395"
+      "sha256": "e24b7b0a66ed7fa7413f6b6da758d39ef285a727b2cfecc74e6300c93b0ca0b1"
     },
     {
-      "bytes": 46877,
+      "bytes": 120115,
       "path": "sing-box/scripts/substore-config-generator.js",
-      "sha256": "2d8782e0c1f66e6ee3ed0f50e336f28a227b32af6ed41f484e0eb8dcf81dd395"
+      "sha256": "e24b7b0a66ed7fa7413f6b6da758d39ef285a727b2cfecc74e6300c93b0ca0b1"
     },
     {
       "bytes": 10529,
@@ -2736,18 +2736,18 @@
       "sha256": "3bdb543fe9f6bc290fe3958a6a8b37058e6223f9c0c8342cd8aa5a4cfb193c9b"
     },
     {
-      "bytes": 45184,
+      "bytes": 118406,
       "path": "surge/scripts/substore-profile-generator.js",
-      "sha256": "5df6828db74c733244315bad021d5436868d3e55fcbfbe83eb1fb6f16a6d3b16"
+      "sha256": "0fb634034d388c1c768b899190aa79bab3d091653615db12aff23e6fe7fc0a9c"
     },
     {
-      "bytes": 45184,
+      "bytes": 118406,
       "path": "surge/scripts/surge-profile-generator.js",
-      "sha256": "5df6828db74c733244315bad021d5436868d3e55fcbfbe83eb1fb6f16a6d3b16"
+      "sha256": "0fb634034d388c1c768b899190aa79bab3d091653615db12aff23e6fe7fc0a9c"
     }
   ],
   "generatedAt": "2026-08-03T19:30:42Z",
-  "manifestHash": "d40499292617893c5ed5ffc0d698ac6b472f8712df6f92fa23182bba80847545",
+  "manifestHash": "451aea56fffff1160a3cff681c9e1920c1358b0f838c3c38d221206170156726",
   "schemaVersion": 1,
   "upstream": {
     "branch": "master",

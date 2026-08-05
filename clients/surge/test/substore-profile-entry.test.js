@@ -54,7 +54,7 @@ test("Sub-Store Surge entry requests a private JSON collection and returns Profi
 });
 
 test("Sub-Store Surge entry normalizes raw collection nodes before rendering", async () => {
-  const rawNodes = nodes.map(({ _profile, ...node }) => ({ ...node, reuse: true, tfo: true, udp_relay: true }));
+  const rawNodes = nodes.map(({ _profile, ...node }) => ({ ...node, reuse: true, tfo: true, udp_relay: true, provider_metadata: "ignored" }));
   const result = await operator(
     { id: "input" },
     "macos",

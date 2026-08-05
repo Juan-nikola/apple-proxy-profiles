@@ -1714,6 +1714,9 @@ var SingBoxConfigBundle = (() => {
       if (!ALLOWED_KEYS2.has(key)) throw new Error(`sing-box node contains unsupported field: ${key}`);
     }
   }
+  function sanitizeSingBoxNode(node) {
+    return Object.fromEntries(Object.entries(node).filter(([key]) => key.startsWith("_") || ALLOWED_KEYS2.has(key)));
+  }
   function setIf(target, key, value) {
     if (value !== void 0 && value !== null && value !== "") target[key] = value;
   }
@@ -2456,7 +2459,7 @@ var SingBoxConfigBundle = (() => {
     if (filtered.nodes.length === 0) throw new Error("No compatible sing-box nodes");
     logDiagnostics(context, options, filtered.nodes);
     const ruleBaseUrl = `${PUBLIC_RULE_ROOT}/${options.channel}/sing-box/rules`;
-    const config = renderSingBoxConfig(options, filtered.nodes, { ruleBaseUrl, ruleSetFormat: "source" });
+    const config = renderSingBoxConfig(options, filtered.nodes.map(sanitizeSingBoxNode), { ruleBaseUrl, ruleSetFormat: "source" });
     return { ...input, $content: `${JSON.stringify(config, null, 2)}
 ` };
   }

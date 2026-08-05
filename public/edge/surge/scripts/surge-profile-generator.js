@@ -1694,6 +1694,9 @@ var SurgeProfileBundle = (() => {
       if (!COMMON_KEYS.has(key)) throw new Error(`Surge node contains unsupported field: ${key}`);
     }
   }
+  function sanitizeSurgeNode(node) {
+    return Object.fromEntries(Object.entries(node).filter(([key]) => key.startsWith("_") || COMMON_KEYS.has(key)));
+  }
   function option(target, key, value) {
     if (value !== void 0 && value !== null && value !== "") target.push(`${key}=${escapeValue(value)}`);
   }
@@ -2436,7 +2439,7 @@ ${renderSurgeRules({ ruleBaseUrl }).join("\n")}`
     const filtered = filterNodesForClient(normalized.nodes, CLIENT.surge);
     if (filtered.nodes.length === 0) throw new Error("No compatible Surge nodes");
     logDiagnostics(context, options, filtered.nodes);
-    const profile = renderSurgeProfile(options, filtered.nodes, { ruleBaseUrl: PUBLIC_RULE_BASE_URL });
+    const profile = renderSurgeProfile(options, filtered.nodes.map(sanitizeSurgeNode), { ruleBaseUrl: PUBLIC_RULE_BASE_URL });
     return { ...input, $content: profile };
   }
   return __toCommonJS(substore_profile_entry_exports);
