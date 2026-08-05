@@ -76,6 +76,7 @@ test("tracked import page closes over all 34 manifest shards deterministically",
   const manifest = JSON.parse(await readFile(new URL("../examples/rules/manifest.json", import.meta.url), "utf8"));
   const batches = buildImportBatches(manifest.shards.map(({ url }) => url));
   const totalLink = buildImportDeepLink(manifest.shards.map(({ url }) => url));
+  const escapedTotalLink = totalLink.replaceAll("&", "&amp;");
   const expected = renderImportPage(batches, manifest);
   const actual = await readFile(new URL("../examples/import.html", import.meta.url), "utf8");
   assert.equal(actual, expected);
@@ -86,7 +87,7 @@ test("tracked import page closes over all 34 manifest shards deterministically",
   assert.doesNotMatch(actual, /<script\b|javascript:|data:|vbscript:|\son\w+\s*=/iu);
   assert.equal((actual.match(/class="button"/gu) ?? []).length, 4);
   assert.equal((actual.match(/<li><a href="https:/gu) ?? []).length, 34);
-  assert.match(actual, new RegExp(`href="${totalLink.replaceAll(/[.*+?^${}()|[\]\\]/g, "\\$&")}"`, "u"));
+  assert.match(actual, new RegExp(`href="${escapedTotalLink.replaceAll(/[.*+?^${}()|[\]\\]/g, "\\$&")}"`, "u"));
   assert.deepEqual(new URL(totalLink).searchParams.getAll("link"), manifest.shards.map(({ url }) => url));
   assert.deepEqual(batches.map(({ urls: batchUrls }) => batchUrls.length), [15, 15, 4]);
   assert.deepEqual(batches.map(({ deepLink }) => deepLink.length), [1748, 1725, 477]);
