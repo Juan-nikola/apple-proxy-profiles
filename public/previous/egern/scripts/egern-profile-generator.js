@@ -795,6 +795,28 @@ var EgernProfileBundle = (() => {
     return groups;
   }
 
+  // ../../../shared/rules/domestic-fallback.js
+  var DOMESTIC_FALLBACK_DOMAIN_SUFFIXES = Object.freeze([
+    "cn",
+    "bilibili.com",
+    "bilivideo.com",
+    "biliapi.com",
+    "hdslb.com",
+    "douyin.com",
+    "douyincdn.com",
+    "byteimg.com",
+    "ibytedtos.com",
+    "pstatp.com",
+    "snssdk.com",
+    "amemv.com",
+    "ixigua.com",
+    "toutiao.com",
+    "toutiaoimg.com",
+    "xiaohongshu.com",
+    "xhscdn.com",
+    "weibo.com"
+  ]);
+
   // render-dns.js
   var CHINA_DNS = Object.freeze({
     alidns: "https://dns.alidns.com/dns-query",
@@ -839,6 +861,11 @@ var EgernProfileBundle = (() => {
       }
     };
   }
+  function domesticFallbackRules(value = "china") {
+    return DOMESTIC_FALLBACK_DOMAIN_SUFFIXES.map((match) => ({
+      domain_suffix: { match, value }
+    }));
+  }
   function wildcard(value) {
     return { domain_wildcard: { match: "*", value } };
   }
@@ -854,9 +881,9 @@ var EgernProfileBundle = (() => {
     if (dnsMode === "privacy") {
       forward = [wildcard("global")];
     } else if (dnsMode === "speed") {
-      forward = [chinaRule(baseUrl), wildcard("system")];
+      forward = [...domesticFallbackRules(), chinaRule(baseUrl), wildcard("system")];
     } else {
-      forward = [chinaRule(baseUrl), wildcard("global")];
+      forward = [...domesticFallbackRules(), chinaRule(baseUrl), wildcard("global")];
     }
     return {
       bootstrap: ["system"],
@@ -1474,6 +1501,7 @@ var EgernProfileBundle = (() => {
     }))
   ]);
   var GAME_DIRECT_DOMAINS = Object.freeze(["leiting.com", "leitingcn.com", "g-bits.com"]);
+  var DOMESTIC_FALLBACK_RULES = Object.freeze(DOMESTIC_FALLBACK_DOMAIN_SUFFIXES.map((match) => Object.freeze({ domain_suffix: Object.freeze({ match, policy: "DIRECT" }) })));
   function invalidCustom() {
     throw new Error(CUSTOM_ERROR);
   }
@@ -1647,6 +1675,9 @@ var EgernProfileBundle = (() => {
         for (const match2 of GAME_DIRECT_DOMAINS) {
           rules.push({ domain_suffix: { match: match2, policy: "DIRECT" } });
         }
+      }
+      if (assignment.sourceId === "ChinaMax_Domain") {
+        rules.push(...DOMESTIC_FALLBACK_RULES.map((rule2) => structuredClone(rule2)));
       }
       const match = `${ruleBase}/${assignment.sourceId}.yaml`;
       if (index === gameIndex) {
