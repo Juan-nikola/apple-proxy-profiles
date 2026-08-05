@@ -27,13 +27,22 @@ function deepLink(urls) {
   return `${DEEP_LINK_BASE}?${urls.map((url) => `link=${encodeURIComponent(url)}`).join("&")}`;
 }
 
-export function buildImportBatches(urls, maxLength = 1_800) {
+function normalizeRuleUrls(urls) {
   if (!Array.isArray(urls) || urls.length === 0) throw new TypeError("Anywhere rule URLs must be non-empty");
+  const normalized = urls.map(validateRuleUrl);
+  if (new Set(normalized).size !== normalized.length) throw new Error("Anywhere rule URLs must be unique");
+  return normalized;
+}
+
+export function buildImportDeepLink(urls) {
+  return deepLink(normalizeRuleUrls(urls));
+}
+
+export function buildImportBatches(urls, maxLength = 1_800) {
   if (!Number.isSafeInteger(maxLength) || maxLength < 100 || maxLength > 1_800) {
     throw new RangeError("Anywhere deep-link limit must be between 100 and 1800");
   }
-  const normalized = urls.map(validateRuleUrl);
-  if (new Set(normalized).size !== normalized.length) throw new Error("Anywhere rule URLs must be unique");
+  const normalized = normalizeRuleUrls(urls);
   const grouped = [];
   let current = [];
   for (const url of normalized) {
@@ -84,6 +93,7 @@ export function renderImportPage(batches, manifest) {
   if (JSON.stringify(actualUrls) !== JSON.stringify(expectedUrls)) {
     throw new Error("Anywhere import batches do not close over the manifest");
   }
+  const allDeepLink = buildImportDeepLink(expectedUrls);
   const checkedBatches = batches.map((batch, index) => {
     const expectedDeepLink = deepLink(batch.urls);
     if (batch.deepLink !== expectedDeepLink || expectedDeepLink.length > 1_800) {
@@ -121,6 +131,10 @@ export function renderImportPage(batches, manifest) {
   <p>生成时间（上游提交时间）：<code>${escapeHtml(manifest.generatedAt)}</code>；Manifest：<code>${escapeHtml(manifest.manifestSha256)}</code></p>
   <p>共处理 ${escapeHtml(manifest.totals.sourceCount)} 个上游来源，生成 ${escapeHtml(manifest.totals.shardCount)} 个分片、${escapeHtml(manifest.totals.outputCount)} 条可导入规则，分为 ${escapeHtml(checkedBatches.length)} 个批次。</p>
   <div class="warning"><strong>导入前须知：</strong>Anywhere 的 Default 不是可靠的“停用”开关。请先用测试设备导入，随后在 App 内逐个确认 DIRECT、REJECT 或目标节点/链；节点订阅、规则文件和本地设置是三层独立配置。导入公开规则不需要 HTTPS 解密/MITM，请保持它关闭。</div>
+  <h2>一键导入全部规则</h2>
+  <p>一次打开 Anywhere 的确认页，导入全部 ${escapeHtml(expectedUrls.length)} 个规则分片；导入后仍是独立规则集。</p>
+  <p><a class="button" href="${escapeHtml(allDeepLink)}">全部导入 ${escapeHtml(expectedUrls.length)} 个规则分片</a></p>
+  <p>如果系统未能打开总链接，请按下面的 ${escapeHtml(checkedBatches.length)} 个批次导入。</p>
   <h2>批量导入</h2>
   <ol>
 ${buttons}

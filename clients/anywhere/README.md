@@ -15,7 +15,7 @@ Anywhere 不能用一个远程文件表达 Shadowrocket/Egern 的完整 Profile�
 - `dist/anywhere-node-generator.js`：自包含私密节点 File Operator。
 - `examples/rules/manifest.json`：固定提交、输入哈希、计数、优先级归并和分片闭包。
 - `examples/rules/*.arrs`：每片最多 95,000 条，低于源码 100,000 条上限。
-- `examples/import.html`：34 个分片分成 3 个不超过 1,800 字符的 deep-link 批次。
+- `examples/import.html`：1 个覆盖 34 个分片的总 deep link，加上 3 个不超过 1,800 字符的回退批次。
 
 新任务统一使用 `anywhere-node-generator.js`。旧 `substore-node-generator.js` 文件和 Pages URL 保留为字节一致的兼容别名，既有 Sub-Store 任务不必仅为改名更换 URL；新旧名称不是两个不同版本。
 
@@ -77,7 +77,7 @@ output=nodes&type=collection&name=shadowrocket-sources&clientChain=off
 
 ### 4. 导入公开 `.arrs` 规则
 
-1. 打开 Pages 的 `current/anywhere/import.html`，按页面顺序完成全部 3 个导入批次，不跳批次、不重复导入。
+1. 打开 Pages 的 `current/anywhere/import.html`，优先使用总导入 deep link；若当前系统或分享链路无法打开，再按页面顺序完成 3 个回退批次，不跳批次、不重复导入。总 deep link 只会打开 Anywhere 的确认页面，不会创建单个聚合 `.arrs` 订阅；34 个规则集导入后仍要分别 Refresh/Update。
 2. 回到 Anywhere，确认 34 个规则分片全部出现。`routing=1` 是 DIRECT，`routing=2` 是 REJECT，`routing=0` 的 Default 会回退到当前节点或链，并不表示停用。
 3. 逐片检查本地目标绑定：国内/局域网按设计绑定 DIRECT，广告与隐私阻断绑定 REJECT，其余服务规则绑定到选定节点或链。
 4. 配置 DNS、IPv6、QUIC、链与 Purify 等设备设置，然后切换到 Rule Mode。节点 File 不会自动完成这些步骤。
@@ -103,7 +103,7 @@ Anywhere 只有这一条 Sub-Store 节点生成链。它不能用一个远程文
 
 1. 按 [部署指南](docs/deployment.md) 在私密 Sub-Store 创建节点 File 任务；真实订阅 URL绝不能提交到仓库。
 2. 在测试设备添加私密节点订阅，检查节点名称唯一且稳定。
-3. 打开最终 Pages 的 `current/anywhere/import.html`，依次完成全部批次。
+3. 打开最终 Pages 的 `current/anywhere/import.html`，优先使用总导入 deep link；若失败再依次完成全部回退批次。不要把 `anywhere://add-rule-set` deep link 粘贴到 `.arrs` 订阅输入框。
 4. 在 Anywhere 内逐个检查所有分片的本地绑定，切换到 Rule 模式。
 5. 按 [canary 清单](docs/canary.md) 先 iPhone、后 iPad，并在每台设备做真实回滚。
 

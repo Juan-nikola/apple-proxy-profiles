@@ -38,9 +38,10 @@ Anywhere 没有与 Shadowrocket/Egern 等价的完整 Profile File，不要创�
 https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/import.html
 ```
 
-按页面顺序点击全部 3 个批次。在 Import Rule Sets 页面等待下载结束，确认没有 failed、所有项目均选中，再点 Done。deep link 使用 `anywhere://add-rule-set`；它只打开确认流程，不会静默导入。不要混用 `current`、`previous` 与某个 `versions/<hash>` 的分片。
+先点页面最上方的总导入 deep link；如果当前系统、浏览器或分享链路无法一次性打开，再按页面顺序点击全部 3 个回退批次。在 Import Rule Sets 页面等待下载结束，确认没有 failed、所有项目均选中，再点 Done。deep link 使用 `anywhere://add-rule-set`；它只打开确认流程，不会静默导入，也不会生成一个聚合 `.arrs` 订阅。不要把 `anywhere://add-rule-set` deep link 粘贴到 `.arrs` 订阅输入框，也不要混用 `current`、`previous` 与某个 `versions/<hash>` 的分片。
 
 Manifest 中每个逻辑规则集的所有 shard 必须绑定相同目标。漏一个 shard 就是部分生效。
+导入完成后应看到总计 34 个规则分片，并逐一核对它们的本地 assignment。
 
 ## 3. 检查首次绑定
 

@@ -1023,9 +1023,9 @@
       "sha256": "d7086c79b0fbdab2aaf566de004bbcaadf3fdfb71c2146ba56ba7fb619f09b2a"
     },
     {
-      "bytes": 13913,
+      "bytes": 18252,
       "path": "anywhere/import.html",
-      "sha256": "42f677d16ff4a2009c411689e94a12567cb2dc2e1cad24069f30742d39dd7a2f"
+      "sha256": "6c256eae89908707c21600540af05f01e4ff99030c712cb761cc9517d06ab622"
     },
     {
       "bytes": 13826,
@@ -1604,7 +1604,7 @@
     }
   ],
   "generatedAt": "2026-08-03T19:30:42Z",
-  "manifestHash": "24f7974e413052557b1738a5bffaea84a4781c06c4bb25f8e6598adce2985634",
+  "manifestHash": "5214cece9813ddd190de8758184dc68a5852e594c2f8564f9e4ab1ac8a427994",
   "schemaVersion": 1,
   "upstream": {
     "branch": "master",
