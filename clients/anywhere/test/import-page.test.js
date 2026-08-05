@@ -19,7 +19,7 @@ test("builds unique bounded deep links with every nested HTTPS URL encoded once"
   assert.deepEqual(parsed.searchParams.getAll("link"), input);
   assert.equal(new Set(parsed.searchParams.getAll("link")).size, input.length);
   assert.ok(link.startsWith("anywhere://add-rule-set?link=https%3A%2F%2F"));
-  assert.equal((link.match(/(?:^|&)link=/gu) ?? []).length, input.length);
+  assert.equal((link.match(/(?:[?&])link=/gu) ?? []).length, input.length);
   const batches = buildImportBatches(input);
   assert.ok(batches.length > 1);
   assert.deepEqual(batches.flatMap(({ urls: batchUrls }) => batchUrls), input);
