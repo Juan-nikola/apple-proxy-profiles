@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { buildAnywhereRuleSnapshot } from "../src/render-anywhere-rules.js";
+import { DOMESTIC_FALLBACK_DOMAIN_SUFFIXES } from "../../shared/rules/domestic-fallback.js";
 
 const upstream = {
   repository: "https://github.com/blackmatrix7/ios_rule_script",
@@ -66,4 +67,26 @@ test("produces byte-identical files and manifests for identical immutable inputs
   const second = buildAnywhereRuleSnapshot(options);
   assert.deepEqual([...first.files], [...second.files]);
   assert.deepEqual(first.manifest, second.manifest);
+});
+
+test("adds the domestic safety net to the existing direct ChinaMax shard", () => {
+  const chinaSource = {
+    id: "ChinaMax_Domain", familyId: "ChinaMax_Domain", componentId: "domains", order: 1, priority: 10,
+    canonicalPath: "rule/Surge/ChinaMax/ChinaMax_Domain.list", inputFormat: "DOMAIN-SET", policy: "DIRECT",
+    routing: 1, intendedTarget: "direct", minEntries: 1,
+  };
+  const text = ".existing.example\n";
+  const result = buildAnywhereRuleSnapshot({
+    snapshot: new Map([["ChinaMax_Domain", input(text)]]),
+    catalog: [chinaSource],
+    upstream,
+    logicalRuleSets: [{ id: "ChinaMax_Domain", sourceIds: ["ChinaMax_Domain"], required: true }],
+  });
+  const artifact = result.files.get("anywhere/rules/ChinaMax_Domain-001.arrs");
+  assert.ok(artifact);
+  for (const suffix of DOMESTIC_FALLBACK_DOMAIN_SUFFIXES) {
+    assert.match(artifact, new RegExp(`^2, ${suffix.replaceAll(".", "\\.")}$`, "mu"), suffix);
+  }
+  assert.match(artifact, /^2, existing\.example$/mu);
+  assert.equal(result.manifest.sources[0].counts.output, DOMESTIC_FALLBACK_DOMAIN_SUFFIXES.length + 1);
 });

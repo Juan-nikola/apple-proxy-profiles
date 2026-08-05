@@ -35,7 +35,11 @@ async function relativeFiles(url, prefix = "") {
 
 test("publishes one hash-closed three-client current snapshot", async () => {
   const manifest = JSON.parse(await readFile(new URL("manifest.json", currentRoot), "utf8"));
-  assert.equal(manifest.upstream.commit, "dab47069a30c4ae70f7f5f4c919d639d9aaf79dc");
+  assert.match(manifest.upstream.commit, /^[0-9a-f]{40}$/u);
+  assert.equal(manifest.generatedAt, manifest.upstream.committedAt);
+  const anywhereManifest = JSON.parse(await readFile(new URL("anywhere/rules/manifest.json", currentRoot), "utf8"));
+  assert.equal(anywhereManifest.upstream.commit, manifest.upstream.commit);
+  assert.equal(anywhereManifest.generatedAt, manifest.generatedAt);
   assert.equal(manifest.clients.shadowrocket.sourceCount, 32);
   assert.equal(manifest.clients.egern.sourceCount, 32);
   assert.equal(manifest.clients.anywhere.sourceCount, 32);

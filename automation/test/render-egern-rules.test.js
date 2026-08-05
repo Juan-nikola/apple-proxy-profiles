@@ -3,6 +3,7 @@ import test from "node:test";
 
 import { parseSurgeRules } from "../src/parse-surge.js";
 import { renderEgernRuleSource } from "../src/render-egern-rules.js";
+import { DOMESTIC_FALLBACK_DOMAIN_SUFFIXES } from "../../shared/rules/domestic-fallback.js";
 
 const source = Object.freeze({
   id: "Fixture",
@@ -84,4 +85,38 @@ test("emits empty typed arrays and deterministic bytes", () => {
   assert.match(first.content, /user_agent_set: \[\]\n$/u);
   assert.equal(first.counts.output, 0);
   assert.equal(first.counts.omitted, 1);
+});
+
+test("profile rules add a domestic safety net without changing upstream accounting", () => {
+  const chinaSource = { ...source, id: "ChinaMax_Domain", inputFormat: "DOMAIN-SET" };
+  const text = ".existing.example\n";
+  const parsed = parseSurgeRules(text, chinaSource);
+  const result = renderEgernRuleSource({
+    source: chinaSource,
+    parsed,
+    fetched: { text },
+    upstream,
+  });
+  assert.deepEqual(result.counts, {
+    input: 1,
+    parsed: 1,
+    output: DOMESTIC_FALLBACK_DOMAIN_SUFFIXES.length + 1,
+    omitted: 0,
+    emittedByType: {
+      domain_set: 0,
+      domain_suffix_set: DOMESTIC_FALLBACK_DOMAIN_SUFFIXES.length + 1,
+      domain_keyword_set: 0,
+      ip_cidr_set: 0,
+      ip_cidr6_set: 0,
+      asn_set: 0,
+      url_regex_set: 0,
+      user_agent_set: 0,
+    },
+    omittedByKind: { processName: 0, geoip: 0, logicalAnd: 0, logicalOr: 0 },
+    supplemental: DOMESTIC_FALLBACK_DOMAIN_SUFFIXES.length,
+  });
+  for (const suffix of DOMESTIC_FALLBACK_DOMAIN_SUFFIXES) {
+    assert.match(result.content, new RegExp(`  - "${suffix.replaceAll(".", "\\.")}"`, "u"), suffix);
+  }
+  assert.match(result.content, /  - "existing\.example"/u);
 });

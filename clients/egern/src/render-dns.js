@@ -1,4 +1,5 @@
 import { OPTION_VALUES } from "../../../shared/contracts.js";
+import { DOMESTIC_FALLBACK_DOMAIN_SUFFIXES } from "../../../shared/rules/domestic-fallback.js";
 import { PUBLIC_SNAPSHOT_BASE_URL } from "./options.js";
 
 const CHINA_DNS = Object.freeze({
@@ -50,6 +51,12 @@ function chinaRule(baseUrl) {
   };
 }
 
+function domesticFallbackRules(value = "china") {
+  return DOMESTIC_FALLBACK_DOMAIN_SUFFIXES.map((match) => ({
+    domain_suffix: { match, value },
+  }));
+}
+
 function wildcard(value) {
   return { domain_wildcard: { match: "*", value } };
 }
@@ -68,9 +75,9 @@ export function renderEgernDns(options) {
   if (dnsMode === "privacy") {
     forward = [wildcard("global")];
   } else if (dnsMode === "speed") {
-    forward = [chinaRule(baseUrl), wildcard("system")];
+    forward = [...domesticFallbackRules(), chinaRule(baseUrl), wildcard("system")];
   } else {
-    forward = [chinaRule(baseUrl), wildcard("global")];
+    forward = [...domesticFallbackRules(), chinaRule(baseUrl), wildcard("global")];
   }
 
   return {

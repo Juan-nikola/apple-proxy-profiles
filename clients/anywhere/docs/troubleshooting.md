@@ -12,6 +12,8 @@
 
 确认 Rule 模式、所有 shard、同一逻辑集绑定一致，并且没有混用 current/previous/version。看到规则被 reset to Default 时，不要理解为关闭：Default 可能直接走当前节点或链。Privacy 没有独立 shard 是优先级归并结果，不是缺文件。
 
+国内 App 偶发慢、切换开关后暂时恢复时，先 Update 现有 `ChinaMax_Domain` 两个分片并确认仍为 `routing=1` / DIRECT；本版本已把 18 条常见国内 App/CDN 后缀合入该规则集，不需要新增导入项。大规则集未命中时，域名可能落到 Default、当前节点或旧 DNS/连接缓存；切换开关会重建这些状态，所以只能暂时缓解。
+
 ## 链消失或绑定变成孤儿
 
 检查节点是否重命名、删除或改变同名顺序。Anywhere 仅按“名称 + 同名序号”复用 UUID；订阅删除会删除节点，规则绑定可能重置为 Default，链也会失效。不要反复删订阅，按部署记录手动重建链和绑定。

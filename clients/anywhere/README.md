@@ -93,7 +93,9 @@ output=nodes&type=collection&name=shadowrocket-sources&clientChain=off
 
 Anywhere 只有这一条 Sub-Store 节点生成链。它不能用一个远程文件表达完整 Profile，所以本项目不会创建虚假的 `anywhere-profile-generator.js`：公开 `.arrs` 规则、规则目标绑定、DNS、IPv6、QUIC、链和 Rule 模式必须继续在 Anywhere 部署链路中完成。完整步骤见[部署指南](docs/deployment.md)。
 
-当前固定 Blackmatrix7 提交为 `dab47069a30c4ae70f7f5f4c919d639d9aaf79dc`：32 个输入共 393,743 条候选，376,477 条可转换，跨来源去重和优先级编译后输出 375,265 条。完整 Advertising 由 `Advertising` 与 `Advertising_Domain` 两个独立输入共同组成。
+当前固定 Blackmatrix7 提交为 `dab47069a30c4ae70f7f5f4c919d639d9aaf79dc`：32 个输入共 393,743 条候选，376,477 条可转换，跨来源去重和优先级编译后输出 375,237 条。现有 `ChinaMax_Domain` 分片额外包含 18 条本地国内 App/CDN 后缀兜底，仍保持 34 个分片，不需要新增导入项。完整 Advertising 由 `Advertising` 与 `Advertising_Domain` 两个独立输入共同组成。
+
+国内 App 偶发变慢、切换开关后暂时恢复，通常是大规则集未及时命中时流量回落到 Default/当前节点，或 DNS/连接缓存处于旧状态；切换会重建连接和缓存。更新现有 `ChinaMax_Domain` 分片并确认其 `routing=1` 为 DIRECT 后，常见的 `*.cn`、哔哩哔哩、抖音/字节、小红书和微博域名会在远程规则之前得到稳定直连与国内 DNS 转发。
 
 客户端兼容性固定到用户提供并核验的 Anywhere 官方源码提交 `e15518fde1f5d2652dfc1c234c89a68b87cecec0`。
 

@@ -73,16 +73,13 @@ routing = 0
 2, battlefrontii.com
 2, battlelog.com
 2, battlenet.com
-2, battlenet.com.cn
 2, bejeweledstars.com
 2, bejewled-stars.com
 2, bioware.com
 2, biowarestore.com
 2, blackboxgames.com
-2, blizzard.cn
 2, blizzard.com
 2, blizzard.nefficient.co.kr
-2, blizzardgames.cn
 2, blizzardgearstore.com
 2, blizzcon-a.akamaihd.net
 2, blz-contentstack.com
@@ -90,7 +87,6 @@ routing = 0
 2, blzddistkr1-a.akamaihd.net
 2, blzmedia-a.akamaihd.net
 2, blznav.akamaized.net
-2, blzstatic.cn
 2, bnetcmsus-a.akamaihd.net
 2, bnetproduct-a.akamaihd.net
 2, bnetshopus.akamaized.net
@@ -110,7 +106,6 @@ routing = 0
 2, conquerwithcharacter.com
 2, convrgencegame.com
 2, crysis.jp
-2, csgo.wmsj.cn
 2, daoc.net
 2, darkageofcamelot.com
 2, darkness-risen.com
@@ -126,14 +121,11 @@ routing = 0
 2, dkr.com
 2, dlmobilegarena-a.akamaihd.net
 2, donkeykongcountryreturns.com
-2, dota2.wmsj.cn
 2, dragonage.com
 2, dragonagekeep.com
 2, dragonagemovie.com
 2, drmario-world.com
-2, dungeonkeeper.cn
 2, dungeonkeeper.com
-2, dungeonkeeper.com.cn
 2, ea-anz-press.com
 2, ea.com
 2, eaaccess.com
@@ -222,7 +214,6 @@ routing = 0
 2, lcsmerch.com
 2, leaguehighschool.com
 2, leagueoflegends.ca
-2, leagueoflegends.cn
 2, leagueoflegends.co.kr
 2, leagueoflegends.com
 2, leagueoflegends.info
@@ -233,8 +224,6 @@ routing = 0
 2, leaguesharp.info
 2, leaguoflegends.com
 2, learnwithleague.com
-2, legendofzelda.cn
-2, legendofzelda.com.cn
 2, lol-europe.com
 2, lolclub.org
 2, lolespor.com
@@ -246,7 +235,6 @@ routing = 0
 2, lolstatic.com
 2, lolusercontent.com
 2, lordofultima.com
-2, lpl.com.cn
 2, maddenchampionship.com
 2, maddenrewards.com
 2, maddenseason.info
@@ -254,8 +242,6 @@ routing = 0
 2, maddenseason.org
 2, marioandluigidreamteam.com
 2, mariobroswii.com
-2, mariokart.cn
-2, mariokart.com.cn
 2, mariokart7.com
 2, mariokart8.com
 2, mariosupersluggers.com
@@ -264,7 +250,6 @@ routing = 0
 2, maxis.com
 2, media-rockstargames-com.akamaized.net
 2, miitomo.com
-2, miitomo.com.cn
 2, miiverse.com
 2, mirrorsedge.com
 2, mirrorsedge.jp
@@ -325,13 +310,10 @@ routing = 0
 2, nintendo3ds.com
 2, nintendodsi.com
 2, nintendoeurope.com
-2, nintendolabo.cn
 2, nintendonetwork.net
 2, nintendonyc.com
 2, nintendostore.com
-2, nintendoswitch.cn
 2, nintendoswitch.com
-2, nintendoswitch.com.cn
 2, nintendoswitch.net
 2, nintendoswitchtogether.com
 2, nintendowifi.net
@@ -458,12 +440,9 @@ routing = 0
 2, steamvideo-a.akamaihd.net
 2, supermario.com
 2, supermario3dworld.com
-2, supermariobros.com.cn
 2, supermariogalaxy.com
 2, supermariorun.com
 2, superpapermario.com
-2, supersmashbros.cn
-2, supersmashbros.com.cn
 2, supremacy.com
 2, supremacy.net
 2, swjedifallenorder.com
@@ -516,7 +495,6 @@ routing = 0
 2, xboxservice.com
 2, xdsummit.com
 2, xenoblade.com
-2, xn--mts47c3w9b1qr.cn
 2, xn--mts47c3w9b1qr.net
 2, yogify.com
 2, yoshisnewisland.com

@@ -1,4 +1,5 @@
 import { RULE_KIND } from "../../shared/rules/model.js";
+import { DOMESTIC_FALLBACK_DOMAIN_SUFFIXES } from "../../shared/rules/domestic-fallback.js";
 import { renderYaml } from "../../shared/serialization/render-yaml.js";
 import { renderRuleProvenance } from "./render-shadowrocket-rules.js";
 
@@ -22,6 +23,7 @@ const OMITTED_KINDS = Object.freeze([
 
 const OMITTED_KIND_SET = new Set(OMITTED_KINDS);
 const TYPE_NAMES = Object.freeze(Object.values(TYPE_BY_KIND));
+const DOMESTIC_FALLBACK_SOURCE_ID = "ChinaMax_Domain";
 
 function bump(counts, key) {
   counts[key] = (counts[key] ?? 0) + 1;
@@ -81,21 +83,30 @@ export function renderEgernRuleSource({ source, parsed, fetched, upstream }) {
     throw new Error(`Rule source ${source.id}: unsupported Egern rule kind ${entry.kind}`);
   }
 
+  const supplementalCount = source.id === DOMESTIC_FALLBACK_SOURCE_ID
+    ? DOMESTIC_FALLBACK_DOMAIN_SUFFIXES.length
+    : 0;
+  if (supplementalCount > 0) {
+    document.domain_suffix_set.push(...DOMESTIC_FALLBACK_DOMAIN_SUFFIXES);
+    emittedByType.domain_suffix_set += supplementalCount;
+  }
+
   const outputCount = Object.values(emittedByType).reduce((sum, count) => sum + count, 0);
   const omittedCount = Object.values(omittedByKind).reduce((sum, count) => sum + count, 0);
-  if (outputCount + omittedCount !== parsed.diagnostics.parsedCount) {
+  if (outputCount - supplementalCount + omittedCount !== parsed.diagnostics.parsedCount) {
     throw new Error(`Rule source ${source.id}: Egern output accounting mismatch`);
   }
 
   const header = renderRuleProvenance({ source, upstream, outputCount, omittedCount });
   const content = `${header.join("\n")}\n${renderYaml(document)}`;
-  const counts = Object.freeze({
+  const counts = {
     input: parsed.diagnostics.candidateCount,
     parsed: parsed.diagnostics.parsedCount,
     output: outputCount,
     omitted: omittedCount,
     emittedByType: Object.freeze(emittedByType),
     omittedByKind: Object.freeze(omittedByKind),
-  });
+  };
+  if (supplementalCount > 0) counts.supplemental = supplementalCount;
   return Object.freeze({ content, counts });
 }

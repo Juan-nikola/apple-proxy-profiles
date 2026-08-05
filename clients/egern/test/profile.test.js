@@ -3,6 +3,7 @@ import { spawnSync } from "node:child_process";
 import test from "node:test";
 
 import { orderedRuleAssignments } from "../../../shared/rules/catalog.js";
+import { DOMESTIC_FALLBACK_DOMAIN_SUFFIXES } from "../../../shared/rules/domestic-fallback.js";
 import { buildPolicyGroups } from "../../../shared/policies/catalog.js";
 import { parseEgernOptions, PUBLIC_SNAPSHOT_BASE_URL } from "../src/options.js";
 import {
@@ -107,6 +108,14 @@ test("renders exact Egern-native rule parity and terminal ordering", () => {
 
   const steamIndex = rules.findIndex((record) => record.rule_set?.match.endsWith("/SteamCN.yaml"));
   const gameIndex = rules.findIndex((record) => record.rule_set?.match.endsWith("/Game.yaml"));
+  const chinaIndex = rules.findIndex((record) => record.rule_set?.match.endsWith("/ChinaMax_Domain.yaml"));
+  assert.ok(chinaIndex > 0);
+  assert.deepEqual(
+    rules.slice(chinaIndex - DOMESTIC_FALLBACK_DOMAIN_SUFFIXES.length, chinaIndex),
+    DOMESTIC_FALLBACK_DOMAIN_SUFFIXES.map((match) => ({
+      domain_suffix: { match, policy: "DIRECT" },
+    })),
+  );
   for (const domain of ["leiting.com", "leitingcn.com", "g-bits.com"]) {
     const index = rules.findIndex((record) => record.domain_suffix?.match === domain);
     assert.ok(index < steamIndex, domain);
