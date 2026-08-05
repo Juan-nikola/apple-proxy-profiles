@@ -9,7 +9,7 @@ const ALLOWED_KEYS = new Set([
   "local_ipv6", "local-ipv6", "ip", "ipv6", "dns", "dns_servers", "mtu", "keepalive",
   "obfs", "obfs-host", "obfs_host", "obfs-password", "obfs_password", "udp-relay-mode", "udp_relay_mode", "ports",
   "port-hopping", "port_hopping", "port-hopping-interval", "port_hopping_interval",
-  "bandwidth", "up", "down", "underlying-proxy", "chain", "dialer-proxy", "detour", "prev_hop",
+  "bandwidth", "up", "down", "reuse", "tfo", "udp_relay", "underlying-proxy", "chain", "dialer-proxy", "detour", "prev_hop",
 ]);
 const CHAIN_ALIASES = ["underlying-proxy", "chain", "dialer-proxy", "detour", "prev_hop"];
 const GENERATED_CHAIN_POLICY = "🔗 入口节点";

@@ -5,12 +5,12 @@
   "configSha256": "9e4b6c75f859b69d4be0f4f5d7f237f3c1f513676f54812654c9d35282425333",
   "platform": "macos",
   "platformKey": "singbox/macos",
-  "ruleManifestSha256": "6cc4b2ab731081490986aa019426092e5d4ed10efa03d454266e48f45b7e24a6",
+  "ruleManifestSha256": "26a69231a80eee2cb3815e908c5bf630d96eec2e06144a11b599fc609c280516",
   "schemaVersion": 1,
   "status": "validated",
   "upstream": {
     "branch": "stable",
     "commit": "4c02326989a170bcf1d2c3aab1cf5c70adfed2ca",
-    "fetchedAt": "2026-08-05T14:51:44.284Z"
+    "fetchedAt": "2026-08-05T14:55:34.588Z"
   }
 }

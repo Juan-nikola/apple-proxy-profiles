@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { parseSingBoxOptions } from "../src/options.js";
+import { renderSingBoxOutbound } from "../src/render-node.js";
 import { renderSingBoxConfig } from "../src/render-config.js";
 import { validateSingBoxConfig } from "../src/validate-config.js";
 
@@ -89,4 +90,26 @@ test("keeps the mixed TUN stack only on OpenWrt", () => {
     });
     assert.equal(Object.hasOwn(config.inbounds[0], "stack"), false, platform);
   }
+});
+
+test("accepts common upstream transport metadata on Snell nodes", () => {
+  const node = {
+    name: "Snell with upstream metadata",
+    type: "snell",
+    server: "198.51.100.11",
+    port: 443,
+    psk: "TEST_ONLY_SNELL_PSK",
+    version: 4,
+    reuse: true,
+    udp_relay: true,
+    tfo: true,
+  };
+  assert.deepEqual(renderSingBoxOutbound(node), {
+    type: "snell",
+    tag: "Snell with upstream metadata",
+    server: "198.51.100.11",
+    server_port: 443,
+    psk: "TEST_ONLY_SNELL_PSK",
+    version: 4,
+  });
 });

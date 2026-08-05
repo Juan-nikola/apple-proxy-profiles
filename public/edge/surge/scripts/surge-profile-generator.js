@@ -251,7 +251,10 @@ var SurgeProfileBundle = (() => {
     "local-ipv6",
     "ip",
     "ipv6",
-    "reality-opts"
+    "reality-opts",
+    "reuse",
+    "tfo",
+    "udp_relay"
   ]);
   function escapeValue(value) {
     const text = String(value);

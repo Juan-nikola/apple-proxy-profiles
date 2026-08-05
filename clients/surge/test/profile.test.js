@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { parseSurgeOptions } from "../src/options.js";
+import { renderSurgeProxy } from "../src/render-node.js";
 import { renderSurgeProfile } from "../src/render-profile.js";
 import { validateSurgeProfile } from "../src/validate-profile.js";
 
@@ -72,4 +73,19 @@ test("renders every Surge platform without changing shared group names", () => {
     assert.match(profile, /^🚀 节点选择 = /mu);
     assert.deepEqual(validateSurgeProfile(profile), { valid: true, errors: [] }, platform);
   }
+});
+
+test("accepts common upstream transport metadata on Snell nodes", () => {
+  const node = {
+    name: "Snell with upstream metadata",
+    type: "snell",
+    server: "198.51.100.11",
+    port: 443,
+    psk: "TEST_ONLY_SNELL_PSK",
+    version: 4,
+    reuse: true,
+    udp_relay: true,
+    tfo: true,
+  };
+  assert.match(renderSurgeProxy(node), /^Snell with upstream metadata = snell,/u);
 });

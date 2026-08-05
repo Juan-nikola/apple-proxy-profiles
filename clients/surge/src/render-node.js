@@ -7,7 +7,7 @@ const COMMON_KEYS = new Set([
   "protocol-param", "obfs-param", "psk", "version", "uuid", "flow", "alter-id",
   "alterId", "username", "private-key", "public-key", "peers", "pre-shared-key",
   "local-address", "local_ipv4", "local-ipv4", "local_ipv6", "local-ipv6", "ip", "ipv6",
-  "reality-opts",
+  "reality-opts", "reuse", "tfo", "udp_relay",
 ]);
 
 function escapeValue(value) {
