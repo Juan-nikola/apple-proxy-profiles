@@ -1,3 +1,6 @@
+import { CLIENT } from "../../../shared/contracts.js";
+import { filterNodesForClient } from "../../../shared/nodes/capabilities.js";
+import { normalizeNodes } from "../../../shared/nodes/normalize-nodes.js";
 import { parseSingBoxOptions } from "./options.js";
 import { renderSingBoxConfig } from "./render-config.js";
 
@@ -24,15 +27,18 @@ export async function operator(input, targetPlatform, context = {}) {
   void targetPlatform;
   const options = parseSingBoxOptions(context.arguments ?? {});
   if (typeof context.produceArtifact !== "function") throw new Error("produceArtifact is unavailable");
-  const nodes = await context.produceArtifact({
+  const rawNodes = await context.produceArtifact({
     type: options.type,
     name: options.name,
     platform: "JSON",
     produceType: "internal",
   });
-  if (!Array.isArray(nodes) || nodes.length === 0) throw new Error("produceArtifact must return a non-empty node array");
-  logDiagnostics(context, options, nodes);
+  if (!Array.isArray(rawNodes) || rawNodes.length === 0) throw new Error("produceArtifact must return a non-empty node array");
+  const normalized = normalizeNodes(rawNodes, { clientChain: options.clientChain });
+  const filtered = filterNodesForClient(normalized.nodes, CLIENT.singbox);
+  if (filtered.nodes.length === 0) throw new Error("No compatible sing-box nodes");
+  logDiagnostics(context, options, filtered.nodes);
   const ruleBaseUrl = `${PUBLIC_RULE_ROOT}/${options.channel}/sing-box/rules`;
-  const config = renderSingBoxConfig(options, nodes, { ruleBaseUrl, ruleSetFormat: "source" });
+  const config = renderSingBoxConfig(options, filtered.nodes, { ruleBaseUrl, ruleSetFormat: "source" });
   return { ...input, $content: `${JSON.stringify(config, null, 2)}\n` };
 }

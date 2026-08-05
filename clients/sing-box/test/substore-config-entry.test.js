@@ -53,3 +53,26 @@ test("Sub-Store sing-box entry requests a private collection and returns JSON co
   assert.ok(config.route.rule_set[0].url.includes("/edge/sing-box/rules/"));
   assert.equal(result.$content.endsWith("\n"), true);
 });
+
+test("Sub-Store sing-box entry normalizes raw collection nodes before rendering", async () => {
+  const rawNodes = nodes.map(({ _profile, ...node }) => ({ ...node, reuse: true, tfo: true, udp_relay: true }));
+  const result = await operator(
+    { id: "input" },
+    "macos",
+    {
+      arguments: {
+        output: "config",
+        type: "collection",
+        name: "apple-proxy-sources",
+        subscriptionName: "Apple-Proxy-Nodes",
+        platform: "macos",
+      },
+      async produceArtifact() {
+        return rawNodes;
+      },
+    },
+  );
+  const config = JSON.parse(result.$content);
+  assert.equal(config.log.level, "info");
+  assert.ok(config.outbounds.some((outbound) => outbound.type === "shadowsocks"));
+});

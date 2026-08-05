@@ -2141,6 +2141,7 @@ var AnywhereNodeBundle = (() => {
   // substore-nodes-entry.js
   var ALLOWED_KEYS = /* @__PURE__ */ new Set(["output", "type", "name", "clientChain"]);
   var PROTOTYPE_KEYS = /* @__PURE__ */ new Set(["__proto__", "constructor", "prototype"]);
+  var COLLECTION_NAME = "apple-proxy-sources";
   function nodeArguments(raw) {
     let array;
     try {
@@ -2180,9 +2181,9 @@ var AnywhereNodeBundle = (() => {
     }
     if (values.get("output") !== "nodes") throw new Error("Anywhere node output must be nodes");
     if (values.get("type") !== "collection") throw new Error("Anywhere node type must be collection");
-    if (values.get("name") !== "shadowrocket-sources") throw new Error("Anywhere node collection is invalid");
+    if (values.get("name") !== COLLECTION_NAME) throw new Error("Anywhere node collection is invalid");
     if (values.get("clientChain") !== "off") throw new Error("Anywhere clientChain must be off");
-    return Object.freeze({ output: "nodes", type: "collection", name: "shadowrocket-sources", clientChain: "off" });
+    return Object.freeze({ output: "nodes", type: "collection", name: COLLECTION_NAME, clientChain: "off" });
   }
   function outputWithContent(input, content) {
     try {

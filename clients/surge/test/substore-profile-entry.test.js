@@ -52,3 +52,25 @@ test("Sub-Store Surge entry requests a private JSON collection and returns Profi
   assert.match(result.$content, /current\/surge\/rules/u);
   assert.doesNotMatch(result.$content, /_profile|_subName/u);
 });
+
+test("Sub-Store Surge entry normalizes raw collection nodes before rendering", async () => {
+  const rawNodes = nodes.map(({ _profile, ...node }) => ({ ...node, reuse: true, tfo: true, udp_relay: true }));
+  const result = await operator(
+    { id: "input" },
+    "macos",
+    {
+      arguments: {
+        output: "config",
+        type: "collection",
+        name: "apple-proxy-sources",
+        subscriptionName: "Apple-Proxy-Nodes",
+        platform: "macos",
+      },
+      async produceArtifact() {
+        return rawNodes;
+      },
+    },
+  );
+  assert.match(result.$content, /^\[General\]/mu);
+  assert.match(result.$content, /^\[Proxy\]$/mu);
+});

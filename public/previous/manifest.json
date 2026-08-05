@@ -1966,14 +1966,14 @@
       "sha256": "c4b6b9a9cb1f30df59596b12c39658b5f4d26da91100d1c373ee2df1e08155cc"
     },
     {
-      "bytes": 105916,
+      "bytes": 105949,
       "path": "anywhere/scripts/anywhere-node-generator.js",
-      "sha256": "212f9116590c29f9c198c341ce02722f1c632a616576a873dbfdd7f024a8c37a"
+      "sha256": "9bccefb9250f9582a29bcc200e9f5abb6de6de69e2f42fd4669aa014455329af"
     },
     {
-      "bytes": 105916,
+      "bytes": 105949,
       "path": "anywhere/scripts/substore-node-generator.js",
-      "sha256": "212f9116590c29f9c198c341ce02722f1c632a616576a873dbfdd7f024a8c37a"
+      "sha256": "9bccefb9250f9582a29bcc200e9f5abb6de6de69e2f42fd4669aa014455329af"
     },
     {
       "bytes": 31812,
@@ -2551,14 +2551,14 @@
       "sha256": "ca3a49e383d63ea7f4e3c3899bb6bad4204cb3b282771fc8f7916ed6f54040e1"
     },
     {
-      "bytes": 46836,
+      "bytes": 46877,
       "path": "sing-box/scripts/sing-box-config-generator.js",
-      "sha256": "9e4b6c75f859b69d4be0f4f5d7f237f3c1f513676f54812654c9d35282425333"
+      "sha256": "2d8782e0c1f66e6ee3ed0f50e336f28a227b32af6ed41f484e0eb8dcf81dd395"
     },
     {
-      "bytes": 46836,
+      "bytes": 46877,
       "path": "sing-box/scripts/substore-config-generator.js",
-      "sha256": "9e4b6c75f859b69d4be0f4f5d7f237f3c1f513676f54812654c9d35282425333"
+      "sha256": "2d8782e0c1f66e6ee3ed0f50e336f28a227b32af6ed41f484e0eb8dcf81dd395"
     },
     {
       "bytes": 10529,
@@ -2736,18 +2736,18 @@
       "sha256": "3bdb543fe9f6bc290fe3958a6a8b37058e6223f9c0c8342cd8aa5a4cfb193c9b"
     },
     {
-      "bytes": 45143,
+      "bytes": 45184,
       "path": "surge/scripts/substore-profile-generator.js",
-      "sha256": "bbc16fe2e004c317f3d407711e4ec8042058bc5769c5b8b9489bc2a1ed51a563"
+      "sha256": "5df6828db74c733244315bad021d5436868d3e55fcbfbe83eb1fb6f16a6d3b16"
     },
     {
-      "bytes": 45143,
+      "bytes": 45184,
       "path": "surge/scripts/surge-profile-generator.js",
-      "sha256": "bbc16fe2e004c317f3d407711e4ec8042058bc5769c5b8b9489bc2a1ed51a563"
+      "sha256": "5df6828db74c733244315bad021d5436868d3e55fcbfbe83eb1fb6f16a6d3b16"
     }
   ],
   "generatedAt": "2026-08-03T19:30:42Z",
-  "manifestHash": "7ecf6b3b2953e8e61984e5b783de401f7eb52eb1e49abbc66ddd5da1c2318a35",
+  "manifestHash": "d40499292617893c5ed5ffc0d698ac6b472f8712df6f92fa23182bba80847545",
   "schemaVersion": 1,
   "upstream": {
     "branch": "master",

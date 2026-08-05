@@ -1,3 +1,6 @@
+import { CLIENT } from "../../../shared/contracts.js";
+import { filterNodesForClient } from "../../../shared/nodes/capabilities.js";
+import { normalizeNodes } from "../../../shared/nodes/normalize-nodes.js";
 import { parseSurgeOptions } from "./options.js";
 import { renderSurgeProfile } from "./render-profile.js";
 
@@ -24,14 +27,17 @@ export async function operator(input, targetPlatform, context = {}) {
   void targetPlatform;
   const options = parseSurgeOptions(context.arguments ?? {});
   if (typeof context.produceArtifact !== "function") throw new Error("produceArtifact is unavailable");
-  const nodes = await context.produceArtifact({
+  const rawNodes = await context.produceArtifact({
     type: options.type,
     name: options.name,
     platform: "JSON",
     produceType: "internal",
   });
-  if (!Array.isArray(nodes) || nodes.length === 0) throw new Error("produceArtifact must return a non-empty node array");
-  logDiagnostics(context, options, nodes);
-  const profile = renderSurgeProfile(options, nodes, { ruleBaseUrl: PUBLIC_RULE_BASE_URL });
+  if (!Array.isArray(rawNodes) || rawNodes.length === 0) throw new Error("produceArtifact must return a non-empty node array");
+  const normalized = normalizeNodes(rawNodes, { clientChain: options.clientChain });
+  const filtered = filterNodesForClient(normalized.nodes, CLIENT.surge);
+  if (filtered.nodes.length === 0) throw new Error("No compatible Surge nodes");
+  logDiagnostics(context, options, filtered.nodes);
+  const profile = renderSurgeProfile(options, filtered.nodes, { ruleBaseUrl: PUBLIC_RULE_BASE_URL });
   return { ...input, $content: profile };
 }
