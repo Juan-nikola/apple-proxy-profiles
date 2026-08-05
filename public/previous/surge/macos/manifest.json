@@ -2,10 +2,10 @@
   "adapterSchema": "surge-adapter-0.1",
   "channel": "current",
   "client": "surge",
-  "configSha256": "0fb634034d388c1c768b899190aa79bab3d091653615db12aff23e6fe7fc0a9c",
+  "configSha256": "3f600a812f5ac925930d9243a0927dc993a0b58c4df9c69e1ade47a6400999bb",
   "platform": "macos",
   "platformKey": "surge/macos",
-  "ruleManifestSha256": "c89816b84e30571dd14d6c6829c22e001302a1d64eef7300b351a5191fb56484",
+  "ruleManifestSha256": "8f721540bdf4ec944bb54dd55ba12077257ed0c82f50ad5b88d6bdfc28c70aea",
   "schemaVersion": 1,
   "status": "validated",
   "upstream": {

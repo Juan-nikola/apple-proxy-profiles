@@ -23,10 +23,8 @@
           "rule-ChinaMax",
           "rule-ChinaMax_Domain"
         ],
-        "action": {
-          "action": "route",
-          "server": "dns-direct"
-        }
+        "action": "route",
+        "server": "dns-direct"
       },
       {
         "rule_set": [
@@ -34,10 +32,8 @@
           "rule-Privacy",
           "rule-Hijacking"
         ],
-        "action": {
-          "action": "route",
-          "server": "dns-proxy"
-        }
+        "action": "route",
+        "server": "dns-proxy"
       }
     ],
     "final": "dns-proxy",
@@ -811,10 +807,8 @@
     "rules": [
       {
         "ip_is_private": true,
-        "action": {
-          "action": "route",
-          "outbound": "DIRECT"
-        }
+        "action": "route",
+        "outbound": "DIRECT"
       },
       {
         "domain_suffix": [
@@ -822,10 +816,8 @@
           "lan",
           "home.arpa"
         ],
-        "action": {
-          "action": "route",
-          "outbound": "DIRECT"
-        }
+        "action": "route",
+        "outbound": "DIRECT"
       },
       {
         "rule_set": [

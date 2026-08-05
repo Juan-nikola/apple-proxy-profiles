@@ -2229,8 +2229,8 @@ var SingBoxConfigBundle = (() => {
 
   // src/render-rules.js
   var LOCAL_RULES = Object.freeze([
-    { ip_is_private: true, action: { action: "route", outbound: "DIRECT" } },
-    { domain_suffix: ["local", "lan", "home.arpa"], action: { action: "route", outbound: "DIRECT" } }
+    { ip_is_private: true, action: "route", outbound: "DIRECT" },
+    { domain_suffix: ["local", "lan", "home.arpa"], action: "route", outbound: "DIRECT" }
   ]);
   function baseUrl(value) {
     if (typeof value !== "string" || !/^https:\/\/[^\s]+$/u.test(value) || /[\r\n]/u.test(value)) {
@@ -2280,8 +2280,8 @@ var SingBoxConfigBundle = (() => {
     return {
       servers: [chinaServer, proxyServer],
       rules: [
-        { rule_set: ["rule-ChinaMax", "rule-ChinaMax_Domain"], action: { action: "route", server: "dns-direct" } },
-        { rule_set: ["rule-Advertising", "rule-Privacy", "rule-Hijacking"], action: { action: "route", server: "dns-proxy" } }
+        { rule_set: ["rule-ChinaMax", "rule-ChinaMax_Domain"], action: "route", server: "dns-direct" },
+        { rule_set: ["rule-Advertising", "rule-Privacy", "rule-Hijacking"], action: "route", server: "dns-proxy" }
       ],
       final: "dns-proxy",
       strategy: options.ipv6Mode === "ipv4-only" ? "ipv4_only" : "prefer_ipv4",
@@ -2353,8 +2353,7 @@ var SingBoxConfigBundle = (() => {
     return tags;
   }
   function actionOutbound(rule2) {
-    if (rule2?.action?.action === "route") return rule2.action.outbound;
-    if (rule2?.action?.action === "bypass") return rule2.action.outbound;
+    if (rule2?.action === "route" || rule2?.action === "bypass") return rule2.outbound;
     return void 0;
   }
   function validateSingBoxConfig(config) {
@@ -2376,7 +2375,8 @@ var SingBoxConfigBundle = (() => {
       for (const tag of rule2.rule_set ?? []) if (!ruleSets.has(tag)) errors.push("route references missing rule-set tag");
       const target = actionOutbound(rule2);
       if (target !== void 0 && !outboundTags.has(target)) errors.push("route references missing outbound tag");
-      if (rule2.action?.action === "hijack-dns" && !dnsServers.size) errors.push("DNS hijack requires DNS servers");
+      if (rule2.action === "hijack-dns" && !dnsServers.size) errors.push("DNS hijack requires DNS servers");
+      if (rule2.action !== void 0 && typeof rule2.action !== "string") errors.push("route rule action must be a string");
     }
     const routeFinal = config.route?.final;
     if (typeof routeFinal !== "string" || !outboundTags.has(routeFinal)) errors.push("route final references missing outbound tag");
@@ -2384,8 +2384,12 @@ var SingBoxConfigBundle = (() => {
     if (typeof dnsFinal !== "string" || !dnsServers.has(dnsFinal)) errors.push("DNS final references missing server");
     for (const rule2 of config.dns?.rules ?? []) {
       for (const tag of rule2.rule_set ?? []) if (!ruleSets.has(tag)) errors.push("DNS references missing rule-set tag");
-      if (rule2.action?.server !== void 0 && !dnsServers.has(rule2.action.server)) errors.push("DNS rule references missing server");
-      if (rule2.action?.detour !== void 0 && !outboundTags.has(rule2.action.detour)) errors.push("DNS rule references missing outbound");
+      if (typeof rule2.action !== "string") errors.push("DNS rule action must be a string");
+      if ((rule2.action === "route" || rule2.action === "evaluate") && typeof rule2.server !== "string") {
+        errors.push("DNS rule action server missing");
+      }
+      if (rule2.server !== void 0 && !dnsServers.has(rule2.server)) errors.push("DNS rule references missing server");
+      if (rule2.detour !== void 0 && !outboundTags.has(rule2.detour)) errors.push("DNS rule references missing outbound");
     }
     for (const server of config.dns?.servers ?? []) {
       if (server.detour !== void 0 && !outboundTags.has(server.detour)) errors.push("DNS server references missing outbound");

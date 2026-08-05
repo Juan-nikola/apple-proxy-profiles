@@ -1,8 +1,8 @@
 import { RULE_CLIENT_CATALOG } from "../../../shared/rules/client-catalog.js";
 
 const LOCAL_RULES = Object.freeze([
-  { ip_is_private: true, action: { action: "route", outbound: "DIRECT" } },
-  { domain_suffix: ["local", "lan", "home.arpa"], action: { action: "route", outbound: "DIRECT" } },
+  { ip_is_private: true, action: "route", outbound: "DIRECT" },
+  { domain_suffix: ["local", "lan", "home.arpa"], action: "route", outbound: "DIRECT" },
 ]);
 
 function baseUrl(value) {

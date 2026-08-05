@@ -9,8 +9,7 @@ function uniqueTags(records, errors, label) {
 }
 
 function actionOutbound(rule) {
-  if (rule?.action?.action === "route") return rule.action.outbound;
-  if (rule?.action?.action === "bypass") return rule.action.outbound;
+  if (rule?.action === "route" || rule?.action === "bypass") return rule.outbound;
   return undefined;
 }
 
@@ -33,7 +32,8 @@ export function validateSingBoxConfig(config) {
     for (const tag of rule.rule_set ?? []) if (!ruleSets.has(tag)) errors.push("route references missing rule-set tag");
     const target = actionOutbound(rule);
     if (target !== undefined && !outboundTags.has(target)) errors.push("route references missing outbound tag");
-    if (rule.action?.action === "hijack-dns" && !dnsServers.size) errors.push("DNS hijack requires DNS servers");
+    if (rule.action === "hijack-dns" && !dnsServers.size) errors.push("DNS hijack requires DNS servers");
+    if (rule.action !== undefined && typeof rule.action !== "string") errors.push("route rule action must be a string");
   }
   const routeFinal = config.route?.final;
   if (typeof routeFinal !== "string" || !outboundTags.has(routeFinal)) errors.push("route final references missing outbound tag");
@@ -41,8 +41,12 @@ export function validateSingBoxConfig(config) {
   if (typeof dnsFinal !== "string" || !dnsServers.has(dnsFinal)) errors.push("DNS final references missing server");
   for (const rule of config.dns?.rules ?? []) {
     for (const tag of rule.rule_set ?? []) if (!ruleSets.has(tag)) errors.push("DNS references missing rule-set tag");
-    if (rule.action?.server !== undefined && !dnsServers.has(rule.action.server)) errors.push("DNS rule references missing server");
-    if (rule.action?.detour !== undefined && !outboundTags.has(rule.action.detour)) errors.push("DNS rule references missing outbound");
+    if (typeof rule.action !== "string") errors.push("DNS rule action must be a string");
+    if ((rule.action === "route" || rule.action === "evaluate") && typeof rule.server !== "string") {
+      errors.push("DNS rule action server missing");
+    }
+    if (rule.server !== undefined && !dnsServers.has(rule.server)) errors.push("DNS rule references missing server");
+    if (rule.detour !== undefined && !outboundTags.has(rule.detour)) errors.push("DNS rule references missing outbound");
   }
   for (const server of config.dns?.servers ?? []) {
     if (server.detour !== undefined && !outboundTags.has(server.detour)) errors.push("DNS server references missing outbound");

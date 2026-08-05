@@ -17,8 +17,8 @@ export function renderSingBoxDns(options) {
   return {
     servers: [chinaServer, proxyServer],
     rules: [
-      { rule_set: ["rule-ChinaMax", "rule-ChinaMax_Domain"], action: { action: "route", server: "dns-direct" } },
-      { rule_set: ["rule-Advertising", "rule-Privacy", "rule-Hijacking"], action: { action: "route", server: "dns-proxy" } },
+      { rule_set: ["rule-ChinaMax", "rule-ChinaMax_Domain"], action: "route", server: "dns-direct" },
+      { rule_set: ["rule-Advertising", "rule-Privacy", "rule-Hijacking"], action: "route", server: "dns-proxy" },
     ],
     final: "dns-proxy",
     strategy: options.ipv6Mode === "ipv4-only" ? "ipv4_only" : "prefer_ipv4",

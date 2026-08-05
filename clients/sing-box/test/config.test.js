@@ -65,6 +65,20 @@ test("renders a validated OpenWrt transparent gateway config", () => {
   assert.deepEqual(validateSingBoxConfig(config), { valid: true, errors: [] });
 });
 
+test("renders latest sing-box flat DNS rule actions", () => {
+  const config = renderSingBoxConfig(parseSingBoxOptions(baseOptions), [node], {
+    ruleBaseUrl: "https://example.invalid/current/sing-box/rules",
+    ruleSetFormat: "source",
+  });
+  assert.deepEqual(
+    config.dns.rules.map(({ action, server }) => ({ action, server })),
+    [
+      { action: "route", server: "dns-direct" },
+      { action: "route", server: "dns-proxy" },
+    ],
+  );
+});
+
 test("renders mobile TUN without Linux-only auto redirect fields", () => {
   const config = renderSingBoxConfig(parseSingBoxOptions({ ...baseOptions, platform: "android" }), [node], {
     ruleBaseUrl: "https://example.invalid/current/sing-box/rules",

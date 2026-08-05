@@ -45,3 +45,15 @@ test("rejects duplicate outbound tags", () => {
   assert.equal(result.valid, false);
   assert.match(result.errors.join("\n"), /duplicate.*tag/iu);
 });
+
+test("requires the latest flat DNS rule action shape", () => {
+  const legacy = validConfig();
+  legacy.dns.rules = [{ action: { action: "route", server: "dns-proxy" } }];
+  const legacyResult = validateSingBoxConfig(legacy);
+  assert.equal(legacyResult.valid, false);
+  assert.match(legacyResult.errors.join("\n"), /DNS rule action/iu);
+
+  const current = validConfig();
+  current.dns.rules = [{ action: "route", server: "dns-proxy" }];
+  assert.deepEqual(validateSingBoxConfig(current), { valid: true, errors: [] });
+});

@@ -5,12 +5,12 @@
   "configSha256": "3f600a812f5ac925930d9243a0927dc993a0b58c4df9c69e1ade47a6400999bb",
   "platform": "iphone",
   "platformKey": "surge/iphone",
-  "ruleManifestSha256": "8f721540bdf4ec944bb54dd55ba12077257ed0c82f50ad5b88d6bdfc28c70aea",
+  "ruleManifestSha256": "25031f24bb58eef03a3ea6511d2bb1ebb37d797056407576bcf7acd295062cb5",
   "schemaVersion": 1,
   "status": "validated",
   "upstream": {
     "branch": "beta",
-    "commit": "b807e9f8b55f6fcfb2cb26f52b77fa1d3b0c4e6b",
-    "fetchedAt": "2026-08-03T19:30:42Z"
+    "commit": "72c410015dc99df6b54eca1386126f70268bf6bc",
+    "fetchedAt": "2026-08-05T19:24:33Z"
   }
 }
