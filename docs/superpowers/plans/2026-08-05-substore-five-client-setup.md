@@ -4,7 +4,7 @@
 
 **Goal:** 建立一个只在 Sub-Store 保存私密节点的统一配置流程，让 `snell` 与 `vlesshy2` 通过 `apple-proxy-sources` 同时服务 Egern、Anywhere、Shadowrocket、Surge 和 sing-box，并完善从新手部署到代码维护的中文文档。
 
-**Architecture:** GitHub Pages 只发布 7 个公开、无节点的远程 JavaScript 入口；Sub-Store 创建一个私密组合订阅 `apple-proxy-sources`，16 个 File/Script Operator 任务通过 `name=apple-proxy-sources` 和 URL hash 参数引用它。仓库 README、总指南、维护手册和五个客户端文档共享同一套参数表，真实订阅 URL、API 地址、节点和输出链接不进 Git。
+**Architecture:** GitHub Pages 只发布 7 个公开、无节点的远程 JavaScript 入口；Sub-Store 创建一个私密组合订阅 `apple-proxy-sources`，17 个 File/Script Operator 任务通过 `name=apple-proxy-sources` 和 URL hash 参数引用它。仓库 README、总指南、维护手册和五个客户端文档共享同一套参数表，真实订阅 URL、API 地址、节点和输出链接不进 Git。
 
 **Tech Stack:** Markdown, Node.js 22+, npm workspaces, Node test runner, esbuild, GitHub Pages, Sub-Store remote Script/File tasks.
 
@@ -14,7 +14,7 @@
 - 公开文档只能出现 GitHub Pages JS URL、公开规则 URL 和 `example.invalid`；不得出现真实 Sub-Store API、节点源、输出订阅、服务器、凭据或 Token。
 - 新任务优先保存远程 JS URL 和可视化参数；旧版单行模式使用 `JS_URL#arg=value&arg2=value`，不能使用 `?` 传脚本参数。
 - 规范入口为 7 个：Shadowrocket 节点/配置、Egern 节点/配置、Anywhere 节点、Surge 配置、sing-box 配置；旧 `substore-*` 仅兼容，不重复部署。
-- 五个客户端共 16 个 Sub-Store 输出任务：Egern 4、Anywhere 1、Shadowrocket 4、Surge 3、sing-box 5。
+- 五个客户端共 17 个 Sub-Store 输出任务：Egern 4、Anywhere 1、Shadowrocket 4、Surge 3、sing-box 5。
 - 不手工编辑 `clients/*/dist/`、`clients/*/examples/`、`public/` 或自动生成的规则快照；代码修改只落在 `src/`、测试、源目录和文档。
 - sing-box `.srs` 只能由显式官方 sing-box core 编译器生成；没有官方可执行文件时必须失败关闭，不能用文本伪装二进制。
 - 完成前必须运行文档测试、客户端测试、构建、秘密扫描、Actions 检查和规则检查；没有真机 canary 不得宣称已完成设备验收。
@@ -30,7 +30,7 @@
 
 **Interfaces:**
 - Consumes: Existing 7 public Pages entrypoints and existing option parsers in `clients/*/src/options.js`.
-- Produces: One copy-safe public URL table, one 16-task private Sub-Store table, and a consistent `apple-proxy-sources` parameter contract.
+- Produces: One copy-safe public URL table, one 17-task private Sub-Store table, and a consistent `apple-proxy-sources` parameter contract.
 
 - [ ] **Step 1: Record the current public entrypoints and option keys**
 
@@ -54,7 +54,7 @@ Change the three-client wording to five clients, add Surge and sing-box platform
 
 - [ ] **Step 3: Replace the central guide’s three-client task model**
 
-Add a table with exactly 7 public JS URLs and a table with exactly 16 tasks. Each task row must include: task name, Sub-Store object type, remote URL, hash-form arguments, platform, update cadence, dependency, and expected preview shape. Use `example.invalid/private/...` for private output URL examples.
+Add a table with exactly 7 public JS URLs and a table with exactly 17 tasks. Each task row must include: task name, Sub-Store object type, remote URL, hash-form arguments, platform, update cadence, dependency, and expected preview shape. Use `example.invalid/private/...` for private output URL examples.
 
 - [ ] **Step 4: Add copy-safe parameter blocks**
 
@@ -62,7 +62,7 @@ For each platform, provide both the hash form and key/value form. Include at lea
 
 - [ ] **Step 5: Update documentation tests**
 
-Add assertions that the central guide contains `apple-proxy-sources`, all 7 canonical script URLs, the 16-task count, `#output=config`, `#output=nodes`, `channel=current`, `channel=edge`, and no real-secret-shaped URL. Run each client’s docs test and fix only documentation expectations.
+Add assertions that the central guide contains `apple-proxy-sources`, all 7 canonical script URLs, the 17-task count, `#output=config`, `#output=nodes`, `channel=current`, `channel=edge`, and no real-secret-shaped URL. Run each client’s docs test and fix only documentation expectations.
 
 - [ ] **Step 6: Run the documentation test slice**
 
@@ -221,7 +221,7 @@ git commit -m "docs: complete client deployment and maintenance guides"
 
 **Interfaces:**
 - Consumes: Existing private Sub-Store source names `snell` and `vlesshy2`, and the public 7-script table.
-- Produces: Private collection `apple-proxy-sources`, 16 private output tasks, and one private output URL per task/platform.
+- Produces: Private collection `apple-proxy-sources`, 17 private output tasks, and one private output URL per task/platform.
 
 - [ ] **Step 1: Create the collection**
 
@@ -285,4 +285,3 @@ Use the repository’s existing GitHub deploy key only for the push; never add i
 - [ ] **Step 5: Verify published URLs**
 
 Check HTTP 200 for at least the current Surge and sing-box scripts and the public Anywhere import page, then report the seven stable script URLs, the private task setup status, and the remaining one-device-at-a-time canary requirement.
-

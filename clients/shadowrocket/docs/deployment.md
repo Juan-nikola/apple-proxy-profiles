@@ -13,7 +13,7 @@
 
 成功标志：旧 Profile 仍在列表中，切回后可以恢复联网。做不到就停止部署，先修复备份或回滚入口。
 
-迁移说明：仓库文件现位于 `clients/shadowrocket/`，但已创建的 Sub-Store 对象名和 URL 不变。`shadowrocket-sources`、`shadowrocket-nodes`、`shadowrocket-config-macos`、`shadowrocket-config-iphone`、`shadowrocket-config-ipad` 及其已发布 URL 都不要重命名；保留旧 Profile 并继续使用本手册的既有顺序。
+迁移说明：仓库文件现位于 `clients/shadowrocket/`；新统一组合名为 `apple-proxy-sources`。建议按本手册创建新的节点输出和三个 Profile 任务，保留旧 Profile 作为回滚入口，直到新配置完成灰度验证。
 
 ### 公网 Sub-Store 安全检查
 
@@ -23,11 +23,11 @@
 
 ## 1. 准备 Sub-Store 来源
 
-把每个机场、自建、Realm、服务端链式和客户端落地订阅加入组合 `shadowrocket-sources`。显示名前缀分别使用 `[机场]`、`[自建]`、`[realm]`、`[链式代理]`、`[落地]`。只有确实需要 Shadowrocket 再套一层入口的节点才标 `[落地]`。
+把现有 Sub-Store 来源 `snell` 和 `vlesshy2` 加入组合 `apple-proxy-sources`。以后增加机场、自建、Realm、服务端链式或客户端落地订阅，也只加入这个组合；显示名前缀分别使用 `[机场]`、`[自建]`、`[realm]`、`[链式代理]`、`[落地]`。只有确实需要 Shadowrocket 再套一层入口的节点才标 `[落地]`。
 
 1. 在 Sub-Store 的来源/订阅区域逐个添加已有订阅。
 2. 每个来源先单独预览，确认能解析出节点；不要在公开场合打开或分享完整地址。
-3. 新建组合订阅，名称准确填写 `shadowrocket-sources`。
+3. 新建组合订阅，名称准确填写 `apple-proxy-sources`。
 4. 把刚才的来源全部加入这个组合。前缀含义如下：
    - `[机场]机场名字`：机场节点，不进入下载/P2P 手动候选。
    - `[自建]节点类型`：普通自建节点，例如 `[自建]Snell`。
@@ -36,7 +36,7 @@
    - `[落地]XXX`：明确允许 Shadowrocket 使用入口节点连接的落地。
 5. 无法确认某个来源是否为客户端落地时，不要标 `[落地]`；先按普通自建或已完成链路处理。
 
-成功标志：`shadowrocket-sources` 预览不是空的，数量与各来源大致相符。原始组合为空时停止，不创建输出文件。
+成功标志：`apple-proxy-sources` 预览不是空的，数量与 `snell`、`vlesshy2` 两个来源大致相符。原始组合为空时停止，不创建输出文件。
 
 ## 2. 创建节点 Script Operator
 
@@ -45,13 +45,13 @@
 - `shadowrocket-node-operator.js` → `https://juan-nikola.github.io/apple-proxy-profiles/current/shadowrocket/scripts/shadowrocket-node-operator.js`
 - `shadowrocket-profile-generator.js` → `https://juan-nikola.github.io/apple-proxy-profiles/current/shadowrocket/scripts/shadowrocket-profile-generator.js`
 
-不需要先在 Sub-Store 建立独立脚本记录。把节点 JS URL 直接作为 Script Operator 加入 `shadowrocket-sources` 的组合处理链。这里是组合订阅 Operator，不是 File。Operator 参数填 `output=nodes&clientChain=off`，目标平台选 Shadowrocket；组合处理后的私密节点订阅命名为 `shadowrocket-nodes`，更新间隔设为每 6 小时。
+不需要先在 Sub-Store 建立独立脚本记录。把节点 JS URL 直接作为 Script Operator 加入 `apple-proxy-sources` 的组合处理链。这里是组合订阅 Operator，不是 File。Operator 参数填 `output=nodes&clientChain=off`，目标平台选 Shadowrocket；组合处理后的私密节点 File 任务名建议为 `shadowrocket-nodes`，在 Shadowrocket 中显示为 `Shadowrocket-Nodes`（也可改成自己的显示名），更新间隔设为每 6 小时。
 
 新任务统一使用 `shadowrocket-node-operator.js` 与 `shadowrocket-profile-generator.js`。旧 `substore-node-operator.js`、`substore-profile-generator.js` Pages URL 继续保留为字节一致的兼容别名；已部署任务不要仅为文件改名替换 URL，也不要同时导入新旧别名。
 
 具体操作：
 
-1. 打开组合 `shadowrocket-sources` 的处理链，新增“脚本操作/Script Operator”。
+1. 打开组合 `apple-proxy-sources` 的处理链，新增“脚本操作/Script Operator”。
 2. 脚本来源选择“链接/远程脚本”，粘贴规范 Pages URL `https://juan-nikola.github.io/apple-proxy-profiles/current/shadowrocket/scripts/shadowrocket-node-operator.js`；不要粘贴脚本正文。
 3. 展开可视化参数编辑器，添加 `output=nodes` 与 `clientChain=off`。旧版只有单行链接时使用 `JS_URL#output=nodes&clientChain=off`，不能使用 `?`。
 4. 预览时目标平台选择 Shadowrocket。
@@ -68,9 +68,9 @@
 
 | File 任务名 | 完整参数 |
 | --- | --- |
-| `shadowrocket-config-macos` | `output=config&type=collection&name=shadowrocket-sources&subscriptionName=Shadowrocket-Nodes&platform=macos&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=ipv4-only&autoGroupMode=auto&clientChain=off` |
-| `shadowrocket-config-iphone` | `output=config&type=collection&name=shadowrocket-sources&subscriptionName=Shadowrocket-Nodes&platform=iphone&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&autoGroupMode=auto&clientChain=off` |
-| `shadowrocket-config-ipad` | `output=config&type=collection&name=shadowrocket-sources&subscriptionName=Shadowrocket-Nodes&platform=ipad&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&autoGroupMode=auto&clientChain=off` |
+| `shadowrocket-config-macos` | `output=config&type=collection&name=apple-proxy-sources&subscriptionName=Shadowrocket-Nodes&platform=macos&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=ipv4-only&autoGroupMode=auto&clientChain=off` |
+| `shadowrocket-config-iphone` | `output=config&type=collection&name=apple-proxy-sources&subscriptionName=Shadowrocket-Nodes&platform=iphone&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&autoGroupMode=auto&clientChain=off` |
+| `shadowrocket-config-ipad` | `output=config&type=collection&name=apple-proxy-sources&subscriptionName=Shadowrocket-Nodes&platform=ipad&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&autoGroupMode=auto&clientChain=off` |
 
 配置更新间隔设为每天。成功标志：预览首行附近出现 `[General]`，随后出现 `[Proxy Group]` 和 `[Rule]`，且没有节点密码。
 
@@ -83,7 +83,7 @@
 5. iPad 文件名填 `shadowrocket-config-ipad`，使用表中的 iPad 完整参数。
 6. 三份都设为每天更新，并分别保存远程 Profile URL。不要公开这些 URL。
 
-`name=shadowrocket-sources` 必须与第 1 节的组合名完全一致。`subscriptionName` 不是占位参数：它必须与 Shadowrocket 中节点订阅的显示名**完全一致**，包括大小写、emoji、空格和标点。显示名可自由命名（支持中文、内部空格和普通标点），但不能以空白开头或结尾，也不能包含换行。本手册仅以 `Shadowrocket-Nodes` 为示例，所以三个 File 的参数都写 `subscriptionName=Shadowrocket-Nodes`，动态候选会显示为 `Shadowrocket-Nodes,use=true`。如果截图中实际显示名是 `SHADOWROCKET-NODES`，macOS、iPhone、iPad 三个 Profile File Operator 的 `subscriptionName` 都必须精确填写 `SHADOWROCKET-NODES`（大小写也一致），不要把它当作必须固定使用的名字。名称不匹配时，`DIRECT`、`🚀 节点选择`、自动/故障转移和地区等显式选择仍在，但动态组不会显示该订阅的具体服务器。参数拼写错误、缺少必填参数或使用未知值时，生成器会直接报错。
+`name=apple-proxy-sources` 必须与第 1 节的组合名完全一致。`subscriptionName` 不是占位参数：它必须与 Shadowrocket 中节点订阅的显示名**完全一致**，包括大小写、emoji、空格和标点。显示名可自由命名（支持中文、内部空格和普通标点），但不能以空白开头或结尾，也不能包含换行。本手册仅以 `Shadowrocket-Nodes` 为示例，所以三个 File 的参数都写 `subscriptionName=Shadowrocket-Nodes`，动态候选会显示为 `Shadowrocket-Nodes,use=true`。如果截图中实际显示名是 `SHADOWROCKET-NODES`，macOS、iPhone、iPad 三个 Profile File Operator 的 `subscriptionName` 都必须精确填写 `SHADOWROCKET-NODES`（大小写也一致），不要把它当作必须固定使用的名字。名称不匹配时，`DIRECT`、`🚀 节点选择`、自动/故障转移和地区等显式选择仍在，但动态组不会显示该订阅的具体服务器。参数拼写错误、缺少必填参数或使用未知值时，生成器会直接报错。
 
 如果界面提供独立的参数名/参数值输入框，显示名填写原值并让界面编码；如果只有单行脚本链接，写成 `JS_URL#arg1=value1&arg2=value2`，且包含中文、emoji、空格、`&`、`#` 或 `%` 的 `subscriptionName` 值必须单独进行百分号编码。不要使用 `?` 连接脚本参数，也不要编码脚本 URL、参数名或分隔参数的 `&` 和 `=`。
 

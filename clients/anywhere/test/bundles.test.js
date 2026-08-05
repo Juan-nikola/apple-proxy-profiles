@@ -10,7 +10,7 @@ import { operator as sourceOperator } from "../src/substore-nodes-entry.js";
 const BUNDLE = new URL("../dist/anywhere-node-generator.js", import.meta.url);
 const LEGACY_BUNDLE = new URL("../dist/substore-node-generator.js", import.meta.url);
 const BUILD = new URL("../scripts/build.mjs", import.meta.url);
-const ARGUMENTS = { output: "nodes", type: "collection", name: "shadowrocket-sources", clientChain: "off" };
+const ARGUMENTS = { output: "nodes", type: "collection", name: "apple-proxy-sources", clientChain: "off" };
 
 function inventory() {
   return [{
@@ -98,7 +98,7 @@ test("restricted Anywhere bundle keeps the pre-await argument snapshot", async (
   assert.match(result.$content, /^proxies:\n/u);
   assert.deepEqual(loaded.requests, [{
     type: "collection",
-    name: "shadowrocket-sources",
+    name: "apple-proxy-sources",
     platform: "JSON",
     produceType: "internal",
   }]);

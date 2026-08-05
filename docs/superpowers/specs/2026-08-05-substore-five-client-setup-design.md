@@ -23,7 +23,7 @@ https://juan-nikola.github.io/apple-proxy-profiles/current/<client>/scripts/<scr
 - 名称：`apple-proxy-sources`
 - 来源：已有订阅 `snell`、`vlesshy2`
 
-创建 16 个输出任务，全部通过 `name=apple-proxy-sources` 引用该组合：
+创建 17 个输出任务，全部通过 `name=apple-proxy-sources` 引用该组合：
 
 | 客户端 | 任务数量 | 输出 |
 | --- | ---: | --- |
@@ -54,7 +54,7 @@ https://juan-nikola.github.io/apple-proxy-profiles/current/<client>/scripts/<scr
 ## 文档结构
 
 - 根 README：项目边界、五客户端总览、快速开始、目录地图、常见维护任务、构建与验证入口。
-- `docs/substore-two-layer-setup.md`：从组合订阅到 16 个任务的逐项填写表，包含 URL、hash 参数、任务依赖、输出链接保存位置、刷新与回滚。
+- `docs/substore-two-layer-setup.md`：从组合订阅到 17 个任务的逐项填写表，包含 URL、hash 参数、任务依赖、输出链接保存位置、刷新与回滚。
 - `clients/<client>/README.md`：客户端能力、支持平台、脚本 URL、参数摘要、公开与私密边界、客户端专属目录。
 - `clients/<client>/docs/deployment.md`：零基础逐步部署、预览成功标志、导入顺序和升级。
 - `clients/<client>/docs/maintenance.md` 或等价章节：新增节点、修改规则、修改策略、生成器变更、编译和验证命令。
@@ -91,8 +91,7 @@ npm run check:rules
 ## 验收标准
 
 1. README 不再只描述三个客户端，而是准确覆盖五个客户端及所有平台。
-2. 总指南列出 7 个规范远程脚本、16 个任务、每个任务的 `#...&...` 参数和依赖顺序。
+2. 总指南列出 7 个规范远程脚本、17 个任务、每个任务的 `#...&...` 参数和依赖顺序。
 3. 文档明确新增节点只改 Sub-Store 组合，新增公开规则只改规则源/目录，代码修改只改 `src/`。
 4. 文档给出每个目录和关键文件作用、完整构建验证命令、发布前检查和真实设备 canary 边界。
 5. 公开扫描不发现 API key、真实 URL 或节点字段；所有测试、构建和文档测试通过。
-

@@ -9,6 +9,7 @@ import {
 
 const ALLOWED_KEYS = new Set(["output", "type", "name", "clientChain"]);
 const PROTOTYPE_KEYS = new Set(["__proto__", "constructor", "prototype"]);
+const COLLECTION_NAME = "apple-proxy-sources";
 
 function nodeArguments(raw) {
   let array;
@@ -49,9 +50,9 @@ function nodeArguments(raw) {
   }
   if (values.get("output") !== "nodes") throw new Error("Anywhere node output must be nodes");
   if (values.get("type") !== "collection") throw new Error("Anywhere node type must be collection");
-  if (values.get("name") !== "shadowrocket-sources") throw new Error("Anywhere node collection is invalid");
+  if (values.get("name") !== COLLECTION_NAME) throw new Error("Anywhere node collection is invalid");
   if (values.get("clientChain") !== "off") throw new Error("Anywhere clientChain must be off");
-  return Object.freeze({ output: "nodes", type: "collection", name: "shadowrocket-sources", clientChain: "off" });
+  return Object.freeze({ output: "nodes", type: "collection", name: COLLECTION_NAME, clientChain: "off" });
 }
 
 function outputWithContent(input, content) {

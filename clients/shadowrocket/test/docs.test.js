@@ -56,7 +56,7 @@ test("beginner docs contain every operational checkpoint and warning", async () 
     "## 可以分享什么",
   ]);
 
-  const defaultParameters = "output=config&type=collection&name=shadowrocket-sources&subscriptionName=Shadowrocket-Nodes&platform=macos&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=ipv4-only&autoGroupMode=auto&clientChain=off";
+  const defaultParameters = "output=config&type=collection&name=apple-proxy-sources&subscriptionName=Shadowrocket-Nodes&platform=macos&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=ipv4-only&autoGroupMode=auto&clientChain=off";
   assert.ok(docs["docs/deployment.md"].includes(defaultParameters), "deployment: missing exact default parameter string");
   for (const phrase of [
     "subscriptionName",
@@ -116,11 +116,11 @@ test("beginner docs contain every operational checkpoint and warning", async () 
   const chainSection = docs["docs/maintenance.md"].split("## 打开客户端链式\n", 2)[1]?.split("\n## ", 1)[0] ?? "";
   const chainSubscriptionName = "Shadowrocket-Nodes-Chain-Test-YYYYMMDD";
   for (const phrase of [
-    "shadowrocket-sources-chain-test-YYYYMMDD",
+    "apple-proxy-sources-chain-test-YYYYMMDD",
     "output=nodes&clientChain=off",
     "output=nodes&clientChain=on",
     "shadowrocket-nodes-chain-test-YYYYMMDD",
-    "name=shadowrocket-sources-chain-test-YYYYMMDD",
+    "name=apple-proxy-sources-chain-test-YYYYMMDD",
     "原来的 `shadowrocket-nodes` 保持不变",
   ]) assert.ok(chainSection.includes(phrase), `maintenance chain procedure: missing isolated-stack phrase: ${phrase}`);
   assert.match(
@@ -182,7 +182,7 @@ test("migration documentation keeps Sub-Store objects stable while using monorep
       `${file}: contains an obsolete root-level operator path`,
     );
   }
-  assert.match(docs["docs/deployment.md"], /shadowrocket-sources[\s\S]*已发布 URL 都不要重命名/);
+  assert.match(docs["docs/deployment.md"], /新统一组合名为 `apple-proxy-sources`/u);
   assert.ok(docs["docs/deployment.md"].includes("HTTPS 解密保持关闭"), "deployment: HTTPS decryption must remain off");
   assert.ok(docs["docs/troubleshooting.md"].includes("旧 Profile"), "troubleshooting: missing old Profile rollback guidance");
 });

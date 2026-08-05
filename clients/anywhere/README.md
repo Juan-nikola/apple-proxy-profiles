@@ -32,17 +32,17 @@ Anywhere 不能用一个远程文件表达 Shadowrocket/Egern 的完整 Profile�
 新建 File `anywhere-nodes`，脚本来源选择“链接/远程脚本”，直接粘贴上面的 URL，然后在这个 File 的可视化参数编辑器中填写：
 
 ```text
-output=nodes&type=collection&name=shadowrocket-sources&clientChain=off
+output=nodes&type=collection&name=apple-proxy-sources&clientChain=off
 ```
 
-旧版只有单行链接时使用 `JS_URL#output=nodes&type=collection&name=shadowrocket-sources&clientChain=off`，不能使用 `?` 连接脚本参数。保存后先预览，确认 `accepted` 至少为 1，再把这个 File 的私密输出 URL 加入 Anywhere；不要在 File 中粘贴 JavaScript 正文。以后脚本升级不改 JS URL、File 名称、参数或私密 URL。
+旧版只有单行链接时使用 `JS_URL#output=nodes&type=collection&name=apple-proxy-sources&clientChain=off`，不能使用 `?` 连接脚本参数。保存后先预览，确认 `accepted` 至少为 1，再把这个 File 的私密输出 URL 加入 Anywhere；不要在 File 中粘贴 JavaScript 正文。以后脚本升级不改 JS URL、File 名称、参数或私密 URL。
 
 ## 新手部署：从节点 File 到规则导入
 
 ### 1. 先备份并确认来源
 
 1. 在 Anywhere 保留当前能联网的节点、Rule Mode 规则集及本地策略绑定，不删除旧设置。
-2. 备份 Sub-Store；确认组合订阅 `shadowrocket-sources` 已存在、包含全部私密来源且预览节点数大于 0。
+2. 备份 Sub-Store；确认组合订阅 `apple-proxy-sources` 已存在、包含 `snell` 与 `vlesshy2` 且预览节点数大于 0。
 3. 真实来源 URL、节点、File 输出 URL 和 Anywhere 本地绑定不得进入公开仓库、截图或聊天。
 
 ### 2. 创建 `anywhere-nodes`
@@ -61,13 +61,13 @@ output=nodes&type=collection&name=shadowrocket-sources&clientChain=off
    | --- | --- |
    | `output` | `nodes` |
    | `type` | `collection` |
-   | `name` | `shadowrocket-sources` |
+   | `name` | `apple-proxy-sources` |
    | `clientChain` | `off` |
 
 5. 单条脚本的“启用”和“预览”都勾选；“关闭缓存”和“不验证服务器证书”都不勾选。标题“文件操作”旁的开关图标只是全部展开/收起，不是运行总开关。
 6. 点击“即时预览”。成功输出必须包含顶层 `proxies:` 且至少一个节点，不能继续显示“填入文件内容”。保存后复制 File 的私密直链，只放进 Anywhere。
 
-远程链接应使用 `JS_URL#output=nodes&type=collection&name=shadowrocket-sources&clientChain=off`。当前 Sub-Store 后端从 URL 的 `#...` 读取 `$arguments`；新界面的独立 key/value 参数行适合检查和修改，但即使这些行已经显示，也必须确认脚本 URL 本身保留相同的 hash 参数，不能只保存无 hash 的 JS URL。
+远程链接应使用 `JS_URL#output=nodes&type=collection&name=apple-proxy-sources&clientChain=off`。当前 Sub-Store 后端从 URL 的 `#...` 读取 `$arguments`；新界面的独立 key/value 参数行适合检查和修改，但即使这些行已经显示，也必须确认脚本 URL 本身保留相同的 hash 参数，不能只保存无 hash 的 JS URL。
 
 ### 3. 在 Anywhere 添加节点
 

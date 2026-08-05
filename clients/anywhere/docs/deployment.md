@@ -19,10 +19,10 @@ https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/scripts/anyw
 新任务统一选择 `anywhere-node-generator.js`。旧 `substore-node-generator.js` Pages URL 继续保留为字节一致的兼容别名；既有任务无需仅为改名替换 URL，也不要同时添加新旧两个别名。
 
 ```text
-output=nodes&type=collection&name=shadowrocket-sources&clientChain=off
+output=nodes&type=collection&name=apple-proxy-sources&clientChain=off
 ```
 
-旧版只有单行链接时使用 `JS_URL#output=nodes&type=collection&name=shadowrocket-sources&clientChain=off`，不能使用 `?` 连接脚本参数。以后更新 Anywhere Node Generator 不复制脚本正文；`anywhere-nodes` 的 JS URL、任务名、私密输出 URL和上述参数保持不动。发布后先重新预览，再在一台 canary 设备手动 Refresh。
+旧版只有单行链接时使用 `JS_URL#output=nodes&type=collection&name=apple-proxy-sources&clientChain=off`，不能使用 `?` 连接脚本参数。以后更新 Anywhere Node Generator 不复制脚本正文；`anywhere-nodes` 的 JS URL、任务名、私密输出 URL和上述参数保持不动。发布后先重新预览，再在一台 canary 设备手动 Refresh。
 
 Anywhere 没有与 Shadowrocket/Egern 等价的完整 Profile File，不要创建 `anywhere-profile-generator.js`。这个 File 只完成私密节点层；规则、绑定和设备设置必须继续完成第 2—5 节。
 
