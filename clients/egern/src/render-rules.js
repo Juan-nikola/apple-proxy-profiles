@@ -1,5 +1,6 @@
 import { orderedRuleAssignments } from "../../../shared/rules/catalog.js";
 import { CUSTOM_RULES } from "../../../shared/rules/custom-rules.js";
+import { DOMESTIC_FALLBACK_DOMAIN_SUFFIXES } from "../../../shared/rules/domestic-fallback.js";
 import { PUBLIC_SNAPSHOT_BASE_URL } from "./options.js";
 
 const RULE_BASE_URL = `${PUBLIC_SNAPSHOT_BASE_URL}/egern/rules`;
@@ -43,6 +44,9 @@ const LOCAL_RULES = Object.freeze([
 ]);
 
 const GAME_DIRECT_DOMAINS = Object.freeze(["leiting.com", "leitingcn.com", "g-bits.com"]);
+const DOMESTIC_FALLBACK_RULES = Object.freeze(DOMESTIC_FALLBACK_DOMAIN_SUFFIXES.map((match) => (
+  Object.freeze({ domain_suffix: Object.freeze({ match, policy: "DIRECT" }) })
+)));
 
 function invalidCustom() {
   throw new Error(CUSTOM_ERROR);
@@ -247,6 +251,9 @@ export function renderEgernRules(options) {
       for (const match of GAME_DIRECT_DOMAINS) {
         rules.push({ domain_suffix: { match, policy: "DIRECT" } });
       }
+    }
+    if (assignment.sourceId === "ChinaMax_Domain") {
+      rules.push(...DOMESTIC_FALLBACK_RULES.map((rule) => structuredClone(rule)));
     }
     const match = `${ruleBase}/${assignment.sourceId}.yaml`;
     if (index === gameIndex) {

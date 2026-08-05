@@ -1,0 +1,78 @@
+# Upstream: https://github.com/blackmatrix7/ios_rule_script
+# Source: BiliBili
+# Commit: dab47069a30c4ae70f7f5f4c919d639d9aaf79dc
+# Converted at upstream commit time: 2026-08-01T19:07:21Z
+# License: GPL-2.0-only
+# Converted by: Juan-nikola/apple-proxy-profiles
+name = 📺 哔哩哔哩 · BiliBili
+routing = 1
+
+0, 106.75.74.76/32
+0, 111.206.25.147/32
+0, 119.3.238.64/32
+0, 120.92.108.182/32
+0, 120.92.113.99/32
+0, 120.92.153.217/32
+0, 134.175.207.130/32
+2, acg.tv
+2, acgvideo.com
+2, animetamashi.cn
+2, animetamashi.com
+2, anitama.cn
+2, anitama.net
+2, b23.tv
+2, baka.im
+2, bigfun.cn
+2, bigfunapp.cn
+2, bili22.cn
+2, bili2233.cn
+2, bili23.cn
+2, bili33.cn
+2, biliapi.com
+2, biliapi.net
+2, bilibili.cc
+2, bilibili.cn
+2, bilibili.co
+2, bilibili.com
+2, bilibili.net
+2, bilibili.tv
+2, bilibiligame.cn
+2, bilibiligame.co
+2, bilibiligame.net
+2, bilibilipay.cn
+2, bilibilipay.com
+2, bilicdn1.com
+2, bilicdn2.com
+2, bilicdn3.com
+2, bilicdn4.com
+2, bilicdn5.com
+2, bilicomics.com
+2, biligame.cn
+2, biligame.co
+2, biligame.com
+2, biligame.net
+2, biligo.com
+2, biliimg.com
+2, biliintl.co
+2, biliintl.com
+2, biliplus.com
+2, bilivideo.cn
+2, bilivideo.com
+2, bilivideo.net
+2, corari.com
+2, dreamcast.hk
+2, dyhgames.com
+2, hdslb.com
+2, hdslb.com.w.kunlunhuf.com
+2, hdslb.com.w.kunlunpi.com
+2, hdslb.net
+2, hdslb.org
+2, im9.com
+2, maoercdn.com
+2, mcbbs.net
+2, mincdn.com
+2, sharejoytech.com
+2, smtcdns.net
+2, upos-hz-mirrorakam.akamaized.net
+2, uposdash-302-bilivideo.yfcdn.net
+2, yo9.com

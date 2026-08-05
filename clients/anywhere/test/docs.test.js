@@ -20,7 +20,7 @@ test("documents the exact three-layer boundary and pinned compatibility", async 
     assert.match(content.readme, new RegExp(phrase.replace(".", "\\."), "u"));
   }
   assert.match(content.readme, /e15518fde1f5d2652dfc1c234c89a68b87cecec0|上游兼容性/u);
-  assert.match(content.readme, /32 个[\s\S]*34 个[\s\S]*375,265/u);
+  assert.match(content.readme, /32 个[\s\S]*34 个[\s\S]*375,237/u);
   assert.match(content.readme, /95,000.*100,000/u);
 });
 

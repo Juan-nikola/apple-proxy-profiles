@@ -4,6 +4,8 @@ import { ANYWHERE_SOURCE_BASELINE } from "../../clients/anywhere/src/upstream-co
 import { compileAnywhereRuleSets } from "../../clients/anywhere/src/compile-priority.js";
 import { renderArrs, ARRS_TYPE_ID } from "../../clients/anywhere/src/render-arrs.js";
 import { shardRuleSet } from "../../clients/anywhere/src/shard-rules.js";
+import { RULE_KIND } from "../../shared/rules/model.js";
+import { DOMESTIC_FALLBACK_DOMAIN_SUFFIXES } from "../../shared/rules/domestic-fallback.js";
 import { parseSurgeRules } from "./parse-surge.js";
 import {
   BLACKMATRIX7_BASELINE,
@@ -12,6 +14,16 @@ import {
 } from "./source-catalog.js";
 
 const PUBLIC_BASE = "https://juan-nikola.github.io/apple-proxy-profiles/current";
+const DOMESTIC_FALLBACK_SOURCE_ID = "DomesticFallback";
+
+function domesticFallbackEntries(source) {
+  if (source.id !== "ChinaMax_Domain") return [];
+  return DOMESTIC_FALLBACK_DOMAIN_SUFFIXES.map((value) => ({
+    kind: RULE_KIND.domainSuffix,
+    value,
+    sourceId: DOMESTIC_FALLBACK_SOURCE_ID,
+  }));
+}
 
 function sha256(content) {
   return createHash("sha256").update(content).digest("hex");
@@ -84,11 +96,16 @@ export function buildAnywhereRuleSnapshot({
   const parsedSources = catalog.map((source) => {
     const fetched = snapshot.get(source.id);
     if (!fetched) throw new Error(`Rule source ${source.id}: missing snapshot input`);
-    return { source, fetched, parsed: parseSurgeRules(fetched.text, source) };
+    return {
+      source,
+      fetched,
+      parsed: parseSurgeRules(fetched.text, source),
+      supplemental: domesticFallbackEntries(source),
+    };
   });
   verifyPinnedBaseline(parsedSources, snapshot, expectedBaseline);
 
-  const compiled = compileAnywhereRuleSets(parsedSources.map(({ source, parsed }) => ({
+  const compiled = compileAnywhereRuleSets(parsedSources.map(({ source, parsed, supplemental }) => ({
     id: source.id,
     sourceId: source.id,
     familyId: source.familyId,
@@ -97,7 +114,7 @@ export function buildAnywhereRuleSnapshot({
     priority: source.priority,
     routing: source.routing,
     required: true,
-    entries: parsed.entries,
+    entries: [...parsed.entries, ...supplemental],
   })));
 
   const files = new Map();
@@ -115,9 +132,11 @@ export function buildAnywhereRuleSnapshot({
   let unsupportedCount = 0;
   let outputCount = 0;
   let noResolveCount = 0;
+  let supplementalCount = 0;
+  let supplementalOutputCount = 0;
 
   for (const [index, item] of parsedSources.entries()) {
-    const { source, fetched, parsed } = item;
+    const { source, fetched, parsed, supplemental } = item;
     const compiledSet = compiled.ruleSets[index];
     const sourceShards = shardRuleSet({ ...compiledSet, required: false });
     const unsupportedByReason = { ...parsed.diagnostics.unsupportedByReason };
@@ -157,6 +176,29 @@ export function buildAnywhereRuleSnapshot({
       shardIds.push(shard.id);
     }
     const sourceOutputCount = compiledSet.entries.length;
+    const sourceSupplementalOutputCount = compiledSet.entries
+      .filter((entry) => entry.sourceId === DOMESTIC_FALLBACK_SOURCE_ID)
+      .length;
+    supplementalCount += supplemental.length;
+    supplementalOutputCount += sourceSupplementalOutputCount;
+    const sourceCounts = {
+      candidate: parsed.diagnostics.candidateCount,
+      parsed: parsed.diagnostics.parsedCount,
+      convertible: parsed.diagnostics.convertibleCount,
+      unsupported: parsed.diagnostics.unsupportedCount,
+      duplicates: compiled.diagnostics.duplicates[source.id] ?? 0,
+      shadowed: compiled.diagnostics.shadowed[source.id] ?? 0,
+      unresolved: 0,
+      output: sourceOutputCount,
+    };
+    if (supplemental.length > 0) {
+      sourceCounts.supplemental = {
+        input: supplemental.length,
+        output: sourceSupplementalOutputCount,
+        duplicates: compiled.diagnostics.duplicates[DOMESTIC_FALLBACK_SOURCE_ID] ?? 0,
+        shadowed: compiled.diagnostics.shadowed[DOMESTIC_FALLBACK_SOURCE_ID] ?? 0,
+      };
+    }
     sources.push({
       id: source.id,
       familyId: source.familyId,
@@ -171,16 +213,7 @@ export function buildAnywhereRuleSnapshot({
       minEntries: source.minEntries,
       sourceBytes: fetched.sourceBytes,
       sourceSha256: fetched.sourceSha256,
-      counts: {
-        candidate: parsed.diagnostics.candidateCount,
-        parsed: parsed.diagnostics.parsedCount,
-        convertible: parsed.diagnostics.convertibleCount,
-        unsupported: parsed.diagnostics.unsupportedCount,
-        duplicates: compiled.diagnostics.duplicates[source.id] ?? 0,
-        shadowed: compiled.diagnostics.shadowed[source.id] ?? 0,
-        unresolved: 0,
-        output: sourceOutputCount,
-      },
+      counts: sourceCounts,
       unsupportedByReason,
       ignoredModifiers: parsed.diagnostics.ignoredModifiers,
       shardIds,
@@ -199,7 +232,7 @@ export function buildAnywhereRuleSnapshot({
 
   const duplicateCount = Object.values(compiled.diagnostics.duplicates).reduce((sum, count) => sum + count, 0);
   const shadowedCount = Object.values(compiled.diagnostics.shadowed).reduce((sum, count) => sum + count, 0);
-  if (outputCount !== convertibleCount - duplicateCount - shadowedCount) {
+  if (outputCount !== convertibleCount - duplicateCount - shadowedCount + supplementalCount) {
     throw new Error("Anywhere rule output accounting mismatch");
   }
   if (expectedBaseline?.compiled) {
@@ -214,6 +247,31 @@ export function buildAnywhereRuleSnapshot({
       throw new Error("Pinned compiled rule baseline changed");
     }
   }
+  const totals = {
+    sourceCount: catalog.length,
+    logicalRuleSetCount: logicalRuleSets.length,
+    sourceBytes,
+    physicalLineCount,
+    commentCount,
+    blankCount,
+    candidateCount,
+    parsedCount,
+    convertibleCount,
+    unsupportedCount,
+    duplicateCount,
+    shadowedCount,
+    unresolvedCount: 0,
+    outputCount,
+    shardCount: shards.length,
+    convertibleByKind: totalConvertibleByKind,
+    unsupportedByReason: totalUnsupportedByReason,
+    ignoredModifiers: { noResolve: noResolveCount },
+  };
+  if (supplementalCount > 0) {
+    totals.supplementalCount = supplementalCount;
+    totals.supplementalOutputCount = supplementalOutputCount;
+  }
+
   const baseManifest = {
     schemaVersion: 1,
     generatorVersion: "0.1.0",
@@ -230,26 +288,7 @@ export function buildAnywhereRuleSnapshot({
     },
     generatedAt: upstream.committedAt,
     catalogSha256: catalogSha256(catalog),
-    totals: {
-      sourceCount: catalog.length,
-      logicalRuleSetCount: logicalRuleSets.length,
-      sourceBytes,
-      physicalLineCount,
-      commentCount,
-      blankCount,
-      candidateCount,
-      parsedCount,
-      convertibleCount,
-      unsupportedCount,
-      duplicateCount,
-      shadowedCount,
-      unresolvedCount: 0,
-      outputCount,
-      shardCount: shards.length,
-      convertibleByKind: totalConvertibleByKind,
-      unsupportedByReason: totalUnsupportedByReason,
-      ignoredModifiers: { noResolve: noResolveCount },
-    },
+    totals,
     logicalRuleSets,
     sources,
     shards,

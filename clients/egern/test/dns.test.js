@@ -5,6 +5,7 @@ import test from "node:test";
 
 import { renderEgernDns } from "../src/render-dns.js";
 import { renderYaml } from "../src/render-yaml.js";
+import { DOMESTIC_FALLBACK_DOMAIN_SUFFIXES } from "../../../shared/rules/domestic-fallback.js";
 import {
   PUBLIC_SNAPSHOT_BASE_URL,
   parseEgernOptions,
@@ -38,6 +39,12 @@ function chinaRule(value = "china") {
   };
 }
 
+function domesticFallbackRules(value = "china") {
+  return DOMESTIC_FALLBACK_DOMAIN_SUFFIXES.map((match) => ({
+    domain_suffix: { match, value },
+  }));
+}
+
 function wildcard(value) {
   return { domain_wildcard: { match: "*", value } };
 }
@@ -50,12 +57,15 @@ test("renders the exact stable DNS object in documented declaration order", () =
       china: ["https://dns.alidns.com/dns-query"],
       global: ["https://cloudflare-dns.com/dns-query"],
     },
-    forward: [chinaRule(), wildcard("global")],
+    forward: [...domesticFallbackRules(), chinaRule(), wildcard("global")],
     proxy_nameservers: ["system"],
   });
   assert.deepEqual(Object.keys(dns), ["bootstrap", "upstreams", "forward", "proxy_nameservers"]);
   assert.deepEqual(Object.keys(dns.upstreams), ["china", "global"]);
-  assert.deepEqual(Object.keys(dns.forward[0].proxy_rule_set), ["match", "value", "update_interval"]);
+  assert.deepEqual(
+    Object.keys(dns.forward[DOMESTIC_FALLBACK_DOMAIN_SUFFIXES.length].proxy_rule_set),
+    ["match", "value", "update_interval"],
+  );
 });
 
 test("closes the China DNS rule URL over the publishing snapshot contract", () => {
@@ -75,6 +85,7 @@ test("closes the China DNS rule URL over the publishing snapshot contract", () =
 test("renders privacy without a China exception and speed with a direct system catch-all", () => {
   assert.deepEqual(renderEgernDns(options({ dnsMode: "privacy" })).forward, [wildcard("global")]);
   assert.deepEqual(renderEgernDns(options({ dnsMode: "speed" })).forward, [
+    ...domesticFallbackRules(),
     chinaRule(),
     wildcard("system"),
   ]);

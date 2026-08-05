@@ -12,19 +12,21 @@
         "ipv6Cidr": 4219
       },
       "convertibleCount": 376477,
-      "duplicateCount": 809,
+      "duplicateCount": 827,
       "ignoredModifiers": {
         "noResolve": 15209
       },
       "logicalRuleSetCount": 31,
-      "manifestSha256": "cfbab80533c4b8c76cbde678e60dfc9a19a72cda8aab295bd2321814ea74b1b6",
-      "outputCount": 375265,
+      "manifestSha256": "1df9f4be7ef35183d11a63d377c8a23669683fee516085a7ebda2452f94f6e91",
+      "outputCount": 375237,
       "parsedCount": 393743,
       "physicalLineCount": 394086,
-      "shadowedCount": 403,
+      "shadowedCount": 431,
       "shardCount": 34,
       "sourceBytes": 7447854,
       "sourceCount": 32,
+      "supplementalCount": 18,
+      "supplementalOutputCount": 1,
       "unresolvedCount": 0,
       "unsupportedByReason": {
         "unsupported-and": 1,
@@ -666,7 +668,7 @@
             "asn_set": 0,
             "domain_keyword_set": 0,
             "domain_set": 297,
-            "domain_suffix_set": 111647,
+            "domain_suffix_set": 111665,
             "ip_cidr6_set": 0,
             "ip_cidr_set": 0,
             "url_regex_set": 0,
@@ -681,8 +683,9 @@
             "logicalOr": 0,
             "processName": 0
           },
-          "output": 111944,
-          "parsed": 111944
+          "output": 111962,
+          "parsed": 111944,
+          "supplemental": 18
         },
         {
           "emittedByType": {
@@ -1022,7 +1025,7 @@
     {
       "bytes": 13913,
       "path": "anywhere/import.html",
-      "sha256": "d99f09b8f902e09a4da5f9a522becb4309bbe17d839ce34ce4df8f0f7bef326f"
+      "sha256": "46ee96eb408a9e696c829e9da64f1a03044211680ba934de508d380d17863094"
     },
     {
       "bytes": 13826,
@@ -1065,19 +1068,19 @@
       "sha256": "9484cd30150e9acdf0d224d26217ae971a309d4b44f9741f21d328e1c7ec31af"
     },
     {
-      "bytes": 244547,
+      "bytes": 244541,
       "path": "anywhere/rules/ChinaMax-001.arrs",
-      "sha256": "92aaa47dfe106d019c6db837135b7ca9e31629d8d0ab16f75d1ec0909c1a2b52"
+      "sha256": "2c00af18ccff572f5f61363be35e122878e13a4a33296dd080be5147313da523"
     },
     {
-      "bytes": 1488188,
+      "bytes": 1488180,
       "path": "anywhere/rules/ChinaMax_Domain-001.arrs",
-      "sha256": "2acf20dfbc15efa597caa2fa1b13e3ef7c2df615e8c5af17eac45c9b660380ed"
+      "sha256": "3c411f0efd24411bf0f894608e06e5a3effcb8aecde161a8aa286ad80e867ed6"
     },
     {
-      "bytes": 251938,
+      "bytes": 251952,
       "path": "anywhere/rules/ChinaMax_Domain-002.arrs",
-      "sha256": "a70d3058c7ebe2c88621056340dc4361b0601781fc19f3e47900ffb61d37ddcd"
+      "sha256": "73316d969b19e7d0fb9be8344dd8b596541bbe337970726bde389cea26850ab5"
     },
     {
       "bytes": 334,
@@ -1105,9 +1108,9 @@
       "sha256": "d287830512a53796424ed8e4b8b699336a7b89607eee19c33ef0d329e0567427"
     },
     {
-      "bytes": 10908,
+      "bytes": 10466,
       "path": "anywhere/rules/Game-001.arrs",
-      "sha256": "f4d8a8e005dafbee6daca0636bc53be2b9253bf7dc8ee2a00b01b3a8ebe684d7"
+      "sha256": "46360d857d542fa7f1e1db2cff561a55c9b98077d542a43fa13948415ca25ead"
     },
     {
       "bytes": 511,
@@ -1150,9 +1153,9 @@
       "sha256": "42746e9ea6d61747254543c9d5d637ade62eb2d41244ccc3bc2f7fa16e0e06ce"
     },
     {
-      "bytes": 1865,
+      "bytes": 1763,
       "path": "anywhere/rules/PrivateTracker-001.arrs",
-      "sha256": "5b8412b32608aa418582bdaca5a4018d8ee148e6cf9eae289107dc4baab70490"
+      "sha256": "7ef4fff9df8bb3fc846528ac8969072f72081761af0b92eeb4a25e3e4f6ae182"
     },
     {
       "bytes": 771,
@@ -1195,9 +1198,9 @@
       "sha256": "52218c96930e1eea1ac54bfdd701e06272ee2bfd2c9d4d3fdaa5b46f17148771"
     },
     {
-      "bytes": 52400,
+      "bytes": 52596,
       "path": "anywhere/rules/manifest.json",
-      "sha256": "30fed7779a2b695275588a3b65c02b1c0ab657cabf0f173b4a2eaf1c20d57e4b"
+      "sha256": "50a5f70310e0a0b1fe5a2c8855281c8270762d9a5efe9bdbb5a11c95c728db46"
     },
     {
       "bytes": 105540,
@@ -1210,19 +1213,19 @@
       "sha256": "5bcfd14ebebe477008e6704edda750bad6875d75e4f8cc3bdd0deba0cc70e9f2"
     },
     {
-      "bytes": 29268,
+      "bytes": 31812,
       "path": "egern/examples/egern-ipad.yaml",
-      "sha256": "a5a753202eb7e515c3deaaec1e2475b0425ea8d973e3f285a5a59fb14b3661df"
+      "sha256": "951745eff5fe892687b2d6128640cdfd80931a9c8fe87338585c9bc9af626249"
     },
     {
-      "bytes": 29268,
+      "bytes": 31812,
       "path": "egern/examples/egern-iphone.yaml",
-      "sha256": "a5a753202eb7e515c3deaaec1e2475b0425ea8d973e3f285a5a59fb14b3661df"
+      "sha256": "951745eff5fe892687b2d6128640cdfd80931a9c8fe87338585c9bc9af626249"
     },
     {
-      "bytes": 29263,
+      "bytes": 31807,
       "path": "egern/examples/egern-macos.yaml",
-      "sha256": "3e5c03f315094778cd1c1eff93cae0c09afdf92e0624639021eb3a806425e6b5"
+      "sha256": "59b761c96930046f35b07a3b9ef3810910c22fe5c7843242cc7bff143e74ec08"
     },
     {
       "bytes": 18128,
@@ -1260,9 +1263,9 @@
       "sha256": "ee9246262d0602b95eedd011b78ecbf2902a5a3a5f67981986737e1449bb2cb8"
     },
     {
-      "bytes": 2093416,
+      "bytes": 2093734,
       "path": "egern/rules/ChinaMax_Domain.yaml",
-      "sha256": "0fdde865a8d739084a0e4194a6d435c348842a665a57011be0ed270ab0593293"
+      "sha256": "f3cedba56d1f5022e84b41b3437a966bd805f9d61d4d343827415738513f7ae6"
     },
     {
       "bytes": 494,
@@ -1390,9 +1393,9 @@
       "sha256": "22dea4b9a5aa8f557f4d95f89b40f8cdc157078bdc166c0217dc7a0eabd958f8"
     },
     {
-      "bytes": 198573,
+      "bytes": 199568,
       "path": "egern/scripts/egern-profile-generator.js",
-      "sha256": "3bcbce0fb1be0719732aaadd041d17131f6e9fba315e41e40cac95264a0a4c35"
+      "sha256": "a92ba4e048cfed1ece1c6de7223c5f76d56218e2dfe45a3adcd71cd90456f90a"
     },
     {
       "bytes": 126907,
@@ -1400,9 +1403,9 @@
       "sha256": "22dea4b9a5aa8f557f4d95f89b40f8cdc157078bdc166c0217dc7a0eabd958f8"
     },
     {
-      "bytes": 198573,
+      "bytes": 199568,
       "path": "egern/scripts/substore-profile-generator.js",
-      "sha256": "3bcbce0fb1be0719732aaadd041d17131f6e9fba315e41e40cac95264a0a4c35"
+      "sha256": "a92ba4e048cfed1ece1c6de7223c5f76d56218e2dfe45a3adcd71cd90456f90a"
     },
     {
       "bytes": 19629,
@@ -1601,7 +1604,7 @@
     }
   ],
   "generatedAt": "2026-08-01T19:07:21Z",
-  "manifestHash": "e75f4cdadadd9a29d2949ac55a412b3fe5fe0acb2a6055ac7daecc9712905224",
+  "manifestHash": "6fe08d9e3759532a51e82c74ebd5ca2f695729a3dea7e578575cc4a0d0f55bb3",
   "schemaVersion": 1,
   "upstream": {
     "branch": "master",

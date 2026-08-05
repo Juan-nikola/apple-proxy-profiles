@@ -226,7 +226,7 @@
       ]
     }
   ],
-  "manifestSha256": "cfbab80533c4b8c76cbde678e60dfc9a19a72cda8aab295bd2321814ea74b1b6",
+  "manifestSha256": "1df9f4be7ef35183d11a63d377c8a23669683fee516085a7ebda2452f94f6e91",
   "schemaVersion": 1,
   "shards": [
     {
@@ -691,22 +691,22 @@
       "index": 1,
       "name": "DIRECT · ChinaMax Domain (1/2)",
       "path": "anywhere/rules/ChinaMax_Domain-001.arrs",
-      "sha256": "2acf20dfbc15efa597caa2fa1b13e3ef7c2df615e8c5af17eac45c9b660380ed",
+      "sha256": "3c411f0efd24411bf0f894608e06e5a3effcb8aecde161a8aa286ad80e867ed6",
       "sourceId": "ChinaMax_Domain",
       "total": 2,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/ChinaMax_Domain-001.arrs"
     },
     {
       "countsByType": {
-        "domainSuffix": 16112
+        "domainSuffix": 16113
       },
-      "entryCount": 16112,
+      "entryCount": 16113,
       "familyId": "ChinaMax_Domain",
       "id": "ChinaMax_Domain-002",
       "index": 2,
       "name": "DIRECT · ChinaMax Domain (2/2)",
       "path": "anywhere/rules/ChinaMax_Domain-002.arrs",
-      "sha256": "a70d3058c7ebe2c88621056340dc4361b0601781fc19f3e47900ffb61d37ddcd",
+      "sha256": "73316d969b19e7d0fb9be8344dd8b596541bbe337970726bde389cea26850ab5",
       "sourceId": "ChinaMax_Domain",
       "total": 2,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/ChinaMax_Domain-002.arrs"
@@ -714,16 +714,16 @@
     {
       "countsByType": {
         "domainKeyword": 4,
-        "domainSuffix": 471,
+        "domainSuffix": 449,
         "ipv4Cidr": 42
       },
-      "entryCount": 517,
+      "entryCount": 495,
       "familyId": "Game",
       "id": "Game-001",
       "index": 1,
       "name": "🕹️ 游戏平台 · Game",
       "path": "anywhere/rules/Game-001.arrs",
-      "sha256": "f4d8a8e005dafbee6daca0636bc53be2b9253bf7dc8ee2a00b01b3a8ebe684d7",
+      "sha256": "46360d857d542fa7f1e1db2cff561a55c9b98077d542a43fa13948415ca25ead",
       "sourceId": "Game",
       "total": 1,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/Game-001.arrs"
@@ -747,16 +747,16 @@
     {
       "countsByType": {
         "domainKeyword": 4,
-        "domainSuffix": 94,
+        "domainSuffix": 88,
         "ipv4Cidr": 3
       },
-      "entryCount": 101,
+      "entryCount": 95,
       "familyId": "PrivateTracker",
       "id": "PrivateTracker-001",
       "index": 1,
       "name": "⬇️ 下载/P2P · PrivateTracker",
       "path": "anywhere/rules/PrivateTracker-001.arrs",
-      "sha256": "5b8412b32608aa418582bdaca5a4018d8ee148e6cf9eae289107dc4baab70490",
+      "sha256": "7ef4fff9df8bb3fc846528ac8969072f72081761af0b92eeb4a25e3e4f6ae182",
       "sourceId": "PrivateTracker",
       "total": 1,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/PrivateTracker-001.arrs"
@@ -764,17 +764,17 @@
     {
       "countsByType": {
         "domainKeyword": 12,
-        "domainSuffix": 50,
+        "domainSuffix": 49,
         "ipv4Cidr": 8099,
         "ipv6Cidr": 4193
       },
-      "entryCount": 12354,
+      "entryCount": 12353,
       "familyId": "ChinaMax",
       "id": "ChinaMax-001",
       "index": 1,
       "name": "DIRECT · ChinaMax",
       "path": "anywhere/rules/ChinaMax-001.arrs",
-      "sha256": "92aaa47dfe106d019c6db837135b7ca9e31629d8d0ab16f75d1ec0909c1a2b52",
+      "sha256": "2c00af18ccff572f5f61363be35e122878e13a4a33296dd080be5147313da523",
       "sourceId": "ChinaMax",
       "total": 1,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/ChinaMax-001.arrs"
@@ -1715,9 +1715,15 @@
         "candidate": 111944,
         "convertible": 111647,
         "duplicates": 335,
-        "output": 111112,
+        "output": 111113,
         "parsed": 111944,
         "shadowed": 200,
+        "supplemental": {
+          "duplicates": 17,
+          "input": 18,
+          "output": 1,
+          "shadowed": 0
+        },
         "unresolved": 0,
         "unsupported": 297
       },
@@ -1750,9 +1756,9 @@
         "candidate": 597,
         "convertible": 589,
         "duplicates": 45,
-        "output": 517,
+        "output": 495,
         "parsed": 597,
-        "shadowed": 27,
+        "shadowed": 49,
         "unresolved": 0,
         "unsupported": 8
       },
@@ -1819,9 +1825,9 @@
         "candidate": 248,
         "convertible": 130,
         "duplicates": 29,
-        "output": 101,
+        "output": 95,
         "parsed": 248,
-        "shadowed": 0,
+        "shadowed": 6,
         "unresolved": 0,
         "unsupported": 118
       },
@@ -1852,8 +1858,8 @@
       "counts": {
         "candidate": 12596,
         "convertible": 12518,
-        "duplicates": 15,
-        "output": 12354,
+        "duplicates": 16,
+        "output": 12353,
         "parsed": 12596,
         "shadowed": 149,
         "unresolved": 0,
@@ -1894,18 +1900,20 @@
       "ipv6Cidr": 4219
     },
     "convertibleCount": 376477,
-    "duplicateCount": 809,
+    "duplicateCount": 827,
     "ignoredModifiers": {
       "noResolve": 15209
     },
     "logicalRuleSetCount": 31,
-    "outputCount": 375265,
+    "outputCount": 375237,
     "parsedCount": 393743,
     "physicalLineCount": 394086,
-    "shadowedCount": 403,
+    "shadowedCount": 431,
     "shardCount": 34,
     "sourceBytes": 7447854,
     "sourceCount": 32,
+    "supplementalCount": 18,
+    "supplementalOutputCount": 1,
     "unresolvedCount": 0,
     "unsupportedByReason": {
       "unsupported-and": 1,

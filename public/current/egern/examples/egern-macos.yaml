@@ -33,6 +33,60 @@ dns:
     global:
       - "https://cloudflare-dns.com/dns-query"
   forward:
+    - domain_suffix:
+        match: "cn"
+        value: "china"
+    - domain_suffix:
+        match: "bilibili.com"
+        value: "china"
+    - domain_suffix:
+        match: "bilivideo.com"
+        value: "china"
+    - domain_suffix:
+        match: "biliapi.com"
+        value: "china"
+    - domain_suffix:
+        match: "hdslb.com"
+        value: "china"
+    - domain_suffix:
+        match: "douyin.com"
+        value: "china"
+    - domain_suffix:
+        match: "douyincdn.com"
+        value: "china"
+    - domain_suffix:
+        match: "byteimg.com"
+        value: "china"
+    - domain_suffix:
+        match: "ibytedtos.com"
+        value: "china"
+    - domain_suffix:
+        match: "pstatp.com"
+        value: "china"
+    - domain_suffix:
+        match: "snssdk.com"
+        value: "china"
+    - domain_suffix:
+        match: "amemv.com"
+        value: "china"
+    - domain_suffix:
+        match: "ixigua.com"
+        value: "china"
+    - domain_suffix:
+        match: "toutiao.com"
+        value: "china"
+    - domain_suffix:
+        match: "toutiaoimg.com"
+        value: "china"
+    - domain_suffix:
+        match: "xiaohongshu.com"
+        value: "china"
+    - domain_suffix:
+        match: "xhscdn.com"
+        value: "china"
+    - domain_suffix:
+        match: "weibo.com"
+        value: "china"
     - proxy_rule_set:
         match: "https://juan-nikola.github.io/apple-proxy-profiles/current/egern/rules/ChinaMax_Domain.yaml"
         value: "china"
@@ -638,6 +692,60 @@ rules:
       match: "https://juan-nikola.github.io/apple-proxy-profiles/current/egern/rules/SteamCN.yaml"
       policy: "DIRECT"
       update_interval: 86400
+  - domain_suffix:
+      match: "cn"
+      policy: "DIRECT"
+  - domain_suffix:
+      match: "bilibili.com"
+      policy: "DIRECT"
+  - domain_suffix:
+      match: "bilivideo.com"
+      policy: "DIRECT"
+  - domain_suffix:
+      match: "biliapi.com"
+      policy: "DIRECT"
+  - domain_suffix:
+      match: "hdslb.com"
+      policy: "DIRECT"
+  - domain_suffix:
+      match: "douyin.com"
+      policy: "DIRECT"
+  - domain_suffix:
+      match: "douyincdn.com"
+      policy: "DIRECT"
+  - domain_suffix:
+      match: "byteimg.com"
+      policy: "DIRECT"
+  - domain_suffix:
+      match: "ibytedtos.com"
+      policy: "DIRECT"
+  - domain_suffix:
+      match: "pstatp.com"
+      policy: "DIRECT"
+  - domain_suffix:
+      match: "snssdk.com"
+      policy: "DIRECT"
+  - domain_suffix:
+      match: "amemv.com"
+      policy: "DIRECT"
+  - domain_suffix:
+      match: "ixigua.com"
+      policy: "DIRECT"
+  - domain_suffix:
+      match: "toutiao.com"
+      policy: "DIRECT"
+  - domain_suffix:
+      match: "toutiaoimg.com"
+      policy: "DIRECT"
+  - domain_suffix:
+      match: "xiaohongshu.com"
+      policy: "DIRECT"
+  - domain_suffix:
+      match: "xhscdn.com"
+      policy: "DIRECT"
+  - domain_suffix:
+      match: "weibo.com"
+      policy: "DIRECT"
   - rule_set:
       match: "https://juan-nikola.github.io/apple-proxy-profiles/current/egern/rules/ChinaMax_Domain.yaml"
       policy: "DIRECT"

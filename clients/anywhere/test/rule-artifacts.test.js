@@ -48,10 +48,10 @@ test("pins the complete 32-source baseline and compiled topology", async () => {
     parsedCount: 393743,
     convertibleCount: 376477,
     unsupportedCount: 17266,
-    duplicateCount: 809,
-    shadowedCount: 403,
+    duplicateCount: 827,
+    shadowedCount: 431,
     unresolvedCount: 0,
-    outputCount: 375265,
+    outputCount: 375237,
     shardCount: 34,
     convertibleByKind: {
       domainSuffix: 360908,
@@ -69,6 +69,8 @@ test("pins the complete 32-source baseline and compiled topology", async () => {
       "unsupported-or": 1,
     },
     ignoredModifiers: { noResolve: 15209 },
+    supplementalCount: 18,
+    supplementalOutputCount: 1,
   });
   assert.equal(manifest.upstream.commit, "dab47069a30c4ae70f7f5f4c919d639d9aaf79dc");
   assert.equal(manifest.generatedAt, manifest.upstream.committedAt);
