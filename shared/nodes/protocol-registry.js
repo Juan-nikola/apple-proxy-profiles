@@ -16,7 +16,7 @@ const definitions = Object.freeze([
   protocol(["ssr"], [CLIENT.shadowrocket, CLIENT.surge], {
     requiredFields: ["cipher", "password", "protocol", "obfs"],
   }),
-  protocol(["snell"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge], {
+  protocol(["snell"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox], {
     requiredFields: ["psk", "version"],
   }),
   protocol(["vmess"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox], {

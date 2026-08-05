@@ -1,0 +1,82 @@
+import assert from "node:assert/strict";
+import test from "node:test";
+
+import { renderSingBoxOutbound } from "../src/render-node.js";
+
+test("renders VLESS Reality WebSocket using official sing-box outbound fields", () => {
+  const outbound = renderSingBoxOutbound({
+    name: "🇩🇪 [Realm] Frankfurt",
+    type: "vless",
+    server: "example.invalid",
+    port: 443,
+    uuid: "00000000-0000-4000-8000-000000000001",
+    network: "ws",
+    "ws-opts": { path: "/gateway", headers: { Host: "example.invalid" } },
+    tls: true,
+    sni: "example.invalid",
+    "client-fingerprint": "chrome",
+    "reality-opts": { "public-key": "TEST_ONLY_PUBLIC_KEY", "short-id": "00000000" },
+  });
+  assert.deepEqual(outbound, {
+    type: "vless",
+    tag: "🇩🇪 [Realm] Frankfurt",
+    server: "example.invalid",
+    server_port: 443,
+    uuid: "00000000-0000-4000-8000-000000000001",
+    tls: {
+      enabled: true,
+      server_name: "example.invalid",
+      utls: { enabled: true, fingerprint: "chrome" },
+      reality: { enabled: true, public_key: "TEST_ONLY_PUBLIC_KEY", short_id: "00000000" },
+    },
+    transport: { type: "ws", path: "/gateway", headers: { Host: "example.invalid" } },
+  });
+});
+
+test("rejects unsupported sing-box node fields instead of silently dropping them", () => {
+  assert.throws(() => renderSingBoxOutbound({
+    name: "fixture",
+    type: "ss",
+    server: "example.invalid",
+    port: 443,
+    cipher: "aes-256-gcm",
+    password: "TEST_ONLY_PASSWORD",
+    "future-option": true,
+  }), /unsupported.*field/iu);
+});
+
+test("renders native Snell outbound fields available in current sing-box testing", () => {
+  const outbound = renderSingBoxOutbound({
+    name: "🇺🇸 [自建] Los Angeles",
+    type: "snell",
+    server: "example.invalid",
+    port: 443,
+    psk: "TEST_ONLY_PSK",
+    version: 4,
+    obfs: "tls",
+    "obfs-host": "example.invalid",
+  });
+  assert.deepEqual(outbound, {
+    type: "snell",
+    tag: "🇺🇸 [自建] Los Angeles",
+    server: "example.invalid",
+    server_port: 443,
+    psk: "TEST_ONLY_PSK",
+    version: 4,
+    obfs: "tls",
+    obfs_host: "example.invalid",
+  });
+});
+
+test("rejects protocols not represented by the sing-box adapter", () => {
+  assert.throws(() => renderSingBoxOutbound({
+    name: "fixture",
+    type: "ssr",
+    server: "example.invalid",
+    port: 443,
+    cipher: "aes-256-gcm",
+    password: "TEST_ONLY_PASSWORD",
+    protocol: "origin",
+    obfs: "plain",
+  }), /unsupported.*protocol/iu);
+});

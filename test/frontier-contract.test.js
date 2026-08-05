@@ -15,6 +15,7 @@ test("registers Surge and sing-box as distinct clients with explicit protocol su
   assert.equal(protocolSupportsClient("vless", CLIENT.singbox), true);
   assert.equal(protocolSupportsClient("ssr", CLIENT.singbox), false);
   assert.equal(protocolSupportsClient("snell", CLIENT.surge), true);
+  assert.equal(protocolSupportsClient("snell", CLIENT.singbox), true);
 });
 
 test("frontier manifest records platform-specific upstream and rejects secret-shaped fields", () => {
