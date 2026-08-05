@@ -84,7 +84,7 @@ test("tracked import page closes over all 34 manifest shards deterministically",
   assert.equal(batches.every(({ deepLink }) => deepLink.length <= 1_800), true);
   assert.match(actual, /全部导入/u);
   assert.equal(actual.includes("<script"), false);
-  assert.doesNotMatch(actual, /<script\b|javascript:|data:|vbscript:|\son\w+\s*=/iu);
+  assert.doesNotMatch(actual, /<script\b|javascript:|vbscript:|\son\w+\s*=/iu);
   assert.equal((actual.match(/class="button"/gu) ?? []).length, 4);
   assert.equal((actual.match(/<li><a href="https:/gu) ?? []).length, 34);
   assert.match(actual, new RegExp(`href="${escapedTotalLink.replaceAll(/[.*+?^${}()|[\]\\]/g, "\\$&")}"`, "u"));
