@@ -1,4 +1,4 @@
-import { RULE_SOURCE_CATALOG } from "../../../shared/rules/catalog.js";
+import { RULE_CLIENT_CATALOG } from "../../../shared/rules/client-catalog.js";
 
 const LOCAL_RULES = Object.freeze([
   { ip_is_private: true, action: { action: "route", outbound: "DIRECT" } },
@@ -20,7 +20,7 @@ function routeAction(outbound) {
 export function renderSingBoxRuleSets({ ruleBaseUrl, ruleSetFormat = "source" }) {
   const base = baseUrl(ruleBaseUrl);
   if (!new Set(["source", "binary"]).has(ruleSetFormat)) throw new Error("Unsupported sing-box rule-set format");
-  return RULE_SOURCE_CATALOG.map((source) => ({
+  return RULE_CLIENT_CATALOG.map((source) => ({
     type: "remote",
     tag: `rule-${source.id}`,
     format: ruleSetFormat,
@@ -32,7 +32,7 @@ export function renderSingBoxRuleSets({ ruleBaseUrl, ruleSetFormat = "source" })
 
 export function renderSingBoxRouteRules({ ruleBaseUrl, ruleSetFormat = "source" }) {
   const rules = [...LOCAL_RULES];
-  for (const source of RULE_SOURCE_CATALOG) {
+  for (const source of RULE_CLIENT_CATALOG) {
     rules.push({ rule_set: [`rule-${source.id}`], ...routeAction(source.policy) });
   }
   rules.push({ geoip: ["cn"], ...routeAction("DIRECT") });

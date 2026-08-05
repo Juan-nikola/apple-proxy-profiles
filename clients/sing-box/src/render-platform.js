@@ -20,11 +20,11 @@ export function renderSingBoxTun(platform) {
     auto_route: true,
     strict_route: true,
     route_exclude_address: [...COMMON_EXCLUDE],
-    stack: "mixed",
   };
   if (platform === "openwrt") {
     return {
       ...base,
+      stack: "mixed",
       dns_mode: "hijack",
       dns_address: ["172.18.0.2", "fdfe:dcba:9876::2"],
       auto_redirect: true,

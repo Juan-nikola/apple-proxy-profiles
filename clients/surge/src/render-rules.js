@@ -1,5 +1,5 @@
 import { CUSTOM_RULES } from "../../../shared/rules/custom-rules.js";
-import { RULE_SOURCE_CATALOG } from "../../../shared/rules/catalog.js";
+import { RULE_CLIENT_CATALOG } from "../../../shared/rules/client-catalog.js";
 
 const LOCAL_RULES = Object.freeze([
   "DOMAIN-SUFFIX,local,DIRECT",
@@ -42,7 +42,7 @@ export function renderSurgeRules({ ruleBaseUrl }) {
   for (const [name, rules, policy] of custom) {
     lines.push(`# ${name}`, ...rules.map((rule) => `${rule},${policy}`));
   }
-  const assignments = RULE_SOURCE_CATALOG;
+  const assignments = RULE_CLIENT_CATALOG;
   const steamIndex = assignments.findIndex(({ id }) => id === "SteamCN");
   const gameIndex = assignments.findIndex(({ id }) => id === "Game");
   if (steamIndex < 0 || gameIndex <= steamIndex) throw new Error("Invalid Surge rule assignment order");

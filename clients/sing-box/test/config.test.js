@@ -72,5 +72,21 @@ test("renders mobile TUN without Linux-only auto redirect fields", () => {
   assert.equal(config.inbounds[0].type, "tun");
   assert.equal(Object.hasOwn(config.inbounds[0], "auto_redirect"), false);
   assert.equal(Object.hasOwn(config.inbounds[0], "iproute2_table_index"), false);
+  assert.equal(Object.hasOwn(config.inbounds[0], "stack"), false);
   assert.deepEqual(validateSingBoxConfig(config), { valid: true, errors: [] });
+});
+
+test("keeps the mixed TUN stack only on OpenWrt", () => {
+  const openwrt = renderSingBoxConfig(parseSingBoxOptions(baseOptions), [node], {
+    ruleBaseUrl: "https://example.invalid/current/sing-box/rules",
+    ruleSetFormat: "source",
+  });
+  assert.equal(openwrt.inbounds[0].stack, "mixed");
+  for (const platform of ["macos", "iphone", "ipad"]) {
+    const config = renderSingBoxConfig(parseSingBoxOptions({ ...baseOptions, platform }), [node], {
+      ruleBaseUrl: "https://example.invalid/current/sing-box/rules",
+      ruleSetFormat: "source",
+    });
+    assert.equal(Object.hasOwn(config.inbounds[0], "stack"), false, platform);
+  }
 });
