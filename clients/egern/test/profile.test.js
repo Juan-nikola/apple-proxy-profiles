@@ -68,6 +68,21 @@ test("parsed-options renderer rejects objects that did not pass the canonical pa
   );
 });
 
+test("rendered profiles validate when the primary group carries the shared non-chained filter", () => {
+  const yaml = renderEgernProfile(rawOptions(), allCompatibleNodes);
+  assert.deepEqual(validateEgernProfile(yaml), { valid: true, errors: [] });
+  const profile = rubyParse(yaml);
+  if (profile === null) return;
+
+  assert.deepEqual(namedGroup(profile, "🚀 节点选择"), {
+    name: "🚀 节点选择",
+    urls: [PRIVATE_URL],
+    filter: "^(?!🔗 ).+$",
+    update_interval: 21600,
+    block_quic: true,
+  });
+});
+
 test("renders exact Egern-native rule parity and terminal ordering", () => {
   const rules = renderEgernRules({ publicBaseUrl: PUBLIC_SNAPSHOT_BASE_URL });
   const assignments = orderedRuleAssignments();

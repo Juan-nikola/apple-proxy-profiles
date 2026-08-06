@@ -260,7 +260,7 @@ function reconstructGroups(policyGroups) {
     const candidates = fields.name === "🚀 节点选择"
       ? [POLICY_TARGET.primaryProxy]
       : (fields.policies ?? []);
-    const nodeFilter = fields.name !== "🚀 节点选择" && fields.urls !== undefined
+    const nodeFilter = fields.urls !== undefined
       ? fields.filter
       : null;
     let test = null;

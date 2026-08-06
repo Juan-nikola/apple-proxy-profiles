@@ -15,7 +15,6 @@ const SOURCE_LABELS = new Map([
   ["落地", { kind: SOURCE_KIND.landing, label: "落地" }],
 ]);
 
-const UNKNOWN_SOURCE_TOKEN = "未标记";
 const SOURCE_MARKER_PATTERN = /\[(?:\s*未标记\s*|\s*机场\s*|\s*自建\s*|\s*realm\s*|\s*链式代理\s*|\s*落地\s*)\]/giu;
 
 export function sourceName(node) {
@@ -27,7 +26,6 @@ export function sourceName(node) {
 }
 
 export function classifySource(node) {
-  let sawUnknownMarker = false;
   for (const field of PROVENANCE_FIELDS) {
     const value = node?.[field];
     if (typeof value !== "string" || !value.trim()) continue;
@@ -36,13 +34,12 @@ export function classifySource(node) {
     const token = match[1].trim().toLowerCase();
     const source = SOURCE_LABELS.get(token);
     if (source) return { ...source, warning: null };
-    if (token === UNKNOWN_SOURCE_TOKEN) sawUnknownMarker = true;
   }
 
   return {
     kind: SOURCE_KIND.unknown,
     label: "未知",
-    warning: sawUnknownMarker ? "missing-source-label" : "missing-source-label",
+    warning: "missing-source-label",
   };
 }
 

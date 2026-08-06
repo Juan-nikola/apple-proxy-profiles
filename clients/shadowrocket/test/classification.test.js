@@ -33,6 +33,11 @@ test("prefers a recognized source when an unknown display field appears first", 
   }), { kind: SOURCE_KIND.selfHosted, label: "自建", warning: null });
 });
 
+test("uses the same missing-source warning for unknown markers and unlabeled provenance", () => {
+  assert.equal(classifySource({ _subName: "[未标记] upstream" }).warning, "missing-source-label");
+  assert.equal(classifySource({ _subName: "upstream" }).warning, "missing-source-label");
+});
+
 test("preserves existing regional flags and reports flag warnings", () => {
   const multiple = classifyRegion("🇯🇵 🇺🇸 US Tokyo");
   assert.equal(multiple.flag, "🇯🇵");
