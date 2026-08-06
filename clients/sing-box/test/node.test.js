@@ -53,7 +53,7 @@ test("renders native Snell outbound fields available in current sing-box testing
     port: 443,
     psk: "TEST_ONLY_PSK",
     version: 4,
-    obfs: "tls",
+    obfs: "http",
     "obfs-host": "example.invalid",
   });
   assert.deepEqual(outbound, {
@@ -63,7 +63,7 @@ test("renders native Snell outbound fields available in current sing-box testing
     server_port: 443,
     psk: "TEST_ONLY_PSK",
     version: 4,
-    obfs: "tls",
+    obfs_mode: "http",
     obfs_host: "example.invalid",
   });
 });

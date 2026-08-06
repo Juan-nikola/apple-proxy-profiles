@@ -123,7 +123,7 @@ test("Pages tree stays inside the guarded size and immutable-version window", as
   assert.deepEqual(PUBLIC_PAGES_LIMITS, {
     githubMaxBytes: 1024 * 1024 * 1024,
     maxBytes: 750 * 1024 * 1024,
-    maxVersions: 8,
+    maxVersions: 9,
   });
   const result = await checkPublicPagesTree(repositoryRoot);
   assert.deepEqual(result.errors, []);

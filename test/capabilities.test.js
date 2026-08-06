@@ -96,6 +96,39 @@ test("enforces the complete client protocol contracts including aliases", () => 
   assert.deepEqual(evaluateNodeForClient({ type: "ss" }, "unknown-client"), { supported: false, reason: "unsupported-client" });
 });
 
+test("filters protocol variants that the official client schemas cannot decode", () => {
+  const common = { server: "capability-filter.example.invalid", port: 443 };
+  const surgeVless = {
+    ...common,
+    name: "Surge VLESS",
+    type: "vless",
+    uuid: "00000000-0000-4000-8000-000000000001",
+  };
+  assert.deepEqual(evaluateNodeForClient(surgeVless, CLIENT.surge), {
+    supported: false,
+    reason: "unsupported-protocol",
+  });
+
+  const singBoxSnellV5 = {
+    ...common,
+    name: "sing-box Snell v5",
+    type: "snell",
+    psk: "TEST_ONLY_SNELL_PSK",
+    version: 5,
+  };
+  assert.deepEqual(evaluateNodeForClient(singBoxSnellV5, CLIENT.singbox), {
+    supported: false,
+    reason: "unsupported-singbox-snell-version",
+  });
+  for (const version of [4, 6]) {
+    assert.deepEqual(
+      evaluateNodeForClient({ ...singBoxSnellV5, version }, CLIENT.singbox),
+      { supported: true, reason: null },
+      `Snell v${version}`,
+    );
+  }
+});
+
 test("allows only verified Anywhere transports and Shadowsocks forms", () => {
   const common = { name: "Anywhere", server: "anywhere.example.invalid", port: 443 };
   const password = "TEST_ONLY_ANYWHERE_PASSWORD";

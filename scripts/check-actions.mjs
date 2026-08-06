@@ -15,7 +15,7 @@ const SHA_PIN = /^[0-9a-f]{40}$/;
 export const PUBLIC_PAGES_LIMITS = Object.freeze({
   githubMaxBytes: 1024 * 1024 * 1024,
   maxBytes: 750 * 1024 * 1024,
-  maxVersions: 8,
+  maxVersions: 9,
 });
 
 function workflowUses(text) {

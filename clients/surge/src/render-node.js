@@ -132,13 +132,6 @@ export function renderSurgeProxy(node) {
       tlsOptions(node, fields);
       transportOptions(node, fields);
       break;
-    case "vless":
-      fields = base(node, "vless");
-      option(fields, "username", requiredString(node, "uuid"));
-      option(fields, "flow", node.flow);
-      tlsOptions(node, fields);
-      transportOptions(node, fields);
-      break;
     case "trojan":
       fields = base(node, "trojan");
       option(fields, "password", requiredString(node, "password"));

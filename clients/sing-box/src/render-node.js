@@ -7,7 +7,7 @@ const ALLOWED_KEYS = new Set([
   "alter-id", "alterId", "psk", "version", "username", "private-key", "private_key",
   "public-key", "pre-shared-key", "peers", "local-address", "local_ipv4", "local-ipv4",
   "local_ipv6", "local-ipv6", "ip", "ipv6", "dns", "dns_servers", "mtu", "keepalive",
-  "obfs", "obfs-host", "obfs_host", "obfs-password", "obfs_password", "udp-relay-mode", "udp_relay_mode", "ports",
+  "obfs", "obfs-mode", "obfs_mode", "obfs-host", "obfs_host", "obfs-password", "obfs_password", "mode", "userkey", "user-key", "udp-relay-mode", "udp_relay_mode", "ports",
   "port-hopping", "port_hopping", "port-hopping-interval", "port_hopping_interval",
   "bandwidth", "up", "down", "reuse", "tfo", "udp_relay", "underlying-proxy", "chain", "dialer-proxy", "detour", "prev_hop",
 ]);
@@ -128,9 +128,20 @@ export function renderSingBoxOutbound(node) {
       outbound.transport = transportFields(node);
       break;
     case "snell":
-      outbound = { ...base(node, "snell"), psk: requiredString(node, "psk"), version: Number(node.version) };
-      setIf(outbound, "obfs", node.obfs);
-      setIf(outbound, "obfs_host", node["obfs-host"] ?? node.obfs_host);
+      {
+        const version = Number(node.version);
+        if (![4, 6].includes(version)) throw new Error("Unsupported sing-box Snell version");
+        outbound = { ...base(node, "snell"), psk: requiredString(node, "psk"), version };
+        if (node.network === "tcp" || node.network === "udp") outbound.network = node.network;
+        if (version === 4) {
+          setIf(outbound, "obfs_mode", node.obfs_mode ?? node["obfs-mode"] ?? node.obfs);
+          setIf(outbound, "obfs_host", node["obfs-host"] ?? node.obfs_host);
+        } else {
+          setIf(outbound, "userkey", node.userkey ?? node["user-key"]);
+          setIf(outbound, "reuse", node.reuse);
+          setIf(outbound, "mode", node.mode);
+        }
+      }
       break;
     case "vless":
       outbound = { ...base(node, "vless"), uuid: requiredString(node, "uuid") };

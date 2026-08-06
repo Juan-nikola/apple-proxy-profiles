@@ -11,7 +11,7 @@ import {
 test("registers Surge and sing-box as distinct clients with explicit protocol support", () => {
   assert.equal(CLIENT.surge, "surge");
   assert.equal(CLIENT.singbox, "singbox");
-  assert.equal(protocolSupportsClient("vless", CLIENT.surge), true);
+  assert.equal(protocolSupportsClient("vless", CLIENT.surge), false);
   assert.equal(protocolSupportsClient("vless", CLIENT.singbox), true);
   assert.equal(protocolSupportsClient("ssr", CLIENT.singbox), false);
   assert.equal(protocolSupportsClient("snell", CLIENT.surge), true);

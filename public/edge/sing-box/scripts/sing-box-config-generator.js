@@ -116,7 +116,7 @@ var SingBoxConfigBundle = (() => {
     protocol(["vmess"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox], {
       requiredFields: ["uuid"]
     }),
-    protocol(["vless"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox], {
+    protocol(["vless"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.singbox], {
       requiredFields: ["uuid"]
     }),
     protocol(["trojan"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox], {
@@ -237,6 +237,9 @@ var SingBoxConfigBundle = (() => {
     "chacha20-ietf"
   ]);
   var EGERN_SNELL_VERSIONS = /* @__PURE__ */ new Set([1, 2, 3, 4, 5]);
+  var SINGBOX_SNELL_VERSIONS = /* @__PURE__ */ new Set([4, 6]);
+  var SINGBOX_SNELL_OBFS_MODES = /* @__PURE__ */ new Set(["none", "http"]);
+  var SINGBOX_SNELL_MODES = /* @__PURE__ */ new Set(["default", "unshaped", "unsafe-raw"]);
   var EGERN_OBFS = /* @__PURE__ */ new Set(["http", "tls"]);
   var EGERN_VMESS_SECURITY = /* @__PURE__ */ new Set(["auto", "aes-128-gcm", "chacha20-poly1305", "none", "zero"]);
   var EGERN_TRANSPORTS = /* @__PURE__ */ new Set(["tcp", "raw", "ws", "grpc", "h2", "http2", "http", "http1"]);
@@ -1037,8 +1040,28 @@ var SingBoxConfigBundle = (() => {
     if (!Object.values(CLIENT).includes(client)) return { supported: false, reason: "unsupported-client" };
     const protocol2 = normalizeProtocol(node?.type);
     if (!protocolSupportsClient(protocol2, client)) return { supported: false, reason: "unsupported-protocol" };
-    const transportReason = client === CLIENT.anywhere ? anywhereNodeExclusionReason(node ?? {}) : client === CLIENT.egern ? egernNodeExclusionReason(node ?? {}) : null;
+    let transportReason = null;
+    if (client === CLIENT.anywhere) transportReason = anywhereNodeExclusionReason(node ?? {});
+    else if (client === CLIENT.egern) transportReason = egernNodeExclusionReason(node ?? {});
+    else if (client === CLIENT.singbox) transportReason = singBoxNodeExclusionReason(node ?? {});
     return transportReason ? { supported: false, reason: transportReason } : { supported: true, reason: null };
+  }
+  function singBoxNodeExclusionReason(node) {
+    if (normalizeProtocol(node?.type) !== "snell") return null;
+    const version = Number(node.version);
+    if (!Number.isInteger(version) || !SINGBOX_SNELL_VERSIONS.has(version)) {
+      return "unsupported-singbox-snell-version";
+    }
+    if (version === 4) {
+      const obfsMode = node.obfs_mode ?? node["obfs-mode"] ?? node.obfs;
+      if (obfsMode !== void 0 && obfsMode !== "" && !SINGBOX_SNELL_OBFS_MODES.has(String(obfsMode).toLowerCase())) {
+        return "unsupported-singbox-snell-obfs";
+      }
+    }
+    if (version === 6 && node.mode !== void 0 && !SINGBOX_SNELL_MODES.has(String(node.mode).toLowerCase())) {
+      return "unsupported-singbox-snell-mode";
+    }
+    return null;
   }
   function filterNodesForClient(nodes, client) {
     const diagnostics = createClientFilterDiagnostics();
@@ -1666,10 +1689,15 @@ var SingBoxConfigBundle = (() => {
     "mtu",
     "keepalive",
     "obfs",
+    "obfs-mode",
+    "obfs_mode",
     "obfs-host",
     "obfs_host",
     "obfs-password",
     "obfs_password",
+    "mode",
+    "userkey",
+    "user-key",
     "udp-relay-mode",
     "udp_relay_mode",
     "ports",
@@ -1795,9 +1823,20 @@ var SingBoxConfigBundle = (() => {
         outbound.transport = transportFields(node);
         break;
       case "snell":
-        outbound = { ...base(node, "snell"), psk: requiredString2(node, "psk"), version: Number(node.version) };
-        setIf(outbound, "obfs", node.obfs);
-        setIf(outbound, "obfs_host", node["obfs-host"] ?? node.obfs_host);
+        {
+          const version = Number(node.version);
+          if (![4, 6].includes(version)) throw new Error("Unsupported sing-box Snell version");
+          outbound = { ...base(node, "snell"), psk: requiredString2(node, "psk"), version };
+          if (node.network === "tcp" || node.network === "udp") outbound.network = node.network;
+          if (version === 4) {
+            setIf(outbound, "obfs_mode", node.obfs_mode ?? node["obfs-mode"] ?? node.obfs);
+            setIf(outbound, "obfs_host", node["obfs-host"] ?? node.obfs_host);
+          } else {
+            setIf(outbound, "userkey", node.userkey ?? node["user-key"]);
+            setIf(outbound, "reuse", node.reuse);
+            setIf(outbound, "mode", node.mode);
+          }
+        }
         break;
       case "vless":
         outbound = { ...base(node, "vless"), uuid: requiredString2(node, "uuid") };
