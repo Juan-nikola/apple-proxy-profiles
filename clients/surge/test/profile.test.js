@@ -23,7 +23,7 @@ const baseOptions = {
 };
 
 const normalizedSsNode = {
-  name: "🇯🇵 [机场] Tokyo A",
+  name: "🇯🇵 机场 · Tokyo A",
   type: "ss",
   server: "198.51.100.10",
   port: 443,
@@ -58,7 +58,7 @@ test("renders a private Surge profile with shared policy sections and no interna
   assert.match(profile, /^\[Proxy\]/mu);
   assert.match(profile, /^\[Proxy Group\]/mu);
   assert.match(profile, /^\[Rule\]/mu);
-  assert.match(profile, /🇯🇵 \[机场\] Tokyo A = ss,198\.51\.100\.10,443/iu);
+  assert.match(profile, /🇯🇵 机场 · Tokyo A = ss,198\.51\.100\.10,443/iu);
   assert.match(profile, /TEST_ONLY_NOT_A_SECRET/u);
   assert.doesNotMatch(profile, /_profile|_subName|_resolved/u);
   assert.deepEqual(validateSurgeProfile(profile), { valid: true, errors: [] });

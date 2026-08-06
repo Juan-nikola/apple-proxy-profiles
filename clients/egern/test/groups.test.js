@@ -54,22 +54,22 @@ function normalizedNode(name, metadata = {}) {
 }
 
 const INVENTORY = Object.freeze([
-  normalizedNode("🇯🇵 [机场] TEST_ONLY_ASIA_NODE [UDP]", { udp: true, entry: true }),
-  normalizedNode("🇩🇪 [自建] TEST_ONLY_EUROPE_NODE", {
+  normalizedNode("🇯🇵 机场 · TEST_ONLY_ASIA_NODE [UDP]", { udp: true, entry: true }),
+  normalizedNode("🇩🇪 自建 · TEST_ONLY_EUROPE_NODE", {
     continent: "europe",
     sourceKind: "selfHosted",
     p2p: true,
   }),
-  normalizedNode("🇺🇸 [Realm] TEST_ONLY_AMERICAS_NODE", {
+  normalizedNode("🇺🇸 Realm · TEST_ONLY_AMERICAS_NODE", {
     continent: "americas",
     sourceKind: "realm",
   }),
-  normalizedNode("🇿🇦 [链式代理] TEST_ONLY_OTHER_NODE", {
+  normalizedNode("🇿🇦 链式代理 · TEST_ONLY_OTHER_NODE", {
     continent: "other",
     sourceKind: "serverChain",
     p2p: true,
   }),
-  normalizedNode("🔗 🇯🇵 [落地] TEST_ONLY_CHAINED_NODE", {
+  normalizedNode("🔗 🇯🇵 落地 · TEST_ONLY_CHAINED_NODE", {
     sourceKind: "landing",
     chained: true,
   }),
@@ -167,6 +167,7 @@ test("renders every shared catalog variant with exact names, order, and document
               assert.deepEqual(fields, {
                 name: group.name,
                 urls: [PRIVATE_URL],
+                filter: group.nodeFilter,
                 update_interval: 21600,
               });
               continue;
@@ -216,6 +217,7 @@ test("mounts the private subscription without leaking semantic or raw node value
     fields: {
       name: "🚀 节点选择",
       urls: [PRIVATE_URL],
+      filter: "^(?!🔗 ).+$",
       update_interval: 21600,
     },
   });
@@ -267,7 +269,7 @@ test("pins service defaults, AI order, security defaults, and special eligibilit
   assert.ok(renderedFields(eligible, "🎮 游戏连接").fields.filter);
   assert.ok(renderedFields(eligible, "⬇️ 下载/P2P").fields.filter);
 
-  const ineligibleInventory = [normalizedNode("🇯🇵 [机场] TEST_ONLY_TCP_NODE", { entry: true })];
+  const ineligibleInventory = [normalizedNode("🇯🇵 机场 · TEST_ONLY_TCP_NODE", { entry: true })];
   const ineligible = renderEgernGroups(
     buildPolicyGroups(options({ clientChain: "off" }), ineligibleInventory),
     privateUrl(),
@@ -451,7 +453,7 @@ test("accepts only the exact shared filter assigned to each documented group", (
 
   const ineligible = buildPolicyGroups(
     options({ clientChain: "off" }),
-    [normalizedNode("🇯🇵 [机场] TEST_ONLY_TCP_NODE")],
+    [normalizedNode("🇯🇵 机场 · TEST_ONLY_TCP_NODE")],
   ).map(cloneGroup);
   ineligible.find((group) => group.name === "🎮 游戏连接").nodeFilter = "^.+$";
   mutations.push(ineligible);

@@ -5,7 +5,7 @@ import { fingerprint, identityKey, isSemanticUnderscoreKey } from "./node-identi
 import { hasExplicitUdp, validateNode } from "./node-validation.js";
 import { diagnosticProtocol } from "./protocol-registry.js";
 import { classifyRegion, removeFlags } from "./regions.js";
-import { classifySource } from "./source-labels.js";
+import { classifySource, stripSourceMarkers } from "./source-labels.js";
 
 const CONTINENT_ORDER = new Map([
   [CONTINENT.asiaPacific, 0],
@@ -18,9 +18,13 @@ const EXISTING_CHAIN_MARKER = "[已有链]";
 
 function cleanDisplayName(name) {
   const withoutMarkers = removeFlags(name)
+    .replace(/\[\s*未标记\s*\]/giu, " ")
     .replace(/\[\s*udp\s*\]/gi, " ")
     .replace(/\[\s*已有链\s*\]/g, " ");
-  const cleaned = withoutMarkers.replace(/[\r\n\t]+/g, " ").replace(/\s+/g, " ").trim();
+  const cleaned = stripSourceMarkers(withoutMarkers)
+    .replace(/[\r\n\t]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
   return cleaned || "未命名节点";
 }
 
@@ -181,7 +185,7 @@ export function normalizeNodes(nodes, { clientChain = "off" } = {}) {
 
     const udp = hasExplicitUdp(original);
     const id = `sr-${fingerprint(cloned)}`;
-    cloned.name = `${region.flag} ${source.label} ${cleanDisplayName(original.name)}${existingChain ? ` ${EXISTING_CHAIN_MARKER}` : ""}${udp ? " [UDP]" : ""}`;
+    cloned.name = `${region.flag} ${source.label} · ${cleanDisplayName(original.name)}${existingChain ? ` ${EXISTING_CHAIN_MARKER}` : ""}${udp ? " [UDP]" : ""}`;
     cloned._profile = {
       id,
       sourceKind: source.kind,

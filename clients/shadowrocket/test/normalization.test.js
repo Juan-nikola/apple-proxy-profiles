@@ -26,6 +26,18 @@ test("normalizes names, preserves credential-distinct nodes, and removes spoofed
   assert.equal(result.diagnostics.excluded["exact-duplicate"], 1);
 });
 
+test("renders compact region-source-name labels without provenance duplication", () => {
+  const node = {
+    ...fakeNodes[0],
+    name: "🇭🇰 [未标记] [自建] Boil-HKT [UDP]",
+    _subDisplayName: "[未标记] display",
+    _subName: "[自建] private",
+    udp: true,
+  };
+  const { nodes } = normalizeNodes([node]);
+  assert.equal(nodes[0].name, "🇭🇰 自建 · Boil-HKT [UDP]");
+});
+
 test("chooses exact-duplicate provenance deterministically with least privilege", () => {
   const airport = {
     ...fakeNodes[0],
@@ -44,7 +56,7 @@ test("chooses exact-duplicate provenance deterministically with least privilege"
   assert.equal(forward.nodes.length, 1);
   assert.equal(forward.nodes[0]._profile.sourceKind, "airport");
   assert.equal(forward.nodes[0]._profile.p2p, false);
-  assert.equal(forward.nodes[0].name.includes("[机场]"), true);
+  assert.equal(forward.nodes[0].name.includes("机场 ·"), true);
   assert.equal(JSON.stringify(forward.diagnostics).includes("TEST_ONLY_NOT_A_SECRET"), false);
 });
 

@@ -188,6 +188,7 @@ export function buildPolicyGroups(options, nodes) {
     kind: GROUP_KIND.primary,
     name: "🚀 节点选择",
     candidates: [POLICY_TARGET.primaryProxy],
+    nodeFilter: NON_CHAINED_FILTER,
   }));
   for (const continent of presentContinents) {
     groups.push(subscriptionGroup(

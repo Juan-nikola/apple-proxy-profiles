@@ -8,11 +8,11 @@ import { classifyRegion, removeFlags } from "../../../shared/nodes/regions.js";
 
 test("classifies leading source labels using provenance priority", () => {
   for (const [name, kind, label] of [
-    ["[机场] X", SOURCE_KIND.airport, "[机场]"],
-    ["[自建] X", SOURCE_KIND.selfHosted, "[自建]"],
-    ["[REALM] X", SOURCE_KIND.realm, "[Realm]"],
-    ["[链式代理] X", SOURCE_KIND.serverChain, "[链式代理]"],
-    ["[落地] X", SOURCE_KIND.landing, "[落地]"],
+    ["[机场] X", SOURCE_KIND.airport, "机场"],
+    ["[自建] X", SOURCE_KIND.selfHosted, "自建"],
+    ["[REALM] X", SOURCE_KIND.realm, "Realm"],
+    ["[链式代理] X", SOURCE_KIND.serverChain, "链式代理"],
+    ["[落地] X", SOURCE_KIND.landing, "落地"],
   ]) {
     assert.deepEqual(classifySource({ _subName: name }), { kind, label, warning: null });
   }
@@ -21,9 +21,16 @@ test("classifies leading source labels using provenance priority", () => {
   assert.equal(classifySource({ _subName: "[落地] X" }).kind, SOURCE_KIND.landing);
   assert.deepEqual(classifySource({ _subName: "Unlabelled" }), {
     kind: SOURCE_KIND.unknown,
-    label: "[未标记]",
+    label: "未知",
     warning: "missing-source-label",
   });
+});
+
+test("prefers a recognized source when an unknown display field appears first", () => {
+  assert.deepEqual(classifySource({
+    _subDisplayName: "[未标记] upstream",
+    _subName: "[自建] private collection",
+  }), { kind: SOURCE_KIND.selfHosted, label: "自建", warning: null });
 });
 
 test("preserves existing regional flags and reports flag warnings", () => {
