@@ -169,8 +169,8 @@ test("client-chain Profiles never serialize raw normalized node names or transpo
   ]) assert.equal(profile.includes(privateValue), false, privateValue);
   assert.equal(new RegExp(entryFilter).test(eligibleNode.name), true);
   assert.equal(new RegExp(entryFilter).test(restrictedNode.name), false);
-  assert.match(restrictedNode.name, /\[已有链\] \[UDP\]$/);
-  assert.match(profile, /policy-regex-filter=\^\(\?!\.\*\\\[已有链\\\]\)/);
+  assert.match(restrictedNode.name, /｜机场·链·U$/);
+  assert.match(profile, /policy-regex-filter=\^\(\?!🔗 \)\(\?!\.\*·链\)/);
   assert.deepEqual(validateProfile(profile), { valid: true, errors: [] });
 });
 

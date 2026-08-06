@@ -5,6 +5,8 @@ import test from "node:test";
 const files = [
   "../dist/surge-profile-generator.js",
   "../dist/substore-profile-generator.js",
+  "../../../public/current/surge/scripts/surge-profile-generator.js",
+  "../../../public/current/surge/scripts/substore-profile-generator.js",
 ];
 
 test("Surge bundles expose the Sub-Store operator and remain public-URL closed", async () => {
@@ -14,5 +16,13 @@ test("Surge bundles expose the Sub-Store operator and remain public-URL closed",
     assert.match(content, /PUBLIC_RULE_BASE_URL|current\/surge\/rules/u, file);
     assert.doesNotMatch(content, /raw\.githubusercontent\.com\/blackmatrix7/iu, file);
     assert.doesNotMatch(content, /private-node\.example|password=secret/iu, file);
+  }
+});
+
+test("published Surge bundles include primary node filtering and compact naming", async () => {
+  for (const file of files) {
+    const content = await readFile(new URL(file, import.meta.url), "utf8");
+    assert.match(content, /nodeFilter:/u, file);
+    assert.match(content, /\\uFF5C/u, file);
   }
 });

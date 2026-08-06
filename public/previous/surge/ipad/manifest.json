@@ -2,15 +2,15 @@
   "adapterSchema": "surge-adapter-0.1",
   "channel": "current",
   "client": "surge",
-  "configSha256": "3f600a812f5ac925930d9243a0927dc993a0b58c4df9c69e1ade47a6400999bb",
+  "configSha256": "18a12969288d79082bdcd29224ebeddcb320a87d3cffec50ae7342419e3bee05",
   "platform": "ipad",
   "platformKey": "surge/ipad",
-  "ruleManifestSha256": "8f721540bdf4ec944bb54dd55ba12077257ed0c82f50ad5b88d6bdfc28c70aea",
+  "ruleManifestSha256": "3d7eb95b48ce6fac7178b63840a72878f5242c44ee9d615baa47fb3dc3d41480",
   "schemaVersion": 1,
   "status": "validated",
   "upstream": {
     "branch": "beta",
-    "commit": "b807e9f8b55f6fcfb2cb26f52b77fa1d3b0c4e6b",
-    "fetchedAt": "2026-08-03T19:30:42Z"
+    "commit": "72c410015dc99df6b54eca1386126f70268bf6bc",
+    "fetchedAt": "2026-08-05T19:24:33Z"
   }
 }

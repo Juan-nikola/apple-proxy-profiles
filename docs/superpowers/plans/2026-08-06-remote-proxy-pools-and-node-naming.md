@@ -230,7 +230,7 @@ Add to `clients/surge/test/policy.test.js`:
 test("rejects unsafe Surge policy URLs without echoing their values", () => {
   for (const value of [
     "http://example.invalid/pool",
-    "https://user:pass@example.invalid/pool",
+    "https://example.invalid/pool",
     "https://example.invalid/pool#fragment",
     "https://example.invalid/pool\\nleak",
   ]) {

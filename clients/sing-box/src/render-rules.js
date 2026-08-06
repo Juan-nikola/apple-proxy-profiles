@@ -1,5 +1,7 @@
 import { RULE_CLIENT_CATALOG } from "../../../shared/rules/client-catalog.js";
 
+export const RULE_DOWNLOAD_HTTP_CLIENT = "🧭 规则下载 HTTP";
+
 const LOCAL_RULES = Object.freeze([
   { ip_is_private: true, action: "route", outbound: "DIRECT" },
   { domain_suffix: ["local", "lan", "home.arpa"], action: "route", outbound: "DIRECT" },
@@ -25,7 +27,7 @@ export function renderSingBoxRuleSets({ ruleBaseUrl, ruleSetFormat = "source" })
     tag: `rule-${source.id}`,
     format: ruleSetFormat,
     url: `${base}/${source.id}.${ruleSetFormat === "binary" ? "srs" : "json"}`,
-    download_detour: "🧭 DNS 与规则下载",
+    http_client: RULE_DOWNLOAD_HTTP_CLIENT,
     update_interval: "24h",
   }));
 }
@@ -35,6 +37,5 @@ export function renderSingBoxRouteRules({ ruleBaseUrl, ruleSetFormat = "source" 
   for (const source of RULE_CLIENT_CATALOG) {
     rules.push({ rule_set: [`rule-${source.id}`], ...routeAction(source.policy) });
   }
-  rules.push({ geoip: ["cn"], ...routeAction("DIRECT") });
   return { ruleSets: renderSingBoxRuleSets({ ruleBaseUrl, ruleSetFormat }), rules, final: "🚀 节点选择" };
 }

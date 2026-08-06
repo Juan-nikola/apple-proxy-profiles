@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { parseSingBoxOptions } from "../src/options.js";
+import { renderSingBoxDns } from "../src/render-dns.js";
 import { renderSingBoxOutbound } from "../src/render-node.js";
 import { renderSingBoxConfig } from "../src/render-config.js";
 import { validateSingBoxConfig } from "../src/validate-config.js";
@@ -65,6 +66,27 @@ test("renders a validated OpenWrt transparent gateway config", () => {
   assert.deepEqual(validateSingBoxConfig(config), { valid: true, errors: [] });
 });
 
+test("renders the latest sing-box HTTP client contract without removed fields", () => {
+  const config = renderSingBoxConfig(parseSingBoxOptions(baseOptions), [node], {
+    ruleBaseUrl: "https://example.invalid/current/sing-box/rules",
+    ruleSetFormat: "source",
+  });
+  assert.deepEqual(config.http_clients, [{
+    tag: "🧭 规则下载 HTTP",
+    version: 2,
+    detour: "🧭 DNS 与规则下载",
+  }]);
+  assert.equal(config.route.default_http_client, "🧭 规则下载 HTTP");
+  assert.equal(config.route.rule_set.every((rule) => rule.http_client === "🧭 规则下载 HTTP"), true);
+  assert.equal(config.route.rules.some((rule) => Object.hasOwn(rule, "geoip") || Object.hasOwn(rule, "geosite")), false);
+  assert.equal(config.route.rule_set.some((rule) => Object.hasOwn(rule, "download_detour")), false);
+  assert.equal(Object.hasOwn(config.experimental.cache_file, "store_rdrc"), false);
+  assert.equal(config.experimental.cache_file.store_dns, true);
+  assert.ok(config.route.rules.some((rule) => (
+    rule.rule_set?.includes("rule-ChinaMax") && rule.outbound === "DIRECT"
+  )));
+});
+
 test("renders latest sing-box flat DNS rule actions", () => {
   const config = renderSingBoxConfig(parseSingBoxOptions(baseOptions), [node], {
     ruleBaseUrl: "https://example.invalid/current/sing-box/rules",
@@ -77,6 +99,21 @@ test("renders latest sing-box flat DNS rule actions", () => {
       { action: "route", server: "dns-proxy" },
     ],
   );
+});
+
+test("renders every global DNS provider with the structured HTTPS contract", () => {
+  for (const globalDns of ["cloudflare", "google", "quad9"]) {
+    const dns = renderSingBoxDns({ ...baseOptions, globalDns });
+    const proxyServer = dns.servers.find((server) => server.tag === "dns-proxy");
+    assert.ok(proxyServer, globalDns);
+    assert.equal(proxyServer.type, "https");
+    assert.equal(proxyServer.server_port, 443);
+    assert.equal(proxyServer.path, "/dns-query");
+    assert.equal(proxyServer.tls?.enabled, true);
+    assert.equal(typeof proxyServer.tls?.server_name, "string");
+    assert.doesNotMatch(proxyServer.server, /^https?:\/\//iu);
+    assert.doesNotMatch(proxyServer.server, /[/?#]/u);
+  }
 });
 
 test("renders mobile TUN without Linux-only auto redirect fields", () => {

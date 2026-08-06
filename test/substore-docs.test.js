@@ -35,6 +35,8 @@ test("central Sub-Store guide closes over all public scripts and private tasks",
   assert.match(readme, /apple-proxy-sources/u);
   assert.match(maintenance, /Node\.js 22/u);
   assert.match(maintenance, /sing-box.*\.srs/u);
+  assert.match(guide, /`apple-proxy-sources`[\s\S]{0,240}(?:原始|raw)[\s\S]{0,240}`shadowrocket-nodes`/iu);
+  assert.match(guide, /Shadowrocket[\s\S]{0,600}name=shadowrocket-nodes/iu);
 });
 
 test("public documentation never contains a private Sub-Store endpoint", async () => {

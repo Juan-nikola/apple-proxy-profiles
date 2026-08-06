@@ -2,15 +2,15 @@
   "adapterSchema": "singbox-adapter-0.1",
   "channel": "current",
   "client": "singbox",
-  "configSha256": "aa16736acecccf044aa57a317133de63ba8783a1d7c79702718fd840b153c8c2",
+  "configSha256": "484114659c34fbaa37fe81409f101e8cd48e58751e438f9e0694b70c8e30ac45",
   "platform": "macos",
   "platformKey": "singbox/macos",
-  "ruleManifestSha256": "2d64d39a95632c9cec693dbed80a5613b9746f2011a6f71b98c1e06edbb6708b",
+  "ruleManifestSha256": "6cba0687c874ed69a588c278f7fd9e74cb736089271adba37f8c19092bc9ddf9",
   "schemaVersion": 1,
   "status": "validated",
   "upstream": {
     "branch": "stable",
     "commit": "4c02326989a170bcf1d2c3aab1cf5c70adfed2ca",
-    "fetchedAt": "2026-08-05T23:47:04.264Z"
+    "fetchedAt": "2026-08-06T15:44:07.597Z"
   }
 }

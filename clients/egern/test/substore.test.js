@@ -120,7 +120,7 @@ test("node File Operator creates only the Egern SSH chain clone when enabled", a
     produceArtifact: producer(rawInventory()),
     logger: logger(lines),
   });
-  assert.match(result.$content, /name: "🔗 [^"]*SSH Landing"/u);
+  assert.match(result.$content, /name: "🔗 [^"]*Landing｜落地"/u);
   assert.match(result.$content, /prev_hop: "🔗 入口节点"/u);
   const diagnostics = JSON.parse(lines[0].replace(/^\[egern-profile\] /u, ""));
   assert.equal(diagnostics.accepted, 3);

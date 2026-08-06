@@ -268,9 +268,9 @@ var ShadowrocketProfileBundle = (() => {
   // ../../../shared/policies/filters.js
   var ALL_NODES_FILTER = "^.+$";
   var NON_CHAINED_FILTER = "^(?!\u{1F517} ).+$";
-  var ENTRY_FILTER = "^(?!.*\\[\u5DF2\u6709\u94FE\\])\\S+ \\[(?:\u673A\u573A|\u81EA\u5EFA|Realm)\\] .+$";
-  var P2P_FILTER = "^\\S+ \\[(?:\u81EA\u5EFA|Realm|\u94FE\u5F0F\u4EE3\u7406)\\] .+$";
-  var GAME_FILTER = "^(?!\u{1F517} )\\S+ .+ \\[UDP\\]$";
+  var ENTRY_FILTER = "^(?!\u{1F517} )(?!.*\xB7\u94FE).+\uFF5C(?:\u673A\u573A|\u81EA\u5EFA|Realm)(?:\xB7.*)?$";
+  var P2P_FILTER = "^(?!\u{1F517} ).+\uFF5C(?:\u81EA\u5EFA|Realm|\u94FE\u5F0F\u4EE3\u7406)(?:\xB7.*)?$";
+  var GAME_FILTER = "^(?!\u{1F517} ).+\xB7U$";
   var CONTINENTS = Object.freeze([
     Object.freeze({
       key: CONTINENT.asiaPacific,
@@ -298,10 +298,10 @@ var ShadowrocketProfileBundle = (() => {
     })
   ]);
   var SOURCE_GROUPS = Object.freeze([
-    Object.freeze({ kind: SOURCE_KIND.selfHosted, name: "\u{1F3E0} \u81EA\u5EFA\u8282\u70B9", filter: "^\\S+ \\[\u81EA\u5EFA\\] .+$" }),
-    Object.freeze({ kind: SOURCE_KIND.airport, name: "\u{1F3E2} \u673A\u573A\u8282\u70B9", filter: "^\\S+ \\[\u673A\u573A\\] .+$" }),
-    Object.freeze({ kind: SOURCE_KIND.realm, name: "\u21AA\uFE0F Realm \u8F6C\u53D1", filter: "^\\S+ \\[Realm\\] .+$" }),
-    Object.freeze({ kind: SOURCE_KIND.serverChain, name: "\u26D3\uFE0F \u94FE\u5F0F\u4EE3\u7406", filter: "^\\S+ \\[\u94FE\u5F0F\u4EE3\u7406\\] .+$" })
+    Object.freeze({ kind: SOURCE_KIND.selfHosted, name: "\u{1F3E0} \u81EA\u5EFA\u8282\u70B9", filter: "^.+\uFF5C\u81EA\u5EFA(?:\xB7.*)?$" }),
+    Object.freeze({ kind: SOURCE_KIND.airport, name: "\u{1F3E2} \u673A\u573A\u8282\u70B9", filter: "^.+\uFF5C\u673A\u573A(?:\xB7.*)?$" }),
+    Object.freeze({ kind: SOURCE_KIND.realm, name: "\u21AA\uFE0F Realm \u8F6C\u53D1", filter: "^.+\uFF5CRealm(?:\xB7.*)?$" }),
+    Object.freeze({ kind: SOURCE_KIND.serverChain, name: "\u26D3\uFE0F \u94FE\u5F0F\u4EE3\u7406", filter: "^.+\uFF5C\u94FE\u5F0F\u4EE3\u7406(?:\xB7.*)?$" })
   ]);
   function continentFilter(continent) {
     if (continent.key === CONTINENT.other) {
@@ -472,7 +472,8 @@ var ShadowrocketProfileBundle = (() => {
     groups.push(policyGroup({
       kind: GROUP_KIND.primary,
       name: "\u{1F680} \u8282\u70B9\u9009\u62E9",
-      candidates: [POLICY_TARGET.primaryProxy]
+      candidates: [POLICY_TARGET.primaryProxy],
+      nodeFilter: NON_CHAINED_FILTER
     }));
     for (const continent of presentContinents) {
       groups.push(subscriptionGroup(

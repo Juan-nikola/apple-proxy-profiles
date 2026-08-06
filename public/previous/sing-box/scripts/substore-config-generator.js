@@ -116,7 +116,7 @@ var SingBoxConfigBundle = (() => {
     protocol(["vmess"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox], {
       requiredFields: ["uuid"]
     }),
-    protocol(["vless"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox], {
+    protocol(["vless"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.singbox], {
       requiredFields: ["uuid"]
     }),
     protocol(["trojan"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox], {
@@ -237,6 +237,9 @@ var SingBoxConfigBundle = (() => {
     "chacha20-ietf"
   ]);
   var EGERN_SNELL_VERSIONS = /* @__PURE__ */ new Set([1, 2, 3, 4, 5]);
+  var SINGBOX_SNELL_VERSIONS = /* @__PURE__ */ new Set([4, 6]);
+  var SINGBOX_SNELL_OBFS_MODES = /* @__PURE__ */ new Set(["none", "http"]);
+  var SINGBOX_SNELL_MODES = /* @__PURE__ */ new Set(["default", "unshaped", "unsafe-raw"]);
   var EGERN_OBFS = /* @__PURE__ */ new Set(["http", "tls"]);
   var EGERN_VMESS_SECURITY = /* @__PURE__ */ new Set(["auto", "aes-128-gcm", "chacha20-poly1305", "none", "zero"]);
   var EGERN_TRANSPORTS = /* @__PURE__ */ new Set(["tcp", "raw", "ws", "grpc", "h2", "http2", "http", "http1"]);
@@ -1037,8 +1040,28 @@ var SingBoxConfigBundle = (() => {
     if (!Object.values(CLIENT).includes(client)) return { supported: false, reason: "unsupported-client" };
     const protocol2 = normalizeProtocol(node?.type);
     if (!protocolSupportsClient(protocol2, client)) return { supported: false, reason: "unsupported-protocol" };
-    const transportReason = client === CLIENT.anywhere ? anywhereNodeExclusionReason(node ?? {}) : client === CLIENT.egern ? egernNodeExclusionReason(node ?? {}) : null;
+    let transportReason = null;
+    if (client === CLIENT.anywhere) transportReason = anywhereNodeExclusionReason(node ?? {});
+    else if (client === CLIENT.egern) transportReason = egernNodeExclusionReason(node ?? {});
+    else if (client === CLIENT.singbox) transportReason = singBoxNodeExclusionReason(node ?? {});
     return transportReason ? { supported: false, reason: transportReason } : { supported: true, reason: null };
+  }
+  function singBoxNodeExclusionReason(node) {
+    if (normalizeProtocol(node?.type) !== "snell") return null;
+    const version = Number(node.version);
+    if (!Number.isInteger(version) || !SINGBOX_SNELL_VERSIONS.has(version)) {
+      return "unsupported-singbox-snell-version";
+    }
+    if (version === 4) {
+      const obfsMode = node.obfs_mode ?? node["obfs-mode"] ?? node.obfs;
+      if (obfsMode !== void 0 && obfsMode !== "" && !SINGBOX_SNELL_OBFS_MODES.has(String(obfsMode).toLowerCase())) {
+        return "unsupported-singbox-snell-obfs";
+      }
+    }
+    if (version === 6 && node.mode !== void 0 && !SINGBOX_SNELL_MODES.has(String(node.mode).toLowerCase())) {
+      return "unsupported-singbox-snell-mode";
+    }
+    return null;
   }
   function filterNodesForClient(nodes, client) {
     const diagnostics = createClientFilterDiagnostics();
@@ -1339,28 +1362,43 @@ var SingBoxConfigBundle = (() => {
     "_collectionName"
   ];
   var SOURCE_LABELS = /* @__PURE__ */ new Map([
-    ["\u673A\u573A", { kind: SOURCE_KIND.airport, label: "[\u673A\u573A]" }],
-    ["\u81EA\u5EFA", { kind: SOURCE_KIND.selfHosted, label: "[\u81EA\u5EFA]" }],
-    ["realm", { kind: SOURCE_KIND.realm, label: "[Realm]" }],
-    ["\u94FE\u5F0F\u4EE3\u7406", { kind: SOURCE_KIND.serverChain, label: "[\u94FE\u5F0F\u4EE3\u7406]" }],
-    ["\u843D\u5730", { kind: SOURCE_KIND.landing, label: "[\u843D\u5730]" }]
+    ["\u673A\u573A", { kind: SOURCE_KIND.airport, label: "\u673A\u573A" }],
+    ["\u81EA\u5EFA", { kind: SOURCE_KIND.selfHosted, label: "\u81EA\u5EFA" }],
+    ["realm", { kind: SOURCE_KIND.realm, label: "Realm" }],
+    ["\u94FE\u5F0F\u4EE3\u7406", { kind: SOURCE_KIND.serverChain, label: "\u94FE\u5F0F\u4EE3\u7406" }],
+    ["\u843D\u5730", { kind: SOURCE_KIND.landing, label: "\u843D\u5730" }]
   ]);
-  function sourceName(node) {
-    for (const field of PROVENANCE_FIELDS) {
-      const value = node?.[field];
-      if (typeof value === "string" && value.trim()) return value;
+  var SOURCE_MARKER_PATTERN = /\[(?:\s*未标记\s*|\s*机场\s*|\s*自建\s*|\s*realm\s*|\s*链式代理\s*|\s*落地\s*)\]/giu;
+  function sourceFromToken(token) {
+    const source = SOURCE_LABELS.get(String(token).trim().toLowerCase());
+    return source ? { ...source, warning: null } : null;
+  }
+  function sourceFromMarkers(value) {
+    if (typeof value !== "string" || value.length === 0) return null;
+    for (const match of value.matchAll(/\[([^\]]+)\]/gu)) {
+      const source = sourceFromToken(match[1]);
+      if (source) return source;
     }
-    return "";
+    return null;
   }
   function classifySource(node) {
-    const match = sourceName(node).match(/^\s*\[([^\]]+)\]/i);
-    const source = match && SOURCE_LABELS.get(match[1].trim().toLowerCase());
+    for (const field of PROVENANCE_FIELDS) {
+      const value = node?.[field];
+      if (typeof value !== "string" || !value.trim()) continue;
+      const source2 = sourceFromMarkers(value);
+      if (source2) return { ...source2, warning: null };
+    }
+    const source = sourceFromMarkers(node?.name);
     if (source) return { ...source, warning: null };
     return {
       kind: SOURCE_KIND.unknown,
-      label: "[\u672A\u6807\u8BB0]",
+      label: "\u672A\u77E5",
       warning: "missing-source-label"
     };
+  }
+  function stripSourceMarkers(name) {
+    if (typeof name !== "string" || name.length === 0) return "";
+    return name.replaceAll(SOURCE_MARKER_PATTERN, " ");
   }
 
   // ../../shared/nodes/normalize-nodes.js
@@ -1370,10 +1408,30 @@ var SingBoxConfigBundle = (() => {
     [CONTINENT.americas, 2],
     [CONTINENT.other, 3]
   ]);
-  var EXISTING_CHAIN_MARKER = "[\u5DF2\u6709\u94FE]";
-  function cleanDisplayName(name) {
-    const withoutMarkers = removeFlags(name).replace(/\[\s*udp\s*\]/gi, " ").replace(/\[\s*已有链\s*\]/g, " ");
-    const cleaned = withoutMarkers.replace(/[\r\n\t]+/g, " ").replace(/\s+/g, " ").trim();
+  var PROTOCOL_NAME_TOKENS = Object.freeze({
+    ss: ["ss", "shadowsocks"],
+    shadowsocks: ["ss", "shadowsocks"],
+    ssr: ["ssr"],
+    snell: ["snell"],
+    vmess: ["vmess"],
+    vless: ["vless"],
+    trojan: ["trojan"],
+    anytls: ["anytls"],
+    hysteria2: ["hy2", "hysteria2", "hysteria 2"],
+    hy2: ["hy2", "hysteria2", "hysteria 2"],
+    tuic: ["tuic"],
+    socks5: ["socks5", "socks"],
+    http: ["http"],
+    ssh: ["ssh"],
+    wireguard: ["wireguard", "wg"]
+  });
+  function cleanDisplayName(name, type) {
+    const withoutMarkers = removeFlags(name).replace(/\[\s*未标记\s*\]/giu, " ").replace(/\[\s*udp\s*\]/gi, " ").replace(/\[\s*已有链\s*\]/g, " ");
+    const stripped = stripSourceMarkers(withoutMarkers);
+    const protocolTokens = PROTOCOL_NAME_TOKENS[type] ?? [type];
+    const protocolPattern = protocolTokens.filter((token) => typeof token === "string" && token.length > 0).join("|");
+    const withoutProtocol = protocolPattern ? stripped.replace(new RegExp("(?:^|\\s)(?:" + protocolPattern + ")(?=\\s|$)", "giu"), " ") : stripped;
+    const cleaned = withoutProtocol.replace(/[\r\n\t]+/g, " ").replace(/\s+/g, " ").trim();
     return cleaned || "\u672A\u547D\u540D\u8282\u70B9";
   }
   function sanitizeInternalMetadata(node) {
@@ -1512,7 +1570,12 @@ var SingBoxConfigBundle = (() => {
       }
       const udp = hasExplicitUdp(original);
       const id = `sr-${fingerprint(cloned)}`;
-      cloned.name = `${region.flag} ${source.label} ${cleanDisplayName(original.name)}${existingChain ? ` ${EXISTING_CHAIN_MARKER}` : ""}${udp ? " [UDP]" : ""}`;
+      const sourceSuffix = source.kind === SOURCE_KIND.unknown ? "" : "\uFF5C" + source.label;
+      const capabilitySuffix = [
+        existingChain ? "\u94FE" : "",
+        udp ? "U" : ""
+      ].filter(Boolean).join("\xB7");
+      cloned.name = region.flag + " " + cleanDisplayName(original.name, cloned.type) + sourceSuffix + (capabilitySuffix ? "\xB7" + capabilitySuffix : "");
       cloned._profile = {
         id,
         sourceKind: source.kind,
@@ -1666,10 +1729,15 @@ var SingBoxConfigBundle = (() => {
     "mtu",
     "keepalive",
     "obfs",
+    "obfs-mode",
+    "obfs_mode",
     "obfs-host",
     "obfs_host",
     "obfs-password",
     "obfs_password",
+    "mode",
+    "userkey",
+    "user-key",
     "udp-relay-mode",
     "udp_relay_mode",
     "ports",
@@ -1795,9 +1863,20 @@ var SingBoxConfigBundle = (() => {
         outbound.transport = transportFields(node);
         break;
       case "snell":
-        outbound = { ...base(node, "snell"), psk: requiredString2(node, "psk"), version: Number(node.version) };
-        setIf(outbound, "obfs", node.obfs);
-        setIf(outbound, "obfs_host", node["obfs-host"] ?? node.obfs_host);
+        {
+          const version = Number(node.version);
+          if (![4, 6].includes(version)) throw new Error("Unsupported sing-box Snell version");
+          outbound = { ...base(node, "snell"), psk: requiredString2(node, "psk"), version };
+          if (node.network === "tcp" || node.network === "udp") outbound.network = node.network;
+          if (version === 4) {
+            setIf(outbound, "obfs_mode", node.obfs_mode ?? node["obfs-mode"] ?? node.obfs);
+            setIf(outbound, "obfs_host", node["obfs-host"] ?? node.obfs_host);
+          } else {
+            setIf(outbound, "userkey", node.userkey ?? node["user-key"]);
+            setIf(outbound, "reuse", node.reuse);
+            setIf(outbound, "mode", node.mode);
+          }
+        }
         break;
       case "vless":
         outbound = { ...base(node, "vless"), uuid: requiredString2(node, "uuid") };
@@ -1863,9 +1942,9 @@ var SingBoxConfigBundle = (() => {
   // ../../shared/policies/filters.js
   var ALL_NODES_FILTER = "^.+$";
   var NON_CHAINED_FILTER = "^(?!\u{1F517} ).+$";
-  var ENTRY_FILTER = "^(?!.*\\[\u5DF2\u6709\u94FE\\])\\S+ \\[(?:\u673A\u573A|\u81EA\u5EFA|Realm)\\] .+$";
-  var P2P_FILTER = "^\\S+ \\[(?:\u81EA\u5EFA|Realm|\u94FE\u5F0F\u4EE3\u7406)\\] .+$";
-  var GAME_FILTER = "^(?!\u{1F517} )\\S+ .+ \\[UDP\\]$";
+  var ENTRY_FILTER = "^(?!\u{1F517} )(?!.*\xB7\u94FE).+\uFF5C(?:\u673A\u573A|\u81EA\u5EFA|Realm)(?:\xB7.*)?$";
+  var P2P_FILTER = "^(?!\u{1F517} ).+\uFF5C(?:\u81EA\u5EFA|Realm|\u94FE\u5F0F\u4EE3\u7406)(?:\xB7.*)?$";
+  var GAME_FILTER = "^(?!\u{1F517} ).+\xB7U$";
   var CONTINENTS = Object.freeze([
     Object.freeze({
       key: CONTINENT.asiaPacific,
@@ -1893,10 +1972,10 @@ var SingBoxConfigBundle = (() => {
     })
   ]);
   var SOURCE_GROUPS = Object.freeze([
-    Object.freeze({ kind: SOURCE_KIND.selfHosted, name: "\u{1F3E0} \u81EA\u5EFA\u8282\u70B9", filter: "^\\S+ \\[\u81EA\u5EFA\\] .+$" }),
-    Object.freeze({ kind: SOURCE_KIND.airport, name: "\u{1F3E2} \u673A\u573A\u8282\u70B9", filter: "^\\S+ \\[\u673A\u573A\\] .+$" }),
-    Object.freeze({ kind: SOURCE_KIND.realm, name: "\u21AA\uFE0F Realm \u8F6C\u53D1", filter: "^\\S+ \\[Realm\\] .+$" }),
-    Object.freeze({ kind: SOURCE_KIND.serverChain, name: "\u26D3\uFE0F \u94FE\u5F0F\u4EE3\u7406", filter: "^\\S+ \\[\u94FE\u5F0F\u4EE3\u7406\\] .+$" })
+    Object.freeze({ kind: SOURCE_KIND.selfHosted, name: "\u{1F3E0} \u81EA\u5EFA\u8282\u70B9", filter: "^.+\uFF5C\u81EA\u5EFA(?:\xB7.*)?$" }),
+    Object.freeze({ kind: SOURCE_KIND.airport, name: "\u{1F3E2} \u673A\u573A\u8282\u70B9", filter: "^.+\uFF5C\u673A\u573A(?:\xB7.*)?$" }),
+    Object.freeze({ kind: SOURCE_KIND.realm, name: "\u21AA\uFE0F Realm \u8F6C\u53D1", filter: "^.+\uFF5CRealm(?:\xB7.*)?$" }),
+    Object.freeze({ kind: SOURCE_KIND.serverChain, name: "\u26D3\uFE0F \u94FE\u5F0F\u4EE3\u7406", filter: "^.+\uFF5C\u94FE\u5F0F\u4EE3\u7406(?:\xB7.*)?$" })
   ]);
   function continentFilter(continent) {
     if (continent.key === CONTINENT.other) {
@@ -2067,7 +2146,8 @@ var SingBoxConfigBundle = (() => {
     groups.push(policyGroup({
       kind: GROUP_KIND.primary,
       name: "\u{1F680} \u8282\u70B9\u9009\u62E9",
-      candidates: [POLICY_TARGET.primaryProxy]
+      candidates: [POLICY_TARGET.primaryProxy],
+      nodeFilter: NON_CHAINED_FILTER
     }));
     for (const continent of presentContinents) {
       groups.push(subscriptionGroup(
@@ -2228,9 +2308,10 @@ var SingBoxConfigBundle = (() => {
   var RULE_CLIENT_CATALOG = Object.freeze(RULE_SOURCE_DEFINITIONS.map(({ id, policy, inputFormat }) => Object.freeze({ id, policy, inputFormat })));
 
   // src/render-rules.js
+  var RULE_DOWNLOAD_HTTP_CLIENT = "\u{1F9ED} \u89C4\u5219\u4E0B\u8F7D HTTP";
   var LOCAL_RULES = Object.freeze([
-    { ip_is_private: true, action: { action: "route", outbound: "DIRECT" } },
-    { domain_suffix: ["local", "lan", "home.arpa"], action: { action: "route", outbound: "DIRECT" } }
+    { ip_is_private: true, action: "route", outbound: "DIRECT" },
+    { domain_suffix: ["local", "lan", "home.arpa"], action: "route", outbound: "DIRECT" }
   ]);
   function baseUrl(value) {
     if (typeof value !== "string" || !/^https:\/\/[^\s]+$/u.test(value) || /[\r\n]/u.test(value)) {
@@ -2250,7 +2331,7 @@ var SingBoxConfigBundle = (() => {
       tag: `rule-${source.id}`,
       format: ruleSetFormat,
       url: `${base2}/${source.id}.${ruleSetFormat === "binary" ? "srs" : "json"}`,
-      download_detour: "\u{1F9ED} DNS \u4E0E\u89C4\u5219\u4E0B\u8F7D",
+      http_client: RULE_DOWNLOAD_HTTP_CLIENT,
       update_interval: "24h"
     }));
   }
@@ -2259,7 +2340,6 @@ var SingBoxConfigBundle = (() => {
     for (const source of RULE_CLIENT_CATALOG) {
       rules.push({ rule_set: [`rule-${source.id}`], ...routeAction(source.policy) });
     }
-    rules.push({ geoip: ["cn"], ...routeAction("DIRECT") });
     return { ruleSets: renderSingBoxRuleSets({ ruleBaseUrl, ruleSetFormat }), rules, final: "\u{1F680} \u8282\u70B9\u9009\u62E9" };
   }
 
@@ -2280,8 +2360,8 @@ var SingBoxConfigBundle = (() => {
     return {
       servers: [chinaServer, proxyServer],
       rules: [
-        { rule_set: ["rule-ChinaMax", "rule-ChinaMax_Domain"], action: { action: "route", server: "dns-direct" } },
-        { rule_set: ["rule-Advertising", "rule-Privacy", "rule-Hijacking"], action: { action: "route", server: "dns-proxy" } }
+        { rule_set: ["rule-ChinaMax", "rule-ChinaMax_Domain"], action: "route", server: "dns-direct" },
+        { rule_set: ["rule-Advertising", "rule-Privacy", "rule-Hijacking"], action: "route", server: "dns-proxy" }
       ],
       final: "dns-proxy",
       strategy: options.ipv6Mode === "ipv4-only" ? "ipv4_only" : "prefer_ipv4",
@@ -2353,8 +2433,7 @@ var SingBoxConfigBundle = (() => {
     return tags;
   }
   function actionOutbound(rule2) {
-    if (rule2?.action?.action === "route") return rule2.action.outbound;
-    if (rule2?.action?.action === "bypass") return rule2.action.outbound;
+    if (rule2?.action === "route" || rule2?.action === "bypass") return rule2.outbound;
     return void 0;
   }
   function validateSingBoxConfig(config) {
@@ -2362,6 +2441,7 @@ var SingBoxConfigBundle = (() => {
     if (!config || typeof config !== "object" || Array.isArray(config)) return { valid: false, errors: ["config must be an object"] };
     const outbounds = config.outbounds;
     const outboundTags = uniqueTags(outbounds, errors, "outbound");
+    const httpClientTags = uniqueTags(config.http_clients, errors, "HTTP client");
     const ruleSets = uniqueTags(config.route?.rule_set, errors, "rule-set");
     const dnsServers = uniqueTags(config.dns?.servers, errors, "DNS server");
     const inboundTags = uniqueTags(config.inbounds, errors, "inbound");
@@ -2370,22 +2450,47 @@ var SingBoxConfigBundle = (() => {
       for (const target of outbound.outbounds ?? []) if (!outboundTags.has(target)) errors.push("outbound references missing tag");
       if (outbound.default !== void 0 && !outboundTags.has(outbound.default)) errors.push("selector default references missing tag");
     }
+    for (const client of config.http_clients ?? []) {
+      if (client.detour !== void 0 && !outboundTags.has(client.detour)) {
+        errors.push("HTTP client references missing outbound tag");
+      }
+    }
     const routeRules = config.route?.rules;
     if (!Array.isArray(routeRules)) errors.push("route rules missing");
     for (const rule2 of routeRules ?? []) {
+      if (Object.hasOwn(rule2, "geoip")) errors.push("route contains removed geoip");
+      if (Object.hasOwn(rule2, "geosite")) errors.push("route contains removed geosite");
       for (const tag of rule2.rule_set ?? []) if (!ruleSets.has(tag)) errors.push("route references missing rule-set tag");
       const target = actionOutbound(rule2);
       if (target !== void 0 && !outboundTags.has(target)) errors.push("route references missing outbound tag");
-      if (rule2.action?.action === "hijack-dns" && !dnsServers.size) errors.push("DNS hijack requires DNS servers");
+      if (rule2.action === "hijack-dns" && !dnsServers.size) errors.push("DNS hijack requires DNS servers");
+      if (rule2.action !== void 0 && typeof rule2.action !== "string") errors.push("route rule action must be a string");
     }
     const routeFinal = config.route?.final;
     if (typeof routeFinal !== "string" || !outboundTags.has(routeFinal)) errors.push("route final references missing outbound tag");
+    const defaultHttpClient = config.route?.default_http_client;
+    if (defaultHttpClient !== void 0 && (typeof defaultHttpClient !== "string" || !httpClientTags.has(defaultHttpClient))) {
+      errors.push("route default_http_client references missing HTTP client tag");
+    }
+    for (const ruleSet of config.route?.rule_set ?? []) {
+      if (Object.hasOwn(ruleSet, "download_detour")) errors.push("rule-set contains deprecated download_detour");
+      if (ruleSet.type === "remote" && (typeof ruleSet.http_client !== "string" || !httpClientTags.has(ruleSet.http_client))) {
+        errors.push("remote rule-set references missing HTTP client tag");
+      }
+      if (ruleSet.http_client !== void 0 && (typeof ruleSet.http_client !== "string" || !httpClientTags.has(ruleSet.http_client))) {
+        errors.push("rule-set references missing HTTP client tag");
+      }
+    }
     const dnsFinal = config.dns?.final;
     if (typeof dnsFinal !== "string" || !dnsServers.has(dnsFinal)) errors.push("DNS final references missing server");
     for (const rule2 of config.dns?.rules ?? []) {
       for (const tag of rule2.rule_set ?? []) if (!ruleSets.has(tag)) errors.push("DNS references missing rule-set tag");
-      if (rule2.action?.server !== void 0 && !dnsServers.has(rule2.action.server)) errors.push("DNS rule references missing server");
-      if (rule2.action?.detour !== void 0 && !outboundTags.has(rule2.action.detour)) errors.push("DNS rule references missing outbound");
+      if (typeof rule2.action !== "string") errors.push("DNS rule action must be a string");
+      if ((rule2.action === "route" || rule2.action === "evaluate") && typeof rule2.server !== "string") {
+        errors.push("DNS rule action server missing");
+      }
+      if (rule2.server !== void 0 && !dnsServers.has(rule2.server)) errors.push("DNS rule references missing server");
+      if (rule2.detour !== void 0 && !outboundTags.has(rule2.detour)) errors.push("DNS rule references missing outbound");
     }
     for (const server of config.dns?.servers ?? []) {
       if (server.detour !== void 0 && !outboundTags.has(server.detour)) errors.push("DNS server references missing outbound");
@@ -2394,6 +2499,9 @@ var SingBoxConfigBundle = (() => {
     for (const inbound of config.inbounds ?? []) {
       if (inbound.type === "tun" && !inbound.auto_route) errors.push("TUN auto_route is required");
       if (inbound.type === "tun" && inbound.platform?.include_android_user && inbound.auto_redirect) errors.push("Android TUN cannot use auto_redirect");
+    }
+    if (Object.hasOwn(config.experimental?.cache_file ?? {}, "store_rdrc")) {
+      errors.push("cache file contains deprecated store_rdrc");
     }
     if (!inboundTags.has("tun-in")) errors.push("tun-in inbound missing");
     if (!groupTags.has("\u{1F680} \u8282\u70B9\u9009\u62E9")) errors.push("primary selector missing");
@@ -2412,6 +2520,11 @@ var SingBoxConfigBundle = (() => {
     const config = {
       log: { level: "info", timestamp: true },
       dns: renderSingBoxDns(options),
+      http_clients: [{
+        tag: RULE_DOWNLOAD_HTTP_CLIENT,
+        version: 2,
+        detour: "\u{1F9ED} DNS \u4E0E\u89C4\u5219\u4E0B\u8F7D"
+      }],
       inbounds: [renderSingBoxTun(options.platform)],
       outbounds: [
         { type: "direct", tag: "DIRECT" },
@@ -2421,11 +2534,12 @@ var SingBoxConfigBundle = (() => {
       ],
       route: {
         auto_detect_interface: true,
+        default_http_client: RULE_DOWNLOAD_HTTP_CLIENT,
         rule_set: ruleSets,
         rules,
         final
       },
-      experimental: { cache_file: { enabled: true, path: "cache.db", store_rdrc: true } }
+      experimental: { cache_file: { enabled: true, path: "cache.db", store_dns: true } }
     };
     const validation = validateSingBoxConfig(config);
     if (!validation.valid) throw new Error(`Generated sing-box config failed validation: ${validation.errors.join(",")}`);

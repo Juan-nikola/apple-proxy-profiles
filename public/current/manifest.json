@@ -1966,29 +1966,29 @@
       "sha256": "72a13052fb71db1a56e8320e13e1c2519f991e5afc0d97996928ef245e9ec618"
     },
     {
-      "bytes": 107064,
+      "bytes": 108827,
       "path": "anywhere/scripts/anywhere-node-generator.js",
-      "sha256": "457500321ddb9569cbe0aebdacfa7f948861e526333fa35a3c595bfac49e5cbe"
+      "sha256": "70713299ee45c4f2ce2f8e064538178f7c3eb5178ccd43dfbaf97ecd9ab4f8f5"
     },
     {
-      "bytes": 107064,
+      "bytes": 108827,
       "path": "anywhere/scripts/substore-node-generator.js",
-      "sha256": "457500321ddb9569cbe0aebdacfa7f948861e526333fa35a3c595bfac49e5cbe"
+      "sha256": "70713299ee45c4f2ce2f8e064538178f7c3eb5178ccd43dfbaf97ecd9ab4f8f5"
     },
     {
-      "bytes": 31812,
+      "bytes": 31839,
       "path": "egern/examples/egern-ipad.yaml",
-      "sha256": "951745eff5fe892687b2d6128640cdfd80931a9c8fe87338585c9bc9af626249"
+      "sha256": "9c61d6c088b501619fd08be3f9d83665174b444732e58306574566b75db6c9f6"
     },
     {
-      "bytes": 31812,
+      "bytes": 31839,
       "path": "egern/examples/egern-iphone.yaml",
-      "sha256": "951745eff5fe892687b2d6128640cdfd80931a9c8fe87338585c9bc9af626249"
+      "sha256": "9c61d6c088b501619fd08be3f9d83665174b444732e58306574566b75db6c9f6"
     },
     {
-      "bytes": 31807,
+      "bytes": 31834,
       "path": "egern/examples/egern-macos.yaml",
-      "sha256": "59b761c96930046f35b07a3b9ef3810910c22fe5c7843242cc7bff143e74ec08"
+      "sha256": "b8c7a15215721cd4b690d7f77ead99f9ba3ac7aff35e1737d24716a08b91d959"
     },
     {
       "bytes": 18128,
@@ -2151,39 +2151,39 @@
       "sha256": "e080516a3a2ceb2db2e7298a7064edf6cda66348b68ffba2b3ace62f2a8e9a3b"
     },
     {
-      "bytes": 128398,
+      "bytes": 130161,
       "path": "egern/scripts/egern-node-generator.js",
-      "sha256": "d04076a0db64e4ef0e157be18ebf65173e1d71acbd4d2ce1314581a836c368ba"
+      "sha256": "24235afdbeb3ec16982c9c8f5761e36bb803bbbc7eb803abb946027c05995cc8"
     },
     {
-      "bytes": 201218,
+      "bytes": 203107,
       "path": "egern/scripts/egern-profile-generator.js",
-      "sha256": "1b6760b888cce6960cc81fed9bf5f2dbce343e8473b28b6bd2994307777ac351"
+      "sha256": "31f2071a36d260a535f23f3c09ca3779d8dc683b84a39259ae12843dee8a6f24"
     },
     {
-      "bytes": 128398,
+      "bytes": 130161,
       "path": "egern/scripts/substore-node-generator.js",
-      "sha256": "d04076a0db64e4ef0e157be18ebf65173e1d71acbd4d2ce1314581a836c368ba"
+      "sha256": "24235afdbeb3ec16982c9c8f5761e36bb803bbbc7eb803abb946027c05995cc8"
     },
     {
-      "bytes": 201218,
+      "bytes": 203107,
       "path": "egern/scripts/substore-profile-generator.js",
-      "sha256": "1b6760b888cce6960cc81fed9bf5f2dbce343e8473b28b6bd2994307777ac351"
+      "sha256": "31f2071a36d260a535f23f3c09ca3779d8dc683b84a39259ae12843dee8a6f24"
     },
     {
-      "bytes": 19629,
+      "bytes": 19700,
       "path": "shadowrocket/examples/shadowrocket-ipad.conf",
-      "sha256": "f941d36b93c89fbcaee7d07f8b09f046434228cf984f48e15b53489242bb1490"
+      "sha256": "eb07bf20b4876adb7e7555d5cf4aa064e84e037439afd47c0d695573537290f8"
     },
     {
-      "bytes": 19631,
+      "bytes": 19702,
       "path": "shadowrocket/examples/shadowrocket-iphone.conf",
-      "sha256": "6a189ba583b05a9484068968c690a256e57e1021d602466032ba7d758dfd3e48"
+      "sha256": "5ace85030afd842a62cb10504435f9e5b06cf79d416373a153e179dde8c21544"
     },
     {
-      "bytes": 19623,
+      "bytes": 19694,
       "path": "shadowrocket/examples/shadowrocket-macos.conf",
-      "sha256": "cfc5a7d1463acb1b650384d0ace74129cfcbc48e57fae7a2e8b7d75bbc22e2cc"
+      "sha256": "03dbe69d3625d0896552f4153d878e021846ee11b87ae147220e38e39bde7fd8"
     },
     {
       "bytes": 27237,
@@ -2346,49 +2346,49 @@
       "sha256": "040a6ba73b3f71a4aab7a61cb4c4b8f7abbe78b370e5d7bf6e8b5258115dc5e6"
     },
     {
-      "bytes": 83027,
+      "bytes": 84790,
       "path": "shadowrocket/scripts/shadowrocket-node-operator.js",
-      "sha256": "18a78d672714050d606d76e027e0db0401f33ec2cca397f9d4da02862fb4aac7"
+      "sha256": "d3a4300f80854bbf51ac84dee5c1f377eaba52a98a812e24dc2b64e57d4b95ae"
     },
     {
-      "bytes": 52146,
+      "bytes": 52218,
       "path": "shadowrocket/scripts/shadowrocket-profile-generator.js",
-      "sha256": "ed9aca3c3bca44d26900d9c154f52ba3db3507925dbb7b558a1fbd12a52cf19c"
+      "sha256": "befa7ca428255f020d169a818ebb7a2131cdb973fe0b3b3ee6ace9b5aed766d4"
     },
     {
-      "bytes": 83027,
+      "bytes": 84790,
       "path": "shadowrocket/scripts/substore-node-operator.js",
-      "sha256": "18a78d672714050d606d76e027e0db0401f33ec2cca397f9d4da02862fb4aac7"
+      "sha256": "d3a4300f80854bbf51ac84dee5c1f377eaba52a98a812e24dc2b64e57d4b95ae"
     },
     {
-      "bytes": 52146,
+      "bytes": 52218,
       "path": "shadowrocket/scripts/substore-profile-generator.js",
-      "sha256": "ed9aca3c3bca44d26900d9c154f52ba3db3507925dbb7b558a1fbd12a52cf19c"
+      "sha256": "befa7ca428255f020d169a818ebb7a2131cdb973fe0b3b3ee6ace9b5aed766d4"
     },
     {
-      "bytes": 27241,
+      "bytes": 27321,
       "path": "sing-box/examples/sing-box-android.json",
-      "sha256": "b63d2b42ebbd83c28d5beb834a814d1675389f834547c3540f8f4e9cf75042dc"
+      "sha256": "9fc398b7b6dce9a1ce6947675d02cfda8f55292094f2a8a2dcccad5e8c8a2a6a"
     },
     {
-      "bytes": 27249,
+      "bytes": 27329,
       "path": "sing-box/examples/sing-box-ipad.json",
-      "sha256": "f970c15a70e32d602fc894427e2934ddc4d2fe4b8d04b9de32a4c57c64664b80"
+      "sha256": "32f9fcab3dfbdcdbb7b489f1ccee0b82bd8f2777eb582c494a6711086e7f99a8"
     },
     {
-      "bytes": 27249,
+      "bytes": 27329,
       "path": "sing-box/examples/sing-box-iphone.json",
-      "sha256": "f970c15a70e32d602fc894427e2934ddc4d2fe4b8d04b9de32a4c57c64664b80"
+      "sha256": "32f9fcab3dfbdcdbb7b489f1ccee0b82bd8f2777eb582c494a6711086e7f99a8"
     },
     {
-      "bytes": 27241,
+      "bytes": 27321,
       "path": "sing-box/examples/sing-box-macos.json",
-      "sha256": "0e6115e7425ca94a26f1eb11c20cbf89491c6f004f643995c892d5a6318d39fb"
+      "sha256": "14279ed217e44fa6021668da61a36a7ef37c6d8fb70799de8d61b3e3f1f369b2"
     },
     {
-      "bytes": 27377,
+      "bytes": 27457,
       "path": "sing-box/examples/sing-box-openwrt.json",
-      "sha256": "8c2b6b54cd8cf9bb87cedbc86e7e0e3fea14c37e904bd70cf16bf4f9b45c67de"
+      "sha256": "e936a75944411603ecd0d7c2303cd3058285e58b5756f95a19fc295d2d172eb7"
     },
     {
       "bytes": 52805,
@@ -2551,29 +2551,29 @@
       "sha256": "ca3a49e383d63ea7f4e3c3899bb6bad4204cb3b282771fc8f7916ed6f54040e1"
     },
     {
-      "bytes": 122260,
+      "bytes": 127041,
       "path": "sing-box/scripts/sing-box-config-generator.js",
-      "sha256": "aa16736acecccf044aa57a317133de63ba8783a1d7c79702718fd840b153c8c2"
+      "sha256": "484114659c34fbaa37fe81409f101e8cd48e58751e438f9e0694b70c8e30ac45"
     },
     {
-      "bytes": 122260,
+      "bytes": 127041,
       "path": "sing-box/scripts/substore-config-generator.js",
-      "sha256": "aa16736acecccf044aa57a317133de63ba8783a1d7c79702718fd840b153c8c2"
+      "sha256": "484114659c34fbaa37fe81409f101e8cd48e58751e438f9e0694b70c8e30ac45"
     },
     {
-      "bytes": 10529,
+      "bytes": 10565,
       "path": "surge/examples/surge-ipad.conf",
-      "sha256": "f23df80332deea11c03f8653a72103431707dff66ecfad2316aee63425538cec"
+      "sha256": "091d0e6578b926ee9040b09745b1f212a45c54612fad57b0df508c9087934a79"
     },
     {
-      "bytes": 10529,
+      "bytes": 10565,
       "path": "surge/examples/surge-iphone.conf",
-      "sha256": "f23df80332deea11c03f8653a72103431707dff66ecfad2316aee63425538cec"
+      "sha256": "091d0e6578b926ee9040b09745b1f212a45c54612fad57b0df508c9087934a79"
     },
     {
-      "bytes": 10524,
+      "bytes": 10560,
       "path": "surge/examples/surge-macos.conf",
-      "sha256": "9344da306d4ece96290e3bbfa043b90ea6d78d9b842417530387a0a9ad33986f"
+      "sha256": "0a1a802d10931d03e5c87ff456d3a70c492f07983d9a9e73f41ee6b246434878"
     },
     {
       "bytes": 27237,
@@ -2736,18 +2736,18 @@
       "sha256": "040a6ba73b3f71a4aab7a61cb4c4b8f7abbe78b370e5d7bf6e8b5258115dc5e6"
     },
     {
-      "bytes": 119444,
+      "bytes": 121279,
       "path": "surge/scripts/substore-profile-generator.js",
-      "sha256": "bbe37e7bc46e5618e1db18f42838e11cd06a7185bf8c2dc961ac242215906480"
+      "sha256": "18a12969288d79082bdcd29224ebeddcb320a87d3cffec50ae7342419e3bee05"
     },
     {
-      "bytes": 119444,
+      "bytes": 121279,
       "path": "surge/scripts/surge-profile-generator.js",
-      "sha256": "bbe37e7bc46e5618e1db18f42838e11cd06a7185bf8c2dc961ac242215906480"
+      "sha256": "18a12969288d79082bdcd29224ebeddcb320a87d3cffec50ae7342419e3bee05"
     }
   ],
   "generatedAt": "2026-08-05T19:24:33Z",
-  "manifestHash": "eaee3bc18fb5cd254b6214e0c6401ed82ef61b4ccb6f22e310af6a2e2aa9f627",
+  "manifestHash": "ac403b5a7f9deb2edcd38e19ba509e8d6bf92a292ec64f93bafb209f56a3e74f",
   "schemaVersion": 1,
   "upstream": {
     "branch": "master",

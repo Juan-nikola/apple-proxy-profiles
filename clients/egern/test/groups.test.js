@@ -54,17 +54,17 @@ function normalizedNode(name, metadata = {}) {
 }
 
 const INVENTORY = Object.freeze([
-  normalizedNode("🇯🇵 机场 · TEST_ONLY_ASIA_NODE [UDP]", { udp: true, entry: true }),
-  normalizedNode("🇩🇪 自建 · TEST_ONLY_EUROPE_NODE", {
+  normalizedNode("🇯🇵 TEST_ONLY_ASIA_NODE｜机场·U", { udp: true, entry: true }),
+  normalizedNode("🇩🇪 TEST_ONLY_EUROPE_NODE｜自建", {
     continent: "europe",
     sourceKind: "selfHosted",
     p2p: true,
   }),
-  normalizedNode("🇺🇸 Realm · TEST_ONLY_AMERICAS_NODE", {
+  normalizedNode("🇺🇸 TEST_ONLY_AMERICAS_NODE｜Realm", {
     continent: "americas",
     sourceKind: "realm",
   }),
-  normalizedNode("🇿🇦 链式代理 · TEST_ONLY_OTHER_NODE", {
+  normalizedNode("🇿🇦 TEST_ONLY_OTHER_NODE｜链式代理", {
     continent: "other",
     sourceKind: "serverChain",
     p2p: true,
@@ -269,7 +269,7 @@ test("pins service defaults, AI order, security defaults, and special eligibilit
   assert.ok(renderedFields(eligible, "🎮 游戏连接").fields.filter);
   assert.ok(renderedFields(eligible, "⬇️ 下载/P2P").fields.filter);
 
-  const ineligibleInventory = [normalizedNode("🇯🇵 机场 · TEST_ONLY_TCP_NODE", { entry: true })];
+  const ineligibleInventory = [normalizedNode("🇯🇵 TEST_ONLY_TCP_NODE｜机场", { entry: true })];
   const ineligible = renderEgernGroups(
     buildPolicyGroups(options({ clientChain: "off" }), ineligibleInventory),
     privateUrl(),
@@ -453,7 +453,7 @@ test("accepts only the exact shared filter assigned to each documented group", (
 
   const ineligible = buildPolicyGroups(
     options({ clientChain: "off" }),
-    [normalizedNode("🇯🇵 机场 · TEST_ONLY_TCP_NODE")],
+    [normalizedNode("🇯🇵 TEST_ONLY_TCP_NODE｜机场")],
   ).map(cloneGroup);
   ineligible.find((group) => group.name === "🎮 游戏连接").nodeFilter = "^.+$";
   mutations.push(ineligible);

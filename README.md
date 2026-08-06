@@ -17,7 +17,7 @@
 
 1. 在自己的 Sub-Store 中确认已有来源 `snell` 与 `vlesshy2`。
 2. 新建组合订阅 `apple-proxy-sources`，只引用这两个来源，先预览确认非空。
-3. 在 Sub-Store 中按总指南创建 17 个 File/Script Operator；任务统一使用 `name=apple-proxy-sources`。
+3. 再创建处理后的 `shadowrocket-nodes` 组合，只给它挂 Shadowrocket 节点 Operator；Shadowrocket 三个 Profile 使用 `name=shadowrocket-nodes`，Egern、Anywhere、Surge、sing-box 使用原始组合 `name=apple-proxy-sources`。
 4. 先用 `edge` 建隔离测试任务，预览无误后生产任务使用 `current`。
 5. 按 macOS → iPhone → iPad；Android 与 OpenWrt 分别按 sing-box 清单逐台导入，始终保留旧配置。
 6. 新增节点只修改 Sub-Store 组合；新增公开规则或修改生成器才修改本仓库。
@@ -40,7 +40,7 @@
 
 ## Sub-Store 任务总览
 
-私密组合名称固定为 `apple-proxy-sources`。总指南包含每个任务的远程 URL、hash 参数、可视化参数、预览成功标志和刷新顺序。
+`apple-proxy-sources` 是保留来源标记的原始组合；Shadowrocket 另使用处理后的 `shadowrocket-nodes` 组合。总指南包含每个任务的远程 URL、hash 参数、可视化参数、预览成功标志和刷新顺序。
 
 | 客户端 | 任务数量 | 任务结构 |
 | --- | ---: | --- |
@@ -82,7 +82,7 @@ https://juan-nikola.github.io/apple-proxy-profiles/current/<client>/scripts/<scr
 
 | 需求 | 只改这里 | 不要改这里 |
 | --- | --- | --- |
-| 增加/删除节点订阅 | Sub-Store 的 `apple-proxy-sources` 组合 | GitHub、README、公开 JS |
+| 增加/删除节点订阅 | Sub-Store 的 `apple-proxy-sources` 原始组合（并同步 `shadowrocket-nodes`） | GitHub、README、公开 JS |
 | 修改公开规则 | `automation/src/source-catalog.js`、对应允许清单或上游固定 SHA | `public/`、`clients/*/dist/` |
 | 修改某客户端行为 | 对应 `clients/<client>/src/`、测试和文档 | 生成后的 bundle |
 | 修改共享协议能力 | `shared/`、各适配器、测试和 fixtures | 只在某一客户端静默丢字段 |

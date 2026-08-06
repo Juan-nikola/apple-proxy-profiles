@@ -10,7 +10,7 @@
 
 ## 五个私密 File 任务
 
-五个 File 都引用同一份 Config Generator。`Apple-Proxy-Nodes` 是可替换的示例显示名，必须改成你的节点订阅真实显示名；`name` 固定指向组合 `apple-proxy-sources`。
+五个 File 都引用同一份 Config Generator。`Apple-Proxy-Nodes` 是可替换的示例显示名，必须改成你的节点订阅真实显示名；`name` 固定指向保留来源标记的原始组合 `apple-proxy-sources`，不要指向 Shadowrocket 的处理组合。
 
 | File | 平台 | Arguments 差异 |
 | --- | --- | --- |
@@ -34,6 +34,8 @@ output=config&type=collection&name=apple-proxy-sources&subscriptionName=Apple-Pr
 - 测试版：`https://juan-nikola.github.io/apple-proxy-profiles/edge/sing-box/scripts/sing-box-config-generator.js`
 
 预览成功标志：输出是合法 JSON，包含 `log`、`dns`、`inbounds`、`outbounds`、`route`，并且有节点和规则引用。Apple/Android 的 TUN 配置不应直接复制到 OpenWrt；OpenWrt 是透明网关，需用独立 LAN/VLAN 灰度。
+
+如果 sing-box 日志出现 `https://https:%2F...` 或 `invalid port`，说明旧配置把完整 DoH URL 填进了结构化 HTTPS DNS 的 `server` 字段。重新生成当前配置后，`server` 应是纯主机/IP，`server_port`、`path` 和 `tls.server_name` 分开出现；不要手工把完整 URL 拼回 `server`。
 
 ## 改什么去哪里
 

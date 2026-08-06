@@ -14,14 +14,38 @@ const CONTINENT_ORDER = new Map([
   [CONTINENT.other, 3],
 ]);
 
-const EXISTING_CHAIN_MARKER = "[已有链]";
+const PROTOCOL_NAME_TOKENS = Object.freeze({
+  ss: ["ss", "shadowsocks"],
+  shadowsocks: ["ss", "shadowsocks"],
+  ssr: ["ssr"],
+  snell: ["snell"],
+  vmess: ["vmess"],
+  vless: ["vless"],
+  trojan: ["trojan"],
+  anytls: ["anytls"],
+  hysteria2: ["hy2", "hysteria2", "hysteria 2"],
+  hy2: ["hy2", "hysteria2", "hysteria 2"],
+  tuic: ["tuic"],
+  socks5: ["socks5", "socks"],
+  http: ["http"],
+  ssh: ["ssh"],
+  wireguard: ["wireguard", "wg"],
+});
 
-function cleanDisplayName(name) {
+function cleanDisplayName(name, type) {
   const withoutMarkers = removeFlags(name)
     .replace(/\[\s*未标记\s*\]/giu, " ")
     .replace(/\[\s*udp\s*\]/gi, " ")
     .replace(/\[\s*已有链\s*\]/g, " ");
-  const cleaned = stripSourceMarkers(withoutMarkers)
+  const stripped = stripSourceMarkers(withoutMarkers);
+  const protocolTokens = PROTOCOL_NAME_TOKENS[type] ?? [type];
+  const protocolPattern = protocolTokens
+    .filter((token) => typeof token === "string" && token.length > 0)
+    .join("|");
+  const withoutProtocol = protocolPattern
+    ? stripped.replace(new RegExp("(?:^|\\s)(?:" + protocolPattern + ")(?=\\s|$)", "giu"), " ")
+    : stripped;
+  const cleaned = withoutProtocol
     .replace(/[\r\n\t]+/g, " ")
     .replace(/\s+/g, " ")
     .trim();
@@ -185,7 +209,13 @@ export function normalizeNodes(nodes, { clientChain = "off" } = {}) {
 
     const udp = hasExplicitUdp(original);
     const id = `sr-${fingerprint(cloned)}`;
-    cloned.name = `${region.flag} ${source.label} · ${cleanDisplayName(original.name)}${existingChain ? ` ${EXISTING_CHAIN_MARKER}` : ""}${udp ? " [UDP]" : ""}`;
+    const sourceSuffix = source.kind === SOURCE_KIND.unknown ? "" : "｜" + source.label;
+    const capabilitySuffix = [
+      existingChain ? "链" : "",
+      udp ? "U" : "",
+    ].filter(Boolean).join("·");
+    cloned.name = region.flag + " " + cleanDisplayName(original.name, cloned.type)
+      + sourceSuffix + (capabilitySuffix ? "·" + capabilitySuffix : "");
     cloned._profile = {
       id,
       sourceKind: source.kind,

@@ -17,6 +17,20 @@ const SOURCE_LABELS = new Map([
 
 const SOURCE_MARKER_PATTERN = /\[(?:\s*未标记\s*|\s*机场\s*|\s*自建\s*|\s*realm\s*|\s*链式代理\s*|\s*落地\s*)\]/giu;
 
+function sourceFromToken(token) {
+  const source = SOURCE_LABELS.get(String(token).trim().toLowerCase());
+  return source ? { ...source, warning: null } : null;
+}
+
+export function sourceFromMarkers(value) {
+  if (typeof value !== "string" || value.length === 0) return null;
+  for (const match of value.matchAll(/\[([^\]]+)\]/gu)) {
+    const source = sourceFromToken(match[1]);
+    if (source) return source;
+  }
+  return null;
+}
+
 export function sourceName(node) {
   for (const field of PROVENANCE_FIELDS) {
     const value = node?.[field];
@@ -29,12 +43,12 @@ export function classifySource(node) {
   for (const field of PROVENANCE_FIELDS) {
     const value = node?.[field];
     if (typeof value !== "string" || !value.trim()) continue;
-    const match = value.match(/^\s*\[([^\]]+)\]/i);
-    if (!match) continue;
-    const token = match[1].trim().toLowerCase();
-    const source = SOURCE_LABELS.get(token);
+    const source = sourceFromMarkers(value);
     if (source) return { ...source, warning: null };
   }
+
+  const source = sourceFromMarkers(node?.name);
+  if (source) return { ...source, warning: null };
 
   return {
     kind: SOURCE_KIND.unknown,

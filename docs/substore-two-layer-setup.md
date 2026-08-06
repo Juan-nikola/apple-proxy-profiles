@@ -24,11 +24,12 @@
 在你自己的 Sub-Store 中：
 
 1. 保留已有订阅 `snell` 和 `vlesshy2`，先分别预览确认非空。
-2. 新建组合订阅，名称严格填写：`apple-proxy-sources`。
-3. 将 `snell` 与 `vlesshy2` 加入这个组合，不把真实来源地址复制到任何公开位置。
-4. 预览组合，确认节点数量大于 0，再创建下面的 File/Script Operator。
+2. 新建原始组合订阅，名称严格填写：`apple-proxy-sources`。
+3. 将 `snell` 与 `vlesshy2` 加入这个原始组合，不把真实来源地址复制到任何公开位置。
+4. 预览原始组合，确认节点数量大于 0。
+5. 再新建处理组合 `shadowrocket-nodes`，选择与原始组合相同的两个来源（优先使用同一个来源标签/筛选条件），只在这个处理组合挂 Shadowrocket 节点 Operator。
 
-以后增加节点来源只需把新来源加入 `apple-proxy-sources`；不需要改 GitHub JS、不需要改五个客户端参数。删除来源时也只在这里操作，并先保留旧输出以便回滚。
+以后增加节点来源先加入 `apple-proxy-sources`，再确认 `shadowrocket-nodes` 的成员同步；不需要改 GitHub JS。Egern、Anywhere、Surge、sing-box 始终读取原始组合，Shadowrocket Profile 始终读取处理组合。删除来源时也只在这两层操作，并先保留旧输出以便回滚。
 
 ## 2. 七个公开远程 JS
 
@@ -73,7 +74,7 @@ https://juan-nikola.github.io/apple-proxy-profiles/current/surge/scripts/surge-p
 
 ## 4. 17 个任务总表
 
-下面的 `Apple-Proxy-Nodes` 是公开示例显示名。实际使用时，在 Shadowrocket、Surge 或 sing-box 中给节点订阅取一个你自己的显示名，并让所有对应 Profile/Config 任务的 `subscriptionName` 逐字一致。
+下面的 `Apple-Proxy-Nodes` 是公开示例显示名。实际使用时，在 Shadowrocket、Surge 或 sing-box 中给节点订阅取一个你自己的显示名，并让同一客户端对应 Profile/Config 任务的 `subscriptionName` 逐字一致。只有 Shadowrocket Profile 指向处理组合 `shadowrocket-nodes`；其余客户端指向原始组合 `apple-proxy-sources`。
 
 | # | 任务名 | 类型 | 远程脚本 | 平台/作用 | 更新 |
 | ---: | --- | --- | --- | --- | --- |
@@ -167,7 +168,7 @@ https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/import.html
 
 ### 7.1 节点 Operator
 
-在组合 `apple-proxy-sources` 的处理链中添加 Script Operator，远程脚本为：
+在处理组合 `shadowrocket-nodes` 的处理链中添加 Script Operator，远程脚本为：
 
 ```text
 https://juan-nikola.github.io/apple-proxy-profiles/current/shadowrocket/scripts/shadowrocket-node-operator.js
@@ -185,7 +186,7 @@ output=nodes&clientChain=off
 https://juan-nikola.github.io/apple-proxy-profiles/current/shadowrocket/scripts/shadowrocket-node-operator.js#output=nodes&clientChain=off
 ```
 
-组合处理后的节点订阅显示名记为 `Apple-Proxy-Nodes`；实际显示名可以自定义，但必须逐字填写到三个 Profile 的 `subscriptionName`。
+组合处理后的节点订阅显示名记为 `Apple-Proxy-Nodes`；实际显示名可以自定义，但必须逐字填写到三个 Shadowrocket Profile 的 `subscriptionName`。不要把这个 Operator 挂到原始组合 `apple-proxy-sources`。
 
 ### 7.2 三个平台 Profile
 
@@ -195,7 +196,7 @@ https://juan-nikola.github.io/apple-proxy-profiles/current/shadowrocket/scripts/
 https://juan-nikola.github.io/apple-proxy-profiles/current/shadowrocket/scripts/shadowrocket-profile-generator.js
 ```
 
-公共参数：`output=config&type=collection&name=apple-proxy-sources&subscriptionName=Apple-Proxy-Nodes&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&autoGroupMode=auto&clientChain=off`。
+公共参数：`output=config&type=collection&name=shadowrocket-nodes&subscriptionName=Apple-Proxy-Nodes&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&autoGroupMode=auto&clientChain=off`。
 
 | 任务 | 额外参数 |
 | --- | --- |
@@ -206,7 +207,7 @@ https://juan-nikola.github.io/apple-proxy-profiles/current/shadowrocket/scripts/
 例如 macOS 完整参数：
 
 ```text
-output=config&type=collection&name=apple-proxy-sources&subscriptionName=Apple-Proxy-Nodes&platform=macos&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=ipv4-only&autoGroupMode=auto&clientChain=off
+output=config&type=collection&name=shadowrocket-nodes&subscriptionName=Apple-Proxy-Nodes&platform=macos&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=ipv4-only&autoGroupMode=auto&clientChain=off
 ```
 
 预览应包含 `[General]`、`[Proxy Group]`、`[Rule]`，且不包含节点密码、UUID 或服务器凭据。导入顺序：Intel Mac → iPhone → iPad；旧 Profile 始终保留。
@@ -219,7 +220,7 @@ output=config&type=collection&name=apple-proxy-sources&subscriptionName=Apple-Pr
 https://juan-nikola.github.io/apple-proxy-profiles/current/surge/scripts/surge-profile-generator.js
 ```
 
-公共参数与 Shadowrocket 相同：`output=config&type=collection&name=apple-proxy-sources&subscriptionName=Apple-Proxy-Nodes&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&autoGroupMode=auto&clientChain=off`。
+公共参数（使用原始组合）：`output=config&type=collection&name=apple-proxy-sources&subscriptionName=Apple-Proxy-Nodes&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&autoGroupMode=auto&clientChain=off`。
 
 | 任务 | 额外参数 | 官方客户端 |
 | --- | --- | --- |
@@ -264,7 +265,7 @@ https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/scripts/sing
 
 ### 日常刷新
 
-节点源变化：组合 → 节点任务 → Profile/Config 任务 → 客户端手动更新。
+节点源变化：原始组合 `apple-proxy-sources` → Shadowrocket 处理组合 `shadowrocket-nodes`（仅 Shadowrocket）→ 各客户端节点/Profile/Config 任务 → 客户端手动更新。
 
 公开规则变化：在客户端对已有规则集执行 Update；不要因为规则更新就重新创建 Sub-Store 节点任务。
 

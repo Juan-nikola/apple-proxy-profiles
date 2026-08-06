@@ -1361,28 +1361,43 @@ var ShadowrocketNodeBundle = (() => {
     "_collectionName"
   ];
   var SOURCE_LABELS = /* @__PURE__ */ new Map([
-    ["\u673A\u573A", { kind: SOURCE_KIND.airport, label: "[\u673A\u573A]" }],
-    ["\u81EA\u5EFA", { kind: SOURCE_KIND.selfHosted, label: "[\u81EA\u5EFA]" }],
-    ["realm", { kind: SOURCE_KIND.realm, label: "[Realm]" }],
-    ["\u94FE\u5F0F\u4EE3\u7406", { kind: SOURCE_KIND.serverChain, label: "[\u94FE\u5F0F\u4EE3\u7406]" }],
-    ["\u843D\u5730", { kind: SOURCE_KIND.landing, label: "[\u843D\u5730]" }]
+    ["\u673A\u573A", { kind: SOURCE_KIND.airport, label: "\u673A\u573A" }],
+    ["\u81EA\u5EFA", { kind: SOURCE_KIND.selfHosted, label: "\u81EA\u5EFA" }],
+    ["realm", { kind: SOURCE_KIND.realm, label: "Realm" }],
+    ["\u94FE\u5F0F\u4EE3\u7406", { kind: SOURCE_KIND.serverChain, label: "\u94FE\u5F0F\u4EE3\u7406" }],
+    ["\u843D\u5730", { kind: SOURCE_KIND.landing, label: "\u843D\u5730" }]
   ]);
-  function sourceName(node) {
-    for (const field of PROVENANCE_FIELDS) {
-      const value = node?.[field];
-      if (typeof value === "string" && value.trim()) return value;
+  var SOURCE_MARKER_PATTERN = /\[(?:\s*未标记\s*|\s*机场\s*|\s*自建\s*|\s*realm\s*|\s*链式代理\s*|\s*落地\s*)\]/giu;
+  function sourceFromToken(token) {
+    const source = SOURCE_LABELS.get(String(token).trim().toLowerCase());
+    return source ? { ...source, warning: null } : null;
+  }
+  function sourceFromMarkers(value) {
+    if (typeof value !== "string" || value.length === 0) return null;
+    for (const match of value.matchAll(/\[([^\]]+)\]/gu)) {
+      const source = sourceFromToken(match[1]);
+      if (source) return source;
     }
-    return "";
+    return null;
   }
   function classifySource(node) {
-    const match = sourceName(node).match(/^\s*\[([^\]]+)\]/i);
-    const source = match && SOURCE_LABELS.get(match[1].trim().toLowerCase());
+    for (const field of PROVENANCE_FIELDS) {
+      const value = node?.[field];
+      if (typeof value !== "string" || !value.trim()) continue;
+      const source2 = sourceFromMarkers(value);
+      if (source2) return { ...source2, warning: null };
+    }
+    const source = sourceFromMarkers(node?.name);
     if (source) return { ...source, warning: null };
     return {
       kind: SOURCE_KIND.unknown,
-      label: "[\u672A\u6807\u8BB0]",
+      label: "\u672A\u77E5",
       warning: "missing-source-label"
     };
+  }
+  function stripSourceMarkers(name) {
+    if (typeof name !== "string" || name.length === 0) return "";
+    return name.replaceAll(SOURCE_MARKER_PATTERN, " ");
   }
 
   // ../../../shared/nodes/normalize-nodes.js
@@ -1392,10 +1407,30 @@ var ShadowrocketNodeBundle = (() => {
     [CONTINENT.americas, 2],
     [CONTINENT.other, 3]
   ]);
-  var EXISTING_CHAIN_MARKER = "[\u5DF2\u6709\u94FE]";
-  function cleanDisplayName(name) {
-    const withoutMarkers = removeFlags(name).replace(/\[\s*udp\s*\]/gi, " ").replace(/\[\s*已有链\s*\]/g, " ");
-    const cleaned = withoutMarkers.replace(/[\r\n\t]+/g, " ").replace(/\s+/g, " ").trim();
+  var PROTOCOL_NAME_TOKENS = Object.freeze({
+    ss: ["ss", "shadowsocks"],
+    shadowsocks: ["ss", "shadowsocks"],
+    ssr: ["ssr"],
+    snell: ["snell"],
+    vmess: ["vmess"],
+    vless: ["vless"],
+    trojan: ["trojan"],
+    anytls: ["anytls"],
+    hysteria2: ["hy2", "hysteria2", "hysteria 2"],
+    hy2: ["hy2", "hysteria2", "hysteria 2"],
+    tuic: ["tuic"],
+    socks5: ["socks5", "socks"],
+    http: ["http"],
+    ssh: ["ssh"],
+    wireguard: ["wireguard", "wg"]
+  });
+  function cleanDisplayName(name, type) {
+    const withoutMarkers = removeFlags(name).replace(/\[\s*未标记\s*\]/giu, " ").replace(/\[\s*udp\s*\]/gi, " ").replace(/\[\s*已有链\s*\]/g, " ");
+    const stripped = stripSourceMarkers(withoutMarkers);
+    const protocolTokens = PROTOCOL_NAME_TOKENS[type] ?? [type];
+    const protocolPattern = protocolTokens.filter((token) => typeof token === "string" && token.length > 0).join("|");
+    const withoutProtocol = protocolPattern ? stripped.replace(new RegExp("(?:^|\\s)(?:" + protocolPattern + ")(?=\\s|$)", "giu"), " ") : stripped;
+    const cleaned = withoutProtocol.replace(/[\r\n\t]+/g, " ").replace(/\s+/g, " ").trim();
     return cleaned || "\u672A\u547D\u540D\u8282\u70B9";
   }
   function sanitizeInternalMetadata(node) {
@@ -1534,7 +1569,12 @@ var ShadowrocketNodeBundle = (() => {
       }
       const udp = hasExplicitUdp(original);
       const id = `sr-${fingerprint(cloned)}`;
-      cloned.name = `${region.flag} ${source.label} ${cleanDisplayName(original.name)}${existingChain ? ` ${EXISTING_CHAIN_MARKER}` : ""}${udp ? " [UDP]" : ""}`;
+      const sourceSuffix = source.kind === SOURCE_KIND.unknown ? "" : "\uFF5C" + source.label;
+      const capabilitySuffix = [
+        existingChain ? "\u94FE" : "",
+        udp ? "U" : ""
+      ].filter(Boolean).join("\xB7");
+      cloned.name = region.flag + " " + cleanDisplayName(original.name, cloned.type) + sourceSuffix + (capabilitySuffix ? "\xB7" + capabilitySuffix : "");
       cloned._profile = {
         id,
         sourceKind: source.kind,

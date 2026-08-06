@@ -56,8 +56,10 @@ test("beginner docs contain every operational checkpoint and warning", async () 
     "## 可以分享什么",
   ]);
 
-  const defaultParameters = "output=config&type=collection&name=apple-proxy-sources&subscriptionName=Shadowrocket-Nodes&platform=macos&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=ipv4-only&autoGroupMode=auto&clientChain=off";
+  const defaultParameters = "output=config&type=collection&name=shadowrocket-nodes&subscriptionName=Shadowrocket-Nodes&platform=macos&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=ipv4-only&autoGroupMode=auto&clientChain=off";
   assert.ok(docs["docs/deployment.md"].includes(defaultParameters), "deployment: missing exact default parameter string");
+  assert.match(docs["docs/deployment.md"], /原始组合 `apple-proxy-sources`[\s\S]*处理组合 `shadowrocket-nodes`/u);
+  assert.match(docs["docs/deployment.md"], /节点 JS URL[\s\S]*Script Operator 加入 `shadowrocket-nodes`/u);
   for (const phrase of [
     "subscriptionName",
     "完全一致",
@@ -133,8 +135,8 @@ test("beginner docs contain every operational checkpoint and warning", async () 
     "无需因防混入而暂停生产订阅",
   ]) assert.ok(chainSection.includes(phrase), `maintenance chain procedure: missing named-subscription isolation: ${phrase}`);
   assert.doesNotMatch(chainSection, /同一正则匹配|筛选客户端全部当前代理|不会混入正式订阅节点/);
-  assert.ok(chainSection.includes("[已有链]"), "maintenance: missing reserved existing-chain marker guidance");
-  assert.ok(docs["docs/troubleshooting.md"].includes("[已有链]"), "troubleshooting: missing reserved existing-chain marker guidance");
+  assert.ok(chainSection.includes("·链"), "maintenance: missing reserved existing-chain marker guidance");
+  assert.ok(docs["docs/troubleshooting.md"].includes("·链"), "troubleshooting: missing reserved existing-chain marker guidance");
   assert.doesNotMatch(chainSection, /将节点 Script Operator 参数改为/, "maintenance chain procedure must not mutate the shared node Script Operator");
   assert.ok(
     docs["docs/maintenance.md"].includes("`clientChain` 不使用这套仅复制 File 的流程"),
@@ -182,7 +184,7 @@ test("migration documentation keeps Sub-Store objects stable while using monorep
       `${file}: contains an obsolete root-level operator path`,
     );
   }
-  assert.match(docs["docs/deployment.md"], /新统一组合名为 `apple-proxy-sources`/u);
+  assert.match(docs["docs/deployment.md"], /原始组合 `apple-proxy-sources`[\s\S]*处理组合 `shadowrocket-nodes`/u);
   assert.ok(docs["docs/deployment.md"].includes("HTTPS 解密保持关闭"), "deployment: HTTPS decryption must remain off");
   assert.ok(docs["docs/troubleshooting.md"].includes("旧 Profile"), "troubleshooting: missing old Profile rollback guidance");
 });

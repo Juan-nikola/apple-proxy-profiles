@@ -514,9 +514,9 @@ var EgernProfileBundle = (() => {
   // ../../../shared/policies/filters.js
   var ALL_NODES_FILTER = "^.+$";
   var NON_CHAINED_FILTER = "^(?!\u{1F517} ).+$";
-  var ENTRY_FILTER = "^(?!.*\\[\u5DF2\u6709\u94FE\\])\\S+ \\[(?:\u673A\u573A|\u81EA\u5EFA|Realm)\\] .+$";
-  var P2P_FILTER = "^\\S+ \\[(?:\u81EA\u5EFA|Realm|\u94FE\u5F0F\u4EE3\u7406)\\] .+$";
-  var GAME_FILTER = "^(?!\u{1F517} )\\S+ .+ \\[UDP\\]$";
+  var ENTRY_FILTER = "^(?!\u{1F517} )(?!.*\xB7\u94FE).+\uFF5C(?:\u673A\u573A|\u81EA\u5EFA|Realm)(?:\xB7.*)?$";
+  var P2P_FILTER = "^(?!\u{1F517} ).+\uFF5C(?:\u81EA\u5EFA|Realm|\u94FE\u5F0F\u4EE3\u7406)(?:\xB7.*)?$";
+  var GAME_FILTER = "^(?!\u{1F517} ).+\xB7U$";
   var CHAINED_NODES_FILTER = "^\u{1F517} .+$";
   var CONTINENTS = Object.freeze([
     Object.freeze({
@@ -545,10 +545,10 @@ var EgernProfileBundle = (() => {
     })
   ]);
   var SOURCE_GROUPS = Object.freeze([
-    Object.freeze({ kind: SOURCE_KIND.selfHosted, name: "\u{1F3E0} \u81EA\u5EFA\u8282\u70B9", filter: "^\\S+ \\[\u81EA\u5EFA\\] .+$" }),
-    Object.freeze({ kind: SOURCE_KIND.airport, name: "\u{1F3E2} \u673A\u573A\u8282\u70B9", filter: "^\\S+ \\[\u673A\u573A\\] .+$" }),
-    Object.freeze({ kind: SOURCE_KIND.realm, name: "\u21AA\uFE0F Realm \u8F6C\u53D1", filter: "^\\S+ \\[Realm\\] .+$" }),
-    Object.freeze({ kind: SOURCE_KIND.serverChain, name: "\u26D3\uFE0F \u94FE\u5F0F\u4EE3\u7406", filter: "^\\S+ \\[\u94FE\u5F0F\u4EE3\u7406\\] .+$" })
+    Object.freeze({ kind: SOURCE_KIND.selfHosted, name: "\u{1F3E0} \u81EA\u5EFA\u8282\u70B9", filter: "^.+\uFF5C\u81EA\u5EFA(?:\xB7.*)?$" }),
+    Object.freeze({ kind: SOURCE_KIND.airport, name: "\u{1F3E2} \u673A\u573A\u8282\u70B9", filter: "^.+\uFF5C\u673A\u573A(?:\xB7.*)?$" }),
+    Object.freeze({ kind: SOURCE_KIND.realm, name: "\u21AA\uFE0F Realm \u8F6C\u53D1", filter: "^.+\uFF5CRealm(?:\xB7.*)?$" }),
+    Object.freeze({ kind: SOURCE_KIND.serverChain, name: "\u26D3\uFE0F \u94FE\u5F0F\u4EE3\u7406", filter: "^.+\uFF5C\u94FE\u5F0F\u4EE3\u7406(?:\xB7.*)?$" })
   ]);
   function continentFilter(continent) {
     if (continent.key === CONTINENT.other) {
@@ -735,7 +735,8 @@ var EgernProfileBundle = (() => {
     groups.push(policyGroup({
       kind: GROUP_KIND.primary,
       name: "\u{1F680} \u8282\u70B9\u9009\u62E9",
-      candidates: [POLICY_TARGET.primaryProxy]
+      candidates: [POLICY_TARGET.primaryProxy],
+      nodeFilter: NON_CHAINED_FILTER
     }));
     for (const continent of presentContinents) {
       groups.push(subscriptionGroup(
@@ -926,7 +927,7 @@ var EgernProfileBundle = (() => {
   var POLICY_SCHEMA_ENTRIES = [
     ["\u26A1 \u5168\u90E8\u81EA\u52A8", policySchema(GROUP_KIND.helper, STRATEGY.autoTest, [NON_CHAINED_FILTER], { hidden: true })],
     ["\u{1F6DF} \u5168\u90E8\u6545\u969C\u8F6C\u79FB", policySchema(GROUP_KIND.helper, STRATEGY.fallback, [NON_CHAINED_FILTER], { hidden: true })],
-    ["\u{1F680} \u8282\u70B9\u9009\u62E9", policySchema(GROUP_KIND.primary, STRATEGY.select, [null])],
+    ["\u{1F680} \u8282\u70B9\u9009\u62E9", policySchema(GROUP_KIND.primary, STRATEGY.select, [NON_CHAINED_FILTER])],
     ...CONTINENTS.flatMap((continent) => {
       const filter = continentFilter(continent);
       return [
@@ -1301,7 +1302,7 @@ var EgernProfileBundle = (() => {
     const rootGroups = groups.filter((group) => group.name === PRIMARY_GROUP_NAME);
     if (rootGroups.length !== 1) throw graphError("must contain exactly one primary group");
     const root = rootGroups[0];
-    if (root.kind !== GROUP_KIND.primary || root.strategy !== STRATEGY.select || root.candidates.length !== 1 || root.candidates[0] !== POLICY_TARGET.primaryProxy || root.nodeFilter !== null || root.test !== null || root.hidden !== void 0 || root.defaultChoice !== void 0) {
+    if (root.kind !== GROUP_KIND.primary || root.strategy !== STRATEGY.select || root.candidates.length !== 1 || root.candidates[0] !== POLICY_TARGET.primaryProxy || root.nodeFilter !== NON_CHAINED_FILTER || root.test !== null || root.hidden !== void 0 || root.defaultChoice !== void 0) {
       throw graphError("requires the primary semantic target as the sole primary candidate");
     }
     for (const group of groups) {
@@ -1334,6 +1335,7 @@ var EgernProfileBundle = (() => {
     const fields = { name: group.name };
     if (group.name === PRIMARY_GROUP_NAME) {
       fields.urls = [nodeSubscriptionUrl];
+      fields.filter = NON_CHAINED_FILTER;
       fields.update_interval = UPDATE_INTERVAL;
       return { [type]: fields };
     }
@@ -1373,7 +1375,7 @@ var EgernProfileBundle = (() => {
       names.add(fields.name);
       groups.set(fields.name, fields);
       if (fields.name === PRIMARY_GROUP_NAME) {
-        if (Object.keys(fields).length !== 3 || fields.urls?.length !== 1 || fields.urls[0] !== nodeSubscriptionUrl || fields.update_interval !== UPDATE_INTERVAL) {
+        if (Object.keys(fields).length !== 4 || fields.urls?.length !== 1 || fields.urls[0] !== nodeSubscriptionUrl || fields.filter !== NON_CHAINED_FILTER || fields.update_interval !== UPDATE_INTERVAL) {
           throw graphError("has an invalid rendered primary group");
         }
       } else if (fields.urls !== void 0) {
@@ -3723,7 +3725,7 @@ var EgernProfileBundle = (() => {
       const schema = POLICY_GROUP_SCHEMA.groups[fields.name];
       const strategy = type === "auto_test" ? "auto-test" : type;
       const candidates = fields.name === "\u{1F680} \u8282\u70B9\u9009\u62E9" ? [POLICY_TARGET.primaryProxy] : fields.policies ?? [];
-      const nodeFilter = fields.name !== "\u{1F680} \u8282\u70B9\u9009\u62E9" && fields.urls !== void 0 ? fields.filter : null;
+      const nodeFilter = fields.urls !== void 0 ? fields.filter : null;
       let test = null;
       if (type === "auto_test") {
         test = {
@@ -4168,28 +4170,43 @@ var EgernProfileBundle = (() => {
     "_collectionName"
   ];
   var SOURCE_LABELS = /* @__PURE__ */ new Map([
-    ["\u673A\u573A", { kind: SOURCE_KIND.airport, label: "[\u673A\u573A]" }],
-    ["\u81EA\u5EFA", { kind: SOURCE_KIND.selfHosted, label: "[\u81EA\u5EFA]" }],
-    ["realm", { kind: SOURCE_KIND.realm, label: "[Realm]" }],
-    ["\u94FE\u5F0F\u4EE3\u7406", { kind: SOURCE_KIND.serverChain, label: "[\u94FE\u5F0F\u4EE3\u7406]" }],
-    ["\u843D\u5730", { kind: SOURCE_KIND.landing, label: "[\u843D\u5730]" }]
+    ["\u673A\u573A", { kind: SOURCE_KIND.airport, label: "\u673A\u573A" }],
+    ["\u81EA\u5EFA", { kind: SOURCE_KIND.selfHosted, label: "\u81EA\u5EFA" }],
+    ["realm", { kind: SOURCE_KIND.realm, label: "Realm" }],
+    ["\u94FE\u5F0F\u4EE3\u7406", { kind: SOURCE_KIND.serverChain, label: "\u94FE\u5F0F\u4EE3\u7406" }],
+    ["\u843D\u5730", { kind: SOURCE_KIND.landing, label: "\u843D\u5730" }]
   ]);
-  function sourceName(node) {
-    for (const field of PROVENANCE_FIELDS) {
-      const value = node?.[field];
-      if (typeof value === "string" && value.trim()) return value;
+  var SOURCE_MARKER_PATTERN = /\[(?:\s*未标记\s*|\s*机场\s*|\s*自建\s*|\s*realm\s*|\s*链式代理\s*|\s*落地\s*)\]/giu;
+  function sourceFromToken(token) {
+    const source = SOURCE_LABELS.get(String(token).trim().toLowerCase());
+    return source ? { ...source, warning: null } : null;
+  }
+  function sourceFromMarkers(value) {
+    if (typeof value !== "string" || value.length === 0) return null;
+    for (const match of value.matchAll(/\[([^\]]+)\]/gu)) {
+      const source = sourceFromToken(match[1]);
+      if (source) return source;
     }
-    return "";
+    return null;
   }
   function classifySource(node) {
-    const match = sourceName(node).match(/^\s*\[([^\]]+)\]/i);
-    const source = match && SOURCE_LABELS.get(match[1].trim().toLowerCase());
+    for (const field of PROVENANCE_FIELDS) {
+      const value = node?.[field];
+      if (typeof value !== "string" || !value.trim()) continue;
+      const source2 = sourceFromMarkers(value);
+      if (source2) return { ...source2, warning: null };
+    }
+    const source = sourceFromMarkers(node?.name);
     if (source) return { ...source, warning: null };
     return {
       kind: SOURCE_KIND.unknown,
-      label: "[\u672A\u6807\u8BB0]",
+      label: "\u672A\u77E5",
       warning: "missing-source-label"
     };
+  }
+  function stripSourceMarkers(name) {
+    if (typeof name !== "string" || name.length === 0) return "";
+    return name.replaceAll(SOURCE_MARKER_PATTERN, " ");
   }
 
   // ../../../shared/nodes/normalize-nodes.js
@@ -4199,10 +4216,30 @@ var EgernProfileBundle = (() => {
     [CONTINENT.americas, 2],
     [CONTINENT.other, 3]
   ]);
-  var EXISTING_CHAIN_MARKER = "[\u5DF2\u6709\u94FE]";
-  function cleanDisplayName(name) {
-    const withoutMarkers = removeFlags(name).replace(/\[\s*udp\s*\]/gi, " ").replace(/\[\s*已有链\s*\]/g, " ");
-    const cleaned = withoutMarkers.replace(/[\r\n\t]+/g, " ").replace(/\s+/g, " ").trim();
+  var PROTOCOL_NAME_TOKENS = Object.freeze({
+    ss: ["ss", "shadowsocks"],
+    shadowsocks: ["ss", "shadowsocks"],
+    ssr: ["ssr"],
+    snell: ["snell"],
+    vmess: ["vmess"],
+    vless: ["vless"],
+    trojan: ["trojan"],
+    anytls: ["anytls"],
+    hysteria2: ["hy2", "hysteria2", "hysteria 2"],
+    hy2: ["hy2", "hysteria2", "hysteria 2"],
+    tuic: ["tuic"],
+    socks5: ["socks5", "socks"],
+    http: ["http"],
+    ssh: ["ssh"],
+    wireguard: ["wireguard", "wg"]
+  });
+  function cleanDisplayName(name, type) {
+    const withoutMarkers = removeFlags(name).replace(/\[\s*未标记\s*\]/giu, " ").replace(/\[\s*udp\s*\]/gi, " ").replace(/\[\s*已有链\s*\]/g, " ");
+    const stripped = stripSourceMarkers(withoutMarkers);
+    const protocolTokens = PROTOCOL_NAME_TOKENS[type] ?? [type];
+    const protocolPattern = protocolTokens.filter((token) => typeof token === "string" && token.length > 0).join("|");
+    const withoutProtocol = protocolPattern ? stripped.replace(new RegExp("(?:^|\\s)(?:" + protocolPattern + ")(?=\\s|$)", "giu"), " ") : stripped;
+    const cleaned = withoutProtocol.replace(/[\r\n\t]+/g, " ").replace(/\s+/g, " ").trim();
     return cleaned || "\u672A\u547D\u540D\u8282\u70B9";
   }
   function sanitizeInternalMetadata(node) {
@@ -4341,7 +4378,12 @@ var EgernProfileBundle = (() => {
       }
       const udp = hasExplicitUdp(original);
       const id = `sr-${fingerprint(cloned)}`;
-      cloned.name = `${region.flag} ${source.label} ${cleanDisplayName(original.name)}${existingChain ? ` ${EXISTING_CHAIN_MARKER}` : ""}${udp ? " [UDP]" : ""}`;
+      const sourceSuffix = source.kind === SOURCE_KIND.unknown ? "" : "\uFF5C" + source.label;
+      const capabilitySuffix = [
+        existingChain ? "\u94FE" : "",
+        udp ? "U" : ""
+      ].filter(Boolean).join("\xB7");
+      cloned.name = region.flag + " " + cleanDisplayName(original.name, cloned.type) + sourceSuffix + (capabilitySuffix ? "\xB7" + capabilitySuffix : "");
       cloned._profile = {
         id,
         sourceKind: source.kind,

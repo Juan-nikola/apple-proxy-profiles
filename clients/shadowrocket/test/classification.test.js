@@ -33,6 +33,14 @@ test("prefers a recognized source when an unknown display field appears first", 
   }), { kind: SOURCE_KIND.selfHosted, label: "自建", warning: null });
 });
 
+test("falls back to a recognized source marker in the node name", () => {
+  assert.deepEqual(classifySource({
+    name: "🇭🇰 [未标记] [自建] Boil-HKT",
+    _subDisplayName: "[未标记] upstream",
+    _subName: "[未标记] private",
+  }), { kind: SOURCE_KIND.selfHosted, label: "自建", warning: null });
+});
+
 test("uses the same missing-source warning for unknown markers and unlabeled provenance", () => {
   assert.equal(classifySource({ _subName: "[未标记] upstream" }).warning, "missing-source-label");
   assert.equal(classifySource({ _subName: "upstream" }).warning, "missing-source-label");

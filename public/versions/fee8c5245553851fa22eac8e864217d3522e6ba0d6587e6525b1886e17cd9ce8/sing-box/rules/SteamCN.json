@@ -1,0 +1,90 @@
+{
+  "rules": [
+    {
+      "domain": [
+        "csgo.wmsj.cn"
+      ]
+    },
+    {
+      "domain": [
+        "dl.steam.clngaa.com"
+      ]
+    },
+    {
+      "domain": [
+        "dl.steam.ksyna.com"
+      ]
+    },
+    {
+      "domain": [
+        "dota2.wmsj.cn"
+      ]
+    },
+    {
+      "domain": [
+        "st.dl.bscstorage.net"
+      ]
+    },
+    {
+      "domain": [
+        "st.dl.eccdnx.com"
+      ]
+    },
+    {
+      "domain": [
+        "st.dl.pinyuncloud.com"
+      ]
+    },
+    {
+      "domain": [
+        "steampipe.steamcontent.tnkjmec.com"
+      ]
+    },
+    {
+      "domain": [
+        "steampowered.com.8686c.com"
+      ]
+    },
+    {
+      "domain": [
+        "steamstatic.com.8686c.com"
+      ]
+    },
+    {
+      "domain": [
+        "wmsjsteam.com"
+      ]
+    },
+    {
+      "domain": [
+        "xz.pphimalayanrt.com"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "cm.steampowered.com"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "steamchina.com"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "steamcontent.com"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "steamserver.net"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "steamusercontent.com"
+      ]
+    }
+  ],
+  "version": 5
+}

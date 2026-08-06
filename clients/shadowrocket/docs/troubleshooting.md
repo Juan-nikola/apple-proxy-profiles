@@ -1,6 +1,6 @@
 # 故障排查与回滚
 
-固定顺序：切回旧 Profile → 判断节点/规则/DNS/局域网/IPv6 → 生成脱敏统计 → 只分享统计。先恢复可用网络，再排查；不要删除旧 Profile。正式配置使用 `apple-proxy-sources`、节点订阅、Profile File 和保留的旧 Profile；排查期间不要重命名或覆盖它们。
+固定顺序：切回旧 Profile → 判断节点/规则/DNS/局域网/IPv6 → 生成脱敏统计 → 只分享统计。先恢复可用网络，再排查；不要删除旧 Profile。正式配置使用原始组合 `apple-proxy-sources`、处理组合 `shadowrocket-nodes`、节点订阅、Profile File 和保留的旧 Profile；排查期间不要重命名或覆盖它们。
 
 ## 先回滚
 
@@ -27,7 +27,7 @@ DNS、QUIC、IPv6、`blockMode`或测速参数排障使用下面的 File 副本�
 
 ## 节点更新失败
 
-在 Sub-Store 预览 `apple-proxy-sources`。原始来源为空就检查 `snell`、`vlesshy2`；原始有节点而 `Shadowrocket-Nodes` 为空就查看排除原因计数。不要截图节点详情。恢复前一次可用订阅，节点数量正常后再更新设备。
+在 Sub-Store 先预览原始组合 `apple-proxy-sources`，再预览处理组合 `shadowrocket-nodes`。原始来源为空就检查 `snell`、`vlesshy2`；原始有节点而 `Shadowrocket-Nodes` 为空就查看排除原因计数。不要截图节点详情。恢复前一次可用订阅，节点数量正常后再更新设备。
 
 检查顺序：
 
@@ -37,7 +37,7 @@ DNS、QUIC、IPv6、`blockMode`或测速参数排障使用下面的 File 副本�
 4. 确认节点脚本参数是 `output=nodes&clientChain=off` 或有意开启的 `on`，且目标平台为 Shadowrocket。
 5. 恢复最近可用来源或脚本后先更新 Intel Mac。
 
-如果节点名出现 `[已有链]`，表示脚本检测到了既有 `chain`、`underlying-proxy` 等链路字段，并主动阻止它再次成为客户端入口；不要手工删除或伪造该标记。若判断不符合预期，应检查原始节点的链路字段，而不是改生成后的名称。
+如果节点名出现 `·链`，表示脚本检测到了既有 `chain`、`underlying-proxy` 等链路字段，并主动阻止它再次成为客户端入口；不要手工删除或伪造该标记。若判断不符合预期，应检查原始节点的链路字段，而不是改生成后的名称。
 
 ## 策略组没有具体服务器
 
@@ -79,7 +79,7 @@ DNS、QUIC、IPv6、`blockMode`或测速参数排障使用下面的 File 副本�
 2. 对照排障时可复制 File，分别测试 `allow`；仍有问题时才另复制一份 `all-block`。
 3. 每种模式都要重新生成和更新 Profile，它不是热切换。
 4. 测试后恢复 `proxy-block`。此开关不等同于禁用 Hysteria2/TUIC 节点传输。
-5. 游戏实时连接组只应显示明确带 `[UDP]` 的节点；没有合适节点时保持 DIRECT。
+5. 游戏实时连接组只应显示明确带 `·U` 能力标记的节点；没有合适节点时保持 DIRECT。
 6. 《问道手游》应确认 `leiting.com`、`leitingcn.com`、`g-bits.com` 命中 DIRECT；iPhone 分别在 Wi-Fi 和蜂窝网络测试登录、换线、战斗和资源加载。
 
 ## AI 登录或风控
