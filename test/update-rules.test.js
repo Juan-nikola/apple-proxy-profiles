@@ -242,6 +242,28 @@ test("rejects an empty unknown directory in a hybrid current", async () => {
   assert.equal(await verifyTrackedPublications({ publicDirectory, ...baseline }), false);
 });
 
+test("rejects an unmanifested empty directory inside a current client tree", async () => {
+  const root = await mkdtemp(join(tmpdir(), "apple-proxy-check-current-client-empty-directory-"));
+  const publicDirectory = join(root, "public");
+  const artifacts = buildClientArtifacts({ snapshot: lightweightFixtureSnapshots(), upstream });
+  await initializeTrackedCurrent(publicDirectory, artifacts);
+
+  assert.equal(await verifyTrackedPublications({ publicDirectory, ...artifacts }), true);
+  await mkdir(join(publicDirectory, "current/sing-box/unknown-empty"));
+  assert.equal(await verifyTrackedPublications({ publicDirectory, ...artifacts }), false);
+});
+
+test("rejects an unmanifested empty directory inside a selected optional client tree", async () => {
+  const root = await mkdtemp(join(tmpdir(), "apple-proxy-check-optional-client-empty-directory-"));
+  const publicDirectory = join(root, "public");
+  const artifacts = buildClientArtifacts({ snapshot: lightweightFixtureSnapshots(), upstream });
+  await initializeTrackedCurrent(publicDirectory, artifacts);
+
+  assert.equal(await verifyTrackedPublications({ publicDirectory, ...artifacts }), true);
+  await mkdir(join(publicDirectory, "optional/adblock-full/current/sing-box/unknown-empty"));
+  assert.equal(await verifyTrackedPublications({ publicDirectory, ...artifacts }), false);
+});
+
 test("promotes exact tested client bytes without changing other clients", async () => {
   const root = await mkdtemp(join(tmpdir(), "apple-proxy-promote-"));
   const publicDirectory = join(root, "public");

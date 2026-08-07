@@ -104,18 +104,37 @@ async function readPublicationTree(directory, prefix = "") {
   return files;
 }
 
+function treeEntriesForFiles(paths) {
+  const entries = new Set(paths);
+  for (const path of paths) {
+    const segments = path.split("/");
+    for (let index = 1; index < segments.length; index += 1) {
+      entries.add(`${segments.slice(0, index).join("/")}/`);
+    }
+  }
+  return [...entries].sort();
+}
+
 async function selectedClientManifest({ directory, basePrefix = "", client, clientDirectory, expectedHash = null }) {
   if ((expectedHash !== null && !/^[0-9a-f]{64}$/u.test(expectedHash)) || !await pathExists(directory)) return null;
   try {
     const treePrefix = basePrefix ? `${basePrefix}/${clientDirectory}` : clientDirectory;
     const files = await readPublicationTree(directory, treePrefix);
-    return validateClientPublication({
+    const manifest = validateClientPublication({
       files,
       client,
       directory: clientDirectory,
       basePrefix,
       expectedHash,
     });
+    const recordPrefix = `${treePrefix}/`;
+    const expectedFiles = ["client-manifest.json", ...manifest.files.map(({ path }) => {
+      if (!path.startsWith(recordPrefix)) throw new Error("Client manifest path escaped its selected tree");
+      return path.slice(recordPrefix.length);
+    })];
+    if (JSON.stringify((await relativeTreeEntries(directory)).sort())
+      !== JSON.stringify(treeEntriesForFiles(expectedFiles))) return null;
+    return manifest;
   } catch {
     return null;
   }
