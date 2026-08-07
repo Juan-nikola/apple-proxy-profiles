@@ -10,13 +10,14 @@ import { allCompatibleNodes } from "./fixtures/nodes.js";
 
 const PRIVATE_URL = "https://example.invalid/private/egern-nodes?key=TEST_ONLY_VALIDATION_QUERY";
 
-function validProfile() {
+function validProfile(overrides = {}) {
   return renderEgernProfile({
     output: "config",
     type: "collection",
     name: "egern-validation",
     nodeSubscriptionUrl: PRIVATE_URL,
     platform: "iphone",
+    ...overrides,
   }, allCompatibleNodes);
 }
 
@@ -38,6 +39,31 @@ test("validates the actual deterministic YAML string", () => {
   assert.deepEqual(validateEgernProfile(profile), { valid: true, errors: [] });
   assertInvalid(null, /string/i);
   assertInvalid({ profile }, /string/i);
+});
+
+test("accepts only closed channel and optional-pack publication combinations", () => {
+  for (const channel of ["edge", "current"]) {
+    for (const adblockMode of ["off", "full"]) {
+      assert.deepEqual(
+        validateEgernProfile(validProfile({ channel, adblockMode })),
+        { valid: true, errors: [] },
+        `${channel}/${adblockMode}`,
+      );
+    }
+  }
+
+  const edgeOff = validProfile({ channel: "edge", adblockMode: "off" });
+  assertInvalid(edgeOff.replace(
+    "/edge/egern/rules/DomesticCore.yaml",
+    "/current/egern/rules/DomesticCore.yaml",
+  ), /DNS|rule|publication/i);
+  assertInvalid(edgeOff.replaceAll("DomesticCore.yaml", "ChinaMax_Domain.yaml"), /DNS|rule|publication/i);
+
+  const currentFull = validProfile({ channel: "current", adblockMode: "full" });
+  assertInvalid(currentFull.replace(
+    "/current/optional/adblock-full/egern/rules/Advertising.yaml",
+    "/current/egern/rules/Advertising.yaml",
+  ), /DNS|rule|publication/i);
 });
 
 test("generated-profile assertion uses one fixed non-reflective error", () => {
@@ -114,7 +140,6 @@ test("rejects unknown, swapped, duplicate, non-terminal, and URL-mutated rules",
     "  - geoip:",
     "      match: \"CN\"",
     "      policy: \"DIRECT\"",
-    "      no_resolve: true",
   ].join("\n");
   const final = [
     "  - default:",
@@ -123,15 +148,15 @@ test("rejects unknown, swapped, duplicate, non-terminal, and URL-mutated rules",
   assertInvalid(profile.replace(geo, "TEST_ONLY_GEO_RULE").replace(final, geo).replace("TEST_ONLY_GEO_RULE", final), /rule|terminal|order/i);
   assertInvalid(profile.replace(final, `${final}\n${final}`), /rule|default|duplicate/i);
 
-  const alternate = "https://example.invalid/current/egern/rules/Advertising.yaml";
-  assertInvalid(profile.replace(/https:\/\/juan-nikola\.github\.io\/apple-proxy-profiles\/current\/egern\/rules\/Advertising\.yaml/u, alternate), /rule|URL|catalog/i, [alternate]);
-  const credentialed = `https://${["us", "er"].join("")}@juan-nikola.github.io/apple-proxy-profiles/current/egern/rules/Game.yaml`;
-  assertInvalid(profile.replace("https://juan-nikola.github.io/apple-proxy-profiles/current/egern/rules/Game.yaml", credentialed), /rule|URL|catalog/i, [credentialed]);
+  const alternate = "https://example.invalid/edge/egern/rules/DomesticCore.yaml";
+  assertInvalid(profile.replace(/https:\/\/juan-nikola\.github\.io\/apple-proxy-profiles\/edge\/egern\/rules\/DomesticCore\.yaml/u, alternate), /rule|URL|catalog/i, [alternate]);
+  const credentialed = `https://${["us", "er"].join("")}@juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/OverseasGame.yaml`;
+  assertInvalid(profile.replace("https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/OverseasGame.yaml", credentialed), /rule|URL|catalog/i, [credentialed]);
 });
 
 test("rejects DNS drift and inline proxy-bearing content", () => {
   const profile = validProfile();
-  assertInvalid(profile.replace("ChinaMax_Domain.yaml", "TEST_ONLY_WRONG_DNS_RULE.yaml"), /DNS|rule|URL/i, [
+  assertInvalid(profile.replace("DomesticCore.yaml", "TEST_ONLY_WRONG_DNS_RULE.yaml"), /DNS|rule|URL/i, [
     "TEST_ONLY_WRONG_DNS_RULE",
   ]);
   assertInvalid(profile.replace('  proxy_nameservers:\n    - "system"', '  proxy_nameservers:\n    - "https://example.invalid/TEST_ONLY_VALIDATION_QUERY"'), /DNS/i);

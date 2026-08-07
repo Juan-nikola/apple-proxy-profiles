@@ -7,7 +7,7 @@ import { validateEgernProfile } from "../src/validate-profile.js";
 
 const root = resolve(import.meta.dirname, "..");
 const privateNodeUrl = "https://example.invalid/private/egern-nodes";
-const publicRuleUrl = "https://juan-nikola.github.io/apple-proxy-profiles/current/egern/rules/Advertising.yaml";
+const publicRuleUrl = "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/DomesticCore.yaml";
 const platforms = Object.freeze([
   Object.freeze(["macos", false]),
   Object.freeze(["iphone", true]),
@@ -71,6 +71,8 @@ for (const [platform, expectedIpv6] of platforms) {
       name: "egern-sources",
       nodeSubscriptionUrl: privateNodeUrl,
       platform,
+      channel: "edge",
+      adblockMode: "off",
     },
     async produceArtifact() { return structuredClone(rawNodes); },
   });
@@ -81,6 +83,8 @@ for (const [platform, expectedIpv6] of platforms) {
   if (
     !new RegExp(`^ipv6: ${expectedIpv6}$`, "mu").test(profile)
     || !profile.includes(publicRuleUrl)
+    || profile.includes("Advertising.yaml")
+    || profile.includes("ChinaMax_Domain.yaml")
     || !profile.includes("policy_groups:\n")
     || !profile.includes("rules:\n")
     || /^proxies:/mu.test(profile)

@@ -1,6 +1,6 @@
 import { OPTION_VALUES } from "../../../shared/contracts.js";
 import { DOMESTIC_FALLBACK_DOMAIN_SUFFIXES } from "../../../shared/rules/domestic-fallback.js";
-import { PUBLIC_SNAPSHOT_BASE_URL } from "./options.js";
+import { PUBLIC_RULE_ROOT } from "./options.js";
 
 const CHINA_DNS = Object.freeze({
   alidns: "https://dns.alidns.com/dns-query",
@@ -32,10 +32,10 @@ function validatedEnum(options, key) {
 
 function publicBaseUrl(options) {
   if (!Object.hasOwn(options, "publicBaseUrl")) {
-    return PUBLIC_SNAPSHOT_BASE_URL;
+    throw new Error("DNS option 'publicBaseUrl' is required");
   }
   const value = safeOption(options, "publicBaseUrl");
-  if (value !== PUBLIC_SNAPSHOT_BASE_URL) {
+  if (value !== `${PUBLIC_RULE_ROOT}/edge` && value !== `${PUBLIC_RULE_ROOT}/current`) {
     throw new Error("DNS option 'publicBaseUrl' must use the fixed public snapshot base");
   }
   return value;
@@ -44,7 +44,7 @@ function publicBaseUrl(options) {
 function chinaRule(baseUrl) {
   return {
     proxy_rule_set: {
-      match: `${baseUrl}/egern/rules/ChinaMax_Domain.yaml`,
+      match: `${baseUrl}/egern/rules/DomesticCore.yaml`,
       value: "china",
       update_interval: 86400,
     },

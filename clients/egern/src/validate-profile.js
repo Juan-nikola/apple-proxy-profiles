@@ -3,7 +3,7 @@ import { POLICY_TARGET } from "../../../shared/policies/intents.js";
 import { POLICY_GROUP_SCHEMA } from "../../../shared/policies/schema.js";
 import { renderEgernDns } from "./render-dns.js";
 import { renderEgernGroups } from "./render-groups.js";
-import { PUBLIC_SNAPSHOT_BASE_URL } from "./options.js";
+import { PUBLIC_RULE_ROOT } from "./options.js";
 import { renderEgernRules } from "./render-rules.js";
 import { renderYaml } from "./render-yaml.js";
 
@@ -203,7 +203,7 @@ function validateRoot(root) {
   ) throw new Error("Invalid Egern root field values");
 }
 
-function validDns(dns) {
+function validDns(dns, publicBaseUrl) {
   for (const dnsMode of OPTION_VALUES.dnsMode) {
     for (const chinaDns of OPTION_VALUES.chinaDns) {
       for (const globalDns of OPTION_VALUES.globalDns) {
@@ -211,7 +211,7 @@ function validDns(dns) {
           dnsMode,
           chinaDns,
           globalDns,
-          publicBaseUrl: PUBLIC_SNAPSHOT_BASE_URL,
+          publicBaseUrl,
         });
         if (sameValue(dns, expected)) return true;
       }
@@ -364,11 +364,19 @@ function validateQuic(root, groups, overrides) {
 
 function validateParsedProfile(root) {
   validateRoot(root);
-  if (!validDns(root.dns)) throw new Error("Invalid Egern DNS schema or rule URL");
+  let publicationValid = false;
+  for (const channel of ["edge", "current"]) {
+    const publicBaseUrl = `${PUBLIC_RULE_ROOT}/${channel}`;
+    for (const adblockMode of ["off", "full"]) {
+      const expectedRules = renderEgernRules({ publicBaseUrl, adblockMode });
+      if (sameValue(root.rules, expectedRules) && validDns(root.dns, publicBaseUrl)) {
+        publicationValid = true;
+      }
+    }
+  }
+  if (!publicationValid) throw new Error("Invalid Egern DNS schema or rule publication");
   const groups = reconstructGroups(root.policy_groups);
   validateQuic(root, groups.shared, groups.overrides);
-  const expectedRules = renderEgernRules({ publicBaseUrl: PUBLIC_SNAPSHOT_BASE_URL });
-  if (!sameValue(root.rules, expectedRules)) throw new Error("Invalid Egern rule catalog, order, policy, or URL");
 }
 
 export function validateEgernProfile(profile) {

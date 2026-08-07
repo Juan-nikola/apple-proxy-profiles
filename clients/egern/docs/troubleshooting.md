@@ -50,7 +50,7 @@
 
 - DNS 完全失败：分别检查 bootstrap 能否解析上游域名，以及 upstream 是否可达；先排除当前网络门户认证。
 - 国内外分流异常：确认 rule-set/规则集下载成功、顺序没有被手工改写，并检查命中的最后规则。
-- 国内 App 偶发变慢、切换开关后暂时恢复：大规则集未命中时，域名可能落到默认代理或全局 DNS；切换会重建连接和缓存。当前生成器已在远程 `ChinaMax_Domain` 前加入 18 条常见国内 App/CDN 后缀，且稳定/速度 DNS 模式会先把这些后缀转发到国内 DNS。刷新 Profile 后确认这些规则仍在 `ChinaMax_Domain` 之前，不要只依赖切换开关。
+- 国内 App 偶发变慢、切换开关后暂时恢复：先确认 `DomesticCore`、`DomesticGame`、`SteamCN` 在明确境外规则之前直连，`ChinaIP` 与可解析的 `GEOIP CN` 在最终代理之前。稳定/速度 DNS 模式应使用同一 `channel` 的 `DomesticCore` 转发到国内 DNS；不应再看到 `ChinaMax_Domain`。若 DNS 失败，未命中流量落入 `🚀 节点选择` 是预期的 fail-safe，不要通过恢复大分类包解决。
 - 只有公开规则失败：测试 `🧭 DNS 与规则下载` 的代理优先路径和直连回退，不要改私密节点 URL。
 - 只有节点失败：重跑私密节点 File，不要把公开规则刷新当成节点修复。
 
