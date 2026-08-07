@@ -529,11 +529,12 @@
       "type": "selector",
       "tag": "🧭 DNS 与规则下载",
       "outbounds": [
+        "⚡ 全部自动",
         "🚀 节点选择",
         "DIRECT"
       ],
       "interrupt_exist_connections": true,
-      "default": "DIRECT"
+      "default": "⚡ 全部自动"
     },
     {
       "type": "selector",

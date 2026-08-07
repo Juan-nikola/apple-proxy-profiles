@@ -1,0 +1,20 @@
+# Upstream: https://github.com/blackmatrix7/ios_rule_script
+# Path: rule/Surge/Instagram/Instagram.list
+# Commit: 72c410015dc99df6b54eca1386126f70268bf6bc
+# Committed at: 2026-08-05T19:24:33Z
+# License: GPL-2.0-only
+# Changed by: Juan-nikola/apple-proxy-profiles
+# Output entries: 4
+# Omitted entries: 0
+domain_set: []
+domain_suffix_set:
+  - "cdninstagram.com"
+  - "instagr.am"
+  - "instagram.com"
+domain_keyword_set:
+  - "instagram"
+ip_cidr_set: []
+ip_cidr6_set: []
+asn_set: []
+url_regex_set: []
+user_agent_set: []

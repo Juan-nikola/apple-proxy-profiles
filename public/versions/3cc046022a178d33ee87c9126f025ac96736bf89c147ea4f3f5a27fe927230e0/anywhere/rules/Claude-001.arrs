@@ -1,0 +1,11 @@
+# Upstream: https://github.com/blackmatrix7/ios_rule_script
+# Source: Claude
+# Commit: 72c410015dc99df6b54eca1386126f70268bf6bc
+# Converted at upstream commit time: 2026-08-05T19:24:33Z
+# License: GPL-2.0-only
+# Converted by: Juan-nikola/apple-proxy-profiles
+name = 🤖 AI 专用 · Claude
+routing = 0
+
+2, anthropic.com
+2, claude.ai
