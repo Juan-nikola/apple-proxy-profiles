@@ -73,4 +73,12 @@ test("validates the synthetic lightweight rule identifiers and pack boundaries",
     defaultSourceIds: ["DomesticCore", "Advertising"],
     optionalSourceIds: ["Advertising"],
   }), /overlap/u);
+  assert.throws(() => validateLightweightRuleCatalog({
+    defaultSourceIds: ["Advertising"],
+    optionalSourceIds: [],
+  }), /default/u);
+  assert.throws(() => validateLightweightRuleCatalog({
+    defaultSourceIds: ["DomesticCore"],
+    optionalSourceIds: ["Advertising", "Advertising"],
+  }), /duplicate/u);
 });

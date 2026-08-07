@@ -186,7 +186,8 @@ export function normalizeRuleEntry(entry) {
 }
 
 const ALLOWED_SYNTHETIC_SOURCE_IDS = new Set(["DomesticCore", "DomesticGame", "OverseasGame", "ChinaIP"]);
-const KNOWN_LIGHTWEIGHT_SOURCE_IDS = new Set([...DEFAULT_RULE_SOURCE_IDS, ...FULL_ADBLOCK_SOURCE_IDS]);
+const DEFAULT_LIGHTWEIGHT_SOURCE_IDS = new Set(DEFAULT_RULE_SOURCE_IDS);
+const OPTIONAL_LIGHTWEIGHT_SOURCE_IDS = new Set(FULL_ADBLOCK_SOURCE_IDS);
 
 function catalogSourceIds(value, name) {
   if (!Array.isArray(value) || value.some((id) => typeof id !== "string" || !id)) {
@@ -200,17 +201,20 @@ export function validateLightweightRuleCatalog({ defaultSourceIds, optionalSourc
   const defaults = catalogSourceIds(defaultSourceIds, "defaultSourceIds");
   const optional = catalogSourceIds(optionalSourceIds, "optionalSourceIds");
   if (new Set(defaults).size !== defaults.length) throw new TypeError("defaultSourceIds contains a duplicate ID");
+  if (new Set(optional).size !== optional.length) throw new TypeError("optionalSourceIds contains a duplicate ID");
+  if (optional.some((id) => defaults.includes(id))) {
+    throw new TypeError("default and optional rule packs overlap");
+  }
   for (const id of defaults) {
-    if (!KNOWN_LIGHTWEIGHT_SOURCE_IDS.has(id)) {
+    if (!DEFAULT_LIGHTWEIGHT_SOURCE_IDS.has(id)) {
       const description = /^(?:Domestic|Overseas)|ChinaIP$/u.test(id) && !ALLOWED_SYNTHETIC_SOURCE_IDS.has(id)
         ? "synthetic"
-        : "unknown";
-      throw new TypeError(`${description} lightweight rule source ID: ${id}`);
+        : "default";
+      throw new TypeError(`${description} lightweight rule source ID is not allowed: ${id}`);
     }
   }
   for (const id of optional) {
-    if (!KNOWN_LIGHTWEIGHT_SOURCE_IDS.has(id)) throw new TypeError(`unknown lightweight rule source ID: ${id}`);
-    if (defaults.includes(id)) throw new TypeError(`default and optional rule packs overlap: ${id}`);
+    if (!OPTIONAL_LIGHTWEIGHT_SOURCE_IDS.has(id)) throw new TypeError(`optional lightweight rule source ID is not allowed: ${id}`);
   }
   return true;
 }

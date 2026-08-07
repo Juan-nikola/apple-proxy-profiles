@@ -14,6 +14,7 @@ import {
   DOMESTIC_GAME_DOMAIN_SUFFIXES,
 } from "../shared/rules/domestic-core.js";
 import { RULE_CLIENT_CATALOG } from "../shared/rules/client-catalog.js";
+import { buildPolicyGroups } from "../shared/policies/catalog.js";
 
 const PUBLIC_SUFFIXES = new Set(["com", "net", "cn", "com.cn"]);
 
@@ -79,4 +80,17 @@ test("defines the shared policy targets and resource budgets", () => {
   assert.equal(RULE_BUDGETS.startupInlineEntries, 64);
   assert.equal(RULE_BUDGETS.singBoxRuleRssBytes, 50 * 1024 * 1024);
   assert.equal(RULE_BUDGETS.singBoxTotalRssBytes, 200 * 1024 * 1024);
+});
+
+test("keeps overseas games proxy-first and SteamCN direct-first", () => {
+  const groups = buildPolicyGroups({
+    platform: "macos",
+    autoGroupMode: "minimal",
+    clientChain: "off",
+    blockMode: "off",
+  }, []);
+  const overseasGame = groups.find(({ name }) => name === POLICY_TARGETS.overseasGame);
+  assert.equal(overseasGame.candidates[0], POLICY_TARGETS.defaultProxy);
+  assert.equal(overseasGame.candidates.at(-1), POLICY_TARGETS.direct);
+  assert.equal(RULE_CLIENT_CATALOG.find(({ id }) => id === "SteamCN").policy, POLICY_TARGETS.direct);
 });
