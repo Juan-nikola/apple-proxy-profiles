@@ -36,6 +36,23 @@ async function writeFiles(directory, files) {
   }
 }
 
+async function initializeTrackedCurrent(publicDirectory, artifacts) {
+  await writeFiles(join(publicDirectory, "current"), artifacts.defaults);
+  await publishEdgeRelease({
+    publicDirectory,
+    defaults: artifacts.defaults,
+    optionalPacks: artifacts.optionalPacks,
+    manifest: artifacts.diagnostics.defaultManifest,
+  });
+  for (const client of ["singbox", "surge", "shadowrocket", "egern", "anywhere"]) {
+    await promoteClientRelease({
+      publicDirectory,
+      client,
+      manifestHash: artifacts.diagnostics.defaultManifest.clients[client].manifestHash,
+    });
+  }
+}
+
 test("accepts only explicit edge, current-check, and client promotion operations", () => {
   assert.deepEqual(parseUpdateRulesArguments(["--channel", "edge"]), { operation: "build-edge" });
   assert.deepEqual(parseUpdateRulesArguments(["--check", "--channel", "current"]), { operation: "check-current" });
@@ -91,7 +108,7 @@ test("verifies a hybrid current from independently promoted clients", async () =
   const publicDirectory = join(root, "public");
   const baseline = buildClientArtifacts({ snapshot: lightweightFixtureSnapshots(), upstream });
   const candidate = buildClientArtifacts({ snapshot: lightweightFixtureSnapshots(), upstream: nextUpstream });
-  await writeFiles(join(publicDirectory, "current"), baseline.defaults);
+  await initializeTrackedCurrent(publicDirectory, baseline);
   await publishEdgeRelease({
     publicDirectory,
     defaults: candidate.defaults,
@@ -116,7 +133,7 @@ test("rejects rollout optional selections that disagree with the current client 
   const publicDirectory = join(root, "public");
   const baseline = buildClientArtifacts({ snapshot: lightweightFixtureSnapshots(), upstream });
   const candidate = buildClientArtifacts({ snapshot: lightweightFixtureSnapshots(), upstream: nextUpstream });
-  await writeFiles(join(publicDirectory, "current"), baseline.defaults);
+  await initializeTrackedCurrent(publicDirectory, baseline);
   await publishEdgeRelease({
     publicDirectory,
     defaults: candidate.defaults,
@@ -141,12 +158,45 @@ test("rejects rollout optional selections that disagree with the current client 
   assert.equal(await verifyTrackedPublications({ publicDirectory, ...baseline }), false);
 });
 
+test("rejects a manifest-selected optional pack when rollout clears that client selection", async () => {
+  const root = await mkdtemp(join(tmpdir(), "apple-proxy-check-cleared-selection-"));
+  const publicDirectory = join(root, "public");
+  const artifacts = buildClientArtifacts({ snapshot: lightweightFixtureSnapshots(), upstream });
+  await initializeTrackedCurrent(publicDirectory, artifacts);
+
+  const rolloutPath = join(publicDirectory, "rollout.json");
+  const rollout = JSON.parse(await readFile(rolloutPath, "utf8"));
+  rollout.clients.singbox = null;
+  rollout.optionalPacks["adblock-full"].singbox = null;
+  await writeFile(rolloutPath, `${JSON.stringify(rollout, null, 2)}\n`);
+  await rename(
+    join(publicDirectory, "optional/adblock-full/current/sing-box"),
+    join(publicDirectory, "optional/adblock-full/deleted-sing-box"),
+  );
+
+  assert.equal(await verifyTrackedPublications({ publicDirectory, ...artifacts }), false);
+});
+
+test("rejects optional rollout selections for unknown clients", async () => {
+  const root = await mkdtemp(join(tmpdir(), "apple-proxy-check-unknown-optional-client-"));
+  const publicDirectory = join(root, "public");
+  const artifacts = buildClientArtifacts({ snapshot: lightweightFixtureSnapshots(), upstream });
+  await initializeTrackedCurrent(publicDirectory, artifacts);
+
+  const rolloutPath = join(publicDirectory, "rollout.json");
+  const rollout = JSON.parse(await readFile(rolloutPath, "utf8"));
+  rollout.optionalPacks["adblock-full"].intruder = "a".repeat(64);
+  await writeFile(rolloutPath, `${JSON.stringify(rollout, null, 2)}\n`);
+
+  assert.equal(await verifyTrackedPublications({ publicDirectory, ...artifacts }), false);
+});
+
 test("rejects extra non-client files and unknown directories in a hybrid current", async () => {
   const root = await mkdtemp(join(tmpdir(), "apple-proxy-check-hybrid-closure-"));
   const publicDirectory = join(root, "public");
   const baseline = buildClientArtifacts({ snapshot: lightweightFixtureSnapshots(), upstream });
   const candidate = buildClientArtifacts({ snapshot: lightweightFixtureSnapshots(), upstream: nextUpstream });
-  await writeFiles(join(publicDirectory, "current"), baseline.defaults);
+  await initializeTrackedCurrent(publicDirectory, baseline);
   await publishEdgeRelease({
     publicDirectory,
     defaults: candidate.defaults,
@@ -159,11 +209,36 @@ test("rejects extra non-client files and unknown directories in a hybrid current
     manifestHash: candidate.diagnostics.defaultManifest.clients.singbox.manifestHash,
   });
 
+  assert.equal(await verifyTrackedPublications({ publicDirectory, ...baseline }), true);
+
   const stray = join(publicDirectory, "current/stray.txt");
   await writeFile(stray, "not manifested\n");
   assert.equal(await verifyTrackedPublications({ publicDirectory, ...baseline }), false);
   await rm(stray);
   await writeFiles(join(publicDirectory, "current"), new Map([["unknown/nested.txt", "not manifested\n"]]));
+  assert.equal(await verifyTrackedPublications({ publicDirectory, ...baseline }), false);
+});
+
+test("rejects an empty unknown directory in a hybrid current", async () => {
+  const root = await mkdtemp(join(tmpdir(), "apple-proxy-check-hybrid-empty-directory-"));
+  const publicDirectory = join(root, "public");
+  const baseline = buildClientArtifacts({ snapshot: lightweightFixtureSnapshots(), upstream });
+  const candidate = buildClientArtifacts({ snapshot: lightweightFixtureSnapshots(), upstream: nextUpstream });
+  await initializeTrackedCurrent(publicDirectory, baseline);
+  await publishEdgeRelease({
+    publicDirectory,
+    defaults: candidate.defaults,
+    optionalPacks: candidate.optionalPacks,
+    manifest: candidate.diagnostics.defaultManifest,
+  });
+  await promoteClientRelease({
+    publicDirectory,
+    client: "singbox",
+    manifestHash: candidate.diagnostics.defaultManifest.clients.singbox.manifestHash,
+  });
+
+  assert.equal(await verifyTrackedPublications({ publicDirectory, ...baseline }), true);
+  await mkdir(join(publicDirectory, "current/unknown-empty"));
   assert.equal(await verifyTrackedPublications({ publicDirectory, ...baseline }), false);
 });
 

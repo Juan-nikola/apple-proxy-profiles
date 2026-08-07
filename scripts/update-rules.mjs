@@ -80,6 +80,22 @@ async function relativeFiles(root, current = "") {
   return found;
 }
 
+async function relativeTreeEntries(root, current = "") {
+  const found = [];
+  for (const entry of await readdir(join(root, current), { withFileTypes: true })) {
+    const relative = current ? `${current}/${entry.name}` : entry.name;
+    if (entry.isDirectory()) {
+      found.push(`${relative}/`);
+      found.push(...await relativeTreeEntries(root, relative));
+    } else if (entry.isFile()) {
+      found.push(relative);
+    } else {
+      throw new Error("Tracked publication contains a non-regular entry");
+    }
+  }
+  return found;
+}
+
 async function readPublicationTree(directory, prefix = "") {
   const files = new Map();
   for (const path of await relativeFiles(directory)) {
@@ -120,6 +136,8 @@ function rolloutOptionalProjection(optionalPacks, client) {
   for (const [packId, selections] of Object.entries(optionalPacks).sort(([left], [right]) => left.localeCompare(right))) {
     if (!/^[a-z0-9][a-z0-9-]*$/u.test(packId)
       || !selections || typeof selections !== "object" || Array.isArray(selections)) return null;
+    if (JSON.stringify(Object.keys(selections).sort())
+      !== JSON.stringify([...PROMOTION_CLIENTS].sort())) return null;
     const hash = selections[client];
     if (hash === null || hash === undefined) continue;
     if (!/^[0-9a-f]{64}$/u.test(hash)) return null;
@@ -199,10 +217,17 @@ export async function verifyTrackedPublications({ publicDirectory, defaults, opt
   const expectedRootPaths = [...defaults.keys()]
     .filter((path) => ![...clientPrefixes].some((prefix) => path.startsWith(prefix)))
     .sort();
-  const actualRootPaths = (await relativeFiles(currentDirectory))
+  const expectedRootEntries = new Set(expectedRootPaths);
+  for (const path of expectedRootPaths) {
+    const segments = path.split("/");
+    for (let index = 1; index < segments.length; index += 1) {
+      expectedRootEntries.add(`${segments.slice(0, index).join("/")}/`);
+    }
+  }
+  const actualRootEntries = (await relativeTreeEntries(currentDirectory))
     .filter((path) => ![...clientPrefixes].some((prefix) => path.startsWith(prefix)))
     .sort();
-  if (JSON.stringify(actualRootPaths) !== JSON.stringify(expectedRootPaths)) return false;
+  if (JSON.stringify(actualRootEntries) !== JSON.stringify([...expectedRootEntries].sort())) return false;
   for (const [path, content] of defaults) {
     if ([...clientPrefixes].some((prefix) => path.startsWith(prefix))) continue;
     try {
@@ -236,10 +261,6 @@ export async function verifyTrackedPublications({ publicDirectory, defaults, opt
   for (const [client, currentManifest] of currentClientManifests) {
     const rolloutProjection = rolloutOptionalProjection(rollout.optionalPacks, client);
     if (rolloutProjection === null) return false;
-    if (rollout.clients[client] === null || rollout.clients[client] === undefined) {
-      if (Object.keys(rolloutProjection).length !== 0) return false;
-      continue;
-    }
     const manifestProjection = optionalSelectionProjection(currentManifest.optionalPacks);
     if (manifestProjection === null
       || JSON.stringify(manifestProjection) !== JSON.stringify(rolloutProjection)) return false;
