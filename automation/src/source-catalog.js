@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 
-import { RULE_SOURCE_CATALOG } from "../../shared/rules/catalog.js";
+import { RULE_SOURCE_CATALOG, UPSTREAM_RULE_SOURCE_CATALOG } from "../../shared/rules/catalog.js";
+import { FULL_ADBLOCK_SOURCE_IDS } from "../../shared/rules/lightweight-policy.js";
 
 export const BLACKMATRIX7_BASELINE = Object.freeze({
   repository: "https://github.com/blackmatrix7/ios_rule_script",
@@ -23,43 +24,67 @@ const DIRECT_IDS = new Set([
   "SteamCN", "ChinaMax_Domain", "Download", "PrivateTracker", "ChinaMax",
 ]);
 
-function publishRecord(source, index) {
+function sourceRecord(source, index, { compiled = false } = {}) {
   const directory = DOMAIN_SET_DIRECTORIES[source.id] ?? source.id;
   const familyId = source.id === "Advertising_Domain" ? "Advertising" : source.id;
   const componentId = source.id.endsWith("_Domain") ? "domains" : "rules";
-  const routing = REJECT_IDS.has(source.id) ? 2 : DIRECT_IDS.has(source.id) ? 1 : 0;
-  return Object.freeze({
+  const routing = REJECT_IDS.has(source.id) ? 2 : (DIRECT_IDS.has(source.id) || source.policy === "DIRECT") ? 1 : 0;
+  const record = {
     id: source.id,
     familyId,
     componentId,
     order: index + 1,
     priority: (index + 1) * 10,
-    canonicalPath: `rule/Surge/${directory}/${source.id}.list`,
+    canonicalPath: compiled
+      ? `compiled/Surge/${source.id}/${source.id}.list`
+      : `rule/Surge/${directory}/${source.id}.list`,
     inputFormat: source.inputFormat,
     policy: source.policy,
     routing,
     intendedTarget: routing === 2 ? "reject" : routing === 1 ? "direct" : source.policy,
     minEntries: source.minEntries,
-  });
+  };
+  if (["Game", "ChinaMax", "ChinaMax_Domain"].includes(source.id)) record.inputOnly = true;
+  if (FULL_ADBLOCK_SOURCE_IDS.includes(source.id)) record.optionalPack = "adblock-full";
+  return Object.freeze(record);
 }
 
-export const PUBLISH_SOURCE_CATALOG = Object.freeze(RULE_SOURCE_CATALOG.map(publishRecord));
+/** Immutable upstream inputs required by the lightweight compiler. */
+export const FETCH_SOURCE_CATALOG = Object.freeze(
+  UPSTREAM_RULE_SOURCE_CATALOG.map((source, index) => sourceRecord(source, index)),
+);
+
+/**
+ * @deprecated Task 3 will switch publication callers to
+ * DEFAULT_PUBLISH_SOURCE_CATALOG. This alias keeps existing fetch callers
+ * working while the compiler is introduced independently.
+ */
+export const PUBLISH_SOURCE_CATALOG = FETCH_SOURCE_CATALOG;
+
+/** Client-visible default outputs after compilation. */
+export const DEFAULT_PUBLISH_SOURCE_CATALOG = Object.freeze(
+  RULE_SOURCE_CATALOG.map((source, index) => sourceRecord(source, index, { compiled: true })),
+);
+
+export const OPTIONAL_PUBLISH_SOURCE_CATALOGS = Object.freeze({
+  adblockFull: Object.freeze(FETCH_SOURCE_CATALOG.filter(({ optionalPack }) => optionalPack === "adblock-full")),
+});
 
 export const LOGICAL_RULE_SETS = Object.freeze(
-  [...new Set(PUBLISH_SOURCE_CATALOG.map(({ familyId }) => familyId))].map((familyId) => Object.freeze({
+  [...new Set(DEFAULT_PUBLISH_SOURCE_CATALOG.map(({ familyId }) => familyId))].map((familyId) => Object.freeze({
     id: familyId,
-    sourceIds: Object.freeze(PUBLISH_SOURCE_CATALOG
+    sourceIds: Object.freeze(DEFAULT_PUBLISH_SOURCE_CATALOG
       .filter((source) => source.familyId === familyId)
       .map(({ id }) => id)),
     required: true,
   })),
 );
 
-export function canonicalCatalogJson(catalog = PUBLISH_SOURCE_CATALOG) {
+export function canonicalCatalogJson(catalog = DEFAULT_PUBLISH_SOURCE_CATALOG) {
   return `${JSON.stringify(catalog, null, 2)}\n`;
 }
 
-export function catalogSha256(catalog = PUBLISH_SOURCE_CATALOG) {
+export function catalogSha256(catalog = DEFAULT_PUBLISH_SOURCE_CATALOG) {
   return createHash("sha256").update(canonicalCatalogJson(catalog)).digest("hex");
 }
 
