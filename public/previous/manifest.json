@@ -2366,29 +2366,29 @@
       "sha256": "befa7ca428255f020d169a818ebb7a2131cdb973fe0b3b3ee6ace9b5aed766d4"
     },
     {
-      "bytes": 27180,
+      "bytes": 27321,
       "path": "sing-box/examples/sing-box-android.json",
-      "sha256": "65545484b01e2c7a9130364c0fadf87f114cbdbc29a5b8761975bff3087a07a1"
+      "sha256": "9fc398b7b6dce9a1ce6947675d02cfda8f55292094f2a8a2dcccad5e8c8a2a6a"
     },
     {
-      "bytes": 27188,
+      "bytes": 27329,
       "path": "sing-box/examples/sing-box-ipad.json",
-      "sha256": "20570655f36440adbe605e52b70b696ec5d701156e31192b76b4f9a285854ad2"
+      "sha256": "32f9fcab3dfbdcdbb7b489f1ccee0b82bd8f2777eb582c494a6711086e7f99a8"
     },
     {
-      "bytes": 27188,
+      "bytes": 27329,
       "path": "sing-box/examples/sing-box-iphone.json",
-      "sha256": "20570655f36440adbe605e52b70b696ec5d701156e31192b76b4f9a285854ad2"
+      "sha256": "32f9fcab3dfbdcdbb7b489f1ccee0b82bd8f2777eb582c494a6711086e7f99a8"
     },
     {
-      "bytes": 27180,
+      "bytes": 27321,
       "path": "sing-box/examples/sing-box-macos.json",
-      "sha256": "8bdf32f95c16a78d19bc61fb12af35c8f146e7672e55ef97b1a2ebb2b28e6705"
+      "sha256": "14279ed217e44fa6021668da61a36a7ef37c6d8fb70799de8d61b3e3f1f369b2"
     },
     {
-      "bytes": 27316,
+      "bytes": 27457,
       "path": "sing-box/examples/sing-box-openwrt.json",
-      "sha256": "8571d34e21dbd6514d0d12abf2b7b8ba8d614469926859f96b1b8d38b8973c79"
+      "sha256": "e936a75944411603ecd0d7c2303cd3058285e58b5756f95a19fc295d2d172eb7"
     },
     {
       "bytes": 52805,
@@ -2551,14 +2551,14 @@
       "sha256": "ca3a49e383d63ea7f4e3c3899bb6bad4204cb3b282771fc8f7916ed6f54040e1"
     },
     {
-      "bytes": 125791,
+      "bytes": 127041,
       "path": "sing-box/scripts/sing-box-config-generator.js",
-      "sha256": "4b059d74883c333b19ce466ab1b7151e89a8699f558a50dba31f30e13a20031d"
+      "sha256": "484114659c34fbaa37fe81409f101e8cd48e58751e438f9e0694b70c8e30ac45"
     },
     {
-      "bytes": 125791,
+      "bytes": 127041,
       "path": "sing-box/scripts/substore-config-generator.js",
-      "sha256": "4b059d74883c333b19ce466ab1b7151e89a8699f558a50dba31f30e13a20031d"
+      "sha256": "484114659c34fbaa37fe81409f101e8cd48e58751e438f9e0694b70c8e30ac45"
     },
     {
       "bytes": 10565,
@@ -2747,7 +2747,7 @@
     }
   ],
   "generatedAt": "2026-08-05T19:24:33Z",
-  "manifestHash": "fee8c5245553851fa22eac8e864217d3522e6ba0d6587e6525b1886e17cd9ce8",
+  "manifestHash": "ac403b5a7f9deb2edcd38e19ba509e8d6bf92a292ec64f93bafb209f56a3e74f",
   "schemaVersion": 1,
   "upstream": {
     "branch": "master",

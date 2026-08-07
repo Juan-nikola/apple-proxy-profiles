@@ -8,7 +8,7 @@ const TYPE_BY_KIND = Object.freeze({
   [RULE_KIND.domainSuffix]: "domain_suffix",
   [RULE_KIND.domainKeyword]: "domain_keyword",
   [RULE_KIND.ipv4Cidr]: "ip_cidr",
-  [RULE_KIND.ipv6Cidr]: "ip_cidr6",
+  [RULE_KIND.ipv6Cidr]: "ip_cidr",
 });
 
 export function renderSingBoxRuleSource({ source, parsed, fetched, upstream }) {

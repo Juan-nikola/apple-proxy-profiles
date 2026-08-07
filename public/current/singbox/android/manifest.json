@@ -5,12 +5,12 @@
   "configSha256": "484114659c34fbaa37fe81409f101e8cd48e58751e438f9e0694b70c8e30ac45",
   "platform": "android",
   "platformKey": "singbox/android",
-  "ruleManifestSha256": "6cba0687c874ed69a588c278f7fd9e74cb736089271adba37f8c19092bc9ddf9",
+  "ruleManifestSha256": "bdca8d09a85a4303b55a76c73e41af39be6cd2dfd9edfedfe6468633c7745b33",
   "schemaVersion": 1,
   "status": "validated",
   "upstream": {
     "branch": "stable",
     "commit": "4c02326989a170bcf1d2c3aab1cf5c70adfed2ca",
-    "fetchedAt": "2026-08-06T15:44:07.597Z"
+    "fetchedAt": "2026-08-07T01:59:04.481Z"
   }
 }

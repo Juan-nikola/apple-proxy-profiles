@@ -2350,13 +2350,23 @@ var SingBoxConfigBundle = (() => {
     system: "local"
   });
   var GLOBAL_DNS = Object.freeze({
-    cloudflare: "https://1.1.1.1/dns-query",
-    google: "https://dns.google/dns-query",
-    quad9: "https://dns.quad9.net/dns-query"
+    cloudflare: Object.freeze({ server: "1.1.1.1", serverName: "cloudflare-dns.com" }),
+    google: Object.freeze({ server: "8.8.8.8", serverName: "dns.google" }),
+    quad9: Object.freeze({ server: "9.9.9.9", serverName: "dns.quad9.net" })
   });
   function renderSingBoxDns(options) {
     const chinaServer = options.chinaDns === "system" ? { type: "local", tag: "dns-direct" } : { type: "udp", tag: "dns-direct", server: CHINA_DNS[options.chinaDns] };
-    const proxyServer = { type: "https", tag: "dns-proxy", server: GLOBAL_DNS[options.globalDns], detour: "\u{1F680} \u8282\u70B9\u9009\u62E9" };
+    const globalDns = GLOBAL_DNS[options.globalDns];
+    if (!globalDns) throw new Error(`Unsupported global DNS provider: ${options.globalDns}`);
+    const proxyServer = {
+      type: "https",
+      tag: "dns-proxy",
+      server: globalDns.server,
+      server_port: 443,
+      path: "/dns-query",
+      tls: { enabled: true, server_name: globalDns.serverName },
+      detour: "\u{1F680} \u8282\u70B9\u9009\u62E9"
+    };
     return {
       servers: [chinaServer, proxyServer],
       rules: [
@@ -2436,6 +2446,20 @@ var SingBoxConfigBundle = (() => {
     if (rule2?.action === "route" || rule2?.action === "bypass") return rule2.outbound;
     return void 0;
   }
+  function validateDnsServerShape(server, errors) {
+    if (server?.type !== "https") return;
+    if (typeof server.server !== "string" || server.server.length === 0) {
+      errors.push("HTTPS DNS server host missing");
+    } else if (/^(?:https?|tls):\/\//iu.test(server.server) || /[/?#\s]/u.test(server.server)) {
+      errors.push("HTTPS DNS server must be a host without scheme or path");
+    }
+    if (server.server_port !== void 0 && (!Number.isInteger(server.server_port) || server.server_port < 1 || server.server_port > 65535)) {
+      errors.push("HTTPS DNS server_port must be between 1 and 65535");
+    }
+    if (server.path !== void 0 && (typeof server.path !== "string" || !server.path.startsWith("/") || /[\r\n]/u.test(server.path))) {
+      errors.push("HTTPS DNS path must start with '/'");
+    }
+  }
   function validateSingBoxConfig(config) {
     const errors = [];
     if (!config || typeof config !== "object" || Array.isArray(config)) return { valid: false, errors: ["config must be an object"] };
@@ -2493,6 +2517,7 @@ var SingBoxConfigBundle = (() => {
       if (rule2.detour !== void 0 && !outboundTags.has(rule2.detour)) errors.push("DNS rule references missing outbound");
     }
     for (const server of config.dns?.servers ?? []) {
+      validateDnsServerShape(server, errors);
       if (server.detour !== void 0 && !outboundTags.has(server.detour)) errors.push("DNS server references missing outbound");
       if (server.detour === server.tag || server.tag === dnsFinal && server.detour === "dns-proxy") errors.push("DNS server loop detected");
     }

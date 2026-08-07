@@ -51,3 +51,19 @@ test("renders deterministic sing-box source rule-set JSON without unsupported en
     upstream,
   }).content);
 });
+
+test("renders IPv6 CIDRs with sing-box's unified ip_cidr field", () => {
+  const text = "IP-CIDR6,2001:db8::/32,no-resolve\n";
+  const parsed = parseSurgeRules(text, source);
+  const result = renderSingBoxRuleSource({
+    source,
+    parsed,
+    fetched: { text, sourceBytes: Buffer.byteLength(text), sourceSha256: "c".repeat(64) },
+    upstream,
+  });
+
+  assert.deepEqual(JSON.parse(result.content), {
+    version: 5,
+    rules: [{ ip_cidr: ["2001:db8::/32"] }],
+  });
+});

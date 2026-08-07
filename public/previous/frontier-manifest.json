@@ -1,6 +1,6 @@
 {
   "channel": "current",
-  "manifestSha256": "c328c934c27463c47fdbf567a26217883dedbc40c699f261f5f3ca28ba69b73a",
+  "manifestSha256": "29e061b8e86590d2048c358eda8b781d5b0e979c4ac031a5ec0ce5af63433ed8",
   "records": [
     {
       "adapterSchema": "surge-adapter-0.1",
@@ -9,7 +9,7 @@
       "configSha256": "18a12969288d79082bdcd29224ebeddcb320a87d3cffec50ae7342419e3bee05",
       "platform": "macos",
       "platformKey": "surge/macos",
-      "ruleManifestSha256": "3d7eb95b48ce6fac7178b63840a72878f5242c44ee9d615baa47fb3dc3d41480",
+      "ruleManifestSha256": "6cba0687c874ed69a588c278f7fd9e74cb736089271adba37f8c19092bc9ddf9",
       "schemaVersion": 1,
       "status": "validated",
       "upstream": {
@@ -25,7 +25,7 @@
       "configSha256": "18a12969288d79082bdcd29224ebeddcb320a87d3cffec50ae7342419e3bee05",
       "platform": "iphone",
       "platformKey": "surge/iphone",
-      "ruleManifestSha256": "3d7eb95b48ce6fac7178b63840a72878f5242c44ee9d615baa47fb3dc3d41480",
+      "ruleManifestSha256": "6cba0687c874ed69a588c278f7fd9e74cb736089271adba37f8c19092bc9ddf9",
       "schemaVersion": 1,
       "status": "validated",
       "upstream": {
@@ -41,7 +41,7 @@
       "configSha256": "18a12969288d79082bdcd29224ebeddcb320a87d3cffec50ae7342419e3bee05",
       "platform": "ipad",
       "platformKey": "surge/ipad",
-      "ruleManifestSha256": "3d7eb95b48ce6fac7178b63840a72878f5242c44ee9d615baa47fb3dc3d41480",
+      "ruleManifestSha256": "6cba0687c874ed69a588c278f7fd9e74cb736089271adba37f8c19092bc9ddf9",
       "schemaVersion": 1,
       "status": "validated",
       "upstream": {
@@ -54,80 +54,80 @@
       "adapterSchema": "singbox-adapter-0.1",
       "channel": "current",
       "client": "singbox",
-      "configSha256": "4b059d74883c333b19ce466ab1b7151e89a8699f558a50dba31f30e13a20031d",
+      "configSha256": "484114659c34fbaa37fe81409f101e8cd48e58751e438f9e0694b70c8e30ac45",
       "platform": "macos",
       "platformKey": "singbox/macos",
-      "ruleManifestSha256": "3d7eb95b48ce6fac7178b63840a72878f5242c44ee9d615baa47fb3dc3d41480",
+      "ruleManifestSha256": "6cba0687c874ed69a588c278f7fd9e74cb736089271adba37f8c19092bc9ddf9",
       "schemaVersion": 1,
       "status": "validated",
       "upstream": {
         "branch": "stable",
         "commit": "4c02326989a170bcf1d2c3aab1cf5c70adfed2ca",
-        "fetchedAt": "2026-08-06T14:35:05.568Z"
+        "fetchedAt": "2026-08-06T15:44:07.597Z"
       }
     },
     {
       "adapterSchema": "singbox-adapter-0.1",
       "channel": "current",
       "client": "singbox",
-      "configSha256": "4b059d74883c333b19ce466ab1b7151e89a8699f558a50dba31f30e13a20031d",
+      "configSha256": "484114659c34fbaa37fe81409f101e8cd48e58751e438f9e0694b70c8e30ac45",
       "platform": "iphone",
       "platformKey": "singbox/iphone",
-      "ruleManifestSha256": "3d7eb95b48ce6fac7178b63840a72878f5242c44ee9d615baa47fb3dc3d41480",
+      "ruleManifestSha256": "6cba0687c874ed69a588c278f7fd9e74cb736089271adba37f8c19092bc9ddf9",
       "schemaVersion": 1,
       "status": "validated",
       "upstream": {
         "branch": "stable",
         "commit": "4c02326989a170bcf1d2c3aab1cf5c70adfed2ca",
-        "fetchedAt": "2026-08-06T14:35:05.568Z"
+        "fetchedAt": "2026-08-06T15:44:07.597Z"
       }
     },
     {
       "adapterSchema": "singbox-adapter-0.1",
       "channel": "current",
       "client": "singbox",
-      "configSha256": "4b059d74883c333b19ce466ab1b7151e89a8699f558a50dba31f30e13a20031d",
+      "configSha256": "484114659c34fbaa37fe81409f101e8cd48e58751e438f9e0694b70c8e30ac45",
       "platform": "ipad",
       "platformKey": "singbox/ipad",
-      "ruleManifestSha256": "3d7eb95b48ce6fac7178b63840a72878f5242c44ee9d615baa47fb3dc3d41480",
+      "ruleManifestSha256": "6cba0687c874ed69a588c278f7fd9e74cb736089271adba37f8c19092bc9ddf9",
       "schemaVersion": 1,
       "status": "validated",
       "upstream": {
         "branch": "stable",
         "commit": "4c02326989a170bcf1d2c3aab1cf5c70adfed2ca",
-        "fetchedAt": "2026-08-06T14:35:05.568Z"
+        "fetchedAt": "2026-08-06T15:44:07.597Z"
       }
     },
     {
       "adapterSchema": "singbox-adapter-0.1",
       "channel": "current",
       "client": "singbox",
-      "configSha256": "4b059d74883c333b19ce466ab1b7151e89a8699f558a50dba31f30e13a20031d",
+      "configSha256": "484114659c34fbaa37fe81409f101e8cd48e58751e438f9e0694b70c8e30ac45",
       "platform": "android",
       "platformKey": "singbox/android",
-      "ruleManifestSha256": "3d7eb95b48ce6fac7178b63840a72878f5242c44ee9d615baa47fb3dc3d41480",
+      "ruleManifestSha256": "6cba0687c874ed69a588c278f7fd9e74cb736089271adba37f8c19092bc9ddf9",
       "schemaVersion": 1,
       "status": "validated",
       "upstream": {
         "branch": "stable",
         "commit": "4c02326989a170bcf1d2c3aab1cf5c70adfed2ca",
-        "fetchedAt": "2026-08-06T14:35:05.568Z"
+        "fetchedAt": "2026-08-06T15:44:07.597Z"
       }
     },
     {
       "adapterSchema": "singbox-adapter-0.1",
       "channel": "current",
       "client": "singbox",
-      "configSha256": "4b059d74883c333b19ce466ab1b7151e89a8699f558a50dba31f30e13a20031d",
+      "configSha256": "484114659c34fbaa37fe81409f101e8cd48e58751e438f9e0694b70c8e30ac45",
       "platform": "openwrt",
       "platformKey": "singbox/openwrt",
-      "ruleManifestSha256": "3d7eb95b48ce6fac7178b63840a72878f5242c44ee9d615baa47fb3dc3d41480",
+      "ruleManifestSha256": "6cba0687c874ed69a588c278f7fd9e74cb736089271adba37f8c19092bc9ddf9",
       "schemaVersion": 1,
       "status": "validated",
       "upstream": {
         "branch": "stable",
         "commit": "4c02326989a170bcf1d2c3aab1cf5c70adfed2ca",
-        "fetchedAt": "2026-08-06T14:35:05.568Z"
+        "fetchedAt": "2026-08-06T15:44:07.597Z"
       }
     }
   ],
