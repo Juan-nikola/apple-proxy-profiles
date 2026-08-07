@@ -169,7 +169,7 @@ assert.equal(result.defaultRuleSets.has("DomesticGame"), true);
 assert.deepEqual(result.diagnostics.overlap, []);
 ```
 
-Use game fixture entries for a `.cn` host, a domain under a domestic game seed suffix, `steampowered.com`, and a game IP CIDR. Assert the first two become `DomesticGame`; the latter two become `OverseasGame`. Include one Chinese IPv4 and one Chinese IPv6 prefix in `ChinaMax` and assert both survive under `ChinaIP`. Assert domain entries covered by `DomesticCore` are removed from narrower direct lists only when the client renderer would otherwise emit identical rules.
+Use game fixture entries for a `.cn` host, a domain under a domestic game seed suffix, `steampowered.com`, and a game IP CIDR. Assert the first two become `DomesticGame`; the latter two become `OverseasGame`. The pinned baseline's `ChinaMax` file is mixed (domain/ASN/process metadata), so add the pinned pure-IP input `ChinaIPs` at `rule/Surge/ChinaIPs/ChinaIPs.list` and include one Chinese IPv4 and one Chinese IPv6 prefix from that input; both must survive under `ChinaIP`. If `ChinaMax` remains fetched for compatibility/audit, it must never feed the `ChinaIP` output. Assert domain entries covered by `DomesticCore` are removed from narrower direct lists only when the client renderer would otherwise emit identical rules.
 
 - [ ] **Step 2: Verify the tests fail**
 
@@ -200,7 +200,7 @@ Rules for compilation:
 
 1. Inject local `DomesticCore` and `DomesticGame` suffix rules.
 2. Partition upstream `Game`: `.cn` and suffixes covered by `DomesticGame` go direct; remaining domains and IP CIDRs become `OverseasGame`.
-3. Rename the upstream `ChinaMax` IP-only output to `ChinaIP`; reject any domain rule found in it.
+3. Compile the pinned pure-IP `ChinaIPs` input as `ChinaIP`; reject any domain or non-address entry found in `ChinaIPs`. The mixed `ChinaMax` input, if retained for compatibility/audit, is never used as `ChinaIP`.
 4. Keep both advertising sources only in `optionalPacks.adblockFull`.
 5. Drop `ChinaMax_Domain` from every default/optional output.
 6. Normalize case, canonicalize CIDRs, remove exact duplicates, and sort deterministically.
@@ -208,11 +208,12 @@ Rules for compilation:
 
 - [ ] **Step 4: Separate fetch inputs from publication outputs**
 
-Build `PUBLISH_SOURCE_CATALOG` from `UPSTREAM_RULE_SOURCE_CATALOG`. Keep upstream `Game`, `ChinaMax`, and advertising URLs in `automation/src/source-catalog.js` because compilation still needs them. Add explicit metadata:
+Build `PUBLISH_SOURCE_CATALOG` from `UPSTREAM_RULE_SOURCE_CATALOG`. Keep upstream `Game`, pinned `ChinaIPs`, and advertising URLs in `automation/src/source-catalog.js` because compilation still needs them. `ChinaMax` may remain as an input-only compatibility/audit source but is not a ChinaIP compiler input. Add explicit metadata:
 
 ```js
 { id: "Game", inputOnly: true }
-{ id: "ChinaMax", inputOnly: true }
+{ id: "ChinaIPs", inputOnly: true }
+{ id: "ChinaMax", inputOnly: true, auditOnly: true }
 { id: "ChinaMax_Domain", inputOnly: true }
 { id: "Advertising", optionalPack: "adblock-full" }
 { id: "Advertising_Domain", optionalPack: "adblock-full" }
