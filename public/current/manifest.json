@@ -1976,19 +1976,19 @@
       "sha256": "2119818643636138563828ed9fa539ea89909bc5099b157c5a7dca29650c8e5d"
     },
     {
-      "bytes": 31839,
+      "bytes": 31815,
       "path": "egern/examples/egern-ipad.yaml",
-      "sha256": "9c61d6c088b501619fd08be3f9d83665174b444732e58306574566b75db6c9f6"
+      "sha256": "2273c3cd43800b68b5e90d7874e6a31b939b4fb6be874e719a71eb2a3c3edbba"
     },
     {
-      "bytes": 31839,
+      "bytes": 31815,
       "path": "egern/examples/egern-iphone.yaml",
-      "sha256": "9c61d6c088b501619fd08be3f9d83665174b444732e58306574566b75db6c9f6"
+      "sha256": "2273c3cd43800b68b5e90d7874e6a31b939b4fb6be874e719a71eb2a3c3edbba"
     },
     {
-      "bytes": 31834,
+      "bytes": 31810,
       "path": "egern/examples/egern-macos.yaml",
-      "sha256": "b8c7a15215721cd4b690d7f77ead99f9ba3ac7aff35e1737d24716a08b91d959"
+      "sha256": "7c1aa028b7ee6fee244093c407e64cb20e71dc0b81bc26eec3b2e4a117e99eb8"
     },
     {
       "bytes": 18128,
@@ -2156,9 +2156,9 @@
       "sha256": "82dd7eefa1b4ca105d793ff58c670f953b5fc8a2a51ff37d03732e65ffbb0798"
     },
     {
-      "bytes": 203536,
+      "bytes": 203530,
       "path": "egern/scripts/egern-profile-generator.js",
-      "sha256": "7f390da69ab3faddf39d6cc7882bf5e43d13fe5f13e6fa08bf40d3bd1882266b"
+      "sha256": "108bb9dc25845fdc0b193595946e31ff02df4fba9ce6734e1d30369dd2f8be05"
     },
     {
       "bytes": 130590,
@@ -2166,24 +2166,24 @@
       "sha256": "82dd7eefa1b4ca105d793ff58c670f953b5fc8a2a51ff37d03732e65ffbb0798"
     },
     {
-      "bytes": 203536,
+      "bytes": 203530,
       "path": "egern/scripts/substore-profile-generator.js",
-      "sha256": "7f390da69ab3faddf39d6cc7882bf5e43d13fe5f13e6fa08bf40d3bd1882266b"
+      "sha256": "108bb9dc25845fdc0b193595946e31ff02df4fba9ce6734e1d30369dd2f8be05"
     },
     {
-      "bytes": 19700,
+      "bytes": 19688,
       "path": "shadowrocket/examples/shadowrocket-ipad.conf",
-      "sha256": "eb07bf20b4876adb7e7555d5cf4aa064e84e037439afd47c0d695573537290f8"
+      "sha256": "4cab97d0493e1088bcd65815f5d82505982b405622f70d4e84ccf9e741e5c435"
     },
     {
-      "bytes": 19702,
+      "bytes": 19690,
       "path": "shadowrocket/examples/shadowrocket-iphone.conf",
-      "sha256": "5ace85030afd842a62cb10504435f9e5b06cf79d416373a153e179dde8c21544"
+      "sha256": "caf22efbf1c2eb4a04ced4cef4172acba5f6ab3855515a7c77bfb44ace689149"
     },
     {
-      "bytes": 19694,
+      "bytes": 19682,
       "path": "shadowrocket/examples/shadowrocket-macos.conf",
-      "sha256": "03dbe69d3625d0896552f4153d878e021846ee11b87ae147220e38e39bde7fd8"
+      "sha256": "0dd03695d5a5af5e470246a41fc419a7254fb36ea52e779326813759e34a3d1a"
     },
     {
       "bytes": 27237,
@@ -2351,9 +2351,9 @@
       "sha256": "676c0af7d79d1e3aca9edca296a472fed1bd0eae3abd76bf5eb14962f99ff0e1"
     },
     {
-      "bytes": 52218,
+      "bytes": 52212,
       "path": "shadowrocket/scripts/shadowrocket-profile-generator.js",
-      "sha256": "befa7ca428255f020d169a818ebb7a2131cdb973fe0b3b3ee6ace9b5aed766d4"
+      "sha256": "c2b53321450a09cbbc22e75769c6cf15168907af07d7487a960e80c7a687acdb"
     },
     {
       "bytes": 85219,
@@ -2361,9 +2361,9 @@
       "sha256": "676c0af7d79d1e3aca9edca296a472fed1bd0eae3abd76bf5eb14962f99ff0e1"
     },
     {
-      "bytes": 52218,
+      "bytes": 52212,
       "path": "shadowrocket/scripts/substore-profile-generator.js",
-      "sha256": "befa7ca428255f020d169a818ebb7a2131cdb973fe0b3b3ee6ace9b5aed766d4"
+      "sha256": "c2b53321450a09cbbc22e75769c6cf15168907af07d7487a960e80c7a687acdb"
     },
     {
       "bytes": 27840,
@@ -2551,14 +2551,14 @@
       "sha256": "8e9bdc631078d0d8e8e8b4311adc7ffbe6a4d7fd77f2b93ddb84f6bf151a36fd"
     },
     {
-      "bytes": 128806,
+      "bytes": 128800,
       "path": "sing-box/scripts/sing-box-config-generator.js",
-      "sha256": "d5a83b9af9bac97bae439f310442adb8197ac5e0fe7df6db3d8c77416b353d9a"
+      "sha256": "7d5d2283097bee33df9570dc45951c503fe3274dae69c65c22470bbdf34e62af"
     },
     {
-      "bytes": 128806,
+      "bytes": 128800,
       "path": "sing-box/scripts/substore-config-generator.js",
-      "sha256": "d5a83b9af9bac97bae439f310442adb8197ac5e0fe7df6db3d8c77416b353d9a"
+      "sha256": "7d5d2283097bee33df9570dc45951c503fe3274dae69c65c22470bbdf34e62af"
     },
     {
       "bytes": 16394,
@@ -2757,7 +2757,7 @@
     }
   ],
   "generatedAt": "2026-08-05T19:24:33Z",
-  "manifestHash": "4e033617f1e2b1b55189a856c869ad7f3e479261070b3f777b53aec987105323",
+  "manifestHash": "e66cea341d1871a179e8e0e27b9866197a15017d42c463da0642a9e750f146c4",
   "schemaVersion": 1,
   "upstream": {
     "branch": "master",
