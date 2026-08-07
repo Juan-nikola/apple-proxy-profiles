@@ -2410,14 +2410,15 @@ var SingBoxConfigBundle = (() => {
     Advertising: "\u{1F9F1} \u5E38\u89C1\u5E7F\u544A",
     Advertising_Domain: "\u{1F9F1} \u5E38\u89C1\u5E7F\u544A"
   });
-  var DOMAIN_SET_IDS = /* @__PURE__ */ new Set(["DomesticCore", "DomesticGame", "Advertising_Domain"]);
   function clientRecord(id) {
     const policy = SOURCE_POLICIES[id];
     if (!policy) throw new Error(`Missing policy for lightweight rule source: ${id}`);
     return Object.freeze({
       id,
       policy,
-      inputFormat: DOMAIN_SET_IDS.has(id) ? "DOMAIN-SET" : "RULE-SET"
+      // The publication pipeline emits normalized, typed Surge/Shadowrocket
+      // lines for every compiled source, including domain-only inputs.
+      inputFormat: "RULE-SET"
     });
   }
   var DEFAULT_RULE_CLIENT_CATALOG = Object.freeze(DEFAULT_RULE_SOURCE_IDS.map(clientRecord));
