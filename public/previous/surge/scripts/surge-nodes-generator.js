@@ -1,4 +1,4 @@
-var AnywhereNodeBundle = (() => {
+var SurgeNodesBundle = (() => {
   var __defProp = Object.defineProperty;
   var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
   var __getOwnPropNames = Object.getOwnPropertyNames;
@@ -17,13 +17,13 @@ var AnywhereNodeBundle = (() => {
   };
   var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
-  // substore-nodes-entry.js
+  // src/substore-nodes-entry.js
   var substore_nodes_entry_exports = {};
   __export(substore_nodes_entry_exports, {
     operator: () => operator
   });
 
-  // ../../../shared/contracts.js
+  // ../../shared/contracts.js
   var CLIENT = Object.freeze({
     shadowrocket: "shadowrocket",
     egern: "egern",
@@ -65,7 +65,7 @@ var AnywhereNodeBundle = (() => {
     return node._profile;
   }
 
-  // ../../../shared/nodes/diagnostics.js
+  // ../../shared/nodes/diagnostics.js
   function createDiagnostics() {
     return {
       total: 0,
@@ -93,7 +93,7 @@ var AnywhereNodeBundle = (() => {
     });
   }
 
-  // ../../../shared/nodes/protocol-registry.js
+  // ../../shared/nodes/protocol-registry.js
   function protocol(names, clients, { requiredFields = [], tls = false } = {}) {
     return Object.freeze({
       names: Object.freeze(names),
@@ -164,7 +164,7 @@ var AnywhereNodeBundle = (() => {
     return registry.has(normalized) ? normalized : "unknown";
   }
 
-  // ../../../shared/nodes/capabilities.js
+  // ../../shared/nodes/capabilities.js
   var ANYWHERE_VLESS_NETWORKS = /* @__PURE__ */ new Set(["tcp", "ws"]);
   var ANYWHERE_SHADOWSOCKS_METHODS = /* @__PURE__ */ new Set([
     "aes-128-gcm",
@@ -1077,529 +1077,7 @@ var AnywhereNodeBundle = (() => {
     return { nodes: supportedNodes, diagnostics };
   }
 
-  // ../../../shared/serialization/render-yaml.js
-  var INDENT_WIDTH = 2;
-  var PLAIN_KEY = /^[A-Za-z_][A-Za-z0-9_-]*$/;
-  var YAML_BOOLEAN_OR_NULL = /^(?:false|null|true)$/i;
-  var RAW_YAML_LINE_OR_C1_CHARACTER = /[\u007f-\u009f\u2028\u2029]/g;
-  function displayPath(path) {
-    return path || "<root>";
-  }
-  function encodeYamlDoubleQuotedString(value, path, { propertyKey = false } = {}) {
-    for (let index = 0; index < value.length; index += 1) {
-      const codeUnit = value.charCodeAt(index);
-      if (codeUnit >= 55296 && codeUnit <= 56319) {
-        const nextCodeUnit = value.charCodeAt(index + 1);
-        if (nextCodeUnit >= 56320 && nextCodeUnit <= 57343) {
-          index += 1;
-          continue;
-        }
-      } else if (codeUnit < 56320 || codeUnit > 57343) {
-        continue;
-      }
-      const subject = propertyKey ? "property key" : "string";
-      throw new TypeError(`Ill-formed UTF-16 ${subject} at ${displayPath(path)}`);
-    }
-    return JSON.stringify(value).replace(
-      RAW_YAML_LINE_OR_C1_CHARACTER,
-      (character) => `\\u${character.charCodeAt(0).toString(16).padStart(4, "0")}`
-    );
-  }
-  function propertyPath(path, key) {
-    if (/^[A-Za-z_$][A-Za-z0-9_$]*$/.test(key)) {
-      return path ? `${path}.${key}` : key;
-    }
-    return `${path}[${encodeYamlDoubleQuotedString(key, path, { propertyKey: true })}]`;
-  }
-  function indexPath(path, index) {
-    return `${path}[${index}]`;
-  }
-  function renderKey(key, path) {
-    if (PLAIN_KEY.test(key) && !YAML_BOOLEAN_OR_NULL.test(key)) {
-      return key;
-    }
-    return encodeYamlDoubleQuotedString(key, path, { propertyKey: true });
-  }
-  function scalarText(value, path) {
-    if (value === null) {
-      return "null";
-    }
-    switch (typeof value) {
-      case "boolean":
-        return value ? "true" : "false";
-      case "number":
-        if (!Number.isFinite(value)) {
-          throw new TypeError(`Expected finite number at ${displayPath(path)}`);
-        }
-        return Object.is(value, -0) ? "-0" : JSON.stringify(value);
-      case "string":
-        return encodeYamlDoubleQuotedString(value, path);
-      case "undefined":
-      case "function":
-      case "symbol":
-      case "bigint":
-        throw new TypeError(`Unsupported YAML value at ${displayPath(path)}`);
-      default:
-        return null;
-    }
-  }
-  function isEmptyCollection(value) {
-    if (Array.isArray(value)) {
-      return value.length === 0;
-    }
-    return Reflect.ownKeys(value).length === 0;
-  }
-  function emptyCollectionText(value) {
-    return Array.isArray(value) ? "[]" : "{}";
-  }
-  function inspectArray(value, path) {
-    const keys = Reflect.ownKeys(value);
-    for (const key of keys) {
-      if (typeof key === "symbol") {
-        throw new TypeError(`Symbol key at ${displayPath(path)}`);
-      }
-      if (key === "length") {
-        continue;
-      }
-      const index = Number(key);
-      const canonicalIndex = Number.isInteger(index) && index >= 0 && index < value.length && String(index) === key;
-      if (!canonicalIndex) {
-        throw new TypeError(`Unsupported YAML array property at ${propertyPath(path, key)}`);
-      }
-    }
-    const descriptors = [];
-    for (let index = 0; index < value.length; index += 1) {
-      const descriptor = Object.getOwnPropertyDescriptor(value, String(index));
-      const itemPath = indexPath(path, index);
-      if (!descriptor) {
-        throw new TypeError(`Sparse YAML array at ${displayPath(itemPath)}`);
-      }
-      if ("get" in descriptor || "set" in descriptor) {
-        throw new TypeError(`Accessor property at ${displayPath(itemPath)}`);
-      }
-      descriptors.push(descriptor);
-    }
-    return descriptors;
-  }
-  function inspectObject(value, path) {
-    const prototype = Object.getPrototypeOf(value);
-    if (prototype !== Object.prototype && prototype !== null) {
-      throw new TypeError(`Expected plain object or array at ${displayPath(path)}`);
-    }
-    const descriptors = [];
-    for (const key of Reflect.ownKeys(value)) {
-      if (typeof key === "symbol") {
-        throw new TypeError(`Symbol key at ${displayPath(path)}`);
-      }
-      const descriptor = Object.getOwnPropertyDescriptor(value, key);
-      const childPath = propertyPath(path, key);
-      if ("get" in descriptor || "set" in descriptor) {
-        throw new TypeError(`Accessor property at ${displayPath(childPath)}`);
-      }
-      if (!descriptor.enumerable) {
-        throw new TypeError(`Non-enumerable property at ${displayPath(childPath)}`);
-      }
-      descriptors.push([key, descriptor]);
-    }
-    return descriptors;
-  }
-  function renderNode(value, path, indent, active) {
-    const scalar = scalarText(value, path);
-    if (scalar !== null) {
-      return [" ".repeat(indent) + scalar];
-    }
-    if (typeof value !== "object") {
-      throw new TypeError(`Unsupported YAML value at ${displayPath(path)}`);
-    }
-    if (active.has(value)) {
-      throw new TypeError(`Cyclic YAML value at ${displayPath(path)}`);
-    }
-    active.add(value);
-    try {
-      if (Array.isArray(value)) {
-        const descriptors2 = inspectArray(value, path);
-        if (descriptors2.length === 0) {
-          return [" ".repeat(indent) + "[]"];
-        }
-        const lines2 = [];
-        for (let index = 0; index < descriptors2.length; index += 1) {
-          const item = descriptors2[index].value;
-          const itemPath = indexPath(path, index);
-          const itemScalar = scalarText(item, itemPath);
-          if (itemScalar !== null) {
-            lines2.push(`${" ".repeat(indent)}- ${itemScalar}`);
-            continue;
-          }
-          const itemLines = renderNode(item, itemPath, indent + INDENT_WIDTH, active);
-          if (isEmptyCollection(item)) {
-            lines2.push(`${" ".repeat(indent)}- ${emptyCollectionText(item)}`);
-          } else if (Array.isArray(item)) {
-            lines2.push(`${" ".repeat(indent)}-`);
-            for (const line of itemLines) lines2.push(line);
-          } else {
-            const itemIndent = " ".repeat(indent + INDENT_WIDTH);
-            lines2.push(`${" ".repeat(indent)}- ${itemLines[0].slice(itemIndent.length)}`);
-            for (let lineIndex = 1; lineIndex < itemLines.length; lineIndex += 1) {
-              lines2.push(itemLines[lineIndex]);
-            }
-          }
-        }
-        return lines2;
-      }
-      const descriptors = inspectObject(value, path);
-      if (descriptors.length === 0) {
-        return [" ".repeat(indent) + "{}"];
-      }
-      const lines = [];
-      for (const [key, descriptor] of descriptors) {
-        const child = descriptor.value;
-        const childPath = propertyPath(path, key);
-        const childScalar = scalarText(child, childPath);
-        const prefix = `${" ".repeat(indent)}${renderKey(key, path)}:`;
-        if (childScalar !== null) {
-          lines.push(`${prefix} ${childScalar}`);
-          continue;
-        }
-        const childLines = renderNode(
-          child,
-          childPath,
-          indent + INDENT_WIDTH,
-          active
-        );
-        if (isEmptyCollection(child)) {
-          lines.push(`${prefix} ${emptyCollectionText(child)}`);
-        } else {
-          lines.push(prefix);
-          for (const line of childLines) lines.push(line);
-        }
-      }
-      return lines;
-    } finally {
-      active.delete(value);
-    }
-  }
-  function renderYaml(value) {
-    return `${renderNode(value, "", 0, /* @__PURE__ */ new WeakSet()).join("\n")}
-`;
-  }
-
-  // render-node.js
-  function hasOwn(value, key) {
-    return Object.hasOwn(value, key);
-  }
-  function firstOwn(source, keys) {
-    for (const key of keys) {
-      if (hasOwn(source, key)) return source[key];
-    }
-    return void 0;
-  }
-  function copyOptional(target, key, source, sourceKey = key) {
-    if (hasOwn(source, sourceKey)) target[key] = source[sourceKey];
-  }
-  function commonFields(node, type) {
-    return {
-      name: node.name,
-      type,
-      server: node.server,
-      port: Number(node.port)
-    };
-  }
-  function appendTlsFields(target, node) {
-    const servername = firstOwn(node, ["servername", "sni"]);
-    if (servername !== void 0) target.servername = servername;
-    if (hasOwn(node, "alpn")) target.alpn = [...node.alpn];
-    copyOptional(target, "client-fingerprint", node);
-    if (hasOwn(node, "ech-opts")) {
-      const source = node["ech-opts"];
-      const ech = {};
-      for (const key of ["enable", "config", "query-server-name"]) copyOptional(ech, key, source);
-      target["ech-opts"] = ech;
-    }
-    return target;
-  }
-  function renderVless(node) {
-    const network = String(node.network ?? "tcp").trim().toLowerCase();
-    const proxy = {
-      ...commonFields(node, "vless"),
-      uuid: node.uuid,
-      network,
-      encryption: node.encryption ?? "none"
-    };
-    copyOptional(proxy, "flow", node);
-    if (node.tls === true || node.security === "tls") proxy.tls = true;
-    appendTlsFields(proxy, node);
-    if (hasOwn(node, "reality-opts")) {
-      const source = node["reality-opts"];
-      proxy["reality-opts"] = { "public-key": source["public-key"] };
-      copyOptional(proxy["reality-opts"], "short-id", source);
-    }
-    if (network === "ws" && hasOwn(node, "ws-opts")) {
-      const source = node["ws-opts"];
-      const options = {};
-      for (const key of ["path", "v2ray-http-upgrade", "max-early-data", "early-data-header-name"]) {
-        copyOptional(options, key, source);
-      }
-      if (hasOwn(source, "headers")) options.headers = { ...source.headers };
-      proxy["ws-opts"] = options;
-    }
-    return proxy;
-  }
-  function renderTrojan(node) {
-    return appendTlsFields({
-      ...commonFields(node, "trojan"),
-      password: node.password,
-      network: "tcp",
-      tls: true
-    }, node);
-  }
-  function renderAnyTls(node) {
-    const proxy = appendTlsFields({
-      ...commonFields(node, "anytls"),
-      password: node.password,
-      network: "tcp",
-      tls: true
-    }, node);
-    for (const key of ["idle-session-check-interval", "idle-session-timeout", "min-idle-session"]) {
-      copyOptional(proxy, key, node);
-    }
-    return proxy;
-  }
-  function renderHysteria2(node) {
-    const proxy = {
-      ...commonFields(node, "hysteria2"),
-      password: node.password
-    };
-    const sni = firstOwn(node, ["servername", "sni"]);
-    if (sni !== void 0) proxy.sni = sni;
-    copyOptional(proxy, "up", node);
-    copyOptional(proxy, "down", node);
-    copyOptional(proxy, "obfs", node);
-    const obfsPassword = firstOwn(node, ["obfs-password", "obfs_password"]);
-    const obfsMin = firstOwn(node, ["obfs-min-packet-size", "obfs_min_packet_size"]);
-    const obfsMax = firstOwn(node, ["obfs-max-packet-size", "obfs_max_packet_size"]);
-    if (obfsPassword !== void 0) proxy["obfs-password"] = obfsPassword;
-    if (obfsMin !== void 0) proxy["obfs-min-packet-size"] = obfsMin;
-    if (obfsMax !== void 0) proxy["obfs-max-packet-size"] = obfsMax;
-    return proxy;
-  }
-  function renderShadowsocks(node) {
-    return {
-      ...commonFields(node, "ss"),
-      cipher: node.cipher.toLowerCase(),
-      password: node.password,
-      network: "tcp"
-    };
-  }
-  function renderSocks5(node) {
-    const proxy = commonFields(node, "socks5");
-    copyOptional(proxy, "username", node);
-    copyOptional(proxy, "password", node);
-    return proxy;
-  }
-  function normalizedSudokuAscii(value) {
-    switch (String(value ?? "prefer_entropy").toLowerCase()) {
-      case "ascii":
-        return "prefer_ascii";
-      case "entropy":
-        return "prefer_entropy";
-      default:
-        return String(value ?? "prefer_entropy").toLowerCase();
-    }
-  }
-  function renderSudoku(node) {
-    const proxy = {
-      ...commonFields(node, "sudoku"),
-      key: node.key
-    };
-    const aead = firstOwn(node, ["aead-method", "aead"]);
-    const ascii = firstOwn(node, ["table-type", "ascii"]);
-    const tables = firstOwn(node, ["custom-tables", "custom_tables", "customTables"]);
-    const legacyTable = firstOwn(node, ["custom-table", "custom_table", "table"]);
-    const paddingMin = firstOwn(node, ["padding-min", "padding_min"]);
-    const paddingMax = firstOwn(node, ["padding-max", "padding_max"]);
-    const pureDownlink = firstOwn(node, ["enable-pure-downlink", "enable_pure_downlink"]);
-    if (aead !== void 0) proxy["aead-method"] = aead.toLowerCase();
-    if (ascii !== void 0) proxy["table-type"] = normalizedSudokuAscii(ascii);
-    if (tables !== void 0) proxy["custom-tables"] = [...tables];
-    if (legacyTable !== void 0) proxy["custom-table"] = legacyTable;
-    if (paddingMin !== void 0) proxy["padding-min"] = paddingMin;
-    if (paddingMax !== void 0) proxy["padding-max"] = paddingMax;
-    if (pureDownlink !== void 0) proxy["enable-pure-downlink"] = pureDownlink;
-    if (hasOwn(node, "multiplex")) proxy.multiplex = node.multiplex.toLowerCase();
-    if (hasOwn(node, "httpmask")) {
-      const source = node.httpmask;
-      const httpmask = {};
-      for (const key of ["disable", "mode", "tls", "host"]) copyOptional(httpmask, key, source);
-      const pathRoot = firstOwn(source, ["path-root", "path_root"]);
-      if (pathRoot !== void 0) httpmask["path-root"] = pathRoot;
-      proxy.httpmask = httpmask;
-    }
-    return proxy;
-  }
-  function renderAnywhereProxy(node) {
-    const reason = anywhereNodeExclusionReason(node);
-    if (reason) throw new Error("Unsupported Anywhere proxy node");
-    switch (normalizeProtocol(node.type)) {
-      case "vless":
-        return renderVless(node);
-      case "hysteria2":
-      case "hy2":
-        return renderHysteria2(node);
-      case "trojan":
-        return renderTrojan(node);
-      case "anytls":
-        return renderAnyTls(node);
-      case "ss":
-      case "shadowsocks":
-        return renderShadowsocks(node);
-      case "socks5":
-        return renderSocks5(node);
-      case "sudoku":
-        return renderSudoku(node);
-      default:
-        throw new Error("Unsupported Anywhere proxy node");
-    }
-  }
-  function toAnywhereProxy(node) {
-    try {
-      return renderAnywhereProxy(node);
-    } catch {
-      throw new Error("Unsupported Anywhere proxy node");
-    }
-  }
-
-  // validate-subscription.js
-  var MAX_SUBSCRIPTION_BYTES = 8e6;
-  function assertAnywhereSubscription(subscription, proxies) {
-    if (typeof subscription !== "string" || subscription.length === 0 || subscription.length > MAX_SUBSCRIPTION_BYTES || !Array.isArray(proxies) || proxies.length === 0 || subscription !== renderYaml({ proxies })) {
-      throw new Error("Invalid Anywhere subscription");
-    }
-    return { proxyCount: proxies.length };
-  }
-
-  // render-subscription.js
-  function formatExcludedCounts(excluded) {
-    return Object.keys(excluded).sort((left, right) => left.localeCompare(right, "en")).map((reason) => `${reason}=${excluded[reason]}`).join(",");
-  }
-  function parsePrepareOptions(options) {
-    try {
-      if (options === void 0) return {};
-      if (options === null || typeof options !== "object" || Array.isArray(options)) throw new Error();
-      const prototype = Object.getPrototypeOf(options);
-      if (prototype !== Object.prototype && prototype !== null) throw new Error();
-      const keys = Reflect.ownKeys(options);
-      if (keys.some((key) => typeof key !== "string" || key !== "onDiagnostics")) throw new Error();
-      if (!Object.hasOwn(options, "onDiagnostics")) return {};
-      const descriptor = Object.getOwnPropertyDescriptor(options, "onDiagnostics");
-      if (!descriptor || "get" in descriptor || "set" in descriptor || typeof descriptor.value !== "function") throw new Error();
-      return { onDiagnostics: descriptor.value };
-    } catch {
-      throw new Error("Invalid Anywhere render options");
-    }
-  }
-  function prepareAnywhereInventory(nodes, options) {
-    const { onDiagnostics } = parsePrepareOptions(options);
-    if (onDiagnostics !== void 0 && typeof onDiagnostics !== "function") {
-      throw new Error("onDiagnostics must be a function");
-    }
-    let filtered;
-    try {
-      filtered = filterNodesForClient(nodes, CLIENT.anywhere);
-    } catch {
-      throw new Error("Invalid Anywhere node inventory");
-    }
-    if (filtered.nodes.length === 0) {
-      const counts = formatExcludedCounts(filtered.diagnostics.excluded);
-      throw new Error(`No compatible Anywhere nodes; excluded counts: ${counts || "none"}`);
-    }
-    const names = /* @__PURE__ */ new Set();
-    const proxies = filtered.nodes.map((node) => {
-      const proxy = toAnywhereProxy(node);
-      if (names.has(proxy.name)) throw new Error("Duplicate Anywhere proxy name");
-      names.add(proxy.name);
-      return proxy;
-    });
-    const diagnostics = structuredClone(filtered.diagnostics);
-    onDiagnostics?.(structuredClone(diagnostics));
-    return { proxies, diagnostics };
-  }
-  function renderAnywhereSubscription(nodes, options = {}) {
-    const prepared = prepareAnywhereInventory(nodes, options);
-    const subscription = renderYaml({ proxies: prepared.proxies });
-    assertAnywhereSubscription(subscription, prepared.proxies);
-    return subscription;
-  }
-
-  // runtime-fallbacks.js
-  var CLONE_ERROR = "Anywhere structured clone fallback rejected unsupported data";
-  function cloneFailure() {
-    return new TypeError(CLONE_ERROR);
-  }
-  function arrayIndex(key, length) {
-    if (!/^(?:0|[1-9]\d*)$/u.test(key)) return false;
-    const index = Number(key);
-    return Number.isSafeInteger(index) && index >= 0 && index < length && index <= 4294967294 && String(index) === key;
-  }
-  function cloneData(value, seen) {
-    if (value === null || typeof value !== "object") {
-      if (["undefined", "boolean", "string", "number", "bigint"].includes(typeof value)) return value;
-      throw cloneFailure();
-    }
-    if (seen.has(value)) return seen.get(value);
-    const prototype = Object.getPrototypeOf(value);
-    const isArray = Array.isArray(value);
-    if (isArray ? prototype !== Array.prototype : prototype !== Object.prototype && prototype !== null) {
-      throw cloneFailure();
-    }
-    const keys = Reflect.ownKeys(value);
-    const result = isArray ? [] : Object.create(prototype === null ? null : Object.prototype);
-    seen.set(value, result);
-    const length = isArray ? value.length : 0;
-    for (const key of keys) {
-      if (typeof key !== "string") throw cloneFailure();
-      if (isArray && key === "length") continue;
-      if (isArray && !arrayIndex(key, length)) throw cloneFailure();
-      const descriptor = Object.getOwnPropertyDescriptor(value, key);
-      if (!descriptor || "get" in descriptor || "set" in descriptor || !descriptor.enumerable) throw cloneFailure();
-      Object.defineProperty(result, key, {
-        value: cloneData(descriptor.value, seen),
-        enumerable: true,
-        configurable: true,
-        writable: true
-      });
-    }
-    if (isArray) result.length = length;
-    return result;
-  }
-  function anywhereStructuredCloneFallback(value) {
-    try {
-      return cloneData(value, /* @__PURE__ */ new WeakMap());
-    } catch {
-      throw cloneFailure();
-    }
-  }
-  function installAnywhereRuntimeFallbacks() {
-    let implementation;
-    try {
-      implementation = globalThis.structuredClone;
-      if (implementation !== void 0 && typeof implementation !== "function") throw new Error();
-    } catch {
-      throw new Error("Anywhere runtime compatibility unavailable");
-    }
-    if (implementation !== void 0) return;
-    try {
-      Object.defineProperty(globalThis, "structuredClone", {
-        value: anywhereStructuredCloneFallback,
-        configurable: true,
-        enumerable: false,
-        writable: true
-      });
-    } catch {
-      throw new Error("Anywhere runtime compatibility unavailable");
-    }
-  }
-
-  // ../../../shared/nodes/client-chain.js
+  // ../../shared/nodes/client-chain.js
   var SUPPORTED_LANDING_PROTOCOLS = /* @__PURE__ */ new Set([
     "ss",
     "shadowsocks",
@@ -1647,7 +1125,7 @@ var AnywhereNodeBundle = (() => {
     return [...nodes, ...clones];
   }
 
-  // ../../../shared/nodes/node-identity.js
+  // ../../shared/nodes/node-identity.js
   var EXCLUDED_TOP_LEVEL_KEYS = /* @__PURE__ */ new Set(["name"]);
   var SEMANTIC_UNDERSCORE_KEYS = /* @__PURE__ */ new Set(["_network"]);
   function isSemanticUnderscoreKey(key) {
@@ -1700,7 +1178,7 @@ var AnywhereNodeBundle = (() => {
     return (hash >>> 0).toString(36).padStart(7, "0");
   }
 
-  // ../../../shared/nodes/node-validation.js
+  // ../../shared/nodes/node-validation.js
   var PSEUDO_NODE_PATTERN = /剩余|流量|到期|套餐|官网|公告|通知|traffic|expire|website/i;
   function isNonblankOpaqueString2(value) {
     return typeof value === "string" && value.trim().length > 0;
@@ -1760,7 +1238,7 @@ var AnywhereNodeBundle = (() => {
     return { valid: true, reason: null, warnings };
   }
 
-  // ../../../shared/nodes/country-regions.js
+  // ../../shared/nodes/country-regions.js
   var REGION_CODES = Object.freeze({
     [CONTINENT.asiaPacific]: Object.freeze(`
     AE AF AM AS AU AZ BD BH BN BT CC CK CN CX CY FJ FM GE GU HK HM ID IL IN
@@ -1801,7 +1279,7 @@ var AnywhereNodeBundle = (() => {
     return FLAG_CONTINENTS.get(flag) ?? null;
   }
 
-  // ../../../shared/nodes/regions.js
+  // ../../shared/nodes/regions.js
   var FLAG_PATTERN = /[\u{1F1E6}-\u{1F1FF}]{2}/gu;
   var RAW_REGIONS = [
     {
@@ -1875,7 +1353,7 @@ var AnywhereNodeBundle = (() => {
     return { flag: "\u{1F310}", continent: CONTINENT.other, warning: null };
   }
 
-  // ../../../shared/nodes/source-labels.js
+  // ../../shared/nodes/source-labels.js
   var PROVENANCE_FIELDS = [
     "_subDisplayName",
     "_subName",
@@ -1922,7 +1400,7 @@ var AnywhereNodeBundle = (() => {
     return name.replaceAll(SOURCE_MARKER_PATTERN, " ");
   }
 
-  // ../../../shared/nodes/normalize-nodes.js
+  // ../../shared/nodes/normalize-nodes.js
   var CONTINENT_ORDER = /* @__PURE__ */ new Map([
     [CONTINENT.asiaPacific, 0],
     [CONTINENT.europe, 1],
@@ -2134,174 +1612,313 @@ var AnywhereNodeBundle = (() => {
     };
   }
 
-  // substore-runtime.js
-  var DIAGNOSTIC_PREFIX = "[anywhere-profile] ";
-  function argumentsFrom(context) {
-    if (context === void 0) return {};
-    if (context === null || typeof context !== "object") throw new Error("Anywhere operator context is invalid");
-    let descriptor;
-    try {
-      descriptor = Object.getOwnPropertyDescriptor(context, "arguments");
-    } catch {
-      throw new Error("Anywhere operator arguments are unavailable");
+  // ../../shared/policies/platform-presets.js
+  var POLICY_PLATFORM_PRESETS = Object.freeze({
+    macos: Object.freeze({ testInterval: 600, timeout: 5, tolerance: 100 }),
+    iphone: Object.freeze({ testInterval: 1800, timeout: 7, tolerance: 150 }),
+    ipad: Object.freeze({ testInterval: 1800, timeout: 7, tolerance: 150 }),
+    android: Object.freeze({ testInterval: 1800, timeout: 7, tolerance: 150 }),
+    openwrt: Object.freeze({ testInterval: 600, timeout: 5, tolerance: 100 }),
+    appletv: Object.freeze({ testInterval: 3600, timeout: 8, tolerance: 200 })
+  });
+
+  // src/options.js
+  var REQUIRED_KEYS = Object.freeze(["output", "type", "name", "subscriptionName", "platform"]);
+  var NODE_REQUIRED_KEYS = Object.freeze(["output", "type", "name"]);
+  var DEFAULTS = Object.freeze({
+    dnsMode: "stable",
+    chinaDns: "alidns",
+    globalDns: "cloudflare",
+    blockMode: "balanced",
+    quicMode: "proxy-block",
+    ipv6Mode: "auto",
+    autoGroupMode: "auto",
+    clientChain: "off"
+  });
+  var PARSED_NODES = /* @__PURE__ */ new WeakSet();
+  var ALLOWED_KEYS = /* @__PURE__ */ new Set([...REQUIRED_KEYS, ...Object.keys(DEFAULTS), "proxyPolicyUrl"]);
+  var NODE_ALLOWED_KEYS = /* @__PURE__ */ new Set([...NODE_REQUIRED_KEYS, "clientChain"]);
+  function requiredString(raw, key) {
+    const value = raw[key];
+    if (typeof value !== "string" || value.length === 0 || value.trim() !== value || /[\r\n]/u.test(value)) {
+      throw new Error(`Option '${key}' must be a non-empty single-line string`);
     }
-    if (descriptor === void 0) return {};
-    if ("get" in descriptor || "set" in descriptor) throw new Error("Anywhere operator arguments are unavailable");
-    return descriptor.value;
+    return value;
   }
-  function producerFrom(context) {
-    let producer;
-    try {
-      producer = context?.produceArtifact;
-    } catch {
-      throw new Error("produceArtifact is unavailable");
+  function enumValue(raw, key, defaultValue) {
+    const value = raw[key] === void 0 ? defaultValue : raw[key];
+    if (typeof value !== "string" || !OPTION_VALUES[key]?.includes(value)) {
+      throw new Error(`Option '${key}' has an unsupported value`);
     }
-    if (typeof producer !== "function") throw new Error("produceArtifact is unavailable");
-    return producer;
+    return value;
   }
-  async function produceNormalizedNodes(options, context) {
-    const producer = producerFrom(context);
-    let rawNodes;
-    try {
-      rawNodes = await producer({
-        type: options.type,
-        name: options.name,
-        platform: "JSON",
-        produceType: "internal"
-      });
-    } catch {
-      throw new Error("Anywhere node artifact production failed");
+  function parseSurgeNodeOptions(raw) {
+    if (!raw || typeof raw !== "object" || Array.isArray(raw)) throw new TypeError("Surge node options must be an object");
+    for (const key of Object.keys(raw)) {
+      if (!key.startsWith("_") && !NODE_ALLOWED_KEYS.has(key)) throw new Error(`Unknown Surge node option: ${key}`);
     }
-    let nonEmptyArray;
-    try {
-      nonEmptyArray = Array.isArray(rawNodes) && rawNodes.length > 0;
-    } catch {
-      throw new Error("produceArtifact must return a non-empty node array");
+    for (const key of NODE_REQUIRED_KEYS) {
+      if (!Object.hasOwn(raw, key)) throw new Error(`Option '${key}' is required`);
     }
-    if (!nonEmptyArray) throw new Error("produceArtifact must return a non-empty node array");
-    try {
-      return normalizeNodes(rawNodes, { clientChain: "off" });
-    } catch {
-      throw new Error("Invalid Anywhere node inventory");
-    }
-  }
-  function mergedAnywhereDiagnostics(normalizationDiagnostics, anywhereDiagnostics) {
-    const diagnostics = structuredClone(normalizationDiagnostics);
-    diagnostics.accepted = anywhereDiagnostics.accepted;
-    for (const [reason, count] of Object.entries(anywhereDiagnostics.excluded)) {
-      increment(diagnostics.excluded, reason, count);
-    }
-    return diagnostics;
-  }
-  function logAnywhereDiagnostics(context, diagnostics) {
-    let logger;
-    try {
-      logger = context?.logger;
-    } catch {
-      return;
-    }
-    let method = null;
-    try {
-      method = typeof logger === "function" ? logger : typeof logger?.info === "function" ? logger.info.bind(logger) : typeof logger?.log === "function" ? logger.log.bind(logger) : null;
-    } catch {
-      return;
-    }
-    if (method === null) return;
-    try {
-      method(`${DIAGNOSTIC_PREFIX}${JSON.stringify(diagnostics)}`);
-    } catch {
-    }
+    if (requiredString(raw, "output") !== "nodes") throw new Error("Option 'output' must be nodes");
+    if (requiredString(raw, "type") !== "collection") throw new Error("Option 'type' must be collection");
+    const options = {
+      output: "nodes",
+      type: "collection",
+      name: requiredString(raw, "name"),
+      clientChain: enumValue(raw, "clientChain", DEFAULTS.clientChain)
+    };
+    Object.freeze(options);
+    PARSED_NODES.add(options);
+    return options;
   }
 
-  // substore-nodes-entry.js
-  var ALLOWED_KEYS = /* @__PURE__ */ new Set(["output", "type", "name", "clientChain"]);
-  var PROTOTYPE_KEYS = /* @__PURE__ */ new Set(["__proto__", "constructor", "prototype"]);
-  var COLLECTION_NAME = "apple-proxy-sources";
-  function nodeArguments(raw) {
-    let array;
-    try {
-      array = Array.isArray(raw);
-    } catch {
-      throw new Error("Anywhere node arguments must be a plain object");
-    }
-    if (raw === null || typeof raw !== "object" || array) {
-      throw new Error("Anywhere node arguments must be a plain object");
-    }
-    let prototype;
-    let keys;
-    try {
-      prototype = Object.getPrototypeOf(raw);
-      keys = Reflect.ownKeys(raw);
-    } catch {
-      throw new Error("Anywhere node arguments must be a plain object");
-    }
-    if (prototype !== Object.prototype && prototype !== null) {
-      throw new Error("Anywhere node arguments must not contain inherited options");
-    }
-    const values = /* @__PURE__ */ new Map();
-    for (const key of keys) {
-      if (typeof key !== "string" || PROTOTYPE_KEYS.has(key) || !ALLOWED_KEYS.has(key)) {
-        throw new Error("Unknown Anywhere node option");
-      }
-      let descriptor;
-      try {
-        descriptor = Object.getOwnPropertyDescriptor(raw, key);
-      } catch {
-        throw new Error("Invalid Anywhere node option descriptor");
-      }
-      if (!descriptor || "get" in descriptor || "set" in descriptor || !descriptor.enumerable) {
-        throw new Error("Invalid Anywhere node option descriptor");
-      }
-      values.set(key, descriptor.value);
-    }
-    if (values.get("output") !== "nodes") throw new Error("Anywhere node output must be nodes");
-    if (values.get("type") !== "collection") throw new Error("Anywhere node type must be collection");
-    if (values.get("name") !== COLLECTION_NAME) throw new Error("Anywhere node collection is invalid");
-    if (values.get("clientChain") !== "off") throw new Error("Anywhere clientChain must be off");
-    return Object.freeze({ output: "nodes", type: "collection", name: COLLECTION_NAME, clientChain: "off" });
+  // src/render-node.js
+  var COMMON_KEYS = /* @__PURE__ */ new Set([
+    "name",
+    "type",
+    "server",
+    "port",
+    "udp",
+    "tls",
+    "security",
+    "sni",
+    "servername",
+    "skip-cert-verify",
+    "allow-insecure",
+    "client-fingerprint",
+    "network",
+    "ws-opts",
+    "grpc-opts",
+    "h2-opts",
+    "http-opts",
+    "cipher",
+    "password",
+    "protocol",
+    "obfs",
+    "protocol-param",
+    "obfs-param",
+    "psk",
+    "version",
+    "uuid",
+    "flow",
+    "alter-id",
+    "alterId",
+    "username",
+    "private-key",
+    "public-key",
+    "peers",
+    "pre-shared-key",
+    "local-address",
+    "local_ipv4",
+    "local-ipv4",
+    "local_ipv6",
+    "local-ipv6",
+    "ip",
+    "ipv6",
+    "reality-opts",
+    "reuse",
+    "tfo",
+    "udp_relay"
+  ]);
+  function escapeValue(value) {
+    const text = String(value);
+    if (/[\r\n]/u.test(text)) throw new Error("Surge node value contains a line break");
+    return text.replaceAll("\\", "\\\\").replaceAll(",", "\\,");
   }
-  function outputWithContent(input, content) {
-    try {
-      if (input === null || typeof input !== "object" || Array.isArray(input)) throw new Error();
-      const prototype = Object.getPrototypeOf(input);
-      if (prototype !== Object.prototype && prototype !== null) throw new Error();
-      const output = {};
-      for (const key of Reflect.ownKeys(input)) {
-        if (typeof key !== "string") throw new Error();
-        const descriptor = Object.getOwnPropertyDescriptor(input, key);
-        if (!descriptor || "get" in descriptor || "set" in descriptor) throw new Error();
-        if (!descriptor.enumerable || key === "$content") continue;
-        Object.defineProperty(output, key, {
-          value: descriptor.value,
-          enumerable: true,
-          configurable: true,
-          writable: true
-        });
+  function requiredString2(node, key) {
+    const value = node[key];
+    if (typeof value !== "string" || value.length === 0 || value.trim() !== value) {
+      throw new Error(`Surge node field '${key}' is invalid`);
+    }
+    return value;
+  }
+  function requiredPort(node) {
+    const port = Number(node.port);
+    if (!Number.isInteger(port) || port < 1 || port > 65535) throw new Error("Surge node port is invalid");
+    return port;
+  }
+  function validateNodeShape(node) {
+    if (!node || typeof node !== "object" || Array.isArray(node)) throw new TypeError("Surge node is invalid");
+    if (typeof node.name !== "string" || !node.name || /[\r\n=]/u.test(node.name)) throw new Error("Surge node name is invalid");
+    requiredString2(node, "server");
+    requiredPort(node);
+    for (const key of Object.keys(node)) {
+      if (key.startsWith("_")) continue;
+      if (!COMMON_KEYS.has(key)) throw new Error(`Surge node contains unsupported field: ${key}`);
+    }
+  }
+  function sanitizeSurgeNode(node) {
+    return Object.fromEntries(Object.entries(node).filter(([key]) => key.startsWith("_") || COMMON_KEYS.has(key)));
+  }
+  function option(target, key, value) {
+    if (value !== void 0 && value !== null && value !== "") target.push(`${key}=${escapeValue(value)}`);
+  }
+  function tlsOptions(node, target) {
+    const tls = node.tls === true || node.security === "tls" || node.security === "reality" || node["reality-opts"] !== void 0;
+    if (!tls) return;
+    target.push("tls=true");
+    option(target, "sni", node.sni ?? node.servername);
+    if (node["skip-cert-verify"] === true || node["allow-insecure"] === true) target.push("skip-cert-verify=true");
+    option(target, "client-fingerprint", node["client-fingerprint"]);
+    const reality = node["reality-opts"];
+    if (reality !== void 0) {
+      if (!reality || typeof reality !== "object" || typeof reality["public-key"] !== "string") throw new Error("Surge Reality options are invalid");
+      target.push("reality=true");
+      option(target, "public-key", reality["public-key"]);
+      option(target, "short-id", reality["short-id"]);
+    }
+  }
+  function transportOptions(node, target) {
+    const network = String(node.network ?? "tcp").toLowerCase();
+    if (network === "tcp" || network === "raw") return;
+    if (network === "ws") {
+      const ws = node["ws-opts"];
+      if (!ws || typeof ws !== "object" || Array.isArray(ws)) throw new Error("Surge WebSocket options are invalid");
+      target.push("ws=true");
+      option(target, "ws-path", Array.isArray(ws.path) ? ws.path[0] : ws.path ?? "/");
+      const headers = ws.headers;
+      if (headers && typeof headers === "object") {
+        const host = headers.Host ?? headers.host;
+        option(target, "ws-headers", host === void 0 ? void 0 : `Host=${host}`);
       }
-      output.$content = content;
-      return output;
+      return;
+    }
+    if (network === "grpc") {
+      const grpc = node["grpc-opts"] ?? {};
+      target.push("grpc=true");
+      option(target, "grpc-service-name", grpc["grpc-service-name"]);
+      return;
+    }
+    if (network === "h2" || network === "http2") {
+      const h2 = node["h2-opts"] ?? {};
+      target.push("h2=true");
+      option(target, "h2-path", Array.isArray(h2.path) ? h2.path[0] : h2.path);
+      return;
+    }
+    throw new Error(`Unsupported Surge transport: ${network}`);
+  }
+  function base(node, type) {
+    return [escapeValue(node.name), type, escapeValue(node.server), String(requiredPort(node))];
+  }
+  function renderSurgeProxy(node) {
+    validateNodeShape(node);
+    const protocol2 = normalizeProtocol(node.type);
+    let fields;
+    switch (protocol2) {
+      case "ss":
+      case "shadowsocks":
+        fields = base(node, "ss");
+        option(fields, "encrypt-method", requiredString2(node, "cipher"));
+        option(fields, "password", requiredString2(node, "password"));
+        if (node.udp === true) fields.push("udp-relay=true");
+        break;
+      case "ssr":
+        fields = base(node, "ssr");
+        option(fields, "encrypt-method", requiredString2(node, "cipher"));
+        option(fields, "password", requiredString2(node, "password"));
+        option(fields, "protocol", requiredString2(node, "protocol"));
+        option(fields, "obfs", requiredString2(node, "obfs"));
+        option(fields, "protocol-param", node["protocol-param"]);
+        option(fields, "obfs-param", node["obfs-param"]);
+        break;
+      case "snell":
+        fields = base(node, "snell");
+        option(fields, "psk", requiredString2(node, "psk"));
+        option(fields, "version", node.version);
+        break;
+      case "vmess":
+        fields = base(node, "vmess");
+        option(fields, "username", requiredString2(node, "uuid"));
+        option(fields, "encrypt-method", node.cipher ?? node.security ?? "auto");
+        tlsOptions(node, fields);
+        transportOptions(node, fields);
+        break;
+      case "trojan":
+        fields = base(node, "trojan");
+        option(fields, "password", requiredString2(node, "password"));
+        tlsOptions({ ...node, tls: true }, fields);
+        transportOptions(node, fields);
+        break;
+      case "hysteria2":
+      case "hy2":
+        fields = base(node, "hysteria2");
+        option(fields, "password", requiredString2(node, "password"));
+        tlsOptions({ ...node, tls: true }, fields);
+        option(fields, "obfs", node.obfs);
+        option(fields, "obfs-password", node["obfs-password"] ?? node["obfs_password"]);
+        break;
+      case "tuic":
+        fields = base(node, "tuic");
+        option(fields, "uuid", requiredString2(node, "uuid"));
+        option(fields, "password", requiredString2(node, "password"));
+        tlsOptions({ ...node, tls: true }, fields);
+        option(fields, "udp-relay-mode", node["udp-relay-mode"] ?? node["udp_relay_mode"]);
+        break;
+      case "socks5":
+        fields = base(node, node.tls === true ? "socks5-tls" : "socks5");
+        option(fields, "username", node.username);
+        option(fields, "password", node.password);
+        if (node.tls === true) tlsOptions(node, fields);
+        break;
+      case "http":
+        fields = base(node, node.tls === true ? "https" : "http");
+        option(fields, "username", node.username);
+        option(fields, "password", node.password);
+        if (node.tls === true) tlsOptions(node, fields);
+        break;
+      default:
+        throw new Error(`Unsupported Surge protocol: ${protocol2 || "unknown"}`);
+    }
+    return `${fields[0]} = ${fields.slice(1).join(",")}`;
+  }
+  function renderSurgeNodeResource(nodes) {
+    const inventory = Array.isArray(nodes) ? nodes : [];
+    if (inventory.length === 0) throw new Error("Surge refuses an empty node resource");
+    return [
+      "# Generated by apple-proxy-profiles. Private Sub-Store output.",
+      "[Proxy]",
+      ...inventory.map((node) => renderSurgeProxy(sanitizeSurgeNode(node))),
+      ""
+    ].join("\n");
+  }
+
+  // src/substore-nodes-entry.js
+  function logDiagnostics(context, options, normalized, filtered) {
+    const logger = context?.logger;
+    const method = typeof logger === "function" ? logger : typeof logger?.info === "function" ? logger.info.bind(logger) : typeof logger?.log === "function" ? logger.log.bind(logger) : null;
+    if (!method) return;
+    try {
+      method(`[surge-nodes] ${JSON.stringify({
+        client: "surge",
+        collection: options.name,
+        total: normalized.diagnostics.total,
+        accepted: filtered.nodes.length
+      })}`);
     } catch {
-      throw new Error("Invalid Anywhere input artifact");
     }
   }
   async function operator(input, targetPlatform, context = {}) {
     void targetPlatform;
-    installAnywhereRuntimeFallbacks();
-    const options = nodeArguments(argumentsFrom(context));
-    const normalized = await produceNormalizedNodes(options, context);
-    let anywhereDiagnostics;
-    const content = renderAnywhereSubscription(normalized.nodes, {
-      onDiagnostics(value) {
-        anywhereDiagnostics = value;
-      }
+    const options = parseSurgeNodeOptions(context.arguments ?? {});
+    if (typeof context.produceArtifact !== "function") throw new Error("produceArtifact is unavailable");
+    const rawNodes = await context.produceArtifact({
+      type: options.type,
+      name: options.name,
+      platform: "JSON",
+      produceType: "internal"
     });
-    const diagnostics = mergedAnywhereDiagnostics(normalized.diagnostics, anywhereDiagnostics);
-    logAnywhereDiagnostics(context, diagnostics);
-    return outputWithContent(input, content);
+    if (!Array.isArray(rawNodes) || rawNodes.length === 0) {
+      throw new Error("produceArtifact must return a non-empty node array");
+    }
+    const normalized = normalizeNodes(rawNodes, { clientChain: options.clientChain });
+    const filtered = filterNodesForClient(normalized.nodes, CLIENT.surge);
+    if (filtered.nodes.length === 0) throw new Error("No compatible Surge nodes");
+    logDiagnostics(context, options, normalized, filtered);
+    return { ...input, $content: renderSurgeNodeResource(filtered.nodes) };
   }
   return __toCommonJS(substore_nodes_entry_exports);
 })();
-
 async function operator(input, targetPlatform) {
-  return AnywhereNodeBundle.operator(input, targetPlatform, { arguments: $arguments, produceArtifact, logger: console });
+  return SurgeNodesBundle.operator(input, targetPlatform, { arguments: $arguments, produceArtifact, logger: console });
 }

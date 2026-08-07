@@ -51,3 +51,19 @@ test("validates remote policy pool references", () => {
   assert.equal(missing.valid, false);
   assert.match(missing.errors.join("\n"), /missing group or proxy reference/iu);
 });
+
+test("validates comma-separated remote policy pool references", () => {
+  const valid = validateSurgeProfile(profile([
+    "PoolA = select,policy-path=https://a.example.invalid/nodes,hidden=1",
+    "PoolB = select,policy-path=https://b.example.invalid/nodes,hidden=1",
+    "A = select,include-other-group=PoolA\\,PoolB,policy-regex-filter=^.+$",
+  ]));
+  assert.deepEqual(valid, { valid: true, errors: [] });
+
+  const missing = validateSurgeProfile(profile([
+    "PoolA = select,policy-path=https://a.example.invalid/nodes,hidden=1",
+    "A = select,include-other-group=PoolA\\,PoolB,policy-regex-filter=^.+$",
+  ]));
+  assert.equal(missing.valid, false);
+  assert.match(missing.errors.join("\n"), /missing group or proxy reference/iu);
+});

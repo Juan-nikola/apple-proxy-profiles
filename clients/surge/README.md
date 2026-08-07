@@ -26,6 +26,8 @@ output=nodes&type=collection&name=apple-proxy-sources&clientChain=off
 
 先预览并保存 `surge-nodes` 的私密输出 URL，再把它作为 `proxyPolicyUrl` 填入下表三个 Profile 任务。示例中的 `https://example.invalid/private/surge-nodes` 不能直接使用。
 
+如果还要保留个人 Surge 节点订阅，可在三个 Profile 的私密 Script Operation 参数中追加可选的 `personalPolicyUrl=https://example.invalid/private/personal-surge`。生成的配置会额外提供隐藏的 `🧩 个人节点池` 和可见的 `🛠 节点来源`；在 `🚀 节点选择` 中选择来源即可在默认池与个人池之间切换。个人链接只保存在 Sub-Store 私有参数和下载后的 profile，不要提交到 GitHub。
+
 | File | 平台 | Arguments |
 | --- | --- | --- |
 | `surge-macos` | macOS | `output=config&type=collection&name=apple-proxy-sources&subscriptionName=Apple-Proxy-Nodes&proxyPolicyUrl=https://example.invalid/private/surge-nodes&platform=macos&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=ipv4-only&autoGroupMode=auto&clientChain=off` |

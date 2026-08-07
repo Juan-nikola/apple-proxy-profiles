@@ -32,7 +32,8 @@ export function renderSurgeProfile(rawOptions, nodes, { ruleBaseUrl } = {}) {
   const inventory = Array.isArray(nodes) ? nodes : [];
   if (inventory.length === 0) throw new Error("Surge refuses an empty node inventory");
   for (const node of inventory) nodeMetadata(node);
-  const proxyLines = options.proxyPolicyUrl
+  const hasRemotePolicy = Boolean(options.proxyPolicyUrl || options.personalPolicyUrl);
+  const proxyLines = hasRemotePolicy
     ? "# Nodes are loaded by the hidden Surge remote policy pool."
     : inventory.map(renderSurgeProxy).join("\n");
   const profile = [

@@ -1636,7 +1636,7 @@ var SurgeNodesBundle = (() => {
     clientChain: "off"
   });
   var PARSED_NODES = /* @__PURE__ */ new WeakSet();
-  var ALLOWED_KEYS = /* @__PURE__ */ new Set([...REQUIRED_KEYS, ...Object.keys(DEFAULTS), "proxyPolicyUrl"]);
+  var ALLOWED_KEYS = /* @__PURE__ */ new Set([...REQUIRED_KEYS, ...Object.keys(DEFAULTS), "proxyPolicyUrl", "personalPolicyUrl"]);
   var NODE_ALLOWED_KEYS = /* @__PURE__ */ new Set([...NODE_REQUIRED_KEYS, "clientChain"]);
   function requiredString(raw, key) {
     const value = raw[key];

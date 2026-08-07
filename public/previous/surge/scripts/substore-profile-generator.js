@@ -1631,6 +1631,7 @@ var SurgeProfileBundle = (() => {
 
   // src/options.js
   var REQUIRED_KEYS = Object.freeze(["output", "type", "name", "subscriptionName", "platform"]);
+  var NODE_REQUIRED_KEYS = Object.freeze(["output", "type", "name"]);
   var DEFAULTS = Object.freeze({
     dnsMode: "stable",
     chinaDns: "alidns",
@@ -1643,7 +1644,8 @@ var SurgeProfileBundle = (() => {
   });
   var PLATFORMS = /* @__PURE__ */ new Set(["macos", "iphone", "ipad"]);
   var PARSED = /* @__PURE__ */ new WeakSet();
-  var ALLOWED_KEYS = /* @__PURE__ */ new Set([...REQUIRED_KEYS, ...Object.keys(DEFAULTS)]);
+  var ALLOWED_KEYS = /* @__PURE__ */ new Set([...REQUIRED_KEYS, ...Object.keys(DEFAULTS), "proxyPolicyUrl"]);
+  var NODE_ALLOWED_KEYS = /* @__PURE__ */ new Set([...NODE_REQUIRED_KEYS, "clientChain"]);
   function requiredString(raw, key) {
     const value = raw[key];
     if (typeof value !== "string" || value.length === 0 || value.trim() !== value || /[\r\n]/u.test(value)) {
@@ -1655,6 +1657,22 @@ var SurgeProfileBundle = (() => {
     const value = raw[key] === void 0 ? defaultValue : raw[key];
     if (typeof value !== "string" || !OPTION_VALUES[key]?.includes(value)) {
       throw new Error(`Option '${key}' has an unsupported value`);
+    }
+    return value;
+  }
+  function validateProxyPolicyUrl(value) {
+    if (value === void 0) return void 0;
+    if (typeof value !== "string" || value.length === 0 || value.trim() !== value || /[\u0000-\u001f\u007f\\]/u.test(value) || /%(?:0[0-9a-f]|1[0-9a-f]|7f)/iu.test(value)) {
+      throw new Error("Option 'proxyPolicyUrl' must be a safe absolute HTTPS URL");
+    }
+    let parsed;
+    try {
+      parsed = new URL(value);
+    } catch {
+      throw new Error("Option 'proxyPolicyUrl' must be a safe absolute HTTPS URL");
+    }
+    if (parsed.protocol !== "https:" || !parsed.hostname || parsed.username || parsed.password || value.includes("#")) {
+      throw new Error("Option 'proxyPolicyUrl' must be a safe absolute HTTPS URL");
     }
     return value;
   }
@@ -1683,7 +1701,8 @@ var SurgeProfileBundle = (() => {
       quicMode: enumValue(raw, "quicMode", DEFAULTS.quicMode),
       ipv6Mode: enumValue(raw, "ipv6Mode", platform === "macos" ? "ipv4-only" : DEFAULTS.ipv6Mode),
       autoGroupMode: enumValue(raw, "autoGroupMode", DEFAULTS.autoGroupMode),
-      clientChain: enumValue(raw, "clientChain", DEFAULTS.clientChain)
+      clientChain: enumValue(raw, "clientChain", DEFAULTS.clientChain),
+      proxyPolicyUrl: validateProxyPolicyUrl(raw.proxyPolicyUrl)
     };
     platformPolicyPreset(platform);
     Object.freeze(options);
@@ -2167,6 +2186,8 @@ var SurgeProfileBundle = (() => {
   }
 
   // src/render-groups.js
+  var REMOTE_POLICY_POOL_NAME = "\u{1F4E6} \u8FDC\u7A0B\u8282\u70B9\u6C60";
+  var REMOTE_POLICY_UPDATE_INTERVAL = 21600;
   function escapeValue2(value) {
     const text = String(value);
     if (/[\r\n]/u.test(text)) throw new Error("Surge group value contains a line break");
@@ -2187,11 +2208,20 @@ var SurgeProfileBundle = (() => {
     const inventory = Array.isArray(nodes) ? nodes : [];
     const shared = buildPolicyGroups(options, inventory);
     const names = new Set(shared.map(({ name }) => name));
-    return shared.map((group) => {
-      const filteredNodes = inventory.filter((node) => matches(group.nodeFilter, node)).map(({ name }) => name);
+    const remoteMode = typeof options.proxyPolicyUrl === "string";
+    const rendered = [];
+    if (remoteMode) {
+      rendered.push(`${escapeValue2(REMOTE_POLICY_POOL_NAME)} = select,policy-path=${escapeValue2(options.proxyPolicyUrl)},update-interval=${REMOTE_POLICY_UPDATE_INTERVAL},hidden=1`);
+    }
+    for (const group of shared) {
+      const filteredNodes = remoteMode ? [] : inventory.filter((node) => matches(group.nodeFilter, node)).map(({ name }) => name);
       const items = [...group.candidates.map(targetName), ...filteredNodes].filter((item, index, all) => all.indexOf(item) === index);
-      if (items.length === 0) items.push("DIRECT");
+      if (items.length === 0 && (!remoteMode || group.nodeFilter === null)) items.push("DIRECT");
       const fields = [group.strategy === "auto-test" ? "url-test" : group.strategy, ...items.map(escapeValue2)];
+      if (remoteMode && group.nodeFilter !== null) {
+        fields.push(`include-other-group=${escapeValue2(REMOTE_POLICY_POOL_NAME)}`);
+        fields.push(`policy-regex-filter=${escapeValue2(group.nodeFilter)}`);
+      }
       if (group.test?.url !== void 0) fields.push(`url=${escapeValue2(group.test.url)}`);
       if (group.test?.interval !== void 0) fields.push(`interval=${escapeValue2(group.test.interval)}`);
       if (group.test?.timeout !== void 0) fields.push(`timeout=${escapeValue2(group.test.timeout)}`);
@@ -2201,8 +2231,9 @@ var SurgeProfileBundle = (() => {
       if (items.some((item) => item !== "DIRECT" && item !== "REJECT" && !names.has(item) && !inventory.some((node) => node.name === item))) {
         throw new Error("Surge group contains an unresolved policy reference");
       }
-      return `${escapeValue2(group.name)} = ${fields.join(",")}`;
-    });
+      rendered.push(`${escapeValue2(group.name)} = ${fields.join(",")}`);
+    }
+    return rendered;
   }
 
   // ../../shared/rules/custom-rules.js
@@ -2393,11 +2424,29 @@ var SurgeProfileBundle = (() => {
         continue;
       }
       if (groups.has(record[0])) errors.push("duplicate group name");
-      groups.set(record[0], { type: fields[0], items: fields.slice(1).filter((field) => !field.includes("=")) });
+      const items = fields.slice(1).filter((field) => !field.includes("="));
+      const remoteGroupReferences = fields.slice(1).filter((field) => field.startsWith("include-other-group=")).map((field) => field.slice("include-other-group=".length));
+      const policyPath = fields.find((field) => field.startsWith("policy-path="));
+      const policyFilter = fields.find((field) => field.startsWith("policy-regex-filter="));
+      if (policyPath) {
+        const url = policyPath.slice("policy-path=".length);
+        try {
+          const parsedUrl = new URL(url);
+          if (parsedUrl.protocol !== "https:" || !parsedUrl.hostname) errors.push("invalid policy path");
+        } catch {
+          errors.push("invalid policy path");
+        }
+      }
+      if (policyFilter && items.length === 0 && remoteGroupReferences.length === 0 && !policyPath) {
+        errors.push("filtered group requires a policy source");
+      }
+      groups.set(record[0], { type: fields[0], items, remoteGroupReferences, policyPath });
     }
     const allowed = /* @__PURE__ */ new Set(["DIRECT", "REJECT", ...proxyNames, ...groups.keys()]);
     for (const group of groups.values()) {
-      for (const item of group.items) if (!allowed.has(item)) errors.push("missing group or proxy reference");
+      for (const item of [...group.items, ...group.remoteGroupReferences]) {
+        if (!allowed.has(item)) errors.push("missing group or proxy reference");
+      }
     }
     const visiting = /* @__PURE__ */ new Set();
     const visited = /* @__PURE__ */ new Set();
@@ -2408,7 +2457,10 @@ var SurgeProfileBundle = (() => {
       }
       if (visited.has(name)) return;
       visiting.add(name);
-      for (const item of groups.get(name)?.items ?? []) if (groups.has(item)) visit(item);
+      const group = groups.get(name);
+      for (const item of [...group?.items ?? [], ...group?.remoteGroupReferences ?? []]) {
+        if (groups.has(item)) visit(item);
+      }
       visiting.delete(name);
       visited.add(name);
     };
@@ -2465,13 +2517,13 @@ var SurgeProfileBundle = (() => {
     const inventory = Array.isArray(nodes) ? nodes : [];
     if (inventory.length === 0) throw new Error("Surge refuses an empty node inventory");
     for (const node of inventory) nodeMetadata(node);
-    const proxyLines = inventory.map(renderSurgeProxy);
+    const proxyLines = options.proxyPolicyUrl ? "# Nodes are loaded by the hidden Surge remote policy pool." : inventory.map(renderSurgeProxy).join("\n");
     const profile = [
       "# Generated by apple-proxy-profiles. Private Sub-Store output.",
       `[General]
 ${generalSettings(options).join("\n")}`,
       `[Proxy]
-${proxyLines.join("\n")}`,
+${proxyLines}`,
       `[Proxy Group]
 ${renderSurgeGroups(options, inventory).join("\n")}`,
       `[Rule]

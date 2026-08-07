@@ -72,7 +72,7 @@ export function validateSurgeProfile(profile) {
     const items = fields.slice(1).filter((field) => !field.includes("="));
     const remoteGroupReferences = fields.slice(1)
       .filter((field) => field.startsWith("include-other-group="))
-      .map((field) => field.slice("include-other-group=".length));
+      .flatMap((field) => field.slice("include-other-group=".length).split(","));
     const policyPath = fields.find((field) => field.startsWith("policy-path="));
     const policyFilter = fields.find((field) => field.startsWith("policy-regex-filter="));
     if (policyPath) {

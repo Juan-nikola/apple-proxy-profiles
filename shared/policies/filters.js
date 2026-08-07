@@ -45,7 +45,7 @@ export const SOURCE_GROUPS = Object.freeze([
 export function continentFilter(continent) {
   if (continent.key === CONTINENT.other) {
     const knownFlags = CONTINENTS.flatMap((record) => record.flags).join("|");
-    return `^(?!(?:🔗|${knownFlags}))\\S+ .+$`;
+    return `^(?!(?:🔗|${knownFlags})).+$`;
   }
-  return `^(?:${continent.flags.join("|")}) .+$`;
+  return `^(?:${continent.flags.join("|")}).+$`;
 }

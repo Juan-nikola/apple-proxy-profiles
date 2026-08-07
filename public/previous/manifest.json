@@ -2366,29 +2366,29 @@
       "sha256": "befa7ca428255f020d169a818ebb7a2131cdb973fe0b3b3ee6ace9b5aed766d4"
     },
     {
-      "bytes": 27431,
+      "bytes": 27840,
       "path": "sing-box/examples/sing-box-android.json",
-      "sha256": "f1334bf88d3e0fba30096c50e12ec24647c4457c15547881ba85803530465744"
+      "sha256": "b4fb1cb45d4c5e370315c171c581be648b78bf5e8125d76037e85b11a4883750"
     },
     {
-      "bytes": 27439,
+      "bytes": 27848,
       "path": "sing-box/examples/sing-box-ipad.json",
-      "sha256": "25a8c5f3b758f9d8f6a9bcba7f4a32c3ed330981db41f4ba9e0c8b978a80179d"
+      "sha256": "7aa7fa420e30c9dd0e8cc317bf4ced6c3de3010169777e6965bdf12db16d187a"
     },
     {
-      "bytes": 27439,
+      "bytes": 27848,
       "path": "sing-box/examples/sing-box-iphone.json",
-      "sha256": "25a8c5f3b758f9d8f6a9bcba7f4a32c3ed330981db41f4ba9e0c8b978a80179d"
+      "sha256": "7aa7fa420e30c9dd0e8cc317bf4ced6c3de3010169777e6965bdf12db16d187a"
     },
     {
-      "bytes": 27431,
+      "bytes": 27840,
       "path": "sing-box/examples/sing-box-macos.json",
-      "sha256": "a54634c11c41dc3f37a75324420ba637efd037931dc3f77033f4047da41c9114"
+      "sha256": "f9256190e87bc903d97ba2b3c499c6bece3205df340c2989696d8179f3bb0399"
     },
     {
-      "bytes": 27567,
+      "bytes": 27976,
       "path": "sing-box/examples/sing-box-openwrt.json",
-      "sha256": "df38c2d64d95697dd171373e6f237120f26c7fb480e9a256f4d2bbc506eafae0"
+      "sha256": "a641aa4ee6ff1cdfcda0c559f5e44087c5b7225de5ea6f84c78d3465fb60051f"
     },
     {
       "bytes": 52802,
@@ -2551,29 +2551,29 @@
       "sha256": "8e9bdc631078d0d8e8e8b4311adc7ffbe6a4d7fd77f2b93ddb84f6bf151a36fd"
     },
     {
-      "bytes": 128033,
+      "bytes": 128806,
       "path": "sing-box/scripts/sing-box-config-generator.js",
-      "sha256": "e2b945ca34964d1d7734e436fc676d145c7d98e0520b4e6f35cc58a0ba07bcde"
+      "sha256": "d5a83b9af9bac97bae439f310442adb8197ac5e0fe7df6db3d8c77416b353d9a"
     },
     {
-      "bytes": 128033,
+      "bytes": 128806,
       "path": "sing-box/scripts/substore-config-generator.js",
-      "sha256": "e2b945ca34964d1d7734e436fc676d145c7d98e0520b4e6f35cc58a0ba07bcde"
+      "sha256": "d5a83b9af9bac97bae439f310442adb8197ac5e0fe7df6db3d8c77416b353d9a"
     },
     {
-      "bytes": 10565,
+      "bytes": 16402,
       "path": "surge/examples/surge-ipad.conf",
-      "sha256": "091d0e6578b926ee9040b09745b1f212a45c54612fad57b0df508c9087934a79"
+      "sha256": "42a70fd9a706cfd0ecb6fce911988333227d5c0f540e2e651b10fba9eb7c75ed"
     },
     {
-      "bytes": 10565,
+      "bytes": 16402,
       "path": "surge/examples/surge-iphone.conf",
-      "sha256": "091d0e6578b926ee9040b09745b1f212a45c54612fad57b0df508c9087934a79"
+      "sha256": "42a70fd9a706cfd0ecb6fce911988333227d5c0f540e2e651b10fba9eb7c75ed"
     },
     {
-      "bytes": 10560,
+      "bytes": 16397,
       "path": "surge/examples/surge-macos.conf",
-      "sha256": "0a1a802d10931d03e5c87ff456d3a70c492f07983d9a9e73f41ee6b246434878"
+      "sha256": "d45fba90badd4cfde05b32bb9b69f9a88256988ae38e4ee8bd9895905fdd8b7d"
     },
     {
       "bytes": 27237,
@@ -2736,18 +2736,28 @@
       "sha256": "040a6ba73b3f71a4aab7a61cb4c4b8f7abbe78b370e5d7bf6e8b5258115dc5e6"
     },
     {
-      "bytes": 121708,
-      "path": "surge/scripts/substore-profile-generator.js",
-      "sha256": "56a334182c41452489c0ffdfe2c4a7974c758267080a903593ddb398c0e5afd7"
+      "bytes": 95369,
+      "path": "surge/scripts/substore-nodes-generator.js",
+      "sha256": "af8f5f4e3af5d2dce8830fd41d74847eafc2d49b3c64a1204bde6d864605a890"
     },
     {
-      "bytes": 121708,
+      "bytes": 124571,
+      "path": "surge/scripts/substore-profile-generator.js",
+      "sha256": "04bb16d1881e4ff32bd9aa258ac088a05c46a48170283d0f67e8f4afa76df510"
+    },
+    {
+      "bytes": 95369,
+      "path": "surge/scripts/surge-nodes-generator.js",
+      "sha256": "af8f5f4e3af5d2dce8830fd41d74847eafc2d49b3c64a1204bde6d864605a890"
+    },
+    {
+      "bytes": 124571,
       "path": "surge/scripts/surge-profile-generator.js",
-      "sha256": "56a334182c41452489c0ffdfe2c4a7974c758267080a903593ddb398c0e5afd7"
+      "sha256": "04bb16d1881e4ff32bd9aa258ac088a05c46a48170283d0f67e8f4afa76df510"
     }
   ],
   "generatedAt": "2026-08-05T19:24:33Z",
-  "manifestHash": "3cc046022a178d33ee87c9126f025ac96736bf89c147ea4f3f5a27fe927230e0",
+  "manifestHash": "8cb8b1cd33ddb07258203035082406e1a7661429931bc693a8708be35f687dc2",
   "schemaVersion": 1,
   "upstream": {
     "branch": "master",

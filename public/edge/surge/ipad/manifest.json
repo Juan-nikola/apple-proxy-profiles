@@ -2,10 +2,10 @@
   "adapterSchema": "surge-adapter-0.1",
   "channel": "edge",
   "client": "surge",
-  "configSha256": "04bb16d1881e4ff32bd9aa258ac088a05c46a48170283d0f67e8f4afa76df510",
+  "configSha256": "7663e140c0373e42df602cc847e6fde63e17d252accbd5d001f7499d8f81e8f9",
   "platform": "ipad",
   "platformKey": "surge/ipad",
-  "ruleManifestSha256": "f129341b43d4db8e89c390f27b8ff787c21d84a233d645a2e0a7c461ab70f861",
+  "ruleManifestSha256": "a4655df9c292f8d3a06ad0ae1a224594542b31a7fb4d77093dd6fd1cc28b7fce",
   "schemaVersion": 1,
   "status": "candidate",
   "upstream": {

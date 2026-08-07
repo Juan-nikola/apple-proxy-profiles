@@ -5,6 +5,7 @@ import { parseSurgeOptions } from "../src/options.js";
 import { renderSurgeProxy } from "../src/render-node.js";
 import { renderSurgeProfile } from "../src/render-profile.js";
 import { validateSurgeProfile } from "../src/validate-profile.js";
+import { CONTINENTS, continentFilter } from "../../../shared/policies/filters.js";
 
 const baseOptions = {
   output: "config",
@@ -48,6 +49,13 @@ test("parses a strict Surge option set for each Apple platform", () => {
   }
   assert.throws(() => parseSurgeOptions({ ...baseOptions, platform: "android" }), /platform/iu);
   assert.throws(() => parseSurgeOptions({ ...baseOptions, unknown: "value" }), /unknown/iu);
+});
+
+test("matches compact and normalized country-flag node names", () => {
+  const asia = CONTINENTS.find((continent) => continent.name === "🌏 亚太");
+  const filter = new RegExp(continentFilter(asia), "u");
+  assert.match("🇯🇵Neburst1|DMIT-T1", filter);
+  assert.match("🇯🇵 Tokyo A｜机场·U", filter);
 });
 
 test("renders a private Surge profile with shared policy sections and no internal metadata", () => {
@@ -105,6 +113,37 @@ test("renders a pure remote Surge profile without embedding node transport detai
   assert.deepEqual(validateSurgeProfile(profile), { valid: true, errors: [] });
 });
 
+test("renders selectable default and personal remote policy pools", () => {
+  const profile = renderSurgeProfile(parseSurgeOptions({
+    ...baseOptions,
+    proxyPolicyUrl: "https://default.example.invalid/surge-nodes",
+    personalPolicyUrl: "https://personal.example.invalid/surge-nodes",
+  }), [normalizedSsNode], {
+    ruleBaseUrl: "https://example.invalid/current/surge/rules",
+  });
+  assert.match(profile, /📦 远程节点池 = select,policy-path=https:\/\/default\.example\.invalid\/surge-nodes,update-interval=21600,hidden=1/u);
+  assert.match(profile, /🧩 个人节点池 = select,policy-path=https:\/\/personal\.example\.invalid\/surge-nodes,update-interval=21600,hidden=1/u);
+  assert.match(profile, /🛠 节点来源 = select,📦 远程节点池,🧩 个人节点池/u);
+  assert.match(profile, /🚀 节点选择 = select,⚡ 全部自动,🛠 节点来源/u);
+  assert.match(profile, /include-other-group=📦 远程节点池\\,🧩 个人节点池/u);
+  const proxySection = profile.split("[Proxy]\n", 2)[1].split("\n\n[Proxy Group]", 1)[0];
+  assert.doesNotMatch(proxySection, / = (?:ss|snell|vmess|hysteria2),/iu);
+  assert.deepEqual(validateSurgeProfile(profile), { valid: true, errors: [] });
+});
+
+test("supports a personal-only remote policy pool", () => {
+  const profile = renderSurgeProfile(parseSurgeOptions({
+    ...baseOptions,
+    personalPolicyUrl: "https://personal.example.invalid/surge-nodes",
+  }), [normalizedSsNode], {
+    ruleBaseUrl: "https://example.invalid/current/surge/rules",
+  });
+  assert.match(profile, /🧩 个人节点池 = select,policy-path=https:\/\/personal\.example\.invalid\/surge-nodes,update-interval=21600,hidden=1/u);
+  assert.doesNotMatch(profile, /📦 远程节点池 = /u);
+  assert.match(profile, /🛠 节点来源/u);
+  assert.deepEqual(validateSurgeProfile(profile), { valid: true, errors: [] });
+});
+
 test("rejects unsafe remote policy URLs", () => {
   const credentialedPolicyUrl = ["https://user", ":pass@substore.example.invalid/surge-nodes"].join("");
   for (const proxyPolicyUrl of [
@@ -114,5 +153,19 @@ test("rejects unsafe remote policy URLs", () => {
     "https://substore.example.invalid/surge-nodes\nnext",
   ]) {
     assert.throws(() => parseSurgeOptions({ ...baseOptions, proxyPolicyUrl }), /proxyPolicyUrl/iu);
+  }
+});
+
+test("accepts and validates a private personal policy URL", () => {
+  const personalPolicyUrl = "https://personal.example.invalid/surge-nodes";
+  const parsed = parseSurgeOptions({ ...baseOptions, personalPolicyUrl });
+  assert.equal(parsed.personalPolicyUrl, personalPolicyUrl);
+  for (const unsafePersonalPolicyUrl of [
+    "http://personal.example.invalid/surge-nodes",
+    ["https://user", ":pass@personal.example.invalid/surge-nodes"].join(""),
+    "https://personal.example.invalid/surge-nodes#fragment",
+    "https://personal.example.invalid/surge-nodes%0A",
+  ]) {
+    assert.throws(() => parseSurgeOptions({ ...baseOptions, personalPolicyUrl: unsafePersonalPolicyUrl }), /personalPolicyUrl/iu);
   }
 });

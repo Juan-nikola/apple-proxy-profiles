@@ -16,7 +16,7 @@ const DEFAULTS = Object.freeze({
 const PLATFORMS = new Set(["macos", "iphone", "ipad"]);
 const PARSED = new WeakSet();
 const PARSED_NODES = new WeakSet();
-const ALLOWED_KEYS = new Set([...REQUIRED_KEYS, ...Object.keys(DEFAULTS), "proxyPolicyUrl"]);
+const ALLOWED_KEYS = new Set([...REQUIRED_KEYS, ...Object.keys(DEFAULTS), "proxyPolicyUrl", "personalPolicyUrl"]);
 const NODE_ALLOWED_KEYS = new Set([...NODE_REQUIRED_KEYS, "clientChain"]);
 
 function requiredString(raw, key) {
@@ -35,7 +35,7 @@ function enumValue(raw, key, defaultValue) {
   return value;
 }
 
-function validateProxyPolicyUrl(value) {
+function validatePolicyUrl(value, key) {
   if (value === undefined) return undefined;
   if (
     typeof value !== "string"
@@ -44,16 +44,16 @@ function validateProxyPolicyUrl(value) {
     || /[\u0000-\u001f\u007f\\]/u.test(value)
     || /%(?:0[0-9a-f]|1[0-9a-f]|7f)/iu.test(value)
   ) {
-    throw new Error("Option 'proxyPolicyUrl' must be a safe absolute HTTPS URL");
+    throw new Error(`Option '${key}' must be a safe absolute HTTPS URL`);
   }
   let parsed;
   try {
     parsed = new URL(value);
   } catch {
-    throw new Error("Option 'proxyPolicyUrl' must be a safe absolute HTTPS URL");
+    throw new Error(`Option '${key}' must be a safe absolute HTTPS URL`);
   }
   if (parsed.protocol !== "https:" || !parsed.hostname || parsed.username || parsed.password || value.includes("#")) {
-    throw new Error("Option 'proxyPolicyUrl' must be a safe absolute HTTPS URL");
+    throw new Error(`Option '${key}' must be a safe absolute HTTPS URL`);
   }
   return value;
 }
@@ -84,7 +84,8 @@ export function parseSurgeOptions(raw) {
     ipv6Mode: enumValue(raw, "ipv6Mode", platform === "macos" ? "ipv4-only" : DEFAULTS.ipv6Mode),
     autoGroupMode: enumValue(raw, "autoGroupMode", DEFAULTS.autoGroupMode),
     clientChain: enumValue(raw, "clientChain", DEFAULTS.clientChain),
-    proxyPolicyUrl: validateProxyPolicyUrl(raw.proxyPolicyUrl),
+    proxyPolicyUrl: validatePolicyUrl(raw.proxyPolicyUrl, "proxyPolicyUrl"),
+    personalPolicyUrl: validatePolicyUrl(raw.personalPolicyUrl, "personalPolicyUrl"),
   };
   platformPolicyPreset(platform);
   Object.freeze(options);
