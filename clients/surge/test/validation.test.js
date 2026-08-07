@@ -38,10 +38,10 @@ test("requires FINAL to be the last rule", () => {
   assert.match(result.errors.join("\n"), /rules after FINAL/iu);
 });
 
-test("accepts Surge-native protected DNS transport rules before the CN fallback", () => {
+test("accepts the rule-download fallback transport before the CN fallback", () => {
   const result = validateSurgeProfile(profile(
     ["A = select,DIRECT"],
-    ["PROTOCOL,DOH,A", "GEOIP,CN,DIRECT", "FINAL,A"],
+    ["DOMAIN,example.invalid,A", "GEOIP,CN,DIRECT", "FINAL,A"],
   ));
   assert.deepEqual(result, { valid: true, errors: [] });
 });

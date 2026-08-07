@@ -116,15 +116,19 @@ test("keeps full ad blocking isolated to the optional Surge publication", () => 
   assert.doesNotMatch(profile, new RegExp(`${ruleBaseUrl}/Advertising(?:_Domain)?\\.list`, "u"));
 });
 
-test("uses domestic DNS by default and protected DNS mappings for explicit overseas sets", () => {
-  const profile = renderSurgeProfile(parseSurgeOptions(baseOptions), [normalizedSsNode], { ruleBaseUrl });
-  assert.match(profile, /^dns-server = 223\.5\.5\.5$/mu);
-  assert.match(profile, /^encrypted-dns-follow-outbound-mode = true$/mu);
-  assert.match(profile, /^\[Host\]$/mu);
-  assert.match(profile, new RegExp(`^RULE-SET:${ruleBaseUrl}/OpenAI\\.list = server:https://cloudflare-dns\\.com/dns-query$`, "mu"));
-  assert.match(profile, new RegExp(`^RULE-SET:${ruleBaseUrl}/OverseasGame\\.list = server:https://cloudflare-dns\\.com/dns-query$`, "mu"));
-  assert.match(profile, /^PROTOCOL,DOH,🧭 DNS 与规则下载$/mu);
-  assert.match(profile, /^DOMAIN,example\.invalid,🧭 DNS 与规则下载$/mu);
+test("keeps unknown-name DNS domestic while explicit overseas domains resolve through the proxy", () => {
+  for (const platform of ["macos", "iphone", "ipad"]) {
+    const profile = renderSurgeProfile(parseSurgeOptions({ ...baseOptions, platform }), [normalizedSsNode], { ruleBaseUrl });
+    const rules = ruleLines(profile);
+    const overseas = rules.findIndex((line) => line.startsWith(`RULE-SET,${ruleBaseUrl}/OpenAI.list,🤖 AI 专用,`));
+    const chinaIp = rules.findIndex((line) => line.includes("/ChinaIP.list,DIRECT,"));
+
+    assert.match(profile, /^dns-server = 223\.5\.5\.5$/mu);
+    assert.doesNotMatch(profile, /^\[Host\]$/mu);
+    assert.doesNotMatch(profile, /^RULE-SET:https:\/\/.* = server:/mu);
+    assert.ok(overseas >= 0 && overseas < chinaIp, platform);
+    assert.match(profile, /^DOMAIN,example\.invalid,🧭 DNS 与规则下载$/mu);
+  }
 });
 
 test("renders every Surge platform without changing shared group names", () => {

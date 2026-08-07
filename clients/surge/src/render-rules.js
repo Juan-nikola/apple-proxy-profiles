@@ -21,11 +21,6 @@ const SECURITY_IDS = new Set(["Hijacking", "BlockHttpDNS", "Privacy", "Advertisi
 const DOMESTIC_IDS = Object.freeze(["DomesticCore", "DomesticGame", "SteamCN"]);
 const OVERSEAS_GAME_ID = "OverseasGame";
 const CHINA_IP_ID = "ChinaIP";
-const OVERSEAS_DNS_IDS = new Set([
-  "OpenAI", "Claude", "Gemini", "Copilot", "GitHub",
-  "YouTube", "Netflix", "Disney", "Spotify", "GlobalMedia",
-  "Telegram", "Facebook", "Instagram", "Twitter", "TikTok", "OverseasGame",
-]);
 const RULE_DOWNLOAD_POLICY = "🧭 DNS 与规则下载";
 
 function safeBaseUrl(value) {
@@ -54,16 +49,6 @@ function selectedSources(ruleBaseUrl, adblockMode) {
   return { base, catalog, optionalBase };
 }
 
-export function renderSurgeDnsHosts({ ruleBaseUrl, adblockMode = "off", globalDnsUrl }) {
-  if (typeof globalDnsUrl !== "string" || !/^https:\/\/[^\s,]+$/u.test(globalDnsUrl)) {
-    throw new Error("Surge protected DNS URL must use HTTPS");
-  }
-  const { base, catalog, optionalBase } = selectedSources(ruleBaseUrl, adblockMode);
-  return catalog.filter(({ id }) => OVERSEAS_DNS_IDS.has(id)).map((source) => (
-    `${source.inputFormat}:${sourceUrl(source, base, optionalBase)} = server:${globalDnsUrl}`
-  ));
-}
-
 export function renderSurgeRules({ ruleBaseUrl, adblockMode = "off" }) {
   const { base, catalog, optionalBase } = selectedSources(ruleBaseUrl, adblockMode);
   const render = (source) => (
@@ -86,8 +71,7 @@ export function renderSurgeRules({ ruleBaseUrl, adblockMode = "off" }) {
   }
   const ruleHost = new URL(base).hostname;
   lines.push(
-    "# Protected DNS and rule-download transport",
-    `PROTOCOL,DOH,${RULE_DOWNLOAD_POLICY}`,
+    "# Rule-download fallback transport",
     `DOMAIN,${ruleHost},${RULE_DOWNLOAD_POLICY}`,
   );
   const byId = new Map(catalog.map((source) => [source.id, source]));
