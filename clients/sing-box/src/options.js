@@ -12,9 +12,13 @@ const DEFAULTS = Object.freeze({
   ipv6Mode: "auto",
   autoGroupMode: "auto",
   clientChain: "off",
+  profileMode: "light",
+  adblockMode: "off",
 });
 const PLATFORMS = new Set(["macos", "iphone", "ipad", "android", "openwrt"]);
 const CHANNELS = new Set(["edge", "current"]);
+const PROFILE_MODES = new Set(["light", "diagnostic"]);
+const ADBLOCK_MODES = new Set(["off", "full"]);
 const ALLOWED_KEYS = new Set([...REQUIRED_KEYS, ...Object.keys(DEFAULTS)]);
 const PARSED = new WeakSet();
 
@@ -34,6 +38,9 @@ function enumValue(raw, key, defaultValue) {
 
 export function parseSingBoxOptions(raw) {
   if (!raw || typeof raw !== "object" || Array.isArray(raw)) throw new TypeError("sing-box options must be an object");
+  if (Object.hasOwn(raw, "ruleSetFormat")) {
+    throw new Error("Option 'ruleSetFormat' was removed; migrate to profileMode and adblockMode");
+  }
   for (const key of Object.keys(raw)) {
     if (!key.startsWith("_") && !ALLOWED_KEYS.has(key)) throw new Error(`Unknown sing-box option: ${key}`);
   }
@@ -44,6 +51,10 @@ export function parseSingBoxOptions(raw) {
   if (requiredString(raw, "type") !== "collection") throw new Error("Option 'type' must be collection");
   const channel = raw.channel === undefined ? DEFAULTS.channel : raw.channel;
   if (typeof channel !== "string" || !CHANNELS.has(channel)) throw new Error("Option 'channel' has an unsupported value");
+  const profileMode = raw.profileMode === undefined ? DEFAULTS.profileMode : raw.profileMode;
+  if (typeof profileMode !== "string" || !PROFILE_MODES.has(profileMode)) throw new Error("Option 'profileMode' has an unsupported value");
+  const adblockMode = raw.adblockMode === undefined ? DEFAULTS.adblockMode : raw.adblockMode;
+  if (typeof adblockMode !== "string" || !ADBLOCK_MODES.has(adblockMode)) throw new Error("Option 'adblockMode' has an unsupported value");
   const options = {
     output: "config",
     type: "collection",
@@ -59,6 +70,8 @@ export function parseSingBoxOptions(raw) {
     ipv6Mode: enumValue(raw, "ipv6Mode", platform === "macos" ? "ipv4-only" : DEFAULTS.ipv6Mode),
     autoGroupMode: enumValue(raw, "autoGroupMode", DEFAULTS.autoGroupMode),
     clientChain: enumValue(raw, "clientChain", DEFAULTS.clientChain),
+    profileMode,
+    adblockMode,
   };
   platformPolicyPreset(platform === "openwrt" ? "macos" : platform);
   Object.freeze(options);

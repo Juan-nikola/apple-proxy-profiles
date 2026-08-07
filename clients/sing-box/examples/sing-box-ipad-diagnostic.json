@@ -23,30 +23,7 @@
         "detour": "🚀 节点选择"
       }
     ],
-    "rules": [
-      {
-        "rule_set": [
-          "rule-OpenAI",
-          "rule-Claude",
-          "rule-Gemini",
-          "rule-Copilot",
-          "rule-GitHub",
-          "rule-YouTube",
-          "rule-Netflix",
-          "rule-Disney",
-          "rule-Spotify",
-          "rule-GlobalMedia",
-          "rule-Telegram",
-          "rule-Facebook",
-          "rule-Instagram",
-          "rule-Twitter",
-          "rule-TikTok",
-          "rule-OverseasGame"
-        ],
-        "action": "route",
-        "server": "dns-proxy"
-      }
-    ],
+    "rules": [],
     "final": "dns-direct",
     "strategy": "prefer_ipv4",
     "cache_capacity": 4096
@@ -62,7 +39,7 @@
     {
       "type": "tun",
       "tag": "tun-in",
-      "interface_name": "sing-box",
+      "interface_name": "singtun0",
       "address": [
         "172.18.0.1/30",
         "fdfe:dcba:9876::1/126"
@@ -79,16 +56,18 @@
         "224.0.0.0/4",
         "fc00::/7",
         "fe80::/10",
-        "ff00::/8",
-        "192.168.0.0/16"
+        "ff00::/8"
       ],
       "dns_mode": "hijack",
       "dns_address": [
-        "172.18.0.2"
+        "172.18.0.2",
+        "fdfe:dcba:9876::2"
       ],
-      "include_android_user": [
-        0
-      ]
+      "platform": {
+        "http_proxy": {
+          "enabled": false
+        }
+      }
     }
   ],
   "outbounds": [
@@ -581,256 +560,7 @@
     "auto_detect_interface": true,
     "default_domain_resolver": "dns-direct",
     "default_http_client": "🧭 规则下载 HTTP",
-    "rule_set": [
-      {
-        "type": "remote",
-        "tag": "rule-Hijacking",
-        "format": "binary",
-        "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/rule-sets/Hijacking.srs",
-        "http_client": "🧭 规则下载 HTTP",
-        "update_interval": "24h"
-      },
-      {
-        "type": "remote",
-        "tag": "rule-BlockHttpDNS",
-        "format": "binary",
-        "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/rule-sets/BlockHttpDNS.srs",
-        "http_client": "🧭 规则下载 HTTP",
-        "update_interval": "24h"
-      },
-      {
-        "type": "remote",
-        "tag": "rule-Privacy",
-        "format": "binary",
-        "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/rule-sets/Privacy.srs",
-        "http_client": "🧭 规则下载 HTTP",
-        "update_interval": "24h"
-      },
-      {
-        "type": "remote",
-        "tag": "rule-DomesticCore",
-        "format": "binary",
-        "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/rule-sets/DomesticCore.srs",
-        "http_client": "🧭 规则下载 HTTP",
-        "update_interval": "24h"
-      },
-      {
-        "type": "remote",
-        "tag": "rule-DomesticGame",
-        "format": "binary",
-        "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/rule-sets/DomesticGame.srs",
-        "http_client": "🧭 规则下载 HTTP",
-        "update_interval": "24h"
-      },
-      {
-        "type": "remote",
-        "tag": "rule-BiliBili",
-        "format": "binary",
-        "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/rule-sets/BiliBili.srs",
-        "http_client": "🧭 规则下载 HTTP",
-        "update_interval": "24h"
-      },
-      {
-        "type": "remote",
-        "tag": "rule-ByteDance",
-        "format": "binary",
-        "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/rule-sets/ByteDance.srs",
-        "http_client": "🧭 规则下载 HTTP",
-        "update_interval": "24h"
-      },
-      {
-        "type": "remote",
-        "tag": "rule-XiaoHongShu",
-        "format": "binary",
-        "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/rule-sets/XiaoHongShu.srs",
-        "http_client": "🧭 规则下载 HTTP",
-        "update_interval": "24h"
-      },
-      {
-        "type": "remote",
-        "tag": "rule-Weibo",
-        "format": "binary",
-        "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/rule-sets/Weibo.srs",
-        "http_client": "🧭 规则下载 HTTP",
-        "update_interval": "24h"
-      },
-      {
-        "type": "remote",
-        "tag": "rule-OpenAI",
-        "format": "binary",
-        "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/rule-sets/OpenAI.srs",
-        "http_client": "🧭 规则下载 HTTP",
-        "update_interval": "24h"
-      },
-      {
-        "type": "remote",
-        "tag": "rule-Claude",
-        "format": "binary",
-        "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/rule-sets/Claude.srs",
-        "http_client": "🧭 规则下载 HTTP",
-        "update_interval": "24h"
-      },
-      {
-        "type": "remote",
-        "tag": "rule-Gemini",
-        "format": "binary",
-        "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/rule-sets/Gemini.srs",
-        "http_client": "🧭 规则下载 HTTP",
-        "update_interval": "24h"
-      },
-      {
-        "type": "remote",
-        "tag": "rule-Copilot",
-        "format": "binary",
-        "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/rule-sets/Copilot.srs",
-        "http_client": "🧭 规则下载 HTTP",
-        "update_interval": "24h"
-      },
-      {
-        "type": "remote",
-        "tag": "rule-GitHub",
-        "format": "binary",
-        "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/rule-sets/GitHub.srs",
-        "http_client": "🧭 规则下载 HTTP",
-        "update_interval": "24h"
-      },
-      {
-        "type": "remote",
-        "tag": "rule-YouTube",
-        "format": "binary",
-        "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/rule-sets/YouTube.srs",
-        "http_client": "🧭 规则下载 HTTP",
-        "update_interval": "24h"
-      },
-      {
-        "type": "remote",
-        "tag": "rule-Netflix",
-        "format": "binary",
-        "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/rule-sets/Netflix.srs",
-        "http_client": "🧭 规则下载 HTTP",
-        "update_interval": "24h"
-      },
-      {
-        "type": "remote",
-        "tag": "rule-Disney",
-        "format": "binary",
-        "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/rule-sets/Disney.srs",
-        "http_client": "🧭 规则下载 HTTP",
-        "update_interval": "24h"
-      },
-      {
-        "type": "remote",
-        "tag": "rule-Spotify",
-        "format": "binary",
-        "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/rule-sets/Spotify.srs",
-        "http_client": "🧭 规则下载 HTTP",
-        "update_interval": "24h"
-      },
-      {
-        "type": "remote",
-        "tag": "rule-GlobalMedia",
-        "format": "binary",
-        "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/rule-sets/GlobalMedia.srs",
-        "http_client": "🧭 规则下载 HTTP",
-        "update_interval": "24h"
-      },
-      {
-        "type": "remote",
-        "tag": "rule-Telegram",
-        "format": "binary",
-        "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/rule-sets/Telegram.srs",
-        "http_client": "🧭 规则下载 HTTP",
-        "update_interval": "24h"
-      },
-      {
-        "type": "remote",
-        "tag": "rule-Facebook",
-        "format": "binary",
-        "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/rule-sets/Facebook.srs",
-        "http_client": "🧭 规则下载 HTTP",
-        "update_interval": "24h"
-      },
-      {
-        "type": "remote",
-        "tag": "rule-Instagram",
-        "format": "binary",
-        "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/rule-sets/Instagram.srs",
-        "http_client": "🧭 规则下载 HTTP",
-        "update_interval": "24h"
-      },
-      {
-        "type": "remote",
-        "tag": "rule-Twitter",
-        "format": "binary",
-        "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/rule-sets/Twitter.srs",
-        "http_client": "🧭 规则下载 HTTP",
-        "update_interval": "24h"
-      },
-      {
-        "type": "remote",
-        "tag": "rule-TikTok",
-        "format": "binary",
-        "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/rule-sets/TikTok.srs",
-        "http_client": "🧭 规则下载 HTTP",
-        "update_interval": "24h"
-      },
-      {
-        "type": "remote",
-        "tag": "rule-Apple",
-        "format": "binary",
-        "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/rule-sets/Apple.srs",
-        "http_client": "🧭 规则下载 HTTP",
-        "update_interval": "24h"
-      },
-      {
-        "type": "remote",
-        "tag": "rule-Microsoft",
-        "format": "binary",
-        "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/rule-sets/Microsoft.srs",
-        "http_client": "🧭 规则下载 HTTP",
-        "update_interval": "24h"
-      },
-      {
-        "type": "remote",
-        "tag": "rule-SteamCN",
-        "format": "binary",
-        "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/rule-sets/SteamCN.srs",
-        "http_client": "🧭 规则下载 HTTP",
-        "update_interval": "24h"
-      },
-      {
-        "type": "remote",
-        "tag": "rule-OverseasGame",
-        "format": "binary",
-        "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/rule-sets/OverseasGame.srs",
-        "http_client": "🧭 规则下载 HTTP",
-        "update_interval": "24h"
-      },
-      {
-        "type": "remote",
-        "tag": "rule-Download",
-        "format": "binary",
-        "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/rule-sets/Download.srs",
-        "http_client": "🧭 规则下载 HTTP",
-        "update_interval": "24h"
-      },
-      {
-        "type": "remote",
-        "tag": "rule-PrivateTracker",
-        "format": "binary",
-        "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/rule-sets/PrivateTracker.srs",
-        "http_client": "🧭 规则下载 HTTP",
-        "update_interval": "24h"
-      },
-      {
-        "type": "remote",
-        "tag": "rule-ChinaIP",
-        "format": "binary",
-        "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/rule-sets/ChinaIP.srs",
-        "http_client": "🧭 规则下载 HTTP",
-        "update_interval": "24h"
-      }
-    ],
+    "rule_set": [],
     "rules": [
       {
         "ip_is_private": true,
@@ -845,27 +575,6 @@
         ],
         "action": "route",
         "outbound": "DIRECT"
-      },
-      {
-        "rule_set": [
-          "rule-Hijacking"
-        ],
-        "action": "reject",
-        "method": "default"
-      },
-      {
-        "rule_set": [
-          "rule-BlockHttpDNS"
-        ],
-        "action": "reject",
-        "method": "default"
-      },
-      {
-        "rule_set": [
-          "rule-Privacy"
-        ],
-        "action": "route",
-        "outbound": "🕵️ 严格跟踪"
       },
       {
         "domain_suffix": [
@@ -908,206 +617,6 @@
         ],
         "action": "route",
         "outbound": "🤖 AI 专用"
-      },
-      {
-        "rule_set": [
-          "rule-DomesticCore"
-        ],
-        "action": "route",
-        "outbound": "DIRECT"
-      },
-      {
-        "rule_set": [
-          "rule-DomesticGame"
-        ],
-        "action": "route",
-        "outbound": "DIRECT"
-      },
-      {
-        "rule_set": [
-          "rule-SteamCN"
-        ],
-        "action": "route",
-        "outbound": "DIRECT"
-      },
-      {
-        "rule_set": [
-          "rule-BiliBili"
-        ],
-        "action": "route",
-        "outbound": "📺 哔哩哔哩"
-      },
-      {
-        "rule_set": [
-          "rule-ByteDance"
-        ],
-        "action": "route",
-        "outbound": "🎵 抖音"
-      },
-      {
-        "rule_set": [
-          "rule-XiaoHongShu"
-        ],
-        "action": "route",
-        "outbound": "📕 小红书"
-      },
-      {
-        "rule_set": [
-          "rule-Weibo"
-        ],
-        "action": "route",
-        "outbound": "🧣 微博"
-      },
-      {
-        "rule_set": [
-          "rule-OpenAI"
-        ],
-        "action": "route",
-        "outbound": "🤖 AI 专用"
-      },
-      {
-        "rule_set": [
-          "rule-Claude"
-        ],
-        "action": "route",
-        "outbound": "🤖 AI 专用"
-      },
-      {
-        "rule_set": [
-          "rule-Gemini"
-        ],
-        "action": "route",
-        "outbound": "🤖 AI 专用"
-      },
-      {
-        "rule_set": [
-          "rule-Copilot"
-        ],
-        "action": "route",
-        "outbound": "🤖 AI 专用"
-      },
-      {
-        "rule_set": [
-          "rule-GitHub"
-        ],
-        "action": "route",
-        "outbound": "🐙 GitHub"
-      },
-      {
-        "rule_set": [
-          "rule-YouTube"
-        ],
-        "action": "route",
-        "outbound": "📺 YouTube"
-      },
-      {
-        "rule_set": [
-          "rule-Netflix"
-        ],
-        "action": "route",
-        "outbound": "🎬 Netflix"
-      },
-      {
-        "rule_set": [
-          "rule-Disney"
-        ],
-        "action": "route",
-        "outbound": "🏰 Disney+"
-      },
-      {
-        "rule_set": [
-          "rule-Spotify"
-        ],
-        "action": "route",
-        "outbound": "🎵 Spotify"
-      },
-      {
-        "rule_set": [
-          "rule-GlobalMedia"
-        ],
-        "action": "route",
-        "outbound": "🌍 国际媒体"
-      },
-      {
-        "rule_set": [
-          "rule-Telegram"
-        ],
-        "action": "route",
-        "outbound": "✈️ Telegram"
-      },
-      {
-        "rule_set": [
-          "rule-Facebook"
-        ],
-        "action": "route",
-        "outbound": "💬 海外社交"
-      },
-      {
-        "rule_set": [
-          "rule-Instagram"
-        ],
-        "action": "route",
-        "outbound": "💬 海外社交"
-      },
-      {
-        "rule_set": [
-          "rule-Twitter"
-        ],
-        "action": "route",
-        "outbound": "💬 海外社交"
-      },
-      {
-        "rule_set": [
-          "rule-TikTok"
-        ],
-        "action": "route",
-        "outbound": "🎶 TikTok"
-      },
-      {
-        "rule_set": [
-          "rule-Apple"
-        ],
-        "action": "route",
-        "outbound": "🍎 Apple"
-      },
-      {
-        "rule_set": [
-          "rule-Microsoft"
-        ],
-        "action": "route",
-        "outbound": "🪟 Microsoft"
-      },
-      {
-        "rule_set": [
-          "rule-Download"
-        ],
-        "action": "route",
-        "outbound": "⬇️ 下载/P2P"
-      },
-      {
-        "rule_set": [
-          "rule-PrivateTracker"
-        ],
-        "action": "route",
-        "outbound": "⬇️ 下载/P2P"
-      },
-      {
-        "rule_set": [
-          "rule-OverseasGame"
-        ],
-        "action": "route",
-        "outbound": "🌍 海外游戏"
-      },
-      {
-        "action": "resolve",
-        "server": "dns-direct"
-      },
-      {
-        "rule_set": [
-          "rule-ChinaIP"
-        ],
-        "action": "route",
-        "outbound": "DIRECT"
       }
     ],
     "final": "🚀 节点选择"

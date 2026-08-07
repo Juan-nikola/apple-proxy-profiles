@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { validateSingBoxConfig } from "../src/validate-config.js";
+import { RULE_BUDGETS } from "../../../shared/rules/lightweight-policy.js";
 
 function validConfig() {
   return {
@@ -119,4 +120,35 @@ test("rejects removed fields and unresolved HTTP client references", () => {
   result = validateSingBoxConfig(config);
   assert.equal(result.valid, false);
   assert.match(result.errors.join("\n"), /HTTP client/iu);
+});
+
+test("rejects source and non-srs remote rule sets", () => {
+  const config = validConfig();
+  config.http_clients = [{ tag: "download", version: 2, detour: "DIRECT" }];
+  config.route.rule_set = [{
+    type: "remote",
+    tag: "rule-Fixture",
+    format: "source",
+    url: "https://example.invalid/Fixture.json",
+    http_client: "download",
+  }];
+  let result = validateSingBoxConfig(config);
+  assert.equal(result.valid, false);
+  assert.match(result.errors.join("\n"), /binary|\.srs/iu);
+
+  config.route.rule_set[0].format = "binary";
+  config.route.rule_set[0].url = "https://example.invalid/Fixture.srs";
+  assert.deepEqual(validateSingBoxConfig(config), { valid: true, errors: [] });
+});
+
+test("fails validation when startup inline rules exceed the shared budget", () => {
+  const config = validConfig();
+  config.route.rules = Array.from({ length: RULE_BUDGETS.startupInlineEntries + 1 }, () => ({
+    domain_suffix: ["example.invalid"],
+    action: "route",
+    outbound: "DIRECT",
+  }));
+  const result = validateSingBoxConfig(config);
+  assert.equal(result.valid, false);
+  assert.match(result.errors.join("\n"), /inline.*budget|budget.*inline/iu);
 });
