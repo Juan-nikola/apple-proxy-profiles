@@ -10,6 +10,6 @@
 
 如果出现 `domain_resolver` 或 `default_domain_resolver` 缺失，说明配置仍是旧版本缓存。sing-box 1.14 对包含域名服务器、规则集或代理节点的配置要求默认域名解析器；重新预览并刷新对应的 `sing-box-*` Config File，使 JSON 中出现 `route.default_domain_resolver: "dns-direct"`。
 
-如果规则集报 `dial ... connection refused` 且目标是某个节点 IP/端口，说明规则下载 HTTP client 选中了失效节点。当前 sing-box 生成器会把 `🧭 DNS 与规则下载` 的默认值设为 `⚡ 全部自动`，并保留 `🚀 节点选择`、`DIRECT` 作为备选；重新预览并刷新 File 任务，确认该 selector 含有 `"default": "⚡ 全部自动"`。
+如果规则集报 `dial ... connection refused`、`context deadline exceeded` 或 TLS/握手错误，说明规则下载候选节点不可用。当前 sing-box 生成器会创建专用的 `🧭 规则下载故障转移` URLTest 组，直接探测 `Hijacking.json` 规则文件，并把 `🧭 DNS 与规则下载` 默认指向该组；失效节点会被跳过，另外保留 `🚀 节点选择`、`DIRECT` 作为手动备用。重新预览并刷新 File 任务，确认 JSON 同时包含该 URLTest 组和 selector 的 `"default": "🧭 规则下载故障转移"`。
 
-如果规则集报 `context deadline exceeded` 且日志显示 `outbound/direct[DIRECT]`，说明当前网络不能及时直连 GitHub Pages。规则下载现在默认通过 `⚡ 全部自动` 选择可用代理；若仍失败，可在配置启动后将该组手动切换到能访问 GitHub Pages 的节点。
+如果全部候选都失败，sing-box 仍会在规则集初始化阶段报错；这表示当前网络既不能通过代理访问规则文件，也不能直连 GitHub Pages，需要更换网络或节点后重新加载配置。
