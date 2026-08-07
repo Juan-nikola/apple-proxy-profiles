@@ -1,5 +1,6 @@
 import { parseOptions } from "./options.js";
 import { renderProfile } from "./render-profile.js";
+import { ruleBaseUrlForChannel } from "./render-rules.js";
 import { validateProfile } from "./validate-profile.js";
 
 export async function operator(input, targetPlatform, context = {}) {
@@ -20,10 +21,11 @@ export async function operator(input, targetPlatform, context = {}) {
     throw new Error("produceArtifact must return a non-empty node array");
   }
 
-  const profile = renderProfile(options, nodes);
+  const profile = renderProfile(options, nodes, {
+    ruleBaseUrl: ruleBaseUrlForChannel(options.channel),
+  });
   if (!validateProfile(profile).valid) {
     throw new Error("Generated profile failed validation");
   }
   return { ...input, $content: profile };
 }
-

@@ -15,6 +15,7 @@ const required = {
 test("parseOptions applies the generator defaults", () => {
   assert.deepEqual(parseOptions(required), {
     ...required,
+    channel: "edge",
     dnsMode: "stable",
     chinaDns: "alidns",
     globalDns: "cloudflare",
@@ -23,7 +24,16 @@ test("parseOptions applies the generator defaults", () => {
     ipv6Mode: "ipv4-only",
     autoGroupMode: "auto",
     clientChain: "off",
+    adblockMode: "off",
   });
+});
+
+test("parseOptions accepts only supported publication and adblock modes", () => {
+  assert.equal(parseOptions({ ...required, channel: "current" }).channel, "current");
+  assert.equal(parseOptions({ ...required, adblockMode: "full" }).adblockMode, "full");
+  for (const [key, value] of [["channel", "beta"], ["adblockMode", "balanced"]]) {
+    assert.throws(() => parseOptions({ ...required, [key]: value }), new RegExp(key, "iu"));
+  }
 });
 
 test("parseOptions derives stable network defaults by platform and preserves explicit overrides", () => {

@@ -10,6 +10,7 @@ const REQUIRED_KEYS = Object.freeze([
 ]);
 
 const DEFAULTS = Object.freeze({
+  channel: "edge",
   dnsMode: "stable",
   chinaDns: "alidns",
   globalDns: "cloudflare",
@@ -18,7 +19,11 @@ const DEFAULTS = Object.freeze({
   ipv6Mode: "auto",
   autoGroupMode: "auto",
   clientChain: "off",
+  adblockMode: "off",
 });
+
+const CHANNELS = new Set(["edge", "current"]);
+const ADBLOCK_MODES = new Set(["off", "full"]);
 
 const ALLOWED_KEYS = new Set([...REQUIRED_KEYS, ...Object.keys(DEFAULTS)]);
 
@@ -81,9 +86,23 @@ export function parseOptions(raw) {
     const platformDefault = key === "ipv6Mode" && options.platform === "macos"
       ? "ipv4-only"
       : defaultValue;
-    options[key] = Object.hasOwn(raw, key) && raw[key] !== undefined
-      ? enumValue(raw, key)
-      : platformDefault;
+    if (key === "channel") {
+      const value = Object.hasOwn(raw, key) && raw[key] !== undefined ? raw[key] : platformDefault;
+      if (typeof value !== "string" || !CHANNELS.has(value)) {
+        throw new Error(`Option '${key}' has an unsupported value: ${value}`);
+      }
+      options[key] = value;
+    } else if (key === "adblockMode") {
+      const value = Object.hasOwn(raw, key) && raw[key] !== undefined ? raw[key] : platformDefault;
+      if (typeof value !== "string" || !ADBLOCK_MODES.has(value)) {
+        throw new Error(`Option '${key}' has an unsupported value: ${value}`);
+      }
+      options[key] = value;
+    } else {
+      options[key] = Object.hasOwn(raw, key) && raw[key] !== undefined
+        ? enumValue(raw, key)
+        : platformDefault;
+    }
   }
   return options;
 }
