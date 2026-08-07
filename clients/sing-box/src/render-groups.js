@@ -1,6 +1,8 @@
 import { buildPolicyGroups } from "../../../shared/policies/catalog.js";
 import { POLICY_TARGET } from "../../../shared/policies/intents.js";
 
+const RULE_DOWNLOAD_GROUP = "🧭 DNS 与规则下载";
+
 function targetName(value) {
   return value === POLICY_TARGET.primaryProxy ? "⚡ 全部自动" : value;
 }
@@ -46,7 +48,8 @@ export function renderSingBoxGroups(options, nodes) {
       outbounds,
       interrupt_exist_connections: true,
     };
-    if (group.defaultChoice !== undefined) outbound.default = targetName(group.defaultChoice);
+    const defaultChoice = group.name === RULE_DOWNLOAD_GROUP ? "DIRECT" : group.defaultChoice;
+    if (defaultChoice !== undefined) outbound.default = targetName(defaultChoice);
     return outbound;
   });
 }

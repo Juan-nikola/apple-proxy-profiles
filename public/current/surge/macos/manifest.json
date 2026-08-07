@@ -5,7 +5,7 @@
   "configSha256": "56a334182c41452489c0ffdfe2c4a7974c758267080a903593ddb398c0e5afd7",
   "platform": "macos",
   "platformKey": "surge/macos",
-  "ruleManifestSha256": "b44d955aff4fa141a6942aada9a9faaeb60b2a5a9351f0362acf36ad7e9ecd84",
+  "ruleManifestSha256": "321f9e5787b3b04326b8b51e83afdd87af1707de90ced1ede7bfc02ad8f90aab",
   "schemaVersion": 1,
   "status": "validated",
   "upstream": {

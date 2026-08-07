@@ -2226,6 +2226,7 @@ var SingBoxConfigBundle = (() => {
   }
 
   // src/render-groups.js
+  var RULE_DOWNLOAD_GROUP = "\u{1F9ED} DNS \u4E0E\u89C4\u5219\u4E0B\u8F7D";
   function targetName(value) {
     return value === POLICY_TARGET.primaryProxy ? "\u26A1 \u5168\u90E8\u81EA\u52A8" : value;
   }
@@ -2268,7 +2269,8 @@ var SingBoxConfigBundle = (() => {
         outbounds,
         interrupt_exist_connections: true
       };
-      if (group.defaultChoice !== void 0) outbound.default = targetName(group.defaultChoice);
+      const defaultChoice = group.name === RULE_DOWNLOAD_GROUP ? "DIRECT" : group.defaultChoice;
+      if (defaultChoice !== void 0) outbound.default = targetName(defaultChoice);
       return outbound;
     });
   }

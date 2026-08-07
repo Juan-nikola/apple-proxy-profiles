@@ -78,6 +78,9 @@ test("renders the latest sing-box HTTP client contract without removed fields", 
   }]);
   assert.equal(config.route.default_http_client, "🧭 规则下载 HTTP");
   assert.equal(config.route.default_domain_resolver, "dns-direct");
+  const ruleDownloadGroup = config.outbounds.find((outbound) => outbound.tag === "🧭 DNS 与规则下载");
+  assert.deepEqual(ruleDownloadGroup?.outbounds, ["🚀 节点选择", "DIRECT"]);
+  assert.equal(ruleDownloadGroup?.default, "DIRECT");
   assert.equal(config.route.rule_set.every((rule) => rule.http_client === "🧭 规则下载 HTTP"), true);
   assert.equal(config.route.rules.some((rule) => Object.hasOwn(rule, "geoip") || Object.hasOwn(rule, "geosite")), false);
   assert.equal(config.route.rule_set.some((rule) => Object.hasOwn(rule, "download_detour")), false);

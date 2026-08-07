@@ -532,7 +532,8 @@
         "🚀 节点选择",
         "DIRECT"
       ],
-      "interrupt_exist_connections": true
+      "interrupt_exist_connections": true,
+      "default": "DIRECT"
     },
     {
       "type": "selector",
