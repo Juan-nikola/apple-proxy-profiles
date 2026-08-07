@@ -23,8 +23,28 @@ const DIRECT_IDS = new Set([
   "Privacy", "BiliBili", "ByteDance", "XiaoHongShu", "Weibo", "Apple", "Microsoft",
   "SteamCN", "ChinaMax_Domain", "Download", "PrivateTracker", "ChinaMax",
 ]);
+const SAFE_SEGMENT = /^[A-Za-z0-9_]+$/u;
+const SAFE_PATH_SEGMENT = /^[A-Za-z0-9_]+(?:\.list)?$/u;
+
+const CHINA_IPS_SOURCE = Object.freeze({
+  id: "ChinaIPs",
+  sourcePath: "ChinaIPs/ChinaIPs.list",
+  upstreamUrl: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Shadowrocket/ChinaIPs/ChinaIPs.list",
+  policy: "DIRECT",
+  minEntries: 20_000,
+  inputFormat: "RULE-SET",
+});
+
+function safePath(path, prefix) {
+  const segments = path.split("/");
+  if (!path.startsWith(prefix) || segments.some((segment) => !SAFE_PATH_SEGMENT.test(segment))) {
+    throw new TypeError(`Rule catalog path is unsafe: ${path}`);
+  }
+  return path;
+}
 
 function sourceRecord(source, index, { compiled = false } = {}) {
+  if (!SAFE_SEGMENT.test(source.id)) throw new TypeError(`Rule source ID is unsafe: ${source.id}`);
   const directory = DOMAIN_SET_DIRECTORIES[source.id] ?? source.id;
   const familyId = source.id === "Advertising_Domain" ? "Advertising" : source.id;
   const componentId = source.id.endsWith("_Domain") ? "domains" : "rules";
@@ -35,23 +55,25 @@ function sourceRecord(source, index, { compiled = false } = {}) {
     componentId,
     order: index + 1,
     priority: (index + 1) * 10,
-    canonicalPath: compiled
+    canonicalPath: safePath(compiled
       ? `compiled/Surge/${source.id}/${source.id}.list`
-      : `rule/Surge/${directory}/${source.id}.list`,
+      : `rule/Surge/${source.sourcePath ?? `${directory}/${source.id}.list`}`,
+    compiled ? "compiled/Surge/" : "rule/Surge/"),
     inputFormat: source.inputFormat,
     policy: source.policy,
     routing,
     intendedTarget: routing === 2 ? "reject" : routing === 1 ? "direct" : source.policy,
     minEntries: source.minEntries,
   };
-  if (["Game", "ChinaMax", "ChinaMax_Domain"].includes(source.id)) record.inputOnly = true;
+  if (["Game", "ChinaIPs", "ChinaMax", "ChinaMax_Domain"].includes(source.id)) record.inputOnly = true;
+  if (source.id === "ChinaMax") record.auditOnly = true;
   if (FULL_ADBLOCK_SOURCE_IDS.includes(source.id)) record.optionalPack = "adblock-full";
   return Object.freeze(record);
 }
 
 /** Immutable upstream inputs required by the lightweight compiler. */
 export const FETCH_SOURCE_CATALOG = Object.freeze(
-  UPSTREAM_RULE_SOURCE_CATALOG.map((source, index) => sourceRecord(source, index)),
+  [...UPSTREAM_RULE_SOURCE_CATALOG, CHINA_IPS_SOURCE].map((source, index) => sourceRecord(source, index)),
 );
 
 /**
