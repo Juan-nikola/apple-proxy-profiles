@@ -26,6 +26,8 @@
 | `name` | `apple-proxy-sources` | `apple-proxy-sources` | `apple-proxy-sources` |
 | `subscriptionName` | `Apple-Proxy-Nodes` | `Apple-Proxy-Nodes` | `Apple-Proxy-Nodes` |
 | `platform` | `macos` | `iphone` | `ipad` |
+| `channel` | `current` | `current` | `current` |
+| `adblockMode` | `off` | `off` | `off` |
 | `dnsMode` | `stable` | `stable` | `stable` |
 | `chinaDns` | `alidns` | `alidns` | `alidns` |
 | `globalDns` | `cloudflare` | `cloudflare` | `cloudflare` |
@@ -36,6 +38,8 @@
 | `clientChain` | `off` | `off` | `off` |
 
 预览成功标志：内容以 Surge INI 配置段落开头，包含 `[General]`、`[Proxy]`、`[Proxy Group]`、`[Rule]`，并且至少有一个节点。若输出为空，先检查组合是否非空、`subscriptionName` 是否只是显示名而非组合名，以及脚本是否启用。
+
+`adblockMode=off` 保持轻量默认分流；确实需要完整广告分类时才使用 `full`。`channel` 和脚本发布通道应保持一致：灰度两者都用 `edge`，稳定任务两者都用 `current`。
 
 “关闭缓存/noCache”和“不验证证书/insecure”保持关闭。公开规则 URL 可以更新，但私密节点 URL、API、UUID 和密码永远不应出现在 Arguments、README、Issue 或终端日志中。
 

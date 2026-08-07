@@ -5,7 +5,8 @@ import { parseSurgeOptions } from "./options.js";
 import { renderSurgeProfile } from "./render-profile.js";
 import { sanitizeSurgeNode } from "./render-node.js";
 
-export const PUBLIC_RULE_BASE_URL = "https://juan-nikola.github.io/apple-proxy-profiles/current/surge/rules";
+export const PUBLIC_RULE_ROOT = "https://juan-nikola.github.io/apple-proxy-profiles";
+export const PUBLIC_RULE_BASE_URL = `${PUBLIC_RULE_ROOT}/current/surge/rules`;
 
 function logDiagnostics(context, options, nodes) {
   const logger = context?.logger;
@@ -18,7 +19,7 @@ function logDiagnostics(context, options, nodes) {
         : null;
   if (!method) return;
   try {
-    method(`[surge-profile] ${JSON.stringify({ client: "surge", platform: options.platform, accepted: nodes.length })}`);
+    method(`[surge-profile] ${JSON.stringify({ client: "surge", platform: options.platform, channel: options.channel, accepted: nodes.length })}`);
   } catch {
     // Diagnostics are optional and never change the private output.
   }
@@ -39,6 +40,7 @@ export async function operator(input, targetPlatform, context = {}) {
   const filtered = filterNodesForClient(normalized.nodes, CLIENT.surge);
   if (filtered.nodes.length === 0) throw new Error("No compatible Surge nodes");
   logDiagnostics(context, options, filtered.nodes);
-  const profile = renderSurgeProfile(options, filtered.nodes.map(sanitizeSurgeNode), { ruleBaseUrl: PUBLIC_RULE_BASE_URL });
+  const ruleBaseUrl = `${PUBLIC_RULE_ROOT}/${options.channel}/surge/rules`;
+  const profile = renderSurgeProfile(options, filtered.nodes.map(sanitizeSurgeNode), { ruleBaseUrl });
   return { ...input, $content: profile };
 }
