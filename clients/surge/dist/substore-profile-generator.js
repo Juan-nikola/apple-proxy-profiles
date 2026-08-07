@@ -2436,7 +2436,7 @@ var SurgeProfileBundle = (() => {
       if (!source) throw new Error(`Missing Surge lightweight rule source: ${id}`);
       lines.push(render(source));
     }
-    lines.push("GEOIP,CN,DIRECT", "FINAL,\u{1F680} \u8282\u70B9\u9009\u62E9");
+    lines.push("GEOIP,CN,DIRECT", "FINAL,\u{1F680} \u8282\u70B9\u9009\u62E9,dns-failed");
     return lines;
   }
 

@@ -91,7 +91,7 @@ test("renders the lightweight Surge precedence without default advertising or Ch
   assert.match(profile, new RegExp(`^RULE-SET,${ruleBaseUrl}/ChinaIP\\.list,DIRECT,`, "mu"));
   assert.match(profile, /^GEOIP,CN,DIRECT$/mu);
   assert.doesNotMatch(profile, /^GEOIP,CN,DIRECT,no-resolve$/mu);
-  assert.equal(rules.at(-1), "FINAL,🚀 节点选择");
+  assert.equal(rules.at(-1), "FINAL,🚀 节点选择,dns-failed");
 
   assert.ok(indexOf("/Hijacking.list") < indexOf("# CUSTOM_BLOCK"));
   assert.ok(indexOf("# CUSTOM_AI") < indexOf("/DomesticCore.list"));
@@ -136,7 +136,7 @@ test("renders every Surge platform without changing shared group names", () => {
     const profile = renderSurgeProfile(parseSurgeOptions({ ...baseOptions, platform }), [normalizedSsNode], {
       ruleBaseUrl,
     });
-    assert.match(profile, /^FINAL,🚀 节点选择$/mu);
+    assert.match(profile, /^FINAL,🚀 节点选择,dns-failed$/mu);
     assert.match(profile, /^🚀 节点选择 = /mu);
     assert.deepEqual(validateSurgeProfile(profile), { valid: true, errors: [] }, platform);
   }

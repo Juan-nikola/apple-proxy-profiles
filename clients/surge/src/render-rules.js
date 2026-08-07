@@ -89,6 +89,6 @@ export function renderSurgeRules({ ruleBaseUrl, adblockMode = "off" }) {
     if (!source) throw new Error(`Missing Surge lightweight rule source: ${id}`);
     lines.push(render(source));
   }
-  lines.push("GEOIP,CN,DIRECT", "FINAL,🚀 节点选择");
+  lines.push("GEOIP,CN,DIRECT", "FINAL,🚀 节点选择,dns-failed");
   return lines;
 }

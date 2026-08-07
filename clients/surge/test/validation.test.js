@@ -45,3 +45,11 @@ test("accepts the rule-download fallback transport before the CN fallback", () =
   ));
   assert.deepEqual(result, { valid: true, errors: [] });
 });
+
+test("accepts dns-failed only on the last FINAL rule", () => {
+  const result = validateSurgeProfile(profile(
+    ["A = select,DIRECT"],
+    ["GEOIP,CN,DIRECT", "FINAL,A,dns-failed"],
+  ));
+  assert.deepEqual(result, { valid: true, errors: [] });
+});

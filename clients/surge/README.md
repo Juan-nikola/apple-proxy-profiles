@@ -35,6 +35,8 @@ https://juan-nikola.github.io/apple-proxy-profiles/current/surge/scripts/surge-p
 
 `adblockMode=off` 是默认值，不下载完整广告分类。只有明确改为 `adblockMode=full` 时，才会加载与 `channel` 一致的独立可选广告包。
 
+`globalDns` 暂保留为跨客户端参数兼容位，Surge 的三端可移植 Profile 不在本地使用它。明确的海外域名在 IP 规则之前命中代理，由代理端解析；未命中域名使用 `chinaDns`，若国内 DNS 解析失败则由 `FINAL` 的 `dns-failed` 回退到代理。
+
 ## 改什么去哪里
 
 | 需求 | 修改位置 | 说明 |

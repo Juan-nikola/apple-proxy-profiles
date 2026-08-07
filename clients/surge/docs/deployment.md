@@ -41,6 +41,8 @@
 
 `adblockMode=off` 保持轻量默认分流；确实需要完整广告分类时才使用 `full`。`channel` 和脚本发布通道应保持一致：灰度两者都用 `edge`，稳定任务两者都用 `current`。
 
+`globalDns` 为共享参数兼容位，这份 Surge Profile 不会在本地使用它。海外规则命中后由代理端解析；其他域名使用 `chinaDns`，解析失败时通过 `dns-failed` 交给代理，这样才能同时兼容 macOS、iPhone 和 iPad。
+
 “关闭缓存/noCache”和“不验证证书/insecure”保持关闭。公开规则 URL 可以更新，但私密节点 URL、API、UUID 和密码永远不应出现在 Arguments、README、Issue 或终端日志中。
 
 ## 3. 导入官方 Surge 与灰度
