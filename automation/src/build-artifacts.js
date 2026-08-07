@@ -4,7 +4,7 @@ import { renderShadowrocketRuleSource } from "./render-shadowrocket-rules.js";
 import { renderSingBoxRuleSource } from "./render-sing-box-rules.js";
 import { compileLightweightRules } from "./compile-lightweight-rules.js";
 import { compactRuleCidrs } from "./compact-rule-cidrs.js";
-import { artifactByteLength, artifactSha256 } from "./artifact-content.js";
+import { artifactBuffer, artifactByteLength, artifactSha256 } from "./artifact-content.js";
 import { BLACKMATRIX7_BASELINE, catalogSha256 } from "./source-catalog.js";
 import { RULE_BUDGETS } from "../../shared/rules/lightweight-policy.js";
 import { RULE_KIND } from "../../shared/rules/model.js";
@@ -24,6 +24,13 @@ const SURGE_TYPE = Object.freeze({
   [RULE_KIND.ipv4Cidr]: "IP-CIDR",
   [RULE_KIND.ipv6Cidr]: "IP-CIDR6",
 });
+
+const FORBIDDEN_DEFAULT_REFERENCES = Object.freeze([
+  Object.freeze({ id: "Advertising_Domain", pattern: /\bAdvertising_Domain\b/u }),
+  Object.freeze({ id: "ChinaMax_Domain", pattern: /\bChinaMax_Domain\b/u }),
+  Object.freeze({ id: "rule-Advertising", pattern: /\brule-Advertising(?:_Domain)?\b/u }),
+  Object.freeze({ id: "Advertising", pattern: /["']Advertising["']|\/Advertising(?:\.(?:arrs|json|list|srs|yaml)|\/)/u }),
+]);
 
 function compiledText(entries) {
   return `${entries.map((entry) => {
@@ -194,10 +201,12 @@ export function enforcePublicationBudgets({ diagnostics, files }) {
   return Object.freeze(referencedBytes);
 }
 
-function addClientManifests(files, upstream) {
+function addClientManifests(files, upstream, basePrefix = "") {
   const manifests = {};
   for (const [client, directory] of Object.entries(CLIENT_PATHS)) {
-    const records = fileRecords(new Map([...files].filter(([path]) => path.startsWith(`${directory}/`))));
+    const prefix = basePrefix ? `${basePrefix}/${directory}` : directory;
+    const records = fileRecords(new Map([...files].filter(([path]) => path.startsWith(`${prefix}/`))));
+    if (records.length === 0) throw new Error(`Client ${client} has no publication files`);
     const base = {
       schemaVersion: 1,
       client,
@@ -206,10 +215,21 @@ function addClientManifests(files, upstream) {
     };
     const manifestHash = artifactSha256(canonicalJson(base));
     const manifest = Object.freeze({ ...base, manifestHash });
-    files.set(`${directory}/client-manifest.json`, canonicalJson(manifest));
+    files.set(`${prefix}/client-manifest.json`, canonicalJson(manifest));
     manifests[client] = manifest;
   }
   return Object.freeze(manifests);
+}
+
+export function assertNoForbiddenDefaultReferences(files) {
+  if (!(files instanceof Map)) throw new TypeError("Default publication files must be a Map");
+  for (const [path, content] of files) {
+    const text = artifactBuffer(content).toString("utf8");
+    const forbidden = FORBIDDEN_DEFAULT_REFERENCES.find(({ pattern }) => pattern.test(text));
+    if (forbidden) {
+      throw new Error(`Forbidden default rule reference ${forbidden.id} in ${path}`);
+    }
+  }
 }
 
 function buildOptionalPack({ packId, ruleSets, upstream }) {
@@ -220,6 +240,7 @@ function buildOptionalPack({ packId, ruleSets, upstream }) {
     pathPrefix,
     anywherePrefix: `${pathPrefix}/anywhere`,
   });
+  const clientManifests = addClientManifests(rendered.files, upstream, pathPrefix);
   const records = fileRecords(rendered.files);
   const baseManifest = {
     schemaVersion: 1,
@@ -227,6 +248,9 @@ function buildOptionalPack({ packId, ruleSets, upstream }) {
     generatedAt: upstream.committedAt,
     entries: [...ruleSets.values()].reduce((sum, set) => sum + set.entries.length, 0),
     bytes: records.reduce((sum, record) => sum + record.bytes, 0),
+    clients: Object.fromEntries(Object.entries(clientManifests).map(([client, manifest]) => [client, {
+      manifestHash: manifest.manifestHash,
+    }])),
     files: records,
   };
   const manifest = Object.freeze({
@@ -263,6 +287,7 @@ export function buildClientArtifacts({
     addFiles(defaults, additions);
   }
 
+  assertNoForbiddenDefaultReferences(defaults);
   const referencedBytes = enforcePublicationBudgets({ diagnostics: publicationDiagnostics, files: defaults });
   const clientManifests = addClientManifests(defaults, upstream);
   const records = fileRecords(defaults);

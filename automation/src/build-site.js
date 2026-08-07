@@ -95,6 +95,15 @@ async function relativeFiles(root, current = "") {
   return found;
 }
 
+async function readArtifactTree(directory, prefix = "") {
+  const files = new Map();
+  for (const relative of await relativeFiles(directory)) {
+    if (relative === "<invalid>") throw new Error("Publication tree contains a non-regular entry");
+    files.set(prefix ? `${prefix}/${relative}` : relative, await readFile(join(directory, relative)));
+  }
+  return files;
+}
+
 async function versionRecords(versionsDirectory) {
   if (!await exists(versionsDirectory)) return [];
   const records = [];
@@ -246,11 +255,108 @@ function mergePublicationFiles(defaults, optionalPacks) {
   return merged;
 }
 
+function parseCanonicalManifest(files, manifestPath, label) {
+  const content = files.get(manifestPath);
+  if (content === undefined) throw new Error(`${label} manifest is missing`);
+  let manifest;
+  try {
+    manifest = JSON.parse(artifactBuffer(content).toString("utf8"));
+  } catch {
+    throw new Error(`${label} manifest is invalid JSON`);
+  }
+  if (!manifest || typeof manifest !== "object" || Array.isArray(manifest)) {
+    throw new Error(`${label} manifest is invalid`);
+  }
+  const { manifestHash, ...baseManifest } = manifest;
+  if (!/^[0-9a-f]{64}$/u.test(manifestHash)
+    || artifactSha256(canonicalJson(baseManifest)) !== manifestHash
+    || !artifactBuffer(content).equals(artifactBuffer(canonicalJson(manifest)))) {
+    throw new Error(`${label} manifest hash or canonical bytes are invalid`);
+  }
+  return manifest;
+}
+
+function verifyManifestFileClosure(files, manifest, manifestPath, expectedPaths, label) {
+  if (!Array.isArray(manifest.files) || manifest.files.length === 0) {
+    throw new Error(`${label} manifest file records are empty`);
+  }
+  const expected = new Set(expectedPaths);
+  const seen = new Set();
+  for (const record of manifest.files) {
+    if (!record || typeof record.path !== "string" || !safeRelativePath(record.path)
+      || seen.has(record.path) || !expected.has(record.path)
+      || !Number.isSafeInteger(record.bytes) || record.bytes < 0
+      || !/^[0-9a-f]{64}$/u.test(record.sha256)) {
+      throw new Error(`${label} manifest file records are invalid`);
+    }
+    const content = files.get(record.path);
+    if (content === undefined || artifactBuffer(content).byteLength !== record.bytes
+      || artifactSha256(content) !== record.sha256) {
+      throw new Error(`${label} manifest file bytes changed: ${record.path}`);
+    }
+    seen.add(record.path);
+  }
+  if (seen.size !== expected.size || [...expected].some((path) => !seen.has(path))) {
+    throw new Error(`${label} manifest file set is not closed`);
+  }
+  if (seen.has(manifestPath)) throw new Error(`${label} manifest must not hash itself`);
+}
+
+function verifyClientManifest(files, client, directory, basePrefix = "") {
+  const prefix = basePrefix ? `${basePrefix}/${directory}` : directory;
+  const manifestPath = `${prefix}/client-manifest.json`;
+  const manifest = parseCanonicalManifest(files, manifestPath, `Client ${client}`);
+  if (manifest.client !== client) throw new Error(`Client ${client} manifest identity is invalid`);
+  const expectedPaths = [...files.keys()].filter((path) => path.startsWith(`${prefix}/`) && path !== manifestPath);
+  verifyManifestFileClosure(files, manifest, manifestPath, expectedPaths, `Client ${client}`);
+  return manifest;
+}
+
+export function validateDefaultPublication({ defaults, manifest }) {
+  validatePublicationMap(defaults, "Default publication");
+  const parsed = parseCanonicalManifest(defaults, "manifest.json", "Default publication");
+  if (!manifest || parsed.manifestHash !== manifest.manifestHash
+    || !artifactBuffer(defaults.get("manifest.json")).equals(artifactBuffer(canonicalJson(manifest)))) {
+    throw new Error("Default publication manifest argument does not match emitted bytes");
+  }
+  const expectedPaths = [...defaults.keys()].filter((path) => path !== "manifest.json");
+  verifyManifestFileClosure(defaults, parsed, "manifest.json", expectedPaths, "Default publication");
+  for (const [client, directory] of Object.entries(CLIENT_PUBLIC_PATHS)) {
+    const clientManifest = verifyClientManifest(defaults, client, directory);
+    if (parsed.clients?.[client]?.manifestHash !== clientManifest.manifestHash) {
+      throw new Error(`Default publication client hash mismatch for ${client}`);
+    }
+  }
+  return parsed;
+}
+
+export function validateOptionalPublication({ packId, files }) {
+  validatePublicationMap(files, `Optional publication ${packId}`);
+  const prefix = `optional/${packId}`;
+  if ([...files.keys()].some((path) => !path.startsWith(`${prefix}/`))) {
+    throw new Error(`Optional publication ${packId} escaped its tree`);
+  }
+  const manifestPath = `${prefix}/manifest.json`;
+  const manifest = parseCanonicalManifest(files, manifestPath, `Optional publication ${packId}`);
+  if (manifest.packId !== packId) throw new Error(`Optional publication ${packId} identity is invalid`);
+  const expectedPaths = [...files.keys()].filter((path) => path !== manifestPath);
+  verifyManifestFileClosure(files, manifest, manifestPath, expectedPaths, `Optional publication ${packId}`);
+  for (const [client, directory] of Object.entries(CLIENT_PUBLIC_PATHS)) {
+    const clientManifest = verifyClientManifest(files, client, directory, prefix);
+    if (manifest.clients?.[client]?.manifestHash !== clientManifest.manifestHash) {
+      throw new Error(`Optional publication ${packId} client hash mismatch for ${client}`);
+    }
+  }
+  return manifest;
+}
+
 export async function publishEdgeRelease({ publicDirectory, defaults, optionalPacks, manifest }) {
   const merged = mergePublicationFiles(defaults, optionalPacks);
-  if (!manifest || !/^[0-9a-f]{64}$/u.test(manifest.manifestHash)) {
-    throw new TypeError("Verified edge manifest is required");
-  }
+  validateDefaultPublication({ defaults, manifest });
+  const optionalManifests = new Map([...optionalPacks].map(([packId, files]) => [
+    packId,
+    validateOptionalPublication({ packId, files }),
+  ]));
   const parent = dirname(publicDirectory);
   await mkdir(publicDirectory, { recursive: true });
   const staging = await mkdtemp(join(parent, `.${basename(publicDirectory)}-edge-staging-`));
@@ -258,6 +364,31 @@ export async function publishEdgeRelease({ publicDirectory, defaults, optionalPa
   const backup = join(publicDirectory, `.edge-backup-${manifest.manifestHash.slice(0, 12)}`);
   try {
     await writeSnapshot(staging, merged);
+    const optionalSelectionBase = {
+      schemaVersion: 1,
+      packs: Object.fromEntries([...optionalManifests].map(([packId, optionalManifest]) => [
+        packId,
+        optionalManifest.manifestHash,
+      ])),
+    };
+    const optionalSelection = Object.freeze({
+      ...optionalSelectionBase,
+      manifestHash: artifactSha256(canonicalJson(optionalSelectionBase)),
+    });
+    for (const [packId, optionalManifest] of optionalManifests) {
+      await cp(
+        join(staging, "optional", packId),
+        join(
+          staging,
+          "optional-versions",
+          packId,
+          optionalManifest.manifestHash,
+          "optional",
+          packId,
+        ),
+        { recursive: true, errorOnExist: true },
+      );
+    }
     for (const [client, directory] of Object.entries(CLIENT_PUBLIC_PATHS)) {
       const clientManifestPath = join(staging, directory, "client-manifest.json");
       const clientManifest = JSON.parse(await readFile(clientManifestPath, "utf8"));
@@ -269,6 +400,7 @@ export async function publishEdgeRelease({ publicDirectory, defaults, optionalPa
       await mkdir(immutable, { recursive: true });
       await cp(join(staging, directory), join(immutable, directory), { recursive: true, errorOnExist: true });
       await writeFile(join(immutable, "client-manifest.json"), artifactBuffer(defaults.get(`${directory}/client-manifest.json`)));
+      await writeFile(join(immutable, "optional-selection.json"), canonicalJson(optionalSelection), "utf8");
     }
 
     if (await exists(backup)) throw new Error("Edge backup path already exists");
@@ -314,8 +446,9 @@ async function verifyImmutableClient(sourceDirectory, manifest, directory) {
     }
     expected.add(nestedManifest);
   }
-  const unexpected = actual.filter((path) => !expected.has(path));
-  if (unexpected.length > 0 || actual.length !== expected.size) {
+  const defaultActual = actual.filter((path) => path !== "optional-selection.json");
+  const unexpected = defaultActual.filter((path) => !expected.has(path));
+  if (unexpected.length > 0 || defaultActual.length !== expected.size) {
     throw new Error(`Immutable edge client contains an unexpected file: ${unexpected[0] ?? "missing manifest record"}`);
   }
 }
@@ -325,6 +458,8 @@ function emptyRollout() {
     schemaVersion: 1,
     clients: Object.fromEntries(Object.keys(CLIENT_PUBLIC_PATHS).map((client) => [client, null])),
     previous: Object.fromEntries(Object.keys(CLIENT_PUBLIC_PATHS).map((client) => [client, null])),
+    optionalPacks: {},
+    previousOptionalPacks: {},
   };
 }
 
@@ -337,6 +472,39 @@ export async function promoteClientRelease({ publicDirectory, client, manifestHa
   const clientManifest = JSON.parse(await readFile(join(immutableSource, "client-manifest.json"), "utf8"));
   if (clientManifest.manifestHash !== manifestHash) throw new Error("Edge client manifest hash does not match promotion target");
   await verifyImmutableClient(immutableSource, clientManifest, directory);
+  const selectionFiles = new Map([[
+    "optional-selection.json",
+    await readFile(join(immutableSource, "optional-selection.json")),
+  ]]);
+  const optionalSelection = parseCanonicalManifest(
+    selectionFiles,
+    "optional-selection.json",
+    "Immutable optional selection",
+  );
+  const optionalPackIds = Object.keys(optionalSelection.packs ?? {}).sort();
+  if (optionalPackIds.length === 0) throw new Error("Immutable optional selection is empty");
+  const optionalManifests = new Map();
+  for (const packId of optionalPackIds) {
+    const optionalHash = optionalSelection.packs[packId];
+    if (!/^[a-z0-9][a-z0-9-]*$/u.test(packId) || !/^[0-9a-f]{64}$/u.test(optionalHash)) {
+      throw new Error("Immutable optional selection contains an invalid pack");
+    }
+    const prefix = `optional/${packId}`;
+    const files = await readArtifactTree(join(
+      publicDirectory,
+      "edge",
+      "optional-versions",
+      packId,
+      optionalHash,
+      "optional",
+      packId,
+    ), prefix);
+    const optionalManifest = validateOptionalPublication({ packId, files });
+    if (optionalManifest.manifestHash !== optionalHash) {
+      throw new Error(`Immutable optional publication hash mismatch for ${packId}`);
+    }
+    optionalManifests.set(packId, optionalManifest);
+  }
 
   const parent = dirname(publicDirectory);
   const staging = await mkdtemp(join(parent, `.${basename(publicDirectory)}-promote-staging-`));
@@ -356,6 +524,29 @@ export async function promoteClientRelease({ publicDirectory, client, manifestHa
     await writeFile(join(current, "client-manifest.json"), artifactBuffer(await readFile(
       join(staging, "edge", "clients", client, manifestHash, "client-manifest.json"),
     )));
+    for (const [packId] of optionalManifests) {
+      const stableOptional = join(staging, "optional", packId);
+      const previousOptional = join(staging, "previous", "optional", packId);
+      await rm(previousOptional, { recursive: true, force: true });
+      if (await exists(stableOptional)) {
+        await mkdir(dirname(previousOptional), { recursive: true });
+        await rename(stableOptional, previousOptional);
+      }
+      await mkdir(dirname(stableOptional), { recursive: true });
+      await cp(
+        join(
+          staging,
+          "edge",
+          "optional-versions",
+          packId,
+          optionalManifests.get(packId).manifestHash,
+          "optional",
+          packId,
+        ),
+        stableOptional,
+        { recursive: true, errorOnExist: true },
+      );
+    }
 
     let rollout = emptyRollout();
     try {
@@ -367,6 +558,20 @@ export async function promoteClientRelease({ publicDirectory, client, manifestHa
       schemaVersion: 1,
       clients: { ...emptyRollout().clients, ...rollout.clients, [client]: manifestHash },
       previous: { ...emptyRollout().previous, ...rollout.previous, [client]: rollout.clients?.[client] ?? null },
+      optionalPacks: {
+        ...rollout.optionalPacks,
+        ...Object.fromEntries([...optionalManifests].map(([packId, optionalManifest]) => [
+          packId,
+          optionalManifest.manifestHash,
+        ])),
+      },
+      previousOptionalPacks: {
+        ...rollout.previousOptionalPacks,
+        ...Object.fromEntries([...optionalManifests.keys()].map((packId) => [
+          packId,
+          rollout.optionalPacks?.[packId] ?? null,
+        ])),
+      },
     };
     await writeFile(join(staging, "rollout.json"), `${JSON.stringify(nextRollout, null, 2)}\n`, "utf8");
 
@@ -379,7 +584,15 @@ export async function promoteClientRelease({ publicDirectory, client, manifestHa
       throw error;
     }
     await rm(backup, { recursive: true, force: true });
-    return Object.freeze({ client, manifestHash, previous: nextRollout.previous[client] });
+    return Object.freeze({
+      client,
+      manifestHash,
+      previous: nextRollout.previous[client],
+      optionalPacks: Object.freeze(Object.fromEntries([...optionalManifests].map(([packId, optionalManifest]) => [
+        packId,
+        optionalManifest.manifestHash,
+      ]))),
+    });
   } catch (error) {
     await rm(staging, { recursive: true, force: true });
     throw error;

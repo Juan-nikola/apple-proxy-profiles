@@ -1,12 +1,16 @@
-import { readFile } from "node:fs/promises";
+import { access, readFile } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { buildClientArtifacts } from "../automation/src/build-artifacts.js";
+import {
+  assertNoForbiddenDefaultReferences,
+  buildClientArtifacts,
+} from "../automation/src/build-artifacts.js";
 import {
   promoteClientRelease as promoteClientReleaseImpl,
   publishEdgeRelease,
   snapshotMatches,
+  validateOptionalPublication,
 } from "../automation/src/build-site.js";
 import { fetchSnapshot } from "../automation/src/fetch-snapshot.js";
 import { resolveUpstreamCommit } from "../automation/src/resolve-upstream.js";
@@ -37,6 +41,52 @@ export function parseUpdateRulesArguments(args) {
 
 export async function promoteClientRelease(options) {
   return promoteClientReleaseImpl(options);
+}
+
+async function pathExists(path) {
+  try {
+    await access(path);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function optionalTreeFiles(packId, files) {
+  const prefix = `optional/${packId}/`;
+  return new Map([...files].map(([path, content]) => {
+    if (!path.startsWith(prefix)) throw new Error(`Optional publication ${packId} escaped its tree`);
+    return [path.slice(prefix.length), content];
+  }));
+}
+
+export function selectDefaultStaticFiles(files) {
+  if (!(files instanceof Map)) throw new TypeError("Static publication files must be a Map");
+  const selected = new Map(files);
+  const legacyProfileArtifact = (path) => path.includes("/examples/")
+    || /\/(?:substore-)?(?:profile|config)-generator\.js$/u.test(path)
+    || /\/(?:shadowrocket-profile|sing-box-config|surge-profile|egern-profile)-generator\.js$/u.test(path);
+  for (const [path, content] of [...selected]) {
+    try {
+      assertNoForbiddenDefaultReferences(new Map([[path, content]]));
+    } catch (error) {
+      if (!legacyProfileArtifact(path)) throw error;
+      selected.delete(path);
+    }
+  }
+  assertNoForbiddenDefaultReferences(selected);
+  return selected;
+}
+
+export async function verifyTrackedPublications({ publicDirectory, defaults, optionalPacks }) {
+  if (!await snapshotMatches(join(publicDirectory, "current"), defaults)) return false;
+  for (const [packId, files] of optionalPacks) {
+    validateOptionalPublication({ packId, files });
+    const stableDirectory = join(publicDirectory, "optional", packId);
+    if (!await pathExists(stableDirectory)) continue;
+    if (!await snapshotMatches(stableDirectory, optionalTreeFiles(packId, files))) return false;
+  }
+  return true;
 }
 
 async function loadText(path) {
@@ -128,7 +178,7 @@ async function staticFiles() {
       throw new Error(`Public compatibility alias drifted for ${canonical}`);
     }
   }
-  return loaded;
+  return selectDefaultStaticFiles(loaded);
 }
 
 async function buildArtifacts({ operation, publicDirectory }) {
@@ -168,16 +218,8 @@ export async function main(args = process.argv.slice(2), { publicDirectory = def
 
   const artifacts = await buildArtifacts({ operation: command.operation, publicDirectory });
   if (command.operation === "check-current") {
-    if (!await snapshotMatches(join(publicDirectory, "current"), artifacts.defaults)) {
-      throw new Error("Tracked public/current does not reproduce from its immutable commit");
-    }
-    for (const files of artifacts.optionalPacks.values()) {
-      if (!await snapshotMatches(join(publicDirectory, "current"), new Map([
-        ...artifacts.defaults,
-        ...files,
-      ]))) {
-        throw new Error("Tracked optional publication does not reproduce from its immutable commit");
-      }
+    if (!await verifyTrackedPublications({ publicDirectory, ...artifacts })) {
+      throw new Error("Tracked default or optional publication does not reproduce from its immutable commit");
     }
     process.stdout.write(`Public snapshot verified: ${artifacts.diagnostics.defaultManifest.upstream.commit}\n`);
     return artifacts.diagnostics;

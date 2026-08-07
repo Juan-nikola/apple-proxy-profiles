@@ -42,3 +42,15 @@ test("uses BigInt IPv6 siblings and never merges different no-resolve semantics"
   ]);
   assert.deepEqual(result.diagnostics, { input: 4, output: 3, removed: 1 });
 });
+
+test("never merges sibling CIDRs that retain different source provenance", () => {
+  const result = compactRuleCidrs([
+    normalizeRuleEntry({ kind: RULE_KIND.ipv4Cidr, value: "192.0.2.0/25", noResolve: true, sourceId: "left" }),
+    normalizeRuleEntry({ kind: RULE_KIND.ipv4Cidr, value: "192.0.2.128/25", noResolve: true, sourceId: "right" }),
+  ]);
+
+  assert.deepEqual(result.entries.map(({ value, sourceId }) => ({ value, sourceId })), [
+    { value: "192.0.2.0/25", sourceId: "left" },
+    { value: "192.0.2.128/25", sourceId: "right" },
+  ]);
+});

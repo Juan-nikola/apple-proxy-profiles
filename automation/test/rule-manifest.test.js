@@ -47,7 +47,29 @@ test("isolates the full ad pack from every default manifest path", () => {
     [...new Set(optionalManifest.files.map(({ path }) => path.split("/")[2]))].sort(),
     ["anywhere", "egern", "shadowrocket", "sing-box", "surge"],
   );
+  assert.deepEqual(Object.keys(optionalManifest.clients).sort(), [
+    "anywhere", "egern", "shadowrocket", "singbox", "surge",
+  ]);
+  for (const [client, { manifestHash }] of Object.entries(optionalManifest.clients)) {
+    const directory = client === "singbox" ? "sing-box" : client;
+    assert.match(manifestHash, /^[0-9a-f]{64}$/u);
+    assert.equal(pack.has(`optional/adblock-full/${directory}/client-manifest.json`), true);
+  }
   assert.equal(manifest.files.some(({ path }) => path.startsWith("optional/")), false);
+});
+
+test("rejects forbidden legacy rule references inside default static content", () => {
+  assert.throws(
+    () => buildClientArtifacts({
+      snapshot: lightweightFixtureSnapshots(),
+      upstream,
+      additionalFiles: new Map([[
+        "surge/examples/legacy.conf",
+        "RULE-SET,https://example.invalid/current/surge/rules/Advertising.list,REJECT\n",
+      ]]),
+    }),
+    /Forbidden default rule reference.*surge\/examples\/legacy\.conf/u,
+  );
 });
 
 test("rejects over-budget compilation before returning publication bytes", () => {

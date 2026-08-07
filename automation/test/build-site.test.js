@@ -4,6 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
 
+import { buildClientArtifacts } from "../src/build-artifacts.js";
 import {
   buildSite,
   CLIENT_PUBLIC_PATHS,
@@ -11,6 +12,15 @@ import {
   publishEdgeRelease,
   snapshotMatches,
 } from "../src/build-site.js";
+import { lightweightFixtureSnapshots } from "./lightweight-fixture.js";
+
+const lightweightUpstream = Object.freeze({
+  repository: "https://github.com/blackmatrix7/ios_rule_script",
+  branch: "master",
+  commit: "d".repeat(40),
+  committedAt: "2026-08-01T19:07:21Z",
+  license: "GPL-2.0-only",
+});
 
 function artifact(hash, text, time = "2026-08-01T00:00:00Z") {
   const manifest = { manifestHash: hash.repeat(64), generatedAt: time, upstream: { commit: "d".repeat(40) } };
@@ -123,6 +133,39 @@ test("publishes edge and immutable per-client bytes without replacing current", 
   const publicDirectory = join(root, "public");
   await mkdir(join(publicDirectory, "current"), { recursive: true });
   await writeFile(join(publicDirectory, "current/stable.txt"), "stable\n");
+  const artifacts = buildClientArtifacts({ snapshot: lightweightFixtureSnapshots(), upstream: lightweightUpstream });
+  const { defaults, optionalPacks } = artifacts;
+  const manifest = artifacts.diagnostics.defaultManifest;
+
+  await publishEdgeRelease({ publicDirectory, defaults, optionalPacks, manifest });
+
+  assert.equal(await readFile(join(publicDirectory, "current/stable.txt"), "utf8"), "stable\n");
+  assert.deepEqual(await readFile(join(publicDirectory, "edge/sing-box/rules/ChinaIP.json")), Buffer.from(
+    defaults.get("sing-box/rules/ChinaIP.json"),
+  ));
+  assert.deepEqual(await readFile(join(
+    publicDirectory,
+    `edge/clients/singbox/${manifest.clients.singbox.manifestHash}/sing-box/rules/ChinaIP.json`,
+  )), Buffer.from(defaults.get("sing-box/rules/ChinaIP.json")));
+  assert.deepEqual(await readFile(join(
+    publicDirectory,
+    `edge/optional-versions/adblock-full/${artifacts.diagnostics.optionalManifests["adblock-full"].manifestHash}/optional/adblock-full/manifest.json`,
+  )), Buffer.from(optionalPacks.get("adblock-full").get("optional/adblock-full/manifest.json")));
+  const optionalSelection = JSON.parse(await readFile(join(
+    publicDirectory,
+    `edge/clients/singbox/${manifest.clients.singbox.manifestHash}/optional-selection.json`,
+  ), "utf8"));
+  assert.equal(
+    optionalSelection.packs["adblock-full"],
+    artifacts.diagnostics.optionalManifests["adblock-full"].manifestHash,
+  );
+});
+
+test("rejects cryptographically open edge candidates before swapping edge", async () => {
+  const root = await mkdtemp(join(tmpdir(), "apple-proxy-edge-open-"));
+  const publicDirectory = join(root, "public");
+  await mkdir(join(publicDirectory, "current"), { recursive: true });
+  await writeFile(join(publicDirectory, "current/stable.txt"), "stable\n");
   const defaults = new Map();
   const clients = {};
   let index = 1;
@@ -139,13 +182,9 @@ test("publishes edge and immutable per-client bytes without replacing current", 
     ["optional/adblock-full/manifest.json", "{}\n"],
   ])]]);
 
-  await publishEdgeRelease({ publicDirectory, defaults, optionalPacks, manifest });
-
+  await assert.rejects(
+    () => publishEdgeRelease({ publicDirectory, defaults, optionalPacks, manifest }),
+    /manifest|file records/u,
+  );
   assert.equal(await readFile(join(publicDirectory, "current/stable.txt"), "utf8"), "stable\n");
-  assert.deepEqual(await readFile(join(publicDirectory, "edge/sing-box/rules.bin")), Buffer.from([1]));
-  assert.deepEqual(await readFile(join(
-    publicDirectory,
-    `edge/clients/singbox/${clients.singbox.manifestHash}/sing-box/rules.bin`,
-  )), Buffer.from([1]));
-  assert.equal(await readFile(join(publicDirectory, "edge/optional/adblock-full/manifest.json"), "utf8"), "{}\n");
 });
