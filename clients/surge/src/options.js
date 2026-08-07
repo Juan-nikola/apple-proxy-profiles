@@ -16,7 +16,7 @@ const DEFAULTS = Object.freeze({
 const PLATFORMS = new Set(["macos", "iphone", "ipad"]);
 const PARSED = new WeakSet();
 const PARSED_NODES = new WeakSet();
-const ALLOWED_KEYS = new Set([...REQUIRED_KEYS, ...Object.keys(DEFAULTS), "proxyPolicyUrl", "personalPolicyUrl"]);
+const ALLOWED_KEYS = new Set([...REQUIRED_KEYS, ...Object.keys(DEFAULTS), "proxyPolicyUrl"]);
 const NODE_ALLOWED_KEYS = new Set([...NODE_REQUIRED_KEYS, "clientChain"]);
 
 function requiredString(raw, key) {
@@ -85,7 +85,6 @@ export function parseSurgeOptions(raw) {
     autoGroupMode: enumValue(raw, "autoGroupMode", DEFAULTS.autoGroupMode),
     clientChain: enumValue(raw, "clientChain", DEFAULTS.clientChain),
     proxyPolicyUrl: validatePolicyUrl(raw.proxyPolicyUrl, "proxyPolicyUrl"),
-    personalPolicyUrl: validatePolicyUrl(raw.personalPolicyUrl, "personalPolicyUrl"),
   };
   platformPolicyPreset(platform);
   Object.freeze(options);

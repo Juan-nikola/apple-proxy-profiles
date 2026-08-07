@@ -553,9 +553,9 @@ var EgernProfileBundle = (() => {
   function continentFilter(continent) {
     if (continent.key === CONTINENT.other) {
       const knownFlags = CONTINENTS.flatMap((record) => record.flags).join("|");
-      return `^(?!(?:\u{1F517}|${knownFlags}))\\S+ .+$`;
+      return `^(?!(?:\u{1F517}|${knownFlags})).+$`;
     }
-    return `^(?:${continent.flags.join("|")}) .+$`;
+    return `^(?:${continent.flags.join("|")}).+$`;
   }
 
   // ../../../shared/policies/intents.js

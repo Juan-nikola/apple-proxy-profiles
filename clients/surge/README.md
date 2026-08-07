@@ -24,9 +24,9 @@ https://juan-nikola.github.io/apple-proxy-profiles/current/surge/scripts/surge-n
 output=nodes&type=collection&name=apple-proxy-sources&clientChain=off
 ```
 
-先预览并保存 `surge-nodes` 的私密输出 URL，再把它作为 `proxyPolicyUrl` 填入下表三个 Profile 任务。示例中的 `https://example.invalid/private/surge-nodes` 不能直接使用。
+先预览并保存 `surge-nodes` 的私密输出 URL，再把它作为唯一的 `proxyPolicyUrl` 填入下表三个 Profile 任务。示例中的 `https://example.invalid/private/surge-nodes` 不能直接使用。
 
-如果还要保留个人 Surge 节点订阅，可在三个 Profile 的私密 Script Operation 参数中追加可选的 `personalPolicyUrl=https://example.invalid/private/personal-surge`。生成的配置会额外提供隐藏的 `🧩 个人节点池` 和可见的 `🛠 节点来源`；在 `🚀 节点选择` 中选择来源即可在默认池与个人池之间切换。个人链接只保存在 Sub-Store 私有参数和下载后的 profile，不要提交到 GitHub。
+每个 Profile 只生成一个隐藏的 `📦 远程节点池`。如果要手动切换到另一份 Surge 节点订阅，只替换下载后 Profile 中这一组的 `policy-path`，不要改组名或删除 `include-other-group`、`policy-regex-filter`；节点分类和自动测速会继续对新订阅生效。订阅源中被注释或筛掉的节点不会被生成器恢复，因此只剩一个可用节点时显示一个节点是预期行为。
 
 | File | 平台 | Arguments |
 | --- | --- | --- |

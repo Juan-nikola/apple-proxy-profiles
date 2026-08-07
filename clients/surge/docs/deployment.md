@@ -33,7 +33,6 @@
 | `name` | `apple-proxy-sources` | `apple-proxy-sources` | `apple-proxy-sources` |
 | `subscriptionName` | `Apple-Proxy-Nodes` | `Apple-Proxy-Nodes` | `Apple-Proxy-Nodes` |
 | `proxyPolicyUrl` | `<SURGE_NODES_URL>` | `<SURGE_NODES_URL>` | `<SURGE_NODES_URL>` |
-| `personalPolicyUrl` | 可选的个人 Surge 节点 URL | 可选的个人 Surge 节点 URL | 可选的个人 Surge 节点 URL |
 | `platform` | `macos` | `iphone` | `ipad` |
 | `dnsMode` | `stable` | `stable` | `stable` |
 | `chinaDns` | `alidns` | `alidns` | `alidns` |
@@ -46,7 +45,7 @@
 
 预览成功标志：Profile 包含 `[General]`、`[Proxy]`、`[Proxy Group]`、`[Rule]`，隐藏组 `📦 远程节点池` 含有 `policy-path=<SURGE_NODES_URL>`，而 `[Proxy]` 不包含服务器、端口、密码或 UUID。若节点资源为空，先检查原始组合是否非空、Surge 兼容节点是否存在，以及脚本是否启用。
 
-填写 `personalPolicyUrl` 后，预览还应出现隐藏组 `🧩 个人节点池` 和可见组 `🛠 节点来源`。在 Surge 的 `🚀 节点选择` 中选择 `🛠 节点来源`，再选择默认池或个人池；地区自动组会同时兼容两种来源的节点名格式。个人 URL 只填入 Sub-Store 私密参数，不要写入仓库或公开脚本。
+Profile 只包含一个隐藏组 `📦 远程节点池`。如果要临时使用另一份 Surge 节点订阅，下载 Profile 后只编辑该组的 `policy-path`；保持组名、`include-other-group` 和 `policy-regex-filter` 不变，地区、流媒体和自动测速组会继续分类新来源。手动替换的 URL 必须返回 Surge 兼容的 `[Proxy]`（例如 Sub-Store 的 `t=surge` 输出），不能使用 JSON、通用 API 或其他客户端格式。
 
 “关闭缓存/noCache”和“不验证证书/insecure”保持关闭。公开规则 URL 可以更新，但私密节点 URL、API、UUID 和密码永远不应出现在 Arguments、README、Issue 或终端日志中。
 
