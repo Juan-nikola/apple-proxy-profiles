@@ -1,5 +1,3 @@
-import { createHash } from "node:crypto";
-
 import { ANYWHERE_SOURCE_BASELINE } from "../../clients/anywhere/src/upstream-contract.js";
 import { compileAnywhereRuleSets } from "../../clients/anywhere/src/compile-priority.js";
 import { renderArrs, ARRS_TYPE_ID } from "../../clients/anywhere/src/render-arrs.js";
@@ -12,6 +10,7 @@ import {
   LOGICAL_RULE_SETS,
   catalogSha256,
 } from "./source-catalog.js";
+import { artifactSha256 } from "./artifact-content.js";
 
 const PUBLIC_BASE = "https://juan-nikola.github.io/apple-proxy-profiles/current";
 const DOMESTIC_FALLBACK_SOURCE_ID = "DomesticFallback";
@@ -23,10 +22,6 @@ function domesticFallbackEntries(source) {
     value,
     sourceId: DOMESTIC_FALLBACK_SOURCE_ID,
   }));
-}
-
-function sha256(content) {
-  return createHash("sha256").update(content).digest("hex");
 }
 
 function canonicalValue(value) {
@@ -90,6 +85,8 @@ export function buildAnywhereRuleSnapshot({
   upstream = BLACKMATRIX7_BASELINE,
   logicalRuleSets = LOGICAL_RULE_SETS,
   expectedBaseline = null,
+  pathPrefix = "anywhere/rules",
+  publicBase = PUBLIC_BASE,
 }) {
   if (!(snapshot instanceof Map)) throw new TypeError("Anywhere snapshot must be a Map");
   if (!Array.isArray(catalog) || catalog.length === 0) throw new TypeError("Anywhere catalog is required");
@@ -146,7 +143,7 @@ export function buildAnywhereRuleSnapshot({
     }
     const shardIds = [];
     for (const shard of sourceShards) {
-      const publicPath = `anywhere/rules/${shard.id}.arrs`;
+      const publicPath = `${pathPrefix}/${shard.id}.arrs`;
       const provenance = {
         repository: upstream.repository,
         sourceId: source.id,
@@ -167,9 +164,9 @@ export function buildAnywhereRuleSnapshot({
         index: shard.shardIndex,
         total: shard.shardTotal,
         path: publicPath,
-        url: `${PUBLIC_BASE}/${publicPath}`,
+        url: `${publicBase}/${publicPath}`,
         entryCount: shard.entries.length,
-        sha256: sha256(content),
+        sha256: artifactSha256(content),
         countsByType,
       };
       shards.push(record);
@@ -293,9 +290,9 @@ export function buildAnywhereRuleSnapshot({
     sources,
     shards,
   };
-  const manifestSha256 = sha256(canonicalJson(baseManifest));
+  const manifestSha256 = artifactSha256(canonicalJson(baseManifest));
   const manifest = { ...baseManifest, manifestSha256 };
-  files.set("anywhere/rules/manifest.json", canonicalJson(manifest));
+  files.set(`${pathPrefix}/manifest.json`, canonicalJson(manifest));
   return Object.freeze({ files, manifest: Object.freeze(manifest) });
 }
 

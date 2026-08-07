@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { buildClientArtifacts } from "../src/build-artifacts.js";
+import { DEFAULT_RULE_SOURCE_IDS } from "../../shared/rules/lightweight-policy.js";
+import { lightweightFixtureSnapshots } from "./lightweight-fixture.js";
 
 const upstream = {
   repository: "https://github.com/blackmatrix7/ios_rule_script",
@@ -10,42 +12,26 @@ const upstream = {
   committedAt: "2026-08-01T19:07:21Z",
   license: "GPL-2.0-only",
 };
-const source = {
-  id: "Fixture", familyId: "Fixture", componentId: "rules", order: 1, priority: 10,
-  canonicalPath: "rule/Surge/Fixture/Fixture.list", inputFormat: "RULE-SET", policy: "DIRECT",
-  routing: 1, intendedTarget: "direct", minEntries: 1,
-};
-
-test("fans one immutable input out to all three native clients and one closed manifest", () => {
-  const text = "DOMAIN-SUFFIX,example.com\nDOMAIN,only.example\n";
-  const snapshot = new Map([["Fixture", {
-    text,
-    rawUrl: "https://raw.githubusercontent.com/example",
-    sourceBytes: Buffer.byteLength(text),
-    sourceSha256: "a".repeat(64),
-  }]]);
-  const result = buildClientArtifacts({ snapshot, catalog: [source], upstream });
-  assert.equal(result.files.has("shadowrocket/rules/Fixture.list"), true);
-  assert.equal(result.files.has("surge/rules/Fixture.list"), true);
-  assert.equal(result.files.has("egern/rules/Fixture.yaml"), true);
-  assert.equal(result.files.has("sing-box/rules/Fixture.json"), true);
-  assert.equal(result.files.has("anywhere/rules/Fixture-001.arrs"), true);
-  assert.equal(result.files.has("manifest.json"), true);
-  assert.equal(result.manifest.files.length, 6);
-  assert.deepEqual(result.manifest.clients.shadowrocket.sources[0], {
-    id: "Fixture", input: 2, parsed: 2, output: 2, omitted: 0,
-  });
-  assert.equal(result.manifest.clients.surge.sources[0].output, 2);
-  assert.equal(result.manifest.clients.egern.sources[0].output, 2);
-  assert.equal(result.manifest.clients.singbox.sources[0].output, 2);
-  assert.equal(result.manifest.clients.anywhere.outputCount, 1);
+test("fans compiled lightweight defaults out without publishing input-only rules", () => {
+  const result = buildClientArtifacts({ snapshot: lightweightFixtureSnapshots(), upstream });
+  assert.equal(result.defaults.has("shadowrocket/rules/DomesticCore.list"), true);
+  assert.equal(result.defaults.has("surge/rules/OverseasGame.list"), true);
+  assert.equal(result.defaults.has("egern/rules/ChinaIP.yaml"), true);
+  assert.equal(result.defaults.has("sing-box/rules/ChinaIP.json"), true);
+  assert.equal(result.defaults.has("anywhere/rules/DomesticCore-001.arrs"), true);
+  assert.equal(result.defaults.has("manifest.json"), true);
+  assert.equal(result.defaults.has("shadowrocket/rules/Advertising.list"), false);
+  assert.equal(result.defaults.has("shadowrocket/rules/ChinaMax_Domain.list"), false);
+  assert.deepEqual(result.diagnostics.defaultRuleIds, DEFAULT_RULE_SOURCE_IDS);
+  assert.deepEqual([...result.optionalPacks.keys()], ["adblock-full"]);
+  const chinaIp = result.defaults.get("surge/rules/ChinaIP.list");
+  assert.match(chinaIp, /IP-CIDR,1\.0\.1\.0\/24,no-resolve/u);
+  assert.match(chinaIp, /IP-CIDR6,2400:3200::\/32,no-resolve/u);
+  assert.equal(chinaIp.includes("/25"), false);
+  assert.equal(result.diagnostics.compaction.ChinaIP.removed, 2);
 });
 
 test("is byte deterministic for the same snapshot", () => {
-  const text = "DOMAIN-KEYWORD,fixture\n";
-  const snapshot = new Map([["Fixture", {
-    text, rawUrl: "https://raw.githubusercontent.com/example", sourceBytes: Buffer.byteLength(text), sourceSha256: "b".repeat(64),
-  }]]);
-  const options = { snapshot, catalog: [source], upstream };
-  assert.deepEqual([...buildClientArtifacts(options).files], [...buildClientArtifacts(options).files]);
+  const options = { snapshot: lightweightFixtureSnapshots(), upstream };
+  assert.deepEqual([...buildClientArtifacts(options).defaults], [...buildClientArtifacts(options).defaults]);
 });

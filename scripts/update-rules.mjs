@@ -1,33 +1,46 @@
 import { readFile } from "node:fs/promises";
-import { dirname, join } from "node:path";
+import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { buildClientArtifacts } from "../automation/src/build-artifacts.js";
-import { buildSite, snapshotMatches } from "../automation/src/build-site.js";
-import { buildFrontierArtifacts } from "../automation/src/render-frontier-artifacts.js";
-import { resolveSingBoxUpstream } from "../automation/src/resolve-frontier-upstream.js";
+import {
+  promoteClientRelease as promoteClientReleaseImpl,
+  publishEdgeRelease,
+  snapshotMatches,
+} from "../automation/src/build-site.js";
 import { fetchSnapshot } from "../automation/src/fetch-snapshot.js";
 import { resolveUpstreamCommit } from "../automation/src/resolve-upstream.js";
-import { BLACKMATRIX7_BASELINE, PUBLISH_SOURCE_CATALOG } from "../automation/src/source-catalog.js";
+import {
+  BLACKMATRIX7_BASELINE,
+  FETCH_SOURCE_CATALOG,
+} from "../automation/src/source-catalog.js";
 import { buildImportBatches, renderImportPage } from "../clients/anywhere/src/build-import-page.js";
-import { RULE_SOURCE_CATALOG } from "../shared/rules/catalog.js";
-import { createFrontierManifest } from "../shared/release/frontier-manifest.js";
-
-import { createHash } from "node:crypto";
+import { UPSTREAM_RULE_SOURCE_CATALOG } from "../shared/rules/catalog.js";
 
 const repositoryRoot = dirname(dirname(fileURLToPath(import.meta.url)));
-const publicDirectory = join(repositoryRoot, "public");
-const checkMode = process.argv.slice(2).includes("--check");
-if (process.argv.slice(2).some((argument) => argument !== "--check")) {
-  throw new Error("Unknown update-rules argument");
+const defaultPublicDirectory = join(repositoryRoot, "public");
+const PROMOTION_CLIENTS = new Set(["singbox", "surge", "shadowrocket", "egern", "anywhere"]);
+
+export function parseUpdateRulesArguments(args) {
+  if (JSON.stringify(args) === JSON.stringify(["--channel", "edge"])) {
+    return Object.freeze({ operation: "build-edge" });
+  }
+  if (JSON.stringify(args) === JSON.stringify(["--check", "--channel", "current"])) {
+    return Object.freeze({ operation: "check-current" });
+  }
+  if (args.length === 3 && args[0] === "--promote" && PROMOTION_CLIENTS.has(args[1])
+    && /^[0-9a-f]{64}$/u.test(args[2])) {
+    return Object.freeze({ operation: "promote", client: args[1], manifestHash: args[2] });
+  }
+  throw new Error("Invalid update-rules arguments; use --channel edge, --check --channel current, or --promote <client> <manifest-hash>");
+}
+
+export async function promoteClientRelease(options) {
+  return promoteClientReleaseImpl(options);
 }
 
 async function loadText(path) {
   return readFile(join(repositoryRoot, path), "utf8");
-}
-
-function sha256(content) {
-  return createHash("sha256").update(content).digest("hex");
 }
 
 async function staticFiles() {
@@ -76,8 +89,7 @@ async function staticFiles() {
     const rewrittenBundle = bundle
       .replace(`var RULE_ROOT = "${rawRoot}";`, `var RULE_ROOT = "${publicRoot}";`)
       .replace("upstreamUrl: `${RULE_ROOT}/${sourcePath}`", "upstreamUrl: `${RULE_ROOT}/${id}.list`");
-    if (rewrittenBundle === bundle
-      || rewrittenBundle.includes(rawRoot)
+    if (rewrittenBundle === bundle || rewrittenBundle.includes(rawRoot)
       || !rewrittenBundle.includes("`${RULE_ROOT}/${id}.list`")) {
       throw new Error(`Public bundle URL closure failed for ${bundlePath}`);
     }
@@ -91,7 +103,7 @@ async function staticFiles() {
   ]) {
     let content = loaded.get(path);
     let replacements = 0;
-    for (const source of RULE_SOURCE_CATALOG) {
+    for (const source of UPSTREAM_RULE_SOURCE_CATALOG) {
       const next = content.replaceAll(
         source.upstreamUrl,
         `https://juan-nikola.github.io/apple-proxy-profiles/current/shadowrocket/rules/${source.id}.list`,
@@ -99,7 +111,7 @@ async function staticFiles() {
       if (next !== content) replacements += 1;
       content = next;
     }
-    if (replacements !== RULE_SOURCE_CATALOG.length) {
+    if (replacements !== UPSTREAM_RULE_SOURCE_CATALOG.length) {
       throw new Error(`Shadowrocket public snapshot URL closure failed for ${path}`);
     }
     loaded.set(path, content);
@@ -119,118 +131,74 @@ async function staticFiles() {
   return loaded;
 }
 
-let commit;
-let committedAt;
-if (checkMode) {
-  const currentManifest = JSON.parse(await readFile(join(publicDirectory, "current/manifest.json"), "utf8"));
-  commit = currentManifest.upstream.commit;
-  committedAt = currentManifest.upstream.committedAt;
-} else {
-  ({ sha: commit, committedAt } = await resolveUpstreamCommit());
-}
-const upstream = Object.freeze({ ...BLACKMATRIX7_BASELINE, commit, committedAt });
-async function publishedFrontierUpstream(path, fallback) {
-  if (!checkMode) return fallback();
-  try {
-    const manifest = JSON.parse(await loadText(path));
-    return manifest.upstream;
-  } catch {
-    return fallback();
+async function buildArtifacts({ operation, publicDirectory }) {
+  let commit;
+  let committedAt;
+  if (operation === "check-current") {
+    const currentManifest = JSON.parse(await readFile(join(publicDirectory, "current/manifest.json"), "utf8"));
+    commit = currentManifest.upstream.commit;
+    committedAt = currentManifest.upstream.committedAt;
+  } else {
+    ({ sha: commit, committedAt } = await resolveUpstreamCommit());
   }
+  const upstream = Object.freeze({ ...BLACKMATRIX7_BASELINE, commit, committedAt });
+  const snapshot = await fetchSnapshot({ commit, catalog: FETCH_SOURCE_CATALOG, concurrency: 4 });
+  const statics = await staticFiles();
+  return buildClientArtifacts({
+    snapshot,
+    upstream,
+    additionalFiles(anywhereManifest) {
+      const additions = new Map(statics);
+      additions.set("anywhere/import.html", renderImportPage(
+        buildImportBatches(anywhereManifest.shards.map(({ url }) => url)),
+        anywhereManifest,
+      ));
+      return additions;
+    },
+  });
 }
-const singBoxTestingUpstream = await publishedFrontierUpstream(
-  "public/edge/singbox/android/manifest.json",
-  () => resolveSingBoxUpstream({ branch: "testing" }),
-);
-const singBoxCurrentUpstream = await publishedFrontierUpstream(
-  "public/current/singbox/android/manifest.json",
-  () => resolveSingBoxUpstream({ branch: "stable" }),
-);
-const snapshot = await fetchSnapshot({ commit, catalog: PUBLISH_SOURCE_CATALOG, concurrency: 4 });
-const baseline = commit === BLACKMATRIX7_BASELINE.commit
-  ? JSON.parse(await loadText("clients/anywhere/compatibility/rule-baseline.json"))
-  : null;
-const statics = await staticFiles();
-const artifacts = buildClientArtifacts({
-  snapshot,
-  catalog: PUBLISH_SOURCE_CATALOG,
-  upstream,
-  expectedAnywhereBaseline: baseline,
-  additionalFiles(anywhereManifest) {
-    const additions = new Map(statics);
-    additions.set("anywhere/import.html", renderImportPage(
-      buildImportBatches(anywhereManifest.shards.map(({ url }) => url)),
-      anywhereManifest,
-    ));
-    return additions;
-  },
-});
 
-const frontierRuleSha256 = sha256(artifacts.files.get("manifest.json"));
-const frontierStaticFiles = new Map([
-  ...[...statics].filter(([path]) => path.startsWith("surge/") || path.startsWith("sing-box/")),
-  ...[...artifacts.files].filter(([path]) => path.startsWith("surge/") || path.startsWith("sing-box/")),
-]);
-const frontierUpstreams = Object.freeze({
-  surge: checkMode
-    ? await publishedFrontierUpstream("public/current/surge/macos/manifest.json", async () => ({
-      branch: "beta", commit: process.env.SURGE_BETA_COMMIT ?? upstream.commit, fetchedAt: upstream.committedAt,
-    }))
-    : Object.freeze({ branch: "beta", commit: process.env.SURGE_BETA_COMMIT ?? upstream.commit, fetchedAt: upstream.committedAt }),
-});
-const frontierManifests = [];
-for (const [client, platforms, schemaVersion, configPath] of [
-  ["surge", ["macos", "iphone", "ipad"], "surge-adapter-0.1", "surge/scripts/surge-profile-generator.js"],
-  ["singbox", ["macos", "iphone", "ipad", "android", "openwrt"], "singbox-adapter-0.1", "sing-box/scripts/sing-box-config-generator.js"],
-]) {
-  for (const platform of platforms) {
-    for (const channel of ["edge", "current"]) {
-      frontierManifests.push(createFrontierManifest({
-        client,
-        platform,
-        channel,
-        upstream: client === "singbox"
-          ? channel === "edge"
-            ? singBoxTestingUpstream
-            : singBoxCurrentUpstream
-          : frontierUpstreams[client],
-        schemaVersion,
-        ruleManifestSha256: frontierRuleSha256,
-        configSha256: sha256(frontierStaticFiles.get(configPath)),
-        status: channel === "edge" ? "candidate" : "validated",
-      }));
-    }
+export async function main(args = process.argv.slice(2), { publicDirectory = defaultPublicDirectory } = {}) {
+  const command = parseUpdateRulesArguments(args);
+  if (command.operation === "promote") {
+    const result = await promoteClientRelease({ publicDirectory, ...command });
+    process.stdout.write(`Client promoted: ${result.client} ${result.manifestHash}\n`);
+    return result;
   }
-}
-const frontierFiles = buildFrontierArtifacts({
-  ruleBaseUrl: "https://juan-nikola.github.io/apple-proxy-profiles/current",
-  manifests: frontierManifests,
-  staticFiles: frontierStaticFiles,
-});
 
-if (checkMode) {
-  const expectedCurrent = new Map(artifacts.files);
-  for (const [path, content] of frontierFiles) {
-    if (path.startsWith("current/")) expectedCurrent.set(path.slice("current/".length), content);
-  }
-  if (!await snapshotMatches(join(publicDirectory, "current"), expectedCurrent)) {
-    throw new Error("Tracked public/current does not reproduce from its immutable commit");
-  }
-  process.stdout.write(`Public snapshot verified: ${commit}\n`);
-} else {
-  try {
-    const prior = JSON.parse(await readFile(join(publicDirectory, "current/anywhere/rules/manifest.json"), "utf8"));
-    const next = JSON.parse(artifacts.files.get("anywhere/rules/manifest.json"));
-    const priorIds = prior.shards.map(({ id }) => id);
-    const nextIds = next.shards.map(({ id }) => id);
-    if (JSON.stringify(priorIds) !== JSON.stringify(nextIds)) {
-      throw new Error("Anywhere shard topology changed; manual migration and canary are required");
+  const artifacts = await buildArtifacts({ operation: command.operation, publicDirectory });
+  if (command.operation === "check-current") {
+    if (!await snapshotMatches(join(publicDirectory, "current"), artifacts.defaults)) {
+      throw new Error("Tracked public/current does not reproduce from its immutable commit");
     }
-  } catch (error) {
-    if (error.code !== "ENOENT") throw error;
+    for (const files of artifacts.optionalPacks.values()) {
+      if (!await snapshotMatches(join(publicDirectory, "current"), new Map([
+        ...artifacts.defaults,
+        ...files,
+      ]))) {
+        throw new Error("Tracked optional publication does not reproduce from its immutable commit");
+      }
+    }
+    process.stdout.write(`Public snapshot verified: ${artifacts.diagnostics.defaultManifest.upstream.commit}\n`);
+    return artifacts.diagnostics;
   }
-  const retention = await buildSite({ publicDirectory, ...artifacts, frontierFiles });
+
+  const result = await publishEdgeRelease({
+    publicDirectory,
+    defaults: artifacts.defaults,
+    optionalPacks: artifacts.optionalPacks,
+    manifest: artifacts.diagnostics.defaultManifest,
+  });
   process.stdout.write(
-    `Public snapshot updated: ${commit}; ${artifacts.manifest.files.length} files; ${retention.versionCount} online version(s); ${retention.bytes} bytes\n`,
+    `Edge candidate updated: ${artifacts.diagnostics.defaultManifest.upstream.commit}; ${result.files} files; ${result.manifestHash}\n`,
   );
+  return result;
+}
+
+const invokedPath = process.argv[1] ? resolve(process.argv[1]) : null;
+if (invokedPath === fileURLToPath(import.meta.url)) {
+  main().catch((error) => {
+    process.stderr.write(`${error.stack ?? error.message}\n`);
+    process.exitCode = 1;
+  });
 }

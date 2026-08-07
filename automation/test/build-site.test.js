@@ -1,10 +1,16 @@
 import assert from "node:assert/strict";
-import { mkdtemp, readFile, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
 
-import { buildSite, PUBLIC_RETENTION, snapshotMatches } from "../src/build-site.js";
+import {
+  buildSite,
+  CLIENT_PUBLIC_PATHS,
+  PUBLIC_RETENTION,
+  publishEdgeRelease,
+  snapshotMatches,
+} from "../src/build-site.js";
 
 function artifact(hash, text, time = "2026-08-01T00:00:00Z") {
   const manifest = { manifestHash: hash.repeat(64), generatedAt: time, upstream: { commit: "d".repeat(40) } };
@@ -97,4 +103,49 @@ test("publishes frontier channel files without overwriting the stable snapshot",
   assert.equal(await readFile(join(publicDirectory, "current/rules/x.txt"), "utf8"), "stable\n");
   assert.equal(await readFile(join(publicDirectory, "edge/surge/scripts/profile.js"), "utf8"), "edge surge\n");
   assert.equal(await readFile(join(publicDirectory, "edge/sing-box/scripts/config.js"), "utf8"), "edge sing-box\n");
+});
+
+test("preserves binary artifact bytes in site emission and snapshot comparison", async () => {
+  const root = await mkdtemp(join(tmpdir(), "apple-proxy-site-binary-"));
+  const publicDirectory = join(root, "public");
+  const binary = Buffer.from([0xd9, 0x9d, 0x73, 0x72]);
+  const release = artifact("c", "text");
+  release.files.set("sing-box/rule-sets/test.srs", binary);
+
+  await buildSite({ publicDirectory, ...release });
+
+  assert.deepEqual(await readFile(join(publicDirectory, "current/sing-box/rule-sets/test.srs")), binary);
+  assert.equal(await snapshotMatches(join(publicDirectory, "current"), release.files), true);
+});
+
+test("publishes edge and immutable per-client bytes without replacing current", async () => {
+  const root = await mkdtemp(join(tmpdir(), "apple-proxy-edge-"));
+  const publicDirectory = join(root, "public");
+  await mkdir(join(publicDirectory, "current"), { recursive: true });
+  await writeFile(join(publicDirectory, "current/stable.txt"), "stable\n");
+  const defaults = new Map();
+  const clients = {};
+  let index = 1;
+  for (const [client, directory] of Object.entries(CLIENT_PUBLIC_PATHS)) {
+    const manifestHash = String(index).repeat(64);
+    clients[client] = { manifestHash };
+    defaults.set(`${directory}/rules.bin`, Buffer.from([index]));
+    defaults.set(`${directory}/client-manifest.json`, `${JSON.stringify({ manifestHash, files: [] })}\n`);
+    index += 1;
+  }
+  const manifest = { manifestHash: "a".repeat(64), clients };
+  defaults.set("manifest.json", `${JSON.stringify(manifest)}\n`);
+  const optionalPacks = new Map([["adblock-full", new Map([
+    ["optional/adblock-full/manifest.json", "{}\n"],
+  ])]]);
+
+  await publishEdgeRelease({ publicDirectory, defaults, optionalPacks, manifest });
+
+  assert.equal(await readFile(join(publicDirectory, "current/stable.txt"), "utf8"), "stable\n");
+  assert.deepEqual(await readFile(join(publicDirectory, "edge/sing-box/rules.bin")), Buffer.from([1]));
+  assert.deepEqual(await readFile(join(
+    publicDirectory,
+    `edge/clients/singbox/${clients.singbox.manifestHash}/sing-box/rules.bin`,
+  )), Buffer.from([1]));
+  assert.equal(await readFile(join(publicDirectory, "edge/optional/adblock-full/manifest.json"), "utf8"), "{}\n");
 });
