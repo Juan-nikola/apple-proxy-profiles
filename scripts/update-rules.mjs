@@ -1,4 +1,4 @@
-import { access, readFile } from "node:fs/promises";
+import { access, readdir, readFile } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -6,10 +6,12 @@ import {
   assertNoForbiddenDefaultReferences,
   buildClientArtifacts,
 } from "../automation/src/build-artifacts.js";
+import { artifactBuffer } from "../automation/src/artifact-content.js";
 import {
   promoteClientRelease as promoteClientReleaseImpl,
   publishEdgeRelease,
   snapshotMatches,
+  validateClientPublication,
   validateOptionalPublication,
 } from "../automation/src/build-site.js";
 import { fetchSnapshot } from "../automation/src/fetch-snapshot.js";
@@ -60,17 +62,82 @@ function optionalTreeFiles(packId, files) {
   }));
 }
 
+function clientTreeFiles(directory, files) {
+  const prefix = `${directory}/`;
+  return new Map([...files]
+    .filter(([path]) => path.startsWith(prefix))
+    .map(([path, content]) => [path.slice(prefix.length), content]));
+}
+
+async function relativeFiles(root, current = "") {
+  const found = [];
+  for (const entry of await readdir(join(root, current), { withFileTypes: true })) {
+    const relative = current ? `${current}/${entry.name}` : entry.name;
+    if (entry.isDirectory()) found.push(...await relativeFiles(root, relative));
+    else if (entry.isFile()) found.push(relative);
+    else throw new Error("Tracked publication contains a non-regular entry");
+  }
+  return found;
+}
+
+async function readPublicationTree(directory, prefix = "") {
+  const files = new Map();
+  for (const path of await relativeFiles(directory)) {
+    files.set(prefix ? `${prefix}/${path}` : path, await readFile(join(directory, path)));
+  }
+  return files;
+}
+
+async function selectedClientMatches({ directory, basePrefix = "", client, clientDirectory, expectedHash }) {
+  if (!/^[0-9a-f]{64}$/u.test(expectedHash) || !await pathExists(directory)) return false;
+  try {
+    const treePrefix = basePrefix ? `${basePrefix}/${clientDirectory}` : clientDirectory;
+    const files = await readPublicationTree(directory, treePrefix);
+    validateClientPublication({
+      files,
+      client,
+      directory: clientDirectory,
+      basePrefix,
+      expectedHash,
+    });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export function selectDefaultStaticFiles(files) {
   if (!(files instanceof Map)) throw new TypeError("Static publication files must be a Map");
   const selected = new Map(files);
-  const legacyProfileArtifact = (path) => path.includes("/examples/")
-    || /\/(?:substore-)?(?:profile|config)-generator\.js$/u.test(path)
-    || /\/(?:shadowrocket-profile|sing-box-config|surge-profile|egern-profile)-generator\.js$/u.test(path);
+  const legacyProfileArtifacts = new Set([
+    "shadowrocket/scripts/shadowrocket-profile-generator.js",
+    "shadowrocket/scripts/substore-profile-generator.js",
+    "shadowrocket/examples/shadowrocket-macos.conf",
+    "shadowrocket/examples/shadowrocket-iphone.conf",
+    "shadowrocket/examples/shadowrocket-ipad.conf",
+    "egern/scripts/egern-profile-generator.js",
+    "egern/scripts/substore-profile-generator.js",
+    "egern/examples/egern-macos.yaml",
+    "egern/examples/egern-iphone.yaml",
+    "egern/examples/egern-ipad.yaml",
+    "surge/scripts/surge-profile-generator.js",
+    "surge/scripts/substore-profile-generator.js",
+    "surge/examples/surge-macos.conf",
+    "surge/examples/surge-iphone.conf",
+    "surge/examples/surge-ipad.conf",
+    "sing-box/scripts/sing-box-config-generator.js",
+    "sing-box/scripts/substore-config-generator.js",
+    "sing-box/examples/sing-box-macos.json",
+    "sing-box/examples/sing-box-iphone.json",
+    "sing-box/examples/sing-box-ipad.json",
+    "sing-box/examples/sing-box-android.json",
+    "sing-box/examples/sing-box-openwrt.json",
+  ]);
   for (const [path, content] of [...selected]) {
     try {
       assertNoForbiddenDefaultReferences(new Map([[path, content]]));
     } catch (error) {
-      if (!legacyProfileArtifact(path)) throw error;
+      if (!legacyProfileArtifacts.has(path)) throw error;
       selected.delete(path);
     }
   }
@@ -79,12 +146,76 @@ export function selectDefaultStaticFiles(files) {
 }
 
 export async function verifyTrackedPublications({ publicDirectory, defaults, optionalPacks }) {
-  if (!await snapshotMatches(join(publicDirectory, "current"), defaults)) return false;
+  let rollout = null;
+  try {
+    rollout = JSON.parse(await readFile(join(publicDirectory, "rollout.json"), "utf8"));
+  } catch (error) {
+    if (error.code !== "ENOENT") return false;
+  }
+  if (rollout === null) {
+    if (!await snapshotMatches(join(publicDirectory, "current"), defaults)) return false;
+    for (const [packId, files] of optionalPacks) {
+      validateOptionalPublication({ packId, files });
+      const stableDirectory = join(publicDirectory, "optional", packId);
+      if (!await pathExists(stableDirectory)) continue;
+      if (!await snapshotMatches(stableDirectory, optionalTreeFiles(packId, files))) return false;
+    }
+    return true;
+  }
+  if (!rollout || rollout.schemaVersion !== 2 || typeof rollout.clients !== "object"
+    || typeof rollout.optionalPacks !== "object") return false;
+
+  const currentDirectory = join(publicDirectory, "current");
+  const clientDirectories = {
+    singbox: "sing-box",
+    surge: "surge",
+    shadowrocket: "shadowrocket",
+    egern: "egern",
+    anywhere: "anywhere",
+  };
+  const clientPrefixes = new Set(Object.values(clientDirectories).map((directory) => `${directory}/`));
+  for (const [path, content] of defaults) {
+    if ([...clientPrefixes].some((prefix) => path.startsWith(prefix))) continue;
+    try {
+      if (!(await readFile(join(currentDirectory, path))).equals(artifactBuffer(content))) return false;
+    } catch {
+      return false;
+    }
+  }
+  for (const [client, clientDirectory] of Object.entries(clientDirectories)) {
+    const selectedHash = rollout.clients[client];
+    if (selectedHash === null || selectedHash === undefined) {
+      if (!await snapshotMatches(
+        join(currentDirectory, clientDirectory),
+        clientTreeFiles(clientDirectory, defaults),
+      )) return false;
+      continue;
+    }
+    if (!await selectedClientMatches({
+      directory: join(currentDirectory, clientDirectory),
+      client,
+      clientDirectory,
+      expectedHash: selectedHash,
+    })) return false;
+  }
+
   for (const [packId, files] of optionalPacks) {
     validateOptionalPublication({ packId, files });
-    const stableDirectory = join(publicDirectory, "optional", packId);
-    if (!await pathExists(stableDirectory)) continue;
-    if (!await snapshotMatches(stableDirectory, optionalTreeFiles(packId, files))) return false;
+  }
+  for (const [packId, selections] of Object.entries(rollout.optionalPacks)) {
+    if (!selections || typeof selections !== "object" || Array.isArray(selections)) return false;
+    for (const [client, clientDirectory] of Object.entries(clientDirectories)) {
+      const selectedHash = selections[client];
+      if (selectedHash === null || selectedHash === undefined) continue;
+      const basePrefix = `optional/${packId}`;
+      if (!await selectedClientMatches({
+        directory: join(publicDirectory, "optional", packId, "current", clientDirectory),
+        basePrefix,
+        client,
+        clientDirectory,
+        expectedHash: selectedHash,
+      })) return false;
+    }
   }
   return true;
 }

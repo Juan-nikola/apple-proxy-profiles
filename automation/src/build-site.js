@@ -312,6 +312,22 @@ function verifyClientManifest(files, client, directory, basePrefix = "") {
   return manifest;
 }
 
+export function validateClientPublication({
+  files,
+  client,
+  directory = CLIENT_PUBLIC_PATHS[client],
+  basePrefix = "",
+  expectedHash = null,
+}) {
+  validatePublicationMap(files, `Client publication ${client}`);
+  if (!directory) throw new TypeError("Client publication identity is invalid");
+  const manifest = verifyClientManifest(files, client, directory, basePrefix);
+  if (expectedHash !== null && manifest.manifestHash !== expectedHash) {
+    throw new Error(`Client ${client} manifest hash does not match selected rollout`);
+  }
+  return manifest;
+}
+
 export function validateDefaultPublication({ defaults, manifest }) {
   validatePublicationMap(defaults, "Default publication");
   const parsed = parseCanonicalManifest(defaults, "manifest.json", "Default publication");
@@ -357,6 +373,16 @@ export async function publishEdgeRelease({ publicDirectory, defaults, optionalPa
     packId,
     validateOptionalPublication({ packId, files }),
   ]));
+  for (const [client, directory] of Object.entries(CLIENT_PUBLIC_PATHS)) {
+    const clientManifest = verifyClientManifest(defaults, client, directory);
+    const expectedSelections = Object.fromEntries([...optionalManifests].map(([packId, optionalManifest]) => [
+      packId,
+      optionalManifest.clients[client].manifestHash,
+    ]));
+    if (canonicalJson(clientManifest.optionalPacks ?? {}) !== canonicalJson(expectedSelections)) {
+      throw new Error(`Default client optional selection mismatch for ${client}`);
+    }
+  }
   const parent = dirname(publicDirectory);
   await mkdir(publicDirectory, { recursive: true });
   const staging = await mkdtemp(join(parent, `.${basename(publicDirectory)}-edge-staging-`));
@@ -364,30 +390,15 @@ export async function publishEdgeRelease({ publicDirectory, defaults, optionalPa
   const backup = join(publicDirectory, `.edge-backup-${manifest.manifestHash.slice(0, 12)}`);
   try {
     await writeSnapshot(staging, merged);
-    const optionalSelectionBase = {
-      schemaVersion: 1,
-      packs: Object.fromEntries([...optionalManifests].map(([packId, optionalManifest]) => [
-        packId,
-        optionalManifest.manifestHash,
-      ])),
-    };
-    const optionalSelection = Object.freeze({
-      ...optionalSelectionBase,
-      manifestHash: artifactSha256(canonicalJson(optionalSelectionBase)),
-    });
     for (const [packId, optionalManifest] of optionalManifests) {
-      await cp(
-        join(staging, "optional", packId),
-        join(
-          staging,
-          "optional-versions",
-          packId,
-          optionalManifest.manifestHash,
-          "optional",
-          packId,
-        ),
-        { recursive: true, errorOnExist: true },
-      );
+      for (const [client, directory] of Object.entries(CLIENT_PUBLIC_PATHS)) {
+        const optionalHash = optionalManifest.clients[client].manifestHash;
+        await cp(
+          join(staging, "optional", packId, directory),
+          join(staging, "optional-versions", packId, optionalHash, directory),
+          { recursive: true, errorOnExist: true },
+        );
+      }
     }
     for (const [client, directory] of Object.entries(CLIENT_PUBLIC_PATHS)) {
       const clientManifestPath = join(staging, directory, "client-manifest.json");
@@ -400,7 +411,6 @@ export async function publishEdgeRelease({ publicDirectory, defaults, optionalPa
       await mkdir(immutable, { recursive: true });
       await cp(join(staging, directory), join(immutable, directory), { recursive: true, errorOnExist: true });
       await writeFile(join(immutable, "client-manifest.json"), artifactBuffer(defaults.get(`${directory}/client-manifest.json`)));
-      await writeFile(join(immutable, "optional-selection.json"), canonicalJson(optionalSelection), "utf8");
     }
 
     if (await exists(backup)) throw new Error("Edge backup path already exists");
@@ -446,18 +456,18 @@ async function verifyImmutableClient(sourceDirectory, manifest, directory) {
     }
     expected.add(nestedManifest);
   }
-  const defaultActual = actual.filter((path) => path !== "optional-selection.json");
-  const unexpected = defaultActual.filter((path) => !expected.has(path));
-  if (unexpected.length > 0 || defaultActual.length !== expected.size) {
+  const unexpected = actual.filter((path) => !expected.has(path));
+  if (unexpected.length > 0 || actual.length !== expected.size) {
     throw new Error(`Immutable edge client contains an unexpected file: ${unexpected[0] ?? "missing manifest record"}`);
   }
 }
 
 function emptyRollout() {
+  const clients = () => Object.fromEntries(Object.keys(CLIENT_PUBLIC_PATHS).map((client) => [client, null]));
   return {
-    schemaVersion: 1,
-    clients: Object.fromEntries(Object.keys(CLIENT_PUBLIC_PATHS).map((client) => [client, null])),
-    previous: Object.fromEntries(Object.keys(CLIENT_PUBLIC_PATHS).map((client) => [client, null])),
+    schemaVersion: 2,
+    clients: clients(),
+    previous: clients(),
     optionalPacks: {},
     previousOptionalPacks: {},
   };
@@ -472,20 +482,11 @@ export async function promoteClientRelease({ publicDirectory, client, manifestHa
   const clientManifest = JSON.parse(await readFile(join(immutableSource, "client-manifest.json"), "utf8"));
   if (clientManifest.manifestHash !== manifestHash) throw new Error("Edge client manifest hash does not match promotion target");
   await verifyImmutableClient(immutableSource, clientManifest, directory);
-  const selectionFiles = new Map([[
-    "optional-selection.json",
-    await readFile(join(immutableSource, "optional-selection.json")),
-  ]]);
-  const optionalSelection = parseCanonicalManifest(
-    selectionFiles,
-    "optional-selection.json",
-    "Immutable optional selection",
-  );
-  const optionalPackIds = Object.keys(optionalSelection.packs ?? {}).sort();
+  const optionalPackIds = Object.keys(clientManifest.optionalPacks ?? {}).sort();
   if (optionalPackIds.length === 0) throw new Error("Immutable optional selection is empty");
   const optionalManifests = new Map();
   for (const packId of optionalPackIds) {
-    const optionalHash = optionalSelection.packs[packId];
+    const optionalHash = clientManifest.optionalPacks[packId];
     if (!/^[a-z0-9][a-z0-9-]*$/u.test(packId) || !/^[0-9a-f]{64}$/u.test(optionalHash)) {
       throw new Error("Immutable optional selection contains an invalid pack");
     }
@@ -496,13 +497,14 @@ export async function promoteClientRelease({ publicDirectory, client, manifestHa
       "optional-versions",
       packId,
       optionalHash,
-      "optional",
-      packId,
     ), prefix);
-    const optionalManifest = validateOptionalPublication({ packId, files });
-    if (optionalManifest.manifestHash !== optionalHash) {
-      throw new Error(`Immutable optional publication hash mismatch for ${packId}`);
-    }
+    const optionalManifest = validateClientPublication({
+      files,
+      client,
+      directory,
+      basePrefix: prefix,
+      expectedHash: optionalHash,
+    });
     optionalManifests.set(packId, optionalManifest);
   }
 
@@ -525,8 +527,8 @@ export async function promoteClientRelease({ publicDirectory, client, manifestHa
       join(staging, "edge", "clients", client, manifestHash, "client-manifest.json"),
     )));
     for (const [packId] of optionalManifests) {
-      const stableOptional = join(staging, "optional", packId);
-      const previousOptional = join(staging, "previous", "optional", packId);
+      const stableOptional = join(staging, "optional", packId, "current", directory);
+      const previousOptional = join(staging, "optional", packId, "previous", directory);
       await rm(previousOptional, { recursive: true, force: true });
       if (await exists(stableOptional)) {
         await mkdir(dirname(previousOptional), { recursive: true });
@@ -540,8 +542,7 @@ export async function promoteClientRelease({ publicDirectory, client, manifestHa
           "optional-versions",
           packId,
           optionalManifests.get(packId).manifestHash,
-          "optional",
-          packId,
+          directory,
         ),
         stableOptional,
         { recursive: true, errorOnExist: true },
@@ -555,21 +556,29 @@ export async function promoteClientRelease({ publicDirectory, client, manifestHa
       if (error.code !== "ENOENT") throw error;
     }
     const nextRollout = {
-      schemaVersion: 1,
+      schemaVersion: 2,
       clients: { ...emptyRollout().clients, ...rollout.clients, [client]: manifestHash },
       previous: { ...emptyRollout().previous, ...rollout.previous, [client]: rollout.clients?.[client] ?? null },
       optionalPacks: {
         ...rollout.optionalPacks,
         ...Object.fromEntries([...optionalManifests].map(([packId, optionalManifest]) => [
           packId,
-          optionalManifest.manifestHash,
+          {
+            ...emptyRollout().clients,
+            ...rollout.optionalPacks?.[packId],
+            [client]: optionalManifest.manifestHash,
+          },
         ])),
       },
       previousOptionalPacks: {
         ...rollout.previousOptionalPacks,
         ...Object.fromEntries([...optionalManifests.keys()].map((packId) => [
           packId,
-          rollout.optionalPacks?.[packId] ?? null,
+          {
+            ...emptyRollout().previous,
+            ...rollout.previousOptionalPacks?.[packId],
+            [client]: rollout.optionalPacks?.[packId]?.[client] ?? null,
+          },
         ])),
       },
     };

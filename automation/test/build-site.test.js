@@ -5,6 +5,8 @@ import { join } from "node:path";
 import test from "node:test";
 
 import { buildClientArtifacts } from "../src/build-artifacts.js";
+import { artifactSha256 } from "../src/artifact-content.js";
+import { canonicalJson } from "../src/render-anywhere-rules.js";
 import {
   buildSite,
   CLIENT_PUBLIC_PATHS,
@@ -149,15 +151,40 @@ test("publishes edge and immutable per-client bytes without replacing current", 
   )), Buffer.from(defaults.get("sing-box/rules/ChinaIP.json")));
   assert.deepEqual(await readFile(join(
     publicDirectory,
-    `edge/optional-versions/adblock-full/${artifacts.diagnostics.optionalManifests["adblock-full"].manifestHash}/optional/adblock-full/manifest.json`,
-  )), Buffer.from(optionalPacks.get("adblock-full").get("optional/adblock-full/manifest.json")));
-  const optionalSelection = JSON.parse(await readFile(join(
+    `edge/optional-versions/adblock-full/${artifacts.diagnostics.optionalManifests["adblock-full"].clients.singbox.manifestHash}/sing-box/rules/Advertising.json`,
+  )), Buffer.from(optionalPacks.get("adblock-full").get("optional/adblock-full/sing-box/rules/Advertising.json")));
+  const clientManifest = JSON.parse(await readFile(join(
     publicDirectory,
-    `edge/clients/singbox/${manifest.clients.singbox.manifestHash}/optional-selection.json`,
+    `edge/clients/singbox/${manifest.clients.singbox.manifestHash}/client-manifest.json`,
   ), "utf8"));
   assert.equal(
-    optionalSelection.packs["adblock-full"],
-    artifacts.diagnostics.optionalManifests["adblock-full"].manifestHash,
+    clientManifest.optionalPacks["adblock-full"],
+    artifacts.diagnostics.optionalManifests["adblock-full"].clients.singbox.manifestHash,
+  );
+});
+
+test("binds optional client selections into the promoted client manifest", async () => {
+  const root = await mkdtemp(join(tmpdir(), "apple-proxy-edge-selection-tamper-"));
+  const publicDirectory = join(root, "public");
+  const artifacts = buildClientArtifacts({ snapshot: lightweightFixtureSnapshots(), upstream: lightweightUpstream });
+  const hash = artifacts.diagnostics.defaultManifest.clients.singbox.manifestHash;
+  await publishEdgeRelease({
+    publicDirectory,
+    defaults: artifacts.defaults,
+    optionalPacks: artifacts.optionalPacks,
+    manifest: artifacts.diagnostics.defaultManifest,
+  });
+  const immutable = join(publicDirectory, "edge/clients/singbox", hash);
+  const clientManifest = JSON.parse(await readFile(join(immutable, "client-manifest.json"), "utf8"));
+  clientManifest.optionalPacks["adblock-full"] = "f".repeat(64);
+  const { manifestHash: ignored, ...baseManifest } = clientManifest;
+  clientManifest.manifestHash = artifactSha256(canonicalJson(baseManifest));
+  await writeFile(join(immutable, "client-manifest.json"), canonicalJson(clientManifest));
+
+  const { promoteClientRelease } = await import("../src/build-site.js");
+  await assert.rejects(
+    () => promoteClientRelease({ publicDirectory, client: "singbox", manifestHash: hash }),
+    /manifest hash does not match promotion target/u,
   );
 });
 

@@ -72,6 +72,19 @@ test("rejects forbidden legacy rule references inside default static content", (
   );
 });
 
+test("rejects bare forbidden rule IDs and forbidden default filenames", () => {
+  for (const additionalFiles of [
+    new Map([["surge/examples/bare.conf", "RULE-SET,Advertising,REJECT\n"]]),
+    new Map([["surge/rules/Advertising.list", "DOMAIN-SUFFIX,otherwise-safe.example\n"]]),
+    new Map([["egern/rules/ChinaMax_Domain.yaml", "domain_suffix_set: []\n"]]),
+  ]) {
+    assert.throws(
+      () => buildClientArtifacts({ snapshot: lightweightFixtureSnapshots(), upstream, additionalFiles }),
+      /Forbidden default rule (?:reference|path)/u,
+    );
+  }
+});
+
 test("rejects over-budget compilation before returning publication bytes", () => {
   const snapshots = lightweightFixtureSnapshots();
   const source = snapshots.get("OpenAI");

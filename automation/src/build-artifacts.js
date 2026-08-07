@@ -25,12 +25,12 @@ const SURGE_TYPE = Object.freeze({
   [RULE_KIND.ipv6Cidr]: "IP-CIDR6",
 });
 
-const FORBIDDEN_DEFAULT_REFERENCES = Object.freeze([
-  Object.freeze({ id: "Advertising_Domain", pattern: /\bAdvertising_Domain\b/u }),
-  Object.freeze({ id: "ChinaMax_Domain", pattern: /\bChinaMax_Domain\b/u }),
-  Object.freeze({ id: "rule-Advertising", pattern: /\brule-Advertising(?:_Domain)?\b/u }),
-  Object.freeze({ id: "Advertising", pattern: /["']Advertising["']|\/Advertising(?:\.(?:arrs|json|list|srs|yaml)|\/)/u }),
+const FORBIDDEN_DEFAULT_RULE_IDS = Object.freeze([
+  "Advertising_Domain",
+  "ChinaMax_Domain",
+  "Advertising",
 ]);
+const FORBIDDEN_DEFAULT_CONTENT = /\b(?:Advertising_Domain|ChinaMax_Domain|Advertising)\b/u;
 
 function compiledText(entries) {
   return `${entries.map((entry) => {
@@ -201,7 +201,7 @@ export function enforcePublicationBudgets({ diagnostics, files }) {
   return Object.freeze(referencedBytes);
 }
 
-function addClientManifests(files, upstream, basePrefix = "") {
+function addClientManifests(files, upstream, basePrefix = "", optionalSelections = null) {
   const manifests = {};
   for (const [client, directory] of Object.entries(CLIENT_PATHS)) {
     const prefix = basePrefix ? `${basePrefix}/${directory}` : directory;
@@ -211,6 +211,7 @@ function addClientManifests(files, upstream, basePrefix = "") {
       schemaVersion: 1,
       client,
       generatedAt: upstream.committedAt,
+      ...(optionalSelections === null ? {} : { optionalPacks: optionalSelections[client] ?? {} }),
       files: records,
     };
     const manifestHash = artifactSha256(canonicalJson(base));
@@ -224,10 +225,12 @@ function addClientManifests(files, upstream, basePrefix = "") {
 export function assertNoForbiddenDefaultReferences(files) {
   if (!(files instanceof Map)) throw new TypeError("Default publication files must be a Map");
   for (const [path, content] of files) {
+    const forbiddenPath = FORBIDDEN_DEFAULT_RULE_IDS.find((id) => path.includes(id));
+    if (forbiddenPath) throw new Error(`Forbidden default rule path ${forbiddenPath} in ${path}`);
     const text = artifactBuffer(content).toString("utf8");
-    const forbidden = FORBIDDEN_DEFAULT_REFERENCES.find(({ pattern }) => pattern.test(text));
-    if (forbidden) {
-      throw new Error(`Forbidden default rule reference ${forbidden.id} in ${path}`);
+    const match = FORBIDDEN_DEFAULT_CONTENT.exec(text);
+    if (match) {
+      throw new Error(`Forbidden default rule reference ${match[0]} in ${path}`);
     }
   }
 }
@@ -289,7 +292,17 @@ export function buildClientArtifacts({
 
   assertNoForbiddenDefaultReferences(defaults);
   const referencedBytes = enforcePublicationBudgets({ diagnostics: publicationDiagnostics, files: defaults });
-  const clientManifests = addClientManifests(defaults, upstream);
+
+  const adblockFull = buildOptionalPack({
+    packId: "adblock-full",
+    ruleSets: compactedAdblock.ruleSets,
+    upstream,
+  });
+  const optionalPacks = new Map([["adblock-full", adblockFull.files]]);
+  const optionalSelections = Object.fromEntries(Object.keys(CLIENT_PATHS).map((client) => [client, {
+    "adblock-full": adblockFull.manifest.clients[client].manifestHash,
+  }]));
+  const clientManifests = addClientManifests(defaults, upstream, "", optionalSelections);
   const records = fileRecords(defaults);
   const baseManifest = {
     schemaVersion: 2,
@@ -314,12 +327,6 @@ export function buildClientArtifacts({
   });
   defaults.set("manifest.json", canonicalJson(defaultManifest));
 
-  const adblockFull = buildOptionalPack({
-    packId: "adblock-full",
-    ruleSets: compactedAdblock.ruleSets,
-    upstream,
-  });
-  const optionalPacks = new Map([["adblock-full", adblockFull.files]]);
   return Object.freeze({
     defaults,
     optionalPacks,

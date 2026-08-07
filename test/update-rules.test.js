@@ -22,6 +22,12 @@ const upstream = Object.freeze({
   license: "GPL-2.0-only",
 });
 
+const nextUpstream = Object.freeze({
+  ...upstream,
+  commit: "e".repeat(40),
+  committedAt: "2026-08-02T19:07:21Z",
+});
+
 async function writeFiles(directory, files) {
   for (const [path, content] of files) {
     const destination = join(directory, path);
@@ -54,9 +60,16 @@ test("keeps known legacy profiles outside defaults and rejects unexpected forbid
     () => selectDefaultStaticFiles(new Map([["unexpected.txt", 'const id = "Advertising";\n']])),
     /Forbidden default rule reference/u,
   );
+  assert.throws(
+    () => selectDefaultStaticFiles(new Map([[
+      "unknown/examples/legacy.conf",
+      "RULE-SET,Advertising,REJECT\n",
+    ]])),
+    /Forbidden default rule reference/u,
+  );
 });
 
-test("verifies current defaults and a separately tracked optional snapshot", async () => {
+test("verifies legacy current defaults and a separately tracked optional snapshot", async () => {
   const root = await mkdtemp(join(tmpdir(), "apple-proxy-check-trees-"));
   const publicDirectory = join(root, "public");
   const artifacts = buildClientArtifacts({ snapshot: lightweightFixtureSnapshots(), upstream });
@@ -73,6 +86,32 @@ test("verifies current defaults and a separately tracked optional snapshot", asy
   assert.equal(await verifyTrackedPublications({ publicDirectory: noOptionalPublic, ...artifacts }), true);
 });
 
+test("verifies a hybrid current from independently promoted clients", async () => {
+  const root = await mkdtemp(join(tmpdir(), "apple-proxy-check-hybrid-"));
+  const publicDirectory = join(root, "public");
+  const baseline = buildClientArtifacts({ snapshot: lightweightFixtureSnapshots(), upstream });
+  const candidate = buildClientArtifacts({ snapshot: lightweightFixtureSnapshots(), upstream: nextUpstream });
+  await writeFiles(join(publicDirectory, "current"), baseline.defaults);
+  await publishEdgeRelease({
+    publicDirectory,
+    defaults: candidate.defaults,
+    optionalPacks: candidate.optionalPacks,
+    manifest: candidate.diagnostics.defaultManifest,
+  });
+  await promoteClientRelease({
+    publicDirectory,
+    client: "singbox",
+    manifestHash: candidate.diagnostics.defaultManifest.clients.singbox.manifestHash,
+  });
+
+  assert.equal(await verifyTrackedPublications({ publicDirectory, ...baseline }), true);
+  const optionalDirectory = join(publicDirectory, "optional/adblock-full/current/sing-box");
+  const deleted = `${optionalDirectory}.deleted`;
+  const { rename } = await import("node:fs/promises");
+  await rename(optionalDirectory, deleted);
+  assert.equal(await verifyTrackedPublications({ publicDirectory, ...baseline }), false);
+});
+
 test("promotes exact tested client bytes without changing other clients", async () => {
   const root = await mkdtemp(join(tmpdir(), "apple-proxy-promote-"));
   const publicDirectory = join(root, "public");
@@ -86,10 +125,10 @@ test("promotes exact tested client bytes without changing other clients", async 
   });
   await mkdir(join(publicDirectory, "current/sing-box"), { recursive: true });
   await mkdir(join(publicDirectory, "current/surge"), { recursive: true });
-  await mkdir(join(publicDirectory, "optional/adblock-full"), { recursive: true });
+  await mkdir(join(publicDirectory, "optional/adblock-full/current/sing-box"), { recursive: true });
   await writeFile(join(publicDirectory, "current/sing-box/old.txt"), "old\n");
   await writeFile(join(publicDirectory, "current/surge/keep.txt"), "keep\n");
-  await writeFile(join(publicDirectory, "optional/adblock-full/old.txt"), "old optional\n");
+  await writeFile(join(publicDirectory, "optional/adblock-full/current/sing-box/old.txt"), "old optional\n");
 
   await promoteClientRelease({ publicDirectory, client: "singbox", manifestHash: hash });
 
@@ -100,19 +139,88 @@ test("promotes exact tested client bytes without changing other clients", async 
   assert.equal(await readFile(join(publicDirectory, "previous/sing-box/old.txt"), "utf8"), "old\n");
   assert.equal(await readFile(join(publicDirectory, "current/surge/keep.txt"), "utf8"), "keep\n");
   assert.deepEqual(
-    await readFile(join(publicDirectory, "optional/adblock-full/manifest.json")),
-    Buffer.from(artifacts.optionalPacks.get("adblock-full").get("optional/adblock-full/manifest.json")),
+    await readFile(join(publicDirectory, "optional/adblock-full/current/sing-box/rules/Advertising.json")),
+    Buffer.from(artifacts.optionalPacks.get("adblock-full").get("optional/adblock-full/sing-box/rules/Advertising.json")),
   );
   assert.equal(
-    await readFile(join(publicDirectory, "previous/optional/adblock-full/old.txt"), "utf8"),
+    await readFile(join(publicDirectory, "optional/adblock-full/previous/sing-box/old.txt"), "utf8"),
     "old optional\n",
   );
   const rollout = JSON.parse(await readFile(join(publicDirectory, "rollout.json"), "utf8"));
   assert.equal(rollout.clients.singbox, hash);
   assert.equal(rollout.clients.surge, null);
   assert.equal(
-    rollout.optionalPacks["adblock-full"],
-    artifacts.diagnostics.optionalManifests["adblock-full"].manifestHash,
+    rollout.optionalPacks["adblock-full"].singbox,
+    artifacts.diagnostics.optionalManifests["adblock-full"].clients.singbox.manifestHash,
+  );
+});
+
+test("promotes and rolls back optional bytes independently per client", async () => {
+  const root = await mkdtemp(join(tmpdir(), "apple-proxy-promote-optional-clients-"));
+  const publicDirectory = join(root, "public");
+  const first = buildClientArtifacts({ snapshot: lightweightFixtureSnapshots(), upstream });
+  await publishEdgeRelease({
+    publicDirectory,
+    defaults: first.defaults,
+    optionalPacks: first.optionalPacks,
+    manifest: first.diagnostics.defaultManifest,
+  });
+  await promoteClientRelease({
+    publicDirectory,
+    client: "surge",
+    manifestHash: first.diagnostics.defaultManifest.clients.surge.manifestHash,
+  });
+  const surgeBefore = await readFile(join(
+    publicDirectory,
+    "optional/adblock-full/current/surge/rules/Advertising.list",
+  ));
+
+  const second = buildClientArtifacts({ snapshot: lightweightFixtureSnapshots(), upstream: nextUpstream });
+  await publishEdgeRelease({
+    publicDirectory,
+    defaults: second.defaults,
+    optionalPacks: second.optionalPacks,
+    manifest: second.diagnostics.defaultManifest,
+  });
+  await promoteClientRelease({
+    publicDirectory,
+    client: "singbox",
+    manifestHash: second.diagnostics.defaultManifest.clients.singbox.manifestHash,
+  });
+
+  assert.deepEqual(await readFile(join(
+    publicDirectory,
+    "optional/adblock-full/current/surge/rules/Advertising.list",
+  )), surgeBefore);
+  const rollout = JSON.parse(await readFile(join(publicDirectory, "rollout.json"), "utf8"));
+  assert.equal(
+    rollout.optionalPacks["adblock-full"].surge,
+    first.diagnostics.optionalManifests["adblock-full"].clients.surge.manifestHash,
+  );
+  assert.equal(
+    rollout.optionalPacks["adblock-full"].singbox,
+    second.diagnostics.optionalManifests["adblock-full"].clients.singbox.manifestHash,
+  );
+
+  await publishEdgeRelease({
+    publicDirectory,
+    defaults: first.defaults,
+    optionalPacks: first.optionalPacks,
+    manifest: first.diagnostics.defaultManifest,
+  });
+  await promoteClientRelease({
+    publicDirectory,
+    client: "singbox",
+    manifestHash: first.diagnostics.defaultManifest.clients.singbox.manifestHash,
+  });
+  const rollback = JSON.parse(await readFile(join(publicDirectory, "rollout.json"), "utf8"));
+  assert.equal(
+    rollback.previousOptionalPacks["adblock-full"].singbox,
+    second.diagnostics.optionalManifests["adblock-full"].clients.singbox.manifestHash,
+  );
+  assert.equal(
+    rollback.optionalPacks["adblock-full"].surge,
+    first.diagnostics.optionalManifests["adblock-full"].clients.surge.manifestHash,
   );
 });
 
