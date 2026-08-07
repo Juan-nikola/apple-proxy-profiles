@@ -725,7 +725,7 @@ Expected: the second build creates no additional diff, canonical and legacy Surg
 ```bash
 npm run check:secrets
 npm run check:actions
-rg -n "substore\\.sunyz\\.uk|3xJ5akUv|c678691f|23\\.145\\.36\\.47|TEST_ONLY" clients public README.md docs
+rg -n "private-source\\.example|EXAMPLE_TOKEN|TEST_ONLY" clients public README.md docs
 ```
 
 The `rg` command may find only synthetic `TEST_ONLY_` fixtures; it must not find the user’s real Sub-Store host, token, UUID, server, or port. If a real value appears, remove it before continuing.

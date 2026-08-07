@@ -2561,19 +2561,19 @@
       "sha256": "d5a83b9af9bac97bae439f310442adb8197ac5e0fe7df6db3d8c77416b353d9a"
     },
     {
-      "bytes": 16402,
+      "bytes": 16394,
       "path": "surge/examples/surge-ipad.conf",
-      "sha256": "42a70fd9a706cfd0ecb6fce911988333227d5c0f540e2e651b10fba9eb7c75ed"
+      "sha256": "559ea75d1f57e951bb26edc016b5fad4d8c801d54a685a498ae2cf04a083a83a"
     },
     {
-      "bytes": 16402,
+      "bytes": 16394,
       "path": "surge/examples/surge-iphone.conf",
-      "sha256": "42a70fd9a706cfd0ecb6fce911988333227d5c0f540e2e651b10fba9eb7c75ed"
+      "sha256": "559ea75d1f57e951bb26edc016b5fad4d8c801d54a685a498ae2cf04a083a83a"
     },
     {
-      "bytes": 16397,
+      "bytes": 16389,
       "path": "surge/examples/surge-macos.conf",
-      "sha256": "d45fba90badd4cfde05b32bb9b69f9a88256988ae38e4ee8bd9895905fdd8b7d"
+      "sha256": "02c4efb6cc54e732855418a27e7055e7dc4a32d769314f4592ce5963fb5ce474"
     },
     {
       "bytes": 27237,
@@ -2736,28 +2736,28 @@
       "sha256": "040a6ba73b3f71a4aab7a61cb4c4b8f7abbe78b370e5d7bf6e8b5258115dc5e6"
     },
     {
-      "bytes": 95369,
+      "bytes": 95390,
       "path": "surge/scripts/substore-nodes-generator.js",
-      "sha256": "af8f5f4e3af5d2dce8830fd41d74847eafc2d49b3c64a1204bde6d864605a890"
+      "sha256": "07956794d4a2ee9f4de8113e6ae7f13980865c0b7690edc6159a2a98cd05c299"
     },
     {
-      "bytes": 124571,
+      "bytes": 125664,
       "path": "surge/scripts/substore-profile-generator.js",
-      "sha256": "04bb16d1881e4ff32bd9aa258ac088a05c46a48170283d0f67e8f4afa76df510"
+      "sha256": "7663e140c0373e42df602cc847e6fde63e17d252accbd5d001f7499d8f81e8f9"
     },
     {
-      "bytes": 95369,
+      "bytes": 95390,
       "path": "surge/scripts/surge-nodes-generator.js",
-      "sha256": "af8f5f4e3af5d2dce8830fd41d74847eafc2d49b3c64a1204bde6d864605a890"
+      "sha256": "07956794d4a2ee9f4de8113e6ae7f13980865c0b7690edc6159a2a98cd05c299"
     },
     {
-      "bytes": 124571,
+      "bytes": 125664,
       "path": "surge/scripts/surge-profile-generator.js",
-      "sha256": "04bb16d1881e4ff32bd9aa258ac088a05c46a48170283d0f67e8f4afa76df510"
+      "sha256": "7663e140c0373e42df602cc847e6fde63e17d252accbd5d001f7499d8f81e8f9"
     }
   ],
   "generatedAt": "2026-08-05T19:24:33Z",
-  "manifestHash": "8cb8b1cd33ddb07258203035082406e1a7661429931bc693a8708be35f687dc2",
+  "manifestHash": "4e033617f1e2b1b55189a856c869ad7f3e479261070b3f777b53aec987105323",
   "schemaVersion": 1,
   "upstream": {
     "branch": "master",

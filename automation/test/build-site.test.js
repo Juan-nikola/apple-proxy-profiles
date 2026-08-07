@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdtemp, readFile, writeFile } from "node:fs/promises";
+import { mkdtemp, readFile, readdir, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
@@ -83,6 +83,23 @@ test("pins a bounded online version window below the Pages capacity budget", () 
     maxVersions: 8,
     minVersions: 2,
   });
+});
+
+test("retains the current immutable version when publication timestamps tie", async () => {
+  const root = await mkdtemp(join(tmpdir(), "apple-proxy-site-tied-retention-"));
+  const publicDirectory = join(root, "public");
+  let latest;
+  for (let index = 0; index < PUBLIC_RETENTION.maxVersions + 2; index += 1) {
+    latest = artifact(index.toString(16), `snapshot-${index}`);
+    await buildSite({ publicDirectory, ...latest });
+  }
+
+  assert.equal(
+    await snapshotMatches(join(publicDirectory, `versions/${latest.manifest.manifestHash}`), latest.files),
+    true,
+  );
+  const versions = await readdir(join(publicDirectory, "versions"));
+  assert.equal(versions.length, PUBLIC_RETENTION.maxVersions);
 });
 
 test("publishes frontier channel files without overwriting the stable snapshot", async () => {

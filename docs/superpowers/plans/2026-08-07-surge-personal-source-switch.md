@@ -341,7 +341,7 @@ Run:
 
 ```bash
 rg -n "个人节点池|节点来源|include-other-group" clients/surge/dist clients/surge/examples
-rg -n "mmw\\.xiaov|h3oTlWivCZ|personalPolicyUrl" clients/surge/dist clients/surge/examples docs || true
+rg -n "private-source\.example|EXAMPLE_TOKEN|personalPolicyUrl" clients/surge/dist clients/surge/examples docs || true
 ```
 
 Expected: names and generic option support are present; the user’s URL/token is absent.

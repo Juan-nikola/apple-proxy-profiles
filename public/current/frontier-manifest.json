@@ -1,6 +1,6 @@
 {
   "channel": "current",
-  "manifestSha256": "4fd9dca579cf0c22f31db9327d7cdb2f231b43848b3615c5effd7c9705227a10",
+  "manifestSha256": "dbd76bde5588e8131125926173822798fd7e1ec17b1117869811d5e3b1c26e25",
   "records": [
     {
       "adapterSchema": "surge-adapter-0.1",
@@ -63,7 +63,7 @@
       "upstream": {
         "branch": "stable",
         "commit": "4c02326989a170bcf1d2c3aab1cf5c70adfed2ca",
-        "fetchedAt": "2026-08-07T09:21:42.566Z"
+        "fetchedAt": "2026-08-07T09:33:36.326Z"
       }
     },
     {
@@ -79,7 +79,7 @@
       "upstream": {
         "branch": "stable",
         "commit": "4c02326989a170bcf1d2c3aab1cf5c70adfed2ca",
-        "fetchedAt": "2026-08-07T09:21:42.566Z"
+        "fetchedAt": "2026-08-07T09:33:36.326Z"
       }
     },
     {
@@ -95,7 +95,7 @@
       "upstream": {
         "branch": "stable",
         "commit": "4c02326989a170bcf1d2c3aab1cf5c70adfed2ca",
-        "fetchedAt": "2026-08-07T09:21:42.566Z"
+        "fetchedAt": "2026-08-07T09:33:36.326Z"
       }
     },
     {
@@ -111,7 +111,7 @@
       "upstream": {
         "branch": "stable",
         "commit": "4c02326989a170bcf1d2c3aab1cf5c70adfed2ca",
-        "fetchedAt": "2026-08-07T09:21:42.566Z"
+        "fetchedAt": "2026-08-07T09:33:36.326Z"
       }
     },
     {
@@ -127,7 +127,7 @@
       "upstream": {
         "branch": "stable",
         "commit": "4c02326989a170bcf1d2c3aab1cf5c70adfed2ca",
-        "fetchedAt": "2026-08-07T09:21:42.566Z"
+        "fetchedAt": "2026-08-07T09:33:36.326Z"
       }
     }
   ],

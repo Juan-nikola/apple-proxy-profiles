@@ -45,6 +45,6 @@ test("published Surge node bundles expose a private provider operator", async ()
     const content = await readFile(new URL(file, import.meta.url), "utf8");
     assert.match(content, /async function operator\(/u, file);
     assert.match(content, /No compatible Surge nodes|renderSurgeNodeResource/u, file);
-    assert.doesNotMatch(content, /substore\.sunyz\.uk|3xJ5akUv/iu, file);
+    assert.doesNotMatch(content, /private-source\.example|EXAMPLE_TOKEN/iu, file);
   }
 });

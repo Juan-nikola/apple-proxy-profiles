@@ -1,6 +1,6 @@
 {
   "channel": "edge",
-  "manifestSha256": "5e13c2d9e76aae55fa8b450c1880661088907a92039b7a2334f3cc0f07ee8b61",
+  "manifestSha256": "2a0ef4b208592bd2a67c67ff16e8929616fbf2417a3a1e81b795100b2b5b194d",
   "records": [
     {
       "adapterSchema": "surge-adapter-0.1",
@@ -63,7 +63,7 @@
       "upstream": {
         "branch": "testing",
         "commit": "fe8bb7ad008fbb43aa6ee6a16bed6db9bd9a6e8e",
-        "fetchedAt": "2026-08-07T09:21:42.195Z"
+        "fetchedAt": "2026-08-07T09:33:35.941Z"
       }
     },
     {
@@ -79,7 +79,7 @@
       "upstream": {
         "branch": "testing",
         "commit": "fe8bb7ad008fbb43aa6ee6a16bed6db9bd9a6e8e",
-        "fetchedAt": "2026-08-07T09:21:42.195Z"
+        "fetchedAt": "2026-08-07T09:33:35.941Z"
       }
     },
     {
@@ -95,7 +95,7 @@
       "upstream": {
         "branch": "testing",
         "commit": "fe8bb7ad008fbb43aa6ee6a16bed6db9bd9a6e8e",
-        "fetchedAt": "2026-08-07T09:21:42.195Z"
+        "fetchedAt": "2026-08-07T09:33:35.941Z"
       }
     },
     {
@@ -111,7 +111,7 @@
       "upstream": {
         "branch": "testing",
         "commit": "fe8bb7ad008fbb43aa6ee6a16bed6db9bd9a6e8e",
-        "fetchedAt": "2026-08-07T09:21:42.195Z"
+        "fetchedAt": "2026-08-07T09:33:35.941Z"
       }
     },
     {
@@ -127,7 +127,7 @@
       "upstream": {
         "branch": "testing",
         "commit": "fe8bb7ad008fbb43aa6ee6a16bed6db9bd9a6e8e",
-        "fetchedAt": "2026-08-07T09:21:42.195Z"
+        "fetchedAt": "2026-08-07T09:33:35.941Z"
       }
     }
   ],
