@@ -2,15 +2,15 @@
   "adapterSchema": "singbox-adapter-0.1",
   "channel": "edge",
   "client": "singbox",
-  "configSha256": "484114659c34fbaa37fe81409f101e8cd48e58751e438f9e0694b70c8e30ac45",
+  "configSha256": "0dda68240dbc33fcf3474dce92edcbd96523da0b35fbacf20fec5f7b20cb4cfa",
   "platform": "android",
   "platformKey": "singbox/android",
-  "ruleManifestSha256": "bdca8d09a85a4303b55a76c73e41af39be6cd2dfd9edfedfe6468633c7745b33",
+  "ruleManifestSha256": "b44d955aff4fa141a6942aada9a9faaeb60b2a5a9351f0362acf36ad7e9ecd84",
   "schemaVersion": 1,
   "status": "candidate",
   "upstream": {
     "branch": "testing",
     "commit": "f14434a6d1c18d1692d632bdca96787da486cc01",
-    "fetchedAt": "2026-08-07T01:59:04.068Z"
+    "fetchedAt": "2026-08-07T03:34:54.663Z"
   }
 }

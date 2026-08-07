@@ -2391,9 +2391,9 @@
       "sha256": "e936a75944411603ecd0d7c2303cd3058285e58b5756f95a19fc295d2d172eb7"
     },
     {
-      "bytes": 52805,
+      "bytes": 52802,
       "path": "sing-box/rules/Advertising.json",
-      "sha256": "32cd8e38e92a2f25156656cc93f30daa60792baa7187455188f842fc0410f957"
+      "sha256": "04aa81357075de7cf05ba0ac6aca3f63a0520b73d0c09219c397533e67b48cbb"
     },
     {
       "bytes": 19666640,
@@ -2401,9 +2401,9 @@
       "sha256": "c1fa3c61a32376fc03617c17daa68c416ae6a9bb60c4da8a51508f3cc06bdbdc"
     },
     {
-      "bytes": 1417,
+      "bytes": 1414,
       "path": "sing-box/rules/Apple.json",
-      "sha256": "06e9b54db4429acb7e38e88af4471c548b0d2f50dbb55880df53466051cbbb62"
+      "sha256": "2f235560ae3901890aea0139d9b1bbc6e90a1c391fc49865f89629b86f7bcb10"
     },
     {
       "bytes": 9356,
@@ -2411,9 +2411,9 @@
       "sha256": "5cad85b8d4af4dd19d890ef4e4869014c1c3f6d82fe4c06c61b980f27529a6bb"
     },
     {
-      "bytes": 4431,
+      "bytes": 4427,
       "path": "sing-box/rules/BlockHttpDNS.json",
-      "sha256": "0b3b1e56c46d14644ebc8479545f804341a86d441dc5da12547d1c1cdc237255"
+      "sha256": "e0421647fed82195bdbdb3ce5bb7caf20d5f1eeda995a201b43dd7ac3bb7b0fc"
     },
     {
       "bytes": 26085,
@@ -2421,9 +2421,9 @@
       "sha256": "3d22dbec67186c2e0ffd493f72affc228e9d4089919bc742fac7dc4cdceb9de5"
     },
     {
-      "bytes": 840031,
+      "bytes": 835832,
       "path": "sing-box/rules/ChinaMax.json",
-      "sha256": "e1bca943d4d0f0598587a01f1aab73bc67093f873f34afd713cb066b951d5ae3"
+      "sha256": "71679643bbddd8ddf76d90e85397072a55aa487be41f3b4d058ae8bfd0c40031"
     },
     {
       "bytes": 7662099,
@@ -2471,9 +2471,9 @@
       "sha256": "9e79f9761097ddbe6548c5c423d992a7a0d43d5eadcfa219fc03208c276e9843"
     },
     {
-      "bytes": 63542,
+      "bytes": 63536,
       "path": "sing-box/rules/GlobalMedia.json",
-      "sha256": "571a381857bb13490ce9410c7051b60cb492d580aa9deb2c231d572e48e23d2d"
+      "sha256": "2c77d0710df8258a997e5f24df3405cd5cd9ea9581d65c5796bf1430cd3ca7f8"
     },
     {
       "bytes": 15696,
@@ -2491,9 +2491,9 @@
       "sha256": "d53aa111e7a40dfcfa13b5b42caabd05928274461613cf332f3ed917ee96d089"
     },
     {
-      "bytes": 76393,
+      "bytes": 76389,
       "path": "sing-box/rules/Netflix.json",
-      "sha256": "6640f6a8e2cf17c566eb9152949f2c87e3c5e13ecdb9714d01cd911df3c35137"
+      "sha256": "ad81cf98a2f96848e96b13cb064926edc9650bd8a06ab34441a9e244b4088d74"
     },
     {
       "bytes": 2557,
@@ -2521,9 +2521,9 @@
       "sha256": "b4fda90ad68cf0cb5815d9cf700b234d0c5471983adb2770eaa10c747125d44e"
     },
     {
-      "bytes": 2400,
+      "bytes": 2396,
       "path": "sing-box/rules/Telegram.json",
-      "sha256": "d926814637ac5e7f22c34333ff919daff46bb38925893c5843ac2ec4d0728689"
+      "sha256": "8985fc38b31e9c87340c6042575e5d8c7e18029fadd59bbec77edfda2366b0cb"
     },
     {
       "bytes": 2214,
@@ -2546,9 +2546,9 @@
       "sha256": "4e6fb2e9f37f3e6bad52ce28ac548d129112cf6b14a528369609ffd2e98b8591"
     },
     {
-      "bytes": 12709,
+      "bytes": 12708,
       "path": "sing-box/rules/YouTube.json",
-      "sha256": "ca3a49e383d63ea7f4e3c3899bb6bad4204cb3b282771fc8f7916ed6f54040e1"
+      "sha256": "8e9bdc631078d0d8e8e8b4311adc7ffbe6a4d7fd77f2b93ddb84f6bf151a36fd"
     },
     {
       "bytes": 127041,
@@ -2747,7 +2747,7 @@
     }
   ],
   "generatedAt": "2026-08-05T19:24:33Z",
-  "manifestHash": "ac403b5a7f9deb2edcd38e19ba509e8d6bf92a292ec64f93bafb209f56a3e74f",
+  "manifestHash": "908106f8932cdaaa0c7a8c1e3258ee59d9f78ebec76c6c560aa23cfe25b396fb",
   "schemaVersion": 1,
   "upstream": {
     "branch": "master",

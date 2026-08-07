@@ -1,0 +1,19 @@
+# Upstream: https://github.com/blackmatrix7/ios_rule_script
+# Path: rule/Surge/Weibo/Weibo.list
+# Commit: 72c410015dc99df6b54eca1386126f70268bf6bc
+# Committed at: 2026-08-05T19:24:33Z
+# License: GPL-2.0-only
+# Changed by: Juan-nikola/apple-proxy-profiles
+# Output entries: 4
+# Omitted entries: 0
+# NAME: Weibo
+# AUTHOR: blackmatrix7
+# REPO: https://github.com/blackmatrix7/ios_rule_script
+# UPDATED: 2025-06-06 09:17:02
+# DOMAIN-KEYWORD: 1
+# DOMAIN-SUFFIX: 3
+# TOTAL: 4
+DOMAIN-SUFFIX,weibo.cn
+DOMAIN-SUFFIX,weibo.com
+DOMAIN-SUFFIX,weibocdn.com
+DOMAIN-KEYWORD,weibo

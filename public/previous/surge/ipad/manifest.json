@@ -5,7 +5,7 @@
   "configSha256": "18a12969288d79082bdcd29224ebeddcb320a87d3cffec50ae7342419e3bee05",
   "platform": "ipad",
   "platformKey": "surge/ipad",
-  "ruleManifestSha256": "6cba0687c874ed69a588c278f7fd9e74cb736089271adba37f8c19092bc9ddf9",
+  "ruleManifestSha256": "bdca8d09a85a4303b55a76c73e41af39be6cd2dfd9edfedfe6468633c7745b33",
   "schemaVersion": 1,
   "status": "validated",
   "upstream": {

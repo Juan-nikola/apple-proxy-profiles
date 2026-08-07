@@ -561,6 +561,7 @@
   ],
   "route": {
     "auto_detect_interface": true,
+    "default_domain_resolver": "dns-direct",
     "default_http_client": "🧭 规则下载 HTTP",
     "rule_set": [
       {

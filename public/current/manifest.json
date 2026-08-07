@@ -1966,14 +1966,14 @@
       "sha256": "72a13052fb71db1a56e8320e13e1c2519f991e5afc0d97996928ef245e9ec618"
     },
     {
-      "bytes": 108827,
+      "bytes": 109256,
       "path": "anywhere/scripts/anywhere-node-generator.js",
-      "sha256": "70713299ee45c4f2ce2f8e064538178f7c3eb5178ccd43dfbaf97ecd9ab4f8f5"
+      "sha256": "2119818643636138563828ed9fa539ea89909bc5099b157c5a7dca29650c8e5d"
     },
     {
-      "bytes": 108827,
+      "bytes": 109256,
       "path": "anywhere/scripts/substore-node-generator.js",
-      "sha256": "70713299ee45c4f2ce2f8e064538178f7c3eb5178ccd43dfbaf97ecd9ab4f8f5"
+      "sha256": "2119818643636138563828ed9fa539ea89909bc5099b157c5a7dca29650c8e5d"
     },
     {
       "bytes": 31839,
@@ -2151,24 +2151,24 @@
       "sha256": "e080516a3a2ceb2db2e7298a7064edf6cda66348b68ffba2b3ace62f2a8e9a3b"
     },
     {
-      "bytes": 130161,
+      "bytes": 130590,
       "path": "egern/scripts/egern-node-generator.js",
-      "sha256": "24235afdbeb3ec16982c9c8f5761e36bb803bbbc7eb803abb946027c05995cc8"
+      "sha256": "82dd7eefa1b4ca105d793ff58c670f953b5fc8a2a51ff37d03732e65ffbb0798"
     },
     {
-      "bytes": 203107,
+      "bytes": 203536,
       "path": "egern/scripts/egern-profile-generator.js",
-      "sha256": "31f2071a36d260a535f23f3c09ca3779d8dc683b84a39259ae12843dee8a6f24"
+      "sha256": "7f390da69ab3faddf39d6cc7882bf5e43d13fe5f13e6fa08bf40d3bd1882266b"
     },
     {
-      "bytes": 130161,
+      "bytes": 130590,
       "path": "egern/scripts/substore-node-generator.js",
-      "sha256": "24235afdbeb3ec16982c9c8f5761e36bb803bbbc7eb803abb946027c05995cc8"
+      "sha256": "82dd7eefa1b4ca105d793ff58c670f953b5fc8a2a51ff37d03732e65ffbb0798"
     },
     {
-      "bytes": 203107,
+      "bytes": 203536,
       "path": "egern/scripts/substore-profile-generator.js",
-      "sha256": "31f2071a36d260a535f23f3c09ca3779d8dc683b84a39259ae12843dee8a6f24"
+      "sha256": "7f390da69ab3faddf39d6cc7882bf5e43d13fe5f13e6fa08bf40d3bd1882266b"
     },
     {
       "bytes": 19700,
@@ -2346,9 +2346,9 @@
       "sha256": "040a6ba73b3f71a4aab7a61cb4c4b8f7abbe78b370e5d7bf6e8b5258115dc5e6"
     },
     {
-      "bytes": 84790,
+      "bytes": 85219,
       "path": "shadowrocket/scripts/shadowrocket-node-operator.js",
-      "sha256": "d3a4300f80854bbf51ac84dee5c1f377eaba52a98a812e24dc2b64e57d4b95ae"
+      "sha256": "676c0af7d79d1e3aca9edca296a472fed1bd0eae3abd76bf5eb14962f99ff0e1"
     },
     {
       "bytes": 52218,
@@ -2356,9 +2356,9 @@
       "sha256": "befa7ca428255f020d169a818ebb7a2131cdb973fe0b3b3ee6ace9b5aed766d4"
     },
     {
-      "bytes": 84790,
+      "bytes": 85219,
       "path": "shadowrocket/scripts/substore-node-operator.js",
-      "sha256": "d3a4300f80854bbf51ac84dee5c1f377eaba52a98a812e24dc2b64e57d4b95ae"
+      "sha256": "676c0af7d79d1e3aca9edca296a472fed1bd0eae3abd76bf5eb14962f99ff0e1"
     },
     {
       "bytes": 52218,
@@ -2366,29 +2366,29 @@
       "sha256": "befa7ca428255f020d169a818ebb7a2131cdb973fe0b3b3ee6ace9b5aed766d4"
     },
     {
-      "bytes": 27321,
+      "bytes": 27366,
       "path": "sing-box/examples/sing-box-android.json",
-      "sha256": "9fc398b7b6dce9a1ce6947675d02cfda8f55292094f2a8a2dcccad5e8c8a2a6a"
+      "sha256": "f34fc9129edf535e79a8c646c388c0116a58267c11be4008ddc36ff973eb9d4a"
     },
     {
-      "bytes": 27329,
+      "bytes": 27374,
       "path": "sing-box/examples/sing-box-ipad.json",
-      "sha256": "32f9fcab3dfbdcdbb7b489f1ccee0b82bd8f2777eb582c494a6711086e7f99a8"
+      "sha256": "d41bec37269209114ca9f6acb2da7308369c15accace7bed3f892c9ccb53cfa1"
     },
     {
-      "bytes": 27329,
+      "bytes": 27374,
       "path": "sing-box/examples/sing-box-iphone.json",
-      "sha256": "32f9fcab3dfbdcdbb7b489f1ccee0b82bd8f2777eb582c494a6711086e7f99a8"
+      "sha256": "d41bec37269209114ca9f6acb2da7308369c15accace7bed3f892c9ccb53cfa1"
     },
     {
-      "bytes": 27321,
+      "bytes": 27366,
       "path": "sing-box/examples/sing-box-macos.json",
-      "sha256": "14279ed217e44fa6021668da61a36a7ef37c6d8fb70799de8d61b3e3f1f369b2"
+      "sha256": "04aa67e914574e31c20b50dcd7d61602bfee8879940206084372ff0146187943"
     },
     {
-      "bytes": 27457,
+      "bytes": 27502,
       "path": "sing-box/examples/sing-box-openwrt.json",
-      "sha256": "e936a75944411603ecd0d7c2303cd3058285e58b5756f95a19fc295d2d172eb7"
+      "sha256": "dd27d0a8754ad8cdf84ae87d204d3d3d58bfb7d5591ec94b4db00027a62101d1"
     },
     {
       "bytes": 52802,
@@ -2551,14 +2551,14 @@
       "sha256": "8e9bdc631078d0d8e8e8b4311adc7ffbe6a4d7fd77f2b93ddb84f6bf151a36fd"
     },
     {
-      "bytes": 127041,
+      "bytes": 127652,
       "path": "sing-box/scripts/sing-box-config-generator.js",
-      "sha256": "484114659c34fbaa37fe81409f101e8cd48e58751e438f9e0694b70c8e30ac45"
+      "sha256": "0dda68240dbc33fcf3474dce92edcbd96523da0b35fbacf20fec5f7b20cb4cfa"
     },
     {
-      "bytes": 127041,
+      "bytes": 127652,
       "path": "sing-box/scripts/substore-config-generator.js",
-      "sha256": "484114659c34fbaa37fe81409f101e8cd48e58751e438f9e0694b70c8e30ac45"
+      "sha256": "0dda68240dbc33fcf3474dce92edcbd96523da0b35fbacf20fec5f7b20cb4cfa"
     },
     {
       "bytes": 10565,
@@ -2736,18 +2736,18 @@
       "sha256": "040a6ba73b3f71a4aab7a61cb4c4b8f7abbe78b370e5d7bf6e8b5258115dc5e6"
     },
     {
-      "bytes": 121279,
+      "bytes": 121708,
       "path": "surge/scripts/substore-profile-generator.js",
-      "sha256": "18a12969288d79082bdcd29224ebeddcb320a87d3cffec50ae7342419e3bee05"
+      "sha256": "56a334182c41452489c0ffdfe2c4a7974c758267080a903593ddb398c0e5afd7"
     },
     {
-      "bytes": 121279,
+      "bytes": 121708,
       "path": "surge/scripts/surge-profile-generator.js",
-      "sha256": "18a12969288d79082bdcd29224ebeddcb320a87d3cffec50ae7342419e3bee05"
+      "sha256": "56a334182c41452489c0ffdfe2c4a7974c758267080a903593ddb398c0e5afd7"
     }
   ],
   "generatedAt": "2026-08-05T19:24:33Z",
-  "manifestHash": "908106f8932cdaaa0c7a8c1e3258ee59d9f78ebec76c6c560aa23cfe25b396fb",
+  "manifestHash": "981414e844c9961d41e3c8c5cd727ff50ea639a20fcffacd166313f28d556aab",
   "schemaVersion": 1,
   "upstream": {
     "branch": "master",

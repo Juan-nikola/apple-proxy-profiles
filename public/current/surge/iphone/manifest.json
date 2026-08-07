@@ -2,10 +2,10 @@
   "adapterSchema": "surge-adapter-0.1",
   "channel": "current",
   "client": "surge",
-  "configSha256": "18a12969288d79082bdcd29224ebeddcb320a87d3cffec50ae7342419e3bee05",
+  "configSha256": "56a334182c41452489c0ffdfe2c4a7974c758267080a903593ddb398c0e5afd7",
   "platform": "iphone",
   "platformKey": "surge/iphone",
-  "ruleManifestSha256": "bdca8d09a85a4303b55a76c73e41af39be6cd2dfd9edfedfe6468633c7745b33",
+  "ruleManifestSha256": "b44d955aff4fa141a6942aada9a9faaeb60b2a5a9351f0362acf36ad7e9ecd84",
   "schemaVersion": 1,
   "status": "validated",
   "upstream": {
