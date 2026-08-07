@@ -1,4 +1,5 @@
 import { isIP } from "node:net";
+import { DEFAULT_RULE_SOURCE_IDS, FULL_ADBLOCK_SOURCE_IDS } from "./lightweight-policy.js";
 
 export const RULE_KIND = Object.freeze({
   domain: "domain",
@@ -182,4 +183,34 @@ export function normalizeRuleEntry(entry) {
     noResolve: entry.noResolve === true,
     sourceId,
   });
+}
+
+const ALLOWED_SYNTHETIC_SOURCE_IDS = new Set(["DomesticCore", "DomesticGame", "OverseasGame", "ChinaIP"]);
+const KNOWN_LIGHTWEIGHT_SOURCE_IDS = new Set([...DEFAULT_RULE_SOURCE_IDS, ...FULL_ADBLOCK_SOURCE_IDS]);
+
+function catalogSourceIds(value, name) {
+  if (!Array.isArray(value) || value.some((id) => typeof id !== "string" || !id)) {
+    throw new TypeError(`${name} must be an array of non-empty source IDs`);
+  }
+  return value;
+}
+
+/** Validates the closed source-ID boundary used by the lightweight compiler. */
+export function validateLightweightRuleCatalog({ defaultSourceIds, optionalSourceIds } = {}) {
+  const defaults = catalogSourceIds(defaultSourceIds, "defaultSourceIds");
+  const optional = catalogSourceIds(optionalSourceIds, "optionalSourceIds");
+  if (new Set(defaults).size !== defaults.length) throw new TypeError("defaultSourceIds contains a duplicate ID");
+  for (const id of defaults) {
+    if (!KNOWN_LIGHTWEIGHT_SOURCE_IDS.has(id)) {
+      const description = /^(?:Domestic|Overseas)|ChinaIP$/u.test(id) && !ALLOWED_SYNTHETIC_SOURCE_IDS.has(id)
+        ? "synthetic"
+        : "unknown";
+      throw new TypeError(`${description} lightweight rule source ID: ${id}`);
+    }
+  }
+  for (const id of optional) {
+    if (!KNOWN_LIGHTWEIGHT_SOURCE_IDS.has(id)) throw new TypeError(`unknown lightweight rule source ID: ${id}`);
+    if (defaults.includes(id)) throw new TypeError(`default and optional rule packs overlap: ${id}`);
+  }
+  return true;
 }

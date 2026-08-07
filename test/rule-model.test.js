@@ -5,6 +5,7 @@ import {
   RULE_KIND,
   normalizeRuleEntry,
   parseCanonicalCidr,
+  validateLightweightRuleCatalog,
 } from "../shared/rules/model.js";
 
 test("normalizes domains without widening exact-domain intent", () => {
@@ -53,4 +54,23 @@ test("rejects malformed and delimiter-bearing normalized values", () => {
   ]) {
     assert.throws(() => normalizeRuleEntry(entry));
   }
+});
+
+test("validates the synthetic lightweight rule identifiers and pack boundaries", () => {
+  assert.doesNotThrow(() => validateLightweightRuleCatalog({
+    defaultSourceIds: ["DomesticCore", "DomesticGame", "OverseasGame", "ChinaIP", "OpenAI"],
+    optionalSourceIds: ["Advertising", "Advertising_Domain"],
+  }));
+  assert.throws(() => validateLightweightRuleCatalog({
+    defaultSourceIds: ["DomesticCore", "DomesticCore"],
+    optionalSourceIds: [],
+  }), /duplicate/u);
+  assert.throws(() => validateLightweightRuleCatalog({
+    defaultSourceIds: ["DomesticFallback"],
+    optionalSourceIds: [],
+  }), /synthetic/u);
+  assert.throws(() => validateLightweightRuleCatalog({
+    defaultSourceIds: ["DomesticCore", "Advertising"],
+    optionalSourceIds: ["Advertising"],
+  }), /overlap/u);
 });
