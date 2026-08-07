@@ -4,14 +4,18 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
 
-import { checkConfigs, compileRules } from "../scripts/compile-rules.mjs";
+import { checkConfigs, compileRules, main } from "../scripts/compile-rules.mjs";
 
-async function fixtureCore(binary) {
+async function fixtureCore(mode) {
   const root = await mkdtemp(join(tmpdir(), "sing-box-core-"));
   const core = join(root, "sing-box");
-  const output = binary
-    ? "#!/bin/sh\nif [ \"$1\" = \"check\" ] || [ \"$1\" = \"format\" ]; then exit 0; fi\nout=''\nwhile [ $# -gt 0 ]; do if [ \"$1\" = \"--output\" ]; then shift; out=$1; fi; shift; done\nprintf '\\000SRS-FIXTURE' > \"$out\"\n"
-    : "#!/bin/sh\nout=''\nwhile [ $# -gt 0 ]; do if [ \"$1\" = \"--output\" ]; then shift; out=$1; fi; shift; done\nprintf '%s' '{\\\"fake\\\":true}' > \"$out\"\n";
+  const payload = {
+    valid: "printf 'SRS\\0021234567890123' > \"$out\"",
+    text: "printf '%s' '{\\\"fake\\\":true}' > \"$out\"",
+    corrupt: "printf '\\000NOT-SRS-CORRUPT-BYTES' > \"$out\"",
+  }[mode];
+  if (!payload) throw new Error(`Unknown fixture core mode: ${mode}`);
+  const output = `#!/bin/sh\nif [ "$1" = "check" ] || [ "$1" = "format" ]; then exit 0; fi\nout=''\nwhile [ $# -gt 0 ]; do if [ "$1" = "--output" ]; then shift; out=$1; fi; shift; done\n${payload}\n`;
   await writeFile(core, output, { mode: 0o755 });
   await chmod(core, 0o755);
   return core;
@@ -23,16 +27,16 @@ test("compiles source rule sets only through an explicit official-core executabl
   const outputDirectory = join(root, "compiled");
   await mkdir(sourceDirectory, { recursive: true });
   await writeFile(join(sourceDirectory, "Fixture.json"), JSON.stringify({ version: 5, rules: [] }));
-  const core = await fixtureCore(true);
+  const core = await fixtureCore("valid");
   const result = await compileRules({ corePath: core, sourceDirectory, outputDirectory });
   assert.equal(result.version, 5);
   assert.equal(result.files.length, 1);
-  assert.deepEqual(await readFile(join(outputDirectory, "Fixture.srs")), Buffer.from([0, 83, 82, 83, 45, 70, 73, 88, 84, 85, 82, 69]));
+  assert.deepEqual(await readFile(join(outputDirectory, "Fixture.srs")), Buffer.from([83, 82, 83, 2, 49, 50, 51, 52, 53, 54, 55, 56, 57, 48, 49, 50, 51]));
   await assert.rejects(() => compileRules({ sourceDirectory, outputDirectory: join(root, "missing-core") }), /corePath/iu);
 });
 
 test("compiles an artifact map to closed binary publication paths", async () => {
-  const core = await fixtureCore(true);
+  const core = await fixtureCore("valid");
   const artifacts = new Map([
     ["audit/sing-box/rules/DomesticCore.json", `${JSON.stringify({ version: 5, rules: [] })}\n`],
     ["optional/adblock-full/audit/sing-box/rules/Advertising.json", `${JSON.stringify({ version: 5, rules: [] })}\n`],
@@ -54,7 +58,7 @@ test("compiles an artifact map to closed binary publication paths", async () => 
 });
 
 test("fails closed with the named missing rule-set artifact", async () => {
-  const core = await fixtureCore(true);
+  const core = await fixtureCore("valid");
   await assert.rejects(
     () => compileRules({
       corePath: core,
@@ -66,7 +70,7 @@ test("fails closed with the named missing rule-set artifact", async () => {
 });
 
 test("checks light and diagnostic configs through the official core", async () => {
-  const core = await fixtureCore(true);
+  const core = await fixtureCore("valid");
   const result = await checkConfigs({
     corePath: core,
     configs: new Map([
@@ -84,9 +88,36 @@ test("rejects a text file pretending to be a compiled .srs", async () => {
   const sourceDirectory = join(root, "source");
   await mkdir(sourceDirectory, { recursive: true });
   await writeFile(join(sourceDirectory, "Fixture.json"), JSON.stringify({ version: 5, rules: [] }));
-  const core = await fixtureCore(false);
+  const core = await fixtureCore("text");
   await assert.rejects(
     () => compileRules({ corePath: core, sourceDirectory, outputDirectory: join(root, "compiled") }),
-    /binary.*srs|compiled.*binary/iu,
+    /SRS magic|valid SRS|minimum valid SRS/iu,
+  );
+});
+
+test("rejects long NUL-containing output without the official SRS magic in both compiler APIs", async () => {
+  const root = await mkdtemp(join(tmpdir(), "sing-box-rules-corrupt-"));
+  const sourceDirectory = join(root, "source");
+  await mkdir(sourceDirectory, { recursive: true });
+  await writeFile(join(sourceDirectory, "Fixture.json"), JSON.stringify({ version: 5, rules: [] }));
+  const core = await fixtureCore("corrupt");
+  await assert.rejects(
+    () => compileRules({ corePath: core, sourceDirectory, outputDirectory: join(root, "compiled") }),
+    /SRS magic|valid.*SRS|SRS.*header/iu,
+  );
+  await assert.rejects(
+    () => compileRules({
+      corePath: core,
+      artifacts: new Map([["audit/sing-box/rules/Fixture.json", JSON.stringify({ version: 5, rules: [] })]]),
+    }),
+    /SRS magic|valid.*SRS|SRS.*header/iu,
+  );
+});
+
+test("compile command uses deterministic workspace defaults and names missing staged inputs", async () => {
+  const core = await fixtureCore("valid");
+  await assert.rejects(
+    () => main(["compile"], { env: { SING_BOX_CORE: core } }),
+    /clients[/\\]sing-box[/\\]build[/\\]rule-artifacts|staged.*artifact|artifact.*missing/iu,
   );
 });

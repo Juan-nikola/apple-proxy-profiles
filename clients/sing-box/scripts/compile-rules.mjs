@@ -7,6 +7,14 @@ import { fileURLToPath } from "node:url";
 
 import { ruleClientCatalog } from "../../../shared/rules/lightweight-policy.js";
 
+// Official sing-box binary rule sets start with ASCII "SRS" followed by the
+// binary format version byte 0x02. Even an empty v5 source compiles to 17 bytes.
+const SRS_MAGIC = Buffer.from([0x53, 0x52, 0x53, 0x02]);
+const SRS_MINIMUM_BYTES = 17;
+const REPOSITORY_ROOT = resolve(import.meta.dirname, "../../..");
+export const DEFAULT_ARTIFACT_ROOT = resolve(REPOSITORY_ROOT, "clients/sing-box/build/rule-artifacts");
+export const DEFAULT_RULE_OUTPUT_ROOT = resolve(REPOSITORY_ROOT, "clients/sing-box/build/compiled-rule-artifacts");
+
 function requiredPath(value, label) {
   if (typeof value !== "string" || !value || /[\r\n]/u.test(value)) throw new TypeError(`${label} is required`);
   return resolve(value);
@@ -66,11 +74,14 @@ function validateSource(sourceName, content) {
   return source.version;
 }
 
-function looksBinary(buffer) {
-  if (!Buffer.isBuffer(buffer) || buffer.length < 2) return false;
-  if (buffer.includes(0)) return true;
-  const text = buffer.toString("utf8").trimStart();
-  return !text.startsWith("{") && !text.startsWith("[") && !/^[\x20-\x7e\r\n\t]*$/u.test(text);
+function validateSrsBinary(buffer, label) {
+  if (!Buffer.isBuffer(buffer) || buffer.length < SRS_MINIMUM_BYTES) {
+    throw new Error(`${label} is shorter than the minimum valid SRS header and payload`);
+  }
+  if (!buffer.subarray(0, SRS_MAGIC.length).equals(SRS_MAGIC)) {
+    throw new Error(`${label} does not contain the official sing-box SRS magic`);
+  }
+  return buffer;
 }
 
 export async function compileRules(options) {
@@ -98,7 +109,7 @@ export async function compileRules(options) {
     const outputStat = await stat(outputPath);
     if (!outputStat.isFile() || outputStat.size === 0) throw new Error(`sing-box core produced no binary rule set: ${outputName}`);
     const binary = await readFile(outputPath);
-    if (!looksBinary(binary)) throw new Error(`sing-box output is not a binary .srs rule set: ${outputName}`);
+    validateSrsBinary(binary, `sing-box output ${outputName}`);
     files.push(Object.freeze({ path: outputName, bytes: binary.length, sha256: sha256(binary) }));
   }
   return Object.freeze({ version, files: Object.freeze(files) });
@@ -123,7 +134,7 @@ async function compileArtifactMap({ corePath, artifacts, expectedPaths = null })
       await writeFile(sourceFile, sourceBytes);
       await runCore(executable, ["rule-set", "compile", "--output", outputFile, sourceFile]);
       const binary = await readFile(outputFile).catch(() => null);
-      if (!looksBinary(binary)) throw new Error(`sing-box core produced invalid or empty binary rule set: ${outputPath}`);
+      validateSrsBinary(binary, `sing-box output ${outputPath}`);
       compiled.set(outputPath, binary);
     }
     const ordered = new Map([...compiled].sort(([left], [right]) => left.localeCompare(right)));
@@ -184,13 +195,31 @@ function expectedPublicationPaths() {
   return [...defaults, ...optionalIds].sort();
 }
 
-async function compileCommand(corePath) {
-  const artifactRoot = requiredPath(process.env.SING_BOX_ARTIFACT_ROOT, "SING_BOX_ARTIFACT_ROOT");
-  const outputRoot = requiredPath(process.env.SING_BOX_RULE_OUTPUT_ROOT, "SING_BOX_RULE_OUTPUT_ROOT");
-  const paths = (await collectFiles(artifactRoot)).filter((path) => (
+function expectedAuditPaths() {
+  const defaults = ruleClientCatalog({ adblockMode: "off" }).map(({ id }) => `audit/sing-box/rules/${id}.json`);
+  const optionalIds = ruleClientCatalog({ adblockMode: "full" })
+    .filter(({ id }) => id === "Advertising" || id === "Advertising_Domain")
+    .map(({ id }) => `optional/adblock-full/audit/sing-box/rules/${id}.json`);
+  return [...defaults, ...optionalIds].sort();
+}
+
+async function compileCommand(corePath, env) {
+  const artifactRoot = requiredPath(env.SING_BOX_ARTIFACT_ROOT ?? DEFAULT_ARTIFACT_ROOT, "SING_BOX_ARTIFACT_ROOT");
+  const outputRoot = requiredPath(env.SING_BOX_RULE_OUTPUT_ROOT ?? DEFAULT_RULE_OUTPUT_ROOT, "SING_BOX_RULE_OUTPUT_ROOT");
+  let discovered;
+  try {
+    discovered = await collectFiles(artifactRoot);
+  } catch (error) {
+    if (error?.code === "ENOENT") throw new Error(`Staged sing-box artifact root is missing: ${artifactRoot}`);
+    throw error;
+  }
+  const paths = discovered.filter((path) => (
     /^audit\/sing-box\/rules\/[^/]+\.json$/u.test(path)
     || /^optional\/[^/]+\/audit\/sing-box\/rules\/[^/]+\.json$/u.test(path)
   ));
+  for (const path of expectedAuditPaths()) {
+    if (!paths.includes(path)) throw new Error(`Expected staged sing-box audit artifact is missing: ${join(artifactRoot, path)}`);
+  }
   const artifacts = new Map(await Promise.all(paths.map(async (path) => [path, await readFile(join(artifactRoot, path))])));
   const compiled = await compileRules({ corePath, artifacts, expectedPaths: expectedPublicationPaths() });
   for (const [path, content] of compiled) {
@@ -213,10 +242,10 @@ async function checkCommand(corePath) {
   return checkConfigs({ corePath, configs });
 }
 
-export async function main(args = process.argv.slice(2)) {
+export async function main(args = process.argv.slice(2), { env = process.env } = {}) {
   const [command] = args;
-  const corePath = process.env.SING_BOX_CORE;
-  if (command === "compile") return compileCommand(corePath);
+  const corePath = env.SING_BOX_CORE;
+  if (command === "compile") return compileCommand(corePath, env);
   if (command === "check") return checkCommand(corePath);
   throw new Error("Usage: compile-rules.mjs <compile|check>");
 }

@@ -20,7 +20,9 @@ OpenWrt 使用 `platform=openwrt` 的专用 File。它不是手机配置的放�
 `.srs` 规则集由官方 sing-box core 编译。开发机上准备与目标配置兼容的官方二进制后，在仓库根目录运行：
 
 ```bash
-node -e 'import("./clients/sing-box/scripts/compile-rules.mjs").then(async ({ compileRules }) => console.log(await compileRules({ corePath: process.env.SING_BOX_CORE, sourceDirectory: "./public/current/sing-box/rules", outputDirectory: "./public/current/sing-box/rule-sets" })))'
+SING_BOX_CORE=/absolute/path/to/sing-box npm --workspace clients/sing-box run compile:rules
 ```
 
-命令会检查源 JSON 的版本一致性、输出文件非空、确实为二进制并记录 SHA-256。`SING_BOX_CORE` 必须指向官方 sing-box 可执行文件；不要把二进制提交到仓库。完成后再运行 sing-box 配置测试和 secret 扫描。
+发布构建先把审计 JSON 放在 `clients/sing-box/build/rule-artifacts`：默认规则使用 `audit/sing-box/rules/<id>.json`，可选广告包使用 `optional/adblock-full/audit/sing-box/rules/<id>.json`。编译结果默认写入 `clients/sing-box/build/compiled-rule-artifacts`。自定义构建器可用 `SING_BOX_ARTIFACT_ROOT` 和 `SING_BOX_RULE_OUTPUT_ROOT` 覆盖这两个路径，但不是本地命令的必填参数。
+
+命令会检查所有必需输入、源 JSON 版本一致性、官方 `SRS 02` 头和最小有效长度；任何输入缺失都会显示具体文件名并中止，不会用空文件覆盖已有规则。`SING_BOX_CORE` 必须指向官方 sing-box 可执行文件；不要把编译中间产物提交到仓库。完成后再运行 `check:config` 和 secret 扫描。

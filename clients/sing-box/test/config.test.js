@@ -146,6 +146,7 @@ test("renders mobile TUN without Linux-only auto redirect fields", () => {
   assert.equal(Object.hasOwn(config.inbounds[0], "stack"), false);
   assert.deepEqual(config.inbounds[0].include_android_user, [0]);
   assert.equal(Object.hasOwn(config.inbounds[0].platform ?? {}, "include_android_user"), false);
+  assert.equal(new Set(config.inbounds[0].route_exclude_address).size, config.inbounds[0].route_exclude_address.length);
   assert.deepEqual(validateSingBoxConfig(config), { valid: true, errors: [] });
 });
 
