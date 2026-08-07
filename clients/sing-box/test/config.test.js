@@ -79,8 +79,8 @@ test("renders the latest sing-box HTTP client contract without removed fields", 
   assert.equal(config.route.default_http_client, "🧭 规则下载 HTTP");
   assert.equal(config.route.default_domain_resolver, "dns-direct");
   const ruleDownloadGroup = config.outbounds.find((outbound) => outbound.tag === "🧭 DNS 与规则下载");
-  assert.deepEqual(ruleDownloadGroup?.outbounds, ["⚡ 全部自动", "🚀 节点选择", "DIRECT"]);
-  assert.equal(ruleDownloadGroup?.default, "⚡ 全部自动");
+  assert.deepEqual(ruleDownloadGroup?.outbounds, ["🧭 规则下载故障转移", "🚀 节点选择", "DIRECT"]);
+  assert.equal(ruleDownloadGroup?.default, "🧭 规则下载故障转移");
   assert.equal(config.route.rule_set.every((rule) => rule.http_client === "🧭 规则下载 HTTP"), true);
   assert.equal(config.route.rules.some((rule) => Object.hasOwn(rule, "geoip") || Object.hasOwn(rule, "geosite")), false);
   assert.equal(config.route.rule_set.some((rule) => Object.hasOwn(rule, "download_detour")), false);
@@ -89,6 +89,25 @@ test("renders the latest sing-box HTTP client contract without removed fields", 
   assert.ok(config.route.rules.some((rule) => (
     rule.rule_set?.includes("rule-ChinaMax") && rule.outbound === "DIRECT"
   )));
+});
+
+test("uses a dedicated health probe for rule downloads", () => {
+  const ruleBaseUrl = "https://example.invalid/current/sing-box/rules";
+  const config = renderSingBoxConfig(parseSingBoxOptions(baseOptions), [node], {
+    ruleBaseUrl,
+    ruleSetFormat: "source",
+  });
+  const failover = config.outbounds.find((outbound) => outbound.tag === "🧭 规则下载故障转移");
+  assert.deepEqual(failover?.type, "urltest");
+  assert.deepEqual(failover?.outbounds, [node.name, "DIRECT"]);
+  assert.equal(failover?.url, `${ruleBaseUrl}/Hijacking.json`);
+  assert.equal(failover?.interval, "30s");
+  assert.equal(failover?.tolerance, 0);
+
+  const ruleDownload = config.outbounds.find((outbound) => outbound.tag === "🧭 DNS 与规则下载");
+  assert.deepEqual(ruleDownload?.type, "selector");
+  assert.deepEqual(ruleDownload?.outbounds, ["🧭 规则下载故障转移", "🚀 节点选择", "DIRECT"]);
+  assert.equal(ruleDownload?.default, "🧭 规则下载故障转移");
 });
 
 test("renders latest sing-box flat DNS rule actions", () => {

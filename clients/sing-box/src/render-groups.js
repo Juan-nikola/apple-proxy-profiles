@@ -1,8 +1,9 @@
 import { buildPolicyGroups } from "../../../shared/policies/catalog.js";
 import { POLICY_TARGET } from "../../../shared/policies/intents.js";
+import { NON_CHAINED_FILTER } from "../../../shared/policies/filters.js";
 
 const RULE_DOWNLOAD_GROUP = "🧭 DNS 与规则下载";
-const RULE_DOWNLOAD_AUTO = "⚡ 全部自动";
+const RULE_DOWNLOAD_FAILOVER_GROUP = "🧭 规则下载故障转移";
 
 function targetName(value) {
   return value === POLICY_TARGET.primaryProxy ? "⚡ 全部自动" : value;
@@ -23,17 +24,38 @@ function duration(seconds) {
   return `${Number(seconds)}s`;
 }
 
-export function renderSingBoxGroups(options, nodes) {
+function renderRuleDownloadGroups(inventory, ruleProbeUrl) {
+  const nodeCandidates = filterNodes(NON_CHAINED_FILTER, inventory);
+  const failover = {
+    type: "urltest",
+    tag: RULE_DOWNLOAD_FAILOVER_GROUP,
+    outbounds: [...nodeCandidates, "DIRECT"],
+    url: ruleProbeUrl,
+    interval: "30s",
+    tolerance: 0,
+    interrupt_exist_connections: true,
+  };
+  return [
+    failover,
+    {
+      type: "selector",
+      tag: RULE_DOWNLOAD_GROUP,
+      outbounds: [RULE_DOWNLOAD_FAILOVER_GROUP, "🚀 节点选择", "DIRECT"],
+      default: RULE_DOWNLOAD_FAILOVER_GROUP,
+      interrupt_exist_connections: true,
+    },
+  ];
+}
+
+export function renderSingBoxGroups(options, nodes, { ruleProbeUrl = "https://www.gstatic.com/generate_204" } = {}) {
   const inventory = Array.isArray(nodes) ? nodes : [];
   const shared = buildPolicyGroups(options, inventory);
-  return shared.map((group) => {
+  return shared.flatMap((group) => {
+    if (group.name === RULE_DOWNLOAD_GROUP) return renderRuleDownloadGroups(inventory, ruleProbeUrl);
     const candidates = [
       ...group.candidates.map(targetName),
       ...filterNodes(group.nodeFilter, inventory),
     ].filter((item, index, all) => all.indexOf(item) === index);
-    if (group.name === RULE_DOWNLOAD_GROUP && !candidates.includes(RULE_DOWNLOAD_AUTO)) {
-      candidates.unshift(RULE_DOWNLOAD_AUTO);
-    }
     const outbounds = candidates.length > 0 ? candidates : ["DIRECT"];
     if (group.strategy === "auto-test" || group.strategy === "fallback") {
       return {
@@ -52,7 +74,7 @@ export function renderSingBoxGroups(options, nodes) {
       outbounds,
       interrupt_exist_connections: true,
     };
-    const defaultChoice = group.name === RULE_DOWNLOAD_GROUP ? RULE_DOWNLOAD_AUTO : group.defaultChoice;
+    const defaultChoice = group.defaultChoice;
     if (defaultChoice !== undefined) outbound.default = targetName(defaultChoice);
     return outbound;
   });

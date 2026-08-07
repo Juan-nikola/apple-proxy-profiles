@@ -13,7 +13,9 @@ export function renderSingBoxConfig(rawOptions, nodes, { ruleBaseUrl, ruleSetFor
   if (inventory.length === 0) throw new Error("sing-box refuses an empty node inventory");
   for (const node of inventory) nodeMetadata(node);
   const nodeOutbounds = inventory.map(renderSingBoxOutbound);
-  const groups = renderSingBoxGroups(options, inventory);
+  const groups = renderSingBoxGroups(options, inventory, {
+    ruleProbeUrl: `${ruleBaseUrl.replace(/\/+$/u, "")}/Hijacking.json`,
+  });
   const { ruleSets, rules, final } = renderSingBoxRouteRules({ ruleBaseUrl, ruleSetFormat });
   const config = {
     log: { level: "info", timestamp: true },
