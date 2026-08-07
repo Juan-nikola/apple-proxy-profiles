@@ -88,22 +88,44 @@ async function readPublicationTree(directory, prefix = "") {
   return files;
 }
 
-async function selectedClientMatches({ directory, basePrefix = "", client, clientDirectory, expectedHash }) {
-  if (!/^[0-9a-f]{64}$/u.test(expectedHash) || !await pathExists(directory)) return false;
+async function selectedClientManifest({ directory, basePrefix = "", client, clientDirectory, expectedHash = null }) {
+  if ((expectedHash !== null && !/^[0-9a-f]{64}$/u.test(expectedHash)) || !await pathExists(directory)) return null;
   try {
     const treePrefix = basePrefix ? `${basePrefix}/${clientDirectory}` : clientDirectory;
     const files = await readPublicationTree(directory, treePrefix);
-    validateClientPublication({
+    return validateClientPublication({
       files,
       client,
       directory: clientDirectory,
       basePrefix,
       expectedHash,
     });
-    return true;
   } catch {
-    return false;
+    return null;
   }
+}
+
+function optionalSelectionProjection(selections) {
+  if (!selections || typeof selections !== "object" || Array.isArray(selections)) return null;
+  const projection = {};
+  for (const [packId, hash] of Object.entries(selections).sort(([left], [right]) => left.localeCompare(right))) {
+    if (!/^[a-z0-9][a-z0-9-]*$/u.test(packId) || !/^[0-9a-f]{64}$/u.test(hash)) return null;
+    projection[packId] = hash;
+  }
+  return projection;
+}
+
+function rolloutOptionalProjection(optionalPacks, client) {
+  const projection = {};
+  for (const [packId, selections] of Object.entries(optionalPacks).sort(([left], [right]) => left.localeCompare(right))) {
+    if (!/^[a-z0-9][a-z0-9-]*$/u.test(packId)
+      || !selections || typeof selections !== "object" || Array.isArray(selections)) return null;
+    const hash = selections[client];
+    if (hash === null || hash === undefined) continue;
+    if (!/^[0-9a-f]{64}$/u.test(hash)) return null;
+    projection[packId] = hash;
+  }
+  return projection;
 }
 
 export function selectDefaultStaticFiles(files) {
@@ -174,6 +196,13 @@ export async function verifyTrackedPublications({ publicDirectory, defaults, opt
     anywhere: "anywhere",
   };
   const clientPrefixes = new Set(Object.values(clientDirectories).map((directory) => `${directory}/`));
+  const expectedRootPaths = [...defaults.keys()]
+    .filter((path) => ![...clientPrefixes].some((prefix) => path.startsWith(prefix)))
+    .sort();
+  const actualRootPaths = (await relativeFiles(currentDirectory))
+    .filter((path) => ![...clientPrefixes].some((prefix) => path.startsWith(prefix)))
+    .sort();
+  if (JSON.stringify(actualRootPaths) !== JSON.stringify(expectedRootPaths)) return false;
   for (const [path, content] of defaults) {
     if ([...clientPrefixes].some((prefix) => path.startsWith(prefix))) continue;
     try {
@@ -182,6 +211,7 @@ export async function verifyTrackedPublications({ publicDirectory, defaults, opt
       return false;
     }
   }
+  const currentClientManifests = new Map();
   for (const [client, clientDirectory] of Object.entries(clientDirectories)) {
     const selectedHash = rollout.clients[client];
     if (selectedHash === null || selectedHash === undefined) {
@@ -189,18 +219,30 @@ export async function verifyTrackedPublications({ publicDirectory, defaults, opt
         join(currentDirectory, clientDirectory),
         clientTreeFiles(clientDirectory, defaults),
       )) return false;
-      continue;
     }
-    if (!await selectedClientMatches({
+    const currentManifest = await selectedClientManifest({
       directory: join(currentDirectory, clientDirectory),
       client,
       clientDirectory,
-      expectedHash: selectedHash,
-    })) return false;
+      expectedHash: selectedHash ?? null,
+    });
+    if (currentManifest === null) return false;
+    currentClientManifests.set(client, currentManifest);
   }
 
   for (const [packId, files] of optionalPacks) {
     validateOptionalPublication({ packId, files });
+  }
+  for (const [client, currentManifest] of currentClientManifests) {
+    const rolloutProjection = rolloutOptionalProjection(rollout.optionalPacks, client);
+    if (rolloutProjection === null) return false;
+    if (rollout.clients[client] === null || rollout.clients[client] === undefined) {
+      if (Object.keys(rolloutProjection).length !== 0) return false;
+      continue;
+    }
+    const manifestProjection = optionalSelectionProjection(currentManifest.optionalPacks);
+    if (manifestProjection === null
+      || JSON.stringify(manifestProjection) !== JSON.stringify(rolloutProjection)) return false;
   }
   for (const [packId, selections] of Object.entries(rollout.optionalPacks)) {
     if (!selections || typeof selections !== "object" || Array.isArray(selections)) return false;
@@ -208,13 +250,13 @@ export async function verifyTrackedPublications({ publicDirectory, defaults, opt
       const selectedHash = selections[client];
       if (selectedHash === null || selectedHash === undefined) continue;
       const basePrefix = `optional/${packId}`;
-      if (!await selectedClientMatches({
+      if (await selectedClientManifest({
         directory: join(publicDirectory, "optional", packId, "current", clientDirectory),
         basePrefix,
         client,
         clientDirectory,
         expectedHash: selectedHash,
-      })) return false;
+      }) === null) return false;
     }
   }
   return true;

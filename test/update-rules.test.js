@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdtemp, mkdir, readFile, writeFile } from "node:fs/promises";
+import { mkdtemp, mkdir, readFile, rename, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import test from "node:test";
@@ -107,8 +107,63 @@ test("verifies a hybrid current from independently promoted clients", async () =
   assert.equal(await verifyTrackedPublications({ publicDirectory, ...baseline }), true);
   const optionalDirectory = join(publicDirectory, "optional/adblock-full/current/sing-box");
   const deleted = `${optionalDirectory}.deleted`;
-  const { rename } = await import("node:fs/promises");
   await rename(optionalDirectory, deleted);
+  assert.equal(await verifyTrackedPublications({ publicDirectory, ...baseline }), false);
+});
+
+test("rejects rollout optional selections that disagree with the current client manifest", async () => {
+  const root = await mkdtemp(join(tmpdir(), "apple-proxy-check-selection-projection-"));
+  const publicDirectory = join(root, "public");
+  const baseline = buildClientArtifacts({ snapshot: lightweightFixtureSnapshots(), upstream });
+  const candidate = buildClientArtifacts({ snapshot: lightweightFixtureSnapshots(), upstream: nextUpstream });
+  await writeFiles(join(publicDirectory, "current"), baseline.defaults);
+  await publishEdgeRelease({
+    publicDirectory,
+    defaults: candidate.defaults,
+    optionalPacks: candidate.optionalPacks,
+    manifest: candidate.diagnostics.defaultManifest,
+  });
+  await promoteClientRelease({
+    publicDirectory,
+    client: "singbox",
+    manifestHash: candidate.diagnostics.defaultManifest.clients.singbox.manifestHash,
+  });
+
+  const rolloutPath = join(publicDirectory, "rollout.json");
+  const rollout = JSON.parse(await readFile(rolloutPath, "utf8"));
+  rollout.optionalPacks["adblock-full"].singbox = null;
+  await writeFile(rolloutPath, `${JSON.stringify(rollout, null, 2)}\n`);
+  await rename(
+    join(publicDirectory, "optional/adblock-full/current/sing-box"),
+    join(publicDirectory, "optional/adblock-full/deleted-sing-box"),
+  );
+
+  assert.equal(await verifyTrackedPublications({ publicDirectory, ...baseline }), false);
+});
+
+test("rejects extra non-client files and unknown directories in a hybrid current", async () => {
+  const root = await mkdtemp(join(tmpdir(), "apple-proxy-check-hybrid-closure-"));
+  const publicDirectory = join(root, "public");
+  const baseline = buildClientArtifacts({ snapshot: lightweightFixtureSnapshots(), upstream });
+  const candidate = buildClientArtifacts({ snapshot: lightweightFixtureSnapshots(), upstream: nextUpstream });
+  await writeFiles(join(publicDirectory, "current"), baseline.defaults);
+  await publishEdgeRelease({
+    publicDirectory,
+    defaults: candidate.defaults,
+    optionalPacks: candidate.optionalPacks,
+    manifest: candidate.diagnostics.defaultManifest,
+  });
+  await promoteClientRelease({
+    publicDirectory,
+    client: "singbox",
+    manifestHash: candidate.diagnostics.defaultManifest.clients.singbox.manifestHash,
+  });
+
+  const stray = join(publicDirectory, "current/stray.txt");
+  await writeFile(stray, "not manifested\n");
+  assert.equal(await verifyTrackedPublications({ publicDirectory, ...baseline }), false);
+  await rm(stray);
+  await writeFiles(join(publicDirectory, "current"), new Map([["unknown/nested.txt", "not manifested\n"]]));
   assert.equal(await verifyTrackedPublications({ publicDirectory, ...baseline }), false);
 });
 
