@@ -37,3 +37,17 @@ test("requires FINAL to be the last rule", () => {
   assert.equal(result.valid, false);
   assert.match(result.errors.join("\n"), /rules after FINAL/iu);
 });
+
+test("validates remote policy pool references", () => {
+  const valid = validateSurgeProfile(profile([
+    "📦 远程节点池 = select,policy-path=https://substore.example.invalid/surge-nodes,update-interval=21600,hidden=1",
+    "🚀 节点选择 = select,include-other-group=📦 远程节点池,policy-regex-filter=^(?!🔗 ).+$",
+  ], ["FINAL,A"]));
+  assert.deepEqual(valid, { valid: true, errors: [] });
+
+  const missing = validateSurgeProfile(profile([
+    "🚀 节点选择 = select,include-other-group=Missing,policy-regex-filter=^(?!🔗 ).+$",
+  ], ["FINAL,A"]));
+  assert.equal(missing.valid, false);
+  assert.match(missing.errors.join("\n"), /missing group or proxy reference/iu);
+});

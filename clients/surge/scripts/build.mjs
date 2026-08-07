@@ -9,6 +9,11 @@ const targets = Object.freeze([
     outputs: Object.freeze(["dist/surge-profile-generator.js", "dist/substore-profile-generator.js"]),
     globalName: "SurgeProfileBundle",
   }),
+  Object.freeze({
+    entry: "src/substore-nodes-entry.js",
+    outputs: Object.freeze(["dist/surge-nodes-generator.js", "dist/substore-nodes-generator.js"]),
+    globalName: "SurgeNodesBundle",
+  }),
 ]);
 
 for (const target of targets) {

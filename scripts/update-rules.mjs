@@ -50,6 +50,8 @@ async function staticFiles() {
     ["anywhere/scripts/substore-node-generator.js", "clients/anywhere/dist/substore-node-generator.js"],
     ["surge/scripts/surge-profile-generator.js", "clients/surge/dist/surge-profile-generator.js"],
     ["surge/scripts/substore-profile-generator.js", "clients/surge/dist/substore-profile-generator.js"],
+    ["surge/scripts/surge-nodes-generator.js", "clients/surge/dist/surge-nodes-generator.js"],
+    ["surge/scripts/substore-nodes-generator.js", "clients/surge/dist/substore-nodes-generator.js"],
     ["surge/examples/surge-macos.conf", "clients/surge/examples/surge-macos.conf"],
     ["surge/examples/surge-iphone.conf", "clients/surge/examples/surge-iphone.conf"],
     ["surge/examples/surge-ipad.conf", "clients/surge/examples/surge-ipad.conf"],

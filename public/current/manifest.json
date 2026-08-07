@@ -2561,19 +2561,19 @@
       "sha256": "d5a83b9af9bac97bae439f310442adb8197ac5e0fe7df6db3d8c77416b353d9a"
     },
     {
-      "bytes": 10565,
+      "bytes": 16402,
       "path": "surge/examples/surge-ipad.conf",
-      "sha256": "091d0e6578b926ee9040b09745b1f212a45c54612fad57b0df508c9087934a79"
+      "sha256": "42a70fd9a706cfd0ecb6fce911988333227d5c0f540e2e651b10fba9eb7c75ed"
     },
     {
-      "bytes": 10565,
+      "bytes": 16402,
       "path": "surge/examples/surge-iphone.conf",
-      "sha256": "091d0e6578b926ee9040b09745b1f212a45c54612fad57b0df508c9087934a79"
+      "sha256": "42a70fd9a706cfd0ecb6fce911988333227d5c0f540e2e651b10fba9eb7c75ed"
     },
     {
-      "bytes": 10560,
+      "bytes": 16397,
       "path": "surge/examples/surge-macos.conf",
-      "sha256": "0a1a802d10931d03e5c87ff456d3a70c492f07983d9a9e73f41ee6b246434878"
+      "sha256": "d45fba90badd4cfde05b32bb9b69f9a88256988ae38e4ee8bd9895905fdd8b7d"
     },
     {
       "bytes": 27237,
@@ -2736,18 +2736,28 @@
       "sha256": "040a6ba73b3f71a4aab7a61cb4c4b8f7abbe78b370e5d7bf6e8b5258115dc5e6"
     },
     {
-      "bytes": 121708,
-      "path": "surge/scripts/substore-profile-generator.js",
-      "sha256": "56a334182c41452489c0ffdfe2c4a7974c758267080a903593ddb398c0e5afd7"
+      "bytes": 95369,
+      "path": "surge/scripts/substore-nodes-generator.js",
+      "sha256": "af8f5f4e3af5d2dce8830fd41d74847eafc2d49b3c64a1204bde6d864605a890"
     },
     {
-      "bytes": 121708,
+      "bytes": 124571,
+      "path": "surge/scripts/substore-profile-generator.js",
+      "sha256": "04bb16d1881e4ff32bd9aa258ac088a05c46a48170283d0f67e8f4afa76df510"
+    },
+    {
+      "bytes": 95369,
+      "path": "surge/scripts/surge-nodes-generator.js",
+      "sha256": "af8f5f4e3af5d2dce8830fd41d74847eafc2d49b3c64a1204bde6d864605a890"
+    },
+    {
+      "bytes": 124571,
       "path": "surge/scripts/surge-profile-generator.js",
-      "sha256": "56a334182c41452489c0ffdfe2c4a7974c758267080a903593ddb398c0e5afd7"
+      "sha256": "04bb16d1881e4ff32bd9aa258ac088a05c46a48170283d0f67e8f4afa76df510"
     }
   ],
   "generatedAt": "2026-08-05T19:24:33Z",
-  "manifestHash": "b64dd12392a18ff5cc65c773c755969253511d8b92e288a523ec974bbe425004",
+  "manifestHash": "8cb8b1cd33ddb07258203035082406e1a7661429931bc693a8708be35f687dc2",
   "schemaVersion": 1,
   "upstream": {
     "branch": "master",

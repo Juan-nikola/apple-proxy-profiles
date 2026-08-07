@@ -2,6 +2,7 @@ import { OPTION_VALUES } from "../../../shared/contracts.js";
 import { platformPolicyPreset } from "../../../shared/policies/platform-presets.js";
 
 const REQUIRED_KEYS = Object.freeze(["output", "type", "name", "subscriptionName", "platform"]);
+const NODE_REQUIRED_KEYS = Object.freeze(["output", "type", "name"]);
 const DEFAULTS = Object.freeze({
   dnsMode: "stable",
   chinaDns: "alidns",
@@ -14,7 +15,9 @@ const DEFAULTS = Object.freeze({
 });
 const PLATFORMS = new Set(["macos", "iphone", "ipad"]);
 const PARSED = new WeakSet();
-const ALLOWED_KEYS = new Set([...REQUIRED_KEYS, ...Object.keys(DEFAULTS)]);
+const PARSED_NODES = new WeakSet();
+const ALLOWED_KEYS = new Set([...REQUIRED_KEYS, ...Object.keys(DEFAULTS), "proxyPolicyUrl"]);
+const NODE_ALLOWED_KEYS = new Set([...NODE_REQUIRED_KEYS, "clientChain"]);
 
 function requiredString(raw, key) {
   const value = raw[key];
@@ -28,6 +31,29 @@ function enumValue(raw, key, defaultValue) {
   const value = raw[key] === undefined ? defaultValue : raw[key];
   if (typeof value !== "string" || !OPTION_VALUES[key]?.includes(value)) {
     throw new Error(`Option '${key}' has an unsupported value`);
+  }
+  return value;
+}
+
+function validateProxyPolicyUrl(value) {
+  if (value === undefined) return undefined;
+  if (
+    typeof value !== "string"
+    || value.length === 0
+    || value.trim() !== value
+    || /[\u0000-\u001f\u007f\\]/u.test(value)
+    || /%(?:0[0-9a-f]|1[0-9a-f]|7f)/iu.test(value)
+  ) {
+    throw new Error("Option 'proxyPolicyUrl' must be a safe absolute HTTPS URL");
+  }
+  let parsed;
+  try {
+    parsed = new URL(value);
+  } catch {
+    throw new Error("Option 'proxyPolicyUrl' must be a safe absolute HTTPS URL");
+  }
+  if (parsed.protocol !== "https:" || !parsed.hostname || parsed.username || parsed.password || value.includes("#")) {
+    throw new Error("Option 'proxyPolicyUrl' must be a safe absolute HTTPS URL");
   }
   return value;
 }
@@ -58,6 +84,7 @@ export function parseSurgeOptions(raw) {
     ipv6Mode: enumValue(raw, "ipv6Mode", platform === "macos" ? "ipv4-only" : DEFAULTS.ipv6Mode),
     autoGroupMode: enumValue(raw, "autoGroupMode", DEFAULTS.autoGroupMode),
     clientChain: enumValue(raw, "clientChain", DEFAULTS.clientChain),
+    proxyPolicyUrl: validateProxyPolicyUrl(raw.proxyPolicyUrl),
   };
   platformPolicyPreset(platform);
   Object.freeze(options);
@@ -65,6 +92,31 @@ export function parseSurgeOptions(raw) {
   return options;
 }
 
+export function parseSurgeNodeOptions(raw) {
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) throw new TypeError("Surge node options must be an object");
+  for (const key of Object.keys(raw)) {
+    if (!key.startsWith("_") && !NODE_ALLOWED_KEYS.has(key)) throw new Error(`Unknown Surge node option: ${key}`);
+  }
+  for (const key of NODE_REQUIRED_KEYS) {
+    if (!Object.hasOwn(raw, key)) throw new Error(`Option '${key}' is required`);
+  }
+  if (requiredString(raw, "output") !== "nodes") throw new Error("Option 'output' must be nodes");
+  if (requiredString(raw, "type") !== "collection") throw new Error("Option 'type' must be collection");
+  const options = {
+    output: "nodes",
+    type: "collection",
+    name: requiredString(raw, "name"),
+    clientChain: enumValue(raw, "clientChain", DEFAULTS.clientChain),
+  };
+  Object.freeze(options);
+  PARSED_NODES.add(options);
+  return options;
+}
+
 export function isParsedSurgeOptions(value) {
   return value !== null && typeof value === "object" && PARSED.has(value);
+}
+
+export function isParsedSurgeNodeOptions(value) {
+  return value !== null && typeof value === "object" && PARSED_NODES.has(value);
 }

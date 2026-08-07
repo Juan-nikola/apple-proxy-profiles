@@ -59,6 +59,8 @@ test("publishes one hash-closed multi-client current snapshot", async () => {
     "anywhere/scripts/substore-node-generator.js",
     "surge/scripts/surge-profile-generator.js",
     "surge/scripts/substore-profile-generator.js",
+    "surge/scripts/surge-nodes-generator.js",
+    "surge/scripts/substore-nodes-generator.js",
     "sing-box/scripts/sing-box-config-generator.js",
     "sing-box/scripts/substore-config-generator.js",
   ]) {
@@ -97,6 +99,14 @@ test("public client entrypoints close over current and never raw master", async 
     const content = await readFile(new URL(path, currentRoot), "utf8");
     assert.equal(content.includes("raw.githubusercontent.com/blackmatrix7"), false, path);
     assert.match(content, new RegExp(marker.replaceAll("/", "\\/"), "u"), path);
+  }
+  for (const path of [
+    "surge/scripts/surge-nodes-generator.js",
+    "surge/scripts/substore-nodes-generator.js",
+  ]) {
+    const content = await readFile(new URL(path, currentRoot), "utf8");
+    assert.match(content, /Option 'output' must be nodes/u, path);
+    assert.doesNotMatch(content, /TEST_ONLY_FIXTURE_PASSWORD|example\.invalid/u, path);
   }
   for (const path of [
     "egern/examples/egern-macos.yaml",

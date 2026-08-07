@@ -7,3 +7,8 @@
 如果 Surge 提示“规则必须以 FINAL 结尾”，不要导入组合订阅/API 总地址；必须使用 Sub-Store 中对应平台的 `surge-macos`、`surge-iphone` 或 `surge-ipad` Profile File 私有输出。正确预览的 `[Rule]` 最后一行必须是 `FINAL,🚀 节点选择`。重新预览并刷新 File；若仍疑似拿到旧 CDN 内容，临时打开该远程脚本操作的 `关闭缓存/noCache`，确认新 Profile 生效后再恢复缓存。
 
 Surge 不识别 VLESS 节点类型。生成器会在输出前自动过滤 VLESS 和其他未登记协议；因此源组合里仍可保留 `vlesshy2`，但这些 VLESS 节点只会进入支持它们的客户端，不会进入 Surge Profile。如果过滤后没有任何可用节点，任务会失败并保留旧输出。参见 [Surge Proxy Policy](https://manual.nssurge.com/policy/proxy.html)。
+## 远程节点池
+
+纯远程 Profile 的 `[Proxy]` 为空是预期行为；节点应从隐藏组 `📦 远程节点池` 的 `policy-path` 加载。若策略组为空，先单独打开 `surge-nodes` File 的私密输出 URL，确认它返回 `[Proxy]` 和至少一个节点，再检查 Profile 的 `proxyPolicyUrl` 是否逐字一致。
+
+节点资源会在生成阶段排除 Surge 不支持或字段不完整的协议。新增协议不会被盲目写入 Surge；需要先在项目协议注册表和 Surge 渲染器中登记。节点实际不可达时，由 Surge 的自动测速/故障转移组选择其他节点。

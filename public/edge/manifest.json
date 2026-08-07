@@ -1,12 +1,12 @@
 {
   "channel": "edge",
-  "manifestSha256": "edcd13f1dda8595deba416de95aab455cf63ac8ebd63a3f69e2b121d0d2b8a25",
+  "manifestSha256": "3ef6e76394d4578c68208e2028c8797c593d460228f68697dc79cdb5894a51ec",
   "records": [
     {
       "adapterSchema": "surge-adapter-0.1",
       "channel": "edge",
       "client": "surge",
-      "configSha256": "56a334182c41452489c0ffdfe2c4a7974c758267080a903593ddb398c0e5afd7",
+      "configSha256": "04bb16d1881e4ff32bd9aa258ac088a05c46a48170283d0f67e8f4afa76df510",
       "platform": "macos",
       "platformKey": "surge/macos",
       "ruleManifestSha256": "10458ed1086def105fd686b9363a1e66ccdc147186924f65a7c541065acbff1b",
@@ -22,7 +22,7 @@
       "adapterSchema": "surge-adapter-0.1",
       "channel": "edge",
       "client": "surge",
-      "configSha256": "56a334182c41452489c0ffdfe2c4a7974c758267080a903593ddb398c0e5afd7",
+      "configSha256": "04bb16d1881e4ff32bd9aa258ac088a05c46a48170283d0f67e8f4afa76df510",
       "platform": "iphone",
       "platformKey": "surge/iphone",
       "ruleManifestSha256": "10458ed1086def105fd686b9363a1e66ccdc147186924f65a7c541065acbff1b",
@@ -38,7 +38,7 @@
       "adapterSchema": "surge-adapter-0.1",
       "channel": "edge",
       "client": "surge",
-      "configSha256": "56a334182c41452489c0ffdfe2c4a7974c758267080a903593ddb398c0e5afd7",
+      "configSha256": "04bb16d1881e4ff32bd9aa258ac088a05c46a48170283d0f67e8f4afa76df510",
       "platform": "ipad",
       "platformKey": "surge/ipad",
       "ruleManifestSha256": "10458ed1086def105fd686b9363a1e66ccdc147186924f65a7c541065acbff1b",

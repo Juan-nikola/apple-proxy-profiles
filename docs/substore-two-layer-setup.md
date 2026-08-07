@@ -42,7 +42,8 @@
 | Egern node | `https://juan-nikola.github.io/apple-proxy-profiles/current/egern/scripts/egern-node-generator.js` | 节点 File |
 | Egern Profile | `https://juan-nikola.github.io/apple-proxy-profiles/current/egern/scripts/egern-profile-generator.js` | 三个 Profile File |
 | Anywhere node | `https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/scripts/anywhere-node-generator.js` | 节点 File |
-| Surge Profile | `https://juan-nikola.github.io/apple-proxy-profiles/current/surge/scripts/surge-profile-generator.js` | 三个平台 Profile File |
+| Surge node resource | `https://juan-nikola.github.io/apple-proxy-profiles/current/surge/scripts/surge-nodes-generator.js` | 一个 Surge 节点 File |
+| Surge Profile | `https://juan-nikola.github.io/apple-proxy-profiles/current/surge/scripts/surge-profile-generator.js` | 三个平台远程 Profile File |
 | sing-box config | `https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/scripts/sing-box-config-generator.js` | 五个平台 Config File |
 
 测试版只把路径中的 `current` 换成 `edge`。不要使用 GitHub `blob` 页面、`clients/*/dist/` 本地路径或旧兼容 URL 创建新任务。
@@ -72,7 +73,7 @@ https://juan-nikola.github.io/apple-proxy-profiles/current/egern/scripts/egern-n
 https://juan-nikola.github.io/apple-proxy-profiles/current/surge/scripts/surge-profile-generator.js#output=config&type=collection&name=apple-proxy-sources&subscriptionName=Apple-Proxy-Nodes&platform=iphone&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&autoGroupMode=auto&clientChain=off
 ```
 
-## 4. 17 个任务总表
+## 4. 18 个任务总表
 
 下面的 `Apple-Proxy-Nodes` 是公开示例显示名。实际使用时，在 Shadowrocket、Surge 或 sing-box 中给节点订阅取一个你自己的显示名，并让同一客户端对应 Profile/Config 任务的 `subscriptionName` 逐字一致。只有 Shadowrocket Profile 指向处理组合 `shadowrocket-nodes`；其余客户端指向原始组合 `apple-proxy-sources`。
 
@@ -87,16 +88,17 @@ https://juan-nikola.github.io/apple-proxy-profiles/current/surge/scripts/surge-p
 | 7 | `shadowrocket-config-macos` | File | Shadowrocket Profile | macOS | 每天 |
 | 8 | `shadowrocket-config-iphone` | File | Shadowrocket Profile | iPhone | 每天 |
 | 9 | `shadowrocket-config-ipad` | File | Shadowrocket Profile | iPad | 每天 |
-| 10 | `surge-config-macos` | File | Surge Profile | macOS | 每天 |
-| 11 | `surge-config-iphone` | File | Surge Profile | iPhone | 每天 |
-| 12 | `surge-config-ipad` | File | Surge Profile | iPad | 每天 |
-| 13 | `singbox-config-macos` | File | sing-box config | macOS | 每天 |
-| 14 | `singbox-config-iphone` | File | sing-box config | iPhone | 每天 |
-| 15 | `singbox-config-ipad` | File | sing-box config | iPad | 每天 |
-| 16 | `singbox-config-android` | File | sing-box config | Android | 每天 |
-| 17 | `singbox-config-openwrt` | File | sing-box config | OpenWrt | 每天 |
+| 10 | `surge-nodes` | File | Surge node resource | 节点 `[Proxy]` | 6 小时 |
+| 11 | `surge-config-macos` | File | Surge Profile | macOS | 每天 |
+| 12 | `surge-config-iphone` | File | Surge Profile | iPhone | 每天 |
+| 13 | `surge-config-ipad` | File | Surge Profile | iPad | 每天 |
+| 14 | `singbox-config-macos` | File | sing-box config | macOS | 每天 |
+| 15 | `singbox-config-iphone` | File | sing-box config | iPhone | 每天 |
+| 16 | `singbox-config-ipad` | File | sing-box config | iPad | 每天 |
+| 17 | `singbox-config-android` | File | sing-box config | Android | 每天 |
+| 18 | `singbox-config-openwrt` | File | sing-box config | OpenWrt | 每天 |
 
-五客户端总数为 4+1+4+3+5=17 个任务。
+五客户端总数为 4+1+4+4+5=18 个任务。
 
 ## 5. Egern：1 个节点 File + 3 个 Profile File
 
@@ -212,7 +214,21 @@ output=config&type=collection&name=shadowrocket-nodes&subscriptionName=Apple-Pro
 
 预览应包含 `[General]`、`[Proxy Group]`、`[Rule]`，且不包含节点密码、UUID 或服务器凭据。导入顺序：Intel Mac → iPhone → iPad；旧 Profile 始终保留。
 
-## 8. Surge：3 个 Profile File
+## 8. Surge：1 个节点 File + 3 个远程 Profile File
+
+### 8.1 节点资源 File
+
+脚本：
+
+```text
+https://juan-nikola.github.io/apple-proxy-profiles/current/surge/scripts/surge-nodes-generator.js
+```
+
+参数：`output=nodes&type=collection&name=apple-proxy-sources&clientChain=off`。
+
+预览应输出 `[Proxy]` 和至少一个节点。该资源只保留 Surge 已登记且字段完整的协议；当前会自动排除 VLESS。保存此 File 的私密输出 URL，下面记作 `<SURGE_NODES_URL>`。
+
+### 8.2 三个平台 Profile
 
 脚本：
 
@@ -220,7 +236,7 @@ output=config&type=collection&name=shadowrocket-nodes&subscriptionName=Apple-Pro
 https://juan-nikola.github.io/apple-proxy-profiles/current/surge/scripts/surge-profile-generator.js
 ```
 
-公共参数（使用原始组合）：`output=config&type=collection&name=apple-proxy-sources&subscriptionName=Apple-Proxy-Nodes&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&autoGroupMode=auto&clientChain=off`。
+公共参数（使用原始组合）：`output=config&type=collection&name=apple-proxy-sources&subscriptionName=Apple-Proxy-Nodes&proxyPolicyUrl=<SURGE_NODES_URL>&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&autoGroupMode=auto&clientChain=off`。在新版 Sub-Store 参数编辑器中直接填写私密 URL；旧版 `JS_URL#...` 模式只对 URL 参数值进行百分号编码。
 
 | 任务 | 额外参数 | 官方客户端 |
 | --- | --- | --- |
@@ -228,7 +244,7 @@ https://juan-nikola.github.io/apple-proxy-profiles/current/surge/scripts/surge-p
 | `surge-config-iphone` | `platform=iphone&ipv6Mode=auto` | Surge for iPhone |
 | `surge-config-ipad` | `platform=ipad&ipv6Mode=auto` | Surge for iPad |
 
-预览应是合法 Surge INI，包含 `[General]`、`[Proxy Group]` 和 `[Rule]`。Intel Mac 与 Apple Silicon Mac 都使用 `platform=macos`；不要把 Mac 配置导入移动端。
+预览应是合法 Surge INI，包含 `[General]`、`[Proxy]`、`[Proxy Group]` 和 `[Rule]`。`[Proxy]` 只保留注释，隐藏组 `📦 远程节点池` 通过 `policy-path=<SURGE_NODES_URL>` 加载节点；Intel Mac 与 Apple Silicon Mac 都使用 `platform=macos`，不要把 Mac 配置导入移动端。
 
 ## 9. sing-box：5 个 Config File
 
@@ -259,13 +275,14 @@ https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/scripts/sing
 1. 预览 `apple-proxy-sources`。
 2. 运行节点任务：Egern、Anywhere、Shadowrocket。
 3. 运行依赖节点输出 URL 的 Egern Profile。
-4. 运行 Shadowrocket、Surge 和 sing-box Profile/Config。
-5. 逐个保存私密输出 URL；不要在聊天中回传。
-6. 先在一台 macOS 设备导入并 canary，再处理移动端；sing-box Android/OpenWrt 另按其清单执行。
+4. 运行 `surge-nodes`，再运行 Surge 三个平台 Profile；Profile 会自动携带节点资源 URL。
+5. 运行 Shadowrocket 和 sing-box Profile/Config。
+6. 逐个保存私密输出 URL；不要在聊天中回传。
+7. 先在一台 macOS 设备导入并 canary，再处理移动端；sing-box Android/OpenWrt 另按其清单执行。
 
 ### 日常刷新
 
-节点源变化：原始组合 `apple-proxy-sources` → Shadowrocket 处理组合 `shadowrocket-nodes`（仅 Shadowrocket）→ 各客户端节点/Profile/Config 任务 → 客户端手动更新。
+节点源变化：原始组合 `apple-proxy-sources` → 各客户端节点任务（Surge 为 `surge-nodes`，Shadowrocket 为 `shadowrocket-nodes`）→ 各客户端 Profile/Config 任务 → 客户端手动更新。
 
 公开规则变化：在客户端对已有规则集执行 Update；不要因为规则更新就重新创建 Sub-Store 节点任务。
 
