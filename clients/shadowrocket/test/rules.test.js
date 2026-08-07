@@ -41,8 +41,8 @@ test("renders the shared lightweight precedence without legacy default rule pack
   assert.ok(indexOf(lines, "/OverseasGame.list") < indexOf(lines, "/ChinaIP.list"));
   assert.ok(indexOf(lines, "/ChinaIP.list") < indexOf(lines, "GEOIP,CN,DIRECT"));
 
-  assert.match(lines[indexOf(lines, "/DomesticCore.list")], /^DOMAIN-SET,.*\/DomesticCore\.list,DIRECT,/u);
-  assert.match(lines[indexOf(lines, "/DomesticGame.list")], /^DOMAIN-SET,.*\/DomesticGame\.list,DIRECT,/u);
+  assert.match(lines[indexOf(lines, "/DomesticCore.list")], /^RULE-SET,.*\/DomesticCore\.list,DIRECT,/u);
+  assert.match(lines[indexOf(lines, "/DomesticGame.list")], /^RULE-SET,.*\/DomesticGame\.list,DIRECT,/u);
   assert.match(lines[indexOf(lines, "/SteamCN.list")], /^RULE-SET,.*\/SteamCN\.list,DIRECT,/u);
   assert.match(lines[indexOf(lines, "/OverseasGame.list")], /^RULE-SET,.*\/OverseasGame\.list,🌍 海外游戏,/u);
   assert.match(lines[indexOf(lines, "/ChinaIP.list")], /^RULE-SET,.*\/ChinaIP\.list,DIRECT,/u);

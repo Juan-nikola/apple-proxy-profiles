@@ -49,7 +49,7 @@ DNS、QUIC、IPv6、`blockMode`或测速参数排障使用下面的 File 副本�
 
 从仓库根目录运行 `npm --workspace @apple-proxy-profiles/shadowrocket run check:rules`。首次部署有任何规则失败就停止灰度；已安装设备先保留 Shadowrocket 上一次可用缓存和旧 Profile。不要用空规则覆盖现有配置。
 
-成功时命令会报告 32 份规则均通过，其中包括完整广告规则的 `Advertising.list` 与 `Advertising_Domain.list`，以及 `ByteDance`、`SteamCN`、`ChinaMax_Domain` 与 `ChinaMax`。若出现 HTTP、条目数量或格式错误，记录规则名称和健康状态即可；不要把临时失败误当成需要删除旧缓存的理由。
+成功时命令会报告 33 份固定提交的编译输入均通过，其中包括默认输入、`Game`/`ChinaIPs` 等编译专用输入，以及 optional `Advertising.list` 与 `Advertising_Domain.list`。这只是验证编译所需上游，不表示默认 Profile 会加载全部输入；默认 `adblockMode=off` 不加载广告包。若出现 HTTP、条目数量或格式错误，记录规则名称和健康状态即可；不要把临时失败误当成需要删除旧缓存的理由。
 
 ## DNS 污染或网站指向异常
 

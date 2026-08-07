@@ -216,7 +216,7 @@ npm run verify
 npm --workspace @apple-proxy-profiles/shadowrocket run check:rules
 ```
 
-`npm run verify` 会运行测试、重新构建两个脚本、生成脱敏示例并扫描敏感信息。`npm --workspace @apple-proxy-profiles/shadowrocket run check:rules` 会从仓库根目录联网检查 32 份远程规则；网络受限时它可能失败，这不等于本地代码错误，但首次部署时仍必须等规则检查全部通过。
+`npm run verify` 会运行测试、重新构建两个脚本、生成脱敏示例并扫描敏感信息。`npm --workspace @apple-proxy-profiles/shadowrocket run check:rules` 会从仓库根目录联网检查 33 份固定提交的编译输入（包括默认、optional 和仅用于编译拆分的输入）；网络受限时它可能失败，这不等于本地代码错误，但首次部署时仍必须等规则检查全部通过。
 
 ## 部署入口
 

@@ -83,7 +83,7 @@ test("beginner docs contain every operational checkpoint and warning", async () 
     "所有显式选择及匹配订阅的具体服务器都存在",
     "在 Shadowrocket 首页切换节点后，`🐙 GitHub` 仍选择 `🚀 节点选择`",
   ]) assert.ok(docs["docs/canary-checklist.md"].includes(phrase), `canary: missing named-subscription validation: ${phrase}`);
-  for (const phrase of ["Shadowrocket-Nodes,use=true", "PROXY", "ChinaMax_Domain", "问道手游"]) {
+  for (const phrase of ["Shadowrocket-Nodes,use=true", "PROXY", "DomesticCore", "问道手游"]) {
     assert.ok(text.includes(phrase), `missing enhanced-routing documentation phrase: ${phrase}`);
   }
   assert.doesNotMatch(text, /include-all-proxies=true/, "documentation must not describe legacy all-proxy dynamic groups");
@@ -155,6 +155,40 @@ test("beginner docs contain every operational checkpoint and warning", async () 
       if (!target || /^[a-z][a-z0-9+.-]*:/i.test(target)) continue;
       const linkedPath = resolve(shadowrocketRoot, dirname(file), target);
       await assert.doesNotReject(readFile(linkedPath), `${file}: broken local Markdown link: ${match[1]}`);
+    }
+  }
+});
+
+test("current-user docs describe only lightweight defaults and isolate legacy audit notes", async () => {
+  const paths = ["README.md", "docs/deployment.md", "docs/troubleshooting.md", "docs/canary-checklist.md"];
+  const files = await Promise.all(paths.map((file) => readFile(resolve(shadowrocketRoot, file), "utf8")));
+  const text = files.join("\n");
+
+  for (const phrase of [
+    "adblockMode=off",
+    "adblockMode=full",
+    "DomesticCore",
+    "DomesticGame",
+    "SteamCN",
+    "OverseasGame",
+    "🌍 海外游戏",
+    "ChinaIP",
+    "GEOIP,CN,DIRECT",
+    "FINAL,🚀 节点选择",
+  ]) assert.ok(text.includes(phrase), `missing lightweight current-user guidance: ${phrase}`);
+
+  for (let index = 0; index < paths.length; index += 1) {
+    for (const line of files[index].split("\n")) {
+      if (/ChinaMax(?:_Domain)?|🕹️ 游戏平台/u.test(line)) {
+        assert.match(line, /历史|旧版|兼容|审计/u, `${paths[index]} contains an unlabeled legacy default: ${line}`);
+      }
+      if (/Advertising(?:_Domain)?(?:\.list)?/u.test(line)) {
+        assert.match(
+          line,
+          /历史|旧版|兼容|审计|adblockMode=full|optional|默认[^。；]*关闭/u,
+          `${paths[index]} describes Advertising as an unlabeled default: ${line}`,
+        );
+      }
     }
   }
 });

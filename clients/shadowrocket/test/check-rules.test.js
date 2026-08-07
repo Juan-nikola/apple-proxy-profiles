@@ -3,6 +3,45 @@ import test from "node:test";
 
 import { checkRule, isValidDomainSetLine, isValidRuleLine } from "../scripts/check-rules.mjs";
 
+test("checks the complete pinned compiler input catalog without undefined fetch targets", async () => {
+  const module = await import("../scripts/check-rules.mjs");
+  assert.equal(typeof module.checkCatalog, "function");
+  assert.equal(Array.isArray(module.RULE_CHECK_CATALOG), true);
+  assert.equal(module.RULE_CHECK_CATALOG.length, 33);
+  assert.deepEqual(
+    module.RULE_CHECK_CATALOG.filter(({ optionalPack }) => optionalPack).map(({ id }) => id),
+    ["Advertising", "Advertising_Domain"],
+  );
+  for (const id of ["DomesticCore", "DomesticGame"]) {
+    assert.equal(module.RULE_CHECK_CATALOG.some((source) => source.id === id), false, id);
+  }
+  for (const id of ["Game", "ChinaIPs", "ChinaMax_Domain", "ChinaMax"]) {
+    assert.equal(module.RULE_CHECK_CATALOG.some((source) => source.id === id), true, id);
+  }
+  assert.equal(
+    module.RULE_CHECK_CATALOG.every(({ upstreamUrl }) => typeof upstreamUrl === "string" && upstreamUrl.startsWith("https://")),
+    true,
+  );
+
+  const requests = [];
+  const result = await module.checkCatalog([{
+    id: "Fixture",
+    upstreamUrl: "https://example.invalid/fixture.list",
+    minEntries: 1,
+    inputFormat: "RULE-SET",
+  }], {
+    async fetchImpl(url) {
+      requests.push(url);
+      return new Response("DOMAIN,example.invalid\n", {
+        status: 200,
+        headers: { "content-type": "text/plain" },
+      });
+    },
+  });
+  assert.deepEqual(requests, ["https://example.invalid/fixture.list"]);
+  assert.deepEqual(result, { checked: 1, failures: [] });
+});
+
 test("accepts only normalized Shadowrocket domain-set entries", () => {
   for (const line of [".example.com", ".sub-domain.example", "exact.example.com"]) {
     assert.equal(isValidDomainSetLine(line), true, line);
@@ -32,6 +71,7 @@ test("accepts representative valid Shadowrocket rule-set lines", () => {
     "URL-REGEX,^https?://example\\.com/[a-z]+$",
     "AND,((DOMAIN-SUFFIX,example.com),(PROTOCOL,UDP))",
     "OR,((DOMAIN,example.com),(DOMAIN,example.net))",
+    "OR,((IP-ASN,44907,no-resolve),(IP-ASN,59930,no-resolve),(IP-ASN,62014,no-resolve),(IP-ASN,62041,no-resolve),(IP-ASN,211157,no-resolve))",
     "NOT,((DOMAIN,example.com))",
     "AND,((PROTOCOL,UDP),(OR,(DOMAIN,example.com),(RULE-SET,https://example.com/rules.list)))",
     "AND,((PROTOCOL,UDP),(DST-PORT,443))",

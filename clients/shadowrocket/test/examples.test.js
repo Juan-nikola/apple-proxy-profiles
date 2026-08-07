@@ -271,8 +271,8 @@ for (const platform of ["macos", "iphone", "ipad"]) {
     assert.match(profile, /edge\/shadowrocket\/rules\/ByteDance\.list,🎵 抖音/);
     assert.doesNotMatch(profile, /\/(?:Advertising|Advertising_Domain|ChinaMax_Domain|ChinaMax|Game)\.list/);
     assert.match(profile, /^🎵 抖音 = select,DIRECT,🚀 节点选择,⚡ 全部自动,🛟 全部故障转移,🌏 亚太,🌍 欧洲,🌎 美洲/m);
-    assert.match(profile, /^DOMAIN-SET,.*\/DomesticCore\.list,DIRECT,/m);
-    assert.match(profile, /^DOMAIN-SET,.*\/DomesticGame\.list,DIRECT,/m);
+    assert.match(profile, /^RULE-SET,.*\/DomesticCore\.list,DIRECT,/m);
+    assert.match(profile, /^RULE-SET,.*\/DomesticGame\.list,DIRECT,/m);
     assert.match(profile, /^RULE-SET,.*\/SteamCN\.list,DIRECT,/m);
     assert.match(profile, /^RULE-SET,.*\/OverseasGame\.list,🌍 海外游戏,/m);
     assert.match(profile, /^RULE-SET,.*\/ChinaIP\.list,DIRECT,/m);

@@ -84,8 +84,8 @@ test("renders the lightweight Surge precedence without default advertising or Ch
   const indexOf = (fragment) => rules.findIndex((line) => line.includes(fragment));
 
   assert.doesNotMatch(profile, /\/(?:Advertising|Advertising_Domain|ChinaMax_Domain)\.list/u);
-  assert.match(profile, new RegExp(`^DOMAIN-SET,${ruleBaseUrl}/DomesticCore\\.list,DIRECT,`, "mu"));
-  assert.match(profile, new RegExp(`^DOMAIN-SET,${ruleBaseUrl}/DomesticGame\\.list,DIRECT,`, "mu"));
+  assert.match(profile, new RegExp(`^RULE-SET,${ruleBaseUrl}/DomesticCore\\.list,DIRECT,`, "mu"));
+  assert.match(profile, new RegExp(`^RULE-SET,${ruleBaseUrl}/DomesticGame\\.list,DIRECT,`, "mu"));
   assert.match(profile, new RegExp(`^RULE-SET,${ruleBaseUrl}/SteamCN\\.list,DIRECT,`, "mu"));
   assert.match(profile, new RegExp(`^RULE-SET,${ruleBaseUrl}/OverseasGame\\.list,🌍 海外游戏,`, "mu"));
   assert.match(profile, new RegExp(`^RULE-SET,${ruleBaseUrl}/ChinaIP\\.list,DIRECT,`, "mu"));

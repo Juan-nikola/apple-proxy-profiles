@@ -70,15 +70,15 @@ const SOURCE_POLICIES = Object.freeze({
   Advertising_Domain: "🧱 常见广告",
 });
 
-const DOMAIN_SET_IDS = new Set(["DomesticCore", "DomesticGame", "Advertising_Domain"]);
-
 function clientRecord(id) {
   const policy = SOURCE_POLICIES[id];
   if (!policy) throw new Error(`Missing policy for lightweight rule source: ${id}`);
   return Object.freeze({
     id,
     policy,
-    inputFormat: DOMAIN_SET_IDS.has(id) ? "DOMAIN-SET" : "RULE-SET",
+    // The publication pipeline emits normalized, typed Surge/Shadowrocket
+    // lines for every compiled source, including domain-only inputs.
+    inputFormat: "RULE-SET",
   });
 }
 

@@ -4,6 +4,8 @@ import test from "node:test";
 import { buildClientArtifacts } from "../src/build-artifacts.js";
 import { DEFAULT_RULE_SOURCE_IDS } from "../../shared/rules/lightweight-policy.js";
 import { lightweightFixtureSnapshots } from "./lightweight-fixture.js";
+import { renderRules as renderShadowrocketRules } from "../../clients/shadowrocket/src/render-rules.js";
+import { renderSurgeRules } from "../../clients/surge/src/render-rules.js";
 
 const upstream = {
   repository: "https://github.com/blackmatrix7/ios_rule_script",
@@ -34,4 +36,49 @@ test("fans compiled lightweight defaults out without publishing input-only rules
 test("is byte deterministic for the same snapshot", () => {
   const options = { snapshot: lightweightFixtureSnapshots(), upstream };
   assert.deepEqual([...buildClientArtifacts(options).defaults], [...buildClientArtifacts(options).defaults]);
+});
+
+test("Shadowrocket and Surge profile provider types match every emitted rule body", () => {
+  const result = buildClientArtifacts({ snapshot: lightweightFixtureSnapshots(), upstream });
+  const clients = [
+    {
+      name: "shadowrocket",
+      lines: renderShadowrocketRules({
+        ruleBaseUrl: "https://example.invalid/current/shadowrocket/rules",
+        adblockMode: "full",
+      }),
+    },
+    {
+      name: "surge",
+      lines: renderSurgeRules({
+        ruleBaseUrl: "https://example.invalid/current/surge/rules",
+        adblockMode: "full",
+      }),
+    },
+  ];
+
+  for (const client of clients) {
+    for (const profileLine of client.lines.filter((line) => /^(?:RULE-SET|DOMAIN-SET),/u.test(line))) {
+      const [providerType, url] = profileLine.split(",", 2);
+      const path = new URL(url).pathname
+        .replace(/^\/current\//u, "")
+        .replace(/^optional\/adblock-full\//u, "optional/adblock-full/");
+      const files = path.startsWith("optional/")
+        ? result.optionalPacks.get("adblock-full")
+        : result.defaults;
+      const content = files.get(path);
+      assert.equal(typeof content, "string", `${client.name}: missing ${path}`);
+      const bodyLine = content.split("\n").find((line) => line && !line.startsWith("#"));
+      assert.ok(bodyLine, `${client.name}: empty ${path}`);
+      if (providerType === "DOMAIN-SET") {
+        assert.doesNotMatch(bodyLine, /,/u, `${client.name}: DOMAIN-SET body ${path}`);
+      } else {
+        assert.match(
+          bodyLine,
+          /^(?:DOMAIN|DOMAIN-SUFFIX|DOMAIN-KEYWORD|IP-CIDR|IP-CIDR6),/u,
+          `${client.name}: RULE-SET body ${path}`,
+        );
+      }
+    }
+  }
 });
