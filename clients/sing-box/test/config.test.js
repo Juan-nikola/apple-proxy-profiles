@@ -77,6 +77,7 @@ test("renders the latest sing-box HTTP client contract without removed fields", 
     detour: "🧭 DNS 与规则下载",
   }]);
   assert.equal(config.route.default_http_client, "🧭 规则下载 HTTP");
+  assert.equal(config.route.default_domain_resolver, "dns-direct");
   assert.equal(config.route.rule_set.every((rule) => rule.http_client === "🧭 规则下载 HTTP"), true);
   assert.equal(config.route.rules.some((rule) => Object.hasOwn(rule, "geoip") || Object.hasOwn(rule, "geosite")), false);
   assert.equal(config.route.rule_set.some((rule) => Object.hasOwn(rule, "download_detour")), false);
@@ -162,5 +163,6 @@ test("accepts common upstream transport metadata on Snell nodes", () => {
     server_port: 443,
     psk: "TEST_ONLY_SNELL_PSK",
     version: 4,
+    reuse: true,
   });
 });

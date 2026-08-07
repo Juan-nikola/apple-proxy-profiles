@@ -28,3 +28,15 @@ test("normalized nodes expose neutral metadata only", () => {
   assert.equal(nodes[0]._profile.sourceKind, "selfHosted");
   assert.deepEqual(Object.keys(nodes[0]).filter((key) => key.startsWith("_")), ["_profile"]);
 });
+
+test("normalized nodes omit undefined optional fields emitted by SubStore", () => {
+  const { nodes } = normalizeNodes([{
+    name: "Undefined options", type: "vless", server: "192.0.2.11", port: 443,
+    uuid: "00000000-0000-4000-8000-000000000001", network: "tcp",
+    tfo: undefined, "skip-cert-verify": undefined, "block-quic": undefined,
+    "ip-version": undefined,
+  }]);
+  for (const key of ["tfo", "skip-cert-verify", "block-quic", "ip-version"]) {
+    assert.equal(Object.hasOwn(nodes[0], key), false, key);
+  }
+});

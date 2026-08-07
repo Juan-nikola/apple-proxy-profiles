@@ -200,6 +200,21 @@ test("node bundle matches source for normalization, Egern SSH chaining, and diag
   assert.deepEqual(bundled.requests, expected.requests);
 });
 
+test("node bundle drops undefined Sub-Store quick-setting fields before Egern validation", async () => {
+  const source = await readFile(NODE_BUNDLE, "utf8");
+  const produced = [{
+    ...rawInventory()[0],
+    tfo: undefined,
+    "skip-cert-verify": undefined,
+    "block-quic": undefined,
+    "ip-version": undefined,
+  }];
+  const bundled = loadBundle(source, { arguments: { ...NODE_ARGUMENTS, clientChain: "off" }, produced });
+  const result = await bundled.context.operator({}, "Egern");
+  assert.match(result.$content, /^proxies:\n/u);
+  assert.match(result.$content, /Tokyo Entry/u);
+});
+
 test("chain-off bundle parity omits every generated previous hop", async () => {
   const arguments_ = { ...NODE_ARGUMENTS, clientChain: "off" };
   const source = await readFile(NODE_BUNDLE, "utf8");

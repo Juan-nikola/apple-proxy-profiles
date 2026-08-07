@@ -237,7 +237,7 @@ var SingBoxConfigBundle = (() => {
     "chacha20-ietf"
   ]);
   var EGERN_SNELL_VERSIONS = /* @__PURE__ */ new Set([1, 2, 3, 4, 5]);
-  var SINGBOX_SNELL_VERSIONS = /* @__PURE__ */ new Set([4, 6]);
+  var SINGBOX_SNELL_VERSIONS = /* @__PURE__ */ new Set([4, 5, 6]);
   var SINGBOX_SNELL_OBFS_MODES = /* @__PURE__ */ new Set(["none", "http"]);
   var SINGBOX_SNELL_MODES = /* @__PURE__ */ new Set(["default", "unshaped", "unsafe-raw"]);
   var EGERN_OBFS = /* @__PURE__ */ new Set(["http", "tls"]);
@@ -1052,7 +1052,7 @@ var SingBoxConfigBundle = (() => {
     if (!Number.isInteger(version) || !SINGBOX_SNELL_VERSIONS.has(version)) {
       return "unsupported-singbox-snell-version";
     }
-    if (version === 4) {
+    if (version === 4 || version === 5) {
       const obfsMode = node.obfs_mode ?? node["obfs-mode"] ?? node.obfs;
       if (obfsMode !== void 0 && obfsMode !== "" && !SINGBOX_SNELL_OBFS_MODES.has(String(obfsMode).toLowerCase())) {
         return "unsupported-singbox-snell-obfs";
@@ -1434,6 +1434,18 @@ var SingBoxConfigBundle = (() => {
     const cleaned = withoutProtocol.replace(/[\r\n\t]+/g, " ").replace(/\s+/g, " ").trim();
     return cleaned || "\u672A\u547D\u540D\u8282\u70B9";
   }
+  function stripUndefinedValues(value) {
+    if (Array.isArray(value)) {
+      value.forEach(stripUndefinedValues);
+      return value;
+    }
+    if (!value || typeof value !== "object") return value;
+    for (const key of Object.keys(value)) {
+      if (value[key] === void 0) Reflect.deleteProperty(value, key);
+      else stripUndefinedValues(value[key]);
+    }
+    return value;
+  }
   function sanitizeInternalMetadata(node) {
     for (const key of Object.keys(node)) {
       if (!key.startsWith("_") || key === "_profile") continue;
@@ -1534,7 +1546,7 @@ var SingBoxConfigBundle = (() => {
         increment(diagnostics.excluded, validation.reason);
         continue;
       }
-      const cloned = structuredClone(original);
+      const cloned = stripUndefinedValues(structuredClone(original));
       cloned.type = original.type.trim().toLowerCase();
       cloned.port = Number(original.port);
       const identity = identityKey(cloned);
@@ -1865,10 +1877,12 @@ var SingBoxConfigBundle = (() => {
       case "snell":
         {
           const version = Number(node.version);
-          if (![4, 6].includes(version)) throw new Error("Unsupported sing-box Snell version");
-          outbound = { ...base(node, "snell"), psk: requiredString2(node, "psk"), version };
+          if (![4, 5, 6].includes(version)) throw new Error("Unsupported sing-box Snell version");
+          const outputVersion = version === 5 ? 4 : version;
+          outbound = { ...base(node, "snell"), psk: requiredString2(node, "psk"), version: outputVersion };
           if (node.network === "tcp" || node.network === "udp") outbound.network = node.network;
-          if (version === 4) {
+          if (outputVersion === 4) {
+            setIf(outbound, "reuse", node.reuse);
             setIf(outbound, "obfs_mode", node.obfs_mode ?? node["obfs-mode"] ?? node.obfs);
             setIf(outbound, "obfs_host", node["obfs-host"] ?? node.obfs_host);
           } else {
@@ -2559,6 +2573,7 @@ var SingBoxConfigBundle = (() => {
       ],
       route: {
         auto_detect_interface: true,
+        default_domain_resolver: "dns-direct",
         default_http_client: RULE_DOWNLOAD_HTTP_CLIENT,
         rule_set: ruleSets,
         rules,

@@ -68,6 +68,21 @@ test("renders native Snell outbound fields available in current sing-box testing
   });
 });
 
+test("renders Snell v5 nodes accepted by current sing-box", () => {
+  const outbound = renderSingBoxOutbound({
+    name: "🇭🇰 [自建] Snell v5",
+    type: "snell",
+    server: "example.invalid",
+    port: 443,
+    psk: "TEST_ONLY_PSK",
+    version: 5,
+    reuse: true,
+    udp: true,
+  });
+  assert.equal(outbound.version, 4);
+  assert.equal(outbound.reuse, true);
+});
+
 test("rejects protocols not represented by the sing-box adapter", () => {
   assert.throws(() => renderSingBoxOutbound({
     name: "fixture",

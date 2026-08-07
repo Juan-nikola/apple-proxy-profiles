@@ -117,10 +117,10 @@ test("filters protocol variants that the official client schemas cannot decode",
     version: 5,
   };
   assert.deepEqual(evaluateNodeForClient(singBoxSnellV5, CLIENT.singbox), {
-    supported: false,
-    reason: "unsupported-singbox-snell-version",
+    supported: true,
+    reason: null,
   });
-  for (const version of [4, 6]) {
+  for (const version of [4, 5, 6]) {
     assert.deepEqual(
       evaluateNodeForClient({ ...singBoxSnellV5, version }, CLIENT.singbox),
       { supported: true, reason: null },

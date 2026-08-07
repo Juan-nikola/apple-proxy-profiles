@@ -11,6 +11,8 @@
 - 返回非数组/non-array：集合 API 没有返回节点数组，检查任务是否真的指向 collection。
 - 空数组/empty 或空结果：上游集合没有可见节点，先单独预览已有集合。
 
+如果集合预览有节点，但 File 输出仍是 `// 填入文件内容` 或空内容，通常是旧外置脚本把 Sub-Store 注入的 `undefined` 可选字段误判为畸形节点。先刷新到 Pages 的最新 `current/egern/scripts/egern-node-generator.js`，再重新预览 `egern-nodes`；不要手工在编辑器里补 `dns: {}`，那不是节点文件。
+
 这些错误都应失败即停止。不得关闭、绕过或削弱 fail-closed 校验来得到“看似成功”的空配置。
 
 ## 2. 没有兼容节点

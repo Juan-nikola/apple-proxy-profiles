@@ -52,6 +52,19 @@ function cleanDisplayName(name, type) {
   return cleaned || "未命名节点";
 }
 
+function stripUndefinedValues(value) {
+  if (Array.isArray(value)) {
+    value.forEach(stripUndefinedValues);
+    return value;
+  }
+  if (!value || typeof value !== "object") return value;
+  for (const key of Object.keys(value)) {
+    if (value[key] === undefined) Reflect.deleteProperty(value, key);
+    else stripUndefinedValues(value[key]);
+  }
+  return value;
+}
+
 function sanitizeInternalMetadata(node) {
   for (const key of Object.keys(node)) {
     if (!key.startsWith("_") || key === "_profile") continue;
@@ -171,7 +184,7 @@ export function normalizeNodes(nodes, { clientChain = "off" } = {}) {
       continue;
     }
 
-    const cloned = structuredClone(original);
+    const cloned = stripUndefinedValues(structuredClone(original));
     cloned.type = original.type.trim().toLowerCase();
     cloned.port = Number(original.port);
     const identity = identityKey(cloned);

@@ -32,6 +32,7 @@ export function renderSingBoxConfig(rawOptions, nodes, { ruleBaseUrl, ruleSetFor
     ],
     route: {
       auto_detect_interface: true,
+      default_domain_resolver: "dns-direct",
       default_http_client: RULE_DOWNLOAD_HTTP_CLIENT,
       rule_set: ruleSets,
       rules,

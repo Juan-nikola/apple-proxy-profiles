@@ -130,10 +130,13 @@ export function renderSingBoxOutbound(node) {
     case "snell":
       {
         const version = Number(node.version);
-        if (![4, 6].includes(version)) throw new Error("Unsupported sing-box Snell version");
-        outbound = { ...base(node, "snell"), psk: requiredString(node, "psk"), version };
+        if (![4, 5, 6].includes(version)) throw new Error("Unsupported sing-box Snell version");
+        // sing-box deliberately implements Snell v5 through its v4 wire format.
+        const outputVersion = version === 5 ? 4 : version;
+        outbound = { ...base(node, "snell"), psk: requiredString(node, "psk"), version: outputVersion };
         if (node.network === "tcp" || node.network === "udp") outbound.network = node.network;
-        if (version === 4) {
+        if (outputVersion === 4) {
+          setIf(outbound, "reuse", node.reuse);
           setIf(outbound, "obfs_mode", node.obfs_mode ?? node["obfs-mode"] ?? node.obfs);
           setIf(outbound, "obfs_host", node["obfs-host"] ?? node.obfs_host);
         } else {

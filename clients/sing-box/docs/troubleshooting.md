@@ -6,4 +6,6 @@
 
 如果出现 `dns.rules[0].action` 无法反序列化、提示不能把对象解析为字符串，说明拿到了旧版 DNS 规则结构：当前 sing-box 要求 `action` 是顶层字符串（例如 `"action": "route"`），`server` 也是同级字段。不要继续使用旧缓存 JSON；在 Sub-Store 重新预览并刷新对应的 `sing-box-*` Config File，确认 JSON 来自平台专用任务而不是组合订阅/API 总地址。
 
-如果出现 `outbounds[*].snell: unsupported version: 5`，说明源节点是 Snell v5。当前 sing-box Snell 出站只输出官方接受的 v4/v6；生成器会自动过滤 v5 和不符合当前字段的 Snell 节点，不会把无效节点写进 JSON。若过滤后没有剩余节点，任务会失败并保留旧输出；请确认组合里还有 VLESS、VMess、Trojan、Shadowsocks 等 sing-box 可用节点。参见 [sing-box Snell outbound](https://sing-box.sagernet.org/configuration/outbound/snell/)。
+如果出现 `outbounds[*].snell: unsupported version: 5`，说明旧生成器没有适配源节点的 Snell v5。sing-box 1.14 的 Snell 出站只接受 v4/v6；v5 在不使用 QUIC 时与 v4 线格式兼容，生成器现在会把 v5 自动转换为 v4，并保留 PSK、复用和 UDP 设置。参见 [sing-box Snell outbound](https://sing-box.sagernet.org/configuration/outbound/snell/)。
+
+如果出现 `domain_resolver` 或 `default_domain_resolver` 缺失，说明配置仍是旧版本缓存。sing-box 1.14 对包含域名服务器、规则集或代理节点的配置要求默认域名解析器；重新预览并刷新对应的 `sing-box-*` Config File，使 JSON 中出现 `route.default_domain_resolver: "dns-direct"`。

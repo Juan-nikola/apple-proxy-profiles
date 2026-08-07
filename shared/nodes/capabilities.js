@@ -58,7 +58,9 @@ const EGERN_SHADOWSOCKS_METHODS = new Set([
   "chacha20-ietf",
 ]);
 const EGERN_SNELL_VERSIONS = new Set([1, 2, 3, 4, 5]);
-const SINGBOX_SNELL_VERSIONS = new Set([4, 6]);
+// sing-box 1.14 accepts v4/v6 output. Snell v5 is wire-compatible with v4
+// (without QUIC mode), so accept v5 source nodes and adapt them at render time.
+const SINGBOX_SNELL_VERSIONS = new Set([4, 5, 6]);
 const SINGBOX_SNELL_OBFS_MODES = new Set(["none", "http"]);
 const SINGBOX_SNELL_MODES = new Set(["default", "unshaped", "unsafe-raw"]);
 const EGERN_OBFS = new Set(["http", "tls"]);
@@ -1164,7 +1166,7 @@ function singBoxNodeExclusionReason(node) {
   if (!Number.isInteger(version) || !SINGBOX_SNELL_VERSIONS.has(version)) {
     return "unsupported-singbox-snell-version";
   }
-  if (version === 4) {
+  if (version === 4 || version === 5) {
     const obfsMode = node.obfs_mode ?? node["obfs-mode"] ?? node.obfs;
     if (obfsMode !== undefined && obfsMode !== "" && !SINGBOX_SNELL_OBFS_MODES.has(String(obfsMode).toLowerCase())) {
       return "unsupported-singbox-snell-obfs";
