@@ -5,7 +5,7 @@
   "configSha256": "d5a83b9af9bac97bae439f310442adb8197ac5e0fe7df6db3d8c77416b353d9a",
   "platform": "macos",
   "platformKey": "singbox/macos",
-  "ruleManifestSha256": "10458ed1086def105fd686b9363a1e66ccdc147186924f65a7c541065acbff1b",
+  "ruleManifestSha256": "f129341b43d4db8e89c390f27b8ff787c21d84a233d645a2e0a7c461ab70f861",
   "schemaVersion": 1,
   "status": "candidate",
   "upstream": {
