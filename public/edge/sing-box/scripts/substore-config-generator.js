@@ -2369,6 +2369,24 @@ var SingBoxConfigBundle = (() => {
     "chinaIp",
     "defaultProxy"
   ]);
+  var EXPLICIT_OVERSEAS_RULE_SOURCE_IDS = Object.freeze([
+    "OpenAI",
+    "Claude",
+    "Gemini",
+    "Copilot",
+    "GitHub",
+    "YouTube",
+    "Netflix",
+    "Disney",
+    "Spotify",
+    "GlobalMedia",
+    "Telegram",
+    "Facebook",
+    "Instagram",
+    "Twitter",
+    "TikTok",
+    "OverseasGame"
+  ]);
   var POLICY_TARGETS = Object.freeze({
     direct: "DIRECT",
     defaultProxy: "\u{1F680} \u8282\u70B9\u9009\u62E9",
@@ -2547,24 +2565,7 @@ var SingBoxConfigBundle = (() => {
     google: Object.freeze({ server: "8.8.8.8", serverName: "dns.google" }),
     quad9: Object.freeze({ server: "9.9.9.9", serverName: "dns.quad9.net" })
   });
-  var EXPLICIT_OVERSEAS_RULE_SETS = Object.freeze([
-    "OpenAI",
-    "Claude",
-    "Gemini",
-    "Copilot",
-    "GitHub",
-    "YouTube",
-    "Netflix",
-    "Disney",
-    "Spotify",
-    "GlobalMedia",
-    "Telegram",
-    "Facebook",
-    "Instagram",
-    "Twitter",
-    "TikTok",
-    "OverseasGame"
-  ].map((id) => `rule-${id}`));
+  var EXPLICIT_OVERSEAS_RULE_SETS = Object.freeze(EXPLICIT_OVERSEAS_RULE_SOURCE_IDS.map((id) => `rule-${id}`));
   function renderSingBoxDns(options) {
     const chinaServer = options.chinaDns === "system" ? { type: "local", tag: "dns-direct" } : { type: "udp", tag: "dns-direct", server: CHINA_DNS[options.chinaDns] };
     const globalDns = GLOBAL_DNS[options.globalDns];

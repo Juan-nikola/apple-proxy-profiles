@@ -4,7 +4,7 @@
 # Committed at: 2026-08-07T18:52:17Z
 # License: GPL-2.0-only
 # Changed by: Juan-nikola/apple-proxy-profiles
-# Output entries: 46
+# Output entries: 65
 # Omitted entries: 0
 DOMAIN-SUFFIX,126.com
 DOMAIN-SUFFIX,163.com
@@ -21,16 +21,30 @@ DOMAIN-SUFFIX,bcebos.com
 DOMAIN-SUFFIX,bdimg.com
 DOMAIN-SUFFIX,bdstatic.com
 DOMAIN-SUFFIX,biliapi.com
+DOMAIN-SUFFIX,bilibili.cc
 DOMAIN-SUFFIX,bilibili.com
+DOMAIN-SUFFIX,bilibili.net
+DOMAIN-SUFFIX,bilibili.tv
 DOMAIN-SUFFIX,bilivideo.com
+DOMAIN-SUFFIX,bilivideo.net
+DOMAIN-SUFFIX,bytehwm.com
 DOMAIN-SUFFIX,byteimg.com
 DOMAIN-SUFFIX,douyin.com
 DOMAIN-SUFFIX,douyincdn.com
+DOMAIN-SUFFIX,douyu.com
+DOMAIN-SUFFIX,douyu.tv
+DOMAIN-SUFFIX,douyucdn.cn
+DOMAIN-SUFFIX,douyuscdn.com
+DOMAIN-SUFFIX,douyutv.com
 DOMAIN-SUFFIX,gtimg.cn
+DOMAIN-SUFFIX,gtimg.com
 DOMAIN-SUFFIX,hdslb.com
+DOMAIN-SUFFIX,hdslb.org
 DOMAIN-SUFFIX,hunantv.com
+DOMAIN-SUFFIX,huya.com
 DOMAIN-SUFFIX,ibytedtos.com
 DOMAIN-SUFFIX,iqiyi.com
+DOMAIN-SUFFIX,iqiyipic.com
 DOMAIN-SUFFIX,ixigua.com
 DOMAIN-SUFFIX,mgtv.com
 DOMAIN-SUFFIX,netease.com
@@ -40,6 +54,8 @@ DOMAIN-SUFFIX,qiyipic.com
 DOMAIN-SUFFIX,qlogo.cn
 DOMAIN-SUFFIX,qpic.cn
 DOMAIN-SUFFIX,qq.com
+DOMAIN-SUFFIX,rtbasia.com
+DOMAIN-SUFFIX,sandbox.itunes.apple.com
 DOMAIN-SUFFIX,sinaimg.cn
 DOMAIN-SUFFIX,snssdk.com
 DOMAIN-SUFFIX,taobao.com
@@ -47,8 +63,11 @@ DOMAIN-SUFFIX,tmall.com
 DOMAIN-SUFFIX,toutiao.com
 DOMAIN-SUFFIX,toutiaoimg.com
 DOMAIN-SUFFIX,tudou.com
+DOMAIN-SUFFIX,tudouui.com
 DOMAIN-SUFFIX,wechat.com
 DOMAIN-SUFFIX,weibo.com
+DOMAIN-SUFFIX,wmpvp.com
 DOMAIN-SUFFIX,xhscdn.com
 DOMAIN-SUFFIX,xiaohongshu.com
+DOMAIN-SUFFIX,ykimg.com
 DOMAIN-SUFFIX,youku.com
