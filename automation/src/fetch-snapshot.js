@@ -90,6 +90,7 @@ async function fetchOne(source, { commit, fetchImpl, maxBytes, timeoutMs, retrie
     }
     return Object.freeze({
       text,
+      source: Object.freeze({ ...source }),
       rawUrl,
       sourceBytes: bytes.byteLength,
       sourceSha256: createHash("sha256").update(bytes).digest("hex"),

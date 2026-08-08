@@ -32,6 +32,8 @@ test("file operator produces a Profile artifact and preserves the input", async 
   assert.equal(typeof result.$content, "string");
   assert.deepEqual(Object.keys(result).sort(), ["$content", "unchanged", "url"]);
   assert.match(result.$content, /\[Proxy Group\]/);
+  assert.match(result.$content, /edge\/shadowrocket\/rules\/DomesticCore\.list/u);
+  assert.doesNotMatch(result.$content, /\/Advertising(?:_Domain)?\.list/u);
 });
 
 test("file operator accepts the full documented option set", async () => {
@@ -47,12 +49,17 @@ test("file operator accepts the full documented option set", async () => {
       ipv6Mode: "auto",
       autoGroupMode: "full",
       clientChain: "on",
+      channel: "current",
+      adblockMode: "full",
       _internal: "ignored",
     },
     async produceArtifact() { return nodes; },
   });
 
   assert.equal(typeof result.$content, "string");
+  assert.match(result.$content, /current\/shadowrocket\/rules\/DomesticCore\.list/u);
+  assert.match(result.$content, /current\/optional\/adblock-full\/shadowrocket\/rules\/Advertising\.list/u);
+  assert.match(result.$content, /current\/optional\/adblock-full\/shadowrocket\/rules\/Advertising_Domain\.list/u);
 });
 
 test("file operator fails closed for invalid integration input", async () => {
@@ -73,6 +80,14 @@ test("file operator fails closed for invalid integration input", async () => {
     arguments: { ...argumentsForProfile, unexpected: "x" },
     async produceArtifact() { return nodes; },
   }), /Unknown option: unexpected/);
+  await assert.rejects(operator({}, "Shadowrocket", {
+    arguments: { ...argumentsForProfile, channel: "beta" },
+    async produceArtifact() { return nodes; },
+  }), /channel/i);
+  await assert.rejects(operator({}, "Shadowrocket", {
+    arguments: { ...argumentsForProfile, adblockMode: "balanced" },
+    async produceArtifact() { return nodes; },
+  }), /adblockMode/i);
 });
 
 test("file operator retains its JavaScript function arity", () => {

@@ -1,0 +1,1245 @@
+{
+  "rules": [
+    {
+      "domain": [
+        "004430.xyz"
+      ]
+    },
+    {
+      "domain": [
+        "021912.xyz"
+      ]
+    },
+    {
+      "domain": [
+        "1337.abcvg.info"
+      ]
+    },
+    {
+      "domain": [
+        "6ahddutb1ucc3cp.ru"
+      ]
+    },
+    {
+      "domain": [
+        "aboutbeautifulgallopinghorsesinthegreenpasture.online"
+      ]
+    },
+    {
+      "domain": [
+        "admin.52ywp.com"
+      ]
+    },
+    {
+      "domain": [
+        "anime-tracker.aruku.kro.kr"
+      ]
+    },
+    {
+      "domain": [
+        "archive.torrentonline.cc"
+      ]
+    },
+    {
+      "domain": [
+        "banananetwork.qzz.io"
+      ]
+    },
+    {
+      "domain": [
+        "bittorrent-tracker.e-n-c-r-y-p-t.net"
+      ]
+    },
+    {
+      "domain": [
+        "bt.okmp3.ru"
+      ]
+    },
+    {
+      "domain": [
+        "bt1.archive.org"
+      ]
+    },
+    {
+      "domain": [
+        "bt2.archive.org"
+      ]
+    },
+    {
+      "domain": [
+        "bvarf.tracker.sh"
+      ]
+    },
+    {
+      "domain": [
+        "cerf.cs.umd.edu"
+      ]
+    },
+    {
+      "domain": [
+        "coeus.torrentonline.cc"
+      ]
+    },
+    {
+      "domain": [
+        "evan.im"
+      ]
+    },
+    {
+      "domain": [
+        "exodus.desync.com"
+      ]
+    },
+    {
+      "domain": [
+        "ipv4announce.sktorrent.eu"
+      ]
+    },
+    {
+      "domain": [
+        "leet-tracker.moe"
+      ]
+    },
+    {
+      "domain": [
+        "martin-gebhardt.eu"
+      ]
+    },
+    {
+      "domain": [
+        "ns575949.ip-51-222-82.net"
+      ]
+    },
+    {
+      "domain": [
+        "nyaa.tracker.wf"
+      ]
+    },
+    {
+      "domain": [
+        "obey.torrentonline.cc"
+      ]
+    },
+    {
+      "domain": [
+        "open.demonii.com"
+      ]
+    },
+    {
+      "domain": [
+        "open.demonoid.ch"
+      ]
+    },
+    {
+      "domain": [
+        "open.ftorrent.com"
+      ]
+    },
+    {
+      "domain": [
+        "open.stealth.si"
+      ]
+    },
+    {
+      "domain": [
+        "open.tracker.ink"
+      ]
+    },
+    {
+      "domain": [
+        "opentor.org"
+      ]
+    },
+    {
+      "domain": [
+        "orgtgju.org"
+      ]
+    },
+    {
+      "domain": [
+        "p4p.arenabg.com"
+      ]
+    },
+    {
+      "domain": [
+        "pybittrack.retiolus.net"
+      ]
+    },
+    {
+      "domain": [
+        "rekcart.duckdns.org"
+      ]
+    },
+    {
+      "domain": [
+        "retracker.hotplug.ru"
+      ]
+    },
+    {
+      "domain": [
+        "seedpeer.net"
+      ]
+    },
+    {
+      "domain": [
+        "shahidrazi.online"
+      ]
+    },
+    {
+      "domain": [
+        "t.213891.xyz"
+      ]
+    },
+    {
+      "domain": [
+        "t.overflow.biz"
+      ]
+    },
+    {
+      "domain": [
+        "torrent.tracker.durukanbal.com"
+      ]
+    },
+    {
+      "domain": [
+        "torrentclub.online"
+      ]
+    },
+    {
+      "domain": [
+        "torrents.tmtime.dev"
+      ]
+    },
+    {
+      "domain": [
+        "torrentsmd.com"
+      ]
+    },
+    {
+      "domain": [
+        "tr.abiir.top"
+      ]
+    },
+    {
+      "domain": [
+        "tr.highstar.shop"
+      ]
+    },
+    {
+      "domain": [
+        "tr.kxmp.cf"
+      ]
+    },
+    {
+      "domain": [
+        "tr.nyacat.pw"
+      ]
+    },
+    {
+      "domain": [
+        "tr.zukizuki.org"
+      ]
+    },
+    {
+      "domain": [
+        "tr4ck3r.duckdns.org"
+      ]
+    },
+    {
+      "domain": [
+        "tracker-udp.gbitt.info"
+      ]
+    },
+    {
+      "domain": [
+        "tracker.004430.xyz"
+      ]
+    },
+    {
+      "domain": [
+        "tracker.1h.is"
+      ]
+    },
+    {
+      "domain": [
+        "tracker.7471.top"
+      ]
+    },
+    {
+      "domain": [
+        "tracker.aruku.ovh"
+      ]
+    },
+    {
+      "domain": [
+        "tracker.auctor.tv"
+      ]
+    },
+    {
+      "domain": [
+        "tracker.bittor.pw"
+      ]
+    },
+    {
+      "domain": [
+        "tracker.bluefrog.pw"
+      ]
+    },
+    {
+      "domain": [
+        "tracker.breizh.pm"
+      ]
+    },
+    {
+      "domain": [
+        "tracker.bt4g.com"
+      ]
+    },
+    {
+      "domain": [
+        "tracker.corpscorp.online"
+      ]
+    },
+    {
+      "domain": [
+        "tracker.ddunlimited.net"
+      ]
+    },
+    {
+      "domain": [
+        "tracker.dhitechnical.com"
+      ]
+    },
+    {
+      "domain": [
+        "tracker.dler.com"
+      ]
+    },
+    {
+      "domain": [
+        "tracker.dler.org"
+      ]
+    },
+    {
+      "domain": [
+        "tracker.ducks.party"
+      ]
+    },
+    {
+      "domain": [
+        "tracker.filemail.com"
+      ]
+    },
+    {
+      "domain": [
+        "tracker.flatuslifir.is"
+      ]
+    },
+    {
+      "domain": [
+        "tracker.fnix.net"
+      ]
+    },
+    {
+      "domain": [
+        "tracker.gcrenwp.top"
+      ]
+    },
+    {
+      "domain": [
+        "tracker.gmi.gd"
+      ]
+    },
+    {
+      "domain": [
+        "tracker.hismz.cn"
+      ]
+    },
+    {
+      "domain": [
+        "tracker.iperson.xyz"
+      ]
+    },
+    {
+      "domain": [
+        "tracker.kuroy.me"
+      ]
+    },
+    {
+      "domain": [
+        "tracker.leechshield.link"
+      ]
+    },
+    {
+      "domain": [
+        "tracker.manager.itislove.cz"
+      ]
+    },
+    {
+      "domain": [
+        "tracker.manager.v6.navy"
+      ]
+    },
+    {
+      "domain": [
+        "tracker.mywaifu.best"
+      ]
+    },
+    {
+      "domain": [
+        "tracker.nekomi.cn"
+      ]
+    },
+    {
+      "domain": [
+        "tracker.nyaa.vc"
+      ]
+    },
+    {
+      "domain": [
+        "tracker.opentorrent.top"
+      ]
+    },
+    {
+      "domain": [
+        "tracker.opentrackr.org"
+      ]
+    },
+    {
+      "domain": [
+        "tracker.openwebtorrent.com"
+      ]
+    },
+    {
+      "domain": [
+        "tracker.playground.ru"
+      ]
+    },
+    {
+      "domain": [
+        "tracker.plx.im"
+      ]
+    },
+    {
+      "domain": [
+        "tracker.pmman.tech"
+      ]
+    },
+    {
+      "domain": [
+        "tracker.privateseedbox.xyz"
+      ]
+    },
+    {
+      "domain": [
+        "tracker.publictracker.xyz"
+      ]
+    },
+    {
+      "domain": [
+        "tracker.qingwapt.org"
+      ]
+    },
+    {
+      "domain": [
+        "tracker.qu.ax"
+      ]
+    },
+    {
+      "domain": [
+        "tracker.renfei.net"
+      ]
+    },
+    {
+      "domain": [
+        "tracker.sharebro.in"
+      ]
+    },
+    {
+      "domain": [
+        "tracker.skyts.net"
+      ]
+    },
+    {
+      "domain": [
+        "tracker.startwork.cv"
+      ]
+    },
+    {
+      "domain": [
+        "tracker.t-1.org"
+      ]
+    },
+    {
+      "domain": [
+        "tracker.theoks.net"
+      ]
+    },
+    {
+      "domain": [
+        "tracker.torrent.eu.org"
+      ]
+    },
+    {
+      "domain": [
+        "tracker.tritan.gg"
+      ]
+    },
+    {
+      "domain": [
+        "tracker.tryhackx.org"
+      ]
+    },
+    {
+      "domain": [
+        "tracker.waaa.moe"
+      ]
+    },
+    {
+      "domain": [
+        "tracker.wildkat.net"
+      ]
+    },
+    {
+      "domain": [
+        "tracker.xn--djrq4gl4hvoi.top"
+      ]
+    },
+    {
+      "domain": [
+        "tracker.yemekyedim.com"
+      ]
+    },
+    {
+      "domain": [
+        "tracker.yume-hatsuyuki.moe"
+      ]
+    },
+    {
+      "domain": [
+        "tracker.zhuqiy.com"
+      ]
+    },
+    {
+      "domain": [
+        "tracker.zhuqiy.dgj055.icu"
+      ]
+    },
+    {
+      "domain": [
+        "tracker1.520.jp"
+      ]
+    },
+    {
+      "domain": [
+        "tracker1.itzmx.com"
+      ]
+    },
+    {
+      "domain": [
+        "tracker2.dler.org"
+      ]
+    },
+    {
+      "domain": [
+        "tracker2.itzmx.com"
+      ]
+    },
+    {
+      "domain": [
+        "tracker3.itzmx.com"
+      ]
+    },
+    {
+      "domain": [
+        "tracker4.itzmx.com"
+      ]
+    },
+    {
+      "domain": [
+        "uabits.today"
+      ]
+    },
+    {
+      "domain": [
+        "udp.tracker.projectk.org"
+      ]
+    },
+    {
+      "domain": [
+        "v6.vito-tracker.space"
+      ]
+    },
+    {
+      "domain": [
+        "whybother.torrentonline.cc"
+      ]
+    },
+    {
+      "domain": [
+        "www.wareztorrent.com"
+      ]
+    },
+    {
+      "domain": [
+        "yuptracker-eu.gaijinent.com"
+      ]
+    },
+    {
+      "domain": [
+        "zer0day.ch"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "1ptba.com"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "2xfree.org"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "52pt.site"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "aidoru-online.me"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "alpharatio.cc"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "animebytes.tv"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "animetorrents.me"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "anthelion.me"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "asiancinema.me"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "audiences.me"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "avgv.cc"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "avistaz.to"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "awesome-hd.me"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "beitai.pt"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "beyond-hd.me"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "bibliotik.me"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "bittorrent.com"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "blutopia.cc"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "broadcasthe.net"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "bt.byr.cn"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "bt.neu6.edu.cn"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "btschool.club"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "bwtorrents.tv"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "byr.pt"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "ccfbits.org"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "cgpeers.com"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "chdbits.co"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "cinemageddon.net"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "cinematik.net"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "cinemaz.to"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "classix-unlimited.co.uk"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "concertos.live"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "creditracker.net"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "dicmusic.club"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "discfan.net"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "dxdhd.com"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "eastgame.org"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "empornium.me"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "et8.org"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "exoticaz.to"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "extremlymtorrents.ws"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "filelist.io"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "gainbound.net"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "gazellegames.net"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "gfxpeers.net"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "hd-space.org"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "hd-torrents.org"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "hd4.xyz"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "hd4fans.org"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "hdarea.co"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "hdatmos.club"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "hdbd.us"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "hdbits.org"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "hdchina.org"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "hdcity.city"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "hddolby.com"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "hdfans.org"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "hdhome.org"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "hdpost.top"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "hdroute.org"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "hdsky.me"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "hdstreet.club"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "hdtime.org"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "hdupt.com"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "hdzone.me"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "hhanclub.top"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "hitpt.com"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "hitpt.org"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "hudbt.hust.edu.cn"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "icetorrent.org"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "iptorrents.com"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "j99.info"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "joyhd.net"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "jpopsuki.eu"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "kamept.com"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "karagarga.in"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "keepfrds.com"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "landof.tv"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "leaguehd.com"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "lemonhd.org"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "lztr.me"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "m-team.cc"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "madsrevolution.net"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "moecat.best"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "morethan.tv"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "msg.vg"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "myanonamouse.net"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "nanyangpt.com"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "ncore.cc"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "nebulance.io"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "nicept.net"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "npupt.com"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "nwsuaf6.edu.cn"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "open.cd"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "oppaiti.me"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "orpheus.network"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "ourbits.club"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "passthepopcorn.me"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "pornbits.net"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "privatehd.to"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "pterclub.com"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "pthome.net"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "ptsbao.club"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "pttime.org"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "pussytorrents.org"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "qingwa.pro"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "redacted.ch"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "sdbits.org"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "sharkpt.net"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "sjtu.edu.cn"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "skyey2.com"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "soulvoice.club"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "springsunday.net"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "tju.pt"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "tjupt.org"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "torrentday.com"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "torrentleech.org"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "torrentseeds.org"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "totheglory.im"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "trontv.com"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "u2.dmhy.org"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "uhdbits.org"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "xauat6.edu.cn"
+      ]
+    },
+    {
+      "domain_keyword": [
+        "announce"
+      ]
+    },
+    {
+      "domain_keyword": [
+        "chdbits"
+      ]
+    },
+    {
+      "domain_keyword": [
+        "m-team"
+      ]
+    },
+    {
+      "domain_keyword": [
+        "torrent"
+      ]
+    },
+    {
+      "ip_cidr": [
+        "207.241.226.111/32"
+      ]
+    },
+    {
+      "ip_cidr": [
+        "207.241.231.226/32"
+      ]
+    },
+    {
+      "ip_cidr": [
+        "52.58.128.163/32"
+      ]
+    }
+  ],
+  "version": 5
+}

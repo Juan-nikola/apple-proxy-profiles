@@ -6,7 +6,7 @@ import { operator } from "../src/substore-nodes-entry.js";
 const ARGUMENTS = Object.freeze({
   output: "nodes",
   type: "collection",
-  name: "shadowrocket-sources",
+  name: "apple-proxy-sources",
   clientChain: "off",
 });
 
@@ -52,7 +52,7 @@ test("Anywhere File Operator produces one private Clash subscription", async () 
   assert.equal(operator.length, 2);
   assert.deepEqual(calls, [{
     type: "collection",
-    name: "shadowrocket-sources",
+    name: "apple-proxy-sources",
     platform: "JSON",
     produceType: "internal",
   }]);
@@ -82,7 +82,7 @@ test("Anywhere File Operator enforces the exact chain-off collection contract", 
     { ...ARGUMENTS, type: "subscription" },
     { ...ARGUMENTS, name: "other-sources" },
     { ...ARGUMENTS, clientChain: "on" },
-    { output: "nodes", type: "collection", name: "shadowrocket-sources" },
+    { output: "nodes", type: "collection", name: "apple-proxy-sources" },
     { ...ARGUMENTS, unknown: true },
   ];
   for (const arguments_ of rejected) {
@@ -96,7 +96,7 @@ test("Anywhere File Operator enforces the exact chain-off collection contract", 
 
 test("Anywhere arguments reject every hostile object shape", async () => {
   const inherited = Object.create({ output: "nodes" });
-  Object.assign(inherited, { type: "collection", name: "shadowrocket-sources", clientChain: "off" });
+  Object.assign(inherited, { type: "collection", name: "apple-proxy-sources", clientChain: "off" });
   const symbol = { ...ARGUMENTS, [Symbol("hostile")]: true };
   const hidden = { ...ARGUMENTS };
   Object.defineProperty(hidden, "clientChain", { value: "off", enumerable: false });
@@ -167,7 +167,7 @@ test("operator keeps one immutable pre-await argument snapshot", async () => {
   assert.match(result.$content, /^proxies:\n/u);
   assert.deepEqual(calls, [{
     type: "collection",
-    name: "shadowrocket-sources",
+    name: "apple-proxy-sources",
     platform: "JSON",
     produceType: "internal",
   }]);

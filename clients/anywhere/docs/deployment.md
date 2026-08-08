@@ -19,10 +19,10 @@ https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/scripts/anyw
 新任务统一选择 `anywhere-node-generator.js`。旧 `substore-node-generator.js` Pages URL 继续保留为字节一致的兼容别名；既有任务无需仅为改名替换 URL，也不要同时添加新旧两个别名。
 
 ```text
-output=nodes&type=collection&name=shadowrocket-sources&clientChain=off
+output=nodes&type=collection&name=apple-proxy-sources&clientChain=off
 ```
 
-旧版只有单行链接时使用 `JS_URL#output=nodes&type=collection&name=shadowrocket-sources&clientChain=off`，不能使用 `?` 连接脚本参数。以后更新 Anywhere Node Generator 不复制脚本正文；`anywhere-nodes` 的 JS URL、任务名、私密输出 URL和上述参数保持不动。发布后先重新预览，再在一台 canary 设备手动 Refresh。
+旧版只有单行链接时使用 `JS_URL#output=nodes&type=collection&name=apple-proxy-sources&clientChain=off`，不能使用 `?` 连接脚本参数。以后更新 Anywhere Node Generator 不复制脚本正文；`anywhere-nodes` 的 JS URL、任务名、私密输出 URL和上述参数保持不动。发布后先重新预览，再在一台 canary 设备手动 Refresh。
 
 Anywhere 没有与 Shadowrocket/Egern 等价的完整 Profile File，不要创建 `anywhere-profile-generator.js`。这个 File 只完成私密节点层；规则、绑定和设备设置必须继续完成第 2—5 节。
 
@@ -38,17 +38,26 @@ Anywhere 没有与 Shadowrocket/Egern 等价的完整 Profile File，不要创�
 https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/import.html
 ```
 
-按页面顺序点击全部 3 个批次。在 Import Rule Sets 页面等待下载结束，确认没有 failed、所有项目均选中，再点 Done。deep link 使用 `anywhere://add-rule-set`；它只打开确认流程，不会静默导入。不要混用 `current`、`previous` 与某个 `versions/<hash>` 的分片。
+已导入旧版的设备，旧分片包括 `Advertising`、`Advertising_Domain`、`ChinaMax_Domain` 和通用 `Game`；导入前必须删除或禁用这些旧分片。然后点默认页最上方的总导入 deep link；如果无法一次打开，按页面顺序点击全部回退批次。deep link 使用 `anywhere://add-rule-set`，只打开确认流程。不要混用 `current`、`previous` 与某个 `versions/<hash>` 的分片。
 
 Manifest 中每个逻辑规则集的所有 shard 必须绑定相同目标。漏一个 shard 就是部分生效。
+导入完成后应看到总计 31 个默认规则分片，并逐一核对它们的本地 assignment。可选广告包的独立页是：
+
+```text
+https://juan-nikola.github.io/apple-proxy-profiles/optional/adblock-full/current/anywhere/import.html
+```
+
+该页只导入 `Advertising` 和 `Advertising_Domain`，两者均为 REJECT；完整包可使内存显著增长，不建议低内存设备启用。
 
 ## 3. 检查首次绑定
 
-- `routing = 2`：Hijacking、BlockHttpDNS、Advertising 和 Advertising_Domain 全部分片应为 REJECT。
-- `routing = 1`：Privacy、BiliBili、ByteDance、XiaoHongShu、Weibo、Apple、Microsoft、SteamCN、ChinaMax_Domain、Download、PrivateTracker、ChinaMax 首次为 DIRECT。Privacy 没有独立分片；若将来拓扑变化，以 Manifest 为准。
-- `routing = 0`：OpenAI、Claude、Gemini、Copilot、GitHub、YouTube、Netflix、Disney、Spotify、GlobalMedia、Telegram、Facebook、Instagram、Twitter、TikTok、Game 首次为 Default。
+- `routing = 2`：默认的 Hijacking、BlockHttpDNS 以及可选包的 Advertising、Advertising_Domain 应为 REJECT。
+- `routing = 1`：`DomesticCore`、`DomesticGame`、`ChinaIP` 以及 Manifest 标注的其他直连分片首次为 DIRECT。
+- `routing = 0`：境外服务与 `OverseasGame` 首次为 Default/当前代理。若当前版本支持专用组，在 App 内手动将 `OverseasGame` 绑定到海外游戏组。
 
 Default 不是停用，而是回退到当前节点或链。四个 AI 规则集若要实现 AI 独立出口，必须在每台设备把所有相关 shard 本地绑定到同一个 AI 节点或链。服务独立出口同理。Download/PrivateTracker 默认 DIRECT；除非服务商明确允许 P2P，不要随意绑定机场。
+
+四个 AI 分片为 `OpenAI`、`Claude`、`Gemini` 和 `Copilot`；如需 AI 专用出口，将它们在每台设备绑定到同一节点或链。
 
 ## 4. 链与本地设置
 

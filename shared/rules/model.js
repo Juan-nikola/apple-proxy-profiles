@@ -1,4 +1,5 @@
 import { isIP } from "node:net";
+import { DEFAULT_RULE_SOURCE_IDS, FULL_ADBLOCK_SOURCE_IDS } from "./lightweight-policy.js";
 
 export const RULE_KIND = Object.freeze({
   domain: "domain",
@@ -182,4 +183,38 @@ export function normalizeRuleEntry(entry) {
     noResolve: entry.noResolve === true,
     sourceId,
   });
+}
+
+const ALLOWED_SYNTHETIC_SOURCE_IDS = new Set(["DomesticCore", "DomesticGame", "OverseasGame", "ChinaIP"]);
+const DEFAULT_LIGHTWEIGHT_SOURCE_IDS = new Set(DEFAULT_RULE_SOURCE_IDS);
+const OPTIONAL_LIGHTWEIGHT_SOURCE_IDS = new Set(FULL_ADBLOCK_SOURCE_IDS);
+
+function catalogSourceIds(value, name) {
+  if (!Array.isArray(value) || value.some((id) => typeof id !== "string" || !id)) {
+    throw new TypeError(`${name} must be an array of non-empty source IDs`);
+  }
+  return value;
+}
+
+/** Validates the closed source-ID boundary used by the lightweight compiler. */
+export function validateLightweightRuleCatalog({ defaultSourceIds, optionalSourceIds } = {}) {
+  const defaults = catalogSourceIds(defaultSourceIds, "defaultSourceIds");
+  const optional = catalogSourceIds(optionalSourceIds, "optionalSourceIds");
+  if (new Set(defaults).size !== defaults.length) throw new TypeError("defaultSourceIds contains a duplicate ID");
+  if (new Set(optional).size !== optional.length) throw new TypeError("optionalSourceIds contains a duplicate ID");
+  if (optional.some((id) => defaults.includes(id))) {
+    throw new TypeError("default and optional rule packs overlap");
+  }
+  for (const id of defaults) {
+    if (!DEFAULT_LIGHTWEIGHT_SOURCE_IDS.has(id)) {
+      const description = /^(?:Domestic|Overseas)|ChinaIP$/u.test(id) && !ALLOWED_SYNTHETIC_SOURCE_IDS.has(id)
+        ? "synthetic"
+        : "default";
+      throw new TypeError(`${description} lightweight rule source ID is not allowed: ${id}`);
+    }
+  }
+  for (const id of optional) {
+    if (!OPTIONAL_LIGHTWEIGHT_SOURCE_IDS.has(id)) throw new TypeError(`optional lightweight rule source ID is not allowed: ${id}`);
+  }
+  return true;
 }

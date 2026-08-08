@@ -6,13 +6,15 @@
 
 ## 规则批次失败或数量不对
 
-只接受 HTTPS、路径以 `.arrs` 结束、HTTP 2xx、严格 UTF‑8。源码上限是每个集合 100,000 条，本项目限制 95,000。解析器会静默丢弃非法行，所以不能把“能导入”当作完整；对照 Manifest 的 entryCount、SHA-256、34 个 shard 和 3 个批次。不要导入 `.amrs`，不要启用 MITM/HTTPS 解密。
+只接受 HTTPS、路径以 `.arrs` 结束、HTTP 2xx、严格 UTF‑8。源码上限是每个集合 100,000 条，本项目限制 95,000。对照 schema-v2 Manifest 的 entryCount、SHA-256 和 31 个默认 shard；批次数以导入页实际显示为准。不要导入 `.amrs`，不要启用 MITM/HTTPS 解密。
 
 ## 分流错误
 
-确认 Rule 模式、所有 shard、同一逻辑集绑定一致，并且没有混用 current/previous/version。看到规则被 reset to Default 时，不要理解为关闭：Default 可能直接走当前节点或链。Privacy 没有独立 shard 是优先级归并结果，不是缺文件。
+确认 Rule 模式、所有 shard、同一逻辑集绑定一致，并且没有混用 current/previous/version。看到规则被 reset to Default 时，不要理解为关闭：Default 可能直接走当前节点或链。
 
-国内 App 偶发慢、切换开关后暂时恢复时，先 Update 现有 `ChinaMax_Domain` 两个分片并确认仍为 `routing=1` / DIRECT；本版本已把 18 条常见国内 App/CDN 后缀合入该规则集，不需要新增导入项。大规则集未命中时，域名可能落到 Default、当前节点或旧 DNS/连接缓存；切换开关会重建这些状态，所以只能暂时缓解。
+国内 App 偶发慢、切换开关后暂时恢复时，先确认旧 `ChinaMax_Domain` 和通用 `Game` 已删除或禁用，再确认 `DomesticCore`、`DomesticGame`、`ChinaIP` 为 DIRECT。切换开关只会暂时重建 DNS/连接缓存，不会修正旧分片的路由。
+
+如果启用完整广告包后出现内存飙升、启动失败或系统杀后台，立即禁用/删除 `Advertising` 与 `Advertising_Domain`，只保留默认轻量规则。可选广告包不是实现国内直连的必要条件。
 
 ## 链消失或绑定变成孤儿
 

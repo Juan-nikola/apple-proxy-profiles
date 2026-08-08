@@ -1,103 +1,148 @@
 # Apple Proxy Profiles
 
-这是 `Juan-nikola/apple-proxy-profiles` 的公开生成器仓库：用同一套节点能力、策略意图与 Blackmatrix7 增强规则，为 Shadowrocket、Egern 和 Anywhere 生成尽可能功能等价、可验证、可回滚的配置产物。
+这是 `Juan-nikola/apple-proxy-profiles` 的公开生成器仓库：从同一套节点能力、策略意图和公开规则，生成 Egern、Anywhere、小火箭（Shadowrocket）、Surge 和 sing-box 的客户端产物。
 
-> 当前状态：三个客户端的生成器与确定性示例已通过本地自动验证，GitHub Pages 已上线；真实设备 canary 尚未完成。没有设备验收记录时，不应把本项目描述为已完成真机验证。
+> 当前状态：生成器、公开脚本、确定性示例和自动验证已完成；真实设备仍需按各客户端 canary 清单逐台验收。本仓库没有保存任何真实节点或 Sub-Store 密钥。
 
-首次配置 Sub-Store 请先看 **[外置 JS + 任务引用总指南](docs/substore-two-layer-setup.md)**：仓库在 GitHub Pages 维护 5 个客户端专属 JS，Sub-Store 的组合订阅 Operator/File 选择链接模式直接引用对应 URL，并在任务的可视化参数编辑器中填写参数。不要把 JavaScript 正文复制进每个任务。
+## 先看哪一份文档
 
-三个客户端现在统一使用同一套维护方式：代码层由仓库集中更新，任务层只保存稳定 JS URL、参数和自己的私密输出 URL。当前通用流程不依赖 Sub-Store 的独立脚本库功能。
+- 第一次部署：先看[五客户端 Sub-Store 总指南](docs/substore-two-layer-setup.md)。
+- 想知道节点、规则或代码应该改哪里：看[维护与编译手册](docs/maintenance.md)。
+- 只部署一个客户端：进入下面对应的 README 和 `docs/deployment.md`。
+- 需要排错：进入对应客户端的 `docs/troubleshooting.md`。
 
-| 客户端 | 外置 JS | Sub-Store 引用任务 |
+本项目的“引用”指：Sub-Store 任务保存 GitHub Pages 的远程 JS URL，并通过 URL hash 传入参数；不把 JS 正文复制到任务，也不把私密节点 URL 写入 GitHub。
+
+## 六步快速开始
+
+1. 在自己的 Sub-Store 中确认已有来源 `snell` 与 `vlesshy2`。
+2. 新建组合订阅 `apple-proxy-sources`，只引用这两个来源，先预览确认非空。
+3. 再创建处理后的 `shadowrocket-nodes` 组合，只给它挂 Shadowrocket 节点 Operator；Shadowrocket 三个 Profile 使用 `name=shadowrocket-nodes`，Egern、Anywhere、Surge、sing-box 使用原始组合 `name=apple-proxy-sources`。
+4. 先用 `edge` 建隔离测试任务，预览无误后生产任务使用 `current`。
+5. 按 macOS → iPhone → iPad；Android 与 OpenWrt 分别按 sing-box 清单逐台导入，始终保留旧配置。
+6. 新增节点只修改 Sub-Store 组合；新增公开规则或修改生成器才修改本仓库。
+
+## 七个公开远程 JS 入口
+
+下面是新任务应使用的稳定地址。不要将真实 Sub-Store 地址拼接在这里，也不要把 GitHub `blob` 页面当作 JS 地址。
+
+| 客户端 | 远程 JS | 用途 |
 | --- | --- | --- |
-| Shadowrocket | `shadowrocket-node-operator.js`、`shadowrocket-profile-generator.js` | 1 个组合订阅 Script Operator + 3 个 Profile File |
-| Egern | `egern-node-generator.js`、`egern-profile-generator.js` | 1 个节点 File + 3 个 Profile File |
-| Anywhere | `anywhere-node-generator.js` | 1 个节点 File；公开规则和设备设置走独立链路 |
+| Shadowrocket | [node operator](https://juan-nikola.github.io/apple-proxy-profiles/current/shadowrocket/scripts/shadowrocket-node-operator.js) | 组合订阅节点处理 |
+| Shadowrocket | [profile generator](https://juan-nikola.github.io/apple-proxy-profiles/current/shadowrocket/scripts/shadowrocket-profile-generator.js) | macOS/iPhone/iPad Profile |
+| Egern | [node generator](https://juan-nikola.github.io/apple-proxy-profiles/current/egern/scripts/egern-node-generator.js) | 私密节点 YAML |
+| Egern | [profile generator](https://juan-nikola.github.io/apple-proxy-profiles/current/egern/scripts/egern-profile-generator.js) | macOS/iPhone/iPad Profile |
+| Anywhere | [node generator](https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/scripts/anywhere-node-generator.js) | 私密 Clash 节点 YAML |
+| Surge | [profile generator](https://juan-nikola.github.io/apple-proxy-profiles/current/surge/scripts/surge-profile-generator.js) | macOS/iPhone/iPad Profile |
+| sing-box | [config generator](https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/scripts/sing-box-config-generator.js) | macOS/iPhone/iPad/Android/OpenWrt JSON |
 
-可直接复制的 URL、参数、创建顺序、成功标志、升级和回滚方法分别写在三个客户端 README 中；根目录总指南用于统一理解链接模式、可视化参数和旧版 `#arg=value` 写法。
+`edge/` 是测试/前沿通道；`current/` 是生产通道。旧的 `substore-*` URL 仍作为兼容别名保留，但不要在同一任务里重复添加新旧脚本。
 
-## 三个客户端
+## Sub-Store 任务总览
 
-| 客户端 | 公开仓库提供 | 私密环境提供 | 使用入口 |
+`apple-proxy-sources` 是保留来源标记的原始组合；Shadowrocket 另使用处理后的 `shadowrocket-nodes` 组合。总指南包含每个任务的远程 URL、hash 参数、可视化参数、预览成功标志和刷新顺序。
+
+| 客户端 | 任务数量 | 任务结构 |
+| --- | ---: | --- |
+| Egern | 4 | 节点 File + macOS/iPhone/iPad Profile File |
+| Anywhere | 1 | 节点 File；规则集和设备设置是独立层 |
+| Shadowrocket | 4 | 节点 Script Operator + macOS/iPhone/iPad Profile File |
+| Surge | 3 | macOS/iPhone/iPad Profile File |
+| sing-box | 5 | macOS/iPhone/iPad/Android/OpenWrt Config File |
+
+旧版 Sub-Store 只有一个脚本链接框时，格式是：
+
+```text
+https://juan-nikola.github.io/apple-proxy-profiles/current/<client>/scripts/<script>.js#output=config&type=collection&name=apple-proxy-sources&platform=iphone
+```
+
+`#` 后的 `&` 用来分隔脚本参数；不要使用 `?` 连接脚本参数。新版界面优先选择“远程链接”，再在参数编辑器逐项填写。五个客户端合计 17 个输出任务。
+
+## 五个客户端
+
+| 客户端 | 支持平台 | 主要入口 | 详细文档 |
 | --- | --- | --- | --- |
-| Shadowrocket | 节点 Operator、macOS/iPhone/iPad Profile 生成器、脱敏结构示例 | Sub-Store 原始订阅、节点订阅 URL、三个 Profile URL | [说明](clients/shadowrocket/README.md) · [部署](clients/shadowrocket/docs/deployment.md) · [canary](clients/shadowrocket/docs/canary-checklist.md) |
-| Egern | 节点生成器、macOS/iPhone/iPad Profile 生成器、脱敏结构示例 | Sub-Store 原始订阅、节点文件 URL、三个 Profile URL | [说明](clients/egern/README.md) · [部署](clients/egern/docs/deployment.md) · [canary](clients/egern/docs/canary.md) |
-| Anywhere | 节点生成器、公开 `.arrs` 规则分片、Manifest 与批量导入页 | 节点订阅 URL、节点凭据，以及 App 内的规则绑定、DNS、链和模式 | [说明](clients/anywhere/README.md) · [部署](clients/anywhere/docs/deployment.md) · [canary](clients/anywhere/docs/canary.md) |
+| Egern | macOS、iPhone、iPad | 节点 YAML + 三份 Profile | [README](clients/egern/README.md) · [部署](clients/egern/docs/deployment.md) |
+| Anywhere | iPhone、iPad 等官方客户端 | 节点 YAML + `.arrs` 规则导入 | [README](clients/anywhere/README.md) · [部署](clients/anywhere/docs/deployment.md) |
+| Shadowrocket | macOS、iPhone、iPad | 节点订阅 + 三份 INI Profile | [README](clients/shadowrocket/README.md) · [部署](clients/shadowrocket/docs/deployment.md) |
+| Surge | macOS、iPhone、iPad | 三份 Surge Profile | [README](clients/surge/README.md) · [部署](clients/surge/docs/deployment.md) |
+| sing-box | macOS、iPhone、iPad、Android、OpenWrt | 五份 JSON 配置 | [README](clients/sing-box/README.md) · [部署](clients/sing-box/docs/deployment.md) |
 
-Shadowrocket 和 Egern 能从私密 Sub-Store File 生成平台 Profile；Anywhere 没有等价的远程完整 Profile 格式，因此不能把它伪装成同一种部署结构。
+## 私密与公开边界
 
-新部署统一使用带客户端前缀的脚本名：`shadowrocket-node-operator.js`、`shadowrocket-profile-generator.js`、`egern-node-generator.js`、`egern-profile-generator.js`、`anywhere-node-generator.js`。已经部署的旧 `substore-*` Pages URL 继续作为字节一致的兼容别名保留，现有 Sub-Store 任务不必仅为改名而更换 URL；新文档和新任务不要再选旧名。
+公开仓库和 GitHub Pages 只允许包含源码、脱敏示例、公开规则、固定提交、哈希和聚合计数。以下内容只能保存在自己的 Sub-Store、设备或密码管理器中：
 
-## 公开与私密边界
+- Sub-Store 管理地址、API key、原始订阅 URL 和生成后的私密输出 URL；
+- 节点服务器、端口、UUID、密码、PSK、私钥、证书和完整 YAML/URI/JSON；
+- 带秘密查询参数的 deep link、二维码、抓包、日志和截图。
 
-公开仓库、GitHub Pages、Actions 日志、Issue、截图、测试夹具和文档只允许包含源码、公开规则、哈希、来源路径、聚合计数和使用 `example.invalid` 的脱敏示例。
+本项目不需要 MITM、HTTPS 解密、根证书、请求重写或“不验证证书”。公开 JS 在私密 Sub-Store 运行时读取节点；诊断只输出平台、协议和排除原因计数，不回传节点值。
 
-以下内容必须只保存在自己的 Sub-Store 和设备中，绝不能提交到 Git、上传到 Pages、粘贴到 Issue/聊天或出现在完整日志和截图里：
+## 维护时改哪里
 
-- 原始或生成后的订阅 URL、Sub-Store 管理地址与 Profile URL；
-- 节点服务器、端口、UUID、密码、PSK、私钥、证书和认证参数；
-- 带秘密查询参数的 deep link、二维码、完整节点 YAML/URI；
-- 能还原以上内容的抓包、调试转储或未脱敏配置。
+| 需求 | 只改这里 | 不要改这里 |
+| --- | --- | --- |
+| 增加/删除节点订阅 | Sub-Store 的 `apple-proxy-sources` 原始组合（并同步 `shadowrocket-nodes`） | GitHub、README、公开 JS |
+| 修改公开规则 | `automation/src/source-catalog.js`、对应允许清单或上游固定 SHA | `public/`、`clients/*/dist/` |
+| 修改某客户端行为 | 对应 `clients/<client>/src/`、测试和文档 | 生成后的 bundle |
+| 修改共享协议能力 | `shared/`、各适配器、测试和 fixtures | 只在某一客户端静默丢字段 |
+| 修改 Sub-Store 参数 | 私密任务的参数编辑器或总指南中的公开示例 | 私密 API 或输出 URL |
+| 修改 sing-box 规则编译 | 官方 core 编译边界、脚本和测试 | 用文本伪造 `.srs` |
 
-本项目不启用 MITM、HTTPS 解密、根证书、请求重写或正文脚本。公开脚本可以在私密 Sub-Store 运行时读取节点，但输出、错误与诊断不得把节点内容带回公开链路。详见 [安全策略](SECURITY.md)。
+完整的目录地图、文件职责、每个平台编译命令、测试矩阵、发布和回滚规则见[维护与编译手册](docs/maintenance.md)。
 
-## Anywhere 的三层配置
+## 本地构建与验证
 
-Anywhere 的功能等价方案必须同时完成三层，少一层都不是完整配置：
-
-1. **私密节点订阅**：`clients/anywhere/dist/anywhere-node-generator.js` 在私密 Sub-Store 中生成仅含 `proxies` 的 Clash YAML；真实 URL 和节点留在私密链路。
-2. **公开规则集**：Blackmatrix7 的 32 个固定 Surge 输入被转换为有哈希、计数与来源信息的 `.arrs` 分片；发布后通过导入页加入 App。
-3. **设备本地设置**：逐个绑定规则集目标，并在 App 中设置默认节点/链、Rule/Global 模式、DNS、IPv6、QUIC 等。远程节点或规则刷新不会替代这些本地设置。
-
-特别注意：Anywhere 的 `Default` 不是“停用”。在审计的源码基线上，自定义规则集未绑定时会回退到当前全局目标（广告阻止规则除外）。导入后必须人工核对绑定。
-
-## 固定上游基线
-
-为了避免一次构建混用不同日期的规则，自动化只从完整提交 SHA 读取允许清单中的路径。
-
-| 上游 | 用途 | 固定提交 | 许可 |
-| --- | --- | --- | --- |
-| [blackmatrix7/ios_rule_script](https://github.com/blackmatrix7/ios_rule_script) | 三客户端的 32 个增强规则输入 | `dab47069a30c4ae70f7f5f4c919d639d9aaf79dc`（2026-08-01 19:07:21 UTC） | GPL-2.0-only |
-| [NodePassProject/Anywhere](https://github.com/NodePassProject/Anywhere) | Anywhere 导入能力的源码审计基线 | `e15518fde1f5d2652dfc1c234c89a68b87cecec0` | GPL-3.0；本仓库不复制其源码或品牌资产 |
-
-“固定”表示可复现基线，不表示永远停留在旧版本。升级上游后必须重新做兼容性审计、确定性验证、秘密扫描和真机 canary，再更新固定 SHA。完整许可与修改说明见 [第三方声明](THIRD_PARTY_NOTICES.md)。
-
-## 验证
-
-需要 Node.js 22 或更高版本。完整本地门禁：
+要求 Node.js 22+ 和 npm：
 
 ```bash
 npm ci
+npm run build
+npm run fixtures
 npm run verify
 npm run check:actions
 npm run check:rules
 ```
 
-也可以按客户端运行：
+只验证一个客户端：
 
 ```bash
-npm run verify:shadowrocket
-npm run verify:egern
-npm run verify:anywhere
-npm run check:secrets
+npm --workspace @apple-proxy-profiles/egern run verify
+npm --workspace @apple-proxy-profiles/anywhere run verify
+npm --workspace @apple-proxy-profiles/shadowrocket run verify
+npm --workspace @apple-proxy-profiles/surge run verify
+npm --workspace @apple-proxy-profiles/sing-box run verify
 ```
 
-`npm run verify` 会执行测试、重建产物、生成脱敏示例并扫描敏感信息；`check:actions` 检查工作流的 SHA 固定与最小权限；根目录的 `check:rules` 按 `public/current/manifest.json` 中的不可变提交重新下载并逐字节核对整个当前快照。若只想检查 Shadowrocket 上游 `master` 的实时健康状况，可另运行 `npm --workspace @apple-proxy-profiles/shadowrocket run check:rules`，但它不能替代固定快照复现门禁。自动验证通过只证明候选产物满足仓库契约，不等于 App Store/TestFlight 版本和真实网络上的真机验收已经完成。
+官方客户端本身不从本仓库编译；本仓库生成它们导入的配置。OpenWrt 使用生成的 JSON 和官方 sing-box 二进制。sing-box `.srs` 规则集必须由显式官方 core 编译器产生；缺少 core 时构建失败是安全行为。
 
-## 发布、灰度与回滚
+CI 和本地可用同一个安装器获取固定的官方 `sing-box 1.14.0-beta.9`。安装器只支持 Linux x64、macOS Apple Silicon 和 macOS Intel，会使用该固定 tag 的 GitHub Release 官方 `sha256` asset digest 校验压缩包，并返回绝对路径：
 
-发布后的公开入口计划为：
+```bash
+TASK_SING_BOX_CORE="$(node scripts/install-sing-box-core.mjs --print-path)"
+SING_BOX_CORE="$TASK_SING_BOX_CORE" node scripts/stage-rule-artifacts.mjs --channel current
+SING_BOX_CORE="$TASK_SING_BOX_CORE" npm --workspace @apple-proxy-profiles/sing-box run compile:rules
+SING_BOX_CORE="$TASK_SING_BOX_CORE" npm --workspace @apple-proxy-profiles/sing-box run check:config
+```
 
-- [当前 Manifest](https://juan-nikola.github.io/apple-proxy-profiles/current/manifest.json)
-- [上一已知良好版本](https://juan-nikola.github.io/apple-proxy-profiles/previous/manifest.json)
-- 内容哈希版本：读取当前 Manifest 的 `manifestHash`，再访问 `https://juan-nikola.github.io/apple-proxy-profiles/versions/<manifestHash>/manifest.json`
+sing-box 有两种配置模式：`profileMode=light` 使用远程二进制 `.srs`；`profileMode=diagnostic` 保留节点、DNS、TUN 和平台设置，但不加载任何远程规则，用于判断启动失败是否来自规则集。默认 `adblockMode=off`；只有显式选择 `adblockMode=full` 才会引用隔离的 `optional/adblock-full` 广告包，它会增加下载量和内存占用。
 
-这些 Pages URL 已上线；使用前仍应检查 Manifest 和文件哈希。`current/` 是当前快照，`previous/` 是更新前的 `current/`（首次构建时两者相同）。在线 `versions/` 最多保留 8 个内容哈希快照；整个 `public/` 树（包括 `current/`、`previous/` 和 `versions/`）不得超过 750 MiB。构建器先把 `versions/` 裁到最多 8 个；若整棵树仍超过 750 MiB，则继续从最旧哈希快照开始删除，但不会因容量清理而把已有在线窗口降到 2 个以下。若保留 `current/`、`previous/` 和最多 2 个哈希快照后仍超限，构建直接失败。需要长期保存的更老版本必须在清理前通过 Git tag/Release 归档；当前工作流不会自动创建 tag 或 Release，不能把 Pages 当成无限历史仓库。
+默认发布的硬限额是：`DomesticCore` 最多 2,000 条、默认规则最多 25,000 条，单个客户端引用的默认规则文件合计最多 5,000,000 字节。`audit/sing-box/rules/*.json` 只是审计和可复现编译输入，不是生产配置可以远程加载的规则；生产路由只能引用经官方 core 验证的 `.srs`。
 
-跨客户端发布 canary 固定为：Intel Mac Egern → iPhone Egern → iPad Egern → iPhone Anywhere → iPad Anywhere；Shadowrocket 继续按自己的 Intel Mac → iPhone → iPad 清单验收。任一阶段失败都停止推广并保留后续设备旧配置。
+## 规则与 Anywhere 全部导入
 
-稳定版是生产基线；Beta/TestFlight 只作为额外 canary 通道，不假设存在未经源码或真机验证的新能力。具体完成度见 [实施状态](docs/implementation-status.md)。
+公开规则 Manifest：<https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/manifest.json>
+
+Anywhere 全部规则导入页：<https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/import.html>
+
+导入规则后仍需在 App 内逐个确认 DIRECT、REJECT 或目标节点/链的绑定。节点刷新、规则更新和本地绑定是三层独立操作；Anywhere 的 `Default` 不是可靠的停用开关。
+
+## 发布、升级与回滚
+
+提交到 `main` 后由 GitHub Actions 构建并发布 `public/`。上线前必须通过官方 core 安装/校验、`.srs` 编译、两种 sing-box 配置检查、全客户端轻量语义与预算门禁、fixtures、秘密扫描、Actions 固定检查和不可变规则检查；上线后再检查公开 URL 返回 200 和 Manifest 哈希。定时任务只更新 `edge`，绝不自动推进 `current`；生产推进必须在 `canary-approval` 环境中指定已真机测试的客户端和其 64 位 client-manifest 哈希，然后复用该不可变字节，不重新构建。
+
+生产任务保持 `/current/`，隔离测试任务可使用 `/edge/`。升级前保留旧 Profile 和旧输出；失败时先在设备切回旧 Profile，再将测试任务改回已验证的旧版 URL。`previous/` 和 Manifest 的不可变版本用于公开规则回滚。真实设备必须按客户端 canary 清单逐台推广，不能把自动测试当作真机验收。
 
 ## 许可
 
-本仓库整体以 [GNU General Public License v2.0 only](LICENSE) 发布。Blackmatrix7 规则的来源、固定提交、转换说明与免责声明必须随衍生产物保留。各客户端名称及商标属于各自权利人；本项目与这些 App 及上游项目没有隶属或背书关系。
+本仓库整体以 [GNU GPL v2.0 only](LICENSE) 发布。Blackmatrix7 规则的来源、固定提交、转换说明和免责声明随衍生产物保留；各客户端名称和商标属于各自权利人。

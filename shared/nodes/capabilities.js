@@ -58,6 +58,11 @@ const EGERN_SHADOWSOCKS_METHODS = new Set([
   "chacha20-ietf",
 ]);
 const EGERN_SNELL_VERSIONS = new Set([1, 2, 3, 4, 5]);
+// sing-box 1.14 accepts v4/v6 output. Snell v5 is wire-compatible with v4
+// (without QUIC mode), so accept v5 source nodes and adapt them at render time.
+const SINGBOX_SNELL_VERSIONS = new Set([4, 5, 6]);
+const SINGBOX_SNELL_OBFS_MODES = new Set(["none", "http"]);
+const SINGBOX_SNELL_MODES = new Set(["default", "unshaped", "unsafe-raw"]);
 const EGERN_OBFS = new Set(["http", "tls"]);
 const EGERN_VMESS_SECURITY = new Set(["auto", "aes-128-gcm", "chacha20-poly1305", "none", "zero"]);
 const EGERN_TRANSPORTS = new Set(["tcp", "raw", "ws", "grpc", "h2", "http2", "http", "http1"]);
@@ -1146,14 +1151,31 @@ export function evaluateNodeForClient(node, client) {
   const protocol = normalizeProtocol(node?.type);
   if (!protocolSupportsClient(protocol, client)) return { supported: false, reason: "unsupported-protocol" };
 
-  const transportReason = client === CLIENT.anywhere
-    ? anywhereNodeExclusionReason(node ?? {})
-    : client === CLIENT.egern
-      ? egernNodeExclusionReason(node ?? {})
-      : null;
+  let transportReason = null;
+  if (client === CLIENT.anywhere) transportReason = anywhereNodeExclusionReason(node ?? {});
+  else if (client === CLIENT.egern) transportReason = egernNodeExclusionReason(node ?? {});
+  else if (client === CLIENT.singbox) transportReason = singBoxNodeExclusionReason(node ?? {});
   return transportReason
     ? { supported: false, reason: transportReason }
     : { supported: true, reason: null };
+}
+
+function singBoxNodeExclusionReason(node) {
+  if (normalizeProtocol(node?.type) !== "snell") return null;
+  const version = Number(node.version);
+  if (!Number.isInteger(version) || !SINGBOX_SNELL_VERSIONS.has(version)) {
+    return "unsupported-singbox-snell-version";
+  }
+  if (version === 4 || version === 5) {
+    const obfsMode = node.obfs_mode ?? node["obfs-mode"] ?? node.obfs;
+    if (obfsMode !== undefined && obfsMode !== "" && !SINGBOX_SNELL_OBFS_MODES.has(String(obfsMode).toLowerCase())) {
+      return "unsupported-singbox-snell-obfs";
+    }
+  }
+  if (version === 6 && node.mode !== undefined && !SINGBOX_SNELL_MODES.has(String(node.mode).toLowerCase())) {
+    return "unsupported-singbox-snell-mode";
+  }
+  return null;
 }
 
 export function filterNodesForClient(nodes, client) {

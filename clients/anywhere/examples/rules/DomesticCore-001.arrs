@@ -1,0 +1,74 @@
+# Upstream: https://github.com/blackmatrix7/ios_rule_script
+# Source: DomesticCore
+# Commit: dab47069a30c4ae70f7f5f4c919d639d9aaf79dc
+# Converted at upstream commit time: 2026-08-01T19:07:21Z
+# License: GPL-2.0-only
+# Converted by: Juan-nikola/apple-proxy-profiles
+name = DIRECT · DomesticCore
+routing = 1
+
+2, 126.com
+2, 163.com
+2, alibaba.com
+2, alicdn.com
+2, alipay.com
+2, aliyun.com
+2, aliyuncs.com
+2, amap.com
+2, amemv.com
+2, autonavi.com
+2, baidu.com
+2, bcebos.com
+2, bdimg.com
+2, bdstatic.com
+2, biliapi.com
+2, bilibili.cc
+2, bilibili.com
+2, bilibili.net
+2, bilibili.tv
+2, bilivideo.com
+2, bilivideo.net
+2, bytehwm.com
+2, byteimg.com
+2, douyin.com
+2, douyincdn.com
+2, douyu.com
+2, douyu.tv
+2, douyucdn.cn
+2, douyuscdn.com
+2, douyutv.com
+2, gtimg.cn
+2, gtimg.com
+2, hdslb.com
+2, hdslb.org
+2, hunantv.com
+2, huya.com
+2, ibytedtos.com
+2, iqiyi.com
+2, iqiyipic.com
+2, ixigua.com
+2, mgtv.com
+2, netease.com
+2, pstatp.com
+2, qiyi.com
+2, qiyipic.com
+2, qlogo.cn
+2, qpic.cn
+2, qq.com
+2, rtbasia.com
+2, sandbox.itunes.apple.com
+2, sinaimg.cn
+2, snssdk.com
+2, taobao.com
+2, tmall.com
+2, toutiao.com
+2, toutiaoimg.com
+2, tudou.com
+2, tudouui.com
+2, wechat.com
+2, weibo.com
+2, wmpvp.com
+2, xhscdn.com
+2, xiaohongshu.com
+2, ykimg.com
+2, youku.com

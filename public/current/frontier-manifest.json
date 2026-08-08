@@ -1,0 +1,136 @@
+{
+  "channel": "current",
+  "manifestSha256": "5afc02b2f533c78c18236c78477295f42fe343696dd360cc496aac4a815ec3e0",
+  "records": [
+    {
+      "adapterSchema": "surge-adapter-0.1",
+      "channel": "current",
+      "client": "surge",
+      "configSha256": "56a334182c41452489c0ffdfe2c4a7974c758267080a903593ddb398c0e5afd7",
+      "platform": "macos",
+      "platformKey": "surge/macos",
+      "ruleManifestSha256": "10458ed1086def105fd686b9363a1e66ccdc147186924f65a7c541065acbff1b",
+      "schemaVersion": 1,
+      "status": "validated",
+      "upstream": {
+        "branch": "beta",
+        "commit": "72c410015dc99df6b54eca1386126f70268bf6bc",
+        "fetchedAt": "2026-08-05T19:24:33Z"
+      }
+    },
+    {
+      "adapterSchema": "surge-adapter-0.1",
+      "channel": "current",
+      "client": "surge",
+      "configSha256": "56a334182c41452489c0ffdfe2c4a7974c758267080a903593ddb398c0e5afd7",
+      "platform": "iphone",
+      "platformKey": "surge/iphone",
+      "ruleManifestSha256": "10458ed1086def105fd686b9363a1e66ccdc147186924f65a7c541065acbff1b",
+      "schemaVersion": 1,
+      "status": "validated",
+      "upstream": {
+        "branch": "beta",
+        "commit": "72c410015dc99df6b54eca1386126f70268bf6bc",
+        "fetchedAt": "2026-08-05T19:24:33Z"
+      }
+    },
+    {
+      "adapterSchema": "surge-adapter-0.1",
+      "channel": "current",
+      "client": "surge",
+      "configSha256": "56a334182c41452489c0ffdfe2c4a7974c758267080a903593ddb398c0e5afd7",
+      "platform": "ipad",
+      "platformKey": "surge/ipad",
+      "ruleManifestSha256": "10458ed1086def105fd686b9363a1e66ccdc147186924f65a7c541065acbff1b",
+      "schemaVersion": 1,
+      "status": "validated",
+      "upstream": {
+        "branch": "beta",
+        "commit": "72c410015dc99df6b54eca1386126f70268bf6bc",
+        "fetchedAt": "2026-08-05T19:24:33Z"
+      }
+    },
+    {
+      "adapterSchema": "singbox-adapter-0.1",
+      "channel": "current",
+      "client": "singbox",
+      "configSha256": "d5a83b9af9bac97bae439f310442adb8197ac5e0fe7df6db3d8c77416b353d9a",
+      "platform": "macos",
+      "platformKey": "singbox/macos",
+      "ruleManifestSha256": "10458ed1086def105fd686b9363a1e66ccdc147186924f65a7c541065acbff1b",
+      "schemaVersion": 1,
+      "status": "validated",
+      "upstream": {
+        "branch": "stable",
+        "commit": "4c02326989a170bcf1d2c3aab1cf5c70adfed2ca",
+        "fetchedAt": "2026-08-07T05:53:32.296Z"
+      }
+    },
+    {
+      "adapterSchema": "singbox-adapter-0.1",
+      "channel": "current",
+      "client": "singbox",
+      "configSha256": "d5a83b9af9bac97bae439f310442adb8197ac5e0fe7df6db3d8c77416b353d9a",
+      "platform": "iphone",
+      "platformKey": "singbox/iphone",
+      "ruleManifestSha256": "10458ed1086def105fd686b9363a1e66ccdc147186924f65a7c541065acbff1b",
+      "schemaVersion": 1,
+      "status": "validated",
+      "upstream": {
+        "branch": "stable",
+        "commit": "4c02326989a170bcf1d2c3aab1cf5c70adfed2ca",
+        "fetchedAt": "2026-08-07T05:53:32.296Z"
+      }
+    },
+    {
+      "adapterSchema": "singbox-adapter-0.1",
+      "channel": "current",
+      "client": "singbox",
+      "configSha256": "d5a83b9af9bac97bae439f310442adb8197ac5e0fe7df6db3d8c77416b353d9a",
+      "platform": "ipad",
+      "platformKey": "singbox/ipad",
+      "ruleManifestSha256": "10458ed1086def105fd686b9363a1e66ccdc147186924f65a7c541065acbff1b",
+      "schemaVersion": 1,
+      "status": "validated",
+      "upstream": {
+        "branch": "stable",
+        "commit": "4c02326989a170bcf1d2c3aab1cf5c70adfed2ca",
+        "fetchedAt": "2026-08-07T05:53:32.296Z"
+      }
+    },
+    {
+      "adapterSchema": "singbox-adapter-0.1",
+      "channel": "current",
+      "client": "singbox",
+      "configSha256": "d5a83b9af9bac97bae439f310442adb8197ac5e0fe7df6db3d8c77416b353d9a",
+      "platform": "android",
+      "platformKey": "singbox/android",
+      "ruleManifestSha256": "10458ed1086def105fd686b9363a1e66ccdc147186924f65a7c541065acbff1b",
+      "schemaVersion": 1,
+      "status": "validated",
+      "upstream": {
+        "branch": "stable",
+        "commit": "4c02326989a170bcf1d2c3aab1cf5c70adfed2ca",
+        "fetchedAt": "2026-08-07T05:53:32.296Z"
+      }
+    },
+    {
+      "adapterSchema": "singbox-adapter-0.1",
+      "channel": "current",
+      "client": "singbox",
+      "configSha256": "d5a83b9af9bac97bae439f310442adb8197ac5e0fe7df6db3d8c77416b353d9a",
+      "platform": "openwrt",
+      "platformKey": "singbox/openwrt",
+      "ruleManifestSha256": "10458ed1086def105fd686b9363a1e66ccdc147186924f65a7c541065acbff1b",
+      "schemaVersion": 1,
+      "status": "validated",
+      "upstream": {
+        "branch": "stable",
+        "commit": "4c02326989a170bcf1d2c3aab1cf5c70adfed2ca",
+        "fetchedAt": "2026-08-07T05:53:32.296Z"
+      }
+    }
+  ],
+  "ruleBaseUrl": "https://juan-nikola.github.io/apple-proxy-profiles/current",
+  "schemaVersion": 1
+}

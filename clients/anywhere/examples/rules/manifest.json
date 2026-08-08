@@ -1,5 +1,5 @@
 {
-  "catalogSha256": "a254c3972a058af7163671bf15f77dbeb5d5549fd125cb98198e2df294e3fb58",
+  "catalogSha256": "5a29cd20b4a7a85cd7e1be15e297de41a62bacf7b5bcf91447674287328d06b0",
   "clientCompatibility": {
     "commit": "e15518fde1f5d2652dfc1c234c89a68b87cecec0",
     "repository": "https://github.com/NodePassProject/Anywhere"
@@ -22,18 +22,24 @@
       ]
     },
     {
-      "id": "Advertising",
-      "required": true,
-      "sourceIds": [
-        "Advertising",
-        "Advertising_Domain"
-      ]
-    },
-    {
       "id": "Privacy",
       "required": true,
       "sourceIds": [
         "Privacy"
+      ]
+    },
+    {
+      "id": "DomesticCore",
+      "required": true,
+      "sourceIds": [
+        "DomesticCore"
+      ]
+    },
+    {
+      "id": "DomesticGame",
+      "required": true,
+      "sourceIds": [
+        "DomesticGame"
       ]
     },
     {
@@ -191,17 +197,10 @@
       ]
     },
     {
-      "id": "ChinaMax_Domain",
+      "id": "OverseasGame",
       "required": true,
       "sourceIds": [
-        "ChinaMax_Domain"
-      ]
-    },
-    {
-      "id": "Game",
-      "required": true,
-      "sourceIds": [
-        "Game"
+        "OverseasGame"
       ]
     },
     {
@@ -219,15 +218,33 @@
       ]
     },
     {
-      "id": "ChinaMax",
+      "id": "ChinaIP",
       "required": true,
       "sourceIds": [
-        "ChinaMax"
+        "ChinaIP"
       ]
     }
   ],
-  "manifestSha256": "1df9f4be7ef35183d11a63d377c8a23669683fee516085a7ebda2452f94f6e91",
-  "schemaVersion": 1,
+  "manifestSha256": "c7d29d5748fb3687ed40d0c54c459e2aa43f301c6c1e2b57d790e5e33b32e548",
+  "optionalPacks": {
+    "adblock-full": "../../optional/adblock-full/manifest.json"
+  },
+  "removed": [
+    "Advertising",
+    "Advertising_Domain",
+    "ChinaMax_Domain",
+    "Game"
+  ],
+  "replacements": {
+    "ChinaMax_Domain": [
+      "DomesticCore"
+    ],
+    "Game": [
+      "DomesticGame",
+      "OverseasGame"
+    ]
+  },
+  "schemaVersion": 2,
   "shards": [
     {
       "countsByType": {
@@ -238,9 +255,9 @@
       "familyId": "Hijacking",
       "id": "Hijacking-001",
       "index": 1,
-      "name": "☣️ 安全威胁 · Hijacking",
+      "name": "REJECT · Hijacking",
       "path": "anywhere/rules/Hijacking-001.arrs",
-      "sha256": "11ec336064f3c95b1e48a52d257281629227002baf7b71a13ad2b8f30660203d",
+      "sha256": "ff380871818d12245d2175ad5b185e02241db8477c85c1719cd8d59c87ab7811",
       "sourceId": "Hijacking",
       "total": 1,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/Hijacking-001.arrs"
@@ -255,86 +272,71 @@
       "familyId": "BlockHttpDNS",
       "id": "BlockHttpDNS-001",
       "index": 1,
-      "name": "☣️ 安全威胁 · BlockHttpDNS",
+      "name": "REJECT · BlockHttpDNS",
       "path": "anywhere/rules/BlockHttpDNS-001.arrs",
-      "sha256": "a879c5c6636dca7ef770fd35cf9009063b8c442cb5a71367aad54318891133d6",
+      "sha256": "9ef04e4f20b77e94ef818e48b80f476ec5c371f0f248d4442635fb50b6982eec",
       "sourceId": "BlockHttpDNS",
       "total": 1,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/BlockHttpDNS-001.arrs"
     },
     {
       "countsByType": {
-        "domainKeyword": 278,
-        "ipv4Cidr": 429
+        "domainKeyword": 9,
+        "ipv4Cidr": 11
       },
-      "entryCount": 707,
-      "familyId": "Advertising",
-      "id": "Advertising-001",
+      "entryCount": 20,
+      "familyId": "Privacy",
+      "id": "Privacy-001",
       "index": 1,
-      "name": "🧱 常见广告 · Advertising",
-      "path": "anywhere/rules/Advertising-001.arrs",
-      "sha256": "78cb48fb52483128b5a5f698e96f846764e08909704ce57d305539f8e442e4d0",
-      "sourceId": "Advertising",
+      "name": "🕵️ 严格跟踪 · Privacy",
+      "path": "anywhere/rules/Privacy-001.arrs",
+      "sha256": "a2d5c7bcd7ea9bc7b0c3f1e695d28e3b44afc1dafc229cb835353d3b390b2431",
+      "sourceId": "Privacy",
       "total": 1,
-      "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/Advertising-001.arrs"
+      "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/Privacy-001.arrs"
     },
     {
       "countsByType": {
-        "domainSuffix": 95000
+        "domainSuffix": 65
       },
-      "entryCount": 95000,
-      "familyId": "Advertising",
-      "id": "Advertising_Domain-001",
+      "entryCount": 65,
+      "familyId": "DomesticCore",
+      "id": "DomesticCore-001",
       "index": 1,
-      "name": "🧱 常见广告 · Advertising Domain (1/3)",
-      "path": "anywhere/rules/Advertising_Domain-001.arrs",
-      "sha256": "098248ac7deed073ef06a9eb2e096efaff055761563a4d3dafb9512730b3712e",
-      "sourceId": "Advertising_Domain",
-      "total": 3,
-      "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/Advertising_Domain-001.arrs"
+      "name": "DIRECT · DomesticCore",
+      "path": "anywhere/rules/DomesticCore-001.arrs",
+      "sha256": "373b4d872c0af277528355266fa9ca85b7c0917adbfd3925ed20a401103213e8",
+      "sourceId": "DomesticCore",
+      "total": 1,
+      "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/DomesticCore-001.arrs"
     },
     {
       "countsByType": {
-        "domainSuffix": 95000
+        "domainSuffix": 40
       },
-      "entryCount": 95000,
-      "familyId": "Advertising",
-      "id": "Advertising_Domain-002",
-      "index": 2,
-      "name": "🧱 常见广告 · Advertising Domain (2/3)",
-      "path": "anywhere/rules/Advertising_Domain-002.arrs",
-      "sha256": "406ac3b7cf271bbd14997d6bfc0b41d76009656d9db46210ef2031b38d52bdcc",
-      "sourceId": "Advertising_Domain",
-      "total": 3,
-      "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/Advertising_Domain-002.arrs"
+      "entryCount": 40,
+      "familyId": "DomesticGame",
+      "id": "DomesticGame-001",
+      "index": 1,
+      "name": "DIRECT · DomesticGame",
+      "path": "anywhere/rules/DomesticGame-001.arrs",
+      "sha256": "ba171c521f76101929df362251f4173c7076a66645c3534162f79c14153b1d02",
+      "sourceId": "DomesticGame",
+      "total": 1,
+      "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/DomesticGame-001.arrs"
     },
     {
       "countsByType": {
-        "domainSuffix": 55956
-      },
-      "entryCount": 55956,
-      "familyId": "Advertising",
-      "id": "Advertising_Domain-003",
-      "index": 3,
-      "name": "🧱 常见广告 · Advertising Domain (3/3)",
-      "path": "anywhere/rules/Advertising_Domain-003.arrs",
-      "sha256": "21e26b39e3f57ef0e6448ff79c700dd139c53230b4b864d069952cf252231273",
-      "sourceId": "Advertising_Domain",
-      "total": 3,
-      "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/Advertising_Domain-003.arrs"
-    },
-    {
-      "countsByType": {
-        "domainSuffix": 62,
+        "domainSuffix": 52,
         "ipv4Cidr": 7
       },
-      "entryCount": 69,
+      "entryCount": 59,
       "familyId": "BiliBili",
       "id": "BiliBili-001",
       "index": 1,
       "name": "📺 哔哩哔哩 · BiliBili",
       "path": "anywhere/rules/BiliBili-001.arrs",
-      "sha256": "8111aec96b5aacc648235b0ad37664b03682f873bb32585208e56f9aab095286",
+      "sha256": "66045ab5f0a016c03da636fbce3affcaebecb522f09d51d23b808fbeaf498c4a",
       "sourceId": "BiliBili",
       "total": 1,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/BiliBili-001.arrs"
@@ -350,22 +352,22 @@
       "index": 1,
       "name": "🎵 抖音 · ByteDance",
       "path": "anywhere/rules/ByteDance-001.arrs",
-      "sha256": "9484cd30150e9acdf0d224d26217ae971a309d4b44f9741f21d328e1c7ec31af",
+      "sha256": "330d82b19bd7515a1bd3bde9f31cfe313b6770f31de999c7f38978d0c44e635f",
       "sourceId": "ByteDance",
       "total": 1,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/ByteDance-001.arrs"
     },
     {
       "countsByType": {
-        "domainSuffix": 3
+        "domainSuffix": 2
       },
-      "entryCount": 3,
+      "entryCount": 2,
       "familyId": "XiaoHongShu",
       "id": "XiaoHongShu-001",
       "index": 1,
       "name": "📕 小红书 · XiaoHongShu",
       "path": "anywhere/rules/XiaoHongShu-001.arrs",
-      "sha256": "d4f3706227b84f15c1757883212b9d622ffa88a5410248656d1a9c5731d2b650",
+      "sha256": "617cda178ffc11083a28e551c326adccf6aff3f7fbcde2f3024ab2c298038dd9",
       "sourceId": "XiaoHongShu",
       "total": 1,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/XiaoHongShu-001.arrs"
@@ -373,15 +375,15 @@
     {
       "countsByType": {
         "domainKeyword": 1,
-        "domainSuffix": 3
+        "domainSuffix": 2
       },
-      "entryCount": 4,
+      "entryCount": 3,
       "familyId": "Weibo",
       "id": "Weibo-001",
       "index": 1,
       "name": "🧣 微博 · Weibo",
       "path": "anywhere/rules/Weibo-001.arrs",
-      "sha256": "cf958ed582064efb9f326541561a78e3adefdef3d41ff853841a537e2e6bf355",
+      "sha256": "4bf80bfc135c77f6eac8680d1c0225c211e9fed7f5577b99ac7b685ed5d3f9ac",
       "sourceId": "Weibo",
       "total": 1,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/Weibo-001.arrs"
@@ -389,16 +391,16 @@
     {
       "countsByType": {
         "domainKeyword": 1,
-        "domainSuffix": 19,
+        "domainSuffix": 24,
         "ipv4Cidr": 2
       },
-      "entryCount": 22,
+      "entryCount": 27,
       "familyId": "OpenAI",
       "id": "OpenAI-001",
       "index": 1,
       "name": "🤖 AI 专用 · OpenAI",
       "path": "anywhere/rules/OpenAI-001.arrs",
-      "sha256": "42746e9ea6d61747254543c9d5d637ade62eb2d41244ccc3bc2f7fa16e0e06ce",
+      "sha256": "43ae93e4c2cc0fbbad625476a0ab80d4cc20aef0d5a0217b705ab0299c0da470",
       "sourceId": "OpenAI",
       "total": 1,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/OpenAI-001.arrs"
@@ -452,15 +454,15 @@
     {
       "countsByType": {
         "domainKeyword": 1,
-        "domainSuffix": 30
+        "domainSuffix": 29
       },
-      "entryCount": 31,
+      "entryCount": 30,
       "familyId": "GitHub",
       "id": "GitHub-001",
       "index": 1,
       "name": "🐙 GitHub · GitHub",
       "path": "anywhere/rules/GitHub-001.arrs",
-      "sha256": "a8836b2e80bb143a431464efe20fa2cf638a10da7ab0c2f7499af40115c88459",
+      "sha256": "a2df31b268fad9892b33868626062b87355d566303b40b53ecd20d1549e170eb",
       "sourceId": "GitHub",
       "total": 1,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/GitHub-001.arrs"
@@ -468,17 +470,17 @@
     {
       "countsByType": {
         "domainKeyword": 1,
-        "domainSuffix": 177,
+        "domainSuffix": 179,
         "ipv4Cidr": 2,
         "ipv6Cidr": 1
       },
-      "entryCount": 181,
+      "entryCount": 183,
       "familyId": "YouTube",
       "id": "YouTube-001",
       "index": 1,
       "name": "📺 YouTube · YouTube",
       "path": "anywhere/rules/YouTube-001.arrs",
-      "sha256": "52218c96930e1eea1ac54bfdd701e06272ee2bfd2c9d4d3fdaa5b46f17148771",
+      "sha256": "81fa240eb4dcad5b69b77bc944b39e13777fe65ad9e883682a5611901ef5b747",
       "sourceId": "YouTube",
       "total": 1,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/YouTube-001.arrs"
@@ -486,32 +488,32 @@
     {
       "countsByType": {
         "domainKeyword": 4,
-        "domainSuffix": 29,
+        "domainSuffix": 30,
         "ipv4Cidr": 1115,
         "ipv6Cidr": 4
       },
-      "entryCount": 1152,
+      "entryCount": 1153,
       "familyId": "Netflix",
       "id": "Netflix-001",
       "index": 1,
       "name": "🎬 Netflix · Netflix",
       "path": "anywhere/rules/Netflix-001.arrs",
-      "sha256": "b4b3002eafe4352e8a05ca481ea91ca480d5fb5a0d643723681569a4d7968891",
+      "sha256": "2bc93387e644a38d735dead0a2d379b02b35c81bf651b854ae66f90015cfbfb7",
       "sourceId": "Netflix",
       "total": 1,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/Netflix-001.arrs"
     },
     {
       "countsByType": {
-        "domainSuffix": 159
+        "domainSuffix": 170
       },
-      "entryCount": 159,
+      "entryCount": 170,
       "familyId": "Disney",
       "id": "Disney-001",
       "index": 1,
       "name": "🏰 Disney+ · Disney",
       "path": "anywhere/rules/Disney-001.arrs",
-      "sha256": "3d21ad65c9ffbcbf649673fdd8c319022a447d0305d5d25ef4db71cb941886e2",
+      "sha256": "359ef7f535d27445f3850f8d3b9bf3ab433a005aab292a10d592b14529a86b77",
       "sourceId": "Disney",
       "total": 1,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/Disney-001.arrs"
@@ -571,16 +573,16 @@
     {
       "countsByType": {
         "domainKeyword": 2,
-        "domainSuffix": 540,
+        "domainSuffix": 544,
         "ipv4Cidr": 23
       },
-      "entryCount": 565,
+      "entryCount": 569,
       "familyId": "Facebook",
       "id": "Facebook-001",
       "index": 1,
       "name": "💬 海外社交 · Facebook",
       "path": "anywhere/rules/Facebook-001.arrs",
-      "sha256": "d287830512a53796424ed8e4b8b699336a7b89607eee19c33ef0d329e0567427",
+      "sha256": "d7d8dabca8687582ac4bcf88e8ef44abaf1521fec3526f6d1dd5fe97bfc43a02",
       "sourceId": "Facebook",
       "total": 1,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/Facebook-001.arrs"
@@ -603,16 +605,16 @@
     {
       "countsByType": {
         "domainKeyword": 1,
-        "domainSuffix": 24,
+        "domainSuffix": 26,
         "ipv4Cidr": 6
       },
-      "entryCount": 31,
+      "entryCount": 33,
       "familyId": "Twitter",
       "id": "Twitter-001",
       "index": 1,
       "name": "💬 海外社交 · Twitter",
       "path": "anywhere/rules/Twitter-001.arrs",
-      "sha256": "3c8f7c6621ef5fff8ad743b27c1d0438152c4faac149fdf2df3863675b57aae3",
+      "sha256": "0e8e3586dfdd3a95d0b62ce2f473fbe22b92af73b8f4969d404929e5acb35c1a",
       "sourceId": "Twitter",
       "total": 1,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/Twitter-001.arrs"
@@ -620,15 +622,15 @@
     {
       "countsByType": {
         "domainKeyword": 2,
-        "domainSuffix": 23
+        "domainSuffix": 21
       },
-      "entryCount": 25,
+      "entryCount": 23,
       "familyId": "TikTok",
       "id": "TikTok-001",
       "index": 1,
       "name": "🎶 TikTok · TikTok",
       "path": "anywhere/rules/TikTok-001.arrs",
-      "sha256": "6bfc1b1cd5dad3fe8f870bfc24ec83c6d53e4f756b910f61217308f832a269fc",
+      "sha256": "df20c26ef33e746aceaa5c38997abb610f770d7df0bf587e6bd3b650e3c9ad6c",
       "sourceId": "TikTok",
       "total": 1,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/TikTok-001.arrs"
@@ -653,15 +655,15 @@
     {
       "countsByType": {
         "domainKeyword": 4,
-        "domainSuffix": 655
+        "domainSuffix": 661
       },
-      "entryCount": 659,
+      "entryCount": 665,
       "familyId": "Microsoft",
       "id": "Microsoft-001",
       "index": 1,
       "name": "🪟 Microsoft · Microsoft",
       "path": "anywhere/rules/Microsoft-001.arrs",
-      "sha256": "99d3e63e3b1c42233de6761feca680cd75f9470438b37aefc580d19f9ecc445f",
+      "sha256": "3a475b93bcf1454b76c73bd533856bb10737a3b6e9584e961baecaf46f78f4ac",
       "sourceId": "Microsoft",
       "total": 1,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/Microsoft-001.arrs"
@@ -683,50 +685,20 @@
     },
     {
       "countsByType": {
-        "domainSuffix": 95000
-      },
-      "entryCount": 95000,
-      "familyId": "ChinaMax_Domain",
-      "id": "ChinaMax_Domain-001",
-      "index": 1,
-      "name": "DIRECT · ChinaMax Domain (1/2)",
-      "path": "anywhere/rules/ChinaMax_Domain-001.arrs",
-      "sha256": "3c411f0efd24411bf0f894608e06e5a3effcb8aecde161a8aa286ad80e867ed6",
-      "sourceId": "ChinaMax_Domain",
-      "total": 2,
-      "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/ChinaMax_Domain-001.arrs"
-    },
-    {
-      "countsByType": {
-        "domainSuffix": 16113
-      },
-      "entryCount": 16113,
-      "familyId": "ChinaMax_Domain",
-      "id": "ChinaMax_Domain-002",
-      "index": 2,
-      "name": "DIRECT · ChinaMax Domain (2/2)",
-      "path": "anywhere/rules/ChinaMax_Domain-002.arrs",
-      "sha256": "73316d969b19e7d0fb9be8344dd8b596541bbe337970726bde389cea26850ab5",
-      "sourceId": "ChinaMax_Domain",
-      "total": 2,
-      "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/ChinaMax_Domain-002.arrs"
-    },
-    {
-      "countsByType": {
         "domainKeyword": 4,
-        "domainSuffix": 449,
+        "domainSuffix": 472,
         "ipv4Cidr": 42
       },
-      "entryCount": 495,
-      "familyId": "Game",
-      "id": "Game-001",
+      "entryCount": 518,
+      "familyId": "OverseasGame",
+      "id": "OverseasGame-001",
       "index": 1,
-      "name": "🕹️ 游戏平台 · Game",
-      "path": "anywhere/rules/Game-001.arrs",
-      "sha256": "46360d857d542fa7f1e1db2cff561a55c9b98077d542a43fa13948415ca25ead",
-      "sourceId": "Game",
+      "name": "🌍 海外游戏 · OverseasGame",
+      "path": "anywhere/rules/OverseasGame-001.arrs",
+      "sha256": "c97455dd5acd06144bedd6d5efccf513451ad19bfeb6f21805134b563a586f9c",
+      "sourceId": "OverseasGame",
       "total": 1,
-      "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/Game-001.arrs"
+      "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/OverseasGame-001.arrs"
     },
     {
       "countsByType": {
@@ -747,42 +719,40 @@
     {
       "countsByType": {
         "domainKeyword": 4,
-        "domainSuffix": 88,
+        "domainSuffix": 123,
         "ipv4Cidr": 3
       },
-      "entryCount": 95,
+      "entryCount": 130,
       "familyId": "PrivateTracker",
       "id": "PrivateTracker-001",
       "index": 1,
       "name": "⬇️ 下载/P2P · PrivateTracker",
       "path": "anywhere/rules/PrivateTracker-001.arrs",
-      "sha256": "7ef4fff9df8bb3fc846528ac8969072f72081761af0b92eeb4a25e3e4f6ae182",
+      "sha256": "15ae0defdfc2f0263a26f67313e109f05df0b831035de628fe1bb53ca88699d1",
       "sourceId": "PrivateTracker",
       "total": 1,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/PrivateTracker-001.arrs"
     },
     {
       "countsByType": {
-        "domainKeyword": 12,
-        "domainSuffix": 49,
-        "ipv4Cidr": 8099,
-        "ipv6Cidr": 4193
+        "ipv4Cidr": 7088,
+        "ipv6Cidr": 4141
       },
-      "entryCount": 12353,
-      "familyId": "ChinaMax",
-      "id": "ChinaMax-001",
+      "entryCount": 11229,
+      "familyId": "ChinaIP",
+      "id": "ChinaIP-001",
       "index": 1,
-      "name": "DIRECT · ChinaMax",
-      "path": "anywhere/rules/ChinaMax-001.arrs",
-      "sha256": "2c00af18ccff572f5f61363be35e122878e13a4a33296dd080be5147313da523",
-      "sourceId": "ChinaMax",
+      "name": "DIRECT · ChinaIP",
+      "path": "anywhere/rules/ChinaIP-001.arrs",
+      "sha256": "dc844a2c72cdfebaf85f319ff8b1822acf65c2905209b4e7d4e24fb1e3f00a58",
+      "sourceId": "ChinaIP",
       "total": 1,
-      "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/ChinaMax-001.arrs"
+      "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/ChinaIP-001.arrs"
     }
   ],
   "sources": [
     {
-      "canonicalPath": "rule/Surge/Hijacking/Hijacking.list",
+      "canonicalPath": "compiled/Surge/Hijacking/Hijacking.list",
       "componentId": "rules",
       "counts": {
         "candidate": 228,
@@ -801,22 +771,22 @@
       },
       "inputFormat": "RULE-SET",
       "intendedTarget": "reject",
-      "minEntries": 150,
+      "minEntries": 0,
       "order": 1,
-      "policy": "☣️ 安全威胁",
+      "policy": "REJECT",
       "priority": 10,
       "routing": 2,
       "shardIds": [
         "Hijacking-001"
       ],
-      "sourceBytes": 6734,
-      "sourceSha256": "47bffe4e8d4f56e736e43f1ed5f639f0b909591de09c5908df6cddad4b9e4e5b",
+      "sourceBytes": 6546,
+      "sourceSha256": "b976714a9cecf0e3da92fdf2857db1076d689497fd0e4b2b6309e61b480a1a55",
       "unsupportedByReason": {
         "unsupported-exact-domain": 1
       }
     },
     {
-      "canonicalPath": "rule/Surge/BlockHttpDNS/BlockHttpDNS.list",
+      "canonicalPath": "compiled/Surge/BlockHttpDNS/BlockHttpDNS.list",
       "componentId": "rules",
       "counts": {
         "candidate": 63,
@@ -835,101 +805,30 @@
       },
       "inputFormat": "RULE-SET",
       "intendedTarget": "reject",
-      "minEntries": 40,
+      "minEntries": 0,
       "order": 2,
-      "policy": "☣️ 安全威胁",
+      "policy": "REJECT",
       "priority": 20,
       "routing": 2,
       "shardIds": [
         "BlockHttpDNS-001"
       ],
-      "sourceBytes": 2403,
-      "sourceSha256": "52753614063eff40364dcbdbbcea14f974409e197c0fe71fa716baa6fb518051",
+      "sourceBytes": 2200,
+      "sourceSha256": "744ce7eb8fbd24c00331634e6981c688b2fb5a63d10f9a0a1079edf0ae3eee18",
       "unsupportedByReason": {
         "unsupported-exact-domain": 18
       }
     },
     {
-      "canonicalPath": "rule/Surge/Advertising/Advertising.list",
-      "componentId": "rules",
-      "counts": {
-        "candidate": 782,
-        "convertible": 767,
-        "duplicates": 60,
-        "output": 707,
-        "parsed": 782,
-        "shadowed": 0,
-        "unresolved": 0,
-        "unsupported": 15
-      },
-      "familyId": "Advertising",
-      "id": "Advertising",
-      "ignoredModifiers": {
-        "noResolve": 489
-      },
-      "inputFormat": "RULE-SET",
-      "intendedTarget": "reject",
-      "minEntries": 700,
-      "order": 3,
-      "policy": "🧱 常见广告",
-      "priority": 30,
-      "routing": 2,
-      "shardIds": [
-        "Advertising-001"
-      ],
-      "sourceBytes": 26927,
-      "sourceSha256": "d040e00e0fe1f2556205f1dc11c262e7b9d55c1754cea1e3ad7f42bfba13902d",
-      "unsupportedByReason": {
-        "unsupported-and": 1,
-        "unsupported-url-regex": 14
-      }
-    },
-    {
-      "canonicalPath": "rule/Surge/Advertising/Advertising_Domain.list",
-      "componentId": "domains",
-      "counts": {
-        "candidate": 262589,
-        "convertible": 246141,
-        "duplicates": 185,
-        "output": 245956,
-        "parsed": 262589,
-        "shadowed": 0,
-        "unresolved": 0,
-        "unsupported": 16448
-      },
-      "familyId": "Advertising",
-      "id": "Advertising_Domain",
-      "ignoredModifiers": {
-        "noResolve": 0
-      },
-      "inputFormat": "DOMAIN-SET",
-      "intendedTarget": "reject",
-      "minEntries": 250000,
-      "order": 4,
-      "policy": "🧱 常见广告",
-      "priority": 40,
-      "routing": 2,
-      "shardIds": [
-        "Advertising_Domain-001",
-        "Advertising_Domain-002",
-        "Advertising_Domain-003"
-      ],
-      "sourceBytes": 5242639,
-      "sourceSha256": "3688b274da31880a946b03f3e4f708df31a973e32f83f6da1a6aa08ffaeff653",
-      "unsupportedByReason": {
-        "unsupported-exact-domain": 16448
-      }
-    },
-    {
-      "canonicalPath": "rule/Surge/Privacy/Privacy.list",
+      "canonicalPath": "compiled/Surge/Privacy/Privacy.list",
       "componentId": "rules",
       "counts": {
         "candidate": 20,
         "convertible": 20,
-        "duplicates": 19,
-        "output": 0,
+        "duplicates": 0,
+        "output": 20,
         "parsed": 20,
-        "shadowed": 1,
+        "shadowed": 0,
         "unresolved": 0,
         "unsupported": 0
       },
@@ -940,28 +839,94 @@
       },
       "inputFormat": "RULE-SET",
       "intendedTarget": "direct",
-      "minEntries": 15,
-      "order": 5,
+      "minEntries": 0,
+      "order": 3,
       "policy": "🕵️ 严格跟踪",
-      "priority": 50,
+      "priority": 30,
       "routing": 1,
-      "shardIds": [],
-      "sourceBytes": 821,
-      "sourceSha256": "a29ccca1b7052f6fc28981646d3bb50daaee1ade27869a2f01e695d0c8d27320",
+      "shardIds": [
+        "Privacy-001"
+      ],
+      "sourceBytes": 610,
+      "sourceSha256": "f69cdd748a1fdae62ae3f41d3d277807396dce8e8dd95afdff231806231f1578",
       "unsupportedByReason": {}
     },
     {
-      "canonicalPath": "rule/Surge/BiliBili/BiliBili.list",
+      "canonicalPath": "compiled/Surge/DomesticCore/DomesticCore.list",
       "componentId": "rules",
       "counts": {
-        "candidate": 133,
-        "convertible": 70,
-        "duplicates": 1,
-        "output": 69,
-        "parsed": 133,
+        "candidate": 65,
+        "convertible": 65,
+        "duplicates": 0,
+        "output": 65,
+        "parsed": 65,
         "shadowed": 0,
         "unresolved": 0,
-        "unsupported": 63
+        "unsupported": 0
+      },
+      "familyId": "DomesticCore",
+      "id": "DomesticCore",
+      "ignoredModifiers": {
+        "noResolve": 0
+      },
+      "inputFormat": "RULE-SET",
+      "intendedTarget": "direct",
+      "minEntries": 0,
+      "order": 4,
+      "policy": "DIRECT",
+      "priority": 40,
+      "routing": 1,
+      "shardIds": [
+        "DomesticCore-001"
+      ],
+      "sourceBytes": 1648,
+      "sourceSha256": "0cf7111b9dfab22edd9187f73c2fc463703ba61300faceaf4fe98a6e5aae0ec2",
+      "unsupportedByReason": {}
+    },
+    {
+      "canonicalPath": "compiled/Surge/DomesticGame/DomesticGame.list",
+      "componentId": "rules",
+      "counts": {
+        "candidate": 40,
+        "convertible": 40,
+        "duplicates": 0,
+        "output": 40,
+        "parsed": 40,
+        "shadowed": 0,
+        "unresolved": 0,
+        "unsupported": 0
+      },
+      "familyId": "DomesticGame",
+      "id": "DomesticGame",
+      "ignoredModifiers": {
+        "noResolve": 0
+      },
+      "inputFormat": "RULE-SET",
+      "intendedTarget": "direct",
+      "minEntries": 0,
+      "order": 5,
+      "policy": "DIRECT",
+      "priority": 50,
+      "routing": 1,
+      "shardIds": [
+        "DomesticGame-001"
+      ],
+      "sourceBytes": 1159,
+      "sourceSha256": "0efe072e4d9b4e186d88a4627d795f0393b5c4e6ab9b4e487b11443c9298a3a2",
+      "unsupportedByReason": {}
+    },
+    {
+      "canonicalPath": "compiled/Surge/BiliBili/BiliBili.list",
+      "componentId": "rules",
+      "counts": {
+        "candidate": 123,
+        "convertible": 70,
+        "duplicates": 11,
+        "output": 59,
+        "parsed": 123,
+        "shadowed": 0,
+        "unresolved": 0,
+        "unsupported": 53
       },
       "familyId": "BiliBili",
       "id": "BiliBili",
@@ -970,7 +935,7 @@
       },
       "inputFormat": "RULE-SET",
       "intendedTarget": "direct",
-      "minEntries": 80,
+      "minEntries": 0,
       "order": 6,
       "policy": "📺 哔哩哔哩",
       "priority": 60,
@@ -978,26 +943,24 @@
       "shardIds": [
         "BiliBili-001"
       ],
-      "sourceBytes": 4742,
-      "sourceSha256": "8537129301d5e4040d9f2b2255217458a16c96eef850ec22367352c512bc3988",
+      "sourceBytes": 4242,
+      "sourceSha256": "278312b9b569f96e4a9504ba46e7537bf5aaecd5674f28a9fd63c56ca42c3924",
       "unsupportedByReason": {
-        "unsupported-exact-domain": 53,
-        "unsupported-process-name": 6,
-        "unsupported-user-agent": 4
+        "unsupported-exact-domain": 53
       }
     },
     {
-      "canonicalPath": "rule/Surge/ByteDance/ByteDance.list",
+      "canonicalPath": "compiled/Surge/ByteDance/ByteDance.list",
       "componentId": "rules",
       "counts": {
-        "candidate": 372,
+        "candidate": 370,
         "convertible": 370,
-        "duplicates": 3,
+        "duplicates": 8,
         "output": 361,
-        "parsed": 372,
-        "shadowed": 6,
+        "parsed": 370,
+        "shadowed": 1,
         "unresolved": 0,
-        "unsupported": 2
+        "unsupported": 0
       },
       "familyId": "ByteDance",
       "id": "ByteDance",
@@ -1006,7 +969,7 @@
       },
       "inputFormat": "RULE-SET",
       "intendedTarget": "direct",
-      "minEntries": 300,
+      "minEntries": 0,
       "order": 7,
       "policy": "🎵 抖音",
       "priority": 70,
@@ -1014,21 +977,18 @@
       "shardIds": [
         "ByteDance-001"
       ],
-      "sourceBytes": 10786,
-      "sourceSha256": "eff7a9defee6cf1f6fd91d8bc87659a3e7fb1a6f420c3793a7ba8867aeb81116",
-      "unsupportedByReason": {
-        "unsupported-process-name": 1,
-        "unsupported-user-agent": 1
-      }
+      "sourceBytes": 10520,
+      "sourceSha256": "075c6747777959fe99b3ff6dc9ea37e6db8b96d56c6d28a04365e69eaccbe524",
+      "unsupportedByReason": {}
     },
     {
-      "canonicalPath": "rule/Surge/XiaoHongShu/XiaoHongShu.list",
+      "canonicalPath": "compiled/Surge/XiaoHongShu/XiaoHongShu.list",
       "componentId": "rules",
       "counts": {
         "candidate": 4,
         "convertible": 4,
-        "duplicates": 1,
-        "output": 3,
+        "duplicates": 2,
+        "output": 2,
         "parsed": 4,
         "shadowed": 0,
         "unresolved": 0,
@@ -1041,7 +1001,7 @@
       },
       "inputFormat": "RULE-SET",
       "intendedTarget": "direct",
-      "minEntries": 3,
+      "minEntries": 0,
       "order": 8,
       "policy": "📕 小红书",
       "priority": 80,
@@ -1049,18 +1009,18 @@
       "shardIds": [
         "XiaoHongShu-001"
       ],
-      "sourceBytes": 272,
-      "sourceSha256": "9fb20e80dc0962cfdf410ffbd72d6bf2a6a0ac0d930951880f98164ff229e8ff",
+      "sourceBytes": 112,
+      "sourceSha256": "3d37c3a1cb8d59ccd5b34ba8350aaa0d5e66c7cf56dab568ddf2bf1eabed1429",
       "unsupportedByReason": {}
     },
     {
-      "canonicalPath": "rule/Surge/Weibo/Weibo.list",
+      "canonicalPath": "compiled/Surge/Weibo/Weibo.list",
       "componentId": "rules",
       "counts": {
         "candidate": 4,
         "convertible": 4,
-        "duplicates": 0,
-        "output": 4,
+        "duplicates": 1,
+        "output": 3,
         "parsed": 4,
         "shadowed": 0,
         "unresolved": 0,
@@ -1073,7 +1033,7 @@
       },
       "inputFormat": "RULE-SET",
       "intendedTarget": "direct",
-      "minEntries": 3,
+      "minEntries": 0,
       "order": 9,
       "policy": "🧣 微博",
       "priority": 90,
@@ -1081,31 +1041,31 @@
       "shardIds": [
         "Weibo-001"
       ],
-      "sourceBytes": 269,
-      "sourceSha256": "54f8a08d7f89498f4f5ec29737c0c82feff1c69faadbd0d4722e1cbd72156f75",
+      "sourceBytes": 95,
+      "sourceSha256": "195eb35b72e9b6ac9ffabe7b9c98105b3dec936b722ec5b478e7401c62ecb0d7",
       "unsupportedByReason": {}
     },
     {
-      "canonicalPath": "rule/Surge/OpenAI/OpenAI.list",
+      "canonicalPath": "compiled/Surge/OpenAI/OpenAI.list",
       "componentId": "rules",
       "counts": {
-        "candidate": 35,
+        "candidate": 34,
         "convertible": 27,
-        "duplicates": 4,
-        "output": 22,
-        "parsed": 35,
-        "shadowed": 1,
+        "duplicates": 0,
+        "output": 27,
+        "parsed": 34,
+        "shadowed": 0,
         "unresolved": 0,
-        "unsupported": 8
+        "unsupported": 7
       },
       "familyId": "OpenAI",
       "id": "OpenAI",
       "ignoredModifiers": {
-        "noResolve": 3
+        "noResolve": 2
       },
       "inputFormat": "RULE-SET",
       "intendedTarget": "🤖 AI 专用",
-      "minEntries": 20,
+      "minEntries": 0,
       "order": 10,
       "policy": "🤖 AI 专用",
       "priority": 100,
@@ -1113,15 +1073,14 @@
       "shardIds": [
         "OpenAI-001"
       ],
-      "sourceBytes": 1353,
-      "sourceSha256": "6f4047cdbf6953cf5d9b38c4ccd6da7bc6f1acb91b7a87134f25d5b8f5d2408b",
+      "sourceBytes": 1115,
+      "sourceSha256": "996d0ac4992f5f1606ae3766f536e03f77f9bde45b5acea995baa9632355abb3",
       "unsupportedByReason": {
-        "unsupported-exact-domain": 7,
-        "unsupported-ip-asn": 1
+        "unsupported-exact-domain": 7
       }
     },
     {
-      "canonicalPath": "rule/Surge/Claude/Claude.list",
+      "canonicalPath": "compiled/Surge/Claude/Claude.list",
       "componentId": "rules",
       "counts": {
         "candidate": 3,
@@ -1140,7 +1099,7 @@
       },
       "inputFormat": "RULE-SET",
       "intendedTarget": "🤖 AI 专用",
-      "minEntries": 2,
+      "minEntries": 0,
       "order": 11,
       "policy": "🤖 AI 专用",
       "priority": 110,
@@ -1148,14 +1107,14 @@
       "shardIds": [
         "Claude-001"
       ],
-      "sourceBytes": 244,
-      "sourceSha256": "870e7e25d798e7f00338507f773b0eea4dfd15e25e9df0a27d5ae421ae1ab378",
+      "sourceBytes": 77,
+      "sourceSha256": "e22906098a08537bca78fe642e8dcf401700595c436d131bfdbb9f446c58e19b",
       "unsupportedByReason": {
         "unsupported-exact-domain": 1
       }
     },
     {
-      "canonicalPath": "rule/Surge/Gemini/Gemini.list",
+      "canonicalPath": "compiled/Surge/Gemini/Gemini.list",
       "componentId": "rules",
       "counts": {
         "candidate": 13,
@@ -1174,7 +1133,7 @@
       },
       "inputFormat": "RULE-SET",
       "intendedTarget": "🤖 AI 专用",
-      "minEntries": 8,
+      "minEntries": 0,
       "order": 12,
       "policy": "🤖 AI 专用",
       "priority": 120,
@@ -1182,33 +1141,33 @@
       "shardIds": [
         "Gemini-001"
       ],
-      "sourceBytes": 605,
-      "sourceSha256": "db8f69154426dca76792ab80b3ad6b0e2d078ebe0e52e76faec1724245a4ec49",
+      "sourceBytes": 417,
+      "sourceSha256": "c3b400c61d4e22fd8c3020dd9fd526a95432744ff9edcefa6c8e553f51a33f76",
       "unsupportedByReason": {
         "unsupported-exact-domain": 3
       }
     },
     {
-      "canonicalPath": "rule/Surge/Copilot/Copilot.list",
+      "canonicalPath": "compiled/Surge/Copilot/Copilot.list",
       "componentId": "rules",
       "counts": {
-        "candidate": 51,
+        "candidate": 49,
         "convertible": 29,
-        "duplicates": 23,
+        "duplicates": 24,
         "output": 4,
-        "parsed": 51,
-        "shadowed": 2,
+        "parsed": 49,
+        "shadowed": 1,
         "unresolved": 0,
-        "unsupported": 22
+        "unsupported": 20
       },
       "familyId": "Copilot",
       "id": "Copilot",
       "ignoredModifiers": {
-        "noResolve": 4
+        "noResolve": 2
       },
       "inputFormat": "RULE-SET",
       "intendedTarget": "🤖 AI 专用",
-      "minEntries": 30,
+      "minEntries": 0,
       "order": 13,
       "policy": "🤖 AI 专用",
       "priority": 130,
@@ -1216,23 +1175,22 @@
       "shardIds": [
         "Copilot-001"
       ],
-      "sourceBytes": 1822,
-      "sourceSha256": "12773330de34b84b7fd2f3f2af598480ea62d8574d8e9b8ae9d011a53c044d39",
+      "sourceBytes": 1558,
+      "sourceSha256": "d0ef6727018fa1a49cb0917d6e8c3a05c305a876bd2c2de1f1baa6930480ea6c",
       "unsupportedByReason": {
-        "unsupported-exact-domain": 20,
-        "unsupported-ip-asn": 2
+        "unsupported-exact-domain": 20
       }
     },
     {
-      "canonicalPath": "rule/Surge/GitHub/GitHub.list",
+      "canonicalPath": "compiled/Surge/GitHub/GitHub.list",
       "componentId": "rules",
       "counts": {
         "candidate": 31,
         "convertible": 31,
         "duplicates": 0,
-        "output": 31,
+        "output": 30,
         "parsed": 31,
-        "shadowed": 0,
+        "shadowed": 1,
         "unresolved": 0,
         "unsupported": 0
       },
@@ -1243,7 +1201,7 @@
       },
       "inputFormat": "RULE-SET",
       "intendedTarget": "🐙 GitHub",
-      "minEntries": 20,
+      "minEntries": 0,
       "order": 14,
       "policy": "🐙 GitHub",
       "priority": 140,
@@ -1251,22 +1209,22 @@
       "shardIds": [
         "GitHub-001"
       ],
-      "sourceBytes": 1117,
-      "sourceSha256": "ced8ab0ecda5775d04ec8ee6a57b282181108565331a6a1d85e9a26fee25d79b",
+      "sourceBytes": 940,
+      "sourceSha256": "95299a16144b19c5ff24298c6ba2ab731dc05b99c22340b566408cedf71124ea",
       "unsupportedByReason": {}
     },
     {
-      "canonicalPath": "rule/Surge/YouTube/YouTube.list",
+      "canonicalPath": "compiled/Surge/YouTube/YouTube.list",
       "componentId": "rules",
       "counts": {
-        "candidate": 190,
+        "candidate": 183,
         "convertible": 183,
-        "duplicates": 2,
-        "output": 181,
-        "parsed": 190,
+        "duplicates": 0,
+        "output": 183,
+        "parsed": 183,
         "shadowed": 0,
         "unresolved": 0,
-        "unsupported": 7
+        "unsupported": 0
       },
       "familyId": "YouTube",
       "id": "YouTube",
@@ -1275,7 +1233,7 @@
       },
       "inputFormat": "RULE-SET",
       "intendedTarget": "📺 YouTube",
-      "minEntries": 120,
+      "minEntries": 0,
       "order": 15,
       "policy": "📺 YouTube",
       "priority": 150,
@@ -1283,24 +1241,22 @@
       "shardIds": [
         "YouTube-001"
       ],
-      "sourceBytes": 5451,
-      "sourceSha256": "42274e143447066e26e1ebbf21ae03ce6efb40827f41e2775a84fb16d390713d",
-      "unsupportedByReason": {
-        "unsupported-user-agent": 7
-      }
+      "sourceBytes": 5020,
+      "sourceSha256": "df9f9138a41a99ef1e0e9be23942bc3624c39fb1111e90c61c14c187b50b60a0",
+      "unsupportedByReason": {}
     },
     {
-      "canonicalPath": "rule/Surge/Netflix/Netflix.list",
+      "canonicalPath": "compiled/Surge/Netflix/Netflix.list",
       "componentId": "rules",
       "counts": {
-        "candidate": 1158,
+        "candidate": 1156,
         "convertible": 1153,
-        "duplicates": 1,
-        "output": 1152,
-        "parsed": 1158,
+        "duplicates": 0,
+        "output": 1153,
+        "parsed": 1156,
         "shadowed": 0,
         "unresolved": 0,
-        "unsupported": 5
+        "unsupported": 3
       },
       "familyId": "Netflix",
       "id": "Netflix",
@@ -1309,7 +1265,7 @@
       },
       "inputFormat": "RULE-SET",
       "intendedTarget": "🎬 Netflix",
-      "minEntries": 800,
+      "minEntries": 0,
       "order": 16,
       "policy": "🎬 Netflix",
       "priority": 160,
@@ -1317,26 +1273,24 @@
       "shardIds": [
         "Netflix-001"
       ],
-      "sourceBytes": 40424,
-      "sourceSha256": "aa03f015949e8f6f981d90a7d8b1acf7e88472ee48601632bd964b0bb740f8aa",
+      "sourceBytes": 40114,
+      "sourceSha256": "dd64988cf0e54bf15d8ca00ad0f34ea470b65262a5a883db4f601c2eb5597ccc",
       "unsupportedByReason": {
-        "unsupported-exact-domain": 3,
-        "unsupported-process-name": 1,
-        "unsupported-user-agent": 1
+        "unsupported-exact-domain": 3
       }
     },
     {
-      "canonicalPath": "rule/Surge/Disney/Disney.list",
+      "canonicalPath": "compiled/Surge/Disney/Disney.list",
       "componentId": "rules",
       "counts": {
-        "candidate": 175,
+        "candidate": 172,
         "convertible": 172,
-        "duplicates": 2,
-        "output": 159,
-        "parsed": 175,
-        "shadowed": 11,
+        "duplicates": 0,
+        "output": 170,
+        "parsed": 172,
+        "shadowed": 2,
         "unresolved": 0,
-        "unsupported": 3
+        "unsupported": 0
       },
       "familyId": "Disney",
       "id": "Disney",
@@ -1345,7 +1299,7 @@
       },
       "inputFormat": "RULE-SET",
       "intendedTarget": "🏰 Disney+",
-      "minEntries": 100,
+      "minEntries": 0,
       "order": 17,
       "policy": "🏰 Disney+",
       "priority": 170,
@@ -1353,25 +1307,22 @@
       "shardIds": [
         "Disney-001"
       ],
-      "sourceBytes": 5674,
-      "sourceSha256": "d0cfd6aee89d9d3075aef9dfadd98a2a3c6a2dba487f5091c801d1bcd70e9884",
-      "unsupportedByReason": {
-        "unsupported-process-name": 2,
-        "unsupported-user-agent": 1
-      }
+      "sourceBytes": 5370,
+      "sourceSha256": "dd32b132007877b6818cf8475866cfacd5087d510dc0df4d4e3e2a7cda5ae9fe",
+      "unsupportedByReason": {}
     },
     {
-      "canonicalPath": "rule/Surge/Spotify/Spotify.list",
+      "canonicalPath": "compiled/Surge/Spotify/Spotify.list",
       "componentId": "rules",
       "counts": {
-        "candidate": 31,
+        "candidate": 29,
         "convertible": 23,
         "duplicates": 0,
         "output": 23,
-        "parsed": 31,
+        "parsed": 29,
         "shadowed": 0,
         "unresolved": 0,
-        "unsupported": 8
+        "unsupported": 6
       },
       "familyId": "Spotify",
       "id": "Spotify",
@@ -1380,7 +1331,7 @@
       },
       "inputFormat": "RULE-SET",
       "intendedTarget": "🎵 Spotify",
-      "minEntries": 20,
+      "minEntries": 0,
       "order": 18,
       "policy": "🎵 Spotify",
       "priority": 180,
@@ -1388,26 +1339,24 @@
       "shardIds": [
         "Spotify-001"
       ],
-      "sourceBytes": 1246,
-      "sourceSha256": "33bd52e8f23cda9374876259621c8fba21554035e20fa55daffbfcaee2109079",
+      "sourceBytes": 958,
+      "sourceSha256": "407613bc81c2d5ab0f4b0c07c6cfde0071ed494723236181c0f3352c70f804de",
       "unsupportedByReason": {
-        "unsupported-exact-domain": 6,
-        "unsupported-process-name": 1,
-        "unsupported-user-agent": 1
+        "unsupported-exact-domain": 6
       }
     },
     {
-      "canonicalPath": "rule/Surge/GlobalMedia/GlobalMedia.list",
+      "canonicalPath": "compiled/Surge/GlobalMedia/GlobalMedia.list",
       "componentId": "rules",
       "counts": {
-        "candidate": 1024,
+        "candidate": 951,
         "convertible": 951,
         "duplicates": 71,
         "output": 880,
-        "parsed": 1024,
+        "parsed": 951,
         "shadowed": 0,
         "unresolved": 0,
-        "unsupported": 73
+        "unsupported": 0
       },
       "familyId": "GlobalMedia",
       "id": "GlobalMedia",
@@ -1416,7 +1365,7 @@
       },
       "inputFormat": "RULE-SET",
       "intendedTarget": "🌍 国际媒体",
-      "minEntries": 700,
+      "minEntries": 0,
       "order": 19,
       "policy": "🌍 国际媒体",
       "priority": 190,
@@ -1424,35 +1373,31 @@
       "shardIds": [
         "GlobalMedia-001"
       ],
-      "sourceBytes": 35722,
-      "sourceSha256": "3d66863f40954e018e4c57675f9e531c2bb921d7fc76d82a91dde16d70f80e70",
-      "unsupportedByReason": {
-        "unsupported-process-name": 3,
-        "unsupported-url-regex": 1,
-        "unsupported-user-agent": 69
-      }
+      "sourceBytes": 33728,
+      "sourceSha256": "5608892d5c707da8f23c9c4adcccc63516aa5542cb072097f83ef3d79e04ffbc",
+      "unsupportedByReason": {}
     },
     {
-      "canonicalPath": "rule/Surge/Telegram/Telegram.list",
+      "canonicalPath": "compiled/Surge/Telegram/Telegram.list",
       "componentId": "rules",
       "counts": {
-        "candidate": 46,
+        "candidate": 35,
         "convertible": 33,
         "duplicates": 0,
         "output": 33,
-        "parsed": 46,
+        "parsed": 35,
         "shadowed": 0,
         "unresolved": 0,
-        "unsupported": 13
+        "unsupported": 2
       },
       "familyId": "Telegram",
       "id": "Telegram",
       "ignoredModifiers": {
-        "noResolve": 15
+        "noResolve": 10
       },
       "inputFormat": "RULE-SET",
       "intendedTarget": "✈️ Telegram",
-      "minEntries": 25,
+      "minEntries": 0,
       "order": 20,
       "policy": "✈️ Telegram",
       "priority": 200,
@@ -1460,36 +1405,33 @@
       "shardIds": [
         "Telegram-001"
       ],
-      "sourceBytes": 1680,
-      "sourceSha256": "3b375bee8b2ff16d6c955804a5a3638e6e8fdfcc58d209506a928bdd4cc9891a",
+      "sourceBytes": 1004,
+      "sourceSha256": "437cbe7b1a4b6865876519792858d304fedaafa38a8b6d382407d8f97a49fcd8",
       "unsupportedByReason": {
-        "unsupported-exact-domain": 2,
-        "unsupported-ip-asn": 5,
-        "unsupported-or": 1,
-        "unsupported-process-name": 5
+        "unsupported-exact-domain": 2
       }
     },
     {
-      "canonicalPath": "rule/Surge/Facebook/Facebook.list",
+      "canonicalPath": "compiled/Surge/Facebook/Facebook.list",
       "componentId": "rules",
       "counts": {
-        "candidate": 570,
+        "candidate": 569,
         "convertible": 569,
-        "duplicates": 3,
-        "output": 565,
-        "parsed": 570,
-        "shadowed": 1,
+        "duplicates": 0,
+        "output": 569,
+        "parsed": 569,
+        "shadowed": 0,
         "unresolved": 0,
-        "unsupported": 1
+        "unsupported": 0
       },
       "familyId": "Facebook",
       "id": "Facebook",
       "ignoredModifiers": {
-        "noResolve": 24
+        "noResolve": 23
       },
       "inputFormat": "RULE-SET",
       "intendedTarget": "💬 海外社交",
-      "minEntries": 350,
+      "minEntries": 0,
       "order": 21,
       "policy": "💬 海外社交",
       "priority": 210,
@@ -1497,14 +1439,12 @@
       "shardIds": [
         "Facebook-001"
       ],
-      "sourceBytes": 17399,
-      "sourceSha256": "747563c96825bbd5f868be955543b0ca1979064e7b094f8aab08aafbce577c36",
-      "unsupportedByReason": {
-        "unsupported-ip-asn": 1
-      }
+      "sourceBytes": 17168,
+      "sourceSha256": "b0c3dfda8a3c6fbead12c6d0c28e3e0a3ed3b9f55e7fd318fdad16f701f4a754",
+      "unsupportedByReason": {}
     },
     {
-      "canonicalPath": "rule/Surge/Instagram/Instagram.list",
+      "canonicalPath": "compiled/Surge/Instagram/Instagram.list",
       "componentId": "rules",
       "counts": {
         "candidate": 4,
@@ -1523,7 +1463,7 @@
       },
       "inputFormat": "RULE-SET",
       "intendedTarget": "💬 海外社交",
-      "minEntries": 3,
+      "minEntries": 0,
       "order": 22,
       "policy": "💬 海外社交",
       "priority": 220,
@@ -1531,18 +1471,18 @@
       "shardIds": [
         "Instagram-001"
       ],
-      "sourceBytes": 287,
-      "sourceSha256": "65f28f9253b0dbb2a81485c788537896a0817766685e7bd91b2f90ec7aa19548",
+      "sourceBytes": 109,
+      "sourceSha256": "0d97aa6e4a5a0993f8bb51926c5b45340f6c846d632a75b1dd76ff21ef6e844c",
       "unsupportedByReason": {}
     },
     {
-      "canonicalPath": "rule/Surge/Twitter/Twitter.list",
+      "canonicalPath": "compiled/Surge/Twitter/Twitter.list",
       "componentId": "rules",
       "counts": {
         "candidate": 33,
         "convertible": 33,
-        "duplicates": 2,
-        "output": 31,
+        "duplicates": 0,
+        "output": 33,
         "parsed": 33,
         "shadowed": 0,
         "unresolved": 0,
@@ -1555,7 +1495,7 @@
       },
       "inputFormat": "RULE-SET",
       "intendedTarget": "💬 海外社交",
-      "minEntries": 20,
+      "minEntries": 0,
       "order": 23,
       "policy": "💬 海外社交",
       "priority": 230,
@@ -1563,22 +1503,22 @@
       "shardIds": [
         "Twitter-001"
       ],
-      "sourceBytes": 1116,
-      "sourceSha256": "64c836f2431ca0d4728cc545bb74280ee50c886e346040012e6cdd2f3eee3f97",
+      "sourceBytes": 925,
+      "sourceSha256": "371a1ead914bfa4ff5ff4ca338111d6e088517cf4792dd0bd43448b9331d1eb8",
       "unsupportedByReason": {}
     },
     {
-      "canonicalPath": "rule/Surge/TikTok/TikTok.list",
+      "canonicalPath": "compiled/Surge/TikTok/TikTok.list",
       "componentId": "rules",
       "counts": {
-        "candidate": 33,
+        "candidate": 31,
         "convertible": 27,
-        "duplicates": 0,
-        "output": 25,
-        "parsed": 33,
+        "duplicates": 2,
+        "output": 23,
+        "parsed": 31,
         "shadowed": 2,
         "unresolved": 0,
-        "unsupported": 6
+        "unsupported": 4
       },
       "familyId": "TikTok",
       "id": "TikTok",
@@ -1587,7 +1527,7 @@
       },
       "inputFormat": "RULE-SET",
       "intendedTarget": "🎶 TikTok",
-      "minEntries": 20,
+      "minEntries": 0,
       "order": 24,
       "policy": "🎶 TikTok",
       "priority": 240,
@@ -1595,26 +1535,24 @@
       "shardIds": [
         "TikTok-001"
       ],
-      "sourceBytes": 1156,
-      "sourceSha256": "b44559153af1e15e49ea1f2e161230276aee0fd29d697f2a4d635f4a484e2220",
+      "sourceBytes": 876,
+      "sourceSha256": "d82ba26ccefadb5645dae38609e8ae3d7e566284c99c05e011d15b575ef0659a",
       "unsupportedByReason": {
-        "unsupported-exact-domain": 4,
-        "unsupported-process-name": 1,
-        "unsupported-user-agent": 1
+        "unsupported-exact-domain": 4
       }
     },
     {
-      "canonicalPath": "rule/Surge/Apple/Apple.list",
+      "canonicalPath": "compiled/Surge/Apple/Apple.list",
       "componentId": "rules",
       "counts": {
-        "candidate": 56,
+        "candidate": 20,
         "convertible": 20,
         "duplicates": 0,
         "output": 20,
-        "parsed": 56,
+        "parsed": 20,
         "shadowed": 0,
         "unresolved": 0,
-        "unsupported": 36
+        "unsupported": 0
       },
       "familyId": "Apple",
       "id": "Apple",
@@ -1623,7 +1561,7 @@
       },
       "inputFormat": "RULE-SET",
       "intendedTarget": "direct",
-      "minEntries": 25,
+      "minEntries": 0,
       "order": 25,
       "policy": "🍎 Apple",
       "priority": 250,
@@ -1631,25 +1569,22 @@
       "shardIds": [
         "Apple-001"
       ],
-      "sourceBytes": 1805,
-      "sourceSha256": "903b2282b621320e3ad3143ddcd30b01821e6d0aad82f3e61f2e5c2610925b8a",
-      "unsupportedByReason": {
-        "unsupported-process-name": 13,
-        "unsupported-user-agent": 23
-      }
+      "sourceBytes": 684,
+      "sourceSha256": "58b398a570f78bad0a787f4eb3fd3c66b81115b305ac82ca75afdc9070c45c09",
+      "unsupportedByReason": {}
     },
     {
-      "canonicalPath": "rule/Surge/Microsoft/Microsoft.list",
+      "canonicalPath": "compiled/Surge/Microsoft/Microsoft.list",
       "componentId": "rules",
       "counts": {
-        "candidate": 673,
+        "candidate": 668,
         "convertible": 667,
-        "duplicates": 5,
-        "output": 659,
-        "parsed": 673,
-        "shadowed": 3,
+        "duplicates": 1,
+        "output": 665,
+        "parsed": 668,
+        "shadowed": 1,
         "unresolved": 0,
-        "unsupported": 6
+        "unsupported": 1
       },
       "familyId": "Microsoft",
       "id": "Microsoft",
@@ -1658,7 +1593,7 @@
       },
       "inputFormat": "RULE-SET",
       "intendedTarget": "direct",
-      "minEntries": 400,
+      "minEntries": 0,
       "order": 26,
       "policy": "🪟 Microsoft",
       "priority": 260,
@@ -1666,16 +1601,14 @@
       "shardIds": [
         "Microsoft-001"
       ],
-      "sourceBytes": 20605,
-      "sourceSha256": "a2854b28dc9f903a64933c74fff5b50166e9bbebc70fdfce18c592f75793ff14",
+      "sourceBytes": 20256,
+      "sourceSha256": "9bf85ec738899b70a01a6657e4c4714a62fe9f08488bf2241f6039de76293ec5",
       "unsupportedByReason": {
-        "unsupported-exact-domain": 1,
-        "unsupported-process-name": 2,
-        "unsupported-user-agent": 3
+        "unsupported-exact-domain": 1
       }
     },
     {
-      "canonicalPath": "rule/Surge/SteamCN/SteamCN.list",
+      "canonicalPath": "compiled/Surge/SteamCN/SteamCN.list",
       "componentId": "rules",
       "counts": {
         "candidate": 17,
@@ -1694,7 +1627,7 @@
       },
       "inputFormat": "RULE-SET",
       "intendedTarget": "direct",
-      "minEntries": 10,
+      "minEntries": 0,
       "order": 27,
       "policy": "DIRECT",
       "priority": 270,
@@ -1702,99 +1635,58 @@
       "shardIds": [
         "SteamCN-001"
       ],
-      "sourceBytes": 662,
-      "sourceSha256": "82c144434e9199c524d95caa8e3659c9f6f1de9fd23b223a58b5d3c821923936",
+      "sourceBytes": 492,
+      "sourceSha256": "e5541c7db5d9396a8be97205ac5a3742b318a391f39946c2a1c8239fb567fb15",
       "unsupportedByReason": {
         "unsupported-exact-domain": 12
       }
     },
     {
-      "canonicalPath": "rule/Surge/ChinaMax/ChinaMax_Domain.list",
-      "componentId": "domains",
-      "counts": {
-        "candidate": 111944,
-        "convertible": 111647,
-        "duplicates": 335,
-        "output": 111113,
-        "parsed": 111944,
-        "shadowed": 200,
-        "supplemental": {
-          "duplicates": 17,
-          "input": 18,
-          "output": 1,
-          "shadowed": 0
-        },
-        "unresolved": 0,
-        "unsupported": 297
-      },
-      "familyId": "ChinaMax_Domain",
-      "id": "ChinaMax_Domain",
-      "ignoredModifiers": {
-        "noResolve": 0
-      },
-      "inputFormat": "DOMAIN-SET",
-      "intendedTarget": "direct",
-      "minEntries": 100000,
-      "order": 28,
-      "policy": "DIRECT",
-      "priority": 280,
-      "routing": 1,
-      "shardIds": [
-        "ChinaMax_Domain-001",
-        "ChinaMax_Domain-002"
-      ],
-      "sourceBytes": 1533232,
-      "sourceSha256": "f0f25a14b54885e10911e1663e3ed0642844f87ca9983846087ccb1c600c3e33",
-      "unsupportedByReason": {
-        "unsupported-exact-domain": 297
-      }
-    },
-    {
-      "canonicalPath": "rule/Surge/Game/Game.list",
+      "canonicalPath": "compiled/Surge/OverseasGame/OverseasGame.list",
       "componentId": "rules",
       "counts": {
-        "candidate": 597,
-        "convertible": 589,
-        "duplicates": 45,
-        "output": 495,
-        "parsed": 597,
-        "shadowed": 49,
+        "candidate": 574,
+        "convertible": 566,
+        "duplicates": 40,
+        "output": 518,
+        "parsed": 574,
+        "shadowed": 8,
         "unresolved": 0,
         "unsupported": 8
       },
-      "familyId": "Game",
-      "id": "Game",
+      "familyId": "OverseasGame",
+      "id": "OverseasGame",
       "ignoredModifiers": {
         "noResolve": 46
       },
       "inputFormat": "RULE-SET",
-      "intendedTarget": "🕹️ 游戏平台",
-      "minEntries": 400,
-      "order": 29,
-      "policy": "🕹️ 游戏平台",
-      "priority": 290,
+      "intendedTarget": "🌍 海外游戏",
+      "minEntries": 0,
+      "order": 28,
+      "policy": "🌍 海外游戏",
+      "priority": 280,
       "routing": 0,
       "shardIds": [
-        "Game-001"
+        "OverseasGame-001"
       ],
-      "sourceBytes": 19223,
-      "sourceSha256": "eed3f77d31ac6c14e2dd59e36018fd3556ba27ffa3db8864679d8c39cfae78d3",
+      "sourceBytes": 18310,
+      "sourceSha256": "e194fe3677d030af4a0f57e1bccf7e475080892f28fceabd0a17ff2c42581ae6",
       "unsupportedByReason": {
         "unsupported-exact-domain": 8
       }
     },
     {
-      "canonicalPath": "rule/Surge/Download/Download.list",
+      "canonicalPath": "compiled/Surge/Download/Download.list",
       "componentId": "rules",
       "counts": {
-        "candidate": 20,
+        "candidate": 6,
         "convertible": 6,
         "duplicates": 0,
         "output": 6,
-        "parsed": 20,
+        "parsed": 6,
         "shadowed": 0,
         "unresolved": 0,
-        "unsupported": 14
+        "unsupported": 0
       },
       "familyId": "Download",
       "id": "Download",
@@ -1803,31 +1695,28 @@
       },
       "inputFormat": "RULE-SET",
       "intendedTarget": "direct",
-      "minEntries": 5,
-      "order": 30,
+      "minEntries": 0,
+      "order": 29,
       "policy": "⬇️ 下载/P2P",
-      "priority": 300,
+      "priority": 290,
       "routing": 1,
       "shardIds": [
         "Download-001"
       ],
-      "sourceBytes": 771,
-      "sourceSha256": "32bb1052491936ed42c1a7f2d783c1b711086541eedf2bb0f027c4c3106dfbf5",
-      "unsupportedByReason": {
-        "unsupported-process-name": 13,
-        "unsupported-url-regex": 1
-      }
+      "sourceBytes": 142,
+      "sourceSha256": "88b3c77b3161bb026753661e1c9fe630a6fb6a1cb4cdb1e204eda13bbbee5f5d",
+      "unsupportedByReason": {}
     },
     {
-      "canonicalPath": "rule/Surge/PrivateTracker/PrivateTracker.list",
+      "canonicalPath": "compiled/Surge/PrivateTracker/PrivateTracker.list",
       "componentId": "rules",
       "counts": {
         "candidate": 248,
         "convertible": 130,
-        "duplicates": 29,
-        "output": 95,
+        "duplicates": 0,
+        "output": 130,
         "parsed": 248,
-        "shadowed": 6,
+        "shadowed": 0,
         "unresolved": 0,
         "unsupported": 118
       },
@@ -1838,93 +1727,81 @@
       },
       "inputFormat": "RULE-SET",
       "intendedTarget": "direct",
-      "minEntries": 150,
-      "order": 31,
+      "minEntries": 0,
+      "order": 30,
       "policy": "⬇️ 下载/P2P",
-      "priority": 310,
+      "priority": 300,
       "routing": 1,
       "shardIds": [
         "PrivateTracker-001"
       ],
-      "sourceBytes": 6834,
-      "sourceSha256": "910ad846c9a866e523372d02dd8d9518fa96256f337f19d34174c5d07699397f",
+      "sourceBytes": 6620,
+      "sourceSha256": "f894ddfd5791debca01f07f6bf33c7bc1ac03c6e423e3e1826ea79e9de35cd16",
       "unsupportedByReason": {
         "unsupported-exact-domain": 118
       }
     },
     {
-      "canonicalPath": "rule/Surge/ChinaMax/ChinaMax.list",
+      "canonicalPath": "compiled/Surge/ChinaIP/ChinaIP.list",
       "componentId": "rules",
       "counts": {
-        "candidate": 12596,
-        "convertible": 12518,
-        "duplicates": 16,
-        "output": 12353,
-        "parsed": 12596,
-        "shadowed": 149,
+        "candidate": 11373,
+        "convertible": 11373,
+        "duplicates": 0,
+        "output": 11229,
+        "parsed": 11373,
+        "shadowed": 144,
         "unresolved": 0,
-        "unsupported": 78
+        "unsupported": 0
       },
-      "familyId": "ChinaMax",
-      "id": "ChinaMax",
+      "familyId": "ChinaIP",
+      "id": "ChinaIP",
       "ignoredModifiers": {
-        "noResolve": 12455
+        "noResolve": 11373
       },
       "inputFormat": "RULE-SET",
       "intendedTarget": "direct",
-      "minEntries": 8000,
-      "order": 32,
+      "minEntries": 0,
+      "order": 31,
       "policy": "DIRECT",
-      "priority": 320,
+      "priority": 310,
       "routing": 1,
       "shardIds": [
-        "ChinaMax-001"
+        "ChinaIP-001"
       ],
-      "sourceBytes": 453833,
-      "sourceSha256": "454aeca1ee5128f4f322d5cac8ca30409908383568a971adb2bbf09d25184a2b",
-      "unsupportedByReason": {
-        "unsupported-ip-asn": 1,
-        "unsupported-process-name": 12,
-        "unsupported-user-agent": 65
-      }
+      "sourceBytes": 411510,
+      "sourceSha256": "4840c577a8cbfb9e58b36b167b5f28ff37268d65bd728b891d91ac7d1bc9f1e6",
+      "unsupportedByReason": {}
     }
   ],
   "totals": {
-    "blankCount": 32,
-    "candidateCount": 393743,
-    "commentCount": 311,
+    "blankCount": 31,
+    "candidateCount": 17116,
+    "commentCount": 0,
     "convertibleByKind": {
-      "domainKeyword": 370,
-      "domainSuffix": 360908,
-      "ipv4Cidr": 10980,
-      "ipv6Cidr": 4219
+      "domainKeyword": 79,
+      "domainSuffix": 3151,
+      "ipv4Cidr": 9465,
+      "ipv6Cidr": 4164
     },
-    "convertibleCount": 376477,
-    "duplicateCount": 827,
+    "convertibleCount": 16859,
+    "duplicateCount": 163,
     "ignoredModifiers": {
-      "noResolve": 15209
+      "noResolve": 13629
     },
     "logicalRuleSetCount": 31,
-    "outputCount": 375237,
-    "parsedCount": 393743,
-    "physicalLineCount": 394086,
-    "shadowedCount": 431,
-    "shardCount": 34,
-    "sourceBytes": 7447854,
-    "sourceCount": 32,
-    "supplementalCount": 18,
-    "supplementalOutputCount": 1,
+    "outputCount": 16536,
+    "parsedCount": 17116,
+    "physicalLineCount": 17147,
+    "shadowedCount": 160,
+    "shardCount": 31,
+    "sourceBytes": 594525,
+    "sourceCount": 31,
     "unresolvedCount": 0,
     "unsupportedByReason": {
-      "unsupported-and": 1,
-      "unsupported-exact-domain": 17002,
-      "unsupported-ip-asn": 10,
-      "unsupported-or": 1,
-      "unsupported-process-name": 60,
-      "unsupported-url-regex": 16,
-      "unsupported-user-agent": 176
+      "unsupported-exact-domain": 257
     },
-    "unsupportedCount": 17266
+    "unsupportedCount": 257
   },
   "upstream": {
     "branch": "master",

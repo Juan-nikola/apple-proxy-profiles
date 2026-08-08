@@ -1,0 +1,25 @@
+{
+  "rules": [
+    {
+      "domain_suffix": [
+        "fengkongcloud.com"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "xhscdn.com"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "xhscdn.net"
+      ]
+    },
+    {
+      "domain_suffix": [
+        "xiaohongshu.com"
+      ]
+    }
+  ],
+  "version": 5
+}

@@ -3,6 +3,7 @@ import { EgernUrlFallback } from "./runtime-fallbacks.js";
 
 export const PUBLIC_SNAPSHOT_BASE_URL =
   "https://juan-nikola.github.io/apple-proxy-profiles/current";
+export const PUBLIC_RULE_ROOT = "https://juan-nikola.github.io/apple-proxy-profiles";
 
 const REQUIRED_KEYS = Object.freeze([
   "output",
@@ -13,6 +14,8 @@ const REQUIRED_KEYS = Object.freeze([
 ]);
 
 const DEFAULTS = Object.freeze({
+  channel: "edge",
+  adblockMode: "off",
   dnsMode: "stable",
   chinaDns: "alidns",
   globalDns: "cloudflare",
@@ -34,7 +37,11 @@ const ENUM_KEYS = Object.freeze([
 ]);
 
 const ALLOWED_KEYS = new Set([...REQUIRED_KEYS, ...ENUM_KEYS]);
+ALLOWED_KEYS.add("channel");
+ALLOWED_KEYS.add("adblockMode");
 const SUPPORTED_PLATFORMS = new Set(["macos", "iphone", "ipad"]);
+const CHANNELS = new Set(["edge", "current"]);
+const ADBLOCK_MODES = new Set(["off", "full"]);
 const PROTOTYPE_KEYS = new Set(["__proto__", "constructor", "prototype"]);
 const AMBIGUOUS_WHITESPACE = /[\t\v\f\u00a0\u1680\u2000-\u200b\u2028\u2029\u202f\u205f\u3000\ufeff]/u;
 const FORBIDDEN_URL_CHARACTER = /[\u0000-\u001f\u007f\\]/u;
@@ -151,6 +158,23 @@ function enumValue(values, key, defaultValue) {
   return value;
 }
 
+function localEnumValue(values, key, defaultValue, supported) {
+  const value = values.has(key) && values.get(key) !== undefined
+    ? values.get(key)
+    : defaultValue;
+  if (typeof value !== "string" || !supported.has(value)) {
+    throw optionError(key, "has an unsupported value");
+  }
+  return value;
+}
+
+export function ruleBaseUrlForChannel(channel) {
+  if (typeof channel !== "string" || !CHANNELS.has(channel)) {
+    throw optionError("channel", "has an unsupported value");
+  }
+  return `${PUBLIC_RULE_ROOT}/${channel}`;
+}
+
 export function validateEgernNodeSubscriptionUrl(value) {
   if (typeof value !== "string" || value.length === 0) {
     throw optionError("nodeSubscriptionUrl", "must be an absolute HTTPS URL");
@@ -196,6 +220,7 @@ function privateNodeUrl(values) {
 export function parseEgernOptions(raw) {
   const values = ownDataOptions(raw);
   const platform = platformValue(values);
+  const channel = localEnumValue(values, "channel", DEFAULTS.channel, CHANNELS);
 
   const options = {
     output: exactLiteral(values, "output", "config"),
@@ -203,7 +228,9 @@ export function parseEgernOptions(raw) {
     name: profileName(values),
     nodeSubscriptionUrl: privateNodeUrl(values),
     platform,
-    publicBaseUrl: PUBLIC_SNAPSHOT_BASE_URL,
+    channel,
+    adblockMode: localEnumValue(values, "adblockMode", DEFAULTS.adblockMode, ADBLOCK_MODES),
+    publicBaseUrl: ruleBaseUrlForChannel(channel),
     dnsMode: enumValue(values, "dnsMode", DEFAULTS.dnsMode),
     chinaDns: enumValue(values, "chinaDns", DEFAULTS.chinaDns),
     globalDns: enumValue(values, "globalDns", DEFAULTS.globalDns),

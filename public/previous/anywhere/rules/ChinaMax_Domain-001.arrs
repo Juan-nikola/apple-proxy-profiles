@@ -1,7 +1,7 @@
 # Upstream: https://github.com/blackmatrix7/ios_rule_script
 # Source: ChinaMax_Domain
-# Commit: b807e9f8b55f6fcfb2cb26f52b77fa1d3b0c4e6b
-# Converted at upstream commit time: 2026-08-03T19:30:42Z
+# Commit: 72c410015dc99df6b54eca1386126f70268bf6bc
+# Converted at upstream commit time: 2026-08-05T19:24:33Z
 # License: GPL-2.0-only
 # Converted by: Juan-nikola/apple-proxy-profiles
 name = DIRECT · ChinaMax Domain (1/2)
@@ -23205,6 +23205,7 @@ routing = 1
 2, cmzi.com
 2, cmzj.net
 2, cmzyk.com
+2, cn
 2, cn-5.com
 2, cn-ab.com
 2, cn-aci.com
@@ -95006,4 +95007,3 @@ routing = 1
 2, williameva.com
 2, williamslullaby.com
 2, willingchem.com
-2, willingchina.com

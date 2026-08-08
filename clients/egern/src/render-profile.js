@@ -90,7 +90,10 @@ export function renderEgernProfileFromOptions(options, nodes, { onDiagnostics } 
     hijack_dns: ["*"],
     dns: renderEgernDns(options),
     policy_groups: applyProxyQuicOverrides(renderedGroups, sharedGroups, options.quicMode),
-    rules: renderEgernRules(options),
+    rules: renderEgernRules({
+      publicBaseUrl: options.publicBaseUrl,
+      adblockMode: options.adblockMode,
+    }),
     default_subscription_group: "🚀 节点选择",
   };
   const yaml = renderYaml(root);

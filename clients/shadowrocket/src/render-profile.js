@@ -2,7 +2,7 @@ import { generalSettings } from "./general.js";
 import { buildGroups } from "./group-catalog.js";
 import { parseOptions } from "./options.js";
 import { renderGroups } from "./render-groups.js";
-import { renderRules } from "./render-rules.js";
+import { renderRules, ruleBaseUrlForChannel } from "./render-rules.js";
 import { nodeMetadata } from "../../../shared/contracts.js";
 
 const NODE_REFRESH_SECONDS = 21600;
@@ -13,7 +13,7 @@ const RULE_REFRESH_SECONDS = 86400;
  * never crosses this boundary: group selection is based only on inventory
  * metadata consumed by buildGroups.
  */
-export function renderProfile(rawOptions, nodes) {
+export function renderProfile(rawOptions, nodes, { ruleBaseUrl } = {}) {
   const options = parseOptions(rawOptions);
   const inventory = Array.isArray(nodes) ? nodes : [];
   const hasChainedNodes = inventory.some((node) => nodeMetadata(node).chained === true);
@@ -34,6 +34,9 @@ export function renderProfile(rawOptions, nodes) {
     header,
     `[General]\n${generalSettings(options).join("\n")}`,
     `[Proxy Group]\n${groups}`,
-    `[Rule]\n${renderRules().join("\n")}`,
+    `[Rule]\n${renderRules({
+      ruleBaseUrl: ruleBaseUrl ?? ruleBaseUrlForChannel(options.channel),
+      adblockMode: options.adblockMode,
+    }).join("\n")}`,
   ].join("\n\n") + "\n";
 }

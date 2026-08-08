@@ -4,7 +4,7 @@
     "commit": "e15518fde1f5d2652dfc1c234c89a68b87cecec0",
     "repository": "https://github.com/NodePassProject/Anywhere"
   },
-  "generatedAt": "2026-08-03T19:30:42Z",
+  "generatedAt": "2026-08-05T19:24:33Z",
   "generatorVersion": "0.1.0",
   "logicalRuleSets": [
     {
@@ -226,7 +226,7 @@
       ]
     }
   ],
-  "manifestSha256": "eeb205c0614aa9b0cbe824fb416ed259562759a08f937790cad8dcb8ebb17607",
+  "manifestSha256": "9bb7578dce37b73cbd504f09b45b66b62df761a2f450e18a02018822aa167ac1",
   "schemaVersion": 1,
   "shards": [
     {
@@ -240,7 +240,7 @@
       "index": 1,
       "name": "☣️ 安全威胁 · Hijacking",
       "path": "anywhere/rules/Hijacking-001.arrs",
-      "sha256": "15653e660a3eea33bcac602a80ec05f9ce256893c120b7948edd0bb4483aa71c",
+      "sha256": "5dd6f6100979d0fbbc04cff29a67942ad3a2a5511c38104ae097a97b28618b85",
       "sourceId": "Hijacking",
       "total": 1,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/Hijacking-001.arrs"
@@ -257,7 +257,7 @@
       "index": 1,
       "name": "☣️ 安全威胁 · BlockHttpDNS",
       "path": "anywhere/rules/BlockHttpDNS-001.arrs",
-      "sha256": "e008b5d936949f2ed906b6afa2f8c5f79ab9148a8d7fff1548fd71f331b0b4e2",
+      "sha256": "1b801f72e7c7147f0a2763ab82fc87e1b2802477608998ad6ee06fb86648a152",
       "sourceId": "BlockHttpDNS",
       "total": 1,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/BlockHttpDNS-001.arrs"
@@ -273,7 +273,7 @@
       "index": 1,
       "name": "🧱 常见广告 · Advertising",
       "path": "anywhere/rules/Advertising-001.arrs",
-      "sha256": "9a6c24f4633d6b9fccc8dff0212fa85f66632ca0f09b9f1f058add2984de26a8",
+      "sha256": "8de9e3407e29b73c6d7930dc7fcb0add0d3308cdd5947f4cc029943020c1da74",
       "sourceId": "Advertising",
       "total": 1,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/Advertising-001.arrs"
@@ -288,7 +288,7 @@
       "index": 1,
       "name": "🧱 常见广告 · Advertising Domain (1/3)",
       "path": "anywhere/rules/Advertising_Domain-001.arrs",
-      "sha256": "e2a0b779a75943a781df882b9ba5af16a706bd05aeb7305cae3efd69190ee8c6",
+      "sha256": "dfdf7aaa023ef54f19b3b2622b8a21f2f045cb34895f029b85561abd6c00d838",
       "sourceId": "Advertising_Domain",
       "total": 3,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/Advertising_Domain-001.arrs"
@@ -303,22 +303,22 @@
       "index": 2,
       "name": "🧱 常见广告 · Advertising Domain (2/3)",
       "path": "anywhere/rules/Advertising_Domain-002.arrs",
-      "sha256": "723cee640c06293813274cb75d57f360580affe990c2994e107801b519855bb7",
+      "sha256": "6e3ca79f76b5fc57fa91926e5ae09d1348ac4ae7f3c5feb3f00329fd98a25b72",
       "sourceId": "Advertising_Domain",
       "total": 3,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/Advertising_Domain-002.arrs"
     },
     {
       "countsByType": {
-        "domainSuffix": 56480
+        "domainSuffix": 57026
       },
-      "entryCount": 56480,
+      "entryCount": 57026,
       "familyId": "Advertising",
       "id": "Advertising_Domain-003",
       "index": 3,
       "name": "🧱 常见广告 · Advertising Domain (3/3)",
       "path": "anywhere/rules/Advertising_Domain-003.arrs",
-      "sha256": "eda1382be722ec1c6ad8cc52a960fd68e73f16797268e6bb476074ac5aa2911e",
+      "sha256": "3a5970f439d52bc483a68c4c7c0e2587fae25f786c4165d94079eb9c9bb45d2d",
       "sourceId": "Advertising_Domain",
       "total": 3,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/Advertising_Domain-003.arrs"
@@ -334,7 +334,7 @@
       "index": 1,
       "name": "📺 哔哩哔哩 · BiliBili",
       "path": "anywhere/rules/BiliBili-001.arrs",
-      "sha256": "858eb6c7af093f5bb6cdd4a6734ee610c3562bd25d141a8f9ed8f18624d8d9e6",
+      "sha256": "cde55ee2a6643d8815966d8a2b4608c8db2af942a500ef6b20de8bf87b7031b3",
       "sourceId": "BiliBili",
       "total": 1,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/BiliBili-001.arrs"
@@ -350,7 +350,7 @@
       "index": 1,
       "name": "🎵 抖音 · ByteDance",
       "path": "anywhere/rules/ByteDance-001.arrs",
-      "sha256": "06f4ddbd95bbf159615242c2c7e4561c654f74554cc14192d2301fbde05f7e35",
+      "sha256": "0d4c870867377a9e6c01c44c38b9f558ca2ccc0fc13229a9f74bd5fcb71cf35b",
       "sourceId": "ByteDance",
       "total": 1,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/ByteDance-001.arrs"
@@ -365,7 +365,7 @@
       "index": 1,
       "name": "📕 小红书 · XiaoHongShu",
       "path": "anywhere/rules/XiaoHongShu-001.arrs",
-      "sha256": "96f4c12a51d969beb03d2a91e16a3e9e8109ef2c2af6f907b4a52c9b7af0bfda",
+      "sha256": "d7bbf650e256b065e4166d2a741010635e374568dc47df49f321f98b1d9257ef",
       "sourceId": "XiaoHongShu",
       "total": 1,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/XiaoHongShu-001.arrs"
@@ -381,7 +381,7 @@
       "index": 1,
       "name": "🧣 微博 · Weibo",
       "path": "anywhere/rules/Weibo-001.arrs",
-      "sha256": "22be89976dcc53380622e8fb682037d97383cca346fd819c4aadc3473ea89999",
+      "sha256": "06a59c9427a58fd39b4d134a55fdb9472af9ba9ec2db41ff8563a9cfbb122fe5",
       "sourceId": "Weibo",
       "total": 1,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/Weibo-001.arrs"
@@ -398,7 +398,7 @@
       "index": 1,
       "name": "🤖 AI 专用 · OpenAI",
       "path": "anywhere/rules/OpenAI-001.arrs",
-      "sha256": "a9daea3b7fd17b57ec154fcf4fb10f0e133bb5b417cf92bc0a07cc2b9693e4c5",
+      "sha256": "be4e6783b551f2a0d0704b2a279c59eef06cae9d949d064510b76a119b5993dd",
       "sourceId": "OpenAI",
       "total": 1,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/OpenAI-001.arrs"
@@ -413,7 +413,7 @@
       "index": 1,
       "name": "🤖 AI 专用 · Claude",
       "path": "anywhere/rules/Claude-001.arrs",
-      "sha256": "878dbe04b0e5e1c84e6ae3917d07b47e5dccc8c89bf451c009a9ac2a0253b205",
+      "sha256": "9bebe1cb84906467f7e1f7724d1627efc09df86dc309294ab6602f1148e13dd0",
       "sourceId": "Claude",
       "total": 1,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/Claude-001.arrs"
@@ -429,7 +429,7 @@
       "index": 1,
       "name": "🤖 AI 专用 · Gemini",
       "path": "anywhere/rules/Gemini-001.arrs",
-      "sha256": "f8ebbfe95fb06b0d0a38980c188e4a47e5520061b8e43cf634f33f2cf585f981",
+      "sha256": "5ff820e8ae0023fcac9a35121a8b4df917f104721408e5ad4cb059218cc7e04b",
       "sourceId": "Gemini",
       "total": 1,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/Gemini-001.arrs"
@@ -444,7 +444,7 @@
       "index": 1,
       "name": "🤖 AI 专用 · Copilot",
       "path": "anywhere/rules/Copilot-001.arrs",
-      "sha256": "8ba71bc2f1ae85e58465032876d625cd70856e6b169e19ab9d7733b3e21c2c92",
+      "sha256": "59a95e68ceb1cd1882fd353535fd5ad71f4d6d4e15479bc3664f4a0813753ccb",
       "sourceId": "Copilot",
       "total": 1,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/Copilot-001.arrs"
@@ -460,7 +460,7 @@
       "index": 1,
       "name": "🐙 GitHub · GitHub",
       "path": "anywhere/rules/GitHub-001.arrs",
-      "sha256": "7a53ebed1f3d30ef21a7a86ee63f4d63a98bcb59ac750dbb453fdf98789d38f3",
+      "sha256": "e28dd2a3997f2926680dbdd626373162252e8b98612f2acdfb9c92c748dc1da0",
       "sourceId": "GitHub",
       "total": 1,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/GitHub-001.arrs"
@@ -478,7 +478,7 @@
       "index": 1,
       "name": "📺 YouTube · YouTube",
       "path": "anywhere/rules/YouTube-001.arrs",
-      "sha256": "7fca10d708f434a1d439f0ef9d590e046a25cecbb72eca751d531195591256df",
+      "sha256": "cc9ea6fca45428e53e8fae638c9c2ab4a76df2db45b9ac860133b0ac042673af",
       "sourceId": "YouTube",
       "total": 1,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/YouTube-001.arrs"
@@ -496,7 +496,7 @@
       "index": 1,
       "name": "🎬 Netflix · Netflix",
       "path": "anywhere/rules/Netflix-001.arrs",
-      "sha256": "5085f5e7d97752816e2ff83572f31a4117244e8957dc6e681ee07127d1e84e03",
+      "sha256": "46d062b52c625757397f3dc2d8bb0e8d9d7406ce8b52399a0e54ffb5a1d99831",
       "sourceId": "Netflix",
       "total": 1,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/Netflix-001.arrs"
@@ -511,7 +511,7 @@
       "index": 1,
       "name": "🏰 Disney+ · Disney",
       "path": "anywhere/rules/Disney-001.arrs",
-      "sha256": "d375725371520917e0910aa23a05bd298d01dff8192a25aa6fca05d4e3772e56",
+      "sha256": "8107de6d2c6fc4b254286ccc113ebdcb8dd9b5a42e4b8d1d3e25654ac6d44f95",
       "sourceId": "Disney",
       "total": 1,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/Disney-001.arrs"
@@ -528,7 +528,7 @@
       "index": 1,
       "name": "🎵 Spotify · Spotify",
       "path": "anywhere/rules/Spotify-001.arrs",
-      "sha256": "6308754ce9785e4aa860f7ac0c3688415ab4fe38f9c21876c93399534064d7d9",
+      "sha256": "6b7e03e7f95767bb0ba9712baaf1085aa1e65fae2684f63eb48b565262e2aa8a",
       "sourceId": "Spotify",
       "total": 1,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/Spotify-001.arrs"
@@ -545,7 +545,7 @@
       "index": 1,
       "name": "🌍 国际媒体 · GlobalMedia",
       "path": "anywhere/rules/GlobalMedia-001.arrs",
-      "sha256": "2d29f872ca5a88e39b8ca7b1dc1773c1c41f0ee1b50e8ca3b6c0248385d1da1f",
+      "sha256": "1e70b0b049ac441fba3ff5b0a367ce04d947a39341a67f96552621040ff73be8",
       "sourceId": "GlobalMedia",
       "total": 1,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/GlobalMedia-001.arrs"
@@ -563,7 +563,7 @@
       "index": 1,
       "name": "✈️ Telegram · Telegram",
       "path": "anywhere/rules/Telegram-001.arrs",
-      "sha256": "5f6b7b3ae4e5f2ca638c0f9371d2c225ef3a1e0b471a57dc6bd8b905fb980a79",
+      "sha256": "ebb85992a17ead4206078c9188b4b595b6b70e8511a3b9a1ddccb799400e871f",
       "sourceId": "Telegram",
       "total": 1,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/Telegram-001.arrs"
@@ -580,7 +580,7 @@
       "index": 1,
       "name": "💬 海外社交 · Facebook",
       "path": "anywhere/rules/Facebook-001.arrs",
-      "sha256": "813b859a9caacfe0e482befa332ca6a852e841212d051eb2714ac1f7355f4eb8",
+      "sha256": "1a1f7cb6299418f099425880c26dd6109182e599bdf2816464d0414242e0b58b",
       "sourceId": "Facebook",
       "total": 1,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/Facebook-001.arrs"
@@ -595,7 +595,7 @@
       "index": 1,
       "name": "💬 海外社交 · Instagram",
       "path": "anywhere/rules/Instagram-001.arrs",
-      "sha256": "600439ff3417d722199b1fec845469634b682f125129a8060005379673cf7308",
+      "sha256": "b22c5a9c44e0a5a50ecd1ec6c26f1aa7f168cf17a07ff532447316960729141c",
       "sourceId": "Instagram",
       "total": 1,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/Instagram-001.arrs"
@@ -612,7 +612,7 @@
       "index": 1,
       "name": "💬 海外社交 · Twitter",
       "path": "anywhere/rules/Twitter-001.arrs",
-      "sha256": "8a17091792be459b541046708ec306e35d9f36baa657deae43c921650ee465e5",
+      "sha256": "f1ef7c80b0e734f7b0a94113aafb956c20e02d200a66fa200b75d6449ade301f",
       "sourceId": "Twitter",
       "total": 1,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/Twitter-001.arrs"
@@ -628,7 +628,7 @@
       "index": 1,
       "name": "🎶 TikTok · TikTok",
       "path": "anywhere/rules/TikTok-001.arrs",
-      "sha256": "63161c17405faec11d457dca9307f8facedc61769fb017b45d9167f4436a4ba6",
+      "sha256": "de9ea5d6b7c979a3a1755a5adc27cda8180bbeb35ce99653b03894ed5625fe02",
       "sourceId": "TikTok",
       "total": 1,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/TikTok-001.arrs"
@@ -645,7 +645,7 @@
       "index": 1,
       "name": "🍎 Apple · Apple",
       "path": "anywhere/rules/Apple-001.arrs",
-      "sha256": "0ae81c8d3feaac77d840059a0ede2a67a66b45d56a0b1b8f5c5cbc17ca5aafb0",
+      "sha256": "ca751437f3e84f1d75f9a7c741dbe7167e0ea32304f0ae55e00c05cb06b918e6",
       "sourceId": "Apple",
       "total": 1,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/Apple-001.arrs"
@@ -661,7 +661,7 @@
       "index": 1,
       "name": "🪟 Microsoft · Microsoft",
       "path": "anywhere/rules/Microsoft-001.arrs",
-      "sha256": "aefbc6d63ba1b02c66d393753b4b80a0373eb97ca8d441bf8064c55004930167",
+      "sha256": "735dcb0b4dcff08f75d727f069078f6ddb8914f15b27c01136ba9afab9b8dc57",
       "sourceId": "Microsoft",
       "total": 1,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/Microsoft-001.arrs"
@@ -676,7 +676,7 @@
       "index": 1,
       "name": "DIRECT · SteamCN",
       "path": "anywhere/rules/SteamCN-001.arrs",
-      "sha256": "30e08f5f108365424fd56d4e90e2482debc356fbd82ae3769f222bfa1ea1c8f0",
+      "sha256": "2422beb4d86c3501ba624ee26f429904c83f756da30498468fee23332b57d533",
       "sourceId": "SteamCN",
       "total": 1,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/SteamCN-001.arrs"
@@ -691,22 +691,22 @@
       "index": 1,
       "name": "DIRECT · ChinaMax Domain (1/2)",
       "path": "anywhere/rules/ChinaMax_Domain-001.arrs",
-      "sha256": "52b4faeb682f466802aa62ca93fa36d2941e9758ed5acef72c07a35b4b22efb4",
+      "sha256": "f3dbe8ba5581261ae1beed2102f347eda24de6a6f3e0f3f9aa05119bb90be54d",
       "sourceId": "ChinaMax_Domain",
       "total": 2,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/ChinaMax_Domain-001.arrs"
     },
     {
       "countsByType": {
-        "domainSuffix": 15736
+        "domainSuffix": 15737
       },
-      "entryCount": 15736,
+      "entryCount": 15737,
       "familyId": "ChinaMax_Domain",
       "id": "ChinaMax_Domain-002",
       "index": 2,
       "name": "DIRECT · ChinaMax Domain (2/2)",
       "path": "anywhere/rules/ChinaMax_Domain-002.arrs",
-      "sha256": "b5bfd3fac7a7bf68e6a6448cc9c0178d0bf88e72bbc8969b50ffbc22ce7ea189",
+      "sha256": "78e9bcdecb4db0e221bd55c2e4519b171e921b2cbe770fb2f39291dc90cb4e7a",
       "sourceId": "ChinaMax_Domain",
       "total": 2,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/ChinaMax_Domain-002.arrs"
@@ -714,16 +714,16 @@
     {
       "countsByType": {
         "domainKeyword": 4,
-        "domainSuffix": 471,
+        "domainSuffix": 449,
         "ipv4Cidr": 42
       },
-      "entryCount": 517,
+      "entryCount": 495,
       "familyId": "Game",
       "id": "Game-001",
       "index": 1,
       "name": "🕹️ 游戏平台 · Game",
       "path": "anywhere/rules/Game-001.arrs",
-      "sha256": "8988d6ccd14abfa00b2585fb4de30e9491b72e98c7a07a45df8c7344393fa752",
+      "sha256": "858730b65a18a801184f6c59c555faac73b5a71f224522b7222807f9fb4741ce",
       "sourceId": "Game",
       "total": 1,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/Game-001.arrs"
@@ -739,7 +739,7 @@
       "index": 1,
       "name": "⬇️ 下载/P2P · Download",
       "path": "anywhere/rules/Download-001.arrs",
-      "sha256": "8171fe64c14280ee07a09cb0557cb8cd85f7d6493a2ebe98f98bc33cf9e6e2a4",
+      "sha256": "6e98ea5375a953f04a3fc149363f5362b0f82cc7b8c1111f7c283d29ff4d3b00",
       "sourceId": "Download",
       "total": 1,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/Download-001.arrs"
@@ -747,16 +747,16 @@
     {
       "countsByType": {
         "domainKeyword": 4,
-        "domainSuffix": 94,
+        "domainSuffix": 88,
         "ipv4Cidr": 3
       },
-      "entryCount": 101,
+      "entryCount": 95,
       "familyId": "PrivateTracker",
       "id": "PrivateTracker-001",
       "index": 1,
       "name": "⬇️ 下载/P2P · PrivateTracker",
       "path": "anywhere/rules/PrivateTracker-001.arrs",
-      "sha256": "78af3b5019c24e8f93658f82ef6361c56d1916040148d11d261375c0e2080d7e",
+      "sha256": "d0793f7d1a122ee038f8db350c4a8457f68068840125540b44ca99c83ca51e51",
       "sourceId": "PrivateTracker",
       "total": 1,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/PrivateTracker-001.arrs"
@@ -764,17 +764,17 @@
     {
       "countsByType": {
         "domainKeyword": 12,
-        "domainSuffix": 50,
-        "ipv4Cidr": 8084,
+        "domainSuffix": 49,
+        "ipv4Cidr": 8092,
         "ipv6Cidr": 4198
       },
-      "entryCount": 12344,
+      "entryCount": 12351,
       "familyId": "ChinaMax",
       "id": "ChinaMax-001",
       "index": 1,
       "name": "DIRECT · ChinaMax",
       "path": "anywhere/rules/ChinaMax-001.arrs",
-      "sha256": "e82b6903fc0017b577011692b9108c127c1cde0f94436289f6dbc07cb83b30f1",
+      "sha256": "e52fd5f3bd949d430a46a22b5044a6516f27712c660d95dba736aec70022cb25",
       "sourceId": "ChinaMax",
       "total": 1,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/ChinaMax-001.arrs"
@@ -878,7 +878,7 @@
         "Advertising-001"
       ],
       "sourceBytes": 26927,
-      "sourceSha256": "6ade866f2f91b709f37b38474d1ad97c3cb923ba80d464e62bb8ee011ff53410",
+      "sourceSha256": "c1ac994f485e467f2931535731905b87b28f0f55ccf71536e12cf5798941935e",
       "unsupportedByReason": {
         "unsupported-and": 1,
         "unsupported-url-regex": 14
@@ -888,11 +888,11 @@
       "canonicalPath": "rule/Surge/Advertising/Advertising_Domain.list",
       "componentId": "domains",
       "counts": {
-        "candidate": 263113,
-        "convertible": 246665,
+        "candidate": 263659,
+        "convertible": 247211,
         "duplicates": 185,
-        "output": 246480,
-        "parsed": 263113,
+        "output": 247026,
+        "parsed": 263659,
         "shadowed": 0,
         "unresolved": 0,
         "unsupported": 16448
@@ -914,8 +914,8 @@
         "Advertising_Domain-002",
         "Advertising_Domain-003"
       ],
-      "sourceBytes": 5253228,
-      "sourceSha256": "9655bb556b303112e0b2b8435bed518628e76bd50d957b793c0c1b0b2de7bdd9",
+      "sourceBytes": 5264386,
+      "sourceSha256": "b1661ab90985bc0a9e170c5c65d980bdf7c96bf7e191246a1870fd0d09440a96",
       "unsupportedByReason": {
         "unsupported-exact-domain": 16448
       }
@@ -1425,7 +1425,7 @@
         "GlobalMedia-001"
       ],
       "sourceBytes": 35722,
-      "sourceSha256": "3d66863f40954e018e4c57675f9e531c2bb921d7fc76d82a91dde16d70f80e70",
+      "sourceSha256": "c0a25471edba34528ac7385672673f2776856869a55f5a224ab073aea6159ae4",
       "unsupportedByReason": {
         "unsupported-process-name": 3,
         "unsupported-url-regex": 1,
@@ -1632,7 +1632,7 @@
         "Apple-001"
       ],
       "sourceBytes": 1805,
-      "sourceSha256": "903b2282b621320e3ad3143ddcd30b01821e6d0aad82f3e61f2e5c2610925b8a",
+      "sourceSha256": "c0b24aa528ff9ae88c4bc8de01e279a6a74c9cfecf916ffc0b3d486015592741",
       "unsupportedByReason": {
         "unsupported-process-name": 13,
         "unsupported-user-agent": 23
@@ -1715,9 +1715,15 @@
         "candidate": 111566,
         "convertible": 111269,
         "duplicates": 335,
-        "output": 110736,
+        "output": 110737,
         "parsed": 111566,
         "shadowed": 198,
+        "supplemental": {
+          "duplicates": 17,
+          "input": 18,
+          "output": 1,
+          "shadowed": 0
+        },
         "unresolved": 0,
         "unsupported": 297
       },
@@ -1738,7 +1744,7 @@
         "ChinaMax_Domain-002"
       ],
       "sourceBytes": 1527998,
-      "sourceSha256": "61502a008c045b852b8fcbdcb01c7d93035868435591c5bebc2988f38161170e",
+      "sourceSha256": "87a16ea3f16b1fe90bc5854b64be2cab81ff281629424e95a3e10cdd93f5d51a",
       "unsupportedByReason": {
         "unsupported-exact-domain": 297
       }
@@ -1750,9 +1756,9 @@
         "candidate": 597,
         "convertible": 589,
         "duplicates": 45,
-        "output": 517,
+        "output": 495,
         "parsed": 597,
-        "shadowed": 27,
+        "shadowed": 49,
         "unresolved": 0,
         "unsupported": 8
       },
@@ -1772,7 +1778,7 @@
         "Game-001"
       ],
       "sourceBytes": 19223,
-      "sourceSha256": "b146576a2dd8aad74634bb70aa345eeee82e013445c598bb8585ef5e60f48222",
+      "sourceSha256": "36cf14ce082ddb813072216a300d3316dc8e78908e67cb4b521ab43e18bab677",
       "unsupportedByReason": {
         "unsupported-exact-domain": 8
       }
@@ -1819,9 +1825,9 @@
         "candidate": 248,
         "convertible": 130,
         "duplicates": 29,
-        "output": 101,
+        "output": 95,
         "parsed": 248,
-        "shadowed": 0,
+        "shadowed": 6,
         "unresolved": 0,
         "unsupported": 118
       },
@@ -1850,11 +1856,11 @@
       "canonicalPath": "rule/Surge/ChinaMax/ChinaMax.list",
       "componentId": "rules",
       "counts": {
-        "candidate": 12586,
-        "convertible": 12508,
-        "duplicates": 15,
-        "output": 12344,
-        "parsed": 12586,
+        "candidate": 12594,
+        "convertible": 12516,
+        "duplicates": 16,
+        "output": 12351,
+        "parsed": 12594,
         "shadowed": 149,
         "unresolved": 0,
         "unsupported": 78
@@ -1862,7 +1868,7 @@
       "familyId": "ChinaMax",
       "id": "ChinaMax",
       "ignoredModifiers": {
-        "noResolve": 12445
+        "noResolve": 12453
       },
       "inputFormat": "RULE-SET",
       "intendedTarget": "direct",
@@ -1874,8 +1880,8 @@
       "shardIds": [
         "ChinaMax-001"
       ],
-      "sourceBytes": 453509,
-      "sourceSha256": "230c819c029e33c3bea7df7e13da76107359d327f4ca3e358cd5edf20cce7c43",
+      "sourceBytes": 453786,
+      "sourceSha256": "eb678a1adbcebc9cda6d6f393bf8f7129c5b002cf40032921cb9de0a4c5c5f3e",
       "unsupportedByReason": {
         "unsupported-ip-asn": 1,
         "unsupported-process-name": 12,
@@ -1885,27 +1891,29 @@
   ],
   "totals": {
     "blankCount": 32,
-    "candidateCount": 393879,
+    "candidateCount": 394433,
     "commentCount": 311,
     "convertibleByKind": {
       "domainKeyword": 370,
-      "domainSuffix": 361054,
-      "ipv4Cidr": 10965,
+      "domainSuffix": 361600,
+      "ipv4Cidr": 10973,
       "ipv6Cidr": 4224
     },
-    "convertibleCount": 376613,
-    "duplicateCount": 809,
+    "convertibleCount": 377167,
+    "duplicateCount": 827,
     "ignoredModifiers": {
-      "noResolve": 15199
+      "noResolve": 15207
     },
     "logicalRuleSetCount": 31,
-    "outputCount": 375403,
-    "parsedCount": 393879,
-    "physicalLineCount": 394222,
-    "shadowedCount": 401,
+    "outputCount": 375929,
+    "parsedCount": 394433,
+    "physicalLineCount": 394776,
+    "shadowedCount": 429,
     "shardCount": 34,
-    "sourceBytes": 7452885,
+    "sourceBytes": 7464320,
     "sourceCount": 32,
+    "supplementalCount": 18,
+    "supplementalOutputCount": 1,
     "unresolvedCount": 0,
     "unsupportedByReason": {
       "unsupported-and": 1,
@@ -1920,8 +1928,8 @@
   },
   "upstream": {
     "branch": "master",
-    "commit": "b807e9f8b55f6fcfb2cb26f52b77fa1d3b0c4e6b",
-    "committedAt": "2026-08-03T19:30:42Z",
+    "commit": "72c410015dc99df6b54eca1386126f70268bf6bc",
+    "committedAt": "2026-08-05T19:24:33Z",
     "license": "GPL-2.0-only",
     "repository": "https://github.com/blackmatrix7/ios_rule_script"
   }

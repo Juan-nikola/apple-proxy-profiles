@@ -26,7 +26,7 @@ const EXPECTED_16_SERVICE_NAMES = Object.freeze([
   "🎵 抖音",
   "📕 小红书",
   "🧣 微博",
-  "🕹️ 游戏平台",
+  "🌍 海外游戏",
 ]);
 
 function makeNormalizedInventory() {

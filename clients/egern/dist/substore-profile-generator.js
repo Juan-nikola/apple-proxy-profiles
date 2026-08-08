@@ -27,7 +27,9 @@ var EgernProfileBundle = (() => {
   var CLIENT = Object.freeze({
     shadowrocket: "shadowrocket",
     egern: "egern",
-    anywhere: "anywhere"
+    anywhere: "anywhere",
+    surge: "surge",
+    singbox: "singbox"
   });
   var OPTION_VALUES = Object.freeze({
     output: Object.freeze(["nodes", "config"]),
@@ -283,7 +285,7 @@ var EgernProfileBundle = (() => {
   }
 
   // options.js
-  var PUBLIC_SNAPSHOT_BASE_URL = "https://juan-nikola.github.io/apple-proxy-profiles/current";
+  var PUBLIC_RULE_ROOT = "https://juan-nikola.github.io/apple-proxy-profiles";
   var REQUIRED_KEYS = Object.freeze([
     "output",
     "type",
@@ -292,6 +294,8 @@ var EgernProfileBundle = (() => {
     "platform"
   ]);
   var DEFAULTS = Object.freeze({
+    channel: "edge",
+    adblockMode: "off",
     dnsMode: "stable",
     chinaDns: "alidns",
     globalDns: "cloudflare",
@@ -311,7 +315,11 @@ var EgernProfileBundle = (() => {
     "clientChain"
   ]);
   var ALLOWED_KEYS = /* @__PURE__ */ new Set([...REQUIRED_KEYS, ...ENUM_KEYS]);
+  ALLOWED_KEYS.add("channel");
+  ALLOWED_KEYS.add("adblockMode");
   var SUPPORTED_PLATFORMS = /* @__PURE__ */ new Set(["macos", "iphone", "ipad"]);
+  var CHANNELS = /* @__PURE__ */ new Set(["edge", "current"]);
+  var ADBLOCK_MODES = /* @__PURE__ */ new Set(["off", "full"]);
   var PROTOTYPE_KEYS = /* @__PURE__ */ new Set(["__proto__", "constructor", "prototype"]);
   var AMBIGUOUS_WHITESPACE = /[\t\v\f\u00a0\u1680\u2000-\u200b\u2028\u2029\u202f\u205f\u3000\ufeff]/u;
   var FORBIDDEN_URL_CHARACTER = /[\u0000-\u001f\u007f\\]/u;
@@ -411,6 +419,19 @@ var EgernProfileBundle = (() => {
     }
     return value;
   }
+  function localEnumValue(values, key, defaultValue, supported) {
+    const value = values.has(key) && values.get(key) !== void 0 ? values.get(key) : defaultValue;
+    if (typeof value !== "string" || !supported.has(value)) {
+      throw optionError(key, "has an unsupported value");
+    }
+    return value;
+  }
+  function ruleBaseUrlForChannel(channel) {
+    if (typeof channel !== "string" || !CHANNELS.has(channel)) {
+      throw optionError("channel", "has an unsupported value");
+    }
+    return `${PUBLIC_RULE_ROOT}/${channel}`;
+  }
   function validateEgernNodeSubscriptionUrl(value) {
     if (typeof value !== "string" || value.length === 0) {
       throw optionError("nodeSubscriptionUrl", "must be an absolute HTTPS URL");
@@ -440,13 +461,16 @@ var EgernProfileBundle = (() => {
   function parseEgernOptions(raw) {
     const values = ownDataOptions(raw);
     const platform = platformValue(values);
+    const channel = localEnumValue(values, "channel", DEFAULTS.channel, CHANNELS);
     const options = {
       output: exactLiteral(values, "output", "config"),
       type: exactLiteral(values, "type", "collection"),
       name: profileName(values),
       nodeSubscriptionUrl: privateNodeUrl(values),
       platform,
-      publicBaseUrl: PUBLIC_SNAPSHOT_BASE_URL,
+      channel,
+      adblockMode: localEnumValue(values, "adblockMode", DEFAULTS.adblockMode, ADBLOCK_MODES),
+      publicBaseUrl: ruleBaseUrlForChannel(channel),
       dnsMode: enumValue(values, "dnsMode", DEFAULTS.dnsMode),
       chinaDns: enumValue(values, "chinaDns", DEFAULTS.chinaDns),
       globalDns: enumValue(values, "globalDns", DEFAULTS.globalDns),
@@ -512,9 +536,9 @@ var EgernProfileBundle = (() => {
   // ../../../shared/policies/filters.js
   var ALL_NODES_FILTER = "^.+$";
   var NON_CHAINED_FILTER = "^(?!\u{1F517} ).+$";
-  var ENTRY_FILTER = "^(?!.*\\[\u5DF2\u6709\u94FE\\])\\S+ \\[(?:\u673A\u573A|\u81EA\u5EFA|Realm)\\] .+$";
-  var P2P_FILTER = "^\\S+ \\[(?:\u81EA\u5EFA|Realm|\u94FE\u5F0F\u4EE3\u7406)\\] .+$";
-  var GAME_FILTER = "^(?!\u{1F517} )\\S+ .+ \\[UDP\\]$";
+  var ENTRY_FILTER = "^(?!\u{1F517} )(?!.*\xB7\u94FE).+\uFF5C(?:\u673A\u573A|\u81EA\u5EFA|Realm)(?:\xB7.*)?$";
+  var P2P_FILTER = "^(?!\u{1F517} ).+\uFF5C(?:\u81EA\u5EFA|Realm|\u94FE\u5F0F\u4EE3\u7406)(?:\xB7.*)?$";
+  var GAME_FILTER = "^(?!\u{1F517} ).+\xB7U$";
   var CHAINED_NODES_FILTER = "^\u{1F517} .+$";
   var CONTINENTS = Object.freeze([
     Object.freeze({
@@ -543,17 +567,17 @@ var EgernProfileBundle = (() => {
     })
   ]);
   var SOURCE_GROUPS = Object.freeze([
-    Object.freeze({ kind: SOURCE_KIND.selfHosted, name: "\u{1F3E0} \u81EA\u5EFA\u8282\u70B9", filter: "^\\S+ \\[\u81EA\u5EFA\\] .+$" }),
-    Object.freeze({ kind: SOURCE_KIND.airport, name: "\u{1F3E2} \u673A\u573A\u8282\u70B9", filter: "^\\S+ \\[\u673A\u573A\\] .+$" }),
-    Object.freeze({ kind: SOURCE_KIND.realm, name: "\u21AA\uFE0F Realm \u8F6C\u53D1", filter: "^\\S+ \\[Realm\\] .+$" }),
-    Object.freeze({ kind: SOURCE_KIND.serverChain, name: "\u26D3\uFE0F \u94FE\u5F0F\u4EE3\u7406", filter: "^\\S+ \\[\u94FE\u5F0F\u4EE3\u7406\\] .+$" })
+    Object.freeze({ kind: SOURCE_KIND.selfHosted, name: "\u{1F3E0} \u81EA\u5EFA\u8282\u70B9", filter: "^.+\uFF5C\u81EA\u5EFA(?:\xB7.*)?$" }),
+    Object.freeze({ kind: SOURCE_KIND.airport, name: "\u{1F3E2} \u673A\u573A\u8282\u70B9", filter: "^.+\uFF5C\u673A\u573A(?:\xB7.*)?$" }),
+    Object.freeze({ kind: SOURCE_KIND.realm, name: "\u21AA\uFE0F Realm \u8F6C\u53D1", filter: "^.+\uFF5CRealm(?:\xB7.*)?$" }),
+    Object.freeze({ kind: SOURCE_KIND.serverChain, name: "\u26D3\uFE0F \u94FE\u5F0F\u4EE3\u7406", filter: "^.+\uFF5C\u94FE\u5F0F\u4EE3\u7406(?:\xB7.*)?$" })
   ]);
   function continentFilter(continent) {
     if (continent.key === CONTINENT.other) {
       const knownFlags = CONTINENTS.flatMap((record) => record.flags).join("|");
-      return `^(?!(?:\u{1F517}|${knownFlags}))\\S+ .+$`;
+      return `^(?!(?:\u{1F517}|${knownFlags})).+$`;
     }
-    return `^(?:${continent.flags.join("|")}) .+$`;
+    return `^(?:${continent.flags.join("|")}).+$`;
   }
 
   // ../../../shared/policies/intents.js
@@ -566,6 +590,8 @@ var EgernProfileBundle = (() => {
     macos: Object.freeze({ testInterval: 600, timeout: 5, tolerance: 100 }),
     iphone: Object.freeze({ testInterval: 1800, timeout: 7, tolerance: 150 }),
     ipad: Object.freeze({ testInterval: 1800, timeout: 7, tolerance: 150 }),
+    android: Object.freeze({ testInterval: 1800, timeout: 7, tolerance: 150 }),
+    openwrt: Object.freeze({ testInterval: 600, timeout: 5, tolerance: 100 }),
     appletv: Object.freeze({ testInterval: 3600, timeout: 8, tolerance: 200 })
   });
   function platformPolicyPreset(platform) {
@@ -620,7 +646,7 @@ var EgernProfileBundle = (() => {
     Object.freeze(["\u{1F3B5} \u6296\u97F3", DIRECT_FIRST_SERVICE_DEFAULTS]),
     Object.freeze(["\u{1F4D5} \u5C0F\u7EA2\u4E66", DIRECT_FIRST_SERVICE_DEFAULTS]),
     Object.freeze(["\u{1F9E3} \u5FAE\u535A", DIRECT_FIRST_SERVICE_DEFAULTS]),
-    Object.freeze(["\u{1F579}\uFE0F \u6E38\u620F\u5E73\u53F0", PROXY_FIRST_SERVICE_DEFAULTS])
+    Object.freeze(["\u{1F30D} \u6D77\u5916\u6E38\u620F", PROXY_FIRST_SERVICE_DEFAULTS])
   ]);
   function policyGroup({
     kind,
@@ -731,7 +757,8 @@ var EgernProfileBundle = (() => {
     groups.push(policyGroup({
       kind: GROUP_KIND.primary,
       name: "\u{1F680} \u8282\u70B9\u9009\u62E9",
-      candidates: [POLICY_TARGET.primaryProxy]
+      candidates: [POLICY_TARGET.primaryProxy],
+      nodeFilter: NON_CHAINED_FILTER
     }));
     for (const continent of presentContinents) {
       groups.push(subscriptionGroup(
@@ -795,13 +822,164 @@ var EgernProfileBundle = (() => {
     return groups;
   }
 
-  // ../../../shared/rules/domestic-fallback.js
-  var DOMESTIC_FALLBACK_DOMAIN_SUFFIXES = Object.freeze([
-    "cn",
+  // ../../../shared/rules/lightweight-policy.js
+  var DEFAULT_RULE_SOURCE_IDS = Object.freeze([
+    "Hijacking",
+    "BlockHttpDNS",
+    "Privacy",
+    "DomesticCore",
+    "DomesticGame",
+    "BiliBili",
+    "ByteDance",
+    "XiaoHongShu",
+    "Weibo",
+    "OpenAI",
+    "Claude",
+    "Gemini",
+    "Copilot",
+    "GitHub",
+    "YouTube",
+    "Netflix",
+    "Disney",
+    "Spotify",
+    "GlobalMedia",
+    "Telegram",
+    "Facebook",
+    "Instagram",
+    "Twitter",
+    "TikTok",
+    "Apple",
+    "Microsoft",
+    "SteamCN",
+    "OverseasGame",
+    "Download",
+    "PrivateTracker",
+    "ChinaIP"
+  ]);
+  var FULL_ADBLOCK_SOURCE_IDS = Object.freeze([
+    "Advertising",
+    "Advertising_Domain"
+  ]);
+  var RULE_BUDGETS = Object.freeze({
+    domesticCoreEntries: 2e3,
+    defaultEntries: 25e3,
+    defaultBytes: 5e6,
+    startupInlineEntries: 64,
+    singBoxRuleRssBytes: 50 * 1024 * 1024,
+    singBoxTotalRssBytes: 200 * 1024 * 1024
+  });
+  var ROUTING_PRECEDENCE = Object.freeze([
+    "local",
+    "security",
+    "custom",
+    "domesticCore",
+    "domesticGame",
+    "explicitOverseas",
+    "overseasGame",
+    "chinaIp",
+    "defaultProxy"
+  ]);
+  var EXPLICIT_OVERSEAS_RULE_SOURCE_IDS = Object.freeze([
+    "OpenAI",
+    "Claude",
+    "Gemini",
+    "Copilot",
+    "GitHub",
+    "YouTube",
+    "Netflix",
+    "Disney",
+    "Spotify",
+    "GlobalMedia",
+    "Telegram",
+    "Facebook",
+    "Instagram",
+    "Twitter",
+    "TikTok",
+    "OverseasGame"
+  ]);
+  var POLICY_TARGETS = Object.freeze({
+    direct: "DIRECT",
+    defaultProxy: "\u{1F680} \u8282\u70B9\u9009\u62E9",
+    overseasGame: "\u{1F30D} \u6D77\u5916\u6E38\u620F",
+    reject: "REJECT"
+  });
+  var SOURCE_POLICIES = Object.freeze({
+    Hijacking: POLICY_TARGETS.reject,
+    BlockHttpDNS: POLICY_TARGETS.reject,
+    Privacy: "\u{1F575}\uFE0F \u4E25\u683C\u8DDF\u8E2A",
+    DomesticCore: POLICY_TARGETS.direct,
+    DomesticGame: POLICY_TARGETS.direct,
+    BiliBili: "\u{1F4FA} \u54D4\u54E9\u54D4\u54E9",
+    ByteDance: "\u{1F3B5} \u6296\u97F3",
+    XiaoHongShu: "\u{1F4D5} \u5C0F\u7EA2\u4E66",
+    Weibo: "\u{1F9E3} \u5FAE\u535A",
+    OpenAI: "\u{1F916} AI \u4E13\u7528",
+    Claude: "\u{1F916} AI \u4E13\u7528",
+    Gemini: "\u{1F916} AI \u4E13\u7528",
+    Copilot: "\u{1F916} AI \u4E13\u7528",
+    GitHub: "\u{1F419} GitHub",
+    YouTube: "\u{1F4FA} YouTube",
+    Netflix: "\u{1F3AC} Netflix",
+    Disney: "\u{1F3F0} Disney+",
+    Spotify: "\u{1F3B5} Spotify",
+    GlobalMedia: "\u{1F30D} \u56FD\u9645\u5A92\u4F53",
+    Telegram: "\u2708\uFE0F Telegram",
+    Facebook: "\u{1F4AC} \u6D77\u5916\u793E\u4EA4",
+    Instagram: "\u{1F4AC} \u6D77\u5916\u793E\u4EA4",
+    Twitter: "\u{1F4AC} \u6D77\u5916\u793E\u4EA4",
+    TikTok: "\u{1F3B6} TikTok",
+    Apple: "\u{1F34E} Apple",
+    Microsoft: "\u{1FA9F} Microsoft",
+    SteamCN: POLICY_TARGETS.direct,
+    OverseasGame: POLICY_TARGETS.overseasGame,
+    Download: "\u2B07\uFE0F \u4E0B\u8F7D/P2P",
+    PrivateTracker: "\u2B07\uFE0F \u4E0B\u8F7D/P2P",
+    ChinaIP: POLICY_TARGETS.direct,
+    Advertising: "\u{1F9F1} \u5E38\u89C1\u5E7F\u544A",
+    Advertising_Domain: "\u{1F9F1} \u5E38\u89C1\u5E7F\u544A"
+  });
+  function clientRecord(id) {
+    const policy = SOURCE_POLICIES[id];
+    if (!policy) throw new Error(`Missing policy for lightweight rule source: ${id}`);
+    return Object.freeze({
+      id,
+      policy,
+      // The publication pipeline emits normalized, typed Surge/Shadowrocket
+      // lines for every compiled source, including domain-only inputs.
+      inputFormat: "RULE-SET"
+    });
+  }
+  var DEFAULT_RULE_CLIENT_CATALOG = Object.freeze(DEFAULT_RULE_SOURCE_IDS.map(clientRecord));
+  var FULL_ADBLOCK_RULE_CLIENT_CATALOG = Object.freeze(FULL_ADBLOCK_SOURCE_IDS.map(clientRecord));
+  function ruleClientCatalog({ adblockMode = "off" } = {}) {
+    if (adblockMode !== "off" && adblockMode !== "full") {
+      throw new TypeError("adblockMode must be either off or full");
+    }
+    return adblockMode === "full" ? Object.freeze([...DEFAULT_RULE_CLIENT_CATALOG, ...FULL_ADBLOCK_RULE_CLIENT_CATALOG]) : DEFAULT_RULE_CLIENT_CATALOG;
+  }
+
+  // ../../../shared/rules/domestic-core.js
+  function normalizedSuffixes(values, name) {
+    const normalized = values.map((value) => {
+      if (typeof value !== "string") throw new TypeError(`${name} suffix must be a string`);
+      return value.trim().toLowerCase().replace(/^\.+/u, "").replace(/\.+$/u, "");
+    });
+    if (normalized.some((value) => !/^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+$/u.test(value))) {
+      throw new TypeError(`${name} contains an invalid domain suffix`);
+    }
+    if (new Set(normalized).size !== normalized.length) throw new TypeError(`${name} contains a duplicate suffix`);
+    return Object.freeze(normalized);
+  }
+  var DOMESTIC_CORE_DOMAIN_SUFFIXES = normalizedSuffixes([
     "bilibili.com",
+    "bilibili.net",
+    "bilibili.tv",
+    "bilibili.cc",
     "bilivideo.com",
+    "bilivideo.net",
     "biliapi.com",
     "hdslb.com",
+    "hdslb.org",
     "douyin.com",
     "douyincdn.com",
     "byteimg.com",
@@ -814,8 +992,76 @@ var EgernProfileBundle = (() => {
     "toutiaoimg.com",
     "xiaohongshu.com",
     "xhscdn.com",
-    "weibo.com"
-  ]);
+    "weibo.com",
+    "sinaimg.cn",
+    "qq.com",
+    "qpic.cn",
+    "qlogo.cn",
+    "gtimg.cn",
+    "gtimg.com",
+    "wechat.com",
+    "iqiyi.com",
+    "iqiyipic.com",
+    "qiyi.com",
+    "qiyipic.com",
+    "youku.com",
+    "tudou.com",
+    "tudouui.com",
+    "ykimg.com",
+    "mgtv.com",
+    "hunantv.com",
+    "baidu.com",
+    "bdstatic.com",
+    "bdimg.com",
+    "bcebos.com",
+    "taobao.com",
+    "tmall.com",
+    "alipay.com",
+    "alibaba.com",
+    "alicdn.com",
+    "aliyun.com",
+    "aliyuncs.com",
+    "163.com",
+    "126.com",
+    "netease.com",
+    "amap.com",
+    "autonavi.com",
+    // Confirmed domestic CDN/app endpoints observed in client traces and the
+    // supplied reference profile. Keep this list small; unknown names are
+    // classified by China-first DNS plus ChinaIP/GeoIP in every client.
+    "wmpvp.com",
+    "bytehwm.com",
+    "rtbasia.com",
+    "sandbox.itunes.apple.com",
+    "douyu.com",
+    "douyu.tv",
+    "douyutv.com",
+    "douyuscdn.com",
+    "douyucdn.cn",
+    "huya.com"
+  ], "Domestic core");
+  var DOMESTIC_GAME_DOMAIN_SUFFIXES = normalizedSuffixes([
+    "leiting.com",
+    "leitingcn.com",
+    "g-bits.com",
+    "tencentgames.com",
+    "neteasegames.com",
+    "wangyigames.com",
+    "mihoyo.com",
+    "yuanshen.com",
+    "biligame.com",
+    "xindong.com",
+    "xd.com",
+    "perfectworld.com",
+    "wanmei.com",
+    "duoyi.com",
+    "4399.com",
+    "taptap.com",
+    "taptap.cn"
+  ], "Domestic game");
+  if (DOMESTIC_CORE_DOMAIN_SUFFIXES.length > RULE_BUDGETS.domesticCoreEntries) {
+    throw new RangeError("Domestic core exceeds its entry budget");
+  }
 
   // render-dns.js
   var CHINA_DNS = Object.freeze({
@@ -844,10 +1090,10 @@ var EgernProfileBundle = (() => {
   }
   function publicBaseUrl(options) {
     if (!Object.hasOwn(options, "publicBaseUrl")) {
-      return PUBLIC_SNAPSHOT_BASE_URL;
+      throw new Error("DNS option 'publicBaseUrl' is required");
     }
     const value = safeOption(options, "publicBaseUrl");
-    if (value !== PUBLIC_SNAPSHOT_BASE_URL) {
+    if (value !== `${PUBLIC_RULE_ROOT}/edge` && value !== `${PUBLIC_RULE_ROOT}/current`) {
       throw new Error("DNS option 'publicBaseUrl' must use the fixed public snapshot base");
     }
     return value;
@@ -855,14 +1101,23 @@ var EgernProfileBundle = (() => {
   function chinaRule(baseUrl) {
     return {
       proxy_rule_set: {
-        match: `${baseUrl}/egern/rules/ChinaMax_Domain.yaml`,
+        match: `${baseUrl}/egern/rules/DomesticCore.yaml`,
         value: "china",
         update_interval: 86400
       }
     };
   }
+  function proxyRule(baseUrl, id) {
+    return {
+      proxy_rule_set: {
+        match: `${baseUrl}/egern/rules/${id}.yaml`,
+        value: "global",
+        update_interval: 86400
+      }
+    };
+  }
   function domesticFallbackRules(value = "china") {
-    return DOMESTIC_FALLBACK_DOMAIN_SUFFIXES.map((match) => ({
+    return DOMESTIC_CORE_DOMAIN_SUFFIXES.map((match) => ({
       domain_suffix: { match, value }
     }));
   }
@@ -880,10 +1135,13 @@ var EgernProfileBundle = (() => {
     let forward;
     if (dnsMode === "privacy") {
       forward = [wildcard("global")];
-    } else if (dnsMode === "speed") {
-      forward = [...domesticFallbackRules(), chinaRule(baseUrl), wildcard("system")];
     } else {
-      forward = [...domesticFallbackRules(), chinaRule(baseUrl), wildcard("global")];
+      forward = [
+        ...EXPLICIT_OVERSEAS_RULE_SOURCE_IDS.map((id) => proxyRule(baseUrl, id)),
+        ...domesticFallbackRules(),
+        chinaRule(baseUrl),
+        wildcard("china")
+      ];
     }
     return {
       bootstrap: ["system"],
@@ -922,7 +1180,7 @@ var EgernProfileBundle = (() => {
   var POLICY_SCHEMA_ENTRIES = [
     ["\u26A1 \u5168\u90E8\u81EA\u52A8", policySchema(GROUP_KIND.helper, STRATEGY.autoTest, [NON_CHAINED_FILTER], { hidden: true })],
     ["\u{1F6DF} \u5168\u90E8\u6545\u969C\u8F6C\u79FB", policySchema(GROUP_KIND.helper, STRATEGY.fallback, [NON_CHAINED_FILTER], { hidden: true })],
-    ["\u{1F680} \u8282\u70B9\u9009\u62E9", policySchema(GROUP_KIND.primary, STRATEGY.select, [null])],
+    ["\u{1F680} \u8282\u70B9\u9009\u62E9", policySchema(GROUP_KIND.primary, STRATEGY.select, [NON_CHAINED_FILTER])],
     ...CONTINENTS.flatMap((continent) => {
       const filter = continentFilter(continent);
       return [
@@ -1297,7 +1555,7 @@ var EgernProfileBundle = (() => {
     const rootGroups = groups.filter((group) => group.name === PRIMARY_GROUP_NAME);
     if (rootGroups.length !== 1) throw graphError("must contain exactly one primary group");
     const root = rootGroups[0];
-    if (root.kind !== GROUP_KIND.primary || root.strategy !== STRATEGY.select || root.candidates.length !== 1 || root.candidates[0] !== POLICY_TARGET.primaryProxy || root.nodeFilter !== null || root.test !== null || root.hidden !== void 0 || root.defaultChoice !== void 0) {
+    if (root.kind !== GROUP_KIND.primary || root.strategy !== STRATEGY.select || root.candidates.length !== 1 || root.candidates[0] !== POLICY_TARGET.primaryProxy || root.nodeFilter !== NON_CHAINED_FILTER || root.test !== null || root.hidden !== void 0 || root.defaultChoice !== void 0) {
       throw graphError("requires the primary semantic target as the sole primary candidate");
     }
     for (const group of groups) {
@@ -1330,6 +1588,7 @@ var EgernProfileBundle = (() => {
     const fields = { name: group.name };
     if (group.name === PRIMARY_GROUP_NAME) {
       fields.urls = [nodeSubscriptionUrl];
+      fields.filter = NON_CHAINED_FILTER;
       fields.update_interval = UPDATE_INTERVAL;
       return { [type]: fields };
     }
@@ -1369,7 +1628,7 @@ var EgernProfileBundle = (() => {
       names.add(fields.name);
       groups.set(fields.name, fields);
       if (fields.name === PRIMARY_GROUP_NAME) {
-        if (Object.keys(fields).length !== 3 || fields.urls?.length !== 1 || fields.urls[0] !== nodeSubscriptionUrl || fields.update_interval !== UPDATE_INTERVAL) {
+        if (Object.keys(fields).length !== 4 || fields.urls?.length !== 1 || fields.urls[0] !== nodeSubscriptionUrl || fields.filter !== NON_CHAINED_FILTER || fields.update_interval !== UPDATE_INTERVAL) {
           throw graphError("has an invalid rendered primary group");
         }
       } else if (fields.urls !== void 0) {
@@ -1395,58 +1654,11 @@ var EgernProfileBundle = (() => {
     return rendered;
   }
 
-  // ../../../shared/rules/catalog.js
-  var RULE_ROOT = "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Shadowrocket";
-  function rule(id, policy, minEntries, inputFormat = "RULE-SET", directory = id) {
-    const sourcePath = `${directory}/${id}.list`;
-    return Object.freeze({
-      id,
-      sourcePath,
-      upstreamUrl: `${RULE_ROOT}/${sourcePath}`,
-      policy,
-      minEntries,
-      inputFormat
-    });
-  }
-  var RULE_SOURCE_CATALOG = Object.freeze([
-    rule("Hijacking", "\u2623\uFE0F \u5B89\u5168\u5A01\u80C1", 150),
-    rule("BlockHttpDNS", "\u2623\uFE0F \u5B89\u5168\u5A01\u80C1", 40),
-    rule("Advertising", "\u{1F9F1} \u5E38\u89C1\u5E7F\u544A", 700),
-    rule("Advertising_Domain", "\u{1F9F1} \u5E38\u89C1\u5E7F\u544A", 25e4, "DOMAIN-SET", "Advertising"),
-    rule("Privacy", "\u{1F575}\uFE0F \u4E25\u683C\u8DDF\u8E2A", 15),
-    rule("BiliBili", "\u{1F4FA} \u54D4\u54E9\u54D4\u54E9", 80),
-    rule("ByteDance", "\u{1F3B5} \u6296\u97F3", 300),
-    rule("XiaoHongShu", "\u{1F4D5} \u5C0F\u7EA2\u4E66", 3),
-    rule("Weibo", "\u{1F9E3} \u5FAE\u535A", 3),
-    rule("OpenAI", "\u{1F916} AI \u4E13\u7528", 20),
-    rule("Claude", "\u{1F916} AI \u4E13\u7528", 2),
-    rule("Gemini", "\u{1F916} AI \u4E13\u7528", 8),
-    rule("Copilot", "\u{1F916} AI \u4E13\u7528", 30),
-    rule("GitHub", "\u{1F419} GitHub", 20),
-    rule("YouTube", "\u{1F4FA} YouTube", 120),
-    rule("Netflix", "\u{1F3AC} Netflix", 800),
-    rule("Disney", "\u{1F3F0} Disney+", 100),
-    rule("Spotify", "\u{1F3B5} Spotify", 20),
-    rule("GlobalMedia", "\u{1F30D} \u56FD\u9645\u5A92\u4F53", 700),
-    rule("Telegram", "\u2708\uFE0F Telegram", 25),
-    rule("Facebook", "\u{1F4AC} \u6D77\u5916\u793E\u4EA4", 350),
-    rule("Instagram", "\u{1F4AC} \u6D77\u5916\u793E\u4EA4", 3),
-    rule("Twitter", "\u{1F4AC} \u6D77\u5916\u793E\u4EA4", 20),
-    rule("TikTok", "\u{1F3B6} TikTok", 20),
-    rule("Apple", "\u{1F34E} Apple", 25),
-    rule("Microsoft", "\u{1FA9F} Microsoft", 400),
-    rule("SteamCN", "DIRECT", 10),
-    rule("ChinaMax_Domain", "DIRECT", 1e5, "DOMAIN-SET", "ChinaMax"),
-    rule("Game", "\u{1F579}\uFE0F \u6E38\u620F\u5E73\u53F0", 400),
-    rule("Download", "\u2B07\uFE0F \u4E0B\u8F7D/P2P", 5),
-    rule("PrivateTracker", "\u2B07\uFE0F \u4E0B\u8F7D/P2P", 150),
-    rule("ChinaMax", "DIRECT", 8e3)
-  ]);
-  function orderedRuleAssignments() {
-    return RULE_SOURCE_CATALOG.map(({ id, policy }) => Object.freeze({ sourceId: id, policy }));
-  }
-
   // ../../../shared/rules/custom-rules.js
+  var CUSTOM_RULE_PRECEDENCE_INDEX = ROUTING_PRECEDENCE.indexOf("custom");
+  if (CUSTOM_RULE_PRECEDENCE_INDEX < 0 || CUSTOM_RULE_PRECEDENCE_INDEX > ROUTING_PRECEDENCE.indexOf("domesticCore")) {
+    throw new Error("Custom rules must precede generated lightweight rules");
+  }
   var CUSTOM_RULES = Object.freeze({
     block: Object.freeze([]),
     direct: Object.freeze([]),
@@ -1462,7 +1674,6 @@ var EgernProfileBundle = (() => {
   });
 
   // render-rules.js
-  var RULE_BASE_URL = `${PUBLIC_SNAPSHOT_BASE_URL}/egern/rules`;
   var CUSTOM_FIELDS = Object.freeze(["block", "direct", "proxy", "ai"]);
   var CUSTOM_POLICIES = Object.freeze({
     block: "REJECT",
@@ -1500,8 +1711,10 @@ var EgernProfileBundle = (() => {
       [type]: Object.freeze({ match, policy: "DIRECT", no_resolve: true })
     }))
   ]);
-  var GAME_DIRECT_DOMAINS = Object.freeze(["leiting.com", "leitingcn.com", "g-bits.com"]);
-  var DOMESTIC_FALLBACK_RULES = Object.freeze(DOMESTIC_FALLBACK_DOMAIN_SUFFIXES.map((match) => Object.freeze({ domain_suffix: Object.freeze({ match, policy: "DIRECT" }) })));
+  var SECURITY_IDS = /* @__PURE__ */ new Set(["Hijacking", "BlockHttpDNS", "Privacy", "Advertising", "Advertising_Domain"]);
+  var DOMESTIC_IDS = Object.freeze(["DomesticCore", "DomesticGame", "SteamCN"]);
+  var OVERSEAS_GAME_ID = "OverseasGame";
+  var CHINA_IP_ID = "ChinaIP";
   function invalidCustom() {
     throw new Error(CUSTOM_ERROR);
   }
@@ -1619,9 +1832,9 @@ var EgernProfileBundle = (() => {
     if (type === "IP-CIDR6") return validCidr(value, 6);
     return false;
   }
-  function parseCustomRule(rule2) {
-    if (typeof rule2 !== "string" || rule2.trim() !== rule2 || /[\r\n]/u.test(rule2)) invalidCustom();
-    const parts = rule2.split(",");
+  function parseCustomRule(rule) {
+    if (typeof rule !== "string" || rule.trim() !== rule || /[\r\n]/u.test(rule)) invalidCustom();
+    const parts = rule.split(",");
     if (parts.length !== 2 || !Object.hasOwn(RULE_TYPES, parts[0]) || !validValue(parts[0], parts[1])) {
       invalidCustom();
     }
@@ -1632,8 +1845,8 @@ var EgernProfileBundle = (() => {
     const seen = /* @__PURE__ */ new Set();
     const rendered = [];
     for (const field of CUSTOM_FIELDS) {
-      for (const rule2 of ownArray(fields.get(field))) {
-        const { type, value } = parseCustomRule(rule2);
+      for (const rule of ownArray(fields.get(field))) {
+        const { type, value } = parseCustomRule(rule);
         const identity = `${type},${value.toLowerCase()}`;
         if (seen.has(identity)) invalidCustom();
         seen.add(identity);
@@ -1644,63 +1857,62 @@ var EgernProfileBundle = (() => {
     }
     return rendered;
   }
-  function validatePublicBase(options) {
+  function validatedOptions(options) {
     if (options === null || typeof options !== "object" || Array.isArray(options)) {
       throw new Error("Invalid Egern public rule base");
     }
-    let descriptor;
+    const descriptors = /* @__PURE__ */ new Map();
     try {
-      descriptor = Object.getOwnPropertyDescriptor(options, "publicBaseUrl");
+      for (const key of ["publicBaseUrl", "adblockMode"]) {
+        descriptors.set(key, Object.getOwnPropertyDescriptor(options, key));
+      }
     } catch {
       throw new Error("Invalid Egern public rule base");
     }
-    if (!descriptor || "get" in descriptor || "set" in descriptor || descriptor.value !== PUBLIC_SNAPSHOT_BASE_URL) {
+    const baseDescriptor = descriptors.get("publicBaseUrl");
+    const adblockDescriptor = descriptors.get("adblockMode");
+    const base = baseDescriptor?.value;
+    const adblockMode = adblockDescriptor?.value;
+    if (!baseDescriptor || "get" in baseDescriptor || "set" in baseDescriptor || base !== `${PUBLIC_RULE_ROOT}/edge` && base !== `${PUBLIC_RULE_ROOT}/current` || !adblockDescriptor || "get" in adblockDescriptor || "set" in adblockDescriptor || adblockMode !== "off" && adblockMode !== "full") {
       throw new Error("Invalid Egern public rule base");
     }
-    return RULE_BASE_URL;
+    return { ruleBase: `${base}/egern/rules`, adblockMode };
   }
   function renderEgernRules(options) {
-    const ruleBase = validatePublicBase(options);
-    const assignments = orderedRuleAssignments();
-    const steamIndex = assignments.findIndex(({ sourceId }) => sourceId === "SteamCN");
-    const gameIndex = assignments.findIndex(({ sourceId }) => sourceId === "Game");
-    if (assignments.length !== 32 || steamIndex < 0 || gameIndex <= steamIndex) {
-      throw new Error("Invalid Egern rule catalog");
+    const { ruleBase, adblockMode } = validatedOptions(options);
+    const catalog = ruleClientCatalog({ adblockMode });
+    const optionalBase = adblockMode === "full" ? ruleBase.replace(/\/egern\/rules$/u, "/optional/adblock-full/egern/rules") : null;
+    const byId = /* @__PURE__ */ new Map();
+    for (const source of catalog) {
+      if (byId.has(source.id)) throw new Error("Invalid Egern rule catalog");
+      byId.set(source.id, source);
     }
-    const rules = [...LOCAL_RULES.map((rule2) => structuredClone(rule2))];
+    const renderRemote = (source) => ({
+      rule_set: {
+        match: `${SECURITY_IDS.has(source.id) && ["Advertising", "Advertising_Domain"].includes(source.id) ? optionalBase : ruleBase}/${source.id}.yaml`,
+        policy: source.policy,
+        update_interval: 86400
+      }
+    });
+    const rules = [...LOCAL_RULES.map((rule) => structuredClone(rule))];
+    rules.push(...catalog.filter(({ id }) => SECURITY_IDS.has(id)).map(renderRemote));
     rules.push(...renderEgernCustomRules(CUSTOM_RULES));
-    for (let index = 0; index < assignments.length; index += 1) {
-      const assignment = assignments[index];
-      if (index === steamIndex) {
-        for (const match2 of GAME_DIRECT_DOMAINS) {
-          rules.push({ domain_suffix: { match: match2, policy: "DIRECT" } });
-        }
-      }
-      if (assignment.sourceId === "ChinaMax_Domain") {
-        rules.push(...DOMESTIC_FALLBACK_RULES.map((rule2) => structuredClone(rule2)));
-      }
-      const match = `${ruleBase}/${assignment.sourceId}.yaml`;
-      if (index === gameIndex) {
-        rules.push({
-          and: {
-            match: [
-              { protocol: { match: "udp" } },
-              { rule_set: { match } }
-            ],
-            policy: "\u{1F3AE} \u6E38\u620F\u8FDE\u63A5"
-          }
-        });
-      }
-      rules.push({
-        rule_set: {
-          match,
-          policy: assignment.policy,
-          update_interval: 86400
-        }
-      });
+    for (const id of DOMESTIC_IDS) {
+      const source = byId.get(id);
+      if (!source) throw new Error("Invalid Egern rule catalog");
+      rules.push(renderRemote(source));
+    }
+    for (const source of catalog) {
+      if (SECURITY_IDS.has(source.id) || DOMESTIC_IDS.includes(source.id) || [OVERSEAS_GAME_ID, CHINA_IP_ID].includes(source.id)) continue;
+      rules.push(renderRemote(source));
+    }
+    for (const id of [OVERSEAS_GAME_ID, CHINA_IP_ID]) {
+      const source = byId.get(id);
+      if (!source) throw new Error("Invalid Egern rule catalog");
+      rules.push(renderRemote(source));
     }
     rules.push(
-      { geoip: { match: "CN", policy: "DIRECT", no_resolve: true } },
+      { geoip: { match: "CN", policy: "DIRECT" } },
       { default: { policy: "\u{1F680} \u8282\u70B9\u9009\u62E9" } }
     );
     return rules;
@@ -1744,43 +1956,43 @@ var EgernProfileBundle = (() => {
     });
   }
   var definitions = Object.freeze([
-    protocol(["ss", "shadowsocks"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere], {
+    protocol(["ss", "shadowsocks"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox], {
       requiredFields: ["cipher", "password"]
     }),
-    protocol(["ssr"], [CLIENT.shadowrocket], {
+    protocol(["ssr"], [CLIENT.shadowrocket, CLIENT.surge], {
       requiredFields: ["cipher", "password", "protocol", "obfs"]
     }),
-    protocol(["snell"], [CLIENT.shadowrocket, CLIENT.egern], {
+    protocol(["snell"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox], {
       requiredFields: ["psk", "version"]
     }),
-    protocol(["vmess"], [CLIENT.shadowrocket, CLIENT.egern], {
+    protocol(["vmess"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox], {
       requiredFields: ["uuid"]
     }),
-    protocol(["vless"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere], {
+    protocol(["vless"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.singbox], {
       requiredFields: ["uuid"]
     }),
-    protocol(["trojan"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere], {
+    protocol(["trojan"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox], {
       requiredFields: ["password"],
       tls: true
     }),
-    protocol(["anytls"], [CLIENT.egern, CLIENT.anywhere], {
+    protocol(["anytls"], [CLIENT.egern, CLIENT.anywhere, CLIENT.singbox], {
       requiredFields: ["password"],
       tls: true
     }),
-    protocol(["hysteria2", "hy2"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere], {
+    protocol(["hysteria2", "hy2"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox], {
       requiredFields: ["password"],
       tls: true
     }),
-    protocol(["tuic"], [CLIENT.shadowrocket, CLIENT.egern], {
+    protocol(["tuic"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox], {
       requiredFields: ["uuid", "password"],
       tls: true
     }),
-    protocol(["socks5"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere]),
-    protocol(["http"], [CLIENT.shadowrocket, CLIENT.egern]),
-    protocol(["ssh"], [CLIENT.egern], {
+    protocol(["socks5"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox]),
+    protocol(["http"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox]),
+    protocol(["ssh"], [CLIENT.egern, CLIENT.singbox], {
       requiredFields: ["username"]
     }),
-    protocol(["wireguard"], [CLIENT.egern], {
+    protocol(["wireguard"], [CLIENT.egern, CLIENT.singbox], {
       requiredFields: ["private-key", "public-key"]
     }),
     protocol(["sudoku"], [CLIENT.anywhere], {
@@ -1877,6 +2089,9 @@ var EgernProfileBundle = (() => {
     "chacha20-ietf"
   ]);
   var EGERN_SNELL_VERSIONS = /* @__PURE__ */ new Set([1, 2, 3, 4, 5]);
+  var SINGBOX_SNELL_VERSIONS = /* @__PURE__ */ new Set([4, 5, 6]);
+  var SINGBOX_SNELL_OBFS_MODES = /* @__PURE__ */ new Set(["none", "http"]);
+  var SINGBOX_SNELL_MODES = /* @__PURE__ */ new Set(["default", "unshaped", "unsafe-raw"]);
   var EGERN_OBFS = /* @__PURE__ */ new Set(["http", "tls"]);
   var EGERN_VMESS_SECURITY = /* @__PURE__ */ new Set(["auto", "aes-128-gcm", "chacha20-poly1305", "none", "zero"]);
   var EGERN_TRANSPORTS = /* @__PURE__ */ new Set(["tcp", "raw", "ws", "grpc", "h2", "http2", "http", "http1"]);
@@ -2696,8 +2911,28 @@ var EgernProfileBundle = (() => {
     if (!Object.values(CLIENT).includes(client)) return { supported: false, reason: "unsupported-client" };
     const protocol2 = normalizeProtocol(node?.type);
     if (!protocolSupportsClient(protocol2, client)) return { supported: false, reason: "unsupported-protocol" };
-    const transportReason = client === CLIENT.anywhere ? anywhereNodeExclusionReason(node ?? {}) : client === CLIENT.egern ? egernNodeExclusionReason(node ?? {}) : null;
+    let transportReason = null;
+    if (client === CLIENT.anywhere) transportReason = anywhereNodeExclusionReason(node ?? {});
+    else if (client === CLIENT.egern) transportReason = egernNodeExclusionReason(node ?? {});
+    else if (client === CLIENT.singbox) transportReason = singBoxNodeExclusionReason(node ?? {});
     return transportReason ? { supported: false, reason: transportReason } : { supported: true, reason: null };
+  }
+  function singBoxNodeExclusionReason(node) {
+    if (normalizeProtocol(node?.type) !== "snell") return null;
+    const version = Number(node.version);
+    if (!Number.isInteger(version) || !SINGBOX_SNELL_VERSIONS.has(version)) {
+      return "unsupported-singbox-snell-version";
+    }
+    if (version === 4 || version === 5) {
+      const obfsMode = node.obfs_mode ?? node["obfs-mode"] ?? node.obfs;
+      if (obfsMode !== void 0 && obfsMode !== "" && !SINGBOX_SNELL_OBFS_MODES.has(String(obfsMode).toLowerCase())) {
+        return "unsupported-singbox-snell-obfs";
+      }
+    }
+    if (version === 6 && node.mode !== void 0 && !SINGBOX_SNELL_MODES.has(String(node.mode).toLowerCase())) {
+      return "unsupported-singbox-snell-mode";
+    }
+    return null;
   }
   function filterNodesForClient(nodes, client) {
     const diagnostics = createClientFilterDiagnostics();
@@ -3644,7 +3879,7 @@ var EgernProfileBundle = (() => {
     }
     if (typeof root.ipv6 !== "boolean" || typeof root.block_quic !== "boolean" || root.close_connections_on_policy_change !== true || !sameValue(root.bypass_tunnel_proxy, BYPASS_TUNNEL_PROXY) || !sameValue(root.real_ip_domains, REAL_IP_DOMAINS) || !sameValue(root.hijack_dns, ["*"]) || root.default_subscription_group !== "\u{1F680} \u8282\u70B9\u9009\u62E9") throw new Error("Invalid Egern root field values");
   }
-  function validDns(dns) {
+  function validDns(dns, publicBaseUrl2) {
     for (const dnsMode of OPTION_VALUES.dnsMode) {
       for (const chinaDns of OPTION_VALUES.chinaDns) {
         for (const globalDns of OPTION_VALUES.globalDns) {
@@ -3652,7 +3887,7 @@ var EgernProfileBundle = (() => {
             dnsMode,
             chinaDns,
             globalDns,
-            publicBaseUrl: PUBLIC_SNAPSHOT_BASE_URL
+            publicBaseUrl: publicBaseUrl2
           });
           if (sameValue(dns, expected)) return true;
         }
@@ -3696,7 +3931,7 @@ var EgernProfileBundle = (() => {
       const schema = POLICY_GROUP_SCHEMA.groups[fields.name];
       const strategy = type === "auto_test" ? "auto-test" : type;
       const candidates = fields.name === "\u{1F680} \u8282\u70B9\u9009\u62E9" ? [POLICY_TARGET.primaryProxy] : fields.policies ?? [];
-      const nodeFilter = fields.name !== "\u{1F680} \u8282\u70B9\u9009\u62E9" && fields.urls !== void 0 ? fields.filter : null;
+      const nodeFilter = fields.urls !== void 0 ? fields.filter : null;
       let test = null;
       if (type === "auto_test") {
         test = {
@@ -3788,11 +4023,19 @@ var EgernProfileBundle = (() => {
   }
   function validateParsedProfile(root) {
     validateRoot(root);
-    if (!validDns(root.dns)) throw new Error("Invalid Egern DNS schema or rule URL");
+    let publicationValid = false;
+    for (const channel of ["edge", "current"]) {
+      const publicBaseUrl2 = `${PUBLIC_RULE_ROOT}/${channel}`;
+      for (const adblockMode of ["off", "full"]) {
+        const expectedRules = renderEgernRules({ publicBaseUrl: publicBaseUrl2, adblockMode });
+        if (sameValue(root.rules, expectedRules) && validDns(root.dns, publicBaseUrl2)) {
+          publicationValid = true;
+        }
+      }
+    }
+    if (!publicationValid) throw new Error("Invalid Egern DNS schema or rule publication");
     const groups = reconstructGroups(root.policy_groups);
     validateQuic(root, groups.shared, groups.overrides);
-    const expectedRules = renderEgernRules({ publicBaseUrl: PUBLIC_SNAPSHOT_BASE_URL });
-    if (!sameValue(root.rules, expectedRules)) throw new Error("Invalid Egern rule catalog, order, policy, or URL");
   }
   function validateEgernProfile(profile) {
     if (typeof profile !== "string") {
@@ -3890,7 +4133,10 @@ var EgernProfileBundle = (() => {
       hijack_dns: ["*"],
       dns: renderEgernDns(options),
       policy_groups: applyProxyQuicOverrides(renderedGroups, sharedGroups, options.quicMode),
-      rules: renderEgernRules(options),
+      rules: renderEgernRules({
+        publicBaseUrl: options.publicBaseUrl,
+        adblockMode: options.adblockMode
+      }),
       default_subscription_group: "\u{1F680} \u8282\u70B9\u9009\u62E9"
     };
     const yaml = renderYaml(root);
@@ -4141,28 +4387,43 @@ var EgernProfileBundle = (() => {
     "_collectionName"
   ];
   var SOURCE_LABELS = /* @__PURE__ */ new Map([
-    ["\u673A\u573A", { kind: SOURCE_KIND.airport, label: "[\u673A\u573A]" }],
-    ["\u81EA\u5EFA", { kind: SOURCE_KIND.selfHosted, label: "[\u81EA\u5EFA]" }],
-    ["realm", { kind: SOURCE_KIND.realm, label: "[Realm]" }],
-    ["\u94FE\u5F0F\u4EE3\u7406", { kind: SOURCE_KIND.serverChain, label: "[\u94FE\u5F0F\u4EE3\u7406]" }],
-    ["\u843D\u5730", { kind: SOURCE_KIND.landing, label: "[\u843D\u5730]" }]
+    ["\u673A\u573A", { kind: SOURCE_KIND.airport, label: "\u673A\u573A" }],
+    ["\u81EA\u5EFA", { kind: SOURCE_KIND.selfHosted, label: "\u81EA\u5EFA" }],
+    ["realm", { kind: SOURCE_KIND.realm, label: "Realm" }],
+    ["\u94FE\u5F0F\u4EE3\u7406", { kind: SOURCE_KIND.serverChain, label: "\u94FE\u5F0F\u4EE3\u7406" }],
+    ["\u843D\u5730", { kind: SOURCE_KIND.landing, label: "\u843D\u5730" }]
   ]);
-  function sourceName(node) {
-    for (const field of PROVENANCE_FIELDS) {
-      const value = node?.[field];
-      if (typeof value === "string" && value.trim()) return value;
+  var SOURCE_MARKER_PATTERN = /\[(?:\s*未标记\s*|\s*机场\s*|\s*自建\s*|\s*realm\s*|\s*链式代理\s*|\s*落地\s*)\]/giu;
+  function sourceFromToken(token) {
+    const source = SOURCE_LABELS.get(String(token).trim().toLowerCase());
+    return source ? { ...source, warning: null } : null;
+  }
+  function sourceFromMarkers(value) {
+    if (typeof value !== "string" || value.length === 0) return null;
+    for (const match of value.matchAll(/\[([^\]]+)\]/gu)) {
+      const source = sourceFromToken(match[1]);
+      if (source) return source;
     }
-    return "";
+    return null;
   }
   function classifySource(node) {
-    const match = sourceName(node).match(/^\s*\[([^\]]+)\]/i);
-    const source = match && SOURCE_LABELS.get(match[1].trim().toLowerCase());
+    for (const field of PROVENANCE_FIELDS) {
+      const value = node?.[field];
+      if (typeof value !== "string" || !value.trim()) continue;
+      const source2 = sourceFromMarkers(value);
+      if (source2) return { ...source2, warning: null };
+    }
+    const source = sourceFromMarkers(node?.name);
     if (source) return { ...source, warning: null };
     return {
       kind: SOURCE_KIND.unknown,
-      label: "[\u672A\u6807\u8BB0]",
+      label: "\u672A\u77E5",
       warning: "missing-source-label"
     };
+  }
+  function stripSourceMarkers(name) {
+    if (typeof name !== "string" || name.length === 0) return "";
+    return name.replaceAll(SOURCE_MARKER_PATTERN, " ");
   }
 
   // ../../../shared/nodes/normalize-nodes.js
@@ -4172,11 +4433,43 @@ var EgernProfileBundle = (() => {
     [CONTINENT.americas, 2],
     [CONTINENT.other, 3]
   ]);
-  var EXISTING_CHAIN_MARKER = "[\u5DF2\u6709\u94FE]";
-  function cleanDisplayName(name) {
-    const withoutMarkers = removeFlags(name).replace(/\[\s*udp\s*\]/gi, " ").replace(/\[\s*已有链\s*\]/g, " ");
-    const cleaned = withoutMarkers.replace(/[\r\n\t]+/g, " ").replace(/\s+/g, " ").trim();
+  var PROTOCOL_NAME_TOKENS = Object.freeze({
+    ss: ["ss", "shadowsocks"],
+    shadowsocks: ["ss", "shadowsocks"],
+    ssr: ["ssr"],
+    snell: ["snell"],
+    vmess: ["vmess"],
+    vless: ["vless"],
+    trojan: ["trojan"],
+    anytls: ["anytls"],
+    hysteria2: ["hy2", "hysteria2", "hysteria 2"],
+    hy2: ["hy2", "hysteria2", "hysteria 2"],
+    tuic: ["tuic"],
+    socks5: ["socks5", "socks"],
+    http: ["http"],
+    ssh: ["ssh"],
+    wireguard: ["wireguard", "wg"]
+  });
+  function cleanDisplayName(name, type) {
+    const withoutMarkers = removeFlags(name).replace(/\[\s*未标记\s*\]/giu, " ").replace(/\[\s*udp\s*\]/gi, " ").replace(/\[\s*已有链\s*\]/g, " ");
+    const stripped = stripSourceMarkers(withoutMarkers);
+    const protocolTokens = PROTOCOL_NAME_TOKENS[type] ?? [type];
+    const protocolPattern = protocolTokens.filter((token) => typeof token === "string" && token.length > 0).join("|");
+    const withoutProtocol = protocolPattern ? stripped.replace(new RegExp("(?:^|\\s)(?:" + protocolPattern + ")(?=\\s|$)", "giu"), " ") : stripped;
+    const cleaned = withoutProtocol.replace(/[\r\n\t]+/g, " ").replace(/\s+/g, " ").trim();
     return cleaned || "\u672A\u547D\u540D\u8282\u70B9";
+  }
+  function stripUndefinedValues(value) {
+    if (Array.isArray(value)) {
+      value.forEach(stripUndefinedValues);
+      return value;
+    }
+    if (!value || typeof value !== "object") return value;
+    for (const key of Object.keys(value)) {
+      if (value[key] === void 0) Reflect.deleteProperty(value, key);
+      else stripUndefinedValues(value[key]);
+    }
+    return value;
   }
   function sanitizeInternalMetadata(node) {
     for (const key of Object.keys(node)) {
@@ -4278,7 +4571,7 @@ var EgernProfileBundle = (() => {
         increment(diagnostics.excluded, validation.reason);
         continue;
       }
-      const cloned = structuredClone(original);
+      const cloned = stripUndefinedValues(structuredClone(original));
       cloned.type = original.type.trim().toLowerCase();
       cloned.port = Number(original.port);
       const identity = identityKey(cloned);
@@ -4314,7 +4607,12 @@ var EgernProfileBundle = (() => {
       }
       const udp = hasExplicitUdp(original);
       const id = `sr-${fingerprint(cloned)}`;
-      cloned.name = `${region.flag} ${source.label} ${cleanDisplayName(original.name)}${existingChain ? ` ${EXISTING_CHAIN_MARKER}` : ""}${udp ? " [UDP]" : ""}`;
+      const sourceSuffix = source.kind === SOURCE_KIND.unknown ? "" : "\uFF5C" + source.label;
+      const capabilitySuffix = [
+        existingChain ? "\u94FE" : "",
+        udp ? "U" : ""
+      ].filter(Boolean).join("\xB7");
+      cloned.name = region.flag + " " + cleanDisplayName(original.name, cloned.type) + sourceSuffix + (capabilitySuffix ? "\xB7" + capabilitySuffix : "");
       cloned._profile = {
         id,
         sourceKind: source.kind,

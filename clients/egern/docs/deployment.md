@@ -4,7 +4,7 @@
 
 ## 0. 开始前
 
-- 确认 Sub-Store 中已有节点集合 `shadowrocket-sources`。下文的 `name` 指向这个现有集合；不要重命名或改名 `shadowrocket-sources`，也不要创建同名副本来替代它。
+- 确认 Sub-Store 中已有节点集合 `apple-proxy-sources`，其中引用 `snell` 与 `vlesshy2`。下文的 `name` 指向这个现有集合；不要重命名或创建同名副本替代它。
 - 备份 Egern 当前使用的旧 Profile，记下当前选中的策略与节点。不要删除或覆盖旧 Profile。
 - 准备仅自己可访问的 Sub-Store File 输出地址。不得公开、发布、粘贴或上传私密 URL、订阅 URL 或 Profile URL。
 - 以下 `example.invalid` 是 IANA 保留域名，只是占位符；结构示例不能直接联网或实际使用。
@@ -19,8 +19,8 @@
 随后在 Sub-Store 中新建 File 任务 `egern-nodes`：
 
 - 添加脚本操作，来源选择“链接/远程脚本”，直接粘贴 `https://juan-nikola.github.io/apple-proxy-profiles/current/egern/scripts/egern-node-generator.js`，不要粘贴 JavaScript 正文。
-- 参数原样复制：`output=nodes&type=collection&name=shadowrocket-sources&clientChain=off`
-- 来源类型是已有 collection，名称必须仍是 `shadowrocket-sources`。
+- 参数原样复制：`output=nodes&type=collection&name=apple-proxy-sources&clientChain=off`
+- 来源类型是已有 collection，名称必须仍是 `apple-proxy-sources`。
 
 操作顺序是：新建 File `egern-nodes` → 添加 Script/脚本操作 → 选择链接模式 → 粘贴 Node Generator URL → 展开可视化参数编辑器并填写上述参数。以后更新 Node Generator 不复制脚本正文；`egern-nodes` 的脚本 URL、任务名、私密输出 URL和参数保持不动。
 
@@ -37,7 +37,7 @@
 在 Sub-Store 中新建第二个 File 任务，名称设为 `egern-macos`：
 
 - 脚本来源选择链接模式，直接粘贴 `https://juan-nikola.github.io/apple-proxy-profiles/current/egern/scripts/egern-profile-generator.js`，不要粘贴 JavaScript 正文。
-- 参数原样复制：`output=config&type=collection&name=shadowrocket-sources&nodeSubscriptionUrl=https://example.invalid/private/egern-nodes&platform=macos&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=ipv4-only&autoGroupMode=auto&clientChain=off`
+- 参数原样复制：`output=config&type=collection&name=apple-proxy-sources&nodeSubscriptionUrl=https://example.invalid/private/egern-nodes&platform=macos&channel=current&adblockMode=off&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=ipv4-only&autoGroupMode=auto&clientChain=off`
 - 只在这个私密 Profile File 任务的参数编辑器里，把 `https://example.invalid/private/egern-nodes` 替换为第 1 步得到的真实 `egern-nodes` 输出 URL。
 
 保存并运行。生成的 Profile 根结构包含且只包含以下根键：`ipv6`、`block_quic`、`close_connections_on_policy_change`、`bypass_tunnel_proxy`、`real_ip_domains`、`hijack_dns`、`dns`、`policy_groups`、`rules`、`default_subscription_group`。它默认省略 `auto_update`，因为仓库不知道你的私密 Profile URL，而 Egern 不接受缺少必填 `url` 的空对象；它也不含 `url_rewrites`，没有把真实节点内嵌进 Profile。本项目不会生成且不依赖 URL 重写。
@@ -47,7 +47,7 @@
 在 Sub-Store 中新建第三个 File 任务，名称设为 `egern-iphone`：
 
 - 继续以链接模式引用同一个 `egern-profile-generator.js` 规范 Pages URL，不要粘贴脚本正文。
-- 参数原样复制：`output=config&type=collection&name=shadowrocket-sources&nodeSubscriptionUrl=https://example.invalid/private/egern-nodes&platform=iphone&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&autoGroupMode=auto&clientChain=off`
+- 参数原样复制：`output=config&type=collection&name=apple-proxy-sources&nodeSubscriptionUrl=https://example.invalid/private/egern-nodes&platform=iphone&channel=current&adblockMode=off&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&autoGroupMode=auto&clientChain=off`
 - 同样只在这个私密任务的参数编辑器中替换节点占位 URL。
 
 保存、运行并检查结构。iPhone 默认 `ipv6Mode=auto`，不要照抄 macOS 的 `ipv4-only`。
@@ -57,7 +57,7 @@
 在 Sub-Store 中新建第四个 File 任务，名称设为 `egern-ipad`：
 
 - 继续以链接模式引用同一个 `egern-profile-generator.js` 规范 Pages URL，不要粘贴脚本正文。
-- 参数原样复制：`output=config&type=collection&name=shadowrocket-sources&nodeSubscriptionUrl=https://example.invalid/private/egern-nodes&platform=ipad&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&autoGroupMode=auto&clientChain=off`
+- 参数原样复制：`output=config&type=collection&name=apple-proxy-sources&nodeSubscriptionUrl=https://example.invalid/private/egern-nodes&platform=ipad&channel=current&adblockMode=off&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&autoGroupMode=auto&clientChain=off`
 - 同样只在这个私密任务的参数编辑器中替换节点占位 URL。
 
 保存、运行并检查结构。到这里，四个任务才算完整。
@@ -68,6 +68,8 @@
 
 | 参数 | 可选值 |
 | --- | --- |
+| channel | edge、current |
+| adblockMode | off、full |
 | dnsMode | stable、privacy、speed |
 | chinaDns | alidns、dnspod、system |
 | globalDns | cloudflare、google、quad9 |
@@ -78,6 +80,8 @@
 | clientChain | off、on |
 
 `clientChain=off` 是默认值。只有明确、合法且兼容的入口节点和落地节点同时存在，并能验证 `prev_hop` 引用时，才考虑开启。
+
+`adblockMode=off` 默认不加载完整广告包；只有专门验证广告时才改为 `full`。`channel` 与规则发布必须一致：灰度使用 `edge`，稳定任务使用 `current`。
 
 ## 私密 URL 的唯一替换位置
 

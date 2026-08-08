@@ -2,8 +2,10 @@ import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import test from "node:test";
 
-import { orderedRuleAssignments } from "../../../shared/rules/catalog.js";
-import { DOMESTIC_FALLBACK_DOMAIN_SUFFIXES } from "../../../shared/rules/domestic-fallback.js";
+import {
+  DEFAULT_RULE_SOURCE_IDS,
+  FULL_ADBLOCK_SOURCE_IDS,
+} from "../../../shared/rules/lightweight-policy.js";
 import { buildPolicyGroups } from "../../../shared/policies/catalog.js";
 import { parseEgernOptions, PUBLIC_SNAPSHOT_BASE_URL } from "../src/options.js";
 import {
@@ -68,19 +70,32 @@ test("parsed-options renderer rejects objects that did not pass the canonical pa
   );
 });
 
-test("renders exact Egern-native rule parity and terminal ordering", () => {
-  const rules = renderEgernRules({ publicBaseUrl: PUBLIC_SNAPSHOT_BASE_URL });
-  const assignments = orderedRuleAssignments();
+test("rendered profiles validate when the primary group carries the shared non-chained filter", () => {
+  const yaml = renderEgernProfile(rawOptions(), allCompatibleNodes);
+  assert.deepEqual(validateEgernProfile(yaml), { valid: true, errors: [] });
+  const profile = rubyParse(yaml);
+  if (profile === null) return;
+
+  assert.deepEqual(namedGroup(profile, "🚀 节点选择"), {
+    name: "🚀 节点选择",
+    urls: [PRIVATE_URL],
+    filter: "^(?!🔗 ).+$",
+    update_interval: 21600,
+    block_quic: true,
+  });
+});
+
+test("renders the lightweight Egern-native rule precedence and terminal ordering", () => {
+  const rules = renderEgernRules({ publicBaseUrl: PUBLIC_SNAPSHOT_BASE_URL, adblockMode: "off" });
   const remote = rules.filter((record) => Object.hasOwn(record, "rule_set"));
 
-  assert.equal(assignments.length, 32);
-  assert.equal(remote.length, 32);
+  assert.equal(remote.length, DEFAULT_RULE_SOURCE_IDS.length);
   assert.deepEqual(
-    remote.map((record) => record.rule_set.match),
-    assignments.map(({ sourceId }) => `${RULE_BASE}/${sourceId}.yaml`),
+    remote.map((record) => record.rule_set.match).sort(),
+    DEFAULT_RULE_SOURCE_IDS.map((id) => `${RULE_BASE}/${id}.yaml`).sort(),
   );
   assert.deepEqual(rules.slice(-2), [
-    { geoip: { match: "CN", policy: "DIRECT", no_resolve: true } },
+    { geoip: { match: "CN", policy: "DIRECT" } },
     { default: { policy: "🚀 节点选择" } },
   ]);
 
@@ -106,35 +121,44 @@ test("renders exact Egern-native rule parity and terminal ordering", () => {
       && record.domain_suffix.policy === "🤖 AI 专用"), domain);
   }
 
-  const steamIndex = rules.findIndex((record) => record.rule_set?.match.endsWith("/SteamCN.yaml"));
-  const gameIndex = rules.findIndex((record) => record.rule_set?.match.endsWith("/Game.yaml"));
-  const chinaIndex = rules.findIndex((record) => record.rule_set?.match.endsWith("/ChinaMax_Domain.yaml"));
-  assert.ok(chinaIndex > 0);
-  assert.deepEqual(
-    rules.slice(chinaIndex - DOMESTIC_FALLBACK_DOMAIN_SUFFIXES.length, chinaIndex),
-    DOMESTIC_FALLBACK_DOMAIN_SUFFIXES.map((match) => ({
-      domain_suffix: { match, policy: "DIRECT" },
-    })),
-  );
-  for (const domain of ["leiting.com", "leitingcn.com", "g-bits.com"]) {
-    const index = rules.findIndex((record) => record.domain_suffix?.match === domain);
-    assert.ok(index < steamIndex, domain);
-  }
-  assert.deepEqual(rules[gameIndex - 1], {
-    and: {
-      match: [
-        { protocol: { match: "udp" } },
-        { rule_set: { match: `${RULE_BASE}/Game.yaml` } },
-      ],
-      policy: "🎮 游戏连接",
-    },
-  });
-  assert.equal(rules[gameIndex].rule_set.policy, "🕹️ 游戏平台");
+  const indexOf = (id) => rules.findIndex((record) => record.rule_set?.match.endsWith(`/${id}.yaml`));
+  assert.ok(indexOf("DomesticCore") < indexOf("DomesticGame"));
+  assert.ok(indexOf("DomesticGame") < indexOf("SteamCN"));
+  assert.ok(indexOf("SteamCN") < indexOf("OpenAI"));
+  assert.ok(indexOf("OpenAI") < indexOf("OverseasGame"));
+  assert.ok(indexOf("OverseasGame") < indexOf("ChinaIP"));
+  assert.ok(indexOf("ChinaIP") < rules.length - 2);
+  assert.equal(rules[indexOf("DomesticCore")].rule_set.policy, "DIRECT");
+  assert.equal(rules[indexOf("DomesticGame")].rule_set.policy, "DIRECT");
+  assert.equal(rules[indexOf("SteamCN")].rule_set.policy, "DIRECT");
+  assert.equal(rules[indexOf("OverseasGame")].rule_set.policy, "🌍 海外游戏");
+  assert.equal(rules[indexOf("ChinaIP")].rule_set.policy, "DIRECT");
 
   const serialized = JSON.stringify(rules);
-  assert.equal(serialized.match(/Advertising\.yaml/gu)?.length, 1);
-  assert.equal(serialized.match(/Advertising_Domain\.yaml/gu)?.length, 1);
-  assert.equal(serialized.match(/Game\.yaml/gu)?.length, 2);
+  for (const forbidden of ["Advertising", "Advertising_Domain", "ChinaMax_Domain", "ChinaMax", "Game"]) {
+    assert.equal(new RegExp(`/${forbidden}\\.yaml`, "u").test(serialized), false, forbidden);
+  }
+});
+
+test("keeps full ad blocking isolated to exactly two optional Egern providers", () => {
+  const off = renderEgernRules({ publicBaseUrl: PUBLIC_SNAPSHOT_BASE_URL, adblockMode: "off" });
+  const full = renderEgernRules({ publicBaseUrl: PUBLIC_SNAPSHOT_BASE_URL, adblockMode: "full" });
+  const optional = full.filter((record) => /\/(?:Advertising|Advertising_Domain)\.yaml$/u.test(record.rule_set?.match ?? ""));
+  assert.deepEqual(FULL_ADBLOCK_SOURCE_IDS, ["Advertising", "Advertising_Domain"]);
+  assert.equal(JSON.stringify(off).includes("Advertising"), false);
+  assert.deepEqual(optional.map((record) => record.rule_set.match), [
+    "https://juan-nikola.github.io/apple-proxy-profiles/current/optional/adblock-full/egern/rules/Advertising.yaml",
+    "https://juan-nikola.github.io/apple-proxy-profiles/current/optional/adblock-full/egern/rules/Advertising_Domain.yaml",
+  ]);
+});
+
+test("selects edge and current Egern rule publications without mixing channels", () => {
+  const edge = JSON.stringify(renderEgernProfile(rawOptions({ channel: "edge" }), allCompatibleNodes));
+  const current = JSON.stringify(renderEgernProfile(rawOptions({ channel: "current" }), allCompatibleNodes));
+  assert.match(edge, /\/edge\/egern\/rules\/DomesticCore\.yaml/u);
+  assert.doesNotMatch(edge, /\/current\/egern\/rules\//u);
+  assert.match(current, /\/current\/egern\/rules\/DomesticCore\.yaml/u);
+  assert.doesNotMatch(current, /\/edge\/egern\/rules\//u);
 });
 
 test("strictly translates supported shared custom rules with safe failures", () => {

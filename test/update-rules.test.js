@@ -1,0 +1,448 @@
+import assert from "node:assert/strict";
+import { mkdtemp, mkdir, readFile, rename, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { dirname, join } from "node:path";
+import test from "node:test";
+
+import { buildClientArtifacts } from "../automation/src/build-artifacts.js";
+import { artifactSha256 } from "../automation/src/artifact-content.js";
+import { canonicalJson } from "../automation/src/render-anywhere-rules.js";
+import { publishEdgeRelease } from "../automation/src/build-site.js";
+import { lightweightFixtureSnapshots } from "../automation/test/lightweight-fixture.js";
+import {
+  parseUpdateRulesArguments,
+  promoteClientRelease,
+  selectDefaultStaticFiles,
+  verifyTrackedPublications,
+} from "../scripts/update-rules.mjs";
+
+const upstream = Object.freeze({
+  repository: "https://github.com/blackmatrix7/ios_rule_script",
+  branch: "master",
+  commit: "d".repeat(40),
+  committedAt: "2026-08-01T19:07:21Z",
+  license: "GPL-2.0-only",
+});
+
+const nextUpstream = Object.freeze({
+  ...upstream,
+  commit: "e".repeat(40),
+  committedAt: "2026-08-02T19:07:21Z",
+});
+
+async function writeFiles(directory, files) {
+  for (const [path, content] of files) {
+    const destination = join(directory, path);
+    await mkdir(dirname(destination), { recursive: true });
+    await writeFile(destination, content);
+  }
+}
+
+async function initializeTrackedCurrent(publicDirectory, artifacts) {
+  await writeFiles(join(publicDirectory, "current"), artifacts.defaults);
+  await publishEdgeRelease({
+    publicDirectory,
+    defaults: artifacts.defaults,
+    optionalPacks: artifacts.optionalPacks,
+    manifest: artifacts.diagnostics.defaultManifest,
+  });
+  for (const client of ["singbox", "surge", "shadowrocket", "egern", "anywhere"]) {
+    await promoteClientRelease({
+      publicDirectory,
+      client,
+      manifestHash: artifacts.diagnostics.defaultManifest.clients[client].manifestHash,
+    });
+  }
+}
+
+test("accepts only explicit edge, current-check, and client promotion operations", () => {
+  assert.deepEqual(parseUpdateRulesArguments(["--channel", "edge"]), { operation: "build-edge" });
+  assert.deepEqual(parseUpdateRulesArguments(["--check", "--channel", "current"]), { operation: "check-current" });
+  assert.deepEqual(parseUpdateRulesArguments(["--promote", "singbox", "a".repeat(64)]), {
+    operation: "promote",
+    client: "singbox",
+    manifestHash: "a".repeat(64),
+  });
+  for (const args of [[], ["--check"], ["--channel", "current"], ["--promote", "unknown", "a".repeat(64)]]) {
+    assert.throws(() => parseUpdateRulesArguments(args), /update-rules arguments/u);
+  }
+});
+
+test("keeps known legacy profiles outside defaults and rejects unexpected forbidden statics", () => {
+  const selected = selectDefaultStaticFiles(new Map([
+    ["LICENSE", "safe\n"],
+    [
+      "surge/scripts/surge-profile-generator.js",
+      'const adblockMode = "off"; if (adblockMode === "full") return "Advertising_Domain";\n',
+    ],
+    ["surge/examples/surge-macos.conf", "RULE-SET,https://example.invalid/Advertising.list,REJECT\n"],
+    ["sing-box/scripts/sing-box-config-generator.js", 'const id = "ChinaMax_Domain";\n'],
+  ]));
+  assert.deepEqual([...selected], [
+    ["LICENSE", "safe\n"],
+    [
+      "surge/scripts/surge-profile-generator.js",
+      'const adblockMode = "off"; if (adblockMode === "full") return "Advertising_Domain";\n',
+    ],
+  ]);
+  assert.throws(
+    () => selectDefaultStaticFiles(new Map([["unexpected.txt", 'const id = "Advertising";\n']])),
+    /Forbidden default rule reference/u,
+  );
+  assert.throws(
+    () => selectDefaultStaticFiles(new Map([[
+      "unknown/examples/legacy.conf",
+      "RULE-SET,Advertising,REJECT\n",
+    ]])),
+    /Forbidden default rule reference/u,
+  );
+});
+
+test("verifies legacy current defaults and a separately tracked optional snapshot", async () => {
+  const root = await mkdtemp(join(tmpdir(), "apple-proxy-check-trees-"));
+  const publicDirectory = join(root, "public");
+  const artifacts = buildClientArtifacts({ snapshot: lightweightFixtureSnapshots(), upstream });
+  await writeFiles(join(publicDirectory, "current"), artifacts.defaults);
+  await writeFiles(publicDirectory, artifacts.optionalPacks.get("adblock-full"));
+
+  assert.equal(await verifyTrackedPublications({ publicDirectory, ...artifacts }), true);
+  await writeFile(join(publicDirectory, "optional/adblock-full/surge/rules/Advertising.list"), "tampered\n");
+  assert.equal(await verifyTrackedPublications({ publicDirectory, ...artifacts }), false);
+
+  const noOptionalRoot = await mkdtemp(join(tmpdir(), "apple-proxy-check-default-only-"));
+  const noOptionalPublic = join(noOptionalRoot, "public");
+  await writeFiles(join(noOptionalPublic, "current"), artifacts.defaults);
+  assert.equal(await verifyTrackedPublications({ publicDirectory: noOptionalPublic, ...artifacts }), true);
+});
+
+test("verifies a closed schema-v1 current during the lightweight migration", async () => {
+  const root = await mkdtemp(join(tmpdir(), "apple-proxy-legacy-current-"));
+  const publicDirectory = join(root, "public");
+  const currentDirectory = join(publicDirectory, "current");
+  const artifacts = buildClientArtifacts({ snapshot: lightweightFixtureSnapshots(), upstream });
+  const content = "legacy stable rule bytes\n";
+  const baseManifest = {
+    schemaVersion: 1,
+    generatedAt: upstream.committedAt,
+    upstream,
+    catalogSha256: "a".repeat(64),
+    clients: {},
+    files: [{
+      path: "legacy/rule.list",
+      bytes: Buffer.byteLength(content),
+      sha256: artifactSha256(content),
+    }],
+  };
+  const manifest = { ...baseManifest, manifestHash: artifactSha256(canonicalJson(baseManifest)) };
+  await writeFiles(currentDirectory, new Map([
+    ["legacy/rule.list", content],
+    ["manifest.json", canonicalJson(manifest)],
+    ["frontier-manifest.json", "{}\n"],
+    ["surge/macos/manifest.json", "{}\n"],
+  ]));
+
+  assert.equal(await verifyTrackedPublications({ publicDirectory, ...artifacts }), true);
+  await writeFile(join(currentDirectory, "legacy/rule.list"), "tampered\n");
+  assert.equal(await verifyTrackedPublications({ publicDirectory, ...artifacts }), false);
+  await writeFile(join(currentDirectory, "legacy/rule.list"), content);
+  await writeFile(join(currentDirectory, "unexpected.txt"), "extra\n");
+  assert.equal(await verifyTrackedPublications({ publicDirectory, ...artifacts }), false);
+});
+
+test("verifies a hybrid current from independently promoted clients", async () => {
+  const root = await mkdtemp(join(tmpdir(), "apple-proxy-check-hybrid-"));
+  const publicDirectory = join(root, "public");
+  const baseline = buildClientArtifacts({ snapshot: lightweightFixtureSnapshots(), upstream });
+  const candidate = buildClientArtifacts({ snapshot: lightweightFixtureSnapshots(), upstream: nextUpstream });
+  await initializeTrackedCurrent(publicDirectory, baseline);
+  await publishEdgeRelease({
+    publicDirectory,
+    defaults: candidate.defaults,
+    optionalPacks: candidate.optionalPacks,
+    manifest: candidate.diagnostics.defaultManifest,
+  });
+  await promoteClientRelease({
+    publicDirectory,
+    client: "singbox",
+    manifestHash: candidate.diagnostics.defaultManifest.clients.singbox.manifestHash,
+  });
+
+  assert.equal(await verifyTrackedPublications({ publicDirectory, ...baseline }), true);
+  const optionalDirectory = join(publicDirectory, "optional/adblock-full/current/sing-box");
+  const deleted = `${optionalDirectory}.deleted`;
+  await rename(optionalDirectory, deleted);
+  assert.equal(await verifyTrackedPublications({ publicDirectory, ...baseline }), false);
+});
+
+test("rejects rollout optional selections that disagree with the current client manifest", async () => {
+  const root = await mkdtemp(join(tmpdir(), "apple-proxy-check-selection-projection-"));
+  const publicDirectory = join(root, "public");
+  const baseline = buildClientArtifacts({ snapshot: lightweightFixtureSnapshots(), upstream });
+  const candidate = buildClientArtifacts({ snapshot: lightweightFixtureSnapshots(), upstream: nextUpstream });
+  await initializeTrackedCurrent(publicDirectory, baseline);
+  await publishEdgeRelease({
+    publicDirectory,
+    defaults: candidate.defaults,
+    optionalPacks: candidate.optionalPacks,
+    manifest: candidate.diagnostics.defaultManifest,
+  });
+  await promoteClientRelease({
+    publicDirectory,
+    client: "singbox",
+    manifestHash: candidate.diagnostics.defaultManifest.clients.singbox.manifestHash,
+  });
+
+  const rolloutPath = join(publicDirectory, "rollout.json");
+  const rollout = JSON.parse(await readFile(rolloutPath, "utf8"));
+  rollout.optionalPacks["adblock-full"].singbox = null;
+  await writeFile(rolloutPath, `${JSON.stringify(rollout, null, 2)}\n`);
+  await rename(
+    join(publicDirectory, "optional/adblock-full/current/sing-box"),
+    join(publicDirectory, "optional/adblock-full/deleted-sing-box"),
+  );
+
+  assert.equal(await verifyTrackedPublications({ publicDirectory, ...baseline }), false);
+});
+
+test("rejects a manifest-selected optional pack when rollout clears that client selection", async () => {
+  const root = await mkdtemp(join(tmpdir(), "apple-proxy-check-cleared-selection-"));
+  const publicDirectory = join(root, "public");
+  const artifacts = buildClientArtifacts({ snapshot: lightweightFixtureSnapshots(), upstream });
+  await initializeTrackedCurrent(publicDirectory, artifacts);
+
+  const rolloutPath = join(publicDirectory, "rollout.json");
+  const rollout = JSON.parse(await readFile(rolloutPath, "utf8"));
+  rollout.clients.singbox = null;
+  rollout.optionalPacks["adblock-full"].singbox = null;
+  await writeFile(rolloutPath, `${JSON.stringify(rollout, null, 2)}\n`);
+  await rename(
+    join(publicDirectory, "optional/adblock-full/current/sing-box"),
+    join(publicDirectory, "optional/adblock-full/deleted-sing-box"),
+  );
+
+  assert.equal(await verifyTrackedPublications({ publicDirectory, ...artifacts }), false);
+});
+
+test("rejects optional rollout selections for unknown clients", async () => {
+  const root = await mkdtemp(join(tmpdir(), "apple-proxy-check-unknown-optional-client-"));
+  const publicDirectory = join(root, "public");
+  const artifacts = buildClientArtifacts({ snapshot: lightweightFixtureSnapshots(), upstream });
+  await initializeTrackedCurrent(publicDirectory, artifacts);
+
+  const rolloutPath = join(publicDirectory, "rollout.json");
+  const rollout = JSON.parse(await readFile(rolloutPath, "utf8"));
+  rollout.optionalPacks["adblock-full"].intruder = "a".repeat(64);
+  await writeFile(rolloutPath, `${JSON.stringify(rollout, null, 2)}\n`);
+
+  assert.equal(await verifyTrackedPublications({ publicDirectory, ...artifacts }), false);
+});
+
+test("rejects extra non-client files and unknown directories in a hybrid current", async () => {
+  const root = await mkdtemp(join(tmpdir(), "apple-proxy-check-hybrid-closure-"));
+  const publicDirectory = join(root, "public");
+  const baseline = buildClientArtifacts({ snapshot: lightweightFixtureSnapshots(), upstream });
+  const candidate = buildClientArtifacts({ snapshot: lightweightFixtureSnapshots(), upstream: nextUpstream });
+  await initializeTrackedCurrent(publicDirectory, baseline);
+  await publishEdgeRelease({
+    publicDirectory,
+    defaults: candidate.defaults,
+    optionalPacks: candidate.optionalPacks,
+    manifest: candidate.diagnostics.defaultManifest,
+  });
+  await promoteClientRelease({
+    publicDirectory,
+    client: "singbox",
+    manifestHash: candidate.diagnostics.defaultManifest.clients.singbox.manifestHash,
+  });
+
+  assert.equal(await verifyTrackedPublications({ publicDirectory, ...baseline }), true);
+
+  const stray = join(publicDirectory, "current/stray.txt");
+  await writeFile(stray, "not manifested\n");
+  assert.equal(await verifyTrackedPublications({ publicDirectory, ...baseline }), false);
+  await rm(stray);
+  await writeFiles(join(publicDirectory, "current"), new Map([["unknown/nested.txt", "not manifested\n"]]));
+  assert.equal(await verifyTrackedPublications({ publicDirectory, ...baseline }), false);
+});
+
+test("rejects an empty unknown directory in a hybrid current", async () => {
+  const root = await mkdtemp(join(tmpdir(), "apple-proxy-check-hybrid-empty-directory-"));
+  const publicDirectory = join(root, "public");
+  const baseline = buildClientArtifacts({ snapshot: lightweightFixtureSnapshots(), upstream });
+  const candidate = buildClientArtifacts({ snapshot: lightweightFixtureSnapshots(), upstream: nextUpstream });
+  await initializeTrackedCurrent(publicDirectory, baseline);
+  await publishEdgeRelease({
+    publicDirectory,
+    defaults: candidate.defaults,
+    optionalPacks: candidate.optionalPacks,
+    manifest: candidate.diagnostics.defaultManifest,
+  });
+  await promoteClientRelease({
+    publicDirectory,
+    client: "singbox",
+    manifestHash: candidate.diagnostics.defaultManifest.clients.singbox.manifestHash,
+  });
+
+  assert.equal(await verifyTrackedPublications({ publicDirectory, ...baseline }), true);
+  await mkdir(join(publicDirectory, "current/unknown-empty"));
+  assert.equal(await verifyTrackedPublications({ publicDirectory, ...baseline }), false);
+});
+
+test("rejects an unmanifested empty directory inside a current client tree", async () => {
+  const root = await mkdtemp(join(tmpdir(), "apple-proxy-check-current-client-empty-directory-"));
+  const publicDirectory = join(root, "public");
+  const artifacts = buildClientArtifacts({ snapshot: lightweightFixtureSnapshots(), upstream });
+  await initializeTrackedCurrent(publicDirectory, artifacts);
+
+  assert.equal(await verifyTrackedPublications({ publicDirectory, ...artifacts }), true);
+  await mkdir(join(publicDirectory, "current/sing-box/unknown-empty"));
+  assert.equal(await verifyTrackedPublications({ publicDirectory, ...artifacts }), false);
+});
+
+test("rejects an unmanifested empty directory inside a selected optional client tree", async () => {
+  const root = await mkdtemp(join(tmpdir(), "apple-proxy-check-optional-client-empty-directory-"));
+  const publicDirectory = join(root, "public");
+  const artifacts = buildClientArtifacts({ snapshot: lightweightFixtureSnapshots(), upstream });
+  await initializeTrackedCurrent(publicDirectory, artifacts);
+
+  assert.equal(await verifyTrackedPublications({ publicDirectory, ...artifacts }), true);
+  await mkdir(join(publicDirectory, "optional/adblock-full/current/sing-box/unknown-empty"));
+  assert.equal(await verifyTrackedPublications({ publicDirectory, ...artifacts }), false);
+});
+
+test("promotes exact tested client bytes without changing other clients", async () => {
+  const root = await mkdtemp(join(tmpdir(), "apple-proxy-promote-"));
+  const publicDirectory = join(root, "public");
+  const artifacts = buildClientArtifacts({ snapshot: lightweightFixtureSnapshots(), upstream });
+  const hash = artifacts.diagnostics.defaultManifest.clients.singbox.manifestHash;
+  await publishEdgeRelease({
+    publicDirectory,
+    defaults: artifacts.defaults,
+    optionalPacks: artifacts.optionalPacks,
+    manifest: artifacts.diagnostics.defaultManifest,
+  });
+  await mkdir(join(publicDirectory, "current/sing-box"), { recursive: true });
+  await mkdir(join(publicDirectory, "current/surge"), { recursive: true });
+  await mkdir(join(publicDirectory, "optional/adblock-full/current/sing-box"), { recursive: true });
+  await writeFile(join(publicDirectory, "current/sing-box/old.txt"), "old\n");
+  await writeFile(join(publicDirectory, "current/surge/keep.txt"), "keep\n");
+  await writeFile(join(publicDirectory, "optional/adblock-full/current/sing-box/old.txt"), "old optional\n");
+
+  await promoteClientRelease({ publicDirectory, client: "singbox", manifestHash: hash });
+
+  assert.deepEqual(
+    await readFile(join(publicDirectory, "current/sing-box/rules/ChinaIP.json")),
+    Buffer.from(artifacts.defaults.get("sing-box/rules/ChinaIP.json")),
+  );
+  assert.equal(await readFile(join(publicDirectory, "previous/sing-box/old.txt"), "utf8"), "old\n");
+  assert.equal(await readFile(join(publicDirectory, "current/surge/keep.txt"), "utf8"), "keep\n");
+  assert.deepEqual(
+    await readFile(join(publicDirectory, "optional/adblock-full/current/sing-box/rules/Advertising.json")),
+    Buffer.from(artifacts.optionalPacks.get("adblock-full").get("optional/adblock-full/sing-box/rules/Advertising.json")),
+  );
+  assert.equal(
+    await readFile(join(publicDirectory, "optional/adblock-full/previous/sing-box/old.txt"), "utf8"),
+    "old optional\n",
+  );
+  const rollout = JSON.parse(await readFile(join(publicDirectory, "rollout.json"), "utf8"));
+  assert.equal(rollout.clients.singbox, hash);
+  assert.equal(rollout.clients.surge, null);
+  assert.equal(
+    rollout.optionalPacks["adblock-full"].singbox,
+    artifacts.diagnostics.optionalManifests["adblock-full"].clients.singbox.manifestHash,
+  );
+});
+
+test("promotes and rolls back optional bytes independently per client", async () => {
+  const root = await mkdtemp(join(tmpdir(), "apple-proxy-promote-optional-clients-"));
+  const publicDirectory = join(root, "public");
+  const first = buildClientArtifacts({ snapshot: lightweightFixtureSnapshots(), upstream });
+  await publishEdgeRelease({
+    publicDirectory,
+    defaults: first.defaults,
+    optionalPacks: first.optionalPacks,
+    manifest: first.diagnostics.defaultManifest,
+  });
+  await promoteClientRelease({
+    publicDirectory,
+    client: "surge",
+    manifestHash: first.diagnostics.defaultManifest.clients.surge.manifestHash,
+  });
+  const surgeBefore = await readFile(join(
+    publicDirectory,
+    "optional/adblock-full/current/surge/rules/Advertising.list",
+  ));
+
+  const second = buildClientArtifacts({ snapshot: lightweightFixtureSnapshots(), upstream: nextUpstream });
+  await publishEdgeRelease({
+    publicDirectory,
+    defaults: second.defaults,
+    optionalPacks: second.optionalPacks,
+    manifest: second.diagnostics.defaultManifest,
+  });
+  await promoteClientRelease({
+    publicDirectory,
+    client: "singbox",
+    manifestHash: second.diagnostics.defaultManifest.clients.singbox.manifestHash,
+  });
+
+  assert.deepEqual(await readFile(join(
+    publicDirectory,
+    "optional/adblock-full/current/surge/rules/Advertising.list",
+  )), surgeBefore);
+  const rollout = JSON.parse(await readFile(join(publicDirectory, "rollout.json"), "utf8"));
+  assert.equal(
+    rollout.optionalPacks["adblock-full"].surge,
+    first.diagnostics.optionalManifests["adblock-full"].clients.surge.manifestHash,
+  );
+  assert.equal(
+    rollout.optionalPacks["adblock-full"].singbox,
+    second.diagnostics.optionalManifests["adblock-full"].clients.singbox.manifestHash,
+  );
+
+  await publishEdgeRelease({
+    publicDirectory,
+    defaults: first.defaults,
+    optionalPacks: first.optionalPacks,
+    manifest: first.diagnostics.defaultManifest,
+  });
+  await promoteClientRelease({
+    publicDirectory,
+    client: "singbox",
+    manifestHash: first.diagnostics.defaultManifest.clients.singbox.manifestHash,
+  });
+  const rollback = JSON.parse(await readFile(join(publicDirectory, "rollout.json"), "utf8"));
+  assert.equal(
+    rollback.previousOptionalPacks["adblock-full"].singbox,
+    second.diagnostics.optionalManifests["adblock-full"].clients.singbox.manifestHash,
+  );
+  assert.equal(
+    rollback.optionalPacks["adblock-full"].surge,
+    first.diagnostics.optionalManifests["adblock-full"].clients.surge.manifestHash,
+  );
+});
+
+test("rejects a tampered immutable manifest before touching current", async () => {
+  const root = await mkdtemp(join(tmpdir(), "apple-proxy-promote-extra-"));
+  const publicDirectory = join(root, "public");
+  const artifacts = buildClientArtifacts({ snapshot: lightweightFixtureSnapshots(), upstream });
+  const hash = artifacts.diagnostics.defaultManifest.clients.singbox.manifestHash;
+  await publishEdgeRelease({
+    publicDirectory,
+    defaults: artifacts.defaults,
+    optionalPacks: artifacts.optionalPacks,
+    manifest: artifacts.diagnostics.defaultManifest,
+  });
+  const immutable = join(publicDirectory, "edge/clients/singbox", hash);
+  await mkdir(join(publicDirectory, "current/sing-box"), { recursive: true });
+  const clientManifest = JSON.parse(await readFile(join(immutable, "client-manifest.json"), "utf8"));
+  clientManifest.files = [];
+  await writeFile(join(immutable, "client-manifest.json"), `${JSON.stringify(clientManifest)}\n`);
+  await writeFile(join(publicDirectory, "current/sing-box/old.txt"), "old\n");
+
+  await assert.rejects(
+    () => promoteClientRelease({ publicDirectory, client: "singbox", manifestHash: hash }),
+    /manifest hash/u,
+  );
+  assert.equal(await readFile(join(publicDirectory, "current/sing-box/old.txt"), "utf8"), "old\n");
+});

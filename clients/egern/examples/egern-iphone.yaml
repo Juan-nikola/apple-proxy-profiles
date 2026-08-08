@@ -33,20 +33,96 @@ dns:
     global:
       - "https://cloudflare-dns.com/dns-query"
   forward:
-    - domain_suffix:
-        match: "cn"
-        value: "china"
+    - proxy_rule_set:
+        match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/OpenAI.yaml"
+        value: "global"
+        update_interval: 86400
+    - proxy_rule_set:
+        match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/Claude.yaml"
+        value: "global"
+        update_interval: 86400
+    - proxy_rule_set:
+        match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/Gemini.yaml"
+        value: "global"
+        update_interval: 86400
+    - proxy_rule_set:
+        match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/Copilot.yaml"
+        value: "global"
+        update_interval: 86400
+    - proxy_rule_set:
+        match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/GitHub.yaml"
+        value: "global"
+        update_interval: 86400
+    - proxy_rule_set:
+        match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/YouTube.yaml"
+        value: "global"
+        update_interval: 86400
+    - proxy_rule_set:
+        match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/Netflix.yaml"
+        value: "global"
+        update_interval: 86400
+    - proxy_rule_set:
+        match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/Disney.yaml"
+        value: "global"
+        update_interval: 86400
+    - proxy_rule_set:
+        match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/Spotify.yaml"
+        value: "global"
+        update_interval: 86400
+    - proxy_rule_set:
+        match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/GlobalMedia.yaml"
+        value: "global"
+        update_interval: 86400
+    - proxy_rule_set:
+        match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/Telegram.yaml"
+        value: "global"
+        update_interval: 86400
+    - proxy_rule_set:
+        match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/Facebook.yaml"
+        value: "global"
+        update_interval: 86400
+    - proxy_rule_set:
+        match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/Instagram.yaml"
+        value: "global"
+        update_interval: 86400
+    - proxy_rule_set:
+        match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/Twitter.yaml"
+        value: "global"
+        update_interval: 86400
+    - proxy_rule_set:
+        match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/TikTok.yaml"
+        value: "global"
+        update_interval: 86400
+    - proxy_rule_set:
+        match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/OverseasGame.yaml"
+        value: "global"
+        update_interval: 86400
     - domain_suffix:
         match: "bilibili.com"
         value: "china"
     - domain_suffix:
+        match: "bilibili.net"
+        value: "china"
+    - domain_suffix:
+        match: "bilibili.tv"
+        value: "china"
+    - domain_suffix:
+        match: "bilibili.cc"
+        value: "china"
+    - domain_suffix:
         match: "bilivideo.com"
+        value: "china"
+    - domain_suffix:
+        match: "bilivideo.net"
         value: "china"
     - domain_suffix:
         match: "biliapi.com"
         value: "china"
     - domain_suffix:
         match: "hdslb.com"
+        value: "china"
+    - domain_suffix:
+        match: "hdslb.org"
         value: "china"
     - domain_suffix:
         match: "douyin.com"
@@ -87,13 +163,142 @@ dns:
     - domain_suffix:
         match: "weibo.com"
         value: "china"
+    - domain_suffix:
+        match: "sinaimg.cn"
+        value: "china"
+    - domain_suffix:
+        match: "qq.com"
+        value: "china"
+    - domain_suffix:
+        match: "qpic.cn"
+        value: "china"
+    - domain_suffix:
+        match: "qlogo.cn"
+        value: "china"
+    - domain_suffix:
+        match: "gtimg.cn"
+        value: "china"
+    - domain_suffix:
+        match: "gtimg.com"
+        value: "china"
+    - domain_suffix:
+        match: "wechat.com"
+        value: "china"
+    - domain_suffix:
+        match: "iqiyi.com"
+        value: "china"
+    - domain_suffix:
+        match: "iqiyipic.com"
+        value: "china"
+    - domain_suffix:
+        match: "qiyi.com"
+        value: "china"
+    - domain_suffix:
+        match: "qiyipic.com"
+        value: "china"
+    - domain_suffix:
+        match: "youku.com"
+        value: "china"
+    - domain_suffix:
+        match: "tudou.com"
+        value: "china"
+    - domain_suffix:
+        match: "tudouui.com"
+        value: "china"
+    - domain_suffix:
+        match: "ykimg.com"
+        value: "china"
+    - domain_suffix:
+        match: "mgtv.com"
+        value: "china"
+    - domain_suffix:
+        match: "hunantv.com"
+        value: "china"
+    - domain_suffix:
+        match: "baidu.com"
+        value: "china"
+    - domain_suffix:
+        match: "bdstatic.com"
+        value: "china"
+    - domain_suffix:
+        match: "bdimg.com"
+        value: "china"
+    - domain_suffix:
+        match: "bcebos.com"
+        value: "china"
+    - domain_suffix:
+        match: "taobao.com"
+        value: "china"
+    - domain_suffix:
+        match: "tmall.com"
+        value: "china"
+    - domain_suffix:
+        match: "alipay.com"
+        value: "china"
+    - domain_suffix:
+        match: "alibaba.com"
+        value: "china"
+    - domain_suffix:
+        match: "alicdn.com"
+        value: "china"
+    - domain_suffix:
+        match: "aliyun.com"
+        value: "china"
+    - domain_suffix:
+        match: "aliyuncs.com"
+        value: "china"
+    - domain_suffix:
+        match: "163.com"
+        value: "china"
+    - domain_suffix:
+        match: "126.com"
+        value: "china"
+    - domain_suffix:
+        match: "netease.com"
+        value: "china"
+    - domain_suffix:
+        match: "amap.com"
+        value: "china"
+    - domain_suffix:
+        match: "autonavi.com"
+        value: "china"
+    - domain_suffix:
+        match: "wmpvp.com"
+        value: "china"
+    - domain_suffix:
+        match: "bytehwm.com"
+        value: "china"
+    - domain_suffix:
+        match: "rtbasia.com"
+        value: "china"
+    - domain_suffix:
+        match: "sandbox.itunes.apple.com"
+        value: "china"
+    - domain_suffix:
+        match: "douyu.com"
+        value: "china"
+    - domain_suffix:
+        match: "douyu.tv"
+        value: "china"
+    - domain_suffix:
+        match: "douyutv.com"
+        value: "china"
+    - domain_suffix:
+        match: "douyuscdn.com"
+        value: "china"
+    - domain_suffix:
+        match: "douyucdn.cn"
+        value: "china"
+    - domain_suffix:
+        match: "huya.com"
+        value: "china"
     - proxy_rule_set:
-        match: "https://juan-nikola.github.io/apple-proxy-profiles/current/egern/rules/ChinaMax_Domain.yaml"
+        match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/DomesticCore.yaml"
         value: "china"
         update_interval: 86400
     - domain_wildcard:
         match: "*"
-        value: "global"
+        value: "china"
   proxy_nameservers:
     - "system"
 policy_groups:
@@ -124,7 +329,7 @@ policy_groups:
       name: "⚡ 亚太自动"
       urls:
         - "https://example.invalid/private/egern-nodes"
-      filter: "^(?:🇦🇪|🇦🇫|🇦🇲|🇦🇸|🇦🇺|🇦🇿|🇧🇩|🇧🇭|🇧🇳|🇧🇹|🇨🇨|🇨🇰|🇨🇳|🇨🇽|🇨🇾|🇫🇯|🇫🇲|🇬🇪|🇬🇺|🇭🇰|🇭🇲|🇮🇩|🇮🇱|🇮🇳|🇮🇶|🇮🇷|🇯🇴|🇯🇵|🇰🇬|🇰🇭|🇰🇮|🇰🇵|🇰🇷|🇰🇼|🇰🇿|🇱🇦|🇱🇧|🇱🇰|🇲🇭|🇲🇲|🇲🇳|🇲🇴|🇲🇵|🇲🇻|🇲🇾|🇳🇨|🇳🇫|🇳🇵|🇳🇷|🇳🇺|🇳🇿|🇴🇲|🇵🇫|🇵🇬|🇵🇭|🇵🇰|🇵🇳|🇵🇸|🇵🇼|🇶🇦|🇸🇦|🇸🇧|🇸🇬|🇸🇾|🇹🇭|🇹🇯|🇹🇰|🇹🇱|🇹🇲|🇹🇴|🇹🇷|🇹🇻|🇹🇼|🇺🇲|🇺🇿|🇻🇳|🇻🇺|🇼🇫|🇼🇸|🇾🇪) .+$"
+      filter: "^(?:🇦🇪|🇦🇫|🇦🇲|🇦🇸|🇦🇺|🇦🇿|🇧🇩|🇧🇭|🇧🇳|🇧🇹|🇨🇨|🇨🇰|🇨🇳|🇨🇽|🇨🇾|🇫🇯|🇫🇲|🇬🇪|🇬🇺|🇭🇰|🇭🇲|🇮🇩|🇮🇱|🇮🇳|🇮🇶|🇮🇷|🇯🇴|🇯🇵|🇰🇬|🇰🇭|🇰🇮|🇰🇵|🇰🇷|🇰🇼|🇰🇿|🇱🇦|🇱🇧|🇱🇰|🇲🇭|🇲🇲|🇲🇳|🇲🇴|🇲🇵|🇲🇻|🇲🇾|🇳🇨|🇳🇫|🇳🇵|🇳🇷|🇳🇺|🇳🇿|🇴🇲|🇵🇫|🇵🇬|🇵🇭|🇵🇰|🇵🇳|🇵🇸|🇵🇼|🇶🇦|🇸🇦|🇸🇧|🇸🇬|🇸🇾|🇹🇭|🇹🇯|🇹🇰|🇹🇱|🇹🇲|🇹🇴|🇹🇷|🇹🇻|🇹🇼|🇺🇲|🇺🇿|🇻🇳|🇻🇺|🇼🇫|🇼🇸|🇾🇪).+$"
       update_interval: 21600
       latency_test_url: "http://www.gstatic.com/generate_204"
       interval: 1800
@@ -136,7 +341,7 @@ policy_groups:
       name: "🛟 亚太故障转移"
       urls:
         - "https://example.invalid/private/egern-nodes"
-      filter: "^(?:🇦🇪|🇦🇫|🇦🇲|🇦🇸|🇦🇺|🇦🇿|🇧🇩|🇧🇭|🇧🇳|🇧🇹|🇨🇨|🇨🇰|🇨🇳|🇨🇽|🇨🇾|🇫🇯|🇫🇲|🇬🇪|🇬🇺|🇭🇰|🇭🇲|🇮🇩|🇮🇱|🇮🇳|🇮🇶|🇮🇷|🇯🇴|🇯🇵|🇰🇬|🇰🇭|🇰🇮|🇰🇵|🇰🇷|🇰🇼|🇰🇿|🇱🇦|🇱🇧|🇱🇰|🇲🇭|🇲🇲|🇲🇳|🇲🇴|🇲🇵|🇲🇻|🇲🇾|🇳🇨|🇳🇫|🇳🇵|🇳🇷|🇳🇺|🇳🇿|🇴🇲|🇵🇫|🇵🇬|🇵🇭|🇵🇰|🇵🇳|🇵🇸|🇵🇼|🇶🇦|🇸🇦|🇸🇧|🇸🇬|🇸🇾|🇹🇭|🇹🇯|🇹🇰|🇹🇱|🇹🇲|🇹🇴|🇹🇷|🇹🇻|🇹🇼|🇺🇲|🇺🇿|🇻🇳|🇻🇺|🇼🇫|🇼🇸|🇾🇪) .+$"
+      filter: "^(?:🇦🇪|🇦🇫|🇦🇲|🇦🇸|🇦🇺|🇦🇿|🇧🇩|🇧🇭|🇧🇳|🇧🇹|🇨🇨|🇨🇰|🇨🇳|🇨🇽|🇨🇾|🇫🇯|🇫🇲|🇬🇪|🇬🇺|🇭🇰|🇭🇲|🇮🇩|🇮🇱|🇮🇳|🇮🇶|🇮🇷|🇯🇴|🇯🇵|🇰🇬|🇰🇭|🇰🇮|🇰🇵|🇰🇷|🇰🇼|🇰🇿|🇱🇦|🇱🇧|🇱🇰|🇲🇭|🇲🇲|🇲🇳|🇲🇴|🇲🇵|🇲🇻|🇲🇾|🇳🇨|🇳🇫|🇳🇵|🇳🇷|🇳🇺|🇳🇿|🇴🇲|🇵🇫|🇵🇬|🇵🇭|🇵🇰|🇵🇳|🇵🇸|🇵🇼|🇶🇦|🇸🇦|🇸🇧|🇸🇬|🇸🇾|🇹🇭|🇹🇯|🇹🇰|🇹🇱|🇹🇲|🇹🇴|🇹🇷|🇹🇻|🇹🇼|🇺🇲|🇺🇿|🇻🇳|🇻🇺|🇼🇫|🇼🇸|🇾🇪).+$"
       update_interval: 21600
       latency_test_url: "http://www.gstatic.com/generate_204"
       interval: 1800
@@ -147,7 +352,7 @@ policy_groups:
       name: "⚡ 其他/未分类自动"
       urls:
         - "https://example.invalid/private/egern-nodes"
-      filter: "^(?!(?:🔗|🇦🇪|🇦🇫|🇦🇲|🇦🇸|🇦🇺|🇦🇿|🇧🇩|🇧🇭|🇧🇳|🇧🇹|🇨🇨|🇨🇰|🇨🇳|🇨🇽|🇨🇾|🇫🇯|🇫🇲|🇬🇪|🇬🇺|🇭🇰|🇭🇲|🇮🇩|🇮🇱|🇮🇳|🇮🇶|🇮🇷|🇯🇴|🇯🇵|🇰🇬|🇰🇭|🇰🇮|🇰🇵|🇰🇷|🇰🇼|🇰🇿|🇱🇦|🇱🇧|🇱🇰|🇲🇭|🇲🇲|🇲🇳|🇲🇴|🇲🇵|🇲🇻|🇲🇾|🇳🇨|🇳🇫|🇳🇵|🇳🇷|🇳🇺|🇳🇿|🇴🇲|🇵🇫|🇵🇬|🇵🇭|🇵🇰|🇵🇳|🇵🇸|🇵🇼|🇶🇦|🇸🇦|🇸🇧|🇸🇬|🇸🇾|🇹🇭|🇹🇯|🇹🇰|🇹🇱|🇹🇲|🇹🇴|🇹🇷|🇹🇻|🇹🇼|🇺🇲|🇺🇿|🇻🇳|🇻🇺|🇼🇫|🇼🇸|🇾🇪|🇦🇩|🇦🇱|🇦🇹|🇦🇽|🇧🇦|🇧🇪|🇧🇬|🇧🇾|🇨🇭|🇨🇿|🇩🇪|🇩🇰|🇪🇪|🇪🇸|🇫🇮|🇫🇴|🇫🇷|🇬🇧|🇬🇬|🇬🇮|🇬🇷|🇭🇷|🇭🇺|🇮🇪|🇮🇲|🇮🇸|🇮🇹|🇯🇪|🇱🇮|🇱🇹|🇱🇺|🇱🇻|🇲🇨|🇲🇩|🇲🇪|🇲🇰|🇲🇹|🇳🇱|🇳🇴|🇵🇱|🇵🇹|🇷🇴|🇷🇸|🇷🇺|🇸🇪|🇸🇮|🇸🇯|🇸🇰|🇸🇲|🇺🇦|🇻🇦|🇦🇬|🇦🇮|🇦🇷|🇦🇼|🇧🇧|🇧🇱|🇧🇲|🇧🇴|🇧🇶|🇧🇷|🇧🇸|🇧🇻|🇧🇿|🇨🇦|🇨🇱|🇨🇴|🇨🇷|🇨🇺|🇨🇼|🇩🇲|🇩🇴|🇪🇨|🇫🇰|🇬🇩|🇬🇫|🇬🇱|🇬🇵|🇬🇸|🇬🇹|🇬🇾|🇭🇳|🇭🇹|🇯🇲|🇰🇳|🇰🇾|🇱🇨|🇲🇫|🇲🇶|🇲🇸|🇲🇽|🇳🇮|🇵🇦|🇵🇪|🇵🇲|🇵🇷|🇵🇾|🇸🇷|🇸🇻|🇸🇽|🇹🇨|🇹🇹|🇺🇸|🇺🇾|🇻🇨|🇻🇪|🇻🇬|🇻🇮))\\S+ .+$"
+      filter: "^(?!(?:🔗|🇦🇪|🇦🇫|🇦🇲|🇦🇸|🇦🇺|🇦🇿|🇧🇩|🇧🇭|🇧🇳|🇧🇹|🇨🇨|🇨🇰|🇨🇳|🇨🇽|🇨🇾|🇫🇯|🇫🇲|🇬🇪|🇬🇺|🇭🇰|🇭🇲|🇮🇩|🇮🇱|🇮🇳|🇮🇶|🇮🇷|🇯🇴|🇯🇵|🇰🇬|🇰🇭|🇰🇮|🇰🇵|🇰🇷|🇰🇼|🇰🇿|🇱🇦|🇱🇧|🇱🇰|🇲🇭|🇲🇲|🇲🇳|🇲🇴|🇲🇵|🇲🇻|🇲🇾|🇳🇨|🇳🇫|🇳🇵|🇳🇷|🇳🇺|🇳🇿|🇴🇲|🇵🇫|🇵🇬|🇵🇭|🇵🇰|🇵🇳|🇵🇸|🇵🇼|🇶🇦|🇸🇦|🇸🇧|🇸🇬|🇸🇾|🇹🇭|🇹🇯|🇹🇰|🇹🇱|🇹🇲|🇹🇴|🇹🇷|🇹🇻|🇹🇼|🇺🇲|🇺🇿|🇻🇳|🇻🇺|🇼🇫|🇼🇸|🇾🇪|🇦🇩|🇦🇱|🇦🇹|🇦🇽|🇧🇦|🇧🇪|🇧🇬|🇧🇾|🇨🇭|🇨🇿|🇩🇪|🇩🇰|🇪🇪|🇪🇸|🇫🇮|🇫🇴|🇫🇷|🇬🇧|🇬🇬|🇬🇮|🇬🇷|🇭🇷|🇭🇺|🇮🇪|🇮🇲|🇮🇸|🇮🇹|🇯🇪|🇱🇮|🇱🇹|🇱🇺|🇱🇻|🇲🇨|🇲🇩|🇲🇪|🇲🇰|🇲🇹|🇳🇱|🇳🇴|🇵🇱|🇵🇹|🇷🇴|🇷🇸|🇷🇺|🇸🇪|🇸🇮|🇸🇯|🇸🇰|🇸🇲|🇺🇦|🇻🇦|🇦🇬|🇦🇮|🇦🇷|🇦🇼|🇧🇧|🇧🇱|🇧🇲|🇧🇴|🇧🇶|🇧🇷|🇧🇸|🇧🇻|🇧🇿|🇨🇦|🇨🇱|🇨🇴|🇨🇷|🇨🇺|🇨🇼|🇩🇲|🇩🇴|🇪🇨|🇫🇰|🇬🇩|🇬🇫|🇬🇱|🇬🇵|🇬🇸|🇬🇹|🇬🇾|🇭🇳|🇭🇹|🇯🇲|🇰🇳|🇰🇾|🇱🇨|🇲🇫|🇲🇶|🇲🇸|🇲🇽|🇳🇮|🇵🇦|🇵🇪|🇵🇲|🇵🇷|🇵🇾|🇸🇷|🇸🇻|🇸🇽|🇹🇨|🇹🇹|🇺🇸|🇺🇾|🇻🇨|🇻🇪|🇻🇬|🇻🇮)).+$"
       update_interval: 21600
       latency_test_url: "http://www.gstatic.com/generate_204"
       interval: 1800
@@ -159,7 +364,7 @@ policy_groups:
       name: "🛟 其他/未分类故障转移"
       urls:
         - "https://example.invalid/private/egern-nodes"
-      filter: "^(?!(?:🔗|🇦🇪|🇦🇫|🇦🇲|🇦🇸|🇦🇺|🇦🇿|🇧🇩|🇧🇭|🇧🇳|🇧🇹|🇨🇨|🇨🇰|🇨🇳|🇨🇽|🇨🇾|🇫🇯|🇫🇲|🇬🇪|🇬🇺|🇭🇰|🇭🇲|🇮🇩|🇮🇱|🇮🇳|🇮🇶|🇮🇷|🇯🇴|🇯🇵|🇰🇬|🇰🇭|🇰🇮|🇰🇵|🇰🇷|🇰🇼|🇰🇿|🇱🇦|🇱🇧|🇱🇰|🇲🇭|🇲🇲|🇲🇳|🇲🇴|🇲🇵|🇲🇻|🇲🇾|🇳🇨|🇳🇫|🇳🇵|🇳🇷|🇳🇺|🇳🇿|🇴🇲|🇵🇫|🇵🇬|🇵🇭|🇵🇰|🇵🇳|🇵🇸|🇵🇼|🇶🇦|🇸🇦|🇸🇧|🇸🇬|🇸🇾|🇹🇭|🇹🇯|🇹🇰|🇹🇱|🇹🇲|🇹🇴|🇹🇷|🇹🇻|🇹🇼|🇺🇲|🇺🇿|🇻🇳|🇻🇺|🇼🇫|🇼🇸|🇾🇪|🇦🇩|🇦🇱|🇦🇹|🇦🇽|🇧🇦|🇧🇪|🇧🇬|🇧🇾|🇨🇭|🇨🇿|🇩🇪|🇩🇰|🇪🇪|🇪🇸|🇫🇮|🇫🇴|🇫🇷|🇬🇧|🇬🇬|🇬🇮|🇬🇷|🇭🇷|🇭🇺|🇮🇪|🇮🇲|🇮🇸|🇮🇹|🇯🇪|🇱🇮|🇱🇹|🇱🇺|🇱🇻|🇲🇨|🇲🇩|🇲🇪|🇲🇰|🇲🇹|🇳🇱|🇳🇴|🇵🇱|🇵🇹|🇷🇴|🇷🇸|🇷🇺|🇸🇪|🇸🇮|🇸🇯|🇸🇰|🇸🇲|🇺🇦|🇻🇦|🇦🇬|🇦🇮|🇦🇷|🇦🇼|🇧🇧|🇧🇱|🇧🇲|🇧🇴|🇧🇶|🇧🇷|🇧🇸|🇧🇻|🇧🇿|🇨🇦|🇨🇱|🇨🇴|🇨🇷|🇨🇺|🇨🇼|🇩🇲|🇩🇴|🇪🇨|🇫🇰|🇬🇩|🇬🇫|🇬🇱|🇬🇵|🇬🇸|🇬🇹|🇬🇾|🇭🇳|🇭🇹|🇯🇲|🇰🇳|🇰🇾|🇱🇨|🇲🇫|🇲🇶|🇲🇸|🇲🇽|🇳🇮|🇵🇦|🇵🇪|🇵🇲|🇵🇷|🇵🇾|🇸🇷|🇸🇻|🇸🇽|🇹🇨|🇹🇹|🇺🇸|🇺🇾|🇻🇨|🇻🇪|🇻🇬|🇻🇮))\\S+ .+$"
+      filter: "^(?!(?:🔗|🇦🇪|🇦🇫|🇦🇲|🇦🇸|🇦🇺|🇦🇿|🇧🇩|🇧🇭|🇧🇳|🇧🇹|🇨🇨|🇨🇰|🇨🇳|🇨🇽|🇨🇾|🇫🇯|🇫🇲|🇬🇪|🇬🇺|🇭🇰|🇭🇲|🇮🇩|🇮🇱|🇮🇳|🇮🇶|🇮🇷|🇯🇴|🇯🇵|🇰🇬|🇰🇭|🇰🇮|🇰🇵|🇰🇷|🇰🇼|🇰🇿|🇱🇦|🇱🇧|🇱🇰|🇲🇭|🇲🇲|🇲🇳|🇲🇴|🇲🇵|🇲🇻|🇲🇾|🇳🇨|🇳🇫|🇳🇵|🇳🇷|🇳🇺|🇳🇿|🇴🇲|🇵🇫|🇵🇬|🇵🇭|🇵🇰|🇵🇳|🇵🇸|🇵🇼|🇶🇦|🇸🇦|🇸🇧|🇸🇬|🇸🇾|🇹🇭|🇹🇯|🇹🇰|🇹🇱|🇹🇲|🇹🇴|🇹🇷|🇹🇻|🇹🇼|🇺🇲|🇺🇿|🇻🇳|🇻🇺|🇼🇫|🇼🇸|🇾🇪|🇦🇩|🇦🇱|🇦🇹|🇦🇽|🇧🇦|🇧🇪|🇧🇬|🇧🇾|🇨🇭|🇨🇿|🇩🇪|🇩🇰|🇪🇪|🇪🇸|🇫🇮|🇫🇴|🇫🇷|🇬🇧|🇬🇬|🇬🇮|🇬🇷|🇭🇷|🇭🇺|🇮🇪|🇮🇲|🇮🇸|🇮🇹|🇯🇪|🇱🇮|🇱🇹|🇱🇺|🇱🇻|🇲🇨|🇲🇩|🇲🇪|🇲🇰|🇲🇹|🇳🇱|🇳🇴|🇵🇱|🇵🇹|🇷🇴|🇷🇸|🇷🇺|🇸🇪|🇸🇮|🇸🇯|🇸🇰|🇸🇲|🇺🇦|🇻🇦|🇦🇬|🇦🇮|🇦🇷|🇦🇼|🇧🇧|🇧🇱|🇧🇲|🇧🇴|🇧🇶|🇧🇷|🇧🇸|🇧🇻|🇧🇿|🇨🇦|🇨🇱|🇨🇴|🇨🇷|🇨🇺|🇨🇼|🇩🇲|🇩🇴|🇪🇨|🇫🇰|🇬🇩|🇬🇫|🇬🇱|🇬🇵|🇬🇸|🇬🇹|🇬🇾|🇭🇳|🇭🇹|🇯🇲|🇰🇳|🇰🇾|🇱🇨|🇲🇫|🇲🇶|🇲🇸|🇲🇽|🇳🇮|🇵🇦|🇵🇪|🇵🇲|🇵🇷|🇵🇾|🇸🇷|🇸🇻|🇸🇽|🇹🇨|🇹🇹|🇺🇸|🇺🇾|🇻🇨|🇻🇪|🇻🇬|🇻🇮)).+$"
       update_interval: 21600
       latency_test_url: "http://www.gstatic.com/generate_204"
       interval: 1800
@@ -170,6 +375,7 @@ policy_groups:
       name: "🚀 节点选择"
       urls:
         - "https://example.invalid/private/egern-nodes"
+      filter: "^(?!🔗 ).+$"
       update_interval: 21600
       block_quic: true
   - select:
@@ -179,7 +385,7 @@ policy_groups:
         - "🛟 亚太故障转移"
       urls:
         - "https://example.invalid/private/egern-nodes"
-      filter: "^(?:🇦🇪|🇦🇫|🇦🇲|🇦🇸|🇦🇺|🇦🇿|🇧🇩|🇧🇭|🇧🇳|🇧🇹|🇨🇨|🇨🇰|🇨🇳|🇨🇽|🇨🇾|🇫🇯|🇫🇲|🇬🇪|🇬🇺|🇭🇰|🇭🇲|🇮🇩|🇮🇱|🇮🇳|🇮🇶|🇮🇷|🇯🇴|🇯🇵|🇰🇬|🇰🇭|🇰🇮|🇰🇵|🇰🇷|🇰🇼|🇰🇿|🇱🇦|🇱🇧|🇱🇰|🇲🇭|🇲🇲|🇲🇳|🇲🇴|🇲🇵|🇲🇻|🇲🇾|🇳🇨|🇳🇫|🇳🇵|🇳🇷|🇳🇺|🇳🇿|🇴🇲|🇵🇫|🇵🇬|🇵🇭|🇵🇰|🇵🇳|🇵🇸|🇵🇼|🇶🇦|🇸🇦|🇸🇧|🇸🇬|🇸🇾|🇹🇭|🇹🇯|🇹🇰|🇹🇱|🇹🇲|🇹🇴|🇹🇷|🇹🇻|🇹🇼|🇺🇲|🇺🇿|🇻🇳|🇻🇺|🇼🇫|🇼🇸|🇾🇪) .+$"
+      filter: "^(?:🇦🇪|🇦🇫|🇦🇲|🇦🇸|🇦🇺|🇦🇿|🇧🇩|🇧🇭|🇧🇳|🇧🇹|🇨🇨|🇨🇰|🇨🇳|🇨🇽|🇨🇾|🇫🇯|🇫🇲|🇬🇪|🇬🇺|🇭🇰|🇭🇲|🇮🇩|🇮🇱|🇮🇳|🇮🇶|🇮🇷|🇯🇴|🇯🇵|🇰🇬|🇰🇭|🇰🇮|🇰🇵|🇰🇷|🇰🇼|🇰🇿|🇱🇦|🇱🇧|🇱🇰|🇲🇭|🇲🇲|🇲🇳|🇲🇴|🇲🇵|🇲🇻|🇲🇾|🇳🇨|🇳🇫|🇳🇵|🇳🇷|🇳🇺|🇳🇿|🇴🇲|🇵🇫|🇵🇬|🇵🇭|🇵🇰|🇵🇳|🇵🇸|🇵🇼|🇶🇦|🇸🇦|🇸🇧|🇸🇬|🇸🇾|🇹🇭|🇹🇯|🇹🇰|🇹🇱|🇹🇲|🇹🇴|🇹🇷|🇹🇻|🇹🇼|🇺🇲|🇺🇿|🇻🇳|🇻🇺|🇼🇫|🇼🇸|🇾🇪).+$"
       update_interval: 21600
       block_quic: true
   - select:
@@ -189,7 +395,7 @@ policy_groups:
         - "🛟 其他/未分类故障转移"
       urls:
         - "https://example.invalid/private/egern-nodes"
-      filter: "^(?!(?:🔗|🇦🇪|🇦🇫|🇦🇲|🇦🇸|🇦🇺|🇦🇿|🇧🇩|🇧🇭|🇧🇳|🇧🇹|🇨🇨|🇨🇰|🇨🇳|🇨🇽|🇨🇾|🇫🇯|🇫🇲|🇬🇪|🇬🇺|🇭🇰|🇭🇲|🇮🇩|🇮🇱|🇮🇳|🇮🇶|🇮🇷|🇯🇴|🇯🇵|🇰🇬|🇰🇭|🇰🇮|🇰🇵|🇰🇷|🇰🇼|🇰🇿|🇱🇦|🇱🇧|🇱🇰|🇲🇭|🇲🇲|🇲🇳|🇲🇴|🇲🇵|🇲🇻|🇲🇾|🇳🇨|🇳🇫|🇳🇵|🇳🇷|🇳🇺|🇳🇿|🇴🇲|🇵🇫|🇵🇬|🇵🇭|🇵🇰|🇵🇳|🇵🇸|🇵🇼|🇶🇦|🇸🇦|🇸🇧|🇸🇬|🇸🇾|🇹🇭|🇹🇯|🇹🇰|🇹🇱|🇹🇲|🇹🇴|🇹🇷|🇹🇻|🇹🇼|🇺🇲|🇺🇿|🇻🇳|🇻🇺|🇼🇫|🇼🇸|🇾🇪|🇦🇩|🇦🇱|🇦🇹|🇦🇽|🇧🇦|🇧🇪|🇧🇬|🇧🇾|🇨🇭|🇨🇿|🇩🇪|🇩🇰|🇪🇪|🇪🇸|🇫🇮|🇫🇴|🇫🇷|🇬🇧|🇬🇬|🇬🇮|🇬🇷|🇭🇷|🇭🇺|🇮🇪|🇮🇲|🇮🇸|🇮🇹|🇯🇪|🇱🇮|🇱🇹|🇱🇺|🇱🇻|🇲🇨|🇲🇩|🇲🇪|🇲🇰|🇲🇹|🇳🇱|🇳🇴|🇵🇱|🇵🇹|🇷🇴|🇷🇸|🇷🇺|🇸🇪|🇸🇮|🇸🇯|🇸🇰|🇸🇲|🇺🇦|🇻🇦|🇦🇬|🇦🇮|🇦🇷|🇦🇼|🇧🇧|🇧🇱|🇧🇲|🇧🇴|🇧🇶|🇧🇷|🇧🇸|🇧🇻|🇧🇿|🇨🇦|🇨🇱|🇨🇴|🇨🇷|🇨🇺|🇨🇼|🇩🇲|🇩🇴|🇪🇨|🇫🇰|🇬🇩|🇬🇫|🇬🇱|🇬🇵|🇬🇸|🇬🇹|🇬🇾|🇭🇳|🇭🇹|🇯🇲|🇰🇳|🇰🇾|🇱🇨|🇲🇫|🇲🇶|🇲🇸|🇲🇽|🇳🇮|🇵🇦|🇵🇪|🇵🇲|🇵🇷|🇵🇾|🇸🇷|🇸🇻|🇸🇽|🇹🇨|🇹🇹|🇺🇸|🇺🇾|🇻🇨|🇻🇪|🇻🇬|🇻🇮))\\S+ .+$"
+      filter: "^(?!(?:🔗|🇦🇪|🇦🇫|🇦🇲|🇦🇸|🇦🇺|🇦🇿|🇧🇩|🇧🇭|🇧🇳|🇧🇹|🇨🇨|🇨🇰|🇨🇳|🇨🇽|🇨🇾|🇫🇯|🇫🇲|🇬🇪|🇬🇺|🇭🇰|🇭🇲|🇮🇩|🇮🇱|🇮🇳|🇮🇶|🇮🇷|🇯🇴|🇯🇵|🇰🇬|🇰🇭|🇰🇮|🇰🇵|🇰🇷|🇰🇼|🇰🇿|🇱🇦|🇱🇧|🇱🇰|🇲🇭|🇲🇲|🇲🇳|🇲🇴|🇲🇵|🇲🇻|🇲🇾|🇳🇨|🇳🇫|🇳🇵|🇳🇷|🇳🇺|🇳🇿|🇴🇲|🇵🇫|🇵🇬|🇵🇭|🇵🇰|🇵🇳|🇵🇸|🇵🇼|🇶🇦|🇸🇦|🇸🇧|🇸🇬|🇸🇾|🇹🇭|🇹🇯|🇹🇰|🇹🇱|🇹🇲|🇹🇴|🇹🇷|🇹🇻|🇹🇼|🇺🇲|🇺🇿|🇻🇳|🇻🇺|🇼🇫|🇼🇸|🇾🇪|🇦🇩|🇦🇱|🇦🇹|🇦🇽|🇧🇦|🇧🇪|🇧🇬|🇧🇾|🇨🇭|🇨🇿|🇩🇪|🇩🇰|🇪🇪|🇪🇸|🇫🇮|🇫🇴|🇫🇷|🇬🇧|🇬🇬|🇬🇮|🇬🇷|🇭🇷|🇭🇺|🇮🇪|🇮🇲|🇮🇸|🇮🇹|🇯🇪|🇱🇮|🇱🇹|🇱🇺|🇱🇻|🇲🇨|🇲🇩|🇲🇪|🇲🇰|🇲🇹|🇳🇱|🇳🇴|🇵🇱|🇵🇹|🇷🇴|🇷🇸|🇷🇺|🇸🇪|🇸🇮|🇸🇯|🇸🇰|🇸🇲|🇺🇦|🇻🇦|🇦🇬|🇦🇮|🇦🇷|🇦🇼|🇧🇧|🇧🇱|🇧🇲|🇧🇴|🇧🇶|🇧🇷|🇧🇸|🇧🇻|🇧🇿|🇨🇦|🇨🇱|🇨🇴|🇨🇷|🇨🇺|🇨🇼|🇩🇲|🇩🇴|🇪🇨|🇫🇰|🇬🇩|🇬🇫|🇬🇱|🇬🇵|🇬🇸|🇬🇹|🇬🇾|🇭🇳|🇭🇹|🇯🇲|🇰🇳|🇰🇾|🇱🇨|🇲🇫|🇲🇶|🇲🇸|🇲🇽|🇳🇮|🇵🇦|🇵🇪|🇵🇲|🇵🇷|🇵🇾|🇸🇷|🇸🇻|🇸🇽|🇹🇨|🇹🇹|🇺🇸|🇺🇾|🇻🇨|🇻🇪|🇻🇬|🇻🇮)).+$"
       update_interval: 21600
       block_quic: true
   - select:
@@ -198,7 +404,7 @@ policy_groups:
         - "DIRECT"
       urls:
         - "https://example.invalid/private/egern-nodes"
-      filter: "^\\S+ \\[自建\\] .+$"
+      filter: "^.+｜自建(?:·.*)?$"
       update_interval: 21600
   - select:
       name: "🏢 机场节点"
@@ -206,7 +412,7 @@ policy_groups:
         - "DIRECT"
       urls:
         - "https://example.invalid/private/egern-nodes"
-      filter: "^\\S+ \\[机场\\] .+$"
+      filter: "^.+｜机场(?:·.*)?$"
       update_interval: 21600
   - select:
       name: "↪️ Realm 转发"
@@ -214,7 +420,7 @@ policy_groups:
         - "DIRECT"
       urls:
         - "https://example.invalid/private/egern-nodes"
-      filter: "^\\S+ \\[Realm\\] .+$"
+      filter: "^.+｜Realm(?:·.*)?$"
       update_interval: 21600
   - select:
       name: "🤖 AI 亚太"
@@ -223,7 +429,7 @@ policy_groups:
         - "🛟 亚太故障转移"
       urls:
         - "https://example.invalid/private/egern-nodes"
-      filter: "^(?:🇦🇪|🇦🇫|🇦🇲|🇦🇸|🇦🇺|🇦🇿|🇧🇩|🇧🇭|🇧🇳|🇧🇹|🇨🇨|🇨🇰|🇨🇳|🇨🇽|🇨🇾|🇫🇯|🇫🇲|🇬🇪|🇬🇺|🇭🇰|🇭🇲|🇮🇩|🇮🇱|🇮🇳|🇮🇶|🇮🇷|🇯🇴|🇯🇵|🇰🇬|🇰🇭|🇰🇮|🇰🇵|🇰🇷|🇰🇼|🇰🇿|🇱🇦|🇱🇧|🇱🇰|🇲🇭|🇲🇲|🇲🇳|🇲🇴|🇲🇵|🇲🇻|🇲🇾|🇳🇨|🇳🇫|🇳🇵|🇳🇷|🇳🇺|🇳🇿|🇴🇲|🇵🇫|🇵🇬|🇵🇭|🇵🇰|🇵🇳|🇵🇸|🇵🇼|🇶🇦|🇸🇦|🇸🇧|🇸🇬|🇸🇾|🇹🇭|🇹🇯|🇹🇰|🇹🇱|🇹🇲|🇹🇴|🇹🇷|🇹🇻|🇹🇼|🇺🇲|🇺🇿|🇻🇳|🇻🇺|🇼🇫|🇼🇸|🇾🇪) .+$"
+      filter: "^(?:🇦🇪|🇦🇫|🇦🇲|🇦🇸|🇦🇺|🇦🇿|🇧🇩|🇧🇭|🇧🇳|🇧🇹|🇨🇨|🇨🇰|🇨🇳|🇨🇽|🇨🇾|🇫🇯|🇫🇲|🇬🇪|🇬🇺|🇭🇰|🇭🇲|🇮🇩|🇮🇱|🇮🇳|🇮🇶|🇮🇷|🇯🇴|🇯🇵|🇰🇬|🇰🇭|🇰🇮|🇰🇵|🇰🇷|🇰🇼|🇰🇿|🇱🇦|🇱🇧|🇱🇰|🇲🇭|🇲🇲|🇲🇳|🇲🇴|🇲🇵|🇲🇻|🇲🇾|🇳🇨|🇳🇫|🇳🇵|🇳🇷|🇳🇺|🇳🇿|🇴🇲|🇵🇫|🇵🇬|🇵🇭|🇵🇰|🇵🇳|🇵🇸|🇵🇼|🇶🇦|🇸🇦|🇸🇧|🇸🇬|🇸🇾|🇹🇭|🇹🇯|🇹🇰|🇹🇱|🇹🇲|🇹🇴|🇹🇷|🇹🇻|🇹🇼|🇺🇲|🇺🇿|🇻🇳|🇻🇺|🇼🇫|🇼🇸|🇾🇪).+$"
       update_interval: 21600
       hidden: true
       block_quic: true
@@ -234,7 +440,7 @@ policy_groups:
         - "🛟 其他/未分类故障转移"
       urls:
         - "https://example.invalid/private/egern-nodes"
-      filter: "^(?!(?:🔗|🇦🇪|🇦🇫|🇦🇲|🇦🇸|🇦🇺|🇦🇿|🇧🇩|🇧🇭|🇧🇳|🇧🇹|🇨🇨|🇨🇰|🇨🇳|🇨🇽|🇨🇾|🇫🇯|🇫🇲|🇬🇪|🇬🇺|🇭🇰|🇭🇲|🇮🇩|🇮🇱|🇮🇳|🇮🇶|🇮🇷|🇯🇴|🇯🇵|🇰🇬|🇰🇭|🇰🇮|🇰🇵|🇰🇷|🇰🇼|🇰🇿|🇱🇦|🇱🇧|🇱🇰|🇲🇭|🇲🇲|🇲🇳|🇲🇴|🇲🇵|🇲🇻|🇲🇾|🇳🇨|🇳🇫|🇳🇵|🇳🇷|🇳🇺|🇳🇿|🇴🇲|🇵🇫|🇵🇬|🇵🇭|🇵🇰|🇵🇳|🇵🇸|🇵🇼|🇶🇦|🇸🇦|🇸🇧|🇸🇬|🇸🇾|🇹🇭|🇹🇯|🇹🇰|🇹🇱|🇹🇲|🇹🇴|🇹🇷|🇹🇻|🇹🇼|🇺🇲|🇺🇿|🇻🇳|🇻🇺|🇼🇫|🇼🇸|🇾🇪|🇦🇩|🇦🇱|🇦🇹|🇦🇽|🇧🇦|🇧🇪|🇧🇬|🇧🇾|🇨🇭|🇨🇿|🇩🇪|🇩🇰|🇪🇪|🇪🇸|🇫🇮|🇫🇴|🇫🇷|🇬🇧|🇬🇬|🇬🇮|🇬🇷|🇭🇷|🇭🇺|🇮🇪|🇮🇲|🇮🇸|🇮🇹|🇯🇪|🇱🇮|🇱🇹|🇱🇺|🇱🇻|🇲🇨|🇲🇩|🇲🇪|🇲🇰|🇲🇹|🇳🇱|🇳🇴|🇵🇱|🇵🇹|🇷🇴|🇷🇸|🇷🇺|🇸🇪|🇸🇮|🇸🇯|🇸🇰|🇸🇲|🇺🇦|🇻🇦|🇦🇬|🇦🇮|🇦🇷|🇦🇼|🇧🇧|🇧🇱|🇧🇲|🇧🇴|🇧🇶|🇧🇷|🇧🇸|🇧🇻|🇧🇿|🇨🇦|🇨🇱|🇨🇴|🇨🇷|🇨🇺|🇨🇼|🇩🇲|🇩🇴|🇪🇨|🇫🇰|🇬🇩|🇬🇫|🇬🇱|🇬🇵|🇬🇸|🇬🇹|🇬🇾|🇭🇳|🇭🇹|🇯🇲|🇰🇳|🇰🇾|🇱🇨|🇲🇫|🇲🇶|🇲🇸|🇲🇽|🇳🇮|🇵🇦|🇵🇪|🇵🇲|🇵🇷|🇵🇾|🇸🇷|🇸🇻|🇸🇽|🇹🇨|🇹🇹|🇺🇸|🇺🇾|🇻🇨|🇻🇪|🇻🇬|🇻🇮))\\S+ .+$"
+      filter: "^(?!(?:🔗|🇦🇪|🇦🇫|🇦🇲|🇦🇸|🇦🇺|🇦🇿|🇧🇩|🇧🇭|🇧🇳|🇧🇹|🇨🇨|🇨🇰|🇨🇳|🇨🇽|🇨🇾|🇫🇯|🇫🇲|🇬🇪|🇬🇺|🇭🇰|🇭🇲|🇮🇩|🇮🇱|🇮🇳|🇮🇶|🇮🇷|🇯🇴|🇯🇵|🇰🇬|🇰🇭|🇰🇮|🇰🇵|🇰🇷|🇰🇼|🇰🇿|🇱🇦|🇱🇧|🇱🇰|🇲🇭|🇲🇲|🇲🇳|🇲🇴|🇲🇵|🇲🇻|🇲🇾|🇳🇨|🇳🇫|🇳🇵|🇳🇷|🇳🇺|🇳🇿|🇴🇲|🇵🇫|🇵🇬|🇵🇭|🇵🇰|🇵🇳|🇵🇸|🇵🇼|🇶🇦|🇸🇦|🇸🇧|🇸🇬|🇸🇾|🇹🇭|🇹🇯|🇹🇰|🇹🇱|🇹🇲|🇹🇴|🇹🇷|🇹🇻|🇹🇼|🇺🇲|🇺🇿|🇻🇳|🇻🇺|🇼🇫|🇼🇸|🇾🇪|🇦🇩|🇦🇱|🇦🇹|🇦🇽|🇧🇦|🇧🇪|🇧🇬|🇧🇾|🇨🇭|🇨🇿|🇩🇪|🇩🇰|🇪🇪|🇪🇸|🇫🇮|🇫🇴|🇫🇷|🇬🇧|🇬🇬|🇬🇮|🇬🇷|🇭🇷|🇭🇺|🇮🇪|🇮🇲|🇮🇸|🇮🇹|🇯🇪|🇱🇮|🇱🇹|🇱🇺|🇱🇻|🇲🇨|🇲🇩|🇲🇪|🇲🇰|🇲🇹|🇳🇱|🇳🇴|🇵🇱|🇵🇹|🇷🇴|🇷🇸|🇷🇺|🇸🇪|🇸🇮|🇸🇯|🇸🇰|🇸🇲|🇺🇦|🇻🇦|🇦🇬|🇦🇮|🇦🇷|🇦🇼|🇧🇧|🇧🇱|🇧🇲|🇧🇴|🇧🇶|🇧🇷|🇧🇸|🇧🇻|🇧🇿|🇨🇦|🇨🇱|🇨🇴|🇨🇷|🇨🇺|🇨🇼|🇩🇲|🇩🇴|🇪🇨|🇫🇰|🇬🇩|🇬🇫|🇬🇱|🇬🇵|🇬🇸|🇬🇹|🇬🇾|🇭🇳|🇭🇹|🇯🇲|🇰🇳|🇰🇾|🇱🇨|🇲🇫|🇲🇶|🇲🇸|🇲🇽|🇳🇮|🇵🇦|🇵🇪|🇵🇲|🇵🇷|🇵🇾|🇸🇷|🇸🇻|🇸🇽|🇹🇨|🇹🇹|🇺🇸|🇺🇾|🇻🇨|🇻🇪|🇻🇬|🇻🇮)).+$"
       update_interval: 21600
       hidden: true
       block_quic: true
@@ -453,7 +659,7 @@ policy_groups:
       filter: "^.+$"
       update_interval: 21600
   - select:
-      name: "🕹️ 游戏平台"
+      name: "🌍 海外游戏"
       policies:
         - "🚀 节点选择"
         - "⚡ 全部自动"
@@ -472,7 +678,7 @@ policy_groups:
         - "DIRECT"
       urls:
         - "https://example.invalid/private/egern-nodes"
-      filter: "^(?!🔗 )\\S+ .+ \\[UDP\\]$"
+      filter: "^(?!🔗 ).+·U$"
       update_interval: 21600
   - select:
       name: "⬇️ 下载/P2P"
@@ -480,7 +686,7 @@ policy_groups:
         - "DIRECT"
       urls:
         - "https://example.invalid/private/egern-nodes"
-      filter: "^\\S+ \\[(?:自建|Realm|链式代理)\\] .+$"
+      filter: "^(?!🔗 ).+｜(?:自建|Realm|链式代理)(?:·.*)?$"
       update_interval: 21600
   - select:
       name: "🧭 DNS 与规则下载"
@@ -557,6 +763,18 @@ rules:
       match: "ff00::/8"
       policy: "DIRECT"
       no_resolve: true
+  - rule_set:
+      match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/Hijacking.yaml"
+      policy: "REJECT"
+      update_interval: 86400
+  - rule_set:
+      match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/BlockHttpDNS.yaml"
+      policy: "REJECT"
+      update_interval: 86400
+  - rule_set:
+      match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/Privacy.yaml"
+      policy: "🕵️ 严格跟踪"
+      update_interval: 86400
   - domain_suffix:
       match: "perplexity.ai"
       policy: "🤖 AI 专用"
@@ -576,207 +794,120 @@ rules:
       match: "poecdn.net"
       policy: "🤖 AI 专用"
   - rule_set:
-      match: "https://juan-nikola.github.io/apple-proxy-profiles/current/egern/rules/Hijacking.yaml"
-      policy: "☣️ 安全威胁"
+      match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/DomesticCore.yaml"
+      policy: "DIRECT"
       update_interval: 86400
   - rule_set:
-      match: "https://juan-nikola.github.io/apple-proxy-profiles/current/egern/rules/BlockHttpDNS.yaml"
-      policy: "☣️ 安全威胁"
+      match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/DomesticGame.yaml"
+      policy: "DIRECT"
       update_interval: 86400
   - rule_set:
-      match: "https://juan-nikola.github.io/apple-proxy-profiles/current/egern/rules/Advertising.yaml"
-      policy: "🧱 常见广告"
+      match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/SteamCN.yaml"
+      policy: "DIRECT"
       update_interval: 86400
   - rule_set:
-      match: "https://juan-nikola.github.io/apple-proxy-profiles/current/egern/rules/Advertising_Domain.yaml"
-      policy: "🧱 常见广告"
-      update_interval: 86400
-  - rule_set:
-      match: "https://juan-nikola.github.io/apple-proxy-profiles/current/egern/rules/Privacy.yaml"
-      policy: "🕵️ 严格跟踪"
-      update_interval: 86400
-  - rule_set:
-      match: "https://juan-nikola.github.io/apple-proxy-profiles/current/egern/rules/BiliBili.yaml"
+      match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/BiliBili.yaml"
       policy: "📺 哔哩哔哩"
       update_interval: 86400
   - rule_set:
-      match: "https://juan-nikola.github.io/apple-proxy-profiles/current/egern/rules/ByteDance.yaml"
+      match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/ByteDance.yaml"
       policy: "🎵 抖音"
       update_interval: 86400
   - rule_set:
-      match: "https://juan-nikola.github.io/apple-proxy-profiles/current/egern/rules/XiaoHongShu.yaml"
+      match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/XiaoHongShu.yaml"
       policy: "📕 小红书"
       update_interval: 86400
   - rule_set:
-      match: "https://juan-nikola.github.io/apple-proxy-profiles/current/egern/rules/Weibo.yaml"
+      match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/Weibo.yaml"
       policy: "🧣 微博"
       update_interval: 86400
   - rule_set:
-      match: "https://juan-nikola.github.io/apple-proxy-profiles/current/egern/rules/OpenAI.yaml"
+      match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/OpenAI.yaml"
       policy: "🤖 AI 专用"
       update_interval: 86400
   - rule_set:
-      match: "https://juan-nikola.github.io/apple-proxy-profiles/current/egern/rules/Claude.yaml"
+      match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/Claude.yaml"
       policy: "🤖 AI 专用"
       update_interval: 86400
   - rule_set:
-      match: "https://juan-nikola.github.io/apple-proxy-profiles/current/egern/rules/Gemini.yaml"
+      match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/Gemini.yaml"
       policy: "🤖 AI 专用"
       update_interval: 86400
   - rule_set:
-      match: "https://juan-nikola.github.io/apple-proxy-profiles/current/egern/rules/Copilot.yaml"
+      match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/Copilot.yaml"
       policy: "🤖 AI 专用"
       update_interval: 86400
   - rule_set:
-      match: "https://juan-nikola.github.io/apple-proxy-profiles/current/egern/rules/GitHub.yaml"
+      match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/GitHub.yaml"
       policy: "🐙 GitHub"
       update_interval: 86400
   - rule_set:
-      match: "https://juan-nikola.github.io/apple-proxy-profiles/current/egern/rules/YouTube.yaml"
+      match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/YouTube.yaml"
       policy: "📺 YouTube"
       update_interval: 86400
   - rule_set:
-      match: "https://juan-nikola.github.io/apple-proxy-profiles/current/egern/rules/Netflix.yaml"
+      match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/Netflix.yaml"
       policy: "🎬 Netflix"
       update_interval: 86400
   - rule_set:
-      match: "https://juan-nikola.github.io/apple-proxy-profiles/current/egern/rules/Disney.yaml"
+      match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/Disney.yaml"
       policy: "🏰 Disney+"
       update_interval: 86400
   - rule_set:
-      match: "https://juan-nikola.github.io/apple-proxy-profiles/current/egern/rules/Spotify.yaml"
+      match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/Spotify.yaml"
       policy: "🎵 Spotify"
       update_interval: 86400
   - rule_set:
-      match: "https://juan-nikola.github.io/apple-proxy-profiles/current/egern/rules/GlobalMedia.yaml"
+      match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/GlobalMedia.yaml"
       policy: "🌍 国际媒体"
       update_interval: 86400
   - rule_set:
-      match: "https://juan-nikola.github.io/apple-proxy-profiles/current/egern/rules/Telegram.yaml"
+      match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/Telegram.yaml"
       policy: "✈️ Telegram"
       update_interval: 86400
   - rule_set:
-      match: "https://juan-nikola.github.io/apple-proxy-profiles/current/egern/rules/Facebook.yaml"
+      match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/Facebook.yaml"
       policy: "💬 海外社交"
       update_interval: 86400
   - rule_set:
-      match: "https://juan-nikola.github.io/apple-proxy-profiles/current/egern/rules/Instagram.yaml"
+      match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/Instagram.yaml"
       policy: "💬 海外社交"
       update_interval: 86400
   - rule_set:
-      match: "https://juan-nikola.github.io/apple-proxy-profiles/current/egern/rules/Twitter.yaml"
+      match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/Twitter.yaml"
       policy: "💬 海外社交"
       update_interval: 86400
   - rule_set:
-      match: "https://juan-nikola.github.io/apple-proxy-profiles/current/egern/rules/TikTok.yaml"
+      match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/TikTok.yaml"
       policy: "🎶 TikTok"
       update_interval: 86400
   - rule_set:
-      match: "https://juan-nikola.github.io/apple-proxy-profiles/current/egern/rules/Apple.yaml"
+      match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/Apple.yaml"
       policy: "🍎 Apple"
       update_interval: 86400
   - rule_set:
-      match: "https://juan-nikola.github.io/apple-proxy-profiles/current/egern/rules/Microsoft.yaml"
+      match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/Microsoft.yaml"
       policy: "🪟 Microsoft"
       update_interval: 86400
-  - domain_suffix:
-      match: "leiting.com"
-      policy: "DIRECT"
-  - domain_suffix:
-      match: "leitingcn.com"
-      policy: "DIRECT"
-  - domain_suffix:
-      match: "g-bits.com"
-      policy: "DIRECT"
   - rule_set:
-      match: "https://juan-nikola.github.io/apple-proxy-profiles/current/egern/rules/SteamCN.yaml"
-      policy: "DIRECT"
-      update_interval: 86400
-  - domain_suffix:
-      match: "cn"
-      policy: "DIRECT"
-  - domain_suffix:
-      match: "bilibili.com"
-      policy: "DIRECT"
-  - domain_suffix:
-      match: "bilivideo.com"
-      policy: "DIRECT"
-  - domain_suffix:
-      match: "biliapi.com"
-      policy: "DIRECT"
-  - domain_suffix:
-      match: "hdslb.com"
-      policy: "DIRECT"
-  - domain_suffix:
-      match: "douyin.com"
-      policy: "DIRECT"
-  - domain_suffix:
-      match: "douyincdn.com"
-      policy: "DIRECT"
-  - domain_suffix:
-      match: "byteimg.com"
-      policy: "DIRECT"
-  - domain_suffix:
-      match: "ibytedtos.com"
-      policy: "DIRECT"
-  - domain_suffix:
-      match: "pstatp.com"
-      policy: "DIRECT"
-  - domain_suffix:
-      match: "snssdk.com"
-      policy: "DIRECT"
-  - domain_suffix:
-      match: "amemv.com"
-      policy: "DIRECT"
-  - domain_suffix:
-      match: "ixigua.com"
-      policy: "DIRECT"
-  - domain_suffix:
-      match: "toutiao.com"
-      policy: "DIRECT"
-  - domain_suffix:
-      match: "toutiaoimg.com"
-      policy: "DIRECT"
-  - domain_suffix:
-      match: "xiaohongshu.com"
-      policy: "DIRECT"
-  - domain_suffix:
-      match: "xhscdn.com"
-      policy: "DIRECT"
-  - domain_suffix:
-      match: "weibo.com"
-      policy: "DIRECT"
-  - rule_set:
-      match: "https://juan-nikola.github.io/apple-proxy-profiles/current/egern/rules/ChinaMax_Domain.yaml"
-      policy: "DIRECT"
-      update_interval: 86400
-  - and:
-      match:
-        - protocol:
-            match: "udp"
-        - rule_set:
-            match: "https://juan-nikola.github.io/apple-proxy-profiles/current/egern/rules/Game.yaml"
-      policy: "🎮 游戏连接"
-  - rule_set:
-      match: "https://juan-nikola.github.io/apple-proxy-profiles/current/egern/rules/Game.yaml"
-      policy: "🕹️ 游戏平台"
-      update_interval: 86400
-  - rule_set:
-      match: "https://juan-nikola.github.io/apple-proxy-profiles/current/egern/rules/Download.yaml"
+      match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/Download.yaml"
       policy: "⬇️ 下载/P2P"
       update_interval: 86400
   - rule_set:
-      match: "https://juan-nikola.github.io/apple-proxy-profiles/current/egern/rules/PrivateTracker.yaml"
+      match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/PrivateTracker.yaml"
       policy: "⬇️ 下载/P2P"
       update_interval: 86400
   - rule_set:
-      match: "https://juan-nikola.github.io/apple-proxy-profiles/current/egern/rules/ChinaMax.yaml"
+      match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/OverseasGame.yaml"
+      policy: "🌍 海外游戏"
+      update_interval: 86400
+  - rule_set:
+      match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/ChinaIP.yaml"
       policy: "DIRECT"
       update_interval: 86400
   - geoip:
       match: "CN"
       policy: "DIRECT"
-      no_resolve: true
   - default:
       policy: "🚀 节点选择"
 default_subscription_group: "🚀 节点选择"

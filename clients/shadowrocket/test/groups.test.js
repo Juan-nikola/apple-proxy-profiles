@@ -75,13 +75,13 @@ test("selects effective automatic group detail by normalized node count", () => 
   assert.equal(effectiveAutoMode("auto", 101), "minimal");
 
   for (const count of [10, 50, 300]) {
-    const groups = buildGroups(options(), Array.from({ length: count }, (_, index) => node(`🇯🇵 [机场] JP ${index}`)));
-    assert.equal(named(groups, "🚀 节点选择").useSubscription, undefined);
-    assert.equal(named(groups, "🚀 节点选择").filter, undefined);
+    const groups = buildGroups(options(), Array.from({ length: count }, (_, index) => node(`🇯🇵 JP ${index}｜机场`)));
+    assert.equal(named(groups, "🚀 节点选择").useSubscription, true);
+    assert.equal(named(groups, "🚀 节点选择").filter, "^(?!🔗 ).+$");
     assert.deepEqual(named(groups, "🚀 节点选择").items, ["PROXY"]);
   }
 
-  const fallback = named(buildGroups(options(), [node("🇯🇵 [机场] JP")]), "🛟 全部故障转移");
+  const fallback = named(buildGroups(options(), [node("🇯🇵 JP｜机场")]), "🛟 全部故障转移");
   assert.deepEqual(
     { url: fallback.url, interval: fallback.interval, timeout: fallback.timeout, tolerance: fallback.tolerance, hidden: fallback.hidden },
     { url: "http://www.gstatic.com/generate_204", interval: 1800, timeout: 7, tolerance: 150, hidden: true },
@@ -89,13 +89,13 @@ test("selects effective automatic group detail by normalized node count", () => 
 });
 
 test("uses continent-only visible grouping while keeping helpers hidden", () => {
-  const groups = buildGroups(options(), Array.from({ length: 40 }, (_, index) => node(`🇯🇵 [机场] JP ${index}`)));
-  const lines = renderGroups(groups, "订阅,名称");
+  const groups = buildGroups(options(), Array.from({ length: 40 }, (_, index) => node(`🇯🇵 JP ${index}｜机场`)));
+ const lines = renderGroups(groups, "订阅,名称");
 
   assert.match(lines.find((line) => line.startsWith("🌏 亚太 =")), /^🌏 亚太 = select,/);
   assert.deepEqual(named(groups, "🌏 亚太").items, ["⚡ 亚太自动"]);
   assert.deepEqual(named(groups, "🚀 节点选择").items, ["PROXY"]);
-  assert.equal(lines.find((line) => line.startsWith("🚀 节点选择 =")), "🚀 节点选择 = select,PROXY");
+  assert.equal(lines.find((line) => line.startsWith("🚀 节点选择 =")), "🚀 节点选择 = select,PROXY,订阅\\,名称,use=true,policy-regex-filter=^(?!🔗 ).+$");
   assert.equal(lines.some((line) => line.includes("订阅\\,名称,use=true")), true);
   assert.equal(named(groups, "🌍 欧洲"), undefined);
   assert.equal(groups.some((group) => group.hidden === true), true);
@@ -104,11 +104,11 @@ test("uses continent-only visible grouping while keeping helpers hidden", () => 
 
 test("keeps service manual access and gates special service groups by eligibility", () => {
   const nodes = [
-    node("🇯🇵 [机场] JP", { entry: true }),
-    node("🇺🇸 [自建] US", { continent: "americas", sourceKind: "selfHosted", p2p: true }),
-    node("🇩🇪 [Realm] DE", { continent: "europe", sourceKind: "realm", p2p: true }),
-    node("🔗 🇯🇵 [落地] clone", { sourceKind: "landing", chained: true }),
-    node("🇭🇰 [机场] UDP", { udp: true }),
+    node("🇯🇵 JP｜机场", { entry: true }),
+    node("🇺🇸 US｜自建", { continent: "americas", sourceKind: "selfHosted", p2p: true }),
+    node("🇩🇪 DE｜Realm", { continent: "europe", sourceKind: "realm", p2p: true }),
+    node("🔗 🇯🇵 clone｜落地", { sourceKind: "landing", chained: true }),
+    node("🇭🇰 UDP｜机场·U", { udp: true }),
   ];
   const groups = buildGroups(options({ clientChain: "on" }), nodes);
 
@@ -132,7 +132,7 @@ test("keeps service manual access and gates special service groups by eligibilit
   ];
   const foreignGroups = [
     "🐙 GitHub", "📺 YouTube", "🎬 Netflix", "🏰 Disney+", "🎵 Spotify", "🌍 国际媒体",
-    "✈️ Telegram", "💬 海外社交", "🎶 TikTok", "🕹️ 游戏平台",
+    "✈️ Telegram", "💬 海外社交", "🎶 TikTok", "🌍 海外游戏",
   ];
   const domesticGroups = [
     "🍎 Apple", "🪟 Microsoft", "📺 哔哩哔哩", "🎵 抖音", "📕 小红书", "🧣 微博",
@@ -158,8 +158,8 @@ test("keeps service manual access and gates special service groups by eligibilit
   assert.deepEqual(named(groups, "🧭 DNS 与规则下载").items, ["🚀 节点选择", "DIRECT"]);
   assert.equal(named(groups, "🧭 DNS 与规则下载").useSubscription, undefined);
   assert.equal(named(groups, "🧭 DNS 与规则下载").filter, undefined);
-  assert.equal(named(groups, "⬇️ 下载/P2P").filter, "^\\S+ \\[(?:自建|Realm|链式代理)\\] .+$");
-  assert.equal(named(groups, "🎮 游戏连接").filter, "^(?!🔗 )\\S+ .+ \\[UDP\\]$");
+  assert.equal(named(groups, "⬇️ 下载/P2P").filter, "^(?!🔗 ).+｜(?:自建|Realm|链式代理)(?:·.*)?$");
+  assert.equal(named(groups, "🎮 游戏连接").filter, "^(?!🔗 ).+·U$");
   assert.ok(named(groups, "🔗 入口节点"));
   assert.deepEqual(named(groups, "🔗 入口节点").items, ["⚡ 入口自动"]);
   assert.deepEqual(named(groups, "⚡ 入口自动").items, []);
@@ -167,7 +167,7 @@ test("keeps service manual access and gates special service groups by eligibilit
   assert.equal(named(groups, "⚡ 入口自动").useSubscription, true);
   assert.equal(
     named(groups, "🔗 入口节点").filter,
-    "^(?!.*\\[已有链\\])\\S+ \\[(?:机场|自建|Realm)\\] .+$",
+    "^(?!🔗 )(?!.*·链).+｜(?:机场|自建|Realm)(?:·.*)?$",
   );
   assert.equal(named(groups, "⚡ 入口自动").filter, named(groups, "🔗 入口节点").filter);
   assert.ok(named(groups, "⚡ 入口自动"));
@@ -184,7 +184,7 @@ test("keeps service manual access and gates special service groups by eligibilit
   assert.match(githubLine, /,SHADOWROCKET-NODES,use=true,policy-regex-filter=\^\.\+\$,policy-select-name=🚀 节点选择$/);
   assert.doesNotMatch(githubLine, /include-all-proxies/);
 
-  const ineligible = buildGroups(options(), [node("🇯🇵 [机场] TCP")]);
+  const ineligible = buildGroups(options(), [node("🇯🇵 TCP｜机场")]);
   for (const name of ["🎮 游戏连接", "⬇️ 下载/P2P"]) {
     const group = named(ineligible, name);
     assert.deepEqual(group.items, ["DIRECT"]);
@@ -206,19 +206,19 @@ test("excludes chained clones from continent and special-candidate eligibility",
 
 test("keeps chained clones out of the other-continent subscription filter", () => {
   const groups = buildGroups(options(), [
-    node("🌐 [机场] Other", { continent: "other" }),
-    node("🔗 🇯🇵 [落地] clone", { chained: true }),
+    node("🌐 Other｜机场", { continent: "other" }),
+    node("🔗 🇯🇵 clone｜落地", { chained: true }),
   ]);
   const filter = new RegExp(named(groups, "🌐 其他/未分类").filter);
 
-  assert.equal(filter.test("🌐 [机场] Other"), true);
-  assert.equal(filter.test("🔗 🇯🇵 [落地] clone"), false);
+  assert.equal(filter.test("🌐 Other｜机场"), true);
+  assert.equal(filter.test("🔗 🇯🇵 clone｜落地"), false);
 });
 
 test("does not use an already chained entry to enable client-chain groups", () => {
   const groups = buildGroups(options({ clientChain: "on" }), [
-    node("🔗 🇯🇵 [机场] chained entry", { entry: true, chained: true }),
-    node("🔗 🇯🇵 [落地] clone", { chained: true }),
+    node("🔗 🇯🇵 chained entry｜机场", { entry: true, chained: true }),
+    node("🔗 🇯🇵 clone｜落地", { chained: true }),
   ]);
 
   assert.equal(named(groups, "⚡ 入口自动"), undefined);
@@ -261,11 +261,11 @@ test("filters entry candidates by a reserved eligibility marker without serializ
   assert.equal(rendered.includes(preChainedName), false);
   assert.match(rendered, /,Shadowrocket-Nodes,use=true/);
   assert.doesNotMatch(rendered, /include-all-proxies/);
-  assert.match(rendered, /policy-regex-filter=\^\(\?!\.\*\\\[已有链\\\]\)/);
+  assert.match(rendered, /policy-regex-filter=\^\(\?!🔗 \)\(\?!\.\*·链\)/);
 });
 
 test("references every available continent helper from its visible selector", () => {
-  const nodes = [node("🇯🇵 [机场] JP")];
+  const nodes = [node("🇯🇵 JP｜机场")];
 
   assert.deepEqual(named(buildGroups(options({ autoGroupMode: "full" }), nodes), "🌏 亚太").items, [
     "⚡ 亚太自动",
@@ -276,10 +276,10 @@ test("references every available continent helper from its visible selector", ()
 
 test("keeps the root locked to the homepage while AI continent order stays stable", () => {
   const mixed = [
-    node("🇿🇦 [自建] ZA", { continent: "other" }),
-    node("🇺🇸 [自建] US", { continent: "americas" }),
-    node("🇩🇪 [自建] DE", { continent: "europe" }),
-    node("🇯🇵 [自建] JP", { continent: "asiaPacific" }),
+    node("🇿🇦 ZA｜自建", { continent: "other" }),
+    node("🇺🇸 US｜自建", { continent: "americas" }),
+    node("🇩🇪 DE｜自建", { continent: "europe" }),
+    node("🇯🇵 JP｜自建", { continent: "asiaPacific" }),
   ];
   const groups = buildGroups(options(), mixed);
 
@@ -366,7 +366,7 @@ test("matches group filters against real normalized edge-case node names", () =>
   ], { clientChain: "on" });
   const groups = buildGroups(options({ clientChain: "on" }), nodes);
   const commaNode = nodes.find((node) => node.name.includes("JP, comma"));
-  const collisions = nodes.filter((node) => node.name.includes("JP collision [UDP] #"));
+  const collisions = nodes.filter((node) => node.name.includes("JP collision｜机场·U #"));
   const unknown = nodes.find((node) => node.name.startsWith("🇿🇦"));
   const udp = nodes.find((node) => node.name.includes("JP, comma"));
   const clone = nodes.find((node) => node._profile.chained);
@@ -385,8 +385,8 @@ test("matches group filters against real normalized edge-case node names", () =>
 });
 
 test("keeps every catalog variant free of duplicates, dangling references, and cycles", () => {
-  const plain = [node("🇯🇵 [机场] JP", { entry: true, udp: true }), node("🇿🇦 [自建] Other", { continent: "other", sourceKind: "selfHosted", p2p: true })];
-  const chained = [...plain, node("🔗 🇯🇵 [落地] clone", { chained: true })];
+  const plain = [node("🇯🇵 JP｜机场·U", { entry: true, udp: true }), node("🇿🇦 Other｜自建", { continent: "other", sourceKind: "selfHosted", p2p: true })];
+  const chained = [...plain, node("🔗 🇯🇵 clone｜落地", { chained: true })];
 
   for (const inventory of [plain, chained]) {
     for (const autoGroupMode of ["full", "balanced", "minimal"]) {

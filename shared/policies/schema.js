@@ -47,7 +47,7 @@ const REQUIRED_POLICY_GROUP_NAMES = Object.freeze([
 const POLICY_SCHEMA_ENTRIES = [
   ["⚡ 全部自动", policySchema(GROUP_KIND.helper, STRATEGY.autoTest, [NON_CHAINED_FILTER], { hidden: true })],
   ["🛟 全部故障转移", policySchema(GROUP_KIND.helper, STRATEGY.fallback, [NON_CHAINED_FILTER], { hidden: true })],
-  ["🚀 节点选择", policySchema(GROUP_KIND.primary, STRATEGY.select, [null])],
+  ["🚀 节点选择", policySchema(GROUP_KIND.primary, STRATEGY.select, [NON_CHAINED_FILTER])],
   ...CONTINENTS.flatMap((continent) => {
     const filter = continentFilter(continent);
     return [

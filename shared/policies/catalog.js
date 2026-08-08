@@ -59,7 +59,7 @@ export const SERVICE_GROUPS = Object.freeze([
   Object.freeze(["🎵 抖音", DIRECT_FIRST_SERVICE_DEFAULTS]),
   Object.freeze(["📕 小红书", DIRECT_FIRST_SERVICE_DEFAULTS]),
   Object.freeze(["🧣 微博", DIRECT_FIRST_SERVICE_DEFAULTS]),
-  Object.freeze(["🕹️ 游戏平台", PROXY_FIRST_SERVICE_DEFAULTS]),
+  Object.freeze(["🌍 海外游戏", PROXY_FIRST_SERVICE_DEFAULTS]),
 ]);
 
 function policyGroup({
@@ -188,6 +188,7 @@ export function buildPolicyGroups(options, nodes) {
     kind: GROUP_KIND.primary,
     name: "🚀 节点选择",
     candidates: [POLICY_TARGET.primaryProxy],
+    nodeFilter: NON_CHAINED_FILTER,
   }));
   for (const continent of presentContinents) {
     groups.push(subscriptionGroup(

@@ -193,6 +193,7 @@ routing = 1
 2, femalefounderscomp.com
 2, flipwithsurface.com
 2, fluidpreview.com
+2, footprintdns.com
 2, forzamotorsport.net
 2, forzaracingchampionship.com
 2, forzarc.com
@@ -251,6 +252,7 @@ routing = 1
 2, livefilestore.com
 2, livetileedge.dsx.mp.microsoft.com.edgekey.net
 2, livingyourambition.com
+2, localytics.com
 2, lync.cn
 2, lync.com
 2, m12.vc
@@ -324,6 +326,8 @@ routing = 1
 2, microsoftaccountguard.com
 2, microsoftadc.com
 2, microsoftads.com
+2, microsoftadvertising.com
+2, microsoftadvertisingregionalawards.com
 2, microsoftaffiliates.com
 2, microsoftapp.net
 2, microsoftazuread-sso.com
@@ -412,6 +416,7 @@ routing = 1
 2, ms-studiosmedia.com
 2, ms365surfaceoffer.com
 2, msa.akadns6.net
+2, msads.net
 2, msappproxy.cn
 2, msappproxy.net
 2, msauth.cn
@@ -511,6 +516,7 @@ routing = 1
 2, onmschina.cn
 2, opentranslatorstothings.org
 2, opticsforthecloud.net
+2, optimizely.com
 2, orithegame.com
 2, osdinfra.net
 2, outingsapp.com
@@ -595,6 +601,7 @@ routing = 1
 2, unity3dcloud.cn
 2, unlocklimitlesslearning.com
 2, userpxt.io
+2, uservoice.com
 2, uwpcommunitytoolkit.com
 2, vfsforgit.com
 2, vfsforgit.org
@@ -651,7 +658,6 @@ routing = 1
 2, xboxab.com
 2, xboxgamepass.com
 2, xboxgamestudios.com
-2, xboxlive.cn
 2, xboxlive.com
 2, xboxone.co
 2, xboxone.com

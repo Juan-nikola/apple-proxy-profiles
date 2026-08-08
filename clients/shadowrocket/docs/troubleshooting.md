@@ -1,6 +1,6 @@
 # 故障排查与回滚
 
-固定顺序：切回旧 Profile → 判断节点/规则/DNS/局域网/IPv6 → 生成脱敏统计 → 只分享统计。先恢复可用网络，再排查；不要删除旧 Profile。仓库路径迁移到 `clients/shadowrocket/` 不改变任何 Sub-Store 对象名或 URL；不要重命名 `shadowrocket-sources`、节点订阅、Profile File 或保留的旧 Profile。
+固定顺序：切回旧 Profile → 判断节点/规则/DNS/局域网/IPv6 → 生成脱敏统计 → 只分享统计。先恢复可用网络，再排查；不要删除旧 Profile。正式配置使用原始组合 `apple-proxy-sources`、处理组合 `shadowrocket-nodes`、节点订阅、Profile File 和保留的旧 Profile；排查期间不要重命名或覆盖它们。
 
 ## 先回滚
 
@@ -27,17 +27,17 @@ DNS、QUIC、IPv6、`blockMode`或测速参数排障使用下面的 File 副本�
 
 ## 节点更新失败
 
-在 Sub-Store 预览 `shadowrocket-sources`。原始来源为空就检查来源；原始有节点而 `shadowrocket-nodes` 为空就查看排除原因计数。不要截图节点详情。恢复前一次可用订阅，节点数量正常后再更新设备。
+在 Sub-Store 先预览原始组合 `apple-proxy-sources`，再预览处理组合 `shadowrocket-nodes`。原始来源为空就检查 `snell`、`vlesshy2`；原始有节点而 `Shadowrocket-Nodes` 为空就查看排除原因计数。不要截图节点详情。恢复前一次可用订阅，节点数量正常后再更新设备。
 
 检查顺序：
 
 1. 单独预览各个原始来源，判断是一个来源还是全部来源失效。
-2. 预览组合 `shadowrocket-sources`，确认处理前节点数量不为 0。
+2. 预览组合 `apple-proxy-sources`，确认处理前节点数量不为 0。
 3. 再预览 `shadowrocket-nodes`。若为空，记录协议和排除原因计数，不复制节点详情。
 4. 确认节点脚本参数是 `output=nodes&clientChain=off` 或有意开启的 `on`，且目标平台为 Shadowrocket。
 5. 恢复最近可用来源或脚本后先更新 Intel Mac。
 
-如果节点名出现 `[已有链]`，表示脚本检测到了既有 `chain`、`underlying-proxy` 等链路字段，并主动阻止它再次成为客户端入口；不要手工删除或伪造该标记。若判断不符合预期，应检查原始节点的链路字段，而不是改生成后的名称。
+如果节点名出现 `·链`，表示脚本检测到了既有 `chain`、`underlying-proxy` 等链路字段，并主动阻止它再次成为客户端入口；不要手工删除或伪造该标记。若判断不符合预期，应检查原始节点的链路字段，而不是改生成后的名称。
 
 ## 策略组没有具体服务器
 
@@ -49,7 +49,7 @@ DNS、QUIC、IPv6、`blockMode`或测速参数排障使用下面的 File 副本�
 
 从仓库根目录运行 `npm --workspace @apple-proxy-profiles/shadowrocket run check:rules`。首次部署有任何规则失败就停止灰度；已安装设备先保留 Shadowrocket 上一次可用缓存和旧 Profile。不要用空规则覆盖现有配置。
 
-成功时命令会报告 32 份规则均通过，其中包括完整广告规则的 `Advertising.list` 与 `Advertising_Domain.list`，以及 `ByteDance`、`SteamCN`、`ChinaMax_Domain` 与 `ChinaMax`。若出现 HTTP、条目数量或格式错误，记录规则名称和健康状态即可；不要把临时失败误当成需要删除旧缓存的理由。
+成功时命令会报告 33 份固定提交的编译输入均通过，其中包括默认输入、`Game`/`ChinaIPs` 等编译专用输入，以及 optional `Advertising.list` 与 `Advertising_Domain.list`。这只是验证编译所需上游，不表示默认 Profile 会加载全部输入；默认 `adblockMode=off` 不加载广告包。若出现 HTTP、条目数量或格式错误，记录规则名称和健康状态即可；不要把临时失败误当成需要删除旧缓存的理由。
 
 ## DNS 污染或网站指向异常
 
@@ -79,7 +79,7 @@ DNS、QUIC、IPv6、`blockMode`或测速参数排障使用下面的 File 副本�
 2. 对照排障时可复制 File，分别测试 `allow`；仍有问题时才另复制一份 `all-block`。
 3. 每种模式都要重新生成和更新 Profile，它不是热切换。
 4. 测试后恢复 `proxy-block`。此开关不等同于禁用 Hysteria2/TUIC 节点传输。
-5. 游戏实时连接组只应显示明确带 `[UDP]` 的节点；没有合适节点时保持 DIRECT。
+5. 游戏实时连接组只应显示明确带 `·U` 能力标记的节点；没有合适节点时保持 DIRECT。
 6. 《问道手游》应确认 `leiting.com`、`leitingcn.com`、`g-bits.com` 命中 DIRECT；iPhone 分别在 Wi-Fi 和蜂窝网络测试登录、换线、战斗和资源加载。
 
 ## AI 登录或风控

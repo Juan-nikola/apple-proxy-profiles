@@ -1,0 +1,105 @@
+{
+  "rules": [
+    {
+      "domain_keyword": [
+        "analytics."
+      ]
+    },
+    {
+      "domain_keyword": [
+        "app-analytics"
+      ]
+    },
+    {
+      "domain_keyword": [
+        "app-log."
+      ]
+    },
+    {
+      "domain_keyword": [
+        "applog."
+      ]
+    },
+    {
+      "domain_keyword": [
+        "fzlm"
+      ]
+    },
+    {
+      "domain_keyword": [
+        "ios-log."
+      ]
+    },
+    {
+      "domain_keyword": [
+        "ioslog."
+      ]
+    },
+    {
+      "domain_keyword": [
+        "pc-log."
+      ]
+    },
+    {
+      "domain_keyword": [
+        "pclog."
+      ]
+    },
+    {
+      "ip_cidr": [
+        "0.0.0.1/32"
+      ]
+    },
+    {
+      "ip_cidr": [
+        "109.123.233.251/32"
+      ]
+    },
+    {
+      "ip_cidr": [
+        "157.148.47.204/32"
+      ]
+    },
+    {
+      "ip_cidr": [
+        "185.193.38.148/32"
+      ]
+    },
+    {
+      "ip_cidr": [
+        "219.143.187.136/32"
+      ]
+    },
+    {
+      "ip_cidr": [
+        "34.215.155.61/32"
+      ]
+    },
+    {
+      "ip_cidr": [
+        "35.194.26.233/32"
+      ]
+    },
+    {
+      "ip_cidr": [
+        "35.239.57.233/32"
+      ]
+    },
+    {
+      "ip_cidr": [
+        "44.228.85.26/32"
+      ]
+    },
+    {
+      "ip_cidr": [
+        "45.32.105.134/32"
+      ]
+    },
+    {
+      "ip_cidr": [
+        "77.162.125.199/32"
+      ]
+    }
+  ],
+  "version": 5
+}

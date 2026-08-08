@@ -2,6 +2,7 @@ import {
   GROUP_KIND,
   STRATEGY,
 } from "../../../shared/policies/catalog.js";
+import { NON_CHAINED_FILTER } from "../../../shared/policies/filters.js";
 import { POLICY_TARGET } from "../../../shared/policies/intents.js";
 import { POLICY_GROUP_SCHEMA } from "../../../shared/policies/schema.js";
 import { validateEgernNodeSubscriptionUrl } from "./options.js";
@@ -313,7 +314,7 @@ function validateSharedGraph(input) {
     || root.strategy !== STRATEGY.select
     || root.candidates.length !== 1
     || root.candidates[0] !== POLICY_TARGET.primaryProxy
-    || root.nodeFilter !== null
+    || root.nodeFilter !== NON_CHAINED_FILTER
     || root.test !== null
     || root.hidden !== undefined
     || root.defaultChoice !== undefined
@@ -355,6 +356,7 @@ function renderGroup(group, nodeSubscriptionUrl) {
 
   if (group.name === PRIMARY_GROUP_NAME) {
     fields.urls = [nodeSubscriptionUrl];
+    fields.filter = NON_CHAINED_FILTER;
     fields.update_interval = UPDATE_INTERVAL;
     return { [type]: fields };
   }
@@ -398,9 +400,10 @@ function validateRenderedGraph(rendered, sharedGroups, nodeSubscriptionUrl) {
 
     if (fields.name === PRIMARY_GROUP_NAME) {
       if (
-        Object.keys(fields).length !== 3
+        Object.keys(fields).length !== 4
         || fields.urls?.length !== 1
         || fields.urls[0] !== nodeSubscriptionUrl
+        || fields.filter !== NON_CHAINED_FILTER
         || fields.update_interval !== UPDATE_INTERVAL
       ) {
         throw graphError("has an invalid rendered primary group");

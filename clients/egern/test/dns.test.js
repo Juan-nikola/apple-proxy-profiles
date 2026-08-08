@@ -6,13 +6,14 @@ import test from "node:test";
 import { renderEgernDns } from "../src/render-dns.js";
 import { renderYaml } from "../src/render-yaml.js";
 import { DOMESTIC_FALLBACK_DOMAIN_SUFFIXES } from "../../../shared/rules/domestic-fallback.js";
+import { EXPLICIT_OVERSEAS_RULE_SOURCE_IDS } from "../../../shared/rules/lightweight-policy.js";
 import {
   PUBLIC_SNAPSHOT_BASE_URL,
   parseEgernOptions,
 } from "../src/options.js";
 
 const PRIVATE_URL = "https://example.invalid/private/egern-nodes";
-const CHINA_RULE_URL = `${PUBLIC_SNAPSHOT_BASE_URL}/egern/rules/ChinaMax_Domain.yaml`;
+const CHINA_RULE_URL = `${PUBLIC_SNAPSHOT_BASE_URL}/egern/rules/DomesticCore.yaml`;
 const PUBLISHING_PLAN = readFileSync(
   new URL("../../../docs/superpowers/plans/2026-08-01-apple-proxy-profiles-publishing.md", import.meta.url),
   "utf8",
@@ -25,6 +26,7 @@ function options(overrides = {}) {
     name: "egern-sources",
     nodeSubscriptionUrl: PRIVATE_URL,
     platform: "macos",
+    channel: "current",
     ...overrides,
   });
 }
@@ -49,45 +51,83 @@ function wildcard(value) {
   return { domain_wildcard: { match: "*", value } };
 }
 
+function proxyRule(id, value = "global") {
+  return {
+    proxy_rule_set: {
+      match: `${PUBLIC_SNAPSHOT_BASE_URL}/egern/rules/${id}.yaml`,
+      value,
+      update_interval: 86400,
+    },
+  };
+}
+
 test("renders the exact stable DNS object in documented declaration order", () => {
   const dns = renderEgernDns(options());
-  assert.deepEqual(dns, {
-    bootstrap: ["system"],
-    upstreams: {
-      china: ["https://dns.alidns.com/dns-query"],
-      global: ["https://cloudflare-dns.com/dns-query"],
-    },
-    forward: [...domesticFallbackRules(), chinaRule(), wildcard("global")],
-    proxy_nameservers: ["system"],
+  assert.deepEqual(dns.bootstrap, ["system"]);
+  assert.deepEqual(dns.upstreams, {
+    china: ["https://dns.alidns.com/dns-query"],
+    global: ["https://cloudflare-dns.com/dns-query"],
   });
+  assert.deepEqual(dns.forward.slice(0, 3), [
+    proxyRule("OpenAI"),
+    proxyRule("Claude"),
+    proxyRule("Gemini"),
+  ]);
+  assert.deepEqual(
+    dns.forward
+      .filter((record) => record.proxy_rule_set && record.proxy_rule_set.match !== CHINA_RULE_URL)
+      .map((record) => record.proxy_rule_set.match),
+    EXPLICIT_OVERSEAS_RULE_SOURCE_IDS.map((id) => `${PUBLIC_SNAPSHOT_BASE_URL}/egern/rules/${id}.yaml`),
+  );
+  assert.deepEqual(dns.forward.slice(-(DOMESTIC_FALLBACK_DOMAIN_SUFFIXES.length + 2)), [
+    ...domesticFallbackRules(),
+    chinaRule(),
+    wildcard("china"),
+  ]);
+  assert.deepEqual(dns.proxy_nameservers, ["system"]);
   assert.deepEqual(Object.keys(dns), ["bootstrap", "upstreams", "forward", "proxy_nameservers"]);
   assert.deepEqual(Object.keys(dns.upstreams), ["china", "global"]);
+  const domesticRule = dns.forward.find((record) => record.proxy_rule_set?.match === CHINA_RULE_URL);
   assert.deepEqual(
-    Object.keys(dns.forward[DOMESTIC_FALLBACK_DOMAIN_SUFFIXES.length].proxy_rule_set),
+    Object.keys(domesticRule.proxy_rule_set),
     ["match", "value", "update_interval"],
   );
 });
 
-test("closes the China DNS rule URL over the publishing snapshot contract", () => {
+test("closes the lightweight domestic DNS rule URL over the publishing snapshot contract", () => {
   assert.match(
     PUBLISHING_PLAN,
     /Egern uses `current\/egern\/rules\/\$\{id\}\.yaml`/,
   );
-  assert.equal(CHINA_RULE_URL.endsWith("/egern/rules/ChinaMax_Domain.yaml"), true);
+  assert.equal(CHINA_RULE_URL.endsWith("/egern/rules/DomesticCore.yaml"), true);
 
   for (const dnsMode of ["stable", "speed"]) {
     const serialized = JSON.stringify(renderEgernDns(options({ dnsMode })));
     assert.equal(serialized.includes(CHINA_RULE_URL), true, dnsMode);
+    assert.equal(serialized.includes("ChinaMax"), false, dnsMode);
     assert.equal(serialized.includes("china-domains"), false, dnsMode);
   }
 });
 
-test("renders privacy without a China exception and speed with a direct system catch-all", () => {
+test("keeps DNS rule providers on the selected publication channel", () => {
+  const edge = JSON.stringify(renderEgernDns(options({ channel: "edge" })));
+  const current = JSON.stringify(renderEgernDns(options({ channel: "current" })));
+  assert.match(edge, /\/edge\/egern\/rules\/DomesticCore\.yaml/u);
+  assert.match(current, /\/current\/egern\/rules\/DomesticCore\.yaml/u);
+});
+
+test("renders privacy globally and stable/speed with China-first catch-all", () => {
   assert.deepEqual(renderEgernDns(options({ dnsMode: "privacy" })).forward, [wildcard("global")]);
-  assert.deepEqual(renderEgernDns(options({ dnsMode: "speed" })).forward, [
+  const speed = renderEgernDns(options({ dnsMode: "speed" })).forward;
+  assert.deepEqual(speed.slice(0, 3), [
+    proxyRule("OpenAI"),
+    proxyRule("Claude"),
+    proxyRule("Gemini"),
+  ]);
+  assert.deepEqual(speed.slice(-(DOMESTIC_FALLBACK_DOMAIN_SUFFIXES.length + 2)), [
     ...domesticFallbackRules(),
     chinaRule(),
-    wildcard("system"),
+    wildcard("china"),
   ]);
 });
 

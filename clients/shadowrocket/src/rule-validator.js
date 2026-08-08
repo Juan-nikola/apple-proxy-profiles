@@ -176,8 +176,9 @@ function isLogicalOperand(value) {
   const fields = topLevelFields(inner);
   if (!fields || fields.some((field) => !isNonEmptyField(field))) return false;
   if (LOGICAL_TYPES.has(fields[0])) {
-    const expectedOperands = fields[0] === "NOT" ? 1 : 2;
-    return fields.length === expectedOperands + 1 && fields.slice(1).every(isLogicalOperand);
+    const operands = fields.slice(1);
+    const hasValidArity = fields[0] === "NOT" ? operands.length === 1 : operands.length >= 2;
+    return hasValidArity && operands.every(isLogicalOperand);
   }
   if (!/^[A-Z][A-Z0-9-]*$/.test(fields[0]) || fields.length < 2) return false;
   return isValidLogicalLeaf(fields[0], fields.slice(1).join(","));
@@ -188,8 +189,8 @@ function isValidLogicalExpression(type, target) {
   const inner = parenthesizedInner(target);
   if (!inner) return false;
   const operands = topLevelFields(inner);
-  const expectedOperands = type === "NOT" ? 1 : 2;
-  return operands?.length === expectedOperands && operands.every(isLogicalOperand);
+  const hasValidArity = type === "NOT" ? operands?.length === 1 : operands?.length >= 2;
+  return hasValidArity && operands.every(isLogicalOperand);
 }
 
 export function isValidRuleTarget(type, target) {
@@ -224,4 +225,3 @@ export function isValidRuleLine(line) {
   if (type === "URL-REGEX") return isValidRuleTarget(type, rawTarget);
   return tail.length === 0 && isValidRuleTarget(type, target);
 }
-

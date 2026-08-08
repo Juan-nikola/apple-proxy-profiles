@@ -69,6 +69,30 @@ test("renders a complete, valid macOS profile without node credentials", () => {
   assert.deepEqual(validateProfile(profile), { valid: true, errors: [] });
 });
 
+test("renders the edge lightweight rules by default and permits GEOIP to resolve", () => {
+  const profile = renderProfile(baseOptions, inventory(25));
+  const rules = profile.slice(profile.indexOf("[Rule]")).split("\n").filter(Boolean);
+
+  assert.match(profile, /edge\/shadowrocket\/rules\/DomesticCore\.list/u);
+  assert.doesNotMatch(profile, /\/(?:Advertising|Advertising_Domain|ChinaMax_Domain|ChinaMax|Game)\.list/u);
+  assert.match(profile, /^RULE-SET,.*\/OverseasGame\.list,🌍 海外游戏,/mu);
+  assert.equal(rules.at(-2), "GEOIP,CN,DIRECT");
+  assert.equal(rules.at(-1), "FINAL,🚀 节点选择");
+});
+
+test("renders current full adblock from the separate optional publication", () => {
+  const profile = renderProfile({
+    ...baseOptions,
+    channel: "current",
+    adblockMode: "full",
+  }, inventory(25));
+
+  assert.match(profile, /current\/shadowrocket\/rules\/DomesticCore\.list/u);
+  assert.match(profile, /current\/optional\/adblock-full\/shadowrocket\/rules\/Advertising\.list/u);
+  assert.match(profile, /current\/optional\/adblock-full\/shadowrocket\/rules\/Advertising_Domain\.list/u);
+  assert.doesNotMatch(profile, /current\/shadowrocket\/rules\/Advertising(?:_Domain)?\.list/u);
+});
+
 test("renders and validates exact named subscription sources", () => {
   const cases = [
     ["Nodes=Prod", "Nodes=Prod"],
@@ -169,8 +193,8 @@ test("client-chain Profiles never serialize raw normalized node names or transpo
   ]) assert.equal(profile.includes(privateValue), false, privateValue);
   assert.equal(new RegExp(entryFilter).test(eligibleNode.name), true);
   assert.equal(new RegExp(entryFilter).test(restrictedNode.name), false);
-  assert.match(restrictedNode.name, /\[已有链\] \[UDP\]$/);
-  assert.match(profile, /policy-regex-filter=\^\(\?!\.\*\\\[已有链\\\]\)/);
+  assert.match(restrictedNode.name, /｜机场·链·U$/);
+  assert.match(profile, /policy-regex-filter=\^\(\?!🔗 \)\(\?!\.\*·链\)/);
   assert.deepEqual(validateProfile(profile), { valid: true, errors: [] });
 });
 

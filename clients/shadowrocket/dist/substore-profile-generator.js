@@ -27,7 +27,9 @@ var ShadowrocketProfileBundle = (() => {
   var CLIENT = Object.freeze({
     shadowrocket: "shadowrocket",
     egern: "egern",
-    anywhere: "anywhere"
+    anywhere: "anywhere",
+    surge: "surge",
+    singbox: "singbox"
   });
   var OPTION_VALUES = Object.freeze({
     output: Object.freeze(["nodes", "config"]),
@@ -68,6 +70,8 @@ var ShadowrocketProfileBundle = (() => {
     macos: Object.freeze({ testInterval: 600, timeout: 5, tolerance: 100 }),
     iphone: Object.freeze({ testInterval: 1800, timeout: 7, tolerance: 150 }),
     ipad: Object.freeze({ testInterval: 1800, timeout: 7, tolerance: 150 }),
+    android: Object.freeze({ testInterval: 1800, timeout: 7, tolerance: 150 }),
+    openwrt: Object.freeze({ testInterval: 600, timeout: 5, tolerance: 100 }),
     appletv: Object.freeze({ testInterval: 3600, timeout: 8, tolerance: 200 })
   });
   function platformPolicyPreset(platform) {
@@ -86,6 +90,7 @@ var ShadowrocketProfileBundle = (() => {
     "platform"
   ]);
   var DEFAULTS = Object.freeze({
+    channel: "edge",
     dnsMode: "stable",
     chinaDns: "alidns",
     globalDns: "cloudflare",
@@ -93,8 +98,11 @@ var ShadowrocketProfileBundle = (() => {
     quicMode: "proxy-block",
     ipv6Mode: "auto",
     autoGroupMode: "auto",
-    clientChain: "off"
+    clientChain: "off",
+    adblockMode: "off"
   });
+  var CHANNELS = /* @__PURE__ */ new Set(["edge", "current"]);
+  var ADBLOCK_MODES = /* @__PURE__ */ new Set(["off", "full"]);
   var ALLOWED_KEYS = /* @__PURE__ */ new Set([...REQUIRED_KEYS, ...Object.keys(DEFAULTS)]);
   function requiredString(raw, key) {
     if (!Object.hasOwn(raw, key)) {
@@ -144,7 +152,21 @@ var ShadowrocketProfileBundle = (() => {
     }
     for (const [key, defaultValue] of Object.entries(DEFAULTS)) {
       const platformDefault = key === "ipv6Mode" && options.platform === "macos" ? "ipv4-only" : defaultValue;
-      options[key] = Object.hasOwn(raw, key) && raw[key] !== void 0 ? enumValue(raw, key) : platformDefault;
+      if (key === "channel") {
+        const value = Object.hasOwn(raw, key) && raw[key] !== void 0 ? raw[key] : platformDefault;
+        if (typeof value !== "string" || !CHANNELS.has(value)) {
+          throw new Error(`Option '${key}' has an unsupported value: ${value}`);
+        }
+        options[key] = value;
+      } else if (key === "adblockMode") {
+        const value = Object.hasOwn(raw, key) && raw[key] !== void 0 ? raw[key] : platformDefault;
+        if (typeof value !== "string" || !ADBLOCK_MODES.has(value)) {
+          throw new Error(`Option '${key}' has an unsupported value: ${value}`);
+        }
+        options[key] = value;
+      } else {
+        options[key] = Object.hasOwn(raw, key) && raw[key] !== void 0 ? enumValue(raw, key) : platformDefault;
+      }
     }
     return options;
   }
@@ -264,9 +286,9 @@ var ShadowrocketProfileBundle = (() => {
   // ../../../shared/policies/filters.js
   var ALL_NODES_FILTER = "^.+$";
   var NON_CHAINED_FILTER = "^(?!\u{1F517} ).+$";
-  var ENTRY_FILTER = "^(?!.*\\[\u5DF2\u6709\u94FE\\])\\S+ \\[(?:\u673A\u573A|\u81EA\u5EFA|Realm)\\] .+$";
-  var P2P_FILTER = "^\\S+ \\[(?:\u81EA\u5EFA|Realm|\u94FE\u5F0F\u4EE3\u7406)\\] .+$";
-  var GAME_FILTER = "^(?!\u{1F517} )\\S+ .+ \\[UDP\\]$";
+  var ENTRY_FILTER = "^(?!\u{1F517} )(?!.*\xB7\u94FE).+\uFF5C(?:\u673A\u573A|\u81EA\u5EFA|Realm)(?:\xB7.*)?$";
+  var P2P_FILTER = "^(?!\u{1F517} ).+\uFF5C(?:\u81EA\u5EFA|Realm|\u94FE\u5F0F\u4EE3\u7406)(?:\xB7.*)?$";
+  var GAME_FILTER = "^(?!\u{1F517} ).+\xB7U$";
   var CONTINENTS = Object.freeze([
     Object.freeze({
       key: CONTINENT.asiaPacific,
@@ -294,17 +316,17 @@ var ShadowrocketProfileBundle = (() => {
     })
   ]);
   var SOURCE_GROUPS = Object.freeze([
-    Object.freeze({ kind: SOURCE_KIND.selfHosted, name: "\u{1F3E0} \u81EA\u5EFA\u8282\u70B9", filter: "^\\S+ \\[\u81EA\u5EFA\\] .+$" }),
-    Object.freeze({ kind: SOURCE_KIND.airport, name: "\u{1F3E2} \u673A\u573A\u8282\u70B9", filter: "^\\S+ \\[\u673A\u573A\\] .+$" }),
-    Object.freeze({ kind: SOURCE_KIND.realm, name: "\u21AA\uFE0F Realm \u8F6C\u53D1", filter: "^\\S+ \\[Realm\\] .+$" }),
-    Object.freeze({ kind: SOURCE_KIND.serverChain, name: "\u26D3\uFE0F \u94FE\u5F0F\u4EE3\u7406", filter: "^\\S+ \\[\u94FE\u5F0F\u4EE3\u7406\\] .+$" })
+    Object.freeze({ kind: SOURCE_KIND.selfHosted, name: "\u{1F3E0} \u81EA\u5EFA\u8282\u70B9", filter: "^.+\uFF5C\u81EA\u5EFA(?:\xB7.*)?$" }),
+    Object.freeze({ kind: SOURCE_KIND.airport, name: "\u{1F3E2} \u673A\u573A\u8282\u70B9", filter: "^.+\uFF5C\u673A\u573A(?:\xB7.*)?$" }),
+    Object.freeze({ kind: SOURCE_KIND.realm, name: "\u21AA\uFE0F Realm \u8F6C\u53D1", filter: "^.+\uFF5CRealm(?:\xB7.*)?$" }),
+    Object.freeze({ kind: SOURCE_KIND.serverChain, name: "\u26D3\uFE0F \u94FE\u5F0F\u4EE3\u7406", filter: "^.+\uFF5C\u94FE\u5F0F\u4EE3\u7406(?:\xB7.*)?$" })
   ]);
   function continentFilter(continent) {
     if (continent.key === CONTINENT.other) {
       const knownFlags = CONTINENTS.flatMap((record) => record.flags).join("|");
-      return `^(?!(?:\u{1F517}|${knownFlags}))\\S+ .+$`;
+      return `^(?!(?:\u{1F517}|${knownFlags})).+$`;
     }
-    return `^(?:${continent.flags.join("|")}) .+$`;
+    return `^(?:${continent.flags.join("|")}).+$`;
   }
 
   // ../../../shared/policies/intents.js
@@ -357,7 +379,7 @@ var ShadowrocketProfileBundle = (() => {
     Object.freeze(["\u{1F3B5} \u6296\u97F3", DIRECT_FIRST_SERVICE_DEFAULTS]),
     Object.freeze(["\u{1F4D5} \u5C0F\u7EA2\u4E66", DIRECT_FIRST_SERVICE_DEFAULTS]),
     Object.freeze(["\u{1F9E3} \u5FAE\u535A", DIRECT_FIRST_SERVICE_DEFAULTS]),
-    Object.freeze(["\u{1F579}\uFE0F \u6E38\u620F\u5E73\u53F0", PROXY_FIRST_SERVICE_DEFAULTS])
+    Object.freeze(["\u{1F30D} \u6D77\u5916\u6E38\u620F", PROXY_FIRST_SERVICE_DEFAULTS])
   ]);
   function policyGroup({
     kind,
@@ -468,7 +490,8 @@ var ShadowrocketProfileBundle = (() => {
     groups.push(policyGroup({
       kind: GROUP_KIND.primary,
       name: "\u{1F680} \u8282\u70B9\u9009\u62E9",
-      candidates: [POLICY_TARGET.primaryProxy]
+      candidates: [POLICY_TARGET.primaryProxy],
+      nodeFilter: NON_CHAINED_FILTER
     }));
     for (const continent of presentContinents) {
       groups.push(subscriptionGroup(
@@ -586,7 +609,147 @@ var ShadowrocketProfileBundle = (() => {
     });
   }
 
+  // ../../../shared/rules/lightweight-policy.js
+  var DEFAULT_RULE_SOURCE_IDS = Object.freeze([
+    "Hijacking",
+    "BlockHttpDNS",
+    "Privacy",
+    "DomesticCore",
+    "DomesticGame",
+    "BiliBili",
+    "ByteDance",
+    "XiaoHongShu",
+    "Weibo",
+    "OpenAI",
+    "Claude",
+    "Gemini",
+    "Copilot",
+    "GitHub",
+    "YouTube",
+    "Netflix",
+    "Disney",
+    "Spotify",
+    "GlobalMedia",
+    "Telegram",
+    "Facebook",
+    "Instagram",
+    "Twitter",
+    "TikTok",
+    "Apple",
+    "Microsoft",
+    "SteamCN",
+    "OverseasGame",
+    "Download",
+    "PrivateTracker",
+    "ChinaIP"
+  ]);
+  var FULL_ADBLOCK_SOURCE_IDS = Object.freeze([
+    "Advertising",
+    "Advertising_Domain"
+  ]);
+  var RULE_BUDGETS = Object.freeze({
+    domesticCoreEntries: 2e3,
+    defaultEntries: 25e3,
+    defaultBytes: 5e6,
+    startupInlineEntries: 64,
+    singBoxRuleRssBytes: 50 * 1024 * 1024,
+    singBoxTotalRssBytes: 200 * 1024 * 1024
+  });
+  var ROUTING_PRECEDENCE = Object.freeze([
+    "local",
+    "security",
+    "custom",
+    "domesticCore",
+    "domesticGame",
+    "explicitOverseas",
+    "overseasGame",
+    "chinaIp",
+    "defaultProxy"
+  ]);
+  var EXPLICIT_OVERSEAS_RULE_SOURCE_IDS = Object.freeze([
+    "OpenAI",
+    "Claude",
+    "Gemini",
+    "Copilot",
+    "GitHub",
+    "YouTube",
+    "Netflix",
+    "Disney",
+    "Spotify",
+    "GlobalMedia",
+    "Telegram",
+    "Facebook",
+    "Instagram",
+    "Twitter",
+    "TikTok",
+    "OverseasGame"
+  ]);
+  var POLICY_TARGETS = Object.freeze({
+    direct: "DIRECT",
+    defaultProxy: "\u{1F680} \u8282\u70B9\u9009\u62E9",
+    overseasGame: "\u{1F30D} \u6D77\u5916\u6E38\u620F",
+    reject: "REJECT"
+  });
+  var SOURCE_POLICIES = Object.freeze({
+    Hijacking: POLICY_TARGETS.reject,
+    BlockHttpDNS: POLICY_TARGETS.reject,
+    Privacy: "\u{1F575}\uFE0F \u4E25\u683C\u8DDF\u8E2A",
+    DomesticCore: POLICY_TARGETS.direct,
+    DomesticGame: POLICY_TARGETS.direct,
+    BiliBili: "\u{1F4FA} \u54D4\u54E9\u54D4\u54E9",
+    ByteDance: "\u{1F3B5} \u6296\u97F3",
+    XiaoHongShu: "\u{1F4D5} \u5C0F\u7EA2\u4E66",
+    Weibo: "\u{1F9E3} \u5FAE\u535A",
+    OpenAI: "\u{1F916} AI \u4E13\u7528",
+    Claude: "\u{1F916} AI \u4E13\u7528",
+    Gemini: "\u{1F916} AI \u4E13\u7528",
+    Copilot: "\u{1F916} AI \u4E13\u7528",
+    GitHub: "\u{1F419} GitHub",
+    YouTube: "\u{1F4FA} YouTube",
+    Netflix: "\u{1F3AC} Netflix",
+    Disney: "\u{1F3F0} Disney+",
+    Spotify: "\u{1F3B5} Spotify",
+    GlobalMedia: "\u{1F30D} \u56FD\u9645\u5A92\u4F53",
+    Telegram: "\u2708\uFE0F Telegram",
+    Facebook: "\u{1F4AC} \u6D77\u5916\u793E\u4EA4",
+    Instagram: "\u{1F4AC} \u6D77\u5916\u793E\u4EA4",
+    Twitter: "\u{1F4AC} \u6D77\u5916\u793E\u4EA4",
+    TikTok: "\u{1F3B6} TikTok",
+    Apple: "\u{1F34E} Apple",
+    Microsoft: "\u{1FA9F} Microsoft",
+    SteamCN: POLICY_TARGETS.direct,
+    OverseasGame: POLICY_TARGETS.overseasGame,
+    Download: "\u2B07\uFE0F \u4E0B\u8F7D/P2P",
+    PrivateTracker: "\u2B07\uFE0F \u4E0B\u8F7D/P2P",
+    ChinaIP: POLICY_TARGETS.direct,
+    Advertising: "\u{1F9F1} \u5E38\u89C1\u5E7F\u544A",
+    Advertising_Domain: "\u{1F9F1} \u5E38\u89C1\u5E7F\u544A"
+  });
+  function clientRecord(id) {
+    const policy = SOURCE_POLICIES[id];
+    if (!policy) throw new Error(`Missing policy for lightweight rule source: ${id}`);
+    return Object.freeze({
+      id,
+      policy,
+      // The publication pipeline emits normalized, typed Surge/Shadowrocket
+      // lines for every compiled source, including domain-only inputs.
+      inputFormat: "RULE-SET"
+    });
+  }
+  var DEFAULT_RULE_CLIENT_CATALOG = Object.freeze(DEFAULT_RULE_SOURCE_IDS.map(clientRecord));
+  var FULL_ADBLOCK_RULE_CLIENT_CATALOG = Object.freeze(FULL_ADBLOCK_SOURCE_IDS.map(clientRecord));
+  function ruleClientCatalog({ adblockMode = "off" } = {}) {
+    if (adblockMode !== "off" && adblockMode !== "full") {
+      throw new TypeError("adblockMode must be either off or full");
+    }
+    return adblockMode === "full" ? Object.freeze([...DEFAULT_RULE_CLIENT_CATALOG, ...FULL_ADBLOCK_RULE_CLIENT_CATALOG]) : DEFAULT_RULE_CLIENT_CATALOG;
+  }
+
   // ../../../shared/rules/custom-rules.js
+  var CUSTOM_RULE_PRECEDENCE_INDEX = ROUTING_PRECEDENCE.indexOf("custom");
+  if (CUSTOM_RULE_PRECEDENCE_INDEX < 0 || CUSTOM_RULE_PRECEDENCE_INDEX > ROUTING_PRECEDENCE.indexOf("domesticCore")) {
+    throw new Error("Custom rules must precede generated lightweight rules");
+  }
   var CUSTOM_RULES = Object.freeze({
     block: Object.freeze([]),
     direct: Object.freeze([]),
@@ -608,57 +771,6 @@ var ShadowrocketProfileBundle = (() => {
     proxy: CUSTOM_PROXY,
     ai: CUSTOM_AI
   } = CUSTOM_RULES;
-
-  // ../../../shared/rules/catalog.js
-  var RULE_ROOT = "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Shadowrocket";
-  function rule(id, policy, minEntries, inputFormat = "RULE-SET", directory = id) {
-    const sourcePath = `${directory}/${id}.list`;
-    return Object.freeze({
-      id,
-      sourcePath,
-      upstreamUrl: `${RULE_ROOT}/${sourcePath}`,
-      policy,
-      minEntries,
-      inputFormat
-    });
-  }
-  var RULE_SOURCE_CATALOG = Object.freeze([
-    rule("Hijacking", "\u2623\uFE0F \u5B89\u5168\u5A01\u80C1", 150),
-    rule("BlockHttpDNS", "\u2623\uFE0F \u5B89\u5168\u5A01\u80C1", 40),
-    rule("Advertising", "\u{1F9F1} \u5E38\u89C1\u5E7F\u544A", 700),
-    rule("Advertising_Domain", "\u{1F9F1} \u5E38\u89C1\u5E7F\u544A", 25e4, "DOMAIN-SET", "Advertising"),
-    rule("Privacy", "\u{1F575}\uFE0F \u4E25\u683C\u8DDF\u8E2A", 15),
-    rule("BiliBili", "\u{1F4FA} \u54D4\u54E9\u54D4\u54E9", 80),
-    rule("ByteDance", "\u{1F3B5} \u6296\u97F3", 300),
-    rule("XiaoHongShu", "\u{1F4D5} \u5C0F\u7EA2\u4E66", 3),
-    rule("Weibo", "\u{1F9E3} \u5FAE\u535A", 3),
-    rule("OpenAI", "\u{1F916} AI \u4E13\u7528", 20),
-    rule("Claude", "\u{1F916} AI \u4E13\u7528", 2),
-    rule("Gemini", "\u{1F916} AI \u4E13\u7528", 8),
-    rule("Copilot", "\u{1F916} AI \u4E13\u7528", 30),
-    rule("GitHub", "\u{1F419} GitHub", 20),
-    rule("YouTube", "\u{1F4FA} YouTube", 120),
-    rule("Netflix", "\u{1F3AC} Netflix", 800),
-    rule("Disney", "\u{1F3F0} Disney+", 100),
-    rule("Spotify", "\u{1F3B5} Spotify", 20),
-    rule("GlobalMedia", "\u{1F30D} \u56FD\u9645\u5A92\u4F53", 700),
-    rule("Telegram", "\u2708\uFE0F Telegram", 25),
-    rule("Facebook", "\u{1F4AC} \u6D77\u5916\u793E\u4EA4", 350),
-    rule("Instagram", "\u{1F4AC} \u6D77\u5916\u793E\u4EA4", 3),
-    rule("Twitter", "\u{1F4AC} \u6D77\u5916\u793E\u4EA4", 20),
-    rule("TikTok", "\u{1F3B6} TikTok", 20),
-    rule("Apple", "\u{1F34E} Apple", 25),
-    rule("Microsoft", "\u{1FA9F} Microsoft", 400),
-    rule("SteamCN", "DIRECT", 10),
-    rule("ChinaMax_Domain", "DIRECT", 1e5, "DOMAIN-SET", "ChinaMax"),
-    rule("Game", "\u{1F579}\uFE0F \u6E38\u620F\u5E73\u53F0", 400),
-    rule("Download", "\u2B07\uFE0F \u4E0B\u8F7D/P2P", 5),
-    rule("PrivateTracker", "\u2B07\uFE0F \u4E0B\u8F7D/P2P", 150),
-    rule("ChinaMax", "DIRECT", 8e3)
-  ]);
-  function orderedRuleAssignments() {
-    return RULE_SOURCE_CATALOG.map(({ id, policy }) => Object.freeze({ sourceId: id, policy }));
-  }
 
   // rule-validator.js
   var ALLOWED_TYPES = /* @__PURE__ */ new Set([
@@ -821,8 +933,9 @@ var ShadowrocketProfileBundle = (() => {
     const fields = topLevelFields(inner);
     if (!fields || fields.some((field) => !isNonEmptyField(field))) return false;
     if (LOGICAL_TYPES.has(fields[0])) {
-      const expectedOperands = fields[0] === "NOT" ? 1 : 2;
-      return fields.length === expectedOperands + 1 && fields.slice(1).every(isLogicalOperand);
+      const operands = fields.slice(1);
+      const hasValidArity = fields[0] === "NOT" ? operands.length === 1 : operands.length >= 2;
+      return hasValidArity && operands.every(isLogicalOperand);
     }
     if (!/^[A-Z][A-Z0-9-]*$/.test(fields[0]) || fields.length < 2) return false;
     return isValidLogicalLeaf(fields[0], fields.slice(1).join(","));
@@ -832,8 +945,8 @@ var ShadowrocketProfileBundle = (() => {
     const inner = parenthesizedInner(target);
     if (!inner) return false;
     const operands = topLevelFields(inner);
-    const expectedOperands = type === "NOT" ? 1 : 2;
-    return operands?.length === expectedOperands && operands.every(isLogicalOperand);
+    const hasValidArity = type === "NOT" ? operands?.length === 1 : operands?.length >= 2;
+    return hasValidArity && operands.every(isLogicalOperand);
   }
   function isValidRuleTarget(type, target) {
     if (!ALLOWED_TYPES.has(type) || !isNonEmptyField(target)) return false;
@@ -867,6 +980,7 @@ var ShadowrocketProfileBundle = (() => {
   }
 
   // render-rules.js
+  var PUBLIC_RULE_ROOT = "https://juan-nikola.github.io/apple-proxy-profiles";
   var LOCAL_RULES = Object.freeze([
     "DOMAIN-SUFFIX,local,DIRECT",
     "DOMAIN-SUFFIX,home.arpa,DIRECT",
@@ -889,11 +1003,17 @@ var ShadowrocketProfileBundle = (() => {
     Object.freeze(["CUSTOM_PROXY", CUSTOM_PROXY, "\u{1F680} \u8282\u70B9\u9009\u62E9"]),
     Object.freeze(["CUSTOM_AI", CUSTOM_AI, "\u{1F916} AI \u4E13\u7528"])
   ]);
-  var GAME_DIRECT_RULES = Object.freeze([
-    "DOMAIN-SUFFIX,leiting.com,DIRECT",
-    "DOMAIN-SUFFIX,leitingcn.com,DIRECT",
-    "DOMAIN-SUFFIX,g-bits.com,DIRECT"
+  var SECURITY_IDS = /* @__PURE__ */ new Set([
+    "Hijacking",
+    "BlockHttpDNS",
+    "Privacy",
+    "Advertising",
+    "Advertising_Domain"
   ]);
+  var DOMESTIC_IDS = Object.freeze(["DomesticCore", "DomesticGame", "SteamCN"]);
+  var OVERSEAS_GAME_ID = "OverseasGame";
+  var CHINA_IP_ID = "ChinaIP";
+  var RULE_DOWNLOAD_POLICY = "\u{1F9ED} DNS \u4E0E\u89C4\u5219\u4E0B\u8F7D";
   function isSafeCustomField(value) {
     return typeof value === "string" && value.length > 0 && value.trim() === value && !/[\r\n,=]/.test(value);
   }
@@ -904,62 +1024,100 @@ var ShadowrocketProfileBundle = (() => {
       if (!Array.isArray(entry) || entry.length !== 3 || !isSafeCustomField(entry[0]) || !Array.isArray(entry[1]) || !isSafeCustomField(entry[2])) {
         throw new Error("Invalid custom rule configuration");
       }
-      for (const rule2 of entry[1]) {
-        if (typeof rule2 !== "string" || /[\r\n]/.test(rule2) || rule2.trim() !== rule2) {
+      for (const rule of entry[1]) {
+        if (typeof rule !== "string" || /[\r\n]/.test(rule) || rule.trim() !== rule) {
           throw new Error("Invalid custom rule");
         }
-        if (rule2.split(",").length !== 2 || !isValidRuleLine(rule2)) {
+        if (rule.split(",").length !== 2 || !isValidRuleLine(rule)) {
           throw new Error("Invalid custom rule");
         }
-        if (seen.has(rule2)) throw new Error("Duplicate custom rule");
-        seen.add(rule2);
+        if (seen.has(rule)) throw new Error("Duplicate custom rule");
+        seen.add(rule);
       }
     }
   }
-  function validatedCatalog(assignments) {
-    const entriesById = /* @__PURE__ */ new Map();
-    for (const entry of RULE_SOURCE_CATALOG) {
-      const entries = entriesById.get(entry.id) ?? [];
-      entries.push(entry);
-      entriesById.set(entry.id, entries);
+  function safeBaseUrl(value) {
+    if (typeof value !== "string" || !/^https:\/\/[^\s]+$/u.test(value) || /[\r\n,]/u.test(value)) {
+      throw new Error("Shadowrocket rule base URL must be an HTTPS URL without commas");
     }
-    for (const { sourceId, policy } of assignments) {
-      const entries = entriesById.get(sourceId);
-      if (entries?.length !== 1 || entries[0].policy !== policy) {
-        throw new Error(`Invalid rule catalog entry: ${sourceId}`);
-      }
+    const match = /^https:\/\/([^/]+)(\/[^?#]*)$/u.exec(value);
+    if (!match) {
+      throw new Error("Shadowrocket rule base URL is invalid");
     }
-    return entriesById;
+    const hostname = match[1];
+    const labels = hostname.split(".");
+    if (hostname.includes(":") || hostname.includes("@") || labels.some((label) => !/^[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?$/u.test(label))) {
+      throw new Error("Shadowrocket rule base URL must be a plain HTTPS publication URL");
+    }
+    const normalized = value.replace(/\/+$/u, "");
+    if (!normalized.endsWith("/shadowrocket/rules")) {
+      throw new Error("Shadowrocket rule base URL must end in /shadowrocket/rules");
+    }
+    return Object.freeze({ url: normalized, hostname });
   }
-  function catalogRule(entriesById, assignment) {
-    return entriesById.get(assignment.sourceId)[0];
+  function optionalAdblockBase(defaultBase) {
+    const optional = defaultBase.replace(
+      /\/shadowrocket\/rules$/u,
+      "/optional/adblock-full/shadowrocket/rules"
+    );
+    if (optional === defaultBase) {
+      throw new Error("Shadowrocket rule base URL must end in /shadowrocket/rules");
+    }
+    return optional;
   }
-  function renderRuleSet(entry) {
-    return `${entry.inputFormat},${entry.upstreamUrl},${entry.policy},update-interval=86400`;
+  function sourceUrl(source, base, optionalBase) {
+    const selectedBase = source.id === "Advertising" || source.id === "Advertising_Domain" ? optionalBase : base;
+    if (!selectedBase) throw new Error("Shadowrocket optional rule URL is unavailable");
+    return `${selectedBase}/${source.id}.list`;
   }
-  function renderRules() {
+  function renderRuleSet(source, base, optionalBase) {
+    return `${source.inputFormat},${sourceUrl(source, base, optionalBase)},${source.policy},update-interval=86400`;
+  }
+  function ruleBaseUrlForChannel(channel) {
+    if (channel !== "edge" && channel !== "current") {
+      throw new Error(`Unsupported Shadowrocket publication channel: ${channel}`);
+    }
+    return `${PUBLIC_RULE_ROOT}/${channel}/shadowrocket/rules`;
+  }
+  function renderRules({ ruleBaseUrl, adblockMode = "off" } = {}) {
     validateCustomRules(CUSTOM_RULES2);
-    const assignments = orderedRuleAssignments();
-    const entriesById = validatedCatalog(assignments);
-    const steamIndex = assignments.findIndex(({ sourceId }) => sourceId === "SteamCN");
-    const gameIndex = assignments.findIndex(({ sourceId }) => sourceId === "Game");
-    if (steamIndex < 0 || gameIndex <= steamIndex) throw new Error("Invalid rule assignment order");
-    const preGameAssignments = assignments.slice(0, steamIndex);
-    const domesticBeforeGameAssignments = assignments.slice(steamIndex, gameIndex);
-    const gameAssignment = assignments[gameIndex];
-    const postGameAssignments = assignments.slice(gameIndex + 1);
-    const lines = [...LOCAL_RULES, "# Custom rules"];
+    const base = safeBaseUrl(ruleBaseUrl);
+    const catalog = ruleClientCatalog({ adblockMode });
+    const optionalBase = adblockMode === "full" ? optionalAdblockBase(base.url) : null;
+    const byId = /* @__PURE__ */ new Map();
+    for (const source of catalog) {
+      if (byId.has(source.id)) throw new Error(`Duplicate Shadowrocket rule source: ${source.id}`);
+      byId.set(source.id, source);
+    }
+    const render = (source) => renderRuleSet(source, base.url, optionalBase);
+    const lines = [
+      ...LOCAL_RULES,
+      "# Security rules",
+      ...catalog.filter(({ id }) => SECURITY_IDS.has(id)).map(render),
+      "# Custom rules"
+    ];
     for (const [name, rules, policy] of CUSTOM_RULES2) {
       lines.push(`# ${name}`);
-      lines.push(...rules.map((rule2) => `${rule2},${policy}`));
+      lines.push(...rules.map((rule) => `${rule},${policy}`));
     }
-    lines.push(...preGameAssignments.map((assignment) => renderRuleSet(catalogRule(entriesById, assignment))));
-    lines.push(...GAME_DIRECT_RULES);
-    lines.push(...domesticBeforeGameAssignments.map((assignment) => renderRuleSet(catalogRule(entriesById, assignment))));
-    const game = catalogRule(entriesById, gameAssignment);
-    lines.push(`AND,((PROTOCOL,UDP),(RULE-SET,${game.upstreamUrl})),\u{1F3AE} \u6E38\u620F\u8FDE\u63A5`);
-    lines.push(renderRuleSet(game));
-    lines.push(...postGameAssignments.map((assignment) => renderRuleSet(catalogRule(entriesById, assignment))));
+    lines.push(
+      "# Rule-download fallback transport",
+      `DOMAIN,${base.hostname},${RULE_DOWNLOAD_POLICY}`
+    );
+    for (const id of DOMESTIC_IDS) {
+      const source = byId.get(id);
+      if (!source) throw new Error(`Missing Shadowrocket lightweight rule source: ${id}`);
+      lines.push(render(source));
+    }
+    for (const source of catalog) {
+      if (SECURITY_IDS.has(source.id) || DOMESTIC_IDS.includes(source.id) || source.id === OVERSEAS_GAME_ID || source.id === CHINA_IP_ID) continue;
+      lines.push(render(source));
+    }
+    for (const id of [OVERSEAS_GAME_ID, CHINA_IP_ID]) {
+      const source = byId.get(id);
+      if (!source) throw new Error(`Missing Shadowrocket lightweight rule source: ${id}`);
+      lines.push(render(source));
+    }
     lines.push("GEOIP,CN,DIRECT", "FINAL,\u{1F680} \u8282\u70B9\u9009\u62E9");
     return lines;
   }
@@ -967,7 +1125,7 @@ var ShadowrocketProfileBundle = (() => {
   // render-profile.js
   var NODE_REFRESH_SECONDS = 21600;
   var RULE_REFRESH_SECONDS = 86400;
-  function renderProfile(rawOptions, nodes) {
+  function renderProfile(rawOptions, nodes, { ruleBaseUrl } = {}) {
     const options = parseOptions(rawOptions);
     const inventory = Array.isArray(nodes) ? nodes : [];
     const hasChainedNodes = inventory.some((node) => nodeMetadata(node).chained === true);
@@ -990,7 +1148,10 @@ ${generalSettings(options).join("\n")}`,
       `[Proxy Group]
 ${groups}`,
       `[Rule]
-${renderRules().join("\n")}`
+${renderRules({
+        ruleBaseUrl: ruleBaseUrl ?? ruleBaseUrlForChannel(options.channel),
+        adblockMode: options.adblockMode
+      }).join("\n")}`
     ].join("\n\n") + "\n";
   }
 
@@ -1185,9 +1346,9 @@ ${renderRules().join("\n")}`
     fields.push(field);
     return fields;
   }
-  function validateLogicalRule(type, rule2, groups, errors) {
-    const topLevel = topLevelFields2(rule2);
-    const escapedFields = escapedCommaFields(rule2);
+  function validateLogicalRule(type, rule, groups, errors) {
+    const topLevel = topLevelFields2(rule);
+    const escapedFields = escapedCommaFields(rule);
     const policy = topLevel?.length === 3 ? escapedFields.at(-1) : "";
     if (!topLevel || topLevel.length !== 3 || topLevel[0] !== type) {
       errors.add(`Malformed ${type} rule`);
@@ -1206,8 +1367,8 @@ ${renderRules().join("\n")}`
     if (geoipIndex !== -1 && finalIndex !== -1 && geoipIndex > finalIndex) {
       errors.add("GEOIP,CN,DIRECT must appear before FINAL");
     }
-    for (const rule2 of rules) {
-      const fields = escapedCommaFields(rule2);
+    for (const rule of rules) {
+      const fields = escapedCommaFields(rule);
       const type = fields[0];
       if (SIMPLE_RULE_TYPES.has(type)) {
         validateSimpleRule(type, fields, groups, errors);
@@ -1219,7 +1380,7 @@ ${renderRules().join("\n")}`
         if (fields.length !== 2) errors.add("Malformed FINAL rule");
         validatePolicy("FINAL", fields[1], groups, errors);
       } else if (["AND", "OR", "NOT"].includes(type)) {
-        validateLogicalRule(type, rule2, groups, errors);
+        validateLogicalRule(type, rule, groups, errors);
       } else {
         errors.add(`Unknown rule type: ${type || "(empty)"}`);
       }
@@ -1256,7 +1417,9 @@ ${renderRules().join("\n")}`
     if (!Array.isArray(nodes) || nodes.length === 0) {
       throw new Error("produceArtifact must return a non-empty node array");
     }
-    const profile = renderProfile(options, nodes);
+    const profile = renderProfile(options, nodes, {
+      ruleBaseUrl: ruleBaseUrlForChannel(options.channel)
+    });
     if (!validateProfile(profile).valid) {
       throw new Error("Generated profile failed validation");
     }

@@ -2,24 +2,24 @@
 
 先记住两类更新：节点凭据只在 `shadowrocket-nodes` 中，每 6 小时更新；规则与策略在平台 Profile 中，每天更新。不要手工编辑生成文件，也不要公开任何远程 URL。
 
-- 新增机场：加入 `shadowrocket-sources`，名称以 `[机场]` 开头，不改生成器源码。
+- 新增机场：加入原始 `apple-proxy-sources`，再同步 `shadowrocket-nodes`，名称以 `[机场]` 开头，不改生成器源码。
 - 新增自建：使用 `[自建]协议名`；Realm 用 `[realm]`；服务器已完成链路用 `[链式代理]`。
 - 协议：Snell 和 Shadowsocks 是两种独立协议；Shadowrocket 可使用两者，订阅中不要把 Snell 写成 Shadowsocks。
 - 客户端链式：只有落地标 `[落地]`；必须按下文创建完整隔离的版本化测试栈，不修改正式组合、节点脚本、节点订阅或 Profile；Hysteria2 不生成链式副本。
 - DNS：修改 `dnsMode`、`chinaDns`、`globalDns` 后重新生成并更新 Profile，不是热切换。
 - QUIC：修改 `quicMode=allow|proxy-block|all-block` 后更新 Profile，不是热切换。
 - IPv6：iPhone/iPad 使用 `ipv6Mode=auto`；macOS 稳定优先使用 `ipv4-only`。
-- 广告：`☣️ 安全威胁`、`🧱 常见广告`、`🕵️ 严格跟踪`可在客户端热切换；`blockMode`只决定首次默认值。
+- 广告：默认 `adblockMode=off` 不下载完整广告包；明确使用 `adblockMode=full` 时才从独立 optional 发布加载两份广告规则，策略仍可在 `🧱 常见广告` 中热切换。
 - HTTPS 解密：保持关闭；广告规则中的域名/IP 项仍会工作，需要解密 HTTPS 路径的 URL 正则不会生效，不为提高拦截率安装证书。
 - AI：在 `🤖 AI 专用`里可通过独立 AI 洲组或具体节点选择出口；它可以与主线路使用不同节点，更新后确认选择仍保留。
 - 国内平台：各自策略组默认 DIRECT，需要时可切到 `🚀 节点选择`或具体节点。抖音使用 Blackmatrix7 `ByteDance` 增强规则；代理不能保证评论地区改变。
-- 游戏连接：默认 DIRECT，只显示明确 `[UDP]` 节点；游戏网页由 `🕹️ 游戏平台`控制。
-- 下载/P2P：默认 DIRECT，候选不含 `[机场]`。
+- 游戏连接：默认 DIRECT，只显示明确带 `·U` 能力标记的节点；海外游戏网页和服务由 `🌍 海外游戏` 控制。
+- 下载/P2P：默认 DIRECT，候选只含 `｜自建`、`｜Realm`、`｜链式代理` 节点。
 
 ## 新增或修改来源
 
 1. 只在 Sub-Store 中添加或修改一个来源，并使用正确前缀。
-2. 先预览该来源，再预览 `shadowrocket-sources`，最后预览 `shadowrocket-nodes`。
+2. 先预览该来源，再预览原始 `apple-proxy-sources`，最后预览处理后的 `shadowrocket-nodes` / `Shadowrocket-Nodes`。
 3. 确认节点数量不为 0、国旗没有重复、日志只含计数。
 4. 节点库存会决定洲组、来源组、`🎮 游戏连接`和`⬇️ 下载/P2P`候选，因此必须重新生成并预览 `shadowrocket-config-macos`、`shadowrocket-config-iphone`、`shadowrocket-config-ipad`；三份都应能生成三个 INI 段且不含凭据。
 5. Intel Mac 必须同时手动更新 `shadowrocket-nodes` 和 `shadowrocket-config-macos`，核对两者的新时间并完成灰度。
@@ -34,23 +34,23 @@
 
 下面所有 `YYYYMMDD` 都替换为同一个测试日期，例如 20260725；不要在同一套测试中混用不同日期。
 
-1. 保持原来的 `shadowrocket-sources`、参数为 `output=nodes&clientChain=off` 的原节点 Script Operator、`shadowrocket-nodes`、三个正式 Profile File 及其 URL 全部不变。
-2. 新建带日期的测试组合，例如 `shadowrocket-sources-chain-test-YYYYMMDD`。复制正式组合的来源成员和必要的非节点脚本处理，但不要把正式节点 Script Operator 挂到测试组合。如果某个来源必须把标签改为 `[落地]`，先复制该来源条目，只在副本上改显示名，不重命名生产来源。
+1. 保持正式的原始 `apple-proxy-sources`、处理组合 `shadowrocket-nodes`（参数为 `output=nodes&clientChain=off`）、`Shadowrocket-Nodes`、三个正式 Profile File 及其 URL 全部不变。
+2. 新建带日期的测试组合，例如 `apple-proxy-sources-chain-test-YYYYMMDD`。复制正式组合的来源成员和必要的非节点脚本处理，但不要把正式节点 Script Operator 挂到测试组合。如果某个来源必须把标签改为 `[落地]`，先复制该来源条目，只在副本上改显示名，不重命名生产来源。
 3. 在测试组合新增隔离的 Script Operator，选择链接模式并直接使用规范 `shadowrocket-node-operator.js` Pages URL，参数填 `output=nodes&clientChain=on`。不要编辑正式组合正在使用的 JS URL、Operator 或参数。既有正式任务继续使用旧 `substore-node-operator.js` URL 也兼容，不要仅为改名触碰正式任务。
 4. 从测试组合发布一份新的版本化节点订阅，例如 `shadowrocket-nodes-chain-test-YYYYMMDD`；原来的 `shadowrocket-nodes` 保持不变。
 5. 在 Shadowrocket 中给新节点订阅一个便于识别的显示名，显示名准确填写 `Shadowrocket-Nodes-Chain-Test-YYYYMMDD`。这是测试示例，不是固定名称；若自定义名称，后续 `subscriptionName` 必须逐字相同，包括大小写、emoji、空格和标点。动态组只从 `subscriptionName` 精确指定的测试订阅读取，无需因防混入而暂停生产订阅；正式订阅与测试订阅仍应分别保留，便于独立回滚和复测。
 6. 先只复制 macOS Profile File，名称加同一天的链式测试后缀。参数中的三个关键值填写为：
-   - `name=shadowrocket-sources-chain-test-YYYYMMDD`
+   - `name=apple-proxy-sources-chain-test-YYYYMMDD`
    - `subscriptionName=Shadowrocket-Nodes-Chain-Test-YYYYMMDD`
    - `clientChain=on`
 7. `name` 对应第 2 步测试组合，`clientChain` 为 `on`；`subscriptionName` 必须与第 5 步的 Shadowrocket 节点订阅显示名完全一致。因此本例的显示名和参数都是 `Shadowrocket-Nodes-Chain-Test-YYYYMMDD`；不匹配时显式选项仍可选择，但动态组不会列出该订阅的具体服务器。其他参数先保持正式 macOS Profile 的值。
    如果正式 Profile 仍使用默认参数，可复制下面整行，再把所有 `YYYYMMDD` 换成同一天：
 
-   `output=config&type=collection&name=shadowrocket-sources-chain-test-YYYYMMDD&subscriptionName=Shadowrocket-Nodes-Chain-Test-YYYYMMDD&platform=macos&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=ipv4-only&autoGroupMode=auto&clientChain=on`
+   `output=config&type=collection&name=apple-proxy-sources-chain-test-YYYYMMDD&subscriptionName=Shadowrocket-Nodes-Chain-Test-YYYYMMDD&platform=macos&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=ipv4-only&autoGroupMode=auto&clientChain=on`
 
 8. 预览 macOS 测试 Profile 后发布新的 URL，在 Intel Mac 中把新节点订阅和新 Profile 并排导入。新 Profile 的动态组只读取第 5 步 `subscriptionName` 指定的测试订阅；测试时无需停用或移除正式节点订阅。
 9. 先在 Intel Mac 验证：普通落地仍在、允许的 `🔗` 链式副本出现、入口失败时连接关闭而不是绕过入口。Hysteria2 不生成客户端链式副本；`[realm]` 和 `[链式代理]`是已完成链路，也不会再次克隆。
-   节点名中的 `[已有链]` 由脚本在检测到 `chain`、`underlying-proxy` 等既有链路字段时自动添加，表示该节点不会再次用作客户端入口。不要手工删除或伪造这个标记；原节点名里手写的同名标记会先被清除，再按真实字段重新判断。
+   节点名中的 `·链` 由脚本在检测到 `chain`、`underlying-proxy` 等既有链路字段时自动添加，表示该节点不会再次用作客户端入口。不要手工删除或伪造这个标记；原节点名里手写的同名标记会先被清除，再按真实字段重新判断。
 10. macOS 通过后，才在同一隔离测试栈中复制 iPhone、iPad Profile File；分别只改 `platform=iphone`、`platform=ipad`，并保持第 6 步三个关键值一致。每份都发布新的 URL，按 iPhone、iPad 顺序测试。
 11. 回滚时直接选回旧 Profile；原节点订阅和旧 Profile 从未被修改，因此不需要反向改参数。停止链式测试也只需切回原来的旧 Profile。
 12. 回滚观察期结束前，不修改或删除正式栈，也不删除测试组合、测试节点订阅和测试 Profile；确认不再需要复现后再自行归档测试产物。

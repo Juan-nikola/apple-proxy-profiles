@@ -1,4 +1,7 @@
+import { ANYWHERE_LIGHTWEIGHT_MIGRATION } from "./shard-rules.js";
+
 const DEEP_LINK_BASE = "anywhere://add-rule-set";
+const ADVERTISING_IDS = new Set(["Advertising", "Advertising_Domain"]);
 
 function validateRuleUrl(value) {
   if (typeof value !== "string" || /[\s\\?#]/u.test(value)) {
@@ -27,13 +30,22 @@ function deepLink(urls) {
   return `${DEEP_LINK_BASE}?${urls.map((url) => `link=${encodeURIComponent(url)}`).join("&")}`;
 }
 
-export function buildImportBatches(urls, maxLength = 1_800) {
+function normalizeRuleUrls(urls) {
   if (!Array.isArray(urls) || urls.length === 0) throw new TypeError("Anywhere rule URLs must be non-empty");
+  const normalized = urls.map(validateRuleUrl);
+  if (new Set(normalized).size !== normalized.length) throw new Error("Anywhere rule URLs must be unique");
+  return normalized;
+}
+
+export function buildImportDeepLink(urls) {
+  return deepLink(normalizeRuleUrls(urls));
+}
+
+export function buildImportBatches(urls, maxLength = 1_800) {
   if (!Number.isSafeInteger(maxLength) || maxLength < 100 || maxLength > 1_800) {
     throw new RangeError("Anywhere deep-link limit must be between 100 and 1800");
   }
-  const normalized = urls.map(validateRuleUrl);
-  if (new Set(normalized).size !== normalized.length) throw new Error("Anywhere rule URLs must be unique");
+  const normalized = normalizeRuleUrls(urls);
   const grouped = [];
   let current = [];
   for (const url of normalized) {
@@ -66,7 +78,32 @@ function escapeHtml(value) {
     .replaceAll("'", "&#39;");
 }
 
-export function renderImportPage(batches, manifest) {
+function validatePageMode(mode, manifest) {
+  if (mode !== "default" && mode !== "adblock-full") {
+    throw new TypeError("Anywhere import page mode must be default or adblock-full");
+  }
+  if (mode === "default" && manifest.schemaVersion === 2) {
+    const migration = {
+      schemaVersion: manifest.schemaVersion,
+      removed: manifest.removed,
+      replacements: manifest.replacements,
+      optionalPacks: manifest.optionalPacks,
+    };
+    if (JSON.stringify(migration) !== JSON.stringify(ANYWHERE_LIGHTWEIGHT_MIGRATION)) {
+      throw new Error("Anywhere import manifest has an invalid schema-v2 migration");
+    }
+  }
+  if (mode === "adblock-full") {
+    if (!Array.isArray(manifest.sources)
+      || manifest.sources.length !== ADVERTISING_IDS.size
+      || manifest.sources.some(({ id, routing }) => !ADVERTISING_IDS.has(id) || routing !== 2)
+      || manifest.shards.some(({ sourceId }) => !ADVERTISING_IDS.has(sourceId))) {
+      throw new Error("Anywhere full-adblock import must contain only REJECT advertising shards");
+    }
+  }
+}
+
+export function renderImportPage(batches, manifest, { mode = "default" } = {}) {
   if (!Array.isArray(batches) || batches.length === 0) throw new TypeError("Anywhere import batches are required");
   if (!manifest || typeof manifest !== "object" || typeof manifest.manifestSha256 !== "string") {
     throw new TypeError("Anywhere rule manifest is required");
@@ -79,11 +116,13 @@ export function renderImportPage(batches, manifest) {
     || manifest.totals.shardCount !== manifest.shards.length) {
     throw new TypeError("Anywhere rule manifest totals are invalid");
   }
+  validatePageMode(mode, manifest);
   const expectedUrls = manifest.shards.map(({ url }) => validateRuleUrl(url));
   const actualUrls = batches.flatMap(({ urls }) => urls.map(validateRuleUrl));
   if (JSON.stringify(actualUrls) !== JSON.stringify(expectedUrls)) {
     throw new Error("Anywhere import batches do not close over the manifest");
   }
+  const allDeepLink = buildImportDeepLink(expectedUrls);
   const checkedBatches = batches.map((batch, index) => {
     const expectedDeepLink = deepLink(batch.urls);
     if (batch.deepLink !== expectedDeepLink || expectedDeepLink.length > 1_800) {
@@ -102,13 +141,22 @@ export function renderImportPage(batches, manifest) {
   const privacyNote = privacy
     ? `Privacy 上游的 ${escapeHtml(privacy.counts.convertible)} 条可转换规则经优先级编译后，${escapeHtml(privacy.counts.duplicates)} 条为重复、${escapeHtml(privacy.counts.shadowed)} 条被更高优先规则完整覆盖，因此输出 ${escapeHtml(privacy.counts.output)} 条且不生成空分片。`
     : "Privacy 中被更高优先级完整覆盖的规则会保留审计计数，但不会生成会改变路由语义的空分片。";
+  const isAdblock = mode === "adblock-full";
+  const title = isAdblock ? "Anywhere 完整广告包（可选）" : "Anywhere 轻量规则导入";
+  const migrationNotice = isAdblock ? "" : `
+  <div class="warning"><strong>schema v2 迁移：</strong>如果你已导入旧版，请先在 Anywhere 中<strong>删除或禁用</strong>旧分片 <code>Advertising</code>、<code>Advertising_Domain</code>、<code>ChinaMax_Domain</code> 和通用 <code>Game</code>，再导入本轻量集。<code>ChinaMax_Domain</code> 由 <code>DomesticCore</code> 替代；<code>Game</code> 拆分为 <code>DomesticGame</code> 与 <code>OverseasGame</code>。</div>
+  <p><code>OverseasGame</code> 首次导入使用 Anywhere 的 Default/代理路由；如当前版本支持专用组，请在 App 内手动将其绑定到海外游戏组。</p>`;
+  const packNotice = isAdblock
+    ? `
+  <div class="warning"><strong>可选高内存包：</strong>本页只导入 <code>Advertising</code> 与 <code>Advertising_Domain</code>，路由目标均为 <strong>REJECT</strong>。完整广告分类体积很大，启用后可能使内存占用显著增长；仅在设备实测有余量时启用。</div>`
+    : "";
   return `<!doctype html>
 <html lang="zh-CN">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; img-src data:; navigate-to 'self' https: anywhere:">
-  <title>Anywhere 完整规则导入</title>
+  <title>${title}</title>
   <style>
     body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;max-width:900px;margin:0 auto;padding:24px;line-height:1.6;color:#172033;background:#f6f8fb}
     main{background:white;padding:28px;border-radius:18px;box-shadow:0 8px 30px #24324a18}h1{margin-top:0}.warning{padding:14px 18px;background:#fff4d6;border-left:4px solid #d98b00}.button{display:inline-block;padding:9px 14px;margin:5px 0;border-radius:10px;background:#315efb;color:white;text-decoration:none}code{word-break:break-all}li{margin:7px 0}
@@ -116,11 +164,16 @@ export function renderImportPage(batches, manifest) {
 </head>
 <body>
 <main>
-  <h1>Anywhere 完整规则导入</h1>
+  <h1>${title}</h1>
   <p>固定 Blackmatrix7 提交：<code>${escapeHtml(manifest.upstream.commit)}</code></p>
   <p>生成时间（上游提交时间）：<code>${escapeHtml(manifest.generatedAt)}</code>；Manifest：<code>${escapeHtml(manifest.manifestSha256)}</code></p>
   <p>共处理 ${escapeHtml(manifest.totals.sourceCount)} 个上游来源，生成 ${escapeHtml(manifest.totals.shardCount)} 个分片、${escapeHtml(manifest.totals.outputCount)} 条可导入规则，分为 ${escapeHtml(checkedBatches.length)} 个批次。</p>
+${migrationNotice}${packNotice}
   <div class="warning"><strong>导入前须知：</strong>Anywhere 的 Default 不是可靠的“停用”开关。请先用测试设备导入，随后在 App 内逐个确认 DIRECT、REJECT 或目标节点/链；节点订阅、规则文件和本地设置是三层独立配置。导入公开规则不需要 HTTPS 解密/MITM，请保持它关闭。</div>
+  <h2>一键导入全部规则</h2>
+  <p>一次打开 Anywhere 的确认页，导入全部 ${escapeHtml(expectedUrls.length)} 个规则分片；导入后仍是独立规则集。</p>
+  <p><a class="button" href="${escapeHtml(allDeepLink)}">全部导入 ${escapeHtml(expectedUrls.length)} 个规则分片</a></p>
+  <p>如果系统未能打开总链接，请按下面的 ${escapeHtml(checkedBatches.length)} 个批次导入。</p>
   <h2>批量导入</h2>
   <ol>
 ${buttons}
@@ -130,8 +183,7 @@ ${buttons}
   <ol>
 ${manual}
   </ol>
-  <h2>已审计的平台差异</h2>
-  <p>${privacyNote}该来源仍从固定提交获取，并在 Manifest 中独立记录哈希和计数，这不是漏源。</p>
+${isAdblock ? "" : `  <h2>已审计的平台差异</h2>\n  <p>${privacyNote}该来源仍从固定提交获取，并在 Manifest 中独立记录哈希和计数，这不是漏源。</p>`}
 </main>
 </body>
 </html>

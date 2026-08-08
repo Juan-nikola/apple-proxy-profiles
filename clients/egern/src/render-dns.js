@@ -1,6 +1,7 @@
 import { OPTION_VALUES } from "../../../shared/contracts.js";
 import { DOMESTIC_FALLBACK_DOMAIN_SUFFIXES } from "../../../shared/rules/domestic-fallback.js";
-import { PUBLIC_SNAPSHOT_BASE_URL } from "./options.js";
+import { EXPLICIT_OVERSEAS_RULE_SOURCE_IDS } from "../../../shared/rules/lightweight-policy.js";
+import { PUBLIC_RULE_ROOT } from "./options.js";
 
 const CHINA_DNS = Object.freeze({
   alidns: "https://dns.alidns.com/dns-query",
@@ -32,10 +33,10 @@ function validatedEnum(options, key) {
 
 function publicBaseUrl(options) {
   if (!Object.hasOwn(options, "publicBaseUrl")) {
-    return PUBLIC_SNAPSHOT_BASE_URL;
+    throw new Error("DNS option 'publicBaseUrl' is required");
   }
   const value = safeOption(options, "publicBaseUrl");
-  if (value !== PUBLIC_SNAPSHOT_BASE_URL) {
+  if (value !== `${PUBLIC_RULE_ROOT}/edge` && value !== `${PUBLIC_RULE_ROOT}/current`) {
     throw new Error("DNS option 'publicBaseUrl' must use the fixed public snapshot base");
   }
   return value;
@@ -44,8 +45,18 @@ function publicBaseUrl(options) {
 function chinaRule(baseUrl) {
   return {
     proxy_rule_set: {
-      match: `${baseUrl}/egern/rules/ChinaMax_Domain.yaml`,
+      match: `${baseUrl}/egern/rules/DomesticCore.yaml`,
       value: "china",
+      update_interval: 86400,
+    },
+  };
+}
+
+function proxyRule(baseUrl, id) {
+  return {
+    proxy_rule_set: {
+      match: `${baseUrl}/egern/rules/${id}.yaml`,
+      value: "global",
       update_interval: 86400,
     },
   };
@@ -74,10 +85,13 @@ export function renderEgernDns(options) {
   let forward;
   if (dnsMode === "privacy") {
     forward = [wildcard("global")];
-  } else if (dnsMode === "speed") {
-    forward = [...domesticFallbackRules(), chinaRule(baseUrl), wildcard("system")];
   } else {
-    forward = [...domesticFallbackRules(), chinaRule(baseUrl), wildcard("global")];
+    forward = [
+      ...EXPLICIT_OVERSEAS_RULE_SOURCE_IDS.map((id) => proxyRule(baseUrl, id)),
+      ...domesticFallbackRules(),
+      chinaRule(baseUrl),
+      wildcard("china"),
+    ];
   }
 
   return {

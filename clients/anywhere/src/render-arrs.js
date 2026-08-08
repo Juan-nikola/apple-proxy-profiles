@@ -7,6 +7,12 @@ export const ARRS_TYPE_ID = Object.freeze({
   [RULE_KIND.domainKeyword]: 3,
 });
 
+export const ARRS_ROUTING = Object.freeze({
+  defaultProxy: 0,
+  direct: 1,
+  reject: 2,
+});
+
 function singleLine(value, label) {
   if (typeof value !== "string" || !value.trim() || value.trim() !== value || /[\r\n]/u.test(value)) {
     throw new TypeError(`${label} must be a non-empty single line`);
@@ -15,7 +21,7 @@ function singleLine(value, label) {
 }
 
 function routingId(value) {
-  if (![0, 1, 2].includes(value)) throw new TypeError("Anywhere routing must be 0, 1, or 2");
+  if (!Object.values(ARRS_ROUTING).includes(value)) throw new TypeError("Anywhere routing must be 0, 1, or 2");
   return value;
 }
 

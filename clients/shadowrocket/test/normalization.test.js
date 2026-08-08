@@ -22,8 +22,32 @@ test("normalizes names, preserves credential-distinct nodes, and removes spoofed
     assert.equal((node.name.match(/🇯🇵/g) ?? []).length, 1);
   }
   const falseUdp = normalizeNodes([{ ...fakeNodes[0], name: "US false marker [UDP]", udp: false }]);
-  assert.equal(falseUdp.nodes[0].name.endsWith("[UDP]"), false);
+  assert.equal(falseUdp.nodes[0].name.endsWith("·U"), false);
   assert.equal(result.diagnostics.excluded["exact-duplicate"], 1);
+});
+
+test("renders compact region-source-name labels without provenance duplication", () => {
+  const node = {
+    ...fakeNodes[0],
+    name: "🇭🇰 [未标记] [自建] Boil-HKT [UDP]",
+    _subDisplayName: "[未标记] display",
+    _subName: "[自建] private",
+    udp: true,
+  };
+  const { nodes } = normalizeNodes([node]);
+  assert.equal(nodes[0].name, "🇭🇰 Boil-HKT｜自建·U");
+});
+
+test("falls back to a known source marker in the original node name", () => {
+  const node = {
+    ...fakeNodes[0],
+    name: "🇭🇰 [未标记] [自建] Boil-HKT [UDP]",
+    _subDisplayName: "[未标记] display",
+    _subName: "[未标记] private",
+    udp: true,
+  };
+  const { nodes } = normalizeNodes([node]);
+  assert.equal(nodes[0].name, "🇭🇰 Boil-HKT｜自建·U");
 });
 
 test("chooses exact-duplicate provenance deterministically with least privilege", () => {
@@ -44,7 +68,7 @@ test("chooses exact-duplicate provenance deterministically with least privilege"
   assert.equal(forward.nodes.length, 1);
   assert.equal(forward.nodes[0]._profile.sourceKind, "airport");
   assert.equal(forward.nodes[0]._profile.p2p, false);
-  assert.equal(forward.nodes[0].name.includes("[机场]"), true);
+  assert.equal(forward.nodes[0].name.includes("｜机场"), true);
   assert.equal(JSON.stringify(forward.diagnostics).includes("TEST_ONLY_NOT_A_SECRET"), false);
 });
 
@@ -208,8 +232,8 @@ test("strips spoofed existing-chain markers and re-derives them before the UDP s
   const restricted = nodes.find((node) => !node._profile.entry);
 
   assert.equal(eligible.name.includes("[已有链]"), false);
-  assert.match(restricted.name, /\[已有链\] \[UDP\]$/);
-  assert.equal((restricted.name.match(/\[已有链\]/g) ?? []).length, 1);
+  assert.match(restricted.name, /｜机场·链·U$/);
+  assert.equal((restricted.name.match(/·链/g) ?? []).length, 1);
 });
 
 test("resolves colliding fingerprint suffixes by private identity order", () => {

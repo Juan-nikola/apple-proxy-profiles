@@ -1,7 +1,8 @@
 import { CUSTOM_AI, CUSTOM_BLOCK, CUSTOM_DIRECT, CUSTOM_PROXY } from "./custom-rules.js";
-import { RULE_CATALOG } from "./rule-catalog.js";
-import { orderedRuleAssignments } from "../../../shared/rules/catalog.js";
+import { ruleClientCatalog } from "../../../shared/rules/lightweight-policy.js";
 import { isValidRuleLine } from "./rule-validator.js";
+
+export const PUBLIC_RULE_ROOT = "https://juan-nikola.github.io/apple-proxy-profiles";
 
 const LOCAL_RULES = Object.freeze([
   "DOMAIN-SUFFIX,local,DIRECT",
@@ -27,11 +28,17 @@ const CUSTOM_RULES = Object.freeze([
   Object.freeze(["CUSTOM_AI", CUSTOM_AI, "🤖 AI 专用"]),
 ]);
 
-const GAME_DIRECT_RULES = Object.freeze([
-  "DOMAIN-SUFFIX,leiting.com,DIRECT",
-  "DOMAIN-SUFFIX,leitingcn.com,DIRECT",
-  "DOMAIN-SUFFIX,g-bits.com,DIRECT",
+const SECURITY_IDS = new Set([
+  "Hijacking",
+  "BlockHttpDNS",
+  "Privacy",
+  "Advertising",
+  "Advertising_Domain",
 ]);
+const DOMESTIC_IDS = Object.freeze(["DomesticCore", "DomesticGame", "SteamCN"]);
+const OVERSEAS_GAME_ID = "OverseasGame";
+const CHINA_IP_ID = "ChinaIP";
+const RULE_DOWNLOAD_POLICY = "🧭 DNS 与规则下载";
 
 function isSafeCustomField(value) {
   return typeof value === "string"
@@ -60,56 +67,107 @@ export function validateCustomRules(customRules) {
   }
 }
 
-function validatedCatalog(assignments) {
-  const entriesById = new Map();
-  for (const entry of RULE_CATALOG) {
-    const entries = entriesById.get(entry.id) ?? [];
-    entries.push(entry);
-    entriesById.set(entry.id, entries);
+function safeBaseUrl(value) {
+  if (typeof value !== "string" || !/^https:\/\/[^\s]+$/u.test(value) || /[\r\n,]/u.test(value)) {
+    throw new Error("Shadowrocket rule base URL must be an HTTPS URL without commas");
   }
-  for (const { sourceId, policy } of assignments) {
-    const entries = entriesById.get(sourceId);
-    if (entries?.length !== 1 || entries[0].policy !== policy) {
-      throw new Error(`Invalid rule catalog entry: ${sourceId}`);
-    }
+  const match = /^https:\/\/([^/]+)(\/[^?#]*)$/u.exec(value);
+  if (!match) {
+    throw new Error("Shadowrocket rule base URL is invalid");
   }
-  return entriesById;
+  const hostname = match[1];
+  const labels = hostname.split(".");
+  if (
+    hostname.includes(":")
+    || hostname.includes("@")
+    || labels.some((label) => !/^[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?$/u.test(label))
+  ) {
+    throw new Error("Shadowrocket rule base URL must be a plain HTTPS publication URL");
+  }
+  const normalized = value.replace(/\/+$/u, "");
+  if (!normalized.endsWith("/shadowrocket/rules")) {
+    throw new Error("Shadowrocket rule base URL must end in /shadowrocket/rules");
+  }
+  return Object.freeze({ url: normalized, hostname });
 }
 
-function catalogRule(entriesById, assignment) {
-  return entriesById.get(assignment.sourceId)[0];
+function optionalAdblockBase(defaultBase) {
+  const optional = defaultBase.replace(
+    /\/shadowrocket\/rules$/u,
+    "/optional/adblock-full/shadowrocket/rules",
+  );
+  if (optional === defaultBase) {
+    throw new Error("Shadowrocket rule base URL must end in /shadowrocket/rules");
+  }
+  return optional;
 }
 
-function renderRuleSet(entry) {
-  return `${entry.inputFormat},${entry.upstreamUrl},${entry.policy},update-interval=86400`;
+function sourceUrl(source, base, optionalBase) {
+  const selectedBase = source.id === "Advertising" || source.id === "Advertising_Domain"
+    ? optionalBase
+    : base;
+  if (!selectedBase) throw new Error("Shadowrocket optional rule URL is unavailable");
+  return `${selectedBase}/${source.id}.list`;
 }
 
-export function renderRules() {
+function renderRuleSet(source, base, optionalBase) {
+  return `${source.inputFormat},${sourceUrl(source, base, optionalBase)},${source.policy},update-interval=86400`;
+}
+
+export function ruleBaseUrlForChannel(channel) {
+  if (channel !== "edge" && channel !== "current") {
+    throw new Error(`Unsupported Shadowrocket publication channel: ${channel}`);
+  }
+  return `${PUBLIC_RULE_ROOT}/${channel}/shadowrocket/rules`;
+}
+
+export function renderRules({ ruleBaseUrl, adblockMode = "off" } = {}) {
   validateCustomRules(CUSTOM_RULES);
-  const assignments = orderedRuleAssignments();
-  const entriesById = validatedCatalog(assignments);
-  const steamIndex = assignments.findIndex(({ sourceId }) => sourceId === "SteamCN");
-  const gameIndex = assignments.findIndex(({ sourceId }) => sourceId === "Game");
-  if (steamIndex < 0 || gameIndex <= steamIndex) throw new Error("Invalid rule assignment order");
-  const preGameAssignments = assignments.slice(0, steamIndex);
-  const domesticBeforeGameAssignments = assignments.slice(steamIndex, gameIndex);
-  const gameAssignment = assignments[gameIndex];
-  const postGameAssignments = assignments.slice(gameIndex + 1);
-  const lines = [...LOCAL_RULES, "# Custom rules"];
+  const base = safeBaseUrl(ruleBaseUrl);
+  const catalog = ruleClientCatalog({ adblockMode });
+  const optionalBase = adblockMode === "full" ? optionalAdblockBase(base.url) : null;
+  const byId = new Map();
+  for (const source of catalog) {
+    if (byId.has(source.id)) throw new Error(`Duplicate Shadowrocket rule source: ${source.id}`);
+    byId.set(source.id, source);
+  }
+  const render = (source) => renderRuleSet(source, base.url, optionalBase);
+  const lines = [
+    ...LOCAL_RULES,
+    "# Security rules",
+    ...catalog.filter(({ id }) => SECURITY_IDS.has(id)).map(render),
+    "# Custom rules",
+  ];
 
   for (const [name, rules, policy] of CUSTOM_RULES) {
     lines.push(`# ${name}`);
     lines.push(...rules.map((rule) => `${rule},${policy}`));
   }
 
-  lines.push(...preGameAssignments.map((assignment) => renderRuleSet(catalogRule(entriesById, assignment))));
-  lines.push(...GAME_DIRECT_RULES);
-  lines.push(...domesticBeforeGameAssignments.map((assignment) => renderRuleSet(catalogRule(entriesById, assignment))));
+  lines.push(
+    "# Rule-download fallback transport",
+    `DOMAIN,${base.hostname},${RULE_DOWNLOAD_POLICY}`,
+  );
 
-  const game = catalogRule(entriesById, gameAssignment);
-  lines.push(`AND,((PROTOCOL,UDP),(RULE-SET,${game.upstreamUrl})),🎮 游戏连接`);
-  lines.push(renderRuleSet(game));
-  lines.push(...postGameAssignments.map((assignment) => renderRuleSet(catalogRule(entriesById, assignment))));
+  for (const id of DOMESTIC_IDS) {
+    const source = byId.get(id);
+    if (!source) throw new Error(`Missing Shadowrocket lightweight rule source: ${id}`);
+    lines.push(render(source));
+  }
+  for (const source of catalog) {
+    if (
+      SECURITY_IDS.has(source.id)
+      || DOMESTIC_IDS.includes(source.id)
+      || source.id === OVERSEAS_GAME_ID
+      || source.id === CHINA_IP_ID
+    ) continue;
+    lines.push(render(source));
+  }
+  for (const id of [OVERSEAS_GAME_ID, CHINA_IP_ID]) {
+    const source = byId.get(id);
+    if (!source) throw new Error(`Missing Shadowrocket lightweight rule source: ${id}`);
+    lines.push(render(source));
+  }
   lines.push("GEOIP,CN,DIRECT", "FINAL,🚀 节点选择");
   return lines;
 }

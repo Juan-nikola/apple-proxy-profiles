@@ -1,10 +1,10 @@
 # Upstream: https://github.com/blackmatrix7/ios_rule_script
 # Path: rule/Surge/ChinaMax/ChinaMax_Domain.list
-# Commit: b807e9f8b55f6fcfb2cb26f52b77fa1d3b0c4e6b
-# Committed at: 2026-08-03T19:30:42Z
+# Commit: 72c410015dc99df6b54eca1386126f70268bf6bc
+# Committed at: 2026-08-05T19:24:33Z
 # License: GPL-2.0-only
 # Changed by: Juan-nikola/apple-proxy-profiles
-# Output entries: 111566
+# Output entries: 111584
 # Omitted entries: 0
 domain_set:
   - "1-fss24-s0.streamhoster.com"
@@ -111574,6 +111574,24 @@ domain_suffix_set:
   - "zzzyyy.com"
   - "zzzzaaaa.com"
   - "zzzzzz.me"
+  - "cn"
+  - "bilibili.com"
+  - "bilivideo.com"
+  - "biliapi.com"
+  - "hdslb.com"
+  - "douyin.com"
+  - "douyincdn.com"
+  - "byteimg.com"
+  - "ibytedtos.com"
+  - "pstatp.com"
+  - "snssdk.com"
+  - "amemv.com"
+  - "ixigua.com"
+  - "toutiao.com"
+  - "toutiaoimg.com"
+  - "xiaohongshu.com"
+  - "xhscdn.com"
+  - "weibo.com"
 domain_keyword_set: []
 ip_cidr_set: []
 ip_cidr6_set: []

@@ -200,6 +200,21 @@ test("node bundle matches source for normalization, Egern SSH chaining, and diag
   assert.deepEqual(bundled.requests, expected.requests);
 });
 
+test("node bundle drops undefined Sub-Store quick-setting fields before Egern validation", async () => {
+  const source = await readFile(NODE_BUNDLE, "utf8");
+  const produced = [{
+    ...rawInventory()[0],
+    tfo: undefined,
+    "skip-cert-verify": undefined,
+    "block-quic": undefined,
+    "ip-version": undefined,
+  }];
+  const bundled = loadBundle(source, { arguments: { ...NODE_ARGUMENTS, clientChain: "off" }, produced });
+  const result = await bundled.context.operator({}, "Egern");
+  assert.match(result.$content, /^proxies:\n/u);
+  assert.match(result.$content, /Tokyo Entry/u);
+});
+
 test("chain-off bundle parity omits every generated previous hop", async () => {
   const arguments_ = { ...NODE_ARGUMENTS, clientChain: "off" };
   const source = await readFile(NODE_BUNDLE, "utf8");
@@ -596,7 +611,8 @@ test("tracked examples are deterministic complete platform Profiles", async () =
     assert.match(profile, new RegExp(`^ipv6: ${ipv6}$`, "mu"));
     assert.match(profile, /policy_groups:/u);
     assert.match(profile, /rules:/u);
-    assert.match(profile, /https:\/\/juan-nikola\.github\.io\/apple-proxy-profiles\/current\/egern\/rules\/Advertising\.yaml/u);
+    assert.match(profile, /https:\/\/juan-nikola\.github\.io\/apple-proxy-profiles\/edge\/egern\/rules\/DomesticCore\.yaml/u);
+    assert.doesNotMatch(profile, /\/Advertising(?:_Domain)?\.yaml|\/ChinaMax_Domain\.yaml/u);
     assert.doesNotMatch(profile, /^proxies:/mu);
     assert.doesNotMatch(profile, /TEST_ONLY_|198\.51\.100\.|192\.0\.2\./u);
     assert.doesNotMatch(profile, /\/Users\/|\\\\Users\\|[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:/u);

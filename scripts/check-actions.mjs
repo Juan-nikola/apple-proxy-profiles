@@ -15,7 +15,7 @@ const SHA_PIN = /^[0-9a-f]{40}$/;
 export const PUBLIC_PAGES_LIMITS = Object.freeze({
   githubMaxBytes: 1024 * 1024 * 1024,
   maxBytes: 750 * 1024 * 1024,
-  maxVersions: 8,
+  maxVersions: 9,
 });
 
 function workflowUses(text) {
@@ -51,6 +51,24 @@ function permissionValue(text, permission) {
 
 function commandPosition(text, command) {
   return text.indexOf(`run: ${command}`);
+}
+
+function validateOfficialCoreGate(file, text, beforePosition, channel) {
+  const commands = [
+    "node scripts/install-sing-box-core.mjs",
+    `node scripts/stage-rule-artifacts.mjs --channel ${channel}`,
+    "npm --workspace @apple-proxy-profiles/sing-box run compile:rules",
+    "npm --workspace @apple-proxy-profiles/sing-box run check:config",
+    "npm run verify:lightweight",
+  ];
+  const positions = commands.map((command) => commandPosition(text, command));
+  if (positions.some((position) => position === -1)
+    || positions.some((position, index) => index > 0 && position <= positions[index - 1])
+    || beforePosition === -1
+    || positions.at(-1) >= beforePosition) {
+    return [`${file}: official sing-box compiler gate is missing or not closed in order`];
+  }
+  return [];
 }
 
 export function validateWorkflowText(file, text) {
@@ -101,10 +119,16 @@ export function validateWorkflowText(file, text) {
     if (!/github\.event_name == 'schedule' \|\| github\.ref == 'refs\/heads\/main'/u.test(text)) {
       errors.push(`${file}: update job must restrict writes to scheduled or main-ref runs`);
     }
+    const edgeCommand = "npm run update:rules";
+    const edgeAt = commandPosition(text, edgeCommand);
+    if (!/^\s*run:\s*npm run update:rules\s*$/mu.test(text)) {
+      errors.push(`${file}: edge update must invoke the package script without duplicate arguments`);
+    }
+    errors.push(...validateOfficialCoreGate(file, text, edgeAt, "edge"));
     const orderedCommands = [
       "npm run verify",
       "git diff --exit-code -- . \":(exclude)public/**\"",
-      "npm run update:rules",
+      edgeCommand,
       "npm run check:rules",
       "npm run check:secrets",
     ];
@@ -112,6 +136,19 @@ export function validateWorkflowText(file, text) {
     if (positions.some((position) => position === -1)
       || positions.some((position, index) => index > 0 && position <= positions[index - 1])) {
       errors.push(`${file}: verification, clean-tree gate, update, rule check, and secret scan are not closed in order`);
+    }
+    if (!/^\s*client:\s*$/mu.test(text)
+      || !/^\s*manifest_hash:\s*$/mu.test(text)
+      || !/^\s*environment:\s*canary-approval\s*$/mu.test(text)
+      || !/github\.event_name == 'workflow_dispatch'.*inputs\.client.*inputs\.manifest_hash/su.test(text)
+      || !/npm run update:rules -- --promote "\$PROMOTION_CLIENT" "\$PROMOTION_MANIFEST_HASH"/u.test(text)) {
+      errors.push(`${file}: current promotion must require canary approval and exact client manifest inputs`);
+    }
+    const edgeJobStart = text.indexOf("  build-edge:");
+    const nextJobStart = text.indexOf("\n  promote-current:", edgeJobStart);
+    const edgeJob = edgeJobStart === -1 ? "" : text.slice(edgeJobStart, nextJobStart === -1 ? undefined : nextJobStart);
+    if (!edgeJob.includes("--channel edge") || edgeJob.includes("--promote")) {
+      errors.push(`${file}: scheduled job must update edge only and never promote current`);
     }
   }
 
@@ -139,6 +176,7 @@ export function validateWorkflowText(file, text) {
     const verifyAt = commandPosition(text, "npm run verify");
     const ruleCheckAt = commandPosition(text, "npm run check:rules");
     const uploadAt = text.indexOf("uses: actions/upload-pages-artifact@");
+    errors.push(...validateOfficialCoreGate(file, text, ruleCheckAt, "current"));
     if (verifyAt === -1 || ruleCheckAt <= verifyAt || uploadAt <= ruleCheckAt) {
       errors.push(`${file}: deploy must verify and reproduce rules before uploading public`);
     }

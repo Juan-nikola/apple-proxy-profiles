@@ -170,6 +170,7 @@ policy_groups:
       name: "🚀 节点选择"
       urls:
         - "https://example.invalid/private/egern-nodes"
+      filter: "^(?!🔗 ).+$"
       update_interval: 21600
       block_quic: true
   - select:
@@ -198,7 +199,7 @@ policy_groups:
         - "DIRECT"
       urls:
         - "https://example.invalid/private/egern-nodes"
-      filter: "^\\S+ \\[自建\\] .+$"
+      filter: "^.+｜自建(?:·.*)?$"
       update_interval: 21600
   - select:
       name: "🏢 机场节点"
@@ -206,7 +207,7 @@ policy_groups:
         - "DIRECT"
       urls:
         - "https://example.invalid/private/egern-nodes"
-      filter: "^\\S+ \\[机场\\] .+$"
+      filter: "^.+｜机场(?:·.*)?$"
       update_interval: 21600
   - select:
       name: "↪️ Realm 转发"
@@ -214,7 +215,7 @@ policy_groups:
         - "DIRECT"
       urls:
         - "https://example.invalid/private/egern-nodes"
-      filter: "^\\S+ \\[Realm\\] .+$"
+      filter: "^.+｜Realm(?:·.*)?$"
       update_interval: 21600
   - select:
       name: "🤖 AI 亚太"
@@ -472,7 +473,7 @@ policy_groups:
         - "DIRECT"
       urls:
         - "https://example.invalid/private/egern-nodes"
-      filter: "^(?!🔗 )\\S+ .+ \\[UDP\\]$"
+      filter: "^(?!🔗 ).+·U$"
       update_interval: 21600
   - select:
       name: "⬇️ 下载/P2P"
@@ -480,7 +481,7 @@ policy_groups:
         - "DIRECT"
       urls:
         - "https://example.invalid/private/egern-nodes"
-      filter: "^\\S+ \\[(?:自建|Realm|链式代理)\\] .+$"
+      filter: "^(?!🔗 ).+｜(?:自建|Realm|链式代理)(?:·.*)?$"
       update_interval: 21600
   - select:
       name: "🧭 DNS 与规则下载"

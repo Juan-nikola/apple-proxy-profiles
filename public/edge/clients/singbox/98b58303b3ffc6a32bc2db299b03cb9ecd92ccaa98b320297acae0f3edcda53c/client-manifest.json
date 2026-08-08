@@ -1,0 +1,226 @@
+{
+  "client": "singbox",
+  "files": [
+    {
+      "bytes": 14576,
+      "path": "sing-box/examples/sing-box-android-diagnostic.json",
+      "sha256": "efbb48e56e247e63393014aedf9d2a1f7bc3591a1237ec5b9a11c85171e867e2"
+    },
+    {
+      "bytes": 28621,
+      "path": "sing-box/examples/sing-box-android.json",
+      "sha256": "308da11fd032f488a12294092b00d418c80f0e5bec5a84c1f47aee7191810968"
+    },
+    {
+      "bytes": 14644,
+      "path": "sing-box/examples/sing-box-ipad-diagnostic.json",
+      "sha256": "15b39c63e12cda879a38a6cde0bb92313d852aee640753131064149e5fcbb42f"
+    },
+    {
+      "bytes": 28689,
+      "path": "sing-box/examples/sing-box-ipad.json",
+      "sha256": "55b0be1c4c90d283840e97522d24112c296e7cd77c9364964bd3dcdadd522421"
+    },
+    {
+      "bytes": 14644,
+      "path": "sing-box/examples/sing-box-iphone-diagnostic.json",
+      "sha256": "15b39c63e12cda879a38a6cde0bb92313d852aee640753131064149e5fcbb42f"
+    },
+    {
+      "bytes": 28689,
+      "path": "sing-box/examples/sing-box-iphone.json",
+      "sha256": "55b0be1c4c90d283840e97522d24112c296e7cd77c9364964bd3dcdadd522421"
+    },
+    {
+      "bytes": 14636,
+      "path": "sing-box/examples/sing-box-macos-diagnostic.json",
+      "sha256": "21573a3db860f9cd1f85e6f312489a614b596871419b70cdb2f4c718be356f7d"
+    },
+    {
+      "bytes": 28681,
+      "path": "sing-box/examples/sing-box-macos.json",
+      "sha256": "55ecaf21cf04430d256313fce5b30305d25655bba626d07eb3545eaa7f213c69"
+    },
+    {
+      "bytes": 14772,
+      "path": "sing-box/examples/sing-box-openwrt-diagnostic.json",
+      "sha256": "6fd1da253b5404c1b1711ce4f5727b95e97d47be2b9b6a783cfe7a1e192e440e"
+    },
+    {
+      "bytes": 28817,
+      "path": "sing-box/examples/sing-box-openwrt.json",
+      "sha256": "c800e50e52bcdbd68831bdec5f48da3bd1dfc4876a4779eecafe08f7fa5043a9"
+    },
+    {
+      "bytes": 246,
+      "path": "sing-box/rule-sets/Apple.srs",
+      "sha256": "44227824b202bb22cda2c120b75208df77d67c9bb4c10ef3a6170b7339c27bcc"
+    },
+    {
+      "bytes": 1112,
+      "path": "sing-box/rule-sets/BiliBili.srs",
+      "sha256": "349a5c6995b1f8c964e1d80b5692355639d68997f8e069e4e4224d2a21116b70"
+    },
+    {
+      "bytes": 637,
+      "path": "sing-box/rule-sets/BlockHttpDNS.srs",
+      "sha256": "fe1b0805269c36847c279260e51fac5c92c0c44c47b1e894083e612dc8eb4372"
+    },
+    {
+      "bytes": 2355,
+      "path": "sing-box/rule-sets/ByteDance.srs",
+      "sha256": "14a8f07028f8bc99b0e368634c4630b4cf47379a60813c7aaccc32a58fbcbbb7"
+    },
+    {
+      "bytes": 66731,
+      "path": "sing-box/rule-sets/ChinaIP.srs",
+      "sha256": "00fdeaa736a3d8350b111abe32031d170958bb88a9964adf47131e5aa6a88fb1"
+    },
+    {
+      "bytes": 97,
+      "path": "sing-box/rule-sets/Claude.srs",
+      "sha256": "00fad1a22d473b8c2004f85b290bd901e5aa046f002e7c81204d0396df95a720"
+    },
+    {
+      "bytes": 743,
+      "path": "sing-box/rule-sets/Copilot.srs",
+      "sha256": "8757486a10e172e5b782f85804a1a64f6d705199a9830920a6a4d387a8ac614a"
+    },
+    {
+      "bytes": 1502,
+      "path": "sing-box/rule-sets/Disney.srs",
+      "sha256": "af41dfa68bbbcf2d3c94ab546e98b0ec3e747ea4131fabe5597f5d2a058ab829"
+    },
+    {
+      "bytes": 498,
+      "path": "sing-box/rule-sets/DomesticCore.srs",
+      "sha256": "48486cfd8d4f9e88ab9efafd05c0954ff2c7196f6dc8aacabd15396ccb66c65e"
+    },
+    {
+      "bytes": 466,
+      "path": "sing-box/rule-sets/DomesticGame.srs",
+      "sha256": "1b5ac98718b80964a976b1df408aa8afbfe7c9179b0bf0535e07d7b9b6c92fd6"
+    },
+    {
+      "bytes": 100,
+      "path": "sing-box/rule-sets/Download.srs",
+      "sha256": "e176b9b3407ade60fec21f937da9c0410950b1e945cc47936dc3bd0351e82b1b"
+    },
+    {
+      "bytes": 3584,
+      "path": "sing-box/rule-sets/Facebook.srs",
+      "sha256": "7055660384a87030687995ea3a9608fa5b448b2ba4e122bcff1d34c8d87bfdd5"
+    },
+    {
+      "bytes": 245,
+      "path": "sing-box/rule-sets/Gemini.srs",
+      "sha256": "eaa0482a4384454070671988bf93dbb70efd384f8d68c9ca3b1c566ef9ae5cf9"
+    },
+    {
+      "bytes": 434,
+      "path": "sing-box/rule-sets/GitHub.srs",
+      "sha256": "ff695be18592792f37248b6884bce25600cba2c6b2166f5a7fe6ac8b07f1377b"
+    },
+    {
+      "bytes": 4058,
+      "path": "sing-box/rule-sets/GlobalMedia.srs",
+      "sha256": "a177b7075cf9905751d67fceb68a0477630240a03f274befdfd91f3d99b9d8f3"
+    },
+    {
+      "bytes": 1896,
+      "path": "sing-box/rule-sets/Hijacking.srs",
+      "sha256": "f3f1faaf729ebe1b03b9ae604fac56f2c4302f1e4202676d0a0cda4a32cb3711"
+    },
+    {
+      "bytes": 97,
+      "path": "sing-box/rule-sets/Instagram.srs",
+      "sha256": "da8240796a83963453bf703bc2b951bb142bced6ee16bfd2fc52df1d373b2b88"
+    },
+    {
+      "bytes": 4964,
+      "path": "sing-box/rule-sets/Microsoft.srs",
+      "sha256": "87a4af8f8b9aba242a8ac5a16eb468ba00d9b0f1bfd4053200ee3924caa0a37f"
+    },
+    {
+      "bytes": 6704,
+      "path": "sing-box/rule-sets/Netflix.srs",
+      "sha256": "87bba8d4ca7abfef9e95938df1835bd22a9883f6cfd16a2092b3d60968ec9f4e"
+    },
+    {
+      "bytes": 568,
+      "path": "sing-box/rule-sets/OpenAI.srs",
+      "sha256": "37fcd8b05a6536e9979c9531fe0328b16701cd85ffd29b612359f4d6c145c8bb"
+    },
+    {
+      "bytes": 4716,
+      "path": "sing-box/rule-sets/OverseasGame.srs",
+      "sha256": "e08c80a9ca73b3f3314d4092de28da1d9ae8db5a367af005f0a8670b259d6b83"
+    },
+    {
+      "bytes": 172,
+      "path": "sing-box/rule-sets/Privacy.srs",
+      "sha256": "1663fd76a561e931ff5720751362d3b01e5cdd3b7cbff3d5055b04a7410b1beb"
+    },
+    {
+      "bytes": 2459,
+      "path": "sing-box/rule-sets/PrivateTracker.srs",
+      "sha256": "3df2476e7c01ed0ec8f5218bd9eb08125df489a4c217c857450f519f39cf70b8"
+    },
+    {
+      "bytes": 436,
+      "path": "sing-box/rule-sets/Spotify.srs",
+      "sha256": "39747139fa3b568ea7fe50ab760d0bd9d1e7e8dfcd934339a95865b8194d1459"
+    },
+    {
+      "bytes": 315,
+      "path": "sing-box/rule-sets/SteamCN.srs",
+      "sha256": "b1b89050f5b81e7d0f1421d84c2a21bbf8e5e4fcfe11f5d815eb6dca7b3dbd80"
+    },
+    {
+      "bytes": 443,
+      "path": "sing-box/rule-sets/Telegram.srs",
+      "sha256": "6b15018c24802288a0a4c647f2c0b329f40fafdefe68930eedc276aa8d62422b"
+    },
+    {
+      "bytes": 407,
+      "path": "sing-box/rule-sets/TikTok.srs",
+      "sha256": "ce8ecfda2f72196bb038d3c0f2d2ca84cbe9dd95f01e8be4aa893d0dff77f12c"
+    },
+    {
+      "bytes": 415,
+      "path": "sing-box/rule-sets/Twitter.srs",
+      "sha256": "464f0ee0dc91dc070230b3559857ce62e9fef9e1d3aa70593c5465a658c577d1"
+    },
+    {
+      "bytes": 79,
+      "path": "sing-box/rule-sets/Weibo.srs",
+      "sha256": "0c0c41b10b04ea4d4d85bbbf6c3913209f0ca945b94c6450fc9795860aedf2d8"
+    },
+    {
+      "bytes": 101,
+      "path": "sing-box/rule-sets/XiaoHongShu.srs",
+      "sha256": "a505a1cac483e178e1fc40da3a9de988eda56d569436aa697abde0d164002486"
+    },
+    {
+      "bytes": 833,
+      "path": "sing-box/rule-sets/YouTube.srs",
+      "sha256": "71494bd314e7c53437c80d9aa76cd92aff989f7075ef91f5484ded4ffe26b691"
+    },
+    {
+      "bytes": 135557,
+      "path": "sing-box/scripts/sing-box-config-generator.js",
+      "sha256": "56b2b7a74d1dddcd48db071366580728f26a1044caf13f4f7ca04cc070c56f6c"
+    },
+    {
+      "bytes": 135557,
+      "path": "sing-box/scripts/substore-config-generator.js",
+      "sha256": "56b2b7a74d1dddcd48db071366580728f26a1044caf13f4f7ca04cc070c56f6c"
+    }
+  ],
+  "generatedAt": "2026-08-07T18:52:17Z",
+  "manifestHash": "98b58303b3ffc6a32bc2db299b03cb9ecd92ccaa98b320297acae0f3edcda53c",
+  "optionalPacks": {
+    "adblock-full": "59163e900531751db43c45c4298da564dd6517fc352a269d11a52d7a3900fd6b"
+  },
+  "schemaVersion": 1
+}

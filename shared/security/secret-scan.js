@@ -16,7 +16,7 @@ const rules = Object.freeze([
   },
   {
     id: "credential-assignment",
-    pattern: /\b(?:authorization|auth(?:[_ -]?(?:token|key))?|access[_ -]?token|id[_ -]?token|refresh[_ -]?token|password|psk|private[_ -]?key|token|api[_ -]?key|secret)\b[ \t]*[:=][ \t]*["']?(?:<)?[^\s,"'}\]]{16,}/i,
+    pattern: /\b(?:authorization|auth(?:[_ -]?(?:token|key))?|access[_ -]?token|id[_ -]?token|refresh[_ -]?token|password|psk|private[_ -]?key|token|api[_ -]?key|secret)\b[ \t]*[:=][ \t]*["']?(?:<)?[^\s,"'\}\]\(\)]{16,}/i,
   },
   {
     id: "uuid-assignment",

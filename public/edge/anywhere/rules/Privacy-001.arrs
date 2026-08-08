@@ -1,0 +1,29 @@
+# Upstream: https://github.com/blackmatrix7/ios_rule_script
+# Source: Privacy
+# Commit: ccc2d6b711007324bacb55cdfbbf7e36ad48145a
+# Converted at upstream commit time: 2026-08-07T18:52:17Z
+# License: GPL-2.0-only
+# Converted by: Juan-nikola/apple-proxy-profiles
+name = 🕵️ 严格跟踪 · Privacy
+routing = 1
+
+0, 0.0.0.1/32
+0, 109.123.233.251/32
+0, 157.148.47.204/32
+0, 185.193.38.148/32
+0, 219.143.187.136/32
+0, 34.215.155.61/32
+0, 35.194.26.233/32
+0, 35.239.57.233/32
+0, 44.228.85.26/32
+0, 45.32.105.134/32
+0, 77.162.125.199/32
+3, analytics.
+3, app-analytics
+3, app-log.
+3, applog.
+3, fzlm
+3, ios-log.
+3, ioslog.
+3, pc-log.
+3, pclog.

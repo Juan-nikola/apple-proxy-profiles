@@ -1,4 +1,5 @@
 import { execFile } from "node:child_process";
+import { access } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
 import { resolve } from "node:path";
@@ -22,9 +23,18 @@ export async function listRepositoryFiles(cwd = process.cwd()) {
   const { stdout } = await execFileAsync("git", ["-C", repositoryRoot, "ls-files", "-co", "--exclude-standard", "-z"], {
     maxBuffer: 16 * 1024 * 1024,
   });
+  const files = stdout.split("\0").filter(Boolean);
+  const existingFiles = (await Promise.all(files.map(async (file) => {
+    try {
+      await access(resolve(repositoryRoot, file));
+      return file;
+    } catch {
+      return null;
+    }
+  }))).filter(Boolean);
   return {
     repositoryRoot,
-    files: stdout.split("\0").filter(Boolean),
+    files: existingFiles,
   };
 }
 

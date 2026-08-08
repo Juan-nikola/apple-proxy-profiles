@@ -3,6 +3,7 @@ import test from "node:test";
 
 import { buildAnywhereRuleSnapshot } from "../src/render-anywhere-rules.js";
 import { DOMESTIC_FALLBACK_DOMAIN_SUFFIXES } from "../../shared/rules/domestic-fallback.js";
+import { ANYWHERE_LIGHTWEIGHT_MIGRATION } from "../../clients/anywhere/src/shard-rules.js";
 
 const upstream = {
   repository: "https://github.com/blackmatrix7/ios_rule_script",
@@ -67,6 +68,27 @@ test("produces byte-identical files and manifests for identical immutable inputs
   const second = buildAnywhereRuleSnapshot(options);
   assert.deepEqual([...first.files], [...second.files]);
   assert.deepEqual(first.manifest, second.manifest);
+});
+
+test("publishes the exact schema-v2 lightweight migration contract", () => {
+  const snapshot = new Map([
+    ["High", input("DOMAIN-SUFFIX,example.com\n")],
+    ["Low", input("DOMAIN-KEYWORD,other\n")],
+  ]);
+  const result = buildAnywhereRuleSnapshot({
+    snapshot,
+    catalog,
+    upstream,
+    logicalRuleSets: catalog.map(({ id }) => ({ id, sourceIds: [id], required: true })),
+    migration: ANYWHERE_LIGHTWEIGHT_MIGRATION,
+  });
+  assert.equal(result.manifest.schemaVersion, 2);
+  assert.deepEqual({
+    schemaVersion: result.manifest.schemaVersion,
+    removed: result.manifest.removed,
+    replacements: result.manifest.replacements,
+    optionalPacks: result.manifest.optionalPacks,
+  }, ANYWHERE_LIGHTWEIGHT_MIGRATION);
 });
 
 test("adds the domestic safety net to the existing direct ChinaMax shard", () => {

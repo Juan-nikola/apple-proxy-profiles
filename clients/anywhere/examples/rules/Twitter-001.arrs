@@ -13,11 +13,13 @@ routing = 0
 0, 202.160.128.0/22
 0, 209.237.192.0/19
 0, 69.195.160.0/19
+2, ads-twitter.com
 2, cms-twdigitalassets.com
 2, grok.com
 2, periscope.tv
 2, pscp.tv
 2, t.co
+2, tellapart.com
 2, tweetdeck.com
 2, twimg.co
 2, twimg.com
