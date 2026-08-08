@@ -1,0 +1,12 @@
+# Upstream: https://github.com/blackmatrix7/ios_rule_script
+# Source: Weibo
+# Commit: ccc2d6b711007324bacb55cdfbbf7e36ad48145a
+# Converted at upstream commit time: 2026-08-07T18:52:17Z
+# License: GPL-2.0-only
+# Converted by: Juan-nikola/apple-proxy-profiles
+name = 🧣 微博 · Weibo
+routing = 1
+
+2, weibo.cn
+2, weibocdn.com
+3, weibo

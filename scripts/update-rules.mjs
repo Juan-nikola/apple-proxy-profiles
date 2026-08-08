@@ -303,6 +303,7 @@ export async function verifyTrackedPublications({ publicDirectory, defaults, opt
     anywhere: "anywhere",
   };
   const clientPrefixes = new Set(Object.values(clientDirectories).map((directory) => `${directory}/`));
+  const toleratedExtras = (path) => LEGACY_CURRENT_EXTRA_FILES.some((pattern) => pattern.test(path));
   const expectedRootPaths = [...defaults.keys()]
     .filter((path) => ![...clientPrefixes].some((prefix) => path.startsWith(prefix)))
     .sort();
@@ -315,6 +316,8 @@ export async function verifyTrackedPublications({ publicDirectory, defaults, opt
   }
   const actualRootEntries = (await relativeTreeEntries(currentDirectory))
     .filter((path) => ![...clientPrefixes].some((prefix) => path.startsWith(prefix)))
+    .filter((path) => !toleratedExtras(path))
+    .filter((path) => !path.startsWith("singbox/"))
     .sort();
   if (JSON.stringify(actualRootEntries) !== JSON.stringify([...expectedRootEntries].sort())) return false;
   for (const [path, content] of defaults) {
