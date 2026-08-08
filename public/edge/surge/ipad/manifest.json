@@ -5,12 +5,12 @@
   "configSha256": "c98ded2f922b7fab123e6a030b09bae0e637378e2bba81569b941f2aa33363fe",
   "platform": "ipad",
   "platformKey": "surge/ipad",
-  "ruleManifestSha256": "5cf82dd34b724623063f0ab66f085a0bf37bfcf043ffe6c2507e48fbcdc746d1",
+  "ruleManifestSha256": "d6d729b4e820a3dff88de1d0ece77156d4a7207e382b8d2d1c7f0e121ff9b989",
   "schemaVersion": 1,
   "status": "candidate",
   "upstream": {
     "branch": "beta",
-    "commit": "72c410015dc99df6b54eca1386126f70268bf6bc",
-    "fetchedAt": "2026-08-05T19:24:33Z"
+    "commit": "ccc2d6b711007324bacb55cdfbbf7e36ad48145a",
+    "fetchedAt": "2026-08-07T18:52:17Z"
   }
 }
