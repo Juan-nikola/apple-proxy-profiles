@@ -1,5 +1,5 @@
 import { CUSTOM_RULES } from "../../../shared/rules/custom-rules.js";
-import { RULE_CLIENT_CATALOG } from "../../../shared/rules/client-catalog.js";
+import { ruleClientCatalog } from "../../../shared/rules/lightweight-policy.js";
 
 const LOCAL_RULES = Object.freeze([
   "DOMAIN-SUFFIX,local,DIRECT",
@@ -17,11 +17,11 @@ const LOCAL_RULES = Object.freeze([
   "IP-CIDR6,fe80::/10,DIRECT,no-resolve",
   "IP-CIDR6,ff00::/8,DIRECT,no-resolve",
 ]);
-const GAME_DIRECT_RULES = Object.freeze([
-  "DOMAIN-SUFFIX,leiting.com,DIRECT",
-  "DOMAIN-SUFFIX,leitingcn.com,DIRECT",
-  "DOMAIN-SUFFIX,g-bits.com,DIRECT",
-]);
+const SECURITY_IDS = new Set(["Hijacking", "BlockHttpDNS", "Privacy", "Advertising", "Advertising_Domain"]);
+const DOMESTIC_IDS = Object.freeze(["DomesticCore", "DomesticGame", "SteamCN"]);
+const OVERSEAS_GAME_ID = "OverseasGame";
+const CHINA_IP_ID = "ChinaIP";
+const RULE_DOWNLOAD_POLICY = "🧭 DNS 与规则下载";
 
 function safeBaseUrl(value) {
   if (typeof value !== "string" || !/^https:\/\/[^\s]+$/u.test(value) || /[\r\n,]/u.test(value)) {
@@ -30,9 +30,36 @@ function safeBaseUrl(value) {
   return value.replace(/\/+$/u, "");
 }
 
-export function renderSurgeRules({ ruleBaseUrl }) {
+function optionalAdblockBase(defaultBase) {
+  const optional = defaultBase.replace(/\/surge\/rules$/u, "/optional/adblock-full/surge/rules");
+  if (optional === defaultBase) throw new Error("Surge adblock rule base URL must end in /surge/rules");
+  return optional;
+}
+
+function sourceUrl(source, base, optionalBase) {
+  const selectedBase = source.id === "Advertising" || source.id === "Advertising_Domain" ? optionalBase : base;
+  if (!selectedBase) throw new Error("Surge optional rule URL is unavailable");
+  return `${selectedBase}/${source.id}.list`;
+}
+
+function selectedSources(ruleBaseUrl, adblockMode) {
   const base = safeBaseUrl(ruleBaseUrl);
-  const lines = [...LOCAL_RULES, "# Custom rules"];
+  const catalog = ruleClientCatalog({ adblockMode });
+  const optionalBase = adblockMode === "full" ? optionalAdblockBase(base) : null;
+  return { base, catalog, optionalBase };
+}
+
+export function renderSurgeRules({ ruleBaseUrl, adblockMode = "off" }) {
+  const { base, catalog, optionalBase } = selectedSources(ruleBaseUrl, adblockMode);
+  const render = (source) => (
+    `${source.inputFormat},${sourceUrl(source, base, optionalBase)},${source.policy},update-interval=86400`
+  );
+  const lines = [
+    ...LOCAL_RULES,
+    "# Security rules",
+    ...catalog.filter(({ id }) => SECURITY_IDS.has(id)).map(render),
+    "# Custom rules",
+  ];
   const custom = [
     ["CUSTOM_BLOCK", CUSTOM_RULES.block, "REJECT"],
     ["CUSTOM_DIRECT", CUSTOM_RULES.direct, "DIRECT"],
@@ -42,18 +69,26 @@ export function renderSurgeRules({ ruleBaseUrl }) {
   for (const [name, rules, policy] of custom) {
     lines.push(`# ${name}`, ...rules.map((rule) => `${rule},${policy}`));
   }
-  const assignments = RULE_CLIENT_CATALOG;
-  const steamIndex = assignments.findIndex(({ id }) => id === "SteamCN");
-  const gameIndex = assignments.findIndex(({ id }) => id === "Game");
-  if (steamIndex < 0 || gameIndex <= steamIndex) throw new Error("Invalid Surge rule assignment order");
-  const render = (source) => `${source.inputFormat},${base}/${source.id}.list,${source.policy},update-interval=86400`;
-  lines.push(...assignments.slice(0, steamIndex).map(render));
-  lines.push(...GAME_DIRECT_RULES);
-  lines.push(...assignments.slice(steamIndex, gameIndex).map(render));
-  const game = assignments[gameIndex];
-  lines.push(`AND,((PROTOCOL,UDP),(${game.inputFormat},${base}/${game.id}.list)),${game.policy}`);
-  lines.push(render(game));
-  lines.push(...assignments.slice(gameIndex + 1).map(render));
-  lines.push("GEOIP,CN,DIRECT", "FINAL,🚀 节点选择");
+  const ruleHost = new URL(base).hostname;
+  lines.push(
+    "# Rule-download fallback transport",
+    `DOMAIN,${ruleHost},${RULE_DOWNLOAD_POLICY}`,
+  );
+  const byId = new Map(catalog.map((source) => [source.id, source]));
+  for (const id of DOMESTIC_IDS) {
+    const source = byId.get(id);
+    if (!source) throw new Error(`Missing Surge lightweight rule source: ${id}`);
+    lines.push(render(source));
+  }
+  for (const source of catalog) {
+    if (SECURITY_IDS.has(source.id) || DOMESTIC_IDS.includes(source.id) || [OVERSEAS_GAME_ID, CHINA_IP_ID].includes(source.id)) continue;
+    lines.push(render(source));
+  }
+  for (const id of [OVERSEAS_GAME_ID, CHINA_IP_ID]) {
+    const source = byId.get(id);
+    if (!source) throw new Error(`Missing Surge lightweight rule source: ${id}`);
+    lines.push(render(source));
+  }
+  lines.push("GEOIP,CN,DIRECT", "FINAL,🚀 节点选择,dns-failed");
   return lines;
 }

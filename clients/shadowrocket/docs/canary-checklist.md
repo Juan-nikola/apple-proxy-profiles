@@ -10,7 +10,8 @@
 - [ ] 一个未列规则的境外目标命中 `FINAL,🚀 节点选择`。
 - [ ] `🚀 节点选择`只有跟随首页节点的 `PROXY`，摘要显示 `SELECT > PROXY`；首页切换节点后，此处不再保存或显示具体节点名。
 - [ ] 动态组按匹配的 `subscriptionName` 显示具体节点；若名称不匹配，`DIRECT`、`🚀 节点选择`、自动/故障转移和地区等显式选择仍可用，但不会显示该订阅的服务器。
-- [ ] 已重新运行当前平台中直接引用 `shadowrocket-profile-generator.js` 规范 Pages URL 的 File，并更新 Profile；三个 File 不粘贴脚本正文，任务名、脚本 URL、私密 URL和参数保持不动。既有 File 若仍引用旧 `substore-profile-generator.js` 兼容 URL，可保持原 URL，只需确认内容已更新。设备端无需替换节点组合 Operator 或改动节点订阅。仓库内 `clients/shadowrocket/dist/`、`clients/shadowrocket/examples/` 已重建校验，节点 Operator 内容未改变；规则的唯一批准变更是用完整 `Advertising` 取代 `AdvertisingLite`，同时引用 `Advertising.list` 与 `Advertising_Domain.list`。
+- [ ] 已重新运行当前平台中直接引用 `shadowrocket-profile-generator.js` 规范 Pages URL 的 File，并更新 Profile；三个 File 不粘贴脚本正文。`clients/shadowrocket/dist/` 与 `clients/shadowrocket/examples/` 已重新构建校验。默认参数为 `channel=edge`、`adblockMode=off`；若灰度稳定通道则明确改为 `channel=current`，只有专门测试完整广告时才使用 `adblockMode=full` 和独立 optional 包。既有 File 若仍引用旧 `substore-profile-generator.js` 兼容 URL，可保持原 URL，只需确认内容已更新。
+- [ ] 规则顺序明确为 `DomesticCore`、`DomesticGame`、`SteamCN` DIRECT，随后是境外服务，`OverseasGame` 进入 `🌍 海外游戏`，再到 `ChinaIP`、`GEOIP,CN,DIRECT`，最后 `FINAL,🚀 节点选择`。
 - [ ] 16 个常用业务组都有自动测速、故障转移、固定顺序地区组和符合筛选条件的具体节点；没有国家组。
 - [ ] 打开 `🐙 GitHub` 和 `🍎 Apple`：确认两组的自动、故障转移、地区、`DIRECT`、`🚀 节点选择`等所有显式选择及匹配订阅的具体服务器都存在；GitHub 的 `policy-select-name=🚀 节点选择`，Apple 的 `policy-select-name=DIRECT`。
 - [ ] 在 Shadowrocket 首页切换节点后，`🐙 GitHub` 仍选择 `🚀 节点选择`并继续联网；Apple 保持其已选择的显式策略。
@@ -18,7 +19,7 @@
 - [ ] `🤖 AI 专用`有独立 AI 洲组和具体节点；更改 AI 节点不改变主线路，OpenAI、Claude、Gemini、Copilot 与常用其他 AI 分流正确。
 - [ ] GitHub 命中 `🐙 GitHub`，早于 Microsoft 规则。
 - [ ] 哔哩哔哩、抖音、小红书、微博各自能在 DIRECT、`🚀 节点选择`或具体节点间单独切换；抖音视频和评论加载正常。
-- [ ] `☣️ 安全威胁`、`🧱 常见广告`、`🕵️ 严格跟踪`各自能在 REJECT 与 DIRECT 间热切换。
+- [ ] `☣️ 安全威胁`和`🕵️ 严格跟踪`能在 REJECT 与 DIRECT 间热切换；默认关闭的广告不产生远程规则请求，只有 `adblockMode=full` 时才检查 optional `🧱 常见广告`命中。
 - [ ] 连接、规则和 DNS 日志可查看，且自动删除 7 天前日志。
 - [ ] IPv4 网络正常。
 - [ ] 双栈网络的 IPv4 和 IPv6 都不绕过规则。
@@ -30,7 +31,7 @@
 - [ ] NAS 正常。
 - [ ] 打印机正常。
 - [ ] `⬇️ 下载/P2P`候选没有 `[机场]`。
-+ [ ] `🎮 游戏连接`只出现明确带 `·U` 能力标记的节点，默认 DIRECT。
+- [ ] `🎮 游戏连接`只出现明确带 `·U` 能力标记的节点，默认 DIRECT；`OverseasGame` 业务规则使用独立的 `🌍 海外游戏`策略组。
 - [ ] iPhone 在 Wi-Fi 和蜂窝网络分别测试《问道手游》登录、换线、战斗和资源加载；雷霆/吉比特域名命中 DIRECT。
 - [ ] macOS 的 `ipv6Mode=ipv4-only`，并完成休眠唤醒与 Wi-Fi 切换测试，无持续断流。
 - [ ] 更新一次 Profile 后，`🚀 节点选择`被收敛为 `PROXY`；AI 和其他仍有效的手动策略选择保持不变，若未保留则在推广前记录并处理。
@@ -43,7 +44,7 @@
 中国候选的做法：
 
 1. 打开规则日志后，访问一个自己知道解析到中国 IP、但不确定是否有专用规则的普通站点候选。
-2. 查看这次请求的命中结果；如果命中 ChinaMax、某个服务名或任何其他命名规则集，丢弃这个候选并换一个。
+2. 查看这次请求的命中结果；如果命中 `ChinaIP`、`DomesticCore`、某个服务名或任何其他命名规则集，丢弃这个候选并换一个。
 3. 只有日志明确显示 `GEOIP,CN,DIRECT`，才勾选中国未知路由项。
 4. 在下面的记录中只记录候选目标和测试日期，不记录完整 URL、查询参数或带地址栏截图。
 

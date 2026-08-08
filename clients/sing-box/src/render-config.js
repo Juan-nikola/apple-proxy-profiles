@@ -7,16 +7,24 @@ import { renderSingBoxDns } from "./render-dns.js";
 import { renderSingBoxTun } from "./render-platform.js";
 import { validateSingBoxConfig } from "./validate-config.js";
 
-export function renderSingBoxConfig(rawOptions, nodes, { ruleBaseUrl, ruleSetFormat = "source" } = {}) {
+export function renderSingBoxConfig(rawOptions, nodes, rendererOptions = {}) {
+  if (Object.hasOwn(rendererOptions, "ruleSetFormat")) {
+    throw new Error("Renderer option 'ruleSetFormat' was removed; migrate to profileMode and adblockMode");
+  }
+  const { ruleBaseUrl } = rendererOptions;
   const options = isParsedSingBoxOptions(rawOptions) ? rawOptions : parseSingBoxOptions(rawOptions);
   const inventory = Array.isArray(nodes) ? nodes : [];
   if (inventory.length === 0) throw new Error("sing-box refuses an empty node inventory");
   for (const node of inventory) nodeMetadata(node);
   const nodeOutbounds = inventory.map(renderSingBoxOutbound);
   const groups = renderSingBoxGroups(options, inventory, {
-    ruleProbeUrl: `${ruleBaseUrl.replace(/\/+$/u, "")}/Hijacking.json`,
+    ruleProbeUrl: `${ruleBaseUrl.replace(/\/+$/u, "")}/Hijacking.srs`,
   });
-  const { ruleSets, rules, final } = renderSingBoxRouteRules({ ruleBaseUrl, ruleSetFormat });
+  const { ruleSets, rules, final } = renderSingBoxRouteRules({
+    ruleBaseUrl,
+    profileMode: options.profileMode,
+    adblockMode: options.adblockMode,
+  });
   const config = {
     log: { level: "info", timestamp: true },
     dns: renderSingBoxDns(options),

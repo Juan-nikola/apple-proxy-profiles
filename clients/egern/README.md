@@ -28,9 +28,9 @@ Egern Node Generator 通过稳定 URL 复用：File `egern-nodes` 直接引用 `
 | File 任务名 | 引用脚本 | Arguments |
 | --- | --- | --- |
 | `egern-nodes` | `egern-node-generator.js` | `output=nodes&type=collection&name=apple-proxy-sources&clientChain=off` |
-| `egern-macos` | `egern-profile-generator.js` | `output=config&type=collection&name=apple-proxy-sources&nodeSubscriptionUrl=https://example.invalid/private/egern-nodes&platform=macos&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=ipv4-only&autoGroupMode=auto&clientChain=off` |
-| `egern-iphone` | `egern-profile-generator.js` | `output=config&type=collection&name=apple-proxy-sources&nodeSubscriptionUrl=https://example.invalid/private/egern-nodes&platform=iphone&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&autoGroupMode=auto&clientChain=off` |
-| `egern-ipad` | `egern-profile-generator.js` | `output=config&type=collection&name=apple-proxy-sources&nodeSubscriptionUrl=https://example.invalid/private/egern-nodes&platform=ipad&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&autoGroupMode=auto&clientChain=off` |
+| `egern-macos` | `egern-profile-generator.js` | `output=config&type=collection&name=apple-proxy-sources&nodeSubscriptionUrl=https://example.invalid/private/egern-nodes&platform=macos&channel=current&adblockMode=off&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=ipv4-only&autoGroupMode=auto&clientChain=off` |
+| `egern-iphone` | `egern-profile-generator.js` | `output=config&type=collection&name=apple-proxy-sources&nodeSubscriptionUrl=https://example.invalid/private/egern-nodes&platform=iphone&channel=current&adblockMode=off&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&autoGroupMode=auto&clientChain=off` |
+| `egern-ipad` | `egern-profile-generator.js` | `output=config&type=collection&name=apple-proxy-sources&nodeSubscriptionUrl=https://example.invalid/private/egern-nodes&platform=ipad&channel=current&adblockMode=off&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&autoGroupMode=auto&clientChain=off` |
 
 先运行 `egern-nodes`，取得自己的私密输出 URL，再只在三个 Profile File 的参数编辑器里替换 `https://example.invalid/private/egern-nodes`。可视化参数编辑器填写原始 URL；旧版只有单行链接时，把真实 URL 当作一个参数值进行百分号编码。不要编码整条 JS URL，也不要把真实 URL 写入公开脚本、仓库或文档。
 
@@ -104,6 +104,8 @@ https://juan-nikola.github.io/apple-proxy-profiles/current/egern/scripts/egern-p
 | `name` | `apple-proxy-sources` | `apple-proxy-sources` | `apple-proxy-sources` |
 | `nodeSubscriptionUrl` | `<EGERN_NODES_PRIVATE_URL>` | `<EGERN_NODES_PRIVATE_URL>` | `<EGERN_NODES_PRIVATE_URL>` |
 | `platform` | `macos` | `iphone` | `ipad` |
+| `channel` | `current` | `current` | `current` |
+| `adblockMode` | `off` | `off` | `off` |
 | `dnsMode` | `stable` | `stable` | `stable` |
 | `chinaDns` | `alidns` | `alidns` | `alidns` |
 | `globalDns` | `cloudflare` | `cloudflare` | `cloudflare` |
@@ -116,6 +118,8 @@ https://juan-nikola.github.io/apple-proxy-profiles/current/egern/scripts/egern-p
 `nodeSubscriptionUrl` 直接填第 2 步复制的原始私密 URL。只有旧版“单行脚本 URL”界面才需要百分号编码这个参数值；不能编码整条 JS URL，也不能把参数之间的 `&`、`=` 一起编码。
 
 三个任务都保持“关闭缓存”未勾选、“不验证服务器证书”未勾选。逐个即时预览：输出应以 `ipv6:` 开头，并包含 `dns:`、`policy_groups:`、`rules:` 和 `default_subscription_group:`。Profile 通过私密 URL 挂载 `egern-nodes`，因此顶层不出现 `proxies:` 是正确结构；没有自更新 URL 时也不会输出 `auto_update:`，这是为了避免 Egern 将空对象判定为缺少必填的 `url`。任何一个仍显示占位内容或错误时都不要导入设备。
+
+`adblockMode=off` 是轻量默认，不下载完整广告分类。只有明确改为 `full` 时，才从与 `channel` 一致的独立 optional 发布加载 `Advertising` 与 `Advertising_Domain`。默认路由使用 `DomesticCore`/`DomesticGame`/`SteamCN` 直连、`OverseasGame` 进入 `🌍 海外游戏`、`ChinaIP` 和可解析的 `GEOIP CN` 国内回退，未识别或 DNS 失败流量最终进入 `🚀 节点选择`。
 
 ### 4. 导入、灰度与回滚
 

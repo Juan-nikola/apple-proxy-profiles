@@ -30,6 +30,7 @@ test("fetches immutable raw bytes and hashes them without resolving master", asy
   assert.equal(calls[0].options.redirect, "manual");
   assert.equal(snapshot.get("Fixture").sourceBytes, 26);
   assert.match(snapshot.get("Fixture").sourceSha256, /^[0-9a-f]{64}$/u);
+  assert.deepEqual(snapshot.get("Fixture").source, source);
 });
 
 test("fails closed for redirects, HTML, invalid UTF-8, and oversized bodies", async () => {

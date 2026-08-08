@@ -20,7 +20,8 @@ test("documents the exact three-layer boundary and pinned compatibility", async 
     assert.match(content.readme, new RegExp(phrase.replace(".", "\\."), "u"));
   }
   assert.match(content.readme, /e15518fde1f5d2652dfc1c234c89a68b87cecec0|上游兼容性/u);
-  assert.match(content.readme, /32 个[\s\S]*34 个[\s\S]*375,237/u);
+  assert.match(content.readme, /31 个默认来源[\s\S]*31 个默认分片[\s\S]*16,522/u);
+  assert.match(content.readme, /Advertising[\s\S]*Advertising_Domain[\s\S]*可选/u);
   assert.match(content.readme, /95,000.*100,000/u);
 });
 
@@ -29,6 +30,7 @@ test("deployment pins private arguments, all import layers, and manual refresh",
   for (const phrase of [
     "output=nodes&type=collection&name=apple-proxy-sources&clientChain=off",
     "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/import.html",
+    "https://juan-nikola.github.io/apple-proxy-profiles/optional/adblock-full/current/anywhere/import.html",
     "anywhere://add-proxy?link=",
     "anywhere://add-rule-set",
     "Subscriptions DNS", "IP Rules DNS", "Proxies DNS", "ECH DNS", "Fallback DNS",
@@ -40,6 +42,8 @@ test("deployment pins private arguments, all import layers, and manual refresh",
   assert.match(deployment, /链接模式[\s\S]*规范 Pages URL[\s\S]*参数/u);
   assert.match(deployment, /MITM\/HTTPS 解密.*Allow Insecure.*关闭/u);
   for (const ai of ["OpenAI", "Claude", "Gemini", "Copilot"]) assert.ok(deployment.includes(ai));
+  assert.match(deployment, /Advertising[\s\S]*Advertising_Domain[\s\S]*删除或禁用/u);
+  assert.match(deployment, /OverseasGame[\s\S]*海外游戏/u);
 });
 
 test("README is independently copyable for the two-layer Sub-Store node setup", async () => {
@@ -64,7 +68,7 @@ test("README contains the complete current-UI beginner deployment path", async (
     "单条脚本的“启用”和“预览”都勾选",
     "只是全部展开/收起，不是运行总开关",
     "“关闭缓存”和“不验证服务器证书”都不勾选",
-    "确认 34 个规则分片全部出现",
+    "确认 31 个默认规则分片全部出现",
     "iPhone 全部通过后才在 iPad",
   ]) assert.ok(readme.includes(phrase), `README missing beginner phrase: ${phrase}`);
   for (const key of ["output", "type", "name", "clientChain"]) {
@@ -81,5 +85,6 @@ test("canary and troubleshooting lock safe order, UUID risks, and real rollback"
   for (const phrase of ["UUID", "名称 + 同名序号", "不要反复删订阅", "iCloud", "不是完整备份", "100,000", "95,000"]) {
     assert.ok(troubleshooting.includes(phrase), `troubleshooting missing ${phrase}`);
   }
+  assert.match(troubleshooting, /广告包[\s\S]*内存/u);
   assert.doesNotMatch(`${canary}\n${troubleshooting}`, /重新导入.{0,12}(?:无损|保留全部)/u);
 });

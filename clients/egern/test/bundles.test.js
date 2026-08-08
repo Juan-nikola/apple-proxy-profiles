@@ -611,7 +611,8 @@ test("tracked examples are deterministic complete platform Profiles", async () =
     assert.match(profile, new RegExp(`^ipv6: ${ipv6}$`, "mu"));
     assert.match(profile, /policy_groups:/u);
     assert.match(profile, /rules:/u);
-    assert.match(profile, /https:\/\/juan-nikola\.github\.io\/apple-proxy-profiles\/current\/egern\/rules\/Advertising\.yaml/u);
+    assert.match(profile, /https:\/\/juan-nikola\.github\.io\/apple-proxy-profiles\/edge\/egern\/rules\/DomesticCore\.yaml/u);
+    assert.doesNotMatch(profile, /\/Advertising(?:_Domain)?\.yaml|\/ChinaMax_Domain\.yaml/u);
     assert.doesNotMatch(profile, /^proxies:/mu);
     assert.doesNotMatch(profile, /TEST_ONLY_|198\.51\.100\.|192\.0\.2\./u);
     assert.doesNotMatch(profile, /\/Users\/|\\\\Users\\|[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:/u);

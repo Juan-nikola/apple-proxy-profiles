@@ -10,14 +10,12 @@ const LOCAL_SKIP_PROXY = Object.freeze([
   "127.0.0.0/8", "169.254.0.0/16", "172.16.0.0/12", "192.168.0.0/16", "224.0.0.0/4",
   "::1/128", "fc00::/7", "fe80::/10", "ff00::/8",
 ]);
-
 function generalSettings(options) {
   const chinaDns = { alidns: "223.5.5.5", dnspod: "119.29.29.29", system: "system" }[options.chinaDns];
-  const globalDns = { cloudflare: "1.1.1.1", google: "8.8.8.8", quad9: "9.9.9.9" }[options.globalDns];
   return [
     "loglevel = notify",
     `ipv6 = ${options.ipv6Mode === "auto" ? "true" : "false"}`,
-    `dns-server = ${chinaDns},${globalDns}`,
+    `dns-server = ${chinaDns}`,
     `skip-proxy = ${LOCAL_SKIP_PROXY.join(",")}`,
     "exclude-simple-hostnames = true",
     "internet-test-url = http://www.gstatic.com/generate_204",
@@ -41,7 +39,7 @@ export function renderSurgeProfile(rawOptions, nodes, { ruleBaseUrl } = {}) {
     `[General]\n${generalSettings(options).join("\n")}`,
     `[Proxy]\n${proxyLines}`,
     `[Proxy Group]\n${renderSurgeGroups(options, inventory).join("\n")}`,
-    `[Rule]\n${renderSurgeRules({ ruleBaseUrl }).join("\n")}`,
+    `[Rule]\n${renderSurgeRules({ ruleBaseUrl, adblockMode: options.adblockMode }).join("\n")}`,
   ].join("\n\n") + "\n";
   const validation = validateSurgeProfile(profile);
   if (!validation.valid) throw new Error(`Generated Surge profile failed validation: ${validation.errors.join(",")}`);

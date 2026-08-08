@@ -165,11 +165,11 @@ Sub-Store 中先找“订阅/组合订阅”，再找“脚本操作/Script Oper
 
 ## 8. 首次使用策略组
 
-1. 本次恢复服务组时，只需重新运行当前平台中直接引用 `shadowrocket-profile-generator.js` 规范 Pages URL 的 File 并更新 Profile；节点脚本 URL、组合 Operator、任务参数和私密 URL都不改。仓库中的 `clients/shadowrocket/dist/` 与 `clients/shadowrocket/examples/` 已随源码重建校验，节点 Operator 内容未改变；规则的唯一批准变更是用完整 `Advertising` 取代 `AdvertisingLite`，同时引用 `Advertising.list` 与 `Advertising_Domain.list`。打开 `🚀 节点选择`，确认它只有 `PROXY`，摘要显示 `SELECT > PROXY`。以后直接在 Shadowrocket 首页选择节点，这个组会自动跟随；如果这里仍显示国旗或具体节点名，当前设备使用的还是旧 Profile。
-2. 16 个常用业务组都提供自动测速、故障转移、地区和具体节点选择。GitHub、YouTube、Netflix、Disney+、Spotify、国际媒体、Telegram、海外社交、TikTok 和游戏平台这 10 个境外组以 `policy-select-name=🚀 节点选择` 设为首项；Apple、Microsoft、哔哩哔哩、抖音、小红书和微博这 6 个国内组以 `policy-select-name=DIRECT` 设为首项。检查至少一个境外组和一个国内组，确认各自首项、完整显式候选和匹配订阅中的具体服务器均可见。
+1. 重新运行当前平台中直接引用 `shadowrocket-profile-generator.js` 规范 Pages URL 的 File 并更新 Profile；节点脚本 URL、组合 Operator 和私密 URL都不改。当前轻量默认是 `channel=edge`、`adblockMode=off`：`DomesticCore`、`DomesticGame`、`SteamCN` 先 DIRECT，明确境外服务随后匹配，`OverseasGame` 进入 `🌍 海外游戏`，`ChinaIP` 与 `GEOIP,CN,DIRECT` 负责国内回退，最后是 `FINAL,🚀 节点选择`。只有明确设置 `adblockMode=full` 才加载独立 optional 广告包。打开 `🚀 节点选择`，确认它只有 `PROXY`，摘要显示 `SELECT > PROXY`；如果仍显示国旗或具体节点名，当前设备使用的还是旧 Profile。
+2. 16 个常用业务组都提供自动测速、故障转移、地区和具体节点选择。GitHub、YouTube、Netflix、Disney+、Spotify、国际媒体、Telegram、海外社交、TikTok 和 `🌍 海外游戏` 这 10 个境外组以 `policy-select-name=🚀 节点选择` 设为首项；Apple、Microsoft、哔哩哔哩、抖音、小红书和微博这 6 个国内组以 `policy-select-name=DIRECT` 设为首项。检查至少一个境外组和一个国内组，确认各自首项、完整显式候选和匹配订阅中的具体服务器均可见。
 3. 打开 `🤖 AI 专用`，可选择独立 AI 洲组或符合筛选条件的具体节点。AI 组的选择不会改变主线路。
 4. Apple、Microsoft 和国内平台默认直连；需要时可在对应平台组选择 `🚀 节点选择`或具体节点。
-5. `☣️ 安全威胁`、`🧱 常见广告`、`🕵️ 严格跟踪`可以在客户端即时切换。
+5. `☣️ 安全威胁`和`🕵️ 严格跟踪`可以在客户端即时切换；`🧱 常见广告`只有 `adblockMode=full` 加载 optional 广告规则后才有规则命中。
 6. `⬇️ 下载/P2P`和`🎮 游戏连接`默认 DIRECT；不了解节点服务条款时不要切换。
 
 本次从旧版恢复服务组时，只更新当前平台 Profile；只更新节点订阅不会改变分组，且不需要更新节点 Script Operator。先在 Intel Mac 更新并核对 Profile 时间和 `SELECT > PROXY`，通过后再依次更新 iPhone、iPad。

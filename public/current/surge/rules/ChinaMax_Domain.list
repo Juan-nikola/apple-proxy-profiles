@@ -1,24 +1,24 @@
 # Upstream: https://github.com/blackmatrix7/ios_rule_script
 # Path: rule/Surge/ChinaMax/ChinaMax_Domain.list
-# Commit: ccc2d6b711007324bacb55cdfbbf7e36ad48145a
-# Committed at: 2026-08-07T18:52:17Z
+# Commit: 72c410015dc99df6b54eca1386126f70268bf6bc
+# Committed at: 2026-08-05T19:24:33Z
 # License: GPL-2.0-only
 # Changed by: Juan-nikola/apple-proxy-profiles
-# Output entries: 111569
+# Output entries: 111566
 # Omitted entries: 0
 # NAME: ChinaMax
 # AUTHOR: blackmatrix7
 # REPO: https://gitlab.com/blackmatrix7/ios_rule_script
-# UPDATED: 2026-08-08 02:48:31
+# UPDATED: 2026-08-06 03:21:37
 # DOMAIN: 297
 # DOMAIN-KEYWORD: 13
-# DOMAIN-SUFFIX: 111323
+# DOMAIN-SUFFIX: 111320
 # IP-ASN: 1
 # IP-CIDR: 8253
-# IP-CIDR6: 4208
+# IP-CIDR6: 4199
 # PROCESS-NAME: 12
 # USER-AGENT: 65
-# TOTAL: 124172
+# TOTAL: 124160
 .0.zone
 .00.net
 .000.link
@@ -63608,7 +63608,6 @@
 .madajiefood.com
 .madaomall.com
 .madboxi.com
-.made-in-china.com
 .madefuns.com
 .madeinchinastone.com
 .madewei.com
@@ -65341,7 +65340,6 @@
 .microxiang.com
 .microyan.com
 .microzuji.com
-.micstatic.com
 .mictormedical.com
 .micu.hk
 .micun.com
@@ -72983,7 +72981,6 @@
 .powerchinayun.com
 .powerde.com
 .powereasy.net
-.poweremarket.com
 .powerex1.com
 .powerflow-tech.com
 .powerfulchina.com

@@ -18,8 +18,13 @@ routing = 0
 2, adventuresbydisney.com
 2, babble.com
 2, babyzone.com
+2, bam.nr-data.net
 2, bamgrid.com
 2, beautyandthebeastmusical.co.uk
+2, braze.com
+2, cdn.optimizely.com
+2, conviva.com
+2, d9.flashtalking.com
 2, dilcdn.com
 2, disney-asia.com
 2, disney-discount.com
@@ -44,6 +49,7 @@ routing = 0
 2, disney.com.tw
 2, disney.cz
 2, disney.de
+2, disney.demdex.net
 2, disney.dk
 2, disney.es
 2, disney.fi
@@ -99,7 +105,9 @@ routing = 0
 2, disneynewseries.com
 2, disneynow.com
 2, disneypeoplesurveys.com
+2, disneyplus.bn5x.net
 2, disneyplus.com
+2, disneyplus.com.ssl.sc.omtrdc.net
 2, disneyprivacycenter.com
 2, disneyredirects.com
 2, disneysrivieraresort.com
@@ -120,8 +128,10 @@ routing = 0
 2, edgedatg.com
 2, espn.co.uk
 2, espn.com
+2, espn.hb.omtrdc.net
 2, espn.net
 2, espncdn.com
+2, espndotcom.tt.omtrdc.net
 2, espnqa.com
 2, execute-api.us-east-1.amazonaws.com
 2, go-disneyworldgo.com
@@ -131,6 +141,7 @@ routing = 0
 2, hotstar.com
 2, hotstarext.com
 2, hsprepack.akamaized.net
+2, js-agent.newrelic.com
 2, marvel.com
 2, marvel10thanniversary.com
 2, marveldimensionofheroes.com

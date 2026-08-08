@@ -59,8 +59,6 @@ test("publishes one hash-closed multi-client current snapshot", async () => {
     "anywhere/scripts/substore-node-generator.js",
     "surge/scripts/surge-profile-generator.js",
     "surge/scripts/substore-profile-generator.js",
-    "surge/scripts/surge-nodes-generator.js",
-    "surge/scripts/substore-nodes-generator.js",
     "sing-box/scripts/sing-box-config-generator.js",
     "sing-box/scripts/substore-config-generator.js",
   ]) {
@@ -87,7 +85,7 @@ test("public client entrypoints close over current and never raw master", async 
       assert.match(content, /current\/shadowrocket\/rules/u);
       assert.match(content, /`\$\{RULE_ROOT\}\/\$\{id\}\.list`/u);
     } else {
-      assert.match(content, /current\/shadowrocket\/rules\/Advertising_Domain\.list/u);
+      assert.match(content, /current\/shadowrocket\/rules\/[A-Za-z0-9_-]+\.list/u);
     }
   }
   for (const [path, marker] of [
@@ -101,14 +99,6 @@ test("public client entrypoints close over current and never raw master", async 
     assert.match(content, new RegExp(marker.replaceAll("/", "\\/"), "u"), path);
   }
   for (const path of [
-    "surge/scripts/surge-nodes-generator.js",
-    "surge/scripts/substore-nodes-generator.js",
-  ]) {
-    const content = await readFile(new URL(path, currentRoot), "utf8");
-    assert.match(content, /Option 'output' must be nodes/u, path);
-    assert.doesNotMatch(content, /TEST_ONLY_FIXTURE_PASSWORD|example\.invalid/u, path);
-  }
-  for (const path of [
     "egern/examples/egern-macos.yaml",
     "egern/examples/egern-iphone.yaml",
     "egern/examples/egern-ipad.yaml",
@@ -116,7 +106,7 @@ test("public client entrypoints close over current and never raw master", async 
     const content = await readFile(new URL(path, currentRoot), "utf8");
     assert.match(content, /^ipv6:/u);
     assert.doesNotMatch(content, /^auto_update: \{\}$/mu);
-    assert.match(content, /current\/egern\/rules\/Advertising_Domain\.yaml/u);
+    assert.match(content, /current\/egern\/rules\/[A-Za-z0-9_-]+\.yaml/u);
   }
   for (const path of [
     "egern/scripts/egern-profile-generator.js",
@@ -148,14 +138,19 @@ test("public client entrypoints close over current and never raw master", async 
   }
 });
 
-test("publishes independent frontier manifests for edge and current", async () => {
+test("publishes an independent lightweight edge candidate beside stable current", async () => {
   const edge = JSON.parse(await readFile(new URL("edge/manifest.json", publicRoot), "utf8"));
   const current = JSON.parse(await readFile(new URL("current/manifest.json", publicRoot), "utf8"));
-  assert.equal(edge.channel, "edge");
+  assert.equal(edge.schemaVersion, 2);
+  assert.equal(edge.generatedAt, edge.upstream.committedAt);
+  assert.match(edge.upstream.commit, /^[0-9a-f]{40}$/u);
   assert.equal(current.upstream.commit.length, 40);
-  assert.ok(edge.records.some((record) => record.platformKey === "surge/macos"));
-  assert.ok(edge.records.some((record) => record.platformKey === "singbox/openwrt"));
-  assert.equal(await readFile(new URL("edge/surge/scripts/surge-profile-generator.js", publicRoot), "utf8").then((text) => text.includes("edge/surge/rules")), true);
+  assert.deepEqual(Object.keys(edge.clients).sort(), ["anywhere", "egern", "shadowrocket", "singbox", "surge"]);
+  assert.ok(edge.clients.singbox.referencedDefaultBytes > 0);
+  const surgeGenerator = await readFile(new URL("edge/surge/scripts/surge-profile-generator.js", publicRoot), "utf8");
+  assert.match(surgeGenerator, /channel:\s*"edge"/u);
+  assert.match(surgeGenerator, /\$\{PUBLIC_RULE_ROOT\}\/\$\{options\.channel\}\/surge\/rules/u);
+  assert.ok((await stat(new URL("edge/sing-box/rule-sets/ChinaIP.srs", publicRoot))).size > 0);
 });
 
 test("keeps current, previous, and an online version within the hard Pages budget", async () => {

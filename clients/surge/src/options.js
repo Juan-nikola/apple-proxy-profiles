@@ -4,6 +4,7 @@ import { platformPolicyPreset } from "../../../shared/policies/platform-presets.
 const REQUIRED_KEYS = Object.freeze(["output", "type", "name", "subscriptionName", "platform"]);
 const NODE_REQUIRED_KEYS = Object.freeze(["output", "type", "name"]);
 const DEFAULTS = Object.freeze({
+  channel: "edge",
   dnsMode: "stable",
   chinaDns: "alidns",
   globalDns: "cloudflare",
@@ -12,8 +13,11 @@ const DEFAULTS = Object.freeze({
   ipv6Mode: "auto",
   autoGroupMode: "auto",
   clientChain: "off",
+  adblockMode: "off",
 });
 const PLATFORMS = new Set(["macos", "iphone", "ipad"]);
+const CHANNELS = new Set(["edge", "current"]);
+const ADBLOCK_MODES = new Set(["off", "full"]);
 const PARSED = new WeakSet();
 const PARSED_NODES = new WeakSet();
 const ALLOWED_KEYS = new Set([...REQUIRED_KEYS, ...Object.keys(DEFAULTS), "proxyPolicyUrl"]);
@@ -70,12 +74,19 @@ export function parseSurgeOptions(raw) {
   if (!PLATFORMS.has(platform)) throw new Error("Option 'platform' has an unsupported value");
   if (requiredString(raw, "output") !== "config") throw new Error("Option 'output' must be config");
   if (requiredString(raw, "type") !== "collection") throw new Error("Option 'type' must be collection");
+  const channel = raw.channel === undefined ? DEFAULTS.channel : raw.channel;
+  if (typeof channel !== "string" || !CHANNELS.has(channel)) throw new Error("Option 'channel' has an unsupported value");
+  const adblockMode = raw.adblockMode === undefined ? DEFAULTS.adblockMode : raw.adblockMode;
+  if (typeof adblockMode !== "string" || !ADBLOCK_MODES.has(adblockMode)) {
+    throw new Error("Option 'adblockMode' has an unsupported value");
+  }
   const options = {
     output: "config",
     type: "collection",
     name: requiredString(raw, "name"),
     subscriptionName: requiredString(raw, "subscriptionName"),
     platform,
+    channel,
     dnsMode: enumValue(raw, "dnsMode", DEFAULTS.dnsMode),
     chinaDns: enumValue(raw, "chinaDns", DEFAULTS.chinaDns),
     globalDns: enumValue(raw, "globalDns", DEFAULTS.globalDns),
@@ -84,7 +95,7 @@ export function parseSurgeOptions(raw) {
     ipv6Mode: enumValue(raw, "ipv6Mode", platform === "macos" ? "ipv4-only" : DEFAULTS.ipv6Mode),
     autoGroupMode: enumValue(raw, "autoGroupMode", DEFAULTS.autoGroupMode),
     clientChain: enumValue(raw, "clientChain", DEFAULTS.clientChain),
-    proxyPolicyUrl: validatePolicyUrl(raw.proxyPolicyUrl, "proxyPolicyUrl"),
+    adblockMode,
   };
   platformPolicyPreset(platform);
   Object.freeze(options);

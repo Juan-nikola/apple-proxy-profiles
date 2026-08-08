@@ -1,3 +1,5 @@
+import { RULE_BUDGETS } from "../../../shared/rules/lightweight-policy.js";
+
 function uniqueTags(records, errors, label) {
   const tags = new Set();
   for (const record of records ?? []) {
@@ -53,6 +55,7 @@ export function validateSingBoxConfig(config) {
   }
   const routeRules = config.route?.rules;
   if (!Array.isArray(routeRules)) errors.push("route rules missing");
+  else if (routeRules.length > RULE_BUDGETS.startupInlineEntries) errors.push("route inline rule budget exceeded");
   for (const rule of routeRules ?? []) {
     if (Object.hasOwn(rule, "geoip")) errors.push("route contains removed geoip");
     if (Object.hasOwn(rule, "geosite")) errors.push("route contains removed geosite");
@@ -60,6 +63,9 @@ export function validateSingBoxConfig(config) {
     const target = actionOutbound(rule);
     if (target !== undefined && !outboundTags.has(target)) errors.push("route references missing outbound tag");
     if (rule.action === "hijack-dns" && !dnsServers.size) errors.push("DNS hijack requires DNS servers");
+    if (rule.action === "resolve" && (typeof rule.server !== "string" || !dnsServers.has(rule.server))) {
+      errors.push("route resolve references missing DNS server");
+    }
     if (rule.action !== undefined && typeof rule.action !== "string") errors.push("route rule action must be a string");
   }
   const routeFinal = config.route?.final;
@@ -75,6 +81,9 @@ export function validateSingBoxConfig(config) {
     }
     if (ruleSet.http_client !== undefined && (typeof ruleSet.http_client !== "string" || !httpClientTags.has(ruleSet.http_client))) {
       errors.push("rule-set references missing HTTP client tag");
+    }
+    if (ruleSet.type === "remote" && (ruleSet.format !== "binary" || typeof ruleSet.url !== "string" || !/^https:\/\/[^\s]+\.srs$/u.test(ruleSet.url))) {
+      errors.push("remote rule-set must use binary format and an HTTPS .srs URL");
     }
   }
   const dnsFinal = config.dns?.final;

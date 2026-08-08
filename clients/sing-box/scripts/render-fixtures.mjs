@@ -6,7 +6,7 @@ import { renderSingBoxConfig } from "../src/render-config.js";
 import { validateSingBoxConfig } from "../src/validate-config.js";
 
 const root = resolve(import.meta.dirname, "..");
-const ruleBaseUrl = "https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/rules";
+const ruleBaseUrl = "https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/rule-sets";
 const nodes = Object.freeze([
   Object.freeze({
     name: "示例 · Tokyo",
@@ -32,19 +32,23 @@ const nodes = Object.freeze([
 ]);
 
 for (const platform of ["macos", "iphone", "ipad", "android", "openwrt"]) {
-  const options = parseSingBoxOptions({
-    output: "config",
-    type: "collection",
-    name: "sing-box-fixture",
-    subscriptionName: "sing-box-Fixture",
-    platform,
-    channel: "current",
-    ipv6Mode: platform === "macos" ? "ipv4-only" : "auto",
-  });
-  const config = renderSingBoxConfig(options, nodes, { ruleBaseUrl, ruleSetFormat: "source" });
-  const validation = validateSingBoxConfig(config);
-  if (!validation.valid) throw new Error(`sing-box fixture failed validation for ${platform}: ${validation.errors.join("; ")}`);
-  const destination = resolve(root, `examples/sing-box-${platform}.json`);
-  await mkdir(dirname(destination), { recursive: true });
-  await writeFile(destination, `${JSON.stringify(config, null, 2)}\n`, "utf8");
+  for (const profileMode of ["light", "diagnostic"]) {
+    const options = parseSingBoxOptions({
+      output: "config",
+      type: "collection",
+      name: "sing-box-fixture",
+      subscriptionName: "sing-box-Fixture",
+      platform,
+      channel: "current",
+      ipv6Mode: platform === "macos" ? "ipv4-only" : "auto",
+      profileMode,
+    });
+    const config = renderSingBoxConfig(options, nodes, { ruleBaseUrl });
+    const validation = validateSingBoxConfig(config);
+    if (!validation.valid) throw new Error(`sing-box fixture failed validation for ${platform}/${profileMode}: ${validation.errors.join("; ")}`);
+    const suffix = profileMode === "diagnostic" ? "-diagnostic" : "";
+    const destination = resolve(root, `examples/sing-box-${platform}${suffix}.json`);
+    await mkdir(dirname(destination), { recursive: true });
+    await writeFile(destination, `${JSON.stringify(config, null, 2)}\n`, "utf8");
+  }
 }

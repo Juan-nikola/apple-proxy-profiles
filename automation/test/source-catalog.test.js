@@ -4,51 +4,63 @@ import test from "node:test";
 import { RULE_SOURCE_CATALOG } from "../../shared/rules/catalog.js";
 import {
   BLACKMATRIX7_BASELINE,
+  DEFAULT_PUBLISH_SOURCE_CATALOG,
+  FETCH_SOURCE_CATALOG,
   LOGICAL_RULE_SETS,
   PUBLISH_SOURCE_CATALOG,
   catalogSha256,
   pinnedRawUrl,
 } from "../src/source-catalog.js";
 
-const EXPECTED_IDS = [
+const EXPECTED_INPUT_IDS = [
   "Hijacking", "BlockHttpDNS", "Advertising", "Advertising_Domain", "Privacy",
   "BiliBili", "ByteDance", "XiaoHongShu", "Weibo", "OpenAI", "Claude", "Gemini",
   "Copilot", "GitHub", "YouTube", "Netflix", "Disney", "Spotify", "GlobalMedia",
   "Telegram", "Facebook", "Instagram", "Twitter", "TikTok", "Apple", "Microsoft",
   "SteamCN", "ChinaMax_Domain", "Game", "Download", "PrivateTracker", "ChinaMax",
+  "ChinaIPs",
 ];
 
-test("pins all 32 Surge inputs and all 31 logical families", () => {
-  assert.deepEqual(PUBLISH_SOURCE_CATALOG.map(({ id }) => id), EXPECTED_IDS);
-  assert.deepEqual(RULE_SOURCE_CATALOG.map(({ id }) => id), EXPECTED_IDS);
-  assert.equal(PUBLISH_SOURCE_CATALOG.length, 32);
+test("keeps all 33 pinned inputs separate from the 31 lightweight publication outputs", () => {
+  assert.deepEqual(FETCH_SOURCE_CATALOG.map(({ id }) => id), EXPECTED_INPUT_IDS);
+  assert.equal(PUBLISH_SOURCE_CATALOG, FETCH_SOURCE_CATALOG);
+  assert.deepEqual(DEFAULT_PUBLISH_SOURCE_CATALOG.map(({ id }) => id), RULE_SOURCE_CATALOG.map(({ id }) => id));
+  assert.equal(PUBLISH_SOURCE_CATALOG.length, 33);
+  assert.equal(DEFAULT_PUBLISH_SOURCE_CATALOG.length, 31);
   assert.equal(LOGICAL_RULE_SETS.length, 31);
-  assert.equal(new Set(PUBLISH_SOURCE_CATALOG.map(({ canonicalPath }) => canonicalPath)).size, 32);
-  assert.deepEqual(LOGICAL_RULE_SETS.find(({ id }) => id === "Advertising"), {
-    id: "Advertising",
-    sourceIds: ["Advertising", "Advertising_Domain"],
-    required: true,
-  });
+  assert.equal(new Set(PUBLISH_SOURCE_CATALOG.map(({ canonicalPath }) => canonicalPath)).size, 33);
+  assert.equal(LOGICAL_RULE_SETS.some(({ id }) => id === "Advertising"), false);
+  assert.equal(LOGICAL_RULE_SETS.some(({ id }) => id === "ChinaMax_Domain"), false);
+  assert.equal(DEFAULT_PUBLISH_SOURCE_CATALOG.find(({ id }) => id === "DomesticCore").routing, 1);
+  assert.equal(DEFAULT_PUBLISH_SOURCE_CATALOG.find(({ id }) => id === "DomesticGame").routing, 1);
+  assert.equal(DEFAULT_PUBLISH_SOURCE_CATALOG.find(({ id }) => id === "ChinaIP").routing, 1);
 });
 
-test("keeps Advertising rules and domain-set inputs independently auditable", () => {
-  const advertising = PUBLISH_SOURCE_CATALOG.filter(({ familyId }) => familyId === "Advertising");
-  assert.deepEqual(advertising.map(({ id, componentId, canonicalPath, routing }) => ({
-    id, componentId, canonicalPath, routing,
+test("marks compiler-only and optional inputs without removing their pinned fetch URLs", () => {
+  const advertising = FETCH_SOURCE_CATALOG.filter(({ familyId }) => familyId === "Advertising");
+  assert.deepEqual(advertising.map(({ id, componentId, canonicalPath, routing, optionalPack }) => ({
+    id, componentId, canonicalPath, routing, optionalPack,
   })), [
     {
       id: "Advertising",
       componentId: "rules",
       canonicalPath: "rule/Surge/Advertising/Advertising.list",
       routing: 2,
+      optionalPack: "adblock-full",
     },
     {
       id: "Advertising_Domain",
       componentId: "domains",
       canonicalPath: "rule/Surge/Advertising/Advertising_Domain.list",
       routing: 2,
+      optionalPack: "adblock-full",
     },
   ]);
+  assert.deepEqual(FETCH_SOURCE_CATALOG.filter(({ inputOnly }) => inputOnly).map(({ id }) => id), [
+    "ChinaMax_Domain", "Game", "ChinaMax", "ChinaIPs",
+  ]);
+  assert.equal(FETCH_SOURCE_CATALOG.find(({ id }) => id === "ChinaMax").auditOnly, true);
+  assert.equal(FETCH_SOURCE_CATALOG.find(({ id }) => id === "ChinaIPs").auditOnly, undefined);
 });
 
 test("uses explicit traversal-free Surge paths and deterministic routing", () => {
@@ -57,6 +69,10 @@ test("uses explicit traversal-free Surge paths and deterministic routing", () =>
     assert.equal(source.canonicalPath.includes(".."), false);
     assert.ok([0, 1, 2].includes(source.routing));
     assert.equal(source.priority, source.order * 10);
+  }
+  for (const source of DEFAULT_PUBLISH_SOURCE_CATALOG) {
+    assert.match(source.canonicalPath, /^compiled\/Surge\/[A-Za-z0-9_]+\/[A-Za-z0-9_]+\.list$/u);
+    assert.equal(source.canonicalPath.includes(".."), false);
   }
   assert.equal(PUBLISH_SOURCE_CATALOG.some(({ id }) => id === "AdvertisingLite"), false);
   assert.equal(PUBLISH_SOURCE_CATALOG.findIndex(({ id }) => id === "ChinaMax_Domain")
@@ -73,7 +89,10 @@ test("pins immutable provenance and raw URLs", () => {
     committedAt: "2026-08-01T19:07:21Z",
     license: "GPL-2.0-only",
   });
-  assert.equal(pinnedRawUrl(PUBLISH_SOURCE_CATALOG[0]),
+  assert.equal(pinnedRawUrl(FETCH_SOURCE_CATALOG[0]),
     "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/dab47069a30c4ae70f7f5f4c919d639d9aaf79dc/rule/Surge/Hijacking/Hijacking.list");
   assert.match(catalogSha256(), /^[0-9a-f]{64}$/u);
+  const chinaIps = FETCH_SOURCE_CATALOG.find(({ id }) => id === "ChinaIPs");
+  assert.equal(pinnedRawUrl(chinaIps),
+    "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/dab47069a30c4ae70f7f5f4c919d639d9aaf79dc/rule/Surge/ChinaIPs/ChinaIPs.list");
 });

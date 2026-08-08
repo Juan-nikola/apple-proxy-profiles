@@ -49,8 +49,33 @@ test("Sub-Store Surge entry requests a private JSON collection and returns Profi
   }]);
   assert.equal(result.id, "input");
   assert.match(result.$content, /^\[General\]/mu);
-  assert.match(result.$content, /current\/surge\/rules/u);
+  assert.match(result.$content, /edge\/surge\/rules/u);
   assert.doesNotMatch(result.$content, /_profile|_subName/u);
+});
+
+test("Sub-Store Surge entry applies current channel and full adblock options to the same profile", async () => {
+  const result = await operator(
+    { id: "input" },
+    "macos",
+    {
+      arguments: {
+        output: "config",
+        type: "collection",
+        name: "surge-sources",
+        subscriptionName: "Surge-Nodes",
+        platform: "macos",
+        channel: "current",
+        adblockMode: "full",
+      },
+      async produceArtifact() {
+        return nodes;
+      },
+    },
+  );
+  assert.match(result.$content, /current\/surge\/rules\/DomesticCore\.list/u);
+  assert.match(result.$content, /current\/optional\/adblock-full\/surge\/rules\/Advertising\.list/u);
+  assert.match(result.$content, /current\/optional\/adblock-full\/surge\/rules\/Advertising_Domain\.list/u);
+  assert.doesNotMatch(result.$content, /current\/surge\/rules\/Advertising(?:_Domain)?\.list/u);
 });
 
 test("Sub-Store Surge entry normalizes raw collection nodes before rendering", async () => {

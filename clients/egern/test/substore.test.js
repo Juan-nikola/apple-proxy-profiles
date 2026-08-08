@@ -193,6 +193,31 @@ test("profile File Operator accepts every documented option and platform", async
   }
 });
 
+test("profile File Operator propagates publication channel and optional adblock selection", async () => {
+  const result = await profileOperator({}, "Egern", {
+    arguments: { ...PROFILE_ARGUMENTS, channel: "current", adblockMode: "full" },
+    produceArtifact: producer(rawInventory()),
+  });
+  assert.match(result.$content, /current\/egern\/rules\/DomesticCore\.yaml/u);
+  assert.match(result.$content, /current\/optional\/adblock-full\/egern\/rules\/Advertising\.yaml/u);
+  assert.match(result.$content, /current\/optional\/adblock-full\/egern\/rules\/Advertising_Domain\.yaml/u);
+  assert.deepEqual(validateEgernProfile(result.$content), { valid: true, errors: [] });
+});
+
+test("profile File Operator rejects unsupported publication and adblock values before producing nodes", async () => {
+  for (const [key, value] of [["channel", "beta"], ["adblockMode", "balanced"]]) {
+    let producerCalls = 0;
+    await assertSafeRejection(profileOperator({}, "Egern", {
+      arguments: { ...PROFILE_ARGUMENTS, [key]: value },
+      async produceArtifact() {
+        producerCalls += 1;
+        return rawInventory();
+      },
+    }), [value]);
+    assert.equal(producerCalls, 0, key);
+  }
+});
+
 test("profile File Operator uses one immutable pre-await option snapshot", async () => {
   const arguments_ = {
     ...PROFILE_ARGUMENTS,

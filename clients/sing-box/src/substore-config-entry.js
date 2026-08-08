@@ -39,7 +39,7 @@ export async function operator(input, targetPlatform, context = {}) {
   const filtered = filterNodesForClient(normalized.nodes, CLIENT.singbox);
   if (filtered.nodes.length === 0) throw new Error("No compatible sing-box nodes");
   logDiagnostics(context, options, filtered.nodes);
-  const ruleBaseUrl = `${PUBLIC_RULE_ROOT}/${options.channel}/sing-box/rules`;
-  const config = renderSingBoxConfig(options, filtered.nodes.map(sanitizeSingBoxNode), { ruleBaseUrl, ruleSetFormat: "source" });
+  const ruleBaseUrl = `${PUBLIC_RULE_ROOT}/${options.channel}/sing-box/rule-sets`;
+  const config = renderSingBoxConfig(options, filtered.nodes.map(sanitizeSingBoxNode), { ruleBaseUrl });
   return { ...input, $content: `${JSON.stringify(config, null, 2)}\n` };
 }

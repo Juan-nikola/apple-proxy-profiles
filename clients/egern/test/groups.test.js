@@ -25,7 +25,7 @@ const FOREIGN_GROUPS = Object.freeze([
   "✈️ Telegram",
   "💬 海外社交",
   "🎶 TikTok",
-  "🕹️ 游戏平台",
+  "🌍 海外游戏",
 ]);
 const DOMESTIC_GROUPS = Object.freeze([
   "🍎 Apple",

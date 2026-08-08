@@ -2,15 +2,15 @@
   "adapterSchema": "singbox-adapter-0.1",
   "channel": "current",
   "client": "singbox",
-  "configSha256": "7d5d2283097bee33df9570dc45951c503fe3274dae69c65c22470bbdf34e62af",
+  "configSha256": "e2b945ca34964d1d7734e436fc676d145c7d98e0520b4e6f35cc58a0ba07bcde",
   "platform": "iphone",
   "platformKey": "singbox/iphone",
-  "ruleManifestSha256": "5cf82dd34b724623063f0ab66f085a0bf37bfcf043ffe6c2507e48fbcdc746d1",
+  "ruleManifestSha256": "1c5ff548799a44eb3e407e49dfff725994e96d362da3de02cd95110bb3ecd8d5",
   "schemaVersion": 1,
   "status": "validated",
   "upstream": {
     "branch": "stable",
     "commit": "4c02326989a170bcf1d2c3aab1cf5c70adfed2ca",
-    "fetchedAt": "2026-08-07T10:27:54.379Z"
+    "fetchedAt": "2026-08-07T05:07:57.908Z"
   }
 }

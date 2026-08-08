@@ -27,6 +27,7 @@ test("builds safe channel-scoped frontier files and rewrites public channel link
   assert.equal(files.get("edge/sing-box/scripts/sing-box-config-generator.js"), "const url = '/edge/sing-box/rules/Fixture.json';\n");
   assert.ok(files.has("current/surge/macos/manifest.json"));
   assert.ok(files.has("edge/singbox/android/manifest.json"));
-  assert.ok(files.has("edge/manifest.json"));
+  assert.ok(files.has("edge/frontier-manifest.json"));
+  assert.equal(files.has("edge/manifest.json"), false);
   for (const path of files.keys()) assert.doesNotMatch(path, /(^|\/)(?:\.\.|\/)/u);
 });

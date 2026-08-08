@@ -1,7 +1,10 @@
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { RULE_CATALOG } from "../src/rule-catalog.js";
+import {
+  FETCH_SOURCE_CATALOG,
+  pinnedRawUrl,
+} from "../../../automation/src/source-catalog.js";
 import { isValidRuleLine, isValidRuleTarget } from "../src/rule-validator.js";
 
 export { isValidRuleLine };
@@ -14,8 +17,17 @@ export function isValidDomainSetLine(line) {
 
 const timeoutMs = 20_000;
 const userAgent = "shadowrocket-profile-rule-check/1.0";
-export async function checkRule(rule) {
-  const response = await fetch(rule.upstreamUrl, {
+export const RULE_CHECK_CATALOG = Object.freeze(FETCH_SOURCE_CATALOG.map((source) => Object.freeze({
+  ...source,
+  upstreamUrl: pinnedRawUrl(source),
+})));
+
+export async function checkRule(rule, { fetchImpl = globalThis.fetch } = {}) {
+  if (!rule || typeof rule.upstreamUrl !== "string" || !rule.upstreamUrl.startsWith("https://")) {
+    throw new Error("rule upstream URL is unavailable");
+  }
+  if (typeof fetchImpl !== "function") throw new Error("fetch is unavailable");
+  const response = await fetchImpl(rule.upstreamUrl, {
     headers: { "user-agent": userAgent },
     signal: AbortSignal.timeout(timeoutMs),
   });
@@ -36,17 +48,26 @@ export async function checkRule(rule) {
   }
 }
 
-async function main() {
-  const results = await Promise.allSettled(RULE_CATALOG.map(async (rule) => ({ rule, result: await checkRule(rule) })));
+export async function checkCatalog(catalog = RULE_CHECK_CATALOG, options = {}) {
+  if (!Array.isArray(catalog) || catalog.length === 0) throw new Error("Rule check catalog is empty");
+  const results = await Promise.allSettled(catalog.map(async (rule) => ({
+    rule,
+    result: await checkRule(rule, options),
+  })));
   const failures = results.flatMap((result, index) => result.status === "rejected"
-    ? [`${RULE_CATALOG[index].id}: ${result.reason instanceof Error ? result.reason.message : String(result.reason)}`]
+    ? [`${catalog[index]?.id ?? "unknown"}: ${result.reason instanceof Error ? result.reason.message : String(result.reason)}`]
     : []);
+  return Object.freeze({ checked: catalog.length, failures: Object.freeze(failures) });
+}
+
+async function main() {
+  const { checked, failures } = await checkCatalog();
 
   if (failures.length > 0) {
     for (const failure of failures) console.error(`FAIL ${failure}`);
     process.exitCode = 1;
   } else {
-    console.log(`OK ${RULE_CATALOG.length} rule sets`);
+    console.log(`OK ${checked} pinned compiler inputs`);
   }
 }
 

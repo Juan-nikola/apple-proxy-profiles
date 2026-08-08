@@ -58,7 +58,7 @@ export function buildFrontierArtifacts({ ruleBaseUrl, manifests, staticFiles }) 
   }
   for (const channel of channels) {
     const channelRecords = records.filter((record) => record.channel === channel);
-    files.set(`${channel}/${channel === "current" ? "frontier-manifest" : "manifest"}.json`, canonicalJson({
+    files.set(`${channel}/frontier-manifest.json`, canonicalJson({
       schemaVersion: 1,
       channel,
       ruleBaseUrl: ruleBaseUrl.replace(/\/current$/u, `/${channel}`),

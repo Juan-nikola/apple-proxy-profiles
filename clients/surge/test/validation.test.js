@@ -38,32 +38,18 @@ test("requires FINAL to be the last rule", () => {
   assert.match(result.errors.join("\n"), /rules after FINAL/iu);
 });
 
-test("validates remote policy pool references", () => {
-  const valid = validateSurgeProfile(profile([
-    "📦 远程节点池 = select,policy-path=https://substore.example.invalid/surge-nodes,update-interval=21600,hidden=1",
-    "🚀 节点选择 = select,include-other-group=📦 远程节点池,policy-regex-filter=^(?!🔗 ).+$",
-  ], ["FINAL,A"]));
-  assert.deepEqual(valid, { valid: true, errors: [] });
-
-  const missing = validateSurgeProfile(profile([
-    "🚀 节点选择 = select,include-other-group=Missing,policy-regex-filter=^(?!🔗 ).+$",
-  ], ["FINAL,A"]));
-  assert.equal(missing.valid, false);
-  assert.match(missing.errors.join("\n"), /missing group or proxy reference/iu);
+test("accepts the rule-download fallback transport before the CN fallback", () => {
+  const result = validateSurgeProfile(profile(
+    ["A = select,DIRECT"],
+    ["DOMAIN,example.invalid,A", "GEOIP,CN,DIRECT", "FINAL,A"],
+  ));
+  assert.deepEqual(result, { valid: true, errors: [] });
 });
 
-test("validates comma-separated remote policy pool references", () => {
-  const valid = validateSurgeProfile(profile([
-    "PoolA = select,policy-path=https://a.example.invalid/nodes,hidden=1",
-    "PoolB = select,policy-path=https://b.example.invalid/nodes,hidden=1",
-    "A = select,include-other-group=PoolA\\,PoolB,policy-regex-filter=^.+$",
-  ]));
-  assert.deepEqual(valid, { valid: true, errors: [] });
-
-  const missing = validateSurgeProfile(profile([
-    "PoolA = select,policy-path=https://a.example.invalid/nodes,hidden=1",
-    "A = select,include-other-group=PoolA\\,PoolB,policy-regex-filter=^.+$",
-  ]));
-  assert.equal(missing.valid, false);
-  assert.match(missing.errors.join("\n"), /missing group or proxy reference/iu);
+test("accepts dns-failed only on the last FINAL rule", () => {
+  const result = validateSurgeProfile(profile(
+    ["A = select,DIRECT"],
+    ["GEOIP,CN,DIRECT", "FINAL,A,dns-failed"],
+  ));
+  assert.deepEqual(result, { valid: true, errors: [] });
 });

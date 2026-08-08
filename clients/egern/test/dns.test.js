@@ -12,7 +12,7 @@ import {
 } from "../src/options.js";
 
 const PRIVATE_URL = "https://example.invalid/private/egern-nodes";
-const CHINA_RULE_URL = `${PUBLIC_SNAPSHOT_BASE_URL}/egern/rules/ChinaMax_Domain.yaml`;
+const CHINA_RULE_URL = `${PUBLIC_SNAPSHOT_BASE_URL}/egern/rules/DomesticCore.yaml`;
 const PUBLISHING_PLAN = readFileSync(
   new URL("../../../docs/superpowers/plans/2026-08-01-apple-proxy-profiles-publishing.md", import.meta.url),
   "utf8",
@@ -25,6 +25,7 @@ function options(overrides = {}) {
     name: "egern-sources",
     nodeSubscriptionUrl: PRIVATE_URL,
     platform: "macos",
+    channel: "current",
     ...overrides,
   });
 }
@@ -68,18 +69,26 @@ test("renders the exact stable DNS object in documented declaration order", () =
   );
 });
 
-test("closes the China DNS rule URL over the publishing snapshot contract", () => {
+test("closes the lightweight domestic DNS rule URL over the publishing snapshot contract", () => {
   assert.match(
     PUBLISHING_PLAN,
     /Egern uses `current\/egern\/rules\/\$\{id\}\.yaml`/,
   );
-  assert.equal(CHINA_RULE_URL.endsWith("/egern/rules/ChinaMax_Domain.yaml"), true);
+  assert.equal(CHINA_RULE_URL.endsWith("/egern/rules/DomesticCore.yaml"), true);
 
   for (const dnsMode of ["stable", "speed"]) {
     const serialized = JSON.stringify(renderEgernDns(options({ dnsMode })));
     assert.equal(serialized.includes(CHINA_RULE_URL), true, dnsMode);
+    assert.equal(serialized.includes("ChinaMax"), false, dnsMode);
     assert.equal(serialized.includes("china-domains"), false, dnsMode);
   }
+});
+
+test("keeps DNS rule providers on the selected publication channel", () => {
+  const edge = JSON.stringify(renderEgernDns(options({ channel: "edge" })));
+  const current = JSON.stringify(renderEgernDns(options({ channel: "current" })));
+  assert.match(edge, /\/edge\/egern\/rules\/DomesticCore\.yaml/u);
+  assert.match(current, /\/current\/egern\/rules\/DomesticCore\.yaml/u);
 });
 
 test("renders privacy without a China exception and speed with a direct system catch-all", () => {

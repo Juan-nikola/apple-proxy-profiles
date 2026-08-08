@@ -11,10 +11,13 @@ routing = 0
 0, 64.23.132.171/32
 2, ai.com
 2, algolia.net
+2, api.statsig.com
 2, auth0.com
 2, chatgpt.com
 2, chatgpt.livekit.cloud
 2, client-api.arkoselabs.com
+2, events.statsigapi.net
+2, featuregates.org
 2, host.livekit.cloud
 2, identrust.com
 2, intercom.io
@@ -26,6 +29,8 @@ routing = 0
 2, openai.com
 2, openaiapi-site.azureedge.net
 2, openaicom.imgix.net
+2, segment.io
+2, sentry.io
 2, stripe.com
 2, turn.livekit.cloud
 3, openai

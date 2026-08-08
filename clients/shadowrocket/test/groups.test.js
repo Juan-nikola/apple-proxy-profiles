@@ -132,7 +132,7 @@ test("keeps service manual access and gates special service groups by eligibilit
   ];
   const foreignGroups = [
     "🐙 GitHub", "📺 YouTube", "🎬 Netflix", "🏰 Disney+", "🎵 Spotify", "🌍 国际媒体",
-    "✈️ Telegram", "💬 海外社交", "🎶 TikTok", "🕹️ 游戏平台",
+    "✈️ Telegram", "💬 海外社交", "🎶 TikTok", "🌍 海外游戏",
   ];
   const domesticGroups = [
     "🍎 Apple", "🪟 Microsoft", "📺 哔哩哔哩", "🎵 抖音", "📕 小红书", "🧣 微博",

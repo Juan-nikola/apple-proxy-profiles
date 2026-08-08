@@ -9,12 +9,12 @@
 - DNS：修改 `dnsMode`、`chinaDns`、`globalDns` 后重新生成并更新 Profile，不是热切换。
 - QUIC：修改 `quicMode=allow|proxy-block|all-block` 后更新 Profile，不是热切换。
 - IPv6：iPhone/iPad 使用 `ipv6Mode=auto`；macOS 稳定优先使用 `ipv4-only`。
-- 广告：`☣️ 安全威胁`、`🧱 常见广告`、`🕵️ 严格跟踪`可在客户端热切换；`blockMode`只决定首次默认值。
+- 广告：默认 `adblockMode=off` 不下载完整广告包；明确使用 `adblockMode=full` 时才从独立 optional 发布加载两份广告规则，策略仍可在 `🧱 常见广告` 中热切换。
 - HTTPS 解密：保持关闭；广告规则中的域名/IP 项仍会工作，需要解密 HTTPS 路径的 URL 正则不会生效，不为提高拦截率安装证书。
 - AI：在 `🤖 AI 专用`里可通过独立 AI 洲组或具体节点选择出口；它可以与主线路使用不同节点，更新后确认选择仍保留。
 - 国内平台：各自策略组默认 DIRECT，需要时可切到 `🚀 节点选择`或具体节点。抖音使用 Blackmatrix7 `ByteDance` 增强规则；代理不能保证评论地区改变。
-+ 游戏连接：默认 DIRECT，只显示明确带 `·U` 能力标记的节点；游戏网页由 `🕹️ 游戏平台`控制。
-+ 下载/P2P：默认 DIRECT，候选只含 `｜自建`、`｜Realm`、`｜链式代理` 节点。
+- 游戏连接：默认 DIRECT，只显示明确带 `·U` 能力标记的节点；海外游戏网页和服务由 `🌍 海外游戏` 控制。
+- 下载/P2P：默认 DIRECT，候选只含 `｜自建`、`｜Realm`、`｜链式代理` 节点。
 
 ## 新增或修改来源
 

@@ -18,6 +18,8 @@ const required = Object.freeze({
 });
 
 const defaults = Object.freeze({
+  channel: "edge",
+  adblockMode: "off",
   dnsMode: "stable",
   chinaDns: "alidns",
   globalDns: "cloudflare",
@@ -33,7 +35,7 @@ test("parses exact Egern profile options with platform IPv6 defaults", () => {
     assert.deepEqual(parsed, {
       ...required,
       platform,
-      publicBaseUrl: PUBLIC_SNAPSHOT_BASE_URL,
+      publicBaseUrl: "https://juan-nikola.github.io/apple-proxy-profiles/edge",
       ...defaults,
       ipv6Mode: platform === "macos" ? "ipv4-only" : "auto",
     });
@@ -58,6 +60,14 @@ test("accepts every shared option enum without cloning or widening the contracts
       assert.equal(parseEgernOptions({ ...required, [key]: value })[key], value, `${key}=${value}`);
     }
     assert.equal(Object.isFrozen(OPTION_VALUES[key]), true, key);
+  }
+});
+
+test("accepts only the two publication channels and explicit full ad blocking", () => {
+  assert.equal(parseEgernOptions({ ...required, channel: "current" }).channel, "current");
+  assert.equal(parseEgernOptions({ ...required, adblockMode: "full" }).adblockMode, "full");
+  for (const [key, value] of [["channel", "beta"], ["adblockMode", "balanced"]]) {
+    assert.throws(() => parseEgernOptions({ ...required, [key]: value }), new RegExp(key, "i"));
   }
 });
 
@@ -129,6 +139,8 @@ test("rejects ambiguous whitespace, CR/LF, and unsupported enum values without e
     ["ipv6Mode", "auto "],
     ["autoGroupMode", "full\r"],
     ["clientChain", "off\n"],
+    ["channel", `edge ${secret}`],
+    ["adblockMode", `off ${secret}`],
   ]) {
     assert.throws(
       () => parseEgernOptions({ ...required, [key]: value }),

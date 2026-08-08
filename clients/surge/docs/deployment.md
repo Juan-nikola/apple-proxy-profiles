@@ -34,6 +34,8 @@
 | `subscriptionName` | `Apple-Proxy-Nodes` | `Apple-Proxy-Nodes` | `Apple-Proxy-Nodes` |
 | `proxyPolicyUrl` | `<SURGE_NODES_URL>` | `<SURGE_NODES_URL>` | `<SURGE_NODES_URL>` |
 | `platform` | `macos` | `iphone` | `ipad` |
+| `channel` | `current` | `current` | `current` |
+| `adblockMode` | `off` | `off` | `off` |
 | `dnsMode` | `stable` | `stable` | `stable` |
 | `chinaDns` | `alidns` | `alidns` | `alidns` |
 | `globalDns` | `cloudflare` | `cloudflare` | `cloudflare` |
@@ -46,6 +48,10 @@
 预览成功标志：Profile 包含 `[General]`、`[Proxy]`、`[Proxy Group]`、`[Rule]`，隐藏组 `📦 远程节点池` 含有 `policy-path=<SURGE_NODES_URL>`，而 `[Proxy]` 不包含服务器、端口、密码或 UUID。若节点资源为空，先检查原始组合是否非空、Surge 兼容节点是否存在，以及脚本是否启用。
 
 Profile 只包含一个隐藏组 `📦 远程节点池`。如果要临时使用另一份 Surge 节点订阅，下载 Profile 后只编辑该组的 `policy-path`；保持组名、`include-other-group` 和 `policy-regex-filter` 不变，地区、流媒体和自动测速组会继续分类新来源。手动替换的 URL 必须返回 Surge 兼容的 `[Proxy]`（例如 Sub-Store 的 `t=surge` 输出），不能使用 JSON、通用 API 或其他客户端格式。
+
+`adblockMode=off` 保持轻量默认分流；确实需要完整广告分类时才使用 `full`。`channel` 和脚本发布通道应保持一致：灰度两者都用 `edge`，稳定任务两者都用 `current`。
+
+`globalDns` 为共享参数兼容位，这份 Surge Profile 不会在本地使用它。海外规则命中后由代理端解析；其他域名使用 `chinaDns`，解析失败时通过 `dns-failed` 交给代理，这样才能同时兼容 macOS、iPhone 和 iPad。
 
 “关闭缓存/noCache”和“不验证证书/insecure”保持关闭。公开规则 URL 可以更新，但私密节点 URL、API、UUID 和密码永远不应出现在 Arguments、README、Issue 或终端日志中。
 

@@ -8,6 +8,8 @@
     "test": "node --test",
     "build": "node scripts/build.mjs",
     "fixtures": "node scripts/render-fixtures.mjs",
+    "compile:rules": "node scripts/compile-rules.mjs compile",
+    "check:config": "node scripts/compile-rules.mjs check",
     "check:secrets": "node ../../scripts/check-secrets.mjs",
     "verify": "npm test && npm run build && npm run fixtures && npm run check:secrets"
   },

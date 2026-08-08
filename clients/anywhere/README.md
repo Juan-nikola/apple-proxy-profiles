@@ -5,7 +5,7 @@ Anywhere 不能用一个远程文件表达 Shadowrocket/Egern 的完整 Profile�
 | 层 | 本项目提供 | 必须留在本地 |
 |---|---|---|
 | 私密节点订阅 | `dist/anywhere-node-generator.js` 生成仅含 `proxies` 的 Clash YAML | 私密订阅 URL、节点凭据、当前节点 |
-| 公开规则 | 32 个 Blackmatrix7 Surge 输入转换成 34 个 `.arrs` 分片及 Manifest | 每个规则集最终绑定到 DIRECT、REJECT、节点或链 |
+| 公开规则 | 31 个默认来源转换成 31 个轻量 `.arrs` 分片及 schema-v2 Manifest | 每个规则集最终绑定到 DIRECT、REJECT、节点或链 |
 | 设备设置 | 部署、灰度和回滚说明 | Rule/Global、DNS、链、IPv6、QUIC、Purify 等 |
 
 三层任一缺失，都不能称为完整配置。`.arrs` 的 `routing = 0/1/2` 仅控制首次导入的 Default、DIRECT、REJECT。特别注意：`Default` 并非停用；在审计的 Anywhere 源码中，它会让自定义规则集回退到当前选择的节点或链。
@@ -15,7 +15,8 @@ Anywhere 不能用一个远程文件表达 Shadowrocket/Egern 的完整 Profile�
 - `dist/anywhere-node-generator.js`：自包含私密节点 File Operator。
 - `examples/rules/manifest.json`：固定提交、输入哈希、计数、优先级归并和分片闭包。
 - `examples/rules/*.arrs`：每片最多 95,000 条，低于源码 100,000 条上限。
-- `examples/import.html`：1 个覆盖 34 个分片的总 deep link，加上 3 个不超过 1,800 字符的回退批次。
+- `examples/import.html`：默认轻量分片导入页，含 schema-v2 迁移提示。
+- `examples/optional/adblock-full/anywhere/import.html`：只导入 `Advertising` 与 `Advertising_Domain` 的可选 REJECT 页；启用前必须评估内存。
 
 新任务统一使用 `anywhere-node-generator.js`。旧 `substore-node-generator.js` 文件和 Pages URL 保留为字节一致的兼容别名，既有 Sub-Store 任务不必仅为改名更换 URL；新旧名称不是两个不同版本。
 
@@ -77,9 +78,10 @@ output=nodes&type=collection&name=apple-proxy-sources&clientChain=off
 
 ### 4. 导入公开 `.arrs` 规则
 
-1. 打开 Pages 的 `current/anywhere/import.html`，优先使用总导入 deep link；若当前系统或分享链路无法打开，再按页面顺序完成 3 个回退批次，不跳批次、不重复导入。总 deep link 只会打开 Anywhere 的确认页面，不会创建单个聚合 `.arrs` 订阅；34 个规则集导入后仍要分别 Refresh/Update。
-2. 回到 Anywhere，确认 34 个规则分片全部出现。`routing=1` 是 DIRECT，`routing=2` 是 REJECT，`routing=0` 的 Default 会回退到当前节点或链，并不表示停用。
-3. 逐片检查本地目标绑定：国内/局域网按设计绑定 DIRECT，广告与隐私阻断绑定 REJECT，其余服务规则绑定到选定节点或链。
+1. 如果设备导入过旧版，先删除或禁用 `Advertising`、`Advertising_Domain`、`ChinaMax_Domain` 和通用 `Game` 分片；否则旧大规则仍会占用内存并可能抢先命中。
+2. 打开 Pages 的 `current/anywhere/import.html`，优先使用总导入 deep link；若当前系统或分享链路无法打开，再按页面顺序完成所有回退批次。总 deep link 只会打开 Anywhere 的确认页面，不会创建单个聚合 `.arrs` 订阅。
+3. 回到 Anywhere，确认 31 个默认规则分片全部出现。`routing=1` 是 DIRECT，`routing=2` 是 REJECT，`routing=0` 的 Default 会回退到当前节点或链，并不表示停用。
+4. `DomesticCore`、`DomesticGame` 和 `ChinaIP` 应为 DIRECT。`OverseasGame` 首次使用 Default/代理；如果 App 版本支持专用组，手动绑定到海外游戏组。
 4. 配置 DNS、IPv6、QUIC、链与 Purify 等设备设置，然后切换到 Rule Mode。节点 File 不会自动完成这些步骤。
 
 ### 5. 灰度和回滚
@@ -89,13 +91,13 @@ output=nodes&type=collection&name=apple-proxy-sources&clientChain=off
 3. 失败时切回旧节点订阅和旧本地规则绑定；若是公开规则问题，恢复旧 `.arrs` 导入；若是节点问题，只回滚 `anywhere-nodes`，不要混改规则层。
 4. 公开 `/current/` JS 升级时任务名、参数和私密直链保持不变。先在 iPhone 重新预览和刷新，通过后再推广到 iPad。
 
-成功标志：节点 File 预览非空；iPhone、iPad 都能手动刷新节点；34 个规则分片和本地绑定完整；旧配置仍可立即恢复。
+成功标志：节点 File 预览非空；iPhone、iPad 都能手动刷新节点；31 个默认分片和本地绑定完整；旧配置仍可立即恢复。
 
 Anywhere 只有这一条 Sub-Store 节点生成链。它不能用一个远程文件表达完整 Profile，所以本项目不会创建虚假的 `anywhere-profile-generator.js`：公开 `.arrs` 规则、规则目标绑定、DNS、IPv6、QUIC、链和 Rule 模式必须继续在 Anywhere 部署链路中完成。完整步骤见[部署指南](docs/deployment.md)。
 
-当前固定 Blackmatrix7 提交为 `dab47069a30c4ae70f7f5f4c919d639d9aaf79dc`：32 个输入共 393,743 条候选，376,477 条可转换，跨来源去重和优先级编译后输出 375,237 条。现有 `ChinaMax_Domain` 分片额外包含 18 条本地国内 App/CDN 后缀兜底，仍保持 34 个分片，不需要新增导入项。完整 Advertising 由 `Advertising` 与 `Advertising_Domain` 两个独立输入共同组成。
+当前固定 Blackmatrix7 提交为 `dab47069a30c4ae70f7f5f4c919d639d9aaf79dc`。编译后的 31 个默认来源生成 31 个默认分片、16,522 条规则；完整 `Advertising` 与 `Advertising_Domain` 仅位于可选 `adblock-full` 包，默认导入不会加载它们。
 
-国内 App 偶发变慢、切换开关后暂时恢复，通常是大规则集未及时命中时流量回落到 Default/当前节点，或 DNS/连接缓存处于旧状态；切换会重建连接和缓存。更新现有 `ChinaMax_Domain` 分片并确认其 `routing=1` 为 DIRECT 后，常见的 `*.cn`、哔哩哔哩、抖音/字节、小红书和微博域名会在远程规则之前得到稳定直连与国内 DNS 转发。
+国内 App 偶发变慢、切换开关后暂时恢复，通常是旧大规则仍在生效，或 DNS/连接缓存处于旧状态。删除或禁用旧 `ChinaMax_Domain`/`Game` 后，确认 `DomesticCore`、`DomesticGame` 和 `ChinaIP` 为 DIRECT，可避免常见国内域名和国内 IP 回落到代理。
 
 客户端兼容性固定到用户提供并核验的 Anywhere 官方源码提交 `e15518fde1f5d2652dfc1c234c89a68b87cecec0`。
 
@@ -113,7 +115,7 @@ Anywhere 只有这一条 Sub-Store 节点生成链。它不能用一个远程文
 
 - 真实订阅 URL、节点、UUID、密码、密钥和证书只存在于私密 Sub-Store 与设备。
 - 本项目不生成 `.amrs`、MITM、HTTPS 解密、重写或证书；Allow Insecure 保持关闭。
-- Privacy 的 20 条可转换规则因更高优先来源而归并为 0 个独立输出：19 条重复、1 条被完整覆盖。这是避免 Anywhere 后插入覆盖改变策略，不是漏源。
+- 可选完整广告包体积大，可能显著提高内存占用；它不属于默认路由。
 - 节点、规则和设备设置是独立更新链路；只更新其中一层不会同步另外两层。
 
 进一步阅读：[故障排查](docs/troubleshooting.md) · [上游兼容性](UPSTREAM_COMPATIBILITY.md)

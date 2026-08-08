@@ -2,15 +2,15 @@
   "adapterSchema": "surge-adapter-0.1",
   "channel": "current",
   "client": "surge",
-  "configSha256": "c98ded2f922b7fab123e6a030b09bae0e637378e2bba81569b941f2aa33363fe",
+  "configSha256": "56a334182c41452489c0ffdfe2c4a7974c758267080a903593ddb398c0e5afd7",
   "platform": "iphone",
   "platformKey": "surge/iphone",
-  "ruleManifestSha256": "d6d729b4e820a3dff88de1d0ece77156d4a7207e382b8d2d1c7f0e121ff9b989",
+  "ruleManifestSha256": "10458ed1086def105fd686b9363a1e66ccdc147186924f65a7c541065acbff1b",
   "schemaVersion": 1,
   "status": "validated",
   "upstream": {
     "branch": "beta",
-    "commit": "ccc2d6b711007324bacb55cdfbbf7e36ad48145a",
-    "fetchedAt": "2026-08-07T18:52:17Z"
+    "commit": "72c410015dc99df6b54eca1386126f70268bf6bc",
+    "fetchedAt": "2026-08-05T19:24:33Z"
   }
 }

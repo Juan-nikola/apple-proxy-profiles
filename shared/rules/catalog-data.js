@@ -8,7 +8,7 @@ function rule(id, policy, minEntries, inputFormat = "RULE-SET", directory = id) 
   });
 }
 
-export const RULE_SOURCE_DEFINITIONS = Object.freeze([
+export const UPSTREAM_RULE_SOURCE_DEFINITIONS = Object.freeze([
   rule("Hijacking", "☣️ 安全威胁", 150),
   rule("BlockHttpDNS", "☣️ 安全威胁", 40),
   rule("Advertising", "🧱 常见广告", 700),
@@ -42,3 +42,6 @@ export const RULE_SOURCE_DEFINITIONS = Object.freeze([
   rule("PrivateTracker", "⬇️ 下载/P2P", 150),
   rule("ChinaMax", "DIRECT", 8_000),
 ]);
+
+/** @deprecated Use UPSTREAM_RULE_SOURCE_DEFINITIONS for upstream fetch inputs. */
+export const RULE_SOURCE_DEFINITIONS = UPSTREAM_RULE_SOURCE_DEFINITIONS;

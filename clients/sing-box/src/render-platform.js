@@ -39,8 +39,8 @@ export function renderSingBoxTun(platform) {
       ...base,
       dns_mode: "hijack",
       dns_address: ["172.18.0.2"],
-      route_exclude_address: [...COMMON_EXCLUDE, "192.168.0.0/16"],
-      platform: { include_android_user: [0] },
+      include_android_user: [0],
+      route_exclude_address: [...COMMON_EXCLUDE],
     };
   }
   return {

@@ -1,9 +1,7 @@
-import { orderedRuleAssignments } from "../../../shared/rules/catalog.js";
+import { ruleClientCatalog } from "../../../shared/rules/lightweight-policy.js";
 import { CUSTOM_RULES } from "../../../shared/rules/custom-rules.js";
-import { DOMESTIC_FALLBACK_DOMAIN_SUFFIXES } from "../../../shared/rules/domestic-fallback.js";
-import { PUBLIC_SNAPSHOT_BASE_URL } from "./options.js";
+import { PUBLIC_RULE_ROOT } from "./options.js";
 
-const RULE_BASE_URL = `${PUBLIC_SNAPSHOT_BASE_URL}/egern/rules`;
 const CUSTOM_FIELDS = Object.freeze(["block", "direct", "proxy", "ai"]);
 const CUSTOM_POLICIES = Object.freeze({
   block: "REJECT",
@@ -43,10 +41,10 @@ const LOCAL_RULES = Object.freeze([
   })),
 ]);
 
-const GAME_DIRECT_DOMAINS = Object.freeze(["leiting.com", "leitingcn.com", "g-bits.com"]);
-const DOMESTIC_FALLBACK_RULES = Object.freeze(DOMESTIC_FALLBACK_DOMAIN_SUFFIXES.map((match) => (
-  Object.freeze({ domain_suffix: Object.freeze({ match, policy: "DIRECT" }) })
-)));
+const SECURITY_IDS = new Set(["Hijacking", "BlockHttpDNS", "Privacy", "Advertising", "Advertising_Domain"]);
+const DOMESTIC_IDS = Object.freeze(["DomesticCore", "DomesticGame", "SteamCN"]);
+const OVERSEAS_GAME_ID = "OverseasGame";
+const CHINA_IP_ID = "ChinaIP";
 
 function invalidCustom() {
   throw new Error(CUSTOM_ERROR);
@@ -218,65 +216,72 @@ export function renderEgernCustomRules(customRules) {
   return rendered;
 }
 
-function validatePublicBase(options) {
+function validatedOptions(options) {
   if (options === null || typeof options !== "object" || Array.isArray(options)) {
     throw new Error("Invalid Egern public rule base");
   }
-  let descriptor;
+  const descriptors = new Map();
   try {
-    descriptor = Object.getOwnPropertyDescriptor(options, "publicBaseUrl");
+    for (const key of ["publicBaseUrl", "adblockMode"]) {
+      descriptors.set(key, Object.getOwnPropertyDescriptor(options, key));
+    }
   } catch {
     throw new Error("Invalid Egern public rule base");
   }
-  if (!descriptor || "get" in descriptor || "set" in descriptor || descriptor.value !== PUBLIC_SNAPSHOT_BASE_URL) {
+  const baseDescriptor = descriptors.get("publicBaseUrl");
+  const adblockDescriptor = descriptors.get("adblockMode");
+  const base = baseDescriptor?.value;
+  const adblockMode = adblockDescriptor?.value;
+  if (
+    !baseDescriptor || "get" in baseDescriptor || "set" in baseDescriptor
+    || (base !== `${PUBLIC_RULE_ROOT}/edge` && base !== `${PUBLIC_RULE_ROOT}/current`)
+    || !adblockDescriptor || "get" in adblockDescriptor || "set" in adblockDescriptor
+    || (adblockMode !== "off" && adblockMode !== "full")
+  ) {
     throw new Error("Invalid Egern public rule base");
   }
-  return RULE_BASE_URL;
+  return { ruleBase: `${base}/egern/rules`, adblockMode };
 }
 
 export function renderEgernRules(options) {
-  const ruleBase = validatePublicBase(options);
-  const assignments = orderedRuleAssignments();
-  const steamIndex = assignments.findIndex(({ sourceId }) => sourceId === "SteamCN");
-  const gameIndex = assignments.findIndex(({ sourceId }) => sourceId === "Game");
-  if (assignments.length !== 32 || steamIndex < 0 || gameIndex <= steamIndex) {
-    throw new Error("Invalid Egern rule catalog");
+  const { ruleBase, adblockMode } = validatedOptions(options);
+  const catalog = ruleClientCatalog({ adblockMode });
+  const optionalBase = adblockMode === "full"
+    ? ruleBase.replace(/\/egern\/rules$/u, "/optional/adblock-full/egern/rules")
+    : null;
+  const byId = new Map();
+  for (const source of catalog) {
+    if (byId.has(source.id)) throw new Error("Invalid Egern rule catalog");
+    byId.set(source.id, source);
   }
 
+  const renderRemote = (source) => ({
+    rule_set: {
+      match: `${SECURITY_IDS.has(source.id) && ["Advertising", "Advertising_Domain"].includes(source.id) ? optionalBase : ruleBase}/${source.id}.yaml`,
+      policy: source.policy,
+      update_interval: 86400,
+    },
+  });
+
   const rules = [...LOCAL_RULES.map((rule) => structuredClone(rule))];
+  rules.push(...catalog.filter(({ id }) => SECURITY_IDS.has(id)).map(renderRemote));
   rules.push(...renderEgernCustomRules(CUSTOM_RULES));
-  for (let index = 0; index < assignments.length; index += 1) {
-    const assignment = assignments[index];
-    if (index === steamIndex) {
-      for (const match of GAME_DIRECT_DOMAINS) {
-        rules.push({ domain_suffix: { match, policy: "DIRECT" } });
-      }
-    }
-    if (assignment.sourceId === "ChinaMax_Domain") {
-      rules.push(...DOMESTIC_FALLBACK_RULES.map((rule) => structuredClone(rule)));
-    }
-    const match = `${ruleBase}/${assignment.sourceId}.yaml`;
-    if (index === gameIndex) {
-      rules.push({
-        and: {
-          match: [
-            { protocol: { match: "udp" } },
-            { rule_set: { match } },
-          ],
-          policy: "🎮 游戏连接",
-        },
-      });
-    }
-    rules.push({
-      rule_set: {
-        match,
-        policy: assignment.policy,
-        update_interval: 86400,
-      },
-    });
+  for (const id of DOMESTIC_IDS) {
+    const source = byId.get(id);
+    if (!source) throw new Error("Invalid Egern rule catalog");
+    rules.push(renderRemote(source));
+  }
+  for (const source of catalog) {
+    if (SECURITY_IDS.has(source.id) || DOMESTIC_IDS.includes(source.id) || [OVERSEAS_GAME_ID, CHINA_IP_ID].includes(source.id)) continue;
+    rules.push(renderRemote(source));
+  }
+  for (const id of [OVERSEAS_GAME_ID, CHINA_IP_ID]) {
+    const source = byId.get(id);
+    if (!source) throw new Error("Invalid Egern rule catalog");
+    rules.push(renderRemote(source));
   }
   rules.push(
-    { geoip: { match: "CN", policy: "DIRECT", no_resolve: true } },
+    { geoip: { match: "CN", policy: "DIRECT" } },
     { default: { policy: "🚀 节点选择" } },
   );
   return rules;

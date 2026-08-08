@@ -1,0 +1,38 @@
+{
+  "client": "anywhere",
+  "files": [
+    {
+      "bytes": 15088,
+      "path": "optional/adblock-full/anywhere/Advertising-001.arrs",
+      "sha256": "c4536fbb19fc76d33a9590381df33ce02397fd23d58a390fab613342eefe643c"
+    },
+    {
+      "bytes": 2087876,
+      "path": "optional/adblock-full/anywhere/Advertising_Domain-001.arrs",
+      "sha256": "aee814111db06510882e608a3fa0bb632c4c09f816af0e01d099512238300bb1"
+    },
+    {
+      "bytes": 2126075,
+      "path": "optional/adblock-full/anywhere/Advertising_Domain-002.arrs",
+      "sha256": "aa2ed703e001f02c5826a11c3637ff619124b7095e6b5475384516aa98c26324"
+    },
+    {
+      "bytes": 1284922,
+      "path": "optional/adblock-full/anywhere/Advertising_Domain-003.arrs",
+      "sha256": "c44afda6fb6211e65881b3a761c08c01d39780bf8e2c4c3832c514bc38cf4428"
+    },
+    {
+      "bytes": 4880,
+      "path": "optional/adblock-full/anywhere/import.html",
+      "sha256": "f8deacf882f2423544c1faff0d63426e06d5d2e5afb37f466a38cdeb2334cf91"
+    },
+    {
+      "bytes": 5944,
+      "path": "optional/adblock-full/anywhere/manifest.json",
+      "sha256": "497ebd6493bfb236968a9fd9d0807d7eba9141f4d0b34b7da0c28905b0088924"
+    }
+  ],
+  "generatedAt": "2026-08-07T18:52:17Z",
+  "manifestHash": "312dd7e8d13ebbd77ced6b01e691748633a48d8799d56b87e8530b118dea54e9",
+  "schemaVersion": 1
+}

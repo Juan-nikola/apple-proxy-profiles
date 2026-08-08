@@ -2,15 +2,15 @@
   "adapterSchema": "singbox-adapter-0.1",
   "channel": "current",
   "client": "singbox",
-  "configSha256": "7d5d2283097bee33df9570dc45951c503fe3274dae69c65c22470bbdf34e62af",
+  "configSha256": "d5a83b9af9bac97bae439f310442adb8197ac5e0fe7df6db3d8c77416b353d9a",
   "platform": "ipad",
   "platformKey": "singbox/ipad",
-  "ruleManifestSha256": "d6d729b4e820a3dff88de1d0ece77156d4a7207e382b8d2d1c7f0e121ff9b989",
+  "ruleManifestSha256": "10458ed1086def105fd686b9363a1e66ccdc147186924f65a7c541065acbff1b",
   "schemaVersion": 1,
   "status": "validated",
   "upstream": {
     "branch": "stable",
-    "commit": "7afc0aa2ba8bd8a5c800ce03c97b9ab106d0cc2b",
-    "fetchedAt": "2026-08-08T04:34:17.584Z"
+    "commit": "4c02326989a170bcf1d2c3aab1cf5c70adfed2ca",
+    "fetchedAt": "2026-08-07T05:53:32.296Z"
   }
 }

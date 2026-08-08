@@ -8,6 +8,11 @@ const GLOBAL_DNS = Object.freeze({
   google: Object.freeze({ server: "8.8.8.8", serverName: "dns.google" }),
   quad9: Object.freeze({ server: "9.9.9.9", serverName: "dns.quad9.net" }),
 });
+const EXPLICIT_OVERSEAS_RULE_SETS = Object.freeze([
+  "OpenAI", "Claude", "Gemini", "Copilot", "GitHub",
+  "YouTube", "Netflix", "Disney", "Spotify", "GlobalMedia",
+  "Telegram", "Facebook", "Instagram", "Twitter", "TikTok", "OverseasGame",
+].map((id) => `rule-${id}`));
 
 export function renderSingBoxDns(options) {
   const chinaServer = options.chinaDns === "system"
@@ -26,11 +31,10 @@ export function renderSingBoxDns(options) {
   };
   return {
     servers: [chinaServer, proxyServer],
-    rules: [
-      { rule_set: ["rule-ChinaMax", "rule-ChinaMax_Domain"], action: "route", server: "dns-direct" },
-      { rule_set: ["rule-Advertising", "rule-Privacy", "rule-Hijacking"], action: "route", server: "dns-proxy" },
+    rules: options.profileMode === "diagnostic" ? [] : [
+      { rule_set: EXPLICIT_OVERSEAS_RULE_SETS, action: "route", server: "dns-proxy" },
     ],
-    final: "dns-proxy",
+    final: "dns-direct",
     strategy: options.ipv6Mode === "ipv4-only" ? "ipv4_only" : "prefer_ipv4",
     cache_capacity: 4096,
   };

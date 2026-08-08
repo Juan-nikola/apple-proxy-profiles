@@ -116,6 +116,19 @@ npm --workspace @apple-proxy-profiles/sing-box run verify
 
 官方客户端本身不从本仓库编译；本仓库生成它们导入的配置。OpenWrt 使用生成的 JSON 和官方 sing-box 二进制。sing-box `.srs` 规则集必须由显式官方 core 编译器产生；缺少 core 时构建失败是安全行为。
 
+CI 和本地可用同一个安装器获取固定的官方 `sing-box 1.14.0-beta.9`。安装器只支持 Linux x64、macOS Apple Silicon 和 macOS Intel，会使用该固定 tag 的 GitHub Release 官方 `sha256` asset digest 校验压缩包，并返回绝对路径：
+
+```bash
+TASK_SING_BOX_CORE="$(node scripts/install-sing-box-core.mjs --print-path)"
+SING_BOX_CORE="$TASK_SING_BOX_CORE" node scripts/stage-rule-artifacts.mjs --channel current
+SING_BOX_CORE="$TASK_SING_BOX_CORE" npm --workspace @apple-proxy-profiles/sing-box run compile:rules
+SING_BOX_CORE="$TASK_SING_BOX_CORE" npm --workspace @apple-proxy-profiles/sing-box run check:config
+```
+
+sing-box 有两种配置模式：`profileMode=light` 使用远程二进制 `.srs`；`profileMode=diagnostic` 保留节点、DNS、TUN 和平台设置，但不加载任何远程规则，用于判断启动失败是否来自规则集。默认 `adblockMode=off`；只有显式选择 `adblockMode=full` 才会引用隔离的 `optional/adblock-full` 广告包，它会增加下载量和内存占用。
+
+默认发布的硬限额是：`DomesticCore` 最多 2,000 条、默认规则最多 25,000 条，单个客户端引用的默认规则文件合计最多 5,000,000 字节。`audit/sing-box/rules/*.json` 只是审计和可复现编译输入，不是生产配置可以远程加载的规则；生产路由只能引用经官方 core 验证的 `.srs`。
+
 ## 规则与 Anywhere 全部导入
 
 公开规则 Manifest：<https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/manifest.json>
@@ -126,7 +139,7 @@ Anywhere 全部规则导入页：<https://juan-nikola.github.io/apple-proxy-prof
 
 ## 发布、升级与回滚
 
-提交到 `main` 后由 GitHub Actions 构建并发布 `public/`。上线前必须通过测试、构建、fixtures、秘密扫描、Actions 固定检查和不可变规则检查；上线后再检查公开 URL 返回 200 和 Manifest 哈希。
+提交到 `main` 后由 GitHub Actions 构建并发布 `public/`。上线前必须通过官方 core 安装/校验、`.srs` 编译、两种 sing-box 配置检查、全客户端轻量语义与预算门禁、fixtures、秘密扫描、Actions 固定检查和不可变规则检查；上线后再检查公开 URL 返回 200 和 Manifest 哈希。定时任务只更新 `edge`，绝不自动推进 `current`；生产推进必须在 `canary-approval` 环境中指定已真机测试的客户端和其 64 位 client-manifest 哈希，然后复用该不可变字节，不重新构建。
 
 生产任务保持 `/current/`，隔离测试任务可使用 `/edge/`。升级前保留旧 Profile 和旧输出；失败时先在设备切回旧 Profile，再将测试任务改回已验证的旧版 URL。`previous/` 和 Manifest 的不可变版本用于公开规则回滚。真实设备必须按客户端 canary 清单逐台推广，不能把自动测试当作真机验收。
 

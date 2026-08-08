@@ -2,94 +2,22 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { CUSTOM_RULES } from "../../../shared/rules/custom-rules.js";
-import { RULE_SOURCE_CATALOG, orderedRuleAssignments } from "../../../shared/rules/catalog.js";
+import {
+  DEFAULT_RULE_SOURCE_IDS,
+  FULL_ADBLOCK_SOURCE_IDS,
+} from "../../../shared/rules/lightweight-policy.js";
 import { CUSTOM_AI, CUSTOM_BLOCK, CUSTOM_DIRECT, CUSTOM_PROXY } from "../src/custom-rules.js";
 import { RULE_CATALOG } from "../src/rule-catalog.js";
 import { renderRules, validateCustomRules } from "../src/render-rules.js";
 
-const BLACKMATRIX7_ROOT = "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Shadowrocket";
-const EXPECTED_CATALOG_IDS = [
-  "Hijacking", "BlockHttpDNS", "Advertising", "Advertising_Domain", "Privacy", "BiliBili", "ByteDance", "XiaoHongShu", "Weibo",
-  "OpenAI", "Claude", "Gemini", "Copilot", "GitHub", "YouTube", "Netflix", "Disney", "Spotify", "GlobalMedia",
-  "Telegram", "Facebook", "Instagram", "Twitter", "TikTok", "Apple", "Microsoft", "SteamCN", "ChinaMax_Domain",
-  "Game", "Download", "PrivateTracker", "ChinaMax",
-];
-const EXPECTED_ASSIGNMENTS = [
-  { sourceId: "Hijacking", policy: "☣️ 安全威胁" },
-  { sourceId: "BlockHttpDNS", policy: "☣️ 安全威胁" },
-  { sourceId: "Advertising", policy: "🧱 常见广告" },
-  { sourceId: "Advertising_Domain", policy: "🧱 常见广告" },
-  { sourceId: "Privacy", policy: "🕵️ 严格跟踪" },
-  { sourceId: "BiliBili", policy: "📺 哔哩哔哩" },
-  { sourceId: "ByteDance", policy: "🎵 抖音" },
-  { sourceId: "XiaoHongShu", policy: "📕 小红书" },
-  { sourceId: "Weibo", policy: "🧣 微博" },
-  { sourceId: "OpenAI", policy: "🤖 AI 专用" },
-  { sourceId: "Claude", policy: "🤖 AI 专用" },
-  { sourceId: "Gemini", policy: "🤖 AI 专用" },
-  { sourceId: "Copilot", policy: "🤖 AI 专用" },
-  { sourceId: "GitHub", policy: "🐙 GitHub" },
-  { sourceId: "YouTube", policy: "📺 YouTube" },
-  { sourceId: "Netflix", policy: "🎬 Netflix" },
-  { sourceId: "Disney", policy: "🏰 Disney+" },
-  { sourceId: "Spotify", policy: "🎵 Spotify" },
-  { sourceId: "GlobalMedia", policy: "🌍 国际媒体" },
-  { sourceId: "Telegram", policy: "✈️ Telegram" },
-  { sourceId: "Facebook", policy: "💬 海外社交" },
-  { sourceId: "Instagram", policy: "💬 海外社交" },
-  { sourceId: "Twitter", policy: "💬 海外社交" },
-  { sourceId: "TikTok", policy: "🎶 TikTok" },
-  { sourceId: "Apple", policy: "🍎 Apple" },
-  { sourceId: "Microsoft", policy: "🪟 Microsoft" },
-  { sourceId: "SteamCN", policy: "DIRECT" },
-  { sourceId: "ChinaMax_Domain", policy: "DIRECT" },
-  { sourceId: "Game", policy: "🕹️ 游戏平台" },
-  { sourceId: "Download", policy: "⬇️ 下载/P2P" },
-  { sourceId: "PrivateTracker", policy: "⬇️ 下载/P2P" },
-  { sourceId: "ChinaMax", policy: "DIRECT" },
-];
-const EXPECTED_CUSTOM_AI = [
-  "DOMAIN-SUFFIX,perplexity.ai",
-  "DOMAIN-SUFFIX,pplx.ai",
-  "DOMAIN-SUFFIX,x.ai",
-  "DOMAIN-SUFFIX,grok.com",
-  "DOMAIN-SUFFIX,poe.com",
-  "DOMAIN-SUFFIX,poecdn.net",
-];
-const EXPECTED_SOURCE_DETAILS = [
-  ["Hijacking/Hijacking.list", 150, "RULE-SET"],
-  ["BlockHttpDNS/BlockHttpDNS.list", 40, "RULE-SET"],
-  ["Advertising/Advertising.list", 700, "RULE-SET"],
-  ["Advertising/Advertising_Domain.list", 250_000, "DOMAIN-SET"],
-  ["Privacy/Privacy.list", 15, "RULE-SET"],
-  ["BiliBili/BiliBili.list", 80, "RULE-SET"],
-  ["ByteDance/ByteDance.list", 300, "RULE-SET"],
-  ["XiaoHongShu/XiaoHongShu.list", 3, "RULE-SET"],
-  ["Weibo/Weibo.list", 3, "RULE-SET"],
-  ["OpenAI/OpenAI.list", 20, "RULE-SET"],
-  ["Claude/Claude.list", 2, "RULE-SET"],
-  ["Gemini/Gemini.list", 8, "RULE-SET"],
-  ["Copilot/Copilot.list", 30, "RULE-SET"],
-  ["GitHub/GitHub.list", 20, "RULE-SET"],
-  ["YouTube/YouTube.list", 120, "RULE-SET"],
-  ["Netflix/Netflix.list", 800, "RULE-SET"],
-  ["Disney/Disney.list", 100, "RULE-SET"],
-  ["Spotify/Spotify.list", 20, "RULE-SET"],
-  ["GlobalMedia/GlobalMedia.list", 700, "RULE-SET"],
-  ["Telegram/Telegram.list", 25, "RULE-SET"],
-  ["Facebook/Facebook.list", 350, "RULE-SET"],
-  ["Instagram/Instagram.list", 3, "RULE-SET"],
-  ["Twitter/Twitter.list", 20, "RULE-SET"],
-  ["TikTok/TikTok.list", 20, "RULE-SET"],
-  ["Apple/Apple.list", 25, "RULE-SET"],
-  ["Microsoft/Microsoft.list", 400, "RULE-SET"],
-  ["SteamCN/SteamCN.list", 10, "RULE-SET"],
-  ["ChinaMax/ChinaMax_Domain.list", 100_000, "DOMAIN-SET"],
-  ["Game/Game.list", 400, "RULE-SET"],
-  ["Download/Download.list", 5, "RULE-SET"],
-  ["PrivateTracker/PrivateTracker.list", 150, "RULE-SET"],
-  ["ChinaMax/ChinaMax.list", 8_000, "RULE-SET"],
-];
+const RULE_BASE_URL = "https://example.invalid/current/shadowrocket/rules";
+const FORBIDDEN_DEFAULT_IDS = Object.freeze([
+  "Advertising",
+  "Advertising_Domain",
+  "ChinaMax_Domain",
+  "ChinaMax",
+  "Game",
+]);
 
 function indexOf(lines, fragment) {
   const index = lines.findIndex((line) => line.includes(fragment));
@@ -97,88 +25,76 @@ function indexOf(lines, fragment) {
   return index;
 }
 
-test("renders local and remote rules in routing precedence order", () => {
-  const lines = renderRules();
+test("renders the shared lightweight precedence without legacy default rule packs", () => {
+  const lines = renderRules({ ruleBaseUrl: RULE_BASE_URL });
 
-  assert.ok(indexOf(lines, "IP-CIDR,192.168.0.0/16") < indexOf(lines, "CUSTOM_PROXY"));
-  assert.ok(indexOf(lines, "BiliBili/BiliBili.list") < indexOf(lines, "ChinaMax/ChinaMax.list"));
-  assert.ok(indexOf(lines, "OpenAI/OpenAI.list") < indexOf(lines, "Microsoft/Microsoft.list"));
-  assert.ok(indexOf(lines, "GitHub/GitHub.list") < indexOf(lines, "Microsoft/Microsoft.list"));
-  assert.ok(indexOf(lines, "ByteDance/ByteDance.list,🎵 抖音") < indexOf(lines, "ChinaMax/ChinaMax_Domain.list,DIRECT"));
-  for (const domain of ["leiting.com", "leitingcn.com", "g-bits.com"]) {
-    assert.ok(indexOf(lines, `DOMAIN-SUFFIX,${domain},DIRECT`) < indexOf(lines, "SteamCN/SteamCN.list"));
+  for (const id of FORBIDDEN_DEFAULT_IDS) {
+    assert.equal(lines.some((line) => line.includes(`/${id}.list`)), false, id);
   }
-  assert.ok(indexOf(lines, "SteamCN/SteamCN.list") < indexOf(lines, "ChinaMax/ChinaMax_Domain.list"));
-  assert.ok(indexOf(lines, "ChinaMax/ChinaMax_Domain.list") < indexOf(lines, "PROTOCOL,UDP"));
-  assert.ok(indexOf(lines, "PROTOCOL,UDP") < indexOf(lines, "Game/Game.list,🕹️ 游戏平台"));
-  assert.ok(indexOf(lines, "Download/Download.list") < indexOf(lines, "ChinaMax/ChinaMax.list"));
-  assert.ok(indexOf(lines, "GEOIP,CN,DIRECT") < indexOf(lines, "FINAL,🚀 节点选择"));
+  assert.ok(indexOf(lines, "IP-CIDR,192.168.0.0/16") < indexOf(lines, "# CUSTOM_PROXY"));
+  assert.ok(indexOf(lines, "/Hijacking.list") < indexOf(lines, "# CUSTOM_BLOCK"));
+  assert.ok(indexOf(lines, "# CUSTOM_AI") < indexOf(lines, "/DomesticCore.list"));
+  assert.ok(indexOf(lines, "/DomesticCore.list") < indexOf(lines, "/DomesticGame.list"));
+  assert.ok(indexOf(lines, "/DomesticGame.list") < indexOf(lines, "/SteamCN.list"));
+  assert.ok(indexOf(lines, "/SteamCN.list") < indexOf(lines, "/OpenAI.list"));
+  assert.ok(indexOf(lines, "/OpenAI.list") < indexOf(lines, "/OverseasGame.list"));
+  assert.ok(indexOf(lines, "/OverseasGame.list") < indexOf(lines, "/ChinaIP.list"));
+  assert.ok(indexOf(lines, "/ChinaIP.list") < indexOf(lines, "GEOIP,CN,DIRECT"));
+
+  assert.match(lines[indexOf(lines, "/DomesticCore.list")], /^RULE-SET,.*\/DomesticCore\.list,DIRECT,/u);
+  assert.match(lines[indexOf(lines, "/DomesticGame.list")], /^RULE-SET,.*\/DomesticGame\.list,DIRECT,/u);
+  assert.match(lines[indexOf(lines, "/SteamCN.list")], /^RULE-SET,.*\/SteamCN\.list,DIRECT,/u);
+  assert.match(lines[indexOf(lines, "/OverseasGame.list")], /^RULE-SET,.*\/OverseasGame\.list,🌍 海外游戏,/u);
+  assert.match(lines[indexOf(lines, "/ChinaIP.list")], /^RULE-SET,.*\/ChinaIP\.list,DIRECT,/u);
+  assert.equal(lines.at(-2), "GEOIP,CN,DIRECT");
+  assert.equal(lines.at(-1), "FINAL,🚀 节点选择");
 });
 
-test("shared rule intent preserves exact source order, policies, and client adapters", () => {
-  assert.strictEqual(RULE_CATALOG, RULE_SOURCE_CATALOG);
-  assert.deepEqual(RULE_SOURCE_CATALOG.map((rule) => rule.id), EXPECTED_CATALOG_IDS);
-  assert.deepEqual(orderedRuleAssignments(), EXPECTED_ASSIGNMENTS);
-  assert.deepEqual(
-    RULE_SOURCE_CATALOG.map(({ id, policy }) => ({ sourceId: id, policy })),
-    EXPECTED_ASSIGNMENTS,
-  );
-  assert.deepEqual(
-    RULE_SOURCE_CATALOG.map(({ sourcePath, minEntries, inputFormat }) => (
-      [sourcePath, minEntries, inputFormat]
-    )),
-    EXPECTED_SOURCE_DETAILS,
-  );
-  for (const rule of RULE_SOURCE_CATALOG) {
-    assert.deepEqual(
-      Object.keys(rule),
-      ["id", "sourcePath", "upstreamUrl", "policy", "minEntries", "inputFormat"],
-    );
-    assert.equal(rule.upstreamUrl, `${BLACKMATRIX7_ROOT}/${rule.sourcePath}`);
-    assert.ok(rule.minEntries > 0, `${rule.id} must have a positive minEntries`);
+test("uses the selected publication and keeps rule downloads on the fallback policy", () => {
+  const lines = renderRules({ ruleBaseUrl: RULE_BASE_URL });
+  const remoteLines = lines.filter((line) => /^(?:RULE-SET|DOMAIN-SET),/u.test(line));
+
+  assert.equal(remoteLines.length, DEFAULT_RULE_SOURCE_IDS.length);
+  assert.equal(remoteLines.every((line) => line.includes(`${RULE_BASE_URL}/`)), true);
+  assert.equal(lines.includes("DOMAIN,example.invalid,🧭 DNS 与规则下载"), true);
+});
+
+test("keeps full ad blocking isolated to exactly two optional Shadowrocket URLs", () => {
+  const off = renderRules({ ruleBaseUrl: RULE_BASE_URL });
+  const full = renderRules({ ruleBaseUrl: RULE_BASE_URL, adblockMode: "full" });
+  const optionalBase = "https://example.invalid/current/optional/adblock-full/shadowrocket/rules";
+  const optionalUrls = full
+    .filter((line) => /\/(?:Advertising|Advertising_Domain)\.list/u.test(line))
+    .map((line) => line.split(",")[1]);
+
+  assert.deepEqual(FULL_ADBLOCK_SOURCE_IDS, ["Advertising", "Advertising_Domain"]);
+  assert.equal(off.some((line) => /\/Advertising(?:_Domain)?\.list/u.test(line)), false);
+  assert.deepEqual(optionalUrls, [
+    `${optionalBase}/Advertising.list`,
+    `${optionalBase}/Advertising_Domain.list`,
+  ]);
+  assert.equal(full.some((line) => line.includes(`${RULE_BASE_URL}/Advertising`)), false);
+});
+
+test("shared Shadowrocket catalog contains only the lightweight default sources", () => {
+  assert.deepEqual(RULE_CATALOG.map(({ id }) => id), DEFAULT_RULE_SOURCE_IDS);
+  for (const source of RULE_CATALOG) {
+    assert.equal(typeof source.sourcePath, "string", source.id);
+    assert.equal(typeof source.policy, "string", source.id);
+    assert.ok(["RULE-SET", "DOMAIN-SET"].includes(source.inputFormat), source.id);
+    assert.ok(source.minEntries > 0, source.id);
   }
-  assert.equal(RULE_SOURCE_CATALOG.find((rule) => rule.id === "ChinaMax_Domain").inputFormat, "DOMAIN-SET");
-  assert.equal(
-    RULE_SOURCE_CATALOG.find((rule) => rule.id === "ChinaMax_Domain").sourcePath,
-    "ChinaMax/ChinaMax_Domain.list",
-  );
 });
 
-test("shared rule intent includes complete domestic and advertising sources", () => {
-  const ids = RULE_SOURCE_CATALOG.map((rule) => rule.id);
-  assert.deepEqual(ids.filter((id) => id.startsWith("China")), ["ChinaMax_Domain", "ChinaMax"]);
-  assert.ok(ids.indexOf("ChinaMax_Domain") < ids.indexOf("ChinaMax"));
-  assert.equal(ids.includes("AdvertisingLite"), false);
-  assert.deepEqual(
-    RULE_SOURCE_CATALOG.filter((rule) => rule.id.startsWith("Advertising")).map((rule) => [
-      rule.id,
-      rule.sourcePath,
-      rule.minEntries,
-      rule.inputFormat,
-    ]),
-    [
-      ["Advertising", "Advertising/Advertising.list", 700, "RULE-SET"],
-      ["Advertising_Domain", "Advertising/Advertising_Domain.list", 250_000, "DOMAIN-SET"],
-    ],
-  );
-  assert.deepEqual(CUSTOM_RULES.ai, EXPECTED_CUSTOM_AI);
-  assert.deepEqual(Object.keys(CUSTOM_RULES), ["block", "direct", "proxy", "ai"]);
-  assert.strictEqual(CUSTOM_BLOCK, CUSTOM_RULES.block);
-  assert.strictEqual(CUSTOM_DIRECT, CUSTOM_RULES.direct);
-  assert.strictEqual(CUSTOM_PROXY, CUSTOM_RULES.proxy);
-  assert.strictEqual(CUSTOM_AI, CUSTOM_RULES.ai);
-});
-
-test("renders every remote catalog entry in its explicit routing order", () => {
-  const lines = renderRules();
-  const renderedRuleSetIds = lines
-    .filter((line) => /^(?:RULE-SET|DOMAIN-SET),/.test(line))
-    .map((line) => RULE_CATALOG.find((rule) => line.includes(rule.upstreamUrl))?.id);
-
-  assert.deepEqual(renderedRuleSetIds, EXPECTED_CATALOG_IDS);
-  assert.equal(lines.filter((line) => line.includes("Game/Game.list")).length, 2);
-  assert.deepEqual(renderedRuleSetIds.slice(-4), ["Game", "Download", "PrivateTracker", "ChinaMax"]);
-  assert.equal(lines.filter((line) => line.startsWith("DOMAIN-SET,")).length, 2);
+test("rejects unsafe or incompatible rule publication URLs", () => {
+  for (const ruleBaseUrl of [
+    "http://example.invalid/current/shadowrocket/rules",
+    "https://example.invalid/current/shadowrocket/rules,REJECT",
+    "https://example.invalid/current/shadowrocket/other",
+    "https://example.invalid/current/shadowrocket/rules\nFINAL,REJECT",
+  ]) {
+    assert.throws(() => renderRules({ ruleBaseUrl }), /Shadowrocket.*URL|base URL/iu, ruleBaseUrl);
+  }
 });
 
 test("rejects invalid custom rules without reflecting CR/LF payloads", () => {
@@ -222,4 +138,10 @@ test("rejects invalid custom rules without reflecting CR/LF payloads", () => {
       return true;
     });
   }
+
+  assert.deepEqual(CUSTOM_RULES.ai, CUSTOM_AI);
+  assert.strictEqual(CUSTOM_BLOCK, CUSTOM_RULES.block);
+  assert.strictEqual(CUSTOM_DIRECT, CUSTOM_RULES.direct);
+  assert.strictEqual(CUSTOM_PROXY, CUSTOM_RULES.proxy);
+  assert.strictEqual(CUSTOM_AI, CUSTOM_RULES.ai);
 });

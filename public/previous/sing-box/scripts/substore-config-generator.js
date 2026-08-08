@@ -1994,9 +1994,9 @@ var SingBoxConfigBundle = (() => {
   function continentFilter(continent) {
     if (continent.key === CONTINENT.other) {
       const knownFlags = CONTINENTS.flatMap((record) => record.flags).join("|");
-      return `^(?!(?:\u{1F517}|${knownFlags})).+$`;
+      return `^(?!(?:\u{1F517}|${knownFlags}))\\S+ .+$`;
     }
-    return `^(?:${continent.flags.join("|")}).+$`;
+    return `^(?:${continent.flags.join("|")}) .+$`;
   }
 
   // ../../shared/policies/intents.js
@@ -2227,7 +2227,7 @@ var SingBoxConfigBundle = (() => {
 
   // src/render-groups.js
   var RULE_DOWNLOAD_GROUP = "\u{1F9ED} DNS \u4E0E\u89C4\u5219\u4E0B\u8F7D";
-  var RULE_DOWNLOAD_FAILOVER_GROUP = "\u{1F9ED} \u89C4\u5219\u4E0B\u8F7D\u6545\u969C\u8F6C\u79FB";
+  var RULE_DOWNLOAD_AUTO = "\u26A1 \u5168\u90E8\u81EA\u52A8";
   function targetName(value) {
     return value === POLICY_TARGET.primaryProxy ? "\u26A1 \u5168\u90E8\u81EA\u52A8" : value;
   }
@@ -2244,37 +2244,17 @@ var SingBoxConfigBundle = (() => {
   function duration(seconds) {
     return `${Number(seconds)}s`;
   }
-  function renderRuleDownloadGroups(inventory, ruleProbeUrl) {
-    const nodeCandidates = filterNodes(NON_CHAINED_FILTER, inventory);
-    const failover = {
-      type: "urltest",
-      tag: RULE_DOWNLOAD_FAILOVER_GROUP,
-      outbounds: [...nodeCandidates, "DIRECT"],
-      url: ruleProbeUrl,
-      interval: "30s",
-      tolerance: 0,
-      interrupt_exist_connections: true
-    };
-    return [
-      failover,
-      {
-        type: "selector",
-        tag: RULE_DOWNLOAD_GROUP,
-        outbounds: [RULE_DOWNLOAD_FAILOVER_GROUP, "\u{1F680} \u8282\u70B9\u9009\u62E9", "DIRECT"],
-        default: RULE_DOWNLOAD_FAILOVER_GROUP,
-        interrupt_exist_connections: true
-      }
-    ];
-  }
-  function renderSingBoxGroups(options, nodes, { ruleProbeUrl = "https://www.gstatic.com/generate_204" } = {}) {
+  function renderSingBoxGroups(options, nodes) {
     const inventory = Array.isArray(nodes) ? nodes : [];
     const shared = buildPolicyGroups(options, inventory);
-    return shared.flatMap((group) => {
-      if (group.name === RULE_DOWNLOAD_GROUP) return renderRuleDownloadGroups(inventory, ruleProbeUrl);
+    return shared.map((group) => {
       const candidates = [
         ...group.candidates.map(targetName),
         ...filterNodes(group.nodeFilter, inventory)
       ].filter((item, index, all) => all.indexOf(item) === index);
+      if (group.name === RULE_DOWNLOAD_GROUP && !candidates.includes(RULE_DOWNLOAD_AUTO)) {
+        candidates.unshift(RULE_DOWNLOAD_AUTO);
+      }
       const outbounds = candidates.length > 0 ? candidates : ["DIRECT"];
       if (group.strategy === "auto-test" || group.strategy === "fallback") {
         return {
@@ -2293,7 +2273,7 @@ var SingBoxConfigBundle = (() => {
         outbounds,
         interrupt_exist_connections: true
       };
-      const defaultChoice = group.defaultChoice;
+      const defaultChoice = group.name === RULE_DOWNLOAD_GROUP ? RULE_DOWNLOAD_AUTO : group.defaultChoice;
       if (defaultChoice !== void 0) outbound.default = targetName(defaultChoice);
       return outbound;
     });
@@ -2580,9 +2560,7 @@ var SingBoxConfigBundle = (() => {
     if (inventory.length === 0) throw new Error("sing-box refuses an empty node inventory");
     for (const node of inventory) nodeMetadata(node);
     const nodeOutbounds = inventory.map(renderSingBoxOutbound);
-    const groups = renderSingBoxGroups(options, inventory, {
-      ruleProbeUrl: `${ruleBaseUrl.replace(/\/+$/u, "")}/Hijacking.json`
-    });
+    const groups = renderSingBoxGroups(options, inventory);
     const { ruleSets, rules, final } = renderSingBoxRouteRules({ ruleBaseUrl, ruleSetFormat });
     const config = {
       log: { level: "info", timestamp: true },
