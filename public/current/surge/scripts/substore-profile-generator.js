@@ -21,6 +21,7 @@ var SurgeProfileBundle = (() => {
   var substore_profile_entry_exports = {};
   __export(substore_profile_entry_exports, {
     PUBLIC_RULE_BASE_URL: () => PUBLIC_RULE_BASE_URL,
+    PUBLIC_RULE_ROOT: () => PUBLIC_RULE_ROOT,
     operator: () => operator
   });
 
@@ -1631,7 +1632,9 @@ var SurgeProfileBundle = (() => {
 
   // src/options.js
   var REQUIRED_KEYS = Object.freeze(["output", "type", "name", "subscriptionName", "platform"]);
+  var NODE_REQUIRED_KEYS = Object.freeze(["output", "type", "name"]);
   var DEFAULTS = Object.freeze({
+    channel: "edge",
     dnsMode: "stable",
     chinaDns: "alidns",
     globalDns: "cloudflare",
@@ -1639,11 +1642,15 @@ var SurgeProfileBundle = (() => {
     quicMode: "proxy-block",
     ipv6Mode: "auto",
     autoGroupMode: "auto",
-    clientChain: "off"
+    clientChain: "off",
+    adblockMode: "off"
   });
   var PLATFORMS = /* @__PURE__ */ new Set(["macos", "iphone", "ipad"]);
+  var CHANNELS = /* @__PURE__ */ new Set(["edge", "current"]);
+  var ADBLOCK_MODES = /* @__PURE__ */ new Set(["off", "full"]);
   var PARSED = /* @__PURE__ */ new WeakSet();
-  var ALLOWED_KEYS = /* @__PURE__ */ new Set([...REQUIRED_KEYS, ...Object.keys(DEFAULTS)]);
+  var ALLOWED_KEYS = /* @__PURE__ */ new Set([...REQUIRED_KEYS, ...Object.keys(DEFAULTS), "proxyPolicyUrl"]);
+  var NODE_ALLOWED_KEYS = /* @__PURE__ */ new Set([...NODE_REQUIRED_KEYS, "clientChain"]);
   function requiredString(raw, key) {
     const value = raw[key];
     if (typeof value !== "string" || value.length === 0 || value.trim() !== value || /[\r\n]/u.test(value)) {
@@ -1655,6 +1662,22 @@ var SurgeProfileBundle = (() => {
     const value = raw[key] === void 0 ? defaultValue : raw[key];
     if (typeof value !== "string" || !OPTION_VALUES[key]?.includes(value)) {
       throw new Error(`Option '${key}' has an unsupported value`);
+    }
+    return value;
+  }
+  function validatePolicyUrl(value, key) {
+    if (value === void 0) return void 0;
+    if (typeof value !== "string" || value.length === 0 || value.trim() !== value || /[\u0000-\u001f\u007f\\]/u.test(value) || /%(?:0[0-9a-f]|1[0-9a-f]|7f)/iu.test(value)) {
+      throw new Error(`Option '${key}' must be a safe absolute HTTPS URL`);
+    }
+    let parsed;
+    try {
+      parsed = new URL(value);
+    } catch {
+      throw new Error(`Option '${key}' must be a safe absolute HTTPS URL`);
+    }
+    if (parsed.protocol !== "https:" || !parsed.hostname || parsed.username || parsed.password || value.includes("#")) {
+      throw new Error(`Option '${key}' must be a safe absolute HTTPS URL`);
     }
     return value;
   }
@@ -1670,12 +1693,19 @@ var SurgeProfileBundle = (() => {
     if (!PLATFORMS.has(platform)) throw new Error("Option 'platform' has an unsupported value");
     if (requiredString(raw, "output") !== "config") throw new Error("Option 'output' must be config");
     if (requiredString(raw, "type") !== "collection") throw new Error("Option 'type' must be collection");
+    const channel = raw.channel === void 0 ? DEFAULTS.channel : raw.channel;
+    if (typeof channel !== "string" || !CHANNELS.has(channel)) throw new Error("Option 'channel' has an unsupported value");
+    const adblockMode = raw.adblockMode === void 0 ? DEFAULTS.adblockMode : raw.adblockMode;
+    if (typeof adblockMode !== "string" || !ADBLOCK_MODES.has(adblockMode)) {
+      throw new Error("Option 'adblockMode' has an unsupported value");
+    }
     const options = {
       output: "config",
       type: "collection",
       name: requiredString(raw, "name"),
       subscriptionName: requiredString(raw, "subscriptionName"),
       platform,
+      channel,
       dnsMode: enumValue(raw, "dnsMode", DEFAULTS.dnsMode),
       chinaDns: enumValue(raw, "chinaDns", DEFAULTS.chinaDns),
       globalDns: enumValue(raw, "globalDns", DEFAULTS.globalDns),
@@ -1683,7 +1713,9 @@ var SurgeProfileBundle = (() => {
       quicMode: enumValue(raw, "quicMode", DEFAULTS.quicMode),
       ipv6Mode: enumValue(raw, "ipv6Mode", platform === "macos" ? "ipv4-only" : DEFAULTS.ipv6Mode),
       autoGroupMode: enumValue(raw, "autoGroupMode", DEFAULTS.autoGroupMode),
-      clientChain: enumValue(raw, "clientChain", DEFAULTS.clientChain)
+      clientChain: enumValue(raw, "clientChain", DEFAULTS.clientChain),
+      adblockMode,
+      proxyPolicyUrl: validatePolicyUrl(raw.proxyPolicyUrl, "proxyPolicyUrl")
     };
     platformPolicyPreset(platform);
     Object.freeze(options);
@@ -1935,9 +1967,9 @@ var SurgeProfileBundle = (() => {
   function continentFilter(continent) {
     if (continent.key === CONTINENT.other) {
       const knownFlags = CONTINENTS.flatMap((record) => record.flags).join("|");
-      return `^(?!(?:\u{1F517}|${knownFlags}))\\S+ .+$`;
+      return `^(?!(?:\u{1F517}|${knownFlags})).+$`;
     }
-    return `^(?:${continent.flags.join("|")}) .+$`;
+    return `^(?:${continent.flags.join("|")}).+$`;
   }
 
   // ../../shared/policies/intents.js
@@ -1990,7 +2022,7 @@ var SurgeProfileBundle = (() => {
     Object.freeze(["\u{1F3B5} \u6296\u97F3", DIRECT_FIRST_SERVICE_DEFAULTS]),
     Object.freeze(["\u{1F4D5} \u5C0F\u7EA2\u4E66", DIRECT_FIRST_SERVICE_DEFAULTS]),
     Object.freeze(["\u{1F9E3} \u5FAE\u535A", DIRECT_FIRST_SERVICE_DEFAULTS]),
-    Object.freeze(["\u{1F579}\uFE0F \u6E38\u620F\u5E73\u53F0", PROXY_FIRST_SERVICE_DEFAULTS])
+    Object.freeze(["\u{1F30D} \u6D77\u5916\u6E38\u620F", PROXY_FIRST_SERVICE_DEFAULTS])
   ]);
   function policyGroup({
     kind,
@@ -2167,6 +2199,8 @@ var SurgeProfileBundle = (() => {
   }
 
   // src/render-groups.js
+  var REMOTE_POLICY_POOL_NAME = "\u{1F4E6} \u8FDC\u7A0B\u8282\u70B9\u6C60";
+  var REMOTE_POLICY_UPDATE_INTERVAL = 21600;
   function escapeValue2(value) {
     const text = String(value);
     if (/[\r\n]/u.test(text)) throw new Error("Surge group value contains a line break");
@@ -2187,11 +2221,21 @@ var SurgeProfileBundle = (() => {
     const inventory = Array.isArray(nodes) ? nodes : [];
     const shared = buildPolicyGroups(options, inventory);
     const names = new Set(shared.map(({ name }) => name));
-    return shared.map((group) => {
-      const filteredNodes = inventory.filter((node) => matches(group.nodeFilter, node)).map(({ name }) => name);
+    const remotePolicy = typeof options.proxyPolicyUrl === "string" ? { name: REMOTE_POLICY_POOL_NAME, url: options.proxyPolicyUrl } : null;
+    const remoteMode = remotePolicy !== null;
+    const rendered = [];
+    if (remotePolicy !== null) {
+      rendered.push(`${escapeValue2(remotePolicy.name)} = select,policy-path=${escapeValue2(remotePolicy.url)},update-interval=${REMOTE_POLICY_UPDATE_INTERVAL},hidden=1`);
+    }
+    for (const group of shared) {
+      const filteredNodes = remoteMode ? [] : inventory.filter((node) => matches(group.nodeFilter, node)).map(({ name }) => name);
       const items = [...group.candidates.map(targetName), ...filteredNodes].filter((item, index, all) => all.indexOf(item) === index);
-      if (items.length === 0) items.push("DIRECT");
+      if (items.length === 0 && (!remoteMode || group.nodeFilter === null)) items.push("DIRECT");
       const fields = [group.strategy === "auto-test" ? "url-test" : group.strategy, ...items.map(escapeValue2)];
+      if (remoteMode && group.nodeFilter !== null) {
+        fields.push(`include-other-group=${escapeValue2(remotePolicy.name)}`);
+        fields.push(`policy-regex-filter=${escapeValue2(group.nodeFilter)}`);
+      }
       if (group.test?.url !== void 0) fields.push(`url=${escapeValue2(group.test.url)}`);
       if (group.test?.interval !== void 0) fields.push(`interval=${escapeValue2(group.test.interval)}`);
       if (group.test?.timeout !== void 0) fields.push(`timeout=${escapeValue2(group.test.timeout)}`);
@@ -2201,11 +2245,152 @@ var SurgeProfileBundle = (() => {
       if (items.some((item) => item !== "DIRECT" && item !== "REJECT" && !names.has(item) && !inventory.some((node) => node.name === item))) {
         throw new Error("Surge group contains an unresolved policy reference");
       }
-      return `${escapeValue2(group.name)} = ${fields.join(",")}`;
+      rendered.push(`${escapeValue2(group.name)} = ${fields.join(",")}`);
+    }
+    return rendered;
+  }
+
+  // ../../shared/rules/lightweight-policy.js
+  var DEFAULT_RULE_SOURCE_IDS = Object.freeze([
+    "Hijacking",
+    "BlockHttpDNS",
+    "Privacy",
+    "DomesticCore",
+    "DomesticGame",
+    "BiliBili",
+    "ByteDance",
+    "XiaoHongShu",
+    "Weibo",
+    "OpenAI",
+    "Claude",
+    "Gemini",
+    "Copilot",
+    "GitHub",
+    "YouTube",
+    "Netflix",
+    "Disney",
+    "Spotify",
+    "GlobalMedia",
+    "Telegram",
+    "Facebook",
+    "Instagram",
+    "Twitter",
+    "TikTok",
+    "Apple",
+    "Microsoft",
+    "SteamCN",
+    "OverseasGame",
+    "Download",
+    "PrivateTracker",
+    "ChinaIP"
+  ]);
+  var FULL_ADBLOCK_SOURCE_IDS = Object.freeze([
+    "Advertising",
+    "Advertising_Domain"
+  ]);
+  var RULE_BUDGETS = Object.freeze({
+    domesticCoreEntries: 2e3,
+    defaultEntries: 25e3,
+    defaultBytes: 5e6,
+    startupInlineEntries: 64,
+    singBoxRuleRssBytes: 50 * 1024 * 1024,
+    singBoxTotalRssBytes: 200 * 1024 * 1024
+  });
+  var ROUTING_PRECEDENCE = Object.freeze([
+    "local",
+    "security",
+    "custom",
+    "domesticCore",
+    "domesticGame",
+    "explicitOverseas",
+    "overseasGame",
+    "chinaIp",
+    "defaultProxy"
+  ]);
+  var EXPLICIT_OVERSEAS_RULE_SOURCE_IDS = Object.freeze([
+    "OpenAI",
+    "Claude",
+    "Gemini",
+    "Copilot",
+    "GitHub",
+    "YouTube",
+    "Netflix",
+    "Disney",
+    "Spotify",
+    "GlobalMedia",
+    "Telegram",
+    "Facebook",
+    "Instagram",
+    "Twitter",
+    "TikTok",
+    "OverseasGame"
+  ]);
+  var POLICY_TARGETS = Object.freeze({
+    direct: "DIRECT",
+    defaultProxy: "\u{1F680} \u8282\u70B9\u9009\u62E9",
+    overseasGame: "\u{1F30D} \u6D77\u5916\u6E38\u620F",
+    reject: "REJECT"
+  });
+  var SOURCE_POLICIES = Object.freeze({
+    Hijacking: POLICY_TARGETS.reject,
+    BlockHttpDNS: POLICY_TARGETS.reject,
+    Privacy: "\u{1F575}\uFE0F \u4E25\u683C\u8DDF\u8E2A",
+    DomesticCore: POLICY_TARGETS.direct,
+    DomesticGame: POLICY_TARGETS.direct,
+    BiliBili: "\u{1F4FA} \u54D4\u54E9\u54D4\u54E9",
+    ByteDance: "\u{1F3B5} \u6296\u97F3",
+    XiaoHongShu: "\u{1F4D5} \u5C0F\u7EA2\u4E66",
+    Weibo: "\u{1F9E3} \u5FAE\u535A",
+    OpenAI: "\u{1F916} AI \u4E13\u7528",
+    Claude: "\u{1F916} AI \u4E13\u7528",
+    Gemini: "\u{1F916} AI \u4E13\u7528",
+    Copilot: "\u{1F916} AI \u4E13\u7528",
+    GitHub: "\u{1F419} GitHub",
+    YouTube: "\u{1F4FA} YouTube",
+    Netflix: "\u{1F3AC} Netflix",
+    Disney: "\u{1F3F0} Disney+",
+    Spotify: "\u{1F3B5} Spotify",
+    GlobalMedia: "\u{1F30D} \u56FD\u9645\u5A92\u4F53",
+    Telegram: "\u2708\uFE0F Telegram",
+    Facebook: "\u{1F4AC} \u6D77\u5916\u793E\u4EA4",
+    Instagram: "\u{1F4AC} \u6D77\u5916\u793E\u4EA4",
+    Twitter: "\u{1F4AC} \u6D77\u5916\u793E\u4EA4",
+    TikTok: "\u{1F3B6} TikTok",
+    Apple: "\u{1F34E} Apple",
+    Microsoft: "\u{1FA9F} Microsoft",
+    SteamCN: POLICY_TARGETS.direct,
+    OverseasGame: POLICY_TARGETS.overseasGame,
+    Download: "\u2B07\uFE0F \u4E0B\u8F7D/P2P",
+    PrivateTracker: "\u2B07\uFE0F \u4E0B\u8F7D/P2P",
+    ChinaIP: POLICY_TARGETS.direct,
+    Advertising: "\u{1F9F1} \u5E38\u89C1\u5E7F\u544A",
+    Advertising_Domain: "\u{1F9F1} \u5E38\u89C1\u5E7F\u544A"
+  });
+  function clientRecord(id) {
+    const policy = SOURCE_POLICIES[id];
+    if (!policy) throw new Error(`Missing policy for lightweight rule source: ${id}`);
+    return Object.freeze({
+      id,
+      policy,
+      // The publication pipeline emits normalized, typed Surge/Shadowrocket
+      // lines for every compiled source, including domain-only inputs.
+      inputFormat: "RULE-SET"
     });
+  }
+  var DEFAULT_RULE_CLIENT_CATALOG = Object.freeze(DEFAULT_RULE_SOURCE_IDS.map(clientRecord));
+  var FULL_ADBLOCK_RULE_CLIENT_CATALOG = Object.freeze(FULL_ADBLOCK_SOURCE_IDS.map(clientRecord));
+  function ruleClientCatalog({ adblockMode = "off" } = {}) {
+    if (adblockMode !== "off" && adblockMode !== "full") {
+      throw new TypeError("adblockMode must be either off or full");
+    }
+    return adblockMode === "full" ? Object.freeze([...DEFAULT_RULE_CLIENT_CATALOG, ...FULL_ADBLOCK_RULE_CLIENT_CATALOG]) : DEFAULT_RULE_CLIENT_CATALOG;
   }
 
   // ../../shared/rules/custom-rules.js
+  var CUSTOM_RULE_PRECEDENCE_INDEX = ROUTING_PRECEDENCE.indexOf("custom");
+  if (CUSTOM_RULE_PRECEDENCE_INDEX < 0 || CUSTOM_RULE_PRECEDENCE_INDEX > ROUTING_PRECEDENCE.indexOf("domesticCore")) {
+    throw new Error("Custom rules must precede generated lightweight rules");
+  }
   var CUSTOM_RULES = Object.freeze({
     block: Object.freeze([]),
     direct: Object.freeze([]),
@@ -2219,54 +2404,6 @@ var SurgeProfileBundle = (() => {
       "DOMAIN-SUFFIX,poecdn.net"
     ])
   });
-
-  // ../../shared/rules/catalog-data.js
-  function rule(id, policy, minEntries, inputFormat = "RULE-SET", directory = id) {
-    return Object.freeze({
-      id,
-      sourcePath: `${directory}/${id}.list`,
-      policy,
-      minEntries,
-      inputFormat
-    });
-  }
-  var RULE_SOURCE_DEFINITIONS = Object.freeze([
-    rule("Hijacking", "\u2623\uFE0F \u5B89\u5168\u5A01\u80C1", 150),
-    rule("BlockHttpDNS", "\u2623\uFE0F \u5B89\u5168\u5A01\u80C1", 40),
-    rule("Advertising", "\u{1F9F1} \u5E38\u89C1\u5E7F\u544A", 700),
-    rule("Advertising_Domain", "\u{1F9F1} \u5E38\u89C1\u5E7F\u544A", 25e4, "DOMAIN-SET", "Advertising"),
-    rule("Privacy", "\u{1F575}\uFE0F \u4E25\u683C\u8DDF\u8E2A", 15),
-    rule("BiliBili", "\u{1F4FA} \u54D4\u54E9\u54D4\u54E9", 80),
-    rule("ByteDance", "\u{1F3B5} \u6296\u97F3", 300),
-    rule("XiaoHongShu", "\u{1F4D5} \u5C0F\u7EA2\u4E66", 3),
-    rule("Weibo", "\u{1F9E3} \u5FAE\u535A", 3),
-    rule("OpenAI", "\u{1F916} AI \u4E13\u7528", 20),
-    rule("Claude", "\u{1F916} AI \u4E13\u7528", 2),
-    rule("Gemini", "\u{1F916} AI \u4E13\u7528", 8),
-    rule("Copilot", "\u{1F916} AI \u4E13\u7528", 30),
-    rule("GitHub", "\u{1F419} GitHub", 20),
-    rule("YouTube", "\u{1F4FA} YouTube", 120),
-    rule("Netflix", "\u{1F3AC} Netflix", 800),
-    rule("Disney", "\u{1F3F0} Disney+", 100),
-    rule("Spotify", "\u{1F3B5} Spotify", 20),
-    rule("GlobalMedia", "\u{1F30D} \u56FD\u9645\u5A92\u4F53", 700),
-    rule("Telegram", "\u2708\uFE0F Telegram", 25),
-    rule("Facebook", "\u{1F4AC} \u6D77\u5916\u793E\u4EA4", 350),
-    rule("Instagram", "\u{1F4AC} \u6D77\u5916\u793E\u4EA4", 3),
-    rule("Twitter", "\u{1F4AC} \u6D77\u5916\u793E\u4EA4", 20),
-    rule("TikTok", "\u{1F3B6} TikTok", 20),
-    rule("Apple", "\u{1F34E} Apple", 25),
-    rule("Microsoft", "\u{1FA9F} Microsoft", 400),
-    rule("SteamCN", "DIRECT", 10),
-    rule("ChinaMax_Domain", "DIRECT", 1e5, "DOMAIN-SET", "ChinaMax"),
-    rule("Game", "\u{1F579}\uFE0F \u6E38\u620F\u5E73\u53F0", 400),
-    rule("Download", "\u2B07\uFE0F \u4E0B\u8F7D/P2P", 5),
-    rule("PrivateTracker", "\u2B07\uFE0F \u4E0B\u8F7D/P2P", 150),
-    rule("ChinaMax", "DIRECT", 8e3)
-  ]);
-
-  // ../../shared/rules/client-catalog.js
-  var RULE_CLIENT_CATALOG = Object.freeze(RULE_SOURCE_DEFINITIONS.map(({ id, policy, inputFormat }) => Object.freeze({ id, policy, inputFormat })));
 
   // src/render-rules.js
   var LOCAL_RULES = Object.freeze([
@@ -2285,20 +2422,42 @@ var SurgeProfileBundle = (() => {
     "IP-CIDR6,fe80::/10,DIRECT,no-resolve",
     "IP-CIDR6,ff00::/8,DIRECT,no-resolve"
   ]);
-  var GAME_DIRECT_RULES = Object.freeze([
-    "DOMAIN-SUFFIX,leiting.com,DIRECT",
-    "DOMAIN-SUFFIX,leitingcn.com,DIRECT",
-    "DOMAIN-SUFFIX,g-bits.com,DIRECT"
-  ]);
+  var SECURITY_IDS = /* @__PURE__ */ new Set(["Hijacking", "BlockHttpDNS", "Privacy", "Advertising", "Advertising_Domain"]);
+  var DOMESTIC_IDS = Object.freeze(["DomesticCore", "DomesticGame", "SteamCN"]);
+  var OVERSEAS_GAME_ID = "OverseasGame";
+  var CHINA_IP_ID = "ChinaIP";
+  var RULE_DOWNLOAD_POLICY = "\u{1F9ED} DNS \u4E0E\u89C4\u5219\u4E0B\u8F7D";
   function safeBaseUrl(value) {
     if (typeof value !== "string" || !/^https:\/\/[^\s]+$/u.test(value) || /[\r\n,]/u.test(value)) {
       throw new Error("Surge rule base URL must be an HTTPS URL without commas");
     }
     return value.replace(/\/+$/u, "");
   }
-  function renderSurgeRules({ ruleBaseUrl }) {
+  function optionalAdblockBase(defaultBase) {
+    const optional = defaultBase.replace(/\/surge\/rules$/u, "/optional/adblock-full/surge/rules");
+    if (optional === defaultBase) throw new Error("Surge adblock rule base URL must end in /surge/rules");
+    return optional;
+  }
+  function sourceUrl(source, base2, optionalBase) {
+    const selectedBase = source.id === "Advertising" || source.id === "Advertising_Domain" ? optionalBase : base2;
+    if (!selectedBase) throw new Error("Surge optional rule URL is unavailable");
+    return `${selectedBase}/${source.id}.list`;
+  }
+  function selectedSources(ruleBaseUrl, adblockMode) {
     const base2 = safeBaseUrl(ruleBaseUrl);
-    const lines = [...LOCAL_RULES, "# Custom rules"];
+    const catalog = ruleClientCatalog({ adblockMode });
+    const optionalBase = adblockMode === "full" ? optionalAdblockBase(base2) : null;
+    return { base: base2, catalog, optionalBase };
+  }
+  function renderSurgeRules({ ruleBaseUrl, adblockMode = "off" }) {
+    const { base: base2, catalog, optionalBase } = selectedSources(ruleBaseUrl, adblockMode);
+    const render = (source) => `${source.inputFormat},${sourceUrl(source, base2, optionalBase)},${source.policy},update-interval=86400`;
+    const lines = [
+      ...LOCAL_RULES,
+      "# Security rules",
+      ...catalog.filter(({ id }) => SECURITY_IDS.has(id)).map(render),
+      "# Custom rules"
+    ];
     const custom = [
       ["CUSTOM_BLOCK", CUSTOM_RULES.block, "REJECT"],
       ["CUSTOM_DIRECT", CUSTOM_RULES.direct, "DIRECT"],
@@ -2306,21 +2465,29 @@ var SurgeProfileBundle = (() => {
       ["CUSTOM_AI", CUSTOM_RULES.ai, "\u{1F916} AI \u4E13\u7528"]
     ];
     for (const [name, rules, policy] of custom) {
-      lines.push(`# ${name}`, ...rules.map((rule2) => `${rule2},${policy}`));
+      lines.push(`# ${name}`, ...rules.map((rule) => `${rule},${policy}`));
     }
-    const assignments = RULE_CLIENT_CATALOG;
-    const steamIndex = assignments.findIndex(({ id }) => id === "SteamCN");
-    const gameIndex = assignments.findIndex(({ id }) => id === "Game");
-    if (steamIndex < 0 || gameIndex <= steamIndex) throw new Error("Invalid Surge rule assignment order");
-    const render = (source) => `${source.inputFormat},${base2}/${source.id}.list,${source.policy},update-interval=86400`;
-    lines.push(...assignments.slice(0, steamIndex).map(render));
-    lines.push(...GAME_DIRECT_RULES);
-    lines.push(...assignments.slice(steamIndex, gameIndex).map(render));
-    const game = assignments[gameIndex];
-    lines.push(`AND,((PROTOCOL,UDP),(${game.inputFormat},${base2}/${game.id}.list)),${game.policy}`);
-    lines.push(render(game));
-    lines.push(...assignments.slice(gameIndex + 1).map(render));
-    lines.push("GEOIP,CN,DIRECT", "FINAL,\u{1F680} \u8282\u70B9\u9009\u62E9");
+    const ruleHost = new URL(base2).hostname;
+    lines.push(
+      "# Rule-download fallback transport",
+      `DOMAIN,${ruleHost},${RULE_DOWNLOAD_POLICY}`
+    );
+    const byId = new Map(catalog.map((source) => [source.id, source]));
+    for (const id of DOMESTIC_IDS) {
+      const source = byId.get(id);
+      if (!source) throw new Error(`Missing Surge lightweight rule source: ${id}`);
+      lines.push(render(source));
+    }
+    for (const source of catalog) {
+      if (SECURITY_IDS.has(source.id) || DOMESTIC_IDS.includes(source.id) || [OVERSEAS_GAME_ID, CHINA_IP_ID].includes(source.id)) continue;
+      lines.push(render(source));
+    }
+    for (const id of [OVERSEAS_GAME_ID, CHINA_IP_ID]) {
+      const source = byId.get(id);
+      if (!source) throw new Error(`Missing Surge lightweight rule source: ${id}`);
+      lines.push(render(source));
+    }
+    lines.push("GEOIP,CN,DIRECT", "FINAL,\u{1F680} \u8282\u70B9\u9009\u62E9,dns-failed");
     return lines;
   }
 
@@ -2393,11 +2560,29 @@ var SurgeProfileBundle = (() => {
         continue;
       }
       if (groups.has(record[0])) errors.push("duplicate group name");
-      groups.set(record[0], { type: fields[0], items: fields.slice(1).filter((field) => !field.includes("=")) });
+      const items = fields.slice(1).filter((field) => !field.includes("="));
+      const remoteGroupReferences = fields.slice(1).filter((field) => field.startsWith("include-other-group=")).flatMap((field) => field.slice("include-other-group=".length).split(","));
+      const policyPath = fields.find((field) => field.startsWith("policy-path="));
+      const policyFilter = fields.find((field) => field.startsWith("policy-regex-filter="));
+      if (policyPath) {
+        const url = policyPath.slice("policy-path=".length);
+        try {
+          const parsedUrl = new URL(url);
+          if (parsedUrl.protocol !== "https:" || !parsedUrl.hostname) errors.push("invalid policy path");
+        } catch {
+          errors.push("invalid policy path");
+        }
+      }
+      if (policyFilter && items.length === 0 && remoteGroupReferences.length === 0 && !policyPath) {
+        errors.push("filtered group requires a policy source");
+      }
+      groups.set(record[0], { type: fields[0], items, remoteGroupReferences, policyPath });
     }
     const allowed = /* @__PURE__ */ new Set(["DIRECT", "REJECT", ...proxyNames, ...groups.keys()]);
     for (const group of groups.values()) {
-      for (const item of group.items) if (!allowed.has(item)) errors.push("missing group or proxy reference");
+      for (const item of [...group.items, ...group.remoteGroupReferences]) {
+        if (!allowed.has(item)) errors.push("missing group or proxy reference");
+      }
     }
     const visiting = /* @__PURE__ */ new Set();
     const visited = /* @__PURE__ */ new Set();
@@ -2408,7 +2593,10 @@ var SurgeProfileBundle = (() => {
       }
       if (visited.has(name)) return;
       visiting.add(name);
-      for (const item of groups.get(name)?.items ?? []) if (groups.has(item)) visit(item);
+      const group = groups.get(name);
+      for (const item of [...group?.items ?? [], ...group?.remoteGroupReferences ?? []]) {
+        if (groups.has(item)) visit(item);
+      }
       visiting.delete(name);
       visited.add(name);
     };
@@ -2447,11 +2635,10 @@ var SurgeProfileBundle = (() => {
   ]);
   function generalSettings(options) {
     const chinaDns = { alidns: "223.5.5.5", dnspod: "119.29.29.29", system: "system" }[options.chinaDns];
-    const globalDns = { cloudflare: "1.1.1.1", google: "8.8.8.8", quad9: "9.9.9.9" }[options.globalDns];
     return [
       "loglevel = notify",
       `ipv6 = ${options.ipv6Mode === "auto" ? "true" : "false"}`,
-      `dns-server = ${chinaDns},${globalDns}`,
+      `dns-server = ${chinaDns}`,
       `skip-proxy = ${LOCAL_SKIP_PROXY.join(",")}`,
       "exclude-simple-hostnames = true",
       "internet-test-url = http://www.gstatic.com/generate_204",
@@ -2465,17 +2652,18 @@ var SurgeProfileBundle = (() => {
     const inventory = Array.isArray(nodes) ? nodes : [];
     if (inventory.length === 0) throw new Error("Surge refuses an empty node inventory");
     for (const node of inventory) nodeMetadata(node);
-    const proxyLines = inventory.map(renderSurgeProxy);
+    const hasRemotePolicy = Boolean(options.proxyPolicyUrl);
+    const proxyLines = hasRemotePolicy ? "# Nodes are loaded by the hidden Surge remote policy pool." : inventory.map(renderSurgeProxy).join("\n");
     const profile = [
       "# Generated by apple-proxy-profiles. Private Sub-Store output.",
       `[General]
 ${generalSettings(options).join("\n")}`,
       `[Proxy]
-${proxyLines.join("\n")}`,
+${proxyLines}`,
       `[Proxy Group]
 ${renderSurgeGroups(options, inventory).join("\n")}`,
       `[Rule]
-${renderSurgeRules({ ruleBaseUrl }).join("\n")}`
+${renderSurgeRules({ ruleBaseUrl, adblockMode: options.adblockMode }).join("\n")}`
     ].join("\n\n") + "\n";
     const validation = validateSurgeProfile(profile);
     if (!validation.valid) throw new Error(`Generated Surge profile failed validation: ${validation.errors.join(",")}`);
@@ -2483,13 +2671,14 @@ ${renderSurgeRules({ ruleBaseUrl }).join("\n")}`
   }
 
   // src/substore-profile-entry.js
-  var PUBLIC_RULE_BASE_URL = "https://juan-nikola.github.io/apple-proxy-profiles/current/surge/rules";
+  var PUBLIC_RULE_ROOT = "https://juan-nikola.github.io/apple-proxy-profiles";
+  var PUBLIC_RULE_BASE_URL = `${PUBLIC_RULE_ROOT}/current/surge/rules`;
   function logDiagnostics(context, options, nodes) {
     const logger = context?.logger;
     const method = typeof logger === "function" ? logger : typeof logger?.info === "function" ? logger.info.bind(logger) : typeof logger?.log === "function" ? logger.log.bind(logger) : null;
     if (!method) return;
     try {
-      method(`[surge-profile] ${JSON.stringify({ client: "surge", platform: options.platform, accepted: nodes.length })}`);
+      method(`[surge-profile] ${JSON.stringify({ client: "surge", platform: options.platform, channel: options.channel, accepted: nodes.length })}`);
     } catch {
     }
   }
@@ -2508,7 +2697,8 @@ ${renderSurgeRules({ ruleBaseUrl }).join("\n")}`
     const filtered = filterNodesForClient(normalized.nodes, CLIENT.surge);
     if (filtered.nodes.length === 0) throw new Error("No compatible Surge nodes");
     logDiagnostics(context, options, filtered.nodes);
-    const profile = renderSurgeProfile(options, filtered.nodes.map(sanitizeSurgeNode), { ruleBaseUrl: PUBLIC_RULE_BASE_URL });
+    const ruleBaseUrl = `${PUBLIC_RULE_ROOT}/${options.channel}/surge/rules`;
+    const profile = renderSurgeProfile(options, filtered.nodes.map(sanitizeSurgeNode), { ruleBaseUrl });
     return { ...input, $content: profile };
   }
   return __toCommonJS(substore_profile_entry_exports);

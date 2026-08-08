@@ -1,7 +1,7 @@
 # Upstream: https://github.com/blackmatrix7/ios_rule_script
 # Source: TikTok
-# Commit: 72c410015dc99df6b54eca1386126f70268bf6bc
-# Converted at upstream commit time: 2026-08-05T19:24:33Z
+# Commit: ccc2d6b711007324bacb55cdfbbf7e36ad48145a
+# Converted at upstream commit time: 2026-08-07T18:52:17Z
 # License: GPL-2.0-only
 # Converted by: Juan-nikola/apple-proxy-profiles
 name = 🎶 TikTok · TikTok
@@ -12,7 +12,6 @@ routing = 0
 2, byteintlapi.com
 2, byteoversea.com
 2, capcut.com
-2, ibytedtos.com
 2, ibyteimg.com
 2, ipstatp.com
 2, isnssdk.com
@@ -20,7 +19,6 @@ routing = 0
 2, muscdn.com
 2, musical.ly
 2, sgpstatp.com
-2, snssdk.com
 2, tik-tokapi.com
 2, tiktok.com
 2, tiktokd.net

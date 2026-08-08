@@ -1,20 +1,11 @@
 # Upstream: https://github.com/blackmatrix7/ios_rule_script
-# Path: rule/Surge/Privacy/Privacy.list
-# Commit: 72c410015dc99df6b54eca1386126f70268bf6bc
-# Committed at: 2026-08-05T19:24:33Z
+# Path: compiled/Surge/Privacy/Privacy.list
+# Commit: ccc2d6b711007324bacb55cdfbbf7e36ad48145a
+# Committed at: 2026-08-07T18:52:17Z
 # License: GPL-2.0-only
 # Changed by: Juan-nikola/apple-proxy-profiles
 # Output entries: 20
 # Omitted entries: 0
-# NAME: Privacy
-# AUTHOR: blackmatrix7
-# REPO: https://github.com/blackmatrix7/ios_rule_script
-# UPDATED: 2025-12-08 02:06:16
-# DOMAIN: 19
-# DOMAIN-KEYWORD: 9
-# DOMAIN-SUFFIX: 39897
-# IP-CIDR: 11
-# TOTAL: 39936
 DOMAIN-KEYWORD,analytics.
 DOMAIN-KEYWORD,app-analytics
 DOMAIN-KEYWORD,app-log.

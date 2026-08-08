@@ -1,23 +1,11 @@
 # Upstream: https://github.com/blackmatrix7/ios_rule_script
-# Path: rule/Surge/Netflix/Netflix.list
-# Commit: 72c410015dc99df6b54eca1386126f70268bf6bc
-# Committed at: 2026-08-05T19:24:33Z
+# Path: compiled/Surge/Netflix/Netflix.list
+# Commit: ccc2d6b711007324bacb55cdfbbf7e36ad48145a
+# Committed at: 2026-08-07T18:52:17Z
 # License: GPL-2.0-only
 # Changed by: Juan-nikola/apple-proxy-profiles
-# Output entries: 1158
+# Output entries: 1156
 # Omitted entries: 0
-# NAME: Netflix
-# AUTHOR: blackmatrix7
-# REPO: https://github.com/blackmatrix7/ios_rule_script
-# UPDATED: 2025-06-06 09:16:54
-# DOMAIN: 3
-# DOMAIN-KEYWORD: 4
-# DOMAIN-SUFFIX: 30
-# IP-CIDR: 1115
-# IP-CIDR6: 4
-# PROCESS-NAME: 1
-# USER-AGENT: 1
-# TOTAL: 1158
 DOMAIN,e13252.dscg.akamaiedge.net
 DOMAIN,h-netflix.online-metrix.net
 DOMAIN,netflix.com.edgesuite.net
@@ -1174,5 +1162,3 @@ IP-CIDR6,2607:fb10::/32,no-resolve
 IP-CIDR6,2620:10c:7000::/44,no-resolve
 IP-CIDR6,2a00:86c0::/32,no-resolve
 IP-CIDR6,2a03:5640::/32,no-resolve
-USER-AGENT,Argo*
-PROCESS-NAME,com.netflix.mediaclient

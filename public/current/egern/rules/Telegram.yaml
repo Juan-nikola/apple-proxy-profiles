@@ -1,11 +1,11 @@
 # Upstream: https://github.com/blackmatrix7/ios_rule_script
-# Path: rule/Surge/Telegram/Telegram.list
-# Commit: 72c410015dc99df6b54eca1386126f70268bf6bc
-# Committed at: 2026-08-05T19:24:33Z
+# Path: compiled/Surge/Telegram/Telegram.list
+# Commit: ccc2d6b711007324bacb55cdfbbf7e36ad48145a
+# Committed at: 2026-08-07T18:52:17Z
 # License: GPL-2.0-only
 # Changed by: Juan-nikola/apple-proxy-profiles
-# Output entries: 40
-# Omitted entries: 6
+# Output entries: 35
+# Omitted entries: 0
 domain_set:
   - "api.imem.app"
   - "api.swiftgram.app"
@@ -46,11 +46,6 @@ ip_cidr6_set:
   - "2001:b28:f23c::/47"
   - "2001:b28:f23f::/48"
   - "2a0a:f280::/29"
-asn_set:
-  - "211157"
-  - "44907"
-  - "59930"
-  - "62014"
-  - "62041"
+asn_set: []
 url_regex_set: []
 user_agent_set: []
