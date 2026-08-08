@@ -6,6 +6,7 @@ import test from "node:test";
 import { canonicalJson } from "../../../automation/src/render-anywhere-rules.js";
 
 const rulesDirectory = new URL("../examples/rules/", import.meta.url);
+const optionalDirectory = new URL("../examples/optional/adblock-full/anywhere/", import.meta.url);
 
 function sha256(content) {
   return createHash("sha256").update(content).digest("hex");
@@ -35,53 +36,26 @@ function parseLikeAnywhere(content) {
   return { name, routing, rules };
 }
 
-test("pins the complete 32-source baseline and compiled topology", async () => {
+test("pins the schema-v2 lightweight topology without legacy giant default shards", async () => {
   const manifest = JSON.parse(await readFile(new URL("manifest.json", rulesDirectory), "utf8"));
-  assert.deepEqual(manifest.totals, {
-    sourceCount: 32,
-    logicalRuleSetCount: 31,
-    sourceBytes: 7447854,
-    physicalLineCount: 394086,
-    commentCount: 311,
-    blankCount: 32,
-    candidateCount: 393743,
-    parsedCount: 393743,
-    convertibleCount: 376477,
-    unsupportedCount: 17266,
-    duplicateCount: 827,
-    shadowedCount: 431,
-    unresolvedCount: 0,
-    outputCount: 375237,
-    shardCount: 34,
-    convertibleByKind: {
-      domainSuffix: 360908,
-      ipv4Cidr: 10980,
-      ipv6Cidr: 4219,
-      domainKeyword: 370,
-    },
-    unsupportedByReason: {
-      "unsupported-exact-domain": 17002,
-      "unsupported-url-regex": 16,
-      "unsupported-and": 1,
-      "unsupported-user-agent": 176,
-      "unsupported-process-name": 60,
-      "unsupported-ip-asn": 10,
-      "unsupported-or": 1,
-    },
-    ignoredModifiers: { noResolve: 15209 },
-    supplementalCount: 18,
-    supplementalOutputCount: 1,
+  assert.equal(manifest.schemaVersion, 2);
+  assert.deepEqual(manifest.removed, ["Advertising", "Advertising_Domain", "ChinaMax_Domain", "Game"]);
+  assert.deepEqual(manifest.replacements, {
+    ChinaMax_Domain: ["DomesticCore"],
+    Game: ["DomesticGame", "OverseasGame"],
   });
+  assert.deepEqual(manifest.optionalPacks, { "adblock-full": "../../optional/adblock-full/manifest.json" });
   assert.equal(manifest.upstream.commit, "dab47069a30c4ae70f7f5f4c919d639d9aaf79dc");
   assert.equal(manifest.generatedAt, manifest.upstream.committedAt);
-  assert.equal(manifest.sources.length, 32);
-  assert.equal(manifest.logicalRuleSets.length, 31);
-  assert.deepEqual(manifest.logicalRuleSets.find(({ id }) => id === "Advertising").sourceIds,
-    ["Advertising", "Advertising_Domain"]);
-  const privacy = manifest.sources.find(({ id }) => id === "Privacy");
-  assert.equal(privacy.counts.convertible, 20);
-  assert.equal(privacy.counts.output, 0);
-  assert.deepEqual(privacy.shardIds, []);
+  const ids = manifest.sources.map(({ id }) => id);
+  for (const id of ["DomesticCore", "DomesticGame", "OverseasGame", "ChinaIP"]) assert.ok(ids.includes(id), id);
+  for (const id of ["Advertising", "Advertising_Domain", "ChinaMax_Domain", "Game", "ChinaMax"]) {
+    assert.equal(ids.includes(id), false, id);
+  }
+  assert.equal(manifest.sources.find(({ id }) => id === "DomesticCore").routing, 1);
+  assert.equal(manifest.sources.find(({ id }) => id === "DomesticGame").routing, 1);
+  assert.equal(manifest.sources.find(({ id }) => id === "OverseasGame").routing, 0);
+  assert.equal(manifest.sources.find(({ id }) => id === "ChinaIP").routing, 1);
 });
 
 test("round-trips every shard with the pinned Swift-equivalent parser", async () => {
@@ -109,20 +83,36 @@ test("round-trips every shard with the pinned Swift-equivalent parser", async ()
   assert.deepEqual(new Set(await readdir(rulesDirectory)), expectedFiles);
 });
 
-test("closes manifest and Advertising component hashes without wall-clock input", async () => {
+test("closes the lightweight manifest without wall-clock input or legacy shard names", async () => {
   const content = await readFile(new URL("manifest.json", rulesDirectory), "utf8");
   const manifest = JSON.parse(content);
   const { manifestSha256, ...withoutHash } = manifest;
   assert.equal(sha256(canonicalJson(withoutHash)), manifestSha256);
-  const advertising = manifest.sources.filter(({ familyId }) => familyId === "Advertising");
-  assert.deepEqual(advertising.map(({ id }) => id), ["Advertising", "Advertising_Domain"]);
-  assert.deepEqual(advertising.flatMap(({ shardIds }) => shardIds), [
-    "Advertising-001",
-    "Advertising_Domain-001",
-    "Advertising_Domain-002",
-    "Advertising_Domain-003",
-  ]);
-  assert.equal(new Set(advertising.map(({ sourceSha256 }) => sourceSha256)).size, 2);
   assert.equal(content.includes("2026-08-03"), false);
   assert.equal(content.includes(".amrs"), false);
+  assert.equal(manifest.shards.some(({ sourceId }) => [
+    "Advertising", "Advertising_Domain", "ChinaMax_Domain", "Game", "ChinaMax",
+  ].includes(sourceId)), false);
+});
+
+test("tracks a closed optional full-adblock tree with only REJECT advertising shards", async () => {
+  const manifest = JSON.parse(await readFile(new URL("manifest.json", optionalDirectory), "utf8"));
+  assert.equal(manifest.schemaVersion, 1);
+  assert.deepEqual(manifest.sources.map(({ id, routing }) => ({ id, routing })), [
+    { id: "Advertising", routing: 2 },
+    { id: "Advertising_Domain", routing: 2 },
+  ]);
+  const expected = new Set(["manifest.json", "client-manifest.json", "import.html"]);
+  for (const shard of manifest.shards) {
+    const filename = shard.path.slice("optional/adblock-full/anywhere/".length);
+    expected.add(filename);
+    assert.match(shard.url, /^https:\/\/juan-nikola\.github\.io\/apple-proxy-profiles\/optional\/adblock-full\/current\/anywhere\/[A-Za-z0-9_-]+\.arrs$/u);
+    const content = await readFile(new URL(filename, optionalDirectory), "utf8");
+    assert.equal(sha256(content), shard.sha256);
+    assert.equal(parseLikeAnywhere(content).routing, 2);
+  }
+  const page = await readFile(new URL("import.html", optionalDirectory), "utf8");
+  assert.match(page, /REJECT[\s\S]*内存/u);
+  assert.equal(page.includes("DomesticCore"), false);
+  assert.deepEqual(new Set(await readdir(optionalDirectory)), expected);
 });

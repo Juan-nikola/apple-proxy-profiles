@@ -20,7 +20,6 @@ import {
   BLACKMATRIX7_BASELINE,
   FETCH_SOURCE_CATALOG,
 } from "../automation/src/source-catalog.js";
-import { buildImportBatches, renderImportPage } from "../clients/anywhere/src/build-import-page.js";
 import { UPSTREAM_RULE_SOURCE_CATALOG } from "../shared/rules/catalog.js";
 
 const repositoryRoot = dirname(dirname(fileURLToPath(import.meta.url)));
@@ -410,14 +409,7 @@ async function buildArtifacts({ operation, publicDirectory }) {
   return buildClientArtifacts({
     snapshot,
     upstream,
-    additionalFiles(anywhereManifest) {
-      const additions = new Map(statics);
-      additions.set("anywhere/import.html", renderImportPage(
-        buildImportBatches(anywhereManifest.shards.map(({ url }) => url)),
-        anywhereManifest,
-      ));
-      return additions;
-    },
+    additionalFiles: statics,
   });
 }
 

@@ -1,10 +1,10 @@
 # Upstream: https://github.com/blackmatrix7/ios_rule_script
-# Source: Game
+# Source: OverseasGame
 # Commit: dab47069a30c4ae70f7f5f4c919d639d9aaf79dc
 # Converted at upstream commit time: 2026-08-01T19:07:21Z
 # License: GPL-2.0-only
 # Converted by: Juan-nikola/apple-proxy-profiles
-name = 🕹️ 游戏平台 · Game
+name = 🌍 海外游戏 · OverseasGame
 routing = 0
 
 0, 103.4.114.233/32
@@ -83,6 +83,7 @@ routing = 0
 2, blizzardgearstore.com
 2, blizzcon-a.akamaihd.net
 2, blz-contentstack.com
+2, blz.nosdn.127.net
 2, blzddist1-a.akamaihd.net
 2, blzddistkr1-a.akamaihd.net
 2, blzmedia-a.akamaihd.net
@@ -98,6 +99,7 @@ routing = 0
 2, camelotherald.net
 2, capitalgames.com
 2, cdngarenanow-a.akamaihd.net
+2, cdp.cloud.unity3d.com
 2, championshipseriesleague.com
 2, chillingo.com
 2, cloudsync-prod.s3.amazonaws.com
@@ -111,7 +113,9 @@ routing = 0
 2, darkness-risen.com
 2, dawngate.com
 2, dawngatechronicles.com
+2, deadspacegame.com
 2, diablo3.com
+2, diablo3.nosdn.127.net
 2, diabloimmortal.com
 2, dialga.com
 2, dice.se
@@ -119,6 +123,8 @@ routing = 0
 2, dicela.net
 2, diddykongracing.com
 2, dkr.com
+2, dl.steam.clngaa.com
+2, dl.steam.ksyna.com
 2, dlmobilegarena-a.akamaihd.net
 2, donkeykongcountryreturns.com
 2, dragonage.com
@@ -128,6 +134,7 @@ routing = 0
 2, dungeonkeeper.com
 2, ea-anz-press.com
 2, ea.com
+2, ea.tt.omtrdc.net
 2, eaaccess.com
 2, eaassets-a.akamaihd.net
 2, eablackbox.com
@@ -194,7 +201,9 @@ routing = 0
 2, gloryofheracles.com
 2, gog-statics.com
 2, gog.com
+2, gog.qtlglb.com
 2, hackyourconsole.com
+2, hearthstone.nosdn.127.net
 2, heroesofdragonage.com
 2, heroesofthestorm.com
 2, historyofdota.com
@@ -324,6 +333,7 @@ routing = 0
 2, origin-a.akamaihd.net
 2, origin.com
 2, origin.tv
+2, overwatch.nosdn.127.net
 2, paragon.com
 2, personaltrainermath.com
 2, plantsvszombies2.com
@@ -391,18 +401,23 @@ routing = 0
 2, rstatic.net
 2, ruinedking.com
 2, s.team
+2, sc2.nosdn.127.net
 2, seagroup.com
 2, seaofsolitude.com
 2, shadowcomplex.com
 2, simcity-buildit.com
 2, simcity.com
 2, skate2.com
+2, sony.com
+2, sonyentertainmentnetwork.com
 2, spearhead.kr
 2, speedhunters.com
 2, splatoon2tournament.com
 2, spore.com
 2, spyjinx.com
 2, ssx3.com
+2, st.dl.bscstorage.net
+2, st.dl.eccdnx.com
 2, st.dl.pinyuncloud.com
 2, starcraft.com
 2, starcraft2.com
@@ -414,10 +429,14 @@ routing = 0
 2, starwarstheoldrepublic.com
 2, steam-api.com
 2, steam-chat.com
+2, steam.apac.qtlglb.com
 2, steam.cdn.on.net
 2, steam.cdn.orcon.net.nz
 2, steam.cdn.slingshot.co.nz
 2, steam.cdn.webra.ru
+2, steam.eca.qtlglb.com
+2, steam.naeu.qtlglb.com
+2, steam.ru.qtlglb.com
 2, steam.tv
 2, steambroadcast.akamaized.net
 2, steamcdn-a.akamaihd.net
@@ -431,8 +450,10 @@ routing = 0
 2, steampipe-partner.akamaized.net
 2, steampipe.akamaized.net
 2, steampowered.com
+2, steampowered.com.8686c.com
 2, steamstat.us
 2, steamstatic.com
+2, steamstatic.com.8686c.com
 2, steamstore-a.akamaihd.net
 2, steamunlocked.net
 2, steamusercontent-a.akamaihd.net
@@ -491,6 +512,8 @@ routing = 0
 2, wiivc.net
 2, wmsjsteam.com
 2, worldofwarcraft.com
+2, wow.nosdn.127.net
+2, wowchina.com
 2, xboxab.net
 2, xboxservice.com
 2, xdsummit.com

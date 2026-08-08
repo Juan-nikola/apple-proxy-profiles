@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { shardRuleSet } from "../src/shard-rules.js";
+import { ANYWHERE_LIGHTWEIGHT_MIGRATION, shardRuleSet, validateShardMigration } from "../src/shard-rules.js";
 
 function entries(count) {
   return Array.from({ length: count }, (_, index) => ({
@@ -38,4 +38,22 @@ test("fails closed for empty required sets and unsafe limits", () => {
   assert.throws(() => shardRuleSet({ id: "required", name: "Required", entries: [] }), /no entries/u);
   assert.deepEqual(shardRuleSet({ id: "optional", name: "Optional", required: false, entries: [] }), []);
   assert.throws(() => shardRuleSet({ id: "x", name: "X", entries: entries(1) }, 100_001), /limit/u);
+});
+
+test("accepts only the explicit schema-v2 legacy shard migration", () => {
+  assert.doesNotThrow(() => validateShardMigration({
+    previousIds: ["Stable", "Advertising", "Advertising_Domain", "ChinaMax_Domain", "Game"],
+    currentIds: ["Stable", "DomesticCore", "DomesticGame", "OverseasGame"],
+    migration: ANYWHERE_LIGHTWEIGHT_MIGRATION,
+  }));
+  assert.throws(() => validateShardMigration({
+    previousIds: ["Stable", "Accident", "Advertising", "Advertising_Domain", "ChinaMax_Domain", "Game"],
+    currentIds: ["Stable", "DomesticCore", "DomesticGame", "OverseasGame"],
+    migration: ANYWHERE_LIGHTWEIGHT_MIGRATION,
+  }), /Accident/u);
+  assert.throws(() => validateShardMigration({
+    previousIds: ["Stable", "Advertising", "Advertising_Domain", "ChinaMax_Domain", "Game"],
+    currentIds: ["StableRenamed", "DomesticCore", "DomesticGame", "OverseasGame"],
+    migration: ANYWHERE_LIGHTWEIGHT_MIGRATION,
+  }), /Stable/u);
 });

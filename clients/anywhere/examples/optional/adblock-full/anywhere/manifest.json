@@ -1,0 +1,197 @@
+{
+  "catalogSha256": "cc344d6fa89e121e8f355aa3e7e9f7eb7cce8b75ed35f7b1654173eac8ef91ee",
+  "clientCompatibility": {
+    "commit": "e15518fde1f5d2652dfc1c234c89a68b87cecec0",
+    "repository": "https://github.com/NodePassProject/Anywhere"
+  },
+  "generatedAt": "2026-08-01T19:07:21Z",
+  "generatorVersion": "0.1.0",
+  "logicalRuleSets": [
+    {
+      "id": "Advertising",
+      "required": true,
+      "sourceIds": [
+        "Advertising"
+      ]
+    },
+    {
+      "id": "Advertising_Domain",
+      "required": true,
+      "sourceIds": [
+        "Advertising_Domain"
+      ]
+    }
+  ],
+  "manifestSha256": "39198c1d98bc4794cf3b8c958f1141022838b3ae9911b401f0575128a6111b32",
+  "schemaVersion": 1,
+  "shards": [
+    {
+      "countsByType": {
+        "domainKeyword": 278,
+        "ipv4Cidr": 486,
+        "ipv6Cidr": 3
+      },
+      "entryCount": 767,
+      "familyId": "Advertising",
+      "id": "Advertising-001",
+      "index": 1,
+      "name": "🧱 常见广告 · Advertising",
+      "path": "optional/adblock-full/anywhere/Advertising-001.arrs",
+      "sha256": "83d0e0f2fc79f2a9a8bcf60381835a82cb92618cefef18e3f72c82d77c094521",
+      "sourceId": "Advertising",
+      "total": 1,
+      "url": "https://juan-nikola.github.io/apple-proxy-profiles/optional/adblock-full/current/anywhere/Advertising-001.arrs"
+    },
+    {
+      "countsByType": {
+        "domainSuffix": 95000
+      },
+      "entryCount": 95000,
+      "familyId": "Advertising",
+      "id": "Advertising_Domain-001",
+      "index": 1,
+      "name": "🧱 常见广告 · Advertising Domain (1/3)",
+      "path": "optional/adblock-full/anywhere/Advertising_Domain-001.arrs",
+      "sha256": "409ef861ee7d1f4312f5d98ea628882bccf5eedc47c0b52012b292ac51908c00",
+      "sourceId": "Advertising_Domain",
+      "total": 3,
+      "url": "https://juan-nikola.github.io/apple-proxy-profiles/optional/adblock-full/current/anywhere/Advertising_Domain-001.arrs"
+    },
+    {
+      "countsByType": {
+        "domainSuffix": 95000
+      },
+      "entryCount": 95000,
+      "familyId": "Advertising",
+      "id": "Advertising_Domain-002",
+      "index": 2,
+      "name": "🧱 常见广告 · Advertising Domain (2/3)",
+      "path": "optional/adblock-full/anywhere/Advertising_Domain-002.arrs",
+      "sha256": "93425cdaf45c630c6069476ad6841ca2912f36fd67d32761e1c2ab43e6ea083d",
+      "sourceId": "Advertising_Domain",
+      "total": 3,
+      "url": "https://juan-nikola.github.io/apple-proxy-profiles/optional/adblock-full/current/anywhere/Advertising_Domain-002.arrs"
+    },
+    {
+      "countsByType": {
+        "domainSuffix": 56141
+      },
+      "entryCount": 56141,
+      "familyId": "Advertising",
+      "id": "Advertising_Domain-003",
+      "index": 3,
+      "name": "🧱 常见广告 · Advertising Domain (3/3)",
+      "path": "optional/adblock-full/anywhere/Advertising_Domain-003.arrs",
+      "sha256": "fe32154af63a77a6bff8a1aa0aae6b7f42c8dfa3206601bdfa6cb42492873082",
+      "sourceId": "Advertising_Domain",
+      "total": 3,
+      "url": "https://juan-nikola.github.io/apple-proxy-profiles/optional/adblock-full/current/anywhere/Advertising_Domain-003.arrs"
+    }
+  ],
+  "sources": [
+    {
+      "canonicalPath": "rule/Surge/Advertising/Advertising.list",
+      "componentId": "rules",
+      "counts": {
+        "candidate": 767,
+        "convertible": 767,
+        "duplicates": 0,
+        "output": 767,
+        "parsed": 767,
+        "shadowed": 0,
+        "unresolved": 0,
+        "unsupported": 0
+      },
+      "familyId": "Advertising",
+      "id": "Advertising",
+      "ignoredModifiers": {
+        "noResolve": 489
+      },
+      "inputFormat": "RULE-SET",
+      "intendedTarget": "reject",
+      "minEntries": 0,
+      "order": 3,
+      "policy": "🧱 常见广告",
+      "priority": 30,
+      "routing": 2,
+      "shardIds": [
+        "Advertising-001"
+      ],
+      "sourceBytes": 25934,
+      "sourceSha256": "18e1b965028514f168e08ad34318cb5ae21614191ad8381b2df7b0bb78b83c90",
+      "unsupportedByReason": {}
+    },
+    {
+      "canonicalPath": "rule/Surge/Advertising/Advertising_Domain.list",
+      "componentId": "domains",
+      "counts": {
+        "candidate": 262589,
+        "convertible": 246141,
+        "duplicates": 0,
+        "output": 246141,
+        "parsed": 262589,
+        "shadowed": 0,
+        "unresolved": 0,
+        "unsupported": 16448
+      },
+      "familyId": "Advertising",
+      "id": "Advertising_Domain",
+      "ignoredModifiers": {
+        "noResolve": 0
+      },
+      "inputFormat": "RULE-SET",
+      "intendedTarget": "reject",
+      "minEntries": 0,
+      "order": 4,
+      "policy": "🧱 常见广告",
+      "priority": 40,
+      "routing": 2,
+      "shardIds": [
+        "Advertising_Domain-001",
+        "Advertising_Domain-002",
+        "Advertising_Domain-003"
+      ],
+      "sourceBytes": 8557269,
+      "sourceSha256": "19972d6836527dfae4632bfd7f4106682a8adaba8714927d9d99fdb003e90e3a",
+      "unsupportedByReason": {
+        "unsupported-exact-domain": 16448
+      }
+    }
+  ],
+  "totals": {
+    "blankCount": 2,
+    "candidateCount": 263356,
+    "commentCount": 0,
+    "convertibleByKind": {
+      "domainKeyword": 278,
+      "domainSuffix": 246141,
+      "ipv4Cidr": 486,
+      "ipv6Cidr": 3
+    },
+    "convertibleCount": 246908,
+    "duplicateCount": 0,
+    "ignoredModifiers": {
+      "noResolve": 489
+    },
+    "logicalRuleSetCount": 2,
+    "outputCount": 246908,
+    "parsedCount": 263356,
+    "physicalLineCount": 263358,
+    "shadowedCount": 0,
+    "shardCount": 4,
+    "sourceBytes": 8583203,
+    "sourceCount": 2,
+    "unresolvedCount": 0,
+    "unsupportedByReason": {
+      "unsupported-exact-domain": 16448
+    },
+    "unsupportedCount": 16448
+  },
+  "upstream": {
+    "branch": "master",
+    "commit": "dab47069a30c4ae70f7f5f4c919d639d9aaf79dc",
+    "committedAt": "2026-08-01T19:07:21Z",
+    "license": "GPL-2.0-only",
+    "repository": "https://github.com/blackmatrix7/ios_rule_script"
+  }
+}

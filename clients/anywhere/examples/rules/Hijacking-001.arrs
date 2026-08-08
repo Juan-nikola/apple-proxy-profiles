@@ -4,7 +4,7 @@
 # Converted at upstream commit time: 2026-08-01T19:07:21Z
 # License: GPL-2.0-only
 # Converted by: Juan-nikola/apple-proxy-profiles
-name = ☣️ 安全威胁 · Hijacking
+name = REJECT · Hijacking
 routing = 2
 
 0, 103.49.209.27/32

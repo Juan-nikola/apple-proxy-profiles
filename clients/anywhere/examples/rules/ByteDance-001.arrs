@@ -15,7 +15,6 @@ routing = 1
 2, aigcarena.com
 2, aihst8.com
 2, amemv.cn
-2, amemv.com
 2, amemv.net
 2, artistrylab.net
 2, baike.com
@@ -57,7 +56,6 @@ routing = 1
 2, bytegecko.com
 2, bytegoofy.com
 2, bytegslb.com
-2, byteimg.com
 2, bytelb.net
 2, bytelove.cn
 2, bytemaimg.com
@@ -89,10 +87,8 @@ routing = 1
 2, dou.top
 2, doubao.cn
 2, doubao.com
-2, douyin.com
 2, douyinact.com
 2, douyinact.net
-2, douyincdn.com
 2, douyinclips.com
 2, douyinec.com
 2, douyinhanyu.com
@@ -193,7 +189,6 @@ routing = 1
 2, ihuoshanvod.com
 2, inluckcalendar.com
 2, ixgvideo.com
-2, ixigua.com
 2, ixiguavideo.com
 2, jinritemai-inc.com
 2, jinritemai.com
@@ -208,6 +203,8 @@ routing = 1
 2, jokecommunity.net
 2, jstti.com
 2, jtamac.com
+2, juejin.cn
+2, juejin.im
 2, juliangyinqing.cn
 2, juliangyinqing.com
 2, juliangyinqing.net
@@ -248,10 +245,14 @@ routing = 1
 2, pangle.cn
 2, pangolin-dsp-toutiao-b.com
 2, pangolin-dsp-toutiao.com
+2, pangolin-sdk-toutiao-b.com
+2, pangolin-sdk-toutiao.com
+2, pangolin-sdk-toutiao1.com
 2, panplayable-toutiao-b.com
 2, panplayable-toutiao.com
+2, pglstatp-toutiao-b.com
+2, pglstatp-toutiao.com
 2, pipix.com
-2, pstatp.com
 2, qmoji.mobi
 2, qmoji.net
 2, qwconnect.top
@@ -273,7 +274,6 @@ routing = 1
 2, tiquality.cn
 2, tiquality.com.cn
 2, toscdn.com
-2, toutiao.com
 2, toutiao11.com
 2, toutiao12.com
 2, toutiao13.com
@@ -291,12 +291,12 @@ routing = 1
 2, toutiaohao.com.cn
 2, toutiaohao.net
 2, toutiaoimg.cn
-2, toutiaoimg.com
 2, toutiaoimg.net
 2, toutiaojisu.com
 2, toutiaolite.com
 2, toutiaolite1.com
 2, toutiaolite2.com
+2, toutiaopage.com
 2, toutiaoribao.cn
 2, toutiaoribao.net
 2, toutiaostatic.com

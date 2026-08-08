@@ -1,7 +1,10 @@
 import { ANYWHERE_SOURCE_BASELINE } from "../../clients/anywhere/src/upstream-contract.js";
 import { compileAnywhereRuleSets } from "../../clients/anywhere/src/compile-priority.js";
 import { renderArrs, ARRS_TYPE_ID } from "../../clients/anywhere/src/render-arrs.js";
-import { shardRuleSet } from "../../clients/anywhere/src/shard-rules.js";
+import {
+  ANYWHERE_LIGHTWEIGHT_MIGRATION,
+  shardRuleSet,
+} from "../../clients/anywhere/src/shard-rules.js";
 import { RULE_KIND } from "../../shared/rules/model.js";
 import { DOMESTIC_FALLBACK_DOMAIN_SUFFIXES } from "../../shared/rules/domestic-fallback.js";
 import { parseSurgeRules } from "./parse-surge.js";
@@ -86,7 +89,9 @@ export function buildAnywhereRuleSnapshot({
   logicalRuleSets = LOGICAL_RULE_SETS,
   expectedBaseline = null,
   pathPrefix = "anywhere/rules",
+  urlPathPrefix = pathPrefix,
   publicBase = PUBLIC_BASE,
+  migration = null,
 }) {
   if (!(snapshot instanceof Map)) throw new TypeError("Anywhere snapshot must be a Map");
   if (!Array.isArray(catalog) || catalog.length === 0) throw new TypeError("Anywhere catalog is required");
@@ -164,7 +169,7 @@ export function buildAnywhereRuleSnapshot({
         index: shard.shardIndex,
         total: shard.shardTotal,
         path: publicPath,
-        url: `${publicBase}/${publicPath}`,
+        url: `${publicBase}/${urlPathPrefix}/${shard.id}.arrs`,
         entryCount: shard.entries.length,
         sha256: artifactSha256(content),
         countsByType,
@@ -269,8 +274,11 @@ export function buildAnywhereRuleSnapshot({
     totals.supplementalOutputCount = supplementalOutputCount;
   }
 
+  if (migration !== null && canonicalJson(migration) !== canonicalJson(ANYWHERE_LIGHTWEIGHT_MIGRATION)) {
+    throw new Error("Anywhere migration must match the explicit schema-v2 contract");
+  }
   const baseManifest = {
-    schemaVersion: 1,
+    ...(migration === null ? { schemaVersion: 1 } : migration),
     generatorVersion: "0.1.0",
     clientCompatibility: {
       repository: ANYWHERE_SOURCE_BASELINE.repository,

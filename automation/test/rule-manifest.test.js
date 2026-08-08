@@ -30,6 +30,12 @@ test("isolates the full ad pack from every default manifest path", () => {
   const manifest = JSON.parse(result.defaults.get("manifest.json"));
   const defaultPaths = manifest.files.map(({ path }) => path);
   assert.equal(defaultPaths.some((path) => /Advertising|ChinaMax_Domain/u.test(path)), false);
+  assert.equal(result.defaults.has("anywhere/import.html"), true);
+  const anywhereManifest = JSON.parse(result.defaults.get("anywhere/rules/manifest.json"));
+  assert.equal(anywhereManifest.schemaVersion, 2);
+  const anywhereClientManifest = JSON.parse(result.defaults.get("anywhere/client-manifest.json"));
+  assert.equal(anywhereClientManifest.files.some(({ path }) => path === "anywhere/import.html"), true);
+  assert.equal(anywhereClientManifest.files.some(({ path }) => path.startsWith("optional/")), false);
 
   const pack = result.optionalPacks.get("adblock-full");
   const optionalManifest = JSON.parse(pack.get("optional/adblock-full/manifest.json"));
@@ -50,6 +56,16 @@ test("isolates the full ad pack from every default manifest path", () => {
   assert.deepEqual(Object.keys(optionalManifest.clients).sort(), [
     "anywhere", "egern", "shadowrocket", "singbox", "surge",
   ]);
+  const optionalPagePath = "optional/adblock-full/anywhere/import.html";
+  assert.equal(pack.has(optionalPagePath), true);
+  assert.match(pack.get(optionalPagePath), /REJECT[\s\S]*内存/u);
+  const optionalAnywhereManifest = JSON.parse(pack.get("optional/adblock-full/anywhere/manifest.json"));
+  assert.deepEqual(optionalAnywhereManifest.sources.map(({ id }) => id), ["Advertising", "Advertising_Domain"]);
+  assert.equal(optionalAnywhereManifest.shards.every(({ url }) => (
+    url.startsWith("https://juan-nikola.github.io/apple-proxy-profiles/optional/adblock-full/current/anywhere/")
+  )), true);
+  const optionalAnywhereClient = JSON.parse(pack.get("optional/adblock-full/anywhere/client-manifest.json"));
+  assert.equal(optionalAnywhereClient.files.some(({ path }) => path === optionalPagePath), true);
   for (const [client, { manifestHash }] of Object.entries(optionalManifest.clients)) {
     const directory = client === "singbox" ? "sing-box" : client;
     assert.match(manifestHash, /^[0-9a-f]{64}$/u);

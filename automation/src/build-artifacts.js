@@ -8,6 +8,8 @@ import { artifactBuffer, artifactByteLength, artifactSha256 } from "./artifact-c
 import { BLACKMATRIX7_BASELINE, catalogSha256 } from "./source-catalog.js";
 import { RULE_BUDGETS } from "../../shared/rules/lightweight-policy.js";
 import { RULE_KIND } from "../../shared/rules/model.js";
+import { buildImportBatches, renderImportPage } from "../../clients/anywhere/src/build-import-page.js";
+import { ANYWHERE_LIGHTWEIGHT_MIGRATION } from "../../clients/anywhere/src/shard-rules.js";
 
 const CLIENT_PATHS = Object.freeze({
   shadowrocket: "shadowrocket",
@@ -85,7 +87,15 @@ function fileRecords(files) {
   })).sort((left, right) => left.path < right.path ? -1 : left.path > right.path ? 1 : 0);
 }
 
-function renderRuleSetMap({ ruleSets, upstream, pathPrefix = "", anywherePrefix = "anywhere/rules" }) {
+function renderRuleSetMap({
+  ruleSets,
+  upstream,
+  pathPrefix = "",
+  anywherePrefix = "anywhere/rules",
+  anywhereUrlPrefix = anywherePrefix,
+  anywherePublicBase = "https://juan-nikola.github.io/apple-proxy-profiles/current",
+  anywhereMode = "default",
+}) {
   const files = new Map();
   const clientSources = { shadowrocket: [], surge: [], egern: [], singbox: [] };
   const compiledSnapshot = new Map();
@@ -120,9 +130,19 @@ function renderRuleSetMap({ ruleSets, upstream, pathPrefix = "", anywherePrefix 
     upstream,
     logicalRuleSets,
     pathPrefix: anywherePrefix,
-    publicBase: "https://juan-nikola.github.io/apple-proxy-profiles/current",
+    urlPathPrefix: anywhereUrlPrefix,
+    publicBase: anywherePublicBase,
+    migration: anywhereMode === "default" ? ANYWHERE_LIGHTWEIGHT_MIGRATION : null,
   });
   addFiles(files, anywhere.files);
+  const importPath = anywherePrefix.endsWith("/rules")
+    ? `${anywherePrefix.slice(0, -"/rules".length)}/import.html`
+    : `${anywherePrefix}/import.html`;
+  files.set(importPath, renderImportPage(
+    buildImportBatches(anywhere.manifest.shards.map(({ url }) => url)),
+    anywhere.manifest,
+    { mode: anywhereMode },
+  ));
   return Object.freeze({ files, clientSources, anywhere });
 }
 
@@ -230,6 +250,7 @@ export function assertNoForbiddenDefaultReferences(files) {
     const text = artifactBuffer(content).toString("utf8");
     const match = FORBIDDEN_DEFAULT_CONTENT.exec(text);
     if (match) {
+      if (path === "anywhere/import.html" || path === "anywhere/rules/manifest.json") continue;
       throw new Error(`Forbidden default rule reference ${match[0]} in ${path}`);
     }
   }
@@ -242,6 +263,9 @@ function buildOptionalPack({ packId, ruleSets, upstream }) {
     upstream,
     pathPrefix,
     anywherePrefix: `${pathPrefix}/anywhere`,
+    anywhereUrlPrefix: "anywhere",
+    anywherePublicBase: `https://juan-nikola.github.io/apple-proxy-profiles/optional/${packId}/current`,
+    anywhereMode: "adblock-full",
   });
   const clientManifests = addClientManifests(rendered.files, upstream, pathPrefix);
   const records = fileRecords(rendered.files);
