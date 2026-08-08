@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
-import { readFile, readdir, stat } from "node:fs/promises";
+import { access, readFile, readdir, stat } from "node:fs/promises";
 import test from "node:test";
 
 const publicRoot = new URL("../public/", import.meta.url);
@@ -34,18 +34,26 @@ async function relativeFiles(url, prefix = "") {
 }
 
 test("publishes one hash-closed multi-client current snapshot", async () => {
-  const manifest = JSON.parse(await readFile(new URL("manifest.json", currentRoot), "utf8"));
-  assert.match(manifest.upstream.commit, /^[0-9a-f]{40}$/u);
-  assert.equal(manifest.generatedAt, manifest.upstream.committedAt);
-  const anywhereManifest = JSON.parse(await readFile(new URL("anywhere/rules/manifest.json", currentRoot), "utf8"));
-  assert.equal(anywhereManifest.upstream.commit, manifest.upstream.commit);
-  assert.equal(anywhereManifest.generatedAt, manifest.generatedAt);
-  assert.equal(manifest.clients.shadowrocket.sourceCount, 32);
-  assert.equal(manifest.clients.egern.sourceCount, 32);
-  assert.equal(manifest.clients.anywhere.sourceCount, 32);
-  assert.equal(manifest.clients.surge.sourceCount, 32);
-  assert.equal(manifest.clients.singbox.sourceCount, 32);
-  const manifestPaths = new Set(manifest.files.map(({ path }) => path));
+  const rollout = JSON.parse(await readFile(new URL("rollout.json", publicRoot), "utf8"));
+  assert.equal(rollout.schemaVersion, 2);
+  const clientDirectories = {
+    shadowrocket: "shadowrocket",
+    egern: "egern",
+    anywhere: "anywhere",
+    surge: "surge",
+    singbox: "sing-box",
+  };
+  for (const [client, directory] of Object.entries(clientDirectories)) {
+    const hash = rollout.clients[client];
+    assert.match(hash, /^[0-9a-f]{64}$/u, client);
+    const manifest = JSON.parse(await readFile(new URL(`${directory}/client-manifest.json`, currentRoot), "utf8"));
+    assert.equal(manifest.manifestHash, hash, client);
+    for (const record of manifest.files) {
+      const content = await readFile(new URL(record.path, currentRoot));
+      assert.equal(content.byteLength, record.bytes, record.path);
+      assert.equal(sha256(content), record.sha256, record.path);
+    }
+  }
   for (const path of [
     "shadowrocket/scripts/shadowrocket-node-operator.js",
     "shadowrocket/scripts/shadowrocket-profile-generator.js",
@@ -57,46 +65,42 @@ test("publishes one hash-closed multi-client current snapshot", async () => {
     "egern/scripts/substore-profile-generator.js",
     "anywhere/scripts/anywhere-node-generator.js",
     "anywhere/scripts/substore-node-generator.js",
+    "surge/scripts/surge-nodes-generator.js",
     "surge/scripts/surge-profile-generator.js",
+    "surge/scripts/substore-nodes-generator.js",
     "surge/scripts/substore-profile-generator.js",
     "sing-box/scripts/sing-box-config-generator.js",
     "sing-box/scripts/substore-config-generator.js",
   ]) {
-    assert.equal(manifestPaths.has(path), true, path);
-  }
-  for (const file of manifest.files) {
-    const content = await readFile(new URL(file.path, currentRoot));
-    assert.equal(content.byteLength, file.bytes, file.path);
-    assert.equal(sha256(content), file.sha256, file.path);
+    await access(new URL(path, currentRoot));
   }
 });
 
-test("public client entrypoints close over current and never raw master", async () => {
+test("public client entrypoints close over hosted channels and never raw master", async () => {
+  const scriptMarkers = {
+    "shadowrocket/scripts/shadowrocket-profile-generator.js": /shadowrocket\/rules/u,
+    "shadowrocket/scripts/substore-profile-generator.js": /shadowrocket\/rules/u,
+    "egern/scripts/egern-profile-generator.js": /egern\/rules/u,
+    "egern/scripts/substore-profile-generator.js": /egern\/rules/u,
+    "surge/scripts/surge-profile-generator.js": /surge\/rules/u,
+    "surge/scripts/substore-profile-generator.js": /surge\/rules/u,
+    "sing-box/scripts/sing-box-config-generator.js": /sing-box\/rule-sets/u,
+    "sing-box/scripts/substore-config-generator.js": /sing-box\/rule-sets/u,
+  };
+  for (const [path, marker] of Object.entries(scriptMarkers)) {
+    const content = await readFile(new URL(path, currentRoot), "utf8");
+    assert.equal(content.includes("raw.githubusercontent.com/blackmatrix7"), false, path);
+    assert.match(content, /https:\/\/juan-nikola\.github\.io\/apple-proxy-profiles/u, path);
+    assert.match(content, marker, path);
+  }
   for (const path of [
-    "shadowrocket/scripts/shadowrocket-profile-generator.js",
-    "shadowrocket/scripts/substore-profile-generator.js",
     "shadowrocket/examples/shadowrocket-macos.conf",
     "shadowrocket/examples/shadowrocket-iphone.conf",
     "shadowrocket/examples/shadowrocket-ipad.conf",
   ]) {
     const content = await readFile(new URL(path, currentRoot), "utf8");
     assert.equal(content.includes("raw.githubusercontent.com/blackmatrix7"), false, path);
-    if (path.includes("scripts/")) {
-      assert.match(content, /current\/shadowrocket\/rules/u);
-      assert.match(content, /`\$\{RULE_ROOT\}\/\$\{id\}\.list`/u);
-    } else {
-      assert.match(content, /current\/shadowrocket\/rules\/[A-Za-z0-9_-]+\.list/u);
-    }
-  }
-  for (const [path, marker] of [
-    ["surge/scripts/surge-profile-generator.js", "current/surge/rules"],
-    ["surge/scripts/substore-profile-generator.js", "current/surge/rules"],
-    ["sing-box/scripts/sing-box-config-generator.js", "sing-box/rules"],
-    ["sing-box/scripts/substore-config-generator.js", "sing-box/rules"],
-  ]) {
-    const content = await readFile(new URL(path, currentRoot), "utf8");
-    assert.equal(content.includes("raw.githubusercontent.com/blackmatrix7"), false, path);
-    assert.match(content, new RegExp(marker.replaceAll("/", "\\/"), "u"), path);
+    assert.match(content, /juan-nikola\.github\.io\/apple-proxy-profiles\/[a-z]+\/shadowrocket\/rules\/[A-Za-z0-9_-]+\.list/u, path);
   }
   for (const path of [
     "egern/examples/egern-macos.yaml",
@@ -106,7 +110,8 @@ test("public client entrypoints close over current and never raw master", async 
     const content = await readFile(new URL(path, currentRoot), "utf8");
     assert.match(content, /^ipv6:/u);
     assert.doesNotMatch(content, /^auto_update: \{\}$/mu);
-    assert.match(content, /current\/egern\/rules\/[A-Za-z0-9_-]+\.yaml/u);
+    assert.equal(content.includes("raw.githubusercontent.com/blackmatrix7"), false, path);
+    assert.match(content, /juan-nikola\.github\.io\/apple-proxy-profiles\/[a-z]+\/egern\/rules\/[A-Za-z0-9_-]+\.yaml/u);
   }
   for (const path of [
     "egern/scripts/egern-profile-generator.js",

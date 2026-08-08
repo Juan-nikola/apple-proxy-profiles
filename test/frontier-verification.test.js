@@ -10,8 +10,17 @@ test("root verification exposes both frontier workspaces and the official-core c
 });
 
 test("public rule publication keeps auditable source JSON separate from binary output", async () => {
-  const current = new URL("../public/current/sing-box/rules/Advertising.json", import.meta.url);
-  const source = JSON.parse(await readFile(current, "utf8"));
-  assert.equal(source.version, 5);
-  assert.ok(Array.isArray(source.rules));
+  const current = new URL("../public/current/sing-box/", import.meta.url);
+  const clientManifest = JSON.parse(await readFile(new URL("client-manifest.json", current), "utf8"));
+  const ruleSetPaths = clientManifest.files
+    .map(({ path }) => path)
+    .filter((path) => path.startsWith("sing-box/rule-sets/") && path.endsWith(".srs"));
+  assert.ok(ruleSetPaths.length > 0);
+  for (const required of ["sing-box/rule-sets/DomesticCore.srs", "sing-box/rule-sets/ChinaIP.srs"]) {
+    assert.ok(ruleSetPaths.includes(required), required);
+  }
+  for (const path of ruleSetPaths) {
+    const bytes = await readFile(new URL(path.replace("sing-box/", ""), current));
+    assert.ok(bytes.subarray(0, 4).equals(Buffer.from([0x53, 0x52, 0x53, 0x02])), path);
+  }
 });
