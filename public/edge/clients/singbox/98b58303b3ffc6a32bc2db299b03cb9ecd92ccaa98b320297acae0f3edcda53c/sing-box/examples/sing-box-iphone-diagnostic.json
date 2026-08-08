@@ -56,21 +56,18 @@
         "224.0.0.0/4",
         "fc00::/7",
         "fe80::/10",
-        "ff00::/8",
-        "192.168.1.0/24"
+        "ff00::/8"
       ],
-      "stack": "mixed",
       "dns_mode": "hijack",
       "dns_address": [
         "172.18.0.2",
         "fdfe:dcba:9876::2"
       ],
-      "auto_redirect": true,
-      "auto_redirect_input_mark": "0x2023",
-      "auto_redirect_output_mark": "0x2024",
-      "loopback_address": [
-        "10.7.0.1"
-      ]
+      "platform": {
+        "http_proxy": {
+          "enabled": false
+        }
+      }
     }
   ],
   "outbounds": [
@@ -110,8 +107,8 @@
         "示例 · Frankfurt"
       ],
       "url": "https://www.gstatic.com/generate_204",
-      "interval": "600s",
-      "tolerance": 100,
+      "interval": "1800s",
+      "tolerance": 150,
       "interrupt_exist_connections": true
     },
     {
@@ -122,8 +119,8 @@
         "示例 · Frankfurt"
       ],
       "url": "https://www.gstatic.com/generate_204",
-      "interval": "600s",
-      "tolerance": 100,
+      "interval": "1800s",
+      "tolerance": 150,
       "interrupt_exist_connections": true
     },
     {
@@ -133,8 +130,8 @@
         "DIRECT"
       ],
       "url": "https://www.gstatic.com/generate_204",
-      "interval": "600s",
-      "tolerance": 100,
+      "interval": "1800s",
+      "tolerance": 150,
       "interrupt_exist_connections": true
     },
     {
@@ -144,8 +141,8 @@
         "DIRECT"
       ],
       "url": "https://www.gstatic.com/generate_204",
-      "interval": "600s",
-      "tolerance": 100,
+      "interval": "1800s",
+      "tolerance": 150,
       "interrupt_exist_connections": true
     },
     {
@@ -155,8 +152,8 @@
         "DIRECT"
       ],
       "url": "https://www.gstatic.com/generate_204",
-      "interval": "600s",
-      "tolerance": 100,
+      "interval": "1800s",
+      "tolerance": 150,
       "interrupt_exist_connections": true
     },
     {
@@ -166,8 +163,8 @@
         "DIRECT"
       ],
       "url": "https://www.gstatic.com/generate_204",
-      "interval": "600s",
-      "tolerance": 100,
+      "interval": "1800s",
+      "tolerance": 150,
       "interrupt_exist_connections": true
     },
     {
@@ -565,6 +562,14 @@
     "default_http_client": "🧭 规则下载 HTTP",
     "rule_set": [],
     "rules": [
+      {
+        "inbound": "tun-in",
+        "action": "sniff"
+      },
+      {
+        "protocol": "dns",
+        "action": "hijack-dns"
+      },
       {
         "ip_is_private": true,
         "action": "route",
