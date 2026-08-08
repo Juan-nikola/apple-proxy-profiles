@@ -20,7 +20,12 @@ import {
   BLACKMATRIX7_BASELINE,
   FETCH_SOURCE_CATALOG,
 } from "../automation/src/source-catalog.js";
-import { UPSTREAM_RULE_SOURCE_CATALOG } from "../shared/rules/catalog.js";
+import {
+  DEFAULT_COMPILED_ROOT,
+  DEFAULT_STAGE_ROOT,
+  loadCompiledSingBoxRules,
+  readRuleStageManifest,
+} from "./stage-rule-artifacts.mjs";
 
 const repositoryRoot = dirname(dirname(fileURLToPath(import.meta.url)));
 const defaultPublicDirectory = join(repositoryRoot, "public");
@@ -330,17 +335,15 @@ async function staticFiles() {
     ["surge/examples/surge-ipad.conf", "clients/surge/examples/surge-ipad.conf"],
     ["sing-box/scripts/sing-box-config-generator.js", "clients/sing-box/dist/sing-box-config-generator.js"],
     ["sing-box/scripts/substore-config-generator.js", "clients/sing-box/dist/substore-config-generator.js"],
-    ["sing-box/examples/sing-box-macos.json", "clients/sing-box/examples/sing-box-macos.json"],
-    ["sing-box/examples/sing-box-iphone.json", "clients/sing-box/examples/sing-box-iphone.json"],
-    ["sing-box/examples/sing-box-ipad.json", "clients/sing-box/examples/sing-box-ipad.json"],
-    ["sing-box/examples/sing-box-android.json", "clients/sing-box/examples/sing-box-android.json"],
-    ["sing-box/examples/sing-box-openwrt.json", "clients/sing-box/examples/sing-box-openwrt.json"],
+    ...["macos", "iphone", "ipad", "android", "openwrt"].flatMap((platform) => [
+      [`sing-box/examples/sing-box-${platform}.json`, `clients/sing-box/examples/sing-box-${platform}.json`],
+      [`sing-box/examples/sing-box-${platform}-diagnostic.json`, `clients/sing-box/examples/sing-box-${platform}-diagnostic.json`],
+    ]),
     ["LICENSE", "LICENSE"],
     ["THIRD_PARTY_NOTICES.md", "THIRD_PARTY_NOTICES.md"],
   ];
   const loaded = new Map(await Promise.all(paths.map(async ([publicPath, localPath]) => [publicPath, await loadText(localPath)])));
   const rawRoot = "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Shadowrocket";
-  const publicRoot = "https://juan-nikola.github.io/apple-proxy-profiles/current/shadowrocket/rules";
   for (const bundlePath of [
     "shadowrocket/scripts/shadowrocket-profile-generator.js",
     "shadowrocket/scripts/substore-profile-generator.js",
@@ -348,14 +351,11 @@ async function staticFiles() {
     "egern/scripts/substore-profile-generator.js",
   ]) {
     const bundle = loaded.get(bundlePath);
-    const rewrittenBundle = bundle
-      .replace(`var RULE_ROOT = "${rawRoot}";`, `var RULE_ROOT = "${publicRoot}";`)
-      .replace("upstreamUrl: `${RULE_ROOT}/${sourcePath}`", "upstreamUrl: `${RULE_ROOT}/${id}.list`");
-    if (rewrittenBundle === bundle || rewrittenBundle.includes(rawRoot)
-      || !rewrittenBundle.includes("`${RULE_ROOT}/${id}.list`")) {
+    if (bundle.includes(rawRoot)
+      || !bundle.includes("https://juan-nikola.github.io/apple-proxy-profiles")
+      || !bundle.includes("${PUBLIC_RULE_ROOT}/${channel}")) {
       throw new Error(`Public bundle URL closure failed for ${bundlePath}`);
     }
-    loaded.set(bundlePath, rewrittenBundle);
   }
 
   for (const path of [
@@ -363,20 +363,11 @@ async function staticFiles() {
     "shadowrocket/examples/shadowrocket-iphone.conf",
     "shadowrocket/examples/shadowrocket-ipad.conf",
   ]) {
-    let content = loaded.get(path);
-    let replacements = 0;
-    for (const source of UPSTREAM_RULE_SOURCE_CATALOG) {
-      const next = content.replaceAll(
-        source.upstreamUrl,
-        `https://juan-nikola.github.io/apple-proxy-profiles/current/shadowrocket/rules/${source.id}.list`,
-      );
-      if (next !== content) replacements += 1;
-      content = next;
-    }
-    if (replacements !== UPSTREAM_RULE_SOURCE_CATALOG.length) {
+    const content = loaded.get(path);
+    if (content.includes(rawRoot)
+      || !content.includes("https://juan-nikola.github.io/apple-proxy-profiles/edge/shadowrocket/rules/")) {
       throw new Error(`Shadowrocket public snapshot URL closure failed for ${path}`);
     }
-    loaded.set(path, content);
   }
 
   for (const [canonical, legacy] of [
@@ -393,10 +384,22 @@ async function staticFiles() {
   return selectDefaultStaticFiles(loaded);
 }
 
-async function buildArtifacts({ operation, publicDirectory }) {
+export async function buildArtifacts({
+  operation,
+  publicDirectory,
+  upstreamOverride = null,
+  singBoxBinaries = null,
+  includeStaticFiles = true,
+}) {
   let commit;
   let committedAt;
-  if (operation === "check-current") {
+  if (upstreamOverride !== null) {
+    if (!/^[0-9a-f]{40}$/u.test(upstreamOverride?.commit)
+      || typeof upstreamOverride.committedAt !== "string") {
+      throw new Error("Staged upstream identity is invalid");
+    }
+    ({ commit, committedAt } = upstreamOverride);
+  } else if (operation === "check-current") {
     const currentManifest = JSON.parse(await readFile(join(publicDirectory, "current/manifest.json"), "utf8"));
     commit = currentManifest.upstream.commit;
     committedAt = currentManifest.upstream.committedAt;
@@ -405,15 +408,19 @@ async function buildArtifacts({ operation, publicDirectory }) {
   }
   const upstream = Object.freeze({ ...BLACKMATRIX7_BASELINE, commit, committedAt });
   const snapshot = await fetchSnapshot({ commit, catalog: FETCH_SOURCE_CATALOG, concurrency: 4 });
-  const statics = await staticFiles();
+  const statics = includeStaticFiles ? await staticFiles() : null;
   return buildClientArtifacts({
     snapshot,
     upstream,
     additionalFiles: statics,
+    singBoxBinaries,
   });
 }
 
-export async function main(args = process.argv.slice(2), { publicDirectory = defaultPublicDirectory } = {}) {
+export async function main(
+  args = process.argv.slice(2),
+  { publicDirectory = defaultPublicDirectory, env = process.env } = {},
+) {
   const command = parseUpdateRulesArguments(args);
   if (command.operation === "promote") {
     const result = await promoteClientRelease({ publicDirectory, ...command });
@@ -421,7 +428,14 @@ export async function main(args = process.argv.slice(2), { publicDirectory = def
     return result;
   }
 
-  const artifacts = await buildArtifacts({ operation: command.operation, publicDirectory });
+  const stage = await readRuleStageManifest(env.SING_BOX_ARTIFACT_ROOT || DEFAULT_STAGE_ROOT);
+  const singBoxBinaries = await loadCompiledSingBoxRules(env.SING_BOX_RULE_OUTPUT_ROOT || DEFAULT_COMPILED_ROOT);
+  const artifacts = await buildArtifacts({
+    operation: command.operation,
+    publicDirectory,
+    upstreamOverride: stage.upstream,
+    singBoxBinaries,
+  });
   if (command.operation === "check-current") {
     if (!await verifyTrackedPublications({ publicDirectory, ...artifacts })) {
       throw new Error("Tracked default or optional publication does not reproduce from its immutable commit");

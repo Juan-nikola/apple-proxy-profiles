@@ -25,7 +25,7 @@ jobs:
   build:
     if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     permissions:
       contents: read
     steps:
@@ -40,10 +40,24 @@ jobs:
           cache: npm
       - name: Install dependencies
         run: npm ci
+      - name: Install verified official sing-box core
+        run: node scripts/install-sing-box-core.mjs
+      - name: Reproduce current lightweight audit rules
+        run: node scripts/stage-rule-artifacts.mjs --channel current
+      - name: Compile binary sing-box rule sets
+        run: npm --workspace @apple-proxy-profiles/sing-box run compile:rules
+      - name: Generate deterministic client inputs
+        run: npm run fixtures && npm run build
+      - name: Check light and diagnostic sing-box profiles
+        run: npm --workspace @apple-proxy-profiles/sing-box run check:config
+      - name: Verify lightweight semantics and budgets
+        run: npm run verify:lightweight
       - name: Verify repository
         run: npm run verify
       - name: Verify pinned rules
         run: npm run check:rules
+      - name: Verify action and secret policy
+        run: npm run check:actions && npm run check:secrets
       - name: Configure GitHub Pages
         uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d
       - name: Upload public site

@@ -4,6 +4,15 @@ on:
   schedule:
     - cron: "23 3 * * *"
   workflow_dispatch:
+    inputs:
+      client:
+        description: "Approved client to promote (leave empty to build edge)"
+        required: false
+        type: string
+      manifest_hash:
+        description: "Tested 64-character edge client-manifest hash"
+        required: false
+        type: string
 
 permissions: {}
 
@@ -12,10 +21,10 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  update:
-    if: github.event_name == 'schedule' || github.ref == 'refs/heads/main'
+  build-edge:
+    if: (github.event_name == 'schedule' || github.ref == 'refs/heads/main') && inputs.client == '' && inputs.manifest_hash == ''
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     permissions:
       contents: write
     steps:
@@ -31,21 +40,33 @@ jobs:
           cache: npm
       - name: Install dependencies
         run: npm ci
+      - name: Install verified official sing-box core
+        run: node scripts/install-sing-box-core.mjs
+      - name: Fetch snapshots and stage lightweight audit rules
+        run: node scripts/stage-rule-artifacts.mjs --channel edge
+      - name: Compile binary sing-box rule sets
+        run: npm --workspace @apple-proxy-profiles/sing-box run compile:rules
+      - name: Generate deterministic client inputs
+        run: npm run fixtures && npm run build
+      - name: Check light and diagnostic sing-box profiles
+        run: npm --workspace @apple-proxy-profiles/sing-box run check:config
+      - name: Verify lightweight semantics and budgets
+        run: npm run verify:lightweight
       - name: Verify repository
         run: npm run verify
       - name: Require canonical tracked generators
         run: git diff --exit-code -- . ":(exclude)public/**"
-      - name: Update public rules
-        run: npm run update:rules
-      - name: Verify pinned rules
+      - name: Generate edge candidates from the tested binaries
+        run: npm run update:rules -- --channel edge
+      - name: Verify pinned current rules
         run: npm run check:rules
-      - name: Scan public output
+      - name: Scan edge output
         run: npm run check:secrets
-      - name: Commit public rule changes
+      - name: Commit edge candidate changes
         shell: bash
         run: |
           if git diff --quiet -- public; then
-            echo "Public rules are already current."
+            echo "Public edge candidates are already current."
             exit 0
           fi
           git config user.name "github-actions[bot]"
@@ -54,5 +75,45 @@ jobs:
           if git diff --cached --quiet; then
             exit 0
           fi
-          git commit -m "chore: update public rules"
+          git commit -m "chore: update edge rule candidates"
+          git push origin main
+
+  promote-current:
+    if: github.event_name == 'workflow_dispatch' && inputs.client != '' && inputs.manifest_hash != ''
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: canary-approval
+    permissions:
+      contents: write
+    env:
+      PROMOTION_CLIENT: ${{ inputs.client }}
+      PROMOTION_MANIFEST_HASH: ${{ inputs.manifest_hash }}
+    steps:
+      - name: Check out tested edge bytes
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          fetch-depth: 0
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Promote exact approved client bytes
+        run: npm run update:rules -- --promote "$PROMOTION_CLIENT" "$PROMOTION_MANIFEST_HASH"
+      - name: Scan promoted output
+        run: npm run check:secrets
+      - name: Commit selected current client
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- public
+          if git diff --cached --quiet; then
+            echo "Selected client is already current."
+            exit 0
+          fi
+          git commit -m "chore: promote tested client $PROMOTION_CLIENT"
           git push origin main

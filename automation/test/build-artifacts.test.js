@@ -6,6 +6,7 @@ import { DEFAULT_RULE_SOURCE_IDS } from "../../shared/rules/lightweight-policy.j
 import { lightweightFixtureSnapshots } from "./lightweight-fixture.js";
 import { renderRules as renderShadowrocketRules } from "../../clients/shadowrocket/src/render-rules.js";
 import { renderSurgeRules } from "../../clients/surge/src/render-rules.js";
+import { ruleClientCatalog } from "../../shared/rules/lightweight-policy.js";
 
 const upstream = {
   repository: "https://github.com/blackmatrix7/ios_rule_script",
@@ -36,6 +37,37 @@ test("fans compiled lightweight defaults out without publishing input-only rules
 test("is byte deterministic for the same snapshot", () => {
   const options = { snapshot: lightweightFixtureSnapshots(), upstream };
   assert.deepEqual([...buildClientArtifacts(options).defaults], [...buildClientArtifacts(options).defaults]);
+});
+
+test("replaces audit JSON with the exact compiled sing-box binaries before manifest accounting", () => {
+  const singBoxBinaries = new Map();
+  for (const { id } of ruleClientCatalog({ adblockMode: "off" })) {
+    singBoxBinaries.set(`sing-box/rule-sets/${id}.srs`, Buffer.from(`SRS\u0002default-${id}`));
+  }
+  for (const { id } of ruleClientCatalog({ adblockMode: "full" })) {
+    if (id === "Advertising" || id === "Advertising_Domain") {
+      singBoxBinaries.set(`optional/adblock-full/sing-box/${id}.srs`, Buffer.from(`SRS\u0002optional-${id}`));
+    }
+  }
+
+  const result = buildClientArtifacts({
+    snapshot: lightweightFixtureSnapshots(),
+    upstream,
+    singBoxBinaries,
+  });
+  for (const [path, bytes] of singBoxBinaries) {
+    const files = path.startsWith("optional/") ? result.optionalPacks.get("adblock-full") : result.defaults;
+    assert.deepEqual(files.get(path), bytes, path);
+  }
+  assert.equal([...result.defaults.keys()].some((path) => /^sing-box\/rules\/.*\.json$/u.test(path)), false);
+  assert.equal(
+    [...result.optionalPacks.get("adblock-full").keys()].some((path) => /sing-box\/rules\/.*\.json$/u.test(path)),
+    false,
+  );
+  assert.equal(
+    result.diagnostics.defaultManifest.files.some(({ path }) => /^sing-box\/rule-sets\/.*\.srs$/u.test(path)),
+    true,
+  );
 });
 
 test("Shadowrocket and Surge profile provider types match every emitted rule body", () => {

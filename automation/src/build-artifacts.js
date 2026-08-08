@@ -6,7 +6,7 @@ import { compileLightweightRules } from "./compile-lightweight-rules.js";
 import { compactRuleCidrs } from "./compact-rule-cidrs.js";
 import { artifactBuffer, artifactByteLength, artifactSha256 } from "./artifact-content.js";
 import { BLACKMATRIX7_BASELINE, catalogSha256 } from "./source-catalog.js";
-import { RULE_BUDGETS } from "../../shared/rules/lightweight-policy.js";
+import { RULE_BUDGETS, ruleClientCatalog } from "../../shared/rules/lightweight-policy.js";
 import { RULE_KIND } from "../../shared/rules/model.js";
 import { buildImportBatches, renderImportPage } from "../../clients/anywhere/src/build-import-page.js";
 import { ANYWHERE_LIGHTWEIGHT_MIGRATION } from "../../clients/anywhere/src/shard-rules.js";
@@ -90,6 +90,7 @@ function fileRecords(files) {
 function renderRuleSetMap({
   ruleSets,
   upstream,
+  singBoxBinaries = null,
   pathPrefix = "",
   anywherePrefix = "anywhere/rules",
   anywhereUrlPrefix = anywherePrefix,
@@ -110,7 +111,16 @@ function renderRuleSetMap({
     files.set(`${prefix}shadowrocket/rules/${id}.list`, shadowrocket.content);
     files.set(`${prefix}surge/rules/${id}.list`, shadowrocket.content);
     files.set(`${prefix}egern/rules/${id}.yaml`, egern.content);
-    files.set(`${prefix}sing-box/rules/${id}.json`, singbox.content);
+    if (singBoxBinaries === null) {
+      files.set(`${prefix}sing-box/rules/${id}.json`, singbox.content);
+    } else {
+      const binaryPath = pathPrefix
+        ? `${prefix}sing-box/${id}.srs`
+        : `sing-box/rule-sets/${id}.srs`;
+      const binary = singBoxBinaries.get(binaryPath);
+      if (!Buffer.isBuffer(binary)) throw new Error(`Compiled sing-box rule set is missing: ${binaryPath}`);
+      files.set(binaryPath, binary);
+    }
     clientSources.shadowrocket.push({ id, ...shadowrocket.counts });
     clientSources.surge.push({ id, ...shadowrocket.counts });
     clientSources.egern.push({ id, ...egern.counts });
@@ -256,11 +266,12 @@ export function assertNoForbiddenDefaultReferences(files) {
   }
 }
 
-function buildOptionalPack({ packId, ruleSets, upstream }) {
+function buildOptionalPack({ packId, ruleSets, upstream, singBoxBinaries = null }) {
   const pathPrefix = `optional/${packId}`;
   const rendered = renderRuleSetMap({
     ruleSets,
     upstream,
+    singBoxBinaries,
     pathPrefix,
     anywherePrefix: `${pathPrefix}/anywhere`,
     anywhereUrlPrefix: "anywhere",
@@ -292,8 +303,27 @@ export function buildClientArtifacts({
   snapshot,
   upstream = BLACKMATRIX7_BASELINE,
   additionalFiles = null,
+  singBoxBinaries = null,
 }) {
   if (!(snapshot instanceof Map)) throw new TypeError("Complete rule snapshot is required");
+  if (singBoxBinaries !== null) {
+    if (!(singBoxBinaries instanceof Map)) throw new TypeError("Compiled sing-box rules must be a Map");
+    const expected = [
+      ...ruleClientCatalog({ adblockMode: "off" }).map(({ id }) => `sing-box/rule-sets/${id}.srs`),
+      "optional/adblock-full/sing-box/Advertising.srs",
+      "optional/adblock-full/sing-box/Advertising_Domain.srs",
+    ].sort();
+    const actual = [...singBoxBinaries.keys()].sort();
+    if (JSON.stringify(actual) !== JSON.stringify(expected)) {
+      throw new Error("Compiled sing-box rule-set file closure failed");
+    }
+    for (const [path, content] of singBoxBinaries) {
+      if (!Buffer.isBuffer(content) || content.length < 17
+        || !content.subarray(0, 4).equals(Buffer.from([0x53, 0x52, 0x53, 0x02]))) {
+        throw new Error(`Compiled sing-box rule set is invalid: ${path}`);
+      }
+    }
+  }
   const compiled = compileLightweightRules({ snapshots: snapshot });
   const compactedDefaults = compactRuleSetMap(compiled.defaultRuleSets);
   const compactedAdblock = compactRuleSetMap(compiled.optionalPacks.adblockFull);
@@ -303,7 +333,7 @@ export function buildClientArtifacts({
     defaultEntries: [...compactedDefaults.ruleSets.values()]
       .reduce((sum, ruleSet) => sum + ruleSet.entries.length, 0),
   });
-  const rendered = renderRuleSetMap({ ruleSets: compactedDefaults.ruleSets, upstream });
+  const rendered = renderRuleSetMap({ ruleSets: compactedDefaults.ruleSets, upstream, singBoxBinaries });
   const defaults = rendered.files;
 
   const additions = typeof additionalFiles === "function"
@@ -321,6 +351,7 @@ export function buildClientArtifacts({
     packId: "adblock-full",
     ruleSets: compactedAdblock.ruleSets,
     upstream,
+    singBoxBinaries,
   });
   const optionalPacks = new Map([["adblock-full", adblockFull.files]]);
   const optionalSelections = Object.fromEntries(Object.keys(CLIENT_PATHS).map((client) => [client, {
