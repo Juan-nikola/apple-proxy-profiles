@@ -160,7 +160,7 @@ test("update workflow verifies official binary rules before building edge and ga
   const compileAt = text.indexOf("npm --workspace @apple-proxy-profiles/sing-box run compile:rules");
   const configAt = text.indexOf("npm --workspace @apple-proxy-profiles/sing-box run check:config");
   const verifyAt = text.indexOf("npm run verify:lightweight");
-  const edgeAt = text.indexOf("npm run update:rules -- --channel edge");
+  const edgeAt = text.indexOf("run: npm run update:rules");
   const currentStageAt = text.indexOf("node scripts/stage-rule-artifacts.mjs --channel current");
   const currentCompileAt = text.lastIndexOf("npm --workspace @apple-proxy-profiles/sing-box run compile:rules");
   const currentCheckAt = text.indexOf("npm run check:rules");
@@ -176,6 +176,8 @@ test("update workflow verifies official binary rules before building edge and ga
   assert.match(text, /^\s*manifest_hash:\s*$/mu);
   assert.match(text, /^\s*environment:\s*canary-approval\s*$/mu);
   assert.match(text, /npm run update:rules -- --promote "\$PROMOTION_CLIENT" "\$PROMOTION_MANIFEST_HASH"/u);
+  assert.match(text, /^\s*run: npm run update:rules\s*$/mu);
+  assert.doesNotMatch(text, /run: npm run update:rules -- --channel edge/u);
   assert.match(text, /github\.event_name == 'workflow_dispatch'.*inputs\.client.*inputs\.manifest_hash/su);
   const scheduleBlock = text.slice(text.indexOf("build-edge:"), text.indexOf("promote-current:"));
   assert.match(scheduleBlock, /--channel edge/u);

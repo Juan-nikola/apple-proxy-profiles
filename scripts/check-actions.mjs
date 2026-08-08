@@ -119,12 +119,16 @@ export function validateWorkflowText(file, text) {
     if (!/github\.event_name == 'schedule' \|\| github\.ref == 'refs\/heads\/main'/u.test(text)) {
       errors.push(`${file}: update job must restrict writes to scheduled or main-ref runs`);
     }
-    const edgeAt = commandPosition(text, "npm run update:rules -- --channel edge");
+    const edgeCommand = "npm run update:rules";
+    const edgeAt = commandPosition(text, edgeCommand);
+    if (!/^\s*run:\s*npm run update:rules\s*$/mu.test(text)) {
+      errors.push(`${file}: edge update must invoke the package script without duplicate arguments`);
+    }
     errors.push(...validateOfficialCoreGate(file, text, edgeAt, "edge"));
     const orderedCommands = [
       "npm run verify",
       "git diff --exit-code -- . \":(exclude)public/**\"",
-      "npm run update:rules -- --channel edge",
+      edgeCommand,
       "npm run check:rules",
       "npm run check:secrets",
     ];

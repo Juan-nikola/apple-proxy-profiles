@@ -57,7 +57,7 @@ jobs:
       - name: Require canonical tracked generators
         run: git diff --exit-code -- . ":(exclude)public/**"
       - name: Generate edge candidates from the tested binaries
-        run: npm run update:rules -- --channel edge
+        run: npm run update:rules
       - name: Restage pinned current audit rules
         run: node scripts/stage-rule-artifacts.mjs --channel current
       - name: Compile pinned current binary rule sets
