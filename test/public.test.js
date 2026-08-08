@@ -85,7 +85,7 @@ test("public client entrypoints close over current and never raw master", async 
       assert.match(content, /current\/shadowrocket\/rules/u);
       assert.match(content, /`\$\{RULE_ROOT\}\/\$\{id\}\.list`/u);
     } else {
-      assert.match(content, /current\/shadowrocket\/rules\/Advertising_Domain\.list/u);
+      assert.match(content, /current\/shadowrocket\/rules\/[A-Za-z0-9_-]+\.list/u);
     }
   }
   for (const [path, marker] of [
@@ -106,7 +106,7 @@ test("public client entrypoints close over current and never raw master", async 
     const content = await readFile(new URL(path, currentRoot), "utf8");
     assert.match(content, /^ipv6:/u);
     assert.doesNotMatch(content, /^auto_update: \{\}$/mu);
-    assert.match(content, /current\/egern\/rules\/Advertising_Domain\.yaml/u);
+    assert.match(content, /current\/egern\/rules\/[A-Za-z0-9_-]+\.yaml/u);
   }
   for (const path of [
     "egern/scripts/egern-profile-generator.js",

@@ -16,6 +16,16 @@ test("monorepo exposes all client workspaces and root verification", async () =>
   assert.equal(root.scripts["verify:anywhere"], "npm --workspace @apple-proxy-profiles/anywhere run verify");
   assert.equal(root.scripts["verify:surge"], "npm --workspace @apple-proxy-profiles/surge run verify");
   assert.equal(root.scripts["verify:singbox"], "npm --workspace @apple-proxy-profiles/sing-box run verify");
+  assert.equal(root.scripts["verify:lightweight"], [
+    "node --test test/lightweight-policy.test.js test/rule-model.test.js",
+    "npm run verify:shadowrocket",
+    "npm run verify:surge",
+    "npm run verify:egern",
+    "npm run verify:singbox",
+    "npm run verify:anywhere",
+    "node --test test/cross-client-routing.test.js test/rule-budgets.test.js",
+  ].join(" && "));
+  assert.equal(root.scripts.verify, "npm run verify:lightweight && node scripts/verify.mjs");
 });
 
 test("normalized nodes expose neutral metadata only", () => {
