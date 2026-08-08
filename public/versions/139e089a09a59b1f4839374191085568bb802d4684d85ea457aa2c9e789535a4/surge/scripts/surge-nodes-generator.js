@@ -1,4 +1,4 @@
-var SurgeProfileBundle = (() => {
+var SurgeNodesBundle = (() => {
   var __defProp = Object.defineProperty;
   var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
   var __getOwnPropNames = Object.getOwnPropertyNames;
@@ -17,11 +17,9 @@ var SurgeProfileBundle = (() => {
   };
   var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
-  // src/substore-profile-entry.js
-  var substore_profile_entry_exports = {};
-  __export(substore_profile_entry_exports, {
-    PUBLIC_RULE_BASE_URL: () => PUBLIC_RULE_BASE_URL,
-    PUBLIC_RULE_ROOT: () => PUBLIC_RULE_ROOT,
+  // src/substore-nodes-entry.js
+  var substore_nodes_entry_exports = {};
+  __export(substore_nodes_entry_exports, {
     operator: () => operator
   });
 
@@ -1623,18 +1621,11 @@ var SurgeProfileBundle = (() => {
     openwrt: Object.freeze({ testInterval: 600, timeout: 5, tolerance: 100 }),
     appletv: Object.freeze({ testInterval: 3600, timeout: 8, tolerance: 200 })
   });
-  function platformPolicyPreset(platform) {
-    if (typeof platform !== "string" || !Object.hasOwn(POLICY_PLATFORM_PRESETS, platform)) {
-      throw new Error(`Unsupported platform: ${platform}`);
-    }
-    return POLICY_PLATFORM_PRESETS[platform];
-  }
 
   // src/options.js
   var REQUIRED_KEYS = Object.freeze(["output", "type", "name", "subscriptionName", "platform"]);
   var NODE_REQUIRED_KEYS = Object.freeze(["output", "type", "name"]);
   var DEFAULTS = Object.freeze({
-    channel: "edge",
     dnsMode: "stable",
     chinaDns: "alidns",
     globalDns: "cloudflare",
@@ -1642,13 +1633,9 @@ var SurgeProfileBundle = (() => {
     quicMode: "proxy-block",
     ipv6Mode: "auto",
     autoGroupMode: "auto",
-    clientChain: "off",
-    adblockMode: "off"
+    clientChain: "off"
   });
-  var PLATFORMS = /* @__PURE__ */ new Set(["macos", "iphone", "ipad"]);
-  var CHANNELS = /* @__PURE__ */ new Set(["edge", "current"]);
-  var ADBLOCK_MODES = /* @__PURE__ */ new Set(["off", "full"]);
-  var PARSED = /* @__PURE__ */ new WeakSet();
+  var PARSED_NODES = /* @__PURE__ */ new WeakSet();
   var ALLOWED_KEYS = /* @__PURE__ */ new Set([...REQUIRED_KEYS, ...Object.keys(DEFAULTS), "proxyPolicyUrl"]);
   var NODE_ALLOWED_KEYS = /* @__PURE__ */ new Set([...NODE_REQUIRED_KEYS, "clientChain"]);
   function requiredString(raw, key) {
@@ -1665,65 +1652,25 @@ var SurgeProfileBundle = (() => {
     }
     return value;
   }
-  function validatePolicyUrl(value, key) {
-    if (value === void 0) return void 0;
-    if (typeof value !== "string" || value.length === 0 || value.trim() !== value || /[\u0000-\u001f\u007f\\]/u.test(value) || /%(?:0[0-9a-f]|1[0-9a-f]|7f)/iu.test(value)) {
-      throw new Error(`Option '${key}' must be a safe absolute HTTPS URL`);
-    }
-    let parsed;
-    try {
-      parsed = new URL(value);
-    } catch {
-      throw new Error(`Option '${key}' must be a safe absolute HTTPS URL`);
-    }
-    if (parsed.protocol !== "https:" || !parsed.hostname || parsed.username || parsed.password || value.includes("#")) {
-      throw new Error(`Option '${key}' must be a safe absolute HTTPS URL`);
-    }
-    return value;
-  }
-  function parseSurgeOptions(raw) {
-    if (!raw || typeof raw !== "object" || Array.isArray(raw)) throw new TypeError("Surge options must be an object");
+  function parseSurgeNodeOptions(raw) {
+    if (!raw || typeof raw !== "object" || Array.isArray(raw)) throw new TypeError("Surge node options must be an object");
     for (const key of Object.keys(raw)) {
-      if (!key.startsWith("_") && !ALLOWED_KEYS.has(key)) throw new Error(`Unknown Surge option: ${key}`);
+      if (!key.startsWith("_") && !NODE_ALLOWED_KEYS.has(key)) throw new Error(`Unknown Surge node option: ${key}`);
     }
-    for (const key of REQUIRED_KEYS) {
+    for (const key of NODE_REQUIRED_KEYS) {
       if (!Object.hasOwn(raw, key)) throw new Error(`Option '${key}' is required`);
     }
-    const platform = requiredString(raw, "platform");
-    if (!PLATFORMS.has(platform)) throw new Error("Option 'platform' has an unsupported value");
-    if (requiredString(raw, "output") !== "config") throw new Error("Option 'output' must be config");
+    if (requiredString(raw, "output") !== "nodes") throw new Error("Option 'output' must be nodes");
     if (requiredString(raw, "type") !== "collection") throw new Error("Option 'type' must be collection");
-    const channel = raw.channel === void 0 ? DEFAULTS.channel : raw.channel;
-    if (typeof channel !== "string" || !CHANNELS.has(channel)) throw new Error("Option 'channel' has an unsupported value");
-    const adblockMode = raw.adblockMode === void 0 ? DEFAULTS.adblockMode : raw.adblockMode;
-    if (typeof adblockMode !== "string" || !ADBLOCK_MODES.has(adblockMode)) {
-      throw new Error("Option 'adblockMode' has an unsupported value");
-    }
     const options = {
-      output: "config",
+      output: "nodes",
       type: "collection",
       name: requiredString(raw, "name"),
-      subscriptionName: requiredString(raw, "subscriptionName"),
-      platform,
-      channel,
-      dnsMode: enumValue(raw, "dnsMode", DEFAULTS.dnsMode),
-      chinaDns: enumValue(raw, "chinaDns", DEFAULTS.chinaDns),
-      globalDns: enumValue(raw, "globalDns", DEFAULTS.globalDns),
-      blockMode: enumValue(raw, "blockMode", DEFAULTS.blockMode),
-      quicMode: enumValue(raw, "quicMode", DEFAULTS.quicMode),
-      ipv6Mode: enumValue(raw, "ipv6Mode", platform === "macos" ? "ipv4-only" : DEFAULTS.ipv6Mode),
-      autoGroupMode: enumValue(raw, "autoGroupMode", DEFAULTS.autoGroupMode),
-      clientChain: enumValue(raw, "clientChain", DEFAULTS.clientChain),
-      adblockMode,
-      proxyPolicyUrl: validatePolicyUrl(raw.proxyPolicyUrl, "proxyPolicyUrl")
+      clientChain: enumValue(raw, "clientChain", DEFAULTS.clientChain)
     };
-    platformPolicyPreset(platform);
     Object.freeze(options);
-    PARSED.add(options);
+    PARSED_NODES.add(options);
     return options;
-  }
-  function isParsedSurgeOptions(value) {
-    return value !== null && typeof value === "object" && PARSED.has(value);
   }
 
   // src/render-node.js
@@ -1925,748 +1872,35 @@ var SurgeProfileBundle = (() => {
     }
     return `${fields[0]} = ${fields.slice(1).join(",")}`;
   }
-
-  // ../../shared/policies/filters.js
-  var ALL_NODES_FILTER = "^.+$";
-  var NON_CHAINED_FILTER = "^(?!\u{1F517} ).+$";
-  var ENTRY_FILTER = "^(?!\u{1F517} )(?!.*\xB7\u94FE).+\uFF5C(?:\u673A\u573A|\u81EA\u5EFA|Realm)(?:\xB7.*)?$";
-  var P2P_FILTER = "^(?!\u{1F517} ).+\uFF5C(?:\u81EA\u5EFA|Realm|\u94FE\u5F0F\u4EE3\u7406)(?:\xB7.*)?$";
-  var GAME_FILTER = "^(?!\u{1F517} ).+\xB7U$";
-  var CONTINENTS = Object.freeze([
-    Object.freeze({
-      key: CONTINENT.asiaPacific,
-      name: "\u{1F30F} \u4E9A\u592A",
-      helperName: "\u4E9A\u592A",
-      flags: CONTINENT_FLAGS[CONTINENT.asiaPacific]
-    }),
-    Object.freeze({
-      key: CONTINENT.europe,
-      name: "\u{1F30D} \u6B27\u6D32",
-      helperName: "\u6B27\u6D32",
-      flags: CONTINENT_FLAGS[CONTINENT.europe]
-    }),
-    Object.freeze({
-      key: CONTINENT.americas,
-      name: "\u{1F30E} \u7F8E\u6D32",
-      helperName: "\u7F8E\u6D32",
-      flags: CONTINENT_FLAGS[CONTINENT.americas]
-    }),
-    Object.freeze({
-      key: CONTINENT.other,
-      name: "\u{1F310} \u5176\u4ED6/\u672A\u5206\u7C7B",
-      helperName: "\u5176\u4ED6/\u672A\u5206\u7C7B",
-      flags: Object.freeze([])
-    })
-  ]);
-  var SOURCE_GROUPS = Object.freeze([
-    Object.freeze({ kind: SOURCE_KIND.selfHosted, name: "\u{1F3E0} \u81EA\u5EFA\u8282\u70B9", filter: "^.+\uFF5C\u81EA\u5EFA(?:\xB7.*)?$" }),
-    Object.freeze({ kind: SOURCE_KIND.airport, name: "\u{1F3E2} \u673A\u573A\u8282\u70B9", filter: "^.+\uFF5C\u673A\u573A(?:\xB7.*)?$" }),
-    Object.freeze({ kind: SOURCE_KIND.realm, name: "\u21AA\uFE0F Realm \u8F6C\u53D1", filter: "^.+\uFF5CRealm(?:\xB7.*)?$" }),
-    Object.freeze({ kind: SOURCE_KIND.serverChain, name: "\u26D3\uFE0F \u94FE\u5F0F\u4EE3\u7406", filter: "^.+\uFF5C\u94FE\u5F0F\u4EE3\u7406(?:\xB7.*)?$" })
-  ]);
-  function continentFilter(continent) {
-    if (continent.key === CONTINENT.other) {
-      const knownFlags = CONTINENTS.flatMap((record) => record.flags).join("|");
-      return `^(?!(?:\u{1F517}|${knownFlags})).+$`;
-    }
-    return `^(?:${continent.flags.join("|")}).+$`;
-  }
-
-  // ../../shared/policies/intents.js
-  var POLICY_TARGET = Object.freeze({
-    primaryProxy: "primary-proxy"
-  });
-
-  // ../../shared/policies/catalog.js
-  var TEST_URL = "http://www.gstatic.com/generate_204";
-  var STRATEGY = Object.freeze({
-    select: "select",
-    autoTest: "auto-test",
-    fallback: "fallback"
-  });
-  var GROUP_KIND = Object.freeze({
-    helper: "helper",
-    primary: "primary",
-    continent: "continent",
-    source: "source",
-    ai: "ai",
-    service: "service",
-    special: "special",
-    security: "security",
-    chain: "chain"
-  });
-  var PROXY_THEN_DIRECT = Object.freeze(["\u{1F680} \u8282\u70B9\u9009\u62E9", "DIRECT"]);
-  var PROXY_FIRST_SERVICE_DEFAULTS = Object.freeze({
-    beforeCandidates: Object.freeze(["\u{1F680} \u8282\u70B9\u9009\u62E9"]),
-    afterCandidates: Object.freeze(["DIRECT"]),
-    defaultChoice: "\u{1F680} \u8282\u70B9\u9009\u62E9"
-  });
-  var DIRECT_FIRST_SERVICE_DEFAULTS = Object.freeze({
-    beforeCandidates: Object.freeze(["DIRECT", "\u{1F680} \u8282\u70B9\u9009\u62E9"]),
-    afterCandidates: Object.freeze([]),
-    defaultChoice: "DIRECT"
-  });
-  var SERVICE_GROUPS = Object.freeze([
-    Object.freeze(["\u{1F419} GitHub", PROXY_FIRST_SERVICE_DEFAULTS]),
-    Object.freeze(["\u{1F4FA} YouTube", PROXY_FIRST_SERVICE_DEFAULTS]),
-    Object.freeze(["\u{1F3AC} Netflix", PROXY_FIRST_SERVICE_DEFAULTS]),
-    Object.freeze(["\u{1F3F0} Disney+", PROXY_FIRST_SERVICE_DEFAULTS]),
-    Object.freeze(["\u{1F3B5} Spotify", PROXY_FIRST_SERVICE_DEFAULTS]),
-    Object.freeze(["\u{1F30D} \u56FD\u9645\u5A92\u4F53", PROXY_FIRST_SERVICE_DEFAULTS]),
-    Object.freeze(["\u2708\uFE0F Telegram", PROXY_FIRST_SERVICE_DEFAULTS]),
-    Object.freeze(["\u{1F4AC} \u6D77\u5916\u793E\u4EA4", PROXY_FIRST_SERVICE_DEFAULTS]),
-    Object.freeze(["\u{1F3B6} TikTok", PROXY_FIRST_SERVICE_DEFAULTS]),
-    Object.freeze(["\u{1F34E} Apple", DIRECT_FIRST_SERVICE_DEFAULTS]),
-    Object.freeze(["\u{1FA9F} Microsoft", DIRECT_FIRST_SERVICE_DEFAULTS]),
-    Object.freeze(["\u{1F4FA} \u54D4\u54E9\u54D4\u54E9", DIRECT_FIRST_SERVICE_DEFAULTS]),
-    Object.freeze(["\u{1F3B5} \u6296\u97F3", DIRECT_FIRST_SERVICE_DEFAULTS]),
-    Object.freeze(["\u{1F4D5} \u5C0F\u7EA2\u4E66", DIRECT_FIRST_SERVICE_DEFAULTS]),
-    Object.freeze(["\u{1F9E3} \u5FAE\u535A", DIRECT_FIRST_SERVICE_DEFAULTS]),
-    Object.freeze(["\u{1F30D} \u6D77\u5916\u6E38\u620F", PROXY_FIRST_SERVICE_DEFAULTS])
-  ]);
-  function policyGroup({
-    kind,
-    name,
-    strategy = STRATEGY.select,
-    candidates = [],
-    nodeFilter = null,
-    test = null,
-    hidden,
-    defaultChoice
-  }) {
-    return { kind, name, strategy, candidates, nodeFilter, test, hidden, defaultChoice };
-  }
-  function helper(kind, name, strategy, preset, nodeFilter, candidates = []) {
-    return policyGroup({
-      kind,
-      name,
-      strategy,
-      candidates,
-      nodeFilter,
-      test: {
-        url: TEST_URL,
-        interval: preset.testInterval,
-        timeout: preset.timeout,
-        tolerance: preset.tolerance
-      },
-      hidden: true
-    });
-  }
-  function subscriptionGroup(kind, name, nodeFilter, candidates = ["DIRECT"], options = {}) {
-    return policyGroup({ kind, name, candidates, nodeFilter, ...options });
-  }
-  function automaticHelperName(continent) {
-    return `\u26A1 ${continent.helperName}\u81EA\u52A8`;
-  }
-  function fallbackHelperName(continent) {
-    return `\u{1F6DF} ${continent.helperName}\u6545\u969C\u8F6C\u79FB`;
-  }
-  function continentHelperItems(continent, mode) {
-    if (mode === "full") return [automaticHelperName(continent), fallbackHelperName(continent)];
-    if (mode === "balanced") return [automaticHelperName(continent)];
-    return [];
-  }
-  function serviceChoiceItems(defaults, presentContinentNames) {
-    return [
-      ...defaults.beforeCandidates,
-      "\u26A1 \u5168\u90E8\u81EA\u52A8",
-      "\u{1F6DF} \u5168\u90E8\u6545\u969C\u8F6C\u79FB",
-      ...presentContinentNames,
-      ...defaults.afterCandidates
-    ];
-  }
-  function securityGroups(blockMode) {
-    const defaults = {
-      off: ["DIRECT", "DIRECT", "DIRECT"],
-      security: ["REJECT", "DIRECT", "DIRECT"],
-      balanced: ["REJECT", "REJECT", "DIRECT"],
-      strict: ["REJECT", "REJECT", "REJECT"]
-    }[blockMode] ?? ["REJECT", "REJECT", "DIRECT"];
-    return ["\u2623\uFE0F \u5B89\u5168\u5A01\u80C1", "\u{1F9F1} \u5E38\u89C1\u5E7F\u544A", "\u{1F575}\uFE0F \u4E25\u683C\u8DDF\u8E2A"].map((name, index) => {
-      const primary = defaults[index];
-      return policyGroup({
-        kind: GROUP_KIND.security,
-        name,
-        candidates: [primary, primary === "REJECT" ? "DIRECT" : "REJECT"]
-      });
-    });
-  }
-  function effectiveAutoMode(requested, nodeCount) {
-    if (requested !== "auto") return requested;
-    if (nodeCount <= 30) return "full";
-    if (nodeCount <= 100) return "balanced";
-    return "minimal";
-  }
-  function buildPolicyGroups(options, nodes) {
-    const normalizedNodes = Array.isArray(nodes) ? nodes : [];
-    const preset = platformPolicyPreset(options.platform);
-    const mode = effectiveAutoMode(options.autoGroupMode, normalizedNodes.length);
-    const presentContinents = CONTINENTS.filter((continent) => normalizedNodes.some((node) => nodeMetadata(node).continent === continent.key && !nodeMetadata(node).chained));
-    const chainEligible = options.clientChain === "on" && normalizedNodes.some((node) => nodeMetadata(node).entry === true && !nodeMetadata(node).chained) && normalizedNodes.some((node) => nodeMetadata(node).chained === true);
-    const groups = [
-      helper(GROUP_KIND.helper, "\u26A1 \u5168\u90E8\u81EA\u52A8", STRATEGY.autoTest, preset, NON_CHAINED_FILTER),
-      helper(GROUP_KIND.helper, "\u{1F6DF} \u5168\u90E8\u6545\u969C\u8F6C\u79FB", STRATEGY.fallback, preset, NON_CHAINED_FILTER)
-    ];
-    if (chainEligible) {
-      groups.push(helper(GROUP_KIND.chain, "\u26A1 \u5165\u53E3\u81EA\u52A8", STRATEGY.autoTest, preset, ENTRY_FILTER));
-    }
-    if (mode !== "minimal") {
-      for (const continent of presentContinents) {
-        groups.push(helper(
-          GROUP_KIND.helper,
-          automaticHelperName(continent),
-          STRATEGY.autoTest,
-          preset,
-          continentFilter(continent)
-        ));
-        if (mode === "full") {
-          groups.push(helper(
-            GROUP_KIND.helper,
-            fallbackHelperName(continent),
-            STRATEGY.fallback,
-            preset,
-            continentFilter(continent)
-          ));
-        }
-      }
-    }
-    groups.push(policyGroup({
-      kind: GROUP_KIND.primary,
-      name: "\u{1F680} \u8282\u70B9\u9009\u62E9",
-      candidates: [POLICY_TARGET.primaryProxy],
-      nodeFilter: NON_CHAINED_FILTER
-    }));
-    for (const continent of presentContinents) {
-      groups.push(subscriptionGroup(
-        GROUP_KIND.continent,
-        continent.name,
-        continentFilter(continent),
-        continentHelperItems(continent, mode)
-      ));
-    }
-    for (const source of SOURCE_GROUPS) {
-      if (normalizedNodes.some((node) => nodeMetadata(node).sourceKind === source.kind && !nodeMetadata(node).chained)) {
-        groups.push(subscriptionGroup(GROUP_KIND.source, source.name, source.filter));
-      }
-    }
-    if (chainEligible) {
-      groups.push(subscriptionGroup(GROUP_KIND.chain, "\u{1F3AF} \u5BA2\u6237\u7AEF\u843D\u5730", "^\u{1F517} .+$"));
-    }
-    const aiContinentGroups = presentContinents.map((continent) => subscriptionGroup(
-      GROUP_KIND.ai,
-      `\u{1F916} AI ${continent.helperName}`,
-      continentFilter(continent),
-      continentHelperItems(continent, mode),
-      { hidden: true }
-    ));
-    groups.push(...aiContinentGroups);
-    groups.push(subscriptionGroup(
-      GROUP_KIND.ai,
-      "\u{1F916} AI \u4E13\u7528",
-      ALL_NODES_FILTER,
-      aiContinentGroups.map((group) => group.name)
-    ));
-    const presentContinentNames = presentContinents.map((continent) => continent.name);
-    for (const [name, defaults] of SERVICE_GROUPS) {
-      groups.push(subscriptionGroup(
-        GROUP_KIND.service,
-        name,
-        ALL_NODES_FILTER,
-        serviceChoiceItems(defaults, presentContinentNames),
-        { defaultChoice: defaults.defaultChoice }
-      ));
-    }
-    if (normalizedNodes.some((node) => nodeMetadata(node).udp === true && !nodeMetadata(node).chained)) {
-      groups.push(subscriptionGroup(GROUP_KIND.special, "\u{1F3AE} \u6E38\u620F\u8FDE\u63A5", GAME_FILTER));
-    } else {
-      groups.push(policyGroup({ kind: GROUP_KIND.special, name: "\u{1F3AE} \u6E38\u620F\u8FDE\u63A5", candidates: ["DIRECT"] }));
-    }
-    if (normalizedNodes.some((node) => nodeMetadata(node).p2p === true && !nodeMetadata(node).chained)) {
-      groups.push(subscriptionGroup(GROUP_KIND.special, "\u2B07\uFE0F \u4E0B\u8F7D/P2P", P2P_FILTER));
-    } else {
-      groups.push(policyGroup({ kind: GROUP_KIND.special, name: "\u2B07\uFE0F \u4E0B\u8F7D/P2P", candidates: ["DIRECT"] }));
-    }
-    groups.push(policyGroup({
-      kind: GROUP_KIND.special,
-      name: "\u{1F9ED} DNS \u4E0E\u89C4\u5219\u4E0B\u8F7D",
-      candidates: [...PROXY_THEN_DIRECT]
-    }));
-    groups.push(...securityGroups(options.blockMode));
-    if (chainEligible) {
-      groups.push(subscriptionGroup(GROUP_KIND.chain, "\u{1F517} \u5165\u53E3\u8282\u70B9", ENTRY_FILTER, ["\u26A1 \u5165\u53E3\u81EA\u52A8"]));
-    }
-    return groups;
-  }
-
-  // src/render-groups.js
-  var REMOTE_POLICY_POOL_NAME = "\u{1F4E6} \u8FDC\u7A0B\u8282\u70B9\u6C60";
-  var REMOTE_POLICY_UPDATE_INTERVAL = 21600;
-  function escapeValue2(value) {
-    const text = String(value);
-    if (/[\r\n]/u.test(text)) throw new Error("Surge group value contains a line break");
-    return text.replaceAll("\\", "\\\\").replaceAll(",", "\\,");
-  }
-  function targetName(value) {
-    return value === POLICY_TARGET.primaryProxy ? "\u26A1 \u5168\u90E8\u81EA\u52A8" : value;
-  }
-  function matches(filter, node) {
-    if (filter === null) return false;
-    try {
-      return new RegExp(filter, "u").test(node.name);
-    } catch {
-      throw new Error("Invalid Surge policy filter");
-    }
-  }
-  function renderSurgeGroups(options, nodes) {
+  function renderSurgeNodeResource(nodes) {
     const inventory = Array.isArray(nodes) ? nodes : [];
-    const shared = buildPolicyGroups(options, inventory);
-    const names = new Set(shared.map(({ name }) => name));
-    const remotePolicy = typeof options.proxyPolicyUrl === "string" ? { name: REMOTE_POLICY_POOL_NAME, url: options.proxyPolicyUrl } : null;
-    const remoteMode = remotePolicy !== null;
-    const rendered = [];
-    if (remotePolicy !== null) {
-      rendered.push(`${escapeValue2(remotePolicy.name)} = select,policy-path=${escapeValue2(remotePolicy.url)},update-interval=${REMOTE_POLICY_UPDATE_INTERVAL},hidden=1`);
-    }
-    for (const group of shared) {
-      const filteredNodes = remoteMode ? [] : inventory.filter((node) => matches(group.nodeFilter, node)).map(({ name }) => name);
-      const items = [...group.candidates.map(targetName), ...filteredNodes].filter((item, index, all) => all.indexOf(item) === index);
-      if (items.length === 0 && (!remoteMode || group.nodeFilter === null)) items.push("DIRECT");
-      const fields = [group.strategy === "auto-test" ? "url-test" : group.strategy, ...items.map(escapeValue2)];
-      if (remoteMode && group.nodeFilter !== null) {
-        fields.push(`include-other-group=${escapeValue2(remotePolicy.name)}`);
-        fields.push(`policy-regex-filter=${escapeValue2(group.nodeFilter)}`);
-      }
-      if (group.test?.url !== void 0) fields.push(`url=${escapeValue2(group.test.url)}`);
-      if (group.test?.interval !== void 0) fields.push(`interval=${escapeValue2(group.test.interval)}`);
-      if (group.test?.timeout !== void 0) fields.push(`timeout=${escapeValue2(group.test.timeout)}`);
-      if (group.test?.tolerance !== void 0) fields.push(`tolerance=${escapeValue2(group.test.tolerance)}`);
-      if (group.defaultChoice !== void 0) fields.push(`policy-select-name=${escapeValue2(group.defaultChoice)}`);
-      if (group.hidden) fields.push("hidden=1");
-      if (items.some((item) => item !== "DIRECT" && item !== "REJECT" && !names.has(item) && !inventory.some((node) => node.name === item))) {
-        throw new Error("Surge group contains an unresolved policy reference");
-      }
-      rendered.push(`${escapeValue2(group.name)} = ${fields.join(",")}`);
-    }
-    return rendered;
-  }
-
-  // ../../shared/rules/lightweight-policy.js
-  var DEFAULT_RULE_SOURCE_IDS = Object.freeze([
-    "Hijacking",
-    "BlockHttpDNS",
-    "Privacy",
-    "DomesticCore",
-    "DomesticGame",
-    "BiliBili",
-    "ByteDance",
-    "XiaoHongShu",
-    "Weibo",
-    "OpenAI",
-    "Claude",
-    "Gemini",
-    "Copilot",
-    "GitHub",
-    "YouTube",
-    "Netflix",
-    "Disney",
-    "Spotify",
-    "GlobalMedia",
-    "Telegram",
-    "Facebook",
-    "Instagram",
-    "Twitter",
-    "TikTok",
-    "Apple",
-    "Microsoft",
-    "SteamCN",
-    "OverseasGame",
-    "Download",
-    "PrivateTracker",
-    "ChinaIP"
-  ]);
-  var FULL_ADBLOCK_SOURCE_IDS = Object.freeze([
-    "Advertising",
-    "Advertising_Domain"
-  ]);
-  var RULE_BUDGETS = Object.freeze({
-    domesticCoreEntries: 2e3,
-    defaultEntries: 25e3,
-    defaultBytes: 5e6,
-    startupInlineEntries: 64,
-    singBoxRuleRssBytes: 50 * 1024 * 1024,
-    singBoxTotalRssBytes: 200 * 1024 * 1024
-  });
-  var ROUTING_PRECEDENCE = Object.freeze([
-    "local",
-    "security",
-    "custom",
-    "domesticCore",
-    "domesticGame",
-    "explicitOverseas",
-    "overseasGame",
-    "chinaIp",
-    "defaultProxy"
-  ]);
-  var POLICY_TARGETS = Object.freeze({
-    direct: "DIRECT",
-    defaultProxy: "\u{1F680} \u8282\u70B9\u9009\u62E9",
-    overseasGame: "\u{1F30D} \u6D77\u5916\u6E38\u620F",
-    reject: "REJECT"
-  });
-  var SOURCE_POLICIES = Object.freeze({
-    Hijacking: POLICY_TARGETS.reject,
-    BlockHttpDNS: POLICY_TARGETS.reject,
-    Privacy: "\u{1F575}\uFE0F \u4E25\u683C\u8DDF\u8E2A",
-    DomesticCore: POLICY_TARGETS.direct,
-    DomesticGame: POLICY_TARGETS.direct,
-    BiliBili: "\u{1F4FA} \u54D4\u54E9\u54D4\u54E9",
-    ByteDance: "\u{1F3B5} \u6296\u97F3",
-    XiaoHongShu: "\u{1F4D5} \u5C0F\u7EA2\u4E66",
-    Weibo: "\u{1F9E3} \u5FAE\u535A",
-    OpenAI: "\u{1F916} AI \u4E13\u7528",
-    Claude: "\u{1F916} AI \u4E13\u7528",
-    Gemini: "\u{1F916} AI \u4E13\u7528",
-    Copilot: "\u{1F916} AI \u4E13\u7528",
-    GitHub: "\u{1F419} GitHub",
-    YouTube: "\u{1F4FA} YouTube",
-    Netflix: "\u{1F3AC} Netflix",
-    Disney: "\u{1F3F0} Disney+",
-    Spotify: "\u{1F3B5} Spotify",
-    GlobalMedia: "\u{1F30D} \u56FD\u9645\u5A92\u4F53",
-    Telegram: "\u2708\uFE0F Telegram",
-    Facebook: "\u{1F4AC} \u6D77\u5916\u793E\u4EA4",
-    Instagram: "\u{1F4AC} \u6D77\u5916\u793E\u4EA4",
-    Twitter: "\u{1F4AC} \u6D77\u5916\u793E\u4EA4",
-    TikTok: "\u{1F3B6} TikTok",
-    Apple: "\u{1F34E} Apple",
-    Microsoft: "\u{1FA9F} Microsoft",
-    SteamCN: POLICY_TARGETS.direct,
-    OverseasGame: POLICY_TARGETS.overseasGame,
-    Download: "\u2B07\uFE0F \u4E0B\u8F7D/P2P",
-    PrivateTracker: "\u2B07\uFE0F \u4E0B\u8F7D/P2P",
-    ChinaIP: POLICY_TARGETS.direct,
-    Advertising: "\u{1F9F1} \u5E38\u89C1\u5E7F\u544A",
-    Advertising_Domain: "\u{1F9F1} \u5E38\u89C1\u5E7F\u544A"
-  });
-  function clientRecord(id) {
-    const policy = SOURCE_POLICIES[id];
-    if (!policy) throw new Error(`Missing policy for lightweight rule source: ${id}`);
-    return Object.freeze({
-      id,
-      policy,
-      // The publication pipeline emits normalized, typed Surge/Shadowrocket
-      // lines for every compiled source, including domain-only inputs.
-      inputFormat: "RULE-SET"
-    });
-  }
-  var DEFAULT_RULE_CLIENT_CATALOG = Object.freeze(DEFAULT_RULE_SOURCE_IDS.map(clientRecord));
-  var FULL_ADBLOCK_RULE_CLIENT_CATALOG = Object.freeze(FULL_ADBLOCK_SOURCE_IDS.map(clientRecord));
-  function ruleClientCatalog({ adblockMode = "off" } = {}) {
-    if (adblockMode !== "off" && adblockMode !== "full") {
-      throw new TypeError("adblockMode must be either off or full");
-    }
-    return adblockMode === "full" ? Object.freeze([...DEFAULT_RULE_CLIENT_CATALOG, ...FULL_ADBLOCK_RULE_CLIENT_CATALOG]) : DEFAULT_RULE_CLIENT_CATALOG;
-  }
-
-  // ../../shared/rules/custom-rules.js
-  var CUSTOM_RULE_PRECEDENCE_INDEX = ROUTING_PRECEDENCE.indexOf("custom");
-  if (CUSTOM_RULE_PRECEDENCE_INDEX < 0 || CUSTOM_RULE_PRECEDENCE_INDEX > ROUTING_PRECEDENCE.indexOf("domesticCore")) {
-    throw new Error("Custom rules must precede generated lightweight rules");
-  }
-  var CUSTOM_RULES = Object.freeze({
-    block: Object.freeze([]),
-    direct: Object.freeze([]),
-    proxy: Object.freeze([]),
-    ai: Object.freeze([
-      "DOMAIN-SUFFIX,perplexity.ai",
-      "DOMAIN-SUFFIX,pplx.ai",
-      "DOMAIN-SUFFIX,x.ai",
-      "DOMAIN-SUFFIX,grok.com",
-      "DOMAIN-SUFFIX,poe.com",
-      "DOMAIN-SUFFIX,poecdn.net"
-    ])
-  });
-
-  // src/render-rules.js
-  var LOCAL_RULES = Object.freeze([
-    "DOMAIN-SUFFIX,local,DIRECT",
-    "DOMAIN-SUFFIX,home.arpa,DIRECT",
-    "DOMAIN-SUFFIX,lan,DIRECT",
-    "IP-CIDR,10.0.0.0/8,DIRECT,no-resolve",
-    "IP-CIDR,100.64.0.0/10,DIRECT,no-resolve",
-    "IP-CIDR,127.0.0.0/8,DIRECT,no-resolve",
-    "IP-CIDR,169.254.0.0/16,DIRECT,no-resolve",
-    "IP-CIDR,172.16.0.0/12,DIRECT,no-resolve",
-    "IP-CIDR,192.168.0.0/16,DIRECT,no-resolve",
-    "IP-CIDR,224.0.0.0/4,DIRECT,no-resolve",
-    "IP-CIDR6,::1/128,DIRECT,no-resolve",
-    "IP-CIDR6,fc00::/7,DIRECT,no-resolve",
-    "IP-CIDR6,fe80::/10,DIRECT,no-resolve",
-    "IP-CIDR6,ff00::/8,DIRECT,no-resolve"
-  ]);
-  var SECURITY_IDS = /* @__PURE__ */ new Set(["Hijacking", "BlockHttpDNS", "Privacy", "Advertising", "Advertising_Domain"]);
-  var DOMESTIC_IDS = Object.freeze(["DomesticCore", "DomesticGame", "SteamCN"]);
-  var OVERSEAS_GAME_ID = "OverseasGame";
-  var CHINA_IP_ID = "ChinaIP";
-  var RULE_DOWNLOAD_POLICY = "\u{1F9ED} DNS \u4E0E\u89C4\u5219\u4E0B\u8F7D";
-  function safeBaseUrl(value) {
-    if (typeof value !== "string" || !/^https:\/\/[^\s]+$/u.test(value) || /[\r\n,]/u.test(value)) {
-      throw new Error("Surge rule base URL must be an HTTPS URL without commas");
-    }
-    return value.replace(/\/+$/u, "");
-  }
-  function optionalAdblockBase(defaultBase) {
-    const optional = defaultBase.replace(/\/surge\/rules$/u, "/optional/adblock-full/surge/rules");
-    if (optional === defaultBase) throw new Error("Surge adblock rule base URL must end in /surge/rules");
-    return optional;
-  }
-  function sourceUrl(source, base2, optionalBase) {
-    const selectedBase = source.id === "Advertising" || source.id === "Advertising_Domain" ? optionalBase : base2;
-    if (!selectedBase) throw new Error("Surge optional rule URL is unavailable");
-    return `${selectedBase}/${source.id}.list`;
-  }
-  function selectedSources(ruleBaseUrl, adblockMode) {
-    const base2 = safeBaseUrl(ruleBaseUrl);
-    const catalog = ruleClientCatalog({ adblockMode });
-    const optionalBase = adblockMode === "full" ? optionalAdblockBase(base2) : null;
-    return { base: base2, catalog, optionalBase };
-  }
-  function renderSurgeRules({ ruleBaseUrl, adblockMode = "off" }) {
-    const { base: base2, catalog, optionalBase } = selectedSources(ruleBaseUrl, adblockMode);
-    const render = (source) => `${source.inputFormat},${sourceUrl(source, base2, optionalBase)},${source.policy},update-interval=86400`;
-    const lines = [
-      ...LOCAL_RULES,
-      "# Security rules",
-      ...catalog.filter(({ id }) => SECURITY_IDS.has(id)).map(render),
-      "# Custom rules"
-    ];
-    const custom = [
-      ["CUSTOM_BLOCK", CUSTOM_RULES.block, "REJECT"],
-      ["CUSTOM_DIRECT", CUSTOM_RULES.direct, "DIRECT"],
-      ["CUSTOM_PROXY", CUSTOM_RULES.proxy, "\u{1F680} \u8282\u70B9\u9009\u62E9"],
-      ["CUSTOM_AI", CUSTOM_RULES.ai, "\u{1F916} AI \u4E13\u7528"]
-    ];
-    for (const [name, rules, policy] of custom) {
-      lines.push(`# ${name}`, ...rules.map((rule) => `${rule},${policy}`));
-    }
-    const ruleHost = new URL(base2).hostname;
-    lines.push(
-      "# Rule-download fallback transport",
-      `DOMAIN,${ruleHost},${RULE_DOWNLOAD_POLICY}`
-    );
-    const byId = new Map(catalog.map((source) => [source.id, source]));
-    for (const id of DOMESTIC_IDS) {
-      const source = byId.get(id);
-      if (!source) throw new Error(`Missing Surge lightweight rule source: ${id}`);
-      lines.push(render(source));
-    }
-    for (const source of catalog) {
-      if (SECURITY_IDS.has(source.id) || DOMESTIC_IDS.includes(source.id) || [OVERSEAS_GAME_ID, CHINA_IP_ID].includes(source.id)) continue;
-      lines.push(render(source));
-    }
-    for (const id of [OVERSEAS_GAME_ID, CHINA_IP_ID]) {
-      const source = byId.get(id);
-      if (!source) throw new Error(`Missing Surge lightweight rule source: ${id}`);
-      lines.push(render(source));
-    }
-    lines.push("GEOIP,CN,DIRECT", "FINAL,\u{1F680} \u8282\u70B9\u9009\u62E9,dns-failed");
-    return lines;
-  }
-
-  // src/validate-profile.js
-  function splitEscaped(line) {
-    const fields = [];
-    let current = "";
-    let escaped = false;
-    for (const character of line) {
-      if (escaped) {
-        current += character;
-        escaped = false;
-      } else if (character === "\\") {
-        escaped = true;
-      } else if (character === ",") {
-        fields.push(current);
-        current = "";
-      } else {
-        current += character;
-      }
-    }
-    if (escaped) return null;
-    fields.push(current);
-    return fields;
-  }
-  function sectionRecords(profile) {
-    if (typeof profile !== "string") return { sections: null, errors: ["Profile must be a string"] };
-    const sections = /* @__PURE__ */ new Map();
-    let current;
-    for (const rawLine of profile.replace(/\r\n?/gu, "\n").split("\n")) {
-      const line = rawLine.trim();
-      if (!line || line.startsWith("#")) continue;
-      const header = /^\[([^\]]+)\]$/u.exec(line);
-      if (header) {
-        current = header[1];
-        if (sections.has(current)) return { sections: null, errors: ["duplicate required section"] };
-        sections.set(current, []);
-        continue;
-      }
-      if (!current || !sections.has(current)) return { sections: null, errors: ["content outside section"] };
-      sections.get(current).push(line);
-    }
-    return { sections, errors: [] };
-  }
-  function lineValue(line) {
-    const index = line.indexOf(" = ");
-    if (index < 1) return null;
-    return [line.slice(0, index), line.slice(index + 3)];
-  }
-  function validateSurgeProfile(profile) {
-    const parsed = sectionRecords(profile);
-    if (parsed.errors.length > 0) return { valid: false, errors: parsed.errors };
-    const required = ["General", "Proxy", "Proxy Group", "Rule"];
-    const errors = required.filter((section) => !parsed.sections.has(section)).map((section) => `missing section: ${section}`);
-    if (errors.length > 0) return { valid: false, errors };
-    const proxyNames = /* @__PURE__ */ new Set();
-    for (const line of parsed.sections.get("Proxy")) {
-      const record = lineValue(line);
-      if (!record || splitEscaped(record[1])?.length < 2) errors.push("malformed proxy line");
-      else if (proxyNames.has(record[0])) errors.push("duplicate proxy name");
-      else proxyNames.add(record[0]);
-      if (line.includes("_profile") || line.includes("_subName")) errors.push("internal node metadata leaked");
-    }
-    const groups = /* @__PURE__ */ new Map();
-    for (const line of parsed.sections.get("Proxy Group")) {
-      const record = lineValue(line);
-      const fields = record && splitEscaped(record[1]);
-      if (!record || !fields || fields.length < 2) {
-        errors.push("malformed group line");
-        continue;
-      }
-      if (groups.has(record[0])) errors.push("duplicate group name");
-      const items = fields.slice(1).filter((field) => !field.includes("="));
-      const remoteGroupReferences = fields.slice(1).filter((field) => field.startsWith("include-other-group=")).flatMap((field) => field.slice("include-other-group=".length).split(","));
-      const policyPath = fields.find((field) => field.startsWith("policy-path="));
-      const policyFilter = fields.find((field) => field.startsWith("policy-regex-filter="));
-      if (policyPath) {
-        const url = policyPath.slice("policy-path=".length);
-        try {
-          const parsedUrl = new URL(url);
-          if (parsedUrl.protocol !== "https:" || !parsedUrl.hostname) errors.push("invalid policy path");
-        } catch {
-          errors.push("invalid policy path");
-        }
-      }
-      if (policyFilter && items.length === 0 && remoteGroupReferences.length === 0 && !policyPath) {
-        errors.push("filtered group requires a policy source");
-      }
-      groups.set(record[0], { type: fields[0], items, remoteGroupReferences, policyPath });
-    }
-    const allowed = /* @__PURE__ */ new Set(["DIRECT", "REJECT", ...proxyNames, ...groups.keys()]);
-    for (const group of groups.values()) {
-      for (const item of [...group.items, ...group.remoteGroupReferences]) {
-        if (!allowed.has(item)) errors.push("missing group or proxy reference");
-      }
-    }
-    const visiting = /* @__PURE__ */ new Set();
-    const visited = /* @__PURE__ */ new Set();
-    const visit = (name) => {
-      if (visiting.has(name)) {
-        errors.push("group cycle");
-        return;
-      }
-      if (visited.has(name)) return;
-      visiting.add(name);
-      const group = groups.get(name);
-      for (const item of [...group?.items ?? [], ...group?.remoteGroupReferences ?? []]) {
-        if (groups.has(item)) visit(item);
-      }
-      visiting.delete(name);
-      visited.add(name);
-    };
-    for (const name of groups.keys()) visit(name);
-    const rules = parsed.sections.get("Rule");
-    const finals = rules.filter((line) => /^FINAL,/u.test(line));
-    if (finals.length !== 1) errors.push("Rule must contain exactly one FINAL");
-    if (finals.length === 1 && rules.at(-1) !== finals[0]) errors.push("rules after FINAL");
-    const policies = /* @__PURE__ */ new Set(["DIRECT", "REJECT", ...proxyNames, ...groups.keys()]);
-    const ipRuleTypes = /* @__PURE__ */ new Set(["IP-CIDR", "IP-CIDR6", "SRC-IP-CIDR", "DEST-PORT", "DST-PORT", "IP-ASN", "GEOIP"]);
-    for (const line of rules.filter((item) => !item.startsWith("#") && !/^FINAL,/u.test(item))) {
-      const fields = splitEscaped(line);
-      const policy = fields?.[0] === "RULE-SET" || fields?.[0] === "DOMAIN-SET" || ipRuleTypes.has(fields?.[0]) ? fields?.[2] : fields?.at(-1);
-      if (!fields || fields.length < 2 || !policies.has(policy)) errors.push("rule references missing policy");
-    }
-    return { valid: errors.length === 0, errors: [...new Set(errors)] };
-  }
-
-  // src/render-profile.js
-  var LOCAL_SKIP_PROXY = Object.freeze([
-    "localhost",
-    "*.local",
-    "*.lan",
-    "*.home.arpa",
-    "10.0.0.0/8",
-    "100.64.0.0/10",
-    "127.0.0.0/8",
-    "169.254.0.0/16",
-    "172.16.0.0/12",
-    "192.168.0.0/16",
-    "224.0.0.0/4",
-    "::1/128",
-    "fc00::/7",
-    "fe80::/10",
-    "ff00::/8"
-  ]);
-  function generalSettings(options) {
-    const chinaDns = { alidns: "223.5.5.5", dnspod: "119.29.29.29", system: "system" }[options.chinaDns];
+    if (inventory.length === 0) throw new Error("Surge refuses an empty node resource");
     return [
-      "loglevel = notify",
-      `ipv6 = ${options.ipv6Mode === "auto" ? "true" : "false"}`,
-      `dns-server = ${chinaDns}`,
-      `skip-proxy = ${LOCAL_SKIP_PROXY.join(",")}`,
-      "exclude-simple-hostnames = true",
-      "internet-test-url = http://www.gstatic.com/generate_204",
-      "proxy-test-url = http://www.gstatic.com/generate_204",
-      `test-timeout = ${options.platform === "macos" ? 5 : 7}`,
-      "suppress-warnings = true"
-    ];
-  }
-  function renderSurgeProfile(rawOptions, nodes, { ruleBaseUrl } = {}) {
-    const options = isParsedSurgeOptions(rawOptions) ? rawOptions : parseSurgeOptions(rawOptions);
-    const inventory = Array.isArray(nodes) ? nodes : [];
-    if (inventory.length === 0) throw new Error("Surge refuses an empty node inventory");
-    for (const node of inventory) nodeMetadata(node);
-    const hasRemotePolicy = Boolean(options.proxyPolicyUrl);
-    const proxyLines = hasRemotePolicy ? "# Nodes are loaded by the hidden Surge remote policy pool." : inventory.map(renderSurgeProxy).join("\n");
-    const profile = [
       "# Generated by apple-proxy-profiles. Private Sub-Store output.",
-      `[General]
-${generalSettings(options).join("\n")}`,
-      `[Proxy]
-${proxyLines}`,
-      `[Proxy Group]
-${renderSurgeGroups(options, inventory).join("\n")}`,
-      `[Rule]
-${renderSurgeRules({ ruleBaseUrl, adblockMode: options.adblockMode }).join("\n")}`
-    ].join("\n\n") + "\n";
-    const validation = validateSurgeProfile(profile);
-    if (!validation.valid) throw new Error(`Generated Surge profile failed validation: ${validation.errors.join(",")}`);
-    return profile;
+      "[Proxy]",
+      ...inventory.map((node) => renderSurgeProxy(sanitizeSurgeNode(node))),
+      ""
+    ].join("\n");
   }
 
-  // src/substore-profile-entry.js
-  var PUBLIC_RULE_ROOT = "https://juan-nikola.github.io/apple-proxy-profiles";
-  var PUBLIC_RULE_BASE_URL = `${PUBLIC_RULE_ROOT}/current/surge/rules`;
-  function logDiagnostics(context, options, nodes) {
+  // src/substore-nodes-entry.js
+  function logDiagnostics(context, options, normalized, filtered) {
     const logger = context?.logger;
     const method = typeof logger === "function" ? logger : typeof logger?.info === "function" ? logger.info.bind(logger) : typeof logger?.log === "function" ? logger.log.bind(logger) : null;
     if (!method) return;
     try {
-      method(`[surge-profile] ${JSON.stringify({ client: "surge", platform: options.platform, channel: options.channel, accepted: nodes.length })}`);
+      method(`[surge-nodes] ${JSON.stringify({
+        client: "surge",
+        collection: options.name,
+        total: normalized.diagnostics.total,
+        accepted: filtered.nodes.length
+      })}`);
     } catch {
     }
   }
   async function operator(input, targetPlatform, context = {}) {
     void targetPlatform;
-    const options = parseSurgeOptions(context.arguments ?? {});
+    const options = parseSurgeNodeOptions(context.arguments ?? {});
     if (typeof context.produceArtifact !== "function") throw new Error("produceArtifact is unavailable");
     const rawNodes = await context.produceArtifact({
       type: options.type,
@@ -2674,17 +1908,17 @@ ${renderSurgeRules({ ruleBaseUrl, adblockMode: options.adblockMode }).join("\n")
       platform: "JSON",
       produceType: "internal"
     });
-    if (!Array.isArray(rawNodes) || rawNodes.length === 0) throw new Error("produceArtifact must return a non-empty node array");
+    if (!Array.isArray(rawNodes) || rawNodes.length === 0) {
+      throw new Error("produceArtifact must return a non-empty node array");
+    }
     const normalized = normalizeNodes(rawNodes, { clientChain: options.clientChain });
     const filtered = filterNodesForClient(normalized.nodes, CLIENT.surge);
     if (filtered.nodes.length === 0) throw new Error("No compatible Surge nodes");
-    logDiagnostics(context, options, filtered.nodes);
-    const ruleBaseUrl = `${PUBLIC_RULE_ROOT}/${options.channel}/surge/rules`;
-    const profile = renderSurgeProfile(options, filtered.nodes.map(sanitizeSurgeNode), { ruleBaseUrl });
-    return { ...input, $content: profile };
+    logDiagnostics(context, options, normalized, filtered);
+    return { ...input, $content: renderSurgeNodeResource(filtered.nodes) };
   }
-  return __toCommonJS(substore_profile_entry_exports);
+  return __toCommonJS(substore_nodes_entry_exports);
 })();
 async function operator(input, targetPlatform) {
-  return SurgeProfileBundle.operator(input, targetPlatform, { arguments: $arguments, produceArtifact, logger: console });
+  return SurgeNodesBundle.operator(input, targetPlatform, { arguments: $arguments, produceArtifact, logger: console });
 }
