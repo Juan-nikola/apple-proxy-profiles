@@ -1,13 +1,20 @@
 # Surge 部署
 
-本手册把一份私密组合订阅转换为 Surge macOS、iPhone、iPad 三个官方客户端 Profile。先在 Sub-Store 完成组合，再创建 File；不要把节点凭据直接粘到 GitHub 或脚本参数。
+本手册把一份私密组合订阅转换为 Surge macOS、iPhone、iPad 三个官方客户端 Profile。先在 Sub-Store 完成组合和 Surge 节点资源 File，再创建三个远程 Profile File；不要把节点凭据直接粘到 GitHub 或脚本参数。
 
 ## 1. 准备组合与公开脚本
 
 1. 在 Sub-Store 的“组合订阅”中创建 `apple-proxy-sources`。
 2. 只加入已有来源 `snell`、`vlesshy2`；预览节点数必须大于 0。
 3. 记录你准备在 Surge 中显示的节点订阅名，例如 `Apple-Proxy-Nodes`。这只是示例，三个 File 的 `subscriptionName` 必须与实际显示名逐字一致。
-4. 三个 File 都引用稳定版：
+4. 创建一个 `surge-nodes` 节点 File，远程脚本为：
+
+   ```text
+   https://juan-nikola.github.io/apple-proxy-profiles/current/surge/scripts/surge-nodes-generator.js
+   ```
+
+   参数为 `output=nodes&type=collection&name=apple-proxy-sources&clientChain=off`。预览必须出现 `[Proxy]` 和至少一个节点；保存该 File 的私密输出 URL，下面记作 `<SURGE_NODES_URL>`。
+5. 三个 Profile File 都引用稳定版：
 
    ```text
    https://juan-nikola.github.io/apple-proxy-profiles/current/surge/scripts/surge-profile-generator.js
@@ -17,7 +24,7 @@
 
 ## 2. 创建三个 File
 
-在 Sub-Store“文件/File”中新建 `surge-macos`、`surge-iphone`、`surge-ipad`。来源使用本地占位内容，添加一条启用且参与预览的“脚本操作”，脚本来源选择“远程链接”。可视化参数逐项填写以下值；旧版单行界面则使用 `JS_URL#...`，不要使用 `?`。
+在 Sub-Store“文件/File”中新建 `surge-macos`、`surge-iphone`、`surge-ipad`。来源使用本地占位内容，添加一条启用且参与预览的“脚本操作”，脚本来源选择“远程链接”。可视化参数逐项填写以下值，把 `<SURGE_NODES_URL>` 替换为上一步的私密 URL；旧版单行界面则使用 `JS_URL#...`，不要使用 `?`。
 
 | key | macOS | iPhone | iPad |
 | --- | --- | --- | --- |
@@ -25,6 +32,7 @@
 | `type` | `collection` | `collection` | `collection` |
 | `name` | `apple-proxy-sources` | `apple-proxy-sources` | `apple-proxy-sources` |
 | `subscriptionName` | `Apple-Proxy-Nodes` | `Apple-Proxy-Nodes` | `Apple-Proxy-Nodes` |
+| `proxyPolicyUrl` | `<SURGE_NODES_URL>` | `<SURGE_NODES_URL>` | `<SURGE_NODES_URL>` |
 | `platform` | `macos` | `iphone` | `ipad` |
 | `channel` | `current` | `current` | `current` |
 | `adblockMode` | `off` | `off` | `off` |
@@ -37,7 +45,9 @@
 | `autoGroupMode` | `auto` | `auto` | `auto` |
 | `clientChain` | `off` | `off` | `off` |
 
-预览成功标志：内容以 Surge INI 配置段落开头，包含 `[General]`、`[Proxy]`、`[Proxy Group]`、`[Rule]`，并且至少有一个节点。若输出为空，先检查组合是否非空、`subscriptionName` 是否只是显示名而非组合名，以及脚本是否启用。
+预览成功标志：Profile 包含 `[General]`、`[Proxy]`、`[Proxy Group]`、`[Rule]`，隐藏组 `📦 远程节点池` 含有 `policy-path=<SURGE_NODES_URL>`，而 `[Proxy]` 不包含服务器、端口、密码或 UUID。若节点资源为空，先检查原始组合是否非空、Surge 兼容节点是否存在，以及脚本是否启用。
+
+Profile 只包含一个隐藏组 `📦 远程节点池`。如果要临时使用另一份 Surge 节点订阅，下载 Profile 后只编辑该组的 `policy-path`；保持组名、`include-other-group` 和 `policy-regex-filter` 不变，地区、流媒体和自动测速组会继续分类新来源。手动替换的 URL 必须返回 Surge 兼容的 `[Proxy]`（例如 Sub-Store 的 `t=surge` 输出），不能使用 JSON、通用 API 或其他客户端格式。
 
 `adblockMode=off` 保持轻量默认分流；确实需要完整广告分类时才使用 `full`。`channel` 和脚本发布通道应保持一致：灰度两者都用 `edge`，稳定任务两者都用 `current`。
 
@@ -54,7 +64,7 @@
 
 ## 4. 版本选择与刷新
 
-`current` 是稳定发布指针，`edge` 是测试指针。脚本升级后先只重新预览 `surge-macos`，再按 macOS → iPhone → iPad 手动更新。正式任务不需要打开 `noCache`；只有确认 CDN 缓存问题时临时使用，验收后恢复关闭。
+`current` 是稳定发布指针，`edge` 是测试指针。节点资源建议每 6 小时刷新，Profile 结构每天刷新。脚本升级后先只重新预览 `surge-macos`，再按 macOS → iPhone → iPad 手动更新。正式任务不需要打开 `noCache`；只有确认 CDN 缓存问题时临时使用，验收后恢复关闭。
 
 ## 5. 文件与构建
 

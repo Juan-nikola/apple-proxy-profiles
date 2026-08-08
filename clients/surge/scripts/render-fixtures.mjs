@@ -39,6 +39,7 @@ for (const platform of ["macos", "iphone", "ipad"]) {
     subscriptionName: "Surge-Fixture",
     platform,
     ipv6Mode: platform === "macos" ? "ipv4-only" : "auto",
+    proxyPolicyUrl: "https://example.invalid/surge-nodes",
   });
   const profile = renderSurgeProfile(options, nodes, { ruleBaseUrl });
   const validation = validateSurgeProfile(profile);

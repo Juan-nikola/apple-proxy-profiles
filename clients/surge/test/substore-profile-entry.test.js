@@ -99,3 +99,25 @@ test("Sub-Store Surge entry normalizes raw collection nodes before rendering", a
   assert.match(result.$content, /^\[General\]/mu);
   assert.match(result.$content, /^\[Proxy\]$/mu);
 });
+
+test("Sub-Store Surge profile carries the private remote provider URL", async () => {
+  const result = await operator(
+    { id: "input" },
+    "macos",
+    {
+      arguments: {
+        output: "config",
+        type: "collection",
+        name: "apple-proxy-sources",
+        subscriptionName: "Apple-Proxy-Nodes",
+        platform: "macos",
+        proxyPolicyUrl: "https://substore.example.invalid/surge-nodes",
+      },
+      async produceArtifact() {
+        return nodes;
+      },
+    },
+  );
+  assert.match(result.$content, /policy-path=https:\/\/substore\.example\.invalid\/surge-nodes/u);
+  assert.doesNotMatch(result.$content, / = ss,198\.51\.100\.10,443/u);
+});

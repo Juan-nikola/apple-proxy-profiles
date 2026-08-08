@@ -121,16 +121,26 @@ async function versionRecords(versionsDirectory) {
   ));
 }
 
-async function enforceRetention(stagingDirectory) {
+async function enforceRetention(stagingDirectory, requiredVersion = null) {
   const versionsDirectory = join(stagingDirectory, "versions");
   let versions = await versionRecords(versionsDirectory);
+  if (requiredVersion !== null) {
+    const required = versions.find((record) => record.name === requiredVersion);
+    if (!required) throw new Error("Current immutable public version is missing");
+    versions = [required, ...versions.filter((record) => record.name !== requiredVersion)];
+  }
   for (const record of versions.slice(MAX_VERSION_COUNT)) {
     await rm(join(versionsDirectory, record.name), { recursive: true, force: true });
   }
   versions = versions.slice(0, MAX_VERSION_COUNT);
   let bytes = await directoryBytes(stagingDirectory);
   while (bytes > MAX_PUBLISHED_BYTES && versions.length > MIN_VERSION_COUNT) {
-    const oldest = versions.pop();
+    let oldestIndex = versions.length - 1;
+    if (requiredVersion !== null && versions[oldestIndex].name === requiredVersion) {
+      oldestIndex -= 1;
+    }
+    if (oldestIndex < 0) break;
+    const [oldest] = versions.splice(oldestIndex, 1);
     await rm(join(versionsDirectory, oldest.name), { recursive: true, force: true });
     bytes = await directoryBytes(stagingDirectory);
   }
@@ -177,11 +187,13 @@ export async function buildSite({ publicDirectory, files, manifest, frontierFile
     && await fileMatches(join(publicDirectory, "index.html"), indexHtml(manifest))) {
     const versionsDirectory = join(publicDirectory, "versions");
     const versionDirectory = join(versionsDirectory, manifest.manifestHash);
-    if (!await exists(versionDirectory) || !await snapshotMatches(versionDirectory, files)) {
+    if (await exists(versionDirectory) && !await snapshotMatches(versionDirectory, files)) {
       throw new Error("Immutable public version bytes changed or are missing");
     }
-    const versions = await versionRecords(versionsDirectory);
-    return { bytes: await directoryBytes(publicDirectory), versionCount: versions.length };
+    if (await exists(versionDirectory)) {
+      const versions = await versionRecords(versionsDirectory);
+      return { bytes: await directoryBytes(publicDirectory), versionCount: versions.length };
+    }
   }
   const parent = dirname(publicDirectory);
   const staging = await mkdtemp(join(parent, `.${basename(publicDirectory)}-staging-`));
@@ -207,7 +219,7 @@ export async function buildSite({ publicDirectory, files, manifest, frontierFile
     await writeFile(join(staging, "manifest.json"), artifactBuffer(files.get("manifest.json")));
     await writeFile(join(staging, "index.html"), indexHtml(manifest), "utf8");
     await writeFile(join(staging, ".nojekyll"), "", "utf8");
-    const retention = await enforceRetention(staging);
+    const retention = await enforceRetention(staging, manifest.manifestHash);
 
     if (await exists(backup)) throw new Error("Public backup path already exists");
     const hadPublic = await exists(publicDirectory);

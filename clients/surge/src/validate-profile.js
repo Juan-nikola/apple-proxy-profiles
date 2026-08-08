@@ -69,11 +69,31 @@ export function validateSurgeProfile(profile) {
       continue;
     }
     if (groups.has(record[0])) errors.push("duplicate group name");
-    groups.set(record[0], { type: fields[0], items: fields.slice(1).filter((field) => !field.includes("=")) });
+    const items = fields.slice(1).filter((field) => !field.includes("="));
+    const remoteGroupReferences = fields.slice(1)
+      .filter((field) => field.startsWith("include-other-group="))
+      .flatMap((field) => field.slice("include-other-group=".length).split(","));
+    const policyPath = fields.find((field) => field.startsWith("policy-path="));
+    const policyFilter = fields.find((field) => field.startsWith("policy-regex-filter="));
+    if (policyPath) {
+      const url = policyPath.slice("policy-path=".length);
+      try {
+        const parsedUrl = new URL(url);
+        if (parsedUrl.protocol !== "https:" || !parsedUrl.hostname) errors.push("invalid policy path");
+      } catch {
+        errors.push("invalid policy path");
+      }
+    }
+    if (policyFilter && items.length === 0 && remoteGroupReferences.length === 0 && !policyPath) {
+      errors.push("filtered group requires a policy source");
+    }
+    groups.set(record[0], { type: fields[0], items, remoteGroupReferences, policyPath });
   }
   const allowed = new Set(["DIRECT", "REJECT", ...proxyNames, ...groups.keys()]);
   for (const group of groups.values()) {
-    for (const item of group.items) if (!allowed.has(item)) errors.push("missing group or proxy reference");
+    for (const item of [...group.items, ...group.remoteGroupReferences]) {
+      if (!allowed.has(item)) errors.push("missing group or proxy reference");
+    }
   }
   const visiting = new Set();
   const visited = new Set();
@@ -84,7 +104,10 @@ export function validateSurgeProfile(profile) {
     }
     if (visited.has(name)) return;
     visiting.add(name);
-    for (const item of groups.get(name)?.items ?? []) if (groups.has(item)) visit(item);
+    const group = groups.get(name);
+    for (const item of [...(group?.items ?? []), ...(group?.remoteGroupReferences ?? [])]) {
+      if (groups.has(item)) visit(item);
+    }
     visiting.delete(name);
     visited.add(name);
   };

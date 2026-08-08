@@ -4,13 +4,29 @@
 
 ## 先看这三份文档
 
-1. [五客户端总指南](../../docs/substore-two-layer-setup.md)：创建 `apple-proxy-sources`、引用 `snell` 与 `vlesshy2`，以及 17 个私密任务的总表。
-2. [Surge 部署](docs/deployment.md)：按 macOS → iPhone → iPad 创建三个 File，并导入官方 Surge。
+1. [五客户端总指南](../../docs/substore-two-layer-setup.md)：创建 `apple-proxy-sources`、引用 `snell` 与 `vlesshy2`，以及 18 个私密任务的总表。
+2. [Surge 部署](docs/deployment.md)：先创建 Surge 节点资源 File，再按 macOS → iPhone → iPad 创建三个远程 Profile File。
 3. [灰度与排障](docs/canary.md)：确认国内 App、DNS、UDP、局域网和回滚顺序。
 
-## 三个私密 File 任务
+## 一个节点资源 File + 三个私密 Profile File
 
-三个 File 都引用同一份公开脚本；只改变 `platform` 和 macOS 的 `ipv6Mode`。`Apple-Proxy-Nodes` 只是示例显示名，必须改成你在 Sub-Store/Surge 节点订阅中实际使用的显示名，并在三个任务里保持完全一致。
+`surge-nodes` 从同一个 `apple-proxy-sources` 组合生成 Surge 专用节点资源；三个 Profile File 只写入这个资源的私密 URL，不再嵌入服务器、端口或密码。`Apple-Proxy-Nodes` 只是示例显示名，必须改成你在 Sub-Store/Surge 中实际使用的显示名，并在三个任务里保持完全一致。
+
+节点资源脚本：
+
+```text
+https://juan-nikola.github.io/apple-proxy-profiles/current/surge/scripts/surge-nodes-generator.js
+```
+
+节点资源参数：
+
+```text
+output=nodes&type=collection&name=apple-proxy-sources&clientChain=off
+```
+
+先预览并保存 `surge-nodes` 的私密输出 URL，再把它作为唯一的 `proxyPolicyUrl` 填入下表三个 Profile 任务。示例中的 `https://example.invalid/private/surge-nodes` 不能直接使用。
+
+每个 Profile 只生成一个隐藏的 `📦 远程节点池`。如果要手动切换到另一份 Surge 节点订阅，只替换下载后 Profile 中这一组的 `policy-path`，不要改组名或删除 `include-other-group`、`policy-regex-filter`；节点分类和自动测速会继续对新订阅生效。订阅源中被注释或筛掉的节点不会被生成器恢复，因此只剩一个可用节点时显示一个节点是预期行为。
 
 | File | 平台 | Arguments |
 | --- | --- | --- |
@@ -29,6 +45,7 @@ https://juan-nikola.github.io/apple-proxy-profiles/current/surge/scripts/surge-p
 ## 公开脚本地址
 
 - 稳定版：`https://juan-nikola.github.io/apple-proxy-profiles/current/surge/scripts/surge-profile-generator.js`
+- 稳定节点资源版：`https://juan-nikola.github.io/apple-proxy-profiles/current/surge/scripts/surge-nodes-generator.js`
 - 测试版：`https://juan-nikola.github.io/apple-proxy-profiles/edge/surge/scripts/surge-profile-generator.js`
 
 先用 `edge` 在一台 Mac 灰度，再切回或提升到 `current`。Surge macOS 的两个架构共用 `platform=macos`；iPhone、iPad 分别使用各自参数。

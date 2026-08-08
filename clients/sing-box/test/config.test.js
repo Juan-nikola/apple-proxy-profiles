@@ -112,6 +112,25 @@ test("uses a dedicated health probe for rule downloads", () => {
   assert.equal(ruleDownload?.default, "🧭 规则下载故障转移");
 });
 
+test("uses a dedicated health probe for rule downloads", () => {
+  const ruleBaseUrl = "https://example.invalid/current/sing-box/rules";
+  const config = renderSingBoxConfig(parseSingBoxOptions(baseOptions), [node], {
+    ruleBaseUrl,
+    ruleSetFormat: "source",
+  });
+  const failover = config.outbounds.find((outbound) => outbound.tag === "🧭 规则下载故障转移");
+  assert.deepEqual(failover?.type, "urltest");
+  assert.deepEqual(failover?.outbounds, [node.name, "DIRECT"]);
+  assert.equal(failover?.url, `${ruleBaseUrl}/Hijacking.json`);
+  assert.equal(failover?.interval, "30s");
+  assert.equal(failover?.tolerance, 0);
+
+  const ruleDownload = config.outbounds.find((outbound) => outbound.tag === "🧭 DNS 与规则下载");
+  assert.deepEqual(ruleDownload?.type, "selector");
+  assert.deepEqual(ruleDownload?.outbounds, ["🧭 规则下载故障转移", "🚀 节点选择", "DIRECT"]);
+  assert.equal(ruleDownload?.default, "🧭 规则下载故障转移");
+});
+
 test("renders latest sing-box flat DNS rule actions", () => {
   const config = render();
   assert.deepEqual(

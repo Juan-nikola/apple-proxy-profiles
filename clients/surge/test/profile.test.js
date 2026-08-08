@@ -5,6 +5,7 @@ import { parseSurgeOptions } from "../src/options.js";
 import { renderSurgeProxy } from "../src/render-node.js";
 import { renderSurgeProfile } from "../src/render-profile.js";
 import { validateSurgeProfile } from "../src/validate-profile.js";
+import { CONTINENTS, continentFilter } from "../../../shared/policies/filters.js";
 
 const baseOptions = {
   output: "config",
@@ -62,6 +63,13 @@ test("parses a strict Surge option set for each Apple platform", () => {
   assert.throws(() => parseSurgeOptions({ ...baseOptions, channel: "beta" }), /channel/iu);
   assert.throws(() => parseSurgeOptions({ ...baseOptions, adblockMode: "balanced" }), /adblockMode/iu);
   assert.throws(() => parseSurgeOptions({ ...baseOptions, unknown: "value" }), /unknown/iu);
+});
+
+test("matches compact and normalized country-flag node names", () => {
+  const asia = CONTINENTS.find((continent) => continent.name === "🌏 亚太");
+  const filter = new RegExp(continentFilter(asia), "u");
+  assert.match("🇯🇵Neburst1|DMIT-T1", filter);
+  assert.match("🇯🇵 Tokyo A｜机场·U", filter);
 });
 
 test("renders a private Surge profile with shared policy sections and no internal metadata", () => {
@@ -155,4 +163,67 @@ test("accepts common upstream transport metadata on Snell nodes", () => {
     tfo: true,
   };
   assert.match(renderSurgeProxy(node), /^Snell with upstream metadata = snell,/u);
+});
+
+test("renders a pure remote Surge profile without embedding node transport details", () => {
+  const profile = renderSurgeProfile(parseSurgeOptions({
+    ...baseOptions,
+    proxyPolicyUrl: "https://substore.example.invalid/surge-nodes",
+  }), [normalizedSsNode], {
+    ruleBaseUrl: "https://example.invalid/current/surge/rules",
+  });
+  const proxySection = profile.split("[Proxy]\n", 2)[1].split("\n\n[Proxy Group]", 1)[0];
+  assert.doesNotMatch(proxySection, / = (?:ss|snell|vmess|hysteria2),/iu);
+  assert.match(profile, /📦 远程节点池 = select,policy-path=https:\/\/substore\.example\.invalid\/surge-nodes,update-interval=21600,hidden=1/u);
+  assert.match(profile, /⚡ 全部自动 = url-test,include-other-group=📦 远程节点池,policy-regex-filter=/u);
+  assert.match(profile, /🚀 节点选择 = select,⚡ 全部自动,include-other-group=📦 远程节点池,policy-regex-filter=/u);
+  assert.deepEqual(validateSurgeProfile(profile), { valid: true, errors: [] });
+});
+
+test("renders one remote policy pool and preserves filters after URL replacement", () => {
+  const defaultPolicyUrl = "https://default.example.invalid/surge-nodes";
+  const manualPolicyUrl = "https://manual.example.invalid/surge-nodes";
+  const profile = renderSurgeProfile(parseSurgeOptions({
+    ...baseOptions,
+    proxyPolicyUrl: defaultPolicyUrl,
+  }), [normalizedSsNode], {
+    ruleBaseUrl: "https://example.invalid/current/surge/rules",
+  });
+  const policyPaths = profile.split("\n").filter((line) => line.includes("policy-path="));
+  assert.equal(policyPaths.length, 1);
+  assert.match(policyPaths[0], /📦 远程节点池 = select,policy-path=https:\/\/default\.example\.invalid\/surge-nodes,update-interval=21600,hidden=1/u);
+  assert.doesNotMatch(profile, /🧩 个人节点池|🛠 节点来源/u);
+  const filteredGroups = profile.split("\n").filter((line) => line.includes("policy-regex-filter="));
+  assert.ok(filteredGroups.length > 0);
+  for (const line of filteredGroups) assert.match(line, /include-other-group=📦 远程节点池/u);
+  const proxySection = profile.split("[Proxy]\n", 2)[1].split("\n\n[Proxy Group]", 1)[0];
+  assert.doesNotMatch(proxySection, / = (?:ss|snell|vmess|hysteria2),/iu);
+  assert.deepEqual(validateSurgeProfile(profile), { valid: true, errors: [] });
+
+  const manuallySwitched = profile.replace(defaultPolicyUrl, manualPolicyUrl);
+  assert.match(manuallySwitched, /📦 远程节点池 = select,policy-path=https:\/\/manual\.example\.invalid\/surge-nodes,update-interval=21600,hidden=1/u);
+  assert.deepEqual(
+    manuallySwitched.split("\n").filter((line) => line.includes("policy-regex-filter=")),
+    filteredGroups,
+  );
+  assert.deepEqual(validateSurgeProfile(manuallySwitched), { valid: true, errors: [] });
+});
+
+test("rejects personalPolicyUrl as a second remote source", () => {
+  assert.throws(
+    () => parseSurgeOptions({ ...baseOptions, personalPolicyUrl: "https://personal.example.invalid/surge-nodes" }),
+    /unknown.*personalPolicyUrl/iu,
+  );
+});
+
+test("rejects unsafe remote policy URLs", () => {
+  const credentialedPolicyUrl = ["https://user", ":pass@substore.example.invalid/surge-nodes"].join("");
+  for (const proxyPolicyUrl of [
+    "http://substore.example.invalid/surge-nodes",
+    credentialedPolicyUrl,
+    "https://substore.example.invalid/surge-nodes#fragment",
+    "https://substore.example.invalid/surge-nodes\nnext",
+  ]) {
+    assert.throws(() => parseSurgeOptions({ ...baseOptions, proxyPolicyUrl }), /proxyPolicyUrl/iu);
+  }
 });
