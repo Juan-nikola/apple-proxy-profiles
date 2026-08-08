@@ -209,6 +209,24 @@ test("orders deterministic fallback after explicit services and before ChinaIP",
   assert.equal(config.route.final, "🚀 节点选择");
 });
 
+test("sniffs TUN connections before domain rule-set routing", () => {
+  const config = render({ platform: "macos" });
+  const sniffIndexes = config.route.rules
+    .map((rule, index) => (rule.action === "sniff" ? index : -1))
+    .filter((index) => index >= 0);
+  assert.deepEqual(sniffIndexes.length, 1);
+  const sniff = config.route.rules[sniffIndexes[0]];
+  assert.deepEqual(sniff, { inbound: "tun-in", action: "sniff" });
+  const dnsHijackIndex = config.route.rules.findIndex((rule) => rule.action === "hijack-dns");
+  assert.deepEqual(config.route.rules[dnsHijackIndex], { protocol: "dns", action: "hijack-dns" });
+  const explicitDomain = config.route.rules.findIndex((rule) => rule.rule_set?.includes("rule-OpenAI"));
+  const chinaIp = config.route.rules.findIndex((rule) => rule.rule_set?.includes("rule-ChinaIP"));
+  const local = config.route.rules.findIndex((rule) => rule.ip_is_private === true);
+  assert.equal(dnsHijackIndex < local, true);
+  assert.equal(sniffIndexes[0] < explicitDomain, true);
+  assert.equal(sniffIndexes[0] < chinaIp, true);
+});
+
 test("diagnostic profile uses zero remote rule sets without changing platform or nodes", () => {
   const light = render();
   const diagnostic = render({ profileMode: "diagnostic" });

@@ -75,7 +75,11 @@ export function renderSingBoxRuleSets({ ruleBaseUrl, profileMode = "light", adbl
 
 export function renderSingBoxRouteRules({ ruleBaseUrl, profileMode = "light", adblockMode = "off" }) {
   const ruleSets = renderSingBoxRuleSets({ ruleBaseUrl, profileMode, adblockMode });
-  const rules = [...LOCAL_RULES];
+  const rules = [
+    { inbound: "tun-in", action: "sniff" },
+    { protocol: "dns", action: "hijack-dns" },
+    ...LOCAL_RULES,
+  ];
   if (profileMode === "light") {
     const catalog = ruleClientCatalog({ adblockMode });
     for (const source of catalog.filter(({ id }) => SECURITY_IDS.has(id))) rules.push(taggedRule(source));
