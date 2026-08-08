@@ -1626,6 +1626,7 @@ var SurgeNodesBundle = (() => {
   var REQUIRED_KEYS = Object.freeze(["output", "type", "name", "subscriptionName", "platform"]);
   var NODE_REQUIRED_KEYS = Object.freeze(["output", "type", "name"]);
   var DEFAULTS = Object.freeze({
+    channel: "edge",
     dnsMode: "stable",
     chinaDns: "alidns",
     globalDns: "cloudflare",
@@ -1633,7 +1634,8 @@ var SurgeNodesBundle = (() => {
     quicMode: "proxy-block",
     ipv6Mode: "auto",
     autoGroupMode: "auto",
-    clientChain: "off"
+    clientChain: "off",
+    adblockMode: "off"
   });
   var PARSED_NODES = /* @__PURE__ */ new WeakSet();
   var ALLOWED_KEYS = /* @__PURE__ */ new Set([...REQUIRED_KEYS, ...Object.keys(DEFAULTS), "proxyPolicyUrl"]);

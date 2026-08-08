@@ -1714,7 +1714,8 @@ var SurgeProfileBundle = (() => {
       ipv6Mode: enumValue(raw, "ipv6Mode", platform === "macos" ? "ipv4-only" : DEFAULTS.ipv6Mode),
       autoGroupMode: enumValue(raw, "autoGroupMode", DEFAULTS.autoGroupMode),
       clientChain: enumValue(raw, "clientChain", DEFAULTS.clientChain),
-      adblockMode
+      adblockMode,
+      proxyPolicyUrl: validatePolicyUrl(raw.proxyPolicyUrl, "proxyPolicyUrl")
     };
     platformPolicyPreset(platform);
     Object.freeze(options);
