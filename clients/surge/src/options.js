@@ -96,6 +96,7 @@ export function parseSurgeOptions(raw) {
     autoGroupMode: enumValue(raw, "autoGroupMode", DEFAULTS.autoGroupMode),
     clientChain: enumValue(raw, "clientChain", DEFAULTS.clientChain),
     adblockMode,
+    proxyPolicyUrl: validatePolicyUrl(raw.proxyPolicyUrl, "proxyPolicyUrl"),
   };
   platformPolicyPreset(platform);
   Object.freeze(options);
