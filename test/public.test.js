@@ -138,14 +138,19 @@ test("public client entrypoints close over current and never raw master", async 
   }
 });
 
-test("publishes independent frontier manifests for edge and current", async () => {
+test("publishes an independent lightweight edge candidate beside stable current", async () => {
   const edge = JSON.parse(await readFile(new URL("edge/manifest.json", publicRoot), "utf8"));
   const current = JSON.parse(await readFile(new URL("current/manifest.json", publicRoot), "utf8"));
-  assert.equal(edge.channel, "edge");
+  assert.equal(edge.schemaVersion, 2);
+  assert.equal(edge.generatedAt, edge.upstream.committedAt);
+  assert.match(edge.upstream.commit, /^[0-9a-f]{40}$/u);
   assert.equal(current.upstream.commit.length, 40);
-  assert.ok(edge.records.some((record) => record.platformKey === "surge/macos"));
-  assert.ok(edge.records.some((record) => record.platformKey === "singbox/openwrt"));
-  assert.equal(await readFile(new URL("edge/surge/scripts/surge-profile-generator.js", publicRoot), "utf8").then((text) => text.includes("edge/surge/rules")), true);
+  assert.deepEqual(Object.keys(edge.clients).sort(), ["anywhere", "egern", "shadowrocket", "singbox", "surge"]);
+  assert.ok(edge.clients.singbox.referencedDefaultBytes > 0);
+  const surgeGenerator = await readFile(new URL("edge/surge/scripts/surge-profile-generator.js", publicRoot), "utf8");
+  assert.match(surgeGenerator, /channel:\s*"edge"/u);
+  assert.match(surgeGenerator, /\$\{PUBLIC_RULE_ROOT\}\/\$\{options\.channel\}\/surge\/rules/u);
+  assert.ok((await stat(new URL("edge/sing-box/rule-sets/ChinaIP.srs", publicRoot))).size > 0);
 });
 
 test("keeps current, previous, and an online version within the hard Pages budget", async () => {

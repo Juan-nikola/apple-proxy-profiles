@@ -88,6 +88,17 @@ test("rejects forbidden legacy rule references inside default static content", (
   );
 });
 
+test("retains third-party license notices that name optional rule inputs", () => {
+  const notice = "The optional Advertising and Advertising_Domain inputs remain GPL-2.0-only.\n";
+  const result = buildClientArtifacts({
+    snapshot: lightweightFixtureSnapshots(),
+    upstream,
+    additionalFiles: new Map([["THIRD_PARTY_NOTICES.md", notice]]),
+  });
+
+  assert.equal(result.defaults.get("THIRD_PARTY_NOTICES.md"), notice);
+});
+
 test("rejects bare forbidden rule IDs and forbidden default filenames", () => {
   for (const additionalFiles of [
     new Map([["surge/examples/bare.conf", "RULE-SET,Advertising,REJECT\n"]]),

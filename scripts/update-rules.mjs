@@ -6,7 +6,8 @@ import {
   assertNoForbiddenDefaultReferences,
   buildClientArtifacts,
 } from "../automation/src/build-artifacts.js";
-import { artifactBuffer } from "../automation/src/artifact-content.js";
+import { artifactBuffer, artifactSha256 } from "../automation/src/artifact-content.js";
+import { canonicalJson } from "../automation/src/render-anywhere-rules.js";
 import {
   promoteClientRelease as promoteClientReleaseImpl,
   publishEdgeRelease,
@@ -30,6 +31,11 @@ import {
 const repositoryRoot = dirname(dirname(fileURLToPath(import.meta.url)));
 const defaultPublicDirectory = join(repositoryRoot, "public");
 const PROMOTION_CLIENTS = new Set(["singbox", "surge", "shadowrocket", "egern", "anywhere"]);
+const LEGACY_CURRENT_EXTRA_FILES = Object.freeze([
+  /^frontier-manifest\.json$/u,
+  /^surge\/(?:macos|iphone|ipad)\/manifest\.json$/u,
+  /^singbox\/(?:macos|iphone|ipad|android|openwrt)\/manifest\.json$/u,
+]);
 
 export function parseUpdateRulesArguments(args) {
   if (JSON.stringify(args) === JSON.stringify(["--channel", "edge"])) {
@@ -117,6 +123,57 @@ function treeEntriesForFiles(paths) {
     }
   }
   return [...entries].sort();
+}
+
+function safeTrackedPath(path) {
+  return typeof path === "string"
+    && path.length > 0
+    && !path.startsWith("/")
+    && !path.includes("\\")
+    && !path.split("/").includes("..");
+}
+
+function sameUpstream(actual, expected) {
+  return actual && expected
+    && actual.repository === expected.repository
+    && actual.branch === expected.branch
+    && actual.commit === expected.commit
+    && actual.committedAt === expected.committedAt
+    && actual.license === expected.license;
+}
+
+async function verifyLegacyCurrent(directory, expectedUpstream) {
+  try {
+    const manifestBytes = await readFile(join(directory, "manifest.json"));
+    const manifest = JSON.parse(manifestBytes.toString("utf8"));
+    if (manifest.schemaVersion !== 1 || manifest.generatedAt !== manifest.upstream?.committedAt
+      || !sameUpstream(manifest.upstream, expectedUpstream)
+      || !Array.isArray(manifest.files) || manifest.files.length === 0) return false;
+    const { manifestHash, ...baseManifest } = manifest;
+    if (!/^[0-9a-f]{64}$/u.test(manifestHash)
+      || artifactSha256(canonicalJson(baseManifest)) !== manifestHash
+      || !manifestBytes.equals(Buffer.from(canonicalJson(manifest), "utf8"))) return false;
+
+    const expectedFiles = new Set(["manifest.json"]);
+    for (const record of manifest.files) {
+      if (!record || !safeTrackedPath(record.path) || expectedFiles.has(record.path)
+        || !Number.isSafeInteger(record.bytes) || record.bytes < 0
+        || !/^[0-9a-f]{64}$/u.test(record.sha256)) return false;
+      const content = await readFile(join(directory, record.path));
+      if (content.length !== record.bytes || artifactSha256(content) !== record.sha256) return false;
+      expectedFiles.add(record.path);
+    }
+
+    const actualFiles = await relativeFiles(directory);
+    for (const path of actualFiles) {
+      if (!expectedFiles.has(path) && !LEGACY_CURRENT_EXTRA_FILES.some((pattern) => pattern.test(path))) return false;
+    }
+    for (const path of expectedFiles) if (!actualFiles.includes(path)) return false;
+    return JSON.stringify((await relativeTreeEntries(directory)).sort())
+      === JSON.stringify(treeEntriesForFiles(actualFiles).sort());
+  } catch {
+    return false;
+  }
 }
 
 async function selectedClientManifest({ directory, basePrefix = "", client, clientDirectory, expectedHash = null }) {
@@ -208,7 +265,7 @@ export function selectDefaultStaticFiles(files) {
   return selected;
 }
 
-export async function verifyTrackedPublications({ publicDirectory, defaults, optionalPacks }) {
+export async function verifyTrackedPublications({ publicDirectory, defaults, optionalPacks, diagnostics = null }) {
   let rollout = null;
   try {
     rollout = JSON.parse(await readFile(join(publicDirectory, "rollout.json"), "utf8"));
@@ -216,7 +273,16 @@ export async function verifyTrackedPublications({ publicDirectory, defaults, opt
     if (error.code !== "ENOENT") return false;
   }
   if (rollout === null) {
-    if (!await snapshotMatches(join(publicDirectory, "current"), defaults)) return false;
+    const currentDirectory = join(publicDirectory, "current");
+    let trackedManifest;
+    try {
+      trackedManifest = JSON.parse(await readFile(join(currentDirectory, "manifest.json"), "utf8"));
+    } catch {
+      return false;
+    }
+    if (trackedManifest.schemaVersion === 1) {
+      if (!await verifyLegacyCurrent(currentDirectory, diagnostics?.defaultManifest?.upstream)) return false;
+    } else if (!await snapshotMatches(currentDirectory, defaults)) return false;
     for (const [packId, files] of optionalPacks) {
       validateOptionalPublication({ packId, files });
       const stableDirectory = join(publicDirectory, "optional", packId);

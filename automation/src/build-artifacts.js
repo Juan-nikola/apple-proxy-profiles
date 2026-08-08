@@ -33,6 +33,18 @@ const FORBIDDEN_DEFAULT_RULE_IDS = Object.freeze([
   "Advertising",
 ]);
 const FORBIDDEN_DEFAULT_CONTENT = /\b(?:Advertising_Domain|ChinaMax_Domain|Advertising)\b/u;
+const FORBIDDEN_LEGACY_CONTENT = /\bChinaMax_Domain\b/u;
+const NON_ROUTING_NOTICE_PATHS = new Set(["THIRD_PARTY_NOTICES.md"]);
+const OPTIONAL_AWARE_GENERATOR_PATHS = new Set([
+  "shadowrocket/scripts/shadowrocket-profile-generator.js",
+  "shadowrocket/scripts/substore-profile-generator.js",
+  "egern/scripts/egern-profile-generator.js",
+  "egern/scripts/substore-profile-generator.js",
+  "surge/scripts/surge-profile-generator.js",
+  "surge/scripts/substore-profile-generator.js",
+  "sing-box/scripts/sing-box-config-generator.js",
+  "sing-box/scripts/substore-config-generator.js",
+]);
 
 function compiledText(entries) {
   return `${entries.map((entry) => {
@@ -178,9 +190,13 @@ function compactRuleSetMap(ruleSets) {
 }
 
 function clientRuleRecords(files, client) {
-  const prefix = client === "anywhere" ? "anywhere/rules/" : `${CLIENT_PATHS[client]}/rules/`;
+  const prefixes = client === "anywhere"
+    ? ["anywhere/rules/"]
+    : client === "singbox"
+      ? ["sing-box/rules/", "sing-box/rule-sets/"]
+      : [`${CLIENT_PATHS[client]}/rules/`];
   return fileRecords(new Map([...files].filter(([path]) => (
-    path.startsWith(prefix) && !path.endsWith("/manifest.json")
+    prefixes.some((prefix) => path.startsWith(prefix)) && !path.endsWith("/manifest.json")
   ))));
 }
 
@@ -257,8 +273,11 @@ export function assertNoForbiddenDefaultReferences(files) {
   for (const [path, content] of files) {
     const forbiddenPath = FORBIDDEN_DEFAULT_RULE_IDS.find((id) => path.includes(id));
     if (forbiddenPath) throw new Error(`Forbidden default rule path ${forbiddenPath} in ${path}`);
+    if (NON_ROUTING_NOTICE_PATHS.has(path)) continue;
     const text = artifactBuffer(content).toString("utf8");
-    const match = FORBIDDEN_DEFAULT_CONTENT.exec(text);
+    const match = (OPTIONAL_AWARE_GENERATOR_PATHS.has(path)
+      ? FORBIDDEN_LEGACY_CONTENT
+      : FORBIDDEN_DEFAULT_CONTENT).exec(text);
     if (match) {
       if (path === "anywhere/import.html" || path === "anywhere/rules/manifest.json") continue;
       throw new Error(`Forbidden default rule reference ${match[0]} in ${path}`);

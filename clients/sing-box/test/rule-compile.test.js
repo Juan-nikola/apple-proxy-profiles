@@ -114,10 +114,15 @@ test("rejects long NUL-containing output without the official SRS magic in both 
   );
 });
 
-test("compile command uses deterministic workspace defaults and names missing staged inputs", async () => {
+test("compile command names missing staged inputs independently of workspace state", async () => {
+  const root = await mkdtemp(join(tmpdir(), "sing-box-missing-stage-"));
   const core = await fixtureCore("valid");
   await assert.rejects(
-    () => main(["compile"], { env: { SING_BOX_CORE: core } }),
-    /clients[/\\]sing-box[/\\]build[/\\]rule-artifacts|staged.*artifact|artifact.*missing/iu,
+    () => main(["compile"], { env: {
+      SING_BOX_CORE: core,
+      SING_BOX_ARTIFACT_ROOT: join(root, "missing-stage"),
+      SING_BOX_RULE_OUTPUT_ROOT: join(root, "compiled"),
+    } }),
+    /missing-stage|staged.*artifact|artifact.*missing/iu,
   );
 });

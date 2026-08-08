@@ -161,11 +161,17 @@ test("update workflow verifies official binary rules before building edge and ga
   const configAt = text.indexOf("npm --workspace @apple-proxy-profiles/sing-box run check:config");
   const verifyAt = text.indexOf("npm run verify:lightweight");
   const edgeAt = text.indexOf("npm run update:rules -- --channel edge");
+  const currentStageAt = text.indexOf("node scripts/stage-rule-artifacts.mjs --channel current");
+  const currentCompileAt = text.lastIndexOf("npm --workspace @apple-proxy-profiles/sing-box run compile:rules");
+  const currentCheckAt = text.indexOf("npm run check:rules");
   assert.ok(installAt > text.indexOf("npm ci"), "official core installs after dependencies");
   assert.ok(compileAt > installAt, "binary rule compilation uses the verified core");
   assert.ok(configAt > compileAt, "both generated profile modes are checked after compilation");
   assert.ok(verifyAt > configAt, "lightweight tests and budgets run after official config checks");
   assert.ok(edgeAt > verifyAt, "edge candidates are generated only after verification");
+  assert.ok(currentStageAt > edgeAt, "current is restaged only after the tested edge bytes are emitted");
+  assert.ok(currentCompileAt > currentStageAt, "current uses binaries compiled from its own immutable stage");
+  assert.ok(currentCheckAt > currentCompileAt, "current verification consumes its own compiled binaries");
   assert.match(text, /^\s*client:\s*$/mu);
   assert.match(text, /^\s*manifest_hash:\s*$/mu);
   assert.match(text, /^\s*environment:\s*canary-approval\s*$/mu);

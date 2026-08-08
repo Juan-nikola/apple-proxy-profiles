@@ -68,6 +68,13 @@ test("replaces audit JSON with the exact compiled sing-box binaries before manif
     result.diagnostics.defaultManifest.files.some(({ path }) => /^sing-box\/rule-sets\/.*\.srs$/u.test(path)),
     true,
   );
+  const expectedDefaultBytes = [...singBoxBinaries]
+    .filter(([path]) => path.startsWith("sing-box/rule-sets/"))
+    .reduce((sum, [, bytes]) => sum + bytes.length, 0);
+  assert.equal(
+    result.diagnostics.defaultManifest.clients.singbox.referencedDefaultBytes,
+    expectedDefaultBytes,
+  );
 });
 
 test("Shadowrocket and Surge profile provider types match every emitted rule body", () => {

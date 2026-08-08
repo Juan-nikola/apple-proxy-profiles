@@ -5,6 +5,8 @@ import { dirname, join } from "node:path";
 import test from "node:test";
 
 import { buildClientArtifacts } from "../automation/src/build-artifacts.js";
+import { artifactSha256 } from "../automation/src/artifact-content.js";
+import { canonicalJson } from "../automation/src/render-anywhere-rules.js";
 import { publishEdgeRelease } from "../automation/src/build-site.js";
 import { lightweightFixtureSnapshots } from "../automation/test/lightweight-fixture.js";
 import {
@@ -69,10 +71,20 @@ test("accepts only explicit edge, current-check, and client promotion operations
 test("keeps known legacy profiles outside defaults and rejects unexpected forbidden statics", () => {
   const selected = selectDefaultStaticFiles(new Map([
     ["LICENSE", "safe\n"],
+    [
+      "surge/scripts/surge-profile-generator.js",
+      'const adblockMode = "off"; if (adblockMode === "full") return "Advertising_Domain";\n',
+    ],
     ["surge/examples/surge-macos.conf", "RULE-SET,https://example.invalid/Advertising.list,REJECT\n"],
-    ["surge/scripts/surge-profile-generator.js", 'const id = "ChinaMax_Domain";\n'],
+    ["sing-box/scripts/sing-box-config-generator.js", 'const id = "ChinaMax_Domain";\n'],
   ]));
-  assert.deepEqual([...selected], [["LICENSE", "safe\n"]]);
+  assert.deepEqual([...selected], [
+    ["LICENSE", "safe\n"],
+    [
+      "surge/scripts/surge-profile-generator.js",
+      'const adblockMode = "off"; if (adblockMode === "full") return "Advertising_Domain";\n',
+    ],
+  ]);
   assert.throws(
     () => selectDefaultStaticFiles(new Map([["unexpected.txt", 'const id = "Advertising";\n']])),
     /Forbidden default rule reference/u,
@@ -101,6 +113,40 @@ test("verifies legacy current defaults and a separately tracked optional snapsho
   const noOptionalPublic = join(noOptionalRoot, "public");
   await writeFiles(join(noOptionalPublic, "current"), artifacts.defaults);
   assert.equal(await verifyTrackedPublications({ publicDirectory: noOptionalPublic, ...artifacts }), true);
+});
+
+test("verifies a closed schema-v1 current during the lightweight migration", async () => {
+  const root = await mkdtemp(join(tmpdir(), "apple-proxy-legacy-current-"));
+  const publicDirectory = join(root, "public");
+  const currentDirectory = join(publicDirectory, "current");
+  const artifacts = buildClientArtifacts({ snapshot: lightweightFixtureSnapshots(), upstream });
+  const content = "legacy stable rule bytes\n";
+  const baseManifest = {
+    schemaVersion: 1,
+    generatedAt: upstream.committedAt,
+    upstream,
+    catalogSha256: "a".repeat(64),
+    clients: {},
+    files: [{
+      path: "legacy/rule.list",
+      bytes: Buffer.byteLength(content),
+      sha256: artifactSha256(content),
+    }],
+  };
+  const manifest = { ...baseManifest, manifestHash: artifactSha256(canonicalJson(baseManifest)) };
+  await writeFiles(currentDirectory, new Map([
+    ["legacy/rule.list", content],
+    ["manifest.json", canonicalJson(manifest)],
+    ["frontier-manifest.json", "{}\n"],
+    ["surge/macos/manifest.json", "{}\n"],
+  ]));
+
+  assert.equal(await verifyTrackedPublications({ publicDirectory, ...artifacts }), true);
+  await writeFile(join(currentDirectory, "legacy/rule.list"), "tampered\n");
+  assert.equal(await verifyTrackedPublications({ publicDirectory, ...artifacts }), false);
+  await writeFile(join(currentDirectory, "legacy/rule.list"), content);
+  await writeFile(join(currentDirectory, "unexpected.txt"), "extra\n");
+  assert.equal(await verifyTrackedPublications({ publicDirectory, ...artifacts }), false);
 });
 
 test("verifies a hybrid current from independently promoted clients", async () => {
