@@ -225,7 +225,7 @@
       ]
     }
   ],
-  "manifestSha256": "aa782551af9516a5b676031cdeccb2c8819bf9a435dc680a2fe6ea783e7c5596",
+  "manifestSha256": "c7d29d5748fb3687ed40d0c54c459e2aa43f301c6c1e2b57d790e5e33b32e548",
   "optionalPacks": {
     "adblock-full": "../../optional/adblock-full/manifest.json"
   },
@@ -297,15 +297,15 @@
     },
     {
       "countsByType": {
-        "domainSuffix": 46
+        "domainSuffix": 65
       },
-      "entryCount": 46,
+      "entryCount": 65,
       "familyId": "DomesticCore",
       "id": "DomesticCore-001",
       "index": 1,
       "name": "DIRECT · DomesticCore",
       "path": "anywhere/rules/DomesticCore-001.arrs",
-      "sha256": "e94eecfeb751dcd5f95819715fd9958c63a352b81bfe9c5b0301ac1be9721f92",
+      "sha256": "373b4d872c0af277528355266fa9ca85b7c0917adbfd3925ed20a401103213e8",
       "sourceId": "DomesticCore",
       "total": 1,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/DomesticCore-001.arrs"
@@ -327,16 +327,16 @@
     },
     {
       "countsByType": {
-        "domainSuffix": 57,
+        "domainSuffix": 52,
         "ipv4Cidr": 7
       },
-      "entryCount": 64,
+      "entryCount": 59,
       "familyId": "BiliBili",
       "id": "BiliBili-001",
       "index": 1,
       "name": "📺 哔哩哔哩 · BiliBili",
       "path": "anywhere/rules/BiliBili-001.arrs",
-      "sha256": "21eeacfc777755bd871c311d4d1f1e61ee17b5aa8d06c5f6d63c80c87f5c7d2a",
+      "sha256": "66045ab5f0a016c03da636fbce3affcaebecb522f09d51d23b808fbeaf498c4a",
       "sourceId": "BiliBili",
       "total": 1,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/BiliBili-001.arrs"
@@ -855,11 +855,11 @@
       "canonicalPath": "compiled/Surge/DomesticCore/DomesticCore.list",
       "componentId": "rules",
       "counts": {
-        "candidate": 46,
-        "convertible": 46,
+        "candidate": 65,
+        "convertible": 65,
         "duplicates": 0,
-        "output": 46,
-        "parsed": 46,
+        "output": 65,
+        "parsed": 65,
         "shadowed": 0,
         "unresolved": 0,
         "unsupported": 0
@@ -879,8 +879,8 @@
       "shardIds": [
         "DomesticCore-001"
       ],
-      "sourceBytes": 1151,
-      "sourceSha256": "56e28805c88260f5dfbecca68170c0f90a78bd8707ab346c0aad1d84ce0120d1",
+      "sourceBytes": 1648,
+      "sourceSha256": "0cf7111b9dfab22edd9187f73c2fc463703ba61300faceaf4fe98a6e5aae0ec2",
       "unsupportedByReason": {}
     },
     {
@@ -921,8 +921,8 @@
       "counts": {
         "candidate": 123,
         "convertible": 70,
-        "duplicates": 6,
-        "output": 64,
+        "duplicates": 11,
+        "output": 59,
         "parsed": 123,
         "shadowed": 0,
         "unresolved": 0,
@@ -1776,26 +1776,26 @@
   ],
   "totals": {
     "blankCount": 31,
-    "candidateCount": 17097,
+    "candidateCount": 17116,
     "commentCount": 0,
     "convertibleByKind": {
       "domainKeyword": 79,
-      "domainSuffix": 3132,
+      "domainSuffix": 3151,
       "ipv4Cidr": 9465,
       "ipv6Cidr": 4164
     },
-    "convertibleCount": 16840,
-    "duplicateCount": 158,
+    "convertibleCount": 16859,
+    "duplicateCount": 163,
     "ignoredModifiers": {
       "noResolve": 13629
     },
     "logicalRuleSetCount": 31,
-    "outputCount": 16522,
-    "parsedCount": 17097,
-    "physicalLineCount": 17128,
+    "outputCount": 16536,
+    "parsedCount": 17116,
+    "physicalLineCount": 17147,
     "shadowedCount": 160,
     "shardCount": 31,
-    "sourceBytes": 594028,
+    "sourceBytes": 594525,
     "sourceCount": 31,
     "unresolvedCount": 0,
     "unsupportedByReason": {

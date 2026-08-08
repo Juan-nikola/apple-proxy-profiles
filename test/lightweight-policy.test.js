@@ -52,7 +52,9 @@ test("covers representative Chinese app, media, map, and game ecosystems", () =>
   for (const suffix of [
     "bilibili.com", "douyin.com", "byteimg.com", "xiaohongshu.com", "weibo.com",
     "qq.com", "wechat.com", "iqiyi.com", "youku.com", "mgtv.com", "baidu.com",
-    "taobao.com", "alipay.com", "163.com", "amap.com",
+    "taobao.com", "alipay.com", "163.com", "amap.com", "wmpvp.com", "bytehwm.com",
+    "rtbasia.com", "sandbox.itunes.apple.com", "douyucdn.cn", "douyu.com", "douyuscdn.com",
+    "huya.com", "bilivideo.net", "hdslb.org", "iqiyipic.com", "ykimg.com", "gtimg.com",
   ]) {
     assert.equal(core.has(suffix), true, `${suffix} must remain in the domestic core`);
   }

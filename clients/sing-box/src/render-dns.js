@@ -1,3 +1,5 @@
+import { EXPLICIT_OVERSEAS_RULE_SOURCE_IDS } from "../../../shared/rules/lightweight-policy.js";
+
 const CHINA_DNS = Object.freeze({
   alidns: "223.5.5.5",
   dnspod: "119.29.29.29",
@@ -8,11 +10,7 @@ const GLOBAL_DNS = Object.freeze({
   google: Object.freeze({ server: "8.8.8.8", serverName: "dns.google" }),
   quad9: Object.freeze({ server: "9.9.9.9", serverName: "dns.quad9.net" }),
 });
-const EXPLICIT_OVERSEAS_RULE_SETS = Object.freeze([
-  "OpenAI", "Claude", "Gemini", "Copilot", "GitHub",
-  "YouTube", "Netflix", "Disney", "Spotify", "GlobalMedia",
-  "Telegram", "Facebook", "Instagram", "Twitter", "TikTok", "OverseasGame",
-].map((id) => `rule-${id}`));
+const EXPLICIT_OVERSEAS_RULE_SETS = Object.freeze(EXPLICIT_OVERSEAS_RULE_SOURCE_IDS.map((id) => `rule-${id}`));
 
 export function renderSingBoxDns(options) {
   const chinaServer = options.chinaDns === "system"

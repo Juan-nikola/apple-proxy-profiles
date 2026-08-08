@@ -13,15 +13,22 @@ function normalizedSuffixes(values, name) {
 }
 
 export const DOMESTIC_CORE_DOMAIN_SUFFIXES = normalizedSuffixes([
-  "bilibili.com", "bilivideo.com", "biliapi.com", "hdslb.com",
+  "bilibili.com", "bilibili.net", "bilibili.tv", "bilibili.cc",
+  "bilivideo.com", "bilivideo.net", "biliapi.com", "hdslb.com", "hdslb.org",
   "douyin.com", "douyincdn.com", "byteimg.com", "ibytedtos.com", "pstatp.com",
   "snssdk.com", "amemv.com", "ixigua.com", "toutiao.com", "toutiaoimg.com",
   "xiaohongshu.com", "xhscdn.com", "weibo.com", "sinaimg.cn",
-  "qq.com", "qpic.cn", "qlogo.cn", "gtimg.cn", "wechat.com",
-  "iqiyi.com", "qiyi.com", "qiyipic.com", "youku.com", "tudou.com", "mgtv.com", "hunantv.com",
+  "qq.com", "qpic.cn", "qlogo.cn", "gtimg.cn", "gtimg.com", "wechat.com",
+  "iqiyi.com", "iqiyipic.com", "qiyi.com", "qiyipic.com", "youku.com", "tudou.com", "tudouui.com",
+  "ykimg.com", "mgtv.com", "hunantv.com",
   "baidu.com", "bdstatic.com", "bdimg.com", "bcebos.com",
   "taobao.com", "tmall.com", "alipay.com", "alibaba.com", "alicdn.com", "aliyun.com", "aliyuncs.com",
   "163.com", "126.com", "netease.com", "amap.com", "autonavi.com",
+  // Confirmed domestic CDN/app endpoints observed in client traces and the
+  // supplied reference profile. Keep this list small; unknown names are
+  // classified by China-first DNS plus ChinaIP/GeoIP in every client.
+  "wmpvp.com", "bytehwm.com", "rtbasia.com", "sandbox.itunes.apple.com",
+  "douyu.com", "douyu.tv", "douyutv.com", "douyuscdn.com", "douyucdn.cn", "huya.com",
 ], "Domestic core");
 
 export const DOMESTIC_GAME_DOMAIN_SUFFIXES = normalizedSuffixes([

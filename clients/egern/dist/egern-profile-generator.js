@@ -879,6 +879,24 @@ var EgernProfileBundle = (() => {
     "chinaIp",
     "defaultProxy"
   ]);
+  var EXPLICIT_OVERSEAS_RULE_SOURCE_IDS = Object.freeze([
+    "OpenAI",
+    "Claude",
+    "Gemini",
+    "Copilot",
+    "GitHub",
+    "YouTube",
+    "Netflix",
+    "Disney",
+    "Spotify",
+    "GlobalMedia",
+    "Telegram",
+    "Facebook",
+    "Instagram",
+    "Twitter",
+    "TikTok",
+    "OverseasGame"
+  ]);
   var POLICY_TARGETS = Object.freeze({
     direct: "DIRECT",
     defaultProxy: "\u{1F680} \u8282\u70B9\u9009\u62E9",
@@ -954,9 +972,14 @@ var EgernProfileBundle = (() => {
   }
   var DOMESTIC_CORE_DOMAIN_SUFFIXES = normalizedSuffixes([
     "bilibili.com",
+    "bilibili.net",
+    "bilibili.tv",
+    "bilibili.cc",
     "bilivideo.com",
+    "bilivideo.net",
     "biliapi.com",
     "hdslb.com",
+    "hdslb.org",
     "douyin.com",
     "douyincdn.com",
     "byteimg.com",
@@ -975,12 +998,16 @@ var EgernProfileBundle = (() => {
     "qpic.cn",
     "qlogo.cn",
     "gtimg.cn",
+    "gtimg.com",
     "wechat.com",
     "iqiyi.com",
+    "iqiyipic.com",
     "qiyi.com",
     "qiyipic.com",
     "youku.com",
     "tudou.com",
+    "tudouui.com",
+    "ykimg.com",
     "mgtv.com",
     "hunantv.com",
     "baidu.com",
@@ -998,7 +1025,20 @@ var EgernProfileBundle = (() => {
     "126.com",
     "netease.com",
     "amap.com",
-    "autonavi.com"
+    "autonavi.com",
+    // Confirmed domestic CDN/app endpoints observed in client traces and the
+    // supplied reference profile. Keep this list small; unknown names are
+    // classified by China-first DNS plus ChinaIP/GeoIP in every client.
+    "wmpvp.com",
+    "bytehwm.com",
+    "rtbasia.com",
+    "sandbox.itunes.apple.com",
+    "douyu.com",
+    "douyu.tv",
+    "douyutv.com",
+    "douyuscdn.com",
+    "douyucdn.cn",
+    "huya.com"
   ], "Domestic core");
   var DOMESTIC_GAME_DOMAIN_SUFFIXES = normalizedSuffixes([
     "leiting.com",
@@ -1067,6 +1107,15 @@ var EgernProfileBundle = (() => {
       }
     };
   }
+  function proxyRule(baseUrl, id) {
+    return {
+      proxy_rule_set: {
+        match: `${baseUrl}/egern/rules/${id}.yaml`,
+        value: "global",
+        update_interval: 86400
+      }
+    };
+  }
   function domesticFallbackRules(value = "china") {
     return DOMESTIC_CORE_DOMAIN_SUFFIXES.map((match) => ({
       domain_suffix: { match, value }
@@ -1086,10 +1135,13 @@ var EgernProfileBundle = (() => {
     let forward;
     if (dnsMode === "privacy") {
       forward = [wildcard("global")];
-    } else if (dnsMode === "speed") {
-      forward = [...domesticFallbackRules(), chinaRule(baseUrl), wildcard("system")];
     } else {
-      forward = [...domesticFallbackRules(), chinaRule(baseUrl), wildcard("global")];
+      forward = [
+        ...EXPLICIT_OVERSEAS_RULE_SOURCE_IDS.map((id) => proxyRule(baseUrl, id)),
+        ...domesticFallbackRules(),
+        chinaRule(baseUrl),
+        wildcard("china")
+      ];
     }
     return {
       bootstrap: ["system"],

@@ -666,6 +666,24 @@ var ShadowrocketProfileBundle = (() => {
     "chinaIp",
     "defaultProxy"
   ]);
+  var EXPLICIT_OVERSEAS_RULE_SOURCE_IDS = Object.freeze([
+    "OpenAI",
+    "Claude",
+    "Gemini",
+    "Copilot",
+    "GitHub",
+    "YouTube",
+    "Netflix",
+    "Disney",
+    "Spotify",
+    "GlobalMedia",
+    "Telegram",
+    "Facebook",
+    "Instagram",
+    "Twitter",
+    "TikTok",
+    "OverseasGame"
+  ]);
   var POLICY_TARGETS = Object.freeze({
     direct: "DIRECT",
     defaultProxy: "\u{1F680} \u8282\u70B9\u9009\u62E9",

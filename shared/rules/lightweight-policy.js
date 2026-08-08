@@ -27,6 +27,14 @@ export const ROUTING_PRECEDENCE = Object.freeze([
   "explicitOverseas", "overseasGame", "chinaIp", "defaultProxy",
 ]);
 
+// These services must use proxy-side DNS before the China-first catch-all.
+// Domestic/direct-first services intentionally stay out of this list.
+export const EXPLICIT_OVERSEAS_RULE_SOURCE_IDS = Object.freeze([
+  "OpenAI", "Claude", "Gemini", "Copilot", "GitHub",
+  "YouTube", "Netflix", "Disney", "Spotify", "GlobalMedia",
+  "Telegram", "Facebook", "Instagram", "Twitter", "TikTok", "OverseasGame",
+]);
+
 export const POLICY_TARGETS = Object.freeze({
   direct: "DIRECT",
   defaultProxy: "🚀 节点选择",

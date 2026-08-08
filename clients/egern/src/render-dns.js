@@ -1,5 +1,6 @@
 import { OPTION_VALUES } from "../../../shared/contracts.js";
 import { DOMESTIC_FALLBACK_DOMAIN_SUFFIXES } from "../../../shared/rules/domestic-fallback.js";
+import { EXPLICIT_OVERSEAS_RULE_SOURCE_IDS } from "../../../shared/rules/lightweight-policy.js";
 import { PUBLIC_RULE_ROOT } from "./options.js";
 
 const CHINA_DNS = Object.freeze({
@@ -51,6 +52,16 @@ function chinaRule(baseUrl) {
   };
 }
 
+function proxyRule(baseUrl, id) {
+  return {
+    proxy_rule_set: {
+      match: `${baseUrl}/egern/rules/${id}.yaml`,
+      value: "global",
+      update_interval: 86400,
+    },
+  };
+}
+
 function domesticFallbackRules(value = "china") {
   return DOMESTIC_FALLBACK_DOMAIN_SUFFIXES.map((match) => ({
     domain_suffix: { match, value },
@@ -74,10 +85,13 @@ export function renderEgernDns(options) {
   let forward;
   if (dnsMode === "privacy") {
     forward = [wildcard("global")];
-  } else if (dnsMode === "speed") {
-    forward = [...domesticFallbackRules(), chinaRule(baseUrl), wildcard("system")];
   } else {
-    forward = [...domesticFallbackRules(), chinaRule(baseUrl), wildcard("global")];
+    forward = [
+      ...EXPLICIT_OVERSEAS_RULE_SOURCE_IDS.map((id) => proxyRule(baseUrl, id)),
+      ...domesticFallbackRules(),
+      chinaRule(baseUrl),
+      wildcard("china"),
+    ];
   }
 
   return {

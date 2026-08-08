@@ -33,17 +33,96 @@ dns:
     global:
       - "https://cloudflare-dns.com/dns-query"
   forward:
+    - proxy_rule_set:
+        match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/OpenAI.yaml"
+        value: "global"
+        update_interval: 86400
+    - proxy_rule_set:
+        match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/Claude.yaml"
+        value: "global"
+        update_interval: 86400
+    - proxy_rule_set:
+        match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/Gemini.yaml"
+        value: "global"
+        update_interval: 86400
+    - proxy_rule_set:
+        match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/Copilot.yaml"
+        value: "global"
+        update_interval: 86400
+    - proxy_rule_set:
+        match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/GitHub.yaml"
+        value: "global"
+        update_interval: 86400
+    - proxy_rule_set:
+        match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/YouTube.yaml"
+        value: "global"
+        update_interval: 86400
+    - proxy_rule_set:
+        match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/Netflix.yaml"
+        value: "global"
+        update_interval: 86400
+    - proxy_rule_set:
+        match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/Disney.yaml"
+        value: "global"
+        update_interval: 86400
+    - proxy_rule_set:
+        match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/Spotify.yaml"
+        value: "global"
+        update_interval: 86400
+    - proxy_rule_set:
+        match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/GlobalMedia.yaml"
+        value: "global"
+        update_interval: 86400
+    - proxy_rule_set:
+        match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/Telegram.yaml"
+        value: "global"
+        update_interval: 86400
+    - proxy_rule_set:
+        match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/Facebook.yaml"
+        value: "global"
+        update_interval: 86400
+    - proxy_rule_set:
+        match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/Instagram.yaml"
+        value: "global"
+        update_interval: 86400
+    - proxy_rule_set:
+        match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/Twitter.yaml"
+        value: "global"
+        update_interval: 86400
+    - proxy_rule_set:
+        match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/TikTok.yaml"
+        value: "global"
+        update_interval: 86400
+    - proxy_rule_set:
+        match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/OverseasGame.yaml"
+        value: "global"
+        update_interval: 86400
     - domain_suffix:
         match: "bilibili.com"
         value: "china"
     - domain_suffix:
+        match: "bilibili.net"
+        value: "china"
+    - domain_suffix:
+        match: "bilibili.tv"
+        value: "china"
+    - domain_suffix:
+        match: "bilibili.cc"
+        value: "china"
+    - domain_suffix:
         match: "bilivideo.com"
+        value: "china"
+    - domain_suffix:
+        match: "bilivideo.net"
         value: "china"
     - domain_suffix:
         match: "biliapi.com"
         value: "china"
     - domain_suffix:
         match: "hdslb.com"
+        value: "china"
+    - domain_suffix:
+        match: "hdslb.org"
         value: "china"
     - domain_suffix:
         match: "douyin.com"
@@ -100,10 +179,16 @@ dns:
         match: "gtimg.cn"
         value: "china"
     - domain_suffix:
+        match: "gtimg.com"
+        value: "china"
+    - domain_suffix:
         match: "wechat.com"
         value: "china"
     - domain_suffix:
         match: "iqiyi.com"
+        value: "china"
+    - domain_suffix:
+        match: "iqiyipic.com"
         value: "china"
     - domain_suffix:
         match: "qiyi.com"
@@ -116,6 +201,12 @@ dns:
         value: "china"
     - domain_suffix:
         match: "tudou.com"
+        value: "china"
+    - domain_suffix:
+        match: "tudouui.com"
+        value: "china"
+    - domain_suffix:
+        match: "ykimg.com"
         value: "china"
     - domain_suffix:
         match: "mgtv.com"
@@ -171,13 +262,43 @@ dns:
     - domain_suffix:
         match: "autonavi.com"
         value: "china"
+    - domain_suffix:
+        match: "wmpvp.com"
+        value: "china"
+    - domain_suffix:
+        match: "bytehwm.com"
+        value: "china"
+    - domain_suffix:
+        match: "rtbasia.com"
+        value: "china"
+    - domain_suffix:
+        match: "sandbox.itunes.apple.com"
+        value: "china"
+    - domain_suffix:
+        match: "douyu.com"
+        value: "china"
+    - domain_suffix:
+        match: "douyu.tv"
+        value: "china"
+    - domain_suffix:
+        match: "douyutv.com"
+        value: "china"
+    - domain_suffix:
+        match: "douyuscdn.com"
+        value: "china"
+    - domain_suffix:
+        match: "douyucdn.cn"
+        value: "china"
+    - domain_suffix:
+        match: "huya.com"
+        value: "china"
     - proxy_rule_set:
         match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/DomesticCore.yaml"
         value: "china"
         update_interval: 86400
     - domain_wildcard:
         match: "*"
-        value: "global"
+        value: "china"
   proxy_nameservers:
     - "system"
 policy_groups:
