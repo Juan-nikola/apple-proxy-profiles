@@ -1,7 +1,11 @@
 import { createHash } from "node:crypto";
 
 import { RULE_SOURCE_CATALOG, UPSTREAM_RULE_SOURCE_CATALOG } from "../../shared/rules/catalog.js";
-import { FULL_ADBLOCK_SOURCE_IDS } from "../../shared/rules/lightweight-policy.js";
+import {
+  FULL_ADBLOCK_SOURCE_IDS,
+  ROUTING_PHASES,
+  ruleClientCatalog,
+} from "../../shared/rules/lightweight-policy.js";
 
 export const BLACKMATRIX7_BASELINE = Object.freeze({
   repository: "https://github.com/blackmatrix7/ios_rule_script",
@@ -25,6 +29,10 @@ const DIRECT_IDS = new Set([
 ]);
 const SAFE_SEGMENT = /^[A-Za-z0-9_]+$/u;
 const SAFE_PATH_SEGMENT = /^[A-Za-z0-9_]+(?:\.list)?$/u;
+const ROUTING_METADATA_BY_ID = new Map(ruleClientCatalog({ adblockMode: "full" }).map((source) => (
+  [source.id, Object.freeze({ phase: source.phase, dnsClass: source.dnsClass })]
+)));
+const LEGAL_DNS_CLASSES = new Set([...ROUTING_METADATA_BY_ID.values()].map(({ dnsClass }) => dnsClass));
 
 const CHINA_IPS_SOURCE = Object.freeze({
   id: "ChinaIPs",
@@ -43,8 +51,17 @@ function safePath(path, prefix) {
   return path;
 }
 
+function withRoutingMetadata(source) {
+  const metadata = ROUTING_METADATA_BY_ID.get(source.id);
+  return metadata ? { ...source, phase: source.phase ?? metadata.phase, dnsClass: source.dnsClass ?? metadata.dnsClass } : source;
+}
+
 function sourceRecord(source, index, { compiled = false } = {}) {
   if (!SAFE_SEGMENT.test(source.id)) throw new TypeError(`Rule source ID is unsafe: ${source.id}`);
+  if ((source.phase !== undefined || source.dnsClass !== undefined)
+    && (!ROUTING_PHASES.includes(source.phase) || !LEGAL_DNS_CLASSES.has(source.dnsClass))) {
+    throw new TypeError(`Rule source ${source.id} has invalid routing metadata`);
+  }
   const directory = DOMAIN_SET_DIRECTORIES[source.id] ?? source.id;
   const familyId = source.id === "Advertising_Domain" ? "Advertising" : source.id;
   const componentId = source.id.endsWith("_Domain") ? "domains" : "rules";
@@ -61,6 +78,8 @@ function sourceRecord(source, index, { compiled = false } = {}) {
     compiled ? "compiled/Surge/" : "rule/Surge/"),
     inputFormat: source.inputFormat,
     policy: source.policy,
+    phase: source.phase,
+    dnsClass: source.dnsClass,
     routing,
     intendedTarget: routing === 2 ? "reject" : routing === 1 ? "direct" : source.policy,
     minEntries: source.minEntries,
@@ -73,7 +92,9 @@ function sourceRecord(source, index, { compiled = false } = {}) {
 
 /** Immutable upstream inputs required by the lightweight compiler. */
 export const FETCH_SOURCE_CATALOG = Object.freeze(
-  [...UPSTREAM_RULE_SOURCE_CATALOG, CHINA_IPS_SOURCE].map((source, index) => sourceRecord(source, index)),
+  [...UPSTREAM_RULE_SOURCE_CATALOG, CHINA_IPS_SOURCE]
+    .map(withRoutingMetadata)
+    .map((source, index) => sourceRecord(source, index)),
 );
 
 /**
@@ -85,7 +106,9 @@ export const PUBLISH_SOURCE_CATALOG = FETCH_SOURCE_CATALOG;
 
 /** Client-visible default outputs after compilation. */
 export const DEFAULT_PUBLISH_SOURCE_CATALOG = Object.freeze(
-  RULE_SOURCE_CATALOG.map((source, index) => sourceRecord(source, index, { compiled: true })),
+  RULE_SOURCE_CATALOG
+    .map(withRoutingMetadata)
+    .map((source, index) => sourceRecord(source, index, { compiled: true })),
 );
 
 export const OPTIONAL_PUBLISH_SOURCE_CATALOGS = Object.freeze({

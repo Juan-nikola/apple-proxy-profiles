@@ -22,17 +22,17 @@
       "sha256": "fe32154af63a77a6bff8a1aa0aae6b7f42c8dfa3206601bdfa6cb42492873082"
     },
     {
-      "bytes": 4880,
+      "bytes": 5425,
       "path": "optional/adblock-full/anywhere/import.html",
-      "sha256": "85ea91f5997b22c5fab77940d6d52938d199ade9b00aa0ced241709c371323bf"
+      "sha256": "0fe9728e809d752d0bc81d3c30f96bc66c62bfcd4350c2a9fec9eb4257366969"
     },
     {
-      "bytes": 5944,
+      "bytes": 6050,
       "path": "optional/adblock-full/anywhere/manifest.json",
-      "sha256": "f68e8b896d027619256911a66113f8b6d0125b790d39e1f38f3f87cd2bbf52b1"
+      "sha256": "5b4072764c34b47d7687e6b9cb777c050dafc5302b16eb0945320fa9072b4487"
     }
   ],
   "generatedAt": "2026-08-01T19:07:21Z",
-  "manifestHash": "109559e99ca5d60300c03cdf5da86b2894589ed3be8c5629b29e8857e137bf08",
+  "manifestHash": "06a0a3e1e685251627041152d826e3c7fcdd01e182b9a78858ec82e000e80f39",
   "schemaVersion": 1
 }

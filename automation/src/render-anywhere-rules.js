@@ -210,6 +210,8 @@ export function buildAnywhereRuleSnapshot({
       canonicalPath: source.canonicalPath,
       inputFormat: source.inputFormat,
       policy: source.policy,
+      phase: source.phase,
+      dnsClass: source.dnsClass,
       intendedTarget: source.intendedTarget,
       routing: source.routing,
       minEntries: source.minEntries,

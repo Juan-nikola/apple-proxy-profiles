@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { RULE_SOURCE_CATALOG } from "../../shared/rules/catalog.js";
+import { ROUTING_PHASES } from "../../shared/rules/lightweight-policy.js";
 import {
   BLACKMATRIX7_BASELINE,
   DEFAULT_PUBLISH_SOURCE_CATALOG,
@@ -64,6 +65,7 @@ test("marks compiler-only and optional inputs without removing their pinned fetc
 });
 
 test("uses explicit traversal-free Surge paths and deterministic routing", () => {
+  const legalDnsClasses = new Set(["china", "none", "proxy"]);
   for (const source of PUBLISH_SOURCE_CATALOG) {
     assert.match(source.canonicalPath, /^rule\/Surge\/[A-Za-z0-9_]+\/[A-Za-z0-9_]+\.list$/u);
     assert.equal(source.canonicalPath.includes(".."), false);
@@ -73,10 +75,22 @@ test("uses explicit traversal-free Surge paths and deterministic routing", () =>
   for (const source of DEFAULT_PUBLISH_SOURCE_CATALOG) {
     assert.match(source.canonicalPath, /^compiled\/Surge\/[A-Za-z0-9_]+\/[A-Za-z0-9_]+\.list$/u);
     assert.equal(source.canonicalPath.includes(".."), false);
+    assert.ok(ROUTING_PHASES.includes(source.phase), `${source.id} has a legal routing phase`);
+    assert.ok(legalDnsClasses.has(source.dnsClass), `${source.id} has a legal DNS class`);
   }
   assert.equal(PUBLISH_SOURCE_CATALOG.some(({ id }) => id === "AdvertisingLite"), false);
   assert.equal(PUBLISH_SOURCE_CATALOG.findIndex(({ id }) => id === "ChinaMax_Domain")
     < PUBLISH_SOURCE_CATALOG.findIndex(({ id }) => id === "ChinaMax"), true);
+  const chinaTld = DEFAULT_PUBLISH_SOURCE_CATALOG.find(({ id }) => id === "ChinaTLD");
+  assert.deepEqual({
+    phase: chinaTld.phase,
+    dnsClass: chinaTld.dnsClass,
+    routing: chinaTld.routing,
+  }, {
+    phase: "lateDomestic",
+    dnsClass: "china",
+    routing: 1,
+  });
 });
 
 test("pins immutable provenance and raw URLs", () => {

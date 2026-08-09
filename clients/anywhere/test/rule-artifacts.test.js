@@ -56,6 +56,22 @@ test("pins the schema-v2 lightweight topology without legacy giant default shard
   assert.equal(manifest.sources.find(({ id }) => id === "DomesticGame").routing, 1);
   assert.equal(manifest.sources.find(({ id }) => id === "OverseasGame").routing, 0);
   assert.equal(manifest.sources.find(({ id }) => id === "ChinaIP").routing, 1);
+  const chinaTld = manifest.sources.find(({ id }) => id === "ChinaTLD");
+  assert.ok(chinaTld, "ChinaTLD must be published");
+  assert.deepEqual({
+    phase: chinaTld.phase,
+    dnsClass: chinaTld.dnsClass,
+    routing: chinaTld.routing,
+  }, {
+    phase: "lateDomestic",
+    dnsClass: "china",
+    routing: 1,
+  });
+  assert.ok(manifest.sources.findIndex(({ id }) => id === "OverseasGame")
+    < manifest.sources.findIndex(({ id }) => id === "ChinaTLD"));
+  assert.ok(manifest.sources.findIndex(({ id }) => id === "ChinaTLD")
+    < manifest.sources.findIndex(({ id }) => id === "ChinaIP"));
+  assert.equal(chinaTld.shardIds.length, 1);
 });
 
 test("round-trips every shard with the pinned Swift-equivalent parser", async () => {

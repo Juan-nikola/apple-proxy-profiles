@@ -1,5 +1,5 @@
 {
-  "catalogSha256": "cc344d6fa89e121e8f355aa3e7e9f7eb7cce8b75ed35f7b1654173eac8ef91ee",
+  "catalogSha256": "0439d782b0dde926844315fd0f23d03c3c31f94c64d337749889e9f3925ada57",
   "clientCompatibility": {
     "commit": "e15518fde1f5d2652dfc1c234c89a68b87cecec0",
     "repository": "https://github.com/NodePassProject/Anywhere"
@@ -22,7 +22,7 @@
       ]
     }
   ],
-  "manifestSha256": "39198c1d98bc4794cf3b8c958f1141022838b3ae9911b401f0575128a6111b32",
+  "manifestSha256": "ac6efdc01b804ba733a1043536da44c3e9ab322a533e4f526b75e45ac25bc8e7",
   "schemaVersion": 1,
   "shards": [
     {
@@ -102,6 +102,7 @@
         "unresolved": 0,
         "unsupported": 0
       },
+      "dnsClass": "none",
       "familyId": "Advertising",
       "id": "Advertising",
       "ignoredModifiers": {
@@ -111,6 +112,7 @@
       "intendedTarget": "reject",
       "minEntries": 0,
       "order": 3,
+      "phase": "security",
       "policy": "🧱 常见广告",
       "priority": 30,
       "routing": 2,
@@ -134,6 +136,7 @@
         "unresolved": 0,
         "unsupported": 16448
       },
+      "dnsClass": "none",
       "familyId": "Advertising",
       "id": "Advertising_Domain",
       "ignoredModifiers": {
@@ -143,6 +146,7 @@
       "intendedTarget": "reject",
       "minEntries": 0,
       "order": 4,
+      "phase": "security",
       "policy": "🧱 常见广告",
       "priority": 40,
       "routing": 2,

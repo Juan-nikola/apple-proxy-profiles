@@ -7,18 +7,27 @@
   <title>Anywhere 完整广告包（可选）</title>
   <style>
     body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;max-width:900px;margin:0 auto;padding:24px;line-height:1.6;color:#172033;background:#f6f8fb}
-    main{background:white;padding:28px;border-radius:18px;box-shadow:0 8px 30px #24324a18}h1{margin-top:0}.warning{padding:14px 18px;background:#fff4d6;border-left:4px solid #d98b00}.button{display:inline-block;padding:9px 14px;margin:5px 0;border-radius:10px;background:#315efb;color:white;text-decoration:none}code{word-break:break-all}li{margin:7px 0}
+    main{background:white;padding:28px;border-radius:18px;box-shadow:0 8px 30px #24324a18}h1{margin-top:0}.warning{padding:14px 18px;background:#fff4d6;border-left:4px solid #d98b00}.button{display:inline-block;padding:9px 14px;margin:5px 0;border-radius:10px;background:#315efb;color:white;text-decoration:none}code{word-break:break-all}li{margin:7px 0}table{width:100%;border-collapse:collapse}th,td{padding:7px;text-align:left;border-bottom:1px solid #d8deea}
   </style>
 </head>
 <body>
 <main>
   <h1>Anywhere 完整广告包（可选）</h1>
   <p>固定 Blackmatrix7 提交：<code>dab47069a30c4ae70f7f5f4c919d639d9aaf79dc</code></p>
-  <p>生成时间（上游提交时间）：<code>2026-08-01T19:07:21Z</code>；Manifest：<code>39198c1d98bc4794cf3b8c958f1141022838b3ae9911b401f0575128a6111b32</code></p>
+  <p>生成时间（上游提交时间）：<code>2026-08-01T19:07:21Z</code>；Manifest：<code>ac6efdc01b804ba733a1043536da44c3e9ab322a533e4f526b75e45ac25bc8e7</code></p>
   <p>共处理 2 个上游来源，生成 4 个分片、246908 条可导入规则，分为 1 个批次。</p>
 
   <div class="warning"><strong>可选高内存包：</strong>本页只导入 <code>Advertising</code> 与 <code>Advertising_Domain</code>，路由目标均为 <strong>REJECT</strong>。完整广告分类体积很大，启用后可能使内存占用显著增长；仅在设备实测有余量时启用。</div>
   <div class="warning"><strong>导入前须知：</strong>Anywhere 的 Default 不是可靠的“停用”开关。请先用测试设备导入，随后在 App 内逐个确认 DIRECT、REJECT 或目标节点/链；节点订阅、规则文件和本地设置是三层独立配置。导入公开规则不需要 HTTPS 解密/MITM，请保持它关闭。</div>
+  <h2>路由分配表</h2>
+  <p class="warning">同一来源的每个分片必须使用同一个路由分配；导入后请逐项确认。</p>
+  <table>
+    <thead><tr><th>来源 ID | 阶段 | 目标 | 分片数</th></tr></thead>
+    <tbody>
+      <tr><td><code>Advertising | security | REJECT | 1 shard(s)</code></td></tr>
+      <tr><td><code>Advertising_Domain | security | REJECT | 3 shard(s)</code></td></tr>
+    </tbody>
+  </table>
   <h2>一键导入全部规则</h2>
   <p>一次打开 Anywhere 的确认页，导入全部 4 个规则分片；导入后仍是独立规则集。</p>
   <p><a class="button" href="anywhere://add-rule-set?link=https%3A%2F%2Fjuan-nikola.github.io%2Fapple-proxy-profiles%2Foptional%2Fadblock-full%2Fcurrent%2Fanywhere%2FAdvertising-001.arrs&amp;link=https%3A%2F%2Fjuan-nikola.github.io%2Fapple-proxy-profiles%2Foptional%2Fadblock-full%2Fcurrent%2Fanywhere%2FAdvertising_Domain-001.arrs&amp;link=https%3A%2F%2Fjuan-nikola.github.io%2Fapple-proxy-profiles%2Foptional%2Fadblock-full%2Fcurrent%2Fanywhere%2FAdvertising_Domain-002.arrs&amp;link=https%3A%2F%2Fjuan-nikola.github.io%2Fapple-proxy-profiles%2Foptional%2Fadblock-full%2Fcurrent%2Fanywhere%2FAdvertising_Domain-003.arrs">全部导入 4 个规则分片</a></p>

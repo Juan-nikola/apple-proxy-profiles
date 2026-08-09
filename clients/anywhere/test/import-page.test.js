@@ -57,6 +57,24 @@ test("rejects insecure, credentialed, query-bearing, duplicate, and oversized li
 test("renders a static escaped no-script page with manual fallbacks", () => {
   const input = urls(4);
   const batches = buildImportBatches(input);
+  const sources = [
+    {
+      id: "ChinaIP", order: 4, phase: "resolvedChinaIp", dnsClass: "none",
+      intendedTarget: "direct", routing: 1, shardIds: ["Rule-004"],
+    },
+    {
+      id: "OverseasGame", order: 2, phase: "overseasGame", dnsClass: "proxy",
+      intendedTarget: "<Proxy & chain>", routing: 0, shardIds: ["Rule-002"],
+    },
+    {
+      id: "ChinaTLD", order: 3, phase: "lateDomestic", dnsClass: "china",
+      intendedTarget: "direct", routing: 1, shardIds: ["Rule-003"],
+    },
+    {
+      id: "DomesticCore", order: 1, phase: "earlyDomestic", dnsClass: "china",
+      intendedTarget: "direct", routing: 1, shardIds: ["Rule-001"],
+    },
+  ];
   const html = renderImportPage(batches, {
     upstream: { commit: "d".repeat(40) },
     generatedAt: "2026-08-01T19:07:21Z",
@@ -70,11 +88,21 @@ test("renders a static escaped no-script page with manual fallbacks", () => {
       Game: ["DomesticGame", "OverseasGame"],
     },
     optionalPacks: { "adblock-full": "../../optional/adblock-full/manifest.json" },
+    sources,
   });
   assert.match(html, /<!doctype html>/u);
   assert.match(html, /Default 不是可靠的“停用”开关/u);
   assert.match(html, /Privacy/u);
   assert.match(html, /HTTPS 解密\/MITM/u);
+  assert.match(html, /每个分片[\s\S]*同一[\s\S]*分配/u);
+  assert.match(html, /ChinaTLD[\s\S]*lateDomestic[\s\S]*DIRECT[\s\S]*1 shard\(s\)/u);
+  assert.match(html, /ChinaTLD \| lateDomestic \| DIRECT \| 1 shard\(s\)/u);
+  assert.match(html, /&lt;Proxy &amp; chain&gt;/u);
+  assert.equal(html.includes("<Proxy & chain>"), false);
+  assert.ok(html.indexOf("DomesticCore") < html.indexOf("OverseasGame"));
+  assert.ok(html.indexOf("OverseasGame") < html.indexOf("ChinaTLD"));
+  assert.ok(html.indexOf("ChinaTLD") < html.indexOf("ChinaIP"));
+  for (const { id } of sources) assert.ok(html.includes(id), id);
   assert.equal(html.includes("<script"), false);
   for (const id of ["Advertising", "Advertising_Domain", "ChinaMax_Domain", "Game"]) {
     assert.match(html, new RegExp(id, "u"));
@@ -94,8 +122,14 @@ test("renders a separate full-adblock import page that only imports REJECT adver
     manifestSha256: "a".repeat(64),
     totals: { sourceCount: 2, shardCount: 2, outputCount: 2 },
     sources: [
-      { id: "Advertising", routing: 2 },
-      { id: "Advertising_Domain", routing: 2 },
+      {
+        id: "Advertising", order: 1, phase: "security", dnsClass: "none",
+        intendedTarget: "reject", routing: 2, shardIds: ["Advertising-001"],
+      },
+      {
+        id: "Advertising_Domain", order: 2, phase: "security", dnsClass: "none",
+        intendedTarget: "reject", routing: 2, shardIds: ["Advertising_Domain-001"],
+      },
     ],
     shards: input.map((url, index) => ({
       sourceId: index === 0 ? "Advertising" : "Advertising_Domain",
@@ -104,6 +138,8 @@ test("renders a separate full-adblock import page that only imports REJECT adver
   };
   const html = renderImportPage(buildImportBatches(input), manifest, { mode: "adblock-full" });
   assert.match(html, /REJECT/u);
+  assert.match(html, /Advertising[\s\S]*security[\s\S]*REJECT[\s\S]*1 shard\(s\)/u);
+  assert.match(html, /Advertising \| security \| REJECT \| 1 shard\(s\)/u);
   assert.match(html, /内存/u);
   assert.match(html, /显著|大幅|明显/u);
   assert.doesNotMatch(html, /DomesticCore|DomesticGame|OverseasGame|ChinaIP/u);
@@ -134,6 +170,32 @@ test("tracked lightweight import page closes over every schema-v2 manifest shard
     ChinaMax_Domain: ["DomesticCore"],
     Game: ["DomesticGame", "OverseasGame"],
   });
+  assert.match(actual, /ChinaTLD[\s\S]*lateDomestic[\s\S]*DIRECT[\s\S]*1 shard\(s\)/u);
+  assert.match(actual, /每个分片[\s\S]*同一[\s\S]*分配/u);
+});
+
+test("rejects invalid source assignment metadata instead of rendering untrusted rows", () => {
+  const input = urls(1);
+  const manifest = {
+    upstream: { commit: "d".repeat(40) },
+    generatedAt: "2026-08-01T19:07:21Z",
+    manifestSha256: "a".repeat(64),
+    totals: { sourceCount: 1, shardCount: 1, outputCount: 1 },
+    sources: [{
+      id: "ChinaTLD", order: 1, phase: "lateDomestic", dnsClass: "china",
+      intendedTarget: "direct", routing: 1, shardIds: ["Rule-001"],
+    }],
+    shards: [{ url: input[0] }],
+  };
+  const batches = buildImportBatches(input);
+  for (const source of [
+    { ...manifest.sources[0], phase: "unknown" },
+    { ...manifest.sources[0], dnsClass: "system" },
+    { ...manifest.sources[0], order: 0 },
+    { ...manifest.sources[0], shardIds: "Rule-001" },
+  ]) {
+    assert.throws(() => renderImportPage(batches, { ...manifest, sources: [source] }), /sources/u);
+  }
 });
 
 test("rendering rejects omitted shards and attacker-controlled deep links", () => {
@@ -143,6 +205,16 @@ test("rendering rejects omitted shards and attacker-controlled deep links", () =
     generatedAt: "2026-08-01T19:07:21Z",
     manifestSha256: "a".repeat(64),
     totals: { sourceCount: 2, shardCount: 2, outputCount: 2 },
+    sources: [
+      {
+        id: "DomesticCore", order: 1, phase: "earlyDomestic", dnsClass: "china",
+        intendedTarget: "direct", routing: 1, shardIds: ["Rule-001"],
+      },
+      {
+        id: "ChinaIP", order: 2, phase: "resolvedChinaIp", dnsClass: "none",
+        intendedTarget: "direct", routing: 1, shardIds: ["Rule-002"],
+      },
+    ],
     shards: input.map((url) => ({ url })),
   };
   const batches = buildImportBatches(input);

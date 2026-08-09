@@ -1,7 +1,11 @@
 import { ANYWHERE_LIGHTWEIGHT_MIGRATION } from "./shard-rules.js";
+import { ROUTING_PHASES } from "../../../shared/rules/lightweight-policy.js";
 
 const DEEP_LINK_BASE = "anywhere://add-rule-set";
 const ADVERTISING_IDS = new Set(["Advertising", "Advertising_Domain"]);
+const DNS_CLASSES = new Set(["china", "none", "proxy"]);
+const SOURCE_ID = /^[A-Za-z0-9_]+$/u;
+const SHARD_ID = /^[A-Za-z0-9_-]+$/u;
 
 function validateRuleUrl(value) {
   if (typeof value !== "string" || /[\s\\?#]/u.test(value)) {
@@ -78,6 +82,44 @@ function escapeHtml(value) {
     .replaceAll("'", "&#39;");
 }
 
+function validateAssignmentSources(manifest) {
+  if (!Array.isArray(manifest.sources)
+    || manifest.sources.length !== manifest.totals.sourceCount) {
+    throw new TypeError("Anywhere manifest sources must match the source total");
+  }
+  const ids = new Set();
+  const orders = new Set();
+  const shardIds = new Set();
+  for (const source of manifest.sources) {
+    if (!source
+      || typeof source !== "object"
+      || !SOURCE_ID.test(source.id)
+      || ids.has(source.id)
+      || !Number.isSafeInteger(source.order)
+      || source.order < 1
+      || orders.has(source.order)
+      || !ROUTING_PHASES.includes(source.phase)
+      || !DNS_CLASSES.has(source.dnsClass)
+      || typeof source.intendedTarget !== "string"
+      || source.intendedTarget.length === 0
+      || ![0, 1, 2].includes(source.routing)
+      || !Array.isArray(source.shardIds)
+      || source.shardIds.some((id) => !SHARD_ID.test(id) || shardIds.has(id))) {
+      throw new TypeError("Anywhere manifest sources contain invalid assignment metadata");
+    }
+    ids.add(source.id);
+    orders.add(source.order);
+    for (const id of source.shardIds) shardIds.add(id);
+  }
+  return [...manifest.sources].sort((left, right) => left.order - right.order);
+}
+
+function assignmentTarget({ intendedTarget, routing }) {
+  if (routing === 1) return "DIRECT";
+  if (routing === 2) return "REJECT";
+  return intendedTarget;
+}
+
 function validatePageMode(mode, manifest) {
   if (mode !== "default" && mode !== "adblock-full") {
     throw new TypeError("Anywhere import page mode must be default or adblock-full");
@@ -117,6 +159,7 @@ export function renderImportPage(batches, manifest, { mode = "default" } = {}) {
     throw new TypeError("Anywhere rule manifest totals are invalid");
   }
   validatePageMode(mode, manifest);
+  const assignmentSources = validateAssignmentSources(manifest);
   const expectedUrls = manifest.shards.map(({ url }) => validateRuleUrl(url));
   const actualUrls = batches.flatMap(({ urls }) => urls.map(validateRuleUrl));
   if (JSON.stringify(actualUrls) !== JSON.stringify(expectedUrls)) {
@@ -136,6 +179,10 @@ export function renderImportPage(batches, manifest, { mode = "default" } = {}) {
   )).join("\n");
   const manual = checkedBatches.flatMap(({ urls }) => urls).map((url) => (
     `      <li><a href="${escapeHtml(url)}">${escapeHtml(url)}</a></li>`
+  )).join("\n");
+  const assignmentRows = assignmentSources.map((source) => (
+    `      <tr><td><code>${escapeHtml(source.id)} | ${escapeHtml(source.phase)} | `
+    + `${escapeHtml(assignmentTarget(source))} | ${escapeHtml(source.shardIds.length)} shard(s)</code></td></tr>`
   )).join("\n");
   const privacy = manifest.sources?.find?.(({ id }) => id === "Privacy");
   const privacyNote = privacy
@@ -159,7 +206,7 @@ export function renderImportPage(batches, manifest, { mode = "default" } = {}) {
   <title>${title}</title>
   <style>
     body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;max-width:900px;margin:0 auto;padding:24px;line-height:1.6;color:#172033;background:#f6f8fb}
-    main{background:white;padding:28px;border-radius:18px;box-shadow:0 8px 30px #24324a18}h1{margin-top:0}.warning{padding:14px 18px;background:#fff4d6;border-left:4px solid #d98b00}.button{display:inline-block;padding:9px 14px;margin:5px 0;border-radius:10px;background:#315efb;color:white;text-decoration:none}code{word-break:break-all}li{margin:7px 0}
+    main{background:white;padding:28px;border-radius:18px;box-shadow:0 8px 30px #24324a18}h1{margin-top:0}.warning{padding:14px 18px;background:#fff4d6;border-left:4px solid #d98b00}.button{display:inline-block;padding:9px 14px;margin:5px 0;border-radius:10px;background:#315efb;color:white;text-decoration:none}code{word-break:break-all}li{margin:7px 0}table{width:100%;border-collapse:collapse}th,td{padding:7px;text-align:left;border-bottom:1px solid #d8deea}
   </style>
 </head>
 <body>
@@ -170,6 +217,14 @@ export function renderImportPage(batches, manifest, { mode = "default" } = {}) {
   <p>共处理 ${escapeHtml(manifest.totals.sourceCount)} 个上游来源，生成 ${escapeHtml(manifest.totals.shardCount)} 个分片、${escapeHtml(manifest.totals.outputCount)} 条可导入规则，分为 ${escapeHtml(checkedBatches.length)} 个批次。</p>
 ${migrationNotice}${packNotice}
   <div class="warning"><strong>导入前须知：</strong>Anywhere 的 Default 不是可靠的“停用”开关。请先用测试设备导入，随后在 App 内逐个确认 DIRECT、REJECT 或目标节点/链；节点订阅、规则文件和本地设置是三层独立配置。导入公开规则不需要 HTTPS 解密/MITM，请保持它关闭。</div>
+  <h2>路由分配表</h2>
+  <p class="warning">同一来源的每个分片必须使用同一个路由分配；导入后请逐项确认。</p>
+  <table>
+    <thead><tr><th>来源 ID | 阶段 | 目标 | 分片数</th></tr></thead>
+    <tbody>
+${assignmentRows}
+    </tbody>
+  </table>
   <h2>一键导入全部规则</h2>
   <p>一次打开 Anywhere 的确认页，导入全部 ${escapeHtml(expectedUrls.length)} 个规则分片；导入后仍是独立规则集。</p>
   <p><a class="button" href="${escapeHtml(allDeepLink)}">全部导入 ${escapeHtml(expectedUrls.length)} 个规则分片</a></p>

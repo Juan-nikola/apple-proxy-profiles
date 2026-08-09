@@ -1,5 +1,5 @@
 {
-  "catalogSha256": "5a29cd20b4a7a85cd7e1be15e297de41a62bacf7b5bcf91447674287328d06b0",
+  "catalogSha256": "75f5506a7a785280e4f846b36aacdf524c24cb0e74707c4506c1d8a9e932aa32",
   "clientCompatibility": {
     "commit": "e15518fde1f5d2652dfc1c234c89a68b87cecec0",
     "repository": "https://github.com/NodePassProject/Anywhere"
@@ -40,6 +40,13 @@
       "required": true,
       "sourceIds": [
         "DomesticGame"
+      ]
+    },
+    {
+      "id": "SteamCN",
+      "required": true,
+      "sourceIds": [
+        "SteamCN"
       ]
     },
     {
@@ -190,20 +197,6 @@
       ]
     },
     {
-      "id": "SteamCN",
-      "required": true,
-      "sourceIds": [
-        "SteamCN"
-      ]
-    },
-    {
-      "id": "OverseasGame",
-      "required": true,
-      "sourceIds": [
-        "OverseasGame"
-      ]
-    },
-    {
       "id": "Download",
       "required": true,
       "sourceIds": [
@@ -218,6 +211,20 @@
       ]
     },
     {
+      "id": "OverseasGame",
+      "required": true,
+      "sourceIds": [
+        "OverseasGame"
+      ]
+    },
+    {
+      "id": "ChinaTLD",
+      "required": true,
+      "sourceIds": [
+        "ChinaTLD"
+      ]
+    },
+    {
       "id": "ChinaIP",
       "required": true,
       "sourceIds": [
@@ -225,7 +232,7 @@
       ]
     }
   ],
-  "manifestSha256": "c7d29d5748fb3687ed40d0c54c459e2aa43f301c6c1e2b57d790e5e33b32e548",
+  "manifestSha256": "65898652f72cb830a0b7851bc3c55f9997f604fca4b99c6c80084c87fb7adf38",
   "optionalPacks": {
     "adblock-full": "../../optional/adblock-full/manifest.json"
   },
@@ -324,6 +331,21 @@
       "sourceId": "DomesticGame",
       "total": 1,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/DomesticGame-001.arrs"
+    },
+    {
+      "countsByType": {
+        "domainSuffix": 5
+      },
+      "entryCount": 5,
+      "familyId": "SteamCN",
+      "id": "SteamCN-001",
+      "index": 1,
+      "name": "DIRECT · SteamCN",
+      "path": "anywhere/rules/SteamCN-001.arrs",
+      "sha256": "094cedabe1167e2669a064a33fe76c72c8eb2747d351ffccc0f7d63e35e26ee9",
+      "sourceId": "SteamCN",
+      "total": 1,
+      "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/SteamCN-001.arrs"
     },
     {
       "countsByType": {
@@ -670,38 +692,6 @@
     },
     {
       "countsByType": {
-        "domainSuffix": 5
-      },
-      "entryCount": 5,
-      "familyId": "SteamCN",
-      "id": "SteamCN-001",
-      "index": 1,
-      "name": "DIRECT · SteamCN",
-      "path": "anywhere/rules/SteamCN-001.arrs",
-      "sha256": "094cedabe1167e2669a064a33fe76c72c8eb2747d351ffccc0f7d63e35e26ee9",
-      "sourceId": "SteamCN",
-      "total": 1,
-      "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/SteamCN-001.arrs"
-    },
-    {
-      "countsByType": {
-        "domainKeyword": 4,
-        "domainSuffix": 472,
-        "ipv4Cidr": 42
-      },
-      "entryCount": 518,
-      "familyId": "OverseasGame",
-      "id": "OverseasGame-001",
-      "index": 1,
-      "name": "🌍 海外游戏 · OverseasGame",
-      "path": "anywhere/rules/OverseasGame-001.arrs",
-      "sha256": "c97455dd5acd06144bedd6d5efccf513451ad19bfeb6f21805134b563a586f9c",
-      "sourceId": "OverseasGame",
-      "total": 1,
-      "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/OverseasGame-001.arrs"
-    },
-    {
-      "countsByType": {
         "domainKeyword": 5,
         "domainSuffix": 1
       },
@@ -735,6 +725,38 @@
     },
     {
       "countsByType": {
+        "domainKeyword": 4,
+        "domainSuffix": 472,
+        "ipv4Cidr": 42
+      },
+      "entryCount": 518,
+      "familyId": "OverseasGame",
+      "id": "OverseasGame-001",
+      "index": 1,
+      "name": "🌍 海外游戏 · OverseasGame",
+      "path": "anywhere/rules/OverseasGame-001.arrs",
+      "sha256": "c97455dd5acd06144bedd6d5efccf513451ad19bfeb6f21805134b563a586f9c",
+      "sourceId": "OverseasGame",
+      "total": 1,
+      "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/OverseasGame-001.arrs"
+    },
+    {
+      "countsByType": {
+        "domainSuffix": 1
+      },
+      "entryCount": 1,
+      "familyId": "ChinaTLD",
+      "id": "ChinaTLD-001",
+      "index": 1,
+      "name": "DIRECT · ChinaTLD",
+      "path": "anywhere/rules/ChinaTLD-001.arrs",
+      "sha256": "6afd888be56ec6b81955879845905411aa98bcb4d444ab32af2546423e8e8b86",
+      "sourceId": "ChinaTLD",
+      "total": 1,
+      "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/ChinaTLD-001.arrs"
+    },
+    {
+      "countsByType": {
         "ipv4Cidr": 7088,
         "ipv6Cidr": 4141
       },
@@ -764,6 +786,7 @@
         "unresolved": 0,
         "unsupported": 1
       },
+      "dnsClass": "none",
       "familyId": "Hijacking",
       "id": "Hijacking",
       "ignoredModifiers": {
@@ -773,6 +796,7 @@
       "intendedTarget": "reject",
       "minEntries": 0,
       "order": 1,
+      "phase": "security",
       "policy": "REJECT",
       "priority": 10,
       "routing": 2,
@@ -798,6 +822,7 @@
         "unresolved": 0,
         "unsupported": 18
       },
+      "dnsClass": "none",
       "familyId": "BlockHttpDNS",
       "id": "BlockHttpDNS",
       "ignoredModifiers": {
@@ -807,6 +832,7 @@
       "intendedTarget": "reject",
       "minEntries": 0,
       "order": 2,
+      "phase": "security",
       "policy": "REJECT",
       "priority": 20,
       "routing": 2,
@@ -832,6 +858,7 @@
         "unresolved": 0,
         "unsupported": 0
       },
+      "dnsClass": "none",
       "familyId": "Privacy",
       "id": "Privacy",
       "ignoredModifiers": {
@@ -841,6 +868,7 @@
       "intendedTarget": "direct",
       "minEntries": 0,
       "order": 3,
+      "phase": "security",
       "policy": "🕵️ 严格跟踪",
       "priority": 30,
       "routing": 1,
@@ -864,6 +892,7 @@
         "unresolved": 0,
         "unsupported": 0
       },
+      "dnsClass": "china",
       "familyId": "DomesticCore",
       "id": "DomesticCore",
       "ignoredModifiers": {
@@ -873,6 +902,7 @@
       "intendedTarget": "direct",
       "minEntries": 0,
       "order": 4,
+      "phase": "earlyDomestic",
       "policy": "DIRECT",
       "priority": 40,
       "routing": 1,
@@ -896,6 +926,7 @@
         "unresolved": 0,
         "unsupported": 0
       },
+      "dnsClass": "china",
       "familyId": "DomesticGame",
       "id": "DomesticGame",
       "ignoredModifiers": {
@@ -905,6 +936,7 @@
       "intendedTarget": "direct",
       "minEntries": 0,
       "order": 5,
+      "phase": "earlyDomestic",
       "policy": "DIRECT",
       "priority": 50,
       "routing": 1,
@@ -914,6 +946,42 @@
       "sourceBytes": 1159,
       "sourceSha256": "0efe072e4d9b4e186d88a4627d795f0393b5c4e6ab9b4e487b11443c9298a3a2",
       "unsupportedByReason": {}
+    },
+    {
+      "canonicalPath": "compiled/Surge/SteamCN/SteamCN.list",
+      "componentId": "rules",
+      "counts": {
+        "candidate": 17,
+        "convertible": 5,
+        "duplicates": 0,
+        "output": 5,
+        "parsed": 17,
+        "shadowed": 0,
+        "unresolved": 0,
+        "unsupported": 12
+      },
+      "dnsClass": "china",
+      "familyId": "SteamCN",
+      "id": "SteamCN",
+      "ignoredModifiers": {
+        "noResolve": 0
+      },
+      "inputFormat": "RULE-SET",
+      "intendedTarget": "direct",
+      "minEntries": 0,
+      "order": 6,
+      "phase": "earlyDomestic",
+      "policy": "DIRECT",
+      "priority": 60,
+      "routing": 1,
+      "shardIds": [
+        "SteamCN-001"
+      ],
+      "sourceBytes": 492,
+      "sourceSha256": "e5541c7db5d9396a8be97205ac5a3742b318a391f39946c2a1c8239fb567fb15",
+      "unsupportedByReason": {
+        "unsupported-exact-domain": 12
+      }
     },
     {
       "canonicalPath": "compiled/Surge/BiliBili/BiliBili.list",
@@ -928,6 +996,7 @@
         "unresolved": 0,
         "unsupported": 53
       },
+      "dnsClass": "china",
       "familyId": "BiliBili",
       "id": "BiliBili",
       "ignoredModifiers": {
@@ -936,9 +1005,10 @@
       "inputFormat": "RULE-SET",
       "intendedTarget": "direct",
       "minEntries": 0,
-      "order": 6,
+      "order": 7,
+      "phase": "serviceIntent",
       "policy": "📺 哔哩哔哩",
-      "priority": 60,
+      "priority": 70,
       "routing": 1,
       "shardIds": [
         "BiliBili-001"
@@ -962,6 +1032,7 @@
         "unresolved": 0,
         "unsupported": 0
       },
+      "dnsClass": "china",
       "familyId": "ByteDance",
       "id": "ByteDance",
       "ignoredModifiers": {
@@ -970,9 +1041,10 @@
       "inputFormat": "RULE-SET",
       "intendedTarget": "direct",
       "minEntries": 0,
-      "order": 7,
+      "order": 8,
+      "phase": "serviceIntent",
       "policy": "🎵 抖音",
-      "priority": 70,
+      "priority": 80,
       "routing": 1,
       "shardIds": [
         "ByteDance-001"
@@ -994,6 +1066,7 @@
         "unresolved": 0,
         "unsupported": 0
       },
+      "dnsClass": "china",
       "familyId": "XiaoHongShu",
       "id": "XiaoHongShu",
       "ignoredModifiers": {
@@ -1002,9 +1075,10 @@
       "inputFormat": "RULE-SET",
       "intendedTarget": "direct",
       "minEntries": 0,
-      "order": 8,
+      "order": 9,
+      "phase": "serviceIntent",
       "policy": "📕 小红书",
-      "priority": 80,
+      "priority": 90,
       "routing": 1,
       "shardIds": [
         "XiaoHongShu-001"
@@ -1026,6 +1100,7 @@
         "unresolved": 0,
         "unsupported": 0
       },
+      "dnsClass": "china",
       "familyId": "Weibo",
       "id": "Weibo",
       "ignoredModifiers": {
@@ -1034,9 +1109,10 @@
       "inputFormat": "RULE-SET",
       "intendedTarget": "direct",
       "minEntries": 0,
-      "order": 9,
+      "order": 10,
+      "phase": "serviceIntent",
       "policy": "🧣 微博",
-      "priority": 90,
+      "priority": 100,
       "routing": 1,
       "shardIds": [
         "Weibo-001"
@@ -1058,6 +1134,7 @@
         "unresolved": 0,
         "unsupported": 7
       },
+      "dnsClass": "proxy",
       "familyId": "OpenAI",
       "id": "OpenAI",
       "ignoredModifiers": {
@@ -1066,9 +1143,10 @@
       "inputFormat": "RULE-SET",
       "intendedTarget": "🤖 AI 专用",
       "minEntries": 0,
-      "order": 10,
+      "order": 11,
+      "phase": "serviceIntent",
       "policy": "🤖 AI 专用",
-      "priority": 100,
+      "priority": 110,
       "routing": 0,
       "shardIds": [
         "OpenAI-001"
@@ -1092,6 +1170,7 @@
         "unresolved": 0,
         "unsupported": 1
       },
+      "dnsClass": "proxy",
       "familyId": "Claude",
       "id": "Claude",
       "ignoredModifiers": {
@@ -1100,9 +1179,10 @@
       "inputFormat": "RULE-SET",
       "intendedTarget": "🤖 AI 专用",
       "minEntries": 0,
-      "order": 11,
+      "order": 12,
+      "phase": "serviceIntent",
       "policy": "🤖 AI 专用",
-      "priority": 110,
+      "priority": 120,
       "routing": 0,
       "shardIds": [
         "Claude-001"
@@ -1126,6 +1206,7 @@
         "unresolved": 0,
         "unsupported": 3
       },
+      "dnsClass": "proxy",
       "familyId": "Gemini",
       "id": "Gemini",
       "ignoredModifiers": {
@@ -1134,9 +1215,10 @@
       "inputFormat": "RULE-SET",
       "intendedTarget": "🤖 AI 专用",
       "minEntries": 0,
-      "order": 12,
+      "order": 13,
+      "phase": "serviceIntent",
       "policy": "🤖 AI 专用",
-      "priority": 120,
+      "priority": 130,
       "routing": 0,
       "shardIds": [
         "Gemini-001"
@@ -1160,6 +1242,7 @@
         "unresolved": 0,
         "unsupported": 20
       },
+      "dnsClass": "proxy",
       "familyId": "Copilot",
       "id": "Copilot",
       "ignoredModifiers": {
@@ -1168,9 +1251,10 @@
       "inputFormat": "RULE-SET",
       "intendedTarget": "🤖 AI 专用",
       "minEntries": 0,
-      "order": 13,
+      "order": 14,
+      "phase": "serviceIntent",
       "policy": "🤖 AI 专用",
-      "priority": 130,
+      "priority": 140,
       "routing": 0,
       "shardIds": [
         "Copilot-001"
@@ -1194,6 +1278,7 @@
         "unresolved": 0,
         "unsupported": 0
       },
+      "dnsClass": "proxy",
       "familyId": "GitHub",
       "id": "GitHub",
       "ignoredModifiers": {
@@ -1202,9 +1287,10 @@
       "inputFormat": "RULE-SET",
       "intendedTarget": "🐙 GitHub",
       "minEntries": 0,
-      "order": 14,
+      "order": 15,
+      "phase": "serviceIntent",
       "policy": "🐙 GitHub",
-      "priority": 140,
+      "priority": 150,
       "routing": 0,
       "shardIds": [
         "GitHub-001"
@@ -1226,6 +1312,7 @@
         "unresolved": 0,
         "unsupported": 0
       },
+      "dnsClass": "proxy",
       "familyId": "YouTube",
       "id": "YouTube",
       "ignoredModifiers": {
@@ -1234,9 +1321,10 @@
       "inputFormat": "RULE-SET",
       "intendedTarget": "📺 YouTube",
       "minEntries": 0,
-      "order": 15,
+      "order": 16,
+      "phase": "serviceIntent",
       "policy": "📺 YouTube",
-      "priority": 150,
+      "priority": 160,
       "routing": 0,
       "shardIds": [
         "YouTube-001"
@@ -1258,6 +1346,7 @@
         "unresolved": 0,
         "unsupported": 3
       },
+      "dnsClass": "proxy",
       "familyId": "Netflix",
       "id": "Netflix",
       "ignoredModifiers": {
@@ -1266,9 +1355,10 @@
       "inputFormat": "RULE-SET",
       "intendedTarget": "🎬 Netflix",
       "minEntries": 0,
-      "order": 16,
+      "order": 17,
+      "phase": "serviceIntent",
       "policy": "🎬 Netflix",
-      "priority": 160,
+      "priority": 170,
       "routing": 0,
       "shardIds": [
         "Netflix-001"
@@ -1292,6 +1382,7 @@
         "unresolved": 0,
         "unsupported": 0
       },
+      "dnsClass": "proxy",
       "familyId": "Disney",
       "id": "Disney",
       "ignoredModifiers": {
@@ -1300,9 +1391,10 @@
       "inputFormat": "RULE-SET",
       "intendedTarget": "🏰 Disney+",
       "minEntries": 0,
-      "order": 17,
+      "order": 18,
+      "phase": "serviceIntent",
       "policy": "🏰 Disney+",
-      "priority": 170,
+      "priority": 180,
       "routing": 0,
       "shardIds": [
         "Disney-001"
@@ -1324,6 +1416,7 @@
         "unresolved": 0,
         "unsupported": 6
       },
+      "dnsClass": "proxy",
       "familyId": "Spotify",
       "id": "Spotify",
       "ignoredModifiers": {
@@ -1332,9 +1425,10 @@
       "inputFormat": "RULE-SET",
       "intendedTarget": "🎵 Spotify",
       "minEntries": 0,
-      "order": 18,
+      "order": 19,
+      "phase": "serviceIntent",
       "policy": "🎵 Spotify",
-      "priority": 180,
+      "priority": 190,
       "routing": 0,
       "shardIds": [
         "Spotify-001"
@@ -1358,6 +1452,7 @@
         "unresolved": 0,
         "unsupported": 0
       },
+      "dnsClass": "proxy",
       "familyId": "GlobalMedia",
       "id": "GlobalMedia",
       "ignoredModifiers": {
@@ -1366,9 +1461,10 @@
       "inputFormat": "RULE-SET",
       "intendedTarget": "🌍 国际媒体",
       "minEntries": 0,
-      "order": 19,
+      "order": 20,
+      "phase": "serviceIntent",
       "policy": "🌍 国际媒体",
-      "priority": 190,
+      "priority": 200,
       "routing": 0,
       "shardIds": [
         "GlobalMedia-001"
@@ -1390,6 +1486,7 @@
         "unresolved": 0,
         "unsupported": 2
       },
+      "dnsClass": "proxy",
       "familyId": "Telegram",
       "id": "Telegram",
       "ignoredModifiers": {
@@ -1398,9 +1495,10 @@
       "inputFormat": "RULE-SET",
       "intendedTarget": "✈️ Telegram",
       "minEntries": 0,
-      "order": 20,
+      "order": 21,
+      "phase": "serviceIntent",
       "policy": "✈️ Telegram",
-      "priority": 200,
+      "priority": 210,
       "routing": 0,
       "shardIds": [
         "Telegram-001"
@@ -1424,6 +1522,7 @@
         "unresolved": 0,
         "unsupported": 0
       },
+      "dnsClass": "proxy",
       "familyId": "Facebook",
       "id": "Facebook",
       "ignoredModifiers": {
@@ -1432,9 +1531,10 @@
       "inputFormat": "RULE-SET",
       "intendedTarget": "💬 海外社交",
       "minEntries": 0,
-      "order": 21,
+      "order": 22,
+      "phase": "serviceIntent",
       "policy": "💬 海外社交",
-      "priority": 210,
+      "priority": 220,
       "routing": 0,
       "shardIds": [
         "Facebook-001"
@@ -1456,6 +1556,7 @@
         "unresolved": 0,
         "unsupported": 0
       },
+      "dnsClass": "proxy",
       "familyId": "Instagram",
       "id": "Instagram",
       "ignoredModifiers": {
@@ -1464,9 +1565,10 @@
       "inputFormat": "RULE-SET",
       "intendedTarget": "💬 海外社交",
       "minEntries": 0,
-      "order": 22,
+      "order": 23,
+      "phase": "serviceIntent",
       "policy": "💬 海外社交",
-      "priority": 220,
+      "priority": 230,
       "routing": 0,
       "shardIds": [
         "Instagram-001"
@@ -1488,6 +1590,7 @@
         "unresolved": 0,
         "unsupported": 0
       },
+      "dnsClass": "proxy",
       "familyId": "Twitter",
       "id": "Twitter",
       "ignoredModifiers": {
@@ -1496,9 +1599,10 @@
       "inputFormat": "RULE-SET",
       "intendedTarget": "💬 海外社交",
       "minEntries": 0,
-      "order": 23,
+      "order": 24,
+      "phase": "serviceIntent",
       "policy": "💬 海外社交",
-      "priority": 230,
+      "priority": 240,
       "routing": 0,
       "shardIds": [
         "Twitter-001"
@@ -1520,6 +1624,7 @@
         "unresolved": 0,
         "unsupported": 4
       },
+      "dnsClass": "proxy",
       "familyId": "TikTok",
       "id": "TikTok",
       "ignoredModifiers": {
@@ -1528,9 +1633,10 @@
       "inputFormat": "RULE-SET",
       "intendedTarget": "🎶 TikTok",
       "minEntries": 0,
-      "order": 24,
+      "order": 25,
+      "phase": "serviceIntent",
       "policy": "🎶 TikTok",
-      "priority": 240,
+      "priority": 250,
       "routing": 0,
       "shardIds": [
         "TikTok-001"
@@ -1554,6 +1660,7 @@
         "unresolved": 0,
         "unsupported": 0
       },
+      "dnsClass": "china",
       "familyId": "Apple",
       "id": "Apple",
       "ignoredModifiers": {
@@ -1562,9 +1669,10 @@
       "inputFormat": "RULE-SET",
       "intendedTarget": "direct",
       "minEntries": 0,
-      "order": 25,
+      "order": 26,
+      "phase": "serviceIntent",
       "policy": "🍎 Apple",
-      "priority": 250,
+      "priority": 260,
       "routing": 1,
       "shardIds": [
         "Apple-001"
@@ -1586,6 +1694,7 @@
         "unresolved": 0,
         "unsupported": 1
       },
+      "dnsClass": "china",
       "familyId": "Microsoft",
       "id": "Microsoft",
       "ignoredModifiers": {
@@ -1594,9 +1703,10 @@
       "inputFormat": "RULE-SET",
       "intendedTarget": "direct",
       "minEntries": 0,
-      "order": 26,
+      "order": 27,
+      "phase": "serviceIntent",
       "policy": "🪟 Microsoft",
-      "priority": 260,
+      "priority": 270,
       "routing": 1,
       "shardIds": [
         "Microsoft-001"
@@ -1605,74 +1715,6 @@
       "sourceSha256": "9bf85ec738899b70a01a6657e4c4714a62fe9f08488bf2241f6039de76293ec5",
       "unsupportedByReason": {
         "unsupported-exact-domain": 1
-      }
-    },
-    {
-      "canonicalPath": "compiled/Surge/SteamCN/SteamCN.list",
-      "componentId": "rules",
-      "counts": {
-        "candidate": 17,
-        "convertible": 5,
-        "duplicates": 0,
-        "output": 5,
-        "parsed": 17,
-        "shadowed": 0,
-        "unresolved": 0,
-        "unsupported": 12
-      },
-      "familyId": "SteamCN",
-      "id": "SteamCN",
-      "ignoredModifiers": {
-        "noResolve": 0
-      },
-      "inputFormat": "RULE-SET",
-      "intendedTarget": "direct",
-      "minEntries": 0,
-      "order": 27,
-      "policy": "DIRECT",
-      "priority": 270,
-      "routing": 1,
-      "shardIds": [
-        "SteamCN-001"
-      ],
-      "sourceBytes": 492,
-      "sourceSha256": "e5541c7db5d9396a8be97205ac5a3742b318a391f39946c2a1c8239fb567fb15",
-      "unsupportedByReason": {
-        "unsupported-exact-domain": 12
-      }
-    },
-    {
-      "canonicalPath": "compiled/Surge/OverseasGame/OverseasGame.list",
-      "componentId": "rules",
-      "counts": {
-        "candidate": 574,
-        "convertible": 566,
-        "duplicates": 40,
-        "output": 518,
-        "parsed": 574,
-        "shadowed": 8,
-        "unresolved": 0,
-        "unsupported": 8
-      },
-      "familyId": "OverseasGame",
-      "id": "OverseasGame",
-      "ignoredModifiers": {
-        "noResolve": 46
-      },
-      "inputFormat": "RULE-SET",
-      "intendedTarget": "🌍 海外游戏",
-      "minEntries": 0,
-      "order": 28,
-      "policy": "🌍 海外游戏",
-      "priority": 280,
-      "routing": 0,
-      "shardIds": [
-        "OverseasGame-001"
-      ],
-      "sourceBytes": 18310,
-      "sourceSha256": "e194fe3677d030af4a0f57e1bccf7e475080892f28fceabd0a17ff2c42581ae6",
-      "unsupportedByReason": {
-        "unsupported-exact-domain": 8
       }
     },
     {
@@ -1688,6 +1730,7 @@
         "unresolved": 0,
         "unsupported": 0
       },
+      "dnsClass": "china",
       "familyId": "Download",
       "id": "Download",
       "ignoredModifiers": {
@@ -1696,9 +1739,10 @@
       "inputFormat": "RULE-SET",
       "intendedTarget": "direct",
       "minEntries": 0,
-      "order": 29,
+      "order": 28,
+      "phase": "serviceIntent",
       "policy": "⬇️ 下载/P2P",
-      "priority": 290,
+      "priority": 280,
       "routing": 1,
       "shardIds": [
         "Download-001"
@@ -1720,6 +1764,7 @@
         "unresolved": 0,
         "unsupported": 118
       },
+      "dnsClass": "china",
       "familyId": "PrivateTracker",
       "id": "PrivateTracker",
       "ignoredModifiers": {
@@ -1728,9 +1773,10 @@
       "inputFormat": "RULE-SET",
       "intendedTarget": "direct",
       "minEntries": 0,
-      "order": 30,
+      "order": 29,
+      "phase": "serviceIntent",
       "policy": "⬇️ 下载/P2P",
-      "priority": 300,
+      "priority": 290,
       "routing": 1,
       "shardIds": [
         "PrivateTracker-001"
@@ -1740,6 +1786,76 @@
       "unsupportedByReason": {
         "unsupported-exact-domain": 118
       }
+    },
+    {
+      "canonicalPath": "compiled/Surge/OverseasGame/OverseasGame.list",
+      "componentId": "rules",
+      "counts": {
+        "candidate": 574,
+        "convertible": 566,
+        "duplicates": 40,
+        "output": 518,
+        "parsed": 574,
+        "shadowed": 8,
+        "unresolved": 0,
+        "unsupported": 8
+      },
+      "dnsClass": "proxy",
+      "familyId": "OverseasGame",
+      "id": "OverseasGame",
+      "ignoredModifiers": {
+        "noResolve": 46
+      },
+      "inputFormat": "RULE-SET",
+      "intendedTarget": "🌍 海外游戏",
+      "minEntries": 0,
+      "order": 30,
+      "phase": "overseasGame",
+      "policy": "🌍 海外游戏",
+      "priority": 300,
+      "routing": 0,
+      "shardIds": [
+        "OverseasGame-001"
+      ],
+      "sourceBytes": 18310,
+      "sourceSha256": "e194fe3677d030af4a0f57e1bccf7e475080892f28fceabd0a17ff2c42581ae6",
+      "unsupportedByReason": {
+        "unsupported-exact-domain": 8
+      }
+    },
+    {
+      "canonicalPath": "compiled/Surge/ChinaTLD/ChinaTLD.list",
+      "componentId": "rules",
+      "counts": {
+        "candidate": 1,
+        "convertible": 1,
+        "duplicates": 0,
+        "output": 1,
+        "parsed": 1,
+        "shadowed": 0,
+        "unresolved": 0,
+        "unsupported": 0
+      },
+      "dnsClass": "china",
+      "familyId": "ChinaTLD",
+      "id": "ChinaTLD",
+      "ignoredModifiers": {
+        "noResolve": 0
+      },
+      "inputFormat": "RULE-SET",
+      "intendedTarget": "direct",
+      "minEntries": 0,
+      "order": 31,
+      "phase": "lateDomestic",
+      "policy": "DIRECT",
+      "priority": 310,
+      "routing": 1,
+      "shardIds": [
+        "ChinaTLD-001"
+      ],
+      "sourceBytes": 17,
+      "sourceSha256": "db29eaa29abef2bdc42483f4258c4c32a3800ca1676028215e5de180589fa464",
+      "unsupportedByReason": {}
     },
     {
       "canonicalPath": "compiled/Surge/ChinaIP/ChinaIP.list",
@@ -1754,6 +1870,7 @@
         "unresolved": 0,
         "unsupported": 0
       },
+      "dnsClass": "none",
       "familyId": "ChinaIP",
       "id": "ChinaIP",
       "ignoredModifiers": {
@@ -1762,9 +1879,10 @@
       "inputFormat": "RULE-SET",
       "intendedTarget": "direct",
       "minEntries": 0,
-      "order": 31,
+      "order": 32,
+      "phase": "resolvedChinaIp",
       "policy": "DIRECT",
-      "priority": 310,
+      "priority": 320,
       "routing": 1,
       "shardIds": [
         "ChinaIP-001"
@@ -1775,28 +1893,28 @@
     }
   ],
   "totals": {
-    "blankCount": 31,
-    "candidateCount": 17116,
+    "blankCount": 32,
+    "candidateCount": 17117,
     "commentCount": 0,
     "convertibleByKind": {
       "domainKeyword": 79,
-      "domainSuffix": 3151,
+      "domainSuffix": 3152,
       "ipv4Cidr": 9465,
       "ipv6Cidr": 4164
     },
-    "convertibleCount": 16859,
+    "convertibleCount": 16860,
     "duplicateCount": 163,
     "ignoredModifiers": {
       "noResolve": 13629
     },
-    "logicalRuleSetCount": 31,
-    "outputCount": 16536,
-    "parsedCount": 17116,
-    "physicalLineCount": 17147,
+    "logicalRuleSetCount": 32,
+    "outputCount": 16537,
+    "parsedCount": 17117,
+    "physicalLineCount": 17149,
     "shadowedCount": 160,
-    "shardCount": 31,
-    "sourceBytes": 594525,
-    "sourceCount": 31,
+    "shardCount": 32,
+    "sourceBytes": 594542,
+    "sourceCount": 32,
     "unresolvedCount": 0,
     "unsupportedByReason": {
       "unsupported-exact-domain": 257
