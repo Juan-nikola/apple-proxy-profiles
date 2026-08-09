@@ -1,19 +1,11 @@
 # Upstream: https://github.com/blackmatrix7/ios_rule_script
-# Path: rule/Surge/Disney/Disney.list
-# Commit: 72c410015dc99df6b54eca1386126f70268bf6bc
-# Committed at: 2026-08-05T19:24:33Z
+# Path: compiled/Surge/Disney/Disney.list
+# Commit: ccc2d6b711007324bacb55cdfbbf7e36ad48145a
+# Committed at: 2026-08-07T18:52:17Z
 # License: GPL-2.0-only
 # Changed by: Juan-nikola/apple-proxy-profiles
-# Output entries: 175
+# Output entries: 172
 # Omitted entries: 0
-# NAME: Disney
-# AUTHOR: blackmatrix7
-# REPO: https://github.com/blackmatrix7/ios_rule_script
-# UPDATED: 2025-07-30 02:08:18
-# DOMAIN-SUFFIX: 172
-# PROCESS-NAME: 2
-# USER-AGENT: 1
-# TOTAL: 175
 DOMAIN-SUFFIX,20thcenturystudios.com.au
 DOMAIN-SUFFIX,20thcenturystudios.com.br
 DOMAIN-SUFFIX,20thcenturystudios.jp
@@ -186,6 +178,3 @@ DOMAIN-SUFFIX,thewaltdisneycompany.com
 DOMAIN-SUFFIX,thisispolaris.com
 DOMAIN-SUFFIX,watchdisneyfe.com
 DOMAIN-SUFFIX,watchespn.com
-USER-AGENT,Disney+*
-PROCESS-NAME,com.disney.datg.videoplatforms.android.abc
-PROCESS-NAME,com.disney.disneyplus

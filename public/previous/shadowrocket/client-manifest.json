@@ -1,21 +1,20 @@
 {
-  "chinaIpAuditSha256": "331a5470c89379c3748594b33f1b97d8fc0e0c7e721fa2109be4391f849dd3fb",
   "client": "shadowrocket",
   "files": [
     {
-      "bytes": 19397,
+      "bytes": 19270,
       "path": "shadowrocket/examples/shadowrocket-ipad.conf",
-      "sha256": "cfcbcdeba9284db0707ffb42a358232c14ad64f26ac6b869df9f02eb32a2952c"
+      "sha256": "664c013eb1f1ea191c6e8b5b0139027eaa0d1788f03e3f2c7c161e6d65e93646"
     },
     {
-      "bytes": 19399,
+      "bytes": 19272,
       "path": "shadowrocket/examples/shadowrocket-iphone.conf",
-      "sha256": "61f48aa3d026b2b7589d36518fd3e5dc850182dd582d127e439a8919caea89e6"
+      "sha256": "392864aa41e626b07a4e57223d3e8defdcf22453de8afdbeae29aa6dda11386a"
     },
     {
-      "bytes": 19391,
+      "bytes": 19264,
       "path": "shadowrocket/examples/shadowrocket-macos.conf",
-      "sha256": "00349461df8141985a1b28e05cbdd19c9ae4e01c9c92112e46cb04bb9db03830"
+      "sha256": "691903acb5223cd40747065ddd9ca1bef6fb463fc306c37e58b952b0833f8f46"
     },
     {
       "bytes": 985,
@@ -41,11 +40,6 @@
       "bytes": 412209,
       "path": "shadowrocket/rules/ChinaIP.list",
       "sha256": "9886f9e7a3043aef946f58e0a36b2fdfc60fd52d38b7887e9fe185f7216cd1e2"
-    },
-    {
-      "bytes": 323,
-      "path": "shadowrocket/rules/ChinaTLD.list",
-      "sha256": "df51012afb947966cf41f9a5b2de02b1379e5c896f464f55eb2652147dbd5fa0"
     },
     {
       "bytes": 379,
@@ -183,9 +177,9 @@
       "sha256": "676c0af7d79d1e3aca9edca296a472fed1bd0eae3abd76bf5eb14962f99ff0e1"
     },
     {
-      "bytes": 58513,
+      "bytes": 56897,
       "path": "shadowrocket/scripts/shadowrocket-profile-generator.js",
-      "sha256": "e0359a2dc104b66849f3840b0c05cb8d5349c12a38b59b1c630f6afdf091f7f5"
+      "sha256": "a7c2329f5e0d43eaeb9447b800ab490c64c01927e3851e52808ce7addf5e08f5"
     },
     {
       "bytes": 85219,
@@ -193,13 +187,13 @@
       "sha256": "676c0af7d79d1e3aca9edca296a472fed1bd0eae3abd76bf5eb14962f99ff0e1"
     },
     {
-      "bytes": 58513,
+      "bytes": 56897,
       "path": "shadowrocket/scripts/substore-profile-generator.js",
-      "sha256": "e0359a2dc104b66849f3840b0c05cb8d5349c12a38b59b1c630f6afdf091f7f5"
+      "sha256": "a7c2329f5e0d43eaeb9447b800ab490c64c01927e3851e52808ce7addf5e08f5"
     }
   ],
   "generatedAt": "2026-08-07T18:52:17Z",
-  "manifestHash": "0b9b6fda2600f25b21aae3706f37461e1713cab427745e5771af7c8c8493c433",
+  "manifestHash": "b78d866813aee66dee590f230e0719395e13f79f30280aa9e639c9a130467c14",
   "optionalPacks": {
     "adblock-full": "08e14639b805d3e3051f2d338918e722d9e6e95e6aa7c424fbafe827072a3a52"
   },
