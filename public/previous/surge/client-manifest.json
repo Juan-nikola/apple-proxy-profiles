@@ -1,21 +1,20 @@
 {
-  "chinaIpAuditSha256": "331a5470c89379c3748594b33f1b97d8fc0e0c7e721fa2109be4391f849dd3fb",
   "client": "surge",
   "files": [
     {
-      "bytes": 16206,
+      "bytes": 16083,
       "path": "surge/examples/surge-ipad.conf",
-      "sha256": "548f01c13a5bd05eac7ef4fce10a3d0f09ad8c7998f6e7159baa19d7e336b5c5"
+      "sha256": "ade223b1bce95e1773aa0fb9500f4be0285f305b7b4af922e0020ac92a15c8ab"
     },
     {
-      "bytes": 16206,
+      "bytes": 16083,
       "path": "surge/examples/surge-iphone.conf",
-      "sha256": "548f01c13a5bd05eac7ef4fce10a3d0f09ad8c7998f6e7159baa19d7e336b5c5"
+      "sha256": "ade223b1bce95e1773aa0fb9500f4be0285f305b7b4af922e0020ac92a15c8ab"
     },
     {
-      "bytes": 16201,
+      "bytes": 16078,
       "path": "surge/examples/surge-macos.conf",
-      "sha256": "b30bc0b77d17e8906f5d7b81eeec6866d277d73cbf032da310b7e69c1eb2b9fe"
+      "sha256": "462878a25cb153d95ae8d36fddae12877494752638684457f80e5a67092a3466"
     },
     {
       "bytes": 985,
@@ -41,11 +40,6 @@
       "bytes": 412209,
       "path": "surge/rules/ChinaIP.list",
       "sha256": "9886f9e7a3043aef946f58e0a36b2fdfc60fd52d38b7887e9fe185f7216cd1e2"
-    },
-    {
-      "bytes": 323,
-      "path": "surge/rules/ChinaTLD.list",
-      "sha256": "df51012afb947966cf41f9a5b2de02b1379e5c896f464f55eb2652147dbd5fa0"
     },
     {
       "bytes": 379,
@@ -183,9 +177,9 @@
       "sha256": "3495fb100167041cf5a1f711859bd9e7c55bfdceb6851106bd4b3ac495f41ad9"
     },
     {
-      "bytes": 130701,
+      "bytes": 128893,
       "path": "surge/scripts/substore-profile-generator.js",
-      "sha256": "9f303ef7074596fbf600a557e687611f32d411d59ceaf75a1fb2014fa43f7a63"
+      "sha256": "0f9a257d0e11b6119dee4717aa3d01f2cf94c850b0a3e02bfedd381f06a1f1fa"
     },
     {
       "bytes": 95414,
@@ -193,13 +187,13 @@
       "sha256": "3495fb100167041cf5a1f711859bd9e7c55bfdceb6851106bd4b3ac495f41ad9"
     },
     {
-      "bytes": 130701,
+      "bytes": 128893,
       "path": "surge/scripts/surge-profile-generator.js",
-      "sha256": "9f303ef7074596fbf600a557e687611f32d411d59ceaf75a1fb2014fa43f7a63"
+      "sha256": "0f9a257d0e11b6119dee4717aa3d01f2cf94c850b0a3e02bfedd381f06a1f1fa"
     }
   ],
   "generatedAt": "2026-08-07T18:52:17Z",
-  "manifestHash": "aa16ce1999ec169a8b3a679f948c652d42251faabcd6495123f57a56c14f55ab",
+  "manifestHash": "05a616c3fb09703af819fb8ba0050d6bd28e3b5e6551775521cec154c52bd3ff",
   "optionalPacks": {
     "adblock-full": "25ec7ae1a02bdb709a18509c79950bc179b86d1b1734b16bd2698499e6734e6c"
   },

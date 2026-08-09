@@ -1,20 +1,11 @@
 # Upstream: https://github.com/blackmatrix7/ios_rule_script
-# Path: rule/Surge/ByteDance/ByteDance.list
-# Commit: 72c410015dc99df6b54eca1386126f70268bf6bc
-# Committed at: 2026-08-05T19:24:33Z
+# Path: compiled/Surge/ByteDance/ByteDance.list
+# Commit: ccc2d6b711007324bacb55cdfbbf7e36ad48145a
+# Committed at: 2026-08-07T18:52:17Z
 # License: GPL-2.0-only
 # Changed by: Juan-nikola/apple-proxy-profiles
-# Output entries: 372
+# Output entries: 370
 # Omitted entries: 0
-# NAME: ByteDance
-# AUTHOR: blackmatrix7
-# REPO: https://github.com/blackmatrix7/ios_rule_script
-# UPDATED: 2025-09-28 02:08:33
-# DOMAIN-SUFFIX: 369
-# IP-CIDR: 1
-# PROCESS-NAME: 1
-# USER-AGENT: 1
-# TOTAL: 372
 DOMAIN-SUFFIX,2333333333333.com
 DOMAIN-SUFFIX,365yg.com
 DOMAIN-SUFFIX,activity-zhendingtech.com
@@ -22,6 +13,7 @@ DOMAIN-SUFFIX,activitybyte.com
 DOMAIN-SUFFIX,aigcarena.com
 DOMAIN-SUFFIX,aihst8.com
 DOMAIN-SUFFIX,amemv.cn
+DOMAIN-SUFFIX,amemv.com
 DOMAIN-SUFFIX,amemv.net
 DOMAIN-SUFFIX,artistrylab.net
 DOMAIN-SUFFIX,baike.com
@@ -98,14 +90,18 @@ DOMAIN-SUFFIX,doubao.com
 DOMAIN-SUFFIX,douyin.com
 DOMAIN-SUFFIX,douyinact.com
 DOMAIN-SUFFIX,douyinact.net
+DOMAIN-SUFFIX,douyincdn.com
 DOMAIN-SUFFIX,douyinclips.com
 DOMAIN-SUFFIX,douyinec.com
 DOMAIN-SUFFIX,douyinhanyu.com
 DOMAIN-SUFFIX,douyinliving.com
 DOMAIN-SUFFIX,douyinmusicclips.com
 DOMAIN-SUFFIX,douyinmusicvideo.com
+DOMAIN-SUFFIX,douyinpic.com
 DOMAIN-SUFFIX,douyinshortvideo.com
+DOMAIN-SUFFIX,douyinstatic.com
 DOMAIN-SUFFIX,douyinvideo.net
+DOMAIN-SUFFIX,douyinvod.com
 DOMAIN-SUFFIX,dymusictape.com
 DOMAIN-SUFFIX,dymusicvideo.com
 DOMAIN-SUFFIX,dyshortvideo.com
@@ -178,6 +174,7 @@ DOMAIN-SUFFIX,ibytedapm.com
 DOMAIN-SUFFIX,icphoto.cn
 DOMAIN-SUFFIX,idouyinpic.com
 DOMAIN-SUFFIX,idouyinstatic.com
+DOMAIN-SUFFIX,idouyinvod.com
 DOMAIN-SUFFIX,iesdouyin.com
 DOMAIN-SUFFIX,iesdouyin.net
 DOMAIN-SUFFIX,ieshs.cn
@@ -194,6 +191,8 @@ DOMAIN-SUFFIX,ihuoshanimg.com
 DOMAIN-SUFFIX,ihuoshanvod.com
 DOMAIN-SUFFIX,inluckcalendar.com
 DOMAIN-SUFFIX,ixgvideo.com
+DOMAIN-SUFFIX,ixigua.com
+DOMAIN-SUFFIX,ixiguavideo.com
 DOMAIN-SUFFIX,jinritemai-inc.com
 DOMAIN-SUFFIX,jinritemai.com
 DOMAIN-SUFFIX,jinritoutiao.com
@@ -257,6 +256,7 @@ DOMAIN-SUFFIX,panplayable-toutiao.com
 DOMAIN-SUFFIX,pglstatp-toutiao-b.com
 DOMAIN-SUFFIX,pglstatp-toutiao.com
 DOMAIN-SUFFIX,pipix.com
+DOMAIN-SUFFIX,pstatp.com
 DOMAIN-SUFFIX,qmoji.mobi
 DOMAIN-SUFFIX,qmoji.net
 DOMAIN-SUFFIX,qwconnect.top
@@ -278,6 +278,7 @@ DOMAIN-SUFFIX,tetrisone.com
 DOMAIN-SUFFIX,tiquality.cn
 DOMAIN-SUFFIX,tiquality.com.cn
 DOMAIN-SUFFIX,toscdn.com
+DOMAIN-SUFFIX,toutiao.com
 DOMAIN-SUFFIX,toutiao11.com
 DOMAIN-SUFFIX,toutiao12.com
 DOMAIN-SUFFIX,toutiao13.com
@@ -374,16 +375,4 @@ DOMAIN-SUFFIX,zjgslb.com
 DOMAIN-SUFFIX,zjurl.cn
 DOMAIN-SUFFIX,zlinkurl.cn
 DOMAIN-SUFFIX,zlinkurl.com
-DOMAIN-SUFFIX,amemv.com
-DOMAIN-SUFFIX,douyincdn.com
-DOMAIN-SUFFIX,douyinpic.com
-DOMAIN-SUFFIX,douyinstatic.com
-DOMAIN-SUFFIX,douyinvod.com
-DOMAIN-SUFFIX,idouyinvod.com
-DOMAIN-SUFFIX,ixigua.com
-DOMAIN-SUFFIX,ixiguavideo.com
-DOMAIN-SUFFIX,pstatp.com
-DOMAIN-SUFFIX,toutiao.com
 IP-CIDR,114.246.10.65/32,no-resolve
-USER-AGENT,TikTok*
-PROCESS-NAME,com.zhiliaoapp.musically

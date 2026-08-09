@@ -1,20 +1,11 @@
 # Upstream: https://github.com/blackmatrix7/ios_rule_script
-# Path: rule/Surge/PrivateTracker/PrivateTracker.list
-# Commit: 72c410015dc99df6b54eca1386126f70268bf6bc
-# Committed at: 2026-08-05T19:24:33Z
+# Path: compiled/Surge/PrivateTracker/PrivateTracker.list
+# Commit: ccc2d6b711007324bacb55cdfbbf7e36ad48145a
+# Committed at: 2026-08-07T18:52:17Z
 # License: GPL-2.0-only
 # Changed by: Juan-nikola/apple-proxy-profiles
 # Output entries: 248
 # Omitted entries: 0
-# NAME: PrivateTracker
-# AUTHOR: blackmatrix7
-# REPO: https://github.com/blackmatrix7/ios_rule_script
-# UPDATED: 2026-06-04 03:21:05
-# DOMAIN: 118
-# DOMAIN-KEYWORD: 4
-# DOMAIN-SUFFIX: 123
-# IP-CIDR: 3
-# TOTAL: 248
 DOMAIN,004430.xyz
 DOMAIN,021912.xyz
 DOMAIN,1337.abcvg.info
