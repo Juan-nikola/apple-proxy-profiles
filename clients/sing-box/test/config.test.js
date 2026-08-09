@@ -113,6 +113,18 @@ test("uses a dedicated health probe for rule downloads", () => {
   assert.equal(ruleDownload?.default, "🧭 规则下载故障转移");
 });
 
+test("keeps the primary selector compact with continent-level entries only", () => {
+  const config = render();
+  const primary = config.outbounds.find((outbound) => outbound.tag === "🚀 节点选择");
+  assert.deepEqual(primary?.type, "selector");
+  assert.deepEqual(primary?.outbounds, ["⚡ 全部自动", "🛟 全部故障转移", "🌏 亚太"]);
+  const continent = config.outbounds.find((outbound) => outbound.tag === "🌏 亚太");
+  assert.ok(continent?.outbounds.includes("🇯🇵 [机场] Tokyo A"));
+  for (const nodeName of ["🇯🇵 [机场] Tokyo A"]) {
+    assert.equal(primary?.outbounds.includes(nodeName), false, "primary selector must not list concrete nodes");
+  }
+});
+
 test("renders latest sing-box flat DNS rule actions", () => {
   const config = render();
   const proxyDnsRuleSets = orderedRoutingPlan()

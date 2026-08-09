@@ -1,4 +1,4 @@
-import { buildPolicyGroups } from "../../../shared/policies/catalog.js";
+import { GROUP_KIND, buildPolicyGroups } from "../../../shared/policies/catalog.js";
 import { POLICY_TARGET } from "../../../shared/policies/intents.js";
 import { NON_CHAINED_FILTER } from "../../../shared/policies/filters.js";
 
@@ -47,11 +47,34 @@ function renderRuleDownloadGroups(inventory, ruleProbeUrl) {
   ];
 }
 
+function continentGroupNames(groups) {
+  return groups
+    .filter((group) => group.kind === GROUP_KIND.continent)
+    .map((group) => group.name);
+}
+
 export function renderSingBoxGroups(options, nodes, { ruleProbeUrl = "https://www.gstatic.com/generate_204" } = {}) {
   const inventory = Array.isArray(nodes) ? nodes : [];
   const shared = buildPolicyGroups(options, inventory);
+  const continentNames = continentGroupNames(shared);
   return shared.flatMap((group) => {
     if (group.name === RULE_DOWNLOAD_GROUP) return renderRuleDownloadGroups(inventory, ruleProbeUrl);
+    if (group.name === "🚀 节点选择") {
+      // Keep the primary selector compact: only helpers and continent groups,
+      // so GUI clients (SFA/SFM) show a short hierarchy instead of a flat
+      // list of every node. Concrete nodes live inside the continent groups.
+      const outbounds = [
+        ...group.candidates.map(targetName),
+        "\u{1F6DF} 全部故障转移",
+        ...continentNames,
+      ].filter((item, index, all) => all.indexOf(item) === index);
+      return {
+        type: "selector",
+        tag: group.name,
+        outbounds: outbounds.length > 0 ? outbounds : ["DIRECT"],
+        interrupt_exist_connections: true,
+      };
+    }
     const candidates = [
       ...group.candidates.map(targetName),
       ...filterNodes(group.nodeFilter, inventory),

@@ -175,8 +175,9 @@
       "tag": "🚀 节点选择",
       "outbounds": [
         "⚡ 全部自动",
-        "示例 · Tokyo",
-        "示例 · Frankfurt"
+        "🛟 全部故障转移",
+        "🌏 亚太",
+        "🌍 欧洲"
       ],
       "interrupt_exist_connections": true
     },

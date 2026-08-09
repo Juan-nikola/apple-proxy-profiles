@@ -32,6 +32,8 @@ output=config&type=collection&name=apple-proxy-sources&subscriptionName=Apple-Pr
 
 预览时 JSON 必须能解析，并包含 `dns`、`inbounds`、`outbounds`、`route`；节点不为空。若只看到占位内容，先确认脚本启用/预览开关、组合非空、`name` 和 `subscriptionName` 没有混用。
 
+`🚀 节点选择` 采用两级结构：主组只包含 `⚡ 全部自动`、`🛟 全部故障转移` 和洲组（`🌏 亚太`、`🌍 欧洲`、`🌎 美洲`），具体节点按洲收进对应洲组。这样在 sing-box 图形客户端（SFA/SFM）里，先选洲、再选节点，而不是面对一长串平铺节点。
+
 ## 3. current 与 edge
 
 `current` 是稳定发布入口；`edge` 使用 testing 分支每日构建，可能出现字段、内核行为或规则兼容性变化。测试时同时做两处修改：
