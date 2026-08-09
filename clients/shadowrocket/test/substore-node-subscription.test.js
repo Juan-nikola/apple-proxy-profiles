@@ -3,11 +3,6 @@ import test from "node:test";
 
 import { operator, renderShadowrocketSubscription } from "../src/substore-node-subscription-entry.js";
 
-const VLESS = "vless";
-const SS = "ss";
-const TROJAN = "trojan";
-const HY2 = "hy2";
-const TUIC = "tuic";
 const UUID_A = "00000000-0000-4000-8000-000000000001";
 const UUID_B = "00000000-0000-4000-8000-000000000002";
 const UUID_C = "00000000-0000-4000-8000-000000000003";
@@ -31,16 +26,21 @@ function node(overrides = {}) {
   };
 }
 
-test("serializes a VLESS Reality node as a Shadowrocket subscription URI", () => {
+function recordsOf(text) {
+  return text.trim().split("\n").slice(1).map((line) => JSON.parse(line.replace(/^  - /, "")));
+}
+
+test("serializes a VLESS Reality node as a Shadowrocket proxies record", () => {
   const text = renderShadowrocketSubscription([node()]);
-  const line = text.trim();
-  assert.match(line, new RegExp(`^${VLESS}://${UUID_A}@192\\.0\\.2\\.10:443\\?`));
-  assert.match(line, /security=reality/);
-  assert.match(line, /pbk=TEST_ONLY_PUBLIC_KEY/);
-  assert.match(line, /sid=00000000/);
-  assert.match(line, /flow=xtls-rprx-vision/);
-  assert.match(line, /type=tcp/);
-  assert.match(line, /#/);
+  assert.match(text, /^proxies:\n/);
+  const [record] = recordsOf(text);
+  assert.equal(record.type, "vless");
+  assert.equal(record.server, "192.0.2.10");
+  assert.equal(record.port, 443);
+  assert.equal(record["reality-opts"]["public-key"], "TEST_ONLY_PUBLIC_KEY");
+  assert.equal(record["reality-opts"]["short-id"], "00000000");
+  assert.equal(record.flow, "xtls-rprx-vision");
+  assert.equal(record.network, "tcp");
 });
 
 test("serializes Snell, Shadowsocks, Trojan, Hysteria2 and TUIC nodes", () => {
@@ -51,20 +51,25 @@ test("serializes Snell, Shadowsocks, Trojan, Hysteria2 and TUIC nodes", () => {
     node({ type: "hysteria2", name: "🇺🇸 HY2｜自建·U", server: "192.0.2.14", port: 8443, password: "TEST_ONLY_HY2_PASSWORD" }),
     node({ type: "tuic", name: "🇺🇸 TUIC｜自建·U", server: "192.0.2.15", port: 443, uuid: UUID_B, password: "TEST_ONLY_TUIC_PASSWORD" }),
   ];
-  const lines = renderShadowrocketSubscription(inventory).trim().split("\n");
-  assert.equal(lines.length, 5);
-  assert.match(lines[0], /^snell,192\.0\.2\.11,8443,psk=TEST_ONLY_PSK,version=5,reuse=true,tfo=true#/);
-  assert.match(lines[1], new RegExp(`^${SS}://[A-Za-z0-9+/=]+@192\\.0\\.2\\.12:8443#`));
-  assert.match(lines[2], new RegExp(`^${TROJAN}://TEST_ONLY_TROJAN_PASSWORD@192\\.0\\.2\\.13:443\\?sni=example\\.invalid&fp=chrome#`));
-  assert.match(lines[3], new RegExp(`^${HY2}://TEST_ONLY_HY2_PASSWORD@192\\.0\\.2\\.14:8443\\?sni=example\\.invalid#`));
-  assert.match(lines[4], new RegExp(`^${TUIC}://${UUID_B}:TEST_ONLY_TUIC_PASSWORD@192\\.0\\.2\\.15:443\\?sni=example\\.invalid#`));
+  const records = recordsOf(renderShadowrocketSubscription(inventory));
+  assert.equal(records.length, 5);
+  assert.deepEqual(records.map((record) => record.type), ["snell", "ss", "trojan", "hysteria2", "tuic"]);
+  assert.equal(records[0].psk, "TEST_ONLY_PSK");
+  assert.equal(records[0].version, 5);
+  assert.equal(records[1].cipher, "aes-256-gcm");
+  assert.equal(records[2].password, "TEST_ONLY_TROJAN_PASSWORD");
+  assert.equal(records[3].password, "TEST_ONLY_HY2_PASSWORD");
+  assert.equal(records[4].password, "TEST_ONLY_TUIC_PASSWORD");
 });
 
-test("fails closed for unsupported protocols", () => {
-  assert.throws(
-    () => renderShadowrocketSubscription([node({ type: "wireguard" })]),
-    /unsupported.*wireguard/iu,
-  );
+test("keeps every Shadowrocket-supported protocol in the raw proxy record", () => {
+  const text = renderShadowrocketSubscription([
+    node({ type: "wireguard", name: "🇺🇸 WG｜自建·U", server: "192.0.2.16", port: 51820 }),
+    node(),
+  ]);
+  const records = recordsOf(text);
+  assert.equal(records.length, 2);
+  assert.deepEqual(records.map((record) => record.type), ["wireguard", "vless"]);
 });
 
 test("operator produces a continent-grouped subscription from the collection", async () => {
@@ -85,13 +90,13 @@ test("operator produces a continent-grouped subscription from the collection", a
   });
   assert.deepEqual(calls, [{ type: "collection", name: "apple-proxy-sources", platform: "JSON", produceType: "internal" }]);
   assert.deepEqual({ url: result.url, unchanged: result.unchanged }, input);
-  const lines = result.$content.trim().split("\n");
-  assert.equal(lines.length, 4);
+  const records = recordsOf(result.$content);
+  assert.equal(records.length, 4);
   // Continent order: Asia-Pacific (JP) before Europe (NL) before Americas (US).
-  assert.match(lines[0], /#%F0%9F%87%AF%F0%9F%87%B5/); // 🇯🇵
-  assert.match(lines[1], /#%F0%9F%87%AF%F0%9F%87%B5/); // 🇯🇵
-  assert.match(lines[2], /#%F0%9F%87%B3%F0%9F%87%B1/); // 🇳🇱
-  assert.match(lines[3], /#%F0%9F%87%BA%F0%9F%87%B8/); // 🇺🇸
+  assert.equal(records[0].name.startsWith("🇯🇵"), true);
+  assert.equal(records[1].name.startsWith("🇯🇵"), true);
+  assert.equal(records[2].name.startsWith("🇳🇱"), true);
+  assert.equal(records[3].name.startsWith("🇺🇸"), true);
 });
 
 test("operator rejects invalid arguments and empty inventories", async () => {
