@@ -213,6 +213,31 @@ async function compileCommand(corePath, env) {
     if (error?.code === "ENOENT") throw new Error(`Staged sing-box artifact root is missing: ${artifactRoot}`);
     throw error;
   }
+  const stagedBinaries = discovered.filter((path) => path.endsWith(".srs")).sort();
+  if (stagedBinaries.length > 0) {
+    const expected = expectedPublicationPaths();
+    if (JSON.stringify(stagedBinaries) !== JSON.stringify(expected)) {
+      const unexpected = stagedBinaries.find((path) => !expected.includes(path));
+      const missing = expected.find((path) => !stagedBinaries.includes(path));
+      throw new Error(`Staged current sing-box SRS closure failed: ${unexpected ? `unexpected ${unexpected}` : `missing ${missing}`}`);
+    }
+    const allowed = new Set([...expected, "audit/china-ip-drift.json", "stage-manifest.json"]);
+    const unexpected = discovered.find((path) => !allowed.has(path));
+    if (unexpected) throw new Error(`Staged current sing-box tree contains an unexpected file: ${unexpected}`);
+    const reused = new Map();
+    await rm(outputRoot, { recursive: true, force: true });
+    for (const path of expected) {
+      const content = validateSrsBinary(
+        await readFile(join(artifactRoot, path)),
+        `staged current sing-box rule ${path}`,
+      );
+      const destination = join(outputRoot, path);
+      await mkdir(dirname(destination), { recursive: true });
+      await writeFile(destination, content);
+      reused.set(path, content);
+    }
+    return reused;
+  }
   const paths = discovered.filter((path) => (
     /^audit\/sing-box\/rules\/[^/]+\.json$/u.test(path)
     || /^optional\/[^/]+\/audit\/sing-box\/rules\/[^/]+\.json$/u.test(path)

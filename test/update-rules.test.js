@@ -71,7 +71,7 @@ function chinaIpAuditBytes({
 function buildClientArtifacts(options) {
   return buildClientArtifactsImpl({
     ...options,
-    chinaIpAudit: options.chinaIpAudit ?? chinaIpAuditBytes(),
+    chinaIpAudit: options.chinaIpAudit ?? chinaIpAuditBytes({ publicationUpstream: options.upstream }),
   });
 }
 
@@ -321,15 +321,20 @@ test("rejects extra non-client files and unknown directories in a hybrid current
     client: "singbox",
     manifestHash: candidate.diagnostics.defaultManifest.clients.singbox.manifestHash,
   });
+  const currentReproduction = buildClientArtifacts({
+    snapshot: lightweightFixtureSnapshots(),
+    upstream,
+    chinaIpAudit: candidate.defaults.get("audit/china-ip-drift.json"),
+  });
 
-  assert.equal(await verifyTrackedPublications({ publicDirectory, ...baseline }), true);
+  assert.equal(await verifyTrackedPublications({ publicDirectory, ...currentReproduction }), true);
 
   const stray = join(publicDirectory, "current/stray.txt");
   await writeFile(stray, "not manifested\n");
-  assert.equal(await verifyTrackedPublications({ publicDirectory, ...baseline }), false);
+  assert.equal(await verifyTrackedPublications({ publicDirectory, ...currentReproduction }), false);
   await rm(stray);
   await writeFiles(join(publicDirectory, "current"), new Map([["unknown/nested.txt", "not manifested\n"]]));
-  assert.equal(await verifyTrackedPublications({ publicDirectory, ...baseline }), false);
+  assert.equal(await verifyTrackedPublications({ publicDirectory, ...currentReproduction }), false);
 });
 
 test("rejects an empty unknown directory in a hybrid current", async () => {
@@ -349,10 +354,15 @@ test("rejects an empty unknown directory in a hybrid current", async () => {
     client: "singbox",
     manifestHash: candidate.diagnostics.defaultManifest.clients.singbox.manifestHash,
   });
+  const currentReproduction = buildClientArtifacts({
+    snapshot: lightweightFixtureSnapshots(),
+    upstream,
+    chinaIpAudit: candidate.defaults.get("audit/china-ip-drift.json"),
+  });
 
-  assert.equal(await verifyTrackedPublications({ publicDirectory, ...baseline }), true);
+  assert.equal(await verifyTrackedPublications({ publicDirectory, ...currentReproduction }), true);
   await mkdir(join(publicDirectory, "current/unknown-empty"));
-  assert.equal(await verifyTrackedPublications({ publicDirectory, ...baseline }), false);
+  assert.equal(await verifyTrackedPublications({ publicDirectory, ...currentReproduction }), false);
 });
 
 test("rejects an unmanifested empty directory inside a current client tree", async () => {

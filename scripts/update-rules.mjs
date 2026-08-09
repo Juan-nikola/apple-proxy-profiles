@@ -171,8 +171,14 @@ function rootManifestMatchesWithIndependentAudit(content, expectedManifest) {
       const { manifestHash: ignored, ...base } = manifest;
       return {
         ...base,
+        clients: base.clients && Object.fromEntries(Object.entries(base.clients).map(([client, value]) => [
+          client,
+          Object.fromEntries(Object.entries(value).filter(([key]) => key !== "manifestHash")),
+        ])),
         files: Array.isArray(base.files)
-          ? base.files.filter(({ path }) => path !== "audit/china-ip-drift.json")
+          ? base.files.filter(({ path }) => (
+            path !== "audit/china-ip-drift.json" && !path.endsWith("/client-manifest.json")
+          ))
           : base.files,
       };
     };

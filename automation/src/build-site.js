@@ -477,7 +477,16 @@ async function verifyImmutableClient(sourceDirectory, manifest, directory) {
   }
 }
 
-async function verifiedChinaIpAuditEvidence(publicDirectory, now) {
+async function verifiedChinaIpAuditEvidence({
+  publicDirectory,
+  client,
+  manifestHash: approvedManifestHash,
+  expectedAuditSha256,
+  now,
+}) {
+  if (!/^[0-9a-f]{64}$/u.test(expectedAuditSha256)) {
+    throw new Error("The approved client manifest does not bind the edge ChinaIP audit");
+  }
   const edgeDirectory = join(publicDirectory, "edge");
   const manifestBytes = await readFile(join(edgeDirectory, "manifest.json"));
   let manifest;
@@ -492,6 +501,9 @@ async function verifiedChinaIpAuditEvidence(publicDirectory, now) {
     || !manifestBytes.equals(artifactBuffer(canonicalJson(manifest)))) {
     throw new Error("Edge root manifest hash or canonical bytes are invalid");
   }
+  if (manifest.clients?.[client]?.manifestHash !== approvedManifestHash) {
+    throw new Error("The edge root manifest does not bind the approved client manifest");
+  }
   const records = Array.isArray(manifest.files)
     ? manifest.files.filter(({ path }) => path === CHINA_IP_AUDIT_PATH)
     : [];
@@ -501,6 +513,9 @@ async function verifiedChinaIpAuditEvidence(publicDirectory, now) {
   const [record] = records;
   if (!Number.isSafeInteger(record.bytes) || record.bytes < 1 || !/^[0-9a-f]{64}$/u.test(record.sha256)) {
     throw new Error("ChinaIP audit root manifest record is invalid");
+  }
+  if (record.sha256 !== expectedAuditSha256) {
+    throw new Error("The approved client manifest does not bind the edge ChinaIP audit");
   }
   const bytes = await readFile(join(edgeDirectory, CHINA_IP_AUDIT_PATH));
   if (bytes.length !== record.bytes || artifactSha256(bytes) !== record.sha256) {
@@ -514,6 +529,11 @@ async function verifiedChinaIpAuditEvidence(publicDirectory, now) {
   }
   if (!bytes.equals(artifactBuffer(canonicalJson(report)))) {
     throw new Error("ChinaIP audit report bytes are not canonical");
+  }
+  if (report.primary?.repository !== manifest.upstream?.repository
+    || report.primary?.commit !== manifest.upstream?.commit
+    || report.primary?.committedAt !== manifest.upstream?.committedAt) {
+    throw new Error("ChinaIP audit primary provenance does not match the edge root upstream");
   }
   const validationTime = now instanceof Date ? now.getTime() : (
     typeof now === "number" ? now : Date.parse(now)
@@ -541,15 +561,27 @@ function emptyRollout() {
   };
 }
 
-export async function promoteClientRelease({ publicDirectory, client, manifestHash, now = new Date() }) {
+export async function promoteClientRelease({
+  publicDirectory,
+  client,
+  manifestHash,
+  now = new Date(),
+  cleanupBackupImpl = (path) => rm(path, { recursive: true, force: true }),
+}) {
   const directory = CLIENT_PUBLIC_PATHS[client];
   if (!directory || !/^[0-9a-f]{64}$/u.test(manifestHash)) {
     throw new TypeError("Client promotion target is invalid");
   }
-  const chinaIpAudit = await verifiedChinaIpAuditEvidence(publicDirectory, now);
   const immutableSource = join(publicDirectory, "edge", "clients", client, manifestHash);
   const clientManifest = JSON.parse(await readFile(join(immutableSource, "client-manifest.json"), "utf8"));
   if (clientManifest.manifestHash !== manifestHash) throw new Error("Edge client manifest hash does not match promotion target");
+  const chinaIpAudit = await verifiedChinaIpAuditEvidence({
+    publicDirectory,
+    client,
+    manifestHash,
+    expectedAuditSha256: clientManifest.chinaIpAuditSha256,
+    now,
+  });
   await verifyImmutableClient(immutableSource, clientManifest, directory);
   const optionalPackIds = Object.keys(clientManifest.optionalPacks ?? {}).sort();
   if (optionalPackIds.length === 0) throw new Error("Immutable optional selection is empty");
@@ -664,11 +696,17 @@ export async function promoteClientRelease({ publicDirectory, client, manifestHa
       await rename(backup, publicDirectory);
       throw error;
     }
-    await rm(backup, { recursive: true, force: true });
+    let backupCleanupPending = false;
+    try {
+      await cleanupBackupImpl(backup);
+    } catch {
+      backupCleanupPending = true;
+    }
     return Object.freeze({
       client,
       manifestHash,
       previous: nextRollout.previous[client],
+      backupCleanupPending,
       optionalPacks: Object.freeze(Object.fromEntries([...optionalManifests].map(([packId, optionalManifest]) => [
         packId,
         optionalManifest.manifestHash,

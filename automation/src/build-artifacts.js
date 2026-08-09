@@ -247,7 +247,16 @@ export function enforcePublicationBudgets({ diagnostics, files }) {
   return Object.freeze(referencedBytes);
 }
 
-function addClientManifests(files, upstream, basePrefix = "", optionalSelections = null) {
+function addClientManifests(
+  files,
+  upstream,
+  basePrefix = "",
+  optionalSelections = null,
+  chinaIpAuditSha256 = null,
+) {
+  if (chinaIpAuditSha256 !== null && !/^[0-9a-f]{64}$/u.test(chinaIpAuditSha256)) {
+    throw new TypeError("ChinaIP audit digest is invalid");
+  }
   const manifests = {};
   for (const [client, directory] of Object.entries(CLIENT_PATHS)) {
     const prefix = basePrefix ? `${basePrefix}/${directory}` : directory;
@@ -258,6 +267,7 @@ function addClientManifests(files, upstream, basePrefix = "", optionalSelections
       client,
       generatedAt: upstream.committedAt,
       ...(optionalSelections === null ? {} : { optionalPacks: optionalSelections[client] ?? {} }),
+      ...(chinaIpAuditSha256 === null ? {} : { chinaIpAuditSha256 }),
       files: records,
     };
     const manifestHash = artifactSha256(canonicalJson(base));
@@ -355,6 +365,7 @@ export function buildClientArtifacts({
   });
   const rendered = renderRuleSetMap({ ruleSets: compactedDefaults.ruleSets, upstream, singBoxBinaries });
   const defaults = rendered.files;
+  let chinaIpAuditSha256 = null;
 
   const additions = typeof additionalFiles === "function"
     ? additionalFiles(rendered.anywhere.manifest)
@@ -369,6 +380,7 @@ export function buildClientArtifacts({
     }
     artifactBuffer(chinaIpAudit);
     defaults.set("audit/china-ip-drift.json", chinaIpAudit);
+    chinaIpAuditSha256 = artifactSha256(chinaIpAudit);
   }
 
   assertNoForbiddenDefaultReferences(defaults);
@@ -384,7 +396,13 @@ export function buildClientArtifacts({
   const optionalSelections = Object.fromEntries(Object.keys(CLIENT_PATHS).map((client) => [client, {
     "adblock-full": adblockFull.manifest.clients[client].manifestHash,
   }]));
-  const clientManifests = addClientManifests(defaults, upstream, "", optionalSelections);
+  const clientManifests = addClientManifests(
+    defaults,
+    upstream,
+    "",
+    optionalSelections,
+    chinaIpAuditSha256,
+  );
   const records = fileRecords(defaults);
   const baseManifest = {
     schemaVersion: 2,

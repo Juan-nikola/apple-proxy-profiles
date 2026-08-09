@@ -293,6 +293,121 @@ test("promotes calibration warnings with the exact manifested audit bytes", asyn
   );
 });
 
+test("rejects a substituted audit even when client content and approval hash are unchanged", async () => {
+  const root = await mkdtemp(join(tmpdir(), "apple-proxy-audit-substitution-"));
+  const publicDirectory = join(root, "public");
+  const approvedAudit = chinaIpAuditBytes();
+  const substitutedAudit = chinaIpAuditBytes({ divergent: true });
+  const artifacts = buildClientArtifacts({
+    snapshot: lightweightFixtureSnapshots(),
+    upstream: lightweightUpstream,
+    chinaIpAudit: approvedAudit,
+  });
+  const hash = artifacts.diagnostics.defaultManifest.clients.singbox.manifestHash;
+  await publishEdgeRelease({
+    publicDirectory,
+    defaults: artifacts.defaults,
+    optionalPacks: artifacts.optionalPacks,
+    manifest: artifacts.diagnostics.defaultManifest,
+  });
+  const manifestPath = join(publicDirectory, "edge/manifest.json");
+  const manifest = JSON.parse(await readFile(manifestPath, "utf8"));
+  const { manifestHash: ignored, ...base } = manifest;
+  const auditRecord = base.files.find(({ path }) => path === "audit/china-ip-drift.json");
+  auditRecord.bytes = substitutedAudit.length;
+  auditRecord.sha256 = artifactSha256(substitutedAudit);
+  await writeFile(join(publicDirectory, "edge/audit/china-ip-drift.json"), substitutedAudit);
+  await writeFile(manifestPath, canonicalJson({
+    ...base,
+    manifestHash: artifactSha256(canonicalJson(base)),
+  }));
+  await mkdir(join(publicDirectory, "current/sing-box"), { recursive: true });
+  await writeFile(join(publicDirectory, "current/sing-box/old.txt"), "old\n");
+
+  await assert.rejects(
+    () => promoteClientRelease({
+      publicDirectory,
+      client: "singbox",
+      manifestHash: hash,
+      now: "2026-08-09T01:00:00Z",
+    }),
+    /approved client manifest does not bind the edge ChinaIP audit/u,
+  );
+  assert.equal(await readFile(join(publicDirectory, "current/sing-box/old.txt"), "utf8"), "old\n");
+});
+
+test("rejects a client-bound audit whose primary provenance differs from the edge root", async () => {
+  const root = await mkdtemp(join(tmpdir(), "apple-proxy-audit-primary-mismatch-"));
+  const publicDirectory = join(root, "public");
+  const report = JSON.parse(chinaIpAuditBytes());
+  report.primary.commit = "c".repeat(40);
+  const chinaIpAudit = Buffer.from(canonicalJson(report));
+  const artifacts = buildClientArtifacts({
+    snapshot: lightweightFixtureSnapshots(),
+    upstream: lightweightUpstream,
+    chinaIpAudit,
+  });
+  const hash = artifacts.diagnostics.defaultManifest.clients.singbox.manifestHash;
+  await publishEdgeRelease({
+    publicDirectory,
+    defaults: artifacts.defaults,
+    optionalPacks: artifacts.optionalPacks,
+    manifest: artifacts.diagnostics.defaultManifest,
+  });
+
+  await assert.rejects(
+    () => promoteClientRelease({
+      publicDirectory,
+      client: "singbox",
+      manifestHash: hash,
+      now: "2026-08-09T01:00:00Z",
+    }),
+    /primary provenance does not match the edge root upstream/u,
+  );
+});
+
+test("treats backup cleanup failure as post-commit maintenance", async () => {
+  const root = await mkdtemp(join(tmpdir(), "apple-proxy-promote-cleanup-"));
+  const publicDirectory = join(root, "public");
+  const artifacts = buildClientArtifacts({
+    snapshot: lightweightFixtureSnapshots(),
+    upstream: lightweightUpstream,
+  });
+  const hash = artifacts.diagnostics.defaultManifest.clients.singbox.manifestHash;
+  await publishEdgeRelease({
+    publicDirectory,
+    defaults: artifacts.defaults,
+    optionalPacks: artifacts.optionalPacks,
+    manifest: artifacts.diagnostics.defaultManifest,
+  });
+  await mkdir(join(publicDirectory, "current/sing-box"), { recursive: true });
+  await writeFile(join(publicDirectory, "current/sing-box/old.txt"), "old\n");
+  let cleanupCalls = 0;
+
+  const result = await promoteClientRelease({
+    publicDirectory,
+    client: "singbox",
+    manifestHash: hash,
+    now: "2026-08-09T01:00:00Z",
+    cleanupBackupImpl: async () => {
+      cleanupCalls += 1;
+      throw new Error("simulated backup cleanup failure");
+    },
+  });
+
+  assert.equal(cleanupCalls, 1);
+  assert.equal(result.client, "singbox");
+  assert.equal(result.backupCleanupPending, true);
+  assert.deepEqual(
+    await readFile(join(publicDirectory, "current/audit/china-ip-drift.json")),
+    artifacts.defaults.get("audit/china-ip-drift.json"),
+  );
+  await assert.rejects(
+    () => readFile(join(publicDirectory, "current/sing-box/old.txt")),
+    /ENOENT/u,
+  );
+});
+
 test("rejects stale, unmanifested, and hash-mismatched audit evidence before promotion", async () => {
   const cases = [
     {

@@ -91,7 +91,7 @@ test("publishes exact ChinaIP audit bytes only as root evidence", () => {
     sha256: artifactSha256(chinaIpAudit),
   });
   for (const client of Object.keys(result.diagnostics.defaultManifest.clients)) {
-    assert.equal(
+    assert.notEqual(
       result.diagnostics.defaultManifest.clients[client].manifestHash,
       baseline.diagnostics.defaultManifest.clients[client].manifestHash,
       client,
@@ -101,6 +101,9 @@ test("publishes exact ChinaIP audit bytes only as root evidence", () => {
       baseline.diagnostics.defaultManifest.clients[client].referencedDefaultBytes,
       client,
     );
+    const directory = client === "singbox" ? "sing-box" : client;
+    const clientManifest = JSON.parse(result.defaults.get(`${directory}/client-manifest.json`));
+    assert.equal(clientManifest.chinaIpAuditSha256, artifactSha256(chinaIpAudit), client);
   }
   const clientPaths = [...result.defaults.keys()].filter((path) => (
     /^(?:shadowrocket|surge|egern|sing-box|anywhere)\//u.test(path)

@@ -20,6 +20,7 @@ const REPOSITORY_ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
 export const DEFAULT_STAGE_ROOT = resolve(REPOSITORY_ROOT, "clients/sing-box/build/rule-artifacts");
 export const DEFAULT_COMPILED_ROOT = resolve(REPOSITORY_ROOT, "clients/sing-box/build/compiled-rule-artifacts");
 const CHINA_IP_AUDIT_PATH = "audit/china-ip-drift.json";
+const SRS_MAGIC = Buffer.from([0x53, 0x52, 0x53, 0x02]);
 
 function sha256(content) {
   return createHash("sha256").update(content).digest("hex");
@@ -174,13 +175,13 @@ export async function loadCurrentChinaIpAudit({ publicDirectory }) {
   return loaded.bytes;
 }
 
-export async function stageSingBoxAuditArtifacts({ artifacts, chinaIpAudit, outputRoot = DEFAULT_STAGE_ROOT }) {
+async function writeRuleStage({ inputs, upstream, chinaIpAudit, outputRoot }) {
   const absoluteOutput = resolve(outputRoot);
   const parent = dirname(absoluteOutput);
   await mkdir(parent, { recursive: true });
   const staging = await mkdtemp(join(parent, ".sing-box-rule-stage-"));
   try {
-    const inputs = auditInputs(artifacts);
+    if (!(inputs instanceof Map) || inputs.size === 0) throw new TypeError("Rule stage inputs are required");
     const audit = canonicalChinaIpAudit(chinaIpAudit);
     const records = [];
     for (const [path, content] of inputs) {
@@ -197,7 +198,6 @@ export async function stageSingBoxAuditArtifacts({ artifacts, chinaIpAudit, outp
       bytes: audit.bytes.length,
       sha256: sha256(audit.bytes),
     });
-    const upstream = artifacts.diagnostics?.defaultManifest?.upstream;
     if (!upstream || !/^[0-9a-f]{40}$/u.test(upstream.commit)) throw new Error("Staged upstream commit is invalid");
     const manifest = Object.freeze({
       schemaVersion: 2,
@@ -213,6 +213,43 @@ export async function stageSingBoxAuditArtifacts({ artifacts, chinaIpAudit, outp
     await rm(staging, { recursive: true, force: true });
     throw error;
   }
+}
+
+export async function stageSingBoxAuditArtifacts({ artifacts, chinaIpAudit, outputRoot = DEFAULT_STAGE_ROOT }) {
+  return writeRuleStage({
+    inputs: auditInputs(artifacts),
+    upstream: artifacts.diagnostics?.defaultManifest?.upstream,
+    chinaIpAudit,
+    outputRoot,
+  });
+}
+
+export async function stageCurrentSingBoxArtifacts({
+  publicDirectory,
+  chinaIpAudit,
+  outputRoot = DEFAULT_STAGE_ROOT,
+}) {
+  if (typeof publicDirectory !== "string" || !publicDirectory) {
+    throw new TypeError("Current public directory is required");
+  }
+  const currentManifest = JSON.parse(await readFile(join(publicDirectory, "current/manifest.json"), "utf8"));
+  const inputs = new Map();
+  for (const path of expectedCompiledPaths()) {
+    const source = path.startsWith("optional/adblock-full/")
+      ? join(publicDirectory, "optional/adblock-full/current", path.slice("optional/adblock-full/".length))
+      : join(publicDirectory, "current", path);
+    const content = await readFile(source);
+    if (content.length < 17 || !content.subarray(0, SRS_MAGIC.length).equals(SRS_MAGIC)) {
+      throw new Error(`Tracked current sing-box rule is invalid: ${path}`);
+    }
+    inputs.set(path, content);
+  }
+  return writeRuleStage({
+    inputs,
+    upstream: currentManifest.upstream,
+    chinaIpAudit,
+    outputRoot,
+  });
 }
 
 export async function readRuleStageManifest(stageRoot = DEFAULT_STAGE_ROOT) {
@@ -267,22 +304,30 @@ export async function main(args = process.argv.slice(2), {
   if (args.length !== 2 || args[0] !== "--channel" || !["edge", "current"].includes(args[1])) {
     throw new Error("Usage: stage-rule-artifacts.mjs --channel <edge|current>");
   }
-  let buildArtifacts = buildArtifactsImpl;
-  if (buildArtifacts === null) ({ buildArtifacts } = await import("./update-rules.mjs"));
   const publicDirectory = env.PUBLIC_DIRECTORY || resolve(REPOSITORY_ROOT, "public");
   const channel = args[1];
+  if (channel === "current") {
+    const chinaIpAudit = await loadCurrentChinaIpAudit({ publicDirectory });
+    const manifest = await stageCurrentSingBoxArtifacts({
+      publicDirectory,
+      chinaIpAudit,
+      outputRoot: env.SING_BOX_ARTIFACT_ROOT || DEFAULT_STAGE_ROOT,
+    });
+    process.stdout.write(`Staged ${manifest.files.length} tracked current sing-box rules at ${manifest.upstream.commit}\n`);
+    return manifest;
+  }
+  let buildArtifacts = buildArtifactsImpl;
+  if (buildArtifacts === null) ({ buildArtifacts } = await import("./update-rules.mjs"));
   const artifacts = await buildArtifacts({
-    operation: channel === "edge" ? "build-edge" : "check-current",
+    operation: "build-edge",
     publicDirectory,
     includeStaticFiles: false,
   });
-  const chinaIpAudit = channel === "current"
-    ? await loadCurrentChinaIpAudit({ publicDirectory })
-    : await buildEdgeChinaIpAuditImpl({
-      publicDirectory,
-      primary: artifacts.diagnostics?.chinaIpAuditPrimary,
-      now,
-    });
+  const chinaIpAudit = await buildEdgeChinaIpAuditImpl({
+    publicDirectory,
+    primary: artifacts.diagnostics?.chinaIpAuditPrimary,
+    now,
+  });
   const manifest = await stageSingBoxAuditArtifacts({
     artifacts,
     chinaIpAudit,

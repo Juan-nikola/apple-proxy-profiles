@@ -161,29 +161,46 @@ test("builds edge audit evidence from the pinned secondary and prior edge baseli
   assert.deepEqual(bytes, Buffer.from(canonicalJson(report)));
 });
 
-test("current stage reuses tracked audit bytes without invoking the secondary builder", async () => {
+test("real current stage reuses tracked audit and SRS bytes with zero network", async () => {
   const root = await mkdtemp(join(tmpdir(), "china-ip-current-stage-"));
   const publicDirectory = join(root, "public");
   const outputRoot = join(root, "stage");
   const report = chinaIpAuditBytes();
-  const artifacts = buildClientArtifacts({ snapshot: lightweightFixtureSnapshots(), upstream });
   await mkdir(join(publicDirectory, "current/audit"), { recursive: true });
   await writeFile(join(publicDirectory, "current/audit/china-ip-drift.json"), report);
-  let secondaryBuilds = 0;
+  await writeFile(join(publicDirectory, "current/manifest.json"), JSON.stringify({ upstream }));
+  const expected = [
+    ...ruleClientCatalog({ adblockMode: "off" }).map(({ id }) => `sing-box/rule-sets/${id}.srs`),
+    "optional/adblock-full/sing-box/Advertising.srs",
+    "optional/adblock-full/sing-box/Advertising_Domain.srs",
+  ].sort();
+  for (const [index, path] of expected.entries()) {
+    const source = path.startsWith("optional/")
+      ? join(publicDirectory, "optional/adblock-full/current", path.slice("optional/adblock-full/".length))
+      : join(publicDirectory, "current", path);
+    await mkdir(dirname(source), { recursive: true });
+    await writeFile(source, Buffer.concat([
+      Buffer.from([0x53, 0x52, 0x53, 0x02]),
+      Buffer.alloc(13, index + 1),
+    ]));
+  }
+  const originalFetch = globalThis.fetch;
+  let networkCalls = 0;
+  globalThis.fetch = async () => {
+    networkCalls += 1;
+    throw new Error("current staging must be offline");
+  };
+  let manifest;
+  try {
+    manifest = await stageRuleArtifactsMain(["--channel", "current"], {
+      env: { PUBLIC_DIRECTORY: publicDirectory, SING_BOX_ARTIFACT_ROOT: outputRoot },
+    });
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
 
-  await stageRuleArtifactsMain(["--channel", "current"], {
-    env: { PUBLIC_DIRECTORY: publicDirectory, SING_BOX_ARTIFACT_ROOT: outputRoot },
-    buildArtifactsImpl: async ({ operation }) => {
-      assert.equal(operation, "check-current");
-      return artifacts;
-    },
-    buildEdgeChinaIpAuditImpl: async () => {
-      secondaryBuilds += 1;
-      throw new Error("current staging must be offline");
-    },
-  });
-
-  assert.equal(secondaryBuilds, 0);
+  assert.equal(networkCalls, 0);
+  assert.deepEqual(manifest.files.map(({ path }) => path), expected);
   assert.deepEqual(await readFile(join(outputRoot, "audit/china-ip-drift.json")), report);
 });
 

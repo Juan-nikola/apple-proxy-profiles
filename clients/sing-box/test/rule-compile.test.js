@@ -5,6 +5,7 @@ import { join } from "node:path";
 import test from "node:test";
 
 import { checkConfigs, compileRules, main } from "../scripts/compile-rules.mjs";
+import { ruleClientCatalog } from "../../../shared/rules/lightweight-policy.js";
 
 async function fixtureCore(mode) {
   const root = await mkdtemp(join(tmpdir(), "sing-box-core-"));
@@ -125,4 +126,33 @@ test("compile command names missing staged inputs independently of workspace sta
     } }),
     /missing-stage|staged.*artifact|artifact.*missing/iu,
   );
+});
+
+test("compile command reuses a closed offline current SRS stage", async () => {
+  const root = await mkdtemp(join(tmpdir(), "sing-box-current-stage-"));
+  const artifactRoot = join(root, "stage");
+  const outputRoot = join(root, "compiled");
+  const expected = [
+    ...ruleClientCatalog({ adblockMode: "off" }).map(({ id }) => `sing-box/rule-sets/${id}.srs`),
+    "optional/adblock-full/sing-box/Advertising.srs",
+    "optional/adblock-full/sing-box/Advertising_Domain.srs",
+  ].sort();
+  const binaries = new Map();
+  for (const [index, path] of expected.entries()) {
+    const bytes = Buffer.concat([Buffer.from([0x53, 0x52, 0x53, 0x02]), Buffer.alloc(13, index + 1)]);
+    binaries.set(path, bytes);
+    await mkdir(join(artifactRoot, path, ".."), { recursive: true });
+    await writeFile(join(artifactRoot, path), bytes);
+  }
+
+  const result = await main(["compile"], { env: {
+    SING_BOX_CORE: join(root, "unused-core"),
+    SING_BOX_ARTIFACT_ROOT: artifactRoot,
+    SING_BOX_RULE_OUTPUT_ROOT: outputRoot,
+  } });
+
+  assert.deepEqual([...result.keys()], expected);
+  for (const [path, bytes] of binaries) {
+    assert.deepEqual(await readFile(join(outputRoot, path)), bytes, path);
+  }
 });
