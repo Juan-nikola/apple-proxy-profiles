@@ -1,0 +1,207 @@
+{
+  "chinaIpAuditSha256": "331a5470c89379c3748594b33f1b97d8fc0e0c7e721fa2109be4391f849dd3fb",
+  "client": "surge",
+  "files": [
+    {
+      "bytes": 14593,
+      "path": "surge/examples/surge-ipad.conf",
+      "sha256": "e5ae70a2a1371ad788c909d9b78404dfcb2d13aded3b7cf1898ea528eccbe406"
+    },
+    {
+      "bytes": 14593,
+      "path": "surge/examples/surge-iphone.conf",
+      "sha256": "e5ae70a2a1371ad788c909d9b78404dfcb2d13aded3b7cf1898ea528eccbe406"
+    },
+    {
+      "bytes": 14588,
+      "path": "surge/examples/surge-macos.conf",
+      "sha256": "569ae525d637b4bf8d3e62c54609d3fce6204f5788bccc113d4f199eb88bcdb9"
+    },
+    {
+      "bytes": 985,
+      "path": "surge/rules/Apple.list",
+      "sha256": "a8ca5ebabeb9bbdd02afed87356f8c730adbae353023ac5b91fd18865e3d94c8"
+    },
+    {
+      "bytes": 4550,
+      "path": "surge/rules/BiliBili.list",
+      "sha256": "44607dcb9d0a88f075d18dea042dd168dfc3145a7383d0a9a410f31e2dd01d6d"
+    },
+    {
+      "bytes": 2515,
+      "path": "surge/rules/BlockHttpDNS.list",
+      "sha256": "7a3b9ea992c16f60604be619911cdd126eec0e3c13b77e85a6bc6b5472fce67a"
+    },
+    {
+      "bytes": 10830,
+      "path": "surge/rules/ByteDance.list",
+      "sha256": "6e2cb5bed0e621e87c14da773acb696cb0f7092d109ef200d4b0cc96aa0db719"
+    },
+    {
+      "bytes": 412209,
+      "path": "surge/rules/ChinaIP.list",
+      "sha256": "9886f9e7a3043aef946f58e0a36b2fdfc60fd52d38b7887e9fe185f7216cd1e2"
+    },
+    {
+      "bytes": 323,
+      "path": "surge/rules/ChinaTLD.list",
+      "sha256": "df51012afb947966cf41f9a5b2de02b1379e5c896f464f55eb2652147dbd5fa0"
+    },
+    {
+      "bytes": 379,
+      "path": "surge/rules/Claude.list",
+      "sha256": "9e5b1a93fc586e47f481cad99f1bbd7e40a0cd64271227f741e8b7ce33041c44"
+    },
+    {
+      "bytes": 1863,
+      "path": "surge/rules/Copilot.list",
+      "sha256": "22c1d7b4b4d2516f2ea573ff1acd79161209f4ecbcf70e592a1c3e2880d3edad"
+    },
+    {
+      "bytes": 5674,
+      "path": "surge/rules/Disney.list",
+      "sha256": "b8457494b4c262957890436717ae14a7092c2242f14c3a87ff1b05001b8fc24c"
+    },
+    {
+      "bytes": 1963,
+      "path": "surge/rules/DomesticCore.list",
+      "sha256": "8ea7334b5593482076efffe1f3cc8d8a39849a94129cdedf2d80c5e8da7c8417"
+    },
+    {
+      "bytes": 1474,
+      "path": "surge/rules/DomesticGame.list",
+      "sha256": "0a49230d40ffbf63c3ccc009e49cc3742c4041809df3935e1756c4edf9066d12"
+    },
+    {
+      "bytes": 448,
+      "path": "surge/rules/Download.list",
+      "sha256": "4328f1598dc828d4a315ea5ccc4df25e2ad263759c34d57e795b49bb4c010791"
+    },
+    {
+      "bytes": 17476,
+      "path": "surge/rules/Facebook.list",
+      "sha256": "7191648baa801c8fb242d4e3cc866e3ae75c11fce0308bdf65ca252045a74f54"
+    },
+    {
+      "bytes": 720,
+      "path": "surge/rules/Gemini.list",
+      "sha256": "82bdbea1c990a5ef95cf46e06a227706e37de10f073f7b6f983b87f0cbf483a0"
+    },
+    {
+      "bytes": 1243,
+      "path": "surge/rules/GitHub.list",
+      "sha256": "a0944a43ed8de3db3340cf9dd9efd230374aeee2f7d8ae2c8616e4e2cb53b871"
+    },
+    {
+      "bytes": 34042,
+      "path": "surge/rules/GlobalMedia.list",
+      "sha256": "6ae66ffbf56669ca0c8fa30cb768eefb06ac518d8f0450283185120a1cd2afe6"
+    },
+    {
+      "bytes": 6856,
+      "path": "surge/rules/Hijacking.list",
+      "sha256": "6b0b2e9d1ab547b5d829070f8264d871d13501d780052003033e422bb3ab8b31"
+    },
+    {
+      "bytes": 417,
+      "path": "surge/rules/Instagram.list",
+      "sha256": "8afd371171bab223edd6348da0008d3118a112ba616d5fca00473e60035fa09e"
+    },
+    {
+      "bytes": 20566,
+      "path": "surge/rules/Microsoft.list",
+      "sha256": "80e3d2bb8ee395a417f28dac0221e7d8e2a937ed6e8c8e46482b77726a096554"
+    },
+    {
+      "bytes": 40421,
+      "path": "surge/rules/Netflix.list",
+      "sha256": "0cd3fecdd3888437e6e9ef85a1e02899a60eee5d9c94aab357536f0e5c09ca8c"
+    },
+    {
+      "bytes": 1418,
+      "path": "surge/rules/OpenAI.list",
+      "sha256": "946f8359bfe0eb728fb259d9eed556ece7c66effceb86735d9957ca602e2ebc0"
+    },
+    {
+      "bytes": 18626,
+      "path": "surge/rules/OverseasGame.list",
+      "sha256": "b40f584cee1022ae7a2bfc80a982aa8fbf359674e2eddceae1b2f49d3e866789"
+    },
+    {
+      "bytes": 915,
+      "path": "surge/rules/Privacy.list",
+      "sha256": "4c2871c9eb7dca052a9fc65a988ee18f657a00d0e3e9ace3b4699575a51e9540"
+    },
+    {
+      "bytes": 6940,
+      "path": "surge/rules/PrivateTracker.list",
+      "sha256": "76d822935660dd832ddf79004b5da0dbf465e856b53154e09e4f1ad2a890ec07"
+    },
+    {
+      "bytes": 1263,
+      "path": "surge/rules/Spotify.list",
+      "sha256": "b08184fd1020933fa814c137d191aaad84b90a534e95f604d733b382fc741369"
+    },
+    {
+      "bytes": 797,
+      "path": "surge/rules/SteamCN.list",
+      "sha256": "5a4e4be5d62711b4864f4f9be37d740fa50e032942157c78b5695e4067f592a5"
+    },
+    {
+      "bytes": 1311,
+      "path": "surge/rules/Telegram.list",
+      "sha256": "9ef55c8cab8a37d366139f430fc3efa2474e6b22e2c83993f184f09231b54992"
+    },
+    {
+      "bytes": 1179,
+      "path": "surge/rules/TikTok.list",
+      "sha256": "ed82fc67208da490204a79e9c36c231fb63bf765574e8e1b1bb6a6ea46fb1a72"
+    },
+    {
+      "bytes": 1230,
+      "path": "surge/rules/Twitter.list",
+      "sha256": "42d117ca0e821b02e9724a7a198d3c9b071dad52e75108aa22584b416d0f2fd0"
+    },
+    {
+      "bytes": 395,
+      "path": "surge/rules/Weibo.list",
+      "sha256": "8fe945b7954894c1480f3c84091c373a0226e26da4d5d6f6beab5ffeea6391ee"
+    },
+    {
+      "bytes": 424,
+      "path": "surge/rules/XiaoHongShu.list",
+      "sha256": "fee5994ba145e4e36b2ae17133bdb201e92d38ce0080c2320574c8d883e0348e"
+    },
+    {
+      "bytes": 5326,
+      "path": "surge/rules/YouTube.list",
+      "sha256": "f86d61408bf0774a5a01d4fe47de5692694f4754f88d15ec57d3c562ab90054f"
+    },
+    {
+      "bytes": 95414,
+      "path": "surge/scripts/substore-nodes-generator.js",
+      "sha256": "3495fb100167041cf5a1f711859bd9e7c55bfdceb6851106bd4b3ac495f41ad9"
+    },
+    {
+      "bytes": 130291,
+      "path": "surge/scripts/substore-profile-generator.js",
+      "sha256": "8bffc46e10fd6677bdf4f5bdae91ad3512a5ce1b8db1120102f657fef71c1f33"
+    },
+    {
+      "bytes": 95414,
+      "path": "surge/scripts/surge-nodes-generator.js",
+      "sha256": "3495fb100167041cf5a1f711859bd9e7c55bfdceb6851106bd4b3ac495f41ad9"
+    },
+    {
+      "bytes": 130291,
+      "path": "surge/scripts/surge-profile-generator.js",
+      "sha256": "8bffc46e10fd6677bdf4f5bdae91ad3512a5ce1b8db1120102f657fef71c1f33"
+    }
+  ],
+  "generatedAt": "2026-08-07T18:52:17Z",
+  "manifestHash": "8963137117fab98d1a58e5684656f5a2c82ac1d0389243ea892874ec46c962e6",
+  "optionalPacks": {
+    "adblock-full": "25ec7ae1a02bdb709a18509c79950bc179b86d1b1734b16bd2698499e6734e6c"
+  },
+  "schemaVersion": 1
+}

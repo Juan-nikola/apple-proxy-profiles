@@ -1,0 +1,47 @@
+# Upstream: https://github.com/blackmatrix7/ios_rule_script
+# Path: compiled/Surge/GitHub/GitHub.list
+# Commit: ccc2d6b711007324bacb55cdfbbf7e36ad48145a
+# Committed at: 2026-08-07T18:52:17Z
+# License: GPL-2.0-only
+# Changed by: Juan-nikola/apple-proxy-profiles
+# Output entries: 31
+# Omitted entries: 0
+domain_set: []
+domain_suffix_set:
+  - "atom.io"
+  - "dependabot.com"
+  - "ghcr.io"
+  - "git.io"
+  - "github-atom-io-herokuapp-com.freetls.fastly.net"
+  - "github-avatars.oss-cn-hongkong.aliyuncs.com"
+  - "github-cloud.s3.amazonaws.com"
+  - "github.blog"
+  - "github.com"
+  - "github.community"
+  - "github.dev"
+  - "github.io"
+  - "githubapp.com"
+  - "githubassets.com"
+  - "githubcopilot.com"
+  - "githubhackathon.com"
+  - "githubnext.com"
+  - "githubpreview.dev"
+  - "githubstatus.com"
+  - "githubuniverse.com"
+  - "githubusercontent.com"
+  - "myoctocat.com"
+  - "npm.community"
+  - "npmjs.com"
+  - "npmjs.org"
+  - "opensource.guide"
+  - "rawgit.com"
+  - "rawgithub.com"
+  - "repo.new"
+  - "thegithubshop.com"
+domain_keyword_set:
+  - "github"
+ip_cidr_set: []
+ip_cidr6_set: []
+asn_set: []
+url_regex_set: []
+user_agent_set: []
