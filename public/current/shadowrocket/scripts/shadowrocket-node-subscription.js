@@ -1,4 +1,4 @@
-var ShadowrocketProfileBundle = (() => {
+var ShadowrocketNodeSubscriptionBundle = (() => {
   var __defProp = Object.defineProperty;
   var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
   var __getOwnPropNames = Object.getOwnPropertyNames;
@@ -17,10 +17,11 @@ var ShadowrocketProfileBundle = (() => {
   };
   var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
-  // substore-profile-entry.js
-  var substore_profile_entry_exports = {};
-  __export(substore_profile_entry_exports, {
-    operator: () => operator
+  // substore-node-subscription-entry.js
+  var substore_node_subscription_entry_exports = {};
+  __export(substore_node_subscription_entry_exports, {
+    operator: () => operator,
+    renderShadowrocketSubscription: () => renderShadowrocketSubscription
   });
 
   // ../../../shared/contracts.js
@@ -1612,1394 +1613,150 @@ var ShadowrocketProfileBundle = (() => {
     };
   }
 
-  // ../../../shared/policies/platform-presets.js
-  var POLICY_PLATFORM_PRESETS = Object.freeze({
-    macos: Object.freeze({ testInterval: 600, timeout: 5, tolerance: 100 }),
-    iphone: Object.freeze({ testInterval: 1800, timeout: 7, tolerance: 150 }),
-    ipad: Object.freeze({ testInterval: 1800, timeout: 7, tolerance: 150 }),
-    android: Object.freeze({ testInterval: 1800, timeout: 7, tolerance: 150 }),
-    openwrt: Object.freeze({ testInterval: 600, timeout: 5, tolerance: 100 }),
-    appletv: Object.freeze({ testInterval: 3600, timeout: 8, tolerance: 200 })
-  });
-  function platformPolicyPreset(platform) {
-    if (typeof platform !== "string" || !Object.hasOwn(POLICY_PLATFORM_PRESETS, platform)) {
-      throw new Error(`Unsupported platform: ${platform}`);
+  // substore-node-subscription-entry.js
+  var ALLOWED_OPTIONS = /* @__PURE__ */ new Set(["output", "type", "name", "clientChain"]);
+  function parseArguments(rawArguments) {
+    if (!rawArguments || typeof rawArguments !== "object" || Array.isArray(rawArguments)) {
+      throw new Error("arguments must be an object");
     }
-    return POLICY_PLATFORM_PRESETS[platform];
-  }
-
-  // options.js
-  var REQUIRED_KEYS = Object.freeze([
-    "output",
-    "type",
-    "name",
-    "subscriptionName",
-    "platform"
-  ]);
-  var DEFAULTS = Object.freeze({
-    channel: "edge",
-    dnsMode: "stable",
-    chinaDns: "alidns",
-    globalDns: "cloudflare",
-    blockMode: "balanced",
-    quicMode: "proxy-block",
-    ipv6Mode: "auto",
-    autoGroupMode: "auto",
-    clientChain: "off",
-    adblockMode: "off"
-  });
-  var CHANNELS = /* @__PURE__ */ new Set(["edge", "current"]);
-  var ADBLOCK_MODES = /* @__PURE__ */ new Set(["off", "full"]);
-  var ALLOWED_KEYS = /* @__PURE__ */ new Set([...REQUIRED_KEYS, ...Object.keys(DEFAULTS)]);
-  function requiredString(raw, key) {
-    if (!Object.hasOwn(raw, key)) {
-      throw new Error(`Option '${key}' must be a non-empty string`);
-    }
-    const value = raw[key];
-    if (typeof value !== "string" || !value.trim()) {
-      throw new Error(`Option '${key}' must be a non-empty string`);
-    }
-    return value.trim();
-  }
-  function subscriptionDisplayName(raw) {
-    if (!Object.hasOwn(raw, "subscriptionName")) {
-      throw new Error("Option 'subscriptionName' must be a non-empty string");
-    }
-    const value = raw.subscriptionName;
-    if (typeof value !== "string" || value.length === 0) {
-      throw new Error("Option 'subscriptionName' must be a non-empty string");
-    }
-    if (/[\r\n]/.test(value)) {
-      throw new Error("Option 'subscriptionName' must not contain CR or LF");
-    }
-    if (value.trim() !== value) {
-      throw new Error("Option 'subscriptionName' must not have leading or trailing whitespace");
-    }
-    return value;
-  }
-  function enumValue(raw, key) {
-    const value = requiredString(raw, key);
-    if (!OPTION_VALUES[key].includes(value)) {
-      throw new Error(`Option '${key}' has an unsupported value: ${value}`);
-    }
-    return value;
-  }
-  function parseOptions(raw) {
-    if (!raw || typeof raw !== "object" || Array.isArray(raw)) {
-      throw new TypeError("Options must be an object");
-    }
-    for (const key of Object.keys(raw)) {
-      if (!key.startsWith("_") && !ALLOWED_KEYS.has(key)) {
+    for (const key of Object.keys(rawArguments)) {
+      if (!key.startsWith("_") && !ALLOWED_OPTIONS.has(key)) {
         throw new Error(`Unknown option: ${key}`);
       }
     }
-    const options = {};
-    for (const key of REQUIRED_KEYS) {
-      options[key] = key === "subscriptionName" ? subscriptionDisplayName(raw) : OPTION_VALUES[key] ? enumValue(raw, key) : requiredString(raw, key);
+    if (rawArguments.output !== "nodes") throw new Error("output must be nodes");
+    if (rawArguments.type !== "collection") throw new Error("type must be collection");
+    if (typeof rawArguments.name !== "string" || rawArguments.name.length === 0 || rawArguments.name.trim() !== rawArguments.name) {
+      throw new Error("name must be a non-empty single-line string");
     }
-    for (const [key, defaultValue] of Object.entries(DEFAULTS)) {
-      const platformDefault = key === "ipv6Mode" && options.platform === "macos" ? "ipv4-only" : defaultValue;
-      if (key === "channel") {
-        const value = Object.hasOwn(raw, key) && raw[key] !== void 0 ? raw[key] : platformDefault;
-        if (typeof value !== "string" || !CHANNELS.has(value)) {
-          throw new Error(`Option '${key}' has an unsupported value: ${value}`);
-        }
-        options[key] = value;
-      } else if (key === "adblockMode") {
-        const value = Object.hasOwn(raw, key) && raw[key] !== void 0 ? raw[key] : platformDefault;
-        if (typeof value !== "string" || !ADBLOCK_MODES.has(value)) {
-          throw new Error(`Option '${key}' has an unsupported value: ${value}`);
-        }
-        options[key] = value;
-      } else {
-        options[key] = Object.hasOwn(raw, key) && raw[key] !== void 0 ? enumValue(raw, key) : platformDefault;
-      }
-    }
-    return options;
+    const clientChain = Object.hasOwn(rawArguments, "clientChain") ? rawArguments.clientChain : "off";
+    if (clientChain !== "off" && clientChain !== "on") throw new Error("clientChain must be off or on");
+    return { type: rawArguments.type, name: rawArguments.name, clientChain };
   }
-
-  // dns.js
-  var CHINA_DNS = Object.freeze({
-    alidns: "https://dns.alidns.com/dns-query",
-    dnspod: "https://doh.pub/dns-query",
-    system: "system"
-  });
-  var GLOBAL_DNS = Object.freeze({
-    cloudflare: "https://cloudflare-dns.com/dns-query",
-    google: "https://dns.google/dns-query",
-    quad9: "https://dns.quad9.net/dns-query"
-  });
-  var DNS_MODES = /* @__PURE__ */ new Set(["stable", "privacy", "speed"]);
-  var DNS_PROXY = `#proxy=${encodeURIComponent("\u{1F9ED} DNS \u4E0E\u89C4\u5219\u4E0B\u8F7D")}`;
-  function optionValue(options, key, allowed) {
-    const value = options?.[key];
-    if (!allowed.has(value)) {
-      throw new Error(`Unsupported ${key}: ${value}`);
-    }
-    return value;
-  }
-  function dnsSettings(options) {
-    const dnsMode = optionValue(options, "dnsMode", DNS_MODES);
-    const chinaDns = optionValue(options, "chinaDns", new Set(Object.keys(CHINA_DNS)));
-    const globalDns = optionValue(options, "globalDns", new Set(Object.keys(GLOBAL_DNS)));
-    const privacySystemDns = dnsMode === "privacy" && chinaDns === "system";
-    const globalUsesProxy = dnsMode !== "speed";
-    return [
-      `dns-server = ${privacySystemDns ? CHINA_DNS.alidns : CHINA_DNS[chinaDns]}`,
-      `fallback-dns-server = ${GLOBAL_DNS[globalDns]}${globalUsesProxy ? DNS_PROXY : ""}`,
-      `dns-direct-system = ${chinaDns === "system" && !privacySystemDns}`,
-      `dns-direct-fallback-proxy = ${globalUsesProxy}`,
-      "private-ip-answer = true",
-      "hijack-dns = *:53"
-    ];
-  }
-
-  // general.js
-  var IPV6_MODES = /* @__PURE__ */ new Set(["auto", "ipv4-only"]);
-  var QUIC_MODES = Object.freeze({
-    allow: "always-allow",
-    "proxy-block": "all-proxy",
-    "all-block": "all"
-  });
-  var CLIENT_CHAIN_MODES = /* @__PURE__ */ new Set(["off", "on"]);
-  var SKIP_PROXY = "127.0.0.1,localhost,*.local,*.lan,*.home.arpa,10.0.0.0/8,100.64.0.0/10,169.254.0.0/16,172.16.0.0/12,192.168.0.0/16,fc00::/7,fe80::/10";
-  var TUN_EXCLUDED_ROUTES = "10.0.0.0/8,100.64.0.0/10,127.0.0.0/8,169.254.0.0/16,172.16.0.0/12,192.168.0.0/16,224.0.0.0/4,::1/128,fc00::/7,fe80::/10,ff00::/8";
-  function optionValue2(options, key, allowed) {
-    const value = options?.[key];
-    if (!allowed.has(value)) {
-      throw new Error(`Unsupported ${key}: ${value}`);
-    }
-    return value;
-  }
-  function generalSettings(options) {
-    const ipv6Mode = optionValue2(options, "ipv6Mode", IPV6_MODES);
-    const quicMode = optionValue2(options, "quicMode", new Set(Object.keys(QUIC_MODES)));
-    const clientChain = optionValue2(options, "clientChain", CLIENT_CHAIN_MODES);
-    return [
-      `skip-proxy = ${SKIP_PROXY}`,
-      `tun-excluded-routes = ${TUN_EXCLUDED_ROUTES}`,
-      "bypass-system = true",
-      "udp-policy-not-supported-behaviour = REJECT",
-      "allow-dns-svcb = false",
-      "allow-dns-all = false",
-      "proxy-dns-server = system",
-      `ipv6 = ${ipv6Mode === "auto"}`,
-      "prefer-ipv6 = false",
-      "ipv6-only-if-no-ipv4-dns = true",
-      `block-quic = ${QUIC_MODES[quicMode]}`,
-      `close-if-proxy-chain-missing = ${clientChain === "on"}`,
-      ...dnsSettings(options)
-    ];
-  }
-
-  // ../../../shared/policies/filters.js
-  var ALL_NODES_FILTER = "^.+$";
-  var NON_CHAINED_FILTER = "^(?!\u{1F517} ).+$";
-  var ENTRY_FILTER = "^(?!\u{1F517} )(?!.*\xB7\u94FE).+\uFF5C(?:\u673A\u573A|\u81EA\u5EFA|Realm)(?:\xB7.*)?$";
-  var P2P_FILTER = "^(?!\u{1F517} ).+\uFF5C(?:\u81EA\u5EFA|Realm|\u94FE\u5F0F\u4EE3\u7406)(?:\xB7.*)?$";
-  var GAME_FILTER = "^(?!\u{1F517} ).+\xB7U$";
-  var CONTINENTS = Object.freeze([
-    Object.freeze({
-      key: CONTINENT.asiaPacific,
-      name: "\u{1F30F} \u4E9A\u592A",
-      helperName: "\u4E9A\u592A",
-      flags: CONTINENT_FLAGS[CONTINENT.asiaPacific]
-    }),
-    Object.freeze({
-      key: CONTINENT.europe,
-      name: "\u{1F30D} \u6B27\u6D32",
-      helperName: "\u6B27\u6D32",
-      flags: CONTINENT_FLAGS[CONTINENT.europe]
-    }),
-    Object.freeze({
-      key: CONTINENT.americas,
-      name: "\u{1F30E} \u7F8E\u6D32",
-      helperName: "\u7F8E\u6D32",
-      flags: CONTINENT_FLAGS[CONTINENT.americas]
-    }),
-    Object.freeze({
-      key: CONTINENT.other,
-      name: "\u{1F310} \u5176\u4ED6/\u672A\u5206\u7C7B",
-      helperName: "\u5176\u4ED6/\u672A\u5206\u7C7B",
-      flags: Object.freeze([])
-    })
-  ]);
-  var SOURCE_GROUPS = Object.freeze([
-    Object.freeze({ kind: SOURCE_KIND.selfHosted, name: "\u{1F3E0} \u81EA\u5EFA\u8282\u70B9", filter: "^.+\uFF5C\u81EA\u5EFA(?:\xB7.*)?$" }),
-    Object.freeze({ kind: SOURCE_KIND.airport, name: "\u{1F3E2} \u673A\u573A\u8282\u70B9", filter: "^.+\uFF5C\u673A\u573A(?:\xB7.*)?$" }),
-    Object.freeze({ kind: SOURCE_KIND.realm, name: "\u21AA\uFE0F Realm \u8F6C\u53D1", filter: "^.+\uFF5CRealm(?:\xB7.*)?$" }),
-    Object.freeze({ kind: SOURCE_KIND.serverChain, name: "\u26D3\uFE0F \u94FE\u5F0F\u4EE3\u7406", filter: "^.+\uFF5C\u94FE\u5F0F\u4EE3\u7406(?:\xB7.*)?$" })
-  ]);
-  function continentFilter(continent) {
-    if (continent.key === CONTINENT.other) {
-      const knownFlags = CONTINENTS.flatMap((record) => record.flags).join("|");
-      return `^(?!(?:\u{1F517}|${knownFlags})).+$`;
-    }
-    return `^(?:${continent.flags.join("|")}).+$`;
-  }
-
-  // ../../../shared/policies/intents.js
-  var POLICY_TARGET = Object.freeze({
-    primaryProxy: "primary-proxy"
-  });
-
-  // ../../../shared/policies/catalog.js
-  var TEST_URL = "http://www.gstatic.com/generate_204";
-  var STRATEGY = Object.freeze({
-    select: "select",
-    autoTest: "auto-test",
-    fallback: "fallback"
-  });
-  var GROUP_KIND = Object.freeze({
-    helper: "helper",
-    primary: "primary",
-    continent: "continent",
-    source: "source",
-    ai: "ai",
-    service: "service",
-    special: "special",
-    security: "security",
-    chain: "chain"
-  });
-  var PROXY_THEN_DIRECT = Object.freeze(["\u{1F680} \u8282\u70B9\u9009\u62E9", "DIRECT"]);
-  var PROXY_FIRST_SERVICE_DEFAULTS = Object.freeze({
-    beforeCandidates: Object.freeze(["\u{1F680} \u8282\u70B9\u9009\u62E9"]),
-    afterCandidates: Object.freeze(["DIRECT"]),
-    defaultChoice: "\u{1F680} \u8282\u70B9\u9009\u62E9"
-  });
-  var DIRECT_FIRST_SERVICE_DEFAULTS = Object.freeze({
-    beforeCandidates: Object.freeze(["DIRECT", "\u{1F680} \u8282\u70B9\u9009\u62E9"]),
-    afterCandidates: Object.freeze([]),
-    defaultChoice: "DIRECT"
-  });
-  var SERVICE_GROUPS = Object.freeze([
-    Object.freeze(["\u{1F419} GitHub", PROXY_FIRST_SERVICE_DEFAULTS]),
-    Object.freeze(["\u{1F4FA} YouTube", PROXY_FIRST_SERVICE_DEFAULTS]),
-    Object.freeze(["\u{1F3AC} \u6D77\u5916\u6D41\u5A92\u4F53", PROXY_FIRST_SERVICE_DEFAULTS]),
-    Object.freeze(["\u{1F4AC} \u6D77\u5916\u793E\u4EA4", PROXY_FIRST_SERVICE_DEFAULTS]),
-    Object.freeze(["\u{1F34E} Apple", DIRECT_FIRST_SERVICE_DEFAULTS]),
-    Object.freeze(["\u{1FA9F} Microsoft", DIRECT_FIRST_SERVICE_DEFAULTS]),
-    Object.freeze(["\u{1F1E8}\u{1F1F3} \u56FD\u5185\u5E73\u53F0", DIRECT_FIRST_SERVICE_DEFAULTS]),
-    Object.freeze(["\u{1F30D} \u6D77\u5916\u6E38\u620F", PROXY_FIRST_SERVICE_DEFAULTS])
-  ]);
-  function policyGroup({
-    kind,
-    name,
-    strategy = STRATEGY.select,
-    candidates = [],
-    nodeFilter = null,
-    test = null,
-    hidden,
-    defaultChoice
-  }) {
-    return { kind, name, strategy, candidates, nodeFilter, test, hidden, defaultChoice };
-  }
-  function helper(kind, name, strategy, preset, nodeFilter, candidates = []) {
-    return policyGroup({
-      kind,
-      name,
-      strategy,
-      candidates,
-      nodeFilter,
-      test: {
-        url: TEST_URL,
-        interval: preset.testInterval,
-        timeout: preset.timeout,
-        tolerance: preset.tolerance
-      },
-      hidden: true
-    });
-  }
-  function subscriptionGroup(kind, name, nodeFilter, candidates = ["DIRECT"], options = {}) {
-    return policyGroup({ kind, name, candidates, nodeFilter, ...options });
-  }
-  function automaticHelperName(continent) {
-    return `\u26A1 ${continent.helperName}\u81EA\u52A8`;
-  }
-  function fallbackHelperName(continent) {
-    return `\u{1F6DF} ${continent.helperName}\u6545\u969C\u8F6C\u79FB`;
-  }
-  function continentHelperItems(continent, mode) {
-    if (mode === "full") return [automaticHelperName(continent), fallbackHelperName(continent)];
-    if (mode === "balanced") return [automaticHelperName(continent)];
-    return [];
-  }
-  function serviceChoiceItems(defaults, presentContinentNames) {
-    return [
-      ...defaults.beforeCandidates,
-      "\u26A1 \u5168\u90E8\u81EA\u52A8",
-      "\u{1F6DF} \u5168\u90E8\u6545\u969C\u8F6C\u79FB",
-      ...presentContinentNames,
-      ...defaults.afterCandidates
-    ];
-  }
-  function securityGroups(blockMode) {
-    const defaults = {
-      off: ["DIRECT", "DIRECT", "DIRECT"],
-      security: ["REJECT", "DIRECT", "DIRECT"],
-      balanced: ["REJECT", "REJECT", "DIRECT"],
-      strict: ["REJECT", "REJECT", "REJECT"]
-    }[blockMode] ?? ["REJECT", "REJECT", "DIRECT"];
-    return ["\u2623\uFE0F \u5B89\u5168\u5A01\u80C1", "\u{1F9F1} \u5E38\u89C1\u5E7F\u544A", "\u{1F575}\uFE0F \u4E25\u683C\u8DDF\u8E2A"].map((name, index) => {
-      const primary = defaults[index];
-      return policyGroup({
-        kind: GROUP_KIND.security,
-        name,
-        candidates: [primary, primary === "REJECT" ? "DIRECT" : "REJECT"]
-      });
-    });
-  }
-  function effectiveAutoMode(requested, nodeCount) {
-    if (requested !== "auto") return requested;
-    if (nodeCount <= 30) return "full";
-    if (nodeCount <= 100) return "balanced";
-    return "minimal";
-  }
-  function buildPolicyGroups(options, nodes) {
-    const normalizedNodes = Array.isArray(nodes) ? nodes : [];
-    const preset = platformPolicyPreset(options.platform);
-    const mode = effectiveAutoMode(options.autoGroupMode, normalizedNodes.length);
-    const presentContinents = CONTINENTS.filter((continent) => normalizedNodes.some((node) => nodeMetadata(node).continent === continent.key && !nodeMetadata(node).chained));
-    const chainEligible = options.clientChain === "on" && normalizedNodes.some((node) => nodeMetadata(node).entry === true && !nodeMetadata(node).chained) && normalizedNodes.some((node) => nodeMetadata(node).chained === true);
-    const groups = [
-      helper(GROUP_KIND.helper, "\u26A1 \u5168\u90E8\u81EA\u52A8", STRATEGY.autoTest, preset, NON_CHAINED_FILTER),
-      helper(GROUP_KIND.helper, "\u{1F6DF} \u5168\u90E8\u6545\u969C\u8F6C\u79FB", STRATEGY.fallback, preset, NON_CHAINED_FILTER)
-    ];
-    if (chainEligible) {
-      groups.push(helper(GROUP_KIND.chain, "\u26A1 \u5165\u53E3\u81EA\u52A8", STRATEGY.autoTest, preset, ENTRY_FILTER));
-    }
-    if (mode !== "minimal") {
-      for (const continent of presentContinents) {
-        groups.push(helper(
-          GROUP_KIND.helper,
-          automaticHelperName(continent),
-          STRATEGY.autoTest,
-          preset,
-          continentFilter(continent)
-        ));
-        if (mode === "full") {
-          groups.push(helper(
-            GROUP_KIND.helper,
-            fallbackHelperName(continent),
-            STRATEGY.fallback,
-            preset,
-            continentFilter(continent)
-          ));
-        }
-      }
-    }
-    groups.push(policyGroup({
-      kind: GROUP_KIND.primary,
-      name: "\u{1F680} \u8282\u70B9\u9009\u62E9",
-      candidates: [POLICY_TARGET.primaryProxy],
-      nodeFilter: NON_CHAINED_FILTER
-    }));
-    for (const continent of presentContinents) {
-      groups.push(subscriptionGroup(
-        GROUP_KIND.continent,
-        continent.name,
-        continentFilter(continent),
-        continentHelperItems(continent, mode)
-      ));
-    }
-    for (const source of SOURCE_GROUPS) {
-      if (normalizedNodes.some((node) => nodeMetadata(node).sourceKind === source.kind && !nodeMetadata(node).chained)) {
-        groups.push(subscriptionGroup(GROUP_KIND.source, source.name, source.filter));
-      }
-    }
-    if (chainEligible) {
-      groups.push(subscriptionGroup(GROUP_KIND.chain, "\u{1F3AF} \u5BA2\u6237\u7AEF\u843D\u5730", "^\u{1F517} .+$"));
-    }
-    const aiContinentGroups = presentContinents.map((continent) => subscriptionGroup(
-      GROUP_KIND.ai,
-      `\u{1F916} AI ${continent.helperName}`,
-      continentFilter(continent),
-      continentHelperItems(continent, mode),
-      { hidden: true }
-    ));
-    groups.push(...aiContinentGroups);
-    groups.push(subscriptionGroup(
-      GROUP_KIND.ai,
-      "\u{1F916} AI \u4E13\u7528",
-      ALL_NODES_FILTER,
-      aiContinentGroups.map((group) => group.name)
-    ));
-    const presentContinentNames = presentContinents.map((continent) => continent.name);
-    for (const [name, defaults] of SERVICE_GROUPS) {
-      groups.push(subscriptionGroup(
-        GROUP_KIND.service,
-        name,
-        ALL_NODES_FILTER,
-        serviceChoiceItems(defaults, presentContinentNames),
-        { defaultChoice: defaults.defaultChoice }
-      ));
-    }
-    if (normalizedNodes.some((node) => nodeMetadata(node).udp === true && !nodeMetadata(node).chained)) {
-      groups.push(subscriptionGroup(GROUP_KIND.special, "\u{1F3AE} \u6E38\u620F\u8FDE\u63A5", GAME_FILTER));
-    } else {
-      groups.push(policyGroup({ kind: GROUP_KIND.special, name: "\u{1F3AE} \u6E38\u620F\u8FDE\u63A5", candidates: ["DIRECT"] }));
-    }
-    if (normalizedNodes.some((node) => nodeMetadata(node).p2p === true && !nodeMetadata(node).chained)) {
-      groups.push(subscriptionGroup(GROUP_KIND.special, "\u2B07\uFE0F \u4E0B\u8F7D/P2P", P2P_FILTER));
-    } else {
-      groups.push(policyGroup({ kind: GROUP_KIND.special, name: "\u2B07\uFE0F \u4E0B\u8F7D/P2P", candidates: ["DIRECT"] }));
-    }
-    groups.push(policyGroup({
-      kind: GROUP_KIND.special,
-      name: "\u{1F9ED} DNS \u4E0E\u89C4\u5219\u4E0B\u8F7D",
-      candidates: [...PROXY_THEN_DIRECT]
-    }));
-    groups.push(...securityGroups(options.blockMode));
-    if (chainEligible) {
-      groups.push(subscriptionGroup(GROUP_KIND.chain, "\u{1F517} \u5165\u53E3\u8282\u70B9", ENTRY_FILTER, ["\u26A1 \u5165\u53E3\u81EA\u52A8"]));
-    }
-    return groups;
-  }
-
-  // group-catalog.js
-  function shadowrocketPolicyTarget(candidate) {
-    return candidate === POLICY_TARGET.primaryProxy ? "PROXY" : candidate;
-  }
-  function buildGroups(options, nodes) {
-    return buildPolicyGroups(options, nodes).map((group) => ({
-      name: group.name,
-      type: group.strategy === "auto-test" ? "url-test" : group.strategy,
-      items: group.candidates.map(shadowrocketPolicyTarget),
-      useSubscription: group.nodeFilter === null ? void 0 : true,
-      filter: group.nodeFilter ?? void 0,
-      url: group.test?.url,
-      interval: group.test?.interval,
-      timeout: group.test?.timeout,
-      tolerance: group.test?.tolerance,
-      hidden: group.hidden,
-      policySelectName: group.defaultChoice
-    }));
-  }
-
-  // render-groups.js
-  function escapeValue(value) {
-    const string = String(value);
-    if (/[\r\n]/.test(string)) throw new Error("Group field values must not contain CR or LF");
-    return string.replaceAll(",", "\\,");
-  }
-  function escapeSubscriptionName(value) {
-    const string = String(value);
-    if (/[\r\n]/.test(string)) throw new Error("Subscription display name must not contain CR or LF");
-    if (string.trim() !== string) {
-      throw new Error("Subscription display name must not have leading or trailing whitespace");
-    }
-    return string.replaceAll("\\", "\\\\").replaceAll(",", "\\,");
-  }
-  function renderGroups(groups, subscriptionName) {
-    return groups.map((group) => {
-      const items = (group.items ?? []).map(escapeValue);
-      const fields = [escapeValue(group.type), ...items];
-      if (group.useSubscription) {
-        fields.push(escapeSubscriptionName(subscriptionName), "use=true");
-      }
-      if (group.filter !== void 0) fields.push(`policy-regex-filter=${escapeValue(group.filter)}`);
-      if (group.policySelectName !== void 0) {
-        fields.push(`policy-select-name=${escapeValue(group.policySelectName)}`);
-      }
-      if (group.url !== void 0) fields.push(`url=${escapeValue(group.url)}`);
-      if (group.interval !== void 0) fields.push(`interval=${escapeValue(group.interval)}`);
-      if (group.timeout !== void 0) fields.push(`timeout=${escapeValue(group.timeout)}`);
-      if (group.tolerance !== void 0) fields.push(`tolerance=${escapeValue(group.tolerance)}`);
-      if (group.hidden) fields.push("hidden=1");
-      return `${escapeValue(group.name)} = ${fields.join(",")}`;
-    });
-  }
-
-  // ../../../shared/rules/lightweight-policy.js
-  var DEFAULT_RULE_SOURCE_IDS = Object.freeze([
-    "Hijacking",
-    "BlockHttpDNS",
-    "Privacy",
-    "DomesticCore",
-    "DomesticGame",
-    "SteamCN",
-    "BiliBili",
-    "ByteDance",
-    "XiaoHongShu",
-    "Weibo",
-    "OpenAI",
-    "Claude",
-    "Gemini",
-    "Copilot",
-    "GitHub",
-    "YouTube",
-    "Netflix",
-    "Disney",
-    "Spotify",
-    "GlobalMedia",
-    "Telegram",
-    "Facebook",
-    "Instagram",
-    "Twitter",
-    "TikTok",
-    "Apple",
-    "Microsoft",
-    "Download",
-    "PrivateTracker",
-    "OverseasGame",
-    "ChinaTLD",
-    "ChinaIP"
-  ]);
-  var FULL_ADBLOCK_SOURCE_IDS = Object.freeze([
-    "Advertising",
-    "Advertising_Domain"
-  ]);
-  var ROUTING_PHASES = Object.freeze([
-    "security",
-    "earlyDomestic",
-    "serviceIntent",
-    "overseasGame",
-    "lateDomestic",
-    "resolvedChinaIp"
-  ]);
-  var PHASE_SOURCE_IDS = Object.freeze({
-    security: Object.freeze([
-      "Hijacking",
-      "BlockHttpDNS",
-      "Privacy",
-      "Advertising",
-      "Advertising_Domain"
-    ]),
-    earlyDomestic: Object.freeze(["DomesticCore", "DomesticGame", "SteamCN"]),
-    serviceIntent: Object.freeze([
-      "BiliBili",
-      "ByteDance",
-      "XiaoHongShu",
-      "Weibo",
-      "OpenAI",
-      "Claude",
-      "Gemini",
-      "Copilot",
-      "GitHub",
-      "YouTube",
-      "Netflix",
-      "Disney",
-      "Spotify",
-      "GlobalMedia",
-      "Telegram",
-      "Facebook",
-      "Instagram",
-      "Twitter",
-      "TikTok",
-      "Apple",
-      "Microsoft",
-      "Download",
-      "PrivateTracker"
-    ]),
-    overseasGame: Object.freeze(["OverseasGame"]),
-    lateDomestic: Object.freeze(["ChinaTLD"]),
-    resolvedChinaIp: Object.freeze(["ChinaIP"])
-  });
-  var RULE_BUDGETS = Object.freeze({
-    domesticCoreEntries: 2e3,
-    defaultEntries: 25e3,
-    defaultBytes: 5e6,
-    startupInlineEntries: 64,
-    singBoxRuleRssBytes: 50 * 1024 * 1024,
-    singBoxTotalRssBytes: 200 * 1024 * 1024
-  });
-  var ROUTING_PRECEDENCE = Object.freeze([
-    "local",
-    "security",
-    "custom",
-    "domesticCore",
-    "domesticGame",
-    "explicitOverseas",
-    "overseasGame",
-    "chinaIp",
-    "defaultProxy"
-  ]);
-  var EXPLICIT_OVERSEAS_RULE_SOURCE_IDS = Object.freeze([
-    "OpenAI",
-    "Claude",
-    "Gemini",
-    "Copilot",
-    "GitHub",
-    "YouTube",
-    "Netflix",
-    "Disney",
-    "Spotify",
-    "GlobalMedia",
-    "Telegram",
-    "Facebook",
-    "Instagram",
-    "Twitter",
-    "TikTok",
-    "OverseasGame"
-  ]);
-  var DNS_CLASS_SOURCE_IDS = Object.freeze({
-    proxy: EXPLICIT_OVERSEAS_RULE_SOURCE_IDS,
-    china: Object.freeze([
-      "DomesticCore",
-      "DomesticGame",
-      "SteamCN",
-      "ChinaTLD",
-      "BiliBili",
-      "ByteDance",
-      "XiaoHongShu",
-      "Weibo",
-      "Apple",
-      "Microsoft",
-      "Download",
-      "PrivateTracker"
-    ]),
-    none: Object.freeze([
-      "Hijacking",
-      "BlockHttpDNS",
-      "Privacy",
-      "Advertising",
-      "Advertising_Domain",
-      "ChinaIP"
-    ])
-  });
-  var POLICY_TARGETS = Object.freeze({
-    direct: "DIRECT",
-    defaultProxy: "\u{1F680} \u8282\u70B9\u9009\u62E9",
-    overseasGame: "\u{1F30D} \u6D77\u5916\u6E38\u620F",
-    reject: "REJECT"
-  });
-  var SOURCE_POLICIES = Object.freeze({
-    Hijacking: POLICY_TARGETS.reject,
-    BlockHttpDNS: POLICY_TARGETS.reject,
-    Privacy: "\u{1F575}\uFE0F \u4E25\u683C\u8DDF\u8E2A",
-    DomesticCore: POLICY_TARGETS.direct,
-    DomesticGame: POLICY_TARGETS.direct,
-    BiliBili: "\u{1F1E8}\u{1F1F3} \u56FD\u5185\u5E73\u53F0",
-    ByteDance: "\u{1F1E8}\u{1F1F3} \u56FD\u5185\u5E73\u53F0",
-    XiaoHongShu: "\u{1F1E8}\u{1F1F3} \u56FD\u5185\u5E73\u53F0",
-    Weibo: "\u{1F1E8}\u{1F1F3} \u56FD\u5185\u5E73\u53F0",
-    OpenAI: "\u{1F916} AI \u4E13\u7528",
-    Claude: "\u{1F916} AI \u4E13\u7528",
-    Gemini: "\u{1F916} AI \u4E13\u7528",
-    Copilot: "\u{1F916} AI \u4E13\u7528",
-    GitHub: "\u{1F419} GitHub",
-    YouTube: "\u{1F4FA} YouTube",
-    Netflix: "\u{1F3AC} \u6D77\u5916\u6D41\u5A92\u4F53",
-    Disney: "\u{1F3AC} \u6D77\u5916\u6D41\u5A92\u4F53",
-    Spotify: "\u{1F3AC} \u6D77\u5916\u6D41\u5A92\u4F53",
-    GlobalMedia: "\u{1F3AC} \u6D77\u5916\u6D41\u5A92\u4F53",
-    Telegram: "\u{1F4AC} \u6D77\u5916\u793E\u4EA4",
-    Facebook: "\u{1F4AC} \u6D77\u5916\u793E\u4EA4",
-    Instagram: "\u{1F4AC} \u6D77\u5916\u793E\u4EA4",
-    Twitter: "\u{1F4AC} \u6D77\u5916\u793E\u4EA4",
-    TikTok: "\u{1F3AC} \u6D77\u5916\u6D41\u5A92\u4F53",
-    Apple: "\u{1F34E} Apple",
-    Microsoft: "\u{1FA9F} Microsoft",
-    SteamCN: POLICY_TARGETS.direct,
-    OverseasGame: POLICY_TARGETS.overseasGame,
-    Download: "\u2B07\uFE0F \u4E0B\u8F7D/P2P",
-    PrivateTracker: "\u2B07\uFE0F \u4E0B\u8F7D/P2P",
-    ChinaTLD: POLICY_TARGETS.direct,
-    ChinaIP: POLICY_TARGETS.direct,
-    Advertising: "\u{1F9F1} \u5E38\u89C1\u5E7F\u544A",
-    Advertising_Domain: "\u{1F9F1} \u5E38\u89C1\u5E7F\u544A"
-  });
-  function uniqueMembership(id, memberships, label) {
-    const matches = Object.entries(memberships).filter(([, ids]) => ids.includes(id)).map(([name]) => name);
-    if (matches.length !== 1) {
-      throw new Error(`Lightweight rule source ${id} must have exactly one ${label} membership`);
-    }
-    return matches[0];
-  }
-  function clientRecord(id) {
-    const policy = SOURCE_POLICIES[id];
-    if (!policy) throw new Error(`Missing policy for lightweight rule source: ${id}`);
-    const phase = uniqueMembership(id, PHASE_SOURCE_IDS, "routing phase");
-    const dnsClass = uniqueMembership(id, DNS_CLASS_SOURCE_IDS, "DNS class");
-    return Object.freeze({
-      id,
-      policy,
-      // The publication pipeline emits normalized, typed Surge/Shadowrocket
-      // lines for every compiled source, including domain-only inputs.
-      inputFormat: "RULE-SET",
-      phase,
-      dnsClass
-    });
-  }
-  var DEFAULT_RULE_CLIENT_CATALOG = Object.freeze(DEFAULT_RULE_SOURCE_IDS.map(clientRecord));
-  var FULL_ADBLOCK_RULE_CLIENT_CATALOG = Object.freeze(FULL_ADBLOCK_SOURCE_IDS.map(clientRecord));
-  function ruleClientCatalog({ adblockMode = "off" } = {}) {
-    if (adblockMode !== "off" && adblockMode !== "full") {
-      throw new TypeError("adblockMode must be either off or full");
-    }
-    return adblockMode === "full" ? Object.freeze([...DEFAULT_RULE_CLIENT_CATALOG, ...FULL_ADBLOCK_RULE_CLIENT_CATALOG]) : DEFAULT_RULE_CLIENT_CATALOG;
-  }
-  function orderedRoutingPlan({ adblockMode = "off" } = {}) {
-    const selected = ruleClientCatalog({ adblockMode });
-    const phaseRank = new Map(ROUTING_PHASES.map((phase, index) => [phase, index]));
-    const sourceRank = new Map(
-      [...DEFAULT_RULE_SOURCE_IDS, ...FULL_ADBLOCK_SOURCE_IDS].map((id, index) => [id, index])
-    );
-    return Object.freeze([...selected].sort((left, right) => phaseRank.get(left.phase) - phaseRank.get(right.phase) || sourceRank.get(left.id) - sourceRank.get(right.id)));
-  }
-
-  // ../../../shared/rules/custom-rules.js
-  var CUSTOM_RULE_PRECEDENCE_INDEX = ROUTING_PRECEDENCE.indexOf("custom");
-  if (CUSTOM_RULE_PRECEDENCE_INDEX < 0 || CUSTOM_RULE_PRECEDENCE_INDEX > ROUTING_PRECEDENCE.indexOf("domesticCore")) {
-    throw new Error("Custom rules must precede generated lightweight rules");
-  }
-  var CUSTOM_RULES = Object.freeze({
-    block: Object.freeze([]),
-    direct: Object.freeze([]),
-    proxy: Object.freeze([]),
-    ai: Object.freeze([
-      "DOMAIN-SUFFIX,perplexity.ai",
-      "DOMAIN-SUFFIX,pplx.ai",
-      "DOMAIN-SUFFIX,x.ai",
-      "DOMAIN-SUFFIX,grok.com",
-      "DOMAIN-SUFFIX,poe.com",
-      "DOMAIN-SUFFIX,poecdn.net"
-    ])
-  });
-
-  // custom-rules.js
-  var {
-    block: CUSTOM_BLOCK,
-    direct: CUSTOM_DIRECT,
-    proxy: CUSTOM_PROXY,
-    ai: CUSTOM_AI
-  } = CUSTOM_RULES;
-
-  // rule-validator.js
-  var ALLOWED_TYPES = /* @__PURE__ */ new Set([
-    "DOMAIN",
-    "DOMAIN-SUFFIX",
-    "DOMAIN-KEYWORD",
-    "DOMAIN-WILDCARD",
-    "IP-CIDR",
-    "IP-CIDR6",
-    "IP-ASN",
-    "GEOIP",
-    "USER-AGENT",
-    "PROCESS-NAME",
-    "URL-REGEX",
-    "DST-PORT",
-    "DEST-PORT",
-    "SRC-IP-CIDR"
-  ]);
-  var LOGICAL_TYPES = /* @__PURE__ */ new Set(["AND", "OR", "NOT"]);
-  var LOGICAL_LEAF_TYPES = /* @__PURE__ */ new Set([...ALLOWED_TYPES, "PROTOCOL", "RULE-SET"]);
-  function isNonEmptyField(value) {
-    return typeof value === "string" && value.length > 0 && value.trim() === value && !/[\r\n\0]/.test(value);
-  }
-  function isIpv4(value) {
-    const parts = value.split(".");
-    return parts.length === 4 && parts.every((part) => /^(?:0|[1-9]\d{0,2})$/.test(part) && Number(part) <= 255);
-  }
-  function ipv6PartCount(parts) {
-    let count = 0;
-    for (let index = 0; index < parts.length; index += 1) {
-      const part = parts[index];
-      if (/^[0-9a-f]{1,4}$/i.test(part)) {
-        count += 1;
-      } else if (index === parts.length - 1 && isIpv4(part)) {
-        count += 2;
-      } else {
-        return -1;
-      }
-    }
-    return count;
-  }
-  function isIpv6(value) {
-    if (!value || value.includes("%") || (value.match(/::/g) ?? []).length > 1) return false;
-    if (value.includes("::")) {
-      const [left, right] = value.split("::");
-      const leftParts = left ? left.split(":") : [];
-      const rightParts = right ? right.split(":") : [];
-      const count = ipv6PartCount(leftParts) + ipv6PartCount(rightParts);
-      return ipv6PartCount(leftParts) >= 0 && ipv6PartCount(rightParts) >= 0 && count < 8;
-    }
-    const parts = value.split(":");
-    return ipv6PartCount(parts) === 8;
-  }
-  function isDomainName(value) {
-    if (!isNonEmptyField(value) || value.length > 253 || value.includes("..")) return false;
-    return value.split(".").every((label) => /^[a-z0-9_](?:[a-z0-9_-]{0,61}[a-z0-9_])?$/i.test(label));
-  }
-  function isWildcardDomain(value) {
-    if (!isNonEmptyField(value) || value.length > 253 || value.includes("..")) return false;
-    return value.split(".").every((label) => /^[a-z0-9_*?](?:[a-z0-9_*?-]{0,61}[a-z0-9_*?])?$/i.test(label));
-  }
-  function isCidr(value, family) {
-    const parts = value.split("/");
-    if (parts.length !== 2 || !/^\d+$/.test(parts[1])) return false;
-    const prefix = Number(parts[1]);
-    if (family === 4) return isIpv4(parts[0]) && prefix >= 0 && prefix <= 32;
-    return isIpv6(parts[0]) && prefix >= 0 && prefix <= 128;
-  }
-  function isPort(value) {
-    const match = /^(\d+)(?:-(\d+))?$/.exec(value);
-    if (!match) return false;
-    const start = Number(match[1]);
-    const end = Number(match[2] ?? match[1]);
-    return start >= 1 && end <= 65535 && start <= end;
-  }
-  function isValidRegex(value) {
+  function logDiagnostics(context, diagnostics) {
+    const suppliedLogger = context?.logger;
+    const logger = suppliedLogger ?? globalThis?.console;
+    const method = typeof logger === "function" ? logger : typeof logger?.info === "function" ? logger.info.bind(logger) : typeof logger?.log === "function" ? logger.log.bind(logger) : null;
+    if (!method) return;
     try {
-      new RegExp(value);
-      return true;
+      method(`[shadowrocket-node-subscription] ${JSON.stringify(diagnostics)}`);
     } catch {
-      return false;
     }
   }
-  function isDnsHostname(value) {
-    if (!value || value.length > 253 || value.includes("..")) return false;
-    return value.split(".").every((label) => label.length <= 63 && /^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/i.test(label));
+  function fragment(node) {
+    return `#${encodeURIComponent(node.name)}`;
   }
-  function isUrlPort(value) {
-    return /^\d+$/.test(value) && Number(value) >= 1 && Number(value) <= 65535;
-  }
-  function isHttpUrl(value) {
-    if (typeof value !== "string" || /[\s\0]/.test(value)) return false;
-    const scheme = /^https?:\/\//i.exec(value);
-    if (!scheme) return false;
-    const remainder = value.slice(scheme[0].length);
-    const boundary = remainder.search(/[/?#]/);
-    const authority = boundary === -1 ? remainder : remainder.slice(0, boundary);
-    if (!authority || authority.includes("@")) return false;
-    if (authority.startsWith("[")) {
-      const close = authority.indexOf("]");
-      if (close < 0 || !isIpv6(authority.slice(1, close))) return false;
-      const suffix = authority.slice(close + 1);
-      return suffix === "" || suffix.startsWith(":") && isUrlPort(suffix.slice(1));
+  var VLESS_SCHEME = "vless";
+  var SS_SCHEME = "ss";
+  var TROJAN_SCHEME = "trojan";
+  var HY2_SCHEME = "hy2";
+  var TUIC_SCHEME = "tuic";
+  function vlessUri(node) {
+    const params = new URLSearchParams();
+    params.set("encryption", node.encryption ?? "none");
+    if (node.flow) params.set("flow", node.flow);
+    const reality = node["reality-opts"];
+    if (reality) {
+      params.set("security", "reality");
+      if (reality["public-key"]) params.set("pbk", reality["public-key"]);
+      if (reality["short-id"]) params.set("sid", reality["short-id"]);
+      if (reality["_spider-x"]) params.set("spx", reality["_spider-x"]);
+    } else if (node.tls) {
+      params.set("security", "tls");
     }
-    if (authority.includes("[") || authority.includes("]")) return false;
-    const firstColon = authority.indexOf(":");
-    const lastColon = authority.lastIndexOf(":");
-    if (firstColon !== lastColon) return false;
-    const host = firstColon === -1 ? authority : authority.slice(0, firstColon);
-    const port = firstColon === -1 ? null : authority.slice(firstColon + 1);
-    if (port !== null && !isUrlPort(port)) return false;
-    if (/^[0-9.]+$/.test(host)) return isIpv4(host);
-    return isDnsHostname(host);
+    if (node.sni ?? node.servername) params.set("sni", node.sni ?? node.servername);
+    if (node["client-fingerprint"]) params.set("fp", node["client-fingerprint"]);
+    params.set("type", node.network ?? "tcp");
+    if (node["packet-encoding"]) params.set("packetEncoding", node["packet-encoding"]);
+    return `${VLESS_SCHEME}://${encodeURIComponent(node.uuid)}@${node.server}:${node.port}?${params}${fragment(node)}`;
   }
-  function topLevelFields(value) {
-    const fields = [];
-    let field = "";
-    let depth = 0;
-    let escaped = false;
-    for (const character of value) {
-      if (escaped) {
-        field += character;
-        escaped = false;
-      } else if (character === "\\") {
-        field += character;
-        escaped = true;
-      } else if (character === "(") {
-        depth += 1;
-        field += character;
-      } else if (character === ")") {
-        depth -= 1;
-        if (depth < 0) return null;
-        field += character;
-      } else if (character === "," && depth === 0) {
-        fields.push(field);
-        field = "";
-      } else {
-        field += character;
+  function snellLine(node) {
+    const parts = [`snell,${node.server},${node.port}`, `psk=${node.psk}`];
+    if (node.version !== void 0 && node.version !== null && node.version !== "") parts.push(`version=${node.version}`);
+    if (node.reuse === true) parts.push("reuse=true");
+    if (node.tfo === true) parts.push("tfo=true");
+    if (node.obfs) parts.push(`obfs=${node.obfs}`);
+    if (node["obfs-host"]) parts.push(`obfs-host=${node["obfs-host"]}`);
+    return `${parts.join(",")}${fragment(node)}`;
+  }
+  function ssLine(node) {
+    const userinfo = Buffer.from(`${node.cipher}:${node.password}`).toString("base64");
+    return `${SS_SCHEME}://${userinfo}@${node.server}:${node.port}${fragment(node)}`;
+  }
+  function trojanUri(node) {
+    const params = new URLSearchParams();
+    if (node.sni ?? node.servername) params.set("sni", node.sni ?? node.servername);
+    if (node["client-fingerprint"]) params.set("fp", node["client-fingerprint"]);
+    const query = params.toString();
+    return `${TROJAN_SCHEME}://${encodeURIComponent(node.password)}@${node.server}:${node.port}${query ? `?${query}` : ""}${fragment(node)}`;
+  }
+  function hysteria2Uri(node) {
+    const params = new URLSearchParams();
+    if (node.sni ?? node.servername) params.set("sni", node.sni ?? node.servername);
+    if (node["skip-cert-verify"] === true) params.set("insecure", "1");
+    const query = params.toString();
+    return `${HY2_SCHEME}://${encodeURIComponent(node.password)}@${node.server}:${node.port}${query ? `?${query}` : ""}${fragment(node)}`;
+  }
+  function tuicUri(node) {
+    const params = new URLSearchParams();
+    if (node.sni ?? node.servername) params.set("sni", node.sni ?? node.servername);
+    if (node["udp-relay-mode"]) params.set("udp_relay_mode", node["udp-relay-mode"]);
+    const query = params.toString();
+    return `${TUIC_SCHEME}://${encodeURIComponent(node.uuid)}:${encodeURIComponent(node.password)}@${node.server}:${node.port}${query ? `?${query}` : ""}${fragment(node)}`;
+  }
+  function renderShadowrocketSubscription(nodes) {
+    if (!Array.isArray(nodes) || nodes.length === 0) {
+      throw new Error("Shadowrocket subscription refuses an empty node list");
+    }
+    const lines = nodes.map((node) => {
+      switch (node.type) {
+        case "vless":
+          return vlessUri(node);
+        case "snell":
+          return snellLine(node);
+        case "ss":
+        case "shadowsocks":
+          return ssLine(node);
+        case "trojan":
+          return trojanUri(node);
+        case "hysteria2":
+        case "hy2":
+          return hysteria2Uri(node);
+        case "tuic":
+          return tuicUri(node);
+        default:
+          throw new Error(`Shadowrocket subscription serialization is unsupported for protocol: ${node.type}`);
       }
-    }
-    if (escaped || depth !== 0) return null;
-    fields.push(field);
-    return fields;
+    });
+    return `${lines.join("\n")}
+`;
   }
-  function parenthesizedInner(value) {
-    if (!value.startsWith("(") || !value.endsWith(")")) return null;
-    const fields = topLevelFields(value);
-    if (!fields || fields.length !== 1) return null;
-    return value.slice(1, -1);
-  }
-  function isValidLogicalLeaf(type, target) {
-    if (!LOGICAL_LEAF_TYPES.has(type)) return false;
-    if (ALLOWED_TYPES.has(type)) return isValidRuleLine(`${type},${target}`);
-    if (type === "PROTOCOL") return /^(?:TCP|UDP)$/.test(target);
-    return isHttpUrl(target);
-  }
-  function isLogicalOperand(value) {
-    const inner = parenthesizedInner(value);
-    if (!inner) return false;
-    const fields = topLevelFields(inner);
-    if (!fields || fields.some((field) => !isNonEmptyField(field))) return false;
-    if (LOGICAL_TYPES.has(fields[0])) {
-      const operands = fields.slice(1);
-      const hasValidArity = fields[0] === "NOT" ? operands.length === 1 : operands.length >= 2;
-      return hasValidArity && operands.every(isLogicalOperand);
-    }
-    if (!/^[A-Z][A-Z0-9-]*$/.test(fields[0]) || fields.length < 2) return false;
-    return isValidLogicalLeaf(fields[0], fields.slice(1).join(","));
-  }
-  function isValidLogicalExpression(type, target) {
-    if (type === "NOT" && isLogicalOperand(target)) return true;
-    const inner = parenthesizedInner(target);
-    if (!inner) return false;
-    const operands = topLevelFields(inner);
-    const hasValidArity = type === "NOT" ? operands?.length === 1 : operands?.length >= 2;
-    return hasValidArity && operands.every(isLogicalOperand);
-  }
-  function isValidRuleTarget(type, target) {
-    if (!ALLOWED_TYPES.has(type) || !isNonEmptyField(target)) return false;
-    if (type === "DOMAIN" || type === "DOMAIN-SUFFIX") return isDomainName(target);
-    if (type === "DOMAIN-WILDCARD") return isWildcardDomain(target);
-    if (type === "IP-CIDR") return isCidr(target, 4) || isCidr(target, 6);
-    if (type === "IP-CIDR6") return isCidr(target, 6);
-    if (type === "SRC-IP-CIDR") return isCidr(target, 4) || isCidr(target, 6);
-    if (type === "IP-ASN") return /^[1-9]\d*$/.test(target);
-    if (type === "DST-PORT" || type === "DEST-PORT") return isPort(target);
-    if (type === "GEOIP") return /^(?:[A-Z]{2}|LAN|PRIVATE)$/.test(target);
-    if (type === "URL-REGEX") return isValidRegex(target);
-    return true;
-  }
-  function isValidRuleLine(line) {
-    if (!isNonEmptyField(line)) return false;
-    const separator = line.indexOf(",");
-    if (separator <= 0) return false;
-    const type = line.slice(0, separator);
-    const rawTarget = line.slice(separator + 1);
-    if (!/^[A-Z][A-Z0-9-]*$/.test(type) || !isNonEmptyField(rawTarget)) return false;
-    if (LOGICAL_TYPES.has(type)) return isValidLogicalExpression(type, rawTarget);
-    if (!ALLOWED_TYPES.has(type)) return false;
-    const [target, ...tail] = rawTarget.split(",");
-    const hasValidIpTail = tail.length === 0 || tail.length === 1 && tail[0] === "no-resolve";
-    if (["IP-CIDR", "IP-CIDR6", "SRC-IP-CIDR", "IP-ASN"].includes(type)) {
-      return hasValidIpTail && isValidRuleTarget(type, target);
-    }
-    if (type === "URL-REGEX") return isValidRuleTarget(type, rawTarget);
-    return tail.length === 0 && isValidRuleTarget(type, target);
-  }
-
-  // render-rules.js
-  var PUBLIC_RULE_ROOT = "https://juan-nikola.github.io/apple-proxy-profiles";
-  var LOCAL_RULES = Object.freeze([
-    "DOMAIN-SUFFIX,local,DIRECT",
-    "DOMAIN-SUFFIX,home.arpa,DIRECT",
-    "DOMAIN-SUFFIX,lan,DIRECT",
-    "IP-CIDR,10.0.0.0/8,DIRECT,no-resolve",
-    "IP-CIDR,100.64.0.0/10,DIRECT,no-resolve",
-    "IP-CIDR,127.0.0.0/8,DIRECT,no-resolve",
-    "IP-CIDR,169.254.0.0/16,DIRECT,no-resolve",
-    "IP-CIDR,172.16.0.0/12,DIRECT,no-resolve",
-    "IP-CIDR,192.168.0.0/16,DIRECT,no-resolve",
-    "IP-CIDR,224.0.0.0/4,DIRECT,no-resolve",
-    "IP-CIDR6,::1/128,DIRECT,no-resolve",
-    "IP-CIDR6,fc00::/7,DIRECT,no-resolve",
-    "IP-CIDR6,fe80::/10,DIRECT,no-resolve",
-    "IP-CIDR6,ff00::/8,DIRECT,no-resolve"
-  ]);
-  var CUSTOM_RULES2 = Object.freeze([
-    Object.freeze(["CUSTOM_BLOCK", CUSTOM_BLOCK, "REJECT"]),
-    Object.freeze(["CUSTOM_DIRECT", CUSTOM_DIRECT, "DIRECT"]),
-    Object.freeze(["CUSTOM_PROXY", CUSTOM_PROXY, "\u{1F680} \u8282\u70B9\u9009\u62E9"]),
-    Object.freeze(["CUSTOM_AI", CUSTOM_AI, "\u{1F916} AI \u4E13\u7528"])
-  ]);
-  var RULE_DOWNLOAD_POLICY = "\u{1F9ED} DNS \u4E0E\u89C4\u5219\u4E0B\u8F7D";
-  function isSafeCustomField(value) {
-    return typeof value === "string" && value.length > 0 && value.trim() === value && !/[\r\n,=]/.test(value);
-  }
-  function validateCustomRules(customRules) {
-    if (!Array.isArray(customRules)) throw new Error("Invalid custom rule configuration");
-    const seen = /* @__PURE__ */ new Set();
-    for (const entry of customRules) {
-      if (!Array.isArray(entry) || entry.length !== 3 || !isSafeCustomField(entry[0]) || !Array.isArray(entry[1]) || !isSafeCustomField(entry[2])) {
-        throw new Error("Invalid custom rule configuration");
-      }
-      for (const rule of entry[1]) {
-        if (typeof rule !== "string" || /[\r\n]/.test(rule) || rule.trim() !== rule) {
-          throw new Error("Invalid custom rule");
-        }
-        if (rule.split(",").length !== 2 || !isValidRuleLine(rule)) {
-          throw new Error("Invalid custom rule");
-        }
-        if (seen.has(rule)) throw new Error("Duplicate custom rule");
-        seen.add(rule);
-      }
-    }
-  }
-  function safeBaseUrl(value) {
-    if (typeof value !== "string" || !/^https:\/\/[^\s]+$/u.test(value) || /[\r\n,]/u.test(value)) {
-      throw new Error("Shadowrocket rule base URL must be an HTTPS URL without commas");
-    }
-    const match = /^https:\/\/([^/]+)(\/[^?#]*)$/u.exec(value);
-    if (!match) {
-      throw new Error("Shadowrocket rule base URL is invalid");
-    }
-    const hostname = match[1];
-    const labels = hostname.split(".");
-    if (hostname.includes(":") || hostname.includes("@") || labels.some((label) => !/^[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?$/u.test(label))) {
-      throw new Error("Shadowrocket rule base URL must be a plain HTTPS publication URL");
-    }
-    const normalized = value.replace(/\/+$/u, "");
-    if (!normalized.endsWith("/shadowrocket/rules")) {
-      throw new Error("Shadowrocket rule base URL must end in /shadowrocket/rules");
-    }
-    return Object.freeze({ url: normalized, hostname });
-  }
-  function optionalAdblockBase(defaultBase) {
-    const optional = defaultBase.replace(
-      /\/shadowrocket\/rules$/u,
-      "/optional/adblock-full/shadowrocket/rules"
-    );
-    if (optional === defaultBase) {
-      throw new Error("Shadowrocket rule base URL must end in /shadowrocket/rules");
-    }
-    return optional;
-  }
-  function sourceUrl(source, base, optionalBase) {
-    const selectedBase = source.id === "Advertising" || source.id === "Advertising_Domain" ? optionalBase : base;
-    if (!selectedBase) throw new Error("Shadowrocket optional rule URL is unavailable");
-    return `${selectedBase}/${source.id}.list`;
-  }
-  function renderRuleSet(source, base, optionalBase) {
-    return `${source.inputFormat},${sourceUrl(source, base, optionalBase)},${source.policy},update-interval=86400`;
-  }
-  function ruleBaseUrlForChannel(channel) {
-    if (channel !== "edge" && channel !== "current") {
-      throw new Error(`Unsupported Shadowrocket publication channel: ${channel}`);
-    }
-    return `${PUBLIC_RULE_ROOT}/${channel}/shadowrocket/rules`;
-  }
-  function renderRules({ ruleBaseUrl, adblockMode = "off" } = {}) {
-    validateCustomRules(CUSTOM_RULES2);
-    const base = safeBaseUrl(ruleBaseUrl);
-    const plan = orderedRoutingPlan({ adblockMode });
-    const optionalBase = adblockMode === "full" ? optionalAdblockBase(base.url) : null;
-    const render = (source) => renderRuleSet(source, base.url, optionalBase);
-    const lines = [
-      ...LOCAL_RULES,
-      "# Security rules",
-      ...plan.filter(({ phase }) => phase === "security").map(render),
-      "# Custom rules"
-    ];
-    for (const [name, rules, policy] of CUSTOM_RULES2) {
-      lines.push(`# ${name}`);
-      lines.push(...rules.map((rule) => `${rule},${policy}`));
-    }
-    lines.push(
-      "# Rule-download fallback transport",
-      `DOMAIN,${base.hostname},${RULE_DOWNLOAD_POLICY}`
-    );
-    for (const phase of ROUTING_PHASES.filter((value) => value !== "security")) {
-      lines.push(...plan.filter((source) => source.phase === phase).map(render));
-    }
-    lines.push("GEOIP,CN,DIRECT", "FINAL,\u{1F680} \u8282\u70B9\u9009\u62E9");
-    return lines;
-  }
-
-  // render-profile.js
-  var NODE_REFRESH_SECONDS = 21600;
-  var RULE_REFRESH_SECONDS = 86400;
-  function renderProfile(rawOptions, nodes, { ruleBaseUrl } = {}) {
-    const options = parseOptions(rawOptions);
-    const inventory = Array.isArray(nodes) ? nodes : [];
-    const hasChainedNodes = inventory.some((node) => nodeMetadata(node).chained === true);
-    const hasEligibleEntry = inventory.some((node) => nodeMetadata(node).entry === true && nodeMetadata(node).chained !== true);
-    if (options.clientChain === "off" && hasChainedNodes) {
-      throw new Error("clientChain=off rejects an inventory containing chained nodes");
-    }
-    if (options.clientChain === "on" && hasChainedNodes && !hasEligibleEntry) {
-      throw new Error("clientChain=on requires an eligible unchained entry for chained nodes");
-    }
-    const header = [
-      "# Generated by shadowrocket-profile. Do not paste credentials into this file.",
-      `# platform=${options.platform}; node-count=${inventory.length}; node-refresh=${NODE_REFRESH_SECONDS}; rule-refresh=${RULE_REFRESH_SECONDS}`
-    ].join("\n");
-    const groups = renderGroups(buildGroups(options, inventory), options.subscriptionName).join("\n");
-    return [
-      header,
-      `[General]
-${generalSettings(options).join("\n")}`,
-      `[Proxy Group]
-${groups}`,
-      `[Rule]
-${renderRules({
-        ruleBaseUrl: ruleBaseUrl ?? ruleBaseUrlForChannel(options.channel),
-        adblockMode: options.adblockMode
-      }).join("\n")}`
-    ].join("\n\n") + "\n";
-  }
-
-  // validate-profile.js
-  var BUILTIN_POLICIES = /* @__PURE__ */ new Set(["DIRECT", "REJECT", "PROXY"]);
-  var GROUP_TYPES = /* @__PURE__ */ new Set(["select", "url-test", "fallback", "load-balance", "random"]);
-  var REQUIRED_SECTIONS = /* @__PURE__ */ new Set(["General", "Proxy Group", "Rule"]);
-  var SIMPLE_RULE_TYPES = /* @__PURE__ */ new Set([
-    "DOMAIN",
-    "DOMAIN-SUFFIX",
-    "DOMAIN-KEYWORD",
-    "DOMAIN-WILDCARD",
-    "IP-CIDR",
-    "IP-CIDR6",
-    "SRC-IP-CIDR",
-    "IP-ASN",
-    "GEOIP",
-    "USER-AGENT",
-    "PROCESS-NAME",
-    "URL-REGEX",
-    "DST-PORT",
-    "DEST-PORT"
-  ]);
-  var IP_RULE_TYPES = /* @__PURE__ */ new Set(["IP-CIDR", "IP-CIDR6", "SRC-IP-CIDR"]);
-  function escapedCommaFields(value) {
-    const fields = [];
-    let field = "";
-    let escaped = false;
-    for (const character of value) {
-      if (escaped) {
-        field += character;
-        escaped = false;
-      } else if (character === "\\") {
-        escaped = true;
-      } else if (character === ",") {
-        fields.push(field);
-        field = "";
-      } else {
-        field += character;
-      }
-    }
-    if (escaped) field += "\\";
-    fields.push(field);
-    return fields;
-  }
-  function sectionsFrom(profile, errors) {
-    const sections = /* @__PURE__ */ new Map();
-    let active;
-    for (const line of profile.replaceAll("\r\n", "\n").split("\n")) {
-      const match = /^\[([^\]]+)\]$/.exec(line);
-      if (match) {
-        active = match[1];
-        if (!REQUIRED_SECTIONS.has(active)) errors.add(`Unrecognized section: ${active}`);
-        if (!sections.has(active)) {
-          sections.set(active, []);
-        } else if (REQUIRED_SECTIONS.has(active)) {
-          errors.add(`Duplicate required section: ${active}`);
-        } else {
-          errors.add(`Duplicate section: ${active}`);
-        }
-        continue;
-      }
-      if (active) sections.get(active).push(line);
-    }
-    for (const required of REQUIRED_SECTIONS) {
-      if (!sections.has(required)) errors.add(`Missing required section: ${required}`);
-    }
-    return sections;
-  }
-  function parseGroups(lines, errors) {
-    const groups = /* @__PURE__ */ new Map();
-    for (const line of lines ?? []) {
-      if (!line || line.startsWith("#")) continue;
-      const separator = line.indexOf("=");
-      if (separator < 1) {
-        errors.add(`Invalid proxy group: ${line}`);
-        continue;
-      }
-      const nameFields = escapedCommaFields(line.slice(0, separator).trim());
-      const name = nameFields[0];
-      const fields = escapedCommaFields(line.slice(separator + 1).trim());
-      if (nameFields.length !== 1 || !name || !GROUP_TYPES.has(fields[0])) {
-        errors.add(`Invalid proxy group: ${name || line}`);
-        continue;
-      }
-      if (groups.has(name)) {
-        errors.add(`Duplicate group: ${name}`);
-        continue;
-      }
-      groups.set(name, fields);
-    }
-    return groups;
-  }
-  function groupReferences(groups, errors) {
-    const graph = new Map([...groups.keys()].map((name) => [name, []]));
-    for (const [name, fields] of groups) {
-      const useIndex = fields.lastIndexOf("use=true");
-      const staticEnd = useIndex > 1 ? useIndex - 1 : useIndex === -1 ? fields.length : 1;
-      const staticItems = [];
-      for (let index = 1; index < staticEnd; index += 1) {
-        const item = fields[index];
-        if (!item || item.includes("=")) continue;
-        staticItems.push(item);
-        if (BUILTIN_POLICIES.has(item)) continue;
-        if (groups.has(item)) {
-          graph.get(name).push(item);
-        } else {
-          errors.add(`Missing group reference: ${name} -> ${item}`);
-        }
-      }
-      const subscriptionSource = useIndex > 1 ? fields[useIndex - 1] : "";
-      const hasSubscription = subscriptionSource.length > 0;
-      const includesAllProxies = fields.includes("include-all-proxies=true");
-      const filtersDynamicPolicies = fields.some((field) => field.startsWith("policy-regex-filter="));
-      if (filtersDynamicPolicies && !hasSubscription && !includesAllProxies) {
-        errors.add(`Filtered group requires include-all-proxies=true or a subscription source: ${name}`);
-      }
-      if (staticItems.length === 0 && !hasSubscription && !includesAllProxies) {
-        errors.add(`Group requires a selectable item or subscription source: ${name}`);
-      }
-    }
-    return graph;
-  }
-  function detectCycles(graph, errors) {
-    const visiting = /* @__PURE__ */ new Set();
-    const visited = /* @__PURE__ */ new Set();
-    function visit(name) {
-      if (visiting.has(name)) {
-        errors.add(`Group cycle: ${[...visiting, name].join(" -> ")}`);
-        return;
-      }
-      if (visited.has(name)) return;
-      visiting.add(name);
-      for (const reference of graph.get(name) ?? []) visit(reference);
-      visiting.delete(name);
-      visited.add(name);
-    }
-    for (const name of graph.keys()) visit(name);
-  }
-  function validPolicy(policy, groups) {
-    return BUILTIN_POLICIES.has(policy) || groups.has(policy);
-  }
-  function validatePolicy(kind, policy, groups, errors) {
-    if (!policy) {
-      errors.add(`${kind} policy is missing`);
-    } else if (!validPolicy(policy, groups)) {
-      errors.add(`${kind} policy references missing group: ${policy}`);
-    }
-  }
-  function isControlTail(field) {
-    return field === "no-resolve" || field.includes("=");
-  }
-  function validateSimpleRule(type, fields, groups, errors) {
-    if (fields.length < 3 || !fields[1]) {
-      errors.add(`Malformed ${type} rule`);
-      return;
-    }
-    if (!isValidRuleTarget(type, fields[1])) errors.add(`Malformed ${type} rule`);
-    validatePolicy(type, fields[2], groups, errors);
-    const tail = fields.slice(3);
-    if (!IP_RULE_TYPES.has(type) && tail.length > 0 || IP_RULE_TYPES.has(type) && tail.some((field) => !isControlTail(field))) {
-      errors.add(`Malformed ${type} rule`);
-    }
-  }
-  function topLevelFields2(value) {
-    const fields = [];
-    let field = "";
-    let depth = 0;
-    let escaped = false;
-    for (const character of value) {
-      if (escaped) {
-        field += character;
-        escaped = false;
-      } else if (character === "\\") {
-        field += character;
-        escaped = true;
-      } else if (character === "(") {
-        depth += 1;
-        field += character;
-      } else if (character === ")") {
-        depth -= 1;
-        if (depth < 0) return null;
-        field += character;
-      } else if (character === "," && depth === 0) {
-        fields.push(field);
-        field = "";
-      } else {
-        field += character;
-      }
-    }
-    if (escaped || depth !== 0) return null;
-    fields.push(field);
-    return fields;
-  }
-  function validateLogicalRule(type, rule, groups, errors) {
-    const topLevel = topLevelFields2(rule);
-    const escapedFields = escapedCommaFields(rule);
-    const policy = topLevel?.length === 3 ? escapedFields.at(-1) : "";
-    if (!topLevel || topLevel.length !== 3 || topLevel[0] !== type) {
-      errors.add(`Malformed ${type} rule`);
-      validatePolicy(type, "", groups, errors);
-      return;
-    }
-    if (!isValidRuleLine(`${type},${topLevel[1]}`)) errors.add(`Malformed ${type} rule`);
-    validatePolicy(type, policy, groups, errors);
-  }
-  function validateRules(lines, groups, errors) {
-    const rules = (lines ?? []).filter((line) => line && !line.startsWith("#"));
-    const geoipIndex = rules.indexOf("GEOIP,CN,DIRECT");
-    const finalIndex = rules.findIndex((line) => line.startsWith("FINAL,"));
-    if (geoipIndex === -1) errors.add("Missing exact GEOIP,CN,DIRECT rule");
-    if (finalIndex === -1) errors.add("Missing FINAL rule");
-    if (geoipIndex !== -1 && finalIndex !== -1 && geoipIndex > finalIndex) {
-      errors.add("GEOIP,CN,DIRECT must appear before FINAL");
-    }
-    for (const rule of rules) {
-      const fields = escapedCommaFields(rule);
-      const type = fields[0];
-      if (SIMPLE_RULE_TYPES.has(type)) {
-        validateSimpleRule(type, fields, groups, errors);
-      } else if (type === "RULE-SET" || type === "DOMAIN-SET") {
-        if (fields.length < 3 || !fields[1]) errors.add(`Malformed ${type} rule`);
-        validatePolicy(type, fields[2], groups, errors);
-        if (fields.slice(3).some((field) => !field.includes("="))) errors.add(`Malformed ${type} rule`);
-      } else if (type === "FINAL") {
-        if (fields.length !== 2) errors.add("Malformed FINAL rule");
-        validatePolicy("FINAL", fields[1], groups, errors);
-      } else if (["AND", "OR", "NOT"].includes(type)) {
-        validateLogicalRule(type, rule, groups, errors);
-      } else {
-        errors.add(`Unknown rule type: ${type || "(empty)"}`);
-      }
-    }
-  }
-  function validateProfile(profile) {
-    const errors = /* @__PURE__ */ new Set();
-    if (typeof profile !== "string") {
-      return { valid: false, errors: ["Profile must be a string"] };
-    }
-    const sections = sectionsFrom(profile, errors);
-    const groups = parseGroups(sections.get("Proxy Group"), errors);
-    const graph = groupReferences(groups, errors);
-    detectCycles(graph, errors);
-    validateRules(sections.get("Rule"), groups, errors);
-    const result = [...errors];
-    return { valid: result.length === 0, errors: result };
-  }
-
-  // substore-profile-entry.js
   async function operator(input, targetPlatform, context = {}) {
     void targetPlatform;
-    const options = parseOptions(context.arguments ?? {});
-    if (options.output !== "config") throw new Error("output must be config");
+    const options = parseArguments(context.arguments ?? {});
     if (typeof context.produceArtifact !== "function") {
       throw new Error("produceArtifact is unavailable");
     }
-    const nodes = await context.produceArtifact({
+    const rawNodes = await context.produceArtifact({
       type: options.type,
       name: options.name,
       platform: "JSON",
       produceType: "internal"
     });
-    if (!Array.isArray(nodes) || nodes.length === 0) {
+    if (!Array.isArray(rawNodes) || rawNodes.length === 0) {
       throw new Error("produceArtifact must return a non-empty node array");
     }
-    const normalized = normalizeNodes(nodes, { clientChain: options.clientChain });
+    const normalized = normalizeNodes(rawNodes, { clientChain: options.clientChain });
     const filtered = filterNodesForClient(normalized.nodes, CLIENT.shadowrocket);
     if (filtered.nodes.length === 0) {
       throw new Error("No compatible Shadowrocket nodes");
     }
-    const profile = renderProfile(options, filtered.nodes, {
-      ruleBaseUrl: ruleBaseUrlForChannel(options.channel)
-    });
-    if (!validateProfile(profile).valid) {
-      throw new Error("Generated profile failed validation");
-    }
-    return { ...input, $content: profile };
+    logDiagnostics(context, filtered.diagnostics);
+    return { ...input, $content: renderShadowrocketSubscription(filtered.nodes) };
   }
-  return __toCommonJS(substore_profile_entry_exports);
+  return __toCommonJS(substore_node_subscription_entry_exports);
 })();
 
 async function operator(input, targetPlatform) {
-  return ShadowrocketProfileBundle.operator(input, targetPlatform, { arguments: $arguments, produceArtifact, logger: console });
+  return ShadowrocketNodeSubscriptionBundle.operator(input, targetPlatform, { arguments: $arguments, produceArtifact, logger: console });
 }
