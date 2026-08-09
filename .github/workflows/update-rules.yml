@@ -106,7 +106,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
       - name: Promote exact approved client bytes
-        run: npm run update:rules -- --promote "$PROMOTION_CLIENT" "$PROMOTION_MANIFEST_HASH"
+        run: node scripts/update-rules.mjs --promote "$PROMOTION_CLIENT" "$PROMOTION_MANIFEST_HASH"
       - name: Scan promoted output
         run: npm run check:secrets
       - name: Commit selected current client
