@@ -25,7 +25,7 @@
     ],
     "rules": [],
     "final": "dns-direct",
-    "strategy": "prefer_ipv4",
+    "strategy": "ipv4_only",
     "cache_capacity": 4096
   },
   "http_clients": [
@@ -56,21 +56,18 @@
         "224.0.0.0/4",
         "fc00::/7",
         "fe80::/10",
-        "ff00::/8",
-        "192.168.1.0/24"
+        "ff00::/8"
       ],
-      "stack": "mixed",
       "dns_mode": "hijack",
       "dns_address": [
         "172.18.0.2",
         "fdfe:dcba:9876::2"
       ],
-      "auto_redirect": true,
-      "auto_redirect_input_mark": "0x2023",
-      "auto_redirect_output_mark": "0x2024",
-      "loopback_address": [
-        "10.7.0.1"
-      ]
+      "platform": {
+        "http_proxy": {
+          "enabled": false
+        }
+      }
     }
   ],
   "outbounds": [
@@ -175,8 +172,9 @@
       "tag": "🚀 节点选择",
       "outbounds": [
         "⚡ 全部自动",
-        "示例 · Tokyo",
-        "示例 · Frankfurt"
+        "🛟 全部故障转移",
+        "🌏 亚太",
+        "🌍 欧洲"
       ],
       "interrupt_exist_connections": true
     },

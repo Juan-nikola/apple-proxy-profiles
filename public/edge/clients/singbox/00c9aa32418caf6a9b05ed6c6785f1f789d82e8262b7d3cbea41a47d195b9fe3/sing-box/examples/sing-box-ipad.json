@@ -62,7 +62,7 @@
     {
       "type": "tun",
       "tag": "tun-in",
-      "interface_name": "sing-box",
+      "interface_name": "singtun0",
       "address": [
         "172.18.0.1/30",
         "fdfe:dcba:9876::1/126"
@@ -83,11 +83,14 @@
       ],
       "dns_mode": "hijack",
       "dns_address": [
-        "172.18.0.2"
+        "172.18.0.2",
+        "fdfe:dcba:9876::2"
       ],
-      "include_android_user": [
-        0
-      ]
+      "platform": {
+        "http_proxy": {
+          "enabled": false
+        }
+      }
     }
   ],
   "outbounds": [
@@ -192,8 +195,9 @@
       "tag": "🚀 节点选择",
       "outbounds": [
         "⚡ 全部自动",
-        "示例 · Tokyo",
-        "示例 · Frankfurt"
+        "🛟 全部故障转移",
+        "🌏 亚太",
+        "🌍 欧洲"
       ],
       "interrupt_exist_connections": true
     },

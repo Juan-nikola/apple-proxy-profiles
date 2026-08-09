@@ -25,7 +25,7 @@
     ],
     "rules": [],
     "final": "dns-direct",
-    "strategy": "ipv4_only",
+    "strategy": "prefer_ipv4",
     "cache_capacity": 4096
   },
   "http_clients": [
@@ -107,8 +107,8 @@
         "示例 · Frankfurt"
       ],
       "url": "https://www.gstatic.com/generate_204",
-      "interval": "600s",
-      "tolerance": 100,
+      "interval": "1800s",
+      "tolerance": 150,
       "interrupt_exist_connections": true
     },
     {
@@ -119,8 +119,8 @@
         "示例 · Frankfurt"
       ],
       "url": "https://www.gstatic.com/generate_204",
-      "interval": "600s",
-      "tolerance": 100,
+      "interval": "1800s",
+      "tolerance": 150,
       "interrupt_exist_connections": true
     },
     {
@@ -130,8 +130,8 @@
         "DIRECT"
       ],
       "url": "https://www.gstatic.com/generate_204",
-      "interval": "600s",
-      "tolerance": 100,
+      "interval": "1800s",
+      "tolerance": 150,
       "interrupt_exist_connections": true
     },
     {
@@ -141,8 +141,8 @@
         "DIRECT"
       ],
       "url": "https://www.gstatic.com/generate_204",
-      "interval": "600s",
-      "tolerance": 100,
+      "interval": "1800s",
+      "tolerance": 150,
       "interrupt_exist_connections": true
     },
     {
@@ -152,8 +152,8 @@
         "DIRECT"
       ],
       "url": "https://www.gstatic.com/generate_204",
-      "interval": "600s",
-      "tolerance": 100,
+      "interval": "1800s",
+      "tolerance": 150,
       "interrupt_exist_connections": true
     },
     {
@@ -163,8 +163,8 @@
         "DIRECT"
       ],
       "url": "https://www.gstatic.com/generate_204",
-      "interval": "600s",
-      "tolerance": 100,
+      "interval": "1800s",
+      "tolerance": 150,
       "interrupt_exist_connections": true
     },
     {
@@ -172,8 +172,9 @@
       "tag": "🚀 节点选择",
       "outbounds": [
         "⚡ 全部自动",
-        "示例 · Tokyo",
-        "示例 · Frankfurt"
+        "🛟 全部故障转移",
+        "🌏 亚太",
+        "🌍 欧洲"
       ],
       "interrupt_exist_connections": true
     },
