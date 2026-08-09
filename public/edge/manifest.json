@@ -10,7 +10,7 @@
       "referencedDefaultBytes": 401384
     },
     "shadowrocket": {
-      "manifestHash": "0b9b6fda2600f25b21aae3706f37461e1713cab427745e5771af7c8c8493c433",
+      "manifestHash": "aa1bd70aed4f2aa06d42ebf128d7058dbf162ebe0374cf7b2f1f7713bba6e31b",
       "referencedDefaultBytes": 604778
     },
     "singbox": {
@@ -442,9 +442,9 @@
       "sha256": "5a8b43ed021d6dcc9cbfad7160ed9d7f1ba695524364a1126451669b966cbb51"
     },
     {
-      "bytes": 7037,
+      "bytes": 7039,
       "path": "shadowrocket/client-manifest.json",
-      "sha256": "818800b1d69e9e35d130adf0affe848702743eca1850db0b74fd4576d63d3b02"
+      "sha256": "02f6367bbcb114804cfdfe83526c1cea463b8088f417aaf61f424bdfecef6903"
     },
     {
       "bytes": 19397,
@@ -627,9 +627,9 @@
       "sha256": "676c0af7d79d1e3aca9edca296a472fed1bd0eae3abd76bf5eb14962f99ff0e1"
     },
     {
-      "bytes": 58513,
+      "bytes": 137583,
       "path": "shadowrocket/scripts/shadowrocket-profile-generator.js",
-      "sha256": "e0359a2dc104b66849f3840b0c05cb8d5349c12a38b59b1c630f6afdf091f7f5"
+      "sha256": "f3d8df1cdfa37caf6d49f76a7fa085d62d081b607cf1c5b70fc1a94ceea29245"
     },
     {
       "bytes": 85219,
@@ -637,9 +637,9 @@
       "sha256": "676c0af7d79d1e3aca9edca296a472fed1bd0eae3abd76bf5eb14962f99ff0e1"
     },
     {
-      "bytes": 58513,
+      "bytes": 137583,
       "path": "shadowrocket/scripts/substore-profile-generator.js",
-      "sha256": "e0359a2dc104b66849f3840b0c05cb8d5349c12a38b59b1c630f6afdf091f7f5"
+      "sha256": "f3d8df1cdfa37caf6d49f76a7fa085d62d081b607cf1c5b70fc1a94ceea29245"
     },
     {
       "bytes": 7848,
@@ -1068,7 +1068,7 @@
     }
   ],
   "generatedAt": "2026-08-07T18:52:17Z",
-  "manifestHash": "b61745d75b049a6ef841eefc4697f7a338d03dd1db82d688f6a2d6fc471307f4",
+  "manifestHash": "f4be92ff6c0e7870a9dd39209ea303d6b59c2e6944badf9c7fde39c630f5be4b",
   "schemaVersion": 2,
   "upstream": {
     "branch": "master",
