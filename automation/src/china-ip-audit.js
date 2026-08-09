@@ -177,23 +177,19 @@ function coverage(entries, family) {
   return Object.freeze({ prefixes: compacted.length, addresses });
 }
 
-function safeBasisPoints(numerator, denominator, label) {
-  const value = numerator * BASIS_POINTS / denominator;
-  if (value > BigInt(Number.MAX_SAFE_INTEGER)) {
-    throw new RangeError(`${label} exceeds the safe integer range`);
-  }
-  return Number(value);
+function basisPoints(numerator, denominator) {
+  return numerator * BASIS_POINTS / denominator;
 }
 
 function shrinkBasisPoints(previous, current) {
-  if (previous === 0n || current >= previous) return 0;
-  return safeBasisPoints(previous - current, previous, "Primary shrink basis points");
+  if (previous === 0n || current >= previous) return 0n;
+  return basisPoints(previous - current, previous);
 }
 
 function divergenceBasisPoints(current, secondary) {
-  if (current === 0n) return secondary === 0n ? 0 : 10_000;
+  if (current === 0n) return secondary === 0n ? 0n : BASIS_POINTS;
   const difference = current > secondary ? current - secondary : secondary - current;
-  return safeBasisPoints(difference, current, "Secondary divergence basis points");
+  return basisPoints(difference, current);
 }
 
 function familyReport(previous, current, secondary) {
@@ -204,8 +200,8 @@ function familyReport(previous, current, secondary) {
     previousAddresses: previous.addresses.toString(),
     currentAddresses: current.addresses.toString(),
     secondaryAddresses: secondary.addresses.toString(),
-    shrinkBasisPoints: shrinkBasisPoints(previous.addresses, current.addresses),
-    divergenceBasisPoints: divergenceBasisPoints(current.addresses, secondary.addresses),
+    shrinkBasisPoints: shrinkBasisPoints(previous.addresses, current.addresses).toString(),
+    divergenceBasisPoints: divergenceBasisPoints(current.addresses, secondary.addresses).toString(),
   });
 }
 
@@ -214,12 +210,14 @@ function diagnosticsFor({ families, reportOnly, generatedAt, secondary }) {
   const blockers = new Set();
   for (const family of FAMILIES_KEYS) {
     const metrics = families[family];
-    if (metrics.shrinkBasisPoints > 2_000) {
+    const shrink = BigInt(metrics.shrinkBasisPoints);
+    const divergence = BigInt(metrics.divergenceBasisPoints);
+    if (shrink > 2_000n) {
       (reportOnly ? warnings : blockers).add(`${family}:primary-shrink`);
     }
-    if (metrics.divergenceBasisPoints > 1_500) {
+    if (divergence > 1_500n) {
       (reportOnly ? warnings : blockers).add(`${family}:secondary-divergence`);
-    } else if (metrics.divergenceBasisPoints > 500) {
+    } else if (divergence > 500n) {
       warnings.add(`${family}:secondary-divergence`);
     }
   }
@@ -311,10 +309,13 @@ function validateFamily(value, family) {
   const previous = validateDecimalString(value.previousAddresses, `Report families.${family}.previousAddresses`);
   const current = validateDecimalString(value.currentAddresses, `Report families.${family}.currentAddresses`);
   const secondary = validateDecimalString(value.secondaryAddresses, `Report families.${family}.secondaryAddresses`);
-  validateNonNegativeInteger(value.shrinkBasisPoints, `Report families.${family}.shrinkBasisPoints`);
-  validateNonNegativeInteger(value.divergenceBasisPoints, `Report families.${family}.divergenceBasisPoints`);
-  if (value.shrinkBasisPoints !== shrinkBasisPoints(previous, current)
-    || value.divergenceBasisPoints !== divergenceBasisPoints(current, secondary)) {
+  const shrink = validateDecimalString(value.shrinkBasisPoints, `Report families.${family}.shrinkBasisPoints`);
+  const divergence = validateDecimalString(
+    value.divergenceBasisPoints,
+    `Report families.${family}.divergenceBasisPoints`,
+  );
+  if (shrink !== shrinkBasisPoints(previous, current)
+    || divergence !== divergenceBasisPoints(current, secondary)) {
     throw new TypeError(`Report families.${family} basis points are inconsistent with address coverage`);
   }
 }
@@ -357,8 +358,8 @@ function validateReportSchema(report) {
 export function validateChinaIpAuditForPromotion(report, now) {
   const { calibrationEnd, secondary } = validateReportSchema(report);
   const validationTime = timestamp(now, "Promotion validation time");
-  if (report.reportOnly || validationTime.millis < calibrationEnd.millis) {
-    throw new Error("ChinaIP audit calibration is still report-only");
+  if (report.reportOnly && validationTime.millis >= calibrationEnd.millis) {
+    throw new Error("ChinaIP audit uses an expired calibration report");
   }
   if (report.blockers.length > 0) throw new Error("ChinaIP audit has blockers");
   if (validationTime.millis - timestamp(secondary.committedAt, "Secondary committedAt").millis

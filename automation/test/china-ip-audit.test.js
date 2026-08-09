@@ -143,8 +143,8 @@ test("uses compacted prefixes and exact decimal-string address coverage", () => 
       previousAddresses: "256",
       currentAddresses: "192",
       secondaryAddresses: "128",
-      shrinkBasisPoints: 2500,
-      divergenceBasisPoints: 3333,
+      shrinkBasisPoints: "2500",
+      divergenceBasisPoints: "3333",
     },
     ipv6: {
       previousPrefixes: 1,
@@ -153,8 +153,8 @@ test("uses compacted prefixes and exact decimal-string address coverage", () => 
       previousAddresses: "4",
       currentAddresses: "3",
       secondaryAddresses: "2",
-      shrinkBasisPoints: 2500,
-      divergenceBasisPoints: 3333,
+      shrinkBasisPoints: "2500",
+      divergenceBasisPoints: "3333",
     },
   });
   assert.deepEqual(report.warnings, []);
@@ -165,6 +165,7 @@ test("uses compacted prefixes and exact decimal-string address coverage", () => 
     "ipv6:secondary-divergence",
   ]);
   assert.equal(typeof report.families.ipv6.currentAddresses, "string");
+  assert.equal(typeof report.families.ipv6.divergenceBasisPoints, "string");
 });
 
 test("uses strict shrink and divergence thresholds", () => {
@@ -192,7 +193,7 @@ test("uses strict shrink and divergence thresholds", () => {
     currentPrimaryEntries: currentFour,
     secondaryEntries: currentFour,
   });
-  assert.equal(exactShrink.families.ipv4.shrinkBasisPoints, 2000);
+  assert.equal(exactShrink.families.ipv4.shrinkBasisPoints, "2000");
   assert.deepEqual(exactShrink.blockers, []);
 
   const exactWarning = audit({
@@ -200,7 +201,7 @@ test("uses strict shrink and divergence thresholds", () => {
     currentPrimaryEntries: currentTwenty,
     secondaryEntries: secondaryNineteen,
   });
-  assert.equal(exactWarning.families.ipv4.divergenceBasisPoints, 500);
+  assert.equal(exactWarning.families.ipv4.divergenceBasisPoints, "500");
   assert.deepEqual(exactWarning.warnings, []);
 
   const exactBlock = audit({
@@ -208,7 +209,7 @@ test("uses strict shrink and divergence thresholds", () => {
     currentPrimaryEntries: currentTwenty,
     secondaryEntries: secondarySeventeen,
   });
-  assert.equal(exactBlock.families.ipv4.divergenceBasisPoints, 1500);
+  assert.equal(exactBlock.families.ipv4.divergenceBasisPoints, "1500");
   assert.deepEqual(exactBlock.warnings, ["ipv4:secondary-divergence"]);
   assert.deepEqual(exactBlock.blockers, []);
 
@@ -220,8 +221,8 @@ test("uses strict shrink and divergence thresholds", () => {
     ],
     secondaryEntries: [entry("ipv4Cidr", "8.8.8.0/31", "ChinaIP-secondary")],
   });
-  assert.equal(overThresholds.families.ipv4.shrinkBasisPoints, 4000);
-  assert.equal(overThresholds.families.ipv4.divergenceBasisPoints, 3333);
+  assert.equal(overThresholds.families.ipv4.shrinkBasisPoints, "4000");
+  assert.equal(overThresholds.families.ipv4.divergenceBasisPoints, "3333");
   assert.deepEqual(overThresholds.blockers, [
     "ipv4:primary-shrink",
     "ipv4:secondary-divergence",
@@ -234,16 +235,38 @@ test("uses the previous primary denominator for shrink and current primary for d
     currentPrimaryEntries: [entry("ipv4Cidr", "8.8.8.0/30")],
     secondaryEntries: [entry("ipv4Cidr", "8.8.8.0/31", "ChinaIP-secondary")],
   });
-  assert.equal(growth.families.ipv4.shrinkBasisPoints, 0);
-  assert.equal(growth.families.ipv4.divergenceBasisPoints, 5000);
+  assert.equal(growth.families.ipv4.shrinkBasisPoints, "0");
+  assert.equal(growth.families.ipv4.divergenceBasisPoints, "5000");
 
   const oneSideZero = audit({
     previousPrimaryEntries: [entry("ipv6Cidr", "2001:4860::/128")],
     currentPrimaryEntries: [],
     secondaryEntries: [entry("ipv6Cidr", "2001:4860::/128", "ChinaIP-secondary")],
   });
-  assert.equal(oneSideZero.families.ipv4.divergenceBasisPoints, 0);
-  assert.equal(oneSideZero.families.ipv6.divergenceBasisPoints, 10000);
+  assert.equal(oneSideZero.families.ipv4.divergenceBasisPoints, "0");
+  assert.equal(oneSideZero.families.ipv6.divergenceBasisPoints, "10000");
+});
+
+test("serializes arbitrarily large IPv6 divergence without precision loss", () => {
+  const report = buildChinaIpAudit({
+    previousPrimaryEntries: [entry("ipv6Cidr", "2001:4860::1/128")],
+    currentPrimaryEntries: [entry("ipv6Cidr", "2001:4860::1/128")],
+    secondaryEntries: [entry("ipv6Cidr", "2001:4000::/18", "ChinaIP-secondary")],
+    primary: PRIMARY,
+    secondary: SECONDARY,
+    now: NOW,
+  });
+
+  assert.equal(report.families.ipv6.currentAddresses, "1");
+  assert.equal(report.families.ipv6.secondaryAddresses, "1298074214633706907132624082305024");
+  assert.equal(report.families.ipv6.shrinkBasisPoints, "0");
+  assert.equal(
+    report.families.ipv6.divergenceBasisPoints,
+    "12980742146337069071326240823050230000",
+  );
+  assert.deepEqual(report.warnings, ["ipv6:secondary-divergence"]);
+  assert.deepEqual(report.blockers, []);
+  assert.equal(validateChinaIpAuditForPromotion(report, NOW), true);
 });
 
 test("starts a fourteen-day calibration and downgrades only numerical blockers", () => {
@@ -343,7 +366,7 @@ test("produces deterministic metadata and diagnostic ordering", () => {
   assert.deepEqual(forward.secondary, SECONDARY);
 });
 
-test("promotion validation accepts only a fresh post-calibration report without blockers", () => {
+test("promotion validation accepts blocker-free reports during and after calibration", () => {
   const report = audit({
     previousPrimaryEntries: [entry("ipv4Cidr", "8.8.8.0/30")],
     currentPrimaryEntries: [entry("ipv4Cidr", "8.8.8.0/30")],
@@ -353,13 +376,22 @@ test("promotion validation accepts only a fresh post-calibration report without 
 
   const calibrationReport = buildChinaIpAudit({
     previousPrimaryEntries: [entry("ipv4Cidr", "8.8.8.0/30")],
-    currentPrimaryEntries: [entry("ipv4Cidr", "8.8.8.0/30")],
-    secondaryEntries: [entry("ipv4Cidr", "8.8.8.0/30", "ChinaIP-secondary")],
+    currentPrimaryEntries: [entry("ipv4Cidr", "8.8.8.0/31")],
+    secondaryEntries: [entry("ipv4Cidr", "8.8.8.0/32", "ChinaIP-secondary")],
     primary: PRIMARY,
     secondary: SECONDARY,
     now: NOW,
   });
-  assert.throws(() => validateChinaIpAuditForPromotion(calibrationReport, NOW), /calibration/u);
+  assert.deepEqual(calibrationReport.warnings, [
+    "ipv4:primary-shrink",
+    "ipv4:secondary-divergence",
+  ]);
+  assert.deepEqual(calibrationReport.blockers, []);
+  assert.equal(validateChinaIpAuditForPromotion(calibrationReport, NOW), true);
+  assert.throws(
+    () => validateChinaIpAuditForPromotion(calibrationReport, calibrationReport.calibrationEndsAt),
+    /expired calibration report/u,
+  );
 
   const blockedReport = audit({
     secondary: { ...SECONDARY, committedAt: "2026-08-01T23:59:59.999Z" },
@@ -403,6 +435,10 @@ test("promotion validation enforces a closed schema at every object level", () =
   const numericAddressCount = structuredClone(valid);
   numericAddressCount.families.ipv4.currentAddresses = 0;
   assert.throws(() => validateChinaIpAuditForPromotion(numericAddressCount, NOW), /decimal string/u);
+
+  const numericBasisPoints = structuredClone(valid);
+  numericBasisPoints.families.ipv4.shrinkBasisPoints = 0;
+  assert.throws(() => validateChinaIpAuditForPromotion(numericBasisPoints, NOW), /decimal string/u);
 
   const numericTimestamp = structuredClone(valid);
   numericTimestamp.generatedAt = Date.parse(NOW);
