@@ -2257,6 +2257,7 @@ var SurgeProfileBundle = (() => {
     "Privacy",
     "DomesticCore",
     "DomesticGame",
+    "SteamCN",
     "BiliBili",
     "ByteDance",
     "XiaoHongShu",
@@ -2278,16 +2279,62 @@ var SurgeProfileBundle = (() => {
     "TikTok",
     "Apple",
     "Microsoft",
-    "SteamCN",
-    "OverseasGame",
     "Download",
     "PrivateTracker",
+    "OverseasGame",
+    "ChinaTLD",
     "ChinaIP"
   ]);
   var FULL_ADBLOCK_SOURCE_IDS = Object.freeze([
     "Advertising",
     "Advertising_Domain"
   ]);
+  var ROUTING_PHASES = Object.freeze([
+    "security",
+    "earlyDomestic",
+    "serviceIntent",
+    "overseasGame",
+    "lateDomestic",
+    "resolvedChinaIp"
+  ]);
+  var PHASE_SOURCE_IDS = Object.freeze({
+    security: Object.freeze([
+      "Hijacking",
+      "BlockHttpDNS",
+      "Privacy",
+      "Advertising",
+      "Advertising_Domain"
+    ]),
+    earlyDomestic: Object.freeze(["DomesticCore", "DomesticGame", "SteamCN"]),
+    serviceIntent: Object.freeze([
+      "BiliBili",
+      "ByteDance",
+      "XiaoHongShu",
+      "Weibo",
+      "OpenAI",
+      "Claude",
+      "Gemini",
+      "Copilot",
+      "GitHub",
+      "YouTube",
+      "Netflix",
+      "Disney",
+      "Spotify",
+      "GlobalMedia",
+      "Telegram",
+      "Facebook",
+      "Instagram",
+      "Twitter",
+      "TikTok",
+      "Apple",
+      "Microsoft",
+      "Download",
+      "PrivateTracker"
+    ]),
+    overseasGame: Object.freeze(["OverseasGame"]),
+    lateDomestic: Object.freeze(["ChinaTLD"]),
+    resolvedChinaIp: Object.freeze(["ChinaIP"])
+  });
   var RULE_BUDGETS = Object.freeze({
     domesticCoreEntries: 2e3,
     defaultEntries: 25e3,
@@ -2325,6 +2372,31 @@ var SurgeProfileBundle = (() => {
     "TikTok",
     "OverseasGame"
   ]);
+  var DNS_CLASS_SOURCE_IDS = Object.freeze({
+    proxy: EXPLICIT_OVERSEAS_RULE_SOURCE_IDS,
+    china: Object.freeze([
+      "DomesticCore",
+      "DomesticGame",
+      "SteamCN",
+      "ChinaTLD",
+      "BiliBili",
+      "ByteDance",
+      "XiaoHongShu",
+      "Weibo",
+      "Apple",
+      "Microsoft",
+      "Download",
+      "PrivateTracker"
+    ]),
+    none: Object.freeze([
+      "Hijacking",
+      "BlockHttpDNS",
+      "Privacy",
+      "Advertising",
+      "Advertising_Domain",
+      "ChinaIP"
+    ])
+  });
   var POLICY_TARGETS = Object.freeze({
     direct: "DIRECT",
     defaultProxy: "\u{1F680} \u8282\u70B9\u9009\u62E9",
@@ -2362,19 +2434,31 @@ var SurgeProfileBundle = (() => {
     OverseasGame: POLICY_TARGETS.overseasGame,
     Download: "\u2B07\uFE0F \u4E0B\u8F7D/P2P",
     PrivateTracker: "\u2B07\uFE0F \u4E0B\u8F7D/P2P",
+    ChinaTLD: POLICY_TARGETS.direct,
     ChinaIP: POLICY_TARGETS.direct,
     Advertising: "\u{1F9F1} \u5E38\u89C1\u5E7F\u544A",
     Advertising_Domain: "\u{1F9F1} \u5E38\u89C1\u5E7F\u544A"
   });
+  function uniqueMembership(id, memberships, label) {
+    const matches2 = Object.entries(memberships).filter(([, ids]) => ids.includes(id)).map(([name]) => name);
+    if (matches2.length !== 1) {
+      throw new Error(`Lightweight rule source ${id} must have exactly one ${label} membership`);
+    }
+    return matches2[0];
+  }
   function clientRecord(id) {
     const policy = SOURCE_POLICIES[id];
     if (!policy) throw new Error(`Missing policy for lightweight rule source: ${id}`);
+    const phase = uniqueMembership(id, PHASE_SOURCE_IDS, "routing phase");
+    const dnsClass = uniqueMembership(id, DNS_CLASS_SOURCE_IDS, "DNS class");
     return Object.freeze({
       id,
       policy,
       // The publication pipeline emits normalized, typed Surge/Shadowrocket
       // lines for every compiled source, including domain-only inputs.
-      inputFormat: "RULE-SET"
+      inputFormat: "RULE-SET",
+      phase,
+      dnsClass
     });
   }
   var DEFAULT_RULE_CLIENT_CATALOG = Object.freeze(DEFAULT_RULE_SOURCE_IDS.map(clientRecord));
@@ -2384,6 +2468,14 @@ var SurgeProfileBundle = (() => {
       throw new TypeError("adblockMode must be either off or full");
     }
     return adblockMode === "full" ? Object.freeze([...DEFAULT_RULE_CLIENT_CATALOG, ...FULL_ADBLOCK_RULE_CLIENT_CATALOG]) : DEFAULT_RULE_CLIENT_CATALOG;
+  }
+  function orderedRoutingPlan({ adblockMode = "off" } = {}) {
+    const selected = ruleClientCatalog({ adblockMode });
+    const phaseRank = new Map(ROUTING_PHASES.map((phase, index) => [phase, index]));
+    const sourceRank = new Map(
+      [...DEFAULT_RULE_SOURCE_IDS, ...FULL_ADBLOCK_SOURCE_IDS].map((id, index) => [id, index])
+    );
+    return Object.freeze([...selected].sort((left, right) => phaseRank.get(left.phase) - phaseRank.get(right.phase) || sourceRank.get(left.id) - sourceRank.get(right.id)));
   }
 
   // ../../shared/rules/custom-rules.js
@@ -2422,10 +2514,6 @@ var SurgeProfileBundle = (() => {
     "IP-CIDR6,fe80::/10,DIRECT,no-resolve",
     "IP-CIDR6,ff00::/8,DIRECT,no-resolve"
   ]);
-  var SECURITY_IDS = /* @__PURE__ */ new Set(["Hijacking", "BlockHttpDNS", "Privacy", "Advertising", "Advertising_Domain"]);
-  var DOMESTIC_IDS = Object.freeze(["DomesticCore", "DomesticGame", "SteamCN"]);
-  var OVERSEAS_GAME_ID = "OverseasGame";
-  var CHINA_IP_ID = "ChinaIP";
   var RULE_DOWNLOAD_POLICY = "\u{1F9ED} DNS \u4E0E\u89C4\u5219\u4E0B\u8F7D";
   function safeBaseUrl(value) {
     if (typeof value !== "string" || !/^https:\/\/[^\s]+$/u.test(value) || /[\r\n,]/u.test(value)) {
@@ -2445,17 +2533,17 @@ var SurgeProfileBundle = (() => {
   }
   function selectedSources(ruleBaseUrl, adblockMode) {
     const base2 = safeBaseUrl(ruleBaseUrl);
-    const catalog = ruleClientCatalog({ adblockMode });
+    const plan = orderedRoutingPlan({ adblockMode });
     const optionalBase = adblockMode === "full" ? optionalAdblockBase(base2) : null;
-    return { base: base2, catalog, optionalBase };
+    return { base: base2, plan, optionalBase };
   }
   function renderSurgeRules({ ruleBaseUrl, adblockMode = "off" }) {
-    const { base: base2, catalog, optionalBase } = selectedSources(ruleBaseUrl, adblockMode);
+    const { base: base2, plan, optionalBase } = selectedSources(ruleBaseUrl, adblockMode);
     const render = (source) => `${source.inputFormat},${sourceUrl(source, base2, optionalBase)},${source.policy},update-interval=86400`;
     const lines = [
       ...LOCAL_RULES,
       "# Security rules",
-      ...catalog.filter(({ id }) => SECURITY_IDS.has(id)).map(render),
+      ...plan.filter(({ phase }) => phase === "security").map(render),
       "# Custom rules"
     ];
     const custom = [
@@ -2472,20 +2560,8 @@ var SurgeProfileBundle = (() => {
       "# Rule-download fallback transport",
       `DOMAIN,${ruleHost},${RULE_DOWNLOAD_POLICY}`
     );
-    const byId = new Map(catalog.map((source) => [source.id, source]));
-    for (const id of DOMESTIC_IDS) {
-      const source = byId.get(id);
-      if (!source) throw new Error(`Missing Surge lightweight rule source: ${id}`);
-      lines.push(render(source));
-    }
-    for (const source of catalog) {
-      if (SECURITY_IDS.has(source.id) || DOMESTIC_IDS.includes(source.id) || [OVERSEAS_GAME_ID, CHINA_IP_ID].includes(source.id)) continue;
-      lines.push(render(source));
-    }
-    for (const id of [OVERSEAS_GAME_ID, CHINA_IP_ID]) {
-      const source = byId.get(id);
-      if (!source) throw new Error(`Missing Surge lightweight rule source: ${id}`);
-      lines.push(render(source));
+    for (const phase of ROUTING_PHASES.filter((value) => value !== "security")) {
+      lines.push(...plan.filter((source) => source.phase === phase).map(render));
     }
     lines.push("GEOIP,CN,DIRECT", "FINAL,\u{1F680} \u8282\u70B9\u9009\u62E9,dns-failed");
     return lines;

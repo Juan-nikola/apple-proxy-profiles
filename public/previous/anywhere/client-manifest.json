@@ -1,10 +1,11 @@
 {
+  "chinaIpAuditSha256": "331a5470c89379c3748594b33f1b97d8fc0e0c7e721fa2109be4391f849dd3fb",
   "client": "anywhere",
   "files": [
     {
-      "bytes": 17411,
+      "bytes": 21041,
       "path": "anywhere/import.html",
-      "sha256": "1dcd79f605701dd2504261657001a4ad8e5daf8b4a742a00d7c3f79c7174307b"
+      "sha256": "fce565caf1cbe762e575168c4668e06be48aba3de918c3f2a4e9bf628e928c10"
     },
     {
       "bytes": 687,
@@ -30,6 +31,11 @@
       "bytes": 223358,
       "path": "anywhere/rules/ChinaIP-001.arrs",
       "sha256": "ff19a235cc5486fce6a37cb998f6f6662a54e65a44c9a311b3734427c72cc054"
+    },
+    {
+      "bytes": 306,
+      "path": "anywhere/rules/ChinaTLD-001.arrs",
+      "sha256": "71f7bcefee06a84849842fd26071e89c2af0dcbddf4e49e1878518ea773e88e0"
     },
     {
       "bytes": 334,
@@ -162,9 +168,9 @@
       "sha256": "5289b62fba47eeee0ecb1a892aba59a15c0e836eb515e7c6e74d56740a2eed1d"
     },
     {
-      "bytes": 48329,
+      "bytes": 51618,
       "path": "anywhere/rules/manifest.json",
-      "sha256": "63f4bb45010f61d206d1b7b0f17f5bdc718674991c2bcb9a74d6f82f9cb0d2f0"
+      "sha256": "d37a415a07760eee819cc45597d50e7f726744cc33a60337ace2f48718c67d32"
     },
     {
       "bytes": 109256,
@@ -178,9 +184,9 @@
     }
   ],
   "generatedAt": "2026-08-07T18:52:17Z",
-  "manifestHash": "07ef67fd46800bbd2a61c5fd614e8b44dede6c61a9f7f1b8aa9dae8d7e0e566b",
+  "manifestHash": "4b5df690a037096184eb88fbd74f910406c508b9f598788fbf71468193ab96f4",
   "optionalPacks": {
-    "adblock-full": "312dd7e8d13ebbd77ced6b01e691748633a48d8799d56b87e8530b118dea54e9"
+    "adblock-full": "349c9a171145ed2d8d66b0fdee63d66096c6d02b2c71202b2fd95417518ca3b0"
   },
   "schemaVersion": 1
 }
