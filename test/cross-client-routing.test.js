@@ -29,6 +29,11 @@ async function anywhereArtifacts() {
       if (match) source.domains.push(match[1]);
     }
   }
+  assert.equal(sources.get("ChinaTLD")?.routing, 1, "Anywhere ChinaTLD must be DIRECT");
+  assert.ok(
+    sources.get("ChinaTLD").domains.some((suffix) => domainMatches("portal.ordinary-service.cn", suffix)),
+    "Anywhere ChinaTLD must cover ordinary .cn domains",
+  );
   return { manifest, sources };
 }
 
@@ -52,8 +57,14 @@ function parseTextPolicies(profile, client) {
   const final = lines.findIndex((line) => line.startsWith("FINAL,🚀 节点选择"));
   const custom = lines.findIndex((line) => line === "DOMAIN-SUFFIX,perplexity.ai,🤖 AI 专用");
   const domestic = lines.findIndex((line) => /\/DomesticCore\.list,/u.test(line));
+  const overseasGame = lines.findIndex((line) => /\/OverseasGame\.list,/u.test(line));
+  const chinaTld = lines.findIndex((line) => /\/ChinaTLD\.list,/u.test(line));
   assert.ok(geoip >= 0 && final > geoip, `${client}: resolved CN must precede proxy final`);
   assert.ok(custom >= 0 && domestic > custom, `${client}: custom rules must precede DomesticCore`);
+  assert.ok(
+    overseasGame >= 0 && chinaTld > overseasGame && geoip > chinaTld,
+    `${client}: ChinaTLD must follow OverseasGame and precede GEOIP CN`,
+  );
   if (client === "surge") assert.match(lines[final], /,dns-failed$/u);
   return policies;
 }
@@ -65,7 +76,14 @@ function parseEgernPolicies(yaml) {
   assert.match(yaml, /- geoip:\n\s+match: "CN"\n\s+policy: "DIRECT"\n\s+- default:\n\s+policy: "🚀 节点选择"/u);
   const custom = yaml.indexOf('match: "perplexity.ai"');
   const domestic = yaml.lastIndexOf("/DomesticCore.yaml");
+  const overseasGame = yaml.lastIndexOf("/OverseasGame.yaml");
+  const chinaTld = yaml.lastIndexOf("/ChinaTLD.yaml");
+  const geoip = yaml.indexOf('match: "CN"');
   assert.ok(custom >= 0 && domestic > custom);
+  assert.ok(
+    overseasGame >= 0 && chinaTld > overseasGame && geoip > chinaTld,
+    "Egern: ChinaTLD must follow OverseasGame and precede GEOIP CN",
+  );
   return policies;
 }
 
@@ -81,8 +99,14 @@ function parseSingBoxPolicies(config) {
   const chinaIp = config.route.rules.findIndex((rule) => rule.rule_set?.includes("rule-ChinaIP"));
   const custom = config.route.rules.findIndex((rule) => rule.domain_suffix?.includes("perplexity.ai"));
   const domestic = config.route.rules.findIndex((rule) => rule.rule_set?.includes("rule-DomesticCore"));
+  const overseasGame = config.route.rules.findIndex((rule) => rule.rule_set?.includes("rule-OverseasGame"));
+  const chinaTld = config.route.rules.findIndex((rule) => rule.rule_set?.includes("rule-ChinaTLD"));
   assert.ok(resolve >= 0 && chinaIp > resolve);
   assert.ok(custom >= 0 && domestic > custom);
+  assert.ok(
+    overseasGame >= 0 && chinaTld > overseasGame && chinaIp > chinaTld,
+    "sing-box: ChinaTLD must follow OverseasGame and precede ChinaIP",
+  );
   assert.equal(config.route.final, "🚀 节点选择");
   return policies;
 }
@@ -92,9 +116,11 @@ function expectedForCase(client, routingCase, policies, anywhere) {
     if (client !== "anywhere") return routingCase.customPolicy;
     return [...anywhere.sources.values()].some(({ routing }) => routing === 1) ? routingCase.customPolicy : undefined;
   }
+  if (client === "anywhere" && routingCase.resolvedIp !== undefined) {
+    assert.equal(anywhere.sources.get("ChinaIP")?.routing, 1, "Anywhere ChinaIP must stay DIRECT");
+  }
   if (!routingCase.sourceId) {
     if (client === "anywhere") {
-      assert.equal(anywhere.sources.get("ChinaIP")?.routing, 1);
       assert.equal([...anywhere.sources.values()].some(({ routing }) => routing === 0), true);
     }
     return routingCase.resolvedCountry === "CN" ? "DIRECT" : "🚀 节点选择";

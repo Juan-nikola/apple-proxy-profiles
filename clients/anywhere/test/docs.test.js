@@ -88,3 +88,22 @@ test("canary and troubleshooting lock safe order, UUID risks, and real rollback"
   assert.match(troubleshooting, /广告包[\s\S]*内存/u);
   assert.doesNotMatch(`${canary}\n${troubleshooting}`, /重新导入.{0,12}(?:无损|保留全部)/u);
 });
+
+test("canary, deployment, and troubleshooting document the ChinaTLD order and offline explain", async () => {
+  const { canary, deployment, troubleshooting } = await docs();
+  const routingOrder = /DomesticCore[\s\S]*OverseasGame[\s\S]*ChinaTLD[\s\S]*ChinaIP/u;
+  assert.match(canary, routingOrder);
+  assert.match(deployment, routingOrder);
+  assert.match(troubleshooting, routingOrder);
+  for (const [name, text] of Object.entries({ canary, deployment, troubleshooting })) {
+    for (const phrase of ["explain:route", "只读取本地已发布规则"]) {
+      assert.ok(text.includes(phrase), `${name} missing ${phrase}`);
+    }
+  }
+  for (const [name, text] of Object.entries({ canary, troubleshooting })) {
+    for (const phrase of ["HTTPDNS", "硬编码 IP"]) {
+      assert.ok(text.includes(phrase), `${name} missing ${phrase}`);
+    }
+  }
+  assert.ok(troubleshooting.includes("本地 assignment"), "troubleshooting missing Anywhere assignment note");
+});

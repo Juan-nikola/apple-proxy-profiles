@@ -271,6 +271,8 @@ curl -L --fail --silent --show-error --head https://juan-nikola.github.io/apple-
 
 生产使用 `current/`，测试使用 `edge/`；公开规则回滚可使用 `previous/` 或 Manifest 中的 `versions/<manifestHash>/`。Sub-Store 任务通常不需要换 URL：修复后重新运行同一远程任务即可。设备侧失败先切回旧 Profile/Config，不要用更新脚本覆盖唯一可用配置。
 
+共享分流顺序固定为：`DomesticCore` → 服务规则 → `OverseasGame` → `ChinaTLD` → `ChinaIP` → FINAL。稳定 DNS 优先国内解析；普通 `.cn` 域名应命中 `ChinaTLD`/DIRECT，未知国内 IPv4/IPv6 应命中 `ChinaIP`/GEOIP CN 直连，未知境外与 DNS 失败走 `🚀 节点选择`。HTTPDNS、硬编码 IP、IPv6、QUIC 和手动服务组选择仍是残余风险。修改分流后，用 `npm run explain:route -- --channel current --domain <域名>` 离线核对预期结果；该命令只读取本地已发布规则，不执行 DNS，也不修改任何文件。
+
 ## 9. 真机 canary 顺序
 
 - Egern：Intel Mac → iPhone → iPad。

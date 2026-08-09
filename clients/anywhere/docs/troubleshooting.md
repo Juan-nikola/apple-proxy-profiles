@@ -14,6 +14,8 @@
 
 国内 App 偶发慢、切换开关后暂时恢复时，先确认旧 `ChinaMax_Domain` 和通用 `Game` 已删除或禁用，再确认 `DomesticCore`、`DomesticGame`、`ChinaIP` 为 DIRECT。切换开关只会暂时重建 DNS/连接缓存，不会修正旧分片的路由。
 
+分流顺序固定为 `DomesticCore` → 服务规则 → `OverseasGame` → `ChinaTLD` → `ChinaIP` → FINAL；普通 `.cn` 应命中 `ChinaTLD`/DIRECT。HTTPDNS、硬编码 IP、IPv6、QUIC 和手动服务组选择仍是残余风险。可用 `npm run explain:route -- --channel current --domain <域名>` 离线核对预期分流，该命令只读取本地已发布规则、不执行 DNS；Anywhere 的本地 assignment 仍必须逐台人工核对。
+
 如果启用完整广告包后出现内存飙升、启动失败或系统杀后台，立即禁用/删除 `Advertising` 与 `Advertising_Domain`，只保留默认轻量规则。可选广告包不是实现国内直连的必要条件。
 
 ## 链消失或绑定变成孤儿

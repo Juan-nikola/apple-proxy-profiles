@@ -21,9 +21,13 @@ export const LIGHTWEIGHT_ROUTING_CASES = Object.freeze([
   Object.freeze({ domain: "wd.leiting.com", sourceId: "DomesticGame", expected: "DIRECT" }),
   Object.freeze({ domain: "store.steampowered.com", sourceId: "OverseasGame", expected: "🌍 海外游戏" }),
   Object.freeze({ domain: "chat.openai.com", sourceId: "OpenAI", expected: "OpenAI policy" }),
+  Object.freeze({ domain: "portal.ordinary-service.cn", sourceId: "ChinaTLD", expected: "DIRECT" }),
   Object.freeze({ domain: "custom.example", customPolicy: "DIRECT", expected: "DIRECT" }),
   Object.freeze({ domain: "unknown.example", resolvedCountry: "CN", expected: "DIRECT" }),
   Object.freeze({ domain: "unknown.example", resolvedCountry: "US", expected: "🚀 节点选择" }),
+  Object.freeze({ domain: "unknown-v4.example", resolvedIp: "1.0.1.1", resolvedCountry: "CN", expected: "DIRECT" }),
+  Object.freeze({ domain: "unknown-v6.example", resolvedIp: "2400:3200::1", resolvedCountry: "CN", expected: "DIRECT" }),
+  Object.freeze({ domain: "unknown-overseas.example", resolvedIp: "8.8.8.8", resolvedCountry: "US", expected: "🚀 节点选择" }),
   Object.freeze({ domain: "unknown.example", resolution: "failed", expected: "🚀 节点选择" }),
 ]);
 

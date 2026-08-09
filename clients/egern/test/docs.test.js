@@ -68,6 +68,10 @@ function strictProfileRootKeys(profile) {
 
 test("all beginner documents exist, use portable Markdown, and are linked from README", async () => {
   const docs = await loadDocs();
+  assert.match(docs.canary, /DomesticCore[\s\S]*OverseasGame[\s\S]*ChinaTLD[\s\S]*ChinaIP/u);
+  for (const phrase of ["explain:route", "HTTPDNS", "硬编码 IP", "分别测试 Wi‑Fi 与蜂窝"]) {
+    assert.ok(docs.canary.includes(phrase), `Egern canary missing ${phrase}`);
+  }
   for (const [name, text] of Object.entries(docs)) {
     assert.equal(text.endsWith("\n"), true, `${name} must end with LF`);
     assert.equal(text.includes("\r"), false, `${name} must use LF only`);

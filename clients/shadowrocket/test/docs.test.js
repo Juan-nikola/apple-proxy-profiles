@@ -145,6 +145,9 @@ test("beginner docs contain every operational checkpoint and warning", async () 
   for (const phrase of ["页面能打开不是证明", "记录候选目标和测试日期", "GEOIP,CN,DIRECT", "FINAL,🚀 节点选择"]) {
     assert.ok(docs["docs/canary-checklist.md"].includes(phrase), `canary: missing executable unknown-route check: ${phrase}`);
   }
+  for (const phrase of ["ChinaTLD", "explain:route", "HTTPDNS", "硬编码 IP", "分别测试 Wi‑Fi 与蜂窝"]) {
+    assert.ok(docs["docs/canary-checklist.md"].includes(phrase), `canary: missing ChinaTLD/explain guidance: ${phrase}`);
+  }
   for (const phrase of ["导入并排在旧 Profile 旁边", "不要覆盖回滚 File 或 URL"]) {
     assert.ok(docs["docs/troubleshooting.md"].includes(phrase), `troubleshooting: missing rollback-safe test Profile phrase: ${phrase}`);
   }

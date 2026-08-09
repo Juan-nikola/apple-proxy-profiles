@@ -67,6 +67,8 @@ Default 不是停用，而是回退到当前节点或链。四个 AI 规则集�
 
 在 Advanced Settings 检查 Advertise IPv6 to Apps；验证时关闭 Hide VPN Icon，因为它会影响 IPv6。QUIC 有 Blocked、Automatic、Unblocked 三种状态，Egern 的 proxy-block 语义最接近 Automatic。Block UDP 开启时 QUIC 控件不再具有独立验证意义。
 
+共享分流顺序为 `DomesticCore` → 服务规则 → `OverseasGame` → `ChinaTLD` → `ChinaIP` → FINAL；普通 `.cn` 命中 `ChinaTLD`/DIRECT，未知国内 IP 命中 `ChinaIP` 直连。可用 `npm run explain:route -- --channel current --domain <域名>` 离线核对预期分流，该命令只读取本地已发布规则、不执行 DNS。
+
 ## 5. 更新节奏
 
 Sub-Store 私密节点产物可按 6 小时任务节奏重建；这不代表 Anywhere 自动刷新。设备仍需对节点订阅手动 Refresh。公开 Pages 可以每日生成新规则，但已导入 `.arrs` 仍需在现有规则集上点 Update 才应用。规则 Update 保留本地名称与目标绑定，并忽略新文件的 routing 头。

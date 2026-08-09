@@ -22,6 +22,10 @@
 
 记录五类 DNS。Wi‑Fi 与蜂窝分别检查 DNS 泄漏、DIRECT、REJECT、代理和链出口。Advertise IPv6 to Apps 先 off，再在网络确认具有 IPv6 时 on；没有 IPv6 应记“未覆盖”，不能算通过。分别验证 QUIC 的 Blocked、Automatic、Unblocked；网页能打开不等于协议行为正确。Block UDP 开启时另记一轮。
 
+## 分流顺序、残余风险与离线解释
+
+共享分流顺序固定为：`DomesticCore` → 服务规则 → `OverseasGame` → `ChinaTLD` → `ChinaIP` → FINAL。稳定 DNS 优先国内解析；普通 `.cn` 域名应命中 `ChinaTLD`/DIRECT，未知国内 IPv4/IPv6 应命中 `ChinaIP` 直连，未知境外与 DNS 失败走 `🚀 节点选择`。HTTPDNS、硬编码 IP、IPv6、QUIC 和手动服务组选择仍是残余风险。`npm run explain:route -- --channel current --domain <域名>` 只读取本地已发布规则、不执行 DNS，可用于离线核对预期分流；Anywhere 的本地 assignment 仍必须逐台人工核对。支持蜂窝的设备必须分别测试 Wi‑Fi 与蜂窝；保留旧配置，并实际完成一次回滚。
+
 ## 每台设备必须做的真实回滚
 
 1. 停止新连接并选回旧节点或链。

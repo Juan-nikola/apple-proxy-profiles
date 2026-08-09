@@ -69,3 +69,7 @@ iPhone 出现任一不一致时，立即回滚，并停止 iPad 与后续设备�
 ## 立即停止的条件
 
 出现以下任何一项都立即回滚：`accepted` 为 0、必需策略组为空、引用悬空、私密节点或公开规则无法独立下载、国内流量意外代理、境外流量意外直连、DNS 持续失败、IPv4-only 或可用 IPv6 路径未验证、旧 Profile 无法恢复。不要为了继续发布而关闭证书验证/TLS 验证、启用 MITM、删除旧 Profile，或绕过 fail-closed 校验。
+
+## 分流顺序、残余风险与离线解释
+
+共享分流顺序固定为：`DomesticCore` → 服务规则 → `OverseasGame` → `ChinaTLD` → `ChinaIP` → FINAL。稳定 DNS 优先国内解析；普通 `.cn` 域名应命中 `ChinaTLD`/DIRECT，未知国内 IPv4/IPv6 应命中 `GEOIP CN` 直连，未知境外与 DNS 失败走 `🚀 节点选择`。HTTPDNS、硬编码 IP、IPv6、QUIC 和手动服务组选择仍是残余风险。`npm run explain:route -- --channel current --domain <域名>` 只读取本地已发布规则、不执行 DNS，可用于离线核对预期分流。支持蜂窝的设备必须分别测试 Wi‑Fi 与蜂窝；保留旧 Profile，并实际完成一次回滚。
