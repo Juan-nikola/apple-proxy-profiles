@@ -13,6 +13,7 @@ test("central Sub-Store guide closes over all public scripts and private tasks",
   const guide = await text("docs/substore-two-layer-setup.md");
   const maintenance = await text("docs/maintenance.md");
   const scripts = [
+    "shadowrocket-node-subscription.js",
     "shadowrocket-profile-generator.js",
     "egern-node-generator.js",
     "egern-profile-generator.js",

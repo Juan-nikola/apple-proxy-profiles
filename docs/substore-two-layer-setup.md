@@ -30,12 +30,13 @@
 
 以后增加节点来源只加入 `apple-proxy-sources`，不需要改 GitHub JS。五个客户端的 Profile/Config 全部读取这个原始组合（Shadowrocket Profile 生成器内置节点归一化，不依赖组合上的节点操作）。删除来源时也只在这一层操作，并先保留旧输出以便回滚。
 
-## 2. 六个公开远程 JS
+## 2. 七个公开远程 JS
 
 新任务优先使用 `current/`：
 
 | JS | 公开 URL | Sub-Store 用途 |
 | --- | --- | --- |
+| Shadowrocket node | `https://juan-nikola.github.io/apple-proxy-profiles/current/shadowrocket/scripts/shadowrocket-node-subscription.js` | 排序节点订阅 File |
 | Shadowrocket Profile | `https://juan-nikola.github.io/apple-proxy-profiles/current/shadowrocket/scripts/shadowrocket-profile-generator.js` | 三个 Profile File |
 | Egern node | `https://juan-nikola.github.io/apple-proxy-profiles/current/egern/scripts/egern-node-generator.js` | 节点 File |
 | Egern Profile | `https://juan-nikola.github.io/apple-proxy-profiles/current/egern/scripts/egern-profile-generator.js` | 三个 Profile File |
@@ -167,7 +168,7 @@ https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/import.html
 
 ### 7.1 节点订阅
 
-Shadowrocket 的节点订阅直接使用原始组合 `apple-proxy-sources` 的输出。在 Shadowrocket 客户端中添加该组合的私密订阅 URL，显示名记为 `Apple-Proxy-Nodes`（实际显示名可以自定义，但必须逐字填写到三个 Shadowrocket Profile 的 `subscriptionName`）。
+Shadowrocket 的节点订阅使用排序生成器 `shadowrocket-node-subscription.js`：在 Sub-Store 新建 File 任务 `shadowrocket-nodes`，脚本链接为 `https://juan-nikola.github.io/apple-proxy-profiles/current/shadowrocket/scripts/shadowrocket-node-subscription.js#output=nodes&type=collection&name=apple-proxy-sources&clientChain=off`。生成器会归一化节点并按“洲 → 国旗 → 名称”排序（亚太 → 欧洲 → 美洲，洲内按国旗），与 Profile 内的节点顺序完全一致。在 Shadowrocket 客户端中添加该 File 的私密输出 URL，显示名记为 `Apple-Proxy-Nodes`（实际显示名可以自定义，但必须逐字填写到三个 Shadowrocket Profile 的 `subscriptionName`）。
 
 旧结构中的 `shadowrocket-nodes` 处理组合保留为兼容项：早期版本曾要求在该组合上挂 `shadowrocket-node-operator.js` 节点操作，但 Sub-Store 的组合 Script Operator 不能执行本项目的 esbuild bundle 格式，会导致节点处理失败。当前 Profile 生成器内置了同一套归一化逻辑，因此新任务不再需要节点操作，也不要再挂这个远程脚本。
 

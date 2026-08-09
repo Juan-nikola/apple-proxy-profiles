@@ -40,15 +40,22 @@
 
 ## 2. 创建节点订阅
 
-本项目在 Pages 提供一条外置 JavaScript：
+本项目在 Pages 提供两条外置 JavaScript：
 
+- `shadowrocket-node-subscription.js` → `https://juan-nikola.github.io/apple-proxy-profiles/current/shadowrocket/scripts/shadowrocket-node-subscription.js`
 - `shadowrocket-profile-generator.js` → `https://juan-nikola.github.io/apple-proxy-profiles/current/shadowrocket/scripts/shadowrocket-profile-generator.js`
 
-节点订阅不需要脚本操作：直接打开原始组合 `apple-proxy-sources` 的预览/输出，把组合输出的私密订阅 URL 记下来，在 Shadowrocket 中作为节点订阅添加，更新间隔设为每 6 小时。生成器会统一节点名称（国旗 + 来源标签 + 能力标记）、去重并按 Shadowrocket 能力过滤。
+节点订阅使用排序生成器：在 Sub-Store 新建 File 任务 `shadowrocket-nodes`，添加“脚本操作/Script”，选择“链接/远程脚本”，粘贴 `shadowrocket-node-subscription.js` 的规范 Pages URL，参数填：
+
+```text
+output=nodes&type=collection&name=apple-proxy-sources&clientChain=off
+```
+
+生成器会统一节点名称（国旗 + 来源标签 + 能力标记）、去重、按 Shadowrocket 能力过滤，并按“洲 → 国旗 → 名称”排序（亚太 → 欧洲 → 美洲，洲内按国旗）。把该 File 的私密输出 URL 记下来，在 Shadowrocket 中作为节点订阅添加，更新间隔设为每 6 小时。
 
 旧 `substore-profile-generator.js` Pages URL 继续保留为字节一致的兼容别名；已部署任务不要仅为文件改名替换 URL，也不要同时导入新旧别名。
 
-成功标志：订阅预览得到至少一个节点；国旗不重复；名称含统一来源标签；没有服务器地址、密码或 UUID 出现在日志统计中。预览为空时停止，不发布。
+成功标志：订阅预览得到至少一个节点；顺序按洲分组（亚太 → 欧洲 → 美洲）；国旗不重复；名称含统一来源标签；没有服务器地址、密码或 UUID 出现在日志统计中。预览为空时停止，不发布。
 
 如果只有个别节点被排除，先看不含节点详情的“排除原因计数”。如果全部节点被排除，保持旧订阅，不要继续导入设备。
 

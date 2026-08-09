@@ -108,7 +108,7 @@ https://juan-nikola.github.io/apple-proxy-profiles/current/shadowrocket/scripts/
 
 ### 4.1 Shadowrocket（小火箭）· Mac / iPhone / iPad
 
-1. 打开 Shadowrocket，进入“订阅/Subscription”页面，添加 `apple-proxy-sources` 组合的私密输出 URL。
+1. 打开 Shadowrocket，进入“订阅/Subscription”页面，添加 `shadowrocket-nodes` 文件任务的私密输出 URL（该任务由排序节点生成器产生，节点按“洲 → 国旗 → 名称”排列）。
 2. 给这个订阅起一个显示名，例如 `Apple-Proxy-Nodes`。**这个名字必须和三个配置任务的 `subscriptionName` 参数完全一致**（你现在已经统一为 `Apple-Proxy-Nodes`）。大小写、空格都要一模一样。
 3. 手动更新订阅，确认节点数量 > 0。
 4. 进入“配置/Config”页面，添加 `shadowrocket-config-macos` 的私密输出 URL（Mac 用 macOS 那份；iPhone 用 `shadowrocket-config-iphone`，iPad 用 `shadowrocket-config-ipad`）。

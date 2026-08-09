@@ -23,6 +23,14 @@ const targets = Object.freeze([
     globalName: "ShadowrocketProfileBundle",
     wrapper: `\nasync function operator(input, targetPlatform) {\n  return ShadowrocketProfileBundle.operator(input, targetPlatform, { arguments: $arguments, produceArtifact, logger: console });\n}\n`,
   },
+  {
+    entry: "substore-node-subscription-entry.js",
+    outputs: Object.freeze([
+      "../dist/shadowrocket-node-subscription.js",
+    ]),
+    globalName: "ShadowrocketNodeSubscriptionBundle",
+    wrapper: `\nasync function operator(input, targetPlatform) {\n  return ShadowrocketNodeSubscriptionBundle.operator(input, targetPlatform, { arguments: $arguments, produceArtifact, logger: console });\n}\n`,
+  },
 ]);
 
 for (const target of targets) {

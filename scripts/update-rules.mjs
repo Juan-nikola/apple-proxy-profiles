@@ -437,6 +437,7 @@ async function loadText(path) {
 
 async function staticFiles() {
   const paths = [
+    ["shadowrocket/scripts/shadowrocket-node-subscription.js", "clients/shadowrocket/dist/shadowrocket-node-subscription.js"],
     ["shadowrocket/scripts/shadowrocket-node-operator.js", "clients/shadowrocket/dist/shadowrocket-node-operator.js"],
     ["shadowrocket/scripts/shadowrocket-profile-generator.js", "clients/shadowrocket/dist/shadowrocket-profile-generator.js"],
     ["shadowrocket/scripts/substore-node-operator.js", "clients/shadowrocket/dist/substore-node-operator.js"],
