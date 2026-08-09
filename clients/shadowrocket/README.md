@@ -35,7 +35,7 @@
 
 - 一份所有设备共用、每 6 小时更新的私密节点订阅（`apple-proxy-sources` 输出）。
 - 三份每天更新的平台 Profile：`shadowrocket-config-macos`、`shadowrocket-config-iphone`、`shadowrocket-config-ipad`。
-- 一个只负责跟随 Shadowrocket 首页节点的 `🚀 节点选择`，以及 16 个常用业务组：每组都有自动测速、故障转移、地区和具体节点选择；其中 10 个境外组首项为 `🚀 节点选择`，6 个国内组首项为 `DIRECT`。
+- 一个只负责跟随 Shadowrocket 首页节点的 `🚀 节点选择`，以及 9 个常用业务组：每组都有自动测速、故障转移、地区和具体节点选择；其中 5 个境外组首项为 `🚀 节点选择`，3 个国内组首项为 `DIRECT`。
 - 默认使用轻量混合规则：`DomesticCore + DomesticGame + SteamCN` 直连、`OverseasGame` 进入 `🌍 海外游戏`、`ChinaIP + GEOIP CN` 作为国内回退，其他未识别流量最终进入 `🚀 节点选择`。完整广告包默认关闭，只有设置 `adblockMode=full` 才从独立 optional 发布加载 `Advertising.list` 与 `Advertising_Domain.list`。
 
 Apple TV 已在生成器中预留参数，但不属于本轮部署范围。首轮顺序必须是 Intel Mac、iPhone、iPad；每台设备都保留原来的可用 Profile。
@@ -176,7 +176,7 @@ https://juan-nikola.github.io/apple-proxy-profiles/current/shadowrocket/scripts/
 1. 先重新预览原始组合 `apple-proxy-sources`，确认节点数量正常、国旗不重复、名称排序正常；异常就停止，不发布。
 2. 重新运行直接引用 `shadowrocket-profile-generator.js` 规范 Pages URL 的 macOS、iPhone、iPad 三个 File；不复制脚本正文，也不因脚本升级改 URL 或参数。只有主动改变 QUIC/IPv6 策略时才按部署手册修改对应 File 参数。
 3. 升级已有安装前，逐一核对 macOS、iPhone、iPad 三个 Profile File Operator 的 `subscriptionName`。节点 URL 无需更换；若旧占位值与 Shadowrocket 当前显示名不一致，就改成该现有显示名，或先在客户端重命名订阅，再重新发布 File 并更新对应 Profile。
-4. 先预览 macOS Profile，确认整行是 `🚀 节点选择 = select,PROXY`；16 个常用业务组都有自动/故障转移/地区/具体节点选择，10 个境外组首项为 `🚀 节点选择`，6 个国内组首项为 `DIRECT`；动态组只含与 `subscriptionName` 完全匹配的 `<subscriptionName>,use=true`，AI 洲组仍存在，再发布并只在 Intel Mac 更新测试。
+4. 先预览 macOS Profile，确认整行是 `🚀 节点选择 = select,PROXY`；9 个常用业务组都有自动/故障转移/地区/具体节点选择，5 个境外组首项为 `🚀 节点选择`，3 个国内组首项为 `DIRECT`；动态组只含与 `subscriptionName` 完全匹配的 `<subscriptionName>,use=true`，AI 洲组仍存在，再发布并只在 Intel Mac 更新测试。
 5. Intel Mac 验收通过后，才按 iPhone、iPad 顺序更新。整个过程中保留旧 Profile 作为回滚入口。
 
 历史兼容审计记录：旧版曾将 `AdvertisingLite` 迁移为完整 `Advertising`，这段差异只由 compatibility baseline 检查使用，不代表当前默认 Profile 会加载广告规则。当前更新只需重新运行直接引用 `shadowrocket-profile-generator.js` 规范 Pages URL 的 File 并更新 Profile；无需修改节点订阅。完整广告规则必须显式设置 `adblockMode=full`。更新后打开 `🚀 节点选择`，摘要应显示 `SELECT > PROXY`；如果仍显示具体节点，说明当前设备还在使用旧 Profile。

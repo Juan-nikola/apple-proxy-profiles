@@ -10,22 +10,14 @@ import { fakeNodes } from "./fixtures/nodes.js";
 
 const sharedRoot = new URL("../../../shared/", import.meta.url);
 
-const EXPECTED_16_SERVICE_NAMES = Object.freeze([
+const EXPECTED_SERVICE_NAMES = Object.freeze([
   "🐙 GitHub",
   "📺 YouTube",
-  "🎬 Netflix",
-  "🏰 Disney+",
-  "🎵 Spotify",
-  "🌍 国际媒体",
-  "✈️ Telegram",
+  "🎬 海外流媒体",
   "💬 海外社交",
-  "🎶 TikTok",
   "🍎 Apple",
   "🪟 Microsoft",
-  "📺 哔哩哔哩",
-  "🎵 抖音",
-  "📕 小红书",
-  "🧣 微博",
+  "🇨🇳 国内平台",
   "🌍 海外游戏",
 ]);
 
@@ -50,7 +42,7 @@ test("shared policy records preserve the Shadowrocket catalog", () => {
   assert.deepEqual(shadowrocket.find((group) => group.name === "🚀 节点选择").items, ["PROXY"]);
   assert.deepEqual(
     shared.filter((group) => group.kind === "service").map((group) => group.name),
-    EXPECTED_16_SERVICE_NAMES,
+    EXPECTED_SERVICE_NAMES,
   );
   assert.deepEqual(shared.find((group) => group.name === "☣️ 安全威胁").candidates, ["REJECT", "DIRECT"]);
   assert.equal(shadowrocket.length, shared.length);
