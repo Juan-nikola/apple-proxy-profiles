@@ -2,6 +2,13 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { buildClientArtifacts } from "../src/build-artifacts.js";
+import { artifactSha256 } from "../src/artifact-content.js";
+import { buildChinaIpAudit } from "../src/china-ip-audit.js";
+import { canonicalJson } from "../src/render-anywhere-rules.js";
+import {
+  DEFAULT_PUBLISH_SOURCE_CATALOG,
+  FETCH_SOURCE_CATALOG,
+} from "../src/source-catalog.js";
 import { DEFAULT_RULE_SOURCE_IDS } from "../../shared/rules/lightweight-policy.js";
 import { lightweightFixtureSnapshots } from "./lightweight-fixture.js";
 import { renderRules as renderShadowrocketRules } from "../../clients/shadowrocket/src/render-rules.js";
@@ -15,6 +22,32 @@ const upstream = {
   committedAt: "2026-08-01T19:07:21Z",
   license: "GPL-2.0-only",
 };
+
+function chinaIpAuditBytes() {
+  const entries = [
+    { kind: "ipv4Cidr", value: "8.8.8.0/24", noResolve: true, sourceId: "ChinaIP" },
+    { kind: "ipv6Cidr", value: "2001:4860::/32", noResolve: true, sourceId: "ChinaIP" },
+  ];
+  return Buffer.from(canonicalJson(buildChinaIpAudit({
+    previousPrimaryEntries: entries,
+    currentPrimaryEntries: entries,
+    secondaryEntries: entries,
+    primary: {
+      repository: upstream.repository,
+      commit: upstream.commit,
+      committedAt: upstream.committedAt,
+      sha256: "1".repeat(64),
+    },
+    secondary: {
+      repository: "https://github.com/gaoyifan/china-operator-ip",
+      commit: "b".repeat(40),
+      committedAt: "2026-08-08T00:00:00Z",
+      sha256: "2".repeat(64),
+    },
+    now: "2026-08-09T00:00:00Z",
+    calibrationStartedAt: "2026-08-01T00:00:00Z",
+  })));
+}
 test("fans compiled lightweight defaults out without publishing input-only rules", () => {
   const result = buildClientArtifacts({ snapshot: lightweightFixtureSnapshots(), upstream });
   assert.equal(result.defaults.has("shadowrocket/rules/DomesticCore.list"), true);
@@ -37,6 +70,57 @@ test("fans compiled lightweight defaults out without publishing input-only rules
 test("is byte deterministic for the same snapshot", () => {
   const options = { snapshot: lightweightFixtureSnapshots(), upstream };
   assert.deepEqual([...buildClientArtifacts(options).defaults], [...buildClientArtifacts(options).defaults]);
+});
+
+test("publishes exact ChinaIP audit bytes only as root evidence", () => {
+  const baseline = buildClientArtifacts({ snapshot: lightweightFixtureSnapshots(), upstream });
+  const chinaIpAudit = chinaIpAuditBytes();
+  const result = buildClientArtifacts({
+    snapshot: lightweightFixtureSnapshots(),
+    upstream,
+    chinaIpAudit,
+  });
+
+  assert.strictEqual(result.defaults.get("audit/china-ip-drift.json"), chinaIpAudit);
+  const record = result.diagnostics.defaultManifest.files.find(({ path }) => (
+    path === "audit/china-ip-drift.json"
+  ));
+  assert.deepEqual(record, {
+    path: "audit/china-ip-drift.json",
+    bytes: chinaIpAudit.length,
+    sha256: artifactSha256(chinaIpAudit),
+  });
+  for (const client of Object.keys(result.diagnostics.defaultManifest.clients)) {
+    assert.equal(
+      result.diagnostics.defaultManifest.clients[client].manifestHash,
+      baseline.diagnostics.defaultManifest.clients[client].manifestHash,
+      client,
+    );
+    assert.equal(
+      result.diagnostics.defaultManifest.clients[client].referencedDefaultBytes,
+      baseline.diagnostics.defaultManifest.clients[client].referencedDefaultBytes,
+      client,
+    );
+  }
+  const clientPaths = [...result.defaults.keys()].filter((path) => (
+    /^(?:shadowrocket|surge|egern|sing-box|anywhere)\//u.test(path)
+  ));
+  assert.deepEqual(clientPaths, [...baseline.defaults.keys()].filter((path) => (
+    /^(?:shadowrocket|surge|egern|sing-box|anywhere)\//u.test(path)
+  )));
+  assert.equal(canonicalJson(result.diagnostics.defaultManifest).includes("gaoyifan"), false);
+  assert.equal(clientPaths.some((path) => (
+    Buffer.from(result.defaults.get(path)).includes(Buffer.from("gaoyifan"))
+  )), false);
+  for (const catalog of [
+    FETCH_SOURCE_CATALOG,
+    DEFAULT_PUBLISH_SOURCE_CATALOG,
+    ruleClientCatalog({ adblockMode: "off" }),
+    ruleClientCatalog({ adblockMode: "full" }),
+  ]) {
+    assert.equal(JSON.stringify(catalog).includes("ChinaIP-audit"), false);
+    assert.equal(JSON.stringify(catalog).includes("china-operator-ip"), false);
+  }
 });
 
 test("replaces audit JSON with the exact compiled sing-box binaries before manifest accounting", () => {

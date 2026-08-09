@@ -4,13 +4,15 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
 
-import { buildClientArtifacts } from "../src/build-artifacts.js";
+import { buildClientArtifacts as buildClientArtifactsImpl } from "../src/build-artifacts.js";
 import { artifactSha256 } from "../src/artifact-content.js";
+import { buildChinaIpAudit } from "../src/china-ip-audit.js";
 import { canonicalJson } from "../src/render-anywhere-rules.js";
 import {
   buildSite,
   CLIENT_PUBLIC_PATHS,
   PUBLIC_RETENTION,
+  promoteClientRelease,
   publishEdgeRelease,
   snapshotMatches,
 } from "../src/build-site.js";
@@ -23,6 +25,48 @@ const lightweightUpstream = Object.freeze({
   committedAt: "2026-08-01T19:07:21Z",
   license: "GPL-2.0-only",
 });
+
+function chinaIpAuditBytes({
+  now = "2026-08-09T00:00:00Z",
+  calibrationStartedAt = "2026-08-01T00:00:00Z",
+  secondaryCommittedAt = "2026-08-08T00:00:00Z",
+  divergent = false,
+} = {}) {
+  const primaryEntries = [
+    { kind: "ipv4Cidr", value: "8.8.8.0/24", noResolve: true, sourceId: "ChinaIP" },
+    { kind: "ipv6Cidr", value: "2001:4860::/32", noResolve: true, sourceId: "ChinaIP" },
+  ];
+  const secondaryEntries = divergent ? [
+    { kind: "ipv4Cidr", value: "8.8.8.0/25", noResolve: true, sourceId: "ChinaIP-audit" },
+    { kind: "ipv6Cidr", value: "2001:4860::/33", noResolve: true, sourceId: "ChinaIP-audit" },
+  ] : primaryEntries;
+  return Buffer.from(canonicalJson(buildChinaIpAudit({
+    previousPrimaryEntries: primaryEntries,
+    currentPrimaryEntries: primaryEntries,
+    secondaryEntries,
+    primary: {
+      repository: lightweightUpstream.repository,
+      commit: lightweightUpstream.commit,
+      committedAt: lightweightUpstream.committedAt,
+      sha256: "1".repeat(64),
+    },
+    secondary: {
+      repository: "https://github.com/gaoyifan/china-operator-ip",
+      commit: "b".repeat(40),
+      committedAt: secondaryCommittedAt,
+      sha256: "2".repeat(64),
+    },
+    now,
+    calibrationStartedAt,
+  })));
+}
+
+function buildClientArtifacts(options) {
+  return buildClientArtifactsImpl({
+    ...options,
+    chinaIpAudit: options.chinaIpAudit ?? chinaIpAuditBytes(),
+  });
+}
 
 function artifact(hash, text, time = "2026-08-01T00:00:00Z") {
   const manifest = { manifestHash: hash.repeat(64), generatedAt: time, upstream: { commit: "d".repeat(40) } };
@@ -159,6 +203,17 @@ test("publishes edge and immutable per-client bytes without replacing current", 
   await publishEdgeRelease({ publicDirectory, defaults, optionalPacks, manifest });
 
   assert.equal(await readFile(join(publicDirectory, "current/stable.txt"), "utf8"), "stable\n");
+  assert.deepEqual(
+    await readFile(join(publicDirectory, "edge/audit/china-ip-drift.json")),
+    defaults.get("audit/china-ip-drift.json"),
+  );
+  await assert.rejects(
+    () => readFile(join(
+      publicDirectory,
+      `edge/clients/singbox/${manifest.clients.singbox.manifestHash}/audit/china-ip-drift.json`,
+    )),
+    /ENOENT/u,
+  );
   assert.deepEqual(await readFile(join(publicDirectory, "edge/sing-box/rules/ChinaIP.json")), Buffer.from(
     defaults.get("sing-box/rules/ChinaIP.json"),
   ));
@@ -198,11 +253,118 @@ test("binds optional client selections into the promoted client manifest", async
   clientManifest.manifestHash = artifactSha256(canonicalJson(baseManifest));
   await writeFile(join(immutable, "client-manifest.json"), canonicalJson(clientManifest));
 
-  const { promoteClientRelease } = await import("../src/build-site.js");
   await assert.rejects(
     () => promoteClientRelease({ publicDirectory, client: "singbox", manifestHash: hash }),
     /manifest hash does not match promotion target/u,
   );
+});
+
+test("promotes calibration warnings with the exact manifested audit bytes", async () => {
+  const root = await mkdtemp(join(tmpdir(), "apple-proxy-audit-calibration-"));
+  const publicDirectory = join(root, "public");
+  const chinaIpAudit = chinaIpAuditBytes({ divergent: true });
+  const report = JSON.parse(chinaIpAudit);
+  assert.equal(report.reportOnly, true);
+  assert.ok(report.warnings.length > 0);
+  assert.deepEqual(report.blockers, []);
+  const artifacts = buildClientArtifacts({
+    snapshot: lightweightFixtureSnapshots(),
+    upstream: lightweightUpstream,
+    chinaIpAudit,
+  });
+  const hash = artifacts.diagnostics.defaultManifest.clients.singbox.manifestHash;
+  await publishEdgeRelease({
+    publicDirectory,
+    defaults: artifacts.defaults,
+    optionalPacks: artifacts.optionalPacks,
+    manifest: artifacts.diagnostics.defaultManifest,
+  });
+
+  await promoteClientRelease({
+    publicDirectory,
+    client: "singbox",
+    manifestHash: hash,
+    now: "2026-08-09T01:00:00Z",
+  });
+
+  assert.deepEqual(
+    await readFile(join(publicDirectory, "current/audit/china-ip-drift.json")),
+    chinaIpAudit,
+  );
+});
+
+test("rejects stale, unmanifested, and hash-mismatched audit evidence before promotion", async () => {
+  const cases = [
+    {
+      name: "stale report",
+      chinaIpAudit: chinaIpAuditBytes({
+        now: "2026-08-01T00:00:00Z",
+        calibrationStartedAt: "2026-07-01T00:00:00Z",
+        secondaryCommittedAt: "2026-08-01T00:00:00Z",
+      }),
+      mutate: async () => {},
+      pattern: /report is stale/u,
+    },
+    {
+      name: "unmanifested report",
+      chinaIpAudit: chinaIpAuditBytes(),
+      mutate: async (publicDirectory) => {
+        const path = join(publicDirectory, "edge/manifest.json");
+        const manifest = JSON.parse(await readFile(path, "utf8"));
+        const { manifestHash: ignored, ...base } = manifest;
+        base.files = base.files.filter((record) => record.path !== "audit/china-ip-drift.json");
+        await writeFile(path, canonicalJson({
+          ...base,
+          manifestHash: artifactSha256(canonicalJson(base)),
+        }));
+      },
+      pattern: /not present in the edge root manifest/u,
+    },
+    {
+      name: "changed report bytes",
+      chinaIpAudit: chinaIpAuditBytes(),
+      mutate: async (publicDirectory) => {
+        await writeFile(join(publicDirectory, "edge/audit/china-ip-drift.json"), "{}\n");
+      },
+      pattern: /bytes differ from the edge root manifest/u,
+    },
+  ];
+
+  for (const { name, chinaIpAudit, mutate, pattern } of cases) {
+    const root = await mkdtemp(join(tmpdir(), "apple-proxy-audit-gate-"));
+    const publicDirectory = join(root, "public");
+    const artifacts = buildClientArtifacts({
+      snapshot: lightweightFixtureSnapshots(),
+      upstream: lightweightUpstream,
+      chinaIpAudit,
+    });
+    const hash = artifacts.diagnostics.defaultManifest.clients.singbox.manifestHash;
+    await publishEdgeRelease({
+      publicDirectory,
+      defaults: artifacts.defaults,
+      optionalPacks: artifacts.optionalPacks,
+      manifest: artifacts.diagnostics.defaultManifest,
+    });
+    await mkdir(join(publicDirectory, "current/sing-box"), { recursive: true });
+    await writeFile(join(publicDirectory, "current/sing-box/old.txt"), "old\n");
+    await mutate(publicDirectory);
+
+    await assert.rejects(
+      () => promoteClientRelease({
+        publicDirectory,
+        client: "singbox",
+        manifestHash: hash,
+        now: "2026-08-09T01:00:00Z",
+      }),
+      pattern,
+      name,
+    );
+    assert.equal(
+      await readFile(join(publicDirectory, "current/sing-box/old.txt"), "utf8"),
+      "old\n",
+      name,
+    );
+  }
 });
 
 test("rejects cryptographically open edge candidates before swapping edge", async () => {

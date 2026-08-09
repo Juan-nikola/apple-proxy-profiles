@@ -55,6 +55,23 @@ export async function promoteClientRelease(options) {
   return promoteClientReleaseImpl(options);
 }
 
+export function chinaIpAuditPrimary(snapshot, upstream) {
+  const chinaIp = snapshot instanceof Map ? snapshot.get("ChinaIPs") : null;
+  if (!chinaIp || !Array.isArray(chinaIp.entries) || !/^[0-9a-f]{64}$/u.test(chinaIp.sourceSha256)
+    || !upstream || !/^[0-9a-f]{40}$/u.test(upstream.commit)) {
+    throw new TypeError("Production ChinaIP snapshot is invalid for audit");
+  }
+  return Object.freeze({
+    entries: chinaIp.entries,
+    source: Object.freeze({
+      repository: upstream.repository,
+      commit: upstream.commit,
+      committedAt: upstream.committedAt,
+      sha256: chinaIp.sourceSha256,
+    }),
+  });
+}
+
 async function pathExists(path) {
   try {
     await access(path);
@@ -140,6 +157,29 @@ function sameUpstream(actual, expected) {
     && actual.commit === expected.commit
     && actual.committedAt === expected.committedAt
     && actual.license === expected.license;
+}
+
+function rootManifestMatchesWithIndependentAudit(content, expectedManifest) {
+  try {
+    const bytes = artifactBuffer(content);
+    const actual = JSON.parse(bytes.toString("utf8"));
+    const { manifestHash, ...actualBase } = actual;
+    if (!/^[0-9a-f]{64}$/u.test(manifestHash)
+      || artifactSha256(canonicalJson(actualBase)) !== manifestHash
+      || !bytes.equals(artifactBuffer(canonicalJson(actual)))) return false;
+    const projection = (manifest) => {
+      const { manifestHash: ignored, ...base } = manifest;
+      return {
+        ...base,
+        files: Array.isArray(base.files)
+          ? base.files.filter(({ path }) => path !== "audit/china-ip-drift.json")
+          : base.files,
+      };
+    };
+    return canonicalJson(projection(actual)) === canonicalJson(projection(expectedManifest));
+  } catch {
+    return false;
+  }
 }
 
 async function verifyLegacyCurrent(directory, expectedUpstream) {
@@ -323,7 +363,10 @@ export async function verifyTrackedPublications({ publicDirectory, defaults, opt
   for (const [path, content] of defaults) {
     if ([...clientPrefixes].some((prefix) => path.startsWith(prefix))) continue;
     try {
-      if (!(await readFile(join(currentDirectory, path))).equals(artifactBuffer(content))) return false;
+      const tracked = await readFile(join(currentDirectory, path));
+      if (path === "manifest.json") {
+        if (!rootManifestMatchesWithIndependentAudit(tracked, diagnostics?.defaultManifest)) return false;
+      } else if (!tracked.equals(artifactBuffer(content))) return false;
     } catch {
       return false;
     }
@@ -461,6 +504,7 @@ export async function buildArtifacts({
   upstreamOverride = null,
   singBoxBinaries = null,
   includeStaticFiles = true,
+  chinaIpAudit = null,
 }) {
   let commit;
   let committedAt;
@@ -480,11 +524,19 @@ export async function buildArtifacts({
   const upstream = Object.freeze({ ...BLACKMATRIX7_BASELINE, commit, committedAt });
   const snapshot = await fetchSnapshot({ commit, catalog: FETCH_SOURCE_CATALOG, concurrency: 4 });
   const statics = includeStaticFiles ? await staticFiles() : null;
-  return buildClientArtifacts({
+  const artifacts = buildClientArtifacts({
     snapshot,
     upstream,
     additionalFiles: statics,
     singBoxBinaries,
+    chinaIpAudit,
+  });
+  return Object.freeze({
+    ...artifacts,
+    diagnostics: Object.freeze({
+      ...artifacts.diagnostics,
+      chinaIpAuditPrimary: chinaIpAuditPrimary(snapshot, upstream),
+    }),
   });
 }
 
@@ -499,13 +551,16 @@ export async function main(
     return result;
   }
 
-  const stage = await readRuleStageManifest(env.SING_BOX_ARTIFACT_ROOT || DEFAULT_STAGE_ROOT);
+  const stageRoot = env.SING_BOX_ARTIFACT_ROOT || DEFAULT_STAGE_ROOT;
+  const stage = await readRuleStageManifest(stageRoot);
+  const chinaIpAudit = await readFile(join(stageRoot, stage.chinaIpAudit.path));
   const singBoxBinaries = await loadCompiledSingBoxRules(env.SING_BOX_RULE_OUTPUT_ROOT || DEFAULT_COMPILED_ROOT);
   const artifacts = await buildArtifacts({
     operation: command.operation,
     publicDirectory,
     upstreamOverride: stage.upstream,
     singBoxBinaries,
+    chinaIpAudit,
   });
   if (command.operation === "check-current") {
     if (!await verifyTrackedPublications({ publicDirectory, ...artifacts })) {

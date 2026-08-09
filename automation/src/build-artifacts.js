@@ -323,6 +323,7 @@ export function buildClientArtifacts({
   upstream = BLACKMATRIX7_BASELINE,
   additionalFiles = null,
   singBoxBinaries = null,
+  chinaIpAudit = null,
 }) {
   if (!(snapshot instanceof Map)) throw new TypeError("Complete rule snapshot is required");
   if (singBoxBinaries !== null) {
@@ -361,6 +362,13 @@ export function buildClientArtifacts({
   if (additions !== null) {
     if (!(additions instanceof Map)) throw new TypeError("Additional public files must be a Map");
     addFiles(defaults, additions);
+  }
+  if (chinaIpAudit !== null) {
+    if (defaults.has("audit/china-ip-drift.json")) {
+      throw new Error("Duplicate public artifact path: audit/china-ip-drift.json");
+    }
+    artifactBuffer(chinaIpAudit);
+    defaults.set("audit/china-ip-drift.json", chinaIpAudit);
   }
 
   assertNoForbiddenDefaultReferences(defaults);

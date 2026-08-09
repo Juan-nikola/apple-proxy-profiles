@@ -4,12 +4,14 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import test from "node:test";
 
-import { buildClientArtifacts } from "../automation/src/build-artifacts.js";
+import { buildClientArtifacts as buildClientArtifactsImpl } from "../automation/src/build-artifacts.js";
 import { artifactSha256 } from "../automation/src/artifact-content.js";
+import { buildChinaIpAudit } from "../automation/src/china-ip-audit.js";
 import { canonicalJson } from "../automation/src/render-anywhere-rules.js";
 import { publishEdgeRelease } from "../automation/src/build-site.js";
 import { lightweightFixtureSnapshots } from "../automation/test/lightweight-fixture.js";
 import {
+  chinaIpAuditPrimary,
   parseUpdateRulesArguments,
   promoteClientRelease,
   selectDefaultStaticFiles,
@@ -29,6 +31,49 @@ const nextUpstream = Object.freeze({
   commit: "e".repeat(40),
   committedAt: "2026-08-02T19:07:21Z",
 });
+
+function chinaIpAuditBytes({
+  publicationUpstream = upstream,
+  now = "2026-08-09T00:00:00Z",
+  calibrationStartedAt = "2026-08-01T00:00:00Z",
+  secondaryCommittedAt = "2026-08-08T00:00:00Z",
+  divergent = false,
+} = {}) {
+  const primaryEntries = [
+    { kind: "ipv4Cidr", value: "8.8.8.0/24", noResolve: true, sourceId: "ChinaIP" },
+    { kind: "ipv6Cidr", value: "2001:4860::/32", noResolve: true, sourceId: "ChinaIP" },
+  ];
+  const secondaryEntries = divergent ? [
+    { kind: "ipv4Cidr", value: "8.8.8.0/25", noResolve: true, sourceId: "ChinaIP-audit" },
+    { kind: "ipv6Cidr", value: "2001:4860::/33", noResolve: true, sourceId: "ChinaIP-audit" },
+  ] : primaryEntries;
+  return Buffer.from(canonicalJson(buildChinaIpAudit({
+    previousPrimaryEntries: primaryEntries,
+    currentPrimaryEntries: primaryEntries,
+    secondaryEntries,
+    primary: {
+      repository: publicationUpstream.repository,
+      commit: publicationUpstream.commit,
+      committedAt: publicationUpstream.committedAt,
+      sha256: "1".repeat(64),
+    },
+    secondary: {
+      repository: "https://github.com/gaoyifan/china-operator-ip",
+      commit: "b".repeat(40),
+      committedAt: secondaryCommittedAt,
+      sha256: "2".repeat(64),
+    },
+    now,
+    calibrationStartedAt,
+  })));
+}
+
+function buildClientArtifacts(options) {
+  return buildClientArtifactsImpl({
+    ...options,
+    chinaIpAudit: options.chinaIpAudit ?? chinaIpAuditBytes(),
+  });
+}
 
 async function writeFiles(directory, files) {
   for (const [path, content] of files) {
@@ -66,6 +111,18 @@ test("accepts only explicit edge, current-check, and client promotion operations
   for (const args of [[], ["--check"], ["--channel", "current"], ["--promote", "unknown", "a".repeat(64)]]) {
     assert.throws(() => parseUpdateRulesArguments(args), /update-rules arguments/u);
   }
+});
+
+test("derives audit-only primary provenance from the production ChinaIP snapshot", () => {
+  const snapshot = lightweightFixtureSnapshots();
+  const result = chinaIpAuditPrimary(snapshot, upstream);
+  assert.strictEqual(result.entries, snapshot.get("ChinaIPs").entries);
+  assert.deepEqual(result.source, {
+    repository: upstream.repository,
+    commit: upstream.commit,
+    committedAt: upstream.committedAt,
+    sha256: snapshot.get("ChinaIPs").sourceSha256,
+  });
 });
 
 test("keeps known legacy profiles outside defaults and rejects unexpected forbidden statics", () => {
@@ -153,7 +210,12 @@ test("verifies a hybrid current from independently promoted clients", async () =
   const root = await mkdtemp(join(tmpdir(), "apple-proxy-check-hybrid-"));
   const publicDirectory = join(root, "public");
   const baseline = buildClientArtifacts({ snapshot: lightweightFixtureSnapshots(), upstream });
-  const candidate = buildClientArtifacts({ snapshot: lightweightFixtureSnapshots(), upstream: nextUpstream });
+  const candidateAudit = chinaIpAuditBytes({ publicationUpstream: nextUpstream, divergent: true });
+  const candidate = buildClientArtifacts({
+    snapshot: lightweightFixtureSnapshots(),
+    upstream: nextUpstream,
+    chinaIpAudit: candidateAudit,
+  });
   await initializeTrackedCurrent(publicDirectory, baseline);
   await publishEdgeRelease({
     publicDirectory,
@@ -166,12 +228,17 @@ test("verifies a hybrid current from independently promoted clients", async () =
     client: "singbox",
     manifestHash: candidate.diagnostics.defaultManifest.clients.singbox.manifestHash,
   });
+  const currentReproduction = buildClientArtifacts({
+    snapshot: lightweightFixtureSnapshots(),
+    upstream,
+    chinaIpAudit: candidateAudit,
+  });
 
-  assert.equal(await verifyTrackedPublications({ publicDirectory, ...baseline }), true);
+  assert.equal(await verifyTrackedPublications({ publicDirectory, ...currentReproduction }), true);
   const optionalDirectory = join(publicDirectory, "optional/adblock-full/current/sing-box");
   const deleted = `${optionalDirectory}.deleted`;
   await rename(optionalDirectory, deleted);
-  assert.equal(await verifyTrackedPublications({ publicDirectory, ...baseline }), false);
+  assert.equal(await verifyTrackedPublications({ publicDirectory, ...currentReproduction }), false);
 });
 
 test("rejects rollout optional selections that disagree with the current client manifest", async () => {
@@ -351,6 +418,42 @@ test("promotes exact tested client bytes without changing other clients", async 
     rollout.optionalPacks["adblock-full"].singbox,
     artifacts.diagnostics.optionalManifests["adblock-full"].clients.singbox.manifestHash,
   );
+});
+
+test("script promotion rejects ChinaIP blockers before touching current", async () => {
+  const root = await mkdtemp(join(tmpdir(), "apple-proxy-promote-audit-blocker-"));
+  const publicDirectory = join(root, "public");
+  const artifacts = buildClientArtifacts({
+    snapshot: lightweightFixtureSnapshots(),
+    upstream,
+    chinaIpAudit: chinaIpAuditBytes({
+      publicationUpstream: upstream,
+      now: "2026-08-20T00:00:00Z",
+      calibrationStartedAt: "2026-08-01T00:00:00Z",
+      secondaryCommittedAt: "2026-08-20T00:00:00Z",
+      divergent: true,
+    }),
+  });
+  const hash = artifacts.diagnostics.defaultManifest.clients.singbox.manifestHash;
+  await publishEdgeRelease({
+    publicDirectory,
+    defaults: artifacts.defaults,
+    optionalPacks: artifacts.optionalPacks,
+    manifest: artifacts.diagnostics.defaultManifest,
+  });
+  await mkdir(join(publicDirectory, "current/sing-box"), { recursive: true });
+  await writeFile(join(publicDirectory, "current/sing-box/old.txt"), "old\n");
+
+  await assert.rejects(
+    () => promoteClientRelease({
+      publicDirectory,
+      client: "singbox",
+      manifestHash: hash,
+      now: "2026-08-20T01:00:00Z",
+    }),
+    /ChinaIP audit has blockers/u,
+  );
+  assert.equal(await readFile(join(publicDirectory, "current/sing-box/old.txt"), "utf8"), "old\n");
 });
 
 test("promotes and rolls back optional bytes independently per client", async () => {

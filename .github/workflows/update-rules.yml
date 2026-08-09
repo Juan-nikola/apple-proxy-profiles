@@ -42,7 +42,7 @@ jobs:
         run: npm ci
       - name: Install verified official sing-box core
         run: node scripts/install-sing-box-core.mjs
-      - name: Fetch snapshots and stage lightweight audit rules
+      - name: Fetch immutable ChinaIP audit and stage lightweight rules
         run: node scripts/stage-rule-artifacts.mjs --channel edge
       - name: Compile binary sing-box rule sets
         run: npm --workspace @apple-proxy-profiles/sing-box run compile:rules

@@ -157,6 +157,7 @@ test("update workflow is daily/manual, verifies output, and commits only public"
 test("update workflow verifies official binary rules before building edge and gates byte-exact promotion", async () => {
   const text = await workflowText(updateWorkflow);
   const installAt = text.indexOf("node scripts/install-sing-box-core.mjs");
+  const stageAt = text.indexOf("node scripts/stage-rule-artifacts.mjs --channel edge");
   const compileAt = text.indexOf("npm --workspace @apple-proxy-profiles/sing-box run compile:rules");
   const configAt = text.indexOf("npm --workspace @apple-proxy-profiles/sing-box run check:config");
   const verifyAt = text.indexOf("npm run verify:lightweight");
@@ -165,7 +166,8 @@ test("update workflow verifies official binary rules before building edge and ga
   const currentCompileAt = text.lastIndexOf("npm --workspace @apple-proxy-profiles/sing-box run compile:rules");
   const currentCheckAt = text.indexOf("npm run check:rules");
   assert.ok(installAt > text.indexOf("npm ci"), "official core installs after dependencies");
-  assert.ok(compileAt > installAt, "binary rule compilation uses the verified core");
+  assert.ok(stageAt > installAt, "the stage command resolves all immutable network inputs");
+  assert.ok(compileAt > stageAt, "binary rule compilation consumes the closed stage");
   assert.ok(configAt > compileAt, "both generated profile modes are checked after compilation");
   assert.ok(verifyAt > configAt, "lightweight tests and budgets run after official config checks");
   assert.ok(edgeAt > verifyAt, "edge candidates are generated only after verification");
@@ -182,6 +184,12 @@ test("update workflow verifies official binary rules before building edge and ga
   const scheduleBlock = text.slice(text.indexOf("build-edge:"), text.indexOf("promote-current:"));
   assert.match(scheduleBlock, /--channel edge/u);
   assert.doesNotMatch(scheduleBlock, /--promote|canary-approval/u);
+  assert.match(text, /name: Fetch immutable ChinaIP audit and stage lightweight rules/u);
+  assert.equal(
+    text.match(/node scripts\/stage-rule-artifacts\.mjs --channel edge/gu)?.length,
+    1,
+  );
+  assert.doesNotMatch(text, /fetch-china-ip-audit|gaoyifan/u);
 });
 
 test("Pages deploy handles public pushes, manual runs, and successful update completion", async () => {

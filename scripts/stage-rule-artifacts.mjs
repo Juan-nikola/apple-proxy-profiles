@@ -4,11 +4,22 @@ import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { artifactBuffer } from "../automation/src/artifact-content.js";
+import {
+  buildChinaIpAudit,
+  parseAuditCidrs,
+  validateChinaIpAuditForPromotion,
+} from "../automation/src/china-ip-audit.js";
+import {
+  fetchChinaIpAuditSnapshot,
+  resolveChinaIpAuditCommit,
+} from "../automation/src/fetch-china-ip-audit.js";
+import { canonicalJson } from "../automation/src/render-anywhere-rules.js";
 import { ruleClientCatalog } from "../shared/rules/lightweight-policy.js";
 
 const REPOSITORY_ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
 export const DEFAULT_STAGE_ROOT = resolve(REPOSITORY_ROOT, "clients/sing-box/build/rule-artifacts");
 export const DEFAULT_COMPILED_ROOT = resolve(REPOSITORY_ROOT, "clients/sing-box/build/compiled-rule-artifacts");
+const CHINA_IP_AUDIT_PATH = "audit/china-ip-drift.json";
 
 function sha256(content) {
   return createHash("sha256").update(content).digest("hex");
@@ -58,13 +69,119 @@ async function treeFiles(root, current = root, found = []) {
   return found;
 }
 
-export async function stageSingBoxAuditArtifacts({ artifacts, outputRoot = DEFAULT_STAGE_ROOT }) {
+function canonicalChinaIpAudit(content) {
+  const bytes = artifactBuffer(content);
+  let report;
+  try {
+    report = JSON.parse(bytes.toString("utf8"));
+  } catch {
+    throw new Error("ChinaIP audit report is invalid JSON");
+  }
+  if (!bytes.equals(Buffer.from(canonicalJson(report), "utf8"))) {
+    throw new Error("ChinaIP audit report bytes are not canonical");
+  }
+  return Object.freeze({ bytes, report });
+}
+
+function previousChinaIpEntries(content) {
+  if (typeof content !== "string") throw new TypeError("Previous edge ChinaIP rule must be text");
+  const ipv4 = [];
+  const ipv6 = [];
+  for (const line of content.split(/\r?\n/u).map((value) => value.trim()).filter(Boolean)) {
+    if (line.startsWith("#")) continue;
+    const [kind, value, ...modifiers] = line.split(",");
+    if (!value || modifiers.some((modifier) => modifier !== "no-resolve")) {
+      throw new Error("Previous edge ChinaIP rule is invalid");
+    }
+    if (kind === "IP-CIDR") ipv4.push(value);
+    else if (kind === "IP-CIDR6") ipv6.push(value);
+    else throw new Error("Previous edge ChinaIP rule is invalid");
+  }
+  return parseAuditCidrs({
+    ipv4Text: `${ipv4.join("\n")}\n`,
+    ipv6Text: `${ipv6.join("\n")}\n`,
+    sourceId: "ChinaIP-previous-edge",
+  });
+}
+
+async function optionalFile(path) {
+  try {
+    return await readFile(path);
+  } catch (error) {
+    if (error.code === "ENOENT") return null;
+    throw error;
+  }
+}
+
+export async function buildEdgeChinaIpAudit({
+  publicDirectory,
+  primary,
+  fetchImpl = globalThis.fetch,
+  now = new Date(),
+  resolveCommitImpl = resolveChinaIpAuditCommit,
+  fetchSnapshotImpl = fetchChinaIpAuditSnapshot,
+}) {
+  if (typeof publicDirectory !== "string" || !publicDirectory
+    || !primary || !Array.isArray(primary.entries) || !primary.source) {
+    throw new TypeError("ChinaIP audit primary snapshot is required");
+  }
+  const nowMillis = now instanceof Date ? now.getTime() : (
+    typeof now === "number" ? now : Date.parse(now)
+  );
+  if (!Number.isFinite(nowMillis)) throw new TypeError("ChinaIP audit generation time is invalid");
+  const commit = await resolveCommitImpl(fetchImpl, nowMillis);
+  const secondarySnapshot = await fetchSnapshotImpl({ commit, fetchImpl });
+
+  const previousRule = await optionalFile(join(publicDirectory, "edge/surge/rules/ChinaIP.list"));
+  const previousPrimaryEntries = previousRule === null
+    ? primary.entries
+    : previousChinaIpEntries(previousRule.toString("utf8"));
+  const previousReportBytes = await optionalFile(join(publicDirectory, "edge", CHINA_IP_AUDIT_PATH));
+  let calibrationStartedAt;
+  if (previousReportBytes !== null) {
+    const previousReport = canonicalChinaIpAudit(previousReportBytes).report;
+    const started = Date.parse(previousReport.calibrationStartedAt);
+    const ended = Date.parse(previousReport.calibrationEndsAt);
+    if (previousReport.schemaVersion !== 1 || !Number.isFinite(started) || !Number.isFinite(ended)
+      || ended - started !== 14 * 24 * 60 * 60 * 1_000) {
+      throw new Error("Previous edge ChinaIP audit report is invalid");
+    }
+    calibrationStartedAt = previousReport.calibrationStartedAt;
+  }
+  const report = buildChinaIpAudit({
+    previousPrimaryEntries,
+    currentPrimaryEntries: primary.entries,
+    secondaryEntries: secondarySnapshot.entries,
+    primary: primary.source,
+    secondary: {
+      repository: secondarySnapshot.source.repository,
+      commit: secondarySnapshot.source.commit,
+      committedAt: secondarySnapshot.source.committedAt,
+      sha256: secondarySnapshot.sha256,
+    },
+    now: new Date(nowMillis),
+    calibrationStartedAt,
+  });
+  return Buffer.from(canonicalJson(report), "utf8");
+}
+
+export async function loadCurrentChinaIpAudit({ publicDirectory }) {
+  if (typeof publicDirectory !== "string" || !publicDirectory) {
+    throw new TypeError("Current public directory is required");
+  }
+  const loaded = canonicalChinaIpAudit(await readFile(join(publicDirectory, "current", CHINA_IP_AUDIT_PATH)));
+  validateChinaIpAuditForPromotion(loaded.report, loaded.report.generatedAt);
+  return loaded.bytes;
+}
+
+export async function stageSingBoxAuditArtifacts({ artifacts, chinaIpAudit, outputRoot = DEFAULT_STAGE_ROOT }) {
   const absoluteOutput = resolve(outputRoot);
   const parent = dirname(absoluteOutput);
   await mkdir(parent, { recursive: true });
   const staging = await mkdtemp(join(parent, ".sing-box-rule-stage-"));
   try {
     const inputs = auditInputs(artifacts);
+    const audit = canonicalChinaIpAudit(chinaIpAudit);
     const records = [];
     for (const [path, content] of inputs) {
       const destination = join(staging, path);
@@ -72,9 +189,22 @@ export async function stageSingBoxAuditArtifacts({ artifacts, outputRoot = DEFAU
       await writeFile(destination, content);
       records.push(Object.freeze({ path, bytes: content.length, sha256: sha256(content) }));
     }
+    const auditDestination = join(staging, CHINA_IP_AUDIT_PATH);
+    await mkdir(dirname(auditDestination), { recursive: true });
+    await writeFile(auditDestination, audit.bytes);
+    const chinaIpAuditRecord = Object.freeze({
+      path: CHINA_IP_AUDIT_PATH,
+      bytes: audit.bytes.length,
+      sha256: sha256(audit.bytes),
+    });
     const upstream = artifacts.diagnostics?.defaultManifest?.upstream;
     if (!upstream || !/^[0-9a-f]{40}$/u.test(upstream.commit)) throw new Error("Staged upstream commit is invalid");
-    const manifest = Object.freeze({ schemaVersion: 1, upstream, files: Object.freeze(records) });
+    const manifest = Object.freeze({
+      schemaVersion: 2,
+      upstream,
+      chinaIpAudit: chinaIpAuditRecord,
+      files: Object.freeze(records),
+    });
     await writeFile(join(staging, "stage-manifest.json"), `${JSON.stringify(manifest)}\n`, "utf8");
     await rm(absoluteOutput, { recursive: true, force: true });
     await rename(staging, absoluteOutput);
@@ -88,12 +218,14 @@ export async function stageSingBoxAuditArtifacts({ artifacts, outputRoot = DEFAU
 export async function readRuleStageManifest(stageRoot = DEFAULT_STAGE_ROOT) {
   const absoluteRoot = resolve(stageRoot);
   const manifest = JSON.parse(await readFile(join(absoluteRoot, "stage-manifest.json"), "utf8"));
-  if (manifest.schemaVersion !== 1 || !/^[0-9a-f]{40}$/u.test(manifest.upstream?.commit)
-    || !Array.isArray(manifest.files)) throw new Error("Rule stage manifest is invalid");
+  if (manifest.schemaVersion !== 2 || !/^[0-9a-f]{40}$/u.test(manifest.upstream?.commit)
+    || !Array.isArray(manifest.files) || manifest.chinaIpAudit?.path !== CHINA_IP_AUDIT_PATH) {
+    throw new Error("Rule stage manifest is invalid");
+  }
   const actualPaths = (await treeFiles(absoluteRoot)).filter((path) => path !== "stage-manifest.json").sort();
-  const expectedPaths = manifest.files.map(({ path }) => path).sort();
+  const expectedPaths = [...manifest.files.map(({ path }) => path), manifest.chinaIpAudit.path].sort();
   if (JSON.stringify(actualPaths) !== JSON.stringify(expectedPaths)) throw new Error("Rule stage file closure failed");
-  for (const record of manifest.files) {
+  for (const record of [...manifest.files, manifest.chinaIpAudit]) {
     if (!record || !/^[0-9a-f]{64}$/u.test(record.sha256) || !Number.isSafeInteger(record.bytes) || record.bytes < 1) {
       throw new Error("Rule stage file record is invalid");
     }
@@ -102,6 +234,7 @@ export async function readRuleStageManifest(stageRoot = DEFAULT_STAGE_ROOT) {
       throw new Error(`Rule stage file hash mismatch: ${record.path}`);
     }
   }
+  canonicalChinaIpAudit(await readFile(join(absoluteRoot, manifest.chinaIpAudit.path)));
   return Object.freeze(manifest);
 }
 
@@ -125,18 +258,34 @@ export async function loadCompiledSingBoxRules(compiledRoot = DEFAULT_COMPILED_R
   return files;
 }
 
-export async function main(args = process.argv.slice(2), { env = process.env } = {}) {
+export async function main(args = process.argv.slice(2), {
+  env = process.env,
+  buildArtifactsImpl = null,
+  buildEdgeChinaIpAuditImpl = buildEdgeChinaIpAudit,
+  now = new Date(),
+} = {}) {
   if (args.length !== 2 || args[0] !== "--channel" || !["edge", "current"].includes(args[1])) {
     throw new Error("Usage: stage-rule-artifacts.mjs --channel <edge|current>");
   }
-  const { buildArtifacts } = await import("./update-rules.mjs");
+  let buildArtifacts = buildArtifactsImpl;
+  if (buildArtifacts === null) ({ buildArtifacts } = await import("./update-rules.mjs"));
+  const publicDirectory = env.PUBLIC_DIRECTORY || resolve(REPOSITORY_ROOT, "public");
+  const channel = args[1];
   const artifacts = await buildArtifacts({
-    operation: args[1] === "edge" ? "build-edge" : "check-current",
-    publicDirectory: env.PUBLIC_DIRECTORY || resolve(REPOSITORY_ROOT, "public"),
+    operation: channel === "edge" ? "build-edge" : "check-current",
+    publicDirectory,
     includeStaticFiles: false,
   });
+  const chinaIpAudit = channel === "current"
+    ? await loadCurrentChinaIpAudit({ publicDirectory })
+    : await buildEdgeChinaIpAuditImpl({
+      publicDirectory,
+      primary: artifacts.diagnostics?.chinaIpAuditPrimary,
+      now,
+    });
   const manifest = await stageSingBoxAuditArtifacts({
     artifacts,
+    chinaIpAudit,
     outputRoot: env.SING_BOX_ARTIFACT_ROOT || DEFAULT_STAGE_ROOT,
   });
   process.stdout.write(`Staged ${manifest.files.length} sing-box audit inputs at ${manifest.upstream.commit}\n`);

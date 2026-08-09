@@ -13,11 +13,14 @@ import {
 import { basename, dirname, join } from "node:path";
 
 import { artifactBuffer, artifactSha256 } from "./artifact-content.js";
+import { validateChinaIpAuditForPromotion } from "./china-ip-audit.js";
 import { canonicalJson } from "./render-anywhere-rules.js";
 
 const MAX_PUBLISHED_BYTES = 750 * 1024 * 1024;
 const MAX_VERSION_COUNT = 8;
 const MIN_VERSION_COUNT = 2;
+const CHINA_IP_AUDIT_PATH = "audit/china-ip-drift.json";
+const CHINA_IP_AUDIT_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1_000;
 
 export const CLIENT_PUBLIC_PATHS = Object.freeze({
   singbox: "sing-box",
@@ -474,6 +477,59 @@ async function verifyImmutableClient(sourceDirectory, manifest, directory) {
   }
 }
 
+async function verifiedChinaIpAuditEvidence(publicDirectory, now) {
+  const edgeDirectory = join(publicDirectory, "edge");
+  const manifestBytes = await readFile(join(edgeDirectory, "manifest.json"));
+  let manifest;
+  try {
+    manifest = JSON.parse(manifestBytes.toString("utf8"));
+  } catch {
+    throw new Error("Edge root manifest is invalid JSON");
+  }
+  const { manifestHash, ...baseManifest } = manifest;
+  if (!/^[0-9a-f]{64}$/u.test(manifestHash)
+    || artifactSha256(canonicalJson(baseManifest)) !== manifestHash
+    || !manifestBytes.equals(artifactBuffer(canonicalJson(manifest)))) {
+    throw new Error("Edge root manifest hash or canonical bytes are invalid");
+  }
+  const records = Array.isArray(manifest.files)
+    ? manifest.files.filter(({ path }) => path === CHINA_IP_AUDIT_PATH)
+    : [];
+  if (records.length !== 1) {
+    throw new Error("ChinaIP audit is not present in the edge root manifest");
+  }
+  const [record] = records;
+  if (!Number.isSafeInteger(record.bytes) || record.bytes < 1 || !/^[0-9a-f]{64}$/u.test(record.sha256)) {
+    throw new Error("ChinaIP audit root manifest record is invalid");
+  }
+  const bytes = await readFile(join(edgeDirectory, CHINA_IP_AUDIT_PATH));
+  if (bytes.length !== record.bytes || artifactSha256(bytes) !== record.sha256) {
+    throw new Error("ChinaIP audit bytes differ from the edge root manifest");
+  }
+  let report;
+  try {
+    report = JSON.parse(bytes.toString("utf8"));
+  } catch {
+    throw new Error("ChinaIP audit report is invalid JSON");
+  }
+  if (!bytes.equals(artifactBuffer(canonicalJson(report)))) {
+    throw new Error("ChinaIP audit report bytes are not canonical");
+  }
+  const validationTime = now instanceof Date ? now.getTime() : (
+    typeof now === "number" ? now : Date.parse(now)
+  );
+  const generatedAt = Date.parse(report.generatedAt);
+  if (!Number.isFinite(validationTime) || !Number.isFinite(generatedAt)) {
+    throw new TypeError("ChinaIP audit promotion time is invalid");
+  }
+  if (generatedAt > validationTime) throw new Error("ChinaIP audit report is from the future");
+  if (validationTime - generatedAt > CHINA_IP_AUDIT_MAX_AGE_MS) {
+    throw new Error("ChinaIP audit report is stale");
+  }
+  validateChinaIpAuditForPromotion(report, new Date(validationTime));
+  return bytes;
+}
+
 function emptyRollout() {
   const clients = () => Object.fromEntries(Object.keys(CLIENT_PUBLIC_PATHS).map((client) => [client, null]));
   return {
@@ -485,11 +541,12 @@ function emptyRollout() {
   };
 }
 
-export async function promoteClientRelease({ publicDirectory, client, manifestHash }) {
+export async function promoteClientRelease({ publicDirectory, client, manifestHash, now = new Date() }) {
   const directory = CLIENT_PUBLIC_PATHS[client];
   if (!directory || !/^[0-9a-f]{64}$/u.test(manifestHash)) {
     throw new TypeError("Client promotion target is invalid");
   }
+  const chinaIpAudit = await verifiedChinaIpAuditEvidence(publicDirectory, now);
   const immutableSource = join(publicDirectory, "edge", "clients", client, manifestHash);
   const clientManifest = JSON.parse(await readFile(join(immutableSource, "client-manifest.json"), "utf8"));
   if (clientManifest.manifestHash !== manifestHash) throw new Error("Edge client manifest hash does not match promotion target");
@@ -538,6 +595,9 @@ export async function promoteClientRelease({ publicDirectory, client, manifestHa
     await writeFile(join(current, "client-manifest.json"), artifactBuffer(await readFile(
       join(staging, "edge", "clients", client, manifestHash, "client-manifest.json"),
     )));
+    const currentAudit = join(staging, "current", CHINA_IP_AUDIT_PATH);
+    await mkdir(dirname(currentAudit), { recursive: true });
+    await writeFile(currentAudit, chinaIpAudit);
     for (const [packId] of optionalManifests) {
       const stableOptional = join(staging, "optional", packId, "current", directory);
       const previousOptional = join(staging, "optional", packId, "previous", directory);
