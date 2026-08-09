@@ -11,6 +11,7 @@
 | Sub-Store 五客户端文档 | 已完成 | `apple-proxy-sources`、6 个公开 JS、17 个任务、维护/编译/回滚指南 | 文档测试、秘密扫描 |
 | GitHub Pages 公开发布 | 已完成 | `current/`、`edge/`、规则和脚本入口可由 Pages 发布 | Actions 检查、公开 URL HTTP 200 |
 | 共享分流顺序与离线解释 | 已完成 | `DomesticCore` → 服务规则 → `OverseasGame` → `ChinaTLD` → `ChinaIP` → FINAL；`explain:route` 只读本地已发布规则、不执行 DNS | `npm run explain:route`、跨客户端回归与文档测试 |
+| 业务组精简 | 已完成 | 业务组由 16 组合并为 9 组：`🎬 海外流媒体`（Netflix/Disney+/Spotify/国际媒体/TikTok）、`💬 海外社交`（Telegram/Facebook/Instagram/Twitter）、`🇨🇳 国内平台`（B站/抖音/小红书/微博）；sing-box 主组改为洲级两级结构 | 全客户端测试、fixtures 与 edge/current 发布验证 |
 | 私密 Sub-Store 任务 | 已完成 | 用户 Sub-Store 已建立 `apple-proxy-sources` 和 17 个文件任务；Shadowrocket 三个 Profile 已改为直接读原始组合；sing-box 移动端 IPv6 已修正 | 17 个任务下载全部非空、结构校验通过 |
 | 真机 canary | 待用户执行 | 需要按各客户端清单逐台导入、联网、DNS、规则和回滚 | 自动测试不能替代设备验收 |
 
