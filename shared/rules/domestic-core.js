@@ -1,4 +1,5 @@
 import { RULE_BUDGETS } from "./lightweight-policy.js";
+import { OBSERVED_DOMESTIC_RECORDS } from "./observed-domestic.js";
 
 function normalizedSuffixes(values, name) {
   const normalized = values.map((value) => {
@@ -12,7 +13,7 @@ function normalizedSuffixes(values, name) {
   return Object.freeze(normalized);
 }
 
-export const DOMESTIC_CORE_DOMAIN_SUFFIXES = normalizedSuffixes([
+const DOMESTIC_CORE_BASE_DOMAIN_SUFFIXES = [
   "bilibili.com", "bilibili.net", "bilibili.tv", "bilibili.cc",
   "bilivideo.com", "bilivideo.net", "biliapi.com", "hdslb.com", "hdslb.org",
   "douyin.com", "douyincdn.com", "byteimg.com", "ibytedtos.com", "pstatp.com",
@@ -24,11 +25,15 @@ export const DOMESTIC_CORE_DOMAIN_SUFFIXES = normalizedSuffixes([
   "baidu.com", "bdstatic.com", "bdimg.com", "bcebos.com",
   "taobao.com", "tmall.com", "alipay.com", "alibaba.com", "alicdn.com", "aliyun.com", "aliyuncs.com",
   "163.com", "126.com", "netease.com", "amap.com", "autonavi.com",
-  // Confirmed domestic CDN/app endpoints observed in client traces and the
-  // supplied reference profile. Keep this list small; unknown names are
-  // classified by China-first DNS plus ChinaIP/GeoIP in every client.
-  "wmpvp.com", "bytehwm.com", "rtbasia.com", "sandbox.itunes.apple.com",
+  // Audited domestic media endpoints from the supplied reference profile.
+  // Keep this list small; unknown names are classified by China-first DNS
+  // plus ChinaIP/GeoIP in every client.
   "douyu.com", "douyu.tv", "douyutv.com", "douyuscdn.com", "douyucdn.cn", "huya.com",
+];
+
+export const DOMESTIC_CORE_DOMAIN_SUFFIXES = normalizedSuffixes([
+  ...DOMESTIC_CORE_BASE_DOMAIN_SUFFIXES,
+  ...OBSERVED_DOMESTIC_RECORDS.map(({ suffix }) => suffix),
 ], "Domestic core");
 
 export const DOMESTIC_GAME_DOMAIN_SUFFIXES = normalizedSuffixes([

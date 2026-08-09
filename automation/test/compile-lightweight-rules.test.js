@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { DOMESTIC_CORE_DOMAIN_SUFFIXES, DOMESTIC_GAME_DOMAIN_SUFFIXES } from "../../shared/rules/domestic-core.js";
+import { OBSERVED_DOMESTIC_RECORDS } from "../../shared/rules/observed-domestic.js";
 import { DEFAULT_RULE_SOURCE_IDS } from "../../shared/rules/lightweight-policy.js";
 import { normalizeRuleEntry, RULE_KIND } from "../../shared/rules/model.js";
 import { compileLightweightRules, findSemanticRuleOverlaps } from "../src/compile-lightweight-rules.js";
@@ -104,6 +105,17 @@ test("compiles only lightweight defaults and isolates the full advertising pack"
   assert.equal(result.diagnostics.domesticCoreEntries, DOMESTIC_CORE_DOMAIN_SUFFIXES.length);
   assert.equal(result.diagnostics.defaultEntries,
     [...result.defaultRuleSets.values()].reduce((total, set) => total + set.entries.length, 0));
+});
+
+test("compiles observed domestic suffixes into DomesticCore without an observed source", () => {
+  const result = compileLightweightRules({ snapshots: fixtureSnapshots() });
+  const domesticCore = values(result.defaultRuleSets, "DomesticCore");
+
+  for (const { suffix } of OBSERVED_DOMESTIC_RECORDS) {
+    assert.equal(domesticCore.some(({ kind, value }) => kind === "domainSuffix" && value === suffix), true);
+  }
+  assert.equal(result.defaultRuleSets.has("ObservedDomestic"), false);
+  assert.equal(result.optionalPacks.adblockFull.has("ObservedDomestic"), false);
 });
 
 test("partitions games, canonicalizes Chinese IPv4 and IPv6, and removes only redundant direct domains", () => {

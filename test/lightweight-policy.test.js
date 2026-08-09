@@ -15,6 +15,7 @@ import {
   DOMESTIC_CORE_DOMAIN_SUFFIXES,
   DOMESTIC_GAME_DOMAIN_SUFFIXES,
 } from "../shared/rules/domestic-core.js";
+import { OBSERVED_DOMESTIC_RECORDS } from "../shared/rules/observed-domestic.js";
 import { RULE_CLIENT_CATALOG } from "../shared/rules/client-catalog.js";
 import { buildPolicyGroups } from "../shared/policies/catalog.js";
 
@@ -46,6 +47,55 @@ test("keeps domestic core and games explicit, normalized, and bounded", () => {
     assert.equal(PUBLIC_SUFFIXES.has(suffix), false);
     assert.match(suffix, /^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+$/u);
   }
+});
+
+test("keeps observed domestic suffixes as complete, normalized provenance records", () => {
+  assert.deepEqual(OBSERVED_DOMESTIC_RECORDS, [
+    {
+      suffix: "wmpvp.com",
+      service: "WeChat mini-program media",
+      observedAt: "2026-08-08",
+      reason: "Domestic App media request was observed falling through to the proxy",
+    },
+    {
+      suffix: "bytehwm.com",
+      service: "ByteDance font and static CDN",
+      observedAt: "2026-08-08",
+      reason: "Domestic static asset request was observed falling through to the proxy",
+    },
+    {
+      suffix: "rtbasia.com",
+      service: "Observed domestic App dependency",
+      observedAt: "2026-08-08",
+      reason: "App dependency was observed using the proxy during domestic workflow testing",
+    },
+    {
+      suffix: "sandbox.itunes.apple.com",
+      service: "Apple sandbox purchase validation",
+      observedAt: "2026-08-08",
+      reason: "Sandbox validation request was observed using the proxy during domestic App testing",
+    },
+  ]);
+  assert.equal(new Set(OBSERVED_DOMESTIC_RECORDS.map(({ suffix }) => suffix)).size,
+    OBSERVED_DOMESTIC_RECORDS.length);
+  for (const record of OBSERVED_DOMESTIC_RECORDS) {
+    assert.deepEqual(Object.keys(record).sort(), ["observedAt", "reason", "service", "suffix"]);
+    assert.match(record.observedAt, /^\d{4}-\d{2}-\d{2}$/u);
+    assert.equal(new Date(`${record.observedAt}T00:00:00.000Z`).toISOString().slice(0, 10), record.observedAt);
+    assert.equal(record.service.length > 0, true);
+    assert.equal(record.reason.length > 0, true);
+    assert.equal(record.suffix, record.suffix.toLowerCase());
+    assert.equal(record.suffix, record.suffix.trim());
+    assert.equal(record.suffix.startsWith("."), false);
+    assert.equal(record.suffix.endsWith("."), false);
+    assert.equal(PUBLIC_SUFFIXES.has(record.suffix), false);
+    assert.match(record.suffix, /^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+$/u);
+  }
+});
+
+test("does not expose observed domestic provenance as a client rule source", () => {
+  assert.equal(DEFAULT_RULE_SOURCE_IDS.includes("ObservedDomestic"), false);
+  assert.equal(RULE_CLIENT_CATALOG.some(({ id }) => id === "ObservedDomestic"), false);
 });
 
 test("covers representative Chinese app, media, map, and game ecosystems", () => {
