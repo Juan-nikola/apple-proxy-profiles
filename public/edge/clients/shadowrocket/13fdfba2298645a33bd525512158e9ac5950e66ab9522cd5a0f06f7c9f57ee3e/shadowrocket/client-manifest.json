@@ -183,6 +183,11 @@
       "sha256": "676c0af7d79d1e3aca9edca296a472fed1bd0eae3abd76bf5eb14962f99ff0e1"
     },
     {
+      "bytes": 90025,
+      "path": "shadowrocket/scripts/shadowrocket-node-subscription.js",
+      "sha256": "4ea6bcbf557594f7954367639c5646b2478d7ab323fe3ca64da33d9e1f9a52ed"
+    },
+    {
       "bytes": 137173,
       "path": "shadowrocket/scripts/shadowrocket-profile-generator.js",
       "sha256": "f106748c9622ca56b891cabdd89db67794f113b876506cff2fbda62cb4d63334"
@@ -199,7 +204,7 @@
     }
   ],
   "generatedAt": "2026-08-07T18:52:17Z",
-  "manifestHash": "fa7cbe361f31d44d9439a01f53916f0b536bdd2c37b1202469e1bd8c4508f7d7",
+  "manifestHash": "13fdfba2298645a33bd525512158e9ac5950e66ab9522cd5a0f06f7c9f57ee3e",
   "optionalPacks": {
     "adblock-full": "08e14639b805d3e3051f2d338918e722d9e6e95e6aa7c424fbafe827072a3a52"
   },

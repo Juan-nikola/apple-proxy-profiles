@@ -10,7 +10,7 @@
       "referencedDefaultBytes": 401384
     },
     "shadowrocket": {
-      "manifestHash": "fa7cbe361f31d44d9439a01f53916f0b536bdd2c37b1202469e1bd8c4508f7d7",
+      "manifestHash": "13fdfba2298645a33bd525512158e9ac5950e66ab9522cd5a0f06f7c9f57ee3e",
       "referencedDefaultBytes": 604778
     },
     "singbox": {
@@ -442,9 +442,9 @@
       "sha256": "ad7ad924a1476b5b1c028672844995573188f886b6e7d86668924d2a27f5d610"
     },
     {
-      "bytes": 7039,
+      "bytes": 7229,
       "path": "shadowrocket/client-manifest.json",
-      "sha256": "0344d664b1f923718406c8027afdaadd64aaa60c61f3d1a96b1d1dddd15c3222"
+      "sha256": "f3bed8876f7758562ffe2cdc03f492ea7d81f76231b292d0d694fc7e933f64cf"
     },
     {
       "bytes": 17792,
@@ -625,6 +625,11 @@
       "bytes": 85219,
       "path": "shadowrocket/scripts/shadowrocket-node-operator.js",
       "sha256": "676c0af7d79d1e3aca9edca296a472fed1bd0eae3abd76bf5eb14962f99ff0e1"
+    },
+    {
+      "bytes": 90025,
+      "path": "shadowrocket/scripts/shadowrocket-node-subscription.js",
+      "sha256": "4ea6bcbf557594f7954367639c5646b2478d7ab323fe3ca64da33d9e1f9a52ed"
     },
     {
       "bytes": 137173,
@@ -1068,7 +1073,7 @@
     }
   ],
   "generatedAt": "2026-08-07T18:52:17Z",
-  "manifestHash": "093d530c190000a7758d5adcf337e93fa60eab94cdf2efd4c5706e7bf8d00e18",
+  "manifestHash": "8f29a0b7d97f9f0a8c8f829b89e517fe9979ddaaded28200256d18e141396cdd",
   "schemaVersion": 2,
   "upstream": {
     "branch": "master",
