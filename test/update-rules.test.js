@@ -139,6 +139,29 @@ test("derives audit-only primary provenance from the production ChinaIP snapshot
   });
 });
 
+test("parses raw production ChinaIP snapshots for audit provenance", () => {
+  const fixture = lightweightFixtureSnapshots();
+  const raw = new Map([["ChinaIPs", {
+    text: fixture.get("ChinaIPs").text,
+    source: fixture.get("ChinaIPs").source,
+    sourceSha256: fixture.get("ChinaIPs").sourceSha256,
+  }]]);
+  const result = chinaIpAuditPrimary(raw, upstream);
+  assert.deepEqual(result.entries, fixture.get("ChinaIPs").entries);
+  assert.deepEqual(result.source, {
+    repository: upstream.repository,
+    commit: upstream.commit,
+    committedAt: upstream.committedAt,
+    sha256: fixture.get("ChinaIPs").sourceSha256,
+  });
+
+  const missingDigest = new Map([["ChinaIPs", {
+    text: fixture.get("ChinaIPs").text,
+    source: fixture.get("ChinaIPs").source,
+  }]]);
+  assert.throws(() => chinaIpAuditPrimary(missingDigest, upstream), /invalid for audit/u);
+});
+
 test("keeps known legacy profiles outside defaults and rejects unexpected forbidden statics", () => {
   const selected = selectDefaultStaticFiles(new Map([
     ["LICENSE", "safe\n"],

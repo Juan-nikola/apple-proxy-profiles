@@ -16,6 +16,7 @@ import {
   validateOptionalPublication,
 } from "../automation/src/build-site.js";
 import { fetchSnapshot } from "../automation/src/fetch-snapshot.js";
+import { parseSurgeRules } from "../automation/src/parse-surge.js";
 import { resolveUpstreamCommit } from "../automation/src/resolve-upstream.js";
 import {
   BLACKMATRIX7_BASELINE,
@@ -58,12 +59,17 @@ export async function promoteClientRelease(options) {
 
 export function chinaIpAuditPrimary(snapshot, upstream) {
   const chinaIp = snapshot instanceof Map ? snapshot.get("ChinaIPs") : null;
-  if (!chinaIp || !Array.isArray(chinaIp.entries) || !/^[0-9a-f]{64}$/u.test(chinaIp.sourceSha256)
+  const entries = Array.isArray(chinaIp?.entries)
+    ? chinaIp.entries
+    : chinaIp?.text && chinaIp?.source
+      ? parseSurgeRules(chinaIp.text, { ...chinaIp.source, minEntries: 0 }).entries
+      : null;
+  if (!entries || !/^[0-9a-f]{64}$/u.test(chinaIp?.sourceSha256)
     || !upstream || !/^[0-9a-f]{40}$/u.test(upstream.commit)) {
     throw new TypeError("Production ChinaIP snapshot is invalid for audit");
   }
   return Object.freeze({
-    entries: chinaIp.entries,
+    entries,
     source: Object.freeze({
       repository: upstream.repository,
       commit: upstream.commit,

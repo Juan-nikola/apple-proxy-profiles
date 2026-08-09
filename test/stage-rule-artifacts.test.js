@@ -161,6 +161,109 @@ test("builds edge audit evidence from the pinned secondary and prior edge baseli
   assert.deepEqual(bytes, Buffer.from(canonicalJson(report)));
 });
 
+test("reuses fresh identical edge audit evidence without refetching", async () => {
+  const root = await mkdtemp(join(tmpdir(), "china-ip-edge-audit-reuse-"));
+  const publicDirectory = join(root, "public");
+  const priorReport = chinaIpAuditBytes();
+  await mkdir(join(publicDirectory, "edge/audit"), { recursive: true });
+  await writeFile(join(publicDirectory, "edge/audit/china-ip-drift.json"), priorReport);
+  let resolved = 0;
+  let fetched = 0;
+  const bytes = await buildEdgeChinaIpAudit({
+    publicDirectory,
+    primary: {
+      entries: [
+        { kind: "ipv4Cidr", value: "8.8.8.0/24", noResolve: true, sourceId: "ChinaIP" },
+        { kind: "ipv6Cidr", value: "2001:4860::/32", noResolve: true, sourceId: "ChinaIP" },
+      ],
+      source: {
+        repository: upstream.repository,
+        commit: upstream.commit,
+        committedAt: upstream.committedAt,
+        sha256: "1".repeat(64),
+      },
+    },
+    now: "2026-08-09T02:00:00Z",
+    resolveCommitImpl: async () => {
+      resolved += 1;
+      return { sha: "b".repeat(40), committedAt: "2026-08-08T00:00:00Z" };
+    },
+    fetchSnapshotImpl: async () => {
+      fetched += 1;
+      return {
+        source: {
+          repository: "https://github.com/gaoyifan/china-operator-ip",
+          commit: "b".repeat(40),
+          committedAt: "2026-08-08T00:00:00Z",
+        },
+        entries: [],
+        sha256: "2".repeat(64),
+      };
+    },
+  });
+
+  assert.deepEqual(bytes, priorReport);
+  assert.equal(resolved, 0);
+  assert.equal(fetched, 0);
+});
+
+test("regenerates edge audit evidence when inputs change or the report is stale", async () => {
+  const root = await mkdtemp(join(tmpdir(), "china-ip-edge-audit-regenerate-"));
+  const publicDirectory = join(root, "public");
+  const priorReport = chinaIpAuditBytes();
+  await mkdir(join(publicDirectory, "edge/audit"), { recursive: true });
+  await writeFile(join(publicDirectory, "edge/audit/china-ip-drift.json"), priorReport);
+  const base = {
+    publicDirectory,
+    primary: {
+      entries: [
+        { kind: "ipv4Cidr", value: "8.8.8.0/24", noResolve: true, sourceId: "ChinaIP" },
+        { kind: "ipv6Cidr", value: "2001:4860::/32", noResolve: true, sourceId: "ChinaIP" },
+      ],
+      source: {
+        repository: upstream.repository,
+        commit: upstream.commit,
+        committedAt: upstream.committedAt,
+        sha256: "1".repeat(64),
+      },
+    },
+    resolveCommitImpl: async () => ({
+      sha: "b".repeat(40),
+      committedAt: "2026-08-08T00:00:00Z",
+    }),
+    fetchSnapshotImpl: async () => ({
+      source: {
+        repository: "https://github.com/gaoyifan/china-operator-ip",
+        commit: "b".repeat(40),
+        committedAt: "2026-08-08T00:00:00Z",
+      },
+      entries: [
+        { kind: "ipv4Cidr", value: "8.8.8.0/24", noResolve: true, sourceId: "ChinaIP-audit" },
+        { kind: "ipv6Cidr", value: "2001:4860::/32", noResolve: true, sourceId: "ChinaIP-audit" },
+      ],
+      sha256: "2".repeat(64),
+    }),
+  };
+
+  const changed = await buildEdgeChinaIpAudit({
+    ...base,
+    primary: {
+      ...base.primary,
+      source: { ...base.primary.source, sha256: "9".repeat(64) },
+    },
+    now: "2026-08-09T02:00:00Z",
+  });
+  assert.notEqual(changed.toString("utf8"), priorReport.toString("utf8"));
+  assert.notEqual(JSON.parse(changed).generatedAt, JSON.parse(priorReport).generatedAt);
+
+  const stale = await buildEdgeChinaIpAudit({
+    ...base,
+    now: "2026-08-11T00:00:00Z",
+  });
+  assert.notEqual(stale.toString("utf8"), priorReport.toString("utf8"));
+  assert.notEqual(JSON.parse(stale).generatedAt, JSON.parse(priorReport).generatedAt);
+});
+
 test("real current stage reuses tracked audit and SRS bytes with zero network", async () => {
   const root = await mkdtemp(join(tmpdir(), "china-ip-current-stage-"));
   const publicDirectory = join(root, "public");

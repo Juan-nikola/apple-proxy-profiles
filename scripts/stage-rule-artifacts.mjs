@@ -20,6 +20,7 @@ const REPOSITORY_ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
 export const DEFAULT_STAGE_ROOT = resolve(REPOSITORY_ROOT, "clients/sing-box/build/rule-artifacts");
 export const DEFAULT_COMPILED_ROOT = resolve(REPOSITORY_ROOT, "clients/sing-box/build/compiled-rule-artifacts");
 const CHINA_IP_AUDIT_PATH = "audit/china-ip-drift.json";
+const REUSE_MAX_AGE_MS = 24 * 60 * 60 * 1000;
 const SRS_MAGIC = Buffer.from([0x53, 0x52, 0x53, 0x02]);
 
 function sha256(content) {
@@ -130,6 +131,24 @@ export async function buildEdgeChinaIpAudit({
     typeof now === "number" ? now : Date.parse(now)
   );
   if (!Number.isFinite(nowMillis)) throw new TypeError("ChinaIP audit generation time is invalid");
+  const existingBytes = await optionalFile(join(publicDirectory, "edge", CHINA_IP_AUDIT_PATH));
+  if (existingBytes !== null) {
+    try {
+      const existing = canonicalChinaIpAudit(existingBytes).report;
+      const generatedAt = Date.parse(existing.generatedAt);
+      const age = Number.isFinite(generatedAt) ? nowMillis - generatedAt : Infinity;
+      if (existing.schemaVersion === 1
+        && age >= 0 && age < REUSE_MAX_AGE_MS
+        && existing.primary?.commit === primary.source.commit
+        && existing.primary?.sha256 === primary.source.sha256
+        && /^[0-9a-f]{40}$/u.test(existing.secondary?.commit ?? "")
+        && /^[0-9a-f]{64}$/u.test(existing.secondary?.sha256 ?? "")) {
+        return existingBytes;
+      }
+    } catch {
+      // Regenerate when the prior edge audit is absent, stale, or invalid.
+    }
+  }
   const commit = await resolveCommitImpl(fetchImpl, nowMillis);
   const secondarySnapshot = await fetchSnapshotImpl({ commit, fetchImpl });
 
