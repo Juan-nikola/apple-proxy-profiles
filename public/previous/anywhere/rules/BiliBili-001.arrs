@@ -1,7 +1,7 @@
 # Upstream: https://github.com/blackmatrix7/ios_rule_script
 # Source: BiliBili
-# Commit: 72c410015dc99df6b54eca1386126f70268bf6bc
-# Converted at upstream commit time: 2026-08-05T19:24:33Z
+# Commit: ccc2d6b711007324bacb55cdfbbf7e36ad48145a
+# Converted at upstream commit time: 2026-08-07T18:52:17Z
 # License: GPL-2.0-only
 # Converted by: Juan-nikola/apple-proxy-profiles
 name = 📺 哔哩哔哩 · BiliBili
@@ -28,14 +28,9 @@ routing = 1
 2, bili2233.cn
 2, bili23.cn
 2, bili33.cn
-2, biliapi.com
 2, biliapi.net
-2, bilibili.cc
 2, bilibili.cn
 2, bilibili.co
-2, bilibili.com
-2, bilibili.net
-2, bilibili.tv
 2, bilibiligame.cn
 2, bilibiligame.co
 2, bilibiligame.net
@@ -49,7 +44,6 @@ routing = 1
 2, bilicomics.com
 2, biligame.cn
 2, biligame.co
-2, biligame.com
 2, biligame.net
 2, biligo.com
 2, biliimg.com
@@ -57,16 +51,12 @@ routing = 1
 2, biliintl.com
 2, biliplus.com
 2, bilivideo.cn
-2, bilivideo.com
-2, bilivideo.net
 2, corari.com
 2, dreamcast.hk
 2, dyhgames.com
-2, hdslb.com
 2, hdslb.com.w.kunlunhuf.com
 2, hdslb.com.w.kunlunpi.com
 2, hdslb.net
-2, hdslb.org
 2, im9.com
 2, maoercdn.com
 2, mcbbs.net
