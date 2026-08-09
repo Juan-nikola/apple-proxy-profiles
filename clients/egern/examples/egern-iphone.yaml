@@ -263,18 +263,6 @@ dns:
         match: "autonavi.com"
         value: "china"
     - domain_suffix:
-        match: "wmpvp.com"
-        value: "china"
-    - domain_suffix:
-        match: "bytehwm.com"
-        value: "china"
-    - domain_suffix:
-        match: "rtbasia.com"
-        value: "china"
-    - domain_suffix:
-        match: "sandbox.itunes.apple.com"
-        value: "china"
-    - domain_suffix:
         match: "douyu.com"
         value: "china"
     - domain_suffix:
@@ -291,6 +279,18 @@ dns:
         value: "china"
     - domain_suffix:
         match: "huya.com"
+        value: "china"
+    - domain_suffix:
+        match: "wmpvp.com"
+        value: "china"
+    - domain_suffix:
+        match: "bytehwm.com"
+        value: "china"
+    - domain_suffix:
+        match: "rtbasia.com"
+        value: "china"
+    - domain_suffix:
+        match: "sandbox.itunes.apple.com"
         value: "china"
     - proxy_rule_set:
         match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/DomesticCore.yaml"

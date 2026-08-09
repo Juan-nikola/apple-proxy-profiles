@@ -1050,6 +1050,34 @@ var EgernProfileBundle = (() => {
     return Object.freeze([...selected].sort((left, right) => phaseRank.get(left.phase) - phaseRank.get(right.phase) || sourceRank.get(left.id) - sourceRank.get(right.id)));
   }
 
+  // ../../../shared/rules/observed-domestic.js
+  var OBSERVED_DOMESTIC_RECORDS = Object.freeze([
+    Object.freeze({
+      suffix: "wmpvp.com",
+      service: "WeChat mini-program media",
+      observedAt: "2026-08-08",
+      reason: "Domestic App media request was observed falling through to the proxy"
+    }),
+    Object.freeze({
+      suffix: "bytehwm.com",
+      service: "ByteDance font and static CDN",
+      observedAt: "2026-08-08",
+      reason: "Domestic static asset request was observed falling through to the proxy"
+    }),
+    Object.freeze({
+      suffix: "rtbasia.com",
+      service: "Observed domestic App dependency",
+      observedAt: "2026-08-08",
+      reason: "App dependency was observed using the proxy during domestic workflow testing"
+    }),
+    Object.freeze({
+      suffix: "sandbox.itunes.apple.com",
+      service: "Apple sandbox purchase validation",
+      observedAt: "2026-08-08",
+      reason: "Sandbox validation request was observed using the proxy during domestic App testing"
+    })
+  ]);
+
   // ../../../shared/rules/domestic-core.js
   function normalizedSuffixes(values, name) {
     const normalized = values.map((value) => {
@@ -1062,7 +1090,7 @@ var EgernProfileBundle = (() => {
     if (new Set(normalized).size !== normalized.length) throw new TypeError(`${name} contains a duplicate suffix`);
     return Object.freeze(normalized);
   }
-  var DOMESTIC_CORE_DOMAIN_SUFFIXES = normalizedSuffixes([
+  var DOMESTIC_CORE_BASE_DOMAIN_SUFFIXES = [
     "bilibili.com",
     "bilibili.net",
     "bilibili.tv",
@@ -1118,19 +1146,19 @@ var EgernProfileBundle = (() => {
     "netease.com",
     "amap.com",
     "autonavi.com",
-    // Confirmed domestic CDN/app endpoints observed in client traces and the
-    // supplied reference profile. Keep this list small; unknown names are
-    // classified by China-first DNS plus ChinaIP/GeoIP in every client.
-    "wmpvp.com",
-    "bytehwm.com",
-    "rtbasia.com",
-    "sandbox.itunes.apple.com",
+    // Audited domestic media endpoints from the supplied reference profile.
+    // Keep this list small; unknown names are classified by China-first DNS
+    // plus ChinaIP/GeoIP in every client.
     "douyu.com",
     "douyu.tv",
     "douyutv.com",
     "douyuscdn.com",
     "douyucdn.cn",
     "huya.com"
+  ];
+  var DOMESTIC_CORE_DOMAIN_SUFFIXES = normalizedSuffixes([
+    ...DOMESTIC_CORE_BASE_DOMAIN_SUFFIXES,
+    ...OBSERVED_DOMESTIC_RECORDS.map(({ suffix }) => suffix)
   ], "Domestic core");
   var DOMESTIC_GAME_DOMAIN_SUFFIXES = normalizedSuffixes([
     "leiting.com",
