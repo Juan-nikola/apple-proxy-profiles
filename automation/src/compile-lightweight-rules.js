@@ -236,6 +236,21 @@ export function compileLightweightRules({ snapshots }) {
       defaultRuleSets.set(id, compiledSet(id, overseasGameEntries, ["Game"], fetchedBytes(snapshots, "Game"), omittedByKind));
       continue;
     }
+    if (id === "ChinaTLD") {
+      defaultRuleSets.set(id, compiledSet(
+        id,
+        normalizeEntries([{
+          kind: RULE_KIND.domainSuffix,
+          value: "cn",
+          noResolve: false,
+          sourceId: "ChinaTLD",
+        }], "ChinaTLD"),
+        [],
+        0,
+        omittedByKind,
+      ));
+      continue;
+    }
     if (id === "ChinaIP") {
       defaultRuleSets.set(id, compiledSet(id, chinaInput, ["ChinaIPs"], fetchedBytes(snapshots, "ChinaIPs"), omittedByKind));
       continue;

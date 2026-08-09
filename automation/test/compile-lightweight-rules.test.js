@@ -82,6 +82,13 @@ test("compiles only lightweight defaults and isolates the full advertising pack"
   const result = compileLightweightRules({ snapshots: fixtureSnapshots() });
 
   assert.deepEqual([...result.defaultRuleSets.keys()], DEFAULT_RULE_SOURCE_IDS);
+  assert.deepEqual(values(result.defaultRuleSets, "ChinaTLD"), [
+    { kind: "domainSuffix", value: "cn", noResolve: false },
+  ]);
+  assert.ok([...result.defaultRuleSets.keys()].indexOf("OverseasGame")
+    < [...result.defaultRuleSets.keys()].indexOf("ChinaTLD"));
+  assert.ok([...result.defaultRuleSets.keys()].indexOf("ChinaTLD")
+    < [...result.defaultRuleSets.keys()].indexOf("ChinaIP"));
   assert.equal(result.defaultRuleSets.has("ChinaMax_Domain"), false);
   assert.equal(result.defaultRuleSets.has("Advertising"), false);
   assert.equal(result.defaultRuleSets.has("Advertising_Domain"), false);

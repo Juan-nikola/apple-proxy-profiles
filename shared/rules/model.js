@@ -185,7 +185,9 @@ export function normalizeRuleEntry(entry) {
   });
 }
 
-const ALLOWED_SYNTHETIC_SOURCE_IDS = new Set(["DomesticCore", "DomesticGame", "OverseasGame", "ChinaIP"]);
+const ALLOWED_SYNTHETIC_SOURCE_IDS = new Set([
+  "DomesticCore", "DomesticGame", "OverseasGame", "ChinaTLD", "ChinaIP",
+]);
 const DEFAULT_LIGHTWEIGHT_SOURCE_IDS = new Set(DEFAULT_RULE_SOURCE_IDS);
 const OPTIONAL_LIGHTWEIGHT_SOURCE_IDS = new Set(FULL_ADBLOCK_SOURCE_IDS);
 

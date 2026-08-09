@@ -21,13 +21,13 @@ const EXPECTED_INPUT_IDS = [
   "ChinaIPs",
 ];
 
-test("keeps all 33 pinned inputs separate from the 31 lightweight publication outputs", () => {
+test("keeps all 33 pinned inputs separate from the 32 lightweight publication outputs", () => {
   assert.deepEqual(FETCH_SOURCE_CATALOG.map(({ id }) => id), EXPECTED_INPUT_IDS);
   assert.equal(PUBLISH_SOURCE_CATALOG, FETCH_SOURCE_CATALOG);
   assert.deepEqual(DEFAULT_PUBLISH_SOURCE_CATALOG.map(({ id }) => id), RULE_SOURCE_CATALOG.map(({ id }) => id));
   assert.equal(PUBLISH_SOURCE_CATALOG.length, 33);
-  assert.equal(DEFAULT_PUBLISH_SOURCE_CATALOG.length, 31);
-  assert.equal(LOGICAL_RULE_SETS.length, 31);
+  assert.equal(DEFAULT_PUBLISH_SOURCE_CATALOG.length, 32);
+  assert.equal(LOGICAL_RULE_SETS.length, 32);
   assert.equal(new Set(PUBLISH_SOURCE_CATALOG.map(({ canonicalPath }) => canonicalPath)).size, 33);
   assert.equal(LOGICAL_RULE_SETS.some(({ id }) => id === "Advertising"), false);
   assert.equal(LOGICAL_RULE_SETS.some(({ id }) => id === "ChinaMax_Domain"), false);

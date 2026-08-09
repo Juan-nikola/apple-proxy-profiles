@@ -5,8 +5,10 @@ import {
   DEFAULT_RULE_SOURCE_IDS,
   FULL_ADBLOCK_SOURCE_IDS,
   POLICY_TARGETS,
+  ROUTING_PHASES,
   ROUTING_PRECEDENCE,
   RULE_BUDGETS,
+  orderedRoutingPlan,
   ruleClientCatalog,
 } from "../shared/rules/lightweight-policy.js";
 import {
@@ -72,6 +74,48 @@ test("only exposes the full advertising pack when it is explicitly requested", (
   assert.deepEqual(ruleClientCatalog({ adblockMode: "full" }).slice(-2).map(({ id }) => id), FULL_ADBLOCK_SOURCE_IDS);
   for (const adblockMode of ["", "balanced", "on", null, 1]) {
     assert.throws(() => ruleClientCatalog({ adblockMode }), /adblockMode/u);
+  }
+});
+
+test("defines one authoritative routing plan with a late domestic fallback", () => {
+  const plan = orderedRoutingPlan();
+  const byId = new Map(plan.map((source) => [source.id, source]));
+  assert.deepEqual(ROUTING_PHASES, [
+    "security",
+    "earlyDomestic",
+    "serviceIntent",
+    "overseasGame",
+    "lateDomestic",
+    "resolvedChinaIp",
+  ]);
+  assert.deepEqual(
+    plan.filter(({ phase }) => phase === "lateDomestic").map(({ id }) => id),
+    ["ChinaTLD"],
+  );
+  assert.deepEqual(byId.get("ChinaTLD"), {
+    id: "ChinaTLD",
+    policy: "DIRECT",
+    inputFormat: "RULE-SET",
+    phase: "lateDomestic",
+    dnsClass: "china",
+  });
+  assert.ok(plan.findIndex(({ id }) => id === "OverseasGame")
+    < plan.findIndex(({ id }) => id === "ChinaTLD"));
+  assert.ok(plan.findIndex(({ id }) => id === "ChinaTLD")
+    < plan.findIndex(({ id }) => id === "ChinaIP"));
+  assert.equal(new Set(plan.map(({ id }) => id)).size, plan.length);
+});
+
+test("assigns every client source one legal phase and DNS class", () => {
+  const plan = orderedRoutingPlan({ adblockMode: "full" });
+  const legalPhases = new Set(ROUTING_PHASES);
+  const legalDnsClasses = new Set(["none", "china", "proxy"]);
+  for (const source of plan) {
+    assert.equal(legalPhases.has(source.phase), true, `${source.id} has an invalid phase`);
+    assert.equal(legalDnsClasses.has(source.dnsClass), true, `${source.id} has an invalid DNS class`);
+  }
+  for (const id of FULL_ADBLOCK_SOURCE_IDS) {
+    assert.equal(plan.find((source) => source.id === id).phase, "security");
   }
 });
 

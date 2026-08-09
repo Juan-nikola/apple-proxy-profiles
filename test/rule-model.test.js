@@ -58,7 +58,7 @@ test("rejects malformed and delimiter-bearing normalized values", () => {
 
 test("validates the synthetic lightweight rule identifiers and pack boundaries", () => {
   assert.doesNotThrow(() => validateLightweightRuleCatalog({
-    defaultSourceIds: ["DomesticCore", "DomesticGame", "OverseasGame", "ChinaIP", "OpenAI"],
+    defaultSourceIds: ["DomesticCore", "DomesticGame", "OverseasGame", "ChinaTLD", "ChinaIP", "OpenAI"],
     optionalSourceIds: ["Advertising", "Advertising_Domain"],
   }));
   assert.throws(() => validateLightweightRuleCatalog({

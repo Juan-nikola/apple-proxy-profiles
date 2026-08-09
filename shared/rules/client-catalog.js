@@ -1,8 +1,10 @@
 import { RULE_SOURCE_CATALOG } from "./catalog.js";
 import { ruleClientCatalog as lightweightRuleClientCatalog } from "./lightweight-policy.js";
 
-export const DEFAULT_RULE_CLIENT_CATALOG = Object.freeze(RULE_SOURCE_CATALOG.map(({ id, policy, inputFormat }) => (
-  Object.freeze({ id, policy, inputFormat })
+export const DEFAULT_RULE_CLIENT_CATALOG = Object.freeze(RULE_SOURCE_CATALOG.map(({
+  id, policy, inputFormat, phase, dnsClass,
+}) => (
+  Object.freeze({ id, policy, inputFormat, phase, dnsClass })
 )));
 
 export const RULE_CLIENT_CATALOG = DEFAULT_RULE_CLIENT_CATALOG;

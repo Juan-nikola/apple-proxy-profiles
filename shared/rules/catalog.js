@@ -24,6 +24,7 @@ const COMPILED_SOURCE_INPUTS = Object.freeze({
   DomesticCore: Object.freeze({ sourcePath: "DomesticCore/DomesticCore.list", minEntries: 1 }),
   DomesticGame: Object.freeze({ sourcePath: "DomesticGame/DomesticGame.list", minEntries: 1 }),
   OverseasGame: Object.freeze({ sourceId: "Game" }),
+  ChinaTLD: Object.freeze({ sourcePath: "ChinaTLD/ChinaTLD.list", minEntries: 1 }),
   ChinaIP: Object.freeze({ sourceId: "ChinaMax" }),
 });
 
@@ -33,18 +34,13 @@ function compiledRule(source) {
   if (upstream) {
     return Object.freeze({
       ...upstream,
-      id: source.id,
-      policy: source.policy,
-      inputFormat: source.inputFormat,
+      ...source,
     });
   }
   if (!mapping) throw new Error(`Missing compiled rule source mapping: ${source.id}`);
   return Object.freeze({
-    id: source.id,
-    sourcePath: mapping.sourcePath,
-    policy: source.policy,
-    minEntries: mapping.minEntries,
-    inputFormat: source.inputFormat,
+    ...mapping,
+    ...source,
   });
 }
 
