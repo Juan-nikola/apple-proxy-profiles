@@ -1643,49 +1643,92 @@ var ShadowrocketNodeSubscriptionBundle = (() => {
     } catch {
     }
   }
-  var SHADOWROCKET_PROXY_KEYS = Object.freeze([
-    "name",
-    "type",
-    "server",
-    "port",
-    "udp",
-    "tls",
-    "sni",
-    "servername",
-    "flow",
-    "network",
-    "encryption",
-    "packet-encoding",
-    "client-fingerprint",
-    "skip-cert-verify",
-    "psk",
-    "version",
-    "reuse",
-    "tfo",
-    "uuid",
-    "cipher",
-    "password",
-    "obfs",
-    "obfs-host",
-    "obfs-opts",
-    "plugin",
-    "plugin-opts"
-  ]);
-  function shadowrocketProxyRecord(node) {
-    const record = {};
-    for (const key of SHADOWROCKET_PROXY_KEYS) {
-      if (node[key] !== void 0 && node[key] !== null && node[key] !== "") record[key] = node[key];
+  function fragment(node) {
+    return `#${encodeURIComponent(node.name)}`;
+  }
+  var VLESS_SCHEME = "vless";
+  var SS_SCHEME = "ss";
+  var TROJAN_SCHEME = "trojan";
+  var HY2_SCHEME = "hy2";
+  var TUIC_SCHEME = "tuic";
+  function vlessUri(node) {
+    const params = new URLSearchParams();
+    params.set("encryption", node.encryption ?? "none");
+    if (node.flow) params.set("flow", node.flow);
+    const reality = node["reality-opts"];
+    if (reality) {
+      params.set("security", "reality");
+      if (reality["public-key"]) params.set("pbk", reality["public-key"]);
+      if (reality["short-id"]) params.set("sid", reality["short-id"]);
+      if (reality["_spider-x"]) params.set("spx", reality["_spider-x"]);
+    } else if (node.tls) {
+      params.set("security", "tls");
     }
-    if (node["reality-opts"]) record["reality-opts"] = node["reality-opts"];
-    return record;
+    if (node.sni ?? node.servername) params.set("sni", node.sni ?? node.servername);
+    if (node["client-fingerprint"]) params.set("fp", node["client-fingerprint"]);
+    params.set("type", node.network ?? "tcp");
+    if (node["packet-encoding"]) params.set("packetEncoding", node["packet-encoding"]);
+    return `${VLESS_SCHEME}://${encodeURIComponent(node.uuid)}@${node.server}:${node.port}?${params}${fragment(node)}`;
+  }
+  function snellLine(node) {
+    const parts = [`snell,${node.server},${node.port}`, `psk=${node.psk}`];
+    if (node.version !== void 0 && node.version !== null && node.version !== "") parts.push(`version=${node.version}`);
+    if (node.reuse === true) parts.push("reuse=true");
+    if (node.tfo === true) parts.push("tfo=true");
+    if (node.obfs) parts.push(`obfs=${node.obfs}`);
+    if (node["obfs-host"]) parts.push(`obfs-host=${node["obfs-host"]}`);
+    return `${parts.join(",")}${fragment(node)}`;
+  }
+  function ssLine(node) {
+    const userinfo = Buffer.from(`${node.cipher}:${node.password}`).toString("base64");
+    return `${SS_SCHEME}://${userinfo}@${node.server}:${node.port}${fragment(node)}`;
+  }
+  function trojanUri(node) {
+    const params = new URLSearchParams();
+    if (node.sni ?? node.servername) params.set("sni", node.sni ?? node.servername);
+    if (node["client-fingerprint"]) params.set("fp", node["client-fingerprint"]);
+    const query = params.toString();
+    return `${TROJAN_SCHEME}://${encodeURIComponent(node.password)}@${node.server}:${node.port}${query ? `?${query}` : ""}${fragment(node)}`;
+  }
+  function hysteria2Uri(node) {
+    const params = new URLSearchParams();
+    if (node.sni ?? node.servername) params.set("sni", node.sni ?? node.servername);
+    if (node["skip-cert-verify"] === true) params.set("insecure", "1");
+    const query = params.toString();
+    return `${HY2_SCHEME}://${encodeURIComponent(node.password)}@${node.server}:${node.port}${query ? `?${query}` : ""}${fragment(node)}`;
+  }
+  function tuicUri(node) {
+    const params = new URLSearchParams();
+    if (node.sni ?? node.servername) params.set("sni", node.sni ?? node.servername);
+    if (node["udp-relay-mode"]) params.set("udp_relay_mode", node["udp-relay-mode"]);
+    const query = params.toString();
+    return `${TUIC_SCHEME}://${encodeURIComponent(node.uuid)}:${encodeURIComponent(node.password)}@${node.server}:${node.port}${query ? `?${query}` : ""}${fragment(node)}`;
   }
   function renderShadowrocketSubscription(nodes) {
     if (!Array.isArray(nodes) || nodes.length === 0) {
       throw new Error("Shadowrocket subscription refuses an empty node list");
     }
-    const lines = nodes.map((node) => `  - ${JSON.stringify(shadowrocketProxyRecord(node))}`);
-    return `proxies:
-${lines.join("\n")}
+    const lines = nodes.map((node) => {
+      switch (node.type) {
+        case "vless":
+          return vlessUri(node);
+        case "snell":
+          return snellLine(node);
+        case "ss":
+        case "shadowsocks":
+          return ssLine(node);
+        case "trojan":
+          return trojanUri(node);
+        case "hysteria2":
+        case "hy2":
+          return hysteria2Uri(node);
+        case "tuic":
+          return tuicUri(node);
+        default:
+          throw new Error(`Shadowrocket subscription serialization is unsupported for protocol: ${node.type}`);
+      }
+    });
+    return `${lines.join("\n")}
 `;
   }
   async function operator(input, targetPlatform, context = {}) {
