@@ -27,17 +27,15 @@
 2. 新建原始组合订阅，名称严格填写：`apple-proxy-sources`。
 3. 将 `snell` 与 `vlesshy2` 加入这个原始组合，不把真实来源地址复制到任何公开位置。
 4. 预览原始组合，确认节点数量大于 0。
-5. 再新建处理组合 `shadowrocket-nodes`，选择与原始组合相同的两个来源（优先使用同一个来源标签/筛选条件），只在这个处理组合挂 Shadowrocket 节点 Operator。
 
-以后增加节点来源先加入 `apple-proxy-sources`，再确认 `shadowrocket-nodes` 的成员同步；不需要改 GitHub JS。Egern、Anywhere、Surge、sing-box 始终读取原始组合，Shadowrocket Profile 始终读取处理组合。删除来源时也只在这两层操作，并先保留旧输出以便回滚。
+以后增加节点来源只加入 `apple-proxy-sources`，不需要改 GitHub JS。五个客户端的 Profile/Config 全部读取这个原始组合（Shadowrocket Profile 生成器内置节点归一化，不依赖组合上的节点操作）。删除来源时也只在这一层操作，并先保留旧输出以便回滚。
 
-## 2. 七个公开远程 JS
+## 2. 六个公开远程 JS
 
 新任务优先使用 `current/`：
 
 | JS | 公开 URL | Sub-Store 用途 |
 | --- | --- | --- |
-| Shadowrocket node | `https://juan-nikola.github.io/apple-proxy-profiles/current/shadowrocket/scripts/shadowrocket-node-operator.js` | 组合订阅 Script Operator |
 | Shadowrocket Profile | `https://juan-nikola.github.io/apple-proxy-profiles/current/shadowrocket/scripts/shadowrocket-profile-generator.js` | 三个 Profile File |
 | Egern node | `https://juan-nikola.github.io/apple-proxy-profiles/current/egern/scripts/egern-node-generator.js` | 节点 File |
 | Egern Profile | `https://juan-nikola.github.io/apple-proxy-profiles/current/egern/scripts/egern-profile-generator.js` | 三个 Profile File |
@@ -75,7 +73,7 @@ https://juan-nikola.github.io/apple-proxy-profiles/current/surge/scripts/surge-p
 
 ## 4. 18 个任务总表
 
-下面的 `Apple-Proxy-Nodes` 是公开示例显示名。实际使用时，在 Shadowrocket、Surge 或 sing-box 中给节点订阅取一个你自己的显示名，并让同一客户端对应 Profile/Config 任务的 `subscriptionName` 逐字一致。只有 Shadowrocket Profile 指向处理组合 `shadowrocket-nodes`；其余客户端指向原始组合 `apple-proxy-sources`。
+下面的 `Apple-Proxy-Nodes` 是公开示例显示名。实际使用时，在 Shadowrocket、Surge 或 sing-box 中给节点订阅取一个你自己的显示名，并让同一客户端对应 Profile/Config 任务的 `subscriptionName` 逐字一致。五个客户端的 Profile/Config 全部指向原始组合 `apple-proxy-sources`：Shadowrocket Profile 生成器内部自己完成节点归一化、去重与客户端过滤，不再依赖组合处理链上的节点操作。
 
 | # | 任务名 | 类型 | 远程脚本 | 平台/作用 | 更新 |
 | ---: | --- | --- | --- | --- | --- |
@@ -84,21 +82,20 @@ https://juan-nikola.github.io/apple-proxy-profiles/current/surge/scripts/surge-p
 | 3 | `egern-iphone` | File | Egern Profile | iPhone | 每天 |
 | 4 | `egern-ipad` | File | Egern Profile | iPad | 每天 |
 | 5 | `anywhere-nodes` | File | Anywhere node | Clash YAML | 6 小时 |
-| 6 | `shadowrocket-nodes` | 组合 Script Operator | Shadowrocket node | 节点订阅 | 6 小时 |
-| 7 | `shadowrocket-config-macos` | File | Shadowrocket Profile | macOS | 每天 |
-| 8 | `shadowrocket-config-iphone` | File | Shadowrocket Profile | iPhone | 每天 |
-| 9 | `shadowrocket-config-ipad` | File | Shadowrocket Profile | iPad | 每天 |
-| 10 | `surge-nodes` | File | Surge node resource | 节点 `[Proxy]` | 6 小时 |
-| 11 | `surge-config-macos` | File | Surge Profile | macOS | 每天 |
-| 12 | `surge-config-iphone` | File | Surge Profile | iPhone | 每天 |
-| 13 | `surge-config-ipad` | File | Surge Profile | iPad | 每天 |
-| 14 | `singbox-config-macos` | File | sing-box config | macOS | 每天 |
-| 15 | `singbox-config-iphone` | File | sing-box config | iPhone | 每天 |
-| 16 | `singbox-config-ipad` | File | sing-box config | iPad | 每天 |
-| 17 | `singbox-config-android` | File | sing-box config | Android | 每天 |
-| 18 | `singbox-config-openwrt` | File | sing-box config | OpenWrt | 每天 |
+| 6 | `shadowrocket-config-macos` | File | Shadowrocket Profile | macOS | 每天 |
+| 7 | `shadowrocket-config-iphone` | File | Shadowrocket Profile | iPhone | 每天 |
+| 8 | `shadowrocket-config-ipad` | File | Shadowrocket Profile | iPad | 每天 |
+| 9 | `surge-nodes` | File | Surge node resource | 节点 `[Proxy]` | 6 小时 |
+| 10 | `surge-config-macos` | File | Surge Profile | macOS | 每天 |
+| 11 | `surge-config-iphone` | File | Surge Profile | iPhone | 每天 |
+| 12 | `surge-config-ipad` | File | Surge Profile | iPad | 每天 |
+| 13 | `singbox-config-macos` | File | sing-box config | macOS | 每天 |
+| 14 | `singbox-config-iphone` | File | sing-box config | iPhone | 每天 |
+| 15 | `singbox-config-ipad` | File | sing-box config | iPad | 每天 |
+| 16 | `singbox-config-android` | File | sing-box config | Android | 每天 |
+| 17 | `singbox-config-openwrt` | File | sing-box config | OpenWrt | 每天 |
 
-五客户端总数为 4+1+4+4+5=18 个任务。
+五客户端总数为 4+1+3+4+5=17 个任务。
 
 ## 5. Egern：1 个节点 File + 3 个 Profile File
 
@@ -168,27 +165,11 @@ https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/import.html
 
 ## 7. Shadowrocket：1 个节点 Operator + 3 个 Profile File
 
-### 7.1 节点 Operator
+### 7.1 节点订阅
 
-在处理组合 `shadowrocket-nodes` 的处理链中添加 Script Operator，远程脚本为：
+Shadowrocket 的节点订阅直接使用原始组合 `apple-proxy-sources` 的输出。在 Shadowrocket 客户端中添加该组合的私密订阅 URL，显示名记为 `Apple-Proxy-Nodes`（实际显示名可以自定义，但必须逐字填写到三个 Shadowrocket Profile 的 `subscriptionName`）。
 
-```text
-https://juan-nikola.github.io/apple-proxy-profiles/current/shadowrocket/scripts/shadowrocket-node-operator.js
-```
-
-参数：
-
-```text
-output=nodes&clientChain=off
-```
-
-旧版引用：
-
-```text
-https://juan-nikola.github.io/apple-proxy-profiles/current/shadowrocket/scripts/shadowrocket-node-operator.js#output=nodes&clientChain=off
-```
-
-组合处理后的节点订阅显示名记为 `Apple-Proxy-Nodes`；实际显示名可以自定义，但必须逐字填写到三个 Shadowrocket Profile 的 `subscriptionName`。不要把这个 Operator 挂到原始组合 `apple-proxy-sources`。
+旧结构中的 `shadowrocket-nodes` 处理组合保留为兼容项：早期版本曾要求在该组合上挂 `shadowrocket-node-operator.js` 节点操作，但 Sub-Store 的组合 Script Operator 不能执行本项目的 esbuild bundle 格式，会导致节点处理失败。当前 Profile 生成器内置了同一套归一化逻辑，因此新任务不再需要节点操作，也不要再挂这个远程脚本。
 
 ### 7.2 三个平台 Profile
 
@@ -198,7 +179,7 @@ https://juan-nikola.github.io/apple-proxy-profiles/current/shadowrocket/scripts/
 https://juan-nikola.github.io/apple-proxy-profiles/current/shadowrocket/scripts/shadowrocket-profile-generator.js
 ```
 
-公共参数：`output=config&type=collection&name=shadowrocket-nodes&subscriptionName=Apple-Proxy-Nodes&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&autoGroupMode=auto&clientChain=off`。
+公共参数：`output=config&type=collection&name=apple-proxy-sources&subscriptionName=Apple-Proxy-Nodes&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&autoGroupMode=auto&clientChain=off`。
 
 | 任务 | 额外参数 |
 | --- | --- |
@@ -209,7 +190,7 @@ https://juan-nikola.github.io/apple-proxy-profiles/current/shadowrocket/scripts/
 例如 macOS 完整参数：
 
 ```text
-output=config&type=collection&name=shadowrocket-nodes&subscriptionName=Apple-Proxy-Nodes&platform=macos&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=ipv4-only&autoGroupMode=auto&clientChain=off
+output=config&type=collection&name=apple-proxy-sources&subscriptionName=Apple-Proxy-Nodes&platform=macos&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=ipv4-only&autoGroupMode=auto&clientChain=off
 ```
 
 预览应包含 `[General]`、`[Proxy Group]`、`[Rule]`，且不包含节点密码、UUID 或服务器凭据。导入顺序：Intel Mac → iPhone → iPad；旧 Profile 始终保留。
@@ -282,7 +263,7 @@ https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/scripts/sing
 
 ### 日常刷新
 
-节点源变化：原始组合 `apple-proxy-sources` → 各客户端节点任务（Surge 为 `surge-nodes`，Shadowrocket 为 `shadowrocket-nodes`）→ 各客户端 Profile/Config 任务 → 客户端手动更新。
+节点源变化：原始组合 `apple-proxy-sources` → 各客户端节点任务（Surge 为 `surge-nodes`）→ 各客户端 Profile/Config 任务 → 客户端手动更新。
 
 公开规则变化：在客户端对已有规则集执行 Update；不要因为规则更新就重新创建 Sub-Store 节点任务。
 

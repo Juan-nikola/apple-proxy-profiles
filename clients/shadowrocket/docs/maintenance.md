@@ -1,8 +1,8 @@
 # 日常维护速查
 
-先记住两类更新：节点凭据只在 `shadowrocket-nodes` 中，每 6 小时更新；规则与策略在平台 Profile 中，每天更新。不要手工编辑生成文件，也不要公开任何远程 URL。
+先记住两类更新：节点凭据只在原始组合 `apple-proxy-sources` 中，每 6 小时更新；规则与策略在平台 Profile 中，每天更新。不要手工编辑生成文件，也不要公开任何远程 URL。
 
-- 新增机场：加入原始 `apple-proxy-sources`，再同步 `shadowrocket-nodes`，名称以 `[机场]` 开头，不改生成器源码。
+- 新增机场：只加入原始 `apple-proxy-sources`，名称以 `[机场]` 开头，不改生成器源码。
 - 新增自建：使用 `[自建]协议名`；Realm 用 `[realm]`；服务器已完成链路用 `[链式代理]`。
 - 协议：Snell 和 Shadowsocks 是两种独立协议；Shadowrocket 可使用两者，订阅中不要把 Snell 写成 Shadowsocks。
 - 客户端链式：只有落地标 `[落地]`；必须按下文创建完整隔离的版本化测试栈，不修改正式组合、节点脚本、节点订阅或 Profile；Hysteria2 不生成链式副本。
@@ -19,10 +19,10 @@
 ## 新增或修改来源
 
 1. 只在 Sub-Store 中添加或修改一个来源，并使用正确前缀。
-2. 先预览该来源，再预览原始 `apple-proxy-sources`，最后预览处理后的 `shadowrocket-nodes` / `Shadowrocket-Nodes`。
+2. 先预览该来源，再预览原始 `apple-proxy-sources`。
 3. 确认节点数量不为 0、国旗没有重复、日志只含计数。
 4. 节点库存会决定洲组、来源组、`🎮 游戏连接`和`⬇️ 下载/P2P`候选，因此必须重新生成并预览 `shadowrocket-config-macos`、`shadowrocket-config-iphone`、`shadowrocket-config-ipad`；三份都应能生成三个 INI 段且不含凭据。
-5. Intel Mac 必须同时手动更新 `shadowrocket-nodes` 和 `shadowrocket-config-macos`，核对两者的新时间并完成灰度。
+5. Intel Mac 必须同时手动更新节点订阅和 `shadowrocket-config-macos`，核对两者的新时间并完成灰度。
 6. Intel Mac 通过后，iPhone 同时更新节点订阅和 `shadowrocket-config-iphone`；iPad 最后同时更新节点订阅和 `shadowrocket-config-ipad`。
 7. 任一设备只更新了节点或只更新了 Profile，都不算完成。节点异常时恢复前一次可用来源、订阅和匹配的 Profile，不需要修改生成器源码。
 
@@ -30,14 +30,13 @@
 
 ## 打开客户端链式
 
-客户端链式会同时改变节点内容和 Profile 引用，不能只复制 Profile，也不能修改共享节点 Script Operator。整套测试必须与正式栈隔离：
+客户端链式会同时改变节点内容和 Profile 引用，不能只复制 Profile。整套测试必须与正式栈隔离：
 
 下面所有 `YYYYMMDD` 都替换为同一个测试日期，例如 20260725；不要在同一套测试中混用不同日期。
 
-1. 保持正式的原始 `apple-proxy-sources`、处理组合 `shadowrocket-nodes`（参数为 `output=nodes&clientChain=off`）、`Shadowrocket-Nodes`、三个正式 Profile File 及其 URL 全部不变。
-2. 新建带日期的测试组合，例如 `apple-proxy-sources-chain-test-YYYYMMDD`。复制正式组合的来源成员和必要的非节点脚本处理，但不要把正式节点 Script Operator 挂到测试组合。如果某个来源必须把标签改为 `[落地]`，先复制该来源条目，只在副本上改显示名，不重命名生产来源。
-3. 在测试组合新增隔离的 Script Operator，选择链接模式并直接使用规范 `shadowrocket-node-operator.js` Pages URL，参数填 `output=nodes&clientChain=on`。不要编辑正式组合正在使用的 JS URL、Operator 或参数。既有正式任务继续使用旧 `substore-node-operator.js` URL 也兼容，不要仅为改名触碰正式任务。
-4. 从测试组合发布一份新的版本化节点订阅，例如 `shadowrocket-nodes-chain-test-YYYYMMDD`；原来的 `shadowrocket-nodes` 保持不变。
+1. 保持正式的原始 `apple-proxy-sources`、节点订阅、三个正式 Profile File 及其 URL 全部不变。
+2. 新建带日期的测试组合，例如 `apple-proxy-sources-chain-test-YYYYMMDD`。复制正式组合的来源成员，不复制任何脚本操作（本项目不使用组合 Script Operator；Profile 生成器内置节点归一化）。如果某个来源必须把标签改为 `[落地]`，先复制该来源条目，只在副本上改显示名，不重命名生产来源。
+3. 从测试组合发布一份新的版本化节点订阅，例如 `shadowrocket-nodes-chain-test-YYYYMMDD`；原来的 `shadowrocket-nodes` 保持不变（旧结构中的处理组合名称；新结构下保持正式的 `apple-proxy-sources` 不动即可）。节点订阅不需要脚本操作：Profile 生成器通过 `clientChain=on` 在 Profile 内生成链式副本，节点侧始终使用原始节点列表（等价于旧结构 `output=nodes&clientChain=off` 的输出；测试 Profile 开启链式等价于旧结构节点侧的 `output=nodes&clientChain=on`）。
 5. 在 Shadowrocket 中给新节点订阅一个便于识别的显示名，显示名准确填写 `Shadowrocket-Nodes-Chain-Test-YYYYMMDD`。这是测试示例，不是固定名称；若自定义名称，后续 `subscriptionName` 必须逐字相同，包括大小写、emoji、空格和标点。动态组只从 `subscriptionName` 精确指定的测试订阅读取，无需因防混入而暂停生产订阅；正式订阅与测试订阅仍应分别保留，便于独立回滚和复测。
 6. 先只复制 macOS Profile File，名称加同一天的链式测试后缀。参数中的三个关键值填写为：
    - `name=apple-proxy-sources-chain-test-YYYYMMDD`

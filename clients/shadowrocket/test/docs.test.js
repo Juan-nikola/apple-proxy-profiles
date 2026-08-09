@@ -29,7 +29,7 @@ test("beginner docs contain every operational checkpoint and warning", async () 
   headingsInOrder("docs/deployment.md", [
     "## 0. 部署前备份",
     "## 1. 准备 Sub-Store 来源",
-    "## 2. 创建节点 Script Operator",
+    "## 2. 创建节点订阅",
     "## 3. 创建三个配置 File Script Operator",
     "## 灰度前的客户端设置（必须先完成）",
     "## 4. Intel Mac 灰度",
@@ -56,10 +56,10 @@ test("beginner docs contain every operational checkpoint and warning", async () 
     "## 可以分享什么",
   ]);
 
-  const defaultParameters = "output=config&type=collection&name=shadowrocket-nodes&subscriptionName=Shadowrocket-Nodes&platform=macos&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=ipv4-only&autoGroupMode=auto&clientChain=off";
+  const defaultParameters = "output=config&type=collection&name=apple-proxy-sources&subscriptionName=Shadowrocket-Nodes&platform=macos&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=ipv4-only&autoGroupMode=auto&clientChain=off";
   assert.ok(docs["docs/deployment.md"].includes(defaultParameters), "deployment: missing exact default parameter string");
-  assert.match(docs["docs/deployment.md"], /原始组合 `apple-proxy-sources`[\s\S]*处理组合 `shadowrocket-nodes`/u);
-  assert.match(docs["docs/deployment.md"], /节点 JS URL[\s\S]*Script Operator 加入 `shadowrocket-nodes`/u);
+  assert.match(docs["docs/deployment.md"], /原始组合 `apple-proxy-sources`/u);
+  assert.doesNotMatch(docs["docs/deployment.md"], /Script Operator 加入 `shadowrocket-nodes`/u);
   for (const phrase of [
     "subscriptionName",
     "完全一致",
@@ -201,16 +201,11 @@ test("migration documentation keeps Sub-Store objects stable while using monorep
   const files = await Promise.all(paths.map((file) => readFile(resolve(shadowrocketRoot, file), "utf8")));
   const docs = Object.fromEntries(paths.map((file, index) => [file, files[index]]));
 
-  const nodeOperatorPath = "clients/shadowrocket/dist/shadowrocket-node-operator.js";
   const profileGeneratorPath = "clients/shadowrocket/dist/shadowrocket-profile-generator.js";
-  for (const scriptPath of [nodeOperatorPath, profileGeneratorPath]) {
-    assert.ok(docs["README.md"].includes(scriptPath), `README.md: missing monorepo script path: ${scriptPath}`);
-    const fileName = scriptPath.split("/").at(-1);
-    assert.ok(docs["docs/deployment.md"].includes(fileName), `deployment: missing operator installation name: ${fileName}`);
-  }
-  assert.ok(docs["docs/maintenance.md"].includes("shadowrocket-node-operator.js"), "maintenance: missing isolated-chain node operator name");
+  assert.ok(docs["README.md"].includes(profileGeneratorPath), "README.md: missing monorepo profile generator path");
+  assert.ok(docs["docs/deployment.md"].includes(profileGeneratorPath.split("/").at(-1)), "deployment: missing profile generator installation name");
   assert.ok(docs["docs/canary-checklist.md"].includes("shadowrocket-profile-generator.js"), "canary: missing current Profile generator name");
-  assert.match(docs["docs/deployment.md"], /substore-node-operator\.js[\s\S]*兼容/u);
+  assert.match(docs["docs/deployment.md"], /substore-profile-generator\.js[\s\S]*兼容/u);
   assert.match(docs["docs/deployment.md"], /链接\/远程脚本[\s\S]*Pages URL[\s\S]*参数/u);
   assert.ok(docs["docs/canary-checklist.md"].includes("clients/shadowrocket/dist/"), "canary: missing current generated-output directory");
   assert.ok(docs["docs/canary-checklist.md"].includes("clients/shadowrocket/examples/"), "canary: missing current generated-example directory");
@@ -221,7 +216,7 @@ test("migration documentation keeps Sub-Store objects stable while using monorep
       `${file}: contains an obsolete root-level operator path`,
     );
   }
-  assert.match(docs["docs/deployment.md"], /原始组合 `apple-proxy-sources`[\s\S]*处理组合 `shadowrocket-nodes`/u);
+  assert.match(docs["docs/deployment.md"], /原始组合 `apple-proxy-sources`/u);
   assert.ok(docs["docs/deployment.md"].includes("HTTPS 解密保持关闭"), "deployment: HTTPS decryption must remain off");
   assert.ok(docs["docs/troubleshooting.md"].includes("旧 Profile"), "troubleshooting: missing old Profile rollback guidance");
 });
@@ -229,10 +224,8 @@ test("migration documentation keeps Sub-Store objects stable while using monorep
 test("README is independently copyable for the two-layer Sub-Store setup", async () => {
   const readme = await readFile(resolve(shadowrocketRoot, "README.md"), "utf8");
   const deployment = await readFile(resolve(shadowrocketRoot, "docs/deployment.md"), "utf8");
-  for (const url of [
-    "https://juan-nikola.github.io/apple-proxy-profiles/current/shadowrocket/scripts/shadowrocket-node-operator.js",
-    "https://juan-nikola.github.io/apple-proxy-profiles/current/shadowrocket/scripts/shadowrocket-profile-generator.js",
-  ]) assert.ok(readme.includes(url), `README.md: missing canonical Pages URL: ${url}`);
+  const profileUrl = "https://juan-nikola.github.io/apple-proxy-profiles/current/shadowrocket/scripts/shadowrocket-profile-generator.js";
+  assert.ok(readme.includes(profileUrl), "README.md: missing canonical Pages URL");
   for (const task of [
     "shadowrocket-config-macos",
     "shadowrocket-config-iphone",
@@ -241,7 +234,6 @@ test("README is independently copyable for the two-layer Sub-Store setup", async
   for (const platform of ["macos", "iphone", "ipad"]) {
     assert.match(readme, new RegExp(`output=config[^\n]+platform=${platform}`, "u"), `README.md: ${platform} arguments`);
   }
-  assert.match(readme, /Sub-Store 不需要先创建独立脚本记录/u);
   assert.match(readme, /JS_URL#arg1=value1&arg2=value2[^\n]+不能使用 `\?`/u);
   assert.match(deployment, /File\/文件[^\n]+Script\/脚本操作[^\n]+链接模式[^\n]+参数/u);
   assert.match(deployment, /subscriptionName[^\n]+百分号编码/u);

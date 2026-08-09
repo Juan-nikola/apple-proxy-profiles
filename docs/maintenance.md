@@ -1,12 +1,12 @@
 # 维护、编译与发布手册
 
-这份手册回答三个问题：以后增加节点或规则要改哪里、每个文件负责什么、在 macOS/Linux/CI/OpenWrt 环境怎样构建和验证。公开仓库不保存节点；你的私密节点来源只在 Sub-Store 的原始组合 `apple-proxy-sources` 中维护，Shadowrocket 的处理结果单独放在 `shadowrocket-nodes`。
+这份手册回答三个问题：以后增加节点或规则要改哪里、每个文件负责什么、在 macOS/Linux/CI/OpenWrt 环境怎样构建和验证。公开仓库不保存节点；你的私密节点来源只在 Sub-Store 的原始组合 `apple-proxy-sources` 中维护，五个客户端的 Profile/Config 生成器都直接读取这个原始组合（Shadowrocket 生成器内置节点归一化，不依赖组合上的节点操作）。
 
 ## 1. 先判断你要改哪一层
 
 | 你要做的事 | 修改位置 | 修改后需要做什么 |
 | --- | --- | --- |
-| 增加或删除节点来源 | 先改 Sub-Store 的原始 `apple-proxy-sources`，再同步 `shadowrocket-nodes` | 先预览原始组合，再预览 Shadowrocket 处理组合，最后按客户端顺序刷新 |
+| 增加或删除节点来源 | 只改 Sub-Store 的原始 `apple-proxy-sources` | 预览原始组合非空后，按客户端顺序刷新 |
 | 修改某个来源的订阅参数 | 只在自己的 Sub-Store 来源对象 | 单独预览来源，确认非空，再刷新组合 |
 | 增加公开规则 | `automation/src/source-catalog.js`、对应源目录或固定上游 SHA | 更新规则快照、运行规则检查、构建和秘密扫描 |
 | 修改客户端默认 DNS/IPv6/QUIC | `clients/<client>/src/options.js`、策略/渲染文件和测试 | 先写测试，再构建对应 bundle 和 fixtures |

@@ -13,7 +13,6 @@ test("central Sub-Store guide closes over all public scripts and private tasks",
   const guide = await text("docs/substore-two-layer-setup.md");
   const maintenance = await text("docs/maintenance.md");
   const scripts = [
-    "shadowrocket-node-operator.js",
     "shadowrocket-profile-generator.js",
     "egern-node-generator.js",
     "egern-profile-generator.js",
@@ -25,19 +24,19 @@ test("central Sub-Store guide closes over all public scripts and private tasks",
   for (const script of scripts) assert.match(guide, new RegExp(`current/.+/${script.replaceAll(".", "\\.")}`, "u"), script);
   for (const task of [
     "egern-nodes", "egern-macos", "egern-iphone", "egern-ipad", "anywhere-nodes",
-    "shadowrocket-nodes", "shadowrocket-config-macos", "shadowrocket-config-iphone", "shadowrocket-config-ipad",
+    "shadowrocket-config-macos", "shadowrocket-config-iphone", "shadowrocket-config-ipad",
     "surge-nodes", "surge-config-macos", "surge-config-iphone", "surge-config-ipad",
     "singbox-config-macos", "singbox-config-iphone", "singbox-config-ipad", "singbox-config-android", "singbox-config-openwrt",
   ]) assert.ok(guide.includes(`\`${task}\``), `missing task ${task}`);
-  assert.match(guide, /五客户端总数为 4\+1\+4\+4\+5=18 个任务/u);
+  assert.match(guide, /五客户端总数为 4\+1\+3\+4\+5=17 个任务/u);
   assert.match(guide, /#output=nodes[\s\S]*&/u);
   assert.match(guide, /#output=config[\s\S]*&/u);
   assert.match(guide, /channel=current[\s\S]*channel=edge/u);
   assert.match(readme, /apple-proxy-sources/u);
   assert.match(maintenance, /Node\.js 22/u);
   assert.match(maintenance, /sing-box.*\.srs/u);
-  assert.match(guide, /`apple-proxy-sources`[\s\S]{0,240}(?:原始|raw)[\s\S]{0,240}`shadowrocket-nodes`/iu);
-  assert.match(guide, /Shadowrocket[\s\S]{0,600}name=shadowrocket-nodes/iu);
+  assert.match(guide, /`apple-proxy-sources`[\s\S]{0,240}(?:原始|raw)/iu);
+  assert.match(guide, /Shadowrocket[\s\S]{0,600}name=apple-proxy-sources/iu);
 });
 
 test("public documentation never contains a private Sub-Store endpoint", async () => {

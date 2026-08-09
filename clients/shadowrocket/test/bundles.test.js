@@ -12,7 +12,7 @@ const nodeArguments = { output: "nodes", clientChain: "off" };
 const profileArguments = {
   output: "config",
   type: "collection",
-  name: "shadowrocket-sources",
+  name: "apple-proxy-sources",
   subscriptionName: "Shadowrocket-Nodes",
   platform: "macos",
 };
@@ -145,13 +145,19 @@ test("profile bundle is self-contained and runs with Sub-Store globals", async (
   assert.doesNotMatch(source, /^\s*(?:import|export)\s/m);
 
   const inventory = Array.from({ length: 25 }, (_, index) => ({
-    name: `Safe ${index + 1}`,
-    _profile: { continent: "asiaPacific", sourceKind: "airport", udp: true, p2p: false, entry: true, chained: false },
+    name: `🇯🇵 Safe ${index + 1}`,
+    type: "ss",
+    server: "198.51.100.7",
+    port: 443,
+    cipher: "aes-128-gcm",
+    password: "TEST_ONLY_NOT_A_SECRET",
+    udp: true,
+    _subName: "[机场]示例",
   }));
   const { context } = loadBundle(source, {
     $arguments: profileArguments,
     async produceArtifact(request) {
-      assert.deepEqual({ ...request }, { type: "collection", name: "shadowrocket-sources", platform: "JSON", produceType: "internal" });
+      assert.deepEqual({ ...request }, { type: "collection", name: "apple-proxy-sources", platform: "JSON", produceType: "internal" });
       return inventory;
     },
   });
