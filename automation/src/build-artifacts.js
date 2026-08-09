@@ -6,7 +6,12 @@ import { compileLightweightRules } from "./compile-lightweight-rules.js";
 import { compactRuleCidrs } from "./compact-rule-cidrs.js";
 import { artifactBuffer, artifactByteLength, artifactSha256 } from "./artifact-content.js";
 import { BLACKMATRIX7_BASELINE, catalogSha256 } from "./source-catalog.js";
-import { RULE_BUDGETS, ruleClientCatalog } from "../../shared/rules/lightweight-policy.js";
+import { buildRoutingPlanAudit } from "./routing-plan-audit.js";
+import {
+  orderedRoutingPlan,
+  RULE_BUDGETS,
+  ruleClientCatalog,
+} from "../../shared/rules/lightweight-policy.js";
 import { RULE_KIND } from "../../shared/rules/model.js";
 import { buildImportBatches, renderImportPage } from "../../clients/anywhere/src/build-import-page.js";
 import { ANYWHERE_LIGHTWEIGHT_MIGRATION } from "../../clients/anywhere/src/shard-rules.js";
@@ -382,6 +387,14 @@ export function buildClientArtifacts({
     defaults.set("audit/china-ip-drift.json", chinaIpAudit);
     chinaIpAuditSha256 = artifactSha256(chinaIpAudit);
   }
+  if (defaults.has("audit/routing-plan.json")) {
+    throw new Error("Duplicate public artifact path: audit/routing-plan.json");
+  }
+  const routingPlanAudit = buildRoutingPlanAudit({
+    plan: orderedRoutingPlan({ adblockMode: "off" }),
+    ruleSets: compactedDefaults.ruleSets,
+  });
+  defaults.set("audit/routing-plan.json", artifactBuffer(canonicalJson(routingPlanAudit)));
 
   assertNoForbiddenDefaultReferences(defaults);
   const referencedBytes = enforcePublicationBudgets({ diagnostics: publicationDiagnostics, files: defaults });
@@ -436,6 +449,7 @@ export function buildClientArtifacts({
       compaction: compactedDefaults.diagnostics,
       referencedBytes,
       defaultManifest,
+      routingPlanAudit,
       optionalManifests: Object.freeze({ "adblock-full": adblockFull.manifest }),
     }),
   });

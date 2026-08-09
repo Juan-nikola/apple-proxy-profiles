@@ -5,6 +5,7 @@ import { buildClientArtifacts } from "../src/build-artifacts.js";
 import { artifactSha256 } from "../src/artifact-content.js";
 import { buildChinaIpAudit } from "../src/china-ip-audit.js";
 import { canonicalJson } from "../src/render-anywhere-rules.js";
+import { validateRoutingPlanAudit } from "../src/routing-plan-audit.js";
 import {
   DEFAULT_PUBLISH_SOURCE_CATALOG,
   FETCH_SOURCE_CATALOG,
@@ -123,6 +124,29 @@ test("publishes exact ChinaIP audit bytes only as root evidence", () => {
   ]) {
     assert.equal(JSON.stringify(catalog).includes("ChinaIP-audit"), false);
     assert.equal(JSON.stringify(catalog).includes("china-operator-ip"), false);
+  }
+});
+
+test("publishes a canonical routing plan audit with a root Manifest record", () => {
+  const result = buildClientArtifacts({ snapshot: lightweightFixtureSnapshots(), upstream });
+  const auditPath = "audit/routing-plan.json";
+  const auditBytes = result.defaults.get(auditPath);
+  assert.equal(Buffer.isBuffer(auditBytes), true);
+  const audit = JSON.parse(auditBytes.toString("utf8"));
+  assert.equal(validateRoutingPlanAudit(audit), true);
+  assert.equal(audit.schemaVersion, 1);
+  assert.equal(result.diagnostics.routingPlanAudit.sha256, audit.sha256);
+
+  const record = result.diagnostics.defaultManifest.files.find(({ path }) => path === auditPath);
+  assert.deepEqual(record, {
+    path: auditPath,
+    bytes: auditBytes.length,
+    sha256: artifactSha256(auditBytes),
+  });
+  for (const client of Object.keys(result.diagnostics.defaultManifest.clients)) {
+    const directory = client === "singbox" ? "sing-box" : client;
+    const clientManifest = JSON.parse(result.defaults.get(`${directory}/client-manifest.json`));
+    assert.equal(clientManifest.files.some(({ path }) => path === auditPath), false, client);
   }
 });
 

@@ -13,6 +13,7 @@
     "check:actions": "node scripts/check-actions.mjs",
     "update:rules": "node scripts/update-rules.mjs --channel edge",
     "check:rules": "node scripts/update-rules.mjs --check --channel current",
+    "explain:route": "node scripts/explain-route.mjs",
     "verify:anywhere": "npm --workspace @apple-proxy-profiles/anywhere run verify",
     "verify:egern": "npm --workspace @apple-proxy-profiles/egern run verify",
     "verify:shadowrocket": "npm --workspace @apple-proxy-profiles/shadowrocket run verify",
