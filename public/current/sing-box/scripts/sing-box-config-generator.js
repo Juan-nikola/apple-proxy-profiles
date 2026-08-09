@@ -2319,6 +2319,7 @@ var SingBoxConfigBundle = (() => {
     "Privacy",
     "DomesticCore",
     "DomesticGame",
+    "SteamCN",
     "BiliBili",
     "ByteDance",
     "XiaoHongShu",
@@ -2340,16 +2341,62 @@ var SingBoxConfigBundle = (() => {
     "TikTok",
     "Apple",
     "Microsoft",
-    "SteamCN",
-    "OverseasGame",
     "Download",
     "PrivateTracker",
+    "OverseasGame",
+    "ChinaTLD",
     "ChinaIP"
   ]);
   var FULL_ADBLOCK_SOURCE_IDS = Object.freeze([
     "Advertising",
     "Advertising_Domain"
   ]);
+  var ROUTING_PHASES = Object.freeze([
+    "security",
+    "earlyDomestic",
+    "serviceIntent",
+    "overseasGame",
+    "lateDomestic",
+    "resolvedChinaIp"
+  ]);
+  var PHASE_SOURCE_IDS = Object.freeze({
+    security: Object.freeze([
+      "Hijacking",
+      "BlockHttpDNS",
+      "Privacy",
+      "Advertising",
+      "Advertising_Domain"
+    ]),
+    earlyDomestic: Object.freeze(["DomesticCore", "DomesticGame", "SteamCN"]),
+    serviceIntent: Object.freeze([
+      "BiliBili",
+      "ByteDance",
+      "XiaoHongShu",
+      "Weibo",
+      "OpenAI",
+      "Claude",
+      "Gemini",
+      "Copilot",
+      "GitHub",
+      "YouTube",
+      "Netflix",
+      "Disney",
+      "Spotify",
+      "GlobalMedia",
+      "Telegram",
+      "Facebook",
+      "Instagram",
+      "Twitter",
+      "TikTok",
+      "Apple",
+      "Microsoft",
+      "Download",
+      "PrivateTracker"
+    ]),
+    overseasGame: Object.freeze(["OverseasGame"]),
+    lateDomestic: Object.freeze(["ChinaTLD"]),
+    resolvedChinaIp: Object.freeze(["ChinaIP"])
+  });
   var RULE_BUDGETS = Object.freeze({
     domesticCoreEntries: 2e3,
     defaultEntries: 25e3,
@@ -2387,6 +2434,31 @@ var SingBoxConfigBundle = (() => {
     "TikTok",
     "OverseasGame"
   ]);
+  var DNS_CLASS_SOURCE_IDS = Object.freeze({
+    proxy: EXPLICIT_OVERSEAS_RULE_SOURCE_IDS,
+    china: Object.freeze([
+      "DomesticCore",
+      "DomesticGame",
+      "SteamCN",
+      "ChinaTLD",
+      "BiliBili",
+      "ByteDance",
+      "XiaoHongShu",
+      "Weibo",
+      "Apple",
+      "Microsoft",
+      "Download",
+      "PrivateTracker"
+    ]),
+    none: Object.freeze([
+      "Hijacking",
+      "BlockHttpDNS",
+      "Privacy",
+      "Advertising",
+      "Advertising_Domain",
+      "ChinaIP"
+    ])
+  });
   var POLICY_TARGETS = Object.freeze({
     direct: "DIRECT",
     defaultProxy: "\u{1F680} \u8282\u70B9\u9009\u62E9",
@@ -2424,19 +2496,31 @@ var SingBoxConfigBundle = (() => {
     OverseasGame: POLICY_TARGETS.overseasGame,
     Download: "\u2B07\uFE0F \u4E0B\u8F7D/P2P",
     PrivateTracker: "\u2B07\uFE0F \u4E0B\u8F7D/P2P",
+    ChinaTLD: POLICY_TARGETS.direct,
     ChinaIP: POLICY_TARGETS.direct,
     Advertising: "\u{1F9F1} \u5E38\u89C1\u5E7F\u544A",
     Advertising_Domain: "\u{1F9F1} \u5E38\u89C1\u5E7F\u544A"
   });
+  function uniqueMembership(id, memberships, label) {
+    const matches = Object.entries(memberships).filter(([, ids]) => ids.includes(id)).map(([name]) => name);
+    if (matches.length !== 1) {
+      throw new Error(`Lightweight rule source ${id} must have exactly one ${label} membership`);
+    }
+    return matches[0];
+  }
   function clientRecord(id) {
     const policy = SOURCE_POLICIES[id];
     if (!policy) throw new Error(`Missing policy for lightweight rule source: ${id}`);
+    const phase = uniqueMembership(id, PHASE_SOURCE_IDS, "routing phase");
+    const dnsClass = uniqueMembership(id, DNS_CLASS_SOURCE_IDS, "DNS class");
     return Object.freeze({
       id,
       policy,
       // The publication pipeline emits normalized, typed Surge/Shadowrocket
       // lines for every compiled source, including domain-only inputs.
-      inputFormat: "RULE-SET"
+      inputFormat: "RULE-SET",
+      phase,
+      dnsClass
     });
   }
   var DEFAULT_RULE_CLIENT_CATALOG = Object.freeze(DEFAULT_RULE_SOURCE_IDS.map(clientRecord));
@@ -2446,6 +2530,14 @@ var SingBoxConfigBundle = (() => {
       throw new TypeError("adblockMode must be either off or full");
     }
     return adblockMode === "full" ? Object.freeze([...DEFAULT_RULE_CLIENT_CATALOG, ...FULL_ADBLOCK_RULE_CLIENT_CATALOG]) : DEFAULT_RULE_CLIENT_CATALOG;
+  }
+  function orderedRoutingPlan({ adblockMode = "off" } = {}) {
+    const selected = ruleClientCatalog({ adblockMode });
+    const phaseRank = new Map(ROUTING_PHASES.map((phase, index) => [phase, index]));
+    const sourceRank = new Map(
+      [...DEFAULT_RULE_SOURCE_IDS, ...FULL_ADBLOCK_SOURCE_IDS].map((id, index) => [id, index])
+    );
+    return Object.freeze([...selected].sort((left, right) => phaseRank.get(left.phase) - phaseRank.get(right.phase) || sourceRank.get(left.id) - sourceRank.get(right.id)));
   }
 
   // ../../shared/rules/custom-rules.js
@@ -2473,10 +2565,6 @@ var SingBoxConfigBundle = (() => {
     { ip_is_private: true, action: "route", outbound: "DIRECT" },
     { domain_suffix: ["local", "lan", "home.arpa"], action: "route", outbound: "DIRECT" }
   ]);
-  var SECURITY_IDS = /* @__PURE__ */ new Set(["Hijacking", "BlockHttpDNS", "Privacy", "Advertising", "Advertising_Domain"]);
-  var DOMESTIC_IDS = Object.freeze(["DomesticCore", "DomesticGame", "SteamCN"]);
-  var OVERSEAS_GAME_ID = "OverseasGame";
-  var CHINA_IP_ID = "ChinaIP";
   var CUSTOM_TARGETS = Object.freeze({ block: "REJECT", direct: "DIRECT", proxy: "\u{1F680} \u8282\u70B9\u9009\u62E9", ai: "\u{1F916} AI \u4E13\u7528" });
   var CUSTOM_FIELDS = Object.freeze({
     DOMAIN: "domain",
@@ -2540,21 +2628,17 @@ var SingBoxConfigBundle = (() => {
       ...LOCAL_RULES
     ];
     if (profileMode === "light") {
-      const catalog2 = ruleClientCatalog({ adblockMode });
-      for (const source of catalog2.filter(({ id }) => SECURITY_IDS.has(id))) rules.push(taggedRule(source));
+      const plan2 = orderedRoutingPlan({ adblockMode });
+      rules.push(...plan2.filter(({ phase }) => phase === "security").map(taggedRule));
     }
     rules.push(...renderCustomRules());
     if (profileMode === "diagnostic") return { ruleSets, rules, final: "\u{1F680} \u8282\u70B9\u9009\u62E9" };
-    const catalog = ruleClientCatalog({ adblockMode });
-    const byId = new Map(catalog.map((source) => [source.id, source]));
-    for (const id of DOMESTIC_IDS) rules.push(taggedRule(byId.get(id)));
-    for (const source of catalog) {
-      if (SECURITY_IDS.has(source.id) || DOMESTIC_IDS.includes(source.id) || [OVERSEAS_GAME_ID, CHINA_IP_ID].includes(source.id)) continue;
-      rules.push(taggedRule(source));
+    const plan = orderedRoutingPlan({ adblockMode });
+    for (const phase of ROUTING_PHASES.filter((value) => value !== "security" && value !== "resolvedChinaIp")) {
+      rules.push(...plan.filter((source) => source.phase === phase).map(taggedRule));
     }
-    rules.push(taggedRule(byId.get(OVERSEAS_GAME_ID)));
     rules.push({ action: "resolve", server: "dns-direct" });
-    rules.push(taggedRule(byId.get(CHINA_IP_ID)));
+    rules.push(...plan.filter(({ phase }) => phase === "resolvedChinaIp").map(taggedRule));
     return { ruleSets, rules, final: "\u{1F680} \u8282\u70B9\u9009\u62E9" };
   }
 
@@ -2569,7 +2653,9 @@ var SingBoxConfigBundle = (() => {
     google: Object.freeze({ server: "8.8.8.8", serverName: "dns.google" }),
     quad9: Object.freeze({ server: "9.9.9.9", serverName: "dns.quad9.net" })
   });
-  var EXPLICIT_OVERSEAS_RULE_SETS = Object.freeze(EXPLICIT_OVERSEAS_RULE_SOURCE_IDS.map((id) => `rule-${id}`));
+  var proxyDnsSourceIds = Object.freeze(
+    orderedRoutingPlan().filter(({ dnsClass }) => dnsClass === "proxy").map(({ id }) => id)
+  );
   function renderSingBoxDns(options) {
     const chinaServer = options.chinaDns === "system" ? { type: "local", tag: "dns-direct" } : { type: "udp", tag: "dns-direct", server: CHINA_DNS[options.chinaDns] };
     const globalDns = GLOBAL_DNS[options.globalDns];
@@ -2586,7 +2672,7 @@ var SingBoxConfigBundle = (() => {
     return {
       servers: [chinaServer, proxyServer],
       rules: options.profileMode === "diagnostic" ? [] : [
-        { rule_set: EXPLICIT_OVERSEAS_RULE_SETS, action: "route", server: "dns-proxy" }
+        { rule_set: proxyDnsSourceIds.map((id) => `rule-${id}`), action: "route", server: "dns-proxy" }
       ],
       final: "dns-direct",
       strategy: options.ipv6Mode === "ipv4-only" ? "ipv4_only" : "prefer_ipv4",

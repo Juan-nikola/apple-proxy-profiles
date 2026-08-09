@@ -1,18 +1,18 @@
 {
   "schemaVersion": 2,
   "clients": {
+    "singbox": "95d42579c72629f44766c7f178874e494e70dc9cf93906a2c24bc544e7e4d233",
+    "surge": "aa16ce1999ec169a8b3a679f948c652d42251faabcd6495123f57a56c14f55ab",
+    "shadowrocket": "0b9b6fda2600f25b21aae3706f37461e1713cab427745e5771af7c8c8493c433",
+    "egern": "15903717bac2da58018ca19155d79ab66fb0bd58db2fe363def04635e146d18e",
+    "anywhere": "4b5df690a037096184eb88fbd74f910406c508b9f598788fbf71468193ab96f4"
+  },
+  "previous": {
     "singbox": "98b58303b3ffc6a32bc2db299b03cb9ecd92ccaa98b320297acae0f3edcda53c",
     "surge": "05a616c3fb09703af819fb8ba0050d6bd28e3b5e6551775521cec154c52bd3ff",
     "shadowrocket": "b78d866813aee66dee590f230e0719395e13f79f30280aa9e639c9a130467c14",
     "egern": "8076d716721369ad683f26e66044c74118e4b93597465191cf54e04b57e9ea5f",
     "anywhere": "07ef67fd46800bbd2a61c5fd614e8b44dede6c61a9f7f1b8aa9dae8d7e0e566b"
-  },
-  "previous": {
-    "singbox": null,
-    "surge": null,
-    "shadowrocket": null,
-    "egern": null,
-    "anywhere": null
   },
   "optionalPacks": {
     "adblock-full": {
@@ -20,16 +20,16 @@
       "surge": "25ec7ae1a02bdb709a18509c79950bc179b86d1b1734b16bd2698499e6734e6c",
       "shadowrocket": "08e14639b805d3e3051f2d338918e722d9e6e95e6aa7c424fbafe827072a3a52",
       "egern": "08d4bb10fe60135e554cc9795db20e14494fc6a6cd170d2eebe06072a552da3f",
-      "anywhere": "312dd7e8d13ebbd77ced6b01e691748633a48d8799d56b87e8530b118dea54e9"
+      "anywhere": "349c9a171145ed2d8d66b0fdee63d66096c6d02b2c71202b2fd95417518ca3b0"
     }
   },
   "previousOptionalPacks": {
     "adblock-full": {
-      "singbox": null,
-      "surge": null,
-      "shadowrocket": null,
-      "egern": null,
-      "anywhere": null
+      "singbox": "59163e900531751db43c45c4298da564dd6517fc352a269d11a52d7a3900fd6b",
+      "surge": "25ec7ae1a02bdb709a18509c79950bc179b86d1b1734b16bd2698499e6734e6c",
+      "shadowrocket": "08e14639b805d3e3051f2d338918e722d9e6e95e6aa7c424fbafe827072a3a52",
+      "egern": "08d4bb10fe60135e554cc9795db20e14494fc6a6cd170d2eebe06072a552da3f",
+      "anywhere": "312dd7e8d13ebbd77ced6b01e691748633a48d8799d56b87e8530b118dea54e9"
     }
   }
 }
