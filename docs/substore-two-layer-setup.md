@@ -71,7 +71,7 @@ https://juan-nikola.github.io/apple-proxy-profiles/current/egern/scripts/egern-n
 https://juan-nikola.github.io/apple-proxy-profiles/current/surge/scripts/surge-profile-generator.js#output=config&type=collection&name=apple-proxy-sources&subscriptionName=Apple-Proxy-Nodes&platform=iphone&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&autoGroupMode=auto&clientChain=off
 ```
 
-## 4. 18 个任务总表
+## 4. 17 个任务总表
 
 下面的 `Apple-Proxy-Nodes` 是公开示例显示名。实际使用时，在 Shadowrocket、Surge 或 sing-box 中给节点订阅取一个你自己的显示名，并让同一客户端对应 Profile/Config 任务的 `subscriptionName` 逐字一致。五个客户端的 Profile/Config 全部指向原始组合 `apple-proxy-sources`：Shadowrocket Profile 生成器内部自己完成节点归一化、去重与客户端过滤，不再依赖组合处理链上的节点操作。
 
