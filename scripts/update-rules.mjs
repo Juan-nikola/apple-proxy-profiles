@@ -31,6 +31,7 @@ import {
 const repositoryRoot = dirname(dirname(fileURLToPath(import.meta.url)));
 const defaultPublicDirectory = join(repositoryRoot, "public");
 const PROMOTION_CLIENTS = new Set(["singbox", "surge", "shadowrocket", "egern", "anywhere"]);
+const INDEPENDENT_CLIENT_PATH = /^(?:anywhere|egern|shadowrocket|sing-box|surge)\//u;
 const LEGACY_CURRENT_EXTRA_FILES = Object.freeze([
   /^frontier-manifest\.json$/u,
   /^surge\/(?:macos|iphone|ipad)\/manifest\.json$/u,
@@ -173,11 +174,11 @@ function rootManifestMatchesWithIndependentAudit(content, expectedManifest) {
         ...base,
         clients: base.clients && Object.fromEntries(Object.entries(base.clients).map(([client, value]) => [
           client,
-          Object.fromEntries(Object.entries(value).filter(([key]) => key !== "manifestHash")),
+          PROMOTION_CLIENTS.has(client) ? null : value,
         ])),
         files: Array.isArray(base.files)
           ? base.files.filter(({ path }) => (
-            path !== "audit/china-ip-drift.json" && !path.endsWith("/client-manifest.json")
+            path !== "audit/china-ip-drift.json" && !INDEPENDENT_CLIENT_PATH.test(path)
           ))
           : base.files,
       };

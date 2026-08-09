@@ -10,6 +10,7 @@ import { buildChinaIpAudit } from "../automation/src/china-ip-audit.js";
 import { canonicalJson } from "../automation/src/render-anywhere-rules.js";
 import { publishEdgeRelease } from "../automation/src/build-site.js";
 import { lightweightFixtureSnapshots } from "../automation/test/lightweight-fixture.js";
+import { ruleClientCatalog } from "../shared/rules/lightweight-policy.js";
 import {
   chinaIpAuditPrimary,
   parseUpdateRulesArguments,
@@ -73,6 +74,19 @@ function buildClientArtifacts(options) {
     ...options,
     chinaIpAudit: options.chinaIpAudit ?? chinaIpAuditBytes({ publicationUpstream: options.upstream }),
   });
+}
+
+function compiledSingBoxRules(marker) {
+  const binaries = new Map();
+  for (const { id } of ruleClientCatalog({ adblockMode: "off" })) {
+    binaries.set(`sing-box/rule-sets/${id}.srs`, Buffer.from(`SRS\u0002${marker}-default-${id}`));
+  }
+  for (const { id } of ruleClientCatalog({ adblockMode: "full" })) {
+    if (id === "Advertising" || id === "Advertising_Domain") {
+      binaries.set(`optional/adblock-full/sing-box/${id}.srs`, Buffer.from(`SRS\u0002${marker}-optional-${id}`));
+    }
+  }
+  return binaries;
 }
 
 async function writeFiles(directory, files) {
@@ -239,6 +253,70 @@ test("verifies a hybrid current from independently promoted clients", async () =
   const deleted = `${optionalDirectory}.deleted`;
   await rename(optionalDirectory, deleted);
   assert.equal(await verifyTrackedPublications({ publicDirectory, ...currentReproduction }), false);
+});
+
+test("verifies a hybrid current after promoting changed sing-box binaries", async () => {
+  const root = await mkdtemp(join(tmpdir(), "apple-proxy-check-hybrid-srs-"));
+  const publicDirectory = join(root, "public");
+  const baselineBinaries = compiledSingBoxRules("baseline");
+  const candidateBinaries = compiledSingBoxRules("candidate");
+  const baseline = buildClientArtifacts({
+    snapshot: lightweightFixtureSnapshots(),
+    upstream,
+    singBoxBinaries: baselineBinaries,
+  });
+  const candidateAudit = chinaIpAuditBytes({ publicationUpstream: nextUpstream });
+  const candidate = buildClientArtifacts({
+    snapshot: lightweightFixtureSnapshots(),
+    upstream: nextUpstream,
+    singBoxBinaries: candidateBinaries,
+    chinaIpAudit: candidateAudit,
+  });
+  await initializeTrackedCurrent(publicDirectory, baseline);
+  await publishEdgeRelease({
+    publicDirectory,
+    defaults: candidate.defaults,
+    optionalPacks: candidate.optionalPacks,
+    manifest: candidate.diagnostics.defaultManifest,
+  });
+  await promoteClientRelease({
+    publicDirectory,
+    client: "singbox",
+    manifestHash: candidate.diagnostics.defaultManifest.clients.singbox.manifestHash,
+  });
+  const currentReproduction = buildClientArtifacts({
+    snapshot: lightweightFixtureSnapshots(),
+    upstream,
+    singBoxBinaries: candidateBinaries,
+    chinaIpAudit: candidateAudit,
+  });
+
+  assert.notDeepEqual(
+    baselineBinaries.get("sing-box/rule-sets/ChinaIP.srs"),
+    candidateBinaries.get("sing-box/rule-sets/ChinaIP.srs"),
+  );
+  assert.deepEqual(
+    await readFile(join(publicDirectory, "current/sing-box/rule-sets/ChinaIP.srs")),
+    candidateBinaries.get("sing-box/rule-sets/ChinaIP.srs"),
+  );
+  assert.equal(await verifyTrackedPublications({ publicDirectory, ...currentReproduction }), true);
+});
+
+test("rejects unknown root client metadata in a hybrid current", async () => {
+  const root = await mkdtemp(join(tmpdir(), "apple-proxy-check-hybrid-root-client-"));
+  const publicDirectory = join(root, "public");
+  const artifacts = buildClientArtifacts({ snapshot: lightweightFixtureSnapshots(), upstream });
+  await initializeTrackedCurrent(publicDirectory, artifacts);
+  const manifestPath = join(publicDirectory, "current/manifest.json");
+  const manifest = JSON.parse(await readFile(manifestPath, "utf8"));
+  const { manifestHash: ignored, ...base } = manifest;
+  base.clients.intruder = { manifestHash: "a".repeat(64), referencedDefaultBytes: 1 };
+  await writeFile(manifestPath, canonicalJson({
+    ...base,
+    manifestHash: artifactSha256(canonicalJson(base)),
+  }));
+
+  assert.equal(await verifyTrackedPublications({ publicDirectory, ...artifacts }), false);
 });
 
 test("rejects rollout optional selections that disagree with the current client manifest", async () => {
