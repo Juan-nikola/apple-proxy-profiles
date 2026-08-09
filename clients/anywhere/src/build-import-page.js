@@ -89,10 +89,11 @@ function validateAssignmentSources(manifest) {
   }
   const ids = new Set();
   const orders = new Set();
-  const shardIds = new Set();
+  const shardOwners = new Map();
   for (const source of manifest.sources) {
     if (!source
       || typeof source !== "object"
+      || typeof source.id !== "string"
       || !SOURCE_ID.test(source.id)
       || ids.has(source.id)
       || !Number.isSafeInteger(source.order)
@@ -104,12 +105,33 @@ function validateAssignmentSources(manifest) {
       || source.intendedTarget.length === 0
       || ![0, 1, 2].includes(source.routing)
       || !Array.isArray(source.shardIds)
-      || source.shardIds.some((id) => !SHARD_ID.test(id) || shardIds.has(id))) {
+      || new Set(source.shardIds).size !== source.shardIds.length
+      || source.shardIds.some((id) => (
+        typeof id !== "string" || !SHARD_ID.test(id) || shardOwners.has(id)
+      ))) {
       throw new TypeError("Anywhere manifest sources contain invalid assignment metadata");
     }
     ids.add(source.id);
     orders.add(source.order);
-    for (const id of source.shardIds) shardIds.add(id);
+    for (const id of source.shardIds) shardOwners.set(id, source.id);
+  }
+  const emittedShardIds = new Set();
+  for (const shard of manifest.shards) {
+    if (!shard
+      || typeof shard !== "object"
+      || typeof shard.id !== "string"
+      || !SHARD_ID.test(shard.id)
+      || emittedShardIds.has(shard.id)
+      || typeof shard.sourceId !== "string"
+      || !SOURCE_ID.test(shard.sourceId)
+      || !ids.has(shard.sourceId)
+      || shardOwners.get(shard.id) !== shard.sourceId) {
+      throw new TypeError("Anywhere manifest sources do not close over shard ownership");
+    }
+    emittedShardIds.add(shard.id);
+  }
+  if (emittedShardIds.size !== shardOwners.size) {
+    throw new TypeError("Anywhere manifest sources do not close over shard ownership");
   }
   return [...manifest.sources].sort((left, right) => left.order - right.order);
 }

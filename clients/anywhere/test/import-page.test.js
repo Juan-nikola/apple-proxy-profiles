@@ -80,7 +80,11 @@ test("renders a static escaped no-script page with manual fallbacks", () => {
     generatedAt: "2026-08-01T19:07:21Z",
     manifestSha256: "a".repeat(64),
     totals: { sourceCount: 4, shardCount: 4, outputCount: 4 },
-    shards: input.map((url) => ({ url })),
+    shards: input.map((url, index) => ({
+      id: `Rule-${String(index + 1).padStart(3, "0")}`,
+      sourceId: ["DomesticCore", "OverseasGame", "ChinaTLD", "ChinaIP"][index],
+      url,
+    })),
     schemaVersion: 2,
     removed: ["Advertising", "Advertising_Domain", "ChinaMax_Domain", "Game"],
     replacements: {
@@ -132,6 +136,7 @@ test("renders a separate full-adblock import page that only imports REJECT adver
       },
     ],
     shards: input.map((url, index) => ({
+      id: index === 0 ? "Advertising-001" : "Advertising_Domain-001",
       sourceId: index === 0 ? "Advertising" : "Advertising_Domain",
       url,
     })),
@@ -185,7 +190,7 @@ test("rejects invalid source assignment metadata instead of rendering untrusted 
       id: "ChinaTLD", order: 1, phase: "lateDomestic", dnsClass: "china",
       intendedTarget: "direct", routing: 1, shardIds: ["Rule-001"],
     }],
-    shards: [{ url: input[0] }],
+    shards: [{ id: "Rule-001", sourceId: "ChinaTLD", url: input[0] }],
   };
   const batches = buildImportBatches(input);
   for (const source of [
@@ -193,8 +198,45 @@ test("rejects invalid source assignment metadata instead of rendering untrusted 
     { ...manifest.sources[0], dnsClass: "system" },
     { ...manifest.sources[0], order: 0 },
     { ...manifest.sources[0], shardIds: "Rule-001" },
+    { ...manifest.sources[0], id: undefined },
+    { ...manifest.sources[0], shardIds: [undefined] },
   ]) {
     assert.throws(() => renderImportPage(batches, { ...manifest, sources: [source] }), /sources/u);
+  }
+});
+
+test("rejects source assignments that do not close over manifest shard ownership", () => {
+  const input = urls(1);
+  const source = {
+    id: "ChinaTLD", order: 1, phase: "lateDomestic", dnsClass: "china",
+    intendedTarget: "direct", routing: 1, shardIds: ["Rule-001"],
+  };
+  const shard = { id: "Rule-001", sourceId: "ChinaTLD", url: input[0] };
+  const manifest = {
+    upstream: { commit: "d".repeat(40) },
+    generatedAt: "2026-08-01T19:07:21Z",
+    manifestSha256: "a".repeat(64),
+    totals: { sourceCount: 1, shardCount: 1, outputCount: 1 },
+    sources: [source],
+    shards: [shard],
+  };
+  const batches = buildImportBatches(input);
+  for (const { name, sources, shards } of [
+    { name: "missing assignment", sources: [{ ...source, shardIds: [] }], shards: [shard] },
+    {
+      name: "extra assignment",
+      sources: [{ ...source, shardIds: ["Rule-001", "Rule-002"] }],
+      shards: [shard],
+    },
+    {
+      name: "duplicate assignment",
+      sources: [{ ...source, shardIds: ["Rule-001", "Rule-001"] }],
+      shards: [shard],
+    },
+    { name: "wrong owner", sources: [source], shards: [{ ...shard, sourceId: "ChinaIP" }] },
+    { name: "non-string emitted ID", sources: [source], shards: [{ ...shard, id: undefined }] },
+  ]) {
+    assert.throws(() => renderImportPage(batches, { ...manifest, sources, shards }), /sources/u, name);
   }
 });
 
@@ -215,7 +257,11 @@ test("rendering rejects omitted shards and attacker-controlled deep links", () =
         intendedTarget: "direct", routing: 1, shardIds: ["Rule-002"],
       },
     ],
-    shards: input.map((url) => ({ url })),
+    shards: input.map((url, index) => ({
+      id: `Rule-${String(index + 1).padStart(3, "0")}`,
+      sourceId: index === 0 ? "DomesticCore" : "ChinaIP",
+      url,
+    })),
   };
   const batches = buildImportBatches(input);
   assert.throws(() => renderImportPage([{ ...batches[0], urls: [input[0]] }], manifest), /close over/u);
