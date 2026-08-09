@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; img-src data:; navigate-to 'self' https: anywhere:">
+  <title>Anywhere 轻量规则导入</title>
+  <style>
+    body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;max-width:900px;margin:0 auto;padding:24px;line-height:1.6;color:#172033;background:#f6f8fb}
+    main{background:white;padding:28px;border-radius:18px;box-shadow:0 8px 30px #24324a18}h1{margin-top:0}.warning{padding:14px 18px;background:#fff4d6;border-left:4px solid #d98b00}.button{display:inline-block;padding:9px 14px;margin:5px 0;border-radius:10px;background:#315efb;color:white;text-decoration:none}code{word-break:break-all}li{margin:7px 0}table{width:100%;border-collapse:collapse}th,td{padding:7px;text-align:left;border-bottom:1px solid #d8deea}
+  </style>
+</head>
+<body>
+<main>
+  <h1>Anywhere 轻量规则导入</h1>
+  <p>固定 Blackmatrix7 提交：<code>ccc2d6b711007324bacb55cdfbbf7e36ad48145a</code></p>
+  <p>生成时间（上游提交时间）：<code>2026-08-07T18:52:17Z</code>；Manifest：<code>dc38068b8c6424270ff75b0a01e35364731d7557fb12b95672b137fc37f34d94</code></p>
+  <p>共处理 32 个上游来源，生成 32 个分片、16548 条可导入规则，分为 3 个批次。</p>
+
+  <div class="warning"><strong>schema v2 迁移：</strong>如果你已导入旧版，请先在 Anywhere 中<strong>删除或禁用</strong>旧分片 <code>Advertising</code>、<code>Advertising_Domain</code>、<code>ChinaMax_Domain</code> 和通用 <code>Game</code>，再导入本轻量集。<code>ChinaMax_Domain</code> 由 <code>DomesticCore</code> 替代；<code>Game</code> 拆分为 <code>DomesticGame</code> 与 <code>OverseasGame</code>。</div>
+  <p><code>OverseasGame</code> 首次导入使用 Anywhere 的 Default/代理路由；如当前版本支持专用组，请在 App 内手动将其绑定到海外游戏组。</p>
+  <div class="warning"><strong>导入前须知：</strong>Anywhere 的 Default 不是可靠的“停用”开关。请先用测试设备导入，随后在 App 内逐个确认 DIRECT、REJECT 或目标节点/链；节点订阅、规则文件和本地设置是三层独立配置。导入公开规则不需要 HTTPS 解密/MITM，请保持它关闭。</div>
+  <h2>路由分配表</h2>
+  <p class="warning">同一来源的每个分片必须使用同一个路由分配；导入后请逐项确认。</p>
+  <table>
+    <thead><tr><th>来源 ID | 阶段 | 目标 | 分片数</th></tr></thead>
+    <tbody>
+      <tr><td><code>Hijacking | security | REJECT | 1 shard(s)</code></td></tr>
+      <tr><td><code>BlockHttpDNS | security | REJECT | 1 shard(s)</code></td></tr>
+      <tr><td><code>Privacy | security | DIRECT | 1 shard(s)</code></td></tr>
+      <tr><td><code>DomesticCore | earlyDomestic | DIRECT | 1 shard(s)</code></td></tr>
+      <tr><td><code>DomesticGame | earlyDomestic | DIRECT | 1 shard(s)</code></td></tr>
+      <tr><td><code>SteamCN | earlyDomestic | DIRECT | 1 shard(s)</code></td></tr>
+      <tr><td><code>BiliBili | serviceIntent | DIRECT | 1 shard(s)</code></td></tr>
+      <tr><td><code>ByteDance | serviceIntent | DIRECT | 1 shard(s)</code></td></tr>
+      <tr><td><code>XiaoHongShu | serviceIntent | DIRECT | 1 shard(s)</code></td></tr>
+      <tr><td><code>Weibo | serviceIntent | DIRECT | 1 shard(s)</code></td></tr>
+      <tr><td><code>OpenAI | serviceIntent | 🤖 AI 专用 | 1 shard(s)</code></td></tr>
+      <tr><td><code>Claude | serviceIntent | 🤖 AI 专用 | 1 shard(s)</code></td></tr>
+      <tr><td><code>Gemini | serviceIntent | 🤖 AI 专用 | 1 shard(s)</code></td></tr>
+      <tr><td><code>Copilot | serviceIntent | 🤖 AI 专用 | 1 shard(s)</code></td></tr>
+      <tr><td><code>GitHub | serviceIntent | 🐙 GitHub | 1 shard(s)</code></td></tr>
+      <tr><td><code>YouTube | serviceIntent | 📺 YouTube | 1 shard(s)</code></td></tr>
+      <tr><td><code>Netflix | serviceIntent | 🎬 Netflix | 1 shard(s)</code></td></tr>
+      <tr><td><code>Disney | serviceIntent | 🏰 Disney+ | 1 shard(s)</code></td></tr>
+      <tr><td><code>Spotify | serviceIntent | 🎵 Spotify | 1 shard(s)</code></td></tr>
+      <tr><td><code>GlobalMedia | serviceIntent | 🌍 国际媒体 | 1 shard(s)</code></td></tr>
+      <tr><td><code>Telegram | serviceIntent | ✈️ Telegram | 1 shard(s)</code></td></tr>
+      <tr><td><code>Facebook | serviceIntent | 💬 海外社交 | 1 shard(s)</code></td></tr>
+      <tr><td><code>Instagram | serviceIntent | 💬 海外社交 | 1 shard(s)</code></td></tr>
+      <tr><td><code>Twitter | serviceIntent | 💬 海外社交 | 1 shard(s)</code></td></tr>
+      <tr><td><code>TikTok | serviceIntent | 🎶 TikTok | 1 shard(s)</code></td></tr>
+      <tr><td><code>Apple | serviceIntent | DIRECT | 1 shard(s)</code></td></tr>
+      <tr><td><code>Microsoft | serviceIntent | DIRECT | 1 shard(s)</code></td></tr>
+      <tr><td><code>Download | serviceIntent | DIRECT | 1 shard(s)</code></td></tr>
+      <tr><td><code>PrivateTracker | serviceIntent | DIRECT | 1 shard(s)</code></td></tr>
+      <tr><td><code>OverseasGame | overseasGame | 🌍 海外游戏 | 1 shard(s)</code></td></tr>
+      <tr><td><code>ChinaTLD | lateDomestic | DIRECT | 1 shard(s)</code></td></tr>
+      <tr><td><code>ChinaIP | resolvedChinaIp | DIRECT | 1 shard(s)</code></td></tr>
+    </tbody>
+  </table>
+  <h2>一键导入全部规则</h2>
+  <p>一次打开 Anywhere 的确认页，导入全部 32 个规则分片；导入后仍是独立规则集。</p>
+  <p><a class="button" href="anywhere://add-rule-set?link=https%3A%2F%2Fjuan-nikola.github.io%2Fapple-proxy-profiles%2Fcurrent%2Fanywhere%2Frules%2FHijacking-001.arrs&amp;link=https%3A%2F%2Fjuan-nikola.github.io%2Fapple-proxy-profiles%2Fcurrent%2Fanywhere%2Frules%2FBlockHttpDNS-001.arrs&amp;link=https%3A%2F%2Fjuan-nikola.github.io%2Fapple-proxy-profiles%2Fcurrent%2Fanywhere%2Frules%2FPrivacy-001.arrs&amp;link=https%3A%2F%2Fjuan-nikola.github.io%2Fapple-proxy-profiles%2Fcurrent%2Fanywhere%2Frules%2FDomesticCore-001.arrs&amp;link=https%3A%2F%2Fjuan-nikola.github.io%2Fapple-proxy-profiles%2Fcurrent%2Fanywhere%2Frules%2FDomesticGame-001.arrs&amp;link=https%3A%2F%2Fjuan-nikola.github.io%2Fapple-proxy-profiles%2Fcurrent%2Fanywhere%2Frules%2FSteamCN-001.arrs&amp;link=https%3A%2F%2Fjuan-nikola.github.io%2Fapple-proxy-profiles%2Fcurrent%2Fanywhere%2Frules%2FBiliBili-001.arrs&amp;link=https%3A%2F%2Fjuan-nikola.github.io%2Fapple-proxy-profiles%2Fcurrent%2Fanywhere%2Frules%2FByteDance-001.arrs&amp;link=https%3A%2F%2Fjuan-nikola.github.io%2Fapple-proxy-profiles%2Fcurrent%2Fanywhere%2Frules%2FXiaoHongShu-001.arrs&amp;link=https%3A%2F%2Fjuan-nikola.github.io%2Fapple-proxy-profiles%2Fcurrent%2Fanywhere%2Frules%2FWeibo-001.arrs&amp;link=https%3A%2F%2Fjuan-nikola.github.io%2Fapple-proxy-profiles%2Fcurrent%2Fanywhere%2Frules%2FOpenAI-001.arrs&amp;link=https%3A%2F%2Fjuan-nikola.github.io%2Fapple-proxy-profiles%2Fcurrent%2Fanywhere%2Frules%2FClaude-001.arrs&amp;link=https%3A%2F%2Fjuan-nikola.github.io%2Fapple-proxy-profiles%2Fcurrent%2Fanywhere%2Frules%2FGemini-001.arrs&amp;link=https%3A%2F%2Fjuan-nikola.github.io%2Fapple-proxy-profiles%2Fcurrent%2Fanywhere%2Frules%2FCopilot-001.arrs&amp;link=https%3A%2F%2Fjuan-nikola.github.io%2Fapple-proxy-profiles%2Fcurrent%2Fanywhere%2Frules%2FGitHub-001.arrs&amp;link=https%3A%2F%2Fjuan-nikola.github.io%2Fapple-proxy-profiles%2Fcurrent%2Fanywhere%2Frules%2FYouTube-001.arrs&amp;link=https%3A%2F%2Fjuan-nikola.github.io%2Fapple-proxy-profiles%2Fcurrent%2Fanywhere%2Frules%2FNetflix-001.arrs&amp;link=https%3A%2F%2Fjuan-nikola.github.io%2Fapple-proxy-profiles%2Fcurrent%2Fanywhere%2Frules%2FDisney-001.arrs&amp;link=https%3A%2F%2Fjuan-nikola.github.io%2Fapple-proxy-profiles%2Fcurrent%2Fanywhere%2Frules%2FSpotify-001.arrs&amp;link=https%3A%2F%2Fjuan-nikola.github.io%2Fapple-proxy-profiles%2Fcurrent%2Fanywhere%2Frules%2FGlobalMedia-001.arrs&amp;link=https%3A%2F%2Fjuan-nikola.github.io%2Fapple-proxy-profiles%2Fcurrent%2Fanywhere%2Frules%2FTelegram-001.arrs&amp;link=https%3A%2F%2Fjuan-nikola.github.io%2Fapple-proxy-profiles%2Fcurrent%2Fanywhere%2Frules%2FFacebook-001.arrs&amp;link=https%3A%2F%2Fjuan-nikola.github.io%2Fapple-proxy-profiles%2Fcurrent%2Fanywhere%2Frules%2FInstagram-001.arrs&amp;link=https%3A%2F%2Fjuan-nikola.github.io%2Fapple-proxy-profiles%2Fcurrent%2Fanywhere%2Frules%2FTwitter-001.arrs&amp;link=https%3A%2F%2Fjuan-nikola.github.io%2Fapple-proxy-profiles%2Fcurrent%2Fanywhere%2Frules%2FTikTok-001.arrs&amp;link=https%3A%2F%2Fjuan-nikola.github.io%2Fapple-proxy-profiles%2Fcurrent%2Fanywhere%2Frules%2FApple-001.arrs&amp;link=https%3A%2F%2Fjuan-nikola.github.io%2Fapple-proxy-profiles%2Fcurrent%2Fanywhere%2Frules%2FMicrosoft-001.arrs&amp;link=https%3A%2F%2Fjuan-nikola.github.io%2Fapple-proxy-profiles%2Fcurrent%2Fanywhere%2Frules%2FDownload-001.arrs&amp;link=https%3A%2F%2Fjuan-nikola.github.io%2Fapple-proxy-profiles%2Fcurrent%2Fanywhere%2Frules%2FPrivateTracker-001.arrs&amp;link=https%3A%2F%2Fjuan-nikola.github.io%2Fapple-proxy-profiles%2Fcurrent%2Fanywhere%2Frules%2FOverseasGame-001.arrs&amp;link=https%3A%2F%2Fjuan-nikola.github.io%2Fapple-proxy-profiles%2Fcurrent%2Fanywhere%2Frules%2FChinaTLD-001.arrs&amp;link=https%3A%2F%2Fjuan-nikola.github.io%2Fapple-proxy-profiles%2Fcurrent%2Fanywhere%2Frules%2FChinaIP-001.arrs">全部导入 32 个规则分片</a></p>
+  <p>如果系统未能打开总链接，请按下面的 3 个批次导入。</p>
+  <h2>批量导入</h2>
+  <ol>
+      <li><a class="button" href="anywhere://add-rule-set?link=https%3A%2F%2Fjuan-nikola.github.io%2Fapple-proxy-profiles%2Fcurrent%2Fanywhere%2Frules%2FHijacking-001.arrs&amp;link=https%3A%2F%2Fjuan-nikola.github.io%2Fapple-proxy-profiles%2Fcurrent%2Fanywhere%2Frules%2FBlockHttpDNS-001.arrs&amp;link=https%3A%2F%2Fjuan-nikola.github.io%2Fapple-proxy-profiles%2Fcurrent%2Fanywhere%2Frules%2FPrivacy-001.arrs&amp;link=https%3A%2F%2Fjuan-nikola.github.io%2Fapple-proxy-profiles%2Fcurrent%2Fanywhere%2Frules%2FDomesticCore-001.arrs&amp;link=https%3A%2F%2Fjuan-nikola.github.io%2Fapple-proxy-profiles%2Fcurrent%2Fanywhere%2Frules%2FDomesticGame-001.arrs&amp;link=https%3A%2F%2Fjuan-nikola.github.io%2Fapple-proxy-profiles%2Fcurrent%2Fanywhere%2Frules%2FSteamCN-001.arrs&amp;link=https%3A%2F%2Fjuan-nikola.github.io%2Fapple-proxy-profiles%2Fcurrent%2Fanywhere%2Frules%2FBiliBili-001.arrs&amp;link=https%3A%2F%2Fjuan-nikola.github.io%2Fapple-proxy-profiles%2Fcurrent%2Fanywhere%2Frules%2FByteDance-001.arrs&amp;link=https%3A%2F%2Fjuan-nikola.github.io%2Fapple-proxy-profiles%2Fcurrent%2Fanywhere%2Frules%2FXiaoHongShu-001.arrs&amp;link=https%3A%2F%2Fjuan-nikola.github.io%2Fapple-proxy-profiles%2Fcurrent%2Fanywhere%2Frules%2FWeibo-001.arrs&amp;link=https%3A%2F%2Fjuan-nikola.github.io%2Fapple-proxy-profiles%2Fcurrent%2Fanywhere%2Frules%2FOpenAI-001.arrs&amp;link=https%3A%2F%2Fjuan-nikola.github.io%2Fapple-proxy-profiles%2Fcurrent%2Fanywhere%2Frules%2FClaude-001.arrs&amp;link=https%3A%2F%2Fjuan-nikola.github.io%2Fapple-proxy-profiles%2Fcurrent%2Fanywhere%2Frules%2FGemini-001.arrs&amp;link=https%3A%2F%2Fjuan-nikola.github.io%2Fapple-proxy-profiles%2Fcurrent%2Fanywhere%2Frules%2FCopilot-001.arrs&amp;link=https%3A%2F%2Fjuan-nikola.github.io%2Fapple-proxy-profiles%2Fcurrent%2Fanywhere%2Frules%2FGitHub-001.arrs">导入批次 1</a> <span>15 个规则分片</span></li>
+      <li><a class="button" href="anywhere://add-rule-set?link=https%3A%2F%2Fjuan-nikola.github.io%2Fapple-proxy-profiles%2Fcurrent%2Fanywhere%2Frules%2FYouTube-001.arrs&amp;link=https%3A%2F%2Fjuan-nikola.github.io%2Fapple-proxy-profiles%2Fcurrent%2Fanywhere%2Frules%2FNetflix-001.arrs&amp;link=https%3A%2F%2Fjuan-nikola.github.io%2Fapple-proxy-profiles%2Fcurrent%2Fanywhere%2Frules%2FDisney-001.arrs&amp;link=https%3A%2F%2Fjuan-nikola.github.io%2Fapple-proxy-profiles%2Fcurrent%2Fanywhere%2Frules%2FSpotify-001.arrs&amp;link=https%3A%2F%2Fjuan-nikola.github.io%2Fapple-proxy-profiles%2Fcurrent%2Fanywhere%2Frules%2FGlobalMedia-001.arrs&amp;link=https%3A%2F%2Fjuan-nikola.github.io%2Fapple-proxy-profiles%2Fcurrent%2Fanywhere%2Frules%2FTelegram-001.arrs&amp;link=https%3A%2F%2Fjuan-nikola.github.io%2Fapple-proxy-profiles%2Fcurrent%2Fanywhere%2Frules%2FFacebook-001.arrs&amp;link=https%3A%2F%2Fjuan-nikola.github.io%2Fapple-proxy-profiles%2Fcurrent%2Fanywhere%2Frules%2FInstagram-001.arrs&amp;link=https%3A%2F%2Fjuan-nikola.github.io%2Fapple-proxy-profiles%2Fcurrent%2Fanywhere%2Frules%2FTwitter-001.arrs&amp;link=https%3A%2F%2Fjuan-nikola.github.io%2Fapple-proxy-profiles%2Fcurrent%2Fanywhere%2Frules%2FTikTok-001.arrs&amp;link=https%3A%2F%2Fjuan-nikola.github.io%2Fapple-proxy-profiles%2Fcurrent%2Fanywhere%2Frules%2FApple-001.arrs&amp;link=https%3A%2F%2Fjuan-nikola.github.io%2Fapple-proxy-profiles%2Fcurrent%2Fanywhere%2Frules%2FMicrosoft-001.arrs&amp;link=https%3A%2F%2Fjuan-nikola.github.io%2Fapple-proxy-profiles%2Fcurrent%2Fanywhere%2Frules%2FDownload-001.arrs&amp;link=https%3A%2F%2Fjuan-nikola.github.io%2Fapple-proxy-profiles%2Fcurrent%2Fanywhere%2Frules%2FPrivateTracker-001.arrs&amp;link=https%3A%2F%2Fjuan-nikola.github.io%2Fapple-proxy-profiles%2Fcurrent%2Fanywhere%2Frules%2FOverseasGame-001.arrs">导入批次 2</a> <span>15 个规则分片</span></li>
+      <li><a class="button" href="anywhere://add-rule-set?link=https%3A%2F%2Fjuan-nikola.github.io%2Fapple-proxy-profiles%2Fcurrent%2Fanywhere%2Frules%2FChinaTLD-001.arrs&amp;link=https%3A%2F%2Fjuan-nikola.github.io%2Fapple-proxy-profiles%2Fcurrent%2Fanywhere%2Frules%2FChinaIP-001.arrs">导入批次 3</a> <span>2 个规则分片</span></li>
+  </ol>
+  <p>每次点击都会打开 Anywhere 的确认界面；不会静默导入。若系统未响应，请使用下方 HTTPS 地址手动导入。</p>
+  <h2>完整分片地址</h2>
+  <ol>
+      <li><a href="https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/Hijacking-001.arrs">https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/Hijacking-001.arrs</a></li>
+      <li><a href="https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/BlockHttpDNS-001.arrs">https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/BlockHttpDNS-001.arrs</a></li>
+      <li><a href="https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/Privacy-001.arrs">https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/Privacy-001.arrs</a></li>
+      <li><a href="https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/DomesticCore-001.arrs">https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/DomesticCore-001.arrs</a></li>
+      <li><a href="https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/DomesticGame-001.arrs">https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/DomesticGame-001.arrs</a></li>
+      <li><a href="https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/SteamCN-001.arrs">https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/SteamCN-001.arrs</a></li>
+      <li><a href="https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/BiliBili-001.arrs">https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/BiliBili-001.arrs</a></li>
+      <li><a href="https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/ByteDance-001.arrs">https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/ByteDance-001.arrs</a></li>
+      <li><a href="https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/XiaoHongShu-001.arrs">https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/XiaoHongShu-001.arrs</a></li>
+      <li><a href="https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/Weibo-001.arrs">https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/Weibo-001.arrs</a></li>
+      <li><a href="https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/OpenAI-001.arrs">https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/OpenAI-001.arrs</a></li>
+      <li><a href="https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/Claude-001.arrs">https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/Claude-001.arrs</a></li>
+      <li><a href="https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/Gemini-001.arrs">https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/Gemini-001.arrs</a></li>
+      <li><a href="https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/Copilot-001.arrs">https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/Copilot-001.arrs</a></li>
+      <li><a href="https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/GitHub-001.arrs">https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/GitHub-001.arrs</a></li>
+      <li><a href="https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/YouTube-001.arrs">https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/YouTube-001.arrs</a></li>
+      <li><a href="https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/Netflix-001.arrs">https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/Netflix-001.arrs</a></li>
+      <li><a href="https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/Disney-001.arrs">https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/Disney-001.arrs</a></li>
+      <li><a href="https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/Spotify-001.arrs">https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/Spotify-001.arrs</a></li>
+      <li><a href="https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/GlobalMedia-001.arrs">https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/GlobalMedia-001.arrs</a></li>
+      <li><a href="https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/Telegram-001.arrs">https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/Telegram-001.arrs</a></li>
+      <li><a href="https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/Facebook-001.arrs">https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/Facebook-001.arrs</a></li>
+      <li><a href="https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/Instagram-001.arrs">https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/Instagram-001.arrs</a></li>
+      <li><a href="https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/Twitter-001.arrs">https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/Twitter-001.arrs</a></li>
+      <li><a href="https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/TikTok-001.arrs">https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/TikTok-001.arrs</a></li>
+      <li><a href="https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/Apple-001.arrs">https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/Apple-001.arrs</a></li>
+      <li><a href="https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/Microsoft-001.arrs">https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/Microsoft-001.arrs</a></li>
+      <li><a href="https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/Download-001.arrs">https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/Download-001.arrs</a></li>
+      <li><a href="https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/PrivateTracker-001.arrs">https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/PrivateTracker-001.arrs</a></li>
+      <li><a href="https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/OverseasGame-001.arrs">https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/OverseasGame-001.arrs</a></li>
+      <li><a href="https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/ChinaTLD-001.arrs">https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/ChinaTLD-001.arrs</a></li>
+      <li><a href="https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/ChinaIP-001.arrs">https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/ChinaIP-001.arrs</a></li>
+  </ol>
+  <h2>已审计的平台差异</h2>
+  <p>Privacy 上游的 20 条可转换规则经优先级编译后，0 条为重复、0 条被更高优先规则完整覆盖，因此输出 20 条且不生成空分片。该来源仍从固定提交获取，并在 Manifest 中独立记录哈希和计数，这不是漏源。</p>
+</main>
+</body>
+</html>
