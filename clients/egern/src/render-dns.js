@@ -1,6 +1,6 @@
 import { OPTION_VALUES } from "../../../shared/contracts.js";
 import { DOMESTIC_FALLBACK_DOMAIN_SUFFIXES } from "../../../shared/rules/domestic-fallback.js";
-import { EXPLICIT_OVERSEAS_RULE_SOURCE_IDS } from "../../../shared/rules/lightweight-policy.js";
+import { orderedRoutingPlan } from "../../../shared/rules/lightweight-policy.js";
 import { PUBLIC_RULE_ROOT } from "./options.js";
 
 const CHINA_DNS = Object.freeze({
@@ -14,6 +14,9 @@ const GLOBAL_DNS = Object.freeze({
   google: "https://dns.google/dns-query",
   quad9: "https://dns.quad9.net/dns-query",
 });
+const proxyDnsSourceIds = Object.freeze(
+  orderedRoutingPlan().filter(({ dnsClass }) => dnsClass === "proxy").map(({ id }) => id),
+);
 
 function safeOption(options, key) {
   const descriptor = Object.getOwnPropertyDescriptor(options, key);
@@ -87,7 +90,7 @@ export function renderEgernDns(options) {
     forward = [wildcard("global")];
   } else {
     forward = [
-      ...EXPLICIT_OVERSEAS_RULE_SOURCE_IDS.map((id) => proxyRule(baseUrl, id)),
+      ...proxyDnsSourceIds.map((id) => proxyRule(baseUrl, id)),
       ...domesticFallbackRules(),
       chinaRule(baseUrl),
       wildcard("china"),

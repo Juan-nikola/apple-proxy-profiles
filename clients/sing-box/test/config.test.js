@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
+import { orderedRoutingPlan } from "../../../shared/rules/lightweight-policy.js";
 import { parseSingBoxOptions } from "../src/options.js";
 import { renderSingBoxDns } from "../src/render-dns.js";
 import { renderSingBoxOutbound } from "../src/render-node.js";
@@ -114,13 +115,16 @@ test("uses a dedicated health probe for rule downloads", () => {
 
 test("renders latest sing-box flat DNS rule actions", () => {
   const config = render();
+  const proxyDnsRuleSets = orderedRoutingPlan()
+    .filter(({ dnsClass }) => dnsClass === "proxy")
+    .map(({ id }) => `rule-${id}`);
   assert.deepEqual(
     config.dns.rules.map(({ action, server }) => ({ action, server })),
     [{ action: "route", server: "dns-proxy" }],
   );
   assert.equal(config.dns.final, "dns-direct");
-  assert.equal(config.dns.rules[0].rule_set.includes("rule-OpenAI"), true);
-  assert.equal(config.dns.rules[0].rule_set.includes("rule-DomesticCore"), false);
+  assert.deepEqual(config.dns.rules[0].rule_set, proxyDnsRuleSets);
+  assert.equal(config.dns.rules[0].rule_set.includes("rule-ChinaTLD"), false);
 });
 
 test("renders every global DNS provider with the structured HTTPS contract", () => {
@@ -197,12 +201,15 @@ test("orders deterministic fallback after explicit services and before ChinaIP",
   const steamCn = indexOfTag("rule-SteamCN");
   const overseas = indexOfTag("rule-OpenAI");
   const overseasGame = indexOfTag("rule-OverseasGame");
+  const chinaTld = indexOfTag("rule-ChinaTLD");
   const resolve = rules.findIndex((rule) => rule.action === "resolve");
   const chinaIp = indexOfTag("rule-ChinaIP");
-  assert.equal([local, security, custom, domesticCore, domesticGame, steamCn, overseas, overseasGame, resolve, chinaIp].every((index) => index >= 0), true);
+  assert.equal([local, security, custom, domesticCore, domesticGame, steamCn, overseas, overseasGame, chinaTld, resolve, chinaIp].every((index) => index >= 0), true);
   assert.equal(local < security && security < custom && custom < domesticCore, true);
   assert.equal(domesticCore < domesticGame && domesticGame < steamCn && steamCn < overseas, true);
-  assert.equal(overseas < overseasGame && overseasGame < resolve && resolve < chinaIp, true);
+  assert.equal(overseas < overseasGame && overseasGame < chinaTld, true);
+  assert.equal(chinaTld < resolve && resolve < chinaIp, true);
+  assert.equal(rules[chinaTld].outbound, "DIRECT");
   assert.deepEqual(rules[resolve], { action: "resolve", server: "dns-direct" });
   assert.equal(rules[chinaIp].outbound, "DIRECT");
   assert.equal(Object.hasOwn(rules[chinaIp], "rule_set_ip_cidr_accept_empty"), false);

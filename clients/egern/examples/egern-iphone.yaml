@@ -902,6 +902,10 @@ rules:
       policy: "🌍 海外游戏"
       update_interval: 86400
   - rule_set:
+      match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/ChinaTLD.yaml"
+      policy: "DIRECT"
+      update_interval: 86400
+  - rule_set:
       match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/ChinaIP.yaml"
       policy: "DIRECT"
       update_interval: 86400

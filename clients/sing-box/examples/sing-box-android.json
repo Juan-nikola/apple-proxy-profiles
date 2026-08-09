@@ -623,6 +623,14 @@
       },
       {
         "type": "remote",
+        "tag": "rule-SteamCN",
+        "format": "binary",
+        "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/rule-sets/SteamCN.srs",
+        "http_client": "🧭 规则下载 HTTP",
+        "update_interval": "24h"
+      },
+      {
+        "type": "remote",
         "tag": "rule-BiliBili",
         "format": "binary",
         "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/rule-sets/BiliBili.srs",
@@ -791,9 +799,17 @@
       },
       {
         "type": "remote",
-        "tag": "rule-SteamCN",
+        "tag": "rule-Download",
         "format": "binary",
-        "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/rule-sets/SteamCN.srs",
+        "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/rule-sets/Download.srs",
+        "http_client": "🧭 规则下载 HTTP",
+        "update_interval": "24h"
+      },
+      {
+        "type": "remote",
+        "tag": "rule-PrivateTracker",
+        "format": "binary",
+        "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/rule-sets/PrivateTracker.srs",
         "http_client": "🧭 规则下载 HTTP",
         "update_interval": "24h"
       },
@@ -807,17 +823,9 @@
       },
       {
         "type": "remote",
-        "tag": "rule-Download",
+        "tag": "rule-ChinaTLD",
         "format": "binary",
-        "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/rule-sets/Download.srs",
-        "http_client": "🧭 规则下载 HTTP",
-        "update_interval": "24h"
-      },
-      {
-        "type": "remote",
-        "tag": "rule-PrivateTracker",
-        "format": "binary",
-        "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/rule-sets/PrivateTracker.srs",
+        "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/rule-sets/ChinaTLD.srs",
         "http_client": "🧭 规则下载 HTTP",
         "update_interval": "24h"
       },
@@ -1104,6 +1112,13 @@
         ],
         "action": "route",
         "outbound": "🌍 海外游戏"
+      },
+      {
+        "rule_set": [
+          "rule-ChinaTLD"
+        ],
+        "action": "route",
+        "outbound": "DIRECT"
       },
       {
         "action": "resolve",

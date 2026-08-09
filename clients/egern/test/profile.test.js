@@ -126,12 +126,14 @@ test("renders the lightweight Egern-native rule precedence and terminal ordering
   assert.ok(indexOf("DomesticGame") < indexOf("SteamCN"));
   assert.ok(indexOf("SteamCN") < indexOf("OpenAI"));
   assert.ok(indexOf("OpenAI") < indexOf("OverseasGame"));
-  assert.ok(indexOf("OverseasGame") < indexOf("ChinaIP"));
+  assert.ok(indexOf("OverseasGame") < indexOf("ChinaTLD"));
+  assert.ok(indexOf("ChinaTLD") < indexOf("ChinaIP"));
   assert.ok(indexOf("ChinaIP") < rules.length - 2);
   assert.equal(rules[indexOf("DomesticCore")].rule_set.policy, "DIRECT");
   assert.equal(rules[indexOf("DomesticGame")].rule_set.policy, "DIRECT");
   assert.equal(rules[indexOf("SteamCN")].rule_set.policy, "DIRECT");
   assert.equal(rules[indexOf("OverseasGame")].rule_set.policy, "🌍 海外游戏");
+  assert.equal(rules[indexOf("ChinaTLD")].rule_set.policy, "DIRECT");
   assert.equal(rules[indexOf("ChinaIP")].rule_set.policy, "DIRECT");
 
   const serialized = JSON.stringify(rules);

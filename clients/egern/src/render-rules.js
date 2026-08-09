@@ -1,4 +1,4 @@
-import { ruleClientCatalog } from "../../../shared/rules/lightweight-policy.js";
+import { ROUTING_PHASES, orderedRoutingPlan } from "../../../shared/rules/lightweight-policy.js";
 import { CUSTOM_RULES } from "../../../shared/rules/custom-rules.js";
 import { PUBLIC_RULE_ROOT } from "./options.js";
 
@@ -41,10 +41,6 @@ const LOCAL_RULES = Object.freeze([
   })),
 ]);
 
-const SECURITY_IDS = new Set(["Hijacking", "BlockHttpDNS", "Privacy", "Advertising", "Advertising_Domain"]);
-const DOMESTIC_IDS = Object.freeze(["DomesticCore", "DomesticGame", "SteamCN"]);
-const OVERSEAS_GAME_ID = "OverseasGame";
-const CHINA_IP_ID = "ChinaIP";
 
 function invalidCustom() {
   throw new Error(CUSTOM_ERROR);
@@ -245,40 +241,24 @@ function validatedOptions(options) {
 
 export function renderEgernRules(options) {
   const { ruleBase, adblockMode } = validatedOptions(options);
-  const catalog = ruleClientCatalog({ adblockMode });
+  const plan = orderedRoutingPlan({ adblockMode });
   const optionalBase = adblockMode === "full"
     ? ruleBase.replace(/\/egern\/rules$/u, "/optional/adblock-full/egern/rules")
     : null;
-  const byId = new Map();
-  for (const source of catalog) {
-    if (byId.has(source.id)) throw new Error("Invalid Egern rule catalog");
-    byId.set(source.id, source);
-  }
 
   const renderRemote = (source) => ({
     rule_set: {
-      match: `${SECURITY_IDS.has(source.id) && ["Advertising", "Advertising_Domain"].includes(source.id) ? optionalBase : ruleBase}/${source.id}.yaml`,
+      match: `${["Advertising", "Advertising_Domain"].includes(source.id) ? optionalBase : ruleBase}/${source.id}.yaml`,
       policy: source.policy,
       update_interval: 86400,
     },
   });
 
   const rules = [...LOCAL_RULES.map((rule) => structuredClone(rule))];
-  rules.push(...catalog.filter(({ id }) => SECURITY_IDS.has(id)).map(renderRemote));
+  rules.push(...plan.filter(({ phase }) => phase === "security").map(renderRemote));
   rules.push(...renderEgernCustomRules(CUSTOM_RULES));
-  for (const id of DOMESTIC_IDS) {
-    const source = byId.get(id);
-    if (!source) throw new Error("Invalid Egern rule catalog");
-    rules.push(renderRemote(source));
-  }
-  for (const source of catalog) {
-    if (SECURITY_IDS.has(source.id) || DOMESTIC_IDS.includes(source.id) || [OVERSEAS_GAME_ID, CHINA_IP_ID].includes(source.id)) continue;
-    rules.push(renderRemote(source));
-  }
-  for (const id of [OVERSEAS_GAME_ID, CHINA_IP_ID]) {
-    const source = byId.get(id);
-    if (!source) throw new Error("Invalid Egern rule catalog");
-    rules.push(renderRemote(source));
+  for (const phase of ROUTING_PHASES.filter((value) => value !== "security")) {
+    rules.push(...plan.filter((source) => source.phase === phase).map(renderRemote));
   }
   rules.push(
     { geoip: { match: "CN", policy: "DIRECT" } },

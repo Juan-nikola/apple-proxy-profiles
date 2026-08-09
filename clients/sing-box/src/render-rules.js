@@ -1,4 +1,8 @@
-import { ruleClientCatalog } from "../../../shared/rules/lightweight-policy.js";
+import {
+  ROUTING_PHASES,
+  orderedRoutingPlan,
+  ruleClientCatalog,
+} from "../../../shared/rules/lightweight-policy.js";
 import { CUSTOM_RULES } from "../../../shared/rules/custom-rules.js";
 
 export const RULE_DOWNLOAD_HTTP_CLIENT = "🧭 规则下载 HTTP";
@@ -7,10 +11,6 @@ const LOCAL_RULES = Object.freeze([
   { ip_is_private: true, action: "route", outbound: "DIRECT" },
   { domain_suffix: ["local", "lan", "home.arpa"], action: "route", outbound: "DIRECT" },
 ]);
-const SECURITY_IDS = new Set(["Hijacking", "BlockHttpDNS", "Privacy", "Advertising", "Advertising_Domain"]);
-const DOMESTIC_IDS = Object.freeze(["DomesticCore", "DomesticGame", "SteamCN"]);
-const OVERSEAS_GAME_ID = "OverseasGame";
-const CHINA_IP_ID = "ChinaIP";
 const CUSTOM_TARGETS = Object.freeze({ block: "REJECT", direct: "DIRECT", proxy: "🚀 节点选择", ai: "🤖 AI 专用" });
 const CUSTOM_FIELDS = Object.freeze({
   DOMAIN: "domain",
@@ -81,20 +81,20 @@ export function renderSingBoxRouteRules({ ruleBaseUrl, profileMode = "light", ad
     ...LOCAL_RULES,
   ];
   if (profileMode === "light") {
-    const catalog = ruleClientCatalog({ adblockMode });
-    for (const source of catalog.filter(({ id }) => SECURITY_IDS.has(id))) rules.push(taggedRule(source));
+    const plan = orderedRoutingPlan({ adblockMode });
+    rules.push(...plan.filter(({ phase }) => phase === "security").map(taggedRule));
   }
   rules.push(...renderCustomRules());
   if (profileMode === "diagnostic") return { ruleSets, rules, final: "🚀 节点选择" };
-  const catalog = ruleClientCatalog({ adblockMode });
-  const byId = new Map(catalog.map((source) => [source.id, source]));
-  for (const id of DOMESTIC_IDS) rules.push(taggedRule(byId.get(id)));
-  for (const source of catalog) {
-    if (SECURITY_IDS.has(source.id) || DOMESTIC_IDS.includes(source.id) || [OVERSEAS_GAME_ID, CHINA_IP_ID].includes(source.id)) continue;
-    rules.push(taggedRule(source));
+  const plan = orderedRoutingPlan({ adblockMode });
+  for (const phase of ROUTING_PHASES.filter((value) => (
+    value !== "security" && value !== "resolvedChinaIp"
+  ))) {
+    rules.push(...plan.filter((source) => source.phase === phase).map(taggedRule));
   }
-  rules.push(taggedRule(byId.get(OVERSEAS_GAME_ID)));
   rules.push({ action: "resolve", server: "dns-direct" });
-  rules.push(taggedRule(byId.get(CHINA_IP_ID)));
+  rules.push(...plan
+    .filter(({ phase }) => phase === "resolvedChinaIp")
+    .map(taggedRule));
   return { ruleSets, rules, final: "🚀 节点选择" };
 }

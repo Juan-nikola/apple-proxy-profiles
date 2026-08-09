@@ -1,4 +1,4 @@
-import { EXPLICIT_OVERSEAS_RULE_SOURCE_IDS } from "../../../shared/rules/lightweight-policy.js";
+import { orderedRoutingPlan } from "../../../shared/rules/lightweight-policy.js";
 
 const CHINA_DNS = Object.freeze({
   alidns: "223.5.5.5",
@@ -10,7 +10,9 @@ const GLOBAL_DNS = Object.freeze({
   google: Object.freeze({ server: "8.8.8.8", serverName: "dns.google" }),
   quad9: Object.freeze({ server: "9.9.9.9", serverName: "dns.quad9.net" }),
 });
-const EXPLICIT_OVERSEAS_RULE_SETS = Object.freeze(EXPLICIT_OVERSEAS_RULE_SOURCE_IDS.map((id) => `rule-${id}`));
+const proxyDnsSourceIds = Object.freeze(
+  orderedRoutingPlan().filter(({ dnsClass }) => dnsClass === "proxy").map(({ id }) => id),
+);
 
 export function renderSingBoxDns(options) {
   const chinaServer = options.chinaDns === "system"
@@ -30,7 +32,7 @@ export function renderSingBoxDns(options) {
   return {
     servers: [chinaServer, proxyServer],
     rules: options.profileMode === "diagnostic" ? [] : [
-      { rule_set: EXPLICIT_OVERSEAS_RULE_SETS, action: "route", server: "dns-proxy" },
+      { rule_set: proxyDnsSourceIds.map((id) => `rule-${id}`), action: "route", server: "dns-proxy" },
     ],
     final: "dns-direct",
     strategy: options.ipv6Mode === "ipv4-only" ? "ipv4_only" : "prefer_ipv4",
