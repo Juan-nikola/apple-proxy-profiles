@@ -1,5 +1,5 @@
 import { CUSTOM_AI, CUSTOM_BLOCK, CUSTOM_DIRECT, CUSTOM_PROXY } from "./custom-rules.js";
-import { ruleClientCatalog } from "../../../shared/rules/lightweight-policy.js";
+import { ROUTING_PHASES, orderedRoutingPlan } from "../../../shared/rules/lightweight-policy.js";
 import { isValidRuleLine } from "./rule-validator.js";
 
 export const PUBLIC_RULE_ROOT = "https://juan-nikola.github.io/apple-proxy-profiles";
@@ -28,16 +28,6 @@ const CUSTOM_RULES = Object.freeze([
   Object.freeze(["CUSTOM_AI", CUSTOM_AI, "🤖 AI 专用"]),
 ]);
 
-const SECURITY_IDS = new Set([
-  "Hijacking",
-  "BlockHttpDNS",
-  "Privacy",
-  "Advertising",
-  "Advertising_Domain",
-]);
-const DOMESTIC_IDS = Object.freeze(["DomesticCore", "DomesticGame", "SteamCN"]);
-const OVERSEAS_GAME_ID = "OverseasGame";
-const CHINA_IP_ID = "ChinaIP";
 const RULE_DOWNLOAD_POLICY = "🧭 DNS 与规则下载";
 
 function isSafeCustomField(value) {
@@ -124,18 +114,13 @@ export function ruleBaseUrlForChannel(channel) {
 export function renderRules({ ruleBaseUrl, adblockMode = "off" } = {}) {
   validateCustomRules(CUSTOM_RULES);
   const base = safeBaseUrl(ruleBaseUrl);
-  const catalog = ruleClientCatalog({ adblockMode });
+  const plan = orderedRoutingPlan({ adblockMode });
   const optionalBase = adblockMode === "full" ? optionalAdblockBase(base.url) : null;
-  const byId = new Map();
-  for (const source of catalog) {
-    if (byId.has(source.id)) throw new Error(`Duplicate Shadowrocket rule source: ${source.id}`);
-    byId.set(source.id, source);
-  }
   const render = (source) => renderRuleSet(source, base.url, optionalBase);
   const lines = [
     ...LOCAL_RULES,
     "# Security rules",
-    ...catalog.filter(({ id }) => SECURITY_IDS.has(id)).map(render),
+    ...plan.filter(({ phase }) => phase === "security").map(render),
     "# Custom rules",
   ];
 
@@ -149,24 +134,8 @@ export function renderRules({ ruleBaseUrl, adblockMode = "off" } = {}) {
     `DOMAIN,${base.hostname},${RULE_DOWNLOAD_POLICY}`,
   );
 
-  for (const id of DOMESTIC_IDS) {
-    const source = byId.get(id);
-    if (!source) throw new Error(`Missing Shadowrocket lightweight rule source: ${id}`);
-    lines.push(render(source));
-  }
-  for (const source of catalog) {
-    if (
-      SECURITY_IDS.has(source.id)
-      || DOMESTIC_IDS.includes(source.id)
-      || source.id === OVERSEAS_GAME_ID
-      || source.id === CHINA_IP_ID
-    ) continue;
-    lines.push(render(source));
-  }
-  for (const id of [OVERSEAS_GAME_ID, CHINA_IP_ID]) {
-    const source = byId.get(id);
-    if (!source) throw new Error(`Missing Shadowrocket lightweight rule source: ${id}`);
-    lines.push(render(source));
+  for (const phase of ROUTING_PHASES.filter((value) => value !== "security")) {
+    lines.push(...plan.filter((source) => source.phase === phase).map(render));
   }
   lines.push("GEOIP,CN,DIRECT", "FINAL,🚀 节点选择");
   return lines;

@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
+import { DEFAULT_RULE_SOURCE_IDS } from "../../../shared/rules/lightweight-policy.js";
 import { parseSurgeOptions } from "../src/options.js";
 import { renderSurgeProxy } from "../src/render-node.js";
 import { renderSurgeProfile } from "../src/render-profile.js";
@@ -86,16 +87,20 @@ test("renders a private Surge profile with shared policy sections and no interna
   assert.deepEqual(validateSurgeProfile(profile), { valid: true, errors: [] });
 });
 
-test("renders the lightweight Surge precedence without default advertising or China domain sets", () => {
+test("renders ChinaTLD after OverseasGame and before ChinaIP in the lightweight Surge precedence", () => {
   const profile = renderSurgeProfile(parseSurgeOptions(baseOptions), [normalizedSsNode], { ruleBaseUrl });
   const rules = ruleLines(profile);
   const indexOf = (fragment) => rules.findIndex((line) => line.includes(fragment));
+  const remoteRules = rules.filter((line) => /^(?:RULE-SET|DOMAIN-SET),/u.test(line));
 
   assert.doesNotMatch(profile, /\/(?:Advertising|Advertising_Domain|ChinaMax_Domain)\.list/u);
+  assert.equal(remoteRules.length, DEFAULT_RULE_SOURCE_IDS.length);
   assert.match(profile, new RegExp(`^RULE-SET,${ruleBaseUrl}/DomesticCore\\.list,DIRECT,`, "mu"));
   assert.match(profile, new RegExp(`^RULE-SET,${ruleBaseUrl}/DomesticGame\\.list,DIRECT,`, "mu"));
   assert.match(profile, new RegExp(`^RULE-SET,${ruleBaseUrl}/SteamCN\\.list,DIRECT,`, "mu"));
   assert.match(profile, new RegExp(`^RULE-SET,${ruleBaseUrl}/OverseasGame\\.list,🌍 海外游戏,`, "mu"));
+  assert.match(profile, new RegExp(`^RULE-SET,${ruleBaseUrl}/ChinaTLD\\.list,DIRECT,`, "mu"));
+  assert.match(rules[indexOf("/ChinaTLD.list")], /ChinaTLD\.list,DIRECT,/u);
   assert.match(profile, new RegExp(`^RULE-SET,${ruleBaseUrl}/ChinaIP\\.list,DIRECT,`, "mu"));
   assert.match(profile, /^GEOIP,CN,DIRECT$/mu);
   assert.doesNotMatch(profile, /^GEOIP,CN,DIRECT,no-resolve$/mu);
@@ -107,7 +112,8 @@ test("renders the lightweight Surge precedence without default advertising or Ch
   assert.ok(indexOf("/DomesticGame.list") < indexOf("/SteamCN.list"));
   assert.ok(indexOf("/SteamCN.list") < indexOf("/OpenAI.list"));
   assert.ok(indexOf("/OpenAI.list") < indexOf("/OverseasGame.list"));
-  assert.ok(indexOf("/OverseasGame.list") < indexOf("/ChinaIP.list"));
+  assert.ok(indexOf("/OverseasGame.list") < indexOf("/ChinaTLD.list"));
+  assert.ok(indexOf("/ChinaTLD.list") < indexOf("/ChinaIP.list"));
   assert.ok(indexOf("/ChinaIP.list") < indexOf("GEOIP,CN,DIRECT"));
 });
 

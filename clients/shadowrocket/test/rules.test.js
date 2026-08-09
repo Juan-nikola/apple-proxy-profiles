@@ -25,7 +25,7 @@ function indexOf(lines, fragment) {
   return index;
 }
 
-test("renders the shared lightweight precedence without legacy default rule packs", () => {
+test("renders ChinaTLD after OverseasGame and before ChinaIP in the shared lightweight precedence", () => {
   const lines = renderRules({ ruleBaseUrl: RULE_BASE_URL });
 
   for (const id of FORBIDDEN_DEFAULT_IDS) {
@@ -38,13 +38,15 @@ test("renders the shared lightweight precedence without legacy default rule pack
   assert.ok(indexOf(lines, "/DomesticGame.list") < indexOf(lines, "/SteamCN.list"));
   assert.ok(indexOf(lines, "/SteamCN.list") < indexOf(lines, "/OpenAI.list"));
   assert.ok(indexOf(lines, "/OpenAI.list") < indexOf(lines, "/OverseasGame.list"));
-  assert.ok(indexOf(lines, "/OverseasGame.list") < indexOf(lines, "/ChinaIP.list"));
+  assert.ok(indexOf(lines, "/OverseasGame.list") < indexOf(lines, "/ChinaTLD.list"));
+  assert.ok(indexOf(lines, "/ChinaTLD.list") < indexOf(lines, "/ChinaIP.list"));
   assert.ok(indexOf(lines, "/ChinaIP.list") < indexOf(lines, "GEOIP,CN,DIRECT"));
 
   assert.match(lines[indexOf(lines, "/DomesticCore.list")], /^RULE-SET,.*\/DomesticCore\.list,DIRECT,/u);
   assert.match(lines[indexOf(lines, "/DomesticGame.list")], /^RULE-SET,.*\/DomesticGame\.list,DIRECT,/u);
   assert.match(lines[indexOf(lines, "/SteamCN.list")], /^RULE-SET,.*\/SteamCN\.list,DIRECT,/u);
   assert.match(lines[indexOf(lines, "/OverseasGame.list")], /^RULE-SET,.*\/OverseasGame\.list,🌍 海外游戏,/u);
+  assert.match(lines[indexOf(lines, "/ChinaTLD.list")], /ChinaTLD\.list,DIRECT,/u);
   assert.match(lines[indexOf(lines, "/ChinaIP.list")], /^RULE-SET,.*\/ChinaIP\.list,DIRECT,/u);
   assert.equal(lines.at(-2), "GEOIP,CN,DIRECT");
   assert.equal(lines.at(-1), "FINAL,🚀 节点选择");
