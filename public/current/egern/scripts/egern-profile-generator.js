@@ -829,6 +829,7 @@ var EgernProfileBundle = (() => {
     "Privacy",
     "DomesticCore",
     "DomesticGame",
+    "SteamCN",
     "BiliBili",
     "ByteDance",
     "XiaoHongShu",
@@ -850,16 +851,62 @@ var EgernProfileBundle = (() => {
     "TikTok",
     "Apple",
     "Microsoft",
-    "SteamCN",
-    "OverseasGame",
     "Download",
     "PrivateTracker",
+    "OverseasGame",
+    "ChinaTLD",
     "ChinaIP"
   ]);
   var FULL_ADBLOCK_SOURCE_IDS = Object.freeze([
     "Advertising",
     "Advertising_Domain"
   ]);
+  var ROUTING_PHASES = Object.freeze([
+    "security",
+    "earlyDomestic",
+    "serviceIntent",
+    "overseasGame",
+    "lateDomestic",
+    "resolvedChinaIp"
+  ]);
+  var PHASE_SOURCE_IDS = Object.freeze({
+    security: Object.freeze([
+      "Hijacking",
+      "BlockHttpDNS",
+      "Privacy",
+      "Advertising",
+      "Advertising_Domain"
+    ]),
+    earlyDomestic: Object.freeze(["DomesticCore", "DomesticGame", "SteamCN"]),
+    serviceIntent: Object.freeze([
+      "BiliBili",
+      "ByteDance",
+      "XiaoHongShu",
+      "Weibo",
+      "OpenAI",
+      "Claude",
+      "Gemini",
+      "Copilot",
+      "GitHub",
+      "YouTube",
+      "Netflix",
+      "Disney",
+      "Spotify",
+      "GlobalMedia",
+      "Telegram",
+      "Facebook",
+      "Instagram",
+      "Twitter",
+      "TikTok",
+      "Apple",
+      "Microsoft",
+      "Download",
+      "PrivateTracker"
+    ]),
+    overseasGame: Object.freeze(["OverseasGame"]),
+    lateDomestic: Object.freeze(["ChinaTLD"]),
+    resolvedChinaIp: Object.freeze(["ChinaIP"])
+  });
   var RULE_BUDGETS = Object.freeze({
     domesticCoreEntries: 2e3,
     defaultEntries: 25e3,
@@ -897,6 +944,31 @@ var EgernProfileBundle = (() => {
     "TikTok",
     "OverseasGame"
   ]);
+  var DNS_CLASS_SOURCE_IDS = Object.freeze({
+    proxy: EXPLICIT_OVERSEAS_RULE_SOURCE_IDS,
+    china: Object.freeze([
+      "DomesticCore",
+      "DomesticGame",
+      "SteamCN",
+      "ChinaTLD",
+      "BiliBili",
+      "ByteDance",
+      "XiaoHongShu",
+      "Weibo",
+      "Apple",
+      "Microsoft",
+      "Download",
+      "PrivateTracker"
+    ]),
+    none: Object.freeze([
+      "Hijacking",
+      "BlockHttpDNS",
+      "Privacy",
+      "Advertising",
+      "Advertising_Domain",
+      "ChinaIP"
+    ])
+  });
   var POLICY_TARGETS = Object.freeze({
     direct: "DIRECT",
     defaultProxy: "\u{1F680} \u8282\u70B9\u9009\u62E9",
@@ -934,19 +1006,31 @@ var EgernProfileBundle = (() => {
     OverseasGame: POLICY_TARGETS.overseasGame,
     Download: "\u2B07\uFE0F \u4E0B\u8F7D/P2P",
     PrivateTracker: "\u2B07\uFE0F \u4E0B\u8F7D/P2P",
+    ChinaTLD: POLICY_TARGETS.direct,
     ChinaIP: POLICY_TARGETS.direct,
     Advertising: "\u{1F9F1} \u5E38\u89C1\u5E7F\u544A",
     Advertising_Domain: "\u{1F9F1} \u5E38\u89C1\u5E7F\u544A"
   });
+  function uniqueMembership(id, memberships, label) {
+    const matches = Object.entries(memberships).filter(([, ids]) => ids.includes(id)).map(([name]) => name);
+    if (matches.length !== 1) {
+      throw new Error(`Lightweight rule source ${id} must have exactly one ${label} membership`);
+    }
+    return matches[0];
+  }
   function clientRecord(id) {
     const policy = SOURCE_POLICIES[id];
     if (!policy) throw new Error(`Missing policy for lightweight rule source: ${id}`);
+    const phase = uniqueMembership(id, PHASE_SOURCE_IDS, "routing phase");
+    const dnsClass = uniqueMembership(id, DNS_CLASS_SOURCE_IDS, "DNS class");
     return Object.freeze({
       id,
       policy,
       // The publication pipeline emits normalized, typed Surge/Shadowrocket
       // lines for every compiled source, including domain-only inputs.
-      inputFormat: "RULE-SET"
+      inputFormat: "RULE-SET",
+      phase,
+      dnsClass
     });
   }
   var DEFAULT_RULE_CLIENT_CATALOG = Object.freeze(DEFAULT_RULE_SOURCE_IDS.map(clientRecord));
@@ -957,6 +1041,42 @@ var EgernProfileBundle = (() => {
     }
     return adblockMode === "full" ? Object.freeze([...DEFAULT_RULE_CLIENT_CATALOG, ...FULL_ADBLOCK_RULE_CLIENT_CATALOG]) : DEFAULT_RULE_CLIENT_CATALOG;
   }
+  function orderedRoutingPlan({ adblockMode = "off" } = {}) {
+    const selected = ruleClientCatalog({ adblockMode });
+    const phaseRank = new Map(ROUTING_PHASES.map((phase, index) => [phase, index]));
+    const sourceRank = new Map(
+      [...DEFAULT_RULE_SOURCE_IDS, ...FULL_ADBLOCK_SOURCE_IDS].map((id, index) => [id, index])
+    );
+    return Object.freeze([...selected].sort((left, right) => phaseRank.get(left.phase) - phaseRank.get(right.phase) || sourceRank.get(left.id) - sourceRank.get(right.id)));
+  }
+
+  // ../../../shared/rules/observed-domestic.js
+  var OBSERVED_DOMESTIC_RECORDS = Object.freeze([
+    Object.freeze({
+      suffix: "wmpvp.com",
+      service: "WeChat mini-program media",
+      observedAt: "2026-08-08",
+      reason: "Domestic App media request was observed falling through to the proxy"
+    }),
+    Object.freeze({
+      suffix: "bytehwm.com",
+      service: "ByteDance font and static CDN",
+      observedAt: "2026-08-08",
+      reason: "Domestic static asset request was observed falling through to the proxy"
+    }),
+    Object.freeze({
+      suffix: "rtbasia.com",
+      service: "Observed domestic App dependency",
+      observedAt: "2026-08-08",
+      reason: "App dependency was observed using the proxy during domestic workflow testing"
+    }),
+    Object.freeze({
+      suffix: "sandbox.itunes.apple.com",
+      service: "Apple sandbox purchase validation",
+      observedAt: "2026-08-08",
+      reason: "Sandbox validation request was observed using the proxy during domestic App testing"
+    })
+  ]);
 
   // ../../../shared/rules/domestic-core.js
   function normalizedSuffixes(values, name) {
@@ -970,7 +1090,7 @@ var EgernProfileBundle = (() => {
     if (new Set(normalized).size !== normalized.length) throw new TypeError(`${name} contains a duplicate suffix`);
     return Object.freeze(normalized);
   }
-  var DOMESTIC_CORE_DOMAIN_SUFFIXES = normalizedSuffixes([
+  var DOMESTIC_CORE_BASE_DOMAIN_SUFFIXES = [
     "bilibili.com",
     "bilibili.net",
     "bilibili.tv",
@@ -1026,19 +1146,19 @@ var EgernProfileBundle = (() => {
     "netease.com",
     "amap.com",
     "autonavi.com",
-    // Confirmed domestic CDN/app endpoints observed in client traces and the
-    // supplied reference profile. Keep this list small; unknown names are
-    // classified by China-first DNS plus ChinaIP/GeoIP in every client.
-    "wmpvp.com",
-    "bytehwm.com",
-    "rtbasia.com",
-    "sandbox.itunes.apple.com",
+    // Audited domestic media endpoints from the supplied reference profile.
+    // Keep this list small; unknown names are classified by China-first DNS
+    // plus ChinaIP/GeoIP in every client.
     "douyu.com",
     "douyu.tv",
     "douyutv.com",
     "douyuscdn.com",
     "douyucdn.cn",
     "huya.com"
+  ];
+  var DOMESTIC_CORE_DOMAIN_SUFFIXES = normalizedSuffixes([
+    ...DOMESTIC_CORE_BASE_DOMAIN_SUFFIXES,
+    ...OBSERVED_DOMESTIC_RECORDS.map(({ suffix }) => suffix)
   ], "Domestic core");
   var DOMESTIC_GAME_DOMAIN_SUFFIXES = normalizedSuffixes([
     "leiting.com",
@@ -1074,6 +1194,9 @@ var EgernProfileBundle = (() => {
     google: "https://dns.google/dns-query",
     quad9: "https://dns.quad9.net/dns-query"
   });
+  var proxyDnsSourceIds = Object.freeze(
+    orderedRoutingPlan().filter(({ dnsClass }) => dnsClass === "proxy").map(({ id }) => id)
+  );
   function safeOption(options, key) {
     const descriptor = Object.getOwnPropertyDescriptor(options, key);
     if (!descriptor || "get" in descriptor || "set" in descriptor) {
@@ -1137,7 +1260,7 @@ var EgernProfileBundle = (() => {
       forward = [wildcard("global")];
     } else {
       forward = [
-        ...EXPLICIT_OVERSEAS_RULE_SOURCE_IDS.map((id) => proxyRule(baseUrl, id)),
+        ...proxyDnsSourceIds.map((id) => proxyRule(baseUrl, id)),
         ...domesticFallbackRules(),
         chinaRule(baseUrl),
         wildcard("china")
@@ -1711,10 +1834,6 @@ var EgernProfileBundle = (() => {
       [type]: Object.freeze({ match, policy: "DIRECT", no_resolve: true })
     }))
   ]);
-  var SECURITY_IDS = /* @__PURE__ */ new Set(["Hijacking", "BlockHttpDNS", "Privacy", "Advertising", "Advertising_Domain"]);
-  var DOMESTIC_IDS = Object.freeze(["DomesticCore", "DomesticGame", "SteamCN"]);
-  var OVERSEAS_GAME_ID = "OverseasGame";
-  var CHINA_IP_ID = "ChinaIP";
   function invalidCustom() {
     throw new Error(CUSTOM_ERROR);
   }
@@ -1880,36 +1999,20 @@ var EgernProfileBundle = (() => {
   }
   function renderEgernRules(options) {
     const { ruleBase, adblockMode } = validatedOptions(options);
-    const catalog = ruleClientCatalog({ adblockMode });
+    const plan = orderedRoutingPlan({ adblockMode });
     const optionalBase = adblockMode === "full" ? ruleBase.replace(/\/egern\/rules$/u, "/optional/adblock-full/egern/rules") : null;
-    const byId = /* @__PURE__ */ new Map();
-    for (const source of catalog) {
-      if (byId.has(source.id)) throw new Error("Invalid Egern rule catalog");
-      byId.set(source.id, source);
-    }
     const renderRemote = (source) => ({
       rule_set: {
-        match: `${SECURITY_IDS.has(source.id) && ["Advertising", "Advertising_Domain"].includes(source.id) ? optionalBase : ruleBase}/${source.id}.yaml`,
+        match: `${["Advertising", "Advertising_Domain"].includes(source.id) ? optionalBase : ruleBase}/${source.id}.yaml`,
         policy: source.policy,
         update_interval: 86400
       }
     });
     const rules = [...LOCAL_RULES.map((rule) => structuredClone(rule))];
-    rules.push(...catalog.filter(({ id }) => SECURITY_IDS.has(id)).map(renderRemote));
+    rules.push(...plan.filter(({ phase }) => phase === "security").map(renderRemote));
     rules.push(...renderEgernCustomRules(CUSTOM_RULES));
-    for (const id of DOMESTIC_IDS) {
-      const source = byId.get(id);
-      if (!source) throw new Error("Invalid Egern rule catalog");
-      rules.push(renderRemote(source));
-    }
-    for (const source of catalog) {
-      if (SECURITY_IDS.has(source.id) || DOMESTIC_IDS.includes(source.id) || [OVERSEAS_GAME_ID, CHINA_IP_ID].includes(source.id)) continue;
-      rules.push(renderRemote(source));
-    }
-    for (const id of [OVERSEAS_GAME_ID, CHINA_IP_ID]) {
-      const source = byId.get(id);
-      if (!source) throw new Error("Invalid Egern rule catalog");
-      rules.push(renderRemote(source));
+    for (const phase of ROUTING_PHASES.filter((value) => value !== "security")) {
+      rules.push(...plan.filter((source) => source.phase === phase).map(renderRemote));
     }
     rules.push(
       { geoip: { match: "CN", policy: "DIRECT" } },

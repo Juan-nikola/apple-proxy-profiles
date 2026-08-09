@@ -1,11 +1,11 @@
 # Upstream: https://github.com/blackmatrix7/ios_rule_script
-# Path: rule/Surge/GlobalMedia/GlobalMedia.list
-# Commit: 72c410015dc99df6b54eca1386126f70268bf6bc
-# Committed at: 2026-08-05T19:24:33Z
+# Path: compiled/Surge/GlobalMedia/GlobalMedia.list
+# Commit: ccc2d6b711007324bacb55cdfbbf7e36ad48145a
+# Committed at: 2026-08-07T18:52:17Z
 # License: GPL-2.0-only
 # Changed by: Juan-nikola/apple-proxy-profiles
-# Output entries: 1021
-# Omitted entries: 3
+# Output entries: 951
+# Omitted entries: 0
 domain_set: []
 domain_suffix_set:
   - "youtube"
@@ -963,75 +963,5 @@ ip_cidr6_set:
   - "2a00:86c0::/32"
   - "2a03:5640::/32"
 asn_set: []
-url_regex_set:
-  - "^https?:\\/\\/www\\.amazon\\.com\\/(Amazon-Video|gp\\/video)\\/"
-user_agent_set:
-  - "*Spotify*"
-  - "AbemaTV*"
-  - "All4*"
-  - "Anime*"
-  - "AppleTV*"
-  - "Argo*"
-  - "BBCiPlayer*"
-  - "DAZN*"
-  - "DPlus*"
-  - "Deezer*"
-  - "Disney*"
-  - "Disney+*"
-  - "FOX%20NOW*"
-  - "FOXNOW*"
-  - "FOXPlus*"
-  - "HBO%20GO%20PROD%20HKG*"
-  - "HBO%20GO%20PROD*"
-  - "HBO%20NOW*"
-  - "HBO*"
-  - "HBOGOPRODHKG*"
-  - "HBOMAX*"
-  - "HBONOW*"
-  - "HWTVMobile*"
-  - "Himalaya*"
-  - "Hulu*"
-  - "ITV_Player*"
-  - "InstantVideo.US*"
-  - "JOOX*"
-  - "KKTV*"
-  - "LINE%20TV*"
-  - "LINE*"
-  - "LINETV*"
-  - "Max*"
-  - "My5*"
-  - "Naver%20TV*"
-  - "NaverTV*"
-  - "Niconico*"
-  - "Overcast*"
-  - "PBS*"
-  - "PPlus*"
-  - "Pandora*"
-  - "PeacockMobile*"
-  - "Prime%20Video*"
-  - "PrimeVideo*"
-  - "SoundCloud*"
-  - "Spotify*"
-  - "TIDAL*"
-  - "TIDAL*dia"
-  - "TVer-Release*"
-  - "TaiwanGood*"
-  - "TikTok*"
-  - "Viu*"
-  - "ViuTV*"
-  - "WeMusic*"
-  - "WeTV*"
-  - "app/bstar*"
-  - "com.apple.tv*"
-  - "com.kktv*"
-  - "com.kktv.ios.kktv*"
-  - "discovery+*"
-  - "encoreTVB*"
-  - "mytv*"
-  - "*youtube*"
-  - "YouTube*"
-  - "com.google.ios.youtube*"
-  - "*YouTubeMusic*"
-  - "*com.google.ios.youtubemusic*"
-  - "YouTubeMusic*"
-  - "com.google.ios.youtubemusic*"
+url_regex_set: []
+user_agent_set: []

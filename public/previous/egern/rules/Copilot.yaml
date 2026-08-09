@@ -1,10 +1,10 @@
 # Upstream: https://github.com/blackmatrix7/ios_rule_script
-# Path: rule/Surge/Copilot/Copilot.list
-# Commit: 72c410015dc99df6b54eca1386126f70268bf6bc
-# Committed at: 2026-08-05T19:24:33Z
+# Path: compiled/Surge/Copilot/Copilot.list
+# Commit: ccc2d6b711007324bacb55cdfbbf7e36ad48145a
+# Committed at: 2026-08-07T18:52:17Z
 # License: GPL-2.0-only
 # Changed by: Juan-nikola/apple-proxy-profiles
-# Output entries: 51
+# Output entries: 49
 # Omitted entries: 0
 domain_set:
   - "api.msn.com"
@@ -60,8 +60,6 @@ ip_cidr_set:
   - "24.199.123.28/32"
   - "64.23.132.171/32"
 ip_cidr6_set: []
-asn_set:
-  - "14061"
-  - "20473"
+asn_set: []
 url_regex_set: []
 user_agent_set: []

@@ -1,11 +1,11 @@
 # Upstream: https://github.com/blackmatrix7/ios_rule_script
-# Path: rule/Surge/Apple/Apple.list
-# Commit: 72c410015dc99df6b54eca1386126f70268bf6bc
-# Committed at: 2026-08-05T19:24:33Z
+# Path: compiled/Surge/Apple/Apple.list
+# Commit: ccc2d6b711007324bacb55cdfbbf7e36ad48145a
+# Committed at: 2026-08-07T18:52:17Z
 # License: GPL-2.0-only
 # Changed by: Juan-nikola/apple-proxy-profiles
-# Output entries: 43
-# Omitted entries: 13
+# Output entries: 20
+# Omitted entries: 0
 domain_set: []
 domain_suffix_set: []
 domain_keyword_set:
@@ -13,9 +13,9 @@ domain_keyword_set:
   - "apple.com.akadns.net"
   - "apple.com.edgekey.net"
   - "buy.itunes.apple.com"
+  - "icloud.com.akadns.net"
   - "smp-device"
   - "testflight"
-  - "icloud.com.akadns.net"
 ip_cidr_set:
   - "139.178.128.0/18"
   - "144.178.0.0/19"
@@ -33,27 +33,4 @@ ip_cidr6_set:
   - "2a01:b740::/32"
 asn_set: []
 url_regex_set: []
-user_agent_set:
-  - "*FindMyiPhone?"
-  - "*Music?"
-  - "*WeatherFoundation*"
-  - "*com.apple.Maps?"
-  - "*com.apple.mobileme.fmip1"
-  - "FMDClient*"
-  - "FMFD*"
-  - "FindMyFriends*"
-  - "FindMyiPhone*"
-  - "Maps*"
-  - "Wallet*"
-  - "com.apple.Maps"
-  - "com.apple.appstored*"
-  - "fmflocatord*"
-  - "geod*"
-  - "locationd*"
-  - "passd*"
-  - "Music*"
-  - "AppleNews*"
-  - "com.apple.news*"
-  - "com.apple.trustd*"
-  - "AppleTV*"
-  - "com.apple.tv*"
+user_agent_set: []

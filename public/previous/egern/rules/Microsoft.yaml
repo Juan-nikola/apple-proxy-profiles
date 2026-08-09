@@ -1,14 +1,15 @@
 # Upstream: https://github.com/blackmatrix7/ios_rule_script
-# Path: rule/Surge/Microsoft/Microsoft.list
-# Commit: 72c410015dc99df6b54eca1386126f70268bf6bc
-# Committed at: 2026-08-05T19:24:33Z
+# Path: compiled/Surge/Microsoft/Microsoft.list
+# Commit: ccc2d6b711007324bacb55cdfbbf7e36ad48145a
+# Committed at: 2026-08-07T18:52:17Z
 # License: GPL-2.0-only
 # Changed by: Juan-nikola/apple-proxy-profiles
-# Output entries: 671
-# Omitted entries: 2
+# Output entries: 668
+# Omitted entries: 0
 domain_set:
   - "vsmarketplacebadge.apphb.com"
 domain_suffix_set:
+  - "1drv.com"
   - "1drv.ms"
   - "21vbc.com"
   - "21vbluecloud.com"
@@ -251,6 +252,7 @@ domain_suffix_set:
   - "live.com.au"
   - "live.eu"
   - "live.net"
+  - "livefilestore.com"
   - "livetileedge.dsx.mp.microsoft.com.edgekey.net"
   - "livingyourambition.com"
   - "localytics.com"
@@ -381,6 +383,7 @@ domain_suffix_set:
   - "microsoftonline.com"
   - "microsoftpartnercommunity.com"
   - "microsoftpartnersolutions.com"
+  - "microsoftpersonalcontent.com"
   - "microsoftreactor.cn"
   - "microsoftreactor.com.cn"
   - "microsoftreactor.info"
@@ -505,6 +508,7 @@ domain_suffix_set:
   - "onecollector.cloudapp.aria"
   - "onedrive.co"
   - "onedrive.co.uk"
+  - "onedrive.com"
   - "onedrive.eu"
   - "onedrive.net"
   - "onedrive.org"
@@ -560,6 +564,8 @@ domain_suffix_set:
   - "sfbassets.net"
   - "sfx.ms"
   - "sharepoint.cn"
+  - "sharepoint.com"
+  - "sharepointonline.com"
   - "signalr.net"
   - "skype"
   - "skype.com"
@@ -567,6 +573,7 @@ domain_suffix_set:
   - "skypeassets.com"
   - "skypeassets.net"
   - "skypeforbusiness.com"
+  - "spoprod-a.akamaihd.net"
   - "sprinklesapp.com"
   - "sqlserveronlinux.com"
   - "staffhub.ms"
@@ -665,23 +672,13 @@ domain_suffix_set:
   - "xbx.lv"
   - "yammer.com"
   - "yammerusercontent.com"
-  - "1drv.com"
-  - "livefilestore.com"
-  - "microsoftpersonalcontent.com"
-  - "onedrive.com"
-  - "sharepoint.com"
-  - "sharepointonline.com"
-  - "spoprod-a.akamaihd.net"
 domain_keyword_set:
-  - "microsoft"
   - "1drv"
+  - "microsoft"
   - "onedrive"
   - "skydrive"
 ip_cidr_set: []
 ip_cidr6_set: []
 asn_set: []
 url_regex_set: []
-user_agent_set:
-  - "Microsoft*"
-  - "OneDrive*"
-  - "OneDriveiOSApp*"
+user_agent_set: []
