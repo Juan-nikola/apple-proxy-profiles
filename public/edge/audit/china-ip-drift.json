@@ -4,13 +4,13 @@
   "calibrationStartedAt": "2026-08-09T13:33:56.957Z",
   "families": {
     "ipv4": {
-      "currentAddresses": "359040754",
-      "currentPrefixes": 7239,
+      "currentAddresses": "359041266",
+      "currentPrefixes": 7241,
       "divergenceBasisPoints": "2052",
       "previousAddresses": "359040754",
       "previousPrefixes": 7239,
-      "secondaryAddresses": "285360638",
-      "secondaryPrefixes": 4143,
+      "secondaryAddresses": "285361150",
+      "secondaryPrefixes": 4144,
       "shrinkBasisPoints": "0"
     },
     "ipv6": {
@@ -19,25 +19,25 @@
       "divergenceBasisPoints": "6059",
       "previousAddresses": "5105335412058994676456054883090432",
       "previousPrefixes": 4145,
-      "secondaryAddresses": "2011543406299712482999005119250432",
-      "secondaryPrefixes": 1234,
+      "secondaryAddresses": "2011543407508638302613634293956608",
+      "secondaryPrefixes": 1215,
       "shrinkBasisPoints": "0"
     }
   },
-  "generatedAt": "2026-08-09T13:45:16.824Z",
+  "generatedAt": "2026-08-10T05:01:17.966Z",
   "primary": {
-    "commit": "ccc2d6b711007324bacb55cdfbbf7e36ad48145a",
-    "committedAt": "2026-08-07T18:52:17Z",
+    "commit": "48a8dbabcc47a574dffed813f25d3171c1938736",
+    "committedAt": "2026-08-09T18:34:14Z",
     "repository": "https://github.com/blackmatrix7/ios_rule_script",
-    "sha256": "4c38244b514723a3680fa3f4c6b01351205477ef202283b287b31c0a35288ffa"
+    "sha256": "fdb32f3c99226342e211e0c2c9f75b79c1fd54b3074703922def4527aa672b82"
   },
   "reportOnly": true,
   "schemaVersion": 1,
   "secondary": {
-    "commit": "18abe5983e8f24a2a6088be168333631b1c23922",
-    "committedAt": "2026-08-09T13:18:58Z",
+    "commit": "d445f6fcdaf14907f9745ba18037d84f0817e422",
+    "committedAt": "2026-08-10T04:21:45Z",
     "repository": "https://github.com/gaoyifan/china-operator-ip",
-    "sha256": "3dcc778745e41cfa956db2b4ae2600790639ffd7620ce9578a32c836c9c0827d"
+    "sha256": "07cc28926257b0da7ca76dbf0745ca79ad2512592133ce93974efa7c8dab2a20"
   },
   "warnings": [
     "ipv4:secondary-divergence",
