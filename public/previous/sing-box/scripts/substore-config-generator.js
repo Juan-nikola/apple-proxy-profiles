@@ -2049,19 +2049,11 @@ var SingBoxConfigBundle = (() => {
   var SERVICE_GROUPS = Object.freeze([
     Object.freeze(["\u{1F419} GitHub", PROXY_FIRST_SERVICE_DEFAULTS]),
     Object.freeze(["\u{1F4FA} YouTube", PROXY_FIRST_SERVICE_DEFAULTS]),
-    Object.freeze(["\u{1F3AC} Netflix", PROXY_FIRST_SERVICE_DEFAULTS]),
-    Object.freeze(["\u{1F3F0} Disney+", PROXY_FIRST_SERVICE_DEFAULTS]),
-    Object.freeze(["\u{1F3B5} Spotify", PROXY_FIRST_SERVICE_DEFAULTS]),
-    Object.freeze(["\u{1F30D} \u56FD\u9645\u5A92\u4F53", PROXY_FIRST_SERVICE_DEFAULTS]),
-    Object.freeze(["\u2708\uFE0F Telegram", PROXY_FIRST_SERVICE_DEFAULTS]),
+    Object.freeze(["\u{1F3AC} \u6D77\u5916\u6D41\u5A92\u4F53", PROXY_FIRST_SERVICE_DEFAULTS]),
     Object.freeze(["\u{1F4AC} \u6D77\u5916\u793E\u4EA4", PROXY_FIRST_SERVICE_DEFAULTS]),
-    Object.freeze(["\u{1F3B6} TikTok", PROXY_FIRST_SERVICE_DEFAULTS]),
     Object.freeze(["\u{1F34E} Apple", DIRECT_FIRST_SERVICE_DEFAULTS]),
     Object.freeze(["\u{1FA9F} Microsoft", DIRECT_FIRST_SERVICE_DEFAULTS]),
-    Object.freeze(["\u{1F4FA} \u54D4\u54E9\u54D4\u54E9", DIRECT_FIRST_SERVICE_DEFAULTS]),
-    Object.freeze(["\u{1F3B5} \u6296\u97F3", DIRECT_FIRST_SERVICE_DEFAULTS]),
-    Object.freeze(["\u{1F4D5} \u5C0F\u7EA2\u4E66", DIRECT_FIRST_SERVICE_DEFAULTS]),
-    Object.freeze(["\u{1F9E3} \u5FAE\u535A", DIRECT_FIRST_SERVICE_DEFAULTS]),
+    Object.freeze(["\u{1F1E8}\u{1F1F3} \u56FD\u5185\u5E73\u53F0", DIRECT_FIRST_SERVICE_DEFAULTS]),
     Object.freeze(["\u{1F30D} \u6D77\u5916\u6E38\u620F", PROXY_FIRST_SERVICE_DEFAULTS])
   ]);
   function policyGroup({
@@ -2279,11 +2271,28 @@ var SingBoxConfigBundle = (() => {
       }
     ];
   }
+  function continentGroupNames(groups) {
+    return groups.filter((group) => group.kind === GROUP_KIND.continent).map((group) => group.name);
+  }
   function renderSingBoxGroups(options, nodes, { ruleProbeUrl = "https://www.gstatic.com/generate_204" } = {}) {
     const inventory = Array.isArray(nodes) ? nodes : [];
     const shared = buildPolicyGroups(options, inventory);
+    const continentNames = continentGroupNames(shared);
     return shared.flatMap((group) => {
       if (group.name === RULE_DOWNLOAD_GROUP) return renderRuleDownloadGroups(inventory, ruleProbeUrl);
+      if (group.name === "\u{1F680} \u8282\u70B9\u9009\u62E9") {
+        const outbounds2 = [
+          ...group.candidates.map(targetName),
+          "\u{1F6DF} \u5168\u90E8\u6545\u969C\u8F6C\u79FB",
+          ...continentNames
+        ].filter((item, index, all) => all.indexOf(item) === index);
+        return {
+          type: "selector",
+          tag: group.name,
+          outbounds: outbounds2.length > 0 ? outbounds2 : ["DIRECT"],
+          interrupt_exist_connections: true
+        };
+      }
       const candidates = [
         ...group.candidates.map(targetName),
         ...filterNodes(group.nodeFilter, inventory)
@@ -2471,25 +2480,25 @@ var SingBoxConfigBundle = (() => {
     Privacy: "\u{1F575}\uFE0F \u4E25\u683C\u8DDF\u8E2A",
     DomesticCore: POLICY_TARGETS.direct,
     DomesticGame: POLICY_TARGETS.direct,
-    BiliBili: "\u{1F4FA} \u54D4\u54E9\u54D4\u54E9",
-    ByteDance: "\u{1F3B5} \u6296\u97F3",
-    XiaoHongShu: "\u{1F4D5} \u5C0F\u7EA2\u4E66",
-    Weibo: "\u{1F9E3} \u5FAE\u535A",
+    BiliBili: "\u{1F1E8}\u{1F1F3} \u56FD\u5185\u5E73\u53F0",
+    ByteDance: "\u{1F1E8}\u{1F1F3} \u56FD\u5185\u5E73\u53F0",
+    XiaoHongShu: "\u{1F1E8}\u{1F1F3} \u56FD\u5185\u5E73\u53F0",
+    Weibo: "\u{1F1E8}\u{1F1F3} \u56FD\u5185\u5E73\u53F0",
     OpenAI: "\u{1F916} AI \u4E13\u7528",
     Claude: "\u{1F916} AI \u4E13\u7528",
     Gemini: "\u{1F916} AI \u4E13\u7528",
     Copilot: "\u{1F916} AI \u4E13\u7528",
     GitHub: "\u{1F419} GitHub",
     YouTube: "\u{1F4FA} YouTube",
-    Netflix: "\u{1F3AC} Netflix",
-    Disney: "\u{1F3F0} Disney+",
-    Spotify: "\u{1F3B5} Spotify",
-    GlobalMedia: "\u{1F30D} \u56FD\u9645\u5A92\u4F53",
-    Telegram: "\u2708\uFE0F Telegram",
+    Netflix: "\u{1F3AC} \u6D77\u5916\u6D41\u5A92\u4F53",
+    Disney: "\u{1F3AC} \u6D77\u5916\u6D41\u5A92\u4F53",
+    Spotify: "\u{1F3AC} \u6D77\u5916\u6D41\u5A92\u4F53",
+    GlobalMedia: "\u{1F3AC} \u6D77\u5916\u6D41\u5A92\u4F53",
+    Telegram: "\u{1F4AC} \u6D77\u5916\u793E\u4EA4",
     Facebook: "\u{1F4AC} \u6D77\u5916\u793E\u4EA4",
     Instagram: "\u{1F4AC} \u6D77\u5916\u793E\u4EA4",
     Twitter: "\u{1F4AC} \u6D77\u5916\u793E\u4EA4",
-    TikTok: "\u{1F3B6} TikTok",
+    TikTok: "\u{1F3AC} \u6D77\u5916\u6D41\u5A92\u4F53",
     Apple: "\u{1F34E} Apple",
     Microsoft: "\u{1FA9F} Microsoft",
     SteamCN: POLICY_TARGETS.direct,

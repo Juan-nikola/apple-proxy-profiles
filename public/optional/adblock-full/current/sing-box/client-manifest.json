@@ -7,12 +7,12 @@
       "sha256": "5766da86b50c870a56e5a4a25e33eb5f37283d1694689c77a4a9609c4c4b7b1e"
     },
     {
-      "bytes": 2371171,
+      "bytes": 2377009,
       "path": "optional/adblock-full/sing-box/Advertising_Domain.srs",
-      "sha256": "359208986ce60cb47b2e89a6d57c3dc685e936f1c9e86200933878f93725af63"
+      "sha256": "e5569439f647683fbf0035de69cb8e994bbd83162fa53b9882c1767b1ebce966"
     }
   ],
-  "generatedAt": "2026-08-07T18:52:17Z",
-  "manifestHash": "59163e900531751db43c45c4298da564dd6517fc352a269d11a52d7a3900fd6b",
+  "generatedAt": "2026-08-09T18:34:14Z",
+  "manifestHash": "e9e9fe8807de0052a179c21dfcd4e7360891faa0c9ef146866aa1eeb7be2d8b6",
   "schemaVersion": 1
 }

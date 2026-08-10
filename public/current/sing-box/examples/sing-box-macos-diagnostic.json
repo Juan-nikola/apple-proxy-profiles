@@ -28,13 +28,6 @@
     "strategy": "ipv4_only",
     "cache_capacity": 4096
   },
-  "http_clients": [
-    {
-      "tag": "🧭 规则下载 HTTP",
-      "version": 2,
-      "detour": "🧭 DNS 与规则下载"
-    }
-  ],
   "inbounds": [
     {
       "type": "tun",
@@ -432,7 +425,6 @@
   "route": {
     "auto_detect_interface": true,
     "default_domain_resolver": "dns-direct",
-    "default_http_client": "🧭 规则下载 HTTP",
     "rule_set": [],
     "rules": [
       {
