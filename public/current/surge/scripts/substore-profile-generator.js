@@ -152,6 +152,24 @@ var SurgeProfileBundle = (() => {
   for (const definition of definitions) {
     for (const name of definition.names) registry.set(name, definition);
   }
+  var DISPLAY_PROTOCOL_NAMES = Object.freeze({
+    ss: "SS",
+    shadowsocks: "SS",
+    ssr: "SSR",
+    snell: "Snell",
+    vmess: "VMess",
+    vless: "VLESS",
+    trojan: "Trojan",
+    anytls: "AnyTLS",
+    hysteria2: "Hy2",
+    hy2: "Hy2",
+    tuic: "Tuic",
+    socks5: "SOCKS5",
+    http: "HTTP",
+    ssh: "SSH",
+    wireguard: "WireGuard",
+    sudoku: "Sudoku"
+  });
   function normalizeProtocol(value) {
     return typeof value === "string" ? value.trim().toLowerCase() : "";
   }
@@ -164,6 +182,9 @@ var SurgeProfileBundle = (() => {
   function diagnosticProtocol(value) {
     const normalized = normalizeProtocol(value);
     return registry.has(normalized) ? normalized : "unknown";
+  }
+  function displayProtocol(value) {
+    return DISPLAY_PROTOCOL_NAMES[normalizeProtocol(value)] ?? "";
   }
 
   // ../../shared/nodes/capabilities.js
@@ -1519,18 +1540,33 @@ var SurgeProfileBundle = (() => {
     }
     for (const [baseName, group] of groups) {
       if (group.length < 2) continue;
-      const byIdentity = group.map((node) => ({ node, identity: getIdentity(node), suffix: getFingerprint(node).slice(-5) })).sort((left, right) => left.identity < right.identity ? -1 : left.identity > right.identity ? 1 : 0);
-      const suffixGroups = /* @__PURE__ */ new Map();
-      for (const record of byIdentity) {
-        const suffixGroup = suffixGroups.get(record.suffix) ?? [];
-        suffixGroup.push(record);
-        suffixGroups.set(record.suffix, suffixGroup);
+      const byProtocol = /* @__PURE__ */ new Map();
+      for (const node of group) {
+        const label = displayProtocol(node.type);
+        const protocolGroup = byProtocol.get(label) ?? [];
+        protocolGroup.push(node);
+        byProtocol.set(label, protocolGroup);
       }
-      for (const records of suffixGroups.values()) {
-        records.forEach((record, index) => {
-          const suffix = records.length > 1 ? `${record.suffix}-${index + 1}` : record.suffix;
-          record.node.name = `${baseName} #${suffix}`;
-        });
+      const multipleProtocols = byProtocol.size > 1;
+      for (const [protocolLabel, protocolGroup] of byProtocol) {
+        const protocolBase = multipleProtocols && protocolLabel ? `${baseName} ${protocolLabel}` : baseName;
+        if (protocolGroup.length === 1) {
+          if (protocolBase !== baseName) protocolGroup[0].name = protocolBase;
+          continue;
+        }
+        const byIdentity = protocolGroup.map((node) => ({ node, identity: getIdentity(node), suffix: getFingerprint(node).slice(-5) })).sort((left, right) => left.identity < right.identity ? -1 : left.identity > right.identity ? 1 : 0);
+        const suffixGroups = /* @__PURE__ */ new Map();
+        for (const record of byIdentity) {
+          const suffixGroup = suffixGroups.get(record.suffix) ?? [];
+          suffixGroup.push(record);
+          suffixGroups.set(record.suffix, suffixGroup);
+        }
+        for (const records of suffixGroups.values()) {
+          records.forEach((record, index) => {
+            const suffix = records.length > 1 ? `${record.suffix}-${index + 1}` : record.suffix;
+            record.node.name = `${protocolBase} #${suffix}`;
+          });
+        }
       }
     }
     return nodes;

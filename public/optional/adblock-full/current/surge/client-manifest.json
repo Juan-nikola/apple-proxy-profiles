@@ -4,15 +4,15 @@
     {
       "bytes": 26244,
       "path": "optional/adblock-full/surge/rules/Advertising.list",
-      "sha256": "08fabeb8d0247fb482acd57175f0f33a968c0fecf95d21ed3b7ca7f51cda0820"
+      "sha256": "2fe7b6e2c066572f454e6128efab7ad499bbcb80fc7224e9ad2b4a0aeffcfb31"
     },
     {
-      "bytes": 8614340,
+      "bytes": 8633598,
       "path": "optional/adblock-full/surge/rules/Advertising_Domain.list",
-      "sha256": "31b3755ae3277373633d62651cf8bb8ee22c473aa8808695abbfa3b759298091"
+      "sha256": "8649237bb7d46073199c79940f5e4d4511994a2db7c4ddbed3a2d3571f7bcffc"
     }
   ],
-  "generatedAt": "2026-08-07T18:52:17Z",
-  "manifestHash": "25ec7ae1a02bdb709a18509c79950bc179b86d1b1734b16bd2698499e6734e6c",
+  "generatedAt": "2026-08-09T18:34:14Z",
+  "manifestHash": "efd4adad47e7f434a05d6eb629e05b1802f820d7a9674454b1e6d5deef81d93c",
   "schemaVersion": 1
 }
