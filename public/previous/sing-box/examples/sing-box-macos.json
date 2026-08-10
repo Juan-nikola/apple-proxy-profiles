@@ -77,6 +77,13 @@
     "strategy": "ipv4_only",
     "cache_capacity": 4096
   },
+  "http_clients": [
+    {
+      "tag": "🧭 规则下载 HTTP",
+      "version": 2,
+      "detour": "🧭 DNS 与规则下载"
+    }
+  ],
   "inbounds": [
     {
       "type": "tun",
@@ -474,13 +481,14 @@
   "route": {
     "auto_detect_interface": true,
     "default_domain_resolver": "dns-direct",
+    "default_http_client": "🧭 规则下载 HTTP",
     "rule_set": [
       {
         "type": "remote",
         "tag": "rule-Hijacking",
         "format": "binary",
         "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/rule-sets/Hijacking.srs",
-        "download_detour": "🧭 DNS 与规则下载",
+        "http_client": "🧭 规则下载 HTTP",
         "update_interval": "24h"
       },
       {
@@ -488,7 +496,7 @@
         "tag": "rule-BlockHttpDNS",
         "format": "binary",
         "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/rule-sets/BlockHttpDNS.srs",
-        "download_detour": "🧭 DNS 与规则下载",
+        "http_client": "🧭 规则下载 HTTP",
         "update_interval": "24h"
       },
       {
@@ -496,7 +504,7 @@
         "tag": "rule-Privacy",
         "format": "binary",
         "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/rule-sets/Privacy.srs",
-        "download_detour": "🧭 DNS 与规则下载",
+        "http_client": "🧭 规则下载 HTTP",
         "update_interval": "24h"
       },
       {
@@ -504,7 +512,7 @@
         "tag": "rule-DomesticCore",
         "format": "binary",
         "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/rule-sets/DomesticCore.srs",
-        "download_detour": "🧭 DNS 与规则下载",
+        "http_client": "🧭 规则下载 HTTP",
         "update_interval": "24h"
       },
       {
@@ -512,7 +520,7 @@
         "tag": "rule-DomesticGame",
         "format": "binary",
         "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/rule-sets/DomesticGame.srs",
-        "download_detour": "🧭 DNS 与规则下载",
+        "http_client": "🧭 规则下载 HTTP",
         "update_interval": "24h"
       },
       {
@@ -520,7 +528,7 @@
         "tag": "rule-SteamCN",
         "format": "binary",
         "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/rule-sets/SteamCN.srs",
-        "download_detour": "🧭 DNS 与规则下载",
+        "http_client": "🧭 规则下载 HTTP",
         "update_interval": "24h"
       },
       {
@@ -528,7 +536,7 @@
         "tag": "rule-BiliBili",
         "format": "binary",
         "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/rule-sets/BiliBili.srs",
-        "download_detour": "🧭 DNS 与规则下载",
+        "http_client": "🧭 规则下载 HTTP",
         "update_interval": "24h"
       },
       {
@@ -536,7 +544,7 @@
         "tag": "rule-ByteDance",
         "format": "binary",
         "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/rule-sets/ByteDance.srs",
-        "download_detour": "🧭 DNS 与规则下载",
+        "http_client": "🧭 规则下载 HTTP",
         "update_interval": "24h"
       },
       {
@@ -544,7 +552,7 @@
         "tag": "rule-XiaoHongShu",
         "format": "binary",
         "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/rule-sets/XiaoHongShu.srs",
-        "download_detour": "🧭 DNS 与规则下载",
+        "http_client": "🧭 规则下载 HTTP",
         "update_interval": "24h"
       },
       {
@@ -552,7 +560,7 @@
         "tag": "rule-Weibo",
         "format": "binary",
         "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/rule-sets/Weibo.srs",
-        "download_detour": "🧭 DNS 与规则下载",
+        "http_client": "🧭 规则下载 HTTP",
         "update_interval": "24h"
       },
       {
@@ -560,7 +568,7 @@
         "tag": "rule-OpenAI",
         "format": "binary",
         "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/rule-sets/OpenAI.srs",
-        "download_detour": "🧭 DNS 与规则下载",
+        "http_client": "🧭 规则下载 HTTP",
         "update_interval": "24h"
       },
       {
@@ -568,7 +576,7 @@
         "tag": "rule-Claude",
         "format": "binary",
         "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/rule-sets/Claude.srs",
-        "download_detour": "🧭 DNS 与规则下载",
+        "http_client": "🧭 规则下载 HTTP",
         "update_interval": "24h"
       },
       {
@@ -576,7 +584,7 @@
         "tag": "rule-Gemini",
         "format": "binary",
         "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/rule-sets/Gemini.srs",
-        "download_detour": "🧭 DNS 与规则下载",
+        "http_client": "🧭 规则下载 HTTP",
         "update_interval": "24h"
       },
       {
@@ -584,7 +592,7 @@
         "tag": "rule-Copilot",
         "format": "binary",
         "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/rule-sets/Copilot.srs",
-        "download_detour": "🧭 DNS 与规则下载",
+        "http_client": "🧭 规则下载 HTTP",
         "update_interval": "24h"
       },
       {
@@ -592,7 +600,7 @@
         "tag": "rule-GitHub",
         "format": "binary",
         "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/rule-sets/GitHub.srs",
-        "download_detour": "🧭 DNS 与规则下载",
+        "http_client": "🧭 规则下载 HTTP",
         "update_interval": "24h"
       },
       {
@@ -600,7 +608,7 @@
         "tag": "rule-YouTube",
         "format": "binary",
         "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/rule-sets/YouTube.srs",
-        "download_detour": "🧭 DNS 与规则下载",
+        "http_client": "🧭 规则下载 HTTP",
         "update_interval": "24h"
       },
       {
@@ -608,7 +616,7 @@
         "tag": "rule-Netflix",
         "format": "binary",
         "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/rule-sets/Netflix.srs",
-        "download_detour": "🧭 DNS 与规则下载",
+        "http_client": "🧭 规则下载 HTTP",
         "update_interval": "24h"
       },
       {
@@ -616,7 +624,7 @@
         "tag": "rule-Disney",
         "format": "binary",
         "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/rule-sets/Disney.srs",
-        "download_detour": "🧭 DNS 与规则下载",
+        "http_client": "🧭 规则下载 HTTP",
         "update_interval": "24h"
       },
       {
@@ -624,7 +632,7 @@
         "tag": "rule-Spotify",
         "format": "binary",
         "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/rule-sets/Spotify.srs",
-        "download_detour": "🧭 DNS 与规则下载",
+        "http_client": "🧭 规则下载 HTTP",
         "update_interval": "24h"
       },
       {
@@ -632,7 +640,7 @@
         "tag": "rule-GlobalMedia",
         "format": "binary",
         "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/rule-sets/GlobalMedia.srs",
-        "download_detour": "🧭 DNS 与规则下载",
+        "http_client": "🧭 规则下载 HTTP",
         "update_interval": "24h"
       },
       {
@@ -640,7 +648,7 @@
         "tag": "rule-Telegram",
         "format": "binary",
         "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/rule-sets/Telegram.srs",
-        "download_detour": "🧭 DNS 与规则下载",
+        "http_client": "🧭 规则下载 HTTP",
         "update_interval": "24h"
       },
       {
@@ -648,7 +656,7 @@
         "tag": "rule-Facebook",
         "format": "binary",
         "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/rule-sets/Facebook.srs",
-        "download_detour": "🧭 DNS 与规则下载",
+        "http_client": "🧭 规则下载 HTTP",
         "update_interval": "24h"
       },
       {
@@ -656,7 +664,7 @@
         "tag": "rule-Instagram",
         "format": "binary",
         "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/rule-sets/Instagram.srs",
-        "download_detour": "🧭 DNS 与规则下载",
+        "http_client": "🧭 规则下载 HTTP",
         "update_interval": "24h"
       },
       {
@@ -664,7 +672,7 @@
         "tag": "rule-Twitter",
         "format": "binary",
         "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/rule-sets/Twitter.srs",
-        "download_detour": "🧭 DNS 与规则下载",
+        "http_client": "🧭 规则下载 HTTP",
         "update_interval": "24h"
       },
       {
@@ -672,7 +680,7 @@
         "tag": "rule-TikTok",
         "format": "binary",
         "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/rule-sets/TikTok.srs",
-        "download_detour": "🧭 DNS 与规则下载",
+        "http_client": "🧭 规则下载 HTTP",
         "update_interval": "24h"
       },
       {
@@ -680,7 +688,7 @@
         "tag": "rule-Apple",
         "format": "binary",
         "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/rule-sets/Apple.srs",
-        "download_detour": "🧭 DNS 与规则下载",
+        "http_client": "🧭 规则下载 HTTP",
         "update_interval": "24h"
       },
       {
@@ -688,7 +696,7 @@
         "tag": "rule-Microsoft",
         "format": "binary",
         "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/rule-sets/Microsoft.srs",
-        "download_detour": "🧭 DNS 与规则下载",
+        "http_client": "🧭 规则下载 HTTP",
         "update_interval": "24h"
       },
       {
@@ -696,7 +704,7 @@
         "tag": "rule-Download",
         "format": "binary",
         "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/rule-sets/Download.srs",
-        "download_detour": "🧭 DNS 与规则下载",
+        "http_client": "🧭 规则下载 HTTP",
         "update_interval": "24h"
       },
       {
@@ -704,7 +712,7 @@
         "tag": "rule-PrivateTracker",
         "format": "binary",
         "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/rule-sets/PrivateTracker.srs",
-        "download_detour": "🧭 DNS 与规则下载",
+        "http_client": "🧭 规则下载 HTTP",
         "update_interval": "24h"
       },
       {
@@ -712,7 +720,7 @@
         "tag": "rule-OverseasGame",
         "format": "binary",
         "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/rule-sets/OverseasGame.srs",
-        "download_detour": "🧭 DNS 与规则下载",
+        "http_client": "🧭 规则下载 HTTP",
         "update_interval": "24h"
       },
       {
@@ -720,7 +728,7 @@
         "tag": "rule-ChinaTLD",
         "format": "binary",
         "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/rule-sets/ChinaTLD.srs",
-        "download_detour": "🧭 DNS 与规则下载",
+        "http_client": "🧭 规则下载 HTTP",
         "update_interval": "24h"
       },
       {
@@ -728,7 +736,7 @@
         "tag": "rule-ChinaIP",
         "format": "binary",
         "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/rule-sets/ChinaIP.srs",
-        "download_detour": "🧭 DNS 与规则下载",
+        "http_client": "🧭 规则下载 HTTP",
         "update_interval": "24h"
       }
     ],

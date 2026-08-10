@@ -211,6 +211,7 @@ var SingBoxConfigBundle = (() => {
     "up_entropy_down_ascii"
   ]);
   var ANYWHERE_SUDOKU_HTTP_MASK_MODES = /* @__PURE__ */ new Set(["legacy", "stream", "poll", "auto", "ws"]);
+  var ANYWHERE_REALITY_ALLOWED_KEYS = /* @__PURE__ */ new Set(["public-key", "short-id", "_spider-x"]);
   var ANYWHERE_FINGERPRINTS = /* @__PURE__ */ new Set([
     "chrome",
     "firefox",
@@ -992,7 +993,7 @@ var SingBoxConfigBundle = (() => {
       if (tlsReason) return tlsReason;
       const reality = node["reality-opts"];
       if (reality !== void 0) {
-        if (!isPlainObject(reality) || Object.keys(reality).some((key) => !["public-key", "short-id"].includes(key)) || !isAnywhereRealityPublicKey(reality["public-key"]) || hasOption(reality, "short-id") && !/^(?:[0-9A-Fa-f]{2}){1,8}$/u.test(reality["short-id"]) || hasOption(node, "alpn") || hasOption(node, "ech-opts")) {
+        if (!isPlainObject(reality) || Object.keys(reality).some((key) => !ANYWHERE_REALITY_ALLOWED_KEYS.has(key)) || !isAnywhereRealityPublicKey(reality["public-key"]) || hasOption(reality, "short-id") && !/^(?:[0-9A-Fa-f]{2}){1,8}$/u.test(reality["short-id"]) || hasOption(node, "alpn") || hasOption(node, "ech-opts")) {
           return "unsupported-anywhere-reality";
         }
       }
@@ -1483,12 +1484,6 @@ var SingBoxConfigBundle = (() => {
     }
     return node;
   }
-  function stripInternalRealityMetadata(node) {
-    const reality = node?.["reality-opts"];
-    if (!reality || typeof reality !== "object" || Array.isArray(reality)) return node;
-    if (Object.hasOwn(reality, "_spider-x")) Reflect.deleteProperty(reality, "_spider-x");
-    return node;
-  }
   function compareNodes(left, right) {
     const continent = (CONTINENT_ORDER.get(nodeMetadata(left).continent) ?? 99) - (CONTINENT_ORDER.get(nodeMetadata(right).continent) ?? 99);
     if (continent !== 0) return continent;
@@ -1588,7 +1583,7 @@ var SingBoxConfigBundle = (() => {
         increment(diagnostics.excluded, validation.reason);
         continue;
       }
-      const cloned = stripInternalRealityMetadata(stripUndefinedValues(structuredClone(original)));
+      const cloned = stripUndefinedValues(structuredClone(original));
       cloned.type = original.type.trim().toLowerCase();
       cloned.port = Number(original.port);
       const identity = identityKey(cloned);
