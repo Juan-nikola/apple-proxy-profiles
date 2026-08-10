@@ -247,6 +247,41 @@ test("resolves colliding fingerprint suffixes by private identity order", () => 
   assert.equal(nodes[1].name, "same #cdefg-1");
 });
 
+test("prefers protocol labels over fingerprint suffixes when names collide", () => {
+  const nodes = [
+    { name: "Gen2", type: "vless", value: "b" },
+    { name: "Gen2", type: "snell", value: "a" },
+  ];
+  resolveNameCollisions(nodes, (node) => node.value, () => "abcdefg");
+
+  assert.equal(nodes[0].name, "Gen2 VLESS");
+  assert.equal(nodes[1].name, "Gen2 Snell");
+});
+
+test("falls back to fingerprint suffixes only for same-name same-protocol collisions", () => {
+  const nodes = [
+    { name: "Gen2", type: "vless", value: "b" },
+    { name: "Gen2", type: "vless", value: "a" },
+  ];
+  resolveNameCollisions(nodes, (node) => node.value, () => "abcdefg");
+
+  assert.equal(nodes[0].name, "Gen2 #cdefg-2");
+  assert.equal(nodes[1].name, "Gen2 #cdefg-1");
+});
+
+test("mixes protocol labels and suffixes when one protocol repeats", () => {
+  const nodes = [
+    { name: "Gen2", type: "vless", value: "b" },
+    { name: "Gen2", type: "vless", value: "a" },
+    { name: "Gen2", type: "snell", value: "c" },
+  ];
+  resolveNameCollisions(nodes, (node) => node.value, () => "abcdefg");
+
+  assert.equal(nodes.find((node) => node.value === "a").name, "Gen2 VLESS #cdefg-1");
+  assert.equal(nodes.find((node) => node.value === "b").name, "Gen2 VLESS #cdefg-2");
+  assert.equal(nodes.find((node) => node.value === "c").name, "Gen2 Snell");
+});
+
 test("fails closed on malformed but present chain aliases", () => {
   const malformedEntry = {
     ...fakeNodes[0],

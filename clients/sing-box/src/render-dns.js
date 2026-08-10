@@ -29,10 +29,21 @@ export function renderSingBoxDns(options) {
     tls: { enabled: true, server_name: globalDns.serverName },
     detour: "🚀 节点选择",
   };
+  const proxyDnsRuleSets = proxyDnsSourceIds.map((id) => `rule-${id}`);
   return {
     servers: [chinaServer, proxyServer],
     rules: options.profileMode === "diagnostic" ? [] : [
-      { rule_set: proxyDnsSourceIds.map((id) => `rule-${id}`), action: "route", server: "dns-proxy" },
+      {
+        rule_set: proxyDnsRuleSets,
+        action: "evaluate",
+        server: "dns-proxy",
+      },
+      {
+        match_response: true,
+        rule_set: proxyDnsRuleSets,
+        action: "respond",
+      },
+      { action: "route", server: "dns-direct" },
     ],
     final: "dns-direct",
     strategy: options.ipv6Mode === "ipv4-only" ? "ipv4_only" : "prefer_ipv4",

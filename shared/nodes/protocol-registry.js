@@ -59,6 +59,25 @@ for (const definition of definitions) {
   for (const name of definition.names) registry.set(name, definition);
 }
 
+const DISPLAY_PROTOCOL_NAMES = Object.freeze({
+  ss: "SS",
+  shadowsocks: "SS",
+  ssr: "SSR",
+  snell: "Snell",
+  vmess: "VMess",
+  vless: "VLESS",
+  trojan: "Trojan",
+  anytls: "AnyTLS",
+  hysteria2: "Hy2",
+  hy2: "Hy2",
+  tuic: "Tuic",
+  socks5: "SOCKS5",
+  http: "HTTP",
+  ssh: "SSH",
+  wireguard: "WireGuard",
+  sudoku: "Sudoku",
+});
+
 export function normalizeProtocol(value) {
   return typeof value === "string" ? value.trim().toLowerCase() : "";
 }
@@ -74,4 +93,8 @@ export function protocolSupportsClient(value, client) {
 export function diagnosticProtocol(value) {
   const normalized = normalizeProtocol(value);
   return registry.has(normalized) ? normalized : "unknown";
+}
+
+export function displayProtocol(value) {
+  return DISPLAY_PROTOCOL_NAMES[normalizeProtocol(value)] ?? "";
 }

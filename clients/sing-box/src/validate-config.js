@@ -39,7 +39,6 @@ export function validateSingBoxConfig(config) {
   if (!config || typeof config !== "object" || Array.isArray(config)) return { valid: false, errors: ["config must be an object"] };
   const outbounds = config.outbounds;
   const outboundTags = uniqueTags(outbounds, errors, "outbound");
-  const httpClientTags = uniqueTags(config.http_clients, errors, "HTTP client");
   const ruleSets = uniqueTags(config.route?.rule_set, errors, "rule-set");
   const dnsServers = uniqueTags(config.dns?.servers, errors, "DNS server");
   const inboundTags = uniqueTags(config.inbounds, errors, "inbound");
@@ -47,11 +46,6 @@ export function validateSingBoxConfig(config) {
   for (const outbound of outbounds ?? []) {
     for (const target of outbound.outbounds ?? []) if (!outboundTags.has(target)) errors.push("outbound references missing tag");
     if (outbound.default !== undefined && !outboundTags.has(outbound.default)) errors.push("selector default references missing tag");
-  }
-  for (const client of config.http_clients ?? []) {
-    if (client.detour !== undefined && !outboundTags.has(client.detour)) {
-      errors.push("HTTP client references missing outbound tag");
-    }
   }
   const routeRules = config.route?.rules;
   if (!Array.isArray(routeRules)) errors.push("route rules missing");
@@ -70,17 +64,10 @@ export function validateSingBoxConfig(config) {
   }
   const routeFinal = config.route?.final;
   if (typeof routeFinal !== "string" || !outboundTags.has(routeFinal)) errors.push("route final references missing outbound tag");
-  const defaultHttpClient = config.route?.default_http_client;
-  if (defaultHttpClient !== undefined && (typeof defaultHttpClient !== "string" || !httpClientTags.has(defaultHttpClient))) {
-    errors.push("route default_http_client references missing HTTP client tag");
-  }
   for (const ruleSet of config.route?.rule_set ?? []) {
-    if (Object.hasOwn(ruleSet, "download_detour")) errors.push("rule-set contains deprecated download_detour");
-    if (ruleSet.type === "remote" && (typeof ruleSet.http_client !== "string" || !httpClientTags.has(ruleSet.http_client))) {
-      errors.push("remote rule-set references missing HTTP client tag");
-    }
-    if (ruleSet.http_client !== undefined && (typeof ruleSet.http_client !== "string" || !httpClientTags.has(ruleSet.http_client))) {
-      errors.push("rule-set references missing HTTP client tag");
+    if (Object.hasOwn(ruleSet, "http_client")) errors.push("rule-set contains removed http_client field");
+    if (ruleSet.type === "remote" && (typeof ruleSet.download_detour !== "string" || !outboundTags.has(ruleSet.download_detour))) {
+      errors.push("remote rule-set references missing download_detour tag");
     }
     if (ruleSet.type === "remote" && (ruleSet.format !== "binary" || typeof ruleSet.url !== "string" || !/^https:\/\/[^\s]+\.srs$/u.test(ruleSet.url))) {
       errors.push("remote rule-set must use binary format and an HTTPS .srs URL");
@@ -88,14 +75,32 @@ export function validateSingBoxConfig(config) {
   }
   const dnsFinal = config.dns?.final;
   if (typeof dnsFinal !== "string" || !dnsServers.has(dnsFinal)) errors.push("DNS final references missing server");
+  let seenAnonymousEvaluate = false;
+  const evaluateTags = new Set();
   for (const rule of config.dns?.rules ?? []) {
     for (const tag of rule.rule_set ?? []) if (!ruleSets.has(tag)) errors.push("DNS references missing rule-set tag");
     if (typeof rule.action !== "string") errors.push("DNS rule action must be a string");
     if ((rule.action === "route" || rule.action === "evaluate") && typeof rule.server !== "string") {
       errors.push("DNS rule action server missing");
     }
+    if (rule.action === "respond" && !seenAnonymousEvaluate) {
+      errors.push("DNS respond rule requires a preceding anonymous evaluate rule");
+    }
+    if (rule.match_response === true && !seenAnonymousEvaluate) {
+      errors.push("DNS match_response rule requires a preceding anonymous evaluate rule");
+    }
+    if (typeof rule.match_response === "string" && !evaluateTags.has(rule.match_response)) {
+      errors.push("DNS match_response references missing evaluate tag");
+    }
     if (rule.server !== undefined && !dnsServers.has(rule.server)) errors.push("DNS rule references missing server");
     if (rule.detour !== undefined && !outboundTags.has(rule.detour)) errors.push("DNS rule references missing outbound");
+    if (rule.action === "evaluate") {
+      if (rule.tag === undefined) {
+        seenAnonymousEvaluate = true;
+      } else if (typeof rule.tag === "string") {
+        evaluateTags.add(rule.tag);
+      }
+    }
   }
   for (const server of config.dns?.servers ?? []) {
     validateDnsServerShape(server, errors);

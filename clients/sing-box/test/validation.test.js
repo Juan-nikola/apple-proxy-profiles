@@ -86,16 +86,13 @@ test("requires the latest flat DNS rule action shape", () => {
   assert.deepEqual(validateSingBoxConfig(current), { valid: true, errors: [] });
 });
 
-test("rejects removed fields and unresolved HTTP client references", () => {
+test("rejects removed fields and unresolved rule-set download references", () => {
   const config = validConfig();
-  config.http_clients = [{ tag: "🧭 规则下载 HTTP", version: 2, detour: "DIRECT" }];
-  config.route.default_http_client = "🧭 规则下载 HTTP";
   config.route.rule_set = [{
     type: "remote",
     tag: "rule-ChinaMax",
-    format: "source",
-    url: "https://example.invalid/rules/ChinaMax.json",
-    http_client: "🧭 规则下载 HTTP",
+    format: "binary",
+    url: "https://example.invalid/rules/ChinaMax.srs",
   }];
 
   config.route.rules.push({ geoip: ["cn"], action: "route", outbound: "DIRECT" });
@@ -104,33 +101,31 @@ test("rejects removed fields and unresolved HTTP client references", () => {
   assert.match(result.errors.join("\n"), /geoip/iu);
 
   config.route.rules.pop();
-  config.route.rule_set[0].download_detour = "DIRECT";
+  config.route.rule_set[0].download_detour = "missing-download-group";
   result = validateSingBoxConfig(config);
   assert.equal(result.valid, false);
   assert.match(result.errors.join("\n"), /download_detour/iu);
 
-  delete config.route.rule_set[0].download_detour;
+  config.route.rule_set[0].download_detour = "DIRECT";
   config.experimental = { cache_file: { enabled: true, store_rdrc: true } };
   result = validateSingBoxConfig(config);
   assert.equal(result.valid, false);
   assert.match(result.errors.join("\n"), /store_rdrc/iu);
 
   delete config.experimental.cache_file.store_rdrc;
-  config.route.default_http_client = "missing-http-client";
+  config.route.rule_set[0].http_client = "missing-http-client";
   result = validateSingBoxConfig(config);
   assert.equal(result.valid, false);
-  assert.match(result.errors.join("\n"), /HTTP client/iu);
+  assert.match(result.errors.join("\n"), /http_client/iu);
 });
 
 test("rejects source and non-srs remote rule sets", () => {
   const config = validConfig();
-  config.http_clients = [{ tag: "download", version: 2, detour: "DIRECT" }];
   config.route.rule_set = [{
     type: "remote",
     tag: "rule-Fixture",
     format: "source",
     url: "https://example.invalid/Fixture.json",
-    http_client: "download",
   }];
   let result = validateSingBoxConfig(config);
   assert.equal(result.valid, false);
@@ -138,6 +133,7 @@ test("rejects source and non-srs remote rule sets", () => {
 
   config.route.rule_set[0].format = "binary";
   config.route.rule_set[0].url = "https://example.invalid/Fixture.srs";
+  config.route.rule_set[0].download_detour = "DIRECT";
   assert.deepEqual(validateSingBoxConfig(config), { valid: true, errors: [] });
 });
 

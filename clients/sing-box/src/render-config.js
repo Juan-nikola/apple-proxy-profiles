@@ -2,7 +2,7 @@ import { nodeMetadata } from "../../../shared/contracts.js";
 import { parseSingBoxOptions, isParsedSingBoxOptions } from "./options.js";
 import { renderSingBoxOutbound } from "./render-node.js";
 import { renderSingBoxGroups } from "./render-groups.js";
-import { renderSingBoxRouteRules, RULE_DOWNLOAD_HTTP_CLIENT } from "./render-rules.js";
+import { renderSingBoxRouteRules } from "./render-rules.js";
 import { renderSingBoxDns } from "./render-dns.js";
 import { renderSingBoxTun } from "./render-platform.js";
 import { validateSingBoxConfig } from "./validate-config.js";
@@ -28,11 +28,6 @@ export function renderSingBoxConfig(rawOptions, nodes, rendererOptions = {}) {
   const config = {
     log: { level: "info", timestamp: true },
     dns: renderSingBoxDns(options),
-    http_clients: [{
-      tag: RULE_DOWNLOAD_HTTP_CLIENT,
-      version: 2,
-      detour: "🧭 DNS 与规则下载",
-    }],
     inbounds: [renderSingBoxTun(options.platform)],
     outbounds: [
       { type: "direct", tag: "DIRECT" },
@@ -43,7 +38,6 @@ export function renderSingBoxConfig(rawOptions, nodes, rendererOptions = {}) {
     route: {
       auto_detect_interface: true,
       default_domain_resolver: "dns-direct",
-      default_http_client: RULE_DOWNLOAD_HTTP_CLIENT,
       rule_set: ruleSets,
       rules,
       final,

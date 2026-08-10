@@ -77,21 +77,17 @@ test("renders a validated OpenWrt transparent gateway config", () => {
   assert.deepEqual(validateSingBoxConfig(config), { valid: true, errors: [] });
 });
 
-test("renders the latest sing-box HTTP client contract without removed fields", () => {
+test("renders the latest sing-box rule-set download contract without removed fields", () => {
   const config = render();
-  assert.deepEqual(config.http_clients, [{
-    tag: "🧭 规则下载 HTTP",
-    version: 2,
-    detour: "🧭 DNS 与规则下载",
-  }]);
-  assert.equal(config.route.default_http_client, "🧭 规则下载 HTTP");
+  assert.equal(Array.isArray(config.http_clients), false);
+  assert.equal(Object.hasOwn(config.route, "default_http_client"), false);
   assert.equal(config.route.default_domain_resolver, "dns-direct");
   const ruleDownloadGroup = config.outbounds.find((outbound) => outbound.tag === "🧭 DNS 与规则下载");
   assert.deepEqual(ruleDownloadGroup?.outbounds, ["🧭 规则下载故障转移", "🚀 节点选择", "DIRECT"]);
   assert.equal(ruleDownloadGroup?.default, "🧭 规则下载故障转移");
-  assert.equal(config.route.rule_set.every((rule) => rule.http_client === "🧭 规则下载 HTTP"), true);
+  assert.equal(config.route.rule_set.every((rule) => rule.download_detour === "🧭 DNS 与规则下载"), true);
   assert.equal(config.route.rules.some((rule) => Object.hasOwn(rule, "geoip") || Object.hasOwn(rule, "geosite")), false);
-  assert.equal(config.route.rule_set.some((rule) => Object.hasOwn(rule, "download_detour")), false);
+  assert.equal(config.route.rule_set.some((rule) => Object.hasOwn(rule, "http_client")), false);
   assert.equal(Object.hasOwn(config.experimental.cache_file, "store_rdrc"), false);
   assert.equal(config.experimental.cache_file.store_dns, true);
   assert.ok(config.route.rules.some((rule) => rule.rule_set?.includes("rule-ChinaIP") && rule.outbound === "DIRECT"));
@@ -125,17 +121,22 @@ test("keeps the primary selector compact with continent-level entries only", () 
   }
 });
 
-test("renders latest sing-box flat DNS rule actions", () => {
+test("renders latest sing-box DNS rules with evaluate and response matching", () => {
   const config = render();
   const proxyDnsRuleSets = orderedRoutingPlan()
     .filter(({ dnsClass }) => dnsClass === "proxy")
     .map(({ id }) => `rule-${id}`);
   assert.deepEqual(
     config.dns.rules.map(({ action, server }) => ({ action, server })),
-    [{ action: "route", server: "dns-proxy" }],
+    [
+      { action: "evaluate", server: "dns-proxy" },
+      { action: "respond", server: undefined },
+      { action: "route", server: "dns-direct" },
+    ],
   );
   assert.equal(config.dns.final, "dns-direct");
   assert.deepEqual(config.dns.rules[0].rule_set, proxyDnsRuleSets);
+  assert.equal(config.dns.rules[1].match_response, true);
   assert.equal(config.dns.rules[0].rule_set.includes("rule-ChinaTLD"), false);
 });
 
@@ -263,7 +264,7 @@ test("rule-download bootstrap has no dependency on a remote rule-set tag", () =>
   const config = render();
   const download = config.outbounds.find(({ tag }) => tag === "🧭 DNS 与规则下载");
   const failover = config.outbounds.find(({ tag }) => tag === "🧭 规则下载故障转移");
-  assert.equal(config.http_clients[0].detour, download.tag);
+  assert.equal(config.route.rule_set.every((rule) => rule.download_detour === download.tag), true);
   assert.equal([...download.outbounds, ...failover.outbounds].some((tag) => tag.startsWith("rule-")), false);
   assert.equal(failover.outbounds.includes(node.name), true);
 });
