@@ -2766,12 +2766,13 @@ var SingBoxConfigBundle = (() => {
     "fe80::/10",
     "ff00::/8"
   ];
-  function renderSingBoxTun(platform) {
+  function renderSingBoxTun(platform, ipv6Mode = "auto") {
+    const ipv4Only = ipv6Mode === "ipv4-only";
     const base2 = {
       type: "tun",
       tag: "tun-in",
       interface_name: platform === "android" ? "sing-box" : "singtun0",
-      address: ["172.18.0.1/30", "fdfe:dcba:9876::1/126"],
+      address: ipv4Only ? ["172.18.0.1/30"] : ["172.18.0.1/30", "fdfe:dcba:9876::1/126"],
       auto_route: true,
       strict_route: true,
       route_exclude_address: [...COMMON_EXCLUDE]
@@ -2781,7 +2782,7 @@ var SingBoxConfigBundle = (() => {
         ...base2,
         stack: "mixed",
         dns_mode: "hijack",
-        dns_address: ["172.18.0.2", "fdfe:dcba:9876::2"],
+        dns_address: ipv4Only ? ["172.18.0.2"] : ["172.18.0.2", "fdfe:dcba:9876::2"],
         auto_redirect: true,
         auto_redirect_input_mark: "0x2023",
         auto_redirect_output_mark: "0x2024",
@@ -2801,7 +2802,7 @@ var SingBoxConfigBundle = (() => {
     return {
       ...base2,
       dns_mode: "hijack",
-      dns_address: ["172.18.0.2", "fdfe:dcba:9876::2"],
+      dns_address: ipv4Only ? ["172.18.0.2"] : ["172.18.0.2", "fdfe:dcba:9876::2"],
       platform: { http_proxy: { enabled: false } }
     };
   }
@@ -2957,7 +2958,7 @@ var SingBoxConfigBundle = (() => {
         version: 2,
         detour: "\u{1F9ED} DNS \u4E0E\u89C4\u5219\u4E0B\u8F7D"
       }],
-      inbounds: [renderSingBoxTun(options.platform)],
+      inbounds: [renderSingBoxTun(options.platform, options.ipv6Mode)],
       outbounds: [
         { type: "direct", tag: "DIRECT" },
         { type: "block", tag: "REJECT" },

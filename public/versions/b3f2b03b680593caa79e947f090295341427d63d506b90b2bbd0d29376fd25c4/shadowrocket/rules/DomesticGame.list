@@ -1,0 +1,48 @@
+# Upstream: https://github.com/blackmatrix7/ios_rule_script
+# Path: compiled/Surge/DomesticGame/DomesticGame.list
+# Commit: 48a8dbabcc47a574dffed813f25d3171c1938736
+# Committed at: 2026-08-09T18:34:14Z
+# License: GPL-2.0-only
+# Changed by: Juan-nikola/apple-proxy-profiles
+# Output entries: 40
+# Omitted entries: 0
+DOMAIN-SUFFIX,4399.com
+DOMAIN-SUFFIX,battlenet.com.cn
+DOMAIN-SUFFIX,biligame.com
+DOMAIN-SUFFIX,blizzard.cn
+DOMAIN-SUFFIX,blizzardgames.cn
+DOMAIN-SUFFIX,blzstatic.cn
+DOMAIN-SUFFIX,csgo.wmsj.cn
+DOMAIN-SUFFIX,dota2.wmsj.cn
+DOMAIN-SUFFIX,dungeonkeeper.cn
+DOMAIN-SUFFIX,dungeonkeeper.com.cn
+DOMAIN-SUFFIX,duoyi.com
+DOMAIN-SUFFIX,g-bits.com
+DOMAIN-SUFFIX,leagueoflegends.cn
+DOMAIN-SUFFIX,legendofzelda.cn
+DOMAIN-SUFFIX,legendofzelda.com.cn
+DOMAIN-SUFFIX,leiting.com
+DOMAIN-SUFFIX,leitingcn.com
+DOMAIN-SUFFIX,lpl.com.cn
+DOMAIN-SUFFIX,mariokart.cn
+DOMAIN-SUFFIX,mariokart.com.cn
+DOMAIN-SUFFIX,mihoyo.com
+DOMAIN-SUFFIX,miitomo.com.cn
+DOMAIN-SUFFIX,neteasegames.com
+DOMAIN-SUFFIX,nintendolabo.cn
+DOMAIN-SUFFIX,nintendoswitch.cn
+DOMAIN-SUFFIX,nintendoswitch.com.cn
+DOMAIN-SUFFIX,perfectworld.com
+DOMAIN-SUFFIX,supermariobros.com.cn
+DOMAIN-SUFFIX,supersmashbros.cn
+DOMAIN-SUFFIX,supersmashbros.com.cn
+DOMAIN-SUFFIX,taptap.cn
+DOMAIN-SUFFIX,taptap.com
+DOMAIN-SUFFIX,tencentgames.com
+DOMAIN-SUFFIX,wangyigames.com
+DOMAIN-SUFFIX,wanmei.com
+DOMAIN-SUFFIX,xboxlive.cn
+DOMAIN-SUFFIX,xd.com
+DOMAIN-SUFFIX,xindong.com
+DOMAIN-SUFFIX,xn--mts47c3w9b1qr.cn
+DOMAIN-SUFFIX,yuanshen.com

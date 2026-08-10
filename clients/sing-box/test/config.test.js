@@ -180,6 +180,19 @@ test("keeps the mixed TUN stack only on OpenWrt", () => {
   }
 });
 
+test("ipv4-only removes the TUN IPv6 address and DNS hijack address", () => {
+  for (const platform of ["macos", "iphone", "ipad", "android", "openwrt"]) {
+    const v4 = render({ platform, ipv6Mode: "ipv4-only" });
+    assert.deepEqual(v4.inbounds[0].address, ["172.18.0.1/30"], `${platform} address`);
+    assert.equal(v4.inbounds[0].dns_address.includes("fdfe:dcba:9876::2"), false, `${platform} dns_address`);
+    assert.equal(v4.dns.strategy, "ipv4_only", `${platform} dns strategy`);
+  }
+  const auto = render({ platform: "iphone", ipv6Mode: "auto" });
+  assert.deepEqual(auto.inbounds[0].address, ["172.18.0.1/30", "fdfe:dcba:9876::1/126"]);
+  assert.deepEqual(auto.inbounds[0].dns_address, ["172.18.0.2", "fdfe:dcba:9876::2"]);
+  assert.equal(auto.dns.strategy, "prefer_ipv4");
+});
+
 test("renders only binary lightweight rule sets and keeps full adblock opt-in", () => {
   const config = render();
   const serialized = JSON.stringify(config);

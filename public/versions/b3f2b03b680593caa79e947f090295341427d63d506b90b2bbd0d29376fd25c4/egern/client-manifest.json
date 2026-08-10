@@ -1,0 +1,207 @@
+{
+  "chinaIpAuditSha256": "777993fc21a4c46551a92e3be1556474357289ece15514f83068dda8028cf95d",
+  "client": "egern",
+  "files": [
+    {
+      "bytes": 33364,
+      "path": "egern/examples/egern-ipad.yaml",
+      "sha256": "6af5406890ce41e0f7e8b50f980831d4af6ee0925862a97ffa7610393513cf6f"
+    },
+    {
+      "bytes": 33364,
+      "path": "egern/examples/egern-iphone.yaml",
+      "sha256": "6af5406890ce41e0f7e8b50f980831d4af6ee0925862a97ffa7610393513cf6f"
+    },
+    {
+      "bytes": 33359,
+      "path": "egern/examples/egern-macos.yaml",
+      "sha256": "16c257b31da3aa4f9d2366025e628b8210089468a939b2f431a563af4ba39dfd"
+    },
+    {
+      "bytes": 883,
+      "path": "egern/rules/Apple.yaml",
+      "sha256": "277062737ca5229a25501f885d347f18f3b2bcebf905ccc1492d507807f83c97"
+    },
+    {
+      "bytes": 4030,
+      "path": "egern/rules/BiliBili.yaml",
+      "sha256": "378e099618c68ac70070bce45bf0aff31bd957cccdb644eb759167d0b12c31d5"
+    },
+    {
+      "bytes": 2058,
+      "path": "egern/rules/BlockHttpDNS.yaml",
+      "sha256": "f326d90a08dc7b39ede495023bae129b6ae47cf99f00c03d767fa4bbb5a2f8c6"
+    },
+    {
+      "bytes": 8001,
+      "path": "egern/rules/ByteDance.yaml",
+      "sha256": "f37ba2b52a1dbc355762557a1f1873a1f973b4bc97024d69d7f59ebf1d87afbc"
+    },
+    {
+      "bytes": 260251,
+      "path": "egern/rules/ChinaIP.yaml",
+      "sha256": "2cb90fc37ac95082adf3ef0a6a2d8b6dd32d3d966b17cbc9bf334c902577fdeb"
+    },
+    {
+      "bytes": 454,
+      "path": "egern/rules/ChinaTLD.yaml",
+      "sha256": "6dfda0cccf5aa4698d3e3be96b2e2ef1ae3fb5cbaad0ec6d7ea31276125d4cab"
+    },
+    {
+      "bytes": 498,
+      "path": "egern/rules/Claude.yaml",
+      "sha256": "c2e0b42fe42ab897e1d554e1292e28dbe74471bd5d31aef9d365b4e56178f67c"
+    },
+    {
+      "bytes": 1730,
+      "path": "egern/rules/Copilot.yaml",
+      "sha256": "def6a4dccdd5a52fd2af1f0c6bacd24eacf4d0a96fed2b1abf26f7fe63939cab"
+    },
+    {
+      "bytes": 4437,
+      "path": "egern/rules/Disney.yaml",
+      "sha256": "2651dedfd7402ab610430f8f0442a437aedf3c6c89f94e99c6cdb7451ad1efa1"
+    },
+    {
+      "bytes": 1582,
+      "path": "egern/rules/DomesticCore.yaml",
+      "sha256": "496919b2e7f2e1d00df2187ca03b441138bfecd0ec02682cf3173b8c3710b07a"
+    },
+    {
+      "bytes": 1293,
+      "path": "egern/rules/DomesticGame.yaml",
+      "sha256": "089153b6e7d9ce30ad5df89c8c848333d16c0e8fed49b3770e472a0144f817c6"
+    },
+    {
+      "bytes": 531,
+      "path": "egern/rules/Download.yaml",
+      "sha256": "8efac886bb28d59e3496abd2749db33b4c78577b9151f87daba07582f54fcaf8"
+    },
+    {
+      "bytes": 12940,
+      "path": "egern/rules/Facebook.yaml",
+      "sha256": "9e10a39442ed456fc94cebef48cebbc08bfae2d8dbd185bec4fa9ef78488032d"
+    },
+    {
+      "bytes": 767,
+      "path": "egern/rules/Gemini.yaml",
+      "sha256": "488d3b60acfd00211902c409d0ffe20d2728b7ed69243d094040504406ceb5c3"
+    },
+    {
+      "bytes": 1130,
+      "path": "egern/rules/GitHub.yaml",
+      "sha256": "24a05f20d1b0540074c13bd3ca991aa9cb6563b83759b8b0796dcf3c186fd7f8"
+    },
+    {
+      "bytes": 21912,
+      "path": "egern/rules/GlobalMedia.yaml",
+      "sha256": "0438de932e5958f22ac4aafb63aab9b3a08a554b6ececbff7249770c313325c8"
+    },
+    {
+      "bytes": 4962,
+      "path": "egern/rules/Hijacking.yaml",
+      "sha256": "93774d9adfffa54a388cac0f7918e4689090d7a71799ce8337c128ee5c7cdc02"
+    },
+    {
+      "bytes": 520,
+      "path": "egern/rules/Instagram.yaml",
+      "sha256": "6fd73f50cb137fb9dc149217230eab0cba3eb97b833a72e30a4a3a7e80d0a302"
+    },
+    {
+      "bytes": 15358,
+      "path": "egern/rules/Microsoft.yaml",
+      "sha256": "61d17113fd7e414860fecca4113130bc414ecf47cf1083ecc6533bc52f8e7d4a"
+    },
+    {
+      "bytes": 25718,
+      "path": "egern/rules/Netflix.yaml",
+      "sha256": "4c506242d3e205c192b8e43b35d25a1b51bbb9a14a99a968fc607dfabb681680"
+    },
+    {
+      "bytes": 1314,
+      "path": "egern/rules/OpenAI.yaml",
+      "sha256": "8967e6cae2db72a5d2d73cf85c87f072f8172508b1e0b239aefbcdd3613d8064"
+    },
+    {
+      "bytes": 13986,
+      "path": "egern/rules/OverseasGame.yaml",
+      "sha256": "099509e480ca1d8f71e011a5869ebeff829b133a8f24ea610a59b2b8eba2126c"
+    },
+    {
+      "bytes": 827,
+      "path": "egern/rules/Privacy.yaml",
+      "sha256": "c63bb0b2d840cde2260d46fb2084598c6034cb7d8169db962cdde845e73013c1"
+    },
+    {
+      "bytes": 5893,
+      "path": "egern/rules/PrivateTracker.yaml",
+      "sha256": "dde30ea5d8c27c653861d84a6314cbf3dc96241a0b20388c517a74092a25de3f"
+    },
+    {
+      "bytes": 1192,
+      "path": "egern/rules/Spotify.yaml",
+      "sha256": "179d6472a0052cb119f9a993f92d99cc0a9c8ad25420d5c5b00b4d34fbbbe0e1"
+    },
+    {
+      "bytes": 881,
+      "path": "egern/rules/SteamCN.yaml",
+      "sha256": "c108953c614dbf337e8ee71efa6796d59016424eaaf946b4f9062d83f3251ff1"
+    },
+    {
+      "bytes": 1117,
+      "path": "egern/rules/Telegram.yaml",
+      "sha256": "6db00e7d401626285b3590dbff88b7b3c2825147e0217e987f89711d424d5637"
+    },
+    {
+      "bytes": 1090,
+      "path": "egern/rules/TikTok.yaml",
+      "sha256": "249ab101425aee35108ff88b4a7492bb843078bda2d4cadf738f05473a5ebd25"
+    },
+    {
+      "bytes": 1068,
+      "path": "egern/rules/Twitter.yaml",
+      "sha256": "90fb3035a79c37d01aaf6c0223ac9e5c43886bc169bd0fe3ce8c5686e74405b9"
+    },
+    {
+      "bytes": 498,
+      "path": "egern/rules/Weibo.yaml",
+      "sha256": "031a7586a57ae7bec5d00b6d9bc25f1ab39af951393a5024716e96af3922de51"
+    },
+    {
+      "bytes": 531,
+      "path": "egern/rules/XiaoHongShu.yaml",
+      "sha256": "3f39becea6343d3bba5f63fc09297e372461e218fab1b23d1d4497d26805e203"
+    },
+    {
+      "bytes": 3975,
+      "path": "egern/rules/YouTube.yaml",
+      "sha256": "cd21aaa0a8ba5fc71aa89635e347b8d4bf6dda61935c4f711936d33be335c5f3"
+    },
+    {
+      "bytes": 132097,
+      "path": "egern/scripts/egern-node-generator.js",
+      "sha256": "c3b8767eee4f641d8fd307e211e96c6bd7ae2d9d26646c1fc0de48886bba6df2"
+    },
+    {
+      "bytes": 213758,
+      "path": "egern/scripts/egern-profile-generator.js",
+      "sha256": "860b4ce1fbf9a240ba7165e74b59a41fb7ffd34c187a2eb61dd845baab2b7104"
+    },
+    {
+      "bytes": 132097,
+      "path": "egern/scripts/substore-node-generator.js",
+      "sha256": "c3b8767eee4f641d8fd307e211e96c6bd7ae2d9d26646c1fc0de48886bba6df2"
+    },
+    {
+      "bytes": 213758,
+      "path": "egern/scripts/substore-profile-generator.js",
+      "sha256": "860b4ce1fbf9a240ba7165e74b59a41fb7ffd34c187a2eb61dd845baab2b7104"
+    }
+  ],
+  "generatedAt": "2026-08-09T18:34:14Z",
+  "manifestHash": "aa4c49ef547e58a138de845ba1a853173d80229026e431a511b3bf47c93bad37",
+  "optionalPacks": {
+    "adblock-full": "20c44a0b4f43535e6a71d869851e77d61f266c16ac55636fdfc5aa14c039a61f"
+  },
+  "schemaVersion": 1
+}

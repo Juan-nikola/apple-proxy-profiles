@@ -34,7 +34,7 @@ export function renderSingBoxConfig(rawOptions, nodes, rendererOptions = {}) {
       version: 2,
       detour: "🧭 DNS 与规则下载",
     }],
-    inbounds: [renderSingBoxTun(options.platform)],
+    inbounds: [renderSingBoxTun(options.platform, options.ipv6Mode)],
     outbounds: [
       { type: "direct", tag: "DIRECT" },
       { type: "block", tag: "REJECT" },
