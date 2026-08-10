@@ -21,6 +21,7 @@ const ANYWHERE_SUDOKU_ASCII = new Set([
   "up_ascii_down_entropy", "up_entropy_down_ascii",
 ]);
 const ANYWHERE_SUDOKU_HTTP_MASK_MODES = new Set(["legacy", "stream", "poll", "auto", "ws"]);
+const ANYWHERE_REALITY_ALLOWED_KEYS = new Set(["public-key", "short-id", "_spider-x"]);
 const ANYWHERE_FINGERPRINTS = new Set([
   "chrome", "firefox", "safari", "ios", "edge", "random",
   "chrome_133", "chrome_120", "chrome_106", "firefox_148", "firefox_120",
@@ -1041,7 +1042,7 @@ export function anywhereNodeExclusionReason(node) {
     const reality = node["reality-opts"];
     if (reality !== undefined) {
       if (!isPlainObject(reality)
-        || Object.keys(reality).some((key) => !["public-key", "short-id"].includes(key))
+        || Object.keys(reality).some((key) => !ANYWHERE_REALITY_ALLOWED_KEYS.has(key))
         || !isAnywhereRealityPublicKey(reality["public-key"])
         || hasOption(reality, "short-id") && (!/^(?:[0-9A-Fa-f]{2}){1,8}$/u.test(reality["short-id"]))
         || hasOption(node, "alpn")

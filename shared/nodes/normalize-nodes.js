@@ -82,20 +82,6 @@ function sanitizeInternalMetadata(node) {
   return node;
 }
 
-/**
- * Sub-Store parses Reality spider paths from VLESS URIs into a private
- * `reality-opts._spider-x` field. No client renderer consumes it (egern
- * deletes it, sing-box/Anywhere ignore it), so treat it as internal metadata:
- * stripping it keeps duplicate subscriptions from splitting into fake
- * distinct nodes and lets strict client filters accept the node.
- */
-function stripInternalRealityMetadata(node) {
-  const reality = node?.["reality-opts"];
-  if (!reality || typeof reality !== "object" || Array.isArray(reality)) return node;
-  if (Object.hasOwn(reality, "_spider-x")) Reflect.deleteProperty(reality, "_spider-x");
-  return node;
-}
-
 function compareNodes(left, right) {
   const continent = (CONTINENT_ORDER.get(nodeMetadata(left).continent) ?? 99) - (CONTINENT_ORDER.get(nodeMetadata(right).continent) ?? 99);
   if (continent !== 0) return continent;
@@ -213,7 +199,7 @@ export function normalizeNodes(nodes, { clientChain = "off" } = {}) {
       continue;
     }
 
-    const cloned = stripInternalRealityMetadata(stripUndefinedValues(structuredClone(original)));
+    const cloned = stripUndefinedValues(structuredClone(original));
     cloned.type = original.type.trim().toLowerCase();
     cloned.port = Number(original.port);
     const identity = identityKey(cloned);

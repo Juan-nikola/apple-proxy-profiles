@@ -282,7 +282,7 @@ test("mixes protocol labels and suffixes when one protocol repeats", () => {
   assert.equal(nodes.find((node) => node.value === "c").name, "Gen2 Snell");
 });
 
-test("strips Sub-Store spider metadata before identity so duplicates merge", () => {
+test("keeps spider-distinct duplicate nodes coexisting with fingerprint suffixes", () => {
   const base = {
     name: "qqpw加宽",
     type: "vless",
@@ -303,10 +303,10 @@ test("strips Sub-Store spider metadata before identity so duplicates merge", () 
     { ...base, "reality-opts": { ...base["reality-opts"], "_spider-x": "/bGge7apgJ4KWzlN" } },
   ]);
 
-  assert.equal(result.nodes.length, 1);
-  assert.equal(result.nodes[0]["reality-opts"]["_spider-x"], undefined);
-  assert.equal(result.nodes[0].name.includes("#"), false);
-  assert.equal(result.diagnostics.excluded["exact-duplicate"], 1);
+  assert.equal(result.nodes.length, 2);
+  assert.equal(new Set(result.nodes.map((node) => node.name)).size, 2);
+  assert.ok(result.nodes.every((node) => node.name.includes("#")));
+  assert.equal(result.diagnostics.excluded["exact-duplicate"], undefined);
 });
 
 test("fails closed on malformed but present chain aliases", () => {
