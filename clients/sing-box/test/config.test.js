@@ -79,15 +79,19 @@ test("renders a validated OpenWrt transparent gateway config", () => {
 
 test("renders the latest sing-box rule-set download contract without removed fields", () => {
   const config = render();
-  assert.equal(Array.isArray(config.http_clients), false);
-  assert.equal(Object.hasOwn(config.route, "default_http_client"), false);
+  assert.deepEqual(config.http_clients, [{
+    tag: "🧭 规则下载 HTTP",
+    version: 2,
+    detour: "🧭 DNS 与规则下载",
+  }]);
+  assert.equal(config.route.default_http_client, "🧭 规则下载 HTTP");
   assert.equal(config.route.default_domain_resolver, "dns-direct");
   const ruleDownloadGroup = config.outbounds.find((outbound) => outbound.tag === "🧭 DNS 与规则下载");
   assert.deepEqual(ruleDownloadGroup?.outbounds, ["🧭 规则下载故障转移", "🚀 节点选择", "DIRECT"]);
   assert.equal(ruleDownloadGroup?.default, "🧭 规则下载故障转移");
-  assert.equal(config.route.rule_set.every((rule) => rule.download_detour === "🧭 DNS 与规则下载"), true);
+  assert.equal(config.route.rule_set.every((rule) => rule.http_client === "🧭 规则下载 HTTP"), true);
   assert.equal(config.route.rules.some((rule) => Object.hasOwn(rule, "geoip") || Object.hasOwn(rule, "geosite")), false);
-  assert.equal(config.route.rule_set.some((rule) => Object.hasOwn(rule, "http_client")), false);
+  assert.equal(config.route.rule_set.some((rule) => Object.hasOwn(rule, "download_detour")), false);
   assert.equal(Object.hasOwn(config.experimental.cache_file, "store_rdrc"), false);
   assert.equal(config.experimental.cache_file.store_dns, true);
   assert.ok(config.route.rules.some((rule) => rule.rule_set?.includes("rule-ChinaIP") && rule.outbound === "DIRECT"));
@@ -264,7 +268,8 @@ test("rule-download bootstrap has no dependency on a remote rule-set tag", () =>
   const config = render();
   const download = config.outbounds.find(({ tag }) => tag === "🧭 DNS 与规则下载");
   const failover = config.outbounds.find(({ tag }) => tag === "🧭 规则下载故障转移");
-  assert.equal(config.route.rule_set.every((rule) => rule.download_detour === download.tag), true);
+  assert.equal(config.http_clients[0].detour, download.tag);
+  assert.equal(config.route.rule_set.every((rule) => rule.http_client === config.route.default_http_client), true);
   assert.equal([...download.outbounds, ...failover.outbounds].some((tag) => tag.startsWith("rule-")), false);
   assert.equal(failover.outbounds.includes(node.name), true);
 });

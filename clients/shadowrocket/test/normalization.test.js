@@ -282,6 +282,33 @@ test("mixes protocol labels and suffixes when one protocol repeats", () => {
   assert.equal(nodes.find((node) => node.value === "c").name, "Gen2 Snell");
 });
 
+test("strips Sub-Store spider metadata before identity so duplicates merge", () => {
+  const base = {
+    name: "qqpw加宽",
+    type: "vless",
+    server: "xmssjc.sunyz.uk",
+    port: 37785,
+    uuid: "00000000-0000-4000-8000-000000000001",
+    tls: true,
+    sni: "it.nvidia.com",
+    flow: "xtls-rprx-vision",
+    network: "tcp",
+    "reality-opts": {
+      "public-key": "TEST_ONLY_PUBLIC_KEY_00000000000000000000000000",
+      "short-id": "00000000",
+    },
+  };
+  const result = normalizeNodes([
+    { ...base, "reality-opts": { ...base["reality-opts"], "_spider-x": "/9857239a33a0f96" } },
+    { ...base, "reality-opts": { ...base["reality-opts"], "_spider-x": "/bGge7apgJ4KWzlN" } },
+  ]);
+
+  assert.equal(result.nodes.length, 1);
+  assert.equal(result.nodes[0]["reality-opts"]["_spider-x"], undefined);
+  assert.equal(result.nodes[0].name.includes("#"), false);
+  assert.equal(result.diagnostics.excluded["exact-duplicate"], 1);
+});
+
 test("fails closed on malformed but present chain aliases", () => {
   const malformedEntry = {
     ...fakeNodes[0],

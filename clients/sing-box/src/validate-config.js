@@ -39,10 +39,16 @@ export function validateSingBoxConfig(config) {
   if (!config || typeof config !== "object" || Array.isArray(config)) return { valid: false, errors: ["config must be an object"] };
   const outbounds = config.outbounds;
   const outboundTags = uniqueTags(outbounds, errors, "outbound");
+  const httpClientTags = uniqueTags(config.http_clients, errors, "HTTP client");
   const ruleSets = uniqueTags(config.route?.rule_set, errors, "rule-set");
   const dnsServers = uniqueTags(config.dns?.servers, errors, "DNS server");
   const inboundTags = uniqueTags(config.inbounds, errors, "inbound");
   const groupTags = new Set(outbounds?.filter((item) => ["selector", "urltest"].includes(item.type)).map((item) => item.tag));
+  for (const client of config.http_clients ?? []) {
+    if (client.detour !== undefined && !outboundTags.has(client.detour)) {
+      errors.push("HTTP client references missing outbound tag");
+    }
+  }
   for (const outbound of outbounds ?? []) {
     for (const target of outbound.outbounds ?? []) if (!outboundTags.has(target)) errors.push("outbound references missing tag");
     if (outbound.default !== undefined && !outboundTags.has(outbound.default)) errors.push("selector default references missing tag");
@@ -64,10 +70,14 @@ export function validateSingBoxConfig(config) {
   }
   const routeFinal = config.route?.final;
   if (typeof routeFinal !== "string" || !outboundTags.has(routeFinal)) errors.push("route final references missing outbound tag");
+  const defaultHttpClient = config.route?.default_http_client;
+  if (defaultHttpClient !== undefined && (typeof defaultHttpClient !== "string" || !httpClientTags.has(defaultHttpClient))) {
+    errors.push("route default_http_client references missing HTTP client tag");
+  }
   for (const ruleSet of config.route?.rule_set ?? []) {
-    if (Object.hasOwn(ruleSet, "http_client")) errors.push("rule-set contains removed http_client field");
-    if (ruleSet.type === "remote" && (typeof ruleSet.download_detour !== "string" || !outboundTags.has(ruleSet.download_detour))) {
-      errors.push("remote rule-set references missing download_detour tag");
+    if (Object.hasOwn(ruleSet, "download_detour")) errors.push("rule-set contains deprecated download_detour");
+    if (ruleSet.type === "remote" && (typeof ruleSet.http_client !== "string" || !httpClientTags.has(ruleSet.http_client))) {
+      errors.push("remote rule-set references missing http_client tag");
     }
     if (ruleSet.type === "remote" && (ruleSet.format !== "binary" || typeof ruleSet.url !== "string" || !/^https:\/\/[^\s]+\.srs$/u.test(ruleSet.url))) {
       errors.push("remote rule-set must use binary format and an HTTPS .srs URL");

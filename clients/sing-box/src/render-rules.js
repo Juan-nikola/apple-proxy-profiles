@@ -5,6 +5,7 @@ import {
 } from "../../../shared/rules/lightweight-policy.js";
 import { CUSTOM_RULES } from "../../../shared/rules/custom-rules.js";
 
+export const RULE_DOWNLOAD_HTTP_CLIENT = "🧭 规则下载 HTTP";
 export const RULE_DOWNLOAD_GROUP = "🧭 DNS 与规则下载";
 
 const LOCAL_RULES = Object.freeze([
@@ -68,7 +69,7 @@ export function renderSingBoxRuleSets({ ruleBaseUrl, profileMode = "light", adbl
     tag: `rule-${source.id}`,
     format: "binary",
     url: `${source.id === "Advertising" || source.id === "Advertising_Domain" ? adblockBase : base}/${source.id}.srs`,
-    download_detour: RULE_DOWNLOAD_GROUP,
+    http_client: RULE_DOWNLOAD_HTTP_CLIENT,
     update_interval: "24h",
   }));
 }
