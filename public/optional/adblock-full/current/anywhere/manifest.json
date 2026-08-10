@@ -4,7 +4,7 @@
     "commit": "e15518fde1f5d2652dfc1c234c89a68b87cecec0",
     "repository": "https://github.com/NodePassProject/Anywhere"
   },
-  "generatedAt": "2026-08-07T18:52:17Z",
+  "generatedAt": "2026-08-09T18:34:14Z",
   "generatorVersion": "0.1.0",
   "logicalRuleSets": [
     {
@@ -22,7 +22,7 @@
       ]
     }
   ],
-  "manifestSha256": "7792c655f102bda052bdc1155f18bd323d1b97f8ba0bc56e5a9c7c7e72052190",
+  "manifestSha256": "663613191a9673488ab2c52fda49b3a8bd108069d6012ec1901dbd5b4e92813c",
   "schemaVersion": 1,
   "shards": [
     {
@@ -37,7 +37,7 @@
       "index": 1,
       "name": "🧱 常见广告 · Advertising",
       "path": "optional/adblock-full/anywhere/Advertising-001.arrs",
-      "sha256": "c4536fbb19fc76d33a9590381df33ce02397fd23d58a390fab613342eefe643c",
+      "sha256": "b0d2155043aa9b890156b3a794854f370b09bb310f4f54485a1e5d022faee33f",
       "sourceId": "Advertising",
       "total": 1,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/optional/adblock-full/current/anywhere/Advertising-001.arrs"
@@ -52,7 +52,7 @@
       "index": 1,
       "name": "🧱 常见广告 · Advertising Domain (1/3)",
       "path": "optional/adblock-full/anywhere/Advertising_Domain-001.arrs",
-      "sha256": "aee814111db06510882e608a3fa0bb632c4c09f816af0e01d099512238300bb1",
+      "sha256": "253dac756dc66da9011c97a3aa021b675c0f233cf7994f35130385c40dbf33d8",
       "sourceId": "Advertising_Domain",
       "total": 3,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/optional/adblock-full/current/anywhere/Advertising_Domain-001.arrs"
@@ -67,22 +67,22 @@
       "index": 2,
       "name": "🧱 常见广告 · Advertising Domain (2/3)",
       "path": "optional/adblock-full/anywhere/Advertising_Domain-002.arrs",
-      "sha256": "aa2ed703e001f02c5826a11c3637ff619124b7095e6b5475384516aa98c26324",
+      "sha256": "0ee03b8f041dfbbdb378958e1fb5e6cc00f48569a333e7e7cb2eab63cfa09a4a",
       "sourceId": "Advertising_Domain",
       "total": 3,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/optional/adblock-full/current/anywhere/Advertising_Domain-002.arrs"
     },
     {
       "countsByType": {
-        "domainSuffix": 57842
+        "domainSuffix": 58422
       },
-      "entryCount": 57842,
+      "entryCount": 58422,
       "familyId": "Advertising",
       "id": "Advertising_Domain-003",
       "index": 3,
       "name": "🧱 常见广告 · Advertising Domain (3/3)",
       "path": "optional/adblock-full/anywhere/Advertising_Domain-003.arrs",
-      "sha256": "c44afda6fb6211e65881b3a761c08c01d39780bf8e2c4c3832c514bc38cf4428",
+      "sha256": "7f31054d8fdcd1ee6e2938232dc0abc9229caacdd63bb637a7a9e742793f98e0",
       "sourceId": "Advertising_Domain",
       "total": 3,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/optional/adblock-full/current/anywhere/Advertising_Domain-003.arrs"
@@ -127,11 +127,11 @@
       "canonicalPath": "rule/Surge/Advertising/Advertising_Domain.list",
       "componentId": "domains",
       "counts": {
-        "candidate": 264290,
-        "convertible": 247842,
+        "candidate": 264870,
+        "convertible": 248422,
         "duplicates": 0,
-        "output": 247842,
-        "parsed": 264290,
+        "output": 248422,
+        "parsed": 264870,
         "shadowed": 0,
         "unresolved": 0,
         "unsupported": 16448
@@ -155,8 +155,8 @@
         "Advertising_Domain-002",
         "Advertising_Domain-003"
       ],
-      "sourceBytes": 8614020,
-      "sourceSha256": "9fd8dca7ae89cb3f53b3c10d35de705acdbbc8fc915442c78db514f9b9e11a8e",
+      "sourceBytes": 8633278,
+      "sourceSha256": "c500440eb9c4f7d7eeab9e084074a0313df716512ced4e1d45d6be704d23ea27",
       "unsupportedByReason": {
         "unsupported-exact-domain": 16448
       }
@@ -164,26 +164,26 @@
   ],
   "totals": {
     "blankCount": 2,
-    "candidateCount": 265057,
+    "candidateCount": 265637,
     "commentCount": 0,
     "convertibleByKind": {
       "domainKeyword": 278,
-      "domainSuffix": 247842,
+      "domainSuffix": 248422,
       "ipv4Cidr": 486,
       "ipv6Cidr": 3
     },
-    "convertibleCount": 248609,
+    "convertibleCount": 249189,
     "duplicateCount": 0,
     "ignoredModifiers": {
       "noResolve": 489
     },
     "logicalRuleSetCount": 2,
-    "outputCount": 248609,
-    "parsedCount": 265057,
-    "physicalLineCount": 265059,
+    "outputCount": 249189,
+    "parsedCount": 265637,
+    "physicalLineCount": 265639,
     "shadowedCount": 0,
     "shardCount": 4,
-    "sourceBytes": 8639954,
+    "sourceBytes": 8659212,
     "sourceCount": 2,
     "unresolvedCount": 0,
     "unsupportedByReason": {
@@ -193,8 +193,8 @@
   },
   "upstream": {
     "branch": "master",
-    "commit": "ccc2d6b711007324bacb55cdfbbf7e36ad48145a",
-    "committedAt": "2026-08-07T18:52:17Z",
+    "commit": "48a8dbabcc47a574dffed813f25d3171c1938736",
+    "committedAt": "2026-08-09T18:34:14Z",
     "license": "GPL-2.0-only",
     "repository": "https://github.com/blackmatrix7/ios_rule_script"
   }

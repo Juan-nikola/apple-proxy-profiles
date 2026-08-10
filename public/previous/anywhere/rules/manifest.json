@@ -1,5 +1,5 @@
 {
-  "catalogSha256": "75f5506a7a785280e4f846b36aacdf524c24cb0e74707c4506c1d8a9e932aa32",
+  "catalogSha256": "62bd34178e5f42f4df9a20447790553325485566b9dfff34af73aa2486c3e55d",
   "clientCompatibility": {
     "commit": "e15518fde1f5d2652dfc1c234c89a68b87cecec0",
     "repository": "https://github.com/NodePassProject/Anywhere"
@@ -232,7 +232,7 @@
       ]
     }
   ],
-  "manifestSha256": "dc38068b8c6424270ff75b0a01e35364731d7557fb12b95672b137fc37f34d94",
+  "manifestSha256": "cc89bbd3735cd72e51ffcefc7fe0edbb7519aa7e9d5cfae7b7d8f8c323b3c38f",
   "optionalPacks": {
     "adblock-full": "../../optional/adblock-full/manifest.json"
   },
@@ -356,9 +356,9 @@
       "familyId": "BiliBili",
       "id": "BiliBili-001",
       "index": 1,
-      "name": "📺 哔哩哔哩 · BiliBili",
+      "name": "🇨🇳 国内平台 · BiliBili",
       "path": "anywhere/rules/BiliBili-001.arrs",
-      "sha256": "924dc840ab90848fa561537cb6e55a524e307e7a9acb7294e1879d2d29b084b3",
+      "sha256": "ba8c71ccfdf0b578c72684e969c4ad4d90a9da312634628e7f1da49eea3396dd",
       "sourceId": "BiliBili",
       "total": 1,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/BiliBili-001.arrs"
@@ -372,9 +372,9 @@
       "familyId": "ByteDance",
       "id": "ByteDance-001",
       "index": 1,
-      "name": "🎵 抖音 · ByteDance",
+      "name": "🇨🇳 国内平台 · ByteDance",
       "path": "anywhere/rules/ByteDance-001.arrs",
-      "sha256": "73b44039e670f7f71c931c4204065ba8041ff1c5068e01f19f59e65829203ac9",
+      "sha256": "3b4a0ebe9e2b896444abe7b5868bea6a561995bbf60ded936f702f9c92906a6b",
       "sourceId": "ByteDance",
       "total": 1,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/ByteDance-001.arrs"
@@ -387,9 +387,9 @@
       "familyId": "XiaoHongShu",
       "id": "XiaoHongShu-001",
       "index": 1,
-      "name": "📕 小红书 · XiaoHongShu",
+      "name": "🇨🇳 国内平台 · XiaoHongShu",
       "path": "anywhere/rules/XiaoHongShu-001.arrs",
-      "sha256": "bd5a42870a6198d54dc57b92af8423e2fa6a836cab5e48af2fe0329a5ef2a5aa",
+      "sha256": "488b04e15f3c0f5208c4a12153c01fbe86850ad8539821b20e9314613d33679e",
       "sourceId": "XiaoHongShu",
       "total": 1,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/XiaoHongShu-001.arrs"
@@ -403,9 +403,9 @@
       "familyId": "Weibo",
       "id": "Weibo-001",
       "index": 1,
-      "name": "🧣 微博 · Weibo",
+      "name": "🇨🇳 国内平台 · Weibo",
       "path": "anywhere/rules/Weibo-001.arrs",
-      "sha256": "a14ae380662d2087eaa0d0ef1f93edfdfa9fab1462dfb67851768fc9708e740c",
+      "sha256": "01a0e08d9de4647a37db5996bbf24d48fdf8b21578879ae372b7814a45245098",
       "sourceId": "Weibo",
       "total": 1,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/Weibo-001.arrs"
@@ -518,9 +518,9 @@
       "familyId": "Netflix",
       "id": "Netflix-001",
       "index": 1,
-      "name": "🎬 Netflix · Netflix",
+      "name": "🎬 海外流媒体 · Netflix",
       "path": "anywhere/rules/Netflix-001.arrs",
-      "sha256": "405936abdf6dbad8b85f07599bcceba44427766e303c73e7caaa350db178ada2",
+      "sha256": "9508243a18372496e51337560d4f202889fa9fc5d4e5e77ffdc044b07c5df7b7",
       "sourceId": "Netflix",
       "total": 1,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/Netflix-001.arrs"
@@ -533,9 +533,9 @@
       "familyId": "Disney",
       "id": "Disney-001",
       "index": 1,
-      "name": "🏰 Disney+ · Disney",
+      "name": "🎬 海外流媒体 · Disney",
       "path": "anywhere/rules/Disney-001.arrs",
-      "sha256": "7f1309e4bdf08374ca9a4ab971abc69fb1c84b4689500e44c0c737770777437f",
+      "sha256": "b3fc9cb84ec1edc6692458586d538881b2b5dbd93fe49a82fb7b4ec182fc701e",
       "sourceId": "Disney",
       "total": 1,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/Disney-001.arrs"
@@ -550,9 +550,9 @@
       "familyId": "Spotify",
       "id": "Spotify-001",
       "index": 1,
-      "name": "🎵 Spotify · Spotify",
+      "name": "🎬 海外流媒体 · Spotify",
       "path": "anywhere/rules/Spotify-001.arrs",
-      "sha256": "8f457c9764bfc62209346d355614774eb0a13f5b9c396f16eb612eb7d5d28452",
+      "sha256": "119117aa2c5ec690185215110993af303cccb24bd16ae691d2594488eb6ea98a",
       "sourceId": "Spotify",
       "total": 1,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/Spotify-001.arrs"
@@ -567,9 +567,9 @@
       "familyId": "GlobalMedia",
       "id": "GlobalMedia-001",
       "index": 1,
-      "name": "🌍 国际媒体 · GlobalMedia",
+      "name": "🎬 海外流媒体 · GlobalMedia",
       "path": "anywhere/rules/GlobalMedia-001.arrs",
-      "sha256": "d0f5806d51290201f6c9e8239fce313ba385e2a2996f2c00527ea722e73a8f12",
+      "sha256": "bcbfaa5996337e15be9fc6e2aa8d60f866f7662038416d9d4c3648f0ed25fe88",
       "sourceId": "GlobalMedia",
       "total": 1,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/GlobalMedia-001.arrs"
@@ -585,9 +585,9 @@
       "familyId": "Telegram",
       "id": "Telegram-001",
       "index": 1,
-      "name": "✈️ Telegram · Telegram",
+      "name": "💬 海外社交 · Telegram",
       "path": "anywhere/rules/Telegram-001.arrs",
-      "sha256": "286a812d8a80e729090a6fe57edfea6bda007510fdcfd78c0376b741b26fd29a",
+      "sha256": "f569dcb80bbca133d79f4601b926241f5ee6b0c13418d021d284d42039f685dc",
       "sourceId": "Telegram",
       "total": 1,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/Telegram-001.arrs"
@@ -650,9 +650,9 @@
       "familyId": "TikTok",
       "id": "TikTok-001",
       "index": 1,
-      "name": "🎶 TikTok · TikTok",
+      "name": "🎬 海外流媒体 · TikTok",
       "path": "anywhere/rules/TikTok-001.arrs",
-      "sha256": "44ebf94fadaaedba45a8ddce5cf4a577ab063e7d18745dedbb371e4c4be0e6fd",
+      "sha256": "2b2e971399cd0e24d1057f3a78ef83fb3db863ea7ed22fa2c3745c4860047baf",
       "sourceId": "TikTok",
       "total": 1,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/TikTok-001.arrs"
@@ -1007,7 +1007,7 @@
       "minEntries": 0,
       "order": 7,
       "phase": "serviceIntent",
-      "policy": "📺 哔哩哔哩",
+      "policy": "🇨🇳 国内平台",
       "priority": 70,
       "routing": 1,
       "shardIds": [
@@ -1043,7 +1043,7 @@
       "minEntries": 0,
       "order": 8,
       "phase": "serviceIntent",
-      "policy": "🎵 抖音",
+      "policy": "🇨🇳 国内平台",
       "priority": 80,
       "routing": 1,
       "shardIds": [
@@ -1077,7 +1077,7 @@
       "minEntries": 0,
       "order": 9,
       "phase": "serviceIntent",
-      "policy": "📕 小红书",
+      "policy": "🇨🇳 国内平台",
       "priority": 90,
       "routing": 1,
       "shardIds": [
@@ -1111,7 +1111,7 @@
       "minEntries": 0,
       "order": 10,
       "phase": "serviceIntent",
-      "policy": "🧣 微博",
+      "policy": "🇨🇳 国内平台",
       "priority": 100,
       "routing": 1,
       "shardIds": [
@@ -1353,11 +1353,11 @@
         "noResolve": 1119
       },
       "inputFormat": "RULE-SET",
-      "intendedTarget": "🎬 Netflix",
+      "intendedTarget": "🎬 海外流媒体",
       "minEntries": 0,
       "order": 17,
       "phase": "serviceIntent",
-      "policy": "🎬 Netflix",
+      "policy": "🎬 海外流媒体",
       "priority": 170,
       "routing": 0,
       "shardIds": [
@@ -1389,11 +1389,11 @@
         "noResolve": 0
       },
       "inputFormat": "RULE-SET",
-      "intendedTarget": "🏰 Disney+",
+      "intendedTarget": "🎬 海外流媒体",
       "minEntries": 0,
       "order": 18,
       "phase": "serviceIntent",
-      "policy": "🏰 Disney+",
+      "policy": "🎬 海外流媒体",
       "priority": 180,
       "routing": 0,
       "shardIds": [
@@ -1423,11 +1423,11 @@
         "noResolve": 2
       },
       "inputFormat": "RULE-SET",
-      "intendedTarget": "🎵 Spotify",
+      "intendedTarget": "🎬 海外流媒体",
       "minEntries": 0,
       "order": 19,
       "phase": "serviceIntent",
-      "policy": "🎵 Spotify",
+      "policy": "🎬 海外流媒体",
       "priority": 190,
       "routing": 0,
       "shardIds": [
@@ -1459,11 +1459,11 @@
         "noResolve": 924
       },
       "inputFormat": "RULE-SET",
-      "intendedTarget": "🌍 国际媒体",
+      "intendedTarget": "🎬 海外流媒体",
       "minEntries": 0,
       "order": 20,
       "phase": "serviceIntent",
-      "policy": "🌍 国际媒体",
+      "policy": "🎬 海外流媒体",
       "priority": 200,
       "routing": 0,
       "shardIds": [
@@ -1493,11 +1493,11 @@
         "noResolve": 10
       },
       "inputFormat": "RULE-SET",
-      "intendedTarget": "✈️ Telegram",
+      "intendedTarget": "💬 海外社交",
       "minEntries": 0,
       "order": 21,
       "phase": "serviceIntent",
-      "policy": "✈️ Telegram",
+      "policy": "💬 海外社交",
       "priority": 210,
       "routing": 0,
       "shardIds": [
@@ -1631,11 +1631,11 @@
         "noResolve": 0
       },
       "inputFormat": "RULE-SET",
-      "intendedTarget": "🎶 TikTok",
+      "intendedTarget": "🎬 海外流媒体",
       "minEntries": 0,
       "order": 25,
       "phase": "serviceIntent",
-      "policy": "🎶 TikTok",
+      "policy": "🎬 海外流媒体",
       "priority": 250,
       "routing": 0,
       "shardIds": [

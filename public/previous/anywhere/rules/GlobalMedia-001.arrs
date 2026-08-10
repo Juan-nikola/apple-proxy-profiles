@@ -4,7 +4,7 @@
 # Converted at upstream commit time: 2026-08-07T18:52:17Z
 # License: GPL-2.0-only
 # Converted by: Juan-nikola/apple-proxy-profiles
-name = 🌍 国际媒体 · GlobalMedia
+name = 🎬 海外流媒体 · GlobalMedia
 routing = 0
 
 0, 1.201.0.0/24
