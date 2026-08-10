@@ -90,6 +90,7 @@ function parseEgernPolicies(yaml) {
 function parseSingBoxPolicies(config) {
   const policies = new Map();
   for (const rule of config.route.rules) {
+    if (rule.network === "udp") continue;
     const tag = rule.rule_set?.[0];
     if (!tag?.startsWith("rule-")) continue;
     const sourceId = tag.slice("rule-".length);

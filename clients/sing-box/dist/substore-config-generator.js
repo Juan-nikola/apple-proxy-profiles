@@ -2611,6 +2611,7 @@ var SingBoxConfigBundle = (() => {
     { ip_is_private: true, action: "route", outbound: "DIRECT" },
     { domain_suffix: ["local", "lan", "home.arpa"], action: "route", outbound: "DIRECT" }
   ]);
+  var QUIC_BLOCK_RULE = Object.freeze({ network: "udp", port: 443, action: "reject" });
   var CUSTOM_TARGETS = Object.freeze({ block: "REJECT", direct: "DIRECT", proxy: "\u{1F680} \u8282\u70B9\u9009\u62E9", ai: "\u{1F916} AI \u4E13\u7528" });
   var CUSTOM_FIELDS = Object.freeze({
     DOMAIN: "domain",
@@ -2666,13 +2667,22 @@ var SingBoxConfigBundle = (() => {
       update_interval: "24h"
     }));
   }
-  function renderSingBoxRouteRules({ ruleBaseUrl, profileMode = "light", adblockMode = "off" }) {
+  function renderSingBoxRouteRules({
+    ruleBaseUrl,
+    profileMode = "light",
+    adblockMode = "off",
+    quicMode = "allow"
+  }) {
+    if (!["allow", "proxy-block", "all-block"].includes(quicMode)) {
+      throw new Error(`Unsupported sing-box quicMode: ${quicMode}`);
+    }
     const ruleSets = renderSingBoxRuleSets({ ruleBaseUrl, profileMode, adblockMode });
     const rules = [
       { inbound: "tun-in", action: "sniff" },
       { protocol: "dns", action: "hijack-dns" },
       ...LOCAL_RULES
     ];
+    if (quicMode === "all-block") rules.push({ ...QUIC_BLOCK_RULE });
     if (profileMode === "light") {
       const plan2 = orderedRoutingPlan({ adblockMode });
       rules.push(...plan2.filter(({ phase }) => phase === "security").map(taggedRule));
@@ -2681,10 +2691,16 @@ var SingBoxConfigBundle = (() => {
     if (profileMode === "diagnostic") return { ruleSets, rules, final: "\u{1F680} \u8282\u70B9\u9009\u62E9" };
     const plan = orderedRoutingPlan({ adblockMode });
     for (const phase of ROUTING_PHASES.filter((value) => value !== "security" && value !== "resolvedChinaIp")) {
-      rules.push(...plan.filter((source) => source.phase === phase).map(taggedRule));
+      for (const source of plan.filter((candidate) => candidate.phase === phase)) {
+        if (quicMode === "proxy-block" && source.dnsClass === "proxy") {
+          rules.push({ ...QUIC_BLOCK_RULE, rule_set: [`rule-${source.id}`] });
+        }
+        rules.push(taggedRule(source));
+      }
     }
     rules.push({ action: "resolve", server: "dns-direct" });
     rules.push(...plan.filter(({ phase }) => phase === "resolvedChinaIp").map(taggedRule));
+    if (quicMode === "proxy-block") rules.push({ ...QUIC_BLOCK_RULE });
     return { ruleSets, rules, final: "\u{1F680} \u8282\u70B9\u9009\u62E9" };
   }
 
@@ -2930,7 +2946,8 @@ var SingBoxConfigBundle = (() => {
     const { ruleSets, rules, final } = renderSingBoxRouteRules({
       ruleBaseUrl,
       profileMode: options.profileMode,
-      adblockMode: options.adblockMode
+      adblockMode: options.adblockMode,
+      quicMode: options.quicMode
     });
     const config = {
       log: { level: "info", timestamp: true },

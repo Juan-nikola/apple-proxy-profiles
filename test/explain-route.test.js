@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { mkdir, mkdtemp, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import test from "node:test";
 
 import { buildClientArtifacts } from "../automation/src/build-artifacts.js";
@@ -240,4 +241,14 @@ test("CLI rejects invalid arguments, channels, and noncanonical trees", async ()
   } finally {
     await rm(root, { recursive: true, force: true });
   }
+});
+
+test("published current channel is self-consistent with its manifest", async () => {
+  const repositoryRoot = fileURLToPath(new URL("../", import.meta.url));
+  const explanation = await explainRouteMain(
+    ["--channel", "current", "--domain", "www.douyin.com"],
+    { publicRoot: join(repositoryRoot, "public") },
+  );
+  assert.ok(["DomesticCore", "ByteDance"].includes(explanation.matchedSource));
+  assert.equal(explanation.expectedPolicy, "🇨🇳 国内平台");
 });

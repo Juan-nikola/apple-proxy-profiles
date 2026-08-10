@@ -14,6 +14,7 @@ import { basename, dirname, join } from "node:path";
 
 import { artifactBuffer, artifactSha256 } from "./artifact-content.js";
 import { validateChinaIpAuditForPromotion } from "./china-ip-audit.js";
+import { canRefreshChannel, refreshCurrentManifest } from "./refresh-current.js";
 import { canonicalJson } from "./render-anywhere-rules.js";
 
 const MAX_PUBLISHED_BYTES = 750 * 1024 * 1024;
@@ -687,6 +688,9 @@ export async function promoteClientRelease({
       },
     };
     await writeFile(join(staging, "rollout.json"), `${JSON.stringify(nextRollout, null, 2)}\n`, "utf8");
+    if (await canRefreshChannel(join(staging, "current"))) {
+      await refreshCurrentManifest({ publicDirectory: staging });
+    }
 
     if (await exists(backup)) throw new Error("Promotion backup path already exists");
     await rename(publicDirectory, backup);

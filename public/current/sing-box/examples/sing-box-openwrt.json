@@ -879,11 +879,27 @@
         "outbound": "🇨🇳 国内平台"
       },
       {
+        "network": "udp",
+        "port": 443,
+        "action": "reject",
+        "rule_set": [
+          "rule-OpenAI"
+        ]
+      },
+      {
         "rule_set": [
           "rule-OpenAI"
         ],
         "action": "route",
         "outbound": "🤖 AI 专用"
+      },
+      {
+        "network": "udp",
+        "port": 443,
+        "action": "reject",
+        "rule_set": [
+          "rule-Claude"
+        ]
       },
       {
         "rule_set": [
@@ -893,11 +909,27 @@
         "outbound": "🤖 AI 专用"
       },
       {
+        "network": "udp",
+        "port": 443,
+        "action": "reject",
+        "rule_set": [
+          "rule-Gemini"
+        ]
+      },
+      {
         "rule_set": [
           "rule-Gemini"
         ],
         "action": "route",
         "outbound": "🤖 AI 专用"
+      },
+      {
+        "network": "udp",
+        "port": 443,
+        "action": "reject",
+        "rule_set": [
+          "rule-Copilot"
+        ]
       },
       {
         "rule_set": [
@@ -907,11 +939,27 @@
         "outbound": "🤖 AI 专用"
       },
       {
+        "network": "udp",
+        "port": 443,
+        "action": "reject",
+        "rule_set": [
+          "rule-GitHub"
+        ]
+      },
+      {
         "rule_set": [
           "rule-GitHub"
         ],
         "action": "route",
         "outbound": "🐙 GitHub"
+      },
+      {
+        "network": "udp",
+        "port": 443,
+        "action": "reject",
+        "rule_set": [
+          "rule-YouTube"
+        ]
       },
       {
         "rule_set": [
@@ -921,11 +969,27 @@
         "outbound": "📺 YouTube"
       },
       {
+        "network": "udp",
+        "port": 443,
+        "action": "reject",
+        "rule_set": [
+          "rule-Netflix"
+        ]
+      },
+      {
         "rule_set": [
           "rule-Netflix"
         ],
         "action": "route",
         "outbound": "🎬 海外流媒体"
+      },
+      {
+        "network": "udp",
+        "port": 443,
+        "action": "reject",
+        "rule_set": [
+          "rule-Disney"
+        ]
       },
       {
         "rule_set": [
@@ -935,11 +999,27 @@
         "outbound": "🎬 海外流媒体"
       },
       {
+        "network": "udp",
+        "port": 443,
+        "action": "reject",
+        "rule_set": [
+          "rule-Spotify"
+        ]
+      },
+      {
         "rule_set": [
           "rule-Spotify"
         ],
         "action": "route",
         "outbound": "🎬 海外流媒体"
+      },
+      {
+        "network": "udp",
+        "port": 443,
+        "action": "reject",
+        "rule_set": [
+          "rule-GlobalMedia"
+        ]
       },
       {
         "rule_set": [
@@ -949,11 +1029,27 @@
         "outbound": "🎬 海外流媒体"
       },
       {
+        "network": "udp",
+        "port": 443,
+        "action": "reject",
+        "rule_set": [
+          "rule-Telegram"
+        ]
+      },
+      {
         "rule_set": [
           "rule-Telegram"
         ],
         "action": "route",
         "outbound": "💬 海外社交"
+      },
+      {
+        "network": "udp",
+        "port": 443,
+        "action": "reject",
+        "rule_set": [
+          "rule-Facebook"
+        ]
       },
       {
         "rule_set": [
@@ -963,6 +1059,14 @@
         "outbound": "💬 海外社交"
       },
       {
+        "network": "udp",
+        "port": 443,
+        "action": "reject",
+        "rule_set": [
+          "rule-Instagram"
+        ]
+      },
+      {
         "rule_set": [
           "rule-Instagram"
         ],
@@ -970,11 +1074,27 @@
         "outbound": "💬 海外社交"
       },
       {
+        "network": "udp",
+        "port": 443,
+        "action": "reject",
+        "rule_set": [
+          "rule-Twitter"
+        ]
+      },
+      {
         "rule_set": [
           "rule-Twitter"
         ],
         "action": "route",
         "outbound": "💬 海外社交"
+      },
+      {
+        "network": "udp",
+        "port": 443,
+        "action": "reject",
+        "rule_set": [
+          "rule-TikTok"
+        ]
       },
       {
         "rule_set": [
@@ -1012,6 +1132,14 @@
         "outbound": "⬇️ 下载/P2P"
       },
       {
+        "network": "udp",
+        "port": 443,
+        "action": "reject",
+        "rule_set": [
+          "rule-OverseasGame"
+        ]
+      },
+      {
         "rule_set": [
           "rule-OverseasGame"
         ],
@@ -1035,6 +1163,11 @@
         ],
         "action": "route",
         "outbound": "DIRECT"
+      },
+      {
+        "network": "udp",
+        "port": 443,
+        "action": "reject"
       }
     ],
     "final": "🚀 节点选择"

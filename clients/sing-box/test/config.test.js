@@ -251,6 +251,47 @@ test("sniffs TUN connections before domain rule-set routing", () => {
   assert.equal(sniffIndexes[0] < chinaIp, true);
 });
 
+test("applies quicMode allow, proxy-block, and all-block to route rules", () => {
+  const quicRule = (extra = {}) => ({ network: "udp", port: 443, action: "reject", ...extra });
+
+  const allow = render({ quicMode: "allow" });
+  assert.equal(
+    allow.route.rules.some((rule) => rule.network === "udp" && rule.port === 443 && rule.action === "reject"),
+    false,
+  );
+
+  const proxyBlock = render({ quicMode: "proxy-block" });
+  const pbRules = proxyBlock.route.rules;
+  const chinaIp = pbRules.findIndex((rule) => rule.rule_set?.includes("rule-ChinaIP"));
+  const lateBlock = pbRules.findIndex((rule) => (
+    rule.network === "udp" && rule.port === 443 && rule.action === "reject" && rule.rule_set === undefined
+  ));
+  assert.ok(lateBlock > chinaIp, "proxy-block must reject QUIC on the final proxy path after ChinaIP");
+
+  const youtubeReject = pbRules.findIndex((rule) => (
+    rule.rule_set?.includes("rule-YouTube") && rule.action === "reject"
+  ));
+  const youtubeRoute = pbRules.findIndex((rule) => (
+    rule.rule_set?.includes("rule-YouTube") && rule.outbound === "📺 YouTube"
+  ));
+  assert.ok(youtubeReject >= 0 && youtubeReject < youtubeRoute, "proxy-block must reject explicit overseas QUIC before routing");
+  assert.equal(
+    pbRules.some((rule) => rule.rule_set?.includes("rule-DomesticCore") && rule.action === "reject"),
+    false,
+    "proxy-block must keep domestic direct QUIC allowed",
+  );
+  assert.deepEqual(validateSingBoxConfig(proxyBlock), { valid: true, errors: [] });
+
+  const allBlock = render({ quicMode: "all-block" });
+  const abRules = allBlock.route.rules;
+  const allBlockIndex = abRules.findIndex((rule) => (
+    rule.network === "udp" && rule.port === 443 && rule.action === "reject"
+  ));
+  const domesticCore = abRules.findIndex((rule) => rule.rule_set?.includes("rule-DomesticCore"));
+  assert.ok(allBlockIndex >= 0 && allBlockIndex < domesticCore, "all-block must reject QUIC before domestic routing");
+  assert.deepEqual(validateSingBoxConfig(allBlock), { valid: true, errors: [] });
+});
+
 test("diagnostic profile uses zero remote rule sets without changing platform or nodes", () => {
   const light = render();
   const diagnostic = render({ profileMode: "diagnostic" });

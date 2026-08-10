@@ -17,6 +17,7 @@ import {
 } from "../automation/src/build-site.js";
 import { fetchSnapshot } from "../automation/src/fetch-snapshot.js";
 import { parseSurgeRules } from "../automation/src/parse-surge.js";
+import { refreshCurrentManifest } from "../automation/src/refresh-current.js";
 import { resolveUpstreamCommit } from "../automation/src/resolve-upstream.js";
 import {
   BLACKMATRIX7_BASELINE,
@@ -46,11 +47,14 @@ export function parseUpdateRulesArguments(args) {
   if (JSON.stringify(args) === JSON.stringify(["--check", "--channel", "current"])) {
     return Object.freeze({ operation: "check-current" });
   }
+  if (JSON.stringify(args) === JSON.stringify(["--refresh-current"])) {
+    return Object.freeze({ operation: "refresh-current" });
+  }
   if (args.length === 3 && args[0] === "--promote" && PROMOTION_CLIENTS.has(args[1])
     && /^[0-9a-f]{64}$/u.test(args[2])) {
     return Object.freeze({ operation: "promote", client: args[1], manifestHash: args[2] });
   }
-  throw new Error("Invalid update-rules arguments; use --channel edge, --check --channel current, or --promote <client> <manifest-hash>");
+  throw new Error("Invalid update-rules arguments; use --channel edge, --check --channel current, --refresh-current, or --promote <client> <manifest-hash>");
 }
 
 export async function promoteClientRelease(options) {
@@ -559,6 +563,11 @@ export async function main(
   { publicDirectory = defaultPublicDirectory, env = process.env } = {},
 ) {
   const command = parseUpdateRulesArguments(args);
+  if (command.operation === "refresh-current") {
+    const manifest = await refreshCurrentManifest({ publicDirectory, adoptEdgeMetadata: true });
+    process.stdout.write(`Current manifest refreshed: ${manifest.manifestHash}\n`);
+    return manifest;
+  }
   if (command.operation === "promote") {
     const result = await promoteClientRelease({ publicDirectory, ...command });
     process.stdout.write(`Client promoted: ${result.client} ${result.manifestHash}\n`);

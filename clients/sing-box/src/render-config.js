@@ -24,6 +24,7 @@ export function renderSingBoxConfig(rawOptions, nodes, rendererOptions = {}) {
     ruleBaseUrl,
     profileMode: options.profileMode,
     adblockMode: options.adblockMode,
+    quicMode: options.quicMode,
   });
   const config = {
     log: { level: "info", timestamp: true },
