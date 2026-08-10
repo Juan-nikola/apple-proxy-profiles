@@ -151,6 +151,24 @@ var SingBoxConfigBundle = (() => {
   for (const definition of definitions) {
     for (const name of definition.names) registry.set(name, definition);
   }
+  var DISPLAY_PROTOCOL_NAMES = Object.freeze({
+    ss: "SS",
+    shadowsocks: "SS",
+    ssr: "SSR",
+    snell: "Snell",
+    vmess: "VMess",
+    vless: "VLESS",
+    trojan: "Trojan",
+    anytls: "AnyTLS",
+    hysteria2: "Hy2",
+    hy2: "Hy2",
+    tuic: "Tuic",
+    socks5: "SOCKS5",
+    http: "HTTP",
+    ssh: "SSH",
+    wireguard: "WireGuard",
+    sudoku: "Sudoku"
+  });
   function normalizeProtocol(value) {
     return typeof value === "string" ? value.trim().toLowerCase() : "";
   }
@@ -163,6 +181,9 @@ var SingBoxConfigBundle = (() => {
   function diagnosticProtocol(value) {
     const normalized = normalizeProtocol(value);
     return registry.has(normalized) ? normalized : "unknown";
+  }
+  function displayProtocol(value) {
+    return DISPLAY_PROTOCOL_NAMES[normalizeProtocol(value)] ?? "";
   }
 
   // ../../shared/nodes/capabilities.js
@@ -1518,18 +1539,33 @@ var SingBoxConfigBundle = (() => {
     }
     for (const [baseName, group] of groups) {
       if (group.length < 2) continue;
-      const byIdentity = group.map((node) => ({ node, identity: getIdentity(node), suffix: getFingerprint(node).slice(-5) })).sort((left, right) => left.identity < right.identity ? -1 : left.identity > right.identity ? 1 : 0);
-      const suffixGroups = /* @__PURE__ */ new Map();
-      for (const record of byIdentity) {
-        const suffixGroup = suffixGroups.get(record.suffix) ?? [];
-        suffixGroup.push(record);
-        suffixGroups.set(record.suffix, suffixGroup);
+      const byProtocol = /* @__PURE__ */ new Map();
+      for (const node of group) {
+        const label = displayProtocol(node.type);
+        const protocolGroup = byProtocol.get(label) ?? [];
+        protocolGroup.push(node);
+        byProtocol.set(label, protocolGroup);
       }
-      for (const records of suffixGroups.values()) {
-        records.forEach((record, index) => {
-          const suffix = records.length > 1 ? `${record.suffix}-${index + 1}` : record.suffix;
-          record.node.name = `${baseName} #${suffix}`;
-        });
+      const multipleProtocols = byProtocol.size > 1;
+      for (const [protocolLabel, protocolGroup] of byProtocol) {
+        const protocolBase = multipleProtocols && protocolLabel ? `${baseName} ${protocolLabel}` : baseName;
+        if (protocolGroup.length === 1) {
+          if (protocolBase !== baseName) protocolGroup[0].name = protocolBase;
+          continue;
+        }
+        const byIdentity = protocolGroup.map((node) => ({ node, identity: getIdentity(node), suffix: getFingerprint(node).slice(-5) })).sort((left, right) => left.identity < right.identity ? -1 : left.identity > right.identity ? 1 : 0);
+        const suffixGroups = /* @__PURE__ */ new Map();
+        for (const record of byIdentity) {
+          const suffixGroup = suffixGroups.get(record.suffix) ?? [];
+          suffixGroup.push(record);
+          suffixGroups.set(record.suffix, suffixGroup);
+        }
+        for (const records of suffixGroups.values()) {
+          records.forEach((record, index) => {
+            const suffix = records.length > 1 ? `${record.suffix}-${index + 1}` : record.suffix;
+            record.node.name = `${protocolBase} #${suffix}`;
+          });
+        }
       }
     }
     return nodes;
@@ -2569,7 +2605,7 @@ var SingBoxConfigBundle = (() => {
   });
 
   // src/render-rules.js
-  var RULE_DOWNLOAD_HTTP_CLIENT = "\u{1F9ED} \u89C4\u5219\u4E0B\u8F7D HTTP";
+  var RULE_DOWNLOAD_GROUP2 = "\u{1F9ED} DNS \u4E0E\u89C4\u5219\u4E0B\u8F7D";
   var LOCAL_RULES = Object.freeze([
     { ip_is_private: true, action: "route", outbound: "DIRECT" },
     { domain_suffix: ["local", "lan", "home.arpa"], action: "route", outbound: "DIRECT" }
@@ -2625,7 +2661,7 @@ var SingBoxConfigBundle = (() => {
       tag: `rule-${source.id}`,
       format: "binary",
       url: `${source.id === "Advertising" || source.id === "Advertising_Domain" ? adblockBase : base2}/${source.id}.srs`,
-      http_client: RULE_DOWNLOAD_HTTP_CLIENT,
+      download_detour: RULE_DOWNLOAD_GROUP2,
       update_interval: "24h"
     }));
   }
@@ -2678,10 +2714,21 @@ var SingBoxConfigBundle = (() => {
       tls: { enabled: true, server_name: globalDns.serverName },
       detour: "\u{1F680} \u8282\u70B9\u9009\u62E9"
     };
+    const proxyDnsRuleSets = proxyDnsSourceIds.map((id) => `rule-${id}`);
     return {
       servers: [chinaServer, proxyServer],
       rules: options.profileMode === "diagnostic" ? [] : [
-        { rule_set: proxyDnsSourceIds.map((id) => `rule-${id}`), action: "route", server: "dns-proxy" }
+        {
+          rule_set: proxyDnsRuleSets,
+          action: "evaluate",
+          server: "dns-proxy"
+        },
+        {
+          match_response: true,
+          rule_set: proxyDnsRuleSets,
+          action: "respond"
+        },
+        { action: "route", server: "dns-direct" }
       ],
       final: "dns-direct",
       strategy: options.ipv6Mode === "ipv4-only" ? "ipv4_only" : "prefer_ipv4",
@@ -2775,7 +2822,6 @@ var SingBoxConfigBundle = (() => {
     if (!config || typeof config !== "object" || Array.isArray(config)) return { valid: false, errors: ["config must be an object"] };
     const outbounds = config.outbounds;
     const outboundTags = uniqueTags(outbounds, errors, "outbound");
-    const httpClientTags = uniqueTags(config.http_clients, errors, "HTTP client");
     const ruleSets = uniqueTags(config.route?.rule_set, errors, "rule-set");
     const dnsServers = uniqueTags(config.dns?.servers, errors, "DNS server");
     const inboundTags = uniqueTags(config.inbounds, errors, "inbound");
@@ -2783,11 +2829,6 @@ var SingBoxConfigBundle = (() => {
     for (const outbound of outbounds ?? []) {
       for (const target of outbound.outbounds ?? []) if (!outboundTags.has(target)) errors.push("outbound references missing tag");
       if (outbound.default !== void 0 && !outboundTags.has(outbound.default)) errors.push("selector default references missing tag");
-    }
-    for (const client of config.http_clients ?? []) {
-      if (client.detour !== void 0 && !outboundTags.has(client.detour)) {
-        errors.push("HTTP client references missing outbound tag");
-      }
     }
     const routeRules = config.route?.rules;
     if (!Array.isArray(routeRules)) errors.push("route rules missing");
@@ -2806,17 +2847,10 @@ var SingBoxConfigBundle = (() => {
     }
     const routeFinal = config.route?.final;
     if (typeof routeFinal !== "string" || !outboundTags.has(routeFinal)) errors.push("route final references missing outbound tag");
-    const defaultHttpClient = config.route?.default_http_client;
-    if (defaultHttpClient !== void 0 && (typeof defaultHttpClient !== "string" || !httpClientTags.has(defaultHttpClient))) {
-      errors.push("route default_http_client references missing HTTP client tag");
-    }
     for (const ruleSet of config.route?.rule_set ?? []) {
-      if (Object.hasOwn(ruleSet, "download_detour")) errors.push("rule-set contains deprecated download_detour");
-      if (ruleSet.type === "remote" && (typeof ruleSet.http_client !== "string" || !httpClientTags.has(ruleSet.http_client))) {
-        errors.push("remote rule-set references missing HTTP client tag");
-      }
-      if (ruleSet.http_client !== void 0 && (typeof ruleSet.http_client !== "string" || !httpClientTags.has(ruleSet.http_client))) {
-        errors.push("rule-set references missing HTTP client tag");
+      if (Object.hasOwn(ruleSet, "http_client")) errors.push("rule-set contains removed http_client field");
+      if (ruleSet.type === "remote" && (typeof ruleSet.download_detour !== "string" || !outboundTags.has(ruleSet.download_detour))) {
+        errors.push("remote rule-set references missing download_detour tag");
       }
       if (ruleSet.type === "remote" && (ruleSet.format !== "binary" || typeof ruleSet.url !== "string" || !/^https:\/\/[^\s]+\.srs$/u.test(ruleSet.url))) {
         errors.push("remote rule-set must use binary format and an HTTPS .srs URL");
@@ -2824,14 +2858,32 @@ var SingBoxConfigBundle = (() => {
     }
     const dnsFinal = config.dns?.final;
     if (typeof dnsFinal !== "string" || !dnsServers.has(dnsFinal)) errors.push("DNS final references missing server");
+    let seenAnonymousEvaluate = false;
+    const evaluateTags = /* @__PURE__ */ new Set();
     for (const rule of config.dns?.rules ?? []) {
       for (const tag of rule.rule_set ?? []) if (!ruleSets.has(tag)) errors.push("DNS references missing rule-set tag");
       if (typeof rule.action !== "string") errors.push("DNS rule action must be a string");
       if ((rule.action === "route" || rule.action === "evaluate") && typeof rule.server !== "string") {
         errors.push("DNS rule action server missing");
       }
+      if (rule.action === "respond" && !seenAnonymousEvaluate) {
+        errors.push("DNS respond rule requires a preceding anonymous evaluate rule");
+      }
+      if (rule.match_response === true && !seenAnonymousEvaluate) {
+        errors.push("DNS match_response rule requires a preceding anonymous evaluate rule");
+      }
+      if (typeof rule.match_response === "string" && !evaluateTags.has(rule.match_response)) {
+        errors.push("DNS match_response references missing evaluate tag");
+      }
       if (rule.server !== void 0 && !dnsServers.has(rule.server)) errors.push("DNS rule references missing server");
       if (rule.detour !== void 0 && !outboundTags.has(rule.detour)) errors.push("DNS rule references missing outbound");
+      if (rule.action === "evaluate") {
+        if (rule.tag === void 0) {
+          seenAnonymousEvaluate = true;
+        } else if (typeof rule.tag === "string") {
+          evaluateTags.add(rule.tag);
+        }
+      }
     }
     for (const server of config.dns?.servers ?? []) {
       validateDnsServerShape(server, errors);
@@ -2872,11 +2924,6 @@ var SingBoxConfigBundle = (() => {
     const config = {
       log: { level: "info", timestamp: true },
       dns: renderSingBoxDns(options),
-      http_clients: [{
-        tag: RULE_DOWNLOAD_HTTP_CLIENT,
-        version: 2,
-        detour: "\u{1F9ED} DNS \u4E0E\u89C4\u5219\u4E0B\u8F7D"
-      }],
       inbounds: [renderSingBoxTun(options.platform)],
       outbounds: [
         { type: "direct", tag: "DIRECT" },
@@ -2887,7 +2934,6 @@ var SingBoxConfigBundle = (() => {
       route: {
         auto_detect_interface: true,
         default_domain_resolver: "dns-direct",
-        default_http_client: RULE_DOWNLOAD_HTTP_CLIENT,
         rule_set: ruleSets,
         rules,
         final
