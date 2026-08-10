@@ -4,7 +4,7 @@
     "commit": "e15518fde1f5d2652dfc1c234c89a68b87cecec0",
     "repository": "https://github.com/NodePassProject/Anywhere"
   },
-  "generatedAt": "2026-08-07T18:52:17Z",
+  "generatedAt": "2026-08-09T18:34:14Z",
   "generatorVersion": "0.1.0",
   "logicalRuleSets": [
     {
@@ -232,7 +232,7 @@
       ]
     }
   ],
-  "manifestSha256": "cc89bbd3735cd72e51ffcefc7fe0edbb7519aa7e9d5cfae7b7d8f8c323b3c38f",
+  "manifestSha256": "02074d0a602bd19fd92c96a9283a6c32617681d5f53a3e643fbf4df2fc06442e",
   "optionalPacks": {
     "adblock-full": "../../optional/adblock-full/manifest.json"
   },
@@ -264,7 +264,7 @@
       "index": 1,
       "name": "REJECT · Hijacking",
       "path": "anywhere/rules/Hijacking-001.arrs",
-      "sha256": "f7df063a8964de5219218e8110990840c2d2363a2825e7003a06d4d5e1622084",
+      "sha256": "9d6d78bb2a17e4b9951bbc9876484878204ed4bc4ffc7c23cf35861c30f6e96f",
       "sourceId": "Hijacking",
       "total": 1,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/Hijacking-001.arrs"
@@ -281,7 +281,7 @@
       "index": 1,
       "name": "REJECT · BlockHttpDNS",
       "path": "anywhere/rules/BlockHttpDNS-001.arrs",
-      "sha256": "b561fedf7d3b4f896ff44e73f7e3e9c595472b66fd113d9d1925d5d7f0a6f77b",
+      "sha256": "02380db470e2acf639bfaf38e8282d655349d67102ecdc9393042357d0210ef3",
       "sourceId": "BlockHttpDNS",
       "total": 1,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/BlockHttpDNS-001.arrs"
@@ -297,7 +297,7 @@
       "index": 1,
       "name": "🕵️ 严格跟踪 · Privacy",
       "path": "anywhere/rules/Privacy-001.arrs",
-      "sha256": "87ea4c002ee5eead4192039668c839f1ae9b2ca8689289d17cdfd723daca0e6b",
+      "sha256": "ca715117d1a3f16e4ec1601116f6bc383dd117f2be756de955050a73cdd68b58",
       "sourceId": "Privacy",
       "total": 1,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/Privacy-001.arrs"
@@ -312,7 +312,7 @@
       "index": 1,
       "name": "DIRECT · DomesticCore",
       "path": "anywhere/rules/DomesticCore-001.arrs",
-      "sha256": "667561e97038ed12e7a0981b252382b2c3196836cf0c484c1b595037189573de",
+      "sha256": "72ecac819ddec0591aec753ee975a0a9a3120d03062f45508e79ce8770331ac3",
       "sourceId": "DomesticCore",
       "total": 1,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/DomesticCore-001.arrs"
@@ -327,7 +327,7 @@
       "index": 1,
       "name": "DIRECT · DomesticGame",
       "path": "anywhere/rules/DomesticGame-001.arrs",
-      "sha256": "bdad4d219e1f9fb84aa43e87714f0fc4cffcca8d936e866e07aae6d913698026",
+      "sha256": "ad3b518c038329a4eda10b84d39e2e555677c9eeaea83c2f26b65a6e887b2bd6",
       "sourceId": "DomesticGame",
       "total": 1,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/DomesticGame-001.arrs"
@@ -342,7 +342,7 @@
       "index": 1,
       "name": "DIRECT · SteamCN",
       "path": "anywhere/rules/SteamCN-001.arrs",
-      "sha256": "ad57ff44b04dd0cef1fdac90c7e45e32aca1464cb72ec7e9d954cef41a7eccb1",
+      "sha256": "527db10cf17bab1d80bf04af215c2b7d4af2a95855df0f957157501ee8757189",
       "sourceId": "SteamCN",
       "total": 1,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/SteamCN-001.arrs"
@@ -358,7 +358,7 @@
       "index": 1,
       "name": "🇨🇳 国内平台 · BiliBili",
       "path": "anywhere/rules/BiliBili-001.arrs",
-      "sha256": "ba8c71ccfdf0b578c72684e969c4ad4d90a9da312634628e7f1da49eea3396dd",
+      "sha256": "4a680d8cb33882bf0eb5b5888554a3983ddc9148bb2c8ca22d0002ac30ecdd09",
       "sourceId": "BiliBili",
       "total": 1,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/BiliBili-001.arrs"
@@ -374,7 +374,7 @@
       "index": 1,
       "name": "🇨🇳 国内平台 · ByteDance",
       "path": "anywhere/rules/ByteDance-001.arrs",
-      "sha256": "3b4a0ebe9e2b896444abe7b5868bea6a561995bbf60ded936f702f9c92906a6b",
+      "sha256": "f54e6fe17db5bc62f7451a566e5fcd5339fe439b254806a124233f1c4fe49297",
       "sourceId": "ByteDance",
       "total": 1,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/ByteDance-001.arrs"
@@ -389,7 +389,7 @@
       "index": 1,
       "name": "🇨🇳 国内平台 · XiaoHongShu",
       "path": "anywhere/rules/XiaoHongShu-001.arrs",
-      "sha256": "488b04e15f3c0f5208c4a12153c01fbe86850ad8539821b20e9314613d33679e",
+      "sha256": "95bc38926b4621a4b796960b3b1f9eb937dc22764fd13d006dfbddaddd522a05",
       "sourceId": "XiaoHongShu",
       "total": 1,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/XiaoHongShu-001.arrs"
@@ -405,7 +405,7 @@
       "index": 1,
       "name": "🇨🇳 国内平台 · Weibo",
       "path": "anywhere/rules/Weibo-001.arrs",
-      "sha256": "01a0e08d9de4647a37db5996bbf24d48fdf8b21578879ae372b7814a45245098",
+      "sha256": "79415f25342286d991f5a538bf7d311ba3ac5e5fa596d65e6f7e1464ae5c255c",
       "sourceId": "Weibo",
       "total": 1,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/Weibo-001.arrs"
@@ -422,7 +422,7 @@
       "index": 1,
       "name": "🤖 AI 专用 · OpenAI",
       "path": "anywhere/rules/OpenAI-001.arrs",
-      "sha256": "470e612b6f21d5484e10d38e277ec5695dde6d564c01fdd7b72f78580c1f33bd",
+      "sha256": "18bd3c99a10181eeb6aa2b5ea7e38f89ea14f0be28cd54e63a27ec7e28b91cda",
       "sourceId": "OpenAI",
       "total": 1,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/OpenAI-001.arrs"
@@ -437,7 +437,7 @@
       "index": 1,
       "name": "🤖 AI 专用 · Claude",
       "path": "anywhere/rules/Claude-001.arrs",
-      "sha256": "d7b763333dd95bd9f4bb9eac01059e0c805b3ee7228abeb939fa7d72f38caf4d",
+      "sha256": "efc325f8b4ee2dd71ef33f1a5d738cd5301daf85ed92555febdfe932f19eb0b3",
       "sourceId": "Claude",
       "total": 1,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/Claude-001.arrs"
@@ -453,7 +453,7 @@
       "index": 1,
       "name": "🤖 AI 专用 · Gemini",
       "path": "anywhere/rules/Gemini-001.arrs",
-      "sha256": "03c0174d2a3cca2b2aa9cc5390e6f0cb12a850a0627542bdb5eec8693d57883c",
+      "sha256": "50527bb5751e327e6346bb4159372016f3400dbce2707795278e23536a2e48af",
       "sourceId": "Gemini",
       "total": 1,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/Gemini-001.arrs"
@@ -468,7 +468,7 @@
       "index": 1,
       "name": "🤖 AI 专用 · Copilot",
       "path": "anywhere/rules/Copilot-001.arrs",
-      "sha256": "14b591014199d42bab6968b4db1d605e95731f92bd84ec26a08ef126ccba6132",
+      "sha256": "cdf3a523a3271baaf262f49709974c1efaa0a32749811d252a35dfd1d9a9913e",
       "sourceId": "Copilot",
       "total": 1,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/Copilot-001.arrs"
@@ -484,7 +484,7 @@
       "index": 1,
       "name": "🐙 GitHub · GitHub",
       "path": "anywhere/rules/GitHub-001.arrs",
-      "sha256": "d74aa29a7e37c9371cab2bbe4a11f672813ce74a1618a2775122149a3cfd5f9c",
+      "sha256": "627bc9e04f093f642204db8c43ce7bb551cc628f32329765c1ac26ea86bda42a",
       "sourceId": "GitHub",
       "total": 1,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/GitHub-001.arrs"
@@ -502,7 +502,7 @@
       "index": 1,
       "name": "📺 YouTube · YouTube",
       "path": "anywhere/rules/YouTube-001.arrs",
-      "sha256": "5289b62fba47eeee0ecb1a892aba59a15c0e836eb515e7c6e74d56740a2eed1d",
+      "sha256": "6eeb35bc6fd90cbc7acd7f8b8a77b1c91eafdd1e78593c914db12bf8299afb36",
       "sourceId": "YouTube",
       "total": 1,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/YouTube-001.arrs"
@@ -520,7 +520,7 @@
       "index": 1,
       "name": "🎬 海外流媒体 · Netflix",
       "path": "anywhere/rules/Netflix-001.arrs",
-      "sha256": "9508243a18372496e51337560d4f202889fa9fc5d4e5e77ffdc044b07c5df7b7",
+      "sha256": "3ee31fede0967d170ae05eff06eef46b2245a7656f85fbe1eb02699d9bc6911f",
       "sourceId": "Netflix",
       "total": 1,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/Netflix-001.arrs"
@@ -535,7 +535,7 @@
       "index": 1,
       "name": "🎬 海外流媒体 · Disney",
       "path": "anywhere/rules/Disney-001.arrs",
-      "sha256": "b3fc9cb84ec1edc6692458586d538881b2b5dbd93fe49a82fb7b4ec182fc701e",
+      "sha256": "90ca0609c63ebabb445481bdf8039eb7e55c94e11a2f0e01859365800f9e77a0",
       "sourceId": "Disney",
       "total": 1,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/Disney-001.arrs"
@@ -552,7 +552,7 @@
       "index": 1,
       "name": "🎬 海外流媒体 · Spotify",
       "path": "anywhere/rules/Spotify-001.arrs",
-      "sha256": "119117aa2c5ec690185215110993af303cccb24bd16ae691d2594488eb6ea98a",
+      "sha256": "4cd0c520495e7f32a68c3d57f3b96831300cbca0d5cf600996b55e2f51bd19ec",
       "sourceId": "Spotify",
       "total": 1,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/Spotify-001.arrs"
@@ -569,7 +569,7 @@
       "index": 1,
       "name": "🎬 海外流媒体 · GlobalMedia",
       "path": "anywhere/rules/GlobalMedia-001.arrs",
-      "sha256": "bcbfaa5996337e15be9fc6e2aa8d60f866f7662038416d9d4c3648f0ed25fe88",
+      "sha256": "8199b98f8ade1b843461fea9aef37f27ab655f943b7c74676ff21ff71c485926",
       "sourceId": "GlobalMedia",
       "total": 1,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/GlobalMedia-001.arrs"
@@ -587,7 +587,7 @@
       "index": 1,
       "name": "💬 海外社交 · Telegram",
       "path": "anywhere/rules/Telegram-001.arrs",
-      "sha256": "f569dcb80bbca133d79f4601b926241f5ee6b0c13418d021d284d42039f685dc",
+      "sha256": "350ed7e8e16cfde318037c706112ed86aaf7352ab775f3b52f82068b081472d6",
       "sourceId": "Telegram",
       "total": 1,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/Telegram-001.arrs"
@@ -604,7 +604,7 @@
       "index": 1,
       "name": "💬 海外社交 · Facebook",
       "path": "anywhere/rules/Facebook-001.arrs",
-      "sha256": "8f28256ef4e79d2fb9846367621505bb39baa233347bc6500d2cb84452edf796",
+      "sha256": "8efe48059699fe218c567c4b25d9a4f9f6004739c5e473dd93528bec273dc68b",
       "sourceId": "Facebook",
       "total": 1,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/Facebook-001.arrs"
@@ -619,7 +619,7 @@
       "index": 1,
       "name": "💬 海外社交 · Instagram",
       "path": "anywhere/rules/Instagram-001.arrs",
-      "sha256": "1d6889a217bbc7cdf07d9dca1909e809cf91ae80fa09c186b8b06315c6b7d8bd",
+      "sha256": "5438c75477ba12681b9200b86fac094a6750eba74faa596bc018e93bed709470",
       "sourceId": "Instagram",
       "total": 1,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/Instagram-001.arrs"
@@ -636,7 +636,7 @@
       "index": 1,
       "name": "💬 海外社交 · Twitter",
       "path": "anywhere/rules/Twitter-001.arrs",
-      "sha256": "4860368122f23e2a6642360ad0499b37fbecd4541b6bfec89e5314b086b91621",
+      "sha256": "0ae6a12caec5065609746502b8e7dde449807e900d1a273bf6e5706917d6a998",
       "sourceId": "Twitter",
       "total": 1,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/Twitter-001.arrs"
@@ -652,7 +652,7 @@
       "index": 1,
       "name": "🎬 海外流媒体 · TikTok",
       "path": "anywhere/rules/TikTok-001.arrs",
-      "sha256": "2b2e971399cd0e24d1057f3a78ef83fb3db863ea7ed22fa2c3745c4860047baf",
+      "sha256": "5beaad3623869fc733abe19bc1a06c1a8c7ad1fb5c92fb41c88fe949c3fb4406",
       "sourceId": "TikTok",
       "total": 1,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/TikTok-001.arrs"
@@ -669,7 +669,7 @@
       "index": 1,
       "name": "🍎 Apple · Apple",
       "path": "anywhere/rules/Apple-001.arrs",
-      "sha256": "0cbf2cfb031d3a8a09fffe4e6ce1d5278bc0563ac699fa181f3a88227dbce9e3",
+      "sha256": "6e0e3f56bf6d8db1960e9f7d4e951413e29def74c96cb5b2b824ba0b289c0441",
       "sourceId": "Apple",
       "total": 1,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/Apple-001.arrs"
@@ -685,7 +685,7 @@
       "index": 1,
       "name": "🪟 Microsoft · Microsoft",
       "path": "anywhere/rules/Microsoft-001.arrs",
-      "sha256": "610223dd5ae11a5afad1f7ebec5c492247e3fdd34633a6b1a36282c70e1a3acb",
+      "sha256": "4d0d4e9fab89564c4eb715e4369d2e9e34f26d0c85b5c4dfbb71c3ccd2d7759f",
       "sourceId": "Microsoft",
       "total": 1,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/Microsoft-001.arrs"
@@ -701,7 +701,7 @@
       "index": 1,
       "name": "⬇️ 下载/P2P · Download",
       "path": "anywhere/rules/Download-001.arrs",
-      "sha256": "2a87d9f70e37bedc30f3da9add9cd8653c3fe7c3ecfd40615071e3216fc957b1",
+      "sha256": "14e1426d9daa493529abe3eeb4316a23c082305d4527fa6ebe000e589ce2ea52",
       "sourceId": "Download",
       "total": 1,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/Download-001.arrs"
@@ -718,7 +718,7 @@
       "index": 1,
       "name": "⬇️ 下载/P2P · PrivateTracker",
       "path": "anywhere/rules/PrivateTracker-001.arrs",
-      "sha256": "75a9451f08a6e85088787278dbb97fa9fc2528cb806de1748026424438ee1832",
+      "sha256": "ee85696bf4a2001d1215b29e12c9c585d1a62b74fc766e61129b1d3c3e710f3d",
       "sourceId": "PrivateTracker",
       "total": 1,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/PrivateTracker-001.arrs"
@@ -735,7 +735,7 @@
       "index": 1,
       "name": "🌍 海外游戏 · OverseasGame",
       "path": "anywhere/rules/OverseasGame-001.arrs",
-      "sha256": "30b23afe3204aed8c9ee53fee710578b3fac090b46bc656326e19a262fef97a1",
+      "sha256": "f95a5d1cddef7b8bb184c8c27c91f8735cc73e54fa51e77f2d082c7c04b51eb1",
       "sourceId": "OverseasGame",
       "total": 1,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/OverseasGame-001.arrs"
@@ -750,23 +750,23 @@
       "index": 1,
       "name": "DIRECT · ChinaTLD",
       "path": "anywhere/rules/ChinaTLD-001.arrs",
-      "sha256": "71f7bcefee06a84849842fd26071e89c2af0dcbddf4e49e1878518ea773e88e0",
+      "sha256": "20cd049c7f7bcf8db791d592b1668a4e96b90fc00be5bb02f350a2e2d697e8f6",
       "sourceId": "ChinaTLD",
       "total": 1,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/ChinaTLD-001.arrs"
     },
     {
       "countsByType": {
-        "ipv4Cidr": 7096,
+        "ipv4Cidr": 7098,
         "ipv6Cidr": 4144
       },
-      "entryCount": 11240,
+      "entryCount": 11242,
       "familyId": "ChinaIP",
       "id": "ChinaIP-001",
       "index": 1,
       "name": "DIRECT · ChinaIP",
       "path": "anywhere/rules/ChinaIP-001.arrs",
-      "sha256": "ff19a235cc5486fce6a37cb998f6f6662a54e65a44c9a311b3734427c72cc054",
+      "sha256": "af87b62e256a228eab32fb2a3ad73b29ddc1ed0d17160af4941a785efe9bf46b",
       "sourceId": "ChinaIP",
       "total": 1,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/ChinaIP-001.arrs"
@@ -1861,11 +1861,11 @@
       "canonicalPath": "compiled/Surge/ChinaIP/ChinaIP.list",
       "componentId": "rules",
       "counts": {
-        "candidate": 11384,
-        "convertible": 11384,
+        "candidate": 11386,
+        "convertible": 11386,
         "duplicates": 0,
-        "output": 11240,
-        "parsed": 11384,
+        "output": 11242,
+        "parsed": 11386,
         "shadowed": 144,
         "unresolved": 0,
         "unsupported": 0
@@ -1874,7 +1874,7 @@
       "familyId": "ChinaIP",
       "id": "ChinaIP",
       "ignoredModifiers": {
-        "noResolve": 11384
+        "noResolve": 11386
       },
       "inputFormat": "RULE-SET",
       "intendedTarget": "direct",
@@ -1887,33 +1887,33 @@
       "shardIds": [
         "ChinaIP-001"
       ],
-      "sourceBytes": 411901,
-      "sourceSha256": "38a0d37fe87b5f2afbd8e071c5f6c27a7cf61cc27f96ca360dd72af746059612",
+      "sourceBytes": 411970,
+      "sourceSha256": "0d4300b7833b41344af19367674d61f92385067e812c7085f9b1082610f945e9",
       "unsupportedByReason": {}
     }
   ],
   "totals": {
     "blankCount": 32,
-    "candidateCount": 17128,
+    "candidateCount": 17130,
     "commentCount": 0,
     "convertibleByKind": {
       "domainKeyword": 79,
       "domainSuffix": 3152,
-      "ipv4Cidr": 9473,
+      "ipv4Cidr": 9475,
       "ipv6Cidr": 4167
     },
-    "convertibleCount": 16871,
+    "convertibleCount": 16873,
     "duplicateCount": 163,
     "ignoredModifiers": {
-      "noResolve": 13640
+      "noResolve": 13642
     },
     "logicalRuleSetCount": 32,
-    "outputCount": 16548,
-    "parsedCount": 17128,
-    "physicalLineCount": 17160,
+    "outputCount": 16550,
+    "parsedCount": 17130,
+    "physicalLineCount": 17162,
     "shadowedCount": 160,
     "shardCount": 32,
-    "sourceBytes": 594933,
+    "sourceBytes": 595002,
     "sourceCount": 32,
     "unresolvedCount": 0,
     "unsupportedByReason": {
@@ -1923,8 +1923,8 @@
   },
   "upstream": {
     "branch": "master",
-    "commit": "ccc2d6b711007324bacb55cdfbbf7e36ad48145a",
-    "committedAt": "2026-08-07T18:52:17Z",
+    "commit": "48a8dbabcc47a574dffed813f25d3171c1938736",
+    "committedAt": "2026-08-09T18:34:14Z",
     "license": "GPL-2.0-only",
     "repository": "https://github.com/blackmatrix7/ios_rule_script"
   }
