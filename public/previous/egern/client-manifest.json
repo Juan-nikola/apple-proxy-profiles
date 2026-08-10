@@ -3,19 +3,19 @@
   "client": "egern",
   "files": [
     {
-      "bytes": 36165,
+      "bytes": 33364,
       "path": "egern/examples/egern-ipad.yaml",
-      "sha256": "a54e51089e5cb1d0b0016650b7aa7f71fd2a37a68fff6b652cf64e07428c0534"
+      "sha256": "6af5406890ce41e0f7e8b50f980831d4af6ee0925862a97ffa7610393513cf6f"
     },
     {
-      "bytes": 36165,
+      "bytes": 33364,
       "path": "egern/examples/egern-iphone.yaml",
-      "sha256": "a54e51089e5cb1d0b0016650b7aa7f71fd2a37a68fff6b652cf64e07428c0534"
+      "sha256": "6af5406890ce41e0f7e8b50f980831d4af6ee0925862a97ffa7610393513cf6f"
     },
     {
-      "bytes": 36160,
+      "bytes": 33359,
       "path": "egern/examples/egern-macos.yaml",
-      "sha256": "041a2789fd4cb5f0fb7a220e55fd7881f731c366e3810c07b42a81a2ae39f366"
+      "sha256": "16c257b31da3aa4f9d2366025e628b8210089468a939b2f431a563af4ba39dfd"
     },
     {
       "bytes": 883,
@@ -183,9 +183,9 @@
       "sha256": "82dd7eefa1b4ca105d793ff58c670f953b5fc8a2a51ff37d03732e65ffbb0798"
     },
     {
-      "bytes": 212661,
+      "bytes": 212251,
       "path": "egern/scripts/egern-profile-generator.js",
-      "sha256": "5a8b43ed021d6dcc9cbfad7160ed9d7f1ba695524364a1126451669b966cbb51"
+      "sha256": "ad7ad924a1476b5b1c028672844995573188f886b6e7d86668924d2a27f5d610"
     },
     {
       "bytes": 130590,
@@ -193,13 +193,13 @@
       "sha256": "82dd7eefa1b4ca105d793ff58c670f953b5fc8a2a51ff37d03732e65ffbb0798"
     },
     {
-      "bytes": 212661,
+      "bytes": 212251,
       "path": "egern/scripts/substore-profile-generator.js",
-      "sha256": "5a8b43ed021d6dcc9cbfad7160ed9d7f1ba695524364a1126451669b966cbb51"
+      "sha256": "ad7ad924a1476b5b1c028672844995573188f886b6e7d86668924d2a27f5d610"
     }
   ],
   "generatedAt": "2026-08-07T18:52:17Z",
-  "manifestHash": "15903717bac2da58018ca19155d79ab66fb0bd58db2fe363def04635e146d18e",
+  "manifestHash": "37bd069c76abae4d5d8f18bf6a24f6e6b0045d8d595da8f7b50901fb6cf5b27e",
   "optionalPacks": {
     "adblock-full": "08d4bb10fe60135e554cc9795db20e14494fc6a6cd170d2eebe06072a552da3f"
   },
