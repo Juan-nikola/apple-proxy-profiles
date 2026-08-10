@@ -38,8 +38,8 @@ export function renderSingBoxConfig(rawOptions, nodes, rendererOptions = {}) {
     outbounds: [
       { type: "direct", tag: "DIRECT" },
       { type: "block", tag: "REJECT" },
-      ...nodeOutbounds,
       ...groups,
+      ...nodeOutbounds,
     ],
     route: {
       auto_detect_interface: true,

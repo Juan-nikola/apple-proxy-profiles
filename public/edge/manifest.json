@@ -14,7 +14,7 @@
       "referencedDefaultBytes": 604847
     },
     "singbox": {
-      "manifestHash": "ae98b44590414f5c21241ff09e26d6c77aedd33e41edd9c95bdec3f2e6877611",
+      "manifestHash": "e998443c707869f4d62b7bce7efb1f48edd3ca5bfd93eeafeb1737a3b85bff87",
       "referencedDefaultBytes": 107456
     },
     "surge": {
@@ -649,57 +649,57 @@
     {
       "bytes": 7848,
       "path": "sing-box/client-manifest.json",
-      "sha256": "dc107d83843d8a7c6d07528053e0f131b0cc6754561d56bba6eadd3b6df01a27"
+      "sha256": "377fb347f302fd23f32ba84e58c43c703e9b9b4cb0ce9b863e79bb4663bac858"
     },
     {
       "bytes": 11509,
       "path": "sing-box/examples/sing-box-android-diagnostic.json",
-      "sha256": "c2e4eb26ac5d1d92fcf740eb4ff3f54786532008d384c1b4fbf757ae8c71e41c"
+      "sha256": "2088549d1b23fa2188dce82e78e61d0e6d1297790edcbeb34f06655d295dcc90"
     },
     {
       "bytes": 29141,
       "path": "sing-box/examples/sing-box-android.json",
-      "sha256": "8aeafe8060e5c806d5d5c3b54c3bd87b6943c2d08ac4a3ae87a84c1d1dfb07f7"
+      "sha256": "167367f8fcddad776f6905c750cd1f2889e96300ac7954365fb4d0f719e84e20"
     },
     {
       "bytes": 11577,
       "path": "sing-box/examples/sing-box-ipad-diagnostic.json",
-      "sha256": "f9ba85b8f423eed9134ce985c11657f8f64026d939e7cec2ec552f461fcc46b2"
+      "sha256": "1a19c55ff29c8262d5b050fc0e485feb149830b4f6f0473f663322ea75600c00"
     },
     {
       "bytes": 29209,
       "path": "sing-box/examples/sing-box-ipad.json",
-      "sha256": "90e6c712835f56d64115ee2f8d70d938d68fafdb7ac62c45246a48396786bc36"
+      "sha256": "1c55ef6868a8f7a3670257f5177076986df84166bcb0901143dabadbb29614ce"
     },
     {
       "bytes": 11577,
       "path": "sing-box/examples/sing-box-iphone-diagnostic.json",
-      "sha256": "f9ba85b8f423eed9134ce985c11657f8f64026d939e7cec2ec552f461fcc46b2"
+      "sha256": "1a19c55ff29c8262d5b050fc0e485feb149830b4f6f0473f663322ea75600c00"
     },
     {
       "bytes": 29209,
       "path": "sing-box/examples/sing-box-iphone.json",
-      "sha256": "90e6c712835f56d64115ee2f8d70d938d68fafdb7ac62c45246a48396786bc36"
+      "sha256": "1c55ef6868a8f7a3670257f5177076986df84166bcb0901143dabadbb29614ce"
     },
     {
       "bytes": 11507,
       "path": "sing-box/examples/sing-box-macos-diagnostic.json",
-      "sha256": "bb757ba4f11579eb879bd9d21d2de9873f3cbed8ed999f61d49ae431195b3314"
+      "sha256": "c3abbd75bc6d380efc24246d41fa4d2c7c2ddc09a1a2a4a63692618c27808b37"
     },
     {
       "bytes": 29139,
       "path": "sing-box/examples/sing-box-macos.json",
-      "sha256": "2317860025522d969e72e8ae6e4e9a0db8c698ebc855d0b13c3451f70817c6da"
+      "sha256": "842ef81dadcca8d2a1eedfa8aa906e3ddb88cbd2f0f26942d564fa162b09ec29"
     },
     {
       "bytes": 11705,
       "path": "sing-box/examples/sing-box-openwrt-diagnostic.json",
-      "sha256": "93b6b2a2da3614f3ad6066c7c0b35b4a9bb96826964848327b31c6fb01505776"
+      "sha256": "e8e0bb93ea0c7b94acc8c03fa7da8cdbb40bc5138b9c5f8b90730f4ac8b0dcad"
     },
     {
       "bytes": 29337,
       "path": "sing-box/examples/sing-box-openwrt.json",
-      "sha256": "1026a4742f0490279ecd4cfc87d7b8aeb55725431183eb751dfd18aa6d27d67a"
+      "sha256": "9cdcc2715638251edeeced78c3765521713fda56453e743d3a94ed3572143347"
     },
     {
       "bytes": 246,
@@ -864,12 +864,12 @@
     {
       "bytes": 141015,
       "path": "sing-box/scripts/sing-box-config-generator.js",
-      "sha256": "ece8b64c944c9955fc348d278390875ae3222cc97e508a81d1f0c02cfe71d9d7"
+      "sha256": "9233dd64260da5229e0977cdad6eab00ef64bea11af417851ed0d0bb0fb65469"
     },
     {
       "bytes": 141015,
       "path": "sing-box/scripts/substore-config-generator.js",
-      "sha256": "ece8b64c944c9955fc348d278390875ae3222cc97e508a81d1f0c02cfe71d9d7"
+      "sha256": "9233dd64260da5229e0977cdad6eab00ef64bea11af417851ed0d0bb0fb65469"
     },
     {
       "bytes": 6728,
@@ -1073,7 +1073,7 @@
     }
   ],
   "generatedAt": "2026-08-09T18:34:14Z",
-  "manifestHash": "5e08dbff69a6a267566964aabe4936258dbfa716762f1cac140d84e8d8d720aa",
+  "manifestHash": "66c37180e67d1b82d7877ee32ae16b125ee7247ababb6905b95cd5c3c48a8d2f",
   "schemaVersion": 2,
   "upstream": {
     "branch": "master",

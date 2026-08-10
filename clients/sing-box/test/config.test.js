@@ -305,6 +305,86 @@ test("applies quicMode allow, proxy-block, and all-block to route rules", () => 
   assert.deepEqual(validateSingBoxConfig(allBlock), { valid: true, errors: [] });
 });
 
+test("keeps visible group order consistent with the shared catalog and moves nodes after groups", () => {
+  const nodes = [
+    {
+      name: "东京节点",
+      type: "ss",
+      server: "198.51.100.10",
+      port: 443,
+      cipher: "aes-256-gcm",
+      password: "TEST_ONLY_PASSWORD",
+      udp: true,
+      _profile: { id: "tokyo", continent: "asiaPacific", sourceKind: "airport", entry: true, chained: false },
+    },
+    {
+      name: "法兰克福节点",
+      type: "ss",
+      server: "198.51.100.20",
+      port: 443,
+      cipher: "aes-256-gcm",
+      password: "TEST_ONLY_PASSWORD",
+      udp: true,
+      _profile: { id: "frankfurt", continent: "europe", sourceKind: "airport", entry: true, chained: false },
+    },
+    {
+      name: "纽约节点",
+      type: "ss",
+      server: "198.51.100.30",
+      port: 443,
+      cipher: "aes-256-gcm",
+      password: "TEST_ONLY_PASSWORD",
+      udp: true,
+      _profile: { id: "newyork", continent: "americas", sourceKind: "airport", entry: true, chained: false },
+    },
+  ];
+  const config = renderSingBoxConfig(parseSingBoxOptions({ ...baseOptions, platform: "iphone" }), nodes, {
+    ruleBaseUrl: "https://example.invalid/current/sing-box/rule-sets",
+  });
+  const tags = config.outbounds.map(({ tag }) => tag);
+  const expectedGroups = [
+    "⚡ 全部自动",
+    "🛟 全部故障转移",
+    "⚡ 亚太自动",
+    "🛟 亚太故障转移",
+    "⚡ 欧洲自动",
+    "🛟 欧洲故障转移",
+    "⚡ 美洲自动",
+    "🛟 美洲故障转移",
+    "🚀 节点选择",
+    "🌏 亚太",
+    "🌍 欧洲",
+    "🌎 美洲",
+    "🏢 机场节点",
+    "🤖 AI 亚太",
+    "🤖 AI 欧洲",
+    "🤖 AI 美洲",
+    "🤖 AI 专用",
+    "🐙 GitHub",
+    "📺 YouTube",
+    "🎬 海外流媒体",
+    "💬 海外社交",
+    "🍎 Apple",
+    "🪟 Microsoft",
+    "🇨🇳 国内平台",
+    "🌍 海外游戏",
+    "🎮 游戏连接",
+    "⬇️ 下载/P2P",
+    "🧭 DNS 与规则下载",
+    "🧭 规则下载故障转移",
+    "☣️ 安全威胁",
+    "🧱 常见广告",
+    "🕵️ 严格跟踪",
+  ];
+  const groupTags = tags.filter((tag) => expectedGroups.includes(tag));
+  assert.deepEqual(groupTags, expectedGroups, "sing-box visible groups must follow the shared catalog order");
+  const firstNodeIndex = tags.indexOf("东京节点");
+  const lastGroupIndex = tags.indexOf("🕵️ 严格跟踪");
+  assert.ok(firstNodeIndex > lastGroupIndex, "node outbounds must be emitted after all policy groups");
+  assert.deepEqual(tags.slice(0, 2), ["DIRECT", "REJECT"]);
+  assert.deepEqual(validateSingBoxConfig(config), { valid: true, errors: [] });
+});
+
 test("diagnostic profile uses zero remote rule sets without changing platform or nodes", () => {
   const light = render();
   const diagnostic = render({ profileMode: "diagnostic" });

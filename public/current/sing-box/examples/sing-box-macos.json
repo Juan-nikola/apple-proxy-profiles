@@ -127,26 +127,6 @@
       "tag": "REJECT"
     },
     {
-      "type": "shadowsocks",
-      "tag": "示例 · Tokyo",
-      "server": "example.invalid",
-      "server_port": 443,
-      "method": "aes-256-gcm",
-      "password": "TEST_ONLY_FIXTURE_PASSWORD"
-    },
-    {
-      "type": "vmess",
-      "tag": "示例 · Frankfurt",
-      "server": "fixture-vmess.example.invalid",
-      "server_port": 443,
-      "uuid": "00000000-0000-4000-8000-000000000001",
-      "security": "auto",
-      "tls": {
-        "enabled": true,
-        "server_name": "fixture-vmess.example.invalid"
-      }
-    },
-    {
       "type": "urltest",
       "tag": "⚡ 全部自动",
       "outbounds": [
@@ -425,6 +405,17 @@
       "interrupt_exist_connections": true
     },
     {
+      "type": "selector",
+      "tag": "🧭 DNS 与规则下载",
+      "outbounds": [
+        "🧭 规则下载故障转移",
+        "🚀 节点选择",
+        "DIRECT"
+      ],
+      "default": "🧭 规则下载故障转移",
+      "interrupt_exist_connections": true
+    },
+    {
       "type": "urltest",
       "tag": "🧭 规则下载故障转移",
       "outbounds": [
@@ -435,17 +426,6 @@
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/rule-sets/Hijacking.srs",
       "interval": "30s",
       "tolerance": 0,
-      "interrupt_exist_connections": true
-    },
-    {
-      "type": "selector",
-      "tag": "🧭 DNS 与规则下载",
-      "outbounds": [
-        "🧭 规则下载故障转移",
-        "🚀 节点选择",
-        "DIRECT"
-      ],
-      "default": "🧭 规则下载故障转移",
       "interrupt_exist_connections": true
     },
     {
@@ -474,6 +454,26 @@
         "REJECT"
       ],
       "interrupt_exist_connections": true
+    },
+    {
+      "type": "shadowsocks",
+      "tag": "示例 · Tokyo",
+      "server": "example.invalid",
+      "server_port": 443,
+      "method": "aes-256-gcm",
+      "password": "TEST_ONLY_FIXTURE_PASSWORD"
+    },
+    {
+      "type": "vmess",
+      "tag": "示例 · Frankfurt",
+      "server": "fixture-vmess.example.invalid",
+      "server_port": 443,
+      "uuid": "00000000-0000-4000-8000-000000000001",
+      "security": "auto",
+      "tls": {
+        "enabled": true,
+        "server_name": "fixture-vmess.example.invalid"
+      }
     }
   ],
   "route": {

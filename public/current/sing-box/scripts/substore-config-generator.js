@@ -2298,14 +2298,14 @@ var SingBoxConfigBundle = (() => {
       interrupt_exist_connections: true
     };
     return [
-      failover,
       {
         type: "selector",
         tag: RULE_DOWNLOAD_GROUP,
         outbounds: [RULE_DOWNLOAD_FAILOVER_GROUP, "\u{1F680} \u8282\u70B9\u9009\u62E9", "DIRECT"],
         default: RULE_DOWNLOAD_FAILOVER_GROUP,
         interrupt_exist_connections: true
-      }
+      },
+      failover
     ];
   }
   function continentGroupNames(groups) {
@@ -2962,8 +2962,8 @@ var SingBoxConfigBundle = (() => {
       outbounds: [
         { type: "direct", tag: "DIRECT" },
         { type: "block", tag: "REJECT" },
-        ...nodeOutbounds,
-        ...groups
+        ...groups,
+        ...nodeOutbounds
       ],
       route: {
         auto_detect_interface: true,

@@ -36,7 +36,6 @@ function renderRuleDownloadGroups(inventory, ruleProbeUrl) {
     interrupt_exist_connections: true,
   };
   return [
-    failover,
     {
       type: "selector",
       tag: RULE_DOWNLOAD_GROUP,
@@ -44,6 +43,7 @@ function renderRuleDownloadGroups(inventory, ruleProbeUrl) {
       default: RULE_DOWNLOAD_FAILOVER_GROUP,
       interrupt_exist_connections: true,
     },
+    failover,
   ];
 }
 
