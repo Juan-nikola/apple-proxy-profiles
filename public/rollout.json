@@ -4,14 +4,14 @@
     "singbox": "f0cd0f3b23fe320ed92f936116b6e81ba8591b0211bf254999be0842de306c2f",
     "surge": "3d865b349aa8b6f754f4517a53fa1ef7e92d6831ff90ac8d68e5eb0b84807955",
     "shadowrocket": "df8ff35f1bcc52f6ed023e17860bcf7b4728797a8c68bc61f62aefa7d49ce451",
-    "egern": "9cecbffb1e7d443f864597812c0d55ff07f43443563c40fdec3b912aa3bbb85d",
+    "egern": "aa4c49ef547e58a138de845ba1a853173d80229026e431a511b3bf47c93bad37",
     "anywhere": "f8531470947d76afde16e473ad4fe95910e831490ecd55dc4c806ce939f0e86b"
   },
   "previous": {
     "singbox": "665f8b28a353eee8753f00f97e996e07e5ca779eaaffc5da06e7a5d899cde638",
     "surge": "3016a80b813611195e37c8670bd77805577c6c10935892117e3bf70dd59b58a7",
     "shadowrocket": "62928f766da5d4e6f02da9ba9c27a0dfd4b01bf869fb8de4cc1e6d2adfafee41",
-    "egern": "37bd069c76abae4d5d8f18bf6a24f6e6b0045d8d595da8f7b50901fb6cf5b27e",
+    "egern": "9cecbffb1e7d443f864597812c0d55ff07f43443563c40fdec3b912aa3bbb85d",
     "anywhere": "f8531470947d76afde16e473ad4fe95910e831490ecd55dc4c806ce939f0e86b"
   },
   "optionalPacks": {
@@ -28,7 +28,7 @@
       "singbox": "e9e9fe8807de0052a179c21dfcd4e7360891faa0c9ef146866aa1eeb7be2d8b6",
       "surge": "efd4adad47e7f434a05d6eb629e05b1802f820d7a9674454b1e6d5deef81d93c",
       "shadowrocket": "446654b6ddddeadf89d44cb33f993d55d81394f90f2241c2453f06de32ba227c",
-      "egern": "08d4bb10fe60135e554cc9795db20e14494fc6a6cd170d2eebe06072a552da3f",
+      "egern": "20c44a0b4f43535e6a71d869851e77d61f266c16ac55636fdfc5aa14c039a61f",
       "anywhere": "cc989d25ab5eb51b94dfeb2c371c78d2d3c7eb1ddf0816fe12852ce234c0a754"
     }
   }
