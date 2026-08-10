@@ -14,7 +14,7 @@
       "referencedDefaultBytes": 604847
     },
     "singbox": {
-      "manifestHash": "e998443c707869f4d62b7bce7efb1f48edd3ca5bfd93eeafeb1737a3b85bff87",
+      "manifestHash": "96109bc440ab638116d5d74943719762f509ead8201e5dc9ffb19468ca15eae3",
       "referencedDefaultBytes": 107456
     },
     "surge": {
@@ -649,57 +649,57 @@
     {
       "bytes": 7848,
       "path": "sing-box/client-manifest.json",
-      "sha256": "377fb347f302fd23f32ba84e58c43c703e9b9b4cb0ce9b863e79bb4663bac858"
+      "sha256": "603d7346b51765136f92637f1f108d81bff790f17886c53bac1d9bb817a31c19"
     },
     {
       "bytes": 11509,
       "path": "sing-box/examples/sing-box-android-diagnostic.json",
-      "sha256": "2088549d1b23fa2188dce82e78e61d0e6d1297790edcbeb34f06655d295dcc90"
+      "sha256": "6ad74520710140326a0d26a42a99b2efa2c3f89aa5d1cb61e88f8d9119067389"
     },
     {
       "bytes": 29141,
       "path": "sing-box/examples/sing-box-android.json",
-      "sha256": "167367f8fcddad776f6905c750cd1f2889e96300ac7954365fb4d0f719e84e20"
+      "sha256": "7e4d34ae164fc87964a5ef9bf75773a1149bc21372b7d8f6e26a42ccbccb8e47"
     },
     {
       "bytes": 11577,
       "path": "sing-box/examples/sing-box-ipad-diagnostic.json",
-      "sha256": "1a19c55ff29c8262d5b050fc0e485feb149830b4f6f0473f663322ea75600c00"
+      "sha256": "87cf04b23cb01cc35966fb3dc0e54c40cf23000d51db352b05782a754b1af741"
     },
     {
       "bytes": 29209,
       "path": "sing-box/examples/sing-box-ipad.json",
-      "sha256": "1c55ef6868a8f7a3670257f5177076986df84166bcb0901143dabadbb29614ce"
+      "sha256": "5d770eb9e702f96e81307150592da3a3c7d19e891ce91b040264da48bd7dc9ab"
     },
     {
       "bytes": 11577,
       "path": "sing-box/examples/sing-box-iphone-diagnostic.json",
-      "sha256": "1a19c55ff29c8262d5b050fc0e485feb149830b4f6f0473f663322ea75600c00"
+      "sha256": "87cf04b23cb01cc35966fb3dc0e54c40cf23000d51db352b05782a754b1af741"
     },
     {
       "bytes": 29209,
       "path": "sing-box/examples/sing-box-iphone.json",
-      "sha256": "1c55ef6868a8f7a3670257f5177076986df84166bcb0901143dabadbb29614ce"
+      "sha256": "5d770eb9e702f96e81307150592da3a3c7d19e891ce91b040264da48bd7dc9ab"
     },
     {
       "bytes": 11507,
       "path": "sing-box/examples/sing-box-macos-diagnostic.json",
-      "sha256": "c3abbd75bc6d380efc24246d41fa4d2c7c2ddc09a1a2a4a63692618c27808b37"
+      "sha256": "adfa424190bcb5e75b119494fdcdd1a913e54895a0e1b16c9836d9e5c74b7cc3"
     },
     {
       "bytes": 29139,
       "path": "sing-box/examples/sing-box-macos.json",
-      "sha256": "842ef81dadcca8d2a1eedfa8aa906e3ddb88cbd2f0f26942d564fa162b09ec29"
+      "sha256": "7f378c5f7a4b69b092e608d3505fbcc4fd1ae321038c0023cdd33ef0ec80b12a"
     },
     {
       "bytes": 11705,
       "path": "sing-box/examples/sing-box-openwrt-diagnostic.json",
-      "sha256": "e8e0bb93ea0c7b94acc8c03fa7da8cdbb40bc5138b9c5f8b90730f4ac8b0dcad"
+      "sha256": "cf08d9c4afd5bb44f28082d26e98faae4f00074cdf88a3628dd1060dd9301c66"
     },
     {
       "bytes": 29337,
       "path": "sing-box/examples/sing-box-openwrt.json",
-      "sha256": "9cdcc2715638251edeeced78c3765521713fda56453e743d3a94ed3572143347"
+      "sha256": "cd44a3af2f3f18dc0b01da5feead5c53fa26b7fb461518bf5af205aa1dba232c"
     },
     {
       "bytes": 246,
@@ -862,14 +862,14 @@
       "sha256": "71494bd314e7c53437c80d9aa76cd92aff989f7075ef91f5484ded4ffe26b691"
     },
     {
-      "bytes": 141015,
+      "bytes": 141334,
       "path": "sing-box/scripts/sing-box-config-generator.js",
-      "sha256": "9233dd64260da5229e0977cdad6eab00ef64bea11af417851ed0d0bb0fb65469"
+      "sha256": "2bfd98f0666feb40c2b631757c2ae8d264a43bf908a6fd3e9abbbda241e47935"
     },
     {
-      "bytes": 141015,
+      "bytes": 141334,
       "path": "sing-box/scripts/substore-config-generator.js",
-      "sha256": "9233dd64260da5229e0977cdad6eab00ef64bea11af417851ed0d0bb0fb65469"
+      "sha256": "2bfd98f0666feb40c2b631757c2ae8d264a43bf908a6fd3e9abbbda241e47935"
     },
     {
       "bytes": 6728,
@@ -1073,7 +1073,7 @@
     }
   ],
   "generatedAt": "2026-08-09T18:34:14Z",
-  "manifestHash": "66c37180e67d1b82d7877ee32ae16b125ee7247ababb6905b95cd5c3c48a8d2f",
+  "manifestHash": "0cf70fc7918395c4c998d8e938ff2c09e583c071c6573da7a21f53bc01b1f1c7",
   "schemaVersion": 2,
   "upstream": {
     "branch": "master",

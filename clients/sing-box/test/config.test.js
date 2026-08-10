@@ -305,7 +305,7 @@ test("applies quicMode allow, proxy-block, and all-block to route rules", () => 
   assert.deepEqual(validateSingBoxConfig(allBlock), { valid: true, errors: [] });
 });
 
-test("keeps visible group order consistent with the shared catalog and moves nodes after groups", () => {
+test("puts visible groups first, hidden helper groups last, and node outbounds at the end", () => {
   const nodes = [
     {
       name: "东京节点",
@@ -342,23 +342,12 @@ test("keeps visible group order consistent with the shared catalog and moves nod
     ruleBaseUrl: "https://example.invalid/current/sing-box/rule-sets",
   });
   const tags = config.outbounds.map(({ tag }) => tag);
-  const expectedGroups = [
-    "⚡ 全部自动",
-    "🛟 全部故障转移",
-    "⚡ 亚太自动",
-    "🛟 亚太故障转移",
-    "⚡ 欧洲自动",
-    "🛟 欧洲故障转移",
-    "⚡ 美洲自动",
-    "🛟 美洲故障转移",
+  const expectedVisible = [
     "🚀 节点选择",
     "🌏 亚太",
     "🌍 欧洲",
     "🌎 美洲",
     "🏢 机场节点",
-    "🤖 AI 亚太",
-    "🤖 AI 欧洲",
-    "🤖 AI 美洲",
     "🤖 AI 专用",
     "🐙 GitHub",
     "📺 YouTube",
@@ -371,17 +360,31 @@ test("keeps visible group order consistent with the shared catalog and moves nod
     "🎮 游戏连接",
     "⬇️ 下载/P2P",
     "🧭 DNS 与规则下载",
-    "🧭 规则下载故障转移",
     "☣️ 安全威胁",
     "🧱 常见广告",
     "🕵️ 严格跟踪",
   ];
-  const groupTags = tags.filter((tag) => expectedGroups.includes(tag));
-  assert.deepEqual(groupTags, expectedGroups, "sing-box visible groups must follow the shared catalog order");
+  const expectedHidden = [
+    "⚡ 全部自动",
+    "🛟 全部故障转移",
+    "⚡ 亚太自动",
+    "🛟 亚太故障转移",
+    "⚡ 欧洲自动",
+    "🛟 欧洲故障转移",
+    "⚡ 美洲自动",
+    "🛟 美洲故障转移",
+    "🤖 AI 亚太",
+    "🤖 AI 欧洲",
+    "🤖 AI 美洲",
+    "🧭 规则下载故障转移",
+  ];
+  const expectedOrder = ["DIRECT", "REJECT", ...expectedVisible, ...expectedHidden];
+  const head = tags.slice(0, expectedOrder.length);
+  assert.deepEqual(head, expectedOrder, "visible groups must precede hidden helper groups");
   const firstNodeIndex = tags.indexOf("东京节点");
-  const lastGroupIndex = tags.indexOf("🕵️ 严格跟踪");
-  assert.ok(firstNodeIndex > lastGroupIndex, "node outbounds must be emitted after all policy groups");
-  assert.deepEqual(tags.slice(0, 2), ["DIRECT", "REJECT"]);
+  const lastHiddenIndex = tags.indexOf("🧭 规则下载故障转移");
+  assert.ok(firstNodeIndex > lastHiddenIndex, "node outbounds must be emitted after every group");
+  assert.deepEqual(tags.slice(expectedOrder.length), ["东京节点", "法兰克福节点", "纽约节点"]);
   assert.deepEqual(validateSingBoxConfig(config), { valid: true, errors: [] });
 });
 

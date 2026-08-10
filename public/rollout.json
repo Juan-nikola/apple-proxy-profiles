@@ -1,14 +1,14 @@
 {
   "schemaVersion": 2,
   "clients": {
-    "singbox": "e998443c707869f4d62b7bce7efb1f48edd3ca5bfd93eeafeb1737a3b85bff87",
+    "singbox": "96109bc440ab638116d5d74943719762f509ead8201e5dc9ffb19468ca15eae3",
     "surge": "ba6c4410cce7945c30581b0af20a7fe0f9122b6700167c67aa46896969c130b3",
     "shadowrocket": "cbd1be5d9afe451c5a23318aff1331db974fe10f8a4e063975bf197b48cd4712",
     "egern": "569bbe0926f89ff194c2c3b6d8009f2d50f2c806070557e3b96c39abc1c93f27",
     "anywhere": "206a5fad315d75a9f5757b5bb8754c57cac4003dd0dac088575d5717b9362241"
   },
   "previous": {
-    "singbox": "ae98b44590414f5c21241ff09e26d6c77aedd33e41edd9c95bdec3f2e6877611",
+    "singbox": "e998443c707869f4d62b7bce7efb1f48edd3ca5bfd93eeafeb1737a3b85bff87",
     "surge": "3d865b349aa8b6f754f4517a53fa1ef7e92d6831ff90ac8d68e5eb0b84807955",
     "shadowrocket": "df8ff35f1bcc52f6ed023e17860bcf7b4728797a8c68bc61f62aefa7d49ce451",
     "egern": "aa4c49ef547e58a138de845ba1a853173d80229026e431a511b3bf47c93bad37",

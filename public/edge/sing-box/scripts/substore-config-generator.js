@@ -2311,51 +2311,63 @@ var SingBoxConfigBundle = (() => {
   function continentGroupNames(groups) {
     return groups.filter((group) => group.kind === GROUP_KIND.continent).map((group) => group.name);
   }
+  function renderGroup(group, continentNames, inventory) {
+    if (group.name === "\u{1F680} \u8282\u70B9\u9009\u62E9") {
+      const outbounds2 = [
+        ...group.candidates.map(targetName),
+        "\u{1F6DF} \u5168\u90E8\u6545\u969C\u8F6C\u79FB",
+        ...continentNames
+      ].filter((item, index, all) => all.indexOf(item) === index);
+      return {
+        type: "selector",
+        tag: group.name,
+        outbounds: outbounds2.length > 0 ? outbounds2 : ["DIRECT"],
+        interrupt_exist_connections: true
+      };
+    }
+    const candidates = [
+      ...group.candidates.map(targetName),
+      ...filterNodes(group.nodeFilter, inventory)
+    ].filter((item, index, all) => all.indexOf(item) === index);
+    const outbounds = candidates.length > 0 ? candidates : ["DIRECT"];
+    if (group.strategy === "auto-test" || group.strategy === "fallback") {
+      return {
+        type: "urltest",
+        tag: group.name,
+        outbounds,
+        url: "https://www.gstatic.com/generate_204",
+        interval: duration(group.test?.interval ?? 600),
+        tolerance: group.test?.tolerance ?? 100,
+        interrupt_exist_connections: true
+      };
+    }
+    const outbound = {
+      type: "selector",
+      tag: group.name,
+      outbounds,
+      interrupt_exist_connections: true
+    };
+    const defaultChoice = group.defaultChoice;
+    if (defaultChoice !== void 0) outbound.default = targetName(defaultChoice);
+    return outbound;
+  }
   function renderSingBoxGroups(options, nodes, { ruleProbeUrl = "https://www.gstatic.com/generate_204" } = {}) {
     const inventory = Array.isArray(nodes) ? nodes : [];
     const shared = buildPolicyGroups(options, inventory);
     const continentNames = continentGroupNames(shared);
-    return shared.flatMap((group) => {
-      if (group.name === RULE_DOWNLOAD_GROUP) return renderRuleDownloadGroups(inventory, ruleProbeUrl);
-      if (group.name === "\u{1F680} \u8282\u70B9\u9009\u62E9") {
-        const outbounds2 = [
-          ...group.candidates.map(targetName),
-          "\u{1F6DF} \u5168\u90E8\u6545\u969C\u8F6C\u79FB",
-          ...continentNames
-        ].filter((item, index, all) => all.indexOf(item) === index);
-        return {
-          type: "selector",
-          tag: group.name,
-          outbounds: outbounds2.length > 0 ? outbounds2 : ["DIRECT"],
-          interrupt_exist_connections: true
-        };
+    const visible = [];
+    const hidden = [];
+    for (const group of shared) {
+      if (group.name === RULE_DOWNLOAD_GROUP) {
+        const [selector, failover] = renderRuleDownloadGroups(inventory, ruleProbeUrl);
+        visible.push(selector);
+        hidden.push(failover);
+        continue;
       }
-      const candidates = [
-        ...group.candidates.map(targetName),
-        ...filterNodes(group.nodeFilter, inventory)
-      ].filter((item, index, all) => all.indexOf(item) === index);
-      const outbounds = candidates.length > 0 ? candidates : ["DIRECT"];
-      if (group.strategy === "auto-test" || group.strategy === "fallback") {
-        return {
-          type: "urltest",
-          tag: group.name,
-          outbounds,
-          url: "https://www.gstatic.com/generate_204",
-          interval: duration(group.test?.interval ?? 600),
-          tolerance: group.test?.tolerance ?? 100,
-          interrupt_exist_connections: true
-        };
-      }
-      const outbound = {
-        type: "selector",
-        tag: group.name,
-        outbounds,
-        interrupt_exist_connections: true
-      };
-      const defaultChoice = group.defaultChoice;
-      if (defaultChoice !== void 0) outbound.default = targetName(defaultChoice);
-      return outbound;
-    });
+      const rendered = renderGroup(group, continentNames, inventory);
+      (group.hidden === true ? hidden : visible).push(rendered);
+    }
+    return [...visible, ...hidden];
   }
 
   // ../../shared/rules/lightweight-policy.js

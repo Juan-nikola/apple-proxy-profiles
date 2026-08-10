@@ -80,74 +80,6 @@
       "tag": "REJECT"
     },
     {
-      "type": "urltest",
-      "tag": "⚡ 全部自动",
-      "outbounds": [
-        "示例 · Tokyo",
-        "示例 · Frankfurt"
-      ],
-      "url": "https://www.gstatic.com/generate_204",
-      "interval": "1800s",
-      "tolerance": 150,
-      "interrupt_exist_connections": true
-    },
-    {
-      "type": "urltest",
-      "tag": "🛟 全部故障转移",
-      "outbounds": [
-        "示例 · Tokyo",
-        "示例 · Frankfurt"
-      ],
-      "url": "https://www.gstatic.com/generate_204",
-      "interval": "1800s",
-      "tolerance": 150,
-      "interrupt_exist_connections": true
-    },
-    {
-      "type": "urltest",
-      "tag": "⚡ 亚太自动",
-      "outbounds": [
-        "DIRECT"
-      ],
-      "url": "https://www.gstatic.com/generate_204",
-      "interval": "1800s",
-      "tolerance": 150,
-      "interrupt_exist_connections": true
-    },
-    {
-      "type": "urltest",
-      "tag": "🛟 亚太故障转移",
-      "outbounds": [
-        "DIRECT"
-      ],
-      "url": "https://www.gstatic.com/generate_204",
-      "interval": "1800s",
-      "tolerance": 150,
-      "interrupt_exist_connections": true
-    },
-    {
-      "type": "urltest",
-      "tag": "⚡ 欧洲自动",
-      "outbounds": [
-        "DIRECT"
-      ],
-      "url": "https://www.gstatic.com/generate_204",
-      "interval": "1800s",
-      "tolerance": 150,
-      "interrupt_exist_connections": true
-    },
-    {
-      "type": "urltest",
-      "tag": "🛟 欧洲故障转移",
-      "outbounds": [
-        "DIRECT"
-      ],
-      "url": "https://www.gstatic.com/generate_204",
-      "interval": "1800s",
-      "tolerance": 150,
-      "interrupt_exist_connections": true
-    },
-    {
       "type": "selector",
       "tag": "🚀 节点选择",
       "outbounds": [
@@ -181,24 +113,6 @@
       "tag": "🏢 机场节点",
       "outbounds": [
         "DIRECT"
-      ],
-      "interrupt_exist_connections": true
-    },
-    {
-      "type": "selector",
-      "tag": "🤖 AI 亚太",
-      "outbounds": [
-        "⚡ 亚太自动",
-        "🛟 亚太故障转移"
-      ],
-      "interrupt_exist_connections": true
-    },
-    {
-      "type": "selector",
-      "tag": "🤖 AI 欧洲",
-      "outbounds": [
-        "⚡ 欧洲自动",
-        "🛟 欧洲故障转移"
       ],
       "interrupt_exist_connections": true
     },
@@ -369,19 +283,6 @@
       "interrupt_exist_connections": true
     },
     {
-      "type": "urltest",
-      "tag": "🧭 规则下载故障转移",
-      "outbounds": [
-        "示例 · Tokyo",
-        "示例 · Frankfurt",
-        "DIRECT"
-      ],
-      "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/rule-sets/Hijacking.srs",
-      "interval": "30s",
-      "tolerance": 0,
-      "interrupt_exist_connections": true
-    },
-    {
       "type": "selector",
       "tag": "☣️ 安全威胁",
       "outbounds": [
@@ -406,6 +307,105 @@
         "DIRECT",
         "REJECT"
       ],
+      "interrupt_exist_connections": true
+    },
+    {
+      "type": "urltest",
+      "tag": "⚡ 全部自动",
+      "outbounds": [
+        "示例 · Tokyo",
+        "示例 · Frankfurt"
+      ],
+      "url": "https://www.gstatic.com/generate_204",
+      "interval": "1800s",
+      "tolerance": 150,
+      "interrupt_exist_connections": true
+    },
+    {
+      "type": "urltest",
+      "tag": "🛟 全部故障转移",
+      "outbounds": [
+        "示例 · Tokyo",
+        "示例 · Frankfurt"
+      ],
+      "url": "https://www.gstatic.com/generate_204",
+      "interval": "1800s",
+      "tolerance": 150,
+      "interrupt_exist_connections": true
+    },
+    {
+      "type": "urltest",
+      "tag": "⚡ 亚太自动",
+      "outbounds": [
+        "DIRECT"
+      ],
+      "url": "https://www.gstatic.com/generate_204",
+      "interval": "1800s",
+      "tolerance": 150,
+      "interrupt_exist_connections": true
+    },
+    {
+      "type": "urltest",
+      "tag": "🛟 亚太故障转移",
+      "outbounds": [
+        "DIRECT"
+      ],
+      "url": "https://www.gstatic.com/generate_204",
+      "interval": "1800s",
+      "tolerance": 150,
+      "interrupt_exist_connections": true
+    },
+    {
+      "type": "urltest",
+      "tag": "⚡ 欧洲自动",
+      "outbounds": [
+        "DIRECT"
+      ],
+      "url": "https://www.gstatic.com/generate_204",
+      "interval": "1800s",
+      "tolerance": 150,
+      "interrupt_exist_connections": true
+    },
+    {
+      "type": "urltest",
+      "tag": "🛟 欧洲故障转移",
+      "outbounds": [
+        "DIRECT"
+      ],
+      "url": "https://www.gstatic.com/generate_204",
+      "interval": "1800s",
+      "tolerance": 150,
+      "interrupt_exist_connections": true
+    },
+    {
+      "type": "selector",
+      "tag": "🤖 AI 亚太",
+      "outbounds": [
+        "⚡ 亚太自动",
+        "🛟 亚太故障转移"
+      ],
+      "interrupt_exist_connections": true
+    },
+    {
+      "type": "selector",
+      "tag": "🤖 AI 欧洲",
+      "outbounds": [
+        "⚡ 欧洲自动",
+        "🛟 欧洲故障转移"
+      ],
+      "interrupt_exist_connections": true
+    },
+    {
+      "type": "urltest",
+      "tag": "🧭 规则下载故障转移",
+      "outbounds": [
+        "示例 · Tokyo",
+        "示例 · Frankfurt",
+        "DIRECT"
+      ],
+      "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/rule-sets/Hijacking.srs",
+      "interval": "30s",
+      "tolerance": 0,
       "interrupt_exist_connections": true
     },
     {
