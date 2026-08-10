@@ -1483,6 +1483,12 @@ var ShadowrocketNodeSubscriptionBundle = (() => {
     }
     return node;
   }
+  function stripInternalRealityMetadata(node) {
+    const reality = node?.["reality-opts"];
+    if (!reality || typeof reality !== "object" || Array.isArray(reality)) return node;
+    if (Object.hasOwn(reality, "_spider-x")) Reflect.deleteProperty(reality, "_spider-x");
+    return node;
+  }
   function compareNodes(left, right) {
     const continent = (CONTINENT_ORDER.get(nodeMetadata(left).continent) ?? 99) - (CONTINENT_ORDER.get(nodeMetadata(right).continent) ?? 99);
     if (continent !== 0) return continent;
@@ -1582,7 +1588,7 @@ var ShadowrocketNodeSubscriptionBundle = (() => {
         increment(diagnostics.excluded, validation.reason);
         continue;
       }
-      const cloned = stripUndefinedValues(structuredClone(original));
+      const cloned = stripInternalRealityMetadata(stripUndefinedValues(structuredClone(original)));
       cloned.type = original.type.trim().toLowerCase();
       cloned.port = Number(original.port);
       const identity = identityKey(cloned);
