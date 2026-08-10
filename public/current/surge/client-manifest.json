@@ -178,28 +178,28 @@
       "sha256": "a245d55178306df6353bc43b99a4b1244019800df9b59a95a0eb85082b0c5a6f"
     },
     {
-      "bytes": 96921,
+      "bytes": 96701,
       "path": "surge/scripts/substore-nodes-generator.js",
-      "sha256": "0309452439d5fdf072b53c81c97cb6769fafbe4d2e5938738ecd2f27321a4efe"
+      "sha256": "321d26f53d8c9285011b890bd9edf6e07e399f9b3770ae077518ce815895b1eb"
     },
     {
-      "bytes": 131798,
+      "bytes": 131578,
       "path": "surge/scripts/substore-profile-generator.js",
-      "sha256": "6c899f07312c93f7c9fa8128619fa3a31e17f78995d7b77013b5ac8f59f0b144"
+      "sha256": "79302f63d9591c7d7b4fe12f2a6c1677a20458e709ac1b72910bc39a5e649374"
     },
     {
-      "bytes": 96921,
+      "bytes": 96701,
       "path": "surge/scripts/surge-nodes-generator.js",
-      "sha256": "0309452439d5fdf072b53c81c97cb6769fafbe4d2e5938738ecd2f27321a4efe"
+      "sha256": "321d26f53d8c9285011b890bd9edf6e07e399f9b3770ae077518ce815895b1eb"
     },
     {
-      "bytes": 131798,
+      "bytes": 131578,
       "path": "surge/scripts/surge-profile-generator.js",
-      "sha256": "6c899f07312c93f7c9fa8128619fa3a31e17f78995d7b77013b5ac8f59f0b144"
+      "sha256": "79302f63d9591c7d7b4fe12f2a6c1677a20458e709ac1b72910bc39a5e649374"
     }
   ],
   "generatedAt": "2026-08-09T18:34:14Z",
-  "manifestHash": "3d865b349aa8b6f754f4517a53fa1ef7e92d6831ff90ac8d68e5eb0b84807955",
+  "manifestHash": "ba6c4410cce7945c30581b0af20a7fe0f9122b6700167c67aa46896969c130b3",
   "optionalPacks": {
     "adblock-full": "efd4adad47e7f434a05d6eb629e05b1802f820d7a9674454b1e6d5deef81d93c"
   },
