@@ -1483,6 +1483,12 @@ var SingBoxConfigBundle = (() => {
     }
     return node;
   }
+  function stripInternalRealityMetadata(node) {
+    const reality = node?.["reality-opts"];
+    if (!reality || typeof reality !== "object" || Array.isArray(reality)) return node;
+    if (Object.hasOwn(reality, "_spider-x")) Reflect.deleteProperty(reality, "_spider-x");
+    return node;
+  }
   function compareNodes(left, right) {
     const continent = (CONTINENT_ORDER.get(nodeMetadata(left).continent) ?? 99) - (CONTINENT_ORDER.get(nodeMetadata(right).continent) ?? 99);
     if (continent !== 0) return continent;
@@ -1582,7 +1588,7 @@ var SingBoxConfigBundle = (() => {
         increment(diagnostics.excluded, validation.reason);
         continue;
       }
-      const cloned = stripUndefinedValues(structuredClone(original));
+      const cloned = stripInternalRealityMetadata(stripUndefinedValues(structuredClone(original)));
       cloned.type = original.type.trim().toLowerCase();
       cloned.port = Number(original.port);
       const identity = identityKey(cloned);
@@ -2605,7 +2611,7 @@ var SingBoxConfigBundle = (() => {
   });
 
   // src/render-rules.js
-  var RULE_DOWNLOAD_GROUP2 = "\u{1F9ED} DNS \u4E0E\u89C4\u5219\u4E0B\u8F7D";
+  var RULE_DOWNLOAD_HTTP_CLIENT = "\u{1F9ED} \u89C4\u5219\u4E0B\u8F7D HTTP";
   var LOCAL_RULES = Object.freeze([
     { ip_is_private: true, action: "route", outbound: "DIRECT" },
     { domain_suffix: ["local", "lan", "home.arpa"], action: "route", outbound: "DIRECT" }
@@ -2661,7 +2667,7 @@ var SingBoxConfigBundle = (() => {
       tag: `rule-${source.id}`,
       format: "binary",
       url: `${source.id === "Advertising" || source.id === "Advertising_Domain" ? adblockBase : base2}/${source.id}.srs`,
-      download_detour: RULE_DOWNLOAD_GROUP2,
+      http_client: RULE_DOWNLOAD_HTTP_CLIENT,
       update_interval: "24h"
     }));
   }
@@ -2822,10 +2828,16 @@ var SingBoxConfigBundle = (() => {
     if (!config || typeof config !== "object" || Array.isArray(config)) return { valid: false, errors: ["config must be an object"] };
     const outbounds = config.outbounds;
     const outboundTags = uniqueTags(outbounds, errors, "outbound");
+    const httpClientTags = uniqueTags(config.http_clients, errors, "HTTP client");
     const ruleSets = uniqueTags(config.route?.rule_set, errors, "rule-set");
     const dnsServers = uniqueTags(config.dns?.servers, errors, "DNS server");
     const inboundTags = uniqueTags(config.inbounds, errors, "inbound");
     const groupTags = new Set(outbounds?.filter((item) => ["selector", "urltest"].includes(item.type)).map((item) => item.tag));
+    for (const client of config.http_clients ?? []) {
+      if (client.detour !== void 0 && !outboundTags.has(client.detour)) {
+        errors.push("HTTP client references missing outbound tag");
+      }
+    }
     for (const outbound of outbounds ?? []) {
       for (const target of outbound.outbounds ?? []) if (!outboundTags.has(target)) errors.push("outbound references missing tag");
       if (outbound.default !== void 0 && !outboundTags.has(outbound.default)) errors.push("selector default references missing tag");
@@ -2847,10 +2859,14 @@ var SingBoxConfigBundle = (() => {
     }
     const routeFinal = config.route?.final;
     if (typeof routeFinal !== "string" || !outboundTags.has(routeFinal)) errors.push("route final references missing outbound tag");
+    const defaultHttpClient = config.route?.default_http_client;
+    if (defaultHttpClient !== void 0 && (typeof defaultHttpClient !== "string" || !httpClientTags.has(defaultHttpClient))) {
+      errors.push("route default_http_client references missing HTTP client tag");
+    }
     for (const ruleSet of config.route?.rule_set ?? []) {
-      if (Object.hasOwn(ruleSet, "http_client")) errors.push("rule-set contains removed http_client field");
-      if (ruleSet.type === "remote" && (typeof ruleSet.download_detour !== "string" || !outboundTags.has(ruleSet.download_detour))) {
-        errors.push("remote rule-set references missing download_detour tag");
+      if (Object.hasOwn(ruleSet, "download_detour")) errors.push("rule-set contains deprecated download_detour");
+      if (ruleSet.type === "remote" && (typeof ruleSet.http_client !== "string" || !httpClientTags.has(ruleSet.http_client))) {
+        errors.push("remote rule-set references missing http_client tag");
       }
       if (ruleSet.type === "remote" && (ruleSet.format !== "binary" || typeof ruleSet.url !== "string" || !/^https:\/\/[^\s]+\.srs$/u.test(ruleSet.url))) {
         errors.push("remote rule-set must use binary format and an HTTPS .srs URL");
@@ -2924,6 +2940,11 @@ var SingBoxConfigBundle = (() => {
     const config = {
       log: { level: "info", timestamp: true },
       dns: renderSingBoxDns(options),
+      http_clients: [{
+        tag: RULE_DOWNLOAD_HTTP_CLIENT,
+        version: 2,
+        detour: "\u{1F9ED} DNS \u4E0E\u89C4\u5219\u4E0B\u8F7D"
+      }],
       inbounds: [renderSingBoxTun(options.platform)],
       outbounds: [
         { type: "direct", tag: "DIRECT" },
@@ -2934,6 +2955,7 @@ var SingBoxConfigBundle = (() => {
       route: {
         auto_detect_interface: true,
         default_domain_resolver: "dns-direct",
+        default_http_client: RULE_DOWNLOAD_HTTP_CLIENT,
         rule_set: ruleSets,
         rules,
         final
