@@ -263,6 +263,18 @@ test("rejects OneXray protocols, chains, aliases, malformed credentials, and los
     supported: false,
     reason: "invalid-onexray-node-shape",
   });
+  for (const vmessSecurity of [
+    { cipher: "tls" },
+    { cipher: "reality" },
+    { cipher: "unsupported" },
+    { security: "tls" },
+    { security: "reality" },
+  ]) {
+    assert.deepEqual(evaluateNodeForClient({ ...common, type: "vmess", uuid, ...vmessSecurity }, "onexray"), {
+      supported: false,
+      reason: "invalid-onexray-node-shape",
+    });
+  }
   for (const lossyField of [
     { tfo: true },
     { mux: true },

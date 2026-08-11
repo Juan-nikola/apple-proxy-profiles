@@ -1313,15 +1313,15 @@ function validateOneXrayProtocolShape(node, protocol) {
       || protocol === "vless" && hasOption(node, "encryption") && !isNonblankString(node.encryption)
       || protocol === "vless" && hasOption(node, "reverse") && (!isPlainObject(node.reverse)
         || Object.keys(node.reverse).some((key) => key !== "tag") || !isNonblankString(node.reverse.tag))) return "invalid-onexray-node-shape";
-    if (protocol === "vmess" && hasOption(node, "cipher") && !isNonblankString(node.cipher)) {
-      return "invalid-onexray-node-shape";
+    if (protocol === "vmess") {
+      const supportedSecurity = ["auto", "aes-128-gcm", "chacha20-poly1305", "none", "zero"];
+      if (["cipher", "security"].some((key) => hasOption(node, key)
+        && (!isNonblankString(node[key]) || !supportedSecurity.includes(node[key])))) {
+        return "invalid-onexray-node-shape";
+      }
     }
     if (protocol === "vmess" && hasOption(node, "cipher") && hasOption(node, "security") && node.cipher !== node.security) {
       return "conflicting-onexray-alias";
-    }
-    if (protocol === "vmess" && hasOption(node, "cipher")
-      && !["none", "tls", "reality", "auto", "aes-128-gcm", "chacha20-poly1305", "zero"].includes(node.cipher)) {
-      return "unsupported-onexray-tls-shape";
     }
     const tlsReason = oneXrayTlsReason(node, protocol);
     return tlsReason || oneXrayTransportReason(node, protocol);
