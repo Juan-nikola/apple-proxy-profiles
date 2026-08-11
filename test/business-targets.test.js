@@ -111,3 +111,29 @@ test("rejects non-Base64URL, malformed UTF-8 and non-object policy documents", (
 test("rejects Base64URL encodings with non-canonical unused bits", () => {
   assert.throws(() => parseBusinessOverrides("e31"));
 });
+
+test("rejects duplicate JSON keys before JSON parsing can discard the conflict", () => {
+  const encoded = Buffer.from('{"ai":"FOLLOW","ai":"DIRECT"}', "utf8").toString("base64url");
+  assert.throws(
+    () => parseBusinessOverrides(encoded),
+    (error) => {
+      assert.equal(error.message.includes(encoded), false);
+      return true;
+    },
+  );
+});
+
+test("rejects Unicode line separators in fixed node target names", () => {
+  const secret = "PRIVATE_NODE_TARGET";
+  for (const separator of ["\u2028", "\u2029"]) {
+    const encoded = base64url({ ai: `NODE:${secret}${separator}Tokyo` });
+    assert.throws(
+      () => parseBusinessOverrides(encoded),
+      (error) => {
+        assert.match(error.message, /🤖 AI 专用/u);
+        assert.equal(error.message.includes(secret), false);
+        return true;
+      },
+    );
+  }
+});

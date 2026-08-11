@@ -1,7 +1,7 @@
 const TARGET_KEYWORD = /^(FOLLOW|DIRECT)$/iu;
 const NODE_TARGET = /^NODE:(.*)$/iu;
 const BASE64URL = /^[A-Za-z0-9_-]+$/u;
-const CONTROL = /[\r\n]/u;
+const LINE_TERMINATOR = /[\r\n\u2028\u2029]/u;
 
 function frozenTarget(id, label, alias, defaultTarget) {
   return Object.freeze({
@@ -45,6 +45,97 @@ function targetError(target, message) {
   return policyError(`${target.label}: ${message}`);
 }
 
+function assertUniqueJsonObjectKeys(text) {
+  let index = 0;
+  const syntaxError = () => { throw new SyntaxError("invalid JSON"); };
+  const skipWhitespace = () => {
+    while (/[\u0020\t\r\n]/u.test(text[index])) index += 1;
+  };
+  const parseString = () => {
+    if (text[index] !== '"') syntaxError();
+    const start = index;
+    index += 1;
+    while (index < text.length) {
+      const character = text[index++];
+      if (character === '"') return JSON.parse(text.slice(start, index));
+      if (character === "\\") {
+        const escape = text[index++];
+        if (escape === "u") {
+          for (let count = 0; count < 4; count += 1) {
+            if (!/[0-9a-f]/iu.test(text[index++])) syntaxError();
+          }
+        } else if (!'"\\/bfnrt'.includes(escape)) {
+          syntaxError();
+        }
+      } else if (character.charCodeAt(0) < 0x20) {
+        syntaxError();
+      }
+    }
+    syntaxError();
+  };
+  const parseValue = () => {
+    skipWhitespace();
+    if (text[index] === "{") {
+      index += 1;
+      skipWhitespace();
+      const keys = new Set();
+      if (text[index] === "}") {
+        index += 1;
+        return;
+      }
+      while (true) {
+        skipWhitespace();
+        const key = parseString();
+        if (keys.has(key)) throw new SyntaxError("duplicate JSON key");
+        keys.add(key);
+        skipWhitespace();
+        if (text[index++] !== ":") syntaxError();
+        parseValue();
+        skipWhitespace();
+        if (text[index] === "}") {
+          index += 1;
+          return;
+        }
+        if (text[index++] !== ",") syntaxError();
+      }
+    }
+    if (text[index] === "[") {
+      index += 1;
+      skipWhitespace();
+      if (text[index] === "]") {
+        index += 1;
+        return;
+      }
+      while (true) {
+        parseValue();
+        skipWhitespace();
+        if (text[index] === "]") {
+          index += 1;
+          return;
+        }
+        if (text[index++] !== ",") syntaxError();
+      }
+    }
+    if (text[index] === '"') {
+      parseString();
+      return;
+    }
+    for (const literal of ["true", "false", "null"]) {
+      if (text.startsWith(literal, index)) {
+        index += literal.length;
+        return;
+      }
+    }
+    const number = /^-?(?:0|[1-9][0-9]*)(?:\.[0-9]+)?(?:[eE][+-]?[0-9]+)?/u.exec(text.slice(index));
+    if (!number) syntaxError();
+    index += number[0].length;
+  };
+
+  parseValue();
+  skipWhitespace();
+  if (index !== text.length) syntaxError();
+}
+
 function decodeBase64url(encoded) {
   if (typeof encoded !== "string") throw policyError("must be a Base64URL string");
   if (encoded === "") return Object.freeze({});
@@ -64,6 +155,7 @@ function decodeBase64url(encoded) {
 
   let parsed;
   try {
+    assertUniqueJsonObjectKeys(text);
     parsed = JSON.parse(text);
   } catch {
     throw policyError("must contain JSON object");
@@ -79,7 +171,7 @@ function canonicalTarget(target, value) {
   if (TARGET_KEYWORD.test(value)) return value.toUpperCase();
 
   const node = NODE_TARGET.exec(value);
-  if (!node || node[1].trim().length === 0 || CONTROL.test(node[1])) {
+  if (!node || node[1].trim().length === 0 || LINE_TERMINATOR.test(node[1])) {
     throw targetError(target, "target must be FOLLOW, DIRECT, or NODE:<name>");
   }
   return `NODE:${node[1]}`;

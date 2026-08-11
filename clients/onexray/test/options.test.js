@@ -109,3 +109,30 @@ test("does not expose private target or override values in option errors", () =>
     );
   }
 });
+
+test("rejects every explicitly supplied undefined option instead of applying a default", () => {
+  for (const key of [
+    "channel",
+    "dnsMode",
+    "chinaDns",
+    "globalDns",
+    "blockMode",
+    "quicMode",
+    "ipv6Mode",
+    "clientChain",
+    "clientChainTarget",
+    "policyOverrides",
+  ]) {
+    assert.throws(() => parseOneXrayOptions({ ...REQUIRED, [key]: undefined }), new RegExp(key, "i"));
+  }
+});
+
+test("rejects Unicode line separators in display and chain target names", () => {
+  for (const separator of ["\u2028", "\u2029"]) {
+    assert.throws(() => parseOneXrayOptions({ ...REQUIRED, name: `OneXray${separator}Profile` }), /name/i);
+    assert.throws(
+      () => parseOneXrayOptions({ ...REQUIRED, clientChain: "on", clientChainTarget: `NODE:Tokyo${separator}Landing` }),
+      /clientChainTarget/i,
+    );
+  }
+});
