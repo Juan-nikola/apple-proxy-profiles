@@ -4,6 +4,7 @@ import { CLIENT } from "../shared/contracts.js";
 import { evaluateNodeForClient, filterNodesForClient } from "../shared/nodes/capabilities.js";
 
 const ALLOWED_PROTOCOLS = Object.freeze({
+  happ: ["vless", "vmess", "trojan", "ss", "socks5", "hysteria2"],
   [CLIENT.shadowrocket]: ["ss", "shadowsocks", "ssr", "snell", "vmess", "vless", "trojan", "hysteria2", "hy2", "tuic", "socks5", "http"],
   [CLIENT.egern]: ["ss", "shadowsocks", "snell", "vmess", "vless", "trojan", "anytls", "hysteria2", "hy2", "tuic", "socks5", "http", "ssh", "wireguard"],
   [CLIENT.anywhere]: ["ss", "shadowsocks", "vless", "trojan", "anytls", "hysteria2", "hy2", "socks5", "sudoku"],
@@ -12,6 +13,23 @@ const ALLOWED_PROTOCOLS = Object.freeze({
 const ALL_PROTOCOLS = [...new Set(Object.values(ALLOWED_PROTOCOLS).flat())];
 
 function nodeForCapability(protocol, client) {
+  if (client === "happ") {
+    const common = {
+      name: `Happ ${protocol}`,
+      type: protocol,
+      server: "happ-capability.example.invalid",
+      port: 443,
+    };
+    if (protocol === "ss") return { ...common, cipher: "aes-128-gcm", password: "TEST_ONLY_HAPP_SS_PASSWORD" };
+    if (protocol === "vless" || protocol === "vmess") {
+      return { ...common, uuid: "00000000-0000-4000-8000-000000000001", network: "tcp" };
+    }
+    if (protocol === "trojan" || protocol === "hysteria2") {
+      return { ...common, password: "TEST_ONLY_HAPP_PASSWORD", tls: true };
+    }
+    if (protocol === "socks5") return common;
+    return common;
+  }
   if (client === CLIENT.anywhere) {
     const common = {
       name: `Anywhere ${protocol}`,
@@ -94,6 +112,55 @@ test("enforces the complete client protocol contracts including aliases", () => 
   assert.deepEqual(evaluateNodeForClient({ type: " SS " }, CLIENT.shadowrocket), { supported: true, reason: null });
   assert.deepEqual(evaluateNodeForClient({ type: "SNELL" }, CLIENT.anywhere), { supported: false, reason: "unsupported-protocol" });
   assert.deepEqual(evaluateNodeForClient({ type: "ss" }, "unknown-client"), { supported: false, reason: "unsupported-client" });
+});
+
+test("keeps only lossless Happ node shapes with stable diagnostics", () => {
+  const common = { name: "Happ", server: "happ.example.invalid", port: 443 };
+  const uuid = "00000000-0000-4000-8000-000000000001";
+  const password = "TEST_ONLY_HAPP_PASSWORD";
+  const publicKey = "A".repeat(43);
+
+  assert.equal(CLIENT.happ, "happ");
+  for (const node of [
+    { ...common, type: "vless", uuid, network: "tcp" },
+    { ...common, type: "vmess", uuid, network: "ws", tls: true, "ws-opts": { path: "/edge", headers: { Host: "edge.example.invalid" } } },
+    { ...common, type: "vless", uuid, security: "reality", "reality-opts": { "public-key": publicKey, "short-id": "0123abcd", "spider-x": "/" } },
+    { ...common, type: "vmess", uuid, network: "grpc", tls: true, "grpc-opts": { "grpc-service-name": "edge" } },
+    { ...common, type: "trojan", password, tls: true, network: "ws", "ws-opts": { path: "/trojan" } },
+    { ...common, type: "ss", cipher: "aes-128-gcm", password },
+    { ...common, type: "socks5", username: "happ", password },
+    { ...common, type: "hysteria2", password, tls: true, network: "quic" },
+  ]) {
+    assert.deepEqual(evaluateNodeForClient(node, "happ"), { supported: true, reason: null }, node.type);
+  }
+
+  const rejected = [
+    [{ ...common, type: "snell", psk: password, version: 4 }, "unsupported-protocol"],
+    [{ ...common, type: "http" }, "unsupported-protocol"],
+    [{ ...common, type: "anytls", password, tls: true }, "unsupported-protocol"],
+    [{ ...common, type: "tuic", uuid, password, tls: true }, "unsupported-protocol"],
+    [{ ...common, type: "ssh", username: "happ", password }, "unsupported-protocol"],
+    [{ ...common, type: "wireguard", "private-key": password, "public-key": password }, "unsupported-protocol"],
+    [{ ...common, type: "ss", cipher: "aes-128-gcm", password, "underlying-proxy": "hop" }, "unsupported-happ-existing-chain"],
+    [{ ...common, type: "ss", cipher: "aes-128-gcm", password, _profile: { chained: true } }, "unsupported-happ-existing-chain"],
+    [{ ...common, type: "ss", cipher: "aes-128-gcm", password, plugin: "v2ray-plugin" }, "unsupported-happ-shadowsocks-shape"],
+    [{ ...common, type: "ss", cipher: "aes-128-gcm", password, sni: "discarded.example.invalid" }, "unsupported-happ-shadowsocks-shape"],
+    [{ ...common, type: "ss", cipher: "aes-128-gcm", password, "unsupported-option": true }, "unsupported-happ-option"],
+    [{ ...common, type: "vless", uuid, network: "h2" }, "unsupported-happ-transport"],
+    [{ ...common, type: "vless", uuid, sni: "one.example.invalid", servername: "two.example.invalid" }, "conflicting-happ-alias"],
+    [{ ...common, type: "trojan", password, port: 0, tls: true }, "invalid-happ-node-shape"],
+    [{ ...common, type: "vless", uuid: "", network: "tcp" }, "invalid-happ-node-shape"],
+    [{ ...common, type: "trojan", password, network: "tcp" }, "unsupported-happ-tls-shape"],
+    [{ ...common, type: "hysteria2", password, network: "quic" }, "unsupported-happ-hysteria2-tls"],
+  ];
+  for (const [node, reason] of rejected) {
+    assert.deepEqual(evaluateNodeForClient(node, "happ"), { supported: false, reason }, `${node.type} ${reason}`);
+  }
+
+  const filtered = filterNodesForClient(rejected.map(([node]) => node), "happ");
+  assert.equal(filtered.nodes.length, 0);
+  assert.equal(filtered.diagnostics.excluded["unsupported-protocol"], 6);
+  assert.equal(filtered.diagnostics.excluded["unsupported-happ-hysteria2-tls"], 1);
 });
 
 test("filters protocol variants that the official client schemas cannot decode", () => {
