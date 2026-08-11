@@ -184,3 +184,10 @@ test("rejects rejected admission shapes, certificate bypasses, and reserved or d
   const tags = new Set(["ap-node-duplicate"]);
   assert.throws(() => renderOneXrayOutbound(node, { tag: "ap-node-duplicate", tags }), /duplicate-onexray-tag/);
 });
+
+test("rejects VMess TLS security before protocol settings can be rendered", () => {
+  assert.throws(
+    () => render({ ...COMMON, type: "vmess", uuid: UUID, security: "tls" }, "ap-node-vmess-tls"),
+    { message: "invalid-onexray-node-shape" },
+  );
+});
