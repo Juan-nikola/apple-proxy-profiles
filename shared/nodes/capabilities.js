@@ -1210,10 +1210,8 @@ function happTransportReason(node, { tlsRequired = false } = {}) {
   if (tlsRequired && !tlsRequestedForCapability(node)) return "unsupported-happ-transport";
   const options = node["grpc-opts"];
   if (options !== undefined && (!isPlainObject(options)
-    || Object.keys(options).some((key) => !["grpc-service-name", "grpc-mode", "authority", "user-agent"].includes(key))
+    || Object.keys(options).some((key) => !["grpc-service-name", "grpc-mode"].includes(key))
     || hasOption(options, "grpc-service-name") && !isNonblankString(options["grpc-service-name"])
-    || hasOption(options, "authority") && !isNonblankString(options.authority)
-    || hasOption(options, "user-agent") && !isNonblankString(options["user-agent"])
     || hasOption(options, "grpc-mode") && options["grpc-mode"] !== "gun")) return "unsupported-happ-transport";
   return optionKeys.some((key) => key !== "grpc-opts" && hasOption(node, key)) ? "unsupported-happ-transport" : null;
 }
@@ -1250,9 +1248,13 @@ export function happNodeExclusionReason(node) {
     const unknown = happUnknownFieldReason(node, new Set(["uuid", "encryption", "flow", "cipher", "alter-id", "alterId"]));
     if (unknown) return unknown;
     if (!isNonblankString(node.uuid)) return "invalid-happ-node-shape";
-    if (protocol === "vless" && hasOption(node, "flow") && !isNonblankString(node.flow)) return "unsupported-happ-vless-shape";
-    if (protocol === "vmess" && hasOption(node, "alter-id") && (!Number.isInteger(node["alter-id"]) || node["alter-id"] !== 0)
-      || hasOption(node, "alterId") && (!Number.isInteger(node.alterId) || node.alterId !== 0)) return "unsupported-happ-vmess-shape";
+    if (protocol === "vless" && (hasOption(node, "encryption") && node.encryption !== "none"
+      || hasOption(node, "flow") && !["", "xtls-rprx-vision"].includes(node.flow))) return "unsupported-happ-vless-shape";
+    if (protocol === "vmess" && (hasOption(node, "cipher") && !EGERN_VMESS_SECURITY.has(node.cipher)
+      || hasOption(node, "encryption") && !EGERN_VMESS_SECURITY.has(node.encryption)
+      || hasConflictingAliases(node, ["cipher", "encryption"])
+      || hasOption(node, "alter-id") && (!Number.isInteger(node["alter-id"]) || node["alter-id"] !== 0)
+      || hasOption(node, "alterId") && (!Number.isInteger(node.alterId) || node.alterId !== 0))) return "unsupported-happ-vmess-shape";
     const tlsReason = happTlsReason(node);
     return tlsReason || happTransportReason(node, { tlsRequired: normalizeTransport(node) === "grpc" });
   }
