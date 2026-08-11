@@ -125,6 +125,7 @@ test("keeps only lossless Happ node shapes with stable diagnostics", () => {
     { ...common, type: "vless", uuid, encryption: "none", network: "tcp" },
     { ...common, type: "vmess", uuid, cipher: "auto", network: "ws", tls: true, "ws-opts": { path: "/edge", headers: { Host: "edge.example.invalid" } } },
     { ...common, type: "vless", uuid, security: "reality", "client-fingerprint": "chrome", "reality-opts": { "public-key": publicKey, "short-id": "0123abcd", "spider-x": "/" } },
+    { ...common, type: "vless", uuid, security: "reality", "skip-cert-verify": false, "allow-insecure": false, "client-fingerprint": "chrome", "reality-opts": { "public-key": publicKey } },
     { ...common, type: "vless", uuid, network: "ws", tls: true, "ws-opts": { path: ["/edge"], headers: { Host: ["edge.example.invalid"] } } },
     { ...common, type: "vmess", uuid, network: "grpc", tls: true, "grpc-opts": { "grpc-service-name": "edge" } },
     { ...common, type: "trojan", password, tls: true, network: "ws", "ws-opts": { path: "/trojan" } },

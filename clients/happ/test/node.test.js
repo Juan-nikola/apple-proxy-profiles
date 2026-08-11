@@ -57,6 +57,25 @@ test("refuses REALITY options without current Xray output fields", () => {
   );
 });
 
+test("omits explicit false REALITY certificate-bypass aliases", () => {
+  assert.deepEqual(renderHappStreamSettings({
+    ...vlessRealityRaw,
+    "skip-cert-verify": false,
+    "allow-insecure": false,
+  }), {
+    method: "raw",
+    rawSettings: {},
+    security: "reality",
+    realitySettings: {
+      serverName: "reality.example.invalid",
+      fingerprint: "chrome",
+      password: "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+      shortId: "0123abcd",
+      spiderX: "/crawl?seed=1",
+    },
+  });
+});
+
 test("renders VLESS WebSocket and gRPC transport settings exactly", () => {
   assert.deepEqual(renderHappStreamSettings(vlessWebSocket), {
     method: "websocket",

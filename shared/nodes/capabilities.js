@@ -1201,8 +1201,8 @@ function happTlsReason(node, { required = false, requiredReason = "unsupported-h
 
   if (node.security === "reality") {
     if (hasOption(node, "alpn")
-      || hasOption(node, "skip-cert-verify")
-      || hasOption(node, "allow-insecure")
+      || node["skip-cert-verify"] === true
+      || node["allow-insecure"] === true
       || !HAPP_REALITY_FINGERPRINTS.has(node["client-fingerprint"])
       || !new Set(["tcp", "raw", "grpc"]).has(normalizeTransport(node))) {
       return "unsupported-happ-reality";

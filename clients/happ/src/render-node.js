@@ -48,7 +48,7 @@ function realitySettings(node) {
   if (!reality || typeof reality !== "object" || Array.isArray(reality)) {
     throw new Error("Happ REALITY options cannot be rendered");
   }
-  if (node.alpn !== undefined || node["skip-cert-verify"] !== undefined || node["allow-insecure"] !== undefined
+  if (node.alpn !== undefined || node["skip-cert-verify"] === true || node["allow-insecure"] === true
     || node["client-fingerprint"] === undefined) {
     throw new Error("Happ REALITY options cannot be rendered");
   }
