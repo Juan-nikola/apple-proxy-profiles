@@ -49,11 +49,11 @@ test("renders VLESS vnext users with REALITY over raw", () => {
 test("refuses REALITY options without current Xray output fields", () => {
   assert.throws(
     () => renderHappStreamSettings({ ...vlessRealityRaw, alpn: ["h2"] }),
-    /REALITY options cannot be rendered/,
+    /unsupported-happ-reality/,
   );
   assert.throws(
     () => renderHappStreamSettings({ ...vlessRealityRaw, "allow-insecure": true }),
-    /REALITY options cannot be rendered/,
+    /unsupported-happ-reality/,
   );
 });
 
@@ -189,5 +189,22 @@ test("retains only supplied opaque tags and never derives them from normalized n
     assert.equal(outbound.tag.includes(node.name), false);
     assert.equal(outbound.tag.includes(node.server), false);
     assert.equal(outbound.tag.includes(node.uuid), false);
+  }
+});
+
+test("rejects tags that contain private node credentials", () => {
+  for (const [node, credential] of [
+    [vlessRealityRaw, vlessRealityRaw.uuid],
+    [vlessRealityRaw, vlessRealityRaw["reality-opts"]["public-key"]],
+    [trojanTls, trojanTls.password],
+    [socks5Authenticated, socks5Authenticated.username],
+    [socks5Authenticated, socks5Authenticated.password],
+    [hysteria2, hysteria2.password],
+    [hysteria2, hysteria2["obfs-password"]],
+  ]) {
+    assert.throws(
+      () => renderHappOutbound(node, `happ-node-${credential}`),
+      /tag must be opaque/,
+    );
   }
 });

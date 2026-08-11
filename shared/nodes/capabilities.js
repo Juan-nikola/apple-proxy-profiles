@@ -66,6 +66,21 @@ const SINGBOX_SNELL_OBFS_MODES = new Set(["none", "http"]);
 const SINGBOX_SNELL_MODES = new Set(["default", "unshaped", "unsafe-raw"]);
 const EGERN_OBFS = new Set(["http", "tls"]);
 const EGERN_VMESS_SECURITY = new Set(["auto", "aes-128-gcm", "chacha20-poly1305", "none", "zero"]);
+const HAPP_SHADOWSOCKS_METHODS = new Set([
+  "2022-blake3-aes-128-gcm",
+  "2022-blake3-aes-256-gcm",
+  "2022-blake3-chacha20-poly1305",
+  "aes-128-gcm",
+  "aes-256-gcm",
+  "chacha20-poly1305",
+  "chacha20-ietf-poly1305",
+  "xchacha20-poly1305",
+  "xchacha20-ietf-poly1305",
+]);
+const HAPP_REALITY_FINGERPRINTS = new Set([
+  "chrome", "firefox", "safari", "ios", "android", "edge", "360", "qq", "random", "randomized",
+  "chrome_133", "chrome_120", "chrome_106", "firefox_148", "firefox_120", "safari_26", "edge_106",
+]);
 const EGERN_TRANSPORTS = new Set(["tcp", "raw", "ws", "grpc", "h2", "http2", "http", "http1"]);
 const EGERN_VLESS_FLOWS = new Set(["xtls-rprx-vision"]);
 const EGERN_TUIC_UDP_MODES = new Set(["native", "quic"]);
@@ -1184,6 +1199,16 @@ function happTlsReason(node, { required = false, requiredReason = "unsupported-h
   }
   if (node.security === "reality" && reality === undefined) return "unsupported-happ-reality";
 
+  if (node.security === "reality") {
+    if (hasOption(node, "alpn")
+      || hasOption(node, "skip-cert-verify")
+      || hasOption(node, "allow-insecure")
+      || !HAPP_REALITY_FINGERPRINTS.has(node["client-fingerprint"])
+      || !new Set(["tcp", "raw", "grpc"]).has(normalizeTransport(node))) {
+      return "unsupported-happ-reality";
+    }
+  }
+
   const tls = node.tls === true || node.security === "tls" || node.security === "reality";
   if (required && !tls) return requiredReason;
   if (!tls && ["sni", "servername", "skip-cert-verify", "allow-insecure", "alpn", "client-fingerprint", "reality-opts"]
@@ -1239,8 +1264,10 @@ export function happNodeExclusionReason(node) {
     const unknown = happUnknownFieldReason(node, new Set(["cipher", "password", "udp", "tfo", "plugin", "plugin-opts"]));
     if (unknown) return unknown;
     if (!isNonblankString(node.cipher) || !isNonblankOpaqueString(node.password)) return "invalid-happ-node-shape";
+    if (!HAPP_SHADOWSOCKS_METHODS.has(node.cipher)) return "unsupported-happ-shadowsocks-method";
     if (hasShadowsocksPlugin(node) || hasTlsSettings(node)
-      || !isOptionalBoolean(node, "udp") || !isOptionalBoolean(node, "tfo")) return "unsupported-happ-shadowsocks-shape";
+      || !isOptionalBoolean(node, "udp") || !isOptionalBoolean(node, "tfo")
+      || node.udp === false) return "unsupported-happ-shadowsocks-shape";
     return happTransportReason(node);
   }
 
@@ -1250,7 +1277,8 @@ export function happNodeExclusionReason(node) {
     if (!isNonblankString(node.uuid)) return "invalid-happ-node-shape";
     if (protocol === "vless" && (hasOption(node, "encryption") && node.encryption !== "none"
       || hasOption(node, "flow") && !["", "xtls-rprx-vision"].includes(node.flow))) return "unsupported-happ-vless-shape";
-    if (protocol === "vmess" && (hasOption(node, "cipher") && !EGERN_VMESS_SECURITY.has(node.cipher)
+    if (protocol === "vmess" && (hasOption(node, "flow")
+      || hasOption(node, "cipher") && !EGERN_VMESS_SECURITY.has(node.cipher)
       || hasOption(node, "encryption") && !EGERN_VMESS_SECURITY.has(node.encryption)
       || hasConflictingAliases(node, ["cipher", "encryption"])
       || hasOption(node, "alter-id") && (!Number.isInteger(node["alter-id"]) || node["alter-id"] !== 0)

@@ -30,8 +30,8 @@ export const vlessWebSocket = {
   tls: true,
   sni: "ws.example.invalid",
   "ws-opts": {
-    path: "/vless",
-    headers: { Host: "edge.example.invalid", "X-Test": "fixture" },
+    path: ["/vless"],
+    headers: { Host: ["edge.example.invalid"], "X-Test": ["fixture"] },
   },
 };
 

@@ -124,7 +124,8 @@ test("keeps only lossless Happ node shapes with stable diagnostics", () => {
   for (const node of [
     { ...common, type: "vless", uuid, encryption: "none", network: "tcp" },
     { ...common, type: "vmess", uuid, cipher: "auto", network: "ws", tls: true, "ws-opts": { path: "/edge", headers: { Host: "edge.example.invalid" } } },
-    { ...common, type: "vless", uuid, security: "reality", "reality-opts": { "public-key": publicKey, "short-id": "0123abcd", "spider-x": "/" } },
+    { ...common, type: "vless", uuid, security: "reality", "client-fingerprint": "chrome", "reality-opts": { "public-key": publicKey, "short-id": "0123abcd", "spider-x": "/" } },
+    { ...common, type: "vless", uuid, network: "ws", tls: true, "ws-opts": { path: ["/edge"], headers: { Host: ["edge.example.invalid"] } } },
     { ...common, type: "vmess", uuid, network: "grpc", tls: true, "grpc-opts": { "grpc-service-name": "edge" } },
     { ...common, type: "trojan", password, tls: true, network: "ws", "ws-opts": { path: "/trojan" } },
     { ...common, type: "ss", cipher: "aes-128-gcm", password },
@@ -145,12 +146,15 @@ test("keeps only lossless Happ node shapes with stable diagnostics", () => {
     [{ ...common, type: "ss", cipher: "aes-128-gcm", password, _profile: { chained: true } }, "unsupported-happ-existing-chain"],
     [{ ...common, type: "ss", cipher: "aes-128-gcm", password, plugin: "v2ray-plugin" }, "unsupported-happ-shadowsocks-shape"],
     [{ ...common, type: "ss", cipher: "aes-128-gcm", password, sni: "discarded.example.invalid" }, "unsupported-happ-shadowsocks-shape"],
+    [{ ...common, type: "ss", cipher: "rc4-md5", password }, "unsupported-happ-shadowsocks-method"],
+    [{ ...common, type: "ss", cipher: "aes-128-gcm", password, udp: false }, "unsupported-happ-shadowsocks-shape"],
     [{ ...common, type: "ss", cipher: "aes-128-gcm", password, "unsupported-option": true }, "unsupported-happ-option"],
     [{ ...common, type: "vless", uuid, network: "h2" }, "unsupported-happ-transport"],
     [{ ...common, type: "vmess", uuid, network: "grpc", tls: true, "grpc-opts": { authority: "discarded.example.invalid" } }, "unsupported-happ-transport"],
     [{ ...common, type: "vmess", uuid, network: "grpc", tls: true, "grpc-opts": { "user-agent": "discarded" } }, "unsupported-happ-transport"],
     [{ ...common, type: "vless", uuid, encryption: "aes-128-gcm", network: "tcp" }, "unsupported-happ-vless-shape"],
     [{ ...common, type: "vless", uuid, flow: "unsupported-flow", network: "tcp" }, "unsupported-happ-vless-shape"],
+    [{ ...common, type: "vmess", uuid, flow: "xtls-rprx-vision", network: "tcp" }, "unsupported-happ-vmess-shape"],
     [{ ...common, type: "vmess", uuid, cipher: "unsupported-cipher", network: "tcp" }, "unsupported-happ-vmess-shape"],
     [{ ...common, type: "vmess", uuid, encryption: "unsupported-encryption", network: "tcp" }, "unsupported-happ-vmess-shape"],
     [{ ...common, type: "vless", uuid, sni: "one.example.invalid", servername: "two.example.invalid" }, "conflicting-happ-alias"],
@@ -158,6 +162,11 @@ test("keeps only lossless Happ node shapes with stable diagnostics", () => {
     [{ ...common, type: "vless", uuid: "", network: "tcp" }, "invalid-happ-node-shape"],
     [{ ...common, type: "trojan", password, network: "tcp" }, "unsupported-happ-tls-shape"],
     [{ ...common, type: "hysteria2", password, network: "quic" }, "unsupported-happ-hysteria2-tls"],
+    [{ ...common, type: "vless", uuid, network: "ws", security: "reality", "client-fingerprint": "chrome", "ws-opts": { path: "/edge" }, "reality-opts": { "public-key": publicKey } }, "unsupported-happ-reality"],
+    [{ ...common, type: "vless", uuid, security: "reality", alpn: ["h2"], "client-fingerprint": "chrome", "reality-opts": { "public-key": publicKey } }, "unsupported-happ-reality"],
+    [{ ...common, type: "vless", uuid, security: "reality", "allow-insecure": true, "client-fingerprint": "chrome", "reality-opts": { "public-key": publicKey } }, "unsupported-happ-reality"],
+    [{ ...common, type: "vless", uuid, security: "reality", "client-fingerprint": "unsafe", "reality-opts": { "public-key": publicKey } }, "unsupported-happ-reality"],
+    [{ ...common, type: "vless", uuid, security: "reality", "reality-opts": { "public-key": publicKey } }, "unsupported-happ-reality"],
   ];
   for (const [node, reason] of rejected) {
     assert.deepEqual(evaluateNodeForClient(node, "happ"), { supported: false, reason }, `${node.type} ${reason}`);

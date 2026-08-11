@@ -9,7 +9,17 @@ function requiredTag(node, tag) {
   if (typeof tag !== "string" || tag.length === 0 || tag.trim() !== tag) {
     throw new Error("Happ outbound tag is invalid");
   }
-  if (tag.includes(node.name) || tag.includes(node.server)) {
+  const credentials = [
+    node.uuid,
+    node.password,
+    node.username,
+    node["obfs-password"],
+    node.obfs_password,
+    node["reality-opts"]?.["public-key"],
+    node["reality-opts"]?.["short-id"],
+  ];
+  if (tag.includes(node.name) || tag.includes(node.server)
+    || credentials.some((value) => typeof value === "string" && value.length > 0 && tag.includes(value))) {
     throw new Error("Happ outbound tag must be opaque");
   }
   return tag;
@@ -38,13 +48,14 @@ function realitySettings(node) {
   if (!reality || typeof reality !== "object" || Array.isArray(reality)) {
     throw new Error("Happ REALITY options cannot be rendered");
   }
-  if (node.alpn !== undefined || node["skip-cert-verify"] === true || node["allow-insecure"] === true) {
+  if (node.alpn !== undefined || node["skip-cert-verify"] !== undefined || node["allow-insecure"] !== undefined
+    || node["client-fingerprint"] === undefined) {
     throw new Error("Happ REALITY options cannot be rendered");
   }
   const settings = {
     // Xray's current client-side name for the server's REALITY public key.
     password: reality["public-key"],
-    fingerprint: node["client-fingerprint"] ?? "chrome",
+    fingerprint: node["client-fingerprint"],
   };
   optional(settings, "serverName", node.sni ?? node.servername);
   optional(settings, "shortId", reality["short-id"]);
@@ -60,8 +71,11 @@ function transportSettings(node) {
     if (!options || typeof options !== "object" || Array.isArray(options)) {
       throw new Error("Happ WebSocket options cannot be rendered");
     }
-    const wsSettings = { path: options.path };
-    if (options.headers !== undefined) wsSettings.headers = { ...options.headers };
+    const wsSettings = { path: Array.isArray(options.path) ? options.path[0] : options.path };
+    if (options.headers !== undefined) {
+      wsSettings.headers = Object.fromEntries(Object.entries(options.headers)
+        .map(([key, value]) => [key, Array.isArray(value) ? value[0] : value]));
+    }
     return { method: "websocket", wsSettings };
   }
   if (network === "grpc") {
