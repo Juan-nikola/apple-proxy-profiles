@@ -1,4 +1,4 @@
-import { CLIENT } from "../contracts.js";
+import { CLIENT, nodeMetadata } from "../contracts.js";
 import { createClientFilterDiagnostics, increment } from "./diagnostics.js";
 import { normalizeProtocol, protocolSupportsClient } from "./protocol-registry.js";
 
@@ -1146,16 +1146,213 @@ export function anywhereNodeExclusionReason(node) {
   return "unsupported-protocol";
 }
 
+const ONEXRAY_TLS_FIELDS = new Set([
+  "tls", "security", "sni", "servername",
+  "alpn", "client-fingerprint", "reality-opts",
+]);
+const ONEXRAY_TRANSPORT_FIELDS = new Set([
+  "network", "ws-opts", "grpc-opts", "httpupgrade-opts", "xhttp-opts", "kcp-opts",
+]);
+const ONEXRAY_COMMON_FIELDS = new Set(["name", "type", "server", "port", "_profile"]);
+
+function validOneXrayHeaders(value) {
+  return isPlainObject(value)
+    && Object.entries(value).every(([key, field]) => isNonblankString(key) && isNonblankString(field));
+}
+
+function oneXrayAliasReason(node) {
+  if (conflictingAliases(node, ["sni", "servername"])
+    || conflictingAliases(node, ["skip-cert-verify", "allow-insecure"])
+    || conflictingAliases(node, ["obfs-password", "obfs_password"])) {
+    return "conflicting-onexray-alias";
+  }
+  return null;
+}
+
+function oneXrayCommonReason(node) {
+  if (!isPlainObject(node)
+    || !isNonblankString(node.name)
+    || !isNonblankString(node.server)
+    || !isValidPort(node.port)) return "invalid-onexray-node-shape";
+  return oneXrayAliasReason(node);
+}
+
+function oneXrayTlsReason(node, protocol, { implicitTls = false, allowReality = protocol === "vless" } = {}) {
+  if (!isOptionalBoolean(node, "tls") || !optionalStringAliasesAreValid(node, ["sni", "servername"])) {
+    return "invalid-onexray-node-shape";
+  }
+  if (hasOption(node, "alpn") && (!Array.isArray(node.alpn) || node.alpn.length === 0 || node.alpn.some((value) => !isNonblankString(value)))) {
+    return "unsupported-onexray-tls-shape";
+  }
+  if (hasOption(node, "client-fingerprint") && !isNonblankString(node["client-fingerprint"])) {
+    return "unsupported-onexray-tls-shape";
+  }
+  if (hasOption(node, "security") && !["none", "tls", "reality", "auto", "aes-128-gcm", "chacha20-poly1305", "zero"].includes(node.security)) {
+    return "unsupported-onexray-tls-shape";
+  }
+  if (protocol !== "vmess" && ["auto", "aes-128-gcm", "chacha20-poly1305", "zero"].includes(node.security)) {
+    return "unsupported-onexray-tls-shape";
+  }
+  if (node.security === "reality" && !allowReality) return "unsupported-onexray-tls-shape";
+  if (node.security === "reality" && !hasOption(node, "reality-opts")) return "incomplete-onexray-reality";
+  if (node.tls === false && ["tls", "reality"].includes(node.security)
+    || node.tls === true && node.security === "none") return "unsupported-onexray-tls-shape";
+
+  const reality = node["reality-opts"];
+  if (reality !== undefined) {
+    if (!allowReality || node.tls === false || node.security !== "reality"
+      || !isPlainObject(reality) || !isRealityPublicKey(reality["public-key"])) {
+      return "incomplete-onexray-reality";
+    }
+    if (Object.keys(reality).some((key) => !["public-key", "short-id", "spider-x"].includes(key))
+      || hasOption(reality, "short-id") && (!isNonblankString(reality["short-id"]) || !/^[0-9a-f]*$/i.test(reality["short-id"]))
+      || hasOption(reality, "spider-x") && !isNonblankString(reality["spider-x"])) {
+      return "incomplete-onexray-reality";
+    }
+  }
+
+  const tlsRequested = tlsRequestedForCapability(node);
+  if (!implicitTls && !tlsRequested && hasTlsSettings(node)) return "unsupported-onexray-tls-shape";
+  if (implicitTls && (node.tls === false || node.security === "none")) return "unsupported-onexray-tls-shape";
+  return null;
+}
+
+function oneXrayTransportReason(node, protocol) {
+  const network = normalizeTransport(node);
+  const transportOptions = ["ws-opts", "grpc-opts", "httpupgrade-opts", "xhttp-opts", "kcp-opts"];
+  if (protocol === "hysteria2") {
+    if (!new Set(["", "quic", "udp", "hysteria"]).has(hasOption(node, "network") ? network : "")) {
+      return "unsupported-onexray-transport";
+    }
+    return transportOptions.some((key) => hasOption(node, key)) ? "unsupported-onexray-transport" : null;
+  }
+  if (!new Set(["tcp", "raw", "ws", "grpc", "httpupgrade", "xhttp", "kcp"]).has(network)) {
+    return "unsupported-onexray-transport";
+  }
+  if (network === "tcp" || network === "raw") {
+    return transportOptions.some((key) => hasOption(node, key)) ? "unsupported-onexray-transport" : null;
+  }
+  const optionByNetwork = {
+    ws: "ws-opts",
+    grpc: "grpc-opts",
+    httpupgrade: "httpupgrade-opts",
+    xhttp: "xhttp-opts",
+    kcp: "kcp-opts",
+  };
+  const optionKey = optionByNetwork[network];
+  if (transportOptions.some((key) => key !== optionKey && hasOption(node, key))) return "unsupported-onexray-transport";
+  const options = node[optionKey];
+  if (options === undefined) return null;
+  if (!isPlainObject(options)) return "unsupported-onexray-transport";
+  if (network === "ws") {
+    return Object.keys(options).some((key) => !["path", "headers"].includes(key))
+      || hasOption(options, "path") && !isNonblankString(options.path)
+      || hasOption(options, "headers") && !validOneXrayHeaders(options.headers)
+      ? "unsupported-onexray-transport" : null;
+  }
+  if (network === "grpc") {
+    return Object.keys(options).some((key) => key !== "grpc-service-name")
+      || hasOption(options, "grpc-service-name") && !isNonblankString(options["grpc-service-name"])
+      ? "unsupported-onexray-transport" : null;
+  }
+  if (network === "httpupgrade" || network === "xhttp") {
+    const allowed = network === "httpupgrade" ? ["path", "host"] : ["path", "host", "mode"];
+    return Object.keys(options).some((key) => !allowed.includes(key))
+      || hasOption(options, "path") && !isNonblankString(options.path)
+      || hasOption(options, "host") && !isNonblankString(options.host)
+      || hasOption(options, "mode") && !new Set(["auto", "packet-up", "stream-up", "stream-one"]).has(options.mode)
+      ? "unsupported-onexray-transport" : null;
+  }
+  return Object.keys(options).length === 0 ? null : "unsupported-onexray-transport";
+}
+
+function unsupportedOneXrayFields(node, protocol) {
+  const allowed = new Set(ONEXRAY_COMMON_FIELDS);
+  const protocolFields = {
+    ss: ["cipher", "password", "plugin", "plugin-opts"],
+    vmess: ["uuid", "security", "cipher"],
+    vless: ["uuid", "flow", "encryption", "reverse"],
+    trojan: ["password"],
+    socks5: ["username", "password"],
+    http: ["username", "password", "headers"],
+    hysteria2: ["password"],
+  };
+  for (const key of protocolFields[protocol] ?? []) allowed.add(key);
+  if (["vmess", "vless", "trojan", "hysteria2"].includes(protocol)) {
+    for (const key of ONEXRAY_TLS_FIELDS) allowed.add(key);
+  }
+  if (["vmess", "vless"].includes(protocol)) {
+    for (const key of ONEXRAY_TRANSPORT_FIELDS) allowed.add(key);
+  } else if (protocol === "hysteria2") {
+    allowed.add("network");
+  }
+  return Object.keys(node).some((key) => !allowed.has(key));
+}
+
+function validateOneXrayProtocolShape(node, protocol) {
+  const commonReason = oneXrayCommonReason(node);
+  if (commonReason) return commonReason;
+  if (hasAnyChain(node)) return "unsupported-onexray-chain";
+  if (unsupportedOneXrayFields(node, protocol)) return "unsupported-onexray-option";
+
+  if (protocol === "ss") {
+    if (!isNonblankString(node.cipher) || !isNonblankOpaqueString(node.password)) return "invalid-onexray-node-shape";
+    if (hasShadowsocksPlugin(node)) return "unsupported-onexray-shadowsocks-plugin";
+    return null;
+  }
+  if (protocol === "vmess" || protocol === "vless") {
+    if (!isNonblankString(node.uuid)) return "invalid-onexray-node-shape";
+    if (protocol === "vless" && hasOption(node, "flow") && !isNonblankString(node.flow)
+      || protocol === "vless" && hasOption(node, "encryption") && !isNonblankString(node.encryption)
+      || protocol === "vless" && hasOption(node, "reverse") && (!isPlainObject(node.reverse)
+        || Object.keys(node.reverse).some((key) => key !== "tag") || !isNonblankString(node.reverse.tag))) return "invalid-onexray-node-shape";
+    if (protocol === "vmess" && hasOption(node, "cipher") && hasOption(node, "security") && node.cipher !== node.security) {
+      return "conflicting-onexray-alias";
+    }
+    const tlsReason = oneXrayTlsReason(node, protocol);
+    return tlsReason || oneXrayTransportReason(node, protocol);
+  }
+  if (protocol === "trojan") {
+    if (!isNonblankOpaqueString(node.password)) return "invalid-onexray-node-shape";
+    return oneXrayTlsReason(node, protocol, { implicitTls: true, allowReality: false });
+  }
+  if (protocol === "socks5" || protocol === "http") {
+    if (!validOptionalAuthentication(node) || hasOption(node, "username") !== hasOption(node, "password")) {
+      return "invalid-onexray-node-shape";
+    }
+    return protocol === "http" && hasOption(node, "headers") && !validOneXrayHeaders(node.headers)
+      ? "invalid-onexray-node-shape" : null;
+  }
+  if (protocol === "hysteria2") {
+    if (!isNonblankOpaqueString(node.password)) return "invalid-onexray-node-shape";
+    return oneXrayTlsReason(node, protocol, { implicitTls: true, allowReality: false })
+      || oneXrayTransportReason(node, protocol);
+  }
+  return "unsupported-onexray-protocol";
+}
+
+export function oneXrayNodeExclusionReason(node) {
+  const protocol = normalizeProtocol(node?.type);
+  if (!protocolSupportsClient(protocol, CLIENT.onexray)) return "unsupported-onexray-protocol";
+  if (nodeMetadata(node).chained) return "unsupported-onexray-chain";
+  return validateOneXrayProtocolShape(node, protocol);
+}
+
 export function evaluateNodeForClient(node, client) {
   if (!Object.values(CLIENT).includes(client)) return { supported: false, reason: "unsupported-client" };
 
   const protocol = normalizeProtocol(node?.type);
-  if (!protocolSupportsClient(protocol, client)) return { supported: false, reason: "unsupported-protocol" };
+  if (!protocolSupportsClient(protocol, client)) {
+    return { supported: false, reason: client === CLIENT.onexray ? "unsupported-onexray-protocol" : "unsupported-protocol" };
+  }
 
   let transportReason = null;
   if (client === CLIENT.anywhere) transportReason = anywhereNodeExclusionReason(node ?? {});
   else if (client === CLIENT.egern) transportReason = egernNodeExclusionReason(node ?? {});
   else if (client === CLIENT.singbox) transportReason = singBoxNodeExclusionReason(node ?? {});
+  else if (client === CLIENT.onexray) {
+    transportReason = oneXrayNodeExclusionReason(node ?? {});
+  }
   return transportReason
     ? { supported: false, reason: transportReason }
     : { supported: true, reason: null };

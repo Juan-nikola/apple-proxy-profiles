@@ -1,17 +1,21 @@
 import { CLIENT } from "../contracts.js";
 
-function protocol(names, clients, { requiredFields = [], tls = false } = {}) {
+function protocol(names, clients, { requiredFields = [], tls = false, clientNames = {} } = {}) {
   return Object.freeze({
     names: Object.freeze(names),
     clients: Object.freeze(clients),
     requiredFields: Object.freeze(requiredFields),
     tls,
+    clientNames: Object.freeze(Object.fromEntries(
+      Object.entries(clientNames).map(([client, supportedNames]) => [client, Object.freeze(supportedNames)]),
+    )),
   });
 }
 
 const definitions = Object.freeze([
-  protocol(["ss", "shadowsocks"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox], {
+  protocol(["ss", "shadowsocks"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.onexray], {
     requiredFields: ["cipher", "password"],
+    clientNames: { [CLIENT.onexray]: ["ss"] },
   }),
   protocol(["ssr"], [CLIENT.shadowrocket, CLIENT.surge], {
     requiredFields: ["cipher", "password", "protocol", "obfs"],
@@ -19,13 +23,13 @@ const definitions = Object.freeze([
   protocol(["snell"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox], {
     requiredFields: ["psk", "version"],
   }),
-  protocol(["vmess"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox], {
+  protocol(["vmess"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox, CLIENT.onexray], {
     requiredFields: ["uuid"],
   }),
-  protocol(["vless"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.singbox], {
+  protocol(["vless"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.singbox, CLIENT.onexray], {
     requiredFields: ["uuid"],
   }),
-  protocol(["trojan"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox], {
+  protocol(["trojan"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.onexray], {
     requiredFields: ["password"],
     tls: true,
   }),
@@ -33,16 +37,17 @@ const definitions = Object.freeze([
     requiredFields: ["password"],
     tls: true,
   }),
-  protocol(["hysteria2", "hy2"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox], {
+  protocol(["hysteria2", "hy2"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.onexray], {
     requiredFields: ["password"],
     tls: true,
+    clientNames: { [CLIENT.onexray]: ["hysteria2"] },
   }),
   protocol(["tuic"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox], {
     requiredFields: ["uuid", "password"],
     tls: true,
   }),
-  protocol(["socks5"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox]),
-  protocol(["http"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox]),
+  protocol(["socks5"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.onexray]),
+  protocol(["http"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox, CLIENT.onexray]),
   protocol(["ssh"], [CLIENT.egern, CLIENT.singbox], {
     requiredFields: ["username"],
   }),
@@ -87,7 +92,10 @@ export function protocolDefinition(value) {
 }
 
 export function protocolSupportsClient(value, client) {
-  return protocolDefinition(value)?.clients.includes(client) === true;
+  const protocol = normalizeProtocol(value);
+  const definition = protocolDefinition(protocol);
+  return definition?.clients.includes(client) === true
+    && (definition.clientNames[client] ?? definition.names).includes(protocol);
 }
 
 export function diagnosticProtocol(value) {
