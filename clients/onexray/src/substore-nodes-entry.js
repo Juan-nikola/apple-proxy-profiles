@@ -18,31 +18,92 @@ function nodeOptions(raw) {
   return options;
 }
 
-function errorMessage(error) {
-  if (error && typeof error === "object" && typeof error.message === "string") return error.message;
-  return "OneXray node processing failed";
+function processorError(code) {
+  return new Error(`OneXray nodes: ${code}`);
+}
+
+function processorInput(input) {
+  try {
+    if (input === null || typeof input !== "object" || Array.isArray(input)) throw new Error();
+    const prototype = Object.getPrototypeOf(input);
+    if (prototype !== Object.prototype && prototype !== null) throw new Error();
+    const values = {};
+    for (const key of ["proxies", "arguments", "onDiagnostics"]) {
+      const descriptor = Object.getOwnPropertyDescriptor(input, key);
+      if (descriptor === undefined) continue;
+      if ("get" in descriptor || "set" in descriptor) throw new Error();
+      values[key] = descriptor.value;
+    }
+    return values;
+  } catch {
+    throw processorError("invalid-request");
+  }
+}
+
+function diagnosticSummary(diagnostics) {
+  return {
+    accepted: diagnostics.accepted,
+    excluded: Object.fromEntries(
+      Object.keys(diagnostics.excluded)
+        .sort((left, right) => left.localeCompare(right, "en"))
+        .map((reason) => [reason, diagnostics.excluded[reason]]),
+    ),
+  };
+}
+
+function emitDiagnostics(onDiagnostics, diagnostics) {
+  if (onDiagnostics === undefined) return;
+  if (typeof onDiagnostics !== "function") throw processorError("invalid-diagnostics-handler");
+  try {
+    onDiagnostics(diagnosticSummary(diagnostics));
+  } catch {
+    // Optional diagnostics must not change the generated private subscription.
+  }
 }
 
 /**
  * Pure Sub-Store node processor. Callers provide the raw proxy inventory and
  * lexical $arguments; this boundary never logs either private input.
  */
-export function runOneXrayNodesProcessor({ proxies, arguments: rawArguments } = {}) {
+export function runOneXrayNodesProcessor(input = {}) {
+  const { proxies, arguments: rawArguments, onDiagnostics } = processorInput(input);
+  let options;
   try {
-    const options = nodeOptions(rawArguments);
-    const normalized = normalizeNodes(proxies, { clientChain: options.clientChain });
-    const eligible = filterNodesForClient(normalized.nodes, CLIENT.onexray);
-    if (eligible.nodes.length === 0) {
-      const counts = formatExcludedCounts(eligible.diagnostics.excluded);
-      throw new Error(`No compatible OneXray nodes; excluded counts: ${counts || "none"}`);
-    }
-    const resolution = resolveOneXrayPolicy({
+    options = nodeOptions(rawArguments);
+  } catch {
+    throw processorError("invalid-arguments");
+  }
+
+  let normalized;
+  try {
+    normalized = normalizeNodes(proxies, { clientChain: options.clientChain });
+  } catch {
+    throw processorError("invalid-inventory");
+  }
+
+  const eligible = filterNodesForClient(normalized.nodes, CLIENT.onexray);
+  emitDiagnostics(onDiagnostics, eligible.diagnostics);
+  if (eligible.nodes.length === 0) {
+    const counts = formatExcludedCounts(eligible.diagnostics.excluded);
+    throw processorError(`no-compatible-nodes; excluded counts: ${counts || "none"}`);
+  }
+
+  let resolution;
+  try {
+    resolution = resolveOneXrayPolicy({
       options,
       allNodes: normalized.nodes,
       eligibleNodes: eligible.nodes,
     });
+  } catch (error) {
+    void error;
+    throw processorError("invalid-policy");
+  }
+
+  try {
     return renderOneXraySubscription(resolution);
   } catch (error) {
-    throw new Error(`OneXray nodes: ${errorMessage(error)}`);
+    void error;
+    throw processorError("invalid-subscription");
   }
 }
