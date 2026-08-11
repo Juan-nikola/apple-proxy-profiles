@@ -233,6 +233,36 @@ test("rejects OneXray protocols, chains, aliases, malformed credentials, and los
     supported: false,
     reason: "unsupported-onexray-transport",
   });
+  assert.deepEqual(evaluateNodeForClient({
+    ...common,
+    type: "vless",
+    uuid,
+    network: "ws",
+    "ws-opts": { headers: { Foo: "bar" } },
+  }, "onexray"), {
+    supported: false,
+    reason: "unsupported-onexray-transport",
+  });
+  assert.deepEqual(evaluateNodeForClient({
+    ...common,
+    type: "vless",
+    uuid,
+    network: "ws",
+    "ws-opts": { headers: { Host: "one.example.invalid", host: "two.example.invalid" } },
+  }, "onexray"), {
+    supported: false,
+    reason: "unsupported-onexray-transport",
+  });
+  for (const tlsOnlyField of [{ alpn: ["h2"] }, { "client-fingerprint": "chrome" }]) {
+    assert.deepEqual(evaluateNodeForClient({ ...common, type: "vless", uuid, ...tlsOnlyField }, "onexray"), {
+      supported: false,
+      reason: "unsupported-onexray-tls-shape",
+    });
+  }
+  assert.deepEqual(evaluateNodeForClient({ ...common, type: "vmess", uuid, cipher: {} }, "onexray"), {
+    supported: false,
+    reason: "invalid-onexray-node-shape",
+  });
   for (const lossyField of [
     { tfo: true },
     { mux: true },
