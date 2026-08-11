@@ -174,6 +174,20 @@ test("does not mutate input and keeps raw display names out of all fields except
   assert.equal(JSON.stringify({ ...outbound, name: undefined }).includes(node.name), false);
 });
 
+test("allows only exact node names when explicit display tags are enabled", () => {
+  const node = { ...COMMON, type: "vless", uuid: UUID, network: "raw" };
+  const outbound = renderOneXrayOutbound(node, {
+    tag: node.name,
+    allowDisplayTag: true,
+  });
+
+  assert.equal(outbound.tag, "OneXray normalized display name");
+  assert.throws(
+    () => renderOneXrayOutbound(node, { tag: `${node.name} duplicate`, allowDisplayTag: true }),
+    { message: "duplicate-onexray-tag" },
+  );
+});
+
 test("rejects rejected admission shapes, certificate bypasses, and reserved or duplicate tags", () => {
   const node = { ...COMMON, type: "vless", uuid: UUID, network: "raw" };
   for (const tag of ["proxy", "chainProxy", "direct", "fragment", "block", "dnsOut", "tunIn", "pingIn", node.name]) {

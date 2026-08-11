@@ -14,12 +14,14 @@ function supportedNode(node) {
   if (reason) throw new Error(reason);
 }
 
-function requiredTag(node, { tag, tags } = {}) {
+function requiredTag(node, { tag, tags, allowDisplayTag = false } = {}) {
   if (typeof tag !== "string" || tag.length === 0 || tag.trim() !== tag || /[\r\n\u2028\u2029]/u.test(tag)) {
     throw new Error("invalid-onexray-tag");
   }
   if (RESERVED_TAGS.has(tag)) throw new Error("reserved-onexray-tag");
-  if (tag.includes(node.name)) throw new Error("duplicate-onexray-tag");
+  if (tag.includes(node.name) && !(allowDisplayTag === true && tag === node.name)) {
+    throw new Error("duplicate-onexray-tag");
+  }
   if (tags !== undefined) {
     if (!(tags instanceof Set)) throw new TypeError("OneXray tags must be a Set");
     if (tags.has(tag)) throw new Error("duplicate-onexray-tag");
