@@ -97,7 +97,6 @@ test("rejects every fixed target that cannot resolve to exactly one compatible n
     [[fixed], [fixed], "NODE:🇺🇸 Los Angeles｜旧名"],
     [[fixed], [fixed], "NODE:proxy"],
     [[fixed], [fixed], "NODE:chainProxy"],
-    [[fixed], [fixed], "NODE:ap-fixed-4c1a2e9d"],
   ];
 
   for (const [allNodes, eligibleNodes, configured] of cases) {
@@ -112,6 +111,51 @@ test("rejects every fixed target that cannot resolve to exactly one compatible n
       target,
     );
   }
+});
+
+test("rejects duplicated normalized fixed targets even when capability filtering keeps one copy", () => {
+  const name = "🇺🇸 Los Angeles｜自建·U";
+  const compatible = node(name, "4c1a2e9d");
+  const incompatible = node(name, "7a1f3d02");
+  assertPrivateTargetError(
+    () => resolve({
+      options: { ...OPTIONS, policyOverrides: encoded({ "🤖 AI 专用": `NODE:${name}` }) },
+      allNodes: [compatible, incompatible],
+      eligibleNodes: [compatible],
+    }),
+    "🤖 AI 专用",
+    name,
+  );
+  assert.throws(
+    () => resolve({
+      options: { ...OPTIONS, policyOverrides: encoded({ "🤖 AI 专用": `NODE:${name}` }) },
+      allNodes: [compatible, incompatible],
+      eligibleNodes: [compatible],
+    }),
+    /duplicated/u,
+  );
+});
+
+test("rejects a matching fixed target in the generated ap-fixed namespace", () => {
+  const name = "ap-fixed-reserved";
+  const reserved = node(name, "4c1a2e9d");
+  assertPrivateTargetError(
+    () => resolve({
+      options: { ...OPTIONS, policyOverrides: encoded({ "🤖 AI 专用": `NODE:${name}` }) },
+      allNodes: [reserved],
+      eligibleNodes: [reserved],
+    }),
+    "🤖 AI 专用",
+    name,
+  );
+  assert.throws(
+    () => resolve({
+      options: { ...OPTIONS, policyOverrides: encoded({ "🤖 AI 专用": `NODE:${name}` }) },
+      allNodes: [reserved],
+      eligibleNodes: [reserved],
+    }),
+    /reserved/u,
+  );
 });
 
 test("rejects malformed fixed target values with the business label and normalized target name", () => {

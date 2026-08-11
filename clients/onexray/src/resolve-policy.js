@@ -6,6 +6,7 @@ import { identityKey } from "../../../shared/nodes/node-identity.js";
 const RESERVED_TAGS = new Set([
   "proxy", "chainProxy", "direct", "fragment", "block", "dnsOut", "tunIn", "pingIn",
 ]);
+const GENERATED_TAG_PREFIXES = ["ap-fixed-"];
 const NODE_TARGET = /^NODE:(.*)$/u;
 const LINE_TERMINATOR = /[\r\n\u2028\u2029]/u;
 const STABLE_ID = /^[A-Za-z0-9][A-Za-z0-9._-]*$/u;
@@ -87,6 +88,10 @@ function candidatesByExactName(nodes, name) {
   return nodes.filter((node) => node.name === name);
 }
 
+function reservedNodeTag(name) {
+  return RESERVED_TAGS.has(name) || GENERATED_TAG_PREFIXES.some((prefix) => name.startsWith(prefix));
+}
+
 function fixedTag(node, target, name, assigned) {
   const id = nodeMetadata(node).id;
   if (typeof id !== "string" || !STABLE_ID.test(id)) {
@@ -105,10 +110,11 @@ function fixedTag(node, target, name, assigned) {
 function resolveFixedTarget(target, configured, allNodes, eligibleNodes, assigned) {
   const name = nodeTargetName(configured);
   if (name === null) throw fixedTargetError(target, "", "malformed fixed target");
-  if (RESERVED_TAGS.has(name)) throw fixedTargetError(target, name, "uses a reserved outbound tag");
+  if (reservedNodeTag(name)) throw fixedTargetError(target, name, "uses a reserved outbound tag");
 
   const allMatches = candidatesByExactName(allNodes, name);
   if (allMatches.length === 0) throw fixedTargetError(target, name, "normalized target is missing");
+  if (allMatches.length !== 1) throw fixedTargetError(target, name, "normalized target is duplicated");
   const compatible = candidatesByExactName(eligibleNodes, name);
   if (compatible.length === 0) throw fixedTargetError(target, name, "normalized target is incompatible");
   if (compatible.length !== 1) throw fixedTargetError(target, name, "normalized target is duplicated");
