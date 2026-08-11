@@ -1,4 +1,5 @@
 import { nodeMetadata } from "../../../shared/contracts.js";
+import { chinaDnsProvider } from "../../../shared/dns/providers.js";
 import { parseSurgeOptions, isParsedSurgeOptions } from "./options.js";
 import { renderSurgeProxy } from "./render-node.js";
 import { renderSurgeGroups } from "./render-groups.js";
@@ -11,7 +12,8 @@ const LOCAL_SKIP_PROXY = Object.freeze([
   "::1/128", "fc00::/7", "fe80::/10", "ff00::/8",
 ]);
 function generalSettings(options) {
-  const chinaDns = { alidns: "223.5.5.5", dnspod: "119.29.29.29", system: "system" }[options.chinaDns];
+  const provider = chinaDnsProvider(options.chinaDns);
+  const chinaDns = options.chinaDns === "system" ? "system" : provider.address;
   return [
     "loglevel = notify",
     `ipv6 = ${options.ipv6Mode === "auto" ? "true" : "false"}`,

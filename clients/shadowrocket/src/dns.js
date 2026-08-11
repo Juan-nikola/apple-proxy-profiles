@@ -1,14 +1,4 @@
-const CHINA_DNS = Object.freeze({
-  alidns: "https://dns.alidns.com/dns-query",
-  dnspod: "https://doh.pub/dns-query",
-  system: "system",
-});
-
-const GLOBAL_DNS = Object.freeze({
-  cloudflare: "https://cloudflare-dns.com/dns-query",
-  google: "https://dns.google/dns-query",
-  quad9: "https://dns.quad9.net/dns-query",
-});
+import { chinaDnsProvider, globalDnsProvider } from "../../../shared/dns/providers.js";
 
 const DNS_MODES = new Set(["stable", "privacy", "speed"]);
 const DNS_PROXY = `#proxy=${encodeURIComponent("🧭 DNS 与规则下载")}`;
@@ -29,18 +19,19 @@ function optionValue(options, key, allowed) {
  */
 export function dnsSettings(options) {
   const dnsMode = optionValue(options, "dnsMode", DNS_MODES);
-  const chinaDns = optionValue(options, "chinaDns", new Set(Object.keys(CHINA_DNS)));
-  const globalDns = optionValue(options, "globalDns", new Set(Object.keys(GLOBAL_DNS)));
+  const chinaDns = optionValue(options, "chinaDns", new Set(["alidns", "dnspod", "system"]));
+  const globalDns = optionValue(options, "globalDns", new Set(["cloudflare", "google", "quad9"]));
   const privacySystemDns = dnsMode === "privacy" && chinaDns === "system";
   const globalUsesProxy = dnsMode !== "speed";
+  const china = chinaDnsProvider(privacySystemDns ? "alidns" : chinaDns);
+  const global = globalDnsProvider(globalDns);
 
   return [
-    `dns-server = ${privacySystemDns ? CHINA_DNS.alidns : CHINA_DNS[chinaDns]}`,
-    `fallback-dns-server = ${GLOBAL_DNS[globalDns]}${globalUsesProxy ? DNS_PROXY : ""}`,
+    `dns-server = ${china.doh}`,
+    `fallback-dns-server = ${global.doh}${globalUsesProxy ? DNS_PROXY : ""}`,
     `dns-direct-system = ${chinaDns === "system" && !privacySystemDns}`,
     `dns-direct-fallback-proxy = ${globalUsesProxy}`,
     "private-ip-answer = true",
     "hijack-dns = *:53",
   ];
 }
-

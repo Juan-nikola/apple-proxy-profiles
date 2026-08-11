@@ -1,19 +1,9 @@
 import { OPTION_VALUES } from "../../../shared/contracts.js";
+import { chinaDnsProvider, globalDnsProvider } from "../../../shared/dns/providers.js";
 import { DOMESTIC_FALLBACK_DOMAIN_SUFFIXES } from "../../../shared/rules/domestic-fallback.js";
 import { orderedRoutingPlan } from "../../../shared/rules/lightweight-policy.js";
 import { PUBLIC_RULE_ROOT } from "./options.js";
 
-const CHINA_DNS = Object.freeze({
-  alidns: "https://dns.alidns.com/dns-query",
-  dnspod: "https://doh.pub/dns-query",
-  system: "system",
-});
-
-const GLOBAL_DNS = Object.freeze({
-  cloudflare: "https://cloudflare-dns.com/dns-query",
-  google: "https://dns.google/dns-query",
-  quad9: "https://dns.quad9.net/dns-query",
-});
 const proxyDnsSourceIds = Object.freeze(
   orderedRoutingPlan().filter(({ dnsClass }) => dnsClass === "proxy").map(({ id }) => id),
 );
@@ -100,8 +90,8 @@ export function renderEgernDns(options) {
   return {
     bootstrap: ["system"],
     upstreams: {
-      china: [CHINA_DNS[chinaDns]],
-      global: [GLOBAL_DNS[globalDns]],
+      china: [chinaDnsProvider(chinaDns).doh],
+      global: [globalDnsProvider(globalDns).doh],
     },
     forward,
     proxy_nameservers: ["system"],

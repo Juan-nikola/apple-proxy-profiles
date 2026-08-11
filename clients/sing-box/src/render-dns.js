@@ -1,29 +1,20 @@
 import { orderedRoutingPlan } from "../../../shared/rules/lightweight-policy.js";
+import { chinaDnsProvider, globalDnsProvider } from "../../../shared/dns/providers.js";
 
-const CHINA_DNS = Object.freeze({
-  alidns: "223.5.5.5",
-  dnspod: "119.29.29.29",
-  system: "local",
-});
-const GLOBAL_DNS = Object.freeze({
-  cloudflare: Object.freeze({ server: "1.1.1.1", serverName: "cloudflare-dns.com" }),
-  google: Object.freeze({ server: "8.8.8.8", serverName: "dns.google" }),
-  quad9: Object.freeze({ server: "9.9.9.9", serverName: "dns.quad9.net" }),
-});
 const proxyDnsSourceIds = Object.freeze(
   orderedRoutingPlan().filter(({ dnsClass }) => dnsClass === "proxy").map(({ id }) => id),
 );
 
 export function renderSingBoxDns(options) {
+  const chinaDns = chinaDnsProvider(options.chinaDns);
   const chinaServer = options.chinaDns === "system"
     ? { type: "local", tag: "dns-direct" }
-    : { type: "udp", tag: "dns-direct", server: CHINA_DNS[options.chinaDns] };
-  const globalDns = GLOBAL_DNS[options.globalDns];
-  if (!globalDns) throw new Error(`Unsupported global DNS provider: ${options.globalDns}`);
+    : { type: "udp", tag: "dns-direct", server: chinaDns.address };
+  const globalDns = globalDnsProvider(options.globalDns);
   const proxyServer = {
     type: "https",
     tag: "dns-proxy",
-    server: globalDns.server,
+    server: globalDns.address,
     server_port: 443,
     path: "/dns-query",
     tls: { enabled: true, server_name: globalDns.serverName },
