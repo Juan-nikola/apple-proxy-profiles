@@ -42,7 +42,7 @@ test("parseHappOptions rejects malformed, unsupported, and misleading options", 
   for (const value of ["preview", "nodes"]) {
     assert.throws(() => parseHappOptions({ ...required, output: value }), /output/u);
   }
-  for (const [key, value] of [["channel", "beta"], ["dnsMode", "unsafe"], ["policyOverrides", 42], ["adblockMode", "full"], ["extra", "value"]]) {
+  for (const [key, value] of [["channel", "beta"], ["dnsMode", "unsafe"], ["policyOverrides", 42], ["adblockMode", "full"], ["_policyOverrides", "ignored"], ["extra", "value"]]) {
     assert.throws(() => parseHappOptions({ ...required, [key]: value }), new RegExp(key, "u"));
   }
   assert.throws(() => parseHappOptions({ ...required, name: " Happ" }), /name/u);

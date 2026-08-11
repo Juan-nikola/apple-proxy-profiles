@@ -56,6 +56,11 @@ export function decodePolicyOverrides(encoded) {
   try {
     const base64 = encoded.replace(/-/gu, "+").replace(/_/gu, "/");
     const bytes = Uint8Array.from(atob(base64), (character) => character.codePointAt(0));
+    const canonical = btoa(Array.from(bytes, (byte) => String.fromCodePoint(byte)).join(""))
+      .replace(/\+/gu, "-")
+      .replace(/\//gu, "_")
+      .replace(/=+$/gu, "");
+    if (canonical !== encoded) throw new Error("policyOverrides must use canonical Base64URL");
     const json = new TextDecoder("utf-8", { fatal: true }).decode(bytes);
     parsed = JSON.parse(json);
   } catch {

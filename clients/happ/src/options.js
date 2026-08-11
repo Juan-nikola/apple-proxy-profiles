@@ -37,7 +37,7 @@ function ownDataOptions(raw) {
     if (!descriptor || "get" in descriptor || "set" in descriptor || !descriptor.enumerable) {
       throw new Error("Happ options must contain only enumerable data options");
     }
-    if (!key.startsWith("_") && !ALLOWED_KEYS.has(key)) throw new Error(`Unknown Happ option: ${key}`);
+    if (!ALLOWED_KEYS.has(key)) throw new Error(`Unknown Happ option: ${key}`);
     values.set(key, descriptor.value);
   }
   return values;

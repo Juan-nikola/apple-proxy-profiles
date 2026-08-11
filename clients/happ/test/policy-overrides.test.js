@@ -29,8 +29,23 @@ test("decodePolicyOverrides accepts unpadded UTF-8 Base64URL Chinese aliases and
   assert.deepEqual(result, { "🤖 AI 专用": "NODE:🇯🇵 東京", "🐙 GitHub": "FOLLOW", "🎬 海外流媒体": "FOLLOW", "🍎 Apple": "DIRECT" });
 });
 
+test("decodePolicyOverrides accepts every documented Chinese and internal alias", () => {
+  for (const [primary, aliases] of [
+    ["🤖 AI 专用", ["AI 专用", "ai"]], ["🐙 GitHub", ["GitHub", "github"]],
+    ["📺 YouTube", ["YouTube", "youtube"]], ["🎬 海外流媒体", ["海外流媒体", "globalMedia"]],
+    ["💬 海外社交", ["海外社交", "globalSocial"]], ["🍎 Apple", ["Apple", "apple"]],
+    ["🪟 Microsoft", ["Microsoft", "microsoft"]], ["🇨🇳 国内平台", ["国内平台", "domestic"]],
+    ["🌍 海外游戏", ["海外游戏", "overseasGame"]], ["⬇️ 下载/P2P", ["下载/P2P", "download"]],
+    ["🧭 DNS 与规则下载", ["DNS 与规则下载", "dnsAndRules"]], ["最终兜底", ["final"]],
+  ]) {
+    for (const alias of [primary, ...aliases]) {
+      assert.deepEqual(decodePolicyOverrides(encode({ [alias]: "FOLLOW" })), { [primary]: "FOLLOW" }, alias);
+    }
+  }
+});
+
 test("decodePolicyOverrides rejects unsafe encodings and malformed policy objects", () => {
-  for (const encoded of ["eyJmb28iOiJiYXIifQ==", "abc+def", "not_base64url", encode(["FOLLOW"]), encode({ unknown: "FOLLOW" }), encode({ "🤖 AI 专用": 1 }), encode({ "🤖 AI 专用": "NODE:   " }), encode({ "🤖 AI 专用": "PROXY" })]) {
+  for (const encoded of ["eyJmb28iOiJiYXIifQ==", "abc+def", "e31", "not_base64url", encode(["FOLLOW"]), encode({ unknown: "FOLLOW" }), encode({ "🤖 AI 专用": 1 }), encode({ "🤖 AI 专用": "NODE:   " }), encode({ "🤖 AI 专用": "PROXY" })]) {
     assert.throws(() => decodePolicyOverrides(encoded));
   }
   assert.throws(() => decodePolicyOverrides(encode({ "🤖 AI 专用": "FOLLOW", ai: "DIRECT" })), /conflict/u);
