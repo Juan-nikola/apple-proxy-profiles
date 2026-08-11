@@ -17,7 +17,7 @@ OneXray 不提供 Surge、Shadowrocket、Egern 或 sing-box 式的可交互业�
 - 固定节点在生成时缺失、重名、改名或协议不兼容时拒绝生成，不静默降级为 `FOLLOW`。
 - 设计覆盖 OneXray 的六个平台，但只在逐平台完成 canary 后声明对应平台可用。
 - 全局客户端链保留为可选能力，默认关闭。
-- 固定节点凭据只进入私密 Profile，不进入公开 Pages、Manifest、fixture 或日志。
+- 固定业务节点凭据只进入私密节点订阅、私密 Profile 与用户设备，不进入公开 Pages、Manifest、fixture 或日志。
 - Profile 使用版本化名称；导入新版本后保留上一版用于人工回滚。
 
 ## 范围
@@ -38,7 +38,7 @@ OneXray 不提供 Surge、Shadowrocket、Egern 或 sing-box 式的可交互业�
 ### 不包含
 
 - OneXray 界面中的业务策略组或独立业务组切换控件。
-- 固定节点的运行时自动回退、自动恢复或推送通知。
+- 固定节点的运行时健康状态机、自动回退或推送通知。
 - 应急 Profile。
 - OneXray Profile 同名自动覆盖；官方客户端当前只会新增记录。
 - Profile 或固定节点快照的自动远程刷新。
@@ -217,7 +217,7 @@ OneXray 与 Happ 共享同一套业务 ID、中文名称、别名和 `policyOver
 
 - 对应业务连接失败；
 - 规则和 Profile 不改变；
-- 不自动回退、不自动恢复、不推送通知；
+- 不自动回退、不推送通知；节点修复后，新连接自然重新使用同一固定 outbound，不存在独立的恢复切换状态；
 - 其他 `FOLLOW`、`DIRECT` 和其他固定业务不受影响；
 - 用户通过 OneXray 状态、Ping、Xray 日志或业务错误人工诊断。
 
