@@ -91,6 +91,18 @@ https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-
 
 主节点可以在 App 内随时切换，主节点切换只影响 FOLLOW 与最终兜底路径，不影响 DIRECT、BLOCK 和固定节点路径。
 
+### 4.1 推荐：用本地 `policy.json` 一键同步
+
+把分组写进仓库外的 `../onexray-private/policy.json`（例如 `代理项目/onexray-private/policy.json`），然后在仓库根目录运行：
+
+```bash
+npm --workspace @apple-proxy-profiles/onexray run set:onexray-policy
+```
+
+脚本会读取可读 JSON，自动 Base64URL 编码，更新 Sub-Store 的 `onexray-profile` 与 `onexray-routing-audit` 两个任务，重新生成并保存 deep link 到 `onexray-private/onexray-profile-link.txt`。之后只需复制该文件里的新链接导入 OneXray。
+
+Sub-Store API 地址写在同目录 `substore.env`（`SUBSTORE_API=...`），该目录位于仓库外，不会提交，也不会被密钥扫描命中。
+
 ## 5. 参数边界
 
 - Profile deep link 上限为 32 KiB。

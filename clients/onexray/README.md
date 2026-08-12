@@ -141,6 +141,31 @@ https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/index.html
 
 `policyOverrides` 使用 Base64URL 编码，但 Base64URL 不是加密，只是可逆编码。包含业务策略或固定节点的编码值属于私密输入，不要提交到仓库，也不要在聊天、截图或日志中分享。完整 Profile deep link 同样按原样保密，并受 32 KiB 长度上限约束。
 
+### 推荐：用本地 `policy.json` 一键同步
+
+不想手动写 Base64URL 时，可以只用可读 JSON 文件维护分组：
+
+1. 编辑 `代理项目/onexray-private/policy.json`（仓库外的私有目录，不会提交）：
+
+```json
+{
+  "ai": "NODE:🇺🇸 大妈尔湾｜自建·U VLESS",
+  "github": "NODE:🇺🇸 小秘书sjc｜自建·U"
+}
+```
+
+2. 在仓库根目录运行：
+
+```bash
+npm --workspace @apple-proxy-profiles/onexray run set:onexray-policy
+```
+
+脚本会自动把 JSON 编码成 Base64URL、更新 Sub-Store 的 `onexray-profile` 与 `onexray-routing-audit` 任务、重新生成 deep link，并把新链接保存到 `onexray-private/onexray-profile-link.txt`。
+
+3. 用文件里的新 deep link 重新导入 OneXray 即可。
+
+只打印不修改：`npm --workspace @apple-proxy-profiles/onexray run set:onexray-policy -- --print`。
+
 ## 文档
 
 - `docs/deployment.md`：两条安装顺序与私有任务参数。
