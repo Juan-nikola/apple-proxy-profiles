@@ -2780,7 +2780,7 @@ var SurgeProfileBundle = (() => {
     ])
   });
 
-  // src/render-rules.js
+  // ../../shared/rules/local-rules.js
   var LOCAL_RULES = Object.freeze([
     "DOMAIN-SUFFIX,local,DIRECT",
     "DOMAIN-SUFFIX,home.arpa,DIRECT",
@@ -2797,6 +2797,8 @@ var SurgeProfileBundle = (() => {
     "IP-CIDR6,fe80::/10,DIRECT,no-resolve",
     "IP-CIDR6,ff00::/8,DIRECT,no-resolve"
   ]);
+
+  // src/render-rules.js
   var RULE_DOWNLOAD_POLICY = "\u{1F9ED} DNS \u4E0E\u89C4\u5219\u4E0B\u8F7D";
   function safeBaseUrl(value) {
     if (typeof value !== "string" || !/^https:\/\/[^\s]+$/u.test(value) || /[\r\n,]/u.test(value)) {

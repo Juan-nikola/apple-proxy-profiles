@@ -9,7 +9,7 @@ import { buildClientArtifacts } from "../automation/src/build-artifacts.js";
 import { lightweightFixtureSnapshots } from "../automation/test/lightweight-fixture.js";
 import { explainRoute } from "../automation/src/routing-plan-audit.js";
 import { orderedRoutingPlan } from "../shared/rules/lightweight-policy.js";
-import { explainRouteMain } from "../scripts/explain-route.mjs";
+import { explainRouteMain, readDomainList } from "../scripts/explain-route.mjs";
 
 const plan = orderedRoutingPlan({ adblockMode: "off" });
 
@@ -251,4 +251,57 @@ test("published current channel is self-consistent with its manifest", async () 
   );
   assert.ok(["DomesticCore", "ByteDance"].includes(explanation.matchedSource));
   assert.equal(explanation.expectedPolicy, "🇨🇳 国内平台");
+});
+
+
+test("batch mode explains multiple domains with a readable report", async () => {
+  const root = await fixtureChannelRoot();
+  const listPath = join(await mkdtemp(join(tmpdir(), "apple-proxy-domains-")), "domains.txt");
+  await writeFile(listPath, [
+    "# comment line",
+    "example.cn",
+    "fixture-openai.example",
+    "",
+    "unknown.example",
+  ].join("\n"));
+  try {
+    const report = await explainRouteMain(["--channel", "current", "--batch", listPath], { publicRoot: root });
+    assert.equal(report.rows.length, 3);
+    assert.ok(report.rows.some((row) => row.domain === "example.cn" && row.source === "ChinaTLD"));
+    assert.ok(report.rows.some((row) => row.domain === "fixture-openai.example" && row.source === "OpenAI"));
+    assert.ok(report.rows.some((row) => row.domain === "unknown.example" && row.needsResolution === true));
+    assert.equal(report.directCount + report.proxyCount + report.unresolvedCount, 3);
+  } finally {
+    await rm(dirname(listPath), { recursive: true, force: true });
+  }
+});
+
+test("batch mode rejects a missing file and empty lists", async () => {
+  const root = await fixtureChannelRoot();
+  await assert.rejects(
+    () => explainRouteMain(["--channel", "current", "--batch", "/nonexistent/domains.txt"], { publicRoot: root }),
+    /Cannot read domain list/u,
+  );
+  const emptyPath = join(await mkdtemp(join(tmpdir(), "apple-proxy-empty-")), "empty.txt");
+  await writeFile(emptyPath, "# only comments\n\n");
+  try {
+    await assert.rejects(
+      () => explainRouteMain(["--channel", "current", "--batch", emptyPath], { publicRoot: root }),
+      /Domain list is empty/u,
+    );
+  } finally {
+    await rm(dirname(emptyPath), { recursive: true, force: true });
+  }
+});
+
+test("batch mode rejects combining --batch with --ip and --domain", async () => {
+  const root = await fixtureChannelRoot();
+  await assert.rejects(
+    () => explainRouteMain(["--channel", "current", "--batch", "x.txt", "--ip", "1.1.1.1"], { publicRoot: root }),
+    /cannot be combined/u,
+  );
+  await assert.rejects(
+    () => explainRouteMain(["--channel", "current", "--domain", "a.cn", "--batch", "x.txt"], { publicRoot: root }),
+    /mutually exclusive/u,
+  );
 });

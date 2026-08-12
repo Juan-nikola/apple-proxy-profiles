@@ -1,25 +1,11 @@
 import { CUSTOM_AI, CUSTOM_BLOCK, CUSTOM_DIRECT, CUSTOM_PROXY } from "./custom-rules.js";
 import { ROUTING_PHASES, orderedRoutingPlan } from "../../../shared/rules/lightweight-policy.js";
+import { LOCAL_RULES } from "../../../shared/rules/local-rules.js";
 import { isValidRuleLine } from "./rule-validator.js";
 
 export const PUBLIC_RULE_ROOT = "https://juan-nikola.github.io/apple-proxy-profiles";
 
-const LOCAL_RULES = Object.freeze([
-  "DOMAIN-SUFFIX,local,DIRECT",
-  "DOMAIN-SUFFIX,home.arpa,DIRECT",
-  "DOMAIN-SUFFIX,lan,DIRECT",
-  "IP-CIDR,10.0.0.0/8,DIRECT,no-resolve",
-  "IP-CIDR,100.64.0.0/10,DIRECT,no-resolve",
-  "IP-CIDR,127.0.0.0/8,DIRECT,no-resolve",
-  "IP-CIDR,169.254.0.0/16,DIRECT,no-resolve",
-  "IP-CIDR,172.16.0.0/12,DIRECT,no-resolve",
-  "IP-CIDR,192.168.0.0/16,DIRECT,no-resolve",
-  "IP-CIDR,224.0.0.0/4,DIRECT,no-resolve",
-  "IP-CIDR6,::1/128,DIRECT,no-resolve",
-  "IP-CIDR6,fc00::/7,DIRECT,no-resolve",
-  "IP-CIDR6,fe80::/10,DIRECT,no-resolve",
-  "IP-CIDR6,ff00::/8,DIRECT,no-resolve",
-]);
+
 
 const CUSTOM_RULES = Object.freeze([
   Object.freeze(["CUSTOM_BLOCK", CUSTOM_BLOCK, "REJECT"]),

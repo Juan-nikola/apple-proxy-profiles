@@ -12,6 +12,10 @@ export const ACTION_PINS = Object.freeze({
 
 const SHA_PIN = /^[0-9a-f]{40}$/;
 
+// Deployment budget. maxVersions (9) intentionally allows one more snapshot
+// than the publication pipeline's retention target (8, see
+// automation/src/build-site.js PUBLIC_RETENTION.maxVersions): the tree can
+// briefly hold a freshly added version before the prune step removes it.
 export const PUBLIC_PAGES_LIMITS = Object.freeze({
   githubMaxBytes: 1024 * 1024 * 1024,
   maxBytes: 750 * 1024 * 1024,

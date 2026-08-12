@@ -1,6 +1,6 @@
 # 维护、编译与发布手册
 
-这份手册回答三个问题：以后增加节点或规则要改哪里、每个文件负责什么、在 macOS/Linux/CI/OpenWrt 环境怎样构建和验证。公开仓库不保存节点；你的私密节点来源只在 Sub-Store 的原始组合 `apple-proxy-sources` 中维护，五个客户端的 Profile/Config 生成器都直接读取这个原始组合（Shadowrocket 生成器内置节点归一化，不依赖组合上的节点操作）。
+这份手册回答三个问题：以后增加节点或规则要改哪里、每个文件负责什么、在 macOS/Linux/CI/OpenWrt 环境怎样构建和验证。公开仓库不保存节点；你的私密节点来源只在 Sub-Store 的原始组合 `apple-proxy-sources` 中维护，六个客户端的 Profile/Config 生成器都直接读取这个原始组合（Shadowrocket 生成器内置节点归一化，不依赖组合上的节点操作）。
 
 ## 1. 先判断你要改哪一层
 
@@ -23,7 +23,7 @@
 ```text
 shared/
   contracts.js                 所有客户端共享的协议、选项和值域
-  normalization/               节点规范化、身份、字段清理
+  nodes/                       节点规范化、身份、字段清理
   policies/                    客户端中立的服务、分组和规则意图
 
 clients/egern/
