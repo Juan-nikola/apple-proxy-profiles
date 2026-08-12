@@ -1,26 +1,26 @@
 {
   "schemaVersion": 2,
   "clients": {
+    "singbox": "56d9ad6441c0d55b0f5b3edf00352c19e3141409c6851140df7aa11201208fc7",
+    "surge": "716cf9f374fc47370f0b720f993c959e63c4fabe5508b2e2e2fbabed44530cb1",
+    "shadowrocket": "aa03501d28bd77962ca64a09b741efef73c10f056ab490cf0d1eab17977cddb2",
+    "egern": "0c50c45128139f09cc9ca172ec16dea6d3bf3b3b7753aab26be158e8f6639110",
+    "anywhere": "ac66d441b604bff73e203a8403754e6f48deafb827626e817222c39a54f04e84"
+  },
+  "previous": {
     "singbox": "96109bc440ab638116d5d74943719762f509ead8201e5dc9ffb19468ca15eae3",
     "surge": "ba6c4410cce7945c30581b0af20a7fe0f9122b6700167c67aa46896969c130b3",
     "shadowrocket": "cbd1be5d9afe451c5a23318aff1331db974fe10f8a4e063975bf197b48cd4712",
     "egern": "569bbe0926f89ff194c2c3b6d8009f2d50f2c806070557e3b96c39abc1c93f27",
     "anywhere": "206a5fad315d75a9f5757b5bb8754c57cac4003dd0dac088575d5717b9362241"
   },
-  "previous": {
-    "singbox": "e998443c707869f4d62b7bce7efb1f48edd3ca5bfd93eeafeb1737a3b85bff87",
-    "surge": "3d865b349aa8b6f754f4517a53fa1ef7e92d6831ff90ac8d68e5eb0b84807955",
-    "shadowrocket": "df8ff35f1bcc52f6ed023e17860bcf7b4728797a8c68bc61f62aefa7d49ce451",
-    "egern": "aa4c49ef547e58a138de845ba1a853173d80229026e431a511b3bf47c93bad37",
-    "anywhere": "038b1dedb6449ce3c216707721c8a7e278b4c3961fb4715b3149740036557a94"
-  },
   "optionalPacks": {
     "adblock-full": {
-      "singbox": "e9e9fe8807de0052a179c21dfcd4e7360891faa0c9ef146866aa1eeb7be2d8b6",
-      "surge": "efd4adad47e7f434a05d6eb629e05b1802f820d7a9674454b1e6d5deef81d93c",
-      "shadowrocket": "446654b6ddddeadf89d44cb33f993d55d81394f90f2241c2453f06de32ba227c",
-      "egern": "20c44a0b4f43535e6a71d869851e77d61f266c16ac55636fdfc5aa14c039a61f",
-      "anywhere": "cc989d25ab5eb51b94dfeb2c371c78d2d3c7eb1ddf0816fe12852ce234c0a754"
+      "singbox": "cb5155774e1811a86722fdfd3a065fe03120637dd3a1c4fc782c8be9d389fc57",
+      "surge": "de682a7dc6615bc7ff2e9c7d89d95119769d7cc950fab847e11d71dbb31ecb5f",
+      "shadowrocket": "87c79c5bf8290cd0ef647c4ff2897db6f7ec78be15f873f255ecec70d9d96b30",
+      "egern": "d501b6feede84b51d1fa53d4ad4fff18a3ffdc3e58554d483871f34cf7b5dc36",
+      "anywhere": "a7f6d0593a3f28ccb7edc8a917abfbee23eabe30940beadf8e739b7e49c43d0a"
     }
   },
   "previousOptionalPacks": {
