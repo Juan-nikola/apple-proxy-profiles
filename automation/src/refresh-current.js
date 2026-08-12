@@ -36,6 +36,70 @@ const CLIENT_RULE_PREFIXES = Object.freeze({
   anywhere: ["anywhere/rules/"],
 });
 
+const ONEXRAY_FILES = Object.freeze([
+  "onexray/geodata/geosite.dat",
+  "onexray/geodata/geoip.dat",
+  "onexray/geodata/manifest.json",
+  "onexray/index.html",
+]);
+const ONEXRAY_SCHEMA = "apple-proxy-onexray-geodata-v1";
+const SHA256 = /^[0-9a-f]{64}$/u;
+
+/** Validates an optional OneXray directory without making it a client slot. */
+export async function validateOneXrayChannelTree(directory) {
+  const paths = (await treeFiles(directory)).filter((path) => path.startsWith("onexray/"));
+  if (paths.length === 0) return null;
+  if (JSON.stringify([...paths].sort()) !== JSON.stringify([...ONEXRAY_FILES].sort())) {
+    throw new Error("OneXray channel projection is incomplete");
+  }
+  const manifestBytes = await readFile(join(directory, "onexray/geodata/manifest.json"));
+  let manifest;
+  try {
+    manifest = JSON.parse(manifestBytes.toString("utf8"));
+  } catch {
+    throw new Error("OneXray channel manifest is invalid JSON");
+  }
+  if (!manifest || manifest.schema !== ONEXRAY_SCHEMA || manifest.schemaVersion !== 1
+    || !["edge", "current", "previous"].includes(manifest.channel)
+    || typeof manifest.releaseId !== "string" || !SHA256.test(manifest.manifestHash ?? "")
+    || !Array.isArray(manifest.files) || manifest.files.length !== 2) {
+    throw new Error("OneXray channel manifest is invalid");
+  }
+  const { manifestHash, ...base } = manifest;
+  if (artifactSha256(canonicalJson(base)) !== manifestHash
+    || !manifestBytes.equals(Buffer.from(canonicalJson(manifest), "utf8"))) {
+    throw new Error("OneXray channel manifest hash or canonical bytes are invalid");
+  }
+  const records = new Map(manifest.files.map((record) => [record.path, record]));
+  for (const path of ["onexray/geodata/geosite.dat", "onexray/geodata/geoip.dat"]) {
+    const record = records.get(path);
+    const content = await readFile(join(directory, path));
+    if (!record || !Number.isSafeInteger(record.bytes) || record.bytes < 1 || !SHA256.test(record.sha256)
+      || content.length !== record.bytes || artifactSha256(content) !== record.sha256) {
+      throw new Error(`OneXray channel bytes changed: ${path}`);
+    }
+  }
+  const page = await readFile(join(directory, "onexray/index.html"), "utf8");
+  for (const identity of [manifest.schema, manifest.channel, manifest.releaseId, manifest.manifestHash]) {
+    if (!page.includes(identity)) throw new Error("OneXray channel page identity does not match manifest");
+  }
+  return manifest;
+}
+
+function oneXrayRootProjection(manifest) {
+  if (!manifest) return undefined;
+  return {
+    schema: manifest.schema,
+    schemaVersion: manifest.schemaVersion,
+    channel: manifest.channel,
+    releaseId: manifest.releaseId,
+    manifestHash: manifest.manifestHash,
+    hashes: manifest.hashes,
+    counts: manifest.counts,
+    files: manifest.files,
+  };
+}
+
 function safeChannel(value) {
   if (value !== "current" && value !== "edge") {
     throw new TypeError("Publication channel must be current or edge");
@@ -136,6 +200,7 @@ async function assertRoutingBytesMatch(records, edgeDirectory) {
 export async function refreshChannelManifest({ publicDirectory, channel }) {
   safeChannel(channel);
   const directory = join(publicDirectory, channel);
+  const onexrayManifest = await validateOneXrayChannelTree(directory);
   const existing = parseCanonicalManifest(
     await readFile(join(directory, "manifest.json")),
     channel,
@@ -162,6 +227,7 @@ export async function refreshChannelManifest({ publicDirectory, channel }) {
     catalogSha256: existing.catalogSha256,
     clients,
     diagnostics: existing.diagnostics,
+    ...(onexrayManifest ? { onexray: oneXrayRootProjection(onexrayManifest) } : {}),
     files: records,
   };
   const manifest = Object.freeze({
@@ -241,6 +307,7 @@ export async function refreshCurrentManifest({ publicDirectory, adoptEdgeMetadat
   const currentDirectory = join(publicDirectory, "current");
   if (adoptEdgeMetadata) {
     const edgeDirectory = join(publicDirectory, "edge");
+    await validateOneXrayChannelTree(edgeDirectory);
     const edgeManifest = parseCanonicalManifest(
       await readFile(join(edgeDirectory, "manifest.json")),
       "edge",
@@ -252,6 +319,7 @@ export async function refreshCurrentManifest({ publicDirectory, adoptEdgeMetadat
       await readFile(join(currentDirectory, "manifest.json")),
       "current",
     );
+    const currentOnexray = await validateOneXrayChannelTree(currentDirectory);
     const base = {
       schemaVersion: 2,
       generatedAt: edgeManifest.generatedAt,
@@ -259,6 +327,7 @@ export async function refreshCurrentManifest({ publicDirectory, adoptEdgeMetadat
       catalogSha256: edgeManifest.catalogSha256,
       clients: existingCurrent.clients,
       diagnostics: edgeManifest.diagnostics,
+      ...(currentOnexray ? { onexray: oneXrayRootProjection(currentOnexray) } : {}),
       files: existingCurrent.files,
     };
     const adopted = Object.freeze({

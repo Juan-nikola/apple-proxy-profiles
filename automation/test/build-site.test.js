@@ -13,8 +13,10 @@ import {
   CLIENT_PUBLIC_PATHS,
   PUBLIC_RETENTION,
   promoteClientRelease,
+  promoteOneXrayRelease,
   publishEdgeRelease,
   snapshotMatches,
+  validateOneXrayPublication,
 } from "../src/build-site.js";
 import { lightweightFixtureSnapshots } from "./lightweight-fixture.js";
 
@@ -233,6 +235,116 @@ test("publishes edge and immutable per-client bytes without replacing current", 
     clientManifest.optionalPacks["adblock-full"],
     artifacts.diagnostics.optionalManifests["adblock-full"].clients.singbox.manifestHash,
   );
+});
+
+test("publishes OneXray GeoData as one atomic edge projection without touching current or previous", async () => {
+  const root = await mkdtemp(join(tmpdir(), "apple-proxy-edge-onexray-"));
+  const publicDirectory = join(root, "public");
+  const artifacts = buildClientArtifacts({ snapshot: lightweightFixtureSnapshots(), upstream: lightweightUpstream });
+  await mkdir(join(publicDirectory, "current/onexray/geodata"), { recursive: true });
+  await writeFile(join(publicDirectory, "current/onexray/sentinel.txt"), "stable\n");
+  await mkdir(join(publicDirectory, "previous/onexray"), { recursive: true });
+  await writeFile(join(publicDirectory, "previous/onexray/sentinel.txt"), "rollback\n");
+
+  const result = await publishEdgeRelease({
+    publicDirectory,
+    defaults: artifacts.defaults,
+    optionalPacks: artifacts.optionalPacks,
+    manifest: artifacts.diagnostics.defaultManifest,
+    onexray: artifacts.onexray,
+  });
+
+  assert.equal(result.onexray.manifestHash, artifacts.diagnostics.onexrayManifest.manifestHash);
+  assert.equal(await readFile(join(publicDirectory, "current/onexray/sentinel.txt"), "utf8"), "stable\n");
+  assert.equal(await readFile(join(publicDirectory, "previous/onexray/sentinel.txt"), "utf8"), "rollback\n");
+  for (const path of [
+    "geodata/geosite.dat",
+    "geodata/geoip.dat",
+    "geodata/manifest.json",
+    "index.html",
+  ]) {
+    assert.deepEqual(
+      await readFile(join(publicDirectory, "edge/onexray", path)),
+      Buffer.from(artifacts.onexray.get(`onexray/${path}`)),
+    );
+  }
+  const edge = JSON.parse(await readFile(join(publicDirectory, "edge/manifest.json"), "utf8"));
+  assert.equal(edge.onexray.manifestHash, artifacts.diagnostics.onexrayManifest.manifestHash);
+  assert.equal(edge.onexray.channel, "edge");
+  assert.equal(validateOneXrayPublication({ files: artifacts.onexray, channel: "edge" }).manifestHash,
+    artifacts.diagnostics.onexrayManifest.manifestHash);
+});
+
+test("rejects partial or cross-channel OneXray projections before replacing the existing edge", async () => {
+  const root = await mkdtemp(join(tmpdir(), "apple-proxy-edge-onexray-invalid-"));
+  const publicDirectory = join(root, "public");
+  const artifacts = buildClientArtifacts({ snapshot: lightweightFixtureSnapshots(), upstream: lightweightUpstream });
+  await publishEdgeRelease({
+    publicDirectory,
+    defaults: artifacts.defaults,
+    optionalPacks: artifacts.optionalPacks,
+    manifest: artifacts.diagnostics.defaultManifest,
+    onexray: artifacts.onexray,
+  });
+  const before = await readFile(join(publicDirectory, "edge/onexray/geodata/manifest.json"));
+  const partial = new Map(artifacts.onexray);
+  partial.delete("onexray/index.html");
+  await assert.rejects(
+    () => publishEdgeRelease({
+      publicDirectory,
+      defaults: artifacts.defaults,
+      optionalPacks: artifacts.optionalPacks,
+      manifest: artifacts.diagnostics.defaultManifest,
+      onexray: partial,
+    }),
+    /OneXray.*(complete|install page|projection)/iu,
+  );
+  assert.deepEqual(await readFile(join(publicDirectory, "edge/onexray/geodata/manifest.json")), before);
+
+  const crossChannel = new Map(artifacts.onexray);
+  const manifest = JSON.parse(crossChannel.get("onexray/geodata/manifest.json").toString("utf8"));
+  manifest.channel = "current";
+  const { manifestHash: ignored, ...base } = manifest;
+  manifest.manifestHash = artifactSha256(canonicalJson(base));
+  crossChannel.set("onexray/geodata/manifest.json", Buffer.from(canonicalJson(manifest)));
+  await assert.rejects(
+    () => publishEdgeRelease({
+      publicDirectory,
+      defaults: artifacts.defaults,
+      optionalPacks: artifacts.optionalPacks,
+      manifest: artifacts.diagnostics.defaultManifest,
+      onexray: crossChannel,
+    }),
+    /channel/iu,
+  );
+  assert.deepEqual(await readFile(join(publicDirectory, "edge/onexray/geodata/manifest.json")), before);
+});
+
+test("deliberate OneXray promotion preserves the prior current projection as previous", async () => {
+  const root = await mkdtemp(join(tmpdir(), "apple-proxy-promote-onexray-"));
+  const publicDirectory = join(root, "public");
+  const artifacts = buildClientArtifacts({ snapshot: lightweightFixtureSnapshots(), upstream: lightweightUpstream });
+  await mkdir(join(publicDirectory, "current/onexray/geodata"), { recursive: true });
+  await writeFile(join(publicDirectory, "current/onexray/geodata/manifest.json"), "old\n");
+  await publishEdgeRelease({
+    publicDirectory,
+    defaults: artifacts.defaults,
+    optionalPacks: artifacts.optionalPacks,
+    manifest: artifacts.diagnostics.defaultManifest,
+    onexray: artifacts.onexray,
+  });
+  const result = await promoteOneXrayRelease({
+    publicDirectory,
+    manifestHash: artifacts.diagnostics.onexrayManifest.manifestHash,
+  });
+  assert.equal(result.manifestHash, artifacts.diagnostics.onexrayManifest.manifestHash);
+  assert.match(result.currentManifestHash, /^[0-9a-f]{64}$/u);
+  assert.equal(await readFile(join(publicDirectory, "previous/onexray/geodata/manifest.json"), "utf8"), "old\n");
+  const currentManifest = JSON.parse(await readFile(join(publicDirectory, "current/onexray/geodata/manifest.json"), "utf8"));
+  assert.equal(currentManifest.channel, "current");
+  assert.equal(currentManifest.manifestHash, result.currentManifestHash);
+  assert.equal(currentManifest.names.domain, "AppleProxySiteCurrent");
+  assert.match(await readFile(join(publicDirectory, "current/onexray/index.html"), "utf8"), /\/current\/onexray\/geodata\/geosite\.dat/u);
 });
 
 test("binds optional client selections into the promoted client manifest", async () => {

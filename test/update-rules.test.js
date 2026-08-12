@@ -122,9 +122,46 @@ test("accepts only explicit edge, current-check, and client promotion operations
     client: "singbox",
     manifestHash: "a".repeat(64),
   });
+  assert.deepEqual(parseUpdateRulesArguments(["--promote", "onexray", "a".repeat(64)]), {
+    operation: "promote",
+    client: "onexray",
+    manifestHash: "a".repeat(64),
+  });
   for (const args of [[], ["--check"], ["--channel", "current"], ["--promote", "unknown", "a".repeat(64)]]) {
     assert.throws(() => parseUpdateRulesArguments(args), /update-rules arguments/u);
   }
+});
+
+test("verifies OneXray only after explicit promotion and binds its current projection to rollout", async () => {
+  const root = await mkdtemp(join(tmpdir(), "apple-proxy-onexray-rollout-"));
+  const publicDirectory = join(root, "public");
+  const artifacts = buildClientArtifacts({ snapshot: lightweightFixtureSnapshots(), upstream });
+  await initializeTrackedCurrent(publicDirectory, artifacts);
+  await publishEdgeRelease({
+    publicDirectory,
+    defaults: artifacts.defaults,
+    optionalPacks: artifacts.optionalPacks,
+    manifest: artifacts.diagnostics.defaultManifest,
+    onexray: artifacts.onexray,
+  });
+  assert.equal(await verifyTrackedPublications({ publicDirectory, ...artifacts }), true);
+  await promoteClientRelease({
+    publicDirectory,
+    client: "onexray",
+    manifestHash: artifacts.diagnostics.onexrayManifest.manifestHash,
+  });
+  assert.equal(await verifyTrackedPublications({ publicDirectory, ...artifacts }), true);
+  const rollout = JSON.parse(await readFile(join(publicDirectory, "rollout.json"), "utf8"));
+  const currentOneXray = JSON.parse(await readFile(join(publicDirectory, "current/onexray/geodata/manifest.json"), "utf8"));
+  assert.equal(rollout.onexray.current, currentOneXray.manifestHash);
+  assert.notEqual(rollout.onexray.current, artifacts.diagnostics.onexrayManifest.manifestHash);
+  const currentRoot = JSON.parse(await readFile(join(publicDirectory, "current/manifest.json"), "utf8"));
+  const edgeRoot = JSON.parse(await readFile(join(publicDirectory, "edge/manifest.json"), "utf8"));
+  assert.equal(currentRoot.onexray.channel, "current");
+  assert.equal(currentRoot.onexray.manifestHash, currentOneXray.manifestHash);
+  assert.equal(edgeRoot.onexray.channel, "edge");
+  await writeFile(join(publicDirectory, "current/onexray/geodata/geoip.dat"), Buffer.from("tampered"));
+  assert.equal(await verifyTrackedPublications({ publicDirectory, ...artifacts }), false);
 });
 
 test("derives audit-only primary provenance from the production ChinaIP snapshot", () => {

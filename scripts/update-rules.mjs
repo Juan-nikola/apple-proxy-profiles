@@ -11,6 +11,7 @@ import { canonicalJson } from "../automation/src/render-anywhere-rules.js";
 import {
   promoteClientRelease as promoteClientReleaseImpl,
   publishEdgeRelease,
+  validateOneXrayPublication,
   snapshotMatches,
   validateClientPublication,
   validateOptionalPublication,
@@ -32,8 +33,9 @@ import {
 
 const repositoryRoot = dirname(dirname(fileURLToPath(import.meta.url)));
 const defaultPublicDirectory = join(repositoryRoot, "public");
-const PROMOTION_CLIENTS = new Set(["singbox", "surge", "shadowrocket", "egern", "anywhere"]);
-const INDEPENDENT_CLIENT_PATH = /^(?:anywhere|egern|shadowrocket|sing-box|surge)\//u;
+const PROMOTION_CLIENTS = new Set(["singbox", "surge", "shadowrocket", "egern", "anywhere", "onexray"]);
+const OPTIONAL_CLIENTS = new Set(["singbox", "surge", "shadowrocket", "egern", "anywhere"]);
+const INDEPENDENT_CLIENT_PATH = /^(?:anywhere|egern|shadowrocket|sing-box|surge|onexray)\//u;
 const LEGACY_CURRENT_EXTRA_FILES = Object.freeze([
   /^frontier-manifest\.json$/u,
   /^surge\/(?:macos|iphone|ipad)\/manifest\.json$/u,
@@ -199,6 +201,19 @@ function rootManifestMatchesWithIndependentAudit(content, expectedManifest) {
   }
 }
 
+function oneXrayRootProjection(manifest) {
+  return {
+    schema: manifest.schema,
+    schemaVersion: manifest.schemaVersion,
+    channel: manifest.channel,
+    releaseId: manifest.releaseId,
+    manifestHash: manifest.manifestHash,
+    hashes: manifest.hashes,
+    counts: manifest.counts,
+    files: manifest.files,
+  };
+}
+
 async function verifyLegacyCurrent(directory, expectedUpstream) {
   try {
     const manifestBytes = await readFile(join(directory, "manifest.json"));
@@ -274,7 +289,7 @@ function rolloutOptionalProjection(optionalPacks, client) {
     if (!/^[a-z0-9][a-z0-9-]*$/u.test(packId)
       || !selections || typeof selections !== "object" || Array.isArray(selections)) return null;
     if (JSON.stringify(Object.keys(selections).sort())
-      !== JSON.stringify([...PROMOTION_CLIENTS].sort())) return null;
+      !== JSON.stringify([...OPTIONAL_CLIENTS].sort())) return null;
     const hash = selections[client];
     if (hash === null || hash === undefined) continue;
     if (!/^[0-9a-f]{64}$/u.test(hash)) return null;
@@ -352,6 +367,33 @@ export async function verifyTrackedPublications({ publicDirectory, defaults, opt
     || typeof rollout.optionalPacks !== "object") return false;
 
   const currentDirectory = join(publicDirectory, "current");
+  let expectedRootManifest = diagnostics?.defaultManifest ?? null;
+  const currentOneXrayDirectory = join(currentDirectory, "onexray");
+  const hasCurrentOneXray = await pathExists(join(currentOneXrayDirectory, "geodata", "manifest.json"));
+  if (hasCurrentOneXray) {
+    if (!rollout?.onexray || typeof rollout.onexray !== "object") return false;
+    try {
+      const onexrayFiles = await readPublicationTree(currentOneXrayDirectory, "onexray");
+      const onexrayManifest = validateOneXrayPublication({ files: onexrayFiles, channel: "current" });
+      if (onexrayManifest.manifestHash !== rollout.onexray.current) return false;
+      expectedRootManifest = { ...expectedRootManifest, onexray: oneXrayRootProjection(onexrayManifest) };
+    } catch {
+      return false;
+    }
+  } else if (rollout?.onexray) {
+    return false;
+  }
+  if (rollout.onexray !== undefined) {
+    if (!rollout.onexray || typeof rollout.onexray !== "object"
+      || !/^[0-9a-f]{64}$/u.test(rollout.onexray.current ?? "")) return false;
+    try {
+      const onexrayFiles = await readPublicationTree(join(currentDirectory, "onexray"), "onexray");
+      const onexrayManifest = validateOneXrayPublication({ files: onexrayFiles });
+      if (onexrayManifest.manifestHash !== rollout.onexray.current) return false;
+    } catch {
+      return false;
+    }
+  }
   const clientDirectories = {
     singbox: "sing-box",
     surge: "surge",
@@ -359,7 +401,10 @@ export async function verifyTrackedPublications({ publicDirectory, defaults, opt
     egern: "egern",
     anywhere: "anywhere",
   };
-  const clientPrefixes = new Set(Object.values(clientDirectories).map((directory) => `${directory}/`));
+  const clientPrefixes = new Set([
+    ...Object.values(clientDirectories).map((directory) => `${directory}/`),
+    "onexray/",
+  ]);
   const toleratedExtras = (path) => LEGACY_CURRENT_EXTRA_FILES.some((pattern) => pattern.test(path));
   const expectedRootPaths = [...defaults.keys()]
     .filter((path) => ![...clientPrefixes].some((prefix) => path.startsWith(prefix)))
@@ -382,7 +427,7 @@ export async function verifyTrackedPublications({ publicDirectory, defaults, opt
     try {
       const tracked = await readFile(join(currentDirectory, path));
       if (path === "manifest.json") {
-        if (!rootManifestMatchesWithIndependentAudit(tracked, diagnostics?.defaultManifest)) return false;
+        if (!rootManifestMatchesWithIndependentAudit(tracked, expectedRootManifest)) return false;
       } else if (!tracked.equals(artifactBuffer(content))) return false;
     } catch {
       return false;
@@ -598,6 +643,7 @@ export async function main(
     defaults: artifacts.defaults,
     optionalPacks: artifacts.optionalPacks,
     manifest: artifacts.diagnostics.defaultManifest,
+    onexray: artifacts.onexray,
   });
   process.stdout.write(
     `Edge candidate updated: ${artifacts.diagnostics.defaultManifest.upstream.commit}; ${result.files} files; ${result.manifestHash}\n`,

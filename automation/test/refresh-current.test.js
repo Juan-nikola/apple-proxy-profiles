@@ -7,7 +7,7 @@ import test from "node:test";
 import { buildClientArtifacts } from "../src/build-artifacts.js";
 import { artifactSha256 } from "../src/artifact-content.js";
 import { canonicalJson } from "../src/render-anywhere-rules.js";
-import { refreshCurrentManifest } from "../src/refresh-current.js";
+import { refreshCurrentManifest, validateOneXrayChannelTree } from "../src/refresh-current.js";
 import { lightweightFixtureSnapshots } from "./lightweight-fixture.js";
 import { explainRouteMain } from "../../scripts/explain-route.mjs";
 
@@ -98,6 +98,26 @@ test("refreshCurrentManifest refuses when current routing bytes diverge from edg
     await assert.rejects(
       () => refreshCurrentManifest({ publicDirectory: root, adoptEdgeMetadata: true }),
       /routing bytes|edge/iu,
+    );
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test("refreshCurrentManifest records a complete OneXray projection and rejects partial channel trees", async () => {
+  const { root, defaults } = await fixtureTree();
+  try {
+    const artifacts = buildClientArtifacts({ snapshot: lightweightFixtureSnapshots() });
+    await writeFiles(join(root, "current"), artifacts.onexray);
+    await writeFiles(join(root, "edge"), artifacts.onexray);
+    assert.equal((await validateOneXrayChannelTree(join(root, "current"))).channel, "edge");
+    const manifest = await refreshCurrentManifest({ publicDirectory: root });
+    assert.ok(manifest.files.some(({ path }) => path === "onexray/geodata/geoip.dat"));
+
+    await rm(join(root, "current/onexray/index.html"));
+    await assert.rejects(
+      () => refreshCurrentManifest({ publicDirectory: root }),
+      /OneXray.*(incomplete|projection)/iu,
     );
   } finally {
     await rm(root, { recursive: true, force: true });

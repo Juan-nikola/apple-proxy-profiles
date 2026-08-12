@@ -2,7 +2,7 @@ import { createHash } from "node:crypto";
 
 import { createFrontierManifest, validateFrontierManifest } from "../../shared/release/frontier-manifest.js";
 
-const CLIENT_DIRECTORY = Object.freeze({ surge: "surge", singbox: "sing-box" });
+const CLIENT_DIRECTORY = Object.freeze({ surge: "surge", singbox: "sing-box", onexray: "onexray" });
 
 function sha256(value) {
   return createHash("sha256").update(value).digest("hex");
@@ -25,7 +25,8 @@ function safePath(path) {
 }
 
 function channelContent(content, channel) {
-  if (typeof content !== "string") throw new TypeError("Frontier static file content must be text");
+  if (Buffer.isBuffer(content) || content instanceof Uint8Array) return content;
+  if (typeof content !== "string") throw new TypeError("Frontier static file content must be text or bytes");
   if (channel === "current") return content;
   return content.replaceAll("/current/", `/${channel}/`);
 }
@@ -45,7 +46,9 @@ export function buildFrontierArtifacts({ ruleBaseUrl, manifests, staticFiles }) 
   const channels = [...new Set(records.map(({ channel }) => channel))];
   const files = new Map();
   for (const [path, content] of staticFiles) {
-    if (!safePath(path) || typeof content !== "string") throw new TypeError("Frontier static file path/content is invalid");
+    if (!safePath(path) || (typeof content !== "string" && !Buffer.isBuffer(content) && !(content instanceof Uint8Array))) {
+      throw new TypeError("Frontier static file path/content is invalid");
+    }
     const client = Object.entries(CLIENT_DIRECTORY).find(([, directory]) => path === directory || path.startsWith(`${directory}/`))?.[0];
     if (!client) throw new Error(`Frontier static file has unknown client path: ${path}`);
     for (const channel of channels) {
@@ -54,7 +57,8 @@ export function buildFrontierArtifacts({ ruleBaseUrl, manifests, staticFiles }) 
     }
   }
   for (const record of records) {
-    files.set(`${record.channel}/${record.client}/${record.platform}/manifest.json`, canonicalJson(record));
+    const keyPath = record.client === "onexray" ? record.platformKey : `${record.client}/${record.platform}`;
+    files.set(`${record.channel}/${keyPath}/manifest.json`, canonicalJson(record));
   }
   for (const channel of channels) {
     const channelRecords = records.filter((record) => record.channel === channel);

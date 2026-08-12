@@ -16,6 +16,7 @@ import {
   main as stageRuleArtifactsMain,
   readRuleStageManifest,
   stageSingBoxAuditArtifacts,
+  validateOneXrayEdgeArtifacts,
 } from "../scripts/stage-rule-artifacts.mjs";
 import { ruleClientCatalog } from "../shared/rules/lightweight-policy.js";
 
@@ -55,6 +56,7 @@ function chinaIpAuditBytes() {
 
 test("stages only deterministic sing-box audit inputs with a closed manifest", async () => {
   const artifacts = buildClientArtifacts({ snapshot: lightweightFixtureSnapshots(), upstream });
+  assert.equal(validateOneXrayEdgeArtifacts(artifacts).channel, "edge");
   const root = await mkdtemp(join(tmpdir(), "sing-box-stage-"));
   const chinaIpAudit = chinaIpAuditBytes();
   const result = await stageSingBoxAuditArtifacts({ artifacts, chinaIpAudit, outputRoot: root });

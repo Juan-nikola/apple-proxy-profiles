@@ -1,6 +1,11 @@
 import assert from "node:assert/strict";
 import { access, readFile } from "node:fs/promises";
 import test from "node:test";
+import { FRONTIER_PLATFORMS } from "../shared/release/frontier-manifest.js";
+
+test("OneXray frontier keeps six platform candidates independent", () => {
+  assert.deepEqual(FRONTIER_PLATFORMS.onexray, ["macos", "iphone", "ipad", "android", "windows", "linux"]);
+});
 
 test("root verification exposes both frontier workspaces and the official-core compiler", async () => {
   const packageJson = JSON.parse(await readFile(new URL("../package.json", import.meta.url), "utf8"));

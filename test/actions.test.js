@@ -184,6 +184,7 @@ test("update workflow verifies official binary rules before building edge and ga
   const scheduleBlock = text.slice(text.indexOf("build-edge:"), text.indexOf("promote-current:"));
   assert.match(scheduleBlock, /--channel edge/u);
   assert.doesNotMatch(scheduleBlock, /--promote|canary-approval/u);
+  assert.doesNotMatch(scheduleBlock, /onexray.*current|promote.*onexray/iu);
   assert.match(text, /name: Fetch immutable ChinaIP audit and stage lightweight rules/u);
   assert.equal(
     text.match(/node scripts\/stage-rule-artifacts\.mjs --channel edge/gu)?.length,

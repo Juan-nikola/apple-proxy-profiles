@@ -15,6 +15,7 @@ import {
 } from "../automation/src/fetch-china-ip-audit.js";
 import { canonicalJson } from "../automation/src/render-anywhere-rules.js";
 import { ruleClientCatalog } from "../shared/rules/lightweight-policy.js";
+import { validateOneXrayPublication } from "../automation/src/build-site.js";
 
 const REPOSITORY_ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
 export const DEFAULT_STAGE_ROOT = resolve(REPOSITORY_ROOT, "clients/sing-box/build/rule-artifacts");
@@ -235,12 +236,21 @@ async function writeRuleStage({ inputs, upstream, chinaIpAudit, outputRoot }) {
 }
 
 export async function stageSingBoxAuditArtifacts({ artifacts, chinaIpAudit, outputRoot = DEFAULT_STAGE_ROOT }) {
+  validateOneXrayEdgeArtifacts(artifacts);
   return writeRuleStage({
     inputs: auditInputs(artifacts),
     upstream: artifacts.diagnostics?.defaultManifest?.upstream,
     chinaIpAudit,
     outputRoot,
   });
+}
+
+/** Ensures the same immutable edge candidate accompanies the staged rules. */
+export function validateOneXrayEdgeArtifacts(artifacts) {
+  if (!(artifacts?.onexray instanceof Map)) {
+    throw new TypeError("OneXray edge artifacts are required for rule staging");
+  }
+  return validateOneXrayPublication({ files: artifacts.onexray, channel: "edge" });
 }
 
 export async function stageCurrentSingBoxArtifacts({
