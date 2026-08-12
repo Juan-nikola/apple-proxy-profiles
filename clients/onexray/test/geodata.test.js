@@ -146,3 +146,36 @@ test("rejects malformed CIDR prefixes and corrupt GeoData bytes", () => {
     expectedHashes: { domain: "0".repeat(64) },
   }, "edge"), /hash mismatch/u);
 });
+
+test("derives deterministic credential-free input provenance", () => {
+  const firstSnapshot = fixtureSnapshot();
+  firstSnapshot.provenance = {
+    sourceCommit: "a".repeat(40),
+    releaseId: "edge-001",
+    upstreamUrl: "https://example.invalid/private?token=SECRET_SENTINEL",
+    token: "SECRET_SENTINEL",
+  };
+  const secondSnapshot = fixtureSnapshot({ reverse: true });
+  secondSnapshot.provenance = {
+    token: "SECRET_SENTINEL",
+    releaseId: "edge-001",
+    sourceCommit: "a".repeat(40),
+    upstreamUrl: "https://example.invalid/private?token=SECRET_SENTINEL",
+  };
+
+  const first = renderXrayGeoData(firstSnapshot, "edge");
+  const second = renderXrayGeoData(secondSnapshot, "edge");
+  assert.deepEqual(first.manifest.provenance, second.manifest.provenance);
+  assert.equal(first.manifest.provenance.sourceCommit, "a".repeat(40));
+  assert.equal(first.manifest.provenance.releaseId, "edge-001");
+  assert.equal("upstreamUrl" in first.manifest.provenance, false);
+  assert.equal("token" in first.manifest.provenance, false);
+  assert.match(first.manifest.provenance.inputSha256, /^[a-f0-9]{64}$/u);
+  assert.deepEqual(first.manifest.inputHashes, second.manifest.inputHashes);
+  assert.equal(Object.keys(first.manifest.inputHashes).length, DEFAULT_RULE_SOURCE_IDS.length);
+  assert.equal(first.manifest.sources.every(({ inputSha256 }) => /^[a-f0-9]{64}$/u.test(inputSha256)), true);
+
+  const invalidHash = fixtureSnapshot();
+  invalidHash.get("GitHub").sourceSha256 = "A".repeat(64);
+  assert.throws(() => renderXrayGeoData(invalidHash, "edge"), /source hash/u);
+});

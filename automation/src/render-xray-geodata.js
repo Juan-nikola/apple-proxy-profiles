@@ -23,6 +23,16 @@ const IP_KINDS = new Set([RULE_KIND.ipv4Cidr, RULE_KIND.ipv6Cidr]);
 const OPTIONAL_IDS = new Set(FULL_ADBLOCK_SOURCE_IDS);
 const OPTIONAL_CODES = new Set(FULL_ADBLOCK_SOURCE_IDS.map((sourceId) => oneXrayGeoCode(sourceId)));
 const DEFAULT_ID_ORDER = new Map(DEFAULT_RULE_SOURCE_IDS.map((id, index) => [id, index]));
+const SHA256 = /^[a-f0-9]{64}$/u;
+const PROVENANCE_PATTERNS = Object.freeze({
+  sourceCommit: /^[a-f0-9]{7,64}$/u,
+  upstreamCommit: /^[a-f0-9]{7,64}$/u,
+  releaseId: /^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$/u,
+  snapshotId: /^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$/u,
+  schema: /^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$/u,
+  version: /^[0-9]+(?:\.[0-9]+){1,3}(?:[-+][A-Za-z0-9.-]+)?$/u,
+  retrievedAt: /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z$/u,
+});
 const PROTO_PATH = fileURLToPath(new URL("../proto/xray-geodata.proto", import.meta.url));
 const PROTO_SOURCE = readFileSync(PROTO_PATH, "utf8");
 const ROOT = protobuf.parse(PROTO_SOURCE, { keepCase: true }).root;
@@ -74,6 +84,15 @@ function sourceIdForKey(key, value) {
   return candidate;
 }
 
+function sourceSha256(value, sourceId) {
+  const candidate = value?.sourceSha256 ?? value?.source?.sha256;
+  if (candidate === undefined) return undefined;
+  if (typeof candidate !== "string" || !SHA256.test(candidate)) {
+    throw new Error(`OneXray GeoData source ${sourceId}: source hash must be lowercase SHA-256`);
+  }
+  return candidate;
+}
+
 function sortedSourceRecords(snapshot) {
   const { map, strictDefaults } = sourceMapFrom(snapshot);
   const records = [];
@@ -89,9 +108,7 @@ function sortedSourceRecords(snapshot) {
       sourceId,
       code,
       entries: sourceEntries(value, sourceId),
-      sourceSha256: typeof value?.sourceSha256 === "string"
-        ? value.sourceSha256
-        : typeof value?.source?.sha256 === "string" ? value.source.sha256 : undefined,
+      sourceSha256: sourceSha256(value, sourceId),
     });
   }
   if (strictDefaults) {
@@ -137,10 +154,16 @@ function normalizedEntries(records) {
     const sortCidr = (left, right) => (
       compareText(left.kind, right.kind) || compareText(left.value, right.value)
     );
+    const inputSha256 = sha256(Buffer.from(JSON.stringify({
+      sourceId: record.sourceId,
+      domains: [...domains.values()].sort(sortEntry).map((entry) => [entry.kind, entry.value, entry.noResolve]),
+      cidrs: [...cidrs.values()].sort(sortCidr).map((entry) => [entry.kind, entry.value, entry.noResolve]),
+    })));
     return {
       ...record,
       domains: [...domains.values()].sort(sortEntry),
       cidrs: [...cidrs.values()].sort(sortCidr),
+      inputSha256,
     };
   });
 }
@@ -302,12 +325,17 @@ function manifestFor({ channel, names, records, domain, ip, provenance }) {
     code: record.code,
     domain: record.domains.length,
     ip: record.cidrs.length,
+    inputSha256: record.inputSha256,
     ...(record.sourceSha256 ? { sourceSha256: record.sourceSha256 } : {}),
   }));
+  const inputHashes = Object.fromEntries(records.map((record) => [record.sourceId, record.inputSha256]));
+  const aggregateInputSha256 = sha256(Buffer.from(JSON.stringify(inputHashes)));
   const safeProvenance = provenance && typeof provenance === "object" && !Array.isArray(provenance)
     ? Object.fromEntries(Object.entries(provenance)
       .filter(([key, value]) => (
-        typeof key === "string" && (typeof value === "string" || Number.isSafeInteger(value))
+        Object.hasOwn(PROVENANCE_PATTERNS, key)
+        && typeof value === "string"
+        && PROVENANCE_PATTERNS[key].test(value)
       ))
       .sort(([left], [right]) => compareText(left, right)))
     : {};
@@ -317,10 +345,13 @@ function manifestFor({ channel, names, records, domain, ip, provenance }) {
     names: Object.freeze({ ...names }),
     provenance: Object.freeze({
       source: "shared-lightweight-rule-snapshot",
+      inputSha256: aggregateInputSha256,
+      inputSourceCount: records.length,
       ...safeProvenance,
     }),
     sourceCount: records.length,
     sources: Object.freeze(sourceCounts.map((item) => Object.freeze(item))),
+    inputHashes: Object.freeze(inputHashes),
     domain: Object.freeze({
       name: names.domain,
       sha256: sha256(domain),
