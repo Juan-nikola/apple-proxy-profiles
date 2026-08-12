@@ -19,3 +19,21 @@ node --test clients/onexray/test/*.test.js
 ```
 
 Commit: `daa2633f49dba5f48cdb95c7016b84c077348ca9`
+
+## Fix round 1
+
+- Whitelisted audit configured/resolved target values and statuses; invalid or untrusted values now become stable `INVALID` markers, fixed tags become hashes, and no raw generated tag is emitted.
+- Replaced the generic chain landing label with a credential-free hash of the resolved landing display name.
+- Derived fixed compatibility from the audited OneXray capability check and restricted protocol names to the allowlisted protocol set.
+- Added a pure shared Base64URL/UTF-8 decoder and removed Node `Buffer` dependencies from business override parsing and malformed-policy diagnostics.
+- Wrapped request prototype/descriptor inspection in a catch boundary and added a Proxy-trap regression; policy failures preserve a stable code plus the approved Chinese business label without exposing target input.
+
+Fix-round tests:
+
+```text
+node --test clients/onexray/test/audit.test.js clients/onexray/test/substore-profile-entry.test.js
+9 passed, 0 failed
+
+node --test clients/onexray/test/*.test.js test/business-targets.test.js
+75 passed, 0 failed
+```
