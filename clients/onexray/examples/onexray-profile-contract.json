@@ -1,0 +1,28 @@
+{
+  "schema": "onexray-profile-contract-v1",
+  "client": "OneXray",
+  "output": "profile",
+  "redacted": true,
+  "schemaFields": [
+    "name",
+    "log",
+    "dns",
+    "routing",
+    "inbounds",
+    "outbounds"
+  ],
+  "profile": {
+    "name": "<redacted channel display name>",
+    "log": "<native log settings>",
+    "dns": "<tagged China/global DNS servers and rules>",
+    "routing": "<ordered IPIfNonMatch routing rules>",
+    "inbounds": "<runtime-owned TUN and ping inbounds>",
+    "outbounds": "<redacted fixed outbounds plus direct/block/dnsOut>"
+  },
+  "constraints": {
+    "import": "<deep link omitted>",
+    "credentials": "<redacted>",
+    "privateSource": "<omitted>",
+    "geoData": "<public channel assets referenced outside this contract>"
+  }
+}

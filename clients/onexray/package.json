@@ -6,8 +6,8 @@
   "engines": { "node": ">=22" },
   "scripts": {
     "test": "node --test",
-    "build": "node --eval \"\"",
-    "fixtures": "node --eval \"\"",
+    "build": "node scripts/build.mjs",
+    "fixtures": "node scripts/render-fixtures.mjs",
     "check:secrets": "node ../../scripts/check-secrets.mjs",
     "verify": "npm run test && npm run build && npm run fixtures && npm run check:secrets"
   }

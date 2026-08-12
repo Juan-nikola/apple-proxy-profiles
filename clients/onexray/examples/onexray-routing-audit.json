@@ -1,0 +1,27 @@
+{
+  "schema": "onexray-routing-audit-v1",
+  "client": "OneXray",
+  "output": "audit",
+  "redacted": true,
+  "schemaFields": [
+    "nodes",
+    "exclusionReasons",
+    "policy",
+    "runtime",
+    "profile"
+  ],
+  "audit": {
+    "nodes": "<count-only summary>",
+    "exclusionReasons": "<allowlisted reason counts>",
+    "policy": "<business target status without target names>",
+    "runtime": "<DNS, IPv6, QUIC, and block mode summary>",
+    "profile": "<hash, release, GeoData hash presence, and deep-link budget>"
+  },
+  "prohibited": [
+    "raw node objects",
+    "sensitive authentication material",
+    "private remote source URLs",
+    "encoded policy data",
+    "Profile JSON or deep links"
+  ]
+}
