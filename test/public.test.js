@@ -83,11 +83,10 @@ test("public OneXray GeoData is not present in stable snapshots before deliberat
       { code: "ENOENT" },
     );
   }
-  try {
-    await access(new URL("edge/onexray/geodata/manifest.json", publicRoot));
-  } catch (error) {
-    assert.equal(error.code, "ENOENT");
-  }
+  await assert.rejects(
+    () => access(new URL("edge/onexray/geodata/manifest.json", publicRoot)),
+    { code: "ENOENT" },
+  );
 });
 
 test("public client entrypoints close over hosted channels and never raw master", async () => {
