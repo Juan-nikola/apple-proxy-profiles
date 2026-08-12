@@ -43,6 +43,78 @@ https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-
 https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-profile-generator.js
 ```
 
+## 快速使用（跳过验证，直接用 edge）
+
+下面的步骤默认你已经有一台能访问的 Sub-Store，并且里面已有原始组合（例如 `apple-proxy-sources`）。仓库不会替你保存 Sub-Store 地址或 API key。
+
+### 第 0 步：让 Pages 上线
+
+脚本已经放在 `public/edge/onexray/scripts/`。你需要把本分支推到 GitHub 并触发 Pages 部署；部署完成后先用浏览器或 `curl -I` 确认下面地址返回 200：
+
+```text
+https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-nodes-generator.js
+```
+
+如果返回 404，说明 Pages 还没部署这个分支，先完成推送/合并再继续。
+
+### 第 1 步：在 Sub-Store 创建三个任务
+
+Sub-Store → Files → 新建任务 → 远程链接，然后粘贴下面完整 URL。`name=apple-proxy-sources` 必须改成你 Sub-Store 里真实组合名；如果改了，三个任务里的 `name=` 要一起改。
+
+#### `onexray-nodes`（节点订阅）
+
+```text
+https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-nodes-generator.js#output=nodes&type=collection&name=apple-proxy-sources&channel=edge&clientChain=off
+```
+
+预览成功标志：节点数量大于 0。
+
+#### `onexray-profile`（Profile）
+
+```text
+https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-profile-generator.js#output=profile&type=collection&name=apple-proxy-sources&channel=edge&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&clientChain=off&policyOverrides=
+```
+
+预览成功标志：生成带版本号的 Profile deep link 或可导入的 Profile 内容。
+
+#### `onexray-routing-audit`（脱敏审计，可选）
+
+```text
+https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-profile-generator.js#output=audit&type=collection&name=apple-proxy-sources&channel=edge&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&clientChain=off&policyOverrides=
+```
+
+### 第 2 步：安装 edge GeoData
+
+打开：
+
+```text
+https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/index.html
+```
+
+先安装 `geosite`（domain），再安装 `geoip`（ip）。安装 GeoData 不会创建 Profile，也不会导入节点。
+
+### 第 3 步：导入 Profile 并启动
+
+1. 用 `onexray-profile` 任务生成的 deep link 在 OneXray 中导入 Profile。
+2. 选择 Rule 模式。
+3. 选一个主节点。
+4. 重启 VPN。
+
+### 第 4 步：快速自检
+
+- `baidu.com` 应直连。
+- `google.com` 应走主节点。
+- `192.168.1.1`（路由器）应直连。
+- 固定业务（如果配了 `policyOverrides`）只走固定节点，主节点切换不影响它。
+
+### 第 5 步：遇到问题
+
+- 先看 OneXray 状态、Ping 和 Xray 日志。
+- 固定节点故障时只有该业务失败，不会自动回退或通知；修复后必须重新生成并重新导入 Profile。
+- 完整诊断和回滚见 `docs/troubleshooting.md`。
+
+跳过验证意味着你直接承担稳定性风险：请一直使用 edge，不要把它 promote 成 current，除非你已经用稳定了。
+
 ## 参数
 
 枚举写法的完整形式是 `output=nodes|profile|audit`，通道写法是 `channel=edge|current|previous`；其余参数见下表。

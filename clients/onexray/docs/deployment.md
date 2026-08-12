@@ -67,6 +67,16 @@ https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-
 
 审计输出是脱敏报告，不包含节点凭据、Policy 原文或 Profile deep link。
 
+### 3.4 复制即用的完整任务链接
+
+以下三条是跳过验证、直接使用 edge 的完整引用。`name=apple-proxy-sources` 必须改成你自己 Sub-Store 中的真实组合名：
+
+```text
+https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-nodes-generator.js#output=nodes&type=collection&name=apple-proxy-sources&channel=edge&clientChain=off
+https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-profile-generator.js#output=profile&type=collection&name=apple-proxy-sources&channel=edge&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&clientChain=off&policyOverrides=
+https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-profile-generator.js#output=audit&type=collection&name=apple-proxy-sources&channel=edge&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&clientChain=off&policyOverrides=
+```
+
 ## 4. 固定业务节点
 
 固定业务通过 `policyOverrides` 指定为 `NODE:<精确节点名>`。固定节点写死在生成时的 Profile 快照里：
