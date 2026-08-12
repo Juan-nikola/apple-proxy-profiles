@@ -39,5 +39,6 @@ Task 13: pending
 Task 13: fix rounds 1–2/5 (6 addressed, 0 open — edge atomic/root projection, canary immutability, platform identity, channel-scoped duplicates, partial trees, promotion rollback rebinding; commits 78fcf5e..bbbad2d)
 Task 13: complete (commits 78fcf5e..bbbad2d, focused staging/frontier suite 78/78, review approved)
 Task 14: pending
+Task 14: complete (commit aa9fe27, parity/cross-client 11/11, OneXray verify 88/88; verified after reviewer session loss)
 Task 15: pending
 Task 16: pending
