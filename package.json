@@ -22,5 +22,5 @@
     "verify:lightweight": "node --test test/lightweight-policy.test.js test/rule-model.test.js && npm run verify:shadowrocket && npm run verify:surge && npm run verify:egern && npm run verify:singbox && npm run verify:anywhere && node --test test/cross-client-routing.test.js test/rule-budgets.test.js",
     "verify": "npm run verify:lightweight && node scripts/verify.mjs"
   },
-  "devDependencies": { "esbuild": "0.28.1" }
+  "devDependencies": { "esbuild": "0.28.1", "protobufjs": "7.6.5" }
 }

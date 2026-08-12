@@ -1,0 +1,48 @@
+// Minimal Xray GeoData wire schema vendored for deterministic public assets.
+//
+// Upstream compatibility references:
+//   https://github.com/v2fly/domain-list-community/blob/master/geo-site.proto
+//   https://github.com/v2fly/geoip/blob/master/geoip.proto
+// Upstream license: MIT (schema definitions); retrieved 2026-08-12.
+// The field numbers and enum values are kept compatible with Xray's standard
+// geosite.dat and geoip.dat readers. This file intentionally omits unrelated
+// build-time messages and source-specific extensions.
+
+syntax = "proto3";
+
+package appleproxy.xray.geodata;
+
+message Domain {
+  enum Type {
+    Plain = 0;
+    Regex = 1;
+    RootDomain = 2;
+    Full = 3;
+  }
+
+  Type type = 1;
+  string value = 2;
+}
+
+message GeoSite {
+  string country_code = 1;
+  repeated Domain domain = 2;
+}
+
+message GeoSiteList {
+  repeated GeoSite entry = 1;
+}
+
+message CIDR {
+  bytes ip = 1;
+  uint32 prefix = 2;
+}
+
+message GeoIP {
+  string country_code = 1;
+  repeated CIDR cidr = 2;
+}
+
+message GeoIPList {
+  repeated GeoIP entry = 1;
+}
