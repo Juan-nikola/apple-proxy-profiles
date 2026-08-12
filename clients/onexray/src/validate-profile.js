@@ -234,7 +234,8 @@ function inboundReferences(profile, errors) {
   const rules = Array.isArray(profile.routing?.rules) ? profile.routing.rules : [];
   for (const rule of rules) {
     if (!object(rule)) continue;
-    for (const tag of rule.inboundTag ?? []) if (!tags.has(tag)) add(errors, `routing references missing inbound: ${tag}`);
+    if (!Array.isArray(rule.inboundTag)) continue;
+    for (const tag of rule.inboundTag) if (!tags.has(tag)) add(errors, `routing references missing inbound: ${tag}`);
   }
 }
 
@@ -252,10 +253,18 @@ function geoReferences(profile, context, errors) {
   const channel = CHANNELS.has(context.channel) ? context.channel : "edge";
   const { names, codes } = geoCodes(context, channel);
   const allStrings = [];
+  const seen = new Set();
   const walk = (value) => {
     if (typeof value === "string") allStrings.push(value);
-    else if (Array.isArray(value)) value.forEach(walk);
-    else if (object(value)) Object.values(value).forEach(walk);
+    else if (Array.isArray(value)) {
+      if (seen.has(value)) return;
+      seen.add(value);
+      value.forEach(walk);
+    } else if (object(value)) {
+      if (seen.has(value)) return;
+      seen.add(value);
+      Object.values(value).forEach(walk);
+    }
   };
   walk(profile);
   for (const value of allStrings) {
@@ -276,13 +285,20 @@ function chainChecks(profile, context, errors) {
   if (enabled && chain.length !== 1) add(errors, "chain-enabled Profile must contain exactly one chainProxy outbound");
   if (!enabled && chain.length !== 0) add(errors, "chain-off Profile must not contain chainProxy");
   if (context.chain?.landingTag !== undefined && enabled && context.chain.landingTag !== "chainProxy") add(errors, "chain landing tag is invalid");
-  const serialized = JSON.stringify(profile);
-  if (serialized.includes("dialerProxy")) add(errors, "dialerProxy is not allowed in OneXray Profile");
+  try {
+    const serialized = JSON.stringify(profile);
+    if (serialized.includes("dialerProxy")) add(errors, "dialerProxy is not allowed in OneXray Profile");
+  } catch {
+    add(errors, "Profile contains a non-JSON value or cycle");
+  }
 }
 
 function secretBoundary(profile, errors) {
+  const seen = new Set();
   const walk = (value, path = [], approvedCredential = false) => {
     if (Array.isArray(value)) {
+      if (seen.has(value)) return;
+      seen.add(value);
       value.forEach((entry, index) => walk(entry, [...path, String(index)], approvedCredential));
       return;
     }
@@ -294,6 +310,8 @@ function secretBoundary(profile, errors) {
       }
       return;
     }
+    if (seen.has(value)) return;
+    seen.add(value);
     for (const [key, entry] of Object.entries(value)) {
       const next = [...path, key];
       if (DIAGNOSTIC_KEY.test(key) && key !== "loglevel") add(errors, `Profile contains diagnostic or private field: ${key}`);

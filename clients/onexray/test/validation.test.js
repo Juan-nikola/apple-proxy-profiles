@@ -98,4 +98,9 @@ test("requires exactly one correctly typed system outbound and a valid chain lan
   assert.equal(validateOneXrayProfile({ ...PROFILE, dns: { servers: [null] } }, CONTEXT).valid, false);
   assert.equal(validateOneXrayProfile({ ...PROFILE, routing: { ...PROFILE.routing, rules: {} } }, CONTEXT).valid, false);
   assert.equal(validateOneXrayProfile({ ...PROFILE, routing: { ...PROFILE.routing, rules: [null] } }, CONTEXT).valid, false);
+  assert.equal(validateOneXrayProfile({ ...PROFILE, routing: { ...PROFILE.routing, rules: [{ type: "field", inboundTag: {} }] } }, CONTEXT).valid, false);
+  const cyclic = { ...PROFILE, marker: {} };
+  cyclic.marker.self = cyclic.marker;
+  assert.equal(validateOneXrayProfile(cyclic, CONTEXT).valid, false);
+  assert.equal(validateOneXrayProfile({ ...PROFILE, marker: 1n }, CONTEXT).valid, false);
 });
