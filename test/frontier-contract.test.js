@@ -116,3 +116,36 @@ test("rejects deeply nested OneXray canary secrets", () => {
     /deeply nested|secret-shaped/iu,
   );
 });
+
+test("does not allow a platform canary state to override the shared OneXray contract", () => {
+  assert.throws(
+    () => createOneXrayFrontierCandidates({
+      channel: "edge",
+      upstream: { branch: "master", commit: "a".repeat(40), fetchedAt: "2026-08-05T00:00:00Z" },
+      ruleManifestSha256: "b".repeat(64),
+      profileSha256: "c".repeat(64),
+      states: {
+        macos: {
+          status: "validated",
+          channel: "current",
+          upstream: { branch: "evil", commit: "d".repeat(40), fetchedAt: "2026-08-06T00:00:00Z" },
+        },
+      },
+    }),
+    /unsupported|state|shared/iu,
+  );
+});
+
+test("rejects a frontier manifest whose platform key does not match its identity", () => {
+  const manifest = createFrontierManifest({
+    client: "onexray",
+    platform: "macos",
+    channel: "edge",
+    upstream: { branch: "master", commit: "a".repeat(40), fetchedAt: "2026-08-05T00:00:00Z" },
+    schemaVersion: "onexray-profile-v1",
+    ruleManifestSha256: "b".repeat(64),
+    configSha256: "c".repeat(64),
+    status: "candidate",
+  });
+  assert.equal(validateFrontierManifest({ ...manifest, platformKey: "onexray-iphone" }), false);
+});

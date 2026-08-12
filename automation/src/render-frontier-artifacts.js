@@ -38,9 +38,14 @@ export function buildFrontierArtifacts({ ruleBaseUrl, manifests, staticFiles }) 
   if (!Array.isArray(manifests) || manifests.length === 0) throw new TypeError("Frontier manifests are required");
   if (!(staticFiles instanceof Map)) throw new TypeError("Frontier static files must be a Map");
 
+  const seenPlatformKeys = new Set();
   const records = manifests.map((input) => {
     const record = validateFrontierManifest(input) ? input : createFrontierManifest(input);
     if (!validateFrontierManifest(record)) throw new Error("Frontier manifest is invalid");
+    if (seenPlatformKeys.has(record.platformKey)) {
+      throw new Error(`Duplicate frontier platform candidate: ${record.platformKey}`);
+    }
+    seenPlatformKeys.add(record.platformKey);
     return record;
   });
   const channels = [...new Set(records.map(({ channel }) => channel))];

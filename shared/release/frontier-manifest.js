@@ -80,6 +80,9 @@ export function frontierPlatformKey(client, platform) {
 export function createFrontierManifest(input) {
   if (!input || typeof input !== "object" || Array.isArray(input)) throw new TypeError("Frontier manifest input is required");
   const platformKey = frontierPlatformKey(input.client, input.platform);
+  if (input.platformKey !== undefined && input.platformKey !== platformKey) {
+    throw new Error("Frontier platformKey does not match client/platform identity");
+  }
   if (!FRONTIER_CHANNELS.includes(input.channel)) throw new Error(`Unsupported frontier channel: ${input.channel}`);
   if (!input.upstream || typeof input.upstream !== "object" || Array.isArray(input.upstream)) {
     throw new TypeError("Frontier upstream metadata is required");
@@ -138,26 +141,34 @@ export function createOneXrayFrontierCandidates(input) {
   if (!states || typeof states !== "object" || Array.isArray(states)) {
     throw new TypeError("OneXray frontier states must be an object");
   }
+  const stateKeys = new Set(["status", "verifiedAt", "canary", "failure"]);
   return Object.freeze(FRONTIER_PLATFORMS[CLIENT.onexray].map((platform) => {
     const state = states[platform] ?? {};
     if (!state || typeof state !== "object" || Array.isArray(state)) {
       throw new TypeError(`OneXray frontier state is invalid: ${platform}`);
     }
+    if (Object.keys(state).some((key) => !stateKeys.has(key))) {
+      throw new Error(`OneXray frontier state contains an unsupported shared field: ${platform}`);
+    }
     return createFrontierManifest({
-      ...input,
-      ...state,
       client: CLIENT.onexray,
       platform,
+      channel: input.channel,
+      upstream: input.upstream,
       schemaVersion: input.schemaVersion ?? "onexray-profile-v1",
       configSha256: input.profileSha256 ?? input.configSha256,
       status: state.status ?? input.status ?? "candidate",
       ruleManifestSha256: input.ruleManifestSha256,
+      failure: state.failure ?? input.failure,
+      verifiedAt: state.verifiedAt,
+      canary: state.canary,
     });
   }));
 }
 
 export function validateFrontierManifest(manifest) {
   try {
+    if (manifest.platformKey !== frontierPlatformKey(manifest.client, manifest.platform)) return false;
     createFrontierManifest({
       client: manifest.client,
       platform: manifest.platform,

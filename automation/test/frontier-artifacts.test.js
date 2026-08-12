@@ -81,3 +81,14 @@ test("keeps OneXray binary GeoData bytes intact in frontier static artifacts", (
   });
   assert.deepEqual(files.get("edge/onexray/geodata/geosite.dat"), bytes);
 });
+
+test("rejects duplicate frontier platform candidates", () => {
+  assert.throws(
+    () => buildFrontierArtifacts({
+      ruleBaseUrl: "https://juan-nikola.github.io/apple-proxy-profiles/current",
+      manifests: [record("onexray", "macos", "edge"), record("onexray", "macos", "edge")],
+      staticFiles: new Map([["onexray/index.html", "release\n"]]),
+    }),
+    /duplicate.*platform|platform.*duplicate/iu,
+  );
+});
