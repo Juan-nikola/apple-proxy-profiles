@@ -22,7 +22,8 @@ Task 5: fix round 1/5 (2 addressed, 0 open — processor error redaction and mix
 Task 5: complete (commits a9cecc3..bc20e73, review clean)
 Task 6: fix round 1/5 (1 addressed, 0 open — split resolver domain/IP alternatives so global DoH cannot fall through to direct; commits 54b70b5..54b70b5)
 Task 6: complete (commit 54b70b5, focused DNS 52/52, OneXray workspace 33/33, legacy fixtures unchanged; review clean)
-Task 7: pending
+Task 7: fix round 1/5 (2 addressed, 0 open — credential-free provenance/hash validation and deterministic duplicate-rule merging; commits 7774d57..972c9e6)
+Task 7: complete (commits 7774d57..972c9e6, focused geodata 6/6, OneXray workspace 39/39; review approved)
 Task 8: pending
 Task 9: pending
 Task 10: pending
