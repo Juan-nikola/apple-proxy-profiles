@@ -45,6 +45,66 @@ test("passes validated compiled GeoData hashes into the shared audit context", (
   );
 });
 
+test("reads a readable Sub-Store policy file with Chinese business keys", () => {
+  const policy = JSON.stringify({
+    "AI 专用": "NODE:🇯🇵 Tokyo｜自建",
+    "GitHub": "FOLLOW",
+  });
+  const audit = JSON.parse(runOneXrayProfileProcessor({
+    proxies: [NODE],
+    arguments: args("audit", { policyFile: "onexray-policy" }),
+    policy,
+  }));
+  const ai = audit.policy.businesses.find(({ id }) => id === "ai");
+  const github = audit.policy.businesses.find(({ id }) => id === "github");
+  assert.equal(ai.status, "fixed");
+  assert.match(ai.configured, /^NODE:<[0-9a-f]{12}>$/u);
+  assert.equal(github.status, "follow");
+
+  const profile = runOneXrayProfileProcessor({
+    proxies: [NODE],
+    arguments: args("profile", { policyFile: "onexray-policy" }),
+    policy,
+  });
+  assert.match(profile, /^onexray:\/\/onexray\.com\/config\/add\?type=profile&data=.+\n$/u);
+});
+
+test("policy file mode fails closed on missing, invalid, or conflicting input", () => {
+  const cases = [
+    {
+      name: "missing policy content",
+      input: { proxies: [NODE], arguments: args("profile", { policyFile: "onexray-policy" }) },
+      code: "policy-file-unavailable",
+    },
+    {
+      name: "policy without policyFile",
+      input: { proxies: [NODE], arguments: args("profile"), policy: "{}" },
+      code: "policy-file-not-configured",
+    },
+    {
+      name: "conflict with policyOverrides",
+      input: {
+        proxies: [NODE],
+        arguments: args("profile", { policyFile: "onexray-policy", policyOverrides: "e30" }),
+        policy: "{}",
+      },
+      code: "invalid-arguments",
+    },
+    {
+      name: "invalid policy JSON",
+      input: { proxies: [NODE], arguments: args("profile", { policyFile: "onexray-policy" }), policy: "{bad" },
+      code: "invalid-policy-file-json",
+    },
+  ];
+  for (const { name, input, code } of cases) {
+    assert.throws(
+      () => runOneXrayProfileProcessor(input),
+      (error) => error.message === `OneXray profile: ${code}`,
+      name,
+    );
+  }
+});
+
 test("rejects node output at the profile entry boundary", () => {
   assert.throws(
     () => runOneXrayProfileProcessor({ proxies: [NODE], arguments: args("nodes") }),

@@ -64,7 +64,7 @@ Sub-Store → Files → 新建任务 → 远程链接，然后粘贴下面完整
 #### `onexray-nodes`（节点订阅）
 
 ```text
-https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-nodes-generator.js?v=4#output=nodes&type=collection&name=apple-proxy-sources&channel=edge&clientChain=off
+https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-nodes-generator.js?v=5#output=nodes&type=collection&name=apple-proxy-sources&channel=edge&clientChain=off
 ```
 
 预览成功标志：节点数量大于 0。
@@ -74,7 +74,7 @@ OneXray 使用 Xray 内核，节点订阅只会包含 OneXray 支持的协议（
 #### `onexray-profile`（Profile）
 
 ```text
-https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-profile-generator.js?v=4#output=profile&type=collection&name=apple-proxy-sources&channel=edge&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&clientChain=off
+https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-profile-generator.js?v=5#output=profile&type=collection&name=apple-proxy-sources&channel=edge&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&clientChain=off&policyFile=onexray-policy
 ```
 
 预览成功标志：生成带版本号的 Profile deep link 或可导入的 Profile 内容。
@@ -82,10 +82,10 @@ https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-
 #### `onexray-routing-audit`（脱敏审计，可选）
 
 ```text
-https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-profile-generator.js?v=4#output=audit&type=collection&name=apple-proxy-sources&channel=edge&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&clientChain=off
+https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-profile-generator.js?v=5#output=audit&type=collection&name=apple-proxy-sources&channel=edge&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&clientChain=off&policyFile=onexray-policy
 ```
 
-`v=4` 是 Sub-Store 脚本缓存版本号：脚本内容更新后，把三个任务 URL 里的 `v=` 数字 +1 再保存一次，否则 Sub-Store 可能继续使用旧脚本。需要固定业务节点时，在 URL 末尾追加非空的 `&policyOverrides=<Base64URL>`；不要写成空的 `&policyOverrides=`，旧版链接模式会把空值解析成布尔值并导致生成失败。
+`v=5` 是 Sub-Store 脚本缓存版本号：脚本内容更新后，把三个任务 URL 里的 `v=` 数字 +1 再保存一次，否则 Sub-Store 可能继续使用旧脚本。固定业务节点推荐用 `policyFile=onexray-policy` 引用 Sub-Store 内的可读策略文件；也可以继续用 `&policyOverrides=<Base64URL>`，但两者不能同时使用。
 
 ### 第 2 步：安装 edge GeoData
 
@@ -138,8 +138,23 @@ https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/index.html
 | `clientChain` | `on`、`off` | `off` |
 | `clientChainTarget` | `NODE:<名称>` 或空 | 空 |
 | `policyOverrides` | Base64URL JSON 或空 | 空 |
+| `policyFile` | Sub-Store 文件名称或空 | 空 |
 
 `policyOverrides` 使用 Base64URL 编码，但 Base64URL 不是加密，只是可逆编码。包含业务策略或固定节点的编码值属于私密输入，不要提交到仓库，也不要在聊天、截图或日志中分享。完整 Profile deep link 同样按原样保密，并受 32 KiB 长度上限约束。
+
+### 推荐：Sub-Store 内维护策略文件
+
+在 Sub-Store 新建一个本地文件 `onexray-policy`，内容直接写可读 JSON（业务名可用中文），例如：
+
+```json
+{
+  "AI 专用": "NODE:🇺🇸 大妈尔湾｜自建·U VLESS",
+  "GitHub": "FOLLOW",
+  "海外流媒体": "NODE:🇺🇸 瓦工MegaboxPro｜自建·U VLESS"
+}
+```
+
+然后在 `onexray-profile` 与 `onexray-routing-audit` 任务 URL 末尾加 `&policyFile=onexray-policy`。生成脚本会自动读取该文件，不需要手动 Base64URL。以后改分组只需编辑这个文件并重新运行 `onexray-profile` 任务。
 
 ### 推荐：用本地 `policy.json` 一键同步
 

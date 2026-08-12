@@ -1874,7 +1874,8 @@ var OneXrayNodesBundle = (() => {
     ipv6Mode: "auto",
     clientChain: "off",
     clientChainTarget: "",
-    policyOverrides: ""
+    policyOverrides: "",
+    policyFile: ""
   });
   var OUTPUTS = /* @__PURE__ */ new Set(["nodes", "profile", "audit"]);
   var CHANNELS = /* @__PURE__ */ new Set(["edge", "current", "previous"]);
@@ -1952,6 +1953,14 @@ var OneXrayNodesBundle = (() => {
     }
     const policyOverrides = values.has("policyOverrides") ? values.get("policyOverrides") : DEFAULTS.policyOverrides;
     if (typeof policyOverrides !== "string") throw optionError("policyOverrides", "must be a string");
+    const policyFile = values.has("policyFile") ? values.get("policyFile") : DEFAULTS.policyFile;
+    if (typeof policyFile !== "string") throw optionError("policyFile", "must be a string");
+    if (policyFile !== "" && (LINE_TERMINATOR.test(policyFile) || /[\/\\]/u.test(policyFile) || policyFile.trim() !== policyFile)) {
+      throw optionError("policyFile", "must be a plain single-line Sub-Store file name");
+    }
+    if (policyFile !== "" && policyOverrides !== "") {
+      throw optionError("policyFile", "cannot be combined with policyOverrides");
+    }
     return Object.freeze({
       output,
       type,
@@ -1965,7 +1974,8 @@ var OneXrayNodesBundle = (() => {
       ipv6Mode: enumValue(values, "ipv6Mode", OPTION_VALUES.ipv6Mode, DEFAULTS.ipv6Mode),
       clientChain,
       clientChainTarget,
-      policyOverrides
+      policyOverrides,
+      policyFile
     });
   }
 

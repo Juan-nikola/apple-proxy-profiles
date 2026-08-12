@@ -12,6 +12,7 @@ const DEFAULTS = Object.freeze({
   clientChain: "off",
   clientChainTarget: "",
   policyOverrides: "",
+  policyFile: "",
 });
 const OUTPUTS = new Set(["nodes", "profile", "audit"]);
 const CHANNELS = new Set(["edge", "current", "previous"]);
@@ -104,6 +105,17 @@ export function parseOneXrayOptions(raw) {
     : DEFAULTS.policyOverrides;
   if (typeof policyOverrides !== "string") throw optionError("policyOverrides", "must be a string");
 
+  const policyFile = values.has("policyFile")
+    ? values.get("policyFile")
+    : DEFAULTS.policyFile;
+  if (typeof policyFile !== "string") throw optionError("policyFile", "must be a string");
+  if (policyFile !== "" && (LINE_TERMINATOR.test(policyFile) || /[\/\\]/u.test(policyFile) || policyFile.trim() !== policyFile)) {
+    throw optionError("policyFile", "must be a plain single-line Sub-Store file name");
+  }
+  if (policyFile !== "" && policyOverrides !== "") {
+    throw optionError("policyFile", "cannot be combined with policyOverrides");
+  }
+
   return Object.freeze({
     output,
     type,
@@ -118,5 +130,6 @@ export function parseOneXrayOptions(raw) {
     clientChain,
     clientChainTarget,
     policyOverrides,
+    policyFile,
   });
 }

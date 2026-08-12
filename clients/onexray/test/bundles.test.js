@@ -30,11 +30,12 @@ function inventory() {
   }];
 }
 
-function loadBundle(source, arguments_, produced = inventory(), onProduce) {
+function loadBundle(source, arguments_, produced = inventory(), onProduce, producedFile) {
   const requests = [];
   const lines = [];
   const context = vm.createContext({
     TextEncoder,
+    TextDecoder,
     Uint8Array,
     DataView,
     URL,
@@ -45,9 +46,13 @@ function loadBundle(source, arguments_, produced = inventory(), onProduce) {
   });
   context.__argumentsJson = JSON.stringify(arguments_);
   context.__producedJson = JSON.stringify(produced);
+  context.__producedFileJson = producedFile;
   context.produceArtifact = async (request) => {
     requests.push(structuredClone(request));
     onProduce?.(context);
+    if (request.type === "file" && producedFile !== undefined) {
+      return vm.runInContext("globalThis.__producedFileJson", context);
+    }
     return vm.runInContext("JSON.parse(globalThis.__producedJson)", context);
   };
   vm.runInContext([
@@ -112,6 +117,23 @@ test("profile bundle matches the pure processor and returns one deep-link line",
   assert.match(actual.$content, /^onexray:\/\/onexray\.com\/config\/add\?type=profile&data=.+\n$/u);
   assert.equal(loaded.requests.length, 1);
   assert.equal(loaded.lines.length, 0);
+});
+
+test("profile bundle reads readable policy from a Sub-Store file when policyFile is set", async () => {
+  const source = await readFile(PROFILE_BUNDLE, "utf8");
+  const policy = JSON.stringify({ "AI 专用": "NODE:🌐 Fixture node" });
+  const loaded = loadBundle(
+    source,
+    { ...PROFILE_ARGUMENTS, policyFile: "onexray-policy" },
+    inventory(),
+    undefined,
+    policy,
+  );
+  const actual = await loaded.context.operator({ unchanged: true }, "OneXray");
+  assert.equal(actual.unchanged, true);
+  assert.match(actual.$content, /^onexray:\/\/onexray\.com\/config\/add\?type=profile&data=.+\n$/u);
+  assert.deepEqual(loaded.requests.map(({ type }) => type), ["collection", "file"]);
+  assert.equal(loaded.requests[1].name, "onexray-policy");
 });
 
 test("bundles snapshot own arguments before awaiting a mutable Sub-Store producer", async () => {

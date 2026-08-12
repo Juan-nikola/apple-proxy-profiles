@@ -52,9 +52,19 @@ function wrapperFor(target) {
   }
 `
     : `
+  let policy;
+  if (typeof arguments_.policyFile === "string" && arguments_.policyFile.length > 0) {
+    policy = await produceArtifact({
+      type: "file",
+      name: arguments_.policyFile,
+      platform: "JSON",
+      produceType: "internal",
+    });
+  }
   const content = ${target.globalName}.${target.processor}({
     proxies,
     arguments: arguments_,
+    ...(policy === undefined ? {} : { policy }),
   });
 `;
   return `

@@ -6,6 +6,7 @@ import { orderedRoutingPlan } from "../../../shared/rules/lightweight-policy.js"
 import { oneXrayGeoCode, oneXrayGeoNames } from "./geodata-contract.js";
 import { parseOneXrayOptions } from "./options.js";
 import { buildOneXrayProfileLink } from "./profile-link.js";
+import { encodePolicyOverrides } from "./policy-sync.js";
 import { renderOneXrayAudit } from "./render-audit.js";
 import { renderOneXrayDns } from "./render-dns.js";
 import { renderOneXrayProfile } from "./render-profile.js";
@@ -38,10 +39,11 @@ function ownRequest(input) {
     const prototype = Object.getPrototypeOf(input);
     if (prototype !== Object.prototype && prototype !== null) throw new Error();
     const values = {};
-    for (const key of ["proxies", "arguments", "geoHashes", "geoManifest"]) {
+    for (const key of ["proxies", "arguments", "geoHashes", "geoManifest", "policy"]) {
       const descriptor = Object.getOwnPropertyDescriptor(input, key);
       if (descriptor === undefined) continue;
       if ("get" in descriptor || "set" in descriptor) throw new Error();
+      if (key === "policy" && descriptor.value !== undefined && typeof descriptor.value !== "string") throw new Error();
       values[key] = descriptor.value;
     }
     const manifestHashes = readGeoHashes(values.geoManifest);
@@ -143,7 +145,31 @@ function privateContext({ options, normalized, eligible, resolution, profile, pr
   return Object.freeze(context);
 }
 
-function buildPrivateOneXrayContext(rawArguments, proxies, { geoHashes = {} } = {}) {
+function resolvePolicyOverride(options, policyText) {
+  if (policyText === undefined) {
+    if (options.policyFile !== "") throw processorError("policy-file-unavailable");
+    return options.policyOverrides;
+  }
+  if (options.policyFile === "") {
+    throw processorError("policy-file-not-configured");
+  }
+  if (options.policyOverrides !== "") {
+    throw processorError("policy-file-conflicts-with-policyOverrides");
+  }
+  let parsed;
+  try {
+    parsed = JSON.parse(policyText);
+  } catch {
+    throw processorError("invalid-policy-file-json");
+  }
+  try {
+    return encodePolicyOverrides(parsed);
+  } catch (error) {
+    throw policyProcessorError(error);
+  }
+}
+
+function buildPrivateOneXrayContext(rawArguments, proxies, { geoHashes = {}, policy } = {}) {
   let options;
   try {
     options = parseOneXrayOptions(rawArguments);
@@ -151,6 +177,7 @@ function buildPrivateOneXrayContext(rawArguments, proxies, { geoHashes = {} } = 
     throw processorError("invalid-arguments");
   }
   if (!OUTPUTS.has(options.output)) throw processorError("unsupported-output");
+  const policyOverrides = resolvePolicyOverride(options, policy);
 
   let normalized;
   try {
@@ -170,7 +197,7 @@ function buildPrivateOneXrayContext(rawArguments, proxies, { geoHashes = {} } = 
   let resolution;
   try {
     resolution = resolveOneXrayPolicy({
-      options,
+      options: { ...options, policyOverrides },
       allNodes: normalized.nodes,
       eligibleNodes: eligible.nodes,
     });
@@ -209,10 +236,10 @@ function buildPrivateOneXrayContext(rawArguments, proxies, { geoHashes = {} } = 
  * only the final allowlisted serialization differs.
  */
 export function runOneXrayProfileProcessor(input = {}) {
-  const { proxies, arguments: rawArguments, geoHashes } = ownRequest(input);
+  const { proxies, arguments: rawArguments, geoHashes, policy } = ownRequest(input);
   let context;
   try {
-    context = buildPrivateOneXrayContext(rawArguments, proxies, { geoHashes });
+    context = buildPrivateOneXrayContext(rawArguments, proxies, { geoHashes, policy });
   } catch (error) {
     if (error instanceof Error && /^OneXray profile: /u.test(error.message)) throw error;
     throw processorError("invalid-profile");

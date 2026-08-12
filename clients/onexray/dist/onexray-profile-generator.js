@@ -1903,6 +1903,24 @@ var OneXrayProfileBundle = (() => {
       throw new TypeError("Base64URL value is not valid UTF-8");
     }
   }
+  function encodeBase64Url(bytes) {
+    if (!(bytes instanceof Uint8Array)) throw new TypeError("Base64URL input must be bytes");
+    let result = "";
+    for (let index = 0; index < bytes.length; index += 3) {
+      const first = bytes[index];
+      const second = index + 1 < bytes.length ? bytes[index + 1] : 0;
+      const third = index + 2 < bytes.length ? bytes[index + 2] : 0;
+      result += ALPHABET[first >> 2];
+      result += ALPHABET[(first & 3) << 4 | second >> 4];
+      if (index + 1 < bytes.length) result += ALPHABET[(second & 15) << 2 | third >> 6];
+      if (index + 2 < bytes.length) result += ALPHABET[third & 63];
+    }
+    return result;
+  }
+  function encodeBase64UrlUtf8(value) {
+    if (typeof value !== "string") throw new TypeError("Base64URL text input must be a string");
+    return encodeBase64Url(new TextEncoder().encode(value));
+  }
 
   // ../../shared/policies/business-targets.js
   var TARGET_KEYWORD = /^(FOLLOW|DIRECT)$/iu;
@@ -2367,7 +2385,8 @@ var OneXrayProfileBundle = (() => {
     ipv6Mode: "auto",
     clientChain: "off",
     clientChainTarget: "",
-    policyOverrides: ""
+    policyOverrides: "",
+    policyFile: ""
   });
   var OUTPUTS = /* @__PURE__ */ new Set(["nodes", "profile", "audit"]);
   var CHANNELS2 = /* @__PURE__ */ new Set(["edge", "current", "previous"]);
@@ -2445,6 +2464,14 @@ var OneXrayProfileBundle = (() => {
     }
     const policyOverrides = values.has("policyOverrides") ? values.get("policyOverrides") : DEFAULTS.policyOverrides;
     if (typeof policyOverrides !== "string") throw optionError("policyOverrides", "must be a string");
+    const policyFile = values.has("policyFile") ? values.get("policyFile") : DEFAULTS.policyFile;
+    if (typeof policyFile !== "string") throw optionError("policyFile", "must be a string");
+    if (policyFile !== "" && (LINE_TERMINATOR2.test(policyFile) || /[\/\\]/u.test(policyFile) || policyFile.trim() !== policyFile)) {
+      throw optionError("policyFile", "must be a plain single-line Sub-Store file name");
+    }
+    if (policyFile !== "" && policyOverrides !== "") {
+      throw optionError("policyFile", "cannot be combined with policyOverrides");
+    }
     return Object.freeze({
       output,
       type,
@@ -2458,7 +2485,8 @@ var OneXrayProfileBundle = (() => {
       ipv6Mode: enumValue(values, "ipv6Mode", OPTION_VALUES.ipv6Mode, DEFAULTS.ipv6Mode),
       clientChain,
       clientChainTarget,
-      policyOverrides
+      policyOverrides,
+      policyFile
     });
   }
 
@@ -3024,6 +3052,17 @@ var OneXrayProfileBundle = (() => {
     const link = `${LINK_PREFIX}?type=profile&data=${encoded}#${fragment}`;
     if (link.length > MAX_PROFILE_LINK_LENGTH2) throw new RangeError("OneXray Profile deep link exceeds 32 KiB");
     return link;
+  }
+
+  // src/policy-sync.js
+  function encodePolicyOverrides(policy) {
+    if (policy === null || typeof policy !== "object" || Array.isArray(policy)) {
+      throw new TypeError("OneXray policy must be a plain JSON object");
+    }
+    const text = JSON.stringify(policy);
+    const encoded = encodeBase64UrlUtf8(text);
+    parseBusinessOverrides(encoded);
+    return encoded;
   }
 
   // src/render-audit.js
@@ -4194,10 +4233,11 @@ var OneXrayProfileBundle = (() => {
       const prototype = Object.getPrototypeOf(input);
       if (prototype !== Object.prototype && prototype !== null) throw new Error();
       const values = {};
-      for (const key of ["proxies", "arguments", "geoHashes", "geoManifest"]) {
+      for (const key of ["proxies", "arguments", "geoHashes", "geoManifest", "policy"]) {
         const descriptor = Object.getOwnPropertyDescriptor(input, key);
         if (descriptor === void 0) continue;
         if ("get" in descriptor || "set" in descriptor) throw new Error();
+        if (key === "policy" && descriptor.value !== void 0 && typeof descriptor.value !== "string") throw new Error();
         values[key] = descriptor.value;
       }
       const manifestHashes = readGeoHashes(values.geoManifest);
@@ -4287,7 +4327,30 @@ var OneXrayProfileBundle = (() => {
     defineInternal(context, "geo", geo);
     return Object.freeze(context);
   }
-  function buildPrivateOneXrayContext(rawArguments, proxies, { geoHashes = {} } = {}) {
+  function resolvePolicyOverride(options, policyText) {
+    if (policyText === void 0) {
+      if (options.policyFile !== "") throw processorError("policy-file-unavailable");
+      return options.policyOverrides;
+    }
+    if (options.policyFile === "") {
+      throw processorError("policy-file-not-configured");
+    }
+    if (options.policyOverrides !== "") {
+      throw processorError("policy-file-conflicts-with-policyOverrides");
+    }
+    let parsed;
+    try {
+      parsed = JSON.parse(policyText);
+    } catch {
+      throw processorError("invalid-policy-file-json");
+    }
+    try {
+      return encodePolicyOverrides(parsed);
+    } catch (error) {
+      throw policyProcessorError(error);
+    }
+  }
+  function buildPrivateOneXrayContext(rawArguments, proxies, { geoHashes = {}, policy } = {}) {
     let options;
     try {
       options = parseOneXrayOptions(rawArguments);
@@ -4295,6 +4358,7 @@ var OneXrayProfileBundle = (() => {
       throw processorError("invalid-arguments");
     }
     if (!OUTPUTS2.has(options.output)) throw processorError("unsupported-output");
+    const policyOverrides = resolvePolicyOverride(options, policy);
     let normalized;
     try {
       normalized = normalizeNodes(proxies, { clientChain: options.clientChain });
@@ -4311,7 +4375,7 @@ var OneXrayProfileBundle = (() => {
     let resolution;
     try {
       resolution = resolveOneXrayPolicy({
-        options,
+        options: { ...options, policyOverrides },
         allNodes: normalized.nodes,
         eligibleNodes: eligible.nodes
       });
@@ -4342,10 +4406,10 @@ var OneXrayProfileBundle = (() => {
     return privateContext({ options, normalized, eligible, resolution, profile, profileLink, dns, routing, geo, geoHashes });
   }
   function runOneXrayProfileProcessor(input = {}) {
-    const { proxies, arguments: rawArguments, geoHashes } = ownRequest(input);
+    const { proxies, arguments: rawArguments, geoHashes, policy } = ownRequest(input);
     let context;
     try {
-      context = buildPrivateOneXrayContext(rawArguments, proxies, { geoHashes });
+      context = buildPrivateOneXrayContext(rawArguments, proxies, { geoHashes, policy });
     } catch (error) {
       if (error instanceof Error && /^OneXray profile: /u.test(error.message)) throw error;
       throw processorError("invalid-profile");
@@ -4400,9 +4464,19 @@ async function operator(input, targetPlatform) {
     produceType: "internal",
   });
 
+  let policy;
+  if (typeof arguments_.policyFile === "string" && arguments_.policyFile.length > 0) {
+    policy = await produceArtifact({
+      type: "file",
+      name: arguments_.policyFile,
+      platform: "JSON",
+      produceType: "internal",
+    });
+  }
   const content = OneXrayProfileBundle.runOneXrayProfileProcessor({
     proxies,
     arguments: arguments_,
+    ...(policy === undefined ? {} : { policy }),
   });
 
   return { ...input, $content: content };

@@ -21,6 +21,7 @@ test("parses the exact OneXray contract with pinned defaults and a trimmed displ
     clientChain: "off",
     clientChainTarget: "",
     policyOverrides: "",
+    policyFile: "",
   });
   assert.equal(Object.isFrozen(parsed), true);
 });
@@ -94,6 +95,23 @@ test("requires and canonicalizes a non-blank NODE chain target only when chainin
   ]) assert.throws(() => parseOneXrayOptions(raw));
 });
 
+test("accepts a Sub-Store policy file name and rejects unsafe or conflicting forms", () => {
+  assert.deepEqual(
+    parseOneXrayOptions({ ...REQUIRED, policyFile: "onexray-policy" }).policyFile,
+    "onexray-policy",
+  );
+  for (const raw of [
+    { ...REQUIRED, policyFile: "onexray/policy" },
+    { ...REQUIRED, policyFile: "onexray\\policy" },
+    { ...REQUIRED, policyFile: " onexray-policy" },
+    { ...REQUIRED, policyFile: "onexray-policy\n" },
+    { ...REQUIRED, policyFile: 7 },
+    { ...REQUIRED, policyFile: "onexray-policy", policyOverrides: "e30" },
+  ]) {
+    assert.throws(() => parseOneXrayOptions(raw), /policyFile/u);
+  }
+});
+
 test("does not expose private target or override values in option errors", () => {
   const secret = "TEST_ONLY_ONEXRAY_POLICY_VALUE";
   for (const raw of [
@@ -122,6 +140,7 @@ test("rejects every explicitly supplied undefined option instead of applying a d
     "clientChain",
     "clientChainTarget",
     "policyOverrides",
+    "policyFile",
   ]) {
     assert.throws(() => parseOneXrayOptions({ ...REQUIRED, [key]: undefined }), new RegExp(key, "i"));
   }
