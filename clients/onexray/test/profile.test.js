@@ -112,3 +112,10 @@ test("stores the chain landing exactly once as chainProxy and never adds dialerP
   assert.equal(profile.outbounds.filter(({ tag }) => tag === "chainProxy").length, 1);
   assert.equal(profile.outbounds.some((outbound) => Object.hasOwn(outbound, "dialerProxy")), false);
 });
+
+test("rejects a Profile when the client-chain option disagrees with policy resolution", () => {
+  assert.throws(
+    () => render({ options: { clientChain: "on", clientChainTarget: "NODE:landing" } }),
+    /chain.*disagree/u,
+  );
+});

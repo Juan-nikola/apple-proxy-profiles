@@ -88,6 +88,8 @@ export function renderOneXrayProfile(input = {}) {
   const options = requiredObject(input.options, "Profile options");
   const channel = validateChannel(options.channel);
   const resolution = requiredObject(input.resolution, "policy resolution");
+  const chainEnabled = resolution.chain?.enabled === true;
+  if ((options.clientChain === "on") !== chainEnabled) throw new Error("OneXray Profile chain option and policy resolution disagree");
   const routingPlan = input.routingPlan ?? orderedRoutingPlan();
   const geo = input.geo ?? defaultGeo(channel);
   const dns = dnsResult(input, options, routingPlan, geo);
