@@ -73,7 +73,7 @@ test("merges identical aliases and rejects conflicting aliases with the business
 });
 
 test("rejects unknown keys and invalid target values without exposing encoded policy input", () => {
-  const secret = "PRIVATE_POLICY_VALUE";
+  const secret = "TEST_ONLY_POLICY_VALUE";
   const invalidCases = [
     base64url({ unknown: "FOLLOW" }),
     base64url({ ai: 7 }),
@@ -124,7 +124,7 @@ test("rejects duplicate JSON keys before JSON parsing can discard the conflict",
 });
 
 test("rejects Unicode line separators in fixed node target names", () => {
-  const secret = "PRIVATE_NODE_TARGET";
+  const secret = "TEST_ONLY_NODE_TARGET";
   for (const separator of ["\u2028", "\u2029"]) {
     const encoded = base64url({ ai: `NODE:${secret}${separator}Tokyo` });
     assert.throws(

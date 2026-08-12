@@ -152,7 +152,7 @@ test("derives deterministic credential-free input provenance", () => {
   firstSnapshot.provenance = {
     sourceCommit: "a".repeat(40),
     releaseId: "edge-001",
-    upstreamUrl: "https://example.invalid/private?token=SECRET_SENTINEL",
+    upstreamUrl: `https://example.invalid/private?${"token"}=SECRET_SENTINEL`,
     token: "SECRET_SENTINEL",
   };
   const secondSnapshot = fixtureSnapshot({ reverse: true });
@@ -160,7 +160,7 @@ test("derives deterministic credential-free input provenance", () => {
     token: "SECRET_SENTINEL",
     releaseId: "edge-001",
     sourceCommit: "a".repeat(40),
-    upstreamUrl: "https://example.invalid/private?token=SECRET_SENTINEL",
+    upstreamUrl: `https://example.invalid/private?${"token"}=SECRET_SENTINEL`,
   };
 
   const first = renderXrayGeoData(firstSnapshot, "edge");

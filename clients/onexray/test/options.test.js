@@ -95,7 +95,7 @@ test("requires and canonicalizes a non-blank NODE chain target only when chainin
 });
 
 test("does not expose private target or override values in option errors", () => {
-  const secret = "PRIVATE_ONEXRAY_POLICY_VALUE";
+  const secret = "TEST_ONLY_ONEXRAY_POLICY_VALUE";
   for (const raw of [
     { ...REQUIRED, clientChain: "on", clientChainTarget: `NODE:${secret}\n` },
     { ...REQUIRED, policyOverrides: 7 },
