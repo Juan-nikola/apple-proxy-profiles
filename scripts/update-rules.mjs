@@ -645,6 +645,7 @@ export async function main(
     optionalPacks: artifacts.optionalPacks,
     manifest: artifacts.diagnostics.defaultManifest,
     onexray: artifacts.onexray,
+    onexrayScripts: artifacts.onexrayScripts,
   });
   process.stdout.write(
     `Edge candidate updated: ${artifacts.diagnostics.defaultManifest.upstream.commit}; ${result.files} files; ${result.manifestHash}\n`,

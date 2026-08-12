@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdir, mkdtemp, readFile, readdir, writeFile } from "node:fs/promises";
+import { access, mkdir, mkdtemp, readFile, readdir, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
@@ -400,6 +400,85 @@ test("rebinding a second OneXray promotion makes the prior current projection pr
   assert.equal(rollout.onexray.previous, previous.manifestHash);
   assert.equal(current.channel, "current");
   assert.equal(currentRoot.onexray.channel, "current");
+});
+
+test("publishes OneXray edge scripts with the GeoData projection and hashes them", async () => {
+  const root = await mkdtemp(join(tmpdir(), "apple-proxy-edge-onexray-scripts-"));
+  const publicDirectory = join(root, "public");
+  const artifacts = buildClientArtifacts({ snapshot: lightweightFixtureSnapshots(), upstream: lightweightUpstream });
+  await publishEdgeRelease({
+    publicDirectory,
+    defaults: artifacts.defaults,
+    optionalPacks: artifacts.optionalPacks,
+    manifest: artifacts.diagnostics.defaultManifest,
+    onexray: artifacts.onexray,
+    onexrayScripts: artifacts.onexrayScripts,
+  });
+  for (const path of [
+    "onexray/scripts/onexray-nodes-generator.js",
+    "onexray/scripts/onexray-profile-generator.js",
+  ]) {
+    assert.deepEqual(
+      await readFile(join(publicDirectory, "edge", path)),
+      Buffer.from(artifacts.onexrayScripts.get(path)),
+    );
+  }
+  const edge = JSON.parse(await readFile(join(publicDirectory, "edge/manifest.json"), "utf8"));
+  assert.deepEqual(edge.onexray.scripts.map(({ path }) => path), [
+    "onexray/scripts/onexray-nodes-generator.js",
+    "onexray/scripts/onexray-profile-generator.js",
+  ]);
+  for (const record of edge.onexray.scripts) {
+    const content = await readFile(join(publicDirectory, "edge", record.path));
+    assert.equal(content.length, record.bytes);
+    assert.equal(artifactSha256(content), record.sha256);
+  }
+  await assert.rejects(() => access(join(publicDirectory, "current/onexray/scripts/onexray-nodes-generator.js")), { code: "ENOENT" });
+  await assert.rejects(() => access(join(publicDirectory, "previous/onexray/scripts/onexray-nodes-generator.js")), { code: "ENOENT" });
+});
+
+test("rejects missing, extra, or orphaned OneXray edge scripts before swapping edge", async () => {
+  const root = await mkdtemp(join(tmpdir(), "apple-proxy-edge-onexray-scripts-invalid-"));
+  const publicDirectory = join(root, "public");
+  const artifacts = buildClientArtifacts({ snapshot: lightweightFixtureSnapshots(), upstream: lightweightUpstream });
+  const publish = (onexrayScripts) => publishEdgeRelease({
+    publicDirectory,
+    defaults: artifacts.defaults,
+    optionalPacks: artifacts.optionalPacks,
+    manifest: artifacts.diagnostics.defaultManifest,
+    onexray: artifacts.onexray,
+    onexrayScripts,
+  });
+  await publish(artifacts.onexrayScripts);
+  const before = await readFile(join(publicDirectory, "edge/onexray/scripts/onexray-nodes-generator.js"));
+
+  const partial = new Map(artifacts.onexrayScripts);
+  partial.delete("onexray/scripts/onexray-profile-generator.js");
+  await assert.rejects(() => publish(partial), /OneXray edge scripts/u);
+  assert.deepEqual(
+    await readFile(join(publicDirectory, "edge/onexray/scripts/onexray-nodes-generator.js")),
+    before,
+  );
+
+  const extra = new Map(artifacts.onexrayScripts);
+  extra.set("onexray/scripts/extra.js", Buffer.from("extra"));
+  await assert.rejects(() => publish(extra), /OneXray edge scripts/u);
+  assert.deepEqual(
+    await readFile(join(publicDirectory, "edge/onexray/scripts/onexray-nodes-generator.js")),
+    before,
+  );
+
+  await assert.rejects(
+    () => publishEdgeRelease({
+      publicDirectory,
+      defaults: artifacts.defaults,
+      optionalPacks: artifacts.optionalPacks,
+      manifest: artifacts.diagnostics.defaultManifest,
+      onexray: null,
+      onexrayScripts: artifacts.onexrayScripts,
+    }),
+    /scripts require the GeoData projection/u,
+  );
 });
 
 test("binds optional client selections into the promoted client manifest", async () => {

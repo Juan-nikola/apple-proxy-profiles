@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+
 import { buildAnywhereRuleSnapshot, canonicalJson } from "./render-anywhere-rules.js";
 import { renderEgernRuleSource } from "./render-egern-rules.js";
 import { renderShadowrocketRuleSource } from "./render-shadowrocket-rules.js";
@@ -24,6 +26,11 @@ const CLIENT_PATHS = Object.freeze({
   singbox: "sing-box",
   anywhere: "anywhere",
 });
+
+const ONEXRAY_SCRIPT_PATHS = Object.freeze([
+  "onexray/scripts/onexray-nodes-generator.js",
+  "onexray/scripts/onexray-profile-generator.js",
+]);
 
 const SURGE_TYPE = Object.freeze({
   [RULE_KIND.domain]: "DOMAIN",
@@ -88,6 +95,19 @@ function renderInput(compiled, upstream) {
     rawUrl: `compiled://${source.id}`,
   });
   return Object.freeze({ source, parsed, fetched, upstream });
+}
+
+function onexrayEdgeScripts() {
+  const files = new Map();
+  for (const path of ONEXRAY_SCRIPT_PATHS) {
+    const filename = path.slice("onexray/scripts/".length);
+    const content = readFileSync(new URL(`../../clients/onexray/dist/${filename}`, import.meta.url));
+    if (!Buffer.isBuffer(content) || content.length === 0) {
+      throw new Error(`OneXray edge script is empty: ${path}`);
+    }
+    files.set(path, content);
+  }
+  return files;
 }
 
 function addFiles(target, additions) {
@@ -451,6 +471,7 @@ export function buildClientArtifacts({
     defaults,
     optionalPacks,
     onexray: onexray.files,
+    onexrayScripts: onexrayEdgeScripts(),
     diagnostics: Object.freeze({
       defaultRuleIds: Object.freeze([...compiled.defaultRuleSets.keys()]),
       compiler: compiled.diagnostics,

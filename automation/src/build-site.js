@@ -40,6 +40,10 @@ const ONEXRAY_PUBLIC_FILES = Object.freeze([
   "onexray/geodata/manifest.json",
   "onexray/index.html",
 ]);
+const ONEXRAY_SCRIPT_FILES = Object.freeze([
+  "onexray/scripts/onexray-nodes-generator.js",
+  "onexray/scripts/onexray-profile-generator.js",
+]);
 const ONEXRAY_SCHEMA = "apple-proxy-onexray-geodata-v1";
 const SHA256 = /^[0-9a-f]{64}$/u;
 const COMMIT = /^[0-9a-f]{40}$/u;
@@ -109,7 +113,23 @@ export function validateOneXrayPublication({ files, channel = null } = {}) {
   return manifest;
 }
 
-function onexrayRootProjection(manifest) {
+export function validateOneXrayScripts(files) {
+  if (!(files instanceof Map)) throw new TypeError("OneXray edge scripts must be a Map");
+  const actual = [...files.keys()].sort();
+  const expected = [...ONEXRAY_SCRIPT_FILES].sort();
+  if (JSON.stringify(actual) !== JSON.stringify(expected)) {
+    throw new Error("OneXray edge scripts must contain the two public Sub-Store bundles");
+  }
+  const records = [];
+  for (const path of ONEXRAY_SCRIPT_FILES) {
+    const content = artifactBuffer(files.get(path));
+    if (content.byteLength === 0) throw new Error(`OneXray edge script is empty: ${path}`);
+    records.push(Object.freeze({ path, bytes: content.byteLength, sha256: artifactSha256(content) }));
+  }
+  return Object.freeze(records);
+}
+
+function onexrayRootProjection(manifest, scripts = null) {
   return Object.freeze({
     schema: manifest.schema,
     schemaVersion: manifest.schemaVersion,
@@ -119,12 +139,13 @@ function onexrayRootProjection(manifest) {
     hashes: manifest.hashes,
     counts: manifest.counts,
     files: manifest.files,
+    ...(scripts === null ? {} : { scripts }),
   });
 }
 
-function edgeManifestWithOneXray(manifest, onexrayManifest) {
+function edgeManifestWithOneXray(manifest, onexrayManifest, scripts = null) {
   const { manifestHash: ignored, ...base } = manifest;
-  const edgeBase = { ...base, onexray: onexrayRootProjection(onexrayManifest) };
+  const edgeBase = { ...base, onexray: onexrayRootProjection(onexrayManifest, scripts) };
   return Object.freeze({ ...edgeBase, manifestHash: artifactSha256(canonicalJson(edgeBase)) });
 }
 
@@ -302,7 +323,14 @@ export async function snapshotMatches(directory, files) {
   return JSON.stringify(actual) === JSON.stringify(expected);
 }
 
-export async function buildSite({ publicDirectory, files, manifest, frontierFiles = null, onexrayFiles = null }) {
+export async function buildSite({
+  publicDirectory,
+  files,
+  manifest,
+  frontierFiles = null,
+  onexrayFiles = null,
+  onexrayScripts = null,
+}) {
   if (!(files instanceof Map) || !manifest || !/^[0-9a-f]{64}$/u.test(manifest.manifestHash)) {
     throw new TypeError("Verified public artifacts are required");
   }
@@ -310,6 +338,10 @@ export async function buildSite({ publicDirectory, files, manifest, frontierFile
     throw new TypeError("Frontier public artifacts must be a Map");
   }
   if (onexrayFiles !== null) validateOneXrayPublication({ files: onexrayFiles, channel: "edge" });
+  if (onexrayScripts !== null) validateOneXrayScripts(onexrayScripts);
+  if (onexrayScripts !== null && onexrayFiles === null) {
+    throw new Error("OneXray edge scripts require the GeoData projection");
+  }
   if (frontierFiles !== null) {
     for (const [path, content] of frontierFiles) {
       if (!safeRelativePath(path)) throw new TypeError("Frontier public artifact is invalid");
@@ -324,6 +356,7 @@ export async function buildSite({ publicDirectory, files, manifest, frontierFile
   if (await exists(currentDirectory) && await snapshotMatches(currentDirectory, files)
     && (frontierFiles === null || await subsetMatches(publicDirectory, frontierFiles))
     && (onexrayFiles === null || await subsetMatches(join(publicDirectory, "edge"), onexrayFiles))
+    && (onexrayScripts === null || await subsetMatches(join(publicDirectory, "edge"), onexrayScripts))
     && await fileMatches(join(publicDirectory, "index.html"), indexHtml(manifest))) {
     const versionsDirectory = join(publicDirectory, "versions");
     const versionDirectory = join(versionsDirectory, manifest.manifestHash);
@@ -352,8 +385,10 @@ export async function buildSite({ publicDirectory, files, manifest, frontierFile
     if (onexrayFiles !== null) {
       const onexrayManifest = validateOneXrayPublication({ files: onexrayFiles, channel: "edge" });
       await writeSnapshot(join(staging, "edge"), onexrayFiles);
+      const scriptRecords = onexrayScripts === null ? null : validateOneXrayScripts(onexrayScripts);
+      if (onexrayScripts !== null) await writeSnapshot(join(staging, "edge"), onexrayScripts);
       const edgeManifestPath = join(staging, "edge", "manifest.json");
-      const edgeBase = edgeManifestWithOneXray(manifest, onexrayManifest);
+      const edgeBase = edgeManifestWithOneXray(manifest, onexrayManifest, scriptRecords);
       await writeFile(edgeManifestPath, artifactBuffer(canonicalJson(edgeBase)));
     }
     if (frontierFiles !== null) await writeSnapshot(staging, frontierFiles);
@@ -525,20 +560,41 @@ export function validateOptionalPublication({ packId, files }) {
   return manifest;
 }
 
-export async function publishEdgeRelease({ publicDirectory, defaults, optionalPacks, manifest, onexray = null }) {
+export async function publishEdgeRelease({
+  publicDirectory,
+  defaults,
+  optionalPacks,
+  manifest,
+  onexray = null,
+  onexrayScripts = null,
+}) {
   const merged = mergePublicationFiles(defaults, optionalPacks);
   validateDefaultPublication({ defaults, manifest });
   const onexrayManifest = onexray === null
     ? null
     : validateOneXrayPublication({ files: onexray, channel: "edge" });
+  const scriptRecords = onexrayScripts === null
+    ? null
+    : validateOneXrayScripts(onexrayScripts);
+  if (onexrayScripts !== null && onexray === null) {
+    throw new Error("OneXray edge scripts require the GeoData projection");
+  }
   if (onexray !== null && merged.has("onexray/geodata/geosite.dat")) {
     throw new Error("Duplicate public artifact path: onexray/geodata/geosite.dat");
   }
   const edgeMerged = new Map(merged);
-  const edgeRootManifest = onexrayManifest === null ? manifest : edgeManifestWithOneXray(manifest, onexrayManifest);
+  const edgeRootManifest = onexrayManifest === null
+    ? manifest
+    : edgeManifestWithOneXray(manifest, onexrayManifest, scriptRecords);
   if (onexray !== null) {
     for (const [path, content] of onexray) edgeMerged.set(path, content);
     edgeMerged.set("manifest.json", canonicalJson(edgeRootManifest));
+  }
+  if (onexrayScripts !== null) {
+    for (const [path, content] of onexrayScripts) {
+      if (edgeMerged.has(path)) throw new Error(`Duplicate public artifact path: ${path}`);
+      edgeMerged.set(path, content);
+    }
   }
   const optionalManifests = new Map([...optionalPacks].map(([packId, files]) => [
     packId,
@@ -605,6 +661,7 @@ export async function publishEdgeRelease({ publicDirectory, defaults, optionalPa
           releaseId: onexrayManifest.releaseId,
         }),
       }),
+      ...(scriptRecords === null ? {} : { onexrayScripts: scriptRecords }),
     });
   } catch (error) {
     await rm(staging, { recursive: true, force: true });

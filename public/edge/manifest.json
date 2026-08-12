@@ -1073,7 +1073,7 @@
     }
   ],
   "generatedAt": "2026-08-09T18:34:14Z",
-  "manifestHash": "a7f75ffd1322e90c52ed9cf1f4c39002ff438177617d787ffab8aabc663ab076",
+  "manifestHash": "4d70fd492af987a0127edcf091f17bef17a40be6107492f6293e7e91138ee094",
   "onexray": {
     "channel": "edge",
     "counts": {
@@ -1101,7 +1101,19 @@
     "manifestHash": "aea286061ea7cd54eca46e78f412acfbbfe2a9dccecc6c655165df07e2d204a2",
     "releaseId": "edge-48a8dbab",
     "schema": "apple-proxy-onexray-geodata-v1",
-    "schemaVersion": 1
+    "schemaVersion": 1,
+    "scripts": [
+      {
+        "bytes": 128153,
+        "path": "onexray/scripts/onexray-nodes-generator.js",
+        "sha256": "7163cf907481fbe5cd85d68ad330649ed7afd35409dfaac5c51b81a9046b064f"
+      },
+      {
+        "bytes": 200547,
+        "path": "onexray/scripts/onexray-profile-generator.js",
+        "sha256": "53b7f1ff15c3c087a27266093463ccd2d2feac44d6e8ec080e5a0e47d3df9b9c"
+      }
+    ]
   },
   "schemaVersion": 2,
   "upstream": {

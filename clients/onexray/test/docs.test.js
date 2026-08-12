@@ -23,6 +23,8 @@ test("OneXray docs name the three private tasks and public scripts", async () =>
   }
   assert.match(deployment, /onexray-nodes-generator\.js/u);
   assert.match(deployment, /onexray-profile-generator\.js/u);
+  assert.match(deployment, /https:\/\/juan-nikola\.github\.io\/apple-proxy-profiles\/edge\/onexray\/scripts\/onexray-nodes-generator\.js/u);
+  assert.match(deployment, /https:\/\/juan-nikola\.github\.io\/apple-proxy-profiles\/edge\/onexray\/scripts\/onexray-profile-generator\.js/u);
   assert.match(readme, /onexray:\/\/onexray\.com\/dat\/add/u);
   assert.match(readme, /edge[\s\S]{0,160}canary|Edge[\s\S]{0,160}候选/iu);
 });

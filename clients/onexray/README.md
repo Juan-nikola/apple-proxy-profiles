@@ -36,6 +36,13 @@ OneXray 在 Sub-Store 中需要三个私有任务：
 
 脚本文件名（`onexray-nodes-generator.js`、`onexray-profile-generator.js`）和参数示例见 `docs/deployment.md`。审计输出与 Profile 共享同一个私有处理器，只是输出模式不同。
 
+两个脚本已随 edge 发布到 Pages：
+
+```text
+https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-nodes-generator.js
+https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-profile-generator.js
+```
+
 ## 参数
 
 枚举写法的完整形式是 `output=nodes|profile|audit`，通道写法是 `channel=edge|current|previous`；其余参数见下表。

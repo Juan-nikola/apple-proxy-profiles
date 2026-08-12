@@ -2,16 +2,16 @@
 
 OneXray 的 Profile 内含节点、固定目标和策略，因此必须在自己的 Sub-Store 中生成，不能通过公开 URL 分发。公开仓库只提供 GeoData 数据与安装页。
 
-## 1. 先准备私密脚本托管
+## 1. 使用 edge Pages 脚本
 
-OneXray 的 Sub-Store bundle 文件名是 `onexray-nodes-generator.js` 和 `onexray-profile-generator.js`（由 `npm run build` 生成在 `clients/onexray/dist/`）。它们不能直接作为 GitHub Pages 公开入口，请先放到你自己控制的 HTTPS 静态目录，得到类似下面的私密地址：
+OneXray 的两个 Sub-Store bundle 已随 edge 发布到 GitHub Pages，文件名是 `onexray-nodes-generator.js` 和 `onexray-profile-generator.js`：
 
 ```text
-https://example.invalid/private/onexray-nodes-generator.js
-https://example.invalid/private/onexray-profile-generator.js
+https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-nodes-generator.js
+https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-profile-generator.js
 ```
 
-不要把你的真实托管地址、Sub-Store 地址或 API 信息提交到仓库。公开仓库中的示例一律使用 `example.invalid`。
+OneXray 脚本只发布在 edge；current 与 previous 不发布脚本，避免未验证版本被当成稳定入口。公开仓库中的真实 Sub-Store 输出 URL 一律不提交，示例继续使用 `example.invalid`。
 
 ## 2. 安装顺序
 
@@ -35,12 +35,12 @@ current 与 previous 必须同名配对：使用 previous Profile 时，必须�
 
 ## 3. 私有任务参数
 
-所有示例只使用合成名称。`name` 必须指向你自己的原始组合（例如 `apple-proxy-sources`）；把 `https://example.invalid/private/...` 换成你自己托管的脚本地址。
+所有示例只使用合成名称。`name` 必须指向你自己的原始组合（例如 `apple-proxy-sources`）；脚本地址直接使用上面的 edge Pages URL。
 
 ### 3.1 `onexray-nodes`
 
 ```text
-https://example.invalid/private/onexray-nodes-generator.js#output=nodes&type=collection&name=apple-proxy-sources&channel=edge&clientChain=off
+https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-nodes-generator.js#output=nodes&type=collection&name=apple-proxy-sources&channel=edge&clientChain=off
 ```
 
 预览成功标志：输出包含 OneXray 可导入的节点列表，节点数量大于 0。
@@ -48,7 +48,7 @@ https://example.invalid/private/onexray-nodes-generator.js#output=nodes&type=col
 ### 3.2 `onexray-profile`
 
 ```text
-https://example.invalid/private/onexray-profile-generator.js#output=profile&type=collection&name=apple-proxy-sources&channel=edge&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&clientChain=off&policyOverrides=
+https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-profile-generator.js#output=profile&type=collection&name=apple-proxy-sources&channel=edge&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&clientChain=off&policyOverrides=
 ```
 
 每次生成的 Profile 名称都会插入 8 位 Profile 版本号（内容哈希），例如：
@@ -62,7 +62,7 @@ Apple Proxy · OneXray · edge · 3f2a91c4
 ### 3.3 `onexray-routing-audit`
 
 ```text
-https://example.invalid/private/onexray-profile-generator.js#output=audit&type=collection&name=apple-proxy-sources&channel=edge&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&clientChain=off&policyOverrides=
+https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-profile-generator.js#output=audit&type=collection&name=apple-proxy-sources&channel=edge&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&clientChain=off&policyOverrides=
 ```
 
 审计输出是脱敏报告，不包含节点凭据、Policy 原文或 Profile deep link。

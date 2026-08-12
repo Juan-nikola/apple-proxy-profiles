@@ -89,6 +89,18 @@ test("builds only an edge OneXray GeoData projection with credential-free manife
   assert.match(result.onexray.get("onexray/index.html").toString("utf8"), /canary|候选/u);
 });
 
+test("carries the two OneXray Sub-Store bundles for edge publication", () => {
+  const result = buildClientArtifacts({ snapshot: lightweightFixtureSnapshots(), upstream });
+  assert.ok(result.onexrayScripts instanceof Map);
+  assert.deepEqual([...result.onexrayScripts.keys()], [
+    "onexray/scripts/onexray-nodes-generator.js",
+    "onexray/scripts/onexray-profile-generator.js",
+  ]);
+  for (const content of result.onexrayScripts.values()) {
+    assert.ok(Buffer.isBuffer(content) && content.length > 0);
+  }
+});
+
 test("supports explicit OneXray channels without adding the client to adblock-full", () => {
   const result = buildClientArtifacts({
     snapshot: lightweightFixtureSnapshots(),

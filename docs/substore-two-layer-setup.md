@@ -233,19 +233,19 @@ https://juan-nikola.github.io/apple-proxy-profiles/current/surge/scripts/surge-p
 
 ## 9. OneXray：3 个私有任务
 
-OneXray 的 bundle 尚未作为公开 Pages 脚本发布。先把 `onexray-nodes-generator.js` 与 `onexray-profile-generator.js` 托管到你自己的私密 HTTPS 目录，再创建下面的任务；真实托管地址不要写回仓库，示例统一用 `https://example.invalid/private/`。
+OneXray 的两个 bundle 已随 edge 发布到 Pages，只存在于 `edge/onexray/scripts/`；current 与 previous 不发布脚本。直接使用下面的 edge URL 创建任务。
 
 节点任务：
 
 ```text
-https://example.invalid/private/onexray-nodes-generator.js#output=nodes&type=collection&name=apple-proxy-sources&channel=edge&clientChain=off
+https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-nodes-generator.js#output=nodes&type=collection&name=apple-proxy-sources&channel=edge&clientChain=off
 ```
 
 Profile 与审计共用同一个生成器，只改 `output`：
 
 ```text
-https://example.invalid/private/onexray-profile-generator.js#output=profile&type=collection&name=apple-proxy-sources&channel=edge&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&clientChain=off&policyOverrides=
-https://example.invalid/private/onexray-profile-generator.js#output=audit&type=collection&name=apple-proxy-sources&channel=edge&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&clientChain=off&policyOverrides=
+https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-profile-generator.js#output=profile&type=collection&name=apple-proxy-sources&channel=edge&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&clientChain=off&policyOverrides=
+https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-profile-generator.js#output=audit&type=collection&name=apple-proxy-sources&channel=edge&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&clientChain=off&policyOverrides=
 ```
 
 | 任务 | 输出 | 平台/作用 | 更新 |
