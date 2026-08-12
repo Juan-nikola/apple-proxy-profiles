@@ -41,4 +41,5 @@ Task 13: complete (commits 78fcf5e..bbbad2d, focused staging/frontier suite 78/7
 Task 14: pending
 Task 14: complete (commit aa9fe27, parity/cross-client 11/11, OneXray verify 88/88; verified after reviewer session loss)
 Task 15: pending
+Task 15: complete (deployment/troubleshooting/canary/README docs, 20-task guides; docs 10/10, OneXray workspace 96/96, secret scan clean)
 Task 16: pending
