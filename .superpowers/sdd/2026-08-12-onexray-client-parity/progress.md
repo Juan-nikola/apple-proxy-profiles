@@ -45,3 +45,4 @@ Task 15: complete (deployment/troubleshooting/canary/README docs, 20-task guides
 Task 16: pending
 Task 16: complete (rebuilds deterministic; npm test/verify/secrets/actions pass; edge OneXray staged from published compiled rules because network-restricted sandbox cannot resolve Blackmatrix7 upstream; current/previous untouched; commit d645376)
 Follow-up: publish OneXray Sub-Store bundles on edge Pages (scripts already tracked in 1b590d3; staging pipeline, manifest hashes, tests, docs in 86b9b08; npm test 244 + workspaces, OneXray verify 96/96, secrets/actions pass)
+Follow-up: add copy-paste quickstart to OneXray README/deployment (b7ee16e); Sub-Store API key received in chat was intentionally not stored
