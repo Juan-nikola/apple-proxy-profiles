@@ -33,6 +33,8 @@ Task 10: complete (commits daa2633..59778ef, focused 12/12, OneXray/business 78/
 Task 11: fix round 1/5 (1 addressed, 0 open — pre-await argument snapshot; tooling pin/hygiene follow-up; commits f9da299..ed6803d)
 Task 11: complete (commits f9da299..ed6803d, focused bundles/examples 9/9, workspace 79/79; review approved)
 Task 12: pending
+Task 12: fix round 1/5 (1 addressed, 0 open — bind installer assets to validated public channel/base; commits d875159..f0d81c0)
+Task 12: complete (commits d875159..f0d81c0, focused public/import/build tests 17/17, review approved)
 Task 13: pending
 Task 14: pending
 Task 15: pending
