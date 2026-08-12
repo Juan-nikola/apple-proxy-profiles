@@ -101,8 +101,8 @@ function oneXrayRootProjection(manifest) {
 }
 
 function safeChannel(value) {
-  if (value !== "current" && value !== "edge") {
-    throw new TypeError("Publication channel must be current or edge");
+  if (value !== "current" && value !== "previous" && value !== "edge") {
+    throw new TypeError("Publication channel must be current, previous, or edge");
   }
   return value;
 }

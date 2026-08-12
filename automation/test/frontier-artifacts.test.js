@@ -92,3 +92,13 @@ test("rejects duplicate frontier platform candidates", () => {
     /duplicate.*platform|platform.*duplicate/iu,
   );
 });
+
+test("allows the same frontier platform in independent channels", () => {
+  const files = buildFrontierArtifacts({
+    ruleBaseUrl: "https://juan-nikola.github.io/apple-proxy-profiles/current",
+    manifests: [record("onexray", "macos", "edge"), record("onexray", "macos", "current")],
+    staticFiles: new Map([["onexray/index.html", "release\n"]]),
+  });
+  assert.ok(files.has("edge/onexray-macos/manifest.json"));
+  assert.ok(files.has("current/onexray-macos/manifest.json"));
+});

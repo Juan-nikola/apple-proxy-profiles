@@ -164,6 +164,16 @@ test("verifies OneXray only after explicit promotion and binds its current proje
   assert.equal(await verifyTrackedPublications({ publicDirectory, ...artifacts }), false);
 });
 
+test("rejects a partial current OneXray tree even when its manifest is missing", async () => {
+  const root = await mkdtemp(join(tmpdir(), "apple-proxy-onexray-partial-current-"));
+  const publicDirectory = join(root, "public");
+  const artifacts = buildClientArtifacts({ snapshot: lightweightFixtureSnapshots(), upstream });
+  await initializeTrackedCurrent(publicDirectory, artifacts);
+  await mkdir(join(publicDirectory, "current/onexray/geodata"), { recursive: true });
+  await writeFile(join(publicDirectory, "current/onexray/geodata/geoip.dat"), Buffer.from("partial"));
+  assert.equal(await verifyTrackedPublications({ publicDirectory, ...artifacts }), false);
+});
+
 test("derives audit-only primary provenance from the production ChinaIP snapshot", () => {
   const snapshot = lightweightFixtureSnapshots();
   const result = chinaIpAuditPrimary(snapshot, upstream);

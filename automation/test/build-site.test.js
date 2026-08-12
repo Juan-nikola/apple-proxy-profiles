@@ -345,6 +345,61 @@ test("deliberate OneXray promotion preserves the prior current projection as pre
   assert.equal(currentManifest.manifestHash, result.currentManifestHash);
   assert.equal(currentManifest.names.domain, "AppleProxySiteCurrent");
   assert.match(await readFile(join(publicDirectory, "current/onexray/index.html"), "utf8"), /\/current\/onexray\/geodata\/geosite\.dat/u);
+  const rollout = JSON.parse(await readFile(join(publicDirectory, "rollout.json"), "utf8"));
+  assert.equal(rollout.schemaVersion, 2);
+  assert.equal(typeof rollout.clients, "object");
+  assert.equal(typeof rollout.previous, "object");
+  assert.equal(typeof rollout.optionalPacks, "object");
+  assert.equal(typeof rollout.previousOptionalPacks, "object");
+});
+
+test("rebinding a second OneXray promotion makes the prior current projection previous", async () => {
+  const root = await mkdtemp(join(tmpdir(), "apple-proxy-promote-onexray-twice-"));
+  const publicDirectory = join(root, "public");
+  const artifacts = buildClientArtifacts({ snapshot: lightweightFixtureSnapshots(), upstream: lightweightUpstream });
+  await buildSite({
+    publicDirectory,
+    files: artifacts.defaults,
+    manifest: artifacts.diagnostics.defaultManifest,
+  });
+  await publishEdgeRelease({
+    publicDirectory,
+    defaults: artifacts.defaults,
+    optionalPacks: artifacts.optionalPacks,
+    manifest: artifacts.diagnostics.defaultManifest,
+    onexray: artifacts.onexray,
+  });
+
+  await promoteOneXrayRelease({
+    publicDirectory,
+    manifestHash: artifacts.diagnostics.onexrayManifest.manifestHash,
+  });
+
+  await promoteOneXrayRelease({
+    publicDirectory,
+    manifestHash: artifacts.diagnostics.onexrayManifest.manifestHash,
+  });
+  const previous = JSON.parse(await readFile(
+    join(publicDirectory, "previous/onexray/geodata/manifest.json"),
+    "utf8",
+  ));
+  const previousPage = await readFile(join(publicDirectory, "previous/onexray/index.html"), "utf8");
+  const previousRoot = JSON.parse(await readFile(join(publicDirectory, "previous/manifest.json"), "utf8"));
+  const current = JSON.parse(await readFile(
+    join(publicDirectory, "current/onexray/geodata/manifest.json"),
+    "utf8",
+  ));
+  const currentRoot = JSON.parse(await readFile(join(publicDirectory, "current/manifest.json"), "utf8"));
+  const rollout = JSON.parse(await readFile(join(publicDirectory, "rollout.json"), "utf8"));
+
+  assert.equal(previous.channel, "previous");
+  assert.equal(previous.names.domain, "AppleProxySitePrevious");
+  assert.match(previousPage, /\/previous\/onexray\/geodata\/geosite\.dat/u);
+  assert.equal(previousRoot.onexray.channel, "previous");
+  assert.equal(previousRoot.onexray.manifestHash, previous.manifestHash);
+  assert.equal(rollout.onexray.previous, previous.manifestHash);
+  assert.equal(current.channel, "current");
+  assert.equal(currentRoot.onexray.channel, "current");
 });
 
 test("binds optional client selections into the promoted client manifest", async () => {

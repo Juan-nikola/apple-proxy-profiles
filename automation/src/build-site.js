@@ -14,7 +14,7 @@ import { basename, dirname, join } from "node:path";
 
 import { artifactBuffer, artifactSha256 } from "./artifact-content.js";
 import { validateChinaIpAuditForPromotion } from "./china-ip-audit.js";
-import { canRefreshChannel, refreshCurrentManifest } from "./refresh-current.js";
+import { canRefreshChannel, refreshChannelManifest, refreshCurrentManifest } from "./refresh-current.js";
 import { canonicalJson } from "./render-anywhere-rules.js";
 import { renderOneXrayImportPage } from "../../clients/onexray/src/build-import-page.js";
 import { oneXrayGeoNames } from "../../clients/onexray/src/geodata-contract.js";
@@ -752,14 +752,29 @@ export async function promoteOneXrayRelease({
     await rm(previous, { recursive: true, force: true });
     let previousManifestHash = null;
     if (await exists(current)) {
+      let reboundPrevious = null;
       try {
         const previousFiles = await readArtifactTree(current, ONEXRAY_PUBLIC_PATH);
-        previousManifestHash = validateOneXrayPublication({ files: previousFiles }).manifestHash;
+        validateOneXrayPublication({ files: previousFiles, channel: "current" });
+        reboundPrevious = rebindOneXrayPublication(previousFiles, "previous");
+        const previousManifest = validateOneXrayPublication({
+          files: reboundPrevious,
+          channel: "previous",
+        });
+        previousManifestHash = previousManifest.manifestHash;
       } catch {
+        // Older installations may contain an unvalidated sentinel/current tree.
+        // Preserve that rollback bytes verbatim; a validated OneXray tree is
+        // always rebound below so its channel names and URLs remain coherent.
         previousManifestHash = null;
       }
-      await mkdir(dirname(previous), { recursive: true });
-      await rename(current, previous);
+      if (reboundPrevious !== null) {
+        await rm(current, { recursive: true, force: true });
+        await writeSnapshot(join(staging, "previous"), reboundPrevious);
+      } else {
+        await mkdir(dirname(previous), { recursive: true });
+        await rename(current, previous);
+      }
     }
     await mkdir(dirname(current), { recursive: true });
     const currentFiles = rebindOneXrayPublication(edgeFiles, "current");
@@ -767,15 +782,27 @@ export async function promoteOneXrayRelease({
     await writeSnapshot(join(staging, "current"), currentFiles);
     const currentManifest = parseOneXrayManifest(currentFiles.get("onexray/geodata/manifest.json"));
 
-    let rollout = {};
+    const rolloutDefaults = emptyRollout();
+    let rollout = rolloutDefaults;
     try {
-      rollout = JSON.parse(await readFile(join(staging, "rollout.json"), "utf8"));
+      const parsedRollout = JSON.parse(await readFile(join(staging, "rollout.json"), "utf8"));
+      if (!parsedRollout || typeof parsedRollout !== "object" || Array.isArray(parsedRollout)) {
+        throw new Error("Rollout manifest must be an object");
+      }
+      rollout = {
+        ...rolloutDefaults,
+        ...parsedRollout,
+        clients: { ...rolloutDefaults.clients, ...(parsedRollout.clients ?? {}) },
+        previous: { ...rolloutDefaults.previous, ...(parsedRollout.previous ?? {}) },
+        optionalPacks: parsedRollout.optionalPacks ?? rolloutDefaults.optionalPacks,
+        previousOptionalPacks: parsedRollout.previousOptionalPacks ?? rolloutDefaults.previousOptionalPacks,
+      };
     } catch (error) {
       if (error.code !== "ENOENT") throw error;
     }
     const nextRollout = {
       ...rollout,
-      schemaVersion: rollout.schemaVersion ?? 2,
+      schemaVersion: 2,
       onexray: {
         edge: manifestHash,
         current: currentManifest.manifestHash,
@@ -783,6 +810,9 @@ export async function promoteOneXrayRelease({
       },
     };
     await writeFile(join(staging, "rollout.json"), `${JSON.stringify(nextRollout, null, 2)}\n`, "utf8");
+    if (await canRefreshChannel(join(staging, "previous"))) {
+      await refreshChannelManifest({ publicDirectory: staging, channel: "previous" });
+    }
     if (await canRefreshChannel(join(staging, "current"))) {
       await refreshCurrentManifest({ publicDirectory: staging });
     }

@@ -369,7 +369,8 @@ export async function verifyTrackedPublications({ publicDirectory, defaults, opt
   const currentDirectory = join(publicDirectory, "current");
   let expectedRootManifest = diagnostics?.defaultManifest ?? null;
   const currentOneXrayDirectory = join(currentDirectory, "onexray");
-  const hasCurrentOneXray = await pathExists(join(currentOneXrayDirectory, "geodata", "manifest.json"));
+  const currentEntries = await relativeTreeEntries(currentDirectory);
+  const hasCurrentOneXray = currentEntries.some((path) => path === "onexray/" || path.startsWith("onexray/"));
   if (hasCurrentOneXray) {
     if (!rollout?.onexray || typeof rollout.onexray !== "object") return false;
     try {

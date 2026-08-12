@@ -42,10 +42,11 @@ export function buildFrontierArtifacts({ ruleBaseUrl, manifests, staticFiles }) 
   const records = manifests.map((input) => {
     const record = validateFrontierManifest(input) ? input : createFrontierManifest(input);
     if (!validateFrontierManifest(record)) throw new Error("Frontier manifest is invalid");
-    if (seenPlatformKeys.has(record.platformKey)) {
-      throw new Error(`Duplicate frontier platform candidate: ${record.platformKey}`);
+    const candidateKey = `${record.channel}/${record.platformKey}`;
+    if (seenPlatformKeys.has(candidateKey)) {
+      throw new Error(`Duplicate frontier platform candidate: ${candidateKey}`);
     }
-    seenPlatformKeys.add(record.platformKey);
+    seenPlatformKeys.add(candidateKey);
     return record;
   });
   const channels = [...new Set(records.map(({ channel }) => channel))];
