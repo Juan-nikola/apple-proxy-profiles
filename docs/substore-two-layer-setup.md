@@ -258,6 +258,8 @@ OneXray 的节点订阅只保留 Xray 内核支持的协议（VLESS、VMess、SS
 
 `v=5` 是 Sub-Store 脚本缓存版本号；脚本内容更新后把三个任务 URL 里的 `v=` 数字 +1 并重新保存。固定业务推荐用 `&policyFile=onexray-policy` 引用 Sub-Store 内的可读策略文件，也可继续用 `&policyOverrides=<Base64URL>`，两者不能同时使用。
 
+`onexray-policy` 是 Sub-Store 里的一个本地文件，内容为可读 JSON（业务名可用中文），每个分组可写 `FOLLOW`（跟随主节点）、`DIRECT`（直连）或 `NODE:<精确节点名>`（固定节点）。以后要加入自定义分流规则，修改仓库 `shared/rules/custom-rules.js` 并按 README 的发布流程执行。
+
 Profile 名会插入 8 位内容哈希版本号；同一通道必须使用同一通道的 GeoData。完整安装顺序、Rule 模式、固定节点快照和回滚说明见 `clients/onexray/docs/deployment.md` 与 `clients/onexray/docs/troubleshooting.md`。
 
 ## 10. sing-box：5 个 Config File

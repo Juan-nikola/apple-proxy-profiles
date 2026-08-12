@@ -83,7 +83,7 @@ https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-
 
 ## 4. 固定业务节点
 
-固定业务通过 `policyOverrides` 指定为 `NODE:<精确节点名>`。固定节点写死在生成时的 Profile 快照里：
+固定业务通过 Sub-Store 的 `onexray-policy` 文件（推荐）或 `policyOverrides` 指定为 `NODE:<精确节点名>`。固定节点写死在生成时的 Profile 快照里：
 
 - 更换固定节点的凭据后，必须重新生成并重新导入 Profile。
 - 仅刷新节点订阅不会更新固定业务使用的节点。
@@ -118,3 +118,41 @@ Sub-Store API 地址写在同目录 `substore.env`（`SUBSTORE_API=...`），该
 - Profile deep link 上限为 32 KiB。
 - `policyOverrides` 是 Base64URL 编码，不是加密；编码后的值仍属于私密输入。
 - `channel` 必须与你要安装的 GeoData 通道一致，否则 Profile 与数据不配对。
+
+## 6. 加入分流规则
+
+业务分组（跟随/直连/固定节点）只需改 Sub-Store 的 `onexray-policy` 文件，不需要发布。要加入新的自定义分流规则时，修改仓库的 `shared/rules/custom-rules.js`：
+
+```js
+export const CUSTOM_RULES = Object.freeze({
+  block: Object.freeze([]),
+  direct: Object.freeze([]),
+  proxy: Object.freeze([]),
+  ai: Object.freeze([
+    "DOMAIN-SUFFIX,perplexity.ai",
+    "DOMAIN-SUFFIX,x.ai",
+  ]),
+});
+```
+
+- `block`：拦截。
+- `direct`：直连。
+- `proxy`：跟随主节点（最终兜底）。
+- `ai`：归入 AI 业务组，走 AI 分组配置的节点。
+
+支持 `DOMAIN`、`DOMAIN-SUFFIX`、`DOMAIN-KEYWORD`、`IP-CIDR`、`IP-CIDR6` 写法，IP 规则可加 `,no-resolve`。这些规则同时作用于 Shadowrocket、Surge、Egern、Anywhere、sing-box 与 OneXray。
+
+发布步骤：
+
+1. 修改 `shared/rules/custom-rules.js` 并运行 `npm test`、`npm run build`。
+2. 提交并推送 GitHub `main`，等 Pages 部署完成。
+3. 把相关 Sub-Store 任务 URL 的 `v=` 数字 +1（OneXray 至少 `onexray-profile`）并保存。
+4. 重新运行 `onexray-profile`，用新 deep link 重新导入 OneXray。
+
+离线核对规则：
+
+```bash
+npm run explain:route -- --channel current --domain example.com
+```
+
+完整的自定义规则说明与三层维护表见 `clients/onexray/README.md`。
