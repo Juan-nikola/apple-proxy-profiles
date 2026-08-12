@@ -36,6 +36,8 @@ Task 12: pending
 Task 12: fix round 1/5 (1 addressed, 0 open — bind installer assets to validated public channel/base; commits d875159..f0d81c0)
 Task 12: complete (commits d875159..f0d81c0, focused public/import/build tests 17/17, review approved)
 Task 13: pending
+Task 13: fix rounds 1–2/5 (6 addressed, 0 open — edge atomic/root projection, canary immutability, platform identity, channel-scoped duplicates, partial trees, promotion rollback rebinding; commits 78fcf5e..bbbad2d)
+Task 13: complete (commits 78fcf5e..bbbad2d, focused staging/frontier suite 78/78, review approved)
 Task 14: pending
 Task 15: pending
 Task 16: pending
