@@ -26,7 +26,8 @@ Task 7: fix round 1/5 (2 addressed, 0 open — credential-free provenance/hash v
 Task 7: complete (commits 7774d57..972c9e6, focused geodata 6/6, OneXray workspace 39/39; review approved)
 Task 8: fix round 1/5 (2 addressed, 0 open — domestic platform target resolution and conditional proxy-block final guard; commits deb1f27..8786325)
 Task 8: complete (commit 8786325, focused routing 7/7, combined 23/23; review approved)
-Task 9: pending
+Task 9: fix rounds 1–4/5 (5 addressed, 0 open — browser-safe codec, pre-encode validation, exact system/chain outbounds, malformed collection/cycle containment; commits c904741..3fc1e55)
+Task 9: complete (commits c904741..3fc1e55, focused profile/link/validation 12/12, review approved)
 Task 10: pending
 Task 11: pending
 Task 12: pending
