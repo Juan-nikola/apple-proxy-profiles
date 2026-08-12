@@ -14,10 +14,12 @@ const DEFAULTS = Object.freeze({
   policyOverrides: "",
   policyFile: "",
   logLevel: "warning",
+  dnsLog: "off",
 });
 const OUTPUTS = new Set(["nodes", "profile", "audit"]);
 const CHANNELS = new Set(["edge", "current", "previous"]);
 const LOG_LEVELS = new Set(["none", "error", "warning", "info", "debug"]);
+const DNS_LOG_MODES = new Set(["on", "off"]);
 const PROTOTYPE_KEYS = new Set(["__proto__", "constructor", "prototype"]);
 const ALLOWED_KEYS = new Set([...REQUIRED_KEYS, "channel", ...Object.keys(DEFAULTS)]);
 const NODE_TARGET = /^NODE:(.*)$/iu;
@@ -119,6 +121,7 @@ export function parseOneXrayOptions(raw) {
   }
 
   const logLevel = enumValue(values, "logLevel", LOG_LEVELS, DEFAULTS.logLevel);
+  const dnsLog = enumValue(values, "dnsLog", DNS_LOG_MODES, DEFAULTS.dnsLog);
 
   return Object.freeze({
     output,
@@ -136,5 +139,6 @@ export function parseOneXrayOptions(raw) {
     policyOverrides,
     policyFile,
     logLevel,
+    dnsLog,
   });
 }

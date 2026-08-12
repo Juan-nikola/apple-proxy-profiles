@@ -40,7 +40,7 @@ current 与 previous 必须同名配对：使用 previous Profile 时，必须�
 ### 3.1 `onexray-nodes`
 
 ```text
-https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-nodes-generator.js?v=7#output=nodes&type=collection&name=apple-proxy-sources&channel=edge&clientChain=off
+https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-nodes-generator.js?v=9#output=nodes&type=collection&name=apple-proxy-sources&channel=edge&clientChain=off
 ```
 
 预览成功标志：输出包含 OneXray 可导入的节点列表，节点数量大于 0。
@@ -50,7 +50,7 @@ https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-
 ### 3.2 `onexray-profile`
 
 ```text
-https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-profile-generator.js?v=7#output=profile&type=collection&name=apple-proxy-sources&channel=edge&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&clientChain=off&policyFile=onexray-policy&logLevel=info
+https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-profile-generator.js?v=9#output=profile&type=collection&name=apple-proxy-sources&channel=edge&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&clientChain=off&policyFile=onexray-policy&logLevel=info&dnsLog=on
 ```
 
 每次生成的 Profile 名称都会插入 8 位 Profile 版本号（内容哈希），例如：
@@ -64,7 +64,7 @@ Apple Proxy · OneXray · edge · 3f2a91c4
 ### 3.3 `onexray-routing-audit`
 
 ```text
-https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-profile-generator.js?v=7#output=audit&type=collection&name=apple-proxy-sources&channel=edge&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&clientChain=off&policyFile=onexray-policy&logLevel=info
+https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-profile-generator.js?v=9#output=audit&type=collection&name=apple-proxy-sources&channel=edge&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&clientChain=off&policyFile=onexray-policy&logLevel=info&dnsLog=on
 ```
 
 审计输出是脱敏报告，不包含节点凭据、Policy 原文或 Profile deep link。
@@ -74,12 +74,12 @@ https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-
 以下三条是跳过验证、直接使用 edge 的完整引用。`name=apple-proxy-sources` 必须改成你自己 Sub-Store 中的真实组合名：
 
 ```text
-https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-nodes-generator.js?v=7#output=nodes&type=collection&name=apple-proxy-sources&channel=edge&clientChain=off
-https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-profile-generator.js?v=7#output=profile&type=collection&name=apple-proxy-sources&channel=edge&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&clientChain=off&policyFile=onexray-policy&logLevel=info
-https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-profile-generator.js?v=7#output=audit&type=collection&name=apple-proxy-sources&channel=edge&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&clientChain=off&policyFile=onexray-policy&logLevel=info
+https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-nodes-generator.js?v=9#output=nodes&type=collection&name=apple-proxy-sources&channel=edge&clientChain=off
+https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-profile-generator.js?v=9#output=profile&type=collection&name=apple-proxy-sources&channel=edge&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&clientChain=off&policyFile=onexray-policy&logLevel=info&dnsLog=on
+https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-profile-generator.js?v=9#output=audit&type=collection&name=apple-proxy-sources&channel=edge&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&clientChain=off&policyFile=onexray-policy&logLevel=info&dnsLog=on
 ```
 
-`v=7` 是 Sub-Store 脚本缓存版本号；脚本内容更新后把 `v=` 数字 +1 并重新保存任务。固定业务推荐用 `&policyFile=onexray-policy` 引用 Sub-Store 内的可读策略文件，也可继续用 `&policyOverrides=<Base64URL>`，两者不能同时使用。`logLevel` 可输入 `none`、`error`、`warning`、`info`、`debug`，默认 `warning`；上面示例使用 `info` 以记录访问日志。
+`v=9` 是 Sub-Store 脚本缓存版本号；脚本内容更新后把 `v=` 数字 +1 并重新保存任务。固定业务推荐用 `&policyFile=onexray-policy` 引用 Sub-Store 内的可读策略文件，也可继续用 `&policyOverrides=<Base64URL>`，两者不能同时使用。`logLevel` 可输入 `none`、`error`、`warning`、`info`、`debug`，默认 `warning`；`dnsLog` 可输入 `on`、`off`，默认 `off`，示例开启以便查看域名。
 
 ## 4. 固定业务节点
 
@@ -108,7 +108,7 @@ Sub-Store API 地址写在同目录 `substore.env`（`SUBSTORE_API=...`），该
 在 Sub-Store 新建一个本地文件 `onexray-policy`，内容为可读 JSON（业务名可用中文，例如 `"AI 专用"`、`"海外流媒体"`），然后在 `onexray-profile` 与 `onexray-routing-audit` 任务 URL 末尾加 `&policyFile=onexray-policy`：
 
 ```text
-.../onexray-profile-generator.js?v=7#...&policyFile=onexray-policy&logLevel=info
+.../onexray-profile-generator.js?v=9#...&policyFile=onexray-policy&logLevel=info&dnsLog=on
 ```
 
 生成脚本会通过 Sub-Store 内部接口自动读取该文件并解析中文业务名，不需要手动 Base64URL。以后改分组只需编辑这个文件并重新运行 `onexray-profile` 任务，再重新导入 deep link。
@@ -119,6 +119,8 @@ Sub-Store API 地址写在同目录 `substore.env`（`SUBSTORE_API=...`），该
 - `policyOverrides` 是 Base64URL 编码，不是加密；编码后的值仍属于私密输入。
 - `channel` 必须与你要安装的 GeoData 通道一致，否则 Profile 与数据不配对。
 - `logLevel=info` 才能看到访问日志；macOS 系统扩展模式下 OneXray 会强制关闭日志，访问日志仍为空。
+- 访问日志中固定节点显示为其节点名（如 `🇺🇸 qqpw家宽｜自建·U`），跟随主节点的流量显示为 `proxy`。
+- `dnsLog=on` 会在日志中增加带域名的 DNS 记录；连接行仍显示目标 IP（Xray 格式限制）。
 
 ## 6. 加入分流规则
 

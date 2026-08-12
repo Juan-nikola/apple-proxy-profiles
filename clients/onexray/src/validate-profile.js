@@ -11,7 +11,7 @@ const DNS_TAGS = new Set(["dns-global", "dns-china"]);
 const RUNTIME_OUTBOUND_TAGS = new Set(["proxy"]);
 const INBOUND_TAGS = new Set(["tunIn", "pingIn", "dnsOut"]);
 const TOP_LEVEL_KEYS = new Set(["name", "log", "dns", "routing", "inbounds", "outbounds"]);
-const LOG_KEYS = new Set(["loglevel"]);
+const LOG_KEYS = new Set(["loglevel", "dnsLog"]);
 const DNS_KEYS = new Set(["servers"]);
 const DNS_SERVER_KEYS = new Set(["tag", "address", "domains", "skipFallback"]);
 const ROUTING_KEYS = new Set(["domainStrategy", "rules"]);
@@ -164,7 +164,7 @@ function validateOutbounds(profile, errors) {
 function validateModel(profile, errors) {
   if (!keysOnly(profile, TOP_LEVEL_KEYS, "Profile", errors)) return;
   if (typeof profile.name !== "string" || profile.name.length === 0 || /[\r\n\u2028\u2029]/u.test(profile.name)) add(errors, "Profile.name is invalid");
-  if (!keysOnly(profile.log, LOG_KEYS, "log", errors) || typeof profile.log.loglevel !== "string") add(errors, "log.loglevel is invalid");
+  if (!keysOnly(profile.log, LOG_KEYS, "log", errors) || typeof profile.log.loglevel !== "string" || (profile.log.dnsLog !== undefined && typeof profile.log.dnsLog !== "boolean")) add(errors, "log.loglevel is invalid");
   validateDns(profile, errors);
   validateRouting(profile, errors);
   if (!Array.isArray(profile.inbounds)) add(errors, "inbounds must be an array");

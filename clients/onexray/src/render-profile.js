@@ -53,7 +53,7 @@ function renderCustomOutbounds(resolution) {
   const fixed = fixedNodes.map((entry) => {
     requiredObject(entry, "fixed outbound resolution");
     requiredObject(entry.node, "fixed outbound node");
-    return renderOneXrayOutbound(entry.node, { tag: entry.tag, tags });
+    return renderOneXrayOutbound(entry.node, { tag: entry.tag, tags, allowDisplayTag: true });
   });
   const chain = resolution.finalOutbound;
   if (chain !== null && chain !== undefined) {
@@ -101,7 +101,10 @@ export function renderOneXrayProfile(input = {}) {
 
   const profile = {
     name: `Apple Proxy · OneXray · ${channel}`,
-    log: { loglevel: options.logLevel ?? "warning" },
+    log: {
+      loglevel: options.logLevel ?? "warning",
+      ...(options.dnsLog === "on" ? { dnsLog: true } : {}),
+    },
     dns: dns.dns,
     routing,
     // TUN and ping are materialized by OneXray's runtime, not the imported

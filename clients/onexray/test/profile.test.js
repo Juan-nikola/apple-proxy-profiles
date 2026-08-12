@@ -83,19 +83,25 @@ test("renders the configured OneXray log level", () => {
   assert.deepEqual(render({ options: { logLevel: "debug" } }).log, { loglevel: "debug" });
 });
 
+test("enables DNS logging only when dnsLog is on", () => {
+  assert.deepEqual(render().log, { loglevel: "warning" });
+  assert.deepEqual(render({ options: { dnsLog: "off" } }).log, { loglevel: "warning" });
+  assert.deepEqual(render({ options: { dnsLog: "on" } }).log, { loglevel: "warning", dnsLog: true });
+});
+
 test("emits one shared fixed outbound for multiple businesses and no custom outbound when none is fixed", () => {
   const shared = node("🇺🇸 Los Angeles｜自建", "fixed-1");
   const fixedResolution = resolution({
-    fixedNodes: [{ node: shared, tag: "ap-fixed-fixed-1" }],
+    fixedNodes: [{ node: shared, tag: "🇺🇸 Los Angeles｜自建" }],
     targets: {
       ...resolution().targets,
-      ai: { configured: "NODE:🇺🇸 Los Angeles｜自建", resolvedTag: "ap-fixed-fixed-1", status: "fixed" },
-      github: { configured: "NODE:🇺🇸 Los Angeles｜自建", resolvedTag: "ap-fixed-fixed-1", status: "fixed" },
+      ai: { configured: "NODE:🇺🇸 Los Angeles｜自建", resolvedTag: "🇺🇸 Los Angeles｜自建", status: "fixed" },
+      github: { configured: "NODE:🇺🇸 Los Angeles｜自建", resolvedTag: "🇺🇸 Los Angeles｜自建", status: "fixed" },
       final: { configured: "FOLLOW", resolvedTag: "proxy", status: "follow" },
     },
   });
   const profile = render({ resolution: fixedResolution });
-  assert.equal(profile.outbounds.filter(({ tag }) => tag === "ap-fixed-fixed-1").length, 1);
+  assert.equal(profile.outbounds.filter(({ tag }) => tag === "🇺🇸 Los Angeles｜自建").length, 1);
   assert.equal(render().outbounds.some(({ tag }) => tag.startsWith("ap-fixed-")), false);
 });
 

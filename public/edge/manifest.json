@@ -1103,14 +1103,14 @@
     "schemaVersion": 1,
     "scripts": [
       {
-        "bytes": 130755,
+        "bytes": 130857,
         "path": "onexray/scripts/onexray-nodes-generator.js",
-        "sha256": "2fc78af991241beab1bcd208001b42886228a739f10a6d6c7bb7a13ef1be0129"
+        "sha256": "54903e5557e836e89ba509a72c9b00a14b146f2f6dab9411a86af03f93ec607a"
       },
       {
-        "bytes": 206114,
+        "bytes": 206321,
         "path": "onexray/scripts/onexray-profile-generator.js",
-        "sha256": "d2e86c212be09fa05d79b7a1d9869948ef3ff3892d4080c0dd4482c5ab13c46b"
+        "sha256": "fa92120cf2d6031f1ed21880e56e2050ba1e4b04b3689a774f4ed91868ffa1f8"
       }
     ]
   },
@@ -1122,5 +1122,5 @@
     "license": "GPL-2.0-only",
     "repository": "https://github.com/blackmatrix7/ios_rule_script"
   },
-  "manifestHash": "d1c7e9858a20a0084e78c021e46924e320d3d31bec0d670f026b9c38e803e0bf"
+  "manifestHash": "318966e7aec43a1a4468b74998187bebf73aefbb072b744793cc06bd4d985653"
 }

@@ -23,6 +23,7 @@ test("parses the exact OneXray contract with pinned defaults and a trimmed displ
     policyOverrides: "",
     policyFile: "",
     logLevel: "warning",
+    dnsLog: "off",
   });
   assert.equal(Object.isFrozen(parsed), true);
 });
@@ -42,6 +43,7 @@ test("accepts every supported OneXray output, channel, and shared option enum", 
     quicMode: ["allow", "proxy-block", "all-block"],
     ipv6Mode: ["auto", "ipv4-only"],
     logLevel: ["none", "error", "warning", "info", "debug"],
+    dnsLog: ["on", "off"],
   })) {
     for (const value of values) assert.equal(parseOneXrayOptions({ ...REQUIRED, [key]: value })[key], value);
   }
@@ -125,6 +127,18 @@ test("accepts only the five OneXray log levels and defaults to warning", () => {
     { ...REQUIRED, logLevel: "" },
   ]) {
     assert.throws(() => parseOneXrayOptions(raw), /logLevel/u);
+  }
+});
+
+test("accepts only on/off for DNS logging and defaults to off", () => {
+  assert.equal(parseOneXrayOptions(REQUIRED).dnsLog, "off");
+  assert.equal(parseOneXrayOptions({ ...REQUIRED, dnsLog: "on" }).dnsLog, "on");
+  for (const raw of [
+    { ...REQUIRED, dnsLog: "yes" },
+    { ...REQUIRED, dnsLog: 1 },
+    { ...REQUIRED, dnsLog: "" },
+  ]) {
+    assert.throws(() => parseOneXrayOptions(raw), /dnsLog/u);
   }
 });
 

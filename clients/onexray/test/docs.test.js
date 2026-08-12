@@ -45,6 +45,7 @@ test("OneXray docs pin option enums and defaults", async () => {
     "clientChain=off",
     "policyOverrides",
     "logLevel",
+    "dnsLog",
   ]) {
     assert.match(combined, new RegExp(token.replaceAll("|", "\\|"), "u"), token);
   }

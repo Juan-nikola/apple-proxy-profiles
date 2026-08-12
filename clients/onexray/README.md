@@ -33,22 +33,22 @@ Sub-Store → Files → 新建任务 → 远程链接，粘贴下面的完整 UR
 `onexray-nodes`（节点订阅）：
 
 ```text
-https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-nodes-generator.js?v=7#output=nodes&type=collection&name=apple-proxy-sources&channel=edge&clientChain=off
+https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-nodes-generator.js?v=9#output=nodes&type=collection&name=apple-proxy-sources&channel=edge&clientChain=off
 ```
 
 `onexray-profile`（Profile）：
 
 ```text
-https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-profile-generator.js?v=7#output=profile&type=collection&name=apple-proxy-sources&channel=edge&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&clientChain=off&policyFile=onexray-policy&logLevel=info
+https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-profile-generator.js?v=9#output=profile&type=collection&name=apple-proxy-sources&channel=edge&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&clientChain=off&policyFile=onexray-policy&logLevel=info&dnsLog=on
 ```
 
 `onexray-routing-audit`（脱敏审计，建议一起建）：
 
 ```text
-https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-profile-generator.js?v=7#output=audit&type=collection&name=apple-proxy-sources&channel=edge&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&clientChain=off&policyFile=onexray-policy&logLevel=info
+https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-profile-generator.js?v=9#output=audit&type=collection&name=apple-proxy-sources&channel=edge&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&clientChain=off&policyFile=onexray-policy&logLevel=info&dnsLog=on
 ```
 
-`v=7` 是 Sub-Store 脚本缓存版本号：脚本内容更新后，把任务 URL 里的 `v=` 数字 +1 再保存一次，否则 Sub-Store 可能继续使用旧脚本。
+`v=9` 是 Sub-Store 脚本缓存版本号：脚本内容更新后，把任务 URL 里的 `v=` 数字 +1 再保存一次，否则 Sub-Store 可能继续使用旧脚本。
 
 预览成功标志：
 
@@ -97,6 +97,16 @@ Profile 的日志级别由 `logLevel` 参数控制，默认 `warning`（只记�
 | `debug` | 最详细，含调试信息 |
 
 注意：macOS 使用系统扩展（System Extension）时，OneXray 会在启动时强制把日志级别设为 `none` 并清空日志路径，因此访问日志必然为空；`logLevel=info` 只在 iPhone/iPad/Android 等非系统扩展平台上生效。
+
+日志里出口显示的是 outbound 标签：固定节点会显示你给节点起的名字（如 `🇺🇸 qqpw家宽｜自建·U`），跟随主节点的流量显示为 `proxy`。
+
+想看到具体访问了哪些网站/App，在任务 URL 里加 `&dnsLog=on`。开启后日志里会出现带域名的记录，例如：
+
+```text
+[DNS] chatgpt.com -> ...
+```
+
+连接行仍然只显示目标 IP（这是 Xray 内核格式限制），但结合 DNS 日志就能知道域名对应的出口。
 
 ## 业务分组设置（跟随 / 直连 / 固定节点）
 
@@ -274,6 +284,7 @@ npm run explain:route -- --channel current --domain example.com
 | `policyOverrides` | Base64URL JSON 或空 | 空 |
 | `policyFile` | Sub-Store 文件名称或空 | 空 |
 | `logLevel` | `none`、`error`、`warning`、`info`、`debug` | `warning` |
+| `dnsLog` | `on`、`off` | `off` |
 
 `policyOverrides` 使用 Base64URL 编码，但 Base64URL 不是加密，只是可逆编码。包含业务策略或固定节点的编码值属于私密输入，不要提交到仓库，也不要在聊天、截图或日志中分享。推荐优先使用 `policyFile=onexray-policy` 的可读 JSON 文件；`policyOverrides` 与 `policyFile` 不能同时使用。完整 Profile deep link 同样按原样保密，并受 32 KiB 长度上限约束。
 

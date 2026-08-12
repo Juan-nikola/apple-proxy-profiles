@@ -2387,11 +2387,13 @@ var OneXrayProfileBundle = (() => {
     clientChainTarget: "",
     policyOverrides: "",
     policyFile: "",
-    logLevel: "warning"
+    logLevel: "warning",
+    dnsLog: "off"
   });
   var OUTPUTS = /* @__PURE__ */ new Set(["nodes", "profile", "audit"]);
   var CHANNELS2 = /* @__PURE__ */ new Set(["edge", "current", "previous"]);
   var LOG_LEVELS = /* @__PURE__ */ new Set(["none", "error", "warning", "info", "debug"]);
+  var DNS_LOG_MODES = /* @__PURE__ */ new Set(["on", "off"]);
   var PROTOTYPE_KEYS = /* @__PURE__ */ new Set(["__proto__", "constructor", "prototype"]);
   var ALLOWED_KEYS = /* @__PURE__ */ new Set([...REQUIRED_KEYS, "channel", ...Object.keys(DEFAULTS)]);
   var NODE_TARGET2 = /^NODE:(.*)$/iu;
@@ -2475,6 +2477,7 @@ var OneXrayProfileBundle = (() => {
       throw optionError("policyFile", "cannot be combined with policyOverrides");
     }
     const logLevel = enumValue(values, "logLevel", LOG_LEVELS, DEFAULTS.logLevel);
+    const dnsLog = enumValue(values, "dnsLog", DNS_LOG_MODES, DEFAULTS.dnsLog);
     return Object.freeze({
       output,
       type,
@@ -2490,7 +2493,8 @@ var OneXrayProfileBundle = (() => {
       clientChainTarget,
       policyOverrides,
       policyFile,
-      logLevel
+      logLevel,
+      dnsLog
     });
   }
 
@@ -2555,7 +2559,7 @@ var OneXrayProfileBundle = (() => {
   var RUNTIME_OUTBOUND_TAGS = /* @__PURE__ */ new Set(["proxy"]);
   var INBOUND_TAGS = /* @__PURE__ */ new Set(["tunIn", "pingIn", "dnsOut"]);
   var TOP_LEVEL_KEYS = /* @__PURE__ */ new Set(["name", "log", "dns", "routing", "inbounds", "outbounds"]);
-  var LOG_KEYS = /* @__PURE__ */ new Set(["loglevel"]);
+  var LOG_KEYS = /* @__PURE__ */ new Set(["loglevel", "dnsLog"]);
   var DNS_KEYS = /* @__PURE__ */ new Set(["servers"]);
   var DNS_SERVER_KEYS = /* @__PURE__ */ new Set(["tag", "address", "domains", "skipFallback"]);
   var ROUTING_KEYS = /* @__PURE__ */ new Set(["domainStrategy", "rules"]);
@@ -2707,7 +2711,7 @@ var OneXrayProfileBundle = (() => {
   function validateModel(profile, errors) {
     if (!keysOnly(profile, TOP_LEVEL_KEYS, "Profile", errors)) return;
     if (typeof profile.name !== "string" || profile.name.length === 0 || /[\r\n\u2028\u2029]/u.test(profile.name)) add(errors, "Profile.name is invalid");
-    if (!keysOnly(profile.log, LOG_KEYS, "log", errors) || typeof profile.log.loglevel !== "string") add(errors, "log.loglevel is invalid");
+    if (!keysOnly(profile.log, LOG_KEYS, "log", errors) || typeof profile.log.loglevel !== "string" || profile.log.dnsLog !== void 0 && typeof profile.log.dnsLog !== "boolean") add(errors, "log.loglevel is invalid");
     validateDns(profile, errors);
     validateRouting(profile, errors);
     if (!Array.isArray(profile.inbounds)) add(errors, "inbounds must be an array");
@@ -3230,10 +3234,9 @@ var OneXrayProfileBundle = (() => {
     const suppliedStatus = target?.status;
     const status = suppliedStatus === "follow" || suppliedStatus === "direct" || suppliedStatus === "fixed" ? suppliedStatus : "invalid";
     const resolved = typeof target?.resolvedTag === "string" ? target.resolvedTag : "";
-    const resolvedFixed = /^ap-fixed-[A-Za-z0-9][A-Za-z0-9._-]*$/u.test(resolved);
     return {
       configured,
-      resolved: status === "fixed" && resolvedFixed ? `FIXED:<${hashNodeName(resolved)}>` : status === "direct" ? "DIRECT" : status === "follow" ? "FOLLOW" : "INVALID",
+      resolved: status === "fixed" && resolved.length > 0 ? `FIXED:<${hashNodeName(resolved)}>` : status === "direct" ? "DIRECT" : status === "follow" ? "FOLLOW" : "INVALID",
       status
     };
   }
@@ -3990,7 +3993,7 @@ var OneXrayProfileBundle = (() => {
     const fixed = fixedNodes.map((entry) => {
       requiredObject3(entry, "fixed outbound resolution");
       requiredObject3(entry.node, "fixed outbound node");
-      return renderOneXrayOutbound(entry.node, { tag: entry.tag, tags });
+      return renderOneXrayOutbound(entry.node, { tag: entry.tag, tags, allowDisplayTag: true });
     });
     const chain = resolution.finalOutbound;
     if (chain !== null && chain !== void 0) {
@@ -4025,7 +4028,10 @@ var OneXrayProfileBundle = (() => {
     if (!Array.isArray(routing.rules) || routing.domainStrategy !== "IPIfNonMatch") throw new TypeError("OneXray Profile routing result is incomplete");
     const profile = {
       name: `Apple Proxy · OneXray · ${channel}`,
-      log: { loglevel: options.logLevel ?? "warning" },
+      log: {
+        loglevel: options.logLevel ?? "warning",
+        ...options.dnsLog === "on" ? { dnsLog: true } : {}
+      },
       dns: dns.dns,
       routing,
       // TUN and ping are materialized by OneXray's runtime, not the imported
@@ -4058,7 +4064,6 @@ var OneXrayProfileBundle = (() => {
   var GENERATED_TAG_PREFIXES = ["ap-fixed-"];
   var NODE_TARGET3 = /^NODE:(.*)$/u;
   var LINE_TERMINATOR3 = /[\r\n\u2028\u2029]/u;
-  var STABLE_ID = /^[A-Za-z0-9][A-Za-z0-9._-]*$/u;
   function freezeTarget(target) {
     return Object.freeze(target);
   }
@@ -4128,18 +4133,16 @@ var OneXrayProfileBundle = (() => {
     return RESERVED_TAGS3.has(name) || GENERATED_TAG_PREFIXES.some((prefix) => name.startsWith(prefix));
   }
   function fixedTag(node, target, name, assigned) {
-    const id = nodeMetadata(node).id;
-    if (typeof id !== "string" || !STABLE_ID.test(id)) {
-      throw fixedTargetError(target, name, "missing stable normalized identity");
+    if (typeof name !== "string" || name.length === 0 || name.trim() !== name || LINE_TERMINATOR3.test(name)) {
+      throw fixedTargetError(target, String(name), "invalid display tag");
     }
-    const tag = `ap-fixed-${id}`;
-    if (RESERVED_TAGS3.has(tag)) throw fixedTargetError(target, name, "uses a reserved outbound tag");
-    const prior = assigned.get(tag);
+    if (reservedNodeTag(name)) throw fixedTargetError(target, name, "uses a reserved outbound tag");
+    const prior = assigned.get(name);
     if (prior && identityKey(prior) !== identityKey(node)) {
       throw fixedTargetError(target, name, "has a colliding stable outbound tag");
     }
-    assigned.set(tag, node);
-    return tag;
+    assigned.set(name, node);
+    return name;
   }
   function resolveFixedTarget(target, configured, allNodes, eligibleNodes, assigned) {
     const name = nodeTargetName(configured);

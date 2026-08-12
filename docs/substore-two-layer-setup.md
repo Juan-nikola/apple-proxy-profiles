@@ -238,14 +238,14 @@ OneXray 的两个 bundle 已随 edge 发布到 Pages，只存在于 `edge/onexra
 节点任务：
 
 ```text
-https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-nodes-generator.js?v=7#output=nodes&type=collection&name=apple-proxy-sources&channel=edge&clientChain=off
+https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-nodes-generator.js?v=9#output=nodes&type=collection&name=apple-proxy-sources&channel=edge&clientChain=off
 ```
 
 Profile 与审计共用同一个生成器，只改 `output`：
 
 ```text
-https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-profile-generator.js?v=7#output=profile&type=collection&name=apple-proxy-sources&channel=edge&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&clientChain=off&policyFile=onexray-policy&logLevel=info
-https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-profile-generator.js?v=7#output=audit&type=collection&name=apple-proxy-sources&channel=edge&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&clientChain=off&policyFile=onexray-policy&logLevel=info
+https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-profile-generator.js?v=9#output=profile&type=collection&name=apple-proxy-sources&channel=edge&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&clientChain=off&policyFile=onexray-policy&logLevel=info&dnsLog=on
+https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-profile-generator.js?v=9#output=audit&type=collection&name=apple-proxy-sources&channel=edge&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&clientChain=off&policyFile=onexray-policy&logLevel=info&dnsLog=on
 ```
 
 | 任务 | 输出 | 平台/作用 | 更新 |
@@ -256,7 +256,7 @@ https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-
 
 OneXray 的节点订阅只保留 Xray 内核支持的协议（VLESS、VMess、SS、Trojan、Socks、HTTP、Hysteria2）；原始组合中的 Snell 等节点会被自动排除，因此 OneXray 节点预览数量可能小于其他客户端。
 
-`v=7` 是 Sub-Store 脚本缓存版本号；脚本内容更新后把三个任务 URL 里的 `v=` 数字 +1 并重新保存。固定业务推荐用 `&policyFile=onexray-policy` 引用 Sub-Store 内的可读策略文件，也可继续用 `&policyOverrides=<Base64URL>`，两者不能同时使用。`logLevel` 可输入 `none`、`error`、`warning`、`info`、`debug`，默认 `warning`，示例使用 `info` 以记录访问日志。
+`v=9` 是 Sub-Store 脚本缓存版本号；脚本内容更新后把三个任务 URL 里的 `v=` 数字 +1 并重新保存。固定业务推荐用 `&policyFile=onexray-policy` 引用 Sub-Store 内的可读策略文件，也可继续用 `&policyOverrides=<Base64URL>`，两者不能同时使用。`logLevel` 可输入 `none`、`error`、`warning`、`info`、`debug`，默认 `warning`；`dnsLog` 可输入 `on`、`off`，默认 `off`，示例开启以便查看域名。
 
 `onexray-policy` 是 Sub-Store 里的一个本地文件，内容为可读 JSON（业务名可用中文），每个分组可写 `FOLLOW`（跟随主节点）、`DIRECT`（直连）或 `NODE:<精确节点名>`（固定节点）。以后要加入自定义分流规则，修改仓库 `shared/rules/custom-rules.js` 并按 README 的发布流程执行。
 

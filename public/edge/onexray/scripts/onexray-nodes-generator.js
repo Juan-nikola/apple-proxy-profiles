@@ -1876,11 +1876,13 @@ var OneXrayNodesBundle = (() => {
     clientChainTarget: "",
     policyOverrides: "",
     policyFile: "",
-    logLevel: "warning"
+    logLevel: "warning",
+    dnsLog: "off"
   });
   var OUTPUTS = /* @__PURE__ */ new Set(["nodes", "profile", "audit"]);
   var CHANNELS = /* @__PURE__ */ new Set(["edge", "current", "previous"]);
   var LOG_LEVELS = /* @__PURE__ */ new Set(["none", "error", "warning", "info", "debug"]);
+  var DNS_LOG_MODES = /* @__PURE__ */ new Set(["on", "off"]);
   var PROTOTYPE_KEYS = /* @__PURE__ */ new Set(["__proto__", "constructor", "prototype"]);
   var ALLOWED_KEYS = /* @__PURE__ */ new Set([...REQUIRED_KEYS, "channel", ...Object.keys(DEFAULTS)]);
   var NODE_TARGET = /^NODE:(.*)$/iu;
@@ -1964,6 +1966,7 @@ var OneXrayNodesBundle = (() => {
       throw optionError("policyFile", "cannot be combined with policyOverrides");
     }
     const logLevel = enumValue(values, "logLevel", LOG_LEVELS, DEFAULTS.logLevel);
+    const dnsLog = enumValue(values, "dnsLog", DNS_LOG_MODES, DEFAULTS.dnsLog);
     return Object.freeze({
       output,
       type,
@@ -1979,7 +1982,8 @@ var OneXrayNodesBundle = (() => {
       clientChainTarget,
       policyOverrides,
       policyFile,
-      logLevel
+      logLevel,
+      dnsLog
     });
   }
 
@@ -2218,7 +2222,6 @@ var OneXrayNodesBundle = (() => {
   var GENERATED_TAG_PREFIXES = ["ap-fixed-"];
   var NODE_TARGET3 = /^NODE:(.*)$/u;
   var LINE_TERMINATOR3 = /[\r\n\u2028\u2029]/u;
-  var STABLE_ID = /^[A-Za-z0-9][A-Za-z0-9._-]*$/u;
   function freezeTarget(target) {
     return Object.freeze(target);
   }
@@ -2288,18 +2291,16 @@ var OneXrayNodesBundle = (() => {
     return RESERVED_TAGS.has(name) || GENERATED_TAG_PREFIXES.some((prefix) => name.startsWith(prefix));
   }
   function fixedTag(node, target, name, assigned) {
-    const id = nodeMetadata(node).id;
-    if (typeof id !== "string" || !STABLE_ID.test(id)) {
-      throw fixedTargetError(target, name, "missing stable normalized identity");
+    if (typeof name !== "string" || name.length === 0 || name.trim() !== name || LINE_TERMINATOR3.test(name)) {
+      throw fixedTargetError(target, String(name), "invalid display tag");
     }
-    const tag = `ap-fixed-${id}`;
-    if (RESERVED_TAGS.has(tag)) throw fixedTargetError(target, name, "uses a reserved outbound tag");
-    const prior = assigned.get(tag);
+    if (reservedNodeTag(name)) throw fixedTargetError(target, name, "uses a reserved outbound tag");
+    const prior = assigned.get(name);
     if (prior && identityKey(prior) !== identityKey(node)) {
       throw fixedTargetError(target, name, "has a colliding stable outbound tag");
     }
-    assigned.set(tag, node);
-    return tag;
+    assigned.set(name, node);
+    return name;
   }
   function resolveFixedTarget(target, configured, allNodes, eligibleNodes, assigned) {
     const name = nodeTargetName(configured);
