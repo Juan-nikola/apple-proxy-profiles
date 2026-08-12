@@ -28,8 +28,9 @@ test("central Sub-Store guide closes over all public scripts and private tasks",
     "shadowrocket-config-macos", "shadowrocket-config-iphone", "shadowrocket-config-ipad",
     "surge-nodes", "surge-config-macos", "surge-config-iphone", "surge-config-ipad",
     "singbox-config-macos", "singbox-config-iphone", "singbox-config-ipad", "singbox-config-android", "singbox-config-openwrt",
+    "onexray-nodes", "onexray-profile", "onexray-routing-audit",
   ]) assert.ok(guide.includes(`\`${task}\``), `missing task ${task}`);
-  assert.match(guide, /五客户端总数为 4\+1\+3\+4\+5=17 个任务/u);
+  assert.match(guide, /(?:五客户端|客户端)总数为 4\+1\+3\+4\+5\+3=20 个任务/u);
   assert.match(guide, /#output=nodes[\s\S]*&/u);
   assert.match(guide, /#output=config[\s\S]*&/u);
   assert.match(guide, /channel=current[\s\S]*channel=edge/u);

@@ -72,7 +72,7 @@ https://juan-nikola.github.io/apple-proxy-profiles/current/egern/scripts/egern-n
 https://juan-nikola.github.io/apple-proxy-profiles/current/surge/scripts/surge-profile-generator.js#output=config&type=collection&name=apple-proxy-sources&subscriptionName=Apple-Proxy-Nodes&platform=iphone&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&autoGroupMode=auto&clientChain=off
 ```
 
-## 4. 17 个任务总表
+## 4. 20 个任务总表
 
 下面的 `Apple-Proxy-Nodes` 是公开示例显示名。实际使用时，在 Shadowrocket、Surge 或 sing-box 中给节点订阅取一个你自己的显示名，并让同一客户端对应 Profile/Config 任务的 `subscriptionName` 逐字一致。五个客户端的 Profile/Config 全部指向原始组合 `apple-proxy-sources`：Shadowrocket Profile 生成器内部自己完成节点归一化、去重与客户端过滤，不再依赖组合处理链上的节点操作。
 
@@ -95,8 +95,11 @@ https://juan-nikola.github.io/apple-proxy-profiles/current/surge/scripts/surge-p
 | 15 | `singbox-config-ipad` | File | sing-box config | iPad | 每天 |
 | 16 | `singbox-config-android` | File | sing-box config | Android | 每天 |
 | 17 | `singbox-config-openwrt` | File | sing-box config | OpenWrt | 每天 |
+| 18 | `onexray-nodes` | File | 私有托管 OneXray node | 节点订阅 | 6 小时 |
+| 19 | `onexray-profile` | File | 私有托管 OneXray Profile | Profile deep link | 每天 |
+| 20 | `onexray-routing-audit` | File | 私有托管 OneXray audit | 脱敏审计 | 每天 |
 
-五客户端总数为 4+1+3+4+5=17 个任务。
+客户端总数为 4+1+3+4+5+3=20 个任务。
 
 ## 5. Egern：1 个节点 File + 3 个 Profile File
 
@@ -228,7 +231,32 @@ https://juan-nikola.github.io/apple-proxy-profiles/current/surge/scripts/surge-p
 
 预览应是合法 Surge INI，包含 `[General]`、`[Proxy]`、`[Proxy Group]` 和 `[Rule]`。`[Proxy]` 只保留注释，隐藏组 `📦 远程节点池` 通过 `policy-path=<SURGE_NODES_URL>` 加载节点；Intel Mac 与 Apple Silicon Mac 都使用 `platform=macos`，不要把 Mac 配置导入移动端。
 
-## 9. sing-box：5 个 Config File
+## 9. OneXray：3 个私有任务
+
+OneXray 的 bundle 尚未作为公开 Pages 脚本发布。先把 `onexray-nodes-generator.js` 与 `onexray-profile-generator.js` 托管到你自己的私密 HTTPS 目录，再创建下面的任务；真实托管地址不要写回仓库，示例统一用 `https://example.invalid/private/`。
+
+节点任务：
+
+```text
+https://example.invalid/private/onexray-nodes-generator.js#output=nodes&type=collection&name=apple-proxy-sources&channel=edge&clientChain=off
+```
+
+Profile 与审计共用同一个生成器，只改 `output`：
+
+```text
+https://example.invalid/private/onexray-profile-generator.js#output=profile&type=collection&name=apple-proxy-sources&channel=edge&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&clientChain=off&policyOverrides=
+https://example.invalid/private/onexray-profile-generator.js#output=audit&type=collection&name=apple-proxy-sources&channel=edge&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&clientChain=off&policyOverrides=
+```
+
+| 任务 | 输出 | 平台/作用 | 更新 |
+| --- | --- | --- | --- |
+| `onexray-nodes` | nodes | OneXray 节点订阅 | 6 小时 |
+| `onexray-profile` | profile | 版本化 Profile deep link | 每天 |
+| `onexray-routing-audit` | audit | 脱敏路由审计 | 按需 |
+
+Profile 名会插入 8 位内容哈希版本号；同一通道必须使用同一通道的 GeoData。完整安装顺序、Rule 模式、固定节点快照和回滚说明见 `clients/onexray/docs/deployment.md` 与 `clients/onexray/docs/troubleshooting.md`。
+
+## 10. sing-box：5 个 Config File
 
 脚本：
 
@@ -250,7 +278,7 @@ https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/scripts/sing
 
 预览必须是 JSON，且能通过配置校验。移动端使用 TUN 相关配置；OpenWrt 才启用透明网关、DNS 劫持和 Linux 自动重定向字段。OpenWrt 还需要设备上安装与配置匹配的官方 sing-box 二进制；不能把本仓库生成的 JSON 当成已安装核心。
 
-## 10. 运行和刷新顺序
+## 11. 运行和刷新顺序
 
 ### 首次建立
 
@@ -272,7 +300,7 @@ https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/scripts/sing
 
 失败时先在设备切回旧 Profile/Config。公开 JS 可在隔离任务中回退到 `/previous/` 或已验证的 `/versions/<manifestHash>/`；生产任务修复前不要直接把所有任务切到 `edge`。参数和私密输出 URL 不需要改变。
 
-## 11. 任务完成检查
+## 12. 任务完成检查
 
 - 组合 `apple-proxy-sources` 非空，且只包含预期来源。
 - 节点预览非空；Profile/Config 预览结构正确，不出现凭据。
@@ -282,6 +310,6 @@ https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/scripts/sing
 - Anywhere 规则导入后逐个检查目标绑定；没有把规则更新误当成节点刷新。
 - 旧 Profile/Config 与回滚入口仍保留。
 
-## 12. 旧兼容 URL
+## 13. 旧兼容 URL
 
 已经部署的 `substore-*` Pages URL 可以继续使用，不需要为了改名迁移。新任务统一使用客户端前缀 URL；不要把同一脚本的新旧 URL 同时添加到一个任务。

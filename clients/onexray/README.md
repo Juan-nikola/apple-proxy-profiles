@@ -1,0 +1,67 @@
+# OneXray
+
+OneXray 使用与 Shadowrocket、Surge、Egern、Anywhere、sing-box 相同的共享轻量规则，生成 OneXray 可导入的 Xray 原生 Profile。节点和业务分组参数保持私密：仓库只发布无凭据的 GeoData 安装页和规则数据，Profile 与节点订阅只在你的 Sub-Store 中生成和保存。
+
+## 公开 GeoData 安装
+
+公开安装页与数据位于三个通道：
+
+- `edge`：仅用于灰度 canary，未通过验证前不能作为 current。
+- `current`：稳定发布，只有 deliberate promotion 后才更新。
+- `previous`：回滚依赖，必须与同名 Profile 配对使用。
+
+安装页示例：
+
+```text
+https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/index.html
+```
+
+页面中的安装链接使用 OneXray deep link 格式：
+
+```text
+onexray://onexray.com/dat/add?type=domain|ip&url=<percent-encoded-https-url>#<channel-name>
+```
+
+域名数据为 `geosite`，IP 数据为 `geoip`。安装 GeoData 不会创建 Profile，也不会导入节点或业务分组；Profile 必须从私密 Sub-Store 入口获取。
+
+## 私有任务
+
+OneXray 在 Sub-Store 中需要三个私有任务：
+
+| 任务 | 输出 | 说明 |
+| --- | --- | --- |
+| `onexray-nodes` | nodes | 生成可导入 OneXray 的节点订阅 |
+| `onexray-profile` | profile | 生成版本化 Profile deep link 与导入内容 |
+| `onexray-routing-audit` | audit | 生成不含凭据的分流审计报告 |
+
+脚本文件名（`onexray-nodes-generator.js`、`onexray-profile-generator.js`）和参数示例见 `docs/deployment.md`。审计输出与 Profile 共享同一个私有处理器，只是输出模式不同。
+
+## 参数
+
+枚举写法的完整形式是 `output=nodes|profile|audit`，通道写法是 `channel=edge|current|previous`；其余参数见下表。
+
+| 参数 | 允许值 | 默认值 |
+| --- | --- | --- |
+| `output` | `nodes`、`profile`、`audit` | 必填 |
+| `type` | `collection` | 必填 |
+| `name` | 组合名称 | 必填 |
+| `channel` | `edge`、`current`、`previous` | `edge` |
+| `dnsMode` | 共享 DNS 枚举 | `stable` |
+| `chinaDns` | 共享国内 DNS 枚举 | `alidns` |
+| `globalDns` | 共享境外 DNS 枚举 | `cloudflare` |
+| `blockMode` | 共享拦截枚举 | `balanced` |
+| `quicMode` | 共享 QUIC 枚举 | `proxy-block` |
+| `ipv6Mode` | 共享 IPv6 枚举 | `auto` |
+| `clientChain` | `on`、`off` | `off` |
+| `clientChainTarget` | `NODE:<名称>` 或空 | 空 |
+| `policyOverrides` | Base64URL JSON 或空 | 空 |
+
+`policyOverrides` 使用 Base64URL 编码，但 Base64URL 不是加密，只是可逆编码。包含业务策略或固定节点的编码值属于私密输入，不要提交到仓库，也不要在聊天、截图或日志中分享。完整 Profile deep link 同样按原样保密，并受 32 KiB 长度上限约束。
+
+## 文档
+
+- `docs/deployment.md`：两条安装顺序与私有任务参数。
+- `docs/troubleshooting.md`：固定节点故障、诊断与回滚。
+- `docs/canary.md`：六平台灰度验收清单。
+
+实现状态与 canary 就绪状态是两回事：自动测试通过只代表实现完成，不代表任何设备已经完成真机验收。

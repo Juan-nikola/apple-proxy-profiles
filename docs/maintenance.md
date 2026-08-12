@@ -64,6 +64,18 @@ clients/sing-box/
   src/render-rules.js          规则集引用
   scripts/compile-rules.mjs    官方 core `.srs` 编译边界
 
+clients/onexray/
+  src/options.js               OneXray 私有任务参数与默认值
+  src/render-profile.js        Xray 原生 Profile
+  src/profile-link.js          32 KiB deep link 编码与校验
+  src/build-import-page.js     公开 GeoData 安装页
+  docs/                        deployment、troubleshooting、canary
+
+clients/onexray/docs/
+  deployment.md                安装顺序与私有任务参数
+  troubleshooting.md           固定节点故障、诊断与回滚
+  canary.md                    六平台灰度验收清单
+
 clients/*/scripts/
   build.mjs                    用 esbuild 生成 dist
   render-fixtures.mjs          生成脱敏 examples（有该脚本的客户端）
