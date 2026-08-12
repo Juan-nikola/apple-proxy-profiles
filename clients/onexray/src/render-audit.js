@@ -196,16 +196,17 @@ function protocolSummary(context) {
 
 function geoSummary(context, channel) {
   const names = oneXrayGeoNames(channel);
-  const fallbackDomain = sha256Hex(JSON.stringify({ type: "domain", name: names.domain, channel }));
-  const fallbackIp = sha256Hex(JSON.stringify({ type: "ip", name: names.ip, channel }));
   const supplied = object(context.geoHashes)
     ? context.geoHashes
     : object(context.geoManifest?.hashes)
       ? context.geoManifest.hashes
       : {};
+  const domain = safeHash(supplied.domain, null);
+  const ip = safeHash(supplied.ip, null);
   return {
-    domain: safeHash(supplied.domain, fallbackDomain),
-    ip: safeHash(supplied.ip, fallbackIp),
+    domain,
+    ip,
+    available: domain !== null && ip !== null,
     domainName: names.domain,
     ipName: names.ip,
   };
@@ -243,7 +244,7 @@ function validateContext(context) {
  * context or redact a serialized Profile: both approaches are easy to extend
  * accidentally with credentials or encoded policy input.
  */
-export function renderOneXrayAudit(context = {}) {
+function renderOneXrayAuditUnsafe(context) {
   validateContext(context);
   let canonical;
   try {
@@ -294,6 +295,15 @@ export function renderOneXrayAudit(context = {}) {
     profile: profileSummary(context, fullHash),
   };
   return `${JSON.stringify(report, null, 2)}\n`;
+}
+
+export function renderOneXrayAudit(context = {}) {
+  try {
+    return renderOneXrayAuditUnsafe(context);
+  } catch (error) {
+    if (error instanceof Error && error.message === "OneXray audit: invalid-profile") throw error;
+    throw new Error("OneXray audit: invalid-context");
+  }
 }
 
 export { sha256Hex };

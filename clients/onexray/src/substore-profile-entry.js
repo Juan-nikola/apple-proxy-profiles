@@ -13,6 +13,7 @@ import { renderOneXrayRouting } from "./render-routing.js";
 import { resolveOneXrayPolicy } from "./resolve-policy.js";
 
 const OUTPUTS = new Set(["profile", "audit"]);
+const SHA256 = /^[a-f0-9]{64}$/u;
 
 function processorError(code) {
   return new Error(`OneXray profile: ${code}`);
@@ -37,16 +38,41 @@ function ownRequest(input) {
     const prototype = Object.getPrototypeOf(input);
     if (prototype !== Object.prototype && prototype !== null) throw new Error();
     const values = {};
-    for (const key of ["proxies", "arguments"]) {
+    for (const key of ["proxies", "arguments", "geoHashes", "geoManifest"]) {
       const descriptor = Object.getOwnPropertyDescriptor(input, key);
       if (descriptor === undefined) continue;
       if ("get" in descriptor || "set" in descriptor) throw new Error();
       values[key] = descriptor.value;
     }
+    const manifestHashes = readGeoHashes(values.geoManifest);
+    const explicitHashes = readGeoHashes(values.geoHashes);
+    values.geoHashes = Object.freeze({ ...manifestHashes, ...explicitHashes });
+    delete values.geoManifest;
     return values;
   } catch {
     throw processorError("invalid-request");
   }
+}
+
+function readGeoHashes(value) {
+  if (value === undefined) return {};
+  if (value === null || typeof value !== "object" || Array.isArray(value)) throw new Error();
+  const prototype = Object.getPrototypeOf(value);
+  if (prototype !== Object.prototype && prototype !== null) throw new Error();
+  let source = value;
+  if (Object.hasOwn(value, "hashes")) {
+    source = value.hashes;
+    if (source === null || typeof source !== "object" || Array.isArray(source)) throw new Error();
+  }
+  const result = {};
+  for (const key of ["domain", "ip"]) {
+    const descriptor = Object.getOwnPropertyDescriptor(source, key);
+    if (descriptor === undefined) continue;
+    if ("get" in descriptor || "set" in descriptor) throw new Error();
+    if (typeof descriptor.value !== "string" || !SHA256.test(descriptor.value)) throw new Error();
+    result[key] = descriptor.value;
+  }
+  return result;
 }
 
 function defaultGeo(channel) {
@@ -84,7 +110,7 @@ function defineInternal(target, key, value) {
   });
 }
 
-function privateContext({ options, normalized, eligible, resolution, profile, profileLink, dns, routing, geo }) {
+function privateContext({ options, normalized, eligible, resolution, profile, profileLink, dns, routing, geo, geoHashes }) {
   const normalizedNodes = normalized.nodes;
   const eligibleNodes = eligible.nodes;
   const context = {
@@ -100,7 +126,7 @@ function privateContext({ options, normalized, eligible, resolution, profile, pr
     }),
     protocolCounts: Object.freeze(protocolCounts(normalizedNodes, eligibleNodes)),
     ruleReleaseId: `shared-lightweight-${options.channel}`,
-    geoHashes: Object.freeze({}),
+    geoHashes: Object.freeze({ ...geoHashes }),
   };
 
   // Credentials and encoded policy input stay in non-enumerated slots. Audit
@@ -117,7 +143,7 @@ function privateContext({ options, normalized, eligible, resolution, profile, pr
   return Object.freeze(context);
 }
 
-function buildPrivateOneXrayContext(rawArguments, proxies) {
+function buildPrivateOneXrayContext(rawArguments, proxies, { geoHashes = {} } = {}) {
   let options;
   try {
     options = parseOneXrayOptions(rawArguments);
@@ -174,7 +200,7 @@ function buildPrivateOneXrayContext(rawArguments, proxies) {
     throw processorError("invalid-profile");
   }
 
-  return privateContext({ options, normalized, eligible, resolution, profile, profileLink, dns, routing, geo });
+  return privateContext({ options, normalized, eligible, resolution, profile, profileLink, dns, routing, geo, geoHashes });
 }
 
 /**
@@ -183,10 +209,10 @@ function buildPrivateOneXrayContext(rawArguments, proxies) {
  * only the final allowlisted serialization differs.
  */
 export function runOneXrayProfileProcessor(input = {}) {
-  const { proxies, arguments: rawArguments } = ownRequest(input);
+  const { proxies, arguments: rawArguments, geoHashes } = ownRequest(input);
   let context;
   try {
-    context = buildPrivateOneXrayContext(rawArguments, proxies);
+    context = buildPrivateOneXrayContext(rawArguments, proxies, { geoHashes });
   } catch (error) {
     if (error instanceof Error && /^OneXray profile: /u.test(error.message)) throw error;
     throw processorError("invalid-profile");

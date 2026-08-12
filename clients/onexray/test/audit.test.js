@@ -155,3 +155,22 @@ test("keeps the private profile transaction browser-safe", () => {
     assert.doesNotMatch(source, /\bBuffer\b|\bnode:/u, file);
   }
 });
+
+test("does not fabricate GeoData hashes when no compiled manifest is supplied", () => {
+  const withoutHashes = renderOneXrayAudit({ ...context(), geoHashes: {} });
+  const geoData = JSON.parse(withoutHashes).profile.geoData;
+  assert.equal(geoData.domain, null);
+  assert.equal(geoData.ip, null);
+  assert.equal(geoData.available, false);
+});
+
+test("turns audit context Proxy/getter failures into a stable error", () => {
+  const secret = "TEST_ONLY_AUDIT_CONTEXT_SECRET";
+  const contextProxy = new Proxy({}, {
+    get() { throw new Error(secret); },
+  });
+  assert.throws(
+    () => renderOneXrayAudit(contextProxy),
+    (error) => error.message === "OneXray audit: invalid-context" && !error.message.includes(secret),
+  );
+});

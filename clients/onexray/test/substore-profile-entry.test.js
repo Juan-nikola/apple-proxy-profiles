@@ -28,6 +28,21 @@ test("Profile and audit modes share one private transaction and exact output fra
   assert.equal(audit.endsWith("\n\n"), false);
   assert.equal(JSON.parse(audit).profile.deepLink.withinBudget, true);
   assert.equal(JSON.parse(audit).profile.shortVersion, decodeURIComponent(profile.trim().split("#").at(-1)).split(" · ").at(-1));
+  assert.equal(JSON.parse(audit).profile.geoData.available, false);
+});
+
+test("passes validated compiled GeoData hashes into the shared audit context", () => {
+  const domain = "a".repeat(64);
+  const ip = "b".repeat(64);
+  const audit = JSON.parse(runOneXrayProfileProcessor({
+    proxies: [NODE],
+    arguments: args("audit"),
+    geoManifest: { hashes: { domain, ip } },
+  }));
+  assert.deepEqual(
+    { domain: audit.profile.geoData.domain, ip: audit.profile.geoData.ip, available: audit.profile.geoData.available },
+    { domain, ip, available: true },
+  );
 });
 
 test("rejects node output at the profile entry boundary", () => {
