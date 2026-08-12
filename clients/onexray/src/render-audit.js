@@ -1,10 +1,12 @@
 import { BUSINESS_TARGETS } from "../../../shared/policies/business-targets.js";
+import { oneXrayNodeExclusionReason } from "../../../shared/nodes/capabilities.js";
 import { normalizeProtocol } from "../../../shared/nodes/protocol-registry.js";
 import { canonicalProfileJson } from "./profile-codec.js";
 import { oneXrayGeoCode, oneXrayGeoNames } from "./geodata-contract.js";
 
 const MAX_PROFILE_LINK_LENGTH = 32_768;
 const HASH = /^[a-f0-9]{64}$/u;
+const AUDITED_PROTOCOLS = new Set(["vless", "vmess", "ss", "trojan", "socks5", "http", "hysteria2"]);
 
 // Keep the audit renderer synchronous and browser-safe. The private Sub-Store
 // task must be able to calculate the same digest as profile-link.js without
@@ -100,17 +102,36 @@ function hashNodeName(name) {
   return sha256Hex(typeof name === "string" ? name : "").slice(0, 12);
 }
 
+function safeNodeTarget(value) {
+  if (typeof value !== "string" || !/^NODE:/u.test(value)) return null;
+  const name = value.slice("NODE:".length);
+  if (name.trim().length === 0 || /[\r\n\u2028\u2029]/u.test(name)) return null;
+  return `NODE:<${hashNodeName(name)}>`;
+}
+
+function safeConfiguredTarget(value, fallback) {
+  const candidate = value === undefined ? fallback : value;
+  if (candidate === "FOLLOW" || candidate === "DIRECT") return candidate;
+  return safeNodeTarget(candidate) ?? "INVALID";
+}
+
 function publicTarget(target, fallback) {
-  const configured = typeof target?.configured === "string" ? target.configured : fallback;
-  const status = typeof target?.status === "string" ? target.status : configured === "DIRECT" ? "direct" : "follow";
-  const resolved = typeof target?.resolvedTag === "string" ? target.resolvedTag : "proxy";
-  const redact = (value) => {
-    if (!value.startsWith("NODE:")) return value;
-    return `NODE:<${hashNodeName(value.slice(5))}>`;
-  };
+  const configured = safeConfiguredTarget(target?.configured, fallback);
+  const suppliedStatus = target?.status;
+  const status = suppliedStatus === "follow" || suppliedStatus === "direct" || suppliedStatus === "fixed"
+    ? suppliedStatus
+    : "invalid";
+  const resolved = typeof target?.resolvedTag === "string" ? target.resolvedTag : "";
+  const resolvedFixed = /^ap-fixed-[A-Za-z0-9][A-Za-z0-9._-]*$/u.test(resolved);
   return {
-    configured: redact(configured),
-    resolved: status === "fixed" ? `FIXED:<${hashNodeName(resolved)}>` : status === "direct" ? "DIRECT" : "FOLLOW",
+    configured,
+    resolved: status === "fixed" && resolvedFixed
+      ? `FIXED:<${hashNodeName(resolved)}>`
+      : status === "direct"
+        ? "DIRECT"
+        : status === "follow"
+          ? "FOLLOW"
+          : "INVALID",
     status,
   };
 }
@@ -127,13 +148,23 @@ function businessSummary(resolution) {
 function fixedSummary(resolution) {
   const fixedNodes = Array.isArray(resolution?.fixedNodes) ? resolution.fixedNodes : [];
   const tags = fixedNodes.map((entry) => entry?.tag).filter((tag) => typeof tag === "string");
-  const unique = new Set(tags).size === tags.length;
-  const entries = fixedNodes.map((entry) => ({
-    protocol: normalizeProtocol(entry?.node?.type) || "unknown",
-    tag: typeof entry?.tag === "string" ? entry.tag : "invalid",
-    unique: unique && typeof entry?.tag === "string",
-    compatible: true,
-  }));
+  const unique = tags.length === fixedNodes.length && new Set(tags).size === tags.length;
+  const entries = fixedNodes.map((entry) => {
+    let compatible = false;
+    try {
+      compatible = oneXrayNodeExclusionReason(entry?.node) === null;
+    } catch {
+      compatible = false;
+    }
+    return {
+      protocol: AUDITED_PROTOCOLS.has(normalizeProtocol(entry?.node?.type))
+        ? normalizeProtocol(entry?.node?.type)
+        : "unknown",
+      tagHash: typeof entry?.tag === "string" ? hashNodeName(entry.tag) : null,
+      unique: unique && typeof entry?.tag === "string",
+      compatible,
+    };
+  });
   return {
     count: entries.length,
     unique,
@@ -244,7 +275,9 @@ export function renderOneXrayAudit(context = {}) {
       chain: {
         enabled: context.resolution?.chain?.enabled === true,
         entryCount: number(context.resolution?.chain?.entryCount),
-        landingDisplayName: context.resolution?.chain?.enabled === true ? "已配置落地节点" : "未启用",
+        landingDisplayName: context.resolution?.chain?.enabled === true
+          ? safeNodeTarget(`NODE:${context.resolution?.finalOutbound?.node?.name ?? ""}`) ?? "INVALID"
+          : "未启用",
       },
     },
     runtime: {

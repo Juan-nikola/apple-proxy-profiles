@@ -42,7 +42,7 @@ test("fixed policy and profile failures reject both modes with the same stable c
   for (const output of ["profile", "audit"]) {
     assert.throws(
       () => runOneXrayProfileProcessor({ proxies: [NODE], arguments: { ...bad, output } }),
-      (error) => error.message === "OneXray profile: invalid-policy",
+      (error) => error.message === "OneXray profile: invalid-policy; 业务: 🐙 GitHub",
     );
   }
 });
@@ -56,6 +56,21 @@ test("never places request or raw node secrets in profile errors", () => {
     }),
     (error) => {
       assert.match(error.message, /^OneXray profile: /u);
+      assert.equal(error.message.includes(secret), false);
+      return true;
+    },
+  );
+});
+
+test("contains Proxy request traps behind the stable invalid-request code", () => {
+  const secret = "TEST_ONLY_PROXY_REQUEST_SECRET";
+  const request = new Proxy({}, {
+    getPrototypeOf() { throw new Error(secret); },
+  });
+  assert.throws(
+    () => runOneXrayProfileProcessor(request),
+    (error) => {
+      assert.equal(error.message, "OneXray profile: invalid-request");
       assert.equal(error.message.includes(secret), false);
       return true;
     },

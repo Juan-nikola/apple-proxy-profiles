@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
+import { readFileSync } from "node:fs";
 import test from "node:test";
 
 import { canonicalProfileJson } from "../src/profile-codec.js";
@@ -102,4 +103,55 @@ test("does not serialize private node fields, policy input, Profile, or deep lin
   });
   for (const canary of canaries) assert.equal(output.includes(canary), false, canary);
   assert.doesNotMatch(output, /(?:password|uuid|psk|private.?key|public.?key|subscription|policyOverrides|profileLink)/iu);
+});
+
+test("whitelists audit target fields and hashes fixed and landing display identities", () => {
+  const secretName = "https://private.invalid/sub?token=TEST_ONLY_AUDIT_TARGET";
+  const output = renderOneXrayAudit({
+    ...context(),
+    resolution: {
+      ...context().resolution,
+      targets: {
+        ai: { configured: secretName, resolvedTag: secretName, status: "unexpected" },
+        github: { configured: "NODE:fixed-secret", resolvedTag: "ap-fixed-secret", status: "fixed" },
+      },
+      fixedNodes: [{
+        tag: "ap-fixed-secret",
+        node: { name: "Fixed Secret", type: "vless", _profile: { chained: false } },
+      }],
+      finalOutbound: {
+        tag: "chainProxy",
+        node: { name: "Landing Secret", type: "vless", _profile: { chained: false } },
+      },
+      chain: { enabled: true, entryCount: 2 },
+    },
+  });
+  const audit = JSON.parse(output);
+  const ai = audit.policy.businesses.find(({ id }) => id === "ai");
+  const github = audit.policy.businesses.find(({ id }) => id === "github");
+  assert.deepEqual(ai, {
+    id: "ai",
+    label: "🤖 AI 专用",
+    configured: "INVALID",
+    resolved: "INVALID",
+    status: "invalid",
+  });
+  assert.match(github.configured, /^NODE:<[a-f0-9]{12}>$/u);
+  assert.match(github.resolved, /^FIXED:<[a-f0-9]{12}>$/u);
+  assert.match(audit.policy.fixed.entries[0].tagHash, /^[a-f0-9]{12}$/u);
+  assert.equal("tag" in audit.policy.fixed.entries[0], false);
+  assert.equal(audit.policy.fixed.entries[0].compatible, false);
+  assert.match(audit.policy.chain.landingDisplayName, /^NODE:<[a-f0-9]{12}>$/u);
+  assert.equal(output.includes(secretName), false);
+});
+
+test("keeps the private profile transaction browser-safe", () => {
+  for (const file of [
+    "shared/policies/business-targets.js",
+    "clients/onexray/src/resolve-policy.js",
+    "shared/encoding/base64url.js",
+  ]) {
+    const source = readFileSync(new URL(`../../../${file}`, import.meta.url), "utf8");
+    assert.doesNotMatch(source, /\bBuffer\b|\bnode:/u, file);
+  }
 });

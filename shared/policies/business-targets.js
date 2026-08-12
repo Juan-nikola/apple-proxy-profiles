@@ -1,3 +1,5 @@
+import { decodeBase64UrlUtf8 } from "../encoding/base64url.js";
+
 const TARGET_KEYWORD = /^(FOLLOW|DIRECT)$/iu;
 const NODE_TARGET = /^NODE:(.*)$/iu;
 const BASE64URL = /^[A-Za-z0-9_-]+$/u;
@@ -143,12 +145,9 @@ function decodeBase64url(encoded) {
     throw policyError("must be a Base64URL string");
   }
 
-  let bytes;
   let text;
   try {
-    bytes = Buffer.from(encoded, "base64url");
-    if (bytes.toString("base64url") !== encoded) throw new Error("non-canonical Base64URL");
-    text = new TextDecoder("utf-8", { fatal: true }).decode(bytes);
+    text = decodeBase64UrlUtf8(encoded);
   } catch {
     throw policyError("must contain UTF-8 JSON");
   }

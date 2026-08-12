@@ -2,6 +2,7 @@ import { businessTargetByKey, BUSINESS_TARGETS, parseBusinessOverrides } from ".
 import { nodeMetadata } from "../../../shared/contracts.js";
 import { hasExistingChain } from "../../../shared/nodes/client-chain.js";
 import { identityKey } from "../../../shared/nodes/node-identity.js";
+import { decodeBase64UrlUtf8 } from "../../../shared/encoding/base64url.js";
 
 const RESERVED_TAGS = new Set([
   "proxy", "chainProxy", "direct", "fragment", "block", "dnsOut", "tunIn", "pingIn",
@@ -41,7 +42,7 @@ function nodeTargetName(value) {
 function malformedTargetError(encoded) {
   if (typeof encoded !== "string" || !/^[A-Za-z0-9_-]+$/u.test(encoded)) return null;
   try {
-    const parsed = JSON.parse(Buffer.from(encoded, "base64url").toString("utf8"));
+    const parsed = JSON.parse(decodeBase64UrlUtf8(encoded));
     if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return null;
     for (const [key, value] of Object.entries(parsed)) {
       const target = businessTargetByKey(key);

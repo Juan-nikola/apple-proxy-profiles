@@ -1,6 +1,7 @@
 import { CLIENT } from "../../../shared/contracts.js";
 import { filterNodesForClient } from "../../../shared/nodes/capabilities.js";
 import { normalizeNodes } from "../../../shared/nodes/normalize-nodes.js";
+import { BUSINESS_TARGETS } from "../../../shared/policies/business-targets.js";
 import { orderedRoutingPlan } from "../../../shared/rules/lightweight-policy.js";
 import { oneXrayGeoCode, oneXrayGeoNames } from "./geodata-contract.js";
 import { parseOneXrayOptions } from "./options.js";
@@ -17,18 +18,35 @@ function processorError(code) {
   return new Error(`OneXray profile: ${code}`);
 }
 
-function ownRequest(input) {
-  if (input === null || typeof input !== "object" || Array.isArray(input)) throw processorError("invalid-request");
-  const prototype = Object.getPrototypeOf(input);
-  if (prototype !== Object.prototype && prototype !== null) throw processorError("invalid-request");
-  const values = {};
-  for (const key of ["proxies", "arguments"]) {
-    const descriptor = Object.getOwnPropertyDescriptor(input, key);
-    if (descriptor === undefined) continue;
-    if ("get" in descriptor || "set" in descriptor) throw processorError("invalid-request");
-    values[key] = descriptor.value;
+function policyProcessorError(error) {
+  let message = "";
+  try {
+    if (error && typeof error.message === "string") message = error.message;
+  } catch {
+    message = "";
   }
-  return values;
+  const target = BUSINESS_TARGETS.find((entry) => message.includes(`${entry.label}:`));
+  if (target) return processorError(`invalid-policy; 业务: ${target.label}`);
+  if (message.includes("全局客户端链")) return processorError("invalid-policy; 全局客户端链");
+  return processorError("invalid-policy");
+}
+
+function ownRequest(input) {
+  try {
+    if (input === null || typeof input !== "object" || Array.isArray(input)) throw new Error();
+    const prototype = Object.getPrototypeOf(input);
+    if (prototype !== Object.prototype && prototype !== null) throw new Error();
+    const values = {};
+    for (const key of ["proxies", "arguments"]) {
+      const descriptor = Object.getOwnPropertyDescriptor(input, key);
+      if (descriptor === undefined) continue;
+      if ("get" in descriptor || "set" in descriptor) throw new Error();
+      values[key] = descriptor.value;
+    }
+    return values;
+  } catch {
+    throw processorError("invalid-request");
+  }
 }
 
 function defaultGeo(channel) {
@@ -130,8 +148,8 @@ function buildPrivateOneXrayContext(rawArguments, proxies) {
       allNodes: normalized.nodes,
       eligibleNodes: eligible.nodes,
     });
-  } catch {
-    throw processorError("invalid-policy");
+  } catch (error) {
+    throw policyProcessorError(error);
   }
 
   const routingPlan = orderedRoutingPlan();
