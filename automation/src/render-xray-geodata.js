@@ -305,9 +305,11 @@ function manifestFor({ channel, names, records, domain, ip, provenance }) {
     ...(record.sourceSha256 ? { sourceSha256: record.sourceSha256 } : {}),
   }));
   const safeProvenance = provenance && typeof provenance === "object" && !Array.isArray(provenance)
-    ? Object.fromEntries(Object.entries(provenance).filter(([key, value]) => (
-      typeof key === "string" && (typeof value === "string" || Number.isSafeInteger(value))
-    )))
+    ? Object.fromEntries(Object.entries(provenance)
+      .filter(([key, value]) => (
+        typeof key === "string" && (typeof value === "string" || Number.isSafeInteger(value))
+      ))
+      .sort(([left], [right]) => compareText(left, right)))
     : {};
   return Object.freeze({
     schema: SCHEMA,
