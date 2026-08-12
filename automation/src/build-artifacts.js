@@ -15,6 +15,7 @@ import {
 import { RULE_KIND } from "../../shared/rules/model.js";
 import { buildImportBatches, renderImportPage } from "../../clients/anywhere/src/build-import-page.js";
 import { ANYWHERE_LIGHTWEIGHT_MIGRATION } from "../../clients/anywhere/src/shard-rules.js";
+import { buildOneXrayGeoDataArtifacts } from "../../clients/onexray/src/build-import-page.js";
 
 const CLIENT_PATHS = Object.freeze({
   shadowrocket: "shadowrocket",
@@ -339,6 +340,7 @@ export function buildClientArtifacts({
   additionalFiles = null,
   singBoxBinaries = null,
   chinaIpAudit = null,
+  onexrayChannel = "edge",
 }) {
   if (!(snapshot instanceof Map)) throw new TypeError("Complete rule snapshot is required");
   if (singBoxBinaries !== null) {
@@ -367,6 +369,11 @@ export function buildClientArtifacts({
     rawDefaultEntries: compiled.diagnostics.defaultEntries,
     defaultEntries: [...compactedDefaults.ruleSets.values()]
       .reduce((sum, ruleSet) => sum + ruleSet.entries.length, 0),
+  });
+  const onexray = buildOneXrayGeoDataArtifacts({
+    ruleSets: compactedDefaults.ruleSets,
+    upstream,
+    channel: onexrayChannel,
   });
   const rendered = renderRuleSetMap({ ruleSets: compactedDefaults.ruleSets, upstream, singBoxBinaries });
   const defaults = rendered.files;
@@ -443,6 +450,7 @@ export function buildClientArtifacts({
   return Object.freeze({
     defaults,
     optionalPacks,
+    onexray: onexray.files,
     diagnostics: Object.freeze({
       defaultRuleIds: Object.freeze([...compiled.defaultRuleSets.keys()]),
       compiler: compiled.diagnostics,
@@ -450,6 +458,8 @@ export function buildClientArtifacts({
       referencedBytes,
       defaultManifest,
       routingPlanAudit,
+      onexrayManifest: onexray.manifest,
+      onexrayChannel: onexray.channel,
       optionalManifests: Object.freeze({ "adblock-full": adblockFull.manifest }),
     }),
   });

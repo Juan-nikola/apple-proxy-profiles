@@ -76,6 +76,20 @@ test("publishes one hash-closed multi-client current snapshot", async () => {
   }
 });
 
+test("public OneXray GeoData is not present in stable snapshots before deliberate promotion", async () => {
+  for (const channel of ["current", "previous"]) {
+    await assert.rejects(
+      () => access(new URL(`${channel}/onexray/geodata/manifest.json`, publicRoot)),
+      { code: "ENOENT" },
+    );
+  }
+  try {
+    await access(new URL("edge/onexray/geodata/manifest.json", publicRoot));
+  } catch (error) {
+    assert.equal(error.code, "ENOENT");
+  }
+});
+
 test("public client entrypoints close over hosted channels and never raw master", async () => {
   const scriptMarkers = {
     "shadowrocket/scripts/shadowrocket-profile-generator.js": /shadowrocket\/rules/u,

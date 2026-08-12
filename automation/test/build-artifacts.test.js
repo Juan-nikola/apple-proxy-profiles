@@ -68,6 +68,39 @@ test("fans compiled lightweight defaults out without publishing input-only rules
   assert.equal(result.diagnostics.compaction.ChinaIP.removed, 2);
 });
 
+test("builds only an edge OneXray GeoData projection with credential-free manifest records", () => {
+  const result = buildClientArtifacts({ snapshot: lightweightFixtureSnapshots(), upstream });
+  assert.ok(result.onexray instanceof Map);
+  assert.deepEqual([...result.onexray.keys()], [
+    "onexray/geodata/geosite.dat",
+    "onexray/geodata/geoip.dat",
+    "onexray/geodata/manifest.json",
+    "onexray/index.html",
+  ]);
+  assert.equal(result.defaults.has("onexray/geodata/geosite.dat"), false);
+  assert.equal(result.optionalPacks.has("onexray"), false);
+  const manifest = JSON.parse(result.onexray.get("onexray/geodata/manifest.json").toString("utf8"));
+  assert.equal(manifest.channel, "edge");
+  assert.equal(manifest.schema, "apple-proxy-onexray-geodata-v1");
+  assert.equal(manifest.files.length, 2);
+  assert.match(manifest.hashes.domain, /^[0-9a-f]{64}$/u);
+  assert.match(manifest.hashes.ip, /^[0-9a-f]{64}$/u);
+  assert.equal(JSON.stringify(manifest).includes("SECRET"), false);
+  assert.match(result.onexray.get("onexray/index.html").toString("utf8"), /canary|候选/u);
+});
+
+test("supports explicit OneXray channels without adding the client to adblock-full", () => {
+  const result = buildClientArtifacts({
+    snapshot: lightweightFixtureSnapshots(),
+    upstream,
+    onexrayChannel: "previous",
+  });
+  const manifest = JSON.parse(result.onexray.get("onexray/geodata/manifest.json").toString("utf8"));
+  assert.equal(manifest.channel, "previous");
+  assert.deepEqual([...result.optionalPacks.keys()], ["adblock-full"]);
+  assert.equal(result.diagnostics.defaultManifest.clients.onexray, undefined);
+});
+
 test("is byte deterministic for the same snapshot", () => {
   const options = { snapshot: lightweightFixtureSnapshots(), upstream };
   assert.deepEqual([...buildClientArtifacts(options).defaults], [...buildClientArtifacts(options).defaults]);
