@@ -1073,7 +1073,36 @@
     }
   ],
   "generatedAt": "2026-08-09T18:34:14Z",
-  "manifestHash": "0cf70fc7918395c4c998d8e938ff2c09e583c071c6573da7a21f53bc01b1f1c7",
+  "manifestHash": "a7f75ffd1322e90c52ed9cf1f4c39002ff438177617d787ffab8aabc663ab076",
+  "onexray": {
+    "channel": "edge",
+    "counts": {
+      "domainCategories": 32,
+      "domainRules": 3488,
+      "ipCategories": 32,
+      "ipRules": 13642
+    },
+    "files": [
+      {
+        "bytes": 74223,
+        "path": "onexray/geodata/geosite.dat",
+        "sha256": "4bed4f09fb433437409d6ffd3f8e061f14babca334c64278110320c011ad7eb9"
+      },
+      {
+        "bytes": 186956,
+        "path": "onexray/geodata/geoip.dat",
+        "sha256": "ac8deb9dc3d30743e59fb9d968e267d8ddbec942d9286a721bb30b6f72051c54"
+      }
+    ],
+    "hashes": {
+      "domain": "4bed4f09fb433437409d6ffd3f8e061f14babca334c64278110320c011ad7eb9",
+      "ip": "ac8deb9dc3d30743e59fb9d968e267d8ddbec942d9286a721bb30b6f72051c54"
+    },
+    "manifestHash": "aea286061ea7cd54eca46e78f412acfbbfe2a9dccecc6c655165df07e2d204a2",
+    "releaseId": "edge-48a8dbab",
+    "schema": "apple-proxy-onexray-geodata-v1",
+    "schemaVersion": 1
+  },
   "schemaVersion": 2,
   "upstream": {
     "branch": "master",

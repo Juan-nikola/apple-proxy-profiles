@@ -31,7 +31,8 @@ var SurgeProfileBundle = (() => {
     egern: "egern",
     anywhere: "anywhere",
     surge: "surge",
-    singbox: "singbox"
+    singbox: "singbox",
+    onexray: "onexray"
   });
   var OPTION_VALUES = Object.freeze({
     output: Object.freeze(["nodes", "config"]),
@@ -96,17 +97,21 @@ var SurgeProfileBundle = (() => {
   }
 
   // ../../shared/nodes/protocol-registry.js
-  function protocol(names, clients, { requiredFields = [], tls = false } = {}) {
+  function protocol(names, clients, { requiredFields = [], tls = false, clientNames = {} } = {}) {
     return Object.freeze({
       names: Object.freeze(names),
       clients: Object.freeze(clients),
       requiredFields: Object.freeze(requiredFields),
-      tls
+      tls,
+      clientNames: Object.freeze(Object.fromEntries(
+        Object.entries(clientNames).map(([client, supportedNames]) => [client, Object.freeze(supportedNames)])
+      ))
     });
   }
   var definitions = Object.freeze([
-    protocol(["ss", "shadowsocks"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox], {
-      requiredFields: ["cipher", "password"]
+    protocol(["ss", "shadowsocks"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.onexray], {
+      requiredFields: ["cipher", "password"],
+      clientNames: { [CLIENT.onexray]: ["ss"] }
     }),
     protocol(["ssr"], [CLIENT.shadowrocket, CLIENT.surge], {
       requiredFields: ["cipher", "password", "protocol", "obfs"]
@@ -114,13 +119,13 @@ var SurgeProfileBundle = (() => {
     protocol(["snell"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox], {
       requiredFields: ["psk", "version"]
     }),
-    protocol(["vmess"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox], {
+    protocol(["vmess"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox, CLIENT.onexray], {
       requiredFields: ["uuid"]
     }),
-    protocol(["vless"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.singbox], {
+    protocol(["vless"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.singbox, CLIENT.onexray], {
       requiredFields: ["uuid"]
     }),
-    protocol(["trojan"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox], {
+    protocol(["trojan"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.onexray], {
       requiredFields: ["password"],
       tls: true
     }),
@@ -128,16 +133,17 @@ var SurgeProfileBundle = (() => {
       requiredFields: ["password"],
       tls: true
     }),
-    protocol(["hysteria2", "hy2"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox], {
+    protocol(["hysteria2", "hy2"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.onexray], {
       requiredFields: ["password"],
-      tls: true
+      tls: true,
+      clientNames: { [CLIENT.onexray]: ["hysteria2"] }
     }),
     protocol(["tuic"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox], {
       requiredFields: ["uuid", "password"],
       tls: true
     }),
-    protocol(["socks5"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox]),
-    protocol(["http"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox]),
+    protocol(["socks5"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.onexray]),
+    protocol(["http"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox, CLIENT.onexray]),
     protocol(["ssh"], [CLIENT.egern, CLIENT.singbox], {
       requiredFields: ["username"]
     }),
@@ -177,7 +183,9 @@ var SurgeProfileBundle = (() => {
     return registry.get(normalizeProtocol(value)) ?? null;
   }
   function protocolSupportsClient(value, client) {
-    return protocolDefinition(value)?.clients.includes(client) === true;
+    const protocol2 = normalizeProtocol(value);
+    const definition = protocolDefinition(protocol2);
+    return definition?.clients.includes(client) === true && (definition.clientNames[client] ?? definition.names).includes(protocol2);
   }
   function diagnosticProtocol(value) {
     const normalized = normalizeProtocol(value);
@@ -1059,14 +1067,194 @@ var SurgeProfileBundle = (() => {
     }
     return "unsupported-protocol";
   }
+  var ONEXRAY_TLS_FIELDS = /* @__PURE__ */ new Set([
+    "tls",
+    "security",
+    "sni",
+    "servername",
+    "alpn",
+    "client-fingerprint",
+    "reality-opts"
+  ]);
+  var ONEXRAY_TRANSPORT_FIELDS = /* @__PURE__ */ new Set([
+    "network",
+    "ws-opts",
+    "grpc-opts",
+    "httpupgrade-opts",
+    "xhttp-opts",
+    "kcp-opts"
+  ]);
+  var ONEXRAY_COMMON_FIELDS = /* @__PURE__ */ new Set(["name", "type", "server", "port", "_profile"]);
+  function validOneXrayHeaders(value) {
+    return isPlainObject(value) && Object.entries(value).every(([key, field]) => isNonblankString(key) && isNonblankString(field));
+  }
+  function validOneXrayWebSocketHeaders(value) {
+    return isPlainObject(value) && !hasHeaderAliasConflict(value) && Object.entries(value).every(([key, field]) => key.toLowerCase() === "host" && isNonblankString(field));
+  }
+  function oneXrayAliasReason(node) {
+    if (conflictingAliases(node, ["sni", "servername"]) || conflictingAliases(node, ["skip-cert-verify", "allow-insecure"]) || conflictingAliases(node, ["obfs-password", "obfs_password"])) {
+      return "conflicting-onexray-alias";
+    }
+    return null;
+  }
+  function oneXrayCommonReason(node) {
+    if (!isPlainObject(node) || !isNonblankString(node.name) || !isNonblankString(node.server) || !isValidPort(node.port)) return "invalid-onexray-node-shape";
+    return oneXrayAliasReason(node);
+  }
+  function oneXrayTlsReason(node, protocol2, { implicitTls = false, allowReality = protocol2 === "vless" } = {}) {
+    if (!isOptionalBoolean(node, "tls") || !optionalStringAliasesAreValid(node, ["sni", "servername"])) {
+      return "invalid-onexray-node-shape";
+    }
+    if (hasOption(node, "alpn") && (!Array.isArray(node.alpn) || node.alpn.length === 0 || node.alpn.some((value) => !isNonblankString(value)))) {
+      return "unsupported-onexray-tls-shape";
+    }
+    if (hasOption(node, "client-fingerprint") && !isNonblankString(node["client-fingerprint"])) {
+      return "unsupported-onexray-tls-shape";
+    }
+    if (hasOption(node, "security") && !["none", "tls", "reality", "auto", "aes-128-gcm", "chacha20-poly1305", "zero"].includes(node.security)) {
+      return "unsupported-onexray-tls-shape";
+    }
+    if (protocol2 !== "vmess" && ["auto", "aes-128-gcm", "chacha20-poly1305", "zero"].includes(node.security)) {
+      return "unsupported-onexray-tls-shape";
+    }
+    if (node.security === "reality" && !allowReality) return "unsupported-onexray-tls-shape";
+    if (node.security === "reality" && !hasOption(node, "reality-opts")) return "incomplete-onexray-reality";
+    if (node.tls === false && ["tls", "reality"].includes(node.security) || node.tls === true && node.security === "none") return "unsupported-onexray-tls-shape";
+    const reality = node["reality-opts"];
+    if (reality !== void 0) {
+      if (!allowReality || node.tls === false || node.security !== "reality" || !isPlainObject(reality) || !isRealityPublicKey(reality["public-key"])) {
+        return "incomplete-onexray-reality";
+      }
+      if (Object.keys(reality).some((key) => !["public-key", "short-id", "spider-x"].includes(key)) || hasOption(reality, "short-id") && (!isNonblankString(reality["short-id"]) || !/^[0-9a-f]*$/i.test(reality["short-id"])) || hasOption(reality, "spider-x") && !isNonblankString(reality["spider-x"])) {
+        return "incomplete-onexray-reality";
+      }
+    }
+    const tlsRequested = tlsRequestedForCapability(node);
+    if (!implicitTls && !tlsRequested && (hasTlsSettings(node) || hasOption(node, "alpn") || hasOption(node, "client-fingerprint"))) return "unsupported-onexray-tls-shape";
+    if (implicitTls && (node.tls === false || node.security === "none")) return "unsupported-onexray-tls-shape";
+    return null;
+  }
+  function oneXrayTransportReason(node, protocol2) {
+    const network = normalizeTransport(node);
+    const transportOptions2 = ["ws-opts", "grpc-opts", "httpupgrade-opts", "xhttp-opts", "kcp-opts"];
+    if (protocol2 === "hysteria2") {
+      if (!(/* @__PURE__ */ new Set(["", "quic", "udp", "hysteria"])).has(hasOption(node, "network") ? network : "")) {
+        return "unsupported-onexray-transport";
+      }
+      return transportOptions2.some((key) => hasOption(node, key)) ? "unsupported-onexray-transport" : null;
+    }
+    if (!(/* @__PURE__ */ new Set(["tcp", "raw", "ws", "grpc", "httpupgrade", "xhttp", "kcp"])).has(network)) {
+      return "unsupported-onexray-transport";
+    }
+    if (network === "tcp" || network === "raw") {
+      return transportOptions2.some((key) => hasOption(node, key)) ? "unsupported-onexray-transport" : null;
+    }
+    const optionByNetwork = {
+      ws: "ws-opts",
+      grpc: "grpc-opts",
+      httpupgrade: "httpupgrade-opts",
+      xhttp: "xhttp-opts",
+      kcp: "kcp-opts"
+    };
+    const optionKey = optionByNetwork[network];
+    if (transportOptions2.some((key) => key !== optionKey && hasOption(node, key))) return "unsupported-onexray-transport";
+    const options = node[optionKey];
+    if (options === void 0) return null;
+    if (!isPlainObject(options)) return "unsupported-onexray-transport";
+    if (network === "ws") {
+      return Object.keys(options).some((key) => !["path", "headers"].includes(key)) || hasOption(options, "path") && !isNonblankString(options.path) || hasOption(options, "headers") && !validOneXrayWebSocketHeaders(options.headers) ? "unsupported-onexray-transport" : null;
+    }
+    if (network === "grpc") {
+      return Object.keys(options).some((key) => key !== "grpc-service-name") || hasOption(options, "grpc-service-name") && !isNonblankString(options["grpc-service-name"]) ? "unsupported-onexray-transport" : null;
+    }
+    if (network === "httpupgrade" || network === "xhttp") {
+      const allowed = network === "httpupgrade" ? ["path", "host"] : ["path", "host", "mode"];
+      return Object.keys(options).some((key) => !allowed.includes(key)) || hasOption(options, "path") && !isNonblankString(options.path) || hasOption(options, "host") && !isNonblankString(options.host) || hasOption(options, "mode") && !(/* @__PURE__ */ new Set(["auto", "packet-up", "stream-up", "stream-one"])).has(options.mode) ? "unsupported-onexray-transport" : null;
+    }
+    return Object.keys(options).length === 0 ? null : "unsupported-onexray-transport";
+  }
+  function unsupportedOneXrayFields(node, protocol2) {
+    const allowed = new Set(ONEXRAY_COMMON_FIELDS);
+    const protocolFields = {
+      ss: ["cipher", "password", "plugin", "plugin-opts"],
+      vmess: ["uuid", "security", "cipher"],
+      vless: ["uuid", "flow", "encryption", "reverse"],
+      trojan: ["password"],
+      socks5: ["username", "password"],
+      http: ["username", "password", "headers"],
+      hysteria2: ["password"]
+    };
+    for (const key of protocolFields[protocol2] ?? []) allowed.add(key);
+    if (["vmess", "vless", "trojan", "hysteria2"].includes(protocol2)) {
+      for (const key of ONEXRAY_TLS_FIELDS) allowed.add(key);
+    }
+    if (["vmess", "vless"].includes(protocol2)) {
+      for (const key of ONEXRAY_TRANSPORT_FIELDS) allowed.add(key);
+    } else if (protocol2 === "hysteria2") {
+      allowed.add("network");
+    }
+    return Object.keys(node).some((key) => !allowed.has(key));
+  }
+  function validateOneXrayProtocolShape(node, protocol2) {
+    const commonReason = oneXrayCommonReason(node);
+    if (commonReason) return commonReason;
+    if (hasAnyChain(node)) return "unsupported-onexray-chain";
+    if (unsupportedOneXrayFields(node, protocol2)) return "unsupported-onexray-option";
+    if (protocol2 === "ss") {
+      if (!isNonblankString(node.cipher) || !isNonblankOpaqueString(node.password)) return "invalid-onexray-node-shape";
+      if (hasShadowsocksPlugin(node)) return "unsupported-onexray-shadowsocks-plugin";
+      return null;
+    }
+    if (protocol2 === "vmess" || protocol2 === "vless") {
+      if (!isNonblankString(node.uuid)) return "invalid-onexray-node-shape";
+      if (protocol2 === "vless" && hasOption(node, "flow") && !isNonblankString(node.flow) || protocol2 === "vless" && hasOption(node, "encryption") && !isNonblankString(node.encryption) || protocol2 === "vless" && hasOption(node, "reverse") && (!isPlainObject(node.reverse) || Object.keys(node.reverse).some((key) => key !== "tag") || !isNonblankString(node.reverse.tag))) return "invalid-onexray-node-shape";
+      if (protocol2 === "vmess") {
+        const supportedSecurity = ["auto", "aes-128-gcm", "chacha20-poly1305", "none", "zero"];
+        if (["cipher", "security"].some((key) => hasOption(node, key) && (!isNonblankString(node[key]) || !supportedSecurity.includes(node[key])))) {
+          return "invalid-onexray-node-shape";
+        }
+      }
+      if (protocol2 === "vmess" && hasOption(node, "cipher") && hasOption(node, "security") && node.cipher !== node.security) {
+        return "conflicting-onexray-alias";
+      }
+      const tlsReason = oneXrayTlsReason(node, protocol2);
+      return tlsReason || oneXrayTransportReason(node, protocol2);
+    }
+    if (protocol2 === "trojan") {
+      if (!isNonblankOpaqueString(node.password)) return "invalid-onexray-node-shape";
+      return oneXrayTlsReason(node, protocol2, { implicitTls: true, allowReality: false });
+    }
+    if (protocol2 === "socks5" || protocol2 === "http") {
+      if (!validOptionalAuthentication(node) || hasOption(node, "username") !== hasOption(node, "password")) {
+        return "invalid-onexray-node-shape";
+      }
+      return protocol2 === "http" && hasOption(node, "headers") && !validOneXrayHeaders(node.headers) ? "invalid-onexray-node-shape" : null;
+    }
+    if (protocol2 === "hysteria2") {
+      if (!isNonblankOpaqueString(node.password)) return "invalid-onexray-node-shape";
+      return oneXrayTlsReason(node, protocol2, { implicitTls: true, allowReality: false }) || oneXrayTransportReason(node, protocol2);
+    }
+    return "unsupported-onexray-protocol";
+  }
+  function oneXrayNodeExclusionReason(node) {
+    const protocol2 = normalizeProtocol(node?.type);
+    if (!protocolSupportsClient(protocol2, CLIENT.onexray)) return "unsupported-onexray-protocol";
+    if (nodeMetadata(node).chained) return "unsupported-onexray-chain";
+    return validateOneXrayProtocolShape(node, protocol2);
+  }
   function evaluateNodeForClient(node, client) {
     if (!Object.values(CLIENT).includes(client)) return { supported: false, reason: "unsupported-client" };
     const protocol2 = normalizeProtocol(node?.type);
-    if (!protocolSupportsClient(protocol2, client)) return { supported: false, reason: "unsupported-protocol" };
+    if (!protocolSupportsClient(protocol2, client)) {
+      return { supported: false, reason: client === CLIENT.onexray ? "unsupported-onexray-protocol" : "unsupported-protocol" };
+    }
     let transportReason = null;
     if (client === CLIENT.anywhere) transportReason = anywhereNodeExclusionReason(node ?? {});
     else if (client === CLIENT.egern) transportReason = egernNodeExclusionReason(node ?? {});
     else if (client === CLIENT.singbox) transportReason = singBoxNodeExclusionReason(node ?? {});
+    else if (client === CLIENT.onexray) {
+      transportReason = oneXrayNodeExclusionReason(node ?? {});
+    }
     return transportReason ? { supported: false, reason: transportReason } : { supported: true, reason: null };
   }
   function singBoxNodeExclusionReason(node) {
@@ -1761,6 +1949,47 @@ var SurgeProfileBundle = (() => {
   }
   function isParsedSurgeOptions(value) {
     return value !== null && typeof value === "object" && PARSED.has(value);
+  }
+
+  // ../../shared/dns/providers.js
+  var CHINA_DNS_PROVIDERS = Object.freeze({
+    alidns: Object.freeze({
+      address: "223.5.5.5",
+      doh: "https://dns.alidns.com/dns-query"
+    }),
+    dnspod: Object.freeze({
+      address: "119.29.29.29",
+      doh: "https://doh.pub/dns-query"
+    }),
+    system: Object.freeze({
+      address: "local",
+      doh: "system"
+    })
+  });
+  var GLOBAL_DNS_PROVIDERS = Object.freeze({
+    cloudflare: Object.freeze({
+      address: "1.1.1.1",
+      serverName: "cloudflare-dns.com",
+      doh: "https://cloudflare-dns.com/dns-query"
+    }),
+    google: Object.freeze({
+      address: "8.8.8.8",
+      serverName: "dns.google",
+      doh: "https://dns.google/dns-query"
+    }),
+    quad9: Object.freeze({
+      address: "9.9.9.9",
+      serverName: "dns.quad9.net",
+      doh: "https://dns.quad9.net/dns-query"
+    })
+  });
+  function provider(providers, id, label) {
+    const value = providers[id];
+    if (!value) throw new Error(`Unsupported ${label} DNS provider`);
+    return value;
+  }
+  function chinaDnsProvider(id) {
+    return provider(CHINA_DNS_PROVIDERS, id, "China");
   }
 
   // src/render-node.js
@@ -2739,7 +2968,8 @@ var SurgeProfileBundle = (() => {
     "ff00::/8"
   ]);
   function generalSettings(options) {
-    const chinaDns = { alidns: "223.5.5.5", dnspod: "119.29.29.29", system: "system" }[options.chinaDns];
+    const provider2 = chinaDnsProvider(options.chinaDns);
+    const chinaDns = options.chinaDns === "system" ? "system" : provider2.address;
     return [
       "loglevel = notify",
       `ipv6 = ${options.ipv6Mode === "auto" ? "true" : "false"}`,
