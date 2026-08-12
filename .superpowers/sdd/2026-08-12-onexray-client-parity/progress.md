@@ -43,3 +43,4 @@ Task 14: complete (commit aa9fe27, parity/cross-client 11/11, OneXray verify 88/
 Task 15: pending
 Task 15: complete (deployment/troubleshooting/canary/README docs, 20-task guides; docs 10/10, OneXray workspace 96/96, secret scan clean)
 Task 16: pending
+Task 16: complete (rebuilds deterministic; npm test/verify/secrets/actions pass; edge OneXray staged from published compiled rules because network-restricted sandbox cannot resolve Blackmatrix7 upstream; current/previous untouched; commit d645376)
