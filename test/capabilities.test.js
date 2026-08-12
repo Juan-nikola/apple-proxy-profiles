@@ -174,10 +174,23 @@ test("admits only OneXray structured outbound shapes that the renderer preserves
     },
     { ...common, type: "vless", uuid, tls: true, sni: "tls.example.invalid", alpn: ["h2"], "client-fingerprint": "chrome" },
     { ...common, type: "vless", uuid, security: "reality", "reality-opts": { "public-key": realityPublicKey, "short-id": "0123abcd", "spider-x": "/" }, "client-fingerprint": "chrome" },
+    {
+      ...common,
+      type: "vless",
+      uuid,
+      tls: true,
+      "reality-opts": { "public-key": realityPublicKey, "short-id": "0123abcd", "_spider-x": "/" },
+      "client-fingerprint": "chrome",
+      network: "tcp",
+      flow: "xtls-rprx-vision",
+      udp: true,
+      "skip-cert-verify": false,
+      "packet-encoding": "xudp",
+    },
     { ...common, type: "vless", uuid, network: "ws", "ws-opts": { path: "/ws", headers: { Host: "ws.example.invalid" } } },
     { ...common, type: "vless", uuid, network: "grpc", "grpc-opts": { "grpc-service-name": "grpc-service" } },
     { ...common, type: "vless", uuid, network: "httpupgrade", "httpupgrade-opts": { path: "/upgrade", host: "upgrade.example.invalid" } },
-    { ...common, type: "vless", uuid, network: "xhttp", "xhttp-opts": { path: "/xhttp", host: "xhttp.example.invalid", mode: "auto" } },
+    { ...common, type: "vless", uuid, network: "xhttp", "xhttp-opts": { path: "/xhttp", host: "xhttp.example.invalid", mode: "auto", "packet-encoding": "xudp" } },
     { ...common, type: "vless", uuid, network: "kcp", "kcp-opts": {} },
   ];
 
@@ -278,7 +291,6 @@ test("rejects OneXray protocols, chains, aliases, malformed credentials, and los
   for (const lossyField of [
     { tfo: true },
     { mux: true },
-    { "packet-encoding": "packet" },
     { "ech-opts": { enable: true, config: "TEST_ONLY_ECH_CONFIG" } },
     { "obfs": "salamander" },
   ]) {
@@ -287,6 +299,18 @@ test("rejects OneXray protocols, chains, aliases, malformed credentials, and los
       reason: "unsupported-onexray-option",
     });
   }
+  assert.deepEqual(evaluateNodeForClient({ ...common, type: "vless", uuid, tls: true, "skip-cert-verify": true }, "onexray"), {
+    supported: false,
+    reason: "unsupported-onexray-option",
+  });
+  assert.deepEqual(evaluateNodeForClient({ ...common, type: "vless", uuid, network: "ws", "packet-encoding": "xudp" }, "onexray"), {
+    supported: false,
+    reason: "unsupported-onexray-transport",
+  });
+  assert.deepEqual(evaluateNodeForClient({ ...common, type: "vless", uuid, network: "raw", "packet-encoding": "unknown" }, "onexray"), {
+    supported: false,
+    reason: "unsupported-onexray-transport",
+  });
   assert.deepEqual(evaluateNodeForClient({ ...common, type: "vless", uuid, network: "kcp", "kcp-opts": { mtu: 1350 } }, "onexray"), {
     supported: false,
     reason: "unsupported-onexray-transport",

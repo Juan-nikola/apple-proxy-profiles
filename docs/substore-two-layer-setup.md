@@ -254,6 +254,8 @@ https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-
 | `onexray-profile` | profile | 版本化 Profile deep link | 每天 |
 | `onexray-routing-audit` | audit | 脱敏路由审计 | 按需 |
 
+OneXray 的节点订阅只保留 Xray 内核支持的协议（VLESS、VMess、SS、Trojan、Socks、HTTP、Hysteria2）；原始组合中的 Snell 等节点会被自动排除，因此 OneXray 节点预览数量可能小于其他客户端。
+
 Profile 名会插入 8 位内容哈希版本号；同一通道必须使用同一通道的 GeoData。完整安装顺序、Rule 模式、固定节点快照和回滚说明见 `clients/onexray/docs/deployment.md` 与 `clients/onexray/docs/troubleshooting.md`。
 
 ## 10. sing-box：5 个 Config File

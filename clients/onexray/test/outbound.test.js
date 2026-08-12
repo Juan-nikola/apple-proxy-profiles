@@ -123,12 +123,42 @@ test("renders TLS and REALITY aliases with the audited false verification defaul
     security: "reality",
     sni: "reality.example.invalid",
     "client-fingerprint": "chrome",
-    "reality-opts": { "public-key": REALITY_KEY, "short-id": "0123abcd", "spider-x": "/crawl" },
+    "reality-opts": { "public-key": REALITY_KEY, "short-id": "0123abcd", "_spider-x": "/crawl" },
   }, "ap-node-reality"), {
     name: "OneXray normalized display name",
     protocol: "vless",
     settings: { address: "one.example.invalid", port: 443, id: UUID, encryption: "none" },
     tag: "ap-node-reality",
+    streamSettings: {
+      ...raw("reality"),
+      realitySettings: {
+        fingerprint: "chrome",
+        serverName: "reality.example.invalid",
+        publicKey: REALITY_KEY,
+        shortId: "0123abcd",
+        spiderX: "/crawl",
+      },
+    },
+    mux: { enabled: false },
+  });
+  assert.deepEqual(render({
+    ...COMMON,
+    type: "vless",
+    uuid: UUID,
+    tls: true,
+    sni: "reality.example.invalid",
+    "client-fingerprint": "chrome",
+    "reality-opts": { "public-key": REALITY_KEY, "short-id": "0123abcd", "_spider-x": "/crawl" },
+    network: "tcp",
+    flow: "xtls-rprx-vision",
+    udp: true,
+    "skip-cert-verify": false,
+    "packet-encoding": "xudp",
+  }, "ap-node-reality-quick"), {
+    name: "OneXray normalized display name",
+    protocol: "vless",
+    settings: { address: "one.example.invalid", port: 443, id: UUID, encryption: "none", flow: "xtls-rprx-vision" },
+    tag: "ap-node-reality-quick",
     streamSettings: {
       ...raw("reality"),
       realitySettings: {
@@ -150,7 +180,7 @@ test("renders every admitted raw, WebSocket, gRPC, HTTPUpgrade, XHTTP, KCP, and 
     [{ ...base, network: "ws", "ws-opts": { path: "/ws", headers: { Host: "ws.example.invalid" } } }, { network: "ws", wsSettings: { path: "/ws", host: "ws.example.invalid" }, security: "none" }],
     [{ ...base, network: "grpc", "grpc-opts": { "grpc-service-name": "grpc-service" } }, { network: "grpc", grpcSettings: { serviceName: "grpc-service" }, security: "none" }],
     [{ ...base, network: "httpupgrade", "httpupgrade-opts": { path: "/upgrade", host: "upgrade.example.invalid" } }, { network: "httpupgrade", httpupgradeSettings: { path: "/upgrade", host: "upgrade.example.invalid" }, security: "none" }],
-    [{ ...base, network: "xhttp", "xhttp-opts": { path: "/xhttp", host: "xhttp.example.invalid", mode: "auto" } }, { network: "xhttp", xhttpSettings: { path: "/xhttp", host: "xhttp.example.invalid", mode: "auto" }, security: "none" }],
+    [{ ...base, network: "xhttp", "xhttp-opts": { path: "/xhttp", host: "xhttp.example.invalid", mode: "auto", "packet-encoding": "xudp" }, "packet-encoding": "xudp" }, { network: "xhttp", xhttpSettings: { path: "/xhttp", host: "xhttp.example.invalid", mode: "auto", packetEncoding: "xudp" }, security: "none" }],
     [{ ...base, network: "kcp", "kcp-opts": {} }, { network: "kcp", kcpSettings: {}, security: "none" }],
   ];
   for (const [node, streamSettings] of transports) {

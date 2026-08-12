@@ -45,6 +45,8 @@ https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-
 
 预览成功标志：输出包含 OneXray 可导入的节点列表，节点数量大于 0。
 
+节点列表只保留 OneXray 支持的协议（VLESS、VMess、SS、Trojan、Socks、HTTP、Hysteria2）；Snell 等 Xray 内核不支持的协议会被自动排除，因此这里的节点数量可能小于其他客户端。
+
 ### 3.2 `onexray-profile`
 
 ```text

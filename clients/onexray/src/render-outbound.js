@@ -48,11 +48,11 @@ function realitySettings(node) {
   }
   const settings = {
     fingerprint: node["client-fingerprint"],
-    publicKey: reality["public-key"],
+    publicKey: reality["public-key"] ?? reality["_public-key"],
   };
   optional(settings, "serverName", node.sni ?? node.servername);
-  optional(settings, "shortId", reality["short-id"]);
-  optional(settings, "spiderX", reality["spider-x"]);
+  optional(settings, "shortId", reality["short-id"] ?? reality["_short-id"]);
+  optional(settings, "spiderX", reality["spider-x"] ?? reality["_spider-x"]);
   return settings;
 }
 
@@ -84,6 +84,11 @@ function transportSettings(node) {
     optional(xhttpSettings, "host", options.host);
     optional(xhttpSettings, "path", options.path);
     optional(xhttpSettings, "mode", options.mode);
+    optional(
+      xhttpSettings,
+      "packetEncoding",
+      node["packet-encoding"] ?? options["packet-encoding"],
+    );
     return { network: "xhttp", xhttpSettings };
   }
   if (network === "kcp") return { network: "kcp", kcpSettings: {} };
@@ -101,7 +106,7 @@ function streamSettings(node) {
   }
 
   const stream = transportSettings(node);
-  if (node.security === "reality") {
+  if (node.security === "reality" || node["reality-opts"] !== undefined) {
     stream.security = "reality";
     stream.realitySettings = realitySettings(node);
   } else if (node.tls === true || node.security === "tls") {

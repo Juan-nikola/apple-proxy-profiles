@@ -69,6 +69,8 @@ https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-
 
 预览成功标志：节点数量大于 0。
 
+OneXray 使用 Xray 内核，节点订阅只会包含 OneXray 支持的协议（VLESS、VMess、SS、Trojan、Socks、HTTP、Hysteria2）。原始组合里的 Snell 等 Xray 不支持的节点会被自动排除，所以 OneXray 的节点数量可能少于 Shadowrocket/Egern；这是预期行为。
+
 #### `onexray-profile`（Profile）
 
 ```text

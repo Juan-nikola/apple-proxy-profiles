@@ -1072,17 +1072,21 @@ var AnywhereNodeBundle = (() => {
     "servername",
     "alpn",
     "client-fingerprint",
-    "reality-opts"
+    "reality-opts",
+    "skip-cert-verify",
+    "allow-insecure"
   ]);
   var ONEXRAY_TRANSPORT_FIELDS = /* @__PURE__ */ new Set([
     "network",
+    "packet-encoding",
     "ws-opts",
     "grpc-opts",
     "httpupgrade-opts",
     "xhttp-opts",
     "kcp-opts"
   ]);
-  var ONEXRAY_COMMON_FIELDS = /* @__PURE__ */ new Set(["name", "type", "server", "port", "_profile"]);
+  var ONEXRAY_COMMON_FIELDS = /* @__PURE__ */ new Set(["name", "type", "server", "port", "udp", "_profile"]);
+  var ONEXRAY_PACKET_ENCODINGS = /* @__PURE__ */ new Set(["none", "xudp", "packet"]);
   function validOneXrayHeaders(value) {
     return isPlainObject(value) && Object.entries(value).every(([key, field]) => isNonblankString(key) && isNonblankString(field));
   }
@@ -1096,11 +1100,17 @@ var AnywhereNodeBundle = (() => {
     return null;
   }
   function oneXrayCommonReason(node) {
-    if (!isPlainObject(node) || !isNonblankString(node.name) || !isNonblankString(node.server) || !isValidPort(node.port)) return "invalid-onexray-node-shape";
+    if (!isPlainObject(node) || !isNonblankString(node.name) || !isNonblankString(node.server) || !isValidPort(node.port) || !isOptionalBoolean(node, "udp")) return "invalid-onexray-node-shape";
     return oneXrayAliasReason(node);
   }
   function oneXrayTlsReason(node, protocol2, { implicitTls = false, allowReality = protocol2 === "vless" } = {}) {
+    if (node["skip-cert-verify"] === true || node["allow-insecure"] === true) {
+      return "unsupported-onexray-option";
+    }
     if (!isOptionalBoolean(node, "tls") || !optionalStringAliasesAreValid(node, ["sni", "servername"])) {
+      return "invalid-onexray-node-shape";
+    }
+    if (!isOptionalBoolean(node, "skip-cert-verify") || !isOptionalBoolean(node, "allow-insecure")) {
       return "invalid-onexray-node-shape";
     }
     if (hasOption(node, "alpn") && (!Array.isArray(node.alpn) || node.alpn.length === 0 || node.alpn.some((value) => !isNonblankString(value)))) {
@@ -1115,15 +1125,22 @@ var AnywhereNodeBundle = (() => {
     if (protocol2 !== "vmess" && ["auto", "aes-128-gcm", "chacha20-poly1305", "zero"].includes(node.security)) {
       return "unsupported-onexray-tls-shape";
     }
-    if (node.security === "reality" && !allowReality) return "unsupported-onexray-tls-shape";
+    const realityRequested = node.security === "reality" || hasOption(node, "reality-opts");
+    if (realityRequested && !allowReality) return "unsupported-onexray-tls-shape";
     if (node.security === "reality" && !hasOption(node, "reality-opts")) return "incomplete-onexray-reality";
+    if (hasOption(node, "reality-opts") && hasOption(node, "security") && node.security !== "reality") {
+      return "incomplete-onexray-reality";
+    }
     if (node.tls === false && ["tls", "reality"].includes(node.security) || node.tls === true && node.security === "none") return "unsupported-onexray-tls-shape";
     const reality = node["reality-opts"];
     if (reality !== void 0) {
-      if (!allowReality || node.tls === false || node.security !== "reality" || !isPlainObject(reality) || !isRealityPublicKey(reality["public-key"])) {
+      const realityPublicKey = firstAliasValue(reality, ["public-key", "_public-key"]);
+      const shortId = reality["short-id"] ?? reality["_short-id"];
+      const spiderX = reality["spider-x"] ?? reality["_spider-x"];
+      if (!allowReality || node.tls === false || !isPlainObject(reality) || !isRealityPublicKey(realityPublicKey)) {
         return "incomplete-onexray-reality";
       }
-      if (Object.keys(reality).some((key) => !["public-key", "short-id", "spider-x"].includes(key)) || hasOption(reality, "short-id") && (!isNonblankString(reality["short-id"]) || !/^[0-9a-f]*$/i.test(reality["short-id"])) || hasOption(reality, "spider-x") && !isNonblankString(reality["spider-x"])) {
+      if (Object.keys(reality).some((key) => !["public-key", "short-id", "spider-x", "_public-key", "_short-id", "_spider-x"].includes(key)) || (hasOption(reality, "short-id") || hasOption(reality, "_short-id")) && (!isNonblankString(shortId) || !/^[0-9a-f]*$/i.test(shortId)) || (hasOption(reality, "spider-x") || hasOption(reality, "_spider-x")) && !isNonblankString(spiderX)) {
         return "incomplete-onexray-reality";
       }
     }
@@ -1144,8 +1161,16 @@ var AnywhereNodeBundle = (() => {
     if (!(/* @__PURE__ */ new Set(["tcp", "raw", "ws", "grpc", "httpupgrade", "xhttp", "kcp"])).has(network)) {
       return "unsupported-onexray-transport";
     }
+    const packetEncoding = node["packet-encoding"];
+    const hasPacketEncoding = hasOption(node, "packet-encoding");
+    if (hasPacketEncoding && (!isNonblankString(packetEncoding) || !ONEXRAY_PACKET_ENCODINGS.has(packetEncoding))) {
+      return "unsupported-onexray-transport";
+    }
     if (network === "tcp" || network === "raw") {
       return transportOptions.some((key) => hasOption(node, key)) ? "unsupported-onexray-transport" : null;
+    }
+    if (hasPacketEncoding && network !== "xhttp") {
+      return "unsupported-onexray-transport";
     }
     const optionByNetwork = {
       ws: "ws-opts",
@@ -1166,8 +1191,8 @@ var AnywhereNodeBundle = (() => {
       return Object.keys(options).some((key) => key !== "grpc-service-name") || hasOption(options, "grpc-service-name") && !isNonblankString(options["grpc-service-name"]) ? "unsupported-onexray-transport" : null;
     }
     if (network === "httpupgrade" || network === "xhttp") {
-      const allowed = network === "httpupgrade" ? ["path", "host"] : ["path", "host", "mode"];
-      return Object.keys(options).some((key) => !allowed.includes(key)) || hasOption(options, "path") && !isNonblankString(options.path) || hasOption(options, "host") && !isNonblankString(options.host) || hasOption(options, "mode") && !(/* @__PURE__ */ new Set(["auto", "packet-up", "stream-up", "stream-one"])).has(options.mode) ? "unsupported-onexray-transport" : null;
+      const allowed = network === "httpupgrade" ? ["path", "host"] : ["path", "host", "mode", "packet-encoding"];
+      return Object.keys(options).some((key) => !allowed.includes(key)) || hasOption(options, "path") && !isNonblankString(options.path) || hasOption(options, "host") && !isNonblankString(options.host) || hasOption(options, "mode") && !(/* @__PURE__ */ new Set(["auto", "packet-up", "stream-up", "stream-one"])).has(options.mode) || hasOption(options, "packet-encoding") && (!isNonblankString(options["packet-encoding"]) || !ONEXRAY_PACKET_ENCODINGS.has(options["packet-encoding"])) ? "unsupported-onexray-transport" : null;
     }
     return Object.keys(options).length === 0 ? null : "unsupported-onexray-transport";
   }
