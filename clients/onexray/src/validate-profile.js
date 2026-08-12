@@ -183,18 +183,18 @@ function tagChecks(profile, errors) {
   const inbounds = Array.isArray(profile.inbounds) ? profile.inbounds : [];
   const servers = Array.isArray(profile.dns?.servers) ? profile.dns.servers : [];
   for (const item of [...outbounds, ...inbounds, ...servers]) {
-    if (typeof item.tag !== "string") continue;
+    if (!object(item) || typeof item.tag !== "string") continue;
     if (all.has(item.tag)) add(errors, `duplicate tag: ${item.tag}`);
     all.add(item.tag);
   }
   for (const outbound of outbounds) {
-    if (typeof outbound.tag !== "string") continue;
+    if (!object(outbound) || typeof outbound.tag !== "string") continue;
     if (RESERVED_TAGS.has(outbound.tag) && !["direct", "block", "dnsOut", "chainProxy"].includes(outbound.tag)) add(errors, `reserved outbound tag is not runtime-owned: ${outbound.tag}`);
     if (outbound.tag === "direct" && outbound.protocol !== "freedom") add(errors, "direct must use freedom");
     if (outbound.tag === "block" && outbound.protocol !== "blackhole") add(errors, "block must use blackhole");
     if (outbound.tag === "dnsOut" && outbound.protocol !== "dns") add(errors, "dnsOut must use dns");
   }
-  for (const server of servers) if (typeof server.tag === "string" && !DNS_TAGS.has(server.tag)) add(errors, `unknown OneXray DNS tag: ${server.tag}`);
+  for (const server of servers) if (object(server) && typeof server.tag === "string" && !DNS_TAGS.has(server.tag)) add(errors, `unknown OneXray DNS tag: ${server.tag}`);
 }
 
 function systemOutboundChecks(profile, context, errors) {
@@ -209,7 +209,7 @@ function systemOutboundChecks(profile, context, errors) {
     else if (matches[0].protocol !== protocol) add(errors, `${tag} outbound must use ${protocol}`);
   }
   const chain = profile.outbounds.filter((outbound) => outbound?.tag === "chainProxy");
-  if (chain.length > 0 && chain.some((outbound) => ["freedom", "blackhole", "dns"].includes(outbound.protocol))) {
+  if (chain.length > 0 && chain.some((outbound) => ["freedom", "blackhole", "dns"].includes(outbound?.protocol))) {
     add(errors, "chainProxy must be a valid custom landing outbound");
   }
   if (chain.length > 0 && chain.some((outbound) => typeof outbound.name !== "string" || !object(outbound.settings))) {
@@ -221,8 +221,9 @@ function systemOutboundChecks(profile, context, errors) {
 function outboundReferences(profile, errors) {
   const outbounds = Array.isArray(profile.outbounds) ? profile.outbounds : [];
   const tags = new Set(outbounds.map((outbound) => outbound?.tag).filter((tag) => typeof tag === "string"));
-  for (const rule of profile.routing?.rules ?? []) {
-    if (typeof rule.outboundTag !== "string") continue;
+  const rules = Array.isArray(profile.routing?.rules) ? profile.routing.rules : [];
+  for (const rule of rules) {
+    if (!object(rule) || typeof rule.outboundTag !== "string") continue;
     if (!tags.has(rule.outboundTag) && !RUNTIME_OUTBOUND_TAGS.has(rule.outboundTag)) add(errors, `routing references missing outbound: ${rule.outboundTag}`);
   }
 }
@@ -230,7 +231,9 @@ function outboundReferences(profile, errors) {
 function inboundReferences(profile, errors) {
   const inbounds = Array.isArray(profile.inbounds) ? profile.inbounds : [];
   const tags = new Set([...inbounds.map((inbound) => inbound?.tag), ...INBOUND_TAGS]);
-  for (const rule of profile.routing?.rules ?? []) {
+  const rules = Array.isArray(profile.routing?.rules) ? profile.routing.rules : [];
+  for (const rule of rules) {
+    if (!object(rule)) continue;
     for (const tag of rule.inboundTag ?? []) if (!tags.has(tag)) add(errors, `routing references missing inbound: ${tag}`);
   }
 }

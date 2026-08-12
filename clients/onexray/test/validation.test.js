@@ -93,4 +93,9 @@ test("requires exactly one correctly typed system outbound and a valid chain lan
   assert.equal(validateOneXrayProfile({ ...PROFILE, outbounds: null }, CONTEXT).valid, false);
   assert.equal(validateOneXrayProfile({ ...PROFILE, outbounds: {} }, CONTEXT).valid, false);
   assert.equal(validateOneXrayProfile({ ...PROFILE, inbounds: {} }, CONTEXT).valid, false);
+  assert.equal(validateOneXrayProfile({ ...PROFILE, outbounds: [null] }, CONTEXT).valid, false);
+  assert.equal(validateOneXrayProfile({ ...PROFILE, inbounds: [null] }, CONTEXT).valid, false);
+  assert.equal(validateOneXrayProfile({ ...PROFILE, dns: { servers: [null] } }, CONTEXT).valid, false);
+  assert.equal(validateOneXrayProfile({ ...PROFILE, routing: { ...PROFILE.routing, rules: {} } }, CONTEXT).valid, false);
+  assert.equal(validateOneXrayProfile({ ...PROFILE, routing: { ...PROFILE.routing, rules: [null] } }, CONTEXT).valid, false);
 });
