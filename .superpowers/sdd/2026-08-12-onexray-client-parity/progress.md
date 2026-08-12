@@ -24,7 +24,8 @@ Task 6: fix round 1/5 (1 addressed, 0 open — split resolver domain/IP alternat
 Task 6: complete (commit 54b70b5, focused DNS 52/52, OneXray workspace 33/33, legacy fixtures unchanged; review clean)
 Task 7: fix round 1/5 (2 addressed, 0 open — credential-free provenance/hash validation and deterministic duplicate-rule merging; commits 7774d57..972c9e6)
 Task 7: complete (commits 7774d57..972c9e6, focused geodata 6/6, OneXray workspace 39/39; review approved)
-Task 8: pending
+Task 8: fix round 1/5 (2 addressed, 0 open — domestic platform target resolution and conditional proxy-block final guard; commits deb1f27..8786325)
+Task 8: complete (commit 8786325, focused routing 7/7, combined 23/23; review approved)
 Task 9: pending
 Task 10: pending
 Task 11: pending
