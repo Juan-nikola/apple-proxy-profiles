@@ -231,7 +231,12 @@ export function renderOneXrayImportPage(input = {}) {
   const manifest = validateManifest(input.manifest);
   const base = input.publicRoot ?? input.publicBase;
   if (typeof base !== "string") throw new TypeError("OneXray public base is required");
-  const urls = input.assets ?? assetUrls(manifest, base);
+  const expectedUrls = assetUrls(manifest, base);
+  const urls = input.assets ?? expectedUrls;
+  if (!urls || typeof urls !== "object"
+    || canonicalJson(urls) !== canonicalJson(expectedUrls)) {
+    throw new TypeError("OneXray GeoData asset URLs do not match the validated public channel");
+  }
   const domainUrl = validateAssetUrl(urls.domain, "/geosite.dat");
   const ipUrl = validateAssetUrl(urls.ip, "/geoip.dat");
   const files = input.files instanceof Map ? input.files : null;

@@ -102,4 +102,16 @@ test("rejects non-HTTPS bases and malformed public manifests before rendering", 
     }),
     /manifest|assets/u,
   );
+  const valid = build("edge");
+  assert.throws(
+    () => renderOneXrayImportPage({
+      manifest: valid.manifest,
+      publicBase: valid.publicBase,
+      assets: {
+        ...valid.assets,
+        domain: "https://attacker.example.invalid/geosite.dat",
+      },
+    }),
+    /asset URLs|public channel/u,
+  );
 });
