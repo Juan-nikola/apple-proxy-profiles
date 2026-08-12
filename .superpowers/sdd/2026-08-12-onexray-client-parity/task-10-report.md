@@ -37,3 +37,19 @@ node --test clients/onexray/test/audit.test.js clients/onexray/test/substore-pro
 node --test clients/onexray/test/*.test.js test/business-targets.test.js
 75 passed, 0 failed
 ```
+
+## Fix round 2
+
+- Added optional `geoManifest`/`geoHashes` request metadata. Only validated lowercase SHA-256 domain/IP hashes enter the private context; the audit reports `available: false` with null hashes when no compiled manifest is supplied instead of fabricating asset hashes.
+- Wrapped direct audit rendering in a stable `OneXray audit: invalid-context` boundary for Proxy/getter failures.
+- Added regression coverage for real hash pass-through, unavailable-hash behavior, and audit context traps.
+
+Fix-round tests:
+
+```text
+node --test clients/onexray/test/audit.test.js clients/onexray/test/substore-profile-entry.test.js
+12 passed, 0 failed
+
+node --test clients/onexray/test/*.test.js test/business-targets.test.js
+78 passed, 0 failed
+```
