@@ -70,3 +70,25 @@ test("rejects credentials outside custom outbound settings and diagnostic or sub
   assert.match(result.errors.join(" "), /diagnostic|model|secret|credential/u);
 });
 
+test("requires exactly one correctly typed system outbound and a valid chain landing", () => {
+  const missingDirect = {
+    ...PROFILE,
+    outbounds: PROFILE.outbounds.filter(({ tag }) => tag !== "direct"),
+  };
+  assert.equal(validateOneXrayProfile(missingDirect, CONTEXT).valid, false);
+
+  const wrongSystem = {
+    ...PROFILE,
+    outbounds: PROFILE.outbounds.map((outbound) => outbound.tag === "block"
+      ? { ...outbound, protocol: "freedom" }
+      : outbound),
+  };
+  assert.equal(validateOneXrayProfile(wrongSystem, CONTEXT).valid, false);
+
+  const chainLanding = {
+    ...PROFILE,
+    outbounds: [...PROFILE.outbounds, { protocol: "freedom", tag: "chainProxy" }],
+  };
+  assert.equal(validateOneXrayProfile(chainLanding, { ...CONTEXT, chain: { enabled: true, landingTag: "chainProxy" } }).valid, false);
+  assert.equal(validateOneXrayProfile({ ...PROFILE, outbounds: null }, CONTEXT).valid, false);
+});

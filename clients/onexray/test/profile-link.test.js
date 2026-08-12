@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import test from "node:test";
 
 import {
@@ -45,7 +46,7 @@ test("round-trips standard Base64 bytes and detects content or option changes", 
   assert.equal(decoded.channel, "edge");
   assert.equal(decoded.hash.length, 8);
   assert.throws(() => decodeOneXrayProfileLink(link.replace("%C2", "%c2")), /canonical|invalid|standard/u);
-  const changed = { ...PROFILE, dns: { servers: [{ address: "system" }] } };
+  const changed = { ...PROFILE, dns: { servers: [{ tag: "dns-global", address: "system" }] } };
   assert.notEqual(buildOneXrayProfileLink(changed, "edge"), link);
   assert.notEqual(buildOneXrayProfileLink({ ...PROFILE, name: "Apple Proxy · OneXray · current" }, "current"), link);
 });
@@ -55,4 +56,14 @@ test("rejects malformed links and enforces the 32 KiB encoded-link budget", () =
   assert.throws(() => buildOneXrayProfileLink(PROFILE, "unknown"), /channel/u);
   const nearLimit = { ...PROFILE, dns: { servers: [{ address: "x".repeat(30_000) }] } };
   assert.throws(() => buildOneXrayProfileLink(nearLimit, "edge"), /32|length|budget/u);
+});
+
+test("keeps the Profile link module free of Node-only globals and validates before encoding", () => {
+  const source = readFileSync(new URL("../src/profile-link.js", import.meta.url), "utf8");
+  assert.doesNotMatch(source, /\bBuffer\b|node:/u);
+  const invalid = {
+    ...PROFILE,
+    routing: { ...PROFILE.routing, rules: [{ type: "field", outboundTag: "missing" }] },
+  };
+  assert.throws(() => buildOneXrayProfileLink(invalid, "edge"), /valid|missing|reference/u);
 });

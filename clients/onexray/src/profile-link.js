@@ -1,10 +1,18 @@
+import {
+  canonicalProfileJson,
+  decodeStandardBase64,
+  decodeUtf8,
+  encodeStandardBase64,
+} from "./profile-codec.js";
+import { validateOneXrayProfile } from "./validate-profile.js";
+
 const CHANNELS = new Set(["edge", "current", "previous"]);
 const LINK_PREFIX = "onexray://onexray.com/config/add";
 const MAX_PROFILE_LINK_LENGTH = 32_768;
 const NAME_PREFIX = "Apple Proxy · OneXray";
 
-// Kept local instead of importing node:crypto: the same Profile renderer is
-// bundled into the browser/IIFE Sub-Store task. These are the SHA-256 round
+// Kept local so the same Profile renderer can be bundled into the browser/IIFE
+// Sub-Store task. These are the SHA-256 round
 // constants from FIPS 180-4, represented as unsigned 32-bit words.
 const SHA256_K = Object.freeze([
   0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
@@ -73,33 +81,6 @@ function requiredChannel(channel) {
   return channel;
 }
 
-function canonicalValue(value, seen = new Set()) {
-  if (value === null || typeof value !== "object") {
-    if (typeof value === "number" && !Number.isFinite(value)) throw new TypeError("OneXray Profile contains a non-finite number");
-    if (typeof value === "bigint" || typeof value === "function" || typeof value === "symbol" || value === undefined) {
-      throw new TypeError("OneXray Profile contains a non-JSON value");
-    }
-    return value;
-  }
-  if (seen.has(value)) throw new TypeError("OneXray Profile must not contain cycles");
-  seen.add(value);
-  let result;
-  if (Array.isArray(value)) result = value.map((entry) => canonicalValue(entry, seen));
-  else {
-    result = {};
-    for (const key of Object.keys(value).sort()) result[key] = canonicalValue(value[key], seen);
-  }
-  seen.delete(value);
-  return result;
-}
-
-export function canonicalProfileJson(profile) {
-  if (profile === null || typeof profile !== "object" || Array.isArray(profile)) {
-    throw new TypeError("OneXray Profile must be an object");
-  }
-  return JSON.stringify(canonicalValue(profile));
-}
-
 function profileHash(profile) {
   return sha256Hex(canonicalProfileJson(profile)).slice(0, 8);
 }
@@ -110,23 +91,15 @@ function baseName(channel) {
 
 function parseProfileJson(data) {
   if (typeof data !== "string" || data.length === 0 || /\s/u.test(data)) throw new TypeError("OneXray Profile link data is invalid");
-  if (!/^[A-Za-z0-9+/]*={0,2}$/u.test(data) || data.length % 4 !== 0) throw new TypeError("OneXray Profile link data is not standard Base64");
-  let bytes;
-  try {
-    bytes = Buffer.from(data, "base64");
-  } catch {
-    throw new TypeError("OneXray Profile link data is not standard Base64");
-  }
-  if (bytes.toString("base64") !== data) throw new TypeError("OneXray Profile link data is not canonical Base64");
+  const bytes = decodeStandardBase64(data);
+  const text = decodeUtf8(bytes);
   let profile;
   try {
-    profile = JSON.parse(bytes.toString("utf8"));
+    profile = JSON.parse(text);
   } catch {
     throw new TypeError("OneXray Profile link data is not valid JSON");
   }
   if (profile === null || typeof profile !== "object" || Array.isArray(profile)) throw new TypeError("OneXray Profile link JSON must be an object");
-  // A UTF-8 replacement character is never emitted by the canonical encoder.
-  if (bytes.toString("utf8").includes("\uFFFD")) throw new TypeError("OneXray Profile link JSON is not valid UTF-8");
   return profile;
 }
 
@@ -143,8 +116,13 @@ export function buildOneXrayProfileLink(profile, channel) {
   requiredChannel(channel);
   const expectedName = baseName(channel);
   if (profile?.name !== expectedName) throw new Error("OneXray Profile name must be the invariant channel base name");
+  const validation = validateOneXrayProfile(profile, {
+    channel,
+    chain: { enabled: profile.outbounds?.some?.(({ tag }) => tag === "chainProxy") === true, landingTag: "chainProxy" },
+  });
+  if (!validation.valid) throw new Error(`OneXray Profile failed validation: ${validation.errors.join(", ")}`);
   const canonical = canonicalProfileJson(profile);
-  const encoded = encodeURIComponent(Buffer.from(canonical, "utf8").toString("base64"));
+  const encoded = encodeURIComponent(encodeStandardBase64(new TextEncoder().encode(canonical)));
   const displayName = `${expectedName} · ${profileHash(profile)}`;
   const fragment = encodeURIComponent(displayName);
   const link = `${LINK_PREFIX}?type=profile&data=${encoded}#${fragment}`;
@@ -182,4 +160,4 @@ export function decodeOneXrayProfileLink(link) {
   return Object.freeze({ profile, channel, hash, displayName: fragment });
 }
 
-export { MAX_PROFILE_LINK_LENGTH, NAME_PREFIX };
+export { canonicalProfileJson, MAX_PROFILE_LINK_LENGTH, NAME_PREFIX };

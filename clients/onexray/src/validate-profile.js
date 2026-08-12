@@ -1,6 +1,6 @@
 import { orderedRoutingPlan } from "../../../shared/rules/lightweight-policy.js";
 import { oneXrayGeoCode, oneXrayGeoNames } from "./geodata-contract.js";
-import { canonicalProfileJson } from "./profile-link.js";
+import { canonicalProfileJson, encodeStandardBase64 } from "./profile-codec.js";
 
 const MAX_PROFILE_LINK_LENGTH = 32_768;
 const CHANNELS = new Set(["edge", "current", "previous"]);
@@ -197,6 +197,27 @@ function tagChecks(profile, errors) {
   for (const server of servers) if (typeof server.tag === "string" && !DNS_TAGS.has(server.tag)) add(errors, `unknown OneXray DNS tag: ${server.tag}`);
 }
 
+function systemOutboundChecks(profile, context, errors) {
+  if (!Array.isArray(profile.outbounds)) {
+    add(errors, "outbounds must be an array");
+    return;
+  }
+  const required = new Map([["direct", "freedom"], ["block", "blackhole"], ["dnsOut", "dns"]]);
+  for (const [tag, protocol] of required) {
+    const matches = profile.outbounds.filter((outbound) => outbound?.tag === tag);
+    if (matches.length !== 1) add(errors, `Profile requires exactly one ${tag} outbound`);
+    else if (matches[0].protocol !== protocol) add(errors, `${tag} outbound must use ${protocol}`);
+  }
+  const chain = profile.outbounds.filter((outbound) => outbound?.tag === "chainProxy");
+  if (chain.length > 0 && chain.some((outbound) => ["freedom", "blackhole", "dns"].includes(outbound.protocol))) {
+    add(errors, "chainProxy must be a valid custom landing outbound");
+  }
+  if (chain.length > 0 && chain.some((outbound) => typeof outbound.name !== "string" || !object(outbound.settings))) {
+    add(errors, "chainProxy landing outbound is incomplete");
+  }
+  if (context.chain?.enabled === true && chain.length !== 1) add(errors, "chain-enabled Profile must contain exactly one chainProxy outbound");
+}
+
 function outboundReferences(profile, errors) {
   const tags = new Set((profile.outbounds ?? []).map(({ tag }) => tag).filter((tag) => typeof tag === "string"));
   for (const rule of profile.routing?.rules ?? []) {
@@ -290,21 +311,11 @@ function canonicalChecks(profile, context, errors) {
   }
   const channel = CHANNELS.has(context.channel) ? context.channel : "edge";
   const name = `Apple Proxy · OneXray · ${channel}`;
-  const hash = Buffer.from(canonical, "utf8");
-  const digest = (awaitableHash(hash));
-  const encoded = encodeURIComponent(hash.toString("base64"));
+  const bytes = new TextEncoder().encode(canonical);
+  const digest = "00000000";
+  const encoded = encodeURIComponent(encodeStandardBase64(bytes));
   const fragment = encodeURIComponent(`${name} · ${digest}`);
   if (`onexray://onexray.com/config/add?type=profile&data=${encoded}#${fragment}`.length > MAX_PROFILE_LINK_LENGTH) add(errors, "OneXray Profile deep link exceeds 32 KiB");
-}
-
-// Kept synchronous and dependency-free so the validator can be used by the
-// browser bundle without importing the link builder's URL parser.
-function awaitableHash(bytes) {
-  // SHA-256 is computed by profile-link.js when encoding. Validation only
-  // needs an eight-character shape to budget the fragment deterministically.
-  // The fixed-length placeholder has exactly the same encoded length.
-  void bytes;
-  return "00000000";
 }
 
 export function validateOneXrayProfile(profile, context = {}) {
@@ -313,6 +324,7 @@ export function validateOneXrayProfile(profile, context = {}) {
   else {
     validateModel(profile, errors);
     tagChecks(profile, errors);
+    systemOutboundChecks(profile, context, errors);
     outboundReferences(profile, errors);
     inboundReferences(profile, errors);
     geoReferences(profile, context, errors);
