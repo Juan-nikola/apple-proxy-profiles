@@ -179,3 +179,30 @@ test("derives deterministic credential-free input provenance", () => {
   invalidHash.get("GitHub").sourceSha256 = "A".repeat(64);
   assert.throws(() => renderXrayGeoData(invalidHash, "edge"), /source hash/u);
 });
+
+test("merges duplicate entries before hashing regardless of noResolve order", () => {
+  const firstSnapshot = fixtureSnapshot();
+  firstSnapshot.get("GitHub").entries = [
+    {
+      kind: RULE_KIND.domainSuffix,
+      value: "github.example",
+      noResolve: false,
+      sourceId: "GitHub",
+    },
+    {
+      kind: RULE_KIND.domainSuffix,
+      value: "github.example",
+      noResolve: true,
+      sourceId: "GitHub",
+    },
+  ];
+  const secondSnapshot = fixtureSnapshot({ reverse: true });
+  secondSnapshot.get("GitHub").entries = [...firstSnapshot.get("GitHub").entries].reverse();
+
+  const first = renderXrayGeoData(firstSnapshot, "edge");
+  const second = renderXrayGeoData(secondSnapshot, "edge");
+  assert.deepEqual(first.domain, second.domain);
+  assert.deepEqual(first.manifest.inputHashes, second.manifest.inputHashes);
+  assert.deepEqual(first.manifest.sources, second.manifest.sources);
+  assert.equal(first.manifest.domain.ruleCount, DEFAULT_RULE_SOURCE_IDS.length - 1);
+});

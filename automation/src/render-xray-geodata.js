@@ -138,10 +138,22 @@ function normalizedEntries(records) {
       }
       if (DOMAIN_KINDS.has(raw.kind)) {
         const entry = normalizeRuleEntry({ ...raw, sourceId: record.sourceId });
-        domains.set(`${entry.kind}\0${entry.value}`, entry);
+        const key = `${entry.kind}\0${entry.value}`;
+        const existing = domains.get(key);
+        domains.set(key, existing && existing.noResolve
+          ? existing
+          : existing && entry.noResolve
+            ? Object.freeze({ ...existing, noResolve: true })
+            : entry);
       } else if (IP_KINDS.has(raw.kind)) {
         const entry = normalizeRuleEntry({ ...raw, sourceId: record.sourceId });
-        cidrs.set(`${entry.kind}\0${entry.value}`, entry);
+        const key = `${entry.kind}\0${entry.value}`;
+        const existing = cidrs.get(key);
+        cidrs.set(key, existing && existing.noResolve
+          ? existing
+          : existing && entry.noResolve
+            ? Object.freeze({ ...existing, noResolve: true })
+            : entry);
       } else if (!Object.values(RULE_KIND).includes(raw.kind)) {
         throw new TypeError(`OneXray GeoData source ${record.sourceId}: rule kind is invalid`);
       }
