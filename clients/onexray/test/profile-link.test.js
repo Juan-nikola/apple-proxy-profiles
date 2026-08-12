@@ -35,6 +35,7 @@ test("canonicalizes recursively with stable compact bytes and hashes the complet
   const link = buildOneXrayProfileLink(PROFILE, "edge");
   assert.match(link, /^onexray:\/\/onexray\.com\/config\/add\?type=profile&data=/u);
   assert.match(link, /#Apple%20Proxy%20%C2%B7%20OneXray%20%C2%B7%20edge%20%C2%B7%20[0-9a-f]{8}$/u);
+  assert.equal(buildOneXrayProfileLink(PROFILE, "edge").split("#").at(-1).endsWith("aba2118d"), true);
 });
 
 test("round-trips standard Base64 bytes and detects content or option changes", () => {
