@@ -10,5 +10,8 @@
     "fixtures": "node scripts/render-fixtures.mjs",
     "check:secrets": "node ../../scripts/check-secrets.mjs",
     "verify": "npm run test && npm run build && npm run fixtures && npm run check:secrets"
+  },
+  "devDependencies": {
+    "esbuild": "0.28.1"
   }
 }

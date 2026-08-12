@@ -23,7 +23,6 @@ test("OneXray contract examples are valid, deterministic JSON", async () => {
     assert.deepEqual(scanText(relative, text), [], relative);
   }
 });
-
 test("contract examples contain only redacted schema shapes", async () => {
   const nodes = JSON.parse(await readFile(new URL(EXAMPLES[0], import.meta.url), "utf8"));
   const profile = JSON.parse(await readFile(new URL(EXAMPLES[1], import.meta.url), "utf8"));
@@ -45,4 +44,3 @@ test("contract examples contain only redacted schema shapes", async () => {
   assert.doesNotMatch(all, /(?:NODE:|ap-fixed-|chainProxy|PRIVATE_|TEST_ONLY_)/u);
   assert.doesNotMatch(all, /198\.51\.100\.|192\.0\.2\./u);
 });
-
