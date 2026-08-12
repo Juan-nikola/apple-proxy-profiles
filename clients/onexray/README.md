@@ -64,7 +64,7 @@ Sub-Store → Files → 新建任务 → 远程链接，然后粘贴下面完整
 #### `onexray-nodes`（节点订阅）
 
 ```text
-https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-nodes-generator.js#output=nodes&type=collection&name=apple-proxy-sources&channel=edge&clientChain=off
+https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-nodes-generator.js?v=3#output=nodes&type=collection&name=apple-proxy-sources&channel=edge&clientChain=off
 ```
 
 预览成功标志：节点数量大于 0。
@@ -74,7 +74,7 @@ OneXray 使用 Xray 内核，节点订阅只会包含 OneXray 支持的协议（
 #### `onexray-profile`（Profile）
 
 ```text
-https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-profile-generator.js#output=profile&type=collection&name=apple-proxy-sources&channel=edge&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&clientChain=off&policyOverrides=
+https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-profile-generator.js?v=3#output=profile&type=collection&name=apple-proxy-sources&channel=edge&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&clientChain=off
 ```
 
 预览成功标志：生成带版本号的 Profile deep link 或可导入的 Profile 内容。
@@ -82,8 +82,10 @@ https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-
 #### `onexray-routing-audit`（脱敏审计，可选）
 
 ```text
-https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-profile-generator.js#output=audit&type=collection&name=apple-proxy-sources&channel=edge&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&clientChain=off&policyOverrides=
+https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-profile-generator.js?v=3#output=audit&type=collection&name=apple-proxy-sources&channel=edge&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&clientChain=off
 ```
+
+`v=3` 是 Sub-Store 脚本缓存版本号：脚本内容更新后，把三个任务 URL 里的 `v=` 数字 +1 再保存一次，否则 Sub-Store 可能继续使用旧脚本。需要固定业务节点时，在 URL 末尾追加非空的 `&policyOverrides=<Base64URL>`；不要写成空的 `&policyOverrides=`，旧版链接模式会把空值解析成布尔值并导致生成失败。
 
 ### 第 2 步：安装 edge GeoData
 

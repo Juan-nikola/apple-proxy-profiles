@@ -238,14 +238,14 @@ OneXray 的两个 bundle 已随 edge 发布到 Pages，只存在于 `edge/onexra
 节点任务：
 
 ```text
-https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-nodes-generator.js#output=nodes&type=collection&name=apple-proxy-sources&channel=edge&clientChain=off
+https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-nodes-generator.js?v=3#output=nodes&type=collection&name=apple-proxy-sources&channel=edge&clientChain=off
 ```
 
 Profile 与审计共用同一个生成器，只改 `output`：
 
 ```text
-https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-profile-generator.js#output=profile&type=collection&name=apple-proxy-sources&channel=edge&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&clientChain=off&policyOverrides=
-https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-profile-generator.js#output=audit&type=collection&name=apple-proxy-sources&channel=edge&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&clientChain=off&policyOverrides=
+https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-profile-generator.js?v=3#output=profile&type=collection&name=apple-proxy-sources&channel=edge&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&clientChain=off
+https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-profile-generator.js?v=3#output=audit&type=collection&name=apple-proxy-sources&channel=edge&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&clientChain=off
 ```
 
 | 任务 | 输出 | 平台/作用 | 更新 |
@@ -255,6 +255,8 @@ https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-
 | `onexray-routing-audit` | audit | 脱敏路由审计 | 按需 |
 
 OneXray 的节点订阅只保留 Xray 内核支持的协议（VLESS、VMess、SS、Trojan、Socks、HTTP、Hysteria2）；原始组合中的 Snell 等节点会被自动排除，因此 OneXray 节点预览数量可能小于其他客户端。
+
+`v=3` 是 Sub-Store 脚本缓存版本号；脚本内容更新后把三个任务 URL 里的 `v=` 数字 +1 并重新保存。需要固定业务时追加非空 `&policyOverrides=<Base64URL>`，不要使用空的 `&policyOverrides=`。
 
 Profile 名会插入 8 位内容哈希版本号；同一通道必须使用同一通道的 GeoData。完整安装顺序、Rule 模式、固定节点快照和回滚说明见 `clients/onexray/docs/deployment.md` 与 `clients/onexray/docs/troubleshooting.md`。
 
