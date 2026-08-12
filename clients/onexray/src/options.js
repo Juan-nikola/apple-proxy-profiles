@@ -13,9 +13,11 @@ const DEFAULTS = Object.freeze({
   clientChainTarget: "",
   policyOverrides: "",
   policyFile: "",
+  logLevel: "warning",
 });
 const OUTPUTS = new Set(["nodes", "profile", "audit"]);
 const CHANNELS = new Set(["edge", "current", "previous"]);
+const LOG_LEVELS = new Set(["none", "error", "warning", "info", "debug"]);
 const PROTOTYPE_KEYS = new Set(["__proto__", "constructor", "prototype"]);
 const ALLOWED_KEYS = new Set([...REQUIRED_KEYS, "channel", ...Object.keys(DEFAULTS)]);
 const NODE_TARGET = /^NODE:(.*)$/iu;
@@ -116,6 +118,8 @@ export function parseOneXrayOptions(raw) {
     throw optionError("policyFile", "cannot be combined with policyOverrides");
   }
 
+  const logLevel = enumValue(values, "logLevel", LOG_LEVELS, DEFAULTS.logLevel);
+
   return Object.freeze({
     output,
     type,
@@ -131,5 +135,6 @@ export function parseOneXrayOptions(raw) {
     clientChainTarget,
     policyOverrides,
     policyFile,
+    logLevel,
   });
 }

@@ -77,6 +77,12 @@ test("renders a minimal native Profile with system outbounds and no raw config f
   assert.equal(JSON.stringify(profile).includes("dialerProxy"), false);
 });
 
+test("renders the configured OneXray log level", () => {
+  assert.deepEqual(render({ options: { logLevel: "warning" } }).log, { loglevel: "warning" });
+  assert.deepEqual(render({ options: { logLevel: "info" } }).log, { loglevel: "info" });
+  assert.deepEqual(render({ options: { logLevel: "debug" } }).log, { loglevel: "debug" });
+});
+
 test("emits one shared fixed outbound for multiple businesses and no custom outbound when none is fixed", () => {
   const shared = node("🇺🇸 Los Angeles｜自建", "fixed-1");
   const fixedResolution = resolution({

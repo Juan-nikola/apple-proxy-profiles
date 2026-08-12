@@ -22,6 +22,7 @@ test("parses the exact OneXray contract with pinned defaults and a trimmed displ
     clientChainTarget: "",
     policyOverrides: "",
     policyFile: "",
+    logLevel: "warning",
   });
   assert.equal(Object.isFrozen(parsed), true);
 });
@@ -40,6 +41,7 @@ test("accepts every supported OneXray output, channel, and shared option enum", 
     blockMode: ["balanced", "security", "strict", "off"],
     quicMode: ["allow", "proxy-block", "all-block"],
     ipv6Mode: ["auto", "ipv4-only"],
+    logLevel: ["none", "error", "warning", "info", "debug"],
   })) {
     for (const value of values) assert.equal(parseOneXrayOptions({ ...REQUIRED, [key]: value })[key], value);
   }
@@ -112,6 +114,20 @@ test("accepts a Sub-Store policy file name and rejects unsafe or conflicting for
   }
 });
 
+test("accepts only the five OneXray log levels and defaults to warning", () => {
+  for (const value of ["none", "error", "warning", "info", "debug"]) {
+    assert.equal(parseOneXrayOptions({ ...REQUIRED, logLevel: value }).logLevel, value);
+  }
+  assert.equal(parseOneXrayOptions(REQUIRED).logLevel, "warning");
+  for (const raw of [
+    { ...REQUIRED, logLevel: "verbose" },
+    { ...REQUIRED, logLevel: 7 },
+    { ...REQUIRED, logLevel: "" },
+  ]) {
+    assert.throws(() => parseOneXrayOptions(raw), /logLevel/u);
+  }
+});
+
 test("does not expose private target or override values in option errors", () => {
   const secret = "TEST_ONLY_ONEXRAY_POLICY_VALUE";
   for (const raw of [
@@ -141,6 +157,7 @@ test("rejects every explicitly supplied undefined option instead of applying a d
     "clientChainTarget",
     "policyOverrides",
     "policyFile",
+    "logLevel",
   ]) {
     assert.throws(() => parseOneXrayOptions({ ...REQUIRED, [key]: undefined }), new RegExp(key, "i"));
   }

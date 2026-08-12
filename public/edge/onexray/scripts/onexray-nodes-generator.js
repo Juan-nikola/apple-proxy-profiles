@@ -1875,10 +1875,12 @@ var OneXrayNodesBundle = (() => {
     clientChain: "off",
     clientChainTarget: "",
     policyOverrides: "",
-    policyFile: ""
+    policyFile: "",
+    logLevel: "warning"
   });
   var OUTPUTS = /* @__PURE__ */ new Set(["nodes", "profile", "audit"]);
   var CHANNELS = /* @__PURE__ */ new Set(["edge", "current", "previous"]);
+  var LOG_LEVELS = /* @__PURE__ */ new Set(["none", "error", "warning", "info", "debug"]);
   var PROTOTYPE_KEYS = /* @__PURE__ */ new Set(["__proto__", "constructor", "prototype"]);
   var ALLOWED_KEYS = /* @__PURE__ */ new Set([...REQUIRED_KEYS, "channel", ...Object.keys(DEFAULTS)]);
   var NODE_TARGET = /^NODE:(.*)$/iu;
@@ -1961,6 +1963,7 @@ var OneXrayNodesBundle = (() => {
     if (policyFile !== "" && policyOverrides !== "") {
       throw optionError("policyFile", "cannot be combined with policyOverrides");
     }
+    const logLevel = enumValue(values, "logLevel", LOG_LEVELS, DEFAULTS.logLevel);
     return Object.freeze({
       output,
       type,
@@ -1975,7 +1978,8 @@ var OneXrayNodesBundle = (() => {
       clientChain,
       clientChainTarget,
       policyOverrides,
-      policyFile
+      policyFile,
+      logLevel
     });
   }
 

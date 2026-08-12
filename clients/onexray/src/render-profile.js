@@ -101,7 +101,7 @@ export function renderOneXrayProfile(input = {}) {
 
   const profile = {
     name: `Apple Proxy · OneXray · ${channel}`,
-    log: { loglevel: "warning" },
+    log: { loglevel: options.logLevel ?? "warning" },
     dns: dns.dns,
     routing,
     // TUN and ping are materialized by OneXray's runtime, not the imported
