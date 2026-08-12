@@ -279,7 +279,10 @@ export function renderOneXrayRouting({ options, resolution, dnsRules } = {}) {
     // while all explicit domestic rules above it retain their UDP allowance.
     rules.push({ type: "field", network: "udp", port: "443", outboundTag: "block" });
   }
-  rules.push({ type: "field", outboundTag: finalTag });
+  // Xray rejects a rule with no effective matcher field, so the final
+  // catch-all must carry an explicit network scope instead of only
+  // `outboundTag`. TUN traffic is always TCP or UDP.
+  rules.push({ type: "field", network: "tcp,udp", outboundTag: finalTag });
   const normalizedRules = rules.map((rule) => (rule.port === undefined ? rule : { ...rule, port: oneXrayPort(rule.port) }));
   validateRouteSemantics(normalizedRules);
   return { domainStrategy: "IPIfNonMatch", rules: normalizedRules };

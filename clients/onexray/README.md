@@ -33,22 +33,22 @@ Sub-Store → Files → 新建任务 → 远程链接，粘贴下面的完整 UR
 `onexray-nodes`（节点订阅）：
 
 ```text
-https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-nodes-generator.js?v=6#output=nodes&type=collection&name=apple-proxy-sources&channel=edge&clientChain=off
+https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-nodes-generator.js?v=7#output=nodes&type=collection&name=apple-proxy-sources&channel=edge&clientChain=off
 ```
 
 `onexray-profile`（Profile）：
 
 ```text
-https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-profile-generator.js?v=6#output=profile&type=collection&name=apple-proxy-sources&channel=edge&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&clientChain=off&policyFile=onexray-policy&logLevel=info
+https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-profile-generator.js?v=7#output=profile&type=collection&name=apple-proxy-sources&channel=edge&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&clientChain=off&policyFile=onexray-policy&logLevel=info
 ```
 
 `onexray-routing-audit`（脱敏审计，建议一起建）：
 
 ```text
-https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-profile-generator.js?v=6#output=audit&type=collection&name=apple-proxy-sources&channel=edge&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&clientChain=off&policyFile=onexray-policy&logLevel=info
+https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-profile-generator.js?v=7#output=audit&type=collection&name=apple-proxy-sources&channel=edge&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&clientChain=off&policyFile=onexray-policy&logLevel=info
 ```
 
-`v=6` 是 Sub-Store 脚本缓存版本号：脚本内容更新后，把任务 URL 里的 `v=` 数字 +1 再保存一次，否则 Sub-Store 可能继续使用旧脚本。
+`v=7` 是 Sub-Store 脚本缓存版本号：脚本内容更新后，把任务 URL 里的 `v=` 数字 +1 再保存一次，否则 Sub-Store 可能继续使用旧脚本。
 
 预览成功标志：
 

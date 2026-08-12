@@ -95,7 +95,7 @@ test("renders system DNS/ping, local, shared phases, ChinaIP, and one final rule
 
   const chinaIpIndex = rules.findIndex(({ ip }) => ip?.some((ref) => ref.endsWith(":APP-CHINAIP")));
   assert.ok(chinaIpIndex > domesticIndex);
-  const finalRules = rules.filter((rule) => Object.keys(rule).length === 2 && rule.type === "field" && rule.outboundTag === "proxy");
+  const finalRules = rules.filter((rule) => rule.type === "field" && rule.outboundTag === "proxy" && rule.network === "tcp,udp" && !rule.domain && !rule.ip && !rule.inboundTag);
   assert.equal(finalRules.length, 1);
   assert.equal(rules.at(-1), finalRules[0]);
 });

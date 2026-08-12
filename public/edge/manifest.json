@@ -1108,9 +1108,9 @@
         "sha256": "2fc78af991241beab1bcd208001b42886228a739f10a6d6c7bb7a13ef1be0129"
       },
       {
-        "bytes": 206094,
+        "bytes": 206114,
         "path": "onexray/scripts/onexray-profile-generator.js",
-        "sha256": "93f07476cb7082836951988fea24ec4294780425e4223e2ecf86816966835d4a"
+        "sha256": "d2e86c212be09fa05d79b7a1d9869948ef3ff3892d4080c0dd4482c5ab13c46b"
       }
     ]
   },
@@ -1122,5 +1122,5 @@
     "license": "GPL-2.0-only",
     "repository": "https://github.com/blackmatrix7/ios_rule_script"
   },
-  "manifestHash": "b8b2d41ba1569deee6c11cf87f949b1ba942244669c7738c001b406de0a6feee"
+  "manifestHash": "d1c7e9858a20a0084e78c021e46924e320d3d31bec0d670f026b9c38e803e0bf"
 }

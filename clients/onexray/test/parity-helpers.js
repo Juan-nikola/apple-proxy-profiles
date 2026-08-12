@@ -102,7 +102,7 @@ function portMatches(value, expected) {
 
 function ruleMatches(rule, request, decoded) {
   if (rule.inboundTag !== undefined && (!request.inboundTag || !rule.inboundTag.includes(request.inboundTag))) return false;
-  if (rule.network !== undefined && (!request.network || !rule.network.split(",").includes(request.network))) return false;
+  if (rule.network !== undefined && request.network !== undefined && !rule.network.split(",").includes(request.network)) return false;
   if (!portMatches(request.port, rule.port)) return false;
   const domainMatches = rule.domain?.some((token) => request.domain && matchesDomainToken(request.domain, token, decoded)) ?? false;
   const ipMatches = rule.ip?.some((token) => request.ip && matchesIpToken(request.ip, token, decoded)) ?? false;

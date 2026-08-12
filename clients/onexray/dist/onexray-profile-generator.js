@@ -3944,7 +3944,7 @@ var OneXrayProfileBundle = (() => {
     if (options.quicMode === "proxy-block" && finalTag !== "direct" && finalTag !== "block") {
       rules.push({ type: "field", network: "udp", port: "443", outboundTag: "block" });
     }
-    rules.push({ type: "field", outboundTag: finalTag });
+    rules.push({ type: "field", network: "tcp,udp", outboundTag: finalTag });
     const normalizedRules = rules.map((rule) => rule.port === void 0 ? rule : { ...rule, port: oneXrayPort(rule.port) });
     validateRouteSemantics(normalizedRules);
     return { domainStrategy: "IPIfNonMatch", rules: normalizedRules };
