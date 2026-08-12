@@ -30,7 +30,8 @@ Task 9: fix rounds 1–4/5 (5 addressed, 0 open — browser-safe codec, pre-enco
 Task 9: complete (commits c904741..3fc1e55, focused profile/link/validation 12/12, review approved)
 Task 10: fix rounds 1–2/5 (4 addressed, 0 open — stable request/error boundary, browser-safe Base64URL, credential-free audit target identities, validated real GeoData hashes; commits daa2633..59778ef)
 Task 10: complete (commits daa2633..59778ef, focused 12/12, OneXray/business 78/78; review approved)
-Task 11: pending
+Task 11: fix round 1/5 (1 addressed, 0 open — pre-await argument snapshot; tooling pin/hygiene follow-up; commits f9da299..ed6803d)
+Task 11: complete (commits f9da299..ed6803d, focused bundles/examples 9/9, workspace 79/79; review approved)
 Task 12: pending
 Task 13: pending
 Task 14: pending
