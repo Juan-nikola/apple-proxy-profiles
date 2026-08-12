@@ -73,6 +73,13 @@ function stableStringify(value) {
   return JSON.stringify(value);
 }
 
+function oneXrayPort(value) {
+  if (value === undefined) return undefined;
+  if (typeof value === "string") return value;
+  if (Number.isSafeInteger(value) && value >= 1 && value <= 65535) return String(value);
+  throw new TypeError(`OneXray routing port must be a string or a port number: ${String(value)}`);
+}
+
 function cloneRule(rule) {
   return { ...rule, ...(rule.domain ? { domain: [...rule.domain] } : {}), ...(rule.ip ? { ip: [...rule.ip] } : {}), ...(rule.inboundTag ? { inboundTag: [...rule.inboundTag] } : {}) };
 }
@@ -211,7 +218,7 @@ function appendRule(rules, rule) {
 
 function quicRule(rule) {
   const matcher = rule.domain ? { domain: [...rule.domain] } : { ip: [...rule.ip] };
-  return { type: "field", ...matcher, network: "udp", port: 443, outboundTag: "block" };
+  return { type: "field", ...matcher, network: "udp", port: "443", outboundTag: "block" };
 }
 
 function addRouteRule(rules, rule, { quicMode, proxyBound }) {
@@ -244,7 +251,7 @@ export function renderOneXrayRouting({ options, resolution, dnsRules } = {}) {
   rules.push(cloneRule(LOCAL_DOMAIN_RULE));
   rules.push(cloneRule(LOCAL_IP_RULE));
 
-  if (options.quicMode === "all-block") rules.push({ type: "field", network: "udp", port: 443, outboundTag: "block" });
+  if (options.quicMode === "all-block") rules.push({ type: "field", network: "udp", port: "443", outboundTag: "block" });
 
   const plan = orderedRoutingPlan();
   const renderSource = (source) => {
@@ -270,11 +277,12 @@ export function renderOneXrayRouting({ options, resolution, dnsRules } = {}) {
   if (options.quicMode === "proxy-block" && finalTag !== "direct" && finalTag !== "block") {
     // This late catch-all protects traffic that reaches the proxy final rule,
     // while all explicit domestic rules above it retain their UDP allowance.
-    rules.push({ type: "field", network: "udp", port: 443, outboundTag: "block" });
+    rules.push({ type: "field", network: "udp", port: "443", outboundTag: "block" });
   }
   rules.push({ type: "field", outboundTag: finalTag });
-  validateRouteSemantics(rules);
-  return { domainStrategy: "IPIfNonMatch", rules };
+  const normalizedRules = rules.map((rule) => (rule.port === undefined ? rule : { ...rule, port: oneXrayPort(rule.port) }));
+  validateRouteSemantics(normalizedRules);
+  return { domainStrategy: "IPIfNonMatch", rules: normalizedRules };
 }
 
 export { outboundTagForIntent };

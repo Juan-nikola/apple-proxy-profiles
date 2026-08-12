@@ -51,6 +51,7 @@ test("rejects dangling references, unknown model fields, bad GeoData, and chain 
     (profile) => ({ ...profile, routing: { ...profile.routing, rules: [...profile.routing.rules, { type: "field", outboundTag: "missing" }] } }),
     (profile) => ({ ...profile, routing: { ...profile.routing, rules: [...profile.routing.rules, { type: "field", inboundTag: ["unknown"], outboundTag: "direct" }] } }),
     (profile) => ({ ...profile, routing: { ...profile.routing, rules: [...profile.routing.rules, { type: "field", domain: ["ext:AppleProxySiteEdge.dat:APP-MISSING"], outboundTag: "direct" }] } }),
+    (profile) => ({ ...profile, routing: { ...profile.routing, rules: [...profile.routing.rules, { type: "field", outboundTag: "direct", port: 443 }] } }),
     (profile) => ({ ...profile, rawConfig: { log: "leak" } }),
     (profile) => ({ ...profile, outbounds: [...profile.outbounds, { protocol: "freedom", tag: "chainProxy" }] }),
   ]) {

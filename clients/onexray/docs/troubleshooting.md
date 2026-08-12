@@ -47,6 +47,14 @@ macOS 上 OneXray 的流量依赖系统扩展（System Extension）。系统扩�
 - 按 `docs/canary.md` 重跑 QUIC/Block/IPv6 用例。
 - 修改 `quicMode` 或 `ipv6Mode` 后必须重新生成并重新导入 Profile。
 
+### 4.5 导入 Profile 提示“未读取到有效配置”
+
+旧版生成脚本会把路由规则的 `port` 写成数字（如 `443`），而 OneXray 的规则模型要求字符串（`"443"`），导致 App 反序列化失败并提示“未读取到有效配置”。
+
+- 确认三个 Sub-Store 任务 URL 都使用 `?v=4`（或更新版本），然后重新运行 `onexray-profile` 任务。
+- 用新生成的 deep link 重新导入，不要使用旧 deep link。
+- 如果仍失败，检查 OneXray App 版本是否低于 26.8.3；低于该版本时先升级 App。
+
 ## 5. 回滚
 
 回滚到 previous：

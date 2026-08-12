@@ -84,7 +84,7 @@ test("renders system DNS/ping, local, shared phases, ChinaIP, and one final rule
 
   const sourceOrder = rules.flatMap((rule) => refs(rule)
     .filter((ref) => ref.startsWith("ext:"))
-    .filter(() => !(rule.network === "udp" && rule.port === 443 && rule.outboundTag === "block"))
+    .filter(() => !(rule.network === "udp" && rule.port === "443" && rule.outboundTag === "block"))
     .map((ref) => ref.split(":").at(-1).replace(/^APP-/u, "")));
   const expectedOrder = orderedRoutingPlan().map(({ id }) => id.toUpperCase().replaceAll("_", "-"));
   assert.deepEqual(sourceOrder, expectedOrder);
@@ -118,7 +118,7 @@ test("routes domestic platform sources through the resolved domestic target and 
   const biliIndex = rules.findIndex(({ domain, network }) => domain?.some((ref) => ref.endsWith(":APP-BILIBILI")) && network === undefined);
   const biliQuicIndex = rules.findIndex(({ domain, network, port, outboundTag }) => (
     domain?.some((ref) => ref.endsWith(":APP-BILIBILI"))
-    && network === "udp" && port === 443 && outboundTag === "block"
+    && network === "udp" && port === "443" && outboundTag === "block"
   ));
   assert.equal(rules[biliIndex].outboundTag, "proxy");
   assert.ok(biliQuicIndex >= 0 && biliQuicIndex < biliIndex);
@@ -151,19 +151,19 @@ test("proxy-block protects only proxy-bound overseas UDP/443, while all-block pr
   const proxyIndex = proxyBlocked.findIndex(({ domain, network }) => domain?.some((ref) => ref.endsWith(":APP-OPENAI")) && network === undefined);
   const proxyQuic = proxyBlocked.findIndex(({ domain, network, port, outboundTag }) => (
     domain?.some((ref) => ref.endsWith(":APP-OPENAI"))
-    && network === "udp" && port === 443 && outboundTag === "block"
+    && network === "udp" && port === "443" && outboundTag === "block"
   ));
   const domesticIndex = proxyBlocked.findIndex(({ domain }) => domain?.some((ref) => ref.endsWith(":APP-DOMESTICGAME")));
   assert.ok(proxyQuic >= 0 && proxyQuic < proxyIndex);
   assert.ok(domesticIndex < proxyQuic);
-  const lateQuic = proxyBlocked.findIndex(({ network, port, outboundTag, domain }) => network === "udp" && port === 443 && outboundTag === "block" && !domain);
+  const lateQuic = proxyBlocked.findIndex(({ network, port, outboundTag, domain }) => network === "udp" && port === "443" && outboundTag === "block" && !domain);
   const finalIndex = proxyBlocked.length - 1;
   assert.ok(lateQuic > domesticIndex && lateQuic < finalIndex);
 
   const allBlocked = render({ quicMode: "all-block" }).rules;
-  assert.equal(allBlocked.filter(({ network, port, outboundTag }) => network === "udp" && port === 443 && outboundTag === "block").length, 1);
-  assert.equal(allBlocked.findIndex(({ network, port }) => network === "udp" && port === 443), allBlocked.findIndex(({ ip }) => ip?.includes("geoip:private")) + 1);
-  assert.equal(render({ quicMode: "allow" }).rules.some(({ network, port }) => network === "udp" && port === 443), false);
+  assert.equal(allBlocked.filter(({ network, port, outboundTag }) => network === "udp" && port === "443" && outboundTag === "block").length, 1);
+  assert.equal(allBlocked.findIndex(({ network, port }) => network === "udp" && port === "443"), allBlocked.findIndex(({ ip }) => ip?.includes("geoip:private")) + 1);
+  assert.equal(render({ quicMode: "allow" }).rules.some(({ network, port }) => network === "udp" && port === "443"), false);
 });
 
 test("does not add a proxy final QUIC catch-all when the final target is direct", () => {
@@ -172,8 +172,16 @@ test("does not add a proxy final QUIC catch-all when the final target is direct"
   });
   const { rules } = renderOneXrayRouting({ options: OPTIONS, resolution: directFinal, dnsRules: dnsPrelude() });
   assert.equal(rules.some(({ network, port, outboundTag, domain, ip }) => (
-    network === "udp" && port === 443 && outboundTag === "block" && !domain && !ip
+    network === "udp" && port === "443" && outboundTag === "block" && !domain && !ip
   )), false);
+});
+
+test("emits every routing port as a OneXray string", () => {
+  const { rules } = render();
+  const ports = rules.filter(({ port }) => port !== undefined).map(({ port }) => port);
+  assert.ok(ports.length > 0);
+  assert.ok(ports.every((port) => typeof port === "string"), ports.join(","));
+  assert.equal(render({ quicMode: "all-block" }).rules.some(({ network, port }) => network === "udp" && port === "443"), true);
 });
 
 test("rejects malformed plans, empty payloads, missing targets, and duplicate DNS preludes", () => {

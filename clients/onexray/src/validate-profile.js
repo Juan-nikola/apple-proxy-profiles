@@ -100,7 +100,7 @@ function validateRouting(profile, errors) {
       if (rule[key] !== undefined) strings(rule[key], `${path}.${key}`, errors);
     }
     if (rule.network !== undefined && (typeof rule.network !== "string" || !/^(?:tcp|udp)(?:,(?:tcp|udp))*$/u.test(rule.network))) add(errors, `${path}.network is invalid`);
-    if (rule.port !== undefined && !((Number.isSafeInteger(rule.port) && rule.port >= 1 && rule.port <= 65535) || (typeof rule.port === "string" && /^[0-9]+(?:-[0-9]+)?$/u.test(rule.port)))) add(errors, `${path}.port is invalid`);
+    if (rule.port !== undefined && !(typeof rule.port === "string" && /^[0-9]+(?:-[0-9]+)?$/u.test(rule.port))) add(errors, `${path}.port must be a string`);
     if (typeof rule.outboundTag !== "string" || rule.outboundTag.length === 0) add(errors, `${path}.outboundTag is invalid`);
   }
 }

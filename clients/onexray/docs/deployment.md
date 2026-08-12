@@ -40,7 +40,7 @@ current 与 previous 必须同名配对：使用 previous Profile 时，必须�
 ### 3.1 `onexray-nodes`
 
 ```text
-https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-nodes-generator.js?v=3#output=nodes&type=collection&name=apple-proxy-sources&channel=edge&clientChain=off
+https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-nodes-generator.js?v=4#output=nodes&type=collection&name=apple-proxy-sources&channel=edge&clientChain=off
 ```
 
 预览成功标志：输出包含 OneXray 可导入的节点列表，节点数量大于 0。
@@ -50,7 +50,7 @@ https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-
 ### 3.2 `onexray-profile`
 
 ```text
-https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-profile-generator.js?v=3#output=profile&type=collection&name=apple-proxy-sources&channel=edge&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&clientChain=off
+https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-profile-generator.js?v=4#output=profile&type=collection&name=apple-proxy-sources&channel=edge&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&clientChain=off
 ```
 
 每次生成的 Profile 名称都会插入 8 位 Profile 版本号（内容哈希），例如：
@@ -64,7 +64,7 @@ Apple Proxy · OneXray · edge · 3f2a91c4
 ### 3.3 `onexray-routing-audit`
 
 ```text
-https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-profile-generator.js?v=3#output=audit&type=collection&name=apple-proxy-sources&channel=edge&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&clientChain=off
+https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-profile-generator.js?v=4#output=audit&type=collection&name=apple-proxy-sources&channel=edge&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&clientChain=off
 ```
 
 审计输出是脱敏报告，不包含节点凭据、Policy 原文或 Profile deep link。
@@ -74,12 +74,12 @@ https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-
 以下三条是跳过验证、直接使用 edge 的完整引用。`name=apple-proxy-sources` 必须改成你自己 Sub-Store 中的真实组合名：
 
 ```text
-https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-nodes-generator.js?v=3#output=nodes&type=collection&name=apple-proxy-sources&channel=edge&clientChain=off
-https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-profile-generator.js?v=3#output=profile&type=collection&name=apple-proxy-sources&channel=edge&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&clientChain=off
-https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-profile-generator.js?v=3#output=audit&type=collection&name=apple-proxy-sources&channel=edge&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&clientChain=off
+https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-nodes-generator.js?v=4#output=nodes&type=collection&name=apple-proxy-sources&channel=edge&clientChain=off
+https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-profile-generator.js?v=4#output=profile&type=collection&name=apple-proxy-sources&channel=edge&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&clientChain=off
+https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-profile-generator.js?v=4#output=audit&type=collection&name=apple-proxy-sources&channel=edge&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&clientChain=off
 ```
 
-`v=3` 是 Sub-Store 脚本缓存版本号；脚本内容更新后把 `v=` 数字 +1 并重新保存任务。需要固定业务时在 URL 末尾追加非空 `&policyOverrides=<Base64URL>`，不要使用空的 `&policyOverrides=`。
+`v=4` 是 Sub-Store 脚本缓存版本号；脚本内容更新后把 `v=` 数字 +1 并重新保存任务。需要固定业务时在 URL 末尾追加非空 `&policyOverrides=<Base64URL>`，不要使用空的 `&policyOverrides=`。
 
 ## 4. 固定业务节点
 

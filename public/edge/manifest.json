@@ -1073,7 +1073,6 @@
     }
   ],
   "generatedAt": "2026-08-11T18:59:15Z",
-  "manifestHash": "fcc6df6e545fb653941f83301ed65463225603ebbf28f9b720149f6e27292326",
   "onexray": {
     "channel": "edge",
     "counts": {
@@ -1109,9 +1108,9 @@
         "sha256": "9a45f2564908286c813067a2d89e3923fc8bfdec83680453597e1ce19b24527a"
       },
       {
-        "bytes": 202333,
+        "bytes": 202737,
         "path": "onexray/scripts/onexray-profile-generator.js",
-        "sha256": "5a377ecea4dd6e0a1d2fbaac01e305e2ff8e72e5250d71b1d1fe0dc6911ff460"
+        "sha256": "4174f89ebe24e6c7d28e4a6e040a5c47790fa775d8d4f316576f909d6cb49885"
       }
     ]
   },
@@ -1122,5 +1121,6 @@
     "committedAt": "2026-08-11T18:59:15Z",
     "license": "GPL-2.0-only",
     "repository": "https://github.com/blackmatrix7/ios_rule_script"
-  }
+  },
+  "manifestHash": "132468aac982e07cf34e8a7484122df3b91858c3098dd9c6512b934f7dc29055"
 }

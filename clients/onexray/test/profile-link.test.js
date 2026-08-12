@@ -54,6 +54,11 @@ test("round-trips standard Base64 bytes and detects content or option changes", 
 test("rejects malformed links and enforces the 32 KiB encoded-link budget", () => {
   assert.throws(() => decodeOneXrayProfileLink("onexray://onexray.com/config/add?type=profile&data=not-base64#bad"), /invalid|profile|standard/u);
   assert.throws(() => buildOneXrayProfileLink(PROFILE, "unknown"), /channel/u);
+  const numericPort = {
+    ...PROFILE,
+    routing: { ...PROFILE.routing, rules: [{ type: "field", outboundTag: "direct", port: 443 }] },
+  };
+  assert.throws(() => buildOneXrayProfileLink(numericPort, "edge"), /port|valid/u);
   const nearLimit = { ...PROFILE, dns: { servers: [{ address: "x".repeat(30_000) }] } };
   assert.throws(() => buildOneXrayProfileLink(nearLimit, "edge"), /32|length|budget/u);
 });

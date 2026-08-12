@@ -2615,7 +2615,7 @@ var OneXrayProfileBundle = (() => {
         if (rule[key] !== void 0) strings(rule[key], `${path}.${key}`, errors);
       }
       if (rule.network !== void 0 && (typeof rule.network !== "string" || !/^(?:tcp|udp)(?:,(?:tcp|udp))*$/u.test(rule.network))) add(errors, `${path}.network is invalid`);
-      if (rule.port !== void 0 && !(Number.isSafeInteger(rule.port) && rule.port >= 1 && rule.port <= 65535 || typeof rule.port === "string" && /^[0-9]+(?:-[0-9]+)?$/u.test(rule.port))) add(errors, `${path}.port is invalid`);
+      if (rule.port !== void 0 && !(typeof rule.port === "string" && /^[0-9]+(?:-[0-9]+)?$/u.test(rule.port))) add(errors, `${path}.port must be a string`);
       if (typeof rule.outboundTag !== "string" || rule.outboundTag.length === 0) add(errors, `${path}.outboundTag is invalid`);
     }
   }
@@ -3724,6 +3724,12 @@ var OneXrayProfileBundle = (() => {
     }
     return JSON.stringify(value);
   }
+  function oneXrayPort(value) {
+    if (value === void 0) return void 0;
+    if (typeof value === "string") return value;
+    if (Number.isSafeInteger(value) && value >= 1 && value <= 65535) return String(value);
+    throw new TypeError(`OneXray routing port must be a string or a port number: ${String(value)}`);
+  }
   function cloneRule(rule) {
     return { ...rule, ...rule.domain ? { domain: [...rule.domain] } : {}, ...rule.ip ? { ip: [...rule.ip] } : {}, ...rule.inboundTag ? { inboundTag: [...rule.inboundTag] } : {} };
   }
@@ -3850,7 +3856,7 @@ var OneXrayProfileBundle = (() => {
   }
   function quicRule(rule) {
     const matcher = rule.domain ? { domain: [...rule.domain] } : { ip: [...rule.ip] };
-    return { type: "field", ...matcher, network: "udp", port: 443, outboundTag: "block" };
+    return { type: "field", ...matcher, network: "udp", port: "443", outboundTag: "block" };
   }
   function addRouteRule(rules, rule, { quicMode, proxyBound }) {
     if (quicMode === "proxy-block" && proxyBound) rules.push(quicRule(rule));
@@ -3874,7 +3880,7 @@ var OneXrayProfileBundle = (() => {
     rules.push(cloneRule(PING_RULE));
     rules.push(cloneRule(LOCAL_DOMAIN_RULE));
     rules.push(cloneRule(LOCAL_IP_RULE));
-    if (options.quicMode === "all-block") rules.push({ type: "field", network: "udp", port: 443, outboundTag: "block" });
+    if (options.quicMode === "all-block") rules.push({ type: "field", network: "udp", port: "443", outboundTag: "block" });
     const plan = orderedRoutingPlan();
     const renderSource = (source) => {
       const intent = sourceIntent(source, options.blockMode);
@@ -3893,11 +3899,12 @@ var OneXrayProfileBundle = (() => {
     for (const source of plan.filter(({ phase }) => phase !== "security")) renderSource(source);
     const finalTag = outboundTagForIntent("final", resolution, tags);
     if (options.quicMode === "proxy-block" && finalTag !== "direct" && finalTag !== "block") {
-      rules.push({ type: "field", network: "udp", port: 443, outboundTag: "block" });
+      rules.push({ type: "field", network: "udp", port: "443", outboundTag: "block" });
     }
     rules.push({ type: "field", outboundTag: finalTag });
-    validateRouteSemantics(rules);
-    return { domainStrategy: "IPIfNonMatch", rules };
+    const normalizedRules = rules.map((rule) => rule.port === void 0 ? rule : { ...rule, port: oneXrayPort(rule.port) });
+    validateRouteSemantics(normalizedRules);
+    return { domainStrategy: "IPIfNonMatch", rules: normalizedRules };
   }
 
   // src/render-profile.js
