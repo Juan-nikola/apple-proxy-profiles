@@ -30,7 +30,7 @@ function inventory() {
   }];
 }
 
-function loadBundle(source, arguments_, produced = inventory()) {
+function loadBundle(source, arguments_, produced = inventory(), onProduce) {
   const requests = [];
   const lines = [];
   const context = vm.createContext({
@@ -47,6 +47,7 @@ function loadBundle(source, arguments_, produced = inventory()) {
   context.__producedJson = JSON.stringify(produced);
   context.produceArtifact = async (request) => {
     requests.push(structuredClone(request));
+    onProduce?.(context);
     return vm.runInContext("JSON.parse(globalThis.__producedJson)", context);
   };
   vm.runInContext([
@@ -111,6 +112,22 @@ test("profile bundle matches the pure processor and returns one deep-link line",
   assert.match(actual.$content, /^onexray:\/\/onexray\.com\/config\/add\?type=profile&data=.+\n$/u);
   assert.equal(loaded.requests.length, 1);
   assert.equal(loaded.lines.length, 0);
+});
+
+test("bundles snapshot own arguments before awaiting a mutable Sub-Store producer", async () => {
+  const source = await readFile(NODE_BUNDLE, "utf8");
+  const loaded = loadBundle(source, NODE_ARGUMENTS, inventory(), (context) => {
+    vm.runInContext(`
+      globalThis.$arguments.output = "profile";
+      globalThis.$arguments.type = "not-a-collection";
+      globalThis.$arguments.name = "MUTATED_PRIVATE_ARGUMENT";
+      globalThis.$arguments = { output: "profile", type: "collection", name: "replacement" };
+    `, context);
+  });
+  const actual = await loaded.context.operator({ unchanged: true }, "OneXray");
+  assert.equal(typeof actual.$content, "string");
+  assert.equal(loaded.requests[0].name, "fixture-source");
+  assert.equal(actual.$content.includes("MUTATED_PRIVATE_ARGUMENT"), false);
 });
 
 test("bundles preserve stable processor failures without leaking inventory values", async () => {

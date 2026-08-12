@@ -4327,12 +4327,32 @@ var OneXrayProfileBundle = (() => {
   }
   return __toCommonJS(substore_profile_entry_exports);
 })();
-async function operator(input, targetPlatform) {
-  void targetPlatform;
-  const arguments_ = $arguments;
-  if (arguments_ === null || typeof arguments_ !== "object" || Array.isArray(arguments_)) {
+function snapshotArguments(raw) {
+  try {
+    if (raw === null || typeof raw !== "object" || Array.isArray(raw)) throw new Error();
+    const prototype = Object.getPrototypeOf(raw);
+    if (prototype !== Object.prototype && prototype !== null) throw new Error();
+    const snapshot = {};
+    for (const key of Reflect.ownKeys(raw)) {
+      if (typeof key !== "string") throw new Error();
+      const descriptor = Object.getOwnPropertyDescriptor(raw, key);
+      if (!descriptor || "get" in descriptor || "set" in descriptor || !descriptor.enumerable) throw new Error();
+      Object.defineProperty(snapshot, key, {
+        value: descriptor.value,
+        writable: true,
+        enumerable: true,
+        configurable: true,
+      });
+    }
+    return snapshot;
+  } catch {
     throw new Error("OneXray profile: invalid-arguments");
   }
+}
+
+async function operator(input, targetPlatform) {
+  void targetPlatform;
+  const arguments_ = snapshotArguments($arguments);
   if (typeof produceArtifact !== "function") {
     throw new Error("OneXray profile: produce-artifact-unavailable");
   }
