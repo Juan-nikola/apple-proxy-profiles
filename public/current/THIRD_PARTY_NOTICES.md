@@ -36,6 +36,25 @@
 
 esbuild 是开发依赖；生成器源码不因此改用 MIT 许可。esbuild 的版权和 MIT 许可文本可在其上游仓库及安装包中取得。
 
+## protobufjs
+
+- 项目：[protobufjs/protobuf.js](https://github.com/protobufjs/protobuf.js)
+- 使用版本：`7.6.5`
+- 许可：BSD-3-Clause
+- 用途：在构建时加载本仓库裁剪的 Xray GeoData protobuf schema，并对生成的
+  `geosite.dat`/`geoip.dat` 做立即解码校验；运行时客户端不依赖 protobufjs。
+
+## Xray GeoData schema
+
+- 兼容来源：[v2fly/domain-list-community `geo-site.proto`](https://github.com/v2fly/domain-list-community/blob/master/geo-site.proto)
+  与 [v2fly/geoip `geoip.proto`](https://github.com/v2fly/geoip/blob/master/geoip.proto)
+- 上游许可：MIT（schema 定义）
+- 取用日期：2026-08-12
+- 使用范围：仅保留 Xray 标准读取器所需的 `Domain`、`GeoSite`、`GeoSiteList`、
+  `CIDR`、`GeoIP`、`GeoIPList` 消息；本项目在
+  `automation/proto/xray-geodata.proto` 中按原字段号重述并编译为公开 GeoData
+  二进制。该文件不复制上游规则内容、数据库或生成资产。
+
 ## Sub-Store integration
 
 本项目调用 Sub-Store Script Operator 与 `produceArtifact` 互操作接口，但不复制或再分发 Sub-Store 源码。Sub-Store 的名称、源码和许可仍属于其各自权利人。

@@ -25,7 +25,7 @@
       "sha256": "ac8deb9dc3d30743e59fb9d968e267d8ddbec942d9286a721bb30b6f72051c54"
     }
   ],
-  "generatedAt": "2026-08-09T18:34:14Z",
+  "generatedAt": "2026-08-11T18:59:15Z",
   "hashes": {
     "domain": "4bed4f09fb433437409d6ffd3f8e061f14babca334c64278110320c011ad7eb9",
     "ip": "ac8deb9dc3d30743e59fb9d968e267d8ddbec942d9286a721bb30b6f72051c54"
@@ -71,7 +71,7 @@
     "ruleCount": 13642,
     "sha256": "ac8deb9dc3d30743e59fb9d968e267d8ddbec942d9286a721bb30b6f72051c54"
   },
-  "manifestHash": "aea286061ea7cd54eca46e78f412acfbbfe2a9dccecc6c655165df07e2d204a2",
+  "manifestHash": "605516210db6f84ca2292f86e1362adc38da548519281808bf286b2052bf8a78",
   "names": {
     "domain": "AppleProxySiteEdge",
     "ip": "AppleProxyIPEdge"
@@ -81,7 +81,7 @@
     "inputSourceCount": 32,
     "source": "shared-lightweight-rule-snapshot"
   },
-  "releaseId": "edge-48a8dbab",
+  "releaseId": "edge-86ada723",
   "schema": "apple-proxy-onexray-geodata-v1",
   "schemaVersion": 1,
   "sourceCount": 32,
@@ -313,8 +313,8 @@
   ],
   "upstream": {
     "branch": "master",
-    "commit": "48a8dbabcc47a574dffed813f25d3171c1938736",
-    "committedAt": "2026-08-09T18:34:14Z",
+    "commit": "86ada72372ec0586be75901f47d5ccca6e28c655",
+    "committedAt": "2026-08-11T18:59:15Z",
     "repository": "https://github.com/blackmatrix7/ios_rule_script",
     "version": "26.8.3"
   },
