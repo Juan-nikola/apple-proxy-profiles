@@ -91,4 +91,6 @@ test("requires exactly one correctly typed system outbound and a valid chain lan
   };
   assert.equal(validateOneXrayProfile(chainLanding, { ...CONTEXT, chain: { enabled: true, landingTag: "chainProxy" } }).valid, false);
   assert.equal(validateOneXrayProfile({ ...PROFILE, outbounds: null }, CONTEXT).valid, false);
+  assert.equal(validateOneXrayProfile({ ...PROFILE, outbounds: {} }, CONTEXT).valid, false);
+  assert.equal(validateOneXrayProfile({ ...PROFILE, inbounds: {} }, CONTEXT).valid, false);
 });

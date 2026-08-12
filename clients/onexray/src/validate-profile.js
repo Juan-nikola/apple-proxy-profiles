@@ -219,7 +219,8 @@ function systemOutboundChecks(profile, context, errors) {
 }
 
 function outboundReferences(profile, errors) {
-  const tags = new Set((profile.outbounds ?? []).map(({ tag }) => tag).filter((tag) => typeof tag === "string"));
+  const outbounds = Array.isArray(profile.outbounds) ? profile.outbounds : [];
+  const tags = new Set(outbounds.map((outbound) => outbound?.tag).filter((tag) => typeof tag === "string"));
   for (const rule of profile.routing?.rules ?? []) {
     if (typeof rule.outboundTag !== "string") continue;
     if (!tags.has(rule.outboundTag) && !RUNTIME_OUTBOUND_TAGS.has(rule.outboundTag)) add(errors, `routing references missing outbound: ${rule.outboundTag}`);
@@ -227,7 +228,8 @@ function outboundReferences(profile, errors) {
 }
 
 function inboundReferences(profile, errors) {
-  const tags = new Set([...(profile.inbounds ?? []).map(({ tag }) => tag), ...INBOUND_TAGS]);
+  const inbounds = Array.isArray(profile.inbounds) ? profile.inbounds : [];
+  const tags = new Set([...inbounds.map((inbound) => inbound?.tag), ...INBOUND_TAGS]);
   for (const rule of profile.routing?.rules ?? []) {
     for (const tag of rule.inboundTag ?? []) if (!tags.has(tag)) add(errors, `routing references missing inbound: ${tag}`);
   }
@@ -266,7 +268,8 @@ function geoReferences(profile, context, errors) {
 
 function chainChecks(profile, context, errors) {
   const enabled = context.chain?.enabled === true || context.resolution?.chain?.enabled === true;
-  const chain = (profile.outbounds ?? []).filter(({ tag }) => tag === "chainProxy");
+  const outbounds = Array.isArray(profile.outbounds) ? profile.outbounds : [];
+  const chain = outbounds.filter((outbound) => outbound?.tag === "chainProxy");
   if (enabled && chain.length !== 1) add(errors, "chain-enabled Profile must contain exactly one chainProxy outbound");
   if (!enabled && chain.length !== 0) add(errors, "chain-off Profile must not contain chainProxy");
   if (context.chain?.landingTag !== undefined && enabled && context.chain.landingTag !== "chainProxy") add(errors, "chain landing tag is invalid");
