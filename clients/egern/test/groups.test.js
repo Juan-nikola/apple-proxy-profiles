@@ -311,6 +311,34 @@ test("pins minimal, balanced, full, and eligible chain group graphs", () => {
   );
 });
 
+test("strictly accepts a non-catalog country flag under its normalized continent", () => {
+  const shared = buildPolicyGroups(
+    options({ autoGroupMode: "minimal", clientChain: "off" }),
+    [normalizedNode("🇽🇰 TEST_ONLY_KOSOVO_NODE｜机场", { continent: "other", flag: "🇽🇰" })],
+  );
+
+  assert.deepEqual(shared.find((group) => group.name === "🚀 节点选择").candidates, [
+    "🌐 其他/未分类",
+  ]);
+  assert.deepEqual(shared.find((group) => group.name === "🌐 其他/未分类").candidates, ["🇽🇰"]);
+  assert.deepEqual(POLICY_GROUP_SCHEMA.groups["🇽🇰"], {
+    kind: GROUP_KIND.flag,
+    strategy: STRATEGY.select,
+    nodeFilters: ["^🇽🇰(?: |$)"],
+    hidden: undefined,
+    defaultChoice: undefined,
+  });
+  assert.deepEqual(renderedFields(renderEgernGroups(shared, privateUrl()), "🇽🇰"), {
+    type: "select",
+    fields: {
+      name: "🇽🇰",
+      urls: [PRIVATE_URL],
+      filter: "^🇽🇰(?: |$)",
+      update_interval: 21600,
+    },
+  });
+});
+
 test("rejects malformed group containers and fields without invoking accessors", () => {
   const valid = buildPolicyGroups(options(), INVENTORY);
   for (const input of [null, undefined, {}, "groups", 3]) {

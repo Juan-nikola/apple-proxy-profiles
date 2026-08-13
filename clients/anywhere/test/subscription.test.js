@@ -245,8 +245,11 @@ test("renders the shared normalized inventory and contains hostile failures", ()
     password: "TEST_ONLY_NORMALIZED_PASSWORD",
     _subDisplayName: "机场订阅",
   }]);
+  assert.equal(normalized.nodes[0].name, "🇭🇰 机场 香港 · SS");
+  assert.equal(prepareAnywhereInventory(normalized.nodes).proxies[0].name, "🇭🇰 机场 香港 · SS");
   const yaml = renderAnywhereSubscription(normalized.nodes);
   assert.match(yaml, /^proxies:\n/u);
+  assert.match(yaml, /name: "🇭🇰 机场 香港 · SS"/u);
   assert.match(yaml, /type: "ss"/u);
 
   const hostileMarker = "SHOULD_NOT_ESCAPE_ANYWHERE_ERRORS";

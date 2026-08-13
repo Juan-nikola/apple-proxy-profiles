@@ -1,5 +1,5 @@
 import { CONTINENT, nodeMetadata } from "../contracts.js";
-import { CONTINENT_FLAGS } from "../nodes/country-regions.js";
+import { CONTINENT_FLAGS, isCountryFlag } from "../nodes/country-regions.js";
 import { countryLabelForFlag } from "../nodes/regions.js";
 import {
   ALL_NODES_FILTER,
@@ -111,6 +111,22 @@ function continentHelperItems(continent, mode) {
   return [];
 }
 
+function compareFlags(left, right) {
+  if (left < right) return -1;
+  if (left > right) return 1;
+  return 0;
+}
+
+function orderedPresentFlags(continent, flags) {
+  const ordered = CONTINENT_FLAGS[continent.key].filter((flag) => flags.has(flag));
+  const orderedSet = new Set(ordered);
+  ordered.push(...[...flags]
+    .filter((flag) => isCountryFlag(flag) && !orderedSet.has(flag))
+    .sort(compareFlags));
+  if (continent.key === CONTINENT.other && flags.has("🌐")) ordered.push("🌐");
+  return ordered;
+}
+
 function serviceChoiceItems(defaults, presentContinentNames) {
   return [
     ...defaults.beforeCandidates,
@@ -159,9 +175,7 @@ export function buildPolicyGroups(options, nodes) {
         return metadata.continent === continent.key && !metadata.chained;
       })
       .map((node) => nodeMetadata(node).flag));
-    const ordered = CONTINENT_FLAGS[continent.key].filter((flag) => flags.has(flag));
-    if (continent.key === CONTINENT.other && flags.has("🌐")) ordered.push("🌐");
-    return [continent.key, ordered];
+    return [continent.key, orderedPresentFlags(continent, flags)];
   }));
   const chainEligible = options.clientChain === "on"
     && normalizedNodes.some((node) => nodeMetadata(node).entry === true && !nodeMetadata(node).chained)

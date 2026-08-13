@@ -199,7 +199,8 @@ test("builds a deterministic root-to-continent-to-flag graph without protocol ch
     ["🇺🇸 US · VLESS｜自建", "americas", "🇺🇸", "VLESS", false],
     ["🌐 Unknown · AnyTLS｜机场", "other", "🌐", "AnyTLS", false],
     ["🇩🇪 DE · Hysteria2｜机场", "europe", "🇩🇪", "Hysteria2", false],
-    ["🔗 🇸🇬 SG · SS｜落地", "asiaPacific", "🇸🇬", "SS", true],
+    ["🇸🇬 SG · Trojan｜机场", "asiaPacific", "🇸🇬", "Trojan", false],
+    ["🔗 🇰🇷 KR · SS｜落地", "asiaPacific", "🇰🇷", "SS", true],
     ["🇯🇵 JP · SS｜机场", "asiaPacific", "🇯🇵", "SS", false],
   ].map(([name, continent, flag, protocolLabel, chained]) => ({
     name,
@@ -242,6 +243,7 @@ test("builds a deterministic root-to-continent-to-flag graph without protocol ch
     "⚡ 亚太自动",
     "🛟 亚太故障转移",
     "🇯🇵 日本",
+    "🇸🇬 新加坡",
   ]);
   assert.deepEqual(byName.get("🌍 欧洲").candidates, [
     "⚡ 欧洲自动",
@@ -260,6 +262,7 @@ test("builds a deterministic root-to-continent-to-flag graph without protocol ch
   ]);
   for (const [name, filter] of [
     ["🇯🇵 日本", "^🇯🇵(?: |$)"],
+    ["🇸🇬 新加坡", "^🇸🇬(?: |$)"],
     ["🇩🇪 德国", "^🇩🇪(?: |$)"],
     ["🇺🇸 美国", "^🇺🇸(?: |$)"],
     ["🌐 未分类", "^🌐(?: |$)"],
@@ -280,6 +283,7 @@ test("builds a deterministic root-to-continent-to-flag graph without protocol ch
       "🚀 节点选择",
       "🌏 亚太",
       "🇯🇵 日本",
+      "🇸🇬 新加坡",
       "🌍 欧洲",
       "🇩🇪 德国",
       "🌎 美洲",
@@ -288,7 +292,7 @@ test("builds a deterministic root-to-continent-to-flag graph without protocol ch
       "🌐 未分类",
     ],
   );
-  assert.equal(byName.has("🇸🇬 新加坡"), false, "chained flags must not create groups");
+  assert.equal(byName.has("🇰🇷 韩国"), false, "chained flags must not create groups");
   assert.equal(groups.some(({ kind }) => kind === "protocol"), false);
   for (const protocolLabel of new Set(inventory.map(({ _profile }) => _profile.protocolLabel))) {
     assert.equal(byName.has(protocolLabel), false, protocolLabel);
@@ -307,4 +311,53 @@ test("builds a deterministic root-to-continent-to-flag graph without protocol ch
     visited.add(name);
   }
   for (const name of byName.keys()) visit(name);
+});
+
+test("retains non-catalog country flags in deterministic minimal-mode flag groups", () => {
+  const inventory = [
+    ["🇽🇽 XX · SS｜机场", "🇽🇽", false],
+    ["🇿🇦 ZA · SS｜机场", "🇿🇦", false],
+    ["🔗 🇽🇦 XA · SS｜落地", "🇽🇦", true],
+    ["🇽🇰 XK · SS｜机场", "🇽🇰", false],
+  ].map(([name, flag, chained]) => ({
+    name,
+    _profile: {
+      continent: "other",
+      flag,
+      protocolLabel: "SS",
+      sourceKind: chained ? "landing" : "airport",
+      udp: false,
+      p2p: false,
+      entry: false,
+      chained,
+    },
+  }));
+  const groups = buildPolicyGroups({
+    platform: "macos",
+    autoGroupMode: "minimal",
+    clientChain: "off",
+    blockMode: "off",
+  }, inventory);
+  const byName = new Map(groups.map((group) => [group.name, group]));
+
+  assert.deepEqual(byName.get("🚀 节点选择").candidates, ["🌐 其他/未分类"]);
+  assert.deepEqual(byName.get("🌐 其他/未分类").candidates, ["🇿🇦", "🇽🇰", "🇽🇽"]);
+  for (const flag of ["🇿🇦", "🇽🇰", "🇽🇽"]) {
+    assert.deepEqual(
+      byName.get(flag),
+      {
+        kind: GROUP_KIND.flag,
+        name: flag,
+        strategy: STRATEGY.select,
+        candidates: [],
+        nodeFilter: `^${flag}(?: |$)`,
+        test: null,
+        hidden: undefined,
+        defaultChoice: undefined,
+      },
+      flag,
+    );
+  }
+  assert.equal(byName.has("🇽🇦"), false, "chained non-catalog flags must not create groups");
+  assert.equal(byName.has("🌐 未分类"), false, "fallback flag must only appear when present");
 });
