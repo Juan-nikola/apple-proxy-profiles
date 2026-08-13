@@ -73,6 +73,29 @@ test("does not emit diagnostics or partial output for mixed compatibility invent
   assert.deepEqual(diagnostics, []);
 });
 
+test("reports normalization and render-failure counts without capability exclusions", () => {
+  const diagnostics = [];
+  const text = runOneXrayNodesProcessor({
+    proxies: [
+      sourceNode(),
+      sourceNode({ name: "流量剩余 100 GB", server: "pseudo.example.invalid" }),
+    ],
+    arguments: ARGUMENTS,
+    onDiagnostics(value) { diagnostics.push(value); },
+  });
+
+  assert.equal(JSON.parse(text).outbounds.length, 1);
+  assert.deepEqual(diagnostics, [{
+    normalization: {
+      total: 2,
+      accepted: 1,
+      protocols: { vless: 1 },
+      excluded: { "pseudo-node": 1 },
+    },
+    renderFailures: {},
+  }]);
+});
+
 test("fails closed with count-only diagnostics when no normalized node is compatible", () => {
   const privateName = "PRIVATE_ONEXRAY_UNSUPPORTED_NODE";
   const privateSecret = "TEST_ONLY_PRIVATE_ONEXRAY_PSK";
@@ -144,4 +167,29 @@ test("uses OneXray native chaining without probing a generic generated chain clo
   assert.equal(output.outbounds.length, 1);
   assert.equal(output.outbounds[0].name, "🇯🇵 Tokyo · VLESS｜自建");
   assert.equal(text.includes(LANDING.server), false);
+});
+
+test("complete node subscription preserves normalized flag and protocol order", () => {
+  const text = runOneXrayNodesProcessor({
+    proxies: [
+      sourceNode({ name: "🇩🇪 Berlin vless", server: "berlin.example.invalid", _subName: "[自建]" }),
+      {
+        name: "🇯🇵 Osaka ss",
+        type: "ss",
+        server: "osaka.example.invalid",
+        port: 443,
+        cipher: "aes-128-gcm",
+        password: "TEST_ONLY_OSAKA_SS_PASSWORD",
+        _subName: "[自建]",
+      },
+      sourceNode({ name: "🇯🇵 Tokyo vless", _subName: "[自建]" }),
+    ],
+    arguments: ARGUMENTS,
+  });
+  const outbounds = JSON.parse(text).outbounds;
+  assert.deepEqual(outbounds.map(({ name, protocol }) => [name, protocol]), [
+    ["🇯🇵 Osaka · SS｜自建", "shadowsocks"],
+    ["🇯🇵 Tokyo · VLESS｜自建", "vless"],
+    ["🇩🇪 Berlin · VLESS｜自建", "vless"],
+  ]);
 });

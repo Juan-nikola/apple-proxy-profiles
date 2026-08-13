@@ -33,6 +33,50 @@ test("renders VLESS Reality WebSocket using official sing-box outbound fields", 
   });
 });
 
+test("renders every selected AnyTLS field supported by the sing-box adapter", () => {
+  const outbound = renderSingBoxOutbound({
+    name: "🇯🇵 Tokyo · AnyTLS｜自建",
+    type: "anytls",
+    server: "anytls.example.invalid",
+    port: 443,
+    password: "TEST_ONLY_ANYTLS_PASSWORD",
+    tls: true,
+    sni: "anytls.example.invalid",
+    alpn: ["h2", "http/1.1"],
+    "client-fingerprint": "chrome",
+    "idle-session-check-interval": 30,
+    "idle-session-timeout": 60,
+    "min-idle-session": 1,
+  });
+  assert.deepEqual(outbound, {
+    type: "anytls",
+    tag: "🇯🇵 Tokyo · AnyTLS｜自建",
+    server: "anytls.example.invalid",
+    server_port: 443,
+    password: "TEST_ONLY_ANYTLS_PASSWORD",
+    idle_session_check_interval: "30s",
+    idle_session_timeout: "60s",
+    min_idle_session: 1,
+    tls: {
+      enabled: true,
+      server_name: "anytls.example.invalid",
+      alpn: ["h2", "http/1.1"],
+      utls: { enabled: true, fingerprint: "chrome" },
+    },
+  });
+});
+
+test("rejects selected fields that the AnyTLS renderer would otherwise ignore", () => {
+  assert.throws(() => renderSingBoxOutbound({
+    name: "AnyTLS unsupported field",
+    type: "anytls",
+    server: "anytls.example.invalid",
+    port: 443,
+    password: "TEST_ONLY_ANYTLS_PASSWORD",
+    flow: "TEST_ONLY_UNSUPPORTED_FLOW",
+  }), /unsupported.*AnyTLS.*field/iu);
+});
+
 test("rejects unsupported sing-box node fields instead of silently dropping them", () => {
   assert.throws(() => renderSingBoxOutbound({
     name: "fixture",

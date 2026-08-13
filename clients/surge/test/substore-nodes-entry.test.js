@@ -41,6 +41,25 @@ const nodes = [
       chained: false,
     },
   },
+  {
+    name: "🇺🇸 自建 · AnyTLS",
+    type: "anytls",
+    server: "198.51.100.22",
+    port: 443,
+    password: "TEST_ONLY_ANYTLS_PASSWORD",
+    tls: true,
+    sni: "anytls.example.invalid",
+    _profile: {
+      id: "anytls-fixture",
+      continent: "americas",
+      sourceKind: "selfHosted",
+      flag: "🇺🇸",
+      udp: true,
+      p2p: true,
+      entry: true,
+      chained: false,
+    },
+  },
 ];
 
 test("Surge node entry rejects a mixed inventory without partial output or private logs", async () => {
@@ -64,8 +83,11 @@ test("Surge node entry rejects a mixed inventory without partial output or priva
       });
     },
     (error) => {
-      assert.equal(error.message, "Surge cannot render selected protocols: vless=1");
-      for (const secret of [nodes[1].name, nodes[1].server, nodes[1].uuid]) {
+      assert.equal(error.message, "Surge cannot render selected protocols: anytls=1,vless=1");
+      for (const secret of [
+        nodes[1].name, nodes[1].server, nodes[1].uuid,
+        nodes[2].name, nodes[2].server, nodes[2].password,
+      ]) {
         assert.equal(error.message.includes(secret), false);
       }
       return true;

@@ -35,7 +35,7 @@ export async function operator(input, targetPlatform, context = {}) {
   });
   if (!Array.isArray(rawNodes) || rawNodes.length === 0) throw new Error("produceArtifact must return a non-empty node array");
   const normalized = normalizeNodes(rawNodes, { clientChain: options.clientChain });
-  assertRenderableNodes(normalized.nodes, "sing-box", (node) => renderSingBoxOutbound(sanitizeSingBoxNode(node)));
+  assertRenderableNodes(normalized.nodes, "sing-box", renderSingBoxOutbound);
   logDiagnostics(context, options, normalized.nodes);
   const ruleBaseUrl = `${PUBLIC_RULE_ROOT}/${options.channel}/sing-box/rule-sets`;
   const config = renderSingBoxConfig(options, normalized.nodes.map(sanitizeSingBoxNode), { ruleBaseUrl });

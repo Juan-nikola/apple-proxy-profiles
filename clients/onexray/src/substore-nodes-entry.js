@@ -33,22 +33,31 @@ function processorInput(input) {
   }
 }
 
-function diagnosticSummary(diagnostics) {
+function sortedCounts(counts) {
+  return Object.fromEntries(
+    Object.keys(counts ?? {})
+      .sort((left, right) => left.localeCompare(right, "en"))
+      .map((key) => [key, counts[key]]),
+  );
+}
+
+function diagnosticSummary(diagnostics, renderFailures = {}) {
   return {
-    accepted: diagnostics.accepted,
-    excluded: Object.fromEntries(
-      Object.keys(diagnostics.excluded)
-        .sort((left, right) => left.localeCompare(right, "en"))
-        .map((reason) => [reason, diagnostics.excluded[reason]]),
-    ),
+    normalization: {
+      total: diagnostics.total,
+      accepted: diagnostics.accepted,
+      protocols: sortedCounts(diagnostics.protocol),
+      excluded: sortedCounts(diagnostics.excluded),
+    },
+    renderFailures: sortedCounts(renderFailures),
   };
 }
 
-function emitDiagnostics(onDiagnostics, diagnostics) {
+function emitDiagnostics(onDiagnostics, diagnostics, renderFailures) {
   if (onDiagnostics === undefined) return;
   if (typeof onDiagnostics !== "function") throw processorError("invalid-diagnostics-handler");
   try {
-    onDiagnostics(diagnosticSummary(diagnostics));
+    onDiagnostics(diagnosticSummary(diagnostics, renderFailures));
   } catch {
     // Optional diagnostics must not change the generated private subscription.
   }
@@ -80,8 +89,7 @@ export function runOneXrayNodesProcessor(input = {}) {
     tag: node.name,
     allowDisplayTag: true,
   }));
-  const renderability = { accepted: normalized.nodes.length, excluded: {} };
-  emitDiagnostics(onDiagnostics, renderability);
+  emitDiagnostics(onDiagnostics, normalized.diagnostics, {});
 
   let resolution;
   try {

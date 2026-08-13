@@ -1,7 +1,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { runOneXrayProfileProcessor } from "../src/substore-profile-entry.js";
+import { buildPrivateOneXrayContext, runOneXrayProfileProcessor } from "../src/substore-profile-entry.js";
+import { validateOneXrayProfile } from "../src/validate-profile.js";
 
 const UUID = "00000000-0000-4000-8000-000000000001";
 const NODE = {
@@ -198,4 +199,39 @@ test("Profile keeps OneXray native client-chain resolution without generic chain
   });
   assert.match(profile, /^onexray:\/\/onexray\.com\/config\/add\?type=profile&data=.+\n$/u);
   assert.equal(profile.includes(LANDING.server), false);
+});
+
+test("private Profile stays native and valid with FOLLOW and DIRECT routing semantics", () => {
+  const context = buildPrivateOneXrayContext(args("profile"), [NODE]);
+  const profile = context.profile;
+  assert.deepEqual(validateOneXrayProfile(profile, {
+    channel: "edge",
+    geo: context.geo,
+    resolution: context.resolution,
+    chain: context.resolution.chain,
+  }), {
+    valid: true,
+    errors: [],
+    checks: {
+      uniqueTags: true,
+      allOutboundRefsExist: true,
+      allInboundRefsAllowed: true,
+      allGeoRefsExist: true,
+      reservedTagsValid: true,
+      oneXrayModelKeysOnly: true,
+      chainShapeValid: true,
+      canonicalRoundTrip: true,
+      encodedLengthAtMost: true,
+    },
+  });
+  assert.equal(Object.hasOwn(profile, "policy_groups"), false);
+  assert.equal(Object.hasOwn(profile.routing, "balancers"), false);
+  assert.deepEqual(profile.outbounds.map(({ protocol, tag }) => [protocol, tag]), [
+    ["freedom", "direct"],
+    ["blackhole", "block"],
+    ["dns", "dnsOut"],
+  ]);
+  assert.equal(context.resolution.targets.ai.resolvedTag, "proxy");
+  assert.equal(context.resolution.targets.github.resolvedTag, "proxy");
+  assert.equal(context.resolution.targets.apple.resolvedTag, "direct");
 });

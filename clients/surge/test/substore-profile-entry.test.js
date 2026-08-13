@@ -123,13 +123,23 @@ test("Sub-Store Surge profile carries the private remote provider URL", async ()
 });
 
 test("Sub-Store Surge profile rejects an unrenderable selected protocol before output", async () => {
-  const privateNode = {
+  const privateAnyTls = {
     name: "PRIVATE_SURGE_ANYTLS",
     type: "anytls",
     server: "private-surge.example.invalid",
     port: 443,
     password: "TEST_ONLY_SURGE_ANYTLS_PASSWORD",
     _subName: "[自建] AnyTLS",
+  };
+  const privateVless = {
+    name: "PRIVATE_SURGE_VLESS",
+    type: "vless",
+    server: "private-vless.example.invalid",
+    port: 443,
+    uuid: "00000000-0000-4000-8000-000000000001",
+    tls: true,
+    sni: "private-vless.example.invalid",
+    _subName: "[自建] VLESS",
   };
   let result;
   await assert.rejects(
@@ -142,12 +152,15 @@ test("Sub-Store Surge profile rejects an unrenderable selected protocol before o
           subscriptionName: "Surge-Nodes",
           platform: "macos",
         },
-        async produceArtifact() { return [nodes[0], privateNode]; },
+        async produceArtifact() { return [nodes[0], privateAnyTls, privateVless]; },
       });
     },
     (error) => {
-      assert.equal(error.message, "Surge cannot render selected protocols: anytls=1");
-      for (const secret of [privateNode.name, privateNode.server, privateNode.password]) {
+      assert.equal(error.message, "Surge cannot render selected protocols: anytls=1,vless=1");
+      for (const secret of [
+        privateAnyTls.name, privateAnyTls.server, privateAnyTls.password,
+        privateVless.name, privateVless.server, privateVless.uuid,
+      ]) {
         assert.equal(error.message.includes(secret), false);
       }
       return true;

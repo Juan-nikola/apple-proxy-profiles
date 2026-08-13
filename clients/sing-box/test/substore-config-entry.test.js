@@ -77,7 +77,7 @@ test("Sub-Store passes the light/diagnostic profile API and never emits source r
 });
 
 test("Sub-Store sing-box entry normalizes raw collection nodes before rendering", async () => {
-  const rawNodes = nodes.map(({ _profile, ...node }) => ({ ...node, reuse: true, tfo: true, udp_relay: true, provider_metadata: "ignored" }));
+  const rawNodes = nodes.map(({ _profile, ...node }) => ({ ...node, reuse: true, tfo: true, udp_relay: true }));
   const result = await operator(
     { id: "input" },
     "macos",
@@ -97,6 +97,52 @@ test("Sub-Store sing-box entry normalizes raw collection nodes before rendering"
   const config = JSON.parse(result.$content);
   assert.equal(config.log.level, "info");
   assert.ok(config.outbounds.some((outbound) => outbound.type === "shadowsocks"));
+});
+
+test("Sub-Store sing-box entry retains normalized AnyTLS fields in the complete config", async () => {
+  const result = await operator({}, "macos", {
+    arguments: {
+      output: "config",
+      type: "collection",
+      name: "apple-proxy-singbox",
+      subscriptionName: "sing-box-Nodes",
+      platform: "macos",
+    },
+    async produceArtifact() {
+      return [{
+        name: "Tokyo AnyTLS",
+        type: "anytls",
+        server: "anytls.example.invalid",
+        port: 443,
+        password: "TEST_ONLY_ANYTLS_PASSWORD",
+        tls: true,
+        sni: "anytls.example.invalid",
+        alpn: ["h2"],
+        "client-fingerprint": "chrome",
+        "idle-session-check-interval": 30,
+        "idle-session-timeout": 60,
+        "min-idle-session": 1,
+        _subName: "[自建] AnyTLS",
+      }];
+    },
+  });
+  const outbound = JSON.parse(result.$content).outbounds.find(({ type }) => type === "anytls");
+  assert.deepEqual(outbound, {
+    type: "anytls",
+    tag: "🇯🇵 Tokyo · AnyTLS｜自建",
+    server: "anytls.example.invalid",
+    server_port: 443,
+    password: "TEST_ONLY_ANYTLS_PASSWORD",
+    idle_session_check_interval: "30s",
+    idle_session_timeout: "60s",
+    min_idle_session: 1,
+    tls: {
+      enabled: true,
+      server_name: "anytls.example.invalid",
+      alpn: ["h2"],
+      utls: { enabled: true, fingerprint: "chrome" },
+    },
+  });
 });
 
 test("Sub-Store sing-box entry rejects unsafe collection names before artifact production", async () => {
@@ -144,6 +190,44 @@ test("Sub-Store sing-box entry rejects a mixed inventory without partial JSON or
     (error) => {
       assert.equal(error.message, "sing-box cannot render selected protocols: sudoku=1");
       for (const secret of [privateNode.name, privateNode.server, privateNode.key]) {
+        assert.equal(error.message.includes(secret), false);
+      }
+      return true;
+    },
+  );
+  assert.equal(result, undefined);
+  assert.deepEqual(lines, []);
+});
+
+test("Sub-Store sing-box renderability probe rejects an unsupported selected AnyTLS field", async () => {
+  const privateNode = {
+    name: "PRIVATE_SINGBOX_ANYTLS",
+    type: "anytls",
+    server: "private-anytls.example.invalid",
+    port: 443,
+    password: "TEST_ONLY_SINGBOX_ANYTLS_PASSWORD",
+    "future-option": "TEST_ONLY_SINGBOX_FUTURE_VALUE",
+    _subName: "[自建] AnyTLS",
+  };
+  const lines = [];
+  let result;
+  await assert.rejects(
+    async () => {
+      result = await operator({}, "macos", {
+        arguments: {
+          output: "config",
+          type: "collection",
+          name: "apple-proxy-singbox",
+          subscriptionName: "sing-box-Nodes",
+          platform: "macos",
+        },
+        async produceArtifact() { return [nodes[0], privateNode]; },
+        logger: { info(line) { lines.push(line); } },
+      });
+    },
+    (error) => {
+      assert.equal(error.message, "sing-box cannot render selected protocols: anytls=1");
+      for (const secret of [privateNode.name, privateNode.server, privateNode.password, privateNode["future-option"]]) {
         assert.equal(error.message.includes(secret), false);
       }
       return true;

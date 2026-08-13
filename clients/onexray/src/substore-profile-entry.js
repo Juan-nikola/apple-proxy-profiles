@@ -92,17 +92,6 @@ function copyCounts(value) {
     .sort(([left], [right]) => left.localeCompare(right, "en")));
 }
 
-function protocolCounts(normalizedNodes, eligibleNodes) {
-  const eligible = new Set(eligibleNodes);
-  const result = {};
-  for (const node of normalizedNodes) {
-    const protocol = typeof node?.type === "string" ? node.type.trim().toLowerCase() : "unknown";
-    result[protocol] ??= { accepted: 0, excluded: 0 };
-    result[protocol][eligible.has(node) ? "accepted" : "excluded"] += 1;
-  }
-  return Object.fromEntries(Object.entries(result).sort(([left], [right]) => left.localeCompare(right, "en")));
-}
-
 function defineInternal(target, key, value) {
   Object.defineProperty(target, key, {
     value,
@@ -112,9 +101,8 @@ function defineInternal(target, key, value) {
   });
 }
 
-function privateContext({ options, normalized, eligible, resolution, profile, profileLink, dns, routing, geo, geoHashes }) {
+function privateContext({ options, normalized, resolution, profile, profileLink, dns, routing, geo, geoHashes }) {
   const normalizedNodes = normalized.nodes;
-  const eligibleNodes = eligible.nodes;
   const context = {
     normalizedDiagnostics: Object.freeze({
       total: normalized.diagnostics.total,
@@ -122,11 +110,7 @@ function privateContext({ options, normalized, eligible, resolution, profile, pr
       protocol: Object.freeze(copyCounts(normalized.diagnostics.protocol)),
       excluded: Object.freeze(copyCounts(normalized.diagnostics.excluded)),
     }),
-    eligibleDiagnostics: Object.freeze({
-      accepted: eligible.diagnostics.accepted,
-      excluded: Object.freeze(copyCounts(eligible.diagnostics.excluded)),
-    }),
-    protocolCounts: Object.freeze(protocolCounts(normalizedNodes, eligibleNodes)),
+    renderFailureProtocols: Object.freeze({}),
     ruleReleaseId: `shared-lightweight-${options.channel}`,
     geoHashes: Object.freeze({ ...geoHashes }),
   };
@@ -135,7 +119,6 @@ function privateContext({ options, normalized, eligible, resolution, profile, pr
   // output is explicitly assembled from the public summaries above.
   defineInternal(context, "options", options);
   defineInternal(context, "normalizedNodes", normalizedNodes);
-  defineInternal(context, "eligibleNodes", eligibleNodes);
   defineInternal(context, "resolution", resolution);
   defineInternal(context, "profile", profile);
   defineInternal(context, "profileLink", profileLink);
@@ -192,10 +175,6 @@ function buildPrivateOneXrayContext(rawArguments, proxies, { geoHashes = {}, pol
     tag: node.name,
     allowDisplayTag: true,
   }));
-  const renderability = {
-    nodes: normalized.nodes,
-    diagnostics: { accepted: normalized.nodes.length, excluded: {} },
-  };
 
   let resolution;
   try {
@@ -230,12 +209,12 @@ function buildPrivateOneXrayContext(rawArguments, proxies, { geoHashes = {}, pol
     throw processorError("invalid-profile");
   }
 
-  return privateContext({ options, normalized, eligible: renderability, resolution, profile, profileLink, dns, routing, geo, geoHashes });
+  return privateContext({ options, normalized, resolution, profile, profileLink, dns, routing, geo, geoHashes });
 }
 
 /**
  * Private Profile/audit Sub-Store processor. Both modes execute the same
- * normalization, capability, policy, DNS, routing, Profile and link stages;
+ * normalization, renderability, policy, DNS, routing, Profile and link stages;
  * only the final allowlisted serialization differs.
  */
 export function runOneXrayProfileProcessor(input = {}) {

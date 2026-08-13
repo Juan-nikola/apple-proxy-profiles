@@ -35,7 +35,7 @@ function context(overrides = {}) {
   return {
     options,
     normalizedDiagnostics: { total: 3, accepted: 2, protocol: { vless: 1, vmess: 1 }, excluded: { "pseudo-node": 1 } },
-    eligibleDiagnostics: { accepted: 1, excluded: { "unsupported-onexray-transport": 1 } },
+    renderFailureProtocols: { snell: 1 },
     resolution: {
       targets: {
         ai: { configured: "FOLLOW", resolvedTag: "proxy", status: "follow" },
@@ -55,13 +55,19 @@ function context(overrides = {}) {
 
 test("renders deterministic Chinese credential-free audit allowlist", () => {
   const audit = JSON.parse(renderOneXrayAudit(context()));
-  assert.equal(audit.nodes.total, 3);
-  assert.equal(audit.nodes.accepted, 1);
-  assert.equal(audit.nodes.excluded, 2);
-  assert.deepEqual(audit.exclusionReasons, {
-    "pseudo-node": 1,
-    "unsupported-onexray-transport": 1,
+  assert.deepEqual(audit.nodes, {
+    normalization: {
+      total: 3,
+      accepted: 2,
+      protocols: { vless: 1, vmess: 1 },
+      excluded: { "pseudo-node": 1 },
+    },
+    renderFailures: {
+      total: 1,
+      protocols: { snell: 1 },
+    },
   });
+  assert.equal(Object.hasOwn(audit, "exclusionReasons"), false);
   assert.equal(audit.policy.businesses.length, 12);
   assert.deepEqual(audit.policy.businesses.slice(0, 2).map(({ id }) => id), ["ai", "github"]);
   assert.equal(audit.profile.ruleReleaseId, "edge-2026-08-12");
