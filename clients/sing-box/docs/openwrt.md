@@ -1,10 +1,12 @@
 # OpenWrt 透明网关
 
+OpenWrt 的 sing-box 任务读取 `apple-proxy-singbox`；统一筛选、preview 与旧 URL 回滚见 [Sub-Store 客户端节点池指南](../../../docs/substore-client-pools.md)。已有 `apple-proxy-sources` 入口继续保留。
+
 OpenWrt 使用 `platform=openwrt` 的专用 File。它不是手机配置的放大版，而是为软路由生成 TUN、DNS hijack、`auto_redirect`、路由排除和 LAN 网段保护；不要把 OpenWrt 字段复制到 Android、iPhone 或 iPad。
 
 ## 部署步骤
 
-1. 先创建并预览私密组合 `apple-proxy-sources`，确认 `snell`、`vlesshy2` 来源非空。
+1. 先创建并预览私密组合 `apple-proxy-singbox`，确认 `snell`、`vlesshy2` 来源非空。
 2. 创建 `sing-box-openwrt`，引用官方 Pages Config Generator，参数使用 `platform=openwrt`、`ipv6Mode=auto`、`channel=current`。
 3. 把输出 JSON 保存到测试 VLAN 的 sing-box 配置位置；不要直接覆盖生产配置。
 4. 先验证网关自身，再让一台测试 LAN 客户端接入；通过后逐步扩大范围。

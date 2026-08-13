@@ -1,10 +1,12 @@
 # sing-box 部署
 
+sing-box 新任务只读取 `apple-proxy-singbox`。先按 [Sub-Store 客户端节点池指南](../../../docs/substore-client-pools.md) 完成筛选、preview 和回滚准备；已有 `apple-proxy-sources` collection、tasks 和旧 URL 保留作兼容/回滚。
+
 本手册覆盖官方 sing-box macOS、iPhone、iPad、Android 和 OpenWrt 软路由。五个平台共用节点组合，但 Apple/Android 是设备 TUN，OpenWrt 是透明网关，不能互换配置。
 
 ## 1. 创建私密组合
 
-1. 在 Sub-Store 新建组合 `apple-proxy-sources`。
+1. 在 Sub-Store 新建组合 `apple-proxy-singbox`。
 2. 加入已有来源 `snell` 与 `vlesshy2`，预览节点数必须大于 0。
 3. 记下节点订阅的显示名，例如 `Apple-Proxy-Nodes`。后续 `subscriptionName` 必须与这个显示名完全一致；它不是组合名，也不是公开占位 URL。
 
@@ -19,7 +21,7 @@ https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/scripts/sing
 复制公共参数后逐项填写；`platform` 是每个任务的唯一平台差异，macOS 明确使用 `ipv4-only`，移动端和 OpenWrt 使用 `auto`。稳定版公共参数如下：
 
 ```text
-output=config&type=collection&name=apple-proxy-sources&subscriptionName=Apple-Proxy-Nodes&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&autoGroupMode=auto&clientChain=off&channel=current
+output=config&type=collection&name=apple-proxy-singbox&subscriptionName=Apple-Proxy-Nodes&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&autoGroupMode=auto&clientChain=off&channel=current
 ```
 
 | File | `platform` | `ipv6Mode` |

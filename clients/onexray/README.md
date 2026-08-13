@@ -1,5 +1,7 @@
 # OneXray
 
+OneXray 新任务只读取 `apple-proxy-onexray`。客户端 collection 边界、迁移与节点精确名称更新以 [Sub-Store 客户端节点池指南](../../docs/substore-client-pools.md) 为准；已有 `apple-proxy-sources` collection、tasks 和旧 URL 保留作兼容/回滚，不要删除。
+
 OneXray 使用与 Shadowrocket、Surge、Egern、Anywhere、sing-box 相同的共享轻量规则，生成 OneXray 可导入的 Xray 原生 Profile。节点、业务分组和 deep link 都是私密信息：仓库只发布无凭据的 GeoData 安装页和规则数据，Profile 与节点订阅只在你的 Sub-Store 中生成和保存。
 
 ## 快速开始
@@ -28,24 +30,24 @@ onexray://onexray.com/dat/add?type=domain|ip&url=<percent-encoded-https-url>#<ch
 
 ### 2. 在 Sub-Store 创建三个任务
 
-Sub-Store → Files → 新建任务 → 远程链接，粘贴下面的完整 URL。`name=apple-proxy-sources` 必须改成你 Sub-Store 里真实组合名；改了之后三个任务里的 `name=` 要一起改。
+Sub-Store → Files → 新建任务 → 远程链接，粘贴下面的完整 URL。`name=apple-proxy-onexray` 必须改成你 Sub-Store 里真实组合名；改了之后三个任务里的 `name=` 要一起改。
 
 `onexray-nodes`（节点订阅）：
 
 ```text
-https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-nodes-generator.js?v=10#output=nodes&type=collection&name=apple-proxy-sources&channel=edge&clientChain=off
+https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-nodes-generator.js?v=10#output=nodes&type=collection&name=apple-proxy-onexray&channel=edge&clientChain=off
 ```
 
 `onexray-profile`（Profile）：
 
 ```text
-https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-profile-generator.js?v=10#output=profile&type=collection&name=apple-proxy-sources&channel=edge&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&clientChain=off&policyFile=onexray-policy&logLevel=info&dnsLog=on
+https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-profile-generator.js?v=10#output=profile&type=collection&name=apple-proxy-onexray&channel=edge&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&clientChain=off&policyFile=onexray-policy&logLevel=info&dnsLog=on
 ```
 
 `onexray-routing-audit`（脱敏审计，建议一起建）：
 
 ```text
-https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-profile-generator.js?v=10#output=audit&type=collection&name=apple-proxy-sources&channel=edge&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&clientChain=off&policyFile=onexray-policy&logLevel=info&dnsLog=on
+https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-profile-generator.js?v=10#output=audit&type=collection&name=apple-proxy-onexray&channel=edge&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&clientChain=off&policyFile=onexray-policy&logLevel=info&dnsLog=on
 ```
 
 `v=10` 是本次内存修复后的 Sub-Store 脚本缓存版本号：脚本内容更新后，把任务 URL 里的 `v=` 数字 +1 再保存一次，否则 Sub-Store 可能继续使用旧脚本。

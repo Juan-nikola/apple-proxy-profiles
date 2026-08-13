@@ -1,5 +1,7 @@
 # OneXray 部署
 
+OneXray 新任务只读取 `apple-proxy-onexray`。先按 [Sub-Store 客户端节点池指南](../../../docs/substore-client-pools.md) 完成筛选、preview、精确名称迁移和回滚准备；已有 `apple-proxy-sources` collection、tasks 和旧 URL 保留作兼容/回滚。
+
 OneXray 的 Profile 内含节点、固定目标和策略，因此必须在自己的 Sub-Store 中生成，不能通过公开 URL 分发。公开仓库只提供 GeoData 数据与安装页。
 
 ## 1. 使用 edge Pages 脚本
@@ -35,12 +37,12 @@ current 与 previous 必须同名配对：使用 previous Profile 时，必须�
 
 ## 3. 私有任务参数
 
-所有示例只使用合成名称。`name` 必须指向你自己的原始组合（例如 `apple-proxy-sources`）；脚本地址直接使用上面的 edge Pages URL。
+所有示例只使用合成名称。`name` 必须指向你自己的原始组合（例如 `apple-proxy-onexray`）；脚本地址直接使用上面的 edge Pages URL。
 
 ### 3.1 `onexray-nodes`
 
 ```text
-https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-nodes-generator.js?v=10#output=nodes&type=collection&name=apple-proxy-sources&channel=edge&clientChain=off
+https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-nodes-generator.js?v=10#output=nodes&type=collection&name=apple-proxy-onexray&channel=edge&clientChain=off
 ```
 
 预览成功标志：输出包含 OneXray 可导入的节点列表，节点数量大于 0。
@@ -58,7 +60,7 @@ OneXray 的“订阅”页面要填 Sub-Store 的文件直链，不是 Sub-Store
 ### 3.2 `onexray-profile`
 
 ```text
-https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-profile-generator.js?v=10#output=profile&type=collection&name=apple-proxy-sources&channel=edge&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&clientChain=off&policyFile=onexray-policy&logLevel=info&dnsLog=on
+https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-profile-generator.js?v=10#output=profile&type=collection&name=apple-proxy-onexray&channel=edge&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&clientChain=off&policyFile=onexray-policy&logLevel=info&dnsLog=on
 ```
 
 每次生成的 Profile 名称都会插入 8 位 Profile 版本号（内容哈希），例如：
@@ -72,19 +74,19 @@ Apple Proxy · OneXray · edge · 3f2a91c4
 ### 3.3 `onexray-routing-audit`
 
 ```text
-https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-profile-generator.js?v=10#output=audit&type=collection&name=apple-proxy-sources&channel=edge&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&clientChain=off&policyFile=onexray-policy&logLevel=info&dnsLog=on
+https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-profile-generator.js?v=10#output=audit&type=collection&name=apple-proxy-onexray&channel=edge&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&clientChain=off&policyFile=onexray-policy&logLevel=info&dnsLog=on
 ```
 
 审计输出是脱敏报告，不包含节点凭据、Policy 原文或 Profile deep link。
 
 ### 3.4 复制即用的完整任务链接
 
-以下三条是跳过验证、直接使用 edge 的完整引用。`name=apple-proxy-sources` 必须改成你自己 Sub-Store 中的真实组合名：
+以下三条是跳过验证、直接使用 edge 的完整引用。`name=apple-proxy-onexray` 必须改成你自己 Sub-Store 中的真实组合名：
 
 ```text
-https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-nodes-generator.js?v=10#output=nodes&type=collection&name=apple-proxy-sources&channel=edge&clientChain=off
-https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-profile-generator.js?v=10#output=profile&type=collection&name=apple-proxy-sources&channel=edge&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&clientChain=off&policyFile=onexray-policy&logLevel=info&dnsLog=on
-https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-profile-generator.js?v=10#output=audit&type=collection&name=apple-proxy-sources&channel=edge&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&clientChain=off&policyFile=onexray-policy&logLevel=info&dnsLog=on
+https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-nodes-generator.js?v=10#output=nodes&type=collection&name=apple-proxy-onexray&channel=edge&clientChain=off
+https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-profile-generator.js?v=10#output=profile&type=collection&name=apple-proxy-onexray&channel=edge&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&clientChain=off&policyFile=onexray-policy&logLevel=info&dnsLog=on
+https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-profile-generator.js?v=10#output=audit&type=collection&name=apple-proxy-onexray&channel=edge&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&clientChain=off&policyFile=onexray-policy&logLevel=info&dnsLog=on
 ```
 
 `v=10` 是本次内存修复后的 Sub-Store 脚本缓存版本号；脚本内容更新后把 `v=` 数字 +1 并重新保存任务。固定业务推荐用 `&policyFile=onexray-policy` 引用 Sub-Store 内的可读策略文件，也可继续用 `&policyOverrides=<Base64URL>`，两者不能同时使用。`logLevel` 可输入 `none`、`error`、`warning`、`info`、`debug`，默认 `warning`；`dnsLog` 可输入 `on`、`off`，默认 `off`，示例开启以便查看域名。

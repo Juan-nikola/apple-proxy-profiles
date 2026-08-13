@@ -1,9 +1,11 @@
 # Intel Mac 灰度清单
 
+本清单验收 `apple-proxy-shadowrocket`；迁移顺序、preview 与旧 URL 回滚见 [Sub-Store 客户端节点池指南](../../../docs/substore-client-pools.md)。已有 `apple-proxy-sources` 入口继续保留。
+
 开始前确认旧 Profile 可用，新 Profile 只是并存导入。每完成一项再勾选；关键联网、DNS、局域网或回滚项失败时立即切回旧 Profile，停止向 iPhone 和 iPad 推广。
 
 - [ ] 旧节点订阅和旧 Profile 均可立即选回。
-- [ ] 节点订阅（`apple-proxy-sources` 输出）手动更新成功，节点数量不是 0；Shadowrocket 显示名与本平台 File 参数的 `subscriptionName` 完全一致（本例 `Shadowrocket-Nodes`，动态候选显示 `Shadowrocket-Nodes,use=true`）。显示名可自由命名（支持中文、内部空格和普通标点），但不能以空白开头或结尾，也不能包含换行；大小写、emoji、空格和标点必须匹配。截图若为 `SHADOWROCKET-NODES`，三个 Profile File Operator 都填写该精确名称。
+- [ ] 节点订阅（`apple-proxy-shadowrocket` 输出）手动更新成功，节点数量不是 0；Shadowrocket 显示名与本平台 File 参数的 `subscriptionName` 完全一致（本例 `Shadowrocket-Nodes`，动态候选显示 `Shadowrocket-Nodes,use=true`）。显示名可自由命名（支持中文、内部空格和普通标点），但不能以空白开头或结尾，也不能包含换行；大小写、emoji、空格和标点必须匹配。截图若为 `SHADOWROCKET-NODES`，三个 Profile File Operator 都填写该精确名称。
 - [ ] 升级已有安装时，macOS、iPhone、iPad 三个 Profile File Operator 的 `subscriptionName` 已逐一核对；节点 URL 和节点 Script Operator 未更换。若旧占位值不匹配当前显示名，已改参数或重命名订阅，并重新发布和更新各平台 Profile。
 - [ ] 常用中国网站直连，常用境外网站经 `🚀 节点选择`。
 - [ ] 一个未列规则但解析为中国 IP 的测试目标命中 `GEOIP,CN,DIRECT`。
