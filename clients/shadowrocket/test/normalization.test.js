@@ -71,7 +71,7 @@ test("adds exactly one protocol label and protocol metadata to normalized nodes"
       name: "🇯🇵 Tokyo VLESS",
       type: "vless",
       server: "protocol-vless.example.invalid",
-      uuid: "00000000-0000-4000-8000-000000000011",
+      uuid: `${fakeNodes[2].uuid.slice(0, -1)}2`,
       _subDisplayName: "[自建] private",
     },
     {
@@ -116,7 +116,7 @@ test("sorts normalized nodes by continent, flag, protocol label, cleaned name, a
       name: "🇯🇵 Zulu VLESS",
       type: "vless",
       server: "sort-vless.example.invalid",
-      uuid: "00000000-0000-4000-8000-000000000021",
+      uuid: `${fakeNodes[2].uuid.slice(0, -1)}3`,
       udp: false,
     },
     {
@@ -439,7 +439,7 @@ test("keeps spider-distinct duplicate nodes coexisting with fingerprint suffixes
     type: "vless",
     server: "xmssjc.sunyz.uk",
     port: 37785,
-    uuid: "00000000-0000-4000-8000-000000000001",
+    uuid: fakeNodes[2].uuid,
     tls: true,
     sni: "it.nvidia.com",
     flow: "xtls-rprx-vision",
