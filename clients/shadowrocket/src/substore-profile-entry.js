@@ -1,10 +1,9 @@
 import { normalizeNodes } from "../../../shared/nodes/normalize-nodes.js";
-import { assertRenderableNodes } from "../../../shared/nodes/renderability.js";
 import { parseOptions } from "./options.js";
+import { assertShadowrocketNodeSet } from "./render-node.js";
 import { renderProfile } from "./render-profile.js";
 import { ruleBaseUrlForChannel } from "./render-rules.js";
 import { validateProfile } from "./validate-profile.js";
-import { renderShadowrocketProxyRecord } from "./substore-node-subscription-entry.js";
 
 export async function operator(input, targetPlatform, context = {}) {
   void targetPlatform;
@@ -25,7 +24,7 @@ export async function operator(input, targetPlatform, context = {}) {
   }
 
   const normalized = normalizeNodes(nodes, { clientChain: options.clientChain });
-  assertRenderableNodes(normalized.nodes, "Shadowrocket", renderShadowrocketProxyRecord);
+  assertShadowrocketNodeSet(normalized.nodes);
 
   const profile = renderProfile(options, normalized.nodes, {
     ruleBaseUrl: ruleBaseUrlForChannel(options.channel),

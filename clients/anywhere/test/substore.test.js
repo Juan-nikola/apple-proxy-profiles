@@ -6,7 +6,7 @@ import { operator } from "../src/substore-nodes-entry.js";
 const ARGUMENTS = Object.freeze({
   output: "nodes",
   type: "collection",
-  name: "apple-proxy-sources",
+  name: "apple-proxy-anywhere",
   clientChain: "off",
 });
 
@@ -24,15 +24,26 @@ function inventory() {
 
 function mixedInventory() {
   return [
-    ...inventory(),
     {
-      name: "Unsupported Snell",
-      type: "snell",
+      name: "Tokyo AnyTLS",
+      type: "anytls",
+      server: "198.51.100.30",
+      port: 443,
+      password: "TEST_ONLY_ANYWHERE_ANYTLS_PASSWORD",
+      alpn: ["h2"],
+      "client-fingerprint": "chrome",
+      "idle-session-check-interval": 30,
+      "idle-session-timeout": 60,
+      "min-idle-session": 1,
+      _subName: "[自建] Tokyo AnyTLS",
+    },
+    {
+      name: "Unsupported Future Protocol",
+      type: " Future-Proto ",
       server: "192.0.2.20",
       port: 443,
-      psk: "TEST_ONLY_ANYWHERE_OPERATOR_PSK",
-      version: 4,
-      _subName: "[自建] Snell",
+      password: "TEST_ONLY_ANYWHERE_FUTURE_PASSWORD",
+      _subName: "[自建] Future",
     },
   ];
 }
@@ -58,8 +69,8 @@ test("Anywhere File Operator rejects a mixed inventory without partial output or
       });
     },
     (error) => {
-      assert.equal(error.message, "Anywhere cannot render selected protocols: snell=1");
-      for (const secret of ["Unsupported Snell", "192.0.2.20", "TEST_ONLY_ANYWHERE_OPERATOR_PSK"]) {
+      assert.equal(error.message, "Anywhere cannot render selected protocols: future-proto=1");
+      for (const secret of ["Unsupported Future Protocol", "192.0.2.20", "TEST_ONLY_ANYWHERE_FUTURE_PASSWORD"]) {
         assert.equal(error.message.includes(secret), false);
       }
       return true;
@@ -68,7 +79,7 @@ test("Anywhere File Operator rejects a mixed inventory without partial output or
   assert.equal(operator.length, 2);
   assert.deepEqual(calls, [{
     type: "collection",
-    name: "apple-proxy-sources",
+    name: "apple-proxy-anywhere",
     platform: "JSON",
     produceType: "internal",
   }]);
@@ -76,15 +87,32 @@ test("Anywhere File Operator rejects a mixed inventory without partial output or
   assert.deepEqual(lines, []);
 });
 
+test("Anywhere File Operator emits a non-empty AnyTLS list with its protocol label", async () => {
+  const calls = [];
+  const result = await operator({}, "Anywhere", {
+    arguments: ARGUMENTS,
+    produceArtifact: producer([mixedInventory()[0]], calls),
+  });
+  assert.deepEqual(calls, [{
+    type: "collection",
+    name: "apple-proxy-anywhere",
+    platform: "JSON",
+    produceType: "internal",
+  }]);
+  assert.match(result.$content, /^proxies:\n/u);
+  assert.match(result.$content, /type: "anytls"/u);
+  assert.match(result.$content, / · AnyTLS｜自建/u);
+});
+
 test("Anywhere File Operator accepts an exact safe collection name and forwards it", async () => {
   const calls = [];
   await assert.doesNotReject(operator({}, "Anywhere", {
-    arguments: { ...ARGUMENTS, name: "apple-proxy-anywhere" },
+    arguments: { ...ARGUMENTS, name: "anywhere-canary" },
     produceArtifact: producer(inventory(), calls),
   }));
   assert.deepEqual(calls, [{
     type: "collection",
-    name: "apple-proxy-anywhere",
+    name: "anywhere-canary",
     platform: "JSON",
     produceType: "internal",
   }]);
@@ -99,7 +127,7 @@ test("Anywhere File Operator enforces the chain-off and safe collection contract
     { ...ARGUMENTS, type: "subscription" },
     ...["", "中文", "anywhere/sources", "anywhere?sources", "anywhere#sources", " anywhere-sources", "anywhere-sources ", "anywhere\nsources", "__proto__"].map((name) => ({ ...ARGUMENTS, name })),
     { ...ARGUMENTS, clientChain: "on" },
-    { output: "nodes", type: "collection", name: "apple-proxy-sources" },
+    { output: "nodes", type: "collection", name: "apple-proxy-anywhere" },
     { ...ARGUMENTS, unknown: true },
   ];
   for (const arguments_ of rejected) {
@@ -113,7 +141,7 @@ test("Anywhere File Operator enforces the chain-off and safe collection contract
 
 test("Anywhere arguments reject every hostile object shape", async () => {
   const inherited = Object.create({ output: "nodes" });
-  Object.assign(inherited, { type: "collection", name: "apple-proxy-sources", clientChain: "off" });
+  Object.assign(inherited, { type: "collection", name: "apple-proxy-anywhere", clientChain: "off" });
   const symbol = { ...ARGUMENTS, [Symbol("hostile")]: true };
   const hidden = { ...ARGUMENTS };
   Object.defineProperty(hidden, "clientChain", { value: "off", enumerable: false });
@@ -184,7 +212,7 @@ test("operator keeps one immutable pre-await argument snapshot", async () => {
   assert.match(result.$content, /^proxies:\n/u);
   assert.deepEqual(calls, [{
     type: "collection",
-    name: "apple-proxy-sources",
+    name: "apple-proxy-anywhere",
     platform: "JSON",
     produceType: "internal",
   }]);

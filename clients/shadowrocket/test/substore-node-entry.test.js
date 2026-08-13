@@ -16,14 +16,6 @@ function egernOnlyNodes() {
       _subName: "[落地] SSH",
     },
     {
-      name: "AnyTLS landing",
-      type: "anytls",
-      server: "anytls-landing.example.invalid",
-      port: 443,
-      password: "TEST_ONLY_ANYTLS_PASSWORD",
-      _subName: "[落地] AnyTLS",
-    },
-    {
       name: "WireGuard landing",
       type: "wireguard",
       server: "wireguard-landing.example.invalid",
@@ -36,13 +28,32 @@ function egernOnlyNodes() {
   ];
 }
 
-test("operator returns normalized nodes for the Shadowrocket node output", async () => {
-  const result = await operator(fakeNodes, "Shadowrocket", {
+function anytlsNode() {
+  return {
+    name: "Tokyo AnyTLS",
+    type: "anytls",
+    server: "anytls-landing.example.invalid",
+    port: 443,
+    password: "TEST_ONLY_ANYTLS_PASSWORD",
+    alpn: ["h2"],
+    "client-fingerprint": "chrome",
+    "idle-session-check-interval": 30,
+    "idle-session-timeout": 60,
+    "min-idle-session": 1,
+    _subName: "[自建] AnyTLS",
+  };
+}
+
+test("operator returns every normalized node including labeled AnyTLS", async () => {
+  const result = await operator([...fakeNodes, anytlsNode()], "Shadowrocket", {
     arguments: { output: "nodes", clientChain: "off" },
   });
 
   assert.equal(Array.isArray(result), true);
-  assert.equal(result.length, fakeNodes.length);
+  assert.equal(result.length, fakeNodes.length + 1);
+  const anytls = result.find((node) => node.type === "anytls");
+  assert.match(anytls.name, / · AnyTLS｜自建$/u);
+  assert.equal(anytls["idle-session-timeout"], 60);
 });
 
 test("operator accepts only the documented node arguments", async () => {
@@ -108,7 +119,7 @@ test("operator rejects a mixed inventory before Shadowrocket output and logging"
       logger: { info(line) { lines.push(line); } },
     }),
     (error) => {
-      assert.equal(error.message, "Shadowrocket cannot render selected protocols: anytls=1,ssh=1,wireguard=1");
+      assert.equal(error.message, "Shadowrocket cannot render selected protocols: ssh=1,wireguard=1");
       for (const secret of ["SSH landing", "ssh-landing.example.invalid", "TEST_ONLY_SSH_PASSWORD"]) {
         assert.equal(error.message.includes(secret), false);
       }
@@ -120,7 +131,7 @@ test("operator rejects a mixed inventory before Shadowrocket output and logging"
 
 test("operator reports protocol counts without logging when every selected protocol is unrenderable", async () => {
   const unsupported = egernOnlyNodes();
-  const inventories = [...unsupported.map((node) => [node]), [unsupported[0], unsupported[1], unsupported[2]]];
+  const inventories = [...unsupported.map((node) => [node]), [unsupported[0], unsupported[1]]];
 
   for (const inventory of inventories) {
     const lines = [];

@@ -1,6 +1,5 @@
 import { normalizeNodes } from "../../../shared/nodes/normalize-nodes.js";
-import { assertRenderableNodes } from "../../../shared/nodes/renderability.js";
-import { renderShadowrocketProxyRecord } from "./substore-node-subscription-entry.js";
+import { assertShadowrocketNodeSet } from "./render-node.js";
 
 const ALLOWED_OPTIONS = new Set(["output", "clientChain"]);
 
@@ -45,7 +44,7 @@ export async function operator(proxies = [], targetPlatform, context = {}) {
   void targetPlatform;
   const { clientChain } = parseArguments(context.arguments ?? {});
   const result = normalizeNodes(proxies, { clientChain });
-  assertRenderableNodes(result.nodes, "Shadowrocket", renderShadowrocketProxyRecord);
+  assertShadowrocketNodeSet(result.nodes);
   logDiagnostics(context, result.diagnostics);
   return result.nodes;
 }

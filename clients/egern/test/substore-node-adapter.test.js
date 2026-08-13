@@ -102,6 +102,11 @@ test("adaptation failures reject the full Sub-Store inventory", () => {
   };
   const hash = "ab".repeat(32);
   const invalid = [
+    {
+      ...common("Bad AnyTLS idle field", "anytls"),
+      password: "TEST_ONLY_BAD_ANYTLS_PASSWORD",
+      "idle-session-timeout": 60,
+    },
     { ...vless(1), name: "Bad client fingerprint", "client-fingerprint": "firefox" },
     { ...vless(2), name: "Bad encryption", encryption: "auto" },
     { ...vless(3), name: "Bad packet encoding", "packet-encoding": "packetaddr" },
@@ -116,8 +121,8 @@ test("adaptation failures reject the full Sub-Store inventory", () => {
   assert.throws(
     () => prepareEgernInventory([good, ...invalid], { clientChain: "off" }),
     (error) => {
-      assert.equal(error.message, "Egern cannot render selected protocols: hy2=4,vless=5");
-      for (const secret of ["Bad client fingerprint", "bad-client-fingerprint.example.invalid", "TEST_ONLY_HYSTERIA2_PASSWORD_1"]) {
+      assert.equal(error.message, "Egern cannot render selected protocols: anytls=1,hy2=4,vless=5");
+      for (const secret of ["Bad AnyTLS idle field", "Bad client fingerprint", "bad-client-fingerprint.example.invalid", "TEST_ONLY_HYSTERIA2_PASSWORD_1"]) {
         assert.equal(error.message.includes(secret), false);
       }
       return true;

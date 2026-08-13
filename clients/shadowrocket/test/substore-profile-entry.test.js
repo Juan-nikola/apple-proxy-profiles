@@ -7,10 +7,28 @@ import { fakeNodes } from "./fixtures/nodes.js";
 const argumentsForProfile = Object.freeze({
   output: "config",
   type: "collection",
-  name: "apple-proxy-sources",
+  name: "apple-proxy-shadowrocket",
   subscriptionName: "Shadowrocket-Nodes",
   platform: "macos",
 });
+
+function anytlsNode() {
+  return {
+    name: "Tokyo AnyTLS",
+    type: "anytls",
+    server: "198.51.100.40",
+    port: 443,
+    password: "TEST_ONLY_PROFILE_ANYTLS_PASSWORD",
+    tls: true,
+    sni: "anytls.example.invalid",
+    alpn: ["h2"],
+    "client-fingerprint": "chrome",
+    "idle-session-check-interval": 30,
+    "idle-session-timeout": 60,
+    "min-idle-session": 1,
+    _subName: "[自建] Tokyo AnyTLS",
+  };
+}
 
 test("file operator produces a Profile artifact and preserves the input", async () => {
   const input = { url: "https://example.invalid/sub", unchanged: true };
@@ -19,16 +37,17 @@ test("file operator produces a Profile artifact and preserves the input", async 
     arguments: argumentsForProfile,
     async produceArtifact(request) {
       calls.push(request);
-      return fakeNodes;
+      return [...fakeNodes, anytlsNode()];
     },
   });
 
-  assert.deepEqual(calls, [{ type: "collection", name: "apple-proxy-sources", platform: "JSON", produceType: "internal" }]);
+  assert.deepEqual(calls, [{ type: "collection", name: "apple-proxy-shadowrocket", platform: "JSON", produceType: "internal" }]);
   assert.deepEqual({ url: result.url, unchanged: result.unchanged }, input);
   assert.equal(typeof result.$content, "string");
   assert.deepEqual(Object.keys(result).sort(), ["$content", "unchanged", "url"]);
   assert.match(result.$content, /\[Proxy Group\]/);
   assert.match(result.$content, /edge\/shadowrocket\/rules\/DomesticCore\.list/u);
+  assert.match(result.$content, /node-count=5/u);
   assert.doesNotMatch(result.$content, /\/Advertising(?:_Domain)?\.list/u);
 });
 
@@ -90,26 +109,25 @@ test("file operator retains its JavaScript function arity", () => {
   assert.equal(operator.length, 2);
 });
 
-test("file operator rejects a mixed protocol inventory before rendering a partial Profile", async () => {
+test("file operator rejects an unknown mixed inventory before rendering a partial Profile", async () => {
   const privateNode = {
-    name: "PRIVATE_SHADOWROCKET_PROFILE_SSH",
-    type: "ssh",
+    name: "PRIVATE_SHADOWROCKET_PROFILE_FUTURE",
+    type: " Future-Proto ",
     server: "private-profile.example.invalid",
-    port: 22,
-    username: "TEST_ONLY_PROFILE_USERNAME",
+    port: 443,
     password: "TEST_ONLY_PROFILE_PASSWORD",
-    _subName: "[落地] SSH",
+    _subName: "[自建] Future",
   };
   let result;
   await assert.rejects(
     async () => {
       result = await operator({}, "Shadowrocket", {
         arguments: argumentsForProfile,
-        async produceArtifact() { return [fakeNodes[0], privateNode]; },
+        async produceArtifact() { return [anytlsNode(), privateNode]; },
       });
     },
     (error) => {
-      assert.equal(error.message, "Shadowrocket cannot render selected protocols: ssh=1");
+      assert.equal(error.message, "Shadowrocket cannot render selected protocols: future-proto=1");
       for (const secret of [privateNode.name, privateNode.server, privateNode.password]) {
         assert.equal(error.message.includes(secret), false);
       }
