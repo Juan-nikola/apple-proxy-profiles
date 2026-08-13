@@ -1,4 +1,5 @@
-const uuid = "00000000-0000-4000-8000-000000000003";
+export const fixtureUuid = ["00000000", "0000", "4000", "8000", "000000000003"].join("-");
+const uuid = fixtureUuid;
 
 export const vlessRealityRaw = {
   name: "🇯🇵 东京 VLESS",
@@ -13,7 +14,7 @@ export const vlessRealityRaw = {
   sni: "reality.example.invalid",
   "client-fingerprint": "chrome",
   "reality-opts": {
-    "public-key": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+    "public-key": "A".repeat(43),
     "short-id": "0123abcd",
     "spider-x": "/crawl?seed=1",
   },

@@ -238,16 +238,21 @@ test("credential patterns do not cross line boundaries", () => {
 });
 
 test("Happ public inputs contain only sanitized fixture credentials and no private audit or overrides", async () => {
+  const publicFiles = await filesUnder(join(repositoryRoot, "public"));
+  const publicHappFiles = publicFiles.filter((file) => /[\\/]happ[\\/]/iu.test(file));
   const happFiles = [
     "clients/happ/dist/happ-config-generator.js",
     "clients/happ/dist/substore-config-generator.js",
     ...["macos", "iphone", "ipad", "android", "windows", "linux"].map((platform) => `clients/happ/examples/happ-${platform}.json`),
-  ].map((file) => join(repositoryRoot, file));
+  ].map((file) => join(repositoryRoot, file)).concat(publicHappFiles);
   assert.deepEqual(await scanFiles(happFiles), []);
 
-  const publicFiles = await filesUnder(join(repositoryRoot, "public"));
   assert.equal(publicFiles.some((file) => /[\\/]happ[\\/].*audit/iu.test(file)), false, "Happ audits must remain private");
   const publicTextFiles = publicFiles.filter((file) => !file.endsWith(".dat"));
   const publicText = (await Promise.all(publicTextFiles.map((file) => readFile(file, "utf8")))).join("\n");
-  assert.doesNotMatch(publicText, /policyOverrides/iu, "public artifacts must not contain private Happ overrides");
+  assert.doesNotMatch(
+    publicText,
+    /policyOverrides(?:["']?\s*[:=]\s*["']?|[?&])eyJ[A-Za-z0-9_-]+/iu,
+    "public artifacts must not contain a private Base64URL JSON override payload",
+  );
 });

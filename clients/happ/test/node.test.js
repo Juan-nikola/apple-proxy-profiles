@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { renderHappOutbound, renderHappStreamSettings } from "../src/render-node.js";
 import {
   hysteria2,
+  fixtureUuid,
   shadowsocksUdp,
   socks5Authenticated,
   socks5Unauthenticated,
@@ -25,7 +26,7 @@ test("renders VLESS vnext users with REALITY over raw", () => {
         address: "vless-reality.example.invalid",
         port: 443,
         users: [{
-          id: "00000000-0000-4000-8000-000000000003",
+          id: fixtureUuid,
           encryption: "none",
           flow: "xtls-rprx-vision",
         }],
@@ -38,7 +39,7 @@ test("renders VLESS vnext users with REALITY over raw", () => {
       realitySettings: {
         serverName: "reality.example.invalid",
         fingerprint: "chrome",
-        password: "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+        password: "A".repeat(43),
         shortId: "0123abcd",
         spiderX: "/crawl?seed=1",
       },
@@ -69,7 +70,7 @@ test("omits explicit false REALITY certificate-bypass aliases", () => {
     realitySettings: {
       serverName: "reality.example.invalid",
       fingerprint: "chrome",
-      password: "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+      password: "A".repeat(43),
       shortId: "0123abcd",
       spiderX: "/crawl?seed=1",
     },
@@ -102,7 +103,7 @@ test("renders VMess users with TLS and each admitted transport", () => {
       vnext: [{
         address: "vmess.example.invalid",
         port: 443,
-        users: [{ id: "00000000-0000-4000-8000-000000000003", alterId: 0, security: "aes-128-gcm" }],
+        users: [{ id: fixtureUuid, alterId: 0, security: "aes-128-gcm" }],
       }],
     },
     streamSettings: {

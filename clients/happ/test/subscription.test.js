@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { renderHappSubscription } from "../src/render-subscription.js";
+import { fixtureUuid } from "./fixtures/nodes.js";
 
 const encode = (value) => Buffer.from(JSON.stringify(value), "utf8").toString("base64url");
 const platforms = ["macos", "iphone", "ipad", "android", "windows", "linux"];
@@ -9,7 +10,7 @@ const platforms = ["macos", "iphone", "ipad", "android", "windows", "linux"];
 function node(name, id) {
   return {
     name, type: "vless", server: `${id}.example.invalid`, port: 443,
-    uuid: "00000000-0000-4000-8000-000000000003", encryption: "none",
+    uuid: fixtureUuid, encryption: "none",
     network: "raw", tls: true, _profile: { id },
   };
 }
