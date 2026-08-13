@@ -31,6 +31,8 @@ function countryCodeToFlag(code) {
   return [...code].map((letter) => String.fromCodePoint(0x1F1E6 + letter.charCodeAt(0) - 65)).join("");
 }
 
+const COUNTRY_FLAG_PATTERN = /^[\u{1F1E6}-\u{1F1FF}]{2}$/u;
+
 export const COUNTRY_CODE_COUNT = Object.values(REGION_CODES).flat().length;
 
 export const CONTINENT_FLAGS = Object.freeze(Object.fromEntries(
@@ -48,4 +50,8 @@ const FLAG_CONTINENTS = new Map(
 
 export function continentForFlag(flag) {
   return FLAG_CONTINENTS.get(flag) ?? null;
+}
+
+export function isCountryFlag(flag) {
+  return typeof flag === "string" && COUNTRY_FLAG_PATTERN.test(flag);
 }

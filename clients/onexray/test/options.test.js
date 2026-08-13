@@ -3,14 +3,14 @@ import test from "node:test";
 
 import { parseOneXrayOptions } from "../src/options.js";
 
-const REQUIRED = Object.freeze({ output: "profile", type: "collection", name: "OneXray 私密 Profile" });
+const REQUIRED = Object.freeze({ output: "profile", type: "collection", name: "apple-proxy-onexray" });
 
-test("parses the exact OneXray contract with pinned defaults and a trimmed display name", () => {
-  const parsed = parseOneXrayOptions({ ...REQUIRED, name: "  OneXray 私密 Profile  " });
+test("parses the exact OneXray contract with pinned defaults and an exact collection name", () => {
+  const parsed = parseOneXrayOptions(REQUIRED);
   assert.deepEqual(parsed, {
     output: "profile",
     type: "collection",
-    name: "OneXray 私密 Profile",
+    name: "apple-proxy-onexray",
     channel: "edge",
     dnsMode: "stable",
     chinaDns: "alidns",
@@ -26,6 +26,13 @@ test("parses the exact OneXray contract with pinned defaults and a trimmed displ
     dnsLog: "off",
   });
   assert.equal(Object.isFrozen(parsed), true);
+});
+
+test("accepts legacy collection names exactly and rejects unsafe collection names", () => {
+  assert.equal(parseOneXrayOptions({ ...REQUIRED, name: "apple-proxy-sources" }).name, "apple-proxy-sources");
+  for (const name of ["", "中文", "onexray/sources", "onexray?sources", "onexray#sources", " onexray-sources", "onexray-sources ", "onexray\nsources", "__proto__"]) {
+    assert.throws(() => parseOneXrayOptions({ ...REQUIRED, name }), /name/i, JSON.stringify(name));
+  }
 });
 
 test("accepts every supported OneXray output, channel, and shared option enum", () => {

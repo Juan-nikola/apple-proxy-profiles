@@ -4,7 +4,7 @@ import test from "node:test";
 import { CONTINENT, SOURCE_KIND } from "../../../shared/contracts.js";
 import { CONTINENT_FLAGS, COUNTRY_CODE_COUNT, continentForFlag } from "../../../shared/nodes/country-regions.js";
 import { classifySource, sourceName } from "../../../shared/nodes/source-labels.js";
-import { classifyRegion, removeFlags } from "../../../shared/nodes/regions.js";
+import { classifyRegion, countryLabelForFlag, removeFlags } from "../../../shared/nodes/regions.js";
 
 test("classifies leading source labels using provenance priority", () => {
   for (const [name, kind, label] of [
@@ -55,7 +55,19 @@ test("preserves existing regional flags and reports flag warnings", () => {
   assert.equal(classifyRegion("🇿🇦 Private 01").continent, CONTINENT.other);
   assert.equal(classifyRegion("🇿🇦 US-LAX").warning, "flag-text-conflict");
   assert.equal(classifyRegion("🇯🇵 US-LAX").warning, "flag-text-conflict");
+  assert.deepEqual(classifyRegion("🇯🇵 Frankfurt"), {
+    flag: "🇯🇵",
+    continent: CONTINENT.asiaPacific,
+    warning: "flag-text-conflict",
+  });
   assert.equal(removeFlags(" 🇯🇵  Tokyo  🇺🇸 "), "Tokyo");
+});
+
+test("assigns deterministic labels to common, unmapped, and fallback flags", () => {
+  assert.equal(countryLabelForFlag("🇯🇵"), "日本");
+  assert.equal(countryLabelForFlag("🇩🇪"), "德国");
+  assert.equal(countryLabelForFlag("🇿🇦"), "🇿🇦");
+  assert.equal(countryLabelForFlag("🌐"), "🌐 未分类");
 });
 
 test("matches Latin region terms at boundaries while accepting compact codes", () => {

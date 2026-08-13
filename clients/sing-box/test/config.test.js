@@ -119,7 +119,9 @@ test("keeps the primary selector compact with continent-level entries only", () 
   assert.deepEqual(primary?.type, "selector");
   assert.deepEqual(primary?.outbounds, ["⚡ 全部自动", "🛟 全部故障转移", "🌏 亚太"]);
   const continent = config.outbounds.find((outbound) => outbound.tag === "🌏 亚太");
-  assert.ok(continent?.outbounds.includes("🇯🇵 [机场] Tokyo A"));
+  assert.deepEqual(continent?.outbounds, ["⚡ 亚太自动", "🛟 亚太故障转移", "🇯🇵 日本"]);
+  const flag = config.outbounds.find((outbound) => outbound.tag === "🇯🇵 日本");
+  assert.deepEqual(flag?.outbounds, ["🇯🇵 [机场] Tokyo A"]);
   for (const nodeName of ["🇯🇵 [机场] Tokyo A"]) {
     assert.equal(primary?.outbounds.includes(nodeName), false, "primary selector must not list concrete nodes");
   }
@@ -308,34 +310,34 @@ test("applies quicMode allow, proxy-block, and all-block to route rules", () => 
 test("puts visible groups first, hidden helper groups last, and node outbounds at the end", () => {
   const nodes = [
     {
-      name: "东京节点",
+      name: "🇯🇵 东京节点",
       type: "ss",
       server: "198.51.100.10",
       port: 443,
       cipher: "aes-256-gcm",
       password: "TEST_ONLY_PASSWORD",
       udp: true,
-      _profile: { id: "tokyo", continent: "asiaPacific", sourceKind: "airport", entry: true, chained: false },
+      _profile: { id: "tokyo", continent: "asiaPacific", flag: "🇯🇵", sourceKind: "airport", entry: true, chained: false },
     },
     {
-      name: "法兰克福节点",
+      name: "🇩🇪 法兰克福节点",
       type: "ss",
       server: "198.51.100.20",
       port: 443,
       cipher: "aes-256-gcm",
       password: "TEST_ONLY_PASSWORD",
       udp: true,
-      _profile: { id: "frankfurt", continent: "europe", sourceKind: "airport", entry: true, chained: false },
+      _profile: { id: "frankfurt", continent: "europe", flag: "🇩🇪", sourceKind: "airport", entry: true, chained: false },
     },
     {
-      name: "纽约节点",
+      name: "🇺🇸 纽约节点",
       type: "ss",
       server: "198.51.100.30",
       port: 443,
       cipher: "aes-256-gcm",
       password: "TEST_ONLY_PASSWORD",
       udp: true,
-      _profile: { id: "newyork", continent: "americas", sourceKind: "airport", entry: true, chained: false },
+      _profile: { id: "newyork", continent: "americas", flag: "🇺🇸", sourceKind: "airport", entry: true, chained: false },
     },
   ];
   const config = renderSingBoxConfig(parseSingBoxOptions({ ...baseOptions, platform: "iphone" }), nodes, {
@@ -345,8 +347,11 @@ test("puts visible groups first, hidden helper groups last, and node outbounds a
   const expectedVisible = [
     "🚀 节点选择",
     "🌏 亚太",
+    "🇯🇵 日本",
     "🌍 欧洲",
+    "🇩🇪 德国",
     "🌎 美洲",
+    "🇺🇸 美国",
     "🏢 机场节点",
     "🤖 AI 专用",
     "🐙 GitHub",
@@ -381,10 +386,10 @@ test("puts visible groups first, hidden helper groups last, and node outbounds a
   const expectedOrder = ["DIRECT", "REJECT", ...expectedVisible, ...expectedHidden];
   const head = tags.slice(0, expectedOrder.length);
   assert.deepEqual(head, expectedOrder, "visible groups must precede hidden helper groups");
-  const firstNodeIndex = tags.indexOf("东京节点");
+  const firstNodeIndex = tags.indexOf("🇯🇵 东京节点");
   const lastHiddenIndex = tags.indexOf("🧭 规则下载故障转移");
   assert.ok(firstNodeIndex > lastHiddenIndex, "node outbounds must be emitted after every group");
-  assert.deepEqual(tags.slice(expectedOrder.length), ["东京节点", "法兰克福节点", "纽约节点"]);
+  assert.deepEqual(tags.slice(expectedOrder.length), ["🇯🇵 东京节点", "🇩🇪 法兰克福节点", "🇺🇸 纽约节点"]);
   assert.deepEqual(validateSingBoxConfig(config), { valid: true, errors: [] });
 });
 

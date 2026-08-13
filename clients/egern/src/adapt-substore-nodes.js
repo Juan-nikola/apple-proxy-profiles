@@ -1,4 +1,3 @@
-import { increment } from "../../../shared/nodes/diagnostics.js";
 import { normalizeProtocol } from "../../../shared/nodes/protocol-registry.js";
 
 const CERTIFICATE_FINGERPRINT = /^[0-9a-f]{64}$/iu;
@@ -121,13 +120,31 @@ function adaptNode(node) {
   return { value: node };
 }
 
+function failureProtocol(node) {
+  try {
+    return normalizeProtocol(node?.type);
+  } catch {
+    return "";
+  }
+}
+
 export function adaptEgernSubStoreNodes(nodes) {
   const adapted = [];
-  const excluded = {};
+  const failures = [];
   for (const node of Array.isArray(nodes) ? nodes : []) {
-    const result = adaptNode(node);
-    if (result.reason) increment(excluded, result.reason);
+    let result;
+    try {
+      result = adaptNode(node);
+    } catch {
+      result = { reason: "invalid-egern-adaptation" };
+    }
+    if (result.reason) {
+      failures.push(Object.freeze({
+        type: failureProtocol(node),
+        adaptationFailure: result.reason,
+      }));
+    }
     else adapted.push(result.value);
   }
-  return { nodes: adapted, excluded };
+  return { nodes: adapted, failures };
 }

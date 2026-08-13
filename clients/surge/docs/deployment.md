@@ -1,10 +1,12 @@
 # Surge 部署
 
+Surge 新任务只读取 `apple-proxy-surge`。先按 [Sub-Store 客户端节点池指南](../../../docs/substore-client-pools.md) 完成筛选、preview 和回滚准备；已有 `apple-proxy-sources` collection、tasks 和旧 URL 保留作兼容/回滚。
+
 本手册把一份私密组合订阅转换为 Surge macOS、iPhone、iPad 三个官方客户端 Profile。先在 Sub-Store 完成组合和 Surge 节点资源 File，再创建三个远程 Profile File；不要把节点凭据直接粘到 GitHub 或脚本参数。
 
 ## 1. 准备组合与公开脚本
 
-1. 在 Sub-Store 的“组合订阅”中创建 `apple-proxy-sources`。
+1. 在 Sub-Store 的“组合订阅”中创建 `apple-proxy-surge`。
 2. 只加入已有来源 `snell`、`vlesshy2`；预览节点数必须大于 0。
 3. 记录你准备在 Surge 中显示的节点订阅名，例如 `Apple-Proxy-Nodes`。这只是示例，三个 File 的 `subscriptionName` 必须与实际显示名逐字一致。
 4. 创建一个 `surge-nodes` 节点 File，远程脚本为：
@@ -13,7 +15,7 @@
    https://juan-nikola.github.io/apple-proxy-profiles/current/surge/scripts/surge-nodes-generator.js
    ```
 
-   参数为 `output=nodes&type=collection&name=apple-proxy-sources&clientChain=off`。预览必须出现 `[Proxy]` 和至少一个节点；保存该 File 的私密输出 URL，下面记作 `<SURGE_NODES_URL>`。
+   参数为 `output=nodes&type=collection&name=apple-proxy-surge&clientChain=off`。预览必须出现 `[Proxy]` 和至少一个节点；保存该 File 的私密输出 URL，下面记作 `<SURGE_NODES_URL>`。
 5. 三个 Profile File 都引用稳定版：
 
    ```text
@@ -30,7 +32,7 @@
 | --- | --- | --- | --- |
 | `output` | `config` | `config` | `config` |
 | `type` | `collection` | `collection` | `collection` |
-| `name` | `apple-proxy-sources` | `apple-proxy-sources` | `apple-proxy-sources` |
+| `name` | `apple-proxy-surge` | `apple-proxy-surge` | `apple-proxy-surge` |
 | `subscriptionName` | `Apple-Proxy-Nodes` | `Apple-Proxy-Nodes` | `Apple-Proxy-Nodes` |
 | `proxyPolicyUrl` | `<SURGE_NODES_URL>` | `<SURGE_NODES_URL>` | `<SURGE_NODES_URL>` |
 | `platform` | `macos` | `iphone` | `ipad` |

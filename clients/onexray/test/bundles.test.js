@@ -121,7 +121,7 @@ test("profile bundle matches the pure processor and returns one deep-link line",
 
 test("profile bundle reads readable policy from a Sub-Store file when policyFile is set", async () => {
   const source = await readFile(PROFILE_BUNDLE, "utf8");
-  const policy = JSON.stringify({ "AI 专用": "NODE:🌐 Fixture node" });
+  const policy = JSON.stringify({ "🤖 AI 专用": "NODE:🌐 Fixture node · VLESS" });
   const loaded = loadBundle(
     source,
     { ...PROFILE_ARGUMENTS, policyFile: "onexray-policy" },
@@ -167,14 +167,14 @@ test("bundles preserve stable processor failures without leaking inventory value
   await assert.rejects(
     node.context.operator({}, "OneXray"),
     (error) => {
-      assert.equal(error.message, "OneXray nodes: no-compatible-nodes; excluded counts: unsupported-onexray-protocol=1");
+      assert.equal(error.message, "OneXray cannot render selected protocols: snell=1");
       assert.equal(error.message.includes(privateName), false);
       assert.equal(error.message.includes(privateSecret), false);
       return true;
     },
   );
   const profile = loadBundle(await readFile(PROFILE_BUNDLE, "utf8"), PROFILE_ARGUMENTS, produced);
-  await assert.rejects(profile.context.operator({}, "OneXray"), { message: "OneXray profile: no-compatible-nodes" });
+  await assert.rejects(profile.context.operator({}, "OneXray"), { message: "OneXray cannot render selected protocols: snell=1" });
 });
 
 test("OneXray bundle output is byte-deterministic across rebuilds", async () => {

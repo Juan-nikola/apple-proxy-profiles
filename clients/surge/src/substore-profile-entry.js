@@ -1,9 +1,8 @@
-import { CLIENT } from "../../../shared/contracts.js";
-import { filterNodesForClient } from "../../../shared/nodes/capabilities.js";
 import { normalizeNodes } from "../../../shared/nodes/normalize-nodes.js";
+import { assertRenderableNodes } from "../../../shared/nodes/renderability.js";
 import { parseSurgeOptions } from "./options.js";
 import { renderSurgeProfile } from "./render-profile.js";
-import { sanitizeSurgeNode } from "./render-node.js";
+import { renderSurgeProxy, sanitizeSurgeNode } from "./render-node.js";
 
 export const PUBLIC_RULE_ROOT = "https://juan-nikola.github.io/apple-proxy-profiles";
 export const PUBLIC_RULE_BASE_URL = `${PUBLIC_RULE_ROOT}/current/surge/rules`;
@@ -37,10 +36,9 @@ export async function operator(input, targetPlatform, context = {}) {
   });
   if (!Array.isArray(rawNodes) || rawNodes.length === 0) throw new Error("produceArtifact must return a non-empty node array");
   const normalized = normalizeNodes(rawNodes, { clientChain: options.clientChain });
-  const filtered = filterNodesForClient(normalized.nodes, CLIENT.surge);
-  if (filtered.nodes.length === 0) throw new Error("No compatible Surge nodes");
-  logDiagnostics(context, options, filtered.nodes);
+  assertRenderableNodes(normalized.nodes, "Surge", (node) => renderSurgeProxy(sanitizeSurgeNode(node)));
+  logDiagnostics(context, options, normalized.nodes);
   const ruleBaseUrl = `${PUBLIC_RULE_ROOT}/${options.channel}/surge/rules`;
-  const profile = renderSurgeProfile(options, filtered.nodes.map(sanitizeSurgeNode), { ruleBaseUrl });
+  const profile = renderSurgeProfile(options, normalized.nodes.map(sanitizeSurgeNode), { ruleBaseUrl });
   return { ...input, $content: profile };
 }

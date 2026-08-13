@@ -1,4 +1,5 @@
 import { renderEgernSubscription } from "./render-subscription.js";
+import { validateCollectionName } from "../../../shared/substore/collection-name.js";
 import { installEgernRuntimeFallbacks } from "./runtime-fallbacks.js";
 import {
   argumentsFrom,
@@ -8,8 +9,6 @@ import {
 } from "./substore-runtime.js";
 
 const ALLOWED_KEYS = new Set(["output", "type", "name", "clientChain"]);
-const AMBIGUOUS_WHITESPACE = /[\t\v\f\u00a0\u1680\u2000-\u200b\u2028\u2029\u202f\u205f\u3000\ufeff]/u;
-const CONTROL_CHARACTERS = /[\u0000-\u001f\u007f-\u009f]/u;
 const PROTOTYPE_KEYS = new Set(["__proto__", "constructor", "prototype"]);
 
 function nodeArguments(raw) {
@@ -47,14 +46,7 @@ function nodeArguments(raw) {
 
   if (values.get("output") !== "nodes") throw new Error("Egern node output must be nodes");
   if (values.get("type") !== "collection") throw new Error("Egern node type must be collection");
-  const name = values.get("name");
-  if (
-    typeof name !== "string"
-    || name.length === 0
-    || name.trim() !== name
-    || CONTROL_CHARACTERS.test(name)
-    || AMBIGUOUS_WHITESPACE.test(name)
-  ) throw new Error("Egern node name is invalid");
+  const name = validateCollectionName(values.get("name"), "Egern node name");
   const clientChain = values.has("clientChain") ? values.get("clientChain") : "off";
   if (clientChain !== "off" && clientChain !== "on") {
     throw new Error("Egern node clientChain must be off or on");

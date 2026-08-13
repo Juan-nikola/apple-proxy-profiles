@@ -1520,6 +1520,8 @@ function singBoxNodeExclusionReason(node) {
 }
 
 export function filterNodesForClient(nodes, client) {
+  // Compatibility-only diagnostic API. SubStore output paths must probe their
+  // concrete renderer through assertRenderableNodes() instead of filtering.
   const diagnostics = createClientFilterDiagnostics();
   const supportedNodes = [];
 

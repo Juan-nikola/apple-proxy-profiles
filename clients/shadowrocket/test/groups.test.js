@@ -7,10 +7,14 @@ import { renderGroups } from "../src/render-groups.js";
 import { fakeNodes } from "./fixtures/nodes.js";
 
 function node(name, metadata = {}) {
+  const flag = metadata.flag
+    ?? name.match(/[\u{1F1E6}-\u{1F1FF}]{2}/u)?.[0]
+    ?? "🌐";
   return {
     name,
     _profile: {
       continent: "asiaPacific",
+      flag,
       sourceKind: "airport",
       udp: false,
       p2p: false,
@@ -76,9 +80,9 @@ test("selects effective automatic group detail by normalized node count", () => 
 
   for (const count of [10, 50, 300]) {
     const groups = buildGroups(options(), Array.from({ length: count }, (_, index) => node(`🇯🇵 JP ${index}｜机场`)));
-    assert.equal(named(groups, "🚀 节点选择").useSubscription, true);
-    assert.equal(named(groups, "🚀 节点选择").filter, "^(?!🔗 ).+$");
-    assert.deepEqual(named(groups, "🚀 节点选择").items, ["PROXY"]);
+    assert.equal(named(groups, "🚀 节点选择").useSubscription, undefined);
+    assert.equal(named(groups, "🚀 节点选择").filter, undefined);
+    assert.deepEqual(named(groups, "🚀 节点选择").items, ["🌏 亚太"]);
   }
 
   const fallback = named(buildGroups(options(), [node("🇯🇵 JP｜机场")]), "🛟 全部故障转移");
@@ -88,18 +92,22 @@ test("selects effective automatic group detail by normalized node count", () => 
   );
 });
 
-test("uses continent-only visible grouping while keeping helpers hidden", () => {
+test("preserves root-to-continent-to-flag references while keeping helpers hidden", () => {
   const groups = buildGroups(options(), Array.from({ length: 40 }, (_, index) => node(`🇯🇵 JP ${index}｜机场`)));
  const lines = renderGroups(groups, "订阅,名称");
 
   assert.match(lines.find((line) => line.startsWith("🌏 亚太 =")), /^🌏 亚太 = select,/);
-  assert.deepEqual(named(groups, "🌏 亚太").items, ["⚡ 亚太自动"]);
-  assert.deepEqual(named(groups, "🚀 节点选择").items, ["PROXY"]);
-  assert.equal(lines.find((line) => line.startsWith("🚀 节点选择 =")), "🚀 节点选择 = select,PROXY,订阅\\,名称,use=true,policy-regex-filter=^(?!🔗 ).+$");
+  assert.deepEqual(named(groups, "🌏 亚太").items, ["⚡ 亚太自动", "🇯🇵 日本"]);
+  assert.deepEqual(named(groups, "🚀 节点选择").items, ["🌏 亚太"]);
+  assert.equal(lines.find((line) => line.startsWith("🚀 节点选择 =")), "🚀 节点选择 = select,🌏 亚太");
+  assert.equal(lines.find((line) => line.startsWith("🌏 亚太 =")), "🌏 亚太 = select,⚡ 亚太自动,🇯🇵 日本");
+  assert.equal(lines.find((line) => line.startsWith("🇯🇵 日本 =")), "🇯🇵 日本 = select,订阅\\,名称,use=true,policy-regex-filter=^🇯🇵(?: |$)");
   assert.equal(lines.some((line) => line.includes("订阅\\,名称,use=true")), true);
   assert.equal(named(groups, "🌍 欧洲"), undefined);
   assert.equal(groups.some((group) => group.hidden === true), true);
-  assert.equal(groups.some((group) => /(?:日本|美国|德国|Japan|US|Germany)/.test(group.name)), false);
+  assert.equal(named(groups, "🇯🇵 日本").type, "select");
+  assert.equal(named(groups, "🇯🇵 日本").useSubscription, true);
+  assert.deepEqual(named(groups, "🇯🇵 日本").items, []);
 });
 
 test("keeps service manual access and gates special service groups by eligibility", () => {
@@ -208,7 +216,7 @@ test("keeps chained clones out of the other-continent subscription filter", () =
     node("🌐 Other｜机场", { continent: "other" }),
     node("🔗 🇯🇵 clone｜落地", { chained: true }),
   ]);
-  const filter = new RegExp(named(groups, "🌐 其他/未分类").filter);
+  const filter = new RegExp(named(groups, "🌐 未分类").filter);
 
   assert.equal(filter.test("🌐 Other｜机场"), true);
   assert.equal(filter.test("🔗 🇯🇵 clone｜落地"), false);
@@ -269,11 +277,14 @@ test("references every available continent helper from its visible selector", ()
   assert.deepEqual(named(buildGroups(options({ autoGroupMode: "full" }), nodes), "🌏 亚太").items, [
     "⚡ 亚太自动",
     "🛟 亚太故障转移",
+    "🇯🇵 日本",
   ]);
-  assert.deepEqual(named(buildGroups(options({ autoGroupMode: "minimal" }), nodes), "🌏 亚太").items, []);
+  assert.deepEqual(named(buildGroups(options({ autoGroupMode: "minimal" }), nodes), "🌏 亚太").items, [
+    "🇯🇵 日本",
+  ]);
 });
 
-test("keeps the root locked to the homepage while AI continent order stays stable", () => {
+test("keeps root continent order and AI continent order stable", () => {
   const mixed = [
     node("🇿🇦 ZA｜自建", { continent: "other" }),
     node("🇺🇸 US｜自建", { continent: "americas" }),
@@ -282,7 +293,12 @@ test("keeps the root locked to the homepage while AI continent order stays stabl
   ];
   const groups = buildGroups(options(), mixed);
 
-  assert.deepEqual(named(groups, "🚀 节点选择").items, ["PROXY"]);
+  assert.deepEqual(named(groups, "🚀 节点选择").items, [
+    "🌏 亚太",
+    "🌍 欧洲",
+    "🌎 美洲",
+    "🌐 其他/未分类",
+  ]);
   assert.deepEqual(named(groups, "🤖 AI 专用").items, [
     "🤖 AI 亚太",
     "🤖 AI 欧洲",
@@ -365,17 +381,17 @@ test("matches group filters against real normalized edge-case node names", () =>
   ], { clientChain: "on" });
   const groups = buildGroups(options({ clientChain: "on" }), nodes);
   const commaNode = nodes.find((node) => node.name.includes("JP, comma"));
-  const collisions = nodes.filter((node) => node.name.includes("JP collision｜机场·U #"));
+  const collisions = nodes.filter((node) => node.name.includes("JP collision · SS｜机场·U #"));
   const unknown = nodes.find((node) => node.name.startsWith("🇿🇦"));
   const udp = nodes.find((node) => node.name.includes("JP, comma"));
   const clone = nodes.find((node) => node._profile.chained);
 
   assert.equal(collisions.length, 2);
-  assert.equal(matches(named(groups, "🌏 亚太"), commaNode), true);
-  assert.equal(matches(named(groups, "🌏 亚太"), unknown), false);
+  assert.equal(matches(named(groups, "🇯🇵 日本"), commaNode), true);
+  assert.equal(matches(named(groups, "🇯🇵 日本"), unknown), false);
   assert.equal(matches(named(groups, "🏢 机场节点"), commaNode), true);
   assert.equal(collisions.every((node) => matches(named(groups, "🏢 机场节点"), node)), true);
-  assert.equal(matches(named(groups, "🌐 其他/未分类"), unknown), true);
+  assert.equal(matches(named(groups, "🇿🇦"), unknown), true);
   assert.equal(matches(named(groups, "🎮 游戏连接"), udp), true);
   assert.equal(matches(named(groups, "⬇️ 下载/P2P"), nodes.find((node) => node._profile.p2p)), true);
   assert.equal(matches(named(groups, "🎯 客户端落地"), clone), true);

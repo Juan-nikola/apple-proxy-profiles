@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 
 import { evaluateNodeForClient } from "../../../shared/nodes/capabilities.js";
 import { CLIENT } from "../../../shared/contracts.js";
+import { normalizeNodes } from "../../../shared/nodes/normalize-nodes.js";
 import { toEgernProxy } from "../src/render-node.js";
 import { renderEgernSubscription } from "../src/render-subscription.js";
 import {
@@ -187,6 +188,40 @@ test("maps all admitted protocol aliases and major verified transports", () => {
   assert.equal(toEgernProxy(tuic, { clientChain: "off" }).tuic.udp_relay_mode, "native");
 });
 
+test("renders a normalized AnyTLS node without dropping its verified Egern fields", () => {
+  const [normalized] = normalizeNodes([{
+    ...anytls,
+    name: "Tokyo AnyTLS",
+    tls: true,
+    sni: "anytls.example.invalid",
+    "fingerprint-sha256": "ab".repeat(32),
+    _subName: "[自建] Tokyo AnyTLS",
+  }]).nodes;
+
+  assert.match(normalized.name, / · AnyTLS｜自建·U$/u);
+  assert.deepEqual(toEgernProxy(normalized, { clientChain: "off" }).anytls, {
+    name: normalized.name,
+    server: anytls.server,
+    port: anytls.port,
+    password: anytls.password,
+    udp_relay: true,
+    sni: "anytls.example.invalid",
+    skip_tls_verify: false,
+    fingerprint_sha256: "ab".repeat(32),
+  });
+  const yaml = renderEgernSubscription([normalized], { clientChain: "off" });
+  assert.match(yaml, /^proxies:\n  - anytls:/u);
+  assert.match(yaml, / · AnyTLS｜自建·U/u);
+
+  assert.throws(
+    () => renderEgernSubscription([{
+      ...normalized,
+      "idle-session-timeout": 60,
+    }], { clientChain: "off" }),
+    /^Error: Egern cannot render selected protocols: anytls=1$/u,
+  );
+});
+
 test("filters every unrepresentable Egern shape before mapping with stable reasons", () => {
   const invalidCases = [
     [fixture("Unknown transport", "vless", { uuid: "00000000-0000-4000-8000-000000000001", network: "quic" }), "unsupported-egern-transport"],
@@ -259,7 +294,7 @@ test("maps a verified single WireGuard peer and rejects peer conflicts", () => {
   });
 });
 
-test("subscription rendering is deterministic, metadata-free, and reports aggregate counts", () => {
+test("subscription rendering rejects a mixed inventory without diagnostics or partial YAML", () => {
   const diagnostics = [];
   const incompatible = [
     fixture("Secret transport node", "vless", {
@@ -271,26 +306,31 @@ test("subscription rendering is deterministic, metadata-free, and reports aggreg
       cipher: "PRIVATE_SECRET_METHOD",
       password: "TEST_ONLY_SECRET_METHOD_PASSWORD",
     }),
+    fixture("Secret future node", " Future-Proto ", {
+      password: "TEST_ONLY_FUTURE_PROTOCOL_PASSWORD",
+    }),
   ];
   const nodes = [shadowsocks2022, ...incompatible];
-  const first = renderEgernSubscription(nodes, {
-    clientChain: "off",
-    onDiagnostics(value) { diagnostics.push(value); },
-  });
-  const second = renderEgernSubscription(nodes, { clientChain: "off" });
-
-  assert.equal(first, second);
-  assert.match(first, /^proxies:\n/);
-  assert.equal(first.includes("_profile"), false);
-  assert.equal(first.includes("_subName"), false);
-  assert.equal(first.includes("underlying-proxy"), false);
-  assert.deepEqual(diagnostics, [{
-    accepted: 1,
-    excluded: {
-      "unsupported-egern-transport": 1,
-      "unsupported-egern-method": 1,
+  let yaml;
+  assert.throws(
+    () => {
+      yaml = renderEgernSubscription(nodes, {
+        clientChain: "off",
+        onDiagnostics(value) { diagnostics.push(value); },
+      });
     },
-  }]);
+    (error) => {
+      assert.equal(error.message, "Egern cannot render selected protocols: future-proto=1,ss=1,vless=1");
+      for (const node of incompatible) {
+        for (const value of [node.name, node.server, node.network, node.password]) {
+          if (value !== undefined) assert.equal(error.message.includes(String(value)), false);
+        }
+      }
+      return true;
+    },
+  );
+  assert.equal(yaml, undefined);
+  assert.deepEqual(diagnostics, []);
 });
 
 test("fails closed for duplicate names and all-incompatible inventories without leaking data", () => {
@@ -311,13 +351,12 @@ test("fails closed for duplicate names and all-incompatible inventories without 
     () => renderEgernSubscription([secretNode], { clientChain: "off" }),
     (error) => {
       message = error.message;
-      return /No compatible Egern nodes/.test(message);
+      return message === "Egern cannot render selected protocols: vless=1";
     },
   );
   for (const secret of [secretNode.name, secretNode.server, secretNode.network, secretNode.password]) {
     assert.equal(message.includes(secret), false);
   }
-  assert.match(message, /unsupported-egern-transport=1/);
 });
 
 test("only generated chain markers map to the fixed Egern previous hop", () => {
@@ -333,15 +372,15 @@ test("only generated chain markers map to the fixed Egern previous hop", () => {
   );
   assert.throws(
     () => toEgernProxy(chained, { clientChain: "off" }),
-    /^Error: Egern client chain is disabled$/,
+    /^Error: Egern cannot render protocol: vless$/,
   );
   assert.throws(
     () => toEgernProxy({ ...vlessReality, chain: "PRIVATE_CHAIN_NAME" }, { clientChain: "on" }),
-    /^Error: Unsupported existing Egern proxy chain$/,
+    /^Error: Egern cannot render protocol: vless$/,
   );
 });
 
-test("mapping failures use only stable allowlisted messages", () => {
+test("mapping failures identify only Egern and the normalized protocol", () => {
   const bad = fixture("PRIVATE_SECRET_BAD_NODE", "vless", {
     uuid: "00000000-0000-4000-8000-000000000001",
     server: "private-secret-server.example.invalid",
@@ -351,7 +390,7 @@ test("mapping failures use only stable allowlisted messages", () => {
   let message = "";
   assert.throws(() => toEgernProxy(bad, { clientChain: "off" }), (error) => {
     message = error.message;
-    return message === "Unsupported Egern transport";
+    return message === "Egern cannot render protocol: vless";
   });
   for (const value of [bad.name, bad.server, bad.port, bad.network, bad.password]) {
     assert.equal(message.includes(String(value)), false);

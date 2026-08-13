@@ -16,7 +16,7 @@ const nodes = Object.freeze([
     cipher: "aes-256-gcm",
     password: "TEST_ONLY_FIXTURE_PASSWORD",
     udp: true,
-    _profile: Object.freeze({ id: "fixture-tokyo", sourceKind: "airport", continent: "asiaPacific", entry: true, chained: false }),
+    _profile: Object.freeze({ id: "fixture-tokyo", sourceKind: "airport", continent: "asiaPacific", flag: "🇯🇵", entry: true, chained: false }),
   }),
   Object.freeze({
     name: "示例 · Frankfurt",
@@ -27,7 +27,7 @@ const nodes = Object.freeze([
     security: "auto",
     tls: true,
     sni: "fixture-vmess.example.invalid",
-    _profile: Object.freeze({ id: "fixture-frankfurt", sourceKind: "airport", continent: "europe", entry: true, chained: false }),
+    _profile: Object.freeze({ id: "fixture-frankfurt", sourceKind: "airport", continent: "europe", flag: "🇩🇪", entry: true, chained: false }),
   }),
 ]);
 

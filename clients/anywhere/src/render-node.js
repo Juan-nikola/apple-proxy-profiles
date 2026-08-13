@@ -1,6 +1,13 @@
 import { anywhereNodeExclusionReason } from "../../../shared/nodes/capabilities.js";
 import { normalizeProtocol } from "../../../shared/nodes/protocol-registry.js";
 
+const ANYTLS_FIELDS = new Set([
+  "name", "type", "server", "port", "password", "network", "tls", "security",
+  "sni", "servername", "alpn", "client-fingerprint", "ech-opts",
+  "skip-cert-verify", "allow-insecure", "idle-session-check-interval",
+  "idle-session-timeout", "min-idle-session", "_profile",
+]);
+
 function hasOwn(value, key) {
   return Object.hasOwn(value, key);
 }
@@ -14,6 +21,20 @@ function firstOwn(source, keys) {
 
 function copyOptional(target, key, source, sourceKey = key) {
   if (hasOwn(source, sourceKey)) target[key] = source[sourceKey];
+}
+
+function assertSupportedFields(node, supportedFields) {
+  if (Object.keys(node).some((key) => !supportedFields.has(key))) {
+    throw new Error("Unsupported Anywhere proxy field");
+  }
+}
+
+function protocolForError(node) {
+  try {
+    return normalizeProtocol(node?.type) || "unknown";
+  } catch {
+    return "unknown";
+  }
 }
 
 function commonFields(node, type) {
@@ -77,6 +98,7 @@ function renderTrojan(node) {
 }
 
 function renderAnyTls(node) {
+  assertSupportedFields(node, ANYTLS_FIELDS);
   const proxy = appendTlsFields({
     ...commonFields(node, "anytls"),
     password: node.password,
@@ -181,9 +203,10 @@ function renderAnywhereProxy(node) {
 }
 
 export function toAnywhereProxy(node) {
+  const protocol = protocolForError(node);
   try {
     return renderAnywhereProxy(node);
   } catch {
-    throw new Error("Unsupported Anywhere proxy node");
+    throw new Error(`Anywhere cannot render protocol: ${protocol}`);
   }
 }

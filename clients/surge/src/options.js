@@ -1,5 +1,6 @@
 import { OPTION_VALUES } from "../../../shared/contracts.js";
 import { platformPolicyPreset } from "../../../shared/policies/platform-presets.js";
+import { validateCollectionName } from "../../../shared/substore/collection-name.js";
 
 const REQUIRED_KEYS = Object.freeze(["output", "type", "name", "subscriptionName", "platform"]);
 const NODE_REQUIRED_KEYS = Object.freeze(["output", "type", "name"]);
@@ -83,7 +84,7 @@ export function parseSurgeOptions(raw) {
   const options = {
     output: "config",
     type: "collection",
-    name: requiredString(raw, "name"),
+    name: validateCollectionName(raw.name, "Option 'name'"),
     subscriptionName: requiredString(raw, "subscriptionName"),
     platform,
     channel,
@@ -117,7 +118,7 @@ export function parseSurgeNodeOptions(raw) {
   const options = {
     output: "nodes",
     type: "collection",
-    name: requiredString(raw, "name"),
+    name: validateCollectionName(raw.name, "Option 'name'"),
     clientChain: enumValue(raw, "clientChain", DEFAULTS.clientChain),
   };
   Object.freeze(options);

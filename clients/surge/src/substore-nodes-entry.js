@@ -1,10 +1,9 @@
-import { CLIENT } from "../../../shared/contracts.js";
-import { filterNodesForClient } from "../../../shared/nodes/capabilities.js";
 import { normalizeNodes } from "../../../shared/nodes/normalize-nodes.js";
+import { assertRenderableNodes } from "../../../shared/nodes/renderability.js";
 import { parseSurgeNodeOptions } from "./options.js";
-import { renderSurgeNodeResource } from "./render-node.js";
+import { renderSurgeNodeResource, renderSurgeProxy, sanitizeSurgeNode } from "./render-node.js";
 
-function logDiagnostics(context, options, normalized, filtered) {
+function logDiagnostics(context, options, normalized) {
   const logger = context?.logger;
   const method = typeof logger === "function"
     ? logger
@@ -19,7 +18,7 @@ function logDiagnostics(context, options, normalized, filtered) {
       client: "surge",
       collection: options.name,
       total: normalized.diagnostics.total,
-      accepted: filtered.nodes.length,
+      accepted: normalized.nodes.length,
     })}`);
   } catch {
     // Diagnostics are optional and never change the private output.
@@ -40,8 +39,7 @@ export async function operator(input, targetPlatform, context = {}) {
     throw new Error("produceArtifact must return a non-empty node array");
   }
   const normalized = normalizeNodes(rawNodes, { clientChain: options.clientChain });
-  const filtered = filterNodesForClient(normalized.nodes, CLIENT.surge);
-  if (filtered.nodes.length === 0) throw new Error("No compatible Surge nodes");
-  logDiagnostics(context, options, normalized, filtered);
-  return { ...input, $content: renderSurgeNodeResource(filtered.nodes) };
+  assertRenderableNodes(normalized.nodes, "Surge", (node) => renderSurgeProxy(sanitizeSurgeNode(node)));
+  logDiagnostics(context, options, normalized);
+  return { ...input, $content: renderSurgeNodeResource(normalized.nodes) };
 }

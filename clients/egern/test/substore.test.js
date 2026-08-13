@@ -9,13 +9,13 @@ const PRIVATE_URL = "https://example.invalid/private/egern-nodes";
 const NODE_ARGUMENTS = Object.freeze({
   output: "nodes",
   type: "collection",
-  name: "egern-sources",
+  name: "apple-proxy-egern",
   clientChain: "off",
 });
 const PROFILE_ARGUMENTS = Object.freeze({
   output: "config",
   type: "collection",
-  name: "egern-sources",
+  name: "apple-proxy-egern",
   nodeSubscriptionUrl: PRIVATE_URL,
   platform: "macos",
 });
@@ -56,6 +56,20 @@ function incompatibleInventory() {
   }];
 }
 
+function anytlsInventory() {
+  return [{
+    name: "Tokyo AnyTLS",
+    type: "anytls",
+    server: "198.51.100.30",
+    port: 443,
+    password: "TEST_ONLY_EGERN_ANYTLS_PASSWORD",
+    tls: true,
+    sni: "anytls.example.invalid",
+    udp: true,
+    _subName: "[自建] Tokyo AnyTLS",
+  }];
+}
+
 function logger(lines, { throwing = false } = {}) {
   return {
     info(line) {
@@ -93,7 +107,7 @@ test("node File Operator produces one normalized Egern subscription and preserve
   assert.equal(nodeOperator.length, 2);
   assert.deepEqual(calls, [{
     type: "collection",
-    name: "egern-sources",
+    name: "apple-proxy-egern",
     platform: "JSON",
     produceType: "internal",
   }]);
@@ -113,6 +127,23 @@ test("node File Operator produces one normalized Egern subscription and preserve
   }
 });
 
+test("node File Operator emits a non-empty AnyTLS inventory with its protocol label", async () => {
+  const calls = [];
+  const result = await nodeOperator({}, "Egern", {
+    arguments: NODE_ARGUMENTS,
+    produceArtifact: producer(anytlsInventory(), calls),
+  });
+
+  assert.deepEqual(calls, [{
+    type: "collection",
+    name: "apple-proxy-egern",
+    platform: "JSON",
+    produceType: "internal",
+  }]);
+  assert.match(result.$content, /^proxies:\n  - anytls:/u);
+  assert.match(result.$content, / · AnyTLS｜自建·U/u);
+});
+
 test("node File Operator creates only the Egern SSH chain clone when enabled", async () => {
   const lines = [];
   const result = await nodeOperator({}, "Egern", {
@@ -120,7 +151,7 @@ test("node File Operator creates only the Egern SSH chain clone when enabled", a
     produceArtifact: producer(rawInventory()),
     logger: logger(lines),
   });
-  assert.match(result.$content, /name: "🔗 [^"]*Landing｜落地"/u);
+  assert.match(result.$content, /name: "🔗 [^"]*Landing · SSH｜落地"/u);
   assert.match(result.$content, /prev_hop: "🔗 入口节点"/u);
   const diagnostics = JSON.parse(lines[0].replace(/^\[egern-profile\] /u, ""));
   assert.equal(diagnostics.accepted, 3);
@@ -147,7 +178,7 @@ test("profile File Operator normalizes once and emits a validated credential-fre
   assert.equal(calls.length, 1);
   assert.deepEqual(calls[0], {
     type: "collection",
-    name: "egern-sources",
+    name: "apple-proxy-egern",
     platform: "JSON",
     produceType: "internal",
   });
@@ -251,7 +282,7 @@ test("profile File Operator uses one immutable pre-await option snapshot", async
   assert.equal(result.$content.includes(mutatedSecret), false);
   assert.deepEqual(calls, [{
     type: "collection",
-    name: "egern-sources",
+    name: "apple-proxy-egern",
     platform: "JSON",
     produceType: "internal",
   }]);
@@ -284,7 +315,7 @@ test("profile File Operator rejects option accessors before producer execution",
 
 test("node argument parser rejects hostile and undocumented shapes without access", async () => {
   const accepted = [
-    { output: "nodes", type: "collection", name: "egern-sources" },
+    { output: "nodes", type: "collection", name: "apple-proxy-egern" },
     { ...NODE_ARGUMENTS, clientChain: "on", _internal: "ignored" },
   ];
   for (const arguments_ of accepted) {
@@ -295,16 +326,16 @@ test("node argument parser rejects hostile and undocumented shapes without acces
   }
 
   let invoked = false;
-  const accessor = { output: "nodes", type: "collection", name: "egern-sources" };
+  const accessor = { output: "nodes", type: "collection", name: "apple-proxy-egern" };
   Object.defineProperty(accessor, "clientChain", {
     enumerable: true,
     get() { invoked = true; throw new Error("TEST_ONLY_OPTION_GETTER"); },
   });
-  const hidden = { output: "nodes", type: "collection", name: "egern-sources" };
+  const hidden = { output: "nodes", type: "collection", name: "apple-proxy-egern" };
   Object.defineProperty(hidden, "clientChain", { value: "off", enumerable: false });
   const inherited = Object.create({ output: "nodes" });
   inherited.type = "collection";
-  inherited.name = "egern-sources";
+  inherited.name = "apple-proxy-egern";
   const polluted = ["__proto__", "constructor", "prototype"].map((key) => {
     const value = Object.create(null);
     Object.assign(value, NODE_ARGUMENTS);

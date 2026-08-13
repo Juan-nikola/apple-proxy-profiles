@@ -1,4 +1,4 @@
-import { GROUP_KIND, buildPolicyGroups } from "../../../shared/policies/catalog.js";
+import { buildPolicyGroups } from "../../../shared/policies/catalog.js";
 import { POLICY_TARGET } from "../../../shared/policies/intents.js";
 import { NON_CHAINED_FILTER } from "../../../shared/policies/filters.js";
 
@@ -47,21 +47,15 @@ function renderRuleDownloadGroups(inventory, ruleProbeUrl) {
   ];
 }
 
-function continentGroupNames(groups) {
-  return groups
-    .filter((group) => group.kind === GROUP_KIND.continent)
-    .map((group) => group.name);
-}
-
-function renderGroup(group, continentNames, inventory) {
+function renderGroup(group, inventory) {
   if (group.name === "🚀 节点选择") {
     // Keep the primary selector compact: only helpers and continent groups,
     // so GUI clients (SFA/SFM) show a short hierarchy instead of a flat
-    // list of every node. Concrete nodes live inside the continent groups.
+    // list of every node. Concrete nodes live inside the flag groups.
     const outbounds = [
-      ...group.candidates.map(targetName),
+      "⚡ 全部自动",
       "\u{1F6DF} 全部故障转移",
-      ...continentNames,
+      ...group.candidates.map(targetName),
     ].filter((item, index, all) => all.indexOf(item) === index);
     return {
       type: "selector",
@@ -100,7 +94,6 @@ function renderGroup(group, continentNames, inventory) {
 export function renderSingBoxGroups(options, nodes, { ruleProbeUrl = "https://www.gstatic.com/generate_204" } = {}) {
   const inventory = Array.isArray(nodes) ? nodes : [];
   const shared = buildPolicyGroups(options, inventory);
-  const continentNames = continentGroupNames(shared);
   const visible = [];
   const hidden = [];
   for (const group of shared) {
@@ -110,7 +103,7 @@ export function renderSingBoxGroups(options, nodes, { ruleProbeUrl = "https://ww
       hidden.push(failover);
       continue;
     }
-    const rendered = renderGroup(group, continentNames, inventory);
+    const rendered = renderGroup(group, inventory);
     (group.hidden === true ? hidden : visible).push(rendered);
   }
   return [...visible, ...hidden];

@@ -35,7 +35,7 @@ test("Surge bundles expose the Sub-Store operator and remain public-URL closed",
 test("published Surge bundles include primary node filtering and compact naming", async () => {
   for (const file of profileFiles) {
     const content = await readFile(new URL(file, import.meta.url), "utf8");
-    assert.match(content, /nodeFilter:/u, file);
+    assert.match(content, /nodeFilter(?:\s*:|\s*,)/u, file);
     assert.match(content, /\\uFF5C/u, file);
   }
 });

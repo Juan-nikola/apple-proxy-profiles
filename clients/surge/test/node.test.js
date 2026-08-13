@@ -19,6 +19,18 @@ test("rejects VLESS because Surge does not support the proxy type", () => {
   }), /unsupported Surge protocol: vless/iu);
 });
 
+test("rejects AnyTLS because Surge does not support the proxy type", () => {
+  assert.throws(() => renderSurgeProxy({
+    name: "🇯🇵 [自建] Tokyo AnyTLS",
+    type: "anytls",
+    server: "anytls.example.invalid",
+    port: 443,
+    password: "TEST_ONLY_ANYTLS_PASSWORD",
+    tls: true,
+    sni: "anytls.example.invalid",
+  }), /unsupported Surge protocol: anytls/iu);
+});
+
 test("rejects unknown Surge node fields before rendering", () => {
   assert.throws(() => renderSurgeProxy({
     name: "fixture",

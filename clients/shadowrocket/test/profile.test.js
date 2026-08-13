@@ -24,12 +24,14 @@ const baseOptions = Object.freeze({
 
 function inventory(count) {
   const continents = ["asiaPacific", "europe", "americas", "other"];
+  const flags = ["🇯🇵", "🇩🇪", "🇺🇸", "🌐"];
   return Array.from({ length: count }, (_, index) => ({
     // Credentials and transport fields must not be rendered in a Profile.
-    name: `node-${index}`,
+    name: `${flags[index % flags.length]} node-${index}`,
     password: `TEST_ONLY_NOT_FOR_PROFILE_${index}`,
     _profile: {
       continent: continents[index % continents.length],
+      flag: flags[index % flags.length],
       sourceKind: ["airport", "selfHosted", "realm"][index % 3],
       udp: index % 2 === 0,
       p2p: index % 3 === 0,

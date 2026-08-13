@@ -53,6 +53,15 @@ test("parseOptions rejects a missing or empty collection name", () => {
   assert.throws(() => parseOptions(withoutName), /name/i);
 });
 
+test("parseOptions preserves safe collection slugs and rejects unsafe collection names", () => {
+  for (const name of ["apple-proxy-shadowrocket", "apple-proxy-sources"]) {
+    assert.equal(parseOptions({ ...required, name }).name, name);
+  }
+  for (const name of ["", "中文", "shadowrocket/sources", "shadowrocket?sources", "shadowrocket#sources", " shadowrocket-sources", "shadowrocket-sources ", "shadowrocket\nsources", "constructor"]) {
+    assert.throws(() => parseOptions({ ...required, name }), /name/i, JSON.stringify(name));
+  }
+});
+
 test("parseOptions preserves an exact subscription display name", () => {
   const subscriptionName = "中文 Nodes=Prod,主订阅\\";
 

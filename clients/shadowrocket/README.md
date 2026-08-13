@@ -1,11 +1,13 @@
 # Shadowrocket 多平台配置生成器
 
+Shadowrocket 新任务只读取 `apple-proxy-shadowrocket`。客户端 collection 边界、迁移与回滚以 [Sub-Store 客户端节点池指南](../../docs/substore-client-pools.md) 为准；已有 `apple-proxy-sources` collection、tasks 和旧 URL 保留作兼容/回滚，不要删除。
+
 这个项目生成两个彼此分离的东西：
 
-1. 私密节点订阅：直接使用原始组合 `apple-proxy-sources` 的输出，含节点凭据，只在自己的 Sub-Store 与设备之间使用。
+1. 私密节点订阅：直接使用原始组合 `apple-proxy-shadowrocket` 的输出，含节点凭据，只在自己的 Sub-Store 与设备之间使用。
 2. `shadowrocket-config-*`：macOS、iPhone、iPad 的配置 Profile，不含节点凭据。
 
-第一次使用先读根目录的 [Sub-Store 外置 JS + 任务引用总指南](../../docs/substore-two-layer-setup.md)，再严格按 [零基础部署手册](docs/deployment.md) 操作：节点订阅直接使用原始组合 `apple-proxy-sources` 的输出，三个 Profile File 选择链接模式直接引用 Pages 上的 Profile JS URL，并在任务自己的参数编辑器中填写参数。日常增加节点或切换 DNS、QUIC、IPv6 时看 [维护速查](docs/maintenance.md)。出现网络、局域网、AI、评论地区或更新异常时看 [故障排查与回滚](docs/troubleshooting.md)。
+第一次使用先读根目录的 [Sub-Store 外置 JS + 任务引用总指南](../../docs/substore-two-layer-setup.md)，再严格按 [零基础部署手册](docs/deployment.md) 操作：节点订阅直接使用原始组合 `apple-proxy-shadowrocket` 的输出，三个 Profile File 选择链接模式直接引用 Pages 上的 Profile JS URL，并在任务自己的参数编辑器中填写参数。日常增加节点或切换 DNS、QUIC、IPv6 时看 [维护速查](docs/maintenance.md)。出现网络、局域网、AI、评论地区或更新异常时看 [故障排查与回滚](docs/troubleshooting.md)。
 
 安全边界：HTTPS 解密保持关闭；不要公开 Sub-Store 管理地址、订阅地址、Profile 地址、Token、节点二维码或带完整 URL 的截图。代理只能改变网络出口，不能保证改变哔哩哔哩、抖音、小红书或微博显示的评论地区。
 
@@ -19,21 +21,21 @@
 | --- | --- |
 | `shadowrocket-profile-generator.js` | `https://juan-nikola.github.io/apple-proxy-profiles/current/shadowrocket/scripts/shadowrocket-profile-generator.js` |
 
-节点订阅不需要脚本：直接使用原始组合 `apple-proxy-sources` 的预览/输出 URL。再创建 3 个 Profile File，每个选择“链接/远程脚本”，直接粘贴上表 URL，并在任务自己的可视化参数编辑器中填写参数；不要粘贴 JavaScript 正文。
+节点订阅不需要脚本：直接使用原始组合 `apple-proxy-shadowrocket` 的预览/输出 URL。再创建 3 个 Profile File，每个选择“链接/远程脚本”，直接粘贴上表 URL，并在任务自己的可视化参数编辑器中填写参数；不要粘贴 JavaScript 正文。
 
 | 任务 | 类型与引用脚本 | Arguments |
 | --- | --- | --- |
-| `shadowrocket-config-macos` | Profile File → Profile JS URL | `output=config&type=collection&name=apple-proxy-sources&subscriptionName=Shadowrocket-Nodes&platform=macos&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=ipv4-only&autoGroupMode=auto&clientChain=off` |
-| `shadowrocket-config-iphone` | Profile File → Profile JS URL | `output=config&type=collection&name=apple-proxy-sources&subscriptionName=Shadowrocket-Nodes&platform=iphone&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&autoGroupMode=auto&clientChain=off` |
-| `shadowrocket-config-ipad` | Profile File → Profile JS URL | `output=config&type=collection&name=apple-proxy-sources&subscriptionName=Shadowrocket-Nodes&platform=ipad&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&autoGroupMode=auto&clientChain=off` |
+| `shadowrocket-config-macos` | Profile File → Profile JS URL | `output=config&type=collection&name=apple-proxy-shadowrocket&subscriptionName=Shadowrocket-Nodes&platform=macos&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=ipv4-only&autoGroupMode=auto&clientChain=off` |
+| `shadowrocket-config-iphone` | Profile File → Profile JS URL | `output=config&type=collection&name=apple-proxy-shadowrocket&subscriptionName=Shadowrocket-Nodes&platform=iphone&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&autoGroupMode=auto&clientChain=off` |
+| `shadowrocket-config-ipad` | Profile File → Profile JS URL | `output=config&type=collection&name=apple-proxy-shadowrocket&subscriptionName=Shadowrocket-Nodes&platform=ipad&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&autoGroupMode=auto&clientChain=off` |
 
-创建顺序：先建立保留来源标记的原始组合 `apple-proxy-sources` → 用它生成私密节点订阅 → 再创建三个直接引用 Profile JS URL 的 File。Profile 生成器内置节点归一化、去重和客户端过滤，不再需要组合上的节点 Script Operator（Sub-Store 的组合 Script Operator 无法执行本项目 bundle 格式，旧结构已废弃）。
+创建顺序：先建立保留来源标记的原始组合 `apple-proxy-shadowrocket` → 用它生成私密节点订阅 → 再创建三个直接引用 Profile JS URL 的 File。Profile 生成器内置节点归一化、去重和客户端过滤，不再需要组合上的节点 Script Operator（Sub-Store 的组合 Script Operator 无法执行本项目 bundle 格式，旧结构已废弃）。
 
 推荐先粘贴完整的 `JS_URL#参数`，再展开可视化参数编辑器逐项核对表中的键和值。当前 Sub-Store 的远程链接模式由后端从 URL 的 `#...` 读取 `$arguments`；即使界面已经显示 key/value 参数行，也必须确认远程链接本身仍包含相同的 hash 参数，不能只留下无 hash 的 JS URL。旧版只有一个脚本链接框时使用 `JS_URL#arg1=value1&arg2=value2` 的形式，不能使用 `?` 连接脚本参数。`subscriptionName=Shadowrocket-Nodes` 必须改成 Shadowrocket 中私密节点订阅的真实显示名；只对包含中文、emoji、空格、`&`、`#` 或 `%` 的参数值进行百分号编码。完整页面操作、成功标志和回滚方法见[零基础部署手册](docs/deployment.md)。
 
 ## 你会得到什么
 
-- 一份所有设备共用、每 6 小时更新的私密节点订阅（`apple-proxy-sources` 输出）。
+- 一份所有设备共用、每 6 小时更新的私密节点订阅（`apple-proxy-shadowrocket` 输出）。
 - 三份每天更新的平台 Profile：`shadowrocket-config-macos`、`shadowrocket-config-iphone`、`shadowrocket-config-ipad`。
 - 一个只负责跟随 Shadowrocket 首页节点的 `🚀 节点选择`，以及 9 个常用业务组：每组都有自动测速、故障转移、地区和具体节点选择；其中 5 个境外组首项为 `🚀 节点选择`，3 个国内组首项为 `DIRECT`。
 - 默认使用轻量混合规则：`DomesticCore + DomesticGame + SteamCN` 直连、`OverseasGame` 进入 `🌍 海外游戏`、`ChinaIP + GEOIP CN` 作为国内回退，其他未识别流量最终进入 `🚀 节点选择`。完整广告包默认关闭，只有设置 `adblockMode=full` 才从独立 optional 发布加载 `Advertising.list` 与 `Advertising_Domain.list`。
@@ -81,15 +83,15 @@ Profile 使用职责分开的两层结构：
 ### 第 1 步：进入 Sub-Store 并确认来源组合
 
 1. 登录自己的 Sub-Store，进入“订阅/组合订阅”页面。
-2. 找到原始组合 `apple-proxy-sources`。如果还没有，就新建同名组合，并在自己的私密环境中加入 `snell` 与 `vlesshy2`。
+2. 找到原始组合 `apple-proxy-shadowrocket`。如果还没有，就新建同名组合，并在自己的私密环境中加入 `snell` 与 `vlesshy2`。
 3. 先预览原始组合；节点数必须大于 0，并与各来源数量大致相符。原始组合为空时停止。
-4. 原始组合名称必须逐字为 `apple-proxy-sources`；后面的三个 Profile File 会用 `name=apple-proxy-sources` 读取它。
+4. 原始组合名称必须逐字为 `apple-proxy-shadowrocket`；后面的三个 Profile File 会用 `name=apple-proxy-shadowrocket` 读取它。
 
-成功标志：`apple-proxy-sources` 能稳定预览出节点，且没有把来源地址、服务器、UUID 或密码复制到公开位置。
+成功标志：`apple-proxy-shadowrocket` 能稳定预览出节点，且没有把来源地址、服务器、UUID 或密码复制到公开位置。
 
 ### 第 2 步：生成节点订阅
 
-1. 打开原始组合 `apple-proxy-sources` 的预览/输出页。至少应返回一个节点；节点名称在 Profile 生成时会统一加上国旗、来源标签和能力标记。
+1. 打开原始组合 `apple-proxy-shadowrocket` 的预览/输出页。至少应返回一个节点；节点名称在 Profile 生成时会统一加上国旗、来源标签和能力标记。
 2. 把组合输出的私密订阅 URL 复制出来，命名为 `Shadowrocket-Nodes`（或自己的显示名），建议每 6 小时更新。
 3. 私密订阅 URL 只保存在自己的设备中；不要把它粘贴回仓库或文档。
 
@@ -121,7 +123,7 @@ https://juan-nikola.github.io/apple-proxy-profiles/current/shadowrocket/scripts/
 | --- | --- | --- | --- | --- |
 | `output` | `config` | `config` | `config` | 固定值 |
 | `type` | `collection` | `collection` | `collection` | 从组合读取 |
-| `name` | `apple-proxy-sources` | `apple-proxy-sources` | `apple-proxy-sources` | 必须等于第 1 步组合名 |
+| `name` | `apple-proxy-shadowrocket` | `apple-proxy-shadowrocket` | `apple-proxy-shadowrocket` | 必须等于第 1 步组合名 |
 | `subscriptionName` | `Shadowrocket-Nodes` | `Shadowrocket-Nodes` | `Shadowrocket-Nodes` | 必须逐字等于客户端节点订阅显示名 |
 | `platform` | `macos` | `iphone` | `ipad` | 每个平台不同 |
 | `dnsMode` | `stable` | `stable` | `stable` | 稳定 DNS 预设 |
@@ -135,9 +137,9 @@ https://juan-nikola.github.io/apple-proxy-profiles/current/shadowrocket/scripts/
 
 用于复制核对的三条完整参数如下；不要加引号、前导 `?` 或换行：
 
-- macOS：`output=config&type=collection&name=apple-proxy-sources&subscriptionName=Shadowrocket-Nodes&platform=macos&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=ipv4-only&autoGroupMode=auto&clientChain=off`
-- iPhone：`output=config&type=collection&name=apple-proxy-sources&subscriptionName=Shadowrocket-Nodes&platform=iphone&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&autoGroupMode=auto&clientChain=off`
-- iPad：`output=config&type=collection&name=apple-proxy-sources&subscriptionName=Shadowrocket-Nodes&platform=ipad&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&autoGroupMode=auto&clientChain=off`
+- macOS：`output=config&type=collection&name=apple-proxy-shadowrocket&subscriptionName=Shadowrocket-Nodes&platform=macos&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=ipv4-only&autoGroupMode=auto&clientChain=off`
+- iPhone：`output=config&type=collection&name=apple-proxy-shadowrocket&subscriptionName=Shadowrocket-Nodes&platform=iphone&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&autoGroupMode=auto&clientChain=off`
+- iPad：`output=config&type=collection&name=apple-proxy-shadowrocket&subscriptionName=Shadowrocket-Nodes&platform=ipad&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&autoGroupMode=auto&clientChain=off`
 
 `Shadowrocket-Nodes` 只是便于首次照填的 ASCII 示例。它必须与稍后添加到 Shadowrocket 的节点订阅显示名完全一致，包括大小写、emoji、空格和标点。如果界面提供参数名/值输入框，直接填写显示名；如果旧版只有单行链接，包含中文、emoji、空格、`&`、`#` 或 `%` 的值必须先进行百分号编码，不能编码分隔参数的 `&` 和 `=`。
 
@@ -167,13 +169,13 @@ https://juan-nikola.github.io/apple-proxy-profiles/current/shadowrocket/scripts/
 
 回滚成功标志：设备选回旧 Profile 后恢复联网；生产任务名称、参数和私密输出 URL 均保持原样，失败版本没有继续推广到下一台设备。
 
-迁移说明：仓库布局已改为 `clients/shadowrocket/`；节点订阅与三个 `shadowrocket-config-*` 任务都直接使用原始组合 `apple-proxy-sources`。旧任务继续保留，直到新 Profile 完成灰度验证；不要覆盖旧 Profile。
+迁移说明：仓库布局已改为 `clients/shadowrocket/`；节点订阅与三个 `shadowrocket-config-*` 任务都直接使用原始组合 `apple-proxy-shadowrocket`。旧任务继续保留，直到新 Profile 完成灰度验证；不要覆盖旧 Profile。
 
 ## 从 GitHub 同步新版生成器
 
 更新代码不会自动改变你正在使用的 Sub-Store。安全更新顺序如下：
 
-1. 先重新预览原始组合 `apple-proxy-sources`，确认节点数量正常、国旗不重复、名称排序正常；异常就停止，不发布。
+1. 先重新预览原始组合 `apple-proxy-shadowrocket`，确认节点数量正常、国旗不重复、名称排序正常；异常就停止，不发布。
 2. 重新运行直接引用 `shadowrocket-profile-generator.js` 规范 Pages URL 的 macOS、iPhone、iPad 三个 File；不复制脚本正文，也不因脚本升级改 URL 或参数。只有主动改变 QUIC/IPv6 策略时才按部署手册修改对应 File 参数。
 3. 升级已有安装前，逐一核对 macOS、iPhone、iPad 三个 Profile File Operator 的 `subscriptionName`。节点 URL 无需更换；若旧占位值与 Shadowrocket 当前显示名不一致，就改成该现有显示名，或先在客户端重命名订阅，再重新发布 File 并更新对应 Profile。
 4. 先预览 macOS Profile，确认整行是 `🚀 节点选择 = select,PROXY`；9 个常用业务组都有自动/故障转移/地区/具体节点选择，5 个境外组首项为 `🚀 节点选择`，3 个国内组首项为 `DIRECT`；动态组只含与 `subscriptionName` 完全匹配的 `<subscriptionName>,use=true`，AI 洲组仍存在，再发布并只在 Intel Mac 更新测试。

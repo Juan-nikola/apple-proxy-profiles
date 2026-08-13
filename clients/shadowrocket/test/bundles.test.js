@@ -12,7 +12,7 @@ const nodeArguments = { output: "nodes", clientChain: "off" };
 const profileArguments = {
   output: "config",
   type: "collection",
-  name: "apple-proxy-sources",
+  name: "apple-proxy-shadowrocket",
   subscriptionName: "Shadowrocket-Nodes",
   platform: "macos",
 };
@@ -28,7 +28,23 @@ function loadBundle(source, globals) {
   return { context, lines };
 }
 
-function egernOnlyNodes() {
+function anytlsNode() {
+  return {
+    name: "AnyTLS landing",
+    type: "anytls",
+    server: "anytls.example.invalid",
+    port: 443,
+    password: "TEST_ONLY_ANYTLS_PASSWORD",
+    alpn: ["h2"],
+    "client-fingerprint": "chrome",
+    "idle-session-check-interval": 30,
+    "idle-session-timeout": 60,
+    "min-idle-session": 1,
+    _subName: "[落地] AnyTLS",
+  };
+}
+
+function unsupportedNodes() {
   return [
     {
       name: "SSH landing",
@@ -38,14 +54,6 @@ function egernOnlyNodes() {
       username: "TEST_ONLY_SSH_USERNAME",
       password: "TEST_ONLY_SSH_PASSWORD",
       _subName: "[落地] SSH",
-    },
-    {
-      name: "AnyTLS landing",
-      type: "anytls",
-      server: "anytls.example.invalid",
-      port: 443,
-      password: "TEST_ONLY_ANYTLS_PASSWORD",
-      _subName: "[落地] AnyTLS",
     },
     {
       name: "WireGuard landing",
@@ -89,7 +97,7 @@ test("node bundle is self-contained and runs with Sub-Store globals", async () =
   assert.equal(lines.length, 1);
 });
 
-test("node bundle excludes Egern-only nodes with client chaining enabled", async () => {
+test("node bundle retains labeled AnyTLS fields with client chaining enabled", async () => {
   const source = await readFile(nodeBundlePath, "utf8");
   const { context, lines } = loadBundle(source, {
     $arguments: { output: "nodes", clientChain: "on" },
@@ -104,29 +112,38 @@ test("node bundle excludes Egern-only nodes with client chaining enabled", async
       password: "TEST_ONLY_ENTRY_PASSWORD",
       _subName: "[自建] Entry",
     },
-    ...egernOnlyNodes(),
+    anytlsNode(),
   ], "Shadowrocket");
 
-  assert.deepEqual(Array.from(nodes, (node) => node.type), ["ss"]);
+  assert.deepEqual(Array.from(nodes, (node) => node.type), ["anytls", "ss"]);
+  const anytls = Array.from(nodes).find((node) => node.type === "anytls");
+  assert.match(anytls.name, / · AnyTLS｜落地$/u);
+  assert.deepEqual(Array.from(anytls.alpn), ["h2"]);
+  assert.equal(anytls["idle-session-timeout"], 60);
   assert.equal(nodes.some((node) => node?._profile?.chained), false);
   const diagnostics = JSON.parse(lines[0].replace(/^\[shadowrocket-profile\] /, ""));
-  assert.equal(diagnostics.accepted, 1);
-  assert.equal(diagnostics.excluded["unsupported-protocol"], 3);
+  assert.equal(diagnostics.accepted, 2);
+  assert.equal(diagnostics.excluded["chain-protocol-unsupported"], 1);
 });
 
-test("node bundle fails closed without diagnostics for all-Egern inventories", async () => {
+test("node bundle fails closed with safe protocol counts for unsupported inventories", async () => {
   const source = await readFile(nodeBundlePath, "utf8");
-  const unsupported = egernOnlyNodes();
-  const inventories = [...unsupported.map((node) => [node]), [unsupported[0], unsupported[1], unsupported[2]]];
+  const unsupported = unsupportedNodes();
+  const cases = [
+    [[unsupported[0]], "Shadowrocket cannot render selected protocols: ssh=1"],
+    [[unsupported[1]], "Shadowrocket cannot render selected protocols: wireguard=1"],
+    [[unsupported[0], unsupported[1]], "Shadowrocket cannot render selected protocols: ssh=1,wireguard=1"],
+    [[anytlsNode(), unsupported[0]], "Shadowrocket cannot render selected protocols: ssh=1"],
+  ];
 
-  for (const inventory of inventories) {
+  for (const [inventory, expectedMessage] of cases) {
     const { context, lines } = loadBundle(source, {
       $arguments: { output: "nodes", clientChain: "on" },
     });
     let message = "";
     await assert.rejects(context.operator(inventory, "Shadowrocket"), (error) => {
       message = error.message;
-      return message === "No compatible Shadowrocket nodes";
+      return message === expectedMessage;
     });
     assert.deepEqual(lines, []);
     for (const node of inventory) {
@@ -144,7 +161,7 @@ test("profile bundle is self-contained and runs with Sub-Store globals", async (
   assert.match(source, /\$content/);
   assert.doesNotMatch(source, /^\s*(?:import|export)\s/m);
 
-  const inventory = Array.from({ length: 25 }, (_, index) => ({
+  const inventory = [...Array.from({ length: 25 }, (_, index) => ({
     name: `🇯🇵 Safe ${index + 1}`,
     type: "ss",
     server: "198.51.100.7",
@@ -153,11 +170,11 @@ test("profile bundle is self-contained and runs with Sub-Store globals", async (
     password: "TEST_ONLY_NOT_A_SECRET",
     udp: true,
     _subName: "[机场]示例",
-  }));
+  })), anytlsNode()];
   const { context } = loadBundle(source, {
     $arguments: profileArguments,
     async produceArtifact(request) {
-      assert.deepEqual({ ...request }, { type: "collection", name: "apple-proxy-sources", platform: "JSON", produceType: "internal" });
+      assert.deepEqual({ ...request }, { type: "collection", name: "apple-proxy-shadowrocket", platform: "JSON", produceType: "internal" });
       return inventory;
     },
   });
@@ -168,6 +185,7 @@ test("profile bundle is self-contained and runs with Sub-Store globals", async (
   assert.match(result.$content, /\[General\]/);
   assert.match(result.$content, /\[Proxy Group\]/);
   assert.match(result.$content, /\[Rule\]/);
+  assert.match(result.$content, /node-count=2/u);
   assert.doesNotMatch(result.$content, /TEST_ONLY_NOT_A_SECRET|198\.51\.100\.7/);
   assert.match(result.$content, /#proxy=%F0%9F%A7%AD%20DNS%20%E4%B8%8E%E8%A7%84%E5%88%99%E4%B8%8B%E8%BD%BD/);
   assert.doesNotMatch(result.$content, /#proxy=🧭 DNS 与规则下载/);

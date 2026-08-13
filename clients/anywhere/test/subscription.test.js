@@ -101,6 +101,10 @@ test("maps exact representative Anywhere Clash proxy objects", () => {
     ...BASE,
     type: "anytls",
     password: "TEST_ONLY_ANYTLS_PASSWORD",
+    tls: true,
+    sni: "anytls.example.invalid",
+    alpn: ["h2", "http/1.1"],
+    "client-fingerprint": "chrome",
     "idle-session-check-interval": 30,
     "idle-session-timeout": 60,
     "min-idle-session": 1,
@@ -110,6 +114,9 @@ test("maps exact representative Anywhere Clash proxy objects", () => {
     password: "TEST_ONLY_ANYTLS_PASSWORD",
     network: "tcp",
     tls: true,
+    servername: "anytls.example.invalid",
+    alpn: ["h2", "http/1.1"],
+    "client-fingerprint": "chrome",
     "idle-session-check-interval": 30,
     "idle-session-timeout": 60,
     "min-idle-session": 1,
@@ -141,6 +148,27 @@ test("maps exact representative Anywhere Clash proxy objects", () => {
   });
 });
 
+test("rejects an unsupported AnyTLS field before subscription validation", () => {
+  const node = {
+    ...BASE,
+    type: "anytls",
+    password: "TEST_ONLY_ANYTLS_UNSUPPORTED_PASSWORD",
+    "idle-session-timeout": 60,
+    "unsupported-anytls-field": "TEST_ONLY_UNSUPPORTED_ANYTLS_VALUE",
+  };
+  assert.throws(
+    () => toAnywhereProxy(node),
+    (error) => error.message === "Anywhere cannot render protocol: anytls"
+      && !error.message.includes(node.name)
+      && !error.message.includes(node.server)
+      && !error.message.includes(node.password),
+  );
+  assert.throws(
+    () => renderAnywhereSubscription([node]),
+    /^Error: Anywhere cannot render selected protocols: anytls=1$/u,
+  );
+});
+
 test("canonicalizes every verified Sudoku alias without losing semantics", () => {
   assert.deepEqual(toAnywhereProxy({
     ...BASE,
@@ -169,28 +197,32 @@ test("canonicalizes every verified Sudoku alias without losing semantics", () =>
   });
 });
 
-test("filters a mixed inventory with count-only diagnostics and deterministic YAML", () => {
+test("rejects a mixed inventory without diagnostics or partial YAML", () => {
   const nodes = [
-    { ...BASE, name: "Good", type: "ss", cipher: "aes-128-gcm", password: "TEST_ONLY_GOOD_PASSWORD" },
-    { ...BASE, name: "Bad protocol", type: "snell", psk: "TEST_ONLY_BAD_PSK", version: 4 },
+    { ...BASE, name: "Good AnyTLS", type: "anytls", password: "TEST_ONLY_GOOD_PASSWORD" },
+    { ...BASE, name: "Bad future protocol", type: " Future-Proto ", password: "TEST_ONLY_FUTURE_PASSWORD" },
     { ...BASE, name: "Bad transport", type: "trojan", password: "TEST_ONLY_BAD_PASSWORD", network: "grpc" },
   ];
   let diagnostics;
-  const prepared = prepareAnywhereInventory(nodes, { onDiagnostics: (value) => { diagnostics = value; } });
-  assert.deepEqual(diagnostics, {
-    accepted: 1,
-    excluded: {
-      "unsupported-protocol": 1,
-      "unsupported-anywhere-trojan-shape": 1,
+  assert.throws(
+    () => prepareAnywhereInventory(nodes, { onDiagnostics: (value) => { diagnostics = value; } }),
+    /Anywhere cannot render selected protocols: future-proto=1,trojan=1/u,
+  );
+  let yaml;
+  assert.throws(
+    () => { yaml = renderAnywhereSubscription(nodes); },
+    (error) => {
+      assert.equal(error.message, "Anywhere cannot render selected protocols: future-proto=1,trojan=1");
+      for (const node of nodes) {
+        for (const value of [node.name, node.server, node.password]) {
+          if (value !== undefined) assert.equal(error.message.includes(String(value)), false);
+        }
+      }
+      return true;
     },
-  });
-  const yaml = renderAnywhereSubscription(nodes);
-  assert.equal(yaml, renderAnywhereSubscription(structuredClone(nodes)));
-  assert.equal(yaml, 'proxies:\n  - name: "Good"\n    type: "ss"\n    server: "node.example.invalid"\n    port: 443\n    cipher: "aes-128-gcm"\n    password: "TEST_ONLY_GOOD_PASSWORD"\n    network: "tcp"\n');
-  assert.deepEqual(assertAnywhereSubscription(yaml, prepared.proxies), { proxyCount: 1 });
-  assert.equal(JSON.stringify(diagnostics).includes("Good"), false);
-  assert.equal(JSON.stringify(diagnostics).includes("example.invalid"), false);
-  assert.equal(JSON.stringify(diagnostics).includes("TEST_ONLY"), false);
+  );
+  assert.equal(diagnostics, undefined);
+  assert.equal(yaml, undefined);
 });
 
 test("independently round-trips the actual YAML and exposes only proxies at root", (t) => {
@@ -213,10 +245,13 @@ test("independently round-trips the actual YAML and exposes only proxies at root
   assert.equal(parsed.proxies[0].type, "ss");
 });
 
-test("fails closed for duplicate names, empty compatibility, and mutated YAML", () => {
+test("fails closed for duplicate names, unrenderable protocols, and mutated YAML", () => {
   const good = { ...BASE, type: "ss", cipher: "aes-128-gcm", password: "TEST_ONLY_PASSWORD" };
   assert.throws(() => renderAnywhereSubscription([good, { ...good, server: "other.example.invalid" }]), /Duplicate Anywhere proxy name/);
-  assert.throws(() => renderAnywhereSubscription([{ ...BASE, type: "snell" }]), /No compatible Anywhere nodes/);
+  assert.throws(
+    () => renderAnywhereSubscription([{ ...BASE, type: "snell" }]),
+    /Anywhere cannot render selected protocols: snell=1/u,
+  );
   const yaml = renderAnywhereSubscription([good]);
   const proxies = prepareAnywhereInventory([good]).proxies;
   for (const mutation of [
@@ -238,20 +273,42 @@ test("renders the shared normalized inventory and contains hostile failures", ()
     password: "TEST_ONLY_NORMALIZED_PASSWORD",
     _subDisplayName: "机场订阅",
   }]);
+  assert.equal(normalized.nodes[0].name, "🇭🇰 机场 香港 · SS");
+  assert.equal(prepareAnywhereInventory(normalized.nodes).proxies[0].name, "🇭🇰 机场 香港 · SS");
   const yaml = renderAnywhereSubscription(normalized.nodes);
   assert.match(yaml, /^proxies:\n/u);
+  assert.match(yaml, /name: "🇭🇰 机场 香港 · SS"/u);
   assert.match(yaml, /type: "ss"/u);
+
+  const anytls = normalizeNodes([{
+    ...BASE,
+    name: "东京 AnyTLS",
+    type: "anytls",
+    password: "TEST_ONLY_NORMALIZED_ANYTLS_PASSWORD",
+    alpn: ["h2"],
+    "client-fingerprint": "chrome",
+    "idle-session-check-interval": 30,
+    "idle-session-timeout": 60,
+    "min-idle-session": 1,
+    _subDisplayName: "[自建] 东京 AnyTLS",
+  }]).nodes;
+  const anytlsYaml = renderAnywhereSubscription(anytls);
+  assert.match(anytls[0].name, / · AnyTLS｜自建$/u);
+  assert.match(anytlsYaml, /^proxies:\n/u);
+  assert.match(anytlsYaml, / · AnyTLS｜自建/u);
+  assert.deepEqual(assertAnywhereSubscription(anytlsYaml, prepareAnywhereInventory(anytls).proxies), { proxyCount: 1 });
 
   const hostileMarker = "SHOULD_NOT_ESCAPE_ANYWHERE_ERRORS";
   const hostile = {};
   Object.defineProperty(hostile, "type", { get() { throw new Error(hostileMarker); } });
   assert.throws(
     () => renderAnywhereSubscription([hostile]),
-    (error) => error.message === "Invalid Anywhere node inventory" && !error.message.includes(hostileMarker),
+    (error) => error.message === "Anywhere cannot render selected protocols: unknown=1"
+      && !error.message.includes(hostileMarker),
   );
   assert.throws(
     () => toAnywhereProxy(hostile),
-    (error) => error.message === "Unsupported Anywhere proxy node" && !error.message.includes(hostileMarker),
+    (error) => error.message === "Anywhere cannot render protocol: unknown" && !error.message.includes(hostileMarker),
   );
 
   const hostileOptions = {};

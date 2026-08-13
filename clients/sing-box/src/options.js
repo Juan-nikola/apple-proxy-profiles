@@ -1,5 +1,6 @@
 import { OPTION_VALUES } from "../../../shared/contracts.js";
 import { platformPolicyPreset } from "../../../shared/policies/platform-presets.js";
+import { validateCollectionName } from "../../../shared/substore/collection-name.js";
 
 const REQUIRED_KEYS = Object.freeze(["output", "type", "name", "subscriptionName", "platform"]);
 const DEFAULTS = Object.freeze({
@@ -58,7 +59,7 @@ export function parseSingBoxOptions(raw) {
   const options = {
     output: "config",
     type: "collection",
-    name: requiredString(raw, "name"),
+    name: validateCollectionName(raw.name, "Option 'name'"),
     subscriptionName: requiredString(raw, "subscriptionName"),
     platform,
     channel,

@@ -1,15 +1,7 @@
-import { CLIENT } from "../../../shared/contracts.js";
-import { filterNodesForClient } from "../../../shared/nodes/capabilities.js";
+import { assertRenderableNodes } from "../../../shared/nodes/renderability.js";
 import { renderYaml } from "../../../shared/serialization/render-yaml.js";
 import { toAnywhereProxy } from "./render-node.js";
 import { assertAnywhereSubscription } from "./validate-subscription.js";
-
-function formatExcludedCounts(excluded) {
-  return Object.keys(excluded)
-    .sort((left, right) => left.localeCompare(right, "en"))
-    .map((reason) => `${reason}=${excluded[reason]}`)
-    .join(",");
-}
 
 function parsePrepareOptions(options) {
   try {
@@ -33,24 +25,17 @@ export function prepareAnywhereInventory(nodes, options) {
   if (onDiagnostics !== undefined && typeof onDiagnostics !== "function") {
     throw new Error("onDiagnostics must be a function");
   }
-  let filtered;
-  try {
-    filtered = filterNodesForClient(nodes, CLIENT.anywhere);
-  } catch {
-    throw new Error("Invalid Anywhere node inventory");
-  }
-  if (filtered.nodes.length === 0) {
-    const counts = formatExcludedCounts(filtered.diagnostics.excluded);
-    throw new Error(`No compatible Anywhere nodes; excluded counts: ${counts || "none"}`);
-  }
+  if (!Array.isArray(nodes)) throw new Error("Invalid Anywhere node inventory");
+  if (nodes.length === 0) throw new Error("No compatible Anywhere nodes; excluded counts: none");
+  assertRenderableNodes(nodes, "Anywhere", toAnywhereProxy);
   const names = new Set();
-  const proxies = filtered.nodes.map((node) => {
+  const proxies = nodes.map((node) => {
     const proxy = toAnywhereProxy(node);
     if (names.has(proxy.name)) throw new Error("Duplicate Anywhere proxy name");
     names.add(proxy.name);
     return proxy;
   });
-  const diagnostics = structuredClone(filtered.diagnostics);
+  const diagnostics = { accepted: nodes.length, excluded: {} };
   onDiagnostics?.(structuredClone(diagnostics));
   return { proxies, diagnostics };
 }
