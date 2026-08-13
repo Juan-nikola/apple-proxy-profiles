@@ -131,6 +131,50 @@ test("accepts only explicit edge, current-check, and client promotion operations
   }
 });
 
+test("accepts a five-client current while Happ remains unpromoted", async () => {
+  const root = await mkdtemp(join(tmpdir(), "apple-proxy-check-unpromoted-happ-"));
+  const publicDirectory = join(root, "public");
+  const artifacts = buildClientArtifacts({ snapshot: lightweightFixtureSnapshots(), upstream });
+  const legacyFiles = new Map([...artifacts.defaults].filter(([path]) => !path.startsWith("happ/")));
+  const rootManifest = JSON.parse(legacyFiles.get("manifest.json"));
+  delete rootManifest.clients.happ;
+  rootManifest.files = [...legacyFiles]
+    .filter(([path]) => path !== "manifest.json")
+    .map(([path, content]) => ({ path, bytes: Buffer.byteLength(content), sha256: artifactSha256(content) }))
+    .sort((left, right) => left.path.localeCompare(right.path));
+  const { manifestHash: ignored, ...rootBase } = rootManifest;
+  legacyFiles.set("manifest.json", canonicalJson({
+    ...rootBase,
+    manifestHash: artifactSha256(canonicalJson(rootBase)),
+  }));
+  await writeFiles(join(publicDirectory, "current"), legacyFiles);
+  const optionalFiles = artifacts.optionalPacks.get("adblock-full");
+  for (const [path, content] of optionalFiles) {
+    const relative = path.slice("optional/adblock-full/".length);
+    await writeFiles(join(publicDirectory, "optional/adblock-full/current"), new Map([[relative, content]]));
+  }
+  await writeFile(join(publicDirectory, "rollout.json"), `${JSON.stringify({
+    schemaVersion: 2,
+    clients: Object.fromEntries(Object.entries(artifacts.diagnostics.defaultManifest.clients)
+      .filter(([client]) => client !== "happ")
+      .map(([client, value]) => [client, value.manifestHash])),
+    previous: Object.fromEntries(Object.keys(artifacts.diagnostics.defaultManifest.clients)
+      .filter((client) => client !== "happ")
+      .map((client) => [client, null])),
+    optionalPacks: {
+      "adblock-full": Object.fromEntries(Object.entries(artifacts.diagnostics.optionalManifests["adblock-full"].clients)
+        .map(([client, value]) => [client, value.manifestHash])),
+    },
+    previousOptionalPacks: {
+      "adblock-full": Object.fromEntries(Object.keys(artifacts.diagnostics.optionalManifests["adblock-full"].clients)
+        .map((client) => [client, null])),
+    },
+  }, null, 2)}\n`);
+
+  assert.equal(await verifyTrackedPublications({ publicDirectory, ...artifacts }), true);
+  await rm(root, { recursive: true, force: true });
+});
+
 test("derives audit-only primary provenance from the production ChinaIP snapshot", () => {
   const snapshot = lightweightFixtureSnapshots();
   const result = chinaIpAuditPrimary(snapshot, upstream);

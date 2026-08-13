@@ -186,14 +186,15 @@ function rootManifestMatchesWithIndependentAudit(content, expectedManifest) {
     if (!/^[0-9a-f]{64}$/u.test(manifestHash)
       || artifactSha256(canonicalJson(actualBase)) !== manifestHash
       || !bytes.equals(artifactBuffer(canonicalJson(actual)))) return false;
+    const missingUnpromotedHapp = !Object.hasOwn(actual.clients ?? {}, "happ");
     const projection = (manifest) => {
       const { manifestHash: ignored, ...base } = manifest;
+      const clients = base.clients && Object.fromEntries(Object.entries(base.clients)
+        .map(([client, value]) => [client, PROMOTION_CLIENTS.has(client) ? null : value]));
+      if (missingUnpromotedHapp && clients && !Object.hasOwn(clients, "happ")) clients.happ = null;
       return {
         ...base,
-        clients: base.clients && Object.fromEntries(Object.entries(base.clients).map(([client, value]) => [
-          client,
-          PROMOTION_CLIENTS.has(client) ? null : value,
-        ])),
+        clients,
         files: Array.isArray(base.files)
           ? base.files.filter(({ path }) => (
             path !== "audit/china-ip-drift.json" && !INDEPENDENT_CLIENT_PATH.test(path)
@@ -401,6 +402,12 @@ export async function verifyTrackedPublications({ publicDirectory, defaults, opt
   const currentClientManifests = new Map();
   for (const [client, clientDirectory] of Object.entries(clientDirectories)) {
     const selectedHash = rollout.clients[client];
+    const hasTrackedClientManifest = await pathExists(join(
+      currentDirectory,
+      clientDirectory,
+      "client-manifest.json",
+    ));
+    if (client === "happ" && selectedHash === undefined && !hasTrackedClientManifest) continue;
     if (selectedHash === null || selectedHash === undefined) {
       if (!await snapshotMatches(
         join(currentDirectory, clientDirectory),
