@@ -36,6 +36,14 @@
 
 esbuild 是开发依赖；生成器源码不因此改用 MIT 许可。esbuild 的版权和 MIT 许可文本可在其上游仓库及安装包中取得。
 
+## V2Ray/Xray geodata schema
+
+- 项目：[v2ray/v2ray-core](https://github.com/v2ray/v2ray-core)
+- 上游提交：`d80440f3d57b45c829dbf513306f7adf9a0f3f76`
+- 上游来源：[app/router/config.proto](https://github.com/v2ray/v2ray-core/blob/d80440f3d57b45c829dbf513306f7adf9a0f3f76/app/router/config.proto)
+- 上游许可：MIT
+- 使用范围：`clients/happ/proto/geodata.proto` 仅保留编写 V2Ray/Xray `geosite.dat` 和 `geoip.dat` 所需的 wire-compatible message 字段；不复制上游 Go 实现。
+
 ## Sub-Store integration
 
 本项目调用 Sub-Store Script Operator 与 `produceArtifact` 互操作接口，但不复制或再分发 Sub-Store 源码。Sub-Store 的名称、源码和许可仍属于其各自权利人。

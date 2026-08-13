@@ -6,6 +6,7 @@ import { OBSERVED_DOMESTIC_RECORDS } from "../../shared/rules/observed-domestic.
 import { DEFAULT_RULE_SOURCE_IDS } from "../../shared/rules/lightweight-policy.js";
 import { normalizeRuleEntry, RULE_KIND } from "../../shared/rules/model.js";
 import { compileLightweightRules, findSemanticRuleOverlaps } from "../src/compile-lightweight-rules.js";
+import { decodeHappGeodata, renderHappGeodata } from "../src/render-happ-geodata.js";
 import { parseSurgeRules } from "../src/parse-surge.js";
 import { FETCH_SOURCE_CATALOG } from "../src/source-catalog.js";
 
@@ -105,6 +106,14 @@ test("compiles only lightweight defaults and isolates the full advertising pack"
   assert.equal(result.diagnostics.domesticCoreEntries, DOMESTIC_CORE_DOMAIN_SUFFIXES.length);
   assert.equal(result.diagnostics.defaultEntries,
     [...result.defaultRuleSets.values()].reduce((total, set) => total + set.entries.length, 0));
+});
+
+test("renders compiled defaults as Happ geodata without the advertising pack", () => {
+  const compiled = compileLightweightRules({ snapshots: fixtureSnapshots() });
+  const geodata = decodeHappGeodata(renderHappGeodata(compiled.defaultRuleSets).files);
+  assert.equal(geodata.geosite.some(({ countryCode }) => countryCode === "HAPP-ADVERTISING"), false);
+  assert.equal(geodata.geosite.some(({ countryCode }) => countryCode === "HAPP-ADVERTISING_DOMAIN"), false);
+  assert.ok(geodata.geoip.some(({ countryCode }) => countryCode === "HAPP-CHINAIP"));
 });
 
 test("compiles observed domestic suffixes into DomesticCore without an observed source", () => {
