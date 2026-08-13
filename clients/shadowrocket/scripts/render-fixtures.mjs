@@ -6,10 +6,16 @@ import { validateProfile } from "../src/validate-profile.js";
 
 const root = resolve(import.meta.dirname, "..");
 const platforms = Object.freeze(["macos", "iphone", "ipad"]);
+const fixtureFlags = Object.freeze({
+  asiaPacific: "🇯🇵",
+  europe: "🇩🇪",
+  americas: "🇺🇸",
+});
 const inventory = Object.freeze(Array.from({ length: 25 }, (_, index) => Object.freeze({
   name: `Synthetic ${String(index + 1).padStart(2, "0")}`,
   _profile: Object.freeze({
     continent: ["asiaPacific", "americas", "europe"][index % 3],
+    flag: fixtureFlags[["asiaPacific", "americas", "europe"][index % 3]],
     sourceKind: index % 4 === 0 ? "selfHosted" : "airport",
     udp: index % 2 === 0,
     p2p: index % 5 === 0,

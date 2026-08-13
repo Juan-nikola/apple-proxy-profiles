@@ -349,6 +349,29 @@ policy_groups:
       hidden: true
       block_quic: true
   - auto_test:
+      name: "⚡ 美洲自动"
+      urls:
+        - "https://example.invalid/private/egern-nodes"
+      filter: "^(?:🇦🇬|🇦🇮|🇦🇷|🇦🇼|🇧🇧|🇧🇱|🇧🇲|🇧🇴|🇧🇶|🇧🇷|🇧🇸|🇧🇻|🇧🇿|🇨🇦|🇨🇱|🇨🇴|🇨🇷|🇨🇺|🇨🇼|🇩🇲|🇩🇴|🇪🇨|🇫🇰|🇬🇩|🇬🇫|🇬🇱|🇬🇵|🇬🇸|🇬🇹|🇬🇾|🇭🇳|🇭🇹|🇯🇲|🇰🇳|🇰🇾|🇱🇨|🇲🇫|🇲🇶|🇲🇸|🇲🇽|🇳🇮|🇵🇦|🇵🇪|🇵🇲|🇵🇷|🇵🇾|🇸🇷|🇸🇻|🇸🇽|🇹🇨|🇹🇹|🇺🇸|🇺🇾|🇻🇨|🇻🇪|🇻🇬|🇻🇮).+$"
+      update_interval: 21600
+      latency_test_url: "http://www.gstatic.com/generate_204"
+      interval: 1800
+      timeout: 7
+      tolerance: 150
+      hidden: true
+      block_quic: true
+  - fallback:
+      name: "🛟 美洲故障转移"
+      urls:
+        - "https://example.invalid/private/egern-nodes"
+      filter: "^(?:🇦🇬|🇦🇮|🇦🇷|🇦🇼|🇧🇧|🇧🇱|🇧🇲|🇧🇴|🇧🇶|🇧🇷|🇧🇸|🇧🇻|🇧🇿|🇨🇦|🇨🇱|🇨🇴|🇨🇷|🇨🇺|🇨🇼|🇩🇲|🇩🇴|🇪🇨|🇫🇰|🇬🇩|🇬🇫|🇬🇱|🇬🇵|🇬🇸|🇬🇹|🇬🇾|🇭🇳|🇭🇹|🇯🇲|🇰🇳|🇰🇾|🇱🇨|🇲🇫|🇲🇶|🇲🇸|🇲🇽|🇳🇮|🇵🇦|🇵🇪|🇵🇲|🇵🇷|🇵🇾|🇸🇷|🇸🇻|🇸🇽|🇹🇨|🇹🇹|🇺🇸|🇺🇾|🇻🇨|🇻🇪|🇻🇬|🇻🇮).+$"
+      update_interval: 21600
+      latency_test_url: "http://www.gstatic.com/generate_204"
+      interval: 1800
+      timeout: 7
+      hidden: true
+      block_quic: true
+  - auto_test:
       name: "⚡ 其他/未分类自动"
       urls:
         - "https://example.invalid/private/egern-nodes"
@@ -373,19 +396,45 @@ policy_groups:
       block_quic: true
   - select:
       name: "🚀 节点选择"
-      urls:
-        - "https://example.invalid/private/egern-nodes"
-      filter: "^(?!🔗 ).+$"
-      update_interval: 21600
+      policies:
+        - "🌏 亚太"
+        - "🌎 美洲"
+        - "🌐 其他/未分类"
       block_quic: true
   - select:
       name: "🌏 亚太"
       policies:
         - "⚡ 亚太自动"
         - "🛟 亚太故障转移"
+        - "🇯🇵 日本"
+        - "🇸🇬 新加坡"
+      block_quic: true
+  - select:
+      name: "🇯🇵 日本"
       urls:
         - "https://example.invalid/private/egern-nodes"
-      filter: "^(?:🇦🇪|🇦🇫|🇦🇲|🇦🇸|🇦🇺|🇦🇿|🇧🇩|🇧🇭|🇧🇳|🇧🇹|🇨🇨|🇨🇰|🇨🇳|🇨🇽|🇨🇾|🇫🇯|🇫🇲|🇬🇪|🇬🇺|🇭🇰|🇭🇲|🇮🇩|🇮🇱|🇮🇳|🇮🇶|🇮🇷|🇯🇴|🇯🇵|🇰🇬|🇰🇭|🇰🇮|🇰🇵|🇰🇷|🇰🇼|🇰🇿|🇱🇦|🇱🇧|🇱🇰|🇲🇭|🇲🇲|🇲🇳|🇲🇴|🇲🇵|🇲🇻|🇲🇾|🇳🇨|🇳🇫|🇳🇵|🇳🇷|🇳🇺|🇳🇿|🇴🇲|🇵🇫|🇵🇬|🇵🇭|🇵🇰|🇵🇳|🇵🇸|🇵🇼|🇶🇦|🇸🇦|🇸🇧|🇸🇬|🇸🇾|🇹🇭|🇹🇯|🇹🇰|🇹🇱|🇹🇲|🇹🇴|🇹🇷|🇹🇻|🇹🇼|🇺🇲|🇺🇿|🇻🇳|🇻🇺|🇼🇫|🇼🇸|🇾🇪).+$"
+      filter: "^🇯🇵(?: |$)"
+      update_interval: 21600
+      block_quic: true
+  - select:
+      name: "🇸🇬 新加坡"
+      urls:
+        - "https://example.invalid/private/egern-nodes"
+      filter: "^🇸🇬(?: |$)"
+      update_interval: 21600
+      block_quic: true
+  - select:
+      name: "🌎 美洲"
+      policies:
+        - "⚡ 美洲自动"
+        - "🛟 美洲故障转移"
+        - "🇺🇸 美国"
+      block_quic: true
+  - select:
+      name: "🇺🇸 美国"
+      urls:
+        - "https://example.invalid/private/egern-nodes"
+      filter: "^🇺🇸(?: |$)"
       update_interval: 21600
       block_quic: true
   - select:
@@ -393,9 +442,13 @@ policy_groups:
       policies:
         - "⚡ 其他/未分类自动"
         - "🛟 其他/未分类故障转移"
+        - "🌐 未分类"
+      block_quic: true
+  - select:
+      name: "🌐 未分类"
       urls:
         - "https://example.invalid/private/egern-nodes"
-      filter: "^(?!(?:🔗|🇦🇪|🇦🇫|🇦🇲|🇦🇸|🇦🇺|🇦🇿|🇧🇩|🇧🇭|🇧🇳|🇧🇹|🇨🇨|🇨🇰|🇨🇳|🇨🇽|🇨🇾|🇫🇯|🇫🇲|🇬🇪|🇬🇺|🇭🇰|🇭🇲|🇮🇩|🇮🇱|🇮🇳|🇮🇶|🇮🇷|🇯🇴|🇯🇵|🇰🇬|🇰🇭|🇰🇮|🇰🇵|🇰🇷|🇰🇼|🇰🇿|🇱🇦|🇱🇧|🇱🇰|🇲🇭|🇲🇲|🇲🇳|🇲🇴|🇲🇵|🇲🇻|🇲🇾|🇳🇨|🇳🇫|🇳🇵|🇳🇷|🇳🇺|🇳🇿|🇴🇲|🇵🇫|🇵🇬|🇵🇭|🇵🇰|🇵🇳|🇵🇸|🇵🇼|🇶🇦|🇸🇦|🇸🇧|🇸🇬|🇸🇾|🇹🇭|🇹🇯|🇹🇰|🇹🇱|🇹🇲|🇹🇴|🇹🇷|🇹🇻|🇹🇼|🇺🇲|🇺🇿|🇻🇳|🇻🇺|🇼🇫|🇼🇸|🇾🇪|🇦🇩|🇦🇱|🇦🇹|🇦🇽|🇧🇦|🇧🇪|🇧🇬|🇧🇾|🇨🇭|🇨🇿|🇩🇪|🇩🇰|🇪🇪|🇪🇸|🇫🇮|🇫🇴|🇫🇷|🇬🇧|🇬🇬|🇬🇮|🇬🇷|🇭🇷|🇭🇺|🇮🇪|🇮🇲|🇮🇸|🇮🇹|🇯🇪|🇱🇮|🇱🇹|🇱🇺|🇱🇻|🇲🇨|🇲🇩|🇲🇪|🇲🇰|🇲🇹|🇳🇱|🇳🇴|🇵🇱|🇵🇹|🇷🇴|🇷🇸|🇷🇺|🇸🇪|🇸🇮|🇸🇯|🇸🇰|🇸🇲|🇺🇦|🇻🇦|🇦🇬|🇦🇮|🇦🇷|🇦🇼|🇧🇧|🇧🇱|🇧🇲|🇧🇴|🇧🇶|🇧🇷|🇧🇸|🇧🇻|🇧🇿|🇨🇦|🇨🇱|🇨🇴|🇨🇷|🇨🇺|🇨🇼|🇩🇲|🇩🇴|🇪🇨|🇫🇰|🇬🇩|🇬🇫|🇬🇱|🇬🇵|🇬🇸|🇬🇹|🇬🇾|🇭🇳|🇭🇹|🇯🇲|🇰🇳|🇰🇾|🇱🇨|🇲🇫|🇲🇶|🇲🇸|🇲🇽|🇳🇮|🇵🇦|🇵🇪|🇵🇲|🇵🇷|🇵🇾|🇸🇷|🇸🇻|🇸🇽|🇹🇨|🇹🇹|🇺🇸|🇺🇾|🇻🇨|🇻🇪|🇻🇬|🇻🇮)).+$"
+      filter: "^🌐(?: |$)"
       update_interval: 21600
       block_quic: true
   - select:
@@ -434,6 +487,17 @@ policy_groups:
       hidden: true
       block_quic: true
   - select:
+      name: "🤖 AI 美洲"
+      policies:
+        - "⚡ 美洲自动"
+        - "🛟 美洲故障转移"
+      urls:
+        - "https://example.invalid/private/egern-nodes"
+      filter: "^(?:🇦🇬|🇦🇮|🇦🇷|🇦🇼|🇧🇧|🇧🇱|🇧🇲|🇧🇴|🇧🇶|🇧🇷|🇧🇸|🇧🇻|🇧🇿|🇨🇦|🇨🇱|🇨🇴|🇨🇷|🇨🇺|🇨🇼|🇩🇲|🇩🇴|🇪🇨|🇫🇰|🇬🇩|🇬🇫|🇬🇱|🇬🇵|🇬🇸|🇬🇹|🇬🇾|🇭🇳|🇭🇹|🇯🇲|🇰🇳|🇰🇾|🇱🇨|🇲🇫|🇲🇶|🇲🇸|🇲🇽|🇳🇮|🇵🇦|🇵🇪|🇵🇲|🇵🇷|🇵🇾|🇸🇷|🇸🇻|🇸🇽|🇹🇨|🇹🇹|🇺🇸|🇺🇾|🇻🇨|🇻🇪|🇻🇬|🇻🇮).+$"
+      update_interval: 21600
+      hidden: true
+      block_quic: true
+  - select:
       name: "🤖 AI 其他/未分类"
       policies:
         - "⚡ 其他/未分类自动"
@@ -448,6 +512,7 @@ policy_groups:
       name: "🤖 AI 专用"
       policies:
         - "🤖 AI 亚太"
+        - "🤖 AI 美洲"
         - "🤖 AI 其他/未分类"
       urls:
         - "https://example.invalid/private/egern-nodes"
@@ -461,6 +526,7 @@ policy_groups:
         - "⚡ 全部自动"
         - "🛟 全部故障转移"
         - "🌏 亚太"
+        - "🌎 美洲"
         - "🌐 其他/未分类"
         - "DIRECT"
       urls:
@@ -475,6 +541,7 @@ policy_groups:
         - "⚡ 全部自动"
         - "🛟 全部故障转移"
         - "🌏 亚太"
+        - "🌎 美洲"
         - "🌐 其他/未分类"
         - "DIRECT"
       urls:
@@ -489,6 +556,7 @@ policy_groups:
         - "⚡ 全部自动"
         - "🛟 全部故障转移"
         - "🌏 亚太"
+        - "🌎 美洲"
         - "🌐 其他/未分类"
         - "DIRECT"
       urls:
@@ -503,6 +571,7 @@ policy_groups:
         - "⚡ 全部自动"
         - "🛟 全部故障转移"
         - "🌏 亚太"
+        - "🌎 美洲"
         - "🌐 其他/未分类"
         - "DIRECT"
       urls:
@@ -518,6 +587,7 @@ policy_groups:
         - "⚡ 全部自动"
         - "🛟 全部故障转移"
         - "🌏 亚太"
+        - "🌎 美洲"
         - "🌐 其他/未分类"
       urls:
         - "https://example.invalid/private/egern-nodes"
@@ -531,6 +601,7 @@ policy_groups:
         - "⚡ 全部自动"
         - "🛟 全部故障转移"
         - "🌏 亚太"
+        - "🌎 美洲"
         - "🌐 其他/未分类"
       urls:
         - "https://example.invalid/private/egern-nodes"
@@ -544,6 +615,7 @@ policy_groups:
         - "⚡ 全部自动"
         - "🛟 全部故障转移"
         - "🌏 亚太"
+        - "🌎 美洲"
         - "🌐 其他/未分类"
       urls:
         - "https://example.invalid/private/egern-nodes"
@@ -556,6 +628,7 @@ policy_groups:
         - "⚡ 全部自动"
         - "🛟 全部故障转移"
         - "🌏 亚太"
+        - "🌎 美洲"
         - "🌐 其他/未分类"
         - "DIRECT"
       urls:
