@@ -1,0 +1,95 @@
+{
+  "schemaVersion": 1,
+  "counts": {
+    "eligibleNodes": 1,
+    "fixedNodes": 0,
+    "warnings": 0
+  },
+  "targets": {
+    "🤖 AI 专用": {
+      "configured": "FOLLOW",
+      "resolved": "FOLLOW",
+      "status": "follow",
+      "warningCode": null,
+      "nodeName": null
+    },
+    "🐙 GitHub": {
+      "configured": "FOLLOW",
+      "resolved": "FOLLOW",
+      "status": "follow",
+      "warningCode": null,
+      "nodeName": null
+    },
+    "📺 YouTube": {
+      "configured": "FOLLOW",
+      "resolved": "FOLLOW",
+      "status": "follow",
+      "warningCode": null,
+      "nodeName": null
+    },
+    "🎬 海外流媒体": {
+      "configured": "FOLLOW",
+      "resolved": "FOLLOW",
+      "status": "follow",
+      "warningCode": null,
+      "nodeName": null
+    },
+    "💬 海外社交": {
+      "configured": "FOLLOW",
+      "resolved": "FOLLOW",
+      "status": "follow",
+      "warningCode": null,
+      "nodeName": null
+    },
+    "🍎 Apple": {
+      "configured": "DIRECT",
+      "resolved": "DIRECT",
+      "status": "direct",
+      "warningCode": null,
+      "nodeName": null
+    },
+    "🪟 Microsoft": {
+      "configured": "DIRECT",
+      "resolved": "DIRECT",
+      "status": "direct",
+      "warningCode": null,
+      "nodeName": null
+    },
+    "🇨🇳 国内平台": {
+      "configured": "DIRECT",
+      "resolved": "DIRECT",
+      "status": "direct",
+      "warningCode": null,
+      "nodeName": null
+    },
+    "🌍 海外游戏": {
+      "configured": "FOLLOW",
+      "resolved": "FOLLOW",
+      "status": "follow",
+      "warningCode": null,
+      "nodeName": null
+    },
+    "⬇️ 下载/P2P": {
+      "configured": "DIRECT",
+      "resolved": "DIRECT",
+      "status": "direct",
+      "warningCode": null,
+      "nodeName": null
+    },
+    "🧭 DNS 与规则下载": {
+      "configured": "FOLLOW",
+      "resolved": "FOLLOW",
+      "status": "follow",
+      "warningCode": null,
+      "nodeName": null
+    },
+    "最终兜底": {
+      "configured": "FOLLOW",
+      "resolved": "FOLLOW",
+      "status": "follow",
+      "warningCode": null,
+      "nodeName": null
+    }
+  },
+  "warnings": []
+}
