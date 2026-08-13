@@ -3751,8 +3751,28 @@ var OneXrayProfileBundle = (() => {
     strict: Object.freeze({ threat: "block", advertising: "block", privacy: "block" })
   });
   var PING_RULE = Object.freeze({ type: "field", inboundTag: ["pingIn"], outboundTag: "proxy" });
-  var LOCAL_DOMAIN_RULE = Object.freeze({ type: "field", domain: ["geosite:private"], outboundTag: "direct" });
-  var LOCAL_IP_RULE = Object.freeze({ type: "field", ip: ["geoip:private"], outboundTag: "direct" });
+  var LOCAL_DOMAIN_RULE = Object.freeze({
+    type: "field",
+    domain: ["full:localhost", "domain:local", "domain:lan", "domain:home.arpa"],
+    outboundTag: "direct"
+  });
+  var LOCAL_IP_RULE = Object.freeze({
+    type: "field",
+    ip: [
+      "10.0.0.0/8",
+      "100.64.0.0/10",
+      "127.0.0.0/8",
+      "169.254.0.0/16",
+      "172.16.0.0/12",
+      "192.168.0.0/16",
+      "224.0.0.0/4",
+      "::1/128",
+      "fc00::/7",
+      "fe80::/10",
+      "ff00::/8"
+    ],
+    outboundTag: "direct"
+  });
   function requiredObject2(value, label) {
     if (value === null || typeof value !== "object" || Array.isArray(value)) {
       throw new TypeError(`OneXray ${label} must be an object`);

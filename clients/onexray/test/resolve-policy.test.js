@@ -65,16 +65,16 @@ test("resolves shared fixed targets by exact normalized name and reuses a stable
   });
 
   assert.deepEqual(resolution.homepageNodes, [fixed, homepage]);
-  assert.deepEqual(resolution.fixedNodes, [{ node: fixed, tag: "ap-fixed-4c1a2e9d" }]);
+  assert.deepEqual(resolution.fixedNodes, [{ node: fixed, tag: "🇺🇸 Los Angeles｜自建·U" }]);
   assert.equal(resolution.finalOutbound, null);
   assert.deepEqual(resolution.targets.ai, {
     configured: "NODE:🇺🇸 Los Angeles｜自建·U",
-    resolvedTag: "ap-fixed-4c1a2e9d",
+    resolvedTag: "🇺🇸 Los Angeles｜自建·U",
     status: "fixed",
   });
   assert.deepEqual(resolution.targets.youtube, {
     configured: "NODE:🇺🇸 Los Angeles｜自建·U",
-    resolvedTag: "ap-fixed-4c1a2e9d",
+    resolvedTag: "🇺🇸 Los Angeles｜自建·U",
     status: "fixed",
   });
   assert.deepEqual(resolution.targets.apple, { configured: "DIRECT", resolvedTag: "direct", status: "direct" });
@@ -186,10 +186,10 @@ test("uses only entry nodes for chained homepage selection and keeps fixed route
 
   assert.deepEqual(resolution.homepageNodes, [entry]);
   assert.deepEqual(resolution.finalOutbound, { node: landing, tag: "chainProxy" });
-  assert.deepEqual(resolution.fixedNodes, [{ node: fixed, tag: "ap-fixed-fixed300" }]);
+  assert.deepEqual(resolution.fixedNodes, [{ node: fixed, tag: "🇺🇸 Los Angeles｜自建·U" }]);
   assert.deepEqual(resolution.targets.ai, {
     configured: "NODE:🇺🇸 Los Angeles｜自建·U",
-    resolvedTag: "ap-fixed-fixed300",
+    resolvedTag: "🇺🇸 Los Angeles｜自建·U",
     status: "fixed",
   });
   assert.deepEqual(resolution.targets.github, { configured: "FOLLOW", resolvedTag: "proxy", status: "follow" });

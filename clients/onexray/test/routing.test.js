@@ -75,12 +75,21 @@ test("renders system DNS/ping, local, shared phases, ChinaIP, and one final rule
   assert.deepEqual(rules.find(({ inboundTag }) => inboundTag?.includes("pingIn")), {
     type: "field", inboundTag: ["pingIn"], outboundTag: "proxy",
   });
-  assert.deepEqual(rules.find(({ domain }) => domain?.includes("geosite:private")), {
-    type: "field", domain: ["geosite:private"], outboundTag: "direct",
+  assert.deepEqual(rules.find(({ domain }) => domain?.includes("full:localhost")), {
+    type: "field",
+    domain: ["full:localhost", "domain:local", "domain:lan", "domain:home.arpa"],
+    outboundTag: "direct",
   });
-  assert.deepEqual(rules.find(({ ip }) => ip?.includes("geoip:private")), {
-    type: "field", ip: ["geoip:private"], outboundTag: "direct",
+  assert.deepEqual(rules.find(({ ip }) => ip?.includes("10.0.0.0/8")), {
+    type: "field",
+    ip: [
+      "10.0.0.0/8", "100.64.0.0/10", "127.0.0.0/8", "169.254.0.0/16",
+      "172.16.0.0/12", "192.168.0.0/16", "224.0.0.0/4",
+      "::1/128", "fc00::/7", "fe80::/10", "ff00::/8",
+    ],
+    outboundTag: "direct",
   });
+  assert.equal(rules.flatMap(refs).some((ref) => /^(?:geosite|geoip):/u.test(ref)), false);
 
   const sourceOrder = rules.flatMap((rule) => refs(rule)
     .filter((ref) => ref.startsWith("ext:"))
@@ -162,7 +171,7 @@ test("proxy-block protects only proxy-bound overseas UDP/443, while all-block pr
 
   const allBlocked = render({ quicMode: "all-block" }).rules;
   assert.equal(allBlocked.filter(({ network, port, outboundTag }) => network === "udp" && port === "443" && outboundTag === "block").length, 1);
-  assert.equal(allBlocked.findIndex(({ network, port }) => network === "udp" && port === "443"), allBlocked.findIndex(({ ip }) => ip?.includes("geoip:private")) + 1);
+  assert.equal(allBlocked.findIndex(({ network, port }) => network === "udp" && port === "443"), allBlocked.findIndex(({ ip }) => ip?.includes("10.0.0.0/8")) + 1);
   assert.equal(render({ quicMode: "allow" }).rules.some(({ network, port }) => network === "udp" && port === "443"), false);
 });
 

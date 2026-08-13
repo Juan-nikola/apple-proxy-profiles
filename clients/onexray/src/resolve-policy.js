@@ -10,8 +10,6 @@ const RESERVED_TAGS = new Set([
 const GENERATED_TAG_PREFIXES = ["ap-fixed-"];
 const NODE_TARGET = /^NODE:(.*)$/u;
 const LINE_TERMINATOR = /[\r\n\u2028\u2029]/u;
-const STABLE_ID = /^[A-Za-z0-9][A-Za-z0-9._-]*$/u;
-
 function freezeTarget(target) {
   return Object.freeze(target);
 }
@@ -94,18 +92,16 @@ function reservedNodeTag(name) {
 }
 
 function fixedTag(node, target, name, assigned) {
-  const id = nodeMetadata(node).id;
-  if (typeof id !== "string" || !STABLE_ID.test(id)) {
-    throw fixedTargetError(target, name, "missing stable normalized identity");
+  if (typeof name !== "string" || name.length === 0 || name.trim() !== name || LINE_TERMINATOR.test(name)) {
+    throw fixedTargetError(target, String(name), "invalid display tag");
   }
-  const tag = `ap-fixed-${id}`;
-  if (RESERVED_TAGS.has(tag)) throw fixedTargetError(target, name, "uses a reserved outbound tag");
-  const prior = assigned.get(tag);
+  if (reservedNodeTag(name)) throw fixedTargetError(target, name, "uses a reserved outbound tag");
+  const prior = assigned.get(name);
   if (prior && identityKey(prior) !== identityKey(node)) {
     throw fixedTargetError(target, name, "has a colliding stable outbound tag");
   }
-  assigned.set(tag, node);
-  return tag;
+  assigned.set(name, node);
+  return name;
 }
 
 function resolveFixedTarget(target, configured, allNodes, eligibleNodes, assigned) {
