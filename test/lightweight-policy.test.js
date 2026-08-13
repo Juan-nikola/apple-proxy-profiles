@@ -361,3 +361,33 @@ test("retains non-catalog country flags in deterministic minimal-mode flag group
   assert.equal(byName.has("🇽🇦"), false, "chained non-catalog flags must not create groups");
   assert.equal(byName.has("🌐 未分类"), false, "fallback flag must only appear when present");
 });
+
+test("rejects normalized flag metadata assigned to a noncanonical continent", () => {
+  for (const [flag, continent] of [
+    ["🇯🇵", "europe"],
+    ["🇽🇰", "europe"],
+  ]) {
+    assert.throws(
+      () => buildPolicyGroups({
+        platform: "macos",
+        autoGroupMode: "minimal",
+        clientChain: "off",
+        blockMode: "off",
+      }, [{
+        name: `${flag} TEST_ONLY_WRONG_CONTINENT`,
+        _profile: {
+          continent,
+          flag,
+          protocolLabel: "SS",
+          sourceKind: "airport",
+          udp: false,
+          p2p: false,
+          entry: false,
+          chained: false,
+        },
+      }]),
+      /flag.*continent|continent.*flag/i,
+      flag,
+    );
+  }
+});

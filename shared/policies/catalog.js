@@ -1,5 +1,9 @@
 import { CONTINENT, nodeMetadata } from "../contracts.js";
-import { CONTINENT_FLAGS, isCountryFlag } from "../nodes/country-regions.js";
+import {
+  CONTINENT_FLAGS,
+  continentForFlag,
+  isCountryFlag,
+} from "../nodes/country-regions.js";
 import { countryLabelForFlag } from "../nodes/regions.js";
 import {
   ALL_NODES_FILTER,
@@ -117,7 +121,19 @@ function compareFlags(left, right) {
   return 0;
 }
 
+function expectedFlagContinent(flag) {
+  const catalogContinent = continentForFlag(flag);
+  if (catalogContinent !== null) return catalogContinent;
+  if (flag === "🌐" || isCountryFlag(flag)) return CONTINENT.other;
+  return null;
+}
+
 function orderedPresentFlags(continent, flags) {
+  for (const flag of flags) {
+    if (expectedFlagContinent(flag) !== continent.key) {
+      throw new Error("Normalized node flag does not match continent metadata");
+    }
+  }
   const ordered = CONTINENT_FLAGS[continent.key].filter((flag) => flags.has(flag));
   const orderedSet = new Set(ordered);
   ordered.push(...[...flags]

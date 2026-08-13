@@ -155,17 +155,17 @@ function inferredInventory(groups) {
   for (const family of presentContinents) {
     const candidates = new Set(groupsByName.get(family.selector)?.candidates ?? []);
     const flags = presentFlags.filter((record) => candidates.has(record.name));
-    if (flags.length === 0) {
-      nodes.push(syntheticNode(nodes.length, family.key));
-      continue;
-    }
+    if (flags.length === 0) return null;
     for (const flag of flags) {
+      const expectedContinent = flag.continent ?? CONTINENT.other;
+      if (expectedContinent !== family.key) return null;
       nodes.push(syntheticNode(nodes.length, family.key, SOURCE_KIND.unknown, flag.flag));
     }
   }
   const sourceContinent = presentContinents[0]?.key;
+  const sourceFlag = nodes.find((node) => node._profile.continent === sourceContinent)?._profile.flag;
   for (const source of presentSources) {
-    nodes.push(syntheticNode(nodes.length, sourceContinent, source.kind));
+    nodes.push(syntheticNode(nodes.length, sourceContinent, source.kind, sourceFlag));
   }
   if (nodes.length > 0) {
     nodes[0]._profile.udp = game?.nodeFilter === GAME_FILTER;
