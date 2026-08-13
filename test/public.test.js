@@ -150,7 +150,7 @@ test("publishes an independent lightweight edge candidate beside stable current"
   assert.equal(edge.generatedAt, edge.upstream.committedAt);
   assert.match(edge.upstream.commit, /^[0-9a-f]{40}$/u);
   assert.equal(current.upstream.commit.length, 40);
-  assert.deepEqual(Object.keys(edge.clients).sort(), ["anywhere", "egern", "shadowrocket", "singbox", "surge"]);
+  assert.deepEqual(Object.keys(edge.clients).sort(), ["anywhere", "egern", "happ", "shadowrocket", "singbox", "surge"]);
   assert.ok(edge.clients.singbox.referencedDefaultBytes > 0);
   const surgeGenerator = await readFile(new URL("edge/surge/scripts/surge-profile-generator.js", publicRoot), "utf8");
   assert.match(surgeGenerator, /channel:\s*"edge"/u);
