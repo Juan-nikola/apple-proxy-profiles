@@ -87,6 +87,18 @@ test("refreshCurrentManifest repairs a stale current manifest from the actual tr
   }
 });
 
+test("refreshCurrentManifest retains Happ binary hashes and byte accounting", async () => {
+  const { root } = await fixtureTree();
+  try {
+    const refreshed = await refreshCurrentManifest({ publicDirectory: root });
+    const manifest = JSON.parse(await readFile(join(root, "current/happ/client-manifest.json"), "utf8"));
+    assert.equal(refreshed.clients.happ.manifestHash, manifest.manifestHash);
+    assert.ok(refreshed.clients.happ.referencedDefaultBytes > 0);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
 test("refreshCurrentManifest refuses when current routing bytes diverge from edge", async () => {
   const { root } = await fixtureTree();
   try {

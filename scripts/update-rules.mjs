@@ -18,6 +18,12 @@ import {
 import { fetchSnapshot } from "../automation/src/fetch-snapshot.js";
 import { parseSurgeRules } from "../automation/src/parse-surge.js";
 import { refreshCurrentManifest } from "../automation/src/refresh-current.js";
+import { renderHappImportPage } from "../clients/happ/src/build-import-page.js";
+import {
+  renderHappRoutingDeepLink,
+  renderHappRoutingProfile,
+  renderHappRoutingQrSvg,
+} from "../clients/happ/src/render-routing-profile.js";
 import { resolveUpstreamCommit } from "../automation/src/resolve-upstream.js";
 import {
   BLACKMATRIX7_BASELINE,
@@ -32,12 +38,14 @@ import {
 
 const repositoryRoot = dirname(dirname(fileURLToPath(import.meta.url)));
 const defaultPublicDirectory = join(repositoryRoot, "public");
-const PROMOTION_CLIENTS = new Set(["singbox", "surge", "shadowrocket", "egern", "anywhere"]);
-const INDEPENDENT_CLIENT_PATH = /^(?:anywhere|egern|shadowrocket|sing-box|surge)\//u;
+const PROMOTION_CLIENTS = new Set(["singbox", "surge", "shadowrocket", "egern", "anywhere", "happ"]);
+const OPTIONAL_PACK_CLIENTS = Object.freeze({ "adblock-full": new Set(["singbox", "surge", "shadowrocket", "egern", "anywhere"]) });
+const INDEPENDENT_CLIENT_PATH = /^(?:anywhere|egern|happ|shadowrocket|sing-box|surge)\//u;
 const LEGACY_CURRENT_EXTRA_FILES = Object.freeze([
   /^frontier-manifest\.json$/u,
   /^surge\/(?:macos|iphone|ipad)\/manifest\.json$/u,
   /^singbox\/(?:macos|iphone|ipad|android|openwrt)\/manifest\.json$/u,
+  /^happ\/(?:macos|iphone|ipad|android|windows|linux)\/manifest\.json$/u,
 ]);
 
 export function parseUpdateRulesArguments(args) {
@@ -273,8 +281,9 @@ function rolloutOptionalProjection(optionalPacks, client) {
   for (const [packId, selections] of Object.entries(optionalPacks).sort(([left], [right]) => left.localeCompare(right))) {
     if (!/^[a-z0-9][a-z0-9-]*$/u.test(packId)
       || !selections || typeof selections !== "object" || Array.isArray(selections)) return null;
-    if (JSON.stringify(Object.keys(selections).sort())
-      !== JSON.stringify([...PROMOTION_CLIENTS].sort())) return null;
+    const expectedClients = OPTIONAL_PACK_CLIENTS[packId];
+    if (!expectedClients || JSON.stringify(Object.keys(selections).sort())
+      !== JSON.stringify([...expectedClients].sort())) return null;
     const hash = selections[client];
     if (hash === null || hash === undefined) continue;
     if (!/^[0-9a-f]{64}$/u.test(hash)) return null;
@@ -358,6 +367,7 @@ export async function verifyTrackedPublications({ publicDirectory, defaults, opt
     shadowrocket: "shadowrocket",
     egern: "egern",
     anywhere: "anywhere",
+    happ: "happ",
   };
   const clientPrefixes = new Set(Object.values(clientDirectories).map((directory) => `${directory}/`));
   const toleratedExtras = (path) => LEGACY_CURRENT_EXTRA_FILES.some((pattern) => pattern.test(path));
@@ -439,7 +449,7 @@ async function loadText(path) {
   return readFile(join(repositoryRoot, path), "utf8");
 }
 
-async function staticFiles() {
+export async function renderDefaultStaticFiles({ generatedAt }) {
   const paths = [
     ["shadowrocket/scripts/shadowrocket-node-subscription.js", "clients/shadowrocket/dist/shadowrocket-node-subscription.js"],
     ["shadowrocket/scripts/shadowrocket-node-operator.js", "clients/shadowrocket/dist/shadowrocket-node-operator.js"],
@@ -458,6 +468,11 @@ async function staticFiles() {
     ["egern/examples/egern-ipad.yaml", "clients/egern/examples/egern-ipad.yaml"],
     ["anywhere/scripts/anywhere-node-generator.js", "clients/anywhere/dist/anywhere-node-generator.js"],
     ["anywhere/scripts/substore-node-generator.js", "clients/anywhere/dist/substore-node-generator.js"],
+    ["happ/scripts/happ-config-generator.js", "clients/happ/dist/happ-config-generator.js"],
+    ["happ/scripts/substore-config-generator.js", "clients/happ/dist/substore-config-generator.js"],
+    ...["macos", "iphone", "ipad", "android", "windows", "linux"].map((platform) => [
+      `happ/examples/happ-${platform}.json`, `clients/happ/examples/happ-${platform}.json`,
+    ]),
     ["surge/scripts/surge-profile-generator.js", "clients/surge/dist/surge-profile-generator.js"],
     ["surge/scripts/substore-profile-generator.js", "clients/surge/dist/substore-profile-generator.js"],
     ["surge/scripts/surge-nodes-generator.js", "clients/surge/dist/surge-nodes-generator.js"],
@@ -513,6 +528,15 @@ async function staticFiles() {
       throw new Error(`Public compatibility alias drifted for ${canonical}`);
     }
   }
+  const baseUrl = "https://juan-nikola.github.io/apple-proxy-profiles/current";
+  const profile = renderHappRoutingProfile({ baseUrl, generatedAt });
+  const deepLink = renderHappRoutingDeepLink(profile);
+  loaded.set("happ/routing-profile.json", `${JSON.stringify(profile, null, 2)}\n`);
+  loaded.set("happ/import.html", renderHappImportPage({
+    profile,
+    deepLink,
+    qrSvg: await renderHappRoutingQrSvg(deepLink),
+  }));
   return selectDefaultStaticFiles(loaded);
 }
 
@@ -541,7 +565,7 @@ export async function buildArtifacts({
   }
   const upstream = Object.freeze({ ...BLACKMATRIX7_BASELINE, commit, committedAt });
   const snapshot = await fetchSnapshot({ commit, catalog: FETCH_SOURCE_CATALOG, concurrency: 4 });
-  const statics = includeStaticFiles ? await staticFiles() : null;
+  const statics = includeStaticFiles ? await renderDefaultStaticFiles({ generatedAt: upstream.committedAt }) : null;
   const artifacts = buildClientArtifacts({
     snapshot,
     upstream,

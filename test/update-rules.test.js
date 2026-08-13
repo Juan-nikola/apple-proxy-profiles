@@ -15,6 +15,7 @@ import {
   chinaIpAuditPrimary,
   parseUpdateRulesArguments,
   promoteClientRelease,
+  renderDefaultStaticFiles,
   selectDefaultStaticFiles,
   verifyTrackedPublications,
 } from "../scripts/update-rules.mjs";
@@ -105,7 +106,7 @@ async function initializeTrackedCurrent(publicDirectory, artifacts) {
     optionalPacks: artifacts.optionalPacks,
     manifest: artifacts.diagnostics.defaultManifest,
   });
-  for (const client of ["singbox", "surge", "shadowrocket", "egern", "anywhere"]) {
+  for (const client of ["singbox", "surge", "shadowrocket", "egern", "anywhere", "happ"]) {
     await promoteClientRelease({
       publicDirectory,
       client,
@@ -122,6 +123,9 @@ test("accepts only explicit edge, current-check, and client promotion operations
     client: "singbox",
     manifestHash: "a".repeat(64),
   });
+  assert.deepEqual(parseUpdateRulesArguments(["--promote", "happ", "a".repeat(64)]), {
+    operation: "promote", client: "happ", manifestHash: "a".repeat(64),
+  });
   for (const args of [[], ["--check"], ["--channel", "current"], ["--promote", "unknown", "a".repeat(64)]]) {
     assert.throws(() => parseUpdateRulesArguments(args), /update-rules arguments/u);
   }
@@ -137,6 +141,20 @@ test("derives audit-only primary provenance from the production ChinaIP snapshot
     committedAt: upstream.committedAt,
     sha256: snapshot.get("ChinaIPs").sourceSha256,
   });
+});
+
+test("renders Happ's public helper, generators, profile, and all six example closures", async () => {
+  const files = await renderDefaultStaticFiles({ generatedAt: upstream.committedAt });
+  for (const path of [
+    "happ/scripts/happ-config-generator.js",
+    "happ/scripts/substore-config-generator.js",
+    "happ/import.html",
+    "happ/routing-profile.json",
+    ...["macos", "iphone", "ipad", "android", "windows", "linux"].map((platform) => `happ/examples/happ-${platform}.json`),
+  ]) assert.equal(files.has(path), true, path);
+  const profile = JSON.parse(files.get("happ/routing-profile.json"));
+  assert.equal(profile.Geoipurl, "https://juan-nikola.github.io/apple-proxy-profiles/current/happ/geoip.dat");
+  assert.match(files.get("happ/import.html"), /happ:\/\/routing\/onadd\//u);
 });
 
 test("parses raw production ChinaIP snapshots for audit provenance", () => {

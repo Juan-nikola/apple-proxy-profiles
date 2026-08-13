@@ -51,7 +51,7 @@ test("emitted default manifests stay inside all entry and byte budgets", () => {
   assert.deepEqual(artifacts.diagnostics.defaultRuleIds, DEFAULT_RULE_SOURCE_IDS);
 
   const report = {};
-  for (const client of ["shadowrocket", "surge", "egern", "singbox", "anywhere"]) {
+  for (const client of ["shadowrocket", "surge", "egern", "singbox", "anywhere", "happ"]) {
     const bytes = defaultManifest.clients[client].referencedDefaultBytes;
     assert.ok(bytes > 0 && bytes <= RULE_BUDGETS.defaultBytes, `${client}: ${bytes}`);
     report[client] = { entries: defaultManifest.diagnostics.defaultEntries, bytes };

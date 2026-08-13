@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { buildClientArtifacts } from "../src/build-artifacts.js";
+import { decodeHappGeodata } from "../src/render-happ-geodata.js";
 import { artifactSha256 } from "../src/artifact-content.js";
 import { buildChinaIpAudit } from "../src/china-ip-audit.js";
 import { canonicalJson } from "../src/render-anywhere-rules.js";
@@ -71,6 +72,34 @@ test("fans compiled lightweight defaults out without publishing input-only rules
 test("is byte deterministic for the same snapshot", () => {
   const options = { snapshot: lightweightFixtureSnapshots(), upstream };
   assert.deepEqual([...buildClientArtifacts(options).defaults], [...buildClientArtifacts(options).defaults]);
+});
+
+test("publishes Happ's decoded binary geodata in its default client closure", () => {
+  const result = buildClientArtifacts({ snapshot: lightweightFixtureSnapshots(), upstream });
+  const geosite = result.defaults.get("happ/geosite.dat");
+  const geoip = result.defaults.get("happ/geoip.dat");
+  assert.equal(Buffer.isBuffer(geosite), true);
+  assert.equal(Buffer.isBuffer(geoip), true);
+  assert.ok(decodeHappGeodata(new Map([["happ/geosite.dat", geosite], ["happ/geoip.dat", geoip]])).geosite.length > 0);
+  const manifest = JSON.parse(result.defaults.get("happ/client-manifest.json"));
+  assert.deepEqual(manifest.optionalPacks, {});
+  for (const path of ["happ/geosite.dat", "happ/geoip.dat"]) {
+    const record = manifest.files.find((candidate) => candidate.path === path);
+    assert.deepEqual(record, {
+      path,
+      bytes: result.defaults.get(path).length,
+      sha256: artifactSha256(result.defaults.get(path)),
+    });
+  }
+  assert.ok(result.diagnostics.defaultManifest.clients.happ.referencedDefaultBytes > 0);
+});
+
+test("omits Happ from the optional adblock-full client closure", () => {
+  const result = buildClientArtifacts({ snapshot: lightweightFixtureSnapshots(), upstream });
+  const optional = result.optionalPacks.get("adblock-full");
+  assert.equal([...optional.keys()].some((path) => path.startsWith("optional/adblock-full/happ/")), false);
+  const manifest = JSON.parse(optional.get("optional/adblock-full/manifest.json"));
+  assert.equal(Object.hasOwn(manifest.clients, "happ"), false);
 });
 
 test("publishes exact ChinaIP audit bytes only as root evidence", () => {

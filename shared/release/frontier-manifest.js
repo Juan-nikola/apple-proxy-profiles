@@ -5,6 +5,7 @@ export const FRONTIER_CHANNELS = Object.freeze(["edge", "current", "previous"]);
 export const FRONTIER_PLATFORMS = Object.freeze({
   [CLIENT.surge]: Object.freeze(["macos", "iphone", "ipad"]),
   [CLIENT.singbox]: Object.freeze(["macos", "iphone", "ipad", "android", "openwrt"]),
+  [CLIENT.happ]: Object.freeze(["macos", "iphone", "ipad", "android", "windows", "linux"]),
 });
 
 const STATUS_VALUES = new Set(["candidate", "validated", "rejected", "rolled-back"]);

@@ -178,6 +178,22 @@ test("publishes frontier channel files without overwriting the stable snapshot",
   assert.equal(await readFile(join(publicDirectory, "edge/sing-box/scripts/config.js"), "utf8"), "edge sing-box\n");
 });
 
+test("publishes Happ as an immutable edge client without changing stable channels", async () => {
+  const root = await mkdtemp(join(tmpdir(), "apple-proxy-site-happ-edge-"));
+  const publicDirectory = join(root, "public");
+  const artifacts = buildClientArtifacts({ snapshot: lightweightFixtureSnapshots(), upstream: lightweightUpstream });
+  await mkdir(join(publicDirectory, "current"), { recursive: true });
+  await mkdir(join(publicDirectory, "previous"), { recursive: true });
+  await writeFile(join(publicDirectory, "current/sentinel.txt"), "current\n");
+  await writeFile(join(publicDirectory, "previous/sentinel.txt"), "previous\n");
+  await publishEdgeRelease({ publicDirectory, defaults: artifacts.defaults, optionalPacks: artifacts.optionalPacks, manifest: artifacts.diagnostics.defaultManifest });
+  const hash = artifacts.diagnostics.defaultManifest.clients.happ.manifestHash;
+  assert.equal(await readFile(join(publicDirectory, "edge/happ/geosite.dat")).then(Buffer.isBuffer), true);
+  assert.equal(await readFile(join(publicDirectory, `edge/clients/happ/${hash}/happ/geoip.dat`)).then(Buffer.isBuffer), true);
+  assert.equal(await readFile(join(publicDirectory, "current/sentinel.txt"), "utf8"), "current\n");
+  assert.equal(await readFile(join(publicDirectory, "previous/sentinel.txt"), "utf8"), "previous\n");
+});
+
 test("preserves binary artifact bytes in site emission and snapshot comparison", async () => {
   const root = await mkdtemp(join(tmpdir(), "apple-proxy-site-binary-"));
   const publicDirectory = join(root, "public");

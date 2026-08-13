@@ -5,6 +5,7 @@ import { CLIENT } from "../shared/contracts.js";
 import { protocolSupportsClient } from "../shared/nodes/protocol-registry.js";
 import {
   createFrontierManifest,
+  frontierPlatformKey,
   validateFrontierManifest,
 } from "../shared/release/frontier-manifest.js";
 
@@ -16,6 +17,13 @@ test("registers Surge and sing-box as distinct clients with explicit protocol su
   assert.equal(protocolSupportsClient("ssr", CLIENT.singbox), false);
   assert.equal(protocolSupportsClient("snell", CLIENT.surge), true);
   assert.equal(protocolSupportsClient("snell", CLIENT.singbox), true);
+});
+
+test("registers all six Happ frontier platforms", () => {
+  assert.deepEqual(
+    ["macos", "iphone", "ipad", "android", "windows", "linux"].map((platform) => frontierPlatformKey(CLIENT.happ, platform)),
+    ["macos", "iphone", "ipad", "android", "windows", "linux"].map((platform) => `happ/${platform}`),
+  );
 });
 
 test("frontier manifest records platform-specific upstream and rejects secret-shaped fields", () => {

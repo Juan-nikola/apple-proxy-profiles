@@ -2,7 +2,7 @@ import { createHash } from "node:crypto";
 
 import { createFrontierManifest, validateFrontierManifest } from "../../shared/release/frontier-manifest.js";
 
-const CLIENT_DIRECTORY = Object.freeze({ surge: "surge", singbox: "sing-box" });
+const CLIENT_DIRECTORY = Object.freeze({ surge: "surge", singbox: "sing-box", happ: "happ" });
 
 function sha256(value) {
   return createHash("sha256").update(value).digest("hex");
