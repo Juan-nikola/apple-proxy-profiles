@@ -19,6 +19,7 @@ const ANYTLS_FIELDS = new Set([
   "skip-cert-verify", "allow-insecure", "client-fingerprint", "alpn", "reality-opts", "network",
   "idle-session-check-interval", "idle-session-timeout", "min-idle-session", ...CHAIN_ALIASES,
 ]);
+const ANYTLS_REALITY_FIELDS = new Set(["public-key", "short-id"]);
 
 function hasOwn(value, key) {
   return Object.hasOwn(value, key);
@@ -50,11 +51,68 @@ function validateNodeShape(node) {
 function validateAnyTlsShape(node) {
   const unsupported = Object.keys(node).find((key) => !key.startsWith("_") && !ANYTLS_FIELDS.has(key));
   if (unsupported !== undefined) throw new Error(`Unsupported sing-box AnyTLS field: ${unsupported}`);
-  if (node.network !== undefined && !["tcp", "raw"].includes(String(node.network).trim().toLowerCase())) {
+
+  if (hasOwn(node, "network") && node.network !== "tcp") {
     throw new Error("Unsupported sing-box AnyTLS field: network");
   }
-  if (node.tls === false || node.security === "none") {
+  if (hasOwn(node, "tls") && (typeof node.tls !== "boolean" || node.tls === false)) {
     throw new Error("Unsupported sing-box AnyTLS field: tls");
+  }
+
+  if (hasOwn(node, "security") && !["tls", "reality"].includes(node.security)) {
+    throw new Error(`Unsupported sing-box AnyTLS security: ${String(node.security)}`);
+  }
+  const reality = node["reality-opts"];
+  if (node.security === "reality" && !hasOwn(node, "reality-opts")) {
+    throw new Error("sing-box AnyTLS Reality options are required for Reality security");
+  }
+  if (node.security === "tls" && hasOwn(node, "reality-opts")) {
+    throw new Error("sing-box AnyTLS security conflicts with Reality options");
+  }
+
+  for (const key of ["sni", "servername"]) {
+    if (hasOwn(node, key) && (typeof node[key] !== "string" || node[key].length === 0 || node[key].trim() !== node[key])) {
+      throw new Error(`sing-box AnyTLS field '${key}' is invalid`);
+    }
+  }
+  if (hasOwn(node, "sni") && hasOwn(node, "servername") && node.sni !== node.servername) {
+    throw new Error("Conflicting sing-box AnyTLS aliases: sni,servername");
+  }
+
+  for (const key of ["skip-cert-verify", "allow-insecure"]) {
+    if (hasOwn(node, key) && typeof node[key] !== "boolean") {
+      throw new Error(`sing-box AnyTLS field '${key}' is invalid`);
+    }
+  }
+  if (hasOwn(node, "skip-cert-verify") && hasOwn(node, "allow-insecure")
+    && node["skip-cert-verify"] !== node["allow-insecure"]) {
+    throw new Error("Conflicting sing-box AnyTLS aliases: skip-cert-verify,allow-insecure");
+  }
+
+  if (hasOwn(node, "client-fingerprint")
+    && (typeof node["client-fingerprint"] !== "string"
+      || node["client-fingerprint"].length === 0
+      || node["client-fingerprint"].trim() !== node["client-fingerprint"])) {
+    throw new Error("sing-box AnyTLS field 'client-fingerprint' is invalid");
+  }
+
+  if (hasOwn(node, "reality-opts")) {
+    if (!reality || typeof reality !== "object" || Array.isArray(reality)) {
+      throw new Error("sing-box AnyTLS Reality options are invalid");
+    }
+    const unsupportedReality = Object.keys(reality).find((key) => !ANYTLS_REALITY_FIELDS.has(key));
+    if (unsupportedReality !== undefined) {
+      throw new Error(`Unsupported sing-box AnyTLS Reality field: ${unsupportedReality}`);
+    }
+    if (typeof reality["public-key"] !== "string"
+      || reality["public-key"].length === 0
+      || reality["public-key"].trim() !== reality["public-key"]) {
+      throw new Error("sing-box AnyTLS Reality public key is invalid");
+    }
+    if (hasOwn(reality, "short-id")
+      && (typeof reality["short-id"] !== "string" || !/^[0-9a-f]+$/iu.test(reality["short-id"]))) {
+      throw new Error("sing-box AnyTLS Reality short ID is invalid");
+    }
   }
 }
 

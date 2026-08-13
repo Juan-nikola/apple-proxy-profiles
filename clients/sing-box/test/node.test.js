@@ -3,6 +3,14 @@ import test from "node:test";
 
 import { renderSingBoxOutbound } from "../src/render-node.js";
 
+const ANYTLS_NODE = Object.freeze({
+  name: "AnyTLS fixture",
+  type: "anytls",
+  server: "anytls.example.invalid",
+  port: 443,
+  password: "TEST_ONLY_ANYTLS_PASSWORD",
+});
+
 test("renders VLESS Reality WebSocket using official sing-box outbound fields", () => {
   const outbound = renderSingBoxOutbound({
     name: "🇩🇪 [Realm] Frankfurt",
@@ -35,15 +43,21 @@ test("renders VLESS Reality WebSocket using official sing-box outbound fields", 
 
 test("renders every selected AnyTLS field supported by the sing-box adapter", () => {
   const outbound = renderSingBoxOutbound({
+    ...ANYTLS_NODE,
     name: "🇯🇵 Tokyo · AnyTLS｜自建",
-    type: "anytls",
-    server: "anytls.example.invalid",
-    port: 443,
-    password: "TEST_ONLY_ANYTLS_PASSWORD",
     tls: true,
+    security: "reality",
+    network: "tcp",
     sni: "anytls.example.invalid",
+    servername: "anytls.example.invalid",
+    "skip-cert-verify": true,
+    "allow-insecure": true,
     alpn: ["h2", "http/1.1"],
     "client-fingerprint": "chrome",
+    "reality-opts": {
+      "public-key": "TEST_ONLY_ANYTLS_PUBLIC_KEY",
+      "short-id": "0123abcd",
+    },
     "idle-session-check-interval": 30,
     "idle-session-timeout": 60,
     "min-idle-session": 1,
@@ -61,10 +75,74 @@ test("renders every selected AnyTLS field supported by the sing-box adapter", ()
       enabled: true,
       server_name: "anytls.example.invalid",
       alpn: ["h2", "http/1.1"],
+      insecure: true,
       utls: { enabled: true, fingerprint: "chrome" },
+      reality: {
+        enabled: true,
+        public_key: "TEST_ONLY_ANYTLS_PUBLIC_KEY",
+        short_id: "0123abcd",
+      },
     },
   });
 });
+
+for (const field of ["future-option", "spider-x"]) {
+  test(`rejects nested AnyTLS Reality field '${field}' that the renderer cannot map`, () => {
+    assert.throws(() => renderSingBoxOutbound({
+      ...ANYTLS_NODE,
+      security: "reality",
+      "reality-opts": {
+        "public-key": "TEST_ONLY_ANYTLS_PUBLIC_KEY",
+        "short-id": "0123abcd",
+        [field]: "TEST_ONLY_UNMAPPED_REALITY_VALUE",
+      },
+    }), /unsupported.*AnyTLS.*Reality.*field/iu, field);
+  });
+}
+
+for (const [label, fields] of [
+  ["unknown security", { security: "future-security" }],
+  ["disabled security", { security: "none" }],
+  ["missing Reality options", { security: "reality" }],
+  ["TLS with Reality options", {
+    security: "tls",
+    "reality-opts": { "public-key": "TEST_ONLY_ANYTLS_PUBLIC_KEY" },
+  }],
+]) {
+  test(`rejects AnyTLS ${label}`, () => {
+    assert.throws(() => renderSingBoxOutbound({ ...ANYTLS_NODE, ...fields }), /AnyTLS.*(?:security|Reality)/iu, label);
+  });
+}
+
+for (const [label, fields] of [
+  ["server name aliases", { sni: "one.example.invalid", servername: "two.example.invalid" }],
+  ["certificate verification aliases", { "skip-cert-verify": false, "allow-insecure": true }],
+]) {
+  test(`rejects conflicting AnyTLS ${label} before projection`, () => {
+    assert.throws(() => renderSingBoxOutbound({ ...ANYTLS_NODE, ...fields }), /conflicting.*AnyTLS.*aliases/iu, label);
+  });
+}
+
+for (const [label, fields, pattern] of [
+  ["raw network", { network: "raw" }, /AnyTLS.*network/iu],
+  ["non-boolean TLS", { tls: "true" }, /AnyTLS.*tls/iu],
+  ["disabled TLS", { tls: false }, /AnyTLS.*tls/iu],
+  ["empty server name", { sni: "" }, /AnyTLS.*sni/iu],
+  ["non-boolean certificate verification", { "skip-cert-verify": "true" }, /AnyTLS.*skip-cert-verify/iu],
+  ["empty client fingerprint", { "client-fingerprint": "" }, /AnyTLS.*client-fingerprint/iu],
+  ["empty Reality public key", { "reality-opts": { "public-key": "" } }, /AnyTLS.*Reality/iu],
+  ["empty Reality short ID", {
+    "reality-opts": { "public-key": "TEST_ONLY_ANYTLS_PUBLIC_KEY", "short-id": "" },
+  }, /AnyTLS.*Reality/iu],
+  ["non-hex Reality short ID", {
+    "reality-opts": { "public-key": "TEST_ONLY_ANYTLS_PUBLIC_KEY", "short-id": "not-hex" },
+  }, /AnyTLS.*Reality/iu],
+  ["invalid ALPN", { alpn: ["h2", ""] }, /ALPN/iu],
+]) {
+  test(`rejects malformed AnyTLS ${label} instead of dropping it`, () => {
+    assert.throws(() => renderSingBoxOutbound({ ...ANYTLS_NODE, ...fields }), pattern, label);
+  });
+}
 
 test("rejects selected fields that the AnyTLS renderer would otherwise ignore", () => {
   assert.throws(() => renderSingBoxOutbound({

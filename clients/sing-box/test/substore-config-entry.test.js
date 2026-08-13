@@ -236,3 +236,52 @@ test("Sub-Store sing-box renderability probe rejects an unsupported selected Any
   assert.equal(result, undefined);
   assert.deepEqual(lines, []);
 });
+
+test("Sub-Store sing-box probe rejects an unmapped nested AnyTLS Reality field", async () => {
+  const privateNode = {
+    name: "PRIVATE_SINGBOX_ANYTLS_REALITY",
+    type: "anytls",
+    server: "private-anytls-reality.example.invalid",
+    port: 443,
+    password: "TEST_ONLY_SINGBOX_ANYTLS_REALITY_PASSWORD",
+    security: "reality",
+    "reality-opts": {
+      "public-key": "TEST_ONLY_SINGBOX_ANYTLS_PUBLIC_KEY",
+      "short-id": "0123abcd",
+      "future-option": "TEST_ONLY_SINGBOX_NESTED_FUTURE_VALUE",
+    },
+    _subName: "[自建] AnyTLS",
+  };
+  const lines = [];
+  let result;
+  await assert.rejects(
+    async () => {
+      result = await operator({}, "macos", {
+        arguments: {
+          output: "config",
+          type: "collection",
+          name: "apple-proxy-singbox",
+          subscriptionName: "sing-box-Nodes",
+          platform: "macos",
+        },
+        async produceArtifact() { return [nodes[0], privateNode]; },
+        logger: { info(line) { lines.push(line); } },
+      });
+    },
+    (error) => {
+      assert.equal(error.message, "sing-box cannot render selected protocols: anytls=1");
+      for (const secret of [
+        privateNode.name,
+        privateNode.server,
+        privateNode.password,
+        privateNode["reality-opts"]["public-key"],
+        privateNode["reality-opts"]["future-option"],
+      ]) {
+        assert.equal(error.message.includes(secret), false);
+      }
+      return true;
+    },
+  );
+  assert.equal(result, undefined);
+  assert.deepEqual(lines, []);
+});
