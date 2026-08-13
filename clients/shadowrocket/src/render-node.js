@@ -6,8 +6,8 @@ const SHADOWROCKET_PROXY_KEYS = Object.freeze([
   "flow", "network", "encryption", "packet-encoding", "alpn",
   "client-fingerprint", "idle-session-check-interval", "idle-session-timeout",
   "min-idle-session", "skip-cert-verify", "psk", "version", "reuse", "tfo",
-  "uuid", "cipher", "password", "obfs", "obfs-host", "obfs-opts", "plugin",
-  "plugin-opts",
+  "uuid", "cipher", "password", "protocol", "obfs", "obfs-host", "obfs-opts",
+  "plugin", "plugin-opts", "underlying-proxy", "chain",
 ]);
 
 const SHADOWROCKET_RECORD_FIELDS = new Set([

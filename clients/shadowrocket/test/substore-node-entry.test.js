@@ -44,6 +44,27 @@ function anytlsNode() {
   };
 }
 
+function clientChainInventory() {
+  return [
+    {
+      ...fakeNodes[0],
+      name: "Singapore entry",
+      server: "legacy-entry.example.invalid",
+      password: "TEST_ONLY_LEGACY_CHAIN_ENTRY_PASSWORD",
+      _subDisplayName: undefined,
+      _subName: "[机场] Entry",
+    },
+    {
+      ...fakeNodes[0],
+      name: "Tokyo landing",
+      server: "legacy-landing.example.invalid",
+      password: "TEST_ONLY_LEGACY_CHAIN_LANDING_PASSWORD",
+      _subDisplayName: undefined,
+      _subName: "[落地] Landing",
+    },
+  ];
+}
+
 test("operator returns every normalized node including labeled AnyTLS", async () => {
   const result = await operator([...fakeNodes, anytlsNode()], "Shadowrocket", {
     arguments: { output: "nodes", clientChain: "off" },
@@ -54,6 +75,18 @@ test("operator returns every normalized node including labeled AnyTLS", async ()
   const anytls = result.find((node) => node.type === "anytls");
   assert.match(anytls.name, / · AnyTLS｜自建$/u);
   assert.equal(anytls["idle-session-timeout"], 60);
+});
+
+test("legacy node operator accepts the generated clientChain clone through the shared assertion", async () => {
+  const result = await operator(clientChainInventory(), "Shadowrocket", {
+    arguments: { output: "nodes", clientChain: "on" },
+  });
+
+  assert.equal(result.length, 3);
+  const chained = result.find((node) => node["underlying-proxy"] === "🔗 入口节点");
+  assert.ok(chained);
+  assert.equal(chained._profile.chained, true);
+  assert.match(chained.name, /^🔗 /u);
 });
 
 test("operator accepts only the documented node arguments", async () => {

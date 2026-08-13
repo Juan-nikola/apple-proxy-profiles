@@ -51,6 +51,45 @@ function anytlsNode(overrides = {}) {
   };
 }
 
+function ssrNode(overrides = {}) {
+  return {
+    name: "🇸🇬 Singapore · SSR｜机场·U",
+    type: "ssr",
+    server: "192.0.2.31",
+    port: 443,
+    cipher: "aes-128-ctr",
+    password: "TEST_ONLY_SHADOWROCKET_SSR_PASSWORD",
+    protocol: "auth_sha1_v4",
+    obfs: "tls1.2_ticket_auth",
+    "obfs-host": "ssr-obfs.example.invalid",
+    udp: true,
+    ...overrides,
+  };
+}
+
+function clientChainInventory() {
+  return [
+    {
+      name: "Singapore entry",
+      type: "ss",
+      server: "entry-chain.example.invalid",
+      port: 443,
+      cipher: "aes-128-gcm",
+      password: "TEST_ONLY_CHAIN_ENTRY_PASSWORD",
+      _subName: "[机场] Entry",
+    },
+    {
+      name: "Tokyo landing",
+      type: "ss",
+      server: "landing-chain.example.invalid",
+      port: 443,
+      cipher: "aes-256-gcm",
+      password: "TEST_ONLY_CHAIN_LANDING_PASSWORD",
+      _subName: "[落地] Landing",
+    },
+  ];
+}
+
 function recordsOf(text) {
   return text.trim().split("\n").slice(1).map((line) => JSON.parse(line.replace(/^  - /, "")));
 }
@@ -90,6 +129,30 @@ test("serializes every supported AnyTLS field and keeps the protocol label", () 
       "unsupported-shadowrocket-field": "TEST_ONLY_UNSUPPORTED_FIELD",
     }),
     /^Error: Shadowrocket cannot render protocol: anytls$/u,
+  );
+});
+
+test("serializes the complete supported SSR record without admitting unknown fields", () => {
+  const ssr = ssrNode();
+  assert.deepEqual(renderShadowrocketProxyRecord(ssr), ssr);
+  assert.doesNotThrow(() => assertShadowrocketNodeSet([ssr]));
+  assert.deepEqual(recordsOf(renderShadowrocketSubscription([ssr])), [ssr]);
+
+  assert.throws(
+    () => renderShadowrocketProxyRecord({
+      ...ssr,
+      "unsupported-ssr-field": "TEST_ONLY_UNSUPPORTED_SSR_VALUE",
+    }),
+    /^Error: Shadowrocket cannot render protocol: ssr$/u,
+  );
+});
+
+test("serializes existing Shadowrocket chain records without widening unknown fields", () => {
+  const chained = node({ chain: "existing-hop" });
+  assert.equal(renderShadowrocketProxyRecord(chained).chain, "existing-hop");
+  assert.throws(
+    () => renderShadowrocketProxyRecord({ ...chained, detour: "unknown-hop" }),
+    /^Error: Shadowrocket cannot render protocol: vless$/u,
   );
 });
 
@@ -152,6 +215,24 @@ test("operator produces a continent-grouped subscription from the collection", a
   assert.match(records[0].name + records[1].name + records[2].name, / · AnyTLS｜自建/u);
   assert.equal(records[3].name.startsWith("🇳🇱"), true);
   assert.equal(records[4].name.startsWith("🇺🇸"), true);
+});
+
+test("node subscription accepts the generated clientChain clone through the shared assertion", async () => {
+  const result = await operator({}, "Shadowrocket", {
+    arguments: {
+      output: "nodes",
+      type: "collection",
+      name: "apple-proxy-shadowrocket",
+      clientChain: "on",
+    },
+    async produceArtifact() { return clientChainInventory(); },
+  });
+
+  const records = recordsOf(result.$content);
+  assert.equal(records.length, 3);
+  const chained = records.find((record) => record["underlying-proxy"] === "🔗 入口节点");
+  assert.ok(chained);
+  assert.match(chained.name, /^🔗 /u);
 });
 
 test("operator rejects invalid arguments and empty inventories", async () => {

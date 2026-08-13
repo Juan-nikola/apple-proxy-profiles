@@ -30,6 +30,27 @@ function anytlsNode() {
   };
 }
 
+function clientChainInventory() {
+  return [
+    {
+      ...fakeNodes[0],
+      name: "Singapore entry",
+      server: "profile-entry.example.invalid",
+      password: "TEST_ONLY_PROFILE_CHAIN_ENTRY_PASSWORD",
+      _subDisplayName: undefined,
+      _subName: "[机场] Entry",
+    },
+    {
+      ...fakeNodes[0],
+      name: "Tokyo landing",
+      server: "profile-landing.example.invalid",
+      password: "TEST_ONLY_PROFILE_CHAIN_LANDING_PASSWORD",
+      _subDisplayName: undefined,
+      _subName: "[落地] Landing",
+    },
+  ];
+}
+
 test("file operator produces a Profile artifact and preserves the input", async () => {
   const input = { url: "https://example.invalid/sub", unchanged: true };
   const calls = [];
@@ -75,6 +96,17 @@ test("file operator accepts the full documented option set", async () => {
   assert.match(result.$content, /current\/shadowrocket\/rules\/DomesticCore\.list/u);
   assert.match(result.$content, /current\/optional\/adblock-full\/shadowrocket\/rules\/Advertising\.list/u);
   assert.match(result.$content, /current\/optional\/adblock-full\/shadowrocket\/rules\/Advertising_Domain\.list/u);
+});
+
+test("Profile operator accepts the generated clientChain clone through the shared assertion", async () => {
+  const result = await operator({}, "Shadowrocket", {
+    arguments: { ...argumentsForProfile, clientChain: "on" },
+    async produceArtifact() { return clientChainInventory(); },
+  });
+
+  assert.match(result.$content, /node-count=3/u);
+  assert.match(result.$content, /🎯 客户端落地/u);
+  assert.match(result.$content, /🔗 入口节点/u);
 });
 
 test("file operator fails closed for invalid integration input", async () => {
