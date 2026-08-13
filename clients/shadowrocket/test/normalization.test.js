@@ -38,6 +38,20 @@ test("renders compact region-source-name labels without provenance duplication",
   assert.equal(nodes[0].name, "🇭🇰 Boil-HKT · SS｜自建·U");
 });
 
+test("replaces a pre-marked protocol segment before source and capability suffixes", () => {
+  const node = {
+    ...fakeNodes[0],
+    name: "🇯🇵 Tokyo · SS｜机场·U",
+    udp: true,
+    _subDisplayName: "[机场] public",
+  };
+
+  const { nodes } = normalizeNodes([node]);
+
+  assert.equal(nodes[0].name, "🇯🇵 Tokyo · SS｜机场·U");
+  assert.equal((nodes[0].name.match(/ · SS/g) ?? []).length, 1);
+});
+
 test("falls back to a known source marker in the original node name", () => {
   const node = {
     ...fakeNodes[0],
@@ -142,6 +156,37 @@ test("sorts normalized nodes by continent, flag, protocol label, cleaned name, a
     "🇺🇸 Americas · SS｜机场",
     "🌐 Unknown · SS｜机场",
   ]);
+});
+
+test("sorts matching display names by stable identity before source suffixes", () => {
+  const base = {
+    ...fakeNodes[0],
+    name: "🇯🇵 Same SS",
+    udp: false,
+  };
+  const { nodes } = normalizeNodes([
+    {
+      ...base,
+      server: "sort-self.example.invalid",
+      password: "TEST_ONLY_SELF_1",
+      _subDisplayName: "[自建] private",
+    },
+    {
+      ...base,
+      server: "sort-airport.example.invalid",
+      password: "TEST_ONLY_AIRPORT_1",
+      _subDisplayName: "[机场] public",
+    },
+  ]);
+
+  assert.deepEqual(nodes.map((node) => node.name), [
+    "🇯🇵 Same · SS｜自建",
+    "🇯🇵 Same · SS｜机场",
+  ]);
+  assert.deepEqual(
+    nodes.map((node) => node._profile.id),
+    [...nodes.map((node) => node._profile.id)].sort((left, right) => left.localeCompare(right, "zh-Hans-CN")),
+  );
 });
 
 test("chooses exact-duplicate provenance deterministically with least privilege", () => {

@@ -365,7 +365,7 @@ test("matches group filters against real normalized edge-case node names", () =>
   ], { clientChain: "on" });
   const groups = buildGroups(options({ clientChain: "on" }), nodes);
   const commaNode = nodes.find((node) => node.name.includes("JP, comma"));
-  const collisions = nodes.filter((node) => node.name.includes("JP collision｜机场·U #"));
+  const collisions = nodes.filter((node) => node.name.includes("JP collision · SS｜机场·U #"));
   const unknown = nodes.find((node) => node.name.startsWith("🇿🇦"));
   const udp = nodes.find((node) => node.name.includes("JP, comma"));
   const clone = nodes.find((node) => node._profile.chained);

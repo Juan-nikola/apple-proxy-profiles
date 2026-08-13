@@ -14,6 +14,8 @@ const CONTINENT_ORDER = new Map([
   [CONTINENT.other, 3],
 ]);
 
+const CLEANED_DISPLAY_NAMES = new WeakMap();
+
 const PROTOCOL_NAME_TOKENS = Object.freeze({
   ss: ["ss", "shadowsocks"],
   shadowsocks: ["ss", "shadowsocks"],
@@ -47,9 +49,15 @@ function cleanDisplayName(name, type) {
     .filter((token) => typeof token === "string" && token.length > 0)
     .map(escapeRegex)
     .join("|");
-  const withoutProtocol = protocolPattern
-    ? stripped.replace(new RegExp("(?:^|\\s)(?:[·｜]\\s*)?(?:" + protocolPattern + ")(?=\\s|$)", "giu"), " ")
+  const withoutNormalizedSuffix = protocolPattern
+    ? stripped.replace(new RegExp(
+      "\\s*·\\s*(?:" + protocolPattern + ")(?:\\s*｜(?:机场|自建|realm|链式代理|落地))?(?:·(?:链|U))*\\s*$",
+      "giu",
+    ), " ")
     : stripped;
+  const withoutProtocol = protocolPattern
+    ? withoutNormalizedSuffix.replace(new RegExp("(?:^|\\s)(?:[·｜]\\s*)?(?:" + protocolPattern + ")(?=\\s|｜|·|$)", "giu"), " ")
+    : withoutNormalizedSuffix;
   const cleaned = withoutProtocol
     .replace(/[\r\n\t]+/g, " ")
     .replace(/\s+/g, " ")
@@ -94,7 +102,8 @@ function compareNodes(left, right) {
   if (flag !== 0) return flag;
   const protocol = nodeMetadata(left).protocolLabel.localeCompare(nodeMetadata(right).protocolLabel, "zh-Hans-CN");
   if (protocol !== 0) return protocol;
-  const name = left.name.localeCompare(right.name, "zh-Hans-CN");
+  const name = (CLEANED_DISPLAY_NAMES.get(left) ?? cleanDisplayName(left.name, left.type))
+    .localeCompare(CLEANED_DISPLAY_NAMES.get(right) ?? cleanDisplayName(right.name, right.type), "zh-Hans-CN");
   if (name !== 0) return name;
   return nodeMetadata(left).id.localeCompare(nodeMetadata(right).id, "zh-Hans-CN");
 }
@@ -245,13 +254,15 @@ export function normalizeNodes(nodes, { clientChain = "off" } = {}) {
     const udp = hasExplicitUdp(original);
     const id = `sr-${fingerprint(cloned)}`;
     const protocolLabel = protocolDisplayLabel(cloned.type);
+    const displayName = cleanDisplayName(original.name, cloned.type);
     const sourceSuffix = source.kind === SOURCE_KIND.unknown ? "" : "｜" + source.label;
     const capabilitySuffix = [
       existingChain ? "链" : "",
       udp ? "U" : "",
     ].filter(Boolean).join("·");
-    cloned.name = region.flag + " " + cleanDisplayName(original.name, cloned.type)
+    cloned.name = region.flag + " " + displayName
       + " · " + protocolLabel + sourceSuffix + (capabilitySuffix ? "·" + capabilitySuffix : "");
+    CLEANED_DISPLAY_NAMES.set(cloned, displayName);
     cloned._profile = {
       id,
       protocol: cloned.type,
