@@ -103,6 +103,11 @@ export function diagnosticProtocol(value) {
   return registry.has(normalized) ? normalized : "unknown";
 }
 
+export function protocolDisplayLabel(value) {
+  const normalized = normalizeProtocol(value);
+  return DISPLAY_PROTOCOL_NAMES[normalized] ?? (normalized || "unknown");
+}
+
 export function displayProtocol(value) {
-  return DISPLAY_PROTOCOL_NAMES[normalizeProtocol(value)] ?? "";
+  return protocolDisplayLabel(value);
 }

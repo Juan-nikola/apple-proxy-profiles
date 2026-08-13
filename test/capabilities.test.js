@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { CLIENT } from "../shared/contracts.js";
 import { evaluateNodeForClient, filterNodesForClient, oneXrayNodeExclusionReason } from "../shared/nodes/capabilities.js";
+import { diagnosticProtocol, protocolDisplayLabel } from "../shared/nodes/protocol-registry.js";
 
 const ALLOWED_PROTOCOLS = Object.freeze({
   [CLIENT.shadowrocket]: ["ss", "shadowsocks", "ssr", "snell", "vmess", "vless", "trojan", "hysteria2", "hy2", "tuic", "socks5", "http"],
@@ -11,6 +12,15 @@ const ALLOWED_PROTOCOLS = Object.freeze({
 });
 
 const ALL_PROTOCOLS = [...new Set(Object.values(ALLOWED_PROTOCOLS).flat())];
+
+test("labels known protocols while preserving unknown diagnostics as count-only", () => {
+  assert.equal(protocolDisplayLabel(" VLESS "), "VLESS");
+  assert.equal(protocolDisplayLabel("anytls"), "AnyTLS");
+  assert.equal(protocolDisplayLabel("quicx"), "quicx");
+  assert.equal(protocolDisplayLabel(""), "unknown");
+  assert.equal(protocolDisplayLabel(null), "unknown");
+  assert.equal(diagnosticProtocol("quicx"), "unknown");
+});
 
 function nodeForCapability(protocol, client) {
   if (client === "onexray") {

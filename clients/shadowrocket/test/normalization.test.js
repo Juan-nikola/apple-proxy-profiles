@@ -35,7 +35,7 @@ test("renders compact region-source-name labels without provenance duplication",
     udp: true,
   };
   const { nodes } = normalizeNodes([node]);
-  assert.equal(nodes[0].name, "🇭🇰 Boil-HKT｜自建·U");
+  assert.equal(nodes[0].name, "🇭🇰 Boil-HKT · SS｜自建·U");
 });
 
 test("falls back to a known source marker in the original node name", () => {
@@ -47,7 +47,101 @@ test("falls back to a known source marker in the original node name", () => {
     udp: true,
   };
   const { nodes } = normalizeNodes([node]);
-  assert.equal(nodes[0].name, "🇭🇰 Boil-HKT｜自建·U");
+  assert.equal(nodes[0].name, "🇭🇰 Boil-HKT · SS｜自建·U");
+});
+
+test("adds exactly one protocol label and protocol metadata to normalized nodes", () => {
+  const input = [
+    {
+      ...fakeNodes[0],
+      name: "🇯🇵 Tokyo VLESS",
+      type: "vless",
+      server: "protocol-vless.example.invalid",
+      uuid: "00000000-0000-4000-8000-000000000011",
+      _subDisplayName: "[自建] private",
+    },
+    {
+      ...fakeNodes[0],
+      name: "Frankfurt AnyTLS",
+      type: "anytls",
+      server: "protocol-anytls.example.invalid",
+      password: "TEST_ONLY_ANYTLS_PROTOCOL_LABEL",
+      sni: "protocol-anytls.example.invalid",
+      udp: false,
+      _subDisplayName: "[机场] public",
+    },
+    {
+      ...fakeNodes[0],
+      name: "Los Angeles quicx",
+      type: "quicx",
+      server: "protocol-quicx.example.invalid",
+      udp: false,
+      _subDisplayName: "[自建] private",
+    },
+  ];
+
+  const { nodes, diagnostics } = normalizeNodes(input);
+
+  assert.deepEqual(nodes.map((node) => node.name), [
+    "🇯🇵 Tokyo · VLESS｜自建·U",
+    "🇩🇪 Frankfurt · AnyTLS｜机场",
+    "🇺🇸 Los Angeles · quicx｜自建",
+  ]);
+  assert.deepEqual(nodes.map((node) => [node._profile.protocol, node._profile.protocolLabel]), [
+    ["vless", "VLESS"],
+    ["anytls", "AnyTLS"],
+    ["quicx", "quicx"],
+  ]);
+  assert.deepEqual(diagnostics.protocol, { vless: 1, anytls: 1, unknown: 1 });
+});
+
+test("sorts normalized nodes by continent, flag, protocol label, cleaned name, and identity", () => {
+  const nodes = [
+    {
+      ...fakeNodes[0],
+      name: "🇯🇵 Zulu VLESS",
+      type: "vless",
+      server: "sort-vless.example.invalid",
+      uuid: "00000000-0000-4000-8000-000000000021",
+      udp: false,
+    },
+    {
+      ...fakeNodes[0],
+      name: "🇯🇵 Alpha SS",
+      server: "sort-ss.example.invalid",
+      password: "TEST_ONLY_SORT_SS_PASSWORD",
+      udp: false,
+    },
+    {
+      ...fakeNodes[0],
+      name: "🇩🇪 Europe SS",
+      server: "sort-europe.example.invalid",
+      password: "TEST_ONLY_SORT_EUROPE_PASSWORD",
+      udp: false,
+    },
+    {
+      ...fakeNodes[0],
+      name: "🇺🇸 Americas SS",
+      server: "sort-americas.example.invalid",
+      password: "TEST_ONLY_SORT_AMERICAS_PASSWORD",
+      udp: false,
+    },
+    {
+      ...fakeNodes[0],
+      name: "Unknown SS",
+      server: "sort-other.example.invalid",
+      password: "TEST_ONLY_SORT_OTHER_PASSWORD",
+      udp: false,
+    },
+  ];
+
+  assert.deepEqual(normalizeNodes(nodes).nodes.map((node) => node.name), [
+    "🇯🇵 Alpha · SS｜机场",
+    "🇯🇵 Zulu · VLESS｜机场",
+    "🇩🇪 Europe · SS｜机场",
+    "🇺🇸 Americas · SS｜机场",
+    "🌐 Unknown · SS｜机场",
+  ]);
 });
 
 test("chooses exact-duplicate provenance deterministically with least privilege", () => {
@@ -280,6 +374,18 @@ test("mixes protocol labels and suffixes when one protocol repeats", () => {
   assert.equal(nodes.find((node) => node.value === "a").name, "Gen2 VLESS #cdefg-1");
   assert.equal(nodes.find((node) => node.value === "b").name, "Gen2 VLESS #cdefg-2");
   assert.equal(nodes.find((node) => node.value === "c").name, "Gen2 Snell");
+});
+
+test("uses raw unknown protocol labels to separate name collision groups", () => {
+  const nodes = [
+    { name: "Gen2", type: "quicx", value: "a" },
+    { name: "Gen2", type: "unknownx", value: "b" },
+  ];
+
+  resolveNameCollisions(nodes, (node) => node.value, () => "abcdefg");
+
+  assert.equal(nodes[0].name, "Gen2 quicx");
+  assert.equal(nodes[1].name, "Gen2 unknownx");
 });
 
 test("keeps spider-distinct duplicate nodes coexisting with fingerprint suffixes", () => {
