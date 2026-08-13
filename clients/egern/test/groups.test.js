@@ -29,12 +29,20 @@ const DOMESTIC_GROUPS = Object.freeze([
 ]);
 
 function normalizedNode(name, metadata = {}) {
+  const continent = metadata.continent ?? "asiaPacific";
+  const flag = metadata.flag ?? {
+    asiaPacific: "🇯🇵",
+    europe: "🇩🇪",
+    americas: "🇺🇸",
+    other: "🌐",
+  }[continent];
   return {
     name,
     server: "192.0.2.10",
     password: "TEST_ONLY_RAW_NODE_CREDENTIAL",
     _profile: {
-      continent: "asiaPacific",
+      continent,
+      flag,
       sourceKind: "airport",
       udp: false,
       p2p: false,
@@ -56,7 +64,7 @@ const INVENTORY = Object.freeze([
     continent: "americas",
     sourceKind: "realm",
   }),
-  normalizedNode("🇿🇦 TEST_ONLY_OTHER_NODE｜链式代理", {
+  normalizedNode("🌐 TEST_ONLY_OTHER_NODE｜链式代理", {
     continent: "other",
     sourceKind: "serverChain",
     p2p: true,
@@ -158,9 +166,7 @@ test("renders every shared catalog variant with exact names, order, and document
               assert.equal(type, "select");
               assert.deepEqual(fields, {
                 name: group.name,
-                urls: [PRIVATE_URL],
-                filter: group.nodeFilter,
-                update_interval: 21600,
+                policies: group.candidates,
               });
               continue;
             }
@@ -208,8 +214,16 @@ test("mounts the private subscription without leaking semantic or raw node value
     type: "select",
     fields: {
       name: "🚀 节点选择",
+      policies: ["🌏 亚太", "🌍 欧洲", "🌎 美洲", "🌐 其他/未分类"],
+    },
+  });
+
+  assert.deepEqual(renderedFields(rendered, "🇯🇵 日本"), {
+    type: "select",
+    fields: {
+      name: "🇯🇵 日本",
       urls: [PRIVATE_URL],
-      filter: "^(?!🔗 ).+$",
+      filter: "^🇯🇵(?: |$)",
       update_interval: 21600,
     },
   });
@@ -273,9 +287,9 @@ test("pins service defaults, AI order, security defaults, and special eligibilit
 
 test("pins minimal, balanced, full, and eligible chain group graphs", () => {
   for (const [mode, expectedContinentPolicies] of [
-    ["minimal", []],
-    ["balanced", ["⚡ 亚太自动"]],
-    ["full", ["⚡ 亚太自动", "🛟 亚太故障转移"]],
+    ["minimal", ["🇯🇵 日本"]],
+    ["balanced", ["⚡ 亚太自动", "🇯🇵 日本"]],
+    ["full", ["⚡ 亚太自动", "🛟 亚太故障转移", "🇯🇵 日本"]],
   ]) {
     const rendered = renderEgernGroups(
       buildPolicyGroups(options({ autoGroupMode: mode, clientChain: "off" }), INVENTORY),
@@ -397,7 +411,7 @@ test("rejects duplicate, missing, cyclic, and semantic-token graph mutations", (
 
   const wrongRoot = valid.map(cloneGroup);
   wrongRoot.find((group) => group.name === "🚀 节点选择").candidates.push("DIRECT");
-  assertSafeFailure(wrongRoot, privateUrl(), /sole|primary/i);
+  assertSafeFailure(wrongRoot, privateUrl(), /candidate|order|primary|semantic/i);
 });
 
 test("enforces the finite shared policy name, kind, and unconditional-group schema", () => {
@@ -406,10 +420,21 @@ test("enforces the finite shared policy name, kind, and unconditional-group sche
   assert.equal(Object.isFrozen(POLICY_GROUP_SCHEMA), true);
   assert.equal(Object.isFrozen(POLICY_GROUP_SCHEMA.groups), true);
   assert.equal(Object.isFrozen(POLICY_GROUP_SCHEMA.requiredNames), true);
+  assert.deepEqual(POLICY_GROUP_SCHEMA.groups["🇯🇵 日本"], {
+    kind: GROUP_KIND.flag,
+    strategy: STRATEGY.select,
+    nodeFilters: ["^🇯🇵(?: |$)"],
+    hidden: undefined,
+    defaultChoice: undefined,
+  });
 
   const relabeled = valid.map(cloneGroup);
   relabeled.find((group) => group.name === "🐙 GitHub").kind = GROUP_KIND.ai;
   assertSafeFailure(relabeled, privateUrl(), /kind|schema/i);
+
+  const relabeledFlag = valid.map(cloneGroup);
+  relabeledFlag.find((group) => group.name === "🇯🇵 日本").kind = GROUP_KIND.continent;
+  assertSafeFailure(relabeledFlag, privateUrl(), /kind|schema/i);
 
   const missingRequired = valid
     .filter((group) => group.name !== "🐙 GitHub")
@@ -438,9 +463,9 @@ test("accepts only the exact shared filter assigned to each documented group", (
   }
 
   const swapped = valid.map(cloneGroup);
-  const asia = swapped.find((group) => group.name === "🌏 亚太");
-  const europe = swapped.find((group) => group.name === "🌍 欧洲");
-  [asia.nodeFilter, europe.nodeFilter] = [europe.nodeFilter, asia.nodeFilter];
+  const japan = swapped.find((group) => group.name === "🇯🇵 日本");
+  const germany = swapped.find((group) => group.name === "🇩🇪 德国");
+  [japan.nodeFilter, germany.nodeFilter] = [germany.nodeFilter, japan.nodeFilter];
   mutations.push(swapped);
 
   const ineligible = buildPolicyGroups(
@@ -462,6 +487,7 @@ test("accepts every generated conditional subset in canonical shared order", () 
       .filter((_, index) => (mask & (1 << index)) !== 0)
       .map((continent, index) => normalizedNode(`TEST_ONLY_CONTINENT_${index}`, {
         continent,
+        flag: ["🇯🇵", "🇩🇪", "🇺🇸", "🌐"][continents.indexOf(continent)],
         sourceKind: "unknown",
       }));
     for (const autoGroupMode of ["full", "balanced", "minimal"]) {
@@ -542,6 +568,15 @@ test("rejects record swaps and every known-reference candidate semantic drift", 
   defaultDrift.find((group) => group.name === "🐙 GitHub").defaultChoice = "DIRECT";
   mutations.push(defaultDrift);
 
+  const reversedRoot = valid.map(cloneGroup);
+  reversedRoot.find((group) => group.name === "🚀 节点选择").candidates.reverse();
+  mutations.push(reversedRoot);
+
+  const reorderedContinent = valid.map(cloneGroup);
+  const asia = reorderedContinent.find((group) => group.name === "🌏 亚太");
+  [asia.candidates[1], asia.candidates[2]] = [asia.candidates[2], asia.candidates[1]];
+  mutations.push(reorderedContinent);
+
   for (const groups of mutations) {
     assertSafeFailure(groups, privateUrl(), /candidate|default|order|schema|semantic/i);
   }
@@ -591,4 +626,5 @@ test("shared semantic and strategy constants stay client-neutral", () => {
   assert.notEqual(POLICY_TARGET.primaryProxy, "PROXY");
   assert.deepEqual(STRATEGY, { select: "select", autoTest: "auto-test", fallback: "fallback" });
   assert.equal(GROUP_KIND.primary, "primary");
+  assert.equal(GROUP_KIND.flag, "flag");
 });

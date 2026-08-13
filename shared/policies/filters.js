@@ -49,3 +49,11 @@ export function continentFilter(continent) {
   }
   return `^(?:${continent.flags.join("|")}).+$`;
 }
+
+function escapeRegex(value) {
+  return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+export function flagFilter(flag) {
+  return `^${escapeRegex(flag)}(?: |$)`;
+}

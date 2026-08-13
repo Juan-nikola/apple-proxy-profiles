@@ -257,9 +257,7 @@ function reconstructGroups(policyGroups) {
     }
     const schema = POLICY_GROUP_SCHEMA.groups[fields.name];
     const strategy = type === "auto_test" ? "auto-test" : type;
-    const candidates = fields.name === "🚀 节点选择"
-      ? [POLICY_TARGET.primaryProxy]
-      : (fields.policies ?? []);
+    const candidates = fields.policies ?? [];
     const nodeFilter = fields.urls !== undefined
       ? fields.filter
       : null;
@@ -289,11 +287,14 @@ function reconstructGroups(policyGroups) {
       hidden: fields.hidden,
       defaultChoice: schema.defaultChoice,
     });
-    if (fields.name === "🚀 节点选择") {
+    if (fields.urls !== undefined) {
       if (!Array.isArray(fields.urls) || fields.urls.length !== 1 || typeof fields.urls[0] !== "string") {
         throw new Error("Invalid Egern policy group subscription URL");
       }
-      nodeSubscriptionUrl = fields.urls[0];
+      if (nodeSubscriptionUrl !== undefined && nodeSubscriptionUrl !== fields.urls[0]) {
+        throw new Error("Invalid Egern policy group subscription URL");
+      }
+      nodeSubscriptionUrl ??= fields.urls[0];
     }
   }
   if (nodeSubscriptionUrl === undefined) throw new Error("Invalid Egern policy group schema");

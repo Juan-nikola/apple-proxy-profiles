@@ -1,4 +1,6 @@
-import { nodeMetadata } from "../contracts.js";
+import { CONTINENT, nodeMetadata } from "../contracts.js";
+import { CONTINENT_FLAGS } from "../nodes/country-regions.js";
+import { countryLabelForFlag } from "../nodes/regions.js";
 import {
   ALL_NODES_FILTER,
   CONTINENTS,
@@ -8,8 +10,8 @@ import {
   P2P_FILTER,
   SOURCE_GROUPS,
   continentFilter,
+  flagFilter,
 } from "./filters.js";
-import { POLICY_TARGET } from "./intents.js";
 import { platformPolicyPreset } from "./platform-presets.js";
 
 const TEST_URL = "http://www.gstatic.com/generate_204";
@@ -24,6 +26,7 @@ export const GROUP_KIND = Object.freeze({
   helper: "helper",
   primary: "primary",
   continent: "continent",
+  flag: "flag",
   source: "source",
   ai: "ai",
   service: "service",
@@ -96,6 +99,12 @@ export function fallbackHelperName(continent) {
   return `\u{1F6DF} ${continent.helperName}故障转移`;
 }
 
+export function flagGroupName(flag) {
+  const label = countryLabelForFlag(flag);
+  if (flag === "🌐" || label === flag) return label;
+  return `${flag} ${label}`;
+}
+
 function continentHelperItems(continent, mode) {
   if (mode === "full") return [automaticHelperName(continent), fallbackHelperName(continent)];
   if (mode === "balanced") return [automaticHelperName(continent)];
@@ -143,6 +152,17 @@ export function buildPolicyGroups(options, nodes) {
   const presentContinents = CONTINENTS.filter((continent) => (
     normalizedNodes.some((node) => nodeMetadata(node).continent === continent.key && !nodeMetadata(node).chained)
   ));
+  const presentFlagsByContinent = new Map(presentContinents.map((continent) => {
+    const flags = new Set(normalizedNodes
+      .filter((node) => {
+        const metadata = nodeMetadata(node);
+        return metadata.continent === continent.key && !metadata.chained;
+      })
+      .map((node) => nodeMetadata(node).flag));
+    const ordered = CONTINENT_FLAGS[continent.key].filter((flag) => flags.has(flag));
+    if (continent.key === CONTINENT.other && flags.has("🌐")) ordered.push("🌐");
+    return [continent.key, ordered];
+  }));
   const chainEligible = options.clientChain === "on"
     && normalizedNodes.some((node) => nodeMetadata(node).entry === true && !nodeMetadata(node).chained)
     && normalizedNodes.some((node) => nodeMetadata(node).chained === true);
@@ -179,16 +199,26 @@ export function buildPolicyGroups(options, nodes) {
   groups.push(policyGroup({
     kind: GROUP_KIND.primary,
     name: "🚀 节点选择",
-    candidates: [POLICY_TARGET.primaryProxy],
-    nodeFilter: NON_CHAINED_FILTER,
+    candidates: presentContinents.map((continent) => continent.name),
   }));
   for (const continent of presentContinents) {
-    groups.push(subscriptionGroup(
-      GROUP_KIND.continent,
-      continent.name,
-      continentFilter(continent),
-      continentHelperItems(continent, mode),
-    ));
+    const flags = presentFlagsByContinent.get(continent.key);
+    groups.push(policyGroup({
+      kind: GROUP_KIND.continent,
+      name: continent.name,
+      candidates: [
+        ...continentHelperItems(continent, mode),
+        ...flags.map(flagGroupName),
+      ],
+    }));
+    for (const flag of flags) {
+      groups.push(subscriptionGroup(
+        GROUP_KIND.flag,
+        flagGroupName(flag),
+        flagFilter(flag),
+        [],
+      ));
+    }
   }
 
   for (const source of SOURCE_GROUPS) {
