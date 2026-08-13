@@ -31,6 +31,10 @@ test("central Sub-Store guide closes over all public scripts and private tasks",
     "happ-config-macos", "happ-config-iphone", "happ-config-ipad", "happ-config-android", "happ-config-windows", "happ-config-linux", "happ-routing-audit",
   ]) assert.ok(guide.includes(`\`${task}\``), `missing task ${task}`);
   assert.match(guide, /六客户端总数为 4\+1\+3\+4\+5\+7=24 个任务/u);
+  assert.match(guide, /17 个任务[\s\S]{0,120}24 个任务/u);
+  assert.ok(guide.includes("`happ-routing-audit`"));
+  assert.match(guide, /七个任务[\s\S]{0,240}policyOverrides/u);
+  assert.match(readme, /六个官方 Happ 平台/u);
   assert.match(guide, /#output=nodes[\s\S]*&/u);
   assert.match(guide, /#output=config[\s\S]*&/u);
   assert.match(guide, /channel=current[\s\S]*channel=edge/u);

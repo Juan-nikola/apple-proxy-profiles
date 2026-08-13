@@ -23,3 +23,31 @@ test("Happ routing audit example is a sanitized private audit object", async () 
   assert.equal(typeof audit.counts.eligibleNodes, "number");
   assert.doesNotMatch(content, /example\.invalid|TEST_ONLY_/u);
 });
+
+test("Happ operator documentation covers the six-platform setup and diagnostics contract", async () => {
+  const root = new URL("../../../", import.meta.url);
+  const read = (path) => readFile(new URL(path, root), "utf8");
+  const [readme, deployment, troubleshooting, canary] = await Promise.all([
+    read("clients/happ/README.md"),
+    read("clients/happ/docs/deployment.md"),
+    read("clients/happ/docs/troubleshooting.md"),
+    read("clients/happ/docs/canary.md"),
+  ]);
+  const content = [readme, deployment, troubleshooting, canary].join("\n");
+
+  for (const platform of ["macOS", "iPhone", "iPad", "Android", "Windows", "Linux"]) assert.match(content, new RegExp(platform, "u"));
+  for (const task of [
+    "happ-config-macos", "happ-config-iphone", "happ-config-ipad", "happ-config-android", "happ-config-windows", "happ-config-linux", "happ-routing-audit",
+  ]) assert.ok(content.includes(`\`${task}\``), `missing Happ task ${task}`);
+  assert.match(content, /七个任务[\s\S]{0,240}同一.{0,20}`policyOverrides`/u);
+  assert.match(content, /大小写.{0,80}完全一致|完全一致.{0,80}大小写/u);
+  assert.match(content, /`DIRECT`.*`FOLLOW`.*`NODE:/us);
+  assert.match(content, /missing-node-fallback/u);
+  assert.match(content, /duplicate-node-fallback/u);
+  assert.match(content, /incompatible-node-fallback/u);
+  assert.match(content, /meta\.serverDescription/u);
+  assert.match(content, /Happ\/Xray 日志/u);
+  assert.match(content, /Base64URL/u);
+  assert.match(content, /先导入.*路由.*geodata[\s\S]{0,180}再导入.*JSON/u);
+  assert.match(content, /edge[\s\S]{0,180}current/u);
+});

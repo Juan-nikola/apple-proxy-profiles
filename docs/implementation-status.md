@@ -8,11 +8,12 @@
 | Anywhere | 已完成 | 节点 YAML、`.arrs` 规则分片、Manifest、全部导入页 | workspace 测试、规则检查、导入页测试 |
 | Surge | 已完成 | macOS/iPhone/iPad Profile 和 Sub-Store 远程入口 | workspace 测试、构建、示例校验 |
 | sing-box | 已完成 | macOS/iPhone/iPad/Android/OpenWrt JSON、testing edge 通道、官方 core 编译边界 | workspace 测试、配置校验、`.srs` 失败关闭测试 |
-| Sub-Store 五客户端文档 | 已完成 | `apple-proxy-sources`、6 个公开 JS、17 个任务、维护/编译/回滚指南 | 文档测试、秘密扫描 |
+| Sub-Store 六客户端文档 | 已完成 | `apple-proxy-sources`、7 个公开 JS、从 17 到 24 个任务、维护/编译/回滚指南 | 文档测试、秘密扫描 |
+| Happ | 已完成（待真机） | macOS/iPhone/iPad/Android/Windows/Linux JSON、公开路由/geodata 导入、七个私密任务与固定节点回退 | workspace 测试、文档断言、六平台 canary 清单 |
 | GitHub Pages 公开发布 | 已完成 | `current/`、`edge/`、规则和脚本入口可由 Pages 发布 | Actions 检查、公开 URL HTTP 200 |
 | 共享分流顺序与离线解释 | 已完成 | `DomesticCore` → 服务规则 → `OverseasGame` → `ChinaTLD` → `ChinaIP` → FINAL；`explain:route` 只读本地已发布规则、不执行 DNS | `npm run explain:route`、跨客户端回归与文档测试 |
 | 业务组精简 | 已完成 | 业务组由 16 组合并为 9 组：`🎬 海外流媒体`（Netflix/Disney+/Spotify/国际媒体/TikTok）、`💬 海外社交`（Telegram/Facebook/Instagram/Twitter）、`🇨🇳 国内平台`（B站/抖音/小红书/微博）；sing-box 主组改为洲级两级结构 | 全客户端测试、fixtures 与 edge/current 发布验证 |
-| 私密 Sub-Store 任务 | 已完成 | 用户 Sub-Store 已建立 `apple-proxy-sources` 和 17 个文件任务；Shadowrocket 三个 Profile 已改为直接读原始组合；sing-box 移动端 IPv6 已修正 | 17 个任务下载全部非空、结构校验通过 |
-| 真机 canary | 待用户执行 | 需要按各客户端清单逐台导入、联网、DNS、规则和回滚 | 自动测试不能替代设备验收 |
+| 私密 Sub-Store 任务 | 已完成（Happ 待建立） | 用户 Sub-Store 已建立 `apple-proxy-sources` 和原 17 个文件任务；按 Happ 指南补建 7 个任务后为 24 个 | 已有 17 个任务下载校验；Happ 使用文档/示例断言 |
+| 真机 canary | 待用户执行 | 需要按各客户端清单逐台导入、联网、DNS、规则和回滚；Happ 必须六平台都通过，才可从 edge 提升 current | 自动测试不能替代设备验收 |
 
 真实 Sub-Store API、节点 URL、凭据和生成后的私密输出 URL 不在本仓库保存。没有用户设备验收证据时，本项目不能描述为“已完成真机验证”。

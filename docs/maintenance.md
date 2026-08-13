@@ -1,6 +1,6 @@
 # 维护、编译与发布手册
 
-这份手册回答三个问题：以后增加节点或规则要改哪里、每个文件负责什么、在 macOS/Linux/CI/OpenWrt 环境怎样构建和验证。公开仓库不保存节点；你的私密节点来源只在 Sub-Store 的原始组合 `apple-proxy-sources` 中维护，五个客户端的 Profile/Config 生成器都直接读取这个原始组合（Shadowrocket 生成器内置节点归一化，不依赖组合上的节点操作）。
+这份手册回答三个问题：以后增加节点或规则要改哪里、每个文件负责什么、在 macOS/Linux/CI/OpenWrt 环境怎样构建和验证。公开仓库不保存节点；你的私密节点来源只在 Sub-Store 的原始组合 `apple-proxy-sources` 中维护，六个客户端的 Profile/Config 生成器都直接读取这个原始组合（Shadowrocket 生成器内置节点归一化，不依赖组合上的节点操作）。
 
 ## 1. 先判断你要改哪一层
 
@@ -13,6 +13,7 @@
 | 修改分组、路由或规则顺序 | 对应客户端 `src/render-*.js`、共享 `shared/policies/` 和测试 | 跑客户端测试、示例校验和全量 verify |
 | 增加协议或传输 | `shared/contracts.js`、归一化/能力过滤、各客户端适配器和测试 | 逐客户端确认是否原生支持；不能静默丢字段 |
 | 修改 Sub-Store 参数 | 私密任务参数编辑器；公开示例同步改总指南 | 先隔离任务预览，不把真实参数值写入 GitHub |
+| 修改 Happ 中文业务固定节点 | Happ 助手生成的 `policyOverrides` 与全部七个 Happ 任务 | 改目标后生成一个未填充 Base64URL，复制到六配置加一审计任务；稳定后不必持续改 |
 | 修改公开 JS 名称或 Pages 路径 | 对应 `clients/<client>/scripts/build.mjs`、发布脚本、文档和测试 | 保留旧兼容别名，验证新旧 bundle 字节契约 |
 | 修改 sing-box `.srs` | `automation/src/render-sing-box-rules.js`、`clients/sing-box/scripts/compile-rules.mjs` 和测试 | 必须使用官方 core 产生二进制；无 core 必须失败 |
 
@@ -267,9 +268,11 @@ npm run check:rules
 curl -L --fail --silent --show-error --head https://juan-nikola.github.io/apple-proxy-profiles/current/surge/scripts/surge-profile-generator.js
 curl -L --fail --silent --show-error --head https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/scripts/sing-box-config-generator.js
 curl -L --fail --silent --show-error --head https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/import.html
+curl -L --fail --silent --show-error --head https://juan-nikola.github.io/apple-proxy-profiles/current/happ/import.html
+curl -L --fail --silent --show-error --head https://juan-nikola.github.io/apple-proxy-profiles/current/happ/scripts/happ-config-generator.js
 ```
 
-生产使用 `current/`，测试使用 `edge/`；公开规则回滚可使用 `previous/` 或 Manifest 中的 `versions/<manifestHash>/`。Sub-Store 任务通常不需要换 URL：修复后重新运行同一远程任务即可。设备侧失败先切回旧 Profile/Config，不要用更新脚本覆盖唯一可用配置。
+生产使用 `current/`，测试使用 `edge/`；公开规则回滚可使用 `previous/` 或 Manifest 中的 `versions/<manifestHash>/`。Sub-Store 任务通常不需要换 URL：修复后重新运行同一远程任务即可。Happ 先以隔离 edge 七任务完成六平台 canary，只有全部成功才 edge-before-current 提升；任何一台失败都阻止 Happ current 提升。设备侧失败先切回旧 Profile/Config，不要用更新脚本覆盖唯一可用配置。
 
 共享分流顺序固定为：`DomesticCore` → 服务规则 → `OverseasGame` → `ChinaTLD` → `ChinaIP` → FINAL。稳定 DNS 优先国内解析；普通 `.cn` 域名应命中 `ChinaTLD`/DIRECT，未知国内 IPv4/IPv6 应命中 `ChinaIP`/GEOIP CN 直连，未知境外与 DNS 失败走 `🚀 节点选择`。HTTPDNS、硬编码 IP、IPv6、QUIC 和手动服务组选择仍是残余风险。修改分流后，用 `npm run explain:route -- --channel current --domain <域名>` 离线核对预期结果；该命令只读取本地已发布规则，不执行 DNS，也不修改任何文件。
 
@@ -280,5 +283,6 @@ curl -L --fail --silent --show-error --head https://juan-nikola.github.io/apple-
 - Surge：Mac → iPhone → iPad。
 - sing-box：Mac → iPhone → iPad → Android → OpenWrt；OpenWrt 还要单独验证透明网关、DNS 劫持、IPv4/IPv6 和重启恢复。
 - Anywhere：iPhone → iPad；节点、规则导入和本地绑定分别验证。
+- Happ：macOS → iPhone → iPad → Android → Windows → Linux；每台先装路由/geodata，再导入 JSON 数组，并记录固定节点 fallback/recovery 的 Happ/Xray 日志。
 
 每台设备保留旧配置并实际做一次回滚演练。自动测试通过不代表 App Store、TestFlight、Android 或 OpenWrt 真机行为已经通过。
