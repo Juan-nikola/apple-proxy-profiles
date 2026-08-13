@@ -1,3 +1,6 @@
+const OPAQUE_FIXED_CANDIDATE = /^happ-fixed\/[A-Za-z0-9_-]{43}\/candidate$/u;
+const OPAQUE_FIXED_BALANCER = /^happ-fixed\/[A-Za-z0-9_-]{43}\/balancer$/u;
+
 function requireArray(value, label) {
   if (!Array.isArray(value)) throw new Error(`Happ subscription ${label} must be an array`);
   return value;
@@ -48,9 +51,12 @@ function validateConfig(config) {
   }
   for (const outbound of config.outbounds) {
     if (outbound.protocol === "snell") throw new Error("Happ Snell outbound is unsupported");
-    if (outbound.tag.startsWith("happ-fixed/") && !/^happ-fixed\/[A-Za-z0-9_-]+\/candidate$/u.test(outbound.tag)) {
+    if (outbound.tag.startsWith("happ-fixed/") && !OPAQUE_FIXED_CANDIDATE.test(outbound.tag)) {
       throw new Error("Happ internal tag is not opaque");
     }
+  }
+  for (const balancer of config.routing.balancers) {
+    if (!OPAQUE_FIXED_BALANCER.test(balancer.tag)) throw new Error("Happ internal tag is not opaque");
   }
   validateReferences(config, outboundTags, inboundTags, balancerTags);
   validateFailover(config, outboundTags);

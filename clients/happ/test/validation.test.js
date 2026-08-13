@@ -44,6 +44,33 @@ test("rejects invalid fixed failover topology and unsafe internal tags", () => {
   assert.ok(balancer);
 });
 
+test("rejects fixed tags that embed a raw ASCII node name", () => {
+  const nodes = [node("当前节点", "node-current"), node("东京节点", "node-tokyo")];
+  const fixed = structuredClone(renderHappSubscription({
+    nodes,
+    allNodes: nodes,
+    options: { ...options, policyOverrides: Buffer.from(JSON.stringify({ "🤖 AI 专用": "NODE:东京节点" })).toString("base64url") },
+  })[0]);
+  const candidate = fixed.outbounds.find(({ tag }) => tag.startsWith("happ-fixed/"));
+  const candidateTag = candidate.tag;
+  candidate.tag = "happ-fixed/tokyo/candidate";
+  fixed.routing.balancers[0].selector = [candidate.tag];
+  fixed.observatory.subjectSelector = [candidate.tag];
+  assert.throws(() => validateHappSubscription([fixed]), /opaque/u);
+
+  const balancerConfig = structuredClone(fixed);
+  balancerConfig.outbounds.find(({ tag }) => tag.startsWith("happ-fixed/")).tag = candidateTag;
+  balancerConfig.routing.balancers[0].selector = [candidateTag];
+  balancerConfig.observatory.subjectSelector = [candidateTag];
+  const balancerTag = balancerConfig.routing.balancers[0].tag;
+  const rawBalancerTag = "happ-fixed/tokyo/balancer";
+  balancerConfig.routing.balancers[0].tag = rawBalancerTag;
+  for (const rule of balancerConfig.routing.rules) {
+    if (rule.balancerTag === balancerTag) rule.balancerTag = rawBalancerTag;
+  }
+  assert.throws(() => validateHappSubscription([balancerConfig]), /opaque/u);
+});
+
 test("rejects unsupported Snell outbounds", () => {
   const config = valid();
   config.outbounds.push({ tag: "happ-sn", protocol: "snell" });
