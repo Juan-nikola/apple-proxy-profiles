@@ -259,7 +259,7 @@ test("maps a verified single WireGuard peer and rejects peer conflicts", () => {
   });
 });
 
-test("subscription rendering is deterministic, metadata-free, and reports aggregate counts", () => {
+test("subscription rendering rejects a mixed inventory without diagnostics or partial YAML", () => {
   const diagnostics = [];
   const incompatible = [
     fixture("Secret transport node", "vless", {
@@ -273,24 +273,26 @@ test("subscription rendering is deterministic, metadata-free, and reports aggreg
     }),
   ];
   const nodes = [shadowsocks2022, ...incompatible];
-  const first = renderEgernSubscription(nodes, {
-    clientChain: "off",
-    onDiagnostics(value) { diagnostics.push(value); },
-  });
-  const second = renderEgernSubscription(nodes, { clientChain: "off" });
-
-  assert.equal(first, second);
-  assert.match(first, /^proxies:\n/);
-  assert.equal(first.includes("_profile"), false);
-  assert.equal(first.includes("_subName"), false);
-  assert.equal(first.includes("underlying-proxy"), false);
-  assert.deepEqual(diagnostics, [{
-    accepted: 1,
-    excluded: {
-      "unsupported-egern-transport": 1,
-      "unsupported-egern-method": 1,
+  let yaml;
+  assert.throws(
+    () => {
+      yaml = renderEgernSubscription(nodes, {
+        clientChain: "off",
+        onDiagnostics(value) { diagnostics.push(value); },
+      });
     },
-  }]);
+    (error) => {
+      assert.equal(error.message, "Egern cannot render selected protocols: ss=1,vless=1");
+      for (const node of incompatible) {
+        for (const value of [node.name, node.server, node.network, node.password]) {
+          if (value !== undefined) assert.equal(error.message.includes(String(value)), false);
+        }
+      }
+      return true;
+    },
+  );
+  assert.equal(yaml, undefined);
+  assert.deepEqual(diagnostics, []);
 });
 
 test("fails closed for duplicate names and all-incompatible inventories without leaking data", () => {
@@ -311,13 +313,12 @@ test("fails closed for duplicate names and all-incompatible inventories without 
     () => renderEgernSubscription([secretNode], { clientChain: "off" }),
     (error) => {
       message = error.message;
-      return /No compatible Egern nodes/.test(message);
+      return message === "Egern cannot render selected protocols: vless=1";
     },
   );
   for (const secret of [secretNode.name, secretNode.server, secretNode.network, secretNode.password]) {
     assert.equal(message.includes(secret), false);
   }
-  assert.match(message, /unsupported-egern-transport=1/);
 });
 
 test("only generated chain markers map to the fixed Egern previous hop", () => {

@@ -1,9 +1,9 @@
 import { increment } from "./diagnostics.js";
-import { diagnosticProtocol } from "./protocol-registry.js";
+import { normalizeProtocol } from "./protocol-registry.js";
 
 function protocolOf(node) {
   try {
-    return diagnosticProtocol(node?.type);
+    return normalizeProtocol(node?.type) || "unknown";
   } catch {
     return "unknown";
   }

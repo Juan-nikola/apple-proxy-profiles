@@ -395,7 +395,7 @@ test("profile and subscription reuse one prepared Egern chain-adjusted inventory
   assert.equal(shared.some((group) => group.name === "🎯 客户端落地"), true);
 });
 
-test("fails closed with count-only diagnostics when no Egern node is compatible", () => {
+test("fails closed with protocol counts when an Egern node is unrenderable", () => {
   const secretNode = fixture("TEST_ONLY_PRIVATE_PROFILE_NODE", "vless", {
     server: "private-profile-endpoint.example.invalid",
     uuid: "00000000-0000-4000-8000-000000000001",
@@ -405,7 +405,7 @@ test("fails closed with count-only diagnostics when no Egern node is compatible"
   assert.throws(
     () => renderEgernProfile(rawOptions(), [secretNode]),
     (error) => {
-      assert.match(error.message, /No compatible Egern nodes/);
+      assert.equal(error.message, "Egern cannot render selected protocols: vless=1");
       for (const value of [secretNode.name, secretNode.server, secretNode.network, secretNode.password]) {
         assert.equal(error.message.includes(value), false);
       }

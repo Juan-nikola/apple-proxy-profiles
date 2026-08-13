@@ -169,28 +169,32 @@ test("canonicalizes every verified Sudoku alias without losing semantics", () =>
   });
 });
 
-test("filters a mixed inventory with count-only diagnostics and deterministic YAML", () => {
+test("rejects a mixed inventory without diagnostics or partial YAML", () => {
   const nodes = [
     { ...BASE, name: "Good", type: "ss", cipher: "aes-128-gcm", password: "TEST_ONLY_GOOD_PASSWORD" },
     { ...BASE, name: "Bad protocol", type: "snell", psk: "TEST_ONLY_BAD_PSK", version: 4 },
     { ...BASE, name: "Bad transport", type: "trojan", password: "TEST_ONLY_BAD_PASSWORD", network: "grpc" },
   ];
   let diagnostics;
-  const prepared = prepareAnywhereInventory(nodes, { onDiagnostics: (value) => { diagnostics = value; } });
-  assert.deepEqual(diagnostics, {
-    accepted: 1,
-    excluded: {
-      "unsupported-protocol": 1,
-      "unsupported-anywhere-trojan-shape": 1,
+  assert.throws(
+    () => prepareAnywhereInventory(nodes, { onDiagnostics: (value) => { diagnostics = value; } }),
+    /Anywhere cannot render selected protocols: snell=1,trojan=1/u,
+  );
+  let yaml;
+  assert.throws(
+    () => { yaml = renderAnywhereSubscription(nodes); },
+    (error) => {
+      assert.equal(error.message, "Anywhere cannot render selected protocols: snell=1,trojan=1");
+      for (const node of nodes) {
+        for (const value of [node.name, node.server, node.password, node.psk]) {
+          if (value !== undefined) assert.equal(error.message.includes(String(value)), false);
+        }
+      }
+      return true;
     },
-  });
-  const yaml = renderAnywhereSubscription(nodes);
-  assert.equal(yaml, renderAnywhereSubscription(structuredClone(nodes)));
-  assert.equal(yaml, 'proxies:\n  - name: "Good"\n    type: "ss"\n    server: "node.example.invalid"\n    port: 443\n    cipher: "aes-128-gcm"\n    password: "TEST_ONLY_GOOD_PASSWORD"\n    network: "tcp"\n');
-  assert.deepEqual(assertAnywhereSubscription(yaml, prepared.proxies), { proxyCount: 1 });
-  assert.equal(JSON.stringify(diagnostics).includes("Good"), false);
-  assert.equal(JSON.stringify(diagnostics).includes("example.invalid"), false);
-  assert.equal(JSON.stringify(diagnostics).includes("TEST_ONLY"), false);
+  );
+  assert.equal(diagnostics, undefined);
+  assert.equal(yaml, undefined);
 });
 
 test("independently round-trips the actual YAML and exposes only proxies at root", (t) => {
@@ -213,10 +217,13 @@ test("independently round-trips the actual YAML and exposes only proxies at root
   assert.equal(parsed.proxies[0].type, "ss");
 });
 
-test("fails closed for duplicate names, empty compatibility, and mutated YAML", () => {
+test("fails closed for duplicate names, unrenderable protocols, and mutated YAML", () => {
   const good = { ...BASE, type: "ss", cipher: "aes-128-gcm", password: "TEST_ONLY_PASSWORD" };
   assert.throws(() => renderAnywhereSubscription([good, { ...good, server: "other.example.invalid" }]), /Duplicate Anywhere proxy name/);
-  assert.throws(() => renderAnywhereSubscription([{ ...BASE, type: "snell" }]), /No compatible Anywhere nodes/);
+  assert.throws(
+    () => renderAnywhereSubscription([{ ...BASE, type: "snell" }]),
+    /Anywhere cannot render selected protocols: snell=1/u,
+  );
   const yaml = renderAnywhereSubscription([good]);
   const proxies = prepareAnywhereInventory([good]).proxies;
   for (const mutation of [
@@ -247,7 +254,8 @@ test("renders the shared normalized inventory and contains hostile failures", ()
   Object.defineProperty(hostile, "type", { get() { throw new Error(hostileMarker); } });
   assert.throws(
     () => renderAnywhereSubscription([hostile]),
-    (error) => error.message === "Invalid Anywhere node inventory" && !error.message.includes(hostileMarker),
+    (error) => error.message === "Anywhere cannot render selected protocols: unknown=1"
+      && !error.message.includes(hostileMarker),
   );
   assert.throws(
     () => toAnywhereProxy(hostile),
