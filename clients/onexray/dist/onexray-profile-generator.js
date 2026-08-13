@@ -3234,10 +3234,9 @@ var OneXrayProfileBundle = (() => {
     const suppliedStatus = target?.status;
     const status = suppliedStatus === "follow" || suppliedStatus === "direct" || suppliedStatus === "fixed" ? suppliedStatus : "invalid";
     const resolved = typeof target?.resolvedTag === "string" ? target.resolvedTag : "";
-    const resolvedFixed = /^ap-fixed-[A-Za-z0-9][A-Za-z0-9._-]*$/u.test(resolved);
     return {
       configured,
-      resolved: status === "fixed" && resolvedFixed ? `FIXED:<${hashNodeName(resolved)}>` : status === "direct" ? "DIRECT" : status === "follow" ? "FOLLOW" : "INVALID",
+      resolved: status === "fixed" && resolved.length > 0 ? `FIXED:<${hashNodeName(resolved)}>` : status === "direct" ? "DIRECT" : status === "follow" ? "FOLLOW" : "INVALID",
       status
     };
   }
@@ -3752,8 +3751,28 @@ var OneXrayProfileBundle = (() => {
     strict: Object.freeze({ threat: "block", advertising: "block", privacy: "block" })
   });
   var PING_RULE = Object.freeze({ type: "field", inboundTag: ["pingIn"], outboundTag: "proxy" });
-  var LOCAL_DOMAIN_RULE = Object.freeze({ type: "field", domain: ["geosite:private"], outboundTag: "direct" });
-  var LOCAL_IP_RULE = Object.freeze({ type: "field", ip: ["geoip:private"], outboundTag: "direct" });
+  var LOCAL_DOMAIN_RULE = Object.freeze({
+    type: "field",
+    domain: ["full:localhost", "domain:local", "domain:lan", "domain:home.arpa"],
+    outboundTag: "direct"
+  });
+  var LOCAL_IP_RULE = Object.freeze({
+    type: "field",
+    ip: [
+      "10.0.0.0/8",
+      "100.64.0.0/10",
+      "127.0.0.0/8",
+      "169.254.0.0/16",
+      "172.16.0.0/12",
+      "192.168.0.0/16",
+      "224.0.0.0/4",
+      "::1/128",
+      "fc00::/7",
+      "fe80::/10",
+      "ff00::/8"
+    ],
+    outboundTag: "direct"
+  });
   function requiredObject2(value, label) {
     if (value === null || typeof value !== "object" || Array.isArray(value)) {
       throw new TypeError(`OneXray ${label} must be an object`);
@@ -4065,7 +4084,6 @@ var OneXrayProfileBundle = (() => {
   var GENERATED_TAG_PREFIXES = ["ap-fixed-"];
   var NODE_TARGET3 = /^NODE:(.*)$/u;
   var LINE_TERMINATOR3 = /[\r\n\u2028\u2029]/u;
-  var STABLE_ID = /^[A-Za-z0-9][A-Za-z0-9._-]*$/u;
   function freezeTarget(target) {
     return Object.freeze(target);
   }
@@ -4135,18 +4153,16 @@ var OneXrayProfileBundle = (() => {
     return RESERVED_TAGS3.has(name) || GENERATED_TAG_PREFIXES.some((prefix) => name.startsWith(prefix));
   }
   function fixedTag(node, target, name, assigned) {
-    const id = nodeMetadata(node).id;
-    if (typeof id !== "string" || !STABLE_ID.test(id)) {
-      throw fixedTargetError(target, name, "missing stable normalized identity");
+    if (typeof name !== "string" || name.length === 0 || name.trim() !== name || LINE_TERMINATOR3.test(name)) {
+      throw fixedTargetError(target, String(name), "invalid display tag");
     }
-    const tag = `ap-fixed-${id}`;
-    if (RESERVED_TAGS3.has(tag)) throw fixedTargetError(target, name, "uses a reserved outbound tag");
-    const prior = assigned.get(tag);
+    if (reservedNodeTag(name)) throw fixedTargetError(target, name, "uses a reserved outbound tag");
+    const prior = assigned.get(name);
     if (prior && identityKey(prior) !== identityKey(node)) {
       throw fixedTargetError(target, name, "has a colliding stable outbound tag");
     }
-    assigned.set(tag, node);
-    return tag;
+    assigned.set(name, node);
+    return name;
   }
   function resolveFixedTarget(target, configured, allNodes, eligibleNodes, assigned) {
     const name = nodeTargetName(configured);

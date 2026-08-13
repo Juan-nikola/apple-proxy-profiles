@@ -122,10 +122,9 @@ function publicTarget(target, fallback) {
     ? suppliedStatus
     : "invalid";
   const resolved = typeof target?.resolvedTag === "string" ? target.resolvedTag : "";
-  const resolvedFixed = /^ap-fixed-[A-Za-z0-9][A-Za-z0-9._-]*$/u.test(resolved);
   return {
     configured,
-    resolved: status === "fixed" && resolvedFixed
+    resolved: status === "fixed" && resolved.length > 0
       ? `FIXED:<${hashNodeName(resolved)}>`
       : status === "direct"
         ? "DIRECT"
