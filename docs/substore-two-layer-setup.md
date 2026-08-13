@@ -1,4 +1,4 @@
-# Sub-Store 五客户端外置 JS + 任务引用总指南
+# Sub-Store 六客户端外置 JS + 任务引用总指南
 
 本指南把公开代码和私密节点分成两层：
 
@@ -28,7 +28,7 @@
 3. 将 `snell` 与 `vlesshy2` 加入这个原始组合，不把真实来源地址复制到任何公开位置。
 4. 预览原始组合，确认节点数量大于 0。
 
-以后增加节点来源只加入 `apple-proxy-sources`，不需要改 GitHub JS。五个客户端的 Profile/Config 全部读取这个原始组合（Shadowrocket Profile 生成器内置节点归一化，不依赖组合上的节点操作）。删除来源时也只在这一层操作，并先保留旧输出以便回滚。
+以后增加节点来源只加入 `apple-proxy-sources`，不需要改 GitHub JS。六个客户端的 Profile/Config 全部读取这个原始组合（Shadowrocket Profile 生成器内置节点归一化，不依赖组合上的节点操作）。删除来源时也只在这一层操作，并先保留旧输出以便回滚。
 
 ## 2. 七个公开远程 JS
 
@@ -74,7 +74,7 @@ https://juan-nikola.github.io/apple-proxy-profiles/current/surge/scripts/surge-p
 
 ## 4. 20 个任务总表
 
-下面的 `Apple-Proxy-Nodes` 是公开示例显示名。实际使用时，在 Shadowrocket、Surge 或 sing-box 中给节点订阅取一个你自己的显示名，并让同一客户端对应 Profile/Config 任务的 `subscriptionName` 逐字一致。五个客户端的 Profile/Config 全部指向原始组合 `apple-proxy-sources`：Shadowrocket Profile 生成器内部自己完成节点归一化、去重与客户端过滤，不再依赖组合处理链上的节点操作。
+下面的 `Apple-Proxy-Nodes` 是公开示例显示名。实际使用时，在 Shadowrocket、Surge 或 sing-box 中给节点订阅取一个你自己的显示名，并让同一客户端对应 Profile/Config 任务的 `subscriptionName` 逐字一致。六个客户端的 Profile/Config 全部指向原始组合 `apple-proxy-sources`：Shadowrocket Profile 生成器内部自己完成节点归一化、去重与客户端过滤，不再依赖组合处理链上的节点操作。
 
 | # | 任务名 | 类型 | 远程脚本 | 平台/作用 | 更新 |
 | ---: | --- | --- | --- | --- | --- |

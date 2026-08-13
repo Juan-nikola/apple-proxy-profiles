@@ -19,6 +19,10 @@ import { canonicalJson } from "./render-anywhere-rules.js";
 import { renderOneXrayImportPage } from "../../clients/onexray/src/build-import-page.js";
 import { oneXrayGeoNames } from "../../clients/onexray/src/geodata-contract.js";
 
+// Retention policy: the publication pipeline prunes immutable version
+// snapshots to MAX_VERSION_COUNT (8). check-actions.mjs validates the on-disk
+// tree with a one-snapshot tolerance (9) so a just-added version never fails
+// CI before the prune step runs. Keep these two numbers in sync.
 const MAX_PUBLISHED_BYTES = 750 * 1024 * 1024;
 const MAX_VERSION_COUNT = 8;
 const MIN_VERSION_COUNT = 2;

@@ -24,7 +24,7 @@
       "shrinkBasisPoints": "0"
     }
   },
-  "generatedAt": "2026-08-12T05:11:00.703Z",
+  "generatedAt": "2026-08-13T05:14:44.982Z",
   "primary": {
     "commit": "86ada72372ec0586be75901f47d5ccca6e28c655",
     "committedAt": "2026-08-11T18:59:15Z",
@@ -34,10 +34,10 @@
   "reportOnly": true,
   "schemaVersion": 1,
   "secondary": {
-    "commit": "ec7189e083684a39e34f0b1c326f134460001b73",
-    "committedAt": "2026-08-12T04:32:27Z",
+    "commit": "e0c8eca98af7e3d23d9220e4b86f19a216ac92cb",
+    "committedAt": "2026-08-13T04:35:31Z",
     "repository": "https://github.com/gaoyifan/china-operator-ip",
-    "sha256": "8f920094a5653eeb5dc3e1273531a4cfc9bdcfc4595eff8ff6648ce619908c5a"
+    "sha256": "d4968e5738b590843e1f9075db2eaadd5ca99a559bda4d5b9226c333dd29f7f0"
   },
   "warnings": [
     "ipv4:secondary-divergence",
