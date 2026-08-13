@@ -76,14 +76,28 @@ test("Anywhere File Operator rejects a mixed inventory without partial output or
   assert.deepEqual(lines, []);
 });
 
-test("Anywhere File Operator enforces the exact chain-off collection contract", async () => {
+test("Anywhere File Operator accepts an exact safe collection name and forwards it", async () => {
+  const calls = [];
+  await assert.doesNotReject(operator({}, "Anywhere", {
+    arguments: { ...ARGUMENTS, name: "apple-proxy-anywhere" },
+    produceArtifact: producer(inventory(), calls),
+  }));
+  assert.deepEqual(calls, [{
+    type: "collection",
+    name: "apple-proxy-anywhere",
+    platform: "JSON",
+    produceType: "internal",
+  }]);
+});
+
+test("Anywhere File Operator enforces the chain-off and safe collection contract", async () => {
   let producerCalls = 0;
   const rejected = [
     null,
     [],
     { ...ARGUMENTS, output: "config" },
     { ...ARGUMENTS, type: "subscription" },
-    { ...ARGUMENTS, name: "other-sources" },
+    ...["", "中文", "anywhere/sources", "anywhere?sources", "anywhere#sources", " anywhere-sources", "anywhere-sources ", "anywhere\nsources", "__proto__"].map((name) => ({ ...ARGUMENTS, name })),
     { ...ARGUMENTS, clientChain: "on" },
     { output: "nodes", type: "collection", name: "apple-proxy-sources" },
     { ...ARGUMENTS, unknown: true },

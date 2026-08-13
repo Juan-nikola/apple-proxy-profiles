@@ -53,7 +53,7 @@ test("Surge node entry rejects a mixed inventory without partial output or priva
       arguments: {
         output: "nodes",
         type: "collection",
-        name: "apple-proxy-sources",
+        name: "apple-proxy-surge",
         clientChain: "off",
       },
       async produceArtifact(request) {
@@ -73,10 +73,25 @@ test("Surge node entry rejects a mixed inventory without partial output or priva
   );
   assert.deepEqual(calls, [{
     type: "collection",
-    name: "apple-proxy-sources",
+    name: "apple-proxy-surge",
     platform: "JSON",
     produceType: "internal",
   }]);
   assert.equal(result, undefined);
   assert.deepEqual(lines, []);
+});
+
+test("Surge node entry forwards the parsed safe collection name and rejects unsafe names", async () => {
+  const calls = [];
+  await assert.rejects(operator({}, "macos", {
+    arguments: { output: "nodes", type: "collection", name: "中文", clientChain: "off" },
+    async produceArtifact(request) { calls.push(request); return nodes; },
+  }), /name/i);
+  assert.deepEqual(calls, []);
+
+  await assert.rejects(operator({}, "macos", {
+    arguments: { output: "nodes", type: "collection", name: "surge/sources", clientChain: "off" },
+    async produceArtifact(request) { calls.push(request); return nodes; },
+  }), /name/i);
+  assert.deepEqual(calls, []);
 });

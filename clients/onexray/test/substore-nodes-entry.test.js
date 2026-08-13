@@ -4,7 +4,7 @@ import test from "node:test";
 import { runOneXrayNodesProcessor } from "../src/substore-nodes-entry.js";
 
 const UUID = "00000000-0000-4000-8000-000000000001";
-const ARGUMENTS = Object.freeze({ output: "nodes", type: "collection", name: "OneXray nodes" });
+const ARGUMENTS = Object.freeze({ output: "nodes", type: "collection", name: "apple-proxy-onexray" });
 const LANDING = Object.freeze({
   name: "🇩🇪 Frankfurt vless",
   type: "vless",

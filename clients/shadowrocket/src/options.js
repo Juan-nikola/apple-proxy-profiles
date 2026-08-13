@@ -1,5 +1,6 @@
 import { OPTION_VALUES } from "../../../shared/contracts.js";
 import { platformPolicyPreset } from "../../../shared/policies/platform-presets.js";
+import { validateCollectionName } from "../../../shared/substore/collection-name.js";
 
 const REQUIRED_KEYS = Object.freeze([
   "output",
@@ -78,6 +79,8 @@ export function parseOptions(raw) {
   for (const key of REQUIRED_KEYS) {
     options[key] = key === "subscriptionName"
       ? subscriptionDisplayName(raw)
+      : key === "name"
+        ? validateCollectionName(raw.name, "Option 'name'")
       : OPTION_VALUES[key]
         ? enumValue(raw, key)
         : requiredString(raw, key);

@@ -22,6 +22,15 @@ test("accepts a valid node task on edge channel", () => {
   assert.equal(result.ok, true, result.errors.join(", "));
 });
 
+test("accepts a client-specific collection slug and rejects unsafe collection names", () => {
+  const safe = `${PUBLIC}/edge/egern/scripts/egern-node-generator.js#output=nodes&type=collection&name=apple-proxy-egern&clientChain=off`;
+  assert.equal(checkSubstoreTaskUrl(safe).ok, true);
+  for (const name of ["", "bad%2Fname", "bad%3Fname", "bad%23name", "%E4%B8%AD%E6%96%87", "bad%0Aname", "__proto__"]) {
+    const url = `${PUBLIC}/edge/egern/scripts/egern-node-generator.js#output=nodes&type=collection&name=${name}&clientChain=off`;
+    assert.equal(checkSubstoreTaskUrl(url).ok, false, name);
+  }
+});
+
 test("rejects an unsupported dnsMode value", () => {
   const url = `${PUBLIC}/current/shadowrocket/scripts/shadowrocket-profile-generator.js#output=config&type=collection&name=apple-proxy-sources&subscriptionName=Apple-Proxy-Nodes&platform=macos&dnsMode=weird`;
   const result = checkSubstoreTaskUrl(url);

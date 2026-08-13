@@ -1,4 +1,5 @@
 import { OPTION_VALUES } from "../../../shared/contracts.js";
+import { validateCollectionName } from "../../../shared/substore/collection-name.js";
 import { EgernUrlFallback } from "./runtime-fallbacks.js";
 
 export const PUBLIC_SNAPSHOT_BASE_URL =
@@ -43,7 +44,6 @@ const SUPPORTED_PLATFORMS = new Set(["macos", "iphone", "ipad"]);
 const CHANNELS = new Set(["edge", "current"]);
 const ADBLOCK_MODES = new Set(["off", "full"]);
 const PROTOTYPE_KEYS = new Set(["__proto__", "constructor", "prototype"]);
-const AMBIGUOUS_WHITESPACE = /[\t\v\f\u00a0\u1680\u2000-\u200b\u2028\u2029\u202f\u205f\u3000\ufeff]/u;
 const FORBIDDEN_URL_CHARACTER = /[\u0000-\u001f\u007f\\]/u;
 const ENCODED_URL_CONTROL = /%(?:0[0-9a-f]|1[0-9a-f]|7f)/iu;
 const PARSED_OPTIONS = new WeakSet();
@@ -122,20 +122,6 @@ function exactLiteral(values, key, expected) {
   const value = ownValue(values, key);
   if (typeof value !== "string" || value !== expected) {
     throw optionError(key, `must be '${expected}'`);
-  }
-  return value;
-}
-
-function profileName(values) {
-  const value = ownValue(values, "name");
-  if (typeof value !== "string" || value.length === 0) {
-    throw optionError("name", "must be a non-empty string");
-  }
-  if (/\r|\n/u.test(value)) {
-    throw optionError("name", "must not contain CR or LF");
-  }
-  if (value.trim() !== value || AMBIGUOUS_WHITESPACE.test(value)) {
-    throw optionError("name", "contains ambiguous whitespace");
   }
   return value;
 }
@@ -225,7 +211,7 @@ export function parseEgernOptions(raw) {
   const options = {
     output: exactLiteral(values, "output", "config"),
     type: exactLiteral(values, "type", "collection"),
-    name: profileName(values),
+    name: validateCollectionName(ownValue(values, "name"), "Option 'name'"),
     nodeSubscriptionUrl: privateNodeUrl(values),
     platform,
     channel,

@@ -14,6 +14,7 @@
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 import { OPTION_VALUES } from "../shared/contracts.js";
+import { validateCollectionName } from "../shared/substore/collection-name.js";
 
 const PUBLIC_BASE = "juan-nikola.github.io/apple-proxy-profiles";
 
@@ -152,8 +153,12 @@ export function checkTaskOptions(schema, params) {
     if (key === "output" && !schema.outputValues.includes(params[key])) {
       errors.push(`Option 'output' has unsupported value '${params[key]}' (expected: ${schema.outputValues.join(", ")})`);
     }
-    if (key === "name" && !/^[A-Za-z0-9_-]+$/u.test(params[key])) {
-      errors.push("Option 'name' must be a simple slug (letters, digits, dash, underscore)");
+    if (key === "name") {
+      try {
+        validateCollectionName(params[key], "Option 'name'");
+      } catch (error) {
+        errors.push(error.message);
+      }
     }
     if (key === "subscriptionName" && /[\r\n]/u.test(params[key])) {
       errors.push("Option 'subscriptionName' must not contain line breaks");

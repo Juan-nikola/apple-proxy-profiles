@@ -1,6 +1,7 @@
 import { normalizeNodes } from "../../../shared/nodes/normalize-nodes.js";
 import { normalizeProtocol } from "../../../shared/nodes/protocol-registry.js";
 import { assertRenderableNodes } from "../../../shared/nodes/renderability.js";
+import { validateCollectionName } from "../../../shared/substore/collection-name.js";
 
 const ALLOWED_OPTIONS = new Set(["output", "type", "name", "clientChain"]);
 
@@ -15,12 +16,10 @@ function parseArguments(rawArguments) {
   }
   if (rawArguments.output !== "nodes") throw new Error("output must be nodes");
   if (rawArguments.type !== "collection") throw new Error("type must be collection");
-  if (typeof rawArguments.name !== "string" || rawArguments.name.length === 0 || rawArguments.name.trim() !== rawArguments.name) {
-    throw new Error("name must be a non-empty single-line string");
-  }
+  const name = validateCollectionName(rawArguments.name, "name");
   const clientChain = Object.hasOwn(rawArguments, "clientChain") ? rawArguments.clientChain : "off";
   if (clientChain !== "off" && clientChain !== "on") throw new Error("clientChain must be off or on");
-  return { type: rawArguments.type, name: rawArguments.name, clientChain };
+  return { type: rawArguments.type, name, clientChain };
 }
 
 function logDiagnostics(context, diagnostics) {

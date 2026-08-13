@@ -12,7 +12,7 @@ const NODE = {
   uuid: UUID,
   _subName: "[自建]",
 };
-const BASE = Object.freeze({ type: "collection", name: "OneXray 私密 Profile" });
+const BASE = Object.freeze({ type: "collection", name: "apple-proxy-onexray" });
 const LANDING = Object.freeze({
   name: "🇩🇪 Frankfurt vless",
   type: "vless",

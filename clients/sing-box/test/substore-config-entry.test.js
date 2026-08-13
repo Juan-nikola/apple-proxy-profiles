@@ -31,7 +31,7 @@ test("Sub-Store sing-box entry requests a private collection and returns JSON co
       arguments: {
         output: "config",
         type: "collection",
-        name: "sing-box-sources",
+        name: "apple-proxy-singbox",
         subscriptionName: "sing-box-Nodes",
         platform: "openwrt",
         channel: "edge",
@@ -44,7 +44,7 @@ test("Sub-Store sing-box entry requests a private collection and returns JSON co
   );
   assert.deepEqual(calls, [{
     type: "collection",
-    name: "sing-box-sources",
+    name: "apple-proxy-singbox",
     platform: "JSON",
     produceType: "internal",
   }]);
@@ -97,6 +97,23 @@ test("Sub-Store sing-box entry normalizes raw collection nodes before rendering"
   const config = JSON.parse(result.$content);
   assert.equal(config.log.level, "info");
   assert.ok(config.outbounds.some((outbound) => outbound.type === "shadowsocks"));
+});
+
+test("Sub-Store sing-box entry rejects unsafe collection names before artifact production", async () => {
+  for (const name of ["中文", "sing-box/sources", "sing-box?sources", "sing-box#sources", " sing-box-sources", "sing-box-sources ", "sing-box\nsources", "prototype"]) {
+    let called = false;
+    await assert.rejects(operator({}, "macos", {
+      arguments: {
+        output: "config",
+        type: "collection",
+        name,
+        subscriptionName: "sing-box-Nodes",
+        platform: "macos",
+      },
+      async produceArtifact() { called = true; return nodes; },
+    }), /name/i, JSON.stringify(name));
+    assert.equal(called, false, JSON.stringify(name));
+  }
 });
 
 test("Sub-Store sing-box entry rejects a mixed inventory without partial JSON or private logs", async () => {

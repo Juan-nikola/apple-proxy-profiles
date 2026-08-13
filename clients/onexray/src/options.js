@@ -1,4 +1,5 @@
 import { OPTION_VALUES } from "../../../shared/contracts.js";
+import { validateCollectionName } from "../../../shared/substore/collection-name.js";
 
 const REQUIRED_KEYS = Object.freeze(["output", "type", "name"]);
 const DEFAULTS = Object.freeze({
@@ -91,9 +92,7 @@ export function parseOneXrayOptions(raw) {
   if (!OUTPUTS.has(output)) throw optionError("output", "has an unsupported value");
   const type = requiredSingleLine(values, "type");
   if (type !== "collection") throw optionError("type", "must be collection");
-  const rawName = requiredSingleLine(values, "name");
-  const name = rawName.trim();
-  if (name.length === 0) throw optionError("name", "must not be blank");
+  const name = validateCollectionName(values.get("name"), "OneXray option 'name'");
 
   const clientChain = enumValue(values, "clientChain", OPTION_VALUES.clientChain, DEFAULTS.clientChain);
   const clientChainTarget = chainTarget(values);

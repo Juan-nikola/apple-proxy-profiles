@@ -88,6 +88,15 @@ test("requires exact profile discriminator values and supported platforms", () =
   }
 });
 
+test("accepts safe collection slugs exactly and rejects unsafe collection names", () => {
+  for (const name of ["apple-proxy-egern", "apple-proxy-sources"]) {
+    assert.equal(parseEgernOptions({ ...required, name }).name, name);
+  }
+  for (const name of ["", " ", "中文", "egern/sources", "egern?sources", "egern#sources", " egern-sources", "egern-sources ", "egern\nsources", "__proto__"]) {
+    assert.throws(() => parseEgernOptions({ ...required, name }), /name/i, JSON.stringify(name));
+  }
+});
+
 test("rejects primitives, arrays, inherited options, accessors, and prototype tricks", () => {
   for (const raw of [null, undefined, [], "options", 7, true]) {
     assert.throws(() => parseEgernOptions(raw), /Options must be a plain object/);
