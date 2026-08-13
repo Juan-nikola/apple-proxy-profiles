@@ -456,7 +456,8 @@ async function loadText(path) {
   return readFile(join(repositoryRoot, path), "utf8");
 }
 
-export async function renderDefaultStaticFiles({ generatedAt }) {
+export async function renderDefaultStaticFiles({ generatedAt, channel = "current" }) {
+  if (channel !== "current" && channel !== "edge") throw new TypeError("Unsupported static publication channel");
   const paths = [
     ["shadowrocket/scripts/shadowrocket-node-subscription.js", "clients/shadowrocket/dist/shadowrocket-node-subscription.js"],
     ["shadowrocket/scripts/shadowrocket-node-operator.js", "clients/shadowrocket/dist/shadowrocket-node-operator.js"],
@@ -535,7 +536,7 @@ export async function renderDefaultStaticFiles({ generatedAt }) {
       throw new Error(`Public compatibility alias drifted for ${canonical}`);
     }
   }
-  const baseUrl = "https://juan-nikola.github.io/apple-proxy-profiles/current";
+  const baseUrl = `https://juan-nikola.github.io/apple-proxy-profiles/${channel}`;
   const profile = renderHappRoutingProfile({ baseUrl, generatedAt });
   const deepLink = renderHappRoutingDeepLink(profile);
   loaded.set("happ/routing-profile.json", `${JSON.stringify(profile, null, 2)}\n`);
@@ -572,7 +573,12 @@ export async function buildArtifacts({
   }
   const upstream = Object.freeze({ ...BLACKMATRIX7_BASELINE, commit, committedAt });
   const snapshot = await fetchSnapshot({ commit, catalog: FETCH_SOURCE_CATALOG, concurrency: 4 });
-  const statics = includeStaticFiles ? await renderDefaultStaticFiles({ generatedAt: upstream.committedAt }) : null;
+  const statics = includeStaticFiles
+    ? await renderDefaultStaticFiles({
+      generatedAt: upstream.committedAt,
+      channel: operation === "build-edge" ? "edge" : "current",
+    })
+    : null;
   const artifacts = buildClientArtifacts({
     snapshot,
     upstream,

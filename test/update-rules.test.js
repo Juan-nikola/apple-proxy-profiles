@@ -201,6 +201,17 @@ test("renders Happ's public helper, generators, profile, and all six example clo
   assert.match(files.get("happ/import.html"), /happ:\/\/routing\/onadd\//u);
 });
 
+test("renders Happ geodata URLs against the selected publication channel", async () => {
+  const edgeFiles = await renderDefaultStaticFiles({ generatedAt: upstream.committedAt, channel: "edge" });
+  const edgeProfile = JSON.parse(edgeFiles.get("happ/routing-profile.json"));
+  assert.equal(edgeProfile.Geoipurl, "https://juan-nikola.github.io/apple-proxy-profiles/edge/happ/geoip.dat");
+  assert.equal(edgeProfile.Geositeurl, "https://juan-nikola.github.io/apple-proxy-profiles/edge/happ/geosite.dat");
+  const encoded = edgeFiles.get("happ/import.html").match(/happ:\/\/routing\/onadd\/([^"<]+)/u)?.[1];
+  assert.ok(encoded);
+  const decoded = Buffer.from(encoded, "base64").toString("utf8");
+  assert.match(decoded, /\/edge\/happ\/(?:geoip|geosite)\.dat/u);
+});
+
 test("parses raw production ChinaIP snapshots for audit provenance", () => {
   const fixture = lightweightFixtureSnapshots();
   const raw = new Map([["ChinaIPs", {
