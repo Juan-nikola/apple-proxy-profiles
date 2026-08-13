@@ -1,9 +1,8 @@
-import { CLIENT } from "../../../shared/contracts.js";
-import { filterNodesForClient } from "../../../shared/nodes/capabilities.js";
 import { normalizeNodes } from "../../../shared/nodes/normalize-nodes.js";
+import { assertRenderableNodes } from "../../../shared/nodes/renderability.js";
 import { parseSingBoxOptions } from "./options.js";
 import { renderSingBoxConfig } from "./render-config.js";
-import { sanitizeSingBoxNode } from "./render-node.js";
+import { renderSingBoxOutbound, sanitizeSingBoxNode } from "./render-node.js";
 
 export const PUBLIC_RULE_ROOT = "https://juan-nikola.github.io/apple-proxy-profiles";
 
@@ -36,10 +35,9 @@ export async function operator(input, targetPlatform, context = {}) {
   });
   if (!Array.isArray(rawNodes) || rawNodes.length === 0) throw new Error("produceArtifact must return a non-empty node array");
   const normalized = normalizeNodes(rawNodes, { clientChain: options.clientChain });
-  const filtered = filterNodesForClient(normalized.nodes, CLIENT.singbox);
-  if (filtered.nodes.length === 0) throw new Error("No compatible sing-box nodes");
-  logDiagnostics(context, options, filtered.nodes);
+  assertRenderableNodes(normalized.nodes, "sing-box", (node) => renderSingBoxOutbound(sanitizeSingBoxNode(node)));
+  logDiagnostics(context, options, normalized.nodes);
   const ruleBaseUrl = `${PUBLIC_RULE_ROOT}/${options.channel}/sing-box/rule-sets`;
-  const config = renderSingBoxConfig(options, filtered.nodes.map(sanitizeSingBoxNode), { ruleBaseUrl });
+  const config = renderSingBoxConfig(options, normalized.nodes.map(sanitizeSingBoxNode), { ruleBaseUrl });
   return { ...input, $content: `${JSON.stringify(config, null, 2)}\n` };
 }

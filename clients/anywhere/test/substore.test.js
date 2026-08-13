@@ -11,16 +11,20 @@ const ARGUMENTS = Object.freeze({
 });
 
 function inventory() {
+  return [{
+    name: "Singapore SS",
+    type: "ss",
+    server: "198.51.100.20",
+    port: 443,
+    cipher: "aes-128-gcm",
+    password: "TEST_ONLY_ANYWHERE_OPERATOR_PASSWORD",
+    _subName: "[机场] Singapore",
+  }];
+}
+
+function mixedInventory() {
   return [
-    {
-      name: "Singapore SS",
-      type: "ss",
-      server: "198.51.100.20",
-      port: 443,
-      cipher: "aes-128-gcm",
-      password: "TEST_ONLY_ANYWHERE_OPERATOR_PASSWORD",
-      _subName: "[机场] Singapore",
-    },
+    ...inventory(),
     {
       name: "Unsupported Snell",
       type: "snell",
@@ -40,15 +44,27 @@ function producer(nodes, calls = []) {
   };
 }
 
-test("Anywhere File Operator produces one private Clash subscription", async () => {
+test("Anywhere File Operator rejects a mixed inventory without partial output or private logs", async () => {
   const calls = [];
   const lines = [];
   const input = { unchanged: true };
-  const result = await operator(input, "Anywhere", {
-    arguments: ARGUMENTS,
-    produceArtifact: producer(inventory(), calls),
-    logger: { info(line) { lines.push(line); } },
-  });
+  let result;
+  await assert.rejects(
+    async () => {
+      result = await operator(input, "Anywhere", {
+        arguments: ARGUMENTS,
+        produceArtifact: producer(mixedInventory(), calls),
+        logger: { info(line) { lines.push(line); } },
+      });
+    },
+    (error) => {
+      assert.equal(error.message, "Anywhere cannot render selected protocols: snell=1");
+      for (const secret of ["Unsupported Snell", "192.0.2.20", "TEST_ONLY_ANYWHERE_OPERATOR_PSK"]) {
+        assert.equal(error.message.includes(secret), false);
+      }
+      return true;
+    },
+  );
   assert.equal(operator.length, 2);
   assert.deepEqual(calls, [{
     type: "collection",
@@ -56,21 +72,8 @@ test("Anywhere File Operator produces one private Clash subscription", async () 
     platform: "JSON",
     produceType: "internal",
   }]);
-  assert.equal(result.unchanged, true);
-  assert.match(result.$content, /^proxies:\n/u);
-  assert.match(result.$content, /type: "ss"/u);
-  assert.doesNotMatch(result.$content, /snell|_profile|_subName/u);
-  assert.equal(lines.length, 1);
-  assert.match(lines[0], /^\[anywhere-profile\] \{/u);
-  const diagnostics = JSON.parse(lines[0].replace(/^\[anywhere-profile\] /u, ""));
-  assert.equal(diagnostics.total, 2);
-  assert.equal(diagnostics.accepted, 1);
-  assert.equal(diagnostics.excluded["unsupported-protocol"], 1);
-  for (const node of inventory()) {
-    for (const value of [node.name, node.server, node.password, node.psk]) {
-      if (value !== undefined) assert.equal(lines[0].includes(value), false, value);
-    }
-  }
+  assert.equal(result, undefined);
+  assert.deepEqual(lines, []);
 });
 
 test("Anywhere File Operator enforces the exact chain-off collection contract", async () => {
@@ -133,8 +136,8 @@ test("Anywhere File Operator rejects hostile input without reflecting it", async
 
   await assert.rejects(operator({}, "Anywhere", {
     arguments: ARGUMENTS,
-    produceArtifact: producer([{ ...inventory()[1] }]),
-  }), /Invalid Anywhere node inventory|No compatible Anywhere nodes/);
+    produceArtifact: producer([{ ...mixedInventory()[1] }]),
+  }), /Invalid Anywhere node inventory|cannot render selected protocols/);
 });
 
 test("logger failure never changes the generated artifact", async () => {

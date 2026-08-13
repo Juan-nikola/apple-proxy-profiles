@@ -99,29 +99,26 @@ test("operator logs one aggregate diagnostics line without node values", async (
   }
 });
 
-test("operator excludes every Egern-only protocol before Shadowrocket output and chaining", async () => {
+test("operator rejects a mixed inventory before Shadowrocket output and logging", async () => {
   const unsupported = egernOnlyNodes();
   const lines = [];
-  const result = await operator([fakeNodes[0], ...unsupported], "Shadowrocket", {
-    arguments: { output: "nodes", clientChain: "on" },
-    logger: { info(line) { lines.push(line); } },
-  });
-
-  assert.deepEqual(result.map((node) => node.type), ["ss"]);
-  assert.equal(result.some((node) => node?._profile?.chained), false);
-  assert.equal(lines.length, 1);
-  const diagnostics = JSON.parse(lines[0].replace(/^\[shadowrocket-profile\] /, ""));
-  assert.deepEqual(Object.keys(diagnostics), [
-    "total", "accepted", "protocol", "source", "region", "excluded", "warnings",
-  ]);
-  assert.equal(diagnostics.total, 4);
-  assert.equal(diagnostics.accepted, 1);
-  assert.equal(diagnostics.excluded["chain-protocol-unsupported"], 3);
-  assert.equal(diagnostics.excluded["unsupported-protocol"], 3);
-  assert.equal(JSON.stringify(diagnostics).includes("example.invalid"), false);
+  await assert.rejects(
+    operator([fakeNodes[0], ...unsupported], "Shadowrocket", {
+      arguments: { output: "nodes", clientChain: "on" },
+      logger: { info(line) { lines.push(line); } },
+    }),
+    (error) => {
+      assert.equal(error.message, "Shadowrocket cannot render selected protocols: anytls=1,ssh=1,wireguard=1");
+      for (const secret of ["SSH landing", "ssh-landing.example.invalid", "TEST_ONLY_SSH_PASSWORD"]) {
+        assert.equal(error.message.includes(secret), false);
+      }
+      return true;
+    },
+  );
+  assert.deepEqual(lines, []);
 });
 
-test("operator fails closed without logging when only Egern protocols survive normalization", async () => {
+test("operator reports protocol counts without logging when every selected protocol is unrenderable", async () => {
   const unsupported = egernOnlyNodes();
   const inventories = [...unsupported.map((node) => [node]), [unsupported[0], unsupported[1], unsupported[2]]];
 
@@ -135,7 +132,7 @@ test("operator fails closed without logging when only Egern protocols survive no
       }),
       (error) => {
         message = error.message;
-        return message === "No compatible Shadowrocket nodes";
+        return /^Shadowrocket cannot render selected protocols: /u.test(message);
       },
     );
     assert.deepEqual(lines, []);

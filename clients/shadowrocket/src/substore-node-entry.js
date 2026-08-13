@@ -1,7 +1,6 @@
-import { CLIENT } from "../../../shared/contracts.js";
-import { filterNodesForClient } from "../../../shared/nodes/capabilities.js";
-import { increment } from "../../../shared/nodes/diagnostics.js";
 import { normalizeNodes } from "../../../shared/nodes/normalize-nodes.js";
+import { assertRenderableNodes } from "../../../shared/nodes/renderability.js";
+import { renderShadowrocketProxyRecord } from "./substore-node-subscription-entry.js";
 
 const ALLOWED_OPTIONS = new Set(["output", "clientChain"]);
 
@@ -46,14 +45,7 @@ export async function operator(proxies = [], targetPlatform, context = {}) {
   void targetPlatform;
   const { clientChain } = parseArguments(context.arguments ?? {});
   const result = normalizeNodes(proxies, { clientChain });
-  const filtered = filterNodesForClient(result.nodes, CLIENT.shadowrocket);
-  if (filtered.nodes.length === 0) {
-    throw new Error("No compatible Shadowrocket nodes");
-  }
-  result.diagnostics.accepted = filtered.diagnostics.accepted;
-  for (const [reason, count] of Object.entries(filtered.diagnostics.excluded)) {
-    increment(result.diagnostics.excluded, reason, count);
-  }
+  assertRenderableNodes(result.nodes, "Shadowrocket", renderShadowrocketProxyRecord);
   logDiagnostics(context, result.diagnostics);
-  return filtered.nodes;
+  return result.nodes;
 }

@@ -98,3 +98,40 @@ test("Sub-Store sing-box entry normalizes raw collection nodes before rendering"
   assert.equal(config.log.level, "info");
   assert.ok(config.outbounds.some((outbound) => outbound.type === "shadowsocks"));
 });
+
+test("Sub-Store sing-box entry rejects a mixed inventory without partial JSON or private logs", async () => {
+  const privateNode = {
+    name: "PRIVATE_SINGBOX_SUDOKU",
+    type: "sudoku",
+    server: "private-singbox.example.invalid",
+    port: 443,
+    key: "TEST_ONLY_SINGBOX_SUDOKU_KEY",
+    _subName: "[自建] Sudoku",
+  };
+  const lines = [];
+  let result;
+  await assert.rejects(
+    async () => {
+      result = await operator({}, "macos", {
+        arguments: {
+          output: "config",
+          type: "collection",
+          name: "sing-box-sources",
+          subscriptionName: "sing-box-Nodes",
+          platform: "macos",
+        },
+        async produceArtifact() { return [nodes[0], privateNode]; },
+        logger: { info(line) { lines.push(line); } },
+      });
+    },
+    (error) => {
+      assert.equal(error.message, "sing-box cannot render selected protocols: sudoku=1");
+      for (const secret of [privateNode.name, privateNode.server, privateNode.key]) {
+        assert.equal(error.message.includes(secret), false);
+      }
+      return true;
+    },
+  );
+  assert.equal(result, undefined);
+  assert.deepEqual(lines, []);
+});

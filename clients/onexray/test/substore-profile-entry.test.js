@@ -13,6 +13,14 @@ const NODE = {
   _subName: "[自建]",
 };
 const BASE = Object.freeze({ type: "collection", name: "OneXray 私密 Profile" });
+const LANDING = Object.freeze({
+  name: "🇩🇪 Frankfurt vless",
+  type: "vless",
+  server: "landing.example.invalid",
+  port: 443,
+  uuid: UUID,
+  _subName: "[落地]",
+});
 
 function args(output, extra = {}) {
   return { ...BASE, output, ...extra };
@@ -47,7 +55,7 @@ test("passes validated compiled GeoData hashes into the shared audit context", (
 
 test("reads a readable Sub-Store policy file with Chinese business keys", () => {
   const policy = JSON.stringify({
-    "AI 专用": "NODE:🇯🇵 Tokyo｜自建",
+    "AI 专用": "NODE:🇯🇵 Tokyo · VLESS｜自建",
     "GitHub": "FOLLOW",
   });
   const audit = JSON.parse(runOneXrayProfileProcessor({
@@ -150,4 +158,44 @@ test("contains Proxy request traps behind the stable invalid-request code", () =
       return true;
     },
   );
+});
+
+test("Profile and audit reject a mixed unrenderable inventory without partial output", () => {
+  const privateNode = {
+    ...NODE,
+    name: "PRIVATE_ONEXRAY_PROFILE_SNELL",
+    type: "snell",
+    server: "private-onexray.example.invalid",
+    psk: "TEST_ONLY_ONEXRAY_PROFILE_PSK",
+    version: 4,
+  };
+  for (const output of ["profile", "audit"]) {
+    let text;
+    assert.throws(
+      () => {
+        text = runOneXrayProfileProcessor({ proxies: [NODE, privateNode], arguments: args(output) });
+      },
+      (error) => {
+        assert.equal(error.message, "OneXray cannot render selected protocols: snell=1");
+        for (const secret of [privateNode.name, privateNode.server, privateNode.psk]) {
+          assert.equal(error.message.includes(secret), false);
+        }
+        return true;
+      },
+      output,
+    );
+    assert.equal(text, undefined, output);
+  }
+});
+
+test("Profile keeps OneXray native client-chain resolution without generic chain clones", () => {
+  const profile = runOneXrayProfileProcessor({
+    proxies: [NODE, LANDING],
+    arguments: args("profile", {
+      clientChain: "on",
+      clientChainTarget: "NODE:🇩🇪 Frankfurt · VLESS｜落地",
+    }),
+  });
+  assert.match(profile, /^onexray:\/\/onexray\.com\/config\/add\?type=profile&data=.+\n$/u);
+  assert.equal(profile.includes(LANDING.server), false);
 });

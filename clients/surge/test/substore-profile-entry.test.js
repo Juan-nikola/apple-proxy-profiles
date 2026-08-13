@@ -121,3 +121,37 @@ test("Sub-Store Surge profile carries the private remote provider URL", async ()
   assert.match(result.$content, /policy-path=https:\/\/substore\.example\.invalid\/surge-nodes/u);
   assert.doesNotMatch(result.$content, / = ss,198\.51\.100\.10,443/u);
 });
+
+test("Sub-Store Surge profile rejects an unrenderable selected protocol before output", async () => {
+  const privateNode = {
+    name: "PRIVATE_SURGE_ANYTLS",
+    type: "anytls",
+    server: "private-surge.example.invalid",
+    port: 443,
+    password: "TEST_ONLY_SURGE_ANYTLS_PASSWORD",
+    _subName: "[自建] AnyTLS",
+  };
+  let result;
+  await assert.rejects(
+    async () => {
+      result = await operator({}, "macos", {
+        arguments: {
+          output: "config",
+          type: "collection",
+          name: "surge-sources",
+          subscriptionName: "Surge-Nodes",
+          platform: "macos",
+        },
+        async produceArtifact() { return [nodes[0], privateNode]; },
+      });
+    },
+    (error) => {
+      assert.equal(error.message, "Surge cannot render selected protocols: anytls=1");
+      for (const secret of [privateNode.name, privateNode.server, privateNode.password]) {
+        assert.equal(error.message.includes(secret), false);
+      }
+      return true;
+    },
+  );
+  assert.equal(result, undefined);
+});

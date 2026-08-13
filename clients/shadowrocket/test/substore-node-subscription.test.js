@@ -62,14 +62,14 @@ test("serializes Snell, Shadowsocks, Trojan, Hysteria2 and TUIC nodes", () => {
   assert.equal(records[4].password, "TEST_ONLY_TUIC_PASSWORD");
 });
 
-test("keeps every Shadowrocket-supported protocol in the raw proxy record", () => {
-  const text = renderShadowrocketSubscription([
-    node({ type: "wireguard", name: "🇺🇸 WG｜自建·U", server: "192.0.2.16", port: 51820 }),
-    node(),
-  ]);
-  const records = recordsOf(text);
-  assert.equal(records.length, 2);
-  assert.deepEqual(records.map((record) => record.type), ["wireguard", "vless"]);
+test("rejects an unimplemented Shadowrocket protocol instead of serializing a partial record", () => {
+  assert.throws(
+    () => renderShadowrocketSubscription([
+      node({ type: "wireguard", name: "🇺🇸 WG｜自建·U", server: "192.0.2.16", port: 51820 }),
+      node(),
+    ]),
+    /Shadowrocket cannot render selected protocols: wireguard=1/u,
+  );
 });
 
 test("operator produces a continent-grouped subscription from the collection", async () => {
@@ -112,4 +112,36 @@ test("operator rejects invalid arguments and empty inventories", async () => {
     arguments: { output: "nodes", type: "collection", name: "apple-proxy-sources" },
     async produceArtifact() { return []; },
   }), /non-empty/i);
+});
+
+test("operator rejects a mixed Shadowrocket collection without partial subscription output", async () => {
+  const privateNode = {
+    name: "PRIVATE_SHADOWROCKET_SSH",
+    type: "ssh",
+    server: "private-shadowrocket.example.invalid",
+    port: 22,
+    username: "TEST_ONLY_SHADOWROCKET_USERNAME",
+    password: "TEST_ONLY_SHADOWROCKET_PASSWORD",
+    _subName: "[落地] SSH",
+  };
+  const lines = [];
+  let result;
+  await assert.rejects(
+    async () => {
+      result = await operator({}, "Shadowrocket", {
+        arguments: { output: "nodes", type: "collection", name: "apple-proxy-sources", clientChain: "off" },
+        async produceArtifact() { return [node(), privateNode]; },
+        logger: { info(line) { lines.push(line); } },
+      });
+    },
+    (error) => {
+      assert.equal(error.message, "Shadowrocket cannot render selected protocols: ssh=1");
+      for (const secret of [privateNode.name, privateNode.server, privateNode.password]) {
+        assert.equal(error.message.includes(secret), false);
+      }
+      return true;
+    },
+  );
+  assert.equal(result, undefined);
+  assert.deepEqual(lines, []);
 });

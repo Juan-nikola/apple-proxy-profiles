@@ -5,6 +5,14 @@ import { runOneXrayNodesProcessor } from "../src/substore-nodes-entry.js";
 
 const UUID = "00000000-0000-4000-8000-000000000001";
 const ARGUMENTS = Object.freeze({ output: "nodes", type: "collection", name: "OneXray nodes" });
+const LANDING = Object.freeze({
+  name: "🇩🇪 Frankfurt vless",
+  type: "vless",
+  server: "landing.example.invalid",
+  port: 443,
+  uuid: UUID,
+  _subName: "[落地]",
+});
 
 function sourceNode(overrides = {}) {
   return {
@@ -18,32 +26,34 @@ function sourceNode(overrides = {}) {
   };
 }
 
-test("normalizes before filtering and renders only compatible nodes", () => {
-  const text = runOneXrayNodesProcessor({
+test("normalizes before rejecting a mixed unrenderable inventory", () => {
+  const privateName = "PRIVATE_UNSUPPORTED_NODE";
+  const privateServer = "private.invalid";
+  const privateSecret = "TEST_ONLY_UNSUPPORTED_PSK";
+  assert.throws(() => runOneXrayNodesProcessor({
     proxies: [
       sourceNode(),
       sourceNode({
-        name: "PRIVATE_UNSUPPORTED_NODE",
+        name: privateName,
         type: "snell",
-        server: "private.invalid",
-        psk: "TEST_ONLY_UNSUPPORTED_PSK",
+        server: privateServer,
+        psk: privateSecret,
         version: 4,
       }),
     ],
     arguments: ARGUMENTS,
+  }), (error) => {
+    assert.equal(error.message, "OneXray cannot render selected protocols: snell=1");
+    for (const secret of [privateName, privateServer, privateSecret]) assert.equal(error.message.includes(secret), false);
+    return true;
   });
-  const output = JSON.parse(text);
-
-  assert.deepEqual(output.outbounds.map((outbound) => ({ name: outbound.name, tag: outbound.tag })), [
-    { name: "🇯🇵 Tokyo｜自建", tag: "🇯🇵 Tokyo｜自建" },
-  ]);
-  assert.equal(text.includes("PRIVATE_UNSUPPORTED_NODE"), false);
-  assert.equal(text.includes("TEST_ONLY_UNSUPPORTED_PSK"), false);
 });
 
-test("emits deterministic count-only diagnostics for mixed compatibility inventories", () => {
+test("does not emit diagnostics or partial output for mixed compatibility inventories", () => {
   const diagnostics = [];
-  const text = runOneXrayNodesProcessor({
+  let text;
+  assert.throws(() => {
+    text = runOneXrayNodesProcessor({
     proxies: [
       sourceNode(),
       sourceNode({
@@ -56,14 +66,11 @@ test("emits deterministic count-only diagnostics for mixed compatibility invento
     ],
     arguments: ARGUMENTS,
     onDiagnostics(value) { diagnostics.push(value); },
-  });
+    });
+  }, /OneXray cannot render selected protocols: snell=1/u);
 
-  assert.deepEqual(diagnostics, [{
-    accepted: 1,
-    excluded: { "unsupported-onexray-protocol": 1 },
-  }]);
-  assert.equal(text.includes("PRIVATE_UNSUPPORTED_NODE"), false);
-  assert.equal(text.includes("TEST_ONLY_UNSUPPORTED_PSK"), false);
+  assert.equal(text, undefined);
+  assert.deepEqual(diagnostics, []);
 });
 
 test("fails closed with count-only diagnostics when no normalized node is compatible", () => {
@@ -75,7 +82,7 @@ test("fails closed with count-only diagnostics when no normalized node is compat
       arguments: ARGUMENTS,
     }),
     (error) => {
-      assert.match(error.message, /^OneXray nodes: no-compatible-nodes; excluded counts: unsupported-onexray-protocol=1$/u);
+      assert.equal(error.message, "OneXray cannot render selected protocols: snell=1");
       assert.equal(error.message.includes(privateName), false);
       assert.equal(error.message.includes(privateSecret), false);
       return true;
@@ -122,4 +129,19 @@ test("maps policy failures to a stable error code without leaking target input",
       return true;
     },
   );
+});
+
+test("uses OneXray native chaining without probing a generic generated chain clone", () => {
+  const text = runOneXrayNodesProcessor({
+    proxies: [sourceNode(), LANDING],
+    arguments: {
+      ...ARGUMENTS,
+      clientChain: "on",
+      clientChainTarget: "NODE:🇩🇪 Frankfurt · VLESS｜落地",
+    },
+  });
+  const output = JSON.parse(text);
+  assert.equal(output.outbounds.length, 1);
+  assert.equal(output.outbounds[0].name, "🇯🇵 Tokyo · VLESS｜自建");
+  assert.equal(text.includes(LANDING.server), false);
 });

@@ -1,16 +1,9 @@
-import { CLIENT } from "../../../shared/contracts.js";
-import { filterNodesForClient } from "../../../shared/nodes/capabilities.js";
 import { normalizeNodes } from "../../../shared/nodes/normalize-nodes.js";
+import { assertRenderableNodes } from "../../../shared/nodes/renderability.js";
 import { parseOneXrayOptions } from "./options.js";
+import { renderOneXrayOutbound } from "./render-outbound.js";
 import { resolveOneXrayPolicy } from "./resolve-policy.js";
 import { renderOneXraySubscription } from "./render-subscription.js";
-
-function formatExcludedCounts(excluded) {
-  return Object.keys(excluded)
-    .sort((left, right) => left.localeCompare(right, "en"))
-    .map((reason) => `${reason}=${excluded[reason]}`)
-    .join(",");
-}
 
 function nodeOptions(raw) {
   const options = parseOneXrayOptions(raw);
@@ -76,24 +69,26 @@ export function runOneXrayNodesProcessor(input = {}) {
 
   let normalized;
   try {
-    normalized = normalizeNodes(proxies, { clientChain: options.clientChain });
+    // OneXray resolves its native chain separately; generic generated clones
+    // are not selected source nodes and cannot be rendered as native outbounds.
+    normalized = normalizeNodes(proxies, { clientChain: "off" });
   } catch {
     throw processorError("invalid-inventory");
   }
 
-  const eligible = filterNodesForClient(normalized.nodes, CLIENT.onexray);
-  emitDiagnostics(onDiagnostics, eligible.diagnostics);
-  if (eligible.nodes.length === 0) {
-    const counts = formatExcludedCounts(eligible.diagnostics.excluded);
-    throw processorError(`no-compatible-nodes; excluded counts: ${counts || "none"}`);
-  }
+  assertRenderableNodes(normalized.nodes, "OneXray", (node) => renderOneXrayOutbound(node, {
+    tag: node.name,
+    allowDisplayTag: true,
+  }));
+  const renderability = { accepted: normalized.nodes.length, excluded: {} };
+  emitDiagnostics(onDiagnostics, renderability);
 
   let resolution;
   try {
     resolution = resolveOneXrayPolicy({
       options,
       allNodes: normalized.nodes,
-      eligibleNodes: eligible.nodes,
+      eligibleNodes: normalized.nodes,
     });
   } catch (error) {
     void error;

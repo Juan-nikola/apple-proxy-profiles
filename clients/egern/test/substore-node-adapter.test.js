@@ -92,7 +92,7 @@ test("adapts the complete current 28-node Sub-Store inventory without mutating i
   assert.equal(hysteria2Proxies.every((proxy) => proxy.skip_tls_verify === true), true);
 });
 
-test("keeps the Sub-Store compatibility boundary strict for unknown values", () => {
+test("adaptation failures reject the full Sub-Store inventory", () => {
   const good = {
     ...common("Good Snell", "snell"),
     psk: "TEST_ONLY_GOOD_SNELL_PSK",
@@ -113,15 +113,28 @@ test("keeps the Sub-Store compatibility boundary strict for unknown values", () 
     { ...hysteria2(4), name: "Missing fingerprint alias", fingerprint: hash, "tls-fingerprint": undefined },
   ];
 
-  const prepared = prepareEgernInventory([good, ...invalid], { clientChain: "off" });
-
-  assert.equal(prepared.nodes.length, 1);
-  assert.deepEqual(prepared.diagnostics, {
-    accepted: 1,
-    excluded: {
-      "unsupported-egern-tls-shape": 6,
-      "unsupported-egern-security": 1,
-      "unsupported-egern-option": 2,
+  assert.throws(
+    () => prepareEgernInventory([good, ...invalid], { clientChain: "off" }),
+    (error) => {
+      assert.equal(error.message, "Egern cannot render selected protocols: hy2=4,vless=5");
+      for (const secret of ["Bad client fingerprint", "bad-client-fingerprint.example.invalid", "TEST_ONLY_HYSTERIA2_PASSWORD_1"]) {
+        assert.equal(error.message.includes(secret), false);
+      }
+      return true;
     },
+  );
+});
+
+test("adapter traps become unknown render failures without reflecting private errors", () => {
+  const privateTrap = "TEST_ONLY_PRIVATE_EGERN_ADAPTER_TRAP";
+  const hostile = {};
+  Object.defineProperty(hostile, "type", {
+    enumerable: true,
+    get() { throw new Error(privateTrap); },
   });
+  assert.throws(
+    () => prepareEgernInventory([snell(1), hostile], { clientChain: "off" }),
+    (error) => error.message === "Egern cannot render selected protocols: unknown=1"
+      && !error.message.includes(privateTrap),
+  );
 });

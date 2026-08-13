@@ -89,3 +89,32 @@ test("file operator fails closed for invalid integration input", async () => {
 test("file operator retains its JavaScript function arity", () => {
   assert.equal(operator.length, 2);
 });
+
+test("file operator rejects a mixed protocol inventory before rendering a partial Profile", async () => {
+  const privateNode = {
+    name: "PRIVATE_SHADOWROCKET_PROFILE_SSH",
+    type: "ssh",
+    server: "private-profile.example.invalid",
+    port: 22,
+    username: "TEST_ONLY_PROFILE_USERNAME",
+    password: "TEST_ONLY_PROFILE_PASSWORD",
+    _subName: "[落地] SSH",
+  };
+  let result;
+  await assert.rejects(
+    async () => {
+      result = await operator({}, "Shadowrocket", {
+        arguments: argumentsForProfile,
+        async produceArtifact() { return [fakeNodes[0], privateNode]; },
+      });
+    },
+    (error) => {
+      assert.equal(error.message, "Shadowrocket cannot render selected protocols: ssh=1");
+      for (const secret of [privateNode.name, privateNode.server, privateNode.password]) {
+        assert.equal(error.message.includes(secret), false);
+      }
+      return true;
+    },
+  );
+  assert.equal(result, undefined);
+});

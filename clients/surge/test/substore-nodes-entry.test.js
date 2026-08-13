@@ -43,12 +43,13 @@ const nodes = [
   },
 ];
 
-test("Surge node entry emits only filtered compatible nodes from the source collection", async () => {
+test("Surge node entry rejects a mixed inventory without partial output or private logs", async () => {
   const calls = [];
-  const result = await operator(
-    { id: "input" },
-    "macos",
-    {
+  const lines = [];
+  let result;
+  await assert.rejects(
+    async () => {
+      result = await operator({ id: "input" }, "macos", {
       arguments: {
         output: "nodes",
         type: "collection",
@@ -59,6 +60,15 @@ test("Surge node entry emits only filtered compatible nodes from the source coll
         calls.push(request);
         return nodes;
       },
+      logger: { info(line) { lines.push(line); } },
+      });
+    },
+    (error) => {
+      assert.equal(error.message, "Surge cannot render selected protocols: vless=1");
+      for (const secret of [nodes[1].name, nodes[1].server, nodes[1].uuid]) {
+        assert.equal(error.message.includes(secret), false);
+      }
+      return true;
     },
   );
   assert.deepEqual(calls, [{
@@ -67,7 +77,6 @@ test("Surge node entry emits only filtered compatible nodes from the source coll
     platform: "JSON",
     produceType: "internal",
   }]);
-  assert.match(result.$content, /^\[Proxy\]$/mu);
-  assert.match(result.$content, /= snell,198\.51\.100\.20,443/iu);
-  assert.doesNotMatch(result.$content, /VLESS|198\.51\.100\.21/u);
+  assert.equal(result, undefined);
+  assert.deepEqual(lines, []);
 });

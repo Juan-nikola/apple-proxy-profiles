@@ -1,6 +1,6 @@
-import { CLIENT } from "../../../shared/contracts.js";
-import { filterNodesForClient } from "../../../shared/nodes/capabilities.js";
 import { normalizeNodes } from "../../../shared/nodes/normalize-nodes.js";
+import { normalizeProtocol } from "../../../shared/nodes/protocol-registry.js";
+import { assertRenderableNodes } from "../../../shared/nodes/renderability.js";
 
 const ALLOWED_OPTIONS = new Set(["output", "type", "name", "clientChain"]);
 
@@ -48,7 +48,15 @@ const SHADOWROCKET_PROXY_KEYS = Object.freeze([
   "password", "obfs", "obfs-host", "obfs-opts", "plugin", "plugin-opts",
 ]);
 
-function shadowrocketProxyRecord(node) {
+const SHADOWROCKET_PROTOCOLS = new Set([
+  "ss", "shadowsocks", "ssr", "snell", "vmess", "vless", "trojan",
+  "hysteria2", "hy2", "tuic", "socks5", "http",
+]);
+
+export function renderShadowrocketProxyRecord(node) {
+  if (!SHADOWROCKET_PROTOCOLS.has(normalizeProtocol(node?.type))) {
+    throw new Error("Unsupported Shadowrocket protocol");
+  }
   const record = {};
   for (const key of SHADOWROCKET_PROXY_KEYS) {
     if (node[key] !== undefined && node[key] !== null && node[key] !== "") record[key] = node[key];
@@ -61,7 +69,8 @@ export function renderShadowrocketSubscription(nodes) {
   if (!Array.isArray(nodes) || nodes.length === 0) {
     throw new Error("Shadowrocket subscription refuses an empty node list");
   }
-  const lines = nodes.map((node) => `  - ${JSON.stringify(shadowrocketProxyRecord(node))}`);
+  assertRenderableNodes(nodes, "Shadowrocket", renderShadowrocketProxyRecord);
+  const lines = nodes.map((node) => `  - ${JSON.stringify(renderShadowrocketProxyRecord(node))}`);
   return `proxies:\n${lines.join("\n")}\n`;
 }
 
@@ -81,10 +90,7 @@ export async function operator(input, targetPlatform, context = {}) {
     throw new Error("produceArtifact must return a non-empty node array");
   }
   const normalized = normalizeNodes(rawNodes, { clientChain: options.clientChain });
-  const filtered = filterNodesForClient(normalized.nodes, CLIENT.shadowrocket);
-  if (filtered.nodes.length === 0) {
-    throw new Error("No compatible Shadowrocket nodes");
-  }
-  logDiagnostics(context, filtered.diagnostics);
-  return { ...input, $content: renderShadowrocketSubscription(filtered.nodes) };
+  assertRenderableNodes(normalized.nodes, "Shadowrocket", renderShadowrocketProxyRecord);
+  logDiagnostics(context, { accepted: normalized.nodes.length, excluded: {} });
+  return { ...input, $content: renderShadowrocketSubscription(normalized.nodes) };
 }
