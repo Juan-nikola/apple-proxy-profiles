@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { execFile } from "node:child_process";
-import { mkdtemp, rm, writeFile } from "node:fs/promises";
+import { mkdtemp, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import test from "node:test";
@@ -29,6 +29,11 @@ const repositoryRoot = dirname(fileURLToPath(new URL("../package.json", import.m
 const rootScanner = fileURLToPath(new URL("../scripts/check-secrets.mjs", import.meta.url));
 const workspaceRoot = fileURLToPath(new URL("../clients/shadowrocket/", import.meta.url));
 const workspaceScanner = fileURLToPath(new URL("../clients/shadowrocket/scripts/check-secrets.mjs", import.meta.url));
+
+async function filesUnder(directory) {
+  const entries = await readdir(directory, { recursive: true, withFileTypes: true });
+  return entries.filter((entry) => entry.isFile()).map((entry) => join(entry.parentPath, entry.name));
+}
 
 test("public output rejects private URLs and endpoint credentials", () => {
   const credential = ["runtime", "constructed", "credential", "value"].join("_");
@@ -230,4 +235,19 @@ test("auth-like credential keys detect base64 and base64url values", () => {
 
 test("credential patterns do not cross line boundaries", () => {
   assert.equal(containsSecret("token\n================================"), false);
+});
+
+test("Happ public inputs contain only sanitized fixture credentials and no private audit or overrides", async () => {
+  const happFiles = [
+    "clients/happ/dist/happ-config-generator.js",
+    "clients/happ/dist/substore-config-generator.js",
+    ...["macos", "iphone", "ipad", "android", "windows", "linux"].map((platform) => `clients/happ/examples/happ-${platform}.json`),
+  ].map((file) => join(repositoryRoot, file));
+  assert.deepEqual(await scanFiles(happFiles), []);
+
+  const publicFiles = await filesUnder(join(repositoryRoot, "public"));
+  assert.equal(publicFiles.some((file) => /[\\/]happ[\\/].*audit/iu.test(file)), false, "Happ audits must remain private");
+  const publicTextFiles = publicFiles.filter((file) => !file.endsWith(".dat"));
+  const publicText = (await Promise.all(publicTextFiles.map((file) => readFile(file, "utf8")))).join("\n");
+  assert.doesNotMatch(publicText, /policyOverrides/iu, "public artifacts must not contain private Happ overrides");
 });

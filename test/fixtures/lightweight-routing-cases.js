@@ -37,4 +37,5 @@ export const LIGHTWEIGHT_CLIENTS = Object.freeze([
   "egern",
   "singbox",
   "anywhere",
+  "happ",
 ]);

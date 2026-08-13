@@ -112,6 +112,44 @@ function parseSingBoxPolicies(config) {
   return policies;
 }
 
+function parseHappPolicies(configs) {
+  assert.ok(Array.isArray(configs) && configs.length > 0, "Happ example must contain a sanitized config");
+  const rules = configs[0]?.routing?.rules;
+  assert.ok(Array.isArray(rules), "Happ config must contain ordered routing rules");
+  const policies = new Map();
+  for (const rule of rules) {
+    if (rule.network !== undefined) continue;
+    const selector = [...(rule.domain ?? []), ...(rule.ip ?? [])]
+      .find((value) => /^(?:geosite|geoip):HAPP-/u.test(value));
+    if (!selector) continue;
+    const sourceId = rule.ruleTag;
+    const match = /^(?:geosite|geoip):HAPP-(.+)$/u.exec(selector);
+    assert.ok(typeof sourceId === "string" && match, "Happ geodata rule must retain its source ID");
+    assert.equal(match[1], sourceId.toUpperCase(), `Happ geodata tag must map back to ${sourceId}`);
+    assert.ok(typeof rule.outboundTag === "string", `Happ ${sourceId} rule must select an outbound`);
+    policies.set(sourceId, rule.outboundTag);
+  }
+  const custom = rules.findIndex((rule) => rule.ruleTag === "custom-ai-0");
+  const domestic = rules.findIndex((rule) => rule.ruleTag === "DomesticCore");
+  const overseasGame = rules.findIndex((rule) => rule.ruleTag === "OverseasGame");
+  const chinaTld = rules.findIndex((rule) => rule.ruleTag === "ChinaTLD");
+  const chinaIp = rules.findIndex((rule) => rule.ruleTag === "ChinaIP");
+  const final = rules.findIndex((rule) => rule.ruleTag === "最终兜底");
+  assert.ok(custom >= 0 && domestic > custom, "Happ: custom rules must precede DomesticCore");
+  assert.ok(overseasGame >= 0 && chinaTld > overseasGame && chinaIp > chinaTld && final > chinaIp,
+    "Happ: ChinaTLD and ChinaIP must precede the proxy final");
+  return policies;
+}
+
+function happPolicy(sourceId, target) {
+  if (target === "happ-direct") return "DIRECT";
+  if (target === "happ-block") return "REJECT";
+  assert.match(target, /^happ-(?:follow|fixed)\//u, `Happ ${sourceId} target must be a policy reference`);
+  if (sourceId === "OpenAI") return "OpenAI policy";
+  if (sourceId === "OverseasGame") return "🌍 海外游戏";
+  return "🚀 节点选择";
+}
+
 function expectedForCase(client, routingCase, policies, anywhere) {
   if (routingCase.customPolicy) {
     if (client !== "anywhere") return routingCase.customPolicy;
@@ -126,6 +164,7 @@ function expectedForCase(client, routingCase, policies, anywhere) {
     }
     return routingCase.resolvedCountry === "CN" ? "DIRECT" : "🚀 节点选择";
   }
+  if (client === "happ") return happPolicy(routingCase.sourceId, policies.get(routingCase.sourceId));
   if (client !== "anywhere") return normalizePolicy(routingCase.sourceId, policies.get(routingCase.sourceId));
   const source = anywhere.sources.get(routingCase.sourceId);
   assert.ok(source.domains.some((suffix) => domainMatches(routingCase.domain, suffix)), `${routingCase.domain} missing from Anywhere ${routingCase.sourceId}`);
@@ -134,7 +173,7 @@ function expectedForCase(client, routingCase, policies, anywhere) {
   return { 0: "🚀 节点选择", 1: "DIRECT", 2: "REJECT" }[source.routing];
 }
 
-test("all five generated client formats implement the shared lightweight behavior cases", async (t) => {
+test("all six generated client formats implement the shared lightweight behavior cases", async (t) => {
   const anywhere = await anywhereArtifacts();
   const artifacts = {
     shadowrocket: parseTextPolicies(await readFile(new URL("clients/shadowrocket/examples/shadowrocket-macos.conf", root), "utf8"), "shadowrocket"),
@@ -142,6 +181,7 @@ test("all five generated client formats implement the shared lightweight behavio
     egern: parseEgernPolicies(await readFile(new URL("clients/egern/examples/egern-macos.yaml", root), "utf8")),
     singbox: parseSingBoxPolicies(JSON.parse(await readFile(new URL("clients/sing-box/examples/sing-box-macos.json", root), "utf8"))),
     anywhere: new Map(),
+    happ: parseHappPolicies(JSON.parse(await readFile(new URL("clients/happ/examples/happ-macos.json", root), "utf8"))),
   };
 
   for (const client of LIGHTWEIGHT_CLIENTS) {
