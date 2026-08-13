@@ -1,5 +1,5 @@
 {
-  "chinaIpAuditSha256": "bc7063df8815153dabc401fbf84a844577a41ba3898fc23efae9dac47a22d584",
+  "chinaIpAuditSha256": "2d33d69ad918cc33c8c781b88ce4cd6e6d9ca6e03a07abac429540d767c53b56",
   "client": "anywhere",
   "files": [
     {
@@ -184,7 +184,7 @@
     }
   ],
   "generatedAt": "2026-08-11T18:59:15Z",
-  "manifestHash": "a4c99b71cfca8db8bf30a77ed4bdee5fd96ee7941acd719fe1085e830a50ea26",
+  "manifestHash": "efa8d04e634b924ace05111a41c94b43133d35f2cc18743c15cd7c7179c745c0",
   "optionalPacks": {
     "adblock-full": "a7f6d0593a3f28ccb7edc8a917abfbee23eabe30940beadf8e739b7e49c43d0a"
   },
