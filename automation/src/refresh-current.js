@@ -13,6 +13,7 @@ const CLIENT_DIRECTORIES = Object.freeze({
   egern: "egern",
   singbox: "sing-box",
   anywhere: "anywhere",
+  happ: "happ",
 });
 
 const ROUTING_PREFIXES = Object.freeze([
@@ -34,6 +35,7 @@ const CLIENT_RULE_PREFIXES = Object.freeze({
   egern: ["egern/rules/"],
   singbox: ["sing-box/rules/", "sing-box/rule-sets/"],
   anywhere: ["anywhere/rules/"],
+  happ: [],
 });
 
 const ONEXRAY_FILES = Object.freeze([

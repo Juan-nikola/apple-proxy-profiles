@@ -35,7 +35,9 @@ export const CLIENT_PUBLIC_PATHS = Object.freeze({
   shadowrocket: "shadowrocket",
   egern: "egern",
   anywhere: "anywhere",
+  happ: "happ",
 });
+const OPTIONAL_CLIENTS = Object.freeze(["singbox", "surge", "shadowrocket", "egern", "anywhere"]);
 
 export const ONEXRAY_PUBLIC_PATH = "onexray";
 const ONEXRAY_PUBLIC_FILES = Object.freeze([
@@ -310,7 +312,7 @@ async function enforceRetention(stagingDirectory, requiredVersion = null) {
 function indexHtml(manifest) {
   return `<!doctype html>
 <html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Apple Proxy Profiles</title></head>
-<body><main><h1>Apple Proxy Profiles</h1><p>Blackmatrix7 commit: <code>${manifest.upstream.commit}</code></p><ul><li><a href="current/manifest.json">Current manifest</a></li><li><a href="edge/manifest.json">Frontier edge manifest</a></li><li><a href="current/frontier-manifest.json">Current frontier manifest</a></li><li><a href="previous/manifest.json">Previous manifest</a></li><li><a href="current/anywhere/import.html">Anywhere import</a></li><li><a href="current/surge/scripts/surge-profile-generator.js">Surge Sub-Store script</a></li><li><a href="current/sing-box/scripts/sing-box-config-generator.js">sing-box Sub-Store script</a></li></ul></main></body></html>
+<body><main><h1>Apple Proxy Profiles</h1><p>Blackmatrix7 commit: <code>${manifest.upstream.commit}</code></p><ul><li><a href="current/manifest.json">Current manifest</a></li><li><a href="edge/manifest.json">Frontier edge manifest</a></li><li><a href="current/frontier-manifest.json">Current frontier manifest</a></li><li><a href="previous/manifest.json">Previous manifest</a></li><li><a href="current/anywhere/import.html">Anywhere import</a></li><li><a href="current/happ/scripts/happ-config-generator.js">Happ Sub-Store script</a></li><li><a href="current/surge/scripts/surge-profile-generator.js">Surge Sub-Store script</a></li><li><a href="current/sing-box/scripts/sing-box-config-generator.js">sing-box Sub-Store script</a></li></ul></main></body></html>
 `;
 }
 
@@ -535,9 +537,10 @@ export function validateDefaultPublication({ defaults, manifest }) {
   }
   const expectedPaths = [...defaults.keys()].filter((path) => path !== "manifest.json");
   verifyManifestFileClosure(defaults, parsed, "manifest.json", expectedPaths, "Default publication");
-  for (const [client, directory] of Object.entries(CLIENT_PUBLIC_PATHS)) {
+  for (const [client, { manifestHash }] of Object.entries(parsed.clients ?? {})) {
+    const directory = CLIENT_PUBLIC_PATHS[client];
     const clientManifest = verifyClientManifest(defaults, client, directory);
-    if (parsed.clients?.[client]?.manifestHash !== clientManifest.manifestHash) {
+    if (manifestHash !== clientManifest.manifestHash) {
       throw new Error(`Default publication client hash mismatch for ${client}`);
     }
   }
@@ -555,9 +558,10 @@ export function validateOptionalPublication({ packId, files }) {
   if (manifest.packId !== packId) throw new Error(`Optional publication ${packId} identity is invalid`);
   const expectedPaths = [...files.keys()].filter((path) => path !== manifestPath);
   verifyManifestFileClosure(files, manifest, manifestPath, expectedPaths, `Optional publication ${packId}`);
-  for (const [client, directory] of Object.entries(CLIENT_PUBLIC_PATHS)) {
+  for (const [client, { manifestHash }] of Object.entries(manifest.clients ?? {})) {
+    const directory = CLIENT_PUBLIC_PATHS[client];
     const clientManifest = verifyClientManifest(files, client, directory, prefix);
-    if (manifest.clients?.[client]?.manifestHash !== clientManifest.manifestHash) {
+    if (manifestHash !== clientManifest.manifestHash) {
       throw new Error(`Optional publication ${packId} client hash mismatch for ${client}`);
     }
   }
@@ -606,10 +610,9 @@ export async function publishEdgeRelease({
   ]));
   for (const [client, directory] of Object.entries(CLIENT_PUBLIC_PATHS)) {
     const clientManifest = verifyClientManifest(defaults, client, directory);
-    const expectedSelections = Object.fromEntries([...optionalManifests].map(([packId, optionalManifest]) => [
-      packId,
-      optionalManifest.clients[client].manifestHash,
-    ]));
+    const expectedSelections = Object.fromEntries([...optionalManifests]
+      .filter(([, optionalManifest]) => optionalManifest.clients[client] !== undefined)
+      .map(([packId, optionalManifest]) => [packId, optionalManifest.clients[client].manifestHash]));
     if (canonicalJson(clientManifest.optionalPacks ?? {}) !== canonicalJson(expectedSelections)) {
       throw new Error(`Default client optional selection mismatch for ${client}`);
     }
@@ -622,8 +625,8 @@ export async function publishEdgeRelease({
   try {
     await writeSnapshot(staging, edgeMerged);
     for (const [packId, optionalManifest] of optionalManifests) {
-      for (const [client, directory] of Object.entries(CLIENT_PUBLIC_PATHS)) {
-        const optionalHash = optionalManifest.clients[client].manifestHash;
+      for (const [client, { manifestHash: optionalHash }] of Object.entries(optionalManifest.clients)) {
+        const directory = CLIENT_PUBLIC_PATHS[client];
         await cp(
           join(staging, "optional", packId, directory),
           join(staging, "optional-versions", packId, optionalHash, directory),
@@ -632,6 +635,7 @@ export async function publishEdgeRelease({
       }
     }
     for (const [client, directory] of Object.entries(CLIENT_PUBLIC_PATHS)) {
+      if (manifest.clients?.[client] === undefined) continue;
       const clientManifestPath = join(staging, directory, "client-manifest.json");
       const clientManifest = JSON.parse(await readFile(clientManifestPath, "utf8"));
       if (!/^[0-9a-f]{64}$/u.test(clientManifest.manifestHash)
@@ -780,12 +784,14 @@ async function verifiedChinaIpAuditEvidence({
 
 function emptyRollout() {
   const clients = () => Object.fromEntries(Object.keys(CLIENT_PUBLIC_PATHS).map((client) => [client, null]));
+  const optionalClients = () => Object.fromEntries(OPTIONAL_CLIENTS.map((client) => [client, null]));
   return {
     schemaVersion: 2,
     clients: clients(),
     previous: clients(),
     optionalPacks: {},
     previousOptionalPacks: {},
+    optionalClients,
   };
 }
 
@@ -933,7 +939,6 @@ export async function promoteClientRelease({
   });
   await verifyImmutableClient(immutableSource, clientManifest, directory);
   const optionalPackIds = Object.keys(clientManifest.optionalPacks ?? {}).sort();
-  if (optionalPackIds.length === 0) throw new Error("Immutable optional selection is empty");
   const optionalManifests = new Map();
   for (const packId of optionalPackIds) {
     const optionalHash = clientManifest.optionalPacks[packId];
@@ -1017,7 +1022,7 @@ export async function promoteClientRelease({
         ...Object.fromEntries([...optionalManifests].map(([packId, optionalManifest]) => [
           packId,
           {
-            ...emptyRollout().clients,
+            ...emptyRollout().optionalClients,
             ...rollout.optionalPacks?.[packId],
             [client]: optionalManifest.manifestHash,
           },
@@ -1028,7 +1033,7 @@ export async function promoteClientRelease({
         ...Object.fromEntries([...optionalManifests.keys()].map((packId) => [
           packId,
           {
-            ...emptyRollout().previous,
+            ...emptyRollout().optionalClients,
             ...rollout.previousOptionalPacks?.[packId],
             [client]: rollout.optionalPacks?.[packId]?.[client] ?? null,
           },

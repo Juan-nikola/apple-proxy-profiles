@@ -105,7 +105,7 @@ async function initializeTrackedCurrent(publicDirectory, artifacts) {
     optionalPacks: artifacts.optionalPacks,
     manifest: artifacts.diagnostics.defaultManifest,
   });
-  for (const client of ["singbox", "surge", "shadowrocket", "egern", "anywhere"]) {
+  for (const client of ["singbox", "surge", "shadowrocket", "egern", "anywhere", "happ"]) {
     await promoteClientRelease({
       publicDirectory,
       client,

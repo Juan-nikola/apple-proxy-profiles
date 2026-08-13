@@ -18,6 +18,7 @@ import { RULE_KIND } from "../../shared/rules/model.js";
 import { buildImportBatches, renderImportPage } from "../../clients/anywhere/src/build-import-page.js";
 import { ANYWHERE_LIGHTWEIGHT_MIGRATION } from "../../clients/anywhere/src/shard-rules.js";
 import { buildOneXrayGeoDataArtifacts } from "../../clients/onexray/src/build-import-page.js";
+import { renderHappGeodata } from "./render-happ-geodata.js";
 
 const CLIENT_PATHS = Object.freeze({
   shadowrocket: "shadowrocket",
@@ -25,11 +26,22 @@ const CLIENT_PATHS = Object.freeze({
   egern: "egern",
   singbox: "sing-box",
   anywhere: "anywhere",
+  happ: "happ",
+});
+
+const OPTIONAL_PACK_CLIENTS = Object.freeze({
+  "adblock-full": Object.freeze(Object.fromEntries(
+    Object.entries(CLIENT_PATHS).filter(([client]) => client !== "happ"),
+  )),
 });
 
 const ONEXRAY_SCRIPT_PATHS = Object.freeze([
   "onexray/scripts/onexray-nodes-generator.js",
   "onexray/scripts/onexray-profile-generator.js",
+]);
+const HAPP_SCRIPT_PATHS = Object.freeze([
+  "happ/scripts/happ-config-generator.js",
+  "happ/scripts/substore-config-generator.js",
 ]);
 
 const SURGE_TYPE = Object.freeze({
@@ -57,6 +69,8 @@ const OPTIONAL_AWARE_GENERATOR_PATHS = new Set([
   "surge/scripts/substore-profile-generator.js",
   "sing-box/scripts/sing-box-config-generator.js",
   "sing-box/scripts/substore-config-generator.js",
+  "happ/scripts/happ-config-generator.js",
+  "happ/scripts/substore-config-generator.js",
 ]);
 
 function compiledText(entries) {
@@ -65,6 +79,17 @@ function compiledText(entries) {
     if (!type) throw new Error(`Compiled rule kind is not publishable: ${entry.kind}`);
     return `${type},${entry.value}${entry.noResolve ? ",no-resolve" : ""}`;
   }).join("\n")}\n`;
+}
+
+function happPublicScripts() {
+  const files = new Map();
+  for (const path of HAPP_SCRIPT_PATHS) {
+    const filename = path.slice("happ/scripts/".length);
+    const content = readFileSync(new URL(`../../clients/happ/dist/${filename}`, import.meta.url));
+    if (!Buffer.isBuffer(content) || content.length === 0) throw new Error(`Happ public script is empty: ${path}`);
+    files.set(path, content);
+  }
+  return files;
 }
 
 function renderInput(compiled, upstream) {
@@ -216,7 +241,9 @@ function compactRuleSetMap(ruleSets) {
 }
 
 function clientRuleRecords(files, client) {
-  const prefixes = client === "anywhere"
+  const prefixes = client === "happ"
+    ? ["happ/geosite.dat", "happ/geoip.dat"]
+    : client === "anywhere"
     ? ["anywhere/rules/"]
     : client === "singbox"
       ? ["sing-box/rules/", "sing-box/rule-sets/"]
@@ -276,6 +303,7 @@ export function enforcePublicationBudgets({ diagnostics, files }) {
 function addClientManifests(
   files,
   upstream,
+  clientPaths = CLIENT_PATHS,
   basePrefix = "",
   optionalSelections = null,
   chinaIpAuditSha256 = null,
@@ -284,7 +312,7 @@ function addClientManifests(
     throw new TypeError("ChinaIP audit digest is invalid");
   }
   const manifests = {};
-  for (const [client, directory] of Object.entries(CLIENT_PATHS)) {
+  for (const [client, directory] of Object.entries(clientPaths)) {
     const prefix = basePrefix ? `${basePrefix}/${directory}` : directory;
     const records = fileRecords(new Map([...files].filter(([path]) => path.startsWith(`${prefix}/`))));
     if (records.length === 0) throw new Error(`Client ${client} has no publication files`);
@@ -333,7 +361,7 @@ function buildOptionalPack({ packId, ruleSets, upstream, singBoxBinaries = null 
     anywherePublicBase: `https://juan-nikola.github.io/apple-proxy-profiles/optional/${packId}/current`,
     anywhereMode: "adblock-full",
   });
-  const clientManifests = addClientManifests(rendered.files, upstream, pathPrefix);
+  const clientManifests = addClientManifests(rendered.files, upstream, OPTIONAL_PACK_CLIENTS[packId], pathPrefix);
   const records = fileRecords(rendered.files);
   const baseManifest = {
     schemaVersion: 1,
@@ -397,6 +425,8 @@ export function buildClientArtifacts({
   });
   const rendered = renderRuleSetMap({ ruleSets: compactedDefaults.ruleSets, upstream, singBoxBinaries });
   const defaults = rendered.files;
+  addFiles(defaults, renderHappGeodata(compactedDefaults.ruleSets).files);
+  addFiles(defaults, happPublicScripts());
   let chinaIpAuditSha256 = null;
 
   const additions = typeof additionalFiles === "function"
@@ -434,11 +464,14 @@ export function buildClientArtifacts({
   });
   const optionalPacks = new Map([["adblock-full", adblockFull.files]]);
   const optionalSelections = Object.fromEntries(Object.keys(CLIENT_PATHS).map((client) => [client, {
-    "adblock-full": adblockFull.manifest.clients[client].manifestHash,
+    ...(adblockFull.manifest.clients[client] === undefined ? {} : {
+      "adblock-full": adblockFull.manifest.clients[client].manifestHash,
+    }),
   }]));
   const clientManifests = addClientManifests(
     defaults,
     upstream,
+    CLIENT_PATHS,
     "",
     optionalSelections,
     chinaIpAuditSha256,

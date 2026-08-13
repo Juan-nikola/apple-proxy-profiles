@@ -33,9 +33,9 @@ import {
 
 const repositoryRoot = dirname(dirname(fileURLToPath(import.meta.url)));
 const defaultPublicDirectory = join(repositoryRoot, "public");
-const PROMOTION_CLIENTS = new Set(["singbox", "surge", "shadowrocket", "egern", "anywhere", "onexray"]);
+const PROMOTION_CLIENTS = new Set(["singbox", "surge", "shadowrocket", "egern", "anywhere", "happ", "onexray"]);
 const OPTIONAL_CLIENTS = new Set(["singbox", "surge", "shadowrocket", "egern", "anywhere"]);
-const INDEPENDENT_CLIENT_PATH = /^(?:anywhere|egern|shadowrocket|sing-box|surge|onexray)\//u;
+const INDEPENDENT_CLIENT_PATH = /^(?:anywhere|egern|shadowrocket|sing-box|surge|happ|onexray)\//u;
 const LEGACY_CURRENT_EXTRA_FILES = Object.freeze([
   /^frontier-manifest\.json$/u,
   /^surge\/(?:macos|iphone|ipad)\/manifest\.json$/u,
@@ -401,6 +401,7 @@ export async function verifyTrackedPublications({ publicDirectory, defaults, opt
     shadowrocket: "shadowrocket",
     egern: "egern",
     anywhere: "anywhere",
+    happ: "happ",
   };
   const clientPrefixes = new Set([
     ...Object.values(clientDirectories).map((directory) => `${directory}/`),
