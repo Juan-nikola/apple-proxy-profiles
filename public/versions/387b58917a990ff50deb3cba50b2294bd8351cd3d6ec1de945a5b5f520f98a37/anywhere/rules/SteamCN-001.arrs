@@ -1,0 +1,14 @@
+# Upstream: https://github.com/blackmatrix7/ios_rule_script
+# Source: SteamCN
+# Commit: 86ada72372ec0586be75901f47d5ccca6e28c655
+# Converted at upstream commit time: 2026-08-11T18:59:15Z
+# License: GPL-2.0-only
+# Converted by: Juan-nikola/apple-proxy-profiles
+name = DIRECT · SteamCN
+routing = 1
+
+2, cm.steampowered.com
+2, steamchina.com
+2, steamcontent.com
+2, steamserver.net
+2, steamusercontent.com

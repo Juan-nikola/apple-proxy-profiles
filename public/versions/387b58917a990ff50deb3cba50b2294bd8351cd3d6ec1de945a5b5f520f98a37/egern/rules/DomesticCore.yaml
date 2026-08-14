@@ -1,0 +1,81 @@
+# Upstream: https://github.com/blackmatrix7/ios_rule_script
+# Path: compiled/Surge/DomesticCore/DomesticCore.list
+# Commit: 86ada72372ec0586be75901f47d5ccca6e28c655
+# Committed at: 2026-08-11T18:59:15Z
+# License: GPL-2.0-only
+# Changed by: Juan-nikola/apple-proxy-profiles
+# Output entries: 65
+# Omitted entries: 0
+domain_set: []
+domain_suffix_set:
+  - "126.com"
+  - "163.com"
+  - "alibaba.com"
+  - "alicdn.com"
+  - "alipay.com"
+  - "aliyun.com"
+  - "aliyuncs.com"
+  - "amap.com"
+  - "amemv.com"
+  - "autonavi.com"
+  - "baidu.com"
+  - "bcebos.com"
+  - "bdimg.com"
+  - "bdstatic.com"
+  - "biliapi.com"
+  - "bilibili.cc"
+  - "bilibili.com"
+  - "bilibili.net"
+  - "bilibili.tv"
+  - "bilivideo.com"
+  - "bilivideo.net"
+  - "bytehwm.com"
+  - "byteimg.com"
+  - "douyin.com"
+  - "douyincdn.com"
+  - "douyu.com"
+  - "douyu.tv"
+  - "douyucdn.cn"
+  - "douyuscdn.com"
+  - "douyutv.com"
+  - "gtimg.cn"
+  - "gtimg.com"
+  - "hdslb.com"
+  - "hdslb.org"
+  - "hunantv.com"
+  - "huya.com"
+  - "ibytedtos.com"
+  - "iqiyi.com"
+  - "iqiyipic.com"
+  - "ixigua.com"
+  - "mgtv.com"
+  - "netease.com"
+  - "pstatp.com"
+  - "qiyi.com"
+  - "qiyipic.com"
+  - "qlogo.cn"
+  - "qpic.cn"
+  - "qq.com"
+  - "rtbasia.com"
+  - "sandbox.itunes.apple.com"
+  - "sinaimg.cn"
+  - "snssdk.com"
+  - "taobao.com"
+  - "tmall.com"
+  - "toutiao.com"
+  - "toutiaoimg.com"
+  - "tudou.com"
+  - "tudouui.com"
+  - "wechat.com"
+  - "weibo.com"
+  - "wmpvp.com"
+  - "xhscdn.com"
+  - "xiaohongshu.com"
+  - "ykimg.com"
+  - "youku.com"
+domain_keyword_set: []
+ip_cidr_set: []
+ip_cidr6_set: []
+asn_set: []
+url_regex_set: []
+user_agent_set: []

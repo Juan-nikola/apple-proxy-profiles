@@ -1,0 +1,10 @@
+# Upstream: https://github.com/blackmatrix7/ios_rule_script
+# Source: Instagram
+# Commit: 86ada72372ec0586be75901f47d5ccca6e28c655
+# Converted at upstream commit time: 2026-08-11T18:59:15Z
+# License: GPL-2.0-only
+# Converted by: Juan-nikola/apple-proxy-profiles
+name = 💬 海外社交 · Instagram
+routing = 0
+
+3, instagram
