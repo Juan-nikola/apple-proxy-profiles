@@ -184,10 +184,9 @@ function rootManifestMatchesWithIndependentAudit(content, expectedManifest) {
       const { manifestHash: ignored, ...base } = manifest;
       return {
         ...base,
-        clients: base.clients && Object.fromEntries(Object.entries(base.clients).map(([client, value]) => [
-          client,
-          PROMOTION_CLIENTS.has(client) ? null : value,
-        ])),
+        clients: base.clients && Object.fromEntries(
+          Object.entries(base.clients).filter(([client]) => !PROMOTION_CLIENTS.has(client)),
+        ),
         files: Array.isArray(base.files)
           ? base.files.filter(({ path }) => (
             path !== "audit/china-ip-drift.json" && !INDEPENDENT_CLIENT_PATH.test(path)
@@ -438,9 +437,13 @@ export async function verifyTrackedPublications({ publicDirectory, defaults, opt
   const currentClientManifests = new Map();
   for (const [client, clientDirectory] of Object.entries(clientDirectories)) {
     const selectedHash = rollout.clients[client];
+    const currentClientDirectory = join(currentDirectory, clientDirectory);
+    if ((selectedHash === null || selectedHash === undefined) && !await pathExists(currentClientDirectory)) {
+      continue;
+    }
     if (selectedHash === null || selectedHash === undefined) {
       if (!await snapshotMatches(
-        join(currentDirectory, clientDirectory),
+        currentClientDirectory,
         clientTreeFiles(clientDirectory, defaults),
       )) return false;
     }
