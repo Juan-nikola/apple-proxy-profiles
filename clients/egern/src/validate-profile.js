@@ -29,6 +29,7 @@ const BYPASS_TUNNEL_PROXY = Object.freeze([
 const REAL_IP_DOMAINS = Object.freeze(["*.local", "*.lan", "*.home.arpa", "*.push.apple.com"]);
 const PLAIN_KEY = /^[A-Za-z_][A-Za-z0-9_-]*$/u;
 const NUMBER = /^-?(?:0|[1-9][0-9]*)(?:\.[0-9]+)?(?:[eE][+-]?[0-9]+)?$/u;
+const PRIMARY_GROUP_NAME = "🚀 节点选择";
 const MAX_PROFILE_BYTES = 2_000_000;
 const MAX_LINES = 50_000;
 const MAX_LINE_LENGTH = 32_000;
@@ -258,7 +259,7 @@ function reconstructGroups(policyGroups) {
     const schema = POLICY_GROUP_SCHEMA.groups[fields.name];
     const strategy = type === "auto_test" ? "auto-test" : type;
     const candidates = fields.policies ?? [];
-    const nodeFilter = fields.urls !== undefined
+    const nodeFilter = fields.urls !== undefined && fields.name !== PRIMARY_GROUP_NAME
       ? fields.filter
       : null;
     let test = null;

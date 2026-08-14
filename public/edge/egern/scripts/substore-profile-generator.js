@@ -1917,7 +1917,11 @@ var EgernProfileBundle = (() => {
     const type = strategyType(group.strategy);
     const fields = { name: group.name };
     if (group.candidates.length > 0) fields.policies = [...group.candidates];
-    if (group.nodeFilter !== null) {
+    if (group.name === PRIMARY_GROUP_NAME) {
+      fields.urls = [nodeSubscriptionUrl];
+      fields.filter = NON_CHAINED_FILTER;
+      fields.update_interval = UPDATE_INTERVAL;
+    } else if (group.nodeFilter !== null) {
       fields.urls = [nodeSubscriptionUrl];
       fields.filter = group.nodeFilter;
       fields.update_interval = UPDATE_INTERVAL;
@@ -1953,7 +1957,7 @@ var EgernProfileBundle = (() => {
       groups.set(fields.name, fields);
       if (fields.name === PRIMARY_GROUP_NAME) {
         const expectedPolicies = sharedGroups[index].candidates;
-        if (Object.keys(fields).length !== (expectedPolicies.length > 0 ? 2 : 1) || expectedPolicies.length > 0 && (!Array.isArray(fields.policies) || fields.policies.length !== expectedPolicies.length || fields.policies.some((policy, policyIndex) => policy !== expectedPolicies[policyIndex])) || fields.urls !== void 0 || fields.filter !== void 0 || fields.update_interval !== void 0) {
+        if (Object.keys(fields).length !== (expectedPolicies.length > 0 ? 5 : 4) || expectedPolicies.length > 0 && (!Array.isArray(fields.policies) || fields.policies.length !== expectedPolicies.length || fields.policies.some((policy, policyIndex) => policy !== expectedPolicies[policyIndex])) || fields.urls?.length !== 1 || fields.urls[0] !== nodeSubscriptionUrl || fields.filter !== NON_CHAINED_FILTER || fields.update_interval !== UPDATE_INTERVAL) {
           throw graphError("has an invalid rendered primary group");
         }
       } else if (fields.urls !== void 0) {
@@ -3887,6 +3891,7 @@ var EgernProfileBundle = (() => {
   var REAL_IP_DOMAINS = Object.freeze(["*.local", "*.lan", "*.home.arpa", "*.push.apple.com"]);
   var PLAIN_KEY2 = /^[A-Za-z_][A-Za-z0-9_-]*$/u;
   var NUMBER = /^-?(?:0|[1-9][0-9]*)(?:\.[0-9]+)?(?:[eE][+-]?[0-9]+)?$/u;
+  var PRIMARY_GROUP_NAME2 = "\u{1F680} \u8282\u70B9\u9009\u62E9";
   var MAX_PROFILE_BYTES = 2e6;
   var MAX_LINES = 5e4;
   var MAX_LINE_LENGTH = 32e3;
@@ -4086,7 +4091,7 @@ var EgernProfileBundle = (() => {
       const schema = POLICY_GROUP_SCHEMA.groups[fields.name];
       const strategy = type === "auto_test" ? "auto-test" : type;
       const candidates = fields.policies ?? [];
-      const nodeFilter = fields.urls !== void 0 ? fields.filter : null;
+      const nodeFilter = fields.urls !== void 0 && fields.name !== PRIMARY_GROUP_NAME2 ? fields.filter : null;
       let test = null;
       if (type === "auto_test") {
         test = {

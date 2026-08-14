@@ -79,6 +79,9 @@ test("rendered profiles validate with the primary-to-continent hierarchy", () =>
   assert.deepEqual(namedGroup(profile, "🚀 节点选择"), {
     name: "🚀 节点选择",
     policies: ["🌏 亚太"],
+    urls: [PRIVATE_URL],
+    filter: "^(?!🔗 ).+$",
+    update_interval: 21600,
     block_quic: true,
   });
   assert.deepEqual(namedGroup(profile, "🇸🇬 新加坡"), {

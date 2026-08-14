@@ -400,6 +400,10 @@ policy_groups:
         - "🌏 亚太"
         - "🌎 美洲"
         - "🌐 其他/未分类"
+      urls:
+        - "https://example.invalid/private/egern-nodes"
+      filter: "^(?!🔗 ).+$"
+      update_interval: 21600
       block_quic: true
   - select:
       name: "🌏 亚太"

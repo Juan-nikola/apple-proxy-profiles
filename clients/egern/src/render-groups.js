@@ -2,6 +2,7 @@ import {
   GROUP_KIND,
   STRATEGY,
 } from "../../../shared/policies/catalog.js";
+import { NON_CHAINED_FILTER } from "../../../shared/policies/filters.js";
 import { POLICY_TARGET } from "../../../shared/policies/intents.js";
 import { POLICY_GROUP_SCHEMA } from "../../../shared/policies/schema.js";
 import { validateEgernNodeSubscriptionUrl } from "./options.js";
@@ -351,7 +352,11 @@ function renderGroup(group, nodeSubscriptionUrl) {
   const fields = { name: group.name };
 
   if (group.candidates.length > 0) fields.policies = [...group.candidates];
-  if (group.nodeFilter !== null) {
+  if (group.name === PRIMARY_GROUP_NAME) {
+    fields.urls = [nodeSubscriptionUrl];
+    fields.filter = NON_CHAINED_FILTER;
+    fields.update_interval = UPDATE_INTERVAL;
+  } else if (group.nodeFilter !== null) {
     fields.urls = [nodeSubscriptionUrl];
     fields.filter = group.nodeFilter;
     fields.update_interval = UPDATE_INTERVAL;
@@ -391,15 +396,16 @@ function validateRenderedGraph(rendered, sharedGroups, nodeSubscriptionUrl) {
     if (fields.name === PRIMARY_GROUP_NAME) {
       const expectedPolicies = sharedGroups[index].candidates;
       if (
-        Object.keys(fields).length !== (expectedPolicies.length > 0 ? 2 : 1)
+        Object.keys(fields).length !== (expectedPolicies.length > 0 ? 5 : 4)
         || (expectedPolicies.length > 0 && (
           !Array.isArray(fields.policies)
           || fields.policies.length !== expectedPolicies.length
           || fields.policies.some((policy, policyIndex) => policy !== expectedPolicies[policyIndex])
         ))
-        || fields.urls !== undefined
-        || fields.filter !== undefined
-        || fields.update_interval !== undefined
+        || fields.urls?.length !== 1
+        || fields.urls[0] !== nodeSubscriptionUrl
+        || fields.filter !== NON_CHAINED_FILTER
+        || fields.update_interval !== UPDATE_INTERVAL
       ) {
         throw graphError("has an invalid rendered primary group");
       }

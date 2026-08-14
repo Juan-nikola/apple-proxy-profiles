@@ -3,19 +3,19 @@
   "client": "egern",
   "files": [
     {
-      "bytes": 34394,
+      "bytes": 34521,
       "path": "egern/examples/egern-ipad.yaml",
-      "sha256": "bfdf5bcd10cde1d063d9b51a7dbe635bd71ac97863b1295aa8370ef259411d6f"
+      "sha256": "96592cfb39dff2362a54c530e1014cc4edccb4251854811f2104a90efce58840"
     },
     {
-      "bytes": 34394,
+      "bytes": 34521,
       "path": "egern/examples/egern-iphone.yaml",
-      "sha256": "bfdf5bcd10cde1d063d9b51a7dbe635bd71ac97863b1295aa8370ef259411d6f"
+      "sha256": "96592cfb39dff2362a54c530e1014cc4edccb4251854811f2104a90efce58840"
     },
     {
-      "bytes": 34387,
+      "bytes": 34514,
       "path": "egern/examples/egern-macos.yaml",
-      "sha256": "e82d74e1da4eb629afbcb2405b4322b30bfc495741c9341b123d39d99a38fcf2"
+      "sha256": "a6a3f408e06b32d6621f564321db35dbc183e122fbe1ef1e2b5a6b4d73f787a3"
     },
     {
       "bytes": 883,
@@ -183,9 +183,9 @@
       "sha256": "4addfba498c469da279067c58c0fe3a4f5d0b9cd85292006d60b8be93f9f864d"
     },
     {
-      "bytes": 206527,
+      "bytes": 206883,
       "path": "egern/scripts/egern-profile-generator.js",
-      "sha256": "f75d2a345bc0ec142a5b5921cc39f8cf3d66060c263afaae39c6d6f8d3736108"
+      "sha256": "0785f23b46c02f0ed6b5eecf1553eaefca127d48724e32a3da6bff5dadff54e7"
     },
     {
       "bytes": 119837,
@@ -193,13 +193,13 @@
       "sha256": "4addfba498c469da279067c58c0fe3a4f5d0b9cd85292006d60b8be93f9f864d"
     },
     {
-      "bytes": 206527,
+      "bytes": 206883,
       "path": "egern/scripts/substore-profile-generator.js",
-      "sha256": "f75d2a345bc0ec142a5b5921cc39f8cf3d66060c263afaae39c6d6f8d3736108"
+      "sha256": "0785f23b46c02f0ed6b5eecf1553eaefca127d48724e32a3da6bff5dadff54e7"
     }
   ],
   "generatedAt": "2026-08-13T19:00:08Z",
-  "manifestHash": "b71cb773aaf120264c1ed63fff5f907b16854eb133f19bbc61c04414650a4824",
+  "manifestHash": "b728d351c7e0670d93e1fb10ef0c037593689f8ed228d0db9c9bab57b2f1e3bf",
   "optionalPacks": {
     "adblock-full": "c78413297f350ef5ab3f5871266222500c42e4904bdcb54a603c8d50016fd96a"
   },
