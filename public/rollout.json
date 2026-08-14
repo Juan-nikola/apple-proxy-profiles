@@ -5,14 +5,14 @@
     "surge": "716cf9f374fc47370f0b720f993c959e63c4fabe5508b2e2e2fbabed44530cb1",
     "shadowrocket": "aa03501d28bd77962ca64a09b741efef73c10f056ab490cf0d1eab17977cddb2",
     "egern": "0c50c45128139f09cc9ca172ec16dea6d3bf3b3b7753aab26be158e8f6639110",
-    "anywhere": "ac66d441b604bff73e203a8403754e6f48deafb827626e817222c39a54f04e84"
+    "anywhere": "851ca5bc9a731c8799ab3ddc357b830888d9145c4e903c3c0e023af8cf69166f"
   },
   "previous": {
     "singbox": "96109bc440ab638116d5d74943719762f509ead8201e5dc9ffb19468ca15eae3",
     "surge": "ba6c4410cce7945c30581b0af20a7fe0f9122b6700167c67aa46896969c130b3",
     "shadowrocket": "cbd1be5d9afe451c5a23318aff1331db974fe10f8a4e063975bf197b48cd4712",
     "egern": "569bbe0926f89ff194c2c3b6d8009f2d50f2c806070557e3b96c39abc1c93f27",
-    "anywhere": "206a5fad315d75a9f5757b5bb8754c57cac4003dd0dac088575d5717b9362241"
+    "anywhere": "ac66d441b604bff73e203a8403754e6f48deafb827626e817222c39a54f04e84"
   },
   "optionalPacks": {
     "adblock-full": {
@@ -29,7 +29,7 @@
       "surge": "efd4adad47e7f434a05d6eb629e05b1802f820d7a9674454b1e6d5deef81d93c",
       "shadowrocket": "446654b6ddddeadf89d44cb33f993d55d81394f90f2241c2453f06de32ba227c",
       "egern": "20c44a0b4f43535e6a71d869851e77d61f266c16ac55636fdfc5aa14c039a61f",
-      "anywhere": "cc989d25ab5eb51b94dfeb2c371c78d2d3c7eb1ddf0816fe12852ce234c0a754"
+      "anywhere": "a7f6d0593a3f28ccb7edc8a917abfbee23eabe30940beadf8e739b7e49c43d0a"
     }
   }
 }

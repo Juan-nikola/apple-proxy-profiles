@@ -2,7 +2,7 @@
   "catalogSha256": "83701c57777cf2051d0afb6a5da75a3ca7ab272d7141f1294a4b1377cd433b2a",
   "clients": {
     "anywhere": {
-      "manifestHash": "ac66d441b604bff73e203a8403754e6f48deafb827626e817222c39a54f04e84",
+      "manifestHash": "851ca5bc9a731c8799ab3ddc357b830888d9145c4e903c3c0e023af8cf69166f",
       "referencedDefaultBytes": 332898
     },
     "egern": {
@@ -47,9 +47,9 @@
       "sha256": "b7c76d982f46785248a35659af82035cddac84cf6ad79a8c4ab87d63d65e87e2"
     },
     {
-      "bytes": 6418,
+      "bytes": 6416,
       "path": "anywhere/client-manifest.json",
-      "sha256": "1fc7720ef1fc2055266e801b3c7657073b56a72f25ce48dbda95c82ff94a9513"
+      "sha256": "0b1a299a2e4820a6d430f7663f380f6f48183a5a87ca1cacb2d6408b4a9629f7"
     },
     {
       "bytes": 21079,
@@ -222,19 +222,19 @@
       "sha256": "345d6ae8c11aa28f88a2b991b3499214c521e402311f21c1cc050131cba30723"
     },
     {
-      "bytes": 121525,
+      "bytes": 82139,
       "path": "anywhere/scripts/anywhere-node-generator.js",
-      "sha256": "c44a5e6c38b8ac395cd6fd873d3ad935eb969eee8fb7bde8c1bd02b0a5eb1b27"
+      "sha256": "06a9016346c14b59437f2c399043b1f341a5aa5799999991845b09afdf0097a1"
     },
     {
-      "bytes": 121525,
+      "bytes": 82139,
       "path": "anywhere/scripts/substore-node-generator.js",
-      "sha256": "c44a5e6c38b8ac395cd6fd873d3ad935eb969eee8fb7bde8c1bd02b0a5eb1b27"
+      "sha256": "06a9016346c14b59437f2c399043b1f341a5aa5799999991845b09afdf0097a1"
     },
     {
       "bytes": 1552,
       "path": "audit/china-ip-drift.json",
-      "sha256": "bc7063df8815153dabc401fbf84a844577a41ba3898fc23efae9dac47a22d584"
+      "sha256": "2d33d69ad918cc33c8c781b88ce4cd6e6d9ca6e03a07abac429540d767c53b56"
     },
     {
       "bytes": 5178,
@@ -1073,7 +1073,7 @@
     }
   ],
   "generatedAt": "2026-08-11T18:59:15Z",
-  "manifestHash": "08cd8e683aa48a812083b152d25851a438efda2ebbec04942059d7bedcee801d",
+  "manifestHash": "a16f84610ed4e4097fba6fd73ec04abacc434b03c73469eec229b86d213f59f5",
   "schemaVersion": 2,
   "upstream": {
     "branch": "master",
