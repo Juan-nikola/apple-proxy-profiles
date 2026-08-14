@@ -102,6 +102,7 @@ test("maps exact representative Anywhere Clash proxy objects", () => {
     type: "anytls",
     password: "TEST_ONLY_ANYTLS_PASSWORD",
     tls: true,
+    udp: true,
     sni: "anytls.example.invalid",
     alpn: ["h2", "http/1.1"],
     "client-fingerprint": "chrome",
@@ -114,6 +115,7 @@ test("maps exact representative Anywhere Clash proxy objects", () => {
     password: "TEST_ONLY_ANYTLS_PASSWORD",
     network: "tcp",
     tls: true,
+    udp: true,
     servername: "anytls.example.invalid",
     alpn: ["h2", "http/1.1"],
     "client-fingerprint": "chrome",
@@ -167,6 +169,33 @@ test("rejects an unsupported AnyTLS field before subscription validation", () =>
     () => renderAnywhereSubscription([node]),
     /^Error: Anywhere cannot render selected protocols: anytls=1$/u,
   );
+});
+
+test("renders AnyTLS nodes carrying Sub-Store collection metadata", () => {
+  const node = {
+    ...BASE,
+    type: "anytls",
+    password: "TEST_ONLY_ANYTLS_METADATA_PASSWORD",
+    tls: true,
+    udp: true,
+    sni: "anytls.example.invalid",
+    alpn: ["h2", "http/1.1"],
+    "client-fingerprint": "chrome",
+    "idle-session-check-interval": 30,
+    "idle-session-timeout": 30,
+    "min-idle-session": 0,
+    "skip-cert-verify": false,
+    _subName: "anytls",
+    _subDisplayName: "",
+    _collectionName: "apple-proxy-anywhere",
+    _collectionDisplayName: "Apple Proxy Anywhere",
+    id: 9,
+  };
+  const proxy = toAnywhereProxy(node);
+  assert.equal(proxy.type, "anytls");
+  assert.equal(proxy.udp, true);
+  assert.equal(proxy.servername, "anytls.example.invalid");
+  assert.match(renderAnywhereSubscription([node]), /^proxies:\n/u);
 });
 
 test("canonicalizes every verified Sudoku alias without losing semantics", () => {
@@ -290,12 +319,14 @@ test("renders the shared normalized inventory and contains hostile failures", ()
     "idle-session-check-interval": 30,
     "idle-session-timeout": 60,
     "min-idle-session": 1,
+    udp: true,
     _subDisplayName: "[自建] 东京 AnyTLS",
   }]).nodes;
   const anytlsYaml = renderAnywhereSubscription(anytls);
-  assert.match(anytls[0].name, / · AnyTLS｜自建$/u);
+  assert.match(anytls[0].name, / · AnyTLS｜自建·U$/u);
   assert.match(anytlsYaml, /^proxies:\n/u);
   assert.match(anytlsYaml, / · AnyTLS｜自建/u);
+  assert.match(anytlsYaml, /udp: true/u);
   assert.deepEqual(assertAnywhereSubscription(anytlsYaml, prepareAnywhereInventory(anytls).proxies), { proxyCount: 1 });
 
   const hostileMarker = "SHOULD_NOT_ESCAPE_ANYWHERE_ERRORS";

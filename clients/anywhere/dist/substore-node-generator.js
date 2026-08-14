@@ -511,6 +511,9 @@ var AnywhereNodeBundle = (() => {
   function validOptionalOpaqueString(node, key) {
     return !hasOption(node, key) || isNonblankOpaqueString(node[key]);
   }
+  function isOptionalBoolean(node, key) {
+    return !hasOption(node, key) || typeof node[key] === "boolean";
+  }
   function hasConflictingAliases(node, keys) {
     return conflictingAliases(node, keys);
   }
@@ -699,7 +702,7 @@ var AnywhereNodeBundle = (() => {
       if (!isNonblankOpaqueString(node.password)) return "invalid-anywhere-node-shape";
       const tlsReason = anywhereTlsShapeReason(node);
       if (tlsReason) return tlsReason;
-      if (network !== "tcp" || node.tls === false || hasOption(node, "security") && node.security !== "tls" || hasOption(node, "reality-opts") || transportFields.some((key) => hasOption(node, key)) || ["idle-session-check-interval", "idle-session-timeout"].some((key) => hasOption(node, key) && (!Number.isInteger(node[key]) || node[key] < 30)) || hasOption(node, "min-idle-session") && (!Number.isInteger(node["min-idle-session"]) || node["min-idle-session"] < 0)) {
+      if (network !== "tcp" || node.tls === false || hasOption(node, "security") && node.security !== "tls" || hasOption(node, "reality-opts") || transportFields.some((key) => hasOption(node, key)) || !isOptionalBoolean(node, "udp") || ["idle-session-check-interval", "idle-session-timeout"].some((key) => hasOption(node, key) && (!Number.isInteger(node[key]) || node[key] < 30)) || hasOption(node, "min-idle-session") && (!Number.isInteger(node["min-idle-session"]) || node["min-idle-session"] < 0)) {
         return "unsupported-anywhere-anytls-shape";
       }
       return null;
@@ -762,7 +765,13 @@ var AnywhereNodeBundle = (() => {
     "idle-session-check-interval",
     "idle-session-timeout",
     "min-idle-session",
-    "_profile"
+    "udp",
+    "_profile",
+    "_subName",
+    "_subDisplayName",
+    "_collectionName",
+    "_collectionDisplayName",
+    "id"
   ]);
   function hasOwn(value, key) {
     return Object.hasOwn(value, key);
@@ -852,6 +861,7 @@ var AnywhereNodeBundle = (() => {
       network: "tcp",
       tls: true
     }, node);
+    copyOptional(proxy, "udp", node);
     for (const key of ["idle-session-check-interval", "idle-session-timeout", "min-idle-session"]) {
       copyOptional(proxy, key, node);
     }

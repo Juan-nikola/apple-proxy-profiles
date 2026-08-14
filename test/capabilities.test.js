@@ -626,6 +626,7 @@ test("rejects Anywhere AnyTLS warm-pool values that its runtime would clamp", ()
     server: "anytls.example.invalid",
     port: 443,
     password: "TEST_ONLY_ANYTLS_PASSWORD",
+    udp: true,
   };
   assert.deepEqual(evaluateNodeForClient({
     ...common,
@@ -637,6 +638,7 @@ test("rejects Anywhere AnyTLS warm-pool values that its runtime would clamp", ()
     { "idle-session-check-interval": 29 },
     { "idle-session-timeout": -1 },
     { "min-idle-session": -1 },
+    { udp: "yes" },
   ]) {
     assert.deepEqual(
       evaluateNodeForClient({ ...common, ...mutation }, CLIENT.anywhere),

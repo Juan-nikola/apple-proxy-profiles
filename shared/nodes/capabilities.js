@@ -1093,6 +1093,7 @@ export function anywhereNodeExclusionReason(node) {
       || hasOption(node, "security") && node.security !== "tls"
       || hasOption(node, "reality-opts")
       || transportFields.some((key) => hasOption(node, key))
+      || !isOptionalBoolean(node, "udp")
       || ["idle-session-check-interval", "idle-session-timeout"]
         .some((key) => hasOption(node, key) && (!Number.isInteger(node[key]) || node[key] < 30))
       || hasOption(node, "min-idle-session")

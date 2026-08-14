@@ -5,7 +5,9 @@ const ANYTLS_FIELDS = new Set([
   "name", "type", "server", "port", "password", "network", "tls", "security",
   "sni", "servername", "alpn", "client-fingerprint", "ech-opts",
   "skip-cert-verify", "allow-insecure", "idle-session-check-interval",
-  "idle-session-timeout", "min-idle-session", "_profile",
+  "idle-session-timeout", "min-idle-session", "udp", "_profile",
+  "_subName", "_subDisplayName", "_collectionName", "_collectionDisplayName",
+  "id",
 ]);
 
 function hasOwn(value, key) {
@@ -105,6 +107,7 @@ function renderAnyTls(node) {
     network: "tcp",
     tls: true,
   }, node);
+  copyOptional(proxy, "udp", node);
   for (const key of ["idle-session-check-interval", "idle-session-timeout", "min-idle-session"]) {
     copyOptional(proxy, key, node);
   }
