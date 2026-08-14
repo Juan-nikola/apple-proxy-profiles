@@ -1324,19 +1324,11 @@ var ShadowrocketProfileBundle = (() => {
     if (chainEligible) {
       groups.push(subscriptionGroup(GROUP_KIND.chain, "\u{1F3AF} \u5BA2\u6237\u7AEF\u843D\u5730", "^\u{1F517} .+$"));
     }
-    const aiContinentGroups = presentContinents.map((continent) => subscriptionGroup(
-      GROUP_KIND.ai,
-      `\u{1F916} AI ${continent.helperName}`,
-      continentFilter(continent),
-      continentHelperItems(continent, mode),
-      { hidden: true }
-    ));
-    groups.push(...aiContinentGroups);
     groups.push(subscriptionGroup(
       GROUP_KIND.ai,
       "\u{1F916} AI \u4E13\u7528",
       ALL_NODES_FILTER,
-      aiContinentGroups.map((group) => group.name)
+      []
     ));
     const presentContinentNames = presentContinents.map((continent) => continent.name);
     for (const [name, defaults] of SERVICE_GROUPS) {

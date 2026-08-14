@@ -21,7 +21,7 @@
 - [ ] 打开 `🐙 GitHub` 和 `🍎 Apple`：确认两组的自动、故障转移、地区、`DIRECT`、`🚀 节点选择`等所有显式选择及匹配订阅的具体服务器都存在；GitHub 的 `policy-select-name=🚀 节点选择`，Apple 的 `policy-select-name=DIRECT`。
 - [ ] 在 Shadowrocket 首页切换节点后，`🐙 GitHub` 仍选择 `🚀 节点选择`并继续联网；Apple 保持其已选择的显式策略。
 - [ ] 常用业务组的摘要已逐个核对。Shadowrocket 若保留仍有效的旧选择，生成器的首项不会自动覆盖：希望境外组跟随首页时手动选第一项 `🚀 节点选择`；希望国内组恢复直连时手动选第一项 `DIRECT`，没有误留在具体节点、自动组、故障转移或地区组。
-- [ ] `🤖 AI 专用`有独立 AI 洲组和具体节点；更改 AI 节点不改变主线路，OpenAI、Claude、Gemini、Copilot 与常用其他 AI 分流正确。
+- [ ] `🤖 AI 专用`直接列出全部已勾选具体节点；更改 AI 节点不改变主线路，OpenAI、Claude、Gemini、Copilot 与常用其他 AI 分流正确。
 - [ ] GitHub 命中 `🐙 GitHub`，早于 Microsoft 规则。
 - [ ] `🇨🇳 国内平台`（哔哩哔哩、抖音、小红书、微博）能在 DIRECT、`🚀 节点选择`或具体节点间切换；抖音视频和评论加载正常。
 - [ ] `☣️ 安全威胁`和`🕵️ 严格跟踪`能在 REJECT 与 DIRECT 间热切换；默认关闭的广告不产生远程规则请求，只有 `adblockMode=full` 时才检查 optional `🧱 常见广告`命中。

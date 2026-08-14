@@ -374,9 +374,6 @@ test("puts visible groups first, hidden helper groups last, and node outbounds a
     "🛟 欧洲故障转移",
     "⚡ 美洲自动",
     "🛟 美洲故障转移",
-    "🤖 AI 亚太",
-    "🤖 AI 欧洲",
-    "🤖 AI 美洲",
     "🧭 规则下载故障转移",
   ];
   const expectedOrder = ["DIRECT", "REJECT", ...expectedVisible, ...expectedHidden];
@@ -385,6 +382,9 @@ test("puts visible groups first, hidden helper groups last, and node outbounds a
   const firstNodeIndex = tags.indexOf("🇯🇵 东京节点");
   const lastHiddenIndex = tags.indexOf("🧭 规则下载故障转移");
   assert.ok(firstNodeIndex > lastHiddenIndex, "node outbounds must be emitted after every group");
+  for (const tag of ["🤖 AI 亚太", "🤖 AI 欧洲", "🤖 AI 美洲"]) {
+    assert.equal(tags.includes(tag), false, tag);
+  }
   assert.deepEqual(tags.slice(expectedOrder.length), ["🇯🇵 东京节点", "🇩🇪 法兰克福节点", "🇺🇸 纽约节点"]);
   assert.deepEqual(validateSingBoxConfig(config), { valid: true, errors: [] });
 });

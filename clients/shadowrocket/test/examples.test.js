@@ -273,8 +273,8 @@ for (const platform of ["macos", "iphone", "ipad"]) {
     assert.doesNotMatch(profile, /^🇯🇵 日本 = /m);
     assert.match(profile, /^🌍 欧洲 = select,⚡ 欧洲自动,🛟 欧洲故障转移,Shadowrocket-Nodes,use=true,policy-regex-filter=/m);
     assert.match(profile, /^🌎 美洲 = select,⚡ 美洲自动,🛟 美洲故障转移,Shadowrocket-Nodes,use=true,policy-regex-filter=/m);
-    assert.match(profile, /^🤖 AI 专用 = select,🤖 AI 亚太,🤖 AI 欧洲,🤖 AI 美洲,Shadowrocket-Nodes,use=true,policy-regex-filter=\^\.\+\$$/m);
-    assert.match(profile, /^🤖 AI 亚太 = select,.*Shadowrocket-Nodes,use=true,.*hidden=1$/m);
+    assert.match(profile, /^🤖 AI 专用 = select,Shadowrocket-Nodes,use=true,policy-regex-filter=\^\.\+\$$/m);
+    assert.doesNotMatch(profile, /^🤖 AI (?:亚太|欧洲|美洲|其他\/未分类) = /m);
     assert.match(profile, /^🐙 GitHub = select,🚀 节点选择,⚡ 全部自动,🛟 全部故障转移,🌏 亚太,🌍 欧洲,🌎 美洲,DIRECT,Shadowrocket-Nodes,use=true,policy-regex-filter=\^\.\+\$,policy-select-name=🚀 节点选择$/m);
     assert.match(profile, /^🍎 Apple = select,DIRECT,🚀 节点选择,⚡ 全部自动,🛟 全部故障转移,🌏 亚太,🌍 欧洲,🌎 美洲,Shadowrocket-Nodes,use=true,policy-regex-filter=\^\.\+\$,policy-select-name=DIRECT$/m);
     assert.doesNotMatch(profile, /include-all-proxies=true/);

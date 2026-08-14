@@ -292,10 +292,8 @@ function validateSharedGraph(input) {
     const selectorPresent = names.has(family.selector);
     const automaticPresent = names.has(family.automatic);
     const fallbackPresent = names.has(family.fallback);
-    const aiPresent = names.has(family.ai);
     if (
-      selectorPresent !== aiPresent
-      || (!selectorPresent && (automaticPresent || fallbackPresent))
+      (!selectorPresent && (automaticPresent || fallbackPresent))
       || (fallbackPresent && !automaticPresent)
     ) {
       throw graphError("contains an incomplete conditional continent family");

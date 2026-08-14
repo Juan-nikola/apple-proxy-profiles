@@ -271,6 +271,10 @@ test("builds a deterministic root-to-continent graph without flag or protocol ch
   assert.equal(byName.has("🇰🇷 韩国"), false, "chained flags must not create groups");
   assert.equal(byName.has("🇯🇵 日本"), false, "country groups must not be created");
   assert.equal(byName.has("🌐 未分类"), false, "fallback flag groups must not be created");
+  assert.deepEqual(byName.get("🤖 AI 专用").candidates, []);
+  for (const name of ["🤖 AI 亚太", "🤖 AI 欧洲", "🤖 AI 美洲", "🤖 AI 其他/未分类"]) {
+    assert.equal(byName.has(name), false, `${name} must not be created`);
+  }
   assert.equal(groups.some(({ kind }) => kind === "protocol"), false);
   for (const protocolLabel of new Set(inventory.map(({ _profile }) => _profile.protocolLabel))) {
     assert.equal(byName.has(protocolLabel), false, protocolLabel);

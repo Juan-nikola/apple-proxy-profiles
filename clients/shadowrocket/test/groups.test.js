@@ -139,12 +139,10 @@ test("keeps service manual access and gates special service groups by eligibilit
   const ai = named(groups, "🤖 AI 专用");
   assert.equal(ai.useSubscription, true);
   assert.equal(ai.filter, "^.+$");
-  assert.deepEqual(ai.items, ["🤖 AI 亚太", "🤖 AI 欧洲", "🤖 AI 美洲"]);
-  assert.deepEqual(named(groups, "🤖 AI 亚太").items, ["⚡ 亚太自动", "🛟 亚太故障转移"]);
-  assert.equal(named(groups, "🤖 AI 亚太").useSubscription, true);
-  assert.equal(named(groups, "🤖 AI 亚太").hidden, true);
-  assert.equal(named(groups, "🤖 AI 欧洲").useSubscription, true);
-  assert.equal(named(groups, "🤖 AI 美洲").useSubscription, true);
+  assert.deepEqual(ai.items, []);
+  for (const name of ["🤖 AI 亚太", "🤖 AI 欧洲", "🤖 AI 美洲", "🤖 AI 其他/未分类"]) {
+    assert.equal(named(groups, name), undefined, name);
+  }
   const foreignItems = [
     "🚀 节点选择",
     "⚡ 全部自动",
@@ -299,7 +297,7 @@ test("references every available continent helper from its visible selector", ()
   ]);
 });
 
-test("keeps root group as a PROXY selector while AI continent order stays stable", () => {
+test("keeps root group as a PROXY selector with a flat AI group", () => {
   const mixed = [
     node("🇿🇦 ZA｜自建", { continent: "other" }),
     node("🇺🇸 US｜自建", { continent: "americas" }),
@@ -319,12 +317,7 @@ test("keeps root group as a PROXY selector while AI continent order stays stable
   ]);
   assert.equal(named(groups, "🚀 节点选择").useSubscription, undefined);
   assert.equal(named(groups, "🚀 节点选择").filter, undefined);
-  assert.deepEqual(named(groups, "🤖 AI 专用").items, [
-    "🤖 AI 亚太",
-    "🤖 AI 欧洲",
-    "🤖 AI 美洲",
-    "🤖 AI 其他/未分类",
-  ]);
+  assert.deepEqual(named(groups, "🤖 AI 专用").items, []);
 });
 
 test("renders policy groups deterministically and escapes comma-delimited values", () => {

@@ -54,7 +54,6 @@ const POLICY_SCHEMA_ENTRIES = [
       [continent.name, policySchema(GROUP_KIND.continent, STRATEGY.select, [filter])],
       [automaticHelperName(continent), policySchema(GROUP_KIND.helper, STRATEGY.autoTest, [filter], { hidden: true })],
       [fallbackHelperName(continent), policySchema(GROUP_KIND.helper, STRATEGY.fallback, [filter], { hidden: true })],
-      [`🤖 AI ${continent.helperName}`, policySchema(GROUP_KIND.ai, STRATEGY.select, [filter], { hidden: true })],
     ];
   }),
   ...SOURCE_GROUPS.map((source) => [
@@ -84,7 +83,6 @@ const CONTINENT_FAMILIES = Object.freeze(CONTINENTS.map((continent) => Object.fr
   selector: continent.name,
   automatic: automaticHelperName(continent),
   fallback: fallbackHelperName(continent),
-  ai: `🤖 AI ${continent.helperName}`,
 })));
 const CHAIN_NAMES = Object.freeze(["⚡ 入口自动", "🎯 客户端落地", "🔗 入口节点"]);
 

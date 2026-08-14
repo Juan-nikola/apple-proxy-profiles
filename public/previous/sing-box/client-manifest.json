@@ -3,54 +3,54 @@
   "client": "singbox",
   "files": [
     {
-      "bytes": 11883,
+      "bytes": 11509,
       "path": "sing-box/examples/sing-box-android-diagnostic.json",
-      "sha256": "fcdf201ee4b82c380f6d46d7044643a1a07c8a5bd383d9049e16c2166c6c6c1d"
+      "sha256": "6ad74520710140326a0d26a42a99b2efa2c3f89aa5d1cb61e88f8d9119067389"
     },
     {
-      "bytes": 29515,
+      "bytes": 29141,
       "path": "sing-box/examples/sing-box-android.json",
-      "sha256": "584f4af9975219d1b40b9eaeaac1d0f8486c5bc91819faac63000b283a53211e"
+      "sha256": "7e4d34ae164fc87964a5ef9bf75773a1149bc21372b7d8f6e26a42ccbccb8e47"
     },
     {
-      "bytes": 11951,
+      "bytes": 11577,
       "path": "sing-box/examples/sing-box-ipad-diagnostic.json",
-      "sha256": "79b6b2ba53d59330955895ed994742ca48b4d3cf24f7c200abb2e100d561e031"
+      "sha256": "87cf04b23cb01cc35966fb3dc0e54c40cf23000d51db352b05782a754b1af741"
     },
     {
-      "bytes": 29583,
+      "bytes": 29209,
       "path": "sing-box/examples/sing-box-ipad.json",
-      "sha256": "77f09d8d8c31172d0970e114edffd82b6c605d79e48224da7a7a3e16a4a06094"
+      "sha256": "5d770eb9e702f96e81307150592da3a3c7d19e891ce91b040264da48bd7dc9ab"
     },
     {
-      "bytes": 11951,
+      "bytes": 11577,
       "path": "sing-box/examples/sing-box-iphone-diagnostic.json",
-      "sha256": "79b6b2ba53d59330955895ed994742ca48b4d3cf24f7c200abb2e100d561e031"
+      "sha256": "87cf04b23cb01cc35966fb3dc0e54c40cf23000d51db352b05782a754b1af741"
     },
     {
-      "bytes": 29583,
+      "bytes": 29209,
       "path": "sing-box/examples/sing-box-iphone.json",
-      "sha256": "77f09d8d8c31172d0970e114edffd82b6c605d79e48224da7a7a3e16a4a06094"
+      "sha256": "5d770eb9e702f96e81307150592da3a3c7d19e891ce91b040264da48bd7dc9ab"
     },
     {
-      "bytes": 11881,
+      "bytes": 11507,
       "path": "sing-box/examples/sing-box-macos-diagnostic.json",
-      "sha256": "1303ed7daf9c206bf5142ab331317220da23ee67e7b26f987e47027fc861baf0"
+      "sha256": "adfa424190bcb5e75b119494fdcdd1a913e54895a0e1b16c9836d9e5c74b7cc3"
     },
     {
-      "bytes": 29513,
+      "bytes": 29139,
       "path": "sing-box/examples/sing-box-macos.json",
-      "sha256": "9f99a4c724f9f8b92b9d5aa2c0f51688e5b6d5d0b879f158b83ab6ae7a6197f0"
+      "sha256": "7f378c5f7a4b69b092e608d3505fbcc4fd1ae321038c0023cdd33ef0ec80b12a"
     },
     {
-      "bytes": 12079,
+      "bytes": 11705,
       "path": "sing-box/examples/sing-box-openwrt-diagnostic.json",
-      "sha256": "20f701c0947baaeb73a0280127967bcc9abcab040c9a6773efccea85a63e4e99"
+      "sha256": "cf08d9c4afd5bb44f28082d26e98faae4f00074cdf88a3628dd1060dd9301c66"
     },
     {
-      "bytes": 29711,
+      "bytes": 29337,
       "path": "sing-box/examples/sing-box-openwrt.json",
-      "sha256": "3a8535482db6d1e3496ddec76f141534b90df4b1cde8423ce986e8ddd31d77b3"
+      "sha256": "cd44a3af2f3f18dc0b01da5feead5c53fa26b7fb461518bf5af205aa1dba232c"
     },
     {
       "bytes": 246,
@@ -213,18 +213,18 @@
       "sha256": "71494bd314e7c53437c80d9aa76cd92aff989f7075ef91f5484ded4ffe26b691"
     },
     {
-      "bytes": 101385,
+      "bytes": 99036,
       "path": "sing-box/scripts/sing-box-config-generator.js",
-      "sha256": "e5f9a15e4709734441671d044cc1c93a753d729a164c2899e400b99b0f2e3701"
+      "sha256": "618e9e14f79fc346f5ef557acc0d7047b4a8c42a81eb0871b24a01588b9e4695"
     },
     {
-      "bytes": 101385,
+      "bytes": 99036,
       "path": "sing-box/scripts/substore-config-generator.js",
-      "sha256": "e5f9a15e4709734441671d044cc1c93a753d729a164c2899e400b99b0f2e3701"
+      "sha256": "618e9e14f79fc346f5ef557acc0d7047b4a8c42a81eb0871b24a01588b9e4695"
     }
   ],
   "generatedAt": "2026-08-13T19:00:08Z",
-  "manifestHash": "0230cabf4e8ca3d6ec689685a4bef0a17d2cefe78dc17f8322daa3999c2b1e7c",
+  "manifestHash": "2ddd4e29f624701bef449dbaafbd46adae0c1777850e302de1b28d9a51390bb1",
   "optionalPacks": {
     "adblock-full": "9d2b3aa44eab0b67aa7637a518f14117d7d69ddb507ceafdd674c2483b616955"
   },

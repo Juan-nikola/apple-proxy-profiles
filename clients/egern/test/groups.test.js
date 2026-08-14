@@ -256,12 +256,12 @@ test("pins service defaults, AI order, security defaults, and special eligibilit
     for (const name of DOMESTIC_GROUPS) {
       assert.equal(renderedFields(rendered, name).fields.policies[0], "DIRECT", name);
     }
-    assert.deepEqual(renderedFields(rendered, "🤖 AI 专用").fields.policies, [
-      "🤖 AI 亚太",
-      "🤖 AI 欧洲",
-      "🤖 AI 美洲",
-      "🤖 AI 其他/未分类",
-    ]);
+    const ai = renderedFields(rendered, "🤖 AI 专用");
+    assert.equal(ai.fields.policies, undefined);
+    assert.equal(ai.fields.filter, "^.+$");
+    for (const name of ["🤖 AI 亚太", "🤖 AI 欧洲", "🤖 AI 美洲", "🤖 AI 其他/未分类"]) {
+      assert.equal(renderedFields(rendered, name), undefined, name);
+    }
 
     const expectedSecurity = {
       off: ["DIRECT", "DIRECT", "DIRECT"],

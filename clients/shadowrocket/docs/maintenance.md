@@ -13,7 +13,7 @@ Shadowrocket 维护对象是 `apple-proxy-shadowrocket`；统一迁移、回滚�
 - IPv6：iPhone/iPad 使用 `ipv6Mode=auto`；macOS 稳定优先使用 `ipv4-only`。
 - 广告：默认 `adblockMode=off` 不下载完整广告包；明确使用 `adblockMode=full` 时才从独立 optional 发布加载两份广告规则，策略仍可在 `🧱 常见广告` 中热切换。
 - HTTPS 解密：保持关闭；广告规则中的域名/IP 项仍会工作，需要解密 HTTPS 路径的 URL 正则不会生效，不为提高拦截率安装证书。
-- AI：在 `🤖 AI 专用`里可通过独立 AI 洲组或具体节点选择出口；它可以与主线路使用不同节点，更新后确认选择仍保留。
+- AI：在 `🤖 AI 专用`里直接选择任意已勾选具体节点作为出口；它可以与主线路使用不同节点，更新后确认选择仍保留。
 - 国内平台：各自策略组默认 DIRECT，需要时可切到 `🚀 节点选择`或具体节点。抖音使用 Blackmatrix7 `ByteDance` 增强规则；代理不能保证评论地区改变。
 - 游戏连接：默认 DIRECT，只显示明确带 `·U` 能力标记的节点；海外游戏网页和服务由 `🌍 海外游戏` 控制。
 - 下载/P2P：默认 DIRECT，候选只含 `｜自建`、`｜Realm`、`｜链式代理` 节点。

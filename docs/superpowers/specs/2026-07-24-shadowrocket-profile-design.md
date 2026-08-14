@@ -154,7 +154,7 @@
 - AI、GitHub、YouTube、流媒体、Telegram、海外社交、TikTok、游戏平台网页默认代理。
 - Apple、Microsoft 默认直连，但可手动选择代理。
 - 哔哩哔哩、抖音、小红书、微博分别有独立策略组，默认直连，可选择当前 `🚀 节点选择`出口或全节点订阅中的具体节点。
-- AI 专用组包含一套独立于主线路的 AI 地区组，也保留全节点订阅入口；用户可以通过任一路径选择具体节点，因此 AI 可与主线路使用不同出口。
+- AI 专用组直接列出全部已勾选节点，用户可手动选择任意具体节点，因此 AI 可与主线路使用不同出口。
 - 原本允许任意选节点的普通业务组保留由 `subscriptionName` 命名的全节点订阅入口。
 - 下载/P2P 默认直连，手动候选只包含自建、Realm 转发和服务端链式节点，不含机场。
 - 游戏实时连接默认直连，候选只包含明确支持 UDP 的节点。
@@ -382,4 +382,3 @@ clientChain=off|on
 
 - Shadowrocket App Store：<https://apps.apple.com/gb/app/shadowrocket/id932747118?platform=mac>
 - Shadowrocket 使用手册补完计划：<https://github.com/LOWERTOP/Shadowrocket>
-

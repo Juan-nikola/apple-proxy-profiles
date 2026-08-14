@@ -199,19 +199,11 @@ export function buildPolicyGroups(options, nodes) {
     groups.push(subscriptionGroup(GROUP_KIND.chain, "🎯 客户端落地", "^🔗 .+$"));
   }
 
-  const aiContinentGroups = presentContinents.map((continent) => subscriptionGroup(
-    GROUP_KIND.ai,
-    `🤖 AI ${continent.helperName}`,
-    continentFilter(continent),
-    continentHelperItems(continent, mode),
-    { hidden: true },
-  ));
-  groups.push(...aiContinentGroups);
   groups.push(subscriptionGroup(
     GROUP_KIND.ai,
     "🤖 AI 专用",
     ALL_NODES_FILTER,
-    aiContinentGroups.map((group) => group.name),
+    [],
   ));
   const presentContinentNames = presentContinents.map((continent) => continent.name);
   for (const [name, defaults] of SERVICE_GROUPS) {

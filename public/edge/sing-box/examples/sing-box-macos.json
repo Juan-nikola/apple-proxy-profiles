@@ -167,8 +167,6 @@
       "type": "selector",
       "tag": "🤖 AI 专用",
       "outbounds": [
-        "🤖 AI 亚太",
-        "🤖 AI 欧洲",
         "示例 · Tokyo",
         "示例 · Frankfurt"
       ],
@@ -422,24 +420,6 @@
       "url": "https://www.gstatic.com/generate_204",
       "interval": "600s",
       "tolerance": 100,
-      "interrupt_exist_connections": true
-    },
-    {
-      "type": "selector",
-      "tag": "🤖 AI 亚太",
-      "outbounds": [
-        "⚡ 亚太自动",
-        "🛟 亚太故障转移"
-      ],
-      "interrupt_exist_connections": true
-    },
-    {
-      "type": "selector",
-      "tag": "🤖 AI 欧洲",
-      "outbounds": [
-        "⚡ 欧洲自动",
-        "🛟 欧洲故障转移"
-      ],
       "interrupt_exist_connections": true
     },
     {
