@@ -46,12 +46,12 @@ Apple TV 已在生成器中预留参数，但不属于本轮部署范围。首�
 
 Profile 使用职责分开的两层结构：
 
-1. 根组为 `🚀 节点选择 = select,PROXY,Shadowrocket-Nodes,use=true,policy-regex-filter=^(?!🔗 ).+$`；`PROXY` 负责跟随 Shadowrocket 首页当前节点，同时根组会从 `subscriptionName` 指定的节点订阅中列出非链式具体服务器，方便直接切换。亚太、欧洲、美洲洲组和国旗组仍从该订阅中筛选各自地区/国家的服务器。
+1. 根组为 `🚀 节点选择 = select,PROXY,⚡ 全部自动,🛟 全部故障转移,🌏 亚太,🌍 欧洲,🌎 美洲`；`PROXY` 负责跟随 Shadowrocket 首页当前节点，全自动和故障转移负责整池测速，亚太、欧洲、美洲洲组则从 `subscriptionName` 指定的节点订阅中筛选各自洲的服务器。洲组内列出该洲全部已选节点，不按客户端能力过滤。
 2. 境外业务分组默认跟随 `🚀 节点选择`：境外组的首项就是 `🚀 节点选择`；每组也都有 `⚡ 全部自动`、`🛟 全部故障转移`、亚太/欧洲/美洲等地区组和符合筛选条件的具体节点。自动测速和故障转移已移到境外业务分组，不再放进 `🚀 节点选择`。
 3. 国内业务分组默认 `DIRECT`：国内组的首项就是 `DIRECT`；每组同样都有 `🚀 节点选择`、自动测速、故障转移、地区组和具体节点，按需要再切换，避免国内 App 因误走代理而变慢。
 4. `🤖 AI 专用`继续使用独立洲组和具体节点，不会跟着首页主线路一起变化。
 
-除 `🚀 节点选择`外，需要枚举节点的动态组会按 `subscriptionName` 只从指定的 Shadowrocket 节点订阅中筛选。显示名可自由命名（支持中文、内部空格和普通标点），但不能以空白开头或结尾，也不能包含换行；macOS、iPhone、iPad 三个 Profile File 的 `subscriptionName` 必须与 Shadowrocket 中的显示名**完全一致**，包括大小写、emoji、空格和标点。本手册的示例显示名是 `Shadowrocket-Nodes`，生成的动态候选写作 `Shadowrocket-Nodes,use=true`；它不是强制名称。若截图中节点订阅的真实显示名是 `SHADOWROCKET-NODES`，三个 Profile File Operator 的 `subscriptionName` 都必须精确填写 `SHADOWROCKET-NODES`，不能仍填示例值。名称不匹配时，策略组中的 `DIRECT`、`🚀 节点选择`、自动/故障转移和地区等显式选项仍在，但动态组不会列出这个订阅的具体服务器。洲顺序固定为亚太、欧洲、美洲、其他；没有节点的洲不会显示。地区识别不会生成大量国家策略组。
+除 `🚀 节点选择`外，需要枚举节点的动态组会按 `subscriptionName` 只从指定的 Shadowrocket 节点订阅中筛选。显示名可自由命名（支持中文、内部空格和普通标点），但不能以空白开头或结尾，也不能包含换行；macOS、iPhone、iPad 三个 Profile File 的 `subscriptionName` 必须与 Shadowrocket 中的显示名**完全一致**，包括大小写、emoji、空格和标点。本手册的示例显示名是 `Shadowrocket-Nodes`，生成的动态候选写作 `Shadowrocket-Nodes,use=true`；它不是强制名称。若截图中节点订阅的真实显示名是 `SHADOWROCKET-NODES`，三个 Profile File Operator 的 `subscriptionName` 都必须精确填写 `SHADOWROCKET-NODES`，不能仍填示例值。名称不匹配时，策略组中的 `DIRECT`、`🚀 节点选择`、自动/故障转移和地区等显式选项仍在，但动态组不会列出这个订阅的具体服务器。洲顺序固定为亚太、欧洲、美洲、其他；没有节点的洲不会显示。每个洲组直接列出该洲全部已选节点，不再生成国家策略组。
 
 生成器用 `policy-select-name=🚀 节点选择` 让境外业务组默认跟随首页节点，用 `policy-select-name=DIRECT` 让国内业务组默认直连；这两个默认项不影响每组完整的显式候选和具体服务器列表。
 

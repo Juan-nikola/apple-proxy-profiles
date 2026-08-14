@@ -1,0 +1,11 @@
+# Upstream: https://github.com/blackmatrix7/ios_rule_script
+# Source: XiaoHongShu
+# Commit: 2ba8dfe636e64b41d4857a621fec35868ab50e08
+# Converted at upstream commit time: 2026-08-13T19:00:08Z
+# License: GPL-2.0-only
+# Converted by: Juan-nikola/apple-proxy-profiles
+name = 🇨🇳 国内平台 · XiaoHongShu
+routing = 1
+
+2, fengkongcloud.com
+2, xhscdn.net

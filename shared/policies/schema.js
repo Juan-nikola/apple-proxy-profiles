@@ -5,7 +5,6 @@ import {
   automaticHelperName,
   buildPolicyGroups,
   fallbackHelperName,
-  flagGroupName,
 } from "./catalog.js";
 import {
   ALL_NODES_FILTER,
@@ -17,11 +16,9 @@ import {
   P2P_FILTER,
   SOURCE_GROUPS,
   continentFilter,
-  flagFilter,
 } from "./filters.js";
 import { POLICY_TARGET } from "./intents.js";
-import { CONTINENT, OPTION_VALUES, SOURCE_KIND } from "../contracts.js";
-import { CONTINENT_FLAGS, continentForFlag } from "../nodes/country-regions.js";
+import { OPTION_VALUES, SOURCE_KIND } from "../contracts.js";
 
 function policySchema(kind, strategy, nodeFilters, { hidden, defaultChoice } = {}) {
   return Object.freeze({
@@ -47,19 +44,6 @@ const REQUIRED_POLICY_GROUP_NAMES = Object.freeze([
   "🕵️ 严格跟踪",
 ]);
 
-const REGIONAL_INDICATOR_A = 0x1F1E6;
-const POSSIBLE_COUNTRY_FLAGS = Object.freeze(Array.from({ length: 26 }, (_, first) => (
-  Array.from({ length: 26 }, (_, second) => (
-    String.fromCodePoint(REGIONAL_INDICATOR_A + first, REGIONAL_INDICATOR_A + second)
-  ))
-)).flat());
-const CATALOG_COUNTRY_FLAGS = CONTINENTS.flatMap((continent) => CONTINENT_FLAGS[continent.key]);
-const CATALOG_COUNTRY_FLAG_SET = new Set(CATALOG_COUNTRY_FLAGS);
-const COUNTRY_FLAG_SCHEMA_FLAGS = Object.freeze([
-  ...CATALOG_COUNTRY_FLAGS,
-  ...POSSIBLE_COUNTRY_FLAGS.filter((flag) => !CATALOG_COUNTRY_FLAG_SET.has(flag)),
-]);
-
 const POLICY_SCHEMA_ENTRIES = [
   ["⚡ 全部自动", policySchema(GROUP_KIND.helper, STRATEGY.autoTest, [NON_CHAINED_FILTER], { hidden: true })],
   ["🛟 全部故障转移", policySchema(GROUP_KIND.helper, STRATEGY.fallback, [NON_CHAINED_FILTER], { hidden: true })],
@@ -67,17 +51,12 @@ const POLICY_SCHEMA_ENTRIES = [
   ...CONTINENTS.flatMap((continent) => {
     const filter = continentFilter(continent);
     return [
-      [continent.name, policySchema(GROUP_KIND.continent, STRATEGY.select, [null])],
+      [continent.name, policySchema(GROUP_KIND.continent, STRATEGY.select, [filter])],
       [automaticHelperName(continent), policySchema(GROUP_KIND.helper, STRATEGY.autoTest, [filter], { hidden: true })],
       [fallbackHelperName(continent), policySchema(GROUP_KIND.helper, STRATEGY.fallback, [filter], { hidden: true })],
       [`🤖 AI ${continent.helperName}`, policySchema(GROUP_KIND.ai, STRATEGY.select, [filter], { hidden: true })],
     ];
   }),
-  ...COUNTRY_FLAG_SCHEMA_FLAGS.map((flag) => [
-    flagGroupName(flag),
-    policySchema(GROUP_KIND.flag, STRATEGY.select, [flagFilter(flag)]),
-  ]),
-  [flagGroupName("🌐"), policySchema(GROUP_KIND.flag, STRATEGY.select, [flagFilter("🌐")])],
   ...SOURCE_GROUPS.map((source) => [
     source.name,
     policySchema(GROUP_KIND.source, STRATEGY.select, [source.filter]),
@@ -107,18 +86,6 @@ const CONTINENT_FAMILIES = Object.freeze(CONTINENTS.map((continent) => Object.fr
   fallback: fallbackHelperName(continent),
   ai: `🤖 AI ${continent.helperName}`,
 })));
-const FLAG_FAMILIES = Object.freeze([
-  ...COUNTRY_FLAG_SCHEMA_FLAGS.map((flag) => Object.freeze({
-    flag,
-    name: flagGroupName(flag),
-    continent: continentForFlag(flag),
-  })),
-  Object.freeze({
-    flag: "🌐",
-    name: flagGroupName("🌐"),
-    continent: CONTINENT.other,
-  }),
-]);
 const CHAIN_NAMES = Object.freeze(["⚡ 入口自动", "🎯 客户端落地", "🔗 入口节点"]);
 
 function syntheticNode(index, continent, sourceKind = SOURCE_KIND.unknown, flag) {
@@ -140,7 +107,6 @@ function inferredInventory(groups) {
   const names = new Set(groups.map((group) => group.name));
   const groupsByName = new Map(groups.map((group) => [group.name, group]));
   const presentContinents = CONTINENT_FAMILIES.filter((family) => names.has(family.selector));
-  const presentFlags = FLAG_FAMILIES.filter((family) => names.has(family.name));
   const presentSources = SOURCE_GROUPS.filter((source) => names.has(source.name));
   const game = groups.find((group) => group.name === "🎮 游戏连接");
   const p2p = groups.find((group) => group.name === "⬇️ 下载/P2P");
@@ -153,14 +119,8 @@ function inferredInventory(groups) {
 
   const nodes = [];
   for (const family of presentContinents) {
-    const candidates = new Set(groupsByName.get(family.selector)?.candidates ?? []);
-    const flags = presentFlags.filter((record) => candidates.has(record.name));
-    if (flags.length === 0) return null;
-    for (const flag of flags) {
-      const expectedContinent = flag.continent ?? CONTINENT.other;
-      if (expectedContinent !== family.key) return null;
-      nodes.push(syntheticNode(nodes.length, family.key, SOURCE_KIND.unknown, flag.flag));
-    }
+    if (groupsByName.get(family.selector)?.nodeFilter !== continentFilter(family)) return null;
+    nodes.push(syntheticNode(nodes.length, family.key, SOURCE_KIND.unknown, "🌐"));
   }
   const sourceContinent = presentContinents[0]?.key;
   const sourceFlag = nodes.find((node) => node._profile.continent === sourceContinent)?._profile.flag;
@@ -226,7 +186,6 @@ export const POLICY_GROUP_SCHEMA = Object.freeze({
   requiredNames: REQUIRED_POLICY_GROUP_NAMES,
   reservedNames: Object.freeze([POLICY_TARGET.primaryProxy, "DIRECT", "REJECT"]),
   continentFamilies: CONTINENT_FAMILIES,
-  flagFamilies: FLAG_FAMILIES,
   chainNames: CHAIN_NAMES,
   matchesCanonicalSemantics,
 });

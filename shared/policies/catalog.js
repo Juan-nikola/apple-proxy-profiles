@@ -1,10 +1,4 @@
-import { CONTINENT, nodeMetadata } from "../contracts.js";
-import {
-  CONTINENT_FLAGS,
-  continentForFlag,
-  isCountryFlag,
-} from "../nodes/country-regions.js";
-import { countryLabelForFlag } from "../nodes/regions.js";
+import { nodeMetadata } from "../contracts.js";
 import {
   ALL_NODES_FILTER,
   CONTINENTS,
@@ -14,7 +8,6 @@ import {
   P2P_FILTER,
   SOURCE_GROUPS,
   continentFilter,
-  flagFilter,
 } from "./filters.js";
 import { platformPolicyPreset } from "./platform-presets.js";
 
@@ -30,7 +23,6 @@ export const GROUP_KIND = Object.freeze({
   helper: "helper",
   primary: "primary",
   continent: "continent",
-  flag: "flag",
   source: "source",
   ai: "ai",
   service: "service",
@@ -103,44 +95,9 @@ export function fallbackHelperName(continent) {
   return `\u{1F6DF} ${continent.helperName}故障转移`;
 }
 
-export function flagGroupName(flag) {
-  const label = countryLabelForFlag(flag);
-  if (flag === "🌐" || label === flag) return label;
-  return `${flag} ${label}`;
-}
-
 function continentHelperItems(continent, mode) {
   if (mode === "full") return [automaticHelperName(continent), fallbackHelperName(continent)];
-  if (mode === "balanced") return [automaticHelperName(continent)];
-  return [];
-}
-
-function compareFlags(left, right) {
-  if (left < right) return -1;
-  if (left > right) return 1;
-  return 0;
-}
-
-function expectedFlagContinent(flag) {
-  const catalogContinent = continentForFlag(flag);
-  if (catalogContinent !== null) return catalogContinent;
-  if (flag === "🌐" || isCountryFlag(flag)) return CONTINENT.other;
-  return null;
-}
-
-function orderedPresentFlags(continent, flags) {
-  for (const flag of flags) {
-    if (expectedFlagContinent(flag) !== continent.key) {
-      throw new Error("Normalized node flag does not match continent metadata");
-    }
-  }
-  const ordered = CONTINENT_FLAGS[continent.key].filter((flag) => flags.has(flag));
-  const orderedSet = new Set(ordered);
-  ordered.push(...[...flags]
-    .filter((flag) => isCountryFlag(flag) && !orderedSet.has(flag))
-    .sort(compareFlags));
-  if (continent.key === CONTINENT.other && flags.has("🌐")) ordered.push("🌐");
-  return ordered;
+  return [automaticHelperName(continent)];
 }
 
 function serviceChoiceItems(defaults, presentContinentNames) {
@@ -184,15 +141,6 @@ export function buildPolicyGroups(options, nodes) {
   const presentContinents = CONTINENTS.filter((continent) => (
     normalizedNodes.some((node) => nodeMetadata(node).continent === continent.key && !nodeMetadata(node).chained)
   ));
-  const presentFlagsByContinent = new Map(presentContinents.map((continent) => {
-    const flags = new Set(normalizedNodes
-      .filter((node) => {
-        const metadata = nodeMetadata(node);
-        return metadata.continent === continent.key && !metadata.chained;
-      })
-      .map((node) => nodeMetadata(node).flag));
-    return [continent.key, orderedPresentFlags(continent, flags)];
-  }));
   const chainEligible = options.clientChain === "on"
     && normalizedNodes.some((node) => nodeMetadata(node).entry === true && !nodeMetadata(node).chained)
     && normalizedNodes.some((node) => nodeMetadata(node).chained === true);
@@ -205,50 +153,41 @@ export function buildPolicyGroups(options, nodes) {
     groups.push(helper(GROUP_KIND.chain, "⚡ 入口自动", STRATEGY.autoTest, preset, ENTRY_FILTER));
   }
 
-  if (mode !== "minimal") {
-    for (const continent of presentContinents) {
+  for (const continent of presentContinents) {
+    groups.push(helper(
+      GROUP_KIND.helper,
+      automaticHelperName(continent),
+      STRATEGY.autoTest,
+      preset,
+      continentFilter(continent),
+    ));
+    if (mode === "full") {
       groups.push(helper(
         GROUP_KIND.helper,
-        automaticHelperName(continent),
-        STRATEGY.autoTest,
+        fallbackHelperName(continent),
+        STRATEGY.fallback,
         preset,
         continentFilter(continent),
       ));
-      if (mode === "full") {
-        groups.push(helper(
-          GROUP_KIND.helper,
-          fallbackHelperName(continent),
-          STRATEGY.fallback,
-          preset,
-          continentFilter(continent),
-        ));
-      }
     }
   }
 
   groups.push(policyGroup({
     kind: GROUP_KIND.primary,
     name: "🚀 节点选择",
-    candidates: presentContinents.map((continent) => continent.name),
+    candidates: [
+      "⚡ 全部自动",
+      "\u{1F6DF} 全部故障转移",
+      ...presentContinents.map((continent) => continent.name),
+    ],
   }));
   for (const continent of presentContinents) {
-    const flags = presentFlagsByContinent.get(continent.key);
     groups.push(policyGroup({
       kind: GROUP_KIND.continent,
       name: continent.name,
-      candidates: [
-        ...continentHelperItems(continent, mode),
-        ...flags.map(flagGroupName),
-      ],
+      candidates: continentHelperItems(continent, mode),
+      nodeFilter: continentFilter(continent),
     }));
-    for (const flag of flags) {
-      groups.push(subscriptionGroup(
-        GROUP_KIND.flag,
-        flagGroupName(flag),
-        flagFilter(flag),
-        [],
-      ));
-    }
   }
 
   for (const source of SOURCE_GROUPS) {

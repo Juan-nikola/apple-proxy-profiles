@@ -7,6 +7,7 @@ import {
   FULL_ADBLOCK_SOURCE_IDS,
 } from "../../../shared/rules/lightweight-policy.js";
 import { buildPolicyGroups } from "../../../shared/policies/catalog.js";
+import { CONTINENTS, continentFilter } from "../../../shared/policies/filters.js";
 import { parseEgernOptions, PUBLIC_SNAPSHOT_BASE_URL } from "../src/options.js";
 import {
   prepareEgernInventory,
@@ -78,16 +79,14 @@ test("rendered profiles validate with the primary-to-continent hierarchy", () =>
 
   assert.deepEqual(namedGroup(profile, "🚀 节点选择"), {
     name: "🚀 节点选择",
-    policies: ["🌏 亚太"],
-    urls: [PRIVATE_URL],
-    filter: "^(?!🔗 ).+$",
-    update_interval: 21600,
+    policies: ["⚡ 全部自动", "🛟 全部故障转移", "🌏 亚太"],
     block_quic: true,
   });
-  assert.deepEqual(namedGroup(profile, "🇸🇬 新加坡"), {
-    name: "🇸🇬 新加坡",
+  assert.deepEqual(namedGroup(profile, "🌏 亚太"), {
+    name: "🌏 亚太",
+    policies: ["⚡ 亚太自动", "🛟 亚太故障转移"],
     urls: [PRIVATE_URL],
-    filter: "^🇸🇬(?: |$)",
+    filter: continentFilter(CONTINENTS.find((continent) => continent.key === "asiaPacific")),
     update_interval: 21600,
     block_quic: true,
   });

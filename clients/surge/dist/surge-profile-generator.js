@@ -374,7 +374,6 @@ var SurgeProfileBundle = (() => {
   function countryCodeToFlag(code) {
     return [...code].map((letter) => String.fromCodePoint(127462 + letter.charCodeAt(0) - 65)).join("");
   }
-  var COUNTRY_FLAG_PATTERN = /^[\u{1F1E6}-\u{1F1FF}]{2}$/u;
   var COUNTRY_CODE_COUNT = Object.values(REGION_CODES).flat().length;
   var CONTINENT_FLAGS = Object.freeze(Object.fromEntries(
     Object.entries(REGION_CODES).map(([continent, codes]) => [
@@ -387,9 +386,6 @@ var SurgeProfileBundle = (() => {
   );
   function continentForFlag(flag) {
     return FLAG_CONTINENTS.get(flag) ?? null;
-  }
-  function isCountryFlag(flag) {
-    return typeof flag === "string" && COUNTRY_FLAG_PATTERN.test(flag);
   }
 
   // ../../shared/nodes/regions.js
@@ -449,11 +445,6 @@ var SurgeProfileBundle = (() => {
   }
   function removeFlags(name) {
     return String(name ?? "").replace(FLAG_PATTERN, " ").replace(/\s+/g, " ").trim();
-  }
-  function countryLabelForFlag(flag) {
-    const value = String(flag ?? "").trim();
-    if (value === "\u{1F310}") return "\u{1F310} \u672A\u5206\u7C7B";
-    return REGION_LABELS.get(value) ?? (isCountryFlag(value) ? value : "\u{1F310} \u672A\u5206\u7C7B");
   }
   function classifyRegion(name) {
     const value = String(name ?? "");
@@ -1209,17 +1200,12 @@ var SurgeProfileBundle = (() => {
     Object.freeze({ kind: SOURCE_KIND.serverChain, name: "\u26D3\uFE0F \u94FE\u5F0F\u4EE3\u7406", filter: "^.+\uFF5C\u94FE\u5F0F\u4EE3\u7406(?:\xB7.*)?$" })
   ]);
   function continentFilter(continent) {
-    if (continent.key === CONTINENT.other) {
-      const knownFlags = CONTINENTS.flatMap((record) => record.flags).join("|");
+    const record = CONTINENTS.find((entry) => entry.key === continent.key) ?? continent;
+    if (record.key === CONTINENT.other) {
+      const knownFlags = CONTINENTS.flatMap((record2) => record2.flags).join("|");
       return `^(?!(?:\u{1F517}|${knownFlags})).+$`;
     }
-    return `^(?:${continent.flags.join("|")}).+$`;
-  }
-  function escapeRegex3(value) {
-    return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  }
-  function flagFilter(flag) {
-    return `^${escapeRegex3(flag)}(?: |$)`;
+    return `^(?:${record.flags.join("|")}).+$`;
   }
 
   // ../../shared/policies/catalog.js
@@ -1233,7 +1219,6 @@ var SurgeProfileBundle = (() => {
     helper: "helper",
     primary: "primary",
     continent: "continent",
-    flag: "flag",
     source: "source",
     ai: "ai",
     service: "service",
@@ -1299,38 +1284,9 @@ var SurgeProfileBundle = (() => {
   function fallbackHelperName(continent) {
     return `\u{1F6DF} ${continent.helperName}\u6545\u969C\u8F6C\u79FB`;
   }
-  function flagGroupName(flag) {
-    const label = countryLabelForFlag(flag);
-    if (flag === "\u{1F310}" || label === flag) return label;
-    return `${flag} ${label}`;
-  }
   function continentHelperItems(continent, mode) {
     if (mode === "full") return [automaticHelperName(continent), fallbackHelperName(continent)];
-    if (mode === "balanced") return [automaticHelperName(continent)];
-    return [];
-  }
-  function compareFlags(left, right) {
-    if (left < right) return -1;
-    if (left > right) return 1;
-    return 0;
-  }
-  function expectedFlagContinent(flag) {
-    const catalogContinent = continentForFlag(flag);
-    if (catalogContinent !== null) return catalogContinent;
-    if (flag === "\u{1F310}" || isCountryFlag(flag)) return CONTINENT.other;
-    return null;
-  }
-  function orderedPresentFlags(continent, flags) {
-    for (const flag of flags) {
-      if (expectedFlagContinent(flag) !== continent.key) {
-        throw new Error("Normalized node flag does not match continent metadata");
-      }
-    }
-    const ordered = CONTINENT_FLAGS[continent.key].filter((flag) => flags.has(flag));
-    const orderedSet = new Set(ordered);
-    ordered.push(...[...flags].filter((flag) => isCountryFlag(flag) && !orderedSet.has(flag)).sort(compareFlags));
-    if (continent.key === CONTINENT.other && flags.has("\u{1F310}")) ordered.push("\u{1F310}");
-    return ordered;
+    return [automaticHelperName(continent)];
   }
   function serviceChoiceItems(defaults, presentContinentNames) {
     return [
@@ -1368,13 +1324,6 @@ var SurgeProfileBundle = (() => {
     const preset = platformPolicyPreset(options.platform);
     const mode = effectiveAutoMode(options.autoGroupMode, normalizedNodes.length);
     const presentContinents = CONTINENTS.filter((continent) => normalizedNodes.some((node) => nodeMetadata(node).continent === continent.key && !nodeMetadata(node).chained));
-    const presentFlagsByContinent = new Map(presentContinents.map((continent) => {
-      const flags = new Set(normalizedNodes.filter((node) => {
-        const metadata = nodeMetadata(node);
-        return metadata.continent === continent.key && !metadata.chained;
-      }).map((node) => nodeMetadata(node).flag));
-      return [continent.key, orderedPresentFlags(continent, flags)];
-    }));
     const chainEligible = options.clientChain === "on" && normalizedNodes.some((node) => nodeMetadata(node).entry === true && !nodeMetadata(node).chained) && normalizedNodes.some((node) => nodeMetadata(node).chained === true);
     const groups = [
       helper(GROUP_KIND.helper, "\u26A1 \u5168\u90E8\u81EA\u52A8", STRATEGY.autoTest, preset, NON_CHAINED_FILTER),
@@ -1383,49 +1332,40 @@ var SurgeProfileBundle = (() => {
     if (chainEligible) {
       groups.push(helper(GROUP_KIND.chain, "\u26A1 \u5165\u53E3\u81EA\u52A8", STRATEGY.autoTest, preset, ENTRY_FILTER));
     }
-    if (mode !== "minimal") {
-      for (const continent of presentContinents) {
+    for (const continent of presentContinents) {
+      groups.push(helper(
+        GROUP_KIND.helper,
+        automaticHelperName(continent),
+        STRATEGY.autoTest,
+        preset,
+        continentFilter(continent)
+      ));
+      if (mode === "full") {
         groups.push(helper(
           GROUP_KIND.helper,
-          automaticHelperName(continent),
-          STRATEGY.autoTest,
+          fallbackHelperName(continent),
+          STRATEGY.fallback,
           preset,
           continentFilter(continent)
         ));
-        if (mode === "full") {
-          groups.push(helper(
-            GROUP_KIND.helper,
-            fallbackHelperName(continent),
-            STRATEGY.fallback,
-            preset,
-            continentFilter(continent)
-          ));
-        }
       }
     }
     groups.push(policyGroup({
       kind: GROUP_KIND.primary,
       name: "\u{1F680} \u8282\u70B9\u9009\u62E9",
-      candidates: presentContinents.map((continent) => continent.name)
+      candidates: [
+        "\u26A1 \u5168\u90E8\u81EA\u52A8",
+        "\u{1F6DF} \u5168\u90E8\u6545\u969C\u8F6C\u79FB",
+        ...presentContinents.map((continent) => continent.name)
+      ]
     }));
     for (const continent of presentContinents) {
-      const flags = presentFlagsByContinent.get(continent.key);
       groups.push(policyGroup({
         kind: GROUP_KIND.continent,
         name: continent.name,
-        candidates: [
-          ...continentHelperItems(continent, mode),
-          ...flags.map(flagGroupName)
-        ]
+        candidates: continentHelperItems(continent, mode),
+        nodeFilter: continentFilter(continent)
       }));
-      for (const flag of flags) {
-        groups.push(subscriptionGroup(
-          GROUP_KIND.flag,
-          flagGroupName(flag),
-          flagFilter(flag),
-          []
-        ));
-      }
     }
     for (const source of SOURCE_GROUPS) {
       if (normalizedNodes.some((node) => nodeMetadata(node).sourceKind === source.kind && !nodeMetadata(node).chained)) {

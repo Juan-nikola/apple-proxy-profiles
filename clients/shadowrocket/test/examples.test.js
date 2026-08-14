@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 
+import { CONTINENTS, continentFilter } from "../../../shared/policies/filters.js";
+
 const comparatorUrl = new URL("../scripts/compare-baseline.mjs", import.meta.url);
 
 // Independent compatibility expectations: intentionally not imported from the
@@ -261,12 +263,16 @@ async function operator(${wrapperParameters}) {
 for (const platform of ["macos", "iphone", "ipad"]) {
   test(`${platform} example contains the layered continent selectors`, async () => {
     const profile = await readFile(new URL(`../examples/shadowrocket-${platform}.conf`, import.meta.url), "utf8");
+    const asia = CONTINENTS.find((continent) => continent.key === "asiaPacific");
     assert.match(profile, /^🌎 美洲 = select,/m);
-    assert.ok(profile.includes("🚀 节点选择 = select,PROXY,Shadowrocket-Nodes,use=true,policy-regex-filter=^(?!🔗 ).+$\n"), "macos example must keep the PROXY subscription root group");
-    assert.match(profile, /^🌏 亚太 = select,⚡ 亚太自动,🛟 亚太故障转移,🇯🇵 日本$/m);
-    assert.ok(profile.includes("🇯🇵 日本 = select,Shadowrocket-Nodes,use=true,policy-regex-filter=^🇯🇵(?: |$)\n"), "macos example must keep Japan in the Asia-Pacific flag group");
-    assert.match(profile, /^🌍 欧洲 = select,⚡ 欧洲自动,🛟 欧洲故障转移,🇩🇪 德国$/m);
-    assert.match(profile, /^🌎 美洲 = select,⚡ 美洲自动,🛟 美洲故障转移,🇺🇸 美国$/m);
+    assert.ok(profile.includes("🚀 节点选择 = select,PROXY,⚡ 全部自动,🛟 全部故障转移,🌏 亚太,🌍 欧洲,🌎 美洲\n"), "example must keep the PROXY selector root group");
+    assert.equal(
+      profile.split("\n").find((line) => line.startsWith("🌏 亚太 =")),
+      `🌏 亚太 = select,⚡ 亚太自动,🛟 亚太故障转移,Shadowrocket-Nodes,use=true,policy-regex-filter=${continentFilter(asia)}`,
+    );
+    assert.doesNotMatch(profile, /^🇯🇵 日本 = /m);
+    assert.match(profile, /^🌍 欧洲 = select,⚡ 欧洲自动,🛟 欧洲故障转移,Shadowrocket-Nodes,use=true,policy-regex-filter=/m);
+    assert.match(profile, /^🌎 美洲 = select,⚡ 美洲自动,🛟 美洲故障转移,Shadowrocket-Nodes,use=true,policy-regex-filter=/m);
     assert.match(profile, /^🤖 AI 专用 = select,🤖 AI 亚太,🤖 AI 欧洲,🤖 AI 美洲,Shadowrocket-Nodes,use=true,policy-regex-filter=\^\.\+\$$/m);
     assert.match(profile, /^🤖 AI 亚太 = select,.*Shadowrocket-Nodes,use=true,.*hidden=1$/m);
     assert.match(profile, /^🐙 GitHub = select,🚀 节点选择,⚡ 全部自动,🛟 全部故障转移,🌏 亚太,🌍 欧洲,🌎 美洲,DIRECT,Shadowrocket-Nodes,use=true,policy-regex-filter=\^\.\+\$,policy-select-name=🚀 节点选择$/m);

@@ -4,6 +4,7 @@ import test from "node:test";
 import { buildGroups, effectiveAutoMode } from "../src/group-catalog.js";
 import { normalizeNodes } from "../../../shared/nodes/normalize-nodes.js";
 import { renderGroups } from "../src/render-groups.js";
+import { CONTINENTS, continentFilter } from "../../../shared/policies/filters.js";
 import { fakeNodes } from "./fixtures/nodes.js";
 
 function node(name, metadata = {}) {
@@ -80,9 +81,14 @@ test("selects effective automatic group detail by normalized node count", () => 
 
   for (const count of [10, 50, 300]) {
     const groups = buildGroups(options(), Array.from({ length: count }, (_, index) => node(`🇯🇵 JP ${index}｜机场`)));
-    assert.equal(named(groups, "🚀 节点选择").useSubscription, true);
-    assert.equal(named(groups, "🚀 节点选择").filter, "^(?!🔗 ).+$");
-    assert.deepEqual(named(groups, "🚀 节点选择").items, ["PROXY"]);
+    assert.equal(named(groups, "🚀 节点选择").useSubscription, undefined);
+    assert.equal(named(groups, "🚀 节点选择").filter, undefined);
+    assert.deepEqual(named(groups, "🚀 节点选择").items, [
+      "PROXY",
+      "⚡ 全部自动",
+      "🛟 全部故障转移",
+      "🌏 亚太",
+    ]);
   }
 
   const fallback = named(buildGroups(options(), [node("🇯🇵 JP｜机场")]), "🛟 全部故障转移");
@@ -92,22 +98,32 @@ test("selects effective automatic group detail by normalized node count", () => 
   );
 });
 
-test("preserves root-to-continent-to-flag references while keeping helpers hidden", () => {
+test("preserves root-to-continent references while keeping helpers hidden", () => {
   const groups = buildGroups(options(), Array.from({ length: 40 }, (_, index) => node(`🇯🇵 JP ${index}｜机场`)));
- const lines = renderGroups(groups, "订阅,名称");
+  const lines = renderGroups(groups, "订阅,名称");
+  const asiaPacific = CONTINENTS.find((continent) => continent.key === "asiaPacific");
 
   assert.match(lines.find((line) => line.startsWith("🌏 亚太 =")), /^🌏 亚太 = select,/);
-  assert.deepEqual(named(groups, "🌏 亚太").items, ["⚡ 亚太自动", "🇯🇵 日本"]);
-  assert.deepEqual(named(groups, "🚀 节点选择").items, ["PROXY"]);
-  assert.equal(lines.find((line) => line.startsWith("🚀 节点选择 =")), "🚀 节点选择 = select,PROXY,订阅\\,名称,use=true,policy-regex-filter=^(?!🔗 ).+$");
-  assert.equal(lines.find((line) => line.startsWith("🌏 亚太 =")), "🌏 亚太 = select,⚡ 亚太自动,🇯🇵 日本");
-  assert.equal(lines.find((line) => line.startsWith("🇯🇵 日本 =")), "🇯🇵 日本 = select,订阅\\,名称,use=true,policy-regex-filter=^🇯🇵(?: |$)");
+  assert.deepEqual(named(groups, "🌏 亚太").items, ["⚡ 亚太自动"]);
+  assert.deepEqual(named(groups, "🚀 节点选择").items, [
+    "PROXY",
+    "⚡ 全部自动",
+    "🛟 全部故障转移",
+    "🌏 亚太",
+  ]);
+  assert.equal(
+    lines.find((line) => line.startsWith("🚀 节点选择 =")),
+    "🚀 节点选择 = select,PROXY,⚡ 全部自动,🛟 全部故障转移,🌏 亚太",
+  );
+  assert.equal(
+    lines.find((line) => line.startsWith("🌏 亚太 =")),
+    `🌏 亚太 = select,⚡ 亚太自动,订阅\\,名称,use=true,policy-regex-filter=${continentFilter(asiaPacific)}`,
+  );
   assert.equal(lines.some((line) => line.includes("订阅\\,名称,use=true")), true);
   assert.equal(named(groups, "🌍 欧洲"), undefined);
   assert.equal(groups.some((group) => group.hidden === true), true);
-  assert.equal(named(groups, "🇯🇵 日本").type, "select");
-  assert.equal(named(groups, "🇯🇵 日本").useSubscription, true);
-  assert.deepEqual(named(groups, "🇯🇵 日本").items, []);
+  assert.equal(named(groups, "🌏 亚太").type, "select");
+  assert.equal(named(groups, "🌏 亚太").useSubscription, true);
 });
 
 test("keeps service manual access and gates special service groups by eligibility", () => {
@@ -216,7 +232,7 @@ test("keeps chained clones out of the other-continent subscription filter", () =
     node("🌐 Other｜机场", { continent: "other" }),
     node("🔗 🇯🇵 clone｜落地", { chained: true }),
   ]);
-  const filter = new RegExp(named(groups, "🌐 未分类").filter);
+  const filter = new RegExp(named(groups, "🌐 其他/未分类").filter);
 
   assert.equal(filter.test("🌐 Other｜机场"), true);
   assert.equal(filter.test("🔗 🇯🇵 clone｜落地"), false);
@@ -277,14 +293,13 @@ test("references every available continent helper from its visible selector", ()
   assert.deepEqual(named(buildGroups(options({ autoGroupMode: "full" }), nodes), "🌏 亚太").items, [
     "⚡ 亚太自动",
     "🛟 亚太故障转移",
-    "🇯🇵 日本",
   ]);
   assert.deepEqual(named(buildGroups(options({ autoGroupMode: "minimal" }), nodes), "🌏 亚太").items, [
-    "🇯🇵 日本",
+    "⚡ 亚太自动",
   ]);
 });
 
-test("keeps root group as a PROXY subscription while AI continent order stays stable", () => {
+test("keeps root group as a PROXY selector while AI continent order stays stable", () => {
   const mixed = [
     node("🇿🇦 ZA｜自建", { continent: "other" }),
     node("🇺🇸 US｜自建", { continent: "americas" }),
@@ -293,7 +308,17 @@ test("keeps root group as a PROXY subscription while AI continent order stays st
   ];
   const groups = buildGroups(options(), mixed);
 
-  assert.deepEqual(named(groups, "🚀 节点选择").items, ["PROXY"]);
+  assert.deepEqual(named(groups, "🚀 节点选择").items, [
+    "PROXY",
+    "⚡ 全部自动",
+    "🛟 全部故障转移",
+    "🌏 亚太",
+    "🌍 欧洲",
+    "🌎 美洲",
+    "🌐 其他/未分类",
+  ]);
+  assert.equal(named(groups, "🚀 节点选择").useSubscription, undefined);
+  assert.equal(named(groups, "🚀 节点选择").filter, undefined);
   assert.deepEqual(named(groups, "🤖 AI 专用").items, [
     "🤖 AI 亚太",
     "🤖 AI 欧洲",
@@ -382,11 +407,11 @@ test("matches group filters against real normalized edge-case node names", () =>
   const clone = nodes.find((node) => node._profile.chained);
 
   assert.equal(collisions.length, 2);
-  assert.equal(matches(named(groups, "🇯🇵 日本"), commaNode), true);
-  assert.equal(matches(named(groups, "🇯🇵 日本"), unknown), false);
+  assert.equal(matches(named(groups, "🌏 亚太"), commaNode), true);
+  assert.equal(matches(named(groups, "🌏 亚太"), unknown), false);
   assert.equal(matches(named(groups, "🏢 机场节点"), commaNode), true);
   assert.equal(collisions.every((node) => matches(named(groups, "🏢 机场节点"), node)), true);
-  assert.equal(matches(named(groups, "🇿🇦"), unknown), true);
+  assert.equal(matches(named(groups, "🌐 其他/未分类"), unknown), true);
   assert.equal(matches(named(groups, "🎮 游戏连接"), udp), true);
   assert.equal(matches(named(groups, "⬇️ 下载/P2P"), nodes.find((node) => node._profile.p2p)), true);
   assert.equal(matches(named(groups, "🎯 客户端落地"), clone), true);

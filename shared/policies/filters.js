@@ -43,17 +43,10 @@ export const SOURCE_GROUPS = Object.freeze([
 ]);
 
 export function continentFilter(continent) {
-  if (continent.key === CONTINENT.other) {
+  const record = CONTINENTS.find((entry) => entry.key === continent.key) ?? continent;
+  if (record.key === CONTINENT.other) {
     const knownFlags = CONTINENTS.flatMap((record) => record.flags).join("|");
     return `^(?!(?:🔗|${knownFlags})).+$`;
   }
-  return `^(?:${continent.flags.join("|")}).+$`;
-}
-
-function escapeRegex(value) {
-  return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
-
-export function flagFilter(flag) {
-  return `^${escapeRegex(flag)}(?: |$)`;
+  return `^(?:${record.flags.join("|")}).+$`;
 }

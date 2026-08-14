@@ -83,9 +83,15 @@ test("renders a private Surge profile with shared policy sections and no interna
   assert.match(profile, /^\[Rule\]/mu);
   assert.match(profile, /🇯🇵 Tokyo A｜机场·U = ss,198\.51\.100\.10,443/iu);
   assert.match(profile, /TEST_ONLY_NOT_A_SECRET/u);
-  assert.match(profile, /^🚀 节点选择 = select,🌏 亚太$/mu);
-  assert.match(profile, /^🌏 亚太 = select,⚡ 亚太自动,🛟 亚太故障转移,🇯🇵 日本$/mu);
-  assert.match(profile, /^🇯🇵 日本 = select,🇯🇵 Tokyo A｜机场·U$/mu);
+  assert.equal(
+    profile.split("\n").find((line) => line.startsWith("🚀 节点选择 =")),
+    "🚀 节点选择 = select,⚡ 全部自动,🛟 全部故障转移,🌏 亚太",
+  );
+  assert.equal(
+    profile.split("\n").find((line) => line.startsWith("🌏 亚太 =")),
+    "🌏 亚太 = select,⚡ 亚太自动,🛟 亚太故障转移,🇯🇵 Tokyo A｜机场·U",
+  );
+  assert.doesNotMatch(profile, /^🇯🇵 日本 = /mu);
   assert.doesNotMatch(profile, /^(?:SS|VLESS|Hysteria2|AnyTLS) = /mu);
   assert.doesNotMatch(profile, /_profile|_subName|_resolved/u);
   assert.deepEqual(validateSurgeProfile(profile), { valid: true, errors: [] });
@@ -176,6 +182,7 @@ test("accepts common upstream transport metadata on Snell nodes", () => {
 });
 
 test("renders a pure remote Surge profile without embedding node transport details", () => {
+  const asia = CONTINENTS.find((continent) => continent.name === "🌏 亚太");
   const profile = renderSurgeProfile(parseSurgeOptions({
     ...baseOptions,
     proxyPolicyUrl: "https://substore.example.invalid/surge-nodes",
@@ -186,9 +193,15 @@ test("renders a pure remote Surge profile without embedding node transport detai
   assert.doesNotMatch(proxySection, / = (?:ss|snell|vmess|hysteria2),/iu);
   assert.match(profile, /📦 远程节点池 = select,policy-path=https:\/\/substore\.example\.invalid\/surge-nodes,update-interval=21600,hidden=1/u);
   assert.match(profile, /⚡ 全部自动 = url-test,include-other-group=📦 远程节点池,policy-regex-filter=/u);
-  assert.match(profile, /^🚀 节点选择 = select,🌏 亚太$/mu);
-  assert.match(profile, /^🌏 亚太 = select,⚡ 亚太自动,🛟 亚太故障转移,🇯🇵 日本$/mu);
-  assert.match(profile, /^🇯🇵 日本 = select,include-other-group=📦 远程节点池,policy-regex-filter=\^🇯🇵\(\?: \|\$\)$/mu);
+  assert.equal(
+    profile.split("\n").find((line) => line.startsWith("🚀 节点选择 =")),
+    "🚀 节点选择 = select,⚡ 全部自动,🛟 全部故障转移,🌏 亚太",
+  );
+  assert.equal(
+    profile.split("\n").find((line) => line.startsWith("🌏 亚太 =")),
+    `🌏 亚太 = select,⚡ 亚太自动,🛟 亚太故障转移,include-other-group=📦 远程节点池,policy-regex-filter=${continentFilter(asia)}`,
+  );
+  assert.doesNotMatch(profile, /^🇯🇵 日本 = /mu);
   assert.deepEqual(validateSurgeProfile(profile), { valid: true, errors: [] });
 });
 

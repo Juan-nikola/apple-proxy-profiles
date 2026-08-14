@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { buildPolicyGroups } from "../../../shared/policies/catalog.js";
+import { CONTINENTS, continentFilter } from "../../../shared/policies/filters.js";
 import { renderEgernGroups } from "../src/render-groups.js";
 import { renderEgernProfile } from "../src/render-profile.js";
 import { renderYaml } from "../src/render-yaml.js";
@@ -59,36 +60,23 @@ function renderedGroupFields(groups, name) {
   return undefined;
 }
 
-function profileWithMovedFlag({ flagName, fromContinent, toContinent, afterFlag }) {
+function profileWithContinentFilter({ fromContinent, toContinent }) {
   const options = {
     platform: "iphone",
     autoGroupMode: "minimal",
     clientChain: "off",
     blockMode: "balanced",
   };
-  const shared = buildPolicyGroups(options, [
+  const nodes = [
     normalizedPolicyNode("🇯🇵", "asiaPacific"),
-    normalizedPolicyNode("🇸🇬", "asiaPacific"),
     normalizedPolicyNode("🇩🇪", "europe"),
-    normalizedPolicyNode("🇿🇦", "other"),
-    normalizedPolicyNode("🇽🇰", "other"),
+  ];
+  const shared = buildPolicyGroups(options, [
+    ...nodes,
   ]);
   const rendered = renderEgernGroups(shared, PRIVATE_URL);
   const source = renderedGroupFields(rendered, fromContinent);
-  const target = renderedGroupFields(rendered, toContinent);
-  const remaining = source.policies.filter((policy) => policy !== flagName);
-  if (remaining.length === 0) delete source.policies;
-  else source.policies = remaining;
-  target.policies.push(flagName);
-
-  const flagIndex = rendered.findIndex((record) => (
-    record[Object.keys(record)[0]].name === flagName
-  ));
-  const [flagRecord] = rendered.splice(flagIndex, 1);
-  const afterIndex = rendered.findIndex((record) => (
-    record[Object.keys(record)[0]].name === afterFlag
-  ));
-  rendered.splice(afterIndex + 1, 0, flagRecord);
+  source.filter = continentFilter(toContinent);
 
   const base = validProfile({
     autoGroupMode: "minimal",
@@ -109,21 +97,17 @@ test("validates the actual deterministic YAML string", () => {
   assertInvalid({ profile }, /string/i);
 });
 
-test("rejects a complete profile that parents an ISO flag under the wrong continent", () => {
-  assertInvalid(profileWithMovedFlag({
-    flagName: "🇯🇵 日本",
+test("rejects a complete profile that assigns a documented continent filter to another continent", () => {
+  assertInvalid(profileWithContinentFilter({
     fromContinent: "🌏 亚太",
-    toContinent: "🌍 欧洲",
-    afterFlag: "🇩🇪 德国",
+    toContinent: CONTINENTS.find((continent) => continent.key === "europe"),
   }), /group|schema|semantic|continent/i);
 });
 
-test("rejects a complete profile that parents a non-catalog flag outside its Task 1 continent", () => {
-  assertInvalid(profileWithMovedFlag({
-    flagName: "🇽🇰",
-    fromContinent: "🌐 其他/未分类",
-    toContinent: "🌍 欧洲",
-    afterFlag: "🇩🇪 德国",
+test("rejects a complete profile whose continent group no longer matches canonical semantics", () => {
+  assertInvalid(profileWithContinentFilter({
+    fromContinent: "🌍 欧洲",
+    toContinent: CONTINENTS.find((continent) => continent.key === "asiaPacific"),
   }), /group|schema|semantic|continent/i);
 });
 

@@ -1,6 +1,4 @@
 import { buildPolicyGroups, effectiveAutoMode } from "../../../shared/policies/catalog.js";
-import { NON_CHAINED_FILTER } from "../../../shared/policies/filters.js";
-
 export { effectiveAutoMode };
 
 export function buildGroups(options, nodes) {
@@ -20,11 +18,10 @@ export function buildGroups(options, nodes) {
   return groups.map((group) => {
     if (group.name !== "🚀 节点选择") return group;
     return {
-      name: "🚀 节点选择",
-      type: "select",
-      items: ["PROXY"],
-      useSubscription: true,
-      filter: NON_CHAINED_FILTER,
+      ...group,
+      items: ["PROXY", ...group.items],
+      useSubscription: undefined,
+      filter: undefined,
     };
   });
 }

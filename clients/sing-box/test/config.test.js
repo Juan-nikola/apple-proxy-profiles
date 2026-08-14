@@ -119,9 +119,8 @@ test("keeps the primary selector compact with continent-level entries only", () 
   assert.deepEqual(primary?.type, "selector");
   assert.deepEqual(primary?.outbounds, ["⚡ 全部自动", "🛟 全部故障转移", "🌏 亚太"]);
   const continent = config.outbounds.find((outbound) => outbound.tag === "🌏 亚太");
-  assert.deepEqual(continent?.outbounds, ["⚡ 亚太自动", "🛟 亚太故障转移", "🇯🇵 日本"]);
-  const flag = config.outbounds.find((outbound) => outbound.tag === "🇯🇵 日本");
-  assert.deepEqual(flag?.outbounds, ["🇯🇵 [机场] Tokyo A"]);
+  assert.deepEqual(continent?.outbounds, ["⚡ 亚太自动", "🛟 亚太故障转移", "🇯🇵 [机场] Tokyo A"]);
+  assert.equal(config.outbounds.some((outbound) => outbound.tag === "🇯🇵 日本"), false);
   for (const nodeName of ["🇯🇵 [机场] Tokyo A"]) {
     assert.equal(primary?.outbounds.includes(nodeName), false, "primary selector must not list concrete nodes");
   }
@@ -347,11 +346,8 @@ test("puts visible groups first, hidden helper groups last, and node outbounds a
   const expectedVisible = [
     "🚀 节点选择",
     "🌏 亚太",
-    "🇯🇵 日本",
     "🌍 欧洲",
-    "🇩🇪 德国",
     "🌎 美洲",
-    "🇺🇸 美国",
     "🏢 机场节点",
     "🤖 AI 专用",
     "🐙 GitHub",

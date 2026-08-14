@@ -147,16 +147,7 @@
       "tag": "🌏 亚太",
       "outbounds": [
         "⚡ 亚太自动",
-        "🛟 亚太故障转移",
-        "🇯🇵 日本"
-      ],
-      "interrupt_exist_connections": true
-    },
-    {
-      "type": "selector",
-      "tag": "🇯🇵 日本",
-      "outbounds": [
-        "DIRECT"
+        "🛟 亚太故障转移"
       ],
       "interrupt_exist_connections": true
     },
@@ -165,16 +156,7 @@
       "tag": "🌍 欧洲",
       "outbounds": [
         "⚡ 欧洲自动",
-        "🛟 欧洲故障转移",
-        "🇩🇪 德国"
-      ],
-      "interrupt_exist_connections": true
-    },
-    {
-      "type": "selector",
-      "tag": "🇩🇪 德国",
-      "outbounds": [
-        "DIRECT"
+        "🛟 欧洲故障转移"
       ],
       "interrupt_exist_connections": true
     },

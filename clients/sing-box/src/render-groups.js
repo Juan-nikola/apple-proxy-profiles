@@ -51,7 +51,7 @@ function renderGroup(group, inventory) {
   if (group.name === "🚀 节点选择") {
     // Keep the primary selector compact: only helpers and continent groups,
     // so GUI clients (SFA/SFM) show a short hierarchy instead of a flat
-    // list of every node. Concrete nodes live inside the flag groups.
+    // list of every node. Concrete nodes live inside the continent groups.
     const outbounds = [
       "⚡ 全部自动",
       "\u{1F6DF} 全部故障转移",

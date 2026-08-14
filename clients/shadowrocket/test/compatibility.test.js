@@ -40,12 +40,12 @@ test("shared policy records preserve the Shadowrocket catalog", () => {
   const shadowrocketPrimary = shadowrocket.find((group) => group.name === "🚀 节点选择");
 
   assert.equal(Object.isFrozen(POLICY_TARGET), true);
-  assert.deepEqual(sharedPrimary.candidates, expectedContinents);
+  assert.deepEqual(sharedPrimary.candidates, ["⚡ 全部自动", "🛟 全部故障转移", ...expectedContinents]);
   assert.equal(sharedPrimary.nodeFilter, null);
   assert.notEqual(POLICY_TARGET.primaryProxy, "PROXY");
-  assert.deepEqual(shadowrocketPrimary.items, ["PROXY"]);
-  assert.equal(shadowrocketPrimary.useSubscription, true);
-  assert.equal(shadowrocketPrimary.filter, "^(?!🔗 ).+$");
+  assert.deepEqual(shadowrocketPrimary.items, ["PROXY", "⚡ 全部自动", "🛟 全部故障转移", ...expectedContinents]);
+  assert.equal(shadowrocketPrimary.useSubscription, undefined);
+  assert.equal(shadowrocketPrimary.filter, undefined);
   assert.deepEqual(
     shared.filter((group) => group.kind === "service").map((group) => group.name),
     EXPECTED_SERVICE_NAMES,
