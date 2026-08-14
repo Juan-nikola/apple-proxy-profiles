@@ -33,5 +33,10 @@
       "egern": "c78413297f350ef5ab3f5871266222500c42e4904bdcb54a603c8d50016fd96a",
       "anywhere": "a16d162f6de60385678038f4cd9835a9e825c079ad603b6bd68875c724d90426"
     }
+  },
+  "onexray": {
+    "edge": "f206e617382d9f2c0d8ef84e2810fe4bfffc3735f39883c9301326876fa10b9d",
+    "current": "3b86a711760afebb47a84dd2b628946a0941ee15e4870883346f9d61af7a3bc7",
+    "previous": null
   }
 }

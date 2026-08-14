@@ -234,6 +234,26 @@ async function fileMatches(path, content) {
   }
 }
 
+async function snapshotCurrentVersion(directory) {
+  const manifestPath = join(directory, "current", "manifest.json");
+  if (!await exists(manifestPath)) return null;
+  const manifestBytes = await readFile(manifestPath);
+  const manifest = JSON.parse(manifestBytes.toString("utf8"));
+  if (!manifest || !/^[0-9a-f]{64}$/u.test(manifest.manifestHash)) {
+    throw new Error("Current manifest hash is invalid");
+  }
+  const versionDirectory = join(directory, "versions", manifest.manifestHash);
+  if (await exists(versionDirectory)) {
+    if (!(await readFile(join(versionDirectory, "manifest.json"))).equals(manifestBytes)) {
+      throw new Error("Immutable public version bytes changed or are missing");
+    }
+    return manifest.manifestHash;
+  }
+  await mkdir(join(directory, "versions"), { recursive: true });
+  await cp(join(directory, "current"), versionDirectory, { recursive: true, errorOnExist: true });
+  return manifest.manifestHash;
+}
+
 async function directoryBytes(directory) {
   let total = 0;
   for (const entry of await readdir(directory, { withFileTypes: true })) {
@@ -882,7 +902,9 @@ export async function promoteOneXrayRelease({
       await refreshChannelManifest({ publicDirectory: staging, channel: "previous" });
     }
     if (await canRefreshChannel(join(staging, "current"))) {
-      await refreshCurrentManifest({ publicDirectory: staging });
+      const currentManifest = await refreshCurrentManifest({ publicDirectory: staging });
+      await snapshotCurrentVersion(staging);
+      await enforceRetention(staging, currentManifest.manifestHash);
     }
 
     if (await exists(backup)) throw new Error("OneXray promotion backup path already exists");
@@ -1015,6 +1037,7 @@ export async function promoteClientRelease({
       if (error.code !== "ENOENT") throw error;
     }
     const nextRollout = {
+      ...rollout,
       schemaVersion: 2,
       clients: { ...emptyRollout().clients, ...rollout.clients, [client]: manifestHash },
       previous: { ...emptyRollout().previous, ...rollout.previous, [client]: rollout.clients?.[client] ?? null },
@@ -1043,7 +1066,9 @@ export async function promoteClientRelease({
     };
     await writeFile(join(staging, "rollout.json"), `${JSON.stringify(nextRollout, null, 2)}\n`, "utf8");
     if (await canRefreshChannel(join(staging, "current"))) {
-      await refreshCurrentManifest({ publicDirectory: staging });
+      const currentManifest = await refreshCurrentManifest({ publicDirectory: staging });
+      await snapshotCurrentVersion(staging);
+      await enforceRetention(staging, currentManifest.manifestHash);
     }
 
     if (await exists(backup)) throw new Error("Promotion backup path already exists");

@@ -400,6 +400,13 @@ test("rebinding a second OneXray promotion makes the prior current projection pr
   assert.equal(rollout.onexray.previous, previous.manifestHash);
   assert.equal(current.channel, "current");
   assert.equal(currentRoot.onexray.channel, "current");
+  const currentVersion = JSON.parse(await readFile(join(
+    publicDirectory,
+    "versions",
+    currentRoot.manifestHash,
+    "manifest.json",
+  ), "utf8"));
+  assert.equal(currentVersion.manifestHash, currentRoot.manifestHash);
 });
 
 test("publishes OneXray edge scripts with the GeoData projection and hashes them", async () => {
@@ -513,6 +520,48 @@ test("binds optional client selections into the promoted client manifest", async
     () => promoteClientRelease({ publicDirectory, client: "singbox", manifestHash: hash }),
     /manifest hash does not match promotion target/u,
   );
+});
+
+test("client promotion keeps OneXray rollout state and snapshots the new current version", async () => {
+  const root = await mkdtemp(join(tmpdir(), "apple-proxy-promote-client-onexray-"));
+  const publicDirectory = join(root, "public");
+  const artifacts = buildClientArtifacts({ snapshot: lightweightFixtureSnapshots(), upstream: lightweightUpstream });
+  const hash = artifacts.diagnostics.defaultManifest.clients.egern.manifestHash;
+  await buildSite({
+    publicDirectory,
+    files: artifacts.defaults,
+    manifest: artifacts.diagnostics.defaultManifest,
+  });
+  await publishEdgeRelease({
+    publicDirectory,
+    defaults: artifacts.defaults,
+    optionalPacks: artifacts.optionalPacks,
+    manifest: artifacts.diagnostics.defaultManifest,
+    onexray: artifacts.onexray,
+  });
+  await promoteOneXrayRelease({
+    publicDirectory,
+    manifestHash: artifacts.diagnostics.onexrayManifest.manifestHash,
+  });
+  const before = JSON.parse(await readFile(join(publicDirectory, "rollout.json"), "utf8"));
+
+  await promoteClientRelease({
+    publicDirectory,
+    client: "egern",
+    manifestHash: hash,
+    now: "2026-08-09T01:00:00Z",
+  });
+
+  const after = JSON.parse(await readFile(join(publicDirectory, "rollout.json"), "utf8"));
+  assert.deepEqual(after.onexray, before.onexray);
+  const currentManifest = JSON.parse(await readFile(join(publicDirectory, "current/manifest.json"), "utf8"));
+  const versionManifest = JSON.parse(await readFile(join(
+    publicDirectory,
+    "versions",
+    currentManifest.manifestHash,
+    "manifest.json",
+  ), "utf8"));
+  assert.equal(versionManifest.manifestHash, currentManifest.manifestHash);
 });
 
 test("promotes calibration warnings with the exact manifested audit bytes", async () => {
