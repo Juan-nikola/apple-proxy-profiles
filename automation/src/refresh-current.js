@@ -44,6 +44,10 @@ const ONEXRAY_FILES = Object.freeze([
   "onexray/geodata/manifest.json",
   "onexray/index.html",
 ]);
+const ONEXRAY_SCRIPT_FILES = Object.freeze([
+  "onexray/scripts/onexray-nodes-generator.js",
+  "onexray/scripts/onexray-profile-generator.js",
+]);
 const ONEXRAY_SCHEMA = "apple-proxy-onexray-geodata-v1";
 const SHA256 = /^[0-9a-f]{64}$/u;
 
@@ -51,9 +55,6 @@ const SHA256 = /^[0-9a-f]{64}$/u;
 export async function validateOneXrayChannelTree(directory) {
   const paths = (await treeFiles(directory)).filter((path) => path.startsWith("onexray/"));
   if (paths.length === 0) return null;
-  if (JSON.stringify([...paths].sort()) !== JSON.stringify([...ONEXRAY_FILES].sort())) {
-    throw new Error("OneXray channel projection is incomplete");
-  }
   const manifestBytes = await readFile(join(directory, "onexray/geodata/manifest.json"));
   let manifest;
   try {
@@ -66,6 +67,19 @@ export async function validateOneXrayChannelTree(directory) {
     || typeof manifest.releaseId !== "string" || !SHA256.test(manifest.manifestHash ?? "")
     || !Array.isArray(manifest.files) || manifest.files.length !== 2) {
     throw new Error("OneXray channel manifest is invalid");
+  }
+  const allowed = new Set([
+    ...ONEXRAY_FILES,
+    ...(manifest.channel === "edge" ? ONEXRAY_SCRIPT_FILES : []),
+  ]);
+  if (ONEXRAY_FILES.some((path) => !paths.includes(path))
+    || paths.some((path) => !allowed.has(path))) {
+    throw new Error("OneXray channel projection is incomplete");
+  }
+  for (const path of ONEXRAY_SCRIPT_FILES) {
+    if (paths.includes(path) && (await readFile(join(directory, path))).byteLength === 0) {
+      throw new Error(`OneXray edge script is empty: ${path}`);
+    }
   }
   const { manifestHash, ...base } = manifest;
   if (artifactSha256(canonicalJson(base)) !== manifestHash

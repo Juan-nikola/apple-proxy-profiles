@@ -123,3 +123,20 @@ test("refreshCurrentManifest records a complete OneXray projection and rejects p
     await rm(root, { recursive: true, force: true });
   }
 });
+
+test("refreshCurrentManifest adopts edge metadata when edge carries OneXray scripts", async () => {
+  const { root } = await fixtureTree();
+  try {
+    const artifacts = buildClientArtifacts({ snapshot: lightweightFixtureSnapshots() });
+    await writeFiles(join(root, "edge"), artifacts.onexray);
+    await writeFiles(join(root, "edge"), artifacts.onexrayScripts);
+    await refreshCurrentManifest({ publicDirectory: root, adoptEdgeMetadata: true });
+    const current = JSON.parse(await readFile(join(root, "current/manifest.json"), "utf8"));
+    const edge = JSON.parse(await readFile(join(root, "edge/manifest.json"), "utf8"));
+    assert.deepEqual(current.upstream, edge.upstream);
+    assert.equal(current.generatedAt, edge.generatedAt);
+    assert.deepEqual(current.diagnostics, edge.diagnostics);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});

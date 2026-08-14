@@ -1,0 +1,12 @@
+# Upstream: https://github.com/blackmatrix7/ios_rule_script
+# Path: compiled/Surge/XiaoHongShu/XiaoHongShu.list
+# Commit: 2ba8dfe636e64b41d4857a621fec35868ab50e08
+# Committed at: 2026-08-13T19:00:08Z
+# License: GPL-2.0-only
+# Changed by: Juan-nikola/apple-proxy-profiles
+# Output entries: 4
+# Omitted entries: 0
+DOMAIN-SUFFIX,fengkongcloud.com
+DOMAIN-SUFFIX,xhscdn.com
+DOMAIN-SUFFIX,xhscdn.net
+DOMAIN-SUFFIX,xiaohongshu.com
