@@ -1,6 +1,5 @@
-import { CLIENT } from "../../../shared/contracts.js";
-import { filterNodesForClient } from "../../../shared/nodes/capabilities.js";
 import { normalizeNodes } from "../../../shared/nodes/normalize-nodes.js";
+import { assertRenderableNodes } from "../../../shared/nodes/renderability.js";
 import { BUSINESS_TARGETS } from "../../../shared/policies/business-targets.js";
 import { orderedRoutingPlan } from "../../../shared/rules/lightweight-policy.js";
 import { oneXrayGeoCode, oneXrayGeoNames } from "./geodata-contract.js";
@@ -10,6 +9,7 @@ import { encodePolicyOverrides } from "./policy-sync.js";
 import { renderOneXrayAudit } from "./render-audit.js";
 import { renderOneXrayDns } from "./render-dns.js";
 import { renderOneXrayProfile } from "./render-profile.js";
+import { renderOneXrayOutbound } from "./render-outbound.js";
 import { renderOneXrayRouting } from "./render-routing.js";
 import { resolveOneXrayPolicy } from "./resolve-policy.js";
 
@@ -92,17 +92,6 @@ function copyCounts(value) {
     .sort(([left], [right]) => left.localeCompare(right, "en")));
 }
 
-function protocolCounts(normalizedNodes, eligibleNodes) {
-  const eligible = new Set(eligibleNodes);
-  const result = {};
-  for (const node of normalizedNodes) {
-    const protocol = typeof node?.type === "string" ? node.type.trim().toLowerCase() : "unknown";
-    result[protocol] ??= { accepted: 0, excluded: 0 };
-    result[protocol][eligible.has(node) ? "accepted" : "excluded"] += 1;
-  }
-  return Object.fromEntries(Object.entries(result).sort(([left], [right]) => left.localeCompare(right, "en")));
-}
-
 function defineInternal(target, key, value) {
   Object.defineProperty(target, key, {
     value,
@@ -112,9 +101,8 @@ function defineInternal(target, key, value) {
   });
 }
 
-function privateContext({ options, normalized, eligible, resolution, profile, profileLink, dns, routing, geo, geoHashes }) {
+function privateContext({ options, normalized, resolution, profile, profileLink, dns, routing, geo, geoHashes }) {
   const normalizedNodes = normalized.nodes;
-  const eligibleNodes = eligible.nodes;
   const context = {
     normalizedDiagnostics: Object.freeze({
       total: normalized.diagnostics.total,
@@ -122,11 +110,7 @@ function privateContext({ options, normalized, eligible, resolution, profile, pr
       protocol: Object.freeze(copyCounts(normalized.diagnostics.protocol)),
       excluded: Object.freeze(copyCounts(normalized.diagnostics.excluded)),
     }),
-    eligibleDiagnostics: Object.freeze({
-      accepted: eligible.diagnostics.accepted,
-      excluded: Object.freeze(copyCounts(eligible.diagnostics.excluded)),
-    }),
-    protocolCounts: Object.freeze(protocolCounts(normalizedNodes, eligibleNodes)),
+    renderFailureProtocols: Object.freeze({}),
     ruleReleaseId: `shared-lightweight-${options.channel}`,
     geoHashes: Object.freeze({ ...geoHashes }),
   };
@@ -135,7 +119,6 @@ function privateContext({ options, normalized, eligible, resolution, profile, pr
   // output is explicitly assembled from the public summaries above.
   defineInternal(context, "options", options);
   defineInternal(context, "normalizedNodes", normalizedNodes);
-  defineInternal(context, "eligibleNodes", eligibleNodes);
   defineInternal(context, "resolution", resolution);
   defineInternal(context, "profile", profile);
   defineInternal(context, "profileLink", profileLink);
@@ -181,25 +164,24 @@ function buildPrivateOneXrayContext(rawArguments, proxies, { geoHashes = {}, pol
 
   let normalized;
   try {
-    normalized = normalizeNodes(proxies, { clientChain: options.clientChain });
+    // OneXray resolves its native chain separately; generic generated clones
+    // are not selected source nodes and cannot be rendered as native outbounds.
+    normalized = normalizeNodes(proxies, { clientChain: "off" });
   } catch {
     throw processorError("invalid-inventory");
   }
 
-  let eligible;
-  try {
-    eligible = filterNodesForClient(normalized.nodes, CLIENT.onexray);
-  } catch {
-    throw processorError("invalid-inventory");
-  }
-  if (eligible.nodes.length === 0) throw processorError("no-compatible-nodes");
+  assertRenderableNodes(normalized.nodes, "OneXray", (node) => renderOneXrayOutbound(node, {
+    tag: node.name,
+    allowDisplayTag: true,
+  }));
 
   let resolution;
   try {
     resolution = resolveOneXrayPolicy({
       options: { ...options, policyOverrides },
       allNodes: normalized.nodes,
-      eligibleNodes: eligible.nodes,
+      eligibleNodes: normalized.nodes,
     });
   } catch (error) {
     throw policyProcessorError(error);
@@ -227,12 +209,12 @@ function buildPrivateOneXrayContext(rawArguments, proxies, { geoHashes = {}, pol
     throw processorError("invalid-profile");
   }
 
-  return privateContext({ options, normalized, eligible, resolution, profile, profileLink, dns, routing, geo, geoHashes });
+  return privateContext({ options, normalized, resolution, profile, profileLink, dns, routing, geo, geoHashes });
 }
 
 /**
  * Private Profile/audit Sub-Store processor. Both modes execute the same
- * normalization, capability, policy, DNS, routing, Profile and link stages;
+ * normalization, renderability, policy, DNS, routing, Profile and link stages;
  * only the final allowlisted serialization differs.
  */
 export function runOneXrayProfileProcessor(input = {}) {
@@ -241,7 +223,7 @@ export function runOneXrayProfileProcessor(input = {}) {
   try {
     context = buildPrivateOneXrayContext(rawArguments, proxies, { geoHashes, policy });
   } catch (error) {
-    if (error instanceof Error && /^OneXray profile: /u.test(error.message)) throw error;
+    if (error instanceof Error && /^(?:OneXray profile: |OneXray cannot render selected protocols: )/u.test(error.message)) throw error;
     throw processorError("invalid-profile");
   }
 

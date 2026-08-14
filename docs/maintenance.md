@@ -1,17 +1,17 @@
 # 维护、编译与发布手册
 
-这份手册回答三个问题：以后增加节点或规则要改哪里、每个文件负责什么、在 macOS/Linux/CI/OpenWrt 环境怎样构建和验证。公开仓库不保存节点；你的私密节点来源只在 Sub-Store 的原始组合 `apple-proxy-sources` 中维护，六个客户端的 Profile/Config 生成器都直接读取这个原始组合（Shadowrocket 生成器内置节点归一化，不依赖组合上的节点操作）。
+这份手册回答三个问题：以后增加节点或规则要改哪里、每个文件负责什么、在 macOS/Linux/CI/OpenWrt 环境怎样构建和验证。公开仓库不保存节点；你的私密节点来源在 `apple-proxy-all` 总池与六个 client collection 中维护，详细边界见 [Sub-Store 客户端节点池指南](substore-client-pools.md)。旧 `apple-proxy-sources` 只保留作兼容/回滚入口。
 
 ## 1. 先判断你要改哪一层
 
 | 你要做的事 | 修改位置 | 修改后需要做什么 |
 | --- | --- | --- |
-| 增加或删除节点来源 | 只改 Sub-Store 的原始 `apple-proxy-sources` | 预览原始组合非空后，按客户端顺序刷新 |
+| 增加或删除节点来源 | Sub-Store 的 `apple-proxy-all` 与受影响 client collection | 用户更新筛选、preview 并对比计数后，只刷新受影响客户端 |
 | 修改某个来源的订阅参数 | 只在自己的 Sub-Store 来源对象 | 单独预览来源，确认非空，再刷新组合 |
 | 增加公开规则 | `automation/src/source-catalog.js`、对应源目录或固定上游 SHA | 更新规则快照、运行规则检查、构建和秘密扫描 |
 | 修改客户端默认 DNS/IPv6/QUIC | `clients/<client>/src/options.js`、策略/渲染文件和测试 | 先写测试，再构建对应 bundle 和 fixtures |
 | 修改分组、路由或规则顺序 | 对应客户端 `src/render-*.js`、共享 `shared/policies/` 和测试 | 跑客户端测试、示例校验和全量 verify |
-| 增加协议或传输 | `shared/contracts.js`、归一化/能力过滤、各客户端适配器和测试 | 逐客户端确认是否原生支持；不能静默丢字段 |
+| 增加协议或传输 | `shared/contracts.js`、归一化、各客户端适配器、渲染器全量校验和测试 | 逐客户端确认是否原生支持；不能静默丢字段 |
 | 修改 Sub-Store 参数 | 私密任务参数编辑器；公开示例同步改总指南 | 先隔离任务预览，不把真实参数值写入 GitHub |
 | 修改公开 JS 名称或 Pages 路径 | 对应 `clients/<client>/scripts/build.mjs`、发布脚本、文档和测试 | 保留旧兼容别名，验证新旧 bundle 字节契约 |
 | 修改 sing-box `.srs` | `automation/src/render-sing-box-rules.js`、`clients/sing-box/scripts/compile-rules.mjs` 和测试 | 必须使用官方 core 产生二进制；无 core 必须失败 |
@@ -236,8 +236,8 @@ node --input-type=module -e 'import { compileRules } from "./clients/sing-box/sc
 
 ### 7.1 增加节点
 
-1. 只在 Sub-Store 新建来源或把来源加入 `apple-proxy-sources`。
-2. 单独预览新增来源，再预览组合。
+1. 只在 Sub-Store 新建来源，再把来源加入 `apple-proxy-all`。
+2. 单独预览新增来源，由用户更新受影响 client collection 的筛选并逐个 preview。
 3. 依次刷新节点输出和平台输出。
 4. 一台设备 canary 通过后再推广，不修改仓库文件。
 
@@ -255,7 +255,7 @@ node --input-type=module -e 'import { compileRules } from "./clients/sing-box/sc
 
 先写或修改对应测试，再改 `src/`：
 
-1. 共享协议或字段：`shared/`、规范化和能力过滤。
+1. 共享协议或字段：`shared/`、规范化和渲染器全量校验。
 2. 节点映射：目标客户端的 `src/render-node.js`、验证和测试。
 3. Profile/Config：目标客户端的 `src/render-profile.js` 或 `render-config.js`、选项和测试。
 4. 分组/路由/DNS：对应 `render-groups.js`、`render-rules.js`、`render-dns.js` 和安全测试。

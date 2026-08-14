@@ -8,6 +8,15 @@ import { normalizeProtocol } from "../../../shared/nodes/protocol-registry.js";
 export const EGERN_CHAIN_POLICY = "🔗 入口节点";
 
 const CHAIN_ALIASES = Object.freeze(["underlying-proxy", "chain", "dialer-proxy", "detour", "prev_hop"]);
+const ANYTLS_FIELDS = new Set([
+  "name", "type", "server", "port", "password", "network", "tls", "security",
+  "sni", "servername", "tfo", "udp", "udp-relay", "udp_relay",
+  "skip-cert-verify", "allow-insecure", "fingerprint-sha256", "fingerprint_sha256",
+  "alpn", "client-fingerprint",
+  "reality-opts", "block-quic", "block_quic", "shadow-tls", "shadow-tls-opts",
+  "shadow_tls", "ip-version", "ip_version", "underlying-proxy", "chain",
+  "dialer-proxy", "detour", "prev_hop", "_profile", "_subName",
+]);
 const REASON_MESSAGES = Object.freeze({
   "unsupported-existing-chain": "Unsupported existing Egern proxy chain",
   "unsupported-egern-transport": "Unsupported Egern transport",
@@ -59,6 +68,20 @@ function requiredString(value) {
     throw new Error("Incomplete Egern proxy node");
   }
   return value;
+}
+
+function assertSupportedFields(node, supportedFields) {
+  if (Object.keys(node).some((key) => !supportedFields.has(key))) {
+    throw new Error("Unsupported Egern proxy option");
+  }
+}
+
+function protocolForError(node) {
+  try {
+    return normalizeProtocol(node?.type) || "unknown";
+  } catch {
+    return "unknown";
+  }
 }
 
 function commonFields(node) {
@@ -254,6 +277,7 @@ function renderTrojan(node) {
 }
 
 function renderAnytls(node) {
+  assertSupportedFields(node, ANYTLS_FIELDS);
   const fields = commonFields(node);
   setCredentialField(fields, "password", requiredString(node.password));
   appendCommonTcpOptions(fields, node, { udp: true });
@@ -370,7 +394,7 @@ function appendClientChain(proxy, node, clientChain) {
   return proxy;
 }
 
-export function toEgernProxy(node, { clientChain = "off" } = {}) {
+function renderEgernProxy(node, { clientChain = "off" } = {}) {
   if (clientChain !== "off" && clientChain !== "on") {
     throw new Error("clientChain must be off or on");
   }
@@ -399,4 +423,13 @@ export function toEgernProxy(node, { clientChain = "off" } = {}) {
   const fields = proxy[Object.keys(proxy)[0]];
   appendLatestCommonOptions(fields, node);
   return appendClientChain(proxy, node, clientChain);
+}
+
+export function toEgernProxy(node, options = {}) {
+  const protocol = protocolForError(node);
+  try {
+    return renderEgernProxy(node, options);
+  } catch {
+    throw new Error(`Egern cannot render protocol: ${protocol}`);
+  }
 }

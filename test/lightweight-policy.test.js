@@ -17,7 +17,10 @@ import {
 } from "../shared/rules/domestic-core.js";
 import { OBSERVED_DOMESTIC_RECORDS } from "../shared/rules/observed-domestic.js";
 import { RULE_CLIENT_CATALOG } from "../shared/rules/client-catalog.js";
-import { buildPolicyGroups } from "../shared/policies/catalog.js";
+import * as policyCatalog from "../shared/policies/catalog.js";
+import * as policyFilters from "../shared/policies/filters.js";
+
+const { GROUP_KIND, STRATEGY, buildPolicyGroups } = policyCatalog;
 
 const PUBLIC_SUFFIXES = new Set(["com", "net", "cn", "com.cn"]);
 
@@ -189,4 +192,202 @@ test("keeps overseas games proxy-first and SteamCN direct-first", () => {
   assert.equal(overseasGame.candidates[0], POLICY_TARGETS.defaultProxy);
   assert.equal(overseasGame.candidates.at(-1), POLICY_TARGETS.direct);
   assert.equal(RULE_CLIENT_CATALOG.find(({ id }) => id === "SteamCN").policy, POLICY_TARGETS.direct);
+});
+
+test("builds a deterministic root-to-continent-to-flag graph without protocol child groups", () => {
+  const inventory = [
+    ["🇺🇸 US · VLESS｜自建", "americas", "🇺🇸", "VLESS", false],
+    ["🌐 Unknown · AnyTLS｜机场", "other", "🌐", "AnyTLS", false],
+    ["🇩🇪 DE · Hysteria2｜机场", "europe", "🇩🇪", "Hysteria2", false],
+    ["🇸🇬 SG · Trojan｜机场", "asiaPacific", "🇸🇬", "Trojan", false],
+    ["🔗 🇰🇷 KR · SS｜落地", "asiaPacific", "🇰🇷", "SS", true],
+    ["🇯🇵 JP · SS｜机场", "asiaPacific", "🇯🇵", "SS", false],
+  ].map(([name, continent, flag, protocolLabel, chained]) => ({
+    name,
+    _profile: {
+      continent,
+      flag,
+      protocolLabel,
+      sourceKind: chained ? "landing" : "airport",
+      udp: false,
+      p2p: false,
+      entry: false,
+      chained,
+    },
+  }));
+  const groups = buildPolicyGroups({
+    platform: "macos",
+    autoGroupMode: "full",
+    clientChain: "off",
+    blockMode: "off",
+  }, inventory);
+  const byName = new Map(groups.map((group) => [group.name, group]));
+
+  assert.equal(GROUP_KIND.flag, "flag");
+  assert.equal(typeof policyCatalog.flagGroupName, "function");
+  assert.equal(typeof policyFilters.flagFilter, "function");
+  assert.equal(policyCatalog.flagGroupName("🇯🇵"), "🇯🇵 日本");
+  assert.equal(policyCatalog.flagGroupName("🌐"), "🌐 未分类");
+  assert.equal(policyFilters.flagFilter("x.y"), String.raw`^x\.y(?: |$)`);
+  assert.match("x.y node", new RegExp(policyFilters.flagFilter("x.y"), "u"));
+  assert.doesNotMatch("xay node", new RegExp(policyFilters.flagFilter("x.y"), "u"));
+
+  assert.deepEqual(byName.get("🚀 节点选择").candidates, [
+    "🌏 亚太",
+    "🌍 欧洲",
+    "🌎 美洲",
+    "🌐 其他/未分类",
+  ]);
+  assert.equal(byName.get("🚀 节点选择").nodeFilter, null);
+  assert.deepEqual(byName.get("🌏 亚太").candidates, [
+    "⚡ 亚太自动",
+    "🛟 亚太故障转移",
+    "🇯🇵 日本",
+    "🇸🇬 新加坡",
+  ]);
+  assert.deepEqual(byName.get("🌍 欧洲").candidates, [
+    "⚡ 欧洲自动",
+    "🛟 欧洲故障转移",
+    "🇩🇪 德国",
+  ]);
+  assert.deepEqual(byName.get("🌎 美洲").candidates, [
+    "⚡ 美洲自动",
+    "🛟 美洲故障转移",
+    "🇺🇸 美国",
+  ]);
+  assert.deepEqual(byName.get("🌐 其他/未分类").candidates, [
+    "⚡ 其他/未分类自动",
+    "🛟 其他/未分类故障转移",
+    "🌐 未分类",
+  ]);
+  for (const [name, filter] of [
+    ["🇯🇵 日本", "^🇯🇵(?: |$)"],
+    ["🇸🇬 新加坡", "^🇸🇬(?: |$)"],
+    ["🇩🇪 德国", "^🇩🇪(?: |$)"],
+    ["🇺🇸 美国", "^🇺🇸(?: |$)"],
+    ["🌐 未分类", "^🌐(?: |$)"],
+  ]) {
+    const group = byName.get(name);
+    assert.deepEqual(
+      { kind: group.kind, strategy: group.strategy, candidates: group.candidates, nodeFilter: group.nodeFilter },
+      { kind: GROUP_KIND.flag, strategy: STRATEGY.select, candidates: [], nodeFilter: filter },
+      name,
+    );
+  }
+
+  assert.deepEqual(
+    groups
+      .filter(({ kind }) => [GROUP_KIND.primary, GROUP_KIND.continent, GROUP_KIND.flag].includes(kind))
+      .map(({ name }) => name),
+    [
+      "🚀 节点选择",
+      "🌏 亚太",
+      "🇯🇵 日本",
+      "🇸🇬 新加坡",
+      "🌍 欧洲",
+      "🇩🇪 德国",
+      "🌎 美洲",
+      "🇺🇸 美国",
+      "🌐 其他/未分类",
+      "🌐 未分类",
+    ],
+  );
+  assert.equal(byName.has("🇰🇷 韩国"), false, "chained flags must not create groups");
+  assert.equal(groups.some(({ kind }) => kind === "protocol"), false);
+  for (const protocolLabel of new Set(inventory.map(({ _profile }) => _profile.protocolLabel))) {
+    assert.equal(byName.has(protocolLabel), false, protocolLabel);
+  }
+
+  const visiting = new Set();
+  const visited = new Set();
+  function visit(name) {
+    assert.equal(visiting.has(name), false, `cycle at ${name}`);
+    if (visited.has(name)) return;
+    visiting.add(name);
+    for (const candidate of byName.get(name).candidates) {
+      if (byName.has(candidate)) visit(candidate);
+    }
+    visiting.delete(name);
+    visited.add(name);
+  }
+  for (const name of byName.keys()) visit(name);
+});
+
+test("retains non-catalog country flags in deterministic minimal-mode flag groups", () => {
+  const inventory = [
+    ["🇽🇽 XX · SS｜机场", "🇽🇽", false],
+    ["🇿🇦 ZA · SS｜机场", "🇿🇦", false],
+    ["🔗 🇽🇦 XA · SS｜落地", "🇽🇦", true],
+    ["🇽🇰 XK · SS｜机场", "🇽🇰", false],
+  ].map(([name, flag, chained]) => ({
+    name,
+    _profile: {
+      continent: "other",
+      flag,
+      protocolLabel: "SS",
+      sourceKind: chained ? "landing" : "airport",
+      udp: false,
+      p2p: false,
+      entry: false,
+      chained,
+    },
+  }));
+  const groups = buildPolicyGroups({
+    platform: "macos",
+    autoGroupMode: "minimal",
+    clientChain: "off",
+    blockMode: "off",
+  }, inventory);
+  const byName = new Map(groups.map((group) => [group.name, group]));
+
+  assert.deepEqual(byName.get("🚀 节点选择").candidates, ["🌐 其他/未分类"]);
+  assert.deepEqual(byName.get("🌐 其他/未分类").candidates, ["🇿🇦", "🇽🇰", "🇽🇽"]);
+  for (const flag of ["🇿🇦", "🇽🇰", "🇽🇽"]) {
+    assert.deepEqual(
+      byName.get(flag),
+      {
+        kind: GROUP_KIND.flag,
+        name: flag,
+        strategy: STRATEGY.select,
+        candidates: [],
+        nodeFilter: `^${flag}(?: |$)`,
+        test: null,
+        hidden: undefined,
+        defaultChoice: undefined,
+      },
+      flag,
+    );
+  }
+  assert.equal(byName.has("🇽🇦"), false, "chained non-catalog flags must not create groups");
+  assert.equal(byName.has("🌐 未分类"), false, "fallback flag must only appear when present");
+});
+
+test("rejects normalized flag metadata assigned to a noncanonical continent", () => {
+  for (const [flag, continent] of [
+    ["🇯🇵", "europe"],
+    ["🇽🇰", "europe"],
+  ]) {
+    assert.throws(
+      () => buildPolicyGroups({
+        platform: "macos",
+        autoGroupMode: "minimal",
+        clientChain: "off",
+        blockMode: "off",
+      }, [{
+        name: `${flag} TEST_ONLY_WRONG_CONTINENT`,
+        _profile: {
+          continent,
+          flag,
+          protocolLabel: "SS",
+          sourceKind: "airport",
+          udp: false,
+          p2p: false,
+          entry: false,
+          chained: false,
+        },
+      }]),
+      /flag.*continent|continent.*flag/i,
+      flag,
+    );
+  }
 });

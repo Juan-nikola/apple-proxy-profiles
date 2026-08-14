@@ -2,17 +2,24 @@ import { normalizeProtocol } from "../../../shared/nodes/protocol-registry.js";
 
 const ALLOWED_KEYS = new Set([
   "name", "type", "server", "port", "udp", "tls", "security", "sni", "servername",
-  "skip-cert-verify", "allow-insecure", "client-fingerprint", "reality-opts", "network",
+  "skip-cert-verify", "allow-insecure", "client-fingerprint", "alpn", "reality-opts", "network",
   "ws-opts", "grpc-opts", "h2-opts", "http-opts", "cipher", "password", "uuid", "flow",
   "alter-id", "alterId", "psk", "version", "username", "private-key", "private_key",
   "public-key", "pre-shared-key", "peers", "local-address", "local_ipv4", "local-ipv4",
   "local_ipv6", "local-ipv6", "ip", "ipv6", "dns", "dns_servers", "mtu", "keepalive",
   "obfs", "obfs-mode", "obfs_mode", "obfs-host", "obfs_host", "obfs-password", "obfs_password", "mode", "userkey", "user-key", "udp-relay-mode", "udp_relay_mode", "ports",
   "port-hopping", "port_hopping", "port-hopping-interval", "port_hopping_interval",
-  "bandwidth", "up", "down", "reuse", "tfo", "udp_relay", "underlying-proxy", "chain", "dialer-proxy", "detour", "prev_hop",
+  "bandwidth", "up", "down", "reuse", "tfo", "udp_relay", "idle-session-check-interval",
+  "idle-session-timeout", "min-idle-session", "underlying-proxy", "chain", "dialer-proxy", "detour", "prev_hop",
 ]);
 const CHAIN_ALIASES = ["underlying-proxy", "chain", "dialer-proxy", "detour", "prev_hop"];
 const GENERATED_CHAIN_POLICY = "🔗 入口节点";
+const ANYTLS_FIELDS = new Set([
+  "name", "type", "server", "port", "password", "tls", "security", "sni", "servername",
+  "skip-cert-verify", "allow-insecure", "client-fingerprint", "alpn", "reality-opts", "network",
+  "idle-session-check-interval", "idle-session-timeout", "min-idle-session", ...CHAIN_ALIASES,
+]);
+const ANYTLS_REALITY_FIELDS = new Set(["public-key", "short-id"]);
 
 function hasOwn(value, key) {
   return Object.hasOwn(value, key);
@@ -41,6 +48,74 @@ function validateNodeShape(node) {
   }
 }
 
+function validateAnyTlsShape(node) {
+  const unsupported = Object.keys(node).find((key) => !key.startsWith("_") && !ANYTLS_FIELDS.has(key));
+  if (unsupported !== undefined) throw new Error(`Unsupported sing-box AnyTLS field: ${unsupported}`);
+
+  if (hasOwn(node, "network") && node.network !== "tcp") {
+    throw new Error("Unsupported sing-box AnyTLS field: network");
+  }
+  if (hasOwn(node, "tls") && (typeof node.tls !== "boolean" || node.tls === false)) {
+    throw new Error("Unsupported sing-box AnyTLS field: tls");
+  }
+
+  if (hasOwn(node, "security") && !["tls", "reality"].includes(node.security)) {
+    throw new Error(`Unsupported sing-box AnyTLS security: ${String(node.security)}`);
+  }
+  const reality = node["reality-opts"];
+  if (node.security === "reality" && !hasOwn(node, "reality-opts")) {
+    throw new Error("sing-box AnyTLS Reality options are required for Reality security");
+  }
+  if (node.security === "tls" && hasOwn(node, "reality-opts")) {
+    throw new Error("sing-box AnyTLS security conflicts with Reality options");
+  }
+
+  for (const key of ["sni", "servername"]) {
+    if (hasOwn(node, key) && (typeof node[key] !== "string" || node[key].length === 0 || node[key].trim() !== node[key])) {
+      throw new Error(`sing-box AnyTLS field '${key}' is invalid`);
+    }
+  }
+  if (hasOwn(node, "sni") && hasOwn(node, "servername") && node.sni !== node.servername) {
+    throw new Error("Conflicting sing-box AnyTLS aliases: sni,servername");
+  }
+
+  for (const key of ["skip-cert-verify", "allow-insecure"]) {
+    if (hasOwn(node, key) && typeof node[key] !== "boolean") {
+      throw new Error(`sing-box AnyTLS field '${key}' is invalid`);
+    }
+  }
+  if (hasOwn(node, "skip-cert-verify") && hasOwn(node, "allow-insecure")
+    && node["skip-cert-verify"] !== node["allow-insecure"]) {
+    throw new Error("Conflicting sing-box AnyTLS aliases: skip-cert-verify,allow-insecure");
+  }
+
+  if (hasOwn(node, "client-fingerprint")
+    && (typeof node["client-fingerprint"] !== "string"
+      || node["client-fingerprint"].length === 0
+      || node["client-fingerprint"].trim() !== node["client-fingerprint"])) {
+    throw new Error("sing-box AnyTLS field 'client-fingerprint' is invalid");
+  }
+
+  if (hasOwn(node, "reality-opts")) {
+    if (!reality || typeof reality !== "object" || Array.isArray(reality)) {
+      throw new Error("sing-box AnyTLS Reality options are invalid");
+    }
+    const unsupportedReality = Object.keys(reality).find((key) => !ANYTLS_REALITY_FIELDS.has(key));
+    if (unsupportedReality !== undefined) {
+      throw new Error(`Unsupported sing-box AnyTLS Reality field: ${unsupportedReality}`);
+    }
+    if (typeof reality["public-key"] !== "string"
+      || reality["public-key"].length === 0
+      || reality["public-key"].trim() !== reality["public-key"]) {
+      throw new Error("sing-box AnyTLS Reality public key is invalid");
+    }
+    if (hasOwn(reality, "short-id")
+      && (typeof reality["short-id"] !== "string" || !/^[0-9a-f]+$/iu.test(reality["short-id"]))) {
+      throw new Error("sing-box AnyTLS Reality short ID is invalid");
+    }
+  }
+}
+
 export function sanitizeSingBoxNode(node) {
   return Object.fromEntries(Object.entries(node).filter(([key]) => key.startsWith("_") || ALLOWED_KEYS.has(key)));
 }
@@ -49,12 +124,33 @@ function setIf(target, key, value) {
   if (value !== undefined && value !== null && value !== "") target[key] = value;
 }
 
+function durationSeconds(node, key) {
+  if (!hasOwn(node, key)) return undefined;
+  const value = node[key];
+  if (Number.isSafeInteger(value) && value >= 0) return `${value}s`;
+  if (typeof value === "string" && value.length > 0 && value.trim() === value) return value;
+  throw new Error(`sing-box AnyTLS node field '${key}' is invalid`);
+}
+
+function minIdleSession(node) {
+  if (!hasOwn(node, "min-idle-session")) return undefined;
+  const value = node["min-idle-session"];
+  if (!Number.isSafeInteger(value) || value < 0) throw new Error("sing-box AnyTLS node field 'min-idle-session' is invalid");
+  return value;
+}
+
 function tlsFields(node, required = false) {
   const reality = node["reality-opts"];
   const enabled = required || node.tls === true || node.security === "tls" || node.security === "reality" || reality !== undefined;
   if (!enabled) return undefined;
   const tls = { enabled: true };
   setIf(tls, "server_name", node.sni ?? node.servername);
+  if (node.alpn !== undefined) {
+    if (!Array.isArray(node.alpn) || node.alpn.length === 0 || node.alpn.some((value) => typeof value !== "string" || value.length === 0 || value.trim() !== value)) {
+      throw new Error("sing-box TLS ALPN is invalid");
+    }
+    tls.alpn = [...node.alpn];
+  }
   if (node["skip-cert-verify"] === true || node["allow-insecure"] === true) tls.insecure = true;
   if (node["client-fingerprint"] !== undefined) {
     tls.utls = { enabled: true, fingerprint: node["client-fingerprint"] };
@@ -158,7 +254,11 @@ export function renderSingBoxOutbound(node) {
       outbound.transport = transportFields(node);
       break;
     case "anytls":
+      validateAnyTlsShape(node);
       outbound = { ...base(node, "anytls"), password: requiredString(node, "password"), tls: tlsFields(node, true) };
+      setIf(outbound, "idle_session_check_interval", durationSeconds(node, "idle-session-check-interval"));
+      setIf(outbound, "idle_session_timeout", durationSeconds(node, "idle-session-timeout"));
+      setIf(outbound, "min_idle_session", minIdleSession(node));
       break;
     case "hysteria2":
     case "hy2":

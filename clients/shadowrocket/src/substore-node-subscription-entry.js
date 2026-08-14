@@ -1,6 +1,9 @@
-import { CLIENT } from "../../../shared/contracts.js";
-import { filterNodesForClient } from "../../../shared/nodes/capabilities.js";
 import { normalizeNodes } from "../../../shared/nodes/normalize-nodes.js";
+import { validateCollectionName } from "../../../shared/substore/collection-name.js";
+import {
+  assertShadowrocketNodeSet,
+  renderShadowrocketProxyRecord,
+} from "./render-node.js";
 
 const ALLOWED_OPTIONS = new Set(["output", "type", "name", "clientChain"]);
 
@@ -15,12 +18,10 @@ function parseArguments(rawArguments) {
   }
   if (rawArguments.output !== "nodes") throw new Error("output must be nodes");
   if (rawArguments.type !== "collection") throw new Error("type must be collection");
-  if (typeof rawArguments.name !== "string" || rawArguments.name.length === 0 || rawArguments.name.trim() !== rawArguments.name) {
-    throw new Error("name must be a non-empty single-line string");
-  }
+  const name = validateCollectionName(rawArguments.name, "name");
   const clientChain = Object.hasOwn(rawArguments, "clientChain") ? rawArguments.clientChain : "off";
   if (clientChain !== "off" && clientChain !== "on") throw new Error("clientChain must be off or on");
-  return { type: rawArguments.type, name: rawArguments.name, clientChain };
+  return { type: rawArguments.type, name, clientChain };
 }
 
 function logDiagnostics(context, diagnostics) {
@@ -41,27 +42,12 @@ function logDiagnostics(context, diagnostics) {
   }
 }
 
-const SHADOWROCKET_PROXY_KEYS = Object.freeze([
-  "name", "type", "server", "port", "udp", "tls", "sni", "servername",
-  "flow", "network", "encryption", "packet-encoding", "client-fingerprint",
-  "skip-cert-verify", "psk", "version", "reuse", "tfo", "uuid", "cipher",
-  "password", "obfs", "obfs-host", "obfs-opts", "plugin", "plugin-opts",
-]);
-
-function shadowrocketProxyRecord(node) {
-  const record = {};
-  for (const key of SHADOWROCKET_PROXY_KEYS) {
-    if (node[key] !== undefined && node[key] !== null && node[key] !== "") record[key] = node[key];
-  }
-  if (node["reality-opts"]) record["reality-opts"] = node["reality-opts"];
-  return record;
-}
-
 export function renderShadowrocketSubscription(nodes) {
   if (!Array.isArray(nodes) || nodes.length === 0) {
     throw new Error("Shadowrocket subscription refuses an empty node list");
   }
-  const lines = nodes.map((node) => `  - ${JSON.stringify(shadowrocketProxyRecord(node))}`);
+  assertShadowrocketNodeSet(nodes);
+  const lines = nodes.map((node) => `  - ${JSON.stringify(renderShadowrocketProxyRecord(node))}`);
   return `proxies:\n${lines.join("\n")}\n`;
 }
 
@@ -81,10 +67,7 @@ export async function operator(input, targetPlatform, context = {}) {
     throw new Error("produceArtifact must return a non-empty node array");
   }
   const normalized = normalizeNodes(rawNodes, { clientChain: options.clientChain });
-  const filtered = filterNodesForClient(normalized.nodes, CLIENT.shadowrocket);
-  if (filtered.nodes.length === 0) {
-    throw new Error("No compatible Shadowrocket nodes");
-  }
-  logDiagnostics(context, filtered.diagnostics);
-  return { ...input, $content: renderShadowrocketSubscription(filtered.nodes) };
+  assertShadowrocketNodeSet(normalized.nodes);
+  logDiagnostics(context, { accepted: normalized.nodes.length, excluded: {} });
+  return { ...input, $content: renderShadowrocketSubscription(normalized.nodes) };
 }

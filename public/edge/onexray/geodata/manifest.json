@@ -4,7 +4,7 @@
     "domainCategories": 32,
     "domainRules": 3488,
     "ipCategories": 32,
-    "ipRules": 13642
+    "ipRules": 13643
   },
   "domain": {
     "byteLength": 74223,
@@ -20,22 +20,22 @@
       "sha256": "4bed4f09fb433437409d6ffd3f8e061f14babca334c64278110320c011ad7eb9"
     },
     {
-      "bytes": 186956,
+      "bytes": 186966,
       "path": "onexray/geodata/geoip.dat",
-      "sha256": "ac8deb9dc3d30743e59fb9d968e267d8ddbec942d9286a721bb30b6f72051c54"
+      "sha256": "5e916c967a6488002459a2fc1a19c1f6b8b3b4585728e9fc991e823a6c651956"
     }
   ],
-  "generatedAt": "2026-08-11T18:59:15Z",
+  "generatedAt": "2026-08-13T19:00:08Z",
   "hashes": {
     "domain": "4bed4f09fb433437409d6ffd3f8e061f14babca334c64278110320c011ad7eb9",
-    "ip": "ac8deb9dc3d30743e59fb9d968e267d8ddbec942d9286a721bb30b6f72051c54"
+    "ip": "5e916c967a6488002459a2fc1a19c1f6b8b3b4585728e9fc991e823a6c651956"
   },
   "inputHashes": {
     "Apple": "9894cfae238a347124e841e7e067b9b67dd24a7226e0043c641753fe26b462ff",
     "BiliBili": "c310fc1361dab30ecba0619541845e48611cc00be8eee57d75165343d7ae1e84",
     "BlockHttpDNS": "50c8918e3335bcc661f118fc349bec89e433ada4f60514748c1dce560707f07e",
     "ByteDance": "d690d7e3a15bf9bed4d26b43052ec69b47a7a74a14714e745147d71cdada3d35",
-    "ChinaIP": "14f6b33de5bd07d8afdf5dbb6e2c2fcb65b8aa583ecdccd5271db64a80ad7771",
+    "ChinaIP": "9d42a50bd5bf09642c47cce083b793767c983070611103fb6aeaab61e4ffed49",
     "ChinaTLD": "402d13bce30990961413c4b08c05eeab73b711398d8ac34e67cf6e0b06f667f0",
     "Claude": "7095f2c34a2fa91d8f45fa65080ed9e0227f402fbcfb0b39f017dc8dc63f988e",
     "Copilot": "903b724aeeb5409bf7ca0d8d4d6e94ba84bd8f3bab10135db774241389140082",
@@ -65,23 +65,23 @@
     "YouTube": "e14f01cd18d0c5c60a4d7aa4ccb26ec191358392af76411cfaba2ec85687b89b"
   },
   "ip": {
-    "byteLength": 186956,
+    "byteLength": 186966,
     "categoryCount": 32,
     "name": "AppleProxyIPEdge",
-    "ruleCount": 13642,
-    "sha256": "ac8deb9dc3d30743e59fb9d968e267d8ddbec942d9286a721bb30b6f72051c54"
+    "ruleCount": 13643,
+    "sha256": "5e916c967a6488002459a2fc1a19c1f6b8b3b4585728e9fc991e823a6c651956"
   },
-  "manifestHash": "605516210db6f84ca2292f86e1362adc38da548519281808bf286b2052bf8a78",
+  "manifestHash": "f206e617382d9f2c0d8ef84e2810fe4bfffc3735f39883c9301326876fa10b9d",
   "names": {
     "domain": "AppleProxySiteEdge",
     "ip": "AppleProxyIPEdge"
   },
   "provenance": {
-    "inputSha256": "cbcda0697c8104e597f70e540d3f33fba620f87f786716a32d8b8a13acc2290b",
+    "inputSha256": "0e7e6311e4aa84f6f5852ece675b197688e23a4bc4199c2cbce334b7447d76dc",
     "inputSourceCount": 32,
     "source": "shared-lightweight-rule-snapshot"
   },
-  "releaseId": "edge-86ada723",
+  "releaseId": "edge-2ba8dfe6",
   "schema": "apple-proxy-onexray-geodata-v1",
   "schemaVersion": 1,
   "sourceCount": 32,
@@ -307,14 +307,14 @@
       "code": "APP-CHINAIP",
       "domain": 0,
       "id": "ChinaIP",
-      "inputSha256": "14f6b33de5bd07d8afdf5dbb6e2c2fcb65b8aa583ecdccd5271db64a80ad7771",
-      "ip": 11386
+      "inputSha256": "9d42a50bd5bf09642c47cce083b793767c983070611103fb6aeaab61e4ffed49",
+      "ip": 11387
     }
   ],
   "upstream": {
     "branch": "master",
-    "commit": "86ada72372ec0586be75901f47d5ccca6e28c655",
-    "committedAt": "2026-08-11T18:59:15Z",
+    "commit": "2ba8dfe636e64b41d4857a621fec35868ab50e08",
+    "committedAt": "2026-08-13T19:00:08Z",
     "repository": "https://github.com/blackmatrix7/ios_rule_script",
     "version": "26.8.3"
   },

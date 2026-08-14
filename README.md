@@ -6,6 +6,8 @@
 
 OneXray 也已接入同一套轻量分流与业务分组设计：公开层提供 GeoData 安装页，私有层通过 Sub-Store 生成 Xray 原生 Profile。安装与验收说明见 [OneXray 客户端文档](clients/onexray/README.md)。
 
+Sub-Store 新部署为每个客户端维护独立 collection；精确名称、用户筛选、迁移顺序和旧入口回滚见 [Sub-Store 客户端节点池指南](docs/substore-client-pools.md)。
+
 > 阅读建议：第一次使用请从第 0 节按顺序读到第 8 节，不要跳步。每一节都有“成功标志”，看到它再继续。
 
 ---
@@ -49,8 +51,8 @@ OneXray 也已接入同一套轻量分流与业务分组设计：公开层提供
 
 用浏览器打开你的 Sub-Store 管理页面。你会看到几个大区块：
 
-- **订阅（Subs）**：原始节点来源。你的里面有 `[自建]snell`、`[自建]Vlesshy2`、`anytls`、`[realm]`、`xiaov` 等。
-- **组合订阅（Collections）**：把多个订阅合并成一个。本项目只需要一个原始组合：`apple-proxy-sources`（显示名 “Apple Proxy Sources”），它已经建好，包含 `[自建]Vlesshy2` 和 `[自建]snell`。
+- **订阅（Subs）**：原始节点来源。你的里面有 `[自建]snell`、`[自建]Vlesshy2`、`anytls`、`[realm]`、`xiaov` 等；`xiaov` 跳过不使用，不要加入总池或任何 client collection。
+- **组合订阅（Collections）**：用户建立 `apple-proxy-all` 总池，再按节点池指南建立六个 client collection。旧 `apple-proxy-sources` 只保留作兼容/回滚入口。
 - **文件（Files）**：最终输出的配置文件。本项目需要 20 个文件任务，你的 Sub-Store 里已经全部建好（见第 3 节清单）。
 - **脚本（Scripts）**：不需要手动创建。本项目的脚本由 GitHub Pages 托管，Sub-Store 任务直接“引用”远程链接。
 
@@ -59,7 +61,7 @@ OneXray 也已接入同一套轻量分流与业务分组设计：公开层提供
 Sub-Store 的每个文件任务都保存一个“远程 JS 链接”，例如：
 
 ```text
-https://juan-nikola.github.io/apple-proxy-profiles/current/shadowrocket/scripts/shadowrocket-profile-generator.js#output=config&type=collection&name=apple-proxy-sources&platform=macos&...
+https://juan-nikola.github.io/apple-proxy-profiles/current/shadowrocket/scripts/shadowrocket-profile-generator.js#output=config&type=collection&name=apple-proxy-shadowrocket&platform=macos&...
 ```
 
 `#` 后面是参数。Sub-Store 每次刷新任务时，会去下载这个 JS 并执行，生成你要的配置。**不要把 JS 内容复制到 Sub-Store，也不要修改链接里的公开部分**（除了你任务自己的参数）。
@@ -70,7 +72,7 @@ https://juan-nikola.github.io/apple-proxy-profiles/current/shadowrocket/scripts/
 | --- | --- | --- |
 | Egern | `egern-nodes`、`egern-config-macos/iphone/ipad` | 节点 YAML + 3 份 Profile |
 | Anywhere | `anywhere-nodes` | Clash 节点 YAML |
-| Shadowrocket | `shadowrocket-config-macos/iphone/ipad` | 3 份 Profile（节点订阅直接用 `apple-proxy-sources`） |
+| Shadowrocket | `shadowrocket-config-macos/iphone/ipad` | 3 份 Profile（读取 `apple-proxy-shadowrocket`） |
 | Surge | `surge-nodes`、`surge-config-macos/iphone/ipad` | 节点资源 + 3 份 Profile |
 | sing-box | `singbox-config-macos/iphone/ipad/android/openwrt` | 5 份 JSON 配置 |
 | OneXray | `onexray-nodes`、`onexray-profile`、`onexray-routing-audit` | 节点订阅 + Profile + 脱敏审计 |
@@ -83,22 +85,22 @@ https://juan-nikola.github.io/apple-proxy-profiles/current/shadowrocket/scripts/
 
 按顺序做这几步，每步都有“成功标志”。这一步很重要：它决定你后面的客户端导入是否顺利。
 
-1. 打开“组合订阅”，找到 `apple-proxy-sources`，点“预览”。
-   - 成功标志：节点数量大于 0，且能看到 `🇯🇵`、`🇺🇸` 等国旗。
+1. 打开“组合订阅”，按节点池指南逐个 preview 六个 client collection。
+   - 成功标志：每个 collection 的节点数量和协议计数符合用户自行筛选的预期。
 2. 打开“文件/File”，逐个点开 20 个任务，点“预览”。
    - 成功标志：`egern-nodes` 预览顶层有 `proxies:`；`anywhere-nodes` 同样有 `proxies:`；Shadowrocket/Surge 的配置预览包含 `[General]`、`[Proxy Group]`、`[Rule]`；sing-box 的配置是合法 JSON，包含 `dns`、`inbounds`、`outbounds`、`route`。
    - 注意：Shadowrocket 三个配置的预览依赖 GitHub Pages 上的最新生成脚本，确认 URL 是 `current/shadowrocket/scripts/shadowrocket-profile-generator.js`。
 3. 打开一个文件任务，找到它的“远程链接/输出 URL”，复制保存到自己的备忘录。这个 URL 是**私密的**，不要发给任何人、不要截图分享。
-   - 成功标志：URL 以 `https://substore.sunyz.uk/...` 开头，能直接下载到配置内容。
+   - 成功标志：合成形式如 `https://example.invalid/private/client-output`；你自己的私密 URL 能直接下载到配置内容。
 
-> 如果预览为空：先确认 `apple-proxy-sources` 非空，再确认任务参数里的 `name=apple-proxy-sources` 没有拼错，最后刷新一次任务。
+> 如果预览为空：先确认对应 client collection 非空，再确认该客户端任务的 `name=` 与节点池指南精确一致，最后刷新一次任务。
 
 ### 任务参数长什么样
 
 以 Shadowrocket macOS 为例，任务里的远程链接是：
 
 ```text
-https://juan-nikola.github.io/apple-proxy-profiles/current/shadowrocket/scripts/shadowrocket-profile-generator.js#output=config&type=collection&name=apple-proxy-sources&subscriptionName=Apple-Proxy-Nodes&platform=macos&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=ipv4-only&autoGroupMode=auto&clientChain=off
+https://juan-nikola.github.io/apple-proxy-profiles/current/shadowrocket/scripts/shadowrocket-profile-generator.js#output=config&type=collection&name=apple-proxy-shadowrocket&subscriptionName=Apple-Proxy-Nodes&platform=macos&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=ipv4-only&autoGroupMode=auto&clientChain=off
 ```
 
 `#` 后面每一对 `key=value` 都是一个参数；不同参数用 `&` 隔开。**不要使用 `?` 连接参数**。对应的生成器源码位置是 `clients/shadowrocket/dist/shadowrocket-profile-generator.js`（构建产物，不要手改）。
@@ -199,7 +201,7 @@ npm --workspace @apple-proxy-profiles/shadowrocket run check:rules
 
 | 我要做什么 | 改哪里 | 怎么做 |
 | --- | --- | --- |
-| 增加/删除节点来源 | 只改 Sub-Store 的 `apple-proxy-sources` 组合 | 加来源后预览组合，再逐个刷新 20 个文件任务 |
+| 增加/删除节点来源 | Sub-Store 的 `apple-proxy-all` 总池与受影响 client collection | 用户更新筛选后 preview，再只刷新受影响客户端任务 |
 | 修改某来源的参数 | Sub-Store 里那个来源对象 | 单独预览来源，再刷新组合 |
 | 更新公开规则 | 本仓库（开发者） | 改 `automation/src/source-catalog.js` 等，跑 `npm run check:rules` |
 | 修改客户端参数 | 对应任务的参数（例如 `dnsMode=privacy`） | 只改一个参数 → 预览 → 更新设备 |
@@ -350,6 +352,7 @@ npm run explain:route -- --channel current --domain baidu.com   # 查某域名�
 ## 附录 C：继续阅读
 
 - [六客户端 Sub-Store 总指南](docs/substore-two-layer-setup.md)：每个任务的参数和刷新顺序
+- [Sub-Store 客户端节点池指南](docs/substore-client-pools.md)：六个 collection 的边界、迁移和回滚
 - [维护与编译手册](docs/maintenance.md)：开发者视角的完整维护流程
 - Shadowrocket：[零基础部署](clients/shadowrocket/docs/deployment.md) · [灰度清单](clients/shadowrocket/docs/canary-checklist.md) · [维护](clients/shadowrocket/docs/maintenance.md) · [排障](clients/shadowrocket/docs/troubleshooting.md)
 - Surge：[部署](clients/surge/docs/deployment.md) · [排障](clients/surge/docs/troubleshooting.md)

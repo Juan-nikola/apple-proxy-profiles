@@ -1,20 +1,31 @@
 {
   "schemaVersion": 2,
   "clients": {
+    "singbox": "96b720054a4d0973b0bcd5c0370064afe60086c5f08fd6a3d24127411b27c67c",
+    "surge": "e512d08cc486ec961900bda7406724a8bbf6bd271a7f2c49678c81c63f47825d",
+    "shadowrocket": "c2dfbc7a7ae6f4fb59393fac33e9ad4f6b9dd489ed89f9c783de8f1ff3accbfd",
+    "egern": "7875642fa71d89474835dcc82fd246b254383d2ce070c798205490ff0c4dc01f",
+    "anywhere": "2d0162c023e4020d52ac641318b9df799bbfe89e0608737ac6445b25002389b1",
+    "happ": "2a47a4181438314641abef588238aff869abd75614c369353e074c8219cea25f"
+  },
+  "previous": {
     "singbox": "56d9ad6441c0d55b0f5b3edf00352c19e3141409c6851140df7aa11201208fc7",
     "surge": "716cf9f374fc47370f0b720f993c959e63c4fabe5508b2e2e2fbabed44530cb1",
     "shadowrocket": "aa03501d28bd77962ca64a09b741efef73c10f056ab490cf0d1eab17977cddb2",
     "egern": "0c50c45128139f09cc9ca172ec16dea6d3bf3b3b7753aab26be158e8f6639110",
-    "anywhere": "ac66d441b604bff73e203a8403754e6f48deafb827626e817222c39a54f04e84"
-  },
-  "previous": {
-    "singbox": "96109bc440ab638116d5d74943719762f509ead8201e5dc9ffb19468ca15eae3",
-    "surge": "ba6c4410cce7945c30581b0af20a7fe0f9122b6700167c67aa46896969c130b3",
-    "shadowrocket": "cbd1be5d9afe451c5a23318aff1331db974fe10f8a4e063975bf197b48cd4712",
-    "egern": "569bbe0926f89ff194c2c3b6d8009f2d50f2c806070557e3b96c39abc1c93f27",
-    "anywhere": "206a5fad315d75a9f5757b5bb8754c57cac4003dd0dac088575d5717b9362241"
+    "anywhere": "a5e6602326d5a0885293c0a8e4087f29b61022db98179657d61cfee46f958c7f",
+    "happ": null
   },
   "optionalPacks": {
+    "adblock-full": {
+      "singbox": "9d2b3aa44eab0b67aa7637a518f14117d7d69ddb507ceafdd674c2483b616955",
+      "surge": "e17ca38a10ddc3822ce511d41d381b1bca3c374af99aa5590457477825ad98c2",
+      "shadowrocket": "ef17a68dd90bf420465ddbcb92cffe2e235b2dae4a8ab49a5bbbe23cdd88faa7",
+      "egern": "c78413297f350ef5ab3f5871266222500c42e4904bdcb54a603c8d50016fd96a",
+      "anywhere": "a16d162f6de60385678038f4cd9835a9e825c079ad603b6bd68875c724d90426"
+    }
+  },
+  "previousOptionalPacks": {
     "adblock-full": {
       "singbox": "cb5155774e1811a86722fdfd3a065fe03120637dd3a1c4fc782c8be9d389fc57",
       "surge": "de682a7dc6615bc7ff2e9c7d89d95119769d7cc950fab847e11d71dbb31ecb5f",
@@ -23,13 +34,9 @@
       "anywhere": "a7f6d0593a3f28ccb7edc8a917abfbee23eabe30940beadf8e739b7e49c43d0a"
     }
   },
-  "previousOptionalPacks": {
-    "adblock-full": {
-      "singbox": "e9e9fe8807de0052a179c21dfcd4e7360891faa0c9ef146866aa1eeb7be2d8b6",
-      "surge": "efd4adad47e7f434a05d6eb629e05b1802f820d7a9674454b1e6d5deef81d93c",
-      "shadowrocket": "446654b6ddddeadf89d44cb33f993d55d81394f90f2241c2453f06de32ba227c",
-      "egern": "20c44a0b4f43535e6a71d869851e77d61f266c16ac55636fdfc5aa14c039a61f",
-      "anywhere": "cc989d25ab5eb51b94dfeb2c371c78d2d3c7eb1ddf0816fe12852ce234c0a754"
-    }
+  "onexray": {
+    "edge": "f206e617382d9f2c0d8ef84e2810fe4bfffc3735f39883c9301326876fa10b9d",
+    "current": "3b86a711760afebb47a84dd2b628946a0941ee15e4870883346f9d61af7a3bc7",
+    "previous": null
   }
 }

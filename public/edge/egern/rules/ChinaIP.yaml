@@ -1,10 +1,10 @@
 # Upstream: https://github.com/blackmatrix7/ios_rule_script
 # Path: compiled/Surge/ChinaIP/ChinaIP.list
-# Commit: 86ada72372ec0586be75901f47d5ccca6e28c655
-# Committed at: 2026-08-11T18:59:15Z
+# Commit: 2ba8dfe636e64b41d4857a621fec35868ab50e08
+# Committed at: 2026-08-13T19:00:08Z
 # License: GPL-2.0-only
 # Changed by: Juan-nikola/apple-proxy-profiles
-# Output entries: 11386
+# Output entries: 11387
 # Omitted entries: 0
 domain_set: []
 domain_suffix_set: []
@@ -2638,6 +2638,7 @@ ip_cidr_set:
   - "106.74.0.0/15"
   - "106.8.0.0/15"
   - "106.80.0.0/12"
+  - "107.148.6.0/24"
   - "107.149.9.0/24"
   - "107.150.125.199/32"
   - "107.151.212.0/24"
@@ -3465,6 +3466,7 @@ ip_cidr_set:
   - "14.196.0.0/15"
   - "14.204.0.0/15"
   - "14.208.0.0/12"
+  - "14.238.116.0/24"
   - "14.255.16.0/24"
   - "14.255.238.0/24"
   - "14.255.254.0/24"
@@ -3966,7 +3968,6 @@ ip_cidr_set:
   - "166.0.97.0/24"
   - "166.1.139.0/24"
   - "166.1.218.0/24"
-  - "166.1.232.0/24"
   - "166.111.0.0/16"
   - "166.118.227.88/32"
   - "167.139.0.0/16"

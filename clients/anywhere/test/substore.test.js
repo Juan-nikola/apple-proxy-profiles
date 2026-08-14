@@ -6,29 +6,44 @@ import { operator } from "../src/substore-nodes-entry.js";
 const ARGUMENTS = Object.freeze({
   output: "nodes",
   type: "collection",
-  name: "apple-proxy-sources",
+  name: "apple-proxy-anywhere",
   clientChain: "off",
 });
 
 function inventory() {
+  return [{
+    name: "Singapore SS",
+    type: "ss",
+    server: "198.51.100.20",
+    port: 443,
+    cipher: "aes-128-gcm",
+    password: "TEST_ONLY_ANYWHERE_OPERATOR_PASSWORD",
+    _subName: "[机场] Singapore",
+  }];
+}
+
+function mixedInventory() {
   return [
     {
-      name: "Singapore SS",
-      type: "ss",
-      server: "198.51.100.20",
+      name: "Tokyo AnyTLS",
+      type: "anytls",
+      server: "198.51.100.30",
       port: 443,
-      cipher: "aes-128-gcm",
-      password: "TEST_ONLY_ANYWHERE_OPERATOR_PASSWORD",
-      _subName: "[机场] Singapore",
+      password: "TEST_ONLY_ANYWHERE_ANYTLS_PASSWORD",
+      alpn: ["h2"],
+      "client-fingerprint": "chrome",
+      "idle-session-check-interval": 30,
+      "idle-session-timeout": 60,
+      "min-idle-session": 1,
+      _subName: "[自建] Tokyo AnyTLS",
     },
     {
-      name: "Unsupported Snell",
-      type: "snell",
+      name: "Unsupported Future Protocol",
+      type: " Future-Proto ",
       server: "192.0.2.20",
       port: 443,
-      psk: "TEST_ONLY_ANYWHERE_OPERATOR_PSK",
-      version: 4,
-      _subName: "[自建] Snell",
+      password: "TEST_ONLY_ANYWHERE_FUTURE_PASSWORD",
+      _subName: "[自建] Future",
     },
   ];
 }
@@ -40,49 +55,79 @@ function producer(nodes, calls = []) {
   };
 }
 
-test("Anywhere File Operator produces one private Clash subscription", async () => {
+test("Anywhere File Operator rejects a mixed inventory without partial output or private logs", async () => {
   const calls = [];
   const lines = [];
   const input = { unchanged: true };
-  const result = await operator(input, "Anywhere", {
-    arguments: ARGUMENTS,
-    produceArtifact: producer(inventory(), calls),
-    logger: { info(line) { lines.push(line); } },
-  });
+  let result;
+  await assert.rejects(
+    async () => {
+      result = await operator(input, "Anywhere", {
+        arguments: ARGUMENTS,
+        produceArtifact: producer(mixedInventory(), calls),
+        logger: { info(line) { lines.push(line); } },
+      });
+    },
+    (error) => {
+      assert.equal(error.message, "Anywhere cannot render selected protocols: future-proto=1");
+      for (const secret of ["Unsupported Future Protocol", "192.0.2.20", "TEST_ONLY_ANYWHERE_FUTURE_PASSWORD"]) {
+        assert.equal(error.message.includes(secret), false);
+      }
+      return true;
+    },
+  );
   assert.equal(operator.length, 2);
   assert.deepEqual(calls, [{
     type: "collection",
-    name: "apple-proxy-sources",
+    name: "apple-proxy-anywhere",
     platform: "JSON",
     produceType: "internal",
   }]);
-  assert.equal(result.unchanged, true);
-  assert.match(result.$content, /^proxies:\n/u);
-  assert.match(result.$content, /type: "ss"/u);
-  assert.doesNotMatch(result.$content, /snell|_profile|_subName/u);
-  assert.equal(lines.length, 1);
-  assert.match(lines[0], /^\[anywhere-profile\] \{/u);
-  const diagnostics = JSON.parse(lines[0].replace(/^\[anywhere-profile\] /u, ""));
-  assert.equal(diagnostics.total, 2);
-  assert.equal(diagnostics.accepted, 1);
-  assert.equal(diagnostics.excluded["unsupported-protocol"], 1);
-  for (const node of inventory()) {
-    for (const value of [node.name, node.server, node.password, node.psk]) {
-      if (value !== undefined) assert.equal(lines[0].includes(value), false, value);
-    }
-  }
+  assert.equal(result, undefined);
+  assert.deepEqual(lines, []);
 });
 
-test("Anywhere File Operator enforces the exact chain-off collection contract", async () => {
+test("Anywhere File Operator emits a non-empty AnyTLS list with its protocol label", async () => {
+  const calls = [];
+  const result = await operator({}, "Anywhere", {
+    arguments: ARGUMENTS,
+    produceArtifact: producer([mixedInventory()[0]], calls),
+  });
+  assert.deepEqual(calls, [{
+    type: "collection",
+    name: "apple-proxy-anywhere",
+    platform: "JSON",
+    produceType: "internal",
+  }]);
+  assert.match(result.$content, /^proxies:\n/u);
+  assert.match(result.$content, /type: "anytls"/u);
+  assert.match(result.$content, / · AnyTLS｜自建/u);
+});
+
+test("Anywhere File Operator accepts an exact safe collection name and forwards it", async () => {
+  const calls = [];
+  await assert.doesNotReject(operator({}, "Anywhere", {
+    arguments: { ...ARGUMENTS, name: "anywhere-canary" },
+    produceArtifact: producer(inventory(), calls),
+  }));
+  assert.deepEqual(calls, [{
+    type: "collection",
+    name: "anywhere-canary",
+    platform: "JSON",
+    produceType: "internal",
+  }]);
+});
+
+test("Anywhere File Operator enforces the chain-off and safe collection contract", async () => {
   let producerCalls = 0;
   const rejected = [
     null,
     [],
     { ...ARGUMENTS, output: "config" },
     { ...ARGUMENTS, type: "subscription" },
-    { ...ARGUMENTS, name: "other-sources" },
+    ...["", "中文", "anywhere/sources", "anywhere?sources", "anywhere#sources", " anywhere-sources", "anywhere-sources ", "anywhere\nsources", "__proto__"].map((name) => ({ ...ARGUMENTS, name })),
     { ...ARGUMENTS, clientChain: "on" },
-    { output: "nodes", type: "collection", name: "apple-proxy-sources" },
+    { output: "nodes", type: "collection", name: "apple-proxy-anywhere" },
     { ...ARGUMENTS, unknown: true },
   ];
   for (const arguments_ of rejected) {
@@ -96,7 +141,7 @@ test("Anywhere File Operator enforces the exact chain-off collection contract", 
 
 test("Anywhere arguments reject every hostile object shape", async () => {
   const inherited = Object.create({ output: "nodes" });
-  Object.assign(inherited, { type: "collection", name: "apple-proxy-sources", clientChain: "off" });
+  Object.assign(inherited, { type: "collection", name: "apple-proxy-anywhere", clientChain: "off" });
   const symbol = { ...ARGUMENTS, [Symbol("hostile")]: true };
   const hidden = { ...ARGUMENTS };
   Object.defineProperty(hidden, "clientChain", { value: "off", enumerable: false });
@@ -133,8 +178,8 @@ test("Anywhere File Operator rejects hostile input without reflecting it", async
 
   await assert.rejects(operator({}, "Anywhere", {
     arguments: ARGUMENTS,
-    produceArtifact: producer([{ ...inventory()[1] }]),
-  }), /Invalid Anywhere node inventory|No compatible Anywhere nodes/);
+    produceArtifact: producer([{ ...mixedInventory()[1] }]),
+  }), /Invalid Anywhere node inventory|cannot render selected protocols/);
 });
 
 test("logger failure never changes the generated artifact", async () => {
@@ -167,7 +212,7 @@ test("operator keeps one immutable pre-await argument snapshot", async () => {
   assert.match(result.$content, /^proxies:\n/u);
   assert.deepEqual(calls, [{
     type: "collection",
-    name: "apple-proxy-sources",
+    name: "apple-proxy-anywhere",
     platform: "JSON",
     produceType: "internal",
   }]);

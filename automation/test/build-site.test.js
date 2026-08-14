@@ -433,6 +433,16 @@ test("publishes OneXray edge scripts with the GeoData projection and hashes them
     assert.equal(content.length, record.bytes);
     assert.equal(artifactSha256(content), record.sha256);
   }
+  const promotion = await promoteOneXrayRelease({
+    publicDirectory,
+    manifestHash: artifacts.diagnostics.onexrayManifest.manifestHash,
+  });
+  assert.equal(promotion.manifestHash, artifacts.diagnostics.onexrayManifest.manifestHash);
+  const current = JSON.parse(await readFile(
+    join(publicDirectory, "current/onexray/geodata/manifest.json"),
+    "utf8",
+  ));
+  assert.equal(current.channel, "current");
   await assert.rejects(() => access(join(publicDirectory, "current/onexray/scripts/onexray-nodes-generator.js")), { code: "ENOENT" });
   await assert.rejects(() => access(join(publicDirectory, "previous/onexray/scripts/onexray-nodes-generator.js")), { code: "ENOENT" });
 });

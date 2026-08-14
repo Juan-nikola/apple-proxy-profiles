@@ -70,7 +70,7 @@ test("parsed-options renderer rejects objects that did not pass the canonical pa
   );
 });
 
-test("rendered profiles validate when the primary group carries the shared non-chained filter", () => {
+test("rendered profiles validate with the primary-to-continent hierarchy", () => {
   const yaml = renderEgernProfile(rawOptions(), allCompatibleNodes);
   assert.deepEqual(validateEgernProfile(yaml), { valid: true, errors: [] });
   const profile = rubyParse(yaml);
@@ -78,8 +78,13 @@ test("rendered profiles validate when the primary group carries the shared non-c
 
   assert.deepEqual(namedGroup(profile, "🚀 节点选择"), {
     name: "🚀 节点选择",
+    policies: ["🌏 亚太"],
+    block_quic: true,
+  });
+  assert.deepEqual(namedGroup(profile, "🇸🇬 新加坡"), {
+    name: "🇸🇬 新加坡",
     urls: [PRIVATE_URL],
-    filter: "^(?!🔗 ).+$",
+    filter: "^🇸🇬(?: |$)",
     update_interval: 21600,
     block_quic: true,
   });
@@ -395,7 +400,7 @@ test("profile and subscription reuse one prepared Egern chain-adjusted inventory
   assert.equal(shared.some((group) => group.name === "🎯 客户端落地"), true);
 });
 
-test("fails closed with count-only diagnostics when no Egern node is compatible", () => {
+test("fails closed with protocol counts when an Egern node is unrenderable", () => {
   const secretNode = fixture("TEST_ONLY_PRIVATE_PROFILE_NODE", "vless", {
     server: "private-profile-endpoint.example.invalid",
     uuid: "00000000-0000-4000-8000-000000000001",
@@ -405,7 +410,7 @@ test("fails closed with count-only diagnostics when no Egern node is compatible"
   assert.throws(
     () => renderEgernProfile(rawOptions(), [secretNode]),
     (error) => {
-      assert.match(error.message, /No compatible Egern nodes/);
+      assert.equal(error.message, "Egern cannot render selected protocols: vless=1");
       for (const value of [secretNode.name, secretNode.server, secretNode.network, secretNode.password]) {
         assert.equal(error.message.includes(value), false);
       }

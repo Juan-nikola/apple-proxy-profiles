@@ -56,9 +56,9 @@ test("beginner docs contain every operational checkpoint and warning", async () 
     "## 可以分享什么",
   ]);
 
-  const defaultParameters = "output=config&type=collection&name=apple-proxy-sources&subscriptionName=Shadowrocket-Nodes&platform=macos&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=ipv4-only&autoGroupMode=auto&clientChain=off";
+  const defaultParameters = "output=config&type=collection&name=apple-proxy-shadowrocket&subscriptionName=Shadowrocket-Nodes&platform=macos&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=ipv4-only&autoGroupMode=auto&clientChain=off";
   assert.ok(docs["docs/deployment.md"].includes(defaultParameters), "deployment: missing exact default parameter string");
-  assert.match(docs["docs/deployment.md"], /原始组合 `apple-proxy-sources`/u);
+  assert.match(docs["docs/deployment.md"], /原始组合 `apple-proxy-shadowrocket`/u);
   assert.doesNotMatch(docs["docs/deployment.md"], /Script Operator 加入 `shadowrocket-nodes`/u);
   for (const phrase of [
     "subscriptionName",
@@ -74,7 +74,7 @@ test("beginner docs contain every operational checkpoint and warning", async () 
     "`SHADOWROCKET-NODES`",
     "三个 Profile File Operator 的 `subscriptionName` 都必须精确填写 `SHADOWROCKET-NODES`",
   ]) assert.ok(docs["docs/deployment.md"].includes(phrase), `deployment: missing exact subscription-name guidance: ${phrase}`);
-  assert.ok(docs["README.md"].includes("`🚀 节点选择 = select,PROXY`"), "README.md: missing exact homepage-follow root group");
+  assert.ok(docs["README.md"].includes("`🚀 节点选择 = select,PROXY,Shadowrocket-Nodes,use=true,policy-regex-filter=^(?!🔗 ).+$`"), "README.md: missing exact homepage-follow root group");
   for (const phrase of ["显式选择仍会出现", "不会显示该订阅的具体服务器"]) {
     assert.ok(docs["docs/troubleshooting.md"].includes(phrase), `troubleshooting: missing name-mismatch outcome: ${phrase}`);
   }
@@ -102,7 +102,7 @@ test("beginner docs contain every operational checkpoint and warning", async () 
     "README.md: generated-profile check must use the named subscription source",
   );
   for (const phrase of [
-    "`🚀 节点选择`只包含 `PROXY`",
+    "`PROXY` 负责跟随 Shadowrocket 首页当前节点",
     "境外业务分组默认跟随 `🚀 节点选择`",
     "国内业务分组默认 `DIRECT`",
     "自动测速和故障转移已移到境外业务分组",
@@ -118,11 +118,11 @@ test("beginner docs contain every operational checkpoint and warning", async () 
   const chainSection = docs["docs/maintenance.md"].split("## 打开客户端链式\n", 2)[1]?.split("\n## ", 1)[0] ?? "";
   const chainSubscriptionName = "Shadowrocket-Nodes-Chain-Test-YYYYMMDD";
   for (const phrase of [
-    "apple-proxy-sources-chain-test-YYYYMMDD",
+    "apple-proxy-shadowrocket-chain-test-YYYYMMDD",
     "output=nodes&clientChain=off",
     "output=nodes&clientChain=on",
     "shadowrocket-nodes-chain-test-YYYYMMDD",
-    "name=apple-proxy-sources-chain-test-YYYYMMDD",
+    "name=apple-proxy-shadowrocket-chain-test-YYYYMMDD",
     "原来的 `shadowrocket-nodes` 保持不变",
   ]) assert.ok(chainSection.includes(phrase), `maintenance chain procedure: missing isolated-stack phrase: ${phrase}`);
   assert.match(
@@ -216,7 +216,8 @@ test("migration documentation keeps Sub-Store objects stable while using monorep
       `${file}: contains an obsolete root-level operator path`,
     );
   }
-  assert.match(docs["docs/deployment.md"], /原始组合 `apple-proxy-sources`/u);
+  assert.match(docs["docs/deployment.md"], /原始组合 `apple-proxy-shadowrocket`/u);
+  assert.match(docs["docs/deployment.md"], /apple-proxy-sources[\s\S]*兼容\/回滚/u);
   assert.ok(docs["docs/deployment.md"].includes("HTTPS 解密保持关闭"), "deployment: HTTPS decryption must remain off");
   assert.ok(docs["docs/troubleshooting.md"].includes("旧 Profile"), "troubleshooting: missing old Profile rollback guidance");
 });

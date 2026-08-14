@@ -47,7 +47,7 @@ function generatedProfile(platform) {
   return renderEgernProfile({
     output: "config",
     type: "collection",
-    name: "apple-proxy-sources",
+    name: "apple-proxy-egern",
     nodeSubscriptionUrl: "https://example.invalid/private/egern-nodes",
     platform,
   }, [shadowsocks2022]);
@@ -120,7 +120,7 @@ test("README is independently copyable for the two-layer Sub-Store setup", async
     assert.ok(docs.readme.includes(task), `README missing task: ${task}`);
   }
   assert.ok(codeArguments(docs.readme, "nodes").includes(
-    "output=nodes&type=collection&name=apple-proxy-sources&clientChain=off",
+    "output=nodes&type=collection&name=apple-proxy-egern&clientChain=off",
   ));
   assert.equal(codeArguments(docs.readme, "config").length, 3);
   assert.match(docs.readme, /Sub-Store 不需要先创建独立脚本记录/u);
@@ -154,7 +154,7 @@ test("README contains a complete current-UI beginner deployment path", async () 
 test("copy-safe arguments use the exact collection and three distinct platform contracts", async () => {
   const { deployment } = await loadDocs();
   assert.ok(codeArguments(deployment, "nodes").includes(
-    "output=nodes&type=collection&name=apple-proxy-sources&clientChain=off",
+    "output=nodes&type=collection&name=apple-proxy-egern&clientChain=off",
   ));
 
   const profiles = codeArguments(deployment, "config");
@@ -164,7 +164,7 @@ test("copy-safe arguments use the exact collection and three distinct platform c
     const values = new URLSearchParams(line);
     assert.equal(values.get("output"), "config");
     assert.equal(values.get("type"), "collection");
-    assert.equal(values.get("name"), "apple-proxy-sources");
+    assert.equal(values.get("name"), "apple-proxy-egern");
     assert.equal(values.get("nodeSubscriptionUrl"), "https://example.invalid/private/egern-nodes");
     for (const key of [
       "dnsMode", "chinaDns", "globalDns", "blockMode", "quicMode",

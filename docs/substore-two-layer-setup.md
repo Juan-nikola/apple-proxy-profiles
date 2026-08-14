@@ -7,6 +7,8 @@
 
 “引用”的含义是：Sub-Store 的 File 或 Script Operator 保存一个远程 JS URL；旧版单行模式在 URL 的 `#` 后用 `&` 传参数。不要复制 JavaScript 正文，也不要把私密 API、节点 URL 或输出链接提交到 GitHub。
 
+六个客户端的 collection 名称、用户自行筛选边界、迁移顺序和回滚方法统一见 [Sub-Store 客户端节点池指南](substore-client-pools.md)。
+
 ## 0. 安全边界
 
 本文件只使用公开 Pages URL 和 `example.invalid`。以下信息不要放进仓库、README、Issue、聊天、截图、终端历史或公开日志：
@@ -19,16 +21,18 @@
 
 本项目不需要 MITM、HTTPS 解密、CA 证书、请求重写或“不验证证书”。`insecure` 永远关闭；`noCache` 生产任务默认关闭，只有隔离测试任务排查缓存时临时打开。
 
-## 1. 先建立一个私密组合订阅
+## 1. 先建立总池和六个客户端组合
 
 在你自己的 Sub-Store 中：
 
-1. 保留已有订阅 `snell` 和 `vlesshy2`，先分别预览确认非空。
-2. 新建原始组合订阅，名称严格填写：`apple-proxy-sources`。
-3. 将 `snell` 与 `vlesshy2` 加入这个原始组合，不把真实来源地址复制到任何公开位置。
-4. 预览原始组合，确认节点数量大于 0。
+1. 保留已有来源、旧 collection、tasks 和旧 URL，先分别 preview 确认非空。
+2. 建立用户自己的 `apple-proxy-all` 总池。
+3. 按节点池指南建立六个 client collection，用户自行选择每个客户端要包含的节点；生成器不按客户端能力白名单过滤。
+4. 逐个 preview 并记录计数，再一次只迁移一个客户端的 `name=`。
 
-以后增加节点来源只加入 `apple-proxy-sources`，不需要改 GitHub JS。六个客户端的 Profile/Config 全部读取这个原始组合（Shadowrocket Profile 生成器内置节点归一化，不依赖组合上的节点操作）。删除来源时也只在这一层操作，并先保留旧输出以便回滚。
+新任务不再让六个客户端直接共享一个 collection。旧 `apple-proxy-sources` 继续保留作兼容/回滚入口，不要删除。
+
+> 本用户部署中的 `xiaov` 来源跳过不使用，不要加入 `apple-proxy-all` 或任何 client collection。
 
 ## 2. 七个公开远程 JS
 
@@ -61,7 +65,7 @@
 把参数放在 URL 的 `#` 后，参数之间用 `&`：
 
 ```text
-https://juan-nikola.github.io/apple-proxy-profiles/current/egern/scripts/egern-node-generator.js#output=nodes&type=collection&name=apple-proxy-sources&clientChain=off
+https://juan-nikola.github.io/apple-proxy-profiles/current/egern/scripts/egern-node-generator.js#output=nodes&type=collection&name=apple-proxy-egern&clientChain=off
 ```
 
 不要写成 `script.js?output=nodes`。`?` 是网页查询参数，不是本项目的 Sub-Store 脚本参数格式。参数值中如果有私密 URL、中文、emoji、空格、`&`、`#` 或 `%`，只对该参数值做百分号编码；不要编码脚本 URL、参数名和分隔参数的 `&`、`=`。
@@ -69,12 +73,12 @@ https://juan-nikola.github.io/apple-proxy-profiles/current/egern/scripts/egern-n
 配置任务同样使用 hash；例如 Surge iPhone 的完整引用形式是：
 
 ```text
-https://juan-nikola.github.io/apple-proxy-profiles/current/surge/scripts/surge-profile-generator.js#output=config&type=collection&name=apple-proxy-sources&subscriptionName=Apple-Proxy-Nodes&platform=iphone&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&autoGroupMode=auto&clientChain=off
+https://juan-nikola.github.io/apple-proxy-profiles/current/surge/scripts/surge-profile-generator.js#output=config&type=collection&name=apple-proxy-surge&subscriptionName=Apple-Proxy-Nodes&platform=iphone&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&autoGroupMode=auto&clientChain=off
 ```
 
 ## 4. 20 个任务总表
 
-下面的 `Apple-Proxy-Nodes` 是公开示例显示名。实际使用时，在 Shadowrocket、Surge 或 sing-box 中给节点订阅取一个你自己的显示名，并让同一客户端对应 Profile/Config 任务的 `subscriptionName` 逐字一致。六个客户端的 Profile/Config 全部指向原始组合 `apple-proxy-sources`：Shadowrocket Profile 生成器内部自己完成节点归一化、去重与客户端过滤，不再依赖组合处理链上的节点操作。
+下面的 `Apple-Proxy-Nodes` 是公开示例显示名。实际使用时，在 Shadowrocket、Surge 或 sing-box 中给节点订阅取一个你自己的显示名，并让同一客户端对应 Profile/Config 任务的 `subscriptionName` 逐字一致。每个 Profile/Config 只指向节点池指南定义的对应 client collection。
 
 | # | 任务名 | 类型 | 远程脚本 | 平台/作用 | 更新 |
 | ---: | --- | --- | --- | --- | --- |
@@ -114,13 +118,13 @@ https://juan-nikola.github.io/apple-proxy-profiles/current/egern/scripts/egern-n
 参数：
 
 ```text
-output=nodes&type=collection&name=apple-proxy-sources&clientChain=off
+output=nodes&type=collection&name=apple-proxy-egern&clientChain=off
 ```
 
 旧版完整引用：
 
 ```text
-https://juan-nikola.github.io/apple-proxy-profiles/current/egern/scripts/egern-node-generator.js#output=nodes&type=collection&name=apple-proxy-sources&clientChain=off
+https://juan-nikola.github.io/apple-proxy-profiles/current/egern/scripts/egern-node-generator.js#output=nodes&type=collection&name=apple-proxy-egern&clientChain=off
 ```
 
 预览成功标志：输出顶层有 `proxies:`，节点数量大于 0；不要导入到 Egern 之前就删除旧 Profile。保存该 File 的私密输出 URL，仅在下表的 `nodeSubscriptionUrl` 参数中使用。
@@ -137,9 +141,9 @@ https://juan-nikola.github.io/apple-proxy-profiles/current/egern/scripts/egern-p
 
 | 任务 | 平台 | 完整参数 |
 | --- | --- | --- |
-| `egern-macos` | macOS | `output=config&type=collection&name=apple-proxy-sources&nodeSubscriptionUrl=https://example.invalid/private/egern-nodes&platform=macos&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=ipv4-only&autoGroupMode=auto&clientChain=off` |
-| `egern-iphone` | iPhone | `output=config&type=collection&name=apple-proxy-sources&nodeSubscriptionUrl=https://example.invalid/private/egern-nodes&platform=iphone&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&autoGroupMode=auto&clientChain=off` |
-| `egern-ipad` | iPad | `output=config&type=collection&name=apple-proxy-sources&nodeSubscriptionUrl=https://example.invalid/private/egern-nodes&platform=ipad&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&autoGroupMode=auto&clientChain=off` |
+| `egern-macos` | macOS | `output=config&type=collection&name=apple-proxy-egern&nodeSubscriptionUrl=https://example.invalid/private/egern-nodes&platform=macos&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=ipv4-only&autoGroupMode=auto&clientChain=off` |
+| `egern-iphone` | iPhone | `output=config&type=collection&name=apple-proxy-egern&nodeSubscriptionUrl=https://example.invalid/private/egern-nodes&platform=iphone&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&autoGroupMode=auto&clientChain=off` |
+| `egern-ipad` | iPad | `output=config&type=collection&name=apple-proxy-egern&nodeSubscriptionUrl=https://example.invalid/private/egern-nodes&platform=ipad&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&autoGroupMode=auto&clientChain=off` |
 
 预览必须出现 `ipv6:`、`dns:`、`policy_groups:`、`rules:` 和 `default_subscription_group:`；没有自更新 URL 时不应出现无效的空 `auto_update: {}`。
 
@@ -154,7 +158,7 @@ https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/scripts/anyw
 参数：
 
 ```text
-output=nodes&type=collection&name=apple-proxy-sources&clientChain=off
+output=nodes&type=collection&name=apple-proxy-anywhere&clientChain=off
 ```
 
 预览顶层必须有 `proxies:`。保存 `anywhere-nodes` 私密输出 URL 后，在 Anywhere 的节点订阅页面导入它。
@@ -171,7 +175,7 @@ https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/import.html
 
 ### 7.1 节点订阅
 
-Shadowrocket 的节点订阅使用排序生成器 `shadowrocket-node-subscription.js`：在 Sub-Store 新建 File 任务 `shadowrocket-nodes`，脚本链接为 `https://juan-nikola.github.io/apple-proxy-profiles/current/shadowrocket/scripts/shadowrocket-node-subscription.js#output=nodes&type=collection&name=apple-proxy-sources&clientChain=off`。生成器会归一化节点并按“洲 → 国旗 → 名称”排序（亚太 → 欧洲 → 美洲，洲内按国旗），与 Profile 内的节点顺序完全一致。在 Shadowrocket 客户端中添加该 File 的私密输出 URL，显示名记为 `Apple-Proxy-Nodes`（实际显示名可以自定义，但必须逐字填写到三个 Shadowrocket Profile 的 `subscriptionName`）。
+Shadowrocket 的节点订阅使用排序生成器 `shadowrocket-node-subscription.js`：在 Sub-Store 新建 File 任务 `shadowrocket-nodes`，脚本链接为 `https://juan-nikola.github.io/apple-proxy-profiles/current/shadowrocket/scripts/shadowrocket-node-subscription.js#output=nodes&type=collection&name=apple-proxy-shadowrocket&clientChain=off`。生成器会归一化节点并按“洲 → 国旗 → 名称”排序（亚太 → 欧洲 → 美洲，洲内按国旗），与 Profile 内的节点顺序完全一致。在 Shadowrocket 客户端中添加该 File 的私密输出 URL，显示名记为 `Apple-Proxy-Nodes`（实际显示名可以自定义，但必须逐字填写到三个 Shadowrocket Profile 的 `subscriptionName`）。
 
 旧结构中的 `shadowrocket-nodes` 处理组合保留为兼容项：早期版本曾要求在该组合上挂 `shadowrocket-node-operator.js` 节点操作，但 Sub-Store 的组合 Script Operator 不能执行本项目的 esbuild bundle 格式，会导致节点处理失败。当前 Profile 生成器内置了同一套归一化逻辑，因此新任务不再需要节点操作，也不要再挂这个远程脚本。
 
@@ -183,7 +187,7 @@ Shadowrocket 的节点订阅使用排序生成器 `shadowrocket-node-subscriptio
 https://juan-nikola.github.io/apple-proxy-profiles/current/shadowrocket/scripts/shadowrocket-profile-generator.js
 ```
 
-公共参数：`output=config&type=collection&name=apple-proxy-sources&subscriptionName=Apple-Proxy-Nodes&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&autoGroupMode=auto&clientChain=off`。
+公共参数：`output=config&type=collection&name=apple-proxy-shadowrocket&subscriptionName=Apple-Proxy-Nodes&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&autoGroupMode=auto&clientChain=off`。
 
 | 任务 | 额外参数 |
 | --- | --- |
@@ -194,7 +198,7 @@ https://juan-nikola.github.io/apple-proxy-profiles/current/shadowrocket/scripts/
 例如 macOS 完整参数：
 
 ```text
-output=config&type=collection&name=apple-proxy-sources&subscriptionName=Apple-Proxy-Nodes&platform=macos&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=ipv4-only&autoGroupMode=auto&clientChain=off
+output=config&type=collection&name=apple-proxy-shadowrocket&subscriptionName=Apple-Proxy-Nodes&platform=macos&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=ipv4-only&autoGroupMode=auto&clientChain=off
 ```
 
 预览应包含 `[General]`、`[Proxy Group]`、`[Rule]`，且不包含节点密码、UUID 或服务器凭据。导入顺序：Intel Mac → iPhone → iPad；旧 Profile 始终保留。
@@ -209,9 +213,9 @@ output=config&type=collection&name=apple-proxy-sources&subscriptionName=Apple-Pr
 https://juan-nikola.github.io/apple-proxy-profiles/current/surge/scripts/surge-nodes-generator.js
 ```
 
-参数：`output=nodes&type=collection&name=apple-proxy-sources&clientChain=off`。
+参数：`output=nodes&type=collection&name=apple-proxy-surge&clientChain=off`。
 
-预览应输出 `[Proxy]` 和至少一个节点。该资源只保留 Surge 已登记且字段完整的协议；当前会自动排除 VLESS。保存此 File 的私密输出 URL，下面记作 `<SURGE_NODES_URL>`。
+预览应输出 `[Proxy]` 和至少一个节点。该资源输出用户选入 `apple-proxy-surge` 的全部节点，生成器不自动排除协议；当前 Surge renderer 未实现的协议（例如 VLESS）会让任务显式失败，不会静默丢弃。保存此 File 的私密输出 URL，下面记作 `<SURGE_NODES_URL>`。
 
 ### 8.2 三个平台 Profile
 
@@ -221,7 +225,7 @@ https://juan-nikola.github.io/apple-proxy-profiles/current/surge/scripts/surge-n
 https://juan-nikola.github.io/apple-proxy-profiles/current/surge/scripts/surge-profile-generator.js
 ```
 
-公共参数（使用原始组合）：`output=config&type=collection&name=apple-proxy-sources&subscriptionName=Apple-Proxy-Nodes&proxyPolicyUrl=<SURGE_NODES_URL>&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&autoGroupMode=auto&clientChain=off`。在新版 Sub-Store 参数编辑器中直接填写私密 URL；旧版 `JS_URL#...` 模式只对 URL 参数值进行百分号编码。
+公共参数（使用原始组合）：`output=config&type=collection&name=apple-proxy-surge&subscriptionName=Apple-Proxy-Nodes&proxyPolicyUrl=<SURGE_NODES_URL>&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&autoGroupMode=auto&clientChain=off`。在新版 Sub-Store 参数编辑器中直接填写私密 URL；旧版 `JS_URL#...` 模式只对 URL 参数值进行百分号编码。
 
 | 任务 | 额外参数 | 官方客户端 |
 | --- | --- | --- |
@@ -238,14 +242,14 @@ OneXray 的两个 bundle 已随 edge 发布到 Pages，只存在于 `edge/onexra
 节点任务：
 
 ```text
-https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-nodes-generator.js?v=10#output=nodes&type=collection&name=apple-proxy-sources&channel=edge&clientChain=off
+https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-nodes-generator.js?v=10#output=nodes&type=collection&name=apple-proxy-onexray&channel=edge&clientChain=off
 ```
 
 Profile 与审计共用同一个生成器，只改 `output`：
 
 ```text
-https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-profile-generator.js?v=10#output=profile&type=collection&name=apple-proxy-sources&channel=edge&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&clientChain=off&policyFile=onexray-policy&logLevel=info&dnsLog=on
-https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-profile-generator.js?v=10#output=audit&type=collection&name=apple-proxy-sources&channel=edge&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&clientChain=off&policyFile=onexray-policy&logLevel=info&dnsLog=on
+https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-profile-generator.js?v=10#output=profile&type=collection&name=apple-proxy-onexray&channel=edge&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&clientChain=off&policyFile=onexray-policy&logLevel=info&dnsLog=on
+https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-profile-generator.js?v=10#output=audit&type=collection&name=apple-proxy-onexray&channel=edge&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&clientChain=off&policyFile=onexray-policy&logLevel=info&dnsLog=on
 ```
 
 | 任务 | 输出 | 平台/作用 | 更新 |
@@ -254,7 +258,7 @@ https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-
 | `onexray-profile` | profile | 版本化 Profile deep link | 每天 |
 | `onexray-routing-audit` | audit | 脱敏路由审计 | 按需 |
 
-OneXray 的节点订阅只保留 Xray 内核支持的协议（VLESS、VMess、SS、Trojan、Socks、HTTP、Hysteria2）；原始组合中的 Snell 等节点会被自动排除，因此 OneXray 节点预览数量可能小于其他客户端。
+OneXray 的 `apple-proxy-onexray` 由用户自行选择节点，生成器不自动排除协议。原生 Profile 无法表示的已选协议会让生成器失败，不会静默丢弃；回到 collection 修正用户筛选后再 preview。
 
 `v=10` 是本次内存修复后的 Sub-Store 脚本缓存版本号；脚本内容更新后把三个任务 URL 里的 `v=` 数字 +1 并重新保存。固定业务推荐用 `&policyFile=onexray-policy` 引用 Sub-Store 内的可读策略文件，也可继续用 `&policyOverrides=<Base64URL>`，两者不能同时使用。`logLevel` 可输入 `none`、`error`、`warning`、`info`、`debug`，默认 `warning`；`dnsLog` 可输入 `on`、`off`，默认 `off`，示例开启以便查看域名。
 
@@ -270,7 +274,7 @@ Profile 名会插入 8 位内容哈希版本号；同一通道必须使用同一
 https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/scripts/sing-box-config-generator.js
 ```
 
-公共参数：`output=config&type=collection&name=apple-proxy-sources&subscriptionName=Apple-Proxy-Nodes&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&autoGroupMode=auto&clientChain=off&channel=current`。
+公共参数：`output=config&type=collection&name=apple-proxy-singbox&subscriptionName=Apple-Proxy-Nodes&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&autoGroupMode=auto&clientChain=off&channel=current`。
 
 | 任务 | 平台额外参数 | 官方客户端 |
 | --- | --- | --- |
@@ -288,7 +292,7 @@ https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/scripts/sing
 
 ### 首次建立
 
-1. 预览 `apple-proxy-sources`。
+1. 按节点池指南 preview 六个 client collection。
 2. 运行节点任务：Egern、Anywhere、Shadowrocket。
 3. 运行依赖节点输出 URL 的 Egern Profile。
 4. 运行 `surge-nodes`，再运行 Surge 三个平台 Profile；Profile 会自动携带节点资源 URL。
@@ -298,7 +302,7 @@ https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/scripts/sing
 
 ### 日常刷新
 
-节点源变化：原始组合 `apple-proxy-sources` → 各客户端节点任务（Surge 为 `surge-nodes`）→ 各客户端 Profile/Config 任务 → 客户端手动更新。
+节点源变化：`apple-proxy-all` 总池 → 用户更新对应 client collection 筛选 → 该客户端节点任务 → Profile/Config 任务 → 客户端手动更新。
 
 公开规则变化：在客户端对已有规则集执行 Update；不要因为规则更新就重新创建 Sub-Store 节点任务。
 
@@ -308,7 +312,7 @@ https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/scripts/sing
 
 ## 12. 任务完成检查
 
-- 组合 `apple-proxy-sources` 非空，且只包含预期来源。
+- 六个 client collection 都已 preview，且只包含用户为该客户端选择的协议和字段。
 - 节点预览非空；Profile/Config 预览结构正确，不出现凭据。
 - `noCache` 正式任务关闭，`insecure` 始终关闭。
 - `subscriptionName` 在对应客户端和所有 Profile/Config 任务中逐字一致。
@@ -318,4 +322,4 @@ https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/scripts/sing
 
 ## 13. 旧兼容 URL
 
-已经部署的 `substore-*` Pages URL 可以继续使用，不需要为了改名迁移。新任务统一使用客户端前缀 URL；不要把同一脚本的新旧 URL 同时添加到一个任务。
+已经部署的 `substore-*` Pages URL 可以继续使用，不需要为了改名迁移。旧 `apple-proxy-sources` collection、tasks 和输出 URL 保留作兼容/回滚入口。新任务统一使用客户端前缀 URL；不要把同一脚本的新旧 URL 同时添加到一个任务。

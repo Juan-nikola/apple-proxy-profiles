@@ -2,7 +2,6 @@ import {
   GROUP_KIND,
   STRATEGY,
 } from "../../../shared/policies/catalog.js";
-import { NON_CHAINED_FILTER } from "../../../shared/policies/filters.js";
 import { POLICY_TARGET } from "../../../shared/policies/intents.js";
 import { POLICY_GROUP_SCHEMA } from "../../../shared/policies/schema.js";
 import { validateEgernNodeSubscriptionUrl } from "./options.js";
@@ -312,14 +311,12 @@ function validateSharedGraph(input) {
   if (
     root.kind !== GROUP_KIND.primary
     || root.strategy !== STRATEGY.select
-    || root.candidates.length !== 1
-    || root.candidates[0] !== POLICY_TARGET.primaryProxy
-    || root.nodeFilter !== NON_CHAINED_FILTER
+    || root.nodeFilter !== null
     || root.test !== null
     || root.hidden !== undefined
     || root.defaultChoice !== undefined
   ) {
-    throw graphError("requires the primary semantic target as the sole primary candidate");
+    throw graphError("has an invalid primary selector");
   }
 
   for (const group of groups) {
@@ -328,8 +325,7 @@ function validateSharedGraph(input) {
     }
     for (const candidate of group.candidates) {
       if (candidate === POLICY_TARGET.primaryProxy) {
-        if (group !== root) throw graphError("misuses the primary semantic target");
-        continue;
+        throw graphError("misuses the primary semantic target");
       }
       if (!names.has(candidate) && !BUILTIN_POLICIES.has(candidate)) {
         throw graphError("contains an unknown reference");
@@ -354,12 +350,6 @@ function renderGroup(group, nodeSubscriptionUrl) {
   const type = strategyType(group.strategy);
   const fields = { name: group.name };
 
-  if (group.name === PRIMARY_GROUP_NAME) {
-    fields.urls = [nodeSubscriptionUrl];
-    fields.filter = NON_CHAINED_FILTER;
-    fields.update_interval = UPDATE_INTERVAL;
-    return { [type]: fields };
-  }
   if (group.candidates.length > 0) fields.policies = [...group.candidates];
   if (group.nodeFilter !== null) {
     fields.urls = [nodeSubscriptionUrl];
@@ -399,12 +389,17 @@ function validateRenderedGraph(rendered, sharedGroups, nodeSubscriptionUrl) {
     groups.set(fields.name, fields);
 
     if (fields.name === PRIMARY_GROUP_NAME) {
+      const expectedPolicies = sharedGroups[index].candidates;
       if (
-        Object.keys(fields).length !== 4
-        || fields.urls?.length !== 1
-        || fields.urls[0] !== nodeSubscriptionUrl
-        || fields.filter !== NON_CHAINED_FILTER
-        || fields.update_interval !== UPDATE_INTERVAL
+        Object.keys(fields).length !== (expectedPolicies.length > 0 ? 2 : 1)
+        || (expectedPolicies.length > 0 && (
+          !Array.isArray(fields.policies)
+          || fields.policies.length !== expectedPolicies.length
+          || fields.policies.some((policy, policyIndex) => policy !== expectedPolicies[policyIndex])
+        ))
+        || fields.urls !== undefined
+        || fields.filter !== undefined
+        || fields.update_interval !== undefined
       ) {
         throw graphError("has an invalid rendered primary group");
       }

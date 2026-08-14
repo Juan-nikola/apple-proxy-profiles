@@ -1,7 +1,6 @@
-import { CLIENT } from "../../../shared/contracts.js";
-import { filterNodesForClient } from "../../../shared/nodes/capabilities.js";
 import { increment } from "../../../shared/nodes/diagnostics.js";
 import { normalizeProtocol } from "../../../shared/nodes/protocol-registry.js";
+import { assertRenderableNodes } from "../../../shared/nodes/renderability.js";
 import { adaptEgernSubStoreNodes } from "./adapt-substore-nodes.js";
 import { renderYaml } from "./render-yaml.js";
 import { EGERN_CHAIN_POLICY, toEgernProxy } from "./render-node.js";
@@ -34,13 +33,6 @@ function appendEgernSshChainClones(nodes, diagnostics, clientChain) {
   return clones.length === 0 ? nodes : [...nodes, ...clones];
 }
 
-function formatExcludedCounts(excluded) {
-  return Object.keys(excluded)
-    .sort((left, right) => left.localeCompare(right, "en"))
-    .map((reason) => `${reason}=${excluded[reason]}`)
-    .join(",");
-}
-
 export function renderEgernSubscription(nodes, { clientChain = "off", onDiagnostics } = {}) {
   const prepared = prepareEgernInventory(nodes, { clientChain, onDiagnostics });
   return renderYaml({ proxies: prepared.proxies });
@@ -55,25 +47,28 @@ export function prepareEgernInventory(nodes, { clientChain = "off", onDiagnostic
   }
 
   const adapted = adaptEgernSubStoreNodes(nodes);
-  const filtered = filterNodesForClient(adapted.nodes, CLIENT.egern);
-  for (const [reason, count] of Object.entries(adapted.excluded)) {
-    increment(filtered.diagnostics.excluded, reason, count);
-  }
+  const diagnostics = { accepted: adapted.nodes.length, excluded: {} };
   const compatible = [];
-  for (const node of filtered.nodes) {
+  for (const node of adapted.nodes) {
     if (isGeneratedChain(node) && clientChain === "off") {
-      increment(filtered.diagnostics.excluded, "client-chain-disabled");
-      filtered.diagnostics.accepted -= 1;
+      increment(diagnostics.excluded, "client-chain-disabled");
+      diagnostics.accepted -= 1;
     } else {
       compatible.push(node);
     }
   }
-  const withEgernSshChains = appendEgernSshChainClones(compatible, filtered.diagnostics, clientChain);
-
-  if (withEgernSshChains.length === 0) {
-    const counts = formatExcludedCounts(filtered.diagnostics.excluded);
-    throw new Error(`No compatible Egern nodes; excluded counts: ${counts || "none"}`);
+  if (compatible.length === 0 && adapted.failures.length === 0) {
+    throw new Error("No compatible Egern nodes; excluded counts: none");
   }
+
+  const probe = (node) => {
+    if (node.adaptationFailure !== undefined) throw new Error("Egern node adaptation failed");
+    toEgernProxy(node, { clientChain });
+  };
+  assertRenderableNodes([...compatible, ...adapted.failures], "Egern", probe);
+
+  const withEgernSshChains = appendEgernSshChainClones(compatible, diagnostics, clientChain);
+  assertRenderableNodes(withEgernSshChains.slice(compatible.length), "Egern", probe);
 
   const seenNames = new Set();
   const proxies = withEgernSshChains.map((node) => {
@@ -85,10 +80,10 @@ export function prepareEgernInventory(nodes, { clientChain = "off", onDiagnostic
     return proxy;
   });
 
-  onDiagnostics?.(structuredClone(filtered.diagnostics));
+  onDiagnostics?.(structuredClone(diagnostics));
   return {
     nodes: withEgernSshChains,
     proxies,
-    diagnostics: structuredClone(filtered.diagnostics),
+    diagnostics: structuredClone(diagnostics),
   };
 }

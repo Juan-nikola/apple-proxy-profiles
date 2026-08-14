@@ -14,6 +14,7 @@
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 import { OPTION_VALUES } from "../shared/contracts.js";
+import { validateCollectionName } from "../shared/substore/collection-name.js";
 
 const PUBLIC_BASE = "juan-nikola.github.io/apple-proxy-profiles";
 
@@ -26,6 +27,8 @@ const COMMON_ENUM_KEYS = Object.freeze([
 const CHANNELS = Object.freeze(["edge", "current"]);
 const ADBLOCK_MODES = Object.freeze(["off", "full"]);
 const PROFILE_MODES = Object.freeze(["light", "diagnostic"]);
+const ONEXRAY_LOG_LEVELS = Object.freeze(["none", "error", "warning", "info", "debug"]);
+const ONEXRAY_DNS_LOG_MODES = Object.freeze(["on", "off"]);
 
 const GENERATOR_SCHEMAS = Object.freeze({
   "shadowrocket/scripts/shadowrocket-node-subscription.js": nodeSchema(),
@@ -49,6 +52,8 @@ const GENERATOR_SCHEMAS = Object.freeze({
     requiresSubscriptionName: true,
     extraKeys: ["profileMode"],
   }),
+  "onexray/scripts/onexray-nodes-generator.js": oneXraySchema(["nodes"]),
+  "onexray/scripts/onexray-profile-generator.js": oneXraySchema(["profile", "audit"]),
 });
 
 function nodeSchema() {
@@ -89,6 +94,28 @@ function configSchema({
       ipv6Mode: OPTION_VALUES.ipv6Mode,
       autoGroupMode: OPTION_VALUES.autoGroupMode,
       clientChain: OPTION_VALUES.clientChain,
+    }),
+  });
+}
+
+function oneXraySchema(outputValues) {
+  return Object.freeze({
+    required: Object.freeze(["output", "type", "name"]),
+    allowed: Object.freeze([
+      "output", "type", "name", "channel", ...COMMON_ENUM_KEYS.filter((key) => key !== "autoGroupMode"),
+      "clientChainTarget", "policyOverrides", "policyFile", "logLevel", "dnsLog",
+    ]),
+    outputValues: Object.freeze(outputValues),
+    enums: Object.freeze({
+      dnsMode: OPTION_VALUES.dnsMode,
+      chinaDns: OPTION_VALUES.chinaDns,
+      globalDns: OPTION_VALUES.globalDns,
+      blockMode: OPTION_VALUES.blockMode,
+      quicMode: OPTION_VALUES.quicMode,
+      ipv6Mode: OPTION_VALUES.ipv6Mode,
+      clientChain: OPTION_VALUES.clientChain,
+      logLevel: ONEXRAY_LOG_LEVELS,
+      dnsLog: ONEXRAY_DNS_LOG_MODES,
     }),
   });
 }
@@ -152,8 +179,12 @@ export function checkTaskOptions(schema, params) {
     if (key === "output" && !schema.outputValues.includes(params[key])) {
       errors.push(`Option 'output' has unsupported value '${params[key]}' (expected: ${schema.outputValues.join(", ")})`);
     }
-    if (key === "name" && !/^[A-Za-z0-9_-]+$/u.test(params[key])) {
-      errors.push("Option 'name' must be a simple slug (letters, digits, dash, underscore)");
+    if (key === "name") {
+      try {
+        validateCollectionName(params[key], "Option 'name'");
+      } catch (error) {
+        errors.push(error.message);
+      }
     }
     if (key === "subscriptionName" && /[\r\n]/u.test(params[key])) {
       errors.push("Option 'subscriptionName' must not contain line breaks");

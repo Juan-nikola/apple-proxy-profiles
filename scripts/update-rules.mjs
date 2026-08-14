@@ -33,9 +33,9 @@ import {
 
 const repositoryRoot = dirname(dirname(fileURLToPath(import.meta.url)));
 const defaultPublicDirectory = join(repositoryRoot, "public");
-const PROMOTION_CLIENTS = new Set(["singbox", "surge", "shadowrocket", "egern", "anywhere", "onexray"]);
+const PROMOTION_CLIENTS = new Set(["singbox", "surge", "shadowrocket", "egern", "anywhere", "happ", "onexray"]);
 const OPTIONAL_CLIENTS = new Set(["singbox", "surge", "shadowrocket", "egern", "anywhere"]);
-const INDEPENDENT_CLIENT_PATH = /^(?:anywhere|egern|shadowrocket|sing-box|surge|onexray)\//u;
+const INDEPENDENT_CLIENT_PATH = /^(?:anywhere|egern|shadowrocket|sing-box|surge|happ|onexray)\//u;
 const LEGACY_CURRENT_EXTRA_FILES = Object.freeze([
   /^frontier-manifest\.json$/u,
   /^surge\/(?:macos|iphone|ipad)\/manifest\.json$/u,
@@ -184,10 +184,9 @@ function rootManifestMatchesWithIndependentAudit(content, expectedManifest) {
       const { manifestHash: ignored, ...base } = manifest;
       return {
         ...base,
-        clients: base.clients && Object.fromEntries(Object.entries(base.clients).map(([client, value]) => [
-          client,
-          PROMOTION_CLIENTS.has(client) ? null : value,
-        ])),
+        clients: base.clients && Object.fromEntries(
+          Object.entries(base.clients).filter(([client]) => !PROMOTION_CLIENTS.has(client)),
+        ),
         files: Array.isArray(base.files)
           ? base.files.filter(({ path }) => (
             path !== "audit/china-ip-drift.json" && !INDEPENDENT_CLIENT_PATH.test(path)
@@ -401,6 +400,7 @@ export async function verifyTrackedPublications({ publicDirectory, defaults, opt
     shadowrocket: "shadowrocket",
     egern: "egern",
     anywhere: "anywhere",
+    happ: "happ",
   };
   const clientPrefixes = new Set([
     ...Object.values(clientDirectories).map((directory) => `${directory}/`),
@@ -437,9 +437,13 @@ export async function verifyTrackedPublications({ publicDirectory, defaults, opt
   const currentClientManifests = new Map();
   for (const [client, clientDirectory] of Object.entries(clientDirectories)) {
     const selectedHash = rollout.clients[client];
+    const currentClientDirectory = join(currentDirectory, clientDirectory);
+    if ((selectedHash === null || selectedHash === undefined) && !await pathExists(currentClientDirectory)) {
+      continue;
+    }
     if (selectedHash === null || selectedHash === undefined) {
       if (!await snapshotMatches(
-        join(currentDirectory, clientDirectory),
+        currentClientDirectory,
         clientTreeFiles(clientDirectory, defaults),
       )) return false;
     }

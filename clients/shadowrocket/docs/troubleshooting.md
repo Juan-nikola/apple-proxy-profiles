@@ -1,6 +1,8 @@
 # 故障排查与回滚
 
-固定顺序：切回旧 Profile → 判断节点/规则/DNS/局域网/IPv6 → 生成脱敏统计 → 只分享统计。先恢复可用网络，再排查；不要删除旧 Profile。正式配置使用原始组合 `apple-proxy-sources`、节点订阅、Profile File 和保留的旧 Profile；排查期间不要重命名或覆盖它们。
+Shadowrocket 当前节点池是 `apple-proxy-shadowrocket`；先按 [Sub-Store 客户端节点池指南](../../../docs/substore-client-pools.md) 的计数对比与旧 URL 回滚边界排查。旧 `apple-proxy-sources` 入口不要删除。
+
+固定顺序：切回旧 Profile → 判断节点/规则/DNS/局域网/IPv6 → 生成脱敏统计 → 只分享统计。先恢复可用网络，再排查；不要删除旧 Profile。正式配置使用原始组合 `apple-proxy-shadowrocket`、节点订阅、Profile File 和保留的旧 Profile；排查期间不要重命名或覆盖它们。
 
 ## 先回滚
 
@@ -27,12 +29,12 @@ DNS、QUIC、IPv6、`blockMode`或测速参数排障使用下面的 File 副本�
 
 ## 节点更新失败
 
-在 Sub-Store 预览原始组合 `apple-proxy-sources`。原始来源为空就检查 `snell`、`vlesshy2`；原始有节点而 Profile 为空就重新生成平台 Profile 并查看生成器日志中的排除原因计数。不要截图节点详情。恢复前一次可用订阅，节点数量正常后再更新设备。
+在 Sub-Store 预览原始组合 `apple-proxy-shadowrocket`。原始来源为空就检查 `snell`、`vlesshy2`；原始有节点而 Profile 为空就重新生成平台 Profile 并查看生成器日志中的排除原因计数。不要截图节点详情。恢复前一次可用订阅，节点数量正常后再更新设备。
 
 检查顺序：
 
 1. 单独预览各个原始来源，判断是一个来源还是全部来源失效。
-2. 预览组合 `apple-proxy-sources`，确认处理前节点数量不为 0。
+2. 预览组合 `apple-proxy-shadowrocket`，确认处理前节点数量不为 0。
 3. 重新生成平台 Profile。若为空，记录协议和排除原因计数，不复制节点详情。
 4. 确认节点脚本参数是 `output=nodes&clientChain=off` 或有意开启的 `on`，且目标平台为 Shadowrocket。
 5. 恢复最近可用来源或脚本后先更新 Intel Mac。

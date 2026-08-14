@@ -2,15 +2,63 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { CLIENT } from "../shared/contracts.js";
 import { evaluateNodeForClient, filterNodesForClient, oneXrayNodeExclusionReason } from "../shared/nodes/capabilities.js";
+import { diagnosticProtocol, protocolDisplayLabel } from "../shared/nodes/protocol-registry.js";
+import { assertRenderableNodes } from "../shared/nodes/renderability.js";
 
 const ALLOWED_PROTOCOLS = Object.freeze({
-  [CLIENT.shadowrocket]: ["ss", "shadowsocks", "ssr", "snell", "vmess", "vless", "trojan", "hysteria2", "hy2", "tuic", "socks5", "http"],
+  [CLIENT.shadowrocket]: ["ss", "shadowsocks", "ssr", "snell", "vmess", "vless", "trojan", "anytls", "hysteria2", "hy2", "tuic", "socks5", "http"],
   [CLIENT.egern]: ["ss", "shadowsocks", "snell", "vmess", "vless", "trojan", "anytls", "hysteria2", "hy2", "tuic", "socks5", "http", "ssh", "wireguard"],
   [CLIENT.anywhere]: ["ss", "shadowsocks", "vless", "trojan", "anytls", "hysteria2", "hy2", "socks5", "sudoku"],
+  [CLIENT.surge]: ["ss", "shadowsocks", "ssr", "snell", "vmess", "trojan", "anytls", "hysteria2", "hy2", "tuic", "socks5", "http"],
   onexray: ["vless", "vmess", "ss", "trojan", "socks5", "http", "hysteria2"],
 });
 
 const ALL_PROTOCOLS = [...new Set(Object.values(ALLOWED_PROTOCOLS).flat())];
+
+test("labels known protocols while preserving unknown diagnostics as count-only", () => {
+  assert.equal(protocolDisplayLabel(" VLESS "), "VLESS");
+  assert.equal(protocolDisplayLabel("anytls"), "AnyTLS");
+  assert.equal(protocolDisplayLabel("quicx"), "quicx");
+  assert.equal(protocolDisplayLabel(""), "unknown");
+  assert.equal(protocolDisplayLabel(null), "unknown");
+  assert.equal(diagnosticProtocol("quicx"), "unknown");
+});
+
+test("renderability preserves normalized unknown protocol counts without leaking node values", () => {
+  const nodes = [
+    {
+      name: "PRIVATE_FUTURE_NODE_ONE",
+      type: " Future-Proto ",
+      server: "future-one.example.invalid",
+      port: 443,
+      password: "TEST_ONLY_FUTURE_PASSWORD_ONE",
+    },
+    {
+      name: "PRIVATE_FUTURE_NODE_TWO",
+      type: "future-proto",
+      server: "future-two.example.invalid",
+      port: 8443,
+      password: "TEST_ONLY_FUTURE_PASSWORD_TWO",
+    },
+  ];
+  let probes = 0;
+  assert.throws(
+    () => assertRenderableNodes(nodes, "TestClient", (node) => {
+      probes += 1;
+      throw new Error(`private renderer failure: ${node.name}`);
+    }),
+    (error) => {
+      assert.equal(error.message, "TestClient cannot render selected protocols: future-proto=2");
+      for (const node of nodes) {
+        for (const value of [node.name, node.server, node.port, node.password]) {
+          assert.equal(error.message.includes(String(value)), false);
+        }
+      }
+      return true;
+    },
+  );
+  assert.equal(probes, 2);
+});
 
 function nodeForCapability(protocol, client) {
   if (client === "onexray") {
@@ -579,6 +627,7 @@ test("rejects Anywhere AnyTLS warm-pool values that its runtime would clamp", ()
     server: "anytls.example.invalid",
     port: 443,
     password: "TEST_ONLY_ANYTLS_PASSWORD",
+    udp: true,
   };
   assert.deepEqual(evaluateNodeForClient({
     ...common,
@@ -590,6 +639,7 @@ test("rejects Anywhere AnyTLS warm-pool values that its runtime would clamp", ()
     { "idle-session-check-interval": 29 },
     { "idle-session-timeout": -1 },
     { "min-idle-session": -1 },
+    { udp: "yes" },
   ]) {
     assert.deepEqual(
       evaluateNodeForClient({ ...common, ...mutation }, CLIENT.anywhere),
@@ -753,7 +803,11 @@ test("normalizes valid nodes before applying AnyTLS and WireGuard client capabil
 
   assert.deepEqual(
     filterNodesForClient(normalized.nodes, CLIENT.shadowrocket).nodes.map((node) => node.type),
-    ["ss"],
+    ["anytls", "ss"],
+  );
+  assert.deepEqual(
+    filterNodesForClient(normalized.nodes, CLIENT.surge).nodes.map((node) => node.type),
+    ["anytls", "ss"],
   );
   assert.deepEqual(
     filterNodesForClient(normalized.nodes, CLIENT.egern).nodes.map((node) => node.type).sort(),

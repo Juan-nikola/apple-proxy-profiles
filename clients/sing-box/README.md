@@ -1,16 +1,18 @@
 # sing-box 配置生成器
 
+sing-box 新任务只读取 `apple-proxy-singbox`。客户端 collection 边界、迁移与回滚以 [Sub-Store 客户端节点池指南](../../docs/substore-client-pools.md) 为准；已有 `apple-proxy-sources` collection、tasks 和旧 URL 保留作兼容/回滚，不要删除。
+
 本目录为官方 sing-box 客户端生成 JSON 配置，覆盖 macOS、iPhone、iPad、Android 和 OpenWrt 软路由。配置由私密 Sub-Store 运行时生成，`current` 是通过验证的发布指针，`edge` 跟踪 testing 分支每日构建；前沿版本只应先在单台设备或测试 VLAN 灰度。
 
 ## 先看这三份文档
 
-1. [五客户端总指南](../../docs/substore-two-layer-setup.md)：创建 `apple-proxy-sources`，引用已有 `snell`、`vlesshy2`，并按平台创建五个私密任务。
+1. [五客户端总指南](../../docs/substore-two-layer-setup.md)：创建 `apple-proxy-singbox`，引用已有 `snell`、`vlesshy2`，并按平台创建五个私密任务。
 2. [sing-box 部署](docs/deployment.md)：填写远程 JS、平台参数、`channel=current|edge`，导入官方客户端。
 3. [OpenWrt 透明网关](docs/openwrt.md)：单独验证 TUN、DNS 劫持、透明路由、LAN 与 IPv6。
 
 ## 五个私密 File 任务
 
-五个 File 都引用同一份 Config Generator。`Apple-Proxy-Nodes` 是可替换的示例显示名，必须改成你的节点订阅真实显示名；`name` 固定指向保留来源标记的原始组合 `apple-proxy-sources`，不要指向 Shadowrocket 的处理组合。
+五个 File 都引用同一份 Config Generator。`Apple-Proxy-Nodes` 是可替换的示例显示名，必须改成你的节点订阅真实显示名；`name` 固定指向保留来源标记的原始组合 `apple-proxy-singbox`，不要指向 Shadowrocket 的处理组合。
 
 | File | 平台 | Arguments 差异 |
 | --- | --- | --- |
@@ -23,7 +25,7 @@
 公共参数为：
 
 ```text
-output=config&type=collection&name=apple-proxy-sources&subscriptionName=Apple-Proxy-Nodes&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&autoGroupMode=auto&clientChain=off&channel=current
+output=config&type=collection&name=apple-proxy-singbox&subscriptionName=Apple-Proxy-Nodes&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&autoGroupMode=auto&clientChain=off&channel=current
 ```
 
 把每个平台追加到公共参数末尾。旧版 Sub-Store 单行模式使用 `JS_URL#output=config&type=collection&...`；不能使用 `?` 连接脚本参数。要测试 testing 分支，只把 `channel=current` 改为 `channel=edge`，并将远程脚本路径中的 `current` 改为 `edge`。
@@ -41,7 +43,7 @@ output=config&type=collection&name=apple-proxy-sources&subscriptionName=Apple-Pr
 
 | 需求 | 修改位置 | 说明 |
 | --- | --- | --- |
-| 增加节点或来源 | Sub-Store 的 `apple-proxy-sources` | 只在私密组合中添加来源，不改公开 JS。 |
+| 增加节点或来源 | Sub-Store 的 `apple-proxy-singbox` | 只在私密组合中添加来源，不改公开 JS。 |
 | 改分流规则 | `shared/rules/`、`clients/sing-box/src/render-rules.js` | 规则源与客户端格式分开维护。 |
 | 改平台 TUN/透明网关 | `clients/sing-box/src/render-platform.js`、`src/render-config.js` | Apple/Android 与 OpenWrt 必须分别验证。 |
 | 改 testing/current 行为 | `clients/sing-box/src/options.js`、`src/substore-config-entry.js` | `edge` 只适合灰度，`current` 才是稳定入口。 |

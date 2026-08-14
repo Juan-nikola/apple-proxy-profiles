@@ -35,11 +35,17 @@ test("shared policy records preserve the Shadowrocket catalog", () => {
   const nodes = makeNormalizedInventory();
   const shared = buildPolicyGroups(options, nodes);
   const shadowrocket = buildLegacyGroups(options, nodes);
+  const expectedContinents = ["🌏 亚太", "🌍 欧洲", "🌎 美洲"];
+  const sharedPrimary = shared.find((group) => group.name === "🚀 节点选择");
+  const shadowrocketPrimary = shadowrocket.find((group) => group.name === "🚀 节点选择");
 
   assert.equal(Object.isFrozen(POLICY_TARGET), true);
-  assert.equal(shared.find((group) => group.name === "🚀 节点选择").candidates[0], POLICY_TARGET.primaryProxy);
+  assert.deepEqual(sharedPrimary.candidates, expectedContinents);
+  assert.equal(sharedPrimary.nodeFilter, null);
   assert.notEqual(POLICY_TARGET.primaryProxy, "PROXY");
-  assert.deepEqual(shadowrocket.find((group) => group.name === "🚀 节点选择").items, ["PROXY"]);
+  assert.deepEqual(shadowrocketPrimary.items, ["PROXY"]);
+  assert.equal(shadowrocketPrimary.useSubscription, true);
+  assert.equal(shadowrocketPrimary.filter, "^(?!🔗 ).+$");
   assert.deepEqual(
     shared.filter((group) => group.kind === "service").map((group) => group.name),
     EXPECTED_SERVICE_NAMES,

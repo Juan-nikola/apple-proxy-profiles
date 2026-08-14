@@ -12,7 +12,7 @@
 - [x] `npm --workspace @apple-proxy-profiles/shadowrocket run check:rules` reports all 33 pinned compiler inputs healthy, including default, optional, and input-only sources; check this only after the live command succeeds.
 - [x] `npm run check:secrets` reports no potential secret.
 - [x] macOS, iPhone, and iPad Profiles contain `[General]`, `[Proxy Group]`, and `[Rule]`.
-- [x] Root selector is exactly `🚀 节点选择 = select,PROXY`; every dynamic group uses the configured `<subscriptionName>,use=true` source and contains no `include-all-proxies` field.
+- [x] Root selector is exactly `🚀 节点选择 = select,PROXY,Shadowrocket-Nodes,use=true,policy-regex-filter=^(?!🔗 ).+$`; continent groups contain only flag groups, and every dynamic group uses the configured `<subscriptionName>,use=true` source and contains no `include-all-proxies` field.
 - [x] Current default profiles use `adblockMode=off`, contain `DomesticCore`/`DomesticGame`/`SteamCN` DIRECT, route `OverseasGame` to `🌍 海外游戏`, then apply `ChinaIP`, `GEOIP,CN,DIRECT`, and the final proxy fallback.
 - [x] `adblockMode=full` adds only the optional `Advertising.list` and `Advertising_Domain.list`; neither is referenced by the default profile.
 - [x] macOS renders IPv4-only and proxy QUIC blocking; iPhone/iPad retain IPv6 with proxy QUIC blocking.

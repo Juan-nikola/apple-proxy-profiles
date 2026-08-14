@@ -1,7 +1,10 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
+import { buildPolicyGroups } from "../../../shared/policies/catalog.js";
+import { renderEgernGroups } from "../src/render-groups.js";
 import { renderEgernProfile } from "../src/render-profile.js";
+import { renderYaml } from "../src/render-yaml.js";
 import {
   assertValidEgernProfile,
   validateEgernProfile,
@@ -33,12 +36,95 @@ function assertInvalid(profile, pattern = /./u, forbidden = []) {
   }
 }
 
+function normalizedPolicyNode(flag, continent) {
+  return {
+    name: `${flag} TEST_ONLY_POLICY_NODE`,
+    _profile: {
+      continent,
+      flag,
+      sourceKind: "unknown",
+      udp: false,
+      p2p: false,
+      entry: false,
+      chained: false,
+    },
+  };
+}
+
+function renderedGroupFields(groups, name) {
+  for (const record of groups) {
+    const type = Object.keys(record)[0];
+    if (record[type].name === name) return record[type];
+  }
+  return undefined;
+}
+
+function profileWithMovedFlag({ flagName, fromContinent, toContinent, afterFlag }) {
+  const options = {
+    platform: "iphone",
+    autoGroupMode: "minimal",
+    clientChain: "off",
+    blockMode: "balanced",
+  };
+  const shared = buildPolicyGroups(options, [
+    normalizedPolicyNode("🇯🇵", "asiaPacific"),
+    normalizedPolicyNode("🇸🇬", "asiaPacific"),
+    normalizedPolicyNode("🇩🇪", "europe"),
+    normalizedPolicyNode("🇿🇦", "other"),
+    normalizedPolicyNode("🇽🇰", "other"),
+  ]);
+  const rendered = renderEgernGroups(shared, PRIVATE_URL);
+  const source = renderedGroupFields(rendered, fromContinent);
+  const target = renderedGroupFields(rendered, toContinent);
+  const remaining = source.policies.filter((policy) => policy !== flagName);
+  if (remaining.length === 0) delete source.policies;
+  else source.policies = remaining;
+  target.policies.push(flagName);
+
+  const flagIndex = rendered.findIndex((record) => (
+    record[Object.keys(record)[0]].name === flagName
+  ));
+  const [flagRecord] = rendered.splice(flagIndex, 1);
+  const afterIndex = rendered.findIndex((record) => (
+    record[Object.keys(record)[0]].name === afterFlag
+  ));
+  rendered.splice(afterIndex + 1, 0, flagRecord);
+
+  const base = validProfile({
+    autoGroupMode: "minimal",
+    clientChain: "off",
+    quicMode: "allow",
+  });
+  return base.replace(
+    /policy_groups:\n[\s\S]*?(?=rules:\n)/u,
+    renderYaml({ policy_groups: rendered }),
+  );
+}
+
 test("validates the actual deterministic YAML string", () => {
   const profile = validProfile();
   assert.equal(typeof profile, "string");
   assert.deepEqual(validateEgernProfile(profile), { valid: true, errors: [] });
   assertInvalid(null, /string/i);
   assertInvalid({ profile }, /string/i);
+});
+
+test("rejects a complete profile that parents an ISO flag under the wrong continent", () => {
+  assertInvalid(profileWithMovedFlag({
+    flagName: "🇯🇵 日本",
+    fromContinent: "🌏 亚太",
+    toContinent: "🌍 欧洲",
+    afterFlag: "🇩🇪 德国",
+  }), /group|schema|semantic|continent/i);
+});
+
+test("rejects a complete profile that parents a non-catalog flag outside its Task 1 continent", () => {
+  assertInvalid(profileWithMovedFlag({
+    flagName: "🇽🇰",
+    fromContinent: "🌐 其他/未分类",
+    toContinent: "🌍 欧洲",
+    afterFlag: "🇩🇪 德国",
+  }), /group|schema|semantic|continent/i);
 });
 
 test("accepts only closed channel and optional-pack publication combinations", () => {

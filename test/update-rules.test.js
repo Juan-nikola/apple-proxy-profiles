@@ -105,7 +105,7 @@ async function initializeTrackedCurrent(publicDirectory, artifacts) {
     optionalPacks: artifacts.optionalPacks,
     manifest: artifacts.diagnostics.defaultManifest,
   });
-  for (const client of ["singbox", "surge", "shadowrocket", "egern", "anywhere"]) {
+  for (const client of ["singbox", "surge", "shadowrocket", "egern", "anywhere", "happ"]) {
     await promoteClientRelease({
       publicDirectory,
       client,
@@ -450,6 +450,21 @@ test("rejects optional rollout selections for unknown clients", async () => {
   await writeFile(rolloutPath, `${JSON.stringify(rollout, null, 2)}\n`);
 
   assert.equal(await verifyTrackedPublications({ publicDirectory, ...artifacts }), false);
+});
+
+test("allows a tracked client slot to stay unpublished when rollout omits it", async () => {
+  const root = await mkdtemp(join(tmpdir(), "apple-proxy-check-unpublished-client-"));
+  const publicDirectory = join(root, "public");
+  const artifacts = buildClientArtifacts({ snapshot: lightweightFixtureSnapshots(), upstream });
+  await initializeTrackedCurrent(publicDirectory, artifacts);
+  await rm(join(publicDirectory, "current/happ"), { recursive: true, force: true });
+
+  const rolloutPath = join(publicDirectory, "rollout.json");
+  const rollout = JSON.parse(await readFile(rolloutPath, "utf8"));
+  delete rollout.clients.happ;
+  await writeFile(rolloutPath, `${JSON.stringify(rollout, null, 2)}\n`);
+
+  assert.equal(await verifyTrackedPublications({ publicDirectory, ...artifacts }), true);
 });
 
 test("rejects extra non-client files and unknown directories in a hybrid current", async () => {

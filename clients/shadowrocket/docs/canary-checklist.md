@@ -1,14 +1,16 @@
 # Intel Mac 灰度清单
 
+本清单验收 `apple-proxy-shadowrocket`；迁移顺序、preview 与旧 URL 回滚见 [Sub-Store 客户端节点池指南](../../../docs/substore-client-pools.md)。已有 `apple-proxy-sources` 入口继续保留。
+
 开始前确认旧 Profile 可用，新 Profile 只是并存导入。每完成一项再勾选；关键联网、DNS、局域网或回滚项失败时立即切回旧 Profile，停止向 iPhone 和 iPad 推广。
 
 - [ ] 旧节点订阅和旧 Profile 均可立即选回。
-- [ ] 节点订阅（`apple-proxy-sources` 输出）手动更新成功，节点数量不是 0；Shadowrocket 显示名与本平台 File 参数的 `subscriptionName` 完全一致（本例 `Shadowrocket-Nodes`，动态候选显示 `Shadowrocket-Nodes,use=true`）。显示名可自由命名（支持中文、内部空格和普通标点），但不能以空白开头或结尾，也不能包含换行；大小写、emoji、空格和标点必须匹配。截图若为 `SHADOWROCKET-NODES`，三个 Profile File Operator 都填写该精确名称。
+- [ ] 节点订阅（`apple-proxy-shadowrocket` 输出）手动更新成功，节点数量不是 0；Shadowrocket 显示名与本平台 File 参数的 `subscriptionName` 完全一致（本例 `Shadowrocket-Nodes`，动态候选显示 `Shadowrocket-Nodes,use=true`）。显示名可自由命名（支持中文、内部空格和普通标点），但不能以空白开头或结尾，也不能包含换行；大小写、emoji、空格和标点必须匹配。截图若为 `SHADOWROCKET-NODES`，三个 Profile File Operator 都填写该精确名称。
 - [ ] 升级已有安装时，macOS、iPhone、iPad 三个 Profile File Operator 的 `subscriptionName` 已逐一核对；节点 URL 和节点 Script Operator 未更换。若旧占位值不匹配当前显示名，已改参数或重命名订阅，并重新发布和更新各平台 Profile。
 - [ ] 常用中国网站直连，常用境外网站经 `🚀 节点选择`。
 - [ ] 一个未列规则但解析为中国 IP 的测试目标命中 `GEOIP,CN,DIRECT`。
 - [ ] 一个未列规则的境外目标命中 `FINAL,🚀 节点选择`。
-- [ ] `🚀 节点选择`只有跟随首页节点的 `PROXY`，摘要显示 `SELECT > PROXY`；首页切换节点后，此处不再保存或显示具体节点名。
+- [ ] `🚀 节点选择`只包含固定的亚太、欧洲、美洲洲组；首页切换洲组或国旗组后，此处不再保存或显示具体节点名。
 - [ ] 动态组按匹配的 `subscriptionName` 显示具体节点；若名称不匹配，`DIRECT`、`🚀 节点选择`、自动/故障转移和地区等显式选择仍可用，但不会显示该订阅的服务器。
 - [ ] 已重新运行当前平台中直接引用 `shadowrocket-profile-generator.js` 规范 Pages URL 的 File，并更新 Profile；三个 File 不粘贴脚本正文。`clients/shadowrocket/dist/` 与 `clients/shadowrocket/examples/` 已重新构建校验。默认参数为 `channel=edge`、`adblockMode=off`；若灰度稳定通道则明确改为 `channel=current`，只有专门测试完整广告时才使用 `adblockMode=full` 和独立 optional 包。既有 File 若仍引用旧 `substore-profile-generator.js` 兼容 URL，可保持原 URL，只需确认内容已更新。
 - [ ] 规则顺序明确为 `DomesticCore`、`DomesticGame`、`SteamCN` DIRECT，随后是境外服务，`OverseasGame` 进入 `🌍 海外游戏`，再到 `ChinaIP`、`GEOIP,CN,DIRECT`，最后 `FINAL,🚀 节点选择`。
@@ -37,7 +39,7 @@
 - [ ] `🎮 游戏连接`只出现明确带 `·U` 能力标记的节点，默认 DIRECT；`OverseasGame` 业务规则使用独立的 `🌍 海外游戏`策略组。
 - [ ] iPhone 在 Wi-Fi 和蜂窝网络分别测试《问道手游》登录、换线、战斗和资源加载；雷霆/吉比特域名命中 DIRECT。
 - [ ] macOS 的 `ipv6Mode=ipv4-only`，并完成休眠唤醒与 Wi-Fi 切换测试，无持续断流。
-- [ ] 更新一次 Profile 后，`🚀 节点选择`被收敛为 `PROXY`；AI 和其他仍有效的手动策略选择保持不变，若未保留则在推广前记录并处理。
+- [ ] 更新一次 Profile 后，`🚀 节点选择`仍只包含固定的亚太、欧洲、美洲洲组；AI 和其他仍有效的手动策略选择保持不变，若未保留则在推广前记录并处理。
 - [ ] 实际切回旧 Profile 一次，确认回滚无需删除新 Profile。
 - [ ] 支持蜂窝的设备已分别测试 Wi‑Fi 与蜂窝，且保留旧 Profile 后完成一次真实回滚。
 

@@ -86,14 +86,6 @@ function sortedCounts(value) {
     .sort(([left], [right]) => left.localeCompare(right, "en")));
 }
 
-function mergeCounts(...buckets) {
-  const result = {};
-  for (const bucket of buckets) {
-    for (const [key, count] of Object.entries(sortedCounts(bucket))) result[key] = (result[key] ?? 0) + count;
-  }
-  return sortedCounts(result);
-}
-
 function safeHash(value, fallback) {
   return typeof value === "string" && HASH.test(value) ? value : fallback;
 }
@@ -172,25 +164,12 @@ function fixedSummary(resolution) {
   };
 }
 
-function protocolSummary(context) {
-  if (object(context.protocolCounts)) {
-    return Object.fromEntries(Object.entries(context.protocolCounts)
-      .sort(([left], [right]) => left.localeCompare(right, "en"))
-      .map(([protocol, value]) => [protocol, {
-        accepted: number(value?.accepted),
-        excluded: number(value?.excluded),
-      }]));
-  }
-  const normalized = Array.isArray(context.normalizedNodes) ? context.normalizedNodes : [];
-  const eligible = new Set(Array.isArray(context.eligibleNodes) ? context.eligibleNodes : []);
-  const values = {};
-  for (const node of normalized) {
-    const protocol = normalizeProtocol(node?.type) || "unknown";
-    values[protocol] ??= { accepted: 0, excluded: 0 };
-    if (eligible.has(node)) values[protocol].accepted += 1;
-    else values[protocol].excluded += 1;
-  }
-  return Object.fromEntries(Object.entries(values).sort(([left], [right]) => left.localeCompare(right, "en")));
+function renderFailureSummary(context) {
+  const protocols = sortedCounts(context.renderFailureProtocols);
+  return {
+    total: Object.values(protocols).reduce((sum, count) => sum + count, 0),
+    protocols,
+  };
 }
 
 function geoSummary(context, channel) {
@@ -253,22 +232,20 @@ function renderOneXrayAuditUnsafe(context) {
   }
   const fullHash = sha256Hex(canonical);
   const normalized = context.normalizedDiagnostics ?? {};
-  const eligible = context.eligibleDiagnostics ?? {};
-  const accepted = number(eligible.accepted);
-  const inputTotal = number(normalized.total, accepted + Object.values(mergeCounts(normalized.excluded, eligible.excluded)).reduce((sum, count) => sum + count, 0));
-  const excluded = Math.max(0, inputTotal - accepted);
+  const normalizationExcluded = sortedCounts(normalized.excluded);
   const report = {
     schema: "onexray-routing-audit-v1",
     client: "OneXray",
     language: "zh-CN",
     nodes: {
-      total: inputTotal,
-      normalized: number(normalized.accepted),
-      accepted,
-      excluded,
-      perProtocol: protocolSummary(context),
+      normalization: {
+        total: number(normalized.total),
+        accepted: number(normalized.accepted),
+        protocols: sortedCounts(normalized.protocol),
+        excluded: normalizationExcluded,
+      },
+      renderFailures: renderFailureSummary(context),
     },
-    exclusionReasons: mergeCounts(normalized.excluded, eligible.excluded),
     policy: {
       businesses: businessSummary(context.resolution),
       fixed: fixedSummary(context.resolution),

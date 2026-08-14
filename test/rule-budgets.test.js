@@ -15,7 +15,12 @@ import {
 
 const root = new URL("../", import.meta.url);
 const forbidden = /\b(?:Advertising|Advertising_Domain|ChinaMax_Domain)\b/u;
-const migrationMetadata = new Set(["anywhere/import.html", "anywhere/rules/manifest.json"]);
+const migrationMetadata = new Set([
+  "anywhere/import.html",
+  "anywhere/rules/manifest.json",
+  "happ/scripts/happ-config-generator.js",
+  "happ/scripts/substore-config-generator.js",
+]);
 const upstream = Object.freeze({
   repository: "https://github.com/blackmatrix7/ios_rule_script",
   branch: "master",

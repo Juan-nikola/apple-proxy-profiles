@@ -138,6 +138,15 @@ export function renderSurgeProxy(node) {
       tlsOptions({ ...node, tls: true }, fields);
       transportOptions(node, fields);
       break;
+    case "anytls":
+      fields = base(node, "anytls");
+      fields.push(escapeValue(requiredString(node, "password")));
+      option(fields, "sni", node.sni ?? node.servername);
+      if (node["skip-cert-verify"] === true || node["allow-insecure"] === true) {
+        fields.push("skip-cert-verify=true");
+      }
+      if (node.udp === true) fields.push("udp-relay=true");
+      break;
     case "hysteria2":
     case "hy2":
       fields = base(node, "hysteria2");

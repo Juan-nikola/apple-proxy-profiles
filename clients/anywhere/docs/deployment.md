@@ -1,5 +1,7 @@
 # Anywhere 部署指南
 
+Anywhere 新任务只读取 `apple-proxy-anywhere`。先按 [Sub-Store 客户端节点池指南](../../../docs/substore-client-pools.md) 完成筛选、preview 和回滚准备；已有 `apple-proxy-sources` collection、tasks 和旧 URL 保留作兼容/回滚。
+
 先读 [Sub-Store 外置 JS + 任务引用总指南](../../../docs/substore-two-layer-setup.md)。File `anywhere-nodes` 选择链接模式，直接引用 Anywhere Node Generator 的规范 Pages URL，并在自己的可视化参数编辑器中保存参数；不要粘贴 JavaScript 正文。
 
 ## 0. 先记录，不删除
@@ -19,10 +21,10 @@ https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/scripts/anyw
 新任务统一选择 `anywhere-node-generator.js`。旧 `substore-node-generator.js` Pages URL 继续保留为字节一致的兼容别名；既有任务无需仅为改名替换 URL，也不要同时添加新旧两个别名。
 
 ```text
-output=nodes&type=collection&name=apple-proxy-sources&clientChain=off
+output=nodes&type=collection&name=apple-proxy-anywhere&clientChain=off
 ```
 
-旧版只有单行链接时使用 `JS_URL#output=nodes&type=collection&name=apple-proxy-sources&clientChain=off`，不能使用 `?` 连接脚本参数。以后更新 Anywhere Node Generator 不复制脚本正文；`anywhere-nodes` 的 JS URL、任务名、私密输出 URL和上述参数保持不动。发布后先重新预览，再在一台 canary 设备手动 Refresh。
+旧版只有单行链接时使用 `JS_URL#output=nodes&type=collection&name=apple-proxy-anywhere&clientChain=off`，不能使用 `?` 连接脚本参数。以后更新 Anywhere Node Generator 不复制脚本正文；`anywhere-nodes` 的 JS URL、任务名、私密输出 URL和上述参数保持不动。发布后先重新预览，再在一台 canary 设备手动 Refresh。
 
 Anywhere 没有与 Shadowrocket/Egern 等价的完整 Profile File，不要创建 `anywhere-profile-generator.js`。这个 File 只完成私密节点层；规则、绑定和设备设置必须继续完成第 2—5 节。
 
