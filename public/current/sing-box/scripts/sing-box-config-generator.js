@@ -769,22 +769,32 @@ var SingBoxConfigBundle = (() => {
       return "unknown";
     }
   }
-  function assertRenderableNodes(nodes, clientName, renderOneNode) {
+  function validateRenderableInvocation(nodes, clientName, renderOneNode) {
     if (!Array.isArray(nodes)) throw new TypeError("Renderable node inventory must be an array");
     if (typeof clientName !== "string" || !/^[A-Za-z][A-Za-z0-9 -]*$/u.test(clientName)) {
       throw new TypeError("Render client name is invalid");
     }
     if (typeof renderOneNode !== "function") throw new TypeError("Node renderer must be a function");
+  }
+  function failureSummary(failures) {
+    return Object.keys(failures).sort((left, right) => left.localeCompare(right, "en")).map((protocol2) => `${protocol2}=${failures[protocol2]}`).join(",");
+  }
+  function partitionRenderableNodes(nodes, clientName, renderOneNode) {
+    validateRenderableInvocation(nodes, clientName, renderOneNode);
     const failures = {};
+    const renderable = [];
     for (const node of nodes) {
       try {
         renderOneNode(node);
+        renderable.push(node);
       } catch {
         increment(failures, protocolOf(node));
       }
     }
-    const counts = Object.keys(failures).sort((left, right) => left.localeCompare(right, "en")).map((protocol2) => `${protocol2}=${failures[protocol2]}`).join(",");
-    if (counts) throw new Error(`${clientName} cannot render selected protocols: ${counts}`);
+    if (renderable.length === 0) {
+      throw new Error(`${clientName} cannot render selected protocols: ${failureSummary(failures)}`);
+    }
+    return { renderable, failureProtocols: failures };
   }
 
   // ../../shared/policies/platform-presets.js
@@ -2326,12 +2336,12 @@ var SingBoxConfigBundle = (() => {
 
   // src/substore-config-entry.js
   var PUBLIC_RULE_ROOT = "https://juan-nikola.github.io/apple-proxy-profiles";
-  function logDiagnostics(context, options, nodes) {
+  function logDiagnostics(context, options, nodes, renderFailures) {
     const logger = context?.logger;
     const method = typeof logger === "function" ? logger : typeof logger?.info === "function" ? logger.info.bind(logger) : typeof logger?.log === "function" ? logger.log.bind(logger) : null;
     if (!method) return;
     try {
-      method(`[sing-box-config] ${JSON.stringify({ client: "singbox", platform: options.platform, channel: options.channel, accepted: nodes.length })}`);
+      method(`[sing-box-config] ${JSON.stringify({ client: "singbox", platform: options.platform, channel: options.channel, accepted: nodes.length, renderFailures })}`);
     } catch {
     }
   }
@@ -2347,10 +2357,10 @@ var SingBoxConfigBundle = (() => {
     });
     if (!Array.isArray(rawNodes) || rawNodes.length === 0) throw new Error("produceArtifact must return a non-empty node array");
     const normalized = normalizeNodes(rawNodes, { clientChain: options.clientChain });
-    assertRenderableNodes(normalized.nodes, "sing-box", renderSingBoxOutbound);
-    logDiagnostics(context, options, normalized.nodes);
+    const partitioned = partitionRenderableNodes(normalized.nodes, "sing-box", renderSingBoxOutbound);
+    logDiagnostics(context, options, partitioned.renderable, partitioned.failureProtocols);
     const ruleBaseUrl = `${PUBLIC_RULE_ROOT}/${options.channel}/sing-box/rule-sets`;
-    const config = renderSingBoxConfig(options, normalized.nodes.map(sanitizeSingBoxNode), { ruleBaseUrl });
+    const config = renderSingBoxConfig(options, partitioned.renderable.map(sanitizeSingBoxNode), { ruleBaseUrl });
     return { ...input, $content: `${JSON.stringify(config, null, 2)}
 ` };
   }

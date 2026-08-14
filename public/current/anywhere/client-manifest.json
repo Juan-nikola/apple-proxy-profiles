@@ -173,18 +173,18 @@
       "sha256": "f2bbd640faa84ff31a101775dd25219b8940a745218afb056d11a1c1d2551433"
     },
     {
-      "bytes": 82570,
+      "bytes": 83257,
       "path": "anywhere/scripts/anywhere-node-generator.js",
-      "sha256": "caa9d3ec5999925a93fe76b660aedf3d817fd7e2b94e6c6b1afa52914e7b810a"
+      "sha256": "4b735c3d7eeed40ce6b2b142d616dc4ab85b06e6d750d3b6da75b82d8442ae6a"
     },
     {
-      "bytes": 82570,
+      "bytes": 83257,
       "path": "anywhere/scripts/substore-node-generator.js",
-      "sha256": "caa9d3ec5999925a93fe76b660aedf3d817fd7e2b94e6c6b1afa52914e7b810a"
+      "sha256": "4b735c3d7eeed40ce6b2b142d616dc4ab85b06e6d750d3b6da75b82d8442ae6a"
     }
   ],
   "generatedAt": "2026-08-13T19:00:08Z",
-  "manifestHash": "2d0162c023e4020d52ac641318b9df799bbfe89e0608737ac6445b25002389b1",
+  "manifestHash": "d6e425bc448345305aab243f062abb7091ca153453b96da31c61a5ecbed1f5ee",
   "optionalPacks": {
     "adblock-full": "a16d162f6de60385678038f4cd9835a9e825c079ad603b6bd68875c724d90426"
   },
