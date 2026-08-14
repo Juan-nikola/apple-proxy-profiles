@@ -12,6 +12,7 @@ const ANYTLS_FIELDS = new Set([
   "name", "type", "server", "port", "password", "network", "tls", "security",
   "sni", "servername", "tfo", "udp", "udp-relay", "udp_relay",
   "skip-cert-verify", "allow-insecure", "fingerprint-sha256", "fingerprint_sha256",
+  "alpn", "client-fingerprint",
   "reality-opts", "block-quic", "block_quic", "shadow-tls", "shadow-tls-opts",
   "shadow_tls", "ip-version", "ip_version", "underlying-proxy", "chain",
   "dialer-proxy", "detour", "prev_hop", "_profile", "_subName",

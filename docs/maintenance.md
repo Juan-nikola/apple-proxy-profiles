@@ -11,7 +11,7 @@
 | 增加公开规则 | `automation/src/source-catalog.js`、对应源目录或固定上游 SHA | 更新规则快照、运行规则检查、构建和秘密扫描 |
 | 修改客户端默认 DNS/IPv6/QUIC | `clients/<client>/src/options.js`、策略/渲染文件和测试 | 先写测试，再构建对应 bundle 和 fixtures |
 | 修改分组、路由或规则顺序 | 对应客户端 `src/render-*.js`、共享 `shared/policies/` 和测试 | 跑客户端测试、示例校验和全量 verify |
-| 增加协议或传输 | `shared/contracts.js`、归一化/能力过滤、各客户端适配器和测试 | 逐客户端确认是否原生支持；不能静默丢字段 |
+| 增加协议或传输 | `shared/contracts.js`、归一化、各客户端适配器、渲染器全量校验和测试 | 逐客户端确认是否原生支持；不能静默丢字段 |
 | 修改 Sub-Store 参数 | 私密任务参数编辑器；公开示例同步改总指南 | 先隔离任务预览，不把真实参数值写入 GitHub |
 | 修改公开 JS 名称或 Pages 路径 | 对应 `clients/<client>/scripts/build.mjs`、发布脚本、文档和测试 | 保留旧兼容别名，验证新旧 bundle 字节契约 |
 | 修改 sing-box `.srs` | `automation/src/render-sing-box-rules.js`、`clients/sing-box/scripts/compile-rules.mjs` 和测试 | 必须使用官方 core 产生二进制；无 core 必须失败 |
@@ -255,7 +255,7 @@ node --input-type=module -e 'import { compileRules } from "./clients/sing-box/sc
 
 先写或修改对应测试，再改 `src/`：
 
-1. 共享协议或字段：`shared/`、规范化和能力过滤。
+1. 共享协议或字段：`shared/`、规范化和渲染器全量校验。
 2. 节点映射：目标客户端的 `src/render-node.js`、验证和测试。
 3. Profile/Config：目标客户端的 `src/render-profile.js` 或 `render-config.js`、选项和测试。
 4. 分组/路由/DNS：对应 `render-groups.js`、`render-rules.js`、`render-dns.js` 和安全测试。

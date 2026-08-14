@@ -223,7 +223,7 @@ var SurgeNodesBundle = (() => {
       requiredFields: ["password"],
       tls: true
     }),
-    protocol(["anytls"], [CLIENT.egern, CLIENT.anywhere, CLIENT.singbox], {
+    protocol(["anytls"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox], {
       requiredFields: ["password"],
       tls: true
     }),
@@ -1016,6 +1016,15 @@ var SurgeNodesBundle = (() => {
         option(fields, "password", requiredString2(node, "password"));
         tlsOptions({ ...node, tls: true }, fields);
         transportOptions(node, fields);
+        break;
+      case "anytls":
+        fields = base(node, "anytls");
+        fields.push(escapeValue(requiredString2(node, "password")));
+        option(fields, "sni", node.sni ?? node.servername);
+        if (node["skip-cert-verify"] === true || node["allow-insecure"] === true) {
+          fields.push("skip-cert-verify=true");
+        }
+        if (node.udp === true) fields.push("udp-relay=true");
         break;
       case "hysteria2":
       case "hy2":

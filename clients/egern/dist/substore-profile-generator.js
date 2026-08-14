@@ -2278,7 +2278,7 @@ var EgernProfileBundle = (() => {
       requiredFields: ["password"],
       tls: true
     }),
-    protocol(["anytls"], [CLIENT.egern, CLIENT.anywhere, CLIENT.singbox], {
+    protocol(["anytls"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox], {
       requiredFields: ["password"],
       tls: true
     }),
@@ -2910,7 +2910,12 @@ var EgernProfileBundle = (() => {
   function tlsRequestedForCapability(node) {
     return node.tls === true || node.security === "tls" || node.security === "reality" || hasOption(node, "reality-opts");
   }
-  function egernTlsReason(node, { allowReality = true, allowAlpn = false, implicitTls = false } = {}) {
+  function egernTlsReason(node, {
+    allowReality = true,
+    allowAlpn = false,
+    allowClientFingerprint = false,
+    implicitTls = false
+  } = {}) {
     if (!isOptionalBoolean(node, "tls") || !isOptionalBoolean(node, "skip-cert-verify") || !isOptionalBoolean(node, "allow-insecure") || hasConflictingAliases(node, ["skip-cert-verify", "allow-insecure"]) || !optionalStringAliasesAreValid(node, ["sni", "servername"]) || hasConflictingAliases(node, ["fingerprint-sha256", "fingerprint_sha256"])) {
       return "unsupported-egern-tls-shape";
     }
@@ -2919,7 +2924,7 @@ var EgernProfileBundle = (() => {
         return "unsupported-egern-tls-shape";
       }
     }
-    if (hasOption(node, "client-fingerprint") || hasOption(node, "alpn") && !allowAlpn) {
+    if (hasOption(node, "client-fingerprint") && !allowClientFingerprint || hasOption(node, "alpn") && !allowAlpn) {
       return "unsupported-egern-tls-shape";
     }
     if (hasOption(node, "security")) {
@@ -3258,7 +3263,7 @@ var EgernProfileBundle = (() => {
       if (!isNonblankOpaqueString(node.password)) return "invalid-egern-node-shape";
       if (node.tls === false || node.security === "none") return "unsupported-egern-tls-shape";
       if (unsupportedPlainTransport(node)) return "unsupported-egern-transport";
-      return egernTlsReason(node, { implicitTls: true }) || (!isOptionalBoolean(node, "udp") || !isOptionalBoolean(node, "tfo") ? "unsupported-egern-anytls-shape" : null);
+      return egernTlsReason(node, { implicitTls: true, allowAlpn: true, allowClientFingerprint: true }) || (!isOptionalBoolean(node, "udp") || !isOptionalBoolean(node, "tfo") ? "unsupported-egern-anytls-shape" : null);
     }
     if (protocol2 === "hysteria2" || protocol2 === "hy2") {
       if (!isNonblankOpaqueString(node.password)) return "invalid-egern-node-shape";
@@ -3344,6 +3349,8 @@ var EgernProfileBundle = (() => {
     "allow-insecure",
     "fingerprint-sha256",
     "fingerprint_sha256",
+    "alpn",
+    "client-fingerprint",
     "reality-opts",
     "block-quic",
     "block_quic",

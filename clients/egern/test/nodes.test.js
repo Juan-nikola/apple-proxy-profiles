@@ -194,6 +194,8 @@ test("renders a normalized AnyTLS node without dropping its verified Egern field
     name: "Tokyo AnyTLS",
     tls: true,
     sni: "anytls.example.invalid",
+    alpn: ["h2", "http/1.1"],
+    "client-fingerprint": "chrome",
     "fingerprint-sha256": "ab".repeat(32),
     _subName: "[自建] Tokyo AnyTLS",
   }]).nodes;
@@ -209,6 +211,8 @@ test("renders a normalized AnyTLS node without dropping its verified Egern field
     skip_tls_verify: false,
     fingerprint_sha256: "ab".repeat(32),
   });
+  assert.equal(Object.hasOwn(toEgernProxy(normalized, { clientChain: "off" }).anytls, "alpn"), false);
+  assert.equal(Object.hasOwn(toEgernProxy(normalized, { clientChain: "off" }).anytls, "client-fingerprint"), false);
   const yaml = renderEgernSubscription([normalized], { clientChain: "off" });
   assert.match(yaml, /^proxies:\n  - anytls:/u);
   assert.match(yaml, / · AnyTLS｜自建·U/u);

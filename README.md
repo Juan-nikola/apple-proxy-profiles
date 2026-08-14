@@ -51,7 +51,7 @@ Sub-Store 新部署为每个客户端维护独立 collection；精确名称、�
 
 用浏览器打开你的 Sub-Store 管理页面。你会看到几个大区块：
 
-- **订阅（Subs）**：原始节点来源。你的里面有 `[自建]snell`、`[自建]Vlesshy2`、`anytls`、`[realm]`、`xiaov` 等。
+- **订阅（Subs）**：原始节点来源。你的里面有 `[自建]snell`、`[自建]Vlesshy2`、`anytls`、`[realm]`、`xiaov` 等；`xiaov` 跳过不使用，不要加入总池或任何 client collection。
 - **组合订阅（Collections）**：用户建立 `apple-proxy-all` 总池，再按节点池指南建立六个 client collection。旧 `apple-proxy-sources` 只保留作兼容/回滚入口。
 - **文件（Files）**：最终输出的配置文件。本项目需要 20 个文件任务，你的 Sub-Store 里已经全部建好（见第 3 节清单）。
 - **脚本（Scripts）**：不需要手动创建。本项目的脚本由 GitHub Pages 托管，Sub-Store 任务直接“引用”远程链接。

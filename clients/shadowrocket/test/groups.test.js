@@ -80,9 +80,9 @@ test("selects effective automatic group detail by normalized node count", () => 
 
   for (const count of [10, 50, 300]) {
     const groups = buildGroups(options(), Array.from({ length: count }, (_, index) => node(`🇯🇵 JP ${index}｜机场`)));
-    assert.equal(named(groups, "🚀 节点选择").useSubscription, undefined);
-    assert.equal(named(groups, "🚀 节点选择").filter, undefined);
-    assert.deepEqual(named(groups, "🚀 节点选择").items, ["🌏 亚太"]);
+    assert.equal(named(groups, "🚀 节点选择").useSubscription, true);
+    assert.equal(named(groups, "🚀 节点选择").filter, "^(?!🔗 ).+$");
+    assert.deepEqual(named(groups, "🚀 节点选择").items, ["PROXY"]);
   }
 
   const fallback = named(buildGroups(options(), [node("🇯🇵 JP｜机场")]), "🛟 全部故障转移");
@@ -98,8 +98,8 @@ test("preserves root-to-continent-to-flag references while keeping helpers hidde
 
   assert.match(lines.find((line) => line.startsWith("🌏 亚太 =")), /^🌏 亚太 = select,/);
   assert.deepEqual(named(groups, "🌏 亚太").items, ["⚡ 亚太自动", "🇯🇵 日本"]);
-  assert.deepEqual(named(groups, "🚀 节点选择").items, ["🌏 亚太"]);
-  assert.equal(lines.find((line) => line.startsWith("🚀 节点选择 =")), "🚀 节点选择 = select,🌏 亚太");
+  assert.deepEqual(named(groups, "🚀 节点选择").items, ["PROXY"]);
+  assert.equal(lines.find((line) => line.startsWith("🚀 节点选择 =")), "🚀 节点选择 = select,PROXY,订阅\\,名称,use=true,policy-regex-filter=^(?!🔗 ).+$");
   assert.equal(lines.find((line) => line.startsWith("🌏 亚太 =")), "🌏 亚太 = select,⚡ 亚太自动,🇯🇵 日本");
   assert.equal(lines.find((line) => line.startsWith("🇯🇵 日本 =")), "🇯🇵 日本 = select,订阅\\,名称,use=true,policy-regex-filter=^🇯🇵(?: |$)");
   assert.equal(lines.some((line) => line.includes("订阅\\,名称,use=true")), true);
@@ -284,7 +284,7 @@ test("references every available continent helper from its visible selector", ()
   ]);
 });
 
-test("keeps root continent order and AI continent order stable", () => {
+test("keeps root group as a PROXY subscription while AI continent order stays stable", () => {
   const mixed = [
     node("🇿🇦 ZA｜自建", { continent: "other" }),
     node("🇺🇸 US｜自建", { continent: "americas" }),
@@ -293,12 +293,7 @@ test("keeps root continent order and AI continent order stable", () => {
   ];
   const groups = buildGroups(options(), mixed);
 
-  assert.deepEqual(named(groups, "🚀 节点选择").items, [
-    "🌏 亚太",
-    "🌍 欧洲",
-    "🌎 美洲",
-    "🌐 其他/未分类",
-  ]);
+  assert.deepEqual(named(groups, "🚀 节点选择").items, ["PROXY"]);
   assert.deepEqual(named(groups, "🤖 AI 专用").items, [
     "🤖 AI 亚太",
     "🤖 AI 欧洲",

@@ -223,7 +223,7 @@ var ShadowrocketProfileBundle = (() => {
       requiredFields: ["password"],
       tls: true
     }),
-    protocol(["anytls"], [CLIENT.egern, CLIENT.anywhere, CLIENT.singbox], {
+    protocol(["anytls"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox], {
       requiredFields: ["password"],
       tls: true
     }),
@@ -1422,7 +1422,7 @@ var ShadowrocketProfileBundle = (() => {
 
   // group-catalog.js
   function buildGroups(options, nodes) {
-    return buildPolicyGroups(options, nodes).map((group) => ({
+    const groups = buildPolicyGroups(options, nodes).map((group) => ({
       name: group.name,
       type: group.strategy === "auto-test" ? "url-test" : group.strategy,
       items: [...group.candidates],
@@ -1435,6 +1435,16 @@ var ShadowrocketProfileBundle = (() => {
       hidden: group.hidden,
       policySelectName: group.defaultChoice
     }));
+    return groups.map((group) => {
+      if (group.name !== "\u{1F680} \u8282\u70B9\u9009\u62E9") return group;
+      return {
+        name: "\u{1F680} \u8282\u70B9\u9009\u62E9",
+        type: "select",
+        items: ["PROXY"],
+        useSubscription: true,
+        filter: NON_CHAINED_FILTER
+      };
+    });
   }
 
   // render-groups.js

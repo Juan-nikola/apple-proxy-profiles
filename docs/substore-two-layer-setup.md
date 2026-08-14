@@ -27,10 +27,12 @@
 
 1. 保留已有来源、旧 collection、tasks 和旧 URL，先分别 preview 确认非空。
 2. 建立用户自己的 `apple-proxy-all` 总池。
-3. 按节点池指南建立六个 client collection，用户自行选择每个客户端可导入的协议和字段。
+3. 按节点池指南建立六个 client collection，用户自行选择每个客户端要包含的节点；生成器不按客户端能力白名单过滤。
 4. 逐个 preview 并记录计数，再一次只迁移一个客户端的 `name=`。
 
 新任务不再让六个客户端直接共享一个 collection。旧 `apple-proxy-sources` 继续保留作兼容/回滚入口，不要删除。
+
+> 本用户部署中的 `xiaov` 来源跳过不使用，不要加入 `apple-proxy-all` 或任何 client collection。
 
 ## 2. 七个公开远程 JS
 
@@ -213,7 +215,7 @@ https://juan-nikola.github.io/apple-proxy-profiles/current/surge/scripts/surge-n
 
 参数：`output=nodes&type=collection&name=apple-proxy-surge&clientChain=off`。
 
-预览应输出 `[Proxy]` 和至少一个节点。该资源只保留 Surge 已登记且字段完整的协议；当前会自动排除 VLESS。保存此 File 的私密输出 URL，下面记作 `<SURGE_NODES_URL>`。
+预览应输出 `[Proxy]` 和至少一个节点。该资源输出用户选入 `apple-proxy-surge` 的全部节点，生成器不自动排除协议；当前 Surge renderer 未实现的协议（例如 VLESS）会让任务显式失败，不会静默丢弃。保存此 File 的私密输出 URL，下面记作 `<SURGE_NODES_URL>`。
 
 ### 8.2 三个平台 Profile
 
@@ -256,7 +258,7 @@ https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-
 | `onexray-profile` | profile | 版本化 Profile deep link | 每天 |
 | `onexray-routing-audit` | audit | 脱敏路由审计 | 按需 |
 
-OneXray 的 `apple-proxy-onexray` 只能选入当前 OneXray 原生 Profile 已实现的协议。不支持的已选协议会让生成器失败，不会静默丢弃；回到 collection 修正用户筛选后再 preview。
+OneXray 的 `apple-proxy-onexray` 由用户自行选择节点，生成器不自动排除协议。原生 Profile 无法表示的已选协议会让生成器失败，不会静默丢弃；回到 collection 修正用户筛选后再 preview。
 
 `v=10` 是本次内存修复后的 Sub-Store 脚本缓存版本号；脚本内容更新后把三个任务 URL 里的 `v=` 数字 +1 并重新保存。固定业务推荐用 `&policyFile=onexray-policy` 引用 Sub-Store 内的可读策略文件，也可继续用 `&policyOverrides=<Base64URL>`，两者不能同时使用。`logLevel` 可输入 `none`、`error`、`warning`、`info`、`debug`，默认 `warning`；`dnsLog` 可输入 `on`、`off`，默认 `off`，示例开启以便查看域名。
 

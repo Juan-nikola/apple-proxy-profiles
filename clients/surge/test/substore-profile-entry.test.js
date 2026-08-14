@@ -156,7 +156,7 @@ test("Sub-Store Surge profile rejects an unrenderable selected protocol before o
       });
     },
     (error) => {
-      assert.equal(error.message, "Surge cannot render selected protocols: anytls=1,vless=1");
+      assert.equal(error.message, "Surge cannot render selected protocols: vless=1");
       for (const secret of [
         privateAnyTls.name, privateAnyTls.server, privateAnyTls.password,
         privateVless.name, privateVless.server, privateVless.uuid,

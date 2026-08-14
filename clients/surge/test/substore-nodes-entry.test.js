@@ -62,7 +62,7 @@ const nodes = [
   },
 ];
 
-test("Surge node entry rejects a mixed inventory without partial output or private logs", async () => {
+test("Surge node entry rejects an unrenderable VLESS selection without partial output or private logs", async () => {
   const calls = [];
   const lines = [];
   let result;
@@ -83,7 +83,7 @@ test("Surge node entry rejects a mixed inventory without partial output or priva
       });
     },
     (error) => {
-      assert.equal(error.message, "Surge cannot render selected protocols: anytls=1,vless=1");
+      assert.equal(error.message, "Surge cannot render selected protocols: vless=1");
       for (const secret of [
         nodes[1].name, nodes[1].server, nodes[1].uuid,
         nodes[2].name, nodes[2].server, nodes[2].password,

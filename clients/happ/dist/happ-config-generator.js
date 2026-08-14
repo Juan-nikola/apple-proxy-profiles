@@ -24,6 +24,28 @@ var HappConfigBundle = (() => {
     operator: () => operator
   });
 
+  // ../../shared/nodes/diagnostics.js
+  function createDiagnostics() {
+    return {
+      total: 0,
+      accepted: 0,
+      protocol: {},
+      source: {},
+      region: {},
+      excluded: {},
+      warnings: {}
+    };
+  }
+  function increment(bucket, key, amount = 1) {
+    const current = Object.hasOwn(bucket, key) ? bucket[key] : 0;
+    Object.defineProperty(bucket, key, {
+      value: current + amount,
+      writable: true,
+      enumerable: true,
+      configurable: true
+    });
+  }
+
   // ../../shared/contracts.js
   var CLIENT = Object.freeze({
     shadowrocket: "shadowrocket",
@@ -68,1369 +90,6 @@ var HappConfigBundle = (() => {
     return node._profile;
   }
 
-  // ../../shared/nodes/diagnostics.js
-  function createDiagnostics() {
-    return {
-      total: 0,
-      accepted: 0,
-      protocol: {},
-      source: {},
-      region: {},
-      excluded: {},
-      warnings: {}
-    };
-  }
-  function createClientFilterDiagnostics() {
-    return {
-      accepted: 0,
-      excluded: {}
-    };
-  }
-  function increment(bucket, key, amount = 1) {
-    const current = Object.hasOwn(bucket, key) ? bucket[key] : 0;
-    Object.defineProperty(bucket, key, {
-      value: current + amount,
-      writable: true,
-      enumerable: true,
-      configurable: true
-    });
-  }
-
-  // ../../shared/nodes/protocol-registry.js
-  function protocol(names, clients, { requiredFields = [], tls = false, clientNames = {} } = {}) {
-    return Object.freeze({
-      names: Object.freeze(names),
-      clients: Object.freeze(clients),
-      requiredFields: Object.freeze(requiredFields),
-      tls,
-      clientNames: Object.freeze(Object.fromEntries(
-        Object.entries(clientNames).map(([client, supportedNames]) => [client, Object.freeze(supportedNames)])
-      ))
-    });
-  }
-  var definitions = Object.freeze([
-    protocol(["ss", "shadowsocks"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.onexray, CLIENT.happ], {
-      requiredFields: ["cipher", "password"],
-      clientNames: { [CLIENT.onexray]: ["ss"] }
-    }),
-    protocol(["ssr"], [CLIENT.shadowrocket, CLIENT.surge], {
-      requiredFields: ["cipher", "password", "protocol", "obfs"]
-    }),
-    protocol(["snell"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox], {
-      requiredFields: ["psk", "version"]
-    }),
-    protocol(["vmess"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox, CLIENT.onexray, CLIENT.happ], {
-      requiredFields: ["uuid"]
-    }),
-    protocol(["vless"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.singbox, CLIENT.onexray, CLIENT.happ], {
-      requiredFields: ["uuid"]
-    }),
-    protocol(["trojan"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.onexray, CLIENT.happ], {
-      requiredFields: ["password"],
-      tls: true
-    }),
-    protocol(["anytls"], [CLIENT.egern, CLIENT.anywhere, CLIENT.singbox], {
-      requiredFields: ["password"],
-      tls: true
-    }),
-    protocol(["hysteria2", "hy2"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.onexray, CLIENT.happ], {
-      requiredFields: ["password"],
-      tls: true,
-      clientNames: { [CLIENT.onexray]: ["hysteria2"] }
-    }),
-    protocol(["tuic"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox], {
-      requiredFields: ["uuid", "password"],
-      tls: true
-    }),
-    protocol(["socks5"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.onexray, CLIENT.happ]),
-    protocol(["http"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox, CLIENT.onexray]),
-    protocol(["ssh"], [CLIENT.egern, CLIENT.singbox], {
-      requiredFields: ["username"]
-    }),
-    protocol(["wireguard"], [CLIENT.egern, CLIENT.singbox], {
-      requiredFields: ["private-key", "public-key"]
-    }),
-    protocol(["sudoku"], [CLIENT.anywhere], {
-      requiredFields: ["key"]
-    })
-  ]);
-  var registry = /* @__PURE__ */ new Map();
-  for (const definition of definitions) {
-    for (const name of definition.names) registry.set(name, definition);
-  }
-  var DISPLAY_PROTOCOL_NAMES = Object.freeze({
-    ss: "SS",
-    shadowsocks: "SS",
-    ssr: "SSR",
-    snell: "Snell",
-    vmess: "VMess",
-    vless: "VLESS",
-    trojan: "Trojan",
-    anytls: "AnyTLS",
-    hysteria2: "Hy2",
-    hy2: "Hy2",
-    tuic: "Tuic",
-    socks5: "SOCKS5",
-    http: "HTTP",
-    ssh: "SSH",
-    wireguard: "WireGuard",
-    sudoku: "Sudoku"
-  });
-  function normalizeProtocol(value) {
-    return typeof value === "string" ? value.trim().toLowerCase() : "";
-  }
-  function protocolDefinition(value) {
-    return registry.get(normalizeProtocol(value)) ?? null;
-  }
-  function protocolSupportsClient(value, client) {
-    const protocol2 = normalizeProtocol(value);
-    const definition = protocolDefinition(protocol2);
-    return definition?.clients.includes(client) === true && (definition.clientNames[client] ?? definition.names).includes(protocol2);
-  }
-  function diagnosticProtocol(value) {
-    const normalized = normalizeProtocol(value);
-    return registry.has(normalized) ? normalized : "unknown";
-  }
-  function protocolDisplayLabel(value) {
-    const normalized = normalizeProtocol(value);
-    return DISPLAY_PROTOCOL_NAMES[normalized] ?? (normalized || "unknown");
-  }
-
-  // ../../shared/nodes/capabilities.js
-  var ANYWHERE_VLESS_NETWORKS = /* @__PURE__ */ new Set(["tcp", "ws"]);
-  var ANYWHERE_SHADOWSOCKS_METHODS = /* @__PURE__ */ new Set([
-    "aes-128-gcm",
-    "aes-256-gcm",
-    "chacha20-ietf-poly1305",
-    "chacha20-poly1305",
-    "none",
-    "plain",
-    "2022-blake3-aes-128-gcm",
-    "2022-blake3-aes-256-gcm",
-    "2022-blake3-chacha20-poly1305"
-  ]);
-  var ANYWHERE_HYSTERIA_OBFS = /* @__PURE__ */ new Set(["salamander", "gecko"]);
-  var ANYWHERE_SUDOKU_AEAD = /* @__PURE__ */ new Set(["chacha20-poly1305", "aes-128-gcm", "none"]);
-  var ANYWHERE_SUDOKU_ASCII = /* @__PURE__ */ new Set([
-    "",
-    "entropy",
-    "prefer_entropy",
-    "ascii",
-    "prefer_ascii",
-    "up_ascii_down_entropy",
-    "up_entropy_down_ascii"
-  ]);
-  var ANYWHERE_SUDOKU_HTTP_MASK_MODES = /* @__PURE__ */ new Set(["legacy", "stream", "poll", "auto", "ws"]);
-  var ANYWHERE_REALITY_ALLOWED_KEYS = /* @__PURE__ */ new Set(["public-key", "short-id", "_spider-x"]);
-  var ANYWHERE_FINGERPRINTS = /* @__PURE__ */ new Set([
-    "chrome",
-    "firefox",
-    "safari",
-    "ios",
-    "edge",
-    "random",
-    "chrome_133",
-    "chrome_120",
-    "chrome_106",
-    "firefox_148",
-    "firefox_120",
-    "safari_26",
-    "edge_106",
-    "non_browser"
-  ]);
-  var EGERN_SHADOWSOCKS_METHODS = /* @__PURE__ */ new Set([
-    "2022-blake3-aes-128-gcm",
-    "2022-blake3-aes-256-gcm",
-    "2022-blake3-chacha20-poly1305",
-    "chacha20-poly1305",
-    "aes-256-gcm",
-    "aes-128-gcm",
-    "none",
-    "table",
-    "rc4",
-    "rc4-md5",
-    "aes-128-cfb",
-    "aes-192-cfb",
-    "aes-256-cfb",
-    "aes-128-ctr",
-    "aes-192-ctr",
-    "aes-256-ctr",
-    "bf-cfb",
-    "camellia-128-cfb",
-    "camellia-192-cfb",
-    "camellia-256-cfb",
-    "cast5-cfb",
-    "des-cfb",
-    "idea-cfb",
-    "rc2-cfb",
-    "seed-cfb",
-    "salsa20",
-    "chacha20",
-    "chacha20-ietf"
-  ]);
-  var EGERN_SNELL_VERSIONS = /* @__PURE__ */ new Set([1, 2, 3, 4, 5]);
-  var SINGBOX_SNELL_VERSIONS = /* @__PURE__ */ new Set([4, 5, 6]);
-  var SINGBOX_SNELL_OBFS_MODES = /* @__PURE__ */ new Set(["none", "http"]);
-  var SINGBOX_SNELL_MODES = /* @__PURE__ */ new Set(["default", "unshaped", "unsafe-raw"]);
-  var EGERN_OBFS = /* @__PURE__ */ new Set(["http", "tls"]);
-  var EGERN_VMESS_SECURITY = /* @__PURE__ */ new Set(["auto", "aes-128-gcm", "chacha20-poly1305", "none", "zero"]);
-  var HAPP_SHADOWSOCKS_METHODS = /* @__PURE__ */ new Set([
-    "2022-blake3-aes-128-gcm",
-    "2022-blake3-aes-256-gcm",
-    "2022-blake3-chacha20-poly1305",
-    "aes-128-gcm",
-    "aes-256-gcm",
-    "chacha20-poly1305",
-    "chacha20-ietf-poly1305",
-    "xchacha20-poly1305",
-    "xchacha20-ietf-poly1305"
-  ]);
-  var HAPP_REALITY_FINGERPRINTS = /* @__PURE__ */ new Set([
-    "chrome",
-    "firefox",
-    "safari",
-    "ios",
-    "android",
-    "edge",
-    "360",
-    "qq",
-    "random",
-    "randomized",
-    "chrome_133",
-    "chrome_120",
-    "chrome_106",
-    "firefox_148",
-    "firefox_120",
-    "safari_26",
-    "edge_106"
-  ]);
-  var EGERN_TRANSPORTS = /* @__PURE__ */ new Set(["tcp", "raw", "ws", "grpc", "h2", "http2", "http", "http1"]);
-  var EGERN_VLESS_FLOWS = /* @__PURE__ */ new Set(["xtls-rprx-vision"]);
-  var EGERN_TUIC_UDP_MODES = /* @__PURE__ */ new Set(["native", "quic"]);
-  var EGERN_IP_VERSIONS = /* @__PURE__ */ new Set(["dual_stack", "v4_only", "v6_only", "v4_prefer", "v6_prefer"]);
-  var EGERN_BLOCK_QUIC_PROTOCOLS = /* @__PURE__ */ new Set([
-    "ss",
-    "shadowsocks",
-    "snell",
-    "trojan",
-    "anytls",
-    "hysteria2",
-    "hy2",
-    "tuic",
-    "socks5",
-    "ssh",
-    "vmess",
-    "vless",
-    "wireguard"
-  ]);
-  var EGERN_SHADOW_TLS_PROTOCOLS = /* @__PURE__ */ new Set([
-    "ss",
-    "shadowsocks",
-    "trojan",
-    "anytls",
-    "socks5",
-    "ssh",
-    "http",
-    "vmess",
-    "vless"
-  ]);
-  var EGERN_TFO_PROTOCOLS = /* @__PURE__ */ new Set([
-    "ss",
-    "shadowsocks",
-    "snell",
-    "trojan",
-    "anytls",
-    "socks5",
-    "ssh",
-    "http",
-    "vmess",
-    "vless"
-  ]);
-  var SHADOW_TLS_ALIASES = Object.freeze(["shadow-tls", "shadow-tls-opts", "shadow_tls"]);
-  var BLOCK_QUIC_ALIASES = Object.freeze(["block-quic", "block_quic"]);
-  var IP_VERSION_ALIASES = Object.freeze(["ip-version", "ip_version"]);
-  var UDP_ALIASES = Object.freeze(["udp", "udp-relay", "udp_relay"]);
-  var CHAIN_ALIASES = Object.freeze(["underlying-proxy", "chain", "dialer-proxy", "detour", "prev_hop"]);
-  var GENERATED_CHAIN_FIELD = "underlying-proxy";
-  var GENERATED_CHAIN_POLICY = "\u{1F517} \u5165\u53E3\u8282\u70B9";
-  function hasOption(node, key) {
-    return Object.hasOwn(node, key);
-  }
-  function hasShadowsocksPlugin(node) {
-    return Boolean(node.plugin) || hasOption(node, "plugin-opts");
-  }
-  function isPlainObject(value) {
-    if (!value || typeof value !== "object" || Array.isArray(value)) return false;
-    const prototype = Object.getPrototypeOf(value);
-    return prototype === Object.prototype || prototype === null;
-  }
-  function isNonblankString(value) {
-    return typeof value === "string" && value.length > 0 && value.trim() === value;
-  }
-  function isNonblankOpaqueString(value) {
-    return typeof value === "string" && value.trim().length > 0;
-  }
-  function isValidPort(value) {
-    return Number.isInteger(value) && value >= 1 && value <= 65535;
-  }
-  function firstAliasValue(node, keys) {
-    for (const key of keys) {
-      if (hasOption(node, key)) return node[key];
-    }
-    return void 0;
-  }
-  function semanticEqual(left, right) {
-    if (left === right) return true;
-    if (Array.isArray(left) && Array.isArray(right)) {
-      return left.length === right.length && left.every((value, index) => semanticEqual(value, right[index]));
-    }
-    if (isPlainObject(left) && isPlainObject(right)) {
-      const leftKeys = Object.keys(left).sort();
-      const rightKeys = Object.keys(right).sort();
-      return leftKeys.length === rightKeys.length && leftKeys.every((key, index) => key === rightKeys[index] && semanticEqual(left[key], right[key]));
-    }
-    return false;
-  }
-  function conflictingAliases(node, keys) {
-    const values = keys.filter((key) => hasOption(node, key)).map((key) => node[key]);
-    return values.length > 1 && values.slice(1).some((value) => !semanticEqual(value, values[0]));
-  }
-  function normalizedHeaderValue(value) {
-    return Array.isArray(value) ? value[0] : value;
-  }
-  function normalizeEgernHeaders(value) {
-    if (!isPlainObject(value)) return null;
-    const result = {};
-    const semantic = /* @__PURE__ */ new Map();
-    for (const [key, rawValue] of Object.entries(value)) {
-      if (!isNonblankString(key) || !isHeaderValue(rawValue)) return null;
-      const normalizedValue = normalizedHeaderValue(rawValue);
-      const normalizedKey = key.toLowerCase();
-      if (semantic.has(normalizedKey)) {
-        if (semantic.get(normalizedKey) !== normalizedValue) return null;
-        continue;
-      }
-      semantic.set(normalizedKey, normalizedValue);
-      result[normalizedKey === "host" ? "Host" : key] = normalizedValue;
-    }
-    return result;
-  }
-  function hasHeaderAliasConflict(value) {
-    if (!isPlainObject(value)) return false;
-    const semantic = /* @__PURE__ */ new Map();
-    for (const [key, rawValue] of Object.entries(value)) {
-      const normalizedKey = key.toLowerCase();
-      const normalizedValue = normalizedHeaderValue(rawValue);
-      if (semantic.has(normalizedKey) && semantic.get(normalizedKey) !== normalizedValue) return true;
-      semantic.set(normalizedKey, normalizedValue);
-    }
-    return false;
-  }
-  function validShadowTls(value) {
-    return isPlainObject(value) && Object.keys(value).every((key) => key === "password" || key === "sni") && isNonblankOpaqueString(value.password) && (!hasOption(value, "sni") || isNonblankString(value.sni));
-  }
-  function validOptionalString(node, key) {
-    return !hasOption(node, key) || isNonblankString(node[key]);
-  }
-  function validOptionalOpaqueString(node, key) {
-    return !hasOption(node, key) || isNonblankOpaqueString(node[key]);
-  }
-  function resolvedUdp(node) {
-    return firstAliasValue(node, UDP_ALIASES);
-  }
-  function isOptionalBoolean(node, key) {
-    return !hasOption(node, key) || typeof node[key] === "boolean";
-  }
-  function isOptionalPositiveInteger(node, key, { allowZero = false } = {}) {
-    if (!hasOption(node, key)) return true;
-    const value = node[key];
-    return Number.isInteger(value) && (allowZero ? value >= 0 : value > 0);
-  }
-  function hasConflictingAliases(node, keys) {
-    return conflictingAliases(node, keys);
-  }
-  function optionalStringAliasesAreValid(node, keys) {
-    return !hasConflictingAliases(node, keys) && keys.every((key) => !hasOption(node, key) || isNonblankString(node[key]));
-  }
-  function tlsSecurity(node) {
-    if (node.security === "tls" || node.security === "reality") return node.security;
-    return node.tls === true ? "tls" : "none";
-  }
-  function hasTlsSettings(node) {
-    return tlsSecurity(node) !== "none" || hasOption(node, "sni") || hasOption(node, "servername") || hasOption(node, "skip-cert-verify") || hasOption(node, "allow-insecure") || hasOption(node, "fingerprint-sha256") || hasOption(node, "fingerprint_sha256") || hasOption(node, "reality-opts");
-  }
-  function isCertificateFingerprint(value) {
-    if (!isNonblankString(value)) return false;
-    if (value.startsWith("TEST_ONLY_")) return true;
-    return /^[0-9a-f]{2}(?:[:-]?[0-9a-f]{2}){31}$/i.test(value);
-  }
-  function isRealityPublicKey(value) {
-    return isNonblankString(value) && (value.startsWith("TEST_ONLY_") || /^[A-Za-z0-9_-]{43}=?$/.test(value));
-  }
-  function tlsRequestedForCapability(node) {
-    return node.tls === true || node.security === "tls" || node.security === "reality" || hasOption(node, "reality-opts");
-  }
-  function egernTlsReason(node, { allowReality = true, allowAlpn = false, implicitTls = false } = {}) {
-    if (!isOptionalBoolean(node, "tls") || !isOptionalBoolean(node, "skip-cert-verify") || !isOptionalBoolean(node, "allow-insecure") || hasConflictingAliases(node, ["skip-cert-verify", "allow-insecure"]) || !optionalStringAliasesAreValid(node, ["sni", "servername"]) || hasConflictingAliases(node, ["fingerprint-sha256", "fingerprint_sha256"])) {
-      return "unsupported-egern-tls-shape";
-    }
-    for (const key of ["fingerprint-sha256", "fingerprint_sha256"]) {
-      if (hasOption(node, key) && !isCertificateFingerprint(node[key])) {
-        return "unsupported-egern-tls-shape";
-      }
-    }
-    if (hasOption(node, "client-fingerprint") || hasOption(node, "alpn") && !allowAlpn) {
-      return "unsupported-egern-tls-shape";
-    }
-    if (hasOption(node, "security")) {
-      const security = node.security;
-      const vmessSecurity = normalizeProtocol(node.type) === "vmess" && EGERN_VMESS_SECURITY.has(security);
-      if (!vmessSecurity && !["none", "tls", "reality"].includes(security)) {
-        return "unsupported-egern-tls-shape";
-      }
-      if (security === "reality" && !hasOption(node, "reality-opts")) {
-        return "incomplete-egern-reality";
-      }
-      if (node.tls === false && (security === "tls" || security === "reality")) {
-        return "unsupported-egern-tls-shape";
-      }
-    }
-    const reality = node["reality-opts"];
-    if (reality !== void 0) {
-      if (node.tls === false || !allowReality || !isPlainObject(reality) || !isRealityPublicKey(reality["public-key"])) {
-        return allowReality ? "incomplete-egern-reality" : "unsupported-egern-tls-shape";
-      }
-      if (hasOption(reality, "short-id") && (!isNonblankString(reality["short-id"]) || !/^[0-9a-f]+$/i.test(reality["short-id"]))) {
-        return "incomplete-egern-reality";
-      }
-      const realityKeys = Object.keys(reality);
-      if (realityKeys.some((key) => !["public-key", "short-id"].includes(key))) {
-        return "unsupported-egern-tls-shape";
-      }
-      if (node["skip-cert-verify"] === true || node["allow-insecure"] === true || hasOption(node, "fingerprint-sha256") || hasOption(node, "fingerprint_sha256")) {
-        return "unsupported-egern-tls-shape";
-      }
-    }
-    if (!implicitTls && !tlsRequestedForCapability(node) && hasTlsSettings(node)) {
-      return "unsupported-egern-tls-shape";
-    }
-    return null;
-  }
-  function normalizeTransport(node) {
-    const network = node.network ?? "tcp";
-    return typeof network === "string" ? network.trim().toLowerCase() : "";
-  }
-  function unsupportedPlainTransport(node, allowedNetworks = /* @__PURE__ */ new Set(["tcp", "raw"])) {
-    if (hasOption(node, "network") && !allowedNetworks.has(normalizeTransport(node))) return true;
-    return ["ws-opts", "grpc-opts", "h2-opts", "http-opts"].some((key) => hasOption(node, key));
-  }
-  function isHeaderValue(value) {
-    return isNonblankString(value) || Array.isArray(value) && value.length === 1 && isNonblankString(value[0]);
-  }
-  function validHeaders(value) {
-    return normalizeEgernHeaders(value) !== null;
-  }
-  function validPath(value) {
-    return isNonblankString(value) || Array.isArray(value) && value.length === 1 && isNonblankString(value[0]);
-  }
-  function validHttpTransportOptions(options) {
-    if (!isPlainObject(options)) return false;
-    const allowed = /* @__PURE__ */ new Set(["method", "path", "headers"]);
-    return Object.keys(options).every((key) => allowed.has(key)) && (!hasOption(options, "method") || isNonblankString(options.method)) && (!hasOption(options, "path") || validPath(options.path)) && (!hasOption(options, "headers") || validHeaders(options.headers));
-  }
-  function validHttp2TransportOptions(options) {
-    if (!isPlainObject(options)) return false;
-    const allowed = /* @__PURE__ */ new Set(["method", "path", "headers", "host"]);
-    if (!Object.keys(options).every((key) => allowed.has(key)) || hasOption(options, "method") && !isNonblankString(options.method) || hasOption(options, "path") && !validPath(options.path) || hasOption(options, "headers") && !validHeaders(options.headers) || hasOption(options, "host") && !validPath(options.host)) {
-      return false;
-    }
-    if (hasOption(options, "host") && hasOption(options, "headers")) {
-      const host = Array.isArray(options.host) ? options.host[0] : options.host;
-      const headerHost = options.headers.Host ?? options.headers.host;
-      if (headerHost !== void 0 && (Array.isArray(headerHost) ? headerHost[0] : headerHost) !== host) return false;
-    }
-    return true;
-  }
-  function egernVmessVlessTransportReason(node) {
-    const network = normalizeTransport(node);
-    if (!EGERN_TRANSPORTS.has(network)) return "unsupported-egern-transport";
-    const tlsReason = egernTlsReason(node);
-    if (tlsReason) return tlsReason;
-    const tls = tlsSecurity(node) !== "none" || hasOption(node, "reality-opts");
-    const optionKeys = ["ws-opts", "grpc-opts", "h2-opts", "http-opts"];
-    if (network === "tcp" || network === "raw") {
-      return optionKeys.some((key) => hasOption(node, key)) ? "unsupported-egern-transport" : null;
-    }
-    if (network === "ws") {
-      if (optionKeys.some((key) => key !== "ws-opts" && hasOption(node, key))) return "unsupported-egern-transport";
-      const options = node["ws-opts"];
-      if (!isPlainObject(options) || Object.keys(options).some((key) => !["path", "headers"].includes(key)) || !validPath(options.path) || hasOption(options, "headers") && !validHeaders(options.headers) || hasOption(node, "reality-opts")) {
-        return "unsupported-egern-transport";
-      }
-      return null;
-    }
-    if (network === "grpc") {
-      if (!tls || optionKeys.some((key) => key !== "grpc-opts" && hasOption(node, key))) {
-        return "unsupported-egern-transport";
-      }
-      const options = node["grpc-opts"];
-      if (options === void 0) return null;
-      if (!isPlainObject(options) || Object.keys(options).some((key) => !["grpc-service-name", "grpc-mode", "user-agent"].includes(key)) || hasOption(options, "grpc-service-name") && !isNonblankString(options["grpc-service-name"]) || hasOption(options, "user-agent") && !isNonblankString(options["user-agent"]) || hasOption(options, "grpc-mode") && options["grpc-mode"] !== "gun") {
-        return "unsupported-egern-transport";
-      }
-      return null;
-    }
-    if (network === "h2" || network === "http2") {
-      if (!tls || hasOption(node, "reality-opts") || optionKeys.some((key) => key !== "h2-opts" && hasOption(node, key))) {
-        return "unsupported-egern-transport";
-      }
-      return node["h2-opts"] === void 0 || validHttp2TransportOptions(node["h2-opts"]) ? null : "unsupported-egern-transport";
-    }
-    if (tls || hasTlsSettings(node) || optionKeys.some((key) => key !== "http-opts" && hasOption(node, key))) {
-      return "unsupported-egern-transport";
-    }
-    return node["http-opts"] === void 0 || validHttpTransportOptions(node["http-opts"]) ? null : "unsupported-egern-transport";
-  }
-  function isPortHopping(value) {
-    return isNonblankString(value) && /^\d+(?:-\d+)?(?:,\d+(?:-\d+)?)*$/.test(value) && value.split(",").every((part) => {
-      const [start, end = start] = part.split("-").map(Number);
-      return start >= 1 && end <= 65535 && start <= end;
-    });
-  }
-  function isWireGuardKey(value) {
-    if (!isNonblankString(value)) return false;
-    if (value.startsWith("TEST_ONLY_")) return true;
-    return /^[A-Za-z0-9+/]{43}=$/.test(value);
-  }
-  function ipFamily(value) {
-    if (!isNonblankString(value)) return 0;
-    const [address, prefix, ...extra] = value.split("/");
-    if (extra.length > 0 || prefix !== void 0 && !/^\d+$/.test(prefix)) return 0;
-    if (/^(?:\d{1,3}\.){3}\d{1,3}$/.test(address) && address.split(".").every((part) => Number(part) <= 255) && (prefix === void 0 || Number(prefix) <= 32)) return 4;
-    if (address.includes(":") && (prefix === void 0 || Number(prefix) <= 128)) {
-      try {
-        const host = new URL(`http://[${address}]/`).hostname;
-        if (host.startsWith("[") && host.endsWith("]")) return 6;
-      } catch {
-        return 0;
-      }
-    }
-    return 0;
-  }
-  function addressValues(node) {
-    const values = [];
-    for (const key of ["local_ipv4", "local-ipv4", "local_ipv6", "local-ipv6", "ip", "ipv6", "local-address"]) {
-      if (!hasOption(node, key)) continue;
-      const value = node[key];
-      values.push(...Array.isArray(value) ? value : [value]);
-    }
-    return values;
-  }
-  function egernWireGuardReason(node) {
-    if (hasOption(node, "peers") && (!Array.isArray(node.peers) || node.peers.length !== 1 || !isPlainObject(node.peers[0]))) {
-      return "unsupported-egern-wireguard-shape";
-    }
-    const peer = node.peers?.[0] ?? {};
-    if (Object.keys(peer).some((key) => !["server", "port", "public-key", "pre-shared-key", "reserved"].includes(key))) {
-      return "unsupported-egern-wireguard-shape";
-    }
-    if (hasOption(peer, "server") && peer.server !== node.server || hasOption(peer, "port") && Number(peer.port) !== Number(node.port)) {
-      return "unsupported-egern-wireguard-shape";
-    }
-    if (hasOption(node, "public-key") && hasOption(peer, "public-key") && node["public-key"] !== peer["public-key"] || hasOption(node, "pre-shared-key") && hasOption(peer, "pre-shared-key") && node["pre-shared-key"] !== peer["pre-shared-key"] || hasOption(node, "reserved") && hasOption(peer, "reserved") && JSON.stringify(node.reserved) !== JSON.stringify(peer.reserved)) {
-      return "unsupported-egern-wireguard-shape";
-    }
-    const publicKey = peer["public-key"] ?? node["public-key"];
-    const presharedKey = peer["pre-shared-key"] ?? node["pre-shared-key"];
-    const reserved = peer.reserved ?? node.reserved;
-    if (!isWireGuardKey(node["private-key"]) || !isWireGuardKey(publicKey) || presharedKey !== void 0 && !isWireGuardKey(presharedKey) || reserved !== void 0 && (!Array.isArray(reserved) || reserved.length !== 3 || reserved.some((byte) => !Number.isInteger(byte) || byte < 0 || byte > 255))) {
-      return "unsupported-egern-wireguard-shape";
-    }
-    const addresses = addressValues(node);
-    const families = addresses.map(ipFamily);
-    if (addresses.length === 0 || families.includes(0) || families.filter((family) => family === 4).length > 1 || families.filter((family) => family === 6).length > 1) {
-      return "unsupported-egern-wireguard-shape";
-    }
-    const dns = node.dns_servers ?? node.dns;
-    if (dns !== void 0 && (!Array.isArray(dns) || dns.length === 0 || dns.some((value) => ipFamily(value) === 0)) || !isOptionalPositiveInteger(node, "mtu") || !isOptionalPositiveInteger(node, "keepalive", { allowZero: true })) {
-      return "unsupported-egern-wireguard-shape";
-    }
-    return null;
-  }
-  function headersInNode(node) {
-    const values = [];
-    if (hasOption(node, "headers")) values.push(node.headers);
-    for (const key of ["ws-opts", "h2-opts", "http-opts"]) {
-      if (isPlainObject(node[key]) && hasOption(node[key], "headers")) values.push(node[key].headers);
-    }
-    return values;
-  }
-  function hasHttp2HostConflict(node) {
-    const options = node["h2-opts"];
-    if (!isPlainObject(options) || !hasOption(options, "host") || !isPlainObject(options.headers)) return false;
-    const host = Array.isArray(options.host) ? options.host[0] : options.host;
-    const headerValues = Object.entries(options.headers).filter(([key]) => key.toLowerCase() === "host").map(([, value]) => normalizedHeaderValue(value));
-    return headerValues.some((value) => value !== host);
-  }
-  function hasEgernAliasConflict(node, protocol2) {
-    const groups = [
-      ["sni", "servername"],
-      ["skip-cert-verify", "allow-insecure"],
-      ["fingerprint-sha256", "fingerprint_sha256"],
-      UDP_ALIASES,
-      ["udp-port", "udp_port"],
-      ["obfs-host", "obfs_host"],
-      ["obfs-uri", "obfs_uri"],
-      ["obfs-password", "obfs_password"],
-      ["port-hopping", "port_hopping", "ports"],
-      ["port-hopping-interval", "port_hopping_interval", "hop-interval"],
-      ["bandwidth", "up"],
-      BLOCK_QUIC_ALIASES,
-      IP_VERSION_ALIASES,
-      SHADOW_TLS_ALIASES,
-      ["private-key", "private_key"],
-      ["host-keys", "host_keys"],
-      ["udp-relay-mode", "udp_relay_mode"]
-    ];
-    if (groups.some((keys) => conflictingAliases(node, keys))) return true;
-    if (protocol2 === "wireguard" && conflictingAliases(node, ["dns_servers", "dns"])) return true;
-    if (headersInNode(node).some(hasHeaderAliasConflict) || hasHttp2HostConflict(node)) return true;
-    if (protocol2 === "vmess" && hasOption(node, "cipher") && EGERN_VMESS_SECURITY.has(node.security) && node.cipher !== node.security) return true;
-    return false;
-  }
-  function egernCommonReason(node, protocol2) {
-    if (!isPlainObject(node) || !isNonblankString(node.name) || !isNonblankString(node.server) || !isValidPort(node.port)) return "invalid-egern-node-shape";
-    if (hasEgernAliasConflict(node, protocol2)) return "conflicting-egern-alias";
-    if (!isOptionalBoolean(node, "tfo") || UDP_ALIASES.some((key) => !isOptionalBoolean(node, key))) return "invalid-egern-node-shape";
-    if (hasOption(node, "tfo") && !EGERN_TFO_PROTOCOLS.has(protocol2)) return "unsupported-egern-option";
-    for (const key of BLOCK_QUIC_ALIASES) {
-      if (hasOption(node, key) && typeof node[key] !== "boolean") return "invalid-egern-node-shape";
-    }
-    const blockQuic = firstAliasValue(node, BLOCK_QUIC_ALIASES);
-    if (blockQuic !== void 0 && !EGERN_BLOCK_QUIC_PROTOCOLS.has(protocol2)) return "unsupported-egern-option";
-    for (const key of IP_VERSION_ALIASES) {
-      if (hasOption(node, key) && !EGERN_IP_VERSIONS.has(node[key])) return "invalid-egern-node-shape";
-    }
-    const shadowTls = firstAliasValue(node, SHADOW_TLS_ALIASES);
-    if (shadowTls !== void 0) {
-      if (!EGERN_SHADOW_TLS_PROTOCOLS.has(protocol2)) return "unsupported-egern-option";
-      if (!validShadowTls(shadowTls) || hasOption(node, "reality-opts")) return "invalid-egern-node-shape";
-    }
-    return null;
-  }
-  function validOptionalAuthentication(node) {
-    return validOptionalString(node, "username") && validOptionalOpaqueString(node, "password");
-  }
-  function validSshHostKey(value) {
-    if (!isNonblankString(value)) return false;
-    const fields = value.split(/\s+/);
-    if (fields.length < 2) return false;
-    const [type, key] = fields;
-    return /^(?:ssh-(?:ed25519|rsa)|ecdsa-sha2-nistp(?:256|384|521))$/.test(type) && (key.startsWith("TEST_ONLY_") || /^[A-Za-z0-9+/]+={0,2}$/.test(key));
-  }
-  function egernSshReason(node) {
-    const sshKeyMaterial = firstAliasValue(node, ["private-key", "private_key"]);
-    const hostKeys = firstAliasValue(node, ["host-keys", "host_keys"]);
-    if (conflictingAliases(node, ["private-key", "private_key"]) || !isNonblankString(node.username)) {
-      return "invalid-egern-node-shape";
-    }
-    if (!validOptionalOpaqueString(node, "password") || sshKeyMaterial !== void 0 && !isNonblankOpaqueString(sshKeyMaterial) || !isNonblankOpaqueString(node.password) && !isNonblankOpaqueString(sshKeyMaterial)) {
-      return "invalid-egern-node-shape";
-    }
-    if (hostKeys !== void 0 && (!Array.isArray(hostKeys) || hostKeys.some((value) => !validSshHostKey(value)))) {
-      return "invalid-egern-node-shape";
-    }
-    if (hasOption(node, "udp") || hasOption(node, "udp-relay") || hasOption(node, "udp_relay")) {
-      return "unsupported-egern-option";
-    }
-    return unsupportedPlainTransport(node) ? "unsupported-egern-transport" : null;
-  }
-  function hasArbitraryChain(node) {
-    const present = CHAIN_ALIASES.filter((key) => hasOption(node, key) && node[key] !== void 0 && node[key] !== null && node[key] !== "");
-    if (present.length === 0) return node?._profile?.chained === true;
-    return !(present.length === 1 && present[0] === GENERATED_CHAIN_FIELD && node[GENERATED_CHAIN_FIELD] === GENERATED_CHAIN_POLICY && node?._profile?.chained === true);
-  }
-  function egernNodeExclusionReason(node) {
-    const protocol2 = normalizeProtocol(node?.type);
-    const commonReason = egernCommonReason(node, protocol2);
-    if (commonReason) return commonReason;
-    if (hasArbitraryChain(node)) return "unsupported-existing-chain";
-    if (protocol2 === "ss" || protocol2 === "shadowsocks") {
-      if (!isNonblankString(node.cipher) || !isNonblankOpaqueString(node.password)) return "invalid-egern-node-shape";
-      if (!EGERN_SHADOWSOCKS_METHODS.has(node.cipher)) return "unsupported-egern-method";
-      if (hasShadowsocksPlugin(node) || unsupportedPlainTransport(node)) return "unsupported-egern-shadowsocks-shape";
-      if (!isOptionalBoolean(node, "udp") || !isOptionalBoolean(node, "tfo")) return "unsupported-egern-shadowsocks-shape";
-      if (["udp-port", "udp_port"].some((key) => !isOptionalPositiveInteger(node, key))) return "invalid-egern-node-shape";
-      if (hasOption(node, "obfs") && !EGERN_OBFS.has(node.obfs) || ["obfs-host", "obfs_host"].some((key) => !validOptionalString(node, key)) || ["obfs-uri", "obfs_uri"].some((key) => !validOptionalString(node, key))) {
-        return "unsupported-egern-shadowsocks-shape";
-      }
-      return null;
-    }
-    if (protocol2 === "snell") {
-      if (!isNonblankOpaqueString(node.psk)) return "invalid-egern-node-shape";
-      const version = typeof node.version === "string" && /^\d+$/.test(node.version) ? Number(node.version) : node.version;
-      if (!EGERN_SNELL_VERSIONS.has(version)) return "unsupported-egern-version";
-      if (hasOption(node, "obfs") && !EGERN_OBFS.has(node.obfs)) return "unsupported-egern-obfs";
-      if (unsupportedPlainTransport(node)) return "unsupported-egern-transport";
-      if (!isOptionalBoolean(node, "udp") || !isOptionalBoolean(node, "reuse") || !isOptionalBoolean(node, "tfo") || resolvedUdp(node) === true && !(/* @__PURE__ */ new Set([3, 4])).has(version) || hasOption(node, "reuse") && version !== 4 || ["obfs-host", "obfs_host"].some((key) => !validOptionalString(node, key))) {
-        return "unsupported-egern-snell-shape";
-      }
-      return null;
-    }
-    if (protocol2 === "vmess" || protocol2 === "vless") {
-      if (!isNonblankString(node.uuid)) return "invalid-egern-node-shape";
-      if (protocol2 === "vmess") {
-        const security = EGERN_VMESS_SECURITY.has(node.security) ? node.security : node.cipher ?? "auto";
-        if (!EGERN_VMESS_SECURITY.has(security)) return "unsupported-egern-security";
-        if (hasOption(node, "legacy") && typeof node.legacy !== "boolean" || hasOption(node, "alter-id") && node["alter-id"] !== 0 || hasOption(node, "alterId") && node.alterId !== 0) {
-          return "unsupported-egern-vmess-shape";
-        }
-      } else {
-        if (hasOption(node, "flow") && !EGERN_VLESS_FLOWS.has(node.flow)) return "unsupported-egern-flow";
-        if (hasOption(node, "flow") && (!(/* @__PURE__ */ new Set(["tcp", "raw"])).has(normalizeTransport(node)) || !tlsRequestedForCapability(node))) {
-          return "unsupported-egern-flow";
-        }
-        if (node.security === "none" && (node.tls === true || hasOption(node, "reality-opts"))) {
-          return "unsupported-egern-tls-shape";
-        }
-      }
-      if (!isOptionalBoolean(node, "udp") || !isOptionalBoolean(node, "tfo")) return "unsupported-egern-transport";
-      return egernVmessVlessTransportReason(node);
-    }
-    if (protocol2 === "trojan") {
-      if (!isNonblankOpaqueString(node.password)) return "invalid-egern-node-shape";
-      if (node.tls === false || node.security === "none") return "unsupported-egern-tls-shape";
-      const network = normalizeTransport(node);
-      if (!(/* @__PURE__ */ new Set(["tcp", "raw", "ws"])).has(network)) return "unsupported-egern-transport";
-      const tlsReason = egernTlsReason(node, { implicitTls: true });
-      if (tlsReason) return tlsReason;
-      if (!isOptionalBoolean(node, "udp") || !isOptionalBoolean(node, "tfo")) return "unsupported-egern-trojan-shape";
-      if (network === "ws") {
-        const options = node["ws-opts"];
-        if (!isPlainObject(options) || Object.keys(options).some((key) => !["path", "headers"].includes(key)) || !validPath(options.path) || hasOption(options, "headers") && (!validHeaders(options.headers) || Object.keys(options.headers).some((key) => key.toLowerCase() !== "host"))) {
-          return "unsupported-egern-transport";
-        }
-      } else if (hasOption(node, "ws-opts")) return "unsupported-egern-transport";
-      if (["grpc-opts", "h2-opts", "http-opts"].some((key) => hasOption(node, key))) return "unsupported-egern-transport";
-      return null;
-    }
-    if (protocol2 === "anytls") {
-      if (!isNonblankOpaqueString(node.password)) return "invalid-egern-node-shape";
-      if (node.tls === false || node.security === "none") return "unsupported-egern-tls-shape";
-      if (unsupportedPlainTransport(node)) return "unsupported-egern-transport";
-      return egernTlsReason(node, { implicitTls: true }) || (!isOptionalBoolean(node, "udp") || !isOptionalBoolean(node, "tfo") ? "unsupported-egern-anytls-shape" : null);
-    }
-    if (protocol2 === "hysteria2" || protocol2 === "hy2") {
-      if (!isNonblankOpaqueString(node.password)) return "invalid-egern-node-shape";
-      const tlsReason = egernTlsReason(node, { allowReality: false, implicitTls: true });
-      if (tlsReason) return tlsReason;
-      if (unsupportedPlainTransport(node, /* @__PURE__ */ new Set(["udp", "quic"]))) return "unsupported-egern-transport";
-      if (hasOption(node, "obfs") && node.obfs !== "salamander") return "unsupported-egern-obfs";
-      const obfsPassword = firstAliasValue(node, ["obfs-password", "obfs_password"]);
-      if (obfsPassword !== void 0 && (!isNonblankOpaqueString(obfsPassword) || node.obfs !== "salamander")) {
-        return isNonblankOpaqueString(obfsPassword) ? "unsupported-egern-obfs" : "invalid-egern-node-shape";
-      }
-      const hopping = firstAliasValue(node, ["port-hopping", "port_hopping", "ports"]);
-      if (hopping !== void 0 && !isPortHopping(hopping) || hasConflictingAliases(node, ["port-hopping", "port_hopping", "ports"]) || hasConflictingAliases(node, ["port-hopping-interval", "port_hopping_interval", "hop-interval"]) || !isOptionalPositiveInteger(node, "port-hopping-interval") || !isOptionalPositiveInteger(node, "port_hopping_interval") || !isOptionalPositiveInteger(node, "hop-interval") || !isOptionalPositiveInteger(node, "bandwidth") || !isOptionalPositiveInteger(node, "up") || hasConflictingAliases(node, ["bandwidth", "up"]) || hasOption(node, "down") || resolvedUdp(node) === false) {
-        return "unsupported-egern-hysteria2-shape";
-      }
-      return null;
-    }
-    if (protocol2 === "tuic") {
-      if (!isNonblankString(node.uuid) || !isNonblankOpaqueString(node.password)) return "invalid-egern-node-shape";
-      const tlsReason = egernTlsReason(node, { allowReality: false, allowAlpn: true, implicitTls: true });
-      if (tlsReason) return tlsReason;
-      if (unsupportedPlainTransport(node, /* @__PURE__ */ new Set(["udp", "quic"]))) return "unsupported-egern-transport";
-      const udpRelayMode = firstAliasValue(node, ["udp-relay-mode", "udp_relay_mode"]);
-      if (udpRelayMode !== void 0 && !EGERN_TUIC_UDP_MODES.has(udpRelayMode)) return "unsupported-egern-udp-mode";
-      if (hasOption(node, "alpn") && (!Array.isArray(node.alpn) || node.alpn.length === 0 || node.alpn.some((item) => !isNonblankString(item)))) {
-        return "invalid-egern-node-shape";
-      }
-      const tuicHopping = firstAliasValue(node, ["port-hopping", "port_hopping", "ports"]);
-      if (tuicHopping !== void 0 && !isPortHopping(tuicHopping) || ["port-hopping-interval", "port_hopping_interval", "hop-interval"].some((key) => !isOptionalPositiveInteger(node, key))) {
-        return "invalid-egern-node-shape";
-      }
-      if (["congestion-controller", "reduce-rtt", "disable-sni"].some((key) => hasOption(node, key)) || resolvedUdp(node) === false) {
-        return "unsupported-egern-tuic-shape";
-      }
-      return null;
-    }
-    if (protocol2 === "socks5") {
-      if (!validOptionalAuthentication(node)) return "invalid-egern-node-shape";
-      const tlsReason = egernTlsReason(node);
-      if (tlsReason) return tlsReason;
-      if (unsupportedPlainTransport(node) || !isOptionalBoolean(node, "udp") || !isOptionalBoolean(node, "tfo")) return "unsupported-egern-socks5-shape";
-      return null;
-    }
-    if (protocol2 === "http") {
-      if (!validOptionalAuthentication(node)) return "invalid-egern-node-shape";
-      const network = normalizeTransport(node);
-      if (network !== "tcp" && network !== "raw") return "unsupported-egern-http-shape";
-      if (["ws-opts", "grpc-opts", "h2-opts", "http-opts"].some((key) => hasOption(node, key))) return "unsupported-egern-http-shape";
-      const tlsReason = egernTlsReason(node);
-      if (tlsReason) return tlsReason;
-      if (hasOption(node, "headers") && !validHeaders(node.headers) || !isOptionalBoolean(node, "tfo") || UDP_ALIASES.some((key) => hasOption(node, key))) {
-        return "unsupported-egern-http-shape";
-      }
-      return null;
-    }
-    if (protocol2 === "wireguard") {
-      if (unsupportedPlainTransport(node, /* @__PURE__ */ new Set(["udp"]))) return "unsupported-egern-wireguard-shape";
-      return egernWireGuardReason(node);
-    }
-    if (protocol2 === "ssh") return egernSshReason(node);
-    return null;
-  }
-  function hasAnyChain(node) {
-    return CHAIN_ALIASES.some((key) => hasOption(node, key) && node[key] !== void 0 && node[key] !== null && node[key] !== "") || node?._profile?.chained === true;
-  }
-  function anywhereTlsWeakeningReason(node) {
-    for (const key of ["skip-cert-verify", "allow-insecure"]) {
-      if (hasOption(node, key) && typeof node[key] !== "boolean") return "invalid-anywhere-node-shape";
-      if (node[key] === true) return "unsupported-anywhere-tls-weakening";
-    }
-    if (conflictingAliases(node, ["skip-cert-verify", "allow-insecure"])) {
-      return "conflicting-anywhere-alias";
-    }
-    return null;
-  }
-  function validAnywhereFingerprint(node) {
-    return !hasOption(node, "client-fingerprint") || isNonblankString(node["client-fingerprint"]) && ANYWHERE_FINGERPRINTS.has(node["client-fingerprint"].toLowerCase());
-  }
-  function validAnywhereAlpn(node) {
-    return !hasOption(node, "alpn") || Array.isArray(node.alpn) && node.alpn.length > 0 && node.alpn.every(isNonblankString);
-  }
-  function validAnywhereEch(node) {
-    if (!hasOption(node, "ech-opts")) return true;
-    const options = node["ech-opts"];
-    return isPlainObject(options) && Object.keys(options).every((key) => ["enable", "config"].includes(key)) && (!hasOption(options, "enable") || typeof options.enable === "boolean") && (!hasOption(options, "config") || isNonblankString(options.config)) && (!hasOption(options, "config") || options.enable === true);
-  }
-  function anywhereTlsShapeReason(node) {
-    const weakening = anywhereTlsWeakeningReason(node);
-    if (weakening) return weakening;
-    if (conflictingAliases(node, ["sni", "servername"]) || !optionalStringAliasesAreValid(node, ["sni", "servername"]) || !validAnywhereFingerprint(node) || !validAnywhereAlpn(node) || !validAnywhereEch(node) || hasOption(node, "fingerprint-sha256") || hasOption(node, "fingerprint_sha256")) {
-      return "unsupported-anywhere-tls-shape";
-    }
-    return null;
-  }
-  function validVlessUserId(value) {
-    if (!isNonblankString(value) || !/^[\u0021-\u007e]+$/u.test(value)) return false;
-    if (value.length >= 1 && value.length <= 30) return true;
-    return value.length === 32 && /^[0-9A-Fa-f]{32}$/u.test(value) || value.length === 36 && /^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$/u.test(value);
-  }
-  function isAnywhereRealityPublicKey(value) {
-    return isNonblankString(value) && /^(?:[A-Za-z0-9_-]{43}|[A-Za-z0-9_-]{43}=)$/u.test(value);
-  }
-  function isAnywhereVlessEncryptionKey(value) {
-    return /^(?:[A-Za-z0-9_-]{43}|[A-Za-z0-9_-]{43}=)$/u.test(value) || /^(?:[A-Za-z0-9_-]{1579}|[A-Za-z0-9_-]{1579}=)$/u.test(value);
-  }
-  function validAnywhereVlessEncryption(value) {
-    if (value === void 0 || value === "" || value === "none") return true;
-    if (!isNonblankString(value)) return false;
-    const segments = value.split(".");
-    if (segments.length < 4 || segments[0] !== "mlkem768x25519plus" || !["native", "xorpub", "random"].includes(segments[1]) || !["1rtt", "0rtt"].includes(segments[2])) return false;
-    let keyCount = 0;
-    for (const segment of segments.slice(3)) {
-      if (segment.length < 20) continue;
-      if (!isAnywhereVlessEncryptionKey(segment)) return false;
-      keyCount += 1;
-    }
-    return keyCount > 0;
-  }
-  function validAnywhereBandwidth(value) {
-    if (value === void 0) return true;
-    const text = typeof value === "number" && Number.isInteger(value) ? String(value) : value;
-    if (typeof text !== "string" || !/^\d+(?:\s+Mbps)?$/u.test(text)) return false;
-    const amount = Number(text.split(/\s+/u, 1)[0]);
-    return Number.isSafeInteger(amount) && amount >= 0 && amount <= 1e3;
-  }
-  function validAnywhereWsOptions(value) {
-    if (!isPlainObject(value)) return false;
-    if (Object.keys(value).some((key) => ![
-      "path",
-      "headers",
-      "v2ray-http-upgrade",
-      "max-early-data",
-      "early-data-header-name"
-    ].includes(key))) return false;
-    if (hasOption(value, "path") && !isNonblankString(value.path) || hasOption(value, "v2ray-http-upgrade") && typeof value["v2ray-http-upgrade"] !== "boolean" || hasOption(value, "max-early-data") && (!Number.isInteger(value["max-early-data"]) || value["max-early-data"] < 0) || hasOption(value, "early-data-header-name") && !isNonblankString(value["early-data-header-name"])) {
-      return false;
-    }
-    if (!hasOption(value, "headers")) return true;
-    return isPlainObject(value.headers) && Object.entries(value.headers).every(([key, field]) => isNonblankString(key) && isNonblankString(field));
-  }
-  function validAnywhereSudokuAliases(node, keys, predicate) {
-    if (conflictingAliases(node, keys)) return false;
-    return keys.every((key) => !hasOption(node, key) || predicate(node[key]));
-  }
-  function validAnywhereSudokuTables(node) {
-    const pluralKeys = ["custom-tables", "custom_tables", "customTables"];
-    const legacyKeys = ["custom-table", "custom_table", "table"];
-    const pluralPresent = pluralKeys.filter((key) => hasOption(node, key));
-    const legacyPresent = legacyKeys.filter((key) => hasOption(node, key));
-    if (pluralPresent.length > 1 || legacyPresent.length > 1 || pluralPresent.length > 0 && legacyPresent.length > 0) return false;
-    if (pluralPresent.length > 0) {
-      const tables = node[pluralPresent[0]];
-      if (!Array.isArray(tables) || tables.length === 0 || !tables.every((value) => isNonblankString(value))) return false;
-      return new Set(tables).size === tables.length;
-    }
-    return legacyPresent.length === 0 || isNonblankString(node[legacyPresent[0]]);
-  }
-  function validAnywhereSudokuHttpMask(value) {
-    if (!isPlainObject(value) || Object.keys(value).some((key) => !["disable", "mode", "tls", "host", "path-root", "path_root"].includes(key)) || !validAnywhereSudokuAliases(value, ["path-root", "path_root"], (field) => typeof field === "string") || hasOption(value, "disable") && typeof value.disable !== "boolean" || hasOption(value, "tls") && typeof value.tls !== "boolean" || hasOption(value, "mode") && (!isNonblankString(value.mode) || !ANYWHERE_SUDOKU_HTTP_MASK_MODES.has(value.mode)) || hasOption(value, "host") && typeof value.host === "string" && value.host.trim() !== value.host || hasOption(value, "host") && typeof value.host !== "string") return false;
-    const pathRoot = firstAliasValue(value, ["path-root", "path_root"]);
-    return pathRoot === void 0 || pathRoot === "" || /^[A-Za-z0-9_-]+$/u.test(pathRoot);
-  }
-  function validAnywhereSudoku(node) {
-    if (!validAnywhereSudokuAliases(node, ["aead-method", "aead"], (value) => isNonblankString(value) && ANYWHERE_SUDOKU_AEAD.has(value))) return false;
-    if (!validAnywhereSudokuAliases(node, ["table-type", "ascii"], (value) => typeof value === "string" && value.trim() === value && ANYWHERE_SUDOKU_ASCII.has(value.toLowerCase()))) return false;
-    if (!validAnywhereSudokuAliases(node, ["padding-min", "padding_min"], (value) => Number.isInteger(value) && value >= 0 && value <= 100)) return false;
-    if (!validAnywhereSudokuAliases(node, ["padding-max", "padding_max"], (value) => Number.isInteger(value) && value >= 0 && value <= 100)) return false;
-    if (!validAnywhereSudokuAliases(node, ["enable-pure-downlink", "enable_pure_downlink"], (value) => typeof value === "boolean")) return false;
-    const paddingMin = firstAliasValue(node, ["padding-min", "padding_min"]);
-    const paddingMax = firstAliasValue(node, ["padding-max", "padding_max"]);
-    if (paddingMax !== void 0 && paddingMax < (paddingMin ?? 5)) return false;
-    if (hasOption(node, "multiplex") && (!isNonblankString(node.multiplex) || !(/* @__PURE__ */ new Set(["off", "auto", "on"])).has(node.multiplex.toLowerCase()))) return false;
-    return validAnywhereSudokuTables(node) && (!hasOption(node, "httpmask") || validAnywhereSudokuHttpMask(node.httpmask));
-  }
-  function anywhereCommonReason(node) {
-    if (!isPlainObject(node) || !isNonblankString(node.name) || !isNonblankString(node.server) || !isValidPort(node.port)) return "invalid-anywhere-node-shape";
-    if (hasOption(node, "tls") && typeof node.tls !== "boolean" || hasOption(node, "security") && !isNonblankString(node.security)) {
-      return "invalid-anywhere-node-shape";
-    }
-    if (hasAnyChain(node)) return "unsupported-existing-chain";
-    return anywhereTlsWeakeningReason(node);
-  }
-  function anywhereNodeExclusionReason(node) {
-    const protocol2 = normalizeProtocol(node?.type);
-    const commonReason = anywhereCommonReason(node);
-    if (commonReason) return commonReason;
-    const network = normalizeTransport(node);
-    const transportFields = ["ws-opts", "grpc-opts", "h2-opts", "http-opts", "xhttp-opts"];
-    if (protocol2 === "ss" || protocol2 === "shadowsocks") {
-      if (!isNonblankOpaqueString(node.password) || !isNonblankString(node.cipher)) return "invalid-anywhere-node-shape";
-      if (!ANYWHERE_SHADOWSOCKS_METHODS.has(node.cipher.toLowerCase())) return "unsupported-anywhere-shadowsocks-method";
-      if (network !== "tcp" || hasShadowsocksPlugin(node) || node.tls === true || hasOption(node, "security") && node.security !== "none" || transportFields.some((key) => hasOption(node, key))) {
-        return "unsupported-anywhere-shadowsocks-shape";
-      }
-      return null;
-    }
-    if (protocol2 === "vless") {
-      if (!validVlessUserId(node.uuid)) return "invalid-anywhere-node-shape";
-      if (!ANYWHERE_VLESS_NETWORKS.has(network)) return "unsupported-anywhere-vless-network";
-      if (!validAnywhereVlessEncryption(node.encryption)) return "unsupported-anywhere-vless-encryption";
-      if (hasOption(node, "flow") && node.flow !== "" && node.flow !== "xtls-rprx-vision") {
-        return "unsupported-anywhere-vless-flow";
-      }
-      if (network === "ws") {
-        if (hasOption(node, "ws-opts") && !validAnywhereWsOptions(node["ws-opts"]) || transportFields.some((key) => key !== "ws-opts" && hasOption(node, key))) {
-          return "unsupported-anywhere-vless-transport";
-        }
-      } else if (transportFields.some((key) => hasOption(node, key))) {
-        return "unsupported-anywhere-vless-transport";
-      }
-      const tlsReason = anywhereTlsShapeReason(node);
-      if (tlsReason) return tlsReason;
-      const reality = node["reality-opts"];
-      if (reality !== void 0) {
-        if (!isPlainObject(reality) || Object.keys(reality).some((key) => !ANYWHERE_REALITY_ALLOWED_KEYS.has(key)) || !isAnywhereRealityPublicKey(reality["public-key"]) || hasOption(reality, "short-id") && !/^(?:[0-9A-Fa-f]{2}){1,8}$/u.test(reality["short-id"]) || hasOption(node, "alpn") || hasOption(node, "ech-opts")) {
-          return "unsupported-anywhere-reality";
-        }
-      }
-      if (node.security === "reality" && reality === void 0 || node.security === "none" && node.tls === true || node.security === "tls" && node.tls === false || node.security === "reality" && node.tls === false) {
-        return "unsupported-anywhere-tls-shape";
-      }
-      return null;
-    }
-    if (protocol2 === "trojan") {
-      if (!isNonblankOpaqueString(node.password)) return "invalid-anywhere-node-shape";
-      const tlsReason = anywhereTlsShapeReason(node);
-      if (tlsReason) return tlsReason;
-      const ssOptions = node["ss-opts"];
-      if (network !== "tcp" || node.tls === false || hasOption(node, "security") && node.security !== "tls" || hasOption(node, "reality-opts") || transportFields.some((key) => hasOption(node, key)) || hasOption(node, "ss-opts") && (!isPlainObject(ssOptions) || ssOptions.enabled === true)) {
-        return "unsupported-anywhere-trojan-shape";
-      }
-      return null;
-    }
-    if (protocol2 === "anytls") {
-      if (!isNonblankOpaqueString(node.password)) return "invalid-anywhere-node-shape";
-      const tlsReason = anywhereTlsShapeReason(node);
-      if (tlsReason) return tlsReason;
-      if (network !== "tcp" || node.tls === false || hasOption(node, "security") && node.security !== "tls" || hasOption(node, "reality-opts") || transportFields.some((key) => hasOption(node, key)) || ["idle-session-check-interval", "idle-session-timeout"].some((key) => hasOption(node, key) && (!Number.isInteger(node[key]) || node[key] < 30)) || hasOption(node, "min-idle-session") && (!Number.isInteger(node["min-idle-session"]) || node["min-idle-session"] < 0)) {
-        return "unsupported-anywhere-anytls-shape";
-      }
-      return null;
-    }
-    if (protocol2 === "hysteria2" || protocol2 === "hy2") {
-      if (!isNonblankOpaqueString(node.password)) return "invalid-anywhere-node-shape";
-      const hysteriaNetwork = hasOption(node, "network") ? network : "quic";
-      if (!["udp", "quic"].includes(hysteriaNetwork)) return "unsupported-anywhere-hysteria2-shape";
-      if (node.tls === false || hasOption(node, "security") && node.security !== "tls" || hasOption(node, "reality-opts") || hasOption(node, "alpn") || hasOption(node, "bandwidth") || hasOption(node, "client-fingerprint") || hasOption(node, "ech-opts") || ["port-hopping", "port_hopping", "ports", "port-hopping-interval", "port_hopping_interval", "hop-interval"].some((key) => hasOption(node, key))) return "unsupported-anywhere-hysteria2-shape";
-      const minAliases = ["obfs-min-packet-size", "obfs_min_packet_size"];
-      const maxAliases = ["obfs-max-packet-size", "obfs_max_packet_size"];
-      const obfsMin = firstAliasValue(node, minAliases);
-      const obfsMax = firstAliasValue(node, maxAliases);
-      if (!validAnywhereBandwidth(node.up) || !validAnywhereBandwidth(node.down) || conflictingAliases(node, minAliases) || conflictingAliases(node, maxAliases) || [...minAliases, ...maxAliases].some((key) => hasOption(node, key) && (!Number.isInteger(node[key]) || node[key] <= 0 || node[key] > 2048)) || obfsMin !== void 0 && obfsMax !== void 0 && obfsMax < obfsMin) {
-        return "unsupported-anywhere-hysteria2-shape";
-      }
-      const tlsReason = anywhereTlsShapeReason(node);
-      if (tlsReason) return tlsReason;
-      if (conflictingAliases(node, ["obfs-password", "obfs_password"])) return "conflicting-anywhere-alias";
-      const obfs = node.obfs;
-      const obfsPassword = firstAliasValue(node, ["obfs-password", "obfs_password"]);
-      if (obfs !== void 0 && (!ANYWHERE_HYSTERIA_OBFS.has(String(obfs).toLowerCase()) || !isNonblankOpaqueString(obfsPassword)) || obfs === void 0 && obfsPassword !== void 0 || String(obfs).toLowerCase() !== "gecko" && (obfsMin !== void 0 || obfsMax !== void 0)) {
-        return "unsupported-anywhere-hysteria2-obfs";
-      }
-      return null;
-    }
-    if (protocol2 === "socks5") {
-      if (network !== "tcp" || node.tls === true || hasOption(node, "security") && node.security !== "none") {
-        return "unsupported-anywhere-socks5-tls";
-      }
-      if (!validOptionalAuthentication(node) || hasOption(node, "username") !== hasOption(node, "password")) return "invalid-anywhere-node-shape";
-      return null;
-    }
-    if (protocol2 === "sudoku") {
-      if (!isNonblankString(node.key) || network !== "tcp") return "invalid-anywhere-node-shape";
-      if (["tls", "security", "sni", "servername", "alpn", "client-fingerprint", "ech-opts", "reality-opts"].some((key) => hasOption(node, key))) return "unsupported-anywhere-sudoku-shape";
-      if (!validAnywhereSudoku(node)) return "unsupported-anywhere-sudoku-shape";
-      return null;
-    }
-    return "unsupported-protocol";
-  }
-  var ONEXRAY_TLS_FIELDS = /* @__PURE__ */ new Set([
-    "tls",
-    "security",
-    "sni",
-    "servername",
-    "alpn",
-    "client-fingerprint",
-    "reality-opts",
-    "skip-cert-verify",
-    "allow-insecure"
-  ]);
-  var ONEXRAY_TRANSPORT_FIELDS = /* @__PURE__ */ new Set([
-    "network",
-    "packet-encoding",
-    "ws-opts",
-    "grpc-opts",
-    "httpupgrade-opts",
-    "xhttp-opts",
-    "kcp-opts"
-  ]);
-  var ONEXRAY_COMMON_FIELDS = /* @__PURE__ */ new Set(["name", "type", "server", "port", "udp", "_profile"]);
-  var ONEXRAY_PACKET_ENCODINGS = /* @__PURE__ */ new Set(["none", "xudp", "packet"]);
-  function validOneXrayHeaders(value) {
-    return isPlainObject(value) && Object.entries(value).every(([key, field]) => isNonblankString(key) && isNonblankString(field));
-  }
-  function validOneXrayWebSocketHeaders(value) {
-    return isPlainObject(value) && !hasHeaderAliasConflict(value) && Object.entries(value).every(([key, field]) => key.toLowerCase() === "host" && isNonblankString(field));
-  }
-  function oneXrayAliasReason(node) {
-    if (conflictingAliases(node, ["sni", "servername"]) || conflictingAliases(node, ["skip-cert-verify", "allow-insecure"]) || conflictingAliases(node, ["obfs-password", "obfs_password"])) {
-      return "conflicting-onexray-alias";
-    }
-    return null;
-  }
-  function oneXrayCommonReason(node) {
-    if (!isPlainObject(node) || !isNonblankString(node.name) || !isNonblankString(node.server) || !isValidPort(node.port) || !isOptionalBoolean(node, "udp")) return "invalid-onexray-node-shape";
-    return oneXrayAliasReason(node);
-  }
-  function oneXrayTlsReason(node, protocol2, { implicitTls = false, allowReality = protocol2 === "vless" } = {}) {
-    if (node["skip-cert-verify"] === true || node["allow-insecure"] === true) {
-      return "unsupported-onexray-option";
-    }
-    if (!isOptionalBoolean(node, "tls") || !optionalStringAliasesAreValid(node, ["sni", "servername"])) {
-      return "invalid-onexray-node-shape";
-    }
-    if (!isOptionalBoolean(node, "skip-cert-verify") || !isOptionalBoolean(node, "allow-insecure")) {
-      return "invalid-onexray-node-shape";
-    }
-    if (hasOption(node, "alpn") && (!Array.isArray(node.alpn) || node.alpn.length === 0 || node.alpn.some((value) => !isNonblankString(value)))) {
-      return "unsupported-onexray-tls-shape";
-    }
-    if (hasOption(node, "client-fingerprint") && !isNonblankString(node["client-fingerprint"])) {
-      return "unsupported-onexray-tls-shape";
-    }
-    if (hasOption(node, "security") && !["none", "tls", "reality", "auto", "aes-128-gcm", "chacha20-poly1305", "zero"].includes(node.security)) {
-      return "unsupported-onexray-tls-shape";
-    }
-    if (protocol2 !== "vmess" && ["auto", "aes-128-gcm", "chacha20-poly1305", "zero"].includes(node.security)) {
-      return "unsupported-onexray-tls-shape";
-    }
-    const realityRequested = node.security === "reality" || hasOption(node, "reality-opts");
-    if (realityRequested && !allowReality) return "unsupported-onexray-tls-shape";
-    if (node.security === "reality" && !hasOption(node, "reality-opts")) return "incomplete-onexray-reality";
-    if (hasOption(node, "reality-opts") && hasOption(node, "security") && node.security !== "reality") {
-      return "incomplete-onexray-reality";
-    }
-    if (node.tls === false && ["tls", "reality"].includes(node.security) || node.tls === true && node.security === "none") return "unsupported-onexray-tls-shape";
-    const reality = node["reality-opts"];
-    if (reality !== void 0) {
-      const realityPublicKey = firstAliasValue(reality, ["public-key", "_public-key"]);
-      const shortId = reality["short-id"] ?? reality["_short-id"];
-      const spiderX = reality["spider-x"] ?? reality["_spider-x"];
-      if (!allowReality || node.tls === false || !isPlainObject(reality) || !isRealityPublicKey(realityPublicKey)) {
-        return "incomplete-onexray-reality";
-      }
-      if (Object.keys(reality).some((key) => !["public-key", "short-id", "spider-x", "_public-key", "_short-id", "_spider-x"].includes(key)) || (hasOption(reality, "short-id") || hasOption(reality, "_short-id")) && (!isNonblankString(shortId) || !/^[0-9a-f]*$/i.test(shortId)) || (hasOption(reality, "spider-x") || hasOption(reality, "_spider-x")) && !isNonblankString(spiderX)) {
-        return "incomplete-onexray-reality";
-      }
-    }
-    const tlsRequested = tlsRequestedForCapability(node);
-    if (!implicitTls && !tlsRequested && (hasTlsSettings(node) || hasOption(node, "alpn") || hasOption(node, "client-fingerprint"))) return "unsupported-onexray-tls-shape";
-    if (implicitTls && (node.tls === false || node.security === "none")) return "unsupported-onexray-tls-shape";
-    return null;
-  }
-  function oneXrayTransportReason(node, protocol2) {
-    const network = normalizeTransport(node);
-    const transportOptions = ["ws-opts", "grpc-opts", "httpupgrade-opts", "xhttp-opts", "kcp-opts"];
-    if (protocol2 === "hysteria2") {
-      if (!(/* @__PURE__ */ new Set(["", "quic", "udp", "hysteria"])).has(hasOption(node, "network") ? network : "")) {
-        return "unsupported-onexray-transport";
-      }
-      return transportOptions.some((key) => hasOption(node, key)) ? "unsupported-onexray-transport" : null;
-    }
-    if (!(/* @__PURE__ */ new Set(["tcp", "raw", "ws", "grpc", "httpupgrade", "xhttp", "kcp"])).has(network)) {
-      return "unsupported-onexray-transport";
-    }
-    const packetEncoding = node["packet-encoding"];
-    const hasPacketEncoding = hasOption(node, "packet-encoding");
-    if (hasPacketEncoding && (!isNonblankString(packetEncoding) || !ONEXRAY_PACKET_ENCODINGS.has(packetEncoding))) {
-      return "unsupported-onexray-transport";
-    }
-    if (network === "tcp" || network === "raw") {
-      return transportOptions.some((key) => hasOption(node, key)) ? "unsupported-onexray-transport" : null;
-    }
-    if (hasPacketEncoding && network !== "xhttp") {
-      return "unsupported-onexray-transport";
-    }
-    const optionByNetwork = {
-      ws: "ws-opts",
-      grpc: "grpc-opts",
-      httpupgrade: "httpupgrade-opts",
-      xhttp: "xhttp-opts",
-      kcp: "kcp-opts"
-    };
-    const optionKey = optionByNetwork[network];
-    if (transportOptions.some((key) => key !== optionKey && hasOption(node, key))) return "unsupported-onexray-transport";
-    const options = node[optionKey];
-    if (options === void 0) return null;
-    if (!isPlainObject(options)) return "unsupported-onexray-transport";
-    if (network === "ws") {
-      return Object.keys(options).some((key) => !["path", "headers"].includes(key)) || hasOption(options, "path") && !isNonblankString(options.path) || hasOption(options, "headers") && !validOneXrayWebSocketHeaders(options.headers) ? "unsupported-onexray-transport" : null;
-    }
-    if (network === "grpc") {
-      return Object.keys(options).some((key) => key !== "grpc-service-name") || hasOption(options, "grpc-service-name") && !isNonblankString(options["grpc-service-name"]) ? "unsupported-onexray-transport" : null;
-    }
-    if (network === "httpupgrade" || network === "xhttp") {
-      const allowed = network === "httpupgrade" ? ["path", "host"] : ["path", "host", "mode", "packet-encoding"];
-      return Object.keys(options).some((key) => !allowed.includes(key)) || hasOption(options, "path") && !isNonblankString(options.path) || hasOption(options, "host") && !isNonblankString(options.host) || hasOption(options, "mode") && !(/* @__PURE__ */ new Set(["auto", "packet-up", "stream-up", "stream-one"])).has(options.mode) || hasOption(options, "packet-encoding") && (!isNonblankString(options["packet-encoding"]) || !ONEXRAY_PACKET_ENCODINGS.has(options["packet-encoding"])) ? "unsupported-onexray-transport" : null;
-    }
-    return Object.keys(options).length === 0 ? null : "unsupported-onexray-transport";
-  }
-  function unsupportedOneXrayFields(node, protocol2) {
-    const allowed = new Set(ONEXRAY_COMMON_FIELDS);
-    const protocolFields = {
-      ss: ["cipher", "password", "plugin", "plugin-opts"],
-      vmess: ["uuid", "security", "cipher"],
-      vless: ["uuid", "flow", "encryption", "reverse"],
-      trojan: ["password"],
-      socks5: ["username", "password"],
-      http: ["username", "password", "headers"],
-      hysteria2: ["password"]
-    };
-    for (const key of protocolFields[protocol2] ?? []) allowed.add(key);
-    if (["vmess", "vless", "trojan", "hysteria2"].includes(protocol2)) {
-      for (const key of ONEXRAY_TLS_FIELDS) allowed.add(key);
-    }
-    if (["vmess", "vless"].includes(protocol2)) {
-      for (const key of ONEXRAY_TRANSPORT_FIELDS) allowed.add(key);
-    } else if (protocol2 === "hysteria2") {
-      allowed.add("network");
-    }
-    return Object.keys(node).some((key) => !allowed.has(key));
-  }
-  function validateOneXrayProtocolShape(node, protocol2) {
-    const commonReason = oneXrayCommonReason(node);
-    if (commonReason) return commonReason;
-    if (hasAnyChain(node)) return "unsupported-onexray-chain";
-    if (unsupportedOneXrayFields(node, protocol2)) return "unsupported-onexray-option";
-    if (protocol2 === "ss") {
-      if (!isNonblankString(node.cipher) || !isNonblankOpaqueString(node.password)) return "invalid-onexray-node-shape";
-      if (hasShadowsocksPlugin(node)) return "unsupported-onexray-shadowsocks-plugin";
-      return null;
-    }
-    if (protocol2 === "vmess" || protocol2 === "vless") {
-      if (!isNonblankString(node.uuid)) return "invalid-onexray-node-shape";
-      if (protocol2 === "vless" && hasOption(node, "flow") && !isNonblankString(node.flow) || protocol2 === "vless" && hasOption(node, "encryption") && !isNonblankString(node.encryption) || protocol2 === "vless" && hasOption(node, "reverse") && (!isPlainObject(node.reverse) || Object.keys(node.reverse).some((key) => key !== "tag") || !isNonblankString(node.reverse.tag))) return "invalid-onexray-node-shape";
-      if (protocol2 === "vmess") {
-        const supportedSecurity = ["auto", "aes-128-gcm", "chacha20-poly1305", "none", "zero"];
-        if (["cipher", "security"].some((key) => hasOption(node, key) && (!isNonblankString(node[key]) || !supportedSecurity.includes(node[key])))) {
-          return "invalid-onexray-node-shape";
-        }
-      }
-      if (protocol2 === "vmess" && hasOption(node, "cipher") && hasOption(node, "security") && node.cipher !== node.security) {
-        return "conflicting-onexray-alias";
-      }
-      const tlsReason = oneXrayTlsReason(node, protocol2);
-      return tlsReason || oneXrayTransportReason(node, protocol2);
-    }
-    if (protocol2 === "trojan") {
-      if (!isNonblankOpaqueString(node.password)) return "invalid-onexray-node-shape";
-      return oneXrayTlsReason(node, protocol2, { implicitTls: true, allowReality: false });
-    }
-    if (protocol2 === "socks5" || protocol2 === "http") {
-      if (!validOptionalAuthentication(node) || hasOption(node, "username") !== hasOption(node, "password")) {
-        return "invalid-onexray-node-shape";
-      }
-      return protocol2 === "http" && hasOption(node, "headers") && !validOneXrayHeaders(node.headers) ? "invalid-onexray-node-shape" : null;
-    }
-    if (protocol2 === "hysteria2") {
-      if (!isNonblankOpaqueString(node.password)) return "invalid-onexray-node-shape";
-      return oneXrayTlsReason(node, protocol2, { implicitTls: true, allowReality: false }) || oneXrayTransportReason(node, protocol2);
-    }
-    return "unsupported-onexray-protocol";
-  }
-  function oneXrayNodeExclusionReason(node) {
-    const protocol2 = normalizeProtocol(node?.type);
-    if (!protocolSupportsClient(protocol2, CLIENT.onexray)) return "unsupported-onexray-protocol";
-    if (nodeMetadata(node).chained) return "unsupported-onexray-chain";
-    return validateOneXrayProtocolShape(node, protocol2);
-  }
-  var HAPP_TRANSPORTS = /* @__PURE__ */ new Set(["tcp", "raw", "ws", "grpc"]);
-  var HAPP_REALITY_KEYS = /* @__PURE__ */ new Set(["public-key", "short-id", "spider-x"]);
-  var HAPP_COMMON_FIELDS = /* @__PURE__ */ new Set([
-    "name",
-    "type",
-    "server",
-    "port",
-    "_profile",
-    "network",
-    "tls",
-    "security",
-    "sni",
-    "servername",
-    "skip-cert-verify",
-    "allow-insecure",
-    "alpn",
-    "client-fingerprint",
-    "reality-opts",
-    "ws-opts",
-    "grpc-opts"
-  ]);
-  function happTlsReason(node, { required = false, requiredReason = "unsupported-happ-tls-shape", allowReality = true } = {}) {
-    if (!isOptionalBoolean(node, "tls") || !isOptionalBoolean(node, "skip-cert-verify") || !isOptionalBoolean(node, "allow-insecure") || hasConflictingAliases(node, ["sni", "servername"]) || hasConflictingAliases(node, ["skip-cert-verify", "allow-insecure"]) || !optionalStringAliasesAreValid(node, ["sni", "servername"]) || hasOption(node, "alpn") && (!Array.isArray(node.alpn) || node.alpn.length === 0 || node.alpn.some((value) => !isNonblankString(value))) || hasOption(node, "client-fingerprint") && !isNonblankString(node["client-fingerprint"])) return "unsupported-happ-tls-shape";
-    if (hasOption(node, "security") && !["none", "tls", "reality"].includes(node.security)) return "unsupported-happ-tls-shape";
-    if (node.tls === false && ["tls", "reality"].includes(node.security)) return "unsupported-happ-tls-shape";
-    const reality = node["reality-opts"];
-    if (reality !== void 0 && (!allowReality || node.tls === false || !isPlainObject(reality) || Object.keys(reality).some((key) => !HAPP_REALITY_KEYS.has(key)) || !isRealityPublicKey(reality["public-key"]) || hasOption(reality, "short-id") && (!isNonblankString(reality["short-id"]) || !/^[0-9a-f]+$/i.test(reality["short-id"])) || hasOption(reality, "spider-x") && !isNonblankString(reality["spider-x"]))) return "unsupported-happ-reality";
-    if (reality !== void 0 && node.security !== "reality" || node.security === "reality" && reality === void 0) return "unsupported-happ-reality";
-    if (node.security === "reality" && (hasOption(node, "alpn") || node["skip-cert-verify"] === true || node["allow-insecure"] === true || !HAPP_REALITY_FINGERPRINTS.has(node["client-fingerprint"]) || !(/* @__PURE__ */ new Set(["tcp", "raw", "grpc"])).has(normalizeTransport(node)))) return "unsupported-happ-reality";
-    const tls = node.tls === true || node.security === "tls" || node.security === "reality";
-    if (required && !tls) return requiredReason;
-    if (!tls && ["sni", "servername", "skip-cert-verify", "allow-insecure", "alpn", "client-fingerprint", "reality-opts"].some((key) => hasOption(node, key))) return "unsupported-happ-tls-shape";
-    return null;
-  }
-  function happTransportReason(node, { tlsRequired = false } = {}) {
-    const network = normalizeTransport(node);
-    if (!HAPP_TRANSPORTS.has(network)) return "unsupported-happ-transport";
-    const optionKeys = ["ws-opts", "grpc-opts", "h2-opts", "http-opts", "xhttp-opts"];
-    if (network === "tcp" || network === "raw") return optionKeys.some((key) => hasOption(node, key)) ? "unsupported-happ-transport" : null;
-    if (network === "ws") {
-      const options2 = node["ws-opts"];
-      if (!isPlainObject(options2) || Object.keys(options2).some((key) => !["path", "headers"].includes(key)) || !validPath(options2.path) || hasOption(options2, "headers") && !validHeaders(options2.headers) || optionKeys.some((key) => key !== "ws-opts" && hasOption(node, key))) return "unsupported-happ-transport";
-      return null;
-    }
-    if (tlsRequired && !tlsRequestedForCapability(node)) return "unsupported-happ-transport";
-    const options = node["grpc-opts"];
-    if (options !== void 0 && (!isPlainObject(options) || Object.keys(options).some((key) => !["grpc-service-name", "grpc-mode"].includes(key)) || hasOption(options, "grpc-service-name") && !isNonblankString(options["grpc-service-name"]) || hasOption(options, "grpc-mode") && options["grpc-mode"] !== "gun")) return "unsupported-happ-transport";
-    return optionKeys.some((key) => key !== "grpc-opts" && hasOption(node, key)) ? "unsupported-happ-transport" : null;
-  }
-  function happUnknownFieldReason(node, allowed) {
-    return Object.keys(node).some((key) => !HAPP_COMMON_FIELDS.has(key) && !allowed.has(key)) ? "unsupported-happ-option" : null;
-  }
-  function happNodeExclusionReason(node) {
-    if (!isPlainObject(node) || !isNonblankString(node.name) || !isNonblankString(node.server) || !isValidPort(node.port)) return "invalid-happ-node-shape";
-    if (hasAnyChain(node)) return "unsupported-happ-existing-chain";
-    if (["sni", "servername", "skip-cert-verify", "allow-insecure"].some((key) => hasOption(node, key)) && (hasConflictingAliases(node, ["sni", "servername"]) || hasConflictingAliases(node, ["skip-cert-verify", "allow-insecure"]))) return "conflicting-happ-alias";
-    const protocol2 = normalizeProtocol(node.type);
-    if (protocol2 === "ss" || protocol2 === "shadowsocks") {
-      const unknown = happUnknownFieldReason(node, /* @__PURE__ */ new Set(["cipher", "password", "udp", "tfo", "plugin", "plugin-opts"]));
-      if (unknown) return unknown;
-      if (!isNonblankString(node.cipher) || !isNonblankOpaqueString(node.password)) return "invalid-happ-node-shape";
-      if (!HAPP_SHADOWSOCKS_METHODS.has(node.cipher)) return "unsupported-happ-shadowsocks-method";
-      if (hasShadowsocksPlugin(node) || hasTlsSettings(node) || !isOptionalBoolean(node, "udp") || !isOptionalBoolean(node, "tfo") || node.udp === false) return "unsupported-happ-shadowsocks-shape";
-      return happTransportReason(node);
-    }
-    if (protocol2 === "vless" || protocol2 === "vmess") {
-      const unknown = happUnknownFieldReason(node, /* @__PURE__ */ new Set(["uuid", "encryption", "flow", "cipher", "alter-id", "alterId"]));
-      if (unknown) return unknown;
-      if (!isNonblankString(node.uuid)) return "invalid-happ-node-shape";
-      if (protocol2 === "vless" && (hasOption(node, "encryption") && node.encryption !== "none" || hasOption(node, "flow") && !["", "xtls-rprx-vision"].includes(node.flow))) return "unsupported-happ-vless-shape";
-      if (protocol2 === "vmess" && (hasOption(node, "flow") || hasOption(node, "cipher") && !EGERN_VMESS_SECURITY.has(node.cipher) || hasOption(node, "encryption") && !EGERN_VMESS_SECURITY.has(node.encryption) || hasConflictingAliases(node, ["cipher", "encryption"]) || hasOption(node, "alter-id") && (!Number.isInteger(node["alter-id"]) || node["alter-id"] !== 0) || hasOption(node, "alterId") && (!Number.isInteger(node.alterId) || node.alterId !== 0))) return "unsupported-happ-vmess-shape";
-      return happTlsReason(node) || happTransportReason(node, { tlsRequired: normalizeTransport(node) === "grpc" });
-    }
-    if (protocol2 === "trojan") return happUnknownFieldReason(node, /* @__PURE__ */ new Set(["password"])) || (!isNonblankOpaqueString(node.password) ? "invalid-happ-node-shape" : happTlsReason(node, { required: true }) || happTransportReason(node, { tlsRequired: normalizeTransport(node) === "grpc" }));
-    if (protocol2 === "socks5") return happUnknownFieldReason(node, /* @__PURE__ */ new Set(["username", "password"])) || (!validOptionalAuthentication(node) || hasOption(node, "username") !== hasOption(node, "password") ? "invalid-happ-node-shape" : hasTlsSettings(node) ? "unsupported-happ-socks5-shape" : happTransportReason(node));
-    if (protocol2 === "hysteria2") {
-      const unknown = happUnknownFieldReason(node, /* @__PURE__ */ new Set(["password", "obfs", "obfs-password", "obfs_password"]));
-      if (unknown || !isNonblankOpaqueString(node.password)) return unknown ?? "invalid-happ-node-shape";
-      if (hasOption(node, "network") && !["quic", "udp"].includes(normalizeTransport(node))) return "unsupported-happ-hysteria2-shape";
-      const tlsReason = happTlsReason(node, { required: true, requiredReason: "unsupported-happ-hysteria2-tls", allowReality: false });
-      const obfsPassword = firstAliasValue(node, ["obfs-password", "obfs_password"]);
-      if (tlsReason || hasConflictingAliases(node, ["obfs-password", "obfs_password"]) || node.obfs !== void 0 && (node.obfs !== "salamander" || !isNonblankOpaqueString(obfsPassword)) || node.obfs === void 0 && obfsPassword !== void 0) return tlsReason ?? "unsupported-happ-hysteria2-shape";
-      return null;
-    }
-    return "unsupported-protocol";
-  }
-  function evaluateNodeForClient(node, client) {
-    if (!Object.values(CLIENT).includes(client)) return { supported: false, reason: "unsupported-client" };
-    const protocol2 = normalizeProtocol(node?.type);
-    if (!protocolSupportsClient(protocol2, client)) {
-      return { supported: false, reason: client === CLIENT.onexray ? "unsupported-onexray-protocol" : "unsupported-protocol" };
-    }
-    let transportReason = null;
-    if (client === CLIENT.anywhere) transportReason = anywhereNodeExclusionReason(node ?? {});
-    else if (client === CLIENT.egern) transportReason = egernNodeExclusionReason(node ?? {});
-    else if (client === CLIENT.singbox) transportReason = singBoxNodeExclusionReason(node ?? {});
-    else if (client === CLIENT.onexray) {
-      transportReason = oneXrayNodeExclusionReason(node ?? {});
-    } else if (client === CLIENT.happ) transportReason = happNodeExclusionReason(node ?? {});
-    return transportReason ? { supported: false, reason: transportReason } : { supported: true, reason: null };
-  }
-  function singBoxNodeExclusionReason(node) {
-    if (normalizeProtocol(node?.type) !== "snell") return null;
-    const version = Number(node.version);
-    if (!Number.isInteger(version) || !SINGBOX_SNELL_VERSIONS.has(version)) {
-      return "unsupported-singbox-snell-version";
-    }
-    if (version === 4 || version === 5) {
-      const obfsMode = node.obfs_mode ?? node["obfs-mode"] ?? node.obfs;
-      if (obfsMode !== void 0 && obfsMode !== "" && !SINGBOX_SNELL_OBFS_MODES.has(String(obfsMode).toLowerCase())) {
-        return "unsupported-singbox-snell-obfs";
-      }
-    }
-    if (version === 6 && node.mode !== void 0 && !SINGBOX_SNELL_MODES.has(String(node.mode).toLowerCase())) {
-      return "unsupported-singbox-snell-mode";
-    }
-    return null;
-  }
-  function filterNodesForClient(nodes, client) {
-    const diagnostics = createClientFilterDiagnostics();
-    const supportedNodes = [];
-    for (const node of Array.isArray(nodes) ? nodes : []) {
-      const evaluation = evaluateNodeForClient(node, client);
-      if (evaluation.supported) {
-        supportedNodes.push(node);
-        diagnostics.accepted += 1;
-      } else {
-        increment(diagnostics.excluded, evaluation.reason);
-      }
-    }
-    return { nodes: supportedNodes, diagnostics };
-  }
-
   // ../../shared/nodes/client-chain.js
   var SUPPORTED_LANDING_PROTOCOLS = /* @__PURE__ */ new Set([
     "ss",
@@ -1443,9 +102,9 @@ var HappConfigBundle = (() => {
     "socks5",
     "http"
   ]);
-  var CHAIN_ALIASES2 = ["underlying-proxy", "chain", "dialer-proxy", "detour", "prev_hop"];
+  var CHAIN_ALIASES = ["underlying-proxy", "chain", "dialer-proxy", "detour", "prev_hop"];
   function hasExistingChain(node) {
-    return CHAIN_ALIASES2.some((key) => {
+    return CHAIN_ALIASES.some((key) => {
       if (!Object.hasOwn(node ?? {}, key)) return false;
       const value = node[key];
       return value !== void 0 && value !== null && value !== "";
@@ -1532,16 +191,111 @@ var HappConfigBundle = (() => {
     return (hash >>> 0).toString(36).padStart(7, "0");
   }
 
+  // ../../shared/nodes/protocol-registry.js
+  function protocol(names, clients, { requiredFields = [], tls = false, clientNames = {} } = {}) {
+    return Object.freeze({
+      names: Object.freeze(names),
+      clients: Object.freeze(clients),
+      requiredFields: Object.freeze(requiredFields),
+      tls,
+      clientNames: Object.freeze(Object.fromEntries(
+        Object.entries(clientNames).map(([client, supportedNames]) => [client, Object.freeze(supportedNames)])
+      ))
+    });
+  }
+  var definitions = Object.freeze([
+    protocol(["ss", "shadowsocks"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.onexray, CLIENT.happ], {
+      requiredFields: ["cipher", "password"],
+      clientNames: { [CLIENT.onexray]: ["ss"] }
+    }),
+    protocol(["ssr"], [CLIENT.shadowrocket, CLIENT.surge], {
+      requiredFields: ["cipher", "password", "protocol", "obfs"]
+    }),
+    protocol(["snell"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox], {
+      requiredFields: ["psk", "version"]
+    }),
+    protocol(["vmess"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox, CLIENT.onexray, CLIENT.happ], {
+      requiredFields: ["uuid"]
+    }),
+    protocol(["vless"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.singbox, CLIENT.onexray, CLIENT.happ], {
+      requiredFields: ["uuid"]
+    }),
+    protocol(["trojan"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.onexray, CLIENT.happ], {
+      requiredFields: ["password"],
+      tls: true
+    }),
+    protocol(["anytls"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox], {
+      requiredFields: ["password"],
+      tls: true
+    }),
+    protocol(["hysteria2", "hy2"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.onexray, CLIENT.happ], {
+      requiredFields: ["password"],
+      tls: true,
+      clientNames: { [CLIENT.onexray]: ["hysteria2"] }
+    }),
+    protocol(["tuic"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox], {
+      requiredFields: ["uuid", "password"],
+      tls: true
+    }),
+    protocol(["socks5"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.onexray, CLIENT.happ]),
+    protocol(["http"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox, CLIENT.onexray]),
+    protocol(["ssh"], [CLIENT.egern, CLIENT.singbox], {
+      requiredFields: ["username"]
+    }),
+    protocol(["wireguard"], [CLIENT.egern, CLIENT.singbox], {
+      requiredFields: ["private-key", "public-key"]
+    }),
+    protocol(["sudoku"], [CLIENT.anywhere], {
+      requiredFields: ["key"]
+    })
+  ]);
+  var registry = /* @__PURE__ */ new Map();
+  for (const definition of definitions) {
+    for (const name of definition.names) registry.set(name, definition);
+  }
+  var DISPLAY_PROTOCOL_NAMES = Object.freeze({
+    ss: "SS",
+    shadowsocks: "SS",
+    ssr: "SSR",
+    snell: "Snell",
+    vmess: "VMess",
+    vless: "VLESS",
+    trojan: "Trojan",
+    anytls: "AnyTLS",
+    hysteria2: "Hy2",
+    hy2: "Hy2",
+    tuic: "Tuic",
+    socks5: "SOCKS5",
+    http: "HTTP",
+    ssh: "SSH",
+    wireguard: "WireGuard",
+    sudoku: "Sudoku"
+  });
+  function normalizeProtocol(value) {
+    return typeof value === "string" ? value.trim().toLowerCase() : "";
+  }
+  function protocolDefinition(value) {
+    return registry.get(normalizeProtocol(value)) ?? null;
+  }
+  function diagnosticProtocol(value) {
+    const normalized = normalizeProtocol(value);
+    return registry.has(normalized) ? normalized : "unknown";
+  }
+  function protocolDisplayLabel(value) {
+    const normalized = normalizeProtocol(value);
+    return DISPLAY_PROTOCOL_NAMES[normalized] ?? (normalized || "unknown");
+  }
+
   // ../../shared/nodes/node-validation.js
   var PSEUDO_NODE_PATTERN = /剩余|流量|到期|套餐|官网|公告|通知|traffic|expire|website/i;
-  function isNonblankOpaqueString2(value) {
+  function isNonblankOpaqueString(value) {
     return typeof value === "string" && value.trim().length > 0;
   }
   function isNonblankIdentifier(value) {
-    return isNonblankOpaqueString2(value) && value.trim() === value;
+    return isNonblankOpaqueString(value) && value.trim() === value;
   }
   var OPAQUE_AUTH_FIELDS = /* @__PURE__ */ new Set(["password", "psk", "private-key", "public-key", "key"]);
-  function isValidPort2(value) {
+  function isValidPort(value) {
     const port = typeof value === "string" && /^\d+$/.test(value) ? Number(value) : value;
     return Number.isInteger(port) && port >= 1 && port <= 65535;
   }
@@ -1550,7 +304,7 @@ var HappConfigBundle = (() => {
       const version = typeof value === "string" && /^\d+$/.test(value) ? Number(value) : value;
       return Number.isInteger(version) && version >= 1;
     }
-    return OPAQUE_AUTH_FIELDS.has(field) ? isNonblankOpaqueString2(value) : isNonblankIdentifier(value);
+    return OPAQUE_AUTH_FIELDS.has(field) ? isNonblankOpaqueString(value) : isNonblankIdentifier(value);
   }
   function hasTlsIdentity(node) {
     return Boolean(
@@ -1558,13 +312,13 @@ var HappConfigBundle = (() => {
     );
   }
   function wireGuardPublicKey(node) {
-    if (isNonblankOpaqueString2(node["public-key"])) return node["public-key"];
+    if (isNonblankOpaqueString(node["public-key"])) return node["public-key"];
     if (!Array.isArray(node.peers) || node.peers.length !== 1) return void 0;
     const peer = node.peers[0];
     return peer && typeof peer === "object" && !Array.isArray(peer) ? peer["public-key"] : void 0;
   }
   function hasSshAuthentication(node) {
-    return isNonblankOpaqueString2(node.password) || isNonblankOpaqueString2(node["private-key"]) || isNonblankOpaqueString2(node.private_key);
+    return isNonblankOpaqueString(node.password) || isNonblankOpaqueString(node["private-key"]) || isNonblankOpaqueString(node.private_key);
   }
   function hasExplicitUdp(node) {
     return node?.udp === true;
@@ -1576,7 +330,7 @@ var HappConfigBundle = (() => {
     if (typeof node.name !== "string" || !node.name.trim() || PSEUDO_NODE_PATTERN.test(node.name)) {
       return { valid: false, reason: "pseudo-node", warnings: [] };
     }
-    if (typeof node.type !== "string" || !node.type.trim() || !isNonblankIdentifier(node.server) || !isValidPort2(node.port)) {
+    if (typeof node.type !== "string" || !node.type.trim() || !isNonblankIdentifier(node.server) || !isValidPort(node.port)) {
       return { valid: false, reason: "missing-endpoint", warnings: [] };
     }
     const type = node.type.trim().toLowerCase();
@@ -1998,6 +752,32 @@ var HappConfigBundle = (() => {
     };
   }
 
+  // ../../shared/nodes/renderability.js
+  function protocolOf(node) {
+    try {
+      return normalizeProtocol(node?.type) || "unknown";
+    } catch {
+      return "unknown";
+    }
+  }
+  function assertRenderableNodes(nodes, clientName, renderOneNode) {
+    if (!Array.isArray(nodes)) throw new TypeError("Renderable node inventory must be an array");
+    if (typeof clientName !== "string" || !/^[A-Za-z][A-Za-z0-9 -]*$/u.test(clientName)) {
+      throw new TypeError("Render client name is invalid");
+    }
+    if (typeof renderOneNode !== "function") throw new TypeError("Node renderer must be a function");
+    const failures = {};
+    for (const node of nodes) {
+      try {
+        renderOneNode(node);
+      } catch {
+        increment(failures, protocolOf(node));
+      }
+    }
+    const counts = Object.keys(failures).sort((left, right) => left.localeCompare(right, "en")).map((protocol2) => `${protocol2}=${failures[protocol2]}`).join(",");
+    if (counts) throw new Error(`${clientName} cannot render selected protocols: ${counts}`);
+  }
+
   // src/policy-overrides.js
   var POLICY_DEFAULTS = Object.freeze({
     "\u{1F916} AI \u4E13\u7528": "FOLLOW",
@@ -2221,6 +1001,413 @@ var HappConfigBundle = (() => {
       policyOverrides,
       adblockMode: "off"
     });
+  }
+
+  // ../../shared/nodes/capabilities.js
+  var EGERN_VMESS_SECURITY = /* @__PURE__ */ new Set(["auto", "aes-128-gcm", "chacha20-poly1305", "none", "zero"]);
+  var HAPP_SHADOWSOCKS_METHODS = /* @__PURE__ */ new Set([
+    "2022-blake3-aes-128-gcm",
+    "2022-blake3-aes-256-gcm",
+    "2022-blake3-chacha20-poly1305",
+    "aes-128-gcm",
+    "aes-256-gcm",
+    "chacha20-poly1305",
+    "chacha20-ietf-poly1305",
+    "xchacha20-poly1305",
+    "xchacha20-ietf-poly1305"
+  ]);
+  var HAPP_REALITY_FINGERPRINTS = /* @__PURE__ */ new Set([
+    "chrome",
+    "firefox",
+    "safari",
+    "ios",
+    "android",
+    "edge",
+    "360",
+    "qq",
+    "random",
+    "randomized",
+    "chrome_133",
+    "chrome_120",
+    "chrome_106",
+    "firefox_148",
+    "firefox_120",
+    "safari_26",
+    "edge_106"
+  ]);
+  var SHADOW_TLS_ALIASES = Object.freeze(["shadow-tls", "shadow-tls-opts", "shadow_tls"]);
+  var BLOCK_QUIC_ALIASES = Object.freeze(["block-quic", "block_quic"]);
+  var IP_VERSION_ALIASES = Object.freeze(["ip-version", "ip_version"]);
+  var UDP_ALIASES = Object.freeze(["udp", "udp-relay", "udp_relay"]);
+  var CHAIN_ALIASES2 = Object.freeze(["underlying-proxy", "chain", "dialer-proxy", "detour", "prev_hop"]);
+  function hasOption(node, key) {
+    return Object.hasOwn(node, key);
+  }
+  function hasShadowsocksPlugin(node) {
+    return Boolean(node.plugin) || hasOption(node, "plugin-opts");
+  }
+  function isPlainObject(value) {
+    if (!value || typeof value !== "object" || Array.isArray(value)) return false;
+    const prototype = Object.getPrototypeOf(value);
+    return prototype === Object.prototype || prototype === null;
+  }
+  function isNonblankString(value) {
+    return typeof value === "string" && value.length > 0 && value.trim() === value;
+  }
+  function isNonblankOpaqueString2(value) {
+    return typeof value === "string" && value.trim().length > 0;
+  }
+  function isValidPort2(value) {
+    return Number.isInteger(value) && value >= 1 && value <= 65535;
+  }
+  function firstAliasValue(node, keys) {
+    for (const key of keys) {
+      if (hasOption(node, key)) return node[key];
+    }
+    return void 0;
+  }
+  function semanticEqual(left, right) {
+    if (left === right) return true;
+    if (Array.isArray(left) && Array.isArray(right)) {
+      return left.length === right.length && left.every((value, index) => semanticEqual(value, right[index]));
+    }
+    if (isPlainObject(left) && isPlainObject(right)) {
+      const leftKeys = Object.keys(left).sort();
+      const rightKeys = Object.keys(right).sort();
+      return leftKeys.length === rightKeys.length && leftKeys.every((key, index) => key === rightKeys[index] && semanticEqual(left[key], right[key]));
+    }
+    return false;
+  }
+  function conflictingAliases(node, keys) {
+    const values = keys.filter((key) => hasOption(node, key)).map((key) => node[key]);
+    return values.length > 1 && values.slice(1).some((value) => !semanticEqual(value, values[0]));
+  }
+  function normalizedHeaderValue(value) {
+    return Array.isArray(value) ? value[0] : value;
+  }
+  function normalizeEgernHeaders(value) {
+    if (!isPlainObject(value)) return null;
+    const result = {};
+    const semantic = /* @__PURE__ */ new Map();
+    for (const [key, rawValue] of Object.entries(value)) {
+      if (!isNonblankString(key) || !isHeaderValue(rawValue)) return null;
+      const normalizedValue = normalizedHeaderValue(rawValue);
+      const normalizedKey = key.toLowerCase();
+      if (semantic.has(normalizedKey)) {
+        if (semantic.get(normalizedKey) !== normalizedValue) return null;
+        continue;
+      }
+      semantic.set(normalizedKey, normalizedValue);
+      result[normalizedKey === "host" ? "Host" : key] = normalizedValue;
+    }
+    return result;
+  }
+  function validOptionalString(node, key) {
+    return !hasOption(node, key) || isNonblankString(node[key]);
+  }
+  function validOptionalOpaqueString(node, key) {
+    return !hasOption(node, key) || isNonblankOpaqueString2(node[key]);
+  }
+  function isOptionalBoolean(node, key) {
+    return !hasOption(node, key) || typeof node[key] === "boolean";
+  }
+  function hasConflictingAliases(node, keys) {
+    return conflictingAliases(node, keys);
+  }
+  function optionalStringAliasesAreValid(node, keys) {
+    return !hasConflictingAliases(node, keys) && keys.every((key) => !hasOption(node, key) || isNonblankString(node[key]));
+  }
+  function tlsSecurity(node) {
+    if (node.security === "tls" || node.security === "reality") return node.security;
+    return node.tls === true ? "tls" : "none";
+  }
+  function hasTlsSettings(node) {
+    return tlsSecurity(node) !== "none" || hasOption(node, "sni") || hasOption(node, "servername") || hasOption(node, "skip-cert-verify") || hasOption(node, "allow-insecure") || hasOption(node, "fingerprint-sha256") || hasOption(node, "fingerprint_sha256") || hasOption(node, "reality-opts");
+  }
+  function isRealityPublicKey(value) {
+    return isNonblankString(value) && (value.startsWith("TEST_ONLY_") || /^[A-Za-z0-9_-]{43}=?$/.test(value));
+  }
+  function tlsRequestedForCapability(node) {
+    return node.tls === true || node.security === "tls" || node.security === "reality" || hasOption(node, "reality-opts");
+  }
+  function normalizeTransport(node) {
+    const network = node.network ?? "tcp";
+    return typeof network === "string" ? network.trim().toLowerCase() : "";
+  }
+  function isHeaderValue(value) {
+    return isNonblankString(value) || Array.isArray(value) && value.length === 1 && isNonblankString(value[0]);
+  }
+  function validHeaders(value) {
+    return normalizeEgernHeaders(value) !== null;
+  }
+  function validPath(value) {
+    return isNonblankString(value) || Array.isArray(value) && value.length === 1 && isNonblankString(value[0]);
+  }
+  function validOptionalAuthentication(node) {
+    return validOptionalString(node, "username") && validOptionalOpaqueString(node, "password");
+  }
+  function hasAnyChain(node) {
+    return CHAIN_ALIASES2.some((key) => hasOption(node, key) && node[key] !== void 0 && node[key] !== null && node[key] !== "") || node?._profile?.chained === true;
+  }
+  var HAPP_TRANSPORTS = /* @__PURE__ */ new Set(["tcp", "raw", "ws", "grpc"]);
+  var HAPP_REALITY_KEYS = /* @__PURE__ */ new Set(["public-key", "short-id", "spider-x"]);
+  var HAPP_COMMON_FIELDS = /* @__PURE__ */ new Set([
+    "name",
+    "type",
+    "server",
+    "port",
+    "_profile",
+    "network",
+    "tls",
+    "security",
+    "sni",
+    "servername",
+    "skip-cert-verify",
+    "allow-insecure",
+    "alpn",
+    "client-fingerprint",
+    "reality-opts",
+    "ws-opts",
+    "grpc-opts"
+  ]);
+  function happTlsReason(node, { required = false, requiredReason = "unsupported-happ-tls-shape", allowReality = true } = {}) {
+    if (!isOptionalBoolean(node, "tls") || !isOptionalBoolean(node, "skip-cert-verify") || !isOptionalBoolean(node, "allow-insecure") || hasConflictingAliases(node, ["sni", "servername"]) || hasConflictingAliases(node, ["skip-cert-verify", "allow-insecure"]) || !optionalStringAliasesAreValid(node, ["sni", "servername"]) || hasOption(node, "alpn") && (!Array.isArray(node.alpn) || node.alpn.length === 0 || node.alpn.some((value) => !isNonblankString(value))) || hasOption(node, "client-fingerprint") && !isNonblankString(node["client-fingerprint"])) return "unsupported-happ-tls-shape";
+    if (hasOption(node, "security") && !["none", "tls", "reality"].includes(node.security)) return "unsupported-happ-tls-shape";
+    if (node.tls === false && ["tls", "reality"].includes(node.security)) return "unsupported-happ-tls-shape";
+    const reality = node["reality-opts"];
+    if (reality !== void 0 && (!allowReality || node.tls === false || !isPlainObject(reality) || Object.keys(reality).some((key) => !HAPP_REALITY_KEYS.has(key)) || !isRealityPublicKey(reality["public-key"]) || hasOption(reality, "short-id") && (!isNonblankString(reality["short-id"]) || !/^[0-9a-f]+$/i.test(reality["short-id"])) || hasOption(reality, "spider-x") && !isNonblankString(reality["spider-x"]))) return "unsupported-happ-reality";
+    if (reality !== void 0 && node.security !== "reality" || node.security === "reality" && reality === void 0) return "unsupported-happ-reality";
+    if (node.security === "reality" && (hasOption(node, "alpn") || node["skip-cert-verify"] === true || node["allow-insecure"] === true || !HAPP_REALITY_FINGERPRINTS.has(node["client-fingerprint"]) || !(/* @__PURE__ */ new Set(["tcp", "raw", "grpc"])).has(normalizeTransport(node)))) return "unsupported-happ-reality";
+    const tls = node.tls === true || node.security === "tls" || node.security === "reality";
+    if (required && !tls) return requiredReason;
+    if (!tls && ["sni", "servername", "skip-cert-verify", "allow-insecure", "alpn", "client-fingerprint", "reality-opts"].some((key) => hasOption(node, key))) return "unsupported-happ-tls-shape";
+    return null;
+  }
+  function happTransportReason(node, { tlsRequired = false } = {}) {
+    const network = normalizeTransport(node);
+    if (!HAPP_TRANSPORTS.has(network)) return "unsupported-happ-transport";
+    const optionKeys = ["ws-opts", "grpc-opts", "h2-opts", "http-opts", "xhttp-opts"];
+    if (network === "tcp" || network === "raw") return optionKeys.some((key) => hasOption(node, key)) ? "unsupported-happ-transport" : null;
+    if (network === "ws") {
+      const options2 = node["ws-opts"];
+      if (!isPlainObject(options2) || Object.keys(options2).some((key) => !["path", "headers"].includes(key)) || !validPath(options2.path) || hasOption(options2, "headers") && !validHeaders(options2.headers) || optionKeys.some((key) => key !== "ws-opts" && hasOption(node, key))) return "unsupported-happ-transport";
+      return null;
+    }
+    if (tlsRequired && !tlsRequestedForCapability(node)) return "unsupported-happ-transport";
+    const options = node["grpc-opts"];
+    if (options !== void 0 && (!isPlainObject(options) || Object.keys(options).some((key) => !["grpc-service-name", "grpc-mode"].includes(key)) || hasOption(options, "grpc-service-name") && !isNonblankString(options["grpc-service-name"]) || hasOption(options, "grpc-mode") && options["grpc-mode"] !== "gun")) return "unsupported-happ-transport";
+    return optionKeys.some((key) => key !== "grpc-opts" && hasOption(node, key)) ? "unsupported-happ-transport" : null;
+  }
+  function happUnknownFieldReason(node, allowed) {
+    return Object.keys(node).some((key) => !HAPP_COMMON_FIELDS.has(key) && !allowed.has(key)) ? "unsupported-happ-option" : null;
+  }
+  function happNodeExclusionReason(node) {
+    if (!isPlainObject(node) || !isNonblankString(node.name) || !isNonblankString(node.server) || !isValidPort2(node.port)) return "invalid-happ-node-shape";
+    if (hasAnyChain(node)) return "unsupported-happ-existing-chain";
+    if (["sni", "servername", "skip-cert-verify", "allow-insecure"].some((key) => hasOption(node, key)) && (hasConflictingAliases(node, ["sni", "servername"]) || hasConflictingAliases(node, ["skip-cert-verify", "allow-insecure"]))) return "conflicting-happ-alias";
+    const protocol2 = normalizeProtocol(node.type);
+    if (protocol2 === "ss" || protocol2 === "shadowsocks") {
+      const unknown = happUnknownFieldReason(node, /* @__PURE__ */ new Set(["cipher", "password", "udp", "tfo", "plugin", "plugin-opts"]));
+      if (unknown) return unknown;
+      if (!isNonblankString(node.cipher) || !isNonblankOpaqueString2(node.password)) return "invalid-happ-node-shape";
+      if (!HAPP_SHADOWSOCKS_METHODS.has(node.cipher)) return "unsupported-happ-shadowsocks-method";
+      if (hasShadowsocksPlugin(node) || hasTlsSettings(node) || !isOptionalBoolean(node, "udp") || !isOptionalBoolean(node, "tfo") || node.udp === false) return "unsupported-happ-shadowsocks-shape";
+      return happTransportReason(node);
+    }
+    if (protocol2 === "vless" || protocol2 === "vmess") {
+      const unknown = happUnknownFieldReason(node, /* @__PURE__ */ new Set(["uuid", "encryption", "flow", "cipher", "alter-id", "alterId"]));
+      if (unknown) return unknown;
+      if (!isNonblankString(node.uuid)) return "invalid-happ-node-shape";
+      if (protocol2 === "vless" && (hasOption(node, "encryption") && node.encryption !== "none" || hasOption(node, "flow") && !["", "xtls-rprx-vision"].includes(node.flow))) return "unsupported-happ-vless-shape";
+      if (protocol2 === "vmess" && (hasOption(node, "flow") || hasOption(node, "cipher") && !EGERN_VMESS_SECURITY.has(node.cipher) || hasOption(node, "encryption") && !EGERN_VMESS_SECURITY.has(node.encryption) || hasConflictingAliases(node, ["cipher", "encryption"]) || hasOption(node, "alter-id") && (!Number.isInteger(node["alter-id"]) || node["alter-id"] !== 0) || hasOption(node, "alterId") && (!Number.isInteger(node.alterId) || node.alterId !== 0))) return "unsupported-happ-vmess-shape";
+      return happTlsReason(node) || happTransportReason(node, { tlsRequired: normalizeTransport(node) === "grpc" });
+    }
+    if (protocol2 === "trojan") return happUnknownFieldReason(node, /* @__PURE__ */ new Set(["password"])) || (!isNonblankOpaqueString2(node.password) ? "invalid-happ-node-shape" : happTlsReason(node, { required: true }) || happTransportReason(node, { tlsRequired: normalizeTransport(node) === "grpc" }));
+    if (protocol2 === "socks5") return happUnknownFieldReason(node, /* @__PURE__ */ new Set(["username", "password"])) || (!validOptionalAuthentication(node) || hasOption(node, "username") !== hasOption(node, "password") ? "invalid-happ-node-shape" : hasTlsSettings(node) ? "unsupported-happ-socks5-shape" : happTransportReason(node));
+    if (protocol2 === "hysteria2") {
+      const unknown = happUnknownFieldReason(node, /* @__PURE__ */ new Set(["password", "obfs", "obfs-password", "obfs_password"]));
+      if (unknown || !isNonblankOpaqueString2(node.password)) return unknown ?? "invalid-happ-node-shape";
+      if (hasOption(node, "network") && !["quic", "udp"].includes(normalizeTransport(node))) return "unsupported-happ-hysteria2-shape";
+      const tlsReason = happTlsReason(node, { required: true, requiredReason: "unsupported-happ-hysteria2-tls", allowReality: false });
+      const obfsPassword = firstAliasValue(node, ["obfs-password", "obfs_password"]);
+      if (tlsReason || hasConflictingAliases(node, ["obfs-password", "obfs_password"]) || node.obfs !== void 0 && (node.obfs !== "salamander" || !isNonblankOpaqueString2(obfsPassword)) || node.obfs === void 0 && obfsPassword !== void 0) return tlsReason ?? "unsupported-happ-hysteria2-shape";
+      return null;
+    }
+    return "unsupported-protocol";
+  }
+
+  // src/render-node.js
+  function optional(target, key, value) {
+    if (value !== void 0 && value !== null && value !== "") target[key] = value;
+  }
+  function requiredTag(node, tag) {
+    if (typeof tag !== "string" || tag.length === 0 || tag.trim() !== tag) {
+      throw new Error("Happ outbound tag is invalid");
+    }
+    const credentials = [
+      node.uuid,
+      node.password,
+      node.username,
+      node["obfs-password"],
+      node.obfs_password,
+      node["reality-opts"]?.["public-key"],
+      node["reality-opts"]?.["short-id"]
+    ];
+    if (tag.includes(node.name) || tag.includes(node.server) || credentials.some((value) => typeof value === "string" && value.length > 0 && tag.includes(value))) {
+      throw new Error("Happ outbound tag must be opaque");
+    }
+    return tag;
+  }
+  function supportedNode(node) {
+    const reason = happNodeExclusionReason(node);
+    if (reason) throw new Error(`Happ node cannot be rendered: ${reason}`);
+  }
+  function requestedTls(node) {
+    return node.tls === true || node.security === "tls" || node.security === "reality";
+  }
+  function tlsSettings(node) {
+    const settings = {};
+    optional(settings, "serverName", node.sni ?? node.servername);
+    if (node.alpn !== void 0) settings.alpn = [...node.alpn];
+    optional(settings, "fingerprint", node["client-fingerprint"]);
+    if (node["skip-cert-verify"] === true || node["allow-insecure"] === true) settings.allowInsecure = true;
+    return settings;
+  }
+  function realitySettings(node) {
+    const reality = node["reality-opts"];
+    if (!reality || typeof reality !== "object" || Array.isArray(reality)) {
+      throw new Error("Happ REALITY options cannot be rendered");
+    }
+    if (node.alpn !== void 0 || node["skip-cert-verify"] === true || node["allow-insecure"] === true || node["client-fingerprint"] === void 0) {
+      throw new Error("Happ REALITY options cannot be rendered");
+    }
+    const settings = {
+      // Xray's current client-side name for the server's REALITY public key.
+      password: reality["public-key"],
+      fingerprint: node["client-fingerprint"]
+    };
+    optional(settings, "serverName", node.sni ?? node.servername);
+    optional(settings, "shortId", reality["short-id"]);
+    optional(settings, "spiderX", reality["spider-x"]);
+    return settings;
+  }
+  function transportSettings(node) {
+    const network = String(node.network ?? "tcp").trim().toLowerCase();
+    if (network === "tcp" || network === "raw") return { method: "raw", rawSettings: {} };
+    if (network === "ws") {
+      const options = node["ws-opts"];
+      if (!options || typeof options !== "object" || Array.isArray(options)) {
+        throw new Error("Happ WebSocket options cannot be rendered");
+      }
+      const wsSettings = { path: Array.isArray(options.path) ? options.path[0] : options.path };
+      if (options.headers !== void 0) {
+        wsSettings.headers = Object.fromEntries(Object.entries(options.headers).map(([key, value]) => [key, Array.isArray(value) ? value[0] : value]));
+      }
+      return { method: "websocket", wsSettings };
+    }
+    if (network === "grpc") {
+      const options = node["grpc-opts"] ?? {};
+      const grpcSettings = {};
+      optional(grpcSettings, "serviceName", options["grpc-service-name"]);
+      return { method: "grpc", grpcSettings };
+    }
+    throw new Error("Happ transport cannot be rendered");
+  }
+  function hysteriaStreamSettings(node) {
+    const settings = {
+      method: "hysteria",
+      hysteriaSettings: { version: 2, auth: node.password },
+      security: "tls",
+      tlsSettings: tlsSettings(node)
+    };
+    if (node.obfs === "salamander") {
+      settings.finalmask = {
+        udp: [{ type: "salamander", settings: { password: node["obfs-password"] ?? node.obfs_password } }]
+      };
+    } else if (node.obfs !== void 0 || node["obfs-password"] !== void 0 || node.obfs_password !== void 0) {
+      throw new Error("Happ Hysteria obfuscation cannot be rendered");
+    }
+    return settings;
+  }
+  function renderHappStreamSettings(node) {
+    supportedNode(node);
+    if (normalizeProtocol(node.type) === "hysteria2") return hysteriaStreamSettings(node);
+    const stream = transportSettings(node);
+    if (node.security === "reality") {
+      stream.security = "reality";
+      stream.realitySettings = realitySettings(node);
+    } else if (requestedTls(node)) {
+      stream.security = "tls";
+      stream.tlsSettings = tlsSettings(node);
+    } else {
+      stream.security = "none";
+    }
+    if (node.tfo === true) stream.sockopt = { tcpFastOpen: true };
+    return stream;
+  }
+  function vnext(node, user) {
+    return [{ address: node.server, port: node.port, users: [user] }];
+  }
+  function renderVless(node, tag) {
+    const user = { id: node.uuid, encryption: node.encryption ?? "none" };
+    optional(user, "flow", node.flow);
+    return { tag, protocol: "vless", settings: { vnext: vnext(node, user) }, streamSettings: renderHappStreamSettings(node) };
+  }
+  function renderVmess(node, tag) {
+    const user = {
+      id: node.uuid,
+      alterId: node["alter-id"] ?? node.alterId ?? 0,
+      security: node.encryption ?? node.cipher ?? "auto"
+    };
+    return { tag, protocol: "vmess", settings: { vnext: vnext(node, user) }, streamSettings: renderHappStreamSettings(node) };
+  }
+  function renderTrojan(node, tag) {
+    return {
+      tag,
+      protocol: "trojan",
+      settings: { servers: [{ address: node.server, port: node.port, password: node.password }] },
+      streamSettings: renderHappStreamSettings(node)
+    };
+  }
+  function renderShadowsocks(node, tag) {
+    if (node.udp === false) throw new Error("Happ Shadowsocks UDP disablement cannot be rendered");
+    const server = { address: node.server, port: node.port, method: node.cipher, password: node.password };
+    return { tag, protocol: "shadowsocks", settings: { servers: [server] }, streamSettings: renderHappStreamSettings(node) };
+  }
+  function renderSocks(node, tag) {
+    const server = { address: node.server, port: node.port };
+    if (node.username !== void 0 || node.password !== void 0) {
+      server.users = [{ user: node.username, pass: node.password }];
+    }
+    return { tag, protocol: "socks", settings: { servers: [server] }, streamSettings: renderHappStreamSettings(node) };
+  }
+  function renderHysteria(node, tag) {
+    return {
+      tag,
+      protocol: "hysteria",
+      settings: { version: 2, address: node.server, port: node.port },
+      streamSettings: renderHappStreamSettings(node)
+    };
+  }
+  function renderHappOutbound(node, opaqueTag) {
+    supportedNode(node);
+    const tag = requiredTag(node, opaqueTag);
+    switch (normalizeProtocol(node.type)) {
+      case "vless":
+        return renderVless(node, tag);
+      case "vmess":
+        return renderVmess(node, tag);
+      case "trojan":
+        return renderTrojan(node, tag);
+      case "ss":
+        return renderShadowsocks(node, tag);
+      case "socks5":
+        return renderSocks(node, tag);
+      case "hysteria2":
+        return renderHysteria(node, tag);
+      default:
+        throw new Error("Happ protocol cannot be rendered");
+    }
   }
 
   // ../../shared/rules/lightweight-policy.js
@@ -2556,180 +1743,6 @@ var HappConfigBundle = (() => {
     }
     routes.push({ inboundTag: [HAPP_DNS_TAG], ip: [global.ip], outboundTag: dnsOutboundTag(options) });
     return routes;
-  }
-
-  // src/render-node.js
-  function optional(target, key, value) {
-    if (value !== void 0 && value !== null && value !== "") target[key] = value;
-  }
-  function requiredTag(node, tag) {
-    if (typeof tag !== "string" || tag.length === 0 || tag.trim() !== tag) {
-      throw new Error("Happ outbound tag is invalid");
-    }
-    const credentials = [
-      node.uuid,
-      node.password,
-      node.username,
-      node["obfs-password"],
-      node.obfs_password,
-      node["reality-opts"]?.["public-key"],
-      node["reality-opts"]?.["short-id"]
-    ];
-    if (tag.includes(node.name) || tag.includes(node.server) || credentials.some((value) => typeof value === "string" && value.length > 0 && tag.includes(value))) {
-      throw new Error("Happ outbound tag must be opaque");
-    }
-    return tag;
-  }
-  function supportedNode(node) {
-    const reason = happNodeExclusionReason(node);
-    if (reason) throw new Error(`Happ node cannot be rendered: ${reason}`);
-  }
-  function requestedTls(node) {
-    return node.tls === true || node.security === "tls" || node.security === "reality";
-  }
-  function tlsSettings(node) {
-    const settings = {};
-    optional(settings, "serverName", node.sni ?? node.servername);
-    if (node.alpn !== void 0) settings.alpn = [...node.alpn];
-    optional(settings, "fingerprint", node["client-fingerprint"]);
-    if (node["skip-cert-verify"] === true || node["allow-insecure"] === true) settings.allowInsecure = true;
-    return settings;
-  }
-  function realitySettings(node) {
-    const reality = node["reality-opts"];
-    if (!reality || typeof reality !== "object" || Array.isArray(reality)) {
-      throw new Error("Happ REALITY options cannot be rendered");
-    }
-    if (node.alpn !== void 0 || node["skip-cert-verify"] === true || node["allow-insecure"] === true || node["client-fingerprint"] === void 0) {
-      throw new Error("Happ REALITY options cannot be rendered");
-    }
-    const settings = {
-      // Xray's current client-side name for the server's REALITY public key.
-      password: reality["public-key"],
-      fingerprint: node["client-fingerprint"]
-    };
-    optional(settings, "serverName", node.sni ?? node.servername);
-    optional(settings, "shortId", reality["short-id"]);
-    optional(settings, "spiderX", reality["spider-x"]);
-    return settings;
-  }
-  function transportSettings(node) {
-    const network = String(node.network ?? "tcp").trim().toLowerCase();
-    if (network === "tcp" || network === "raw") return { method: "raw", rawSettings: {} };
-    if (network === "ws") {
-      const options = node["ws-opts"];
-      if (!options || typeof options !== "object" || Array.isArray(options)) {
-        throw new Error("Happ WebSocket options cannot be rendered");
-      }
-      const wsSettings = { path: Array.isArray(options.path) ? options.path[0] : options.path };
-      if (options.headers !== void 0) {
-        wsSettings.headers = Object.fromEntries(Object.entries(options.headers).map(([key, value]) => [key, Array.isArray(value) ? value[0] : value]));
-      }
-      return { method: "websocket", wsSettings };
-    }
-    if (network === "grpc") {
-      const options = node["grpc-opts"] ?? {};
-      const grpcSettings = {};
-      optional(grpcSettings, "serviceName", options["grpc-service-name"]);
-      return { method: "grpc", grpcSettings };
-    }
-    throw new Error("Happ transport cannot be rendered");
-  }
-  function hysteriaStreamSettings(node) {
-    const settings = {
-      method: "hysteria",
-      hysteriaSettings: { version: 2, auth: node.password },
-      security: "tls",
-      tlsSettings: tlsSettings(node)
-    };
-    if (node.obfs === "salamander") {
-      settings.finalmask = {
-        udp: [{ type: "salamander", settings: { password: node["obfs-password"] ?? node.obfs_password } }]
-      };
-    } else if (node.obfs !== void 0 || node["obfs-password"] !== void 0 || node.obfs_password !== void 0) {
-      throw new Error("Happ Hysteria obfuscation cannot be rendered");
-    }
-    return settings;
-  }
-  function renderHappStreamSettings(node) {
-    supportedNode(node);
-    if (normalizeProtocol(node.type) === "hysteria2") return hysteriaStreamSettings(node);
-    const stream = transportSettings(node);
-    if (node.security === "reality") {
-      stream.security = "reality";
-      stream.realitySettings = realitySettings(node);
-    } else if (requestedTls(node)) {
-      stream.security = "tls";
-      stream.tlsSettings = tlsSettings(node);
-    } else {
-      stream.security = "none";
-    }
-    if (node.tfo === true) stream.sockopt = { tcpFastOpen: true };
-    return stream;
-  }
-  function vnext(node, user) {
-    return [{ address: node.server, port: node.port, users: [user] }];
-  }
-  function renderVless(node, tag) {
-    const user = { id: node.uuid, encryption: node.encryption ?? "none" };
-    optional(user, "flow", node.flow);
-    return { tag, protocol: "vless", settings: { vnext: vnext(node, user) }, streamSettings: renderHappStreamSettings(node) };
-  }
-  function renderVmess(node, tag) {
-    const user = {
-      id: node.uuid,
-      alterId: node["alter-id"] ?? node.alterId ?? 0,
-      security: node.encryption ?? node.cipher ?? "auto"
-    };
-    return { tag, protocol: "vmess", settings: { vnext: vnext(node, user) }, streamSettings: renderHappStreamSettings(node) };
-  }
-  function renderTrojan(node, tag) {
-    return {
-      tag,
-      protocol: "trojan",
-      settings: { servers: [{ address: node.server, port: node.port, password: node.password }] },
-      streamSettings: renderHappStreamSettings(node)
-    };
-  }
-  function renderShadowsocks(node, tag) {
-    if (node.udp === false) throw new Error("Happ Shadowsocks UDP disablement cannot be rendered");
-    const server = { address: node.server, port: node.port, method: node.cipher, password: node.password };
-    return { tag, protocol: "shadowsocks", settings: { servers: [server] }, streamSettings: renderHappStreamSettings(node) };
-  }
-  function renderSocks(node, tag) {
-    const server = { address: node.server, port: node.port };
-    if (node.username !== void 0 || node.password !== void 0) {
-      server.users = [{ user: node.username, pass: node.password }];
-    }
-    return { tag, protocol: "socks", settings: { servers: [server] }, streamSettings: renderHappStreamSettings(node) };
-  }
-  function renderHysteria(node, tag) {
-    return {
-      tag,
-      protocol: "hysteria",
-      settings: { version: 2, address: node.server, port: node.port },
-      streamSettings: renderHappStreamSettings(node)
-    };
-  }
-  function renderHappOutbound(node, opaqueTag) {
-    supportedNode(node);
-    const tag = requiredTag(node, opaqueTag);
-    switch (normalizeProtocol(node.type)) {
-      case "vless":
-        return renderVless(node, tag);
-      case "vmess":
-        return renderVmess(node, tag);
-      case "trojan":
-        return renderTrojan(node, tag);
-      case "ss":
-        return renderShadowsocks(node, tag);
-      case "socks5":
-        return renderSocks(node, tag);
-      case "hysteria2":
-        return renderHysteria(node, tag);
-      default:
-        throw new Error("Happ protocol cannot be rendered");
-    }
   }
 
   // src/render-platform.js
@@ -3210,11 +2223,11 @@ var HappConfigBundle = (() => {
     if (typeof logger?.log === "function") return logger.log.bind(logger);
     return null;
   }
-  function logDiagnostics(context, options, normalized, filtered) {
+  function logDiagnostics(context, options, normalized) {
     const log = loggerMethod(context);
     if (!log) return;
     try {
-      log(`[happ-config] ${JSON.stringify({ output: options.output, platform: options.platform, normalized: normalized.nodes.length, accepted: filtered.nodes.length })}`);
+      log(`[happ-config] ${JSON.stringify({ output: options.output, platform: options.platform, selected: normalized.nodes.length })}`);
     } catch {
     }
   }
@@ -3230,10 +2243,9 @@ var HappConfigBundle = (() => {
     });
     if (!Array.isArray(rawNodes) || rawNodes.length === 0) throw new Error("produceArtifact must return a non-empty node array");
     const normalized = normalizeNodes(rawNodes);
-    const filtered = filterNodesForClient(normalized.nodes, CLIENT.happ);
-    if (filtered.nodes.length === 0) throw new Error("\u6CA1\u6709\u53EF\u7528\u4E8E Happ \u7684\u8282\u70B9");
-    logDiagnostics(context, options, normalized, filtered);
-    const content = options.output === "audit" ? buildHappAudit({ nodes: filtered.nodes, allNodes: normalized.nodes, options }) : renderHappSubscription({ nodes: filtered.nodes, allNodes: normalized.nodes, options });
+    assertRenderableNodes(normalized.nodes, "Happ", (node) => renderHappOutbound(node, "happ-render-probe"));
+    logDiagnostics(context, options, normalized);
+    const content = options.output === "audit" ? buildHappAudit({ nodes: normalized.nodes, allNodes: normalized.nodes, options }) : renderHappSubscription({ nodes: normalized.nodes, allNodes: normalized.nodes, options });
     if (options.output === "config") validateHappSubscription(content);
     return { ...input, $content: `${JSON.stringify(content, null, 2)}
 ` };

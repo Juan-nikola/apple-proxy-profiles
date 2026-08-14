@@ -43,9 +43,9 @@ test("shared policy records preserve the Shadowrocket catalog", () => {
   assert.deepEqual(sharedPrimary.candidates, expectedContinents);
   assert.equal(sharedPrimary.nodeFilter, null);
   assert.notEqual(POLICY_TARGET.primaryProxy, "PROXY");
-  assert.deepEqual(shadowrocketPrimary.items, expectedContinents);
-  assert.equal(shadowrocketPrimary.useSubscription, undefined);
-  assert.equal(shadowrocketPrimary.filter, undefined);
+  assert.deepEqual(shadowrocketPrimary.items, ["PROXY"]);
+  assert.equal(shadowrocketPrimary.useSubscription, true);
+  assert.equal(shadowrocketPrimary.filter, "^(?!🔗 ).+$");
   assert.deepEqual(
     shared.filter((group) => group.kind === "service").map((group) => group.name),
     EXPECTED_SERVICE_NAMES,

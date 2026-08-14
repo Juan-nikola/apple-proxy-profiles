@@ -1,9 +1,10 @@
 import { buildPolicyGroups, effectiveAutoMode } from "../../../shared/policies/catalog.js";
+import { NON_CHAINED_FILTER } from "../../../shared/policies/filters.js";
 
 export { effectiveAutoMode };
 
 export function buildGroups(options, nodes) {
-  return buildPolicyGroups(options, nodes).map((group) => ({
+  const groups = buildPolicyGroups(options, nodes).map((group) => ({
     name: group.name,
     type: group.strategy === "auto-test" ? "url-test" : group.strategy,
     items: [...group.candidates],
@@ -16,4 +17,14 @@ export function buildGroups(options, nodes) {
     hidden: group.hidden,
     policySelectName: group.defaultChoice,
   }));
+  return groups.map((group) => {
+    if (group.name !== "🚀 节点选择") return group;
+    return {
+      name: "🚀 节点选择",
+      type: "select",
+      items: ["PROXY"],
+      useSubscription: true,
+      filter: NON_CHAINED_FILTER,
+    };
+  });
 }

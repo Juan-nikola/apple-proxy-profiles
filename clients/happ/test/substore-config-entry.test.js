@@ -30,12 +30,12 @@ function configArguments(platform = "macos") {
   };
 }
 
-test("Happ operator requests a private collection, normalizes it, filters unsupported nodes, and logs no credentials", async () => {
+test("Happ operator requests a private collection and renders every selected node without capability filtering", async () => {
   const requests = [];
   const lines = [];
   const result = await operator({ unchanged: true }, "Happ", {
     arguments: configArguments(),
-    async produceArtifact(request) { requests.push(request); return structuredClone(rawNodes); },
+    async produceArtifact(request) { requests.push(request); return structuredClone([rawNodes[0]]); },
     logger: { info(line) { lines.push(line); } },
   });
 
@@ -47,14 +47,33 @@ test("Happ operator requests a private collection, normalizes it, filters unsupp
   assert.equal(configs[0].remarks.includes("Tokyo"), true);
   assert.equal(result.$content.includes("TEST_ONLY_OPERATOR_SECRET"), true);
   assert.equal(lines.length, 1);
-  assert.match(lines[0], /"accepted":1/u);
+  assert.match(lines[0], /"selected":1/u);
   assert.doesNotMatch(lines[0], /TEST_ONLY_OPERATOR_SECRET|private-tokyo\.example/u);
+});
+
+test("Happ operator fails closed when any selected node cannot be rendered", async () => {
+  const lines = [];
+  await assert.rejects(
+    () => operator({}, "Happ", {
+      arguments: configArguments(),
+      async produceArtifact() { return structuredClone(rawNodes); },
+      logger: { info(line) { lines.push(line); } },
+    }),
+    (error) => {
+      assert.equal(error.message, "Happ cannot render selected protocols: snell=1");
+      assert.equal(error.message.includes("Unsupported Snell"), false);
+      assert.equal(error.message.includes("private-snell.example.invalid"), false);
+      assert.equal(error.message.includes("TEST_ONLY_SNELL_SECRET"), false);
+      return true;
+    },
+  );
+  assert.deepEqual(lines, []);
 });
 
 test("Happ operator emits private audit JSON from the same normalized eligible inventory", async () => {
   const result = await operator({}, "Happ", {
     arguments: { ...configArguments("all"), output: "audit", name: "happ-routing-audit", subscriptionName: "happ-routing-audit" },
-    async produceArtifact() { return structuredClone(rawNodes); },
+    async produceArtifact() { return structuredClone([rawNodes[0]]); },
   });
   const audit = JSON.parse(result.$content);
   assert.equal(audit.counts.eligibleNodes, 1);
@@ -63,11 +82,11 @@ test("Happ operator emits private audit JSON from the same normalized eligible i
   assert.doesNotMatch(result.$content, /private-tokyo|TEST_ONLY_OPERATOR_SECRET/u);
 });
 
-test("Happ operator fails stably for absent arguments and zero eligible nodes", async () => {
+test("Happ operator fails stably for absent arguments and an empty artifact", async () => {
   await assert.rejects(() => operator({}, "Happ", {}), /Option 'output' is required/u);
   await assert.rejects(
-    () => operator({}, "Happ", { arguments: configArguments(), async produceArtifact() { return [rawNodes[1]]; } }),
-    /没有可用于 Happ 的节点/u,
+    () => operator({}, "Happ", { arguments: configArguments(), async produceArtifact() { return []; } }),
+    /produceArtifact must return a non-empty node array/u,
   );
 });
 

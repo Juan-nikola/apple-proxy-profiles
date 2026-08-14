@@ -74,7 +74,7 @@ test("beginner docs contain every operational checkpoint and warning", async () 
     "`SHADOWROCKET-NODES`",
     "三个 Profile File Operator 的 `subscriptionName` 都必须精确填写 `SHADOWROCKET-NODES`",
   ]) assert.ok(docs["docs/deployment.md"].includes(phrase), `deployment: missing exact subscription-name guidance: ${phrase}`);
-  assert.ok(docs["README.md"].includes("`🚀 节点选择 = select,🌏 亚太,🌍 欧洲,🌎 美洲`"), "README.md: missing exact homepage-follow root group");
+  assert.ok(docs["README.md"].includes("`🚀 节点选择 = select,PROXY,Shadowrocket-Nodes,use=true,policy-regex-filter=^(?!🔗 ).+$`"), "README.md: missing exact homepage-follow root group");
   for (const phrase of ["显式选择仍会出现", "不会显示该订阅的具体服务器"]) {
     assert.ok(docs["docs/troubleshooting.md"].includes(phrase), `troubleshooting: missing name-mismatch outcome: ${phrase}`);
   }
@@ -102,7 +102,7 @@ test("beginner docs contain every operational checkpoint and warning", async () 
     "README.md: generated-profile check must use the named subscription source",
   );
   for (const phrase of [
-    "`🚀 节点选择`只包含固定的亚太、欧洲、美洲洲组",
+    "`PROXY` 负责跟随 Shadowrocket 首页当前节点",
     "境外业务分组默认跟随 `🚀 节点选择`",
     "国内业务分组默认 `DIRECT`",
     "自动测速和故障转移已移到境外业务分组",
@@ -217,6 +217,7 @@ test("migration documentation keeps Sub-Store objects stable while using monorep
     );
   }
   assert.match(docs["docs/deployment.md"], /原始组合 `apple-proxy-shadowrocket`/u);
+  assert.match(docs["docs/deployment.md"], /apple-proxy-sources[\s\S]*兼容\/回滚/u);
   assert.ok(docs["docs/deployment.md"].includes("HTTPS 解密保持关闭"), "deployment: HTTPS decryption must remain off");
   assert.ok(docs["docs/troubleshooting.md"].includes("旧 Profile"), "troubleshooting: missing old Profile rollback guidance");
 });

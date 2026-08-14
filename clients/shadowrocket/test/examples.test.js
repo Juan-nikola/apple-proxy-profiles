@@ -262,7 +262,7 @@ for (const platform of ["macos", "iphone", "ipad"]) {
   test(`${platform} example contains the layered continent selectors`, async () => {
     const profile = await readFile(new URL(`../examples/shadowrocket-${platform}.conf`, import.meta.url), "utf8");
     assert.match(profile, /^🌎 美洲 = select,/m);
-    assert.match(profile, /^🚀 节点选择 = select,🌏 亚太,🌍 欧洲,🌎 美洲$/m);
+    assert.ok(profile.includes("🚀 节点选择 = select,PROXY,Shadowrocket-Nodes,use=true,policy-regex-filter=^(?!🔗 ).+$\n"), "macos example must keep the PROXY subscription root group");
     assert.match(profile, /^🌏 亚太 = select,⚡ 亚太自动,🛟 亚太故障转移,🇯🇵 日本$/m);
     assert.ok(profile.includes("🇯🇵 日本 = select,Shadowrocket-Nodes,use=true,policy-regex-filter=^🇯🇵(?: |$)\n"), "macos example must keep Japan in the Asia-Pacific flag group");
     assert.match(profile, /^🌍 欧洲 = select,⚡ 欧洲自动,🛟 欧洲故障转移,🇩🇪 德国$/m);

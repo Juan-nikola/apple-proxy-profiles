@@ -22,6 +22,7 @@ const rawNodes = Object.freeze([
     port: 443,
     password: "TEST_ONLY_FIXTURE_FRANKFURT_PASSWORD",
     sni: "fixture-frankfurt.example.invalid",
+    tls: true,
   }),
 ]);
 

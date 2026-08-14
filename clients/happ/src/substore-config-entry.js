@@ -1,8 +1,8 @@
-import { CLIENT } from "../../../shared/contracts.js";
-import { filterNodesForClient } from "../../../shared/nodes/capabilities.js";
 import { normalizeNodes } from "../../../shared/nodes/normalize-nodes.js";
+import { assertRenderableNodes } from "../../../shared/nodes/renderability.js";
 import { buildHappAudit } from "./audit.js";
 import { parseHappOptions } from "./options.js";
+import { renderHappOutbound } from "./render-node.js";
 import { renderHappSubscription } from "./render-subscription.js";
 import { validateHappSubscription } from "./validate-subscription.js";
 
@@ -37,11 +37,11 @@ function loggerMethod(context) {
   return null;
 }
 
-function logDiagnostics(context, options, normalized, filtered) {
+function logDiagnostics(context, options, normalized) {
   const log = loggerMethod(context);
   if (!log) return;
   try {
-    log(`[happ-config] ${JSON.stringify({ output: options.output, platform: options.platform, normalized: normalized.nodes.length, accepted: filtered.nodes.length })}`);
+    log(`[happ-config] ${JSON.stringify({ output: options.output, platform: options.platform, selected: normalized.nodes.length })}`);
   } catch {
     // Diagnostics are optional and cannot affect private generated content.
   }
@@ -60,12 +60,11 @@ export async function operator(input, targetPlatform, context = {}) {
   });
   if (!Array.isArray(rawNodes) || rawNodes.length === 0) throw new Error("produceArtifact must return a non-empty node array");
   const normalized = normalizeNodes(rawNodes);
-  const filtered = filterNodesForClient(normalized.nodes, CLIENT.happ);
-  if (filtered.nodes.length === 0) throw new Error("没有可用于 Happ 的节点");
-  logDiagnostics(context, options, normalized, filtered);
+  assertRenderableNodes(normalized.nodes, "Happ", (node) => renderHappOutbound(node, "happ-render-probe"));
+  logDiagnostics(context, options, normalized);
   const content = options.output === "audit"
-    ? buildHappAudit({ nodes: filtered.nodes, allNodes: normalized.nodes, options })
-    : renderHappSubscription({ nodes: filtered.nodes, allNodes: normalized.nodes, options });
+    ? buildHappAudit({ nodes: normalized.nodes, allNodes: normalized.nodes, options })
+    : renderHappSubscription({ nodes: normalized.nodes, allNodes: normalized.nodes, options });
   if (options.output === "config") validateHappSubscription(content);
   return { ...input, $content: `${JSON.stringify(content, null, 2)}\n` };
 }

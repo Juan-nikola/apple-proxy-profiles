@@ -6,9 +6,10 @@ import { diagnosticProtocol, protocolDisplayLabel } from "../shared/nodes/protoc
 import { assertRenderableNodes } from "../shared/nodes/renderability.js";
 
 const ALLOWED_PROTOCOLS = Object.freeze({
-  [CLIENT.shadowrocket]: ["ss", "shadowsocks", "ssr", "snell", "vmess", "vless", "trojan", "hysteria2", "hy2", "tuic", "socks5", "http"],
+  [CLIENT.shadowrocket]: ["ss", "shadowsocks", "ssr", "snell", "vmess", "vless", "trojan", "anytls", "hysteria2", "hy2", "tuic", "socks5", "http"],
   [CLIENT.egern]: ["ss", "shadowsocks", "snell", "vmess", "vless", "trojan", "anytls", "hysteria2", "hy2", "tuic", "socks5", "http", "ssh", "wireguard"],
   [CLIENT.anywhere]: ["ss", "shadowsocks", "vless", "trojan", "anytls", "hysteria2", "hy2", "socks5", "sudoku"],
+  [CLIENT.surge]: ["ss", "shadowsocks", "ssr", "snell", "vmess", "trojan", "anytls", "hysteria2", "hy2", "tuic", "socks5", "http"],
   onexray: ["vless", "vmess", "ss", "trojan", "socks5", "http", "hysteria2"],
 });
 
@@ -802,7 +803,11 @@ test("normalizes valid nodes before applying AnyTLS and WireGuard client capabil
 
   assert.deepEqual(
     filterNodesForClient(normalized.nodes, CLIENT.shadowrocket).nodes.map((node) => node.type),
-    ["ss"],
+    ["anytls", "ss"],
+  );
+  assert.deepEqual(
+    filterNodesForClient(normalized.nodes, CLIENT.surge).nodes.map((node) => node.type),
+    ["anytls", "ss"],
   );
   assert.deepEqual(
     filterNodesForClient(normalized.nodes, CLIENT.egern).nodes.map((node) => node.type).sort(),

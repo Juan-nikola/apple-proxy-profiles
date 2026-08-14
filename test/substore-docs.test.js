@@ -81,19 +81,19 @@ test("public documentation never contains a private Sub-Store endpoint", async (
   assert.match(content, /example\.invalid/u);
 });
 
-test("canonical client pool guide defines six mappings, migration, rollback, and fail-closed filtering", async () => {
+test("canonical client pool guide defines six mappings, migration, rollback, and fail-closed rendering", async () => {
   const guide = await optionalText("docs/substore-client-pools.md");
   for (const row of [
     "| Egern | `apple-proxy-egern` | 用户自行选择来源、AnyTLS 和字段形状 |",
     "| Anywhere | `apple-proxy-anywhere` | 用户自行选择 Anywhere 可导入的节点，远程输出只有节点列表 |",
-    "| Shadowrocket | `apple-proxy-shadowrocket` | 可维护 AnyTLS 及其他已实现节点类型 |",
-    "| Surge | `apple-proxy-surge` | 只加入当前 Surge renderer 已实现的类型 |",
-    "| sing-box | `apple-proxy-singbox` | 可加入当前 sing-box renderer 已实现的类型和字段 |",
-    "| OneXray | `apple-proxy-onexray` | 只加入当前 OneXray 原生 Profile 已实现的类型 |",
+    "| Shadowrocket | `apple-proxy-shadowrocket` | 用户自行选择节点；AnyTLS 等已实现类型可直接包含 |",
+    "| Surge | `apple-proxy-surge` | 用户自行选择节点；renderer 无法表示的已选协议显式失败 |",
+    "| sing-box | `apple-proxy-singbox` | 用户自行选择节点和字段；renderer 无法表示的已选协议显式失败 |",
+    "| OneXray | `apple-proxy-onexray` | 用户自行选择节点；原生 Profile 无法表示的已选协议显式失败 |",
   ]) assert.ok(guide.includes(row), row);
   assert.match(guide, /`apple-proxy-all`[\s\S]{0,160}总池/u);
   assert.match(guide, /`apple-proxy-sources`[\s\S]{0,240}(?:兼容|回滚)/u);
-  assert.match(guide, /不支持的已选协议[会将必须应当][\s\S]{0,80}(?:失败|报错)[\s\S]{0,80}不(?:会|得)静默丢弃/u);
+  assert.match(guide, /渲染器确实无法表示的协议[\s\S]{0,80}(?:失败|报错)[\s\S]{0,80}不(?:会|得)静默丢弃/u);
 
   const orderedSteps = [
     "保留旧 collection 和 tasks",
