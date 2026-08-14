@@ -1872,12 +1872,19 @@ var EgernNodeBundle = (() => {
       throw new Error("Egern runtime compatibility unavailable");
     }
   }
+  function safeGlobalValue(name) {
+    const descriptor = Object.getOwnPropertyDescriptor(globalThis, name);
+    if (descriptor !== void 0 && ("get" in descriptor || "set" in descriptor)) {
+      throw new Error("Egern runtime compatibility unavailable");
+    }
+    return descriptor?.value;
+  }
   function installEgernRuntimeFallbacks() {
     let cloneImplementation;
     let urlImplementation;
     try {
-      cloneImplementation = globalThis.structuredClone;
-      urlImplementation = globalThis.URL;
+      cloneImplementation = safeGlobalValue("structuredClone");
+      urlImplementation = safeGlobalValue("URL");
       if (cloneImplementation !== void 0 && typeof cloneImplementation !== "function") {
         throw new Error("Invalid structured clone global");
       }
