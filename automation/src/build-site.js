@@ -803,7 +803,8 @@ export async function promoteOneXrayRelease({
 }) {
   if (!/^[0-9a-f]{64}$/u.test(manifestHash)) throw new TypeError("OneXray promotion target is invalid");
   const edgeDirectory = join(publicDirectory, "edge", ONEXRAY_PUBLIC_PATH);
-  const edgeFiles = await readArtifactTree(edgeDirectory, ONEXRAY_PUBLIC_PATH);
+  const edgeTree = await readArtifactTree(edgeDirectory, ONEXRAY_PUBLIC_PATH);
+  const edgeFiles = new Map(ONEXRAY_PUBLIC_FILES.map((path) => [path, edgeTree.get(path)]));
   const edgeManifest = validateOneXrayPublication({ files: edgeFiles, channel: "edge" });
   if (edgeManifest.manifestHash !== manifestHash) {
     throw new Error("OneXray edge manifest hash does not match promotion target");

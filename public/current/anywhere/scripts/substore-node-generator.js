@@ -122,7 +122,7 @@ var AnywhereNodeBundle = (() => {
       requiredFields: ["password"],
       tls: true
     }),
-    protocol(["anytls"], [CLIENT.egern, CLIENT.anywhere, CLIENT.singbox], {
+    protocol(["anytls"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox], {
       requiredFields: ["password"],
       tls: true
     }),

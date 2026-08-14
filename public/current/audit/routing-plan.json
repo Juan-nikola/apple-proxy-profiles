@@ -216,7 +216,7 @@
       "sources": [
         {
           "dnsClass": "none",
-          "entries": 11386,
+          "entries": 11387,
           "id": "ChinaIP",
           "policy": "DIRECT"
         }
@@ -224,9 +224,9 @@
     }
   ],
   "schemaVersion": 1,
-  "sha256": "e13c06ada9598680294ec93672c9ab2339d3bd35b1d13330968936f294dbf168",
+  "sha256": "7d81784e69ec84b20b98b54339806ccf0a25cade4defd147349a5144c561ec62",
   "totals": {
-    "entries": 17130,
+    "entries": 17131,
     "sources": 32
   }
 }
