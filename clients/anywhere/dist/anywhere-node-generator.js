@@ -192,22 +192,32 @@ var AnywhereNodeBundle = (() => {
       return "unknown";
     }
   }
-  function assertRenderableNodes(nodes, clientName, renderOneNode) {
+  function validateRenderableInvocation(nodes, clientName, renderOneNode) {
     if (!Array.isArray(nodes)) throw new TypeError("Renderable node inventory must be an array");
     if (typeof clientName !== "string" || !/^[A-Za-z][A-Za-z0-9 -]*$/u.test(clientName)) {
       throw new TypeError("Render client name is invalid");
     }
     if (typeof renderOneNode !== "function") throw new TypeError("Node renderer must be a function");
+  }
+  function failureSummary(failures) {
+    return Object.keys(failures).sort((left, right) => left.localeCompare(right, "en")).map((protocol2) => `${protocol2}=${failures[protocol2]}`).join(",");
+  }
+  function partitionRenderableNodes(nodes, clientName, renderOneNode) {
+    validateRenderableInvocation(nodes, clientName, renderOneNode);
     const failures = {};
+    const renderable = [];
     for (const node of nodes) {
       try {
         renderOneNode(node);
+        renderable.push(node);
       } catch {
         increment(failures, protocolOf(node));
       }
     }
-    const counts = Object.keys(failures).sort((left, right) => left.localeCompare(right, "en")).map((protocol2) => `${protocol2}=${failures[protocol2]}`).join(",");
-    if (counts) throw new Error(`${clientName} cannot render selected protocols: ${counts}`);
+    if (renderable.length === 0) {
+      throw new Error(`${clientName} cannot render selected protocols: ${failureSummary(failures)}`);
+    }
+    return { renderable, failureProtocols: failures };
   }
 
   // ../../../shared/serialization/render-yaml.js
@@ -1005,15 +1015,18 @@ var AnywhereNodeBundle = (() => {
     }
     if (!Array.isArray(nodes)) throw new Error("Invalid Anywhere node inventory");
     if (nodes.length === 0) throw new Error("No compatible Anywhere nodes; excluded counts: none");
-    assertRenderableNodes(nodes, "Anywhere", toAnywhereProxy);
+    const partitioned = partitionRenderableNodes(nodes, "Anywhere", toAnywhereProxy);
     const names = /* @__PURE__ */ new Set();
-    const proxies = nodes.map((node) => {
+    const proxies = partitioned.renderable.map((node) => {
       const proxy = toAnywhereProxy(node);
       if (names.has(proxy.name)) throw new Error("Duplicate Anywhere proxy name");
       names.add(proxy.name);
       return proxy;
     });
-    const diagnostics = { accepted: nodes.length, excluded: {} };
+    const diagnostics = { accepted: partitioned.renderable.length, excluded: {} };
+    if (Object.keys(partitioned.failureProtocols).length > 0) {
+      diagnostics.renderFailures = partitioned.failureProtocols;
+    }
     onDiagnostics?.(structuredClone(diagnostics));
     return { proxies, diagnostics };
   }
@@ -1726,6 +1739,9 @@ var AnywhereNodeBundle = (() => {
     diagnostics.accepted = anywhereDiagnostics.accepted;
     for (const [reason, count] of Object.entries(anywhereDiagnostics.excluded)) {
       increment(diagnostics.excluded, reason, count);
+    }
+    if (Object.hasOwn(anywhereDiagnostics, "renderFailures")) {
+      diagnostics.renderFailures = { ...anywhereDiagnostics.renderFailures };
     }
     return diagnostics;
   }

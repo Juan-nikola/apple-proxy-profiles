@@ -162,7 +162,7 @@ test("Sub-Store sing-box entry rejects unsafe collection names before artifact p
   }
 });
 
-test("Sub-Store sing-box entry rejects a mixed inventory without partial JSON or private logs", async () => {
+test("Sub-Store sing-box entry keeps the compatible subset and reports skipped protocols", async () => {
   const privateNode = {
     name: "PRIVATE_SINGBOX_SUDOKU",
     type: "sudoku",
@@ -172,34 +172,27 @@ test("Sub-Store sing-box entry rejects a mixed inventory without partial JSON or
     _subName: "[自建] Sudoku",
   };
   const lines = [];
-  let result;
-  await assert.rejects(
-    async () => {
-      result = await operator({}, "macos", {
-        arguments: {
-          output: "config",
-          type: "collection",
-          name: "sing-box-sources",
-          subscriptionName: "sing-box-Nodes",
-          platform: "macos",
-        },
-        async produceArtifact() { return [nodes[0], privateNode]; },
-        logger: { info(line) { lines.push(line); } },
-      });
+  const result = await operator({}, "macos", {
+    arguments: {
+      output: "config",
+      type: "collection",
+      name: "sing-box-sources",
+      subscriptionName: "sing-box-Nodes",
+      platform: "macos",
     },
-    (error) => {
-      assert.equal(error.message, "sing-box cannot render selected protocols: sudoku=1");
-      for (const secret of [privateNode.name, privateNode.server, privateNode.key]) {
-        assert.equal(error.message.includes(secret), false);
-      }
-      return true;
-    },
-  );
-  assert.equal(result, undefined);
-  assert.deepEqual(lines, []);
+    async produceArtifact() { return [nodes[0], privateNode]; },
+    logger: { info(line) { lines.push(line); } },
+  });
+  const config = JSON.parse(result.$content);
+  assert.equal(config.outbounds.some(({ type }) => type === "shadowsocks"), true);
+  assert.equal(JSON.stringify(config).includes(privateNode.name), false);
+  assert.equal(JSON.stringify(config).includes(privateNode.key), false);
+  assert.equal(lines.length, 1);
+  assert.equal(lines[0].includes('"accepted":1,"renderFailures":{"sudoku":1}'), true);
+  assert.equal(lines[0].includes(privateNode.name), false);
 });
 
-test("Sub-Store sing-box renderability probe rejects an unsupported selected AnyTLS field", async () => {
+test("Sub-Store sing-box renderability skips an unsupported selected AnyTLS field", async () => {
   const privateNode = {
     name: "PRIVATE_SINGBOX_ANYTLS",
     type: "anytls",
@@ -210,34 +203,27 @@ test("Sub-Store sing-box renderability probe rejects an unsupported selected Any
     _subName: "[自建] AnyTLS",
   };
   const lines = [];
-  let result;
-  await assert.rejects(
-    async () => {
-      result = await operator({}, "macos", {
-        arguments: {
-          output: "config",
-          type: "collection",
-          name: "apple-proxy-singbox",
-          subscriptionName: "sing-box-Nodes",
-          platform: "macos",
-        },
-        async produceArtifact() { return [nodes[0], privateNode]; },
-        logger: { info(line) { lines.push(line); } },
-      });
+  const result = await operator({}, "macos", {
+    arguments: {
+      output: "config",
+      type: "collection",
+      name: "apple-proxy-singbox",
+      subscriptionName: "sing-box-Nodes",
+      platform: "macos",
     },
-    (error) => {
-      assert.equal(error.message, "sing-box cannot render selected protocols: anytls=1");
-      for (const secret of [privateNode.name, privateNode.server, privateNode.password, privateNode["future-option"]]) {
-        assert.equal(error.message.includes(secret), false);
-      }
-      return true;
-    },
-  );
-  assert.equal(result, undefined);
-  assert.deepEqual(lines, []);
+    async produceArtifact() { return [nodes[0], privateNode]; },
+    logger: { info(line) { lines.push(line); } },
+  });
+  const config = JSON.parse(result.$content);
+  assert.equal(config.outbounds.some(({ type }) => type === "shadowsocks"), true);
+  assert.equal(config.outbounds.some(({ type }) => type === "anytls"), false);
+  assert.equal(JSON.stringify(config).includes(privateNode["future-option"]), false);
+  assert.equal(lines.length, 1);
+  assert.equal(lines[0].includes('"accepted":1,"renderFailures":{"anytls":1}'), true);
+  assert.equal(lines[0].includes(privateNode.name), false);
 });
 
-test("Sub-Store sing-box probe rejects an unmapped nested AnyTLS Reality field", async () => {
+test("Sub-Store sing-box probe skips an unmapped nested AnyTLS Reality field", async () => {
   const privateNode = {
     name: "PRIVATE_SINGBOX_ANYTLS_REALITY",
     type: "anytls",
@@ -253,35 +239,23 @@ test("Sub-Store sing-box probe rejects an unmapped nested AnyTLS Reality field",
     _subName: "[自建] AnyTLS",
   };
   const lines = [];
-  let result;
-  await assert.rejects(
-    async () => {
-      result = await operator({}, "macos", {
-        arguments: {
-          output: "config",
-          type: "collection",
-          name: "apple-proxy-singbox",
-          subscriptionName: "sing-box-Nodes",
-          platform: "macos",
-        },
-        async produceArtifact() { return [nodes[0], privateNode]; },
-        logger: { info(line) { lines.push(line); } },
-      });
+  const result = await operator({}, "macos", {
+    arguments: {
+      output: "config",
+      type: "collection",
+      name: "apple-proxy-singbox",
+      subscriptionName: "sing-box-Nodes",
+      platform: "macos",
     },
-    (error) => {
-      assert.equal(error.message, "sing-box cannot render selected protocols: anytls=1");
-      for (const secret of [
-        privateNode.name,
-        privateNode.server,
-        privateNode.password,
-        privateNode["reality-opts"]["public-key"],
-        privateNode["reality-opts"]["future-option"],
-      ]) {
-        assert.equal(error.message.includes(secret), false);
-      }
-      return true;
-    },
-  );
-  assert.equal(result, undefined);
-  assert.deepEqual(lines, []);
+    async produceArtifact() { return [nodes[0], privateNode]; },
+    logger: { info(line) { lines.push(line); } },
+  });
+  const config = JSON.parse(result.$content);
+  assert.equal(config.outbounds.some(({ type }) => type === "shadowsocks"), true);
+  assert.equal(config.outbounds.some(({ type }) => type === "anytls"), false);
+  assert.equal(JSON.stringify(config).includes(privateNode["reality-opts"]["public-key"]), false);
+  assert.equal(JSON.stringify(config).includes(privateNode["reality-opts"]["future-option"]), false);
+  assert.equal(lines.length, 1);
+  assert.equal(lines[0].includes('"accepted":1,"renderFailures":{"anytls":1}'), true);
+  assert.equal(lines[0].includes(privateNode.name), false);
 });

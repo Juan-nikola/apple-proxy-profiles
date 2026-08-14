@@ -53,13 +53,13 @@ Shadowrocket 新任务只读取 `apple-proxy-shadowrocket`。先按 [Sub-Store �
 output=nodes&type=collection&name=apple-proxy-shadowrocket&clientChain=off
 ```
 
-生成器会统一节点名称（国旗 + 来源标签 + 能力标记）、去重、按 Shadowrocket 能力过滤，并按“洲 → 国旗 → 名称”排序（亚太 → 欧洲 → 美洲，洲内按国旗）。把该 File 的私密输出 URL 记下来，在 Shadowrocket 中作为节点订阅添加，更新间隔设为每 6 小时。
+生成器会统一节点名称（国旗 + 来源标签 + 能力标记）、去重、跳过 renderer 无法表示的节点（计入 `renderFailures`），并按“洲 → 国旗 → 名称”排序（亚太 → 欧洲 → 美洲，洲内按国旗）。把该 File 的私密输出 URL 记下来，在 Shadowrocket 中作为节点订阅添加，更新间隔设为每 6 小时。
 
 旧 `substore-profile-generator.js` Pages URL 继续保留为字节一致的兼容别名；已部署任务不要仅为文件改名替换 URL，也不要同时导入新旧别名。
 
 成功标志：订阅预览得到至少一个节点；顺序按洲分组（亚太 → 欧洲 → 美洲）；国旗不重复；名称含统一来源标签；没有服务器地址、密码或 UUID 出现在日志统计中。预览为空时停止，不发布。
 
-如果只有个别节点被排除，先看不含节点详情的“排除原因计数”。如果全部节点被排除，保持旧订阅，不要继续导入设备。
+如果只有个别节点被跳过，先看不含节点详情的 `renderFailures` 协议计数。如果全部节点都被跳过，保持旧订阅，不要继续导入设备。
 
 ## 3. 创建三个配置 File Script Operator
 

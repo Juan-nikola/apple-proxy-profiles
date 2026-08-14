@@ -143,23 +143,24 @@ test("operator logs one aggregate diagnostics line without node values", async (
   }
 });
 
-test("operator rejects a mixed inventory before Shadowrocket output and logging", async () => {
+test("operator skips a mixed inventory and logs render-failure counts", async () => {
   const unsupported = egernOnlyNodes();
   const lines = [];
-  await assert.rejects(
-    operator([fakeNodes[0], ...unsupported], "Shadowrocket", {
-      arguments: { output: "nodes", clientChain: "on" },
-      logger: { info(line) { lines.push(line); } },
-    }),
-    (error) => {
-      assert.equal(error.message, "Shadowrocket cannot render selected protocols: ssh=1,wireguard=1");
-      for (const secret of ["SSH landing", "ssh-landing.example.invalid", "TEST_ONLY_SSH_PASSWORD"]) {
-        assert.equal(error.message.includes(secret), false);
-      }
-      return true;
-    },
-  );
-  assert.deepEqual(lines, []);
+  const result = await operator([fakeNodes[0], ...unsupported], "Shadowrocket", {
+    arguments: { output: "nodes", clientChain: "on" },
+    logger: { info(line) { lines.push(line); } },
+  });
+  assert.equal(Array.isArray(result), true);
+  assert.equal(result.length, 1);
+  assert.match(result[0].name, /Tokyo A/u);
+  for (const node of unsupported) {
+    for (const secret of [node.name, node.server, node.password, node["private-key"], node["public-key"]]) {
+      if (secret !== undefined) assert.equal(JSON.stringify(result).includes(secret), false);
+    }
+  }
+  assert.equal(lines.length, 1);
+  const diagnostics = JSON.parse(lines[0].slice("[shadowrocket-profile] ".length));
+  assert.deepEqual(diagnostics.renderFailures, { ssh: 1, wireguard: 1 });
 });
 
 test("operator reports protocol counts without logging when every selected protocol is unrenderable", async () => {

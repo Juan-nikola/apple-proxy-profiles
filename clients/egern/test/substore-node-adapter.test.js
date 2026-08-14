@@ -92,7 +92,21 @@ test("adapts the complete current 28-node Sub-Store inventory without mutating i
   assert.equal(hysteria2Proxies.every((proxy) => proxy.skip_tls_verify === true), true);
 });
 
-test("adaptation failures reject the full Sub-Store inventory", () => {
+test("adapts AnyTLS idle session fields before rendering", () => {
+  const idle = {
+    ...common("Idle AnyTLS", "anytls"),
+    password: "TEST_ONLY_IDLE_ANYTLS_PASSWORD",
+    "idle-session-check-interval": 30,
+    "idle-session-timeout": 60,
+    "min-idle-session": 1,
+  };
+  const prepared = prepareEgernInventory([idle], { clientChain: "off" });
+  assert.equal(prepared.nodes.length, 1);
+  assert.equal(prepared.nodes[0]["idle-session-timeout"], undefined);
+  assert.deepEqual(prepared.diagnostics, { accepted: 1, excluded: {} });
+});
+
+test("adaptation failures are skipped while the compatible subset renders", () => {
   const good = {
     ...common("Good Snell", "snell"),
     psk: "TEST_ONLY_GOOD_SNELL_PSK",
@@ -103,9 +117,9 @@ test("adaptation failures reject the full Sub-Store inventory", () => {
   const hash = "ab".repeat(32);
   const invalid = [
     {
-      ...common("Bad AnyTLS idle field", "anytls"),
+      ...common("Bad AnyTLS future field", "anytls"),
       password: "TEST_ONLY_BAD_ANYTLS_PASSWORD",
-      "idle-session-timeout": 60,
+      "future-option": "TEST_ONLY_BAD_ANYTLS_FUTURE",
     },
     { ...vless(1), name: "Bad client fingerprint", "client-fingerprint": "firefox" },
     { ...vless(2), name: "Bad encryption", encryption: "auto" },
@@ -118,28 +132,32 @@ test("adaptation failures reject the full Sub-Store inventory", () => {
     { ...hysteria2(4), name: "Missing fingerprint alias", fingerprint: hash, "tls-fingerprint": undefined },
   ];
 
-  assert.throws(
-    () => prepareEgernInventory([good, ...invalid], { clientChain: "off" }),
-    (error) => {
-      assert.equal(error.message, "Egern cannot render selected protocols: anytls=1,hy2=4,vless=5");
-      for (const secret of ["Bad AnyTLS idle field", "Bad client fingerprint", "bad-client-fingerprint.example.invalid", "TEST_ONLY_HYSTERIA2_PASSWORD_1"]) {
-        assert.equal(error.message.includes(secret), false);
-      }
-      return true;
-    },
-  );
+  const prepared = prepareEgernInventory([good, ...invalid], { clientChain: "off" });
+  assert.equal(prepared.nodes.length, 1);
+  assert.equal(prepared.proxies.length, 1);
+  assert.deepEqual(prepared.diagnostics, {
+    accepted: 1,
+    excluded: {},
+    renderFailures: { anytls: 1, hy2: 4, vless: 5 },
+  });
+  for (const secret of ["Bad AnyTLS future field", "Bad client fingerprint", "bad-client-fingerprint.example.invalid", "TEST_ONLY_HYSTERIA2_PASSWORD_1"]) {
+    assert.equal(JSON.stringify(prepared.diagnostics).includes(secret), false);
+  }
 });
 
-test("adapter traps become unknown render failures without reflecting private errors", () => {
+test("adapter traps become skipped unknown nodes without reflecting private errors", () => {
   const privateTrap = "TEST_ONLY_PRIVATE_EGERN_ADAPTER_TRAP";
   const hostile = {};
   Object.defineProperty(hostile, "type", {
     enumerable: true,
     get() { throw new Error(privateTrap); },
   });
-  assert.throws(
-    () => prepareEgernInventory([snell(1), hostile], { clientChain: "off" }),
-    (error) => error.message === "Egern cannot render selected protocols: unknown=1"
-      && !error.message.includes(privateTrap),
-  );
+  const prepared = prepareEgernInventory([snell(1), hostile], { clientChain: "off" });
+  assert.equal(prepared.nodes.length, 1);
+  assert.deepEqual(prepared.diagnostics, {
+    accepted: 1,
+    excluded: {},
+    renderFailures: { unknown: 1 },
+  });
+  assert.equal(JSON.stringify(prepared.diagnostics).includes(privateTrap), false);
 });

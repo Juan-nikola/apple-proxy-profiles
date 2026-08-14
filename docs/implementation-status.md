@@ -4,7 +4,7 @@ Sub-Store 当前的六客户端 collection 边界、迁移和回滚见 [Sub-Stor
 
 | 里程碑 | 状态 | 说明 | 验证 |
 | --- | --- | --- | --- |
-| 共享核心与节点能力 | 已完成 | 共享协议、规范化、渲染器全量校验和隐私边界已建立 | `npm run verify` |
+| 共享核心与节点能力 | 已完成 | 共享协议、规范化、隐私边界；renderer 无法表示的节点跳过并计入 renderFailures，全部不可渲染才失败 | `npm run verify` |
 | Shadowrocket | 已完成 | Profile 生成器内置节点归一化（兼容 Sub-Store 2.36）、macOS/iPhone/iPad Profile、规则和兼容入口 | workspace 测试、构建、线上 Sub-Store 输出验证 |
 | Egern | 已完成 | 节点 YAML、macOS/iPhone/iPad Profile 和 Sub-Store 入口 | workspace 测试、构建、脱敏 fixtures |
 | Anywhere | 已完成 | 节点 YAML、`.arrs` 规则分片、Manifest、全部导入页 | workspace 测试、规则检查、导入页测试 |

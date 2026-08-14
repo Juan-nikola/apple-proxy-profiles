@@ -140,4 +140,4 @@ https://juan-nikola.github.io/apple-proxy-profiles/current/egern/scripts/egern-p
 - 生成配置默认省略 `auto_update`：仓库不知道你的私密 Profile URL，而 Egern 不接受缺少 `url` 的空 `auto_update` 对象。参数变化后，应重新运行或刷新私密 Sub-Store Profile File 任务，再在 Egern 中手动更新对应的远程 Profile。
 - Egern 稳定版是默认发布基线。Beta 或 TestFlight 仅供主动选择的用户验证，并继续使用同一份 Profile；除非以后仓库提交明确的 feature flag（功能开关），不要假设测试版专属行为。
 
-所有生成器都采用 fail-closed（失败即停止）校验。不得绕过或削弱 fail-closed 校验，也不得删除或覆盖旧 Profile 来“修复”导入问题。
+所有生成器对校验错误和全部节点不可渲染都采用 fail-closed（失败即停止）；renderer 无法表示的单个节点会跳过并计入 `renderFailures`。不得绕过或削弱 fail-closed 校验，也不得删除或覆盖旧 Profile 来“修复”导入问题。

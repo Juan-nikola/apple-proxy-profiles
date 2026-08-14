@@ -51,23 +51,26 @@ test("Happ operator requests a private collection and renders every selected nod
   assert.doesNotMatch(lines[0], /TEST_ONLY_OPERATOR_SECRET|private-tokyo\.example/u);
 });
 
-test("Happ operator fails closed when any selected node cannot be rendered", async () => {
+test("Happ operator skips unrenderable selected nodes and reports render failures", async () => {
   const lines = [];
-  await assert.rejects(
-    () => operator({}, "Happ", {
-      arguments: configArguments(),
-      async produceArtifact() { return structuredClone(rawNodes); },
-      logger: { info(line) { lines.push(line); } },
-    }),
-    (error) => {
-      assert.equal(error.message, "Happ cannot render selected protocols: snell=1");
-      assert.equal(error.message.includes("Unsupported Snell"), false);
-      assert.equal(error.message.includes("private-snell.example.invalid"), false);
-      assert.equal(error.message.includes("TEST_ONLY_SNELL_SECRET"), false);
-      return true;
-    },
-  );
-  assert.deepEqual(lines, []);
+  const result = await operator({}, "Happ", {
+    arguments: configArguments(),
+    async produceArtifact() { return structuredClone(rawNodes); },
+    logger: { info(line) { lines.push(line); } },
+  });
+  const configs = JSON.parse(result.$content);
+  assert.equal(configs.length, 1);
+  assert.equal(configs[0].remarks.includes("Tokyo"), true);
+  assert.equal(result.$content.includes("TEST_ONLY_SNELL_SECRET"), false);
+  assert.equal(result.$content.includes("private-snell.example.invalid"), false);
+  assert.equal(lines.length, 1);
+  const diagnostics = JSON.parse(lines[0].slice("[happ-config] ".length));
+  assert.deepEqual(diagnostics, {
+    output: "config",
+    platform: "macos",
+    selected: 1,
+    renderFailures: { snell: 1 },
+  });
 });
 
 test("Happ operator emits private audit JSON from the same normalized eligible inventory", async () => {

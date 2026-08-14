@@ -47,7 +47,7 @@ https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-
 
 预览成功标志：输出包含 OneXray 可导入的节点列表，节点数量大于 0。
 
-节点列表只保留 OneXray 支持的协议（VLESS、VMess、SS、Trojan、Socks、HTTP、Hysteria2）；Snell 等 Xray 内核不支持的协议会被自动排除，因此这里的节点数量可能小于其他客户端。
+节点列表只输出 OneXray 渲染器可表示的协议（VLESS、VMess、SS、Trojan、Socks、HTTP、Hysteria2）；Snell 等无法表示的协议会跳过并计入 `renderFailures`，因此这里的节点数量可能小于其他客户端。全部节点不可渲染时任务失败。
 
 OneXray 的“订阅”页面要填 Sub-Store 的文件直链，不是 Sub-Store 管理页面。对于后端地址 `<SUBSTORE_API>`，节点直链是：
 

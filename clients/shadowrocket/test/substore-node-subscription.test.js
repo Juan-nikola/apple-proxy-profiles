@@ -175,17 +175,24 @@ test("serializes Snell, Shadowsocks, Trojan, Hysteria2 and TUIC nodes", () => {
   assert.equal(records[4].password, "TEST_ONLY_TUIC_PASSWORD");
 });
 
-test("rejects an unknown mixed protocol instead of serializing a partial record", () => {
-  assert.throws(
-    () => renderShadowrocketSubscription([
-      node({ type: " Future-Proto ", name: "PRIVATE_FUTURE_NODE", server: "192.0.2.16", password: "TEST_ONLY_FUTURE_PASSWORD" }),
-      anytlsNode({ name: "🇺🇸 Future peer · AnyTLS｜自建", password: "TEST_ONLY_GOOD_ANYTLS_PASSWORD" }),
-    ]),
-    (error) => error.message === "Shadowrocket cannot render selected protocols: future-proto=1"
-      && !error.message.includes("PRIVATE_FUTURE_NODE")
-      && !error.message.includes("192.0.2.16")
-      && !error.message.includes("TEST_ONLY_FUTURE_PASSWORD"),
-  );
+test("skips an unknown mixed protocol and serializes only renderable records", () => {
+  const future = node({
+    type: " Future-Proto ",
+    name: "PRIVATE_FUTURE_NODE",
+    server: "192.0.2.16",
+    password: "TEST_ONLY_FUTURE_PASSWORD",
+  });
+  const text = renderShadowrocketSubscription([
+    future,
+    anytlsNode({ name: "🇺🇸 Future peer · AnyTLS｜自建", password: "TEST_ONLY_GOOD_ANYTLS_PASSWORD" }),
+  ]);
+  const records = recordsOf(text);
+  assert.equal(records.length, 1);
+  assert.equal(records[0].type, "anytls");
+  assert.equal(records[0].password, "TEST_ONLY_GOOD_ANYTLS_PASSWORD");
+  for (const secret of [future.name, future.server, future.password]) {
+    assert.equal(text.includes(secret), false);
+  }
 });
 
 test("operator produces a continent-grouped subscription from the collection", async () => {
@@ -250,7 +257,7 @@ test("operator rejects invalid arguments and empty inventories", async () => {
   }), /non-empty/i);
 });
 
-test("operator rejects a mixed Shadowrocket collection without partial subscription output", async () => {
+test("operator skips a mixed Shadowrocket collection and logs render-failure counts", async () => {
   const privateNode = {
     name: "PRIVATE_SHADOWROCKET_SSH",
     type: "ssh",
@@ -261,23 +268,19 @@ test("operator rejects a mixed Shadowrocket collection without partial subscript
     _subName: "[落地] SSH",
   };
   const lines = [];
-  let result;
-  await assert.rejects(
-    async () => {
-      result = await operator({}, "Shadowrocket", {
-        arguments: { output: "nodes", type: "collection", name: "apple-proxy-shadowrocket", clientChain: "off" },
-        async produceArtifact() { return [anytlsNode({ password: "TEST_ONLY_MIXED_ANYTLS_PASSWORD" }), privateNode]; },
-        logger: { info(line) { lines.push(line); } },
-      });
-    },
-    (error) => {
-      assert.equal(error.message, "Shadowrocket cannot render selected protocols: ssh=1");
-      for (const secret of [privateNode.name, privateNode.server, privateNode.password]) {
-        assert.equal(error.message.includes(secret), false);
-      }
-      return true;
-    },
-  );
-  assert.equal(result, undefined);
-  assert.deepEqual(lines, []);
+  const result = await operator({}, "Shadowrocket", {
+    arguments: { output: "nodes", type: "collection", name: "apple-proxy-shadowrocket", clientChain: "off" },
+    async produceArtifact() { return [anytlsNode({ password: "TEST_ONLY_MIXED_ANYTLS_PASSWORD" }), privateNode]; },
+    logger: { info(line) { lines.push(line); } },
+  });
+  const records = recordsOf(result.$content);
+  assert.equal(records.length, 1);
+  assert.equal(records[0].type, "anytls");
+  assert.equal(records[0].password, "TEST_ONLY_MIXED_ANYTLS_PASSWORD");
+  for (const secret of [privateNode.name, privateNode.server, privateNode.password]) {
+    assert.equal(result.$content.includes(secret), false);
+  }
+  assert.equal(lines.length, 1);
+  const diagnostics = JSON.parse(lines[0].slice("[shadowrocket-node-subscription] ".length));
+  assert.deepEqual(diagnostics.renderFailures, { ssh: 1 });
 });

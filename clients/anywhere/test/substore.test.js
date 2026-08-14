@@ -55,27 +55,15 @@ function producer(nodes, calls = []) {
   };
 }
 
-test("Anywhere File Operator rejects a mixed inventory without partial output or private logs", async () => {
+test("Anywhere File Operator skips unrenderable nodes and logs render-failure counts", async () => {
   const calls = [];
   const lines = [];
   const input = { unchanged: true };
-  let result;
-  await assert.rejects(
-    async () => {
-      result = await operator(input, "Anywhere", {
-        arguments: ARGUMENTS,
-        produceArtifact: producer(mixedInventory(), calls),
-        logger: { info(line) { lines.push(line); } },
-      });
-    },
-    (error) => {
-      assert.equal(error.message, "Anywhere cannot render selected protocols: future-proto=1");
-      for (const secret of ["Unsupported Future Protocol", "192.0.2.20", "TEST_ONLY_ANYWHERE_FUTURE_PASSWORD"]) {
-        assert.equal(error.message.includes(secret), false);
-      }
-      return true;
-    },
-  );
+  const result = await operator(input, "Anywhere", {
+    arguments: ARGUMENTS,
+    produceArtifact: producer(mixedInventory(), calls),
+    logger: { info(line) { lines.push(line); } },
+  });
   assert.equal(operator.length, 2);
   assert.deepEqual(calls, [{
     type: "collection",
@@ -83,8 +71,17 @@ test("Anywhere File Operator rejects a mixed inventory without partial output or
     platform: "JSON",
     produceType: "internal",
   }]);
-  assert.equal(result, undefined);
-  assert.deepEqual(lines, []);
+  assert.equal(result.unchanged, true);
+  assert.match(result.$content, /^proxies:\n/u);
+  assert.match(result.$content, /type: "anytls"/u);
+  assert.match(result.$content, / · AnyTLS｜自建/u);
+  for (const secret of ["Unsupported Future Protocol", "192.0.2.20", "TEST_ONLY_ANYWHERE_FUTURE_PASSWORD"]) {
+    assert.equal(result.$content.includes(secret), false);
+  }
+  assert.equal(lines.length, 1);
+  const diagnostics = JSON.parse(lines[0].slice("[anywhere-profile] ".length));
+  assert.deepEqual(diagnostics.renderFailures, { "future-proto": 1 });
+  assert.equal(lines[0].includes("Unsupported Future Protocol"), false);
 });
 
 test("Anywhere File Operator emits a non-empty AnyTLS list with its protocol label", async () => {

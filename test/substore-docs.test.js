@@ -87,13 +87,14 @@ test("canonical client pool guide defines six mappings, migration, rollback, and
     "| Egern | `apple-proxy-egern` | 用户自行选择来源、AnyTLS 和字段形状 |",
     "| Anywhere | `apple-proxy-anywhere` | 用户自行选择 Anywhere 可导入的节点，远程输出只有节点列表 |",
     "| Shadowrocket | `apple-proxy-shadowrocket` | 用户自行选择节点；AnyTLS 等已实现类型可直接包含 |",
-    "| Surge | `apple-proxy-surge` | 用户自行选择节点；renderer 无法表示的已选协议显式失败 |",
-    "| sing-box | `apple-proxy-singbox` | 用户自行选择节点和字段；renderer 无法表示的已选协议显式失败 |",
-    "| OneXray | `apple-proxy-onexray` | 用户自行选择节点；原生 Profile 无法表示的已选协议显式失败 |",
+    "| Surge | `apple-proxy-surge` | 用户自行选择节点；renderer 无法表示的协议跳过并计入 renderFailures |",
+    "| sing-box | `apple-proxy-singbox` | 用户自行选择节点和字段；renderer 无法表示的协议跳过并计入 renderFailures |",
+    "| OneXray | `apple-proxy-onexray` | 用户自行选择节点；原生 Profile 无法表示的协议跳过并计入 renderFailures |",
   ]) assert.ok(guide.includes(row), row);
   assert.match(guide, /`apple-proxy-all`[\s\S]{0,160}总池/u);
   assert.match(guide, /`apple-proxy-sources`[\s\S]{0,240}(?:兼容|回滚)/u);
-  assert.match(guide, /渲染器确实无法表示的协议[\s\S]{0,80}(?:失败|报错)[\s\S]{0,80}不(?:会|得)静默丢弃/u);
+  assert.match(guide, /渲染器确实无法表示的协议[\s\S]{0,120}renderFailures[\s\S]{0,120}(?:失败|报错)/u);
+  assert.match(guide, /不(?:会|得)静默丢弃/u);
 
   const orderedSteps = [
     "保留旧 collection 和 tasks",

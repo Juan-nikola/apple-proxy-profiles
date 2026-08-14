@@ -126,14 +126,13 @@ test("node bundle retains labeled AnyTLS fields with client chaining enabled", a
   assert.equal(diagnostics.excluded["chain-protocol-unsupported"], 1);
 });
 
-test("node bundle fails closed with safe protocol counts for unsupported inventories", async () => {
+test("node bundle skips unsupported mixed inventory and reports render-failure counts", async () => {
   const source = await readFile(nodeBundlePath, "utf8");
   const unsupported = unsupportedNodes();
   const cases = [
     [[unsupported[0]], "Shadowrocket cannot render selected protocols: ssh=1"],
     [[unsupported[1]], "Shadowrocket cannot render selected protocols: wireguard=1"],
     [[unsupported[0], unsupported[1]], "Shadowrocket cannot render selected protocols: ssh=1,wireguard=1"],
-    [[anytlsNode(), unsupported[0]], "Shadowrocket cannot render selected protocols: ssh=1"],
   ];
 
   for (const [inventory, expectedMessage] of cases) {
@@ -152,6 +151,23 @@ test("node bundle fails closed with safe protocol counts for unsupported invento
       }
     }
   }
+
+  const { context, lines } = loadBundle(source, {
+    $arguments: { output: "nodes", clientChain: "on" },
+  });
+  const mixed = [anytlsNode(), unsupported[0]];
+  const nodes = await context.operator(mixed, "Shadowrocket");
+  assert.equal(Array.isArray(nodes), true);
+  assert.equal(nodes.length, 1);
+  assert.equal(nodes[0].type, "anytls");
+  for (const node of unsupported) {
+    for (const value of [node.name, node.server, node.password, node["private-key"], node["public-key"]]) {
+      if (value !== undefined) assert.equal(JSON.stringify(nodes).includes(value), false);
+    }
+  }
+  assert.equal(lines.length, 1);
+  const diagnostics = JSON.parse(lines[0].replace(/^\[shadowrocket-profile\] /, ""));
+  assert.deepEqual(diagnostics.renderFailures, { ssh: 1 });
 });
 
 test("profile bundle is self-contained and runs with Sub-Store globals", async () => {

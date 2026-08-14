@@ -67,6 +67,9 @@ export function mergedEgernDiagnostics(normalizationDiagnostics, egernDiagnostic
   for (const [reason, count] of Object.entries(egernDiagnostics.excluded)) {
     increment(diagnostics.excluded, reason, count);
   }
+  if (Object.hasOwn(egernDiagnostics, "renderFailures")) {
+    diagnostics.renderFailures = { ...egernDiagnostics.renderFailures };
+  }
   return diagnostics;
 }
 

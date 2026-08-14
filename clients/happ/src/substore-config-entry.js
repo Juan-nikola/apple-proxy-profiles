@@ -1,5 +1,5 @@
 import { normalizeNodes } from "../../../shared/nodes/normalize-nodes.js";
-import { assertRenderableNodes } from "../../../shared/nodes/renderability.js";
+import { partitionRenderableNodes } from "../../../shared/nodes/renderability.js";
 import { buildHappAudit } from "./audit.js";
 import { parseHappOptions } from "./options.js";
 import { renderHappOutbound } from "./render-node.js";
@@ -37,11 +37,11 @@ function loggerMethod(context) {
   return null;
 }
 
-function logDiagnostics(context, options, normalized) {
+function logDiagnostics(context, options, partitioned, renderFailures) {
   const log = loggerMethod(context);
   if (!log) return;
   try {
-    log(`[happ-config] ${JSON.stringify({ output: options.output, platform: options.platform, selected: normalized.nodes.length })}`);
+    log(`[happ-config] ${JSON.stringify({ output: options.output, platform: options.platform, selected: partitioned.renderable.length, renderFailures })}`);
   } catch {
     // Diagnostics are optional and cannot affect private generated content.
   }
@@ -60,11 +60,11 @@ export async function operator(input, targetPlatform, context = {}) {
   });
   if (!Array.isArray(rawNodes) || rawNodes.length === 0) throw new Error("produceArtifact must return a non-empty node array");
   const normalized = normalizeNodes(rawNodes);
-  assertRenderableNodes(normalized.nodes, "Happ", (node) => renderHappOutbound(node, "happ-render-probe"));
-  logDiagnostics(context, options, normalized);
+  const partitioned = partitionRenderableNodes(normalized.nodes, "Happ", (node) => renderHappOutbound(node, "happ-render-probe"));
+  logDiagnostics(context, options, partitioned, partitioned.failureProtocols);
   const content = options.output === "audit"
-    ? buildHappAudit({ nodes: normalized.nodes, allNodes: normalized.nodes, options })
-    : renderHappSubscription({ nodes: normalized.nodes, allNodes: normalized.nodes, options });
+    ? buildHappAudit({ nodes: partitioned.renderable, allNodes: normalized.nodes, options })
+    : renderHappSubscription({ nodes: partitioned.renderable, allNodes: normalized.nodes, options });
   if (options.output === "config") validateHappSubscription(content);
   return { ...input, $content: `${JSON.stringify(content, null, 2)}\n` };
 }

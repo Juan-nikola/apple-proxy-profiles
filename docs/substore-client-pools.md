@@ -11,11 +11,11 @@
 | Egern | `apple-proxy-egern` | 用户自行选择来源、AnyTLS 和字段形状 |
 | Anywhere | `apple-proxy-anywhere` | 用户自行选择 Anywhere 可导入的节点，远程输出只有节点列表 |
 | Shadowrocket | `apple-proxy-shadowrocket` | 用户自行选择节点；AnyTLS 等已实现类型可直接包含 |
-| Surge | `apple-proxy-surge` | 用户自行选择节点；renderer 无法表示的已选协议显式失败 |
-| sing-box | `apple-proxy-singbox` | 用户自行选择节点和字段；renderer 无法表示的已选协议显式失败 |
-| OneXray | `apple-proxy-onexray` | 用户自行选择节点；原生 Profile 无法表示的已选协议显式失败 |
+| Surge | `apple-proxy-surge` | 用户自行选择节点；renderer 无法表示的协议跳过并计入 renderFailures |
+| sing-box | `apple-proxy-singbox` | 用户自行选择节点和字段；renderer 无法表示的协议跳过并计入 renderFailures |
+| OneXray | `apple-proxy-onexray` | 用户自行选择节点；原生 Profile 无法表示的协议跳过并计入 renderFailures |
 
-用户必须在 Sub-Store 中自行选择每个 client collection 的成员。生成器不做客户端能力白名单过滤：勾选什么节点就处理什么节点；只有渲染器确实无法表示的协议才会让任务显式失败，不会静默丢弃。先修正 collection 选择再重新 preview，不要把节点数减少误当作成功过滤。
+用户必须在 Sub-Store 中自行选择每个 client collection 的成员。生成器不做客户端能力白名单过滤：勾选什么节点就处理什么节点；渲染器确实无法表示的协议会跳过，并按协议计数写入 `renderFailures` 诊断，不会静默丢弃。只有没有任何节点可渲染时任务才失败。先看 preview 日志里的 `renderFailures`，再决定是否修正 collection 选择。
 
 > 本用户部署中的 `xiaov` 来源跳过不使用，不要加入 `apple-proxy-all` 或任何 client collection。
 
@@ -26,7 +26,7 @@
 1. **保留旧 collection 和 tasks**：不重命名、不覆盖、不删除现有输出。
 2. **建立 `apple-proxy-all` 总池**：只添加用户已单独预览过的来源。
 3. **建立六个客户端组合**：按上表精确创建六个名称，并从总池选择成员。
-4. **用户自行筛选**：直接编辑对应 collection 选择要包含的节点；生成器不按客户端能力白名单过滤，渲染器无法表示的已选协议会显式失败。
+4. **用户自行筛选**：直接编辑对应 collection 选择要包含的节点；生成器不按客户端能力白名单过滤，渲染器无法表示的已选协议会跳过并计入 `renderFailures`，全部不可渲染才失败。
 5. **preview**：逐个预览六个 client collection，记录节点总数和各协议计数；任何失败先停止迁移。
 6. **只修改对应客户端的 `name=`**：将该客户端的 File/Script tasks 指向它自己的 collection，不改其他客户端任务。
 7. **refresh 并对比计数**：刷新该客户端的节点与 Profile/Config 任务，将输入数、输出数与 preview 记录对比。

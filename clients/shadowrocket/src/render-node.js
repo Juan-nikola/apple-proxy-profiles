@@ -1,5 +1,5 @@
 import { normalizeProtocol } from "../../../shared/nodes/protocol-registry.js";
-import { assertRenderableNodes } from "../../../shared/nodes/renderability.js";
+import { assertRenderableNodes, partitionRenderableNodes } from "../../../shared/nodes/renderability.js";
 
 const SHADOWROCKET_PROXY_KEYS = Object.freeze([
   "name", "type", "server", "port", "udp", "tls", "sni", "servername",
@@ -65,4 +65,8 @@ export function renderShadowrocketProxyRecord(node) {
 
 export function assertShadowrocketNodeSet(nodes) {
   assertRenderableNodes(nodes, "Shadowrocket", renderShadowrocketProxyRecord);
+}
+
+export function partitionShadowrocketNodeSet(nodes) {
+  return partitionRenderableNodes(nodes, "Shadowrocket", renderShadowrocketProxyRecord);
 }

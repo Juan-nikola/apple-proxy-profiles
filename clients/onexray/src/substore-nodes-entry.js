@@ -1,5 +1,5 @@
 import { normalizeNodes } from "../../../shared/nodes/normalize-nodes.js";
-import { assertRenderableNodes } from "../../../shared/nodes/renderability.js";
+import { partitionRenderableNodes } from "../../../shared/nodes/renderability.js";
 import { parseOneXrayOptions } from "./options.js";
 import { renderOneXrayOutbound } from "./render-outbound.js";
 import { resolveOneXrayPolicy } from "./resolve-policy.js";
@@ -85,18 +85,18 @@ export function runOneXrayNodesProcessor(input = {}) {
     throw processorError("invalid-inventory");
   }
 
-  assertRenderableNodes(normalized.nodes, "OneXray", (node) => renderOneXrayOutbound(node, {
+  const partitioned = partitionRenderableNodes(normalized.nodes, "OneXray", (node) => renderOneXrayOutbound(node, {
     tag: node.name,
     allowDisplayTag: true,
   }));
-  emitDiagnostics(onDiagnostics, normalized.diagnostics, {});
+  emitDiagnostics(onDiagnostics, normalized.diagnostics, partitioned.failureProtocols);
 
   let resolution;
   try {
     resolution = resolveOneXrayPolicy({
       options,
       allNodes: normalized.nodes,
-      eligibleNodes: normalized.nodes,
+      eligibleNodes: partitioned.renderable,
     });
   } catch (error) {
     void error;

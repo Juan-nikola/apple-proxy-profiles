@@ -62,45 +62,39 @@ const nodes = [
   },
 ];
 
-test("Surge node entry rejects an unrenderable VLESS selection without partial output or private logs", async () => {
+test("Surge node entry skips an unrenderable VLESS selection and logs render-failure counts", async () => {
   const calls = [];
   const lines = [];
-  let result;
-  await assert.rejects(
-    async () => {
-      result = await operator({ id: "input" }, "macos", {
-      arguments: {
-        output: "nodes",
-        type: "collection",
-        name: "apple-proxy-surge",
-        clientChain: "off",
-      },
-      async produceArtifact(request) {
-        calls.push(request);
-        return nodes;
-      },
-      logger: { info(line) { lines.push(line); } },
-      });
+  const result = await operator({ id: "input" }, "macos", {
+    arguments: {
+      output: "nodes",
+      type: "collection",
+      name: "apple-proxy-surge",
+      clientChain: "off",
     },
-    (error) => {
-      assert.equal(error.message, "Surge cannot render selected protocols: vless=1");
-      for (const secret of [
-        nodes[1].name, nodes[1].server, nodes[1].uuid,
-        nodes[2].name, nodes[2].server, nodes[2].password,
-      ]) {
-        assert.equal(error.message.includes(secret), false);
-      }
-      return true;
+    async produceArtifact(request) {
+      calls.push(request);
+      return nodes;
     },
-  );
+    logger: { info(line) { lines.push(line); } },
+  });
   assert.deepEqual(calls, [{
     type: "collection",
     name: "apple-proxy-surge",
     platform: "JSON",
     produceType: "internal",
   }]);
-  assert.equal(result, undefined);
-  assert.deepEqual(lines, []);
+  assert.equal(result.id, "input");
+  assert.match(result.$content, /^\[Proxy\]/mu);
+  assert.match(result.$content, / = snell,/u);
+  assert.match(result.$content, / = anytls,/u);
+  for (const secret of [nodes[1].name, nodes[1].server, nodes[1].uuid]) {
+    assert.equal(result.$content.includes(secret), false);
+  }
+  assert.equal(lines.length, 1);
+  const diagnostics = JSON.parse(lines[0].slice("[surge-nodes] ".length));
+  assert.equal(diagnostics.accepted, 2);
+  assert.deepEqual(diagnostics.renderFailures, { vless: 1 });
 });
 
 test("Surge node entry forwards the parsed safe collection name and rejects unsafe names", async () => {

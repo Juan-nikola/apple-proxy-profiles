@@ -1,5 +1,5 @@
 import { normalizeNodes } from "../../../shared/nodes/normalize-nodes.js";
-import { assertRenderableNodes } from "../../../shared/nodes/renderability.js";
+import { partitionRenderableNodes } from "../../../shared/nodes/renderability.js";
 import { BUSINESS_TARGETS } from "../../../shared/policies/business-targets.js";
 import { orderedRoutingPlan } from "../../../shared/rules/lightweight-policy.js";
 import { oneXrayGeoCode, oneXrayGeoNames } from "./geodata-contract.js";
@@ -101,7 +101,7 @@ function defineInternal(target, key, value) {
   });
 }
 
-function privateContext({ options, normalized, resolution, profile, profileLink, dns, routing, geo, geoHashes }) {
+function privateContext({ options, normalized, resolution, profile, profileLink, dns, routing, geo, geoHashes, renderFailureProtocols = {} }) {
   const normalizedNodes = normalized.nodes;
   const context = {
     normalizedDiagnostics: Object.freeze({
@@ -110,7 +110,7 @@ function privateContext({ options, normalized, resolution, profile, profileLink,
       protocol: Object.freeze(copyCounts(normalized.diagnostics.protocol)),
       excluded: Object.freeze(copyCounts(normalized.diagnostics.excluded)),
     }),
-    renderFailureProtocols: Object.freeze({}),
+    renderFailureProtocols: Object.freeze(renderFailureProtocols),
     ruleReleaseId: `shared-lightweight-${options.channel}`,
     geoHashes: Object.freeze({ ...geoHashes }),
   };
@@ -171,7 +171,7 @@ function buildPrivateOneXrayContext(rawArguments, proxies, { geoHashes = {}, pol
     throw processorError("invalid-inventory");
   }
 
-  assertRenderableNodes(normalized.nodes, "OneXray", (node) => renderOneXrayOutbound(node, {
+  const partitioned = partitionRenderableNodes(normalized.nodes, "OneXray", (node) => renderOneXrayOutbound(node, {
     tag: node.name,
     allowDisplayTag: true,
   }));
@@ -181,7 +181,7 @@ function buildPrivateOneXrayContext(rawArguments, proxies, { geoHashes = {}, pol
     resolution = resolveOneXrayPolicy({
       options: { ...options, policyOverrides },
       allNodes: normalized.nodes,
-      eligibleNodes: normalized.nodes,
+      eligibleNodes: partitioned.renderable,
     });
   } catch (error) {
     throw policyProcessorError(error);
@@ -209,7 +209,18 @@ function buildPrivateOneXrayContext(rawArguments, proxies, { geoHashes = {}, pol
     throw processorError("invalid-profile");
   }
 
-  return privateContext({ options, normalized, resolution, profile, profileLink, dns, routing, geo, geoHashes });
+  return privateContext({
+    options,
+    normalized,
+    resolution,
+    profile,
+    profileLink,
+    dns,
+    routing,
+    geo,
+    geoHashes,
+    renderFailureProtocols: partitioned.failureProtocols,
+  });
 }
 
 /**

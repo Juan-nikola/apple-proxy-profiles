@@ -1,6 +1,6 @@
 import { increment } from "../../../shared/nodes/diagnostics.js";
 import { normalizeProtocol } from "../../../shared/nodes/protocol-registry.js";
-import { assertRenderableNodes } from "../../../shared/nodes/renderability.js";
+import { partitionRenderableNodes } from "../../../shared/nodes/renderability.js";
 import { adaptEgernSubStoreNodes } from "./adapt-substore-nodes.js";
 import { renderYaml } from "./render-yaml.js";
 import { EGERN_CHAIN_POLICY, toEgernProxy } from "./render-node.js";
@@ -65,13 +65,24 @@ export function prepareEgernInventory(nodes, { clientChain = "off", onDiagnostic
     if (node.adaptationFailure !== undefined) throw new Error("Egern node adaptation failed");
     toEgernProxy(node, { clientChain });
   };
-  assertRenderableNodes([...compatible, ...adapted.failures], "Egern", probe);
+  const partitioned = partitionRenderableNodes([...compatible, ...adapted.failures], "Egern", probe);
+  const failureProtocols = { ...partitioned.failureProtocols };
 
-  const withEgernSshChains = appendEgernSshChainClones(compatible, diagnostics, clientChain);
-  assertRenderableNodes(withEgernSshChains.slice(compatible.length), "Egern", probe);
+  const withEgernSshChains = appendEgernSshChainClones(partitioned.renderable, diagnostics, clientChain);
+  let inventory = partitioned.renderable;
+  if (withEgernSshChains.length !== inventory.length) {
+    const clones = withEgernSshChains.slice(inventory.length);
+    const clonePartition = partitionRenderableNodes(clones, "Egern", probe);
+    inventory = [...inventory, ...clonePartition.renderable];
+    for (const [protocol, count] of Object.entries(clonePartition.failureProtocols)) {
+      increment(failureProtocols, protocol, count);
+    }
+  }
+  diagnostics.accepted = inventory.length;
+  if (Object.keys(failureProtocols).length > 0) diagnostics.renderFailures = failureProtocols;
 
   const seenNames = new Set();
-  const proxies = withEgernSshChains.map((node) => {
+  const proxies = inventory.map((node) => {
     const proxy = toEgernProxy(node, { clientChain });
     const protocol = Object.keys(proxy)[0];
     const name = proxy[protocol].name;
@@ -82,7 +93,7 @@ export function prepareEgernInventory(nodes, { clientChain = "off", onDiagnostic
 
   onDiagnostics?.(structuredClone(diagnostics));
   return {
-    nodes: withEgernSshChains,
+    nodes: inventory,
     proxies,
     diagnostics: structuredClone(diagnostics),
   };

@@ -884,22 +884,32 @@ var ShadowrocketProfileBundle = (() => {
       return "unknown";
     }
   }
-  function assertRenderableNodes(nodes, clientName, renderOneNode) {
+  function validateRenderableInvocation(nodes, clientName, renderOneNode) {
     if (!Array.isArray(nodes)) throw new TypeError("Renderable node inventory must be an array");
     if (typeof clientName !== "string" || !/^[A-Za-z][A-Za-z0-9 -]*$/u.test(clientName)) {
       throw new TypeError("Render client name is invalid");
     }
     if (typeof renderOneNode !== "function") throw new TypeError("Node renderer must be a function");
+  }
+  function failureSummary(failures) {
+    return Object.keys(failures).sort((left, right) => left.localeCompare(right, "en")).map((protocol2) => `${protocol2}=${failures[protocol2]}`).join(",");
+  }
+  function partitionRenderableNodes(nodes, clientName, renderOneNode) {
+    validateRenderableInvocation(nodes, clientName, renderOneNode);
     const failures = {};
+    const renderable = [];
     for (const node of nodes) {
       try {
         renderOneNode(node);
+        renderable.push(node);
       } catch {
         increment(failures, protocolOf(node));
       }
     }
-    const counts = Object.keys(failures).sort((left, right) => left.localeCompare(right, "en")).map((protocol2) => `${protocol2}=${failures[protocol2]}`).join(",");
-    if (counts) throw new Error(`${clientName} cannot render selected protocols: ${counts}`);
+    if (renderable.length === 0) {
+      throw new Error(`${clientName} cannot render selected protocols: ${failureSummary(failures)}`);
+    }
+    return { renderable, failureProtocols: failures };
   }
 
   // render-node.js
@@ -995,8 +1005,8 @@ var ShadowrocketProfileBundle = (() => {
       throw new Error(`Shadowrocket cannot render protocol: ${protocol2}`);
     }
   }
-  function assertShadowrocketNodeSet(nodes) {
-    assertRenderableNodes(nodes, "Shadowrocket", renderShadowrocketProxyRecord);
+  function partitionShadowrocketNodeSet(nodes) {
+    return partitionRenderableNodes(nodes, "Shadowrocket", renderShadowrocketProxyRecord);
   }
 
   // ../../../shared/dns/providers.js
@@ -2358,8 +2368,8 @@ ${renderRules({
       throw new Error("produceArtifact must return a non-empty node array");
     }
     const normalized = normalizeNodes(nodes, { clientChain: options.clientChain });
-    assertShadowrocketNodeSet(normalized.nodes);
-    const profile = renderProfile(options, normalized.nodes, {
+    const partitioned = partitionShadowrocketNodeSet(normalized.nodes);
+    const profile = renderProfile(options, partitioned.renderable, {
       ruleBaseUrl: ruleBaseUrlForChannel(options.channel)
     });
     if (!validateProfile(profile).valid) {

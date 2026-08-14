@@ -25,7 +25,7 @@ function accepted(node) {
   return node;
 }
 
-test("raw optional-shape failures reject the complete selected inventory", () => {
+test("raw optional-shape failures render the compatible subset with protocol counts", () => {
   const normalized = normalizeNodes([
     raw("Good SS", "ss", { cipher: "aes-128-gcm", password: "TEST_ONLY_GOOD_SS_PASSWORD" }),
     raw("Bad SOCKS auth", "socks5", { username: { nested: true } }),
@@ -37,20 +37,19 @@ test("raw optional-shape failures reject the complete selected inventory", () =>
     }),
   ]);
   const seen = [];
-  assert.throws(
-    () => renderEgernSubscription(normalized.nodes, {
-      clientChain: "off",
-      onDiagnostics(value) { seen.push(value); },
-    }),
-    (error) => {
-      assert.equal(error.message, "Egern cannot render selected protocols: http=1,hy2=1,socks5=1");
-      for (const secret of ["Bad SOCKS auth", "review.example.invalid", "TEST_ONLY_BAD_HY2_AUTH"]) {
-        assert.equal(error.message.includes(secret), false);
-      }
-      return true;
-    },
-  );
-  assert.deepEqual(seen, []);
+  const yaml = renderEgernSubscription(normalized.nodes, {
+    clientChain: "off",
+    onDiagnostics(value) { seen.push(value); },
+  });
+  assert.match(yaml, /Good · SS/u);
+  for (const secret of ["Bad SOCKS auth", "TEST_ONLY_BAD_HY2_AUTH"]) {
+    assert.equal(yaml.includes(secret), false);
+  }
+  assert.deepEqual(seen, [{
+    accepted: 1,
+    excluded: {},
+    renderFailures: { http: 1, hy2: 1, socks5: 1 },
+  }]);
 });
 
 test("SubStore source entries do not import the compatibility filter", () => {
@@ -73,7 +72,7 @@ test("SubStore source entries do not import the compatibility filter", () => {
   }
 });
 
-test("compatibility diagnostics stay total while rendering malformed nodes fails closed", () => {
+test("compatibility diagnostics stay total while malformed nodes are skipped", () => {
   const malformed = [
     { ...shadowsocks2022, name: { nested: true } },
     { ...shadowsocks2022, server: ["bad.example.invalid"] },
@@ -93,10 +92,17 @@ test("compatibility diagnostics stay total while rendering malformed nodes fails
       reason: "invalid-egern-node-shape",
     });
   }
-  assert.throws(
-    () => renderEgernSubscription([shadowsocks2022, ...malformed], { clientChain: "off" }),
-    /Egern cannot render selected protocols: ss=5,tuic=1/u,
-  );
+  const diagnostics = [];
+  const yaml = renderEgernSubscription([shadowsocks2022, ...malformed], {
+    clientChain: "off",
+    onDiagnostics(value) { diagnostics.push(value); },
+  });
+  assert.match(yaml, /SS 2022/u);
+  assert.deepEqual(diagnostics, [{
+    accepted: 1,
+    excluded: {},
+    renderFailures: { ss: 5, tuic: 1 },
+  }]);
 });
 
 test("validates every TUIC hopping alias before mapping a mixed inventory", () => {
@@ -119,14 +125,16 @@ test("validates every TUIC hopping alias before mapping a mixed inventory", () =
     }),
   ];
   const diagnostics = [];
-  assert.throws(
-    () => renderEgernSubscription([good, ...invalid], {
-      clientChain: "off",
-      onDiagnostics(value) { diagnostics.push(value); },
-    }),
-    /Egern cannot render selected protocols: tuic=2/u,
-  );
-  assert.deepEqual(diagnostics, []);
+  const yaml = renderEgernSubscription([good, ...invalid], {
+    clientChain: "off",
+    onDiagnostics(value) { diagnostics.push(value); },
+  });
+  assert.match(yaml, /TUIC aliases/u);
+  assert.deepEqual(diagnostics, [{
+    accepted: 1,
+    excluded: {},
+    renderFailures: { tuic: 2 },
+  }]);
 });
 
 test("rejects semantic alias conflicts and case-insensitive HTTP header duplicates", () => {
@@ -494,16 +502,30 @@ test("only Egern subscription rendering generates one eligible SSH landing chain
     _subName: "[自建] Unsupported Entry",
   });
   const unsupported = normalizeNodes([unsupportedEntry, landing], { clientChain: "on" });
-  assert.throws(
-    () => renderEgernSubscription(unsupported.nodes, { clientChain: "on" }),
-    /Egern cannot render selected protocols: sudoku=1/u,
-  );
+  const unsupportedDiagnostics = [];
+  const unsupportedYaml = renderEgernSubscription(unsupported.nodes, {
+    clientChain: "on",
+    onDiagnostics(value) { unsupportedDiagnostics.push(value); },
+  });
+  assert.match(unsupportedYaml, /landing · SSH/u);
+  assert.deepEqual(unsupportedDiagnostics, [{
+    accepted: 1,
+    excluded: {},
+    renderFailures: { sudoku: 1 },
+  }]);
 
   const arbitraryLanding = { ...landing, chain: "PRIVATE_EXISTING_CHAIN" };
   const arbitrary = normalizeNodes([entry, arbitraryLanding], { clientChain: "on" });
-  assert.throws(
-    () => renderEgernSubscription(arbitrary.nodes, { clientChain: "on" }),
-    (error) => error.message === "Egern cannot render selected protocols: ssh=1"
-      && !error.message.includes("PRIVATE_EXISTING_CHAIN"),
-  );
+  const arbitraryDiagnostics = [];
+  const arbitraryYaml = renderEgernSubscription(arbitrary.nodes, {
+    clientChain: "on",
+    onDiagnostics(value) { arbitraryDiagnostics.push(value); },
+  });
+  assert.match(arbitraryYaml, /chain entry/u);
+  assert.equal(arbitraryYaml.includes("PRIVATE_EXISTING_CHAIN"), false);
+  assert.deepEqual(arbitraryDiagnostics, [{
+    accepted: 1,
+    excluded: {},
+    renderFailures: { ssh: 1 },
+  }]);
 });

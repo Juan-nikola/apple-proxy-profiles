@@ -2348,22 +2348,32 @@ var EgernProfileBundle = (() => {
       return "unknown";
     }
   }
-  function assertRenderableNodes(nodes, clientName, renderOneNode) {
+  function validateRenderableInvocation(nodes, clientName, renderOneNode) {
     if (!Array.isArray(nodes)) throw new TypeError("Renderable node inventory must be an array");
     if (typeof clientName !== "string" || !/^[A-Za-z][A-Za-z0-9 -]*$/u.test(clientName)) {
       throw new TypeError("Render client name is invalid");
     }
     if (typeof renderOneNode !== "function") throw new TypeError("Node renderer must be a function");
+  }
+  function failureSummary(failures) {
+    return Object.keys(failures).sort((left, right) => left.localeCompare(right, "en")).map((protocol2) => `${protocol2}=${failures[protocol2]}`).join(",");
+  }
+  function partitionRenderableNodes(nodes, clientName, renderOneNode) {
+    validateRenderableInvocation(nodes, clientName, renderOneNode);
     const failures = {};
+    const renderable = [];
     for (const node of nodes) {
       try {
         renderOneNode(node);
+        renderable.push(node);
       } catch {
         increment(failures, protocolOf(node));
       }
     }
-    const counts = Object.keys(failures).sort((left, right) => left.localeCompare(right, "en")).map((protocol2) => `${protocol2}=${failures[protocol2]}`).join(",");
-    if (counts) throw new Error(`${clientName} cannot render selected protocols: ${counts}`);
+    if (renderable.length === 0) {
+      throw new Error(`${clientName} cannot render selected protocols: ${failureSummary(failures)}`);
+    }
+    return { renderable, failureProtocols: failures };
   }
 
   // adapt-substore-nodes.js
@@ -2450,12 +2460,20 @@ var EgernProfileBundle = (() => {
     }
     return { value: cloned ?? node };
   }
+  function adaptAnytls(node) {
+    const idleKeys = ["idle-session-check-interval", "idle-session-timeout", "min-idle-session"];
+    if (!idleKeys.some((key) => hasOwn(node, key))) return { value: node };
+    const cloned = structuredClone(node);
+    for (const key of idleKeys) delete cloned[key];
+    return { value: cloned };
+  }
   function adaptNode(node) {
     if (!isPlainObject(node)) return { value: node };
     const protocol2 = normalizeProtocol(node.type);
     if (protocol2 === "snell") return adaptSnell(node);
     if (protocol2 === "vless") return adaptRealityVless(node);
     if (protocol2 === "hysteria2" || protocol2 === "hy2") return adaptHysteria2(node);
+    if (protocol2 === "anytls") return adaptAnytls(node);
     return { value: node };
   }
   function failureProtocol(node) {
@@ -3805,11 +3823,22 @@ var EgernProfileBundle = (() => {
       if (node.adaptationFailure !== void 0) throw new Error("Egern node adaptation failed");
       toEgernProxy(node, { clientChain });
     };
-    assertRenderableNodes([...compatible, ...adapted.failures], "Egern", probe);
-    const withEgernSshChains = appendEgernSshChainClones(compatible, diagnostics, clientChain);
-    assertRenderableNodes(withEgernSshChains.slice(compatible.length), "Egern", probe);
+    const partitioned = partitionRenderableNodes([...compatible, ...adapted.failures], "Egern", probe);
+    const failureProtocols = { ...partitioned.failureProtocols };
+    const withEgernSshChains = appendEgernSshChainClones(partitioned.renderable, diagnostics, clientChain);
+    let inventory = partitioned.renderable;
+    if (withEgernSshChains.length !== inventory.length) {
+      const clones = withEgernSshChains.slice(inventory.length);
+      const clonePartition = partitionRenderableNodes(clones, "Egern", probe);
+      inventory = [...inventory, ...clonePartition.renderable];
+      for (const [protocol2, count] of Object.entries(clonePartition.failureProtocols)) {
+        increment(failureProtocols, protocol2, count);
+      }
+    }
+    diagnostics.accepted = inventory.length;
+    if (Object.keys(failureProtocols).length > 0) diagnostics.renderFailures = failureProtocols;
     const seenNames = /* @__PURE__ */ new Set();
-    const proxies = withEgernSshChains.map((node) => {
+    const proxies = inventory.map((node) => {
       const proxy = toEgernProxy(node, { clientChain });
       const protocol2 = Object.keys(proxy)[0];
       const name = proxy[protocol2].name;
@@ -3819,7 +3848,7 @@ var EgernProfileBundle = (() => {
     });
     onDiagnostics?.(structuredClone(diagnostics));
     return {
-      nodes: withEgernSshChains,
+      nodes: inventory,
       proxies,
       diagnostics: structuredClone(diagnostics)
     };
@@ -4783,6 +4812,9 @@ var EgernProfileBundle = (() => {
     diagnostics.accepted = egernDiagnostics.accepted;
     for (const [reason, count] of Object.entries(egernDiagnostics.excluded)) {
       increment(diagnostics.excluded, reason, count);
+    }
+    if (Object.hasOwn(egernDiagnostics, "renderFailures")) {
+      diagnostics.renderFailures = { ...egernDiagnostics.renderFailures };
     }
     return diagnostics;
   }

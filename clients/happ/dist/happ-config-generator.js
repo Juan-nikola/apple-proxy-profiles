@@ -760,22 +760,32 @@ var HappConfigBundle = (() => {
       return "unknown";
     }
   }
-  function assertRenderableNodes(nodes, clientName, renderOneNode) {
+  function validateRenderableInvocation(nodes, clientName, renderOneNode) {
     if (!Array.isArray(nodes)) throw new TypeError("Renderable node inventory must be an array");
     if (typeof clientName !== "string" || !/^[A-Za-z][A-Za-z0-9 -]*$/u.test(clientName)) {
       throw new TypeError("Render client name is invalid");
     }
     if (typeof renderOneNode !== "function") throw new TypeError("Node renderer must be a function");
+  }
+  function failureSummary(failures) {
+    return Object.keys(failures).sort((left, right) => left.localeCompare(right, "en")).map((protocol2) => `${protocol2}=${failures[protocol2]}`).join(",");
+  }
+  function partitionRenderableNodes(nodes, clientName, renderOneNode) {
+    validateRenderableInvocation(nodes, clientName, renderOneNode);
     const failures = {};
+    const renderable = [];
     for (const node of nodes) {
       try {
         renderOneNode(node);
+        renderable.push(node);
       } catch {
         increment(failures, protocolOf(node));
       }
     }
-    const counts = Object.keys(failures).sort((left, right) => left.localeCompare(right, "en")).map((protocol2) => `${protocol2}=${failures[protocol2]}`).join(",");
-    if (counts) throw new Error(`${clientName} cannot render selected protocols: ${counts}`);
+    if (renderable.length === 0) {
+      throw new Error(`${clientName} cannot render selected protocols: ${failureSummary(failures)}`);
+    }
+    return { renderable, failureProtocols: failures };
   }
 
   // src/policy-overrides.js
@@ -2223,11 +2233,11 @@ var HappConfigBundle = (() => {
     if (typeof logger?.log === "function") return logger.log.bind(logger);
     return null;
   }
-  function logDiagnostics(context, options, normalized) {
+  function logDiagnostics(context, options, partitioned, renderFailures) {
     const log = loggerMethod(context);
     if (!log) return;
     try {
-      log(`[happ-config] ${JSON.stringify({ output: options.output, platform: options.platform, selected: normalized.nodes.length })}`);
+      log(`[happ-config] ${JSON.stringify({ output: options.output, platform: options.platform, selected: partitioned.renderable.length, renderFailures })}`);
     } catch {
     }
   }
@@ -2243,9 +2253,9 @@ var HappConfigBundle = (() => {
     });
     if (!Array.isArray(rawNodes) || rawNodes.length === 0) throw new Error("produceArtifact must return a non-empty node array");
     const normalized = normalizeNodes(rawNodes);
-    assertRenderableNodes(normalized.nodes, "Happ", (node) => renderHappOutbound(node, "happ-render-probe"));
-    logDiagnostics(context, options, normalized);
-    const content = options.output === "audit" ? buildHappAudit({ nodes: normalized.nodes, allNodes: normalized.nodes, options }) : renderHappSubscription({ nodes: normalized.nodes, allNodes: normalized.nodes, options });
+    const partitioned = partitionRenderableNodes(normalized.nodes, "Happ", (node) => renderHappOutbound(node, "happ-render-probe"));
+    logDiagnostics(context, options, partitioned, partitioned.failureProtocols);
+    const content = options.output === "audit" ? buildHappAudit({ nodes: partitioned.renderable, allNodes: normalized.nodes, options }) : renderHappSubscription({ nodes: partitioned.renderable, allNodes: normalized.nodes, options });
     if (options.output === "config") validateHappSubscription(content);
     return { ...input, $content: `${JSON.stringify(content, null, 2)}
 ` };

@@ -111,12 +111,21 @@ function adaptHysteria2(node) {
   return { value: cloned ?? node };
 }
 
+function adaptAnytls(node) {
+  const idleKeys = ["idle-session-check-interval", "idle-session-timeout", "min-idle-session"];
+  if (!idleKeys.some((key) => hasOwn(node, key))) return { value: node };
+  const cloned = structuredClone(node);
+  for (const key of idleKeys) delete cloned[key];
+  return { value: cloned };
+}
+
 function adaptNode(node) {
   if (!isPlainObject(node)) return { value: node };
   const protocol = normalizeProtocol(node.type);
   if (protocol === "snell") return adaptSnell(node);
   if (protocol === "vless") return adaptRealityVless(node);
   if (protocol === "hysteria2" || protocol === "hy2") return adaptHysteria2(node);
+  if (protocol === "anytls") return adaptAnytls(node);
   return { value: node };
 }
 

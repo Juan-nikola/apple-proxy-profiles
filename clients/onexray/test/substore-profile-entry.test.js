@@ -161,7 +161,7 @@ test("contains Proxy request traps behind the stable invalid-request code", () =
   );
 });
 
-test("Profile and audit reject a mixed unrenderable inventory without partial output", () => {
+test("Profile and audit skip a mixed unrenderable inventory without leaking private nodes", () => {
   const privateNode = {
     ...NODE,
     name: "PRIVATE_ONEXRAY_PROFILE_SNELL",
@@ -170,22 +170,17 @@ test("Profile and audit reject a mixed unrenderable inventory without partial ou
     psk: "TEST_ONLY_ONEXRAY_PROFILE_PSK",
     version: 4,
   };
-  for (const output of ["profile", "audit"]) {
-    let text;
-    assert.throws(
-      () => {
-        text = runOneXrayProfileProcessor({ proxies: [NODE, privateNode], arguments: args(output) });
-      },
-      (error) => {
-        assert.equal(error.message, "OneXray cannot render selected protocols: snell=1");
-        for (const secret of [privateNode.name, privateNode.server, privateNode.psk]) {
-          assert.equal(error.message.includes(secret), false);
-        }
-        return true;
-      },
-      output,
-    );
-    assert.equal(text, undefined, output);
+  const profile = runOneXrayProfileProcessor({ proxies: [NODE, privateNode], arguments: args("profile") });
+  assert.match(profile, /^onexray:\/\/onexray\.com\/config\/add\?type=profile&data=.+\n$/u);
+  for (const secret of [privateNode.name, privateNode.server, privateNode.psk]) {
+    assert.equal(profile.includes(secret), false);
+  }
+
+  const auditText = runOneXrayProfileProcessor({ proxies: [NODE, privateNode], arguments: args("audit") });
+  const audit = JSON.parse(auditText);
+  assert.deepEqual(audit.nodes.renderFailures, { total: 1, protocols: { snell: 1 } });
+  for (const secret of [privateNode.name, privateNode.server, privateNode.psk]) {
+    assert.equal(auditText.includes(secret), false);
   }
 });
 

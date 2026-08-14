@@ -44,7 +44,7 @@ test("Happ operator documentation covers the six-platform setup and diagnostics 
   assert.match(content, /`DIRECT`.*`FOLLOW`.*`NODE:/us);
   assert.match(content, /missing-node-fallback/u);
   assert.match(content, /duplicate-node-fallback/u);
-  assert.match(content, /incompatible-node-fallback/u);
+  assert.match(content, /renderFailures|不兼容协议/u);
   assert.match(content, /meta\.serverDescription/u);
   assert.match(content, /Happ\/Xray 日志/u);
   assert.match(content, /Base64URL/u);

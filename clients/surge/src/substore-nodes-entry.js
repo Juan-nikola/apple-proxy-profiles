@@ -1,9 +1,9 @@
 import { normalizeNodes } from "../../../shared/nodes/normalize-nodes.js";
-import { assertRenderableNodes } from "../../../shared/nodes/renderability.js";
+import { partitionRenderableNodes } from "../../../shared/nodes/renderability.js";
 import { parseSurgeNodeOptions } from "./options.js";
 import { renderSurgeNodeResource, renderSurgeProxy, sanitizeSurgeNode } from "./render-node.js";
 
-function logDiagnostics(context, options, normalized) {
+function logDiagnostics(context, options, normalized, renderFailures) {
   const logger = context?.logger;
   const method = typeof logger === "function"
     ? logger
@@ -18,7 +18,8 @@ function logDiagnostics(context, options, normalized) {
       client: "surge",
       collection: options.name,
       total: normalized.diagnostics.total,
-      accepted: normalized.nodes.length,
+      accepted: normalized.nodes.length - Object.values(renderFailures ?? {}).reduce((sum, count) => sum + count, 0),
+      renderFailures,
     })}`);
   } catch {
     // Diagnostics are optional and never change the private output.
@@ -39,7 +40,8 @@ export async function operator(input, targetPlatform, context = {}) {
     throw new Error("produceArtifact must return a non-empty node array");
   }
   const normalized = normalizeNodes(rawNodes, { clientChain: options.clientChain });
-  assertRenderableNodes(normalized.nodes, "Surge", (node) => renderSurgeProxy(sanitizeSurgeNode(node)));
-  logDiagnostics(context, options, normalized);
-  return { ...input, $content: renderSurgeNodeResource(normalized.nodes) };
+  const probe = (node) => renderSurgeProxy(sanitizeSurgeNode(node));
+  const partitioned = partitionRenderableNodes(normalized.nodes, "Surge", probe);
+  logDiagnostics(context, options, normalized, partitioned.failureProtocols);
+  return { ...input, $content: renderSurgeNodeResource(partitioned.renderable) };
 }

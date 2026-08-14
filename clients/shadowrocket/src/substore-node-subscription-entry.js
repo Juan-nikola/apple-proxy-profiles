@@ -1,7 +1,7 @@
 import { normalizeNodes } from "../../../shared/nodes/normalize-nodes.js";
 import { validateCollectionName } from "../../../shared/substore/collection-name.js";
 import {
-  assertShadowrocketNodeSet,
+  partitionShadowrocketNodeSet,
   renderShadowrocketProxyRecord,
 } from "./render-node.js";
 
@@ -46,8 +46,8 @@ export function renderShadowrocketSubscription(nodes) {
   if (!Array.isArray(nodes) || nodes.length === 0) {
     throw new Error("Shadowrocket subscription refuses an empty node list");
   }
-  assertShadowrocketNodeSet(nodes);
-  const lines = nodes.map((node) => `  - ${JSON.stringify(renderShadowrocketProxyRecord(node))}`);
+  const partitioned = partitionShadowrocketNodeSet(nodes);
+  const lines = partitioned.renderable.map((node) => `  - ${JSON.stringify(renderShadowrocketProxyRecord(node))}`);
   return `proxies:\n${lines.join("\n")}\n`;
 }
 
@@ -67,7 +67,11 @@ export async function operator(input, targetPlatform, context = {}) {
     throw new Error("produceArtifact must return a non-empty node array");
   }
   const normalized = normalizeNodes(rawNodes, { clientChain: options.clientChain });
-  assertShadowrocketNodeSet(normalized.nodes);
-  logDiagnostics(context, { accepted: normalized.nodes.length, excluded: {} });
-  return { ...input, $content: renderShadowrocketSubscription(normalized.nodes) };
+  const partitioned = partitionShadowrocketNodeSet(normalized.nodes);
+  const diagnostics = { accepted: partitioned.renderable.length, excluded: {} };
+  if (Object.keys(partitioned.failureProtocols).length > 0) {
+    diagnostics.renderFailures = partitioned.failureProtocols;
+  }
+  logDiagnostics(context, diagnostics);
+  return { ...input, $content: renderShadowrocketSubscription(partitioned.renderable) };
 }

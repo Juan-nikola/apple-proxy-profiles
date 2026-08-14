@@ -188,7 +188,7 @@ test("maps all admitted protocol aliases and major verified transports", () => {
   assert.equal(toEgernProxy(tuic, { clientChain: "off" }).tuic.udp_relay_mode, "native");
 });
 
-test("renders a normalized AnyTLS node without dropping its verified Egern fields", () => {
+test("renders a normalized AnyTLS node and adapts Egern-incompatible idle session fields", () => {
   const [normalized] = normalizeNodes([{
     ...anytls,
     name: "Tokyo AnyTLS",
@@ -217,13 +217,14 @@ test("renders a normalized AnyTLS node without dropping its verified Egern field
   assert.match(yaml, /^proxies:\n  - anytls:/u);
   assert.match(yaml, / · AnyTLS｜自建·U/u);
 
-  assert.throws(
-    () => renderEgernSubscription([{
-      ...normalized,
-      "idle-session-timeout": 60,
-    }], { clientChain: "off" }),
-    /^Error: Egern cannot render selected protocols: anytls=1$/u,
-  );
+  const withIdleSession = renderEgernSubscription([{
+    ...normalized,
+    "idle-session-check-interval": 30,
+    "idle-session-timeout": 60,
+    "min-idle-session": 1,
+  }], { clientChain: "off" });
+  assert.match(withIdleSession, /^proxies:\n  - anytls:/u);
+  assert.equal(withIdleSession.includes("idle-session"), false);
 });
 
 test("filters every unrepresentable Egern shape before mapping with stable reasons", () => {
@@ -298,7 +299,7 @@ test("maps a verified single WireGuard peer and rejects peer conflicts", () => {
   });
 });
 
-test("subscription rendering rejects a mixed inventory without diagnostics or partial YAML", () => {
+test("subscription rendering keeps the compatible subset and reports render failures", () => {
   const diagnostics = [];
   const incompatible = [
     fixture("Secret transport node", "vless", {
@@ -315,26 +316,21 @@ test("subscription rendering rejects a mixed inventory without diagnostics or pa
     }),
   ];
   const nodes = [shadowsocks2022, ...incompatible];
-  let yaml;
-  assert.throws(
-    () => {
-      yaml = renderEgernSubscription(nodes, {
-        clientChain: "off",
-        onDiagnostics(value) { diagnostics.push(value); },
-      });
-    },
-    (error) => {
-      assert.equal(error.message, "Egern cannot render selected protocols: future-proto=1,ss=1,vless=1");
-      for (const node of incompatible) {
-        for (const value of [node.name, node.server, node.network, node.password]) {
-          if (value !== undefined) assert.equal(error.message.includes(String(value)), false);
-        }
-      }
-      return true;
-    },
-  );
-  assert.equal(yaml, undefined);
-  assert.deepEqual(diagnostics, []);
+  const yaml = renderEgernSubscription(nodes, {
+    clientChain: "off",
+    onDiagnostics(value) { diagnostics.push(value); },
+  });
+  assert.match(yaml, /SS 2022/u);
+  for (const node of incompatible) {
+    for (const value of [node.name, node.server, node.network, node.password]) {
+      if (value !== undefined) assert.equal(yaml.includes(String(value)), false);
+    }
+  }
+  assert.deepEqual(diagnostics, [{
+    accepted: 1,
+    excluded: {},
+    renderFailures: { "future-proto": 1, ss: 1, vless: 1 },
+  }]);
 });
 
 test("fails closed for duplicate names and all-incompatible inventories without leaking data", () => {

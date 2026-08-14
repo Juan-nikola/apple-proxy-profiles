@@ -1,6 +1,6 @@
 import { normalizeNodes } from "../../../shared/nodes/normalize-nodes.js";
 import { parseOptions } from "./options.js";
-import { assertShadowrocketNodeSet } from "./render-node.js";
+import { partitionShadowrocketNodeSet } from "./render-node.js";
 import { renderProfile } from "./render-profile.js";
 import { ruleBaseUrlForChannel } from "./render-rules.js";
 import { validateProfile } from "./validate-profile.js";
@@ -24,9 +24,9 @@ export async function operator(input, targetPlatform, context = {}) {
   }
 
   const normalized = normalizeNodes(nodes, { clientChain: options.clientChain });
-  assertShadowrocketNodeSet(normalized.nodes);
+  const partitioned = partitionShadowrocketNodeSet(normalized.nodes);
 
-  const profile = renderProfile(options, normalized.nodes, {
+  const profile = renderProfile(options, partitioned.renderable, {
     ruleBaseUrl: ruleBaseUrlForChannel(options.channel),
   });
   if (!validateProfile(profile).valid) {

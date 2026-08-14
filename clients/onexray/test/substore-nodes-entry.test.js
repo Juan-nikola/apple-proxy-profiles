@@ -26,11 +26,11 @@ function sourceNode(overrides = {}) {
   };
 }
 
-test("normalizes before rejecting a mixed unrenderable inventory", () => {
+test("normalizes before skipping a mixed unrenderable inventory", () => {
   const privateName = "PRIVATE_UNSUPPORTED_NODE";
   const privateServer = "private.invalid";
   const privateSecret = "TEST_ONLY_UNSUPPORTED_PSK";
-  assert.throws(() => runOneXrayNodesProcessor({
+  const text = runOneXrayNodesProcessor({
     proxies: [
       sourceNode(),
       sourceNode({
@@ -42,18 +42,14 @@ test("normalizes before rejecting a mixed unrenderable inventory", () => {
       }),
     ],
     arguments: ARGUMENTS,
-  }), (error) => {
-    assert.equal(error.message, "OneXray cannot render selected protocols: snell=1");
-    for (const secret of [privateName, privateServer, privateSecret]) assert.equal(error.message.includes(secret), false);
-    return true;
   });
+  assert.equal(JSON.parse(text).outbounds.length, 1);
+  for (const secret of [privateName, privateServer, privateSecret]) assert.equal(text.includes(secret), false);
 });
 
-test("does not emit diagnostics or partial output for mixed compatibility inventories", () => {
+test("reports render-failure counts for mixed compatibility inventories", () => {
   const diagnostics = [];
-  let text;
-  assert.throws(() => {
-    text = runOneXrayNodesProcessor({
+  const text = runOneXrayNodesProcessor({
     proxies: [
       sourceNode(),
       sourceNode({
@@ -66,11 +62,18 @@ test("does not emit diagnostics or partial output for mixed compatibility invent
     ],
     arguments: ARGUMENTS,
     onDiagnostics(value) { diagnostics.push(value); },
-    });
-  }, /OneXray cannot render selected protocols: snell=1/u);
+  });
 
-  assert.equal(text, undefined);
-  assert.deepEqual(diagnostics, []);
+  assert.equal(JSON.parse(text).outbounds.length, 1);
+  assert.deepEqual(diagnostics, [{
+    normalization: {
+      total: 2,
+      accepted: 2,
+      protocols: { snell: 1, vless: 1 },
+      excluded: {},
+    },
+    renderFailures: { snell: 1 },
+  }]);
 });
 
 test("reports normalization and render-failure counts without capability exclusions", () => {

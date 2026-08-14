@@ -1,4 +1,4 @@
-import { assertRenderableNodes } from "../../../shared/nodes/renderability.js";
+import { partitionRenderableNodes } from "../../../shared/nodes/renderability.js";
 import { renderYaml } from "../../../shared/serialization/render-yaml.js";
 import { toAnywhereProxy } from "./render-node.js";
 import { assertAnywhereSubscription } from "./validate-subscription.js";
@@ -27,15 +27,18 @@ export function prepareAnywhereInventory(nodes, options) {
   }
   if (!Array.isArray(nodes)) throw new Error("Invalid Anywhere node inventory");
   if (nodes.length === 0) throw new Error("No compatible Anywhere nodes; excluded counts: none");
-  assertRenderableNodes(nodes, "Anywhere", toAnywhereProxy);
+  const partitioned = partitionRenderableNodes(nodes, "Anywhere", toAnywhereProxy);
   const names = new Set();
-  const proxies = nodes.map((node) => {
+  const proxies = partitioned.renderable.map((node) => {
     const proxy = toAnywhereProxy(node);
     if (names.has(proxy.name)) throw new Error("Duplicate Anywhere proxy name");
     names.add(proxy.name);
     return proxy;
   });
-  const diagnostics = { accepted: nodes.length, excluded: {} };
+  const diagnostics = { accepted: partitioned.renderable.length, excluded: {} };
+  if (Object.keys(partitioned.failureProtocols).length > 0) {
+    diagnostics.renderFailures = partitioned.failureProtocols;
+  }
   onDiagnostics?.(structuredClone(diagnostics));
   return { proxies, diagnostics };
 }

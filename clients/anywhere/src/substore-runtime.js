@@ -61,6 +61,9 @@ export function mergedAnywhereDiagnostics(normalizationDiagnostics, anywhereDiag
   for (const [reason, count] of Object.entries(anywhereDiagnostics.excluded)) {
     increment(diagnostics.excluded, reason, count);
   }
+  if (Object.hasOwn(anywhereDiagnostics, "renderFailures")) {
+    diagnostics.renderFailures = { ...anywhereDiagnostics.renderFailures };
+  }
   return diagnostics;
 }
 

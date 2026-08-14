@@ -54,7 +54,7 @@ https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-
 
 预览成功标志：
 
-- `onexray-nodes`：节点数量大于 0。原始组合里的 Snell 等 Xray 不支持的节点会被自动排除，所以节点数可能少于 Shadowrocket/Egern，这是预期行为。
+- `onexray-nodes`：节点数量大于 0。原始组合里的 Snell 等无法由 OneXray 渲染器表示的节点会跳过并计入 `renderFailures`，所以节点数可能少于 Shadowrocket/Egern；全部不可渲染时任务失败。
 - `onexray-profile`：生成带版本号的 deep link。
 - `onexray-routing-audit`：生成脱敏 JSON 审计报告。
 

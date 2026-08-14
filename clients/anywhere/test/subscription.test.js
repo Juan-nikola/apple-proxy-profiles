@@ -226,32 +226,26 @@ test("canonicalizes every verified Sudoku alias without losing semantics", () =>
   });
 });
 
-test("rejects a mixed inventory without diagnostics or partial YAML", () => {
+test("skips unrenderable mixed inventory nodes and reports render-failure counts", () => {
   const nodes = [
     { ...BASE, name: "Good AnyTLS", type: "anytls", password: "TEST_ONLY_GOOD_PASSWORD" },
     { ...BASE, name: "Bad future protocol", type: " Future-Proto ", password: "TEST_ONLY_FUTURE_PASSWORD" },
     { ...BASE, name: "Bad transport", type: "trojan", password: "TEST_ONLY_BAD_PASSWORD", network: "grpc" },
   ];
-  let diagnostics;
-  assert.throws(
-    () => prepareAnywhereInventory(nodes, { onDiagnostics: (value) => { diagnostics = value; } }),
-    /Anywhere cannot render selected protocols: future-proto=1,trojan=1/u,
-  );
-  let yaml;
-  assert.throws(
-    () => { yaml = renderAnywhereSubscription(nodes); },
-    (error) => {
-      assert.equal(error.message, "Anywhere cannot render selected protocols: future-proto=1,trojan=1");
-      for (const node of nodes) {
-        for (const value of [node.name, node.server, node.password]) {
-          if (value !== undefined) assert.equal(error.message.includes(String(value)), false);
-        }
-      }
-      return true;
-    },
-  );
-  assert.equal(diagnostics, undefined);
-  assert.equal(yaml, undefined);
+  const diagnostics = [];
+  const yaml = renderAnywhereSubscription(nodes, {
+    onDiagnostics(value) { diagnostics.push(value); },
+  });
+  assert.match(yaml, /^proxies:\n/u);
+  assert.match(yaml, /name: "Good AnyTLS"/u);
+  assert.equal(yaml.includes("Bad future protocol"), false);
+  assert.equal(yaml.includes("TEST_ONLY_FUTURE_PASSWORD"), false);
+  assert.equal(yaml.includes("TEST_ONLY_BAD_PASSWORD"), false);
+  assert.deepEqual(diagnostics, [{
+    accepted: 1,
+    excluded: {},
+    renderFailures: { "future-proto": 1, trojan: 1 },
+  }]);
 });
 
 test("independently round-trips the actual YAML and exposes only proxies at root", (t) => {

@@ -1,5 +1,5 @@
 import { normalizeNodes } from "../../../shared/nodes/normalize-nodes.js";
-import { assertShadowrocketNodeSet } from "./render-node.js";
+import { partitionShadowrocketNodeSet } from "./render-node.js";
 
 const ALLOWED_OPTIONS = new Set(["output", "clientChain"]);
 
@@ -44,7 +44,14 @@ export async function operator(proxies = [], targetPlatform, context = {}) {
   void targetPlatform;
   const { clientChain } = parseArguments(context.arguments ?? {});
   const result = normalizeNodes(proxies, { clientChain });
-  assertShadowrocketNodeSet(result.nodes);
-  logDiagnostics(context, result.diagnostics);
-  return result.nodes;
+  const partitioned = partitionShadowrocketNodeSet(result.nodes);
+  const diagnostics = {
+    ...result.diagnostics,
+    accepted: partitioned.renderable.length,
+  };
+  if (Object.keys(partitioned.failureProtocols).length > 0) {
+    diagnostics.renderFailures = partitioned.failureProtocols;
+  }
+  logDiagnostics(context, diagnostics);
+  return partitioned.renderable;
 }

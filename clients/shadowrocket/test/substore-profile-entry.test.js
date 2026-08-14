@@ -141,7 +141,7 @@ test("file operator retains its JavaScript function arity", () => {
   assert.equal(operator.length, 2);
 });
 
-test("file operator rejects an unknown mixed inventory before rendering a partial Profile", async () => {
+test("file operator skips unknown mixed inventory while rendering the supported Profile", async () => {
   const privateNode = {
     name: "PRIVATE_SHADOWROCKET_PROFILE_FUTURE",
     type: " Future-Proto ",
@@ -150,21 +150,12 @@ test("file operator rejects an unknown mixed inventory before rendering a partia
     password: "TEST_ONLY_PROFILE_PASSWORD",
     _subName: "[自建] Future",
   };
-  let result;
-  await assert.rejects(
-    async () => {
-      result = await operator({}, "Shadowrocket", {
-        arguments: argumentsForProfile,
-        async produceArtifact() { return [anytlsNode(), privateNode]; },
-      });
-    },
-    (error) => {
-      assert.equal(error.message, "Shadowrocket cannot render selected protocols: future-proto=1");
-      for (const secret of [privateNode.name, privateNode.server, privateNode.password]) {
-        assert.equal(error.message.includes(secret), false);
-      }
-      return true;
-    },
-  );
-  assert.equal(result, undefined);
+  const result = await operator({}, "Shadowrocket", {
+    arguments: argumentsForProfile,
+    async produceArtifact() { return [anytlsNode(), privateNode]; },
+  });
+  assert.match(result.$content, /node-count=1/u);
+  for (const secret of [privateNode.name, privateNode.server, privateNode.password]) {
+    assert.equal(result.$content.includes(secret), false);
+  }
 });

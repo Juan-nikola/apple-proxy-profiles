@@ -215,7 +215,7 @@ https://juan-nikola.github.io/apple-proxy-profiles/current/surge/scripts/surge-n
 
 参数：`output=nodes&type=collection&name=apple-proxy-surge&clientChain=off`。
 
-预览应输出 `[Proxy]` 和至少一个节点。该资源输出用户选入 `apple-proxy-surge` 的全部节点，生成器不自动排除协议；当前 Surge renderer 未实现的协议（例如 VLESS）会让任务显式失败，不会静默丢弃。保存此 File 的私密输出 URL，下面记作 `<SURGE_NODES_URL>`。
+预览应输出 `[Proxy]` 和至少一个节点。该资源输出用户选入 `apple-proxy-surge` 的全部节点，生成器不按客户端能力白名单过滤；当前 Surge renderer 无法表示的协议（例如 VLESS）会跳过并计入 `renderFailures`，只有没有任何可渲染节点时才失败。保存此 File 的私密输出 URL，下面记作 `<SURGE_NODES_URL>`。
 
 ### 8.2 三个平台 Profile
 
@@ -258,7 +258,7 @@ https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-
 | `onexray-profile` | profile | 版本化 Profile deep link | 每天 |
 | `onexray-routing-audit` | audit | 脱敏路由审计 | 按需 |
 
-OneXray 的 `apple-proxy-onexray` 由用户自行选择节点，生成器不自动排除协议。原生 Profile 无法表示的已选协议会让生成器失败，不会静默丢弃；回到 collection 修正用户筛选后再 preview。
+OneXray 的 `apple-proxy-onexray` 由用户自行选择节点，生成器不自动排除协议。原生 Profile 无法表示的已选协议会跳过并计入 `renderFailures`，只有没有任何可渲染节点时才失败；查看审计或 preview 日志后再回到 collection 修正筛选。
 
 `v=10` 是本次内存修复后的 Sub-Store 脚本缓存版本号；脚本内容更新后把三个任务 URL 里的 `v=` 数字 +1 并重新保存。固定业务推荐用 `&policyFile=onexray-policy` 引用 Sub-Store 内的可读策略文件，也可继续用 `&policyOverrides=<Base64URL>`，两者不能同时使用。`logLevel` 可输入 `none`、`error`、`warning`、`info`、`debug`，默认 `warning`；`dnsLog` 可输入 `on`、`off`，默认 `off`，示例开启以便查看域名。
 
