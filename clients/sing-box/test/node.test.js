@@ -41,7 +41,7 @@ test("renders VLESS Reality WebSocket using official sing-box outbound fields", 
   });
 });
 
-test("renders Sub-Store VLESS fields including packet encoding", () => {
+test("renders Sub-Store VLESS fields while ignoring Reality spider metadata", () => {
   const outbound = renderSingBoxOutbound({
     name: "🇭🇰 阿里云香港 · VLESS｜自建·U",
     type: "vless",
@@ -63,7 +63,7 @@ test("renders Sub-Store VLESS fields including packet encoding", () => {
     },
   });
   assert.equal(outbound.packet_encoding, "xudp");
-  assert.equal(outbound.tls.reality.spider_x, "/test-only-spider");
+  assert.equal(Object.hasOwn(outbound.tls.reality, "spider_x"), false);
   assert.equal(Object.hasOwn(outbound, "encryption"), false);
 });
 
@@ -149,7 +149,7 @@ test("renders AnyTLS UDP flag from Sub-Store without forcing a network field", (
   assert.equal(Object.hasOwn(outbound, "network"), false);
 });
 
-test("renders AnyTLS Reality spider X into the official TLS field", () => {
+test("ignores AnyTLS Reality spider metadata that sing-box rejects", () => {
   const outbound = renderSingBoxOutbound({
     ...ANYTLS_NODE,
     security: "reality",
@@ -159,7 +159,9 @@ test("renders AnyTLS Reality spider X into the official TLS field", () => {
       "_spider-x": "/test-only-spider",
     },
   });
-  assert.equal(outbound.tls.reality.spider_x, "/test-only-spider");
+  assert.equal(outbound.tls.reality.public_key, "TEST_ONLY_ANYTLS_PUBLIC_KEY");
+  assert.equal(outbound.tls.reality.short_id, "0123abcd");
+  assert.equal(Object.hasOwn(outbound.tls.reality, "spider_x"), false);
 });
 
 for (const field of ["future-option", "spider-x"]) {

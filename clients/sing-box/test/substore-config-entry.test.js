@@ -211,9 +211,12 @@ test("Sub-Store sing-box entry keeps VLESS, AnyTLS and Snell from a real mixed i
   const config = JSON.parse(result.$content);
   const types = config.outbounds.map(({ type }) => type);
   assert.deepEqual(types.filter((type) => ["vless", "anytls", "snell"].includes(type)).sort(), ["anytls", "snell", "vless"]);
-  assert.equal(config.outbounds.find(({ type }) => type === "vless").packet_encoding, "xudp");
+  const vless = config.outbounds.find(({ type }) => type === "vless");
+  assert.equal(vless.packet_encoding, "xudp");
+  assert.equal(Object.hasOwn(vless.tls.reality, "spider_x"), false);
   assert.equal(config.outbounds.find(({ type }) => type === "anytls").server_port, 37311);
   assert.equal(config.outbounds.find(({ type }) => type === "snell").version, 4);
+  assert.equal(config.outbounds.some(({ tls }) => tls?.reality && Object.hasOwn(tls.reality, "spider_x")), false);
   assert.equal(lines.length, 1);
   assert.equal(lines[0].includes('"accepted":3,"renderFailures":{}'), true);
 });

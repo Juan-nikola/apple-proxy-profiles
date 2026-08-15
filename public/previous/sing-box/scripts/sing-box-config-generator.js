@@ -918,6 +918,11 @@ var SingBoxConfigBundle = (() => {
     "password",
     "uuid",
     "flow",
+    "encryption",
+    "packet-encoding",
+    "packetEncoding",
+    "xudp",
+    "packet-addr",
     "alter-id",
     "alterId",
     "psk",
@@ -989,12 +994,13 @@ var SingBoxConfigBundle = (() => {
     "alpn",
     "reality-opts",
     "network",
+    "udp",
     "idle-session-check-interval",
     "idle-session-timeout",
     "min-idle-session",
     ...CHAIN_ALIASES2
   ]);
-  var ANYTLS_REALITY_FIELDS = /* @__PURE__ */ new Set(["public-key", "short-id"]);
+  var ANYTLS_REALITY_FIELDS = /* @__PURE__ */ new Set(["public-key", "short-id", "_spider-x"]);
   function hasOwn(value, key) {
     return Object.hasOwn(value, key);
   }
@@ -1026,6 +1032,9 @@ var SingBoxConfigBundle = (() => {
     }
     if (hasOwn(node, "tls") && (typeof node.tls !== "boolean" || node.tls === false)) {
       throw new Error("Unsupported sing-box AnyTLS field: tls");
+    }
+    if (hasOwn(node, "udp") && typeof node.udp !== "boolean") {
+      throw new Error("Unsupported sing-box AnyTLS field: udp");
     }
     if (hasOwn(node, "security") && !["tls", "reality"].includes(node.security)) {
       throw new Error(`Unsupported sing-box AnyTLS security: ${String(node.security)}`);
@@ -1070,6 +1079,9 @@ var SingBoxConfigBundle = (() => {
       if (hasOwn(reality, "short-id") && (typeof reality["short-id"] !== "string" || !/^[0-9a-f]+$/iu.test(reality["short-id"]))) {
         throw new Error("sing-box AnyTLS Reality short ID is invalid");
       }
+      if (hasOwn(reality, "_spider-x") && (typeof reality["_spider-x"] !== "string" || reality["_spider-x"].length === 0 || reality["_spider-x"].trim() !== reality["_spider-x"])) {
+        throw new Error("sing-box AnyTLS Reality spider X is invalid");
+      }
     }
   }
   function sanitizeSingBoxNode(node) {
@@ -1113,8 +1125,29 @@ var SingBoxConfigBundle = (() => {
       }
       tls.reality = { enabled: true, public_key: reality["public-key"] };
       setIf(tls.reality, "short_id", reality["short-id"]);
+      setIf(tls.reality, "spider_x", reality["_spider-x"]);
     }
     return tls;
+  }
+  function packetEncoding(node) {
+    if (node["packet-encoding"] !== void 0) {
+      return String(node["packet-encoding"]).trim().toLowerCase();
+    }
+    if (node.packetEncoding !== void 0) {
+      return String(node.packetEncoding).trim().toLowerCase();
+    }
+    if (node.xudp === true) return "xudp";
+    if (node["packet-addr"] === true) return "packetaddr";
+    return void 0;
+  }
+  function packetEncodingForOutbound(node, outbound) {
+    const encoding = packetEncoding(node);
+    if (encoding === void 0 || encoding === "") return outbound;
+    if (encoding === "xudp" || encoding === "packetaddr" || encoding === "packet") {
+      outbound.packet_encoding = encoding === "packet" ? "packetaddr" : encoding;
+      return outbound;
+    }
+    throw new Error(`Unsupported sing-box packet encoding: ${encoding}`);
   }
   function transportFields(node) {
     const network = String(node.network ?? "tcp").trim().toLowerCase();
@@ -1170,6 +1203,7 @@ var SingBoxConfigBundle = (() => {
         if (node["alter-id"] !== void 0 || node.alterId !== void 0) outbound.alter_id = Number(node["alter-id"] ?? node.alterId);
         outbound.tls = tlsFields(node);
         outbound.transport = transportFields(node);
+        packetEncodingForOutbound(node, outbound);
         break;
       case "snell":
         {
@@ -1190,11 +1224,15 @@ var SingBoxConfigBundle = (() => {
         }
         break;
       case "vless":
+        if (node.encryption !== void 0 && !["", "none"].includes(node.encryption)) {
+          throw new Error(`Unsupported sing-box VLESS encryption: ${String(node.encryption)}`);
+        }
         outbound = { ...base(node, "vless"), uuid: requiredString2(node, "uuid") };
         setIf(outbound, "flow", node.flow);
         if (node.network === "tcp" || node.network === "udp") outbound.network = node.network;
         outbound.tls = tlsFields(node);
         outbound.transport = transportFields(node);
+        packetEncodingForOutbound(node, outbound);
         break;
       case "trojan":
         outbound = { ...base(node, "trojan"), password: requiredString2(node, "password"), tls: tlsFields(node, true) };
