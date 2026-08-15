@@ -18,7 +18,7 @@
       "referencedDefaultBytes": 604882
     },
     "singbox": {
-      "manifestHash": "550b3e67da49122286bcd856500aaa8950dfc1206b15f16aebcd8c9d8c64618e",
+      "manifestHash": "6c1fd3d21478a96ea291aee0850436e853da9dc8e70924305d52d14f04a03c99",
       "referencedDefaultBytes": 107463
     },
     "surge": {
@@ -676,9 +676,9 @@
       "sha256": "8262cccd7d82a2f8e376b9983acd82056a679d2f7d2d5e8ca2088e3150edc361"
     },
     {
-      "bytes": 7846,
+      "bytes": 7848,
       "path": "sing-box/client-manifest.json",
-      "sha256": "22e27802290a5bcf18e66d38364c96f6d6ef2aa968a443c63b2ac9d7d154c9c4"
+      "sha256": "b707f2dcc879426e53364d2a44ecbbc451c5c86f11f4c9dd973a028177838a87"
     },
     {
       "bytes": 11049,
@@ -891,14 +891,14 @@
       "sha256": "71494bd314e7c53437c80d9aa76cd92aff989f7075ef91f5484ded4ffe26b691"
     },
     {
-      "bytes": 98692,
+      "bytes": 100385,
       "path": "sing-box/scripts/sing-box-config-generator.js",
-      "sha256": "9d3a7acfc90cd5ed1c9bd796169d80465b8fed44bd8b996b55f1fdbedf431f1e"
+      "sha256": "0aaf4908836f4991a603cb9a6cd6938666eaf773c179e924d95c1d2eb2bba024"
     },
     {
-      "bytes": 98692,
+      "bytes": 100385,
       "path": "sing-box/scripts/substore-config-generator.js",
-      "sha256": "9d3a7acfc90cd5ed1c9bd796169d80465b8fed44bd8b996b55f1fdbedf431f1e"
+      "sha256": "0aaf4908836f4991a603cb9a6cd6938666eaf773c179e924d95c1d2eb2bba024"
     },
     {
       "bytes": 6726,
@@ -1102,7 +1102,7 @@
     }
   ],
   "generatedAt": "2026-08-13T19:00:08Z",
-  "manifestHash": "3cfa1ab373a7de3d4d6d00968a015500632352db05e241bfc5c5c831114db1fe",
+  "manifestHash": "da3df2cbdd85f3c9e1adc613e9a26ad6337205747eeeabd944f5e68db7cf4001",
   "onexray": {
     "channel": "edge",
     "counts": {

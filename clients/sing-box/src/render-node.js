@@ -3,7 +3,8 @@ import { normalizeProtocol } from "../../../shared/nodes/protocol-registry.js";
 const ALLOWED_KEYS = new Set([
   "name", "type", "server", "port", "udp", "tls", "security", "sni", "servername",
   "skip-cert-verify", "allow-insecure", "client-fingerprint", "alpn", "reality-opts", "network",
-  "ws-opts", "grpc-opts", "h2-opts", "http-opts", "cipher", "password", "uuid", "flow",
+  "ws-opts", "grpc-opts", "h2-opts", "http-opts", "cipher", "password", "uuid", "flow", "encryption",
+  "packet-encoding", "packetEncoding", "xudp", "packet-addr",
   "alter-id", "alterId", "psk", "version", "username", "private-key", "private_key",
   "public-key", "pre-shared-key", "peers", "local-address", "local_ipv4", "local-ipv4",
   "local_ipv6", "local-ipv6", "ip", "ipv6", "dns", "dns_servers", "mtu", "keepalive",
@@ -17,9 +18,9 @@ const GENERATED_CHAIN_POLICY = "🔗 入口节点";
 const ANYTLS_FIELDS = new Set([
   "name", "type", "server", "port", "password", "tls", "security", "sni", "servername",
   "skip-cert-verify", "allow-insecure", "client-fingerprint", "alpn", "reality-opts", "network",
-  "idle-session-check-interval", "idle-session-timeout", "min-idle-session", ...CHAIN_ALIASES,
+  "udp", "idle-session-check-interval", "idle-session-timeout", "min-idle-session", ...CHAIN_ALIASES,
 ]);
-const ANYTLS_REALITY_FIELDS = new Set(["public-key", "short-id"]);
+const ANYTLS_REALITY_FIELDS = new Set(["public-key", "short-id", "_spider-x"]);
 
 function hasOwn(value, key) {
   return Object.hasOwn(value, key);
@@ -57,6 +58,9 @@ function validateAnyTlsShape(node) {
   }
   if (hasOwn(node, "tls") && (typeof node.tls !== "boolean" || node.tls === false)) {
     throw new Error("Unsupported sing-box AnyTLS field: tls");
+  }
+  if (hasOwn(node, "udp") && typeof node.udp !== "boolean") {
+    throw new Error("Unsupported sing-box AnyTLS field: udp");
   }
 
   if (hasOwn(node, "security") && !["tls", "reality"].includes(node.security)) {
@@ -113,6 +117,12 @@ function validateAnyTlsShape(node) {
       && (typeof reality["short-id"] !== "string" || !/^[0-9a-f]+$/iu.test(reality["short-id"]))) {
       throw new Error("sing-box AnyTLS Reality short ID is invalid");
     }
+    if (hasOwn(reality, "_spider-x")
+      && (typeof reality["_spider-x"] !== "string"
+        || reality["_spider-x"].length === 0
+        || reality["_spider-x"].trim() !== reality["_spider-x"])) {
+      throw new Error("sing-box AnyTLS Reality spider X is invalid");
+    }
   }
 }
 
@@ -161,8 +171,31 @@ function tlsFields(node, required = false) {
     }
     tls.reality = { enabled: true, public_key: reality["public-key"] };
     setIf(tls.reality, "short_id", reality["short-id"]);
+    setIf(tls.reality, "spider_x", reality["_spider-x"]);
   }
   return tls;
+}
+
+function packetEncoding(node) {
+  if (node["packet-encoding"] !== undefined) {
+    return String(node["packet-encoding"]).trim().toLowerCase();
+  }
+  if (node.packetEncoding !== undefined) {
+    return String(node.packetEncoding).trim().toLowerCase();
+  }
+  if (node.xudp === true) return "xudp";
+  if (node["packet-addr"] === true) return "packetaddr";
+  return undefined;
+}
+
+function packetEncodingForOutbound(node, outbound) {
+  const encoding = packetEncoding(node);
+  if (encoding === undefined || encoding === "") return outbound;
+  if (encoding === "xudp" || encoding === "packetaddr" || encoding === "packet") {
+    outbound.packet_encoding = encoding === "packet" ? "packetaddr" : encoding;
+    return outbound;
+  }
+  throw new Error(`Unsupported sing-box packet encoding: ${encoding}`);
 }
 
 function transportFields(node) {
@@ -222,6 +255,7 @@ export function renderSingBoxOutbound(node) {
       if (node["alter-id"] !== undefined || node.alterId !== undefined) outbound.alter_id = Number(node["alter-id"] ?? node.alterId);
       outbound.tls = tlsFields(node);
       outbound.transport = transportFields(node);
+      packetEncodingForOutbound(node, outbound);
       break;
     case "snell":
       {
@@ -243,11 +277,15 @@ export function renderSingBoxOutbound(node) {
       }
       break;
     case "vless":
+      if (node.encryption !== undefined && !["", "none"].includes(node.encryption)) {
+        throw new Error(`Unsupported sing-box VLESS encryption: ${String(node.encryption)}`);
+      }
       outbound = { ...base(node, "vless"), uuid: requiredString(node, "uuid") };
       setIf(outbound, "flow", node.flow);
       if (node.network === "tcp" || node.network === "udp") outbound.network = node.network;
       outbound.tls = tlsFields(node);
       outbound.transport = transportFields(node);
+      packetEncodingForOutbound(node, outbound);
       break;
     case "trojan":
       outbound = { ...base(node, "trojan"), password: requiredString(node, "password"), tls: tlsFields(node, true) };

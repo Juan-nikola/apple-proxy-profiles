@@ -41,6 +41,57 @@ test("renders VLESS Reality WebSocket using official sing-box outbound fields", 
   });
 });
 
+test("renders Sub-Store VLESS fields including packet encoding", () => {
+  const outbound = renderSingBoxOutbound({
+    name: "🇭🇰 阿里云香港 · VLESS｜自建·U",
+    type: "vless",
+    server: "vless.example.invalid",
+    port: 443,
+    uuid: "00000000-0000-4000-8000-000000000001",
+    tls: true,
+    sni: "example.invalid",
+    flow: "xtls-rprx-vision",
+    network: "tcp",
+    encryption: "none",
+    "packet-encoding": "xudp",
+    "client-fingerprint": "chrome",
+    "skip-cert-verify": false,
+    "reality-opts": {
+      "public-key": "TEST_ONLY_PUBLIC_KEY",
+      "short-id": "34cde204",
+      "_spider-x": "/test-only-spider",
+    },
+  });
+  assert.equal(outbound.packet_encoding, "xudp");
+  assert.equal(outbound.tls.reality.spider_x, "/test-only-spider");
+  assert.equal(Object.hasOwn(outbound, "encryption"), false);
+});
+
+for (const [source, expected] of [
+  [{ "packet-encoding": "packetaddr" }, "packetaddr"],
+  [{ "packet-encoding": "packet" }, "packetaddr"],
+  [{ packetEncoding: "xudp" }, "xudp"],
+  [{ xudp: true }, "xudp"],
+  [{ "packet-addr": true }, "packetaddr"],
+  [{ "packet-encoding": "" }, undefined],
+]) {
+  test(`maps Sub-Store packet encoding ${JSON.stringify(source)} for VLESS`, () => {
+    const outbound = renderSingBoxOutbound({
+      name: "packet encoding fixture",
+      type: "vless",
+      server: "example.invalid",
+      port: 443,
+      uuid: "00000000-0000-4000-8000-000000000001",
+      ...source,
+    });
+    if (expected === undefined) {
+      assert.equal(Object.hasOwn(outbound, "packet_encoding"), false);
+    } else {
+      assert.equal(outbound.packet_encoding, expected);
+    }
+  });
+}
+
 test("renders every selected AnyTLS field supported by the sing-box adapter", () => {
   const outbound = renderSingBoxOutbound({
     ...ANYTLS_NODE,
@@ -54,6 +105,7 @@ test("renders every selected AnyTLS field supported by the sing-box adapter", ()
     "allow-insecure": true,
     alpn: ["h2", "http/1.1"],
     "client-fingerprint": "chrome",
+    udp: true,
     "reality-opts": {
       "public-key": "TEST_ONLY_ANYTLS_PUBLIC_KEY",
       "short-id": "0123abcd",
@@ -84,6 +136,30 @@ test("renders every selected AnyTLS field supported by the sing-box adapter", ()
       },
     },
   });
+});
+
+test("renders AnyTLS UDP flag from Sub-Store without forcing a network field", () => {
+  const outbound = renderSingBoxOutbound({
+    ...ANYTLS_NODE,
+    tls: true,
+    sni: "anytls.example.invalid",
+    udp: true,
+  });
+  assert.equal(outbound.type, "anytls");
+  assert.equal(Object.hasOwn(outbound, "network"), false);
+});
+
+test("renders AnyTLS Reality spider X into the official TLS field", () => {
+  const outbound = renderSingBoxOutbound({
+    ...ANYTLS_NODE,
+    security: "reality",
+    "reality-opts": {
+      "public-key": "TEST_ONLY_ANYTLS_PUBLIC_KEY",
+      "short-id": "0123abcd",
+      "_spider-x": "/test-only-spider",
+    },
+  });
+  assert.equal(outbound.tls.reality.spider_x, "/test-only-spider");
 });
 
 for (const field of ["future-option", "spider-x"]) {

@@ -145,6 +145,79 @@ test("Sub-Store sing-box entry retains normalized AnyTLS fields in the complete 
   });
 });
 
+test("Sub-Store sing-box entry keeps VLESS, AnyTLS and Snell from a real mixed inventory", async () => {
+  const lines = [];
+  const result = await operator({}, "macos", {
+    arguments: {
+      output: "config",
+      type: "collection",
+      name: "apple-proxy-singbox",
+      subscriptionName: "sing-box-Nodes",
+      platform: "macos",
+    },
+    async produceArtifact() {
+      return [{
+        name: "🇭🇰 阿里云香港 · VLESS｜自建·U",
+        type: "vless",
+        server: "vless.example.invalid",
+        port: 48254,
+        udp: true,
+        tls: true,
+        sni: "apple.com",
+        flow: "xtls-rprx-vision",
+        network: "tcp",
+        encryption: "none",
+        "packet-encoding": "xudp",
+        "client-fingerprint": "chrome",
+        "skip-cert-verify": false,
+        uuid: "00000000-0000-4000-8000-000000000001",
+        "reality-opts": {
+          "public-key": "TEST_ONLY_SINGBOX_PUBLIC_KEY",
+          "short-id": "34cde204",
+          "_spider-x": "/test-only-spider",
+        },
+        _subName: "[自建] VLESS",
+      }, {
+        name: "🇯🇵 Neburst-JP · AnyTLS·U",
+        type: "anytls",
+        server: "anytls.example.invalid",
+        port: 37311,
+        udp: true,
+        tls: true,
+        sni: "anytls.example.invalid",
+        alpn: ["h2", "http/1.1"],
+        "client-fingerprint": "chrome",
+        "idle-session-check-interval": 30,
+        "idle-session-timeout": 30,
+        "min-idle-session": 0,
+        "skip-cert-verify": false,
+        password: "TEST_ONLY_ANYTLS_PASSWORD",
+        _subName: "[自建] AnyTLS",
+      }, {
+        name: "🇭🇰 阿里云香港 · Snell｜自建·U",
+        type: "snell",
+        server: "snell.example.invalid",
+        port: 60001,
+        udp: true,
+        psk: "TEST_ONLY_SNELL_PSK",
+        version: 5,
+        reuse: true,
+        tfo: true,
+        _subName: "[自建] Snell",
+      }];
+    },
+    logger: { info(line) { lines.push(line); } },
+  });
+  const config = JSON.parse(result.$content);
+  const types = config.outbounds.map(({ type }) => type);
+  assert.deepEqual(types.filter((type) => ["vless", "anytls", "snell"].includes(type)).sort(), ["anytls", "snell", "vless"]);
+  assert.equal(config.outbounds.find(({ type }) => type === "vless").packet_encoding, "xudp");
+  assert.equal(config.outbounds.find(({ type }) => type === "anytls").server_port, 37311);
+  assert.equal(config.outbounds.find(({ type }) => type === "snell").version, 4);
+  assert.equal(lines.length, 1);
+  assert.equal(lines[0].includes('"accepted":3,"renderFailures":{}'), true);
+});
+
 test("Sub-Store sing-box entry rejects unsafe collection names before artifact production", async () => {
   for (const name of ["中文", "sing-box/sources", "sing-box?sources", "sing-box#sources", " sing-box-sources", "sing-box-sources ", "sing-box\nsources", "prototype"]) {
     let called = false;

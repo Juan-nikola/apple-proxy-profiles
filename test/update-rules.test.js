@@ -35,9 +35,9 @@ const nextUpstream = Object.freeze({
 
 function chinaIpAuditBytes({
   publicationUpstream = upstream,
-  now = "2026-08-09T00:00:00Z",
-  calibrationStartedAt = "2026-08-01T00:00:00Z",
-  secondaryCommittedAt = "2026-08-08T00:00:00Z",
+  now = "2026-08-10T00:00:00Z",
+  calibrationStartedAt = "2026-08-02T00:00:00Z",
+  secondaryCommittedAt = "2026-08-09T00:00:00Z",
   divergent = false,
 } = {}) {
   const primaryEntries = [
