@@ -87,8 +87,9 @@ test("renders the latest sing-box rule-set download contract without removed fie
   assert.equal(config.route.default_http_client, "🧭 规则下载 HTTP");
   assert.equal(config.route.default_domain_resolver, "dns-direct");
   const ruleDownloadGroup = config.outbounds.find((outbound) => outbound.tag === "🧭 DNS 与规则下载");
-  assert.deepEqual(ruleDownloadGroup?.outbounds, ["🧭 规则下载故障转移", "🚀 节点选择", "DIRECT"]);
-  assert.equal(ruleDownloadGroup?.default, "🧭 规则下载故障转移");
+  assert.deepEqual(ruleDownloadGroup?.outbounds, ["🚀 节点选择", "DIRECT"]);
+  assert.equal(ruleDownloadGroup?.default, "🚀 节点选择");
+  assert.equal(config.outbounds.some((outbound) => outbound.tag === "🧭 规则下载故障转移"), false);
   assert.equal(config.route.rule_set.every((rule) => rule.http_client === "🧭 规则下载 HTTP"), true);
   assert.equal(config.route.rules.some((rule) => Object.hasOwn(rule, "geoip") || Object.hasOwn(rule, "geosite")), false);
   assert.equal(config.route.rule_set.some((rule) => Object.hasOwn(rule, "download_detour")), false);
@@ -97,20 +98,34 @@ test("renders the latest sing-box rule-set download contract without removed fie
   assert.ok(config.route.rules.some((rule) => rule.rule_set?.includes("rule-ChinaIP") && rule.outbound === "DIRECT"));
 });
 
-test("uses a dedicated health probe for rule downloads", () => {
-  const ruleBaseUrl = "https://example.invalid/current/sing-box/rule-sets";
-  const config = renderSingBoxConfig(parseSingBoxOptions(baseOptions), [node], { ruleBaseUrl });
-  const failover = config.outbounds.find((outbound) => outbound.tag === "🧭 规则下载故障转移");
-  assert.deepEqual(failover?.type, "urltest");
-  assert.deepEqual(failover?.outbounds, [node.name, "DIRECT"]);
-  assert.equal(failover?.url, `${ruleBaseUrl}/Hijacking.srs`);
-  assert.equal(failover?.interval, "30s");
-  assert.equal(failover?.tolerance, 0);
-
+test("does not probe every node for rule downloads", () => {
+  const config = render();
   const ruleDownload = config.outbounds.find((outbound) => outbound.tag === "🧭 DNS 与规则下载");
   assert.deepEqual(ruleDownload?.type, "selector");
-  assert.deepEqual(ruleDownload?.outbounds, ["🧭 规则下载故障转移", "🚀 节点选择", "DIRECT"]);
-  assert.equal(ruleDownload?.default, "🧭 规则下载故障转移");
+  assert.deepEqual(ruleDownload?.outbounds, ["🚀 节点选择", "DIRECT"]);
+  assert.equal(ruleDownload?.default, "🚀 节点选择");
+  assert.equal(config.outbounds.some((outbound) => outbound.tag === "🧭 规则下载故障转移"), false);
+});
+
+test("keeps latency probing to the two global groups and pauses it when idle", () => {
+  const config = render();
+  const urltests = config.outbounds.filter((outbound) => outbound.type === "urltest");
+  assert.deepEqual(urltests.map((outbound) => outbound.tag), ["⚡ 全部自动", "🛟 全部故障转移"]);
+  assert.equal(urltests.every((outbound) => outbound.idle_timeout === "30m"), true);
+
+  const asiaAuto = config.outbounds.find((outbound) => outbound.tag === "⚡ 亚太自动");
+  assert.deepEqual(asiaAuto?.type, "selector");
+  assert.deepEqual(asiaAuto?.outbounds, ["⚡ 全部自动", node.name]);
+  assert.equal(asiaAuto?.default, "⚡ 全部自动");
+
+  const asiaFallback = config.outbounds.find((outbound) => outbound.tag === "🛟 亚太故障转移");
+  assert.deepEqual(asiaFallback?.type, "selector");
+  assert.deepEqual(asiaFallback?.outbounds, ["🛟 全部故障转移", node.name]);
+  assert.equal(asiaFallback?.default, "🛟 全部故障转移");
+
+  const minimal = render({ autoGroupMode: "minimal" });
+  assert.equal(minimal.outbounds.some((outbound) => outbound.tag === "🛟 亚太故障转移"), false);
+  assert.deepEqual(minimal.outbounds.filter((outbound) => outbound.type === "urltest").map((outbound) => outbound.tag), ["⚡ 全部自动", "🛟 全部故障转移"]);
 });
 
 test("keeps the primary selector compact with continent-level entries only", () => {
@@ -374,13 +389,12 @@ test("puts visible groups first, hidden helper groups last, and node outbounds a
     "🛟 欧洲故障转移",
     "⚡ 美洲自动",
     "🛟 美洲故障转移",
-    "🧭 规则下载故障转移",
   ];
   const expectedOrder = ["DIRECT", "REJECT", ...expectedVisible, ...expectedHidden];
   const head = tags.slice(0, expectedOrder.length);
   assert.deepEqual(head, expectedOrder, "visible groups must precede hidden helper groups");
   const firstNodeIndex = tags.indexOf("🇯🇵 东京节点");
-  const lastHiddenIndex = tags.indexOf("🧭 规则下载故障转移");
+  const lastHiddenIndex = tags.indexOf("🛟 美洲故障转移");
   assert.ok(firstNodeIndex > lastHiddenIndex, "node outbounds must be emitted after every group");
   for (const tag of ["🤖 AI 亚太", "🤖 AI 欧洲", "🤖 AI 美洲"]) {
     assert.equal(tags.includes(tag), false, tag);
@@ -408,8 +422,9 @@ test("rule-download bootstrap has no dependency on a remote rule-set tag", () =>
   const failover = config.outbounds.find(({ tag }) => tag === "🧭 规则下载故障转移");
   assert.equal(config.http_clients[0].detour, download.tag);
   assert.equal(config.route.rule_set.every((rule) => rule.http_client === config.route.default_http_client), true);
-  assert.equal([...download.outbounds, ...failover.outbounds].some((tag) => tag.startsWith("rule-")), false);
-  assert.equal(failover.outbounds.includes(node.name), true);
+  assert.equal(failover, undefined);
+  assert.equal(download.outbounds.some((tag) => tag.startsWith("rule-")), false);
+  assert.deepEqual(download.outbounds, ["🚀 节点选择", "DIRECT"]);
 });
 
 test("accepts common upstream transport metadata on Snell nodes", () => {

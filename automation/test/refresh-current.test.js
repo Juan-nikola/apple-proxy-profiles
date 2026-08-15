@@ -7,7 +7,7 @@ import test from "node:test";
 import { buildClientArtifacts } from "../src/build-artifacts.js";
 import { artifactSha256 } from "../src/artifact-content.js";
 import { canonicalJson } from "../src/render-anywhere-rules.js";
-import { refreshCurrentManifest, validateOneXrayChannelTree } from "../src/refresh-current.js";
+import { refreshChannelManifest, refreshCurrentManifest, validateOneXrayChannelTree } from "../src/refresh-current.js";
 import { lightweightFixtureSnapshots } from "./lightweight-fixture.js";
 import { explainRouteMain } from "../../scripts/explain-route.mjs";
 
@@ -136,6 +136,31 @@ test("refreshCurrentManifest adopts edge metadata when edge carries OneXray scri
     assert.deepEqual(current.upstream, edge.upstream);
     assert.equal(current.generatedAt, edge.generatedAt);
     assert.deepEqual(current.diagnostics, edge.diagnostics);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test("refreshChannelManifest keeps OneXray edge script metadata", async () => {
+  const { root } = await fixtureTree();
+  try {
+    const artifacts = buildClientArtifacts({ snapshot: lightweightFixtureSnapshots() });
+    await writeFiles(join(root, "edge"), artifacts.onexray);
+    await writeFiles(join(root, "edge"), artifacts.onexrayScripts);
+
+    const refreshed = await refreshChannelManifest({ publicDirectory: root, channel: "edge" });
+    assert.deepEqual(refreshed.onexray.scripts.map(({ path }) => path), [
+      "onexray/scripts/onexray-nodes-generator.js",
+      "onexray/scripts/onexray-profile-generator.js",
+    ]);
+
+    const onDisk = JSON.parse(await readFile(join(root, "edge/manifest.json"), "utf8"));
+    const { manifestHash, ...base } = onDisk;
+    assert.equal(artifactSha256(canonicalJson(base)), manifestHash);
+    assert.deepEqual(onDisk.onexray.scripts.map(({ path }) => path), [
+      "onexray/scripts/onexray-nodes-generator.js",
+      "onexray/scripts/onexray-profile-generator.js",
+    ]);
   } finally {
     await rm(root, { recursive: true, force: true });
   }

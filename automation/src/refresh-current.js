@@ -102,7 +102,7 @@ export async function validateOneXrayChannelTree(directory) {
   return manifest;
 }
 
-function oneXrayRootProjection(manifest) {
+function oneXrayRootProjection(manifest, scripts = null) {
   if (!manifest) return undefined;
   return {
     schema: manifest.schema,
@@ -113,6 +113,7 @@ function oneXrayRootProjection(manifest) {
     hashes: manifest.hashes,
     counts: manifest.counts,
     files: manifest.files,
+    ...(scripts === null ? {} : { scripts }),
   };
 }
 
@@ -222,6 +223,9 @@ export async function refreshChannelManifest({ publicDirectory, channel }) {
     channel,
   );
   const records = await channelTreeRecords(directory);
+  const onexrayScripts = channel === "edge" && onexrayManifest
+    ? records.filter(({ path }) => ONEXRAY_SCRIPT_FILES.includes(path))
+    : null;
   const clients = {};
   for (const [client, clientDirectory] of Object.entries(CLIENT_DIRECTORIES)) {
     const clientManifestPath = `${clientDirectory}/client-manifest.json`;
@@ -243,7 +247,7 @@ export async function refreshChannelManifest({ publicDirectory, channel }) {
     catalogSha256: existing.catalogSha256,
     clients,
     diagnostics: existing.diagnostics,
-    ...(onexrayManifest ? { onexray: oneXrayRootProjection(onexrayManifest) } : {}),
+    ...(onexrayManifest ? { onexray: oneXrayRootProjection(onexrayManifest, onexrayScripts) } : {}),
     files: records,
   };
   const manifest = Object.freeze({
