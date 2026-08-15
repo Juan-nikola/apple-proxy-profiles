@@ -1550,14 +1550,7 @@ var SingBoxConfigBundle = (() => {
 
   // src/render-groups.js
   var RULE_DOWNLOAD_GROUP = "\u{1F9ED} DNS \u4E0E\u89C4\u5219\u4E0B\u8F7D";
-  var GLOBAL_AUTO_GROUP = "\u26A1 \u5168\u90E8\u81EA\u52A8";
-  var GLOBAL_FALLBACK_GROUP = "\u{1F6DF} \u5168\u90E8\u6545\u969C\u8F6C\u79FB";
-  var CONTINENT_HELPER_NAMES = new Map(
-    CONTINENTS.flatMap((continent) => [
-      [automaticHelperName(continent), GLOBAL_AUTO_GROUP],
-      [fallbackHelperName(continent), GLOBAL_FALLBACK_GROUP]
-    ])
-  );
+  var RULE_DOWNLOAD_FAILOVER_GROUP = "\u{1F9ED} \u89C4\u5219\u4E0B\u8F7D\u6545\u969C\u8F6C\u79FB";
   function targetName(value) {
     return value === POLICY_TARGET.primaryProxy ? "\u26A1 \u5168\u90E8\u81EA\u52A8" : value;
   }
@@ -1573,6 +1566,28 @@ var SingBoxConfigBundle = (() => {
   }
   function duration(seconds) {
     return `${Number(seconds)}s`;
+  }
+  function renderRuleDownloadGroups(inventory, ruleProbeUrl) {
+    const nodeCandidates = filterNodes(NON_CHAINED_FILTER, inventory);
+    const failover = {
+      type: "urltest",
+      tag: RULE_DOWNLOAD_FAILOVER_GROUP,
+      outbounds: [...nodeCandidates, "DIRECT"],
+      url: ruleProbeUrl,
+      interval: "30s",
+      tolerance: 0,
+      interrupt_exist_connections: true
+    };
+    return [
+      {
+        type: "selector",
+        tag: RULE_DOWNLOAD_GROUP,
+        outbounds: [RULE_DOWNLOAD_FAILOVER_GROUP, "\u{1F680} \u8282\u70B9\u9009\u62E9", "DIRECT"],
+        default: RULE_DOWNLOAD_FAILOVER_GROUP,
+        interrupt_exist_connections: true
+      },
+      failover
+    ];
   }
   function renderGroup(group, inventory) {
     if (group.name === "\u{1F680} \u8282\u70B9\u9009\u62E9") {
@@ -1593,17 +1608,6 @@ var SingBoxConfigBundle = (() => {
       ...filterNodes(group.nodeFilter, inventory)
     ].filter((item, index, all) => all.indexOf(item) === index);
     const outbounds = candidates.length > 0 ? candidates : ["DIRECT"];
-    const globalDelegate = CONTINENT_HELPER_NAMES.get(group.name);
-    if (globalDelegate !== void 0) {
-      const delegateOutbounds = [globalDelegate, ...outbounds];
-      return {
-        type: "selector",
-        tag: group.name,
-        outbounds: delegateOutbounds.filter((item, index, all) => all.indexOf(item) === index),
-        default: globalDelegate,
-        interrupt_exist_connections: true
-      };
-    }
     if (group.strategy === "auto-test" || group.strategy === "fallback") {
       return {
         type: "urltest",
@@ -1612,7 +1616,6 @@ var SingBoxConfigBundle = (() => {
         url: "https://www.gstatic.com/generate_204",
         interval: duration(group.test?.interval ?? 600),
         tolerance: group.test?.tolerance ?? 100,
-        idle_timeout: "30m",
         interrupt_exist_connections: true
       };
     }
@@ -1626,20 +1629,16 @@ var SingBoxConfigBundle = (() => {
     if (defaultChoice !== void 0) outbound.default = targetName(defaultChoice);
     return outbound;
   }
-  function renderSingBoxGroups(options, nodes) {
+  function renderSingBoxGroups(options, nodes, { ruleProbeUrl = "https://www.gstatic.com/generate_204" } = {}) {
     const inventory = Array.isArray(nodes) ? nodes : [];
     const shared = buildPolicyGroups(options, inventory);
     const visible = [];
     const hidden = [];
     for (const group of shared) {
       if (group.name === RULE_DOWNLOAD_GROUP) {
-        visible.push({
-          type: "selector",
-          tag: RULE_DOWNLOAD_GROUP,
-          outbounds: ["\u{1F680} \u8282\u70B9\u9009\u62E9", "DIRECT"],
-          default: "\u{1F680} \u8282\u70B9\u9009\u62E9",
-          interrupt_exist_connections: true
-        });
+        const [selector, failover] = renderRuleDownloadGroups(inventory, ruleProbeUrl);
+        visible.push(selector);
+        hidden.push(failover);
         continue;
       }
       const rendered = renderGroup(group, inventory);
@@ -2073,7 +2072,7 @@ var SingBoxConfigBundle = (() => {
       ],
       final: "dns-direct",
       strategy: options.ipv6Mode === "ipv4-only" ? "ipv4_only" : "prefer_ipv4",
-      cache_capacity: 1024
+      cache_capacity: 4096
     };
   }
 
@@ -2265,7 +2264,9 @@ var SingBoxConfigBundle = (() => {
     if (inventory.length === 0) throw new Error("sing-box refuses an empty node inventory");
     for (const node of inventory) nodeMetadata(node);
     const nodeOutbounds = inventory.map(renderSingBoxOutbound);
-    const groups = renderSingBoxGroups(options, inventory);
+    const groups = renderSingBoxGroups(options, inventory, {
+      ruleProbeUrl: `${ruleBaseUrl.replace(/\/+$/u, "")}/Hijacking.srs`
+    });
     const { ruleSets, rules, final } = renderSingBoxRouteRules({
       ruleBaseUrl,
       profileMode: options.profileMode,

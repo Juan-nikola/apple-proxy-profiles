@@ -38,6 +38,6 @@ export function renderSingBoxDns(options) {
     ],
     final: "dns-direct",
     strategy: options.ipv6Mode === "ipv4-only" ? "ipv4_only" : "prefer_ipv4",
-    cache_capacity: 1024,
+    cache_capacity: 4096,
   };
 }

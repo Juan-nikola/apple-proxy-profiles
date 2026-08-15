@@ -26,7 +26,7 @@
     "rules": [],
     "final": "dns-direct",
     "strategy": "prefer_ipv4",
-    "cache_capacity": 1024
+    "cache_capacity": 4096
   },
   "http_clients": [
     {
@@ -270,10 +270,11 @@
       "type": "selector",
       "tag": "🧭 DNS 与规则下载",
       "outbounds": [
+        "🧭 规则下载故障转移",
         "🚀 节点选择",
         "DIRECT"
       ],
-      "default": "🚀 节点选择",
+      "default": "🧭 规则下载故障转移",
       "interrupt_exist_connections": true
     },
     {
@@ -313,7 +314,6 @@
       "url": "https://www.gstatic.com/generate_204",
       "interval": "1800s",
       "tolerance": 150,
-      "idle_timeout": "30m",
       "interrupt_exist_connections": true
     },
     {
@@ -326,47 +326,63 @@
       "url": "https://www.gstatic.com/generate_204",
       "interval": "1800s",
       "tolerance": 150,
-      "idle_timeout": "30m",
       "interrupt_exist_connections": true
     },
     {
-      "type": "selector",
+      "type": "urltest",
       "tag": "⚡ 亚太自动",
       "outbounds": [
-        "⚡ 全部自动",
         "DIRECT"
       ],
-      "default": "⚡ 全部自动",
+      "url": "https://www.gstatic.com/generate_204",
+      "interval": "1800s",
+      "tolerance": 150,
       "interrupt_exist_connections": true
     },
     {
-      "type": "selector",
+      "type": "urltest",
       "tag": "🛟 亚太故障转移",
       "outbounds": [
-        "🛟 全部故障转移",
         "DIRECT"
       ],
-      "default": "🛟 全部故障转移",
+      "url": "https://www.gstatic.com/generate_204",
+      "interval": "1800s",
+      "tolerance": 150,
       "interrupt_exist_connections": true
     },
     {
-      "type": "selector",
+      "type": "urltest",
       "tag": "⚡ 欧洲自动",
       "outbounds": [
-        "⚡ 全部自动",
         "DIRECT"
       ],
-      "default": "⚡ 全部自动",
+      "url": "https://www.gstatic.com/generate_204",
+      "interval": "1800s",
+      "tolerance": 150,
       "interrupt_exist_connections": true
     },
     {
-      "type": "selector",
+      "type": "urltest",
       "tag": "🛟 欧洲故障转移",
       "outbounds": [
-        "🛟 全部故障转移",
         "DIRECT"
       ],
-      "default": "🛟 全部故障转移",
+      "url": "https://www.gstatic.com/generate_204",
+      "interval": "1800s",
+      "tolerance": 150,
+      "interrupt_exist_connections": true
+    },
+    {
+      "type": "urltest",
+      "tag": "🧭 规则下载故障转移",
+      "outbounds": [
+        "示例 · Tokyo",
+        "示例 · Frankfurt",
+        "DIRECT"
+      ],
+      "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/rule-sets/Hijacking.srs",
+      "interval": "30s",
+      "tolerance": 0,
       "interrupt_exist_connections": true
     },
     {

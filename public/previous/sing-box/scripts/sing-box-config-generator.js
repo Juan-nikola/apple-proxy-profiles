@@ -1125,6 +1125,7 @@ var SingBoxConfigBundle = (() => {
       }
       tls.reality = { enabled: true, public_key: reality["public-key"] };
       setIf(tls.reality, "short_id", reality["short-id"]);
+      setIf(tls.reality, "spider_x", reality["_spider-x"]);
     }
     return tls;
   }

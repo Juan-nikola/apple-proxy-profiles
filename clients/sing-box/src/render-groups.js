@@ -1,17 +1,9 @@
-import { automaticHelperName, buildPolicyGroups, fallbackHelperName } from "../../../shared/policies/catalog.js";
+import { buildPolicyGroups } from "../../../shared/policies/catalog.js";
 import { POLICY_TARGET } from "../../../shared/policies/intents.js";
-import { CONTINENTS } from "../../../shared/policies/filters.js";
+import { NON_CHAINED_FILTER } from "../../../shared/policies/filters.js";
 
 const RULE_DOWNLOAD_GROUP = "🧭 DNS 与规则下载";
-const GLOBAL_AUTO_GROUP = "⚡ 全部自动";
-const GLOBAL_FALLBACK_GROUP = "\u{1F6DF} 全部故障转移";
-
-const CONTINENT_HELPER_NAMES = new Map(
-  CONTINENTS.flatMap((continent) => [
-    [automaticHelperName(continent), GLOBAL_AUTO_GROUP],
-    [fallbackHelperName(continent), GLOBAL_FALLBACK_GROUP],
-  ]),
-);
+const RULE_DOWNLOAD_FAILOVER_GROUP = "🧭 规则下载故障转移";
 
 function targetName(value) {
   return value === POLICY_TARGET.primaryProxy ? "⚡ 全部自动" : value;
@@ -30,6 +22,29 @@ function filterNodes(filter, nodes) {
 
 function duration(seconds) {
   return `${Number(seconds)}s`;
+}
+
+function renderRuleDownloadGroups(inventory, ruleProbeUrl) {
+  const nodeCandidates = filterNodes(NON_CHAINED_FILTER, inventory);
+  const failover = {
+    type: "urltest",
+    tag: RULE_DOWNLOAD_FAILOVER_GROUP,
+    outbounds: [...nodeCandidates, "DIRECT"],
+    url: ruleProbeUrl,
+    interval: "30s",
+    tolerance: 0,
+    interrupt_exist_connections: true,
+  };
+  return [
+    {
+      type: "selector",
+      tag: RULE_DOWNLOAD_GROUP,
+      outbounds: [RULE_DOWNLOAD_FAILOVER_GROUP, "🚀 节点选择", "DIRECT"],
+      default: RULE_DOWNLOAD_FAILOVER_GROUP,
+      interrupt_exist_connections: true,
+    },
+    failover,
+  ];
 }
 
 function renderGroup(group, inventory) {
@@ -54,17 +69,6 @@ function renderGroup(group, inventory) {
     ...filterNodes(group.nodeFilter, inventory),
   ].filter((item, index, all) => all.indexOf(item) === index);
   const outbounds = candidates.length > 0 ? candidates : ["DIRECT"];
-  const globalDelegate = CONTINENT_HELPER_NAMES.get(group.name);
-  if (globalDelegate !== undefined) {
-    const delegateOutbounds = [globalDelegate, ...outbounds];
-    return {
-      type: "selector",
-      tag: group.name,
-      outbounds: delegateOutbounds.filter((item, index, all) => all.indexOf(item) === index),
-      default: globalDelegate,
-      interrupt_exist_connections: true,
-    };
-  }
   if (group.strategy === "auto-test" || group.strategy === "fallback") {
     return {
       type: "urltest",
@@ -73,7 +77,6 @@ function renderGroup(group, inventory) {
       url: "https://www.gstatic.com/generate_204",
       interval: duration(group.test?.interval ?? 600),
       tolerance: group.test?.tolerance ?? 100,
-      idle_timeout: "30m",
       interrupt_exist_connections: true,
     };
   }
@@ -88,20 +91,16 @@ function renderGroup(group, inventory) {
   return outbound;
 }
 
-export function renderSingBoxGroups(options, nodes) {
+export function renderSingBoxGroups(options, nodes, { ruleProbeUrl = "https://www.gstatic.com/generate_204" } = {}) {
   const inventory = Array.isArray(nodes) ? nodes : [];
   const shared = buildPolicyGroups(options, inventory);
   const visible = [];
   const hidden = [];
   for (const group of shared) {
     if (group.name === RULE_DOWNLOAD_GROUP) {
-      visible.push({
-        type: "selector",
-        tag: RULE_DOWNLOAD_GROUP,
-        outbounds: ["🚀 节点选择", "DIRECT"],
-        default: "🚀 节点选择",
-        interrupt_exist_connections: true,
-      });
+      const [selector, failover] = renderRuleDownloadGroups(inventory, ruleProbeUrl);
+      visible.push(selector);
+      hidden.push(failover);
       continue;
     }
     const rendered = renderGroup(group, inventory);

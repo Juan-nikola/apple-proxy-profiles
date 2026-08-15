@@ -14,8 +14,6 @@
 
 如果出现 `domain_resolver` 或 `default_domain_resolver` 缺失，说明配置仍是旧版本缓存。sing-box 1.14 对包含域名服务器、规则集或代理节点的配置要求默认域名解析器；重新预览并刷新对应的 `sing-box-*` Config File，使 JSON 中出现 `route.default_domain_resolver: "dns-direct"`。
 
-如果规则集报 `dial ... connection refused`、`context deadline exceeded` 或 TLS/握手错误，说明规则下载候选节点不可用。当前 `🧭 DNS 与规则下载` 是普通 selector，候选为 `🚀 节点选择`、`DIRECT`，默认走 `🚀 节点选择`；不会为下载规则建立全节点 URLTest 探测组。先刷新配置确认 selector 默认值，再在客户端里把 `🧭 DNS 与规则下载` 切到可用节点或 DIRECT，避免启动时对全部节点并发探测。
+如果规则集报 `dial ... connection refused`、`context deadline exceeded` 或 TLS/握手错误，说明规则下载候选节点不可用。当前 sing-box 生成器会创建专用的 `🧭 规则下载故障转移` URLTest 组，直接探测 `Hijacking.json` 规则文件，并把 `🧭 DNS 与规则下载` 默认指向该组；失效节点会被跳过，另外保留 `🚀 节点选择`、`DIRECT` 作为手动备用。重新预览并刷新 File 任务，确认 JSON 同时包含该 URLTest 组和 selector 的 `"default": "🧭 规则下载故障转移"`。
 
 如果全部候选都失败，sing-box 仍会在规则集初始化阶段报错；这表示当前网络既不能通过代理访问规则文件，也不能直连 GitHub Pages，需要更换网络或节点后重新加载配置。
-
-iOS 长时间开启后出现 `memory pressure: critical` 并自动退出时，先导入对应的诊断配置区分规则集与节点组开销。默认配置只保留 `⚡ 全部自动`、`🛟 全部故障转移` 两个测速组，并为它们设置 `idle_timeout`，空闲时暂停周期探测；`⚡ 亚太自动` 等洲级自动组已收敛为 selector，不再各自对全洲节点发起测速。若诊断配置也退出，优先更新 sing-box 客户端，并检查 TUN、节点数量和客户端后台限制。
