@@ -25,6 +25,40 @@
     ],
     "rules": [
       {
+        "domain_suffix": [
+          "google.com",
+          "googleapis.com",
+          "googleusercontent.com",
+          "gstatic.com",
+          "ggpht.com",
+          "gvt1.com",
+          "googlevideo.com",
+          "youtube.com",
+          "youtube-nocookie.com",
+          "youtu.be",
+          "ytimg.com"
+        ],
+        "action": "evaluate",
+        "server": "dns-proxy"
+      },
+      {
+        "match_response": true,
+        "domain_suffix": [
+          "google.com",
+          "googleapis.com",
+          "googleusercontent.com",
+          "gstatic.com",
+          "ggpht.com",
+          "gvt1.com",
+          "googlevideo.com",
+          "youtube.com",
+          "youtube-nocookie.com",
+          "youtu.be",
+          "ytimg.com"
+        ],
+        "action": "respond"
+      },
+      {
         "rule_set": [
           "rule-OpenAI",
           "rule-Claude",
@@ -1105,6 +1139,41 @@
         ],
         "action": "route",
         "outbound": "⬇️ 下载/P2P"
+      },
+      {
+        "network": "udp",
+        "port": 443,
+        "action": "reject",
+        "domain_suffix": [
+          "google.com",
+          "googleapis.com",
+          "googleusercontent.com",
+          "gstatic.com",
+          "ggpht.com",
+          "gvt1.com",
+          "googlevideo.com",
+          "youtube.com",
+          "youtube-nocookie.com",
+          "youtu.be",
+          "ytimg.com"
+        ]
+      },
+      {
+        "domain_suffix": [
+          "google.com",
+          "googleapis.com",
+          "googleusercontent.com",
+          "gstatic.com",
+          "ggpht.com",
+          "gvt1.com",
+          "googlevideo.com",
+          "youtube.com",
+          "youtube-nocookie.com",
+          "youtu.be",
+          "ytimg.com"
+        ],
+        "action": "route",
+        "outbound": "🚀 节点选择"
       },
       {
         "network": "udp",

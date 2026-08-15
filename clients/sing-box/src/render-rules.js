@@ -4,6 +4,7 @@ import {
   ruleClientCatalog,
 } from "../../../shared/rules/lightweight-policy.js";
 import { CUSTOM_RULES } from "../../../shared/rules/custom-rules.js";
+import { PROXY_DNS_DOMAIN_SUFFIXES } from "../../../shared/rules/overseas-dns.js";
 
 export const RULE_DOWNLOAD_HTTP_CLIENT = "🧭 规则下载 HTTP";
 export const RULE_DOWNLOAD_GROUP = "🧭 DNS 与规则下载";
@@ -13,6 +14,15 @@ const LOCAL_RULES = Object.freeze([
   { domain_suffix: ["local", "lan", "home.arpa"], action: "route", outbound: "DIRECT" },
 ]);
 const QUIC_BLOCK_RULE = Object.freeze({ network: "udp", port: 443, action: "reject" });
+const OVERSEAS_DNS_FALLBACK_RULE = Object.freeze({
+  domain_suffix: PROXY_DNS_DOMAIN_SUFFIXES,
+  action: "route",
+  outbound: "🚀 节点选择",
+});
+const OVERSEAS_DNS_QUIC_BLOCK_RULE = Object.freeze({
+  ...QUIC_BLOCK_RULE,
+  domain_suffix: PROXY_DNS_DOMAIN_SUFFIXES,
+});
 const CUSTOM_TARGETS = Object.freeze({ block: "REJECT", direct: "DIRECT", proxy: "🚀 节点选择", ai: "🤖 AI 专用" });
 const CUSTOM_FIELDS = Object.freeze({
   DOMAIN: "domain",
@@ -106,6 +116,10 @@ export function renderSingBoxRouteRules({
         rules.push({ ...QUIC_BLOCK_RULE, rule_set: [`rule-${source.id}`] });
       }
       rules.push(taggedRule(source));
+    }
+    if (phase === "serviceIntent") {
+      if (quicMode === "proxy-block") rules.push({ ...OVERSEAS_DNS_QUIC_BLOCK_RULE });
+      rules.push({ ...OVERSEAS_DNS_FALLBACK_RULE });
     }
   }
   rules.push({ action: "resolve", server: "dns-direct" });

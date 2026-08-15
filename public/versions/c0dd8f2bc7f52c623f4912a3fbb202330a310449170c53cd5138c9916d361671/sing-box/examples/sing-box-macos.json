@@ -25,6 +25,40 @@
     ],
     "rules": [
       {
+        "domain_suffix": [
+          "google.com",
+          "googleapis.com",
+          "googleusercontent.com",
+          "gstatic.com",
+          "ggpht.com",
+          "gvt1.com",
+          "googlevideo.com",
+          "youtube.com",
+          "youtube-nocookie.com",
+          "youtu.be",
+          "ytimg.com"
+        ],
+        "action": "evaluate",
+        "server": "dns-proxy"
+      },
+      {
+        "match_response": true,
+        "domain_suffix": [
+          "google.com",
+          "googleapis.com",
+          "googleusercontent.com",
+          "gstatic.com",
+          "ggpht.com",
+          "gvt1.com",
+          "googlevideo.com",
+          "youtube.com",
+          "youtube-nocookie.com",
+          "youtu.be",
+          "ytimg.com"
+        ],
+        "action": "respond"
+      },
+      {
         "rule_set": [
           "rule-OpenAI",
           "rule-Claude",
@@ -74,7 +108,7 @@
       }
     ],
     "final": "dns-direct",
-    "strategy": "prefer_ipv4",
+    "strategy": "ipv4_only",
     "cache_capacity": 4096
   },
   "http_clients": [
@@ -90,8 +124,7 @@
       "tag": "tun-in",
       "interface_name": "singtun0",
       "address": [
-        "172.18.0.1/30",
-        "fdfe:dcba:9876::1/126"
+        "172.18.0.1/30"
       ],
       "auto_route": true,
       "strict_route": true,
@@ -105,21 +138,17 @@
         "224.0.0.0/4",
         "fc00::/7",
         "fe80::/10",
-        "ff00::/8",
-        "192.168.1.0/24"
+        "ff00::/8"
       ],
-      "stack": "mixed",
       "dns_mode": "hijack",
       "dns_address": [
-        "172.18.0.2",
-        "fdfe:dcba:9876::2"
+        "172.18.0.2"
       ],
-      "auto_redirect": true,
-      "auto_redirect_input_mark": "0x2023",
-      "auto_redirect_output_mark": "0x2024",
-      "loopback_address": [
-        "10.7.0.1"
-      ]
+      "platform": {
+        "http_proxy": {
+          "enabled": false
+        }
+      }
     }
   ],
   "outbounds": [
@@ -1110,6 +1139,41 @@
         ],
         "action": "route",
         "outbound": "⬇️ 下载/P2P"
+      },
+      {
+        "network": "udp",
+        "port": 443,
+        "action": "reject",
+        "domain_suffix": [
+          "google.com",
+          "googleapis.com",
+          "googleusercontent.com",
+          "gstatic.com",
+          "ggpht.com",
+          "gvt1.com",
+          "googlevideo.com",
+          "youtube.com",
+          "youtube-nocookie.com",
+          "youtu.be",
+          "ytimg.com"
+        ]
+      },
+      {
+        "domain_suffix": [
+          "google.com",
+          "googleapis.com",
+          "googleusercontent.com",
+          "gstatic.com",
+          "ggpht.com",
+          "gvt1.com",
+          "googlevideo.com",
+          "youtube.com",
+          "youtube-nocookie.com",
+          "youtu.be",
+          "ytimg.com"
+        ],
+        "action": "route",
+        "outbound": "🚀 节点选择"
       },
       {
         "network": "udp",

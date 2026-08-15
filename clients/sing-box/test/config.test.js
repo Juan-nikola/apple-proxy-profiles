@@ -136,13 +136,17 @@ test("renders latest sing-box DNS rules with evaluate and response matching", ()
     [
       { action: "evaluate", server: "dns-proxy" },
       { action: "respond", server: undefined },
+      { action: "evaluate", server: "dns-proxy" },
+      { action: "respond", server: undefined },
       { action: "route", server: "dns-direct" },
     ],
   );
   assert.equal(config.dns.final, "dns-direct");
-  assert.deepEqual(config.dns.rules[0].rule_set, proxyDnsRuleSets);
+  assert.equal(config.dns.rules[0].domain_suffix.includes("google.com"), true);
   assert.equal(config.dns.rules[1].match_response, true);
-  assert.equal(config.dns.rules[0].rule_set.includes("rule-ChinaTLD"), false);
+  assert.deepEqual(config.dns.rules[2].rule_set, proxyDnsRuleSets);
+  assert.equal(config.dns.rules[3].match_response, true);
+  assert.equal(config.dns.rules[2].rule_set.includes("rule-ChinaTLD"), false);
 });
 
 test("renders every global DNS provider with the structured HTTPS contract", () => {
@@ -225,6 +229,9 @@ test("orders deterministic fallback after explicit services and before ChinaIP",
   const rules = config.route.rules;
   const indexOfTag = (tag) => rules.findIndex((rule) => rule.rule_set?.includes(tag));
   const local = rules.findIndex((rule) => rule.ip_is_private === true);
+  const overseasFallback = rules.findIndex((rule) => (
+    rule.domain_suffix?.includes("google.com") && rule.action === "route"
+  ));
   const security = indexOfTag("rule-Hijacking");
   const custom = rules.findIndex((rule) => rule.domain_suffix?.includes("perplexity.ai"));
   const domesticCore = indexOfTag("rule-DomesticCore");
@@ -235,8 +242,9 @@ test("orders deterministic fallback after explicit services and before ChinaIP",
   const chinaTld = indexOfTag("rule-ChinaTLD");
   const resolve = rules.findIndex((rule) => rule.action === "resolve");
   const chinaIp = indexOfTag("rule-ChinaIP");
-  assert.equal([local, security, custom, domesticCore, domesticGame, steamCn, overseas, overseasGame, chinaTld, resolve, chinaIp].every((index) => index >= 0), true);
+  assert.equal([local, overseasFallback, security, custom, domesticCore, domesticGame, steamCn, overseas, overseasGame, chinaTld, resolve, chinaIp].every((index) => index >= 0), true);
   assert.equal(local < security && security < custom && custom < domesticCore, true);
+  assert.equal(overseasFallback < resolve, true);
   assert.equal(domesticCore < domesticGame && domesticGame < steamCn && steamCn < overseas, true);
   assert.equal(overseas < overseasGame && overseasGame < chinaTld, true);
   assert.equal(chinaTld < resolve && resolve < chinaIp, true);
@@ -278,9 +286,18 @@ test("applies quicMode allow, proxy-block, and all-block to route rules", () => 
   const pbRules = proxyBlock.route.rules;
   const chinaIp = pbRules.findIndex((rule) => rule.rule_set?.includes("rule-ChinaIP"));
   const lateBlock = pbRules.findIndex((rule) => (
-    rule.network === "udp" && rule.port === 443 && rule.action === "reject" && rule.rule_set === undefined
+    rule.network === "udp" && rule.port === 443 && rule.action === "reject"
+      && rule.rule_set === undefined && rule.domain_suffix === undefined
   ));
   assert.ok(lateBlock > chinaIp, "proxy-block must reject QUIC on the final proxy path after ChinaIP");
+
+  const overseasQuicBlock = pbRules.findIndex((rule) => (
+    rule.domain_suffix?.includes("googlevideo.com") && rule.action === "reject"
+  ));
+  const overseasRoute = pbRules.findIndex((rule) => (
+    rule.domain_suffix?.includes("googlevideo.com") && rule.outbound === "🚀 节点选择"
+  ));
+  assert.ok(overseasQuicBlock >= 0 && overseasQuicBlock < overseasRoute, "proxy-block must reject Google/YouTube QUIC before routing");
 
   const youtubeReject = pbRules.findIndex((rule) => (
     rule.rule_set?.includes("rule-YouTube") && rule.action === "reject"

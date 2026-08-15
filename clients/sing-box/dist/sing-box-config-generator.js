@@ -1894,6 +1894,21 @@ var SingBoxConfigBundle = (() => {
     ])
   });
 
+  // ../../shared/rules/overseas-dns.js
+  var PROXY_DNS_DOMAIN_SUFFIXES = Object.freeze([
+    "google.com",
+    "googleapis.com",
+    "googleusercontent.com",
+    "gstatic.com",
+    "ggpht.com",
+    "gvt1.com",
+    "googlevideo.com",
+    "youtube.com",
+    "youtube-nocookie.com",
+    "youtu.be",
+    "ytimg.com"
+  ]);
+
   // src/render-rules.js
   var RULE_DOWNLOAD_HTTP_CLIENT = "\u{1F9ED} \u89C4\u5219\u4E0B\u8F7D HTTP";
   var LOCAL_RULES = Object.freeze([
@@ -1901,6 +1916,15 @@ var SingBoxConfigBundle = (() => {
     { domain_suffix: ["local", "lan", "home.arpa"], action: "route", outbound: "DIRECT" }
   ]);
   var QUIC_BLOCK_RULE = Object.freeze({ network: "udp", port: 443, action: "reject" });
+  var OVERSEAS_DNS_FALLBACK_RULE = Object.freeze({
+    domain_suffix: PROXY_DNS_DOMAIN_SUFFIXES,
+    action: "route",
+    outbound: "\u{1F680} \u8282\u70B9\u9009\u62E9"
+  });
+  var OVERSEAS_DNS_QUIC_BLOCK_RULE = Object.freeze({
+    ...QUIC_BLOCK_RULE,
+    domain_suffix: PROXY_DNS_DOMAIN_SUFFIXES
+  });
   var CUSTOM_TARGETS = Object.freeze({ block: "REJECT", direct: "DIRECT", proxy: "\u{1F680} \u8282\u70B9\u9009\u62E9", ai: "\u{1F916} AI \u4E13\u7528" });
   var CUSTOM_FIELDS = Object.freeze({
     DOMAIN: "domain",
@@ -1986,6 +2010,10 @@ var SingBoxConfigBundle = (() => {
         }
         rules.push(taggedRule(source));
       }
+      if (phase === "serviceIntent") {
+        if (quicMode === "proxy-block") rules.push({ ...OVERSEAS_DNS_QUIC_BLOCK_RULE });
+        rules.push({ ...OVERSEAS_DNS_FALLBACK_RULE });
+      }
     }
     rules.push({ action: "resolve", server: "dns-direct" });
     rules.push(...plan.filter(({ phase }) => phase === "resolvedChinaIp").map(taggedRule));
@@ -2058,6 +2086,16 @@ var SingBoxConfigBundle = (() => {
     return {
       servers: [chinaServer, proxyServer],
       rules: options.profileMode === "diagnostic" ? [] : [
+        {
+          domain_suffix: PROXY_DNS_DOMAIN_SUFFIXES,
+          action: "evaluate",
+          server: "dns-proxy"
+        },
+        {
+          match_response: true,
+          domain_suffix: PROXY_DNS_DOMAIN_SUFFIXES,
+          action: "respond"
+        },
         {
           rule_set: proxyDnsRuleSets,
           action: "evaluate",

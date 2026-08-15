@@ -1,5 +1,6 @@
 import { orderedRoutingPlan } from "../../../shared/rules/lightweight-policy.js";
 import { chinaDnsProvider, globalDnsProvider } from "../../../shared/dns/providers.js";
+import { PROXY_DNS_DOMAIN_SUFFIXES } from "../../../shared/rules/overseas-dns.js";
 
 const proxyDnsSourceIds = Object.freeze(
   orderedRoutingPlan().filter(({ dnsClass }) => dnsClass === "proxy").map(({ id }) => id),
@@ -24,6 +25,16 @@ export function renderSingBoxDns(options) {
   return {
     servers: [chinaServer, proxyServer],
     rules: options.profileMode === "diagnostic" ? [] : [
+      {
+        domain_suffix: PROXY_DNS_DOMAIN_SUFFIXES,
+        action: "evaluate",
+        server: "dns-proxy",
+      },
+      {
+        match_response: true,
+        domain_suffix: PROXY_DNS_DOMAIN_SUFFIXES,
+        action: "respond",
+      },
       {
         rule_set: proxyDnsRuleSets,
         action: "evaluate",

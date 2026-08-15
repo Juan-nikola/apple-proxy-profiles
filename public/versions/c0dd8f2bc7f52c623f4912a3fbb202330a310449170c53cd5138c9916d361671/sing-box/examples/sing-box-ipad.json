@@ -25,6 +25,40 @@
     ],
     "rules": [
       {
+        "domain_suffix": [
+          "google.com",
+          "googleapis.com",
+          "googleusercontent.com",
+          "gstatic.com",
+          "ggpht.com",
+          "gvt1.com",
+          "googlevideo.com",
+          "youtube.com",
+          "youtube-nocookie.com",
+          "youtu.be",
+          "ytimg.com"
+        ],
+        "action": "evaluate",
+        "server": "dns-proxy"
+      },
+      {
+        "match_response": true,
+        "domain_suffix": [
+          "google.com",
+          "googleapis.com",
+          "googleusercontent.com",
+          "gstatic.com",
+          "ggpht.com",
+          "gvt1.com",
+          "googlevideo.com",
+          "youtube.com",
+          "youtube-nocookie.com",
+          "youtu.be",
+          "ytimg.com"
+        ],
+        "action": "respond"
+      },
+      {
         "rule_set": [
           "rule-OpenAI",
           "rule-Claude",
@@ -88,7 +122,7 @@
     {
       "type": "tun",
       "tag": "tun-in",
-      "interface_name": "sing-box",
+      "interface_name": "singtun0",
       "address": [
         "172.18.0.1/30",
         "fdfe:dcba:9876::1/126"
@@ -109,11 +143,14 @@
       ],
       "dns_mode": "hijack",
       "dns_address": [
-        "172.18.0.2"
+        "172.18.0.2",
+        "fdfe:dcba:9876::2"
       ],
-      "include_android_user": [
-        0
-      ]
+      "platform": {
+        "http_proxy": {
+          "enabled": false
+        }
+      }
     }
   ],
   "outbounds": [
@@ -1104,6 +1141,41 @@
         ],
         "action": "route",
         "outbound": "⬇️ 下载/P2P"
+      },
+      {
+        "network": "udp",
+        "port": 443,
+        "action": "reject",
+        "domain_suffix": [
+          "google.com",
+          "googleapis.com",
+          "googleusercontent.com",
+          "gstatic.com",
+          "ggpht.com",
+          "gvt1.com",
+          "googlevideo.com",
+          "youtube.com",
+          "youtube-nocookie.com",
+          "youtu.be",
+          "ytimg.com"
+        ]
+      },
+      {
+        "domain_suffix": [
+          "google.com",
+          "googleapis.com",
+          "googleusercontent.com",
+          "gstatic.com",
+          "ggpht.com",
+          "gvt1.com",
+          "googlevideo.com",
+          "youtube.com",
+          "youtube-nocookie.com",
+          "youtu.be",
+          "ytimg.com"
+        ],
+        "action": "route",
+        "outbound": "🚀 节点选择"
       },
       {
         "network": "udp",

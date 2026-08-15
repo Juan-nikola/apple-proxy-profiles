@@ -25,6 +25,40 @@
     ],
     "rules": [
       {
+        "domain_suffix": [
+          "google.com",
+          "googleapis.com",
+          "googleusercontent.com",
+          "gstatic.com",
+          "ggpht.com",
+          "gvt1.com",
+          "googlevideo.com",
+          "youtube.com",
+          "youtube-nocookie.com",
+          "youtu.be",
+          "ytimg.com"
+        ],
+        "action": "evaluate",
+        "server": "dns-proxy"
+      },
+      {
+        "match_response": true,
+        "domain_suffix": [
+          "google.com",
+          "googleapis.com",
+          "googleusercontent.com",
+          "gstatic.com",
+          "ggpht.com",
+          "gvt1.com",
+          "googlevideo.com",
+          "youtube.com",
+          "youtube-nocookie.com",
+          "youtu.be",
+          "ytimg.com"
+        ],
+        "action": "respond"
+      },
+      {
         "rule_set": [
           "rule-OpenAI",
           "rule-Claude",
@@ -105,18 +139,21 @@
         "224.0.0.0/4",
         "fc00::/7",
         "fe80::/10",
-        "ff00::/8"
+        "ff00::/8",
+        "192.168.1.0/24"
       ],
+      "stack": "mixed",
       "dns_mode": "hijack",
       "dns_address": [
         "172.18.0.2",
         "fdfe:dcba:9876::2"
       ],
-      "platform": {
-        "http_proxy": {
-          "enabled": false
-        }
-      }
+      "auto_redirect": true,
+      "auto_redirect_input_mark": "0x2023",
+      "auto_redirect_output_mark": "0x2024",
+      "loopback_address": [
+        "10.7.0.1"
+      ]
     }
   ],
   "outbounds": [
@@ -364,8 +401,8 @@
         "示例 · Frankfurt"
       ],
       "url": "https://www.gstatic.com/generate_204",
-      "interval": "1800s",
-      "tolerance": 150,
+      "interval": "600s",
+      "tolerance": 100,
       "interrupt_exist_connections": true
     },
     {
@@ -376,8 +413,8 @@
         "示例 · Frankfurt"
       ],
       "url": "https://www.gstatic.com/generate_204",
-      "interval": "1800s",
-      "tolerance": 150,
+      "interval": "600s",
+      "tolerance": 100,
       "interrupt_exist_connections": true
     },
     {
@@ -387,8 +424,8 @@
         "DIRECT"
       ],
       "url": "https://www.gstatic.com/generate_204",
-      "interval": "1800s",
-      "tolerance": 150,
+      "interval": "600s",
+      "tolerance": 100,
       "interrupt_exist_connections": true
     },
     {
@@ -398,8 +435,8 @@
         "DIRECT"
       ],
       "url": "https://www.gstatic.com/generate_204",
-      "interval": "1800s",
-      "tolerance": 150,
+      "interval": "600s",
+      "tolerance": 100,
       "interrupt_exist_connections": true
     },
     {
@@ -409,8 +446,8 @@
         "DIRECT"
       ],
       "url": "https://www.gstatic.com/generate_204",
-      "interval": "1800s",
-      "tolerance": 150,
+      "interval": "600s",
+      "tolerance": 100,
       "interrupt_exist_connections": true
     },
     {
@@ -420,8 +457,8 @@
         "DIRECT"
       ],
       "url": "https://www.gstatic.com/generate_204",
-      "interval": "1800s",
-      "tolerance": 150,
+      "interval": "600s",
+      "tolerance": 100,
       "interrupt_exist_connections": true
     },
     {
@@ -1107,6 +1144,41 @@
         ],
         "action": "route",
         "outbound": "⬇️ 下载/P2P"
+      },
+      {
+        "network": "udp",
+        "port": 443,
+        "action": "reject",
+        "domain_suffix": [
+          "google.com",
+          "googleapis.com",
+          "googleusercontent.com",
+          "gstatic.com",
+          "ggpht.com",
+          "gvt1.com",
+          "googlevideo.com",
+          "youtube.com",
+          "youtube-nocookie.com",
+          "youtu.be",
+          "ytimg.com"
+        ]
+      },
+      {
+        "domain_suffix": [
+          "google.com",
+          "googleapis.com",
+          "googleusercontent.com",
+          "gstatic.com",
+          "ggpht.com",
+          "gvt1.com",
+          "googlevideo.com",
+          "youtube.com",
+          "youtube-nocookie.com",
+          "youtu.be",
+          "ytimg.com"
+        ],
+        "action": "route",
+        "outbound": "🚀 节点选择"
       },
       {
         "network": "udp",
