@@ -4,6 +4,7 @@ import { NON_CHAINED_FILTER } from "../../../shared/policies/filters.js";
 
 const RULE_DOWNLOAD_GROUP = "🧭 DNS 与规则下载";
 const RULE_DOWNLOAD_FAILOVER_GROUP = "🧭 规则下载故障转移";
+const FALLBACK_TOLERANCE_MS = 65535;
 
 function targetName(value) {
   return value === POLICY_TARGET.primaryProxy ? "⚡ 全部自动" : value;
@@ -32,7 +33,10 @@ function renderRuleDownloadGroups(inventory, ruleProbeUrl) {
     outbounds: [...nodeCandidates, "DIRECT"],
     url: ruleProbeUrl,
     interval: "30s",
-    tolerance: 0,
+    // sing-box has no ordered fallback outbound. A very large URLTest
+    // tolerance preserves the first healthy candidate and only advances when
+    // it fails, which is the closest native equivalent.
+    tolerance: FALLBACK_TOLERANCE_MS,
     interrupt_exist_connections: true,
   };
   return [
@@ -61,11 +65,15 @@ function renderGroup(group, inventory) {
       type: "selector",
       tag: group.name,
       outbounds: outbounds.length > 0 ? outbounds : ["DIRECT"],
+      default: outbounds[0] ?? "DIRECT",
       interrupt_exist_connections: true,
     };
   }
+  const explicitCandidates = group.kind === "source"
+    ? group.candidates.filter((candidate) => candidate !== "DIRECT")
+    : group.candidates;
   const candidates = [
-    ...group.candidates.map(targetName),
+    ...explicitCandidates.map(targetName),
     ...filterNodes(group.nodeFilter, inventory),
   ].filter((item, index, all) => all.indexOf(item) === index);
   const outbounds = candidates.length > 0 ? candidates : ["DIRECT"];
@@ -76,7 +84,9 @@ function renderGroup(group, inventory) {
       outbounds,
       url: "https://www.gstatic.com/generate_204",
       interval: duration(group.test?.interval ?? 600),
-      tolerance: group.test?.tolerance ?? 100,
+      tolerance: group.strategy === "fallback"
+        ? FALLBACK_TOLERANCE_MS
+        : group.test?.tolerance ?? 100,
       interrupt_exist_connections: true,
     };
   }

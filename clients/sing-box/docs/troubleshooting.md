@@ -14,6 +14,8 @@
 
 如果出现 `domain_resolver` 或 `default_domain_resolver` 缺失，说明配置仍是旧版本缓存。sing-box 1.14 对包含域名服务器、规则集或代理节点的配置要求默认域名解析器；重新预览并刷新对应的 `sing-box-*` Config File，使 JSON 中出现 `route.default_domain_resolver: "dns-direct"`。
 
-如果规则集报 `dial ... connection refused`、`context deadline exceeded` 或 TLS/握手错误，说明规则下载候选节点不可用。当前 sing-box 生成器会创建专用的 `🧭 规则下载故障转移` URLTest 组，直接探测 `Hijacking.json` 规则文件，并把 `🧭 DNS 与规则下载` 默认指向该组；失效节点会被跳过，另外保留 `🚀 节点选择`、`DIRECT` 作为手动备用。重新预览并刷新 File 任务，确认 JSON 同时包含该 URLTest 组和 selector 的 `"default": "🧭 规则下载故障转移"`。
+如果规则集报 `dial ... connection refused`、`context deadline exceeded` 或 TLS/握手错误，说明规则下载候选节点不可用。当前 sing-box 生成器会创建专用的 `🧭 规则下载故障转移` URLTest 组，直接探测 `Hijacking.srs` 规则文件，并把 `🧭 DNS 与规则下载` 默认指向该组；失效节点会被跳过，另外保留 `🚀 节点选择`、`DIRECT` 作为手动备用。sing-box 没有独立的有序 fallback 出站，生成器通过高 tolerance 保留第一个健康候选，只在它失效时切换。重新预览并刷新 File 任务，确认 JSON 同时包含该 URLTest 组和 selector 的 `"default": "🧭 规则下载故障转移"`。
+
+如果配置启动时卡在 DNS、节点域名解析或规则下载，检查 `dns-direct`。非系统 DNS 必须显式包含 `"detour": "DIRECT"`；否则国内 DNS 请求可能进入默认代理，而代理节点域名又需要同一 DNS，形成启动循环。
 
 如果全部候选都失败，sing-box 仍会在规则集初始化阶段报错；这表示当前网络既不能通过代理访问规则文件，也不能直连 GitHub Pages，需要更换网络或节点后重新加载配置。

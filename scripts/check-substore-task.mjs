@@ -27,6 +27,7 @@ const COMMON_ENUM_KEYS = Object.freeze([
 const CHANNELS = Object.freeze(["edge", "current"]);
 const ADBLOCK_MODES = Object.freeze(["off", "full"]);
 const PROFILE_MODES = Object.freeze(["light", "diagnostic"]);
+const NODE_ERROR_MODES = Object.freeze(["strict", "compatible"]);
 const ONEXRAY_LOG_LEVELS = Object.freeze(["none", "error", "warning", "info", "debug"]);
 const ONEXRAY_DNS_LOG_MODES = Object.freeze(["on", "off"]);
 
@@ -50,7 +51,11 @@ const GENERATOR_SCHEMAS = Object.freeze({
   "sing-box/scripts/sing-box-config-generator.js": configSchema({
     platforms: ["macos", "iphone", "ipad", "android", "openwrt"],
     requiresSubscriptionName: true,
-    extraKeys: ["profileMode"],
+    extraKeys: ["profileMode", "nodeErrorMode"],
+    extraEnums: {
+      profileMode: PROFILE_MODES,
+      nodeErrorMode: NODE_ERROR_MODES,
+    },
   }),
   "onexray/scripts/onexray-nodes-generator.js": oneXraySchema(["nodes"]),
   "onexray/scripts/onexray-profile-generator.js": oneXraySchema(["profile", "audit"]),
@@ -70,6 +75,7 @@ function configSchema({
   requiresSubscriptionName = false,
   requiresNodeSubscriptionUrl = false,
   extraKeys = [],
+  extraEnums = {},
 }) {
   const allowed = [
     "output", "type", "name", "subscriptionName", "nodeSubscriptionUrl", "platform",
@@ -94,6 +100,7 @@ function configSchema({
       ipv6Mode: OPTION_VALUES.ipv6Mode,
       autoGroupMode: OPTION_VALUES.autoGroupMode,
       clientChain: OPTION_VALUES.clientChain,
+      ...extraEnums,
     }),
   });
 }
@@ -169,9 +176,6 @@ export function checkTaskOptions(schema, params) {
     }
     if (key === "adblockMode" && !ADBLOCK_MODES.includes(params[key])) {
       errors.push(`Option 'adblockMode' has unsupported value '${params[key]}' (allowed: ${ADBLOCK_MODES.join(", ")})`);
-    }
-    if (key === "profileMode" && !PROFILE_MODES.includes(params[key])) {
-      errors.push(`Option 'profileMode' has unsupported value '${params[key]}' (allowed: ${PROFILE_MODES.join(", ")})`);
     }
     if (key === "platform" && schema.platforms && !schema.platforms.includes(params[key])) {
       errors.push(`Option 'platform' has unsupported value '${params[key]}' (allowed: ${schema.platforms.join(", ")})`);

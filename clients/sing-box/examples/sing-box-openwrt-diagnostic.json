@@ -8,7 +8,8 @@
       {
         "type": "udp",
         "tag": "dns-direct",
-        "server": "223.5.5.5"
+        "server": "223.5.5.5",
+        "detour": "DIRECT"
       },
       {
         "type": "https",
@@ -20,10 +21,49 @@
           "enabled": true,
           "server_name": "cloudflare-dns.com"
         },
-        "detour": "🚀 节点选择"
+        "detour": "🧭 DNS 与规则下载"
       }
     ],
-    "rules": [],
+    "rules": [
+      {
+        "domain_suffix": [
+          "google.com",
+          "googleapis.com",
+          "googleusercontent.com",
+          "gstatic.com",
+          "ggpht.com",
+          "gvt1.com",
+          "googlevideo.com",
+          "youtube.com",
+          "youtube-nocookie.com",
+          "youtu.be",
+          "ytimg.com"
+        ],
+        "action": "evaluate",
+        "server": "dns-proxy"
+      },
+      {
+        "match_response": true,
+        "domain_suffix": [
+          "google.com",
+          "googleapis.com",
+          "googleusercontent.com",
+          "gstatic.com",
+          "ggpht.com",
+          "gvt1.com",
+          "googlevideo.com",
+          "youtube.com",
+          "youtube-nocookie.com",
+          "youtu.be",
+          "ytimg.com"
+        ],
+        "action": "respond"
+      },
+      {
+        "action": "route",
+        "server": "dns-direct"
+      }
+    ],
     "final": "dns-direct",
     "strategy": "prefer_ipv4",
     "cache_capacity": 4096
@@ -91,6 +131,7 @@
         "🌏 亚太",
         "🌍 欧洲"
       ],
+      "default": "⚡ 全部自动",
       "interrupt_exist_connections": true
     },
     {
@@ -331,7 +372,7 @@
       ],
       "url": "https://www.gstatic.com/generate_204",
       "interval": "600s",
-      "tolerance": 100,
+      "tolerance": 65535,
       "interrupt_exist_connections": true
     },
     {
@@ -353,7 +394,7 @@
       ],
       "url": "https://www.gstatic.com/generate_204",
       "interval": "600s",
-      "tolerance": 100,
+      "tolerance": 65535,
       "interrupt_exist_connections": true
     },
     {
@@ -375,7 +416,7 @@
       ],
       "url": "https://www.gstatic.com/generate_204",
       "interval": "600s",
-      "tolerance": 100,
+      "tolerance": 65535,
       "interrupt_exist_connections": true
     },
     {
@@ -388,7 +429,7 @@
       ],
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/rule-sets/Hijacking.srs",
       "interval": "30s",
-      "tolerance": 0,
+      "tolerance": 65535,
       "interrupt_exist_connections": true
     },
     {

@@ -787,6 +787,19 @@ var SingBoxConfigBundle = (() => {
     }
     return { renderable, failureProtocols: failures };
   }
+  function assertRenderableNodes(nodes, clientName, renderOneNode) {
+    validateRenderableInvocation(nodes, clientName, renderOneNode);
+    const failures = {};
+    for (const node of nodes) {
+      try {
+        renderOneNode(node);
+      } catch {
+        increment(failures, protocolOf(node));
+      }
+    }
+    const counts = failureSummary(failures);
+    if (counts) throw new Error(`${clientName} cannot render selected protocols: ${counts}`);
+  }
 
   // ../../shared/policies/platform-presets.js
   var POLICY_PLATFORM_PRESETS = Object.freeze({
@@ -827,12 +840,14 @@ var SingBoxConfigBundle = (() => {
     autoGroupMode: "auto",
     clientChain: "off",
     profileMode: "light",
-    adblockMode: "off"
+    adblockMode: "off",
+    nodeErrorMode: "strict"
   });
   var PLATFORMS = /* @__PURE__ */ new Set(["macos", "iphone", "ipad", "android", "openwrt"]);
   var CHANNELS = /* @__PURE__ */ new Set(["edge", "current"]);
   var PROFILE_MODES = /* @__PURE__ */ new Set(["light", "diagnostic"]);
   var ADBLOCK_MODES = /* @__PURE__ */ new Set(["off", "full"]);
+  var NODE_ERROR_MODES = /* @__PURE__ */ new Set(["strict", "compatible"]);
   var ALLOWED_KEYS = /* @__PURE__ */ new Set([...REQUIRED_KEYS, ...Object.keys(DEFAULTS)]);
   var PARSED = /* @__PURE__ */ new WeakSet();
   function requiredString(raw, key) {
@@ -866,6 +881,8 @@ var SingBoxConfigBundle = (() => {
     if (typeof profileMode !== "string" || !PROFILE_MODES.has(profileMode)) throw new Error("Option 'profileMode' has an unsupported value");
     const adblockMode = raw.adblockMode === void 0 ? DEFAULTS.adblockMode : raw.adblockMode;
     if (typeof adblockMode !== "string" || !ADBLOCK_MODES.has(adblockMode)) throw new Error("Option 'adblockMode' has an unsupported value");
+    const nodeErrorMode = raw.nodeErrorMode === void 0 ? DEFAULTS.nodeErrorMode : raw.nodeErrorMode;
+    if (typeof nodeErrorMode !== "string" || !NODE_ERROR_MODES.has(nodeErrorMode)) throw new Error("Option 'nodeErrorMode' has an unsupported value");
     const options = {
       output: "config",
       type: "collection",
@@ -882,7 +899,8 @@ var SingBoxConfigBundle = (() => {
       autoGroupMode: enumValue(raw, "autoGroupMode", DEFAULTS.autoGroupMode),
       clientChain: enumValue(raw, "clientChain", DEFAULTS.clientChain),
       profileMode,
-      adblockMode
+      adblockMode,
+      nodeErrorMode
     };
     platformPolicyPreset(platform === "openwrt" ? "macos" : platform);
     Object.freeze(options);
@@ -1551,6 +1569,7 @@ var SingBoxConfigBundle = (() => {
   // src/render-groups.js
   var RULE_DOWNLOAD_GROUP = "\u{1F9ED} DNS \u4E0E\u89C4\u5219\u4E0B\u8F7D";
   var RULE_DOWNLOAD_FAILOVER_GROUP = "\u{1F9ED} \u89C4\u5219\u4E0B\u8F7D\u6545\u969C\u8F6C\u79FB";
+  var FALLBACK_TOLERANCE_MS = 65535;
   function targetName(value) {
     return value === POLICY_TARGET.primaryProxy ? "\u26A1 \u5168\u90E8\u81EA\u52A8" : value;
   }
@@ -1575,7 +1594,10 @@ var SingBoxConfigBundle = (() => {
       outbounds: [...nodeCandidates, "DIRECT"],
       url: ruleProbeUrl,
       interval: "30s",
-      tolerance: 0,
+      // sing-box has no ordered fallback outbound. A very large URLTest
+      // tolerance preserves the first healthy candidate and only advances when
+      // it fails, which is the closest native equivalent.
+      tolerance: FALLBACK_TOLERANCE_MS,
       interrupt_exist_connections: true
     };
     return [
@@ -1600,11 +1622,13 @@ var SingBoxConfigBundle = (() => {
         type: "selector",
         tag: group.name,
         outbounds: outbounds2.length > 0 ? outbounds2 : ["DIRECT"],
+        default: outbounds2[0] ?? "DIRECT",
         interrupt_exist_connections: true
       };
     }
+    const explicitCandidates = group.kind === "source" ? group.candidates.filter((candidate) => candidate !== "DIRECT") : group.candidates;
     const candidates = [
-      ...group.candidates.map(targetName),
+      ...explicitCandidates.map(targetName),
       ...filterNodes(group.nodeFilter, inventory)
     ].filter((item, index, all) => all.indexOf(item) === index);
     const outbounds = candidates.length > 0 ? candidates : ["DIRECT"];
@@ -1615,7 +1639,7 @@ var SingBoxConfigBundle = (() => {
         outbounds,
         url: "https://www.gstatic.com/generate_204",
         interval: duration(group.test?.interval ?? 600),
-        tolerance: group.test?.tolerance ?? 100,
+        tolerance: group.strategy === "fallback" ? FALLBACK_TOLERANCE_MS : group.test?.tolerance ?? 100,
         interrupt_exist_connections: true
       };
     }
@@ -2069,9 +2093,33 @@ var SingBoxConfigBundle = (() => {
   var proxyDnsSourceIds = Object.freeze(
     orderedRoutingPlan().filter(({ dnsClass }) => dnsClass === "proxy").map(({ id }) => id)
   );
+  var chinaDnsSourceIds = Object.freeze(
+    orderedRoutingPlan().filter(({ dnsClass }) => dnsClass === "china").map(({ id }) => id)
+  );
+  var LOCAL_DNS_SUFFIXES = Object.freeze(["local", "lan", "home.arpa"]);
+  function evaluateAndRespond(match, server) {
+    return [
+      { ...match, action: "evaluate", server },
+      { match_response: true, ...match, action: "respond" }
+    ];
+  }
+  function dnsRules(options) {
+    const rules = [];
+    if (options.dnsMode === "privacy") {
+      rules.push(...evaluateAndRespond({ domain_suffix: LOCAL_DNS_SUFFIXES }, "dns-direct"));
+    }
+    rules.push(...evaluateAndRespond({ domain_suffix: PROXY_DNS_DOMAIN_SUFFIXES }, "dns-proxy"));
+    if (options.profileMode !== "diagnostic") {
+      const sourceIds = options.dnsMode === "privacy" ? chinaDnsSourceIds : proxyDnsSourceIds;
+      const server = options.dnsMode === "privacy" ? "dns-direct" : "dns-proxy";
+      rules.push(...evaluateAndRespond({ rule_set: sourceIds.map((id) => `rule-${id}`) }, server));
+    }
+    rules.push({ action: "route", server: options.dnsMode === "privacy" ? "dns-proxy" : "dns-direct" });
+    return rules;
+  }
   function renderSingBoxDns(options) {
     const chinaDns = chinaDnsProvider(options.chinaDns);
-    const chinaServer = options.chinaDns === "system" ? { type: "local", tag: "dns-direct" } : { type: "udp", tag: "dns-direct", server: chinaDns.address };
+    const chinaServer = options.chinaDns === "system" ? { type: "local", tag: "dns-direct" } : { type: "udp", tag: "dns-direct", server: chinaDns.address, detour: "DIRECT" };
     const globalDns = globalDnsProvider(options.globalDns);
     const proxyServer = {
       type: "https",
@@ -2080,35 +2128,12 @@ var SingBoxConfigBundle = (() => {
       server_port: 443,
       path: "/dns-query",
       tls: { enabled: true, server_name: globalDns.serverName },
-      detour: "\u{1F680} \u8282\u70B9\u9009\u62E9"
+      detour: options.dnsMode === "speed" ? "DIRECT" : "\u{1F9ED} DNS \u4E0E\u89C4\u5219\u4E0B\u8F7D"
     };
-    const proxyDnsRuleSets = proxyDnsSourceIds.map((id) => `rule-${id}`);
     return {
       servers: [chinaServer, proxyServer],
-      rules: options.profileMode === "diagnostic" ? [] : [
-        {
-          domain_suffix: PROXY_DNS_DOMAIN_SUFFIXES,
-          action: "evaluate",
-          server: "dns-proxy"
-        },
-        {
-          match_response: true,
-          domain_suffix: PROXY_DNS_DOMAIN_SUFFIXES,
-          action: "respond"
-        },
-        {
-          rule_set: proxyDnsRuleSets,
-          action: "evaluate",
-          server: "dns-proxy"
-        },
-        {
-          match_response: true,
-          rule_set: proxyDnsRuleSets,
-          action: "respond"
-        },
-        { action: "route", server: "dns-direct" }
-      ],
-      final: "dns-direct",
+      rules: dnsRules(options),
+      final: options.dnsMode === "privacy" ? "dns-proxy" : "dns-direct",
       strategy: options.ipv6Mode === "ipv4-only" ? "ipv4_only" : "prefer_ipv4",
       cache_capacity: 4096
     };
@@ -2278,6 +2303,9 @@ var SingBoxConfigBundle = (() => {
       validateDnsServerShape(server, errors);
       if (server.detour !== void 0 && !outboundTags.has(server.detour)) errors.push("DNS server references missing outbound");
       if (server.detour === server.tag || server.tag === dnsFinal && server.detour === "dns-proxy") errors.push("DNS server loop detected");
+      if (server.tag === "dns-direct" && server.type !== "local" && server.detour !== "DIRECT") {
+        errors.push("non-local dns-direct must use the DIRECT outbound");
+      }
     }
     for (const inbound of config.inbounds ?? []) {
       if (inbound.type === "tun" && !inbound.auto_route) errors.push("TUN auto_route is required");
@@ -2364,10 +2392,20 @@ var SingBoxConfigBundle = (() => {
     });
     if (!Array.isArray(rawNodes) || rawNodes.length === 0) throw new Error("produceArtifact must return a non-empty node array");
     const normalized = normalizeNodes(rawNodes, { clientChain: options.clientChain });
-    const partitioned = partitionRenderableNodes(normalized.nodes, "sing-box", renderSingBoxOutbound);
-    logDiagnostics(context, options, partitioned.renderable, partitioned.failureProtocols);
+    let renderable;
+    let renderFailures;
+    if (options.nodeErrorMode === "compatible") {
+      const partitioned = partitionRenderableNodes(normalized.nodes, "sing-box", renderSingBoxOutbound);
+      renderable = partitioned.renderable;
+      renderFailures = partitioned.failureProtocols;
+    } else {
+      assertRenderableNodes(normalized.nodes, "sing-box", renderSingBoxOutbound);
+      renderable = normalized.nodes;
+      renderFailures = {};
+    }
+    logDiagnostics(context, options, renderable, renderFailures);
     const ruleBaseUrl = `${PUBLIC_RULE_ROOT}/${options.channel}/sing-box/rule-sets`;
-    const config = renderSingBoxConfig(options, partitioned.renderable.map(sanitizeSingBoxNode), { ruleBaseUrl });
+    const config = renderSingBoxConfig(options, renderable.map(sanitizeSingBoxNode), { ruleBaseUrl });
     return { ...input, $content: `${JSON.stringify(config, null, 2)}
 ` };
   }

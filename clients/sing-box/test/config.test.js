@@ -9,7 +9,7 @@ import { renderSingBoxConfig } from "../src/render-config.js";
 import { validateSingBoxConfig } from "../src/validate-config.js";
 
 const node = {
-  name: "🇯🇵 [机场] Tokyo A",
+  name: "🇯🇵 Tokyo A · Shadowsocks｜机场·U",
   type: "ss",
   server: "198.51.100.10",
   port: 443,
@@ -60,10 +60,13 @@ test("parses all requested sing-box platforms and rejects unsupported values", (
   assert.throws(() => parseSingBoxOptions({ ...baseOptions, channel: "beta" }), /channel/iu);
   assert.equal(parseSingBoxOptions(baseOptions).profileMode, "light");
   assert.equal(parseSingBoxOptions(baseOptions).adblockMode, "off");
+  assert.equal(parseSingBoxOptions(baseOptions).nodeErrorMode, "strict");
   assert.equal(parseSingBoxOptions({ ...baseOptions, profileMode: "diagnostic" }).profileMode, "diagnostic");
   assert.equal(parseSingBoxOptions({ ...baseOptions, adblockMode: "full" }).adblockMode, "full");
+  assert.equal(parseSingBoxOptions({ ...baseOptions, nodeErrorMode: "compatible" }).nodeErrorMode, "compatible");
   assert.throws(() => parseSingBoxOptions({ ...baseOptions, profileMode: "debug" }), /profileMode/iu);
   assert.throws(() => parseSingBoxOptions({ ...baseOptions, adblockMode: "partial" }), /adblockMode/iu);
+  assert.throws(() => parseSingBoxOptions({ ...baseOptions, nodeErrorMode: "skip" }), /nodeErrorMode/iu);
 });
 
 test("renders a validated OpenWrt transparent gateway config", () => {
@@ -105,7 +108,7 @@ test("uses a dedicated health probe for rule downloads", () => {
   assert.deepEqual(failover?.outbounds, [node.name, "DIRECT"]);
   assert.equal(failover?.url, `${ruleBaseUrl}/Hijacking.srs`);
   assert.equal(failover?.interval, "30s");
-  assert.equal(failover?.tolerance, 0);
+  assert.equal(failover?.tolerance, 65535);
 
   const ruleDownload = config.outbounds.find((outbound) => outbound.tag === "🧭 DNS 与规则下载");
   assert.deepEqual(ruleDownload?.type, "selector");
@@ -118,12 +121,20 @@ test("keeps the primary selector compact with continent-level entries only", () 
   const primary = config.outbounds.find((outbound) => outbound.tag === "🚀 节点选择");
   assert.deepEqual(primary?.type, "selector");
   assert.deepEqual(primary?.outbounds, ["⚡ 全部自动", "🛟 全部故障转移", "🌏 亚太"]);
+  assert.equal(primary?.default, "⚡ 全部自动");
   const continent = config.outbounds.find((outbound) => outbound.tag === "🌏 亚太");
-  assert.deepEqual(continent?.outbounds, ["⚡ 亚太自动", "🛟 亚太故障转移", "🇯🇵 [机场] Tokyo A"]);
+  assert.deepEqual(continent?.outbounds, ["⚡ 亚太自动", "🛟 亚太故障转移", node.name]);
   assert.equal(config.outbounds.some((outbound) => outbound.tag === "🇯🇵 日本"), false);
-  for (const nodeName of ["🇯🇵 [机场] Tokyo A"]) {
+  for (const nodeName of [node.name]) {
     assert.equal(primary?.outbounds.includes(nodeName), false, "primary selector must not list concrete nodes");
   }
+  const source = config.outbounds.find((outbound) => outbound.tag === "🏢 机场节点");
+  assert.deepEqual(source?.outbounds, [node.name]);
+  assert.equal(source?.outbounds.includes("DIRECT"), false);
+  const automatic = config.outbounds.find((outbound) => outbound.tag === "⚡ 全部自动");
+  const fallback = config.outbounds.find((outbound) => outbound.tag === "🛟 全部故障转移");
+  assert.equal(automatic?.tolerance, 100);
+  assert.equal(fallback?.tolerance, 65535);
 });
 
 test("renders latest sing-box DNS rules with evaluate and response matching", () => {
@@ -161,7 +172,38 @@ test("renders every global DNS provider with the structured HTTPS contract", () 
     assert.equal(typeof proxyServer.tls?.server_name, "string");
     assert.doesNotMatch(proxyServer.server, /^https?:\/\//iu);
     assert.doesNotMatch(proxyServer.server, /[/?#]/u);
+    assert.equal(proxyServer.detour, "🧭 DNS 与规则下载");
   }
+});
+
+test("implements stable, privacy, and speed DNS modes without a bootstrap loop", () => {
+  const stable = render({ dnsMode: "stable" });
+  const stableDirect = stable.dns.servers.find(({ tag }) => tag === "dns-direct");
+  const stableProxy = stable.dns.servers.find(({ tag }) => tag === "dns-proxy");
+  assert.equal(stableDirect?.detour, "DIRECT");
+  assert.equal(stableProxy?.detour, "🧭 DNS 与规则下载");
+  assert.equal(stable.dns.final, "dns-direct");
+
+  const privacy = render({ dnsMode: "privacy" });
+  const chinaRuleSets = orderedRoutingPlan()
+    .filter(({ dnsClass }) => dnsClass === "china")
+    .map(({ id }) => `rule-${id}`);
+  const privacyChina = privacy.dns.rules.find((rule) => (
+    rule.action === "evaluate" && rule.server === "dns-direct" && Array.isArray(rule.rule_set)
+  ));
+  assert.deepEqual(privacyChina?.rule_set, chinaRuleSets);
+  assert.equal(privacy.dns.final, "dns-proxy");
+  assert.equal(privacy.dns.rules.at(-1)?.server, "dns-proxy");
+
+  const speed = render({ dnsMode: "speed" });
+  const speedProxy = speed.dns.servers.find(({ tag }) => tag === "dns-proxy");
+  assert.equal(speedProxy?.detour, "DIRECT");
+  assert.equal(speed.dns.final, "dns-direct");
+
+  const system = render({ chinaDns: "system" });
+  const systemDirect = system.dns.servers.find(({ tag }) => tag === "dns-direct");
+  assert.equal(systemDirect?.type, "local");
+  assert.equal(Object.hasOwn(systemDirect, "detour"), false);
 });
 
 test("renders mobile TUN without Linux-only auto redirect fields", () => {

@@ -25,10 +25,14 @@ sing-box 新任务只读取 `apple-proxy-singbox`。客户端 collection 边界�
 公共参数为：
 
 ```text
-output=config&type=collection&name=apple-proxy-singbox&subscriptionName=Apple-Proxy-Nodes&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&autoGroupMode=auto&clientChain=off&channel=current
+output=config&type=collection&name=apple-proxy-singbox&subscriptionName=Apple-Proxy-Nodes&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&autoGroupMode=auto&clientChain=off&nodeErrorMode=strict&channel=current
 ```
 
 把每个平台追加到公共参数末尾。旧版 Sub-Store 单行模式使用 `JS_URL#output=config&type=collection&...`；不能使用 `?` 连接脚本参数。要测试 testing 分支，只把 `channel=current` 改为 `channel=edge`，并将远程脚本路径中的 `current` 改为 `edge`。
+
+`nodeErrorMode=strict` 是默认安全边界：只要用户选入的任一节点无法被 sing-box 完整表达，任务就失败并按协议类型报告计数，避免不知情地丢节点。迁移期确实需要保留可用子集时，可显式改为 `nodeErrorMode=compatible`，并检查 preview 日志中的 `renderFailures`。
+
+DNS 模式现在是实际路由语义：`stable` 为国内直连 DNS／明确海外代理 DNS；`privacy` 为国内规则直连、其他查询默认通过代理 DoH；`speed` 允许海外 DoH 直连。非系统的国内 DNS 会强制使用 `DIRECT` 出站，不依赖代理节点启动。
 
 ## 公开脚本地址
 

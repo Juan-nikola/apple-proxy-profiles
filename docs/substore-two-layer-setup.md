@@ -274,7 +274,9 @@ Profile 名会插入 8 位内容哈希版本号；同一通道必须使用同一
 https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/scripts/sing-box-config-generator.js
 ```
 
-公共参数：`output=config&type=collection&name=apple-proxy-singbox&subscriptionName=Apple-Proxy-Nodes&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&autoGroupMode=auto&clientChain=off&channel=current`。
+公共参数：`output=config&type=collection&name=apple-proxy-singbox&subscriptionName=Apple-Proxy-Nodes&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&autoGroupMode=auto&clientChain=off&nodeErrorMode=strict&channel=current`。
+
+sing-box 默认 strict：任一已选节点无法完整渲染时 preview 失败，用户应回到 `apple-proxy-singbox` 修正组合。迁移期可显式使用 `nodeErrorMode=compatible`，但必须检查 `renderFailures`。
 
 | 任务 | 平台额外参数 | 官方客户端 |
 | --- | --- | --- |

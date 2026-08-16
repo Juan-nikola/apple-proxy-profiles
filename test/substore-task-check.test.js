@@ -110,6 +110,19 @@ test("rejects an unsupported sing-box platform", () => {
   assert.ok(result.errors.some((message) => message.includes("platform")), result.errors.join(", "));
 });
 
+test("accepts valid sing-box output safety modes", () => {
+  const url = `${PUBLIC}/current/sing-box/scripts/sing-box-config-generator.js#output=config&type=collection&name=apple-proxy-sources&subscriptionName=Apple-Proxy-Nodes&platform=macos&dnsMode=stable&profileMode=light&nodeErrorMode=strict`;
+  const result = checkSubstoreTaskUrl(url);
+  assert.equal(result.ok, true, result.errors.join(", "));
+});
+
+test("rejects an unsupported sing-box nodeErrorMode", () => {
+  const url = `${PUBLIC}/current/sing-box/scripts/sing-box-config-generator.js#output=config&type=collection&name=apple-proxy-sources&subscriptionName=Apple-Proxy-Nodes&platform=macos&nodeErrorMode=partial`;
+  const result = checkSubstoreTaskUrl(url);
+  assert.equal(result.ok, false);
+  assert.ok(result.errors.some((message) => message.includes("nodeErrorMode")), result.errors.join(", "));
+});
+
 test("checkTaskOptions returns no errors for a full valid config", () => {
   const url = `${PUBLIC}/current/surge/scripts/surge-profile-generator.js#output=config&type=collection&name=apple-proxy-sources&subscriptionName=Apple-Proxy-Nodes&platform=iphone&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&autoGroupMode=auto&clientChain=off`;
   const parsed = parseTaskUrl(url);

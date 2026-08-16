@@ -116,6 +116,9 @@ export function validateSingBoxConfig(config) {
     validateDnsServerShape(server, errors);
     if (server.detour !== undefined && !outboundTags.has(server.detour)) errors.push("DNS server references missing outbound");
     if (server.detour === server.tag || server.tag === dnsFinal && server.detour === "dns-proxy") errors.push("DNS server loop detected");
+    if (server.tag === "dns-direct" && server.type !== "local" && server.detour !== "DIRECT") {
+      errors.push("non-local dns-direct must use the DIRECT outbound");
+    }
   }
   for (const inbound of config.inbounds ?? []) {
     if (inbound.type === "tun" && !inbound.auto_route) errors.push("TUN auto_route is required");

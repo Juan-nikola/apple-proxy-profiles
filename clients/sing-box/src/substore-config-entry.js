@@ -1,5 +1,5 @@
 import { normalizeNodes } from "../../../shared/nodes/normalize-nodes.js";
-import { partitionRenderableNodes } from "../../../shared/nodes/renderability.js";
+import { assertRenderableNodes, partitionRenderableNodes } from "../../../shared/nodes/renderability.js";
 import { parseSingBoxOptions } from "./options.js";
 import { renderSingBoxConfig } from "./render-config.js";
 import { renderSingBoxOutbound, sanitizeSingBoxNode } from "./render-node.js";
@@ -35,9 +35,19 @@ export async function operator(input, targetPlatform, context = {}) {
   });
   if (!Array.isArray(rawNodes) || rawNodes.length === 0) throw new Error("produceArtifact must return a non-empty node array");
   const normalized = normalizeNodes(rawNodes, { clientChain: options.clientChain });
-  const partitioned = partitionRenderableNodes(normalized.nodes, "sing-box", renderSingBoxOutbound);
-  logDiagnostics(context, options, partitioned.renderable, partitioned.failureProtocols);
+  let renderable;
+  let renderFailures;
+  if (options.nodeErrorMode === "compatible") {
+    const partitioned = partitionRenderableNodes(normalized.nodes, "sing-box", renderSingBoxOutbound);
+    renderable = partitioned.renderable;
+    renderFailures = partitioned.failureProtocols;
+  } else {
+    assertRenderableNodes(normalized.nodes, "sing-box", renderSingBoxOutbound);
+    renderable = normalized.nodes;
+    renderFailures = {};
+  }
+  logDiagnostics(context, options, renderable, renderFailures);
   const ruleBaseUrl = `${PUBLIC_RULE_ROOT}/${options.channel}/sing-box/rule-sets`;
-  const config = renderSingBoxConfig(options, partitioned.renderable.map(sanitizeSingBoxNode), { ruleBaseUrl });
+  const config = renderSingBoxConfig(options, renderable.map(sanitizeSingBoxNode), { ruleBaseUrl });
   return { ...input, $content: `${JSON.stringify(config, null, 2)}\n` };
 }

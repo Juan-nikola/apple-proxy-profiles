@@ -14,6 +14,7 @@ function validConfig() {
         server_port: 443,
         path: "/dns-query",
         tls: { server_name: "cloudflare-dns.com" },
+        detour: "DIRECT",
       }],
       final: "dns-proxy",
       rules: [],
@@ -44,6 +45,19 @@ test("rejects DNS server loops and missing platform gateway safeguards", () => {
   const result = validateSingBoxConfig(config);
   assert.equal(result.valid, false);
   assert.match(result.errors.join("\n"), /DNS|OpenWrt|missing/iu);
+});
+
+test("requires a non-local bootstrap DNS server to bypass the proxy graph", () => {
+  const config = validConfig();
+  config.dns.servers[0].tag = "dns-direct";
+  delete config.dns.servers[0].detour;
+  const result = validateSingBoxConfig(config);
+  assert.equal(result.valid, false);
+  assert.match(result.errors.join("\n"), /dns-direct.*DIRECT/iu);
+
+  config.dns.servers[0] = { type: "local", tag: "dns-direct" };
+  config.dns.final = "dns-direct";
+  assert.deepEqual(validateSingBoxConfig(config), { valid: true, errors: [] });
 });
 
 test("rejects duplicate outbound tags", () => {

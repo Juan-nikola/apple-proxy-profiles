@@ -88,12 +88,12 @@ test("canonical client pool guide defines six mappings, migration, rollback, and
     "| Anywhere | `apple-proxy-anywhere` | 用户自行选择 Anywhere 可导入的节点，远程输出只有节点列表 |",
     "| Shadowrocket | `apple-proxy-shadowrocket` | 用户自行选择节点；AnyTLS 等已实现类型可直接包含 |",
     "| Surge | `apple-proxy-surge` | 用户自行选择节点；renderer 无法表示的协议跳过并计入 renderFailures |",
-    "| sing-box | `apple-proxy-singbox` | 用户自行选择节点和字段；renderer 无法表示的协议跳过并计入 renderFailures |",
+    "| sing-box | `apple-proxy-singbox` | 默认 strict；任一已选节点无法完整表示时失败，迁移期可显式使用 compatible |",
     "| OneXray | `apple-proxy-onexray` | 用户自行选择节点；原生 Profile 无法表示的协议跳过并计入 renderFailures |",
   ]) assert.ok(guide.includes(row), row);
   assert.match(guide, /`apple-proxy-all`[\s\S]{0,160}总池/u);
   assert.match(guide, /`apple-proxy-sources`[\s\S]{0,240}(?:兼容|回滚)/u);
-  assert.match(guide, /渲染器确实无法表示的协议[\s\S]{0,120}renderFailures[\s\S]{0,120}(?:失败|报错)/u);
+  assert.match(guide, /sing-box 默认使用 `nodeErrorMode=strict`[\s\S]{0,220}renderFailures/u);
   assert.match(guide, /不(?:会|得)静默丢弃/u);
 
   const orderedSteps = [

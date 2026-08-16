@@ -21,7 +21,7 @@ https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/scripts/sing
 复制公共参数后逐项填写；`platform` 是每个任务的唯一平台差异，macOS 明确使用 `ipv4-only`，移动端和 OpenWrt 使用 `auto`。稳定版公共参数如下：
 
 ```text
-output=config&type=collection&name=apple-proxy-singbox&subscriptionName=Apple-Proxy-Nodes&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&autoGroupMode=auto&clientChain=off&channel=current
+output=config&type=collection&name=apple-proxy-singbox&subscriptionName=Apple-Proxy-Nodes&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&autoGroupMode=auto&clientChain=off&nodeErrorMode=strict&channel=current
 ```
 
 | File | `platform` | `ipv6Mode` |
@@ -33,6 +33,8 @@ output=config&type=collection&name=apple-proxy-singbox&subscriptionName=Apple-Pr
 | `sing-box-openwrt` | `openwrt` | `auto` |
 
 预览时 JSON 必须能解析，并包含 `dns`、`inbounds`、`outbounds`、`route`；节点不为空。若只看到占位内容，先确认脚本启用/预览开关、组合非空、`name` 和 `subscriptionName` 没有混用。
+
+默认 `nodeErrorMode=strict`。如果 preview 提示 `cannot render selected protocols`，应优先在 `apple-proxy-singbox` 组合中修正节点字段或移除未支持协议。只在迁移期可显式使用 `nodeErrorMode=compatible`；此时必须检查 `renderFailures`，因为输出中不会包含无法完整转换的节点。
 
 `🚀 节点选择` 采用两级结构：主组只包含 `⚡ 全部自动`、`🛟 全部故障转移` 和洲组（`🌏 亚太`、`🌍 欧洲`、`🌎 美洲`），具体节点按洲收进对应洲组。这样在 sing-box 图形客户端（SFA/SFM）里，先选洲、再选节点，而不是面对一长串平铺节点。
 

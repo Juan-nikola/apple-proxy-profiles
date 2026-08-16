@@ -238,6 +238,27 @@ test("Sub-Store sing-box entry rejects unsafe collection names before artifact p
   }
 });
 
+test("Sub-Store sing-box entry fails closed when a selected node cannot be rendered", async () => {
+  const privateNode = {
+    name: "PRIVATE_SINGBOX_SUDOKU",
+    type: "sudoku",
+    server: "private-singbox.example.invalid",
+    port: 443,
+    key: "TEST_ONLY_SINGBOX_SUDOKU_KEY",
+    _subName: "[自建] Sudoku",
+  };
+  await assert.rejects(operator({}, "macos", {
+    arguments: {
+      output: "config",
+      type: "collection",
+      name: "sing-box-sources",
+      subscriptionName: "sing-box-Nodes",
+      platform: "macos",
+    },
+    async produceArtifact() { return [nodes[0], privateNode]; },
+  }), /sing-box cannot render selected protocols: sudoku=1/u);
+});
+
 test("Sub-Store sing-box entry keeps the compatible subset and reports skipped protocols", async () => {
   const privateNode = {
     name: "PRIVATE_SINGBOX_SUDOKU",
@@ -255,6 +276,7 @@ test("Sub-Store sing-box entry keeps the compatible subset and reports skipped p
       name: "sing-box-sources",
       subscriptionName: "sing-box-Nodes",
       platform: "macos",
+      nodeErrorMode: "compatible",
     },
     async produceArtifact() { return [nodes[0], privateNode]; },
     logger: { info(line) { lines.push(line); } },
@@ -286,6 +308,7 @@ test("Sub-Store sing-box renderability skips an unsupported selected AnyTLS fiel
       name: "apple-proxy-singbox",
       subscriptionName: "sing-box-Nodes",
       platform: "macos",
+      nodeErrorMode: "compatible",
     },
     async produceArtifact() { return [nodes[0], privateNode]; },
     logger: { info(line) { lines.push(line); } },
@@ -322,6 +345,7 @@ test("Sub-Store sing-box probe skips an unmapped nested AnyTLS Reality field", a
       name: "apple-proxy-singbox",
       subscriptionName: "sing-box-Nodes",
       platform: "macos",
+      nodeErrorMode: "compatible",
     },
     async produceArtifact() { return [nodes[0], privateNode]; },
     logger: { info(line) { lines.push(line); } },

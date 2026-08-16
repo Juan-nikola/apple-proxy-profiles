@@ -14,10 +14,16 @@ import { ruleClientCatalog } from "../shared/rules/lightweight-policy.js";
 import {
   chinaIpAuditPrimary,
   parseUpdateRulesArguments,
-  promoteClientRelease,
+  promoteClientRelease as promoteClientReleaseImpl,
   selectDefaultStaticFiles,
   verifyTrackedPublications,
 } from "../scripts/update-rules.mjs";
+
+const TEST_PROMOTION_NOW = "2026-08-10T01:00:00Z";
+
+function promoteClientRelease(options) {
+  return promoteClientReleaseImpl({ now: TEST_PROMOTION_NOW, ...options });
+}
 
 const upstream = Object.freeze({
   repository: "https://github.com/blackmatrix7/ios_rule_script",

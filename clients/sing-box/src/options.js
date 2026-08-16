@@ -15,11 +15,13 @@ const DEFAULTS = Object.freeze({
   clientChain: "off",
   profileMode: "light",
   adblockMode: "off",
+  nodeErrorMode: "strict",
 });
 const PLATFORMS = new Set(["macos", "iphone", "ipad", "android", "openwrt"]);
 const CHANNELS = new Set(["edge", "current"]);
 const PROFILE_MODES = new Set(["light", "diagnostic"]);
 const ADBLOCK_MODES = new Set(["off", "full"]);
+const NODE_ERROR_MODES = new Set(["strict", "compatible"]);
 const ALLOWED_KEYS = new Set([...REQUIRED_KEYS, ...Object.keys(DEFAULTS)]);
 const PARSED = new WeakSet();
 
@@ -56,6 +58,8 @@ export function parseSingBoxOptions(raw) {
   if (typeof profileMode !== "string" || !PROFILE_MODES.has(profileMode)) throw new Error("Option 'profileMode' has an unsupported value");
   const adblockMode = raw.adblockMode === undefined ? DEFAULTS.adblockMode : raw.adblockMode;
   if (typeof adblockMode !== "string" || !ADBLOCK_MODES.has(adblockMode)) throw new Error("Option 'adblockMode' has an unsupported value");
+  const nodeErrorMode = raw.nodeErrorMode === undefined ? DEFAULTS.nodeErrorMode : raw.nodeErrorMode;
+  if (typeof nodeErrorMode !== "string" || !NODE_ERROR_MODES.has(nodeErrorMode)) throw new Error("Option 'nodeErrorMode' has an unsupported value");
   const options = {
     output: "config",
     type: "collection",
@@ -73,6 +77,7 @@ export function parseSingBoxOptions(raw) {
     clientChain: enumValue(raw, "clientChain", DEFAULTS.clientChain),
     profileMode,
     adblockMode,
+    nodeErrorMode,
   };
   platformPolicyPreset(platform === "openwrt" ? "macos" : platform);
   Object.freeze(options);
