@@ -1,6 +1,6 @@
 {
   "log": {
-    "level": "info",
+    "level": "warn",
     "timestamp": true
   },
   "dns": {
@@ -8,8 +8,7 @@
       {
         "type": "udp",
         "tag": "dns-direct",
-        "server": "223.5.5.5",
-        "detour": "DIRECT"
+        "server": "223.5.5.5"
       },
       {
         "type": "https",
@@ -99,7 +98,7 @@
       }
     ],
     "final": "dns-proxy",
-    "strategy": "ipv4_only",
+    "strategy": "prefer_ipv4",
     "cache_capacity": 4096
   },
   "http_clients": [
@@ -115,7 +114,8 @@
       "tag": "tun-in",
       "interface_name": "singtun0",
       "address": [
-        "172.18.0.1/30"
+        "172.18.0.1/30",
+        "fdfe:dcba:9876::1/126"
       ],
       "auto_route": true,
       "strict_route": true,
@@ -133,7 +133,8 @@
       ],
       "dns_mode": "hijack",
       "dns_address": [
-        "172.18.0.2"
+        "172.18.0.2",
+        "fdfe:dcba:9876::2"
       ],
       "platform": {
         "http_proxy": {
@@ -152,37 +153,13 @@
       "tag": "REJECT"
     },
     {
-      "type": "urltest",
+      "type": "selector",
       "tag": "⚡ 全部自动",
       "outbounds": [
         "示例 · Tokyo",
         "示例 · Frankfurt"
       ],
-      "url": "https://www.gstatic.com/generate_204",
-      "interval": "600s",
-      "tolerance": 100,
-      "interrupt_exist_connections": true
-    },
-    {
-      "type": "urltest",
-      "tag": "⚡ 亚太自动",
-      "outbounds": [
-        "DIRECT"
-      ],
-      "url": "https://www.gstatic.com/generate_204",
-      "interval": "600s",
-      "tolerance": 100,
-      "interrupt_exist_connections": true
-    },
-    {
-      "type": "urltest",
-      "tag": "⚡ 欧洲自动",
-      "outbounds": [
-        "DIRECT"
-      ],
-      "url": "https://www.gstatic.com/generate_204",
-      "interval": "600s",
-      "tolerance": 100,
+      "default": "示例 · Tokyo",
       "interrupt_exist_connections": true
     },
     {
@@ -200,7 +177,7 @@
       "type": "selector",
       "tag": "🌏 亚太",
       "outbounds": [
-        "⚡ 亚太自动"
+        "DIRECT"
       ],
       "interrupt_exist_connections": true
     },
@@ -208,7 +185,7 @@
       "type": "selector",
       "tag": "🌍 欧洲",
       "outbounds": [
-        "⚡ 欧洲自动"
+        "DIRECT"
       ],
       "interrupt_exist_connections": true
     },
@@ -232,75 +209,13 @@
     },
     {
       "type": "selector",
-      "tag": "🐙 GitHub",
-      "outbounds": [
-        "🚀 节点选择",
-        "⚡ 全部自动",
-        "🌏 亚太",
-        "🌍 欧洲",
-        "DIRECT",
-        "示例 · Tokyo",
-        "示例 · Frankfurt"
-      ],
-      "interrupt_exist_connections": true,
-      "default": "🚀 节点选择"
-    },
-    {
-      "type": "selector",
-      "tag": "📺 YouTube",
-      "outbounds": [
-        "🚀 节点选择",
-        "⚡ 全部自动",
-        "🌏 亚太",
-        "🌍 欧洲",
-        "DIRECT",
-        "示例 · Tokyo",
-        "示例 · Frankfurt"
-      ],
-      "interrupt_exist_connections": true,
-      "default": "🚀 节点选择"
-    },
-    {
-      "type": "selector",
-      "tag": "🎬 海外流媒体",
-      "outbounds": [
-        "🚀 节点选择",
-        "⚡ 全部自动",
-        "🌏 亚太",
-        "🌍 欧洲",
-        "DIRECT",
-        "示例 · Tokyo",
-        "示例 · Frankfurt"
-      ],
-      "interrupt_exist_connections": true,
-      "default": "🚀 节点选择"
-    },
-    {
-      "type": "selector",
-      "tag": "💬 海外社交",
-      "outbounds": [
-        "🚀 节点选择",
-        "⚡ 全部自动",
-        "🌏 亚太",
-        "🌍 欧洲",
-        "DIRECT",
-        "示例 · Tokyo",
-        "示例 · Frankfurt"
-      ],
-      "interrupt_exist_connections": true,
-      "default": "🚀 节点选择"
-    },
-    {
-      "type": "selector",
       "tag": "🍎 Apple",
       "outbounds": [
         "DIRECT",
         "🚀 节点选择",
         "⚡ 全部自动",
         "🌏 亚太",
-        "🌍 欧洲",
-        "示例 · Tokyo",
-        "示例 · Frankfurt"
+        "🌍 欧洲"
       ],
       "interrupt_exist_connections": true,
       "default": "DIRECT"
@@ -313,9 +228,7 @@
         "🚀 节点选择",
         "⚡ 全部自动",
         "🌏 亚太",
-        "🌍 欧洲",
-        "示例 · Tokyo",
-        "示例 · Frankfurt"
+        "🌍 欧洲"
       ],
       "interrupt_exist_connections": true,
       "default": "DIRECT"
@@ -328,43 +241,10 @@
         "🚀 节点选择",
         "⚡ 全部自动",
         "🌏 亚太",
-        "🌍 欧洲",
-        "示例 · Tokyo",
-        "示例 · Frankfurt"
+        "🌍 欧洲"
       ],
       "interrupt_exist_connections": true,
       "default": "DIRECT"
-    },
-    {
-      "type": "selector",
-      "tag": "🌍 海外游戏",
-      "outbounds": [
-        "🚀 节点选择",
-        "⚡ 全部自动",
-        "🌏 亚太",
-        "🌍 欧洲",
-        "DIRECT",
-        "示例 · Tokyo",
-        "示例 · Frankfurt"
-      ],
-      "interrupt_exist_connections": true,
-      "default": "🚀 节点选择"
-    },
-    {
-      "type": "selector",
-      "tag": "🎮 游戏连接",
-      "outbounds": [
-        "DIRECT"
-      ],
-      "interrupt_exist_connections": true
-    },
-    {
-      "type": "selector",
-      "tag": "⬇️ 下载/P2P",
-      "outbounds": [
-        "DIRECT"
-      ],
-      "interrupt_exist_connections": true
     },
     {
       "type": "selector",
@@ -453,6 +333,13 @@
         "outbound": "DIRECT"
       },
       {
+        "ip_cidr": [
+          "223.5.5.5/32"
+        ],
+        "action": "route",
+        "outbound": "DIRECT"
+      },
+      {
         "domain_suffix": [
           "perplexity.ai",
           "pplx.ai",
@@ -483,9 +370,9 @@
   },
   "experimental": {
     "cache_file": {
-      "enabled": true,
+      "enabled": false,
       "path": "cache.db",
-      "store_dns": true
+      "store_dns": false
     }
   }
 }

@@ -8,8 +8,7 @@
       {
         "type": "udp",
         "tag": "dns-direct",
-        "server": "223.5.5.5",
-        "detour": "DIRECT"
+        "server": "223.5.5.5"
       },
       {
         "type": "https",
@@ -99,7 +98,7 @@
       }
     ],
     "final": "dns-proxy",
-    "strategy": "prefer_ipv4",
+    "strategy": "ipv4_only",
     "cache_capacity": 4096
   },
   "http_clients": [
@@ -113,10 +112,9 @@
     {
       "type": "tun",
       "tag": "tun-in",
-      "interface_name": "sing-box",
+      "interface_name": "singtun0",
       "address": [
-        "172.18.0.1/30",
-        "fdfe:dcba:9876::1/126"
+        "172.18.0.1/30"
       ],
       "auto_route": true,
       "strict_route": true,
@@ -134,12 +132,13 @@
       ],
       "dns_mode": "hijack",
       "dns_address": [
-        "172.18.0.2",
-        "fdfe:dcba:9876::2"
+        "172.18.0.2"
       ],
-      "include_android_user": [
-        0
-      ]
+      "platform": {
+        "http_proxy": {
+          "enabled": false
+        }
+      }
     }
   ],
   "outbounds": [
@@ -159,8 +158,30 @@
         "示例 · Frankfurt"
       ],
       "url": "https://www.gstatic.com/generate_204",
-      "interval": "1800s",
-      "tolerance": 150,
+      "interval": "600s",
+      "tolerance": 100,
+      "interrupt_exist_connections": true
+    },
+    {
+      "type": "urltest",
+      "tag": "⚡ 亚太自动",
+      "outbounds": [
+        "DIRECT"
+      ],
+      "url": "https://www.gstatic.com/generate_204",
+      "interval": "600s",
+      "tolerance": 100,
+      "interrupt_exist_connections": true
+    },
+    {
+      "type": "urltest",
+      "tag": "⚡ 欧洲自动",
+      "outbounds": [
+        "DIRECT"
+      ],
+      "url": "https://www.gstatic.com/generate_204",
+      "interval": "600s",
+      "tolerance": 100,
       "interrupt_exist_connections": true
     },
     {
@@ -178,7 +199,7 @@
       "type": "selector",
       "tag": "🌏 亚太",
       "outbounds": [
-        "DIRECT"
+        "⚡ 亚太自动"
       ],
       "interrupt_exist_connections": true
     },
@@ -186,7 +207,7 @@
       "type": "selector",
       "tag": "🌍 欧洲",
       "outbounds": [
-        "DIRECT"
+        "⚡ 欧洲自动"
       ],
       "interrupt_exist_connections": true
     },
@@ -426,6 +447,13 @@
           "local",
           "lan",
           "home.arpa"
+        ],
+        "action": "route",
+        "outbound": "DIRECT"
+      },
+      {
+        "ip_cidr": [
+          "223.5.5.5/32"
         ],
         "action": "route",
         "outbound": "DIRECT"

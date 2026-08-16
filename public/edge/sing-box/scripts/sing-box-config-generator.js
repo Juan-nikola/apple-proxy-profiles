@@ -1976,6 +1976,50 @@ var SingBoxConfigBundle = (() => {
     "ytimg.com"
   ]);
 
+  // ../../shared/dns/providers.js
+  var CHINA_DNS_PROVIDERS = Object.freeze({
+    alidns: Object.freeze({
+      address: "223.5.5.5",
+      doh: "https://dns.alidns.com/dns-query"
+    }),
+    dnspod: Object.freeze({
+      address: "119.29.29.29",
+      doh: "https://doh.pub/dns-query"
+    }),
+    system: Object.freeze({
+      address: "local",
+      doh: "system"
+    })
+  });
+  var GLOBAL_DNS_PROVIDERS = Object.freeze({
+    cloudflare: Object.freeze({
+      address: "1.1.1.1",
+      serverName: "cloudflare-dns.com",
+      doh: "https://cloudflare-dns.com/dns-query"
+    }),
+    google: Object.freeze({
+      address: "8.8.8.8",
+      serverName: "dns.google",
+      doh: "https://dns.google/dns-query"
+    }),
+    quad9: Object.freeze({
+      address: "9.9.9.9",
+      serverName: "dns.quad9.net",
+      doh: "https://dns.quad9.net/dns-query"
+    })
+  });
+  function provider(providers, id, label) {
+    const value = providers[id];
+    if (!value) throw new Error(`Unsupported ${label} DNS provider`);
+    return value;
+  }
+  function chinaDnsProvider(id) {
+    return provider(CHINA_DNS_PROVIDERS, id, "China");
+  }
+  function globalDnsProvider(id) {
+    return provider(GLOBAL_DNS_PROVIDERS, id, "global");
+  }
+
   // src/render-rules.js
   var RULE_DOWNLOAD_HTTP_CLIENT = "\u{1F9ED} \u89C4\u5219\u4E0B\u8F7D HTTP";
   var MOBILE_RULE_SOURCE_ID_SET = new Set(MOBILE_RULE_SOURCE_IDS);
@@ -2021,6 +2065,15 @@ var SingBoxConfigBundle = (() => {
   }
   function reject() {
     return { action: "reject", method: "default" };
+  }
+  function dnsAddressCidr(address) {
+    if (typeof address !== "string" || address === "local") return null;
+    return address.includes(":") ? `${address}/128` : `${address}/32`;
+  }
+  function renderDnsBootstrapRules({ chinaDns = "alidns", globalDns = "cloudflare", dnsMode = "stable" } = {}) {
+    const addresses = [chinaDnsProvider(chinaDns).address];
+    if (dnsMode === "speed") addresses.push(globalDnsProvider(globalDns).address);
+    return [...new Set(addresses.map(dnsAddressCidr).filter(Boolean))].map((address) => ({ ip_cidr: [address], action: "route", outbound: "DIRECT" }));
   }
   function optionalAdblockBase(defaultBase) {
     const optional = defaultBase.replace(/\/sing-box\/rule-sets$/u, "/optional/adblock-full/sing-box");
@@ -2082,7 +2135,10 @@ var SingBoxConfigBundle = (() => {
     adblockMode = "off",
     blockMode = "balanced",
     quicMode = "allow",
-    platform
+    platform,
+    chinaDns = "alidns",
+    globalDns = "cloudflare",
+    dnsMode = "stable"
   }) {
     if (!["allow", "proxy-block", "all-block"].includes(quicMode)) {
       throw new Error(`Unsupported sing-box quicMode: ${quicMode}`);
@@ -2091,7 +2147,8 @@ var SingBoxConfigBundle = (() => {
     const rules = [
       { inbound: "tun-in", action: "sniff" },
       { protocol: "dns", action: "hijack-dns" },
-      ...LOCAL_RULES
+      ...LOCAL_RULES,
+      ...renderDnsBootstrapRules({ chinaDns, globalDns, dnsMode })
     ];
     if (quicMode === "all-block") rules.push({ ...QUIC_BLOCK_RULE });
     if (profileMode === "diagnostic") {
@@ -2124,50 +2181,6 @@ var SingBoxConfigBundle = (() => {
     rules.push(...plan.filter(({ phase }) => phase === "resolvedChinaIp").map(taggedRule));
     if (quicMode === "proxy-block") rules.push({ ...QUIC_BLOCK_RULE });
     return { ruleSets, rules, final: "\u{1F680} \u8282\u70B9\u9009\u62E9" };
-  }
-
-  // ../../shared/dns/providers.js
-  var CHINA_DNS_PROVIDERS = Object.freeze({
-    alidns: Object.freeze({
-      address: "223.5.5.5",
-      doh: "https://dns.alidns.com/dns-query"
-    }),
-    dnspod: Object.freeze({
-      address: "119.29.29.29",
-      doh: "https://doh.pub/dns-query"
-    }),
-    system: Object.freeze({
-      address: "local",
-      doh: "system"
-    })
-  });
-  var GLOBAL_DNS_PROVIDERS = Object.freeze({
-    cloudflare: Object.freeze({
-      address: "1.1.1.1",
-      serverName: "cloudflare-dns.com",
-      doh: "https://cloudflare-dns.com/dns-query"
-    }),
-    google: Object.freeze({
-      address: "8.8.8.8",
-      serverName: "dns.google",
-      doh: "https://dns.google/dns-query"
-    }),
-    quad9: Object.freeze({
-      address: "9.9.9.9",
-      serverName: "dns.quad9.net",
-      doh: "https://dns.quad9.net/dns-query"
-    })
-  });
-  function provider(providers, id, label) {
-    const value = providers[id];
-    if (!value) throw new Error(`Unsupported ${label} DNS provider`);
-    return value;
-  }
-  function chinaDnsProvider(id) {
-    return provider(CHINA_DNS_PROVIDERS, id, "China");
-  }
-  function globalDnsProvider(id) {
-    return provider(GLOBAL_DNS_PROVIDERS, id, "global");
   }
 
   // src/render-dns.js
@@ -2253,7 +2266,7 @@ var SingBoxConfigBundle = (() => {
   }
   function renderSingBoxDns(options) {
     const chinaDns = chinaDnsProvider(options.chinaDns);
-    const chinaServer = options.chinaDns === "system" ? { type: "local", tag: DNS_DIRECT } : { type: "udp", tag: DNS_DIRECT, server: chinaDns.address, detour: "DIRECT" };
+    const chinaServer = options.chinaDns === "system" ? { type: "local", tag: DNS_DIRECT } : { type: "udp", tag: DNS_DIRECT, server: chinaDns.address };
     const globalDns = globalDnsProvider(options.globalDns);
     const proxyServer = {
       type: "https",
@@ -2263,7 +2276,7 @@ var SingBoxConfigBundle = (() => {
       path: "/dns-query",
       tls: { enabled: true, server_name: globalDns.serverName },
       // DNS proxying must never depend on a selector that contains DIRECT.
-      detour: options.dnsMode === "speed" ? "DIRECT" : "\u26A1 \u5168\u90E8\u81EA\u52A8"
+      ...options.dnsMode === "speed" ? {} : { detour: "\u26A1 \u5168\u90E8\u81EA\u52A8" }
     };
     return {
       servers: [chinaServer, proxyServer],
@@ -2430,9 +2443,7 @@ var SingBoxConfigBundle = (() => {
       validateDnsServerShape(server, errors);
       if (server.detour !== void 0 && !outboundTags.has(server.detour)) errors.push("DNS server references missing outbound");
       if (server.detour === server.tag) errors.push("DNS server loop detected");
-      if (server.tag === "dns-direct" && server.type !== "local" && server.detour !== "DIRECT") {
-        errors.push("non-local dns-direct must use the DIRECT outbound");
-      }
+      if (server.detour === "DIRECT") errors.push("DNS server must not detour through the empty DIRECT outbound");
     }
     for (const inbound of config.inbounds ?? []) {
       if (inbound.type === "tun" && !inbound.auto_route) errors.push("TUN auto_route is required");
@@ -2464,7 +2475,10 @@ var SingBoxConfigBundle = (() => {
       adblockMode: options.adblockMode,
       blockMode: options.blockMode,
       quicMode: options.quicMode,
-      platform: options.platform
+      platform: options.platform,
+      chinaDns: options.chinaDns,
+      globalDns: options.globalDns,
+      dnsMode: options.dnsMode
     });
     const config = {
       log: {

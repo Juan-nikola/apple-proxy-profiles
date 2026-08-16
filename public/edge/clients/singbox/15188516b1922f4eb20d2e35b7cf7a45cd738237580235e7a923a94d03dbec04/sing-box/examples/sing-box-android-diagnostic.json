@@ -1,6 +1,6 @@
 {
   "log": {
-    "level": "warn",
+    "level": "info",
     "timestamp": true
   },
   "dns": {
@@ -8,8 +8,7 @@
       {
         "type": "udp",
         "tag": "dns-direct",
-        "server": "223.5.5.5",
-        "detour": "DIRECT"
+        "server": "223.5.5.5"
       },
       {
         "type": "https",
@@ -113,7 +112,7 @@
     {
       "type": "tun",
       "tag": "tun-in",
-      "interface_name": "singtun0",
+      "interface_name": "sing-box",
       "address": [
         "172.18.0.1/30",
         "fdfe:dcba:9876::1/126"
@@ -137,11 +136,9 @@
         "172.18.0.2",
         "fdfe:dcba:9876::2"
       ],
-      "platform": {
-        "http_proxy": {
-          "enabled": false
-        }
-      }
+      "include_android_user": [
+        0
+      ]
     }
   ],
   "outbounds": [
@@ -154,13 +151,15 @@
       "tag": "REJECT"
     },
     {
-      "type": "selector",
+      "type": "urltest",
       "tag": "⚡ 全部自动",
       "outbounds": [
         "示例 · Tokyo",
         "示例 · Frankfurt"
       ],
-      "default": "示例 · Tokyo",
+      "url": "https://www.gstatic.com/generate_204",
+      "interval": "1800s",
+      "tolerance": 150,
       "interrupt_exist_connections": true
     },
     {
@@ -210,13 +209,75 @@
     },
     {
       "type": "selector",
+      "tag": "🐙 GitHub",
+      "outbounds": [
+        "🚀 节点选择",
+        "⚡ 全部自动",
+        "🌏 亚太",
+        "🌍 欧洲",
+        "DIRECT",
+        "示例 · Tokyo",
+        "示例 · Frankfurt"
+      ],
+      "interrupt_exist_connections": true,
+      "default": "🚀 节点选择"
+    },
+    {
+      "type": "selector",
+      "tag": "📺 YouTube",
+      "outbounds": [
+        "🚀 节点选择",
+        "⚡ 全部自动",
+        "🌏 亚太",
+        "🌍 欧洲",
+        "DIRECT",
+        "示例 · Tokyo",
+        "示例 · Frankfurt"
+      ],
+      "interrupt_exist_connections": true,
+      "default": "🚀 节点选择"
+    },
+    {
+      "type": "selector",
+      "tag": "🎬 海外流媒体",
+      "outbounds": [
+        "🚀 节点选择",
+        "⚡ 全部自动",
+        "🌏 亚太",
+        "🌍 欧洲",
+        "DIRECT",
+        "示例 · Tokyo",
+        "示例 · Frankfurt"
+      ],
+      "interrupt_exist_connections": true,
+      "default": "🚀 节点选择"
+    },
+    {
+      "type": "selector",
+      "tag": "💬 海外社交",
+      "outbounds": [
+        "🚀 节点选择",
+        "⚡ 全部自动",
+        "🌏 亚太",
+        "🌍 欧洲",
+        "DIRECT",
+        "示例 · Tokyo",
+        "示例 · Frankfurt"
+      ],
+      "interrupt_exist_connections": true,
+      "default": "🚀 节点选择"
+    },
+    {
+      "type": "selector",
       "tag": "🍎 Apple",
       "outbounds": [
         "DIRECT",
         "🚀 节点选择",
         "⚡ 全部自动",
         "🌏 亚太",
-        "🌍 欧洲"
+        "🌍 欧洲",
+        "示例 · Tokyo",
+        "示例 · Frankfurt"
       ],
       "interrupt_exist_connections": true,
       "default": "DIRECT"
@@ -229,7 +290,9 @@
         "🚀 节点选择",
         "⚡ 全部自动",
         "🌏 亚太",
-        "🌍 欧洲"
+        "🌍 欧洲",
+        "示例 · Tokyo",
+        "示例 · Frankfurt"
       ],
       "interrupt_exist_connections": true,
       "default": "DIRECT"
@@ -242,10 +305,43 @@
         "🚀 节点选择",
         "⚡ 全部自动",
         "🌏 亚太",
-        "🌍 欧洲"
+        "🌍 欧洲",
+        "示例 · Tokyo",
+        "示例 · Frankfurt"
       ],
       "interrupt_exist_connections": true,
       "default": "DIRECT"
+    },
+    {
+      "type": "selector",
+      "tag": "🌍 海外游戏",
+      "outbounds": [
+        "🚀 节点选择",
+        "⚡ 全部自动",
+        "🌏 亚太",
+        "🌍 欧洲",
+        "DIRECT",
+        "示例 · Tokyo",
+        "示例 · Frankfurt"
+      ],
+      "interrupt_exist_connections": true,
+      "default": "🚀 节点选择"
+    },
+    {
+      "type": "selector",
+      "tag": "🎮 游戏连接",
+      "outbounds": [
+        "DIRECT"
+      ],
+      "interrupt_exist_connections": true
+    },
+    {
+      "type": "selector",
+      "tag": "⬇️ 下载/P2P",
+      "outbounds": [
+        "DIRECT"
+      ],
+      "interrupt_exist_connections": true
     },
     {
       "type": "selector",
@@ -334,6 +430,13 @@
         "outbound": "DIRECT"
       },
       {
+        "ip_cidr": [
+          "223.5.5.5/32"
+        ],
+        "action": "route",
+        "outbound": "DIRECT"
+      },
+      {
         "domain_suffix": [
           "perplexity.ai",
           "pplx.ai",
@@ -364,9 +467,9 @@
   },
   "experimental": {
     "cache_file": {
-      "enabled": false,
+      "enabled": true,
       "path": "cache.db",
-      "store_dns": false
+      "store_dns": true
     }
   }
 }
