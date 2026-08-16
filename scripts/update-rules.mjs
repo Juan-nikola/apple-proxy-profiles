@@ -36,6 +36,12 @@ const defaultPublicDirectory = join(repositoryRoot, "public");
 const PROMOTION_CLIENTS = new Set(["singbox", "surge", "shadowrocket", "egern", "anywhere", "happ", "onexray"]);
 const OPTIONAL_CLIENTS = new Set(["singbox", "surge", "shadowrocket", "egern", "anywhere"]);
 const INDEPENDENT_CLIENT_PATH = /^(?:anywhere|egern|shadowrocket|sing-box|surge|happ|onexray)\//u;
+const ONEXRAY_GEODATA_PATHS = new Set([
+  "onexray/geodata/geosite.dat",
+  "onexray/geodata/geoip.dat",
+  "onexray/geodata/manifest.json",
+  "onexray/index.html",
+]);
 const LEGACY_CURRENT_EXTRA_FILES = Object.freeze([
   /^frontier-manifest\.json$/u,
   /^surge\/(?:macos|iphone|ipad)\/manifest\.json$/u,
@@ -297,6 +303,10 @@ function rolloutOptionalProjection(optionalPacks, client) {
   return projection;
 }
 
+function oneXrayGeoDataFiles(files) {
+  return new Map([...files].filter(([path]) => ONEXRAY_GEODATA_PATHS.has(path)));
+}
+
 export function selectDefaultStaticFiles(files) {
   if (!(files instanceof Map)) throw new TypeError("Static publication files must be a Map");
   const selected = new Map(files);
@@ -369,29 +379,32 @@ export async function verifyTrackedPublications({ publicDirectory, defaults, opt
   const currentOneXrayDirectory = join(currentDirectory, "onexray");
   const currentEntries = await relativeTreeEntries(currentDirectory);
   const hasCurrentOneXray = currentEntries.some((path) => path === "onexray/" || path.startsWith("onexray/"));
-  if (hasCurrentOneXray) {
-    if (!rollout?.onexray || typeof rollout.onexray !== "object") return false;
+  if (rollout.onexray !== undefined) {
+    if (!rollout.onexray || typeof rollout.onexray !== "object" || Array.isArray(rollout.onexray)
+      || !/^[0-9a-f]{64}$/u.test(rollout.onexray.edge ?? "")) return false;
     try {
-      const onexrayFiles = await readPublicationTree(currentOneXrayDirectory, "onexray");
-      const onexrayManifest = validateOneXrayPublication({ files: onexrayFiles, channel: "current" });
+      const edgeFiles = await readPublicationTree(join(publicDirectory, "edge/onexray"), "onexray");
+      const edgeManifest = validateOneXrayPublication({
+        files: oneXrayGeoDataFiles(edgeFiles),
+        channel: "edge",
+      });
+      if (edgeManifest.manifestHash !== rollout.onexray.edge) return false;
+    } catch {
+      return false;
+    }
+  }
+  if (hasCurrentOneXray) {
+    if (!rollout?.onexray || !/^[0-9a-f]{64}$/u.test(rollout.onexray.current ?? "")) return false;
+    try {
+      const onexrayFiles = await readPublicationTree(join(currentDirectory, "onexray"), "onexray");
+      const onexrayManifest = validateOneXrayPublication({ files: onexrayFiles });
       if (onexrayManifest.manifestHash !== rollout.onexray.current) return false;
       expectedRootManifest = { ...expectedRootManifest, onexray: oneXrayRootProjection(onexrayManifest) };
     } catch {
       return false;
     }
-  } else if (rollout?.onexray) {
+  } else if (rollout.onexray?.current !== undefined && rollout.onexray.current !== null) {
     return false;
-  }
-  if (rollout.onexray !== undefined) {
-    if (!rollout.onexray || typeof rollout.onexray !== "object"
-      || !/^[0-9a-f]{64}$/u.test(rollout.onexray.current ?? "")) return false;
-    try {
-      const onexrayFiles = await readPublicationTree(join(currentDirectory, "onexray"), "onexray");
-      const onexrayManifest = validateOneXrayPublication({ files: onexrayFiles });
-      if (onexrayManifest.manifestHash !== rollout.onexray.current) return false;
-    } catch {
-      return false;
-    }
   }
   const clientDirectories = {
     singbox: "sing-box",

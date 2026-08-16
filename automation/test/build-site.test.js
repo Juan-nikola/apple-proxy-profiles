@@ -413,6 +413,15 @@ test("publishes OneXray edge scripts with the GeoData projection and hashes them
   const root = await mkdtemp(join(tmpdir(), "apple-proxy-edge-onexray-scripts-"));
   const publicDirectory = join(root, "public");
   const artifacts = buildClientArtifacts({ snapshot: lightweightFixtureSnapshots(), upstream: lightweightUpstream });
+  await mkdir(publicDirectory, { recursive: true });
+  await writeFile(join(publicDirectory, "rollout.json"), `${JSON.stringify({
+    schemaVersion: 2,
+    onexray: {
+      edge: "0".repeat(64),
+      current: "1".repeat(64),
+      previous: null,
+    },
+  }, null, 2)}\n`);
   await publishEdgeRelease({
     publicDirectory,
     defaults: artifacts.defaults,
@@ -431,6 +440,9 @@ test("publishes OneXray edge scripts with the GeoData projection and hashes them
     );
   }
   const edge = JSON.parse(await readFile(join(publicDirectory, "edge/manifest.json"), "utf8"));
+  const rollout = JSON.parse(await readFile(join(publicDirectory, "rollout.json"), "utf8"));
+  assert.equal(rollout.onexray.edge, artifacts.diagnostics.onexrayManifest.manifestHash);
+  assert.equal(rollout.onexray.current, "1".repeat(64));
   assert.deepEqual(edge.onexray.scripts.map(({ path }) => path), [
     "onexray/scripts/onexray-nodes-generator.js",
     "onexray/scripts/onexray-profile-generator.js",

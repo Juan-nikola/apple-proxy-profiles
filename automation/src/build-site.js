@@ -639,10 +639,44 @@ export async function publishEdgeRelease({
   }
   const parent = dirname(publicDirectory);
   await mkdir(publicDirectory, { recursive: true });
+  let rollout = null;
+  if (onexrayManifest !== null) {
+    try {
+      rollout = JSON.parse(await readFile(join(publicDirectory, "rollout.json"), "utf8"));
+    } catch (error) {
+      if (error.code !== "ENOENT") throw error;
+    }
+    if (rollout !== null) {
+      if (!rollout || typeof rollout !== "object" || Array.isArray(rollout)) {
+        throw new Error("Rollout manifest must be an object");
+      }
+      if (rollout.onexray !== undefined
+        && (!rollout.onexray || typeof rollout.onexray !== "object" || Array.isArray(rollout.onexray))) {
+        throw new Error("Rollout OneXray metadata must be an object");
+      }
+    }
+  }
   const staging = await mkdtemp(join(parent, `.${basename(publicDirectory)}-edge-staging-`));
   const edgeDirectory = join(publicDirectory, "edge");
   const backup = join(publicDirectory, `.edge-backup-${manifest.manifestHash.slice(0, 12)}`);
+  const rolloutPath = join(publicDirectory, "rollout.json");
+  const rolloutBackup = rollout === null
+    ? null
+    : join(publicDirectory, `.rollout-backup-${onexrayManifest.manifestHash.slice(0, 12)}`);
+  let rolloutStageDirectory = null;
+  let rolloutStagePath = null;
   try {
+    if (rollout !== null) {
+      rolloutStageDirectory = await mkdtemp(join(parent, `.${basename(publicDirectory)}-rollout-staging-`));
+      rolloutStagePath = join(rolloutStageDirectory, "rollout.json");
+      await writeFile(rolloutStagePath, `${JSON.stringify({
+        ...rollout,
+        onexray: {
+          ...(rollout.onexray ?? {}),
+          edge: onexrayManifest.manifestHash,
+        },
+      }, null, 2)}\n`, "utf8");
+    }
     await writeSnapshot(staging, edgeMerged);
     for (const [packId, optionalManifest] of optionalManifests) {
       for (const [client, { manifestHash: optionalHash }] of Object.entries(optionalManifest.clients)) {
@@ -669,15 +703,33 @@ export async function publishEdgeRelease({
     }
 
     if (await exists(backup)) throw new Error("Edge backup path already exists");
+    if (rolloutBackup !== null && await exists(rolloutBackup)) {
+      throw new Error("Rollout backup path already exists");
+    }
     const hadEdge = await exists(edgeDirectory);
     if (hadEdge) await rename(edgeDirectory, backup);
+    let edgeInstalled = false;
+    let rolloutInstalled = false;
     try {
       await rename(staging, edgeDirectory);
+      edgeInstalled = true;
+      if (rolloutStagePath !== null) {
+        await rename(rolloutPath, rolloutBackup);
+        await rename(rolloutStagePath, rolloutPath);
+        rolloutInstalled = true;
+      }
     } catch (error) {
+      if (rolloutInstalled) await rm(rolloutPath, { force: true });
+      if (rolloutBackup !== null && await exists(rolloutBackup)) {
+        await rename(rolloutBackup, rolloutPath);
+      }
+      if (edgeInstalled) await rm(edgeDirectory, { recursive: true, force: true });
       if (hadEdge) await rename(backup, edgeDirectory);
       throw error;
     }
     if (hadEdge) await rm(backup, { recursive: true, force: true });
+    if (rolloutBackup !== null) await rm(rolloutBackup, { force: true });
+    if (rolloutStageDirectory !== null) await rm(rolloutStageDirectory, { recursive: true, force: true });
     return Object.freeze({
       files: edgeMerged.size,
       manifestHash: edgeRootManifest.manifestHash,
@@ -693,6 +745,9 @@ export async function publishEdgeRelease({
     });
   } catch (error) {
     await rm(staging, { recursive: true, force: true });
+    if (rolloutStageDirectory !== null) {
+      await rm(rolloutStageDirectory, { recursive: true, force: true });
+    }
     throw error;
   }
 }
