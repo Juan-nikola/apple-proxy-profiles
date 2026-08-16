@@ -29,6 +29,6 @@ Android 只生成一个 `⚡ 全部自动` URLTest。iPhone/iPad 不生成任何
 
 ## 规则下载与 DNS
 
-代理 DNS 使用 `⚡ 全部自动`，规则下载使用 `🧭 DNS 与规则下载`，两者不会互相解析形成启动环路。`dns-direct` 必须通过 `DIRECT` 出站；如果节点域名解析失败，先检查国内 DNS，再切换到 IP/备用节点。
+代理 DNS 使用 `⚡ 全部自动`，规则下载使用 `🧭 DNS 与规则下载`，两者不会互相解析形成启动环路。DNS 服务器不再使用 `detour: DIRECT`；新版 sing-box 会拒绝把空 `DIRECT` 出站作为 DNS detour，生成器会用 DNS 提供商 IP 的显式直连规则保证启动可用。如果节点域名解析失败，先检查国内 DNS，再切换到 IP/备用节点。
 
 OpenWrt 透明网关不在本阶段范围内；不要用旧 OpenWrt JSON 代替终端配置。

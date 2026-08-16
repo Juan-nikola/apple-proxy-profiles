@@ -27,6 +27,9 @@ export function renderSingBoxConfig(rawOptions, nodes, rendererOptions = {}) {
     blockMode: options.blockMode,
     quicMode: options.quicMode,
     platform: options.platform,
+    chinaDns: options.chinaDns,
+    globalDns: options.globalDns,
+    dnsMode: options.dnsMode,
   });
   const config = {
     log: {

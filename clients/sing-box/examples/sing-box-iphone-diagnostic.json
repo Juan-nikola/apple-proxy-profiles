@@ -8,8 +8,7 @@
       {
         "type": "udp",
         "tag": "dns-direct",
-        "server": "223.5.5.5",
-        "detour": "DIRECT"
+        "server": "223.5.5.5"
       },
       {
         "type": "https",
@@ -329,6 +328,13 @@
           "local",
           "lan",
           "home.arpa"
+        ],
+        "action": "route",
+        "outbound": "DIRECT"
+      },
+      {
+        "ip_cidr": [
+          "223.5.5.5/32"
         ],
         "action": "route",
         "outbound": "DIRECT"

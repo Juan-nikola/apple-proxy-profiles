@@ -86,7 +86,7 @@ test("renders a complete latest-style config with response-based ChinaIP fallbac
   assert.ok(config.dns.rules.some((rule) => rule.action === "evaluate" && rule.server === "dns-proxy"));
   assert.ok(config.dns.rules.some((rule) => rule.match_response === "direct-answer" && rule.rule_set?.includes("rule-ChinaIP")));
   assert.equal(config.dns.final, "dns-proxy");
-  assert.equal(config.dns.servers.find(({ tag }) => tag === "dns-direct")?.detour, "DIRECT");
+  assert.equal(config.dns.servers.find(({ tag }) => tag === "dns-direct")?.detour, undefined);
   assert.equal(config.dns.servers.find(({ tag }) => tag === "dns-proxy")?.detour, "⚡ 全部自动");
 });
 
@@ -192,4 +192,14 @@ test("uses structured HTTPS DNS fields for every global provider", () => {
     assert.doesNotMatch(proxy.server, /^https?:\/\//iu);
     assert.equal(proxy.path, "/dns-query");
   }
+});
+
+test("routes DNS provider IPs directly without a DNS detour to DIRECT", () => {
+  const config = render({ dnsMode: "speed" });
+  assert.equal(config.dns.servers.find(({ tag }) => tag === "dns-direct")?.detour, undefined);
+  assert.equal(config.dns.servers.find(({ tag }) => tag === "dns-proxy")?.detour, undefined);
+  for (const address of ["223.5.5.5/32", "1.1.1.1/32"]) {
+    assert.ok(config.route.rules.some((rule) => rule.ip_cidr?.includes(address) && rule.outbound === "DIRECT"), address);
+  }
+  assert.deepEqual(validateSingBoxConfig(config), { valid: true, errors: [] });
 });

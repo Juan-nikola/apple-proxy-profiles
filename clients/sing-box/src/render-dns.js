@@ -103,7 +103,7 @@ export function renderSingBoxDns(options) {
   const chinaDns = chinaDnsProvider(options.chinaDns);
   const chinaServer = options.chinaDns === "system"
     ? { type: "local", tag: DNS_DIRECT }
-    : { type: "udp", tag: DNS_DIRECT, server: chinaDns.address, detour: "DIRECT" };
+    : { type: "udp", tag: DNS_DIRECT, server: chinaDns.address };
   const globalDns = globalDnsProvider(options.globalDns);
   const proxyServer = {
     type: "https",
@@ -113,7 +113,7 @@ export function renderSingBoxDns(options) {
     path: "/dns-query",
     tls: { enabled: true, server_name: globalDns.serverName },
     // DNS proxying must never depend on a selector that contains DIRECT.
-    detour: options.dnsMode === "speed" ? "DIRECT" : "⚡ 全部自动",
+    ...(options.dnsMode === "speed" ? {} : { detour: "⚡ 全部自动" }),
   };
   return {
     servers: [chinaServer, proxyServer],

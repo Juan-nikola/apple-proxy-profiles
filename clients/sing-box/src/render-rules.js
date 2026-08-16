@@ -6,6 +6,7 @@ import {
 } from "../../../shared/rules/lightweight-policy.js";
 import { CUSTOM_RULES } from "../../../shared/rules/custom-rules.js";
 import { PROXY_DNS_DOMAIN_SUFFIXES } from "../../../shared/rules/overseas-dns.js";
+import { chinaDnsProvider, globalDnsProvider } from "../../../shared/dns/providers.js";
 
 export const RULE_DOWNLOAD_HTTP_CLIENT = "🧭 规则下载 HTTP";
 export const RULE_DOWNLOAD_GROUP = "🧭 DNS 与规则下载";
@@ -60,6 +61,18 @@ function route(outbound) {
 
 function reject() {
   return { action: "reject", method: "default" };
+}
+
+function dnsAddressCidr(address) {
+  if (typeof address !== "string" || address === "local") return null;
+  return address.includes(":") ? `${address}/128` : `${address}/32`;
+}
+
+function renderDnsBootstrapRules({ chinaDns = "alidns", globalDns = "cloudflare", dnsMode = "stable" } = {}) {
+  const addresses = [chinaDnsProvider(chinaDns).address];
+  if (dnsMode === "speed") addresses.push(globalDnsProvider(globalDns).address);
+  return [...new Set(addresses.map(dnsAddressCidr).filter(Boolean))]
+    .map((address) => ({ ip_cidr: [address], action: "route", outbound: "DIRECT" }));
 }
 
 function optionalAdblockBase(defaultBase) {
@@ -128,6 +141,9 @@ export function renderSingBoxRouteRules({
   blockMode = "balanced",
   quicMode = "allow",
   platform,
+  chinaDns = "alidns",
+  globalDns = "cloudflare",
+  dnsMode = "stable",
 }) {
   if (!["allow", "proxy-block", "all-block"].includes(quicMode)) {
     throw new Error(`Unsupported sing-box quicMode: ${quicMode}`);
@@ -137,6 +153,7 @@ export function renderSingBoxRouteRules({
     { inbound: "tun-in", action: "sniff" },
     { protocol: "dns", action: "hijack-dns" },
     ...LOCAL_RULES,
+    ...renderDnsBootstrapRules({ chinaDns, globalDns, dnsMode }),
   ];
 
   if (quicMode === "all-block") rules.push({ ...QUIC_BLOCK_RULE });
