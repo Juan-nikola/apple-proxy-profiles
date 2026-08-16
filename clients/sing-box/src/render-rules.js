@@ -1,4 +1,5 @@
 import {
+  MOBILE_RULE_SOURCE_IDS,
   ROUTING_PHASES,
   orderedRoutingPlan,
   ruleClientCatalog,
@@ -8,6 +9,19 @@ import { PROXY_DNS_DOMAIN_SUFFIXES } from "../../../shared/rules/overseas-dns.js
 
 export const RULE_DOWNLOAD_HTTP_CLIENT = "🧭 规则下载 HTTP";
 export const RULE_DOWNLOAD_GROUP = "🧭 DNS 与规则下载";
+const MOBILE_RULE_SOURCE_ID_SET = new Set(MOBILE_RULE_SOURCE_IDS);
+
+function activeRuleCatalog(platform, adblockMode) {
+  const catalog = ruleClientCatalog({ adblockMode });
+  return ["iphone", "ipad"].includes(platform)
+    ? catalog.filter(({ id }) => MOBILE_RULE_SOURCE_ID_SET.has(id))
+    : catalog;
+}
+
+function activeRoutingPlan(platform, adblockMode) {
+  const activeIds = new Set(activeRuleCatalog(platform, adblockMode).map(({ id }) => id));
+  return orderedRoutingPlan({ adblockMode }).filter(({ id }) => activeIds.has(id));
+}
 
 const LOCAL_RULES = Object.freeze([
   { ip_is_private: true, action: "route", outbound: "DIRECT" },
@@ -91,11 +105,11 @@ function taggedRule(source) {
   return { rule_set: [`rule-${source.id}`], ...route(source.policy) };
 }
 
-export function renderSingBoxRuleSets({ ruleBaseUrl, profileMode = "light", adblockMode = "off" }) {
+export function renderSingBoxRuleSets({ ruleBaseUrl, profileMode = "light", adblockMode = "off", platform }) {
   const base = baseUrl(ruleBaseUrl);
   if (profileMode === "diagnostic") return [];
   if (profileMode !== "light") throw new Error("Unsupported sing-box profile mode");
-  const sources = ruleClientCatalog({ adblockMode });
+  const sources = activeRuleCatalog(platform, adblockMode);
   const adblockBase = adblockMode === "full" ? optionalAdblockBase(base) : null;
   return sources.map((source) => ({
     type: "remote",
@@ -113,11 +127,12 @@ export function renderSingBoxRouteRules({
   adblockMode = "off",
   blockMode = "balanced",
   quicMode = "allow",
+  platform,
 }) {
   if (!["allow", "proxy-block", "all-block"].includes(quicMode)) {
     throw new Error(`Unsupported sing-box quicMode: ${quicMode}`);
   }
-  const ruleSets = renderSingBoxRuleSets({ ruleBaseUrl, profileMode, adblockMode });
+  const ruleSets = renderSingBoxRuleSets({ ruleBaseUrl, profileMode, adblockMode, platform });
   const rules = [
     { inbound: "tun-in", action: "sniff" },
     { protocol: "dns", action: "hijack-dns" },
@@ -130,7 +145,7 @@ export function renderSingBoxRouteRules({
     return { ruleSets, rules, final: "🚀 节点选择" };
   }
 
-  const plan = orderedRoutingPlan({ adblockMode });
+  const plan = activeRoutingPlan(platform, adblockMode);
   const securityIds = new Set({
     off: [],
     security: ["Hijacking", "BlockHttpDNS"],

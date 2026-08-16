@@ -58,6 +58,9 @@ export function parseSingBoxOptions(raw) {
   if (typeof profileMode !== "string" || !PROFILE_MODES.has(profileMode)) throw new Error("Option 'profileMode' has an unsupported value");
   const adblockMode = raw.adblockMode === undefined ? DEFAULTS.adblockMode : raw.adblockMode;
   if (typeof adblockMode !== "string" || !ADBLOCK_MODES.has(adblockMode)) throw new Error("Option 'adblockMode' has an unsupported value");
+  if (["iphone", "ipad"].includes(platform) && adblockMode === "full") {
+    throw new Error("Option 'adblockMode=full' exceeds the iOS NetworkExtension memory budget");
+  }
   const nodeErrorMode = raw.nodeErrorMode === undefined ? DEFAULTS.nodeErrorMode : raw.nodeErrorMode;
   if (typeof nodeErrorMode !== "string" || !NODE_ERROR_MODES.has(nodeErrorMode)) throw new Error("Option 'nodeErrorMode' has an unsupported value");
   const options = {
@@ -72,7 +75,11 @@ export function parseSingBoxOptions(raw) {
     globalDns: enumValue(raw, "globalDns", DEFAULTS.globalDns),
     blockMode: enumValue(raw, "blockMode", DEFAULTS.blockMode),
     quicMode: enumValue(raw, "quicMode", DEFAULTS.quicMode),
-    ipv6Mode: enumValue(raw, "ipv6Mode", platform === "macos" ? "ipv4-only" : DEFAULTS.ipv6Mode),
+    ipv6Mode: enumValue(
+      raw,
+      "ipv6Mode",
+      ["macos", "iphone", "ipad"].includes(platform) ? "ipv4-only" : DEFAULTS.ipv6Mode,
+    ),
     autoGroupMode: enumValue(raw, "autoGroupMode", DEFAULTS.autoGroupMode),
     clientChain: enumValue(raw, "clientChain", DEFAULTS.clientChain),
     profileMode,

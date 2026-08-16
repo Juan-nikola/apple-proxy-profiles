@@ -21,8 +21,8 @@ output=config&type=collection&name=apple-proxy-singbox&subscriptionName=Apple-Pr
 | File | `platform` | `ipv6Mode` |
 | --- | --- | --- |
 | `sing-box-macos` | `macos` | `ipv4-only` |
-| `sing-box-iphone` | `iphone` | `auto` |
-| `sing-box-ipad` | `ipad` | `auto` |
+| `sing-box-iphone` | `iphone` | `ipv4-only` |
+| `sing-box-ipad` | `ipad` | `ipv4-only` |
 | `sing-box-android` | `android` | `auto` |
 
 预览必须是合法 JSON，并包含 `dns`、`inbounds`、`outbounds`、`route`。如果 `strict` 失败，查看 Sub-Store 日志中的协议和字段错误，不要改成兼容模式来掩盖节点丢失。
@@ -43,6 +43,8 @@ output=config&type=collection&name=apple-proxy-singbox&subscriptionName=Apple-Pr
 ## edge 与 current
 
 `edge` 在 GitHub Actions 中解析官方 sing-box testing 最新 release，安装官方校验过的 core，重新编译 `.srs`、生成四个平台配置并执行 `sing-box check`。`current` 是可回滚的已发布快照；不要把 edge 直接用于全部设备，除非你接受 testing 核心的字段变更风险。
+
+iPhone/iPad 的配置专门按 NetworkExtension 的内存上限生成：日志为 `warn`、缓存文件和 `store_dns` 关闭、规则集限制为 14 个，且不允许 `adblockMode=full`。这不会改变 macOS/Android 的规则目录。
 
 ## 代码职责
 

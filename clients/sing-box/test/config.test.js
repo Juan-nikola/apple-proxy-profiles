@@ -66,6 +66,14 @@ test("accepts only the four terminal platforms and rejects deferred OpenWrt", ()
   assert.equal(parseSingBoxOptions(baseOptions).channel, "edge");
 });
 
+test("defaults Apple platforms to IPv4-only without changing Android defaults", () => {
+  for (const platform of ["macos", "iphone", "ipad"]) {
+    const { ipv6Mode } = parseSingBoxOptions({ ...baseOptions, platform, ipv6Mode: undefined });
+    assert.equal(ipv6Mode, "ipv4-only", platform);
+  }
+  assert.equal(parseSingBoxOptions({ ...baseOptions, platform: "android", ipv6Mode: undefined }).ipv6Mode, "auto");
+});
+
 test("renders a complete latest-style config with response-based ChinaIP fallback", () => {
   const config = render();
   assert.deepEqual(validateSingBoxConfig(config), { valid: true, errors: [] });
@@ -99,14 +107,30 @@ test("renders Egern-like selectors without pretending urltest is request fallbac
   assert.equal(auto.url, "https://www.gstatic.com/generate_204");
 });
 
-test("keeps mobile startup to one URLTest graph while retaining service groups", () => {
-  for (const platform of ["iphone", "ipad", "android"]) {
+test("removes iOS URLTests and keeps only the low-memory service groups", () => {
+  for (const platform of ["iphone", "ipad"]) {
     const config = render({ platform });
-    assert.deepEqual(config.outbounds.filter(({ type }) => type === "urltest").map(({ tag }) => tag), ["⚡ 全部自动"], platform);
-    assert.ok(config.outbounds.some(({ tag }) => tag === "📺 YouTube"), platform);
+    assert.deepEqual(config.outbounds.filter(({ type }) => type === "urltest"), [], platform);
+    assert.ok(config.outbounds.some(({ tag }) => tag === "🍎 Apple"), platform);
+    assert.ok(config.outbounds.some(({ tag }) => tag === "🪟 Microsoft"), platform);
+    assert.ok(config.outbounds.some(({ tag }) => tag === "🇨🇳 国内平台"), platform);
+    assert.equal(config.outbounds.some(({ tag }) => tag === "📺 YouTube"), false, platform);
     assert.ok(config.outbounds.some(({ tag }) => tag === "🤖 AI 专用"), platform);
+    assert.equal(config.log.level, "warn", platform);
+    assert.equal(config.experimental.cache_file.enabled, false, platform);
+    assert.equal(config.experimental.cache_file.store_dns, false, platform);
+    assert.equal(config.route.rule_set.length, 14, platform);
+    assert.equal(config.dns.rules.some((rule) => Array.isArray(rule.rule_set) && rule.rule_set.length === 0), false, platform);
     assert.deepEqual(validateSingBoxConfig(config), { valid: true, errors: [] }, platform);
   }
+});
+
+test("retains Android's single automatic URLTest graph", () => {
+  const config = render({ platform: "android" });
+  assert.deepEqual(config.outbounds.filter(({ type }) => type === "urltest").map(({ tag }) => tag), ["⚡ 全部自动"]);
+  assert.ok(config.outbounds.some(({ tag }) => tag === "📺 YouTube"));
+  assert.ok(config.outbounds.some(({ tag }) => tag === "🤖 AI 专用"));
+  assert.deepEqual(validateSingBoxConfig(config), { valid: true, errors: [] });
 });
 
 test("applies QUIC modes only to the selected traffic class", () => {
@@ -140,6 +164,7 @@ test("keeps adblock opt-in and compiles only binary remote rule sets", () => {
   const full = render({ adblockMode: "full" });
   assert.equal(full.route.rule_set.some(({ tag }) => tag === "rule-Advertising"), true);
   assert.equal(full.route.rule_set.some(({ tag }) => tag === "rule-Advertising_Domain"), true);
+  assert.throws(() => render({ platform: "iphone", adblockMode: "full" }), /memory budget/iu);
 });
 
 test("renders WireGuard as a 1.14 endpoint instead of a removed outbound", () => {

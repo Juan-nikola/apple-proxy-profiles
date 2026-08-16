@@ -147,10 +147,15 @@ test("all Actions use the approved immutable SHA pins", async () => {
   });
 });
 
-test("update workflow is daily/manual, verifies output, and commits only public", async () => {
+test("update workflow is source-push/daily/manual, verifies output, and commits only public", async () => {
   const text = await workflowText(updateWorkflow);
+  assert.match(text, /^\s*push:\s*$/mu);
   assert.match(text, /^\s*schedule:\s*$/mu);
   assert.match(text, /^\s*workflow_dispatch:\s*$/mu);
+  for (const path of ["automation/**", "clients/**", "scripts/**", "shared/**"]) {
+    assert.ok(text.includes(`- "${path}"`), path);
+  }
+  assert.doesNotMatch(text, /^\s*-\s*["']?public\/\*\*/mu);
   assert.match(text, /^\s*contents:\s*write\s*$/mu);
   assert.match(text, /github\.event_name == 'schedule' \|\| github\.ref == 'refs\/heads\/main'/u);
   assert.doesNotMatch(text, /^\s*(?:pages|id-token):\s*/mu);

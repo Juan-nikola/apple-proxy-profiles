@@ -26,9 +26,13 @@ export function renderSingBoxConfig(rawOptions, nodes, rendererOptions = {}) {
     adblockMode: options.adblockMode,
     blockMode: options.blockMode,
     quicMode: options.quicMode,
+    platform: options.platform,
   });
   const config = {
-    log: { level: "info", timestamp: true },
+    log: {
+      level: ["iphone", "ipad"].includes(options.platform) ? "warn" : "info",
+      timestamp: true,
+    },
     dns: renderSingBoxDns(options),
     http_clients: [{
       tag: RULE_DOWNLOAD_HTTP_CLIENT,
@@ -50,7 +54,13 @@ export function renderSingBoxConfig(rawOptions, nodes, rendererOptions = {}) {
       rules,
       final,
     },
-    experimental: { cache_file: { enabled: true, path: "cache.db", store_dns: true } },
+    experimental: {
+      cache_file: {
+        enabled: !["iphone", "ipad"].includes(options.platform),
+        path: "cache.db",
+        store_dns: !["iphone", "ipad"].includes(options.platform),
+      },
+    },
   };
   const endpoints = renderedNodes.flatMap(({ endpoint }) => (endpoint ? [endpoint] : []));
   if (endpoints.length > 0) config.endpoints = endpoints;

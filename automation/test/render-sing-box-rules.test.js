@@ -26,7 +26,7 @@ const upstream = {
 };
 
 test("renders deterministic sing-box source rule-set JSON without unsupported entries", () => {
-  const text = "DOMAIN-SUFFIX,example.com\nIP-CIDR,192.0.2.0/24,no-resolve\nGEOIP,CN\n";
+  const text = "DOMAIN-SUFFIX,example.com\nDOMAIN-SUFFIX,example.net\nIP-CIDR,192.0.2.0/24,no-resolve\nIP-CIDR,198.51.100.0/24,no-resolve\nGEOIP,CN\n";
   const parsed = parseSurgeRules(text, source);
   const result = renderSingBoxRuleSource({
     source,
@@ -34,14 +34,15 @@ test("renders deterministic sing-box source rule-set JSON without unsupported en
     fetched: { text, sourceBytes: Buffer.byteLength(text), sourceSha256: "b".repeat(64) },
     upstream,
   });
-  assert.equal(result.counts.input, 3);
-  assert.equal(result.counts.output, 2);
+  assert.equal(result.counts.input, 5);
+  assert.equal(result.counts.output, 4);
+  assert.equal(result.counts.runtimeRules, 2);
   assert.equal(result.counts.omitted, 1);
   assert.deepEqual(JSON.parse(result.content), {
     version: 5,
     rules: [
-      { domain_suffix: ["example.com"] },
-      { ip_cidr: ["192.0.2.0/24"] },
+      { domain_suffix: ["example.com", "example.net"] },
+      { ip_cidr: ["192.0.2.0/24", "198.51.100.0/24"] },
     ],
   });
   assert.equal(result.content, renderSingBoxRuleSource({

@@ -57,6 +57,14 @@ function commandPosition(text, command) {
   return text.indexOf(`run: ${command}`);
 }
 
+function topLevelTriggerBlock(text, trigger) {
+  const match = text.match(new RegExp(
+    `^  ${trigger}:\\s*$([\\s\\S]*?)(?=^  [A-Za-z0-9_-]+:\\s*$|^\\S|(?![\\s\\S]))`,
+    "mu",
+  ));
+  return match?.[1] ?? null;
+}
+
 function validateOfficialCoreGate(file, text, beforePosition, channel) {
   const commands = [
     "node scripts/install-sing-box-core.mjs",
@@ -117,8 +125,16 @@ export function validateWorkflowText(file, text) {
     if (permissionValue(text, "pages").length > 0 || permissionValue(text, "id-token").length > 0) {
       errors.push(`${file}: update workflow must not request Pages permissions`);
     }
-    if (/^\s*push:\s*$/mu.test(text)) {
-      errors.push(`${file}: update workflow must not trigger on its own push`);
+    const pushBlock = topLevelTriggerBlock(text, "push");
+    if (pushBlock !== null) {
+      const sourcePaths = ["automation/**", "clients/**", "scripts/**", "shared/**"];
+      const hasMainBranch = /^    branches:\s*$[\s\S]*?^      -\s*["']?main["']?\s*$/mu.test(pushBlock);
+      const hasPaths = /^    paths:\s*$/mu.test(pushBlock);
+      const hasRequiredSources = sourcePaths.every((path) => pushBlock.includes(`- "${path}"`));
+      const includesPublic = /^      -\s*["']?public(?:\/|["']?\s*$)/mu.test(pushBlock);
+      if (!hasMainBranch || !hasPaths || !hasRequiredSources || includesPublic) {
+        errors.push(`${file}: update workflow must not trigger on its own push; push requires main-only source paths excluding public`);
+      }
     }
     if (!/github\.event_name == 'schedule' \|\| github\.ref == 'refs\/heads\/main'/u.test(text)) {
       errors.push(`${file}: update job must restrict writes to scheduled or main-ref runs`);

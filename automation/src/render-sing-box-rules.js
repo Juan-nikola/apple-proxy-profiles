@@ -17,7 +17,7 @@ export function renderSingBoxRuleSource({ source, parsed, fetched, upstream }) {
   if (!fetched || typeof fetched.text !== "string") throw new TypeError("Fetched Surge source is required");
   if (!upstream || typeof upstream.commit !== "string") throw new TypeError("Rule provenance is required");
 
-  const rules = [];
+  const valuesByType = new Map();
   const omittedByKind = {};
   const emittedByKind = {};
   for (const entry of parsed.entries) {
@@ -26,14 +26,23 @@ export function renderSingBoxRuleSource({ source, parsed, fetched, upstream }) {
       omittedByKind[entry.kind] = (omittedByKind[entry.kind] ?? 0) + 1;
       continue;
     }
-    rules.push({ [type]: [entry.value] });
+    const values = valuesByType.get(type) ?? [];
+    values.push(entry.value);
+    valuesByType.set(type, values);
     emittedByKind[entry.kind] = (emittedByKind[entry.kind] ?? 0) + 1;
   }
+  // Entries sharing a matcher type are one OR expression. Grouping them
+  // avoids one runtime rule object per domain or CIDR on iOS.
+  const rules = [...new Set(Object.values(TYPE_BY_KIND))]
+    .filter((type) => valuesByType.has(type))
+    .map((type) => ({ [type]: valuesByType.get(type) }));
+  const outputEntries = [...valuesByType.values()].reduce((total, values) => total + values.length, 0);
   const counts = Object.freeze({
     input: parsed.diagnostics.candidateCount,
     parsed: parsed.diagnostics.parsedCount,
-    output: rules.length,
-    omitted: parsed.entries.length - rules.length,
+    output: outputEntries,
+    runtimeRules: rules.length,
+    omitted: parsed.entries.length - outputEntries,
     emittedByKind: Object.freeze(emittedByKind),
     omittedByKind: Object.freeze(omittedByKind),
     sourceSha256: fetched.sourceSha256,

@@ -7,10 +7,16 @@ const PRIMARY_GROUP = "🚀 节点选择";
 const AUTO_GROUP = "⚡ 全部自动";
 const FALLBACK_GROUP_PATTERN = /故障转移/u;
 const MOBILE_MEMORY_PLATFORMS = new Set(["iphone", "ipad", "android"]);
+const IOS_MEMORY_PLATFORMS = new Set(["iphone", "ipad"]);
+const IOS_SERVICE_GROUPS = new Set(["🍎 Apple", "🪟 Microsoft", "🇨🇳 国内平台"]);
 const TEST_URL = "https://www.gstatic.com/generate_204";
 
 function isMobileMemoryConstrained(options) {
   return MOBILE_MEMORY_PLATFORMS.has(options.platform);
+}
+
+function isIosMemoryConstrained(options) {
+  return IOS_MEMORY_PLATFORMS.has(options.platform);
 }
 
 function isDisabledFallback(name) {
@@ -33,12 +39,12 @@ function filterNodes(filter, nodes) {
   return nodes.filter((node) => pattern.test(node.name)).map((node) => node.name);
 }
 
-function candidateList(group, nodes, { compact = false } = {}) {
+function candidateList(group, nodes, { compact = false, ios = false } = {}) {
   const candidates = [
     ...(compact && group.kind === "continent" ? [] : group.candidates
       .filter((candidate) => !isDisabledFallback(candidate))
       .map(targetName)),
-    ...filterNodes(group.nodeFilter, nodes),
+    ...(compact && ios && group.kind === "service" ? [] : filterNodes(group.nodeFilter, nodes)),
   ];
   return candidates.filter((item, index, all) => all.indexOf(item) === index);
 }
@@ -53,10 +59,10 @@ function renderDownloadGroup() {
   };
 }
 
-function renderGroup(group, nodes, { compact = false } = {}) {
+function renderGroup(group, nodes, { compact = false, ios = false } = {}) {
   if (group.name === RULE_DOWNLOAD_GROUP) return renderDownloadGroup();
 
-  const candidates = candidateList(group, nodes, { compact });
+  const candidates = candidateList(group, nodes, { compact, ios });
   if (group.kind === "ai" && candidates[0] !== AUTO_GROUP) candidates.unshift(AUTO_GROUP);
   const outbounds = candidates.length > 0 ? candidates : ["DIRECT"];
 
@@ -71,7 +77,7 @@ function renderGroup(group, nodes, { compact = false } = {}) {
     };
   }
 
-  if (compact && group.strategy === "auto-test" && group.name !== AUTO_GROUP) {
+  if (compact && group.strategy === "auto-test" && (group.name !== AUTO_GROUP || ios)) {
     return {
       type: "selector",
       tag: group.name,
@@ -114,7 +120,9 @@ export function renderSingBoxGroups(options, nodes) {
   for (const group of shared) {
     if (group.strategy === "fallback") continue;
     if (compact && group.strategy === "auto-test" && group.name !== AUTO_GROUP) continue;
-    rendered.push(renderGroup(group, inventory, { compact }));
+    if (isIosMemoryConstrained(options) && group.kind === "service" && !IOS_SERVICE_GROUPS.has(group.name)) continue;
+    if (isIosMemoryConstrained(options) && group.kind === "special" && group.name !== RULE_DOWNLOAD_GROUP) continue;
+    rendered.push(renderGroup(group, inventory, { compact, ios: isIosMemoryConstrained(options) }));
   }
 
   return rendered;

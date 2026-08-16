@@ -47,7 +47,7 @@
 | Anywhere node | `https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/scripts/anywhere-node-generator.js` | 节点 File |
 | Surge node resource | `https://juan-nikola.github.io/apple-proxy-profiles/current/surge/scripts/surge-nodes-generator.js` | 一个 Surge 节点 File |
 | Surge Profile | `https://juan-nikola.github.io/apple-proxy-profiles/current/surge/scripts/surge-profile-generator.js` | 三个平台远程 Profile File |
-| sing-box config | `https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/scripts/sing-box-config-generator.js` | 五个平台 Config File |
+| sing-box config | `https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/scripts/sing-box-config-generator.js` | 四个平台 Config File |
 
 测试版只把路径中的 `current` 换成 `edge`。不要使用 GitHub `blob` 页面、`clients/*/dist/` 本地路径或旧兼容 URL 创建新任务。
 
@@ -280,13 +280,13 @@ sing-box 默认 strict：任一已选节点无法完整渲染时 preview 失败�
 | 任务 | 平台额外参数 | 官方客户端 |
 | --- | --- | --- |
 | `singbox-config-macos` | `platform=macos&ipv6Mode=ipv4-only` | sing-box for Mac |
-| `singbox-config-iphone` | `platform=iphone&ipv6Mode=auto` | sing-box for iPhone |
-| `singbox-config-ipad` | `platform=ipad&ipv6Mode=auto` | sing-box for iPad |
+| `singbox-config-iphone` | `platform=iphone&ipv6Mode=ipv4-only` | sing-box for iPhone |
+| `singbox-config-ipad` | `platform=ipad&ipv6Mode=ipv4-only` | sing-box for iPad |
 | `singbox-config-android` | `platform=android&ipv6Mode=auto` | sing-box for Android |
 
 本项目的 sing-box edge 构建会自动解析官方 testing 最新 release。测试时把 JS URL 的 `current` 改成 `edge`，并把 `channel=current` 改成 `channel=edge`；生产任务保留 current 作为回滚入口。
 
-预览必须是 JSON，且能通过配置校验。四个平台都使用终端 TUN；未知域名通过 DNS response matching 和 `ChinaIP` rule-set 自动判断国内/海外。当前不生成 OpenWrt 透明网关配置。
+预览必须是 JSON，且能通过配置校验。四个平台都使用终端 TUN；未知域名通过 DNS response matching 和 `ChinaIP` rule-set 自动判断国内/海外。iPhone/iPad 任务不得设置 `adblockMode=full`，且应确认没有 URLTest、持久 DNS 缓存和 IPv6 直连探测。当前不生成 OpenWrt 透明网关配置。
 
 ## 11. 运行和刷新顺序
 

@@ -25,4 +25,4 @@
 - `examples/sing-box-ipad-diagnostic.json`
 - `examples/sing-box-android-diagnostic.json`
 
-移动端默认只保留一个 `⚡ 全部自动` URLTest 图，避免启动时重复探测全部节点。
+Android 默认只保留一个 `⚡ 全部自动` URLTest 图。iPhone/iPad 不生成 URLTest，`⚡ 全部自动` 使用选择器，并关闭规则缓存 DNS；这两个平台的验收应确认启动日志没有批量探测节点或 IPv6 `no route to host`。

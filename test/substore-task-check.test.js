@@ -116,6 +116,17 @@ test("accepts valid sing-box output safety modes", () => {
   assert.equal(result.ok, true, result.errors.join(", "));
 });
 
+test("rejects full adblock for iOS sing-box tasks before preview", () => {
+  for (const platform of ["iphone", "ipad"]) {
+    const url = `${PUBLIC}/current/sing-box/scripts/sing-box-config-generator.js#output=config&type=collection&name=apple-proxy-sources&subscriptionName=Apple-Proxy-Nodes&platform=${platform}&adblockMode=full`;
+    const result = checkSubstoreTaskUrl(url);
+    assert.equal(result.ok, false, platform);
+    assert.match(result.errors.join(", "), /adblockMode=full.*iOS.*memory/iu);
+  }
+  const macos = `${PUBLIC}/current/sing-box/scripts/sing-box-config-generator.js#output=config&type=collection&name=apple-proxy-sources&subscriptionName=Apple-Proxy-Nodes&platform=macos&adblockMode=full`;
+  assert.equal(checkSubstoreTaskUrl(macos).ok, true);
+});
+
 test("rejects an unsupported sing-box nodeErrorMode", () => {
   const url = `${PUBLIC}/current/sing-box/scripts/sing-box-config-generator.js#output=config&type=collection&name=apple-proxy-sources&subscriptionName=Apple-Proxy-Nodes&platform=macos&nodeErrorMode=partial`;
   const result = checkSubstoreTaskUrl(url);

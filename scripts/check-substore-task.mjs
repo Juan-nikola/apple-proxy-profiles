@@ -51,6 +51,7 @@ const GENERATOR_SCHEMAS = Object.freeze({
   "sing-box/scripts/sing-box-config-generator.js": configSchema({
     platforms: ["macos", "iphone", "ipad", "android"],
     requiresSubscriptionName: true,
+    rejectFullAdblockPlatforms: ["iphone", "ipad"],
     extraKeys: ["profileMode", "nodeErrorMode"],
     extraEnums: {
       profileMode: PROFILE_MODES,
@@ -74,6 +75,7 @@ function configSchema({
   platforms,
   requiresSubscriptionName = false,
   requiresNodeSubscriptionUrl = false,
+  rejectFullAdblockPlatforms = [],
   extraKeys = [],
   extraEnums = {},
 }) {
@@ -91,6 +93,7 @@ function configSchema({
     allowed: Object.freeze(allowed),
     outputValues: Object.freeze(["config"]),
     platforms: Object.freeze(platforms),
+    rejectFullAdblockPlatforms: Object.freeze(rejectFullAdblockPlatforms),
     enums: Object.freeze({
       dnsMode: OPTION_VALUES.dnsMode,
       chinaDns: OPTION_VALUES.chinaDns,
@@ -196,6 +199,9 @@ export function checkTaskOptions(schema, params) {
   }
   for (const key of schema.required) {
     if (!Object.hasOwn(params, key)) errors.push(`Missing required option '${key}'`);
+  }
+  if (params.adblockMode === "full" && schema.rejectFullAdblockPlatforms?.includes(params.platform)) {
+    errors.push(`Option 'adblockMode=full' is not supported on ${params.platform} because of the iOS NetworkExtension memory budget`);
   }
   return Object.freeze(errors);
 }

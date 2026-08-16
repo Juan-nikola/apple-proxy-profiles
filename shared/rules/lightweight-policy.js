@@ -9,6 +9,15 @@ export const DEFAULT_RULE_SOURCE_IDS = Object.freeze([
   "OverseasGame", "ChinaTLD", "ChinaIP",
 ]);
 
+// Keep domestic direct routing and security coverage on iOS while avoiding
+// the larger overseas service catalog under NetworkExtension's RSS ceiling.
+export const MOBILE_RULE_SOURCE_IDS = Object.freeze([
+  "Hijacking", "BlockHttpDNS", "Privacy",
+  "DomesticCore", "DomesticGame", "SteamCN",
+  "BiliBili", "ByteDance", "XiaoHongShu", "Weibo",
+  "Apple", "Microsoft", "ChinaTLD", "ChinaIP",
+]);
+
 export const FULL_ADBLOCK_SOURCE_IDS = Object.freeze([
   "Advertising", "Advertising_Domain",
 ]);

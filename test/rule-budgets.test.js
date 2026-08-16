@@ -10,6 +10,7 @@ import { lightweightFixtureSnapshots } from "../automation/test/lightweight-fixt
 import { compileRules } from "../clients/sing-box/scripts/compile-rules.mjs";
 import {
   DEFAULT_RULE_SOURCE_IDS,
+  MOBILE_RULE_SOURCE_IDS,
   RULE_BUDGETS,
 } from "../shared/rules/lightweight-policy.js";
 
@@ -100,6 +101,9 @@ test("all default client profiles leave the optional advertising pack unreachabl
   for (const platform of ["macos", "iphone", "ipad", "android"]) {
     const path = `clients/sing-box/examples/sing-box-${platform}.json`;
     const singbox = JSON.parse(await readFile(new URL(path, root), "utf8"));
+    const expectedRuleIds = ["iphone", "ipad"].includes(platform)
+      ? MOBILE_RULE_SOURCE_IDS
+      : DEFAULT_RULE_SOURCE_IDS;
     for (const provider of singbox.route.rule_set) {
       assert.equal(provider.type, "remote", path);
       assert.equal(provider.format, "binary", path);
@@ -110,7 +114,7 @@ test("all default client profiles leave the optional advertising pack unreachabl
     }
     assert.deepEqual(
       singbox.route.rule_set.map(({ tag }) => tag.slice("rule-".length)),
-      DEFAULT_RULE_SOURCE_IDS,
+      expectedRuleIds,
       path,
     );
     assert.equal(singbox.route.rule_set.some((provider) => provider.format === "source"), false, path);

@@ -24,6 +24,8 @@
 
 所谓“故障转移”不再生成伪 fallback 组。sing-box 原生 `urltest` 是健康测速选择，不是有序请求重试。
 
+iPhone/iPad 为 NetworkExtension 低内存配置：不生成 URLTest、不持久化 DNS 缓存、日志级别为 `warn`，并只加载 14 个必要规则集；完整广告规则在这两个平台被拒绝。
+
 ## Sub-Store 参数
 
 四个平台共用同一套参数，只改变 `platform` 和 `ipv6Mode`：
@@ -35,8 +37,8 @@ output=config&type=collection&name=apple-proxy-singbox&subscriptionName=Apple-Pr
 | File | `platform` | 推荐 `ipv6Mode` |
 | --- | --- | --- |
 | sing-box-macos | `macos` | `ipv4-only` |
-| sing-box-iphone | `iphone` | `auto` |
-| sing-box-ipad | `ipad` | `auto` |
+| sing-box-iphone | `iphone` | `ipv4-only` |
+| sing-box-ipad | `ipad` | `ipv4-only` |
 | sing-box-android | `android` | `auto` |
 
 `edge` 每天使用官方 testing 最新发布版构建；`current` 用于保留经验证的生产快照。当前阶段不生成 OpenWrt 配置，避免把终端 TUN 配置误当透明网关配置。

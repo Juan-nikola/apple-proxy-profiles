@@ -21,7 +21,7 @@ sing-box check --config config.json
 
 ## iPhone/iPad 内存压力
 
-移动端只生成一个 `⚡ 全部自动` URLTest；地区组保留选择器，不额外并发测速。重新从 Sub-Store 预览并导入最新配置，确认 JSON 中只有一个 `"type": "urltest"`。
+Android 只生成一个 `⚡ 全部自动` URLTest。iPhone/iPad 不生成任何 `"type": "urltest"`，并使用 `ipv4-only`、`log.level=warn`、关闭 `experimental.cache_file.enabled` 和 `store_dns`。重新从 Sub-Store 预览并导入最新配置，确认 iOS JSON 的 `route.rule_set` 恰好有 14 项。
 
 ## IPv6 与 QUIC
 
