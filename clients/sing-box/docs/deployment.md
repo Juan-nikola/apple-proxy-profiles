@@ -36,7 +36,7 @@ output=config&type=collection&name=apple-proxy-singbox&subscriptionName=Apple-Pr
 
 默认 `nodeErrorMode=strict`。如果 preview 提示 `cannot render selected protocols`，应优先在 `apple-proxy-singbox` 组合中修正节点字段或移除未支持协议。只在迁移期可显式使用 `nodeErrorMode=compatible`；此时必须检查 `renderFailures`，因为输出中不会包含无法完整转换的节点。
 
-`🚀 节点选择` 采用两级结构：主组只包含 `⚡ 全部自动`、`🛟 全部故障转移` 和洲组（`🌏 亚太`、`🌍 欧洲`、`🌎 美洲`），具体节点按洲收进对应洲组。这样在 sing-box 图形客户端（SFA/SFM）里，先选洲、再选节点，而不是面对一长串平铺节点。
+`🚀 节点选择` 采用两级结构：具体节点按洲收进 `🌏 亚太`、`🌍 欧洲`、`🌎 美洲`。macOS、Android、OpenWrt 保留完整的全局/洲自动与故障转移层级；iPhone/iPad 受 Network Extension 内存上限约束，固定只运行一个 `⚡ 全部自动` URLTest，洲组用于手动选具体节点，规则下载也复用该自动组。这样仍保留“小火箭式”的自动选择和分组手选，同时避免启动时对同一节点重复测速。
 
 ## 3. current 与 edge
 

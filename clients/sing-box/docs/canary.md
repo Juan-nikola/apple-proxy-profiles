@@ -20,4 +20,4 @@
 - [Android 诊断配置](https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/examples/sing-box-android-diagnostic.json)
 - [OpenWrt 诊断配置](https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/examples/sing-box-openwrt-diagnostic.json)
 
-诊断配置可正常启动而默认配置仍暴涨，问题优先指向规则集加载或规则引擎；两者都暴涨，则优先检查 TUN、节点出站或客户端本身。
+诊断配置可正常启动而默认配置仍暴涨，问题优先指向规则集加载或规则引擎；两者都暴涨，则优先检查 TUN、节点出站或客户端本身。iPhone/iPad 的当前配置应只有一个 `⚡ 全部自动` URLTest；如果日志仍同时出现全局、洲级和规则下载多组并发测速，说明设备仍在使用旧配置，需要重新预览、刷新并重新导入。

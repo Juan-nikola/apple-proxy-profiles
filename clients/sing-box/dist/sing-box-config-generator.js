@@ -1570,8 +1570,14 @@ var SingBoxConfigBundle = (() => {
   var RULE_DOWNLOAD_GROUP = "\u{1F9ED} DNS \u4E0E\u89C4\u5219\u4E0B\u8F7D";
   var RULE_DOWNLOAD_FAILOVER_GROUP = "\u{1F9ED} \u89C4\u5219\u4E0B\u8F7D\u6545\u969C\u8F6C\u79FB";
   var FALLBACK_TOLERANCE_MS = 65535;
-  function targetName(value) {
-    return value === POLICY_TARGET.primaryProxy ? "\u26A1 \u5168\u90E8\u81EA\u52A8" : value;
+  var MOBILE_MEMORY_PLATFORMS = /* @__PURE__ */ new Set(["iphone", "ipad"]);
+  function isMobileMemoryConstrained(options) {
+    return MOBILE_MEMORY_PLATFORMS.has(options.platform);
+  }
+  function targetName(value, { compact = false } = {}) {
+    if (value === POLICY_TARGET.primaryProxy) return "\u26A1 \u5168\u90E8\u81EA\u52A8";
+    if (compact && value === "\u{1F6DF} \u5168\u90E8\u6545\u969C\u8F6C\u79FB") return "\u26A1 \u5168\u90E8\u81EA\u52A8";
+    return value;
   }
   function filterNodes(filter, nodes) {
     if (filter === null) return [];
@@ -1586,7 +1592,16 @@ var SingBoxConfigBundle = (() => {
   function duration(seconds) {
     return `${Number(seconds)}s`;
   }
-  function renderRuleDownloadGroups(inventory, ruleProbeUrl) {
+  function renderRuleDownloadGroups(inventory, ruleProbeUrl, { compact = false } = {}) {
+    if (compact) {
+      return [{
+        type: "selector",
+        tag: RULE_DOWNLOAD_GROUP,
+        outbounds: ["\u26A1 \u5168\u90E8\u81EA\u52A8", "DIRECT"],
+        default: "\u26A1 \u5168\u90E8\u81EA\u52A8",
+        interrupt_exist_connections: true
+      }];
+    }
     const nodeCandidates = filterNodes(NON_CHAINED_FILTER, inventory);
     const failover = {
       type: "urltest",
@@ -1611,13 +1626,9 @@ var SingBoxConfigBundle = (() => {
       failover
     ];
   }
-  function renderGroup(group, inventory) {
+  function renderGroup(group, inventory, { compact = false } = {}) {
     if (group.name === "\u{1F680} \u8282\u70B9\u9009\u62E9") {
-      const outbounds2 = [
-        "\u26A1 \u5168\u90E8\u81EA\u52A8",
-        "\u{1F6DF} \u5168\u90E8\u6545\u969C\u8F6C\u79FB",
-        ...group.candidates.map(targetName)
-      ].filter((item, index, all) => all.indexOf(item) === index);
+      const outbounds2 = group.candidates.map((candidate) => targetName(candidate, { compact })).filter((item, index, all) => all.indexOf(item) === index);
       return {
         type: "selector",
         tag: group.name,
@@ -1628,10 +1639,19 @@ var SingBoxConfigBundle = (() => {
     }
     const explicitCandidates = group.kind === "source" ? group.candidates.filter((candidate) => candidate !== "DIRECT") : group.candidates;
     const candidates = [
-      ...explicitCandidates.map(targetName),
+      ...compact && group.kind === "continent" ? [] : explicitCandidates.map((candidate) => targetName(candidate, { compact })),
       ...filterNodes(group.nodeFilter, inventory)
     ].filter((item, index, all) => all.indexOf(item) === index);
     const outbounds = candidates.length > 0 ? candidates : ["DIRECT"];
+    if (compact && group.kind === "chain" && (group.strategy === "auto-test" || group.strategy === "fallback")) {
+      return {
+        type: "selector",
+        tag: group.name,
+        outbounds,
+        default: outbounds[0],
+        interrupt_exist_connections: true
+      };
+    }
     if (group.strategy === "auto-test" || group.strategy === "fallback") {
       return {
         type: "urltest",
@@ -1650,22 +1670,25 @@ var SingBoxConfigBundle = (() => {
       interrupt_exist_connections: true
     };
     const defaultChoice = group.defaultChoice;
-    if (defaultChoice !== void 0) outbound.default = targetName(defaultChoice);
+    if (defaultChoice !== void 0) outbound.default = targetName(defaultChoice, { compact });
     return outbound;
   }
   function renderSingBoxGroups(options, nodes, { ruleProbeUrl = "https://www.gstatic.com/generate_204" } = {}) {
     const inventory = Array.isArray(nodes) ? nodes : [];
+    const compact = isMobileMemoryConstrained(options);
     const shared = buildPolicyGroups(options, inventory);
     const visible = [];
     const hidden = [];
     for (const group of shared) {
       if (group.name === RULE_DOWNLOAD_GROUP) {
-        const [selector, failover] = renderRuleDownloadGroups(inventory, ruleProbeUrl);
-        visible.push(selector);
-        hidden.push(failover);
+        const renderedDownloadGroups = renderRuleDownloadGroups(inventory, ruleProbeUrl, { compact });
+        visible.push(renderedDownloadGroups[0]);
+        hidden.push(...renderedDownloadGroups.slice(1));
         continue;
       }
-      const rendered = renderGroup(group, inventory);
+      if (compact && group.strategy === "fallback") continue;
+      if (compact && group.kind === "helper" && group.name !== "\u26A1 \u5168\u90E8\u81EA\u52A8") continue;
+      const rendered = renderGroup(group, inventory, { compact });
       (group.hidden === true ? hidden : visible).push(rendered);
     }
     return [...visible, ...hidden];

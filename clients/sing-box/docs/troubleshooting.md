@@ -2,6 +2,8 @@
 
 国内 App 偶发变慢时，先看 DNS 是否误走代理、`ChinaMax` 是否命中直连、自动测速组是否选中了高延迟节点，以及规则集是否下载成功。开关后恢复通常是缓存或测速状态重新初始化，并不代表根因消失。
 
+如果 iPhone/iPad 启动数秒后提示内存不足并关闭，同时日志出现 `service/oom-killer: memory pressure: critical`，先确认配置来自最新版生成器。iOS 的 Network Extension 内存额度很小；旧配置会让“全部自动、全部故障转移、洲自动、洲故障转移、规则下载故障转移”在启动时重复探测同一批节点。新版 iPhone/iPad 配置固定只保留一个 `⚡ 全部自动` URLTest；洲组保留具体节点供手动选择，`🧭 DNS 与规则下载` 复用全局自动组并保留 `DIRECT` 手动备用。`autoGroupMode=full` 也不会绕过这一移动端保护。重新预览并刷新后，JSON 中 `"type": "urltest"` 应只出现一次。
+
 如果日志大量出现 `dial tcp [2408:...]:443: connect: no route to host`（通常是抖音等使用 IPv6 CDN 的国内 App），说明当前 Wi‑Fi/蜂窝没有 IPv6 路由但 `ipv6Mode=auto` 仍在解析 AAAA。把对应 `sing-box-*` 任务的 `ipv6Mode` 改为 `ipv4-only` 并重新预览/刷新即可；网络具备 IPv6 时再改回 `auto`。
 
 `quicMode=proxy-block` 会在 sing-box 路由中阻止“代理路径”上的 QUIC（UDP 443）：显式海外业务（YouTube、Netflix 等）和未命中直连规则的未知流量先被 REJECT，客户端回落到 TCP；国内直连域名、`.cn` 和中国 IP 的 QUIC 保持允许。`all-block` 在本地规则之后阻止全部应用 QUIC；`allow` 不添加任何 QUIC 规则。
@@ -14,7 +16,7 @@
 
 如果出现 `domain_resolver` 或 `default_domain_resolver` 缺失，说明配置仍是旧版本缓存。sing-box 1.14 对包含域名服务器、规则集或代理节点的配置要求默认域名解析器；重新预览并刷新对应的 `sing-box-*` Config File，使 JSON 中出现 `route.default_domain_resolver: "dns-direct"`。
 
-如果规则集报 `dial ... connection refused`、`context deadline exceeded` 或 TLS/握手错误，说明规则下载候选节点不可用。当前 sing-box 生成器会创建专用的 `🧭 规则下载故障转移` URLTest 组，直接探测 `Hijacking.srs` 规则文件，并把 `🧭 DNS 与规则下载` 默认指向该组；失效节点会被跳过，另外保留 `🚀 节点选择`、`DIRECT` 作为手动备用。sing-box 没有独立的有序 fallback 出站，生成器通过高 tolerance 保留第一个健康候选，只在它失效时切换。重新预览并刷新 File 任务，确认 JSON 同时包含该 URLTest 组和 selector 的 `"default": "🧭 规则下载故障转移"`。
+如果规则集报 `dial ... connection refused`、`context deadline exceeded` 或 TLS/握手错误，说明规则下载所用路径不可用。macOS、Android 和 OpenWrt 会创建专用的 `🧭 规则下载故障转移` URLTest，直接探测 `Hijacking.srs`，另外保留 `🚀 节点选择`、`DIRECT` 作为手动备用。sing-box 没有独立的有序 fallback 出站，生成器通过高 tolerance 保留第一个健康候选，只在它失效时切换。iPhone/iPad 为避免启动 OOM，不创建第二套全节点探测，而让 `🧭 DNS 与规则下载` 默认复用 `⚡ 全部自动`，并保留 `DIRECT`。
 
 如果配置启动时卡在 DNS、节点域名解析或规则下载，检查 `dns-direct`。非系统 DNS 必须显式包含 `"detour": "DIRECT"`；否则国内 DNS 请求可能进入默认代理，而代理节点域名又需要同一 DNS，形成启动循环。
 

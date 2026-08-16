@@ -116,6 +116,26 @@ test("uses a dedicated health probe for rule downloads", () => {
   assert.equal(ruleDownload?.default, "🧭 规则下载故障转移");
 });
 
+test("limits iPhone and iPad startup to one URLTest graph", () => {
+  for (const platform of ["iphone", "ipad"]) {
+    const config = render({ platform, autoGroupMode: "full" });
+    const urlTests = config.outbounds.filter((outbound) => outbound.type === "urltest");
+    assert.deepEqual(urlTests.map(({ tag }) => tag), ["⚡ 全部自动"], platform);
+
+    const primary = config.outbounds.find(({ tag }) => tag === "🚀 节点选择");
+    assert.deepEqual(primary?.outbounds, ["⚡ 全部自动", "🌏 亚太"], platform);
+    const continent = config.outbounds.find(({ tag }) => tag === "🌏 亚太");
+    assert.deepEqual(continent?.outbounds, [node.name], platform);
+
+    const ruleDownload = config.outbounds.find(({ tag }) => tag === "🧭 DNS 与规则下载");
+    assert.deepEqual(ruleDownload?.outbounds, ["⚡ 全部自动", "DIRECT"], platform);
+    assert.equal(ruleDownload?.default, "⚡ 全部自动", platform);
+    assert.equal(config.outbounds.some(({ tag }) => tag === "🧭 规则下载故障转移"), false, platform);
+    assert.equal(config.outbounds.some(({ tag }) => tag === "🛟 全部故障转移"), false, platform);
+    assert.deepEqual(validateSingBoxConfig(config), { valid: true, errors: [] }, platform);
+  }
+});
+
 test("keeps the primary selector compact with continent-level entries only", () => {
   const config = render();
   const primary = config.outbounds.find((outbound) => outbound.tag === "🚀 节点选择");
@@ -365,7 +385,7 @@ test("applies quicMode allow, proxy-block, and all-block to route rules", () => 
   assert.deepEqual(validateSingBoxConfig(allBlock), { valid: true, errors: [] });
 });
 
-test("puts visible groups first, hidden helper groups last, and node outbounds at the end", () => {
+test("puts mobile visible groups first, its single URLTest last, and node outbounds at the end", () => {
   const nodes = [
     {
       name: "🇯🇵 东京节点",
@@ -424,22 +444,12 @@ test("puts visible groups first, hidden helper groups last, and node outbounds a
     "🧱 常见广告",
     "🕵️ 严格跟踪",
   ];
-  const expectedHidden = [
-    "⚡ 全部自动",
-    "🛟 全部故障转移",
-    "⚡ 亚太自动",
-    "🛟 亚太故障转移",
-    "⚡ 欧洲自动",
-    "🛟 欧洲故障转移",
-    "⚡ 美洲自动",
-    "🛟 美洲故障转移",
-    "🧭 规则下载故障转移",
-  ];
+  const expectedHidden = ["⚡ 全部自动"];
   const expectedOrder = ["DIRECT", "REJECT", ...expectedVisible, ...expectedHidden];
   const head = tags.slice(0, expectedOrder.length);
   assert.deepEqual(head, expectedOrder, "visible groups must precede hidden helper groups");
   const firstNodeIndex = tags.indexOf("🇯🇵 东京节点");
-  const lastHiddenIndex = tags.indexOf("🧭 规则下载故障转移");
+  const lastHiddenIndex = tags.indexOf("⚡ 全部自动");
   assert.ok(firstNodeIndex > lastHiddenIndex, "node outbounds must be emitted after every group");
   for (const tag of ["🤖 AI 亚太", "🤖 AI 欧洲", "🤖 AI 美洲"]) {
     assert.equal(tags.includes(tag), false, tag);
