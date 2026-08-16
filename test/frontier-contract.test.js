@@ -23,7 +23,7 @@ test("registers Surge and sing-box as distinct clients with explicit protocol su
 test("frontier manifest records platform-specific upstream and rejects secret-shaped fields", () => {
   const input = {
     client: CLIENT.singbox,
-    platform: "openwrt",
+    platform: "macos",
     channel: "edge",
     upstream: {
       branch: "testing",
@@ -36,7 +36,7 @@ test("frontier manifest records platform-specific upstream and rejects secret-sh
     status: "validated",
   };
   const manifest = createFrontierManifest(input);
-  assert.equal(manifest.platformKey, "singbox/openwrt");
+  assert.equal(manifest.platformKey, "singbox/macos");
   assert.equal(validateFrontierManifest(manifest), true);
   assert.equal(Object.hasOwn(manifest, "password"), false);
   assert.throws(

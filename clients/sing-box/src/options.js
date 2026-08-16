@@ -17,7 +17,7 @@ const DEFAULTS = Object.freeze({
   adblockMode: "off",
   nodeErrorMode: "strict",
 });
-const PLATFORMS = new Set(["macos", "iphone", "ipad", "android", "openwrt"]);
+const PLATFORMS = new Set(["macos", "iphone", "ipad", "android"]);
 const CHANNELS = new Set(["edge", "current"]);
 const PROFILE_MODES = new Set(["light", "diagnostic"]);
 const ADBLOCK_MODES = new Set(["off", "full"]);
@@ -79,7 +79,7 @@ export function parseSingBoxOptions(raw) {
     adblockMode,
     nodeErrorMode,
   };
-  platformPolicyPreset(platform === "openwrt" ? "macos" : platform);
+  platformPolicyPreset(platform);
   Object.freeze(options);
   PARSED.add(options);
   return options;

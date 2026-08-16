@@ -8,7 +8,8 @@
       {
         "type": "udp",
         "tag": "dns-direct",
-        "server": "223.5.5.5"
+        "server": "223.5.5.5",
+        "detour": "DIRECT"
       },
       {
         "type": "https",
@@ -20,34 +21,79 @@
           "enabled": true,
           "server_name": "cloudflare-dns.com"
         },
-        "detour": "🚀 节点选择"
+        "detour": "⚡ 全部自动"
       }
     ],
     "rules": [
       {
-        "rule_set": [
-          "rule-OpenAI",
-          "rule-Claude",
-          "rule-Gemini",
-          "rule-Copilot",
-          "rule-GitHub",
-          "rule-YouTube",
-          "rule-Netflix",
-          "rule-Disney",
-          "rule-Spotify",
-          "rule-GlobalMedia",
-          "rule-Telegram",
-          "rule-Facebook",
-          "rule-Instagram",
-          "rule-Twitter",
-          "rule-TikTok",
-          "rule-OverseasGame"
+        "domain_suffix": [
+          "local",
+          "lan",
+          "home.arpa"
         ],
-        "action": "evaluate",
+        "action": "route",
+        "server": "dns-direct"
+      },
+      {
+        "domain_suffix": [
+          "google.com",
+          "googleapis.com",
+          "googleusercontent.com",
+          "gstatic.com",
+          "ggpht.com",
+          "gvt1.com",
+          "googlevideo.com",
+          "youtube.com",
+          "youtube-nocookie.com",
+          "youtu.be",
+          "ytimg.com"
+        ],
+        "action": "route",
         "server": "dns-proxy"
       },
       {
-        "match_response": true,
+        "domain_suffix": [
+          "perplexity.ai"
+        ],
+        "action": "route",
+        "server": "dns-proxy"
+      },
+      {
+        "domain_suffix": [
+          "pplx.ai"
+        ],
+        "action": "route",
+        "server": "dns-proxy"
+      },
+      {
+        "domain_suffix": [
+          "x.ai"
+        ],
+        "action": "route",
+        "server": "dns-proxy"
+      },
+      {
+        "domain_suffix": [
+          "grok.com"
+        ],
+        "action": "route",
+        "server": "dns-proxy"
+      },
+      {
+        "domain_suffix": [
+          "poe.com"
+        ],
+        "action": "route",
+        "server": "dns-proxy"
+      },
+      {
+        "domain_suffix": [
+          "poecdn.net"
+        ],
+        "action": "route",
+        "server": "dns-proxy"
+      },
+      {
         "rule_set": [
           "rule-OpenAI",
           "rule-Claude",
@@ -66,14 +112,55 @@
           "rule-TikTok",
           "rule-OverseasGame"
         ],
+        "action": "route",
+        "server": "dns-proxy"
+      },
+      {
+        "rule_set": [
+          "rule-DomesticCore",
+          "rule-DomesticGame",
+          "rule-SteamCN",
+          "rule-BiliBili",
+          "rule-ByteDance",
+          "rule-XiaoHongShu",
+          "rule-Weibo",
+          "rule-Apple",
+          "rule-Microsoft",
+          "rule-Download",
+          "rule-PrivateTracker",
+          "rule-ChinaTLD"
+        ],
+        "action": "route",
+        "server": "dns-direct"
+      },
+      {
+        "action": "evaluate",
+        "server": "dns-direct",
+        "tag": "direct-answer"
+      },
+      {
+        "rule_set": [
+          "rule-ChinaIP"
+        ],
+        "match_response": "direct-answer",
+        "action": "respond"
+      },
+      {
+        "action": "evaluate",
+        "server": "dns-proxy",
+        "tag": "proxy-answer"
+      },
+      {
+        "match_response": "proxy-answer",
+        "ip_accept_any": true,
         "action": "respond"
       },
       {
         "action": "route",
-        "server": "dns-direct"
+        "server": "dns-proxy"
       }
     ],
-    "final": "dns-direct",
+    "final": "dns-proxy",
     "strategy": "prefer_ipv4",
     "cache_capacity": 4096
   },
@@ -129,22 +216,33 @@
       "tag": "REJECT"
     },
     {
+      "type": "urltest",
+      "tag": "⚡ 全部自动",
+      "outbounds": [
+        "示例 · Tokyo",
+        "示例 · Frankfurt"
+      ],
+      "url": "https://www.gstatic.com/generate_204",
+      "interval": "1800s",
+      "tolerance": 150,
+      "interrupt_exist_connections": true
+    },
+    {
       "type": "selector",
       "tag": "🚀 节点选择",
       "outbounds": [
         "⚡ 全部自动",
-        "🛟 全部故障转移",
         "🌏 亚太",
         "🌍 欧洲"
       ],
+      "default": "⚡ 全部自动",
       "interrupt_exist_connections": true
     },
     {
       "type": "selector",
       "tag": "🌏 亚太",
       "outbounds": [
-        "⚡ 亚太自动",
-        "🛟 亚太故障转移"
+        "DIRECT"
       ],
       "interrupt_exist_connections": true
     },
@@ -152,8 +250,7 @@
       "type": "selector",
       "tag": "🌍 欧洲",
       "outbounds": [
-        "⚡ 欧洲自动",
-        "🛟 欧洲故障转移"
+        "DIRECT"
       ],
       "interrupt_exist_connections": true
     },
@@ -169,6 +266,7 @@
       "type": "selector",
       "tag": "🤖 AI 专用",
       "outbounds": [
+        "⚡ 全部自动",
         "示例 · Tokyo",
         "示例 · Frankfurt"
       ],
@@ -180,7 +278,6 @@
       "outbounds": [
         "🚀 节点选择",
         "⚡ 全部自动",
-        "🛟 全部故障转移",
         "🌏 亚太",
         "🌍 欧洲",
         "DIRECT",
@@ -196,7 +293,6 @@
       "outbounds": [
         "🚀 节点选择",
         "⚡ 全部自动",
-        "🛟 全部故障转移",
         "🌏 亚太",
         "🌍 欧洲",
         "DIRECT",
@@ -212,7 +308,6 @@
       "outbounds": [
         "🚀 节点选择",
         "⚡ 全部自动",
-        "🛟 全部故障转移",
         "🌏 亚太",
         "🌍 欧洲",
         "DIRECT",
@@ -228,7 +323,6 @@
       "outbounds": [
         "🚀 节点选择",
         "⚡ 全部自动",
-        "🛟 全部故障转移",
         "🌏 亚太",
         "🌍 欧洲",
         "DIRECT",
@@ -245,7 +339,6 @@
         "DIRECT",
         "🚀 节点选择",
         "⚡ 全部自动",
-        "🛟 全部故障转移",
         "🌏 亚太",
         "🌍 欧洲",
         "示例 · Tokyo",
@@ -261,7 +354,6 @@
         "DIRECT",
         "🚀 节点选择",
         "⚡ 全部自动",
-        "🛟 全部故障转移",
         "🌏 亚太",
         "🌍 欧洲",
         "示例 · Tokyo",
@@ -277,7 +369,6 @@
         "DIRECT",
         "🚀 节点选择",
         "⚡ 全部自动",
-        "🛟 全部故障转移",
         "🌏 亚太",
         "🌍 欧洲",
         "示例 · Tokyo",
@@ -292,7 +383,6 @@
       "outbounds": [
         "🚀 节点选择",
         "⚡ 全部自动",
-        "🛟 全部故障转移",
         "🌏 亚太",
         "🌍 欧洲",
         "DIRECT",
@@ -322,11 +412,10 @@
       "type": "selector",
       "tag": "🧭 DNS 与规则下载",
       "outbounds": [
-        "🧭 规则下载故障转移",
-        "🚀 节点选择",
+        "⚡ 全部自动",
         "DIRECT"
       ],
-      "default": "🧭 规则下载故障转移",
+      "default": "⚡ 全部自动",
       "interrupt_exist_connections": true
     },
     {
@@ -354,87 +443,6 @@
         "DIRECT",
         "REJECT"
       ],
-      "interrupt_exist_connections": true
-    },
-    {
-      "type": "urltest",
-      "tag": "⚡ 全部自动",
-      "outbounds": [
-        "示例 · Tokyo",
-        "示例 · Frankfurt"
-      ],
-      "url": "https://www.gstatic.com/generate_204",
-      "interval": "1800s",
-      "tolerance": 150,
-      "interrupt_exist_connections": true
-    },
-    {
-      "type": "urltest",
-      "tag": "🛟 全部故障转移",
-      "outbounds": [
-        "示例 · Tokyo",
-        "示例 · Frankfurt"
-      ],
-      "url": "https://www.gstatic.com/generate_204",
-      "interval": "1800s",
-      "tolerance": 150,
-      "interrupt_exist_connections": true
-    },
-    {
-      "type": "urltest",
-      "tag": "⚡ 亚太自动",
-      "outbounds": [
-        "DIRECT"
-      ],
-      "url": "https://www.gstatic.com/generate_204",
-      "interval": "1800s",
-      "tolerance": 150,
-      "interrupt_exist_connections": true
-    },
-    {
-      "type": "urltest",
-      "tag": "🛟 亚太故障转移",
-      "outbounds": [
-        "DIRECT"
-      ],
-      "url": "https://www.gstatic.com/generate_204",
-      "interval": "1800s",
-      "tolerance": 150,
-      "interrupt_exist_connections": true
-    },
-    {
-      "type": "urltest",
-      "tag": "⚡ 欧洲自动",
-      "outbounds": [
-        "DIRECT"
-      ],
-      "url": "https://www.gstatic.com/generate_204",
-      "interval": "1800s",
-      "tolerance": 150,
-      "interrupt_exist_connections": true
-    },
-    {
-      "type": "urltest",
-      "tag": "🛟 欧洲故障转移",
-      "outbounds": [
-        "DIRECT"
-      ],
-      "url": "https://www.gstatic.com/generate_204",
-      "interval": "1800s",
-      "tolerance": 150,
-      "interrupt_exist_connections": true
-    },
-    {
-      "type": "urltest",
-      "tag": "🧭 规则下载故障转移",
-      "outbounds": [
-        "示例 · Tokyo",
-        "示例 · Frankfurt",
-        "DIRECT"
-      ],
-      "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/rule-sets/Hijacking.srs",
-      "interval": "30s",
-      "tolerance": 0,
       "interrupt_exist_connections": true
     },
     {
@@ -766,45 +774,53 @@
       },
       {
         "domain_suffix": [
-          "perplexity.ai"
+          "perplexity.ai",
+          "pplx.ai",
+          "x.ai",
+          "grok.com",
+          "poe.com",
+          "poecdn.net"
         ],
-        "action": "route",
-        "outbound": "🤖 AI 专用"
+        "network": "udp",
+        "port": 443,
+        "action": "reject",
+        "method": "drop"
       },
       {
         "domain_suffix": [
-          "pplx.ai"
-        ],
-        "action": "route",
-        "outbound": "🤖 AI 专用"
-      },
-      {
-        "domain_suffix": [
-          "x.ai"
-        ],
-        "action": "route",
-        "outbound": "🤖 AI 专用"
-      },
-      {
-        "domain_suffix": [
-          "grok.com"
-        ],
-        "action": "route",
-        "outbound": "🤖 AI 专用"
-      },
-      {
-        "domain_suffix": [
-          "poe.com"
-        ],
-        "action": "route",
-        "outbound": "🤖 AI 专用"
-      },
-      {
-        "domain_suffix": [
+          "perplexity.ai",
+          "pplx.ai",
+          "x.ai",
+          "grok.com",
+          "poe.com",
           "poecdn.net"
         ],
         "action": "route",
         "outbound": "🤖 AI 专用"
+      },
+      {
+        "network": "udp",
+        "port": 443,
+        "rule_set": [
+          "rule-OpenAI",
+          "rule-Claude",
+          "rule-Gemini",
+          "rule-Copilot",
+          "rule-GitHub",
+          "rule-YouTube",
+          "rule-Netflix",
+          "rule-Disney",
+          "rule-Spotify",
+          "rule-GlobalMedia",
+          "rule-Telegram",
+          "rule-Facebook",
+          "rule-Instagram",
+          "rule-Twitter",
+          "rule-TikTok",
+          "rule-OverseasGame"
+        ],
+        "action": "reject",
+        "method": "default"
       },
       {
         "rule_set": [
@@ -856,27 +872,11 @@
         "outbound": "🇨🇳 国内平台"
       },
       {
-        "network": "udp",
-        "port": 443,
-        "action": "reject",
-        "rule_set": [
-          "rule-OpenAI"
-        ]
-      },
-      {
         "rule_set": [
           "rule-OpenAI"
         ],
         "action": "route",
         "outbound": "🤖 AI 专用"
-      },
-      {
-        "network": "udp",
-        "port": 443,
-        "action": "reject",
-        "rule_set": [
-          "rule-Claude"
-        ]
       },
       {
         "rule_set": [
@@ -886,14 +886,6 @@
         "outbound": "🤖 AI 专用"
       },
       {
-        "network": "udp",
-        "port": 443,
-        "action": "reject",
-        "rule_set": [
-          "rule-Gemini"
-        ]
-      },
-      {
         "rule_set": [
           "rule-Gemini"
         ],
@@ -901,27 +893,11 @@
         "outbound": "🤖 AI 专用"
       },
       {
-        "network": "udp",
-        "port": 443,
-        "action": "reject",
-        "rule_set": [
-          "rule-Copilot"
-        ]
-      },
-      {
         "rule_set": [
           "rule-Copilot"
         ],
         "action": "route",
         "outbound": "🤖 AI 专用"
-      },
-      {
-        "network": "udp",
-        "port": 443,
-        "action": "reject",
-        "rule_set": [
-          "rule-GitHub"
-        ]
       },
       {
         "rule_set": [
@@ -931,14 +907,6 @@
         "outbound": "🐙 GitHub"
       },
       {
-        "network": "udp",
-        "port": 443,
-        "action": "reject",
-        "rule_set": [
-          "rule-YouTube"
-        ]
-      },
-      {
         "rule_set": [
           "rule-YouTube"
         ],
@@ -946,27 +914,11 @@
         "outbound": "📺 YouTube"
       },
       {
-        "network": "udp",
-        "port": 443,
-        "action": "reject",
-        "rule_set": [
-          "rule-Netflix"
-        ]
-      },
-      {
         "rule_set": [
           "rule-Netflix"
         ],
         "action": "route",
         "outbound": "🎬 海外流媒体"
-      },
-      {
-        "network": "udp",
-        "port": 443,
-        "action": "reject",
-        "rule_set": [
-          "rule-Disney"
-        ]
       },
       {
         "rule_set": [
@@ -976,27 +928,11 @@
         "outbound": "🎬 海外流媒体"
       },
       {
-        "network": "udp",
-        "port": 443,
-        "action": "reject",
-        "rule_set": [
-          "rule-Spotify"
-        ]
-      },
-      {
         "rule_set": [
           "rule-Spotify"
         ],
         "action": "route",
         "outbound": "🎬 海外流媒体"
-      },
-      {
-        "network": "udp",
-        "port": 443,
-        "action": "reject",
-        "rule_set": [
-          "rule-GlobalMedia"
-        ]
       },
       {
         "rule_set": [
@@ -1006,27 +942,11 @@
         "outbound": "🎬 海外流媒体"
       },
       {
-        "network": "udp",
-        "port": 443,
-        "action": "reject",
-        "rule_set": [
-          "rule-Telegram"
-        ]
-      },
-      {
         "rule_set": [
           "rule-Telegram"
         ],
         "action": "route",
         "outbound": "💬 海外社交"
-      },
-      {
-        "network": "udp",
-        "port": 443,
-        "action": "reject",
-        "rule_set": [
-          "rule-Facebook"
-        ]
       },
       {
         "rule_set": [
@@ -1036,14 +956,6 @@
         "outbound": "💬 海外社交"
       },
       {
-        "network": "udp",
-        "port": 443,
-        "action": "reject",
-        "rule_set": [
-          "rule-Instagram"
-        ]
-      },
-      {
         "rule_set": [
           "rule-Instagram"
         ],
@@ -1051,27 +963,11 @@
         "outbound": "💬 海外社交"
       },
       {
-        "network": "udp",
-        "port": 443,
-        "action": "reject",
-        "rule_set": [
-          "rule-Twitter"
-        ]
-      },
-      {
         "rule_set": [
           "rule-Twitter"
         ],
         "action": "route",
         "outbound": "💬 海外社交"
-      },
-      {
-        "network": "udp",
-        "port": 443,
-        "action": "reject",
-        "rule_set": [
-          "rule-TikTok"
-        ]
       },
       {
         "rule_set": [
@@ -1109,12 +1005,41 @@
         "outbound": "⬇️ 下载/P2P"
       },
       {
+        "domain_suffix": [
+          "google.com",
+          "googleapis.com",
+          "googleusercontent.com",
+          "gstatic.com",
+          "ggpht.com",
+          "gvt1.com",
+          "googlevideo.com",
+          "youtube.com",
+          "youtube-nocookie.com",
+          "youtu.be",
+          "ytimg.com"
+        ],
+        "action": "reject",
+        "outbound": "🚀 节点选择",
         "network": "udp",
         "port": 443,
-        "action": "reject",
-        "rule_set": [
-          "rule-OverseasGame"
-        ]
+        "method": "drop"
+      },
+      {
+        "domain_suffix": [
+          "google.com",
+          "googleapis.com",
+          "googleusercontent.com",
+          "gstatic.com",
+          "ggpht.com",
+          "gvt1.com",
+          "googlevideo.com",
+          "youtube.com",
+          "youtube-nocookie.com",
+          "youtu.be",
+          "ytimg.com"
+        ],
+        "action": "route",
+        "outbound": "🚀 节点选择"
       },
       {
         "rule_set": [
@@ -1132,7 +1057,7 @@
       },
       {
         "action": "resolve",
-        "server": "dns-direct"
+        "strategy": "prefer_ipv4"
       },
       {
         "rule_set": [
@@ -1144,7 +1069,8 @@
       {
         "network": "udp",
         "port": 443,
-        "action": "reject"
+        "action": "reject",
+        "method": "drop"
       }
     ],
     "final": "🚀 节点选择"

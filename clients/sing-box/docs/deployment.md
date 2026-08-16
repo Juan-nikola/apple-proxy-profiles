@@ -1,28 +1,22 @@
 # sing-box 部署
 
-sing-box 新任务只读取 `apple-proxy-singbox`。先按 [Sub-Store 客户端节点池指南](../../../docs/substore-client-pools.md) 完成筛选、preview 和回滚准备；已有 `apple-proxy-sources` collection、tasks 和旧 URL 保留作兼容/回滚。
+sing-box 读取独立的 Sub-Store 组合 `apple-proxy-singbox`。组合中的节点由你维护；默认严格模式会保留所有可完整转换的节点，并对无效输入、未知字段或不支持的传输组合 fail closed。组合迁移和回滚见 [Sub-Store 客户端节点池指南](../../../docs/substore-client-pools.md)。
 
-本手册覆盖官方 sing-box macOS、iPhone、iPad、Android 和 OpenWrt 软路由。五个平台共用节点组合，但 Apple/Android 是设备 TUN，OpenWrt 是透明网关，不能互换配置。
+## Sub-Store File
 
-## 1. 创建私密组合
-
-1. 在 Sub-Store 新建组合 `apple-proxy-singbox`。
-2. 加入已有来源 `snell` 与 `vlesshy2`，预览节点数必须大于 0。
-3. 记下节点订阅的显示名，例如 `Apple-Proxy-Nodes`。后续 `subscriptionName` 必须与这个显示名完全一致；它不是组合名，也不是公开占位 URL。
-
-## 2. 创建五个 File
-
-每个 File 添加一条启用的“脚本操作”，选择远程链接：
+脚本地址：
 
 ```text
-https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/scripts/sing-box-config-generator.js
+https://juan-nikola.github.io/apple-proxy-profiles/edge/sing-box/scripts/sing-box-config-generator.js
 ```
 
-复制公共参数后逐项填写；`platform` 是每个任务的唯一平台差异，macOS 明确使用 `ipv4-only`，移动端和 OpenWrt 使用 `auto`。稳定版公共参数如下：
+公共参数：
 
 ```text
-output=config&type=collection&name=apple-proxy-singbox&subscriptionName=Apple-Proxy-Nodes&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&autoGroupMode=auto&clientChain=off&nodeErrorMode=strict&channel=current
+output=config&type=collection&name=apple-proxy-singbox&subscriptionName=Apple-Proxy-Nodes&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&autoGroupMode=auto&clientChain=off&nodeErrorMode=strict&channel=edge
 ```
+
+`subscriptionName` 必须是节点 File 在客户端显示的名称。不要把私密节点 URL、密码、UUID 或 Sub-Store API 放进公开脚本参数。
 
 | File | `platform` | `ipv6Mode` |
 | --- | --- | --- |
@@ -30,44 +24,33 @@ output=config&type=collection&name=apple-proxy-singbox&subscriptionName=Apple-Pr
 | `sing-box-iphone` | `iphone` | `auto` |
 | `sing-box-ipad` | `ipad` | `auto` |
 | `sing-box-android` | `android` | `auto` |
-| `sing-box-openwrt` | `openwrt` | `auto` |
 
-预览时 JSON 必须能解析，并包含 `dns`、`inbounds`、`outbounds`、`route`；节点不为空。若只看到占位内容，先确认脚本启用/预览开关、组合非空、`name` 和 `subscriptionName` 没有混用。
+预览必须是合法 JSON，并包含 `dns`、`inbounds`、`outbounds`、`route`。如果 `strict` 失败，查看 Sub-Store 日志中的协议和字段错误，不要改成兼容模式来掩盖节点丢失。
 
-默认 `nodeErrorMode=strict`。如果 preview 提示 `cannot render selected protocols`，应优先在 `apple-proxy-singbox` 组合中修正节点字段或移除未支持协议。只在迁移期可显式使用 `nodeErrorMode=compatible`；此时必须检查 `renderFailures`，因为输出中不会包含无法完整转换的节点。
+## 分流验收
 
-`🚀 节点选择` 采用两级结构：具体节点按洲收进 `🌏 亚太`、`🌍 欧洲`、`🌎 美洲`。macOS、Android、OpenWrt 保留完整的全局/洲自动与故障转移层级；iPhone/iPad 受 Network Extension 内存上限约束，固定只运行一个 `⚡ 全部自动` URLTest，洲组用于手动选具体节点，规则下载也复用该自动组。这样仍保留“小火箭式”的自动选择和分组手选，同时避免启动时对同一节点重复测速。
+每个平台至少测试：
 
-## 3. current 与 edge
+- `baidu.com`、`bilibili.com` 和局域网地址直连。
+- `google.com`、`youtube.com`、GitHub 和 AI 服务走相应业务组。
+- 未配置但解析到中国 IP 的域名直连。
+- 未配置且解析到非中国 IP 的域名走 `🚀 节点选择`。
+- 代理节点切换后，海外服务的新连接使用新节点。
+- 关闭代理后系统网络恢复。
 
-`current` 是稳定发布入口；`edge` 使用 testing 分支每日构建，可能出现字段、内核行为或规则兼容性变化。测试时同时做两处修改：
+未知域名使用 DNS response matching 和 `ChinaIP` rule-set 自动分类，但不承诺对已经失败的请求进行跨出口重放。被墙的中国域名应加入自定义 proxy 规则。
 
-1. 远程脚本 URL 中 `current` 改为 `edge`。
-2. Arguments 中 `channel=current` 改为 `channel=edge`。
+## edge 与 current
 
-先只在 Mac 预览和导入，确认后再 Android、iPhone、iPad，最后在 OpenWrt 测试 VLAN。出错时先回到 `current`，保留失败的 JSON、平台、日期和 sing-box 提交号用于排障。
+`edge` 在 GitHub Actions 中解析官方 sing-box testing 最新 release，安装官方校验过的 core，重新编译 `.srs`、生成四个平台配置并执行 `sing-box check`。`current` 是可回滚的已发布快照；不要把 edge 直接用于全部设备，除非你接受 testing 核心的字段变更风险。
 
-## 4. 导入顺序与平台差异
+## 代码职责
 
-1. macOS：先保留旧配置，导入 `sing-box-macos`，验证 DNS、国内 App、国际站点、UDP、IPv4/IPv6 和节点切换。
-2. Android：导入 `sing-box-android`，确认系统 VPN 权限、TUN、后台运行和电池策略。
-3. iPhone、iPad：依次导入对应 File，确认按需连接、系统 VPN 权限、局域网访问和切换节点。
-4. OpenWrt：只把 `sing-box-openwrt` 放到测试 VLAN，确认网关自身和 LAN 客户端都能回滚后再接入主 LAN。
+- `src/render-dns.js`：国内 DNS、代理 DoH、未知域名 response matching。
+- `src/render-rules.js`：rule-set、GeoIP/ChinaIP 兜底和 QUIC 策略。
+- `src/render-groups.js`：Egern 风格策略组到 sing-box selector/urltest 的映射。
+- `src/render-node.js`：节点协议投影；WireGuard 使用 endpoint，不再生成已移除的 outbound。
+- `src/render-platform.js`：Apple/Android TUN 差异。
+- `scripts/compile-rules.mjs`：只接受官方 core 生成的 `.srs`。
 
-所有设备保留上一份可用配置。国内 App 通过“开关一下”恢复时，先重新生成/刷新配置并检查 DNS、规则命中与测速状态，不把反复开关当作修复。
-
-## 5. 文件职责与构建
-
-- `clients/sing-box/src/options.js`：Arguments 白名单、平台和 `channel` 解析；可修改但必须更新测试。
-- `clients/sing-box/src/render-config.js`、`render-platform.js`：JSON 根配置、TUN、OpenWrt 透明网关字段；可修改。
-- `clients/sing-box/src/render-node.js`、`render-rules.js`：节点和规则格式转换；可修改。
-- `clients/sing-box/test/`、`examples/`：测试和 `example.invalid` 结构样例；不含真实节点。
-- `clients/sing-box/dist/`、`public/current/sing-box/`、`public/edge/sing-box/`：生成产物，只读。
-
-```bash
-npm --workspace @apple-proxy-profiles/sing-box test
-npm --workspace @apple-proxy-profiles/sing-box run build
-npm --workspace @apple-proxy-profiles/sing-box run check:secrets
-```
-
-`.srs` 规则集必须由官方 sing-box core 编译，不能使用任意第三方转换器。根目录的 `clients/sing-box/scripts/compile-rules.mjs` 会检查 core 生成的文件确实为非空二进制，并记录 SHA-256。
+OpenWrt 透明网关暂不属于本次生成器目标，后续必须在明确 LAN、IPv6、fw4/nftables 和回环要求后单独实现。

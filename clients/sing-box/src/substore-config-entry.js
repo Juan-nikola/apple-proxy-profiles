@@ -2,7 +2,7 @@ import { normalizeNodes } from "../../../shared/nodes/normalize-nodes.js";
 import { assertRenderableNodes, partitionRenderableNodes } from "../../../shared/nodes/renderability.js";
 import { parseSingBoxOptions } from "./options.js";
 import { renderSingBoxConfig } from "./render-config.js";
-import { renderSingBoxOutbound, sanitizeSingBoxNode } from "./render-node.js";
+import { renderSingBoxNode } from "./render-node.js";
 
 export const PUBLIC_RULE_ROOT = "https://juan-nikola.github.io/apple-proxy-profiles";
 
@@ -35,19 +35,25 @@ export async function operator(input, targetPlatform, context = {}) {
   });
   if (!Array.isArray(rawNodes) || rawNodes.length === 0) throw new Error("produceArtifact must return a non-empty node array");
   const normalized = normalizeNodes(rawNodes, { clientChain: options.clientChain });
+  const invalidInputCount = Object.entries(normalized.diagnostics.excluded)
+    .filter(([reason]) => reason !== "exact-duplicate")
+    .reduce((total, [, count]) => total + count, 0);
+  if (options.nodeErrorMode === "strict" && invalidInputCount > 0) {
+    throw new Error(`sing-box strict node inventory rejected ${invalidInputCount} invalid input node(s): ${JSON.stringify(normalized.diagnostics.excluded)}`);
+  }
   let renderable;
   let renderFailures;
   if (options.nodeErrorMode === "compatible") {
-    const partitioned = partitionRenderableNodes(normalized.nodes, "sing-box", renderSingBoxOutbound);
+    const partitioned = partitionRenderableNodes(normalized.nodes, "sing-box", renderSingBoxNode);
     renderable = partitioned.renderable;
     renderFailures = partitioned.failureProtocols;
   } else {
-    assertRenderableNodes(normalized.nodes, "sing-box", renderSingBoxOutbound);
+    assertRenderableNodes(normalized.nodes, "sing-box", renderSingBoxNode);
     renderable = normalized.nodes;
     renderFailures = {};
   }
   logDiagnostics(context, options, renderable, renderFailures);
   const ruleBaseUrl = `${PUBLIC_RULE_ROOT}/${options.channel}/sing-box/rule-sets`;
-  const config = renderSingBoxConfig(options, renderable.map(sanitizeSingBoxNode), { ruleBaseUrl });
+  const config = renderSingBoxConfig(options, renderable, { ruleBaseUrl });
   return { ...input, $content: `${JSON.stringify(config, null, 2)}\n` };
 }

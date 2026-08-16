@@ -18,6 +18,7 @@ import {
   digestForReleaseAsset,
   installSingBoxCore,
   releaseAsset,
+  resolveSingBoxTestingRelease,
 } from "../scripts/install-sing-box-core.mjs";
 
 const repositoryRoot = new URL("../", import.meta.url);
@@ -28,25 +29,26 @@ async function workflowText(url) {
   return readFile(url, "utf8");
 }
 
-test("official sing-box release assets are closed to the three supported runners", () => {
-  assert.equal(SING_BOX_VERSION, "1.14.0-beta.9");
+test("official sing-box release assets are closed to supported runners", () => {
+  assert.equal(SING_BOX_VERSION, "1.14.0-beta.15");
   assert.deepEqual(releaseAsset("linux", "x64"), {
+    version: "1.14.0-beta.15",
     suffix: "linux-amd64",
-    archiveName: "sing-box-1.14.0-beta.9-linux-amd64.tar.gz",
-    archiveUrl: "https://github.com/SagerNet/sing-box/releases/download/v1.14.0-beta.9/sing-box-1.14.0-beta.9-linux-amd64.tar.gz",
-    metadataUrl: "https://api.github.com/repos/SagerNet/sing-box/releases/tags/v1.14.0-beta.9",
+    archiveName: "sing-box-1.14.0-beta.15-linux-amd64.tar.gz",
+    archiveUrl: "https://github.com/SagerNet/sing-box/releases/download/v1.14.0-beta.15/sing-box-1.14.0-beta.15-linux-amd64.tar.gz",
+    metadataUrl: "https://api.github.com/repos/SagerNet/sing-box/releases/tags/v1.14.0-beta.15",
   });
   assert.equal(releaseAsset("darwin", "arm64").suffix, "darwin-arm64");
   assert.equal(releaseAsset("darwin", "x64").suffix, "darwin-amd64");
-  for (const pair of [["linux", "arm64"], ["win32", "x64"], ["darwin", "ia32"]]) {
+  for (const pair of [["win32", "x64"], ["darwin", "ia32"]]) {
     assert.throws(() => releaseAsset(...pair), /Unsupported sing-box platform/u);
   }
 });
 
 test("official release metadata requires one exact archive digest", () => {
-  const name = "sing-box-1.14.0-beta.9-linux-amd64.tar.gz";
   const digest = "a".repeat(64);
   const asset = releaseAsset("linux", "x64");
+  const name = asset.archiveName;
   const record = (overrides = {}) => ({
     name,
     browser_download_url: asset.archiveUrl,
@@ -78,7 +80,7 @@ test("installer verifies, extracts, versions, and exports an absolute official c
   const archiveDirectory = `sing-box-${SING_BOX_VERSION}-${asset.suffix}`;
   const executable = join(source, archiveDirectory, "sing-box");
   await mkdir(join(source, archiveDirectory), { recursive: true });
-  await writeFile(executable, "#!/bin/sh\nprintf 'sing-box version 1.14.0-beta.9\\n'\n", "utf8");
+  await writeFile(executable, `#!/bin/sh\nprintf 'sing-box version ${SING_BOX_VERSION}\\n'\n`, "utf8");
   await chmod(executable, 0o755);
   const archivePath = join(root, asset.archiveName);
   const tar = spawnSync("tar", ["-czf", archivePath, "-C", source, archiveDirectory], { encoding: "utf8" });
@@ -104,11 +106,32 @@ test("installer verifies, extracts, versions, and exports an absolute official c
     installRoot,
     githubEnvPath,
     fetchImpl,
+    version: SING_BOX_VERSION,
   });
   assert.equal(isAbsolute(result.corePath), true);
   assert.equal(result.corePath, join(installRoot, archiveDirectory, "sing-box"));
   assert.equal(result.versionOutput, `sing-box version ${SING_BOX_VERSION}`);
   assert.equal(await readFile(githubEnvPath, "utf8"), `SING_BOX_CORE=${result.corePath}\n`);
+});
+
+test("resolves the newest published prerelease testing release", async () => {
+  const result = await resolveSingBoxTestingRelease({
+    fetchImpl: async (url, init) => {
+      assert.match(url, /repos\/SagerNet\/sing-box\/releases/iu);
+      assert.equal(init.headers.Accept, "application/vnd.github+json");
+      return {
+        ok: true,
+        async json() {
+          return [
+            { tag_name: "v1.14.0-beta.14", prerelease: true, published_at: "2026-08-14T00:00:00Z" },
+            { tag_name: "v1.14.0-beta.15", prerelease: true, published_at: "2026-08-15T00:00:00Z" },
+            { tag_name: "v1.13.18", prerelease: false, published_at: "2026-08-15T00:00:00Z" },
+          ];
+        },
+      };
+    },
+  });
+  assert.deepEqual(result, { version: "1.14.0-beta.15", tag: "v1.14.0-beta.15", commit: null });
 });
 
 test("all Actions use the approved immutable SHA pins", async () => {

@@ -26,14 +26,14 @@ test("Sub-Store sing-box entry requests a private collection and returns JSON co
   const calls = [];
   const result = await operator(
     { id: "input" },
-    "openwrt",
+    "macos",
     {
       arguments: {
         output: "config",
         type: "collection",
         name: "apple-proxy-singbox",
         subscriptionName: "sing-box-Nodes",
-        platform: "openwrt",
+        platform: "macos",
         channel: "edge",
       },
       async produceArtifact(request) {
@@ -49,7 +49,7 @@ test("Sub-Store sing-box entry requests a private collection and returns JSON co
     produceType: "internal",
   }]);
   const config = JSON.parse(result.$content);
-  assert.equal(config.inbounds[0].auto_redirect, true);
+  assert.equal(config.inbounds[0].auto_redirect, undefined);
   assert.ok(config.route.rule_set[0].url.includes("/edge/sing-box/rule-sets/"));
   assert.equal(config.route.rule_set.every(({ format, url }) => format === "binary" && url.endsWith(".srs")), true);
   assert.equal(result.$content.endsWith("\n"), true);

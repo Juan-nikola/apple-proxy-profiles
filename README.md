@@ -1,6 +1,6 @@
 # Apple Proxy Profiles · 新手完整教程
 
-这个仓库帮你把“节点”和“规则”变成 6 个客户端（Shadowrocket、Surge、Egern、Anywhere、sing-box、OneXray，以及 Android、OpenWrt 软路由）可以直接导入的配置文件。你不需要会编程，只需要按本教程一步一步操作。全程大约需要 1–2 小时，之后日常使用只需几分钟。
+这个仓库帮你把“节点”和“规则”变成 6 个客户端（Shadowrocket、Surge、Egern、Anywhere、sing-box、OneXray，以及 Android）可以直接导入的配置文件。你不需要会编程，只需要按本教程一步一步操作。全程大约需要 1–2 小时，之后日常使用只需几分钟。
 
 本仓库**不保存你的任何节点信息**。你的节点、订阅链接、密码全部留在你自己的 Sub-Store 里；仓库只提供公开的“生成脚本”和“规则文件”。
 
@@ -53,7 +53,7 @@ Sub-Store 新部署为每个客户端维护独立 collection；精确名称、�
 
 - **订阅（Subs）**：原始节点来源。你的里面有 `[自建]snell`、`[自建]Vlesshy2`、`anytls`、`[realm]`、`xiaov` 等；`xiaov` 跳过不使用，不要加入总池或任何 client collection。
 - **组合订阅（Collections）**：用户建立 `apple-proxy-all` 总池，再按节点池指南建立六个 client collection。旧 `apple-proxy-sources` 只保留作兼容/回滚入口。
-- **文件（Files）**：最终输出的配置文件。本项目需要 20 个文件任务，你的 Sub-Store 里已经全部建好（见第 3 节清单）。
+- **文件（Files）**：最终输出的配置文件。本项目需要 19 个文件任务，你的 Sub-Store 里已经全部建好（见第 3 节清单）。
 - **脚本（Scripts）**：不需要手动创建。本项目的脚本由 GitHub Pages 托管，Sub-Store 任务直接“引用”远程链接。
 
 ### 重要概念：引用而不是复制
@@ -66,7 +66,7 @@ https://juan-nikola.github.io/apple-proxy-profiles/current/shadowrocket/scripts/
 
 `#` 后面是参数。Sub-Store 每次刷新任务时，会去下载这个 JS 并执行，生成你要的配置。**不要把 JS 内容复制到 Sub-Store，也不要修改链接里的公开部分**（除了你任务自己的参数）。
 
-### 已经帮你建好的 20 个任务
+### 已经帮你建好的 19 个任务
 
 | 客户端 | 任务名 | 输出 |
 | --- | --- | --- |
@@ -74,7 +74,7 @@ https://juan-nikola.github.io/apple-proxy-profiles/current/shadowrocket/scripts/
 | Anywhere | `anywhere-nodes` | Clash 节点 YAML |
 | Shadowrocket | `shadowrocket-config-macos/iphone/ipad` | 3 份 Profile（读取 `apple-proxy-shadowrocket`） |
 | Surge | `surge-nodes`、`surge-config-macos/iphone/ipad` | 节点资源 + 3 份 Profile |
-| sing-box | `singbox-config-macos/iphone/ipad/android/openwrt` | 5 份 JSON 配置 |
+| sing-box | `singbox-config-macos/iphone/ipad/android` | 4 份 JSON 配置 |
 | OneXray | `onexray-nodes`、`onexray-profile`、`onexray-routing-audit` | 节点订阅 + Profile + 脱敏审计 |
 
 每个任务都已设置：节点类任务每 6 小时刷新，配置类任务每天刷新。你不需要在 Sub-Store 里再建任何东西。
@@ -87,7 +87,7 @@ https://juan-nikola.github.io/apple-proxy-profiles/current/shadowrocket/scripts/
 
 1. 打开“组合订阅”，按节点池指南逐个 preview 六个 client collection。
    - 成功标志：每个 collection 的节点数量和协议计数符合用户自行筛选的预期。
-2. 打开“文件/File”，逐个点开 20 个任务，点“预览”。
+2. 打开“文件/File”，逐个点开 19 个任务，点“预览”。
    - 成功标志：`egern-nodes` 预览顶层有 `proxies:`；`anywhere-nodes` 同样有 `proxies:`；Shadowrocket/Surge 的配置预览包含 `[General]`、`[Proxy Group]`、`[Rule]`；sing-box 的配置是合法 JSON，包含 `dns`、`inbounds`、`outbounds`、`route`。
    - 注意：Shadowrocket 三个配置的预览依赖 GitHub Pages 上的最新生成脚本，确认 URL 是 `current/shadowrocket/scripts/shadowrocket-profile-generator.js`。
 3. 打开一个文件任务，找到它的“远程链接/输出 URL”，复制保存到自己的备忘录。这个 URL 是**私密的**，不要发给任何人、不要截图分享。
@@ -152,17 +152,16 @@ Anywhere 没有“完整配置”概念，要分三层做：
 
 > Surge 的 Profile 不含节点凭据，节点由 `policy-path` 动态加载。macOS 用 `platform=macos`，不要拿 Mac 的 Profile 导进 iPhone。
 
-### 4.5 sing-box · Mac / iPhone / iPad / Android / OpenWrt
+### 4.5 sing-box · Mac / iPhone / iPad / Android
 
 1. 按设备添加对应配置：
    - Mac：`singbox-config-macos`
    - iPhone：`singbox-config-iphone`
    - iPad：`singbox-config-ipad`
    - Android：`singbox-config-android`
-   - 软路由：`singbox-config-openwrt`
 2. 导入后确认系统 VPN 权限（iOS/Android 会弹出 VPN 授权），TUN 模式接管流量。
 3. 成功标志：配置能通过 sing-box 校验，`dns`、`inbounds`、`outbounds`、`route` 都存在，节点不为空。
-4. OpenWrt 还需要在路由器上安装与配置匹配的官方 sing-box 二进制；本仓库只生成 JSON，不负责安装核心。
+4. 本阶段不生成 OpenWrt 透明网关配置；后续需要单独确认 LAN、IPv6 和 fw4/nftables 参数后再实现。
 
 > sing-box 默认使用远程 `.srs` 二进制规则集（轻量模式）。规则文件由 GitHub Pages 托管，客户端启动时自动下载。
 

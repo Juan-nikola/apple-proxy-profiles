@@ -6,7 +6,7 @@
 secrets/
 node_modules/
 coverage/
+clients/sing-box/build/
 *.local
 *.secret
 diagnostics/private/
-

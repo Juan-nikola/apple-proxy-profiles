@@ -13,17 +13,18 @@ const LOCAL_RULES = Object.freeze([
   { ip_is_private: true, action: "route", outbound: "DIRECT" },
   { domain_suffix: ["local", "lan", "home.arpa"], action: "route", outbound: "DIRECT" },
 ]);
-const QUIC_BLOCK_RULE = Object.freeze({ network: "udp", port: 443, action: "reject" });
+const QUIC_BLOCK_RULE = Object.freeze({ network: "udp", port: 443, action: "reject", method: "drop" });
 const OVERSEAS_DNS_FALLBACK_RULE = Object.freeze({
   domain_suffix: PROXY_DNS_DOMAIN_SUFFIXES,
   action: "route",
   outbound: "🚀 节点选择",
 });
-const OVERSEAS_DNS_QUIC_BLOCK_RULE = Object.freeze({
-  ...QUIC_BLOCK_RULE,
-  domain_suffix: PROXY_DNS_DOMAIN_SUFFIXES,
+const CUSTOM_TARGETS = Object.freeze({
+  block: "REJECT",
+  direct: "DIRECT",
+  proxy: "🚀 节点选择",
+  ai: "🤖 AI 专用",
 });
-const CUSTOM_TARGETS = Object.freeze({ block: "REJECT", direct: "DIRECT", proxy: "🚀 节点选择", ai: "🤖 AI 专用" });
 const CUSTOM_FIELDS = Object.freeze({
   DOMAIN: "domain",
   "DOMAIN-SUFFIX": "domain_suffix",
@@ -39,34 +40,55 @@ function baseUrl(value) {
   return value.replace(/\/+$/u, "");
 }
 
-function routeAction(outbound) {
-  if (outbound === "REJECT") return { action: "reject", method: "default" };
+function route(outbound) {
   return { action: "route", outbound };
 }
 
+function reject() {
+  return { action: "reject", method: "default" };
+}
+
 function optionalAdblockBase(defaultBase) {
-  const optional = defaultBase.replace(/\/sing-box\/(?:rule-sets|rules)$/u, "/optional/adblock-full/sing-box");
+  const optional = defaultBase.replace(/\/sing-box\/rule-sets$/u, "/optional/adblock-full/sing-box");
   if (optional === defaultBase) throw new Error("sing-box adblock rule base URL must end in /sing-box/rule-sets");
   return optional;
 }
 
-function renderCustomRules() {
-  const rendered = [];
+function customRuleFields(entry) {
+  const [type, value, ...modifiers] = entry.split(",");
+  const field = CUSTOM_FIELDS[type];
+  if (!field || !value || modifiers.some((modifier) => modifier !== "no-resolve")) {
+    throw new Error(`Invalid sing-box custom rule: ${entry}`);
+  }
+  return { [field]: [value] };
+}
+
+function renderCustomRules(quicMode) {
+  const grouped = new Map();
   for (const [kind, entries] of Object.entries(CUSTOM_RULES)) {
     for (const entry of entries) {
-      const [type, value, ...modifiers] = entry.split(",");
-      const field = CUSTOM_FIELDS[type];
-      if (!field || !value || modifiers.some((modifier) => modifier !== "no-resolve")) {
-        throw new Error(`Invalid sing-box custom rule: ${entry}`);
-      }
-      rendered.push({ [field]: [value], ...routeAction(CUSTOM_TARGETS[kind]) });
+      const fields = customRuleFields(entry);
+      const [field] = Object.keys(fields);
+      const key = `${kind}:${field}`;
+      const values = grouped.get(key) ?? { kind, field, values: [] };
+      values.values.push(...fields[field]);
+      grouped.set(key, values);
     }
+  }
+  const rendered = [];
+  for (const { kind, field, values } of grouped.values()) {
+    const fields = { [field]: [...new Set(values)] };
+    if (quicMode === "proxy-block" && ["proxy", "ai"].includes(kind) && field !== "ip_cidr") {
+      rendered.push({ ...fields, ...QUIC_BLOCK_RULE });
+    }
+    rendered.push({ ...fields, ...(kind === "block" ? reject() : route(CUSTOM_TARGETS[kind])) });
   }
   return rendered;
 }
 
 function taggedRule(source) {
-  return { rule_set: [`rule-${source.id}`], ...routeAction(source.policy) };
+  if (source.policy === "REJECT") return { rule_set: [`rule-${source.id}`], ...reject() };
+  return { rule_set: [`rule-${source.id}`], ...route(source.policy) };
 }
 
 export function renderSingBoxRuleSets({ ruleBaseUrl, profileMode = "light", adblockMode = "off" }) {
@@ -89,6 +111,7 @@ export function renderSingBoxRouteRules({
   ruleBaseUrl,
   profileMode = "light",
   adblockMode = "off",
+  blockMode = "balanced",
   quicMode = "allow",
 }) {
   if (!["allow", "proxy-block", "all-block"].includes(quicMode)) {
@@ -100,29 +123,45 @@ export function renderSingBoxRouteRules({
     { protocol: "dns", action: "hijack-dns" },
     ...LOCAL_RULES,
   ];
+
   if (quicMode === "all-block") rules.push({ ...QUIC_BLOCK_RULE });
-  if (profileMode === "light") {
-    const plan = orderedRoutingPlan({ adblockMode });
-    rules.push(...plan.filter(({ phase }) => phase === "security").map(taggedRule));
+  if (profileMode === "diagnostic") {
+    rules.push(...renderCustomRules(quicMode));
+    return { ruleSets, rules, final: "🚀 节点选择" };
   }
-  rules.push(...renderCustomRules());
-  if (profileMode === "diagnostic") return { ruleSets, rules, final: "🚀 节点选择" };
+
   const plan = orderedRoutingPlan({ adblockMode });
-  for (const phase of ROUTING_PHASES.filter((value) => (
-    value !== "security" && value !== "resolvedChinaIp"
-  ))) {
+  const securityIds = new Set({
+    off: [],
+    security: ["Hijacking", "BlockHttpDNS"],
+    balanced: ["Hijacking", "BlockHttpDNS", "Privacy", "Advertising", "Advertising_Domain"],
+    strict: ["Hijacking", "BlockHttpDNS", "Privacy", "Advertising", "Advertising_Domain"],
+  }[blockMode] ?? []);
+  rules.push(...plan
+    .filter(({ phase, id }) => phase === "security" && securityIds.has(id))
+    .map(taggedRule));
+  rules.push(...renderCustomRules(quicMode));
+
+  if (quicMode === "proxy-block") {
+    const proxyRuleSets = plan
+      .filter(({ dnsClass }) => dnsClass === "proxy")
+      .map(({ id }) => `rule-${id}`);
+    if (proxyRuleSets.length > 0) rules.push({ network: "udp", port: 443, rule_set: proxyRuleSets, ...reject() });
+  }
+
+  for (const phase of ROUTING_PHASES.filter((value) => value !== "security" && value !== "resolvedChinaIp")) {
     for (const source of plan.filter((candidate) => candidate.phase === phase)) {
-      if (quicMode === "proxy-block" && source.dnsClass === "proxy") {
-        rules.push({ ...QUIC_BLOCK_RULE, rule_set: [`rule-${source.id}`] });
-      }
       rules.push(taggedRule(source));
     }
     if (phase === "serviceIntent") {
-      if (quicMode === "proxy-block") rules.push({ ...OVERSEAS_DNS_QUIC_BLOCK_RULE });
+      if (quicMode === "proxy-block") rules.push({ ...OVERSEAS_DNS_FALLBACK_RULE, ...QUIC_BLOCK_RULE });
       rules.push({ ...OVERSEAS_DNS_FALLBACK_RULE });
     }
   }
-  rules.push({ action: "resolve", server: "dns-direct" });
+
+  // Resolve only after domain rules. With no explicit DNS server, sing-box
+  // evaluates the DNS rules above, including the ChinaIP response test.
+  rules.push({ action: "resolve", strategy: "prefer_ipv4" });
   rules.push(...plan
     .filter(({ phase }) => phase === "resolvedChinaIp")
     .map(taggedRule));

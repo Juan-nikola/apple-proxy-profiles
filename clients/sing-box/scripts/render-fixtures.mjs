@@ -31,7 +31,7 @@ const nodes = Object.freeze([
   }),
 ]);
 
-for (const platform of ["macos", "iphone", "ipad", "android", "openwrt"]) {
+for (const platform of ["macos", "iphone", "ipad", "android"]) {
   for (const profileMode of ["light", "diagnostic"]) {
     const options = parseSingBoxOptions({
       output: "config",

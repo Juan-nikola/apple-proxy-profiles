@@ -5,30 +5,61 @@ import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-export const SING_BOX_VERSION = "1.14.0-beta.9";
-
-const RELEASE_ROOT = `https://github.com/SagerNet/sing-box/releases/download/v${SING_BOX_VERSION}`;
-const RELEASE_METADATA_URL = `https://api.github.com/repos/SagerNet/sing-box/releases/tags/v${SING_BOX_VERSION}`;
+// Used only when GitHub is temporarily unavailable. CI resolves the newest
+// published testing release before every build.
+export const SING_BOX_VERSION = "1.14.0-beta.15";
+const RELEASES_URL = "https://api.github.com/repos/SagerNet/sing-box/releases?per_page=100";
+const RELEASE_ROOT = (version) => `https://github.com/SagerNet/sing-box/releases/download/v${version}`;
+const RELEASE_METADATA_URL = (version) => `https://api.github.com/repos/SagerNet/sing-box/releases/tags/v${version}`;
 const PLATFORM_SUFFIXES = Object.freeze({
   "linux/x64": "linux-amd64",
+  "linux/arm64": "linux-arm64",
+  "linux/arm": "linux-armv7",
   "darwin/arm64": "darwin-arm64",
   "darwin/x64": "darwin-amd64",
 });
 
-export function releaseAsset(platform = process.platform, arch = process.arch) {
+export async function resolveSingBoxTestingRelease({ fetchImpl = fetch } = {}) {
+  const response = await fetchImpl(RELEASES_URL, {
+    headers: {
+      Accept: "application/vnd.github+json",
+      "User-Agent": "apple-proxy-profiles-sing-box-installer",
+      "X-GitHub-Api-Version": "2022-11-28",
+    },
+  });
+  if (!response?.ok) throw new Error(`Failed to resolve the latest sing-box testing release (${response?.status ?? "no response"})`);
+  const releases = await response.json();
+  if (!Array.isArray(releases)) throw new Error("sing-box release list is invalid");
+  const candidates = releases
+    .filter((release) => (
+      release?.prerelease === true
+      && (release.target_commitish === undefined || release.target_commitish === "testing")
+      && /^v\d+\.\d+\.\d+-[0-9A-Za-z.-]+$/u.test(release.tag_name ?? "")
+    ))
+    .sort((left, right) => String(right.published_at ?? "").localeCompare(String(left.published_at ?? "")));
+  const release = candidates[0];
+  if (!release) throw new Error("No published sing-box testing release was found");
+  const version = release.tag_name.slice(1);
+  return Object.freeze({ version, tag: release.tag_name, commit: release.target_commitish ?? null });
+}
+
+export function releaseAsset(platform = process.platform, arch = process.arch, version = SING_BOX_VERSION) {
   const suffix = PLATFORM_SUFFIXES[`${platform}/${arch}`];
   if (!suffix) throw new Error(`Unsupported sing-box platform: ${platform}/${arch}`);
-  const archiveName = `sing-box-${SING_BOX_VERSION}-${suffix}.tar.gz`;
+  if (typeof version !== "string" || !/^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/u.test(version)) throw new Error("Invalid sing-box version");
+  const archiveName = `sing-box-${version}-${suffix}.tar.gz`;
   return Object.freeze({
+    version,
     suffix,
     archiveName,
-    archiveUrl: `${RELEASE_ROOT}/${archiveName}`,
-    metadataUrl: RELEASE_METADATA_URL,
+    archiveUrl: `${RELEASE_ROOT(version)}/${archiveName}`,
+    metadataUrl: RELEASE_METADATA_URL(version),
   });
 }
 
 export function digestForReleaseAsset(metadata, asset) {
-  if (!metadata || metadata.tag_name !== `v${SING_BOX_VERSION}`) {
+  const version = asset?.version ?? SING_BOX_VERSION;
+  if (!metadata || metadata.tag_name !== `v${version}`) {
     throw new Error(`Official sing-box release tag mismatch: ${metadata?.tag_name ?? "missing"}`);
   }
   if (!Array.isArray(metadata.assets)) throw new Error("Official sing-box release assets are missing");
@@ -80,9 +111,11 @@ export async function installSingBoxCore({
   installRoot = join(process.env.RUNNER_TEMP || tmpdir(), "apple-proxy-profiles-toolchain"),
   githubEnvPath = process.env.GITHUB_ENV || null,
   fetchImpl = globalThis.fetch,
+  version = null,
 } = {}) {
   if (typeof fetchImpl !== "function") throw new TypeError("A fetch implementation is required");
-  const asset = releaseAsset(platform, arch);
+  const release = version === null ? await resolveSingBoxTestingRelease({ fetchImpl }) : { version };
+  const asset = releaseAsset(platform, arch, release.version);
   const absoluteRoot = resolve(installRoot);
   if (/[\r\n]/u.test(absoluteRoot)) throw new Error("sing-box install path must not contain line breaks");
   await mkdir(absoluteRoot, { recursive: true });
@@ -106,15 +139,15 @@ export async function installSingBoxCore({
   if (!equalDigest(actual, expected)) throw new Error(`Official sing-box archive checksum mismatch: ${asset.archiveName}`);
 
   const archivePath = join(absoluteRoot, asset.archiveName);
-  const metadataPath = join(absoluteRoot, `sing-box-${SING_BOX_VERSION}-release.json`);
+  const metadataPath = join(absoluteRoot, `sing-box-${asset.version}-release.json`);
   await writeFile(archivePath, archive, { mode: 0o600 });
   await writeFile(metadataPath, metadataBytes, { mode: 0o600 });
   await run("tar", ["-xzf", archivePath, "-C", absoluteRoot]);
 
-  const corePath = resolve(absoluteRoot, `sing-box-${SING_BOX_VERSION}-${asset.suffix}`, "sing-box");
-  const version = await run(corePath, ["version"]);
-  const versionOutput = `${version.stdout}\n${version.stderr}`.trim();
-  const expectedVersion = `sing-box version ${SING_BOX_VERSION}`;
+  const corePath = resolve(absoluteRoot, `sing-box-${asset.version}-${asset.suffix}`, "sing-box");
+  const versionResult = await run(corePath, ["version"]);
+  const versionOutput = `${versionResult.stdout}\n${versionResult.stderr}`.trim();
+  const expectedVersion = `sing-box version ${asset.version}`;
   if (!versionOutput.split(/\r?\n/u).includes(expectedVersion)) {
     throw new Error(`Installed sing-box version mismatch; expected ${expectedVersion}`);
   }
@@ -124,7 +157,7 @@ export async function installSingBoxCore({
     }
     await appendFile(githubEnvPath, `SING_BOX_CORE=${corePath}\n`, "utf8");
   }
-  return Object.freeze({ corePath, versionOutput: expectedVersion, asset });
+  return Object.freeze({ corePath, versionOutput: expectedVersion, asset, release });
 }
 
 export async function main(args = process.argv.slice(2)) {

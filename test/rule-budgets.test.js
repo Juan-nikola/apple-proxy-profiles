@@ -97,7 +97,7 @@ test("all default client profiles leave the optional advertising pack unreachabl
     assert.doesNotMatch(content, /\/optional\/adblock-full\//u, path);
   }
 
-  for (const platform of ["macos", "iphone", "ipad", "android", "openwrt"]) {
+  for (const platform of ["macos", "iphone", "ipad", "android"]) {
     const path = `clients/sing-box/examples/sing-box-${platform}.json`;
     const singbox = JSON.parse(await readFile(new URL(path, root), "utf8"));
     for (const provider of singbox.route.rule_set) {

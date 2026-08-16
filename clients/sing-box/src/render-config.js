@@ -1,6 +1,6 @@
 import { nodeMetadata } from "../../../shared/contracts.js";
 import { parseSingBoxOptions, isParsedSingBoxOptions } from "./options.js";
-import { renderSingBoxOutbound } from "./render-node.js";
+import { renderSingBoxNode } from "./render-node.js";
 import { renderSingBoxGroups } from "./render-groups.js";
 import { renderSingBoxRouteRules, RULE_DOWNLOAD_HTTP_CLIENT } from "./render-rules.js";
 import { renderSingBoxDns } from "./render-dns.js";
@@ -16,7 +16,7 @@ export function renderSingBoxConfig(rawOptions, nodes, rendererOptions = {}) {
   const inventory = Array.isArray(nodes) ? nodes : [];
   if (inventory.length === 0) throw new Error("sing-box refuses an empty node inventory");
   for (const node of inventory) nodeMetadata(node);
-  const nodeOutbounds = inventory.map(renderSingBoxOutbound);
+  const renderedNodes = inventory.map(renderSingBoxNode);
   const groups = renderSingBoxGroups(options, inventory, {
     ruleProbeUrl: `${ruleBaseUrl.replace(/\/+$/u, "")}/Hijacking.srs`,
   });
@@ -24,6 +24,7 @@ export function renderSingBoxConfig(rawOptions, nodes, rendererOptions = {}) {
     ruleBaseUrl,
     profileMode: options.profileMode,
     adblockMode: options.adblockMode,
+    blockMode: options.blockMode,
     quicMode: options.quicMode,
   });
   const config = {
@@ -39,7 +40,7 @@ export function renderSingBoxConfig(rawOptions, nodes, rendererOptions = {}) {
       { type: "direct", tag: "DIRECT" },
       { type: "block", tag: "REJECT" },
       ...groups,
-      ...nodeOutbounds,
+      ...renderedNodes.flatMap(({ outbound }) => (outbound ? [outbound] : [])),
     ],
     route: {
       auto_detect_interface: true,
@@ -51,6 +52,8 @@ export function renderSingBoxConfig(rawOptions, nodes, rendererOptions = {}) {
     },
     experimental: { cache_file: { enabled: true, path: "cache.db", store_dns: true } },
   };
+  const endpoints = renderedNodes.flatMap(({ endpoint }) => (endpoint ? [endpoint] : []));
+  if (endpoints.length > 0) config.endpoints = endpoints;
   const validation = validateSingBoxConfig(config);
   if (!validation.valid) throw new Error(`Generated sing-box config failed validation: ${validation.errors.join(",")}`);
   return config;

@@ -21,29 +21,20 @@
           "enabled": true,
           "server_name": "cloudflare-dns.com"
         },
-        "detour": "🧭 DNS 与规则下载"
+        "detour": "⚡ 全部自动"
       }
     ],
     "rules": [
       {
         "domain_suffix": [
-          "google.com",
-          "googleapis.com",
-          "googleusercontent.com",
-          "gstatic.com",
-          "ggpht.com",
-          "gvt1.com",
-          "googlevideo.com",
-          "youtube.com",
-          "youtube-nocookie.com",
-          "youtu.be",
-          "ytimg.com"
+          "local",
+          "lan",
+          "home.arpa"
         ],
-        "action": "evaluate",
-        "server": "dns-proxy"
+        "action": "route",
+        "server": "dns-direct"
       },
       {
-        "match_response": true,
         "domain_suffix": [
           "google.com",
           "googleapis.com",
@@ -57,14 +48,57 @@
           "youtu.be",
           "ytimg.com"
         ],
-        "action": "respond"
+        "action": "route",
+        "server": "dns-proxy"
+      },
+      {
+        "domain_suffix": [
+          "perplexity.ai"
+        ],
+        "action": "route",
+        "server": "dns-proxy"
+      },
+      {
+        "domain_suffix": [
+          "pplx.ai"
+        ],
+        "action": "route",
+        "server": "dns-proxy"
+      },
+      {
+        "domain_suffix": [
+          "x.ai"
+        ],
+        "action": "route",
+        "server": "dns-proxy"
+      },
+      {
+        "domain_suffix": [
+          "grok.com"
+        ],
+        "action": "route",
+        "server": "dns-proxy"
+      },
+      {
+        "domain_suffix": [
+          "poe.com"
+        ],
+        "action": "route",
+        "server": "dns-proxy"
+      },
+      {
+        "domain_suffix": [
+          "poecdn.net"
+        ],
+        "action": "route",
+        "server": "dns-proxy"
       },
       {
         "action": "route",
-        "server": "dns-direct"
+        "server": "dns-proxy"
       }
     ],
-    "final": "dns-direct",
+    "final": "dns-proxy",
     "strategy": "prefer_ipv4",
     "cache_capacity": 4096
   },
@@ -120,6 +154,18 @@
       "tag": "REJECT"
     },
     {
+      "type": "urltest",
+      "tag": "⚡ 全部自动",
+      "outbounds": [
+        "示例 · Tokyo",
+        "示例 · Frankfurt"
+      ],
+      "url": "https://www.gstatic.com/generate_204",
+      "interval": "1800s",
+      "tolerance": 150,
+      "interrupt_exist_connections": true
+    },
+    {
       "type": "selector",
       "tag": "🚀 节点选择",
       "outbounds": [
@@ -158,6 +204,7 @@
       "type": "selector",
       "tag": "🤖 AI 专用",
       "outbounds": [
+        "⚡ 全部自动",
         "示例 · Tokyo",
         "示例 · Frankfurt"
       ],
@@ -337,18 +384,6 @@
       "interrupt_exist_connections": true
     },
     {
-      "type": "urltest",
-      "tag": "⚡ 全部自动",
-      "outbounds": [
-        "示例 · Tokyo",
-        "示例 · Frankfurt"
-      ],
-      "url": "https://www.gstatic.com/generate_204",
-      "interval": "1800s",
-      "tolerance": 150,
-      "interrupt_exist_connections": true
-    },
-    {
       "type": "shadowsocks",
       "tag": "示例 · Tokyo",
       "server": "example.invalid",
@@ -399,41 +434,25 @@
       },
       {
         "domain_suffix": [
-          "perplexity.ai"
+          "perplexity.ai",
+          "pplx.ai",
+          "x.ai",
+          "grok.com",
+          "poe.com",
+          "poecdn.net"
         ],
-        "action": "route",
-        "outbound": "🤖 AI 专用"
+        "network": "udp",
+        "port": 443,
+        "action": "reject",
+        "method": "drop"
       },
       {
         "domain_suffix": [
-          "pplx.ai"
-        ],
-        "action": "route",
-        "outbound": "🤖 AI 专用"
-      },
-      {
-        "domain_suffix": [
-          "x.ai"
-        ],
-        "action": "route",
-        "outbound": "🤖 AI 专用"
-      },
-      {
-        "domain_suffix": [
-          "grok.com"
-        ],
-        "action": "route",
-        "outbound": "🤖 AI 专用"
-      },
-      {
-        "domain_suffix": [
-          "poe.com"
-        ],
-        "action": "route",
-        "outbound": "🤖 AI 专用"
-      },
-      {
-        "domain_suffix": [
+          "perplexity.ai",
+          "pplx.ai",
+          "x.ai",
+          "grok.com",
+          "poe.com",
           "poecdn.net"
         ],
         "action": "route",

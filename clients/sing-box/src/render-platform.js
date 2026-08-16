@@ -1,4 +1,4 @@
-const COMMON_EXCLUDE = [
+const COMMON_EXCLUDE = Object.freeze([
   "192.168.0.0/16",
   "172.16.0.0/12",
   "10.0.0.0/8",
@@ -9,11 +9,14 @@ const COMMON_EXCLUDE = [
   "fc00::/7",
   "fe80::/10",
   "ff00::/8",
-];
+]);
 
 export function renderSingBoxTun(platform, ipv6Mode = "auto") {
+  if (!["macos", "iphone", "ipad", "android"].includes(platform)) {
+    throw new Error(`Unsupported sing-box platform: ${platform}`);
+  }
   const ipv4Only = ipv6Mode === "ipv4-only";
-  const base = {
+  return {
     type: "tun",
     tag: "tun-in",
     interface_name: platform === "android" ? "sing-box" : "singtun0",
@@ -23,33 +26,10 @@ export function renderSingBoxTun(platform, ipv6Mode = "auto") {
     auto_route: true,
     strict_route: true,
     route_exclude_address: [...COMMON_EXCLUDE],
-  };
-  if (platform === "openwrt") {
-    return {
-      ...base,
-      stack: "mixed",
-      dns_mode: "hijack",
-      dns_address: ipv4Only ? ["172.18.0.2"] : ["172.18.0.2", "fdfe:dcba:9876::2"],
-      auto_redirect: true,
-      auto_redirect_input_mark: "0x2023",
-      auto_redirect_output_mark: "0x2024",
-      loopback_address: ["10.7.0.1"],
-      route_exclude_address: [...COMMON_EXCLUDE, "192.168.1.0/24"],
-    };
-  }
-  if (platform === "android") {
-    return {
-      ...base,
-      dns_mode: "hijack",
-      dns_address: ["172.18.0.2"],
-      include_android_user: [0],
-      route_exclude_address: [...COMMON_EXCLUDE],
-    };
-  }
-  return {
-    ...base,
     dns_mode: "hijack",
     dns_address: ipv4Only ? ["172.18.0.2"] : ["172.18.0.2", "fdfe:dcba:9876::2"],
-    platform: { http_proxy: { enabled: false } },
+    ...(platform === "android"
+      ? { include_android_user: [0] }
+      : { platform: { http_proxy: { enabled: false } } }),
   };
 }

@@ -23,7 +23,7 @@ test("sing-box bundles expose the Sub-Store operator and remain public-URL close
 });
 
 test("sing-box public static map includes one-click diagnostic profiles", () => {
-  for (const platform of ["macos", "iphone", "ipad", "android", "openwrt"]) {
+  for (const platform of ["macos", "iphone", "ipad", "android"]) {
     assert.equal(SING_BOX_PUBLIC_STATIC_FILE_PATHS.includes(`sing-box/examples/sing-box-${platform}-diagnostic.json`), true);
   }
 });

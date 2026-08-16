@@ -1,6 +1,6 @@
 # 维护、编译与发布手册
 
-这份手册回答三个问题：以后增加节点或规则要改哪里、每个文件负责什么、在 macOS/Linux/CI/OpenWrt 环境怎样构建和验证。公开仓库不保存节点；你的私密节点来源在 `apple-proxy-all` 总池与六个 client collection 中维护，详细边界见 [Sub-Store 客户端节点池指南](substore-client-pools.md)。旧 `apple-proxy-sources` 只保留作兼容/回滚入口。
+这份手册回答三个问题：以后增加节点或规则要改哪里、每个文件负责什么、在 macOS/Linux/CI 环境怎样构建和验证。公开仓库不保存节点；你的私密节点来源在 `apple-proxy-all` 总池与六个 client collection 中维护，详细边界见 [Sub-Store 客户端节点池指南](substore-client-pools.md)。旧 `apple-proxy-sources` 只保留作兼容/回滚入口。
 
 ## 1. 先判断你要改哪一层
 
@@ -60,7 +60,7 @@ clients/sing-box/
   src/substore-config-entry.js sing-box Config File 入口
   src/render-config.js         JSON 根配置、路由和出站
   src/render-dns.js            DNS 服务器、引导和劫持保护
-  src/render-platform.js       macOS/移动端/OpenWrt 平台差异
+  src/render-platform.js       macOS/移动端 TUN 平台差异
   src/render-rules.js          规则集引用
   scripts/compile-rules.mjs    官方 core `.srs` 编译边界
 
@@ -104,7 +104,7 @@ npm ci
 
 ### OpenWrt 软路由
 
-OpenWrt 不是在本仓库中编译客户端。推荐在 macOS/Linux/CI 生成 JSON，在软路由上安装与配置匹配的官方 sing-box 二进制，然后导入 JSON。只有明确在路由器上开发时，才在 OpenWrt 安装 Node.js 22+ 和 npm；设备资源不足时不要在路由器上运行完整 `npm ci`。
+OpenWrt 透明网关暂不属于本次 sing-box 生成器范围。后续实现前必须确认 LAN/VLAN、IPv6、fw4/nftables、DNS 劫持和回环排除；不要把终端 TUN JSON 直接用于路由器。
 
 ## 4. 根目录构建和验证
 
@@ -214,7 +214,7 @@ npm --workspace @apple-proxy-profiles/sing-box run check:secrets
 npm --workspace @apple-proxy-profiles/sing-box run verify
 ```
 
-生成 `clients/sing-box/dist/sing-box-config-generator.js` 和兼容别名；平台由 `platform=macos|iphone|ipad|android|openwrt` 选择。
+生成 `clients/sing-box/dist/sing-box-config-generator.js` 和兼容别名；平台由 `platform=macos|iphone|ipad|android` 选择。
 
 ## 6. sing-box 官方 core 和 `.srs` 编译
 
@@ -283,14 +283,14 @@ curl -L --fail --silent --show-error --head https://juan-nikola.github.io/apple-
 
 生产使用 `current/`，测试使用 `edge/`；公开规则回滚可使用 `previous/` 或 Manifest 中的 `versions/<manifestHash>/`。Sub-Store 任务通常不需要换 URL：修复后重新运行同一远程任务即可。设备侧失败先切回旧 Profile/Config，不要用更新脚本覆盖唯一可用配置。
 
-共享分流顺序固定为：`DomesticCore` → 服务规则 → `OverseasGame` → `ChinaTLD` → `ChinaIP` → FINAL。稳定 DNS 优先国内解析；普通 `.cn` 域名应命中 `ChinaTLD`/DIRECT，未知国内 IPv4/IPv6 应命中 `ChinaIP`/GEOIP CN 直连，未知境外与 DNS 失败走 `🚀 节点选择`。HTTPDNS、硬编码 IP、IPv6、QUIC 和手动服务组选择仍是残余风险。修改分流后，用 `npm run explain:route -- --channel current --domain <域名>` 离线核对预期结果；该命令只读取本地已发布规则，不执行 DNS，也不修改任何文件。
+共享分流顺序固定为：`DomesticCore` → 服务规则 → `OverseasGame` → `ChinaTLD` → `ChinaIP` → FINAL。未知域名通过 DNS response matching 和 `ChinaIP` rule-set 判断；HTTPDNS、硬编码 IP、IPv6、QUIC 和手动服务组选择仍是残余风险。修改分流后，用 `npm run explain:route -- --channel current --domain <域名>` 离线核对预期结果；该命令只读取本地已发布规则，不执行 DNS，也不修改任何文件。
 
 ## 9. 真机 canary 顺序
 
 - Egern：Intel Mac → iPhone → iPad。
 - Shadowrocket：Intel Mac → iPhone → iPad。
 - Surge：Mac → iPhone → iPad。
-- sing-box：Mac → iPhone → iPad → Android → OpenWrt；OpenWrt 还要单独验证透明网关、DNS 劫持、IPv4/IPv6 和重启恢复。
+- sing-box：Mac → Android → iPhone → iPad；OpenWrt 后续单独设计。
 - Anywhere：iPhone → iPad；节点、规则导入和本地绑定分别验证。
 
-每台设备保留旧配置并实际做一次回滚演练。自动测试通过不代表 App Store、TestFlight、Android 或 OpenWrt 真机行为已经通过。
+每台设备保留旧配置并实际做一次回滚演练。自动测试通过不代表 App Store、TestFlight 或 Android 真机行为已经通过。

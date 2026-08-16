@@ -4,7 +4,7 @@ export const FRONTIER_CHANNELS = Object.freeze(["edge", "current", "previous"]);
 
 export const FRONTIER_PLATFORMS = Object.freeze({
   [CLIENT.surge]: Object.freeze(["macos", "iphone", "ipad"]),
-  [CLIENT.singbox]: Object.freeze(["macos", "iphone", "ipad", "android", "openwrt"]),
+  [CLIENT.singbox]: Object.freeze(["macos", "iphone", "ipad", "android"]),
   [CLIENT.onexray]: Object.freeze(["macos", "iphone", "ipad", "android", "windows", "linux"]),
   [CLIENT.happ]: Object.freeze(["macos", "iphone", "ipad", "android", "windows", "linux"]),
 });

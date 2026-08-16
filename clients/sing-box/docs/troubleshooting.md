@@ -1,23 +1,34 @@
 # sing-box 排障
 
-国内 App 偶发变慢时，先看 DNS 是否误走代理、`ChinaMax` 是否命中直连、自动测速组是否选中了高延迟节点，以及规则集是否下载成功。开关后恢复通常是缓存或测速状态重新初始化，并不代表根因消失。
+## 配置无法启动
 
-如果 iPhone/iPad 启动数秒后提示内存不足并关闭，同时日志出现 `service/oom-killer: memory pressure: critical`，先确认配置来自最新版生成器。iOS 的 Network Extension 内存额度很小；旧配置会让“全部自动、全部故障转移、洲自动、洲故障转移、规则下载故障转移”在启动时重复探测同一批节点。新版 iPhone/iPad 配置固定只保留一个 `⚡ 全部自动` URLTest；洲组保留具体节点供手动选择，`🧭 DNS 与规则下载` 复用全局自动组并保留 `DIRECT` 手动备用。`autoGroupMode=full` 也不会绕过这一移动端保护。重新预览并刷新后，JSON 中 `"type": "urltest"` 应只出现一次。
+先确认 App 使用的核心版本属于当前 edge/current 对应的 sing-box 1.14 testing 契约，再运行：
 
-如果日志大量出现 `dial tcp [2408:...]:443: connect: no route to host`（通常是抖音等使用 IPv6 CDN 的国内 App），说明当前 Wi‑Fi/蜂窝没有 IPv6 路由但 `ipv6Mode=auto` 仍在解析 AAAA。把对应 `sing-box-*` 任务的 `ipv6Mode` 改为 `ipv4-only` 并重新预览/刷新即可；网络具备 IPv6 时再改回 `auto`。
+```bash
+sing-box format --config config.json
+sing-box check --config config.json
+```
 
-`quicMode=proxy-block` 会在 sing-box 路由中阻止“代理路径”上的 QUIC（UDP 443）：显式海外业务（YouTube、Netflix 等）和未命中直连规则的未知流量先被 REJECT，客户端回落到 TCP；国内直连域名、`.cn` 和中国 IP 的 QUIC 保持允许。`all-block` 在本地规则之后阻止全部应用 QUIC；`allow` 不添加任何 QUIC 规则。
+不要把旧配置缓存、OpenWrt 配置或其他客户端的 JSON 交叉导入 Apple/Android。
 
-如果 edge 启动失败，切换到 current；如果只有 OpenWrt 失败，检查 TUN、DNS 劫持、路由标记和 LAN 排除项；如果只有 Android 或 Apple 失败，检查客户端是否支持当前字段。保留平台、channel、生成时间、sing-box 提交号和日志，再提交问题。
+## 国内站点走了代理
 
-如果出现 `dns.rules[0].action` 无法反序列化、提示不能把对象解析为字符串，说明拿到了旧版 DNS 规则结构：当前 sing-box 要求 `action` 是顶层字符串（例如 `"action": "route"`），`server` 也是同级字段。不要继续使用旧缓存 JSON；在 Sub-Store 重新预览并刷新对应的 `sing-box-*` Config File，确认 JSON 来自平台专用任务而不是组合订阅/API 总地址。
+查看目标域名是否命中 `DomesticCore`、`ChinaTLD`，以及 `ChinaIP` rule-set 是否成功下载。未配置域名通过 DNS response matching 判断；如果它解析到海外 CDN IP，按 GeoIP 结果代理是预期行为。
 
-如果出现 `outbounds[*].snell: unsupported version: 5`，说明旧生成器没有适配源节点的 Snell v5。sing-box 1.14 的 Snell 出站只接受 v4/v6；v5 在不使用 QUIC 时与 v4 线格式兼容，生成器现在会把 v5 自动转换为 v4，并保留 PSK、复用和 UDP 设置。参见 [sing-box Snell outbound](https://sing-box.sagernet.org/configuration/outbound/snell/)。
+## 海外站点打不开
 
-如果出现 `domain_resolver` 或 `default_domain_resolver` 缺失，说明配置仍是旧版本缓存。sing-box 1.14 对包含域名服务器、规则集或代理节点的配置要求默认域名解析器；重新预览并刷新对应的 `sing-box-*` Config File，使 JSON 中出现 `route.default_domain_resolver: "dns-direct"`。
+先在 `🚀 节点选择` 切换节点，再检查域名是否命中海外业务规则和 `dns-proxy`。如果是未配置域名，生成器会优先使用代理 DoH 解析非中国地址。规则下载失败时，检查当前节点能否访问 GitHub Pages。
 
-如果规则集报 `dial ... connection refused`、`context deadline exceeded` 或 TLS/握手错误，说明规则下载所用路径不可用。macOS、Android 和 OpenWrt 会创建专用的 `🧭 规则下载故障转移` URLTest，直接探测 `Hijacking.srs`，另外保留 `🚀 节点选择`、`DIRECT` 作为手动备用。sing-box 没有独立的有序 fallback 出站，生成器通过高 tolerance 保留第一个健康候选，只在它失效时切换。iPhone/iPad 为避免启动 OOM，不创建第二套全节点探测，而让 `🧭 DNS 与规则下载` 默认复用 `⚡ 全部自动`，并保留 `DIRECT`。
+## iPhone/iPad 内存压力
 
-如果配置启动时卡在 DNS、节点域名解析或规则下载，检查 `dns-direct`。非系统 DNS 必须显式包含 `"detour": "DIRECT"`；否则国内 DNS 请求可能进入默认代理，而代理节点域名又需要同一 DNS，形成启动循环。
+移动端只生成一个 `⚡ 全部自动` URLTest；地区组保留选择器，不额外并发测速。重新从 Sub-Store 预览并导入最新配置，确认 JSON 中只有一个 `"type": "urltest"`。
 
-如果全部候选都失败，sing-box 仍会在规则集初始化阶段报错；这表示当前网络既不能通过代理访问规则文件，也不能直连 GitHub Pages，需要更换网络或节点后重新加载配置。
+## IPv6 与 QUIC
+
+如果网络没有稳定 IPv6，把任务的 `ipv6Mode` 改为 `ipv4-only`。`quicMode=proxy-block` 只阻断代理路径上的 UDP/443，国内直连 QUIC 保留；`all-block` 阻断全部应用 QUIC；`allow` 不添加阻断规则。
+
+## 规则下载与 DNS
+
+代理 DNS 使用 `⚡ 全部自动`，规则下载使用 `🧭 DNS 与规则下载`，两者不会互相解析形成启动环路。`dns-direct` 必须通过 `DIRECT` 出站；如果节点域名解析失败，先检查国内 DNS，再切换到 IP/备用节点。
+
+OpenWrt 透明网关不在本阶段范围内；不要用旧 OpenWrt JSON 代替终端配置。

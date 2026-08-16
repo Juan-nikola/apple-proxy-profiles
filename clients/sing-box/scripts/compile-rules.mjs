@@ -258,7 +258,7 @@ async function compileCommand(corePath, env) {
 async function checkCommand(corePath) {
   const examplesRoot = resolve(import.meta.dirname, "../examples");
   const configs = new Map();
-  for (const platform of ["macos", "iphone", "ipad", "android", "openwrt"]) {
+  for (const platform of ["macos", "iphone", "ipad", "android"]) {
     for (const suffix of ["", "-diagnostic"]) {
       const name = `sing-box-${platform}${suffix}.json`;
       configs.set(name, await readFile(join(examplesRoot, name)));

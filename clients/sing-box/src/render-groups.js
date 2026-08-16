@@ -3,17 +3,22 @@ import { POLICY_TARGET } from "../../../shared/policies/intents.js";
 import { NON_CHAINED_FILTER } from "../../../shared/policies/filters.js";
 
 const RULE_DOWNLOAD_GROUP = "🧭 DNS 与规则下载";
-const RULE_DOWNLOAD_FAILOVER_GROUP = "🧭 规则下载故障转移";
-const FALLBACK_TOLERANCE_MS = 65535;
-const MOBILE_MEMORY_PLATFORMS = new Set(["iphone", "ipad"]);
+const PRIMARY_GROUP = "🚀 节点选择";
+const AUTO_GROUP = "⚡ 全部自动";
+const FALLBACK_GROUP_PATTERN = /故障转移/u;
+const MOBILE_MEMORY_PLATFORMS = new Set(["iphone", "ipad", "android"]);
+const TEST_URL = "https://www.gstatic.com/generate_204";
 
 function isMobileMemoryConstrained(options) {
   return MOBILE_MEMORY_PLATFORMS.has(options.platform);
 }
 
-function targetName(value, { compact = false } = {}) {
-  if (value === POLICY_TARGET.primaryProxy) return "⚡ 全部自动";
-  if (compact && value === "🛟 全部故障转移") return "⚡ 全部自动";
+function isDisabledFallback(name) {
+  return typeof name === "string" && FALLBACK_GROUP_PATTERN.test(name);
+}
+
+function targetName(value) {
+  if (value === POLICY_TARGET.primaryProxy) return AUTO_GROUP;
   return value;
 }
 
@@ -28,70 +33,45 @@ function filterNodes(filter, nodes) {
   return nodes.filter((node) => pattern.test(node.name)).map((node) => node.name);
 }
 
-function duration(seconds) {
-  return `${Number(seconds)}s`;
+function candidateList(group, nodes, { compact = false } = {}) {
+  const candidates = [
+    ...(compact && group.kind === "continent" ? [] : group.candidates
+      .filter((candidate) => !isDisabledFallback(candidate))
+      .map(targetName)),
+    ...filterNodes(group.nodeFilter, nodes),
+  ];
+  return candidates.filter((item, index, all) => all.indexOf(item) === index);
 }
 
-function renderRuleDownloadGroups(inventory, ruleProbeUrl, { compact = false } = {}) {
-  if (compact) {
-    return [{
-      type: "selector",
-      tag: RULE_DOWNLOAD_GROUP,
-      outbounds: ["⚡ 全部自动", "DIRECT"],
-      default: "⚡ 全部自动",
-      interrupt_exist_connections: true,
-    }];
-  }
-  const nodeCandidates = filterNodes(NON_CHAINED_FILTER, inventory);
-  const failover = {
-    type: "urltest",
-    tag: RULE_DOWNLOAD_FAILOVER_GROUP,
-    outbounds: [...nodeCandidates, "DIRECT"],
-    url: ruleProbeUrl,
-    interval: "30s",
-    // sing-box has no ordered fallback outbound. A very large URLTest
-    // tolerance preserves the first healthy candidate and only advances when
-    // it fails, which is the closest native equivalent.
-    tolerance: FALLBACK_TOLERANCE_MS,
+function renderDownloadGroup() {
+  return {
+    type: "selector",
+    tag: RULE_DOWNLOAD_GROUP,
+    outbounds: [AUTO_GROUP, "DIRECT"],
+    default: AUTO_GROUP,
     interrupt_exist_connections: true,
   };
-  return [
-    {
-      type: "selector",
-      tag: RULE_DOWNLOAD_GROUP,
-      outbounds: [RULE_DOWNLOAD_FAILOVER_GROUP, "🚀 节点选择", "DIRECT"],
-      default: RULE_DOWNLOAD_FAILOVER_GROUP,
-      interrupt_exist_connections: true,
-    },
-    failover,
-  ];
 }
 
-function renderGroup(group, inventory, { compact = false } = {}) {
-  if (group.name === "🚀 节点选择") {
-    // Keep the primary selector compact: only helpers and continent groups,
-    // so GUI clients (SFA/SFM) show a short hierarchy instead of a flat
-    // list of every node. Concrete nodes live inside the continent groups.
-    const outbounds = group.candidates
-      .map((candidate) => targetName(candidate, { compact }))
-      .filter((item, index, all) => all.indexOf(item) === index);
+function renderGroup(group, nodes, { compact = false } = {}) {
+  if (group.name === RULE_DOWNLOAD_GROUP) return renderDownloadGroup();
+
+  const candidates = candidateList(group, nodes, { compact });
+  if (group.kind === "ai" && candidates[0] !== AUTO_GROUP) candidates.unshift(AUTO_GROUP);
+  const outbounds = candidates.length > 0 ? candidates : ["DIRECT"];
+
+  if (group.name === PRIMARY_GROUP) {
+    const primary = outbounds.filter((candidate) => candidate !== "DIRECT");
     return {
       type: "selector",
       tag: group.name,
-      outbounds: outbounds.length > 0 ? outbounds : ["DIRECT"],
-      default: outbounds[0] ?? "DIRECT",
+      outbounds: primary.length > 0 ? primary : ["DIRECT"],
+      default: primary[0] ?? "DIRECT",
       interrupt_exist_connections: true,
     };
   }
-  const explicitCandidates = group.kind === "source"
-    ? group.candidates.filter((candidate) => candidate !== "DIRECT")
-    : group.candidates;
-  const candidates = [
-    ...(compact && group.kind === "continent" ? [] : explicitCandidates.map((candidate) => targetName(candidate, { compact }))),
-    ...filterNodes(group.nodeFilter, inventory),
-  ].filter((item, index, all) => all.indexOf(item) === index);
-  const outbounds = candidates.length > 0 ? candidates : ["DIRECT"];
-  if (compact && group.kind === "chain" && (group.strategy === "auto-test" || group.strategy === "fallback")) {
+
+  if (compact && group.strategy === "auto-test" && group.name !== AUTO_GROUP) {
     return {
       type: "selector",
       tag: group.name,
@@ -100,50 +80,42 @@ function renderGroup(group, inventory, { compact = false } = {}) {
       interrupt_exist_connections: true,
     };
   }
-  if (group.strategy === "auto-test" || group.strategy === "fallback") {
+
+  if (group.strategy === "auto-test") {
     return {
       type: "urltest",
       tag: group.name,
       outbounds,
-      url: "https://www.gstatic.com/generate_204",
-      interval: duration(group.test?.interval ?? 600),
-      tolerance: group.strategy === "fallback"
-        ? FALLBACK_TOLERANCE_MS
-        : group.test?.tolerance ?? 100,
+      url: TEST_URL,
+      interval: `${Number(group.test?.interval ?? 600)}s`,
+      tolerance: group.test?.tolerance ?? 100,
       interrupt_exist_connections: true,
     };
   }
-  const outbound = {
+
+  const selector = {
     type: "selector",
     tag: group.name,
     outbounds,
     interrupt_exist_connections: true,
   };
-  const defaultChoice = group.defaultChoice;
-  if (defaultChoice !== undefined) outbound.default = targetName(defaultChoice, { compact });
-  return outbound;
+  if (group.defaultChoice !== undefined && !isDisabledFallback(group.defaultChoice)) {
+    selector.default = targetName(group.defaultChoice);
+  }
+  return selector;
 }
 
-export function renderSingBoxGroups(options, nodes, { ruleProbeUrl = "https://www.gstatic.com/generate_204" } = {}) {
+export function renderSingBoxGroups(options, nodes) {
   const inventory = Array.isArray(nodes) ? nodes : [];
-  // iOS NetworkExtension has a much tighter memory ceiling than desktop and
-  // routers. Keep one shared probe graph there; every additional URLTest
-  // would open the same node connections again during startup.
   const compact = isMobileMemoryConstrained(options);
   const shared = buildPolicyGroups(options, inventory);
-  const visible = [];
-  const hidden = [];
+  const rendered = [];
+
   for (const group of shared) {
-    if (group.name === RULE_DOWNLOAD_GROUP) {
-      const renderedDownloadGroups = renderRuleDownloadGroups(inventory, ruleProbeUrl, { compact });
-      visible.push(renderedDownloadGroups[0]);
-      hidden.push(...renderedDownloadGroups.slice(1));
-      continue;
-    }
-    if (compact && group.strategy === "fallback") continue;
-    if (compact && group.kind === "helper" && group.name !== "⚡ 全部自动") continue;
-    const rendered = renderGroup(group, inventory, { compact });
-    (group.hidden === true ? hidden : visible).push(rendered);
+    if (group.strategy === "fallback") continue;
+    if (compact && group.strategy === "auto-test" && group.name !== AUTO_GROUP) continue;
+    rendered.push(renderGroup(group, inventory, { compact }));
   }
-  return [...visible, ...hidden];
+
+  return rendered;
 }

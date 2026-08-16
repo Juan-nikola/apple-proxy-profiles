@@ -49,7 +49,7 @@ const GENERATOR_SCHEMAS = Object.freeze({
     requiresSubscriptionName: true,
   }),
   "sing-box/scripts/sing-box-config-generator.js": configSchema({
-    platforms: ["macos", "iphone", "ipad", "android", "openwrt"],
+    platforms: ["macos", "iphone", "ipad", "android"],
     requiresSubscriptionName: true,
     extraKeys: ["profileMode", "nodeErrorMode"],
     extraEnums: {

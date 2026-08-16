@@ -1,68 +1,54 @@
 # sing-box 配置生成器
 
-sing-box 新任务只读取 `apple-proxy-singbox`。客户端 collection 边界、迁移与回滚以 [Sub-Store 客户端节点池指南](../../docs/substore-client-pools.md) 为准；已有 `apple-proxy-sources` collection、tasks 和旧 URL 保留作兼容/回滚，不要删除。
+本目录生成 macOS、iPhone、iPad 和 Android 的 sing-box 配置。节点仍由你在 Sub-Store 的独立组合 `apple-proxy-singbox` 维护；生成器不会按机场、来源或地区静默删节点，默认 `nodeErrorMode=strict`，无法完整表达的节点会直接让预览失败。更多迁移和回滚说明见 [Sub-Store 客户端节点池指南](../../docs/substore-client-pools.md)。
 
-本目录为官方 sing-box 客户端生成 JSON 配置，覆盖 macOS、iPhone、iPad、Android 和 OpenWrt 软路由。配置由私密 Sub-Store 运行时生成，`current` 是通过验证的发布指针，`edge` 跟踪 testing 分支每日构建；前沿版本只应先在单台设备或测试 VLAN 灰度。
+## 分流模型
 
-## 先看这三份文档
+配置使用 sing-box 1.14 testing 的新式 rule action 和 `.srs` rule-set：
 
-1. [五客户端总指南](../../docs/substore-two-layer-setup.md)：创建 `apple-proxy-singbox`，引用已有 `snell`、`vlesshy2`，并按平台创建五个私密任务。
-2. [sing-box 部署](docs/deployment.md)：填写远程 JS、平台参数、`channel=current|edge`，导入官方客户端。
-3. [OpenWrt 透明网关](docs/openwrt.md)：单独验证 TUN、DNS 劫持、透明路由、LAN 与 IPv6。
+1. 私网、局域网和明确国内规则直连。
+2. OpenAI、YouTube、GitHub、流媒体、社交、海外游戏等明确海外规则走对应策略组。
+3. `.cn` 等中国域名直连。
+4. 其他域名执行 `resolve`，用 `ChinaIP` rule-set 判断解析结果；中国 IP 直连，其他地址进入 `🚀 节点选择`。
+5. 未知 DNS 查询先使用国内 DNS；若返回结果不是中国 IP，再使用经代理的 DoH。这样可以利用 GeoIP 判断未收录域名，同时避免把所有域名交给污染风险较高的直连 DNS。
 
-## 五个私密 File 任务
+这不是“请求失败后透明重试”：sing-box 路由不能安全地把已经失败的 TCP/UDP 请求重放到另一个出口。被墙的中国域名需要加入 `shared/rules/custom-rules.js` 的 proxy/ai 集合，或在服务策略组中手动切换。
 
-五个 File 都引用同一份 Config Generator。`Apple-Proxy-Nodes` 是可替换的示例显示名，必须改成你的节点订阅真实显示名；`name` 固定指向保留来源标记的原始组合 `apple-proxy-singbox`，不要指向 Shadowrocket 的处理组合。
+## 策略组
 
-| File | 平台 | Arguments 差异 |
-| --- | --- | --- |
-| `sing-box-macos` | macOS | `platform=macos&ipv6Mode=ipv4-only` |
-| `sing-box-iphone` | iPhone | `platform=iphone&ipv6Mode=auto` |
-| `sing-box-ipad` | iPad | `platform=ipad&ipv6Mode=auto` |
-| `sing-box-android` | Android | `platform=android&ipv6Mode=auto` |
-| `sing-box-openwrt` | OpenWrt | `platform=openwrt&ipv6Mode=auto` |
+- `🚀 节点选择`：主选择器。
+- `⚡ 全部自动`：只对实际节点做 URLTest，选择健康且延迟较低的节点。
+- `🌏 亚太`、`🌍 欧洲`、`🌎 美洲`：地区选择器及地区自动组。
+- `🤖 AI 专用`、`🐙 GitHub`、`📺 YouTube`、`🎬 海外流媒体`、`💬 海外社交`、`🍎 Apple`、`🪟 Microsoft`、`🇨🇳 国内平台`：业务策略组。
+- `🧭 DNS 与规则下载`：规则下载可手动切换，但代理 DNS 永远绕过它并经 `⚡ 全部自动`，避免启动环路。
 
-公共参数为：
+所谓“故障转移”不再生成伪 fallback 组。sing-box 原生 `urltest` 是健康测速选择，不是有序请求重试。
+
+## Sub-Store 参数
+
+四个平台共用同一套参数，只改变 `platform` 和 `ipv6Mode`：
 
 ```text
-output=config&type=collection&name=apple-proxy-singbox&subscriptionName=Apple-Proxy-Nodes&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&autoGroupMode=auto&clientChain=off&nodeErrorMode=strict&channel=current
+output=config&type=collection&name=apple-proxy-singbox&subscriptionName=Apple-Proxy-Nodes&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&autoGroupMode=auto&clientChain=off&nodeErrorMode=strict&channel=edge
 ```
 
-把每个平台追加到公共参数末尾。旧版 Sub-Store 单行模式使用 `JS_URL#output=config&type=collection&...`；不能使用 `?` 连接脚本参数。要测试 testing 分支，只把 `channel=current` 改为 `channel=edge`，并将远程脚本路径中的 `current` 改为 `edge`。
-
-`nodeErrorMode=strict` 是默认安全边界：只要用户选入的任一节点无法被 sing-box 完整表达，任务就失败并按协议类型报告计数，避免不知情地丢节点。迁移期确实需要保留可用子集时，可显式改为 `nodeErrorMode=compatible`，并检查 preview 日志中的 `renderFailures`。
-
-DNS 模式现在是实际路由语义：`stable` 为国内直连 DNS／明确海外代理 DNS；`privacy` 为国内规则直连、其他查询默认通过代理 DoH；`speed` 允许海外 DoH 直连。非系统的国内 DNS 会强制使用 `DIRECT` 出站，不依赖代理节点启动。
-
-## 公开脚本地址
-
-- 稳定版：`https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/scripts/sing-box-config-generator.js`
-- 测试版：`https://juan-nikola.github.io/apple-proxy-profiles/edge/sing-box/scripts/sing-box-config-generator.js`
-
-预览成功标志：输出是合法 JSON，包含 `log`、`dns`、`inbounds`、`outbounds`、`route`，并且有节点和规则引用。Apple/Android 的 TUN 配置不应直接复制到 OpenWrt；OpenWrt 是透明网关，需用独立 LAN/VLAN 灰度。
-
-如果 sing-box 日志出现 `https://https:%2F...` 或 `invalid port`，说明旧配置把完整 DoH URL 填进了结构化 HTTPS DNS 的 `server` 字段。重新生成当前配置后，`server` 应是纯主机/IP，`server_port`、`path` 和 `tls.server_name` 分开出现；不要手工把完整 URL 拼回 `server`。
-
-## 改什么去哪里
-
-| 需求 | 修改位置 | 说明 |
+| File | `platform` | 推荐 `ipv6Mode` |
 | --- | --- | --- |
-| 增加节点或来源 | Sub-Store 的 `apple-proxy-singbox` | 只在私密组合中添加来源，不改公开 JS。 |
-| 改分流规则 | `shared/rules/`、`clients/sing-box/src/render-rules.js` | 规则源与客户端格式分开维护。 |
-| 改平台 TUN/透明网关 | `clients/sing-box/src/render-platform.js`、`src/render-config.js` | Apple/Android 与 OpenWrt 必须分别验证。 |
-| 改 testing/current 行为 | `clients/sing-box/src/options.js`、`src/substore-config-entry.js` | `edge` 只适合灰度，`current` 才是稳定入口。 |
-| 改 `.srs` 规则集 | `public/current/sing-box/rules/*.json` 或规则源 | `.srs` 由官方 sing-box core 编译，不能手工编辑。 |
-| 改文档/测试 | `clients/sing-box/docs/`、`clients/sing-box/test/` | 先更新文档契约，再构建和校验。 |
+| sing-box-macos | `macos` | `ipv4-only` |
+| sing-box-iphone | `iphone` | `auto` |
+| sing-box-ipad | `ipad` | `auto` |
+| sing-box-android | `android` | `auto` |
 
-`clients/sing-box/dist/`、`public/current/sing-box/`、`public/edge/sing-box/` 是生成产物，只读使用。真实 JSON、节点 URL、凭据和 Sub-Store API 不得进仓库。
+`edge` 每天使用官方 testing 最新发布版构建；`current` 用于保留经验证的生产快照。当前阶段不生成 OpenWrt 配置，避免把终端 TUN 配置误当透明网关配置。
 
-## 本地构建与检查
+## 构建与检查
 
 ```bash
 npm ci
 npm --workspace @apple-proxy-profiles/sing-box test
 npm --workspace @apple-proxy-profiles/sing-box run build
-npm --workspace @apple-proxy-profiles/sing-box run check:secrets
+npm --workspace @apple-proxy-profiles/sing-box run fixtures
+SING_BOX_CORE=/path/to/sing-box npm --workspace @apple-proxy-profiles/sing-box run check:config
 ```
 
-编译二进制规则集时还需要官方 sing-box core，详见 [OpenWrt 与规则集构建说明](docs/openwrt.md) 和根目录[维护手册](../../docs/maintenance.md)。
+`.srs` 必须由官方 sing-box core 编译。节点凭据、真实订阅 URL 和 Sub-Store API 不得进入仓库；`dist/` 和 `public/` 下的生成文件只由构建流程更新。

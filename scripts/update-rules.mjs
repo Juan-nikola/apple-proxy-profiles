@@ -39,7 +39,7 @@ const INDEPENDENT_CLIENT_PATH = /^(?:anywhere|egern|shadowrocket|sing-box|surge|
 const LEGACY_CURRENT_EXTRA_FILES = Object.freeze([
   /^frontier-manifest\.json$/u,
   /^surge\/(?:macos|iphone|ipad)\/manifest\.json$/u,
-  /^singbox\/(?:macos|iphone|ipad|android|openwrt)\/manifest\.json$/u,
+  /^singbox\/(?:macos|iphone|ipad|android)\/manifest\.json$/u,
 ]);
 
 export function parseUpdateRulesArguments(args) {
@@ -322,7 +322,6 @@ export function selectDefaultStaticFiles(files) {
     "sing-box/examples/sing-box-iphone.json",
     "sing-box/examples/sing-box-ipad.json",
     "sing-box/examples/sing-box-android.json",
-    "sing-box/examples/sing-box-openwrt.json",
   ]);
   for (const [path, content] of [...selected]) {
     try {
@@ -517,7 +516,7 @@ async function staticFiles() {
     ["surge/examples/surge-ipad.conf", "clients/surge/examples/surge-ipad.conf"],
     ["sing-box/scripts/sing-box-config-generator.js", "clients/sing-box/dist/sing-box-config-generator.js"],
     ["sing-box/scripts/substore-config-generator.js", "clients/sing-box/dist/substore-config-generator.js"],
-    ...["macos", "iphone", "ipad", "android", "openwrt"].flatMap((platform) => [
+     ...["macos", "iphone", "ipad", "android"].flatMap((platform) => [
       [`sing-box/examples/sing-box-${platform}.json`, `clients/sing-box/examples/sing-box-${platform}.json`],
       [`sing-box/examples/sing-box-${platform}-diagnostic.json`, `clients/sing-box/examples/sing-box-${platform}-diagnostic.json`],
     ]),

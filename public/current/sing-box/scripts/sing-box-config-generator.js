@@ -787,6 +787,19 @@ var SingBoxConfigBundle = (() => {
     }
     return { renderable, failureProtocols: failures };
   }
+  function assertRenderableNodes(nodes, clientName, renderOneNode) {
+    validateRenderableInvocation(nodes, clientName, renderOneNode);
+    const failures = {};
+    for (const node of nodes) {
+      try {
+        renderOneNode(node);
+      } catch {
+        increment(failures, protocolOf(node));
+      }
+    }
+    const counts = failureSummary(failures);
+    if (counts) throw new Error(`${clientName} cannot render selected protocols: ${counts}`);
+  }
 
   // ../../shared/policies/platform-presets.js
   var POLICY_PLATFORM_PRESETS = Object.freeze({
@@ -827,12 +840,14 @@ var SingBoxConfigBundle = (() => {
     autoGroupMode: "auto",
     clientChain: "off",
     profileMode: "light",
-    adblockMode: "off"
+    adblockMode: "off",
+    nodeErrorMode: "strict"
   });
-  var PLATFORMS = /* @__PURE__ */ new Set(["macos", "iphone", "ipad", "android", "openwrt"]);
+  var PLATFORMS = /* @__PURE__ */ new Set(["macos", "iphone", "ipad", "android"]);
   var CHANNELS = /* @__PURE__ */ new Set(["edge", "current"]);
   var PROFILE_MODES = /* @__PURE__ */ new Set(["light", "diagnostic"]);
   var ADBLOCK_MODES = /* @__PURE__ */ new Set(["off", "full"]);
+  var NODE_ERROR_MODES = /* @__PURE__ */ new Set(["strict", "compatible"]);
   var ALLOWED_KEYS = /* @__PURE__ */ new Set([...REQUIRED_KEYS, ...Object.keys(DEFAULTS)]);
   var PARSED = /* @__PURE__ */ new WeakSet();
   function requiredString(raw, key) {
@@ -866,6 +881,8 @@ var SingBoxConfigBundle = (() => {
     if (typeof profileMode !== "string" || !PROFILE_MODES.has(profileMode)) throw new Error("Option 'profileMode' has an unsupported value");
     const adblockMode = raw.adblockMode === void 0 ? DEFAULTS.adblockMode : raw.adblockMode;
     if (typeof adblockMode !== "string" || !ADBLOCK_MODES.has(adblockMode)) throw new Error("Option 'adblockMode' has an unsupported value");
+    const nodeErrorMode = raw.nodeErrorMode === void 0 ? DEFAULTS.nodeErrorMode : raw.nodeErrorMode;
+    if (typeof nodeErrorMode !== "string" || !NODE_ERROR_MODES.has(nodeErrorMode)) throw new Error("Option 'nodeErrorMode' has an unsupported value");
     const options = {
       output: "config",
       type: "collection",
@@ -882,9 +899,10 @@ var SingBoxConfigBundle = (() => {
       autoGroupMode: enumValue(raw, "autoGroupMode", DEFAULTS.autoGroupMode),
       clientChain: enumValue(raw, "clientChain", DEFAULTS.clientChain),
       profileMode,
-      adblockMode
+      adblockMode,
+      nodeErrorMode
     };
-    platformPolicyPreset(platform === "openwrt" ? "macos" : platform);
+    platformPolicyPreset(platform);
     Object.freeze(options);
     PARSED.add(options);
     return options;
@@ -914,6 +932,8 @@ var SingBoxConfigBundle = (() => {
     "grpc-opts",
     "h2-opts",
     "http-opts",
+    "httpupgrade-opts",
+    "xhttp-opts",
     "cipher",
     "password",
     "uuid",
@@ -944,6 +964,11 @@ var SingBoxConfigBundle = (() => {
     "dns_servers",
     "mtu",
     "keepalive",
+    "reserved",
+    "address",
+    "allowed-ips",
+    "allowed_ips",
+    "persistent-keepalive",
     "obfs",
     "obfs-mode",
     "obfs_mode",
@@ -956,20 +981,32 @@ var SingBoxConfigBundle = (() => {
     "user-key",
     "udp-relay-mode",
     "udp_relay_mode",
+    "congestion-control",
+    "congestion_control",
+    "heartbeat",
     "ports",
+    "server-ports",
+    "server_ports",
     "port-hopping",
     "port_hopping",
     "port-hopping-interval",
     "port_hopping_interval",
+    "hop-interval",
+    "hop_interval",
+    "hop_interval_max",
     "bandwidth",
     "up",
     "down",
+    "up_mbps",
+    "down_mbps",
     "reuse",
     "tfo",
     "udp_relay",
     "idle-session-check-interval",
     "idle-session-timeout",
     "min-idle-session",
+    "client-metadata",
+    "client_metadata",
     "underlying-proxy",
     "chain",
     "dialer-proxy",
@@ -998,6 +1035,8 @@ var SingBoxConfigBundle = (() => {
     "idle-session-check-interval",
     "idle-session-timeout",
     "min-idle-session",
+    "client-metadata",
+    "client_metadata",
     ...CHAIN_ALIASES2
   ]);
   var ANYTLS_REALITY_FIELDS = /* @__PURE__ */ new Set(["public-key", "short-id", "_spider-x"]);
@@ -1006,7 +1045,9 @@ var SingBoxConfigBundle = (() => {
   }
   function requiredString2(node, key) {
     const value = node[key];
-    if (typeof value !== "string" || value.length === 0 || value.trim() !== value) throw new Error(`sing-box node field '${key}' is invalid`);
+    if (typeof value !== "string" || value.length === 0 || value.trim() !== value) {
+      throw new Error(`sing-box node field '${key}' is invalid`);
+    }
     return value;
   }
   function requiredPort(node) {
@@ -1016,7 +1057,9 @@ var SingBoxConfigBundle = (() => {
   }
   function validateNodeShape(node) {
     if (!node || typeof node !== "object" || Array.isArray(node)) throw new TypeError("sing-box node is invalid");
-    if (typeof node.name !== "string" || node.name.length === 0 || /[\r\n]/u.test(node.name)) throw new Error("sing-box node name is invalid");
+    if (typeof node.name !== "string" || node.name.length === 0 || /[\r\n]/u.test(node.name)) {
+      throw new Error("sing-box node name is invalid");
+    }
     requiredString2(node, "server");
     requiredPort(node);
     for (const key of Object.keys(node)) {
@@ -1027,24 +1070,10 @@ var SingBoxConfigBundle = (() => {
   function validateAnyTlsShape(node) {
     const unsupported = Object.keys(node).find((key) => !key.startsWith("_") && !ANYTLS_FIELDS.has(key));
     if (unsupported !== void 0) throw new Error(`Unsupported sing-box AnyTLS field: ${unsupported}`);
-    if (hasOwn(node, "network") && node.network !== "tcp") {
-      throw new Error("Unsupported sing-box AnyTLS field: network");
-    }
-    if (hasOwn(node, "tls") && (typeof node.tls !== "boolean" || node.tls === false)) {
-      throw new Error("Unsupported sing-box AnyTLS field: tls");
-    }
-    if (hasOwn(node, "udp") && typeof node.udp !== "boolean") {
-      throw new Error("Unsupported sing-box AnyTLS field: udp");
-    }
-    if (hasOwn(node, "security") && !["tls", "reality"].includes(node.security)) {
+    if (node.network !== void 0 && node.network !== "tcp") throw new Error("Unsupported sing-box AnyTLS network");
+    if (node.tls !== void 0 && node.tls !== true) throw new Error("sing-box AnyTLS requires TLS");
+    if (node.security !== void 0 && !["tls", "reality"].includes(node.security)) {
       throw new Error(`Unsupported sing-box AnyTLS security: ${String(node.security)}`);
-    }
-    const reality = node["reality-opts"];
-    if (node.security === "reality" && !hasOwn(node, "reality-opts")) {
-      throw new Error("sing-box AnyTLS Reality options are required for Reality security");
-    }
-    if (node.security === "tls" && hasOwn(node, "reality-opts")) {
-      throw new Error("sing-box AnyTLS security conflicts with Reality options");
     }
     for (const key of ["sni", "servername"]) {
       if (hasOwn(node, key) && (typeof node[key] !== "string" || node[key].length === 0 || node[key].trim() !== node[key])) {
@@ -1052,40 +1081,30 @@ var SingBoxConfigBundle = (() => {
       }
     }
     if (hasOwn(node, "sni") && hasOwn(node, "servername") && node.sni !== node.servername) {
-      throw new Error("Conflicting sing-box AnyTLS aliases: sni,servername");
+      throw new Error("Conflicting sing-box AnyTLS server name aliases");
     }
     for (const key of ["skip-cert-verify", "allow-insecure"]) {
-      if (hasOwn(node, key) && typeof node[key] !== "boolean") {
-        throw new Error(`sing-box AnyTLS field '${key}' is invalid`);
-      }
+      if (hasOwn(node, key) && typeof node[key] !== "boolean") throw new Error(`sing-box AnyTLS field '${key}' is invalid`);
     }
     if (hasOwn(node, "skip-cert-verify") && hasOwn(node, "allow-insecure") && node["skip-cert-verify"] !== node["allow-insecure"]) {
-      throw new Error("Conflicting sing-box AnyTLS aliases: skip-cert-verify,allow-insecure");
+      throw new Error("Conflicting sing-box AnyTLS certificate verification aliases");
     }
+    if (hasOwn(node, "udp") && typeof node.udp !== "boolean") throw new Error("sing-box AnyTLS field 'udp' is invalid");
     if (hasOwn(node, "client-fingerprint") && (typeof node["client-fingerprint"] !== "string" || node["client-fingerprint"].length === 0 || node["client-fingerprint"].trim() !== node["client-fingerprint"])) {
       throw new Error("sing-box AnyTLS field 'client-fingerprint' is invalid");
     }
-    if (hasOwn(node, "reality-opts")) {
-      if (!reality || typeof reality !== "object" || Array.isArray(reality)) {
-        throw new Error("sing-box AnyTLS Reality options are invalid");
-      }
-      const unsupportedReality = Object.keys(reality).find((key) => !ANYTLS_REALITY_FIELDS.has(key));
-      if (unsupportedReality !== void 0) {
-        throw new Error(`Unsupported sing-box AnyTLS Reality field: ${unsupportedReality}`);
-      }
-      if (typeof reality["public-key"] !== "string" || reality["public-key"].length === 0 || reality["public-key"].trim() !== reality["public-key"]) {
-        throw new Error("sing-box AnyTLS Reality public key is invalid");
-      }
-      if (hasOwn(reality, "short-id") && (typeof reality["short-id"] !== "string" || !/^[0-9a-f]+$/iu.test(reality["short-id"]))) {
-        throw new Error("sing-box AnyTLS Reality short ID is invalid");
-      }
-      if (hasOwn(reality, "_spider-x") && (typeof reality["_spider-x"] !== "string" || reality["_spider-x"].length === 0 || reality["_spider-x"].trim() !== reality["_spider-x"])) {
-        throw new Error("sing-box AnyTLS Reality spider X is invalid");
-      }
+    const reality = node["reality-opts"];
+    if (node.security === "reality" && !reality) throw new Error("sing-box AnyTLS Reality options are required");
+    if (node.security === "tls" && reality) throw new Error("sing-box AnyTLS TLS conflicts with Reality options");
+    if (!reality) return;
+    const unsupportedReality = Object.keys(reality).find((key) => !ANYTLS_REALITY_FIELDS.has(key));
+    if (unsupportedReality !== void 0) throw new Error(`Unsupported sing-box AnyTLS Reality field: ${unsupportedReality}`);
+    if (typeof reality["public-key"] !== "string" || reality["public-key"].length === 0 || reality["public-key"].trim() !== reality["public-key"]) {
+      throw new Error("sing-box AnyTLS Reality public key is invalid");
     }
-  }
-  function sanitizeSingBoxNode(node) {
-    return Object.fromEntries(Object.entries(node).filter(([key]) => key.startsWith("_") || ALLOWED_KEYS2.has(key)));
+    if (reality["short-id"] !== void 0 && (typeof reality["short-id"] !== "string" || !/^[0-9a-f]+$/iu.test(reality["short-id"]))) {
+      throw new Error("sing-box AnyTLS Reality short ID is invalid");
+    }
   }
   function setIf(target, key, value) {
     if (value !== void 0 && value !== null && value !== "") target[key] = value;
@@ -1094,14 +1113,8 @@ var SingBoxConfigBundle = (() => {
     if (!hasOwn(node, key)) return void 0;
     const value = node[key];
     if (Number.isSafeInteger(value) && value >= 0) return `${value}s`;
-    if (typeof value === "string" && value.length > 0 && value.trim() === value) return value;
-    throw new Error(`sing-box AnyTLS node field '${key}' is invalid`);
-  }
-  function minIdleSession(node) {
-    if (!hasOwn(node, "min-idle-session")) return void 0;
-    const value = node["min-idle-session"];
-    if (!Number.isSafeInteger(value) || value < 0) throw new Error("sing-box AnyTLS node field 'min-idle-session' is invalid");
-    return value;
+    if (typeof value === "string" && value.trim() === value && value.length > 0) return value;
+    throw new Error(`sing-box node field '${key}' is invalid`);
   }
   function tlsFields(node, required = false) {
     const reality = node["reality-opts"];
@@ -1110,17 +1123,17 @@ var SingBoxConfigBundle = (() => {
     const tls = { enabled: true };
     setIf(tls, "server_name", node.sni ?? node.servername);
     if (node.alpn !== void 0) {
-      if (!Array.isArray(node.alpn) || node.alpn.length === 0 || node.alpn.some((value) => typeof value !== "string" || value.length === 0 || value.trim() !== value)) {
+      if (!Array.isArray(node.alpn) || node.alpn.length === 0 || node.alpn.some((value) => typeof value !== "string" || !value)) {
         throw new Error("sing-box TLS ALPN is invalid");
       }
       tls.alpn = [...node.alpn];
     }
     if (node["skip-cert-verify"] === true || node["allow-insecure"] === true) tls.insecure = true;
     if (node["client-fingerprint"] !== void 0) {
-      tls.utls = { enabled: true, fingerprint: node["client-fingerprint"] };
+      tls.utls = { enabled: true, fingerprint: requiredString2(node, "client-fingerprint") };
     }
     if (reality !== void 0) {
-      if (!reality || typeof reality !== "object" || Array.isArray(reality) || typeof reality["public-key"] !== "string") {
+      if (!reality || typeof reality !== "object" || typeof reality["public-key"] !== "string") {
         throw new Error("sing-box Reality options are invalid");
       }
       tls.reality = { enabled: true, public_key: reality["public-key"] };
@@ -1128,29 +1141,9 @@ var SingBoxConfigBundle = (() => {
     }
     return tls;
   }
-  function packetEncoding(node) {
-    if (node["packet-encoding"] !== void 0) {
-      return String(node["packet-encoding"]).trim().toLowerCase();
-    }
-    if (node.packetEncoding !== void 0) {
-      return String(node.packetEncoding).trim().toLowerCase();
-    }
-    if (node.xudp === true) return "xudp";
-    if (node["packet-addr"] === true) return "packetaddr";
-    return void 0;
-  }
-  function packetEncodingForOutbound(node, outbound) {
-    const encoding = packetEncoding(node);
-    if (encoding === void 0 || encoding === "") return outbound;
-    if (encoding === "xudp" || encoding === "packetaddr" || encoding === "packet") {
-      outbound.packet_encoding = encoding === "packet" ? "packetaddr" : encoding;
-      return outbound;
-    }
-    throw new Error(`Unsupported sing-box packet encoding: ${encoding}`);
-  }
   function transportFields(node) {
     const network = String(node.network ?? "tcp").trim().toLowerCase();
-    if (network === "tcp" || network === "raw") return void 0;
+    if (["tcp", "raw"].includes(network)) return void 0;
     if (network === "ws") {
       const source = node["ws-opts"];
       if (!source || typeof source !== "object" || Array.isArray(source)) throw new Error("sing-box WebSocket options are invalid");
@@ -1161,10 +1154,10 @@ var SingBoxConfigBundle = (() => {
     if (network === "grpc") {
       const source = node["grpc-opts"] ?? {};
       const transport = { type: "grpc" };
-      setIf(transport, "service_name", source["grpc-service-name"]);
+      setIf(transport, "service_name", source["grpc-service-name"] ?? source.service_name);
       return transport;
     }
-    if (network === "h2" || network === "http2" || network === "http") {
+    if (["h2", "http2", "http"].includes(network)) {
       const source = node["h2-opts"] ?? node["http-opts"] ?? {};
       const transport = { type: "http" };
       setIf(transport, "method", source.method);
@@ -1173,7 +1166,20 @@ var SingBoxConfigBundle = (() => {
       if (source.host !== void 0) transport.host = Array.isArray(source.host) ? source.host : [source.host];
       return transport;
     }
+    if (network === "httpupgrade") {
+      const source = node["httpupgrade-opts"] ?? {};
+      const transport = { type: "httpupgrade", path: source.path ?? "/" };
+      setIf(transport, "host", source.host);
+      return transport;
+    }
     throw new Error(`Unsupported sing-box transport: ${network}`);
+  }
+  function packetEncoding(node, outbound) {
+    const raw = node["packet-encoding"] ?? node.packetEncoding ?? (node.xudp === true ? "xudp" : node["packet-addr"] === true ? "packetaddr" : void 0);
+    if (raw === void 0 || raw === "") return;
+    const encoding = String(raw).trim().toLowerCase();
+    if (!["xudp", "packetaddr", "packet"].includes(encoding)) throw new Error(`Unsupported sing-box packet encoding: ${encoding}`);
+    outbound.packet_encoding = encoding === "packet" ? "packetaddr" : encoding;
   }
   function base(node, type) {
     return { type, tag: node.name, server: node.server, server_port: requiredPort(node) };
@@ -1187,51 +1193,77 @@ var SingBoxConfigBundle = (() => {
     outbound.detour = GENERATED_CHAIN_POLICY;
     return outbound;
   }
+  function renderWireGuardEndpoint(node) {
+    validateNodeShape(node);
+    const peers = Array.isArray(node.peers) && node.peers.length > 0 ? node.peers : [{}];
+    const localAddress = node["local-address"] ?? node.local_ipv4 ?? node["local-ipv4"] ?? node.ip;
+    if (localAddress === void 0) throw new Error("sing-box WireGuard local address is required");
+    const endpointPeers = peers.map((peer) => {
+      const publicKey = peer["public-key"] ?? node["public-key"];
+      if (typeof publicKey !== "string" || !publicKey) throw new Error("sing-box WireGuard peer public key is required");
+      return {
+        address: peer.address ?? node.server,
+        port: Number(peer.port ?? node.port),
+        public_key: publicKey,
+        allowed_ips: peer["allowed-ips"] ?? peer.allowed_ips ?? ["0.0.0.0/0", "::/0"],
+        ...peer["pre-shared-key"] ?? node["pre-shared-key"] ? { pre_shared_key: peer["pre-shared-key"] ?? node["pre-shared-key"] } : {},
+        ...peer["persistent-keepalive"] ?? node.keepalive ? { persistent_keepalive_interval: Number(peer["persistent-keepalive"] ?? node.keepalive) } : {},
+        ...peer.reserved ?? node.reserved ? { reserved: peer.reserved ?? node.reserved } : {}
+      };
+    });
+    return {
+      type: "wireguard",
+      tag: node.name,
+      system: false,
+      mtu: Number(node.mtu ?? 1408),
+      address: Array.isArray(localAddress) ? localAddress : [localAddress],
+      private_key: requiredString2(node, "private-key"),
+      peers: endpointPeers
+    };
+  }
   function renderSingBoxOutbound(node) {
     validateNodeShape(node);
     const protocol2 = normalizeProtocol(node.type);
+    if (protocol2 === "wireguard") throw new Error("WireGuard is rendered as a sing-box endpoint");
     let outbound;
     switch (protocol2) {
       case "ss":
       case "shadowsocks":
         outbound = { ...base(node, "shadowsocks"), method: requiredString2(node, "cipher"), password: requiredString2(node, "password") };
-        if (node.network === "tcp" || node.network === "udp") outbound.network = node.network;
+        if (["tcp", "udp"].includes(node.network)) outbound.network = node.network;
         break;
       case "vmess":
         outbound = { ...base(node, "vmess"), uuid: requiredString2(node, "uuid"), security: node.security ?? node.cipher ?? "auto" };
         if (node["alter-id"] !== void 0 || node.alterId !== void 0) outbound.alter_id = Number(node["alter-id"] ?? node.alterId);
         outbound.tls = tlsFields(node);
         outbound.transport = transportFields(node);
-        packetEncodingForOutbound(node, outbound);
+        packetEncoding(node, outbound);
         break;
-      case "snell":
-        {
-          const version = Number(node.version);
-          if (![4, 5, 6].includes(version)) throw new Error("Unsupported sing-box Snell version");
-          const outputVersion = version === 5 ? 4 : version;
-          outbound = { ...base(node, "snell"), psk: requiredString2(node, "psk"), version: outputVersion };
-          if (node.network === "tcp" || node.network === "udp") outbound.network = node.network;
-          if (outputVersion === 4) {
-            setIf(outbound, "reuse", node.reuse);
-            setIf(outbound, "obfs_mode", node.obfs_mode ?? node["obfs-mode"] ?? node.obfs);
-            setIf(outbound, "obfs_host", node["obfs-host"] ?? node.obfs_host);
-          } else {
-            setIf(outbound, "userkey", node.userkey ?? node["user-key"]);
-            setIf(outbound, "reuse", node.reuse);
-            setIf(outbound, "mode", node.mode);
-          }
+      case "snell": {
+        const version = Number(node.version);
+        if (![4, 5, 6].includes(version)) throw new Error("Unsupported sing-box Snell version");
+        const outputVersion = version === 5 ? 4 : version;
+        outbound = { ...base(node, "snell"), psk: requiredString2(node, "psk"), version: outputVersion };
+        if (["tcp", "udp"].includes(node.network)) outbound.network = node.network;
+        if (outputVersion === 4) {
+          setIf(outbound, "reuse", node.reuse);
+          setIf(outbound, "obfs_mode", node.obfs_mode ?? node["obfs-mode"] ?? node.obfs);
+          setIf(outbound, "obfs_host", node["obfs-host"] ?? node.obfs_host);
+        } else {
+          setIf(outbound, "userkey", node.userkey ?? node["user-key"]);
+          setIf(outbound, "reuse", node.reuse);
+          setIf(outbound, "mode", node.mode);
         }
         break;
+      }
       case "vless":
-        if (node.encryption !== void 0 && !["", "none"].includes(node.encryption)) {
-          throw new Error(`Unsupported sing-box VLESS encryption: ${String(node.encryption)}`);
-        }
+        if (node.encryption !== void 0 && !["", "none"].includes(node.encryption)) throw new Error("Unsupported sing-box VLESS encryption");
         outbound = { ...base(node, "vless"), uuid: requiredString2(node, "uuid") };
         setIf(outbound, "flow", node.flow);
-        if (node.network === "tcp" || node.network === "udp") outbound.network = node.network;
+        if (["tcp", "udp"].includes(node.network)) outbound.network = node.network;
         outbound.tls = tlsFields(node);
         outbound.transport = transportFields(node);
-        packetEncodingForOutbound(node, outbound);
+        packetEncoding(node, outbound);
         break;
       case "trojan":
         outbound = { ...base(node, "trojan"), password: requiredString2(node, "password"), tls: tlsFields(node, true) };
@@ -1242,19 +1274,28 @@ var SingBoxConfigBundle = (() => {
         outbound = { ...base(node, "anytls"), password: requiredString2(node, "password"), tls: tlsFields(node, true) };
         setIf(outbound, "idle_session_check_interval", durationSeconds(node, "idle-session-check-interval"));
         setIf(outbound, "idle_session_timeout", durationSeconds(node, "idle-session-timeout"));
-        setIf(outbound, "min_idle_session", minIdleSession(node));
+        if (node["min-idle-session"] !== void 0) outbound.min_idle_session = Number(node["min-idle-session"]);
+        setIf(outbound, "client_metadata", node["client-metadata"] ?? node.client_metadata);
         break;
       case "hysteria2":
       case "hy2":
         outbound = { ...base(node, "hysteria2"), password: requiredString2(node, "password"), tls: tlsFields(node, true) };
+        setIf(outbound, "server_ports", node.server_ports ?? node["server-ports"] ?? node.ports);
+        setIf(outbound, "hop_interval", node.hop_interval ?? node["hop-interval"] ?? node["port-hopping-interval"]);
+        setIf(outbound, "hop_interval_max", node.hop_interval_max);
+        setIf(outbound, "up_mbps", node.up_mbps ?? node.up);
+        setIf(outbound, "down_mbps", node.down_mbps ?? node.down);
         if (node.obfs !== void 0) {
-          outbound.obfs = { type: node.obfs };
-          setIf(outbound.obfs, "password", node["obfs-password"] ?? node["obfs_password"]);
+          const type = typeof node.obfs === "string" ? node.obfs : node.obfs.type;
+          outbound.obfs = { type };
+          setIf(outbound.obfs, "password", node["obfs-password"] ?? node["obfs_password"] ?? node.obfs.password);
         }
         break;
       case "tuic":
         outbound = { ...base(node, "tuic"), uuid: requiredString2(node, "uuid"), password: requiredString2(node, "password"), tls: tlsFields(node, true) };
-        setIf(outbound, "udp_relay_mode", node["udp-relay-mode"] ?? node["udp_relay_mode"]);
+        setIf(outbound, "udp_relay_mode", node["udp-relay-mode"] ?? node.udp_relay_mode);
+        setIf(outbound, "congestion_control", node["congestion-control"] ?? node.congestion_control);
+        setIf(outbound, "heartbeat", node.heartbeat);
         break;
       case "socks5":
         outbound = base(node, "socks");
@@ -1272,23 +1313,16 @@ var SingBoxConfigBundle = (() => {
         setIf(outbound, "password", node.password);
         setIf(outbound, "private_key", node["private-key"] ?? node.private_key);
         break;
-      case "wireguard": {
-        const peer = node.peers?.[0] ?? {};
-        outbound = {
-          ...base(node, "wireguard"),
-          private_key: requiredString2(node, "private-key"),
-          peer_public_key: requiredString2({ "public-key": peer["public-key"] ?? node["public-key"] }, "public-key")
-        };
-        const address = node["local-address"] ?? node.local_ipv4 ?? node["local-ipv4"] ?? node.ip;
-        if (address !== void 0) outbound.local_address = Array.isArray(address) ? address : [address];
-        setIf(outbound, "pre_shared_key", peer["pre-shared-key"] ?? node["pre-shared-key"]);
-        break;
-      }
       default:
         throw new Error(`Unsupported sing-box protocol: ${protocol2 || "unknown"}`);
     }
     for (const key of ["tls", "transport"]) if (outbound[key] === void 0) delete outbound[key];
     return appendChain(outbound, node);
+  }
+  function renderSingBoxNode(node) {
+    const protocol2 = normalizeProtocol(node?.type);
+    if (protocol2 === "wireguard") return { endpoint: renderWireGuardEndpoint(node) };
+    return { outbound: renderSingBoxOutbound(node) };
   }
 
   // ../../shared/policies/filters.js
@@ -1550,9 +1584,20 @@ var SingBoxConfigBundle = (() => {
 
   // src/render-groups.js
   var RULE_DOWNLOAD_GROUP = "\u{1F9ED} DNS \u4E0E\u89C4\u5219\u4E0B\u8F7D";
-  var RULE_DOWNLOAD_FAILOVER_GROUP = "\u{1F9ED} \u89C4\u5219\u4E0B\u8F7D\u6545\u969C\u8F6C\u79FB";
+  var PRIMARY_GROUP = "\u{1F680} \u8282\u70B9\u9009\u62E9";
+  var AUTO_GROUP = "\u26A1 \u5168\u90E8\u81EA\u52A8";
+  var FALLBACK_GROUP_PATTERN = /故障转移/u;
+  var MOBILE_MEMORY_PLATFORMS = /* @__PURE__ */ new Set(["iphone", "ipad", "android"]);
+  var TEST_URL2 = "https://www.gstatic.com/generate_204";
+  function isMobileMemoryConstrained(options) {
+    return MOBILE_MEMORY_PLATFORMS.has(options.platform);
+  }
+  function isDisabledFallback(name) {
+    return typeof name === "string" && FALLBACK_GROUP_PATTERN.test(name);
+  }
   function targetName(value) {
-    return value === POLICY_TARGET.primaryProxy ? "\u26A1 \u5168\u90E8\u81EA\u52A8" : value;
+    if (value === POLICY_TARGET.primaryProxy) return AUTO_GROUP;
+    return value;
   }
   function filterNodes(filter, nodes) {
     if (filter === null) return [];
@@ -1564,87 +1609,79 @@ var SingBoxConfigBundle = (() => {
     }
     return nodes.filter((node) => pattern.test(node.name)).map((node) => node.name);
   }
-  function duration(seconds) {
-    return `${Number(seconds)}s`;
+  function candidateList(group, nodes, { compact = false } = {}) {
+    const candidates = [
+      ...compact && group.kind === "continent" ? [] : group.candidates.filter((candidate) => !isDisabledFallback(candidate)).map(targetName),
+      ...filterNodes(group.nodeFilter, nodes)
+    ];
+    return candidates.filter((item, index, all) => all.indexOf(item) === index);
   }
-  function renderRuleDownloadGroups(inventory, ruleProbeUrl) {
-    const nodeCandidates = filterNodes(NON_CHAINED_FILTER, inventory);
-    const failover = {
-      type: "urltest",
-      tag: RULE_DOWNLOAD_FAILOVER_GROUP,
-      outbounds: [...nodeCandidates, "DIRECT"],
-      url: ruleProbeUrl,
-      interval: "30s",
-      tolerance: 0,
+  function renderDownloadGroup() {
+    return {
+      type: "selector",
+      tag: RULE_DOWNLOAD_GROUP,
+      outbounds: [AUTO_GROUP, "DIRECT"],
+      default: AUTO_GROUP,
       interrupt_exist_connections: true
     };
-    return [
-      {
-        type: "selector",
-        tag: RULE_DOWNLOAD_GROUP,
-        outbounds: [RULE_DOWNLOAD_FAILOVER_GROUP, "\u{1F680} \u8282\u70B9\u9009\u62E9", "DIRECT"],
-        default: RULE_DOWNLOAD_FAILOVER_GROUP,
-        interrupt_exist_connections: true
-      },
-      failover
-    ];
   }
-  function renderGroup(group, inventory) {
-    if (group.name === "\u{1F680} \u8282\u70B9\u9009\u62E9") {
-      const outbounds2 = [
-        "\u26A1 \u5168\u90E8\u81EA\u52A8",
-        "\u{1F6DF} \u5168\u90E8\u6545\u969C\u8F6C\u79FB",
-        ...group.candidates.map(targetName)
-      ].filter((item, index, all) => all.indexOf(item) === index);
+  function renderGroup(group, nodes, { compact = false } = {}) {
+    if (group.name === RULE_DOWNLOAD_GROUP) return renderDownloadGroup();
+    const candidates = candidateList(group, nodes, { compact });
+    if (group.kind === "ai" && candidates[0] !== AUTO_GROUP) candidates.unshift(AUTO_GROUP);
+    const outbounds = candidates.length > 0 ? candidates : ["DIRECT"];
+    if (group.name === PRIMARY_GROUP) {
+      const primary = outbounds.filter((candidate) => candidate !== "DIRECT");
       return {
         type: "selector",
         tag: group.name,
-        outbounds: outbounds2.length > 0 ? outbounds2 : ["DIRECT"],
+        outbounds: primary.length > 0 ? primary : ["DIRECT"],
+        default: primary[0] ?? "DIRECT",
         interrupt_exist_connections: true
       };
     }
-    const candidates = [
-      ...group.candidates.map(targetName),
-      ...filterNodes(group.nodeFilter, inventory)
-    ].filter((item, index, all) => all.indexOf(item) === index);
-    const outbounds = candidates.length > 0 ? candidates : ["DIRECT"];
-    if (group.strategy === "auto-test" || group.strategy === "fallback") {
+    if (compact && group.strategy === "auto-test" && group.name !== AUTO_GROUP) {
+      return {
+        type: "selector",
+        tag: group.name,
+        outbounds,
+        default: outbounds[0],
+        interrupt_exist_connections: true
+      };
+    }
+    if (group.strategy === "auto-test") {
       return {
         type: "urltest",
         tag: group.name,
         outbounds,
-        url: "https://www.gstatic.com/generate_204",
-        interval: duration(group.test?.interval ?? 600),
+        url: TEST_URL2,
+        interval: `${Number(group.test?.interval ?? 600)}s`,
         tolerance: group.test?.tolerance ?? 100,
         interrupt_exist_connections: true
       };
     }
-    const outbound = {
+    const selector = {
       type: "selector",
       tag: group.name,
       outbounds,
       interrupt_exist_connections: true
     };
-    const defaultChoice = group.defaultChoice;
-    if (defaultChoice !== void 0) outbound.default = targetName(defaultChoice);
-    return outbound;
-  }
-  function renderSingBoxGroups(options, nodes, { ruleProbeUrl = "https://www.gstatic.com/generate_204" } = {}) {
-    const inventory = Array.isArray(nodes) ? nodes : [];
-    const shared = buildPolicyGroups(options, inventory);
-    const visible = [];
-    const hidden = [];
-    for (const group of shared) {
-      if (group.name === RULE_DOWNLOAD_GROUP) {
-        const [selector, failover] = renderRuleDownloadGroups(inventory, ruleProbeUrl);
-        visible.push(selector);
-        hidden.push(failover);
-        continue;
-      }
-      const rendered = renderGroup(group, inventory);
-      (group.hidden === true ? hidden : visible).push(rendered);
+    if (group.defaultChoice !== void 0 && !isDisabledFallback(group.defaultChoice)) {
+      selector.default = targetName(group.defaultChoice);
     }
-    return [...visible, ...hidden];
+    return selector;
+  }
+  function renderSingBoxGroups(options, nodes) {
+    const inventory = Array.isArray(nodes) ? nodes : [];
+    const compact = isMobileMemoryConstrained(options);
+    const shared = buildPolicyGroups(options, inventory);
+    const rendered = [];
+    for (const group of shared) {
+      if (group.strategy === "fallback") continue;
+      if (compact && group.strategy === "auto-test" && group.name !== AUTO_GROUP) continue;
+      rendered.push(renderGroup(group, inventory, { compact }));
+    }
+    return rendered;
   }
 
   // ../../shared/rules/lightweight-policy.js
@@ -1915,17 +1952,18 @@ var SingBoxConfigBundle = (() => {
     { ip_is_private: true, action: "route", outbound: "DIRECT" },
     { domain_suffix: ["local", "lan", "home.arpa"], action: "route", outbound: "DIRECT" }
   ]);
-  var QUIC_BLOCK_RULE = Object.freeze({ network: "udp", port: 443, action: "reject" });
+  var QUIC_BLOCK_RULE = Object.freeze({ network: "udp", port: 443, action: "reject", method: "drop" });
   var OVERSEAS_DNS_FALLBACK_RULE = Object.freeze({
     domain_suffix: PROXY_DNS_DOMAIN_SUFFIXES,
     action: "route",
     outbound: "\u{1F680} \u8282\u70B9\u9009\u62E9"
   });
-  var OVERSEAS_DNS_QUIC_BLOCK_RULE = Object.freeze({
-    ...QUIC_BLOCK_RULE,
-    domain_suffix: PROXY_DNS_DOMAIN_SUFFIXES
+  var CUSTOM_TARGETS = Object.freeze({
+    block: "REJECT",
+    direct: "DIRECT",
+    proxy: "\u{1F680} \u8282\u70B9\u9009\u62E9",
+    ai: "\u{1F916} AI \u4E13\u7528"
   });
-  var CUSTOM_TARGETS = Object.freeze({ block: "REJECT", direct: "DIRECT", proxy: "\u{1F680} \u8282\u70B9\u9009\u62E9", ai: "\u{1F916} AI \u4E13\u7528" });
   var CUSTOM_FIELDS = Object.freeze({
     DOMAIN: "domain",
     "DOMAIN-SUFFIX": "domain_suffix",
@@ -1939,31 +1977,50 @@ var SingBoxConfigBundle = (() => {
     }
     return value.replace(/\/+$/u, "");
   }
-  function routeAction(outbound) {
-    if (outbound === "REJECT") return { action: "reject", method: "default" };
+  function route(outbound) {
     return { action: "route", outbound };
   }
+  function reject() {
+    return { action: "reject", method: "default" };
+  }
   function optionalAdblockBase(defaultBase) {
-    const optional = defaultBase.replace(/\/sing-box\/(?:rule-sets|rules)$/u, "/optional/adblock-full/sing-box");
+    const optional = defaultBase.replace(/\/sing-box\/rule-sets$/u, "/optional/adblock-full/sing-box");
     if (optional === defaultBase) throw new Error("sing-box adblock rule base URL must end in /sing-box/rule-sets");
     return optional;
   }
-  function renderCustomRules() {
-    const rendered = [];
+  function customRuleFields(entry) {
+    const [type, value, ...modifiers] = entry.split(",");
+    const field = CUSTOM_FIELDS[type];
+    if (!field || !value || modifiers.some((modifier) => modifier !== "no-resolve")) {
+      throw new Error(`Invalid sing-box custom rule: ${entry}`);
+    }
+    return { [field]: [value] };
+  }
+  function renderCustomRules(quicMode) {
+    const grouped = /* @__PURE__ */ new Map();
     for (const [kind, entries] of Object.entries(CUSTOM_RULES)) {
       for (const entry of entries) {
-        const [type, value, ...modifiers] = entry.split(",");
-        const field = CUSTOM_FIELDS[type];
-        if (!field || !value || modifiers.some((modifier) => modifier !== "no-resolve")) {
-          throw new Error(`Invalid sing-box custom rule: ${entry}`);
-        }
-        rendered.push({ [field]: [value], ...routeAction(CUSTOM_TARGETS[kind]) });
+        const fields = customRuleFields(entry);
+        const [field] = Object.keys(fields);
+        const key = `${kind}:${field}`;
+        const values = grouped.get(key) ?? { kind, field, values: [] };
+        values.values.push(...fields[field]);
+        grouped.set(key, values);
       }
+    }
+    const rendered = [];
+    for (const { kind, field, values } of grouped.values()) {
+      const fields = { [field]: [...new Set(values)] };
+      if (quicMode === "proxy-block" && ["proxy", "ai"].includes(kind) && field !== "ip_cidr") {
+        rendered.push({ ...fields, ...QUIC_BLOCK_RULE });
+      }
+      rendered.push({ ...fields, ...kind === "block" ? reject() : route(CUSTOM_TARGETS[kind]) });
     }
     return rendered;
   }
   function taggedRule(source) {
-    return { rule_set: [`rule-${source.id}`], ...routeAction(source.policy) };
+    if (source.policy === "REJECT") return { rule_set: [`rule-${source.id}`], ...reject() };
+    return { rule_set: [`rule-${source.id}`], ...route(source.policy) };
   }
   function renderSingBoxRuleSets({ ruleBaseUrl, profileMode = "light", adblockMode = "off" }) {
     const base2 = baseUrl(ruleBaseUrl);
@@ -1984,6 +2041,7 @@ var SingBoxConfigBundle = (() => {
     ruleBaseUrl,
     profileMode = "light",
     adblockMode = "off",
+    blockMode = "balanced",
     quicMode = "allow"
   }) {
     if (!["allow", "proxy-block", "all-block"].includes(quicMode)) {
@@ -1996,26 +2054,33 @@ var SingBoxConfigBundle = (() => {
       ...LOCAL_RULES
     ];
     if (quicMode === "all-block") rules.push({ ...QUIC_BLOCK_RULE });
-    if (profileMode === "light") {
-      const plan2 = orderedRoutingPlan({ adblockMode });
-      rules.push(...plan2.filter(({ phase }) => phase === "security").map(taggedRule));
+    if (profileMode === "diagnostic") {
+      rules.push(...renderCustomRules(quicMode));
+      return { ruleSets, rules, final: "\u{1F680} \u8282\u70B9\u9009\u62E9" };
     }
-    rules.push(...renderCustomRules());
-    if (profileMode === "diagnostic") return { ruleSets, rules, final: "\u{1F680} \u8282\u70B9\u9009\u62E9" };
     const plan = orderedRoutingPlan({ adblockMode });
+    const securityIds = new Set({
+      off: [],
+      security: ["Hijacking", "BlockHttpDNS"],
+      balanced: ["Hijacking", "BlockHttpDNS", "Privacy", "Advertising", "Advertising_Domain"],
+      strict: ["Hijacking", "BlockHttpDNS", "Privacy", "Advertising", "Advertising_Domain"]
+    }[blockMode] ?? []);
+    rules.push(...plan.filter(({ phase, id }) => phase === "security" && securityIds.has(id)).map(taggedRule));
+    rules.push(...renderCustomRules(quicMode));
+    if (quicMode === "proxy-block") {
+      const proxyRuleSets = plan.filter(({ dnsClass }) => dnsClass === "proxy").map(({ id }) => `rule-${id}`);
+      if (proxyRuleSets.length > 0) rules.push({ network: "udp", port: 443, rule_set: proxyRuleSets, ...reject() });
+    }
     for (const phase of ROUTING_PHASES.filter((value) => value !== "security" && value !== "resolvedChinaIp")) {
       for (const source of plan.filter((candidate) => candidate.phase === phase)) {
-        if (quicMode === "proxy-block" && source.dnsClass === "proxy") {
-          rules.push({ ...QUIC_BLOCK_RULE, rule_set: [`rule-${source.id}`] });
-        }
         rules.push(taggedRule(source));
       }
       if (phase === "serviceIntent") {
-        if (quicMode === "proxy-block") rules.push({ ...OVERSEAS_DNS_QUIC_BLOCK_RULE });
+        if (quicMode === "proxy-block") rules.push({ ...OVERSEAS_DNS_FALLBACK_RULE, ...QUIC_BLOCK_RULE });
         rules.push({ ...OVERSEAS_DNS_FALLBACK_RULE });
       }
     }
-    rules.push({ action: "resolve", server: "dns-direct" });
+    rules.push({ action: "resolve", strategy: "prefer_ipv4" });
     rules.push(...plan.filter(({ phase }) => phase === "resolvedChinaIp").map(taggedRule));
     if (quicMode === "proxy-block") rules.push({ ...QUIC_BLOCK_RULE });
     return { ruleSets, rules, final: "\u{1F680} \u8282\u70B9\u9009\u62E9" };
@@ -2066,56 +2131,99 @@ var SingBoxConfigBundle = (() => {
   }
 
   // src/render-dns.js
-  var proxyDnsSourceIds = Object.freeze(
+  var DNS_DIRECT = "dns-direct";
+  var DNS_PROXY = "dns-proxy";
+  var LOCAL_DNS_SUFFIXES = Object.freeze(["local", "lan", "home.arpa"]);
+  var PROXY_DNS_SOURCE_IDS = Object.freeze(
     orderedRoutingPlan().filter(({ dnsClass }) => dnsClass === "proxy").map(({ id }) => id)
   );
+  var CHINA_DNS_SOURCE_IDS = Object.freeze(
+    orderedRoutingPlan().filter(({ id, dnsClass }) => dnsClass === "china" && id !== "ChinaIP").map(({ id }) => id)
+  );
+  function customDnsRules() {
+    const rules = [];
+    const targetByKind = /* @__PURE__ */ new Map([
+      ["direct", DNS_DIRECT],
+      ["proxy", DNS_PROXY],
+      ["ai", DNS_PROXY]
+    ]);
+    for (const [kind, entries] of Object.entries(CUSTOM_RULES)) {
+      const server = targetByKind.get(kind);
+      if (!server) continue;
+      for (const entry of entries) {
+        const [type, value, ...modifiers] = entry.split(",");
+        if (modifiers.some((modifier) => modifier !== "no-resolve")) {
+          throw new Error(`Invalid sing-box custom DNS rule: ${entry}`);
+        }
+        if (type === "DOMAIN") rules.push({ domain: [value], action: "route", server });
+        else if (type === "DOMAIN-SUFFIX") rules.push({ domain_suffix: [value], action: "route", server });
+        else if (type === "DOMAIN-KEYWORD") rules.push({ domain_keyword: [value], action: "route", server });
+        else if (!["IP-CIDR", "IP-CIDR6"].includes(type)) {
+          throw new Error(`Invalid sing-box custom DNS rule: ${entry}`);
+        }
+      }
+    }
+    return rules;
+  }
+  function renderUnknownDnsRules(chinaIpRuleTag) {
+    return [
+      { action: "evaluate", server: DNS_DIRECT, tag: "direct-answer" },
+      {
+        rule_set: [chinaIpRuleTag],
+        match_response: "direct-answer",
+        action: "respond"
+      },
+      { action: "evaluate", server: DNS_PROXY, tag: "proxy-answer" },
+      {
+        match_response: "proxy-answer",
+        ip_accept_any: true,
+        action: "respond"
+      },
+      { action: "route", server: DNS_PROXY }
+    ];
+  }
+  function dnsRules(options) {
+    const rules = [
+      { domain_suffix: LOCAL_DNS_SUFFIXES, action: "route", server: DNS_DIRECT },
+      { domain_suffix: PROXY_DNS_DOMAIN_SUFFIXES, action: "route", server: DNS_PROXY },
+      ...customDnsRules()
+    ];
+    if (options.profileMode !== "diagnostic") {
+      rules.push(
+        { rule_set: PROXY_DNS_SOURCE_IDS.map((id) => `rule-${id}`), action: "route", server: DNS_PROXY },
+        { rule_set: CHINA_DNS_SOURCE_IDS.map((id) => `rule-${id}`), action: "route", server: DNS_DIRECT },
+        ...options.dnsMode === "privacy" ? [{ action: "route", server: DNS_PROXY }] : renderUnknownDnsRules("rule-ChinaIP")
+      );
+    } else {
+      rules.push({ action: "route", server: DNS_PROXY });
+    }
+    return rules;
+  }
   function renderSingBoxDns(options) {
     const chinaDns = chinaDnsProvider(options.chinaDns);
-    const chinaServer = options.chinaDns === "system" ? { type: "local", tag: "dns-direct" } : { type: "udp", tag: "dns-direct", server: chinaDns.address };
+    const chinaServer = options.chinaDns === "system" ? { type: "local", tag: DNS_DIRECT } : { type: "udp", tag: DNS_DIRECT, server: chinaDns.address, detour: "DIRECT" };
     const globalDns = globalDnsProvider(options.globalDns);
     const proxyServer = {
       type: "https",
-      tag: "dns-proxy",
+      tag: DNS_PROXY,
       server: globalDns.address,
       server_port: 443,
       path: "/dns-query",
       tls: { enabled: true, server_name: globalDns.serverName },
-      detour: "\u{1F680} \u8282\u70B9\u9009\u62E9"
+      // DNS proxying must never depend on a selector that contains DIRECT.
+      detour: options.dnsMode === "speed" ? "DIRECT" : "\u26A1 \u5168\u90E8\u81EA\u52A8"
     };
-    const proxyDnsRuleSets = proxyDnsSourceIds.map((id) => `rule-${id}`);
     return {
       servers: [chinaServer, proxyServer],
-      rules: options.profileMode === "diagnostic" ? [] : [
-        {
-          domain_suffix: PROXY_DNS_DOMAIN_SUFFIXES,
-          action: "evaluate",
-          server: "dns-proxy"
-        },
-        {
-          match_response: true,
-          domain_suffix: PROXY_DNS_DOMAIN_SUFFIXES,
-          action: "respond"
-        },
-        {
-          rule_set: proxyDnsRuleSets,
-          action: "evaluate",
-          server: "dns-proxy"
-        },
-        {
-          match_response: true,
-          rule_set: proxyDnsRuleSets,
-          action: "respond"
-        },
-        { action: "route", server: "dns-direct" }
-      ],
-      final: "dns-direct",
+      rules: dnsRules(options),
+      final: DNS_PROXY,
       strategy: options.ipv6Mode === "ipv4-only" ? "ipv4_only" : "prefer_ipv4",
       cache_capacity: 4096
     };
   }
 
   // src/render-platform.js
-  var COMMON_EXCLUDE = [
+  var COMMON_EXCLUDE = Object.freeze([
     "192.168.0.0/16",
     "172.16.0.0/12",
     "10.0.0.0/8",
@@ -2126,45 +2234,23 @@ var SingBoxConfigBundle = (() => {
     "fc00::/7",
     "fe80::/10",
     "ff00::/8"
-  ];
+  ]);
   function renderSingBoxTun(platform, ipv6Mode = "auto") {
+    if (!["macos", "iphone", "ipad", "android"].includes(platform)) {
+      throw new Error(`Unsupported sing-box platform: ${platform}`);
+    }
     const ipv4Only = ipv6Mode === "ipv4-only";
-    const base2 = {
+    return {
       type: "tun",
       tag: "tun-in",
       interface_name: platform === "android" ? "sing-box" : "singtun0",
       address: ipv4Only ? ["172.18.0.1/30"] : ["172.18.0.1/30", "fdfe:dcba:9876::1/126"],
       auto_route: true,
       strict_route: true,
-      route_exclude_address: [...COMMON_EXCLUDE]
-    };
-    if (platform === "openwrt") {
-      return {
-        ...base2,
-        stack: "mixed",
-        dns_mode: "hijack",
-        dns_address: ipv4Only ? ["172.18.0.2"] : ["172.18.0.2", "fdfe:dcba:9876::2"],
-        auto_redirect: true,
-        auto_redirect_input_mark: "0x2023",
-        auto_redirect_output_mark: "0x2024",
-        loopback_address: ["10.7.0.1"],
-        route_exclude_address: [...COMMON_EXCLUDE, "192.168.1.0/24"]
-      };
-    }
-    if (platform === "android") {
-      return {
-        ...base2,
-        dns_mode: "hijack",
-        dns_address: ["172.18.0.2"],
-        include_android_user: [0],
-        route_exclude_address: [...COMMON_EXCLUDE]
-      };
-    }
-    return {
-      ...base2,
+      route_exclude_address: [...COMMON_EXCLUDE],
       dns_mode: "hijack",
       dns_address: ipv4Only ? ["172.18.0.2"] : ["172.18.0.2", "fdfe:dcba:9876::2"],
-      platform: { http_proxy: { enabled: false } }
+      ...platform === "android" ? { include_android_user: [0] } : { platform: { http_proxy: { enabled: false } } }
     };
   }
 
@@ -2172,15 +2258,18 @@ var SingBoxConfigBundle = (() => {
   function uniqueTags(records, errors, label) {
     const tags = /* @__PURE__ */ new Set();
     for (const record of records ?? []) {
-      if (!record || typeof record.tag !== "string" || !record.tag) errors.push(`${label} tag missing`);
-      else if (tags.has(record.tag)) errors.push(`duplicate ${label} tag`);
-      else tags.add(record.tag);
+      if (!record || typeof record.tag !== "string" || record.tag.length === 0) {
+        errors.push(`${label} tag missing`);
+      } else if (tags.has(record.tag)) {
+        errors.push(`duplicate ${label} tag`);
+      } else {
+        tags.add(record.tag);
+      }
     }
     return tags;
   }
   function actionOutbound(rule) {
-    if (rule?.action === "route" || rule?.action === "bypass") return rule.outbound;
-    return void 0;
+    return rule?.action === "route" || rule?.action === "bypass" ? rule.outbound : void 0;
   }
   function validateDnsServerShape(server, errors) {
     if (server?.type !== "https") return;
@@ -2196,24 +2285,57 @@ var SingBoxConfigBundle = (() => {
       errors.push("HTTPS DNS path must start with '/'");
     }
   }
+  function validateDnsRule(rule, dnsServers, ruleSets, outboundTags, evaluateTags, errors) {
+    if (!rule || typeof rule !== "object" || typeof rule.action !== "string") {
+      errors.push("DNS rule action must be a string");
+      return;
+    }
+    for (const tag of rule.rule_set ?? []) {
+      if (!ruleSets.has(tag)) errors.push("DNS references missing rule-set tag");
+    }
+    if (rule.action === "route" || rule.action === "evaluate") {
+      if (typeof rule.server !== "string" || !dnsServers.has(rule.server)) errors.push("DNS rule references missing server");
+    }
+    if (rule.action === "respond" && rule.server !== void 0) errors.push("DNS respond must not specify a server");
+    if (rule.action === "evaluate" && rule.tag !== void 0) {
+      if (typeof rule.tag !== "string" || evaluateTags.has(rule.tag)) errors.push("duplicate DNS evaluate tag");
+      else evaluateTags.add(rule.tag);
+    }
+    if (rule.match_response !== void 0) {
+      if (rule.match_response !== true && (typeof rule.match_response !== "string" || !evaluateTags.has(rule.match_response))) {
+        errors.push("DNS match_response references missing evaluate tag");
+      }
+      if (rule.action === "route" && (typeof rule.server !== "string" || !dnsServers.has(rule.server))) {
+        errors.push("DNS response route references missing server");
+      }
+    }
+    if (rule.ip_accept_any === true && rule.match_response === void 0) errors.push("DNS ip_accept_any requires match_response");
+    if (rule.race === true && rule.action !== "evaluate") errors.push("DNS race requires evaluate action");
+    if (rule.detour !== void 0 && !outboundTags.has(rule.detour)) errors.push("DNS rule references missing outbound");
+  }
   function validateSingBoxConfig(config) {
     const errors = [];
     if (!config || typeof config !== "object" || Array.isArray(config)) return { valid: false, errors: ["config must be an object"] };
     const outbounds = config.outbounds;
     const outboundTags = uniqueTags(outbounds, errors, "outbound");
+    const endpointTags = uniqueTags(config.endpoints, errors, "endpoint");
+    for (const tag of endpointTags) outboundTags.add(tag);
     const httpClientTags = uniqueTags(config.http_clients, errors, "HTTP client");
     const ruleSets = uniqueTags(config.route?.rule_set, errors, "rule-set");
     const dnsServers = uniqueTags(config.dns?.servers, errors, "DNS server");
-    const inboundTags = uniqueTags(config.inbounds, errors, "inbound");
-    const groupTags = new Set(outbounds?.filter((item) => ["selector", "urltest"].includes(item.type)).map((item) => item.tag));
+    const groupTags = new Set((outbounds ?? []).filter((item) => ["selector", "urltest"].includes(item?.type)).map((item) => item.tag));
     for (const client of config.http_clients ?? []) {
-      if (client.detour !== void 0 && !outboundTags.has(client.detour)) {
-        errors.push("HTTP client references missing outbound tag");
-      }
+      if (client.detour !== void 0 && !outboundTags.has(client.detour)) errors.push("HTTP client references missing outbound tag");
     }
     for (const outbound of outbounds ?? []) {
       for (const target of outbound.outbounds ?? []) if (!outboundTags.has(target)) errors.push("outbound references missing tag");
       if (outbound.default !== void 0 && !outboundTags.has(outbound.default)) errors.push("selector default references missing tag");
+      if (outbound.type === "urltest" && typeof outbound.url !== "string") errors.push("urltest URL is missing");
+    }
+    for (const endpoint of config.endpoints ?? []) {
+      if (endpoint.type === "wireguard" && (!Array.isArray(endpoint.address) || endpoint.address.length === 0)) {
+        errors.push("WireGuard endpoint address is missing");
+      }
     }
     const routeRules = config.route?.rules;
     if (!Array.isArray(routeRules)) errors.push("route rules missing");
@@ -2224,14 +2346,17 @@ var SingBoxConfigBundle = (() => {
       for (const tag of rule.rule_set ?? []) if (!ruleSets.has(tag)) errors.push("route references missing rule-set tag");
       const target = actionOutbound(rule);
       if (target !== void 0 && !outboundTags.has(target)) errors.push("route references missing outbound tag");
-      if (rule.action === "hijack-dns" && !dnsServers.size) errors.push("DNS hijack requires DNS servers");
-      if (rule.action === "resolve" && (typeof rule.server !== "string" || !dnsServers.has(rule.server))) {
+      if (rule.action === "resolve" && rule.server !== void 0 && (typeof rule.server !== "string" || !dnsServers.has(rule.server))) {
         errors.push("route resolve references missing DNS server");
       }
       if (rule.action !== void 0 && typeof rule.action !== "string") errors.push("route rule action must be a string");
     }
     const routeFinal = config.route?.final;
     if (typeof routeFinal !== "string" || !outboundTags.has(routeFinal)) errors.push("route final references missing outbound tag");
+    if (config.route?.default_domain_resolver !== void 0) {
+      const resolver = typeof config.route.default_domain_resolver === "string" ? config.route.default_domain_resolver : config.route.default_domain_resolver?.server;
+      if (typeof resolver !== "string" || !dnsServers.has(resolver)) errors.push("default domain resolver references missing DNS server");
+    }
     const defaultHttpClient = config.route?.default_http_client;
     if (defaultHttpClient !== void 0 && (typeof defaultHttpClient !== "string" || !httpClientTags.has(defaultHttpClient))) {
       errors.push("route default_http_client references missing HTTP client tag");
@@ -2247,47 +2372,23 @@ var SingBoxConfigBundle = (() => {
     }
     const dnsFinal = config.dns?.final;
     if (typeof dnsFinal !== "string" || !dnsServers.has(dnsFinal)) errors.push("DNS final references missing server");
-    let seenAnonymousEvaluate = false;
     const evaluateTags = /* @__PURE__ */ new Set();
-    for (const rule of config.dns?.rules ?? []) {
-      for (const tag of rule.rule_set ?? []) if (!ruleSets.has(tag)) errors.push("DNS references missing rule-set tag");
-      if (typeof rule.action !== "string") errors.push("DNS rule action must be a string");
-      if ((rule.action === "route" || rule.action === "evaluate") && typeof rule.server !== "string") {
-        errors.push("DNS rule action server missing");
-      }
-      if (rule.action === "respond" && !seenAnonymousEvaluate) {
-        errors.push("DNS respond rule requires a preceding anonymous evaluate rule");
-      }
-      if (rule.match_response === true && !seenAnonymousEvaluate) {
-        errors.push("DNS match_response rule requires a preceding anonymous evaluate rule");
-      }
-      if (typeof rule.match_response === "string" && !evaluateTags.has(rule.match_response)) {
-        errors.push("DNS match_response references missing evaluate tag");
-      }
-      if (rule.server !== void 0 && !dnsServers.has(rule.server)) errors.push("DNS rule references missing server");
-      if (rule.detour !== void 0 && !outboundTags.has(rule.detour)) errors.push("DNS rule references missing outbound");
-      if (rule.action === "evaluate") {
-        if (rule.tag === void 0) {
-          seenAnonymousEvaluate = true;
-        } else if (typeof rule.tag === "string") {
-          evaluateTags.add(rule.tag);
-        }
-      }
-    }
+    for (const rule of config.dns?.rules ?? []) validateDnsRule(rule, dnsServers, ruleSets, outboundTags, evaluateTags, errors);
     for (const server of config.dns?.servers ?? []) {
       validateDnsServerShape(server, errors);
       if (server.detour !== void 0 && !outboundTags.has(server.detour)) errors.push("DNS server references missing outbound");
-      if (server.detour === server.tag || server.tag === dnsFinal && server.detour === "dns-proxy") errors.push("DNS server loop detected");
+      if (server.detour === server.tag) errors.push("DNS server loop detected");
+      if (server.tag === "dns-direct" && server.type !== "local" && server.detour !== "DIRECT") {
+        errors.push("non-local dns-direct must use the DIRECT outbound");
+      }
     }
     for (const inbound of config.inbounds ?? []) {
       if (inbound.type === "tun" && !inbound.auto_route) errors.push("TUN auto_route is required");
       if (inbound.type === "tun" && inbound.platform?.include_android_user && inbound.auto_redirect) errors.push("Android TUN cannot use auto_redirect");
     }
-    if (Object.hasOwn(config.experimental?.cache_file ?? {}, "store_rdrc")) {
-      errors.push("cache file contains deprecated store_rdrc");
-    }
-    if (!inboundTags.has("tun-in")) errors.push("tun-in inbound missing");
+    if (Object.hasOwn(config.experimental?.cache_file ?? {}, "store_rdrc")) errors.push("cache file contains deprecated store_rdrc");
     if (!groupTags.has("\u{1F680} \u8282\u70B9\u9009\u62E9")) errors.push("primary selector missing");
+    if (!new Set(config.inbounds?.map((item) => item.tag)).has("tun-in")) errors.push("tun-in inbound missing");
     return { valid: errors.length === 0, errors: [...new Set(errors)] };
   }
 
@@ -2301,7 +2402,7 @@ var SingBoxConfigBundle = (() => {
     const inventory = Array.isArray(nodes) ? nodes : [];
     if (inventory.length === 0) throw new Error("sing-box refuses an empty node inventory");
     for (const node of inventory) nodeMetadata(node);
-    const nodeOutbounds = inventory.map(renderSingBoxOutbound);
+    const renderedNodes = inventory.map(renderSingBoxNode);
     const groups = renderSingBoxGroups(options, inventory, {
       ruleProbeUrl: `${ruleBaseUrl.replace(/\/+$/u, "")}/Hijacking.srs`
     });
@@ -2309,6 +2410,7 @@ var SingBoxConfigBundle = (() => {
       ruleBaseUrl,
       profileMode: options.profileMode,
       adblockMode: options.adblockMode,
+      blockMode: options.blockMode,
       quicMode: options.quicMode
     });
     const config = {
@@ -2324,7 +2426,7 @@ var SingBoxConfigBundle = (() => {
         { type: "direct", tag: "DIRECT" },
         { type: "block", tag: "REJECT" },
         ...groups,
-        ...nodeOutbounds
+        ...renderedNodes.flatMap(({ outbound }) => outbound ? [outbound] : [])
       ],
       route: {
         auto_detect_interface: true,
@@ -2336,6 +2438,8 @@ var SingBoxConfigBundle = (() => {
       },
       experimental: { cache_file: { enabled: true, path: "cache.db", store_dns: true } }
     };
+    const endpoints = renderedNodes.flatMap(({ endpoint }) => endpoint ? [endpoint] : []);
+    if (endpoints.length > 0) config.endpoints = endpoints;
     const validation = validateSingBoxConfig(config);
     if (!validation.valid) throw new Error(`Generated sing-box config failed validation: ${validation.errors.join(",")}`);
     return config;
@@ -2364,10 +2468,24 @@ var SingBoxConfigBundle = (() => {
     });
     if (!Array.isArray(rawNodes) || rawNodes.length === 0) throw new Error("produceArtifact must return a non-empty node array");
     const normalized = normalizeNodes(rawNodes, { clientChain: options.clientChain });
-    const partitioned = partitionRenderableNodes(normalized.nodes, "sing-box", renderSingBoxOutbound);
-    logDiagnostics(context, options, partitioned.renderable, partitioned.failureProtocols);
+    const invalidInputCount = Object.entries(normalized.diagnostics.excluded).filter(([reason]) => reason !== "exact-duplicate").reduce((total, [, count]) => total + count, 0);
+    if (options.nodeErrorMode === "strict" && invalidInputCount > 0) {
+      throw new Error(`sing-box strict node inventory rejected ${invalidInputCount} invalid input node(s): ${JSON.stringify(normalized.diagnostics.excluded)}`);
+    }
+    let renderable;
+    let renderFailures;
+    if (options.nodeErrorMode === "compatible") {
+      const partitioned = partitionRenderableNodes(normalized.nodes, "sing-box", renderSingBoxNode);
+      renderable = partitioned.renderable;
+      renderFailures = partitioned.failureProtocols;
+    } else {
+      assertRenderableNodes(normalized.nodes, "sing-box", renderSingBoxNode);
+      renderable = normalized.nodes;
+      renderFailures = {};
+    }
+    logDiagnostics(context, options, renderable, renderFailures);
     const ruleBaseUrl = `${PUBLIC_RULE_ROOT}/${options.channel}/sing-box/rule-sets`;
-    const config = renderSingBoxConfig(options, partitioned.renderable.map(sanitizeSingBoxNode), { ruleBaseUrl });
+    const config = renderSingBoxConfig(options, renderable, { ruleBaseUrl });
     return { ...input, $content: `${JSON.stringify(config, null, 2)}
 ` };
   }

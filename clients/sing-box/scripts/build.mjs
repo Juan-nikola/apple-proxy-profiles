@@ -6,7 +6,7 @@ const sourceRoot = resolve(import.meta.dirname, "..");
 export const SING_BOX_PUBLIC_STATIC_FILE_PATHS = Object.freeze([
   "sing-box/scripts/sing-box-config-generator.js",
   "sing-box/scripts/substore-config-generator.js",
-  ...["macos", "iphone", "ipad", "android", "openwrt"].flatMap((platform) => [
+  ...["macos", "iphone", "ipad", "android"].flatMap((platform) => [
     `sing-box/examples/sing-box-${platform}.json`,
     `sing-box/examples/sing-box-${platform}-diagnostic.json`,
   ]),

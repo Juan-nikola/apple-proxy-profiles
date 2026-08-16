@@ -101,16 +101,16 @@ test("OneXray canary table starts with no platform marked passed", async () => {
   assert.match(firstRow, /未|待执行/u);
 });
 
-test("repository status and guides document the OneXray tasks as 20 total", async () => {
+test("repository status and guides document the OneXray tasks as 19 total", async () => {
   const status = await text(new URL("docs/implementation-status.md", repositoryRoot));
   const guide = await text(new URL("docs/substore-two-layer-setup.md", repositoryRoot));
   const maintenance = await text(new URL("docs/maintenance.md", repositoryRoot));
   assert.match(status, /OneXray/u);
-  assert.match(status, /20 个任务/u);
+  assert.match(status, /19 个任务/u);
   for (const task of ["onexray-nodes", "onexray-profile", "onexray-routing-audit"]) {
     assert.match(guide, new RegExp(`\`${task}\``, "u"), task);
   }
-  assert.match(guide, /4\+1\+3\+4\+5\+3=20 个任务/u);
+  assert.match(guide, /4\+1\+3\+4\+4\+3=19 个任务/u);
   assert.match(maintenance, /clients\/onexray\//u);
   assert.match(maintenance, /onexray\/docs\//u);
   const rootReadme = await text(new URL("README.md", repositoryRoot));

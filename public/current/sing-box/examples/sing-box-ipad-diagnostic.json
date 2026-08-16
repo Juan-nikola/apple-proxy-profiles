@@ -8,7 +8,8 @@
       {
         "type": "udp",
         "tag": "dns-direct",
-        "server": "223.5.5.5"
+        "server": "223.5.5.5",
+        "detour": "DIRECT"
       },
       {
         "type": "https",
@@ -20,11 +21,84 @@
           "enabled": true,
           "server_name": "cloudflare-dns.com"
         },
-        "detour": "🚀 节点选择"
+        "detour": "⚡ 全部自动"
       }
     ],
-    "rules": [],
-    "final": "dns-direct",
+    "rules": [
+      {
+        "domain_suffix": [
+          "local",
+          "lan",
+          "home.arpa"
+        ],
+        "action": "route",
+        "server": "dns-direct"
+      },
+      {
+        "domain_suffix": [
+          "google.com",
+          "googleapis.com",
+          "googleusercontent.com",
+          "gstatic.com",
+          "ggpht.com",
+          "gvt1.com",
+          "googlevideo.com",
+          "youtube.com",
+          "youtube-nocookie.com",
+          "youtu.be",
+          "ytimg.com"
+        ],
+        "action": "route",
+        "server": "dns-proxy"
+      },
+      {
+        "domain_suffix": [
+          "perplexity.ai"
+        ],
+        "action": "route",
+        "server": "dns-proxy"
+      },
+      {
+        "domain_suffix": [
+          "pplx.ai"
+        ],
+        "action": "route",
+        "server": "dns-proxy"
+      },
+      {
+        "domain_suffix": [
+          "x.ai"
+        ],
+        "action": "route",
+        "server": "dns-proxy"
+      },
+      {
+        "domain_suffix": [
+          "grok.com"
+        ],
+        "action": "route",
+        "server": "dns-proxy"
+      },
+      {
+        "domain_suffix": [
+          "poe.com"
+        ],
+        "action": "route",
+        "server": "dns-proxy"
+      },
+      {
+        "domain_suffix": [
+          "poecdn.net"
+        ],
+        "action": "route",
+        "server": "dns-proxy"
+      },
+      {
+        "action": "route",
+        "server": "dns-proxy"
+      }
+    ],
+    "final": "dns-proxy",
     "strategy": "prefer_ipv4",
     "cache_capacity": 4096
   },
@@ -80,22 +154,33 @@
       "tag": "REJECT"
     },
     {
+      "type": "urltest",
+      "tag": "⚡ 全部自动",
+      "outbounds": [
+        "示例 · Tokyo",
+        "示例 · Frankfurt"
+      ],
+      "url": "https://www.gstatic.com/generate_204",
+      "interval": "1800s",
+      "tolerance": 150,
+      "interrupt_exist_connections": true
+    },
+    {
       "type": "selector",
       "tag": "🚀 节点选择",
       "outbounds": [
         "⚡ 全部自动",
-        "🛟 全部故障转移",
         "🌏 亚太",
         "🌍 欧洲"
       ],
+      "default": "⚡ 全部自动",
       "interrupt_exist_connections": true
     },
     {
       "type": "selector",
       "tag": "🌏 亚太",
       "outbounds": [
-        "⚡ 亚太自动",
-        "🛟 亚太故障转移"
+        "DIRECT"
       ],
       "interrupt_exist_connections": true
     },
@@ -103,8 +188,7 @@
       "type": "selector",
       "tag": "🌍 欧洲",
       "outbounds": [
-        "⚡ 欧洲自动",
-        "🛟 欧洲故障转移"
+        "DIRECT"
       ],
       "interrupt_exist_connections": true
     },
@@ -120,6 +204,7 @@
       "type": "selector",
       "tag": "🤖 AI 专用",
       "outbounds": [
+        "⚡ 全部自动",
         "示例 · Tokyo",
         "示例 · Frankfurt"
       ],
@@ -131,7 +216,6 @@
       "outbounds": [
         "🚀 节点选择",
         "⚡ 全部自动",
-        "🛟 全部故障转移",
         "🌏 亚太",
         "🌍 欧洲",
         "DIRECT",
@@ -147,7 +231,6 @@
       "outbounds": [
         "🚀 节点选择",
         "⚡ 全部自动",
-        "🛟 全部故障转移",
         "🌏 亚太",
         "🌍 欧洲",
         "DIRECT",
@@ -163,7 +246,6 @@
       "outbounds": [
         "🚀 节点选择",
         "⚡ 全部自动",
-        "🛟 全部故障转移",
         "🌏 亚太",
         "🌍 欧洲",
         "DIRECT",
@@ -179,7 +261,6 @@
       "outbounds": [
         "🚀 节点选择",
         "⚡ 全部自动",
-        "🛟 全部故障转移",
         "🌏 亚太",
         "🌍 欧洲",
         "DIRECT",
@@ -196,7 +277,6 @@
         "DIRECT",
         "🚀 节点选择",
         "⚡ 全部自动",
-        "🛟 全部故障转移",
         "🌏 亚太",
         "🌍 欧洲",
         "示例 · Tokyo",
@@ -212,7 +292,6 @@
         "DIRECT",
         "🚀 节点选择",
         "⚡ 全部自动",
-        "🛟 全部故障转移",
         "🌏 亚太",
         "🌍 欧洲",
         "示例 · Tokyo",
@@ -228,7 +307,6 @@
         "DIRECT",
         "🚀 节点选择",
         "⚡ 全部自动",
-        "🛟 全部故障转移",
         "🌏 亚太",
         "🌍 欧洲",
         "示例 · Tokyo",
@@ -243,7 +321,6 @@
       "outbounds": [
         "🚀 节点选择",
         "⚡ 全部自动",
-        "🛟 全部故障转移",
         "🌏 亚太",
         "🌍 欧洲",
         "DIRECT",
@@ -273,11 +350,10 @@
       "type": "selector",
       "tag": "🧭 DNS 与规则下载",
       "outbounds": [
-        "🧭 规则下载故障转移",
-        "🚀 节点选择",
+        "⚡ 全部自动",
         "DIRECT"
       ],
-      "default": "🧭 规则下载故障转移",
+      "default": "⚡ 全部自动",
       "interrupt_exist_connections": true
     },
     {
@@ -305,87 +381,6 @@
         "DIRECT",
         "REJECT"
       ],
-      "interrupt_exist_connections": true
-    },
-    {
-      "type": "urltest",
-      "tag": "⚡ 全部自动",
-      "outbounds": [
-        "示例 · Tokyo",
-        "示例 · Frankfurt"
-      ],
-      "url": "https://www.gstatic.com/generate_204",
-      "interval": "1800s",
-      "tolerance": 150,
-      "interrupt_exist_connections": true
-    },
-    {
-      "type": "urltest",
-      "tag": "🛟 全部故障转移",
-      "outbounds": [
-        "示例 · Tokyo",
-        "示例 · Frankfurt"
-      ],
-      "url": "https://www.gstatic.com/generate_204",
-      "interval": "1800s",
-      "tolerance": 150,
-      "interrupt_exist_connections": true
-    },
-    {
-      "type": "urltest",
-      "tag": "⚡ 亚太自动",
-      "outbounds": [
-        "DIRECT"
-      ],
-      "url": "https://www.gstatic.com/generate_204",
-      "interval": "1800s",
-      "tolerance": 150,
-      "interrupt_exist_connections": true
-    },
-    {
-      "type": "urltest",
-      "tag": "🛟 亚太故障转移",
-      "outbounds": [
-        "DIRECT"
-      ],
-      "url": "https://www.gstatic.com/generate_204",
-      "interval": "1800s",
-      "tolerance": 150,
-      "interrupt_exist_connections": true
-    },
-    {
-      "type": "urltest",
-      "tag": "⚡ 欧洲自动",
-      "outbounds": [
-        "DIRECT"
-      ],
-      "url": "https://www.gstatic.com/generate_204",
-      "interval": "1800s",
-      "tolerance": 150,
-      "interrupt_exist_connections": true
-    },
-    {
-      "type": "urltest",
-      "tag": "🛟 欧洲故障转移",
-      "outbounds": [
-        "DIRECT"
-      ],
-      "url": "https://www.gstatic.com/generate_204",
-      "interval": "1800s",
-      "tolerance": 150,
-      "interrupt_exist_connections": true
-    },
-    {
-      "type": "urltest",
-      "tag": "🧭 规则下载故障转移",
-      "outbounds": [
-        "示例 · Tokyo",
-        "示例 · Frankfurt",
-        "DIRECT"
-      ],
-      "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/rule-sets/Hijacking.srs",
-      "interval": "30s",
-      "tolerance": 0,
       "interrupt_exist_connections": true
     },
     {
@@ -439,41 +434,25 @@
       },
       {
         "domain_suffix": [
-          "perplexity.ai"
+          "perplexity.ai",
+          "pplx.ai",
+          "x.ai",
+          "grok.com",
+          "poe.com",
+          "poecdn.net"
         ],
-        "action": "route",
-        "outbound": "🤖 AI 专用"
+        "network": "udp",
+        "port": 443,
+        "action": "reject",
+        "method": "drop"
       },
       {
         "domain_suffix": [
-          "pplx.ai"
-        ],
-        "action": "route",
-        "outbound": "🤖 AI 专用"
-      },
-      {
-        "domain_suffix": [
-          "x.ai"
-        ],
-        "action": "route",
-        "outbound": "🤖 AI 专用"
-      },
-      {
-        "domain_suffix": [
-          "grok.com"
-        ],
-        "action": "route",
-        "outbound": "🤖 AI 专用"
-      },
-      {
-        "domain_suffix": [
-          "poe.com"
-        ],
-        "action": "route",
-        "outbound": "🤖 AI 专用"
-      },
-      {
-        "domain_suffix": [
+          "perplexity.ai",
+          "pplx.ai",
+          "x.ai",
+          "grok.com",
+          "poe.com",
           "poecdn.net"
         ],
         "action": "route",

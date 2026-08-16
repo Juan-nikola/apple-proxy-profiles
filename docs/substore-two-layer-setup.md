@@ -76,7 +76,7 @@ https://juan-nikola.github.io/apple-proxy-profiles/current/egern/scripts/egern-n
 https://juan-nikola.github.io/apple-proxy-profiles/current/surge/scripts/surge-profile-generator.js#output=config&type=collection&name=apple-proxy-surge&subscriptionName=Apple-Proxy-Nodes&platform=iphone&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&autoGroupMode=auto&clientChain=off
 ```
 
-## 4. 20 个任务总表
+## 4. 19 个任务总表
 
 下面的 `Apple-Proxy-Nodes` 是公开示例显示名。实际使用时，在 Shadowrocket、Surge 或 sing-box 中给节点订阅取一个你自己的显示名，并让同一客户端对应 Profile/Config 任务的 `subscriptionName` 逐字一致。每个 Profile/Config 只指向节点池指南定义的对应 client collection。
 
@@ -98,12 +98,11 @@ https://juan-nikola.github.io/apple-proxy-profiles/current/surge/scripts/surge-p
 | 14 | `singbox-config-iphone` | File | sing-box config | iPhone | 每天 |
 | 15 | `singbox-config-ipad` | File | sing-box config | iPad | 每天 |
 | 16 | `singbox-config-android` | File | sing-box config | Android | 每天 |
-| 17 | `singbox-config-openwrt` | File | sing-box config | OpenWrt | 每天 |
-| 18 | `onexray-nodes` | File | 私有托管 OneXray node | 节点订阅 | 6 小时 |
-| 19 | `onexray-profile` | File | 私有托管 OneXray Profile | Profile deep link | 每天 |
-| 20 | `onexray-routing-audit` | File | 私有托管 OneXray audit | 脱敏审计 | 每天 |
+| 17 | `onexray-nodes` | File | 私有托管 OneXray node | 节点订阅 | 6 小时 |
+| 18 | `onexray-profile` | File | 私有托管 OneXray Profile | Profile deep link | 每天 |
+| 19 | `onexray-routing-audit` | File | 私有托管 OneXray audit | 脱敏审计 | 每天 |
 
-客户端总数为 4+1+3+4+5+3=20 个任务。
+客户端总数为 4+1+3+4+4+3=19 个任务。
 
 ## 5. Egern：1 个节点 File + 3 个 Profile File
 
@@ -266,7 +265,7 @@ OneXray 的 `apple-proxy-onexray` 由用户自行选择节点，生成器不自�
 
 Profile 名会插入 8 位内容哈希版本号；同一通道必须使用同一通道的 GeoData。完整安装顺序、Rule 模式、固定节点快照和回滚说明见 `clients/onexray/docs/deployment.md` 与 `clients/onexray/docs/troubleshooting.md`。
 
-## 10. sing-box：5 个 Config File
+## 10. sing-box：4 个 Config File
 
 脚本：
 
@@ -284,11 +283,10 @@ sing-box 默认 strict：任一已选节点无法完整渲染时 preview 失败�
 | `singbox-config-iphone` | `platform=iphone&ipv6Mode=auto` | sing-box for iPhone |
 | `singbox-config-ipad` | `platform=ipad&ipv6Mode=auto` | sing-box for iPad |
 | `singbox-config-android` | `platform=android&ipv6Mode=auto` | sing-box for Android |
-| `singbox-config-openwrt` | `platform=openwrt&ipv6Mode=auto` | OpenWrt 软路由 |
 
-想测试最新 testing 分支时，只在隔离任务中把 JS URL 的 `current` 改成 `edge`，并把 `channel=current` 改成 `channel=edge`。生产任务先使用 `current`，避免每日 testing 提交直接影响全部设备。
+本项目的 sing-box edge 构建会自动解析官方 testing 最新 release。测试时把 JS URL 的 `current` 改成 `edge`，并把 `channel=current` 改成 `channel=edge`；生产任务保留 current 作为回滚入口。
 
-预览必须是 JSON，且能通过配置校验。移动端使用 TUN 相关配置；OpenWrt 才启用透明网关、DNS 劫持和 Linux 自动重定向字段。OpenWrt 还需要设备上安装与配置匹配的官方 sing-box 二进制；不能把本仓库生成的 JSON 当成已安装核心。
+预览必须是 JSON，且能通过配置校验。四个平台都使用终端 TUN；未知域名通过 DNS response matching 和 `ChinaIP` rule-set 自动判断国内/海外。当前不生成 OpenWrt 透明网关配置。
 
 ## 11. 运行和刷新顺序
 
@@ -300,7 +298,7 @@ sing-box 默认 strict：任一已选节点无法完整渲染时 preview 失败�
 4. 运行 `surge-nodes`，再运行 Surge 三个平台 Profile；Profile 会自动携带节点资源 URL。
 5. 运行 Shadowrocket 和 sing-box Profile/Config。
 6. 逐个保存私密输出 URL；不要在聊天中回传。
-7. 先在一台 macOS 设备导入并 canary，再处理移动端；sing-box Android/OpenWrt 另按其清单执行。
+7. 先在一台 macOS 设备导入并 canary，再处理 Android、iPhone 和 iPad。
 
 ### 日常刷新
 
@@ -318,7 +316,7 @@ sing-box 默认 strict：任一已选节点无法完整渲染时 preview 失败�
 - 节点预览非空；Profile/Config 预览结构正确，不出现凭据。
 - `noCache` 正式任务关闭，`insecure` 始终关闭。
 - `subscriptionName` 在对应客户端和所有 Profile/Config 任务中逐字一致。
-- Mac、iPhone、iPad、Android、OpenWrt 使用各自平台值；没有交叉导入。
+- Mac、iPhone、iPad、Android 使用各自平台值；没有交叉导入。
 - Anywhere 规则导入后逐个检查目标绑定；没有把规则更新误当成节点刷新。
 - 旧 Profile/Config 与回滚入口仍保留。
 
