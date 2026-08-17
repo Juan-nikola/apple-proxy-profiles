@@ -881,6 +881,9 @@ var SingBoxConfigBundle = (() => {
     if (typeof profileMode !== "string" || !PROFILE_MODES.has(profileMode)) throw new Error("Option 'profileMode' has an unsupported value");
     const adblockMode = raw.adblockMode === void 0 ? DEFAULTS.adblockMode : raw.adblockMode;
     if (typeof adblockMode !== "string" || !ADBLOCK_MODES.has(adblockMode)) throw new Error("Option 'adblockMode' has an unsupported value");
+    if (["iphone", "ipad"].includes(platform) && adblockMode === "full") {
+      throw new Error("Option 'adblockMode=full' exceeds the iOS NetworkExtension memory budget");
+    }
     const nodeErrorMode = raw.nodeErrorMode === void 0 ? DEFAULTS.nodeErrorMode : raw.nodeErrorMode;
     if (typeof nodeErrorMode !== "string" || !NODE_ERROR_MODES.has(nodeErrorMode)) throw new Error("Option 'nodeErrorMode' has an unsupported value");
     const options = {
@@ -895,7 +898,11 @@ var SingBoxConfigBundle = (() => {
       globalDns: enumValue(raw, "globalDns", DEFAULTS.globalDns),
       blockMode: enumValue(raw, "blockMode", DEFAULTS.blockMode),
       quicMode: enumValue(raw, "quicMode", DEFAULTS.quicMode),
-      ipv6Mode: enumValue(raw, "ipv6Mode", platform === "macos" ? "ipv4-only" : DEFAULTS.ipv6Mode),
+      ipv6Mode: enumValue(
+        raw,
+        "ipv6Mode",
+        ["macos", "iphone", "ipad"].includes(platform) ? "ipv4-only" : DEFAULTS.ipv6Mode
+      ),
       autoGroupMode: enumValue(raw, "autoGroupMode", DEFAULTS.autoGroupMode),
       clientChain: enumValue(raw, "clientChain", DEFAULTS.clientChain),
       profileMode,
@@ -1588,9 +1595,14 @@ var SingBoxConfigBundle = (() => {
   var AUTO_GROUP = "\u26A1 \u5168\u90E8\u81EA\u52A8";
   var FALLBACK_GROUP_PATTERN = /故障转移/u;
   var MOBILE_MEMORY_PLATFORMS = /* @__PURE__ */ new Set(["iphone", "ipad", "android"]);
+  var IOS_MEMORY_PLATFORMS = /* @__PURE__ */ new Set(["iphone", "ipad"]);
+  var IOS_SERVICE_GROUPS = /* @__PURE__ */ new Set(["\u{1F34E} Apple", "\u{1FA9F} Microsoft", "\u{1F1E8}\u{1F1F3} \u56FD\u5185\u5E73\u53F0"]);
   var TEST_URL2 = "https://www.gstatic.com/generate_204";
   function isMobileMemoryConstrained(options) {
     return MOBILE_MEMORY_PLATFORMS.has(options.platform);
+  }
+  function isIosMemoryConstrained(options) {
+    return IOS_MEMORY_PLATFORMS.has(options.platform);
   }
   function isDisabledFallback(name) {
     return typeof name === "string" && FALLBACK_GROUP_PATTERN.test(name);
@@ -1609,10 +1621,10 @@ var SingBoxConfigBundle = (() => {
     }
     return nodes.filter((node) => pattern.test(node.name)).map((node) => node.name);
   }
-  function candidateList(group, nodes, { compact = false } = {}) {
+  function candidateList(group, nodes, { compact = false, ios = false } = {}) {
     const candidates = [
       ...compact && group.kind === "continent" ? [] : group.candidates.filter((candidate) => !isDisabledFallback(candidate)).map(targetName),
-      ...filterNodes(group.nodeFilter, nodes)
+      ...compact && ios && group.kind === "service" ? [] : filterNodes(group.nodeFilter, nodes)
     ];
     return candidates.filter((item, index, all) => all.indexOf(item) === index);
   }
@@ -1625,9 +1637,9 @@ var SingBoxConfigBundle = (() => {
       interrupt_exist_connections: true
     };
   }
-  function renderGroup(group, nodes, { compact = false } = {}) {
+  function renderGroup(group, nodes, { compact = false, ios = false } = {}) {
     if (group.name === RULE_DOWNLOAD_GROUP) return renderDownloadGroup();
-    const candidates = candidateList(group, nodes, { compact });
+    const candidates = candidateList(group, nodes, { compact, ios });
     if (group.kind === "ai" && candidates[0] !== AUTO_GROUP) candidates.unshift(AUTO_GROUP);
     const outbounds = candidates.length > 0 ? candidates : ["DIRECT"];
     if (group.name === PRIMARY_GROUP) {
@@ -1640,7 +1652,7 @@ var SingBoxConfigBundle = (() => {
         interrupt_exist_connections: true
       };
     }
-    if (compact && group.strategy === "auto-test" && group.name !== AUTO_GROUP) {
+    if (compact && group.strategy === "auto-test" && (group.name !== AUTO_GROUP || ios)) {
       return {
         type: "selector",
         tag: group.name,
@@ -1679,7 +1691,9 @@ var SingBoxConfigBundle = (() => {
     for (const group of shared) {
       if (group.strategy === "fallback") continue;
       if (compact && group.strategy === "auto-test" && group.name !== AUTO_GROUP) continue;
-      rendered.push(renderGroup(group, inventory, { compact }));
+      if (isIosMemoryConstrained(options) && group.kind === "service" && !IOS_SERVICE_GROUPS.has(group.name)) continue;
+      if (isIosMemoryConstrained(options) && group.kind === "special" && group.name !== RULE_DOWNLOAD_GROUP) continue;
+      rendered.push(renderGroup(group, inventory, { compact, ios: isIosMemoryConstrained(options) }));
     }
     return rendered;
   }
@@ -1716,6 +1730,22 @@ var SingBoxConfigBundle = (() => {
     "Download",
     "PrivateTracker",
     "OverseasGame",
+    "ChinaTLD",
+    "ChinaIP"
+  ]);
+  var MOBILE_RULE_SOURCE_IDS = Object.freeze([
+    "Hijacking",
+    "BlockHttpDNS",
+    "Privacy",
+    "DomesticCore",
+    "DomesticGame",
+    "SteamCN",
+    "BiliBili",
+    "ByteDance",
+    "XiaoHongShu",
+    "Weibo",
+    "Apple",
+    "Microsoft",
     "ChinaTLD",
     "ChinaIP"
   ]);
@@ -1946,146 +1976,6 @@ var SingBoxConfigBundle = (() => {
     "ytimg.com"
   ]);
 
-  // src/render-rules.js
-  var RULE_DOWNLOAD_HTTP_CLIENT = "\u{1F9ED} \u89C4\u5219\u4E0B\u8F7D HTTP";
-  var LOCAL_RULES = Object.freeze([
-    { ip_is_private: true, action: "route", outbound: "DIRECT" },
-    { domain_suffix: ["local", "lan", "home.arpa"], action: "route", outbound: "DIRECT" }
-  ]);
-  var QUIC_BLOCK_RULE = Object.freeze({ network: "udp", port: 443, action: "reject", method: "drop" });
-  var OVERSEAS_DNS_FALLBACK_RULE = Object.freeze({
-    domain_suffix: PROXY_DNS_DOMAIN_SUFFIXES,
-    action: "route",
-    outbound: "\u{1F680} \u8282\u70B9\u9009\u62E9"
-  });
-  var CUSTOM_TARGETS = Object.freeze({
-    block: "REJECT",
-    direct: "DIRECT",
-    proxy: "\u{1F680} \u8282\u70B9\u9009\u62E9",
-    ai: "\u{1F916} AI \u4E13\u7528"
-  });
-  var CUSTOM_FIELDS = Object.freeze({
-    DOMAIN: "domain",
-    "DOMAIN-SUFFIX": "domain_suffix",
-    "DOMAIN-KEYWORD": "domain_keyword",
-    "IP-CIDR": "ip_cidr",
-    "IP-CIDR6": "ip_cidr"
-  });
-  function baseUrl(value) {
-    if (typeof value !== "string" || !/^https:\/\/[^\s]+$/u.test(value) || /[\r\n]/u.test(value)) {
-      throw new Error("sing-box rule base URL must be an HTTPS URL");
-    }
-    return value.replace(/\/+$/u, "");
-  }
-  function route(outbound) {
-    return { action: "route", outbound };
-  }
-  function reject() {
-    return { action: "reject", method: "default" };
-  }
-  function optionalAdblockBase(defaultBase) {
-    const optional = defaultBase.replace(/\/sing-box\/rule-sets$/u, "/optional/adblock-full/sing-box");
-    if (optional === defaultBase) throw new Error("sing-box adblock rule base URL must end in /sing-box/rule-sets");
-    return optional;
-  }
-  function customRuleFields(entry) {
-    const [type, value, ...modifiers] = entry.split(",");
-    const field = CUSTOM_FIELDS[type];
-    if (!field || !value || modifiers.some((modifier) => modifier !== "no-resolve")) {
-      throw new Error(`Invalid sing-box custom rule: ${entry}`);
-    }
-    return { [field]: [value] };
-  }
-  function renderCustomRules(quicMode) {
-    const grouped = /* @__PURE__ */ new Map();
-    for (const [kind, entries] of Object.entries(CUSTOM_RULES)) {
-      for (const entry of entries) {
-        const fields = customRuleFields(entry);
-        const [field] = Object.keys(fields);
-        const key = `${kind}:${field}`;
-        const values = grouped.get(key) ?? { kind, field, values: [] };
-        values.values.push(...fields[field]);
-        grouped.set(key, values);
-      }
-    }
-    const rendered = [];
-    for (const { kind, field, values } of grouped.values()) {
-      const fields = { [field]: [...new Set(values)] };
-      if (quicMode === "proxy-block" && ["proxy", "ai"].includes(kind) && field !== "ip_cidr") {
-        rendered.push({ ...fields, ...QUIC_BLOCK_RULE });
-      }
-      rendered.push({ ...fields, ...kind === "block" ? reject() : route(CUSTOM_TARGETS[kind]) });
-    }
-    return rendered;
-  }
-  function taggedRule(source) {
-    if (source.policy === "REJECT") return { rule_set: [`rule-${source.id}`], ...reject() };
-    return { rule_set: [`rule-${source.id}`], ...route(source.policy) };
-  }
-  function renderSingBoxRuleSets({ ruleBaseUrl, profileMode = "light", adblockMode = "off" }) {
-    const base2 = baseUrl(ruleBaseUrl);
-    if (profileMode === "diagnostic") return [];
-    if (profileMode !== "light") throw new Error("Unsupported sing-box profile mode");
-    const sources = ruleClientCatalog({ adblockMode });
-    const adblockBase = adblockMode === "full" ? optionalAdblockBase(base2) : null;
-    return sources.map((source) => ({
-      type: "remote",
-      tag: `rule-${source.id}`,
-      format: "binary",
-      url: `${source.id === "Advertising" || source.id === "Advertising_Domain" ? adblockBase : base2}/${source.id}.srs`,
-      http_client: RULE_DOWNLOAD_HTTP_CLIENT,
-      update_interval: "24h"
-    }));
-  }
-  function renderSingBoxRouteRules({
-    ruleBaseUrl,
-    profileMode = "light",
-    adblockMode = "off",
-    blockMode = "balanced",
-    quicMode = "allow"
-  }) {
-    if (!["allow", "proxy-block", "all-block"].includes(quicMode)) {
-      throw new Error(`Unsupported sing-box quicMode: ${quicMode}`);
-    }
-    const ruleSets = renderSingBoxRuleSets({ ruleBaseUrl, profileMode, adblockMode });
-    const rules = [
-      { inbound: "tun-in", action: "sniff" },
-      { protocol: "dns", action: "hijack-dns" },
-      ...LOCAL_RULES
-    ];
-    if (quicMode === "all-block") rules.push({ ...QUIC_BLOCK_RULE });
-    if (profileMode === "diagnostic") {
-      rules.push(...renderCustomRules(quicMode));
-      return { ruleSets, rules, final: "\u{1F680} \u8282\u70B9\u9009\u62E9" };
-    }
-    const plan = orderedRoutingPlan({ adblockMode });
-    const securityIds = new Set({
-      off: [],
-      security: ["Hijacking", "BlockHttpDNS"],
-      balanced: ["Hijacking", "BlockHttpDNS", "Privacy", "Advertising", "Advertising_Domain"],
-      strict: ["Hijacking", "BlockHttpDNS", "Privacy", "Advertising", "Advertising_Domain"]
-    }[blockMode] ?? []);
-    rules.push(...plan.filter(({ phase, id }) => phase === "security" && securityIds.has(id)).map(taggedRule));
-    rules.push(...renderCustomRules(quicMode));
-    if (quicMode === "proxy-block") {
-      const proxyRuleSets = plan.filter(({ dnsClass }) => dnsClass === "proxy").map(({ id }) => `rule-${id}`);
-      if (proxyRuleSets.length > 0) rules.push({ network: "udp", port: 443, rule_set: proxyRuleSets, ...reject() });
-    }
-    for (const phase of ROUTING_PHASES.filter((value) => value !== "security" && value !== "resolvedChinaIp")) {
-      for (const source of plan.filter((candidate) => candidate.phase === phase)) {
-        rules.push(taggedRule(source));
-      }
-      if (phase === "serviceIntent") {
-        if (quicMode === "proxy-block") rules.push({ ...OVERSEAS_DNS_FALLBACK_RULE, ...QUIC_BLOCK_RULE });
-        rules.push({ ...OVERSEAS_DNS_FALLBACK_RULE });
-      }
-    }
-    rules.push({ action: "resolve", strategy: "prefer_ipv4" });
-    rules.push(...plan.filter(({ phase }) => phase === "resolvedChinaIp").map(taggedRule));
-    if (quicMode === "proxy-block") rules.push({ ...QUIC_BLOCK_RULE });
-    return { ruleSets, rules, final: "\u{1F680} \u8282\u70B9\u9009\u62E9" };
-  }
-
   // ../../shared/dns/providers.js
   var CHINA_DNS_PROVIDERS = Object.freeze({
     alidns: Object.freeze({
@@ -2130,6 +2020,169 @@ var SingBoxConfigBundle = (() => {
     return provider(GLOBAL_DNS_PROVIDERS, id, "global");
   }
 
+  // src/render-rules.js
+  var RULE_DOWNLOAD_HTTP_CLIENT = "\u{1F9ED} \u89C4\u5219\u4E0B\u8F7D HTTP";
+  var MOBILE_RULE_SOURCE_ID_SET = new Set(MOBILE_RULE_SOURCE_IDS);
+  function activeRuleCatalog(platform, adblockMode) {
+    const catalog = ruleClientCatalog({ adblockMode });
+    return ["iphone", "ipad"].includes(platform) ? catalog.filter(({ id }) => MOBILE_RULE_SOURCE_ID_SET.has(id)) : catalog;
+  }
+  function activeRoutingPlan(platform, adblockMode) {
+    const activeIds = new Set(activeRuleCatalog(platform, adblockMode).map(({ id }) => id));
+    return orderedRoutingPlan({ adblockMode }).filter(({ id }) => activeIds.has(id));
+  }
+  var LOCAL_RULES = Object.freeze([
+    { ip_is_private: true, action: "route", outbound: "DIRECT" },
+    { domain_suffix: ["local", "lan", "home.arpa"], action: "route", outbound: "DIRECT" }
+  ]);
+  var QUIC_BLOCK_RULE = Object.freeze({ network: "udp", port: 443, action: "reject", method: "drop" });
+  var OVERSEAS_DNS_FALLBACK_RULE = Object.freeze({
+    domain_suffix: PROXY_DNS_DOMAIN_SUFFIXES,
+    action: "route",
+    outbound: "\u{1F680} \u8282\u70B9\u9009\u62E9"
+  });
+  var CUSTOM_TARGETS = Object.freeze({
+    block: "REJECT",
+    direct: "DIRECT",
+    proxy: "\u{1F680} \u8282\u70B9\u9009\u62E9",
+    ai: "\u{1F916} AI \u4E13\u7528"
+  });
+  var CUSTOM_FIELDS = Object.freeze({
+    DOMAIN: "domain",
+    "DOMAIN-SUFFIX": "domain_suffix",
+    "DOMAIN-KEYWORD": "domain_keyword",
+    "IP-CIDR": "ip_cidr",
+    "IP-CIDR6": "ip_cidr"
+  });
+  function baseUrl(value) {
+    if (typeof value !== "string" || !/^https:\/\/[^\s]+$/u.test(value) || /[\r\n]/u.test(value)) {
+      throw new Error("sing-box rule base URL must be an HTTPS URL");
+    }
+    return value.replace(/\/+$/u, "");
+  }
+  function route(outbound) {
+    return { action: "route", outbound };
+  }
+  function reject() {
+    return { action: "reject", method: "default" };
+  }
+  function dnsAddressCidr(address) {
+    if (typeof address !== "string" || address === "local") return null;
+    return address.includes(":") ? `${address}/128` : `${address}/32`;
+  }
+  function renderDnsBootstrapRules({ chinaDns = "alidns", globalDns = "cloudflare", dnsMode = "stable" } = {}) {
+    const addresses = [chinaDnsProvider(chinaDns).address];
+    if (dnsMode === "speed") addresses.push(globalDnsProvider(globalDns).address);
+    return [...new Set(addresses.map(dnsAddressCidr).filter(Boolean))].map((address) => ({ ip_cidr: [address], action: "route", outbound: "DIRECT" }));
+  }
+  function optionalAdblockBase(defaultBase) {
+    const optional = defaultBase.replace(/\/sing-box\/rule-sets$/u, "/optional/adblock-full/sing-box");
+    if (optional === defaultBase) throw new Error("sing-box adblock rule base URL must end in /sing-box/rule-sets");
+    return optional;
+  }
+  function customRuleFields(entry) {
+    const [type, value, ...modifiers] = entry.split(",");
+    const field = CUSTOM_FIELDS[type];
+    if (!field || !value || modifiers.some((modifier) => modifier !== "no-resolve")) {
+      throw new Error(`Invalid sing-box custom rule: ${entry}`);
+    }
+    return { [field]: [value] };
+  }
+  function renderCustomRules(quicMode) {
+    const grouped = /* @__PURE__ */ new Map();
+    for (const [kind, entries] of Object.entries(CUSTOM_RULES)) {
+      for (const entry of entries) {
+        const fields = customRuleFields(entry);
+        const [field] = Object.keys(fields);
+        const key = `${kind}:${field}`;
+        const values = grouped.get(key) ?? { kind, field, values: [] };
+        values.values.push(...fields[field]);
+        grouped.set(key, values);
+      }
+    }
+    const rendered = [];
+    for (const { kind, field, values } of grouped.values()) {
+      const fields = { [field]: [...new Set(values)] };
+      if (quicMode === "proxy-block" && ["proxy", "ai"].includes(kind) && field !== "ip_cidr") {
+        rendered.push({ ...fields, ...QUIC_BLOCK_RULE });
+      }
+      rendered.push({ ...fields, ...kind === "block" ? reject() : route(CUSTOM_TARGETS[kind]) });
+    }
+    return rendered;
+  }
+  function taggedRule(source) {
+    if (source.policy === "REJECT") return { rule_set: [`rule-${source.id}`], ...reject() };
+    return { rule_set: [`rule-${source.id}`], ...route(source.policy) };
+  }
+  function renderSingBoxRuleSets({ ruleBaseUrl, profileMode = "light", adblockMode = "off", platform }) {
+    const base2 = baseUrl(ruleBaseUrl);
+    if (profileMode === "diagnostic") return [];
+    if (profileMode !== "light") throw new Error("Unsupported sing-box profile mode");
+    const sources = activeRuleCatalog(platform, adblockMode);
+    const adblockBase = adblockMode === "full" ? optionalAdblockBase(base2) : null;
+    return sources.map((source) => ({
+      type: "remote",
+      tag: `rule-${source.id}`,
+      format: "binary",
+      url: `${source.id === "Advertising" || source.id === "Advertising_Domain" ? adblockBase : base2}/${source.id}.srs`,
+      http_client: RULE_DOWNLOAD_HTTP_CLIENT,
+      update_interval: "24h"
+    }));
+  }
+  function renderSingBoxRouteRules({
+    ruleBaseUrl,
+    profileMode = "light",
+    adblockMode = "off",
+    blockMode = "balanced",
+    quicMode = "allow",
+    platform,
+    chinaDns = "alidns",
+    globalDns = "cloudflare",
+    dnsMode = "stable"
+  }) {
+    if (!["allow", "proxy-block", "all-block"].includes(quicMode)) {
+      throw new Error(`Unsupported sing-box quicMode: ${quicMode}`);
+    }
+    const ruleSets = renderSingBoxRuleSets({ ruleBaseUrl, profileMode, adblockMode, platform });
+    const rules = [
+      { inbound: "tun-in", action: "sniff" },
+      { protocol: "dns", action: "hijack-dns" },
+      ...LOCAL_RULES,
+      ...renderDnsBootstrapRules({ chinaDns, globalDns, dnsMode })
+    ];
+    if (quicMode === "all-block") rules.push({ ...QUIC_BLOCK_RULE });
+    if (profileMode === "diagnostic") {
+      rules.push(...renderCustomRules(quicMode));
+      return { ruleSets, rules, final: "\u{1F680} \u8282\u70B9\u9009\u62E9" };
+    }
+    const plan = activeRoutingPlan(platform, adblockMode);
+    const securityIds = new Set({
+      off: [],
+      security: ["Hijacking", "BlockHttpDNS"],
+      balanced: ["Hijacking", "BlockHttpDNS", "Privacy", "Advertising", "Advertising_Domain"],
+      strict: ["Hijacking", "BlockHttpDNS", "Privacy", "Advertising", "Advertising_Domain"]
+    }[blockMode] ?? []);
+    rules.push(...plan.filter(({ phase, id }) => phase === "security" && securityIds.has(id)).map(taggedRule));
+    rules.push(...renderCustomRules(quicMode));
+    if (quicMode === "proxy-block") {
+      const proxyRuleSets = plan.filter(({ dnsClass }) => dnsClass === "proxy").map(({ id }) => `rule-${id}`);
+      if (proxyRuleSets.length > 0) rules.push({ network: "udp", port: 443, rule_set: proxyRuleSets, ...reject() });
+    }
+    for (const phase of ROUTING_PHASES.filter((value) => value !== "security" && value !== "resolvedChinaIp")) {
+      for (const source of plan.filter((candidate) => candidate.phase === phase)) {
+        rules.push(taggedRule(source));
+      }
+      if (phase === "serviceIntent") {
+        if (quicMode === "proxy-block") rules.push({ ...OVERSEAS_DNS_FALLBACK_RULE, ...QUIC_BLOCK_RULE });
+        rules.push({ ...OVERSEAS_DNS_FALLBACK_RULE });
+      }
+    }
+    rules.push({ action: "resolve", strategy: "prefer_ipv4" });
+    rules.push(...plan.filter(({ phase }) => phase === "resolvedChinaIp").map(taggedRule));
+    if (quicMode === "proxy-block") rules.push({ ...QUIC_BLOCK_RULE });
+    return { ruleSets, rules, final: "\u{1F680} \u8282\u70B9\u9009\u62E9" };
+  }
+
   // src/render-dns.js
   var DNS_DIRECT = "dns-direct";
   var DNS_PROXY = "dns-proxy";
@@ -2140,6 +2193,13 @@ var SingBoxConfigBundle = (() => {
   var CHINA_DNS_SOURCE_IDS = Object.freeze(
     orderedRoutingPlan().filter(({ id, dnsClass }) => dnsClass === "china" && id !== "ChinaIP").map(({ id }) => id)
   );
+  var MOBILE_RULE_SOURCE_ID_SET2 = new Set(MOBILE_RULE_SOURCE_IDS);
+  function isIos(options) {
+    return options.platform === "iphone" || options.platform === "ipad";
+  }
+  function activeSourceIds(options, sourceIds) {
+    return isIos(options) ? sourceIds.filter((id) => MOBILE_RULE_SOURCE_ID_SET2.has(id)) : sourceIds;
+  }
   function customDnsRules() {
     const rules = [];
     const targetByKind = /* @__PURE__ */ new Map([
@@ -2189,9 +2249,14 @@ var SingBoxConfigBundle = (() => {
       ...customDnsRules()
     ];
     if (options.profileMode !== "diagnostic") {
+      for (const [sourceIds, server] of [
+        [PROXY_DNS_SOURCE_IDS, DNS_PROXY],
+        [CHINA_DNS_SOURCE_IDS, DNS_DIRECT]
+      ]) {
+        const ruleSet = activeSourceIds(options, sourceIds).map((id) => `rule-${id}`);
+        if (ruleSet.length > 0) rules.push({ rule_set: ruleSet, action: "route", server });
+      }
       rules.push(
-        { rule_set: PROXY_DNS_SOURCE_IDS.map((id) => `rule-${id}`), action: "route", server: DNS_PROXY },
-        { rule_set: CHINA_DNS_SOURCE_IDS.map((id) => `rule-${id}`), action: "route", server: DNS_DIRECT },
         ...options.dnsMode === "privacy" ? [{ action: "route", server: DNS_PROXY }] : renderUnknownDnsRules("rule-ChinaIP")
       );
     } else {
@@ -2201,7 +2266,7 @@ var SingBoxConfigBundle = (() => {
   }
   function renderSingBoxDns(options) {
     const chinaDns = chinaDnsProvider(options.chinaDns);
-    const chinaServer = options.chinaDns === "system" ? { type: "local", tag: DNS_DIRECT } : { type: "udp", tag: DNS_DIRECT, server: chinaDns.address, detour: "DIRECT" };
+    const chinaServer = options.chinaDns === "system" ? { type: "local", tag: DNS_DIRECT } : { type: "udp", tag: DNS_DIRECT, server: chinaDns.address };
     const globalDns = globalDnsProvider(options.globalDns);
     const proxyServer = {
       type: "https",
@@ -2211,7 +2276,7 @@ var SingBoxConfigBundle = (() => {
       path: "/dns-query",
       tls: { enabled: true, server_name: globalDns.serverName },
       // DNS proxying must never depend on a selector that contains DIRECT.
-      detour: options.dnsMode === "speed" ? "DIRECT" : "\u26A1 \u5168\u90E8\u81EA\u52A8"
+      ...options.dnsMode === "speed" ? {} : { detour: "\u26A1 \u5168\u90E8\u81EA\u52A8" }
     };
     return {
       servers: [chinaServer, proxyServer],
@@ -2378,9 +2443,7 @@ var SingBoxConfigBundle = (() => {
       validateDnsServerShape(server, errors);
       if (server.detour !== void 0 && !outboundTags.has(server.detour)) errors.push("DNS server references missing outbound");
       if (server.detour === server.tag) errors.push("DNS server loop detected");
-      if (server.tag === "dns-direct" && server.type !== "local" && server.detour !== "DIRECT") {
-        errors.push("non-local dns-direct must use the DIRECT outbound");
-      }
+      if (server.detour === "DIRECT") errors.push("DNS server must not detour through the empty DIRECT outbound");
     }
     for (const inbound of config.inbounds ?? []) {
       if (inbound.type === "tun" && !inbound.auto_route) errors.push("TUN auto_route is required");
@@ -2411,10 +2474,17 @@ var SingBoxConfigBundle = (() => {
       profileMode: options.profileMode,
       adblockMode: options.adblockMode,
       blockMode: options.blockMode,
-      quicMode: options.quicMode
+      quicMode: options.quicMode,
+      platform: options.platform,
+      chinaDns: options.chinaDns,
+      globalDns: options.globalDns,
+      dnsMode: options.dnsMode
     });
     const config = {
-      log: { level: "info", timestamp: true },
+      log: {
+        level: ["iphone", "ipad"].includes(options.platform) ? "warn" : "info",
+        timestamp: true
+      },
       dns: renderSingBoxDns(options),
       http_clients: [{
         tag: RULE_DOWNLOAD_HTTP_CLIENT,
@@ -2436,7 +2506,13 @@ var SingBoxConfigBundle = (() => {
         rules,
         final
       },
-      experimental: { cache_file: { enabled: true, path: "cache.db", store_dns: true } }
+      experimental: {
+        cache_file: {
+          enabled: !["iphone", "ipad"].includes(options.platform),
+          path: "cache.db",
+          store_dns: !["iphone", "ipad"].includes(options.platform)
+        }
+      }
     };
     const endpoints = renderedNodes.flatMap(({ endpoint }) => endpoint ? [endpoint] : []);
     if (endpoints.length > 0) config.endpoints = endpoints;

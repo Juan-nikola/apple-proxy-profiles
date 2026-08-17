@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
   "clients": {
-    "singbox": "07c9708ad5ac8236d949d473bb5cb8e28437dcf2b0ec17c6f8d66b42c657bd16",
+    "singbox": "15188516b1922f4eb20d2e35b7cf7a45cd738237580235e7a923a94d03dbec04",
     "surge": "9afc5436aa3082f19346206db7442dd477c5cb91d86e69a7019a3b5f554f8a78",
     "shadowrocket": "2606919d530d2eb2acc4d505dfcd6767f9db81ad7e90fc4028510f1a7c625674",
     "egern": "c6e7b5ae23bad79fa695e0dc02e95a64dc8092582bb3bf5d254cdfa56351a967",
@@ -18,7 +18,7 @@
   },
   "optionalPacks": {
     "adblock-full": {
-      "singbox": "9d2b3aa44eab0b67aa7637a518f14117d7d69ddb507ceafdd674c2483b616955",
+      "singbox": "7760abafda3af7ef1eb3bcf252fec97c9a4639cd3143f6810c7f787f96be2187",
       "surge": "e17ca38a10ddc3822ce511d41d381b1bca3c374af99aa5590457477825ad98c2",
       "shadowrocket": "ef17a68dd90bf420465ddbcb92cffe2e235b2dae4a8ab49a5bbbe23cdd88faa7",
       "egern": "c78413297f350ef5ab3f5871266222500c42e4904bdcb54a603c8d50016fd96a",

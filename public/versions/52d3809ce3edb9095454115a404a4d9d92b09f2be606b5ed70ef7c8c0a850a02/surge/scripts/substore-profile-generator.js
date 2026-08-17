@@ -1,4 +1,4 @@
-var SingBoxConfigBundle = (() => {
+var SurgeProfileBundle = (() => {
   var __defProp = Object.defineProperty;
   var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
   var __getOwnPropNames = Object.getOwnPropertyNames;
@@ -17,9 +17,10 @@ var SingBoxConfigBundle = (() => {
   };
   var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
-  // src/substore-config-entry.js
-  var substore_config_entry_exports = {};
-  __export(substore_config_entry_exports, {
+  // src/substore-profile-entry.js
+  var substore_profile_entry_exports = {};
+  __export(substore_profile_entry_exports, {
+    PUBLIC_RULE_BASE_URL: () => PUBLIC_RULE_BASE_URL,
     PUBLIC_RULE_ROOT: () => PUBLIC_RULE_ROOT,
     operator: () => operator
   });
@@ -787,19 +788,6 @@ var SingBoxConfigBundle = (() => {
     }
     return { renderable, failureProtocols: failures };
   }
-  function assertRenderableNodes(nodes, clientName, renderOneNode) {
-    validateRenderableInvocation(nodes, clientName, renderOneNode);
-    const failures = {};
-    for (const node of nodes) {
-      try {
-        renderOneNode(node);
-      } catch {
-        increment(failures, protocolOf(node));
-      }
-    }
-    const counts = failureSummary(failures);
-    if (counts) throw new Error(`${clientName} cannot render selected protocols: ${counts}`);
-  }
 
   // ../../shared/policies/platform-presets.js
   var POLICY_PLATFORM_PRESETS = Object.freeze({
@@ -829,6 +817,7 @@ var SingBoxConfigBundle = (() => {
 
   // src/options.js
   var REQUIRED_KEYS = Object.freeze(["output", "type", "name", "subscriptionName", "platform"]);
+  var NODE_REQUIRED_KEYS = Object.freeze(["output", "type", "name"]);
   var DEFAULTS = Object.freeze({
     channel: "edge",
     dnsMode: "stable",
@@ -839,17 +828,14 @@ var SingBoxConfigBundle = (() => {
     ipv6Mode: "auto",
     autoGroupMode: "auto",
     clientChain: "off",
-    profileMode: "light",
-    adblockMode: "off",
-    nodeErrorMode: "strict"
+    adblockMode: "off"
   });
-  var PLATFORMS = /* @__PURE__ */ new Set(["macos", "iphone", "ipad", "android"]);
+  var PLATFORMS = /* @__PURE__ */ new Set(["macos", "iphone", "ipad"]);
   var CHANNELS = /* @__PURE__ */ new Set(["edge", "current"]);
-  var PROFILE_MODES = /* @__PURE__ */ new Set(["light", "diagnostic"]);
   var ADBLOCK_MODES = /* @__PURE__ */ new Set(["off", "full"]);
-  var NODE_ERROR_MODES = /* @__PURE__ */ new Set(["strict", "compatible"]);
-  var ALLOWED_KEYS = /* @__PURE__ */ new Set([...REQUIRED_KEYS, ...Object.keys(DEFAULTS)]);
   var PARSED = /* @__PURE__ */ new WeakSet();
+  var ALLOWED_KEYS = /* @__PURE__ */ new Set([...REQUIRED_KEYS, ...Object.keys(DEFAULTS), "proxyPolicyUrl"]);
+  var NODE_ALLOWED_KEYS = /* @__PURE__ */ new Set([...NODE_REQUIRED_KEYS, "clientChain"]);
   function requiredString(raw, key) {
     const value = raw[key];
     if (typeof value !== "string" || value.length === 0 || value.trim() !== value || /[\r\n]/u.test(value)) {
@@ -859,33 +845,45 @@ var SingBoxConfigBundle = (() => {
   }
   function enumValue(raw, key, defaultValue) {
     const value = raw[key] === void 0 ? defaultValue : raw[key];
-    if (typeof value !== "string" || !OPTION_VALUES[key]?.includes(value)) throw new Error(`Option '${key}' has an unsupported value`);
+    if (typeof value !== "string" || !OPTION_VALUES[key]?.includes(value)) {
+      throw new Error(`Option '${key}' has an unsupported value`);
+    }
     return value;
   }
-  function parseSingBoxOptions(raw) {
-    if (!raw || typeof raw !== "object" || Array.isArray(raw)) throw new TypeError("sing-box options must be an object");
-    if (Object.hasOwn(raw, "ruleSetFormat")) {
-      throw new Error("Option 'ruleSetFormat' was removed; migrate to profileMode and adblockMode");
+  function validatePolicyUrl(value, key) {
+    if (value === void 0) return void 0;
+    if (typeof value !== "string" || value.length === 0 || value.trim() !== value || /[\u0000-\u001f\u007f\\]/u.test(value) || /%(?:0[0-9a-f]|1[0-9a-f]|7f)/iu.test(value)) {
+      throw new Error(`Option '${key}' must be a safe absolute HTTPS URL`);
     }
+    let parsed;
+    try {
+      parsed = new URL(value);
+    } catch {
+      throw new Error(`Option '${key}' must be a safe absolute HTTPS URL`);
+    }
+    if (parsed.protocol !== "https:" || !parsed.hostname || parsed.username || parsed.password || value.includes("#")) {
+      throw new Error(`Option '${key}' must be a safe absolute HTTPS URL`);
+    }
+    return value;
+  }
+  function parseSurgeOptions(raw) {
+    if (!raw || typeof raw !== "object" || Array.isArray(raw)) throw new TypeError("Surge options must be an object");
     for (const key of Object.keys(raw)) {
-      if (!key.startsWith("_") && !ALLOWED_KEYS.has(key)) throw new Error(`Unknown sing-box option: ${key}`);
+      if (!key.startsWith("_") && !ALLOWED_KEYS.has(key)) throw new Error(`Unknown Surge option: ${key}`);
     }
-    for (const key of REQUIRED_KEYS) if (!Object.hasOwn(raw, key)) throw new Error(`Option '${key}' is required`);
+    for (const key of REQUIRED_KEYS) {
+      if (!Object.hasOwn(raw, key)) throw new Error(`Option '${key}' is required`);
+    }
     const platform = requiredString(raw, "platform");
     if (!PLATFORMS.has(platform)) throw new Error("Option 'platform' has an unsupported value");
     if (requiredString(raw, "output") !== "config") throw new Error("Option 'output' must be config");
     if (requiredString(raw, "type") !== "collection") throw new Error("Option 'type' must be collection");
     const channel = raw.channel === void 0 ? DEFAULTS.channel : raw.channel;
     if (typeof channel !== "string" || !CHANNELS.has(channel)) throw new Error("Option 'channel' has an unsupported value");
-    const profileMode = raw.profileMode === void 0 ? DEFAULTS.profileMode : raw.profileMode;
-    if (typeof profileMode !== "string" || !PROFILE_MODES.has(profileMode)) throw new Error("Option 'profileMode' has an unsupported value");
     const adblockMode = raw.adblockMode === void 0 ? DEFAULTS.adblockMode : raw.adblockMode;
-    if (typeof adblockMode !== "string" || !ADBLOCK_MODES.has(adblockMode)) throw new Error("Option 'adblockMode' has an unsupported value");
-    if (["iphone", "ipad"].includes(platform) && adblockMode === "full") {
-      throw new Error("Option 'adblockMode=full' exceeds the iOS NetworkExtension memory budget");
+    if (typeof adblockMode !== "string" || !ADBLOCK_MODES.has(adblockMode)) {
+      throw new Error("Option 'adblockMode' has an unsupported value");
     }
-    const nodeErrorMode = raw.nodeErrorMode === void 0 ? DEFAULTS.nodeErrorMode : raw.nodeErrorMode;
-    if (typeof nodeErrorMode !== "string" || !NODE_ERROR_MODES.has(nodeErrorMode)) throw new Error("Option 'nodeErrorMode' has an unsupported value");
     const options = {
       output: "config",
       type: "collection",
@@ -898,28 +896,64 @@ var SingBoxConfigBundle = (() => {
       globalDns: enumValue(raw, "globalDns", DEFAULTS.globalDns),
       blockMode: enumValue(raw, "blockMode", DEFAULTS.blockMode),
       quicMode: enumValue(raw, "quicMode", DEFAULTS.quicMode),
-      ipv6Mode: enumValue(
-        raw,
-        "ipv6Mode",
-        ["macos", "iphone", "ipad"].includes(platform) ? "ipv4-only" : DEFAULTS.ipv6Mode
-      ),
+      ipv6Mode: enumValue(raw, "ipv6Mode", platform === "macos" ? "ipv4-only" : DEFAULTS.ipv6Mode),
       autoGroupMode: enumValue(raw, "autoGroupMode", DEFAULTS.autoGroupMode),
       clientChain: enumValue(raw, "clientChain", DEFAULTS.clientChain),
-      profileMode,
       adblockMode,
-      nodeErrorMode
+      proxyPolicyUrl: validatePolicyUrl(raw.proxyPolicyUrl, "proxyPolicyUrl")
     };
     platformPolicyPreset(platform);
     Object.freeze(options);
     PARSED.add(options);
     return options;
   }
-  function isParsedSingBoxOptions(value) {
+  function isParsedSurgeOptions(value) {
     return value !== null && typeof value === "object" && PARSED.has(value);
   }
 
+  // ../../shared/dns/providers.js
+  var CHINA_DNS_PROVIDERS = Object.freeze({
+    alidns: Object.freeze({
+      address: "223.5.5.5",
+      doh: "https://dns.alidns.com/dns-query"
+    }),
+    dnspod: Object.freeze({
+      address: "119.29.29.29",
+      doh: "https://doh.pub/dns-query"
+    }),
+    system: Object.freeze({
+      address: "local",
+      doh: "system"
+    })
+  });
+  var GLOBAL_DNS_PROVIDERS = Object.freeze({
+    cloudflare: Object.freeze({
+      address: "1.1.1.1",
+      serverName: "cloudflare-dns.com",
+      doh: "https://cloudflare-dns.com/dns-query"
+    }),
+    google: Object.freeze({
+      address: "8.8.8.8",
+      serverName: "dns.google",
+      doh: "https://dns.google/dns-query"
+    }),
+    quad9: Object.freeze({
+      address: "9.9.9.9",
+      serverName: "dns.quad9.net",
+      doh: "https://dns.quad9.net/dns-query"
+    })
+  });
+  function provider(providers, id, label) {
+    const value = providers[id];
+    if (!value) throw new Error(`Unsupported ${label} DNS provider`);
+    return value;
+  }
+  function chinaDnsProvider(id) {
+    return provider(CHINA_DNS_PROVIDERS, id, "China");
+  }
+
   // src/render-node.js
-  var ALLOWED_KEYS2 = /* @__PURE__ */ new Set([
+  var COMMON_KEYS = /* @__PURE__ */ new Set([
     "name",
     "type",
     "server",
@@ -932,34 +966,28 @@ var SingBoxConfigBundle = (() => {
     "skip-cert-verify",
     "allow-insecure",
     "client-fingerprint",
-    "alpn",
-    "reality-opts",
     "network",
     "ws-opts",
     "grpc-opts",
     "h2-opts",
     "http-opts",
-    "httpupgrade-opts",
-    "xhttp-opts",
     "cipher",
     "password",
-    "uuid",
-    "flow",
-    "encryption",
-    "packet-encoding",
-    "packetEncoding",
-    "xudp",
-    "packet-addr",
-    "alter-id",
-    "alterId",
+    "protocol",
+    "obfs",
+    "protocol-param",
+    "obfs-param",
     "psk",
     "version",
+    "uuid",
+    "flow",
+    "alter-id",
+    "alterId",
     "username",
     "private-key",
-    "private_key",
     "public-key",
-    "pre-shared-key",
     "peers",
+    "pre-shared-key",
     "local-address",
     "local_ipv4",
     "local-ipv4",
@@ -967,369 +995,170 @@ var SingBoxConfigBundle = (() => {
     "local-ipv6",
     "ip",
     "ipv6",
-    "dns",
-    "dns_servers",
-    "mtu",
-    "keepalive",
-    "reserved",
-    "address",
-    "allowed-ips",
-    "allowed_ips",
-    "persistent-keepalive",
-    "obfs",
-    "obfs-mode",
-    "obfs_mode",
-    "obfs-host",
-    "obfs_host",
-    "obfs-password",
-    "obfs_password",
-    "mode",
-    "userkey",
-    "user-key",
-    "udp-relay-mode",
-    "udp_relay_mode",
-    "congestion-control",
-    "congestion_control",
-    "heartbeat",
-    "ports",
-    "server-ports",
-    "server_ports",
-    "port-hopping",
-    "port_hopping",
-    "port-hopping-interval",
-    "port_hopping_interval",
-    "hop-interval",
-    "hop_interval",
-    "hop_interval_max",
-    "bandwidth",
-    "up",
-    "down",
-    "up_mbps",
-    "down_mbps",
+    "reality-opts",
     "reuse",
     "tfo",
-    "udp_relay",
-    "idle-session-check-interval",
-    "idle-session-timeout",
-    "min-idle-session",
-    "client-metadata",
-    "client_metadata",
-    "underlying-proxy",
-    "chain",
-    "dialer-proxy",
-    "detour",
-    "prev_hop"
+    "udp_relay"
   ]);
-  var CHAIN_ALIASES2 = ["underlying-proxy", "chain", "dialer-proxy", "detour", "prev_hop"];
-  var GENERATED_CHAIN_POLICY = "\u{1F517} \u5165\u53E3\u8282\u70B9";
-  var ANYTLS_FIELDS = /* @__PURE__ */ new Set([
-    "name",
-    "type",
-    "server",
-    "port",
-    "password",
-    "tls",
-    "security",
-    "sni",
-    "servername",
-    "skip-cert-verify",
-    "allow-insecure",
-    "client-fingerprint",
-    "alpn",
-    "reality-opts",
-    "network",
-    "udp",
-    "idle-session-check-interval",
-    "idle-session-timeout",
-    "min-idle-session",
-    "client-metadata",
-    "client_metadata",
-    ...CHAIN_ALIASES2
-  ]);
-  var ANYTLS_REALITY_FIELDS = /* @__PURE__ */ new Set(["public-key", "short-id", "_spider-x"]);
-  function hasOwn(value, key) {
-    return Object.hasOwn(value, key);
+  function escapeValue(value) {
+    const text = String(value);
+    if (/[\r\n]/u.test(text)) throw new Error("Surge node value contains a line break");
+    return text.replaceAll("\\", "\\\\").replaceAll(",", "\\,");
   }
   function requiredString2(node, key) {
     const value = node[key];
     if (typeof value !== "string" || value.length === 0 || value.trim() !== value) {
-      throw new Error(`sing-box node field '${key}' is invalid`);
+      throw new Error(`Surge node field '${key}' is invalid`);
     }
     return value;
   }
   function requiredPort(node) {
     const port = Number(node.port);
-    if (!Number.isInteger(port) || port < 1 || port > 65535) throw new Error("sing-box node port is invalid");
+    if (!Number.isInteger(port) || port < 1 || port > 65535) throw new Error("Surge node port is invalid");
     return port;
   }
   function validateNodeShape(node) {
-    if (!node || typeof node !== "object" || Array.isArray(node)) throw new TypeError("sing-box node is invalid");
-    if (typeof node.name !== "string" || node.name.length === 0 || /[\r\n]/u.test(node.name)) {
-      throw new Error("sing-box node name is invalid");
-    }
+    if (!node || typeof node !== "object" || Array.isArray(node)) throw new TypeError("Surge node is invalid");
+    if (typeof node.name !== "string" || !node.name || /[\r\n=]/u.test(node.name)) throw new Error("Surge node name is invalid");
     requiredString2(node, "server");
     requiredPort(node);
     for (const key of Object.keys(node)) {
       if (key.startsWith("_")) continue;
-      if (!ALLOWED_KEYS2.has(key)) throw new Error(`sing-box node contains unsupported field: ${key}`);
+      if (!COMMON_KEYS.has(key)) throw new Error(`Surge node contains unsupported field: ${key}`);
     }
   }
-  function validateAnyTlsShape(node) {
-    const unsupported = Object.keys(node).find((key) => !key.startsWith("_") && !ANYTLS_FIELDS.has(key));
-    if (unsupported !== void 0) throw new Error(`Unsupported sing-box AnyTLS field: ${unsupported}`);
-    if (node.network !== void 0 && node.network !== "tcp") throw new Error("Unsupported sing-box AnyTLS network");
-    if (node.tls !== void 0 && node.tls !== true) throw new Error("sing-box AnyTLS requires TLS");
-    if (node.security !== void 0 && !["tls", "reality"].includes(node.security)) {
-      throw new Error(`Unsupported sing-box AnyTLS security: ${String(node.security)}`);
-    }
-    for (const key of ["sni", "servername"]) {
-      if (hasOwn(node, key) && (typeof node[key] !== "string" || node[key].length === 0 || node[key].trim() !== node[key])) {
-        throw new Error(`sing-box AnyTLS field '${key}' is invalid`);
-      }
-    }
-    if (hasOwn(node, "sni") && hasOwn(node, "servername") && node.sni !== node.servername) {
-      throw new Error("Conflicting sing-box AnyTLS server name aliases");
-    }
-    for (const key of ["skip-cert-verify", "allow-insecure"]) {
-      if (hasOwn(node, key) && typeof node[key] !== "boolean") throw new Error(`sing-box AnyTLS field '${key}' is invalid`);
-    }
-    if (hasOwn(node, "skip-cert-verify") && hasOwn(node, "allow-insecure") && node["skip-cert-verify"] !== node["allow-insecure"]) {
-      throw new Error("Conflicting sing-box AnyTLS certificate verification aliases");
-    }
-    if (hasOwn(node, "udp") && typeof node.udp !== "boolean") throw new Error("sing-box AnyTLS field 'udp' is invalid");
-    if (hasOwn(node, "client-fingerprint") && (typeof node["client-fingerprint"] !== "string" || node["client-fingerprint"].length === 0 || node["client-fingerprint"].trim() !== node["client-fingerprint"])) {
-      throw new Error("sing-box AnyTLS field 'client-fingerprint' is invalid");
-    }
+  function sanitizeSurgeNode(node) {
+    return Object.fromEntries(Object.entries(node).filter(([key]) => key.startsWith("_") || COMMON_KEYS.has(key)));
+  }
+  function option(target, key, value) {
+    if (value !== void 0 && value !== null && value !== "") target.push(`${key}=${escapeValue(value)}`);
+  }
+  function tlsOptions(node, target) {
+    const tls = node.tls === true || node.security === "tls" || node.security === "reality" || node["reality-opts"] !== void 0;
+    if (!tls) return;
+    target.push("tls=true");
+    option(target, "sni", node.sni ?? node.servername);
+    if (node["skip-cert-verify"] === true || node["allow-insecure"] === true) target.push("skip-cert-verify=true");
+    option(target, "client-fingerprint", node["client-fingerprint"]);
     const reality = node["reality-opts"];
-    if (node.security === "reality" && !reality) throw new Error("sing-box AnyTLS Reality options are required");
-    if (node.security === "tls" && reality) throw new Error("sing-box AnyTLS TLS conflicts with Reality options");
-    if (!reality) return;
-    const unsupportedReality = Object.keys(reality).find((key) => !ANYTLS_REALITY_FIELDS.has(key));
-    if (unsupportedReality !== void 0) throw new Error(`Unsupported sing-box AnyTLS Reality field: ${unsupportedReality}`);
-    if (typeof reality["public-key"] !== "string" || reality["public-key"].length === 0 || reality["public-key"].trim() !== reality["public-key"]) {
-      throw new Error("sing-box AnyTLS Reality public key is invalid");
-    }
-    if (reality["short-id"] !== void 0 && (typeof reality["short-id"] !== "string" || !/^[0-9a-f]+$/iu.test(reality["short-id"]))) {
-      throw new Error("sing-box AnyTLS Reality short ID is invalid");
-    }
-  }
-  function setIf(target, key, value) {
-    if (value !== void 0 && value !== null && value !== "") target[key] = value;
-  }
-  function durationSeconds(node, key) {
-    if (!hasOwn(node, key)) return void 0;
-    const value = node[key];
-    if (Number.isSafeInteger(value) && value >= 0) return `${value}s`;
-    if (typeof value === "string" && value.trim() === value && value.length > 0) return value;
-    throw new Error(`sing-box node field '${key}' is invalid`);
-  }
-  function tlsFields(node, required = false) {
-    const reality = node["reality-opts"];
-    const enabled = required || node.tls === true || node.security === "tls" || node.security === "reality" || reality !== void 0;
-    if (!enabled) return void 0;
-    const tls = { enabled: true };
-    setIf(tls, "server_name", node.sni ?? node.servername);
-    if (node.alpn !== void 0) {
-      if (!Array.isArray(node.alpn) || node.alpn.length === 0 || node.alpn.some((value) => typeof value !== "string" || !value)) {
-        throw new Error("sing-box TLS ALPN is invalid");
-      }
-      tls.alpn = [...node.alpn];
-    }
-    if (node["skip-cert-verify"] === true || node["allow-insecure"] === true) tls.insecure = true;
-    if (node["client-fingerprint"] !== void 0) {
-      tls.utls = { enabled: true, fingerprint: requiredString2(node, "client-fingerprint") };
-    }
     if (reality !== void 0) {
-      if (!reality || typeof reality !== "object" || typeof reality["public-key"] !== "string") {
-        throw new Error("sing-box Reality options are invalid");
-      }
-      tls.reality = { enabled: true, public_key: reality["public-key"] };
-      setIf(tls.reality, "short_id", reality["short-id"]);
+      if (!reality || typeof reality !== "object" || typeof reality["public-key"] !== "string") throw new Error("Surge Reality options are invalid");
+      target.push("reality=true");
+      option(target, "public-key", reality["public-key"]);
+      option(target, "short-id", reality["short-id"]);
     }
-    return tls;
   }
-  function transportFields(node) {
-    const network = String(node.network ?? "tcp").trim().toLowerCase();
-    if (["tcp", "raw"].includes(network)) return void 0;
+  function transportOptions(node, target) {
+    const network = String(node.network ?? "tcp").toLowerCase();
+    if (network === "tcp" || network === "raw") return;
     if (network === "ws") {
-      const source = node["ws-opts"];
-      if (!source || typeof source !== "object" || Array.isArray(source)) throw new Error("sing-box WebSocket options are invalid");
-      const transport = { type: "ws", path: Array.isArray(source.path) ? source.path[0] : source.path ?? "/" };
-      if (source.headers !== void 0) transport.headers = { ...source.headers };
-      return transport;
+      const ws = node["ws-opts"];
+      if (!ws || typeof ws !== "object" || Array.isArray(ws)) throw new Error("Surge WebSocket options are invalid");
+      target.push("ws=true");
+      option(target, "ws-path", Array.isArray(ws.path) ? ws.path[0] : ws.path ?? "/");
+      const headers = ws.headers;
+      if (headers && typeof headers === "object") {
+        const host = headers.Host ?? headers.host;
+        option(target, "ws-headers", host === void 0 ? void 0 : `Host=${host}`);
+      }
+      return;
     }
     if (network === "grpc") {
-      const source = node["grpc-opts"] ?? {};
-      const transport = { type: "grpc" };
-      setIf(transport, "service_name", source["grpc-service-name"] ?? source.service_name);
-      return transport;
+      const grpc = node["grpc-opts"] ?? {};
+      target.push("grpc=true");
+      option(target, "grpc-service-name", grpc["grpc-service-name"]);
+      return;
     }
-    if (["h2", "http2", "http"].includes(network)) {
-      const source = node["h2-opts"] ?? node["http-opts"] ?? {};
-      const transport = { type: "http" };
-      setIf(transport, "method", source.method);
-      setIf(transport, "path", Array.isArray(source.path) ? source.path[0] : source.path);
-      if (source.headers !== void 0) transport.headers = { ...source.headers };
-      if (source.host !== void 0) transport.host = Array.isArray(source.host) ? source.host : [source.host];
-      return transport;
+    if (network === "h2" || network === "http2") {
+      const h2 = node["h2-opts"] ?? {};
+      target.push("h2=true");
+      option(target, "h2-path", Array.isArray(h2.path) ? h2.path[0] : h2.path);
+      return;
     }
-    if (network === "httpupgrade") {
-      const source = node["httpupgrade-opts"] ?? {};
-      const transport = { type: "httpupgrade", path: source.path ?? "/" };
-      setIf(transport, "host", source.host);
-      return transport;
-    }
-    throw new Error(`Unsupported sing-box transport: ${network}`);
-  }
-  function packetEncoding(node, outbound) {
-    const raw = node["packet-encoding"] ?? node.packetEncoding ?? (node.xudp === true ? "xudp" : node["packet-addr"] === true ? "packetaddr" : void 0);
-    if (raw === void 0 || raw === "") return;
-    const encoding = String(raw).trim().toLowerCase();
-    if (!["xudp", "packetaddr", "packet"].includes(encoding)) throw new Error(`Unsupported sing-box packet encoding: ${encoding}`);
-    outbound.packet_encoding = encoding === "packet" ? "packetaddr" : encoding;
+    throw new Error(`Unsupported Surge transport: ${network}`);
   }
   function base(node, type) {
-    return { type, tag: node.name, server: node.server, server_port: requiredPort(node) };
+    return [escapeValue(node.name), type, escapeValue(node.server), String(requiredPort(node))];
   }
-  function appendChain(outbound, node) {
-    const aliases = CHAIN_ALIASES2.filter((key) => hasOwn(node, key) && node[key] !== void 0 && node[key] !== null && node[key] !== "");
-    if (aliases.length === 0) return outbound;
-    if (aliases.length !== 1 || aliases[0] !== "underlying-proxy" || node["underlying-proxy"] !== GENERATED_CHAIN_POLICY || node?._profile?.chained !== true) {
-      throw new Error("Unsupported existing sing-box proxy chain");
-    }
-    outbound.detour = GENERATED_CHAIN_POLICY;
-    return outbound;
-  }
-  function renderWireGuardEndpoint(node) {
-    validateNodeShape(node);
-    const peers = Array.isArray(node.peers) && node.peers.length > 0 ? node.peers : [{}];
-    const localAddress = node["local-address"] ?? node.local_ipv4 ?? node["local-ipv4"] ?? node.ip;
-    if (localAddress === void 0) throw new Error("sing-box WireGuard local address is required");
-    const endpointPeers = peers.map((peer) => {
-      const publicKey = peer["public-key"] ?? node["public-key"];
-      if (typeof publicKey !== "string" || !publicKey) throw new Error("sing-box WireGuard peer public key is required");
-      return {
-        address: peer.address ?? node.server,
-        port: Number(peer.port ?? node.port),
-        public_key: publicKey,
-        allowed_ips: peer["allowed-ips"] ?? peer.allowed_ips ?? ["0.0.0.0/0", "::/0"],
-        ...peer["pre-shared-key"] ?? node["pre-shared-key"] ? { pre_shared_key: peer["pre-shared-key"] ?? node["pre-shared-key"] } : {},
-        ...peer["persistent-keepalive"] ?? node.keepalive ? { persistent_keepalive_interval: Number(peer["persistent-keepalive"] ?? node.keepalive) } : {},
-        ...peer.reserved ?? node.reserved ? { reserved: peer.reserved ?? node.reserved } : {}
-      };
-    });
-    return {
-      type: "wireguard",
-      tag: node.name,
-      system: false,
-      mtu: Number(node.mtu ?? 1408),
-      address: Array.isArray(localAddress) ? localAddress : [localAddress],
-      private_key: requiredString2(node, "private-key"),
-      peers: endpointPeers
-    };
-  }
-  function renderSingBoxOutbound(node) {
+  function renderSurgeProxy(node) {
     validateNodeShape(node);
     const protocol2 = normalizeProtocol(node.type);
-    if (protocol2 === "wireguard") throw new Error("WireGuard is rendered as a sing-box endpoint");
-    let outbound;
+    let fields;
     switch (protocol2) {
       case "ss":
       case "shadowsocks":
-        outbound = { ...base(node, "shadowsocks"), method: requiredString2(node, "cipher"), password: requiredString2(node, "password") };
-        if (["tcp", "udp"].includes(node.network)) outbound.network = node.network;
+        fields = base(node, "ss");
+        option(fields, "encrypt-method", requiredString2(node, "cipher"));
+        option(fields, "password", requiredString2(node, "password"));
+        if (node.udp === true) fields.push("udp-relay=true");
+        break;
+      case "ssr":
+        fields = base(node, "ssr");
+        option(fields, "encrypt-method", requiredString2(node, "cipher"));
+        option(fields, "password", requiredString2(node, "password"));
+        option(fields, "protocol", requiredString2(node, "protocol"));
+        option(fields, "obfs", requiredString2(node, "obfs"));
+        option(fields, "protocol-param", node["protocol-param"]);
+        option(fields, "obfs-param", node["obfs-param"]);
+        break;
+      case "snell":
+        fields = base(node, "snell");
+        option(fields, "psk", requiredString2(node, "psk"));
+        option(fields, "version", node.version);
         break;
       case "vmess":
-        outbound = { ...base(node, "vmess"), uuid: requiredString2(node, "uuid"), security: node.security ?? node.cipher ?? "auto" };
-        if (node["alter-id"] !== void 0 || node.alterId !== void 0) outbound.alter_id = Number(node["alter-id"] ?? node.alterId);
-        outbound.tls = tlsFields(node);
-        outbound.transport = transportFields(node);
-        packetEncoding(node, outbound);
-        break;
-      case "snell": {
-        const version = Number(node.version);
-        if (![4, 5, 6].includes(version)) throw new Error("Unsupported sing-box Snell version");
-        const outputVersion = version === 5 ? 4 : version;
-        outbound = { ...base(node, "snell"), psk: requiredString2(node, "psk"), version: outputVersion };
-        if (["tcp", "udp"].includes(node.network)) outbound.network = node.network;
-        if (outputVersion === 4) {
-          setIf(outbound, "reuse", node.reuse);
-          setIf(outbound, "obfs_mode", node.obfs_mode ?? node["obfs-mode"] ?? node.obfs);
-          setIf(outbound, "obfs_host", node["obfs-host"] ?? node.obfs_host);
-        } else {
-          setIf(outbound, "userkey", node.userkey ?? node["user-key"]);
-          setIf(outbound, "reuse", node.reuse);
-          setIf(outbound, "mode", node.mode);
-        }
-        break;
-      }
-      case "vless":
-        if (node.encryption !== void 0 && !["", "none"].includes(node.encryption)) throw new Error("Unsupported sing-box VLESS encryption");
-        outbound = { ...base(node, "vless"), uuid: requiredString2(node, "uuid") };
-        setIf(outbound, "flow", node.flow);
-        if (["tcp", "udp"].includes(node.network)) outbound.network = node.network;
-        outbound.tls = tlsFields(node);
-        outbound.transport = transportFields(node);
-        packetEncoding(node, outbound);
+        fields = base(node, "vmess");
+        option(fields, "username", requiredString2(node, "uuid"));
+        option(fields, "encrypt-method", node.cipher ?? node.security ?? "auto");
+        tlsOptions(node, fields);
+        transportOptions(node, fields);
         break;
       case "trojan":
-        outbound = { ...base(node, "trojan"), password: requiredString2(node, "password"), tls: tlsFields(node, true) };
-        outbound.transport = transportFields(node);
+        fields = base(node, "trojan");
+        option(fields, "password", requiredString2(node, "password"));
+        tlsOptions({ ...node, tls: true }, fields);
+        transportOptions(node, fields);
         break;
       case "anytls":
-        validateAnyTlsShape(node);
-        outbound = { ...base(node, "anytls"), password: requiredString2(node, "password"), tls: tlsFields(node, true) };
-        setIf(outbound, "idle_session_check_interval", durationSeconds(node, "idle-session-check-interval"));
-        setIf(outbound, "idle_session_timeout", durationSeconds(node, "idle-session-timeout"));
-        if (node["min-idle-session"] !== void 0) outbound.min_idle_session = Number(node["min-idle-session"]);
-        setIf(outbound, "client_metadata", node["client-metadata"] ?? node.client_metadata);
+        fields = base(node, "anytls");
+        fields.push(escapeValue(requiredString2(node, "password")));
+        option(fields, "sni", node.sni ?? node.servername);
+        if (node["skip-cert-verify"] === true || node["allow-insecure"] === true) {
+          fields.push("skip-cert-verify=true");
+        }
+        if (node.udp === true) fields.push("udp-relay=true");
         break;
       case "hysteria2":
       case "hy2":
-        outbound = { ...base(node, "hysteria2"), password: requiredString2(node, "password"), tls: tlsFields(node, true) };
-        setIf(outbound, "server_ports", node.server_ports ?? node["server-ports"] ?? node.ports);
-        setIf(outbound, "hop_interval", node.hop_interval ?? node["hop-interval"] ?? node["port-hopping-interval"]);
-        setIf(outbound, "hop_interval_max", node.hop_interval_max);
-        setIf(outbound, "up_mbps", node.up_mbps ?? node.up);
-        setIf(outbound, "down_mbps", node.down_mbps ?? node.down);
-        if (node.obfs !== void 0) {
-          const type = typeof node.obfs === "string" ? node.obfs : node.obfs.type;
-          outbound.obfs = { type };
-          setIf(outbound.obfs, "password", node["obfs-password"] ?? node["obfs_password"] ?? node.obfs.password);
-        }
+        fields = base(node, "hysteria2");
+        option(fields, "password", requiredString2(node, "password"));
+        tlsOptions({ ...node, tls: true }, fields);
+        option(fields, "obfs", node.obfs);
+        option(fields, "obfs-password", node["obfs-password"] ?? node["obfs_password"]);
         break;
       case "tuic":
-        outbound = { ...base(node, "tuic"), uuid: requiredString2(node, "uuid"), password: requiredString2(node, "password"), tls: tlsFields(node, true) };
-        setIf(outbound, "udp_relay_mode", node["udp-relay-mode"] ?? node.udp_relay_mode);
-        setIf(outbound, "congestion_control", node["congestion-control"] ?? node.congestion_control);
-        setIf(outbound, "heartbeat", node.heartbeat);
+        fields = base(node, "tuic");
+        option(fields, "uuid", requiredString2(node, "uuid"));
+        option(fields, "password", requiredString2(node, "password"));
+        tlsOptions({ ...node, tls: true }, fields);
+        option(fields, "udp-relay-mode", node["udp-relay-mode"] ?? node["udp_relay_mode"]);
         break;
       case "socks5":
-        outbound = base(node, "socks");
-        setIf(outbound, "username", node.username);
-        setIf(outbound, "password", node.password);
+        fields = base(node, node.tls === true ? "socks5-tls" : "socks5");
+        option(fields, "username", node.username);
+        option(fields, "password", node.password);
+        if (node.tls === true) tlsOptions(node, fields);
         break;
       case "http":
-        outbound = base(node, "http");
-        setIf(outbound, "username", node.username);
-        setIf(outbound, "password", node.password);
-        outbound.tls = tlsFields(node);
-        break;
-      case "ssh":
-        outbound = { ...base(node, "ssh"), user: requiredString2(node, "username") };
-        setIf(outbound, "password", node.password);
-        setIf(outbound, "private_key", node["private-key"] ?? node.private_key);
+        fields = base(node, node.tls === true ? "https" : "http");
+        option(fields, "username", node.username);
+        option(fields, "password", node.password);
+        if (node.tls === true) tlsOptions(node, fields);
         break;
       default:
-        throw new Error(`Unsupported sing-box protocol: ${protocol2 || "unknown"}`);
+        throw new Error(`Unsupported Surge protocol: ${protocol2 || "unknown"}`);
     }
-    for (const key of ["tls", "transport"]) if (outbound[key] === void 0) delete outbound[key];
-    return appendChain(outbound, node);
-  }
-  function renderSingBoxNode(node) {
-    const protocol2 = normalizeProtocol(node?.type);
-    if (protocol2 === "wireguard") return { endpoint: renderWireGuardEndpoint(node) };
-    return { outbound: renderSingBoxOutbound(node) };
+    return `${fields[0]} = ${fields.slice(1).join(",")}`;
   }
 
   // ../../shared/policies/filters.js
@@ -1590,110 +1419,53 @@ var SingBoxConfigBundle = (() => {
   });
 
   // src/render-groups.js
-  var RULE_DOWNLOAD_GROUP = "\u{1F9ED} DNS \u4E0E\u89C4\u5219\u4E0B\u8F7D";
-  var PRIMARY_GROUP = "\u{1F680} \u8282\u70B9\u9009\u62E9";
-  var AUTO_GROUP = "\u26A1 \u5168\u90E8\u81EA\u52A8";
-  var FALLBACK_GROUP_PATTERN = /故障转移/u;
-  var MOBILE_MEMORY_PLATFORMS = /* @__PURE__ */ new Set(["iphone", "ipad", "android"]);
-  var IOS_MEMORY_PLATFORMS = /* @__PURE__ */ new Set(["iphone", "ipad"]);
-  var IOS_SERVICE_GROUPS = /* @__PURE__ */ new Set(["\u{1F34E} Apple", "\u{1FA9F} Microsoft", "\u{1F1E8}\u{1F1F3} \u56FD\u5185\u5E73\u53F0"]);
-  var TEST_URL2 = "https://www.gstatic.com/generate_204";
-  function isMobileMemoryConstrained(options) {
-    return MOBILE_MEMORY_PLATFORMS.has(options.platform);
-  }
-  function isIosMemoryConstrained(options) {
-    return IOS_MEMORY_PLATFORMS.has(options.platform);
-  }
-  function isDisabledFallback(name) {
-    return typeof name === "string" && FALLBACK_GROUP_PATTERN.test(name);
+  var REMOTE_POLICY_POOL_NAME = "\u{1F4E6} \u8FDC\u7A0B\u8282\u70B9\u6C60";
+  var REMOTE_POLICY_UPDATE_INTERVAL = 21600;
+  function escapeValue2(value) {
+    const text = String(value);
+    if (/[\r\n]/u.test(text)) throw new Error("Surge group value contains a line break");
+    return text.replaceAll("\\", "\\\\").replaceAll(",", "\\,");
   }
   function targetName(value) {
-    if (value === POLICY_TARGET.primaryProxy) return AUTO_GROUP;
-    return value;
+    return value === POLICY_TARGET.primaryProxy ? "\u26A1 \u5168\u90E8\u81EA\u52A8" : value;
   }
-  function filterNodes(filter, nodes) {
-    if (filter === null) return [];
-    let pattern;
+  function matches(filter, node) {
+    if (filter === null) return false;
     try {
-      pattern = new RegExp(filter, "u");
+      return new RegExp(filter, "u").test(node.name);
     } catch {
-      throw new Error("Invalid sing-box policy filter");
+      throw new Error("Invalid Surge policy filter");
     }
-    return nodes.filter((node) => pattern.test(node.name)).map((node) => node.name);
   }
-  function candidateList(group, nodes, { compact = false, ios = false } = {}) {
-    const candidates = [
-      ...compact && group.kind === "continent" ? [] : group.candidates.filter((candidate) => !isDisabledFallback(candidate)).map(targetName),
-      ...compact && ios && group.kind === "service" ? [] : filterNodes(group.nodeFilter, nodes)
-    ];
-    return candidates.filter((item, index, all) => all.indexOf(item) === index);
-  }
-  function renderDownloadGroup() {
-    return {
-      type: "selector",
-      tag: RULE_DOWNLOAD_GROUP,
-      outbounds: [AUTO_GROUP, "DIRECT"],
-      default: AUTO_GROUP,
-      interrupt_exist_connections: true
-    };
-  }
-  function renderGroup(group, nodes, { compact = false, ios = false } = {}) {
-    if (group.name === RULE_DOWNLOAD_GROUP) return renderDownloadGroup();
-    const candidates = candidateList(group, nodes, { compact, ios });
-    if (group.kind === "ai" && candidates[0] !== AUTO_GROUP) candidates.unshift(AUTO_GROUP);
-    const outbounds = candidates.length > 0 ? candidates : ["DIRECT"];
-    if (group.name === PRIMARY_GROUP) {
-      const primary = outbounds.filter((candidate) => candidate !== "DIRECT");
-      return {
-        type: "selector",
-        tag: group.name,
-        outbounds: primary.length > 0 ? primary : ["DIRECT"],
-        default: primary[0] ?? "DIRECT",
-        interrupt_exist_connections: true
-      };
-    }
-    if (compact && group.strategy === "auto-test" && (group.name !== AUTO_GROUP || ios)) {
-      return {
-        type: "selector",
-        tag: group.name,
-        outbounds,
-        default: outbounds[0],
-        interrupt_exist_connections: true
-      };
-    }
-    if (group.strategy === "auto-test") {
-      return {
-        type: "urltest",
-        tag: group.name,
-        outbounds,
-        url: TEST_URL2,
-        interval: `${Number(group.test?.interval ?? 600)}s`,
-        tolerance: group.test?.tolerance ?? 100,
-        interrupt_exist_connections: true
-      };
-    }
-    const selector = {
-      type: "selector",
-      tag: group.name,
-      outbounds,
-      interrupt_exist_connections: true
-    };
-    if (group.defaultChoice !== void 0 && !isDisabledFallback(group.defaultChoice)) {
-      selector.default = targetName(group.defaultChoice);
-    }
-    return selector;
-  }
-  function renderSingBoxGroups(options, nodes) {
+  function renderSurgeGroups(options, nodes) {
     const inventory = Array.isArray(nodes) ? nodes : [];
-    const compact = isMobileMemoryConstrained(options);
     const shared = buildPolicyGroups(options, inventory);
+    const names = new Set(shared.map(({ name }) => name));
+    const remotePolicy = typeof options.proxyPolicyUrl === "string" ? { name: REMOTE_POLICY_POOL_NAME, url: options.proxyPolicyUrl } : null;
+    const remoteMode = remotePolicy !== null;
     const rendered = [];
+    if (remotePolicy !== null) {
+      rendered.push(`${escapeValue2(remotePolicy.name)} = select,policy-path=${escapeValue2(remotePolicy.url)},update-interval=${REMOTE_POLICY_UPDATE_INTERVAL},hidden=1`);
+    }
     for (const group of shared) {
-      if (group.strategy === "fallback") continue;
-      if (compact && group.strategy === "auto-test" && group.name !== AUTO_GROUP) continue;
-      if (isIosMemoryConstrained(options) && group.kind === "service" && !IOS_SERVICE_GROUPS.has(group.name)) continue;
-      if (isIosMemoryConstrained(options) && group.kind === "special" && group.name !== RULE_DOWNLOAD_GROUP) continue;
-      rendered.push(renderGroup(group, inventory, { compact, ios: isIosMemoryConstrained(options) }));
+      const filteredNodes = remoteMode ? [] : inventory.filter((node) => matches(group.nodeFilter, node)).map(({ name }) => name);
+      const items = [...group.candidates.map(targetName), ...filteredNodes].filter((item, index, all) => all.indexOf(item) === index);
+      if (items.length === 0 && (!remoteMode || group.nodeFilter === null)) items.push("DIRECT");
+      const fields = [group.strategy === "auto-test" ? "url-test" : group.strategy, ...items.map(escapeValue2)];
+      if (remoteMode && group.nodeFilter !== null) {
+        fields.push(`include-other-group=${escapeValue2(remotePolicy.name)}`);
+        fields.push(`policy-regex-filter=${escapeValue2(group.nodeFilter)}`);
+      }
+      if (group.test?.url !== void 0) fields.push(`url=${escapeValue2(group.test.url)}`);
+      if (group.test?.interval !== void 0) fields.push(`interval=${escapeValue2(group.test.interval)}`);
+      if (group.test?.timeout !== void 0) fields.push(`timeout=${escapeValue2(group.test.timeout)}`);
+      if (group.test?.tolerance !== void 0) fields.push(`tolerance=${escapeValue2(group.test.tolerance)}`);
+      if (group.defaultChoice !== void 0) fields.push(`policy-select-name=${escapeValue2(group.defaultChoice)}`);
+      if (group.hidden) fields.push("hidden=1");
+      if (items.some((item) => item !== "DIRECT" && item !== "REJECT" && !names.has(item) && !inventory.some((node) => node.name === item))) {
+        throw new Error("Surge group contains an unresolved policy reference");
+      }
+      rendered.push(`${escapeValue2(group.name)} = ${fields.join(",")}`);
     }
     return rendered;
   }
@@ -1730,22 +1502,6 @@ var SingBoxConfigBundle = (() => {
     "Download",
     "PrivateTracker",
     "OverseasGame",
-    "ChinaTLD",
-    "ChinaIP"
-  ]);
-  var MOBILE_RULE_SOURCE_IDS = Object.freeze([
-    "Hijacking",
-    "BlockHttpDNS",
-    "Privacy",
-    "DomesticCore",
-    "DomesticGame",
-    "SteamCN",
-    "BiliBili",
-    "ByteDance",
-    "XiaoHongShu",
-    "Weibo",
-    "Apple",
-    "Microsoft",
     "ChinaTLD",
     "ChinaIP"
   ]);
@@ -1904,11 +1660,11 @@ var SingBoxConfigBundle = (() => {
     Advertising_Domain: "\u{1F9F1} \u5E38\u89C1\u5E7F\u544A"
   });
   function uniqueMembership(id, memberships, label) {
-    const matches = Object.entries(memberships).filter(([, ids]) => ids.includes(id)).map(([name]) => name);
-    if (matches.length !== 1) {
+    const matches2 = Object.entries(memberships).filter(([, ids]) => ids.includes(id)).map(([name]) => name);
+    if (matches2.length !== 1) {
       throw new Error(`Lightweight rule source ${id} must have exactly one ${label} membership`);
     }
-    return matches[0];
+    return matches2[0];
   }
   function clientRecord(id) {
     const policy = SOURCE_POLICIES[id];
@@ -1961,580 +1717,273 @@ var SingBoxConfigBundle = (() => {
     ])
   });
 
-  // ../../shared/rules/overseas-dns.js
-  var PROXY_DNS_DOMAIN_SUFFIXES = Object.freeze([
-    "google.com",
-    "googleapis.com",
-    "googleusercontent.com",
-    "gstatic.com",
-    "ggpht.com",
-    "gvt1.com",
-    "googlevideo.com",
-    "youtube.com",
-    "youtube-nocookie.com",
-    "youtu.be",
-    "ytimg.com"
+  // ../../shared/rules/local-rules.js
+  var LOCAL_RULES = Object.freeze([
+    "DOMAIN-SUFFIX,local,DIRECT",
+    "DOMAIN-SUFFIX,home.arpa,DIRECT",
+    "DOMAIN-SUFFIX,lan,DIRECT",
+    "IP-CIDR,10.0.0.0/8,DIRECT,no-resolve",
+    "IP-CIDR,100.64.0.0/10,DIRECT,no-resolve",
+    "IP-CIDR,127.0.0.0/8,DIRECT,no-resolve",
+    "IP-CIDR,169.254.0.0/16,DIRECT,no-resolve",
+    "IP-CIDR,172.16.0.0/12,DIRECT,no-resolve",
+    "IP-CIDR,192.168.0.0/16,DIRECT,no-resolve",
+    "IP-CIDR,224.0.0.0/4,DIRECT,no-resolve",
+    "IP-CIDR6,::1/128,DIRECT,no-resolve",
+    "IP-CIDR6,fc00::/7,DIRECT,no-resolve",
+    "IP-CIDR6,fe80::/10,DIRECT,no-resolve",
+    "IP-CIDR6,ff00::/8,DIRECT,no-resolve"
   ]);
-
-  // ../../shared/dns/providers.js
-  var CHINA_DNS_PROVIDERS = Object.freeze({
-    alidns: Object.freeze({
-      address: "223.5.5.5",
-      doh: "https://dns.alidns.com/dns-query"
-    }),
-    dnspod: Object.freeze({
-      address: "119.29.29.29",
-      doh: "https://doh.pub/dns-query"
-    }),
-    system: Object.freeze({
-      address: "local",
-      doh: "system"
-    })
-  });
-  var GLOBAL_DNS_PROVIDERS = Object.freeze({
-    cloudflare: Object.freeze({
-      address: "1.1.1.1",
-      serverName: "cloudflare-dns.com",
-      doh: "https://cloudflare-dns.com/dns-query"
-    }),
-    google: Object.freeze({
-      address: "8.8.8.8",
-      serverName: "dns.google",
-      doh: "https://dns.google/dns-query"
-    }),
-    quad9: Object.freeze({
-      address: "9.9.9.9",
-      serverName: "dns.quad9.net",
-      doh: "https://dns.quad9.net/dns-query"
-    })
-  });
-  function provider(providers, id, label) {
-    const value = providers[id];
-    if (!value) throw new Error(`Unsupported ${label} DNS provider`);
-    return value;
-  }
-  function chinaDnsProvider(id) {
-    return provider(CHINA_DNS_PROVIDERS, id, "China");
-  }
-  function globalDnsProvider(id) {
-    return provider(GLOBAL_DNS_PROVIDERS, id, "global");
-  }
 
   // src/render-rules.js
-  var RULE_DOWNLOAD_HTTP_CLIENT = "\u{1F9ED} \u89C4\u5219\u4E0B\u8F7D HTTP";
-  var MOBILE_RULE_SOURCE_ID_SET = new Set(MOBILE_RULE_SOURCE_IDS);
-  function activeRuleCatalog(platform, adblockMode) {
-    const catalog = ruleClientCatalog({ adblockMode });
-    return ["iphone", "ipad"].includes(platform) ? catalog.filter(({ id }) => MOBILE_RULE_SOURCE_ID_SET.has(id)) : catalog;
-  }
-  function activeRoutingPlan(platform, adblockMode) {
-    const activeIds = new Set(activeRuleCatalog(platform, adblockMode).map(({ id }) => id));
-    return orderedRoutingPlan({ adblockMode }).filter(({ id }) => activeIds.has(id));
-  }
-  var LOCAL_RULES = Object.freeze([
-    { ip_is_private: true, action: "route", outbound: "DIRECT" },
-    { domain_suffix: ["local", "lan", "home.arpa"], action: "route", outbound: "DIRECT" }
-  ]);
-  var QUIC_BLOCK_RULE = Object.freeze({ network: "udp", port: 443, action: "reject", method: "drop" });
-  var OVERSEAS_DNS_FALLBACK_RULE = Object.freeze({
-    domain_suffix: PROXY_DNS_DOMAIN_SUFFIXES,
-    action: "route",
-    outbound: "\u{1F680} \u8282\u70B9\u9009\u62E9"
-  });
-  var CUSTOM_TARGETS = Object.freeze({
-    block: "REJECT",
-    direct: "DIRECT",
-    proxy: "\u{1F680} \u8282\u70B9\u9009\u62E9",
-    ai: "\u{1F916} AI \u4E13\u7528"
-  });
-  var CUSTOM_FIELDS = Object.freeze({
-    DOMAIN: "domain",
-    "DOMAIN-SUFFIX": "domain_suffix",
-    "DOMAIN-KEYWORD": "domain_keyword",
-    "IP-CIDR": "ip_cidr",
-    "IP-CIDR6": "ip_cidr"
-  });
-  function baseUrl(value) {
-    if (typeof value !== "string" || !/^https:\/\/[^\s]+$/u.test(value) || /[\r\n]/u.test(value)) {
-      throw new Error("sing-box rule base URL must be an HTTPS URL");
+  var RULE_DOWNLOAD_POLICY = "\u{1F9ED} DNS \u4E0E\u89C4\u5219\u4E0B\u8F7D";
+  function safeBaseUrl(value) {
+    if (typeof value !== "string" || !/^https:\/\/[^\s]+$/u.test(value) || /[\r\n,]/u.test(value)) {
+      throw new Error("Surge rule base URL must be an HTTPS URL without commas");
     }
     return value.replace(/\/+$/u, "");
   }
-  function route(outbound) {
-    return { action: "route", outbound };
-  }
-  function reject() {
-    return { action: "reject", method: "default" };
-  }
-  function dnsAddressCidr(address) {
-    if (typeof address !== "string" || address === "local") return null;
-    return address.includes(":") ? `${address}/128` : `${address}/32`;
-  }
-  function renderDnsBootstrapRules({ chinaDns = "alidns", globalDns = "cloudflare", dnsMode = "stable" } = {}) {
-    const addresses = [chinaDnsProvider(chinaDns).address];
-    if (dnsMode === "speed") addresses.push(globalDnsProvider(globalDns).address);
-    return [...new Set(addresses.map(dnsAddressCidr).filter(Boolean))].map((address) => ({ ip_cidr: [address], action: "route", outbound: "DIRECT" }));
-  }
   function optionalAdblockBase(defaultBase) {
-    const optional = defaultBase.replace(/\/sing-box\/rule-sets$/u, "/optional/adblock-full/sing-box");
-    if (optional === defaultBase) throw new Error("sing-box adblock rule base URL must end in /sing-box/rule-sets");
+    const optional = defaultBase.replace(/\/surge\/rules$/u, "/optional/adblock-full/surge/rules");
+    if (optional === defaultBase) throw new Error("Surge adblock rule base URL must end in /surge/rules");
     return optional;
   }
-  function customRuleFields(entry) {
-    const [type, value, ...modifiers] = entry.split(",");
-    const field = CUSTOM_FIELDS[type];
-    if (!field || !value || modifiers.some((modifier) => modifier !== "no-resolve")) {
-      throw new Error(`Invalid sing-box custom rule: ${entry}`);
-    }
-    return { [field]: [value] };
+  function sourceUrl(source, base2, optionalBase) {
+    const selectedBase = source.id === "Advertising" || source.id === "Advertising_Domain" ? optionalBase : base2;
+    if (!selectedBase) throw new Error("Surge optional rule URL is unavailable");
+    return `${selectedBase}/${source.id}.list`;
   }
-  function renderCustomRules(quicMode) {
-    const grouped = /* @__PURE__ */ new Map();
-    for (const [kind, entries] of Object.entries(CUSTOM_RULES)) {
-      for (const entry of entries) {
-        const fields = customRuleFields(entry);
-        const [field] = Object.keys(fields);
-        const key = `${kind}:${field}`;
-        const values = grouped.get(key) ?? { kind, field, values: [] };
-        values.values.push(...fields[field]);
-        grouped.set(key, values);
-      }
-    }
-    const rendered = [];
-    for (const { kind, field, values } of grouped.values()) {
-      const fields = { [field]: [...new Set(values)] };
-      if (quicMode === "proxy-block" && ["proxy", "ai"].includes(kind) && field !== "ip_cidr") {
-        rendered.push({ ...fields, ...QUIC_BLOCK_RULE });
-      }
-      rendered.push({ ...fields, ...kind === "block" ? reject() : route(CUSTOM_TARGETS[kind]) });
-    }
-    return rendered;
+  function selectedSources(ruleBaseUrl, adblockMode) {
+    const base2 = safeBaseUrl(ruleBaseUrl);
+    const plan = orderedRoutingPlan({ adblockMode });
+    const optionalBase = adblockMode === "full" ? optionalAdblockBase(base2) : null;
+    return { base: base2, plan, optionalBase };
   }
-  function taggedRule(source) {
-    if (source.policy === "REJECT") return { rule_set: [`rule-${source.id}`], ...reject() };
-    return { rule_set: [`rule-${source.id}`], ...route(source.policy) };
-  }
-  function renderSingBoxRuleSets({ ruleBaseUrl, profileMode = "light", adblockMode = "off", platform }) {
-    const base2 = baseUrl(ruleBaseUrl);
-    if (profileMode === "diagnostic") return [];
-    if (profileMode !== "light") throw new Error("Unsupported sing-box profile mode");
-    const sources = activeRuleCatalog(platform, adblockMode);
-    const adblockBase = adblockMode === "full" ? optionalAdblockBase(base2) : null;
-    return sources.map((source) => ({
-      type: "remote",
-      tag: `rule-${source.id}`,
-      format: "binary",
-      url: `${source.id === "Advertising" || source.id === "Advertising_Domain" ? adblockBase : base2}/${source.id}.srs`,
-      http_client: RULE_DOWNLOAD_HTTP_CLIENT,
-      update_interval: "24h"
-    }));
-  }
-  function renderSingBoxRouteRules({
-    ruleBaseUrl,
-    profileMode = "light",
-    adblockMode = "off",
-    blockMode = "balanced",
-    quicMode = "allow",
-    platform,
-    chinaDns = "alidns",
-    globalDns = "cloudflare",
-    dnsMode = "stable"
-  }) {
-    if (!["allow", "proxy-block", "all-block"].includes(quicMode)) {
-      throw new Error(`Unsupported sing-box quicMode: ${quicMode}`);
-    }
-    const ruleSets = renderSingBoxRuleSets({ ruleBaseUrl, profileMode, adblockMode, platform });
-    const rules = [
-      { inbound: "tun-in", action: "sniff" },
-      { protocol: "dns", action: "hijack-dns" },
+  function renderSurgeRules({ ruleBaseUrl, adblockMode = "off" }) {
+    const { base: base2, plan, optionalBase } = selectedSources(ruleBaseUrl, adblockMode);
+    const render = (source) => `${source.inputFormat},${sourceUrl(source, base2, optionalBase)},${source.policy},update-interval=86400`;
+    const lines = [
       ...LOCAL_RULES,
-      ...renderDnsBootstrapRules({ chinaDns, globalDns, dnsMode })
+      "# Security rules",
+      ...plan.filter(({ phase }) => phase === "security").map(render),
+      "# Custom rules"
     ];
-    if (quicMode === "all-block") rules.push({ ...QUIC_BLOCK_RULE });
-    if (profileMode === "diagnostic") {
-      rules.push(...renderCustomRules(quicMode));
-      return { ruleSets, rules, final: "\u{1F680} \u8282\u70B9\u9009\u62E9" };
+    const custom = [
+      ["CUSTOM_BLOCK", CUSTOM_RULES.block, "REJECT"],
+      ["CUSTOM_DIRECT", CUSTOM_RULES.direct, "DIRECT"],
+      ["CUSTOM_PROXY", CUSTOM_RULES.proxy, "\u{1F680} \u8282\u70B9\u9009\u62E9"],
+      ["CUSTOM_AI", CUSTOM_RULES.ai, "\u{1F916} AI \u4E13\u7528"]
+    ];
+    for (const [name, rules, policy] of custom) {
+      lines.push(`# ${name}`, ...rules.map((rule) => `${rule},${policy}`));
     }
-    const plan = activeRoutingPlan(platform, adblockMode);
-    const securityIds = new Set({
-      off: [],
-      security: ["Hijacking", "BlockHttpDNS"],
-      balanced: ["Hijacking", "BlockHttpDNS", "Privacy", "Advertising", "Advertising_Domain"],
-      strict: ["Hijacking", "BlockHttpDNS", "Privacy", "Advertising", "Advertising_Domain"]
-    }[blockMode] ?? []);
-    rules.push(...plan.filter(({ phase, id }) => phase === "security" && securityIds.has(id)).map(taggedRule));
-    rules.push(...renderCustomRules(quicMode));
-    if (quicMode === "proxy-block") {
-      const proxyRuleSets = plan.filter(({ dnsClass }) => dnsClass === "proxy").map(({ id }) => `rule-${id}`);
-      if (proxyRuleSets.length > 0) rules.push({ network: "udp", port: 443, rule_set: proxyRuleSets, ...reject() });
+    const ruleHost = new URL(base2).hostname;
+    lines.push(
+      "# Rule-download fallback transport",
+      `DOMAIN,${ruleHost},${RULE_DOWNLOAD_POLICY}`
+    );
+    for (const phase of ROUTING_PHASES.filter((value) => value !== "security")) {
+      lines.push(...plan.filter((source) => source.phase === phase).map(render));
     }
-    for (const phase of ROUTING_PHASES.filter((value) => value !== "security" && value !== "resolvedChinaIp")) {
-      for (const source of plan.filter((candidate) => candidate.phase === phase)) {
-        rules.push(taggedRule(source));
-      }
-      if (phase === "serviceIntent") {
-        if (quicMode === "proxy-block") rules.push({ ...OVERSEAS_DNS_FALLBACK_RULE, ...QUIC_BLOCK_RULE });
-        rules.push({ ...OVERSEAS_DNS_FALLBACK_RULE });
-      }
-    }
-    rules.push({ action: "resolve", strategy: "prefer_ipv4" });
-    rules.push(...plan.filter(({ phase }) => phase === "resolvedChinaIp").map(taggedRule));
-    if (quicMode === "proxy-block") rules.push({ ...QUIC_BLOCK_RULE });
-    return { ruleSets, rules, final: "\u{1F680} \u8282\u70B9\u9009\u62E9" };
+    lines.push("GEOIP,CN,DIRECT", "FINAL,\u{1F680} \u8282\u70B9\u9009\u62E9,dns-failed");
+    return lines;
   }
 
-  // src/render-dns.js
-  var DNS_DIRECT = "dns-direct";
-  var DNS_PROXY = "dns-proxy";
-  var LOCAL_DNS_SUFFIXES = Object.freeze(["local", "lan", "home.arpa"]);
-  var PROXY_DNS_SOURCE_IDS = Object.freeze(
-    orderedRoutingPlan().filter(({ dnsClass }) => dnsClass === "proxy").map(({ id }) => id)
-  );
-  var CHINA_DNS_SOURCE_IDS = Object.freeze(
-    orderedRoutingPlan().filter(({ id, dnsClass }) => dnsClass === "china" && id !== "ChinaIP").map(({ id }) => id)
-  );
-  var MOBILE_RULE_SOURCE_ID_SET2 = new Set(MOBILE_RULE_SOURCE_IDS);
-  function isIos(options) {
-    return options.platform === "iphone" || options.platform === "ipad";
-  }
-  function activeSourceIds(options, sourceIds) {
-    return isIos(options) ? sourceIds.filter((id) => MOBILE_RULE_SOURCE_ID_SET2.has(id)) : sourceIds;
-  }
-  function customDnsRules() {
-    const rules = [];
-    const targetByKind = /* @__PURE__ */ new Map([
-      ["direct", DNS_DIRECT],
-      ["proxy", DNS_PROXY],
-      ["ai", DNS_PROXY]
-    ]);
-    for (const [kind, entries] of Object.entries(CUSTOM_RULES)) {
-      const server = targetByKind.get(kind);
-      if (!server) continue;
-      for (const entry of entries) {
-        const [type, value, ...modifiers] = entry.split(",");
-        if (modifiers.some((modifier) => modifier !== "no-resolve")) {
-          throw new Error(`Invalid sing-box custom DNS rule: ${entry}`);
-        }
-        if (type === "DOMAIN") rules.push({ domain: [value], action: "route", server });
-        else if (type === "DOMAIN-SUFFIX") rules.push({ domain_suffix: [value], action: "route", server });
-        else if (type === "DOMAIN-KEYWORD") rules.push({ domain_keyword: [value], action: "route", server });
-        else if (!["IP-CIDR", "IP-CIDR6"].includes(type)) {
-          throw new Error(`Invalid sing-box custom DNS rule: ${entry}`);
-        }
+  // src/validate-profile.js
+  function splitEscaped(line) {
+    const fields = [];
+    let current = "";
+    let escaped = false;
+    for (const character of line) {
+      if (escaped) {
+        current += character;
+        escaped = false;
+      } else if (character === "\\") {
+        escaped = true;
+      } else if (character === ",") {
+        fields.push(current);
+        current = "";
+      } else {
+        current += character;
       }
     }
-    return rules;
+    if (escaped) return null;
+    fields.push(current);
+    return fields;
   }
-  function renderUnknownDnsRules(chinaIpRuleTag) {
-    return [
-      { action: "evaluate", server: DNS_DIRECT, tag: "direct-answer" },
-      {
-        rule_set: [chinaIpRuleTag],
-        match_response: "direct-answer",
-        action: "respond"
-      },
-      { action: "evaluate", server: DNS_PROXY, tag: "proxy-answer" },
-      {
-        match_response: "proxy-answer",
-        ip_accept_any: true,
-        action: "respond"
-      },
-      { action: "route", server: DNS_PROXY }
-    ];
-  }
-  function dnsRules(options) {
-    const rules = [
-      { domain_suffix: LOCAL_DNS_SUFFIXES, action: "route", server: DNS_DIRECT },
-      { domain_suffix: PROXY_DNS_DOMAIN_SUFFIXES, action: "route", server: DNS_PROXY },
-      ...customDnsRules()
-    ];
-    if (options.profileMode !== "diagnostic") {
-      for (const [sourceIds, server] of [
-        [PROXY_DNS_SOURCE_IDS, DNS_PROXY],
-        [CHINA_DNS_SOURCE_IDS, DNS_DIRECT]
-      ]) {
-        const ruleSet = activeSourceIds(options, sourceIds).map((id) => `rule-${id}`);
-        if (ruleSet.length > 0) rules.push({ rule_set: ruleSet, action: "route", server });
+  function sectionRecords(profile) {
+    if (typeof profile !== "string") return { sections: null, errors: ["Profile must be a string"] };
+    const sections = /* @__PURE__ */ new Map();
+    let current;
+    for (const rawLine of profile.replace(/\r\n?/gu, "\n").split("\n")) {
+      const line = rawLine.trim();
+      if (!line || line.startsWith("#")) continue;
+      const header = /^\[([^\]]+)\]$/u.exec(line);
+      if (header) {
+        current = header[1];
+        if (sections.has(current)) return { sections: null, errors: ["duplicate required section"] };
+        sections.set(current, []);
+        continue;
       }
-      rules.push(
-        ...options.dnsMode === "privacy" ? [{ action: "route", server: DNS_PROXY }] : renderUnknownDnsRules("rule-ChinaIP")
-      );
-    } else {
-      rules.push({ action: "route", server: DNS_PROXY });
+      if (!current || !sections.has(current)) return { sections: null, errors: ["content outside section"] };
+      sections.get(current).push(line);
     }
-    return rules;
+    return { sections, errors: [] };
   }
-  function renderSingBoxDns(options) {
-    const chinaDns = chinaDnsProvider(options.chinaDns);
-    const chinaServer = options.chinaDns === "system" ? { type: "local", tag: DNS_DIRECT } : { type: "udp", tag: DNS_DIRECT, server: chinaDns.address };
-    const globalDns = globalDnsProvider(options.globalDns);
-    const proxyServer = {
-      type: "https",
-      tag: DNS_PROXY,
-      server: globalDns.address,
-      server_port: 443,
-      path: "/dns-query",
-      tls: { enabled: true, server_name: globalDns.serverName },
-      // DNS proxying must never depend on a selector that contains DIRECT.
-      ...options.dnsMode === "speed" ? {} : { detour: "\u26A1 \u5168\u90E8\u81EA\u52A8" }
+  function lineValue(line) {
+    const index = line.indexOf(" = ");
+    if (index < 1) return null;
+    return [line.slice(0, index), line.slice(index + 3)];
+  }
+  function validateSurgeProfile(profile) {
+    const parsed = sectionRecords(profile);
+    if (parsed.errors.length > 0) return { valid: false, errors: parsed.errors };
+    const required = ["General", "Proxy", "Proxy Group", "Rule"];
+    const errors = required.filter((section) => !parsed.sections.has(section)).map((section) => `missing section: ${section}`);
+    if (errors.length > 0) return { valid: false, errors };
+    const proxyNames = /* @__PURE__ */ new Set();
+    for (const line of parsed.sections.get("Proxy")) {
+      const record = lineValue(line);
+      if (!record || splitEscaped(record[1])?.length < 2) errors.push("malformed proxy line");
+      else if (proxyNames.has(record[0])) errors.push("duplicate proxy name");
+      else proxyNames.add(record[0]);
+      if (line.includes("_profile") || line.includes("_subName")) errors.push("internal node metadata leaked");
+    }
+    const groups = /* @__PURE__ */ new Map();
+    for (const line of parsed.sections.get("Proxy Group")) {
+      const record = lineValue(line);
+      const fields = record && splitEscaped(record[1]);
+      if (!record || !fields || fields.length < 2) {
+        errors.push("malformed group line");
+        continue;
+      }
+      if (groups.has(record[0])) errors.push("duplicate group name");
+      const items = fields.slice(1).filter((field) => !field.includes("="));
+      const remoteGroupReferences = fields.slice(1).filter((field) => field.startsWith("include-other-group=")).flatMap((field) => field.slice("include-other-group=".length).split(","));
+      const policyPath = fields.find((field) => field.startsWith("policy-path="));
+      const policyFilter = fields.find((field) => field.startsWith("policy-regex-filter="));
+      if (policyPath) {
+        const url = policyPath.slice("policy-path=".length);
+        try {
+          const parsedUrl = new URL(url);
+          if (parsedUrl.protocol !== "https:" || !parsedUrl.hostname) errors.push("invalid policy path");
+        } catch {
+          errors.push("invalid policy path");
+        }
+      }
+      if (policyFilter && items.length === 0 && remoteGroupReferences.length === 0 && !policyPath) {
+        errors.push("filtered group requires a policy source");
+      }
+      groups.set(record[0], { type: fields[0], items, remoteGroupReferences, policyPath });
+    }
+    const allowed = /* @__PURE__ */ new Set(["DIRECT", "REJECT", ...proxyNames, ...groups.keys()]);
+    for (const group of groups.values()) {
+      for (const item of [...group.items, ...group.remoteGroupReferences]) {
+        if (!allowed.has(item)) errors.push("missing group or proxy reference");
+      }
+    }
+    const visiting = /* @__PURE__ */ new Set();
+    const visited = /* @__PURE__ */ new Set();
+    const visit = (name) => {
+      if (visiting.has(name)) {
+        errors.push("group cycle");
+        return;
+      }
+      if (visited.has(name)) return;
+      visiting.add(name);
+      const group = groups.get(name);
+      for (const item of [...group?.items ?? [], ...group?.remoteGroupReferences ?? []]) {
+        if (groups.has(item)) visit(item);
+      }
+      visiting.delete(name);
+      visited.add(name);
     };
-    return {
-      servers: [chinaServer, proxyServer],
-      rules: dnsRules(options),
-      final: DNS_PROXY,
-      strategy: options.ipv6Mode === "ipv4-only" ? "ipv4_only" : "prefer_ipv4",
-      cache_capacity: 4096
-    };
+    for (const name of groups.keys()) visit(name);
+    const rules = parsed.sections.get("Rule");
+    const finals = rules.filter((line) => /^FINAL,/u.test(line));
+    if (finals.length !== 1) errors.push("Rule must contain exactly one FINAL");
+    if (finals.length === 1 && rules.at(-1) !== finals[0]) errors.push("rules after FINAL");
+    const policies = /* @__PURE__ */ new Set(["DIRECT", "REJECT", ...proxyNames, ...groups.keys()]);
+    const ipRuleTypes = /* @__PURE__ */ new Set(["IP-CIDR", "IP-CIDR6", "SRC-IP-CIDR", "DEST-PORT", "DST-PORT", "IP-ASN", "GEOIP"]);
+    for (const line of rules.filter((item) => !item.startsWith("#") && !/^FINAL,/u.test(item))) {
+      const fields = splitEscaped(line);
+      const policy = fields?.[0] === "RULE-SET" || fields?.[0] === "DOMAIN-SET" || ipRuleTypes.has(fields?.[0]) ? fields?.[2] : fields?.at(-1);
+      if (!fields || fields.length < 2 || !policies.has(policy)) errors.push("rule references missing policy");
+    }
+    return { valid: errors.length === 0, errors: [...new Set(errors)] };
   }
 
-  // src/render-platform.js
-  var COMMON_EXCLUDE = Object.freeze([
-    "192.168.0.0/16",
-    "172.16.0.0/12",
+  // src/render-profile.js
+  var LOCAL_SKIP_PROXY = Object.freeze([
+    "localhost",
+    "*.local",
+    "*.lan",
+    "*.home.arpa",
     "10.0.0.0/8",
     "100.64.0.0/10",
     "127.0.0.0/8",
     "169.254.0.0/16",
+    "172.16.0.0/12",
+    "192.168.0.0/16",
     "224.0.0.0/4",
+    "::1/128",
     "fc00::/7",
     "fe80::/10",
     "ff00::/8"
   ]);
-  function renderSingBoxTun(platform, ipv6Mode = "auto") {
-    if (!["macos", "iphone", "ipad", "android"].includes(platform)) {
-      throw new Error(`Unsupported sing-box platform: ${platform}`);
-    }
-    const ipv4Only = ipv6Mode === "ipv4-only";
-    return {
-      type: "tun",
-      tag: "tun-in",
-      interface_name: platform === "android" ? "sing-box" : "singtun0",
-      address: ipv4Only ? ["172.18.0.1/30"] : ["172.18.0.1/30", "fdfe:dcba:9876::1/126"],
-      auto_route: true,
-      strict_route: true,
-      route_exclude_address: [...COMMON_EXCLUDE],
-      dns_mode: "hijack",
-      dns_address: ipv4Only ? ["172.18.0.2"] : ["172.18.0.2", "fdfe:dcba:9876::2"],
-      ...platform === "android" ? { include_android_user: [0] } : { platform: { http_proxy: { enabled: false } } }
-    };
+  function generalSettings(options) {
+    const provider2 = chinaDnsProvider(options.chinaDns);
+    const chinaDns = options.chinaDns === "system" ? "system" : provider2.address;
+    return [
+      "loglevel = notify",
+      `ipv6 = ${options.ipv6Mode === "auto" ? "true" : "false"}`,
+      `dns-server = ${chinaDns}`,
+      `skip-proxy = ${LOCAL_SKIP_PROXY.join(",")}`,
+      "exclude-simple-hostnames = true",
+      "internet-test-url = http://www.gstatic.com/generate_204",
+      "proxy-test-url = http://www.gstatic.com/generate_204",
+      `test-timeout = ${options.platform === "macos" ? 5 : 7}`,
+      "suppress-warnings = true"
+    ];
   }
-
-  // src/validate-config.js
-  function uniqueTags(records, errors, label) {
-    const tags = /* @__PURE__ */ new Set();
-    for (const record of records ?? []) {
-      if (!record || typeof record.tag !== "string" || record.tag.length === 0) {
-        errors.push(`${label} tag missing`);
-      } else if (tags.has(record.tag)) {
-        errors.push(`duplicate ${label} tag`);
-      } else {
-        tags.add(record.tag);
-      }
-    }
-    return tags;
-  }
-  function actionOutbound(rule) {
-    return rule?.action === "route" || rule?.action === "bypass" ? rule.outbound : void 0;
-  }
-  function validateDnsServerShape(server, errors) {
-    if (server?.type !== "https") return;
-    if (typeof server.server !== "string" || server.server.length === 0) {
-      errors.push("HTTPS DNS server host missing");
-    } else if (/^(?:https?|tls):\/\//iu.test(server.server) || /[/?#\s]/u.test(server.server)) {
-      errors.push("HTTPS DNS server must be a host without scheme or path");
-    }
-    if (server.server_port !== void 0 && (!Number.isInteger(server.server_port) || server.server_port < 1 || server.server_port > 65535)) {
-      errors.push("HTTPS DNS server_port must be between 1 and 65535");
-    }
-    if (server.path !== void 0 && (typeof server.path !== "string" || !server.path.startsWith("/") || /[\r\n]/u.test(server.path))) {
-      errors.push("HTTPS DNS path must start with '/'");
-    }
-  }
-  function validateDnsRule(rule, dnsServers, ruleSets, outboundTags, evaluateTags, errors) {
-    if (!rule || typeof rule !== "object" || typeof rule.action !== "string") {
-      errors.push("DNS rule action must be a string");
-      return;
-    }
-    for (const tag of rule.rule_set ?? []) {
-      if (!ruleSets.has(tag)) errors.push("DNS references missing rule-set tag");
-    }
-    if (rule.action === "route" || rule.action === "evaluate") {
-      if (typeof rule.server !== "string" || !dnsServers.has(rule.server)) errors.push("DNS rule references missing server");
-    }
-    if (rule.action === "respond" && rule.server !== void 0) errors.push("DNS respond must not specify a server");
-    if (rule.action === "evaluate" && rule.tag !== void 0) {
-      if (typeof rule.tag !== "string" || evaluateTags.has(rule.tag)) errors.push("duplicate DNS evaluate tag");
-      else evaluateTags.add(rule.tag);
-    }
-    if (rule.match_response !== void 0) {
-      if (rule.match_response !== true && (typeof rule.match_response !== "string" || !evaluateTags.has(rule.match_response))) {
-        errors.push("DNS match_response references missing evaluate tag");
-      }
-      if (rule.action === "route" && (typeof rule.server !== "string" || !dnsServers.has(rule.server))) {
-        errors.push("DNS response route references missing server");
-      }
-    }
-    if (rule.ip_accept_any === true && rule.match_response === void 0) errors.push("DNS ip_accept_any requires match_response");
-    if (rule.race === true && rule.action !== "evaluate") errors.push("DNS race requires evaluate action");
-    if (rule.detour !== void 0 && !outboundTags.has(rule.detour)) errors.push("DNS rule references missing outbound");
-  }
-  function validateSingBoxConfig(config) {
-    const errors = [];
-    if (!config || typeof config !== "object" || Array.isArray(config)) return { valid: false, errors: ["config must be an object"] };
-    const outbounds = config.outbounds;
-    const outboundTags = uniqueTags(outbounds, errors, "outbound");
-    const endpointTags = uniqueTags(config.endpoints, errors, "endpoint");
-    for (const tag of endpointTags) outboundTags.add(tag);
-    const httpClientTags = uniqueTags(config.http_clients, errors, "HTTP client");
-    const ruleSets = uniqueTags(config.route?.rule_set, errors, "rule-set");
-    const dnsServers = uniqueTags(config.dns?.servers, errors, "DNS server");
-    const groupTags = new Set((outbounds ?? []).filter((item) => ["selector", "urltest"].includes(item?.type)).map((item) => item.tag));
-    for (const client of config.http_clients ?? []) {
-      if (client.detour !== void 0 && !outboundTags.has(client.detour)) errors.push("HTTP client references missing outbound tag");
-    }
-    for (const outbound of outbounds ?? []) {
-      for (const target of outbound.outbounds ?? []) if (!outboundTags.has(target)) errors.push("outbound references missing tag");
-      if (outbound.default !== void 0 && !outboundTags.has(outbound.default)) errors.push("selector default references missing tag");
-      if (outbound.type === "urltest" && typeof outbound.url !== "string") errors.push("urltest URL is missing");
-    }
-    for (const endpoint of config.endpoints ?? []) {
-      if (endpoint.type === "wireguard" && (!Array.isArray(endpoint.address) || endpoint.address.length === 0)) {
-        errors.push("WireGuard endpoint address is missing");
-      }
-    }
-    const routeRules = config.route?.rules;
-    if (!Array.isArray(routeRules)) errors.push("route rules missing");
-    else if (routeRules.length > RULE_BUDGETS.startupInlineEntries) errors.push("route inline rule budget exceeded");
-    for (const rule of routeRules ?? []) {
-      if (Object.hasOwn(rule, "geoip")) errors.push("route contains removed geoip");
-      if (Object.hasOwn(rule, "geosite")) errors.push("route contains removed geosite");
-      for (const tag of rule.rule_set ?? []) if (!ruleSets.has(tag)) errors.push("route references missing rule-set tag");
-      const target = actionOutbound(rule);
-      if (target !== void 0 && !outboundTags.has(target)) errors.push("route references missing outbound tag");
-      if (rule.action === "resolve" && rule.server !== void 0 && (typeof rule.server !== "string" || !dnsServers.has(rule.server))) {
-        errors.push("route resolve references missing DNS server");
-      }
-      if (rule.action !== void 0 && typeof rule.action !== "string") errors.push("route rule action must be a string");
-    }
-    const routeFinal = config.route?.final;
-    if (typeof routeFinal !== "string" || !outboundTags.has(routeFinal)) errors.push("route final references missing outbound tag");
-    if (config.route?.default_domain_resolver !== void 0) {
-      const resolver = typeof config.route.default_domain_resolver === "string" ? config.route.default_domain_resolver : config.route.default_domain_resolver?.server;
-      if (typeof resolver !== "string" || !dnsServers.has(resolver)) errors.push("default domain resolver references missing DNS server");
-    }
-    const defaultHttpClient = config.route?.default_http_client;
-    if (defaultHttpClient !== void 0 && (typeof defaultHttpClient !== "string" || !httpClientTags.has(defaultHttpClient))) {
-      errors.push("route default_http_client references missing HTTP client tag");
-    }
-    for (const ruleSet of config.route?.rule_set ?? []) {
-      if (Object.hasOwn(ruleSet, "download_detour")) errors.push("rule-set contains deprecated download_detour");
-      if (ruleSet.type === "remote" && (typeof ruleSet.http_client !== "string" || !httpClientTags.has(ruleSet.http_client))) {
-        errors.push("remote rule-set references missing http_client tag");
-      }
-      if (ruleSet.type === "remote" && (ruleSet.format !== "binary" || typeof ruleSet.url !== "string" || !/^https:\/\/[^\s]+\.srs$/u.test(ruleSet.url))) {
-        errors.push("remote rule-set must use binary format and an HTTPS .srs URL");
-      }
-    }
-    const dnsFinal = config.dns?.final;
-    if (typeof dnsFinal !== "string" || !dnsServers.has(dnsFinal)) errors.push("DNS final references missing server");
-    const evaluateTags = /* @__PURE__ */ new Set();
-    for (const rule of config.dns?.rules ?? []) validateDnsRule(rule, dnsServers, ruleSets, outboundTags, evaluateTags, errors);
-    for (const server of config.dns?.servers ?? []) {
-      validateDnsServerShape(server, errors);
-      if (server.detour !== void 0 && !outboundTags.has(server.detour)) errors.push("DNS server references missing outbound");
-      if (server.detour === server.tag) errors.push("DNS server loop detected");
-      if (server.detour === "DIRECT") errors.push("DNS server must not detour through the empty DIRECT outbound");
-    }
-    for (const inbound of config.inbounds ?? []) {
-      if (inbound.type === "tun" && !inbound.auto_route) errors.push("TUN auto_route is required");
-      if (inbound.type === "tun" && inbound.platform?.include_android_user && inbound.auto_redirect) errors.push("Android TUN cannot use auto_redirect");
-    }
-    if (Object.hasOwn(config.experimental?.cache_file ?? {}, "store_rdrc")) errors.push("cache file contains deprecated store_rdrc");
-    if (!groupTags.has("\u{1F680} \u8282\u70B9\u9009\u62E9")) errors.push("primary selector missing");
-    if (!new Set(config.inbounds?.map((item) => item.tag)).has("tun-in")) errors.push("tun-in inbound missing");
-    return { valid: errors.length === 0, errors: [...new Set(errors)] };
-  }
-
-  // src/render-config.js
-  function renderSingBoxConfig(rawOptions, nodes, rendererOptions = {}) {
-    if (Object.hasOwn(rendererOptions, "ruleSetFormat")) {
-      throw new Error("Renderer option 'ruleSetFormat' was removed; migrate to profileMode and adblockMode");
-    }
-    const { ruleBaseUrl } = rendererOptions;
-    const options = isParsedSingBoxOptions(rawOptions) ? rawOptions : parseSingBoxOptions(rawOptions);
+  function renderSurgeProfile(rawOptions, nodes, { ruleBaseUrl } = {}) {
+    const options = isParsedSurgeOptions(rawOptions) ? rawOptions : parseSurgeOptions(rawOptions);
     const inventory = Array.isArray(nodes) ? nodes : [];
-    if (inventory.length === 0) throw new Error("sing-box refuses an empty node inventory");
+    if (inventory.length === 0) throw new Error("Surge refuses an empty node inventory");
     for (const node of inventory) nodeMetadata(node);
-    const renderedNodes = inventory.map(renderSingBoxNode);
-    const groups = renderSingBoxGroups(options, inventory, {
-      ruleProbeUrl: `${ruleBaseUrl.replace(/\/+$/u, "")}/Hijacking.srs`
-    });
-    const { ruleSets, rules, final } = renderSingBoxRouteRules({
-      ruleBaseUrl,
-      profileMode: options.profileMode,
-      adblockMode: options.adblockMode,
-      blockMode: options.blockMode,
-      quicMode: options.quicMode,
-      platform: options.platform,
-      chinaDns: options.chinaDns,
-      globalDns: options.globalDns,
-      dnsMode: options.dnsMode
-    });
-    const config = {
-      log: {
-        level: ["iphone", "ipad"].includes(options.platform) ? "warn" : "info",
-        timestamp: true
-      },
-      dns: renderSingBoxDns(options),
-      http_clients: [{
-        tag: RULE_DOWNLOAD_HTTP_CLIENT,
-        version: 2,
-        detour: "\u{1F9ED} DNS \u4E0E\u89C4\u5219\u4E0B\u8F7D"
-      }],
-      inbounds: [renderSingBoxTun(options.platform, options.ipv6Mode)],
-      outbounds: [
-        { type: "direct", tag: "DIRECT" },
-        { type: "block", tag: "REJECT" },
-        ...groups,
-        ...renderedNodes.flatMap(({ outbound }) => outbound ? [outbound] : [])
-      ],
-      route: {
-        auto_detect_interface: true,
-        default_domain_resolver: "dns-direct",
-        default_http_client: RULE_DOWNLOAD_HTTP_CLIENT,
-        rule_set: ruleSets,
-        rules,
-        final
-      },
-      experimental: {
-        cache_file: {
-          enabled: !["iphone", "ipad"].includes(options.platform),
-          path: "cache.db",
-          store_dns: !["iphone", "ipad"].includes(options.platform)
-        }
-      }
-    };
-    const endpoints = renderedNodes.flatMap(({ endpoint }) => endpoint ? [endpoint] : []);
-    if (endpoints.length > 0) config.endpoints = endpoints;
-    const validation = validateSingBoxConfig(config);
-    if (!validation.valid) throw new Error(`Generated sing-box config failed validation: ${validation.errors.join(",")}`);
-    return config;
+    const hasRemotePolicy = Boolean(options.proxyPolicyUrl);
+    const proxyLines = hasRemotePolicy ? "# Nodes are loaded by the hidden Surge remote policy pool." : inventory.map(renderSurgeProxy).join("\n");
+    const profile = [
+      "# Generated by apple-proxy-profiles. Private Sub-Store output.",
+      `[General]
+${generalSettings(options).join("\n")}`,
+      `[Proxy]
+${proxyLines}`,
+      `[Proxy Group]
+${renderSurgeGroups(options, inventory).join("\n")}`,
+      `[Rule]
+${renderSurgeRules({ ruleBaseUrl, adblockMode: options.adblockMode }).join("\n")}`
+    ].join("\n\n") + "\n";
+    const validation = validateSurgeProfile(profile);
+    if (!validation.valid) throw new Error(`Generated Surge profile failed validation: ${validation.errors.join(",")}`);
+    return profile;
   }
 
-  // src/substore-config-entry.js
+  // src/substore-profile-entry.js
   var PUBLIC_RULE_ROOT = "https://juan-nikola.github.io/apple-proxy-profiles";
+  var PUBLIC_RULE_BASE_URL = `${PUBLIC_RULE_ROOT}/current/surge/rules`;
   function logDiagnostics(context, options, nodes, renderFailures) {
     const logger = context?.logger;
     const method = typeof logger === "function" ? logger : typeof logger?.info === "function" ? logger.info.bind(logger) : typeof logger?.log === "function" ? logger.log.bind(logger) : null;
     if (!method) return;
     try {
-      method(`[sing-box-config] ${JSON.stringify({ client: "singbox", platform: options.platform, channel: options.channel, accepted: nodes.length, renderFailures })}`);
+      method(`[surge-profile] ${JSON.stringify({ client: "surge", platform: options.platform, channel: options.channel, accepted: nodes.length, renderFailures })}`);
     } catch {
     }
   }
   async function operator(input, targetPlatform, context = {}) {
     void targetPlatform;
-    const options = parseSingBoxOptions(context.arguments ?? {});
+    const options = parseSurgeOptions(context.arguments ?? {});
     if (typeof context.produceArtifact !== "function") throw new Error("produceArtifact is unavailable");
     const rawNodes = await context.produceArtifact({
       type: options.type,
@@ -2544,29 +1993,15 @@ var SingBoxConfigBundle = (() => {
     });
     if (!Array.isArray(rawNodes) || rawNodes.length === 0) throw new Error("produceArtifact must return a non-empty node array");
     const normalized = normalizeNodes(rawNodes, { clientChain: options.clientChain });
-    const invalidInputCount = Object.entries(normalized.diagnostics.excluded).filter(([reason]) => reason !== "exact-duplicate").reduce((total, [, count]) => total + count, 0);
-    if (options.nodeErrorMode === "strict" && invalidInputCount > 0) {
-      throw new Error(`sing-box strict node inventory rejected ${invalidInputCount} invalid input node(s): ${JSON.stringify(normalized.diagnostics.excluded)}`);
-    }
-    let renderable;
-    let renderFailures;
-    if (options.nodeErrorMode === "compatible") {
-      const partitioned = partitionRenderableNodes(normalized.nodes, "sing-box", renderSingBoxNode);
-      renderable = partitioned.renderable;
-      renderFailures = partitioned.failureProtocols;
-    } else {
-      assertRenderableNodes(normalized.nodes, "sing-box", renderSingBoxNode);
-      renderable = normalized.nodes;
-      renderFailures = {};
-    }
-    logDiagnostics(context, options, renderable, renderFailures);
-    const ruleBaseUrl = `${PUBLIC_RULE_ROOT}/${options.channel}/sing-box/rule-sets`;
-    const config = renderSingBoxConfig(options, renderable, { ruleBaseUrl });
-    return { ...input, $content: `${JSON.stringify(config, null, 2)}
-` };
+    const probe = (node) => renderSurgeProxy(sanitizeSurgeNode(node));
+    const partitioned = partitionRenderableNodes(normalized.nodes, "Surge", probe);
+    logDiagnostics(context, options, partitioned.renderable, partitioned.failureProtocols);
+    const ruleBaseUrl = `${PUBLIC_RULE_ROOT}/${options.channel}/surge/rules`;
+    const profile = renderSurgeProfile(options, partitioned.renderable.map(sanitizeSurgeNode), { ruleBaseUrl });
+    return { ...input, $content: profile };
   }
-  return __toCommonJS(substore_config_entry_exports);
+  return __toCommonJS(substore_profile_entry_exports);
 })();
 async function operator(input, targetPlatform) {
-  return SingBoxConfigBundle.operator(input, targetPlatform, { arguments: $arguments, produceArtifact, logger: console });
+  return SurgeProfileBundle.operator(input, targetPlatform, { arguments: $arguments, produceArtifact, logger: console });
 }
