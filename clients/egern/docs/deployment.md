@@ -6,7 +6,7 @@ Egern 新任务只读取 `apple-proxy-egern`。先按 [Sub-Store 客户端节点
 
 ## 0. 开始前
 
-- 确认 Sub-Store 中已有节点集合 `apple-proxy-egern`，其中引用 `snell` 与 `vlesshy2`。下文的 `name` 指向这个现有集合；不要重命名或创建同名副本替代它。
+- 创建或确认 Sub-Store 节点集合 `apple-proxy-egern`，其中只加入你已单独预览并确认可用的私密来源。下文的 `name` 指向这个集合；不要重命名，也不要用另一个同名副本替代它。
 - 备份 Egern 当前使用的旧 Profile，记下当前选中的策略与节点。不要删除或覆盖旧 Profile。
 - 准备仅自己可访问的 Sub-Store File 输出地址。不得公开、发布、粘贴或上传私密 URL、订阅 URL 或 Profile URL。
 - 以下 `example.invalid` 是 IANA 保留域名，只是占位符；结构示例不能直接联网或实际使用。

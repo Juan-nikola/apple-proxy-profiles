@@ -6,13 +6,13 @@
 
 ## 规则批次失败或数量不对
 
-只接受 HTTPS、路径以 `.arrs` 结束、HTTP 2xx、严格 UTF‑8。源码上限是每个集合 100,000 条，本项目限制 95,000。对照 schema-v2 Manifest 的 entryCount、SHA-256 和 31 个默认 shard；批次数以导入页实际显示为准。不要导入 `.amrs`，不要启用 MITM/HTTPS 解密。
+只接受 HTTPS、路径以 `.arrs` 结束、HTTP 2xx、严格 UTF‑8。源码上限是每个集合 100,000 条，本项目限制 95,000。对照 schema-v2 Manifest 的 entryCount、SHA-256 和 14 个稳定业务包；批次数以导入页实际显示为准。不要导入 `.amrs`，不要启用 MITM/HTTPS 解密。
 
 ## 分流错误
 
 确认 Rule 模式、所有 shard、同一逻辑集绑定一致，并且没有混用 current/previous/version。看到规则被 reset to Default 时，不要理解为关闭：Default 可能直接走当前节点或链。
 
-国内 App 偶发慢、切换开关后暂时恢复时，先确认旧 `ChinaMax_Domain` 和通用 `Game` 已删除或禁用，再确认 `DomesticCore`、`DomesticGame`、`ChinaIP` 为 DIRECT。切换开关只会暂时重建 DNS/连接缓存，不会修正旧分片的路由。
+国内 App 偶发慢、切换开关后暂时恢复时，先确认旧 `ChinaMax_Domain` 和通用 `Game` 已删除或禁用，再确认 `DomesticCore`、`DomesticPlatform`、`ChinaIP` 为 DIRECT。切换开关只会暂时重建 DNS/连接缓存，不会修正旧业务包的路由。
 
 分流顺序固定为 `DomesticCore` → 服务规则 → `OverseasGame` → `ChinaTLD` → `ChinaIP` → FINAL；普通 `.cn` 应命中 `ChinaTLD`/DIRECT。HTTPDNS、硬编码 IP、IPv6、QUIC 和手动服务组选择仍是残余风险。可用 `npm run explain:route -- --channel current --domain <域名>` 离线核对预期分流，该命令只读取本地已发布规则、不执行 DNS；Anywhere 的本地 assignment 仍必须逐台人工核对。
 

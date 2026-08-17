@@ -7,10 +7,12 @@ Anywhere 不能用一个远程文件表达 Shadowrocket/Egern 的完整 Profile�
 | 层 | 本项目提供 | 必须留在本地 |
 |---|---|---|
 | 私密节点订阅 | `dist/anywhere-node-generator.js` 生成仅含 `proxies` 的 Clash YAML | 私密订阅 URL、节点凭据、当前节点 |
-| 公开规则 | 31 个默认来源转换成 31 个轻量 `.arrs` 分片及 schema-v2 Manifest | 每个规则集最终绑定到 DIRECT、REJECT、节点或链 |
+| 公开规则 | 固定上游输入聚合成 14 个稳定 `.arrs` 业务包及 schema-v2 Manifest | 每个业务包最终绑定到 DIRECT、REJECT、节点或链 |
 | 设备设置 | 部署、灰度和回滚说明 | Rule/Global、DNS、链、IPv6、QUIC、Purify 等 |
 
 三层任一缺失，都不能称为完整配置。`.arrs` 的 `routing = 0/1/2` 仅控制首次导入的 Default、DIRECT、REJECT。特别注意：`Default` 并非停用；在审计的 Anywhere 源码中，它会让自定义规则集回退到当前选择的节点或链。
+
+默认 14 个稳定业务包是：`AI`、`Apple`、`ChinaIP`、`DomesticCore`、`DomesticPlatform`、`Download`、`GitHub`、`Microsoft`、`OverseasGame`、`OverseasMedia`、`OverseasSocial`、`Privacy`、`Security`、`YouTube`。上游来源如何聚合、每包规则数量和 SHA-256 以 schema-v2 Manifest 为唯一事实源。
 
 ## 已生成产物
 
@@ -45,7 +47,7 @@ output=nodes&type=collection&name=apple-proxy-anywhere&clientChain=off
 ### 1. 先备份并确认来源
 
 1. 在 Anywhere 保留当前能联网的节点、Rule Mode 规则集及本地策略绑定，不删除旧设置。
-2. 备份 Sub-Store；确认组合订阅 `apple-proxy-anywhere` 已存在、包含 `snell` 与 `vlesshy2` 且预览节点数大于 0。
+2. 备份 Sub-Store；确认组合订阅 `apple-proxy-anywhere` 已存在、包含你已验证的私密来源且预览节点数大于 0。
 3. 真实来源 URL、节点、File 输出 URL 和 Anywhere 本地绑定不得进入公开仓库、截图或聊天。
 
 ### 2. 创建 `anywhere-nodes`
@@ -82,9 +84,9 @@ output=nodes&type=collection&name=apple-proxy-anywhere&clientChain=off
 
 1. 如果设备导入过旧版，先删除或禁用 `Advertising`、`Advertising_Domain`、`ChinaMax_Domain` 和通用 `Game` 分片；否则旧大规则仍会占用内存并可能抢先命中。
 2. 打开 Pages 的 `current/anywhere/import.html`，优先使用总导入 deep link；若当前系统或分享链路无法打开，再按页面顺序完成所有回退批次。总 deep link 只会打开 Anywhere 的确认页面，不会创建单个聚合 `.arrs` 订阅。
-3. 回到 Anywhere，确认 31 个默认规则分片全部出现。`routing=1` 是 DIRECT，`routing=2` 是 REJECT，`routing=0` 的 Default 会回退到当前节点或链，并不表示停用。
-4. `DomesticCore`、`DomesticGame` 和 `ChinaIP` 应为 DIRECT。`OverseasGame` 首次使用 Default/代理；如果 App 版本支持专用组，手动绑定到海外游戏组。
-4. 配置 DNS、IPv6、QUIC、链与 Purify 等设备设置，然后切换到 Rule Mode。节点 File 不会自动完成这些步骤。
+3. 回到 Anywhere，确认 14 个稳定业务包全部出现。`routing=1` 是 DIRECT，`routing=2` 是 REJECT，`routing=0` 的 Default 会回退到当前节点或链，并不表示停用。
+4. `Privacy`、`DomesticCore`、`DomesticPlatform`、`Apple`、`Microsoft`、`Download` 和 `ChinaIP` 应为 DIRECT，`Security` 应为 REJECT；其余六个境外业务包首次使用 Default/代理。
+5. 配置 DNS、IPv6、QUIC、链与 Purify 等设备设置，然后切换到 Rule Mode。节点 File 不会自动完成这些步骤。
 
 ### 5. 灰度和回滚
 
@@ -93,13 +95,13 @@ output=nodes&type=collection&name=apple-proxy-anywhere&clientChain=off
 3. 失败时切回旧节点订阅和旧本地规则绑定；若是公开规则问题，恢复旧 `.arrs` 导入；若是节点问题，只回滚 `anywhere-nodes`，不要混改规则层。
 4. 公开 `/current/` JS 升级时任务名、参数和私密直链保持不变。先在 iPhone 重新预览和刷新，通过后再推广到 iPad。
 
-成功标志：节点 File 预览非空；iPhone、iPad 都能手动刷新节点；31 个默认分片和本地绑定完整；旧配置仍可立即恢复。
+成功标志：节点 File 预览非空；iPhone、iPad 都能手动刷新节点；14 个稳定业务包和本地绑定完整；旧配置仍可立即恢复。
 
 Anywhere 只有这一条 Sub-Store 节点生成链。它不能用一个远程文件表达完整 Profile，所以本项目不会创建虚假的 `anywhere-profile-generator.js`：公开 `.arrs` 规则、规则目标绑定、DNS、IPv6、QUIC、链和 Rule 模式必须继续在 Anywhere 部署链路中完成。完整步骤见[部署指南](docs/deployment.md)。
 
-当前固定 Blackmatrix7 提交为 `dab47069a30c4ae70f7f5f4c919d639d9aaf79dc`。编译后的 31 个默认来源生成 31 个默认分片、16,522 条规则；完整 `Advertising` 与 `Advertising_Domain` 仅位于可选 `adblock-full` 包，默认导入不会加载它们。
+当前固定 Blackmatrix7 提交为 `dab47069a30c4ae70f7f5f4c919d639d9aaf79dc`。固定上游输入经过优先级归并后生成 14 个稳定业务包；精确输入数、规则数、SHA-256 和包列表以当前 schema-v2 Manifest 为准。完整 `Advertising` 与 `Advertising_Domain` 仅位于可选 `adblock-full` 包，默认导入不会加载它们。
 
-国内 App 偶发变慢、切换开关后暂时恢复，通常是旧大规则仍在生效，或 DNS/连接缓存处于旧状态。删除或禁用旧 `ChinaMax_Domain`/`Game` 后，确认 `DomesticCore`、`DomesticGame` 和 `ChinaIP` 为 DIRECT，可避免常见国内域名和国内 IP 回落到代理。
+国内 App 偶发变慢、切换开关后暂时恢复，通常是旧大规则仍在生效，或 DNS/连接缓存处于旧状态。删除或禁用旧 `ChinaMax_Domain`/`Game` 后，确认 `DomesticCore`、`DomesticPlatform` 和 `ChinaIP` 为 DIRECT，可避免常见国内域名和国内 IP 回落到代理。
 
 客户端兼容性固定到用户提供并核验的 Anywhere 官方源码提交 `e15518fde1f5d2652dfc1c234c89a68b87cecec0`。
 
@@ -108,7 +110,7 @@ Anywhere 只有这一条 Sub-Store 节点生成链。它不能用一个远程文
 1. 按 [部署指南](docs/deployment.md) 在私密 Sub-Store 创建节点 File 任务；真实订阅 URL绝不能提交到仓库。
 2. 在测试设备添加私密节点订阅，检查节点名称唯一且稳定。
 3. 打开最终 Pages 的 `current/anywhere/import.html`，优先使用总导入 deep link；若失败再依次完成全部回退批次。不要把 `anywhere://add-rule-set` deep link 粘贴到 `.arrs` 订阅输入框。
-4. 在 Anywhere 内逐个检查所有分片的本地绑定，切换到 Rule 模式。
+4. 在 Anywhere 内逐个检查 14 个业务包的本地绑定；若某个业务包以后拆成多个 shard，同包分片必须绑定相同目标。确认后切换到 Rule 模式。
 5. 按 [canary 清单](docs/canary.md) 先 iPhone、后 iPad，并在每台设备做真实回滚。
 
 稳定版是生产基线；Beta/TestFlight 只是附加灰度通道，使用同一套已验证产物，不推定 beta 拥有未审计能力。节点产物可由 Sub-Store 按私密任务节奏重建，但 Anywhere 源码只证明了用户手动 Refresh/Update；不要写成 App 会自动每 6 小时刷新。

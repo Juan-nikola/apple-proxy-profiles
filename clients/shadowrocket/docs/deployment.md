@@ -25,7 +25,7 @@ Shadowrocket 新任务只读取 `apple-proxy-shadowrocket`。先按 [Sub-Store �
 
 ## 1. 准备 Sub-Store 来源
 
-把现有 Sub-Store 来源 `snell` 和 `vlesshy2` 加入原始组合 `apple-proxy-shadowrocket`。以后增加机场、自建、Realm、服务端链式或客户端落地订阅，只加入这个原始组合即可；显示名前缀分别使用 `[机场]`、`[自建]`、`[realm]`、`[链式代理]`、`[落地]`。只有确实需要 Shadowrocket 再套一层入口的节点才标 `[落地]`。
+把你已单独预览并确认可用的私密来源加入原始组合 `apple-proxy-shadowrocket`。以后增加机场、自建、Realm、服务端链式或客户端落地订阅，只加入这个原始组合即可；显示名前缀分别使用 `[机场]`、`[自建]`、`[realm]`、`[链式代理]`、`[落地]`。只有确实需要 Shadowrocket 再套一层入口的节点才标 `[落地]`。
 
 1. 在 Sub-Store 的来源/订阅区域逐个添加已有订阅。
 2. 每个来源先单独预览，确认能解析出节点；不要在公开场合打开或分享完整地址。
@@ -38,7 +38,7 @@ Shadowrocket 新任务只读取 `apple-proxy-shadowrocket`。先按 [Sub-Store �
    - `[落地]XXX`：明确允许 Shadowrocket 使用入口节点连接的落地。
 5. 无法确认某个来源是否为客户端落地时，不要标 `[落地]`；先按普通自建或已完成链路处理。
 
-成功标志：`apple-proxy-shadowrocket` 预览不是空的，数量与 `snell`、`vlesshy2` 两个来源大致相符。原始组合为空时停止，不创建输出文件。
+成功标志：`apple-proxy-shadowrocket` 预览不是空的，数量与刚才加入的私密来源大致相符。原始组合为空时停止，不创建输出文件。
 
 ## 2. 创建节点订阅
 
@@ -108,7 +108,7 @@ output=nodes&type=collection&name=apple-proxy-shadowrocket&clientChain=off
 
 ## 4. Intel Mac 灰度
 
-先导入节点订阅（原始组合 `apple-proxy-shadowrocket` 的输出），在 Shadowrocket 中将它的显示名填写为与三个 File 参数相同的名称（本例为 `Shadowrocket-Nodes`）；再导入 `shadowrocket-config-macos`。不要覆盖旧 Profile。保持 HTTPS 解密关闭。
+先导入节点订阅（`shadowrocket-nodes` 的私密输出），在 Shadowrocket 中将它的显示名填写为与三个 File 参数相同的名称（本例为 `Shadowrocket-Nodes`）；再导入 `shadowrocket-config-macos`。不要覆盖旧 Profile。保持 HTTPS 解密关闭。
 
 开始前再次确认 Intel Mac 已完成“灰度前的客户端设置”全部 7 项；缺一项就停止。
 

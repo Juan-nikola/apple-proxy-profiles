@@ -38,23 +38,23 @@ Shadowrocket 维护对象是 `apple-proxy-shadowrocket`；统一迁移、回滚�
 
 1. 保持正式的原始 `apple-proxy-shadowrocket`、节点订阅、三个正式 Profile File 及其 URL 全部不变。
 2. 新建带日期的测试组合，例如 `apple-proxy-shadowrocket-chain-test-YYYYMMDD`。复制正式组合的来源成员，不复制任何脚本操作（本项目不使用组合 Script Operator；Profile 生成器内置节点归一化）。如果某个来源必须把标签改为 `[落地]`，先复制该来源条目，只在副本上改显示名，不重命名生产来源。
-3. 从测试组合发布一份新的版本化节点订阅，例如 `shadowrocket-nodes-chain-test-YYYYMMDD`；原来的 `shadowrocket-nodes` 保持不变（旧结构中的处理组合名称；新结构下保持正式的 `apple-proxy-shadowrocket` 不动即可）。节点订阅不需要脚本操作：Profile 生成器通过 `clientChain=on` 在 Profile 内生成链式副本，节点侧始终使用原始节点列表（等价于旧结构 `output=nodes&clientChain=off` 的输出；测试 Profile 开启链式等价于旧结构节点侧的 `output=nodes&clientChain=on`）。
-5. 在 Shadowrocket 中给新节点订阅一个便于识别的显示名，显示名准确填写 `Shadowrocket-Nodes-Chain-Test-YYYYMMDD`。这是测试示例，不是固定名称；若自定义名称，后续 `subscriptionName` 必须逐字相同，包括大小写、emoji、空格和标点。动态组只从 `subscriptionName` 精确指定的测试订阅读取，无需因防混入而暂停生产订阅；正式订阅与测试订阅仍应分别保留，便于独立回滚和复测。
-6. 先只复制 macOS Profile File，名称加同一天的链式测试后缀。参数中的三个关键值填写为：
+3. 复制正式节点 File，发布一份新的版本化节点订阅，例如 `shadowrocket-nodes-chain-test-YYYYMMDD`。原来的 `shadowrocket-nodes` 保持不变，正式 `apple-proxy-shadowrocket` 也保持不变。正式节点 File 的基准开关仍是 `output=nodes&clientChain=off`，测试副本要把它改成 `output=nodes&clientChain=on`。测试节点 File 继续引用 `shadowrocket-node-subscription.js`，完整参数填写 `output=nodes&type=collection&name=apple-proxy-shadowrocket-chain-test-YYYYMMDD&clientChain=on`。节点 File 和测试 Profile 必须同时开启链式，否则 Shadowrocket 的测试订阅里没有可供 Profile 动态组读取的 `🔗` 链式副本。
+4. 在 Shadowrocket 中给新节点订阅一个便于识别的显示名，显示名准确填写 `Shadowrocket-Nodes-Chain-Test-YYYYMMDD`。这是测试示例，不是固定名称；若自定义名称，后续 `subscriptionName` 必须逐字相同，包括大小写、emoji、空格和标点。动态组只从 `subscriptionName` 精确指定的测试订阅读取，无需因防混入而暂停生产订阅；正式订阅与测试订阅仍应分别保留，便于独立回滚和复测。
+5. 先只复制 macOS Profile File，名称加同一天的链式测试后缀。参数中的三个关键值填写为：
    - `name=apple-proxy-shadowrocket-chain-test-YYYYMMDD`
    - `subscriptionName=Shadowrocket-Nodes-Chain-Test-YYYYMMDD`
    - `clientChain=on`
-7. `name` 对应第 2 步测试组合，`clientChain` 为 `on`；`subscriptionName` 必须与第 5 步的 Shadowrocket 节点订阅显示名完全一致。因此本例的显示名和参数都是 `Shadowrocket-Nodes-Chain-Test-YYYYMMDD`；不匹配时显式选项仍可选择，但动态组不会列出该订阅的具体服务器。其他参数先保持正式 macOS Profile 的值。
+6. `name` 对应第 2 步测试组合，`clientChain` 为 `on`；`subscriptionName` 必须与第 4 步的 Shadowrocket 节点订阅显示名完全一致。因此本例的显示名和参数都是 `Shadowrocket-Nodes-Chain-Test-YYYYMMDD`；不匹配时显式选项仍可选择，但动态组不会列出该订阅的具体服务器。其他参数先保持正式 macOS Profile 的值。
    如果正式 Profile 仍使用默认参数，可复制下面整行，再把所有 `YYYYMMDD` 换成同一天：
 
    `output=config&type=collection&name=apple-proxy-shadowrocket-chain-test-YYYYMMDD&subscriptionName=Shadowrocket-Nodes-Chain-Test-YYYYMMDD&platform=macos&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=ipv4-only&autoGroupMode=auto&clientChain=on`
 
-8. 预览 macOS 测试 Profile 后发布新的 URL，在 Intel Mac 中把新节点订阅和新 Profile 并排导入。新 Profile 的动态组只读取第 5 步 `subscriptionName` 指定的测试订阅；测试时无需停用或移除正式节点订阅。
-9. 先在 Intel Mac 验证：普通落地仍在、允许的 `🔗` 链式副本出现、入口失败时连接关闭而不是绕过入口。Hysteria2 不生成客户端链式副本；`[realm]` 和 `[链式代理]`是已完成链路，也不会再次克隆。
+7. 预览 macOS 测试 Profile 后发布新的 URL，在 Intel Mac 中把新节点订阅和新 Profile 并排导入。新 Profile 的动态组只读取第 4 步 `subscriptionName` 指定的测试订阅；测试时无需停用或移除正式节点订阅。
+8. 先在 Intel Mac 验证：普通落地仍在、允许的 `🔗` 链式副本出现、入口失败时连接关闭而不是绕过入口。Hysteria2 不生成客户端链式副本；`[realm]` 和 `[链式代理]`是已完成链路，也不会再次克隆。
    节点名中的 `·链` 由脚本在检测到 `chain`、`underlying-proxy` 等既有链路字段时自动添加，表示该节点不会再次用作客户端入口。不要手工删除或伪造这个标记；原节点名里手写的同名标记会先被清除，再按真实字段重新判断。
-10. macOS 通过后，才在同一隔离测试栈中复制 iPhone、iPad Profile File；分别只改 `platform=iphone`、`platform=ipad`，并保持第 6 步三个关键值一致。每份都发布新的 URL，按 iPhone、iPad 顺序测试。
-11. 回滚时直接选回旧 Profile；原节点订阅和旧 Profile 从未被修改，因此不需要反向改参数。停止链式测试也只需切回原来的旧 Profile。
-12. 回滚观察期结束前，不修改或删除正式栈，也不删除测试组合、测试节点订阅和测试 Profile；确认不再需要复现后再自行归档测试产物。
+9. macOS 通过后，才在同一隔离测试栈中复制 iPhone、iPad Profile File；分别只改 `platform=iphone`、`platform=ipad`，并保持第 5 步三个关键值一致。每份都发布新的 URL，按 iPhone、iPad 顺序测试。
+10. 回滚时直接选回旧 Profile；原节点订阅和旧 Profile 从未被修改，因此不需要反向改参数。停止链式测试也只需切回原来的旧 Profile。
+11. 回滚观察期结束前，不修改或删除正式栈，也不删除测试组合、测试节点订阅和测试 Profile；确认不再需要复现后再自行归档测试产物。
 
 ## 参数修改表
 

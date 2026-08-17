@@ -30,11 +30,9 @@
 3. 按节点池指南建立五个 client collection，用户自行选择每个客户端要包含的节点；生成器不按客户端能力白名单过滤。
 4. 逐个 preview 并记录计数，再一次只迁移一个客户端的 `name=`。
 
-新任务不再让六个客户端直接共享一个 collection。旧 `apple-proxy-sources` 继续保留作兼容/回滚入口，不要删除。
+新任务不再让五个客户端直接共享一个 collection。旧 `apple-proxy-sources` 继续保留作兼容/回滚入口，不要删除。
 
-> 本用户部署中的 `xiaov` 来源跳过不使用，不要加入 `apple-proxy-all` 或任何 client collection。
-
-## 2. 七个公开远程 JS
+## 2. 八个公开远程 JS
 
 新任务优先使用 `current/`：
 
@@ -76,7 +74,7 @@ https://juan-nikola.github.io/apple-proxy-profiles/current/egern/scripts/egern-n
 https://juan-nikola.github.io/apple-proxy-profiles/current/surge/scripts/surge-profile-generator.js#output=config&type=collection&name=apple-proxy-surge&subscriptionName=Apple-Proxy-Nodes&platform=iphone&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&autoGroupMode=auto&clientChain=off
 ```
 
-## 4. 19 个任务总表
+## 4. 17 个任务总表
 
 下面的 `Apple-Proxy-Nodes` 是公开示例显示名。实际使用时，在 Shadowrocket、Surge 或 sing-box 中给节点订阅取一个你自己的显示名，并让同一客户端对应 Profile/Config 任务的 `subscriptionName` 逐字一致。每个 Profile/Config 只指向节点池指南定义的对应 client collection。
 
@@ -87,18 +85,20 @@ https://juan-nikola.github.io/apple-proxy-profiles/current/surge/scripts/surge-p
 | 3 | `egern-iphone` | File | Egern Profile | iPhone | 每天 |
 | 4 | `egern-ipad` | File | Egern Profile | iPad | 每天 |
 | 5 | `anywhere-nodes` | File | Anywhere node | Clash YAML | 6 小时 |
-| 6 | `shadowrocket-config-macos` | File | Shadowrocket Profile | macOS | 每天 |
-| 7 | `shadowrocket-config-iphone` | File | Shadowrocket Profile | iPhone | 每天 |
-| 8 | `shadowrocket-config-ipad` | File | Shadowrocket Profile | iPad | 每天 |
-| 9 | `surge-nodes` | File | Surge node resource | 节点 `[Proxy]` | 6 小时 |
-| 10 | `surge-config-macos` | File | Surge Profile | macOS | 每天 |
-| 11 | `surge-config-iphone` | File | Surge Profile | iPhone | 每天 |
-| 12 | `surge-config-ipad` | File | Surge Profile | iPad | 每天 |
-| 13 | `singbox-config-macos` | File | sing-box config | macOS | 每天 |
-| 14 | `singbox-config-iphone` | File | sing-box config | iPhone | 每天 |
-| 15 | `singbox-config-ipad` | File | sing-box config | iPad | 每天 |
-| 16 | `singbox-config-android` | File | sing-box config | Android | 每天 |
-客户端总数为 4+1+3+4+4=16 个任务。
+| 6 | `shadowrocket-nodes` | File | Shadowrocket node | 排序节点订阅 | 6 小时 |
+| 7 | `shadowrocket-config-macos` | File | Shadowrocket Profile | macOS | 每天 |
+| 8 | `shadowrocket-config-iphone` | File | Shadowrocket Profile | iPhone | 每天 |
+| 9 | `shadowrocket-config-ipad` | File | Shadowrocket Profile | iPad | 每天 |
+| 10 | `surge-nodes` | File | Surge node resource | 节点 `[Proxy]` | 6 小时 |
+| 11 | `surge-config-macos` | File | Surge Profile | macOS | 每天 |
+| 12 | `surge-config-iphone` | File | Surge Profile | iPhone | 每天 |
+| 13 | `surge-config-ipad` | File | Surge Profile | iPad | 每天 |
+| 14 | `singbox-config-macos` | File | sing-box config | macOS | 每天 |
+| 15 | `singbox-config-iphone` | File | sing-box config | iPhone | 每天 |
+| 16 | `singbox-config-ipad` | File | sing-box config | iPad | 每天 |
+| 17 | `singbox-config-android` | File | sing-box config | Android | 每天 |
+
+五客户端总数为 4+1+4+4+4=17 个任务。
 
 ## 5. Egern：1 个节点 File + 3 个 Profile File
 
@@ -257,7 +257,7 @@ sing-box 默认 strict：任一已选节点无法完整渲染时 preview 失败�
 
 ### 首次建立
 
-1. 按节点池指南 preview 六个 client collection。
+1. 按节点池指南 preview 五个 client collection。
 2. 运行节点任务：Egern、Anywhere、Shadowrocket。
 3. 运行依赖节点输出 URL 的 Egern Profile。
 4. 运行 `surge-nodes`，再运行 Surge 三个平台 Profile；Profile 会自动携带节点资源 URL。
@@ -277,7 +277,7 @@ sing-box 默认 strict：任一已选节点无法完整渲染时 preview 失败�
 
 ## 12. 任务完成检查
 
-- 六个 client collection 都已 preview，且只包含用户为该客户端选择的协议和字段。
+- 五个 client collection 都已 preview，且只包含用户为该客户端选择的协议和字段。
 - 节点预览非空；Profile/Config 预览结构正确，不出现凭据。
 - `noCache` 正式任务关闭，`insecure` 始终关闭。
 - `subscriptionName` 在对应客户端和所有 Profile/Config 任务中逐字一致。

@@ -43,7 +43,7 @@ https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/import.html
 已导入旧版的设备，旧分片包括 `Advertising`、`Advertising_Domain`、`ChinaMax_Domain` 和通用 `Game`；导入前必须删除或禁用这些旧分片。然后点默认页最上方的总导入 deep link；如果无法一次打开，按页面顺序点击全部回退批次。deep link 使用 `anywhere://add-rule-set`，只打开确认流程。不要混用 `current`、`previous` 与某个 `versions/<hash>` 的分片。
 
 Manifest 中每个逻辑规则集的所有 shard 必须绑定相同目标。漏一个 shard 就是部分生效。
-导入完成后应看到总计 31 个默认规则分片，并逐一核对它们的本地 assignment。可选广告包的独立页是：
+导入完成后应看到总计 14 个稳定业务包，并逐一核对它们的本地 assignment。可选广告包的独立页是：
 
 ```text
 https://juan-nikola.github.io/apple-proxy-profiles/optional/adblock-full/current/anywhere/import.html
@@ -53,13 +53,11 @@ https://juan-nikola.github.io/apple-proxy-profiles/optional/adblock-full/current
 
 ## 3. 检查首次绑定
 
-- `routing = 2`：默认的 Hijacking、BlockHttpDNS 以及可选包的 Advertising、Advertising_Domain 应为 REJECT。
-- `routing = 1`：`DomesticCore`、`DomesticGame`、`ChinaIP` 以及 Manifest 标注的其他直连分片首次为 DIRECT。
+- `routing = 2`：默认业务包 `Security` 应为 REJECT；它聚合旧的 Hijacking 与 BlockHttpDNS 输入。可选包的 `Advertising`、`Advertising_Domain` 也应为 REJECT。
+- `routing = 1`：`Privacy`、`DomesticCore`、`DomesticPlatform`、`Apple`、`Microsoft`、`Download`、`ChinaIP` 首次为 DIRECT。
 - `routing = 0`：境外服务与 `OverseasGame` 首次为 Default/当前代理。若当前版本支持专用组，在 App 内手动将 `OverseasGame` 绑定到海外游戏组。
 
-Default 不是停用，而是回退到当前节点或链。四个 AI 规则集若要实现 AI 独立出口，必须在每台设备把所有相关 shard 本地绑定到同一个 AI 节点或链。服务独立出口同理。Download/PrivateTracker 默认 DIRECT；除非服务商明确允许 P2P，不要随意绑定机场。
-
-四个 AI 分片为 `OpenAI`、`Claude`、`Gemini` 和 `Copilot`；如需 AI 专用出口，将它们在每台设备绑定到同一节点或链。
+Default 不是停用，而是回退到当前节点或链。`AI` 业务包聚合 OpenAI、Claude、Gemini 和 Copilot；如需 AI 独立出口，在每台设备只需把 `AI` 业务包绑定到同一个 AI 节点或链，再分别实测四项服务。其他境外业务包需要独立出口时同理。`Download` 聚合下载与 PrivateTracker 输入，默认 DIRECT；除非服务商明确允许 P2P，不要随意绑定机场。
 
 ## 4. 链与本地设置
 

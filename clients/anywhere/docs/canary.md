@@ -11,11 +11,11 @@
 
 ## 规则门槛
 
-- 记录 schema-v2 Manifest hash；确认全部 31 个默认 shard 来自同一快照并完成导入。
+- 记录 schema-v2 Manifest hash；确认全部 14 个稳定业务包来自同一快照并完成导入。
 - 同一逻辑规则集的所有 shard 绑定一致，App 处于 Rule 模式。
-- 验证 DomesticCore/DomesticGame/ChinaIP DIRECT、普通境外流量走当前代理；仅在显式启用可选广告包时验证 Advertising REJECT 和内存余量。
-- OpenAI、Claude、Gemini、Copilot 绑定同一个 AI 专用节点/链并分别实测。
-- 验证 GitHub、YouTube/Netflix、Telegram/社交、DomesticGame/OverseasGame UDP，以及 Download/PrivateTracker 不误走不允许 P2P 的机场。
+- 验证 Privacy/DomesticCore/DomesticPlatform/Apple/Microsoft/Download/ChinaIP DIRECT、Security REJECT，普通境外流量走当前代理；仅在显式启用可选广告包时验证 Advertising REJECT 和内存余量。
+- 把 `AI` 业务包绑定到一个 AI 专用节点/链，再分别实测 OpenAI、Claude、Gemini、Copilot。
+- 验证 GitHub、YouTube/海外媒体、海外社交、DomesticCore 中的国内游戏/OverseasGame UDP，以及 Download 中的私有 Tracker 不误走不允许 P2P 的机场。
 - 不把 Default 当停用；用 Requests 和可辨别出口证明它确实跟随当前节点/链。
 
 ## DNS、IPv6 与 QUIC

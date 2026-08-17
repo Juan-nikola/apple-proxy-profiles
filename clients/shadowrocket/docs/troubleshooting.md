@@ -29,7 +29,7 @@ DNS、QUIC、IPv6、`blockMode`或测速参数排障使用下面的 File 副本�
 
 ## 节点更新失败
 
-在 Sub-Store 预览原始组合 `apple-proxy-shadowrocket`。原始来源为空就检查 `snell`、`vlesshy2`；原始有节点而 Profile 为空就重新生成平台 Profile 并查看生成器日志中的排除原因计数。不要截图节点详情。恢复前一次可用订阅，节点数量正常后再更新设备。
+在 Sub-Store 预览原始组合 `apple-proxy-shadowrocket`。原始来源为空就逐个检查你加入的私密来源；原始有节点而 `shadowrocket-nodes` 或 Profile 为空，就重新运行对应 File 并查看生成器日志中的排除原因计数。不要截图节点详情。恢复前一次可用订阅，节点数量正常后再更新设备。
 
 检查顺序：
 

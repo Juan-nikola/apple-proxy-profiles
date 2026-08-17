@@ -6,7 +6,7 @@ Surge 新任务只读取 `apple-proxy-surge`。客户端 collection 边界、迁
 
 ## 先看这三份文档
 
-1. [五客户端总指南](../../docs/substore-two-layer-setup.md)：创建 `apple-proxy-surge`、引用 `snell` 与 `vlesshy2`，以及 18 个私密任务的总表。
+1. [五客户端总指南](../../docs/substore-two-layer-setup.md)：创建 `apple-proxy-surge`、加入你已验证的私密来源，以及 17 个私密任务的总表。
 2. [Surge 部署](docs/deployment.md)：先创建 Surge 节点资源 File，再按 macOS → iPhone → iPad 创建三个远程 Profile File。
 3. [灰度与排障](docs/canary.md)：确认国内 App、DNS、UDP、局域网和回滚顺序。
 
@@ -32,9 +32,9 @@ output=nodes&type=collection&name=apple-proxy-surge&clientChain=off
 
 | File | 平台 | Arguments |
 | --- | --- | --- |
-| `surge-macos` | macOS | `output=config&type=collection&name=apple-proxy-surge&subscriptionName=Apple-Proxy-Nodes&platform=macos&channel=current&adblockMode=off&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=ipv4-only&autoGroupMode=auto&clientChain=off` |
-| `surge-iphone` | iPhone | `output=config&type=collection&name=apple-proxy-surge&subscriptionName=Apple-Proxy-Nodes&platform=iphone&channel=current&adblockMode=off&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&autoGroupMode=auto&clientChain=off` |
-| `surge-ipad` | iPad | `output=config&type=collection&name=apple-proxy-surge&subscriptionName=Apple-Proxy-Nodes&platform=ipad&channel=current&adblockMode=off&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&autoGroupMode=auto&clientChain=off` |
+| `surge-config-macos` | macOS | `output=config&type=collection&name=apple-proxy-surge&subscriptionName=Apple-Proxy-Nodes&platform=macos&channel=current&adblockMode=off&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=ipv4-only&autoGroupMode=auto&clientChain=off` |
+| `surge-config-iphone` | iPhone | `output=config&type=collection&name=apple-proxy-surge&subscriptionName=Apple-Proxy-Nodes&platform=iphone&channel=current&adblockMode=off&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&autoGroupMode=auto&clientChain=off` |
+| `surge-config-ipad` | iPad | `output=config&type=collection&name=apple-proxy-surge&subscriptionName=Apple-Proxy-Nodes&platform=ipad&channel=current&adblockMode=off&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&autoGroupMode=auto&clientChain=off` |
 
 旧版 Sub-Store 只有单行远程链接时，参数放在 `JS_URL#...` 后面，例如：
 
@@ -60,7 +60,7 @@ https://juan-nikola.github.io/apple-proxy-profiles/current/surge/scripts/surge-p
 
 | 需求 | 修改位置 | 说明 |
 | --- | --- | --- |
-| 增加节点或来源 | Sub-Store 的 `apple-proxy-surge` | 只加入/移除 `snell`、`vlesshy2` 或新来源，不改 JavaScript。 |
+| 增加节点或来源 | Sub-Store 的 `apple-proxy-surge` | 只加入/移除你已验证的私密来源，不改 JavaScript。 |
 | 改国内/国外分流 | `shared/rules/`、`clients/surge/src/render-rules.js` | 先改共享规则，再运行规则测试和构建。 |
 | 改 Surge 分组/参数 | `clients/surge/src/`、`clients/surge/src/options.js` | 必须同步测试与 README 参数表。 |
 | 改公开远程入口 | `clients/surge/scripts/build.mjs`、`public/` 生成流程 | `dist/` 和 `public/` 都是构建产物，不手工编辑。 |

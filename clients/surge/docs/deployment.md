@@ -7,7 +7,7 @@ Surge 新任务只读取 `apple-proxy-surge`。先按 [Sub-Store 客户端节点
 ## 1. 准备组合与公开脚本
 
 1. 在 Sub-Store 的“组合订阅”中创建 `apple-proxy-surge`。
-2. 只加入已有来源 `snell`、`vlesshy2`；预览节点数必须大于 0。
+2. 只加入你已单独预览并确认可用的私密来源；组合预览节点数必须大于 0。
 3. 记录你准备在 Surge 中显示的节点订阅名，例如 `Apple-Proxy-Nodes`。这只是示例，三个 File 的 `subscriptionName` 必须与实际显示名逐字一致。
 4. 创建一个 `surge-nodes` 节点 File，远程脚本为：
 
@@ -26,7 +26,7 @@ Surge 新任务只读取 `apple-proxy-surge`。先按 [Sub-Store 客户端节点
 
 ## 2. 创建三个 File
 
-在 Sub-Store“文件/File”中新建 `surge-macos`、`surge-iphone`、`surge-ipad`。来源使用本地占位内容，添加一条启用且参与预览的“脚本操作”，脚本来源选择“远程链接”。可视化参数逐项填写以下值，把 `<SURGE_NODES_URL>` 替换为上一步的私密 URL；旧版单行界面则使用 `JS_URL#...`，不要使用 `?`。
+在 Sub-Store“文件/File”中新建 `surge-config-macos`、`surge-config-iphone`、`surge-config-ipad`。来源使用本地占位内容，添加一条启用且参与预览的“脚本操作”，脚本来源选择“远程链接”。可视化参数逐项填写以下值，把 `<SURGE_NODES_URL>` 替换为上一步的私密 URL；旧版单行界面则使用 `JS_URL#...`，不要使用 `?`。
 
 | key | macOS | iPhone | iPad |
 | --- | --- | --- | --- |
@@ -59,14 +59,14 @@ Profile 只包含一个隐藏组 `📦 远程节点池`。如果要临时使用�
 
 ## 3. 导入官方 Surge 与灰度
 
-1. 先在 Intel Mac 或 Apple Silicon Mac 的官方 Surge 中保留旧 Profile，再添加 `surge-macos` 的私密 File URL。
+1. 先在 Intel Mac 或 Apple Silicon Mac 的官方 Surge 中保留旧 Profile，再添加 `surge-config-macos` 的私密 File URL。
 2. 手动更新并验证：国内常用 App、国际站点、DNS、UDP、局域网设备、IPv4/IPv6、节点切换和断网恢复。
-3. macOS 通过后，再在 iPhone 导入 `surge-iphone`；iPhone 通过后，最后导入 `surge-ipad`。
+3. macOS 通过后，再在 iPhone 导入 `surge-config-iphone`；iPhone 通过后，最后导入 `surge-config-ipad`。
 4. 任一平台失败，立刻切回旧 Profile，并保留失败任务和时间；不要删除旧 File。
 
 ## 4. 版本选择与刷新
 
-`current` 是稳定发布指针，`edge` 是测试指针。节点资源建议每 6 小时刷新，Profile 结构每天刷新。脚本升级后先只重新预览 `surge-macos`，再按 macOS → iPhone → iPad 手动更新。正式任务不需要打开 `noCache`；只有确认 CDN 缓存问题时临时使用，验收后恢复关闭。
+`current` 是稳定发布指针，`edge` 是测试指针。节点资源建议每 6 小时刷新，Profile 结构每天刷新。脚本升级后先只重新预览 `surge-config-macos`，再按 macOS → iPhone → iPad 手动更新。正式任务不需要打开 `noCache`；只有确认 CDN 缓存问题时临时使用，验收后恢复关闭。
 
 ## 5. 文件与构建
 

@@ -16,8 +16,6 @@
 
 用户必须在 Sub-Store 中自行选择每个 client collection 的成员。生成器不做客户端能力白名单过滤：勾选什么节点就处理什么节点。sing-box 默认使用 `nodeErrorMode=strict`，任一已选节点无法完整渲染时整个任务失败；这能避免私密组合与实际配置不一致。只有迁移期显式使用 `nodeErrorMode=compatible` 时，才保留可渲染子集并把跳过计数写入 `renderFailures`，不会静默丢弃。其他客户端仍按各自文档的 `renderFailures` 边界执行。
 
-> 本用户部署中的 `xiaov` 来源跳过不使用，不要加入 `apple-proxy-all` 或任何 client collection。
-
 ## 手工迁移顺序
 
 一次只迁移一个客户端，严格按下列顺序操作：
