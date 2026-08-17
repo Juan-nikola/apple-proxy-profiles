@@ -5,7 +5,7 @@ import { tmpdir } from "node:os";
 import { basename, dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { ruleClientCatalog } from "../../../shared/rules/lightweight-policy.js";
+import { MOBILE_RULE_SOURCE_IDS, ruleClientCatalog } from "../../../shared/rules/lightweight-policy.js";
 
 // Official sing-box binary rule sets start with ASCII "SRS" followed by the
 // binary format version byte 0x02. Even an empty v5 source compiles to 17 bytes.
@@ -54,7 +54,9 @@ function safeArtifactPath(path) {
 }
 
 function compiledArtifactPath(sourcePath) {
-  let match = /^audit\/sing-box\/rules\/([^/]+)\.json$/u.exec(sourcePath);
+  let match = /^audit\/sing-box\/rules\/mobile_([A-Za-z0-9_]+)\.json$/u.exec(sourcePath);
+  if (match) return `sing-box/mobile-rule-sets/${match[1]}.srs`;
+  match = /^audit\/sing-box\/rules\/([^/]+)\.json$/u.exec(sourcePath);
   if (match) return `sing-box/rule-sets/${match[1]}.srs`;
   match = /^optional\/([^/]+)\/audit\/sing-box\/rules\/([^/]+)\.json$/u.exec(sourcePath);
   if (match) return `optional/${match[1]}/sing-box/${match[2]}.srs`;
@@ -188,7 +190,10 @@ async function collectFiles(root, current = root, files = []) {
 }
 
 function expectedPublicationPaths() {
-  const defaults = ruleClientCatalog({ adblockMode: "off" }).map(({ id }) => `sing-box/rule-sets/${id}.srs`);
+  const defaults = [
+    ...ruleClientCatalog({ adblockMode: "off" }).map(({ id }) => `sing-box/rule-sets/${id}.srs`),
+    ...MOBILE_RULE_SOURCE_IDS.map((id) => `sing-box/mobile-rule-sets/${id}.srs`),
+  ];
   const optionalIds = ruleClientCatalog({ adblockMode: "full" })
     .filter(({ id }) => id === "Advertising" || id === "Advertising_Domain")
     .map(({ id }) => `optional/adblock-full/sing-box/${id}.srs`);
@@ -196,7 +201,10 @@ function expectedPublicationPaths() {
 }
 
 function expectedAuditPaths() {
-  const defaults = ruleClientCatalog({ adblockMode: "off" }).map(({ id }) => `audit/sing-box/rules/${id}.json`);
+  const defaults = [
+    ...ruleClientCatalog({ adblockMode: "off" }).map(({ id }) => `audit/sing-box/rules/${id}.json`),
+    ...MOBILE_RULE_SOURCE_IDS.map((id) => `audit/sing-box/rules/mobile_${id}.json`),
+  ];
   const optionalIds = ruleClientCatalog({ adblockMode: "full" })
     .filter(({ id }) => id === "Advertising" || id === "Advertising_Domain")
     .map(({ id }) => `optional/adblock-full/audit/sing-box/rules/${id}.json`);

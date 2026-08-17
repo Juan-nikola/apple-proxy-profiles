@@ -86,16 +86,9 @@ test("selects effective automatic group detail by normalized node count", () => 
     assert.deepEqual(named(groups, "🚀 节点选择").items, [
       "PROXY",
       "⚡ 全部自动",
-      "🛟 全部故障转移",
       "🌏 亚太",
     ]);
   }
-
-  const fallback = named(buildGroups(options(), [node("🇯🇵 JP｜机场")]), "🛟 全部故障转移");
-  assert.deepEqual(
-    { url: fallback.url, interval: fallback.interval, timeout: fallback.timeout, tolerance: fallback.tolerance, hidden: fallback.hidden },
-    { url: "http://www.gstatic.com/generate_204", interval: 1800, timeout: 7, tolerance: 150, hidden: true },
-  );
 });
 
 test("preserves root-to-continent references while keeping helpers hidden", () => {
@@ -108,12 +101,11 @@ test("preserves root-to-continent references while keeping helpers hidden", () =
   assert.deepEqual(named(groups, "🚀 节点选择").items, [
     "PROXY",
     "⚡ 全部自动",
-    "🛟 全部故障转移",
     "🌏 亚太",
   ]);
   assert.equal(
     lines.find((line) => line.startsWith("🚀 节点选择 =")),
-    "🚀 节点选择 = select,PROXY,⚡ 全部自动,🛟 全部故障转移,🌏 亚太",
+    "🚀 节点选择 = select,PROXY,⚡ 全部自动,🌏 亚太",
   );
   assert.equal(
     lines.find((line) => line.startsWith("🌏 亚太 =")),
@@ -146,18 +138,16 @@ test("keeps service manual access and gates special service groups by eligibilit
   const foreignItems = [
     "🚀 节点选择",
     "⚡ 全部自动",
-    "🛟 全部故障转移",
     "🌏 亚太",
     "🌍 欧洲",
     "🌎 美洲",
     "DIRECT",
   ];
   const foreignGroups = [
-    "🐙 GitHub", "📺 YouTube", "🎬 Netflix", "🏰 Disney+", "🎵 Spotify", "🌍 国际媒体",
-    "✈️ Telegram", "💬 海外社交", "🎶 TikTok", "🌍 海外游戏",
+    "🐙 GitHub", "📺 YouTube", "🎬 海外流媒体", "💬 海外社交", "🌍 海外游戏",
   ];
   const domesticGroups = [
-    "🍎 Apple", "🪟 Microsoft", "📺 哔哩哔哩", "🎵 抖音", "📕 小红书", "🧣 微博",
+    "🍎 Apple", "🪟 Microsoft", "🇨🇳 国内平台",
   ];
   for (const name of foreignGroups) {
     const group = named(groups, name);
@@ -170,7 +160,6 @@ test("keeps service manual access and gates special service groups by eligibilit
       "DIRECT",
       "🚀 节点选择",
       "⚡ 全部自动",
-      "🛟 全部故障转移",
       "🌏 亚太",
       "🌍 欧洲",
       "🌎 美洲",
@@ -291,7 +280,6 @@ test("references every available continent helper from its visible selector", ()
 
   assert.deepEqual(named(buildGroups(options({ autoGroupMode: "full" }), nodes), "🌏 亚太").items, [
     "⚡ 亚太自动",
-    "🛟 亚太故障转移",
   ]);
   assert.deepEqual(named(buildGroups(options({ autoGroupMode: "minimal" }), nodes), "🌏 亚太").items, [
     "⚡ 亚太自动",
@@ -310,7 +298,6 @@ test("keeps root group as a PROXY selector with a flat AI group", () => {
   assert.deepEqual(named(groups, "🚀 节点选择").items, [
     "PROXY",
     "⚡ 全部自动",
-    "🛟 全部故障转移",
     "🌏 亚太",
     "🌍 欧洲",
     "🌎 美洲",
@@ -403,14 +390,14 @@ test("matches group filters against real normalized edge-case node names", () =>
   assert.equal(collisions.length, 2);
   assert.equal(matches(named(groups, "🌏 亚太"), commaNode), true);
   assert.equal(matches(named(groups, "🌏 亚太"), unknown), false);
-  assert.equal(matches(named(groups, "🏢 机场节点"), commaNode), true);
-  assert.equal(collisions.every((node) => matches(named(groups, "🏢 机场节点"), node)), true);
+  assert.equal(matches(named(groups, "⚡ 亚太自动"), commaNode), true);
+  assert.equal(collisions.every((node) => matches(named(groups, "⚡ 亚太自动"), node)), true);
   assert.equal(matches(named(groups, "🌐 其他/未分类"), unknown), true);
   assert.equal(matches(named(groups, "🎮 游戏连接"), udp), true);
   assert.equal(matches(named(groups, "⬇️ 下载/P2P"), nodes.find((node) => node._profile.p2p)), true);
   assert.equal(matches(named(groups, "🎯 客户端落地"), clone), true);
   assert.equal(matches(named(groups, "🎮 游戏连接"), clone), false);
-  assert.equal(matches(named(groups, "🏢 机场节点"), clone), false);
+  assert.equal(matches(named(groups, "⚡ 亚太自动"), clone), false);
 });
 
 test("keeps every catalog variant free of duplicates, dangling references, and cycles", () => {

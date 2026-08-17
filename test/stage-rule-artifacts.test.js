@@ -18,7 +18,7 @@ import {
   stageSingBoxAuditArtifacts,
   validateOneXrayEdgeArtifacts,
 } from "../scripts/stage-rule-artifacts.mjs";
-import { ruleClientCatalog } from "../shared/rules/lightweight-policy.js";
+import { MOBILE_RULE_SOURCE_IDS, ruleClientCatalog } from "../shared/rules/lightweight-policy.js";
 
 const upstream = Object.freeze({
   repository: "https://github.com/blackmatrix7/ios_rule_script",
@@ -62,7 +62,7 @@ test("stages only deterministic sing-box audit inputs with a closed manifest", a
   const result = await stageSingBoxAuditArtifacts({ artifacts, chinaIpAudit, outputRoot: root });
   assert.equal(result.schemaVersion, 2);
   assert.equal(result.upstream.commit, upstream.commit);
-  assert.equal(result.files.length, ruleClientCatalog({ adblockMode: "off" }).length + 2);
+  assert.equal(result.files.length, ruleClientCatalog({ adblockMode: "off" }).length + MOBILE_RULE_SOURCE_IDS.length + 2);
   assert.deepEqual(result.files.map(({ path }) => path), [...result.files.map(({ path }) => path)].sort());
   for (const record of result.files) {
     assert.match(record.path, /^(?:optional\/adblock-full\/)?audit\/sing-box\/rules\/[A-Za-z0-9_]+\.json$/u);
@@ -276,6 +276,7 @@ test("real current stage reuses tracked audit and SRS bytes with zero network", 
   await writeFile(join(publicDirectory, "current/manifest.json"), JSON.stringify({ upstream }));
   const expected = [
     ...ruleClientCatalog({ adblockMode: "off" }).map(({ id }) => `sing-box/rule-sets/${id}.srs`),
+    ...MOBILE_RULE_SOURCE_IDS.map((id) => `sing-box/mobile-rule-sets/${id}.srs`),
     "optional/adblock-full/sing-box/Advertising.srs",
     "optional/adblock-full/sing-box/Advertising_Domain.srs",
   ].sort();
@@ -313,6 +314,7 @@ test("loads a closed set of non-empty official SRS outputs", async () => {
   const root = await mkdtemp(join(tmpdir(), "sing-box-compiled-"));
   const expected = [
     ...ruleClientCatalog({ adblockMode: "off" }).map(({ id }) => `sing-box/rule-sets/${id}.srs`),
+    ...MOBILE_RULE_SOURCE_IDS.map((id) => `sing-box/mobile-rule-sets/${id}.srs`),
     "optional/adblock-full/sing-box/Advertising.srs",
     "optional/adblock-full/sing-box/Advertising_Domain.srs",
   ].sort();

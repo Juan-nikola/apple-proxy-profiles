@@ -8,13 +8,6 @@ const AUTO_GROUP = "⚡ 全部自动";
 const FALLBACK_GROUP_PATTERN = /故障转移/u;
 const MOBILE_MEMORY_PLATFORMS = new Set(["iphone", "ipad", "android"]);
 const IOS_MEMORY_PLATFORMS = new Set(["iphone", "ipad"]);
-// These are the service groups whose rule sources remain in the iOS
-// lightweight catalog. Overseas service groups stay available on the other
-// clients without reintroducing the NetworkExtension RSS pressure fix.
-const IOS_SERVICE_GROUPS = new Set([
-  "🍎 Apple", "🪟 Microsoft",
-  "📺 哔哩哔哩", "🎵 抖音", "📕 小红书", "🧣 微博",
-]);
 const TEST_URL = "https://www.gstatic.com/generate_204";
 
 function isMobileMemoryConstrained(options) {
@@ -47,10 +40,10 @@ function filterNodes(filter, nodes) {
 
 function candidateList(group, nodes, { compact = false, ios = false } = {}) {
   const candidates = [
-    ...(compact && group.kind === "continent" ? [] : group.candidates
+    ...group.candidates
       .filter((candidate) => !isDisabledFallback(candidate))
-      .map(targetName)),
-    ...(compact && ios && group.kind === "service" ? [] : filterNodes(group.nodeFilter, nodes)),
+      .map(targetName),
+    ...filterNodes(group.nodeFilter, nodes),
   ];
   return candidates.filter((item, index, all) => all.indexOf(item) === index);
 }
@@ -79,16 +72,6 @@ function renderGroup(group, nodes, { compact = false, ios = false } = {}) {
       tag: group.name,
       outbounds: primary.length > 0 ? primary : ["DIRECT"],
       default: primary[0] ?? "DIRECT",
-      interrupt_exist_connections: true,
-    };
-  }
-
-  if (compact && group.strategy === "auto-test" && (group.name !== AUTO_GROUP || ios)) {
-    return {
-      type: "selector",
-      tag: group.name,
-      outbounds,
-      default: outbounds[0],
       interrupt_exist_connections: true,
     };
   }
@@ -125,9 +108,6 @@ export function renderSingBoxGroups(options, nodes) {
 
   for (const group of shared) {
     if (group.strategy === "fallback") continue;
-    if (compact && group.strategy === "auto-test" && group.name !== AUTO_GROUP) continue;
-    if (isIosMemoryConstrained(options) && group.kind === "service" && !IOS_SERVICE_GROUPS.has(group.name)) continue;
-    if (isIosMemoryConstrained(options) && group.kind === "special" && group.name !== RULE_DOWNLOAD_GROUP) continue;
     rendered.push(renderGroup(group, inventory, { compact, ios: isIosMemoryConstrained(options) }));
   }
 

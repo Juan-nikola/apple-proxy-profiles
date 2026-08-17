@@ -5,7 +5,7 @@ import { join } from "node:path";
 import test from "node:test";
 
 import { checkConfigs, compileRules, main } from "../scripts/compile-rules.mjs";
-import { ruleClientCatalog } from "../../../shared/rules/lightweight-policy.js";
+import { MOBILE_RULE_SOURCE_IDS, ruleClientCatalog } from "../../../shared/rules/lightweight-policy.js";
 
 async function fixtureCore(mode) {
   const root = await mkdtemp(join(tmpdir(), "sing-box-core-"));
@@ -134,6 +134,7 @@ test("compile command reuses a closed offline current SRS stage", async () => {
   const outputRoot = join(root, "compiled");
   const expected = [
     ...ruleClientCatalog({ adblockMode: "off" }).map(({ id }) => `sing-box/rule-sets/${id}.srs`),
+    ...MOBILE_RULE_SOURCE_IDS.map((id) => `sing-box/mobile-rule-sets/${id}.srs`),
     "optional/adblock-full/sing-box/Advertising.srs",
     "optional/adblock-full/sing-box/Advertising_Domain.srs",
   ].sort();

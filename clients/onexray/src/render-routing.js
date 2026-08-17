@@ -20,15 +20,15 @@ const SERVICE_INTENTS = Object.freeze({
   Copilot: "ai",
   GitHub: "github",
   YouTube: "youtube",
-  Netflix: "netflix",
-  Disney: "disney",
-  Spotify: "spotify",
-  GlobalMedia: "globalMedia",
-  Telegram: "telegram",
+  Netflix: "overseasMedia",
+  Disney: "overseasMedia",
+  Spotify: "overseasMedia",
+  GlobalMedia: "overseasMedia",
+  Telegram: "globalSocial",
   Facebook: "globalSocial",
   Instagram: "globalSocial",
   Twitter: "globalSocial",
-  TikTok: "tiktok",
+  TikTok: "globalSocial",
   Apple: "apple",
   Microsoft: "microsoft",
   Download: "download",
@@ -166,12 +166,7 @@ function outboundTagForIntent(intent, resolution, tags = fixedTags(resolution)) 
 function sourceIntent(source, blockMode) {
   if (!source || typeof source.id !== "string") throw new TypeError("OneXray routing source is invalid");
   if (Object.hasOwn(SECURITY_CATEGORIES, source.id)) return SECURITY_TARGETS[blockMode][SECURITY_CATEGORIES[source.id]];
-  if (DOMESTIC_BUSINESS_SOURCES.has(source.id)) return {
-    BiliBili: "bilibili",
-    ByteDance: "bytedance",
-    XiaoHongShu: "xiaohongshu",
-    Weibo: "weibo",
-  }[source.id];
+  if (DOMESTIC_BUSINESS_SOURCES.has(source.id)) return "domestic";
   if (DOMESTIC_SOURCES.has(source.id)) return "direct";
   if (Object.hasOwn(SERVICE_INTENTS, source.id)) return SERVICE_INTENTS[source.id];
   throw new Error(`OneXray routing source has unknown intent: ${source.id}`);

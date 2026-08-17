@@ -10,7 +10,7 @@ import { buildChinaIpAudit } from "../automation/src/china-ip-audit.js";
 import { canonicalJson } from "../automation/src/render-anywhere-rules.js";
 import { publishEdgeRelease } from "../automation/src/build-site.js";
 import { lightweightFixtureSnapshots } from "../automation/test/lightweight-fixture.js";
-import { ruleClientCatalog } from "../shared/rules/lightweight-policy.js";
+import { MOBILE_RULE_SOURCE_IDS, ruleClientCatalog } from "../shared/rules/lightweight-policy.js";
 import {
   chinaIpAuditPrimary,
   parseUpdateRulesArguments,
@@ -91,6 +91,9 @@ function compiledSingBoxRules(marker) {
     if (id === "Advertising" || id === "Advertising_Domain") {
       binaries.set(`optional/adblock-full/sing-box/${id}.srs`, Buffer.from(`SRS\u0002${marker}-optional-${id}`));
     }
+  }
+  for (const id of MOBILE_RULE_SOURCE_IDS) {
+    binaries.set(`sing-box/mobile-rule-sets/${id}.srs`, Buffer.from(`SRS\u0002${marker}-mobile-${id}`));
   }
   return binaries;
 }

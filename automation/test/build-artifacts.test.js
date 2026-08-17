@@ -10,7 +10,7 @@ import {
   DEFAULT_PUBLISH_SOURCE_CATALOG,
   FETCH_SOURCE_CATALOG,
 } from "../src/source-catalog.js";
-import { DEFAULT_RULE_SOURCE_IDS } from "../../shared/rules/lightweight-policy.js";
+import { DEFAULT_RULE_SOURCE_IDS, MOBILE_RULE_SOURCE_IDS } from "../../shared/rules/lightweight-policy.js";
 import { lightweightFixtureSnapshots } from "./lightweight-fixture.js";
 import { renderRules as renderShadowrocketRules } from "../../clients/shadowrocket/src/render-rules.js";
 import { renderSurgeRules } from "../../clients/surge/src/render-rules.js";
@@ -205,6 +205,9 @@ test("replaces audit JSON with the exact compiled sing-box binaries before manif
       singBoxBinaries.set(`optional/adblock-full/sing-box/${id}.srs`, Buffer.from(`SRS\u0002optional-${id}`));
     }
   }
+  for (const id of MOBILE_RULE_SOURCE_IDS) {
+    singBoxBinaries.set(`sing-box/mobile-rule-sets/${id}.srs`, Buffer.from(`SRS\u0002mobile-${id}-fixture-padding`));
+  }
 
   const result = buildClientArtifacts({
     snapshot: lightweightFixtureSnapshots(),
@@ -225,7 +228,7 @@ test("replaces audit JSON with the exact compiled sing-box binaries before manif
     true,
   );
   const expectedDefaultBytes = [...singBoxBinaries]
-    .filter(([path]) => path.startsWith("sing-box/rule-sets/"))
+    .filter(([path]) => path.startsWith("sing-box/rule-sets/") || path.startsWith("sing-box/mobile-rule-sets/"))
     .reduce((sum, [, bytes]) => sum + bytes.length, 0);
   assert.equal(
     result.diagnostics.defaultManifest.clients.singbox.referencedDefaultBytes,

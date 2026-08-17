@@ -19,22 +19,14 @@ const BUILTINS = new Set(["DIRECT", "REJECT"]);
 const FOREIGN_GROUPS = Object.freeze([
   "🐙 GitHub",
   "📺 YouTube",
-  "🎬 Netflix",
-  "🏰 Disney+",
-  "🎵 Spotify",
-  "🌍 国际媒体",
-  "✈️ Telegram",
+  "🎬 海外流媒体",
   "💬 海外社交",
-  "🎶 TikTok",
   "🌍 海外游戏",
 ]);
 const DOMESTIC_GROUPS = Object.freeze([
   "🍎 Apple",
   "🪟 Microsoft",
-  "📺 哔哩哔哩",
-  "🎵 抖音",
-  "📕 小红书",
-  "🧣 微博",
+  "🇨🇳 国内平台",
 ]);
 
 function normalizedNode(name, metadata = {}) {
@@ -223,7 +215,7 @@ test("mounts the private subscription without leaking semantic or raw node value
     type: "select",
     fields: {
       name: "🚀 节点选择",
-      policies: ["⚡ 全部自动", "🛟 全部故障转移", "🌏 亚太", "🌍 欧洲", "🌎 美洲", "🌐 其他/未分类"],
+      policies: ["⚡ 全部自动", "🌏 亚太", "🌍 欧洲", "🌎 美洲", "🌐 其他/未分类"],
     },
   });
   assert.equal(Object.hasOwn(root.fields, "urls"), false);
@@ -235,7 +227,7 @@ test("mounts the private subscription without leaking semantic or raw node value
     type: "select",
     fields: {
       name: "🌏 亚太",
-      policies: ["⚡ 亚太自动", "🛟 亚太故障转移"],
+      policies: ["⚡ 亚太自动"],
       urls: [PRIVATE_URL],
       filter: continentFilter(asia),
       update_interval: 21600,
@@ -303,7 +295,7 @@ test("pins minimal, balanced, full, and eligible chain group graphs", () => {
   for (const [mode, expectedContinentPolicies] of [
     ["minimal", ["⚡ 亚太自动"]],
     ["balanced", ["⚡ 亚太自动"]],
-    ["full", ["⚡ 亚太自动", "🛟 亚太故障转移"]],
+    ["full", ["⚡ 亚太自动"]],
   ]) {
     const rendered = renderEgernGroups(
       buildPolicyGroups(options({ autoGroupMode: mode, clientChain: "off" }), INVENTORY),
@@ -312,7 +304,7 @@ test("pins minimal, balanced, full, and eligible chain group graphs", () => {
     const asia = renderedFields(rendered, "🌏 亚太").fields;
     assert.deepEqual(asia.policies ?? [], expectedContinentPolicies, mode);
     assert.equal(Boolean(renderedFields(rendered, "⚡ 亚太自动")), true, mode);
-    assert.equal(Boolean(renderedFields(rendered, "🛟 亚太故障转移")), mode === "full", mode);
+    assert.equal(Boolean(renderedFields(rendered, "🛟 亚太故障转移")), false, mode);
   }
 
   const rendered = renderEgernGroups(buildPolicyGroups(options({ clientChain: "on" }), INVENTORY), privateUrl());
@@ -333,7 +325,6 @@ test("groups a non-catalog country flag under its normalized continent without a
 
   assert.deepEqual(shared.find((group) => group.name === "🚀 节点选择").candidates, [
     "⚡ 全部自动",
-    "🛟 全部故障转移",
     "🌐 其他/未分类",
   ]);
   const other = CONTINENTS.find((continent) => continent.key === "other");
@@ -399,7 +390,7 @@ test("rejects malformed group containers and fields without invoking accessors",
   assertSafeFailure([accessorCandidates, ...valid.slice(1)], privateUrl(), /candidate.*data propert/i);
   assert.equal(candidateCalls, 0);
 
-  const accessorTest = cloneGroup(valid[0]);
+  const accessorTest = cloneGroup(valid.find((group) => group.name === "⚡ 全部自动"));
   let testCalls = 0;
   Object.defineProperty(accessorTest.test, "url", {
     enumerable: true,
@@ -426,11 +417,11 @@ test("rejects malformed group containers and fields without invoking accessors",
     [{ ...cloneGroup(valid[0]), hidden: "true" }, /hidden/i],
     [{ ...cloneGroup(valid[0]), defaultChoice: false }, /default/i],
     [{ ...cloneGroup(valid[0]), test: "test" }, /test/i],
-    [{ ...cloneGroup(valid[0]), test: { ...valid[0].test, surprise: true } }, /test.*field/i],
-    [{ ...cloneGroup(valid[0]), test: { ...valid[0].test, url: "file:///TEST_ONLY_RAW_NODE" } }, /test URL/i],
-    [{ ...cloneGroup(valid[0]), test: { ...valid[0].test, interval: 1.5 } }, /interval/i],
-    [{ ...cloneGroup(valid[0]), test: { ...valid[0].test, timeout: 61 } }, /timeout/i],
-    [{ ...cloneGroup(valid[0]), test: { ...valid[0].test, tolerance: -1 } }, /tolerance/i],
+    [{ ...cloneGroup(valid[0]), test: { ...valid[0].test, surprise: true } }, /test.*(?:field|settings|strategy)/i],
+    [{ ...cloneGroup(valid[0]), test: { ...valid[0].test, url: "file:///TEST_ONLY_RAW_NODE" } }, /test.*(?:field|settings|strategy)/i],
+    [{ ...cloneGroup(valid[0]), test: { ...valid[0].test, interval: 1.5 } }, /test.*(?:field|settings|strategy)/i],
+    [{ ...cloneGroup(valid[0]), test: { ...valid[0].test, timeout: 61 } }, /test.*(?:field|settings|strategy)/i],
+    [{ ...cloneGroup(valid[0]), test: { ...valid[0].test, tolerance: -1 } }, /test.*(?:field|settings|strategy)/i],
   ];
   for (const [first, pattern] of cases) {
     assertSafeFailure([first, ...valid.slice(1)], privateUrl(), pattern);
@@ -448,8 +439,7 @@ test("rejects duplicate, missing, cyclic, and semantic-token graph mutations", (
   assertSafeFailure(missing, privateUrl(), /unknown reference/i);
 
   const cyclic = valid.map(cloneGroup);
-  cyclic.find((group) => group.name === "⚡ 全部自动").candidates.push("🛟 全部故障转移");
-  cyclic.find((group) => group.name === "🛟 全部故障转移").candidates.push("⚡ 全部自动");
+  cyclic.find((group) => group.name === "🌏 亚太").candidates.push("🚀 节点选择");
   assertSafeFailure(cyclic, privateUrl(), /cycle/i);
 
   const misuse = valid.map(cloneGroup);

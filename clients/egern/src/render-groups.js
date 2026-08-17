@@ -291,11 +291,7 @@ function validateSharedGraph(input) {
   for (const family of POLICY_GROUP_SCHEMA.continentFamilies) {
     const selectorPresent = names.has(family.selector);
     const automaticPresent = names.has(family.automatic);
-    const fallbackPresent = names.has(family.fallback);
-    if (
-      (!selectorPresent && (automaticPresent || fallbackPresent))
-      || (fallbackPresent && !automaticPresent)
-    ) {
+    if ((!selectorPresent && automaticPresent) || (selectorPresent && !automaticPresent)) {
       throw graphError("contains an incomplete conditional continent family");
     }
   }

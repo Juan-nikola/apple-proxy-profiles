@@ -4,6 +4,7 @@ import test from "node:test";
 import {
   DEFAULT_RULE_SOURCE_IDS,
   FULL_ADBLOCK_SOURCE_IDS,
+  MOBILE_RULE_BUNDLES,
   POLICY_TARGETS,
   ROUTING_PHASES,
   ROUTING_PRECEDENCE,
@@ -38,6 +39,22 @@ test("defines the default lightweight rule-set boundary", () => {
     "local", "security", "custom", "domesticCore", "domesticGame",
     "explicitOverseas", "overseasGame", "chinaIp", "defaultProxy",
   ]);
+});
+
+test("defines fourteen semantic iOS rule bundles with closed source membership", () => {
+  assert.deepEqual(MOBILE_RULE_BUNDLES.map(({ id }) => id), [
+    "Security", "Privacy", "DomesticCore", "DomesticPlatform", "AI", "GitHub", "YouTube",
+    "OverseasMedia", "OverseasSocial", "Apple", "Microsoft", "Download", "OverseasGame", "ChinaIP",
+  ]);
+  const sourceIds = MOBILE_RULE_BUNDLES.flatMap(({ sourceIds: ids }) => ids);
+  assert.equal(new Set(sourceIds).size, sourceIds.length);
+  assert.deepEqual(new Set(sourceIds), new Set([
+    "Hijacking", "BlockHttpDNS", "Privacy", "DomesticCore", "DomesticGame", "SteamCN",
+    "BiliBili", "ByteDance", "XiaoHongShu", "Weibo", "OpenAI", "Claude", "Gemini", "Copilot",
+    "GitHub", "YouTube", "Netflix", "Disney", "Spotify", "GlobalMedia", "Telegram", "Facebook",
+    "Instagram", "Twitter", "TikTok", "Apple", "Microsoft", "Download", "PrivateTracker",
+    "OverseasGame", "ChinaIP",
+  ]));
 });
 
 test("keeps domestic core and games explicit, normalized, and bounded", () => {
@@ -194,6 +211,46 @@ test("keeps overseas games proxy-first and SteamCN direct-first", () => {
   assert.equal(RULE_CLIENT_CATALOG.find(({ id }) => id === "SteamCN").policy, POLICY_TARGETS.direct);
 });
 
+test("uses the compact business catalog without source or fallback helper groups", () => {
+  const nodes = [{
+    name: "🇯🇵 Tokyo · SS｜机场·U",
+    _profile: {
+      continent: "asiaPacific",
+      flag: "🇯🇵",
+      sourceKind: "airport",
+      udp: true,
+      p2p: true,
+      entry: true,
+      chained: false,
+    },
+  }];
+  const groups = buildPolicyGroups({
+    platform: "iphone",
+    autoGroupMode: "full",
+    clientChain: "off",
+    blockMode: "balanced",
+  }, nodes);
+  const names = groups.map(({ name }) => name);
+
+  assert.equal(names.some((name) => /故障转移/u.test(name)), false);
+  assert.equal(names.some((name) => /自建节点|机场节点|Realm 转发|链式代理/u.test(name)), false);
+  for (const name of [
+    "🤖 AI 专用", "🐙 GitHub", "📺 YouTube", "🎬 海外流媒体", "💬 海外社交",
+    "🍎 Apple", "🪟 Microsoft", "🇨🇳 国内平台", "🌍 海外游戏", "🎮 游戏连接",
+    "⬇️ 下载/P2P", "🧭 DNS 与规则下载", "☣️ 安全威胁", "🧱 常见广告", "🕵️ 严格跟踪",
+  ]) assert.ok(names.includes(name), `missing ${name}`);
+
+  const visibleEnd = Math.max(...groups
+    .filter(({ strategy, hidden }) => strategy === STRATEGY.select && hidden !== true)
+    .map(({ name }) => names.indexOf(name)));
+  const helperIndexes = groups
+    .filter(({ kind }) => kind === GROUP_KIND.helper)
+    .map(({ name }) => names.indexOf(name));
+  assert.ok(helperIndexes.every((index) => index > visibleEnd));
+  assert.equal(groups.find(({ name }) => name === "⚡ 全部自动").hidden, true);
+  assert.equal(groups.find(({ name }) => name === "⚡ 亚太自动").hidden, true);
+});
+
 test("builds a deterministic root-to-continent graph without flag or protocol child groups", () => {
   const inventory = [
     ["🇺🇸 US · VLESS｜自建", "americas", "🇺🇸", "VLESS", false],
@@ -225,7 +282,6 @@ test("builds a deterministic root-to-continent graph without flag or protocol ch
 
   assert.deepEqual(byName.get("🚀 节点选择").candidates, [
     "⚡ 全部自动",
-    "🛟 全部故障转移",
     "🌏 亚太",
     "🌍 欧洲",
     "🌎 美洲",
@@ -253,9 +309,7 @@ test("builds a deterministic root-to-continent graph without flag or protocol ch
       },
       continent.name,
     );
-    assert.deepEqual(group.candidates, ["⚡ 亚太自动", "🛟 亚太故障转移"].map((name) => (
-      name.replace("亚太", continent.helperName)
-    )), continent.name);
+    assert.deepEqual(group.candidates, [`⚡ ${continent.helperName}自动`], continent.name);
   }
   const nonChained = inventory.filter(({ _profile }) => !_profile.chained);
   for (const continent of policyFilters.CONTINENTS) {
@@ -324,7 +378,6 @@ test("keeps non-catalog country flags inside their normalized continent without 
 
   assert.deepEqual(byName.get("🚀 节点选择").candidates, [
     "⚡ 全部自动",
-    "🛟 全部故障转移",
     "🌐 其他/未分类",
   ]);
   const other = byName.get("🌐 其他/未分类");

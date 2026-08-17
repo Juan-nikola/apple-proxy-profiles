@@ -85,11 +85,11 @@ test("renders a private Surge profile with shared policy sections and no interna
   assert.match(profile, /TEST_ONLY_NOT_A_SECRET/u);
   assert.equal(
     profile.split("\n").find((line) => line.startsWith("🚀 节点选择 =")),
-    "🚀 节点选择 = select,⚡ 全部自动,🛟 全部故障转移,🌏 亚太",
+    "🚀 节点选择 = select,⚡ 全部自动,🌏 亚太",
   );
   assert.equal(
     profile.split("\n").find((line) => line.startsWith("🌏 亚太 =")),
-    "🌏 亚太 = select,⚡ 亚太自动,🛟 亚太故障转移,🇯🇵 Tokyo A｜机场·U",
+    "🌏 亚太 = select,⚡ 亚太自动,🇯🇵 Tokyo A｜机场·U",
   );
   assert.doesNotMatch(profile, /^🇯🇵 日本 = /mu);
   assert.doesNotMatch(profile, /^(?:SS|VLESS|Hysteria2|AnyTLS) = /mu);
@@ -195,11 +195,11 @@ test("renders a pure remote Surge profile without embedding node transport detai
   assert.match(profile, /⚡ 全部自动 = url-test,include-other-group=📦 远程节点池,policy-regex-filter=/u);
   assert.equal(
     profile.split("\n").find((line) => line.startsWith("🚀 节点选择 =")),
-    "🚀 节点选择 = select,⚡ 全部自动,🛟 全部故障转移,🌏 亚太",
+    "🚀 节点选择 = select,⚡ 全部自动,🌏 亚太",
   );
   assert.equal(
     profile.split("\n").find((line) => line.startsWith("🌏 亚太 =")),
-    `🌏 亚太 = select,⚡ 亚太自动,🛟 亚太故障转移,include-other-group=📦 远程节点池,policy-regex-filter=${continentFilter(asia)}`,
+    `🌏 亚太 = select,⚡ 亚太自动,include-other-group=📦 远程节点池,policy-regex-filter=${continentFilter(asia)}`,
   );
   assert.doesNotMatch(profile, /^🇯🇵 日本 = /mu);
   assert.deepEqual(validateSurgeProfile(profile), { valid: true, errors: [] });

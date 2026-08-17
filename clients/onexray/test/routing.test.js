@@ -19,19 +19,10 @@ const TARGETS = Object.freeze({
   ai: "proxy",
   github: "proxy",
   youtube: "proxy",
-  netflix: "proxy",
-  disney: "proxy",
-  spotify: "proxy",
-  globalMedia: "proxy",
-  telegram: "proxy",
+  overseasMedia: "proxy",
   globalSocial: "proxy",
-  tiktok: "proxy",
   apple: "direct",
   microsoft: "direct",
-  bilibili: "direct",
-  bytedance: "direct",
-  xiaohongshu: "direct",
-  weibo: "direct",
   domestic: "direct",
   overseasGame: "proxy",
   download: "direct",
@@ -130,7 +121,7 @@ test("routes business sources through resolved target tags without inventing fix
 
 test("routes domestic platform sources through their independent resolved targets and protects proxy QUIC", () => {
   const domesticProxy = resolution({
-    bilibili: { configured: "FOLLOW", resolvedTag: "proxy", status: "follow" },
+    domestic: { configured: "FOLLOW", resolvedTag: "proxy", status: "follow" },
   });
   const { rules } = renderOneXrayRouting({ options: OPTIONS, resolution: domesticProxy, dnsRules: dnsPrelude() });
   const biliIndex = rules.findIndex(({ domain, network }) => domain?.some((ref) => ref.endsWith(":APP-BILIBILI")) && network === undefined);

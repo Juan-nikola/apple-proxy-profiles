@@ -19,12 +19,12 @@
 - `🚀 节点选择`：主选择器。
 - `⚡ 全部自动`：只对实际节点做 URLTest，选择健康且延迟较低的节点。
 - `🌏 亚太`、`🌍 欧洲`、`🌎 美洲`：地区选择器及地区自动组。
-- `🤖 AI 专用`、`🐙 GitHub`、`📺 YouTube`、`🎬 Netflix`、`🏰 Disney+`、`🎵 Spotify`、`🌍 国际媒体`、`✈️ Telegram`、`💬 海外社交`、`🎶 TikTok`、`🍎 Apple`、`🪟 Microsoft`、`📺 哔哩哔哩`、`🎵 抖音`、`📕 小红书`、`🧣 微博`、`🌍 海外游戏`：独立业务策略组。macOS/Android 完整保留这些组；iPhone/iPad 为避免 NetworkExtension OOM，只保留 Apple、Microsoft、哔哩哔哩、抖音、小红书、微博六个轻量业务组。
+- `🤖 AI 专用`、`🐙 GitHub`、`📺 YouTube`、`🎬 海外流媒体`、`💬 海外社交`、`🍎 Apple`、`🪟 Microsoft`、`🇨🇳 国内平台`、`🌍 海外游戏`：统一业务策略组；另有 `🎮 游戏连接`、`⬇️ 下载/P2P`、`🧭 DNS 与规则下载` 和三类安全组。各业务组保留首页跟随、自动测速、各洲组和手动节点候选；自动测速组排在手动组之后。
 - `🧭 DNS 与规则下载`：规则下载可手动切换，但代理 DNS 永远绕过它并经 `⚡ 全部自动`，避免启动环路。
 
-所谓“故障转移”不再生成伪 fallback 组。sing-box 原生 `urltest` 是健康测速选择，不是有序请求重试。
+sing-box 不生成伪造的 fallback 组。原生 `urltest` 只负责健康测速选择，不是有序请求重试。
 
-iPhone/iPad 为 NetworkExtension 低内存配置：不生成 URLTest、不持久化 DNS 缓存、日志级别为 `warn`，并只加载 14 个必要规则集；完整广告规则在这两个平台被拒绝。
+iPhone/iPad 为 NetworkExtension 低内存配置：保留低频 URLTest（1800 秒）、不持久化 DNS 缓存、日志级别为 `warn`，并只加载 14 个合并规则集；完整广告规则在这两个平台被拒绝。
 
 ## Sub-Store 参数
 

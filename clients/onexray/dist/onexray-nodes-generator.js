@@ -1454,37 +1454,57 @@ var OneXrayNodesBundle = (() => {
   var NODE_TARGET2 = /^NODE:(.*)$/iu;
   var BASE64URL = /^[A-Za-z0-9_-]+$/u;
   var LINE_TERMINATOR2 = /[\r\n\u2028\u2029]/u;
-  function frozenTarget(id, label, alias, defaultTarget) {
+  function frozenTarget(id, label, aliases, defaultTarget) {
     return Object.freeze({
       id,
       label,
-      aliases: Object.freeze([alias, id]),
+      aliases: Object.freeze([...aliases]),
       defaultTarget
     });
   }
   var BUSINESS_TARGETS = Object.freeze([
-    frozenTarget("ai", "🤖 AI 专用", "AI 专用", "FOLLOW"),
-    frozenTarget("github", "🐙 GitHub", "GitHub", "FOLLOW"),
-    frozenTarget("youtube", "📺 YouTube", "YouTube", "FOLLOW"),
-    frozenTarget("netflix", "🎬 Netflix", "Netflix", "FOLLOW"),
-    frozenTarget("disney", "🏰 Disney+", "Disney+", "FOLLOW"),
-    frozenTarget("spotify", "🎵 Spotify", "Spotify", "FOLLOW"),
-    frozenTarget("globalMedia", "🌍 国际媒体", "国际媒体", "FOLLOW"),
-    frozenTarget("telegram", "✈️ Telegram", "Telegram", "FOLLOW"),
-    frozenTarget("globalSocial", "💬 海外社交", "海外社交", "FOLLOW"),
-    frozenTarget("tiktok", "🎶 TikTok", "TikTok", "FOLLOW"),
-    frozenTarget("apple", "🍎 Apple", "Apple", "DIRECT"),
-    frozenTarget("microsoft", "🪟 Microsoft", "Microsoft", "DIRECT"),
-    frozenTarget("bilibili", "📺 哔哩哔哩", "哔哩哔哩", "DIRECT"),
-    frozenTarget("bytedance", "🎵 抖音", "抖音", "DIRECT"),
-    frozenTarget("xiaohongshu", "📕 小红书", "小红书", "DIRECT"),
-    frozenTarget("weibo", "🧣 微博", "微博", "DIRECT"),
-    // Compatibility target for core domestic rules and custom DIRECT rules.
-    frozenTarget("domestic", "🇨🇳 国内平台", "国内平台", "DIRECT"),
-    frozenTarget("overseasGame", "🌍 海外游戏", "海外游戏", "FOLLOW"),
-    frozenTarget("download", "⬇️ 下载/P2P", "下载/P2P", "DIRECT"),
-    frozenTarget("dnsAndRules", "🧭 DNS 与规则下载", "DNS 与规则下载", "FOLLOW"),
-    frozenTarget("final", "最终兜底", "最终兜底", "FOLLOW")
+    frozenTarget("ai", "🤖 AI 专用", ["AI 专用", "ai"], "FOLLOW"),
+    frozenTarget("github", "🐙 GitHub", ["GitHub", "github"], "FOLLOW"),
+    frozenTarget("youtube", "📺 YouTube", ["YouTube", "youtube"], "FOLLOW"),
+    frozenTarget("overseasMedia", "🎬 海外流媒体", [
+      "海外流媒体",
+      "overseasMedia",
+      "Netflix",
+      "netflix",
+      "Disney+",
+      "disney",
+      "Spotify",
+      "spotify",
+      "国际媒体",
+      "globalMedia"
+    ], "FOLLOW"),
+    frozenTarget("globalSocial", "💬 海外社交", [
+      "海外社交",
+      "globalSocial",
+      "Telegram",
+      "telegram",
+      "TikTok",
+      "tiktok"
+    ], "FOLLOW"),
+    frozenTarget("apple", "🍎 Apple", ["Apple", "apple"], "DIRECT"),
+    frozenTarget("microsoft", "🪟 Microsoft", ["Microsoft", "microsoft"], "DIRECT"),
+    // Compatibility aliases for domestic app-specific rules and overrides.
+    frozenTarget("domestic", "🇨🇳 国内平台", [
+      "国内平台",
+      "domestic",
+      "哔哩哔哩",
+      "bilibili",
+      "抖音",
+      "bytedance",
+      "小红书",
+      "xiaohongshu",
+      "微博",
+      "weibo"
+    ], "DIRECT"),
+    frozenTarget("overseasGame", "🌍 海外游戏", ["海外游戏", "overseasGame"], "FOLLOW"),
+    frozenTarget("download", "⬇️ 下载/P2P", ["下载/P2P", "download"], "DIRECT"),
+    frozenTarget("dnsAndRules", "🧭 DNS 与规则下载", ["DNS 与规则下载", "dnsAndRules"], "FOLLOW"),
+    frozenTarget("final", "最终兜底", ["最终兜底", "final"], "FOLLOW")
   ]);
   var TARGET_BY_KEY = /* @__PURE__ */ new Map();
   for (const target of BUSINESS_TARGETS) {

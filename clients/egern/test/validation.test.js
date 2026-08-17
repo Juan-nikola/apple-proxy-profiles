@@ -188,11 +188,11 @@ test("rejects group record swaps, duplicates, dangling policies, and private URL
     "      name: \"⚡ 全部自动\"",
   ].join("\n");
   const helperB = [
-    "  - fallback:",
-    "      name: \"🛟 全部故障转移\"",
+    "  - auto_test:",
+    "      name: \"⚡ 亚太自动\"",
   ].join("\n");
   assertInvalid(profile.replace(helperA, "TEST_ONLY_HELPER_A").replace(helperB, helperA).replace("TEST_ONLY_HELPER_A", helperB), /group|order|schema/i);
-  assertInvalid(profile.replace('name: "🛟 全部故障转移"', 'name: "⚡ 全部自动"'), /group|duplicate|schema/i);
+  assertInvalid(profile.replace('name: "⚡ 亚太自动"', 'name: "⚡ 全部自动"'), /group|duplicate|schema/i);
   assertInvalid(profile.replace('policy: "🚀 节点选择"', 'policy: "TEST_ONLY_MISSING_POLICY"'), /rule|policy|group|schema/i, [
     "TEST_ONLY_MISSING_POLICY",
   ]);

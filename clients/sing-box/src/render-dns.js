@@ -1,4 +1,4 @@
-import { MOBILE_RULE_SOURCE_IDS, orderedRoutingPlan } from "../../../shared/rules/lightweight-policy.js";
+import { mobileRuleClientCatalog, orderedRoutingPlan } from "../../../shared/rules/lightweight-policy.js";
 import { chinaDnsProvider, globalDnsProvider } from "../../../shared/dns/providers.js";
 import { PROXY_DNS_DOMAIN_SUFFIXES } from "../../../shared/rules/overseas-dns.js";
 import { CUSTOM_RULES } from "../../../shared/rules/custom-rules.js";
@@ -15,14 +15,19 @@ const CHINA_DNS_SOURCE_IDS = Object.freeze(
     .filter(({ id, dnsClass }) => dnsClass === "china" && id !== "ChinaIP")
     .map(({ id }) => id),
 );
-const MOBILE_RULE_SOURCE_ID_SET = new Set(MOBILE_RULE_SOURCE_IDS);
+const MOBILE_PROXY_DNS_SOURCE_IDS = Object.freeze(
+  mobileRuleClientCatalog().filter(({ dnsClass }) => dnsClass === "proxy").map(({ id }) => id),
+);
+const MOBILE_CHINA_DNS_SOURCE_IDS = Object.freeze(
+  mobileRuleClientCatalog().filter(({ dnsClass }) => dnsClass === "china").map(({ id }) => id),
+);
 
 function isIos(options) {
   return options.platform === "iphone" || options.platform === "ipad";
 }
 
-function activeSourceIds(options, sourceIds) {
-  return isIos(options) ? sourceIds.filter((id) => MOBILE_RULE_SOURCE_ID_SET.has(id)) : sourceIds;
+function activeSourceIds(options, sourceIds, mobileSourceIds) {
+  return isIos(options) ? mobileSourceIds : sourceIds;
 }
 
 function customDnsRules() {
@@ -81,11 +86,11 @@ function dnsRules(options) {
   ];
 
   if (options.profileMode !== "diagnostic") {
-    for (const [sourceIds, server] of [
-      [PROXY_DNS_SOURCE_IDS, DNS_PROXY],
-      [CHINA_DNS_SOURCE_IDS, DNS_DIRECT],
+    for (const [sourceIds, mobileSourceIds, server] of [
+      [PROXY_DNS_SOURCE_IDS, MOBILE_PROXY_DNS_SOURCE_IDS, DNS_PROXY],
+      [CHINA_DNS_SOURCE_IDS, MOBILE_CHINA_DNS_SOURCE_IDS, DNS_DIRECT],
     ]) {
-      const ruleSet = activeSourceIds(options, sourceIds).map((id) => `rule-${id}`);
+      const ruleSet = activeSourceIds(options, sourceIds, mobileSourceIds).map((id) => `rule-${id}`);
       if (ruleSet.length > 0) rules.push({ rule_set: ruleSet, action: "route", server });
     }
     rules.push(

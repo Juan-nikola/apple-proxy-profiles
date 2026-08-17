@@ -250,7 +250,7 @@ test("published current channel is self-consistent with its manifest", async () 
     { publicRoot: join(repositoryRoot, "public") },
   );
   assert.ok(["DomesticCore", "ByteDance"].includes(explanation.matchedSource));
-  assert.equal(explanation.expectedPolicy, "🎵 抖音");
+  assert.equal(explanation.expectedPolicy, "🇨🇳 国内平台");
 });
 
 

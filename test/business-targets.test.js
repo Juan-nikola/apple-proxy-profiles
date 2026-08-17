@@ -12,27 +12,18 @@ function base64url(value) {
 }
 
 const EXPECTED_TARGETS = [
-  ["ai", "🤖 AI 专用", "AI 专用", "FOLLOW"],
-  ["github", "🐙 GitHub", "GitHub", "FOLLOW"],
-  ["youtube", "📺 YouTube", "YouTube", "FOLLOW"],
-  ["netflix", "🎬 Netflix", "Netflix", "FOLLOW"],
-  ["disney", "🏰 Disney+", "Disney+", "FOLLOW"],
-  ["spotify", "🎵 Spotify", "Spotify", "FOLLOW"],
-  ["globalMedia", "🌍 国际媒体", "国际媒体", "FOLLOW"],
-  ["telegram", "✈️ Telegram", "Telegram", "FOLLOW"],
-  ["globalSocial", "💬 海外社交", "海外社交", "FOLLOW"],
-  ["tiktok", "🎶 TikTok", "TikTok", "FOLLOW"],
-  ["apple", "🍎 Apple", "Apple", "DIRECT"],
-  ["microsoft", "🪟 Microsoft", "Microsoft", "DIRECT"],
-  ["bilibili", "📺 哔哩哔哩", "哔哩哔哩", "DIRECT"],
-  ["bytedance", "🎵 抖音", "抖音", "DIRECT"],
-  ["xiaohongshu", "📕 小红书", "小红书", "DIRECT"],
-  ["weibo", "🧣 微博", "微博", "DIRECT"],
-  ["domestic", "🇨🇳 国内平台", "国内平台", "DIRECT"],
-  ["overseasGame", "🌍 海外游戏", "海外游戏", "FOLLOW"],
-  ["download", "⬇️ 下载/P2P", "下载/P2P", "DIRECT"],
-  ["dnsAndRules", "🧭 DNS 与规则下载", "DNS 与规则下载", "FOLLOW"],
-  ["final", "最终兜底", "最终兜底", "FOLLOW"],
+  ["ai", "🤖 AI 专用", ["AI 专用", "ai"], "FOLLOW"],
+  ["github", "🐙 GitHub", ["GitHub", "github"], "FOLLOW"],
+  ["youtube", "📺 YouTube", ["YouTube", "youtube"], "FOLLOW"],
+  ["overseasMedia", "🎬 海外流媒体", ["海外流媒体", "overseasMedia", "Netflix", "netflix", "Disney+", "disney", "Spotify", "spotify", "国际媒体", "globalMedia"], "FOLLOW"],
+  ["globalSocial", "💬 海外社交", ["海外社交", "globalSocial", "Telegram", "telegram", "TikTok", "tiktok"], "FOLLOW"],
+  ["apple", "🍎 Apple", ["Apple", "apple"], "DIRECT"],
+  ["microsoft", "🪟 Microsoft", ["Microsoft", "microsoft"], "DIRECT"],
+  ["domestic", "🇨🇳 国内平台", ["国内平台", "domestic", "哔哩哔哩", "bilibili", "抖音", "bytedance", "小红书", "xiaohongshu", "微博", "weibo"], "DIRECT"],
+  ["overseasGame", "🌍 海外游戏", ["海外游戏", "overseasGame"], "FOLLOW"],
+  ["download", "⬇️ 下载/P2P", ["下载/P2P", "download"], "DIRECT"],
+  ["dnsAndRules", "🧭 DNS 与规则下载", ["DNS 与规则下载", "dnsAndRules"], "FOLLOW"],
+  ["final", "最终兜底", ["最终兜底", "final"], "FOLLOW"],
 ];
 
 test("pins frozen ordered business records and resolves their approved aliases", () => {
@@ -42,14 +33,14 @@ test("pins frozen ordered business records and resolves their approved aliases",
   );
   assert.equal(Object.isFrozen(BUSINESS_TARGETS), true);
 
-  for (const [id, label, alias, defaultTarget] of EXPECTED_TARGETS) {
+  for (const [id, label, aliases, defaultTarget] of EXPECTED_TARGETS) {
     const target = BUSINESS_TARGETS.find((entry) => entry.id === id);
-    assert.deepEqual(target.aliases, [alias, id]);
+    assert.deepEqual(target.aliases, aliases);
     assert.equal(target.defaultTarget, defaultTarget);
     assert.equal(Object.isFrozen(target), true);
     assert.equal(Object.isFrozen(target.aliases), true);
     assert.equal(businessTargetByKey(id), target);
-    assert.equal(businessTargetByKey(alias), target);
+    for (const alias of aliases) assert.equal(businessTargetByKey(alias), target);
     assert.equal(businessTargetByKey(label), target);
   }
   assert.equal(businessTargetByKey("unknown"), undefined);

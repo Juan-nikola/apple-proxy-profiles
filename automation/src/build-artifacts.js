@@ -11,6 +11,7 @@ import { BLACKMATRIX7_BASELINE, catalogSha256 } from "./source-catalog.js";
 import { buildRoutingPlanAudit } from "./routing-plan-audit.js";
 import {
   orderedRoutingPlan,
+  MOBILE_RULE_SOURCE_IDS,
   RULE_BUDGETS,
   ruleClientCatalog,
 } from "../../shared/rules/lightweight-policy.js";
@@ -152,6 +153,7 @@ function fileRecords(files) {
 
 function renderRuleSetMap({
   ruleSets,
+  mobileRuleSets = new Map(),
   upstream,
   singBoxBinaries = null,
   pathPrefix = "",
@@ -190,6 +192,22 @@ function renderRuleSetMap({
     clientSources.singbox.push({ id, ...singbox.counts });
     compiledSnapshot.set(id, input.fetched);
     compiledCatalog.push(input.source);
+  }
+
+  for (const [id, compiled] of mobileRuleSets) {
+    const input = renderInput(compiled, upstream);
+    const singbox = renderSingBoxRuleSource(input);
+    const prefix = pathPrefix ? `${pathPrefix}/` : "";
+    if (singBoxBinaries === null) {
+      files.set(`${prefix}sing-box/rules/mobile_${id}.json`, singbox.content);
+    } else {
+      const binaryPath = pathPrefix
+        ? `${pathPrefix}sing-box/mobile-rule-sets/${id}.srs`
+        : `sing-box/mobile-rule-sets/${id}.srs`;
+      const binary = singBoxBinaries.get(binaryPath);
+      if (!Buffer.isBuffer(binary)) throw new Error(`Compiled sing-box mobile rule set is missing: ${binaryPath}`);
+      files.set(binaryPath, binary);
+    }
   }
 
   const logicalRuleSets = compiledCatalog.map(({ id }) => Object.freeze({
@@ -246,7 +264,7 @@ function clientRuleRecords(files, client) {
     : client === "anywhere"
     ? ["anywhere/rules/"]
     : client === "singbox"
-      ? ["sing-box/rules/", "sing-box/rule-sets/"]
+      ? ["sing-box/rules/", "sing-box/rule-sets/", "sing-box/mobile-rule-sets/"]
       : [`${CLIENT_PATHS[client]}/rules/`];
   return fileRecords(new Map([...files].filter(([path]) => (
     prefixes.some((prefix) => path.startsWith(prefix)) && !path.endsWith("/manifest.json")
@@ -395,6 +413,7 @@ export function buildClientArtifacts({
     if (!(singBoxBinaries instanceof Map)) throw new TypeError("Compiled sing-box rules must be a Map");
     const expected = [
       ...ruleClientCatalog({ adblockMode: "off" }).map(({ id }) => `sing-box/rule-sets/${id}.srs`),
+      ...MOBILE_RULE_SOURCE_IDS.map((id) => `sing-box/mobile-rule-sets/${id}.srs`),
       "optional/adblock-full/sing-box/Advertising.srs",
       "optional/adblock-full/sing-box/Advertising_Domain.srs",
     ].sort();
@@ -423,7 +442,13 @@ export function buildClientArtifacts({
     upstream,
     channel: onexrayChannel,
   });
-  const rendered = renderRuleSetMap({ ruleSets: compactedDefaults.ruleSets, upstream, singBoxBinaries });
+  const compactedMobile = compactRuleSetMap(compiled.mobileRuleSets);
+  const rendered = renderRuleSetMap({
+    ruleSets: compactedDefaults.ruleSets,
+    mobileRuleSets: compactedMobile.ruleSets,
+    upstream,
+    singBoxBinaries,
+  });
   const defaults = rendered.files;
   addFiles(defaults, renderHappGeodata(compactedDefaults.ruleSets).files);
   addFiles(defaults, happPublicScripts());

@@ -151,40 +151,6 @@
       "tag": "REJECT"
     },
     {
-      "type": "urltest",
-      "tag": "⚡ 全部自动",
-      "outbounds": [
-        "示例 · Tokyo",
-        "示例 · Frankfurt"
-      ],
-      "url": "https://www.gstatic.com/generate_204",
-      "interval": "600s",
-      "tolerance": 100,
-      "interrupt_exist_connections": true
-    },
-    {
-      "type": "urltest",
-      "tag": "⚡ 亚太自动",
-      "outbounds": [
-        "DIRECT"
-      ],
-      "url": "https://www.gstatic.com/generate_204",
-      "interval": "600s",
-      "tolerance": 100,
-      "interrupt_exist_connections": true
-    },
-    {
-      "type": "urltest",
-      "tag": "⚡ 欧洲自动",
-      "outbounds": [
-        "DIRECT"
-      ],
-      "url": "https://www.gstatic.com/generate_204",
-      "interval": "600s",
-      "tolerance": 100,
-      "interrupt_exist_connections": true
-    },
-    {
       "type": "selector",
       "tag": "🚀 节点选择",
       "outbounds": [
@@ -208,14 +174,6 @@
       "tag": "🌍 欧洲",
       "outbounds": [
         "⚡ 欧洲自动"
-      ],
-      "interrupt_exist_connections": true
-    },
-    {
-      "type": "selector",
-      "tag": "🏢 机场节点",
-      "outbounds": [
-        "DIRECT"
       ],
       "interrupt_exist_connections": true
     },
@@ -261,67 +219,7 @@
     },
     {
       "type": "selector",
-      "tag": "🎬 Netflix",
-      "outbounds": [
-        "🚀 节点选择",
-        "⚡ 全部自动",
-        "🌏 亚太",
-        "🌍 欧洲",
-        "DIRECT",
-        "示例 · Tokyo",
-        "示例 · Frankfurt"
-      ],
-      "interrupt_exist_connections": true,
-      "default": "🚀 节点选择"
-    },
-    {
-      "type": "selector",
-      "tag": "🏰 Disney+",
-      "outbounds": [
-        "🚀 节点选择",
-        "⚡ 全部自动",
-        "🌏 亚太",
-        "🌍 欧洲",
-        "DIRECT",
-        "示例 · Tokyo",
-        "示例 · Frankfurt"
-      ],
-      "interrupt_exist_connections": true,
-      "default": "🚀 节点选择"
-    },
-    {
-      "type": "selector",
-      "tag": "🎵 Spotify",
-      "outbounds": [
-        "🚀 节点选择",
-        "⚡ 全部自动",
-        "🌏 亚太",
-        "🌍 欧洲",
-        "DIRECT",
-        "示例 · Tokyo",
-        "示例 · Frankfurt"
-      ],
-      "interrupt_exist_connections": true,
-      "default": "🚀 节点选择"
-    },
-    {
-      "type": "selector",
-      "tag": "🌍 国际媒体",
-      "outbounds": [
-        "🚀 节点选择",
-        "⚡ 全部自动",
-        "🌏 亚太",
-        "🌍 欧洲",
-        "DIRECT",
-        "示例 · Tokyo",
-        "示例 · Frankfurt"
-      ],
-      "interrupt_exist_connections": true,
-      "default": "🚀 节点选择"
-    },
-    {
-      "type": "selector",
-      "tag": "✈️ Telegram",
+      "tag": "🎬 海外流媒体",
       "outbounds": [
         "🚀 节点选择",
         "⚡ 全部自动",
@@ -337,21 +235,6 @@
     {
       "type": "selector",
       "tag": "💬 海外社交",
-      "outbounds": [
-        "🚀 节点选择",
-        "⚡ 全部自动",
-        "🌏 亚太",
-        "🌍 欧洲",
-        "DIRECT",
-        "示例 · Tokyo",
-        "示例 · Frankfurt"
-      ],
-      "interrupt_exist_connections": true,
-      "default": "🚀 节点选择"
-    },
-    {
-      "type": "selector",
-      "tag": "🎶 TikTok",
       "outbounds": [
         "🚀 节点选择",
         "⚡ 全部自动",
@@ -396,52 +279,7 @@
     },
     {
       "type": "selector",
-      "tag": "📺 哔哩哔哩",
-      "outbounds": [
-        "DIRECT",
-        "🚀 节点选择",
-        "⚡ 全部自动",
-        "🌏 亚太",
-        "🌍 欧洲",
-        "示例 · Tokyo",
-        "示例 · Frankfurt"
-      ],
-      "interrupt_exist_connections": true,
-      "default": "DIRECT"
-    },
-    {
-      "type": "selector",
-      "tag": "🎵 抖音",
-      "outbounds": [
-        "DIRECT",
-        "🚀 节点选择",
-        "⚡ 全部自动",
-        "🌏 亚太",
-        "🌍 欧洲",
-        "示例 · Tokyo",
-        "示例 · Frankfurt"
-      ],
-      "interrupt_exist_connections": true,
-      "default": "DIRECT"
-    },
-    {
-      "type": "selector",
-      "tag": "📕 小红书",
-      "outbounds": [
-        "DIRECT",
-        "🚀 节点选择",
-        "⚡ 全部自动",
-        "🌏 亚太",
-        "🌍 欧洲",
-        "示例 · Tokyo",
-        "示例 · Frankfurt"
-      ],
-      "interrupt_exist_connections": true,
-      "default": "DIRECT"
-    },
-    {
-      "type": "selector",
-      "tag": "🧣 微博",
+      "tag": "🇨🇳 国内平台",
       "outbounds": [
         "DIRECT",
         "🚀 节点选择",
@@ -520,6 +358,40 @@
         "DIRECT",
         "REJECT"
       ],
+      "interrupt_exist_connections": true
+    },
+    {
+      "type": "urltest",
+      "tag": "⚡ 全部自动",
+      "outbounds": [
+        "示例 · Tokyo",
+        "示例 · Frankfurt"
+      ],
+      "url": "https://www.gstatic.com/generate_204",
+      "interval": "600s",
+      "tolerance": 100,
+      "interrupt_exist_connections": true
+    },
+    {
+      "type": "urltest",
+      "tag": "⚡ 亚太自动",
+      "outbounds": [
+        "DIRECT"
+      ],
+      "url": "https://www.gstatic.com/generate_204",
+      "interval": "600s",
+      "tolerance": 100,
+      "interrupt_exist_connections": true
+    },
+    {
+      "type": "urltest",
+      "tag": "⚡ 欧洲自动",
+      "outbounds": [
+        "DIRECT"
+      ],
+      "url": "https://www.gstatic.com/generate_204",
+      "interval": "600s",
+      "tolerance": 100,
       "interrupt_exist_connections": true
     },
     {

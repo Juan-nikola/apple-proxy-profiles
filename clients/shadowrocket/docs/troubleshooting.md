@@ -45,7 +45,7 @@ DNS、QUIC、IPv6、`blockMode`或测速参数排障使用下面的 File 副本�
 
 先确认 Shadowrocket 中节点订阅的显示名与当前平台 Profile File 参数的 `subscriptionName` **完全一致**，包括大小写、emoji、空格和标点。显示名可自由命名（支持中文、内部空格和普通标点），但不能以空白开头或结尾，也不能包含换行；`Shadowrocket-Nodes` 只是示例，对应动态候选 `Shadowrocket-Nodes,use=true`，不是必须固定使用的名称。若截图显示 `SHADOWROCKET-NODES`，该设备所用 File 的 `subscriptionName` 必须精确填 `SHADOWROCKET-NODES`；三台设备使用同一个显示名时，三个 File 都填同一值。
 
-名称不匹配时，`DIRECT`、`🚀 节点选择`、自动/故障转移和地区等显式选择仍会出现，但动态组不会显示该订阅的具体服务器。已有安装不必更换节点 URL 或节点 Script Operator；改正三个 Profile File Operator 的参数（或重命名客户端订阅）后，重新发布并更新对应平台 Profile，再检查一个境外组的 `policy-select-name=🚀 节点选择` 默认项和一个国内组的 `policy-select-name=DIRECT` 默认项，以及各自的具体服务器。
+名称不匹配时，`DIRECT`、`🚀 节点选择`、自动测速和地区等显式选择仍会出现，但动态组不会显示该订阅的具体服务器。已有安装不必更换节点 URL 或节点 Script Operator；改正三个 Profile File Operator 的参数（或重命名客户端订阅）后，重新发布并更新对应平台 Profile，再检查一个境外组的 `policy-select-name=🚀 节点选择` 默认项和一个国内组的 `policy-select-name=DIRECT` 默认项，以及各自的具体服务器。
 
 ## 规则下载失败
 

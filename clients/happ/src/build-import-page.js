@@ -1,10 +1,6 @@
-const BUSINESS_POLICIES = Object.freeze([
-  ["🤖 AI 专用", "FOLLOW"], ["🐙 GitHub", "FOLLOW"], ["📺 YouTube", "FOLLOW"], ["🎬 Netflix", "FOLLOW"],
-  ["🏰 Disney+", "FOLLOW"], ["🎵 Spotify", "FOLLOW"], ["🌍 国际媒体", "FOLLOW"], ["✈️ Telegram", "FOLLOW"],
-  ["💬 海外社交", "FOLLOW"], ["🎶 TikTok", "FOLLOW"], ["🍎 Apple", "DIRECT"], ["🪟 Microsoft", "DIRECT"],
-  ["📺 哔哩哔哩", "DIRECT"], ["🎵 抖音", "DIRECT"], ["📕 小红书", "DIRECT"], ["🧣 微博", "DIRECT"], ["🇨🇳 国内平台", "DIRECT"],
-  ["🌍 海外游戏", "FOLLOW"], ["⬇️ 下载/P2P", "DIRECT"], ["🧭 DNS 与规则下载", "FOLLOW"], ["最终兜底", "FOLLOW"],
-]);
+import { BUSINESS_TARGETS } from "../../../shared/policies/business-targets.js";
+
+const BUSINESS_POLICIES = Object.freeze(BUSINESS_TARGETS.map(({ label, defaultTarget }) => [label, defaultTarget]));
 
 function safeDeepLink(value) {
   if (typeof value !== "string" || !/^happ:\/\/routing\/onadd\/[A-Za-z0-9+/]+={0,2}$/u.test(value)) throw new TypeError("Happ import deep link is invalid");

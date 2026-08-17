@@ -11,6 +11,6 @@ Surge 不识别 VLESS 节点类型。生成器不做客户端能力白名单过�
 
 纯远程 Profile 的 `[Proxy]` 为空是预期行为；节点应从隐藏组 `📦 远程节点池` 的 `policy-path` 加载。若策略组为空，先单独打开 `surge-nodes` File 的私密输出 URL，确认它返回 `[Proxy]` 和至少一个节点，再检查 Profile 的 `proxyPolicyUrl` 是否逐字一致。
 
-节点资源会在生成阶段跳过 Surge 无法表示的协议或字段，并只输出 `renderFailures` 协议计数。新增协议需要先在项目协议注册表和 Surge 渲染器中登记，不会被盲目写入 Surge。节点实际不可达时，由 Surge 的自动测速/故障转移组选择其他节点。
+节点资源会在生成阶段跳过 Surge 无法表示的协议或字段，并只输出 `renderFailures` 协议计数。新增协议需要先在项目协议注册表和 Surge 渲染器中登记，不会被盲目写入 Surge。节点实际不可达时，由 Surge 的自动测速组选择其他节点。
 
 如果手动把唯一的 `📦 远程节点池` 的 `policy-path` 换成另一份 Surge 节点订阅后“🌏 亚太”为空，先确认新链接返回的是 Surge `[Proxy]` 节点且节点名保留国旗前缀（`🇯🇵Neburst` 和 `🇯🇵 节点名｜自建·U` 两种格式都支持）。不要新增个人池或节点来源组，也不要删除原有 `include-other-group`、`policy-regex-filter`；重新刷新同一个 Profile 即可。

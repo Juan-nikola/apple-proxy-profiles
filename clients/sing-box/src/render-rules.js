@@ -1,4 +1,5 @@
 import {
+  mobileRuleClientCatalog,
   MOBILE_RULE_SOURCE_IDS,
   ROUTING_PHASES,
   orderedRoutingPlan,
@@ -15,12 +16,13 @@ const MOBILE_RULE_SOURCE_ID_SET = new Set(MOBILE_RULE_SOURCE_IDS);
 function activeRuleCatalog(platform, adblockMode) {
   const catalog = ruleClientCatalog({ adblockMode });
   return ["iphone", "ipad"].includes(platform)
-    ? catalog.filter(({ id }) => MOBILE_RULE_SOURCE_ID_SET.has(id))
+    ? mobileRuleClientCatalog().filter(({ id }) => MOBILE_RULE_SOURCE_ID_SET.has(id))
     : catalog;
 }
 
 function activeRoutingPlan(platform, adblockMode) {
   const activeIds = new Set(activeRuleCatalog(platform, adblockMode).map(({ id }) => id));
+  if (["iphone", "ipad"].includes(platform)) return mobileRuleClientCatalog();
   return orderedRoutingPlan({ adblockMode }).filter(({ id }) => activeIds.has(id));
 }
 
@@ -81,6 +83,11 @@ function optionalAdblockBase(defaultBase) {
   return optional;
 }
 
+function mobileRuleBase(defaultBase) {
+  if (!defaultBase.endsWith("/rule-sets")) throw new Error("sing-box mobile rule base URL must end in /rule-sets");
+  return `${defaultBase.slice(0, -"/rule-sets".length)}/mobile-rule-sets`;
+}
+
 function customRuleFields(entry) {
   const [type, value, ...modifiers] = entry.split(",");
   const field = CUSTOM_FIELDS[type];
@@ -123,12 +130,13 @@ export function renderSingBoxRuleSets({ ruleBaseUrl, profileMode = "light", adbl
   if (profileMode === "diagnostic") return [];
   if (profileMode !== "light") throw new Error("Unsupported sing-box profile mode");
   const sources = activeRuleCatalog(platform, adblockMode);
+  const sourceBase = ["iphone", "ipad"].includes(platform) ? mobileRuleBase(base) : base;
   const adblockBase = adblockMode === "full" ? optionalAdblockBase(base) : null;
   return sources.map((source) => ({
     type: "remote",
     tag: `rule-${source.id}`,
     format: "binary",
-    url: `${source.id === "Advertising" || source.id === "Advertising_Domain" ? adblockBase : base}/${source.id}.srs`,
+    url: `${source.id === "Advertising" || source.id === "Advertising_Domain" ? adblockBase : sourceBase}/${source.id}.srs`,
     http_client: RULE_DOWNLOAD_HTTP_CLIENT,
     update_interval: "24h",
   }));
@@ -169,6 +177,14 @@ export function renderSingBoxRouteRules({
     balanced: ["Hijacking", "BlockHttpDNS", "Privacy", "Advertising", "Advertising_Domain"],
     strict: ["Hijacking", "BlockHttpDNS", "Privacy", "Advertising", "Advertising_Domain"],
   }[blockMode] ?? []);
+  if (["iphone", "ipad"].includes(platform)) {
+    securityIds.clear();
+    if (blockMode === "security") securityIds.add("Security");
+    if (["balanced", "strict"].includes(blockMode)) {
+      securityIds.add("Security");
+      securityIds.add("Privacy");
+    }
+  }
   rules.push(...plan
     .filter(({ phase, id }) => phase === "security" && securityIds.has(id))
     .map(taggedRule));
@@ -188,6 +204,9 @@ export function renderSingBoxRouteRules({
     if (phase === "serviceIntent") {
       if (quicMode === "proxy-block") rules.push({ ...OVERSEAS_DNS_FALLBACK_RULE, ...QUIC_BLOCK_RULE });
       rules.push({ ...OVERSEAS_DNS_FALLBACK_RULE });
+      if (["iphone", "ipad"].includes(platform)) {
+        rules.push({ domain_suffix: ["cn"], action: "route", outbound: "DIRECT" });
+      }
     }
   }
 

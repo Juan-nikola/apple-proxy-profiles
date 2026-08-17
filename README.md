@@ -121,7 +121,7 @@ https://juan-nikola.github.io/apple-proxy-profiles/current/shadowrocket/scripts/
 6. 检查：打开 `🚀 节点选择` 组，摘要应显示 `SELECT > PROXY`；再打开 `🐙 GitHub` 和 `🍎 Apple`，确认两个组都存在、候选完整。
 7. 分别测试：一个中国网站（如 baidu.com）、一个境外网站（如 google.com）、你家的路由器管理页（如 192.168.1.1）。
 
-> 常见检查点：动态组只含与 `subscriptionName` 完全匹配的 `<subscriptionName>,use=true`。`🚀 节点选择`只包含 `PROXY`；境外业务分组默认跟随 `🚀 节点选择`，国内业务分组默认 `DIRECT`，自动测速和故障转移已移到境外业务分组。若显示名不匹配，动态组不会列出该订阅的具体服务器（显式选择仍会出现）。
+> 常见检查点：动态组只含与 `subscriptionName` 完全匹配的 `<subscriptionName>,use=true`。`🚀 节点选择`以 `PROXY` 为首页跟随入口；境外业务分组默认跟随它，国内业务分组默认 `DIRECT`，自动测速组和各洲手动节点组作为显式候选保留。若显示名不匹配，动态组不会列出该订阅的具体服务器（显式选择仍会出现）。
 
 ### 4.2 Egern · Mac / iPhone / iPad
 

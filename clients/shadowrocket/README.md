@@ -37,7 +37,7 @@ Shadowrocket 新任务只读取 `apple-proxy-shadowrocket`。客户端 collectio
 
 - 一份所有设备共用、每 6 小时更新的私密节点订阅（`apple-proxy-shadowrocket` 输出）。
 - 三份每天更新的平台 Profile：`shadowrocket-config-macos`、`shadowrocket-config-iphone`、`shadowrocket-config-ipad`。
-- 一个只负责跟随 Shadowrocket 首页节点的 `🚀 节点选择`，以及 16 个独立业务组：10 个境外组首项为 `🚀 节点选择`，6 个国内平台组首项为 `DIRECT`；每组都有自动测速、故障转移、地区和具体节点选择。
+- 一个只负责跟随 Shadowrocket 首页节点的 `🚀 节点选择`，以及精简后的业务组：境外服务组首项为 `🚀 节点选择`，Apple、Microsoft 和国内平台组首项为 `DIRECT`；每组都有自动测速、地区和具体节点选择。
 - 默认使用轻量混合规则：`DomesticCore + DomesticGame + SteamCN` 直连、`OverseasGame` 进入 `🌍 海外游戏`、`ChinaIP + GEOIP CN` 作为国内回退，其他未识别流量最终进入 `🚀 节点选择`。完整广告包默认关闭，只有设置 `adblockMode=full` 才从独立 optional 发布加载 `Advertising.list` 与 `Advertising_Domain.list`。
 
 Apple TV 已在生成器中预留参数，但不属于本轮部署范围。首轮顺序必须是 Intel Mac、iPhone、iPad；每台设备都保留原来的可用 Profile。
@@ -46,12 +46,12 @@ Apple TV 已在生成器中预留参数，但不属于本轮部署范围。首�
 
 Profile 使用职责分开的两层结构：
 
-1. 根组为 `🚀 节点选择 = select,PROXY,⚡ 全部自动,🛟 全部故障转移,🌏 亚太,🌍 欧洲,🌎 美洲`；`PROXY` 负责跟随 Shadowrocket 首页当前节点，全自动和故障转移负责整池测速，亚太、欧洲、美洲洲组则从 `subscriptionName` 指定的节点订阅中筛选各自洲的服务器。洲组内列出该洲全部已选节点，不按客户端能力过滤。
-2. 境外业务分组默认跟随 `🚀 节点选择`：境外组的首项就是 `🚀 节点选择`；每组也都有 `⚡ 全部自动`、`🛟 全部故障转移`、亚太/欧洲/美洲等地区组和符合筛选条件的具体节点。自动测速和故障转移已移到境外业务分组，不再放进 `🚀 节点选择`。
-3. 国内业务分组默认 `DIRECT`：国内组的首项就是 `DIRECT`；每组同样都有 `🚀 节点选择`、自动测速、故障转移、地区组和具体节点，按需要再切换，避免国内 App 因误走代理而变慢。
+1. 根组为 `🚀 节点选择 = select,PROXY,⚡ 全部自动,🌏 亚太,🌍 欧洲,🌎 美洲`；`PROXY` 负责跟随 Shadowrocket 首页当前节点，自动测速和洲组则从 `subscriptionName` 指定的节点订阅中筛选服务器。洲组内列出该洲全部已选节点，不按客户端能力过滤。
+2. 境外业务分组默认跟随 `🚀 节点选择`：每组都有 `⚡ 全部自动`、亚太/欧洲/美洲等地区组和符合筛选条件的具体节点。
+3. 国内业务分组默认 `DIRECT`：每组同样都有 `🚀 节点选择`、自动测速、地区组和具体节点，按需要再切换，避免国内 App 因误走代理而变慢。
 4. `🤖 AI 专用`继续直接列出全部已勾选节点，不会跟着首页主线路一起变化。
 
-除 `🚀 节点选择`外，需要枚举节点的动态组会按 `subscriptionName` 只从指定的 Shadowrocket 节点订阅中筛选。显示名可自由命名（支持中文、内部空格和普通标点），但不能以空白开头或结尾，也不能包含换行；macOS、iPhone、iPad 三个 Profile File 的 `subscriptionName` 必须与 Shadowrocket 中的显示名**完全一致**，包括大小写、emoji、空格和标点。本手册的示例显示名是 `Shadowrocket-Nodes`，生成的动态候选写作 `Shadowrocket-Nodes,use=true`；它不是强制名称。若截图中节点订阅的真实显示名是 `SHADOWROCKET-NODES`，三个 Profile File Operator 的 `subscriptionName` 都必须精确填写 `SHADOWROCKET-NODES`，不能仍填示例值。名称不匹配时，策略组中的 `DIRECT`、`🚀 节点选择`、自动/故障转移和地区等显式选项仍在，但动态组不会列出这个订阅的具体服务器。洲顺序固定为亚太、欧洲、美洲、其他；没有节点的洲不会显示。每个洲组直接列出该洲全部已选节点，不再生成国家策略组。
+除 `🚀 节点选择`外，需要枚举节点的动态组会按 `subscriptionName` 只从指定的 Shadowrocket 节点订阅中筛选。显示名可自由命名（支持中文、内部空格和普通标点），但不能以空白开头或结尾，也不能包含换行；macOS、iPhone、iPad 三个 Profile File 的 `subscriptionName` 必须与 Shadowrocket 中的显示名**完全一致**，包括大小写、emoji、空格和标点。本手册的示例显示名是 `Shadowrocket-Nodes`，生成的动态候选写作 `Shadowrocket-Nodes,use=true`；它不是强制名称。若截图中节点订阅的真实显示名是 `SHADOWROCKET-NODES`，三个 Profile File Operator 的 `subscriptionName` 都必须精确填写 `SHADOWROCKET-NODES`，不能仍填示例值。名称不匹配时，策略组中的 `DIRECT`、`🚀 节点选择`、自动测速和地区等显式选项仍在，但动态组不会列出这个订阅的具体服务器。洲顺序固定为亚太、欧洲、美洲、其他；没有节点的洲不会显示。每个洲组直接列出该洲全部已选节点，不再生成国家策略组。
 
 生成器用 `policy-select-name=🚀 节点选择` 让境外业务组默认跟随首页节点，用 `policy-select-name=DIRECT` 让国内业务组默认直连；这两个默认项不影响每组完整的显式候选和具体服务器列表。
 
@@ -178,12 +178,12 @@ https://juan-nikola.github.io/apple-proxy-profiles/current/shadowrocket/scripts/
 1. 先重新预览原始组合 `apple-proxy-shadowrocket`，确认节点数量正常、国旗不重复、名称排序正常；异常就停止，不发布。
 2. 重新运行直接引用 `shadowrocket-profile-generator.js` 规范 Pages URL 的 macOS、iPhone、iPad 三个 File；不复制脚本正文，也不因脚本升级改 URL 或参数。只有主动改变 QUIC/IPv6 策略时才按部署手册修改对应 File 参数。
 3. 升级已有安装前，逐一核对 macOS、iPhone、iPad 三个 Profile File Operator 的 `subscriptionName`。节点 URL 无需更换；若旧占位值与 Shadowrocket 当前显示名不一致，就改成该现有显示名，或先在客户端重命名订阅，再重新发布 File 并更新对应 Profile。
-4. 先预览 macOS Profile，确认整行是 `🚀 节点选择 = select,PROXY,Shadowrocket-Nodes,use=true,policy-regex-filter=^(?!🔗 ).+$`；常用业务组都有自动/故障转移/地区/具体节点选择，境外组首项为 `🚀 节点选择`，国内组首项为 `DIRECT`；动态组只含与 `subscriptionName` 完全匹配的 `<subscriptionName>,use=true`，`🤖 AI 专用`不再包含洲组，再发布并只在 Intel Mac 更新测试。
+4. 先预览 macOS Profile，确认整行是 `🚀 节点选择 = select,PROXY,Shadowrocket-Nodes,use=true,policy-regex-filter=^(?!🔗 ).+$`；常用业务组都有自动测速/地区/具体节点选择，自动测速和各洲手动节点已保留在业务分组中，境外组首项为 `🚀 节点选择`，国内组首项为 `DIRECT`；动态组只含与 `subscriptionName` 完全匹配的 `<subscriptionName>,use=true`，`🤖 AI 专用`不再包含洲组，再发布并只在 Intel Mac 更新测试。
 5. Intel Mac 验收通过后，才按 iPhone、iPad 顺序更新。整个过程中保留旧 Profile 作为回滚入口。
 
 历史兼容审计记录：旧版曾将 `AdvertisingLite` 迁移为完整 `Advertising`，这段差异只由 compatibility baseline 检查使用，不代表当前默认 Profile 会加载广告规则。当前更新只需重新运行直接引用 `shadowrocket-profile-generator.js` 规范 Pages URL 的 File 并更新 Profile；无需修改节点订阅。完整广告规则必须显式设置 `adblockMode=full`。更新后打开 `🚀 节点选择`，应看到 `PROXY` 以及节点订阅中的具体服务器；如果只看到固定的亚太、欧洲、美洲洲组，说明当前设备还在使用旧 Profile。
 
-Shadowrocket 可能保留其他业务分组中仍然有效的旧选择，生成时的首项默认值不会自动覆盖它。逐个查看常用业务组：境外组希望跟随首页时，手动选择第一项 `🚀 节点选择`；国内组希望恢复默认直连时，手动选择第一项 `DIRECT`。如果摘要仍显示具体节点、自动组、故障转移或地区组，业务会继续按该旧选择工作。
+Shadowrocket 可能保留其他业务分组中仍然有效的旧选择，生成时的首项默认值不会自动覆盖它。逐个查看常用业务组：境外组希望跟随首页时，手动选择第一项 `🚀 节点选择`；国内组希望恢复默认直连时，手动选择第一项 `DIRECT`。如果摘要仍显示具体节点、自动测速或地区组，业务会继续按该旧选择工作。
 
 完整页面操作与成功标志见[零基础部署手册](docs/deployment.md)，更新后的逐项检查见[Intel Mac 灰度清单](docs/canary-checklist.md)。
 

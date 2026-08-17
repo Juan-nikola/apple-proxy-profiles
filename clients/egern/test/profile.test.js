@@ -79,12 +79,12 @@ test("rendered profiles validate with the primary-to-continent hierarchy", () =>
 
   assert.deepEqual(namedGroup(profile, "🚀 节点选择"), {
     name: "🚀 节点选择",
-    policies: ["⚡ 全部自动", "🛟 全部故障转移", "🌏 亚太"],
+    policies: ["⚡ 全部自动", "🌏 亚太"],
     block_quic: true,
   });
   assert.deepEqual(namedGroup(profile, "🌏 亚太"), {
     name: "🌏 亚太",
-    policies: ["⚡ 亚太自动", "🛟 亚太故障转移"],
+    policies: ["⚡ 亚太自动"],
     urls: [PRIVATE_URL],
     filter: continentFilter(CONTINENTS.find((continent) => continent.key === "asiaPacific")),
     update_interval: 21600,
@@ -371,7 +371,7 @@ test("maps all three QUIC modes at the correct global or semantic group layer", 
     "🚀 节点选择", "⚡ 全部自动", "🌏 亚太", "🤖 AI 专用", "🐙 GitHub", "🧭 DNS 与规则下载",
   ]) assert.equal(namedGroup(proxyBlock, name).block_quic, true, name);
   for (const name of [
-    "🍎 Apple", "🪟 Microsoft", "☣️ 安全威胁", "🧱 常见广告", "🕵️ 严格跟踪", "🏢 机场节点",
+    "🍎 Apple", "🪟 Microsoft", "☣️ 安全威胁", "🧱 常见广告", "🕵️ 严格跟踪", "🎮 游戏连接",
   ]) assert.equal(Object.hasOwn(namedGroup(proxyBlock, name), "block_quic"), false, name);
 });
 

@@ -857,37 +857,57 @@ var OneXrayProfileBundle = (() => {
   var NODE_TARGET = /^NODE:(.*)$/iu;
   var BASE64URL = /^[A-Za-z0-9_-]+$/u;
   var LINE_TERMINATOR = /[\r\n\u2028\u2029]/u;
-  function frozenTarget(id, label, alias, defaultTarget) {
+  function frozenTarget(id, label, aliases, defaultTarget) {
     return Object.freeze({
       id,
       label,
-      aliases: Object.freeze([alias, id]),
+      aliases: Object.freeze([...aliases]),
       defaultTarget
     });
   }
   var BUSINESS_TARGETS = Object.freeze([
-    frozenTarget("ai", "🤖 AI 专用", "AI 专用", "FOLLOW"),
-    frozenTarget("github", "🐙 GitHub", "GitHub", "FOLLOW"),
-    frozenTarget("youtube", "📺 YouTube", "YouTube", "FOLLOW"),
-    frozenTarget("netflix", "🎬 Netflix", "Netflix", "FOLLOW"),
-    frozenTarget("disney", "🏰 Disney+", "Disney+", "FOLLOW"),
-    frozenTarget("spotify", "🎵 Spotify", "Spotify", "FOLLOW"),
-    frozenTarget("globalMedia", "🌍 国际媒体", "国际媒体", "FOLLOW"),
-    frozenTarget("telegram", "✈️ Telegram", "Telegram", "FOLLOW"),
-    frozenTarget("globalSocial", "💬 海外社交", "海外社交", "FOLLOW"),
-    frozenTarget("tiktok", "🎶 TikTok", "TikTok", "FOLLOW"),
-    frozenTarget("apple", "🍎 Apple", "Apple", "DIRECT"),
-    frozenTarget("microsoft", "🪟 Microsoft", "Microsoft", "DIRECT"),
-    frozenTarget("bilibili", "📺 哔哩哔哩", "哔哩哔哩", "DIRECT"),
-    frozenTarget("bytedance", "🎵 抖音", "抖音", "DIRECT"),
-    frozenTarget("xiaohongshu", "📕 小红书", "小红书", "DIRECT"),
-    frozenTarget("weibo", "🧣 微博", "微博", "DIRECT"),
-    // Compatibility target for core domestic rules and custom DIRECT rules.
-    frozenTarget("domestic", "🇨🇳 国内平台", "国内平台", "DIRECT"),
-    frozenTarget("overseasGame", "🌍 海外游戏", "海外游戏", "FOLLOW"),
-    frozenTarget("download", "⬇️ 下载/P2P", "下载/P2P", "DIRECT"),
-    frozenTarget("dnsAndRules", "🧭 DNS 与规则下载", "DNS 与规则下载", "FOLLOW"),
-    frozenTarget("final", "最终兜底", "最终兜底", "FOLLOW")
+    frozenTarget("ai", "🤖 AI 专用", ["AI 专用", "ai"], "FOLLOW"),
+    frozenTarget("github", "🐙 GitHub", ["GitHub", "github"], "FOLLOW"),
+    frozenTarget("youtube", "📺 YouTube", ["YouTube", "youtube"], "FOLLOW"),
+    frozenTarget("overseasMedia", "🎬 海外流媒体", [
+      "海外流媒体",
+      "overseasMedia",
+      "Netflix",
+      "netflix",
+      "Disney+",
+      "disney",
+      "Spotify",
+      "spotify",
+      "国际媒体",
+      "globalMedia"
+    ], "FOLLOW"),
+    frozenTarget("globalSocial", "💬 海外社交", [
+      "海外社交",
+      "globalSocial",
+      "Telegram",
+      "telegram",
+      "TikTok",
+      "tiktok"
+    ], "FOLLOW"),
+    frozenTarget("apple", "🍎 Apple", ["Apple", "apple"], "DIRECT"),
+    frozenTarget("microsoft", "🪟 Microsoft", ["Microsoft", "microsoft"], "DIRECT"),
+    // Compatibility aliases for domestic app-specific rules and overrides.
+    frozenTarget("domestic", "🇨🇳 国内平台", [
+      "国内平台",
+      "domestic",
+      "哔哩哔哩",
+      "bilibili",
+      "抖音",
+      "bytedance",
+      "小红书",
+      "xiaohongshu",
+      "微博",
+      "weibo"
+    ], "DIRECT"),
+    frozenTarget("overseasGame", "🌍 海外游戏", ["海外游戏", "overseasGame"], "FOLLOW"),
+    frozenTarget("download", "⬇️ 下载/P2P", ["下载/P2P", "download"], "DIRECT"),
+    frozenTarget("dnsAndRules", "🧭 DNS 与规则下载", ["DNS 与规则下载", "dnsAndRules"], "FOLLOW"),
+    frozenTarget("final", "最终兜底", ["最终兜底", "final"], "FOLLOW")
   ]);
   var TARGET_BY_KEY = /* @__PURE__ */ new Map();
   for (const target of BUSINESS_TARGETS) {
@@ -1077,22 +1097,23 @@ var OneXrayProfileBundle = (() => {
     "ChinaTLD",
     "ChinaIP"
   ]);
-  var MOBILE_RULE_SOURCE_IDS = Object.freeze([
-    "Hijacking",
-    "BlockHttpDNS",
-    "Privacy",
-    "DomesticCore",
-    "DomesticGame",
-    "SteamCN",
-    "BiliBili",
-    "ByteDance",
-    "XiaoHongShu",
-    "Weibo",
-    "Apple",
-    "Microsoft",
-    "ChinaTLD",
-    "ChinaIP"
+  var MOBILE_RULE_BUNDLES = Object.freeze([
+    Object.freeze({ id: "Security", sourceIds: Object.freeze(["Hijacking", "BlockHttpDNS"]), policy: "REJECT", phase: "security", dnsClass: "none" }),
+    Object.freeze({ id: "Privacy", sourceIds: Object.freeze(["Privacy"]), policy: "🕵️ 严格跟踪", phase: "security", dnsClass: "none" }),
+    Object.freeze({ id: "DomesticCore", sourceIds: Object.freeze(["DomesticCore", "DomesticGame", "SteamCN"]), policy: "DIRECT", phase: "earlyDomestic", dnsClass: "china" }),
+    Object.freeze({ id: "DomesticPlatform", sourceIds: Object.freeze(["BiliBili", "ByteDance", "XiaoHongShu", "Weibo"]), policy: "🇨🇳 国内平台", phase: "serviceIntent", dnsClass: "china" }),
+    Object.freeze({ id: "AI", sourceIds: Object.freeze(["OpenAI", "Claude", "Gemini", "Copilot"]), policy: "🤖 AI 专用", phase: "serviceIntent", dnsClass: "proxy" }),
+    Object.freeze({ id: "GitHub", sourceIds: Object.freeze(["GitHub"]), policy: "🐙 GitHub", phase: "serviceIntent", dnsClass: "proxy" }),
+    Object.freeze({ id: "YouTube", sourceIds: Object.freeze(["YouTube"]), policy: "📺 YouTube", phase: "serviceIntent", dnsClass: "proxy" }),
+    Object.freeze({ id: "OverseasMedia", sourceIds: Object.freeze(["Netflix", "Disney", "Spotify", "GlobalMedia"]), policy: "🎬 海外流媒体", phase: "serviceIntent", dnsClass: "proxy" }),
+    Object.freeze({ id: "OverseasSocial", sourceIds: Object.freeze(["Telegram", "Facebook", "Instagram", "Twitter", "TikTok"]), policy: "💬 海外社交", phase: "serviceIntent", dnsClass: "proxy" }),
+    Object.freeze({ id: "Apple", sourceIds: Object.freeze(["Apple"]), policy: "🍎 Apple", phase: "serviceIntent", dnsClass: "china" }),
+    Object.freeze({ id: "Microsoft", sourceIds: Object.freeze(["Microsoft"]), policy: "🪟 Microsoft", phase: "serviceIntent", dnsClass: "china" }),
+    Object.freeze({ id: "Download", sourceIds: Object.freeze(["Download", "PrivateTracker"]), policy: "⬇️ 下载/P2P", phase: "serviceIntent", dnsClass: "china" }),
+    Object.freeze({ id: "OverseasGame", sourceIds: Object.freeze(["OverseasGame"]), policy: "🌍 海外游戏", phase: "overseasGame", dnsClass: "proxy" }),
+    Object.freeze({ id: "ChinaIP", sourceIds: Object.freeze(["ChinaIP"]), policy: "DIRECT", phase: "resolvedChinaIp", dnsClass: "none" })
   ]);
+  var MOBILE_RULE_SOURCE_IDS = Object.freeze(MOBILE_RULE_BUNDLES.map(({ id }) => id));
   var FULL_ADBLOCK_SOURCE_IDS = Object.freeze([
     "Advertising",
     "Advertising_Domain"
@@ -1209,6 +1230,9 @@ var OneXrayProfileBundle = (() => {
     direct: "DIRECT",
     defaultProxy: "🚀 节点选择",
     overseasGame: "🌍 海外游戏",
+    overseasMedia: "🎬 海外流媒体",
+    overseasSocial: "💬 海外社交",
+    domesticPlatform: "🇨🇳 国内平台",
     reject: "REJECT"
   });
   var SOURCE_POLICIES = Object.freeze({
@@ -1217,25 +1241,25 @@ var OneXrayProfileBundle = (() => {
     Privacy: "🕵️ 严格跟踪",
     DomesticCore: POLICY_TARGETS.direct,
     DomesticGame: POLICY_TARGETS.direct,
-    BiliBili: "📺 哔哩哔哩",
-    ByteDance: "🎵 抖音",
-    XiaoHongShu: "📕 小红书",
-    Weibo: "🧣 微博",
+    BiliBili: POLICY_TARGETS.domesticPlatform,
+    ByteDance: POLICY_TARGETS.domesticPlatform,
+    XiaoHongShu: POLICY_TARGETS.domesticPlatform,
+    Weibo: POLICY_TARGETS.domesticPlatform,
     OpenAI: "🤖 AI 专用",
     Claude: "🤖 AI 专用",
     Gemini: "🤖 AI 专用",
     Copilot: "🤖 AI 专用",
     GitHub: "🐙 GitHub",
     YouTube: "📺 YouTube",
-    Netflix: "🎬 Netflix",
-    Disney: "🏰 Disney+",
-    Spotify: "🎵 Spotify",
-    GlobalMedia: "🌍 国际媒体",
-    Telegram: "✈️ Telegram",
-    Facebook: "💬 海外社交",
-    Instagram: "💬 海外社交",
-    Twitter: "💬 海外社交",
-    TikTok: "🎶 TikTok",
+    Netflix: POLICY_TARGETS.overseasMedia,
+    Disney: POLICY_TARGETS.overseasMedia,
+    Spotify: POLICY_TARGETS.overseasMedia,
+    GlobalMedia: POLICY_TARGETS.overseasMedia,
+    Telegram: POLICY_TARGETS.overseasSocial,
+    Facebook: POLICY_TARGETS.overseasSocial,
+    Instagram: POLICY_TARGETS.overseasSocial,
+    Twitter: POLICY_TARGETS.overseasSocial,
+    TikTok: POLICY_TARGETS.overseasSocial,
     Apple: "🍎 Apple",
     Microsoft: "🪟 Microsoft",
     SteamCN: POLICY_TARGETS.direct,
@@ -1271,6 +1295,13 @@ var OneXrayProfileBundle = (() => {
   }
   var DEFAULT_RULE_CLIENT_CATALOG = Object.freeze(DEFAULT_RULE_SOURCE_IDS.map(clientRecord));
   var FULL_ADBLOCK_RULE_CLIENT_CATALOG = Object.freeze(FULL_ADBLOCK_SOURCE_IDS.map(clientRecord));
+  var MOBILE_RULE_CLIENT_CATALOG = Object.freeze(MOBILE_RULE_BUNDLES.map((bundle) => Object.freeze({
+    id: bundle.id,
+    policy: bundle.policy,
+    inputFormat: "RULE-SET",
+    phase: bundle.phase,
+    dnsClass: bundle.dnsClass
+  })));
   function ruleClientCatalog({ adblockMode = "off" } = {}) {
     if (adblockMode !== "off" && adblockMode !== "full") {
       throw new TypeError("adblockMode must be either off or full");
@@ -2967,15 +2998,15 @@ var OneXrayProfileBundle = (() => {
     Copilot: "ai",
     GitHub: "github",
     YouTube: "youtube",
-    Netflix: "netflix",
-    Disney: "disney",
-    Spotify: "spotify",
-    GlobalMedia: "globalMedia",
-    Telegram: "telegram",
+    Netflix: "overseasMedia",
+    Disney: "overseasMedia",
+    Spotify: "overseasMedia",
+    GlobalMedia: "overseasMedia",
+    Telegram: "globalSocial",
     Facebook: "globalSocial",
     Instagram: "globalSocial",
     Twitter: "globalSocial",
-    TikTok: "tiktok",
+    TikTok: "globalSocial",
     Apple: "apple",
     Microsoft: "microsoft",
     Download: "download",
@@ -3107,12 +3138,7 @@ var OneXrayProfileBundle = (() => {
   function sourceIntent(source, blockMode) {
     if (!source || typeof source.id !== "string") throw new TypeError("OneXray routing source is invalid");
     if (Object.hasOwn(SECURITY_CATEGORIES, source.id)) return SECURITY_TARGETS[blockMode][SECURITY_CATEGORIES[source.id]];
-    if (DOMESTIC_BUSINESS_SOURCES.has(source.id)) return {
-      BiliBili: "bilibili",
-      ByteDance: "bytedance",
-      XiaoHongShu: "xiaohongshu",
-      Weibo: "weibo"
-    }[source.id];
+    if (DOMESTIC_BUSINESS_SOURCES.has(source.id)) return "domestic";
     if (DOMESTIC_SOURCES.has(source.id)) return "direct";
     if (Object.hasOwn(SERVICE_INTENTS, source.id)) return SERVICE_INTENTS[source.id];
     throw new Error(`OneXray routing source has unknown intent: ${source.id}`);

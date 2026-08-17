@@ -4,7 +4,6 @@ import {
   STRATEGY,
   automaticHelperName,
   buildPolicyGroups,
-  fallbackHelperName,
 } from "./catalog.js";
 import {
   ALL_NODES_FILTER,
@@ -14,7 +13,6 @@ import {
   GAME_FILTER,
   NON_CHAINED_FILTER,
   P2P_FILTER,
-  SOURCE_GROUPS,
   continentFilter,
 } from "./filters.js";
 import { POLICY_TARGET } from "./intents.js";
@@ -32,7 +30,6 @@ function policySchema(kind, strategy, nodeFilters, { hidden, defaultChoice } = {
 
 const REQUIRED_POLICY_GROUP_NAMES = Object.freeze([
   "⚡ 全部自动",
-  "🛟 全部故障转移",
   "🚀 节点选择",
   "🤖 AI 专用",
   ...SERVICE_GROUPS.map(([name]) => name),
@@ -46,20 +43,14 @@ const REQUIRED_POLICY_GROUP_NAMES = Object.freeze([
 
 const POLICY_SCHEMA_ENTRIES = [
   ["⚡ 全部自动", policySchema(GROUP_KIND.helper, STRATEGY.autoTest, [NON_CHAINED_FILTER], { hidden: true })],
-  ["🛟 全部故障转移", policySchema(GROUP_KIND.helper, STRATEGY.fallback, [NON_CHAINED_FILTER], { hidden: true })],
   ["🚀 节点选择", policySchema(GROUP_KIND.primary, STRATEGY.select, [null])],
   ...CONTINENTS.flatMap((continent) => {
     const filter = continentFilter(continent);
     return [
       [continent.name, policySchema(GROUP_KIND.continent, STRATEGY.select, [filter])],
       [automaticHelperName(continent), policySchema(GROUP_KIND.helper, STRATEGY.autoTest, [filter], { hidden: true })],
-      [fallbackHelperName(continent), policySchema(GROUP_KIND.helper, STRATEGY.fallback, [filter], { hidden: true })],
     ];
   }),
-  ...SOURCE_GROUPS.map((source) => [
-    source.name,
-    policySchema(GROUP_KIND.source, STRATEGY.select, [source.filter]),
-  ]),
   ["🤖 AI 专用", policySchema(GROUP_KIND.ai, STRATEGY.select, [ALL_NODES_FILTER])],
   ...SERVICE_GROUPS.map(([name, defaults]) => [
     name,
@@ -82,7 +73,6 @@ const CONTINENT_FAMILIES = Object.freeze(CONTINENTS.map((continent) => Object.fr
   key: continent.key,
   selector: continent.name,
   automatic: automaticHelperName(continent),
-  fallback: fallbackHelperName(continent),
 })));
 const CHAIN_NAMES = Object.freeze(["⚡ 入口自动", "🎯 客户端落地", "🔗 入口节点"]);
 
@@ -105,12 +95,10 @@ function inferredInventory(groups) {
   const names = new Set(groups.map((group) => group.name));
   const groupsByName = new Map(groups.map((group) => [group.name, group]));
   const presentContinents = CONTINENT_FAMILIES.filter((family) => names.has(family.selector));
-  const presentSources = SOURCE_GROUPS.filter((source) => names.has(source.name));
   const game = groups.find((group) => group.name === "🎮 游戏连接");
   const p2p = groups.find((group) => group.name === "⬇️ 下载/P2P");
   const chainEnabled = CHAIN_NAMES.every((name) => names.has(name));
-  const needsNonChainedNode = presentSources.length > 0
-    || game?.nodeFilter === GAME_FILTER
+  const needsNonChainedNode = game?.nodeFilter === GAME_FILTER
     || p2p?.nodeFilter === P2P_FILTER
     || chainEnabled;
   if (presentContinents.length === 0 && needsNonChainedNode) return null;
@@ -119,11 +107,6 @@ function inferredInventory(groups) {
   for (const family of presentContinents) {
     if (groupsByName.get(family.selector)?.nodeFilter !== continentFilter(family)) return null;
     nodes.push(syntheticNode(nodes.length, family.key, SOURCE_KIND.unknown, "🌐"));
-  }
-  const sourceContinent = presentContinents[0]?.key;
-  const sourceFlag = nodes.find((node) => node._profile.continent === sourceContinent)?._profile.flag;
-  for (const source of presentSources) {
-    nodes.push(syntheticNode(nodes.length, sourceContinent, source.kind, sourceFlag));
   }
   if (nodes.length > 0) {
     nodes[0]._profile.udp = game?.nodeFilter === GAME_FILTER;

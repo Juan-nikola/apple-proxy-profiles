@@ -1,5 +1,9 @@
 import { DOMESTIC_CORE_DOMAIN_SUFFIXES, DOMESTIC_GAME_DOMAIN_SUFFIXES } from "../../shared/rules/domestic-core.js";
-import { DEFAULT_RULE_SOURCE_IDS, FULL_ADBLOCK_SOURCE_IDS } from "../../shared/rules/lightweight-policy.js";
+import {
+  DEFAULT_RULE_SOURCE_IDS,
+  FULL_ADBLOCK_SOURCE_IDS,
+  MOBILE_RULE_BUNDLES,
+} from "../../shared/rules/lightweight-policy.js";
 import { normalizeRuleEntry, parseCanonicalCidr, RULE_KIND } from "../../shared/rules/model.js";
 import { parseSurgeRules } from "./parse-surge.js";
 import {
@@ -90,8 +94,9 @@ function coveredByAnySuffix(entry, suffixes) {
   return suffixes.some((suffix) => coveredBySuffix(entry, suffix));
 }
 
-function compiledSet(id, entries, sourceIds, sourceBytes, omittedByKind) {
-  const source = DEFAULT_CATALOG_BY_ID.get(id)
+function compiledSet(id, entries, sourceIds, sourceBytes, omittedByKind, sourceOverride = null) {
+  const source = sourceOverride
+    ?? DEFAULT_CATALOG_BY_ID.get(id)
     ?? OPTIONAL_PUBLISH_SOURCE_CATALOGS.adblockFull.find((item) => item.id === id);
   if (!source) throw new Error(`Rule source ${id}: compiled descriptor is unavailable`);
   return Object.freeze({
@@ -272,6 +277,22 @@ export function compileLightweightRules({ snapshots }) {
     id,
     compiledSet(id, parsedSnapshot(parsed, id), [id], fetchedBytes(snapshots, id), omittedByKind),
   ]));
+  const mobileRuleSets = new Map(MOBILE_RULE_BUNDLES.map((bundle) => {
+    const entries = bundle.sourceIds.flatMap((sourceId) => defaultRuleSets.get(sourceId)?.entries ?? []);
+    const source = Object.freeze({
+      id: bundle.id,
+      canonicalPath: `compiled/mobile/${bundle.id}.list`,
+      inputFormat: "RULE-SET",
+      policy: bundle.policy,
+      phase: bundle.phase,
+      dnsClass: bundle.dnsClass,
+      minEntries: 0,
+    });
+    const sourceBytes = bundle.sourceIds.reduce((total, sourceId) => (
+      total + (defaultRuleSets.get(sourceId)?.sourceBytes ?? fetchedBytes(snapshots, sourceId))
+    ), 0);
+    return [bundle.id, compiledSet(bundle.id, entries, bundle.sourceIds, sourceBytes, omittedByKind, source)];
+  }));
   const defaultInputIds = new Set([...defaultRuleSets.values()].flatMap(({ sourceIds }) => sourceIds));
   const defaultSourceBytes = [...defaultInputIds]
     .reduce((total, id) => total + fetchedBytes(snapshots, id), 0);
@@ -280,6 +301,7 @@ export function compileLightweightRules({ snapshots }) {
 
   return Object.freeze({
     defaultRuleSets,
+    mobileRuleSets,
     optionalPacks: Object.freeze({ adblockFull }),
     diagnostics: Object.freeze({
       defaultEntries,

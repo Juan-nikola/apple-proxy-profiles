@@ -13,19 +13,11 @@ const sharedRoot = new URL("../../../shared/", import.meta.url);
 const EXPECTED_SERVICE_NAMES = Object.freeze([
   "🐙 GitHub",
   "📺 YouTube",
-  "🎬 Netflix",
-  "🏰 Disney+",
-  "🎵 Spotify",
-  "🌍 国际媒体",
-  "✈️ Telegram",
+  "🎬 海外流媒体",
   "💬 海外社交",
-  "🎶 TikTok",
   "🍎 Apple",
   "🪟 Microsoft",
-  "📺 哔哩哔哩",
-  "🎵 抖音",
-  "📕 小红书",
-  "🧣 微博",
+  "🇨🇳 国内平台",
   "🌍 海外游戏",
 ]);
 
@@ -48,10 +40,10 @@ test("shared policy records preserve the Shadowrocket catalog", () => {
   const shadowrocketPrimary = shadowrocket.find((group) => group.name === "🚀 节点选择");
 
   assert.equal(Object.isFrozen(POLICY_TARGET), true);
-  assert.deepEqual(sharedPrimary.candidates, ["⚡ 全部自动", "🛟 全部故障转移", ...expectedContinents]);
+  assert.deepEqual(sharedPrimary.candidates, ["⚡ 全部自动", ...expectedContinents]);
   assert.equal(sharedPrimary.nodeFilter, null);
   assert.notEqual(POLICY_TARGET.primaryProxy, "PROXY");
-  assert.deepEqual(shadowrocketPrimary.items, ["PROXY", "⚡ 全部自动", "🛟 全部故障转移", ...expectedContinents]);
+  assert.deepEqual(shadowrocketPrimary.items, ["PROXY", "⚡ 全部自动", ...expectedContinents]);
   assert.equal(shadowrocketPrimary.useSubscription, undefined);
   assert.equal(shadowrocketPrimary.filter, undefined);
   assert.deepEqual(

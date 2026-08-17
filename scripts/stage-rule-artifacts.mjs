@@ -14,7 +14,7 @@ import {
   resolveChinaIpAuditCommit,
 } from "../automation/src/fetch-china-ip-audit.js";
 import { canonicalJson } from "../automation/src/render-anywhere-rules.js";
-import { ruleClientCatalog } from "../shared/rules/lightweight-policy.js";
+import { MOBILE_RULE_SOURCE_IDS, ruleClientCatalog } from "../shared/rules/lightweight-policy.js";
 import { validateOneXrayPublication } from "../automation/src/build-site.js";
 
 const REPOSITORY_ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
@@ -31,6 +31,7 @@ function sha256(content) {
 function expectedCompiledPaths() {
   return [
     ...ruleClientCatalog({ adblockMode: "off" }).map(({ id }) => `sing-box/rule-sets/${id}.srs`),
+    ...MOBILE_RULE_SOURCE_IDS.map((id) => `sing-box/mobile-rule-sets/${id}.srs`),
     "optional/adblock-full/sing-box/Advertising.srs",
     "optional/adblock-full/sing-box/Advertising_Domain.srs",
   ].sort();
@@ -53,6 +54,7 @@ function auditInputs(artifacts) {
   }
   const expected = [
     ...ruleClientCatalog({ adblockMode: "off" }).map(({ id }) => `audit/sing-box/rules/${id}.json`),
+    ...MOBILE_RULE_SOURCE_IDS.map((id) => `audit/sing-box/rules/mobile_${id}.json`),
     "optional/adblock-full/audit/sing-box/rules/Advertising.json",
     "optional/adblock-full/audit/sing-box/rules/Advertising_Domain.json",
   ].sort();

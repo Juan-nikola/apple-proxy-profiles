@@ -265,22 +265,22 @@ for (const platform of ["macos", "iphone", "ipad"]) {
     const profile = await readFile(new URL(`../examples/shadowrocket-${platform}.conf`, import.meta.url), "utf8");
     const asia = CONTINENTS.find((continent) => continent.key === "asiaPacific");
     assert.match(profile, /^🌎 美洲 = select,/m);
-    assert.ok(profile.includes("🚀 节点选择 = select,PROXY,⚡ 全部自动,🛟 全部故障转移,🌏 亚太,🌍 欧洲,🌎 美洲\n"), "example must keep the PROXY selector root group");
+    assert.ok(profile.includes("🚀 节点选择 = select,PROXY,⚡ 全部自动,🌏 亚太,🌍 欧洲,🌎 美洲\n"), "example must keep the PROXY selector root group");
     assert.equal(
       profile.split("\n").find((line) => line.startsWith("🌏 亚太 =")),
-      `🌏 亚太 = select,⚡ 亚太自动,🛟 亚太故障转移,Shadowrocket-Nodes,use=true,policy-regex-filter=${continentFilter(asia)}`,
+      `🌏 亚太 = select,⚡ 亚太自动,Shadowrocket-Nodes,use=true,policy-regex-filter=${continentFilter(asia)}`,
     );
     assert.doesNotMatch(profile, /^🇯🇵 日本 = /m);
-    assert.match(profile, /^🌍 欧洲 = select,⚡ 欧洲自动,🛟 欧洲故障转移,Shadowrocket-Nodes,use=true,policy-regex-filter=/m);
-    assert.match(profile, /^🌎 美洲 = select,⚡ 美洲自动,🛟 美洲故障转移,Shadowrocket-Nodes,use=true,policy-regex-filter=/m);
+    assert.match(profile, /^🌍 欧洲 = select,⚡ 欧洲自动,Shadowrocket-Nodes,use=true,policy-regex-filter=/m);
+    assert.match(profile, /^🌎 美洲 = select,⚡ 美洲自动,Shadowrocket-Nodes,use=true,policy-regex-filter=/m);
     assert.match(profile, /^🤖 AI 专用 = select,Shadowrocket-Nodes,use=true,policy-regex-filter=\^\.\+\$$/m);
     assert.doesNotMatch(profile, /^🤖 AI (?:亚太|欧洲|美洲|其他\/未分类) = /m);
-    assert.match(profile, /^🐙 GitHub = select,🚀 节点选择,⚡ 全部自动,🛟 全部故障转移,🌏 亚太,🌍 欧洲,🌎 美洲,DIRECT,Shadowrocket-Nodes,use=true,policy-regex-filter=\^\.\+\$,policy-select-name=🚀 节点选择$/m);
-    assert.match(profile, /^🍎 Apple = select,DIRECT,🚀 节点选择,⚡ 全部自动,🛟 全部故障转移,🌏 亚太,🌍 欧洲,🌎 美洲,Shadowrocket-Nodes,use=true,policy-regex-filter=\^\.\+\$,policy-select-name=DIRECT$/m);
+    assert.match(profile, /^🐙 GitHub = select,🚀 节点选择,⚡ 全部自动,🌏 亚太,🌍 欧洲,🌎 美洲,DIRECT,Shadowrocket-Nodes,use=true,policy-regex-filter=\^\.\+\$,policy-select-name=🚀 节点选择$/m);
+    assert.match(profile, /^🍎 Apple = select,DIRECT,🚀 节点选择,⚡ 全部自动,🌏 亚太,🌍 欧洲,🌎 美洲,Shadowrocket-Nodes,use=true,policy-regex-filter=\^\.\+\$,policy-select-name=DIRECT$/m);
     assert.doesNotMatch(profile, /include-all-proxies=true/);
-    assert.match(profile, /edge\/shadowrocket\/rules\/ByteDance\.list,🎵 抖音/);
+    assert.match(profile, /edge\/shadowrocket\/rules\/ByteDance\.list,🇨🇳 国内平台/);
     assert.doesNotMatch(profile, /\/(?:Advertising|Advertising_Domain|ChinaMax_Domain|ChinaMax|Game)\.list/);
-    assert.match(profile, /^🎵 抖音 = select,DIRECT,🚀 节点选择,⚡ 全部自动,🛟 全部故障转移,🌏 亚太,🌍 欧洲,🌎 美洲/m);
+    assert.match(profile, /^🇨🇳 国内平台 = select,DIRECT,🚀 节点选择,⚡ 全部自动,🌏 亚太,🌍 欧洲,🌎 美洲/m);
     assert.match(profile, /^RULE-SET,.*\/DomesticCore\.list,DIRECT,/m);
     assert.match(profile, /^RULE-SET,.*\/DomesticGame\.list,DIRECT,/m);
     assert.match(profile, /^RULE-SET,.*\/SteamCN\.list,DIRECT,/m);

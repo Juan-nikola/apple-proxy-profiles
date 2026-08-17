@@ -90,6 +90,31 @@ test("renders a complete latest-style config with response-based ChinaIP fallbac
   assert.equal(config.dns.servers.find(({ tag }) => tag === "dns-proxy")?.detour, "⚡ 全部自动");
 });
 
+test("routes iOS DNS classes through the compact mobile rule bundles", () => {
+  const expectedProxy = [
+    "rule-AI", "rule-GitHub", "rule-YouTube", "rule-OverseasMedia",
+    "rule-OverseasSocial", "rule-OverseasGame",
+  ];
+  const expectedChina = [
+    "rule-DomesticCore", "rule-DomesticPlatform", "rule-Apple",
+    "rule-Microsoft", "rule-Download",
+  ];
+
+  for (const platform of ["iphone", "ipad"]) {
+    const config = render({ platform });
+    assert.deepEqual(
+      config.dns.rules.find((rule) => rule.action === "route" && rule.server === "dns-proxy" && rule.rule_set)?.rule_set,
+      expectedProxy,
+      platform,
+    );
+    assert.deepEqual(
+      config.dns.rules.find((rule) => rule.action === "route" && rule.server === "dns-direct" && rule.rule_set)?.rule_set,
+      expectedChina,
+      platform,
+    );
+  }
+});
+
 test("renders Egern-like selectors without pretending urltest is request fallback", () => {
   const config = render();
   const tags = config.outbounds.map(({ tag }) => tag);
@@ -107,29 +132,45 @@ test("renders Egern-like selectors without pretending urltest is request fallbac
   assert.equal(auto.url, "https://www.gstatic.com/generate_204");
 });
 
-test("removes iOS URLTests and keeps only the low-memory service groups", () => {
+test("keeps low-frequency iOS URLTests and the complete compact business catalog", () => {
   for (const platform of ["iphone", "ipad"]) {
     const config = render({ platform });
-    assert.deepEqual(config.outbounds.filter(({ type }) => type === "urltest"), [], platform);
+    const urltests = config.outbounds.filter(({ type }) => type === "urltest");
+    assert.ok(urltests.some(({ tag }) => tag === "⚡ 全部自动"), platform);
+    assert.ok(urltests.some(({ tag }) => tag === "⚡ 亚太自动"), platform);
+    assert.ok(urltests.every(({ interval }) => interval === "1800s"), platform);
     assert.ok(config.outbounds.some(({ tag }) => tag === "🍎 Apple"), platform);
     assert.ok(config.outbounds.some(({ tag }) => tag === "🪟 Microsoft"), platform);
-    for (const tag of ["📺 哔哩哔哩", "🎵 抖音", "📕 小红书", "🧣 微博"]) {
+    for (const tag of ["📺 YouTube", "🎬 海外流媒体", "💬 海外社交", "🇨🇳 国内平台"]) {
       assert.ok(config.outbounds.some((outbound) => outbound.tag === tag), `${platform}/${tag}`);
     }
-    assert.equal(config.outbounds.some(({ tag }) => tag === "📺 YouTube"), false, platform);
     assert.ok(config.outbounds.some(({ tag }) => tag === "🤖 AI 专用"), platform);
     assert.equal(config.log.level, "warn", platform);
     assert.equal(config.experimental.cache_file.enabled, false, platform);
     assert.equal(config.experimental.cache_file.store_dns, false, platform);
     assert.equal(config.route.rule_set.length, 14, platform);
+    assert.deepEqual(
+      config.route.rule_set.map(({ tag }) => tag),
+      ["rule-Security", "rule-Privacy", "rule-DomesticCore", "rule-DomesticPlatform",
+        "rule-AI", "rule-GitHub", "rule-YouTube", "rule-OverseasMedia", "rule-OverseasSocial",
+        "rule-Apple", "rule-Microsoft", "rule-Download", "rule-OverseasGame", "rule-ChinaIP"],
+      platform,
+    );
+    const lastManual = Math.max(...config.outbounds
+      .filter(({ type, tag }) => type === "selector" && !/自动/u.test(tag))
+      .map(({ tag }) => config.outbounds.findIndex((outbound) => outbound.tag === tag)));
+    const firstHelper = Math.min(...config.outbounds
+      .filter(({ type, tag }) => type === "urltest" && /自动/u.test(tag))
+      .map(({ tag }) => config.outbounds.findIndex((outbound) => outbound.tag === tag)));
+    assert.ok(firstHelper > lastManual, platform);
     assert.equal(config.dns.rules.some((rule) => Array.isArray(rule.rule_set) && rule.rule_set.length === 0), false, platform);
     assert.deepEqual(validateSingBoxConfig(config), { valid: true, errors: [] }, platform);
   }
 });
 
-test("retains Android's single automatic URLTest graph", () => {
+test("retains Android's complete automatic URLTest graph", () => {
   const config = render({ platform: "android" });
-  assert.deepEqual(config.outbounds.filter(({ type }) => type === "urltest").map(({ tag }) => tag), ["⚡ 全部自动"]);
+  assert.deepEqual(config.outbounds.filter(({ type }) => type === "urltest").map(({ tag }) => tag), ["⚡ 全部自动", "⚡ 亚太自动", "⚡ 欧洲自动"]);
   assert.ok(config.outbounds.some(({ tag }) => tag === "📺 YouTube"));
   assert.ok(config.outbounds.some(({ tag }) => tag === "🤖 AI 专用"));
   assert.deepEqual(validateSingBoxConfig(config), { valid: true, errors: [] });
