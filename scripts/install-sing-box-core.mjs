@@ -11,6 +11,7 @@ export const SING_BOX_VERSION = "1.14.0-beta.15";
 const RELEASES_URL = "https://api.github.com/repos/SagerNet/sing-box/releases?per_page=100";
 const RELEASE_ROOT = (version) => `https://github.com/SagerNet/sing-box/releases/download/v${version}`;
 const RELEASE_METADATA_URL = (version) => `https://api.github.com/repos/SagerNet/sing-box/releases/tags/v${version}`;
+const RELEASE_RETRY_DELAYS_MS = Object.freeze([1_000, 2_000]);
 const PLATFORM_SUFFIXES = Object.freeze({
   "linux/x64": "linux-amd64",
   "linux/arm64": "linux-arm64",
@@ -19,15 +20,33 @@ const PLATFORM_SUFFIXES = Object.freeze({
   "darwin/x64": "darwin-amd64",
 });
 
-export async function resolveSingBoxTestingRelease({ fetchImpl = fetch } = {}) {
-  const response = await fetchImpl(RELEASES_URL, {
-    headers: {
-      Accept: "application/vnd.github+json",
-      "User-Agent": "apple-proxy-profiles-sing-box-installer",
-      "X-GitHub-Api-Version": "2022-11-28",
-    },
-  });
-  if (!response?.ok) throw new Error(`Failed to resolve the latest sing-box testing release (${response?.status ?? "no response"})`);
+function sleep(delayMs) {
+  return new Promise((resolvePromise) => setTimeout(resolvePromise, delayMs));
+}
+
+function retryableReleaseStatus(status) {
+  return status === 429 || (Number.isInteger(status) && status >= 500 && status <= 599);
+}
+
+export async function resolveSingBoxTestingRelease({ fetchImpl = fetch, sleepImpl = sleep } = {}) {
+  if (typeof fetchImpl !== "function") throw new TypeError("A fetch implementation is required");
+  if (typeof sleepImpl !== "function") throw new TypeError("A sleep implementation is required");
+  let response;
+  for (let attempt = 0; attempt <= RELEASE_RETRY_DELAYS_MS.length; attempt += 1) {
+    response = await fetchImpl(RELEASES_URL, {
+      headers: {
+        Accept: "application/vnd.github+json",
+        "User-Agent": "apple-proxy-profiles-sing-box-installer",
+        "X-GitHub-Api-Version": "2022-11-28",
+      },
+    });
+    if (response?.ok) break;
+    const status = response?.status;
+    if (!retryableReleaseStatus(status) || attempt === RELEASE_RETRY_DELAYS_MS.length) {
+      throw new Error(`Failed to resolve the latest sing-box testing release (${status ?? "no response"})`);
+    }
+    await sleepImpl(RELEASE_RETRY_DELAYS_MS[attempt]);
+  }
   const releases = await response.json();
   if (!Array.isArray(releases)) throw new Error("sing-box release list is invalid");
   const candidates = releases

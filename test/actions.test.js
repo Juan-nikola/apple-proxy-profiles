@@ -134,6 +134,32 @@ test("resolves the newest published prerelease testing release", async () => {
   assert.deepEqual(result, { version: "1.14.0-beta.15", tag: "v1.14.0-beta.15", commit: null });
 });
 
+test("retries transient release API failures before selecting the newest testing release", async () => {
+  let attempts = 0;
+  const delays = [];
+  const result = await resolveSingBoxTestingRelease({
+    fetchImpl: async () => {
+      attempts += 1;
+      if (attempts < 3) return { ok: false, status: 504 };
+      return {
+        ok: true,
+        async json() {
+          return [{
+            tag_name: "v1.14.0-beta.15",
+            prerelease: true,
+            target_commitish: "testing",
+            published_at: "2026-08-15T00:00:00Z",
+          }];
+        },
+      };
+    },
+    sleepImpl: async (delayMs) => { delays.push(delayMs); },
+  });
+  assert.equal(attempts, 3);
+  assert.deepEqual(delays, [1_000, 2_000]);
+  assert.deepEqual(result, { version: "1.14.0-beta.15", tag: "v1.14.0-beta.15", commit: "testing" });
+});
+
 test("all Actions use the approved immutable SHA pins", async () => {
   const result = await checkActions(repositoryRoot);
   assert.equal(result.workflowCount, 2);
