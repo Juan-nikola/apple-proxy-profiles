@@ -533,6 +533,7 @@ export async function buildArtifacts({
   singBoxBinaries = null,
   includeStaticFiles = true,
   chinaIpAudit = null,
+  fetchSnapshotImpl = fetchSnapshot,
 }) {
   let commit;
   let committedAt;
@@ -550,7 +551,12 @@ export async function buildArtifacts({
     ({ sha: commit, committedAt } = await resolveUpstreamCommit());
   }
   const upstream = Object.freeze({ ...BLACKMATRIX7_BASELINE, commit, committedAt });
-  const snapshot = await fetchSnapshot({ commit, catalog: FETCH_SOURCE_CATALOG, concurrency: 4 });
+  const snapshot = await fetchSnapshotImpl({
+    commit,
+    catalog: FETCH_SOURCE_CATALOG,
+    concurrency: 1,
+    requestIntervalMs: 250,
+  });
   const statics = includeStaticFiles ? await staticFiles() : null;
   const artifacts = buildClientArtifacts({
     snapshot,

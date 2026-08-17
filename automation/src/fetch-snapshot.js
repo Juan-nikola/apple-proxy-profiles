@@ -3,7 +3,14 @@ import { createHash } from "node:crypto";
 import { BLACKMATRIX7_BASELINE, pinnedRawUrl } from "./source-catalog.js";
 
 const MAX_SOURCE_BYTES = 64 * 1024 * 1024;
+const MAX_RETRY_DELAY_MS = 5 * 60_000;
 const RETRYABLE_STATUS = new Set([408, 425, 429, 500, 502, 503, 504]);
+const TRANSIENT_RETRY_DELAYS_MS = Object.freeze([1_000, 2_000]);
+const RATE_LIMIT_RETRY_DELAYS_MS = Object.freeze([30_000, 60_000]);
+
+function sleep(delayMs) {
+  return new Promise((resolvePromise) => setTimeout(resolvePromise, delayMs));
+}
 
 function sourceError(sourceId, reason) {
   return new Error(`Rule source ${sourceId}: ${reason}`);
@@ -48,20 +55,83 @@ async function readBoundedBody(response, sourceId, maxBytes) {
   return Buffer.concat(chunks, total);
 }
 
-async function fetchOne(source, { commit, fetchImpl, maxBytes, timeoutMs, retries }) {
+function parsedHttpDate(value) {
+  const timestamp = typeof value === "string" ? Date.parse(value) : Number.NaN;
+  return Number.isFinite(timestamp) ? timestamp : null;
+}
+
+function boundedDelay(delayMs, fallbackMs) {
+  const selected = Number.isFinite(delayMs) && delayMs >= 0 ? delayMs : fallbackMs;
+  return Math.min(MAX_RETRY_DELAY_MS, Math.max(1_000, Math.ceil(selected)));
+}
+
+function responseRetryDelay(response, attempt, nowImpl) {
+  const status = response?.status;
+  const fallback = status === 429
+    ? RATE_LIMIT_RETRY_DELAYS_MS[attempt]
+    : TRANSIENT_RETRY_DELAYS_MS[attempt];
+  const serverDate = parsedHttpDate(response?.headers?.get("date")) ?? nowImpl();
+  const retryAfter = response?.headers?.get("retry-after");
+  if (typeof retryAfter === "string" && /^\d+$/u.test(retryAfter)) {
+    return boundedDelay(Number(retryAfter) * 1_000, fallback);
+  }
+  const retryAt = parsedHttpDate(retryAfter);
+  if (retryAt !== null) return boundedDelay(retryAt - serverDate, fallback);
+  const expiresAt = parsedHttpDate(response?.headers?.get("expires"));
+  if (expiresAt !== null) return boundedDelay(expiresAt - serverDate, fallback);
+  return boundedDelay(fallback, fallback);
+}
+
+async function discardBody(response) {
+  if (response?.body && typeof response.body.cancel === "function") {
+    await response.body.cancel().catch(() => {});
+  }
+}
+
+function requestStarter(requestIntervalMs, sleepImpl) {
+  let tail = Promise.resolve();
+  let started = false;
+  return async function startRequest(start) {
+    const turn = tail;
+    let release;
+    tail = new Promise((resolvePromise) => { release = resolvePromise; });
+    await turn;
+    try {
+      if (started && requestIntervalMs > 0) await sleepImpl(requestIntervalMs);
+      started = true;
+      return start();
+    } finally {
+      release();
+    }
+  };
+}
+
+async function fetchOne(source, {
+  commit,
+  fetchImpl,
+  maxBytes,
+  timeoutMs,
+  retries,
+  sleepImpl,
+  nowImpl,
+  startRequest,
+}) {
   const rawUrl = validateRawUrl(pinnedRawUrl(source, commit), commit);
   let lastReason = "network failure";
   for (let attempt = 0; attempt <= retries; attempt += 1) {
     let response;
     try {
-      response = await fetchImpl(rawUrl, {
+      response = await startRequest(() => fetchImpl(rawUrl, {
         redirect: "manual",
         headers: { Accept: "text/plain" },
         signal: AbortSignal.timeout(timeoutMs),
-      });
+      }));
     } catch {
       lastReason = "network failure";
-      if (attempt < retries) continue;
+      if (attempt < retries) {
+        await sleepImpl(TRANSIENT_RETRY_DELAYS_MS[attempt]);
+        continue;
+      }
       throw sourceError(source.id, lastReason);
     }
     if (response.status >= 300 && response.status < 400) {
@@ -69,7 +139,12 @@ async function fetchOne(source, { commit, fetchImpl, maxBytes, timeoutMs, retrie
     }
     if (response.status !== 200) {
       lastReason = `HTTP status ${response.status}`;
-      if (RETRYABLE_STATUS.has(response.status) && attempt < retries) continue;
+      if (RETRYABLE_STATUS.has(response.status) && attempt < retries) {
+        const delayMs = responseRetryDelay(response, attempt, nowImpl);
+        await discardBody(response);
+        await sleepImpl(delayMs);
+        continue;
+      }
       throw sourceError(source.id, lastReason);
     }
     if (response.headers.has("location")) throw sourceError(source.id, "unexpected redirect metadata");
@@ -107,21 +182,40 @@ export async function fetchSnapshot({
   maxBytes = MAX_SOURCE_BYTES,
   timeoutMs = 30_000,
   retries = 2,
+  sleepImpl = sleep,
+  nowImpl = Date.now,
+  requestIntervalMs = 0,
 }) {
   if (!/^[0-9a-f]{40}$/u.test(commit)) throw new TypeError("Snapshot commit must be a full SHA");
   if (!Array.isArray(catalog) || catalog.length === 0) throw new TypeError("Snapshot catalog must be non-empty");
   if (typeof fetchImpl !== "function") throw new TypeError("Snapshot fetch implementation is required");
+  if (typeof sleepImpl !== "function") throw new TypeError("Snapshot sleep implementation is required");
+  if (typeof nowImpl !== "function") throw new TypeError("Snapshot clock implementation is required");
   if (!Number.isSafeInteger(concurrency) || concurrency < 1 || concurrency > 4) {
     throw new RangeError("Snapshot concurrency must be between 1 and 4");
   }
+  if (!Number.isSafeInteger(retries) || retries < 0 || retries > 2) {
+    throw new RangeError("Snapshot retries must be between 0 and 2");
+  }
+  if (!Number.isSafeInteger(requestIntervalMs) || requestIntervalMs < 0 || requestIntervalMs > 5_000) {
+    throw new RangeError("Snapshot request interval must be between 0 and 5000 milliseconds");
+  }
   const results = new Array(catalog.length);
   let cursor = 0;
+  const startRequest = requestStarter(requestIntervalMs, sleepImpl);
   async function worker() {
     while (cursor < catalog.length) {
       const index = cursor;
       cursor += 1;
       results[index] = await fetchOne(catalog[index], {
-        commit, fetchImpl, maxBytes, timeoutMs, retries,
+        commit,
+        fetchImpl,
+        maxBytes,
+        timeoutMs,
+        retries,
+        sleepImpl,
+        nowImpl,
+        startRequest,
       });
     }
   }
