@@ -13,15 +13,13 @@ import {
   PUBLIC_PAGES_LIMITS,
   validateWorkflowText,
 } from "../scripts/check-actions.mjs";
-import * as singBoxInstaller from "../scripts/install-sing-box-core.mjs";
-
-const {
+import {
   SING_BOX_VERSION,
   digestForReleaseAssetPage,
   installSingBoxCore,
   releaseAsset,
   resolveSingBoxTestingRelease,
-} = singBoxInstaller;
+} from "../scripts/install-sing-box-core.mjs";
 
 const repositoryRoot = new URL("../", import.meta.url);
 const updateWorkflow = new URL("../.github/workflows/update-rules.yml", import.meta.url);
@@ -120,12 +118,18 @@ test("installer verifies, extracts, versions, and exports an absolute official c
   assert.equal(tar.status, 0, tar.stderr);
   const archive = await readFile(archivePath);
   const digest = createHash("sha256").update(archive).digest("hex");
+  let integrityAttempts = 0;
+  const retryDelays = [];
   const fetchImpl = async (url) => {
     if (url === "https://github.com/SagerNet/sing-box/releases.atom") {
       return new Response(releaseFeed, { status: 200 });
     }
     if (url === asset.archiveUrl) return new Response(archive, { status: 200 });
-    if (url === asset.integrityUrl) return new Response(releaseAssetRow({ digest }), { status: 200 });
+    if (url === asset.integrityUrl) {
+      integrityAttempts += 1;
+      if (integrityAttempts < 3) return new Response("gateway timeout", { status: 504 });
+      return new Response(releaseAssetRow({ digest }), { status: 200 });
+    }
     return new Response("not found", { status: 404 });
   };
 
@@ -135,11 +139,14 @@ test("installer verifies, extracts, versions, and exports an absolute official c
     installRoot,
     githubEnvPath,
     fetchImpl,
+    sleepImpl: async (delayMs) => { retryDelays.push(delayMs); },
   });
   assert.equal(isAbsolute(result.corePath), true);
   assert.equal(result.corePath, join(installRoot, archiveDirectory, "sing-box"));
   assert.equal(result.versionOutput, `sing-box version ${SING_BOX_VERSION}`);
   assert.equal(await readFile(githubEnvPath, "utf8"), `SING_BOX_CORE=${result.corePath}\n`);
+  assert.equal(integrityAttempts, 3);
+  assert.deepEqual(retryDelays, [1_000, 2_000]);
   assert.deepEqual(result.release, {
     version: "1.14.0-beta.17",
     tag: "v1.14.0-beta.17",
@@ -172,7 +179,7 @@ test("resolves the newest published prerelease testing release", async () => {
   );
 });
 
-test("retries transient release API failures before selecting the newest testing release", async () => {
+test("retries transient release feed failures before selecting the newest testing release", async () => {
   let attempts = 0;
   const delays = [];
   const result = await resolveSingBoxTestingRelease({

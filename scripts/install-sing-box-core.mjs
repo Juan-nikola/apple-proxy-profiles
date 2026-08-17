@@ -5,12 +5,12 @@ import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-// Used only when GitHub is temporarily unavailable. CI resolves the newest
-// published testing release before every build.
-export const SING_BOX_VERSION = "1.14.0-beta.15";
-const RELEASES_URL = "https://api.github.com/repos/SagerNet/sing-box/releases?per_page=100";
+// Explicit callers can pin this version. CI resolves the newest published
+// testing release from GitHub's official Atom feed before every build.
+export const SING_BOX_VERSION = "1.14.0-beta.17";
+const RELEASE_FEED_URL = "https://github.com/SagerNet/sing-box/releases.atom";
 const RELEASE_ROOT = (version) => `https://github.com/SagerNet/sing-box/releases/download/v${version}`;
-const RELEASE_METADATA_URL = (version) => `https://api.github.com/repos/SagerNet/sing-box/releases/tags/v${version}`;
+const RELEASE_ASSETS_URL = (version) => `https://github.com/SagerNet/sing-box/releases/expanded_assets/v${version}`;
 const RELEASE_RETRY_DELAYS_MS = Object.freeze([1_000, 2_000]);
 const PLATFORM_SUFFIXES = Object.freeze({
   "linux/x64": "linux-amd64",
@@ -28,38 +28,64 @@ function retryableReleaseStatus(status) {
   return status === 429 || (Number.isInteger(status) && status >= 500 && status <= 599);
 }
 
-export async function resolveSingBoxTestingRelease({ fetchImpl = fetch, sleepImpl = sleep } = {}) {
+async function fetchWithRetry(url, init, {
+  fetchImpl,
+  sleepImpl,
+  description,
+}) {
   if (typeof fetchImpl !== "function") throw new TypeError("A fetch implementation is required");
   if (typeof sleepImpl !== "function") throw new TypeError("A sleep implementation is required");
   let response;
   for (let attempt = 0; attempt <= RELEASE_RETRY_DELAYS_MS.length; attempt += 1) {
-    response = await fetchImpl(RELEASES_URL, {
-      headers: {
-        Accept: "application/vnd.github+json",
-        "User-Agent": "apple-proxy-profiles-sing-box-installer",
-        "X-GitHub-Api-Version": "2022-11-28",
-      },
-    });
+    response = await fetchImpl(url, init);
     if (response?.ok) break;
     const status = response?.status;
     if (!retryableReleaseStatus(status) || attempt === RELEASE_RETRY_DELAYS_MS.length) {
-      throw new Error(`Failed to resolve the latest sing-box testing release (${status ?? "no response"})`);
+      throw new Error(`Failed to download ${description} (${status ?? "no response"})`);
     }
     await sleepImpl(RELEASE_RETRY_DELAYS_MS[attempt]);
   }
-  const releases = await response.json();
-  if (!Array.isArray(releases)) throw new Error("sing-box release list is invalid");
-  const candidates = releases
-    .filter((release) => (
-      release?.prerelease === true
-      && (release.target_commitish === undefined || release.target_commitish === "testing")
-      && /^v\d+\.\d+\.\d+-[0-9A-Za-z.-]+$/u.test(release.tag_name ?? "")
-    ))
-    .sort((left, right) => String(right.published_at ?? "").localeCompare(String(left.published_at ?? "")));
+  return response;
+}
+
+function attribute(element, name) {
+  const match = new RegExp(`\\b${name}="([^"]*)"`, "u").exec(element);
+  return match?.[1] ?? null;
+}
+
+export async function resolveSingBoxTestingRelease({ fetchImpl = fetch, sleepImpl = sleep } = {}) {
+  const response = await fetchWithRetry(RELEASE_FEED_URL, {
+    headers: {
+      Accept: "application/atom+xml",
+      "User-Agent": "apple-proxy-profiles-sing-box-installer",
+    },
+  }, {
+    fetchImpl,
+    sleepImpl,
+    description: "official sing-box release feed",
+  });
+  const feed = await response.text();
+  if (typeof feed !== "string") throw new Error("sing-box release feed is invalid");
+  const entries = feed.match(/<entry\b[^>]*>[\s\S]*?<\/entry>/gu) ?? [];
+  const candidates = [];
+  for (const entry of entries) {
+    const updatedMatch = /<updated>([^<]+)<\/updated>/u.exec(entry);
+    const updatedAt = Date.parse(updatedMatch?.[1] ?? "");
+    if (!Number.isFinite(updatedAt)) continue;
+    const links = entry.match(/<link\b[^>]*>/gu) ?? [];
+    for (const link of links) {
+      if (attribute(link, "rel") !== "alternate" || attribute(link, "type") !== "text/html") continue;
+      const href = attribute(link, "href") ?? "";
+      const tagMatch = /^https:\/\/github\.com\/SagerNet\/sing-box\/releases\/tag\/(v\d+\.\d+\.\d+-[0-9A-Za-z.-]+)$/u.exec(href);
+      if (!tagMatch) continue;
+      candidates.push({ tag: tagMatch[1], updatedAt });
+    }
+  }
+  candidates.sort((left, right) => right.updatedAt - left.updatedAt);
   const release = candidates[0];
   if (!release) throw new Error("No published sing-box testing release was found");
-  const version = release.tag_name.slice(1);
-  return Object.freeze({ version, tag: release.tag_name, commit: release.target_commitish ?? null });
+  const version = release.tag.slice(1);
+  return Object.freeze({ version, tag: release.tag, commit: null });
 }
 
 export function releaseAsset(platform = process.platform, arch = process.arch, version = SING_BOX_VERSION) {
@@ -72,26 +98,34 @@ export function releaseAsset(platform = process.platform, arch = process.arch, v
     suffix,
     archiveName,
     archiveUrl: `${RELEASE_ROOT(version)}/${archiveName}`,
-    metadataUrl: RELEASE_METADATA_URL(version),
+    integrityUrl: RELEASE_ASSETS_URL(version),
   });
 }
 
-export function digestForReleaseAsset(metadata, asset) {
+export function digestForReleaseAssetPage(html, asset) {
+  if (typeof html !== "string") throw new Error("Official sing-box release asset page is invalid");
   const version = asset?.version ?? SING_BOX_VERSION;
-  if (!metadata || metadata.tag_name !== `v${version}`) {
-    throw new Error(`Official sing-box release tag mismatch: ${metadata?.tag_name ?? "missing"}`);
+  const archiveName = asset?.archiveName ?? "";
+  const expectedPath = `/SagerNet/sing-box/releases/download/v${version}/${archiveName}`;
+  if (asset?.archiveUrl !== `https://github.com${expectedPath}`) {
+    throw new Error(`Official release asset URL mismatch: ${archiveName || "missing"}`);
   }
-  if (!Array.isArray(metadata.assets)) throw new Error("Official sing-box release assets are missing");
-  const matches = metadata.assets.filter((record) => record?.name === asset.archiveName);
-  if (matches.length === 0) throw new Error(`Official release asset is missing: ${asset.archiveName}`);
-  if (matches.length !== 1) throw new Error(`Official release asset is duplicate: ${asset.archiveName}`);
-  const [record] = matches;
-  if (record.browser_download_url !== asset.archiveUrl) {
+  const digestLabel = `Copy to clipboard digest for ${archiveName}`;
+  const rows = html.match(/<li\b[^>]*>[\s\S]*?<\/li>/gu) ?? [];
+  const matches = rows.filter((row) => row.includes(`aria-label="${digestLabel}"`));
+  if (matches.length === 0) throw new Error(`Official release asset is missing: ${archiveName}`);
+  if (matches.length !== 1) throw new Error(`Official release asset is duplicate: ${archiveName}`);
+  const [row] = matches;
+  const hrefs = (row.match(/\bhref="[^"]+"/gu) ?? []).map((match) => attribute(match, "href"));
+  if (hrefs.filter((href) => href === expectedPath).length !== 1) {
     throw new Error(`Official release asset URL mismatch: ${asset.archiveName}`);
   }
-  const match = /^sha256:([0-9a-f]{64})$/u.exec(record.digest ?? "");
-  if (!match) throw new Error(`Official release asset digest is invalid: ${asset.archiveName}`);
-  return match[1];
+  const digestElements = (row.match(/<clipboard-copy\b[^>]*>/gu) ?? [])
+    .filter((element) => attribute(element, "aria-label") === digestLabel);
+  if (digestElements.length !== 1) throw new Error(`Official release asset digest is duplicate: ${archiveName}`);
+  const digestMatch = /^sha256:([0-9a-f]{64})$/u.exec(attribute(digestElements[0], "value") ?? "");
+  if (!digestMatch) throw new Error(`Official release asset digest is invalid: ${archiveName}`);
+  return digestMatch[1];
 }
 
 function sha256(bytes) {
@@ -105,6 +139,21 @@ function equalDigest(actual, expected) {
 async function download(url, fetchImpl, headers = {}) {
   const response = await fetchImpl(url, { redirect: "follow", headers });
   if (!response?.ok) throw new Error(`Failed to download official sing-box asset (${response?.status ?? "no response"}): ${url}`);
+  return Buffer.from(await response.arrayBuffer());
+}
+
+async function downloadIntegrityPage(url, fetchImpl, sleepImpl) {
+  const response = await fetchWithRetry(url, {
+    redirect: "follow",
+    headers: {
+      Accept: "text/html",
+      "User-Agent": "apple-proxy-profiles-sing-box-installer",
+    },
+  }, {
+    fetchImpl,
+    sleepImpl,
+    description: "official sing-box release asset page",
+  });
   return Buffer.from(await response.arrayBuffer());
 }
 
@@ -130,37 +179,29 @@ export async function installSingBoxCore({
   installRoot = join(process.env.RUNNER_TEMP || tmpdir(), "apple-proxy-profiles-toolchain"),
   githubEnvPath = process.env.GITHUB_ENV || null,
   fetchImpl = globalThis.fetch,
+  sleepImpl = sleep,
   version = null,
 } = {}) {
   if (typeof fetchImpl !== "function") throw new TypeError("A fetch implementation is required");
-  const release = version === null ? await resolveSingBoxTestingRelease({ fetchImpl }) : { version };
+  if (typeof sleepImpl !== "function") throw new TypeError("A sleep implementation is required");
+  const release = version === null ? await resolveSingBoxTestingRelease({ fetchImpl, sleepImpl }) : { version };
   const asset = releaseAsset(platform, arch, release.version);
   const absoluteRoot = resolve(installRoot);
   if (/[\r\n]/u.test(absoluteRoot)) throw new Error("sing-box install path must not contain line breaks");
   await mkdir(absoluteRoot, { recursive: true });
 
-  const [archive, metadataBytes] = await Promise.all([
+  const [archive, integrityBytes] = await Promise.all([
     download(asset.archiveUrl, fetchImpl),
-    download(asset.metadataUrl, fetchImpl, {
-      Accept: "application/vnd.github+json",
-      "User-Agent": "apple-proxy-profiles-sing-box-installer",
-      "X-GitHub-Api-Version": "2022-11-28",
-    }),
+    downloadIntegrityPage(asset.integrityUrl, fetchImpl, sleepImpl),
   ]);
-  let metadata;
-  try {
-    metadata = JSON.parse(metadataBytes.toString("utf8"));
-  } catch (error) {
-    throw Object.assign(new Error("Official sing-box release metadata is invalid JSON"), { cause: error });
-  }
-  const expected = digestForReleaseAsset(metadata, asset);
+  const expected = digestForReleaseAssetPage(integrityBytes.toString("utf8"), asset);
   const actual = sha256(archive);
   if (!equalDigest(actual, expected)) throw new Error(`Official sing-box archive checksum mismatch: ${asset.archiveName}`);
 
   const archivePath = join(absoluteRoot, asset.archiveName);
-  const metadataPath = join(absoluteRoot, `sing-box-${asset.version}-release.json`);
+  const integrityPath = join(absoluteRoot, `sing-box-${asset.version}-release-assets.html`);
   await writeFile(archivePath, archive, { mode: 0o600 });
-  await writeFile(metadataPath, metadataBytes, { mode: 0o600 });
+  await writeFile(integrityPath, integrityBytes, { mode: 0o600 });
   await run("tar", ["-xzf", archivePath, "-C", absoluteRoot]);
 
   const corePath = resolve(absoluteRoot, `sing-box-${asset.version}-${asset.suffix}`, "sing-box");
