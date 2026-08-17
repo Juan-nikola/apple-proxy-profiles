@@ -35,7 +35,7 @@
 根 README 顶部先回答“这个项目做什么”和“我现在要做什么”，随后按真实使用顺序组织：
 
 1. 先理解节点、订阅、Sub-Store、客户端、业务分组和公开规则。
-2. 首次部署：准备环境，建立五个 client collection，创建或核对 16 个 File 任务。
+2. 首次部署：准备环境，建立五个 client collection，创建或核对 17 个 File 任务。
 3. 导入客户端：分别说明 Shadowrocket、Surge、Egern、Anywhere 和 sing-box 的最短成功路径。
 4. 验证与回滚：先验证国内、海外、局域网和业务组切换，再说明客户端、Sub-Store 和发布通道三层回滚。
 5. 日常维护：按“增加或删除节点、修改任务参数、更新公开规则、修改源码、发布 Pages”拆分场景。
@@ -86,11 +86,11 @@ Android 是 sing-box 的平台输出，不是第六个客户端。所有当前�
 
 ### 任务边界
 
-根 README 展示 16 个 File 任务及其用途：
+根 README 展示 17 个 File 任务及其用途：
 
 - Egern：`egern-nodes` 与三个平台配置，共 4 个。
 - Anywhere：`anywhere-nodes`，共 1 个。
-- Shadowrocket：`shadowrocket-config-macos/iphone/ipad`，共 3 个。
+- Shadowrocket：`shadowrocket-nodes` 与三个平台配置，共 4 个。
 - Surge：`surge-nodes` 与三个平台配置，共 4 个。
 - sing-box：四个平台配置，共 4 个。
 
@@ -164,7 +164,7 @@ Anywhere 当前默认导入 14 个稳定业务包：
 ## 验收标准
 
 1. 新用户只读根 README 就知道自己当前该做哪一步，并能完成首次部署、验证和回滚。
-2. 所有当前文档统一描述五个客户端、五个 client collection、16 个任务和 Anywhere 14 个稳定业务包。
+2. 所有当前文档统一描述五个客户端、五个 client collection、17 个任务（`4+1+4+4+4`）和 Anywhere 14 个稳定业务包。
 3. README 不再断言用户已经部署特定 Sub-Store、拥有特定来源或已经建立任务。
 4. 每个关键操作都有成功标志，失败时有可逆检查和回滚入口。
 5. 文档一致性测试能在旧口径重新出现时失败，并从实际仓库结构获得客户端和 Anywhere 业务包事实。

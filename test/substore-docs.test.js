@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 
+import { CLIENT } from "../shared/contracts.js";
+
 const root = new URL("../", import.meta.url);
 
 async function text(path) {
@@ -38,6 +40,16 @@ const operationalDocs = Object.freeze({
   "clients/sing-box/docs/openwrt.md": "apple-proxy-singbox",
 });
 
+const activeDocs = Object.freeze([
+  "README.md",
+  "docs/substore-two-layer-setup.md",
+  "docs/implementation-status.md",
+  "clients/anywhere/README.md",
+  "clients/anywhere/docs/canary.md",
+  "clients/anywhere/docs/deployment.md",
+  "clients/anywhere/docs/troubleshooting.md",
+]);
+
 test("central Sub-Store guide closes over all public scripts and private tasks", async () => {
   const readme = await text("README.md");
   const guide = await text("docs/substore-two-layer-setup.md");
@@ -53,13 +65,18 @@ test("central Sub-Store guide closes over all public scripts and private tasks",
     "sing-box-config-generator.js",
   ];
   for (const script of scripts) assert.match(guide, new RegExp(`current/.+/${script.replaceAll(".", "\\.")}`, "u"), script);
-  for (const task of [
+  const tasks = [
     "egern-nodes", "egern-macos", "egern-iphone", "egern-ipad", "anywhere-nodes",
+    "shadowrocket-nodes",
     "shadowrocket-config-macos", "shadowrocket-config-iphone", "shadowrocket-config-ipad",
     "surge-nodes", "surge-config-macos", "surge-config-iphone", "surge-config-ipad",
      "singbox-config-macos", "singbox-config-iphone", "singbox-config-ipad", "singbox-config-android",
-  ]) assert.ok(guide.includes(`\`${task}\``), `missing task ${task}`);
-  assert.match(guide, /(?:五客户端|客户端)总数为 4\+1\+3\+4\+4=16 个任务/u);
+  ];
+  for (const [index, task] of tasks.entries()) {
+    const rowPattern = new RegExp("\\| " + (index + 1) + " \\| `" + task + "` \\|", "u");
+    assert.match(guide, rowPattern, `missing task-table row ${task}`);
+  }
+  assert.match(guide, /(?:五客户端|客户端)总数为 4\+1\+4\+4\+4=17 个任务/u);
   assert.match(guide, /#output=nodes[\s\S]*&/u);
   assert.match(guide, /#output=config[\s\S]*&/u);
   assert.match(guide, /channel=current[\s\S]*channel=edge/u);
@@ -76,6 +93,30 @@ test("public documentation never contains a private Sub-Store endpoint", async (
   assert.doesNotMatch(content, /(?:substore|subs)[^\n]{0,120}(?:api|token|key)=/iu);
   assert.doesNotMatch(content, /(?:uuid|password|passwd|private_key)\s*[:=]\s*[^`\s]+/iu);
   assert.match(content, /example\.invalid/u);
+});
+
+test("active documentation follows the maintained client and Anywhere package contracts", async () => {
+  const manifest = JSON.parse(await text("clients/anywhere/examples/rules/manifest.json"));
+  const packageIds = manifest.logicalRuleSets.map(({ id }) => id).sort();
+  const expectedCount = packageIds.length;
+  const docs = await Promise.all(activeDocs.map(async (path) => [path, await text(path)]));
+
+  assert.deepEqual(Object.keys(CLIENT).sort(), ["anywhere", "egern", "shadowrocket", "singbox", "surge"]);
+  assert.equal(expectedCount, 14);
+  for (const [path, content] of docs) {
+    assert.doesNotMatch(content, /六个客户端|六个 client collection|31 个默认(?:规则)?分片|31 个默认 shard/u, path);
+    assert.doesNotMatch(content, /(?:Happ|OneXray).{0,40}(?:部署|客户端|任务|collection)/iu, path);
+  }
+
+  const entry = docs.find(([path]) => path === "README.md")[1];
+  assert.match(entry, new RegExp(`${expectedCount} 个稳定业务包`, "u"));
+  for (const id of packageIds) assert.ok(entry.includes(`\`${id}\``), `README missing Anywhere package ${id}`);
+});
+
+test("beginner entry does not assume one private deployment already exists", async () => {
+  const readme = await text("README.md");
+  assert.doesNotMatch(readme, /substore\.sunyz\.uk|xiaov/u);
+  assert.doesNotMatch(readme, /你的 Sub-Store 里已有|你自己的 Sub-Store 已经部署|已经全部建好|已经帮你建好/u);
 });
 
 test("canonical client pool guide defines five mappings, migration, rollback, and fail-closed rendering", async () => {
