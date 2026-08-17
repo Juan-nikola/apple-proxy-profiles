@@ -3,31 +3,84 @@ import test from "node:test";
 
 import { resolveUpstreamCommit } from "../src/resolve-upstream.js";
 
-const sha = "dab47069a30c4ae70f7f5f4c919d639d9aaf79dc";
+const headSha = "538b8a79532c44dfbcb8e694d2f43e753c60b157";
+const olderSha = "2ba8dfe636e64b41d4857a621fec35868ab50e08";
+const now = Date.parse("2026-08-17T16:00:00Z");
+const commitFeed = `<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <entry>
+    <id>tag:github.com,2008:Grit::Commit/538b8a79532c44dfbcb8e694d2f43e753c60b157</id>
+    <link href="https://github.com/blackmatrix7/ios_rule_script/commit/538b8a79532c44dfbcb8e694d2f43e753c60b157" rel="alternate" type="text/html"/>
+    <updated>2026-08-15T18:26:29Z</updated>
+  </entry>
+  <entry>
+    <id>tag:github.com,2008:Grit::Commit/2ba8dfe636e64b41d4857a621fec35868ab50e08</id>
+    <link type="text/html" rel="alternate" href="https://github.com/blackmatrix7/ios_rule_script/commit/2ba8dfe636e64b41d4857a621fec35868ab50e08"/>
+    <updated>2026-08-16T00:00:00Z</updated>
+  </entry>
+</feed>`;
 
-test("resolves one immutable default-branch commit with the GitHub media type", async () => {
+test("resolves the first immutable default-branch Atom entry", async () => {
   let request;
   const result = await resolveUpstreamCommit(async (url, options) => {
     request = { url, options };
-    return new Response(JSON.stringify({ sha, commit: { committer: { date: "2026-08-01T19:07:21Z" } } }), {
-      status: 200,
-      headers: { "content-type": "application/json" },
-    });
-  }, Date.parse("2026-08-03T00:00:00Z"));
-  assert.deepEqual(result, { sha, committedAt: "2026-08-01T19:07:21Z" });
-  assert.match(request.url, /blackmatrix7\/ios_rule_script\/commits\/master$/u);
+    return new Response(commitFeed, { status: 200 });
+  }, now);
+  assert.deepEqual(result, { sha: headSha, committedAt: "2026-08-15T18:26:29Z" });
+  assert.equal(request.url, "https://github.com/blackmatrix7/ios_rule_script/commits/master.atom");
   assert.equal(request.options.redirect, "manual");
-  assert.equal(request.options.headers.Accept, "application/vnd.github+json");
+  assert.equal(request.options.headers.Accept, "application/atom+xml");
 });
 
-test("rejects bad status, JSON, sha, and future timestamps without response bodies", async () => {
+test("retries transient commit feed failures before resolving the head", async () => {
+  let attempts = 0;
+  const delays = [];
+  const result = await resolveUpstreamCommit(async () => {
+    attempts += 1;
+    if (attempts < 3) return new Response("gateway timeout", { status: 504 });
+    return new Response(commitFeed, { status: 200 });
+  }, now, async (delayMs) => { delays.push(delayMs); });
+  assert.deepEqual(result, { sha: headSha, committedAt: "2026-08-15T18:26:29Z" });
+  assert.equal(attempts, 3);
+  assert.deepEqual(delays, [1_000, 2_000]);
+});
+
+test("does not retry a permanent commit feed status", async () => {
+  let attempts = 0;
+  await assert.rejects(
+    resolveUpstreamCommit(async () => {
+      attempts += 1;
+      return new Response("not found", { status: 404 });
+    }, now, async () => {}),
+    /HTTP status 404/u,
+  );
+  assert.equal(attempts, 1);
+});
+
+test("rejects malformed commit entries, mismatched links, and invalid times", async () => {
+  const invalidShaFeed = commitFeed.replace(headSha, "master");
+  const mismatchedLinkFeed = commitFeed.replace(
+    `https://github.com/blackmatrix7/ios_rule_script/commit/${headSha}`,
+    `https://github.com/blackmatrix7/ios_rule_script/commit/${olderSha}`,
+  );
   const cases = [
-    [async () => new Response("private", { status: 503 }), /HTTP status 503/u],
-    [async () => new Response("not-json", { status: 200 }), /invalid JSON/u],
-    [async () => new Response(JSON.stringify({ sha: "main", commit: { committer: { date: "2026-08-01T00:00:00Z" } } })), /invalid commit$/u],
-    [async () => new Response(JSON.stringify({ sha, commit: { committer: { date: "2030-01-01T00:00:00Z" } } })), /invalid commit time/u],
+    ["<feed></feed>", /invalid commit$/u],
+    [invalidShaFeed, /invalid commit$/u],
+    [mismatchedLinkFeed, /invalid commit$/u],
+    [commitFeed.replace("2026-08-15T18:26:29Z", "not-a-time"), /invalid commit time/u],
+    [commitFeed.replace("2026-08-15T18:26:29Z", "2030-01-01T00:00:00Z"), /invalid commit time/u],
   ];
-  for (const [fetchImpl, pattern] of cases) {
-    await assert.rejects(() => resolveUpstreamCommit(fetchImpl, Date.parse("2026-08-03T00:00:00Z")), pattern);
+  for (const [body, pattern] of cases) {
+    await assert.rejects(
+      resolveUpstreamCommit(async () => new Response(body, { status: 200 }), now),
+      pattern,
+    );
   }
+});
+
+test("reports a commit feed network failure without exposing fetch details", async () => {
+  await assert.rejects(
+    resolveUpstreamCommit(async () => { throw new Error("private network detail"); }, now),
+    /Blackmatrix7 resolver network failure/u,
+  );
 });
