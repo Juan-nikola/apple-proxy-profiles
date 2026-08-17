@@ -13,30 +13,63 @@ import {
   PUBLIC_PAGES_LIMITS,
   validateWorkflowText,
 } from "../scripts/check-actions.mjs";
-import {
+import * as singBoxInstaller from "../scripts/install-sing-box-core.mjs";
+
+const {
   SING_BOX_VERSION,
-  digestForReleaseAsset,
+  digestForReleaseAssetPage,
   installSingBoxCore,
   releaseAsset,
   resolveSingBoxTestingRelease,
-} from "../scripts/install-sing-box-core.mjs";
+} = singBoxInstaller;
 
 const repositoryRoot = new URL("../", import.meta.url);
 const updateWorkflow = new URL("../.github/workflows/update-rules.yml", import.meta.url);
 const deployWorkflow = new URL("../.github/workflows/deploy-pages.yml", import.meta.url);
+
+const releaseFeed = `<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <entry>
+    <updated>2026-08-17T09:47:06Z</updated>
+    <link rel="alternate" type="text/html" href="https://github.com/SagerNet/sing-box/releases/tag/v1.13.19"/>
+  </entry>
+  <entry>
+    <updated>2026-08-17T09:47:04Z</updated>
+    <link rel="alternate" type="text/html" href="https://github.com/SagerNet/sing-box/releases/tag/v1.14.0-beta.17"/>
+  </entry>
+  <entry>
+    <updated>2026-08-15T14:02:19Z</updated>
+    <link rel="alternate" type="text/html" href="https://github.com/SagerNet/sing-box/releases/tag/v1.14.0-beta.15"/>
+  </entry>
+</feed>`;
+
+function releaseAssetRow({
+  href = "/SagerNet/sing-box/releases/download/v1.14.0-beta.17/sing-box-1.14.0-beta.17-linux-amd64.tar.gz",
+  digest = "a".repeat(64),
+} = {}) {
+  return `<li>
+    <a href="${href}">
+      <span>sing-box-1.14.0-beta.17-linux-amd64.tar.gz</span>
+    </a>
+    <clipboard-copy
+      aria-label="Copy to clipboard digest for sing-box-1.14.0-beta.17-linux-amd64.tar.gz"
+      value="sha256:${digest}">
+    </clipboard-copy>
+  </li>`;
+}
 
 async function workflowText(url) {
   return readFile(url, "utf8");
 }
 
 test("official sing-box release assets are closed to supported runners", () => {
-  assert.equal(SING_BOX_VERSION, "1.14.0-beta.15");
+  assert.equal(SING_BOX_VERSION, "1.14.0-beta.17");
   assert.deepEqual(releaseAsset("linux", "x64"), {
-    version: "1.14.0-beta.15",
+    version: "1.14.0-beta.17",
     suffix: "linux-amd64",
-    archiveName: "sing-box-1.14.0-beta.15-linux-amd64.tar.gz",
-    archiveUrl: "https://github.com/SagerNet/sing-box/releases/download/v1.14.0-beta.15/sing-box-1.14.0-beta.15-linux-amd64.tar.gz",
-    metadataUrl: "https://api.github.com/repos/SagerNet/sing-box/releases/tags/v1.14.0-beta.15",
+    archiveName: "sing-box-1.14.0-beta.17-linux-amd64.tar.gz",
+    archiveUrl: "https://github.com/SagerNet/sing-box/releases/download/v1.14.0-beta.17/sing-box-1.14.0-beta.17-linux-amd64.tar.gz",
+    integrityUrl: "https://github.com/SagerNet/sing-box/releases/expanded_assets/v1.14.0-beta.17",
   });
   assert.equal(releaseAsset("darwin", "arm64").suffix, "darwin-arm64");
   assert.equal(releaseAsset("darwin", "x64").suffix, "darwin-amd64");
@@ -45,29 +78,29 @@ test("official sing-box release assets are closed to supported runners", () => {
   }
 });
 
-test("official release metadata requires one exact archive digest", () => {
+test("official release asset page requires one exact archive path and digest", () => {
   const digest = "a".repeat(64);
-  const asset = releaseAsset("linux", "x64");
-  const name = asset.archiveName;
-  const record = (overrides = {}) => ({
-    name,
-    browser_download_url: asset.archiveUrl,
-    digest: `sha256:${digest}`,
-    ...overrides,
-  });
-  assert.equal(digestForReleaseAsset({ tag_name: `v${SING_BOX_VERSION}`, assets: [record()] }, asset), digest);
-  assert.throws(() => digestForReleaseAsset({ tag_name: `v${SING_BOX_VERSION}`, assets: [] }, asset), /missing/u);
+  const asset = {
+    version: "1.14.0-beta.17",
+    archiveName: "sing-box-1.14.0-beta.17-linux-amd64.tar.gz",
+    archiveUrl: "https://github.com/SagerNet/sing-box/releases/download/v1.14.0-beta.17/sing-box-1.14.0-beta.17-linux-amd64.tar.gz",
+    integrityUrl: "https://github.com/SagerNet/sing-box/releases/expanded_assets/v1.14.0-beta.17",
+  };
+  assert.equal(digestForReleaseAssetPage(releaseAssetRow({ digest }), asset), digest);
+  assert.throws(() => digestForReleaseAssetPage("<ul></ul>", asset), /missing/u);
   assert.throws(
-    () => digestForReleaseAsset({ tag_name: `v${SING_BOX_VERSION}`, assets: [record(), record()] }, asset),
+    () => digestForReleaseAssetPage(`${releaseAssetRow()}${releaseAssetRow()}`, asset),
     /duplicate/u,
   );
   assert.throws(
-    () => digestForReleaseAsset({ tag_name: `v${SING_BOX_VERSION}`, assets: [record({ digest: "sha256:nope" })] }, asset),
-    /digest/u,
+    () => digestForReleaseAssetPage(releaseAssetRow({
+      href: "/SagerNet/sing-box/releases/download/v1.14.0-beta.16/sing-box-1.14.0-beta.17-linux-amd64.tar.gz",
+    }), asset),
+    /URL/u,
   );
   assert.throws(
-    () => digestForReleaseAsset({ tag_name: "v1.14.0-beta.8", assets: [record()] }, asset),
-    /tag/u,
+    () => digestForReleaseAssetPage(releaseAssetRow({ digest: "nope" }), asset),
+    /digest/u,
   );
 });
 
@@ -88,15 +121,11 @@ test("installer verifies, extracts, versions, and exports an absolute official c
   const archive = await readFile(archivePath);
   const digest = createHash("sha256").update(archive).digest("hex");
   const fetchImpl = async (url) => {
+    if (url === "https://github.com/SagerNet/sing-box/releases.atom") {
+      return new Response(releaseFeed, { status: 200 });
+    }
     if (url === asset.archiveUrl) return new Response(archive, { status: 200 });
-    if (url === asset.metadataUrl) return new Response(JSON.stringify({
-      tag_name: `v${SING_BOX_VERSION}`,
-      assets: [{
-        name: asset.archiveName,
-        browser_download_url: asset.archiveUrl,
-        digest: `sha256:${digest}`,
-      }],
-    }), { status: 200 });
+    if (url === asset.integrityUrl) return new Response(releaseAssetRow({ digest }), { status: 200 });
     return new Response("not found", { status: 404 });
   };
 
@@ -106,32 +135,41 @@ test("installer verifies, extracts, versions, and exports an absolute official c
     installRoot,
     githubEnvPath,
     fetchImpl,
-    version: SING_BOX_VERSION,
   });
   assert.equal(isAbsolute(result.corePath), true);
   assert.equal(result.corePath, join(installRoot, archiveDirectory, "sing-box"));
   assert.equal(result.versionOutput, `sing-box version ${SING_BOX_VERSION}`);
   assert.equal(await readFile(githubEnvPath, "utf8"), `SING_BOX_CORE=${result.corePath}\n`);
+  assert.deepEqual(result.release, {
+    version: "1.14.0-beta.17",
+    tag: "v1.14.0-beta.17",
+    commit: null,
+  });
 });
 
 test("resolves the newest published prerelease testing release", async () => {
   const result = await resolveSingBoxTestingRelease({
     fetchImpl: async (url, init) => {
-      assert.match(url, /repos\/SagerNet\/sing-box\/releases/iu);
-      assert.equal(init.headers.Accept, "application/vnd.github+json");
+      assert.equal(url, "https://github.com/SagerNet/sing-box/releases.atom");
+      assert.equal(init.headers.Accept, "application/atom+xml");
       return {
         ok: true,
-        async json() {
-          return [
-            { tag_name: "v1.14.0-beta.14", prerelease: true, published_at: "2026-08-14T00:00:00Z" },
-            { tag_name: "v1.14.0-beta.15", prerelease: true, published_at: "2026-08-15T00:00:00Z" },
-            { tag_name: "v1.13.18", prerelease: false, published_at: "2026-08-15T00:00:00Z" },
-          ];
-        },
+        async text() { return releaseFeed; },
       };
     },
   });
-  assert.deepEqual(result, { version: "1.14.0-beta.15", tag: "v1.14.0-beta.15", commit: null });
+  assert.deepEqual(result, { version: "1.14.0-beta.17", tag: "v1.14.0-beta.17", commit: null });
+  await assert.rejects(
+    resolveSingBoxTestingRelease({
+      fetchImpl: async () => ({
+        ok: true,
+        async text() {
+          return releaseFeed.replaceAll("1.14.0-beta.17", "1.13.19").replaceAll("1.14.0-beta.15", "1.13.18");
+        },
+      }),
+    }),
+    /No published sing-box testing release/u,
+  );
 });
 
 test("retries transient release API failures before selecting the newest testing release", async () => {
@@ -143,21 +181,14 @@ test("retries transient release API failures before selecting the newest testing
       if (attempts < 3) return { ok: false, status: 504 };
       return {
         ok: true,
-        async json() {
-          return [{
-            tag_name: "v1.14.0-beta.15",
-            prerelease: true,
-            target_commitish: "testing",
-            published_at: "2026-08-15T00:00:00Z",
-          }];
-        },
+        async text() { return releaseFeed; },
       };
     },
     sleepImpl: async (delayMs) => { delays.push(delayMs); },
   });
   assert.equal(attempts, 3);
   assert.deepEqual(delays, [1_000, 2_000]);
-  assert.deepEqual(result, { version: "1.14.0-beta.15", tag: "v1.14.0-beta.15", commit: "testing" });
+  assert.deepEqual(result, { version: "1.14.0-beta.17", tag: "v1.14.0-beta.17", commit: null });
 });
 
 test("all Actions use the approved immutable SHA pins", async () => {
