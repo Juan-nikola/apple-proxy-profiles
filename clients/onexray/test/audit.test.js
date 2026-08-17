@@ -3,6 +3,7 @@ import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 
+import { BUSINESS_TARGETS } from "../../../shared/policies/business-targets.js";
 import { canonicalProfileJson } from "../src/profile-codec.js";
 import { renderOneXrayAudit } from "../src/render-audit.js";
 
@@ -68,7 +69,7 @@ test("renders deterministic Chinese credential-free audit allowlist", () => {
     },
   });
   assert.equal(Object.hasOwn(audit, "exclusionReasons"), false);
-  assert.equal(audit.policy.businesses.length, 12);
+  assert.equal(audit.policy.businesses.length, BUSINESS_TARGETS.length);
   assert.deepEqual(audit.policy.businesses.slice(0, 2).map(({ id }) => id), ["ai", "github"]);
   assert.equal(audit.profile.ruleReleaseId, "edge-2026-08-12");
   assert.equal(audit.profile.geoData.domain, "a".repeat(64));

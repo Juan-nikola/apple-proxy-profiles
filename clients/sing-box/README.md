@@ -19,7 +19,7 @@
 - `🚀 节点选择`：主选择器。
 - `⚡ 全部自动`：只对实际节点做 URLTest，选择健康且延迟较低的节点。
 - `🌏 亚太`、`🌍 欧洲`、`🌎 美洲`：地区选择器及地区自动组。
-- `🤖 AI 专用`、`🐙 GitHub`、`📺 YouTube`、`🎬 海外流媒体`、`💬 海外社交`、`🍎 Apple`、`🪟 Microsoft`、`🇨🇳 国内平台`：业务策略组。
+- `🤖 AI 专用`、`🐙 GitHub`、`📺 YouTube`、`🎬 Netflix`、`🏰 Disney+`、`🎵 Spotify`、`🌍 国际媒体`、`✈️ Telegram`、`💬 海外社交`、`🎶 TikTok`、`🍎 Apple`、`🪟 Microsoft`、`📺 哔哩哔哩`、`🎵 抖音`、`📕 小红书`、`🧣 微博`、`🌍 海外游戏`：独立业务策略组。macOS/Android 完整保留这些组；iPhone/iPad 为避免 NetworkExtension OOM，只保留 Apple、Microsoft、哔哩哔哩、抖音、小红书、微博六个轻量业务组。
 - `🧭 DNS 与规则下载`：规则下载可手动切换，但代理 DNS 永远绕过它并经 `⚡ 全部自动`，避免启动环路。
 
 所谓“故障转移”不再生成伪 fallback 组。sing-box 原生 `urltest` 是健康测速选择，不是有序请求重试。

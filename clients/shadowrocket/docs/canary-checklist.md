@@ -17,13 +17,13 @@
 - [ ] 规则顺序包含 `ChinaTLD`：普通 `.cn` 域名命中 `ChinaTLD`/DIRECT，位置在 `OverseasGame` 之后、`ChinaIP`/`GEOIP,CN` 之前。
 - [ ] 稳定 DNS 优先国内解析；未知国内 IPv4/IPv6 命中 `GEOIP,CN,DIRECT`，未知境外与 DNS 失败走 `FINAL,🚀 节点选择`；HTTPDNS、硬编码 IP、IPv6、QUIC 和手动服务组选择仍作为残余风险记录。
 - [ ] 用 `npm run explain:route -- --channel current --domain <域名>` 离线核对过预期分流（只读取本地已发布规则，不执行 DNS）。
-- [ ] 9 个常用业务组都有自动测速、故障转移、固定顺序地区组和符合筛选条件的具体节点；没有国家组。
+- [ ] 16 个独立业务组都有自动测速、故障转移、固定顺序地区组和符合筛选条件的具体节点；没有国家组。
 - [ ] 打开 `🐙 GitHub` 和 `🍎 Apple`：确认两组的自动、故障转移、地区、`DIRECT`、`🚀 节点选择`等所有显式选择及匹配订阅的具体服务器都存在；GitHub 的 `policy-select-name=🚀 节点选择`，Apple 的 `policy-select-name=DIRECT`。
 - [ ] 在 Shadowrocket 首页切换节点后，`🐙 GitHub` 仍选择 `🚀 节点选择`并继续联网；Apple 保持其已选择的显式策略。
 - [ ] 常用业务组的摘要已逐个核对。Shadowrocket 若保留仍有效的旧选择，生成器的首项不会自动覆盖：希望境外组跟随首页时手动选第一项 `🚀 节点选择`；希望国内组恢复直连时手动选第一项 `DIRECT`，没有误留在具体节点、自动组、故障转移或地区组。
 - [ ] `🤖 AI 专用`直接列出全部已勾选具体节点；更改 AI 节点不改变主线路，OpenAI、Claude、Gemini、Copilot 与常用其他 AI 分流正确。
 - [ ] GitHub 命中 `🐙 GitHub`，早于 Microsoft 规则。
-- [ ] `🇨🇳 国内平台`（哔哩哔哩、抖音、小红书、微博）能在 DIRECT、`🚀 节点选择`或具体节点间切换；抖音视频和评论加载正常。
+- [ ] `📺 哔哩哔哩`、`🎵 抖音`、`📕 小红书`、`🧣 微博` 都能在 DIRECT、`🚀 节点选择`或具体节点间切换；抖音视频和评论加载正常。
 - [ ] `☣️ 安全威胁`和`🕵️ 严格跟踪`能在 REJECT 与 DIRECT 间热切换；默认关闭的广告不产生远程规则请求，只有 `adblockMode=full` 时才检查 optional `🧱 常见广告`命中。
 - [ ] 连接、规则和 DNS 日志可查看，且自动删除 7 天前日志。
 - [ ] IPv4 网络正常。

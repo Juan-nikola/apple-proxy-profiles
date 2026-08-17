@@ -11,8 +11,10 @@ import { renderHappImportPage } from "../src/build-import-page.js";
 const BASE_URL = "https://juan-nikola.github.io/apple-proxy-profiles/edge";
 const GENERATED_AT = "2026-08-12T03:04:05.000Z";
 const POLICY_KEYS = [
-  "🤖 AI 专用", "🐙 GitHub", "📺 YouTube", "🎬 海外流媒体", "💬 海外社交", "🍎 Apple",
-  "🪟 Microsoft", "🇨🇳 国内平台", "🌍 海外游戏", "⬇️ 下载/P2P", "🧭 DNS 与规则下载", "最终兜底",
+  "🤖 AI 专用", "🐙 GitHub", "📺 YouTube", "🎬 Netflix", "🏰 Disney+", "🎵 Spotify",
+  "🌍 国际媒体", "✈️ Telegram", "💬 海外社交", "🎶 TikTok", "🍎 Apple", "🪟 Microsoft",
+  "📺 哔哩哔哩", "🎵 抖音", "📕 小红书", "🧣 微博", "🇨🇳 国内平台", "🌍 海外游戏",
+  "⬇️ 下载/P2P", "🧭 DNS 与规则下载", "最终兜底",
 ];
 
 test("renders the official Happ routing profile and its exact onadd Base64 payload", async () => {

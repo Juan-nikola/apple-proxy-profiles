@@ -37,7 +37,7 @@ Shadowrocket 新任务只读取 `apple-proxy-shadowrocket`。客户端 collectio
 
 - 一份所有设备共用、每 6 小时更新的私密节点订阅（`apple-proxy-shadowrocket` 输出）。
 - 三份每天更新的平台 Profile：`shadowrocket-config-macos`、`shadowrocket-config-iphone`、`shadowrocket-config-ipad`。
-- 一个只负责跟随 Shadowrocket 首页节点的 `🚀 节点选择`，以及 9 个常用业务组：每组都有自动测速、故障转移、地区和具体节点选择；其中 5 个境外组首项为 `🚀 节点选择`，3 个国内组首项为 `DIRECT`。
+- 一个只负责跟随 Shadowrocket 首页节点的 `🚀 节点选择`，以及 16 个独立业务组：10 个境外组首项为 `🚀 节点选择`，6 个国内平台组首项为 `DIRECT`；每组都有自动测速、故障转移、地区和具体节点选择。
 - 默认使用轻量混合规则：`DomesticCore + DomesticGame + SteamCN` 直连、`OverseasGame` 进入 `🌍 海外游戏`、`ChinaIP + GEOIP CN` 作为国内回退，其他未识别流量最终进入 `🚀 节点选择`。完整广告包默认关闭，只有设置 `adblockMode=full` 才从独立 optional 发布加载 `Advertising.list` 与 `Advertising_Domain.list`。
 
 Apple TV 已在生成器中预留参数，但不属于本轮部署范围。首轮顺序必须是 Intel Mac、iPhone、iPad；每台设备都保留原来的可用 Profile。

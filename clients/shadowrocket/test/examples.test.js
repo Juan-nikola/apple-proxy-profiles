@@ -278,9 +278,9 @@ for (const platform of ["macos", "iphone", "ipad"]) {
     assert.match(profile, /^🐙 GitHub = select,🚀 节点选择,⚡ 全部自动,🛟 全部故障转移,🌏 亚太,🌍 欧洲,🌎 美洲,DIRECT,Shadowrocket-Nodes,use=true,policy-regex-filter=\^\.\+\$,policy-select-name=🚀 节点选择$/m);
     assert.match(profile, /^🍎 Apple = select,DIRECT,🚀 节点选择,⚡ 全部自动,🛟 全部故障转移,🌏 亚太,🌍 欧洲,🌎 美洲,Shadowrocket-Nodes,use=true,policy-regex-filter=\^\.\+\$,policy-select-name=DIRECT$/m);
     assert.doesNotMatch(profile, /include-all-proxies=true/);
-    assert.match(profile, /edge\/shadowrocket\/rules\/ByteDance\.list,🇨🇳 国内平台/);
+    assert.match(profile, /edge\/shadowrocket\/rules\/ByteDance\.list,🎵 抖音/);
     assert.doesNotMatch(profile, /\/(?:Advertising|Advertising_Domain|ChinaMax_Domain|ChinaMax|Game)\.list/);
-    assert.match(profile, /^🇨🇳 国内平台 = select,DIRECT,🚀 节点选择,⚡ 全部自动,🛟 全部故障转移,🌏 亚太,🌍 欧洲,🌎 美洲/m);
+    assert.match(profile, /^🎵 抖音 = select,DIRECT,🚀 节点选择,⚡ 全部自动,🛟 全部故障转移,🌏 亚太,🌍 欧洲,🌎 美洲/m);
     assert.match(profile, /^RULE-SET,.*\/DomesticCore\.list,DIRECT,/m);
     assert.match(profile, /^RULE-SET,.*\/DomesticGame\.list,DIRECT,/m);
     assert.match(profile, /^RULE-SET,.*\/SteamCN\.list,DIRECT,/m);

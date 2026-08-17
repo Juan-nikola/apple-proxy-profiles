@@ -27,7 +27,35 @@
       "warningCode": null,
       "nodeName": null
     },
-    "🎬 海外流媒体": {
+    "🎬 Netflix": {
+      "configured": "FOLLOW",
+      "resolved": "FOLLOW",
+      "status": "follow",
+      "warningCode": null,
+      "nodeName": null
+    },
+    "🏰 Disney+": {
+      "configured": "FOLLOW",
+      "resolved": "FOLLOW",
+      "status": "follow",
+      "warningCode": null,
+      "nodeName": null
+    },
+    "🎵 Spotify": {
+      "configured": "FOLLOW",
+      "resolved": "FOLLOW",
+      "status": "follow",
+      "warningCode": null,
+      "nodeName": null
+    },
+    "🌍 国际媒体": {
+      "configured": "FOLLOW",
+      "resolved": "FOLLOW",
+      "status": "follow",
+      "warningCode": null,
+      "nodeName": null
+    },
+    "✈️ Telegram": {
       "configured": "FOLLOW",
       "resolved": "FOLLOW",
       "status": "follow",
@@ -35,6 +63,13 @@
       "nodeName": null
     },
     "💬 海外社交": {
+      "configured": "FOLLOW",
+      "resolved": "FOLLOW",
+      "status": "follow",
+      "warningCode": null,
+      "nodeName": null
+    },
+    "🎶 TikTok": {
       "configured": "FOLLOW",
       "resolved": "FOLLOW",
       "status": "follow",
@@ -49,6 +84,34 @@
       "nodeName": null
     },
     "🪟 Microsoft": {
+      "configured": "DIRECT",
+      "resolved": "DIRECT",
+      "status": "direct",
+      "warningCode": null,
+      "nodeName": null
+    },
+    "📺 哔哩哔哩": {
+      "configured": "DIRECT",
+      "resolved": "DIRECT",
+      "status": "direct",
+      "warningCode": null,
+      "nodeName": null
+    },
+    "🎵 抖音": {
+      "configured": "DIRECT",
+      "resolved": "DIRECT",
+      "status": "direct",
+      "warningCode": null,
+      "nodeName": null
+    },
+    "📕 小红书": {
+      "configured": "DIRECT",
+      "resolved": "DIRECT",
+      "status": "direct",
+      "warningCode": null,
+      "nodeName": null
+    },
+    "🧣 微博": {
       "configured": "DIRECT",
       "resolved": "DIRECT",
       "status": "direct",

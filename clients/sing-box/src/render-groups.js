@@ -8,7 +8,13 @@ const AUTO_GROUP = "⚡ 全部自动";
 const FALLBACK_GROUP_PATTERN = /故障转移/u;
 const MOBILE_MEMORY_PLATFORMS = new Set(["iphone", "ipad", "android"]);
 const IOS_MEMORY_PLATFORMS = new Set(["iphone", "ipad"]);
-const IOS_SERVICE_GROUPS = new Set(["🍎 Apple", "🪟 Microsoft", "🇨🇳 国内平台"]);
+// These are the service groups whose rule sources remain in the iOS
+// lightweight catalog. Overseas service groups stay available on the other
+// clients without reintroducing the NetworkExtension RSS pressure fix.
+const IOS_SERVICE_GROUPS = new Set([
+  "🍎 Apple", "🪟 Microsoft",
+  "📺 哔哩哔哩", "🎵 抖音", "📕 小红书", "🧣 微博",
+]);
 const TEST_URL = "https://www.gstatic.com/generate_204";
 
 function isMobileMemoryConstrained(options) {

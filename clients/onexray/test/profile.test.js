@@ -38,7 +38,8 @@ function resolution(overrides = {}) {
     fixedNodes: [],
     finalOutbound: null,
     targets: Object.fromEntries([
-      "ai", "github", "youtube", "globalMedia", "globalSocial", "apple", "microsoft", "domestic",
+      "ai", "github", "youtube", "netflix", "disney", "spotify", "globalMedia", "telegram", "globalSocial", "tiktok",
+      "apple", "microsoft", "bilibili", "bytedance", "xiaohongshu", "weibo", "domestic",
       "overseasGame", "download", "dnsAndRules", "final",
     ].map((id) => [id, follow])),
     chain: { enabled: false, landingTag: null, entryCount: 0 },

@@ -113,7 +113,9 @@ test("removes iOS URLTests and keeps only the low-memory service groups", () => 
     assert.deepEqual(config.outbounds.filter(({ type }) => type === "urltest"), [], platform);
     assert.ok(config.outbounds.some(({ tag }) => tag === "🍎 Apple"), platform);
     assert.ok(config.outbounds.some(({ tag }) => tag === "🪟 Microsoft"), platform);
-    assert.ok(config.outbounds.some(({ tag }) => tag === "🇨🇳 国内平台"), platform);
+    for (const tag of ["📺 哔哩哔哩", "🎵 抖音", "📕 小红书", "🧣 微博"]) {
+      assert.ok(config.outbounds.some((outbound) => outbound.tag === tag), `${platform}/${tag}`);
+    }
     assert.equal(config.outbounds.some(({ tag }) => tag === "📺 YouTube"), false, platform);
     assert.ok(config.outbounds.some(({ tag }) => tag === "🤖 AI 专用"), platform);
     assert.equal(config.log.level, "warn", platform);

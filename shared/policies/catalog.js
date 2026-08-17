@@ -45,11 +45,19 @@ const DIRECT_FIRST_SERVICE_DEFAULTS = Object.freeze({
 export const SERVICE_GROUPS = Object.freeze([
   Object.freeze(["🐙 GitHub", PROXY_FIRST_SERVICE_DEFAULTS]),
   Object.freeze(["📺 YouTube", PROXY_FIRST_SERVICE_DEFAULTS]),
-  Object.freeze(["🎬 海外流媒体", PROXY_FIRST_SERVICE_DEFAULTS]),
+  Object.freeze(["🎬 Netflix", PROXY_FIRST_SERVICE_DEFAULTS]),
+  Object.freeze(["🏰 Disney+", PROXY_FIRST_SERVICE_DEFAULTS]),
+  Object.freeze(["🎵 Spotify", PROXY_FIRST_SERVICE_DEFAULTS]),
+  Object.freeze(["🌍 国际媒体", PROXY_FIRST_SERVICE_DEFAULTS]),
+  Object.freeze(["✈️ Telegram", PROXY_FIRST_SERVICE_DEFAULTS]),
   Object.freeze(["💬 海外社交", PROXY_FIRST_SERVICE_DEFAULTS]),
+  Object.freeze(["🎶 TikTok", PROXY_FIRST_SERVICE_DEFAULTS]),
   Object.freeze(["🍎 Apple", DIRECT_FIRST_SERVICE_DEFAULTS]),
   Object.freeze(["🪟 Microsoft", DIRECT_FIRST_SERVICE_DEFAULTS]),
-  Object.freeze(["🇨🇳 国内平台", DIRECT_FIRST_SERVICE_DEFAULTS]),
+  Object.freeze(["📺 哔哩哔哩", DIRECT_FIRST_SERVICE_DEFAULTS]),
+  Object.freeze(["🎵 抖音", DIRECT_FIRST_SERVICE_DEFAULTS]),
+  Object.freeze(["📕 小红书", DIRECT_FIRST_SERVICE_DEFAULTS]),
+  Object.freeze(["🧣 微博", DIRECT_FIRST_SERVICE_DEFAULTS]),
   Object.freeze(["🌍 海外游戏", PROXY_FIRST_SERVICE_DEFAULTS]),
 ]);
 

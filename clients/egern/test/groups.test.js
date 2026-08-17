@@ -19,14 +19,22 @@ const BUILTINS = new Set(["DIRECT", "REJECT"]);
 const FOREIGN_GROUPS = Object.freeze([
   "🐙 GitHub",
   "📺 YouTube",
-  "🎬 海外流媒体",
+  "🎬 Netflix",
+  "🏰 Disney+",
+  "🎵 Spotify",
+  "🌍 国际媒体",
+  "✈️ Telegram",
   "💬 海外社交",
+  "🎶 TikTok",
   "🌍 海外游戏",
 ]);
 const DOMESTIC_GROUPS = Object.freeze([
   "🍎 Apple",
   "🪟 Microsoft",
-  "🇨🇳 国内平台",
+  "📺 哔哩哔哩",
+  "🎵 抖音",
+  "📕 小红书",
+  "🧣 微博",
 ]);
 
 function normalizedNode(name, metadata = {}) {

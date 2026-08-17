@@ -13,11 +13,19 @@ const sharedRoot = new URL("../../../shared/", import.meta.url);
 const EXPECTED_SERVICE_NAMES = Object.freeze([
   "🐙 GitHub",
   "📺 YouTube",
-  "🎬 海外流媒体",
+  "🎬 Netflix",
+  "🏰 Disney+",
+  "🎵 Spotify",
+  "🌍 国际媒体",
+  "✈️ Telegram",
   "💬 海外社交",
+  "🎶 TikTok",
   "🍎 Apple",
   "🪟 Microsoft",
-  "🇨🇳 国内平台",
+  "📺 哔哩哔哩",
+  "🎵 抖音",
+  "📕 小红书",
+  "🧣 微博",
   "🌍 海外游戏",
 ]);
 

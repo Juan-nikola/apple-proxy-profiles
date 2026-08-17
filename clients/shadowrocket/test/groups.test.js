@@ -153,10 +153,11 @@ test("keeps service manual access and gates special service groups by eligibilit
     "DIRECT",
   ];
   const foreignGroups = [
-    "🐙 GitHub", "📺 YouTube", "🎬 海外流媒体", "💬 海外社交", "🌍 海外游戏",
+    "🐙 GitHub", "📺 YouTube", "🎬 Netflix", "🏰 Disney+", "🎵 Spotify", "🌍 国际媒体",
+    "✈️ Telegram", "💬 海外社交", "🎶 TikTok", "🌍 海外游戏",
   ];
   const domesticGroups = [
-    "🍎 Apple", "🪟 Microsoft", "🇨🇳 国内平台",
+    "🍎 Apple", "🪟 Microsoft", "📺 哔哩哔哩", "🎵 抖音", "📕 小红书", "🧣 微博",
   ];
   for (const name of foreignGroups) {
     const group = named(groups, name);
