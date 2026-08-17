@@ -3,6 +3,7 @@ import { mkdir, mkdtemp, readFile, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import test from "node:test";
+import { fileURLToPath } from "node:url";
 
 import { buildClientArtifacts } from "../automation/src/build-artifacts.js";
 import { artifactSha256 } from "../automation/src/artifact-content.js";
@@ -26,6 +27,23 @@ const upstream = Object.freeze({
   commit: "e".repeat(40),
   committedAt: "2026-08-01T19:07:21Z",
   license: "GPL-2.0-only",
+});
+
+test("stages the checked-in current sing-box publication offline", async () => {
+  const outputRoot = await mkdtemp(join(tmpdir(), "sing-box-current-publication-"));
+  const publicDirectory = fileURLToPath(new URL("../public/", import.meta.url));
+
+  const manifest = await stageRuleArtifactsMain(["--channel", "current"], {
+    env: {
+      PUBLIC_DIRECTORY: publicDirectory,
+      SING_BOX_ARTIFACT_ROOT: outputRoot,
+    },
+  });
+
+  assert.equal(
+    manifest.files.length,
+    ruleClientCatalog({ adblockMode: "off" }).length + MOBILE_RULE_SOURCE_IDS.length + 2,
+  );
 });
 
 function chinaIpAuditBytes() {

@@ -87,6 +87,28 @@ test("refreshCurrentManifest repairs a stale current manifest from the actual tr
   }
 });
 
+test("refreshCurrentManifest counts sing-box mobile rule-set bytes", async () => {
+  const { root } = await fixtureTree();
+  try {
+    const mobileRuleSet = Buffer.from("SRS\\u0002mobile-ai", "utf8");
+    await writeFiles(join(root, "current"), [["sing-box/mobile-rule-sets/AI.srs", mobileRuleSet]]);
+
+    const refreshed = await refreshCurrentManifest({ publicDirectory: root });
+    const records = await treeRecords(join(root, "current"));
+    const expectedBytes = records
+      .filter(({ path }) => (
+        path.startsWith("sing-box/rules/")
+        || path.startsWith("sing-box/rule-sets/")
+        || path.startsWith("sing-box/mobile-rule-sets/")
+      ))
+      .reduce((sum, { bytes }) => sum + bytes, 0);
+
+    assert.equal(refreshed.clients.singbox.referencedDefaultBytes, expectedBytes);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
 test("refreshCurrentManifest refuses when current routing bytes diverge from edge", async () => {
   const { root } = await fixtureTree();
   try {

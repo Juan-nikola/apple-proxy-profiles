@@ -33,7 +33,11 @@ const CLIENT_RULE_PREFIXES = Object.freeze({
   shadowrocket: ["shadowrocket/rules/"],
   surge: ["surge/rules/"],
   egern: ["egern/rules/"],
-  singbox: ["sing-box/rules/", "sing-box/rule-sets/"],
+  singbox: [
+    "sing-box/rules/",
+    "sing-box/rule-sets/",
+    "sing-box/mobile-rule-sets/",
+  ],
   anywhere: ["anywhere/rules/"],
   happ: [],
 });

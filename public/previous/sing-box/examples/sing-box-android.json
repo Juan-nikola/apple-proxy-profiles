@@ -301,7 +301,67 @@
     },
     {
       "type": "selector",
-      "tag": "🎬 海外流媒体",
+      "tag": "🎬 Netflix",
+      "outbounds": [
+        "🚀 节点选择",
+        "⚡ 全部自动",
+        "🌏 亚太",
+        "🌍 欧洲",
+        "DIRECT",
+        "示例 · Tokyo",
+        "示例 · Frankfurt"
+      ],
+      "interrupt_exist_connections": true,
+      "default": "🚀 节点选择"
+    },
+    {
+      "type": "selector",
+      "tag": "🏰 Disney+",
+      "outbounds": [
+        "🚀 节点选择",
+        "⚡ 全部自动",
+        "🌏 亚太",
+        "🌍 欧洲",
+        "DIRECT",
+        "示例 · Tokyo",
+        "示例 · Frankfurt"
+      ],
+      "interrupt_exist_connections": true,
+      "default": "🚀 节点选择"
+    },
+    {
+      "type": "selector",
+      "tag": "🎵 Spotify",
+      "outbounds": [
+        "🚀 节点选择",
+        "⚡ 全部自动",
+        "🌏 亚太",
+        "🌍 欧洲",
+        "DIRECT",
+        "示例 · Tokyo",
+        "示例 · Frankfurt"
+      ],
+      "interrupt_exist_connections": true,
+      "default": "🚀 节点选择"
+    },
+    {
+      "type": "selector",
+      "tag": "🌍 国际媒体",
+      "outbounds": [
+        "🚀 节点选择",
+        "⚡ 全部自动",
+        "🌏 亚太",
+        "🌍 欧洲",
+        "DIRECT",
+        "示例 · Tokyo",
+        "示例 · Frankfurt"
+      ],
+      "interrupt_exist_connections": true,
+      "default": "🚀 节点选择"
+    },
+    {
+      "type": "selector",
+      "tag": "✈️ Telegram",
       "outbounds": [
         "🚀 节点选择",
         "⚡ 全部自动",
@@ -317,6 +377,21 @@
     {
       "type": "selector",
       "tag": "💬 海外社交",
+      "outbounds": [
+        "🚀 节点选择",
+        "⚡ 全部自动",
+        "🌏 亚太",
+        "🌍 欧洲",
+        "DIRECT",
+        "示例 · Tokyo",
+        "示例 · Frankfurt"
+      ],
+      "interrupt_exist_connections": true,
+      "default": "🚀 节点选择"
+    },
+    {
+      "type": "selector",
+      "tag": "🎶 TikTok",
       "outbounds": [
         "🚀 节点选择",
         "⚡ 全部自动",
@@ -361,7 +436,52 @@
     },
     {
       "type": "selector",
-      "tag": "🇨🇳 国内平台",
+      "tag": "📺 哔哩哔哩",
+      "outbounds": [
+        "DIRECT",
+        "🚀 节点选择",
+        "⚡ 全部自动",
+        "🌏 亚太",
+        "🌍 欧洲",
+        "示例 · Tokyo",
+        "示例 · Frankfurt"
+      ],
+      "interrupt_exist_connections": true,
+      "default": "DIRECT"
+    },
+    {
+      "type": "selector",
+      "tag": "🎵 抖音",
+      "outbounds": [
+        "DIRECT",
+        "🚀 节点选择",
+        "⚡ 全部自动",
+        "🌏 亚太",
+        "🌍 欧洲",
+        "示例 · Tokyo",
+        "示例 · Frankfurt"
+      ],
+      "interrupt_exist_connections": true,
+      "default": "DIRECT"
+    },
+    {
+      "type": "selector",
+      "tag": "📕 小红书",
+      "outbounds": [
+        "DIRECT",
+        "🚀 节点选择",
+        "⚡ 全部自动",
+        "🌏 亚太",
+        "🌍 欧洲",
+        "示例 · Tokyo",
+        "示例 · Frankfurt"
+      ],
+      "interrupt_exist_connections": true,
+      "default": "DIRECT"
+    },
+    {
+      "type": "selector",
+      "tag": "🧣 微博",
       "outbounds": [
         "DIRECT",
         "🚀 节点选择",
@@ -852,28 +972,28 @@
           "rule-BiliBili"
         ],
         "action": "route",
-        "outbound": "🇨🇳 国内平台"
+        "outbound": "📺 哔哩哔哩"
       },
       {
         "rule_set": [
           "rule-ByteDance"
         ],
         "action": "route",
-        "outbound": "🇨🇳 国内平台"
+        "outbound": "🎵 抖音"
       },
       {
         "rule_set": [
           "rule-XiaoHongShu"
         ],
         "action": "route",
-        "outbound": "🇨🇳 国内平台"
+        "outbound": "📕 小红书"
       },
       {
         "rule_set": [
           "rule-Weibo"
         ],
         "action": "route",
-        "outbound": "🇨🇳 国内平台"
+        "outbound": "🧣 微博"
       },
       {
         "rule_set": [
@@ -922,35 +1042,35 @@
           "rule-Netflix"
         ],
         "action": "route",
-        "outbound": "🎬 海外流媒体"
+        "outbound": "🎬 Netflix"
       },
       {
         "rule_set": [
           "rule-Disney"
         ],
         "action": "route",
-        "outbound": "🎬 海外流媒体"
+        "outbound": "🏰 Disney+"
       },
       {
         "rule_set": [
           "rule-Spotify"
         ],
         "action": "route",
-        "outbound": "🎬 海外流媒体"
+        "outbound": "🎵 Spotify"
       },
       {
         "rule_set": [
           "rule-GlobalMedia"
         ],
         "action": "route",
-        "outbound": "🎬 海外流媒体"
+        "outbound": "🌍 国际媒体"
       },
       {
         "rule_set": [
           "rule-Telegram"
         ],
         "action": "route",
-        "outbound": "💬 海外社交"
+        "outbound": "✈️ Telegram"
       },
       {
         "rule_set": [
@@ -978,7 +1098,7 @@
           "rule-TikTok"
         ],
         "action": "route",
-        "outbound": "🎬 海外流媒体"
+        "outbound": "🎶 TikTok"
       },
       {
         "rule_set": [

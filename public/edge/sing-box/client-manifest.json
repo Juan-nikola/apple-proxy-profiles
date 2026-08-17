@@ -3,44 +3,114 @@
   "client": "singbox",
   "files": [
     {
-      "bytes": 13000,
+      "bytes": 10576,
       "path": "sing-box/examples/sing-box-android-diagnostic.json",
-      "sha256": "51e4b567f056a0b6a8bd30d0163a7986c98543e67db4757d1cdadf7c171a67c9"
+      "sha256": "e8a3fd771a3466e74d3cf40c00aa05070b4f6c33898b7d71b2fb78446c735c51"
     },
     {
-      "bytes": 29983,
+      "bytes": 27625,
       "path": "sing-box/examples/sing-box-android.json",
-      "sha256": "5280c10b6f48071e36942ab71a9eca7367a285f5e8f48a7d324ca8c6e1bcc789"
+      "sha256": "5140f5c9b1303addc573a969bfaa8e8637d4480b8ae1baa44538c4dd655b14da"
     },
     {
-      "bytes": 8726,
+      "bytes": 10617,
       "path": "sing-box/examples/sing-box-ipad-diagnostic.json",
-      "sha256": "fdb38244c8d5c8d52e62106a7f545196f243fa270da07dd6487f05365e0e2074"
+      "sha256": "b0eb2f534c035e524e05804b4646695784a2e544da24356189e2bead883ca07d"
     },
     {
-      "bytes": 16734,
+      "bytes": 19379,
       "path": "sing-box/examples/sing-box-ipad.json",
-      "sha256": "a7319fcceaa1a4bf4bbbc976b37fe61a3be5ab959c977e7638c7833e3dc52618"
+      "sha256": "5a88bc4dbd4f1a1ddeff2eeb961af87a6d4dcf16185bbb0cc0e6be5519b164e1"
     },
     {
-      "bytes": 8726,
+      "bytes": 10617,
       "path": "sing-box/examples/sing-box-iphone-diagnostic.json",
-      "sha256": "fdb38244c8d5c8d52e62106a7f545196f243fa270da07dd6487f05365e0e2074"
+      "sha256": "b0eb2f534c035e524e05804b4646695784a2e544da24356189e2bead883ca07d"
     },
     {
-      "bytes": 16734,
+      "bytes": 19379,
       "path": "sing-box/examples/sing-box-iphone.json",
-      "sha256": "a7319fcceaa1a4bf4bbbc976b37fe61a3be5ab959c977e7638c7833e3dc52618"
+      "sha256": "5a88bc4dbd4f1a1ddeff2eeb961af87a6d4dcf16185bbb0cc0e6be5519b164e1"
     },
     {
-      "bytes": 13520,
+      "bytes": 10548,
       "path": "sing-box/examples/sing-box-macos-diagnostic.json",
-      "sha256": "d0c7b1e836ebb40dcbf16726f4b7201d555fb78bc1a9c896f0e4a2eeac02b914"
+      "sha256": "2965f5b80bf3edd4052e040330e7464305c2fd0eba145c40a0665bb72865070a"
     },
     {
-      "bytes": 30503,
+      "bytes": 27597,
       "path": "sing-box/examples/sing-box-macos.json",
-      "sha256": "6b46b074fd0f57e29c4e28786c4fbd9d2c2765632a3c59e56c9d3d2d16e2f34a"
+      "sha256": "20f583fa7e392031f54ffd875c198ab0ec00aa39ce2c51932ed327ddd278fc03"
+    },
+    {
+      "bytes": 959,
+      "path": "sing-box/mobile-rule-sets/AI.srs",
+      "sha256": "9d92a5b5a062f12acda68d6778259600eb900fc8d61f4eb50de931af67cd6469"
+    },
+    {
+      "bytes": 237,
+      "path": "sing-box/mobile-rule-sets/Apple.srs",
+      "sha256": "3ce05f569a082f65132f2782c90b88c1788f017ce0b521f40b3ef7a5f15b19e2"
+    },
+    {
+      "bytes": 48632,
+      "path": "sing-box/mobile-rule-sets/ChinaIP.srs",
+      "sha256": "03ef5fc65b90d123afcd2f3bd3180023bce46fb06c81112ccb60c897f32a56cb"
+    },
+    {
+      "bytes": 1074,
+      "path": "sing-box/mobile-rule-sets/DomesticCore.srs",
+      "sha256": "281a08c75ce24676800cde609a5e1ae050f60bdce8b91f07ccfd7e38d2060c6b"
+    },
+    {
+      "bytes": 4074,
+      "path": "sing-box/mobile-rule-sets/DomesticPlatform.srs",
+      "sha256": "36c82c1ecef870302487b42acedeba709f4594092051b80eacce3be43b1eff2b"
+    },
+    {
+      "bytes": 2615,
+      "path": "sing-box/mobile-rule-sets/Download.srs",
+      "sha256": "59afedac42953dbb4182c2c06d2fb1948ed99f5e4cb4f664117a928a383ea67c"
+    },
+    {
+      "bytes": 432,
+      "path": "sing-box/mobile-rule-sets/GitHub.srs",
+      "sha256": "8e7ae0b406596a831e3e822841f215a63dfc2e550dc603eeccc505fa2ad97057"
+    },
+    {
+      "bytes": 6120,
+      "path": "sing-box/mobile-rule-sets/Microsoft.srs",
+      "sha256": "51a1cc32887f293f431a40bfe1a0a59f790edb33cef825f42e5f12b8d1ba412a"
+    },
+    {
+      "bytes": 5340,
+      "path": "sing-box/mobile-rule-sets/OverseasGame.srs",
+      "sha256": "2d44e6d81f4673fe60ccc0c7c073af6e1333649b18798177401bdc74d3c260dc"
+    },
+    {
+      "bytes": 10654,
+      "path": "sing-box/mobile-rule-sets/OverseasMedia.srs",
+      "sha256": "7dfc992546cf04041d45a8e72e370fb31d6c48ca10aa29c78fe6fb6da3a459da"
+    },
+    {
+      "bytes": 5337,
+      "path": "sing-box/mobile-rule-sets/OverseasSocial.srs",
+      "sha256": "139deb26cfac0e7fb63bf3fb7bfda2be4e16c99d55792b0620f6920a0d890ad4"
+    },
+    {
+      "bytes": 148,
+      "path": "sing-box/mobile-rule-sets/Privacy.srs",
+      "sha256": "7d99871ced1458fe7a6c34cc95ae67b72d3099bdb304d5addc5818dbacfe7108"
+    },
+    {
+      "bytes": 2261,
+      "path": "sing-box/mobile-rule-sets/Security.srs",
+      "sha256": "699539e5a0bbb8cc430a81d1b50bc23d2f94f93ee72a0ecf635b798fda589a94"
+    },
+    {
+      "bytes": 1205,
+      "path": "sing-box/mobile-rule-sets/YouTube.srs",
+      "sha256": "da4163404185d0c106158bad3bc246a7df1388b1974bceace0dfa1f0443abd30"
     },
     {
       "bytes": 237,
@@ -203,18 +273,18 @@
       "sha256": "da4163404185d0c106158bad3bc246a7df1388b1974bceace0dfa1f0443abd30"
     },
     {
-      "bytes": 112201,
+      "bytes": 113757,
       "path": "sing-box/scripts/sing-box-config-generator.js",
-      "sha256": "25144948a077a3880d86b351b587ac00cf198b984edb817d3d46c4664bcaa9f1"
+      "sha256": "ea7a38a1cf51071992052a00664f96f4bdae60a8cfbb15787188258cb8e0d2d0"
     },
     {
-      "bytes": 112201,
+      "bytes": 113757,
       "path": "sing-box/scripts/substore-config-generator.js",
-      "sha256": "25144948a077a3880d86b351b587ac00cf198b984edb817d3d46c4664bcaa9f1"
+      "sha256": "ea7a38a1cf51071992052a00664f96f4bdae60a8cfbb15787188258cb8e0d2d0"
     }
   ],
   "generatedAt": "2026-08-15T18:26:29Z",
-  "manifestHash": "e80f622549b3db11d2edb90a253721a6521bb9b99545e2b835d3dc7bd8efbf30",
+  "manifestHash": "4a009951f9362de0eee135c10feab5fa19a0e830b4a0dd776140bc5c1c8de016",
   "optionalPacks": {
     "adblock-full": "7760abafda3af7ef1eb3bcf252fec97c9a4639cd3143f6810c7f787f96be2187"
   },

@@ -788,54 +788,74 @@ var HappConfigBundle = (() => {
     return { renderable, failureProtocols: failures };
   }
 
-  // src/policy-overrides.js
-  var POLICY_DEFAULTS = Object.freeze({
-    "\u{1F916} AI \u4E13\u7528": "FOLLOW",
-    "\u{1F419} GitHub": "FOLLOW",
-    "\u{1F4FA} YouTube": "FOLLOW",
-    "\u{1F3AC} Netflix": "FOLLOW",
-    "\u{1F3F0} Disney+": "FOLLOW",
-    "\u{1F3B5} Spotify": "FOLLOW",
-    "\u{1F30D} \u56FD\u9645\u5A92\u4F53": "FOLLOW",
-    "\u2708\uFE0F Telegram": "FOLLOW",
-    "\u{1F4AC} \u6D77\u5916\u793E\u4EA4": "FOLLOW",
-    "\u{1F3B6} TikTok": "FOLLOW",
-    "\u{1F34E} Apple": "DIRECT",
-    "\u{1FA9F} Microsoft": "DIRECT",
-    "\u{1F4FA} \u54D4\u54E9\u54D4\u54E9": "DIRECT",
-    "\u{1F3B5} \u6296\u97F3": "DIRECT",
-    "\u{1F4D5} \u5C0F\u7EA2\u4E66": "DIRECT",
-    "\u{1F9E3} \u5FAE\u535A": "DIRECT",
-    // Compatibility target for core domestic and custom DIRECT rules.
-    "\u{1F1E8}\u{1F1F3} \u56FD\u5185\u5E73\u53F0": "DIRECT",
-    "\u{1F30D} \u6D77\u5916\u6E38\u620F": "FOLLOW",
-    "\u2B07\uFE0F \u4E0B\u8F7D/P2P": "DIRECT",
-    "\u{1F9ED} DNS \u4E0E\u89C4\u5219\u4E0B\u8F7D": "FOLLOW",
-    "\u6700\u7EC8\u515C\u5E95": "FOLLOW"
-  });
-  var POLICY_KEYS = Object.freeze([
-    ["\u{1F916} AI \u4E13\u7528", ["AI \u4E13\u7528", "ai"]],
-    ["\u{1F419} GitHub", ["GitHub", "github"]],
-    ["\u{1F4FA} YouTube", ["YouTube", "youtube"]],
-    ["\u{1F3AC} Netflix", ["Netflix", "netflix"]],
-    ["\u{1F3F0} Disney+", ["Disney+", "disney"]],
-    ["\u{1F3B5} Spotify", ["Spotify", "spotify"]],
-    ["\u{1F30D} \u56FD\u9645\u5A92\u4F53", ["\u56FD\u9645\u5A92\u4F53", "globalMedia"]],
-    ["\u2708\uFE0F Telegram", ["Telegram", "telegram"]],
-    ["\u{1F4AC} \u6D77\u5916\u793E\u4EA4", ["\u6D77\u5916\u793E\u4EA4", "globalSocial"]],
-    ["\u{1F3B6} TikTok", ["TikTok", "tiktok"]],
-    ["\u{1F34E} Apple", ["Apple", "apple"]],
-    ["\u{1FA9F} Microsoft", ["Microsoft", "microsoft"]],
-    ["\u{1F4FA} \u54D4\u54E9\u54D4\u54E9", ["\u54D4\u54E9\u54D4\u54E9", "bilibili"]],
-    ["\u{1F3B5} \u6296\u97F3", ["\u6296\u97F3", "bytedance"]],
-    ["\u{1F4D5} \u5C0F\u7EA2\u4E66", ["\u5C0F\u7EA2\u4E66", "xiaohongshu"]],
-    ["\u{1F9E3} \u5FAE\u535A", ["\u5FAE\u535A", "weibo"]],
-    ["\u{1F1E8}\u{1F1F3} \u56FD\u5185\u5E73\u53F0", ["\u56FD\u5185\u5E73\u53F0", "domestic"]],
-    ["\u{1F30D} \u6D77\u5916\u6E38\u620F", ["\u6D77\u5916\u6E38\u620F", "overseasGame"]],
-    ["\u2B07\uFE0F \u4E0B\u8F7D/P2P", ["\u4E0B\u8F7D/P2P", "download"]],
-    ["\u{1F9ED} DNS \u4E0E\u89C4\u5219\u4E0B\u8F7D", ["DNS \u4E0E\u89C4\u5219\u4E0B\u8F7D", "dnsAndRules"]],
-    ["\u6700\u7EC8\u515C\u5E95", ["final"]]
+  // ../../shared/encoding/base64url.js
+  var ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
+  var REVERSE = new Map([...ALPHABET].map((character, index) => [character, index]));
+
+  // ../../shared/policies/business-targets.js
+  function frozenTarget(id, label, aliases, defaultTarget) {
+    return Object.freeze({
+      id,
+      label,
+      aliases: Object.freeze([...aliases]),
+      defaultTarget
+    });
+  }
+  var BUSINESS_TARGETS = Object.freeze([
+    frozenTarget("ai", "\u{1F916} AI \u4E13\u7528", ["AI \u4E13\u7528", "ai"], "FOLLOW"),
+    frozenTarget("github", "\u{1F419} GitHub", ["GitHub", "github"], "FOLLOW"),
+    frozenTarget("youtube", "\u{1F4FA} YouTube", ["YouTube", "youtube"], "FOLLOW"),
+    frozenTarget("overseasMedia", "\u{1F3AC} \u6D77\u5916\u6D41\u5A92\u4F53", [
+      "\u6D77\u5916\u6D41\u5A92\u4F53",
+      "overseasMedia",
+      "Netflix",
+      "netflix",
+      "Disney+",
+      "disney",
+      "Spotify",
+      "spotify",
+      "\u56FD\u9645\u5A92\u4F53",
+      "globalMedia"
+    ], "FOLLOW"),
+    frozenTarget("globalSocial", "\u{1F4AC} \u6D77\u5916\u793E\u4EA4", [
+      "\u6D77\u5916\u793E\u4EA4",
+      "globalSocial",
+      "Telegram",
+      "telegram",
+      "TikTok",
+      "tiktok"
+    ], "FOLLOW"),
+    frozenTarget("apple", "\u{1F34E} Apple", ["Apple", "apple"], "DIRECT"),
+    frozenTarget("microsoft", "\u{1FA9F} Microsoft", ["Microsoft", "microsoft"], "DIRECT"),
+    // Compatibility aliases for domestic app-specific rules and overrides.
+    frozenTarget("domestic", "\u{1F1E8}\u{1F1F3} \u56FD\u5185\u5E73\u53F0", [
+      "\u56FD\u5185\u5E73\u53F0",
+      "domestic",
+      "\u54D4\u54E9\u54D4\u54E9",
+      "bilibili",
+      "\u6296\u97F3",
+      "bytedance",
+      "\u5C0F\u7EA2\u4E66",
+      "xiaohongshu",
+      "\u5FAE\u535A",
+      "weibo"
+    ], "DIRECT"),
+    frozenTarget("overseasGame", "\u{1F30D} \u6D77\u5916\u6E38\u620F", ["\u6D77\u5916\u6E38\u620F", "overseasGame"], "FOLLOW"),
+    frozenTarget("download", "\u2B07\uFE0F \u4E0B\u8F7D/P2P", ["\u4E0B\u8F7D/P2P", "download"], "DIRECT"),
+    frozenTarget("dnsAndRules", "\u{1F9ED} DNS \u4E0E\u89C4\u5219\u4E0B\u8F7D", ["DNS \u4E0E\u89C4\u5219\u4E0B\u8F7D", "dnsAndRules"], "FOLLOW"),
+    frozenTarget("final", "\u6700\u7EC8\u515C\u5E95", ["\u6700\u7EC8\u515C\u5E95", "final"], "FOLLOW")
   ]);
+  var TARGET_BY_KEY = /* @__PURE__ */ new Map();
+  for (const target of BUSINESS_TARGETS) {
+    TARGET_BY_KEY.set(target.label, target);
+    for (const alias of target.aliases) TARGET_BY_KEY.set(alias, target);
+  }
+
+  // src/policy-overrides.js
+  var POLICY_DEFAULTS = Object.freeze(Object.fromEntries(
+    BUSINESS_TARGETS.map(({ label, defaultTarget }) => [label, defaultTarget])
+  ));
+  var POLICY_KEYS = Object.freeze(BUSINESS_TARGETS.map(({ label, aliases }) => [label, aliases]));
   var ALIASES = new Map(POLICY_KEYS.flatMap(([primary, aliases]) => [[primary, primary], ...aliases.map((alias) => [alias, primary])]));
   var BASE64URL = /^[A-Za-z0-9_-]*$/u;
   var PROTOTYPE_KEYS = /* @__PURE__ */ new Set(["__proto__", "constructor", "prototype"]);
@@ -1474,22 +1494,23 @@ var HappConfigBundle = (() => {
     "ChinaTLD",
     "ChinaIP"
   ]);
-  var MOBILE_RULE_SOURCE_IDS = Object.freeze([
-    "Hijacking",
-    "BlockHttpDNS",
-    "Privacy",
-    "DomesticCore",
-    "DomesticGame",
-    "SteamCN",
-    "BiliBili",
-    "ByteDance",
-    "XiaoHongShu",
-    "Weibo",
-    "Apple",
-    "Microsoft",
-    "ChinaTLD",
-    "ChinaIP"
+  var MOBILE_RULE_BUNDLES = Object.freeze([
+    Object.freeze({ id: "Security", sourceIds: Object.freeze(["Hijacking", "BlockHttpDNS"]), policy: "REJECT", phase: "security", dnsClass: "none" }),
+    Object.freeze({ id: "Privacy", sourceIds: Object.freeze(["Privacy"]), policy: "\u{1F575}\uFE0F \u4E25\u683C\u8DDF\u8E2A", phase: "security", dnsClass: "none" }),
+    Object.freeze({ id: "DomesticCore", sourceIds: Object.freeze(["DomesticCore", "DomesticGame", "SteamCN"]), policy: "DIRECT", phase: "earlyDomestic", dnsClass: "china" }),
+    Object.freeze({ id: "DomesticPlatform", sourceIds: Object.freeze(["BiliBili", "ByteDance", "XiaoHongShu", "Weibo"]), policy: "\u{1F1E8}\u{1F1F3} \u56FD\u5185\u5E73\u53F0", phase: "serviceIntent", dnsClass: "china" }),
+    Object.freeze({ id: "AI", sourceIds: Object.freeze(["OpenAI", "Claude", "Gemini", "Copilot"]), policy: "\u{1F916} AI \u4E13\u7528", phase: "serviceIntent", dnsClass: "proxy" }),
+    Object.freeze({ id: "GitHub", sourceIds: Object.freeze(["GitHub"]), policy: "\u{1F419} GitHub", phase: "serviceIntent", dnsClass: "proxy" }),
+    Object.freeze({ id: "YouTube", sourceIds: Object.freeze(["YouTube"]), policy: "\u{1F4FA} YouTube", phase: "serviceIntent", dnsClass: "proxy" }),
+    Object.freeze({ id: "OverseasMedia", sourceIds: Object.freeze(["Netflix", "Disney", "Spotify", "GlobalMedia"]), policy: "\u{1F3AC} \u6D77\u5916\u6D41\u5A92\u4F53", phase: "serviceIntent", dnsClass: "proxy" }),
+    Object.freeze({ id: "OverseasSocial", sourceIds: Object.freeze(["Telegram", "Facebook", "Instagram", "Twitter", "TikTok"]), policy: "\u{1F4AC} \u6D77\u5916\u793E\u4EA4", phase: "serviceIntent", dnsClass: "proxy" }),
+    Object.freeze({ id: "Apple", sourceIds: Object.freeze(["Apple"]), policy: "\u{1F34E} Apple", phase: "serviceIntent", dnsClass: "china" }),
+    Object.freeze({ id: "Microsoft", sourceIds: Object.freeze(["Microsoft"]), policy: "\u{1FA9F} Microsoft", phase: "serviceIntent", dnsClass: "china" }),
+    Object.freeze({ id: "Download", sourceIds: Object.freeze(["Download", "PrivateTracker"]), policy: "\u2B07\uFE0F \u4E0B\u8F7D/P2P", phase: "serviceIntent", dnsClass: "china" }),
+    Object.freeze({ id: "OverseasGame", sourceIds: Object.freeze(["OverseasGame"]), policy: "\u{1F30D} \u6D77\u5916\u6E38\u620F", phase: "overseasGame", dnsClass: "proxy" }),
+    Object.freeze({ id: "ChinaIP", sourceIds: Object.freeze(["ChinaIP"]), policy: "DIRECT", phase: "resolvedChinaIp", dnsClass: "none" })
   ]);
+  var MOBILE_RULE_SOURCE_IDS = Object.freeze(MOBILE_RULE_BUNDLES.map(({ id }) => id));
   var FULL_ADBLOCK_SOURCE_IDS = Object.freeze([
     "Advertising",
     "Advertising_Domain"
@@ -1606,6 +1627,9 @@ var HappConfigBundle = (() => {
     direct: "DIRECT",
     defaultProxy: "\u{1F680} \u8282\u70B9\u9009\u62E9",
     overseasGame: "\u{1F30D} \u6D77\u5916\u6E38\u620F",
+    overseasMedia: "\u{1F3AC} \u6D77\u5916\u6D41\u5A92\u4F53",
+    overseasSocial: "\u{1F4AC} \u6D77\u5916\u793E\u4EA4",
+    domesticPlatform: "\u{1F1E8}\u{1F1F3} \u56FD\u5185\u5E73\u53F0",
     reject: "REJECT"
   });
   var SOURCE_POLICIES = Object.freeze({
@@ -1614,25 +1638,25 @@ var HappConfigBundle = (() => {
     Privacy: "\u{1F575}\uFE0F \u4E25\u683C\u8DDF\u8E2A",
     DomesticCore: POLICY_TARGETS.direct,
     DomesticGame: POLICY_TARGETS.direct,
-    BiliBili: "\u{1F4FA} \u54D4\u54E9\u54D4\u54E9",
-    ByteDance: "\u{1F3B5} \u6296\u97F3",
-    XiaoHongShu: "\u{1F4D5} \u5C0F\u7EA2\u4E66",
-    Weibo: "\u{1F9E3} \u5FAE\u535A",
+    BiliBili: POLICY_TARGETS.domesticPlatform,
+    ByteDance: POLICY_TARGETS.domesticPlatform,
+    XiaoHongShu: POLICY_TARGETS.domesticPlatform,
+    Weibo: POLICY_TARGETS.domesticPlatform,
     OpenAI: "\u{1F916} AI \u4E13\u7528",
     Claude: "\u{1F916} AI \u4E13\u7528",
     Gemini: "\u{1F916} AI \u4E13\u7528",
     Copilot: "\u{1F916} AI \u4E13\u7528",
     GitHub: "\u{1F419} GitHub",
     YouTube: "\u{1F4FA} YouTube",
-    Netflix: "\u{1F3AC} Netflix",
-    Disney: "\u{1F3F0} Disney+",
-    Spotify: "\u{1F3B5} Spotify",
-    GlobalMedia: "\u{1F30D} \u56FD\u9645\u5A92\u4F53",
-    Telegram: "\u2708\uFE0F Telegram",
-    Facebook: "\u{1F4AC} \u6D77\u5916\u793E\u4EA4",
-    Instagram: "\u{1F4AC} \u6D77\u5916\u793E\u4EA4",
-    Twitter: "\u{1F4AC} \u6D77\u5916\u793E\u4EA4",
-    TikTok: "\u{1F3B6} TikTok",
+    Netflix: POLICY_TARGETS.overseasMedia,
+    Disney: POLICY_TARGETS.overseasMedia,
+    Spotify: POLICY_TARGETS.overseasMedia,
+    GlobalMedia: POLICY_TARGETS.overseasMedia,
+    Telegram: POLICY_TARGETS.overseasSocial,
+    Facebook: POLICY_TARGETS.overseasSocial,
+    Instagram: POLICY_TARGETS.overseasSocial,
+    Twitter: POLICY_TARGETS.overseasSocial,
+    TikTok: POLICY_TARGETS.overseasSocial,
     Apple: "\u{1F34E} Apple",
     Microsoft: "\u{1FA9F} Microsoft",
     SteamCN: POLICY_TARGETS.direct,
@@ -1668,6 +1692,13 @@ var HappConfigBundle = (() => {
   }
   var DEFAULT_RULE_CLIENT_CATALOG = Object.freeze(DEFAULT_RULE_SOURCE_IDS.map(clientRecord));
   var FULL_ADBLOCK_RULE_CLIENT_CATALOG = Object.freeze(FULL_ADBLOCK_SOURCE_IDS.map(clientRecord));
+  var MOBILE_RULE_CLIENT_CATALOG = Object.freeze(MOBILE_RULE_BUNDLES.map((bundle) => Object.freeze({
+    id: bundle.id,
+    policy: bundle.policy,
+    inputFormat: "RULE-SET",
+    phase: bundle.phase,
+    dnsClass: bundle.dnsClass
+  })));
   function ruleClientCatalog({ adblockMode = "off" } = {}) {
     if (adblockMode !== "off" && adblockMode !== "full") {
       throw new TypeError("adblockMode must be either off or full");
@@ -1925,23 +1956,14 @@ var HappConfigBundle = (() => {
   });
   var BUSINESS_KEY_BY_SOURCE_POLICY = Object.freeze({
     DIRECT: "\u{1F1E8}\u{1F1F3} \u56FD\u5185\u5E73\u53F0",
-    "\u{1F1E8}\u{1F1F3} \u56FD\u5185\u5E73\u53F0": "\u{1F1E8}\u{1F1F3} \u56FD\u5185\u5E73\u53F0",
     "\u{1F916} AI \u4E13\u7528": "\u{1F916} AI \u4E13\u7528",
     "\u{1F419} GitHub": "\u{1F419} GitHub",
     "\u{1F4FA} YouTube": "\u{1F4FA} YouTube",
-    "\u{1F3AC} Netflix": "\u{1F3AC} Netflix",
-    "\u{1F3F0} Disney+": "\u{1F3F0} Disney+",
-    "\u{1F3B5} Spotify": "\u{1F3B5} Spotify",
-    "\u{1F30D} \u56FD\u9645\u5A92\u4F53": "\u{1F30D} \u56FD\u9645\u5A92\u4F53",
-    "\u2708\uFE0F Telegram": "\u2708\uFE0F Telegram",
+    "\u{1F3AC} \u6D77\u5916\u6D41\u5A92\u4F53": "\u{1F3AC} \u6D77\u5916\u6D41\u5A92\u4F53",
     "\u{1F4AC} \u6D77\u5916\u793E\u4EA4": "\u{1F4AC} \u6D77\u5916\u793E\u4EA4",
-    "\u{1F3B6} TikTok": "\u{1F3B6} TikTok",
+    "\u{1F1E8}\u{1F1F3} \u56FD\u5185\u5E73\u53F0": "\u{1F1E8}\u{1F1F3} \u56FD\u5185\u5E73\u53F0",
     "\u{1F34E} Apple": "\u{1F34E} Apple",
     "\u{1FA9F} Microsoft": "\u{1FA9F} Microsoft",
-    "\u{1F4FA} \u54D4\u54E9\u54D4\u54E9": "\u{1F4FA} \u54D4\u54E9\u54D4\u54E9",
-    "\u{1F3B5} \u6296\u97F3": "\u{1F3B5} \u6296\u97F3",
-    "\u{1F4D5} \u5C0F\u7EA2\u4E66": "\u{1F4D5} \u5C0F\u7EA2\u4E66",
-    "\u{1F9E3} \u5FAE\u535A": "\u{1F9E3} \u5FAE\u535A",
     "\u{1F30D} \u6D77\u5916\u6E38\u620F": "\u{1F30D} \u6D77\u5916\u6E38\u620F",
     "\u2B07\uFE0F \u4E0B\u8F7D/P2P": "\u2B07\uFE0F \u4E0B\u8F7D/P2P"
   });

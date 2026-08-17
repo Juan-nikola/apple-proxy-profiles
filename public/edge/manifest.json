@@ -1,28 +1,28 @@
 {
-  "catalogSha256": "b6259eb2f4e89a0bd80eb34cfa7f52b526c4fdd288064bdae78544a8c230235a",
+  "catalogSha256": "c2437ae35319f1e41b69a098fdc7c0b3c3c5a90e6deea906406f30f998bd9403",
   "clients": {
     "anywhere": {
-      "manifestHash": "4fde04926957dc2e304ff1fa8f620155fb15791e84a8bf865e9f8482e6c2394d",
-      "referencedDefaultBytes": 326581
+      "manifestHash": "edaca97d7d90fcda9760da18d6d34f326fcb06a87fee6e8ee5462b34de42717e",
+      "referencedDefaultBytes": 326647
     },
     "egern": {
-      "manifestHash": "c8fab5943dfc222d71db6ee7ae909de7f9f5bc6db0df8e59bd3d45f86d7320f5",
+      "manifestHash": "d4765167d452c6fa3a185c0745f939483cf375c1b3a34149402aac3ca218c7e3",
       "referencedDefaultBytes": 394309
     },
     "happ": {
-      "manifestHash": "8ab0e4f45436c9c12f4878e93bc5658a5117f92c031e8db90298b140a8796118",
+      "manifestHash": "31eea898cfa1ad99147915ad29e21a26b0c4e4cdd14b41dcc51a20457ccd8c74",
       "referencedDefaultBytes": 255486
     },
     "shadowrocket": {
-      "manifestHash": "3cb50324d585277fe291fc627336a9e63466d00c4d06ea8bf4a0296c2eafcd12",
+      "manifestHash": "bd1af2ee6e17a865eafbeff1bc40ab4933fe1720ee8b80489af5f79a6f9f3078",
       "referencedDefaultBytes": 593739
     },
     "singbox": {
-      "manifestHash": "e80f622549b3db11d2edb90a253721a6521bb9b99545e2b835d3dc7bd8efbf30",
-      "referencedDefaultBytes": 90767
+      "manifestHash": "4a009951f9362de0eee135c10feab5fa19a0e830b4a0dd776140bc5c1c8de016",
+      "referencedDefaultBytes": 179855
     },
     "surge": {
-      "manifestHash": "440d21906324cc8881365816822e8616663b43988f6abfc88b5e88561be6c1b4",
+      "manifestHash": "f016386e0a3548ba67a8a7d37d081e638783b20881ee1574bfd48e0b333ed66f",
       "referencedDefaultBytes": 593739
     }
   },
@@ -53,12 +53,12 @@
     {
       "bytes": 6416,
       "path": "anywhere/client-manifest.json",
-      "sha256": "c023f90528179aebe7860fcb4af1c8bd94d343cad152467a2cdad3b3387bc7b4"
+      "sha256": "f31ca28926c4d9485cf6cb892f6babb42bd3cdfe366c08bfc2f88c4c49757473"
     },
     {
-      "bytes": 21041,
+      "bytes": 21076,
       "path": "anywhere/import.html",
-      "sha256": "6310c022a2a36656d64cf584f9c850ad9216e73473db4fcfdf8e13cb2992b454"
+      "sha256": "6424723261ceae22d27f925974c703349480430fbf27980a86e5b9aa1400916e"
     },
     {
       "bytes": 687,
@@ -66,9 +66,9 @@
       "sha256": "f0df9aad4af00bdf58c586b42df208f174a5aa86e1ace1fbea3b9364d20726f6"
     },
     {
-      "bytes": 1316,
+      "bytes": 1320,
       "path": "anywhere/rules/BiliBili-001.arrs",
-      "sha256": "d1ef62275b2c15640e86110943b2594af11e241e4f9c85169a0e2dc38fb29f7f"
+      "sha256": "c5716b0da2d72998f6aa868c9faf55dba11e405b920807ee82357d40499fef81"
     },
     {
       "bytes": 1290,
@@ -76,9 +76,9 @@
       "sha256": "c7c49200571d11c026abccd744013672015a5d445edc69fc554843bff45f1946"
     },
     {
-      "bytes": 6613,
+      "bytes": 6623,
       "path": "anywhere/rules/ByteDance-001.arrs",
-      "sha256": "d9967b7a177b95be56754baa89aaf1b168fb052eeabbf4f5ef69212a5ba06b79"
+      "sha256": "5726590e5114e2b2a8943c91803de3a8dcb660d82d517383892c1fea560375ee"
     },
     {
       "bytes": 217147,
@@ -101,9 +101,9 @@
       "sha256": "58f2e77ed6902a779e3c101ed0b3adc3084344850ff437f5f0cf5c15ef88a6ea"
     },
     {
-      "bytes": 3724,
+      "bytes": 3732,
       "path": "anywhere/rules/Disney-001.arrs",
-      "sha256": "5e37a925276886eefd84ebd4567bcf59551da3768652df7c51befcb872d1ac19"
+      "sha256": "fd6888b5af1beabac3ab315a4011c6b01a7a3dffd097239f82a622cae85e6c68"
     },
     {
       "bytes": 1241,
@@ -136,9 +136,9 @@
       "sha256": "5ae1d41ebb741b29839bbf849e25baa8d1027ae01b59f18301de4969271503cd"
     },
     {
-      "bytes": 17693,
+      "bytes": 17696,
       "path": "anywhere/rules/GlobalMedia-001.arrs",
-      "sha256": "ec443888d3b87089f5280a19baa7390942e21f47f84675aaf6096587510cd2a9"
+      "sha256": "6a3f873bd0f31265bec825d2544fcb268332e3b7cf9009bdcfcfd3b4b616f49b"
     },
     {
       "bytes": 4119,
@@ -156,9 +156,9 @@
       "sha256": "d50b456b36bb76d143ae0adbf0ad7a0d5dd891d6700e8f019e2000f5efadcbeb"
     },
     {
-      "bytes": 22030,
+      "bytes": 22038,
       "path": "anywhere/rules/Netflix-001.arrs",
-      "sha256": "8c16a234682c484be4e9c74de0633b46510d04c11612af48d3601d89d1c7b6c9"
+      "sha256": "1e62e262abb258a7d5416ddddb21321b49c6f2119d37025912ac1ded08175822"
     },
     {
       "bytes": 806,
@@ -181,9 +181,9 @@
       "sha256": "26fecf5e1251cbc8eae16b63c5ef23d680f86027e3de291e0cac86e9e0561301"
     },
     {
-      "bytes": 771,
+      "bytes": 779,
       "path": "anywhere/rules/Spotify-001.arrs",
-      "sha256": "38725f159b868ac9518f92afbd3af39cb63b52571936ee5ff8c82ba83b1df05f"
+      "sha256": "f3b59f012d99a0961c327d85a36766c4462ef8c039c138316fe906dc8b65ce0c"
     },
     {
       "bytes": 402,
@@ -191,14 +191,14 @@
       "sha256": "3db96e4087eb283db0986ca3207974569e2b3d6745f6a45d042b0df5cef63359"
     },
     {
-      "bytes": 850,
+      "bytes": 852,
       "path": "anywhere/rules/Telegram-001.arrs",
-      "sha256": "6862b055d9d4577d9e296eb83a4d99f6b3c89ccee1d16b1dd3f63d1fb4cce056"
+      "sha256": "90b3cb7d58157ff66450a9a2dc199be5e38642cbf536c4da1e5a86cf4f0ec444"
     },
     {
-      "bytes": 659,
+      "bytes": 665,
       "path": "anywhere/rules/TikTok-001.arrs",
-      "sha256": "e85f0514f977ff5f2e1c65fe46bb8c1855539cf48dd587a0bc0e9cd3777dcafe"
+      "sha256": "efe1d1aec01a3cb59c7a94d6c47dad1063ccd543a405e8963443f1d86311ada6"
     },
     {
       "bytes": 840,
@@ -206,14 +206,14 @@
       "sha256": "3943b742e8d923681b2f31eee4c3842f4962932a2e5a75eaf50d0abf760a2485"
     },
     {
-      "bytes": 336,
+      "bytes": 346,
       "path": "anywhere/rules/Weibo-001.arrs",
-      "sha256": "a04136be4acca5db3b12f89a2b815288102ecd6519d88852d3338662693cafc9"
+      "sha256": "1f0d8cb0d87d127de4a5fbb945b83a5a087cf1c53374af9446f7293d70959240"
     },
     {
-      "bytes": 349,
+      "bytes": 356,
       "path": "anywhere/rules/XiaoHongShu-001.arrs",
-      "sha256": "22202f9bd969bf9e84552f02e712464c4e2b7d842e0d64cd01ab38edecc2e024"
+      "sha256": "b888a05397c46b0b11558156937164133874004fda1ffb64ec48708768425f2d"
     },
     {
       "bytes": 3294,
@@ -221,9 +221,9 @@
       "sha256": "c1ab85369aa455f1385c728a0feaa59c1d7a4e0553a7a3383f004eb8889658f8"
     },
     {
-      "bytes": 51618,
+      "bytes": 51785,
       "path": "anywhere/rules/manifest.json",
-      "sha256": "c2be74f4734dfa9f4392499d921db4f56b02a486f960c62c5b2ea298c114e4e8"
+      "sha256": "1121e7d6172598843482006fb820303d208251a66148cc06bcb0aa724b496040"
     },
     {
       "bytes": 83257,
@@ -241,29 +241,29 @@
       "sha256": "98f13d6021721417d0cd66ee09b9249f5125eefe85b9278841516dc61c5a4cfb"
     },
     {
-      "bytes": 5109,
+      "bytes": 5175,
       "path": "audit/routing-plan.json",
-      "sha256": "456713e0a32a31a2fdecd2d8bb711262c178c88f5a7e71a3f4c367d56c6ef361"
+      "sha256": "49b800828169763cbc4f315132892be58cb403b9d2cc7b60d3f05f806098d7a3"
     },
     {
       "bytes": 6727,
       "path": "egern/client-manifest.json",
-      "sha256": "3ce3367b063412c6d8d25b56e314db3e4922b269fddb208979dbbcda5851825d"
+      "sha256": "da7f93e994f0aca021c85a818b6885d33ab71f648c517bd9a06747219ec80cfe"
     },
     {
-      "bytes": 35931,
+      "bytes": 27637,
       "path": "egern/examples/egern-ipad.yaml",
-      "sha256": "ecb04490b3cc8a0efb42cf71c8f5ebdddfdc9cb26dbda62818f480fe98f8ee1c"
+      "sha256": "4152e71d98115ab6122f4ca6b2c845fc61778045a3b55ce2c561211fdc75570f"
     },
     {
-      "bytes": 35931,
+      "bytes": 27637,
       "path": "egern/examples/egern-iphone.yaml",
-      "sha256": "ecb04490b3cc8a0efb42cf71c8f5ebdddfdc9cb26dbda62818f480fe98f8ee1c"
+      "sha256": "4152e71d98115ab6122f4ca6b2c845fc61778045a3b55ce2c561211fdc75570f"
     },
     {
-      "bytes": 35924,
+      "bytes": 27634,
       "path": "egern/examples/egern-macos.yaml",
-      "sha256": "757cc9503d0e50d795a5d9d415db0e3e98c20678bdfaf9126ba0734cc5fc3e24"
+      "sha256": "2ef110539de54b320d009e48e2d9df9ac9f0619fa876aa270be452fac783c180"
     },
     {
       "bytes": 883,
@@ -431,9 +431,9 @@
       "sha256": "4addfba498c469da279067c58c0fe3a4f5d0b9cd85292006d60b8be93f9f864d"
     },
     {
-      "bytes": 202463,
+      "bytes": 202703,
       "path": "egern/scripts/egern-profile-generator.js",
-      "sha256": "6f25d6f6e1858ca8d727e972ebc80c7c847109e57c8518f31c711130382e0b9e"
+      "sha256": "e2c4048111071861549436a3fe54ed53e5d3e1b91cd5b0f031fc843066499e7a"
     },
     {
       "bytes": 119837,
@@ -441,14 +441,14 @@
       "sha256": "4addfba498c469da279067c58c0fe3a4f5d0b9cd85292006d60b8be93f9f864d"
     },
     {
-      "bytes": 202463,
+      "bytes": 202703,
       "path": "egern/scripts/substore-profile-generator.js",
-      "sha256": "6f25d6f6e1858ca8d727e972ebc80c7c847109e57c8518f31c711130382e0b9e"
+      "sha256": "e2c4048111071861549436a3fe54ed53e5d3e1b91cd5b0f031fc843066499e7a"
     },
     {
       "bytes": 959,
       "path": "happ/client-manifest.json",
-      "sha256": "452a2adaad1ed7371a3b77f8a97331b6c756ad71186139940a0218d00005cef7"
+      "sha256": "157255941d62c7839af12029e3ad7ca7769b144a10bdc74612c13f5fcddae0bf"
     },
     {
       "bytes": 181247,
@@ -461,34 +461,34 @@
       "sha256": "52de4978bef9970c4b0dd551834f8bf1a32246a648b09be6f705b6b16bbd9203"
     },
     {
-      "bytes": 108227,
+      "bytes": 110796,
       "path": "happ/scripts/happ-config-generator.js",
-      "sha256": "c9cdf6944c4d84723640d9790c5e8e5e895a97a405d4c88eee34491b31cd419b"
+      "sha256": "bd5d2dba1186b19f655ae75222209eeb50502933cad017602cb5d3cb7a541c37"
     },
     {
-      "bytes": 108227,
+      "bytes": 110796,
       "path": "happ/scripts/substore-config-generator.js",
-      "sha256": "c9cdf6944c4d84723640d9790c5e8e5e895a97a405d4c88eee34491b31cd419b"
+      "sha256": "bd5d2dba1186b19f655ae75222209eeb50502933cad017602cb5d3cb7a541c37"
     },
     {
       "bytes": 7227,
       "path": "shadowrocket/client-manifest.json",
-      "sha256": "d5e18b62d94e5b2eed59f5129315d045c9671c60a681100e553614645ca1b8d9"
+      "sha256": "ecc10244a8121ea64020aa72d8c4b3d8bf30cb6dda0b714644a32d31012c8bc2"
     },
     {
-      "bytes": 17285,
+      "bytes": 12769,
       "path": "shadowrocket/examples/shadowrocket-ipad.conf",
-      "sha256": "c8de963dc68f9597484e34b9a73a028b0628c40f1c60bc2086dd921e107427b8"
+      "sha256": "ce8f9c4136498227a039590ca1dae8633d714c374bd05ed27586a2e621040776"
     },
     {
-      "bytes": 17287,
+      "bytes": 12771,
       "path": "shadowrocket/examples/shadowrocket-iphone.conf",
-      "sha256": "6a8de7e5c642d56802af91102c4052e925ca03b18f9821d04adf13ba5006adf3"
+      "sha256": "70793c711ff2a166fd6e82d0c54d8d4ed05d26df72f8b5fb512b5df7670b2a97"
     },
     {
-      "bytes": 17279,
+      "bytes": 12767,
       "path": "shadowrocket/examples/shadowrocket-macos.conf",
-      "sha256": "4397a136435d1c705abe75b349f577eb64e1b3852100f8deee29f27fdfeb34bf"
+      "sha256": "08349d18f7e69146b930241cd43f53faa447bc8af9662a943e08f149a1c5b50f"
     },
     {
       "bytes": 985,
@@ -661,9 +661,9 @@
       "sha256": "963ad993a6b806a5ff608b4f1f216fe33409b918de2bd0663cf81c669c945ff6"
     },
     {
-      "bytes": 94371,
+      "bytes": 95608,
       "path": "shadowrocket/scripts/shadowrocket-profile-generator.js",
-      "sha256": "7d58cdfa57b7e68b755f5afb3cb5369fc11ea750e595c76ac88b0b52bcd618a5"
+      "sha256": "f8208ebe36938767dede5db4fef25623dacdc21b677b1c071960572fa0e46132"
     },
     {
       "bytes": 40387,
@@ -671,54 +671,124 @@
       "sha256": "8cb83aea654a3c586aaa3af517124d16e453ab2a55693a2b4324218c0512d35e"
     },
     {
-      "bytes": 94371,
+      "bytes": 95608,
       "path": "shadowrocket/scripts/substore-profile-generator.js",
-      "sha256": "7d58cdfa57b7e68b755f5afb3cb5369fc11ea750e595c76ac88b0b52bcd618a5"
+      "sha256": "f8208ebe36938767dede5db4fef25623dacdc21b677b1c071960572fa0e46132"
     },
     {
-      "bytes": 7484,
+      "bytes": 9920,
       "path": "sing-box/client-manifest.json",
-      "sha256": "2c0ea274cb5932c21f714ab29c3e221c90a4849068b99936e76654e4e8a305e0"
+      "sha256": "84802f608977863d2020498510f03a2c8699547c5853006bfc127422227e3ff2"
     },
     {
-      "bytes": 13000,
+      "bytes": 10576,
       "path": "sing-box/examples/sing-box-android-diagnostic.json",
-      "sha256": "51e4b567f056a0b6a8bd30d0163a7986c98543e67db4757d1cdadf7c171a67c9"
+      "sha256": "e8a3fd771a3466e74d3cf40c00aa05070b4f6c33898b7d71b2fb78446c735c51"
     },
     {
-      "bytes": 29983,
+      "bytes": 27625,
       "path": "sing-box/examples/sing-box-android.json",
-      "sha256": "5280c10b6f48071e36942ab71a9eca7367a285f5e8f48a7d324ca8c6e1bcc789"
+      "sha256": "5140f5c9b1303addc573a969bfaa8e8637d4480b8ae1baa44538c4dd655b14da"
     },
     {
-      "bytes": 8726,
+      "bytes": 10617,
       "path": "sing-box/examples/sing-box-ipad-diagnostic.json",
-      "sha256": "fdb38244c8d5c8d52e62106a7f545196f243fa270da07dd6487f05365e0e2074"
+      "sha256": "b0eb2f534c035e524e05804b4646695784a2e544da24356189e2bead883ca07d"
     },
     {
-      "bytes": 16734,
+      "bytes": 19379,
       "path": "sing-box/examples/sing-box-ipad.json",
-      "sha256": "a7319fcceaa1a4bf4bbbc976b37fe61a3be5ab959c977e7638c7833e3dc52618"
+      "sha256": "5a88bc4dbd4f1a1ddeff2eeb961af87a6d4dcf16185bbb0cc0e6be5519b164e1"
     },
     {
-      "bytes": 8726,
+      "bytes": 10617,
       "path": "sing-box/examples/sing-box-iphone-diagnostic.json",
-      "sha256": "fdb38244c8d5c8d52e62106a7f545196f243fa270da07dd6487f05365e0e2074"
+      "sha256": "b0eb2f534c035e524e05804b4646695784a2e544da24356189e2bead883ca07d"
     },
     {
-      "bytes": 16734,
+      "bytes": 19379,
       "path": "sing-box/examples/sing-box-iphone.json",
-      "sha256": "a7319fcceaa1a4bf4bbbc976b37fe61a3be5ab959c977e7638c7833e3dc52618"
+      "sha256": "5a88bc4dbd4f1a1ddeff2eeb961af87a6d4dcf16185bbb0cc0e6be5519b164e1"
     },
     {
-      "bytes": 13520,
+      "bytes": 10548,
       "path": "sing-box/examples/sing-box-macos-diagnostic.json",
-      "sha256": "d0c7b1e836ebb40dcbf16726f4b7201d555fb78bc1a9c896f0e4a2eeac02b914"
+      "sha256": "2965f5b80bf3edd4052e040330e7464305c2fd0eba145c40a0665bb72865070a"
     },
     {
-      "bytes": 30503,
+      "bytes": 27597,
       "path": "sing-box/examples/sing-box-macos.json",
-      "sha256": "6b46b074fd0f57e29c4e28786c4fbd9d2c2765632a3c59e56c9d3d2d16e2f34a"
+      "sha256": "20f583fa7e392031f54ffd875c198ab0ec00aa39ce2c51932ed327ddd278fc03"
+    },
+    {
+      "bytes": 959,
+      "path": "sing-box/mobile-rule-sets/AI.srs",
+      "sha256": "9d92a5b5a062f12acda68d6778259600eb900fc8d61f4eb50de931af67cd6469"
+    },
+    {
+      "bytes": 237,
+      "path": "sing-box/mobile-rule-sets/Apple.srs",
+      "sha256": "3ce05f569a082f65132f2782c90b88c1788f017ce0b521f40b3ef7a5f15b19e2"
+    },
+    {
+      "bytes": 48632,
+      "path": "sing-box/mobile-rule-sets/ChinaIP.srs",
+      "sha256": "03ef5fc65b90d123afcd2f3bd3180023bce46fb06c81112ccb60c897f32a56cb"
+    },
+    {
+      "bytes": 1074,
+      "path": "sing-box/mobile-rule-sets/DomesticCore.srs",
+      "sha256": "281a08c75ce24676800cde609a5e1ae050f60bdce8b91f07ccfd7e38d2060c6b"
+    },
+    {
+      "bytes": 4074,
+      "path": "sing-box/mobile-rule-sets/DomesticPlatform.srs",
+      "sha256": "36c82c1ecef870302487b42acedeba709f4594092051b80eacce3be43b1eff2b"
+    },
+    {
+      "bytes": 2615,
+      "path": "sing-box/mobile-rule-sets/Download.srs",
+      "sha256": "59afedac42953dbb4182c2c06d2fb1948ed99f5e4cb4f664117a928a383ea67c"
+    },
+    {
+      "bytes": 432,
+      "path": "sing-box/mobile-rule-sets/GitHub.srs",
+      "sha256": "8e7ae0b406596a831e3e822841f215a63dfc2e550dc603eeccc505fa2ad97057"
+    },
+    {
+      "bytes": 6120,
+      "path": "sing-box/mobile-rule-sets/Microsoft.srs",
+      "sha256": "51a1cc32887f293f431a40bfe1a0a59f790edb33cef825f42e5f12b8d1ba412a"
+    },
+    {
+      "bytes": 5340,
+      "path": "sing-box/mobile-rule-sets/OverseasGame.srs",
+      "sha256": "2d44e6d81f4673fe60ccc0c7c073af6e1333649b18798177401bdc74d3c260dc"
+    },
+    {
+      "bytes": 10654,
+      "path": "sing-box/mobile-rule-sets/OverseasMedia.srs",
+      "sha256": "7dfc992546cf04041d45a8e72e370fb31d6c48ca10aa29c78fe6fb6da3a459da"
+    },
+    {
+      "bytes": 5337,
+      "path": "sing-box/mobile-rule-sets/OverseasSocial.srs",
+      "sha256": "139deb26cfac0e7fb63bf3fb7bfda2be4e16c99d55792b0620f6920a0d890ad4"
+    },
+    {
+      "bytes": 148,
+      "path": "sing-box/mobile-rule-sets/Privacy.srs",
+      "sha256": "7d99871ced1458fe7a6c34cc95ae67b72d3099bdb304d5addc5818dbacfe7108"
+    },
+    {
+      "bytes": 2261,
+      "path": "sing-box/mobile-rule-sets/Security.srs",
+      "sha256": "699539e5a0bbb8cc430a81d1b50bc23d2f94f93ee72a0ecf635b798fda589a94"
+    },
+    {
+      "bytes": 1205,
+      "path": "sing-box/mobile-rule-sets/YouTube.srs",
+      "sha256": "da4163404185d0c106158bad3bc246a7df1388b1974bceace0dfa1f0443abd30"
     },
     {
       "bytes": 237,
@@ -881,34 +951,34 @@
       "sha256": "da4163404185d0c106158bad3bc246a7df1388b1974bceace0dfa1f0443abd30"
     },
     {
-      "bytes": 112201,
+      "bytes": 113757,
       "path": "sing-box/scripts/sing-box-config-generator.js",
-      "sha256": "25144948a077a3880d86b351b587ac00cf198b984edb817d3d46c4664bcaa9f1"
+      "sha256": "ea7a38a1cf51071992052a00664f96f4bdae60a8cfbb15787188258cb8e0d2d0"
     },
     {
-      "bytes": 112201,
+      "bytes": 113757,
       "path": "sing-box/scripts/substore-config-generator.js",
-      "sha256": "25144948a077a3880d86b351b587ac00cf198b984edb817d3d46c4664bcaa9f1"
+      "sha256": "ea7a38a1cf51071992052a00664f96f4bdae60a8cfbb15787188258cb8e0d2d0"
     },
     {
       "bytes": 6726,
       "path": "surge/client-manifest.json",
-      "sha256": "c2b51acb53132b4dbb446992475c8eeefa03a8510d69936d26288232ed30a65d"
+      "sha256": "51b430ada96b47a809b2dbf27457d0a2630fd53973118337598ccc7e30d9924f"
     },
     {
-      "bytes": 14684,
+      "bytes": 10928,
       "path": "surge/examples/surge-ipad.conf",
-      "sha256": "9b4318aa28f04b0bc34ea98de9f12f6cf1b8a8acbd433b952f3ba687471519eb"
+      "sha256": "6afdf37579583c1c60a7be8e93f64f0f34a55fad306ba2563f7d45555c994733"
     },
     {
-      "bytes": 14684,
+      "bytes": 10928,
       "path": "surge/examples/surge-iphone.conf",
-      "sha256": "9b4318aa28f04b0bc34ea98de9f12f6cf1b8a8acbd433b952f3ba687471519eb"
+      "sha256": "6afdf37579583c1c60a7be8e93f64f0f34a55fad306ba2563f7d45555c994733"
     },
     {
-      "bytes": 14679,
+      "bytes": 10926,
       "path": "surge/examples/surge-macos.conf",
-      "sha256": "8de615df64cfd5cee6baabc0e5da53157af44310dae6f1b496da163266c62a0c"
+      "sha256": "0a30c857a4f87b11c1e4be7aaf905f0f056697ab3280c65609893b6c8a552eb8"
     },
     {
       "bytes": 985,
@@ -1076,9 +1146,9 @@
       "sha256": "74ae5739b02f2ea805cfbcf23a9c03374f759b5288ba2e44ddebd83acf81a4d2"
     },
     {
-      "bytes": 85736,
+      "bytes": 86973,
       "path": "surge/scripts/substore-profile-generator.js",
-      "sha256": "ac210dfa8fbeb5502ea5106ba03c9274f26914f8a9b8b061dad2d4146d56a199"
+      "sha256": "9836c5c831b4e36e8a6db01c1275ccbf815c2b87e82c0abcc8c826103ef33ab3"
     },
     {
       "bytes": 49253,
@@ -1086,13 +1156,13 @@
       "sha256": "74ae5739b02f2ea805cfbcf23a9c03374f759b5288ba2e44ddebd83acf81a4d2"
     },
     {
-      "bytes": 85736,
+      "bytes": 86973,
       "path": "surge/scripts/surge-profile-generator.js",
-      "sha256": "ac210dfa8fbeb5502ea5106ba03c9274f26914f8a9b8b061dad2d4146d56a199"
+      "sha256": "9836c5c831b4e36e8a6db01c1275ccbf815c2b87e82c0abcc8c826103ef33ab3"
     }
   ],
   "generatedAt": "2026-08-15T18:26:29Z",
-  "manifestHash": "2e6ac16907d5826a8cf1db407792dde8a766be2228bc0237a12067a82e6b29bc",
+  "manifestHash": "8a2f8f4f4e8999fab25acedae0db92c1d361d50c0d3011e129da8fa4dea5ec71",
   "onexray": {
     "channel": "edge",
     "counts": {
@@ -1123,14 +1193,14 @@
     "schemaVersion": 1,
     "scripts": [
       {
-        "bytes": 87485,
+        "bytes": 87467,
         "path": "onexray/scripts/onexray-nodes-generator.js",
-        "sha256": "6dec3421a4e06fd2d6427ed6d0a8e98d4b1b63bb2a5fedf257d06e3f4cf2b761"
+        "sha256": "8aae7f3b69314b9595e276bf51059819b3241d8379024c87f16cf7d7e68015c1"
       },
       {
-        "bytes": 161624,
+        "bytes": 164188,
         "path": "onexray/scripts/onexray-profile-generator.js",
-        "sha256": "263a99c1ec95cd456da9a304e9d0295f57fe4e301ddaa73949cc952e8c399f7d"
+        "sha256": "e007db72dd10bcf629ee38a3bc649a82cc29947e0575d6e2a76e2e07a5a2a111"
       }
     ]
   },

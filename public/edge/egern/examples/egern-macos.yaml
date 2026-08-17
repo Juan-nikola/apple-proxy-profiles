@@ -302,103 +302,10 @@ dns:
   proxy_nameservers:
     - "system"
 policy_groups:
-  - auto_test:
-      name: "⚡ 全部自动"
-      urls:
-        - "https://example.invalid/private/egern-nodes"
-      filter: "^(?!🔗 ).+$"
-      update_interval: 21600
-      latency_test_url: "http://www.gstatic.com/generate_204"
-      interval: 600
-      timeout: 5
-      tolerance: 100
-      hidden: true
-      block_quic: true
-  - fallback:
-      name: "🛟 全部故障转移"
-      urls:
-        - "https://example.invalid/private/egern-nodes"
-      filter: "^(?!🔗 ).+$"
-      update_interval: 21600
-      latency_test_url: "http://www.gstatic.com/generate_204"
-      interval: 600
-      timeout: 5
-      hidden: true
-      block_quic: true
-  - auto_test:
-      name: "⚡ 亚太自动"
-      urls:
-        - "https://example.invalid/private/egern-nodes"
-      filter: "^(?:🇦🇪|🇦🇫|🇦🇲|🇦🇸|🇦🇺|🇦🇿|🇧🇩|🇧🇭|🇧🇳|🇧🇹|🇨🇨|🇨🇰|🇨🇳|🇨🇽|🇨🇾|🇫🇯|🇫🇲|🇬🇪|🇬🇺|🇭🇰|🇭🇲|🇮🇩|🇮🇱|🇮🇳|🇮🇶|🇮🇷|🇯🇴|🇯🇵|🇰🇬|🇰🇭|🇰🇮|🇰🇵|🇰🇷|🇰🇼|🇰🇿|🇱🇦|🇱🇧|🇱🇰|🇲🇭|🇲🇲|🇲🇳|🇲🇴|🇲🇵|🇲🇻|🇲🇾|🇳🇨|🇳🇫|🇳🇵|🇳🇷|🇳🇺|🇳🇿|🇴🇲|🇵🇫|🇵🇬|🇵🇭|🇵🇰|🇵🇳|🇵🇸|🇵🇼|🇶🇦|🇸🇦|🇸🇧|🇸🇬|🇸🇾|🇹🇭|🇹🇯|🇹🇰|🇹🇱|🇹🇲|🇹🇴|🇹🇷|🇹🇻|🇹🇼|🇺🇲|🇺🇿|🇻🇳|🇻🇺|🇼🇫|🇼🇸|🇾🇪).+$"
-      update_interval: 21600
-      latency_test_url: "http://www.gstatic.com/generate_204"
-      interval: 600
-      timeout: 5
-      tolerance: 100
-      hidden: true
-      block_quic: true
-  - fallback:
-      name: "🛟 亚太故障转移"
-      urls:
-        - "https://example.invalid/private/egern-nodes"
-      filter: "^(?:🇦🇪|🇦🇫|🇦🇲|🇦🇸|🇦🇺|🇦🇿|🇧🇩|🇧🇭|🇧🇳|🇧🇹|🇨🇨|🇨🇰|🇨🇳|🇨🇽|🇨🇾|🇫🇯|🇫🇲|🇬🇪|🇬🇺|🇭🇰|🇭🇲|🇮🇩|🇮🇱|🇮🇳|🇮🇶|🇮🇷|🇯🇴|🇯🇵|🇰🇬|🇰🇭|🇰🇮|🇰🇵|🇰🇷|🇰🇼|🇰🇿|🇱🇦|🇱🇧|🇱🇰|🇲🇭|🇲🇲|🇲🇳|🇲🇴|🇲🇵|🇲🇻|🇲🇾|🇳🇨|🇳🇫|🇳🇵|🇳🇷|🇳🇺|🇳🇿|🇴🇲|🇵🇫|🇵🇬|🇵🇭|🇵🇰|🇵🇳|🇵🇸|🇵🇼|🇶🇦|🇸🇦|🇸🇧|🇸🇬|🇸🇾|🇹🇭|🇹🇯|🇹🇰|🇹🇱|🇹🇲|🇹🇴|🇹🇷|🇹🇻|🇹🇼|🇺🇲|🇺🇿|🇻🇳|🇻🇺|🇼🇫|🇼🇸|🇾🇪).+$"
-      update_interval: 21600
-      latency_test_url: "http://www.gstatic.com/generate_204"
-      interval: 600
-      timeout: 5
-      hidden: true
-      block_quic: true
-  - auto_test:
-      name: "⚡ 美洲自动"
-      urls:
-        - "https://example.invalid/private/egern-nodes"
-      filter: "^(?:🇦🇬|🇦🇮|🇦🇷|🇦🇼|🇧🇧|🇧🇱|🇧🇲|🇧🇴|🇧🇶|🇧🇷|🇧🇸|🇧🇻|🇧🇿|🇨🇦|🇨🇱|🇨🇴|🇨🇷|🇨🇺|🇨🇼|🇩🇲|🇩🇴|🇪🇨|🇫🇰|🇬🇩|🇬🇫|🇬🇱|🇬🇵|🇬🇸|🇬🇹|🇬🇾|🇭🇳|🇭🇹|🇯🇲|🇰🇳|🇰🇾|🇱🇨|🇲🇫|🇲🇶|🇲🇸|🇲🇽|🇳🇮|🇵🇦|🇵🇪|🇵🇲|🇵🇷|🇵🇾|🇸🇷|🇸🇻|🇸🇽|🇹🇨|🇹🇹|🇺🇸|🇺🇾|🇻🇨|🇻🇪|🇻🇬|🇻🇮).+$"
-      update_interval: 21600
-      latency_test_url: "http://www.gstatic.com/generate_204"
-      interval: 600
-      timeout: 5
-      tolerance: 100
-      hidden: true
-      block_quic: true
-  - fallback:
-      name: "🛟 美洲故障转移"
-      urls:
-        - "https://example.invalid/private/egern-nodes"
-      filter: "^(?:🇦🇬|🇦🇮|🇦🇷|🇦🇼|🇧🇧|🇧🇱|🇧🇲|🇧🇴|🇧🇶|🇧🇷|🇧🇸|🇧🇻|🇧🇿|🇨🇦|🇨🇱|🇨🇴|🇨🇷|🇨🇺|🇨🇼|🇩🇲|🇩🇴|🇪🇨|🇫🇰|🇬🇩|🇬🇫|🇬🇱|🇬🇵|🇬🇸|🇬🇹|🇬🇾|🇭🇳|🇭🇹|🇯🇲|🇰🇳|🇰🇾|🇱🇨|🇲🇫|🇲🇶|🇲🇸|🇲🇽|🇳🇮|🇵🇦|🇵🇪|🇵🇲|🇵🇷|🇵🇾|🇸🇷|🇸🇻|🇸🇽|🇹🇨|🇹🇹|🇺🇸|🇺🇾|🇻🇨|🇻🇪|🇻🇬|🇻🇮).+$"
-      update_interval: 21600
-      latency_test_url: "http://www.gstatic.com/generate_204"
-      interval: 600
-      timeout: 5
-      hidden: true
-      block_quic: true
-  - auto_test:
-      name: "⚡ 其他/未分类自动"
-      urls:
-        - "https://example.invalid/private/egern-nodes"
-      filter: "^(?!(?:🔗|🇦🇪|🇦🇫|🇦🇲|🇦🇸|🇦🇺|🇦🇿|🇧🇩|🇧🇭|🇧🇳|🇧🇹|🇨🇨|🇨🇰|🇨🇳|🇨🇽|🇨🇾|🇫🇯|🇫🇲|🇬🇪|🇬🇺|🇭🇰|🇭🇲|🇮🇩|🇮🇱|🇮🇳|🇮🇶|🇮🇷|🇯🇴|🇯🇵|🇰🇬|🇰🇭|🇰🇮|🇰🇵|🇰🇷|🇰🇼|🇰🇿|🇱🇦|🇱🇧|🇱🇰|🇲🇭|🇲🇲|🇲🇳|🇲🇴|🇲🇵|🇲🇻|🇲🇾|🇳🇨|🇳🇫|🇳🇵|🇳🇷|🇳🇺|🇳🇿|🇴🇲|🇵🇫|🇵🇬|🇵🇭|🇵🇰|🇵🇳|🇵🇸|🇵🇼|🇶🇦|🇸🇦|🇸🇧|🇸🇬|🇸🇾|🇹🇭|🇹🇯|🇹🇰|🇹🇱|🇹🇲|🇹🇴|🇹🇷|🇹🇻|🇹🇼|🇺🇲|🇺🇿|🇻🇳|🇻🇺|🇼🇫|🇼🇸|🇾🇪|🇦🇩|🇦🇱|🇦🇹|🇦🇽|🇧🇦|🇧🇪|🇧🇬|🇧🇾|🇨🇭|🇨🇿|🇩🇪|🇩🇰|🇪🇪|🇪🇸|🇫🇮|🇫🇴|🇫🇷|🇬🇧|🇬🇬|🇬🇮|🇬🇷|🇭🇷|🇭🇺|🇮🇪|🇮🇲|🇮🇸|🇮🇹|🇯🇪|🇱🇮|🇱🇹|🇱🇺|🇱🇻|🇲🇨|🇲🇩|🇲🇪|🇲🇰|🇲🇹|🇳🇱|🇳🇴|🇵🇱|🇵🇹|🇷🇴|🇷🇸|🇷🇺|🇸🇪|🇸🇮|🇸🇯|🇸🇰|🇸🇲|🇺🇦|🇻🇦|🇦🇬|🇦🇮|🇦🇷|🇦🇼|🇧🇧|🇧🇱|🇧🇲|🇧🇴|🇧🇶|🇧🇷|🇧🇸|🇧🇻|🇧🇿|🇨🇦|🇨🇱|🇨🇴|🇨🇷|🇨🇺|🇨🇼|🇩🇲|🇩🇴|🇪🇨|🇫🇰|🇬🇩|🇬🇫|🇬🇱|🇬🇵|🇬🇸|🇬🇹|🇬🇾|🇭🇳|🇭🇹|🇯🇲|🇰🇳|🇰🇾|🇱🇨|🇲🇫|🇲🇶|🇲🇸|🇲🇽|🇳🇮|🇵🇦|🇵🇪|🇵🇲|🇵🇷|🇵🇾|🇸🇷|🇸🇻|🇸🇽|🇹🇨|🇹🇹|🇺🇸|🇺🇾|🇻🇨|🇻🇪|🇻🇬|🇻🇮)).+$"
-      update_interval: 21600
-      latency_test_url: "http://www.gstatic.com/generate_204"
-      interval: 600
-      timeout: 5
-      tolerance: 100
-      hidden: true
-      block_quic: true
-  - fallback:
-      name: "🛟 其他/未分类故障转移"
-      urls:
-        - "https://example.invalid/private/egern-nodes"
-      filter: "^(?!(?:🔗|🇦🇪|🇦🇫|🇦🇲|🇦🇸|🇦🇺|🇦🇿|🇧🇩|🇧🇭|🇧🇳|🇧🇹|🇨🇨|🇨🇰|🇨🇳|🇨🇽|🇨🇾|🇫🇯|🇫🇲|🇬🇪|🇬🇺|🇭🇰|🇭🇲|🇮🇩|🇮🇱|🇮🇳|🇮🇶|🇮🇷|🇯🇴|🇯🇵|🇰🇬|🇰🇭|🇰🇮|🇰🇵|🇰🇷|🇰🇼|🇰🇿|🇱🇦|🇱🇧|🇱🇰|🇲🇭|🇲🇲|🇲🇳|🇲🇴|🇲🇵|🇲🇻|🇲🇾|🇳🇨|🇳🇫|🇳🇵|🇳🇷|🇳🇺|🇳🇿|🇴🇲|🇵🇫|🇵🇬|🇵🇭|🇵🇰|🇵🇳|🇵🇸|🇵🇼|🇶🇦|🇸🇦|🇸🇧|🇸🇬|🇸🇾|🇹🇭|🇹🇯|🇹🇰|🇹🇱|🇹🇲|🇹🇴|🇹🇷|🇹🇻|🇹🇼|🇺🇲|🇺🇿|🇻🇳|🇻🇺|🇼🇫|🇼🇸|🇾🇪|🇦🇩|🇦🇱|🇦🇹|🇦🇽|🇧🇦|🇧🇪|🇧🇬|🇧🇾|🇨🇭|🇨🇿|🇩🇪|🇩🇰|🇪🇪|🇪🇸|🇫🇮|🇫🇴|🇫🇷|🇬🇧|🇬🇬|🇬🇮|🇬🇷|🇭🇷|🇭🇺|🇮🇪|🇮🇲|🇮🇸|🇮🇹|🇯🇪|🇱🇮|🇱🇹|🇱🇺|🇱🇻|🇲🇨|🇲🇩|🇲🇪|🇲🇰|🇲🇹|🇳🇱|🇳🇴|🇵🇱|🇵🇹|🇷🇴|🇷🇸|🇷🇺|🇸🇪|🇸🇮|🇸🇯|🇸🇰|🇸🇲|🇺🇦|🇻🇦|🇦🇬|🇦🇮|🇦🇷|🇦🇼|🇧🇧|🇧🇱|🇧🇲|🇧🇴|🇧🇶|🇧🇷|🇧🇸|🇧🇻|🇧🇿|🇨🇦|🇨🇱|🇨🇴|🇨🇷|🇨🇺|🇨🇼|🇩🇲|🇩🇴|🇪🇨|🇫🇰|🇬🇩|🇬🇫|🇬🇱|🇬🇵|🇬🇸|🇬🇹|🇬🇾|🇭🇳|🇭🇹|🇯🇲|🇰🇳|🇰🇾|🇱🇨|🇲🇫|🇲🇶|🇲🇸|🇲🇽|🇳🇮|🇵🇦|🇵🇪|🇵🇲|🇵🇷|🇵🇾|🇸🇷|🇸🇻|🇸🇽|🇹🇨|🇹🇹|🇺🇸|🇺🇾|🇻🇨|🇻🇪|🇻🇬|🇻🇮)).+$"
-      update_interval: 21600
-      latency_test_url: "http://www.gstatic.com/generate_204"
-      interval: 600
-      timeout: 5
-      hidden: true
-      block_quic: true
   - select:
       name: "🚀 节点选择"
       policies:
         - "⚡ 全部自动"
-        - "🛟 全部故障转移"
         - "🌏 亚太"
         - "🌎 美洲"
         - "🌐 其他/未分类"
@@ -407,7 +314,6 @@ policy_groups:
       name: "🌏 亚太"
       policies:
         - "⚡ 亚太自动"
-        - "🛟 亚太故障转移"
       urls:
         - "https://example.invalid/private/egern-nodes"
       filter: "^(?:🇦🇪|🇦🇫|🇦🇲|🇦🇸|🇦🇺|🇦🇿|🇧🇩|🇧🇭|🇧🇳|🇧🇹|🇨🇨|🇨🇰|🇨🇳|🇨🇽|🇨🇾|🇫🇯|🇫🇲|🇬🇪|🇬🇺|🇭🇰|🇭🇲|🇮🇩|🇮🇱|🇮🇳|🇮🇶|🇮🇷|🇯🇴|🇯🇵|🇰🇬|🇰🇭|🇰🇮|🇰🇵|🇰🇷|🇰🇼|🇰🇿|🇱🇦|🇱🇧|🇱🇰|🇲🇭|🇲🇲|🇲🇳|🇲🇴|🇲🇵|🇲🇻|🇲🇾|🇳🇨|🇳🇫|🇳🇵|🇳🇷|🇳🇺|🇳🇿|🇴🇲|🇵🇫|🇵🇬|🇵🇭|🇵🇰|🇵🇳|🇵🇸|🇵🇼|🇶🇦|🇸🇦|🇸🇧|🇸🇬|🇸🇾|🇹🇭|🇹🇯|🇹🇰|🇹🇱|🇹🇲|🇹🇴|🇹🇷|🇹🇻|🇹🇼|🇺🇲|🇺🇿|🇻🇳|🇻🇺|🇼🇫|🇼🇸|🇾🇪).+$"
@@ -417,7 +323,6 @@ policy_groups:
       name: "🌎 美洲"
       policies:
         - "⚡ 美洲自动"
-        - "🛟 美洲故障转移"
       urls:
         - "https://example.invalid/private/egern-nodes"
       filter: "^(?:🇦🇬|🇦🇮|🇦🇷|🇦🇼|🇧🇧|🇧🇱|🇧🇲|🇧🇴|🇧🇶|🇧🇷|🇧🇸|🇧🇻|🇧🇿|🇨🇦|🇨🇱|🇨🇴|🇨🇷|🇨🇺|🇨🇼|🇩🇲|🇩🇴|🇪🇨|🇫🇰|🇬🇩|🇬🇫|🇬🇱|🇬🇵|🇬🇸|🇬🇹|🇬🇾|🇭🇳|🇭🇹|🇯🇲|🇰🇳|🇰🇾|🇱🇨|🇲🇫|🇲🇶|🇲🇸|🇲🇽|🇳🇮|🇵🇦|🇵🇪|🇵🇲|🇵🇷|🇵🇾|🇸🇷|🇸🇻|🇸🇽|🇹🇨|🇹🇹|🇺🇸|🇺🇾|🇻🇨|🇻🇪|🇻🇬|🇻🇮).+$"
@@ -427,36 +332,11 @@ policy_groups:
       name: "🌐 其他/未分类"
       policies:
         - "⚡ 其他/未分类自动"
-        - "🛟 其他/未分类故障转移"
       urls:
         - "https://example.invalid/private/egern-nodes"
       filter: "^(?!(?:🔗|🇦🇪|🇦🇫|🇦🇲|🇦🇸|🇦🇺|🇦🇿|🇧🇩|🇧🇭|🇧🇳|🇧🇹|🇨🇨|🇨🇰|🇨🇳|🇨🇽|🇨🇾|🇫🇯|🇫🇲|🇬🇪|🇬🇺|🇭🇰|🇭🇲|🇮🇩|🇮🇱|🇮🇳|🇮🇶|🇮🇷|🇯🇴|🇯🇵|🇰🇬|🇰🇭|🇰🇮|🇰🇵|🇰🇷|🇰🇼|🇰🇿|🇱🇦|🇱🇧|🇱🇰|🇲🇭|🇲🇲|🇲🇳|🇲🇴|🇲🇵|🇲🇻|🇲🇾|🇳🇨|🇳🇫|🇳🇵|🇳🇷|🇳🇺|🇳🇿|🇴🇲|🇵🇫|🇵🇬|🇵🇭|🇵🇰|🇵🇳|🇵🇸|🇵🇼|🇶🇦|🇸🇦|🇸🇧|🇸🇬|🇸🇾|🇹🇭|🇹🇯|🇹🇰|🇹🇱|🇹🇲|🇹🇴|🇹🇷|🇹🇻|🇹🇼|🇺🇲|🇺🇿|🇻🇳|🇻🇺|🇼🇫|🇼🇸|🇾🇪|🇦🇩|🇦🇱|🇦🇹|🇦🇽|🇧🇦|🇧🇪|🇧🇬|🇧🇾|🇨🇭|🇨🇿|🇩🇪|🇩🇰|🇪🇪|🇪🇸|🇫🇮|🇫🇴|🇫🇷|🇬🇧|🇬🇬|🇬🇮|🇬🇷|🇭🇷|🇭🇺|🇮🇪|🇮🇲|🇮🇸|🇮🇹|🇯🇪|🇱🇮|🇱🇹|🇱🇺|🇱🇻|🇲🇨|🇲🇩|🇲🇪|🇲🇰|🇲🇹|🇳🇱|🇳🇴|🇵🇱|🇵🇹|🇷🇴|🇷🇸|🇷🇺|🇸🇪|🇸🇮|🇸🇯|🇸🇰|🇸🇲|🇺🇦|🇻🇦|🇦🇬|🇦🇮|🇦🇷|🇦🇼|🇧🇧|🇧🇱|🇧🇲|🇧🇴|🇧🇶|🇧🇷|🇧🇸|🇧🇻|🇧🇿|🇨🇦|🇨🇱|🇨🇴|🇨🇷|🇨🇺|🇨🇼|🇩🇲|🇩🇴|🇪🇨|🇫🇰|🇬🇩|🇬🇫|🇬🇱|🇬🇵|🇬🇸|🇬🇹|🇬🇾|🇭🇳|🇭🇹|🇯🇲|🇰🇳|🇰🇾|🇱🇨|🇲🇫|🇲🇶|🇲🇸|🇲🇽|🇳🇮|🇵🇦|🇵🇪|🇵🇲|🇵🇷|🇵🇾|🇸🇷|🇸🇻|🇸🇽|🇹🇨|🇹🇹|🇺🇸|🇺🇾|🇻🇨|🇻🇪|🇻🇬|🇻🇮)).+$"
       update_interval: 21600
       block_quic: true
-  - select:
-      name: "🏠 自建节点"
-      policies:
-        - "DIRECT"
-      urls:
-        - "https://example.invalid/private/egern-nodes"
-      filter: "^.+｜自建(?:·.*)?$"
-      update_interval: 21600
-  - select:
-      name: "🏢 机场节点"
-      policies:
-        - "DIRECT"
-      urls:
-        - "https://example.invalid/private/egern-nodes"
-      filter: "^.+｜机场(?:·.*)?$"
-      update_interval: 21600
-  - select:
-      name: "↪️ Realm 转发"
-      policies:
-        - "DIRECT"
-      urls:
-        - "https://example.invalid/private/egern-nodes"
-      filter: "^.+｜Realm(?:·.*)?$"
-      update_interval: 21600
   - select:
       name: "🤖 AI 专用"
       urls:
@@ -469,7 +349,6 @@ policy_groups:
       policies:
         - "🚀 节点选择"
         - "⚡ 全部自动"
-        - "🛟 全部故障转移"
         - "🌏 亚太"
         - "🌎 美洲"
         - "🌐 其他/未分类"
@@ -484,7 +363,6 @@ policy_groups:
       policies:
         - "🚀 节点选择"
         - "⚡ 全部自动"
-        - "🛟 全部故障转移"
         - "🌏 亚太"
         - "🌎 美洲"
         - "🌐 其他/未分类"
@@ -495,71 +373,10 @@ policy_groups:
       update_interval: 21600
       block_quic: true
   - select:
-      name: "🎬 Netflix"
+      name: "🎬 海外流媒体"
       policies:
         - "🚀 节点选择"
         - "⚡ 全部自动"
-        - "🛟 全部故障转移"
-        - "🌏 亚太"
-        - "🌎 美洲"
-        - "🌐 其他/未分类"
-        - "DIRECT"
-      urls:
-        - "https://example.invalid/private/egern-nodes"
-      filter: "^.+$"
-      update_interval: 21600
-      block_quic: true
-  - select:
-      name: "🏰 Disney+"
-      policies:
-        - "🚀 节点选择"
-        - "⚡ 全部自动"
-        - "🛟 全部故障转移"
-        - "🌏 亚太"
-        - "🌎 美洲"
-        - "🌐 其他/未分类"
-        - "DIRECT"
-      urls:
-        - "https://example.invalid/private/egern-nodes"
-      filter: "^.+$"
-      update_interval: 21600
-      block_quic: true
-  - select:
-      name: "🎵 Spotify"
-      policies:
-        - "🚀 节点选择"
-        - "⚡ 全部自动"
-        - "🛟 全部故障转移"
-        - "🌏 亚太"
-        - "🌎 美洲"
-        - "🌐 其他/未分类"
-        - "DIRECT"
-      urls:
-        - "https://example.invalid/private/egern-nodes"
-      filter: "^.+$"
-      update_interval: 21600
-      block_quic: true
-  - select:
-      name: "🌍 国际媒体"
-      policies:
-        - "🚀 节点选择"
-        - "⚡ 全部自动"
-        - "🛟 全部故障转移"
-        - "🌏 亚太"
-        - "🌎 美洲"
-        - "🌐 其他/未分类"
-        - "DIRECT"
-      urls:
-        - "https://example.invalid/private/egern-nodes"
-      filter: "^.+$"
-      update_interval: 21600
-      block_quic: true
-  - select:
-      name: "✈️ Telegram"
-      policies:
-        - "🚀 节点选择"
-        - "⚡ 全部自动"
-        - "🛟 全部故障转移"
         - "🌏 亚太"
         - "🌎 美洲"
         - "🌐 其他/未分类"
@@ -574,22 +391,6 @@ policy_groups:
       policies:
         - "🚀 节点选择"
         - "⚡ 全部自动"
-        - "🛟 全部故障转移"
-        - "🌏 亚太"
-        - "🌎 美洲"
-        - "🌐 其他/未分类"
-        - "DIRECT"
-      urls:
-        - "https://example.invalid/private/egern-nodes"
-      filter: "^.+$"
-      update_interval: 21600
-      block_quic: true
-  - select:
-      name: "🎶 TikTok"
-      policies:
-        - "🚀 节点选择"
-        - "⚡ 全部自动"
-        - "🛟 全部故障转移"
         - "🌏 亚太"
         - "🌎 美洲"
         - "🌐 其他/未分类"
@@ -605,7 +406,6 @@ policy_groups:
         - "DIRECT"
         - "🚀 节点选择"
         - "⚡ 全部自动"
-        - "🛟 全部故障转移"
         - "🌏 亚太"
         - "🌎 美洲"
         - "🌐 其他/未分类"
@@ -619,7 +419,6 @@ policy_groups:
         - "DIRECT"
         - "🚀 节点选择"
         - "⚡ 全部自动"
-        - "🛟 全部故障转移"
         - "🌏 亚太"
         - "🌎 美洲"
         - "🌐 其他/未分类"
@@ -628,54 +427,11 @@ policy_groups:
       filter: "^.+$"
       update_interval: 21600
   - select:
-      name: "📺 哔哩哔哩"
+      name: "🇨🇳 国内平台"
       policies:
         - "DIRECT"
         - "🚀 节点选择"
         - "⚡ 全部自动"
-        - "🛟 全部故障转移"
-        - "🌏 亚太"
-        - "🌎 美洲"
-        - "🌐 其他/未分类"
-      urls:
-        - "https://example.invalid/private/egern-nodes"
-      filter: "^.+$"
-      update_interval: 21600
-  - select:
-      name: "🎵 抖音"
-      policies:
-        - "DIRECT"
-        - "🚀 节点选择"
-        - "⚡ 全部自动"
-        - "🛟 全部故障转移"
-        - "🌏 亚太"
-        - "🌎 美洲"
-        - "🌐 其他/未分类"
-      urls:
-        - "https://example.invalid/private/egern-nodes"
-      filter: "^.+$"
-      update_interval: 21600
-  - select:
-      name: "📕 小红书"
-      policies:
-        - "DIRECT"
-        - "🚀 节点选择"
-        - "⚡ 全部自动"
-        - "🛟 全部故障转移"
-        - "🌏 亚太"
-        - "🌎 美洲"
-        - "🌐 其他/未分类"
-      urls:
-        - "https://example.invalid/private/egern-nodes"
-      filter: "^.+$"
-      update_interval: 21600
-  - select:
-      name: "🧣 微博"
-      policies:
-        - "DIRECT"
-        - "🚀 节点选择"
-        - "⚡ 全部自动"
-        - "🛟 全部故障转移"
         - "🌏 亚太"
         - "🌎 美洲"
         - "🌐 其他/未分类"
@@ -688,7 +444,6 @@ policy_groups:
       policies:
         - "🚀 节点选择"
         - "⚡ 全部自动"
-        - "🛟 全部故障转移"
         - "🌏 亚太"
         - "🌎 美洲"
         - "🌐 其他/未分类"
@@ -735,6 +490,54 @@ policy_groups:
       policies:
         - "DIRECT"
         - "REJECT"
+  - auto_test:
+      name: "⚡ 全部自动"
+      urls:
+        - "https://example.invalid/private/egern-nodes"
+      filter: "^(?!🔗 ).+$"
+      update_interval: 21600
+      latency_test_url: "http://www.gstatic.com/generate_204"
+      interval: 600
+      timeout: 5
+      tolerance: 100
+      hidden: true
+      block_quic: true
+  - auto_test:
+      name: "⚡ 亚太自动"
+      urls:
+        - "https://example.invalid/private/egern-nodes"
+      filter: "^(?:🇦🇪|🇦🇫|🇦🇲|🇦🇸|🇦🇺|🇦🇿|🇧🇩|🇧🇭|🇧🇳|🇧🇹|🇨🇨|🇨🇰|🇨🇳|🇨🇽|🇨🇾|🇫🇯|🇫🇲|🇬🇪|🇬🇺|🇭🇰|🇭🇲|🇮🇩|🇮🇱|🇮🇳|🇮🇶|🇮🇷|🇯🇴|🇯🇵|🇰🇬|🇰🇭|🇰🇮|🇰🇵|🇰🇷|🇰🇼|🇰🇿|🇱🇦|🇱🇧|🇱🇰|🇲🇭|🇲🇲|🇲🇳|🇲🇴|🇲🇵|🇲🇻|🇲🇾|🇳🇨|🇳🇫|🇳🇵|🇳🇷|🇳🇺|🇳🇿|🇴🇲|🇵🇫|🇵🇬|🇵🇭|🇵🇰|🇵🇳|🇵🇸|🇵🇼|🇶🇦|🇸🇦|🇸🇧|🇸🇬|🇸🇾|🇹🇭|🇹🇯|🇹🇰|🇹🇱|🇹🇲|🇹🇴|🇹🇷|🇹🇻|🇹🇼|🇺🇲|🇺🇿|🇻🇳|🇻🇺|🇼🇫|🇼🇸|🇾🇪).+$"
+      update_interval: 21600
+      latency_test_url: "http://www.gstatic.com/generate_204"
+      interval: 600
+      timeout: 5
+      tolerance: 100
+      hidden: true
+      block_quic: true
+  - auto_test:
+      name: "⚡ 美洲自动"
+      urls:
+        - "https://example.invalid/private/egern-nodes"
+      filter: "^(?:🇦🇬|🇦🇮|🇦🇷|🇦🇼|🇧🇧|🇧🇱|🇧🇲|🇧🇴|🇧🇶|🇧🇷|🇧🇸|🇧🇻|🇧🇿|🇨🇦|🇨🇱|🇨🇴|🇨🇷|🇨🇺|🇨🇼|🇩🇲|🇩🇴|🇪🇨|🇫🇰|🇬🇩|🇬🇫|🇬🇱|🇬🇵|🇬🇸|🇬🇹|🇬🇾|🇭🇳|🇭🇹|🇯🇲|🇰🇳|🇰🇾|🇱🇨|🇲🇫|🇲🇶|🇲🇸|🇲🇽|🇳🇮|🇵🇦|🇵🇪|🇵🇲|🇵🇷|🇵🇾|🇸🇷|🇸🇻|🇸🇽|🇹🇨|🇹🇹|🇺🇸|🇺🇾|🇻🇨|🇻🇪|🇻🇬|🇻🇮).+$"
+      update_interval: 21600
+      latency_test_url: "http://www.gstatic.com/generate_204"
+      interval: 600
+      timeout: 5
+      tolerance: 100
+      hidden: true
+      block_quic: true
+  - auto_test:
+      name: "⚡ 其他/未分类自动"
+      urls:
+        - "https://example.invalid/private/egern-nodes"
+      filter: "^(?!(?:🔗|🇦🇪|🇦🇫|🇦🇲|🇦🇸|🇦🇺|🇦🇿|🇧🇩|🇧🇭|🇧🇳|🇧🇹|🇨🇨|🇨🇰|🇨🇳|🇨🇽|🇨🇾|🇫🇯|🇫🇲|🇬🇪|🇬🇺|🇭🇰|🇭🇲|🇮🇩|🇮🇱|🇮🇳|🇮🇶|🇮🇷|🇯🇴|🇯🇵|🇰🇬|🇰🇭|🇰🇮|🇰🇵|🇰🇷|🇰🇼|🇰🇿|🇱🇦|🇱🇧|🇱🇰|🇲🇭|🇲🇲|🇲🇳|🇲🇴|🇲🇵|🇲🇻|🇲🇾|🇳🇨|🇳🇫|🇳🇵|🇳🇷|🇳🇺|🇳🇿|🇴🇲|🇵🇫|🇵🇬|🇵🇭|🇵🇰|🇵🇳|🇵🇸|🇵🇼|🇶🇦|🇸🇦|🇸🇧|🇸🇬|🇸🇾|🇹🇭|🇹🇯|🇹🇰|🇹🇱|🇹🇲|🇹🇴|🇹🇷|🇹🇻|🇹🇼|🇺🇲|🇺🇿|🇻🇳|🇻🇺|🇼🇫|🇼🇸|🇾🇪|🇦🇩|🇦🇱|🇦🇹|🇦🇽|🇧🇦|🇧🇪|🇧🇬|🇧🇾|🇨🇭|🇨🇿|🇩🇪|🇩🇰|🇪🇪|🇪🇸|🇫🇮|🇫🇴|🇫🇷|🇬🇧|🇬🇬|🇬🇮|🇬🇷|🇭🇷|🇭🇺|🇮🇪|🇮🇲|🇮🇸|🇮🇹|🇯🇪|🇱🇮|🇱🇹|🇱🇺|🇱🇻|🇲🇨|🇲🇩|🇲🇪|🇲🇰|🇲🇹|🇳🇱|🇳🇴|🇵🇱|🇵🇹|🇷🇴|🇷🇸|🇷🇺|🇸🇪|🇸🇮|🇸🇯|🇸🇰|🇸🇲|🇺🇦|🇻🇦|🇦🇬|🇦🇮|🇦🇷|🇦🇼|🇧🇧|🇧🇱|🇧🇲|🇧🇴|🇧🇶|🇧🇷|🇧🇸|🇧🇻|🇧🇿|🇨🇦|🇨🇱|🇨🇴|🇨🇷|🇨🇺|🇨🇼|🇩🇲|🇩🇴|🇪🇨|🇫🇰|🇬🇩|🇬🇫|🇬🇱|🇬🇵|🇬🇸|🇬🇹|🇬🇾|🇭🇳|🇭🇹|🇯🇲|🇰🇳|🇰🇾|🇱🇨|🇲🇫|🇲🇶|🇲🇸|🇲🇽|🇳🇮|🇵🇦|🇵🇪|🇵🇲|🇵🇷|🇵🇾|🇸🇷|🇸🇻|🇸🇽|🇹🇨|🇹🇹|🇺🇸|🇺🇾|🇻🇨|🇻🇪|🇻🇬|🇻🇮)).+$"
+      update_interval: 21600
+      latency_test_url: "http://www.gstatic.com/generate_204"
+      interval: 600
+      timeout: 5
+      tolerance: 100
+      hidden: true
+      block_quic: true
 rules:
   - domain_suffix:
       match: "local"
@@ -833,19 +636,19 @@ rules:
       update_interval: 86400
   - rule_set:
       match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/BiliBili.yaml"
-      policy: "📺 哔哩哔哩"
+      policy: "🇨🇳 国内平台"
       update_interval: 86400
   - rule_set:
       match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/ByteDance.yaml"
-      policy: "🎵 抖音"
+      policy: "🇨🇳 国内平台"
       update_interval: 86400
   - rule_set:
       match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/XiaoHongShu.yaml"
-      policy: "📕 小红书"
+      policy: "🇨🇳 国内平台"
       update_interval: 86400
   - rule_set:
       match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/Weibo.yaml"
-      policy: "🧣 微博"
+      policy: "🇨🇳 国内平台"
       update_interval: 86400
   - rule_set:
       match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/OpenAI.yaml"
@@ -873,23 +676,23 @@ rules:
       update_interval: 86400
   - rule_set:
       match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/Netflix.yaml"
-      policy: "🎬 Netflix"
+      policy: "🎬 海外流媒体"
       update_interval: 86400
   - rule_set:
       match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/Disney.yaml"
-      policy: "🏰 Disney+"
+      policy: "🎬 海外流媒体"
       update_interval: 86400
   - rule_set:
       match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/Spotify.yaml"
-      policy: "🎵 Spotify"
+      policy: "🎬 海外流媒体"
       update_interval: 86400
   - rule_set:
       match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/GlobalMedia.yaml"
-      policy: "🌍 国际媒体"
+      policy: "🎬 海外流媒体"
       update_interval: 86400
   - rule_set:
       match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/Telegram.yaml"
-      policy: "✈️ Telegram"
+      policy: "💬 海外社交"
       update_interval: 86400
   - rule_set:
       match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/Facebook.yaml"
@@ -905,7 +708,7 @@ rules:
       update_interval: 86400
   - rule_set:
       match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/TikTok.yaml"
-      policy: "🎶 TikTok"
+      policy: "💬 海外社交"
       update_interval: 86400
   - rule_set:
       match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/Apple.yaml"

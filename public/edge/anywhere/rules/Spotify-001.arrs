@@ -4,7 +4,7 @@
 # Converted at upstream commit time: 2026-08-15T18:26:29Z
 # License: GPL-2.0-only
 # Converted by: Juan-nikola/apple-proxy-profiles
-name = 🎵 Spotify · Spotify
+name = 🎬 海外流媒体 · Spotify
 routing = 0
 
 0, 104.154.127.126/32
