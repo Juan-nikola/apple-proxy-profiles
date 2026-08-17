@@ -63,10 +63,17 @@ test("rejects malformed commit entries, mismatched links, and invalid times", as
     `https://github.com/blackmatrix7/ios_rule_script/commit/${headSha}`,
     `https://github.com/blackmatrix7/ios_rule_script/commit/${olderSha}`,
   );
+  const duplicateIdentityFeed = commitFeed.replace(
+    "    <updated>2026-08-15T18:26:29Z</updated>",
+    `    <id>tag:github.com,2008:Grit::Commit/${headSha}</id>
+    <link rel="alternate" type="text/html" href="https://github.com/blackmatrix7/ios_rule_script/commit/${headSha}"/>
+    <updated>2026-08-15T18:26:29Z</updated>`,
+  );
   const cases = [
     ["<feed></feed>", /invalid commit$/u],
     [invalidShaFeed, /invalid commit$/u],
     [mismatchedLinkFeed, /invalid commit$/u],
+    [duplicateIdentityFeed, /invalid commit$/u],
     [commitFeed.replace("2026-08-15T18:26:29Z", "not-a-time"), /invalid commit time/u],
     [commitFeed.replace("2026-08-15T18:26:29Z", "2030-01-01T00:00:00Z"), /invalid commit time/u],
   ];
