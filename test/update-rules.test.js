@@ -12,6 +12,7 @@ import { publishEdgeRelease } from "../automation/src/build-site.js";
 import { lightweightFixtureSnapshots } from "../automation/test/lightweight-fixture.js";
 import { MOBILE_RULE_SOURCE_IDS, ruleClientCatalog } from "../shared/rules/lightweight-policy.js";
 import {
+  buildArtifacts as buildArtifactsFromScript,
   chinaIpAuditPrimary,
   parseUpdateRulesArguments,
   promoteClientRelease as promoteClientReleaseImpl,
@@ -134,6 +135,32 @@ test("accepts only explicit edge, current-check, and client promotion operations
   for (const args of [[], ["--check"], ["--channel", "current"], ["--promote", "unknown", "a".repeat(64)]]) {
     assert.throws(() => parseUpdateRulesArguments(args), /update-rules arguments/u);
   }
+});
+
+test("build edge paces one production snapshot worker", async () => {
+  const originalFetch = globalThis.fetch;
+  let captured;
+  try {
+    globalThis.fetch = async () => { throw new Error("unexpected global fetch"); };
+    await assert.rejects(
+      buildArtifactsFromScript({
+        operation: "build-edge",
+        publicDirectory: join(tmpdir(), "unused-public"),
+        upstreamOverride: upstream,
+        includeStaticFiles: false,
+        fetchSnapshotImpl: async (options) => {
+          captured = options;
+          throw new Error("capture snapshot options");
+        },
+      }),
+      /capture snapshot options/u,
+    );
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+  assert.equal(captured.commit, upstream.commit);
+  assert.equal(captured.concurrency, 1);
+  assert.equal(captured.requestIntervalMs, 250);
 });
 
 test("derives audit-only primary provenance from the production ChinaIP snapshot", () => {

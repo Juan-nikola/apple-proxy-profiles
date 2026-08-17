@@ -51,6 +51,98 @@ test("fails closed for redirects, HTML, invalid UTF-8, and oversized bodies", as
   }
 });
 
+test("honors the server Expires cooldown before retrying a 429", async () => {
+  let attempts = 0;
+  const delays = [];
+  const snapshot = await fetchSnapshot({
+    commit,
+    catalog: [source],
+    retries: 2,
+    sleepImpl: async (delayMs) => { delays.push(delayMs); },
+    nowImpl: () => Date.parse("2026-08-17T15:37:40Z"),
+    fetchImpl: async () => {
+      attempts += 1;
+      if (attempts < 3) {
+        return new Response("too many requests", {
+          status: 429,
+          headers: {
+            date: "Mon, 17 Aug 2026 15:37:40 GMT",
+            expires: "Mon, 17 Aug 2026 15:42:40 GMT",
+          },
+        });
+      }
+      return response("DOMAIN-SUFFIX,example.com\n");
+    },
+  });
+  assert.equal(snapshot.get("Fixture").sourceBytes, 26);
+  assert.equal(attempts, 3);
+  assert.deepEqual(delays, [300_000, 300_000]);
+});
+
+test("uses bounded fallback delays for retryable status and network failures", async () => {
+  for (const mode of ["status", "network"]) {
+    let attempts = 0;
+    const delays = [];
+    const snapshot = await fetchSnapshot({
+      commit,
+      catalog: [source],
+      retries: 2,
+      sleepImpl: async (delayMs) => { delays.push(delayMs); },
+      fetchImpl: async () => {
+        attempts += 1;
+        if (attempts < 3) {
+          if (mode === "network") throw new Error("temporary network failure");
+          return new Response("unavailable", { status: 503 });
+        }
+        return response("DOMAIN-SUFFIX,example.com\n");
+      },
+    });
+    assert.equal(snapshot.get("Fixture").sourceBytes, 26, mode);
+    assert.equal(attempts, 3, mode);
+    assert.deepEqual(delays, [1_000, 2_000], mode);
+  }
+});
+
+test("does not wait or retry a permanent source status", async () => {
+  let attempts = 0;
+  const delays = [];
+  await assert.rejects(() => fetchSnapshot({
+    commit,
+    catalog: [source],
+    retries: 2,
+    sleepImpl: async (delayMs) => { delays.push(delayMs); },
+    fetchImpl: async () => {
+      attempts += 1;
+      return new Response("not found", { status: 404 });
+    },
+  }), /HTTP status 404/u);
+  assert.equal(attempts, 1);
+  assert.deepEqual(delays, []);
+});
+
+test("paces request starts through one shared gate", async () => {
+  const events = [];
+  const catalog = Array.from({ length: 3 }, (_, index) => ({
+    id: `S${index}`,
+    canonicalPath: `rule/Surge/S${index}/S${index}.list`,
+  }));
+  const snapshot = await fetchSnapshot({
+    commit,
+    catalog,
+    concurrency: 3,
+    retries: 0,
+    requestIntervalMs: 250,
+    sleepImpl: async (delayMs) => { events.push(`sleep:${delayMs}`); },
+    fetchImpl: async (url) => {
+      const id = /\/(S\d+)\.list$/u.exec(url)?.[1];
+      events.push(`fetch:${id}`);
+      return response("DOMAIN-SUFFIX,example.com\n");
+    },
+  });
+  assert.deepEqual(events, ["fetch:S0", "sleep:250", "fetch:S1", "sleep:250", "fetch:S2"]);
+  assert.deepEqual([...snapshot.keys()], catalog.map(({ id }) => id));
+});
+
 test("limits concurrency and preserves catalog order", async () => {
   let active = 0;
   let peak = 0;
