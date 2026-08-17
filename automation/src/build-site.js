@@ -16,8 +16,6 @@ import { artifactBuffer, artifactSha256 } from "./artifact-content.js";
 import { validateChinaIpAuditForPromotion } from "./china-ip-audit.js";
 import { canRefreshChannel, refreshChannelManifest, refreshCurrentManifest } from "./refresh-current.js";
 import { canonicalJson } from "./render-anywhere-rules.js";
-import { renderOneXrayImportPage } from "../../clients/onexray/src/build-import-page.js";
-import { oneXrayGeoNames } from "../../clients/onexray/src/geodata-contract.js";
 
 // Retention policy: the publication pipeline prunes immutable version
 // snapshots to MAX_VERSION_COUNT (8). check-actions.mjs validates the on-disk
@@ -35,158 +33,8 @@ export const CLIENT_PUBLIC_PATHS = Object.freeze({
   shadowrocket: "shadowrocket",
   egern: "egern",
   anywhere: "anywhere",
-  happ: "happ",
 });
 const OPTIONAL_CLIENTS = Object.freeze(["singbox", "surge", "shadowrocket", "egern", "anywhere"]);
-
-export const ONEXRAY_PUBLIC_PATH = "onexray";
-const ONEXRAY_PUBLIC_FILES = Object.freeze([
-  "onexray/geodata/geosite.dat",
-  "onexray/geodata/geoip.dat",
-  "onexray/geodata/manifest.json",
-  "onexray/index.html",
-]);
-const ONEXRAY_SCRIPT_FILES = Object.freeze([
-  "onexray/scripts/onexray-nodes-generator.js",
-  "onexray/scripts/onexray-profile-generator.js",
-]);
-const ONEXRAY_SCHEMA = "apple-proxy-onexray-geodata-v1";
-const SHA256 = /^[0-9a-f]{64}$/u;
-const COMMIT = /^[0-9a-f]{40}$/u;
-
-function parseOneXrayManifest(content) {
-  let manifest;
-  try {
-    manifest = JSON.parse(artifactBuffer(content).toString("utf8"));
-  } catch {
-    throw new Error("OneXray GeoData manifest is invalid JSON");
-  }
-  if (!manifest || typeof manifest !== "object" || Array.isArray(manifest)
-    || manifest.schema !== ONEXRAY_SCHEMA || manifest.schemaVersion !== 1
-    || typeof manifest.channel !== "string" || !["edge", "current", "previous"].includes(manifest.channel)
-    || typeof manifest.releaseId !== "string" || !/^[A-Za-z0-9._-]+$/u.test(manifest.releaseId)
-    || !manifest.upstream || !COMMIT.test(manifest.upstream.commit ?? "")
-    || !SHA256.test(manifest.manifestHash ?? "") || !Array.isArray(manifest.files)
-    || manifest.files.length !== 2) {
-    throw new Error("OneXray GeoData manifest is invalid");
-  }
-  const { manifestHash, ...base } = manifest;
-  if (artifactSha256(canonicalJson(base)) !== manifestHash
-    || !artifactBuffer(content).equals(artifactBuffer(canonicalJson(manifest)))) {
-    throw new Error("OneXray GeoData manifest hash or canonical bytes are invalid");
-  }
-  return manifest;
-}
-
-/**
- * Validates the complete credential-free OneXray public projection before it
- * can enter an edge/current/previous directory. The install page is checked
- * against the same release identity so a partial swap cannot expose mixed
- * GeoData and metadata.
- */
-export function validateOneXrayPublication({ files, channel = null } = {}) {
-  if (!(files instanceof Map)) throw new TypeError("OneXray publication must be a Map");
-  const actual = [...files.keys()].sort();
-  const expected = [...ONEXRAY_PUBLIC_FILES].sort();
-  if (JSON.stringify(actual) !== JSON.stringify(expected)) {
-    throw new Error("OneXray publication must contain a complete GeoData projection");
-  }
-  const manifestPath = "onexray/geodata/manifest.json";
-  const manifest = parseOneXrayManifest(files.get(manifestPath));
-  if (channel !== null && manifest.channel !== channel) {
-    throw new Error(`OneXray publication channel mismatch: ${manifest.channel}`);
-  }
-  const records = new Map(manifest.files.map((record) => [record.path, record]));
-  const expectedData = ["onexray/geodata/geosite.dat", "onexray/geodata/geoip.dat"];
-  if (records.size !== expectedData.length || expectedData.some((path) => !records.has(path))) {
-    throw new Error("OneXray GeoData manifest file records are invalid");
-  }
-  for (const path of expectedData) {
-    const record = records.get(path);
-    const content = artifactBuffer(files.get(path));
-    if (!Number.isSafeInteger(record.bytes) || record.bytes < 1 || !SHA256.test(record.sha256)
-      || content.byteLength !== record.bytes || artifactSha256(content) !== record.sha256) {
-      throw new Error(`OneXray GeoData bytes changed: ${path}`);
-    }
-  }
-  const page = artifactBuffer(files.get("onexray/index.html")).toString("utf8");
-  for (const identity of [manifest.schema, manifest.channel, manifest.releaseId, manifest.upstream.commit, manifest.manifestHash]) {
-    if (!page.includes(identity)) throw new Error("OneXray install page identity does not match manifest");
-  }
-  if (/<(?:script|form|input)\b/iu.test(page) || /(?:policyOverrides|onexray:\/\/[^\s"']*config\/add|password=|uuid=)/iu.test(page)) {
-    throw new Error("OneXray install page contains a private input surface");
-  }
-  return manifest;
-}
-
-export function validateOneXrayScripts(files) {
-  if (!(files instanceof Map)) throw new TypeError("OneXray edge scripts must be a Map");
-  const actual = [...files.keys()].sort();
-  const expected = [...ONEXRAY_SCRIPT_FILES].sort();
-  if (JSON.stringify(actual) !== JSON.stringify(expected)) {
-    throw new Error("OneXray edge scripts must contain the two public Sub-Store bundles");
-  }
-  const records = [];
-  for (const path of ONEXRAY_SCRIPT_FILES) {
-    const content = artifactBuffer(files.get(path));
-    if (content.byteLength === 0) throw new Error(`OneXray edge script is empty: ${path}`);
-    records.push(Object.freeze({ path, bytes: content.byteLength, sha256: artifactSha256(content) }));
-  }
-  return Object.freeze(records);
-}
-
-function onexrayRootProjection(manifest, scripts = null) {
-  return Object.freeze({
-    schema: manifest.schema,
-    schemaVersion: manifest.schemaVersion,
-    channel: manifest.channel,
-    releaseId: manifest.releaseId,
-    manifestHash: manifest.manifestHash,
-    hashes: manifest.hashes,
-    counts: manifest.counts,
-    files: manifest.files,
-    ...(scripts === null ? {} : { scripts }),
-  });
-}
-
-function edgeManifestWithOneXray(manifest, onexrayManifest, scripts = null) {
-  const { manifestHash: ignored, ...base } = manifest;
-  const edgeBase = { ...base, onexray: onexrayRootProjection(onexrayManifest, scripts) };
-  return Object.freeze({ ...edgeBase, manifestHash: artifactSha256(canonicalJson(edgeBase)) });
-}
-
-function rebindOneXrayPublication(files, channel) {
-  const sourceManifest = parseOneXrayManifest(files.get("onexray/geodata/manifest.json"));
-  if (channel !== "current" && channel !== "previous" && channel !== "edge") {
-    throw new TypeError("OneXray publication channel is invalid");
-  }
-  if (sourceManifest.channel === channel) return new Map(files);
-  const manifestBase = {
-    ...sourceManifest,
-    channel,
-    releaseId: `${channel}-${sourceManifest.upstream.commit.slice(0, 8)}`,
-    names: oneXrayGeoNames(channel),
-  };
-  delete manifestBase.manifestHash;
-  const manifest = Object.freeze({
-    ...manifestBase,
-    manifestHash: artifactSha256(canonicalJson(manifestBase)),
-  });
-  const dataFiles = new Map([
-    ["onexray/geodata/geosite.dat", artifactBuffer(files.get("onexray/geodata/geosite.dat"))],
-    ["onexray/geodata/geoip.dat", artifactBuffer(files.get("onexray/geodata/geoip.dat"))],
-  ]);
-  const page = renderOneXrayImportPage({
-    manifest,
-    files: dataFiles,
-    publicBase: "https://juan-nikola.github.io/apple-proxy-profiles",
-  });
-  return new Map([
-    ...dataFiles,
-    ["onexray/geodata/manifest.json", Buffer.from(canonicalJson(manifest), "utf8")],
-    ["onexray/index.html", Buffer.from(page, "utf8")],
-  ]);
-}
 
 async function exists(path) {
   try {
@@ -332,7 +180,7 @@ async function enforceRetention(stagingDirectory, requiredVersion = null) {
 function indexHtml(manifest) {
   return `<!doctype html>
 <html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Apple Proxy Profiles</title></head>
-<body><main><h1>Apple Proxy Profiles</h1><p>Blackmatrix7 commit: <code>${manifest.upstream.commit}</code></p><ul><li><a href="current/manifest.json">Current manifest</a></li><li><a href="edge/manifest.json">Frontier edge manifest</a></li><li><a href="current/frontier-manifest.json">Current frontier manifest</a></li><li><a href="previous/manifest.json">Previous manifest</a></li><li><a href="current/anywhere/import.html">Anywhere import</a></li><li><a href="current/happ/scripts/happ-config-generator.js">Happ Sub-Store script</a></li><li><a href="current/surge/scripts/surge-profile-generator.js">Surge Sub-Store script</a></li><li><a href="current/sing-box/scripts/sing-box-config-generator.js">sing-box Sub-Store script</a></li></ul></main></body></html>
+<body><main><h1>Apple Proxy Profiles</h1><p>Blackmatrix7 commit: <code>${manifest.upstream.commit}</code></p><ul><li><a href="current/manifest.json">Current manifest</a></li><li><a href="edge/manifest.json">Frontier edge manifest</a></li><li><a href="current/frontier-manifest.json">Current frontier manifest</a></li><li><a href="previous/manifest.json">Previous manifest</a></li><li><a href="current/anywhere/import.html">Anywhere import</a></li><li><a href="current/surge/scripts/surge-profile-generator.js">Surge Sub-Store script</a></li><li><a href="current/sing-box/scripts/sing-box-config-generator.js">sing-box Sub-Store script</a></li></ul></main></body></html>
 `;
 }
 
@@ -354,8 +202,6 @@ export async function buildSite({
   files,
   manifest,
   frontierFiles = null,
-  onexrayFiles = null,
-  onexrayScripts = null,
 }) {
   if (!(files instanceof Map) || !manifest || !/^[0-9a-f]{64}$/u.test(manifest.manifestHash)) {
     throw new TypeError("Verified public artifacts are required");
@@ -363,26 +209,15 @@ export async function buildSite({
   if (frontierFiles !== null && !(frontierFiles instanceof Map)) {
     throw new TypeError("Frontier public artifacts must be a Map");
   }
-  if (onexrayFiles !== null) validateOneXrayPublication({ files: onexrayFiles, channel: "edge" });
-  if (onexrayScripts !== null) validateOneXrayScripts(onexrayScripts);
-  if (onexrayScripts !== null && onexrayFiles === null) {
-    throw new Error("OneXray edge scripts require the GeoData projection");
-  }
   if (frontierFiles !== null) {
     for (const [path, content] of frontierFiles) {
       if (!safeRelativePath(path)) throw new TypeError("Frontier public artifact is invalid");
       if (!/^(?:edge|current)\//u.test(path)) throw new Error("Frontier public artifact must be scoped to edge or current");
     }
-    const frontierOneXray = new Map([...frontierFiles]
-      .filter(([path]) => path.startsWith("edge/onexray/"))
-      .map(([path, content]) => [path.slice("edge/".length), content]));
-    if (frontierOneXray.size > 0) validateOneXrayPublication({ files: frontierOneXray, channel: "edge" });
   }
   const currentDirectory = join(publicDirectory, "current");
   if (await exists(currentDirectory) && await snapshotMatches(currentDirectory, files)
     && (frontierFiles === null || await subsetMatches(publicDirectory, frontierFiles))
-    && (onexrayFiles === null || await subsetMatches(join(publicDirectory, "edge"), onexrayFiles))
-    && (onexrayScripts === null || await subsetMatches(join(publicDirectory, "edge"), onexrayScripts))
     && await fileMatches(join(publicDirectory, "index.html"), indexHtml(manifest))) {
     const versionsDirectory = join(publicDirectory, "versions");
     const versionDirectory = join(versionsDirectory, manifest.manifestHash);
@@ -408,15 +243,6 @@ export async function buildSite({
       await writeSnapshot(join(staging, "previous"), files);
     }
     await writeSnapshot(join(staging, "current"), files);
-    if (onexrayFiles !== null) {
-      const onexrayManifest = validateOneXrayPublication({ files: onexrayFiles, channel: "edge" });
-      await writeSnapshot(join(staging, "edge"), onexrayFiles);
-      const scriptRecords = onexrayScripts === null ? null : validateOneXrayScripts(onexrayScripts);
-      if (onexrayScripts !== null) await writeSnapshot(join(staging, "edge"), onexrayScripts);
-      const edgeManifestPath = join(staging, "edge", "manifest.json");
-      const edgeBase = edgeManifestWithOneXray(manifest, onexrayManifest, scriptRecords);
-      await writeFile(edgeManifestPath, artifactBuffer(canonicalJson(edgeBase)));
-    }
     if (frontierFiles !== null) await writeSnapshot(staging, frontierFiles);
     const versionDirectory = join(staging, "versions", manifest.manifestHash);
     if (await exists(versionDirectory)) {
@@ -593,37 +419,11 @@ export async function publishEdgeRelease({
   defaults,
   optionalPacks,
   manifest,
-  onexray = null,
-  onexrayScripts = null,
 }) {
   const merged = mergePublicationFiles(defaults, optionalPacks);
   validateDefaultPublication({ defaults, manifest });
-  const onexrayManifest = onexray === null
-    ? null
-    : validateOneXrayPublication({ files: onexray, channel: "edge" });
-  const scriptRecords = onexrayScripts === null
-    ? null
-    : validateOneXrayScripts(onexrayScripts);
-  if (onexrayScripts !== null && onexray === null) {
-    throw new Error("OneXray edge scripts require the GeoData projection");
-  }
-  if (onexray !== null && merged.has("onexray/geodata/geosite.dat")) {
-    throw new Error("Duplicate public artifact path: onexray/geodata/geosite.dat");
-  }
   const edgeMerged = new Map(merged);
-  const edgeRootManifest = onexrayManifest === null
-    ? manifest
-    : edgeManifestWithOneXray(manifest, onexrayManifest, scriptRecords);
-  if (onexray !== null) {
-    for (const [path, content] of onexray) edgeMerged.set(path, content);
-    edgeMerged.set("manifest.json", canonicalJson(edgeRootManifest));
-  }
-  if (onexrayScripts !== null) {
-    for (const [path, content] of onexrayScripts) {
-      if (edgeMerged.has(path)) throw new Error(`Duplicate public artifact path: ${path}`);
-      edgeMerged.set(path, content);
-    }
-  }
+  const edgeRootManifest = manifest;
   const optionalManifests = new Map([...optionalPacks].map(([packId, files]) => [
     packId,
     validateOptionalPublication({ packId, files }),
@@ -640,42 +440,18 @@ export async function publishEdgeRelease({
   const parent = dirname(publicDirectory);
   await mkdir(publicDirectory, { recursive: true });
   let rollout = null;
-  if (onexrayManifest !== null) {
-    try {
-      rollout = JSON.parse(await readFile(join(publicDirectory, "rollout.json"), "utf8"));
-    } catch (error) {
-      if (error.code !== "ENOENT") throw error;
-    }
-    if (rollout !== null) {
-      if (!rollout || typeof rollout !== "object" || Array.isArray(rollout)) {
-        throw new Error("Rollout manifest must be an object");
-      }
-      if (rollout.onexray !== undefined
-        && (!rollout.onexray || typeof rollout.onexray !== "object" || Array.isArray(rollout.onexray))) {
-        throw new Error("Rollout OneXray metadata must be an object");
-      }
-    }
-  }
   const staging = await mkdtemp(join(parent, `.${basename(publicDirectory)}-edge-staging-`));
   const edgeDirectory = join(publicDirectory, "edge");
   const backup = join(publicDirectory, `.edge-backup-${manifest.manifestHash.slice(0, 12)}`);
   const rolloutPath = join(publicDirectory, "rollout.json");
-  const rolloutBackup = rollout === null
-    ? null
-    : join(publicDirectory, `.rollout-backup-${onexrayManifest.manifestHash.slice(0, 12)}`);
+  const rolloutBackup = null;
   let rolloutStageDirectory = null;
   let rolloutStagePath = null;
   try {
     if (rollout !== null) {
       rolloutStageDirectory = await mkdtemp(join(parent, `.${basename(publicDirectory)}-rollout-staging-`));
       rolloutStagePath = join(rolloutStageDirectory, "rollout.json");
-      await writeFile(rolloutStagePath, `${JSON.stringify({
-        ...rollout,
-        onexray: {
-          ...(rollout.onexray ?? {}),
-          edge: onexrayManifest.manifestHash,
-        },
-      }, null, 2)}\n`, "utf8");
+      await writeFile(rolloutStagePath, `${JSON.stringify(rollout, null, 2)}\n`, "utf8");
     }
     await writeSnapshot(staging, edgeMerged);
     for (const [packId, optionalManifest] of optionalManifests) {
@@ -734,14 +510,6 @@ export async function publishEdgeRelease({
       files: edgeMerged.size,
       manifestHash: edgeRootManifest.manifestHash,
       defaultManifestHash: manifest.manifestHash,
-      ...(onexrayManifest === null ? {} : {
-        onexray: Object.freeze({
-          manifestHash: onexrayManifest.manifestHash,
-          channel: onexrayManifest.channel,
-          releaseId: onexrayManifest.releaseId,
-        }),
-      }),
-      ...(scriptRecords === null ? {} : { onexrayScripts: scriptRecords }),
     });
   } catch (error) {
     await rm(staging, { recursive: true, force: true });
@@ -870,123 +638,30 @@ function emptyRollout() {
   };
 }
 
-/** Deliberately promotes one validated edge OneXray projection. */
-export async function promoteOneXrayRelease({
-  publicDirectory,
-  manifestHash,
-  cleanupBackupImpl = (path) => rm(path, { recursive: true, force: true }),
-}) {
-  if (!/^[0-9a-f]{64}$/u.test(manifestHash)) throw new TypeError("OneXray promotion target is invalid");
-  const edgeDirectory = join(publicDirectory, "edge", ONEXRAY_PUBLIC_PATH);
-  const edgeTree = await readArtifactTree(edgeDirectory, ONEXRAY_PUBLIC_PATH);
-  const edgeFiles = new Map(ONEXRAY_PUBLIC_FILES.map((path) => [path, edgeTree.get(path)]));
-  const edgeManifest = validateOneXrayPublication({ files: edgeFiles, channel: "edge" });
-  if (edgeManifest.manifestHash !== manifestHash) {
-    throw new Error("OneXray edge manifest hash does not match promotion target");
+function knownClientSelections(value) {
+  const selections = Object.fromEntries(Object.keys(CLIENT_PUBLIC_PATHS).map((client) => [client, null]));
+  if (!value || typeof value !== "object" || Array.isArray(value)) return selections;
+  for (const client of Object.keys(selections)) {
+    if (Object.hasOwn(value, client)) selections[client] = value[client];
   }
+  return selections;
+}
 
-  const parent = dirname(publicDirectory);
-  const staging = await mkdtemp(join(parent, `.${basename(publicDirectory)}-onexray-promote-staging-`));
-  const backup = `${publicDirectory}.onexray-promote-backup-${manifestHash.slice(0, 12)}`;
-  try {
-    await cp(publicDirectory, staging, { recursive: true, force: false, errorOnExist: false });
-    const current = join(staging, "current", ONEXRAY_PUBLIC_PATH);
-    const previous = join(staging, "previous", ONEXRAY_PUBLIC_PATH);
-    await rm(previous, { recursive: true, force: true });
-    let previousManifestHash = null;
-    if (await exists(current)) {
-      let reboundPrevious = null;
-      try {
-        const previousFiles = await readArtifactTree(current, ONEXRAY_PUBLIC_PATH);
-        validateOneXrayPublication({ files: previousFiles, channel: "current" });
-        reboundPrevious = rebindOneXrayPublication(previousFiles, "previous");
-        const previousManifest = validateOneXrayPublication({
-          files: reboundPrevious,
-          channel: "previous",
-        });
-        previousManifestHash = previousManifest.manifestHash;
-      } catch {
-        // Older installations may contain an unvalidated sentinel/current tree.
-        // Preserve that rollback bytes verbatim; a validated OneXray tree is
-        // always rebound below so its channel names and URLs remain coherent.
-        previousManifestHash = null;
-      }
-      if (reboundPrevious !== null) {
-        await rm(current, { recursive: true, force: true });
-        await writeSnapshot(join(staging, "previous"), reboundPrevious);
-      } else {
-        await mkdir(dirname(previous), { recursive: true });
-        await rename(current, previous);
-      }
-    }
-    await mkdir(dirname(current), { recursive: true });
-    const currentFiles = rebindOneXrayPublication(edgeFiles, "current");
-    validateOneXrayPublication({ files: currentFiles, channel: "current" });
-    await writeSnapshot(join(staging, "current"), currentFiles);
-    const currentManifest = parseOneXrayManifest(currentFiles.get("onexray/geodata/manifest.json"));
-
-    const rolloutDefaults = emptyRollout();
-    let rollout = rolloutDefaults;
-    try {
-      const parsedRollout = JSON.parse(await readFile(join(staging, "rollout.json"), "utf8"));
-      if (!parsedRollout || typeof parsedRollout !== "object" || Array.isArray(parsedRollout)) {
-        throw new Error("Rollout manifest must be an object");
-      }
-      rollout = {
-        ...rolloutDefaults,
-        ...parsedRollout,
-        clients: { ...rolloutDefaults.clients, ...(parsedRollout.clients ?? {}) },
-        previous: { ...rolloutDefaults.previous, ...(parsedRollout.previous ?? {}) },
-        optionalPacks: parsedRollout.optionalPacks ?? rolloutDefaults.optionalPacks,
-        previousOptionalPacks: parsedRollout.previousOptionalPacks ?? rolloutDefaults.previousOptionalPacks,
-      };
-    } catch (error) {
-      if (error.code !== "ENOENT") throw error;
-    }
-    const nextRollout = {
-      ...rollout,
-      schemaVersion: 2,
-      onexray: {
-        edge: manifestHash,
-        current: currentManifest.manifestHash,
-        previous: previousManifestHash,
-      },
-    };
-    await writeFile(join(staging, "rollout.json"), `${JSON.stringify(nextRollout, null, 2)}\n`, "utf8");
-    if (await canRefreshChannel(join(staging, "previous"))) {
-      await refreshChannelManifest({ publicDirectory: staging, channel: "previous" });
-    }
-    if (await canRefreshChannel(join(staging, "current"))) {
-      const currentManifest = await refreshCurrentManifest({ publicDirectory: staging });
-      await snapshotCurrentVersion(staging);
-      await enforceRetention(staging, currentManifest.manifestHash);
-    }
-
-    if (await exists(backup)) throw new Error("OneXray promotion backup path already exists");
-    await rename(publicDirectory, backup);
-    try {
-      await rename(staging, publicDirectory);
-    } catch (error) {
-      await rename(backup, publicDirectory);
-      throw error;
-    }
-    let backupCleanupPending = false;
-    try {
-      await cleanupBackupImpl(backup);
-    } catch {
-      backupCleanupPending = true;
-    }
-    return Object.freeze({
-      client: "onexray",
-      manifestHash,
-      currentManifestHash: currentManifest.manifestHash,
-      previous: previousManifestHash,
-      backupCleanupPending,
-    });
-  } catch (error) {
-    await rm(staging, { recursive: true, force: true });
-    throw error;
+function knownOptionalSelections(value) {
+  const selections = Object.fromEntries(OPTIONAL_CLIENTS.map((client) => [client, null]));
+  if (!value || typeof value !== "object" || Array.isArray(value)) return selections;
+  for (const client of OPTIONAL_CLIENTS) {
+    if (Object.hasOwn(value, client)) selections[client] = value[client];
   }
+  return selections;
+}
+
+function knownOptionalPacks(value) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return {};
+  return Object.fromEntries(Object.entries(value).map(([packId, selections]) => [
+    packId,
+    knownOptionalSelections(selections),
+  ]));
 }
 
 export async function promoteClientRelease({
@@ -996,11 +671,6 @@ export async function promoteClientRelease({
   now = new Date(),
   cleanupBackupImpl = (path) => rm(path, { recursive: true, force: true }),
 }) {
-  if (client === "onexray") return promoteOneXrayRelease({
-    publicDirectory,
-    manifestHash,
-    cleanupBackupImpl,
-  });
   const directory = CLIENT_PUBLIC_PATHS[client];
   if (!directory || !/^[0-9a-f]{64}$/u.test(manifestHash)) {
     throw new TypeError("Client promotion target is invalid");
@@ -1091,30 +761,31 @@ export async function promoteClientRelease({
     } catch (error) {
       if (error.code !== "ENOENT") throw error;
     }
+    const sanitizedClients = knownClientSelections(rollout.clients);
+    const sanitizedPrevious = knownClientSelections(rollout.previous);
+    const sanitizedOptionalPacks = knownOptionalPacks(rollout.optionalPacks);
+    const sanitizedPreviousOptionalPacks = knownOptionalPacks(rollout.previousOptionalPacks);
     const nextRollout = {
-      ...rollout,
       schemaVersion: 2,
-      clients: { ...emptyRollout().clients, ...rollout.clients, [client]: manifestHash },
-      previous: { ...emptyRollout().previous, ...rollout.previous, [client]: rollout.clients?.[client] ?? null },
+      clients: { ...sanitizedClients, [client]: manifestHash },
+      previous: { ...sanitizedPrevious, [client]: sanitizedClients[client] ?? null },
       optionalPacks: {
-        ...rollout.optionalPacks,
+        ...sanitizedOptionalPacks,
         ...Object.fromEntries([...optionalManifests].map(([packId, optionalManifest]) => [
           packId,
           {
-            ...emptyRollout().optionalClients,
-            ...rollout.optionalPacks?.[packId],
+            ...knownOptionalSelections(sanitizedOptionalPacks[packId]),
             [client]: optionalManifest.manifestHash,
           },
         ])),
       },
       previousOptionalPacks: {
-        ...rollout.previousOptionalPacks,
+        ...sanitizedPreviousOptionalPacks,
         ...Object.fromEntries([...optionalManifests.keys()].map((packId) => [
           packId,
           {
-            ...emptyRollout().optionalClients,
-            ...rollout.previousOptionalPacks?.[packId],
-            [client]: rollout.optionalPacks?.[packId]?.[client] ?? null,
+            ...knownOptionalSelections(sanitizedPreviousOptionalPacks[packId]),
+            [client]: sanitizedOptionalPacks[packId]?.[client] ?? null,
           },
         ])),
       },

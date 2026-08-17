@@ -1,5 +1,5 @@
 {
-  "catalogSha256": "75f5506a7a785280e4f846b36aacdf524c24cb0e74707c4506c1d8a9e932aa32",
+  "catalogSha256": "b1b4e7788ddccee1c0bd90812c84bac65545f01e839c97494265fa0485c83a42",
   "clientCompatibility": {
     "commit": "e15518fde1f5d2652dfc1c234c89a68b87cecec0",
     "repository": "https://github.com/NodePassProject/Anywhere"
@@ -8,283 +8,277 @@
   "generatorVersion": "0.1.0",
   "logicalRuleSets": [
     {
-      "id": "Hijacking",
+      "defaultTarget": "REJECT",
+      "dnsClass": "none",
+      "id": "Security",
+      "phase": "security",
+      "policy": "REJECT",
       "required": true,
+      "routing": 2,
       "sourceIds": [
-        "Hijacking"
-      ]
-    },
-    {
-      "id": "BlockHttpDNS",
-      "required": true,
-      "sourceIds": [
+        "Hijacking",
         "BlockHttpDNS"
       ]
     },
     {
+      "defaultTarget": "DIRECT",
+      "dnsClass": "none",
       "id": "Privacy",
+      "phase": "security",
+      "policy": "🕵️ 严格跟踪",
       "required": true,
+      "routing": 1,
       "sourceIds": [
         "Privacy"
       ]
     },
     {
+      "defaultTarget": "DIRECT",
+      "dnsClass": "china",
       "id": "DomesticCore",
+      "phase": "earlyDomestic",
+      "policy": "DIRECT",
       "required": true,
+      "routing": 1,
       "sourceIds": [
-        "DomesticCore"
+        "DomesticCore",
+        "DomesticGame",
+        "SteamCN",
+        "ChinaTLD"
       ]
     },
     {
-      "id": "DomesticGame",
+      "defaultTarget": "DIRECT",
+      "dnsClass": "china",
+      "id": "DomesticPlatform",
+      "phase": "serviceIntent",
+      "policy": "🇨🇳 国内平台",
       "required": true,
+      "routing": 1,
       "sourceIds": [
-        "DomesticGame"
-      ]
-    },
-    {
-      "id": "SteamCN",
-      "required": true,
-      "sourceIds": [
-        "SteamCN"
-      ]
-    },
-    {
-      "id": "BiliBili",
-      "required": true,
-      "sourceIds": [
-        "BiliBili"
-      ]
-    },
-    {
-      "id": "ByteDance",
-      "required": true,
-      "sourceIds": [
-        "ByteDance"
-      ]
-    },
-    {
-      "id": "XiaoHongShu",
-      "required": true,
-      "sourceIds": [
-        "XiaoHongShu"
-      ]
-    },
-    {
-      "id": "Weibo",
-      "required": true,
-      "sourceIds": [
+        "BiliBili",
+        "ByteDance",
+        "XiaoHongShu",
         "Weibo"
       ]
     },
     {
-      "id": "OpenAI",
+      "defaultTarget": "FOLLOW",
+      "dnsClass": "proxy",
+      "id": "AI",
+      "phase": "serviceIntent",
+      "policy": "🤖 AI 专用",
       "required": true,
+      "routing": 0,
       "sourceIds": [
-        "OpenAI"
-      ]
-    },
-    {
-      "id": "Claude",
-      "required": true,
-      "sourceIds": [
-        "Claude"
-      ]
-    },
-    {
-      "id": "Gemini",
-      "required": true,
-      "sourceIds": [
-        "Gemini"
-      ]
-    },
-    {
-      "id": "Copilot",
-      "required": true,
-      "sourceIds": [
+        "OpenAI",
+        "Claude",
+        "Gemini",
         "Copilot"
       ]
     },
     {
+      "defaultTarget": "FOLLOW",
+      "dnsClass": "proxy",
       "id": "GitHub",
+      "phase": "serviceIntent",
+      "policy": "🐙 GitHub",
       "required": true,
+      "routing": 0,
       "sourceIds": [
         "GitHub"
       ]
     },
     {
+      "defaultTarget": "FOLLOW",
+      "dnsClass": "proxy",
       "id": "YouTube",
+      "phase": "serviceIntent",
+      "policy": "📺 YouTube",
       "required": true,
+      "routing": 0,
       "sourceIds": [
         "YouTube"
       ]
     },
     {
-      "id": "Netflix",
+      "defaultTarget": "FOLLOW",
+      "dnsClass": "proxy",
+      "id": "OverseasMedia",
+      "phase": "serviceIntent",
+      "policy": "🎬 海外流媒体",
       "required": true,
+      "routing": 0,
       "sourceIds": [
-        "Netflix"
-      ]
-    },
-    {
-      "id": "Disney",
-      "required": true,
-      "sourceIds": [
-        "Disney"
-      ]
-    },
-    {
-      "id": "Spotify",
-      "required": true,
-      "sourceIds": [
-        "Spotify"
-      ]
-    },
-    {
-      "id": "GlobalMedia",
-      "required": true,
-      "sourceIds": [
+        "Netflix",
+        "Disney",
+        "Spotify",
         "GlobalMedia"
       ]
     },
     {
-      "id": "Telegram",
+      "defaultTarget": "FOLLOW",
+      "dnsClass": "proxy",
+      "id": "OverseasSocial",
+      "phase": "serviceIntent",
+      "policy": "💬 海外社交",
       "required": true,
+      "routing": 0,
       "sourceIds": [
-        "Telegram"
-      ]
-    },
-    {
-      "id": "Facebook",
-      "required": true,
-      "sourceIds": [
-        "Facebook"
-      ]
-    },
-    {
-      "id": "Instagram",
-      "required": true,
-      "sourceIds": [
-        "Instagram"
-      ]
-    },
-    {
-      "id": "Twitter",
-      "required": true,
-      "sourceIds": [
-        "Twitter"
-      ]
-    },
-    {
-      "id": "TikTok",
-      "required": true,
-      "sourceIds": [
+        "Telegram",
+        "Facebook",
+        "Instagram",
+        "Twitter",
         "TikTok"
       ]
     },
     {
+      "defaultTarget": "DIRECT",
+      "dnsClass": "china",
       "id": "Apple",
+      "phase": "serviceIntent",
+      "policy": "🍎 Apple",
       "required": true,
+      "routing": 1,
       "sourceIds": [
         "Apple"
       ]
     },
     {
+      "defaultTarget": "DIRECT",
+      "dnsClass": "china",
       "id": "Microsoft",
+      "phase": "serviceIntent",
+      "policy": "🪟 Microsoft",
       "required": true,
+      "routing": 1,
       "sourceIds": [
         "Microsoft"
       ]
     },
     {
+      "defaultTarget": "DIRECT",
+      "dnsClass": "china",
       "id": "Download",
+      "phase": "serviceIntent",
+      "policy": "⬇️ 下载/P2P",
       "required": true,
+      "routing": 1,
       "sourceIds": [
-        "Download"
-      ]
-    },
-    {
-      "id": "PrivateTracker",
-      "required": true,
-      "sourceIds": [
+        "Download",
         "PrivateTracker"
       ]
     },
     {
+      "defaultTarget": "FOLLOW",
+      "dnsClass": "proxy",
       "id": "OverseasGame",
+      "phase": "overseasGame",
+      "policy": "🌍 海外游戏",
       "required": true,
+      "routing": 0,
       "sourceIds": [
         "OverseasGame"
       ]
     },
     {
-      "id": "ChinaTLD",
-      "required": true,
-      "sourceIds": [
-        "ChinaTLD"
-      ]
-    },
-    {
+      "defaultTarget": "DIRECT",
+      "dnsClass": "none",
       "id": "ChinaIP",
+      "phase": "resolvedChinaIp",
+      "policy": "DIRECT",
       "required": true,
+      "routing": 1,
       "sourceIds": [
         "ChinaIP"
       ]
     }
   ],
-  "manifestSha256": "48e9a86607287fcaf0ed96d2a2643f492698526e1735bc5230c37b8303a4c859",
+  "manifestSha256": "1e5231aa9a57b2667949e26385cb46ddb18343ab4a00bdb9d592dd713826d140",
   "optionalPacks": {
     "adblock-full": "../../optional/adblock-full/manifest.json"
   },
   "removed": [
+    "Hijacking",
+    "BlockHttpDNS",
     "Advertising",
     "Advertising_Domain",
+    "DomesticGame",
+    "SteamCN",
+    "BiliBili",
+    "ByteDance",
+    "XiaoHongShu",
+    "Weibo",
+    "OpenAI",
+    "Claude",
+    "Gemini",
+    "Copilot",
+    "Netflix",
+    "Disney",
+    "Spotify",
+    "GlobalMedia",
+    "Telegram",
+    "Facebook",
+    "Instagram",
+    "Twitter",
+    "TikTok",
+    "PrivateTracker",
+    "ChinaTLD",
     "ChinaMax_Domain",
     "Game"
   ],
   "replacements": {
+    "AI": [
+      "AI"
+    ],
     "ChinaMax_Domain": [
       "DomesticCore"
     ],
+    "DomesticCore": [
+      "DomesticCore"
+    ],
+    "DomesticPlatform": [
+      "DomesticPlatform"
+    ],
+    "Download": [
+      "Download"
+    ],
     "Game": [
-      "DomesticGame",
+      "DomesticCore",
       "OverseasGame"
+    ],
+    "OverseasMedia": [
+      "OverseasMedia"
+    ],
+    "OverseasSocial": [
+      "OverseasSocial"
+    ],
+    "Security": [
+      "Security"
     ]
   },
   "schemaVersion": 2,
   "shards": [
     {
       "countsByType": {
-        "domainSuffix": 185,
-        "ipv4Cidr": 42
-      },
-      "entryCount": 227,
-      "familyId": "Hijacking",
-      "id": "Hijacking-001",
-      "index": 1,
-      "name": "REJECT · Hijacking",
-      "path": "anywhere/rules/Hijacking-001.arrs",
-      "sha256": "fd36a2375e68824ed20a334b02f4d2b9164d7d3854a15ebefcf33dcf357f4f7e",
-      "sourceId": "Hijacking",
-      "total": 1,
-      "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/Hijacking-001.arrs"
-    },
-    {
-      "countsByType": {
-        "domainSuffix": 4,
-        "ipv4Cidr": 37,
+        "domainSuffix": 189,
+        "ipv4Cidr": 79,
         "ipv6Cidr": 4
       },
-      "entryCount": 45,
-      "familyId": "BlockHttpDNS",
-      "id": "BlockHttpDNS-001",
+      "entryCount": 272,
+      "familyId": "Security",
+      "id": "Security-001",
       "index": 1,
-      "name": "REJECT · BlockHttpDNS",
-      "path": "anywhere/rules/BlockHttpDNS-001.arrs",
-      "sha256": "c7c49200571d11c026abccd744013672015a5d445edc69fc554843bff45f1946",
-      "sourceId": "BlockHttpDNS",
+      "name": "REJECT · Security",
+      "path": "anywhere/rules/Security-001.arrs",
+      "sha256": "e25375edb6f43da0cad73d37b10059b20d551b6a2bb321868f763b180f3dab89",
+      "sourceId": "Security",
+      "sourceIds": [
+        "Hijacking",
+        "BlockHttpDNS"
+      ],
       "total": 1,
-      "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/BlockHttpDNS-001.arrs"
+      "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/Security-001.arrs"
     },
     {
       "countsByType": {
@@ -299,179 +293,78 @@
       "path": "anywhere/rules/Privacy-001.arrs",
       "sha256": "2f8e10c9fef65253126a90a4fb4b84d6299f6e4b57cf8c83a984fae669363d37",
       "sourceId": "Privacy",
+      "sourceIds": [
+        "Privacy"
+      ],
       "total": 1,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/Privacy-001.arrs"
     },
     {
       "countsByType": {
-        "domainSuffix": 65
+        "domainSuffix": 111
       },
-      "entryCount": 65,
+      "entryCount": 111,
       "familyId": "DomesticCore",
       "id": "DomesticCore-001",
       "index": 1,
       "name": "DIRECT · DomesticCore",
       "path": "anywhere/rules/DomesticCore-001.arrs",
-      "sha256": "09e1b7b4d0bb619380e213adf82c2563c541fb6b08327fa061fa6e17a852bf02",
+      "sha256": "26dd5af2f0c19a08be5ddbe56420e05b38bc7629cfb129d1e6c6a9348cafe9cb",
       "sourceId": "DomesticCore",
+      "sourceIds": [
+        "DomesticCore",
+        "DomesticGame",
+        "SteamCN",
+        "ChinaTLD"
+      ],
       "total": 1,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/DomesticCore-001.arrs"
     },
     {
       "countsByType": {
-        "domainSuffix": 40
-      },
-      "entryCount": 40,
-      "familyId": "DomesticGame",
-      "id": "DomesticGame-001",
-      "index": 1,
-      "name": "DIRECT · DomesticGame",
-      "path": "anywhere/rules/DomesticGame-001.arrs",
-      "sha256": "0843560b8eae445c84ddefe06bcf5b0ff2389b76d0bc71bfda49510e5ff03f4e",
-      "sourceId": "DomesticGame",
-      "total": 1,
-      "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/DomesticGame-001.arrs"
-    },
-    {
-      "countsByType": {
-        "domainSuffix": 5
-      },
-      "entryCount": 5,
-      "familyId": "SteamCN",
-      "id": "SteamCN-001",
-      "index": 1,
-      "name": "DIRECT · SteamCN",
-      "path": "anywhere/rules/SteamCN-001.arrs",
-      "sha256": "3db96e4087eb283db0986ca3207974569e2b3d6745f6a45d042b0df5cef63359",
-      "sourceId": "SteamCN",
-      "total": 1,
-      "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/SteamCN-001.arrs"
-    },
-    {
-      "countsByType": {
-        "domainSuffix": 52,
-        "ipv4Cidr": 7
-      },
-      "entryCount": 59,
-      "familyId": "BiliBili",
-      "id": "BiliBili-001",
-      "index": 1,
-      "name": "📺 哔哩哔哩 · BiliBili",
-      "path": "anywhere/rules/BiliBili-001.arrs",
-      "sha256": "d1ef62275b2c15640e86110943b2594af11e241e4f9c85169a0e2dc38fb29f7f",
-      "sourceId": "BiliBili",
-      "total": 1,
-      "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/BiliBili-001.arrs"
-    },
-    {
-      "countsByType": {
-        "domainSuffix": 360,
-        "ipv4Cidr": 1
-      },
-      "entryCount": 361,
-      "familyId": "ByteDance",
-      "id": "ByteDance-001",
-      "index": 1,
-      "name": "🎵 抖音 · ByteDance",
-      "path": "anywhere/rules/ByteDance-001.arrs",
-      "sha256": "d9967b7a177b95be56754baa89aaf1b168fb052eeabbf4f5ef69212a5ba06b79",
-      "sourceId": "ByteDance",
-      "total": 1,
-      "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/ByteDance-001.arrs"
-    },
-    {
-      "countsByType": {
-        "domainSuffix": 2
-      },
-      "entryCount": 2,
-      "familyId": "XiaoHongShu",
-      "id": "XiaoHongShu-001",
-      "index": 1,
-      "name": "📕 小红书 · XiaoHongShu",
-      "path": "anywhere/rules/XiaoHongShu-001.arrs",
-      "sha256": "22202f9bd969bf9e84552f02e712464c4e2b7d842e0d64cd01ab38edecc2e024",
-      "sourceId": "XiaoHongShu",
-      "total": 1,
-      "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/XiaoHongShu-001.arrs"
-    },
-    {
-      "countsByType": {
         "domainKeyword": 1,
-        "domainSuffix": 2
+        "domainSuffix": 416,
+        "ipv4Cidr": 8
       },
-      "entryCount": 3,
-      "familyId": "Weibo",
-      "id": "Weibo-001",
+      "entryCount": 425,
+      "familyId": "DomesticPlatform",
+      "id": "DomesticPlatform-001",
       "index": 1,
-      "name": "🧣 微博 · Weibo",
-      "path": "anywhere/rules/Weibo-001.arrs",
-      "sha256": "a04136be4acca5db3b12f89a2b815288102ecd6519d88852d3338662693cafc9",
-      "sourceId": "Weibo",
+      "name": "🇨🇳 国内平台 · DomesticPlatform",
+      "path": "anywhere/rules/DomesticPlatform-001.arrs",
+      "sha256": "76f70816571d38ba87695dd2bb0cc02ea94cd3854402e1deb761440ee23a221b",
+      "sourceId": "DomesticPlatform",
+      "sourceIds": [
+        "BiliBili",
+        "ByteDance",
+        "XiaoHongShu",
+        "Weibo"
+      ],
       "total": 1,
-      "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/Weibo-001.arrs"
+      "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/DomesticPlatform-001.arrs"
     },
     {
       "countsByType": {
-        "domainKeyword": 1,
-        "domainSuffix": 24,
+        "domainKeyword": 4,
+        "domainSuffix": 37,
         "ipv4Cidr": 2
       },
-      "entryCount": 27,
-      "familyId": "OpenAI",
-      "id": "OpenAI-001",
+      "entryCount": 43,
+      "familyId": "AI",
+      "id": "AI-001",
       "index": 1,
-      "name": "🤖 AI 专用 · OpenAI",
-      "path": "anywhere/rules/OpenAI-001.arrs",
-      "sha256": "0d4a2a561abc62624ba83b0026f25d7140bb88037762fcb76a2ca0034c385986",
-      "sourceId": "OpenAI",
+      "name": "🤖 AI 专用 · AI",
+      "path": "anywhere/rules/AI-001.arrs",
+      "sha256": "bcbe7fcfaa16c2805808a69cb536c0cb5ad1a15f2ed75b1aece2cc83ce7c3943",
+      "sourceId": "AI",
+      "sourceIds": [
+        "OpenAI",
+        "Claude",
+        "Gemini",
+        "Copilot"
+      ],
       "total": 1,
-      "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/OpenAI-001.arrs"
-    },
-    {
-      "countsByType": {
-        "domainSuffix": 2
-      },
-      "entryCount": 2,
-      "familyId": "Claude",
-      "id": "Claude-001",
-      "index": 1,
-      "name": "🤖 AI 专用 · Claude",
-      "path": "anywhere/rules/Claude-001.arrs",
-      "sha256": "eeb8c785d5259eeea8aacacf544ae8316c045ba661b936d2db5c0a44041030d6",
-      "sourceId": "Claude",
-      "total": 1,
-      "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/Claude-001.arrs"
-    },
-    {
-      "countsByType": {
-        "domainKeyword": 3,
-        "domainSuffix": 7
-      },
-      "entryCount": 10,
-      "familyId": "Gemini",
-      "id": "Gemini-001",
-      "index": 1,
-      "name": "🤖 AI 专用 · Gemini",
-      "path": "anywhere/rules/Gemini-001.arrs",
-      "sha256": "0d214fb9102c14e5ee62dfaf31762cd5006e0784b3148d37c20cb4dbf338ada3",
-      "sourceId": "Gemini",
-      "total": 1,
-      "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/Gemini-001.arrs"
-    },
-    {
-      "countsByType": {
-        "domainSuffix": 4
-      },
-      "entryCount": 4,
-      "familyId": "Copilot",
-      "id": "Copilot-001",
-      "index": 1,
-      "name": "🤖 AI 专用 · Copilot",
-      "path": "anywhere/rules/Copilot-001.arrs",
-      "sha256": "58f2e77ed6902a779e3c101ed0b3adc3084344850ff437f5f0cf5c15ef88a6ea",
-      "sourceId": "Copilot",
-      "total": 1,
-      "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/Copilot-001.arrs"
+      "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/AI-001.arrs"
     },
     {
       "countsByType": {
@@ -486,6 +379,9 @@
       "path": "anywhere/rules/GitHub-001.arrs",
       "sha256": "5ae1d41ebb741b29839bbf849e25baa8d1027ae01b59f18301de4969271503cd",
       "sourceId": "GitHub",
+      "sourceIds": [
+        "GitHub"
+      ],
       "total": 1,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/GitHub-001.arrs"
     },
@@ -504,158 +400,60 @@
       "path": "anywhere/rules/YouTube-001.arrs",
       "sha256": "c1ab85369aa455f1385c728a0feaa59c1d7a4e0553a7a3383f004eb8889658f8",
       "sourceId": "YouTube",
+      "sourceIds": [
+        "YouTube"
+      ],
       "total": 1,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/YouTube-001.arrs"
     },
     {
       "countsByType": {
-        "domainKeyword": 4,
-        "domainSuffix": 30,
-        "ipv4Cidr": 1115,
+        "domainKeyword": 25,
+        "domainSuffix": 220,
+        "ipv4Cidr": 1976,
+        "ipv6Cidr": 5
+      },
+      "entryCount": 2226,
+      "familyId": "OverseasMedia",
+      "id": "OverseasMedia-001",
+      "index": 1,
+      "name": "🎬 海外流媒体 · OverseasMedia",
+      "path": "anywhere/rules/OverseasMedia-001.arrs",
+      "sha256": "a1b1ab289bb675f6ba14789613a41f7abba20ad643c28137360215d208113281",
+      "sourceId": "OverseasMedia",
+      "sourceIds": [
+        "Netflix",
+        "Disney",
+        "Spotify",
+        "GlobalMedia"
+      ],
+      "total": 1,
+      "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/OverseasMedia-001.arrs"
+    },
+    {
+      "countsByType": {
+        "domainKeyword": 7,
+        "domainSuffix": 613,
+        "ipv4Cidr": 35,
         "ipv6Cidr": 4
       },
-      "entryCount": 1153,
-      "familyId": "Netflix",
-      "id": "Netflix-001",
+      "entryCount": 659,
+      "familyId": "OverseasSocial",
+      "id": "OverseasSocial-001",
       "index": 1,
-      "name": "🎬 Netflix · Netflix",
-      "path": "anywhere/rules/Netflix-001.arrs",
-      "sha256": "8c16a234682c484be4e9c74de0633b46510d04c11612af48d3601d89d1c7b6c9",
-      "sourceId": "Netflix",
+      "name": "💬 海外社交 · OverseasSocial",
+      "path": "anywhere/rules/OverseasSocial-001.arrs",
+      "sha256": "56b7ef88b2b71b4b0a9fc4911424a00123654fce54bf1b17c2b389d2d53853af",
+      "sourceId": "OverseasSocial",
+      "sourceIds": [
+        "Telegram",
+        "Facebook",
+        "Instagram",
+        "Twitter",
+        "TikTok"
+      ],
       "total": 1,
-      "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/Netflix-001.arrs"
-    },
-    {
-      "countsByType": {
-        "domainSuffix": 170
-      },
-      "entryCount": 170,
-      "familyId": "Disney",
-      "id": "Disney-001",
-      "index": 1,
-      "name": "🏰 Disney+ · Disney",
-      "path": "anywhere/rules/Disney-001.arrs",
-      "sha256": "5e37a925276886eefd84ebd4567bcf59551da3768652df7c51befcb872d1ac19",
-      "sourceId": "Disney",
-      "total": 1,
-      "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/Disney-001.arrs"
-    },
-    {
-      "countsByType": {
-        "domainKeyword": 1,
-        "domainSuffix": 20,
-        "ipv4Cidr": 2
-      },
-      "entryCount": 23,
-      "familyId": "Spotify",
-      "id": "Spotify-001",
-      "index": 1,
-      "name": "🎵 Spotify · Spotify",
-      "path": "anywhere/rules/Spotify-001.arrs",
-      "sha256": "38725f159b868ac9518f92afbd3af39cb63b52571936ee5ff8c82ba83b1df05f",
-      "sourceId": "Spotify",
-      "total": 1,
-      "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/Spotify-001.arrs"
-    },
-    {
-      "countsByType": {
-        "domainKeyword": 20,
-        "ipv4Cidr": 859,
-        "ipv6Cidr": 1
-      },
-      "entryCount": 880,
-      "familyId": "GlobalMedia",
-      "id": "GlobalMedia-001",
-      "index": 1,
-      "name": "🌍 国际媒体 · GlobalMedia",
-      "path": "anywhere/rules/GlobalMedia-001.arrs",
-      "sha256": "ec443888d3b87089f5280a19baa7390942e21f47f84675aaf6096587510cd2a9",
-      "sourceId": "GlobalMedia",
-      "total": 1,
-      "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/GlobalMedia-001.arrs"
-    },
-    {
-      "countsByType": {
-        "domainKeyword": 1,
-        "domainSuffix": 22,
-        "ipv4Cidr": 6,
-        "ipv6Cidr": 4
-      },
-      "entryCount": 33,
-      "familyId": "Telegram",
-      "id": "Telegram-001",
-      "index": 1,
-      "name": "✈️ Telegram · Telegram",
-      "path": "anywhere/rules/Telegram-001.arrs",
-      "sha256": "6862b055d9d4577d9e296eb83a4d99f6b3c89ccee1d16b1dd3f63d1fb4cce056",
-      "sourceId": "Telegram",
-      "total": 1,
-      "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/Telegram-001.arrs"
-    },
-    {
-      "countsByType": {
-        "domainKeyword": 2,
-        "domainSuffix": 544,
-        "ipv4Cidr": 23
-      },
-      "entryCount": 569,
-      "familyId": "Facebook",
-      "id": "Facebook-001",
-      "index": 1,
-      "name": "💬 海外社交 · Facebook",
-      "path": "anywhere/rules/Facebook-001.arrs",
-      "sha256": "d6858cefd616439ed89e9d4e2a51e2eb67a39a902be476ffc470ca1a90df7637",
-      "sourceId": "Facebook",
-      "total": 1,
-      "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/Facebook-001.arrs"
-    },
-    {
-      "countsByType": {
-        "domainKeyword": 1
-      },
-      "entryCount": 1,
-      "familyId": "Instagram",
-      "id": "Instagram-001",
-      "index": 1,
-      "name": "💬 海外社交 · Instagram",
-      "path": "anywhere/rules/Instagram-001.arrs",
-      "sha256": "f00ac945c521c56f1f99ec922c065906d59d8b3673ac0fea439aecf6af36db89",
-      "sourceId": "Instagram",
-      "total": 1,
-      "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/Instagram-001.arrs"
-    },
-    {
-      "countsByType": {
-        "domainKeyword": 1,
-        "domainSuffix": 26,
-        "ipv4Cidr": 6
-      },
-      "entryCount": 33,
-      "familyId": "Twitter",
-      "id": "Twitter-001",
-      "index": 1,
-      "name": "💬 海外社交 · Twitter",
-      "path": "anywhere/rules/Twitter-001.arrs",
-      "sha256": "3943b742e8d923681b2f31eee4c3842f4962932a2e5a75eaf50d0abf760a2485",
-      "sourceId": "Twitter",
-      "total": 1,
-      "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/Twitter-001.arrs"
-    },
-    {
-      "countsByType": {
-        "domainKeyword": 2,
-        "domainSuffix": 21
-      },
-      "entryCount": 23,
-      "familyId": "TikTok",
-      "id": "TikTok-001",
-      "index": 1,
-      "name": "🎶 TikTok · TikTok",
-      "path": "anywhere/rules/TikTok-001.arrs",
-      "sha256": "e85f0514f977ff5f2e1c65fe46bb8c1855539cf48dd587a0bc0e9cd3777dcafe",
-      "sourceId": "TikTok",
-      "total": 1,
-      "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/TikTok-001.arrs"
+      "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/OverseasSocial-001.arrs"
     },
     {
       "countsByType": {
@@ -671,6 +469,9 @@
       "path": "anywhere/rules/Apple-001.arrs",
       "sha256": "f0df9aad4af00bdf58c586b42df208f174a5aa86e1ace1fbea3b9364d20726f6",
       "sourceId": "Apple",
+      "sourceIds": [
+        "Apple"
+      ],
       "total": 1,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/Apple-001.arrs"
     },
@@ -687,41 +488,32 @@
       "path": "anywhere/rules/Microsoft-001.arrs",
       "sha256": "d50b456b36bb76d143ae0adbf0ad7a0d5dd891d6700e8f019e2000f5efadcbeb",
       "sourceId": "Microsoft",
+      "sourceIds": [
+        "Microsoft"
+      ],
       "total": 1,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/Microsoft-001.arrs"
     },
     {
       "countsByType": {
-        "domainKeyword": 5,
-        "domainSuffix": 1
+        "domainKeyword": 9,
+        "domainSuffix": 124,
+        "ipv4Cidr": 3
       },
-      "entryCount": 6,
+      "entryCount": 136,
       "familyId": "Download",
       "id": "Download-001",
       "index": 1,
       "name": "⬇️ 下载/P2P · Download",
       "path": "anywhere/rules/Download-001.arrs",
-      "sha256": "1b1af880d5a95ea106c5fc59140afcfdae8d1622a432fd48495abcf86e7fa4d2",
+      "sha256": "474be6da61329f77c71890be9bf5ae56e42a485d2292ac3ffd8b0c88e47d6aa2",
       "sourceId": "Download",
+      "sourceIds": [
+        "Download",
+        "PrivateTracker"
+      ],
       "total": 1,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/Download-001.arrs"
-    },
-    {
-      "countsByType": {
-        "domainKeyword": 4,
-        "domainSuffix": 123,
-        "ipv4Cidr": 3
-      },
-      "entryCount": 130,
-      "familyId": "PrivateTracker",
-      "id": "PrivateTracker-001",
-      "index": 1,
-      "name": "⬇️ 下载/P2P · PrivateTracker",
-      "path": "anywhere/rules/PrivateTracker-001.arrs",
-      "sha256": "26fecf5e1251cbc8eae16b63c5ef23d680f86027e3de291e0cac86e9e0561301",
-      "sourceId": "PrivateTracker",
-      "total": 1,
-      "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/PrivateTracker-001.arrs"
     },
     {
       "countsByType": {
@@ -737,23 +529,11 @@
       "path": "anywhere/rules/OverseasGame-001.arrs",
       "sha256": "eb98f3cd9faff3d1a96555949dcd9c5d2973ce41479d2148294ea3ed873a9200",
       "sourceId": "OverseasGame",
+      "sourceIds": [
+        "OverseasGame"
+      ],
       "total": 1,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/OverseasGame-001.arrs"
-    },
-    {
-      "countsByType": {
-        "domainSuffix": 1
-      },
-      "entryCount": 1,
-      "familyId": "ChinaTLD",
-      "id": "ChinaTLD-001",
-      "index": 1,
-      "name": "DIRECT · ChinaTLD",
-      "path": "anywhere/rules/ChinaTLD-001.arrs",
-      "sha256": "1dc989007d13077c5aa7b6fd08627939776d2a963cd98b29b069b77e62761c28",
-      "sourceId": "ChinaTLD",
-      "total": 1,
-      "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/ChinaTLD-001.arrs"
     },
     {
       "countsByType": {
@@ -768,81 +548,81 @@
       "path": "anywhere/rules/ChinaIP-001.arrs",
       "sha256": "30144e48ba8f23f07476fd54c43c3217586e8f3133d0a455bd5e5d244fb74813",
       "sourceId": "ChinaIP",
+      "sourceIds": [
+        "ChinaIP"
+      ],
       "total": 1,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/ChinaIP-001.arrs"
     }
   ],
   "sources": [
     {
-      "canonicalPath": "compiled/Surge/Hijacking/Hijacking.list",
+      "canonicalPath": "compiled/Anywhere/Security.arrs",
       "componentId": "rules",
       "counts": {
-        "candidate": 228,
-        "convertible": 227,
+        "candidate": 291,
+        "convertible": 272,
         "duplicates": 0,
-        "output": 227,
-        "parsed": 228,
+        "inputSources": 2,
+        "output": 272,
+        "parsed": 291,
         "shadowed": 0,
         "unresolved": 0,
-        "unsupported": 1
+        "unsupported": 19
       },
       "dnsClass": "none",
-      "familyId": "Hijacking",
-      "id": "Hijacking",
+      "familyId": "Security",
+      "id": "Security",
       "ignoredModifiers": {
-        "noResolve": 42
+        "noResolve": 83
       },
       "inputFormat": "RULE-SET",
-      "intendedTarget": "reject",
+      "inputSources": [
+        {
+          "candidate": 228,
+          "convertible": 227,
+          "id": "Hijacking",
+          "output": 227,
+          "parsed": 228,
+          "sourceBytes": 6546,
+          "sourceSha256": "b976714a9cecf0e3da92fdf2857db1076d689497fd0e4b2b6309e61b480a1a55",
+          "unsupported": 1
+        },
+        {
+          "candidate": 63,
+          "convertible": 45,
+          "id": "BlockHttpDNS",
+          "output": 45,
+          "parsed": 63,
+          "sourceBytes": 2200,
+          "sourceSha256": "744ce7eb8fbd24c00331634e6981c688b2fb5a63d10f9a0a1079edf0ae3eee18",
+          "unsupported": 18
+        }
+      ],
+      "intendedTarget": "REJECT",
       "minEntries": 0,
       "order": 1,
       "phase": "security",
       "policy": "REJECT",
       "priority": 10,
+      "provenance": {
+        "commit": "538b8a79532c44dfbcb8e694d2f43e753c60b157",
+        "committedAt": "2026-08-15T18:26:29Z",
+        "license": "GPL-2.0-only",
+        "repository": "https://github.com/blackmatrix7/ios_rule_script"
+      },
       "routing": 2,
       "shardIds": [
-        "Hijacking-001"
+        "Security-001"
       ],
-      "sourceBytes": 6546,
-      "sourceSha256": "b976714a9cecf0e3da92fdf2857db1076d689497fd0e4b2b6309e61b480a1a55",
-      "unsupportedByReason": {
-        "unsupported-exact-domain": 1
-      }
-    },
-    {
-      "canonicalPath": "compiled/Surge/BlockHttpDNS/BlockHttpDNS.list",
-      "componentId": "rules",
-      "counts": {
-        "candidate": 63,
-        "convertible": 45,
-        "duplicates": 0,
-        "output": 45,
-        "parsed": 63,
-        "shadowed": 0,
-        "unresolved": 0,
-        "unsupported": 18
-      },
-      "dnsClass": "none",
-      "familyId": "BlockHttpDNS",
-      "id": "BlockHttpDNS",
-      "ignoredModifiers": {
-        "noResolve": 41
-      },
-      "inputFormat": "RULE-SET",
-      "intendedTarget": "reject",
-      "minEntries": 0,
-      "order": 2,
-      "phase": "security",
-      "policy": "REJECT",
-      "priority": 20,
-      "routing": 2,
-      "shardIds": [
-        "BlockHttpDNS-001"
+      "sourceBytes": 8746,
+      "sourceIds": [
+        "Hijacking",
+        "BlockHttpDNS"
       ],
-      "sourceBytes": 2200,
-      "sourceSha256": "744ce7eb8fbd24c00331634e6981c688b2fb5a63d10f9a0a1079edf0ae3eee18",
+      "sourceSha256": "b1b19ad18a43727ad814e6226c82e284bfbd1a5788c1c4216e7d3354c6c52967",
       "unsupportedByReason": {
-        "unsupported-exact-domain": 18
+        "unsupported-exact-domain": 19
       }
     },
     {
@@ -865,32 +645,54 @@
         "noResolve": 11
       },
       "inputFormat": "RULE-SET",
-      "intendedTarget": "direct",
+      "inputSources": [
+        {
+          "candidate": 20,
+          "convertible": 20,
+          "id": "Privacy",
+          "output": 20,
+          "parsed": 20,
+          "sourceBytes": 610,
+          "sourceSha256": "f69cdd748a1fdae62ae3f41d3d277807396dce8e8dd95afdff231806231f1578",
+          "unsupported": 0
+        }
+      ],
+      "intendedTarget": "DIRECT",
       "minEntries": 0,
       "order": 3,
       "phase": "security",
       "policy": "🕵️ 严格跟踪",
       "priority": 30,
+      "provenance": {
+        "commit": "538b8a79532c44dfbcb8e694d2f43e753c60b157",
+        "committedAt": "2026-08-15T18:26:29Z",
+        "license": "GPL-2.0-only",
+        "repository": "https://github.com/blackmatrix7/ios_rule_script"
+      },
       "routing": 1,
       "shardIds": [
         "Privacy-001"
       ],
       "sourceBytes": 610,
+      "sourceIds": [
+        "Privacy"
+      ],
       "sourceSha256": "f69cdd748a1fdae62ae3f41d3d277807396dce8e8dd95afdff231806231f1578",
       "unsupportedByReason": {}
     },
     {
-      "canonicalPath": "compiled/Surge/DomesticCore/DomesticCore.list",
+      "canonicalPath": "compiled/Anywhere/DomesticCore.arrs",
       "componentId": "rules",
       "counts": {
-        "candidate": 65,
-        "convertible": 65,
+        "candidate": 123,
+        "convertible": 111,
         "duplicates": 0,
-        "output": 65,
-        "parsed": 65,
+        "inputSources": 4,
+        "output": 111,
+        "parsed": 123,
         "shadowed": 0,
         "unresolved": 0,
-        "unsupported": 0
+        "unsupported": 12
       },
       "dnsClass": "china",
       "familyId": "DomesticCore",
@@ -899,370 +701,256 @@
         "noResolve": 0
       },
       "inputFormat": "RULE-SET",
-      "intendedTarget": "direct",
+      "inputSources": [
+        {
+          "candidate": 65,
+          "convertible": 65,
+          "id": "DomesticCore",
+          "output": 65,
+          "parsed": 65,
+          "sourceBytes": 1648,
+          "sourceSha256": "0cf7111b9dfab22edd9187f73c2fc463703ba61300faceaf4fe98a6e5aae0ec2",
+          "unsupported": 0
+        },
+        {
+          "candidate": 40,
+          "convertible": 40,
+          "id": "DomesticGame",
+          "output": 40,
+          "parsed": 40,
+          "sourceBytes": 1159,
+          "sourceSha256": "0efe072e4d9b4e186d88a4627d795f0393b5c4e6ab9b4e487b11443c9298a3a2",
+          "unsupported": 0
+        },
+        {
+          "candidate": 17,
+          "convertible": 5,
+          "id": "SteamCN",
+          "output": 5,
+          "parsed": 17,
+          "sourceBytes": 492,
+          "sourceSha256": "e5541c7db5d9396a8be97205ac5a3742b318a391f39946c2a1c8239fb567fb15",
+          "unsupported": 12
+        },
+        {
+          "candidate": 1,
+          "convertible": 1,
+          "id": "ChinaTLD",
+          "output": 1,
+          "parsed": 1,
+          "sourceBytes": 17,
+          "sourceSha256": "db29eaa29abef2bdc42483f4258c4c32a3800ca1676028215e5de180589fa464",
+          "unsupported": 0
+        }
+      ],
+      "intendedTarget": "DIRECT",
       "minEntries": 0,
       "order": 4,
       "phase": "earlyDomestic",
       "policy": "DIRECT",
       "priority": 40,
+      "provenance": {
+        "commit": "538b8a79532c44dfbcb8e694d2f43e753c60b157",
+        "committedAt": "2026-08-15T18:26:29Z",
+        "license": "GPL-2.0-only",
+        "repository": "https://github.com/blackmatrix7/ios_rule_script"
+      },
       "routing": 1,
       "shardIds": [
         "DomesticCore-001"
       ],
-      "sourceBytes": 1648,
-      "sourceSha256": "0cf7111b9dfab22edd9187f73c2fc463703ba61300faceaf4fe98a6e5aae0ec2",
-      "unsupportedByReason": {}
-    },
-    {
-      "canonicalPath": "compiled/Surge/DomesticGame/DomesticGame.list",
-      "componentId": "rules",
-      "counts": {
-        "candidate": 40,
-        "convertible": 40,
-        "duplicates": 0,
-        "output": 40,
-        "parsed": 40,
-        "shadowed": 0,
-        "unresolved": 0,
-        "unsupported": 0
-      },
-      "dnsClass": "china",
-      "familyId": "DomesticGame",
-      "id": "DomesticGame",
-      "ignoredModifiers": {
-        "noResolve": 0
-      },
-      "inputFormat": "RULE-SET",
-      "intendedTarget": "direct",
-      "minEntries": 0,
-      "order": 5,
-      "phase": "earlyDomestic",
-      "policy": "DIRECT",
-      "priority": 50,
-      "routing": 1,
-      "shardIds": [
-        "DomesticGame-001"
+      "sourceBytes": 3316,
+      "sourceIds": [
+        "DomesticCore",
+        "DomesticGame",
+        "SteamCN",
+        "ChinaTLD"
       ],
-      "sourceBytes": 1159,
-      "sourceSha256": "0efe072e4d9b4e186d88a4627d795f0393b5c4e6ab9b4e487b11443c9298a3a2",
-      "unsupportedByReason": {}
-    },
-    {
-      "canonicalPath": "compiled/Surge/SteamCN/SteamCN.list",
-      "componentId": "rules",
-      "counts": {
-        "candidate": 17,
-        "convertible": 5,
-        "duplicates": 0,
-        "output": 5,
-        "parsed": 17,
-        "shadowed": 0,
-        "unresolved": 0,
-        "unsupported": 12
-      },
-      "dnsClass": "china",
-      "familyId": "SteamCN",
-      "id": "SteamCN",
-      "ignoredModifiers": {
-        "noResolve": 0
-      },
-      "inputFormat": "RULE-SET",
-      "intendedTarget": "direct",
-      "minEntries": 0,
-      "order": 6,
-      "phase": "earlyDomestic",
-      "policy": "DIRECT",
-      "priority": 60,
-      "routing": 1,
-      "shardIds": [
-        "SteamCN-001"
-      ],
-      "sourceBytes": 492,
-      "sourceSha256": "e5541c7db5d9396a8be97205ac5a3742b318a391f39946c2a1c8239fb567fb15",
+      "sourceSha256": "6d8002b7bb44b53463504c0465620daf8807731232ce29c4856796feed9b925e",
       "unsupportedByReason": {
         "unsupported-exact-domain": 12
       }
     },
     {
-      "canonicalPath": "compiled/Surge/BiliBili/BiliBili.list",
+      "canonicalPath": "compiled/Anywhere/DomesticPlatform.arrs",
       "componentId": "rules",
       "counts": {
-        "candidate": 123,
-        "convertible": 70,
-        "duplicates": 11,
-        "output": 59,
-        "parsed": 123,
-        "shadowed": 0,
+        "candidate": 501,
+        "convertible": 448,
+        "duplicates": 22,
+        "inputSources": 4,
+        "output": 425,
+        "parsed": 501,
+        "shadowed": 1,
         "unresolved": 0,
         "unsupported": 53
       },
       "dnsClass": "china",
-      "familyId": "BiliBili",
-      "id": "BiliBili",
+      "familyId": "DomesticPlatform",
+      "id": "DomesticPlatform",
       "ignoredModifiers": {
-        "noResolve": 8
+        "noResolve": 9
       },
       "inputFormat": "RULE-SET",
-      "intendedTarget": "direct",
+      "inputSources": [
+        {
+          "candidate": 123,
+          "convertible": 70,
+          "id": "BiliBili",
+          "output": 59,
+          "parsed": 123,
+          "sourceBytes": 4242,
+          "sourceSha256": "278312b9b569f96e4a9504ba46e7537bf5aaecd5674f28a9fd63c56ca42c3924",
+          "unsupported": 53
+        },
+        {
+          "candidate": 370,
+          "convertible": 370,
+          "id": "ByteDance",
+          "output": 361,
+          "parsed": 370,
+          "sourceBytes": 10520,
+          "sourceSha256": "075c6747777959fe99b3ff6dc9ea37e6db8b96d56c6d28a04365e69eaccbe524",
+          "unsupported": 0
+        },
+        {
+          "candidate": 4,
+          "convertible": 4,
+          "id": "XiaoHongShu",
+          "output": 2,
+          "parsed": 4,
+          "sourceBytes": 112,
+          "sourceSha256": "3d37c3a1cb8d59ccd5b34ba8350aaa0d5e66c7cf56dab568ddf2bf1eabed1429",
+          "unsupported": 0
+        },
+        {
+          "candidate": 4,
+          "convertible": 4,
+          "id": "Weibo",
+          "output": 3,
+          "parsed": 4,
+          "sourceBytes": 95,
+          "sourceSha256": "195eb35b72e9b6ac9ffabe7b9c98105b3dec936b722ec5b478e7401c62ecb0d7",
+          "unsupported": 0
+        }
+      ],
+      "intendedTarget": "DIRECT",
       "minEntries": 0,
       "order": 7,
       "phase": "serviceIntent",
-      "policy": "📺 哔哩哔哩",
+      "policy": "🇨🇳 国内平台",
       "priority": 70,
+      "provenance": {
+        "commit": "538b8a79532c44dfbcb8e694d2f43e753c60b157",
+        "committedAt": "2026-08-15T18:26:29Z",
+        "license": "GPL-2.0-only",
+        "repository": "https://github.com/blackmatrix7/ios_rule_script"
+      },
       "routing": 1,
       "shardIds": [
-        "BiliBili-001"
+        "DomesticPlatform-001"
       ],
-      "sourceBytes": 4242,
-      "sourceSha256": "278312b9b569f96e4a9504ba46e7537bf5aaecd5674f28a9fd63c56ca42c3924",
+      "sourceBytes": 14969,
+      "sourceIds": [
+        "BiliBili",
+        "ByteDance",
+        "XiaoHongShu",
+        "Weibo"
+      ],
+      "sourceSha256": "d78f608097856cd5a1b2f09ddc547c5c15871f1246eb9869f6487815bc453301",
       "unsupportedByReason": {
         "unsupported-exact-domain": 53
       }
     },
     {
-      "canonicalPath": "compiled/Surge/ByteDance/ByteDance.list",
+      "canonicalPath": "compiled/Anywhere/AI.arrs",
       "componentId": "rules",
       "counts": {
-        "candidate": 370,
-        "convertible": 370,
-        "duplicates": 8,
-        "output": 361,
-        "parsed": 370,
+        "candidate": 99,
+        "convertible": 68,
+        "duplicates": 24,
+        "inputSources": 4,
+        "output": 43,
+        "parsed": 99,
         "shadowed": 1,
         "unresolved": 0,
-        "unsupported": 0
-      },
-      "dnsClass": "china",
-      "familyId": "ByteDance",
-      "id": "ByteDance",
-      "ignoredModifiers": {
-        "noResolve": 1
-      },
-      "inputFormat": "RULE-SET",
-      "intendedTarget": "direct",
-      "minEntries": 0,
-      "order": 8,
-      "phase": "serviceIntent",
-      "policy": "🎵 抖音",
-      "priority": 80,
-      "routing": 1,
-      "shardIds": [
-        "ByteDance-001"
-      ],
-      "sourceBytes": 10520,
-      "sourceSha256": "075c6747777959fe99b3ff6dc9ea37e6db8b96d56c6d28a04365e69eaccbe524",
-      "unsupportedByReason": {}
-    },
-    {
-      "canonicalPath": "compiled/Surge/XiaoHongShu/XiaoHongShu.list",
-      "componentId": "rules",
-      "counts": {
-        "candidate": 4,
-        "convertible": 4,
-        "duplicates": 2,
-        "output": 2,
-        "parsed": 4,
-        "shadowed": 0,
-        "unresolved": 0,
-        "unsupported": 0
-      },
-      "dnsClass": "china",
-      "familyId": "XiaoHongShu",
-      "id": "XiaoHongShu",
-      "ignoredModifiers": {
-        "noResolve": 0
-      },
-      "inputFormat": "RULE-SET",
-      "intendedTarget": "direct",
-      "minEntries": 0,
-      "order": 9,
-      "phase": "serviceIntent",
-      "policy": "📕 小红书",
-      "priority": 90,
-      "routing": 1,
-      "shardIds": [
-        "XiaoHongShu-001"
-      ],
-      "sourceBytes": 112,
-      "sourceSha256": "3d37c3a1cb8d59ccd5b34ba8350aaa0d5e66c7cf56dab568ddf2bf1eabed1429",
-      "unsupportedByReason": {}
-    },
-    {
-      "canonicalPath": "compiled/Surge/Weibo/Weibo.list",
-      "componentId": "rules",
-      "counts": {
-        "candidate": 4,
-        "convertible": 4,
-        "duplicates": 1,
-        "output": 3,
-        "parsed": 4,
-        "shadowed": 0,
-        "unresolved": 0,
-        "unsupported": 0
-      },
-      "dnsClass": "china",
-      "familyId": "Weibo",
-      "id": "Weibo",
-      "ignoredModifiers": {
-        "noResolve": 0
-      },
-      "inputFormat": "RULE-SET",
-      "intendedTarget": "direct",
-      "minEntries": 0,
-      "order": 10,
-      "phase": "serviceIntent",
-      "policy": "🧣 微博",
-      "priority": 100,
-      "routing": 1,
-      "shardIds": [
-        "Weibo-001"
-      ],
-      "sourceBytes": 95,
-      "sourceSha256": "195eb35b72e9b6ac9ffabe7b9c98105b3dec936b722ec5b478e7401c62ecb0d7",
-      "unsupportedByReason": {}
-    },
-    {
-      "canonicalPath": "compiled/Surge/OpenAI/OpenAI.list",
-      "componentId": "rules",
-      "counts": {
-        "candidate": 34,
-        "convertible": 27,
-        "duplicates": 0,
-        "output": 27,
-        "parsed": 34,
-        "shadowed": 0,
-        "unresolved": 0,
-        "unsupported": 7
+        "unsupported": 31
       },
       "dnsClass": "proxy",
-      "familyId": "OpenAI",
-      "id": "OpenAI",
+      "familyId": "AI",
+      "id": "AI",
       "ignoredModifiers": {
-        "noResolve": 2
+        "noResolve": 4
       },
       "inputFormat": "RULE-SET",
-      "intendedTarget": "🤖 AI 专用",
+      "inputSources": [
+        {
+          "candidate": 34,
+          "convertible": 27,
+          "id": "OpenAI",
+          "output": 27,
+          "parsed": 34,
+          "sourceBytes": 1115,
+          "sourceSha256": "996d0ac4992f5f1606ae3766f536e03f77f9bde45b5acea995baa9632355abb3",
+          "unsupported": 7
+        },
+        {
+          "candidate": 3,
+          "convertible": 2,
+          "id": "Claude",
+          "output": 2,
+          "parsed": 3,
+          "sourceBytes": 77,
+          "sourceSha256": "e22906098a08537bca78fe642e8dcf401700595c436d131bfdbb9f446c58e19b",
+          "unsupported": 1
+        },
+        {
+          "candidate": 13,
+          "convertible": 10,
+          "id": "Gemini",
+          "output": 10,
+          "parsed": 13,
+          "sourceBytes": 417,
+          "sourceSha256": "c3b400c61d4e22fd8c3020dd9fd526a95432744ff9edcefa6c8e553f51a33f76",
+          "unsupported": 3
+        },
+        {
+          "candidate": 49,
+          "convertible": 29,
+          "id": "Copilot",
+          "output": 4,
+          "parsed": 49,
+          "sourceBytes": 1558,
+          "sourceSha256": "d0ef6727018fa1a49cb0917d6e8c3a05c305a876bd2c2de1f1baa6930480ea6c",
+          "unsupported": 20
+        }
+      ],
+      "intendedTarget": "FOLLOW",
       "minEntries": 0,
       "order": 11,
       "phase": "serviceIntent",
       "policy": "🤖 AI 专用",
       "priority": 110,
+      "provenance": {
+        "commit": "538b8a79532c44dfbcb8e694d2f43e753c60b157",
+        "committedAt": "2026-08-15T18:26:29Z",
+        "license": "GPL-2.0-only",
+        "repository": "https://github.com/blackmatrix7/ios_rule_script"
+      },
       "routing": 0,
       "shardIds": [
-        "OpenAI-001"
+        "AI-001"
       ],
-      "sourceBytes": 1115,
-      "sourceSha256": "996d0ac4992f5f1606ae3766f536e03f77f9bde45b5acea995baa9632355abb3",
-      "unsupportedByReason": {
-        "unsupported-exact-domain": 7
-      }
-    },
-    {
-      "canonicalPath": "compiled/Surge/Claude/Claude.list",
-      "componentId": "rules",
-      "counts": {
-        "candidate": 3,
-        "convertible": 2,
-        "duplicates": 0,
-        "output": 2,
-        "parsed": 3,
-        "shadowed": 0,
-        "unresolved": 0,
-        "unsupported": 1
-      },
-      "dnsClass": "proxy",
-      "familyId": "Claude",
-      "id": "Claude",
-      "ignoredModifiers": {
-        "noResolve": 0
-      },
-      "inputFormat": "RULE-SET",
-      "intendedTarget": "🤖 AI 专用",
-      "minEntries": 0,
-      "order": 12,
-      "phase": "serviceIntent",
-      "policy": "🤖 AI 专用",
-      "priority": 120,
-      "routing": 0,
-      "shardIds": [
-        "Claude-001"
+      "sourceBytes": 3167,
+      "sourceIds": [
+        "OpenAI",
+        "Claude",
+        "Gemini",
+        "Copilot"
       ],
-      "sourceBytes": 77,
-      "sourceSha256": "e22906098a08537bca78fe642e8dcf401700595c436d131bfdbb9f446c58e19b",
+      "sourceSha256": "cebc765707cf80af8c0f876c9c4662530c642081cb2bd0a2d54df9b6cf4d8ed4",
       "unsupportedByReason": {
-        "unsupported-exact-domain": 1
-      }
-    },
-    {
-      "canonicalPath": "compiled/Surge/Gemini/Gemini.list",
-      "componentId": "rules",
-      "counts": {
-        "candidate": 13,
-        "convertible": 10,
-        "duplicates": 0,
-        "output": 10,
-        "parsed": 13,
-        "shadowed": 0,
-        "unresolved": 0,
-        "unsupported": 3
-      },
-      "dnsClass": "proxy",
-      "familyId": "Gemini",
-      "id": "Gemini",
-      "ignoredModifiers": {
-        "noResolve": 0
-      },
-      "inputFormat": "RULE-SET",
-      "intendedTarget": "🤖 AI 专用",
-      "minEntries": 0,
-      "order": 13,
-      "phase": "serviceIntent",
-      "policy": "🤖 AI 专用",
-      "priority": 130,
-      "routing": 0,
-      "shardIds": [
-        "Gemini-001"
-      ],
-      "sourceBytes": 417,
-      "sourceSha256": "c3b400c61d4e22fd8c3020dd9fd526a95432744ff9edcefa6c8e553f51a33f76",
-      "unsupportedByReason": {
-        "unsupported-exact-domain": 3
-      }
-    },
-    {
-      "canonicalPath": "compiled/Surge/Copilot/Copilot.list",
-      "componentId": "rules",
-      "counts": {
-        "candidate": 49,
-        "convertible": 29,
-        "duplicates": 24,
-        "output": 4,
-        "parsed": 49,
-        "shadowed": 1,
-        "unresolved": 0,
-        "unsupported": 20
-      },
-      "dnsClass": "proxy",
-      "familyId": "Copilot",
-      "id": "Copilot",
-      "ignoredModifiers": {
-        "noResolve": 2
-      },
-      "inputFormat": "RULE-SET",
-      "intendedTarget": "🤖 AI 专用",
-      "minEntries": 0,
-      "order": 14,
-      "phase": "serviceIntent",
-      "policy": "🤖 AI 专用",
-      "priority": 140,
-      "routing": 0,
-      "shardIds": [
-        "Copilot-001"
-      ],
-      "sourceBytes": 1558,
-      "sourceSha256": "d0ef6727018fa1a49cb0917d6e8c3a05c305a876bd2c2de1f1baa6930480ea6c",
-      "unsupportedByReason": {
-        "unsupported-exact-domain": 20
+        "unsupported-exact-domain": 31
       }
     },
     {
@@ -1285,17 +973,38 @@
         "noResolve": 0
       },
       "inputFormat": "RULE-SET",
-      "intendedTarget": "🐙 GitHub",
+      "inputSources": [
+        {
+          "candidate": 31,
+          "convertible": 31,
+          "id": "GitHub",
+          "output": 30,
+          "parsed": 31,
+          "sourceBytes": 940,
+          "sourceSha256": "95299a16144b19c5ff24298c6ba2ab731dc05b99c22340b566408cedf71124ea",
+          "unsupported": 0
+        }
+      ],
+      "intendedTarget": "FOLLOW",
       "minEntries": 0,
       "order": 15,
       "phase": "serviceIntent",
       "policy": "🐙 GitHub",
       "priority": 150,
+      "provenance": {
+        "commit": "538b8a79532c44dfbcb8e694d2f43e753c60b157",
+        "committedAt": "2026-08-15T18:26:29Z",
+        "license": "GPL-2.0-only",
+        "repository": "https://github.com/blackmatrix7/ios_rule_script"
+      },
       "routing": 0,
       "shardIds": [
         "GitHub-001"
       ],
       "sourceBytes": 940,
+      "sourceIds": [
+        "GitHub"
+      ],
       "sourceSha256": "95299a16144b19c5ff24298c6ba2ab731dc05b99c22340b566408cedf71124ea",
       "unsupportedByReason": {}
     },
@@ -1319,332 +1028,232 @@
         "noResolve": 3
       },
       "inputFormat": "RULE-SET",
-      "intendedTarget": "📺 YouTube",
+      "inputSources": [
+        {
+          "candidate": 183,
+          "convertible": 183,
+          "id": "YouTube",
+          "output": 183,
+          "parsed": 183,
+          "sourceBytes": 5020,
+          "sourceSha256": "df9f9138a41a99ef1e0e9be23942bc3624c39fb1111e90c61c14c187b50b60a0",
+          "unsupported": 0
+        }
+      ],
+      "intendedTarget": "FOLLOW",
       "minEntries": 0,
       "order": 16,
       "phase": "serviceIntent",
       "policy": "📺 YouTube",
       "priority": 160,
+      "provenance": {
+        "commit": "538b8a79532c44dfbcb8e694d2f43e753c60b157",
+        "committedAt": "2026-08-15T18:26:29Z",
+        "license": "GPL-2.0-only",
+        "repository": "https://github.com/blackmatrix7/ios_rule_script"
+      },
       "routing": 0,
       "shardIds": [
         "YouTube-001"
       ],
       "sourceBytes": 5020,
+      "sourceIds": [
+        "YouTube"
+      ],
       "sourceSha256": "df9f9138a41a99ef1e0e9be23942bc3624c39fb1111e90c61c14c187b50b60a0",
       "unsupportedByReason": {}
     },
     {
-      "canonicalPath": "compiled/Surge/Netflix/Netflix.list",
+      "canonicalPath": "compiled/Anywhere/OverseasMedia.arrs",
       "componentId": "rules",
       "counts": {
-        "candidate": 1156,
-        "convertible": 1153,
-        "duplicates": 0,
-        "output": 1153,
-        "parsed": 1156,
-        "shadowed": 0,
+        "candidate": 2308,
+        "convertible": 2299,
+        "duplicates": 71,
+        "inputSources": 4,
+        "output": 2226,
+        "parsed": 2308,
+        "shadowed": 2,
         "unresolved": 0,
-        "unsupported": 3
+        "unsupported": 9
       },
       "dnsClass": "proxy",
-      "familyId": "Netflix",
-      "id": "Netflix",
+      "familyId": "OverseasMedia",
+      "id": "OverseasMedia",
       "ignoredModifiers": {
-        "noResolve": 1119
+        "noResolve": 2045
       },
       "inputFormat": "RULE-SET",
-      "intendedTarget": "🎬 Netflix",
+      "inputSources": [
+        {
+          "candidate": 1156,
+          "convertible": 1153,
+          "id": "Netflix",
+          "output": 1153,
+          "parsed": 1156,
+          "sourceBytes": 40114,
+          "sourceSha256": "dd64988cf0e54bf15d8ca00ad0f34ea470b65262a5a883db4f601c2eb5597ccc",
+          "unsupported": 3
+        },
+        {
+          "candidate": 172,
+          "convertible": 172,
+          "id": "Disney",
+          "output": 170,
+          "parsed": 172,
+          "sourceBytes": 5370,
+          "sourceSha256": "dd32b132007877b6818cf8475866cfacd5087d510dc0df4d4e3e2a7cda5ae9fe",
+          "unsupported": 0
+        },
+        {
+          "candidate": 29,
+          "convertible": 23,
+          "id": "Spotify",
+          "output": 23,
+          "parsed": 29,
+          "sourceBytes": 958,
+          "sourceSha256": "407613bc81c2d5ab0f4b0c07c6cfde0071ed494723236181c0f3352c70f804de",
+          "unsupported": 6
+        },
+        {
+          "candidate": 951,
+          "convertible": 951,
+          "id": "GlobalMedia",
+          "output": 880,
+          "parsed": 951,
+          "sourceBytes": 33728,
+          "sourceSha256": "5608892d5c707da8f23c9c4adcccc63516aa5542cb072097f83ef3d79e04ffbc",
+          "unsupported": 0
+        }
+      ],
+      "intendedTarget": "FOLLOW",
       "minEntries": 0,
       "order": 17,
       "phase": "serviceIntent",
-      "policy": "🎬 Netflix",
+      "policy": "🎬 海外流媒体",
       "priority": 170,
+      "provenance": {
+        "commit": "538b8a79532c44dfbcb8e694d2f43e753c60b157",
+        "committedAt": "2026-08-15T18:26:29Z",
+        "license": "GPL-2.0-only",
+        "repository": "https://github.com/blackmatrix7/ios_rule_script"
+      },
       "routing": 0,
       "shardIds": [
-        "Netflix-001"
+        "OverseasMedia-001"
       ],
-      "sourceBytes": 40114,
-      "sourceSha256": "dd64988cf0e54bf15d8ca00ad0f34ea470b65262a5a883db4f601c2eb5597ccc",
+      "sourceBytes": 80170,
+      "sourceIds": [
+        "Netflix",
+        "Disney",
+        "Spotify",
+        "GlobalMedia"
+      ],
+      "sourceSha256": "9d8bac952ad97b4e2acd1b569454d95d40f0475ce328b55719664ca4bd6d1afa",
       "unsupportedByReason": {
-        "unsupported-exact-domain": 3
+        "unsupported-exact-domain": 9
       }
     },
     {
-      "canonicalPath": "compiled/Surge/Disney/Disney.list",
+      "canonicalPath": "compiled/Anywhere/OverseasSocial.arrs",
       "componentId": "rules",
       "counts": {
-        "candidate": 172,
-        "convertible": 172,
-        "duplicates": 0,
-        "output": 170,
-        "parsed": 172,
+        "candidate": 672,
+        "convertible": 666,
+        "duplicates": 5,
+        "inputSources": 5,
+        "output": 659,
+        "parsed": 672,
         "shadowed": 2,
-        "unresolved": 0,
-        "unsupported": 0
-      },
-      "dnsClass": "proxy",
-      "familyId": "Disney",
-      "id": "Disney",
-      "ignoredModifiers": {
-        "noResolve": 0
-      },
-      "inputFormat": "RULE-SET",
-      "intendedTarget": "🏰 Disney+",
-      "minEntries": 0,
-      "order": 18,
-      "phase": "serviceIntent",
-      "policy": "🏰 Disney+",
-      "priority": 180,
-      "routing": 0,
-      "shardIds": [
-        "Disney-001"
-      ],
-      "sourceBytes": 5370,
-      "sourceSha256": "dd32b132007877b6818cf8475866cfacd5087d510dc0df4d4e3e2a7cda5ae9fe",
-      "unsupportedByReason": {}
-    },
-    {
-      "canonicalPath": "compiled/Surge/Spotify/Spotify.list",
-      "componentId": "rules",
-      "counts": {
-        "candidate": 29,
-        "convertible": 23,
-        "duplicates": 0,
-        "output": 23,
-        "parsed": 29,
-        "shadowed": 0,
         "unresolved": 0,
         "unsupported": 6
       },
       "dnsClass": "proxy",
-      "familyId": "Spotify",
-      "id": "Spotify",
+      "familyId": "OverseasSocial",
+      "id": "OverseasSocial",
       "ignoredModifiers": {
-        "noResolve": 2
+        "noResolve": 39
       },
       "inputFormat": "RULE-SET",
-      "intendedTarget": "🎵 Spotify",
-      "minEntries": 0,
-      "order": 19,
-      "phase": "serviceIntent",
-      "policy": "🎵 Spotify",
-      "priority": 190,
-      "routing": 0,
-      "shardIds": [
-        "Spotify-001"
+      "inputSources": [
+        {
+          "candidate": 35,
+          "convertible": 33,
+          "id": "Telegram",
+          "output": 33,
+          "parsed": 35,
+          "sourceBytes": 1004,
+          "sourceSha256": "437cbe7b1a4b6865876519792858d304fedaafa38a8b6d382407d8f97a49fcd8",
+          "unsupported": 2
+        },
+        {
+          "candidate": 569,
+          "convertible": 569,
+          "id": "Facebook",
+          "output": 569,
+          "parsed": 569,
+          "sourceBytes": 17168,
+          "sourceSha256": "b0c3dfda8a3c6fbead12c6d0c28e3e0a3ed3b9f55e7fd318fdad16f701f4a754",
+          "unsupported": 0
+        },
+        {
+          "candidate": 4,
+          "convertible": 4,
+          "id": "Instagram",
+          "output": 1,
+          "parsed": 4,
+          "sourceBytes": 109,
+          "sourceSha256": "0d97aa6e4a5a0993f8bb51926c5b45340f6c846d632a75b1dd76ff21ef6e844c",
+          "unsupported": 0
+        },
+        {
+          "candidate": 33,
+          "convertible": 33,
+          "id": "Twitter",
+          "output": 33,
+          "parsed": 33,
+          "sourceBytes": 925,
+          "sourceSha256": "371a1ead914bfa4ff5ff4ca338111d6e088517cf4792dd0bd43448b9331d1eb8",
+          "unsupported": 0
+        },
+        {
+          "candidate": 31,
+          "convertible": 27,
+          "id": "TikTok",
+          "output": 23,
+          "parsed": 31,
+          "sourceBytes": 876,
+          "sourceSha256": "d82ba26ccefadb5645dae38609e8ae3d7e566284c99c05e011d15b575ef0659a",
+          "unsupported": 4
+        }
       ],
-      "sourceBytes": 958,
-      "sourceSha256": "407613bc81c2d5ab0f4b0c07c6cfde0071ed494723236181c0f3352c70f804de",
-      "unsupportedByReason": {
-        "unsupported-exact-domain": 6
-      }
-    },
-    {
-      "canonicalPath": "compiled/Surge/GlobalMedia/GlobalMedia.list",
-      "componentId": "rules",
-      "counts": {
-        "candidate": 951,
-        "convertible": 951,
-        "duplicates": 71,
-        "output": 880,
-        "parsed": 951,
-        "shadowed": 0,
-        "unresolved": 0,
-        "unsupported": 0
-      },
-      "dnsClass": "proxy",
-      "familyId": "GlobalMedia",
-      "id": "GlobalMedia",
-      "ignoredModifiers": {
-        "noResolve": 924
-      },
-      "inputFormat": "RULE-SET",
-      "intendedTarget": "🌍 国际媒体",
-      "minEntries": 0,
-      "order": 20,
-      "phase": "serviceIntent",
-      "policy": "🌍 国际媒体",
-      "priority": 200,
-      "routing": 0,
-      "shardIds": [
-        "GlobalMedia-001"
-      ],
-      "sourceBytes": 33728,
-      "sourceSha256": "5608892d5c707da8f23c9c4adcccc63516aa5542cb072097f83ef3d79e04ffbc",
-      "unsupportedByReason": {}
-    },
-    {
-      "canonicalPath": "compiled/Surge/Telegram/Telegram.list",
-      "componentId": "rules",
-      "counts": {
-        "candidate": 35,
-        "convertible": 33,
-        "duplicates": 0,
-        "output": 33,
-        "parsed": 35,
-        "shadowed": 0,
-        "unresolved": 0,
-        "unsupported": 2
-      },
-      "dnsClass": "proxy",
-      "familyId": "Telegram",
-      "id": "Telegram",
-      "ignoredModifiers": {
-        "noResolve": 10
-      },
-      "inputFormat": "RULE-SET",
-      "intendedTarget": "✈️ Telegram",
+      "intendedTarget": "FOLLOW",
       "minEntries": 0,
       "order": 21,
       "phase": "serviceIntent",
-      "policy": "✈️ Telegram",
+      "policy": "💬 海外社交",
       "priority": 210,
+      "provenance": {
+        "commit": "538b8a79532c44dfbcb8e694d2f43e753c60b157",
+        "committedAt": "2026-08-15T18:26:29Z",
+        "license": "GPL-2.0-only",
+        "repository": "https://github.com/blackmatrix7/ios_rule_script"
+      },
       "routing": 0,
       "shardIds": [
-        "Telegram-001"
+        "OverseasSocial-001"
       ],
-      "sourceBytes": 1004,
-      "sourceSha256": "437cbe7b1a4b6865876519792858d304fedaafa38a8b6d382407d8f97a49fcd8",
+      "sourceBytes": 20082,
+      "sourceIds": [
+        "Telegram",
+        "Facebook",
+        "Instagram",
+        "Twitter",
+        "TikTok"
+      ],
+      "sourceSha256": "4571a6a9b42fde6cc4d0402a7cafc88dc610a33602954b54a99f1903831fba82",
       "unsupportedByReason": {
-        "unsupported-exact-domain": 2
-      }
-    },
-    {
-      "canonicalPath": "compiled/Surge/Facebook/Facebook.list",
-      "componentId": "rules",
-      "counts": {
-        "candidate": 569,
-        "convertible": 569,
-        "duplicates": 0,
-        "output": 569,
-        "parsed": 569,
-        "shadowed": 0,
-        "unresolved": 0,
-        "unsupported": 0
-      },
-      "dnsClass": "proxy",
-      "familyId": "Facebook",
-      "id": "Facebook",
-      "ignoredModifiers": {
-        "noResolve": 23
-      },
-      "inputFormat": "RULE-SET",
-      "intendedTarget": "💬 海外社交",
-      "minEntries": 0,
-      "order": 22,
-      "phase": "serviceIntent",
-      "policy": "💬 海外社交",
-      "priority": 220,
-      "routing": 0,
-      "shardIds": [
-        "Facebook-001"
-      ],
-      "sourceBytes": 17168,
-      "sourceSha256": "b0c3dfda8a3c6fbead12c6d0c28e3e0a3ed3b9f55e7fd318fdad16f701f4a754",
-      "unsupportedByReason": {}
-    },
-    {
-      "canonicalPath": "compiled/Surge/Instagram/Instagram.list",
-      "componentId": "rules",
-      "counts": {
-        "candidate": 4,
-        "convertible": 4,
-        "duplicates": 3,
-        "output": 1,
-        "parsed": 4,
-        "shadowed": 0,
-        "unresolved": 0,
-        "unsupported": 0
-      },
-      "dnsClass": "proxy",
-      "familyId": "Instagram",
-      "id": "Instagram",
-      "ignoredModifiers": {
-        "noResolve": 0
-      },
-      "inputFormat": "RULE-SET",
-      "intendedTarget": "💬 海外社交",
-      "minEntries": 0,
-      "order": 23,
-      "phase": "serviceIntent",
-      "policy": "💬 海外社交",
-      "priority": 230,
-      "routing": 0,
-      "shardIds": [
-        "Instagram-001"
-      ],
-      "sourceBytes": 109,
-      "sourceSha256": "0d97aa6e4a5a0993f8bb51926c5b45340f6c846d632a75b1dd76ff21ef6e844c",
-      "unsupportedByReason": {}
-    },
-    {
-      "canonicalPath": "compiled/Surge/Twitter/Twitter.list",
-      "componentId": "rules",
-      "counts": {
-        "candidate": 33,
-        "convertible": 33,
-        "duplicates": 0,
-        "output": 33,
-        "parsed": 33,
-        "shadowed": 0,
-        "unresolved": 0,
-        "unsupported": 0
-      },
-      "dnsClass": "proxy",
-      "familyId": "Twitter",
-      "id": "Twitter",
-      "ignoredModifiers": {
-        "noResolve": 6
-      },
-      "inputFormat": "RULE-SET",
-      "intendedTarget": "💬 海外社交",
-      "minEntries": 0,
-      "order": 24,
-      "phase": "serviceIntent",
-      "policy": "💬 海外社交",
-      "priority": 240,
-      "routing": 0,
-      "shardIds": [
-        "Twitter-001"
-      ],
-      "sourceBytes": 925,
-      "sourceSha256": "371a1ead914bfa4ff5ff4ca338111d6e088517cf4792dd0bd43448b9331d1eb8",
-      "unsupportedByReason": {}
-    },
-    {
-      "canonicalPath": "compiled/Surge/TikTok/TikTok.list",
-      "componentId": "rules",
-      "counts": {
-        "candidate": 31,
-        "convertible": 27,
-        "duplicates": 2,
-        "output": 23,
-        "parsed": 31,
-        "shadowed": 2,
-        "unresolved": 0,
-        "unsupported": 4
-      },
-      "dnsClass": "proxy",
-      "familyId": "TikTok",
-      "id": "TikTok",
-      "ignoredModifiers": {
-        "noResolve": 0
-      },
-      "inputFormat": "RULE-SET",
-      "intendedTarget": "🎶 TikTok",
-      "minEntries": 0,
-      "order": 25,
-      "phase": "serviceIntent",
-      "policy": "🎶 TikTok",
-      "priority": 250,
-      "routing": 0,
-      "shardIds": [
-        "TikTok-001"
-      ],
-      "sourceBytes": 876,
-      "sourceSha256": "d82ba26ccefadb5645dae38609e8ae3d7e566284c99c05e011d15b575ef0659a",
-      "unsupportedByReason": {
-        "unsupported-exact-domain": 4
+        "unsupported-exact-domain": 6
       }
     },
     {
@@ -1667,17 +1276,38 @@
         "noResolve": 13
       },
       "inputFormat": "RULE-SET",
-      "intendedTarget": "direct",
+      "inputSources": [
+        {
+          "candidate": 20,
+          "convertible": 20,
+          "id": "Apple",
+          "output": 20,
+          "parsed": 20,
+          "sourceBytes": 684,
+          "sourceSha256": "58b398a570f78bad0a787f4eb3fd3c66b81115b305ac82ca75afdc9070c45c09",
+          "unsupported": 0
+        }
+      ],
+      "intendedTarget": "DIRECT",
       "minEntries": 0,
       "order": 26,
       "phase": "serviceIntent",
       "policy": "🍎 Apple",
       "priority": 260,
+      "provenance": {
+        "commit": "538b8a79532c44dfbcb8e694d2f43e753c60b157",
+        "committedAt": "2026-08-15T18:26:29Z",
+        "license": "GPL-2.0-only",
+        "repository": "https://github.com/blackmatrix7/ios_rule_script"
+      },
       "routing": 1,
       "shardIds": [
         "Apple-001"
       ],
       "sourceBytes": 684,
+      "sourceIds": [
+        "Apple"
+      ],
       "sourceSha256": "58b398a570f78bad0a787f4eb3fd3c66b81115b305ac82ca75afdc9070c45c09",
       "unsupportedByReason": {}
     },
@@ -1701,88 +1331,108 @@
         "noResolve": 0
       },
       "inputFormat": "RULE-SET",
-      "intendedTarget": "direct",
+      "inputSources": [
+        {
+          "candidate": 668,
+          "convertible": 667,
+          "id": "Microsoft",
+          "output": 665,
+          "parsed": 668,
+          "sourceBytes": 20256,
+          "sourceSha256": "9bf85ec738899b70a01a6657e4c4714a62fe9f08488bf2241f6039de76293ec5",
+          "unsupported": 1
+        }
+      ],
+      "intendedTarget": "DIRECT",
       "minEntries": 0,
       "order": 27,
       "phase": "serviceIntent",
       "policy": "🪟 Microsoft",
       "priority": 270,
+      "provenance": {
+        "commit": "538b8a79532c44dfbcb8e694d2f43e753c60b157",
+        "committedAt": "2026-08-15T18:26:29Z",
+        "license": "GPL-2.0-only",
+        "repository": "https://github.com/blackmatrix7/ios_rule_script"
+      },
       "routing": 1,
       "shardIds": [
         "Microsoft-001"
       ],
       "sourceBytes": 20256,
+      "sourceIds": [
+        "Microsoft"
+      ],
       "sourceSha256": "9bf85ec738899b70a01a6657e4c4714a62fe9f08488bf2241f6039de76293ec5",
       "unsupportedByReason": {
         "unsupported-exact-domain": 1
       }
     },
     {
-      "canonicalPath": "compiled/Surge/Download/Download.list",
+      "canonicalPath": "compiled/Anywhere/Download.arrs",
       "componentId": "rules",
       "counts": {
-        "candidate": 6,
-        "convertible": 6,
+        "candidate": 254,
+        "convertible": 136,
         "duplicates": 0,
-        "output": 6,
-        "parsed": 6,
-        "shadowed": 0,
-        "unresolved": 0,
-        "unsupported": 0
-      },
-      "dnsClass": "china",
-      "familyId": "Download",
-      "id": "Download",
-      "ignoredModifiers": {
-        "noResolve": 0
-      },
-      "inputFormat": "RULE-SET",
-      "intendedTarget": "direct",
-      "minEntries": 0,
-      "order": 28,
-      "phase": "serviceIntent",
-      "policy": "⬇️ 下载/P2P",
-      "priority": 280,
-      "routing": 1,
-      "shardIds": [
-        "Download-001"
-      ],
-      "sourceBytes": 142,
-      "sourceSha256": "88b3c77b3161bb026753661e1c9fe630a6fb6a1cb4cdb1e204eda13bbbee5f5d",
-      "unsupportedByReason": {}
-    },
-    {
-      "canonicalPath": "compiled/Surge/PrivateTracker/PrivateTracker.list",
-      "componentId": "rules",
-      "counts": {
-        "candidate": 248,
-        "convertible": 130,
-        "duplicates": 0,
-        "output": 130,
-        "parsed": 248,
+        "inputSources": 2,
+        "output": 136,
+        "parsed": 254,
         "shadowed": 0,
         "unresolved": 0,
         "unsupported": 118
       },
       "dnsClass": "china",
-      "familyId": "PrivateTracker",
-      "id": "PrivateTracker",
+      "familyId": "Download",
+      "id": "Download",
       "ignoredModifiers": {
         "noResolve": 3
       },
       "inputFormat": "RULE-SET",
-      "intendedTarget": "direct",
+      "inputSources": [
+        {
+          "candidate": 6,
+          "convertible": 6,
+          "id": "Download",
+          "output": 6,
+          "parsed": 6,
+          "sourceBytes": 142,
+          "sourceSha256": "88b3c77b3161bb026753661e1c9fe630a6fb6a1cb4cdb1e204eda13bbbee5f5d",
+          "unsupported": 0
+        },
+        {
+          "candidate": 248,
+          "convertible": 130,
+          "id": "PrivateTracker",
+          "output": 130,
+          "parsed": 248,
+          "sourceBytes": 6620,
+          "sourceSha256": "f894ddfd5791debca01f07f6bf33c7bc1ac03c6e423e3e1826ea79e9de35cd16",
+          "unsupported": 118
+        }
+      ],
+      "intendedTarget": "DIRECT",
       "minEntries": 0,
-      "order": 29,
+      "order": 28,
       "phase": "serviceIntent",
       "policy": "⬇️ 下载/P2P",
-      "priority": 290,
+      "priority": 280,
+      "provenance": {
+        "commit": "538b8a79532c44dfbcb8e694d2f43e753c60b157",
+        "committedAt": "2026-08-15T18:26:29Z",
+        "license": "GPL-2.0-only",
+        "repository": "https://github.com/blackmatrix7/ios_rule_script"
+      },
       "routing": 1,
       "shardIds": [
-        "PrivateTracker-001"
+        "Download-001"
       ],
-      "sourceBytes": 6620,
-      "sourceSha256": "f894ddfd5791debca01f07f6bf33c7bc1ac03c6e423e3e1826ea79e9de35cd16",
+      "sourceBytes": 6762,
+      "sourceIds": [
+        "Download",
+        "PrivateTracker"
+      ],
+      "sourceSha256": "7b819f5a35bc0b6be79ed7a3c349c5ada42765bb8b61090052631cbed97cbabe",
       "unsupportedByReason": {
         "unsupported-exact-domain": 118
       }
@@ -1807,55 +1457,42 @@
         "noResolve": 46
       },
       "inputFormat": "RULE-SET",
-      "intendedTarget": "🌍 海外游戏",
+      "inputSources": [
+        {
+          "candidate": 574,
+          "convertible": 566,
+          "id": "OverseasGame",
+          "output": 518,
+          "parsed": 574,
+          "sourceBytes": 18310,
+          "sourceSha256": "e194fe3677d030af4a0f57e1bccf7e475080892f28fceabd0a17ff2c42581ae6",
+          "unsupported": 8
+        }
+      ],
+      "intendedTarget": "FOLLOW",
       "minEntries": 0,
       "order": 30,
       "phase": "overseasGame",
       "policy": "🌍 海外游戏",
       "priority": 300,
+      "provenance": {
+        "commit": "538b8a79532c44dfbcb8e694d2f43e753c60b157",
+        "committedAt": "2026-08-15T18:26:29Z",
+        "license": "GPL-2.0-only",
+        "repository": "https://github.com/blackmatrix7/ios_rule_script"
+      },
       "routing": 0,
       "shardIds": [
         "OverseasGame-001"
       ],
       "sourceBytes": 18310,
+      "sourceIds": [
+        "OverseasGame"
+      ],
       "sourceSha256": "e194fe3677d030af4a0f57e1bccf7e475080892f28fceabd0a17ff2c42581ae6",
       "unsupportedByReason": {
         "unsupported-exact-domain": 8
       }
-    },
-    {
-      "canonicalPath": "compiled/Surge/ChinaTLD/ChinaTLD.list",
-      "componentId": "rules",
-      "counts": {
-        "candidate": 1,
-        "convertible": 1,
-        "duplicates": 0,
-        "output": 1,
-        "parsed": 1,
-        "shadowed": 0,
-        "unresolved": 0,
-        "unsupported": 0
-      },
-      "dnsClass": "china",
-      "familyId": "ChinaTLD",
-      "id": "ChinaTLD",
-      "ignoredModifiers": {
-        "noResolve": 0
-      },
-      "inputFormat": "RULE-SET",
-      "intendedTarget": "direct",
-      "minEntries": 0,
-      "order": 31,
-      "phase": "lateDomestic",
-      "policy": "DIRECT",
-      "priority": 310,
-      "routing": 1,
-      "shardIds": [
-        "ChinaTLD-001"
-      ],
-      "sourceBytes": 17,
-      "sourceSha256": "db29eaa29abef2bdc42483f4258c4c32a3800ca1676028215e5de180589fa464",
-      "unsupportedByReason": {}
     },
     {
       "canonicalPath": "compiled/Surge/ChinaIP/ChinaIP.list",
@@ -1877,17 +1514,38 @@
         "noResolve": 11096
       },
       "inputFormat": "RULE-SET",
-      "intendedTarget": "direct",
+      "inputSources": [
+        {
+          "candidate": 11096,
+          "convertible": 11096,
+          "id": "ChinaIP",
+          "output": 10952,
+          "parsed": 11096,
+          "sourceBytes": 400862,
+          "sourceSha256": "5765925aa3394350a43568e1dcb3cbd2e1492c7683479d22aedbf3c1e581e9a6",
+          "unsupported": 0
+        }
+      ],
+      "intendedTarget": "DIRECT",
       "minEntries": 0,
       "order": 32,
       "phase": "resolvedChinaIp",
       "policy": "DIRECT",
       "priority": 320,
+      "provenance": {
+        "commit": "538b8a79532c44dfbcb8e694d2f43e753c60b157",
+        "committedAt": "2026-08-15T18:26:29Z",
+        "license": "GPL-2.0-only",
+        "repository": "https://github.com/blackmatrix7/ios_rule_script"
+      },
       "routing": 1,
       "shardIds": [
         "ChinaIP-001"
       ],
       "sourceBytes": 400862,
+      "sourceIds": [
+        "ChinaIP"
+      ],
       "sourceSha256": "5765925aa3394350a43568e1dcb3cbd2e1492c7683479d22aedbf3c1e581e9a6",
       "unsupportedByReason": {}
     }
@@ -1907,14 +1565,15 @@
     "ignoredModifiers": {
       "noResolve": 13352
     },
-    "logicalRuleSetCount": 32,
+    "inputSourceCount": 32,
+    "logicalRuleSetCount": 14,
     "outputCount": 16260,
     "parsedCount": 16840,
     "physicalLineCount": 16872,
     "shadowedCount": 160,
-    "shardCount": 32,
+    "shardCount": 14,
     "sourceBytes": 583894,
-    "sourceCount": 32,
+    "sourceCount": 14,
     "unresolvedCount": 0,
     "unsupportedByReason": {
       "unsupported-exact-domain": 257

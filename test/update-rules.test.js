@@ -114,7 +114,7 @@ async function initializeTrackedCurrent(publicDirectory, artifacts) {
     optionalPacks: artifacts.optionalPacks,
     manifest: artifacts.diagnostics.defaultManifest,
   });
-  for (const client of ["singbox", "surge", "shadowrocket", "egern", "anywhere", "happ"]) {
+  for (const client of ["singbox", "surge", "shadowrocket", "egern", "anywhere"]) {
     await promoteClientRelease({
       publicDirectory,
       client,
@@ -131,56 +131,9 @@ test("accepts only explicit edge, current-check, and client promotion operations
     client: "singbox",
     manifestHash: "a".repeat(64),
   });
-  assert.deepEqual(parseUpdateRulesArguments(["--promote", "onexray", "a".repeat(64)]), {
-    operation: "promote",
-    client: "onexray",
-    manifestHash: "a".repeat(64),
-  });
   for (const args of [[], ["--check"], ["--channel", "current"], ["--promote", "unknown", "a".repeat(64)]]) {
     assert.throws(() => parseUpdateRulesArguments(args), /update-rules arguments/u);
   }
-});
-
-test("verifies OneXray only after explicit promotion and binds its current projection to rollout", async () => {
-  const root = await mkdtemp(join(tmpdir(), "apple-proxy-onexray-rollout-"));
-  const publicDirectory = join(root, "public");
-  const artifacts = buildClientArtifacts({ snapshot: lightweightFixtureSnapshots(), upstream });
-  await initializeTrackedCurrent(publicDirectory, artifacts);
-  await publishEdgeRelease({
-    publicDirectory,
-    defaults: artifacts.defaults,
-    optionalPacks: artifacts.optionalPacks,
-    manifest: artifacts.diagnostics.defaultManifest,
-    onexray: artifacts.onexray,
-  });
-  assert.equal(await verifyTrackedPublications({ publicDirectory, ...artifacts }), true);
-  await promoteClientRelease({
-    publicDirectory,
-    client: "onexray",
-    manifestHash: artifacts.diagnostics.onexrayManifest.manifestHash,
-  });
-  assert.equal(await verifyTrackedPublications({ publicDirectory, ...artifacts }), true);
-  const rollout = JSON.parse(await readFile(join(publicDirectory, "rollout.json"), "utf8"));
-  const currentOneXray = JSON.parse(await readFile(join(publicDirectory, "current/onexray/geodata/manifest.json"), "utf8"));
-  assert.equal(rollout.onexray.current, currentOneXray.manifestHash);
-  assert.notEqual(rollout.onexray.current, artifacts.diagnostics.onexrayManifest.manifestHash);
-  const currentRoot = JSON.parse(await readFile(join(publicDirectory, "current/manifest.json"), "utf8"));
-  const edgeRoot = JSON.parse(await readFile(join(publicDirectory, "edge/manifest.json"), "utf8"));
-  assert.equal(currentRoot.onexray.channel, "current");
-  assert.equal(currentRoot.onexray.manifestHash, currentOneXray.manifestHash);
-  assert.equal(edgeRoot.onexray.channel, "edge");
-  await writeFile(join(publicDirectory, "current/onexray/geodata/geoip.dat"), Buffer.from("tampered"));
-  assert.equal(await verifyTrackedPublications({ publicDirectory, ...artifacts }), false);
-});
-
-test("rejects a partial current OneXray tree even when its manifest is missing", async () => {
-  const root = await mkdtemp(join(tmpdir(), "apple-proxy-onexray-partial-current-"));
-  const publicDirectory = join(root, "public");
-  const artifacts = buildClientArtifacts({ snapshot: lightweightFixtureSnapshots(), upstream });
-  await initializeTrackedCurrent(publicDirectory, artifacts);
-  await mkdir(join(publicDirectory, "current/onexray/geodata"), { recursive: true });
-  await writeFile(join(publicDirectory, "current/onexray/geodata/geoip.dat"), Buffer.from("partial"));
-  assert.equal(await verifyTrackedPublications({ publicDirectory, ...artifacts }), false);
 });
 
 test("derives audit-only primary provenance from the production ChinaIP snapshot", () => {
@@ -461,21 +414,6 @@ test("rejects optional rollout selections for unknown clients", async () => {
   assert.equal(await verifyTrackedPublications({ publicDirectory, ...artifacts }), false);
 });
 
-test("allows a tracked client slot to stay unpublished when rollout omits it", async () => {
-  const root = await mkdtemp(join(tmpdir(), "apple-proxy-check-unpublished-client-"));
-  const publicDirectory = join(root, "public");
-  const artifacts = buildClientArtifacts({ snapshot: lightweightFixtureSnapshots(), upstream });
-  await initializeTrackedCurrent(publicDirectory, artifacts);
-  await rm(join(publicDirectory, "current/happ"), { recursive: true, force: true });
-
-  const rolloutPath = join(publicDirectory, "rollout.json");
-  const rollout = JSON.parse(await readFile(rolloutPath, "utf8"));
-  delete rollout.clients.happ;
-  await writeFile(rolloutPath, `${JSON.stringify(rollout, null, 2)}\n`);
-
-  assert.equal(await verifyTrackedPublications({ publicDirectory, ...artifacts }), true);
-});
-
 test("rejects extra non-client files and unknown directories in a hybrid current", async () => {
   const root = await mkdtemp(join(tmpdir(), "apple-proxy-check-hybrid-closure-"));
   const publicDirectory = join(root, "public");
@@ -576,6 +514,18 @@ test("promotes exact tested client bytes without changing other clients", async 
   await writeFile(join(publicDirectory, "current/sing-box/old.txt"), "old\n");
   await writeFile(join(publicDirectory, "current/surge/keep.txt"), "keep\n");
   await writeFile(join(publicDirectory, "optional/adblock-full/current/sing-box/old.txt"), "old optional\n");
+  await writeFile(join(publicDirectory, "rollout.json"), `${JSON.stringify({
+    schemaVersion: 2,
+    clients: { singbox: null, surge: null, shadowrocket: null, egern: null, anywhere: null, happ: "a".repeat(64) },
+    previous: { singbox: null, surge: null, shadowrocket: null, egern: null, anywhere: null, happ: "b".repeat(64) },
+    optionalPacks: {
+      "adblock-full": { singbox: null, surge: null, shadowrocket: null, egern: null, anywhere: null, happ: "c".repeat(64) },
+    },
+    previousOptionalPacks: {
+      "adblock-full": { singbox: null, surge: null, shadowrocket: null, egern: null, anywhere: null, happ: "d".repeat(64) },
+    },
+    onexray: { current: "e".repeat(64) },
+  }, null, 2)}\n`);
 
   await promoteClientRelease({ publicDirectory, client: "singbox", manifestHash: hash });
 
@@ -594,6 +544,10 @@ test("promotes exact tested client bytes without changing other clients", async 
     "old optional\n",
   );
   const rollout = JSON.parse(await readFile(join(publicDirectory, "rollout.json"), "utf8"));
+  assert.deepEqual(Object.keys(rollout.clients).sort(), ["anywhere", "egern", "shadowrocket", "singbox", "surge"]);
+  assert.deepEqual(Object.keys(rollout.previous).sort(), ["anywhere", "egern", "shadowrocket", "singbox", "surge"]);
+  assert.equal(Object.hasOwn(rollout, "onexray"), false);
+  assert.equal(Object.hasOwn(rollout.optionalPacks["adblock-full"], "happ"), false);
   assert.equal(rollout.clients.singbox, hash);
   assert.equal(rollout.clients.surge, null);
   assert.equal(

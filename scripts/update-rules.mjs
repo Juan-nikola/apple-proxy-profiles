@@ -11,7 +11,6 @@ import { canonicalJson } from "../automation/src/render-anywhere-rules.js";
 import {
   promoteClientRelease as promoteClientReleaseImpl,
   publishEdgeRelease,
-  validateOneXrayPublication,
   snapshotMatches,
   validateClientPublication,
   validateOptionalPublication,
@@ -33,15 +32,9 @@ import {
 
 const repositoryRoot = dirname(dirname(fileURLToPath(import.meta.url)));
 const defaultPublicDirectory = join(repositoryRoot, "public");
-const PROMOTION_CLIENTS = new Set(["singbox", "surge", "shadowrocket", "egern", "anywhere", "happ", "onexray"]);
+const PROMOTION_CLIENTS = new Set(["singbox", "surge", "shadowrocket", "egern", "anywhere"]);
 const OPTIONAL_CLIENTS = new Set(["singbox", "surge", "shadowrocket", "egern", "anywhere"]);
-const INDEPENDENT_CLIENT_PATH = /^(?:anywhere|egern|shadowrocket|sing-box|surge|happ|onexray)\//u;
-const ONEXRAY_GEODATA_PATHS = new Set([
-  "onexray/geodata/geosite.dat",
-  "onexray/geodata/geoip.dat",
-  "onexray/geodata/manifest.json",
-  "onexray/index.html",
-]);
+const INDEPENDENT_CLIENT_PATH = /^(?:anywhere|egern|shadowrocket|sing-box|surge)\//u;
 const LEGACY_CURRENT_EXTRA_FILES = Object.freeze([
   /^frontier-manifest\.json$/u,
   /^surge\/(?:macos|iphone|ipad)\/manifest\.json$/u,
@@ -206,19 +199,6 @@ function rootManifestMatchesWithIndependentAudit(content, expectedManifest) {
   }
 }
 
-function oneXrayRootProjection(manifest) {
-  return {
-    schema: manifest.schema,
-    schemaVersion: manifest.schemaVersion,
-    channel: manifest.channel,
-    releaseId: manifest.releaseId,
-    manifestHash: manifest.manifestHash,
-    hashes: manifest.hashes,
-    counts: manifest.counts,
-    files: manifest.files,
-  };
-}
-
 async function verifyLegacyCurrent(directory, expectedUpstream) {
   try {
     const manifestBytes = await readFile(join(directory, "manifest.json"));
@@ -303,10 +283,6 @@ function rolloutOptionalProjection(optionalPacks, client) {
   return projection;
 }
 
-function oneXrayGeoDataFiles(files) {
-  return new Map([...files].filter(([path]) => ONEXRAY_GEODATA_PATHS.has(path)));
-}
-
 export function selectDefaultStaticFiles(files) {
   if (!(files instanceof Map)) throw new TypeError("Static publication files must be a Map");
   const selected = new Map(files);
@@ -373,51 +349,23 @@ export async function verifyTrackedPublications({ publicDirectory, defaults, opt
   }
   if (!rollout || rollout.schemaVersion !== 2 || typeof rollout.clients !== "object"
     || typeof rollout.optionalPacks !== "object") return false;
+  const expectedRolloutClients = [...PROMOTION_CLIENTS].sort();
+  if (JSON.stringify(Object.keys(rollout.clients).sort()) !== JSON.stringify(expectedRolloutClients)
+    || (rollout.previous !== undefined
+      && JSON.stringify(Object.keys(rollout.previous).sort()) !== JSON.stringify(expectedRolloutClients))) {
+    return false;
+  }
 
   const currentDirectory = join(publicDirectory, "current");
   let expectedRootManifest = diagnostics?.defaultManifest ?? null;
-  const currentOneXrayDirectory = join(currentDirectory, "onexray");
-  const currentEntries = await relativeTreeEntries(currentDirectory);
-  const hasCurrentOneXray = currentEntries.some((path) => path === "onexray/" || path.startsWith("onexray/"));
-  if (rollout.onexray !== undefined) {
-    if (!rollout.onexray || typeof rollout.onexray !== "object" || Array.isArray(rollout.onexray)
-      || !/^[0-9a-f]{64}$/u.test(rollout.onexray.edge ?? "")) return false;
-    try {
-      const edgeFiles = await readPublicationTree(join(publicDirectory, "edge/onexray"), "onexray");
-      const edgeManifest = validateOneXrayPublication({
-        files: oneXrayGeoDataFiles(edgeFiles),
-        channel: "edge",
-      });
-      if (edgeManifest.manifestHash !== rollout.onexray.edge) return false;
-    } catch {
-      return false;
-    }
-  }
-  if (hasCurrentOneXray) {
-    if (!rollout?.onexray || !/^[0-9a-f]{64}$/u.test(rollout.onexray.current ?? "")) return false;
-    try {
-      const onexrayFiles = await readPublicationTree(join(currentDirectory, "onexray"), "onexray");
-      const onexrayManifest = validateOneXrayPublication({ files: onexrayFiles });
-      if (onexrayManifest.manifestHash !== rollout.onexray.current) return false;
-      expectedRootManifest = { ...expectedRootManifest, onexray: oneXrayRootProjection(onexrayManifest) };
-    } catch {
-      return false;
-    }
-  } else if (rollout.onexray?.current !== undefined && rollout.onexray.current !== null) {
-    return false;
-  }
   const clientDirectories = {
     singbox: "sing-box",
     surge: "surge",
     shadowrocket: "shadowrocket",
     egern: "egern",
     anywhere: "anywhere",
-    happ: "happ",
   };
-  const clientPrefixes = new Set([
-    ...Object.values(clientDirectories).map((directory) => `${directory}/`),
-    "onexray/",
-  ]);
+  const clientPrefixes = new Set(Object.values(clientDirectories).map((directory) => `${directory}/`));
   const toleratedExtras = (path) => LEGACY_CURRENT_EXTRA_FILES.some((pattern) => pattern.test(path));
   const expectedRootPaths = [...defaults.keys()]
     .filter((path) => ![...clientPrefixes].some((prefix) => path.startsWith(prefix)))
@@ -660,8 +608,6 @@ export async function main(
     defaults: artifacts.defaults,
     optionalPacks: artifacts.optionalPacks,
     manifest: artifacts.diagnostics.defaultManifest,
-    onexray: artifacts.onexray,
-    onexrayScripts: artifacts.onexrayScripts,
   });
   process.stdout.write(
     `Edge candidate updated: ${artifacts.diagnostics.defaultManifest.upstream.commit}; ${result.files} files; ${result.manifestHash}\n`,

@@ -42,7 +42,6 @@ test("publishes one hash-closed multi-client current snapshot", async () => {
     anywhere: "anywhere",
     surge: "surge",
     singbox: "sing-box",
-    happ: "happ",
   };
   for (const [client, directory] of Object.entries(clientDirectories)) {
     const hash = rollout.clients[client];
@@ -75,37 +74,6 @@ test("publishes one hash-closed multi-client current snapshot", async () => {
   ]) {
     await access(new URL(path, currentRoot));
   }
-});
-
-test("public OneXray GeoData is promoted to current and kept in edge without previous", async () => {
-  const rollout = JSON.parse(await readFile(new URL("rollout.json", publicRoot), "utf8"));
-  const currentManifest = JSON.parse(await readFile(
-    new URL("current/onexray/geodata/manifest.json", publicRoot),
-    "utf8",
-  ));
-  assert.equal(currentManifest.channel, "current");
-  assert.equal(currentManifest.schema, "apple-proxy-onexray-geodata-v1");
-  assert.equal(currentManifest.manifestHash, rollout.onexray.current);
-  await access(new URL("current/onexray/geodata/geosite.dat", publicRoot));
-  await access(new URL("current/onexray/geodata/geoip.dat", publicRoot));
-  await assert.rejects(
-    () => access(new URL("previous/onexray/geodata/manifest.json", publicRoot)),
-    { code: "ENOENT" },
-  );
-  const edgeManifest = JSON.parse(await readFile(
-    new URL("edge/onexray/geodata/manifest.json", publicRoot),
-    "utf8",
-  ));
-  assert.equal(edgeManifest.channel, "edge");
-  assert.equal(edgeManifest.schema, "apple-proxy-onexray-geodata-v1");
-  assert.equal(edgeManifest.manifestHash, rollout.onexray.edge);
-  await access(new URL("edge/onexray/scripts/onexray-nodes-generator.js", publicRoot));
-  await access(new URL("edge/onexray/scripts/onexray-profile-generator.js", publicRoot));
-  const edgeRoot = JSON.parse(await readFile(new URL("edge/manifest.json", publicRoot), "utf8"));
-  assert.deepEqual(edgeRoot.onexray.scripts.map(({ path }) => path), [
-    "onexray/scripts/onexray-nodes-generator.js",
-    "onexray/scripts/onexray-profile-generator.js",
-  ]);
 });
 
 test("public client entrypoints close over hosted channels and never raw master", async () => {
@@ -152,7 +120,7 @@ test("public client entrypoints close over hosted channels and never raw master"
     const content = await readFile(new URL(path, currentRoot), "utf8");
     assert.doesNotMatch(content, /auto_update:\s*\{\}/u);
   }
-  assert.match(await readFile(new URL("anywhere/import.html", currentRoot), "utf8"), /导入批次 3/u);
+  assert.match(await readFile(new URL("anywhere/import.html", currentRoot), "utf8"), /导入批次 \d+/u);
 
   for (const [canonical, legacy] of [
     ["shadowrocket/scripts/shadowrocket-node-operator.js", "shadowrocket/scripts/substore-node-operator.js"],
@@ -182,7 +150,7 @@ test("publishes an independent lightweight edge candidate beside stable current"
   assert.equal(edge.generatedAt, edge.upstream.committedAt);
   assert.match(edge.upstream.commit, /^[0-9a-f]{40}$/u);
   assert.equal(current.upstream.commit.length, 40);
-  assert.deepEqual(Object.keys(edge.clients).sort(), ["anywhere", "egern", "happ", "shadowrocket", "singbox", "surge"]);
+  assert.deepEqual(Object.keys(edge.clients).sort(), ["anywhere", "egern", "shadowrocket", "singbox", "surge"]);
   assert.ok(edge.clients.singbox.referencedDefaultBytes > 0);
   const surgeGenerator = await readFile(new URL("edge/surge/scripts/surge-profile-generator.js", publicRoot), "utf8");
   assert.match(surgeGenerator, /channel:\s*"edge"/u);

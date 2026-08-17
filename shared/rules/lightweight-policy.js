@@ -1,3 +1,5 @@
+import { SEMANTIC_INTENTS } from "./semantic-intents.js";
+
 export const DEFAULT_RULE_SOURCE_IDS = Object.freeze([
   "Hijacking", "BlockHttpDNS", "Privacy",
   "DomesticCore", "DomesticGame", "SteamCN",
@@ -11,22 +13,13 @@ export const DEFAULT_RULE_SOURCE_IDS = Object.freeze([
 
 // Keep domestic direct routing and security coverage on iOS while avoiding
 // the larger overseas service catalog under NetworkExtension's RSS ceiling.
-export const MOBILE_RULE_BUNDLES = Object.freeze([
-  Object.freeze({ id: "Security", sourceIds: Object.freeze(["Hijacking", "BlockHttpDNS"]), policy: "REJECT", phase: "security", dnsClass: "none" }),
-  Object.freeze({ id: "Privacy", sourceIds: Object.freeze(["Privacy"]), policy: "🕵️ 严格跟踪", phase: "security", dnsClass: "none" }),
-  Object.freeze({ id: "DomesticCore", sourceIds: Object.freeze(["DomesticCore", "DomesticGame", "SteamCN"]), policy: "DIRECT", phase: "earlyDomestic", dnsClass: "china" }),
-  Object.freeze({ id: "DomesticPlatform", sourceIds: Object.freeze(["BiliBili", "ByteDance", "XiaoHongShu", "Weibo"]), policy: "🇨🇳 国内平台", phase: "serviceIntent", dnsClass: "china" }),
-  Object.freeze({ id: "AI", sourceIds: Object.freeze(["OpenAI", "Claude", "Gemini", "Copilot"]), policy: "🤖 AI 专用", phase: "serviceIntent", dnsClass: "proxy" }),
-  Object.freeze({ id: "GitHub", sourceIds: Object.freeze(["GitHub"]), policy: "🐙 GitHub", phase: "serviceIntent", dnsClass: "proxy" }),
-  Object.freeze({ id: "YouTube", sourceIds: Object.freeze(["YouTube"]), policy: "📺 YouTube", phase: "serviceIntent", dnsClass: "proxy" }),
-  Object.freeze({ id: "OverseasMedia", sourceIds: Object.freeze(["Netflix", "Disney", "Spotify", "GlobalMedia"]), policy: "🎬 海外流媒体", phase: "serviceIntent", dnsClass: "proxy" }),
-  Object.freeze({ id: "OverseasSocial", sourceIds: Object.freeze(["Telegram", "Facebook", "Instagram", "Twitter", "TikTok"]), policy: "💬 海外社交", phase: "serviceIntent", dnsClass: "proxy" }),
-  Object.freeze({ id: "Apple", sourceIds: Object.freeze(["Apple"]), policy: "🍎 Apple", phase: "serviceIntent", dnsClass: "china" }),
-  Object.freeze({ id: "Microsoft", sourceIds: Object.freeze(["Microsoft"]), policy: "🪟 Microsoft", phase: "serviceIntent", dnsClass: "china" }),
-  Object.freeze({ id: "Download", sourceIds: Object.freeze(["Download", "PrivateTracker"]), policy: "⬇️ 下载/P2P", phase: "serviceIntent", dnsClass: "china" }),
-  Object.freeze({ id: "OverseasGame", sourceIds: Object.freeze(["OverseasGame"]), policy: "🌍 海外游戏", phase: "overseasGame", dnsClass: "proxy" }),
-  Object.freeze({ id: "ChinaIP", sourceIds: Object.freeze(["ChinaIP"]), policy: "DIRECT", phase: "resolvedChinaIp", dnsClass: "none" }),
-]);
+export const MOBILE_RULE_BUNDLES = Object.freeze(SEMANTIC_INTENTS.map((entry) => Object.freeze({
+  id: entry.ruleId,
+  sourceIds: entry.sourceIds,
+  policy: entry.policy,
+  phase: entry.phase,
+  dnsClass: entry.dnsClass,
+})));
 
 export const MOBILE_RULE_SOURCE_IDS = Object.freeze(MOBILE_RULE_BUNDLES.map(({ id }) => id));
 

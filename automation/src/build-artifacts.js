@@ -1,5 +1,3 @@
-import { readFileSync } from "node:fs";
-
 import { buildAnywhereRuleSnapshot, canonicalJson } from "./render-anywhere-rules.js";
 import { renderEgernRuleSource } from "./render-egern-rules.js";
 import { renderShadowrocketRuleSource } from "./render-shadowrocket-rules.js";
@@ -15,11 +13,10 @@ import {
   RULE_BUDGETS,
   ruleClientCatalog,
 } from "../../shared/rules/lightweight-policy.js";
+import { SEMANTIC_INTENTS } from "../../shared/rules/semantic-intents.js";
 import { RULE_KIND } from "../../shared/rules/model.js";
 import { buildImportBatches, renderImportPage } from "../../clients/anywhere/src/build-import-page.js";
 import { ANYWHERE_LIGHTWEIGHT_MIGRATION } from "../../clients/anywhere/src/shard-rules.js";
-import { buildOneXrayGeoDataArtifacts } from "../../clients/onexray/src/build-import-page.js";
-import { renderHappGeodata } from "./render-happ-geodata.js";
 
 const CLIENT_PATHS = Object.freeze({
   shadowrocket: "shadowrocket",
@@ -27,23 +24,13 @@ const CLIENT_PATHS = Object.freeze({
   egern: "egern",
   singbox: "sing-box",
   anywhere: "anywhere",
-  happ: "happ",
 });
 
 const OPTIONAL_PACK_CLIENTS = Object.freeze({
   "adblock-full": Object.freeze(Object.fromEntries(
-    Object.entries(CLIENT_PATHS).filter(([client]) => client !== "happ"),
+    Object.entries(CLIENT_PATHS),
   )),
 });
-
-const ONEXRAY_SCRIPT_PATHS = Object.freeze([
-  "onexray/scripts/onexray-nodes-generator.js",
-  "onexray/scripts/onexray-profile-generator.js",
-]);
-const HAPP_SCRIPT_PATHS = Object.freeze([
-  "happ/scripts/happ-config-generator.js",
-  "happ/scripts/substore-config-generator.js",
-]);
 
 const SURGE_TYPE = Object.freeze({
   [RULE_KIND.domain]: "DOMAIN",
@@ -70,8 +57,6 @@ const OPTIONAL_AWARE_GENERATOR_PATHS = new Set([
   "surge/scripts/substore-profile-generator.js",
   "sing-box/scripts/sing-box-config-generator.js",
   "sing-box/scripts/substore-config-generator.js",
-  "happ/scripts/happ-config-generator.js",
-  "happ/scripts/substore-config-generator.js",
 ]);
 
 function compiledText(entries) {
@@ -82,16 +67,6 @@ function compiledText(entries) {
   }).join("\n")}\n`;
 }
 
-function happPublicScripts() {
-  const files = new Map();
-  for (const path of HAPP_SCRIPT_PATHS) {
-    const filename = path.slice("happ/scripts/".length);
-    const content = readFileSync(new URL(`../../clients/happ/dist/${filename}`, import.meta.url));
-    if (!Buffer.isBuffer(content) || content.length === 0) throw new Error(`Happ public script is empty: ${path}`);
-    files.set(path, content);
-  }
-  return files;
-}
 
 function renderInput(compiled, upstream) {
   const text = compiledText(compiled.entries);
@@ -123,17 +98,55 @@ function renderInput(compiled, upstream) {
   return Object.freeze({ source, parsed, fetched, upstream });
 }
 
-function onexrayEdgeScripts() {
-  const files = new Map();
-  for (const path of ONEXRAY_SCRIPT_PATHS) {
-    const filename = path.slice("onexray/scripts/".length);
-    const content = readFileSync(new URL(`../../clients/onexray/dist/${filename}`, import.meta.url));
-    if (!Buffer.isBuffer(content) || content.length === 0) {
-      throw new Error(`OneXray edge script is empty: ${path}`);
+function anywhereLogicalRuleSets(compiledCatalog) {
+  const sourceById = new Map(compiledCatalog.map((source) => [source.id, source]));
+  const assigned = new Set();
+  const logical = [];
+  for (const intent of SEMANTIC_INTENTS) {
+    const sourceIds = intent.sourceIds.filter((sourceId) => sourceById.has(sourceId));
+    if (sourceIds.length === 0) continue;
+    const sources = sourceIds.map((sourceId) => sourceById.get(sourceId));
+    const routing = sources[0].routing;
+    if (sources.some((source) => source.routing !== routing)) {
+      throw new Error(`Anywhere semantic intent ${intent.id} mixes routing targets`);
     }
-    files.set(path, content);
+    logical.push(Object.freeze({
+      id: intent.ruleId,
+      sourceIds: Object.freeze(sourceIds),
+      required: true,
+      policy: intent.policy,
+      defaultTarget: intent.defaultTarget,
+      phase: intent.phase,
+      dnsClass: intent.dnsClass,
+      routing,
+    }));
+    for (const sourceId of sourceIds) assigned.add(sourceId);
   }
-  return files;
+  if (sourceById.has("ChinaTLD") && !assigned.has("ChinaTLD")) {
+    const domesticCoreIndex = logical.findIndex(({ id }) => id === "DomesticCore");
+    if (domesticCoreIndex !== -1) {
+      const domesticCore = logical[domesticCoreIndex];
+      logical[domesticCoreIndex] = Object.freeze({
+        ...domesticCore,
+        sourceIds: Object.freeze([...domesticCore.sourceIds, "ChinaTLD"]),
+      });
+      assigned.add("ChinaTLD");
+    }
+  }
+  for (const source of compiledCatalog) {
+    if (assigned.has(source.id)) continue;
+    logical.push(Object.freeze({
+      id: source.id,
+      sourceIds: Object.freeze([source.id]),
+      required: true,
+      policy: source.policy,
+      defaultTarget: source.intendedTarget,
+      phase: source.phase,
+      dnsClass: source.dnsClass,
+      routing: source.routing,
+    }));
+  }
+  return Object.freeze(logical);
 }
 
 function addFiles(target, additions) {
@@ -210,16 +223,11 @@ function renderRuleSetMap({
     }
   }
 
-  const logicalRuleSets = compiledCatalog.map(({ id }) => Object.freeze({
-    id,
-    sourceIds: Object.freeze([id]),
-    required: true,
-  }));
   const anywhere = buildAnywhereRuleSnapshot({
     snapshot: compiledSnapshot,
     catalog: compiledCatalog,
     upstream,
-    logicalRuleSets,
+    logicalRuleSets: anywhereLogicalRuleSets(compiledCatalog),
     pathPrefix: anywherePrefix,
     urlPathPrefix: anywhereUrlPrefix,
     publicBase: anywherePublicBase,
@@ -259,9 +267,7 @@ function compactRuleSetMap(ruleSets) {
 }
 
 function clientRuleRecords(files, client) {
-  const prefixes = client === "happ"
-    ? ["happ/geosite.dat", "happ/geoip.dat"]
-    : client === "anywhere"
+  const prefixes = client === "anywhere"
     ? ["anywhere/rules/"]
     : client === "singbox"
       ? ["sing-box/rules/", "sing-box/rule-sets/", "sing-box/mobile-rule-sets/"]
@@ -406,7 +412,6 @@ export function buildClientArtifacts({
   additionalFiles = null,
   singBoxBinaries = null,
   chinaIpAudit = null,
-  onexrayChannel = "edge",
 }) {
   if (!(snapshot instanceof Map)) throw new TypeError("Complete rule snapshot is required");
   if (singBoxBinaries !== null) {
@@ -437,11 +442,6 @@ export function buildClientArtifacts({
     defaultEntries: [...compactedDefaults.ruleSets.values()]
       .reduce((sum, ruleSet) => sum + ruleSet.entries.length, 0),
   });
-  const onexray = buildOneXrayGeoDataArtifacts({
-    ruleSets: compactedDefaults.ruleSets,
-    upstream,
-    channel: onexrayChannel,
-  });
   const compactedMobile = compactRuleSetMap(compiled.mobileRuleSets);
   const rendered = renderRuleSetMap({
     ruleSets: compactedDefaults.ruleSets,
@@ -450,8 +450,6 @@ export function buildClientArtifacts({
     singBoxBinaries,
   });
   const defaults = rendered.files;
-  addFiles(defaults, renderHappGeodata(compactedDefaults.ruleSets).files);
-  addFiles(defaults, happPublicScripts());
   let chinaIpAuditSha256 = null;
 
   const additions = typeof additionalFiles === "function"
@@ -528,8 +526,6 @@ export function buildClientArtifacts({
   return Object.freeze({
     defaults,
     optionalPacks,
-    onexray: onexray.files,
-    onexrayScripts: onexrayEdgeScripts(),
     diagnostics: Object.freeze({
       defaultRuleIds: Object.freeze([...compiled.defaultRuleSets.keys()]),
       compiler: compiled.diagnostics,
@@ -537,8 +533,6 @@ export function buildClientArtifacts({
       referencedBytes,
       defaultManifest,
       routingPlanAudit,
-      onexrayManifest: onexray.manifest,
-      onexrayChannel: onexray.channel,
       optionalManifests: Object.freeze({ "adblock-full": adblockFull.manifest }),
     }),
   });

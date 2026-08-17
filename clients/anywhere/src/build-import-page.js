@@ -7,6 +7,14 @@ const DNS_CLASSES = new Set(["china", "none", "proxy"]);
 const SOURCE_ID = /^[A-Za-z0-9_]+$/u;
 const SHARD_ID = /^[A-Za-z0-9_-]+$/u;
 
+function canonicalJson(value) {
+  if (Array.isArray(value)) return `[${value.map(canonicalJson).join(",")}]`;
+  if (value && typeof value === "object") {
+    return `{${Object.keys(value).sort().map((key) => `${JSON.stringify(key)}:${canonicalJson(value[key])}`).join(",")}}`;
+  }
+  return JSON.stringify(value);
+}
+
 function validateRuleUrl(value) {
   if (typeof value !== "string" || /[\s\\?#]/u.test(value)) {
     throw new TypeError("Anywhere rule URL must be a canonical string");
@@ -153,7 +161,7 @@ function validatePageMode(mode, manifest) {
       replacements: manifest.replacements,
       optionalPacks: manifest.optionalPacks,
     };
-    if (JSON.stringify(migration) !== JSON.stringify(ANYWHERE_LIGHTWEIGHT_MIGRATION)) {
+    if (canonicalJson(migration) !== canonicalJson(ANYWHERE_LIGHTWEIGHT_MIGRATION)) {
       throw new Error("Anywhere import manifest has an invalid schema-v2 migration");
     }
   }

@@ -1,6 +1,6 @@
 # 维护、编译与发布手册
 
-这份手册回答三个问题：以后增加节点或规则要改哪里、每个文件负责什么、在 macOS/Linux/CI 环境怎样构建和验证。公开仓库不保存节点；你的私密节点来源在 `apple-proxy-all` 总池与六个 client collection 中维护，详细边界见 [Sub-Store 客户端节点池指南](substore-client-pools.md)。旧 `apple-proxy-sources` 只保留作兼容/回滚入口。
+这份手册回答三个问题：以后增加节点或规则要改哪里、每个文件负责什么、在 macOS/Linux/CI 环境怎样构建和验证。公开仓库不保存节点；你的私密节点来源在 `apple-proxy-all` 总池与五个 client collection 中维护，详细边界见 [Sub-Store 客户端节点池指南](substore-client-pools.md)。旧 `apple-proxy-sources` 只保留作兼容/回滚入口。
 
 ## 1. 先判断你要改哪一层
 
@@ -63,18 +63,6 @@ clients/sing-box/
   src/render-platform.js       macOS/移动端 TUN 平台差异
   src/render-rules.js          规则集引用
   scripts/compile-rules.mjs    官方 core `.srs` 编译边界
-
-clients/onexray/
-  src/options.js               OneXray 私有任务参数与默认值
-  src/render-profile.js        Xray 原生 Profile
-  src/profile-link.js          32 KiB deep link 编码与校验
-  src/build-import-page.js     公开 GeoData 安装页
-  docs/                        deployment、troubleshooting、canary
-
-clients/onexray/docs/
-  deployment.md                安装顺序与私有任务参数
-  troubleshooting.md           固定节点故障、诊断与回滚
-  canary.md                    六平台灰度验收清单
 
 clients/*/scripts/
   build.mjs                    用 esbuild 生成 dist

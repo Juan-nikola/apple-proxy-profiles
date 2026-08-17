@@ -1,4 +1,4 @@
-# Sub-Store 六客户端外置 JS + 任务引用总指南
+# Sub-Store 五客户端外置 JS + 任务引用总指南
 
 本指南把公开代码和私密节点分成两层：
 
@@ -7,7 +7,7 @@
 
 “引用”的含义是：Sub-Store 的 File 或 Script Operator 保存一个远程 JS URL；旧版单行模式在 URL 的 `#` 后用 `&` 传参数。不要复制 JavaScript 正文，也不要把私密 API、节点 URL 或输出链接提交到 GitHub。
 
-六个客户端的 collection 名称、用户自行筛选边界、迁移顺序和回滚方法统一见 [Sub-Store 客户端节点池指南](substore-client-pools.md)。
+五个客户端的 collection 名称、用户自行筛选边界、迁移顺序和回滚方法统一见 [Sub-Store 客户端节点池指南](substore-client-pools.md)。
 
 ## 0. 安全边界
 
@@ -21,13 +21,13 @@
 
 本项目不需要 MITM、HTTPS 解密、CA 证书、请求重写或“不验证证书”。`insecure` 永远关闭；`noCache` 生产任务默认关闭，只有隔离测试任务排查缓存时临时打开。
 
-## 1. 先建立总池和六个客户端组合
+## 1. 先建立总池和五个客户端组合
 
 在你自己的 Sub-Store 中：
 
 1. 保留已有来源、旧 collection、tasks 和旧 URL，先分别 preview 确认非空。
 2. 建立用户自己的 `apple-proxy-all` 总池。
-3. 按节点池指南建立六个 client collection，用户自行选择每个客户端要包含的节点；生成器不按客户端能力白名单过滤。
+3. 按节点池指南建立五个 client collection，用户自行选择每个客户端要包含的节点；生成器不按客户端能力白名单过滤。
 4. 逐个 preview 并记录计数，再一次只迁移一个客户端的 `name=`。
 
 新任务不再让六个客户端直接共享一个 collection。旧 `apple-proxy-sources` 继续保留作兼容/回滚入口，不要删除。
@@ -98,11 +98,7 @@ https://juan-nikola.github.io/apple-proxy-profiles/current/surge/scripts/surge-p
 | 14 | `singbox-config-iphone` | File | sing-box config | iPhone | 每天 |
 | 15 | `singbox-config-ipad` | File | sing-box config | iPad | 每天 |
 | 16 | `singbox-config-android` | File | sing-box config | Android | 每天 |
-| 17 | `onexray-nodes` | File | 私有托管 OneXray node | 节点订阅 | 6 小时 |
-| 18 | `onexray-profile` | File | 私有托管 OneXray Profile | Profile deep link | 每天 |
-| 19 | `onexray-routing-audit` | File | 私有托管 OneXray audit | 脱敏审计 | 每天 |
-
-客户端总数为 4+1+3+4+4+3=19 个任务。
+客户端总数为 4+1+3+4+4=16 个任务。
 
 ## 5. Egern：1 个节点 File + 3 个 Profile File
 
@@ -234,38 +230,7 @@ https://juan-nikola.github.io/apple-proxy-profiles/current/surge/scripts/surge-p
 
 预览应是合法 Surge INI，包含 `[General]`、`[Proxy]`、`[Proxy Group]` 和 `[Rule]`。`[Proxy]` 只保留注释，隐藏组 `📦 远程节点池` 通过 `policy-path=<SURGE_NODES_URL>` 加载节点；Intel Mac 与 Apple Silicon Mac 都使用 `platform=macos`，不要把 Mac 配置导入移动端。
 
-## 9. OneXray：3 个私有任务
-
-OneXray 的两个 bundle 已随 edge 发布到 Pages，只存在于 `edge/onexray/scripts/`；current 与 previous 不发布脚本。直接使用下面的 edge URL 创建任务。
-
-节点任务：
-
-```text
-https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-nodes-generator.js?v=10#output=nodes&type=collection&name=apple-proxy-onexray&channel=edge&clientChain=off
-```
-
-Profile 与审计共用同一个生成器，只改 `output`：
-
-```text
-https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-profile-generator.js?v=10#output=profile&type=collection&name=apple-proxy-onexray&channel=edge&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&clientChain=off&policyFile=onexray-policy&logLevel=info&dnsLog=on
-https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/scripts/onexray-profile-generator.js?v=10#output=audit&type=collection&name=apple-proxy-onexray&channel=edge&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&clientChain=off&policyFile=onexray-policy&logLevel=info&dnsLog=on
-```
-
-| 任务 | 输出 | 平台/作用 | 更新 |
-| --- | --- | --- | --- |
-| `onexray-nodes` | nodes | OneXray 节点订阅 | 6 小时 |
-| `onexray-profile` | profile | 版本化 Profile deep link | 每天 |
-| `onexray-routing-audit` | audit | 脱敏路由审计 | 按需 |
-
-OneXray 的 `apple-proxy-onexray` 由用户自行选择节点，生成器不自动排除协议。原生 Profile 无法表示的已选协议会跳过并计入 `renderFailures`，只有没有任何可渲染节点时才失败；查看审计或 preview 日志后再回到 collection 修正筛选。
-
-`v=10` 是本次内存修复后的 Sub-Store 脚本缓存版本号；脚本内容更新后把三个任务 URL 里的 `v=` 数字 +1 并重新保存。固定业务推荐用 `&policyFile=onexray-policy` 引用 Sub-Store 内的可读策略文件，也可继续用 `&policyOverrides=<Base64URL>`，两者不能同时使用。`logLevel` 可输入 `none`、`error`、`warning`、`info`、`debug`，默认 `warning`；`dnsLog` 可输入 `on`、`off`，默认 `off`，示例开启以便查看域名。
-
-`onexray-policy` 是 Sub-Store 里的一个本地文件，内容为可读 JSON（业务名可用中文），每个分组可写 `FOLLOW`（跟随主节点）、`DIRECT`（直连）或 `NODE:<精确节点名>`（固定节点）。以后要加入自定义分流规则，修改仓库 `shared/rules/custom-rules.js` 并按 README 的发布流程执行。
-
-Profile 名会插入 8 位内容哈希版本号；同一通道必须使用同一通道的 GeoData。完整安装顺序、Rule 模式、固定节点快照和回滚说明见 `clients/onexray/docs/deployment.md` 与 `clients/onexray/docs/troubleshooting.md`。
-
-## 10. sing-box：4 个 Config File
+## 9. sing-box：4 个 Config File
 
 脚本：
 

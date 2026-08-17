@@ -24,15 +24,15 @@
     {
       "bytes": 5425,
       "path": "optional/adblock-full/anywhere/import.html",
-      "sha256": "675da8d26812e8ec0b4b4479eac5a020d65e7fd17702dea2038e9c3a1b0d3107"
+      "sha256": "c3513aad38eb5225a09986fbf937d4fed270dfb19a25faa0cfcaf0a9761bfe3c"
     },
     {
-      "bytes": 6050,
+      "bytes": 7933,
       "path": "optional/adblock-full/anywhere/manifest.json",
-      "sha256": "ac99895076116d87ee1af22c2656ea785ea03dc34bf87ab2d8158945ab57b64c"
+      "sha256": "b622808a068a164e3f03f3da1c52b3d7d1ebf19bc032a977c2a081bc99468902"
     }
   ],
   "generatedAt": "2026-08-15T18:26:29Z",
-  "manifestHash": "a7275c67c64e2b759f311626eccac4ffb03eddfe9fb22c1c2adc5a9356ed21b1",
+  "manifestHash": "e3bb406f23c8a832d429c2a6dfbb760209a599935999a68424f36b11b5fccb58",
   "schemaVersion": 1
 }

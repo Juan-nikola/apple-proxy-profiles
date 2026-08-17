@@ -29,9 +29,7 @@ var EgernProfileBundle = (() => {
     egern: "egern",
     anywhere: "anywhere",
     surge: "surge",
-    singbox: "singbox",
-    onexray: "onexray",
-    happ: "happ"
+    singbox: "singbox"
   });
   var OPTION_VALUES = Object.freeze({
     output: Object.freeze(["nodes", "config"]),
@@ -634,19 +632,11 @@ var EgernProfileBundle = (() => {
   var SERVICE_GROUPS = Object.freeze([
     Object.freeze(["\u{1F419} GitHub", PROXY_FIRST_SERVICE_DEFAULTS]),
     Object.freeze(["\u{1F4FA} YouTube", PROXY_FIRST_SERVICE_DEFAULTS]),
-    Object.freeze(["\u{1F3AC} Netflix", PROXY_FIRST_SERVICE_DEFAULTS]),
-    Object.freeze(["\u{1F3F0} Disney+", PROXY_FIRST_SERVICE_DEFAULTS]),
-    Object.freeze(["\u{1F3B5} Spotify", PROXY_FIRST_SERVICE_DEFAULTS]),
-    Object.freeze(["\u{1F30D} \u56FD\u9645\u5A92\u4F53", PROXY_FIRST_SERVICE_DEFAULTS]),
-    Object.freeze(["\u2708\uFE0F Telegram", PROXY_FIRST_SERVICE_DEFAULTS]),
+    Object.freeze(["\u{1F3AC} \u6D77\u5916\u6D41\u5A92\u4F53", PROXY_FIRST_SERVICE_DEFAULTS]),
     Object.freeze(["\u{1F4AC} \u6D77\u5916\u793E\u4EA4", PROXY_FIRST_SERVICE_DEFAULTS]),
-    Object.freeze(["\u{1F3B6} TikTok", PROXY_FIRST_SERVICE_DEFAULTS]),
     Object.freeze(["\u{1F34E} Apple", DIRECT_FIRST_SERVICE_DEFAULTS]),
     Object.freeze(["\u{1FA9F} Microsoft", DIRECT_FIRST_SERVICE_DEFAULTS]),
-    Object.freeze(["\u{1F4FA} \u54D4\u54E9\u54D4\u54E9", DIRECT_FIRST_SERVICE_DEFAULTS]),
-    Object.freeze(["\u{1F3B5} \u6296\u97F3", DIRECT_FIRST_SERVICE_DEFAULTS]),
-    Object.freeze(["\u{1F4D5} \u5C0F\u7EA2\u4E66", DIRECT_FIRST_SERVICE_DEFAULTS]),
-    Object.freeze(["\u{1F9E3} \u5FAE\u535A", DIRECT_FIRST_SERVICE_DEFAULTS]),
+    Object.freeze(["\u{1F1E8}\u{1F1F3} \u56FD\u5185\u5E73\u53F0", DIRECT_FIRST_SERVICE_DEFAULTS]),
     Object.freeze(["\u{1F30D} \u6D77\u5916\u6E38\u620F", PROXY_FIRST_SERVICE_DEFAULTS])
   ]);
   function policyGroup({
@@ -683,18 +673,14 @@ var EgernProfileBundle = (() => {
   function automaticHelperName(continent) {
     return `\u26A1 ${continent.helperName}\u81EA\u52A8`;
   }
-  function fallbackHelperName(continent) {
-    return `\u{1F6DF} ${continent.helperName}\u6545\u969C\u8F6C\u79FB`;
-  }
   function continentHelperItems(continent, mode) {
-    if (mode === "full") return [automaticHelperName(continent), fallbackHelperName(continent)];
+    void mode;
     return [automaticHelperName(continent)];
   }
   function serviceChoiceItems(defaults, presentContinentNames) {
     return [
       ...defaults.beforeCandidates,
       "\u26A1 \u5168\u90E8\u81EA\u52A8",
-      "\u{1F6DF} \u5168\u90E8\u6545\u969C\u8F6C\u79FB",
       ...presentContinentNames,
       ...defaults.afterCandidates
     ];
@@ -727,37 +713,27 @@ var EgernProfileBundle = (() => {
     const mode = effectiveAutoMode(options.autoGroupMode, normalizedNodes.length);
     const presentContinents = CONTINENTS.filter((continent) => normalizedNodes.some((node) => nodeMetadata(node).continent === continent.key && !nodeMetadata(node).chained));
     const chainEligible = options.clientChain === "on" && normalizedNodes.some((node) => nodeMetadata(node).entry === true && !nodeMetadata(node).chained) && normalizedNodes.some((node) => nodeMetadata(node).chained === true);
-    const groups = [
-      helper(GROUP_KIND.helper, "\u26A1 \u5168\u90E8\u81EA\u52A8", STRATEGY.autoTest, preset, NON_CHAINED_FILTER),
-      helper(GROUP_KIND.helper, "\u{1F6DF} \u5168\u90E8\u6545\u969C\u8F6C\u79FB", STRATEGY.fallback, preset, NON_CHAINED_FILTER)
+    const helpers = [
+      helper(GROUP_KIND.helper, "\u26A1 \u5168\u90E8\u81EA\u52A8", STRATEGY.autoTest, preset, NON_CHAINED_FILTER)
     ];
     if (chainEligible) {
-      groups.push(helper(GROUP_KIND.chain, "\u26A1 \u5165\u53E3\u81EA\u52A8", STRATEGY.autoTest, preset, ENTRY_FILTER));
+      helpers.push(helper(GROUP_KIND.chain, "\u26A1 \u5165\u53E3\u81EA\u52A8", STRATEGY.autoTest, preset, ENTRY_FILTER));
     }
     for (const continent of presentContinents) {
-      groups.push(helper(
+      helpers.push(helper(
         GROUP_KIND.helper,
         automaticHelperName(continent),
         STRATEGY.autoTest,
         preset,
         continentFilter(continent)
       ));
-      if (mode === "full") {
-        groups.push(helper(
-          GROUP_KIND.helper,
-          fallbackHelperName(continent),
-          STRATEGY.fallback,
-          preset,
-          continentFilter(continent)
-        ));
-      }
     }
+    const groups = [];
     groups.push(policyGroup({
       kind: GROUP_KIND.primary,
       name: "\u{1F680} \u8282\u70B9\u9009\u62E9",
       candidates: [
         "\u26A1 \u5168\u90E8\u81EA\u52A8",
-        "\u{1F6DF} \u5168\u90E8\u6545\u969C\u8F6C\u79FB",
         ...presentContinents.map((continent) => continent.name)
       ]
     }));
@@ -768,11 +744,6 @@ var EgernProfileBundle = (() => {
         candidates: continentHelperItems(continent, mode),
         nodeFilter: continentFilter(continent)
       }));
-    }
-    for (const source of SOURCE_GROUPS) {
-      if (normalizedNodes.some((node) => nodeMetadata(node).sourceKind === source.kind && !nodeMetadata(node).chained)) {
-        groups.push(subscriptionGroup(GROUP_KIND.source, source.name, source.filter));
-      }
     }
     if (chainEligible) {
       groups.push(subscriptionGroup(GROUP_KIND.chain, "\u{1F3AF} \u5BA2\u6237\u7AEF\u843D\u5730", "^\u{1F517} .+$"));
@@ -812,7 +783,7 @@ var EgernProfileBundle = (() => {
     if (chainEligible) {
       groups.push(subscriptionGroup(GROUP_KIND.chain, "\u{1F517} \u5165\u53E3\u8282\u70B9", ENTRY_FILTER, ["\u26A1 \u5165\u53E3\u81EA\u52A8"]));
     }
-    return groups;
+    return [...groups, ...helpers];
   }
 
   // ../../../shared/policies/intents.js
@@ -864,6 +835,37 @@ var EgernProfileBundle = (() => {
     return provider(GLOBAL_DNS_PROVIDERS, id, "global");
   }
 
+  // ../../../shared/rules/semantic-intents.js
+  var intent = ({ id, ruleId, label, sourceIds, policy, defaultTarget, phase, dnsClass }) => Object.freeze({
+    id,
+    ruleId,
+    label,
+    sourceIds: Object.freeze([...sourceIds]),
+    policy,
+    defaultTarget,
+    phase,
+    dnsClass
+  });
+  var SEMANTIC_INTENTS = Object.freeze([
+    intent({ id: "security", ruleId: "Security", label: "\u5B89\u5168\u62E6\u622A", sourceIds: ["Hijacking", "BlockHttpDNS"], policy: "REJECT", defaultTarget: "REJECT", phase: "security", dnsClass: "none" }),
+    intent({ id: "privacy", ruleId: "Privacy", label: "\u{1F575}\uFE0F \u4E25\u683C\u8DDF\u8E2A", sourceIds: ["Privacy"], policy: "\u{1F575}\uFE0F \u4E25\u683C\u8DDF\u8E2A", defaultTarget: "DIRECT", phase: "security", dnsClass: "none" }),
+    intent({ id: "domesticCore", ruleId: "DomesticCore", label: "\u56FD\u5185\u6838\u5FC3", sourceIds: ["DomesticCore", "DomesticGame", "SteamCN"], policy: "DIRECT", defaultTarget: "DIRECT", phase: "earlyDomestic", dnsClass: "china" }),
+    intent({ id: "domesticPlatform", ruleId: "DomesticPlatform", label: "\u{1F1E8}\u{1F1F3} \u56FD\u5185\u5E73\u53F0", sourceIds: ["BiliBili", "ByteDance", "XiaoHongShu", "Weibo"], policy: "\u{1F1E8}\u{1F1F3} \u56FD\u5185\u5E73\u53F0", defaultTarget: "DIRECT", phase: "serviceIntent", dnsClass: "china" }),
+    intent({ id: "ai", ruleId: "AI", label: "\u{1F916} AI \u4E13\u7528", sourceIds: ["OpenAI", "Claude", "Gemini", "Copilot"], policy: "\u{1F916} AI \u4E13\u7528", defaultTarget: "FOLLOW", phase: "serviceIntent", dnsClass: "proxy" }),
+    intent({ id: "github", ruleId: "GitHub", label: "\u{1F419} GitHub", sourceIds: ["GitHub"], policy: "\u{1F419} GitHub", defaultTarget: "FOLLOW", phase: "serviceIntent", dnsClass: "proxy" }),
+    intent({ id: "youtube", ruleId: "YouTube", label: "\u{1F4FA} YouTube", sourceIds: ["YouTube"], policy: "\u{1F4FA} YouTube", defaultTarget: "FOLLOW", phase: "serviceIntent", dnsClass: "proxy" }),
+    intent({ id: "overseasMedia", ruleId: "OverseasMedia", label: "\u{1F3AC} \u6D77\u5916\u6D41\u5A92\u4F53", sourceIds: ["Netflix", "Disney", "Spotify", "GlobalMedia"], policy: "\u{1F3AC} \u6D77\u5916\u6D41\u5A92\u4F53", defaultTarget: "FOLLOW", phase: "serviceIntent", dnsClass: "proxy" }),
+    intent({ id: "globalSocial", ruleId: "OverseasSocial", label: "\u{1F4AC} \u6D77\u5916\u793E\u4EA4", sourceIds: ["Telegram", "Facebook", "Instagram", "Twitter", "TikTok"], policy: "\u{1F4AC} \u6D77\u5916\u793E\u4EA4", defaultTarget: "FOLLOW", phase: "serviceIntent", dnsClass: "proxy" }),
+    intent({ id: "apple", ruleId: "Apple", label: "\u{1F34E} Apple", sourceIds: ["Apple"], policy: "\u{1F34E} Apple", defaultTarget: "DIRECT", phase: "serviceIntent", dnsClass: "china" }),
+    intent({ id: "microsoft", ruleId: "Microsoft", label: "\u{1FA9F} Microsoft", sourceIds: ["Microsoft"], policy: "\u{1FA9F} Microsoft", defaultTarget: "DIRECT", phase: "serviceIntent", dnsClass: "china" }),
+    intent({ id: "download", ruleId: "Download", label: "\u2B07\uFE0F \u4E0B\u8F7D/P2P", sourceIds: ["Download", "PrivateTracker"], policy: "\u2B07\uFE0F \u4E0B\u8F7D/P2P", defaultTarget: "DIRECT", phase: "serviceIntent", dnsClass: "china" }),
+    intent({ id: "overseasGame", ruleId: "OverseasGame", label: "\u{1F30D} \u6D77\u5916\u6E38\u620F", sourceIds: ["OverseasGame"], policy: "\u{1F30D} \u6D77\u5916\u6E38\u620F", defaultTarget: "FOLLOW", phase: "overseasGame", dnsClass: "proxy" }),
+    intent({ id: "chinaIp", ruleId: "ChinaIP", label: "\u4E2D\u56FD IP", sourceIds: ["ChinaIP"], policy: "DIRECT", defaultTarget: "DIRECT", phase: "resolvedChinaIp", dnsClass: "none" })
+  ]);
+  var SOURCE_TO_INTENT = new Map(
+    SEMANTIC_INTENTS.flatMap((entry) => entry.sourceIds.map((sourceId) => [sourceId, entry]))
+  );
+
   // ../../../shared/rules/lightweight-policy.js
   var DEFAULT_RULE_SOURCE_IDS = Object.freeze([
     "Hijacking",
@@ -899,22 +901,14 @@ var EgernProfileBundle = (() => {
     "ChinaTLD",
     "ChinaIP"
   ]);
-  var MOBILE_RULE_SOURCE_IDS = Object.freeze([
-    "Hijacking",
-    "BlockHttpDNS",
-    "Privacy",
-    "DomesticCore",
-    "DomesticGame",
-    "SteamCN",
-    "BiliBili",
-    "ByteDance",
-    "XiaoHongShu",
-    "Weibo",
-    "Apple",
-    "Microsoft",
-    "ChinaTLD",
-    "ChinaIP"
-  ]);
+  var MOBILE_RULE_BUNDLES = Object.freeze(SEMANTIC_INTENTS.map((entry) => Object.freeze({
+    id: entry.ruleId,
+    sourceIds: entry.sourceIds,
+    policy: entry.policy,
+    phase: entry.phase,
+    dnsClass: entry.dnsClass
+  })));
+  var MOBILE_RULE_SOURCE_IDS = Object.freeze(MOBILE_RULE_BUNDLES.map(({ id }) => id));
   var FULL_ADBLOCK_SOURCE_IDS = Object.freeze([
     "Advertising",
     "Advertising_Domain"
@@ -1031,6 +1025,9 @@ var EgernProfileBundle = (() => {
     direct: "DIRECT",
     defaultProxy: "\u{1F680} \u8282\u70B9\u9009\u62E9",
     overseasGame: "\u{1F30D} \u6D77\u5916\u6E38\u620F",
+    overseasMedia: "\u{1F3AC} \u6D77\u5916\u6D41\u5A92\u4F53",
+    overseasSocial: "\u{1F4AC} \u6D77\u5916\u793E\u4EA4",
+    domesticPlatform: "\u{1F1E8}\u{1F1F3} \u56FD\u5185\u5E73\u53F0",
     reject: "REJECT"
   });
   var SOURCE_POLICIES = Object.freeze({
@@ -1039,25 +1036,25 @@ var EgernProfileBundle = (() => {
     Privacy: "\u{1F575}\uFE0F \u4E25\u683C\u8DDF\u8E2A",
     DomesticCore: POLICY_TARGETS.direct,
     DomesticGame: POLICY_TARGETS.direct,
-    BiliBili: "\u{1F4FA} \u54D4\u54E9\u54D4\u54E9",
-    ByteDance: "\u{1F3B5} \u6296\u97F3",
-    XiaoHongShu: "\u{1F4D5} \u5C0F\u7EA2\u4E66",
-    Weibo: "\u{1F9E3} \u5FAE\u535A",
+    BiliBili: POLICY_TARGETS.domesticPlatform,
+    ByteDance: POLICY_TARGETS.domesticPlatform,
+    XiaoHongShu: POLICY_TARGETS.domesticPlatform,
+    Weibo: POLICY_TARGETS.domesticPlatform,
     OpenAI: "\u{1F916} AI \u4E13\u7528",
     Claude: "\u{1F916} AI \u4E13\u7528",
     Gemini: "\u{1F916} AI \u4E13\u7528",
     Copilot: "\u{1F916} AI \u4E13\u7528",
     GitHub: "\u{1F419} GitHub",
     YouTube: "\u{1F4FA} YouTube",
-    Netflix: "\u{1F3AC} Netflix",
-    Disney: "\u{1F3F0} Disney+",
-    Spotify: "\u{1F3B5} Spotify",
-    GlobalMedia: "\u{1F30D} \u56FD\u9645\u5A92\u4F53",
-    Telegram: "\u2708\uFE0F Telegram",
-    Facebook: "\u{1F4AC} \u6D77\u5916\u793E\u4EA4",
-    Instagram: "\u{1F4AC} \u6D77\u5916\u793E\u4EA4",
-    Twitter: "\u{1F4AC} \u6D77\u5916\u793E\u4EA4",
-    TikTok: "\u{1F3B6} TikTok",
+    Netflix: POLICY_TARGETS.overseasMedia,
+    Disney: POLICY_TARGETS.overseasMedia,
+    Spotify: POLICY_TARGETS.overseasMedia,
+    GlobalMedia: POLICY_TARGETS.overseasMedia,
+    Telegram: POLICY_TARGETS.overseasSocial,
+    Facebook: POLICY_TARGETS.overseasSocial,
+    Instagram: POLICY_TARGETS.overseasSocial,
+    Twitter: POLICY_TARGETS.overseasSocial,
+    TikTok: POLICY_TARGETS.overseasSocial,
     Apple: "\u{1F34E} Apple",
     Microsoft: "\u{1FA9F} Microsoft",
     SteamCN: POLICY_TARGETS.direct,
@@ -1093,6 +1090,13 @@ var EgernProfileBundle = (() => {
   }
   var DEFAULT_RULE_CLIENT_CATALOG = Object.freeze(DEFAULT_RULE_SOURCE_IDS.map(clientRecord));
   var FULL_ADBLOCK_RULE_CLIENT_CATALOG = Object.freeze(FULL_ADBLOCK_SOURCE_IDS.map(clientRecord));
+  var MOBILE_RULE_CLIENT_CATALOG = Object.freeze(MOBILE_RULE_BUNDLES.map((bundle) => Object.freeze({
+    id: bundle.id,
+    policy: bundle.policy,
+    inputFormat: "RULE-SET",
+    phase: bundle.phase,
+    dnsClass: bundle.dnsClass
+  })));
   function ruleClientCatalog({ adblockMode = "off" } = {}) {
     if (adblockMode !== "off" && adblockMode !== "full") {
       throw new TypeError("adblockMode must be either off or full");
@@ -1337,7 +1341,6 @@ var EgernProfileBundle = (() => {
   }
   var REQUIRED_POLICY_GROUP_NAMES = Object.freeze([
     "\u26A1 \u5168\u90E8\u81EA\u52A8",
-    "\u{1F6DF} \u5168\u90E8\u6545\u969C\u8F6C\u79FB",
     "\u{1F680} \u8282\u70B9\u9009\u62E9",
     "\u{1F916} AI \u4E13\u7528",
     ...SERVICE_GROUPS.map(([name]) => name),
@@ -1350,20 +1353,14 @@ var EgernProfileBundle = (() => {
   ]);
   var POLICY_SCHEMA_ENTRIES = [
     ["\u26A1 \u5168\u90E8\u81EA\u52A8", policySchema(GROUP_KIND.helper, STRATEGY.autoTest, [NON_CHAINED_FILTER], { hidden: true })],
-    ["\u{1F6DF} \u5168\u90E8\u6545\u969C\u8F6C\u79FB", policySchema(GROUP_KIND.helper, STRATEGY.fallback, [NON_CHAINED_FILTER], { hidden: true })],
     ["\u{1F680} \u8282\u70B9\u9009\u62E9", policySchema(GROUP_KIND.primary, STRATEGY.select, [null])],
     ...CONTINENTS.flatMap((continent) => {
       const filter = continentFilter(continent);
       return [
         [continent.name, policySchema(GROUP_KIND.continent, STRATEGY.select, [filter])],
-        [automaticHelperName(continent), policySchema(GROUP_KIND.helper, STRATEGY.autoTest, [filter], { hidden: true })],
-        [fallbackHelperName(continent), policySchema(GROUP_KIND.helper, STRATEGY.fallback, [filter], { hidden: true })]
+        [automaticHelperName(continent), policySchema(GROUP_KIND.helper, STRATEGY.autoTest, [filter], { hidden: true })]
       ];
     }),
-    ...SOURCE_GROUPS.map((source) => [
-      source.name,
-      policySchema(GROUP_KIND.source, STRATEGY.select, [source.filter])
-    ]),
     ["\u{1F916} AI \u4E13\u7528", policySchema(GROUP_KIND.ai, STRATEGY.select, [ALL_NODES_FILTER])],
     ...SERVICE_GROUPS.map(([name, defaults]) => [
       name,
@@ -1384,8 +1381,7 @@ var EgernProfileBundle = (() => {
   var CONTINENT_FAMILIES = Object.freeze(CONTINENTS.map((continent) => Object.freeze({
     key: continent.key,
     selector: continent.name,
-    automatic: automaticHelperName(continent),
-    fallback: fallbackHelperName(continent)
+    automatic: automaticHelperName(continent)
   })));
   var CHAIN_NAMES = Object.freeze(["\u26A1 \u5165\u53E3\u81EA\u52A8", "\u{1F3AF} \u5BA2\u6237\u7AEF\u843D\u5730", "\u{1F517} \u5165\u53E3\u8282\u70B9"]);
   function syntheticNode(index, continent, sourceKind = SOURCE_KIND.unknown, flag) {
@@ -1406,21 +1402,15 @@ var EgernProfileBundle = (() => {
     const names = new Set(groups.map((group) => group.name));
     const groupsByName = new Map(groups.map((group) => [group.name, group]));
     const presentContinents = CONTINENT_FAMILIES.filter((family) => names.has(family.selector));
-    const presentSources = SOURCE_GROUPS.filter((source) => names.has(source.name));
     const game = groups.find((group) => group.name === "\u{1F3AE} \u6E38\u620F\u8FDE\u63A5");
     const p2p = groups.find((group) => group.name === "\u2B07\uFE0F \u4E0B\u8F7D/P2P");
     const chainEnabled = CHAIN_NAMES.every((name) => names.has(name));
-    const needsNonChainedNode = presentSources.length > 0 || game?.nodeFilter === GAME_FILTER || p2p?.nodeFilter === P2P_FILTER || chainEnabled;
+    const needsNonChainedNode = game?.nodeFilter === GAME_FILTER || p2p?.nodeFilter === P2P_FILTER || chainEnabled;
     if (presentContinents.length === 0 && needsNonChainedNode) return null;
     const nodes = [];
     for (const family of presentContinents) {
       if (groupsByName.get(family.selector)?.nodeFilter !== continentFilter(family)) return null;
       nodes.push(syntheticNode(nodes.length, family.key, SOURCE_KIND.unknown, "\u{1F310}"));
-    }
-    const sourceContinent = presentContinents[0]?.key;
-    const sourceFlag = nodes.find((node) => node._profile.continent === sourceContinent)?._profile.flag;
-    for (const source of presentSources) {
-      nodes.push(syntheticNode(nodes.length, sourceContinent, source.kind, sourceFlag));
     }
     if (nodes.length > 0) {
       nodes[0]._profile.udp = game?.nodeFilter === GAME_FILTER;
@@ -1718,8 +1708,7 @@ var EgernProfileBundle = (() => {
     for (const family of POLICY_GROUP_SCHEMA.continentFamilies) {
       const selectorPresent = names.has(family.selector);
       const automaticPresent = names.has(family.automatic);
-      const fallbackPresent = names.has(family.fallback);
-      if (!selectorPresent && (automaticPresent || fallbackPresent) || fallbackPresent && !automaticPresent) {
+      if (!selectorPresent && automaticPresent || selectorPresent && !automaticPresent) {
         throw graphError("contains an incomplete conditional continent family");
       }
     }
@@ -2101,9 +2090,8 @@ var EgernProfileBundle = (() => {
     });
   }
   var definitions = Object.freeze([
-    protocol(["ss", "shadowsocks"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.onexray, CLIENT.happ], {
-      requiredFields: ["cipher", "password"],
-      clientNames: { [CLIENT.onexray]: ["ss"] }
+    protocol(["ss", "shadowsocks"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox], {
+      requiredFields: ["cipher", "password"]
     }),
     protocol(["ssr"], [CLIENT.shadowrocket, CLIENT.surge], {
       requiredFields: ["cipher", "password", "protocol", "obfs"]
@@ -2111,13 +2099,13 @@ var EgernProfileBundle = (() => {
     protocol(["snell"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox], {
       requiredFields: ["psk", "version"]
     }),
-    protocol(["vmess"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox, CLIENT.onexray, CLIENT.happ], {
+    protocol(["vmess"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox], {
       requiredFields: ["uuid"]
     }),
-    protocol(["vless"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.singbox, CLIENT.onexray, CLIENT.happ], {
+    protocol(["vless"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.singbox], {
       requiredFields: ["uuid"]
     }),
-    protocol(["trojan"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.onexray, CLIENT.happ], {
+    protocol(["trojan"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox], {
       requiredFields: ["password"],
       tls: true
     }),
@@ -2125,17 +2113,16 @@ var EgernProfileBundle = (() => {
       requiredFields: ["password"],
       tls: true
     }),
-    protocol(["hysteria2", "hy2"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.onexray, CLIENT.happ], {
+    protocol(["hysteria2", "hy2"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox], {
       requiredFields: ["password"],
-      tls: true,
-      clientNames: { [CLIENT.onexray]: ["hysteria2"] }
+      tls: true
     }),
     protocol(["tuic"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox], {
       requiredFields: ["uuid", "password"],
       tls: true
     }),
-    protocol(["socks5"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.onexray, CLIENT.happ]),
-    protocol(["http"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox, CLIENT.onexray]),
+    protocol(["socks5"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox]),
+    protocol(["http"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox]),
     protocol(["ssh"], [CLIENT.egern, CLIENT.singbox], {
       requiredFields: ["username"]
     }),

@@ -51,9 +51,7 @@ var ShadowrocketProfileBundle = (() => {
     egern: "egern",
     anywhere: "anywhere",
     surge: "surge",
-    singbox: "singbox",
-    onexray: "onexray",
-    happ: "happ"
+    singbox: "singbox"
   });
   var OPTION_VALUES = Object.freeze({
     output: Object.freeze(["nodes", "config"]),
@@ -203,9 +201,8 @@ var ShadowrocketProfileBundle = (() => {
     });
   }
   var definitions = Object.freeze([
-    protocol(["ss", "shadowsocks"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.onexray, CLIENT.happ], {
-      requiredFields: ["cipher", "password"],
-      clientNames: { [CLIENT.onexray]: ["ss"] }
+    protocol(["ss", "shadowsocks"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox], {
+      requiredFields: ["cipher", "password"]
     }),
     protocol(["ssr"], [CLIENT.shadowrocket, CLIENT.surge], {
       requiredFields: ["cipher", "password", "protocol", "obfs"]
@@ -213,13 +210,13 @@ var ShadowrocketProfileBundle = (() => {
     protocol(["snell"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox], {
       requiredFields: ["psk", "version"]
     }),
-    protocol(["vmess"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox, CLIENT.onexray, CLIENT.happ], {
+    protocol(["vmess"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox], {
       requiredFields: ["uuid"]
     }),
-    protocol(["vless"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.singbox, CLIENT.onexray, CLIENT.happ], {
+    protocol(["vless"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.singbox], {
       requiredFields: ["uuid"]
     }),
-    protocol(["trojan"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.onexray, CLIENT.happ], {
+    protocol(["trojan"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox], {
       requiredFields: ["password"],
       tls: true
     }),
@@ -227,17 +224,16 @@ var ShadowrocketProfileBundle = (() => {
       requiredFields: ["password"],
       tls: true
     }),
-    protocol(["hysteria2", "hy2"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.onexray, CLIENT.happ], {
+    protocol(["hysteria2", "hy2"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox], {
       requiredFields: ["password"],
-      tls: true,
-      clientNames: { [CLIENT.onexray]: ["hysteria2"] }
+      tls: true
     }),
     protocol(["tuic"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox], {
       requiredFields: ["uuid", "password"],
       tls: true
     }),
-    protocol(["socks5"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.onexray, CLIENT.happ]),
-    protocol(["http"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox, CLIENT.onexray]),
+    protocol(["socks5"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox]),
+    protocol(["http"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox]),
     protocol(["ssh"], [CLIENT.egern, CLIENT.singbox], {
       requiredFields: ["username"]
     }),
@@ -1403,6 +1399,37 @@ var ShadowrocketProfileBundle = (() => {
     });
   }
 
+  // ../../../shared/rules/semantic-intents.js
+  var intent = ({ id, ruleId, label, sourceIds, policy, defaultTarget, phase, dnsClass }) => Object.freeze({
+    id,
+    ruleId,
+    label,
+    sourceIds: Object.freeze([...sourceIds]),
+    policy,
+    defaultTarget,
+    phase,
+    dnsClass
+  });
+  var SEMANTIC_INTENTS = Object.freeze([
+    intent({ id: "security", ruleId: "Security", label: "\u5B89\u5168\u62E6\u622A", sourceIds: ["Hijacking", "BlockHttpDNS"], policy: "REJECT", defaultTarget: "REJECT", phase: "security", dnsClass: "none" }),
+    intent({ id: "privacy", ruleId: "Privacy", label: "\u{1F575}\uFE0F \u4E25\u683C\u8DDF\u8E2A", sourceIds: ["Privacy"], policy: "\u{1F575}\uFE0F \u4E25\u683C\u8DDF\u8E2A", defaultTarget: "DIRECT", phase: "security", dnsClass: "none" }),
+    intent({ id: "domesticCore", ruleId: "DomesticCore", label: "\u56FD\u5185\u6838\u5FC3", sourceIds: ["DomesticCore", "DomesticGame", "SteamCN"], policy: "DIRECT", defaultTarget: "DIRECT", phase: "earlyDomestic", dnsClass: "china" }),
+    intent({ id: "domesticPlatform", ruleId: "DomesticPlatform", label: "\u{1F1E8}\u{1F1F3} \u56FD\u5185\u5E73\u53F0", sourceIds: ["BiliBili", "ByteDance", "XiaoHongShu", "Weibo"], policy: "\u{1F1E8}\u{1F1F3} \u56FD\u5185\u5E73\u53F0", defaultTarget: "DIRECT", phase: "serviceIntent", dnsClass: "china" }),
+    intent({ id: "ai", ruleId: "AI", label: "\u{1F916} AI \u4E13\u7528", sourceIds: ["OpenAI", "Claude", "Gemini", "Copilot"], policy: "\u{1F916} AI \u4E13\u7528", defaultTarget: "FOLLOW", phase: "serviceIntent", dnsClass: "proxy" }),
+    intent({ id: "github", ruleId: "GitHub", label: "\u{1F419} GitHub", sourceIds: ["GitHub"], policy: "\u{1F419} GitHub", defaultTarget: "FOLLOW", phase: "serviceIntent", dnsClass: "proxy" }),
+    intent({ id: "youtube", ruleId: "YouTube", label: "\u{1F4FA} YouTube", sourceIds: ["YouTube"], policy: "\u{1F4FA} YouTube", defaultTarget: "FOLLOW", phase: "serviceIntent", dnsClass: "proxy" }),
+    intent({ id: "overseasMedia", ruleId: "OverseasMedia", label: "\u{1F3AC} \u6D77\u5916\u6D41\u5A92\u4F53", sourceIds: ["Netflix", "Disney", "Spotify", "GlobalMedia"], policy: "\u{1F3AC} \u6D77\u5916\u6D41\u5A92\u4F53", defaultTarget: "FOLLOW", phase: "serviceIntent", dnsClass: "proxy" }),
+    intent({ id: "globalSocial", ruleId: "OverseasSocial", label: "\u{1F4AC} \u6D77\u5916\u793E\u4EA4", sourceIds: ["Telegram", "Facebook", "Instagram", "Twitter", "TikTok"], policy: "\u{1F4AC} \u6D77\u5916\u793E\u4EA4", defaultTarget: "FOLLOW", phase: "serviceIntent", dnsClass: "proxy" }),
+    intent({ id: "apple", ruleId: "Apple", label: "\u{1F34E} Apple", sourceIds: ["Apple"], policy: "\u{1F34E} Apple", defaultTarget: "DIRECT", phase: "serviceIntent", dnsClass: "china" }),
+    intent({ id: "microsoft", ruleId: "Microsoft", label: "\u{1FA9F} Microsoft", sourceIds: ["Microsoft"], policy: "\u{1FA9F} Microsoft", defaultTarget: "DIRECT", phase: "serviceIntent", dnsClass: "china" }),
+    intent({ id: "download", ruleId: "Download", label: "\u2B07\uFE0F \u4E0B\u8F7D/P2P", sourceIds: ["Download", "PrivateTracker"], policy: "\u2B07\uFE0F \u4E0B\u8F7D/P2P", defaultTarget: "DIRECT", phase: "serviceIntent", dnsClass: "china" }),
+    intent({ id: "overseasGame", ruleId: "OverseasGame", label: "\u{1F30D} \u6D77\u5916\u6E38\u620F", sourceIds: ["OverseasGame"], policy: "\u{1F30D} \u6D77\u5916\u6E38\u620F", defaultTarget: "FOLLOW", phase: "overseasGame", dnsClass: "proxy" }),
+    intent({ id: "chinaIp", ruleId: "ChinaIP", label: "\u4E2D\u56FD IP", sourceIds: ["ChinaIP"], policy: "DIRECT", defaultTarget: "DIRECT", phase: "resolvedChinaIp", dnsClass: "none" })
+  ]);
+  var SOURCE_TO_INTENT = new Map(
+    SEMANTIC_INTENTS.flatMap((entry) => entry.sourceIds.map((sourceId) => [sourceId, entry]))
+  );
+
   // ../../../shared/rules/lightweight-policy.js
   var DEFAULT_RULE_SOURCE_IDS = Object.freeze([
     "Hijacking",
@@ -1438,22 +1465,13 @@ var ShadowrocketProfileBundle = (() => {
     "ChinaTLD",
     "ChinaIP"
   ]);
-  var MOBILE_RULE_BUNDLES = Object.freeze([
-    Object.freeze({ id: "Security", sourceIds: Object.freeze(["Hijacking", "BlockHttpDNS"]), policy: "REJECT", phase: "security", dnsClass: "none" }),
-    Object.freeze({ id: "Privacy", sourceIds: Object.freeze(["Privacy"]), policy: "\u{1F575}\uFE0F \u4E25\u683C\u8DDF\u8E2A", phase: "security", dnsClass: "none" }),
-    Object.freeze({ id: "DomesticCore", sourceIds: Object.freeze(["DomesticCore", "DomesticGame", "SteamCN"]), policy: "DIRECT", phase: "earlyDomestic", dnsClass: "china" }),
-    Object.freeze({ id: "DomesticPlatform", sourceIds: Object.freeze(["BiliBili", "ByteDance", "XiaoHongShu", "Weibo"]), policy: "\u{1F1E8}\u{1F1F3} \u56FD\u5185\u5E73\u53F0", phase: "serviceIntent", dnsClass: "china" }),
-    Object.freeze({ id: "AI", sourceIds: Object.freeze(["OpenAI", "Claude", "Gemini", "Copilot"]), policy: "\u{1F916} AI \u4E13\u7528", phase: "serviceIntent", dnsClass: "proxy" }),
-    Object.freeze({ id: "GitHub", sourceIds: Object.freeze(["GitHub"]), policy: "\u{1F419} GitHub", phase: "serviceIntent", dnsClass: "proxy" }),
-    Object.freeze({ id: "YouTube", sourceIds: Object.freeze(["YouTube"]), policy: "\u{1F4FA} YouTube", phase: "serviceIntent", dnsClass: "proxy" }),
-    Object.freeze({ id: "OverseasMedia", sourceIds: Object.freeze(["Netflix", "Disney", "Spotify", "GlobalMedia"]), policy: "\u{1F3AC} \u6D77\u5916\u6D41\u5A92\u4F53", phase: "serviceIntent", dnsClass: "proxy" }),
-    Object.freeze({ id: "OverseasSocial", sourceIds: Object.freeze(["Telegram", "Facebook", "Instagram", "Twitter", "TikTok"]), policy: "\u{1F4AC} \u6D77\u5916\u793E\u4EA4", phase: "serviceIntent", dnsClass: "proxy" }),
-    Object.freeze({ id: "Apple", sourceIds: Object.freeze(["Apple"]), policy: "\u{1F34E} Apple", phase: "serviceIntent", dnsClass: "china" }),
-    Object.freeze({ id: "Microsoft", sourceIds: Object.freeze(["Microsoft"]), policy: "\u{1FA9F} Microsoft", phase: "serviceIntent", dnsClass: "china" }),
-    Object.freeze({ id: "Download", sourceIds: Object.freeze(["Download", "PrivateTracker"]), policy: "\u2B07\uFE0F \u4E0B\u8F7D/P2P", phase: "serviceIntent", dnsClass: "china" }),
-    Object.freeze({ id: "OverseasGame", sourceIds: Object.freeze(["OverseasGame"]), policy: "\u{1F30D} \u6D77\u5916\u6E38\u620F", phase: "overseasGame", dnsClass: "proxy" }),
-    Object.freeze({ id: "ChinaIP", sourceIds: Object.freeze(["ChinaIP"]), policy: "DIRECT", phase: "resolvedChinaIp", dnsClass: "none" })
-  ]);
+  var MOBILE_RULE_BUNDLES = Object.freeze(SEMANTIC_INTENTS.map((entry) => Object.freeze({
+    id: entry.ruleId,
+    sourceIds: entry.sourceIds,
+    policy: entry.policy,
+    phase: entry.phase,
+    dnsClass: entry.dnsClass
+  })));
   var MOBILE_RULE_SOURCE_IDS = Object.freeze(MOBILE_RULE_BUNDLES.map(({ id }) => id));
   var FULL_ADBLOCK_SOURCE_IDS = Object.freeze([
     "Advertising",

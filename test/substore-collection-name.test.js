@@ -10,7 +10,6 @@ test("accepts every client collection slug and preserves its exact value", () =>
     "apple-proxy-shadowrocket",
     "apple-proxy-surge",
     "apple-proxy-singbox",
-    "apple-proxy-onexray",
     "apple-proxy-sources",
   ]) {
     assert.equal(validateCollectionName(name), name);

@@ -1,8 +1,8 @@
 {
-  "bytes": 30738750,
+  "bytes": 30740633,
   "clients": {
     "anywhere": {
-      "manifestHash": "a7275c67c64e2b759f311626eccac4ffb03eddfe9fb22c1c2adc5a9356ed21b1"
+      "manifestHash": "e3bb406f23c8a832d429c2a6dfbb760209a599935999a68424f36b11b5fccb58"
     },
     "egern": {
       "manifestHash": "5599ad31194d1f1d7f88e4a2eec4632d9883a1a7ba57e29d46fb1db775542672"
@@ -42,17 +42,17 @@
     {
       "bytes": 1324,
       "path": "optional/adblock-full/anywhere/client-manifest.json",
-      "sha256": "0538ff857cbd484cd7a3133376da78bc701425489cca2807271b7a31f251e69b"
+      "sha256": "6215e743b18294a8df3f7bf675e7cf3a5d07e97c5863b0d2153e611d00763e81"
     },
     {
       "bytes": 5425,
       "path": "optional/adblock-full/anywhere/import.html",
-      "sha256": "675da8d26812e8ec0b4b4479eac5a020d65e7fd17702dea2038e9c3a1b0d3107"
+      "sha256": "c3513aad38eb5225a09986fbf937d4fed270dfb19a25faa0cfcaf0a9761bfe3c"
     },
     {
-      "bytes": 6050,
+      "bytes": 7933,
       "path": "optional/adblock-full/anywhere/manifest.json",
-      "sha256": "ac99895076116d87ee1af22c2656ea785ea03dc34bf87ab2d8158945ab57b64c"
+      "sha256": "b622808a068a164e3f03f3da1c52b3d7d1ebf19bc032a977c2a081bc99468902"
     },
     {
       "bytes": 571,
@@ -116,7 +116,7 @@
     }
   ],
   "generatedAt": "2026-08-15T18:26:29Z",
-  "manifestHash": "e67644a1f488f5fefbef03ee26ba1185dfc43afadd58120d69e960ae891089b3",
+  "manifestHash": "92b05ac1ff2d260f0c85605c019fd449ab44c1a57d2bcfb3b5ff17bf8124c1ac",
   "packId": "adblock-full",
   "schemaVersion": 1
 }

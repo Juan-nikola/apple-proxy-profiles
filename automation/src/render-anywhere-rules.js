@@ -48,6 +48,90 @@ function ruleSetName(source) {
   return `${source.policy} · ${displayId}`;
 }
 
+const POLICY_ROUTING = Object.freeze({
+  REJECT: 2,
+  DIRECT: 1,
+  FOLLOW: 0,
+  PROXY: 0,
+});
+
+function validateLogicalRuleSets(logicalRuleSets, catalog) {
+  if (!Array.isArray(logicalRuleSets) || logicalRuleSets.length === 0) {
+    throw new TypeError("Anywhere logical rule sets are required");
+  }
+  const catalogById = new Map(catalog.map((source) => [source.id, source]));
+  const assigned = new Map();
+  const normalized = logicalRuleSets.map((logical, index) => {
+    if (!logical || typeof logical !== "object" || Array.isArray(logical)) {
+      throw new TypeError(`Anywhere logical rule set ${index} must be an object`);
+    }
+    if (typeof logical.id !== "string" || !/^[A-Za-z0-9][A-Za-z0-9_-]*$/u.test(logical.id)) {
+      throw new TypeError(`Anywhere logical rule set ${index} has an unsafe id`);
+    }
+    const sourceIds = logical.sourceIds ?? [logical.id];
+    if (!Array.isArray(sourceIds) || sourceIds.length === 0
+      || sourceIds.some((sourceId) => typeof sourceId !== "string" || !catalogById.has(sourceId))
+      || new Set(sourceIds).size !== sourceIds.length) {
+      throw new TypeError(`Anywhere logical rule set ${logical.id} has invalid sourceIds`);
+    }
+    for (const sourceId of sourceIds) {
+      if (assigned.has(sourceId)) {
+        throw new Error(`Anywhere source ${sourceId} is assigned to multiple logical rule sets`);
+      }
+      assigned.set(sourceId, logical.id);
+    }
+    const sources = sourceIds.map((sourceId) => catalogById.get(sourceId));
+    const sourceRouting = new Set(sources.map(({ routing }) => routing));
+    const explicitRouting = logical.routing;
+    const policyRouting = POLICY_ROUTING[logical.policy];
+    const routing = explicitRouting ?? policyRouting ?? (
+      sourceRouting.size === 1 ? sources[0].routing : undefined
+    );
+    if (![0, 1, 2].includes(routing)) {
+      throw new TypeError(`Anywhere logical rule set ${logical.id} needs an explicit routing`);
+    }
+    return Object.freeze({
+      logical,
+      id: logical.id,
+      sourceIds: Object.freeze([...sourceIds]),
+      sources: Object.freeze(sources),
+      routing,
+      policy: logical.policy ?? sources[0].policy,
+      phase: logical.phase ?? sources[0].phase,
+      dnsClass: logical.dnsClass ?? sources[0].dnsClass,
+      intendedTarget: logical.intendedTarget ?? logical.defaultTarget ?? sources[0].intendedTarget,
+      priority: Math.min(...sources.map(({ priority }) => priority)),
+    });
+  });
+  if (assigned.size !== catalog.length) {
+    const missing = catalog.map(({ id }) => id).filter((id) => !assigned.has(id));
+    throw new Error(`Anywhere sources are not assigned to a logical rule set: ${missing.join(", ")}`);
+  }
+  return Object.freeze(normalized);
+}
+
+function countEntriesBySource(entries) {
+  const counts = new Map();
+  for (const entry of entries) counts.set(entry.sourceId, (counts.get(entry.sourceId) ?? 0) + 1);
+  return counts;
+}
+
+function sumDiagnostics(items, field) {
+  return items.reduce((total, item) => total + item.parsed.diagnostics[field], 0);
+}
+
+function sumUnsupportedByReason(items) {
+  const result = {};
+  for (const item of items) addCounts(result, item.parsed.diagnostics.unsupportedByReason);
+  return result;
+}
+
+function sumIgnoredModifiers(items) {
+  return {
+    noResolve: items.reduce((total, item) => total + item.parsed.diagnostics.ignoredModifiers.noResolve, 0),
+  };
+}
+
 function verifyPinnedBaseline(parsedSources, snapshot, expected) {
   if (!expected) return;
   const totals = {
@@ -95,6 +179,7 @@ export function buildAnywhereRuleSnapshot({
 }) {
   if (!(snapshot instanceof Map)) throw new TypeError("Anywhere snapshot must be a Map");
   if (!Array.isArray(catalog) || catalog.length === 0) throw new TypeError("Anywhere catalog is required");
+  const logicalDescriptors = validateLogicalRuleSets(logicalRuleSets, catalog);
   const parsedSources = catalog.map((source) => {
     const fetched = snapshot.get(source.id);
     if (!fetched) throw new Error(`Rule source ${source.id}: missing snapshot input`);
@@ -118,6 +203,8 @@ export function buildAnywhereRuleSnapshot({
     required: true,
     entries: [...parsed.entries, ...supplemental],
   })));
+  const parsedById = new Map(parsedSources.map((item) => [item.source.id, item]));
+  const compiledById = new Map(compiled.ruleSets.map((ruleSet) => [ruleSet.id, ruleSet]));
 
   const files = new Map();
   const shards = [];
@@ -137,21 +224,47 @@ export function buildAnywhereRuleSnapshot({
   let supplementalCount = 0;
   let supplementalOutputCount = 0;
 
-  for (const [index, item] of parsedSources.entries()) {
+  for (const item of parsedSources) {
     const { source, fetched, parsed, supplemental } = item;
-    const compiledSet = compiled.ruleSets[index];
-    const sourceShards = shardRuleSet({ ...compiledSet, required: false });
-    const unsupportedByReason = { ...parsed.diagnostics.unsupportedByReason };
-    addCounts(totalUnsupportedByReason, unsupportedByReason);
+    addCounts(totalUnsupportedByReason, parsed.diagnostics.unsupportedByReason);
     for (const entry of parsed.entries) {
       if (Object.hasOwn(ARRS_TYPE_ID, entry.kind)) bumpCount(totalConvertibleByKind, entry.kind);
     }
+    sourceBytes += fetched.sourceBytes;
+    physicalLineCount += parsed.diagnostics.physicalLines;
+    commentCount += parsed.diagnostics.comments;
+    blankCount += parsed.diagnostics.blank;
+    candidateCount += parsed.diagnostics.candidateCount;
+    parsedCount += parsed.diagnostics.parsedCount;
+    convertibleCount += parsed.diagnostics.convertibleCount;
+    unsupportedCount += parsed.diagnostics.unsupportedCount;
+    noResolveCount += parsed.diagnostics.ignoredModifiers.noResolve;
+    supplementalCount += supplemental.length;
+  }
+
+  for (const descriptor of logicalDescriptors) {
+    const items = descriptor.sourceIds.map((sourceId) => parsedById.get(sourceId));
+    const sourceRuleSets = descriptor.sourceIds.map((sourceId) => compiledById.get(sourceId));
+    const entries = sourceRuleSets.flatMap(({ entries: sourceEntries }) => sourceEntries);
+    const supplementalItems = items.filter(({ supplemental }) => supplemental.length > 0);
+    const supplementalOutput = entries.filter(({ sourceId }) => sourceId === DOMESTIC_FALLBACK_SOURCE_ID).length;
+    supplementalOutputCount += supplementalOutput;
+    const aggregateSet = {
+      id: descriptor.id,
+      name: descriptor.logical.name ?? `${descriptor.policy} · ${descriptor.id.replaceAll("_", " ")}`,
+      policy: descriptor.policy,
+      priority: descriptor.priority,
+      routing: descriptor.routing,
+      required: descriptor.logical.required,
+      entries,
+    };
+    const sourceShards = shardRuleSet(aggregateSet);
     const shardIds = [];
     for (const shard of sourceShards) {
       const publicPath = `${pathPrefix}/${shard.id}.arrs`;
       const provenance = {
         repository: upstream.repository,
-        sourceId: source.id,
+        sourceId: descriptor.id,
         commit: upstream.commit,
         committedAt: upstream.committedAt,
         license: upstream.license,
@@ -161,10 +274,11 @@ export function buildAnywhereRuleSnapshot({
       files.set(publicPath, content);
       const countsByType = {};
       for (const entry of shard.entries) bumpCount(countsByType, entry.kind);
-      const record = {
+      shards.push({
         id: shard.id,
-        sourceId: source.id,
-        familyId: source.familyId,
+        sourceId: descriptor.id,
+        sourceIds: descriptor.sourceIds,
+        familyId: descriptor.id,
         name: shard.name,
         index: shard.shardIndex,
         total: shard.shardTotal,
@@ -173,65 +287,77 @@ export function buildAnywhereRuleSnapshot({
         entryCount: shard.entries.length,
         sha256: artifactSha256(content),
         countsByType,
-      };
-      shards.push(record);
+      });
       shardIds.push(shard.id);
     }
-    const sourceOutputCount = compiledSet.entries.length;
-    const sourceSupplementalOutputCount = compiledSet.entries
-      .filter((entry) => entry.sourceId === DOMESTIC_FALLBACK_SOURCE_ID)
-      .length;
-    supplementalCount += supplemental.length;
-    supplementalOutputCount += sourceSupplementalOutputCount;
+    const entryCounts = countEntriesBySource(entries);
     const sourceCounts = {
-      candidate: parsed.diagnostics.candidateCount,
-      parsed: parsed.diagnostics.parsedCount,
-      convertible: parsed.diagnostics.convertibleCount,
-      unsupported: parsed.diagnostics.unsupportedCount,
-      duplicates: compiled.diagnostics.duplicates[source.id] ?? 0,
-      shadowed: compiled.diagnostics.shadowed[source.id] ?? 0,
+      candidate: sumDiagnostics(items, "candidateCount"),
+      parsed: sumDiagnostics(items, "parsedCount"),
+      convertible: sumDiagnostics(items, "convertibleCount"),
+      unsupported: sumDiagnostics(items, "unsupportedCount"),
+      duplicates: descriptor.sourceIds.reduce((total, sourceId) => total + (compiled.diagnostics.duplicates[sourceId] ?? 0), 0),
+      shadowed: descriptor.sourceIds.reduce((total, sourceId) => total + (compiled.diagnostics.shadowed[sourceId] ?? 0), 0),
       unresolved: 0,
-      output: sourceOutputCount,
+      output: entries.length,
     };
-    if (supplemental.length > 0) {
+    if (descriptor.sourceIds.length > 1) sourceCounts.inputSources = descriptor.sourceIds.length;
+    if (supplementalItems.length > 0) {
       sourceCounts.supplemental = {
-        input: supplemental.length,
-        output: sourceSupplementalOutputCount,
+        input: supplementalItems.reduce((total, { supplemental: values }) => total + values.length, 0),
+        output: supplementalOutput,
         duplicates: compiled.diagnostics.duplicates[DOMESTIC_FALLBACK_SOURCE_ID] ?? 0,
         shadowed: compiled.diagnostics.shadowed[DOMESTIC_FALLBACK_SOURCE_ID] ?? 0,
       };
     }
+    const inputSources = descriptor.sourceIds.map((sourceId) => {
+      const { source, fetched, parsed: inputParsed } = parsedById.get(sourceId);
+      return {
+        id: source.id,
+        sourceBytes: fetched.sourceBytes,
+        sourceSha256: fetched.sourceSha256,
+        candidate: inputParsed.diagnostics.candidateCount,
+        parsed: inputParsed.diagnostics.parsedCount,
+        convertible: inputParsed.diagnostics.convertibleCount,
+        unsupported: inputParsed.diagnostics.unsupportedCount,
+        output: entryCounts.get(source.id) ?? 0,
+      };
+    });
+    const firstSource = descriptor.sources[0];
     sources.push({
-      id: source.id,
-      familyId: source.familyId,
-      componentId: source.componentId,
-      order: source.order,
-      priority: source.priority,
-      canonicalPath: source.canonicalPath,
-      inputFormat: source.inputFormat,
-      policy: source.policy,
-      phase: source.phase,
-      dnsClass: source.dnsClass,
-      intendedTarget: source.intendedTarget,
-      routing: source.routing,
-      minEntries: source.minEntries,
-      sourceBytes: fetched.sourceBytes,
-      sourceSha256: fetched.sourceSha256,
+      id: descriptor.id,
+      sourceIds: descriptor.sourceIds,
+      inputSources,
+      familyId: descriptor.sourceIds.length === 1 ? firstSource.familyId : descriptor.id,
+      componentId: descriptor.sourceIds.length === 1 ? firstSource.componentId : "rules",
+      order: Math.min(...descriptor.sources.map(({ order }) => order)),
+      priority: descriptor.priority,
+      canonicalPath: descriptor.sourceIds.length === 1
+        ? firstSource.canonicalPath
+        : `compiled/Anywhere/${descriptor.id}.arrs`,
+      inputFormat: "RULE-SET",
+      policy: descriptor.policy,
+      phase: descriptor.phase,
+      dnsClass: descriptor.dnsClass,
+      intendedTarget: descriptor.intendedTarget,
+      routing: descriptor.routing,
+      minEntries: Math.min(...descriptor.sources.map(({ minEntries }) => minEntries ?? 0)),
+      sourceBytes: inputSources.reduce((total, input) => total + input.sourceBytes, 0),
+      sourceSha256: descriptor.sourceIds.length === 1
+        ? inputSources[0].sourceSha256
+        : artifactSha256(canonicalJson(inputSources.map(({ id, sourceSha256 }) => ({ id, sourceSha256 })))),
+      provenance: {
+        repository: upstream.repository,
+        commit: upstream.commit,
+        committedAt: upstream.committedAt,
+        license: upstream.license,
+      },
       counts: sourceCounts,
-      unsupportedByReason,
-      ignoredModifiers: parsed.diagnostics.ignoredModifiers,
+      unsupportedByReason: sumUnsupportedByReason(items),
+      ignoredModifiers: sumIgnoredModifiers(items),
       shardIds,
     });
-    sourceBytes += fetched.sourceBytes;
-    physicalLineCount += parsed.diagnostics.physicalLines;
-    commentCount += parsed.diagnostics.comments;
-    blankCount += parsed.diagnostics.blank;
-    candidateCount += parsed.diagnostics.candidateCount;
-    parsedCount += parsed.diagnostics.parsedCount;
-    convertibleCount += parsed.diagnostics.convertibleCount;
-    unsupportedCount += parsed.diagnostics.unsupportedCount;
-    outputCount += sourceOutputCount;
-    noResolveCount += parsed.diagnostics.ignoredModifiers.noResolve;
+    outputCount += entries.length;
   }
 
   const duplicateCount = Object.values(compiled.diagnostics.duplicates).reduce((sum, count) => sum + count, 0);
@@ -252,8 +378,9 @@ export function buildAnywhereRuleSnapshot({
     }
   }
   const totals = {
-    sourceCount: catalog.length,
-    logicalRuleSetCount: logicalRuleSets.length,
+    sourceCount: logicalDescriptors.length,
+    inputSourceCount: catalog.length,
+    logicalRuleSetCount: logicalDescriptors.length,
     sourceBytes,
     physicalLineCount,
     commentCount,
@@ -296,7 +423,10 @@ export function buildAnywhereRuleSnapshot({
     generatedAt: upstream.committedAt,
     catalogSha256: catalogSha256(catalog),
     totals,
-    logicalRuleSets,
+    logicalRuleSets: Object.freeze(logicalRuleSets.map((logical) => Object.freeze({
+      ...logical,
+      sourceIds: Object.freeze([...(logical.sourceIds ?? [logical.id])]),
+    }))),
     sources,
     shards,
   };

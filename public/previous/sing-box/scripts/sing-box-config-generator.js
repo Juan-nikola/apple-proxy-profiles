@@ -52,9 +52,7 @@ var SingBoxConfigBundle = (() => {
     egern: "egern",
     anywhere: "anywhere",
     surge: "surge",
-    singbox: "singbox",
-    onexray: "onexray",
-    happ: "happ"
+    singbox: "singbox"
   });
   var OPTION_VALUES = Object.freeze({
     output: Object.freeze(["nodes", "config"]),
@@ -204,9 +202,8 @@ var SingBoxConfigBundle = (() => {
     });
   }
   var definitions = Object.freeze([
-    protocol(["ss", "shadowsocks"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.onexray, CLIENT.happ], {
-      requiredFields: ["cipher", "password"],
-      clientNames: { [CLIENT.onexray]: ["ss"] }
+    protocol(["ss", "shadowsocks"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox], {
+      requiredFields: ["cipher", "password"]
     }),
     protocol(["ssr"], [CLIENT.shadowrocket, CLIENT.surge], {
       requiredFields: ["cipher", "password", "protocol", "obfs"]
@@ -214,13 +211,13 @@ var SingBoxConfigBundle = (() => {
     protocol(["snell"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox], {
       requiredFields: ["psk", "version"]
     }),
-    protocol(["vmess"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox, CLIENT.onexray, CLIENT.happ], {
+    protocol(["vmess"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox], {
       requiredFields: ["uuid"]
     }),
-    protocol(["vless"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.singbox, CLIENT.onexray, CLIENT.happ], {
+    protocol(["vless"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.singbox], {
       requiredFields: ["uuid"]
     }),
-    protocol(["trojan"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.onexray, CLIENT.happ], {
+    protocol(["trojan"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox], {
       requiredFields: ["password"],
       tls: true
     }),
@@ -228,17 +225,16 @@ var SingBoxConfigBundle = (() => {
       requiredFields: ["password"],
       tls: true
     }),
-    protocol(["hysteria2", "hy2"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.onexray, CLIENT.happ], {
+    protocol(["hysteria2", "hy2"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox], {
       requiredFields: ["password"],
-      tls: true,
-      clientNames: { [CLIENT.onexray]: ["hysteria2"] }
+      tls: true
     }),
     protocol(["tuic"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox], {
       requiredFields: ["uuid", "password"],
       tls: true
     }),
-    protocol(["socks5"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.onexray, CLIENT.happ]),
-    protocol(["http"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox, CLIENT.onexray]),
+    protocol(["socks5"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox]),
+    protocol(["http"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox]),
     protocol(["ssh"], [CLIENT.egern, CLIENT.singbox], {
       requiredFields: ["username"]
     }),
@@ -1411,19 +1407,11 @@ var SingBoxConfigBundle = (() => {
   var SERVICE_GROUPS = Object.freeze([
     Object.freeze(["\u{1F419} GitHub", PROXY_FIRST_SERVICE_DEFAULTS]),
     Object.freeze(["\u{1F4FA} YouTube", PROXY_FIRST_SERVICE_DEFAULTS]),
-    Object.freeze(["\u{1F3AC} Netflix", PROXY_FIRST_SERVICE_DEFAULTS]),
-    Object.freeze(["\u{1F3F0} Disney+", PROXY_FIRST_SERVICE_DEFAULTS]),
-    Object.freeze(["\u{1F3B5} Spotify", PROXY_FIRST_SERVICE_DEFAULTS]),
-    Object.freeze(["\u{1F30D} \u56FD\u9645\u5A92\u4F53", PROXY_FIRST_SERVICE_DEFAULTS]),
-    Object.freeze(["\u2708\uFE0F Telegram", PROXY_FIRST_SERVICE_DEFAULTS]),
+    Object.freeze(["\u{1F3AC} \u6D77\u5916\u6D41\u5A92\u4F53", PROXY_FIRST_SERVICE_DEFAULTS]),
     Object.freeze(["\u{1F4AC} \u6D77\u5916\u793E\u4EA4", PROXY_FIRST_SERVICE_DEFAULTS]),
-    Object.freeze(["\u{1F3B6} TikTok", PROXY_FIRST_SERVICE_DEFAULTS]),
     Object.freeze(["\u{1F34E} Apple", DIRECT_FIRST_SERVICE_DEFAULTS]),
     Object.freeze(["\u{1FA9F} Microsoft", DIRECT_FIRST_SERVICE_DEFAULTS]),
-    Object.freeze(["\u{1F4FA} \u54D4\u54E9\u54D4\u54E9", DIRECT_FIRST_SERVICE_DEFAULTS]),
-    Object.freeze(["\u{1F3B5} \u6296\u97F3", DIRECT_FIRST_SERVICE_DEFAULTS]),
-    Object.freeze(["\u{1F4D5} \u5C0F\u7EA2\u4E66", DIRECT_FIRST_SERVICE_DEFAULTS]),
-    Object.freeze(["\u{1F9E3} \u5FAE\u535A", DIRECT_FIRST_SERVICE_DEFAULTS]),
+    Object.freeze(["\u{1F1E8}\u{1F1F3} \u56FD\u5185\u5E73\u53F0", DIRECT_FIRST_SERVICE_DEFAULTS]),
     Object.freeze(["\u{1F30D} \u6D77\u5916\u6E38\u620F", PROXY_FIRST_SERVICE_DEFAULTS])
   ]);
   function policyGroup({
@@ -1460,18 +1448,14 @@ var SingBoxConfigBundle = (() => {
   function automaticHelperName(continent) {
     return `\u26A1 ${continent.helperName}\u81EA\u52A8`;
   }
-  function fallbackHelperName(continent) {
-    return `\u{1F6DF} ${continent.helperName}\u6545\u969C\u8F6C\u79FB`;
-  }
   function continentHelperItems(continent, mode) {
-    if (mode === "full") return [automaticHelperName(continent), fallbackHelperName(continent)];
+    void mode;
     return [automaticHelperName(continent)];
   }
   function serviceChoiceItems(defaults, presentContinentNames) {
     return [
       ...defaults.beforeCandidates,
       "\u26A1 \u5168\u90E8\u81EA\u52A8",
-      "\u{1F6DF} \u5168\u90E8\u6545\u969C\u8F6C\u79FB",
       ...presentContinentNames,
       ...defaults.afterCandidates
     ];
@@ -1504,37 +1488,27 @@ var SingBoxConfigBundle = (() => {
     const mode = effectiveAutoMode(options.autoGroupMode, normalizedNodes.length);
     const presentContinents = CONTINENTS.filter((continent) => normalizedNodes.some((node) => nodeMetadata(node).continent === continent.key && !nodeMetadata(node).chained));
     const chainEligible = options.clientChain === "on" && normalizedNodes.some((node) => nodeMetadata(node).entry === true && !nodeMetadata(node).chained) && normalizedNodes.some((node) => nodeMetadata(node).chained === true);
-    const groups = [
-      helper(GROUP_KIND.helper, "\u26A1 \u5168\u90E8\u81EA\u52A8", STRATEGY.autoTest, preset, NON_CHAINED_FILTER),
-      helper(GROUP_KIND.helper, "\u{1F6DF} \u5168\u90E8\u6545\u969C\u8F6C\u79FB", STRATEGY.fallback, preset, NON_CHAINED_FILTER)
+    const helpers = [
+      helper(GROUP_KIND.helper, "\u26A1 \u5168\u90E8\u81EA\u52A8", STRATEGY.autoTest, preset, NON_CHAINED_FILTER)
     ];
     if (chainEligible) {
-      groups.push(helper(GROUP_KIND.chain, "\u26A1 \u5165\u53E3\u81EA\u52A8", STRATEGY.autoTest, preset, ENTRY_FILTER));
+      helpers.push(helper(GROUP_KIND.chain, "\u26A1 \u5165\u53E3\u81EA\u52A8", STRATEGY.autoTest, preset, ENTRY_FILTER));
     }
     for (const continent of presentContinents) {
-      groups.push(helper(
+      helpers.push(helper(
         GROUP_KIND.helper,
         automaticHelperName(continent),
         STRATEGY.autoTest,
         preset,
         continentFilter(continent)
       ));
-      if (mode === "full") {
-        groups.push(helper(
-          GROUP_KIND.helper,
-          fallbackHelperName(continent),
-          STRATEGY.fallback,
-          preset,
-          continentFilter(continent)
-        ));
-      }
     }
+    const groups = [];
     groups.push(policyGroup({
       kind: GROUP_KIND.primary,
       name: "\u{1F680} \u8282\u70B9\u9009\u62E9",
       candidates: [
         "\u26A1 \u5168\u90E8\u81EA\u52A8",
-        "\u{1F6DF} \u5168\u90E8\u6545\u969C\u8F6C\u79FB",
         ...presentContinents.map((continent) => continent.name)
       ]
     }));
@@ -1545,11 +1519,6 @@ var SingBoxConfigBundle = (() => {
         candidates: continentHelperItems(continent, mode),
         nodeFilter: continentFilter(continent)
       }));
-    }
-    for (const source of SOURCE_GROUPS) {
-      if (normalizedNodes.some((node) => nodeMetadata(node).sourceKind === source.kind && !nodeMetadata(node).chained)) {
-        groups.push(subscriptionGroup(GROUP_KIND.source, source.name, source.filter));
-      }
     }
     if (chainEligible) {
       groups.push(subscriptionGroup(GROUP_KIND.chain, "\u{1F3AF} \u5BA2\u6237\u7AEF\u843D\u5730", "^\u{1F517} .+$"));
@@ -1589,7 +1558,7 @@ var SingBoxConfigBundle = (() => {
     if (chainEligible) {
       groups.push(subscriptionGroup(GROUP_KIND.chain, "\u{1F517} \u5165\u53E3\u8282\u70B9", ENTRY_FILTER, ["\u26A1 \u5165\u53E3\u81EA\u52A8"]));
     }
-    return groups;
+    return [...groups, ...helpers];
   }
 
   // ../../shared/policies/intents.js
@@ -1604,14 +1573,6 @@ var SingBoxConfigBundle = (() => {
   var FALLBACK_GROUP_PATTERN = /故障转移/u;
   var MOBILE_MEMORY_PLATFORMS = /* @__PURE__ */ new Set(["iphone", "ipad", "android"]);
   var IOS_MEMORY_PLATFORMS = /* @__PURE__ */ new Set(["iphone", "ipad"]);
-  var IOS_SERVICE_GROUPS = /* @__PURE__ */ new Set([
-    "\u{1F34E} Apple",
-    "\u{1FA9F} Microsoft",
-    "\u{1F4FA} \u54D4\u54E9\u54D4\u54E9",
-    "\u{1F3B5} \u6296\u97F3",
-    "\u{1F4D5} \u5C0F\u7EA2\u4E66",
-    "\u{1F9E3} \u5FAE\u535A"
-  ]);
   var TEST_URL2 = "https://www.gstatic.com/generate_204";
   function isMobileMemoryConstrained(options) {
     return MOBILE_MEMORY_PLATFORMS.has(options.platform);
@@ -1638,8 +1599,8 @@ var SingBoxConfigBundle = (() => {
   }
   function candidateList(group, nodes, { compact = false, ios = false } = {}) {
     const candidates = [
-      ...compact && group.kind === "continent" ? [] : group.candidates.filter((candidate) => !isDisabledFallback(candidate)).map(targetName),
-      ...compact && ios && group.kind === "service" ? [] : filterNodes(group.nodeFilter, nodes)
+      ...group.candidates.filter((candidate) => !isDisabledFallback(candidate)).map(targetName),
+      ...filterNodes(group.nodeFilter, nodes)
     ];
     return candidates.filter((item, index, all) => all.indexOf(item) === index);
   }
@@ -1664,15 +1625,6 @@ var SingBoxConfigBundle = (() => {
         tag: group.name,
         outbounds: primary.length > 0 ? primary : ["DIRECT"],
         default: primary[0] ?? "DIRECT",
-        interrupt_exist_connections: true
-      };
-    }
-    if (compact && group.strategy === "auto-test" && (group.name !== AUTO_GROUP || ios)) {
-      return {
-        type: "selector",
-        tag: group.name,
-        outbounds,
-        default: outbounds[0],
         interrupt_exist_connections: true
       };
     }
@@ -1705,13 +1657,41 @@ var SingBoxConfigBundle = (() => {
     const rendered = [];
     for (const group of shared) {
       if (group.strategy === "fallback") continue;
-      if (compact && group.strategy === "auto-test" && group.name !== AUTO_GROUP) continue;
-      if (isIosMemoryConstrained(options) && group.kind === "service" && !IOS_SERVICE_GROUPS.has(group.name)) continue;
-      if (isIosMemoryConstrained(options) && group.kind === "special" && group.name !== RULE_DOWNLOAD_GROUP) continue;
       rendered.push(renderGroup(group, inventory, { compact, ios: isIosMemoryConstrained(options) }));
     }
     return rendered;
   }
+
+  // ../../shared/rules/semantic-intents.js
+  var intent = ({ id, ruleId, label, sourceIds, policy, defaultTarget, phase, dnsClass }) => Object.freeze({
+    id,
+    ruleId,
+    label,
+    sourceIds: Object.freeze([...sourceIds]),
+    policy,
+    defaultTarget,
+    phase,
+    dnsClass
+  });
+  var SEMANTIC_INTENTS = Object.freeze([
+    intent({ id: "security", ruleId: "Security", label: "\u5B89\u5168\u62E6\u622A", sourceIds: ["Hijacking", "BlockHttpDNS"], policy: "REJECT", defaultTarget: "REJECT", phase: "security", dnsClass: "none" }),
+    intent({ id: "privacy", ruleId: "Privacy", label: "\u{1F575}\uFE0F \u4E25\u683C\u8DDF\u8E2A", sourceIds: ["Privacy"], policy: "\u{1F575}\uFE0F \u4E25\u683C\u8DDF\u8E2A", defaultTarget: "DIRECT", phase: "security", dnsClass: "none" }),
+    intent({ id: "domesticCore", ruleId: "DomesticCore", label: "\u56FD\u5185\u6838\u5FC3", sourceIds: ["DomesticCore", "DomesticGame", "SteamCN"], policy: "DIRECT", defaultTarget: "DIRECT", phase: "earlyDomestic", dnsClass: "china" }),
+    intent({ id: "domesticPlatform", ruleId: "DomesticPlatform", label: "\u{1F1E8}\u{1F1F3} \u56FD\u5185\u5E73\u53F0", sourceIds: ["BiliBili", "ByteDance", "XiaoHongShu", "Weibo"], policy: "\u{1F1E8}\u{1F1F3} \u56FD\u5185\u5E73\u53F0", defaultTarget: "DIRECT", phase: "serviceIntent", dnsClass: "china" }),
+    intent({ id: "ai", ruleId: "AI", label: "\u{1F916} AI \u4E13\u7528", sourceIds: ["OpenAI", "Claude", "Gemini", "Copilot"], policy: "\u{1F916} AI \u4E13\u7528", defaultTarget: "FOLLOW", phase: "serviceIntent", dnsClass: "proxy" }),
+    intent({ id: "github", ruleId: "GitHub", label: "\u{1F419} GitHub", sourceIds: ["GitHub"], policy: "\u{1F419} GitHub", defaultTarget: "FOLLOW", phase: "serviceIntent", dnsClass: "proxy" }),
+    intent({ id: "youtube", ruleId: "YouTube", label: "\u{1F4FA} YouTube", sourceIds: ["YouTube"], policy: "\u{1F4FA} YouTube", defaultTarget: "FOLLOW", phase: "serviceIntent", dnsClass: "proxy" }),
+    intent({ id: "overseasMedia", ruleId: "OverseasMedia", label: "\u{1F3AC} \u6D77\u5916\u6D41\u5A92\u4F53", sourceIds: ["Netflix", "Disney", "Spotify", "GlobalMedia"], policy: "\u{1F3AC} \u6D77\u5916\u6D41\u5A92\u4F53", defaultTarget: "FOLLOW", phase: "serviceIntent", dnsClass: "proxy" }),
+    intent({ id: "globalSocial", ruleId: "OverseasSocial", label: "\u{1F4AC} \u6D77\u5916\u793E\u4EA4", sourceIds: ["Telegram", "Facebook", "Instagram", "Twitter", "TikTok"], policy: "\u{1F4AC} \u6D77\u5916\u793E\u4EA4", defaultTarget: "FOLLOW", phase: "serviceIntent", dnsClass: "proxy" }),
+    intent({ id: "apple", ruleId: "Apple", label: "\u{1F34E} Apple", sourceIds: ["Apple"], policy: "\u{1F34E} Apple", defaultTarget: "DIRECT", phase: "serviceIntent", dnsClass: "china" }),
+    intent({ id: "microsoft", ruleId: "Microsoft", label: "\u{1FA9F} Microsoft", sourceIds: ["Microsoft"], policy: "\u{1FA9F} Microsoft", defaultTarget: "DIRECT", phase: "serviceIntent", dnsClass: "china" }),
+    intent({ id: "download", ruleId: "Download", label: "\u2B07\uFE0F \u4E0B\u8F7D/P2P", sourceIds: ["Download", "PrivateTracker"], policy: "\u2B07\uFE0F \u4E0B\u8F7D/P2P", defaultTarget: "DIRECT", phase: "serviceIntent", dnsClass: "china" }),
+    intent({ id: "overseasGame", ruleId: "OverseasGame", label: "\u{1F30D} \u6D77\u5916\u6E38\u620F", sourceIds: ["OverseasGame"], policy: "\u{1F30D} \u6D77\u5916\u6E38\u620F", defaultTarget: "FOLLOW", phase: "overseasGame", dnsClass: "proxy" }),
+    intent({ id: "chinaIp", ruleId: "ChinaIP", label: "\u4E2D\u56FD IP", sourceIds: ["ChinaIP"], policy: "DIRECT", defaultTarget: "DIRECT", phase: "resolvedChinaIp", dnsClass: "none" })
+  ]);
+  var SOURCE_TO_INTENT = new Map(
+    SEMANTIC_INTENTS.flatMap((entry) => entry.sourceIds.map((sourceId) => [sourceId, entry]))
+  );
 
   // ../../shared/rules/lightweight-policy.js
   var DEFAULT_RULE_SOURCE_IDS = Object.freeze([
@@ -1748,22 +1728,14 @@ var SingBoxConfigBundle = (() => {
     "ChinaTLD",
     "ChinaIP"
   ]);
-  var MOBILE_RULE_SOURCE_IDS = Object.freeze([
-    "Hijacking",
-    "BlockHttpDNS",
-    "Privacy",
-    "DomesticCore",
-    "DomesticGame",
-    "SteamCN",
-    "BiliBili",
-    "ByteDance",
-    "XiaoHongShu",
-    "Weibo",
-    "Apple",
-    "Microsoft",
-    "ChinaTLD",
-    "ChinaIP"
-  ]);
+  var MOBILE_RULE_BUNDLES = Object.freeze(SEMANTIC_INTENTS.map((entry) => Object.freeze({
+    id: entry.ruleId,
+    sourceIds: entry.sourceIds,
+    policy: entry.policy,
+    phase: entry.phase,
+    dnsClass: entry.dnsClass
+  })));
+  var MOBILE_RULE_SOURCE_IDS = Object.freeze(MOBILE_RULE_BUNDLES.map(({ id }) => id));
   var FULL_ADBLOCK_SOURCE_IDS = Object.freeze([
     "Advertising",
     "Advertising_Domain"
@@ -1880,6 +1852,9 @@ var SingBoxConfigBundle = (() => {
     direct: "DIRECT",
     defaultProxy: "\u{1F680} \u8282\u70B9\u9009\u62E9",
     overseasGame: "\u{1F30D} \u6D77\u5916\u6E38\u620F",
+    overseasMedia: "\u{1F3AC} \u6D77\u5916\u6D41\u5A92\u4F53",
+    overseasSocial: "\u{1F4AC} \u6D77\u5916\u793E\u4EA4",
+    domesticPlatform: "\u{1F1E8}\u{1F1F3} \u56FD\u5185\u5E73\u53F0",
     reject: "REJECT"
   });
   var SOURCE_POLICIES = Object.freeze({
@@ -1888,25 +1863,25 @@ var SingBoxConfigBundle = (() => {
     Privacy: "\u{1F575}\uFE0F \u4E25\u683C\u8DDF\u8E2A",
     DomesticCore: POLICY_TARGETS.direct,
     DomesticGame: POLICY_TARGETS.direct,
-    BiliBili: "\u{1F4FA} \u54D4\u54E9\u54D4\u54E9",
-    ByteDance: "\u{1F3B5} \u6296\u97F3",
-    XiaoHongShu: "\u{1F4D5} \u5C0F\u7EA2\u4E66",
-    Weibo: "\u{1F9E3} \u5FAE\u535A",
+    BiliBili: POLICY_TARGETS.domesticPlatform,
+    ByteDance: POLICY_TARGETS.domesticPlatform,
+    XiaoHongShu: POLICY_TARGETS.domesticPlatform,
+    Weibo: POLICY_TARGETS.domesticPlatform,
     OpenAI: "\u{1F916} AI \u4E13\u7528",
     Claude: "\u{1F916} AI \u4E13\u7528",
     Gemini: "\u{1F916} AI \u4E13\u7528",
     Copilot: "\u{1F916} AI \u4E13\u7528",
     GitHub: "\u{1F419} GitHub",
     YouTube: "\u{1F4FA} YouTube",
-    Netflix: "\u{1F3AC} Netflix",
-    Disney: "\u{1F3F0} Disney+",
-    Spotify: "\u{1F3B5} Spotify",
-    GlobalMedia: "\u{1F30D} \u56FD\u9645\u5A92\u4F53",
-    Telegram: "\u2708\uFE0F Telegram",
-    Facebook: "\u{1F4AC} \u6D77\u5916\u793E\u4EA4",
-    Instagram: "\u{1F4AC} \u6D77\u5916\u793E\u4EA4",
-    Twitter: "\u{1F4AC} \u6D77\u5916\u793E\u4EA4",
-    TikTok: "\u{1F3B6} TikTok",
+    Netflix: POLICY_TARGETS.overseasMedia,
+    Disney: POLICY_TARGETS.overseasMedia,
+    Spotify: POLICY_TARGETS.overseasMedia,
+    GlobalMedia: POLICY_TARGETS.overseasMedia,
+    Telegram: POLICY_TARGETS.overseasSocial,
+    Facebook: POLICY_TARGETS.overseasSocial,
+    Instagram: POLICY_TARGETS.overseasSocial,
+    Twitter: POLICY_TARGETS.overseasSocial,
+    TikTok: POLICY_TARGETS.overseasSocial,
     Apple: "\u{1F34E} Apple",
     Microsoft: "\u{1FA9F} Microsoft",
     SteamCN: POLICY_TARGETS.direct,
@@ -1942,6 +1917,16 @@ var SingBoxConfigBundle = (() => {
   }
   var DEFAULT_RULE_CLIENT_CATALOG = Object.freeze(DEFAULT_RULE_SOURCE_IDS.map(clientRecord));
   var FULL_ADBLOCK_RULE_CLIENT_CATALOG = Object.freeze(FULL_ADBLOCK_SOURCE_IDS.map(clientRecord));
+  var MOBILE_RULE_CLIENT_CATALOG = Object.freeze(MOBILE_RULE_BUNDLES.map((bundle) => Object.freeze({
+    id: bundle.id,
+    policy: bundle.policy,
+    inputFormat: "RULE-SET",
+    phase: bundle.phase,
+    dnsClass: bundle.dnsClass
+  })));
+  function mobileRuleClientCatalog() {
+    return MOBILE_RULE_CLIENT_CATALOG;
+  }
   function ruleClientCatalog({ adblockMode = "off" } = {}) {
     if (adblockMode !== "off" && adblockMode !== "full") {
       throw new TypeError("adblockMode must be either off or full");
@@ -2040,10 +2025,11 @@ var SingBoxConfigBundle = (() => {
   var MOBILE_RULE_SOURCE_ID_SET = new Set(MOBILE_RULE_SOURCE_IDS);
   function activeRuleCatalog(platform, adblockMode) {
     const catalog = ruleClientCatalog({ adblockMode });
-    return ["iphone", "ipad"].includes(platform) ? catalog.filter(({ id }) => MOBILE_RULE_SOURCE_ID_SET.has(id)) : catalog;
+    return ["iphone", "ipad"].includes(platform) ? mobileRuleClientCatalog().filter(({ id }) => MOBILE_RULE_SOURCE_ID_SET.has(id)) : catalog;
   }
   function activeRoutingPlan(platform, adblockMode) {
     const activeIds = new Set(activeRuleCatalog(platform, adblockMode).map(({ id }) => id));
+    if (["iphone", "ipad"].includes(platform)) return mobileRuleClientCatalog();
     return orderedRoutingPlan({ adblockMode }).filter(({ id }) => activeIds.has(id));
   }
   var LOCAL_RULES = Object.freeze([
@@ -2095,6 +2081,10 @@ var SingBoxConfigBundle = (() => {
     if (optional === defaultBase) throw new Error("sing-box adblock rule base URL must end in /sing-box/rule-sets");
     return optional;
   }
+  function mobileRuleBase(defaultBase) {
+    if (!defaultBase.endsWith("/rule-sets")) throw new Error("sing-box mobile rule base URL must end in /rule-sets");
+    return `${defaultBase.slice(0, -"/rule-sets".length)}/mobile-rule-sets`;
+  }
   function customRuleFields(entry) {
     const [type, value, ...modifiers] = entry.split(",");
     const field = CUSTOM_FIELDS[type];
@@ -2134,12 +2124,13 @@ var SingBoxConfigBundle = (() => {
     if (profileMode === "diagnostic") return [];
     if (profileMode !== "light") throw new Error("Unsupported sing-box profile mode");
     const sources = activeRuleCatalog(platform, adblockMode);
+    const sourceBase = ["iphone", "ipad"].includes(platform) ? mobileRuleBase(base2) : base2;
     const adblockBase = adblockMode === "full" ? optionalAdblockBase(base2) : null;
     return sources.map((source) => ({
       type: "remote",
       tag: `rule-${source.id}`,
       format: "binary",
-      url: `${source.id === "Advertising" || source.id === "Advertising_Domain" ? adblockBase : base2}/${source.id}.srs`,
+      url: `${source.id === "Advertising" || source.id === "Advertising_Domain" ? adblockBase : sourceBase}/${source.id}.srs`,
       http_client: RULE_DOWNLOAD_HTTP_CLIENT,
       update_interval: "24h"
     }));
@@ -2177,6 +2168,14 @@ var SingBoxConfigBundle = (() => {
       balanced: ["Hijacking", "BlockHttpDNS", "Privacy", "Advertising", "Advertising_Domain"],
       strict: ["Hijacking", "BlockHttpDNS", "Privacy", "Advertising", "Advertising_Domain"]
     }[blockMode] ?? []);
+    if (["iphone", "ipad"].includes(platform)) {
+      securityIds.clear();
+      if (blockMode === "security") securityIds.add("Security");
+      if (["balanced", "strict"].includes(blockMode)) {
+        securityIds.add("Security");
+        securityIds.add("Privacy");
+      }
+    }
     rules.push(...plan.filter(({ phase, id }) => phase === "security" && securityIds.has(id)).map(taggedRule));
     rules.push(...renderCustomRules(quicMode));
     if (quicMode === "proxy-block") {
@@ -2190,6 +2189,9 @@ var SingBoxConfigBundle = (() => {
       if (phase === "serviceIntent") {
         if (quicMode === "proxy-block") rules.push({ ...OVERSEAS_DNS_FALLBACK_RULE, ...QUIC_BLOCK_RULE });
         rules.push({ ...OVERSEAS_DNS_FALLBACK_RULE });
+        if (["iphone", "ipad"].includes(platform)) {
+          rules.push({ domain_suffix: ["cn"], action: "route", outbound: "DIRECT" });
+        }
       }
     }
     rules.push({ action: "resolve", strategy: "prefer_ipv4" });
@@ -2208,12 +2210,17 @@ var SingBoxConfigBundle = (() => {
   var CHINA_DNS_SOURCE_IDS = Object.freeze(
     orderedRoutingPlan().filter(({ id, dnsClass }) => dnsClass === "china" && id !== "ChinaIP").map(({ id }) => id)
   );
-  var MOBILE_RULE_SOURCE_ID_SET2 = new Set(MOBILE_RULE_SOURCE_IDS);
+  var MOBILE_PROXY_DNS_SOURCE_IDS = Object.freeze(
+    mobileRuleClientCatalog().filter(({ dnsClass }) => dnsClass === "proxy").map(({ id }) => id)
+  );
+  var MOBILE_CHINA_DNS_SOURCE_IDS = Object.freeze(
+    mobileRuleClientCatalog().filter(({ dnsClass }) => dnsClass === "china").map(({ id }) => id)
+  );
   function isIos(options) {
     return options.platform === "iphone" || options.platform === "ipad";
   }
-  function activeSourceIds(options, sourceIds) {
-    return isIos(options) ? sourceIds.filter((id) => MOBILE_RULE_SOURCE_ID_SET2.has(id)) : sourceIds;
+  function activeSourceIds(options, sourceIds, mobileSourceIds) {
+    return isIos(options) ? mobileSourceIds : sourceIds;
   }
   function customDnsRules() {
     const rules = [];
@@ -2264,11 +2271,11 @@ var SingBoxConfigBundle = (() => {
       ...customDnsRules()
     ];
     if (options.profileMode !== "diagnostic") {
-      for (const [sourceIds, server] of [
-        [PROXY_DNS_SOURCE_IDS, DNS_PROXY],
-        [CHINA_DNS_SOURCE_IDS, DNS_DIRECT]
+      for (const [sourceIds, mobileSourceIds, server] of [
+        [PROXY_DNS_SOURCE_IDS, MOBILE_PROXY_DNS_SOURCE_IDS, DNS_PROXY],
+        [CHINA_DNS_SOURCE_IDS, MOBILE_CHINA_DNS_SOURCE_IDS, DNS_DIRECT]
       ]) {
-        const ruleSet = activeSourceIds(options, sourceIds).map((id) => `rule-${id}`);
+        const ruleSet = activeSourceIds(options, sourceIds, mobileSourceIds).map((id) => `rule-${id}`);
         if (ruleSet.length > 0) rules.push({ rule_set: ruleSet, action: "route", server });
       }
       rules.push(

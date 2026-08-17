@@ -68,49 +68,20 @@ test("fans compiled lightweight defaults out without publishing input-only rules
   assert.equal(result.diagnostics.compaction.ChinaIP.removed, 2);
 });
 
-test("builds only an edge OneXray GeoData projection with credential-free manifest records", () => {
+test("publishes Anywhere as semantic business packages while other clients keep source-level rules", () => {
   const result = buildClientArtifacts({ snapshot: lightweightFixtureSnapshots(), upstream });
-  assert.ok(result.onexray instanceof Map);
-  assert.deepEqual([...result.onexray.keys()], [
-    "onexray/geodata/geosite.dat",
-    "onexray/geodata/geoip.dat",
-    "onexray/geodata/manifest.json",
-    "onexray/index.html",
+  const anywhereManifest = JSON.parse(result.defaults.get("anywhere/rules/manifest.json"));
+  const anywhereIds = anywhereManifest.sources.map(({ id }) => id);
+  assert.deepEqual(anywhereIds, [
+    "Security", "Privacy", "DomesticCore", "DomesticPlatform", "AI", "GitHub", "YouTube",
+    "OverseasMedia", "OverseasSocial", "Apple", "Microsoft", "Download", "OverseasGame", "ChinaIP",
   ]);
-  assert.equal(result.defaults.has("onexray/geodata/geosite.dat"), false);
-  assert.equal(result.optionalPacks.has("onexray"), false);
-  const manifest = JSON.parse(result.onexray.get("onexray/geodata/manifest.json").toString("utf8"));
-  assert.equal(manifest.channel, "edge");
-  assert.equal(manifest.schema, "apple-proxy-onexray-geodata-v1");
-  assert.equal(manifest.files.length, 2);
-  assert.match(manifest.hashes.domain, /^[0-9a-f]{64}$/u);
-  assert.match(manifest.hashes.ip, /^[0-9a-f]{64}$/u);
-  assert.equal(JSON.stringify(manifest).includes("SECRET"), false);
-  assert.match(result.onexray.get("onexray/index.html").toString("utf8"), /canary|候选/u);
-});
-
-test("carries the two OneXray Sub-Store bundles for edge publication", () => {
-  const result = buildClientArtifacts({ snapshot: lightweightFixtureSnapshots(), upstream });
-  assert.ok(result.onexrayScripts instanceof Map);
-  assert.deepEqual([...result.onexrayScripts.keys()], [
-    "onexray/scripts/onexray-nodes-generator.js",
-    "onexray/scripts/onexray-profile-generator.js",
+  assert.deepEqual(anywhereManifest.sources.find(({ id }) => id === "AI").sourceIds, [
+    "OpenAI", "Claude", "Gemini", "Copilot",
   ]);
-  for (const content of result.onexrayScripts.values()) {
-    assert.ok(Buffer.isBuffer(content) && content.length > 0);
-  }
-});
-
-test("supports explicit OneXray channels without adding the client to adblock-full", () => {
-  const result = buildClientArtifacts({
-    snapshot: lightweightFixtureSnapshots(),
-    upstream,
-    onexrayChannel: "previous",
-  });
-  const manifest = JSON.parse(result.onexray.get("onexray/geodata/manifest.json").toString("utf8"));
-  assert.equal(manifest.channel, "previous");
-  assert.deepEqual([...result.optionalPacks.keys()], ["adblock-full"]);
-  assert.equal(result.diagnostics.defaultManifest.clients.onexray, undefined);
+  assert.equal(result.defaults.has("anywhere/rules/AI-001.arrs"), true);
+  assert.equal(result.defaults.has("anywhere/rules/OpenAI-001.arrs"), false);
+  assert.equal(result.defaults.has("shadowrocket/rules/OpenAI.list"), true);
 });
 
 test("is byte deterministic for the same snapshot", () => {

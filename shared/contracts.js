@@ -4,8 +4,6 @@ export const CLIENT = Object.freeze({
   anywhere: "anywhere",
   surge: "surge",
   singbox: "singbox",
-  onexray: "onexray",
-  happ: "happ",
 });
 
 export const OPTION_VALUES = Object.freeze({

@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { CLIENT } from "../shared/contracts.js";
-import { evaluateNodeForClient, filterNodesForClient, oneXrayNodeExclusionReason } from "../shared/nodes/capabilities.js";
+import { evaluateNodeForClient, filterNodesForClient } from "../shared/nodes/capabilities.js";
 import { diagnosticProtocol, protocolDisplayLabel } from "../shared/nodes/protocol-registry.js";
 import { assertRenderableNodes } from "../shared/nodes/renderability.js";
 
@@ -10,7 +10,6 @@ const ALLOWED_PROTOCOLS = Object.freeze({
   [CLIENT.egern]: ["ss", "shadowsocks", "snell", "vmess", "vless", "trojan", "anytls", "hysteria2", "hy2", "tuic", "socks5", "http", "ssh", "wireguard"],
   [CLIENT.anywhere]: ["ss", "shadowsocks", "vless", "trojan", "anytls", "hysteria2", "hy2", "socks5", "sudoku"],
   [CLIENT.surge]: ["ss", "shadowsocks", "ssr", "snell", "vmess", "trojan", "anytls", "hysteria2", "hy2", "tuic", "socks5", "http"],
-  onexray: ["vless", "vmess", "ss", "trojan", "socks5", "http", "hysteria2"],
 });
 
 const ALL_PROTOCOLS = [...new Set(Object.values(ALLOWED_PROTOCOLS).flat())];
@@ -61,26 +60,6 @@ test("renderability preserves normalized unknown protocol counts without leaking
 });
 
 function nodeForCapability(protocol, client) {
-  if (client === "onexray") {
-    const common = {
-      name: `OneXray ${protocol}`,
-      type: protocol,
-      server: "onexray-capability.example.invalid",
-      port: 443,
-      _profile: { chained: false },
-    };
-    if (protocol === "ss" || protocol === "shadowsocks") {
-      return { ...common, cipher: "aes-128-gcm", password: "TEST_ONLY_ONEXRAY_SS_PASSWORD" };
-    }
-    if (protocol === "vmess" || protocol === "vless") {
-      return { ...common, uuid: "00000000-0000-4000-8000-000000000001", network: "raw" };
-    }
-    if (["trojan", "hysteria2", "hy2"].includes(protocol)) {
-      return { ...common, password: "TEST_ONLY_ONEXRAY_PASSWORD" };
-    }
-    if (protocol === "socks5" || protocol === "http") return common;
-    return common;
-  }
   if (client === CLIENT.anywhere) {
     const common = {
       name: `Anywhere ${protocol}`,
@@ -154,7 +133,7 @@ test("enforces the complete client protocol contracts including aliases", () => 
         evaluateNodeForClient(nodeForCapability(protocol, client), client),
         allowed.includes(protocol)
           ? { supported: true, reason: null }
-          : { supported: false, reason: client === "onexray" ? "unsupported-onexray-protocol" : "unsupported-protocol" },
+          : { supported: false, reason: "unsupported-protocol" },
         `${client} ${protocol}`,
       );
     }
@@ -195,219 +174,6 @@ test("filters protocol variants that the official client schemas cannot decode",
       { supported: true, reason: null },
       `Snell v${version}`,
     );
-  }
-});
-
-test("admits only OneXray structured outbound shapes that the renderer preserves", () => {
-  const common = {
-    name: "OneXray structured fixture",
-    server: "onexray.example.invalid",
-    port: 443,
-    _profile: { chained: false },
-  };
-  const uuid = "00000000-0000-4000-8000-000000000001";
-  const realityPublicKey = "A".repeat(43);
-  const accepted = [
-    { ...common, type: "vless", uuid, network: "raw" },
-    { ...common, type: "vmess", uuid, security: "auto", network: "raw" },
-    { ...common, type: "ss", cipher: "aes-128-gcm", password: "TEST_ONLY_ONEXRAY_SS_PASSWORD" },
-    { ...common, type: "trojan", password: "TEST_ONLY_ONEXRAY_TROJAN_PASSWORD", tls: true },
-    { ...common, type: "socks5", username: "fixture-user", password: "TEST_ONLY_ONEXRAY_SOCKS_PASSWORD" },
-    { ...common, type: "http", username: "fixture-user", password: "TEST_ONLY_ONEXRAY_HTTP_PASSWORD", headers: { Host: "proxy.example.invalid" } },
-    {
-      ...common,
-      type: "hysteria2",
-      password: "TEST_ONLY_ONEXRAY_HYSTERIA_PASSWORD",
-      network: "quic",
-    },
-    { ...common, type: "vless", uuid, tls: true, sni: "tls.example.invalid", alpn: ["h2"], "client-fingerprint": "chrome" },
-    { ...common, type: "vless", uuid, security: "reality", "reality-opts": { "public-key": realityPublicKey, "short-id": "0123abcd", "spider-x": "/" }, "client-fingerprint": "chrome" },
-    {
-      ...common,
-      type: "vless",
-      uuid,
-      tls: true,
-      "reality-opts": { "public-key": realityPublicKey, "short-id": "0123abcd", "_spider-x": "/" },
-      "client-fingerprint": "chrome",
-      network: "tcp",
-      flow: "xtls-rprx-vision",
-      udp: true,
-      "skip-cert-verify": false,
-      "packet-encoding": "xudp",
-    },
-    { ...common, type: "vless", uuid, network: "ws", "ws-opts": { path: "/ws", headers: { Host: "ws.example.invalid" } } },
-    { ...common, type: "vless", uuid, network: "grpc", "grpc-opts": { "grpc-service-name": "grpc-service" } },
-    { ...common, type: "vless", uuid, network: "httpupgrade", "httpupgrade-opts": { path: "/upgrade", host: "upgrade.example.invalid" } },
-    { ...common, type: "vless", uuid, network: "xhttp", "xhttp-opts": { path: "/xhttp", host: "xhttp.example.invalid", mode: "auto", "packet-encoding": "xudp" } },
-    { ...common, type: "vless", uuid, network: "kcp", "kcp-opts": {} },
-  ];
-
-  for (const node of accepted) {
-    assert.deepEqual(evaluateNodeForClient(node, "onexray"), { supported: true, reason: null }, node.network ?? node.type);
-  }
-});
-
-test("rejects OneXray protocols, chains, aliases, malformed credentials, and lossy fields with stable reasons", () => {
-  const common = {
-    name: "OneXray rejected fixture",
-    server: "onexray.example.invalid",
-    port: 443,
-    _profile: { chained: false },
-  };
-  const uuid = "00000000-0000-4000-8000-000000000001";
-
-  for (const type of ["snell", "ssr", "anytls", "tuic", "ssh", "wireguard", "hy2"]) {
-    assert.deepEqual(evaluateNodeForClient({ ...common, type }, "onexray"), {
-      supported: false,
-      reason: "unsupported-onexray-protocol",
-    }, type);
-  }
-  assert.deepEqual(evaluateNodeForClient({ ...common, type: "vless", uuid, _profile: { chained: true } }, "onexray"), {
-    supported: false,
-    reason: "unsupported-onexray-chain",
-  });
-  assert.deepEqual(evaluateNodeForClient({ ...common, type: "ss", cipher: "aes-128-gcm", password: "TEST_ONLY", plugin: "v2ray-plugin" }, "onexray"), {
-    supported: false,
-    reason: "unsupported-onexray-shadowsocks-plugin",
-  });
-  assert.deepEqual(evaluateNodeForClient({ ...common, type: "vless", uuid, sni: "one.example.invalid", servername: "two.example.invalid" }, "onexray"), {
-    supported: false,
-    reason: "conflicting-onexray-alias",
-  });
-  assert.deepEqual(evaluateNodeForClient({ ...common, type: "vless", uuid, port: 0 }, "onexray"), {
-    supported: false,
-    reason: "invalid-onexray-node-shape",
-  });
-  assert.deepEqual(evaluateNodeForClient({ ...common, type: "trojan", password: " " }, "onexray"), {
-    supported: false,
-    reason: "invalid-onexray-node-shape",
-  });
-  assert.deepEqual(evaluateNodeForClient({ ...common, type: "vless", uuid, security: "reality" }, "onexray"), {
-    supported: false,
-    reason: "incomplete-onexray-reality",
-  });
-  assert.deepEqual(evaluateNodeForClient({ ...common, type: "vless", uuid, security: "none", tls: true }, "onexray"), {
-    supported: false,
-    reason: "unsupported-onexray-tls-shape",
-  });
-  assert.deepEqual(evaluateNodeForClient({ ...common, type: "vless", uuid, network: "h2" }, "onexray"), {
-    supported: false,
-    reason: "unsupported-onexray-transport",
-  });
-  assert.deepEqual(evaluateNodeForClient({
-    ...common,
-    type: "vless",
-    uuid,
-    network: "ws",
-    "ws-opts": { headers: { Foo: "bar" } },
-  }, "onexray"), {
-    supported: false,
-    reason: "unsupported-onexray-transport",
-  });
-  assert.deepEqual(evaluateNodeForClient({
-    ...common,
-    type: "vless",
-    uuid,
-    network: "ws",
-    "ws-opts": { headers: { Host: "one.example.invalid", host: "two.example.invalid" } },
-  }, "onexray"), {
-    supported: false,
-    reason: "unsupported-onexray-transport",
-  });
-  for (const tlsOnlyField of [{ alpn: ["h2"] }, { "client-fingerprint": "chrome" }]) {
-    assert.deepEqual(evaluateNodeForClient({ ...common, type: "vless", uuid, ...tlsOnlyField }, "onexray"), {
-      supported: false,
-      reason: "unsupported-onexray-tls-shape",
-    });
-  }
-  assert.deepEqual(evaluateNodeForClient({ ...common, type: "vmess", uuid, cipher: {} }, "onexray"), {
-    supported: false,
-    reason: "invalid-onexray-node-shape",
-  });
-  for (const vmessSecurity of [
-    { cipher: "tls" },
-    { cipher: "reality" },
-    { cipher: "unsupported" },
-    { security: "tls" },
-    { security: "reality" },
-  ]) {
-    assert.deepEqual(evaluateNodeForClient({ ...common, type: "vmess", uuid, ...vmessSecurity }, "onexray"), {
-      supported: false,
-      reason: "invalid-onexray-node-shape",
-    });
-  }
-  for (const lossyField of [
-    { tfo: true },
-    { mux: true },
-    { "ech-opts": { enable: true, config: "TEST_ONLY_ECH_CONFIG" } },
-    { "obfs": "salamander" },
-  ]) {
-    assert.deepEqual(evaluateNodeForClient({ ...common, type: "vless", uuid, ...lossyField }, "onexray"), {
-      supported: false,
-      reason: "unsupported-onexray-option",
-    });
-  }
-  assert.deepEqual(evaluateNodeForClient({ ...common, type: "vless", uuid, tls: true, "skip-cert-verify": true }, "onexray"), {
-    supported: false,
-    reason: "unsupported-onexray-option",
-  });
-  assert.deepEqual(evaluateNodeForClient({ ...common, type: "vless", uuid, network: "ws", "packet-encoding": "xudp" }, "onexray"), {
-    supported: false,
-    reason: "unsupported-onexray-transport",
-  });
-  assert.deepEqual(evaluateNodeForClient({ ...common, type: "vless", uuid, network: "raw", "packet-encoding": "unknown" }, "onexray"), {
-    supported: false,
-    reason: "unsupported-onexray-transport",
-  });
-  assert.deepEqual(evaluateNodeForClient({ ...common, type: "vless", uuid, network: "kcp", "kcp-opts": { mtu: 1350 } }, "onexray"), {
-    supported: false,
-    reason: "unsupported-onexray-transport",
-  });
-});
-
-test("OneXray filtering aggregates credential-free diagnostic reasons", () => {
-  const accepted = {
-    name: "ONE_XRAY_ACCEPTED_NODE",
-    type: "vless",
-    server: "accepted.onexray.example.invalid",
-    port: 443,
-    uuid: "00000000-0000-4000-8000-000000000001",
-    _profile: { chained: false },
-  };
-  const chained = {
-    name: "ONE_XRAY_CHAINED_NODE",
-    type: "vless",
-    server: "chained.onexray.example.invalid",
-    port: 443,
-    uuid: "00000000-0000-4000-8000-000000000001",
-    password: "TEST_ONLY_ONEXRAY_CHAIN_PASSWORD",
-    _profile: { chained: true },
-  };
-  const unsupported = {
-    name: "ONE_XRAY_UNSUPPORTED_NODE",
-    type: "snell",
-    server: "unsupported.onexray.example.invalid",
-    port: 443,
-    psk: "TEST_ONLY_ONEXRAY_PSK",
-    _profile: { chained: false },
-  };
-  const result = filterNodesForClient([accepted, chained, unsupported], "onexray");
-  assert.deepEqual(result.nodes, [accepted]);
-  assert.deepEqual(result.diagnostics, {
-    accepted: 1,
-    excluded: {
-      "unsupported-onexray-chain": 1,
-      "unsupported-onexray-protocol": 1,
-    },
-  });
-  assert.equal(oneXrayNodeExclusionReason(accepted), null);
-  const diagnosticsJson = JSON.stringify(result.diagnostics);
-  for (const node of [accepted, chained, unsupported]) {
-    assert.equal(diagnosticsJson.includes(node.name), false);
-    assert.equal(diagnosticsJson.includes(node.server), false);
-    for (const credential of [node.uuid, node.password, node.psk]) {
-      if (credential) assert.equal(diagnosticsJson.includes(credential), false);
-    }
   }
 });
 

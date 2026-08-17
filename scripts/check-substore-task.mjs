@@ -28,8 +28,6 @@ const CHANNELS = Object.freeze(["edge", "current"]);
 const ADBLOCK_MODES = Object.freeze(["off", "full"]);
 const PROFILE_MODES = Object.freeze(["light", "diagnostic"]);
 const NODE_ERROR_MODES = Object.freeze(["strict", "compatible"]);
-const ONEXRAY_LOG_LEVELS = Object.freeze(["none", "error", "warning", "info", "debug"]);
-const ONEXRAY_DNS_LOG_MODES = Object.freeze(["on", "off"]);
 
 const GENERATOR_SCHEMAS = Object.freeze({
   "shadowrocket/scripts/shadowrocket-node-subscription.js": nodeSchema(),
@@ -58,8 +56,6 @@ const GENERATOR_SCHEMAS = Object.freeze({
       nodeErrorMode: NODE_ERROR_MODES,
     },
   }),
-  "onexray/scripts/onexray-nodes-generator.js": oneXraySchema(["nodes"]),
-  "onexray/scripts/onexray-profile-generator.js": oneXraySchema(["profile", "audit"]),
 });
 
 function nodeSchema() {
@@ -104,28 +100,6 @@ function configSchema({
       autoGroupMode: OPTION_VALUES.autoGroupMode,
       clientChain: OPTION_VALUES.clientChain,
       ...extraEnums,
-    }),
-  });
-}
-
-function oneXraySchema(outputValues) {
-  return Object.freeze({
-    required: Object.freeze(["output", "type", "name"]),
-    allowed: Object.freeze([
-      "output", "type", "name", "channel", ...COMMON_ENUM_KEYS.filter((key) => key !== "autoGroupMode"),
-      "clientChainTarget", "policyOverrides", "policyFile", "logLevel", "dnsLog",
-    ]),
-    outputValues: Object.freeze(outputValues),
-    enums: Object.freeze({
-      dnsMode: OPTION_VALUES.dnsMode,
-      chinaDns: OPTION_VALUES.chinaDns,
-      globalDns: OPTION_VALUES.globalDns,
-      blockMode: OPTION_VALUES.blockMode,
-      quicMode: OPTION_VALUES.quicMode,
-      ipv6Mode: OPTION_VALUES.ipv6Mode,
-      clientChain: OPTION_VALUES.clientChain,
-      logLevel: ONEXRAY_LOG_LEVELS,
-      dnsLog: ONEXRAY_DNS_LOG_MODES,
     }),
   });
 }

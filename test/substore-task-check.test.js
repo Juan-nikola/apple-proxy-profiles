@@ -31,40 +31,6 @@ test("accepts a client-specific collection slug and rejects unsafe collection na
   }
 });
 
-test("accepts OneXray node, profile, and audit generator schemas", () => {
-  const urls = [
-    `${PUBLIC}/edge/onexray/scripts/onexray-nodes-generator.js#output=nodes&type=collection&name=apple-proxy-onexray&channel=edge&clientChain=off`,
-    `${PUBLIC}/edge/onexray/scripts/onexray-profile-generator.js#output=profile&type=collection&name=apple-proxy-onexray&channel=edge&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&clientChain=off&policyFile=synthetic-policy&logLevel=info&dnsLog=on`,
-    `${PUBLIC}/edge/onexray/scripts/onexray-profile-generator.js#output=audit&type=collection&name=apple-proxy-onexray&channel=edge&dnsMode=privacy&chinaDns=dnspod&globalDns=quad9&blockMode=security&quicMode=all-block&ipv6Mode=ipv4-only&clientChain=off&policyOverrides=e30&logLevel=warning&dnsLog=off`,
-  ];
-  for (const url of urls) {
-    const result = checkSubstoreTaskUrl(url);
-    assert.equal(result.ok, true, result.errors.join(", "));
-  }
-});
-
-test("OneXray checker uses the shared safe collection slug boundary", () => {
-  for (const name of ["apple-proxy-onexray", "apple-proxy-all", "a", `a${"b".repeat(127)}`]) {
-    const url = `${PUBLIC}/edge/onexray/scripts/onexray-nodes-generator.js#output=nodes&type=collection&name=${name}&channel=edge&clientChain=off`;
-    assert.equal(checkSubstoreTaskUrl(url).ok, true, name);
-  }
-  for (const name of ["", "bad%2Fname", "bad%3Fname", "bad%23name", "%E4%B8%AD%E6%96%87", "bad%0Aname", "__proto__", "constructor", "prototype", `a${"b".repeat(128)}`]) {
-    const url = `${PUBLIC}/edge/onexray/scripts/onexray-nodes-generator.js#output=nodes&type=collection&name=${name}&channel=edge&clientChain=off`;
-    assert.equal(checkSubstoreTaskUrl(url).ok, false, name);
-  }
-});
-
-test("rejects unsupported OneXray generator options", () => {
-  for (const suffix of [
-    "output=config&type=collection&name=apple-proxy-onexray",
-    "output=profile&type=collection&name=apple-proxy-onexray&platform=macos",
-    "output=profile&type=collection&name=apple-proxy-onexray&dnsLog=yes",
-  ]) {
-    const result = checkSubstoreTaskUrl(`${PUBLIC}/edge/onexray/scripts/onexray-profile-generator.js#${suffix}`);
-    assert.equal(result.ok, false, suffix);
-  }
-});
-
 test("rejects an unsupported dnsMode value", () => {
   const url = `${PUBLIC}/current/shadowrocket/scripts/shadowrocket-profile-generator.js#output=config&type=collection&name=apple-proxy-sources&subscriptionName=Apple-Proxy-Nodes&platform=macos&dnsMode=weird`;
   const result = checkSubstoreTaskUrl(url);

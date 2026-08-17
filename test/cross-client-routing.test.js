@@ -3,73 +3,9 @@ import { readFile } from "node:fs/promises";
 import test from "node:test";
 
 import { LIGHTWEIGHT_CLIENTS, LIGHTWEIGHT_ROUTING_CASES } from "./fixtures/lightweight-routing-cases.js";
-import { decodeXrayGeoData, renderXrayGeoData } from "../automation/src/render-xray-geodata.js";
-import { RULE_KIND } from "../shared/rules/model.js";
-import { BUSINESS_TARGETS } from "../shared/policies/business-targets.js";
-import { orderedRoutingPlan } from "../shared/rules/lightweight-policy.js";
-import { oneXrayGeoCode, oneXrayGeoNames } from "../clients/onexray/src/geodata-contract.js";
-import { renderOneXrayProfile } from "../clients/onexray/src/render-profile.js";
-import { classifyOneXrayProfile } from "../clients/onexray/test/parity-helpers.js";
 
 const root = new URL("../", import.meta.url);
 const openAiNativePolicy = "🤖 AI 专用";
-const ONEXRAY_CHANNEL = "edge";
-const ONEXRAY_NAMES = oneXrayGeoNames(ONEXRAY_CHANNEL);
-
-function oneXrayFixtureArtifacts() {
-  const entries = new Map(BUSINESS_TARGETS.length > 0
-    ? orderedRoutingPlan().map(({ id }) => [id, []])
-    : []);
-  for (const routingCase of LIGHTWEIGHT_ROUTING_CASES) {
-    const sourceId = routingCase.sourceId ?? (routingCase.resolvedCountry === "CN" ? "ChinaIP" : null);
-    const value = routingCase.ip ?? routingCase.resolvedIp;
-    if (!sourceId || !value && !routingCase.domain) continue;
-    if (!entries.has(sourceId)) continue;
-    entries.get(sourceId).push(value !== undefined && sourceId === "ChinaIP"
-      ? {
-        kind: value.includes(":") ? RULE_KIND.ipv6Cidr : RULE_KIND.ipv4Cidr,
-        value: `${value}/${value.includes(":") ? 128 : 32}`,
-        noResolve: true,
-        sourceId,
-      }
-      : {
-        kind: RULE_KIND.domainSuffix,
-        value: routingCase.domain,
-        noResolve: false,
-        sourceId,
-      });
-  }
-  const geo = renderXrayGeoData(new Map([...entries].map(([id, sourceEntries]) => [id, { id, entries: sourceEntries }])), ONEXRAY_CHANNEL);
-  const decoded = {
-    domain: decodeXrayGeoData(geo.domain, "domain"),
-    ip: decodeXrayGeoData(geo.ip, "ip"),
-  };
-  const options = {
-    channel: ONEXRAY_CHANNEL,
-    dnsMode: "stable",
-    chinaDns: "alidns",
-    globalDns: "cloudflare",
-    blockMode: "balanced",
-    quicMode: "proxy-block",
-    ipv6Mode: "auto",
-    clientChain: "off",
-    clientChainTarget: "",
-  };
-  const targets = Object.fromEntries(BUSINESS_TARGETS.map(({ id, defaultTarget }) => [id, {
-    configured: defaultTarget,
-    resolvedTag: defaultTarget === "DIRECT" ? "direct" : "proxy",
-    status: defaultTarget === "DIRECT" ? "direct" : "follow",
-  }]));
-  const resolution = { homepageNodes: [], fixedNodes: [], finalOutbound: null, targets, chain: { enabled: false, landingTag: null, entryCount: 0 } };
-  const profileFor = (quicMode) => renderOneXrayProfile({
-    options: { ...options, quicMode },
-    resolution,
-    routingPlan: orderedRoutingPlan(),
-    geo: { siteName: ONEXRAY_NAMES.domain, code: oneXrayGeoCode },
-  });
-  return { decoded, profiles: Object.freeze({ allow: profileFor("allow"), "proxy-block": profileFor("proxy-block"), "all-block": profileFor("all-block") }) };
-}
-
 function normalizePolicy(sourceId, policy) {
   if (sourceId === "OpenAI" && policy === openAiNativePolicy) return "OpenAI policy";
   return policy;
@@ -90,6 +26,12 @@ async function anywhereArtifacts() {
     for (const raw of content.split("\n")) {
       const match = /^2,\s*(\S+)$/u.exec(raw.trim());
       if (match) source.domains.push(match[1]);
+    }
+  }
+  for (const logical of manifest.sources) {
+    const source = sources.get(logical.id);
+    for (const sourceId of logical.sourceIds ?? []) {
+      if (!sources.has(sourceId)) sources.set(sourceId, source);
     }
   }
   assert.equal(sources.get("ChinaTLD")?.routing, 1, "Anywhere ChinaTLD must be DIRECT");
@@ -176,21 +118,6 @@ function parseSingBoxPolicies(config) {
 }
 
 function expectedForCase(client, routingCase, policies, anywhere) {
-  if (client === "onexray") {
-    const profile = policies.profiles[routingCase.quicMode ?? "proxy-block"];
-    const actual = classifyOneXrayProfile(profile, {
-      domain: routingCase.domain,
-      ip: routingCase.ip ?? routingCase.resolvedIp,
-      network: routingCase.network,
-      port: routingCase.port,
-    }, policies.decoded);
-    const expected = routingCase.oneXrayExpected
-      ?? (routingCase.expected === "DIRECT" || routingCase.expected === "🇨🇳 国内平台" || routingCase.expected === "⬇️ 下载/P2P" || routingCase.expected === "🕵️ 严格跟踪"
-        ? "direct"
-        : routingCase.expected === "REJECT" ? "block" : "proxy");
-    assert.equal(actual, expected, `onexray: ${routingCase.domain ?? routingCase.ip}`);
-    return routingCase.expected;
-  }
   if (["local-domain", "private-ipv4", "private-ipv6"].includes(routingCase.kind)) return "DIRECT";
   if (client === "anywhere" && routingCase.kind === "security-privacy") {
     const source = anywhere.sources.get(routingCase.sourceId);
@@ -218,7 +145,7 @@ function expectedForCase(client, routingCase, policies, anywhere) {
   return { 0: "🚀 节点选择", 1: "DIRECT", 2: "REJECT" }[source.routing];
 }
 
-test("all six generated client formats implement the shared lightweight behavior cases", async (t) => {
+test("all five generated client formats implement the shared lightweight behavior cases", async (t) => {
   const anywhere = await anywhereArtifacts();
   const artifacts = {
     shadowrocket: parseTextPolicies(await readFile(new URL("clients/shadowrocket/examples/shadowrocket-macos.conf", root), "utf8"), "shadowrocket"),
@@ -226,7 +153,6 @@ test("all six generated client formats implement the shared lightweight behavior
     egern: parseEgernPolicies(await readFile(new URL("clients/egern/examples/egern-macos.yaml", root), "utf8")),
     singbox: parseSingBoxPolicies(JSON.parse(await readFile(new URL("clients/sing-box/examples/sing-box-macos.json", root), "utf8"))),
     anywhere: new Map(),
-    onexray: oneXrayFixtureArtifacts(),
   };
 
   for (const client of LIGHTWEIGHT_CLIENTS) {

@@ -3,19 +3,19 @@
   "client": "egern",
   "files": [
     {
-      "bytes": 35931,
+      "bytes": 27637,
       "path": "egern/examples/egern-ipad.yaml",
-      "sha256": "ecb04490b3cc8a0efb42cf71c8f5ebdddfdc9cb26dbda62818f480fe98f8ee1c"
+      "sha256": "4152e71d98115ab6122f4ca6b2c845fc61778045a3b55ce2c561211fdc75570f"
     },
     {
-      "bytes": 35931,
+      "bytes": 27637,
       "path": "egern/examples/egern-iphone.yaml",
-      "sha256": "ecb04490b3cc8a0efb42cf71c8f5ebdddfdc9cb26dbda62818f480fe98f8ee1c"
+      "sha256": "4152e71d98115ab6122f4ca6b2c845fc61778045a3b55ce2c561211fdc75570f"
     },
     {
-      "bytes": 35924,
+      "bytes": 27634,
       "path": "egern/examples/egern-macos.yaml",
-      "sha256": "757cc9503d0e50d795a5d9d415db0e3e98c20678bdfaf9126ba0734cc5fc3e24"
+      "sha256": "2ef110539de54b320d009e48e2d9df9ac9f0619fa876aa270be452fac783c180"
     },
     {
       "bytes": 883,
@@ -178,28 +178,28 @@
       "sha256": "ea6d3fd4853f019d1f3f8d6f24e1542cfae0e83b802399f737ce154de6cf4610"
     },
     {
-      "bytes": 119837,
+      "bytes": 119500,
       "path": "egern/scripts/egern-node-generator.js",
-      "sha256": "4addfba498c469da279067c58c0fe3a4f5d0b9cd85292006d60b8be93f9f864d"
+      "sha256": "00f66d3bb98a2f325a7f17f82a078b0b7169036cd8da1e4d270c1bd67faafc5c"
     },
     {
-      "bytes": 202463,
+      "bytes": 203885,
       "path": "egern/scripts/egern-profile-generator.js",
-      "sha256": "6f25d6f6e1858ca8d727e972ebc80c7c847109e57c8518f31c711130382e0b9e"
+      "sha256": "ff8c602f2e97897d1c214044d998ab71a266f7a2b431546c21778662310c8ee4"
     },
     {
-      "bytes": 119837,
+      "bytes": 119500,
       "path": "egern/scripts/substore-node-generator.js",
-      "sha256": "4addfba498c469da279067c58c0fe3a4f5d0b9cd85292006d60b8be93f9f864d"
+      "sha256": "00f66d3bb98a2f325a7f17f82a078b0b7169036cd8da1e4d270c1bd67faafc5c"
     },
     {
-      "bytes": 202463,
+      "bytes": 203885,
       "path": "egern/scripts/substore-profile-generator.js",
-      "sha256": "6f25d6f6e1858ca8d727e972ebc80c7c847109e57c8518f31c711130382e0b9e"
+      "sha256": "ff8c602f2e97897d1c214044d998ab71a266f7a2b431546c21778662310c8ee4"
     }
   ],
   "generatedAt": "2026-08-15T18:26:29Z",
-  "manifestHash": "c8fab5943dfc222d71db6ee7ae909de7f9f5bc6db0df8e59bd3d45f86d7320f5",
+  "manifestHash": "085ac60c7d5d86c720d23940aac43a2df9124774461c8d12a5844d6d094886f2",
   "optionalPacks": {
     "adblock-full": "5599ad31194d1f1d7f88e4a2eec4632d9883a1a7ba57e29d46fb1db775542672"
   },

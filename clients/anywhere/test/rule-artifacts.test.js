@@ -4,6 +4,7 @@ import { readFile, readdir } from "node:fs/promises";
 import test from "node:test";
 
 import { canonicalJson } from "../../../automation/src/render-anywhere-rules.js";
+import { ANYWHERE_LIGHTWEIGHT_MIGRATION } from "../src/shard-rules.js";
 
 const rulesDirectory = new URL("../examples/rules/", import.meta.url);
 const optionalDirectory = new URL("../examples/optional/adblock-full/anywhere/", import.meta.url);
@@ -39,39 +40,41 @@ function parseLikeAnywhere(content) {
 test("pins the schema-v2 lightweight topology without legacy giant default shards", async () => {
   const manifest = JSON.parse(await readFile(new URL("manifest.json", rulesDirectory), "utf8"));
   assert.equal(manifest.schemaVersion, 2);
-  assert.deepEqual(manifest.removed, ["Advertising", "Advertising_Domain", "ChinaMax_Domain", "Game"]);
-  assert.deepEqual(manifest.replacements, {
-    ChinaMax_Domain: ["DomesticCore"],
-    Game: ["DomesticGame", "OverseasGame"],
-  });
+  assert.deepEqual(manifest.removed, ANYWHERE_LIGHTWEIGHT_MIGRATION.removed);
+  assert.deepEqual(manifest.replacements, ANYWHERE_LIGHTWEIGHT_MIGRATION.replacements);
   assert.deepEqual(manifest.optionalPacks, { "adblock-full": "../../optional/adblock-full/manifest.json" });
   assert.equal(manifest.upstream.commit, "dab47069a30c4ae70f7f5f4c919d639d9aaf79dc");
   assert.equal(manifest.generatedAt, manifest.upstream.committedAt);
   const ids = manifest.sources.map(({ id }) => id);
-  for (const id of ["DomesticCore", "DomesticGame", "OverseasGame", "ChinaIP"]) assert.ok(ids.includes(id), id);
-  for (const id of ["Advertising", "Advertising_Domain", "ChinaMax_Domain", "Game", "ChinaMax"]) {
+  for (const id of [
+    "Security", "Privacy", "DomesticCore", "DomesticPlatform", "AI", "GitHub", "YouTube",
+    "OverseasMedia", "OverseasSocial", "Apple", "Microsoft", "Download", "OverseasGame", "ChinaIP",
+  ]) assert.ok(ids.includes(id), id);
+  for (const id of [
+    "Hijacking", "BlockHttpDNS", "DomesticGame", "SteamCN", "BiliBili", "ByteDance", "XiaoHongShu",
+    "Weibo", "OpenAI", "Claude", "Gemini", "Copilot", "Netflix", "Disney", "Spotify", "GlobalMedia",
+    "Telegram", "Facebook", "Instagram", "Twitter", "TikTok", "PrivateTracker", "ChinaTLD",
+    "Advertising", "Advertising_Domain", "ChinaMax_Domain", "Game", "ChinaMax",
+  ]) {
     assert.equal(ids.includes(id), false, id);
   }
   assert.equal(manifest.sources.find(({ id }) => id === "DomesticCore").routing, 1);
-  assert.equal(manifest.sources.find(({ id }) => id === "DomesticGame").routing, 1);
   assert.equal(manifest.sources.find(({ id }) => id === "OverseasGame").routing, 0);
   assert.equal(manifest.sources.find(({ id }) => id === "ChinaIP").routing, 1);
-  const chinaTld = manifest.sources.find(({ id }) => id === "ChinaTLD");
-  assert.ok(chinaTld, "ChinaTLD must be published");
+  const domesticCore = manifest.sources.find(({ id }) => id === "DomesticCore");
+  assert.ok(domesticCore.sourceIds.includes("ChinaTLD"), "ChinaTLD must be included in DomesticCore");
   assert.deepEqual({
-    phase: chinaTld.phase,
-    dnsClass: chinaTld.dnsClass,
-    routing: chinaTld.routing,
+    phase: domesticCore.phase,
+    dnsClass: domesticCore.dnsClass,
+    routing: domesticCore.routing,
   }, {
-    phase: "lateDomestic",
+    phase: "earlyDomestic",
     dnsClass: "china",
     routing: 1,
   });
   assert.ok(manifest.sources.findIndex(({ id }) => id === "OverseasGame")
-    < manifest.sources.findIndex(({ id }) => id === "ChinaTLD"));
-  assert.ok(manifest.sources.findIndex(({ id }) => id === "ChinaTLD")
     < manifest.sources.findIndex(({ id }) => id === "ChinaIP"));
-  assert.equal(chinaTld.shardIds.length, 1);
+  assert.equal(domesticCore.shardIds.length, 1);
 });
 
 test("round-trips every shard with the pinned Swift-equivalent parser", async () => {

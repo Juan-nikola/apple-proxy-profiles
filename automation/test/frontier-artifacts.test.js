@@ -32,62 +32,31 @@ test("builds safe channel-scoped frontier files and rewrites public channel link
   for (const path of files.keys()) assert.doesNotMatch(path, /(^|\/)(?:\.\.|\/)/u);
 });
 
-test("renders all six OneXray frontier candidates with one shared contract hash", () => {
-  const manifests = ["macos", "iphone", "ipad", "android", "windows", "linux"].map((platform) => ({
-    client: "onexray",
-    platform,
-    channel: "edge",
-    upstream: { branch: "master", commit: "a".repeat(40), fetchedAt: "2026-08-05T00:00:00Z" },
-    schemaVersion: "onexray-profile-v1",
-    ruleManifestSha256: "b".repeat(64),
-    configSha256: "c".repeat(64),
-    status: "candidate",
-  }));
-  const files = buildFrontierArtifacts({
-    ruleBaseUrl: "https://juan-nikola.github.io/apple-proxy-profiles/current",
-    manifests,
-    staticFiles: new Map([
-      ["onexray/index.html", "release onexray\n"],
-      ["onexray/geodata/geosite.dat", "domain\n"],
-      ["onexray/geodata/geoip.dat", "ip\n"],
-      ["onexray/geodata/manifest.json", "manifest\n"],
-    ]),
-  });
-  assert.ok(files.has("edge/onexray/index.html"));
-  assert.ok(files.has("edge/onexray-macos/manifest.json"));
-  assert.ok(files.has("edge/onexray-linux/manifest.json"));
-  const frontier = JSON.parse(files.get("edge/frontier-manifest.json"));
-  assert.deepEqual(frontier.records.map(({ platformKey }) => platformKey), [
-    "onexray-macos", "onexray-iphone", "onexray-ipad", "onexray-android", "onexray-windows", "onexray-linux",
-  ]);
-  assert.equal(new Set(frontier.records.map(({ configSha256 }) => configSha256)).size, 1);
-});
-
-test("keeps OneXray binary GeoData bytes intact in frontier static artifacts", () => {
+test("keeps binary static bytes intact for maintained frontier clients", () => {
   const bytes = Buffer.from([0, 1, 2, 255]);
   const files = buildFrontierArtifacts({
     ruleBaseUrl: "https://juan-nikola.github.io/apple-proxy-profiles/current",
     manifests: [{
-      client: "onexray",
+      client: "singbox",
       platform: "macos",
       channel: "edge",
       upstream: { branch: "master", commit: "a".repeat(40), fetchedAt: "2026-08-05T00:00:00Z" },
-      schemaVersion: "onexray-profile-v1",
+      schemaVersion: "singbox-profile-v1",
       ruleManifestSha256: "b".repeat(64),
       configSha256: "c".repeat(64),
       status: "candidate",
     }],
-    staticFiles: new Map([["onexray/geodata/geosite.dat", bytes]]),
+    staticFiles: new Map([["sing-box/scripts/config.bin", bytes]]),
   });
-  assert.deepEqual(files.get("edge/onexray/geodata/geosite.dat"), bytes);
+  assert.deepEqual(files.get("edge/sing-box/scripts/config.bin"), bytes);
 });
 
 test("rejects duplicate frontier platform candidates", () => {
   assert.throws(
     () => buildFrontierArtifacts({
       ruleBaseUrl: "https://juan-nikola.github.io/apple-proxy-profiles/current",
-      manifests: [record("onexray", "macos", "edge"), record("onexray", "macos", "edge")],
-      staticFiles: new Map([["onexray/index.html", "release\n"]]),
+      manifests: [record("surge", "macos", "edge"), record("surge", "macos", "edge")],
+      staticFiles: new Map([["surge/index.html", "release\n"]]),
     }),
     /duplicate.*platform|platform.*duplicate/iu,
   );
@@ -96,9 +65,9 @@ test("rejects duplicate frontier platform candidates", () => {
 test("allows the same frontier platform in independent channels", () => {
   const files = buildFrontierArtifacts({
     ruleBaseUrl: "https://juan-nikola.github.io/apple-proxy-profiles/current",
-    manifests: [record("onexray", "macos", "edge"), record("onexray", "macos", "current")],
-    staticFiles: new Map([["onexray/index.html", "release\n"]]),
+    manifests: [record("surge", "macos", "edge"), record("surge", "macos", "current")],
+    staticFiles: new Map([["surge/index.html", "release\n"]]),
   });
-  assert.ok(files.has("edge/onexray-macos/manifest.json"));
-  assert.ok(files.has("current/onexray-macos/manifest.json"));
+  assert.ok(files.has("edge/surge/macos/manifest.json"));
+  assert.ok(files.has("current/surge/macos/manifest.json"));
 });

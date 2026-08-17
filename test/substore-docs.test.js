@@ -36,8 +36,6 @@ const operationalDocs = Object.freeze({
   "clients/sing-box/README.md": "apple-proxy-singbox",
   "clients/sing-box/docs/deployment.md": "apple-proxy-singbox",
   "clients/sing-box/docs/openwrt.md": "apple-proxy-singbox",
-  "clients/onexray/README.md": "apple-proxy-onexray",
-  "clients/onexray/docs/deployment.md": "apple-proxy-onexray",
 });
 
 test("central Sub-Store guide closes over all public scripts and private tasks", async () => {
@@ -60,9 +58,8 @@ test("central Sub-Store guide closes over all public scripts and private tasks",
     "shadowrocket-config-macos", "shadowrocket-config-iphone", "shadowrocket-config-ipad",
     "surge-nodes", "surge-config-macos", "surge-config-iphone", "surge-config-ipad",
      "singbox-config-macos", "singbox-config-iphone", "singbox-config-ipad", "singbox-config-android",
-    "onexray-nodes", "onexray-profile", "onexray-routing-audit",
   ]) assert.ok(guide.includes(`\`${task}\``), `missing task ${task}`);
-   assert.match(guide, /(?:五客户端|客户端)总数为 4\+1\+3\+4\+4\+3=19 个任务/u);
+  assert.match(guide, /(?:五客户端|客户端)总数为 4\+1\+3\+4\+4=16 个任务/u);
   assert.match(guide, /#output=nodes[\s\S]*&/u);
   assert.match(guide, /#output=config[\s\S]*&/u);
   assert.match(guide, /channel=current[\s\S]*channel=edge/u);
@@ -81,7 +78,7 @@ test("public documentation never contains a private Sub-Store endpoint", async (
   assert.match(content, /example\.invalid/u);
 });
 
-test("canonical client pool guide defines six mappings, migration, rollback, and fail-closed rendering", async () => {
+test("canonical client pool guide defines five mappings, migration, rollback, and fail-closed rendering", async () => {
   const guide = await optionalText("docs/substore-client-pools.md");
   for (const row of [
     "| Egern | `apple-proxy-egern` | 用户自行选择来源、AnyTLS 和字段形状 |",
@@ -89,7 +86,6 @@ test("canonical client pool guide defines six mappings, migration, rollback, and
     "| Shadowrocket | `apple-proxy-shadowrocket` | 用户自行选择节点；AnyTLS 等已实现类型可直接包含 |",
     "| Surge | `apple-proxy-surge` | 用户自行选择节点；renderer 无法表示的协议跳过并计入 renderFailures |",
     "| sing-box | `apple-proxy-singbox` | 默认 strict；任一已选节点无法完整表示时失败，迁移期可显式使用 compatible |",
-    "| OneXray | `apple-proxy-onexray` | 用户自行选择节点；原生 Profile 无法表示的协议跳过并计入 renderFailures |",
   ]) assert.ok(guide.includes(row), row);
   assert.match(guide, /`apple-proxy-all`[\s\S]{0,160}总池/u);
   assert.match(guide, /`apple-proxy-sources`[\s\S]{0,240}(?:兼容|回滚)/u);
@@ -99,7 +95,7 @@ test("canonical client pool guide defines six mappings, migration, rollback, and
   const orderedSteps = [
     "保留旧 collection 和 tasks",
     "建立 `apple-proxy-all` 总池",
-    "建立六个客户端组合",
+    "建立五个客户端组合",
     "用户自行筛选",
     "preview",
     "只修改对应客户端的 `name=`",
@@ -112,7 +108,6 @@ test("canonical client pool guide defines six mappings, migration, rollback, and
     assert.ok(next > position, `missing or out-of-order migration step: ${step}`);
     position = next;
   }
-  assert.match(guide, /OneXray[\s\S]{0,500}`NODE:<name>`[\s\S]{0,500}外部 exact-name 引用[\s\S]{0,500}preview[\s\S]{0,500}`· <Protocol>`/u);
 });
 
 test("canonical client pool guide uses only synthetic, non-secret examples", async () => {

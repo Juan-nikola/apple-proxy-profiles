@@ -5,8 +5,6 @@ export const FRONTIER_CHANNELS = Object.freeze(["edge", "current", "previous"]);
 export const FRONTIER_PLATFORMS = Object.freeze({
   [CLIENT.surge]: Object.freeze(["macos", "iphone", "ipad"]),
   [CLIENT.singbox]: Object.freeze(["macos", "iphone", "ipad", "android"]),
-  [CLIENT.onexray]: Object.freeze(["macos", "iphone", "ipad", "android", "windows", "linux"]),
-  [CLIENT.happ]: Object.freeze(["macos", "iphone", "ipad", "android", "windows", "linux"]),
 });
 
 const STATUS_VALUES = new Set(["candidate", "validated", "rejected", "rolled-back"]);
@@ -75,7 +73,7 @@ export function frontierPlatformKey(client, platform) {
   if (!Object.hasOwn(FRONTIER_PLATFORMS, client) || !FRONTIER_PLATFORMS[client].includes(platform)) {
     throw new Error(`Unsupported frontier platform: ${client}/${platform}`);
   }
-  return client === CLIENT.onexray ? `onexray-${platform}` : `${client}/${platform}`;
+  return `${client}/${platform}`;
 }
 
 export function createFrontierManifest(input) {
@@ -123,48 +121,6 @@ export function createFrontierManifest(input) {
   if (verifiedAt !== undefined) manifest.verifiedAt = verifiedAt;
   if (canary !== undefined) manifest.canary = canary;
   return Object.freeze(manifest);
-}
-
-/**
- * Creates six independent OneXray edge candidates from one sanitized
- * Profile/client contract. The profile hash is intentionally carried in the
- * existing configSha256 slot so platform records do not contain credentials
- * or duplicate binary data.
- */
-export function createOneXrayFrontierCandidates(input) {
-  if (!input || typeof input !== "object" || Array.isArray(input)) {
-    throw new TypeError("OneXray frontier input is required");
-  }
-  if (!SHA256.test(input.profileSha256 ?? input.configSha256)) {
-    throw new TypeError("OneXray frontier profileSha256 must be a SHA-256");
-  }
-  const states = input.states === undefined ? {} : input.states;
-  if (!states || typeof states !== "object" || Array.isArray(states)) {
-    throw new TypeError("OneXray frontier states must be an object");
-  }
-  const stateKeys = new Set(["status", "verifiedAt", "canary", "failure"]);
-  return Object.freeze(FRONTIER_PLATFORMS[CLIENT.onexray].map((platform) => {
-    const state = states[platform] ?? {};
-    if (!state || typeof state !== "object" || Array.isArray(state)) {
-      throw new TypeError(`OneXray frontier state is invalid: ${platform}`);
-    }
-    if (Object.keys(state).some((key) => !stateKeys.has(key))) {
-      throw new Error(`OneXray frontier state contains an unsupported shared field: ${platform}`);
-    }
-    return createFrontierManifest({
-      client: CLIENT.onexray,
-      platform,
-      channel: input.channel,
-      upstream: input.upstream,
-      schemaVersion: input.schemaVersion ?? "onexray-profile-v1",
-      configSha256: input.profileSha256 ?? input.configSha256,
-      status: state.status ?? input.status ?? "candidate",
-      ruleManifestSha256: input.ruleManifestSha256,
-      failure: state.failure ?? input.failure,
-      verifiedAt: state.verifiedAt,
-      canary: state.canary,
-    });
-  }));
 }
 
 export function validateFrontierManifest(manifest) {

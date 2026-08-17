@@ -55,6 +55,37 @@ test("compiles across sources before sharding and closes manifest accounting", (
   assert.equal(result.files.has("anywhere/rules/Low-001.arrs"), true);
 });
 
+test("aggregates multiple upstream sources into one stable business package", () => {
+  const snapshot = new Map([
+    ["High", input("DOMAIN-SUFFIX,example.com\n")],
+    ["Low", input("DOMAIN-SUFFIX,media.example\nDOMAIN-SUFFIX,api.example.com\n")],
+  ]);
+  const result = buildAnywhereRuleSnapshot({
+    snapshot,
+    catalog,
+    upstream,
+    logicalRuleSets: [{
+      id: "OverseasMedia",
+      sourceIds: ["High", "Low"],
+      required: true,
+      policy: "FOLLOW",
+    }],
+  });
+  assert.equal(result.manifest.totals.logicalRuleSetCount, 1);
+  assert.deepEqual(result.manifest.logicalRuleSets, [{
+    id: "OverseasMedia",
+    sourceIds: ["High", "Low"],
+    required: true,
+    policy: "FOLLOW",
+  }]);
+  assert.equal(result.manifest.sources.length, 1);
+  assert.deepEqual(result.manifest.sources[0].sourceIds, ["High", "Low"]);
+  assert.equal(result.manifest.sources[0].counts.inputSources, 2);
+  assert.equal(result.manifest.sources[0].counts.output, 2);
+  assert.equal(result.files.has("anywhere/rules/OverseasMedia-001.arrs"), true);
+  assert.equal(result.files.has("anywhere/rules/High-001.arrs"), false);
+});
+
 test("produces byte-identical files and manifests for identical immutable inputs", () => {
   const snapshot = new Map([
     ["High", input("DOMAIN-SUFFIX,example.com\n")],

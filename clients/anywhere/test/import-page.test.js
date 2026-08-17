@@ -3,6 +3,7 @@ import { readFile } from "node:fs/promises";
 import test from "node:test";
 
 import { buildImportBatches, buildImportDeepLink, renderImportPage } from "../src/build-import-page.js";
+import { ANYWHERE_LIGHTWEIGHT_MIGRATION } from "../src/shard-rules.js";
 
 function urls(count) {
   return Array.from({ length: count }, (_, index) => (
@@ -86,12 +87,9 @@ test("renders a static escaped no-script page with manual fallbacks", () => {
       url,
     })),
     schemaVersion: 2,
-    removed: ["Advertising", "Advertising_Domain", "ChinaMax_Domain", "Game"],
-    replacements: {
-      ChinaMax_Domain: ["DomesticCore"],
-      Game: ["DomesticGame", "OverseasGame"],
-    },
-    optionalPacks: { "adblock-full": "../../optional/adblock-full/manifest.json" },
+    removed: ANYWHERE_LIGHTWEIGHT_MIGRATION.removed,
+    replacements: ANYWHERE_LIGHTWEIGHT_MIGRATION.replacements,
+    optionalPacks: ANYWHERE_LIGHTWEIGHT_MIGRATION.optionalPacks,
     sources,
   });
   assert.match(html, /<!doctype html>/u);
@@ -165,17 +163,14 @@ test("tracked lightweight import page closes over every schema-v2 manifest shard
   assert.match(actual, /全部导入/u);
   assert.equal(actual.includes("<script"), false);
   assert.doesNotMatch(actual, /<script\b|javascript:|vbscript:|\son\w+\s*=/iu);
-  assert.equal((actual.match(/class="button"/gu) ?? []).length, 4);
+  assert.equal((actual.match(/class="button"/gu) ?? []).length, batches.length + 1);
   assert.equal((actual.match(/<li><a href="https:/gu) ?? []).length, manifest.totals.shardCount);
   assert.match(actual, new RegExp(`href="${escapedTotalLink.replaceAll(/[.*+?^${}()|[\]\\]/g, "\\$&")}"`, "u"));
   assert.deepEqual(new URL(totalLink).searchParams.getAll("link"), manifest.shards.map(({ url }) => url));
   assert.equal(manifest.schemaVersion, 2);
-  assert.deepEqual(manifest.removed, ["Advertising", "Advertising_Domain", "ChinaMax_Domain", "Game"]);
-  assert.deepEqual(manifest.replacements, {
-    ChinaMax_Domain: ["DomesticCore"],
-    Game: ["DomesticGame", "OverseasGame"],
-  });
-  assert.match(actual, /ChinaTLD[\s\S]*lateDomestic[\s\S]*DIRECT[\s\S]*1 shard\(s\)/u);
+  assert.deepEqual(manifest.removed, ANYWHERE_LIGHTWEIGHT_MIGRATION.removed);
+  assert.deepEqual(manifest.replacements, ANYWHERE_LIGHTWEIGHT_MIGRATION.replacements);
+  assert.match(actual, /DomesticCore[\s\S]*earlyDomestic[\s\S]*DIRECT[\s\S]*1 shard\(s\)/u);
   assert.match(actual, /每个分片[\s\S]*同一[\s\S]*分配/u);
 });
 

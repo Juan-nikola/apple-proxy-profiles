@@ -62,9 +62,6 @@ test("SubStore source entries do not import the compatibility filter", () => {
     "../../surge/src/substore-nodes-entry.js",
     "../../surge/src/substore-profile-entry.js",
     "../../sing-box/src/substore-config-entry.js",
-    "../../onexray/src/substore-nodes-entry.js",
-    "../../onexray/src/substore-profile-entry.js",
-    "../../happ/src/substore-config-entry.js",
   ];
   for (const entry of entries) {
     const source = readFileSync(new URL(entry, import.meta.url), "utf8");

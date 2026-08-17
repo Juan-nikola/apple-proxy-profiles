@@ -57,3 +57,34 @@ test("accepts only the explicit schema-v2 legacy shard migration", () => {
     migration: ANYWHERE_LIGHTWEIGHT_MIGRATION,
   }), /Stable/u);
 });
+
+test("allows the source-level topology to migrate into stable semantic business packages", () => {
+  assert.doesNotThrow(() => validateShardMigration({
+    previousIds: [
+      "Hijacking", "BlockHttpDNS", "Privacy", "DomesticCore", "DomesticGame", "SteamCN",
+      "BiliBili", "ByteDance", "XiaoHongShu", "Weibo", "OpenAI", "Claude", "Gemini", "Copilot",
+      "GitHub", "YouTube", "Netflix", "Disney", "Spotify", "GlobalMedia", "Telegram", "Facebook",
+      "Instagram", "Twitter", "TikTok", "Apple", "Microsoft", "Download", "PrivateTracker",
+      "OverseasGame", "ChinaTLD", "ChinaIP",
+    ],
+    currentIds: [
+      "Security", "Privacy", "DomesticCore", "DomesticPlatform", "AI", "GitHub", "YouTube",
+      "OverseasMedia", "OverseasSocial", "Apple", "Microsoft", "Download", "OverseasGame", "ChinaIP",
+    ],
+    migration: ANYWHERE_LIGHTWEIGHT_MIGRATION,
+  }));
+});
+
+test("compares migration contracts by canonical content rather than object insertion order", () => {
+  const reordered = {
+    optionalPacks: ANYWHERE_LIGHTWEIGHT_MIGRATION.optionalPacks,
+    replacements: ANYWHERE_LIGHTWEIGHT_MIGRATION.replacements,
+    removed: ANYWHERE_LIGHTWEIGHT_MIGRATION.removed,
+    schemaVersion: ANYWHERE_LIGHTWEIGHT_MIGRATION.schemaVersion,
+  };
+  assert.doesNotThrow(() => validateShardMigration({
+    previousIds: ["Stable"],
+    currentIds: ["Stable"],
+    migration: reordered,
+  }));
+});

@@ -1,6 +1,6 @@
 # 实施状态
 
-Sub-Store 当前的六客户端 collection 边界、迁移和回滚见 [Sub-Store 客户端节点池指南](substore-client-pools.md)。旧 `apple-proxy-sources` 保留作兼容/回滚入口。
+Sub-Store 当前的五客户端 collection 边界、迁移和回滚见 [Sub-Store 客户端节点池指南](substore-client-pools.md)。旧 `apple-proxy-sources` 保留作兼容/回滚入口。
 
 | 里程碑 | 状态 | 说明 | 验证 |
 | --- | --- | --- | --- |
@@ -10,8 +10,7 @@ Sub-Store 当前的六客户端 collection 边界、迁移和回滚见 [Sub-Stor
 | Anywhere | 已完成 | 节点 YAML、`.arrs` 规则分片、Manifest、全部导入页 | workspace 测试、规则检查、导入页测试 |
 | Surge | 已完成 | macOS/iPhone/iPad Profile 和 Sub-Store 远程入口 | workspace 测试、构建、示例校验 |
 | sing-box | 重写中 | macOS/iPhone/iPad/Android JSON、testing 最新 release edge、DNS response matching、ChinaIP rule-set、Egern 风格策略组；OpenWrt 暂缓 | workspace 测试、官方 core `format/check`、`.srs` 失败关闭测试 |
-| OneXray | 已实现 | Xray 原生 Profile、输出级路由 parity、公开 edge GeoData 安装层、六平台 frontier 候选 | workspace 测试、parity 88/88、公开边界与文档契约 |
-| Sub-Store 客户端文档 | 已完成 | `apple-proxy-all`、6 个 client collection、公开 JS、19 个任务、维护/编译/回滚指南 | 文档测试、秘密扫描 |
+| Sub-Store 客户端文档 | 已完成 | `apple-proxy-all`、5 个 client collection、公开 JS、16 个任务、维护/编译/回滚指南 | 文档测试、秘密扫描 |
 | GitHub Pages 公开发布 | 已完成 | `current/`、`edge/`、规则和脚本入口可由 Pages 发布 | Actions 检查、公开 URL HTTP 200 |
 | 共享分流顺序与离线解释 | 已完成 | `DomesticCore` → 服务规则 → `OverseasGame` → `ChinaTLD` → `ChinaIP` → FINAL；`explain:route` 只读本地已发布规则、不执行 DNS | `npm run explain:route`、跨客户端回归与文档测试 |
 | 独立业务组 | 已完成 | 恢复 16 个独立业务组；Netflix、Disney+、Spotify、国际媒体、Telegram、TikTok，以及 B 站、抖音、小红书、微博重新使用独立策略目标；sing-box 主组继续使用洲级两级结构 | 全客户端测试、fixtures 与 edge/current 发布验证 |
