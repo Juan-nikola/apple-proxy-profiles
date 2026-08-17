@@ -4,7 +4,7 @@
 # Converted at upstream commit time: 2026-08-15T18:26:29Z
 # License: GPL-2.0-only
 # Converted by: Juan-nikola/apple-proxy-profiles
-name = 🇨🇳 国内平台 · BiliBili
+name = 📺 哔哩哔哩 · BiliBili
 routing = 1
 
 0, 106.75.74.76/32

@@ -495,7 +495,67 @@ policy_groups:
       update_interval: 21600
       block_quic: true
   - select:
-      name: "🎬 海外流媒体"
+      name: "🎬 Netflix"
+      policies:
+        - "🚀 节点选择"
+        - "⚡ 全部自动"
+        - "🛟 全部故障转移"
+        - "🌏 亚太"
+        - "🌎 美洲"
+        - "🌐 其他/未分类"
+        - "DIRECT"
+      urls:
+        - "https://example.invalid/private/egern-nodes"
+      filter: "^.+$"
+      update_interval: 21600
+      block_quic: true
+  - select:
+      name: "🏰 Disney+"
+      policies:
+        - "🚀 节点选择"
+        - "⚡ 全部自动"
+        - "🛟 全部故障转移"
+        - "🌏 亚太"
+        - "🌎 美洲"
+        - "🌐 其他/未分类"
+        - "DIRECT"
+      urls:
+        - "https://example.invalid/private/egern-nodes"
+      filter: "^.+$"
+      update_interval: 21600
+      block_quic: true
+  - select:
+      name: "🎵 Spotify"
+      policies:
+        - "🚀 节点选择"
+        - "⚡ 全部自动"
+        - "🛟 全部故障转移"
+        - "🌏 亚太"
+        - "🌎 美洲"
+        - "🌐 其他/未分类"
+        - "DIRECT"
+      urls:
+        - "https://example.invalid/private/egern-nodes"
+      filter: "^.+$"
+      update_interval: 21600
+      block_quic: true
+  - select:
+      name: "🌍 国际媒体"
+      policies:
+        - "🚀 节点选择"
+        - "⚡ 全部自动"
+        - "🛟 全部故障转移"
+        - "🌏 亚太"
+        - "🌎 美洲"
+        - "🌐 其他/未分类"
+        - "DIRECT"
+      urls:
+        - "https://example.invalid/private/egern-nodes"
+      filter: "^.+$"
+      update_interval: 21600
+      block_quic: true
+  - select:
+      name: "✈️ Telegram"
       policies:
         - "🚀 节点选择"
         - "⚡ 全部自动"
@@ -511,6 +571,21 @@ policy_groups:
       block_quic: true
   - select:
       name: "💬 海外社交"
+      policies:
+        - "🚀 节点选择"
+        - "⚡ 全部自动"
+        - "🛟 全部故障转移"
+        - "🌏 亚太"
+        - "🌎 美洲"
+        - "🌐 其他/未分类"
+        - "DIRECT"
+      urls:
+        - "https://example.invalid/private/egern-nodes"
+      filter: "^.+$"
+      update_interval: 21600
+      block_quic: true
+  - select:
+      name: "🎶 TikTok"
       policies:
         - "🚀 节点选择"
         - "⚡ 全部自动"
@@ -553,7 +628,49 @@ policy_groups:
       filter: "^.+$"
       update_interval: 21600
   - select:
-      name: "🇨🇳 国内平台"
+      name: "📺 哔哩哔哩"
+      policies:
+        - "DIRECT"
+        - "🚀 节点选择"
+        - "⚡ 全部自动"
+        - "🛟 全部故障转移"
+        - "🌏 亚太"
+        - "🌎 美洲"
+        - "🌐 其他/未分类"
+      urls:
+        - "https://example.invalid/private/egern-nodes"
+      filter: "^.+$"
+      update_interval: 21600
+  - select:
+      name: "🎵 抖音"
+      policies:
+        - "DIRECT"
+        - "🚀 节点选择"
+        - "⚡ 全部自动"
+        - "🛟 全部故障转移"
+        - "🌏 亚太"
+        - "🌎 美洲"
+        - "🌐 其他/未分类"
+      urls:
+        - "https://example.invalid/private/egern-nodes"
+      filter: "^.+$"
+      update_interval: 21600
+  - select:
+      name: "📕 小红书"
+      policies:
+        - "DIRECT"
+        - "🚀 节点选择"
+        - "⚡ 全部自动"
+        - "🛟 全部故障转移"
+        - "🌏 亚太"
+        - "🌎 美洲"
+        - "🌐 其他/未分类"
+      urls:
+        - "https://example.invalid/private/egern-nodes"
+      filter: "^.+$"
+      update_interval: 21600
+  - select:
+      name: "🧣 微博"
       policies:
         - "DIRECT"
         - "🚀 节点选择"
@@ -716,19 +833,19 @@ rules:
       update_interval: 86400
   - rule_set:
       match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/BiliBili.yaml"
-      policy: "🇨🇳 国内平台"
+      policy: "📺 哔哩哔哩"
       update_interval: 86400
   - rule_set:
       match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/ByteDance.yaml"
-      policy: "🇨🇳 国内平台"
+      policy: "🎵 抖音"
       update_interval: 86400
   - rule_set:
       match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/XiaoHongShu.yaml"
-      policy: "🇨🇳 国内平台"
+      policy: "📕 小红书"
       update_interval: 86400
   - rule_set:
       match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/Weibo.yaml"
-      policy: "🇨🇳 国内平台"
+      policy: "🧣 微博"
       update_interval: 86400
   - rule_set:
       match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/OpenAI.yaml"
@@ -756,23 +873,23 @@ rules:
       update_interval: 86400
   - rule_set:
       match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/Netflix.yaml"
-      policy: "🎬 海外流媒体"
+      policy: "🎬 Netflix"
       update_interval: 86400
   - rule_set:
       match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/Disney.yaml"
-      policy: "🎬 海外流媒体"
+      policy: "🏰 Disney+"
       update_interval: 86400
   - rule_set:
       match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/Spotify.yaml"
-      policy: "🎬 海外流媒体"
+      policy: "🎵 Spotify"
       update_interval: 86400
   - rule_set:
       match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/GlobalMedia.yaml"
-      policy: "🎬 海外流媒体"
+      policy: "🌍 国际媒体"
       update_interval: 86400
   - rule_set:
       match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/Telegram.yaml"
-      policy: "💬 海外社交"
+      policy: "✈️ Telegram"
       update_interval: 86400
   - rule_set:
       match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/Facebook.yaml"
@@ -788,7 +905,7 @@ rules:
       update_interval: 86400
   - rule_set:
       match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/TikTok.yaml"
-      policy: "🎬 海外流媒体"
+      policy: "🎶 TikTok"
       update_interval: 86400
   - rule_set:
       match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/Apple.yaml"

@@ -53,25 +53,25 @@
           "dnsClass": "china",
           "entries": 123,
           "id": "BiliBili",
-          "policy": "🇨🇳 国内平台"
+          "policy": "📺 哔哩哔哩"
         },
         {
           "dnsClass": "china",
           "entries": 370,
           "id": "ByteDance",
-          "policy": "🇨🇳 国内平台"
+          "policy": "🎵 抖音"
         },
         {
           "dnsClass": "china",
           "entries": 4,
           "id": "XiaoHongShu",
-          "policy": "🇨🇳 国内平台"
+          "policy": "📕 小红书"
         },
         {
           "dnsClass": "china",
           "entries": 4,
           "id": "Weibo",
-          "policy": "🇨🇳 国内平台"
+          "policy": "🧣 微博"
         },
         {
           "dnsClass": "proxy",
@@ -113,31 +113,31 @@
           "dnsClass": "proxy",
           "entries": 1156,
           "id": "Netflix",
-          "policy": "🎬 海外流媒体"
+          "policy": "🎬 Netflix"
         },
         {
           "dnsClass": "proxy",
           "entries": 172,
           "id": "Disney",
-          "policy": "🎬 海外流媒体"
+          "policy": "🏰 Disney+"
         },
         {
           "dnsClass": "proxy",
           "entries": 29,
           "id": "Spotify",
-          "policy": "🎬 海外流媒体"
+          "policy": "🎵 Spotify"
         },
         {
           "dnsClass": "proxy",
           "entries": 951,
           "id": "GlobalMedia",
-          "policy": "🎬 海外流媒体"
+          "policy": "🌍 国际媒体"
         },
         {
           "dnsClass": "proxy",
           "entries": 35,
           "id": "Telegram",
-          "policy": "💬 海外社交"
+          "policy": "✈️ Telegram"
         },
         {
           "dnsClass": "proxy",
@@ -161,7 +161,7 @@
           "dnsClass": "proxy",
           "entries": 31,
           "id": "TikTok",
-          "policy": "🎬 海外流媒体"
+          "policy": "🎶 TikTok"
         },
         {
           "dnsClass": "china",
@@ -224,7 +224,7 @@
     }
   ],
   "schemaVersion": 1,
-  "sha256": "470c9dd51229c830730ed48bd133f695953bb86800d48b28d341e3344c46d462",
+  "sha256": "332477f7efdbe759002b8a800bea3b6a436af7188bdf6f9f772e1a64cf1137fc",
   "totals": {
     "entries": 16840,
     "sources": 32

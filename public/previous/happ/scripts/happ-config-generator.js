@@ -760,22 +760,32 @@ var HappConfigBundle = (() => {
       return "unknown";
     }
   }
-  function assertRenderableNodes(nodes, clientName, renderOneNode) {
+  function validateRenderableInvocation(nodes, clientName, renderOneNode) {
     if (!Array.isArray(nodes)) throw new TypeError("Renderable node inventory must be an array");
     if (typeof clientName !== "string" || !/^[A-Za-z][A-Za-z0-9 -]*$/u.test(clientName)) {
       throw new TypeError("Render client name is invalid");
     }
     if (typeof renderOneNode !== "function") throw new TypeError("Node renderer must be a function");
+  }
+  function failureSummary(failures) {
+    return Object.keys(failures).sort((left, right) => left.localeCompare(right, "en")).map((protocol2) => `${protocol2}=${failures[protocol2]}`).join(",");
+  }
+  function partitionRenderableNodes(nodes, clientName, renderOneNode) {
+    validateRenderableInvocation(nodes, clientName, renderOneNode);
     const failures = {};
+    const renderable = [];
     for (const node of nodes) {
       try {
         renderOneNode(node);
+        renderable.push(node);
       } catch {
         increment(failures, protocolOf(node));
       }
     }
-    const counts = Object.keys(failures).sort((left, right) => left.localeCompare(right, "en")).map((protocol2) => `${protocol2}=${failures[protocol2]}`).join(",");
-    if (counts) throw new Error(`${clientName} cannot render selected protocols: ${counts}`);
+    if (renderable.length === 0) {
+      throw new Error(`${clientName} cannot render selected protocols: ${failureSummary(failures)}`);
+    }
+    return { renderable, failureProtocols: failures };
   }
 
   // src/policy-overrides.js
@@ -783,10 +793,20 @@ var HappConfigBundle = (() => {
     "\u{1F916} AI \u4E13\u7528": "FOLLOW",
     "\u{1F419} GitHub": "FOLLOW",
     "\u{1F4FA} YouTube": "FOLLOW",
-    "\u{1F3AC} \u6D77\u5916\u6D41\u5A92\u4F53": "FOLLOW",
+    "\u{1F3AC} Netflix": "FOLLOW",
+    "\u{1F3F0} Disney+": "FOLLOW",
+    "\u{1F3B5} Spotify": "FOLLOW",
+    "\u{1F30D} \u56FD\u9645\u5A92\u4F53": "FOLLOW",
+    "\u2708\uFE0F Telegram": "FOLLOW",
     "\u{1F4AC} \u6D77\u5916\u793E\u4EA4": "FOLLOW",
+    "\u{1F3B6} TikTok": "FOLLOW",
     "\u{1F34E} Apple": "DIRECT",
     "\u{1FA9F} Microsoft": "DIRECT",
+    "\u{1F4FA} \u54D4\u54E9\u54D4\u54E9": "DIRECT",
+    "\u{1F3B5} \u6296\u97F3": "DIRECT",
+    "\u{1F4D5} \u5C0F\u7EA2\u4E66": "DIRECT",
+    "\u{1F9E3} \u5FAE\u535A": "DIRECT",
+    // Compatibility target for core domestic and custom DIRECT rules.
     "\u{1F1E8}\u{1F1F3} \u56FD\u5185\u5E73\u53F0": "DIRECT",
     "\u{1F30D} \u6D77\u5916\u6E38\u620F": "FOLLOW",
     "\u2B07\uFE0F \u4E0B\u8F7D/P2P": "DIRECT",
@@ -797,10 +817,19 @@ var HappConfigBundle = (() => {
     ["\u{1F916} AI \u4E13\u7528", ["AI \u4E13\u7528", "ai"]],
     ["\u{1F419} GitHub", ["GitHub", "github"]],
     ["\u{1F4FA} YouTube", ["YouTube", "youtube"]],
-    ["\u{1F3AC} \u6D77\u5916\u6D41\u5A92\u4F53", ["\u6D77\u5916\u6D41\u5A92\u4F53", "globalMedia"]],
+    ["\u{1F3AC} Netflix", ["Netflix", "netflix"]],
+    ["\u{1F3F0} Disney+", ["Disney+", "disney"]],
+    ["\u{1F3B5} Spotify", ["Spotify", "spotify"]],
+    ["\u{1F30D} \u56FD\u9645\u5A92\u4F53", ["\u56FD\u9645\u5A92\u4F53", "globalMedia"]],
+    ["\u2708\uFE0F Telegram", ["Telegram", "telegram"]],
     ["\u{1F4AC} \u6D77\u5916\u793E\u4EA4", ["\u6D77\u5916\u793E\u4EA4", "globalSocial"]],
+    ["\u{1F3B6} TikTok", ["TikTok", "tiktok"]],
     ["\u{1F34E} Apple", ["Apple", "apple"]],
     ["\u{1FA9F} Microsoft", ["Microsoft", "microsoft"]],
+    ["\u{1F4FA} \u54D4\u54E9\u54D4\u54E9", ["\u54D4\u54E9\u54D4\u54E9", "bilibili"]],
+    ["\u{1F3B5} \u6296\u97F3", ["\u6296\u97F3", "bytedance"]],
+    ["\u{1F4D5} \u5C0F\u7EA2\u4E66", ["\u5C0F\u7EA2\u4E66", "xiaohongshu"]],
+    ["\u{1F9E3} \u5FAE\u535A", ["\u5FAE\u535A", "weibo"]],
     ["\u{1F1E8}\u{1F1F3} \u56FD\u5185\u5E73\u53F0", ["\u56FD\u5185\u5E73\u53F0", "domestic"]],
     ["\u{1F30D} \u6D77\u5916\u6E38\u620F", ["\u6D77\u5916\u6E38\u620F", "overseasGame"]],
     ["\u2B07\uFE0F \u4E0B\u8F7D/P2P", ["\u4E0B\u8F7D/P2P", "download"]],
@@ -1445,6 +1474,22 @@ var HappConfigBundle = (() => {
     "ChinaTLD",
     "ChinaIP"
   ]);
+  var MOBILE_RULE_SOURCE_IDS = Object.freeze([
+    "Hijacking",
+    "BlockHttpDNS",
+    "Privacy",
+    "DomesticCore",
+    "DomesticGame",
+    "SteamCN",
+    "BiliBili",
+    "ByteDance",
+    "XiaoHongShu",
+    "Weibo",
+    "Apple",
+    "Microsoft",
+    "ChinaTLD",
+    "ChinaIP"
+  ]);
   var FULL_ADBLOCK_SOURCE_IDS = Object.freeze([
     "Advertising",
     "Advertising_Domain"
@@ -1569,25 +1614,25 @@ var HappConfigBundle = (() => {
     Privacy: "\u{1F575}\uFE0F \u4E25\u683C\u8DDF\u8E2A",
     DomesticCore: POLICY_TARGETS.direct,
     DomesticGame: POLICY_TARGETS.direct,
-    BiliBili: "\u{1F1E8}\u{1F1F3} \u56FD\u5185\u5E73\u53F0",
-    ByteDance: "\u{1F1E8}\u{1F1F3} \u56FD\u5185\u5E73\u53F0",
-    XiaoHongShu: "\u{1F1E8}\u{1F1F3} \u56FD\u5185\u5E73\u53F0",
-    Weibo: "\u{1F1E8}\u{1F1F3} \u56FD\u5185\u5E73\u53F0",
+    BiliBili: "\u{1F4FA} \u54D4\u54E9\u54D4\u54E9",
+    ByteDance: "\u{1F3B5} \u6296\u97F3",
+    XiaoHongShu: "\u{1F4D5} \u5C0F\u7EA2\u4E66",
+    Weibo: "\u{1F9E3} \u5FAE\u535A",
     OpenAI: "\u{1F916} AI \u4E13\u7528",
     Claude: "\u{1F916} AI \u4E13\u7528",
     Gemini: "\u{1F916} AI \u4E13\u7528",
     Copilot: "\u{1F916} AI \u4E13\u7528",
     GitHub: "\u{1F419} GitHub",
     YouTube: "\u{1F4FA} YouTube",
-    Netflix: "\u{1F3AC} \u6D77\u5916\u6D41\u5A92\u4F53",
-    Disney: "\u{1F3AC} \u6D77\u5916\u6D41\u5A92\u4F53",
-    Spotify: "\u{1F3AC} \u6D77\u5916\u6D41\u5A92\u4F53",
-    GlobalMedia: "\u{1F3AC} \u6D77\u5916\u6D41\u5A92\u4F53",
-    Telegram: "\u{1F4AC} \u6D77\u5916\u793E\u4EA4",
+    Netflix: "\u{1F3AC} Netflix",
+    Disney: "\u{1F3F0} Disney+",
+    Spotify: "\u{1F3B5} Spotify",
+    GlobalMedia: "\u{1F30D} \u56FD\u9645\u5A92\u4F53",
+    Telegram: "\u2708\uFE0F Telegram",
     Facebook: "\u{1F4AC} \u6D77\u5916\u793E\u4EA4",
     Instagram: "\u{1F4AC} \u6D77\u5916\u793E\u4EA4",
     Twitter: "\u{1F4AC} \u6D77\u5916\u793E\u4EA4",
-    TikTok: "\u{1F3AC} \u6D77\u5916\u6D41\u5A92\u4F53",
+    TikTok: "\u{1F3B6} TikTok",
     Apple: "\u{1F34E} Apple",
     Microsoft: "\u{1FA9F} Microsoft",
     SteamCN: POLICY_TARGETS.direct,
@@ -1884,10 +1929,19 @@ var HappConfigBundle = (() => {
     "\u{1F916} AI \u4E13\u7528": "\u{1F916} AI \u4E13\u7528",
     "\u{1F419} GitHub": "\u{1F419} GitHub",
     "\u{1F4FA} YouTube": "\u{1F4FA} YouTube",
-    "\u{1F3AC} \u6D77\u5916\u6D41\u5A92\u4F53": "\u{1F3AC} \u6D77\u5916\u6D41\u5A92\u4F53",
+    "\u{1F3AC} Netflix": "\u{1F3AC} Netflix",
+    "\u{1F3F0} Disney+": "\u{1F3F0} Disney+",
+    "\u{1F3B5} Spotify": "\u{1F3B5} Spotify",
+    "\u{1F30D} \u56FD\u9645\u5A92\u4F53": "\u{1F30D} \u56FD\u9645\u5A92\u4F53",
+    "\u2708\uFE0F Telegram": "\u2708\uFE0F Telegram",
     "\u{1F4AC} \u6D77\u5916\u793E\u4EA4": "\u{1F4AC} \u6D77\u5916\u793E\u4EA4",
+    "\u{1F3B6} TikTok": "\u{1F3B6} TikTok",
     "\u{1F34E} Apple": "\u{1F34E} Apple",
     "\u{1FA9F} Microsoft": "\u{1FA9F} Microsoft",
+    "\u{1F4FA} \u54D4\u54E9\u54D4\u54E9": "\u{1F4FA} \u54D4\u54E9\u54D4\u54E9",
+    "\u{1F3B5} \u6296\u97F3": "\u{1F3B5} \u6296\u97F3",
+    "\u{1F4D5} \u5C0F\u7EA2\u4E66": "\u{1F4D5} \u5C0F\u7EA2\u4E66",
+    "\u{1F9E3} \u5FAE\u535A": "\u{1F9E3} \u5FAE\u535A",
     "\u{1F30D} \u6D77\u5916\u6E38\u620F": "\u{1F30D} \u6D77\u5916\u6E38\u620F",
     "\u2B07\uFE0F \u4E0B\u8F7D/P2P": "\u2B07\uFE0F \u4E0B\u8F7D/P2P"
   });
@@ -2223,11 +2277,11 @@ var HappConfigBundle = (() => {
     if (typeof logger?.log === "function") return logger.log.bind(logger);
     return null;
   }
-  function logDiagnostics(context, options, normalized) {
+  function logDiagnostics(context, options, partitioned, renderFailures) {
     const log = loggerMethod(context);
     if (!log) return;
     try {
-      log(`[happ-config] ${JSON.stringify({ output: options.output, platform: options.platform, selected: normalized.nodes.length })}`);
+      log(`[happ-config] ${JSON.stringify({ output: options.output, platform: options.platform, selected: partitioned.renderable.length, renderFailures })}`);
     } catch {
     }
   }
@@ -2243,9 +2297,9 @@ var HappConfigBundle = (() => {
     });
     if (!Array.isArray(rawNodes) || rawNodes.length === 0) throw new Error("produceArtifact must return a non-empty node array");
     const normalized = normalizeNodes(rawNodes);
-    assertRenderableNodes(normalized.nodes, "Happ", (node) => renderHappOutbound(node, "happ-render-probe"));
-    logDiagnostics(context, options, normalized);
-    const content = options.output === "audit" ? buildHappAudit({ nodes: normalized.nodes, allNodes: normalized.nodes, options }) : renderHappSubscription({ nodes: normalized.nodes, allNodes: normalized.nodes, options });
+    const partitioned = partitionRenderableNodes(normalized.nodes, "Happ", (node) => renderHappOutbound(node, "happ-render-probe"));
+    logDiagnostics(context, options, partitioned, partitioned.failureProtocols);
+    const content = options.output === "audit" ? buildHappAudit({ nodes: partitioned.renderable, allNodes: normalized.nodes, options }) : renderHappSubscription({ nodes: partitioned.renderable, allNodes: normalized.nodes, options });
     if (options.output === "config") validateHappSubscription(content);
     return { ...input, $content: `${JSON.stringify(content, null, 2)}
 ` };

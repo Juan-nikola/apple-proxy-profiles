@@ -3,19 +3,19 @@
   "client": "surge",
   "files": [
     {
-      "bytes": 13071,
+      "bytes": 14684,
       "path": "surge/examples/surge-ipad.conf",
-      "sha256": "e767fe77c08a773fd1e9520083fcb0c9a62a1b2944cbcd7721d6c1ad3f6bfe4b"
+      "sha256": "9b4318aa28f04b0bc34ea98de9f12f6cf1b8a8acbd433b952f3ba687471519eb"
     },
     {
-      "bytes": 13071,
+      "bytes": 14684,
       "path": "surge/examples/surge-iphone.conf",
-      "sha256": "e767fe77c08a773fd1e9520083fcb0c9a62a1b2944cbcd7721d6c1ad3f6bfe4b"
+      "sha256": "9b4318aa28f04b0bc34ea98de9f12f6cf1b8a8acbd433b952f3ba687471519eb"
     },
     {
-      "bytes": 13066,
+      "bytes": 14679,
       "path": "surge/examples/surge-macos.conf",
-      "sha256": "0c74474dccc968d18f2f51eca469f94a5e01704944a123e7fc4af64ede1c81ad"
+      "sha256": "8de615df64cfd5cee6baabc0e5da53157af44310dae6f1b496da163266c62a0c"
     },
     {
       "bytes": 985,
@@ -183,9 +183,9 @@
       "sha256": "74ae5739b02f2ea805cfbcf23a9c03374f759b5288ba2e44ddebd83acf81a4d2"
     },
     {
-      "bytes": 85326,
+      "bytes": 85736,
       "path": "surge/scripts/substore-profile-generator.js",
-      "sha256": "8c9f11fd6e5a3fb2a2e04b5f94a5573a8f4072f625f297035e014f7eb969760b"
+      "sha256": "ac210dfa8fbeb5502ea5106ba03c9274f26914f8a9b8b061dad2d4146d56a199"
     },
     {
       "bytes": 49253,
@@ -193,13 +193,13 @@
       "sha256": "74ae5739b02f2ea805cfbcf23a9c03374f759b5288ba2e44ddebd83acf81a4d2"
     },
     {
-      "bytes": 85326,
+      "bytes": 85736,
       "path": "surge/scripts/surge-profile-generator.js",
-      "sha256": "8c9f11fd6e5a3fb2a2e04b5f94a5573a8f4072f625f297035e014f7eb969760b"
+      "sha256": "ac210dfa8fbeb5502ea5106ba03c9274f26914f8a9b8b061dad2d4146d56a199"
     }
   ],
   "generatedAt": "2026-08-15T18:26:29Z",
-  "manifestHash": "a965febc707a458acec72a32398c0fdaf4ba65a08274371d72a90f83aef68fa9",
+  "manifestHash": "440d21906324cc8881365816822e8616663b43988f6abfc88b5e88561be6c1b4",
   "optionalPacks": {
     "adblock-full": "fddbcc80635cffcf188119f7408b53baf8bff9a530b9a2d0f90695202c3b76b5"
   },

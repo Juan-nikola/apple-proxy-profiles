@@ -4,7 +4,7 @@
 # Converted at upstream commit time: 2026-08-15T18:26:29Z
 # License: GPL-2.0-only
 # Converted by: Juan-nikola/apple-proxy-profiles
-name = 🎬 海外流媒体 · Netflix
+name = 🎬 Netflix · Netflix
 routing = 0
 
 0, 103.87.204.0/22
