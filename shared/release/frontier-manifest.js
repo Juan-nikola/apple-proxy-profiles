@@ -1,4 +1,5 @@
 import { CLIENT } from "../contracts.js";
+import { activeClientIds, clientAdapter } from "./client-catalog.js";
 
 export const FRONTIER_CHANNELS = Object.freeze(["edge", "current", "previous"]);
 
@@ -70,7 +71,11 @@ function validateCanary(canary) {
 export function frontierPlatformKey(client, platform) {
   requiredString(client, "Frontier client");
   requiredString(platform, "Frontier platform");
-  if (!Object.hasOwn(FRONTIER_PLATFORMS, client) || !FRONTIER_PLATFORMS[client].includes(platform)) {
+  const adapter = (() => {
+    try { return clientAdapter(client); } catch { return undefined; }
+  })();
+  if (!adapter || !activeClientIds().includes(client)
+    || !Object.hasOwn(FRONTIER_PLATFORMS, client) || !FRONTIER_PLATFORMS[client].includes(platform)) {
     throw new Error(`Unsupported frontier platform: ${client}/${platform}`);
   }
   return `${client}/${platform}`;

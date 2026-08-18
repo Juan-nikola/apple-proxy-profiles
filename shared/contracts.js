@@ -1,9 +1,11 @@
 export const CLIENT = Object.freeze({
-  shadowrocket: "shadowrocket",
-  egern: "egern",
   anywhere: "anywhere",
+  egern: "egern",
+  shadowrocket: "shadowrocket",
   surge: "surge",
   singbox: "singbox",
+  onexray: "onexray",
+  happ: "happ",
 });
 
 export const OPTION_VALUES = Object.freeze({
