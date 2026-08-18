@@ -1,4 +1,5 @@
-import { decodeBase64UrlUtf8 } from "../encoding/base64url.js";
+import { decodeBase64Url } from "../encoding/base64url.js";
+import { parseStrictJson } from "../serialization/strict-json.js";
 
 const TARGET_KEYWORD = /^(FOLLOW|DIRECT)$/iu;
 const NODE_TARGET = /^NODE:(.*)$/iu;
@@ -6,12 +7,7 @@ const BASE64URL = /^[A-Za-z0-9_-]+$/u;
 const LINE_TERMINATOR = /[\r\n\u2028\u2029]/u;
 
 function frozenTarget(id, label, aliases, defaultTarget) {
-  return Object.freeze({
-    id,
-    label,
-    aliases: Object.freeze([...aliases]),
-    defaultTarget,
-  });
+  return Object.freeze({ id, label, aliases: Object.freeze([...aliases]), defaultTarget });
 }
 
 export const BUSINESS_TARGETS = Object.freeze([
@@ -25,17 +21,17 @@ export const BUSINESS_TARGETS = Object.freeze([
   frozenTarget("globalSocial", "💬 海外社交", [
     "海外社交", "globalSocial", "Telegram", "telegram", "TikTok", "tiktok",
   ], "FOLLOW"),
+  frozenTarget("overseasGame", "🌍 海外游戏", ["海外游戏", "overseasGame"], "FOLLOW"),
+  frozenTarget("domesticCore", "国内核心", ["国内核心", "domesticCore"], "DIRECT"),
+  // Preserve all published domestic-platform spellings under the stable ID.
+  frozenTarget("domesticPlatform", "🇨🇳 国内平台", [
+    "国内平台", "domestic", "🇨🇳 国内平台", "domesticPlatform", "哔哩哔哩", "bilibili",
+    "抖音", "bytedance", "小红书", "xiaohongshu", "微博", "weibo",
+  ], "DIRECT"),
+  frozenTarget("chinaIp", "中国 IP", ["中国 IP", "chinaIp"], "DIRECT"),
   frozenTarget("apple", "🍎 Apple", ["Apple", "apple"], "DIRECT"),
   frozenTarget("microsoft", "🪟 Microsoft", ["Microsoft", "microsoft"], "DIRECT"),
-  // Compatibility aliases for domestic app-specific rules and overrides.
-  frozenTarget("domestic", "🇨🇳 国内平台", [
-    "国内平台", "domestic", "哔哩哔哩", "bilibili", "抖音", "bytedance",
-    "小红书", "xiaohongshu", "微博", "weibo",
-  ], "DIRECT"),
-  frozenTarget("overseasGame", "🌍 海外游戏", ["海外游戏", "overseasGame"], "FOLLOW"),
   frozenTarget("download", "⬇️ 下载/P2P", ["下载/P2P", "download"], "DIRECT"),
-  frozenTarget("dnsAndRules", "🧭 DNS 与规则下载", ["DNS 与规则下载", "dnsAndRules"], "FOLLOW"),
-  frozenTarget("final", "最终兜底", ["最终兜底", "final"], "FOLLOW"),
 ]);
 
 const TARGET_BY_KEY = new Map();
@@ -56,148 +52,55 @@ function targetError(target, message) {
   return policyError(`${target.label}: ${message}`);
 }
 
-function assertUniqueJsonObjectKeys(text) {
-  let index = 0;
-  const syntaxError = () => { throw new SyntaxError("invalid JSON"); };
-  const skipWhitespace = () => {
-    while (/[\u0020\t\r\n]/u.test(text[index])) index += 1;
-  };
-  const parseString = () => {
-    if (text[index] !== '"') syntaxError();
-    const start = index;
-    index += 1;
-    while (index < text.length) {
-      const character = text[index++];
-      if (character === '"') return JSON.parse(text.slice(start, index));
-      if (character === "\\") {
-        const escape = text[index++];
-        if (escape === "u") {
-          for (let count = 0; count < 4; count += 1) {
-            if (!/[0-9a-f]/iu.test(text[index++])) syntaxError();
-          }
-        } else if (!'"\\/bfnrt'.includes(escape)) {
-          syntaxError();
-        }
-      } else if (character.charCodeAt(0) < 0x20) {
-        syntaxError();
-      }
-    }
-    syntaxError();
-  };
-  const parseValue = () => {
-    skipWhitespace();
-    if (text[index] === "{") {
-      index += 1;
-      skipWhitespace();
-      const keys = new Set();
-      if (text[index] === "}") {
-        index += 1;
-        return;
-      }
-      while (true) {
-        skipWhitespace();
-        const key = parseString();
-        if (keys.has(key)) throw new SyntaxError("duplicate JSON key");
-        keys.add(key);
-        skipWhitespace();
-        if (text[index++] !== ":") syntaxError();
-        parseValue();
-        skipWhitespace();
-        if (text[index] === "}") {
-          index += 1;
-          return;
-        }
-        if (text[index++] !== ",") syntaxError();
-      }
-    }
-    if (text[index] === "[") {
-      index += 1;
-      skipWhitespace();
-      if (text[index] === "]") {
-        index += 1;
-        return;
-      }
-      while (true) {
-        parseValue();
-        skipWhitespace();
-        if (text[index] === "]") {
-          index += 1;
-          return;
-        }
-        if (text[index++] !== ",") syntaxError();
-      }
-    }
-    if (text[index] === '"') {
-      parseString();
-      return;
-    }
-    for (const literal of ["true", "false", "null"]) {
-      if (text.startsWith(literal, index)) {
-        index += literal.length;
-        return;
-      }
-    }
-    const number = /^-?(?:0|[1-9][0-9]*)(?:\.[0-9]+)?(?:[eE][+-]?[0-9]+)?/u.exec(text.slice(index));
-    if (!number) syntaxError();
-    index += number[0].length;
-  };
-
-  parseValue();
-  skipWhitespace();
-  if (index !== text.length) syntaxError();
-}
-
-function decodeBase64url(encoded) {
-  if (typeof encoded !== "string") throw policyError("must be a Base64URL string");
-  if (encoded === "") return Object.freeze({});
-  if (!BASE64URL.test(encoded) || encoded.length % 4 === 1) {
+function decodePolicy(encoded) {
+  if (typeof encoded !== "string" || (encoded !== "" && !BASE64URL.test(encoded)) || encoded.length % 4 === 1) {
     throw policyError("must be a Base64URL string");
   }
-
-  let text;
+  if (encoded === "") return Object.freeze({});
+  let bytes;
   try {
-    text = decodeBase64UrlUtf8(encoded);
+    bytes = decodeBase64Url(encoded);
   } catch {
-    throw policyError("must contain UTF-8 JSON");
+    throw policyError("must be a Base64URL string");
   }
-
-  let parsed;
+  let values;
   try {
-    assertUniqueJsonObjectKeys(text);
-    parsed = JSON.parse(text);
+    values = parseStrictJson(bytes, { label: "business overrides", maxBytes: 64 * 1024, maxDepth: 8 });
   } catch {
     throw policyError("must contain JSON object");
   }
-  if (parsed === null || Array.isArray(parsed) || Object.getPrototypeOf(parsed) !== Object.prototype) {
+  if (values === null || Array.isArray(values) || typeof values !== "object" || Object.getPrototypeOf(values) !== Object.prototype) {
     throw policyError("must contain a JSON object");
   }
-  return parsed;
+  return values;
 }
 
-function canonicalTarget(target, value) {
-  if (typeof value !== "string") throw targetError(target, "target must be a string");
+export function canonicalBusinessTarget(value) {
+  if (typeof value !== "string") throw new TypeError("target must be a string");
   if (TARGET_KEYWORD.test(value)) return value.toUpperCase();
-
   const node = NODE_TARGET.exec(value);
   if (!node || node[1].trim().length === 0 || LINE_TERMINATOR.test(node[1])) {
-    throw targetError(target, "target must be FOLLOW, DIRECT, or NODE:<name>");
+    throw new TypeError("target must be FOLLOW, DIRECT, or NODE:<name>");
   }
   return `NODE:${node[1]}`;
 }
 
 export function parseBusinessOverrides(encoded) {
-  const values = decodeBase64url(encoded);
+  const values = decodePolicy(encoded);
   const overrides = {};
-
   for (const [key, value] of Object.entries(values)) {
     const target = businessTargetByKey(key);
     if (!target) throw policyError("contains an unknown business key");
-    const canonical = canonicalTarget(target, value);
+    let canonical;
+    try {
+      canonical = canonicalBusinessTarget(value);
+    } catch {
+      throw targetError(target, "target must be FOLLOW, DIRECT, or NODE:<name>");
+    }
     if (Object.hasOwn(overrides, target.id) && overrides[target.id] !== canonical) {
       throw targetError(target, "has conflicting aliases");
     }
     overrides[target.id] = canonical;
   }
-
   return Object.freeze(overrides);
 }

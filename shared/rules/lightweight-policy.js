@@ -63,7 +63,7 @@ export const RULE_BUDGETS = Object.freeze({
 });
 
 export const ROUTING_PRECEDENCE = Object.freeze([
-  "local", "security", "custom", "domesticCore", "domesticGame",
+  "local", "security", "custom", "domesticCore", "domesticPlatform", "domesticGame",
   "explicitOverseas", "overseasGame", "chinaIp", "defaultProxy",
 ]);
 

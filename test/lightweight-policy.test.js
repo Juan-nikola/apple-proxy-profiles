@@ -36,7 +36,7 @@ test("defines the default lightweight rule-set boundary", () => {
   assert.equal(DEFAULT_RULE_SOURCE_IDS.includes("ChinaIP"), true);
   assert.equal(new Set(DEFAULT_RULE_SOURCE_IDS).size, DEFAULT_RULE_SOURCE_IDS.length);
   assert.deepEqual(ROUTING_PRECEDENCE, [
-    "local", "security", "custom", "domesticCore", "domesticGame",
+    "local", "security", "custom", "domesticCore", "domesticPlatform", "domesticGame",
     "explicitOverseas", "overseasGame", "chinaIp", "defaultProxy",
   ]);
 });
