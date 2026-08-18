@@ -8,6 +8,7 @@ import {
   plannedClientIds,
   publicDirectoryForClient,
 } from "../shared/release/client-catalog.js";
+import { protocolSupportsClient } from "../shared/nodes/protocol-registry.js";
 
 const REQUIRED_FIELDS = [
   "id", "displayName", "state", "platforms", "configFormat", "ruleFormat",
@@ -62,5 +63,16 @@ test("unknown capabilities stay explicitly unsupported", () => {
     assert.equal(Object.hasOwn(adapter, "unknownCapability"), false);
     assert.equal(adapter.separatesProfile, false);
     assert.equal(adapter.supportsPolicyOverrides, false);
+  }
+});
+
+test("HAPP and OneXray expose only the audited Xray protocol boundary", () => {
+  for (const client of ["happ", "onexray"]) {
+    for (const protocol of ["vless", "vmess", "ss", "trojan", "hysteria2", "socks5"]) {
+      assert.equal(protocolSupportsClient(protocol, client), true, `${client} should support ${protocol}`);
+    }
+    for (const protocol of ["snell", "anytls", "tuic", "ssh", "wireguard", "ssr", "http"]) {
+      assert.equal(protocolSupportsClient(protocol, client), false, `${client} must reject ${protocol}`);
+    }
   }
 });
