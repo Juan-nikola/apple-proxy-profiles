@@ -24,7 +24,7 @@ const COMMON_ENUM_KEYS = Object.freeze([
   "ipv6Mode", "autoGroupMode", "clientChain",
 ]);
 
-const CHANNELS = Object.freeze(["edge", "current"]);
+const CHANNELS = Object.freeze(["edge", "current", "previous"]);
 const ADBLOCK_MODES = Object.freeze(["off", "full"]);
 const PROFILE_MODES = Object.freeze(["light", "diagnostic"]);
 const NODE_ERROR_MODES = Object.freeze(["strict", "compatible"]);
@@ -56,6 +56,38 @@ const GENERATOR_SCHEMAS = Object.freeze({
       nodeErrorMode: NODE_ERROR_MODES,
     },
   }),
+  "onexray/scripts/onexray-node-generator.js": nodeSchema(),
+  "onexray/scripts/substore-node-generator.js": nodeSchema(),
+  "onexray/scripts/onexray-profile-generator.js": xraySchema("profile"),
+  "onexray/scripts/substore-profile-generator.js": xraySchema("profile"),
+  "onexray/scripts/onexray-routing-audit.js": xraySchema("audit"),
+  "onexray/scripts/substore-routing-audit.js": xraySchema("audit"),
+  "happ/scripts/happ-config-generator.js": configSchema({
+    platforms: ["macos", "iphone", "ipad", "android", "windows", "linux"],
+    requiresSubscriptionName: true,
+    extraKeys: ["policyOverrides"],
+    omitKeys: ["clientChain"],
+  }),
+  "happ/scripts/substore-config-generator.js": configSchema({
+    platforms: ["macos", "iphone", "ipad", "android", "windows", "linux"],
+    requiresSubscriptionName: true,
+    extraKeys: ["policyOverrides"],
+    omitKeys: ["clientChain"],
+  }),
+  "happ/scripts/happ-routing-audit.js": configSchema({
+    platforms: ["all"],
+    requiresSubscriptionName: true,
+    extraKeys: ["policyOverrides"],
+    omitKeys: ["clientChain"],
+    output: "audit",
+  }),
+  "happ/scripts/substore-routing-audit.js": configSchema({
+    platforms: ["all"],
+    requiresSubscriptionName: true,
+    extraKeys: ["policyOverrides"],
+    omitKeys: ["clientChain"],
+    output: "audit",
+  }),
 });
 
 function nodeSchema() {
@@ -68,17 +100,20 @@ function nodeSchema() {
 }
 
 function configSchema({
+  output = "config",
   platforms,
   requiresSubscriptionName = false,
   requiresNodeSubscriptionUrl = false,
   rejectFullAdblockPlatforms = [],
   extraKeys = [],
   extraEnums = {},
+  omitKeys = [],
 }) {
+  const omitted = new Set(omitKeys);
   const allowed = [
     "output", "type", "name", "subscriptionName", "nodeSubscriptionUrl", "platform",
     "channel", "adblockMode", ...COMMON_ENUM_KEYS, ...extraKeys,
-  ];
+  ].filter((key) => !omitted.has(key));
   const required = [
     "output", "type", "name", "platform",
     ...(requiresSubscriptionName ? ["subscriptionName"] : []),
@@ -87,7 +122,7 @@ function configSchema({
   return Object.freeze({
     required: Object.freeze(required),
     allowed: Object.freeze(allowed),
-    outputValues: Object.freeze(["config"]),
+    outputValues: Object.freeze([output]),
     platforms: Object.freeze(platforms),
     rejectFullAdblockPlatforms: Object.freeze(rejectFullAdblockPlatforms),
     enums: Object.freeze({
@@ -100,6 +135,26 @@ function configSchema({
       autoGroupMode: OPTION_VALUES.autoGroupMode,
       clientChain: OPTION_VALUES.clientChain,
       ...extraEnums,
+    }),
+  });
+}
+
+function xraySchema(output) {
+  return Object.freeze({
+    required: Object.freeze(["output", "type", "name"]),
+    allowed: Object.freeze([
+      "output", "type", "name", "channel", "dnsMode", "chinaDns", "globalDns",
+      "blockMode", "quicMode", "ipv6Mode", "clientChain", "clientChainTarget", "policyOverrides",
+    ]),
+    outputValues: Object.freeze([output]),
+    enums: Object.freeze({
+      dnsMode: OPTION_VALUES.dnsMode,
+      chinaDns: OPTION_VALUES.chinaDns,
+      globalDns: OPTION_VALUES.globalDns,
+      blockMode: OPTION_VALUES.blockMode,
+      quicMode: OPTION_VALUES.quicMode,
+      ipv6Mode: OPTION_VALUES.ipv6Mode,
+      clientChain: OPTION_VALUES.clientChain,
     }),
   });
 }
@@ -211,7 +266,11 @@ export function checkSubstoreTaskUrl(raw) {
       errors: Object.freeze([`Unexpected publication host '${parsed.url.hostname}'; expected ${PUBLIC_BASE} or a personal *.github.io fork`]),
     });
   }
-  const errors = checkTaskOptions(generator, parsed.params);
+  const errors = [...checkTaskOptions(generator, parsed.params)];
+  const pathChannel = parsed.scriptPath.split("/").find((segment) => PUBLISHED_CHANNELS.includes(segment));
+  if (pathChannel && parsed.params.channel && parsed.params.channel !== pathChannel) {
+    errors.push(`Option 'channel' must match the publication path '${pathChannel}'`);
+  }
   return Object.freeze({
     ok: errors.length === 0,
     taskUrl: raw,

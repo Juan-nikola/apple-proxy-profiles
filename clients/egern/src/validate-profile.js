@@ -1,4 +1,5 @@
 import { OPTION_VALUES } from "../../../shared/contracts.js";
+import { FRONTIER_CHANNELS } from "../../../shared/release/frontier-manifest.js";
 import { POLICY_TARGET } from "../../../shared/policies/intents.js";
 import { POLICY_GROUP_SCHEMA } from "../../../shared/policies/schema.js";
 import { renderEgernDns } from "./render-dns.js";
@@ -367,7 +368,7 @@ function validateQuic(root, groups, overrides) {
 function validateParsedProfile(root) {
   validateRoot(root);
   let publicationValid = false;
-  for (const channel of ["edge", "current"]) {
+  for (const channel of FRONTIER_CHANNELS) {
     const publicBaseUrl = `${PUBLIC_RULE_ROOT}/${channel}`;
     for (const adblockMode of ["off", "full"]) {
       const expectedRules = renderEgernRules({ publicBaseUrl, adblockMode });

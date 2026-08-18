@@ -22,6 +22,33 @@ test("accepts a valid node task on edge channel", () => {
   assert.equal(result.ok, true, result.errors.join(", "));
 });
 
+test("accepts a valid previous-channel task and preserves its channel parameter", () => {
+  const url = `${PUBLIC}/previous/egern/scripts/egern-node-generator.js#output=nodes&type=collection&name=apple-proxy-sources&clientChain=off&channel=previous`;
+  const result = checkSubstoreTaskUrl(url);
+  assert.equal(result.ok, true, result.errors.join(", "));
+  assert.equal(parseTaskUrl(url).params.channel, "previous");
+});
+
+test("accepts the published previous Egern node URL from the rollback guide", () => {
+  const url = `${PUBLIC}/previous/egern/scripts/egern-node-generator.js#output=nodes&type=collection&name=apple-proxy-egern&clientChain=off`;
+  const result = checkSubstoreTaskUrl(url);
+  assert.equal(result.ok, true, result.errors.join(", "));
+});
+
+test("accepts the active HAPP and OneXray generators and rejects unsupported channels", () => {
+  const base = `${PUBLIC}/current/egern/scripts/egern-node-generator.js#output=nodes&type=collection&name=apple-proxy-egern&clientChain=off`;
+  assert.equal(checkSubstoreTaskUrl(base.replace("/current/", "/beta/")).ok, false);
+  assert.equal(checkSubstoreTaskUrl(`${base}&channel=edge`).ok, false);
+  const happ = `${PUBLIC}/current/happ/scripts/happ-config-generator.js#output=config&type=collection&name=apple-proxy-happ&subscriptionName=Apple-Proxy-Happ&platform=macos&channel=current`;
+  assert.equal(checkSubstoreTaskUrl(happ).ok, true, checkSubstoreTaskUrl(happ).errors.join(", "));
+  const onexrayNodes = `${PUBLIC}/current/onexray/scripts/onexray-node-generator.js#output=nodes&type=collection&name=apple-proxy-onexray&clientChain=off&channel=current`;
+  assert.equal(checkSubstoreTaskUrl(onexrayNodes).ok, true, checkSubstoreTaskUrl(onexrayNodes).errors.join(", "));
+  const onexrayProfile = `${PUBLIC}/edge/onexray/scripts/onexray-profile-generator.js#output=profile&type=collection&name=apple-proxy-onexray&channel=edge&clientChain=off`;
+  assert.equal(checkSubstoreTaskUrl(onexrayProfile).ok, true, checkSubstoreTaskUrl(onexrayProfile).errors.join(", "));
+  const happAudit = `${PUBLIC}/previous/happ/scripts/happ-routing-audit.js#output=audit&type=collection&name=apple-proxy-happ&subscriptionName=Apple-Proxy-Happ&platform=all&channel=previous`;
+  assert.equal(checkSubstoreTaskUrl(happAudit).ok, true, checkSubstoreTaskUrl(happAudit).errors.join(", "));
+});
+
 test("accepts a client-specific collection slug and rejects unsafe collection names", () => {
   const safe = `${PUBLIC}/edge/egern/scripts/egern-node-generator.js#output=nodes&type=collection&name=apple-proxy-egern&clientChain=off`;
   assert.equal(checkSubstoreTaskUrl(safe).ok, true);

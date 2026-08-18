@@ -3,6 +3,7 @@ import { readFile } from "node:fs/promises";
 import test from "node:test";
 
 import { LIGHTWEIGHT_CLIENTS, LIGHTWEIGHT_ROUTING_CASES } from "./fixtures/lightweight-routing-cases.js";
+import { SEMANTIC_INTENTS } from "../shared/rules/semantic-intents.js";
 
 const root = new URL("../", import.meta.url);
 const openAiNativePolicy = "🤖 AI 专用";
@@ -154,6 +155,22 @@ test("all five generated client formats implement the shared lightweight behavio
     singbox: parseSingBoxPolicies(JSON.parse(await readFile(new URL("clients/sing-box/examples/sing-box-macos.json", root), "utf8"))),
     anywhere: new Map(),
   };
+
+  const representativeSources = new Map([
+    ["ai", "Claude"], ["github", "GitHub"], ["youtube", "YouTube"],
+    ["overseasMedia", "Netflix"], ["globalSocial", "Telegram"], ["overseasGame", "OverseasGame"],
+    ["domesticCore", "DomesticCore"], ["domesticPlatform", "BiliBili"], ["chinaIp", "ChinaIP"],
+    ["apple", "Apple"], ["microsoft", "Microsoft"], ["download", "Download"],
+  ]);
+  const expectedPolicies = new Map(SEMANTIC_INTENTS.map(({ id, policy }) => [id, policy]));
+  for (const client of ["shadowrocket", "surge", "egern", "singbox"]) {
+    for (const [id, sourceId] of representativeSources) {
+      assert.equal(
+        artifacts[client].get(sourceId), expectedPolicies.get(id),
+        `${client}: ${id} (${sourceId}) must keep its shared semantic policy`,
+      );
+    }
+  }
 
   for (const client of LIGHTWEIGHT_CLIENTS) {
     await t.test(client, () => {

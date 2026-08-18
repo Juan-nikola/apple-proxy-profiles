@@ -4,6 +4,7 @@ import test from "node:test";
 import {
   BUSINESS_TARGETS,
   businessTargetByKey,
+  canonicalBusinessTarget,
   parseBusinessOverrides,
 } from "../shared/policies/business-targets.js";
 
@@ -17,13 +18,13 @@ const EXPECTED_TARGETS = [
   ["youtube", "📺 YouTube", ["YouTube", "youtube"], "FOLLOW"],
   ["overseasMedia", "🎬 海外流媒体", ["海外流媒体", "overseasMedia", "Netflix", "netflix", "Disney+", "disney", "Spotify", "spotify", "国际媒体", "globalMedia"], "FOLLOW"],
   ["globalSocial", "💬 海外社交", ["海外社交", "globalSocial", "Telegram", "telegram", "TikTok", "tiktok"], "FOLLOW"],
+  ["overseasGame", "🌍 海外游戏", ["海外游戏", "overseasGame"], "FOLLOW"],
+  ["domesticCore", "国内核心", ["国内核心", "domesticCore"], "DIRECT"],
+  ["domesticPlatform", "🇨🇳 国内平台", ["国内平台", "domestic", "🇨🇳 国内平台", "domesticPlatform", "哔哩哔哩", "bilibili", "抖音", "bytedance", "小红书", "xiaohongshu", "微博", "weibo"], "DIRECT"],
+  ["chinaIp", "中国 IP", ["中国 IP", "chinaIp"], "DIRECT"],
   ["apple", "🍎 Apple", ["Apple", "apple"], "DIRECT"],
   ["microsoft", "🪟 Microsoft", ["Microsoft", "microsoft"], "DIRECT"],
-  ["domestic", "🇨🇳 国内平台", ["国内平台", "domestic", "哔哩哔哩", "bilibili", "抖音", "bytedance", "小红书", "xiaohongshu", "微博", "weibo"], "DIRECT"],
-  ["overseasGame", "🌍 海外游戏", ["海外游戏", "overseasGame"], "FOLLOW"],
   ["download", "⬇️ 下载/P2P", ["下载/P2P", "download"], "DIRECT"],
-  ["dnsAndRules", "🧭 DNS 与规则下载", ["DNS 与规则下载", "dnsAndRules"], "FOLLOW"],
-  ["final", "最终兜底", ["最终兜底", "final"], "FOLLOW"],
 ];
 
 test("pins frozen ordered business records and resolves their approved aliases", () => {
@@ -50,15 +51,26 @@ test("parses URL-safe override JSON by canonical business id", () => {
   const encoded = base64url({
     "🤖 AI 专用": "node:🇯🇵 Tokyo｜自建·U",
     youtube: "follow",
+    "国内平台": "direct",
     "Apple": "direct",
   });
   assert.deepEqual(parseBusinessOverrides(encoded), {
     ai: "NODE:🇯🇵 Tokyo｜自建·U",
     youtube: "FOLLOW",
+    domesticPlatform: "DIRECT",
     apple: "DIRECT",
   });
   assert.equal(Object.isFrozen(parseBusinessOverrides(encoded)), true);
   assert.deepEqual(parseBusinessOverrides(""), {});
+});
+
+test("canonicalizes only approved keywords and preserves node display names", () => {
+  assert.equal(canonicalBusinessTarget("follow"), "FOLLOW");
+  assert.equal(canonicalBusinessTarget("DIRECT"), "DIRECT");
+  assert.equal(canonicalBusinessTarget("node:🇯🇵 Tokyo｜MixedCase"), "NODE:🇯🇵 Tokyo｜MixedCase");
+  for (const value of ["NODE:", "NODE:  ", "NODE:Tokyo\n", "BLOCK", 7]) {
+    assert.throws(() => canonicalBusinessTarget(value));
+  }
 });
 
 test("merges identical aliases and rejects conflicting aliases with the business label", () => {
@@ -97,7 +109,8 @@ test("rejects unknown keys and invalid target values without exposing encoded po
 
 test("rejects non-Base64URL, malformed UTF-8 and non-object policy documents", () => {
   const malformedUtf8 = Buffer.from([0xff]).toString("base64url");
-  for (const encoded of ["eyJhaSI6IkZPTExPVyJ9=", "a+b", "a/b", malformedUtf8, base64url([]), base64url(null)]) {
+  const bomPolicy = Buffer.concat([Buffer.from([0xef, 0xbb, 0xbf]), Buffer.from('{"ai":"FOLLOW"}', "utf8")]).toString("base64url");
+  for (const encoded of ["eyJhaSI6IkZPTExPVyJ9=", "a+b", "a/b", malformedUtf8, bomPolicy, base64url([]), base64url(null)]) {
     assert.throws(
       () => parseBusinessOverrides(encoded),
       (error) => {

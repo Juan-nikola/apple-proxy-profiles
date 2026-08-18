@@ -1,5 +1,6 @@
 import { ANYWHERE_LIGHTWEIGHT_MIGRATION } from "./shard-rules.js";
 import { ROUTING_PHASES } from "../../../shared/rules/lightweight-policy.js";
+import { FRONTIER_CHANNELS } from "../../../shared/release/frontier-manifest.js";
 
 const DEEP_LINK_BASE = "anywhere://add-rule-set";
 const ADVERTISING_IDS = new Set(["Advertising", "Advertising_Domain"]);
@@ -175,8 +176,11 @@ function validatePageMode(mode, manifest) {
   }
 }
 
-export function renderImportPage(batches, manifest, { mode = "default" } = {}) {
+export function renderImportPage(batches, manifest, { mode = "default", channel = "edge" } = {}) {
   if (!Array.isArray(batches) || batches.length === 0) throw new TypeError("Anywhere import batches are required");
+  if (!FRONTIER_CHANNELS.includes(channel)) {
+    throw new TypeError("Anywhere import page channel is unsupported");
+  }
   if (!manifest || typeof manifest !== "object" || typeof manifest.manifestSha256 !== "string") {
     throw new TypeError("Anywhere rule manifest is required");
   }
@@ -191,6 +195,9 @@ export function renderImportPage(batches, manifest, { mode = "default" } = {}) {
   validatePageMode(mode, manifest);
   const assignmentSources = validateAssignmentSources(manifest);
   const expectedUrls = manifest.shards.map(({ url }) => validateRuleUrl(url));
+  if (expectedUrls.some((url) => !new URL(url).pathname.includes(`/${channel}/`))) {
+    throw new Error("Anywhere import manifest does not match its publication channel");
+  }
   const actualUrls = batches.flatMap(({ urls }) => urls.map(validateRuleUrl));
   if (JSON.stringify(actualUrls) !== JSON.stringify(expectedUrls)) {
     throw new Error("Anywhere import batches do not close over the manifest");

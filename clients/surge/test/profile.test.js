@@ -59,11 +59,22 @@ test("parses a strict Surge option set for each Apple platform", () => {
     assert.equal(options.adblockMode, "off");
   }
   assert.equal(parseSurgeOptions({ ...baseOptions, channel: "current" }).channel, "current");
+  assert.equal(parseSurgeOptions({ ...baseOptions, channel: "previous" }).channel, "previous");
   assert.equal(parseSurgeOptions({ ...baseOptions, adblockMode: "full" }).adblockMode, "full");
   assert.throws(() => parseSurgeOptions({ ...baseOptions, platform: "android" }), /platform/iu);
   assert.throws(() => parseSurgeOptions({ ...baseOptions, channel: "beta" }), /channel/iu);
   assert.throws(() => parseSurgeOptions({ ...baseOptions, adblockMode: "balanced" }), /adblockMode/iu);
   assert.throws(() => parseSurgeOptions({ ...baseOptions, unknown: "value" }), /unknown/iu);
+});
+
+test("renders the previous Surge rule publication without mixing channels", () => {
+  const profile = renderSurgeProfile(
+    parseSurgeOptions({ ...baseOptions, channel: "previous" }),
+    [normalizedSsNode],
+    { ruleBaseUrl: "https://example.invalid/previous/surge/rules" },
+  );
+  assert.match(profile, /\/previous\/surge\/rules\/DomesticCore\.list/u);
+  assert.doesNotMatch(profile, /\/(?:edge|current)\/surge\/rules\//u);
 });
 
 test("matches compact and normalized country-flag node names", () => {

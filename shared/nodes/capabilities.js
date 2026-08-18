@@ -1157,6 +1157,15 @@ export function anywhereNodeExclusionReason(node) {
 export function evaluateNodeForClient(node, client) {
   if (!Object.values(CLIENT).includes(client)) return { supported: false, reason: "unsupported-client" };
 
+  if (client === CLIENT.happ) {
+    const reason = happNodeExclusionReason(node ?? {});
+    return reason ? { supported: false, reason } : { supported: true, reason: null };
+  }
+  if (client === CLIENT.onexray) {
+    const reason = oneXrayNodeExclusionReason(node ?? {});
+    return reason ? { supported: false, reason } : { supported: true, reason: null };
+  }
+
   const protocol = normalizeProtocol(node?.type);
   if (!protocolSupportsClient(protocol, client)) {
     return { supported: false, reason: "unsupported-protocol" };
@@ -1166,9 +1175,99 @@ export function evaluateNodeForClient(node, client) {
   if (client === CLIENT.anywhere) transportReason = anywhereNodeExclusionReason(node ?? {});
   else if (client === CLIENT.egern) transportReason = egernNodeExclusionReason(node ?? {});
   else if (client === CLIENT.singbox) transportReason = singBoxNodeExclusionReason(node ?? {});
+  else if (client === CLIENT.happ) transportReason = happNodeExclusionReason(node ?? {});
+  else if (client === CLIENT.onexray) transportReason = oneXrayNodeExclusionReason(node ?? {});
   return transportReason
     ? { supported: false, reason: transportReason }
     : { supported: true, reason: null };
+}
+
+const HAPP_XRAY_TRANSPORTS = new Set(["tcp", "raw", "ws", "grpc", "h2", "http2"]);
+const ONEXRAY_TRANSPORTS = new Set([
+  "tcp", "raw", "ws", "grpc", "h2", "http2", "http", "httpupgrade", "xhttp", "kcp", "mkcp", "hysteria",
+]);
+const XRAY_CHAIN_REASON = Object.freeze({ happ: "unsupported-happ-chain", onexray: "unsupported-onexray-chain" });
+const XRAY_PROTOCOL_REASON = Object.freeze({ happ: "unsupported-happ-protocol", onexray: "unsupported-onexray-protocol" });
+const XRAY_TRANSPORT_REASON = Object.freeze({ happ: "unsupported-happ-transport", onexray: "unsupported-onexray-transport" });
+
+function xrayCommonReason(node, client) {
+  if (!isPlainObject(node) || !isNonblankString(node.name) || !isNonblankString(node.server) || !isValidPort(node.port)) {
+    return `invalid-${client}-node-shape`;
+  }
+  if (hasAnyChain(node)) return XRAY_CHAIN_REASON[client];
+  const protocol = normalizeProtocol(node.type);
+  if (!protocolSupportsClient(protocol, client)) return XRAY_PROTOCOL_REASON[client];
+  return null;
+}
+
+function xrayTlsReason(node, client) {
+  const security = node.security === undefined ? (node.tls === true ? "tls" : "none") : String(node.security).toLowerCase();
+  if (!["none", "tls", "reality"].includes(security)) return `unsupported-${client}-tls`;
+  if (node.security === "none" && node.tls === true || node.tls === false && security !== "none") {
+    return `unsupported-${client}-tls`;
+  }
+  if (security === "reality") {
+    const reality = node["reality-opts"];
+    if (!isPlainObject(reality) || !isNonblankOpaqueString(reality["public-key"])) {
+      return client === "onexray" ? "incomplete-onexray-reality" : "incomplete-happ-reality";
+    }
+    if (Object.keys(reality).some((key) => !["public-key", "short-id", "spider-x", "_spider-x"].includes(key))) {
+      return `unsupported-${client}-tls`;
+    }
+  }
+  if (hasOption(node, "skip-cert-verify") && typeof node["skip-cert-verify"] !== "boolean"
+    || hasOption(node, "allow-insecure") && typeof node["allow-insecure"] !== "boolean") {
+    return `unsupported-${client}-tls`;
+  }
+  return null;
+}
+
+function xrayTransportReason(node, client, protocol) {
+  if (protocol === "hysteria2" || protocol === "hy2") {
+    const network = normalizeTransport(node);
+    return network !== "tcp" && network !== "udp" && network !== "quic" ? XRAY_TRANSPORT_REASON[client] : null;
+  }
+  const network = normalizeTransport(node);
+  const allowed = client === "happ" ? HAPP_XRAY_TRANSPORTS : ONEXRAY_TRANSPORTS;
+  if (!allowed.has(network)) return XRAY_TRANSPORT_REASON[client];
+  if (protocol === "socks5" && network !== "tcp" && network !== "raw") return XRAY_TRANSPORT_REASON[client];
+  if ((protocol === "ss" || protocol === "shadowsocks") && (hasShadowsocksPlugin(node) || network !== "tcp" && network !== "raw")) {
+    return XRAY_TRANSPORT_REASON[client];
+  }
+  const optionKeys = ["ws-opts", "grpc-opts", "h2-opts", "http-opts", "httpupgrade-opts", "xhttp-opts", "kcp-opts", "hysteria-opts"];
+  const present = optionKeys.filter((key) => hasOption(node, key));
+  const expected = network === "ws" ? "ws-opts"
+    : network === "grpc" ? "grpc-opts"
+      : network === "h2" || network === "http2" || network === "http" ? "h2-opts"
+        : network === "httpupgrade" ? "httpupgrade-opts"
+          : network === "xhttp" ? "xhttp-opts"
+            : network === "kcp" || network === "mkcp" ? "kcp-opts"
+              : null;
+  if (present.some((key) => key !== expected && !(expected === "h2-opts" && key === "http-opts"))) return XRAY_TRANSPORT_REASON[client];
+  for (const key of present) if (!isPlainObject(node[key])) return XRAY_TRANSPORT_REASON[client];
+  return null;
+}
+
+function xrayNodeExclusionReason(node, client) {
+  const common = xrayCommonReason(node, client);
+  if (common) return common;
+  const protocol = normalizeProtocol(node.type);
+  const tls = xrayTlsReason(node, client);
+  if (tls) return tls;
+  const transport = xrayTransportReason(node, client, protocol);
+  if (transport) return transport;
+  if (client === "happ" && protocol === "socks5" && (node.tls === true || node.security === "tls" || node.security === "reality")) {
+    return "unsupported-happ-tls";
+  }
+  return null;
+}
+
+export function happNodeExclusionReason(node) {
+  return xrayNodeExclusionReason(node, "happ");
+}
+
+export function oneXrayNodeExclusionReason(node) {
+  return xrayNodeExclusionReason(node, "onexray");
 }
 
 function singBoxNodeExclusionReason(node) {

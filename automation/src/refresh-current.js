@@ -6,14 +6,11 @@ import { buildRoutingPlanAudit } from "./routing-plan-audit.js";
 import { canonicalJson } from "./render-anywhere-rules.js";
 import { parseSurgeRules } from "./parse-surge.js";
 import { orderedRoutingPlan } from "../../shared/rules/lightweight-policy.js";
+import { activeClientIds, publicDirectoryForClient } from "../../shared/release/client-catalog.js";
 
-const CLIENT_DIRECTORIES = Object.freeze({
-  shadowrocket: "shadowrocket",
-  surge: "surge",
-  egern: "egern",
-  singbox: "sing-box",
-  anywhere: "anywhere",
-});
+const CLIENT_DIRECTORIES = Object.freeze(Object.fromEntries(
+  activeClientIds().map((client) => [client, publicDirectoryForClient(client)]),
+));
 
 const ROUTING_PREFIXES = Object.freeze([
   "surge/rules/",
@@ -38,6 +35,11 @@ const CLIENT_RULE_PREFIXES = Object.freeze({
     "sing-box/mobile-rule-sets/",
   ],
   anywhere: ["anywhere/rules/"],
+  // Native Xray adapters publish private generator scripts rather than the
+  // shared lightweight rule-file tree, so their referenced rule-byte count is
+  // intentionally zero in root manifests.
+  onexray: [],
+  happ: [],
 });
 const SHA256 = /^[0-9a-f]{64}$/u;
 
@@ -93,6 +95,7 @@ function parseCanonicalManifest(bytes, label) {
 function referencedBytesForClient(records, client) {
   const prefixes = CLIENT_RULE_PREFIXES[client];
   if (!prefixes) throw new Error(`Unknown client: ${client}`);
+  if (prefixes.length === 0) return 0;
   return records
     .filter(({ path }) => (
       prefixes.some((prefix) => path.startsWith(prefix)) && !path.endsWith("/manifest.json")
@@ -165,6 +168,7 @@ export async function refreshChannelManifest({ publicDirectory, channel }) {
     generatedAt: existing.generatedAt,
     upstream: existing.upstream,
     catalogSha256: existing.catalogSha256,
+    ...(existing.clientStates === undefined ? {} : { clientStates: existing.clientStates }),
     clients,
     diagnostics: existing.diagnostics,
     files: records,
@@ -261,7 +265,10 @@ export async function refreshCurrentManifest({ publicDirectory, adoptEdgeMetadat
       schemaVersion: 2,
       generatedAt: edgeManifest.generatedAt,
       upstream: edgeManifest.upstream,
-      catalogSha256: edgeManifest.catalogSha256,
+    catalogSha256: edgeManifest.catalogSha256,
+      ...(edgeManifest.clientStates === undefined
+        ? (existingCurrent.clientStates === undefined ? {} : { clientStates: existingCurrent.clientStates })
+        : { clientStates: edgeManifest.clientStates }),
       clients: existingCurrent.clients,
       diagnostics: edgeManifest.diagnostics,
       files: existingCurrent.files,

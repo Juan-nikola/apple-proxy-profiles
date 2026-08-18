@@ -11,6 +11,24 @@ function urls(count) {
   ));
 }
 
+test("requires an explicit non-edge channel when rendering a non-edge import page", () => {
+  const input = urls(1);
+  const manifest = {
+    upstream: { commit: "d".repeat(40) },
+    generatedAt: "2026-08-01T19:07:21Z",
+    manifestSha256: "a".repeat(64),
+    totals: { sourceCount: 1, shardCount: 1, outputCount: 1 },
+    sources: [{
+      id: "DomesticCore", order: 1, phase: "earlyDomestic", dnsClass: "china",
+      intendedTarget: "direct", routing: 1, shardIds: ["Rule-001"],
+    }],
+    shards: [{ id: "Rule-001", sourceId: "DomesticCore", url: input[0] }],
+  };
+  const batches = buildImportBatches(input);
+  assert.throws(() => renderImportPage(batches, manifest), /channel/iu);
+  assert.doesNotThrow(() => renderImportPage(batches, manifest, { channel: "current" }));
+});
+
 test("builds unique bounded deep links with every nested HTTPS URL encoded once", () => {
   const input = urls(34);
   const link = buildImportDeepLink(input);
@@ -91,7 +109,7 @@ test("renders a static escaped no-script page with manual fallbacks", () => {
     replacements: ANYWHERE_LIGHTWEIGHT_MIGRATION.replacements,
     optionalPacks: ANYWHERE_LIGHTWEIGHT_MIGRATION.optionalPacks,
     sources,
-  });
+  }, { channel: "current" });
   assert.match(html, /<!doctype html>/u);
   assert.match(html, /Default 不是可靠的“停用”开关/u);
   assert.match(html, /Privacy/u);
@@ -139,7 +157,7 @@ test("renders a separate full-adblock import page that only imports REJECT adver
       url,
     })),
   };
-  const html = renderImportPage(buildImportBatches(input), manifest, { mode: "adblock-full" });
+  const html = renderImportPage(buildImportBatches(input), manifest, { mode: "adblock-full", channel: "current" });
   assert.match(html, /REJECT/u);
   assert.match(html, /Advertising[\s\S]*security[\s\S]*REJECT[\s\S]*1 shard\(s\)/u);
   assert.match(html, /Advertising \| security \| REJECT \| 1 shard\(s\)/u);
@@ -155,7 +173,7 @@ test("tracked lightweight import page closes over every schema-v2 manifest shard
   const batches = buildImportBatches(manifest.shards.map(({ url }) => url));
   const totalLink = buildImportDeepLink(manifest.shards.map(({ url }) => url));
   const escapedTotalLink = totalLink.replaceAll("&", "&amp;");
-  const expected = renderImportPage(batches, manifest);
+  const expected = renderImportPage(batches, manifest, { channel: "current" });
   const actual = await readFile(new URL("../examples/import.html", import.meta.url), "utf8");
   assert.equal(actual, expected);
   assert.equal(batches.flatMap(({ urls: batchUrls }) => batchUrls).length, manifest.totals.shardCount);
@@ -196,7 +214,7 @@ test("rejects invalid source assignment metadata instead of rendering untrusted 
     { ...manifest.sources[0], id: undefined },
     { ...manifest.sources[0], shardIds: [undefined] },
   ]) {
-    assert.throws(() => renderImportPage(batches, { ...manifest, sources: [source] }), /sources/u);
+    assert.throws(() => renderImportPage(batches, { ...manifest, sources: [source] }, { channel: "current" }), /sources/u);
   }
 });
 
@@ -231,7 +249,7 @@ test("rejects source assignments that do not close over manifest shard ownership
     { name: "wrong owner", sources: [source], shards: [{ ...shard, sourceId: "ChinaIP" }] },
     { name: "non-string emitted ID", sources: [source], shards: [{ ...shard, id: undefined }] },
   ]) {
-    assert.throws(() => renderImportPage(batches, { ...manifest, sources, shards }), /sources/u, name);
+    assert.throws(() => renderImportPage(batches, { ...manifest, sources, shards }, { channel: "current" }), /sources/u, name);
   }
 });
 
@@ -259,6 +277,6 @@ test("rendering rejects omitted shards and attacker-controlled deep links", () =
     })),
   };
   const batches = buildImportBatches(input);
-  assert.throws(() => renderImportPage([{ ...batches[0], urls: [input[0]] }], manifest), /close over/u);
-  assert.throws(() => renderImportPage([{ ...batches[0], deepLink: "javascript:alert(1)" }], manifest), /deep link/u);
+  assert.throws(() => renderImportPage([{ ...batches[0], urls: [input[0]] }], manifest, { channel: "current" }), /close over/u);
+  assert.throws(() => renderImportPage([{ ...batches[0], deepLink: "javascript:alert(1)" }], manifest, { channel: "current" }), /deep link/u);
 });

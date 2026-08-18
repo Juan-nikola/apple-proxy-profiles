@@ -40,7 +40,13 @@ async function treeRecords(directory) {
 }
 
 async function fixtureTree() {
-  const artifacts = buildClientArtifacts({ snapshot: lightweightFixtureSnapshots() });
+  const artifacts = buildClientArtifacts({
+    snapshot: lightweightFixtureSnapshots(),
+    additionalFiles: new Map([
+      ["onexray/scripts/onexray-node-generator.js", "native onexray generator\n"],
+      ["happ/scripts/happ-config-generator.js", "native happ generator\n"],
+    ]),
+  });
   const root = await mkdtemp(join(tmpdir(), "apple-proxy-refresh-"));
   await writeFiles(join(root, "current"), artifacts.defaults);
   await writeFiles(join(root, "edge"), artifacts.defaults);

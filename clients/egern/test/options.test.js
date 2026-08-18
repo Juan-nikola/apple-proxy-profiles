@@ -63,8 +63,10 @@ test("accepts every shared option enum without cloning or widening the contracts
   }
 });
 
-test("accepts only the two publication channels and explicit full ad blocking", () => {
-  assert.equal(parseEgernOptions({ ...required, channel: "current" }).channel, "current");
+test("accepts all three publication channels and explicit full ad blocking", () => {
+  for (const channel of ["edge", "current", "previous"]) {
+    assert.equal(parseEgernOptions({ ...required, channel }).channel, channel);
+  }
   assert.equal(parseEgernOptions({ ...required, adblockMode: "full" }).adblockMode, "full");
   for (const [key, value] of [["channel", "beta"], ["adblockMode", "balanced"]]) {
     assert.throws(() => parseEgernOptions({ ...required, [key]: value }), new RegExp(key, "i"));

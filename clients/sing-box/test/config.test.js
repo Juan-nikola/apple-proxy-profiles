@@ -54,7 +54,7 @@ const nodes = [
 function render(overrides = {}) {
   const options = parseSingBoxOptions({ ...baseOptions, ...overrides });
   return renderSingBoxConfig(options, nodes, {
-    ruleBaseUrl: "https://example.invalid/current/sing-box/rule-sets",
+    ruleBaseUrl: `https://example.invalid/${options.channel}/sing-box/rule-sets`,
   });
 }
 
@@ -64,6 +64,15 @@ test("accepts only the four terminal platforms and rejects deferred OpenWrt", ()
   }
   assert.throws(() => parseSingBoxOptions({ ...baseOptions, platform: "openwrt" }), /platform/iu);
   assert.equal(parseSingBoxOptions(baseOptions).channel, "edge");
+  assert.equal(parseSingBoxOptions({ ...baseOptions, channel: "previous" }).channel, "previous");
+});
+
+test("renders the previous sing-box rule publication without mixing channels", () => {
+  const config = render({ channel: "previous" });
+  const urls = config.route.rule_set.map(({ url }) => url);
+  assert.ok(urls.some((url) => url.includes("/previous/sing-box/")));
+  assert.equal(urls.some((url) => /\/(?:edge|current)\/sing-box\//u.test(url)), false);
+  assert.deepEqual(validateSingBoxConfig(config), { valid: true, errors: [] });
 });
 
 test("defaults Apple platforms to IPv4-only without changing Android defaults", () => {

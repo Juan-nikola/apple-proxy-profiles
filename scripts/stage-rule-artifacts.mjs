@@ -13,13 +13,18 @@ import {
   fetchChinaIpAuditSnapshot,
   resolveChinaIpAuditCommit,
 } from "../automation/src/fetch-china-ip-audit.js";
+import { buildV2flyDomainAudit } from "../automation/src/v2fly-domain-audit.js";
+import { fetchV2flyDomainAuditSnapshot } from "../automation/src/fetch-v2fly-domain-audit.js";
 import { canonicalJson } from "../automation/src/render-anywhere-rules.js";
+import { parseSurgeRules } from "../automation/src/parse-surge.js";
+import { V2FLY_AUDIT_BASELINE } from "../automation/src/source-catalog.js";
 import { MOBILE_RULE_SOURCE_IDS, ruleClientCatalog } from "../shared/rules/lightweight-policy.js";
 
 const REPOSITORY_ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
 export const DEFAULT_STAGE_ROOT = resolve(REPOSITORY_ROOT, "clients/sing-box/build/rule-artifacts");
 export const DEFAULT_COMPILED_ROOT = resolve(REPOSITORY_ROOT, "clients/sing-box/build/compiled-rule-artifacts");
 const CHINA_IP_AUDIT_PATH = "audit/china-ip-drift.json";
+const V2FLY_AUDIT_PATH = "audit/v2fly-domain-drift.json";
 const REUSE_MAX_AGE_MS = 24 * 60 * 60 * 1000;
 const SRS_MAGIC = Buffer.from([0x53, 0x52, 0x53, 0x02]);
 
@@ -85,6 +90,61 @@ function canonicalChinaIpAudit(content) {
     throw new Error("ChinaIP audit report bytes are not canonical");
   }
   return Object.freeze({ bytes, report });
+}
+
+function canonicalV2flyAudit(content) {
+  const bytes = artifactBuffer(content);
+  let report;
+  try {
+    report = JSON.parse(bytes.toString("utf8"));
+  } catch {
+    throw new Error("v2fly audit report is invalid JSON");
+  }
+  if (!bytes.equals(Buffer.from(canonicalJson(report), "utf8"))) {
+    throw new Error("v2fly audit report bytes are not canonical");
+  }
+  return Object.freeze({ bytes, report });
+}
+
+function productionDomainEntries(artifacts) {
+  const entries = [];
+  const domainKinds = new Set(["domain", "domainSuffix", "domainKeyword", "regexp"]);
+  for (const [path, content] of artifacts.defaults) {
+    const match = /^surge\/rules\/[A-Za-z0-9_]+\.list$/u.exec(path);
+    if (!match) continue;
+    const id = path.slice("surge/rules/".length, -".list".length);
+    const parsed = parseSurgeRules(artifactBuffer(content).toString("utf8"), {
+      id,
+      inputFormat: "RULE-SET",
+      minEntries: 0,
+    });
+    entries.push(...parsed.entries.filter(({ kind }) => domainKinds.has(kind)));
+  }
+  return entries;
+}
+
+export async function buildEdgeV2flyDomainAudit({
+  artifacts,
+  fetchImpl = globalThis.fetch,
+  now = new Date(),
+  fetchSnapshotImpl = fetchV2flyDomainAuditSnapshot,
+  baseline = V2FLY_AUDIT_BASELINE,
+} = {}) {
+  if (!artifacts?.defaults || !artifacts.diagnostics?.defaultManifest?.upstream) {
+    throw new TypeError("Built artifacts are required for v2fly audit");
+  }
+  const generatedAt = now instanceof Date ? now.toISOString() : new Date(now).toISOString();
+  const snapshot = await fetchSnapshotImpl({
+    commit: { sha: baseline.commit, committedAt: artifacts.diagnostics.defaultManifest.upstream.committedAt },
+    fetchImpl,
+  });
+  const report = buildV2flyDomainAudit({
+    snapshot,
+    generatedAt,
+    blackmatrixCatalog: productionDomainEntries(artifacts),
+    production: artifacts.diagnostics.defaultManifest.upstream,
+  });
+  return Buffer.from(canonicalJson(report), "utf8");
 }
 
 function previousChinaIpEntries(content) {
@@ -196,7 +256,7 @@ export async function loadCurrentChinaIpAudit({ publicDirectory }) {
   return loaded.bytes;
 }
 
-async function writeRuleStage({ inputs, upstream, chinaIpAudit, outputRoot }) {
+async function writeRuleStage({ inputs, upstream, chinaIpAudit, v2flyDomainAudit = null, outputRoot }) {
   const absoluteOutput = resolve(outputRoot);
   const parent = dirname(absoluteOutput);
   await mkdir(parent, { recursive: true });
@@ -219,11 +279,24 @@ async function writeRuleStage({ inputs, upstream, chinaIpAudit, outputRoot }) {
       bytes: audit.bytes.length,
       sha256: sha256(audit.bytes),
     });
+    let v2flyAuditRecord = null;
+    if (v2flyDomainAudit !== null) {
+      const audit = canonicalV2flyAudit(v2flyDomainAudit);
+      const destination = join(staging, V2FLY_AUDIT_PATH);
+      await mkdir(dirname(destination), { recursive: true });
+      await writeFile(destination, audit.bytes);
+      v2flyAuditRecord = Object.freeze({
+        path: V2FLY_AUDIT_PATH,
+        bytes: audit.bytes.length,
+        sha256: sha256(audit.bytes),
+      });
+    }
     if (!upstream || !/^[0-9a-f]{40}$/u.test(upstream.commit)) throw new Error("Staged upstream commit is invalid");
     const manifest = Object.freeze({
       schemaVersion: 2,
       upstream,
       chinaIpAudit: chinaIpAuditRecord,
+      ...(v2flyAuditRecord === null ? {} : { v2flyAudit: v2flyAuditRecord }),
       files: Object.freeze(records),
     });
     await writeFile(join(staging, "stage-manifest.json"), `${JSON.stringify(manifest)}\n`, "utf8");
@@ -236,18 +309,34 @@ async function writeRuleStage({ inputs, upstream, chinaIpAudit, outputRoot }) {
   }
 }
 
-export async function stageSingBoxAuditArtifacts({ artifacts, chinaIpAudit, outputRoot = DEFAULT_STAGE_ROOT }) {
+export async function stageSingBoxAuditArtifacts({
+  artifacts,
+  chinaIpAudit,
+  v2flyDomainAudit = null,
+  outputRoot = DEFAULT_STAGE_ROOT,
+}) {
   return writeRuleStage({
     inputs: auditInputs(artifacts),
     upstream: artifacts.diagnostics?.defaultManifest?.upstream,
     chinaIpAudit,
+    v2flyDomainAudit,
     outputRoot,
   });
+}
+
+export async function stageSingBoxAuditArtifactsWithV2fly({
+  artifacts,
+  chinaIpAudit,
+  v2flyDomainAudit = null,
+  outputRoot = DEFAULT_STAGE_ROOT,
+}) {
+  return stageSingBoxAuditArtifacts({ artifacts, chinaIpAudit, v2flyDomainAudit, outputRoot });
 }
 
 export async function stageCurrentSingBoxArtifacts({
   publicDirectory,
   chinaIpAudit,
+  v2flyDomainAudit = null,
   outputRoot = DEFAULT_STAGE_ROOT,
 }) {
   if (typeof publicDirectory !== "string" || !publicDirectory) {
@@ -269,6 +358,7 @@ export async function stageCurrentSingBoxArtifacts({
     inputs,
     upstream: currentManifest.upstream,
     chinaIpAudit,
+    v2flyDomainAudit,
     outputRoot,
   });
 }
@@ -281,7 +371,11 @@ export async function readRuleStageManifest(stageRoot = DEFAULT_STAGE_ROOT) {
     throw new Error("Rule stage manifest is invalid");
   }
   const actualPaths = (await treeFiles(absoluteRoot)).filter((path) => path !== "stage-manifest.json").sort();
-  const expectedPaths = [...manifest.files.map(({ path }) => path), manifest.chinaIpAudit.path].sort();
+  const expectedPaths = [
+    ...manifest.files.map(({ path }) => path),
+    manifest.chinaIpAudit.path,
+    ...(manifest.v2flyAudit === undefined ? [] : [manifest.v2flyAudit.path]),
+  ].sort();
   if (JSON.stringify(actualPaths) !== JSON.stringify(expectedPaths)) throw new Error("Rule stage file closure failed");
   for (const record of [...manifest.files, manifest.chinaIpAudit]) {
     if (!record || !/^[0-9a-f]{64}$/u.test(record.sha256) || !Number.isSafeInteger(record.bytes) || record.bytes < 1) {
@@ -291,6 +385,18 @@ export async function readRuleStageManifest(stageRoot = DEFAULT_STAGE_ROOT) {
     if (content.length !== record.bytes || sha256(content) !== record.sha256) {
       throw new Error(`Rule stage file hash mismatch: ${record.path}`);
     }
+  }
+  if (manifest.v2flyAudit !== undefined) {
+    const record = manifest.v2flyAudit;
+    if (record.path !== V2FLY_AUDIT_PATH || !/^[0-9a-f]{64}$/u.test(record.sha256)
+      || !Number.isSafeInteger(record.bytes) || record.bytes < 1) {
+      throw new Error("Rule stage v2fly audit record is invalid");
+    }
+    const content = await readFile(join(absoluteRoot, record.path));
+    if (content.length !== record.bytes || sha256(content) !== record.sha256) {
+      throw new Error("Rule stage v2fly audit hash mismatch");
+    }
+    canonicalV2flyAudit(content);
   }
   canonicalChinaIpAudit(await readFile(join(absoluteRoot, manifest.chinaIpAudit.path)));
   return Object.freeze(manifest);
@@ -329,9 +435,17 @@ export async function main(args = process.argv.slice(2), {
   const channel = args[1];
   if (channel === "current") {
     const chinaIpAudit = await loadCurrentChinaIpAudit({ publicDirectory });
+    let v2flyDomainAudit = null;
+    try {
+      v2flyDomainAudit = await readFile(join(publicDirectory, "current", V2FLY_AUDIT_PATH));
+      canonicalV2flyAudit(v2flyDomainAudit);
+    } catch (error) {
+      if (error.code !== "ENOENT") throw error;
+    }
     const manifest = await stageCurrentSingBoxArtifacts({
       publicDirectory,
       chinaIpAudit,
+      v2flyDomainAudit,
       outputRoot: env.SING_BOX_ARTIFACT_ROOT || DEFAULT_STAGE_ROOT,
     });
     process.stdout.write(`Staged ${manifest.files.length} tracked current sing-box rules at ${manifest.upstream.commit}\n`);
@@ -349,9 +463,14 @@ export async function main(args = process.argv.slice(2), {
     primary: artifacts.diagnostics?.chinaIpAuditPrimary,
     now,
   });
-  const manifest = await stageSingBoxAuditArtifacts({
+  const v2flyDomainAudit = await buildEdgeV2flyDomainAudit({
+    artifacts,
+    now,
+  });
+  const manifest = await stageSingBoxAuditArtifactsWithV2fly({
     artifacts,
     chinaIpAudit,
+    v2flyDomainAudit,
     outputRoot: env.SING_BOX_ARTIFACT_ROOT || DEFAULT_STAGE_ROOT,
   });
   process.stdout.write(`Staged ${manifest.files.length} sing-box audit inputs at ${manifest.upstream.commit}\n`);

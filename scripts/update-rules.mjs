@@ -11,18 +11,30 @@ import { canonicalJson } from "../automation/src/render-anywhere-rules.js";
 import {
   promoteClientRelease as promoteClientReleaseImpl,
   publishEdgeRelease,
+  sealPreviousRelease,
   snapshotMatches,
   validateClientPublication,
   validateOptionalPublication,
 } from "../automation/src/build-site.js";
+import {
+  renderPublicAuditDashboard,
+  validatePublicAuditDashboard,
+} from "../automation/src/public-audit-dashboard.js";
 import { fetchSnapshot } from "../automation/src/fetch-snapshot.js";
 import { parseSurgeRules } from "../automation/src/parse-surge.js";
 import { refreshCurrentManifest } from "../automation/src/refresh-current.js";
+import { assertChannelClosure } from "../shared/release/channel-closure.js";
 import { resolveUpstreamCommit } from "../automation/src/resolve-upstream.js";
 import {
   BLACKMATRIX7_BASELINE,
   FETCH_SOURCE_CATALOG,
 } from "../automation/src/source-catalog.js";
+import {
+  activeClientIds,
+  lightweightRuleClientIds,
+  publicDirectoryForClient,
+} from "../shared/release/client-catalog.js";
+import { FRONTIER_CHANNELS } from "../shared/release/frontier-manifest.js";
 import {
   DEFAULT_COMPILED_ROOT,
   DEFAULT_STAGE_ROOT,
@@ -32,9 +44,13 @@ import {
 
 const repositoryRoot = dirname(dirname(fileURLToPath(import.meta.url)));
 const defaultPublicDirectory = join(repositoryRoot, "public");
-const PROMOTION_CLIENTS = new Set(["singbox", "surge", "shadowrocket", "egern", "anywhere"]);
-const OPTIONAL_CLIENTS = new Set(["singbox", "surge", "shadowrocket", "egern", "anywhere"]);
-const INDEPENDENT_CLIENT_PATH = /^(?:anywhere|egern|shadowrocket|sing-box|surge)\//u;
+const PROMOTION_CLIENTS = new Set(activeClientIds());
+const OPTIONAL_CLIENTS = new Set(lightweightRuleClientIds());
+const ACTIVE_CLIENT_DIRECTORIES = Object.freeze(Object.fromEntries(
+  activeClientIds().map((client) => [client, publicDirectoryForClient(client)]),
+));
+const ACTIVE_CLIENT_PREFIXES = Object.freeze(Object.values(ACTIVE_CLIENT_DIRECTORIES).map((directory) => `${directory}/`));
+const PUBLIC_AUDIT_DASHBOARD_PATHS = new Set(["audit/dashboard.json", "audit/dashboard.html"]);
 const LEGACY_CURRENT_EXTRA_FILES = Object.freeze([
   /^frontier-manifest\.json$/u,
   /^surge\/(?:macos|iphone|ipad)\/manifest\.json$/u,
@@ -43,10 +59,14 @@ const LEGACY_CURRENT_EXTRA_FILES = Object.freeze([
 
 export function parseUpdateRulesArguments(args) {
   if (JSON.stringify(args) === JSON.stringify(["--channel", "edge"])) {
-    return Object.freeze({ operation: "build-edge" });
+    return Object.freeze({ operation: "build-edge", channel: "edge" });
   }
-  if (JSON.stringify(args) === JSON.stringify(["--check", "--channel", "current"])) {
-    return Object.freeze({ operation: "check-current" });
+  if (args.length === 3 && args[0] === "--check" && args[1] === "--channel"
+    && FRONTIER_CHANNELS.includes(args[2])) {
+    return Object.freeze({ operation: `check-${args[2]}`, channel: args[2] });
+  }
+  if (JSON.stringify(args) === JSON.stringify(["--seal-previous"])) {
+    return Object.freeze({ operation: "seal-previous" });
   }
   if (JSON.stringify(args) === JSON.stringify(["--refresh-current"])) {
     return Object.freeze({ operation: "refresh-current" });
@@ -55,7 +75,7 @@ export function parseUpdateRulesArguments(args) {
     && /^[0-9a-f]{64}$/u.test(args[2])) {
     return Object.freeze({ operation: "promote", client: args[1], manifestHash: args[2] });
   }
-  throw new Error("Invalid update-rules arguments; use --channel edge, --check --channel current, --refresh-current, or --promote <client> <manifest-hash>");
+  throw new Error("Invalid update-rules arguments; use --channel edge, --check --channel <edge|current|previous>, --seal-previous, --refresh-current, or --promote <client> <manifest-hash>");
 }
 
 export async function promoteClientRelease(options) {
@@ -188,12 +208,32 @@ function rootManifestMatchesWithIndependentAudit(content, expectedManifest) {
         ),
         files: Array.isArray(base.files)
           ? base.files.filter(({ path }) => (
-            path !== "audit/china-ip-drift.json" && !INDEPENDENT_CLIENT_PATH.test(path)
+            path !== "audit/china-ip-drift.json"
+              && !PUBLIC_AUDIT_DASHBOARD_PATHS.has(path)
+              && !ACTIVE_CLIENT_PREFIXES.some((prefix) => path.startsWith(prefix))
           ))
           : base.files,
       };
     };
     return canonicalJson(projection(actual)) === canonicalJson(projection(expectedManifest));
+  } catch {
+    return false;
+  }
+}
+
+async function validateTrackedPublicAuditDashboard(directory, manifest) {
+  try {
+    const jsonBytes = await readFile(join(directory, "audit/dashboard.json"));
+    const dashboard = JSON.parse(jsonBytes.toString("utf8"));
+    if (!jsonBytes.equals(artifactBuffer(canonicalJson(dashboard)))) return false;
+    validatePublicAuditDashboard(dashboard);
+    const htmlBytes = await readFile(join(directory, "audit/dashboard.html"));
+    if (!htmlBytes.equals(artifactBuffer(renderPublicAuditDashboard(dashboard)))) return false;
+    for (const [path, bytes] of [["audit/dashboard.json", jsonBytes], ["audit/dashboard.html", htmlBytes]]) {
+      const record = Array.isArray(manifest.files) ? manifest.files.find((item) => item?.path === path) : null;
+      if (!record || record.bytes !== bytes.length || record.sha256 !== artifactSha256(bytes)) return false;
+    }
+    return true;
   } catch {
     return false;
   }
@@ -349,22 +389,26 @@ export async function verifyTrackedPublications({ publicDirectory, defaults, opt
   }
   if (!rollout || rollout.schemaVersion !== 2 || typeof rollout.clients !== "object"
     || typeof rollout.optionalPacks !== "object") return false;
-  const expectedRolloutClients = [...PROMOTION_CLIENTS].sort();
-  if (JSON.stringify(Object.keys(rollout.clients).sort()) !== JSON.stringify(expectedRolloutClients)
-    || (rollout.previous !== undefined
-      && JSON.stringify(Object.keys(rollout.previous).sort()) !== JSON.stringify(expectedRolloutClients))) {
+  const validRolloutClientKeys = (value) => {
+    if (!value || typeof value !== "object" || Array.isArray(value)) return false;
+    const keys = Object.keys(value);
+    return keys.length > 0 && keys.every((client) => PROMOTION_CLIENTS.has(client));
+  };
+  if (!validRolloutClientKeys(rollout.clients)
+    || (rollout.previous !== undefined && !validRolloutClientKeys(rollout.previous))) {
     return false;
   }
 
   const currentDirectory = join(publicDirectory, "current");
   let expectedRootManifest = diagnostics?.defaultManifest ?? null;
-  const clientDirectories = {
-    singbox: "sing-box",
-    surge: "surge",
-    shadowrocket: "shadowrocket",
-    egern: "egern",
-    anywhere: "anywhere",
-  };
+  let trackedRootManifest;
+  try {
+    trackedRootManifest = JSON.parse(await readFile(join(currentDirectory, "manifest.json"), "utf8"));
+  } catch {
+    return false;
+  }
+  if (!await validateTrackedPublicAuditDashboard(currentDirectory, trackedRootManifest)) return false;
+  const clientDirectories = ACTIVE_CLIENT_DIRECTORIES;
   const clientPrefixes = new Set(Object.values(clientDirectories).map((directory) => `${directory}/`));
   const toleratedExtras = (path) => LEGACY_CURRENT_EXTRA_FILES.some((pattern) => pattern.test(path));
   const expectedRootPaths = [...defaults.keys()]
@@ -385,6 +429,7 @@ export async function verifyTrackedPublications({ publicDirectory, defaults, opt
   if (JSON.stringify(actualRootEntries) !== JSON.stringify([...expectedRootEntries].sort())) return false;
   for (const [path, content] of defaults) {
     if ([...clientPrefixes].some((prefix) => path.startsWith(prefix))) continue;
+    if (PUBLIC_AUDIT_DASHBOARD_PATHS.has(path)) continue;
     try {
       const tracked = await readFile(join(currentDirectory, path));
       if (path === "manifest.json") {
@@ -445,11 +490,45 @@ export async function verifyTrackedPublications({ publicDirectory, defaults, opt
   return true;
 }
 
+export async function verifyPublishedChannel({ publicDirectory, channel }) {
+  if (!FRONTIER_CHANNELS.includes(channel)) throw new TypeError("Publication channel is unsupported");
+  const directory = join(publicDirectory, channel);
+  if (!await pathExists(directory)) return false;
+  try {
+    const files = await readPublicationTree(directory, channel);
+    assertChannelClosure({ files, channel, rootPrefix: channel });
+    const versionsDirectory = join(publicDirectory, "versions");
+    if (await pathExists(versionsDirectory)) {
+      for (const entry of await readdir(versionsDirectory, { withFileTypes: true })) {
+        if (!entry.isDirectory() || !/^[0-9a-f]{64}$/u.test(entry.name)) return false;
+        const versionFiles = await readPublicationTree(
+          join(versionsDirectory, entry.name),
+          `versions/${entry.name}`,
+        );
+        assertChannelClosure({
+          files: versionFiles,
+          channel: "current",
+          rootPrefix: `versions/${entry.name}`,
+          immutableVersion: entry.name,
+        });
+      }
+    }
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 async function loadText(path) {
   return readFile(join(repositoryRoot, path), "utf8");
 }
 
-async function staticFiles() {
+function rewriteStaticPublicationChannel(content, channel) {
+  if (channel === "current") return content;
+  return content.replaceAll("/current/", `/${channel}/`);
+}
+
+async function staticFiles(channel = "current") {
   const paths = [
     ["shadowrocket/scripts/shadowrocket-node-subscription.js", "clients/shadowrocket/dist/shadowrocket-node-subscription.js"],
     ["shadowrocket/scripts/shadowrocket-node-operator.js", "clients/shadowrocket/dist/shadowrocket-node-operator.js"],
@@ -477,6 +556,16 @@ async function staticFiles() {
     ["surge/examples/surge-ipad.conf", "clients/surge/examples/surge-ipad.conf"],
     ["sing-box/scripts/sing-box-config-generator.js", "clients/sing-box/dist/sing-box-config-generator.js"],
     ["sing-box/scripts/substore-config-generator.js", "clients/sing-box/dist/substore-config-generator.js"],
+    ["onexray/scripts/onexray-node-generator.js", "clients/onexray/dist/onexray-node-generator.js"],
+    ["onexray/scripts/substore-node-generator.js", "clients/onexray/dist/substore-node-generator.js"],
+    ["onexray/scripts/onexray-profile-generator.js", "clients/onexray/dist/onexray-profile-generator.js"],
+    ["onexray/scripts/substore-profile-generator.js", "clients/onexray/dist/substore-profile-generator.js"],
+    ["onexray/scripts/onexray-routing-audit.js", "clients/onexray/dist/onexray-routing-audit.js"],
+    ["onexray/scripts/substore-routing-audit.js", "clients/onexray/dist/substore-routing-audit.js"],
+    ["happ/scripts/happ-config-generator.js", "clients/happ/dist/happ-config-generator.js"],
+    ["happ/scripts/substore-config-generator.js", "clients/happ/dist/substore-config-generator.js"],
+    ["happ/scripts/happ-routing-audit.js", "clients/happ/dist/happ-routing-audit.js"],
+    ["happ/scripts/substore-routing-audit.js", "clients/happ/dist/substore-routing-audit.js"],
      ...["macos", "iphone", "ipad", "android"].flatMap((platform) => [
       [`sing-box/examples/sing-box-${platform}.json`, `clients/sing-box/examples/sing-box-${platform}.json`],
       [`sing-box/examples/sing-box-${platform}-diagnostic.json`, `clients/sing-box/examples/sing-box-${platform}-diagnostic.json`],
@@ -484,7 +573,10 @@ async function staticFiles() {
     ["LICENSE", "LICENSE"],
     ["THIRD_PARTY_NOTICES.md", "THIRD_PARTY_NOTICES.md"],
   ];
-  const loaded = new Map(await Promise.all(paths.map(async ([publicPath, localPath]) => [publicPath, await loadText(localPath)])));
+  const loaded = new Map(await Promise.all(paths.map(async ([publicPath, localPath]) => [
+    publicPath,
+    rewriteStaticPublicationChannel(await loadText(localPath), channel),
+  ])));
   const rawRoot = "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Shadowrocket";
   for (const bundlePath of [
     "shadowrocket/scripts/shadowrocket-profile-generator.js",
@@ -529,10 +621,12 @@ async function staticFiles() {
 export async function buildArtifacts({
   operation,
   publicDirectory,
+  channel = "edge",
   upstreamOverride = null,
   singBoxBinaries = null,
   includeStaticFiles = true,
   chinaIpAudit = null,
+  v2flyDomainAudit = null,
   fetchSnapshotImpl = fetchSnapshot,
 }) {
   let commit;
@@ -543,10 +637,11 @@ export async function buildArtifacts({
       throw new Error("Staged upstream identity is invalid");
     }
     ({ commit, committedAt } = upstreamOverride);
-  } else if (operation === "check-current") {
-    const currentManifest = JSON.parse(await readFile(join(publicDirectory, "current/manifest.json"), "utf8"));
-    commit = currentManifest.upstream.commit;
-    committedAt = currentManifest.upstream.committedAt;
+  } else if (operation.startsWith("check-")) {
+    const checkedChannel = operation.slice("check-".length);
+    const checkedManifest = JSON.parse(await readFile(join(publicDirectory, checkedChannel, "manifest.json"), "utf8"));
+    commit = checkedManifest.upstream.commit;
+    committedAt = checkedManifest.upstream.committedAt;
   } else {
     ({ sha: commit, committedAt } = await resolveUpstreamCommit());
   }
@@ -557,13 +652,15 @@ export async function buildArtifacts({
     concurrency: 1,
     requestIntervalMs: 250,
   });
-  const statics = includeStaticFiles ? await staticFiles() : null;
+  const statics = includeStaticFiles ? await staticFiles(channel) : null;
   const artifacts = buildClientArtifacts({
     snapshot,
     upstream,
+    channel,
     additionalFiles: statics,
     singBoxBinaries,
     chinaIpAudit,
+    v2flyDomainAudit,
   });
   return Object.freeze({
     ...artifacts,
@@ -584,8 +681,18 @@ export async function main(
     process.stdout.write(`Current manifest refreshed: ${manifest.manifestHash}\n`);
     return manifest;
   }
+  if (command.operation === "seal-previous") {
+    const result = await sealPreviousRelease({ publicDirectory });
+    process.stdout.write(`Previous channel sealed: ${result.manifestHash}\n`);
+    return result;
+  }
   if (command.operation === "promote") {
-    const result = await promoteClientRelease({ publicDirectory, ...command });
+    const result = await promoteClientRelease({
+      publicDirectory,
+      ...command,
+      expectedHash: command.manifestHash,
+      canary: { device: env.CANARY_DEVICE, passed: env.CANARY_PASSED === "true" },
+    });
     process.stdout.write(`Client promoted: ${result.client} ${result.manifestHash}\n`);
     return result;
   }
@@ -593,13 +700,18 @@ export async function main(
   const stageRoot = env.SING_BOX_ARTIFACT_ROOT || DEFAULT_STAGE_ROOT;
   const stage = await readRuleStageManifest(stageRoot);
   const chinaIpAudit = await readFile(join(stageRoot, stage.chinaIpAudit.path));
+  const v2flyDomainAudit = stage.v2flyAudit === undefined
+    ? null
+    : await readFile(join(stageRoot, stage.v2flyAudit.path));
   const singBoxBinaries = await loadCompiledSingBoxRules(env.SING_BOX_RULE_OUTPUT_ROOT || DEFAULT_COMPILED_ROOT);
   const artifacts = await buildArtifacts({
     operation: command.operation,
     publicDirectory,
     upstreamOverride: stage.upstream,
+    channel: command.channel ?? "edge",
     singBoxBinaries,
     chinaIpAudit,
+    v2flyDomainAudit,
   });
   if (command.operation === "check-current") {
     if (!await verifyTrackedPublications({ publicDirectory, ...artifacts })) {
@@ -608,12 +720,20 @@ export async function main(
     process.stdout.write(`Public snapshot verified: ${artifacts.diagnostics.defaultManifest.upstream.commit}\n`);
     return artifacts.diagnostics;
   }
+  if (command.operation === "check-edge" || command.operation === "check-previous") {
+    if (!await verifyPublishedChannel({ publicDirectory, channel: command.channel })) {
+      throw new Error(`Published ${command.channel} channel failed closure verification`);
+    }
+    process.stdout.write(`Published ${command.channel} channel verified.\n`);
+    return artifacts.diagnostics;
+  }
 
   const result = await publishEdgeRelease({
     publicDirectory,
     defaults: artifacts.defaults,
     optionalPacks: artifacts.optionalPacks,
     manifest: artifacts.diagnostics.defaultManifest,
+    channel: command.channel ?? "edge",
   });
   process.stdout.write(
     `Edge candidate updated: ${artifacts.diagnostics.defaultManifest.upstream.commit}; ${result.files} files; ${result.manifestHash}\n`,

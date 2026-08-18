@@ -47,12 +47,30 @@ var AnywhereNodeBundle = (() => {
 
   // ../../../shared/contracts.js
   var CLIENT = Object.freeze({
-    shadowrocket: "shadowrocket",
-    egern: "egern",
     anywhere: "anywhere",
+    egern: "egern",
+    shadowrocket: "shadowrocket",
     surge: "surge",
-    singbox: "singbox"
+    singbox: "singbox",
+    onexray: "onexray",
+    happ: "happ"
   });
+  var PRIVATE_POLICY_CHANNELS = Object.freeze(["edge", "current", "previous"]);
+  var PRIVATE_POLICY_CLIENTS = Object.freeze([CLIENT.happ, CLIENT.onexray]);
+  var PRIVATE_POLICY_TARGET_IDS = Object.freeze([
+    "ai",
+    "github",
+    "youtube",
+    "overseasMedia",
+    "globalSocial",
+    "overseasGame",
+    "domesticCore",
+    "domesticPlatform",
+    "chinaIp",
+    "apple",
+    "microsoft",
+    "download"
+  ]);
   var OPTION_VALUES = Object.freeze({
     output: Object.freeze(["nodes", "config"]),
     type: Object.freeze(["collection"]),
@@ -100,7 +118,7 @@ var AnywhereNodeBundle = (() => {
     });
   }
   var definitions = Object.freeze([
-    protocol(["ss", "shadowsocks"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox], {
+    protocol(["ss", "shadowsocks"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.onexray, CLIENT.happ], {
       requiredFields: ["cipher", "password"]
     }),
     protocol(["ssr"], [CLIENT.shadowrocket, CLIENT.surge], {
@@ -109,13 +127,13 @@ var AnywhereNodeBundle = (() => {
     protocol(["snell"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox], {
       requiredFields: ["psk", "version"]
     }),
-    protocol(["vmess"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox], {
+    protocol(["vmess"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox, CLIENT.onexray, CLIENT.happ], {
       requiredFields: ["uuid"]
     }),
-    protocol(["vless"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.singbox], {
+    protocol(["vless"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.singbox, CLIENT.onexray, CLIENT.happ], {
       requiredFields: ["uuid"]
     }),
-    protocol(["trojan"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox], {
+    protocol(["trojan"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.onexray, CLIENT.happ], {
       requiredFields: ["password"],
       tls: true
     }),
@@ -123,7 +141,7 @@ var AnywhereNodeBundle = (() => {
       requiredFields: ["password"],
       tls: true
     }),
-    protocol(["hysteria2", "hy2"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox], {
+    protocol(["hysteria2", "hy2"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.onexray, CLIENT.happ], {
       requiredFields: ["password"],
       tls: true
     }),
@@ -131,8 +149,8 @@ var AnywhereNodeBundle = (() => {
       requiredFields: ["uuid", "password"],
       tls: true
     }),
-    protocol(["socks5"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox]),
-    protocol(["http"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox]),
+    protocol(["socks5"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.onexray, CLIENT.happ]),
+    protocol(["http"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox, CLIENT.onexray]),
     protocol(["ssh"], [CLIENT.egern, CLIENT.singbox], {
       requiredFields: ["username"]
     }),
@@ -750,6 +768,9 @@ var AnywhereNodeBundle = (() => {
     }
     return "unsupported-protocol";
   }
+  var XRAY_CHAIN_REASON = Object.freeze({ happ: "unsupported-happ-chain", onexray: "unsupported-onexray-chain" });
+  var XRAY_PROTOCOL_REASON = Object.freeze({ happ: "unsupported-happ-protocol", onexray: "unsupported-onexray-protocol" });
+  var XRAY_TRANSPORT_REASON = Object.freeze({ happ: "unsupported-happ-transport", onexray: "unsupported-onexray-transport" });
 
   // render-node.js
   var ANYTLS_FIELDS = /* @__PURE__ */ new Set([
@@ -1032,6 +1053,126 @@ var AnywhereNodeBundle = (() => {
     assertAnywhereSubscription(subscription, prepared.proxies);
     return subscription;
   }
+
+  // ../../../shared/release/client-catalog.js
+  var freeze = (value) => {
+    if (value && typeof value === "object" && !Object.isFrozen(value)) {
+      for (const child of Object.values(value)) freeze(child);
+      Object.freeze(value);
+    }
+    return value;
+  };
+  var records = [
+    {
+      id: CLIENT.anywhere,
+      displayName: "Anywhere",
+      state: "active",
+      platforms: ["iphone", "ipad", "macos", "appletv"],
+      configFormat: "clash-yaml",
+      ruleFormat: "clash-yaml",
+      nodeValidator: "anywhere",
+      separatesProfile: false,
+      supportsPolicyOverrides: false,
+      adapterSchema: "anywhere-v1",
+      publicDirectory: "anywhere"
+    },
+    {
+      id: CLIENT.egern,
+      displayName: "Egern",
+      state: "active",
+      platforms: ["iphone", "ipad", "macos"],
+      configFormat: "yaml",
+      ruleFormat: "yaml",
+      nodeValidator: "egern",
+      separatesProfile: false,
+      supportsPolicyOverrides: false,
+      adapterSchema: "egern-v1",
+      publicDirectory: "egern"
+    },
+    {
+      id: CLIENT.shadowrocket,
+      displayName: "Shadowrocket",
+      state: "active",
+      platforms: ["iphone", "ipad", "macos"],
+      configFormat: "ini",
+      ruleFormat: "list",
+      nodeValidator: "shadowrocket",
+      separatesProfile: false,
+      supportsPolicyOverrides: false,
+      adapterSchema: "shadowrocket-v1",
+      publicDirectory: "shadowrocket"
+    },
+    {
+      id: CLIENT.surge,
+      displayName: "Surge",
+      state: "active",
+      platforms: ["macos", "iphone", "ipad"],
+      configFormat: "ini",
+      ruleFormat: "list",
+      nodeValidator: "surge",
+      separatesProfile: false,
+      supportsPolicyOverrides: false,
+      adapterSchema: "surge-v1",
+      publicDirectory: "surge"
+    },
+    {
+      id: CLIENT.singbox,
+      displayName: "sing-box",
+      state: "active",
+      platforms: ["macos", "iphone", "ipad", "android"],
+      configFormat: "json",
+      ruleFormat: "srs",
+      nodeValidator: "singbox",
+      separatesProfile: false,
+      supportsPolicyOverrides: false,
+      adapterSchema: "singbox-v1",
+      publicDirectory: "sing-box"
+    },
+    {
+      id: CLIENT.onexray,
+      displayName: "OneXray",
+      state: "active",
+      platforms: ["macos", "iphone", "ipad", "android", "windows", "linux"],
+      configFormat: "xray-profile-json",
+      ruleFormat: "xray-geodata",
+      nodeValidator: "onexray",
+      separatesProfile: false,
+      supportsPolicyOverrides: false,
+      adapterSchema: "onexray-v1",
+      publicDirectory: "onexray"
+    },
+    {
+      id: CLIENT.happ,
+      displayName: "HAPP",
+      state: "active",
+      platforms: ["iphone", "ipad", "macos", "android"],
+      configFormat: "happ-json",
+      ruleFormat: "happ-json",
+      nodeValidator: "happ",
+      separatesProfile: false,
+      supportsPolicyOverrides: false,
+      adapterSchema: "happ-v4",
+      publicDirectory: "happ"
+    }
+  ].map((record) => freeze(record));
+  var byId = new Map(records.map((record) => [record.id, record]));
+  var ids = freeze(records.map(({ id }) => id));
+  var activeIds = freeze(records.filter(({ state }) => state === "active").map(({ id }) => id));
+  var plannedIds = freeze(records.filter(({ state }) => state === "planned").map(({ id }) => id));
+  var lightweightRuleIds = freeze([
+    CLIENT.anywhere,
+    CLIENT.egern,
+    CLIENT.shadowrocket,
+    CLIENT.surge,
+    CLIENT.singbox
+  ]);
+
+  // ../../../shared/release/frontier-manifest.js
+  var FRONTIER_CHANNELS = Object.freeze(["edge", "current", "previous"]);
+  var FRONTIER_PLATFORMS = Object.freeze({
+    [CLIENT.surge]: Object.freeze(["macos", "iphone", "ipad"]),
+    [CLIENT.singbox]: Object.freeze(["macos", "iphone", "ipad", "android"])
+  });
 
   // ../../../shared/substore/collection-name.js
   var SAFE_COLLECTION_NAME = /^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$/u;
@@ -1585,9 +1726,9 @@ var AnywhereNodeBundle = (() => {
           suffixGroup.push(record);
           suffixGroups.set(record.suffix, suffixGroup);
         }
-        for (const records of suffixGroups.values()) {
-          records.forEach((record, index) => {
-            const suffix = records.length > 1 ? `${record.suffix}-${index + 1}` : record.suffix;
+        for (const records2 of suffixGroups.values()) {
+          records2.forEach((record, index) => {
+            const suffix = records2.length > 1 ? `${record.suffix}-${index + 1}` : record.suffix;
             record.node.name = `${protocolBase} #${suffix}`;
           });
         }
@@ -1762,7 +1903,7 @@ var AnywhereNodeBundle = (() => {
   }
 
   // substore-nodes-entry.js
-  var ALLOWED_KEYS = /* @__PURE__ */ new Set(["output", "type", "name", "clientChain"]);
+  var ALLOWED_KEYS = /* @__PURE__ */ new Set(["output", "type", "name", "clientChain", "channel"]);
   var PROTOTYPE_KEYS2 = /* @__PURE__ */ new Set(["__proto__", "constructor", "prototype"]);
   function nodeArguments(raw) {
     let array;
@@ -1805,7 +1946,9 @@ var AnywhereNodeBundle = (() => {
     if (values.get("type") !== "collection") throw new Error("Anywhere node type must be collection");
     const name = validateCollectionName(values.get("name"), "Anywhere node name");
     if (values.get("clientChain") !== "off") throw new Error("Anywhere clientChain must be off");
-    return Object.freeze({ output: "nodes", type: "collection", name, clientChain: "off" });
+    const channel = values.get("channel") ?? "edge";
+    if (!FRONTIER_CHANNELS.includes(channel)) throw new Error("Anywhere node channel is unsupported");
+    return Object.freeze({ output: "nodes", type: "collection", name, clientChain: "off", channel });
   }
   function outputWithContent(input, content) {
     try {

@@ -1,7 +1,12 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { CLIENT } from "../shared/contracts.js";
-import { evaluateNodeForClient, filterNodesForClient } from "../shared/nodes/capabilities.js";
+import {
+  evaluateNodeForClient,
+  filterNodesForClient,
+  happNodeExclusionReason,
+  oneXrayNodeExclusionReason,
+} from "../shared/nodes/capabilities.js";
 import { diagnosticProtocol, protocolDisplayLabel } from "../shared/nodes/protocol-registry.js";
 import { assertRenderableNodes } from "../shared/nodes/renderability.js";
 
@@ -688,4 +693,40 @@ test("reports only accepted and excluded counts for client filtering", () => {
     assert.equal(diagnosticsJson.includes(node.server), false);
     assert.equal(diagnosticsJson.includes(node.password), false);
   }
+});
+
+test("HAPP and OneXray capability dispatch rejects only shapes their renderers cannot preserve", () => {
+  const base = {
+    name: "TEST_ONLY_Node",
+    server: "example.test",
+    port: 443,
+    uuid: "TEST_ONLY_UUID",
+    tls: true,
+    sni: "example.test",
+  };
+
+  assert.equal(happNodeExclusionReason({ ...base, type: "vless", network: "ws", "ws-opts": { path: "/" } }), null);
+  assert.equal(oneXrayNodeExclusionReason({ ...base, type: "vless", network: "ws", "ws-opts": { path: "/" } }), null);
+  assert.equal(oneXrayNodeExclusionReason({ ...base, type: "http", username: "TEST_ONLY_USER", password: "TEST_ONLY_PASSWORD" }), null);
+  assert.equal(happNodeExclusionReason({ ...base, type: "http" }), "unsupported-happ-protocol");
+  assert.equal(oneXrayNodeExclusionReason({ ...base, type: "snell", psk: "TEST_ONLY_PSK", version: 4 }), "unsupported-onexray-protocol");
+  assert.equal(happNodeExclusionReason({ ...base, type: "vless", network: "xhttp" }), "unsupported-happ-transport");
+  assert.equal(oneXrayNodeExclusionReason({ ...base, type: "vless", network: "xhttp", "xhttp-opts": { path: "/" } }), null);
+  assert.equal(oneXrayNodeExclusionReason({ ...base, type: "vless", security: "reality", "reality-opts": {} }), "incomplete-onexray-reality");
+  assert.equal(happNodeExclusionReason({ ...base, type: "vless", "underlying-proxy": "TEST_ONLY_Landing" }), "unsupported-happ-chain");
+  assert.equal(oneXrayNodeExclusionReason({ ...base, type: "vless", "underlying-proxy": "TEST_ONLY_Landing" }), "unsupported-onexray-chain");
+});
+
+test("filterNodesForClient uses audited Xray reasons without changing existing client diagnostics", () => {
+  const nodes = [
+    { name: "TEST_ONLY_VLESS", type: "vless", server: "example.test", port: 443, uuid: "TEST_ONLY_UUID" },
+    { name: "TEST_ONLY_HTTP", type: "http", server: "example.test", port: 80 },
+    { name: "TEST_ONLY_Snell", type: "snell", server: "example.test", port: 443, psk: "TEST_ONLY_PSK", version: 4 },
+  ];
+  const onexray = filterNodesForClient(nodes, CLIENT.onexray);
+  assert.equal(onexray.nodes.length, 2);
+  assert.deepEqual(onexray.diagnostics.excluded, { "unsupported-onexray-protocol": 1 });
+  const happ = filterNodesForClient(nodes, CLIENT.happ);
+  assert.equal(happ.nodes.length, 1);
+  assert.deepEqual(happ.diagnostics.excluded, { "unsupported-happ-protocol": 2 });
 });

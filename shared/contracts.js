@@ -1,10 +1,29 @@
 export const CLIENT = Object.freeze({
-  shadowrocket: "shadowrocket",
-  egern: "egern",
   anywhere: "anywhere",
+  egern: "egern",
+  shadowrocket: "shadowrocket",
   surge: "surge",
   singbox: "singbox",
+  onexray: "onexray",
+  happ: "happ",
 });
+
+export const PRIVATE_POLICY_CHANNELS = Object.freeze(["edge", "current", "previous"]);
+export const PRIVATE_POLICY_CLIENTS = Object.freeze([CLIENT.happ, CLIENT.onexray]);
+export const PRIVATE_POLICY_TARGET_IDS = Object.freeze([
+  "ai",
+  "github",
+  "youtube",
+  "overseasMedia",
+  "globalSocial",
+  "overseasGame",
+  "domesticCore",
+  "domesticPlatform",
+  "chinaIp",
+  "apple",
+  "microsoft",
+  "download",
+]);
 
 export const OPTION_VALUES = Object.freeze({
   output: Object.freeze(["nodes", "config"]),

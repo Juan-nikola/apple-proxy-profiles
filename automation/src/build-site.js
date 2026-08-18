@@ -14,8 +14,21 @@ import { basename, dirname, join } from "node:path";
 
 import { artifactBuffer, artifactSha256 } from "./artifact-content.js";
 import { validateChinaIpAuditForPromotion } from "./china-ip-audit.js";
-import { canRefreshChannel, refreshChannelManifest, refreshCurrentManifest } from "./refresh-current.js";
+import { validatePublicAuditDashboard } from "./public-audit-dashboard.js";
+import {
+  canRefreshChannel,
+  refreshChannelManifest,
+  refreshClientManifest,
+  refreshCurrentManifest,
+} from "./refresh-current.js";
 import { canonicalJson } from "./render-anywhere-rules.js";
+import { assertChannelClosure } from "../../shared/release/channel-closure.js";
+import { FRONTIER_CHANNELS } from "../../shared/release/frontier-manifest.js";
+import {
+  activeClientIds,
+  lightweightRuleClientIds,
+  publicDirectoryForClient,
+} from "../../shared/release/client-catalog.js";
 
 // Retention policy: the publication pipeline prunes immutable version
 // snapshots to MAX_VERSION_COUNT (8). check-actions.mjs validates the on-disk
@@ -26,15 +39,12 @@ const MAX_VERSION_COUNT = 8;
 const MIN_VERSION_COUNT = 2;
 const CHINA_IP_AUDIT_PATH = "audit/china-ip-drift.json";
 const CHINA_IP_AUDIT_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1_000;
+const PUBLIC_AUDIT_DASHBOARD_PATH = "audit/dashboard.json";
 
-export const CLIENT_PUBLIC_PATHS = Object.freeze({
-  singbox: "sing-box",
-  surge: "surge",
-  shadowrocket: "shadowrocket",
-  egern: "egern",
-  anywhere: "anywhere",
-});
-const OPTIONAL_CLIENTS = Object.freeze(["singbox", "surge", "shadowrocket", "egern", "anywhere"]);
+export const CLIENT_PUBLIC_PATHS = Object.freeze(Object.fromEntries(
+  activeClientIds().map((client) => [client, publicDirectoryForClient(client)]),
+));
+const OPTIONAL_CLIENTS = lightweightRuleClientIds();
 
 async function exists(path) {
   try {
@@ -62,6 +72,57 @@ async function writeSnapshot(directory, files) {
   }
 }
 
+function rewritePublicationChannel(content, from, to) {
+  if (!(content instanceof Uint8Array)) return content;
+  let text;
+  try {
+    text = new TextDecoder("utf-8", { fatal: true, ignoreBOM: true }).decode(content);
+  } catch {
+    return Buffer.from(content);
+  }
+  const rewritten = text
+    .replaceAll(`/${from}/`, `/${to}/`)
+    .replaceAll(`channel=${from}`, `channel=${to}`)
+    .replaceAll(`channel%3D${from}`, `channel%3D${to}`)
+    .replaceAll(`channel:${from}`, `channel:${to}`)
+    .replaceAll(`channel: ${from}`, `channel: ${to}`);
+  return Buffer.from(rewritten, "utf8");
+}
+
+async function rewriteTreeChannel(directory, from, to) {
+  for (const relative of await relativeFiles(directory)) {
+    const path = join(directory, relative);
+    const content = await readFile(path);
+    await writeFile(path, rewritePublicationChannel(content, from, to));
+  }
+}
+
+async function refreshNestedClientManifest({ treeRoot, clientDirectory, manifestPath, recordPrefix }) {
+  const existing = JSON.parse(await readFile(manifestPath, "utf8"));
+  const records = [];
+  for (const relative of await relativeFiles(treeRoot)) {
+    if (relative === "client-manifest.json") continue;
+    const content = await readFile(join(treeRoot, relative));
+    records.push({
+      path: `${recordPrefix}/${relative}`,
+      bytes: content.byteLength,
+      sha256: artifactSha256(content),
+    });
+  }
+  records.sort((left, right) => left.path.localeCompare(right.path));
+  const base = {
+    schemaVersion: 1,
+    client: existing.client,
+    generatedAt: existing.generatedAt,
+    ...(existing.optionalPacks === undefined ? {} : { optionalPacks: existing.optionalPacks }),
+    ...(existing.chinaIpAuditSha256 === undefined ? {} : { chinaIpAuditSha256: existing.chinaIpAuditSha256 }),
+    files: records,
+  };
+  const manifest = { ...base, manifestHash: artifactSha256(canonicalJson(base)) };
+  await writeFile(manifestPath, canonicalJson(manifest), "utf8");
+  return manifest;
+}
+
 async function subsetMatches(directory, files) {
   for (const [path, content] of files) {
     if (!safeRelativePath(path)) return false;
@@ -72,6 +133,21 @@ async function subsetMatches(directory, files) {
     }
   }
   return true;
+}
+
+function validateFrontierPublicationFiles(files) {
+  const byChannel = new Map(FRONTIER_CHANNELS.map((channel) => [channel, new Map()]));
+  for (const [path, content] of files) {
+    const [channel] = path.split("/", 1);
+    if (!byChannel.has(channel)) {
+      throw new Error("Frontier public artifact must be scoped to edge, current, or previous");
+    }
+    byChannel.get(channel).set(path, content);
+  }
+  for (const [channel, scopedFiles] of byChannel) {
+    if (scopedFiles.size === 0) continue;
+    assertChannelClosure({ files: scopedFiles, channel, rootPrefix: channel });
+  }
 }
 
 async function fileMatches(path, content) {
@@ -180,7 +256,7 @@ async function enforceRetention(stagingDirectory, requiredVersion = null) {
 function indexHtml(manifest) {
   return `<!doctype html>
 <html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Apple Proxy Profiles</title></head>
-<body><main><h1>Apple Proxy Profiles</h1><p>Blackmatrix7 commit: <code>${manifest.upstream.commit}</code></p><ul><li><a href="current/manifest.json">Current manifest</a></li><li><a href="edge/manifest.json">Frontier edge manifest</a></li><li><a href="current/frontier-manifest.json">Current frontier manifest</a></li><li><a href="previous/manifest.json">Previous manifest</a></li><li><a href="current/anywhere/import.html">Anywhere import</a></li><li><a href="current/surge/scripts/surge-profile-generator.js">Surge Sub-Store script</a></li><li><a href="current/sing-box/scripts/sing-box-config-generator.js">sing-box Sub-Store script</a></li></ul></main></body></html>
+<body><main><h1>Apple Proxy Profiles</h1><p>Blackmatrix7 commit: <code>${manifest.upstream.commit}</code></p><p>公开页不包含私密节点、策略正文或凭据。</p><ul><li><a href="current/manifest.json">Current manifest</a></li><li><a href="edge/manifest.json">Frontier edge manifest</a></li><li><a href="current/frontier-manifest.json">Current frontier manifest</a></li><li><a href="previous/manifest.json">Previous manifest</a></li><li><a href="current/audit/dashboard.html">中文公开审计看板</a></li><li><a href="current/audit/dashboard.json">审计 JSON</a></li><li><a href="current/anywhere/import.html">Anywhere import</a></li><li><a href="current/surge/scripts/surge-profile-generator.js">Surge Sub-Store script</a></li><li><a href="current/sing-box/scripts/sing-box-config-generator.js">sing-box Sub-Store script</a></li></ul></main></body></html>
 `;
 }
 
@@ -212,8 +288,11 @@ export async function buildSite({
   if (frontierFiles !== null) {
     for (const [path, content] of frontierFiles) {
       if (!safeRelativePath(path)) throw new TypeError("Frontier public artifact is invalid");
-      if (!/^(?:edge|current)\//u.test(path)) throw new Error("Frontier public artifact must be scoped to edge or current");
+      if (!/^(?:edge|current|previous)\//u.test(path)) {
+        throw new Error("Frontier public artifact must be scoped to edge, current, or previous");
+      }
     }
+    validateFrontierPublicationFiles(frontierFiles);
   }
   const currentDirectory = join(publicDirectory, "current");
   if (await exists(currentDirectory) && await snapshotMatches(currentDirectory, files)
@@ -250,6 +329,27 @@ export async function buildSite({
     } else {
       await writeSnapshot(versionDirectory, files);
     }
+    if (await exists(join(staging, "previous"))) {
+      await rewriteTreeChannel(join(staging, "previous"), "current", "previous");
+      for (const client of activeClientIds()) {
+        const clientDirectory = publicDirectoryForClient(client);
+        if (await exists(join(staging, "previous", clientDirectory, "client-manifest.json"))) {
+          await refreshClientManifest({ publicDirectory: staging, channel: "previous", client });
+        }
+      }
+      if (await canRefreshChannel(join(staging, "previous"))) {
+        await refreshChannelManifest({ publicDirectory: staging, channel: "previous" });
+      }
+      const previousFiles = await readArtifactTree(join(staging, "previous"));
+      assertChannelClosure({ files: previousFiles, channel: "previous", rootPrefix: "previous" });
+    }
+    const versionFiles = await readArtifactTree(versionDirectory);
+    assertChannelClosure({
+      files: versionFiles,
+      channel: "current",
+      rootPrefix: `versions/${manifest.manifestHash}`,
+      immutableVersion: manifest.manifestHash,
+    });
     await writeFile(join(staging, "manifest.json"), artifactBuffer(files.get("manifest.json")));
     await writeFile(join(staging, "index.html"), indexHtml(manifest), "utf8");
     await writeFile(join(staging, ".nojekyll"), "", "utf8");
@@ -358,12 +458,94 @@ function verifyClientManifest(files, client, directory, basePrefix = "") {
   return manifest;
 }
 
+function publicationChannel(basePrefix, explicitChannel = null) {
+  if (explicitChannel !== null) {
+    if (!FRONTIER_CHANNELS.includes(explicitChannel)) {
+      throw new TypeError("Publication channel is unsupported");
+    }
+    return explicitChannel;
+  }
+  if (FRONTIER_CHANNELS.includes(basePrefix)) return basePrefix;
+  return "current";
+}
+
+function assertPublicationChannelClosure(files, {
+  channel,
+  rootPrefix = null,
+  immutableVersion = null,
+} = {}) {
+  assertChannelClosure({
+    files,
+    channel,
+    rootPrefix: rootPrefix ?? channel,
+    immutableVersion,
+  });
+}
+
+function inferArtifactChannel(files) {
+  for (const value of files.values()) {
+    if (!(value instanceof Uint8Array) && typeof value !== "string") continue;
+    const text = Buffer.from(value).toString("utf8");
+    const match = text.match(/\/apple-proxy-profiles\/(edge|current|previous)\//u);
+    if (match) return match[1];
+  }
+  return null;
+}
+
+function validateAnywhereHostedUrls(files, channel) {
+  const defaultPattern = new RegExp(`^/apple-proxy-profiles/${channel}/anywhere/rules/[^/]+\\.arrs$`, "u");
+  const optionalPattern = new RegExp(
+    `^/apple-proxy-profiles/optional/[a-z0-9][a-z0-9-]*/${channel}/anywhere/[^/]+\\.arrs$`,
+    "u",
+  );
+  const urlPattern = /https:\/\/[^\s"'<>`()]+/gu;
+  for (const [path, value] of files) {
+    if (!(value instanceof Uint8Array) && typeof value !== "string") continue;
+    let text;
+    try {
+      text = new TextDecoder("utf-8", { fatal: true, ignoreBOM: true }).decode(
+        typeof value === "string" ? Buffer.from(value) : value,
+      );
+    } catch {
+      continue;
+    }
+    for (const raw of text.match(urlPattern) ?? []) {
+      let url;
+      try {
+        url = new URL(raw);
+      } catch {
+        continue;
+      }
+      if (!url.pathname.includes("/apple-proxy-profiles/") || !url.pathname.includes("/anywhere/")) continue;
+      if (url.protocol !== "https:" || url.hostname !== "juan-nikola.github.io"
+        || url.username || url.password || url.port || url.search || url.hash
+        || (!defaultPattern.test(url.pathname) && !optionalPattern.test(url.pathname))) {
+        throw new Error(`Anywhere hosted URL is not closed to ${channel}: ${path}`);
+      }
+    }
+  }
+}
+
+function validateCanaryEvidence(canary) {
+  if (!canary || typeof canary !== "object" || Array.isArray(canary)
+    || canary.passed !== true || typeof canary.device !== "string"
+    || canary.device.trim() === "") {
+    throw new Error("Canary evidence is required and must include device and passed=true");
+  }
+  const serialized = JSON.stringify(canary);
+  if (/(?:password|passwd|secret|token|uuid|private|public[-_ ]?key|subscription|profile|node)/iu.test(serialized)) {
+    throw new Error("Canary evidence contains a secret-shaped value");
+  }
+}
+
 export function validateClientPublication({
   files,
   client,
   directory = CLIENT_PUBLIC_PATHS[client],
   basePrefix = "",
   expectedHash = null,
+  channel = null,
+  immutableVersion = null,
 }) {
   validatePublicationMap(files, `Client publication ${client}`);
   if (!directory) throw new TypeError("Client publication identity is invalid");
@@ -371,10 +553,16 @@ export function validateClientPublication({
   if (expectedHash !== null && manifest.manifestHash !== expectedHash) {
     throw new Error(`Client ${client} manifest hash does not match selected rollout`);
   }
+  const versionMatch = /^versions\/([0-9a-f]{64})$/u.exec(basePrefix);
+  assertPublicationChannelClosure(files, {
+    channel: publicationChannel(basePrefix, channel),
+    rootPrefix: basePrefix || publicationChannel(basePrefix, channel),
+    immutableVersion: immutableVersion ?? versionMatch?.[1] ?? null,
+  });
   return manifest;
 }
 
-export function validateDefaultPublication({ defaults, manifest }) {
+export function validateDefaultPublication({ defaults, manifest, channel = "current" }) {
   validatePublicationMap(defaults, "Default publication");
   const parsed = parseCanonicalManifest(defaults, "manifest.json", "Default publication");
   if (!manifest || parsed.manifestHash !== manifest.manifestHash
@@ -383,6 +571,18 @@ export function validateDefaultPublication({ defaults, manifest }) {
   }
   const expectedPaths = [...defaults.keys()].filter((path) => path !== "manifest.json");
   verifyManifestFileClosure(defaults, parsed, "manifest.json", expectedPaths, "Default publication");
+  const dashboardBytes = defaults.get(PUBLIC_AUDIT_DASHBOARD_PATH);
+  if (dashboardBytes === undefined) throw new Error("Public audit dashboard manifest artifact is missing");
+  let dashboard;
+  try {
+    dashboard = JSON.parse(artifactBuffer(dashboardBytes).toString("utf8"));
+  } catch {
+    throw new Error("Public audit dashboard is invalid JSON");
+  }
+  if (!artifactBuffer(dashboardBytes).equals(artifactBuffer(canonicalJson(dashboard)))) {
+    throw new Error("Public audit dashboard bytes are not canonical");
+  }
+  validatePublicAuditDashboard(dashboard);
   for (const [client, { manifestHash }] of Object.entries(parsed.clients ?? {})) {
     const directory = CLIENT_PUBLIC_PATHS[client];
     const clientManifest = verifyClientManifest(defaults, client, directory);
@@ -390,10 +590,12 @@ export function validateDefaultPublication({ defaults, manifest }) {
       throw new Error(`Default publication client hash mismatch for ${client}`);
     }
   }
+  validateAnywhereHostedUrls(defaults, channel);
+  assertPublicationChannelClosure(defaults, { channel, rootPrefix: channel });
   return parsed;
 }
 
-export function validateOptionalPublication({ packId, files }) {
+export function validateOptionalPublication({ packId, files, channel = "current" }) {
   validatePublicationMap(files, `Optional publication ${packId}`);
   const prefix = `optional/${packId}`;
   if ([...files.keys()].some((path) => !path.startsWith(`${prefix}/`))) {
@@ -411,6 +613,8 @@ export function validateOptionalPublication({ packId, files }) {
       throw new Error(`Optional publication ${packId} client hash mismatch for ${client}`);
     }
   }
+  validateAnywhereHostedUrls(files, channel);
+  assertPublicationChannelClosure(files, { channel, rootPrefix: prefix });
   return manifest;
 }
 
@@ -419,14 +623,17 @@ export async function publishEdgeRelease({
   defaults,
   optionalPacks,
   manifest,
+  channel = null,
 }) {
   const merged = mergePublicationFiles(defaults, optionalPacks);
-  validateDefaultPublication({ defaults, manifest });
+  const selectedChannel = channel ?? inferArtifactChannel(defaults) ?? "edge";
+  if (!FRONTIER_CHANNELS.includes(selectedChannel)) throw new TypeError("Publication channel is unsupported");
+  validateDefaultPublication({ defaults, manifest, channel: selectedChannel });
   const edgeMerged = new Map(merged);
   const edgeRootManifest = manifest;
   const optionalManifests = new Map([...optionalPacks].map(([packId, files]) => [
     packId,
-    validateOptionalPublication({ packId, files }),
+    validateOptionalPublication({ packId, files, channel: selectedChannel }),
   ]));
   for (const [client, directory] of Object.entries(CLIENT_PUBLIC_PATHS)) {
     const clientManifest = verifyClientManifest(defaults, client, directory);
@@ -477,6 +684,10 @@ export async function publishEdgeRelease({
       await cp(join(staging, directory), join(immutable, directory), { recursive: true, errorOnExist: true });
       await writeFile(join(immutable, "client-manifest.json"), artifactBuffer(defaults.get(`${directory}/client-manifest.json`)));
     }
+
+    const edgeFiles = await readArtifactTree(staging);
+    validateAnywhereHostedUrls(edgeFiles, selectedChannel);
+    assertChannelClosure({ files: edgeFiles, channel: selectedChannel, rootPrefix: "edge" });
 
     if (await exists(backup)) throw new Error("Edge backup path already exists");
     if (rolloutBackup !== null && await exists(rolloutBackup)) {
@@ -664,24 +875,145 @@ function knownOptionalPacks(value) {
   ]));
 }
 
+export async function sealPreviousRelease({ publicDirectory }) {
+  if (typeof publicDirectory !== "string" || publicDirectory.length === 0) {
+    throw new TypeError("Public directory is required");
+  }
+  const currentDirectory = join(publicDirectory, "current");
+  if (!await exists(join(currentDirectory, "manifest.json"))) {
+    throw new Error("Canonical current publication is required before sealing previous");
+  }
+  const parent = dirname(publicDirectory);
+  const staging = await mkdtemp(join(parent, `.${basename(publicDirectory)}-seal-previous-`));
+  const backup = `${publicDirectory}.seal-previous-backup`;
+  try {
+    await cp(publicDirectory, staging, { recursive: true, force: false, errorOnExist: false });
+    await rm(join(staging, "previous"), { recursive: true, force: true });
+    await cp(join(staging, "current"), join(staging, "previous"), { recursive: true, errorOnExist: true });
+    await rewriteTreeChannel(join(staging, "previous"), "current", "previous");
+
+    for (const client of activeClientIds()) {
+      const directory = publicDirectoryForClient(client);
+      if (await exists(join(staging, "previous", directory, "client-manifest.json"))) {
+        await refreshClientManifest({ publicDirectory: staging, channel: "previous", client });
+      }
+    }
+    if (await canRefreshChannel(join(staging, "previous"))) {
+      await refreshChannelManifest({ publicDirectory: staging, channel: "previous" });
+    }
+
+    const optionalRoot = join(staging, "optional");
+    if (await exists(optionalRoot)) {
+      for (const packId of await readdir(optionalRoot, { withFileTypes: true })) {
+        if (!packId.isDirectory()) continue;
+        const optionalCurrent = join(optionalRoot, packId.name, "current");
+        if (!await exists(optionalCurrent)) continue;
+        const optionalPrevious = join(optionalRoot, packId.name, "previous");
+        await rm(optionalPrevious, { recursive: true, force: true });
+        await cp(optionalCurrent, optionalPrevious, { recursive: true, errorOnExist: true });
+        await rewriteTreeChannel(optionalPrevious, "current", "previous");
+        for (const client of activeClientIds()) {
+          const clientDirectory = publicDirectoryForClient(client);
+          const manifestPath = join(optionalPrevious, clientDirectory, "client-manifest.json");
+          if (await exists(manifestPath)) {
+            await refreshNestedClientManifest({
+              treeRoot: join(optionalPrevious, clientDirectory),
+              clientDirectory,
+              manifestPath,
+              recordPrefix: `optional/${packId.name}/${clientDirectory}`,
+            });
+          }
+        }
+      }
+    }
+
+    const rolloutPath = join(staging, "rollout.json");
+    if (await exists(rolloutPath)) {
+      let rollout;
+      try {
+        rollout = JSON.parse(await readFile(rolloutPath, "utf8"));
+      } catch {
+        throw new Error("Rollout metadata is invalid");
+      }
+      const previous = Object.fromEntries(activeClientIds().map((client) => [client, null]));
+      for (const client of activeClientIds()) {
+        const manifestPath = join(staging, "previous", publicDirectoryForClient(client), "client-manifest.json");
+        if (await exists(manifestPath)) {
+          const manifest = JSON.parse(await readFile(manifestPath, "utf8"));
+          previous[client] = manifest.manifestHash;
+        }
+      }
+      rollout.previous = previous;
+      await writeFile(rolloutPath, `${JSON.stringify(rollout, null, 2)}\n`, "utf8");
+    }
+
+    const previousFiles = await readArtifactTree(join(staging, "previous"));
+    assertChannelClosure({ files: previousFiles, channel: "previous", rootPrefix: "previous" });
+    if (await exists(optionalRoot)) {
+      for (const packEntry of await readdir(optionalRoot, { withFileTypes: true })) {
+        if (!packEntry.isDirectory()) continue;
+        const previousDirectory = join(optionalRoot, packEntry.name, "previous");
+        if (!await exists(previousDirectory)) continue;
+        const optionalPreviousFiles = await readArtifactTree(previousDirectory);
+        assertChannelClosure({ files: optionalPreviousFiles, channel: "previous", rootPrefix: "previous" });
+      }
+    }
+    if (await exists(backup)) throw new Error("Previous seal backup path already exists");
+    await rename(publicDirectory, backup);
+    try {
+      await rename(staging, publicDirectory);
+    } catch (error) {
+      await rename(backup, publicDirectory);
+      throw error;
+    }
+    await rm(backup, { recursive: true, force: true });
+    const manifest = await readFile(join(publicDirectory, "previous", "manifest.json"), "utf8");
+    return Object.freeze({ manifestHash: JSON.parse(manifest).manifestHash, channel: "previous" });
+  } catch (error) {
+    await rm(staging, { recursive: true, force: true });
+    throw error;
+  }
+}
+
 export async function promoteClientRelease({
   publicDirectory,
   client,
+  expectedHash = null,
   manifestHash,
+  canary = null,
   now = new Date(),
   cleanupBackupImpl = (path) => rm(path, { recursive: true, force: true }),
 }) {
   const directory = CLIENT_PUBLIC_PATHS[client];
-  if (!directory || !/^[0-9a-f]{64}$/u.test(manifestHash)) {
+  if (!activeClientIds().includes(client) || !directory) {
+    throw new Error(`Client ${client} is not an active promotion target`);
+  }
+  const targetHash = expectedHash ?? manifestHash;
+  if (expectedHash !== null && manifestHash !== undefined && expectedHash !== manifestHash) {
+    throw new Error("Expected client manifest hash does not match legacy manifestHash");
+  }
+  if (!/^[0-9a-f]{64}$/u.test(targetHash)) {
     throw new TypeError("Client promotion target is invalid");
   }
-  const immutableSource = join(publicDirectory, "edge", "clients", client, manifestHash);
+  validateCanaryEvidence(canary);
+  const immutableSource = join(publicDirectory, "edge", "clients", client, targetHash);
   const clientManifest = JSON.parse(await readFile(join(immutableSource, "client-manifest.json"), "utf8"));
-  if (clientManifest.manifestHash !== manifestHash) throw new Error("Edge client manifest hash does not match promotion target");
+  if (clientManifest.manifestHash !== targetHash) throw new Error("Edge client manifest hash does not match promotion target");
+  const immutableFiles = await readArtifactTree(immutableSource);
+  const candidateChannel = inferArtifactChannel(immutableFiles) ?? "edge";
+  validateClientPublication({
+    files: immutableFiles,
+    client,
+    directory,
+    basePrefix: "",
+    expectedHash: targetHash,
+    channel: candidateChannel,
+    immutableVersion: targetHash,
+  });
   const chinaIpAudit = await verifiedChinaIpAuditEvidence({
     publicDirectory,
     client,
-    manifestHash,
+    manifestHash: targetHash,
     expectedAuditSha256: clientManifest.chinaIpAuditSha256,
     now,
   });
@@ -707,28 +1039,49 @@ export async function promoteClientRelease({
       directory,
       basePrefix: prefix,
       expectedHash: optionalHash,
+      channel: inferArtifactChannel(files) ?? candidateChannel,
     });
     optionalManifests.set(packId, optionalManifest);
   }
 
   const parent = dirname(publicDirectory);
   const staging = await mkdtemp(join(parent, `.${basename(publicDirectory)}-promote-staging-`));
-  const backup = `${publicDirectory}.promote-backup-${client}-${manifestHash.slice(0, 12)}`;
+  const backup = `${publicDirectory}.promote-backup-${client}-${targetHash.slice(0, 12)}`;
   try {
     await cp(publicDirectory, staging, { recursive: true, force: false, errorOnExist: false });
-    const stagedSource = join(staging, "edge", "clients", client, manifestHash, directory);
+    const stagedSource = join(staging, "edge", "clients", client, targetHash, directory);
     const current = join(staging, "current", directory);
     const previous = join(staging, "previous", directory);
     await rm(previous, { recursive: true, force: true });
     if (await exists(current)) {
       await mkdir(dirname(previous), { recursive: true });
       await rename(current, previous);
+      await rewriteTreeChannel(previous, "current", "previous");
+      if (await exists(join(previous, "client-manifest.json"))) {
+        await refreshNestedClientManifest({
+          treeRoot: previous,
+          clientDirectory: directory,
+          manifestPath: join(previous, "client-manifest.json"),
+          recordPrefix: directory,
+        });
+      }
     }
     await mkdir(dirname(current), { recursive: true });
     await cp(stagedSource, current, { recursive: true, errorOnExist: true });
+    if (candidateChannel !== "current") {
+      await rewriteTreeChannel(current, candidateChannel, "current");
+    }
     await writeFile(join(current, "client-manifest.json"), artifactBuffer(await readFile(
-      join(staging, "edge", "clients", client, manifestHash, "client-manifest.json"),
+      join(staging, "edge", "clients", client, targetHash, "client-manifest.json"),
     )));
+    if (candidateChannel !== "current") {
+      await refreshNestedClientManifest({
+        treeRoot: current,
+        clientDirectory: directory,
+        manifestPath: join(current, "client-manifest.json"),
+        recordPrefix: directory,
+      });
+    }
     const currentAudit = join(staging, "current", CHINA_IP_AUDIT_PATH);
     await mkdir(dirname(currentAudit), { recursive: true });
     await writeFile(currentAudit, chinaIpAudit);
@@ -739,6 +1092,15 @@ export async function promoteClientRelease({
       if (await exists(stableOptional)) {
         await mkdir(dirname(previousOptional), { recursive: true });
         await rename(stableOptional, previousOptional);
+        await rewriteTreeChannel(previousOptional, "current", "previous");
+        if (await exists(join(previousOptional, "client-manifest.json"))) {
+          await refreshNestedClientManifest({
+            treeRoot: previousOptional,
+            clientDirectory: directory,
+            manifestPath: join(previousOptional, "client-manifest.json"),
+            recordPrefix: `optional/${packId}/${directory}`,
+          });
+        }
       }
       await mkdir(dirname(stableOptional), { recursive: true });
       await cp(
@@ -753,7 +1115,47 @@ export async function promoteClientRelease({
         stableOptional,
         { recursive: true, errorOnExist: true },
       );
+      if (candidateChannel !== "current") {
+        await rewriteTreeChannel(stableOptional, candidateChannel, "current");
+        await refreshNestedClientManifest({
+          treeRoot: stableOptional,
+          clientDirectory: directory,
+          manifestPath: join(stableOptional, "client-manifest.json"),
+          recordPrefix: `optional/${packId}/${directory}`,
+        });
+      }
     }
+
+    const installedOptionalManifests = new Map();
+    for (const [packId] of optionalManifests) {
+      const installedPath = join(staging, "optional", packId, "current", directory, "client-manifest.json");
+      if (await exists(installedPath)) {
+        installedOptionalManifests.set(packId, JSON.parse(await readFile(installedPath, "utf8")));
+      }
+    }
+    if (installedOptionalManifests.size > 0) {
+      const currentManifestPath = join(current, "client-manifest.json");
+      const currentManifest = JSON.parse(await readFile(currentManifestPath, "utf8"));
+      const optionalSelections = Object.fromEntries([...installedOptionalManifests]
+        .map(([packId, optionalManifest]) => [packId, optionalManifest.manifestHash]));
+      const currentBase = { ...currentManifest, optionalPacks: optionalSelections };
+      delete currentBase.manifestHash;
+      await writeFile(join(current, "client-manifest.json"), canonicalJson({
+        ...currentBase,
+        manifestHash: artifactSha256(canonicalJson(currentBase)),
+      }), "utf8");
+    }
+    const publishedClientManifest = JSON.parse(await readFile(
+      join(current, "client-manifest.json"),
+      "utf8",
+    ));
+    if (!/^[0-9a-f]{64}$/u.test(publishedClientManifest.manifestHash)) {
+      throw new Error("Published current client manifest hash is invalid");
+    }
+    const publishedOptionalManifests = new Map(
+      Object.entries(publishedClientManifest.optionalPacks ?? {})
+        .map(([packId, hash]) => [packId, hash]),
+    );
 
     let rollout = emptyRollout();
     try {
@@ -767,15 +1169,15 @@ export async function promoteClientRelease({
     const sanitizedPreviousOptionalPacks = knownOptionalPacks(rollout.previousOptionalPacks);
     const nextRollout = {
       schemaVersion: 2,
-      clients: { ...sanitizedClients, [client]: manifestHash },
+      clients: { ...sanitizedClients, [client]: publishedClientManifest.manifestHash },
       previous: { ...sanitizedPrevious, [client]: sanitizedClients[client] ?? null },
       optionalPacks: {
         ...sanitizedOptionalPacks,
-        ...Object.fromEntries([...optionalManifests].map(([packId, optionalManifest]) => [
+        ...Object.fromEntries([...installedOptionalManifests].map(([packId, optionalManifest]) => [
           packId,
           {
             ...knownOptionalSelections(sanitizedOptionalPacks[packId]),
-            [client]: optionalManifest.manifestHash,
+            [client]: publishedOptionalManifests.get(packId) ?? optionalManifest.manifestHash,
           },
         ])),
       },
@@ -797,6 +1199,36 @@ export async function promoteClientRelease({
       await enforceRetention(staging, currentManifest.manifestHash);
     }
 
+    const currentFiles = await readArtifactTree(join(staging, "current"));
+    assertChannelClosure({ files: currentFiles, channel: "current", rootPrefix: "current" });
+    if (await exists(join(staging, "previous"))) {
+      const previousFiles = await readArtifactTree(join(staging, "previous"));
+      assertChannelClosure({ files: previousFiles, channel: "previous", rootPrefix: "previous" });
+    }
+    const optionalRoot = join(staging, "optional");
+    if (await exists(optionalRoot)) {
+      for (const packEntry of await readdir(optionalRoot, { withFileTypes: true })) {
+        if (!packEntry.isDirectory()) continue;
+        for (const channel of ["current", "previous"]) {
+          const optionalDirectory = join(optionalRoot, packEntry.name, channel);
+          if (!await exists(optionalDirectory)) continue;
+          const optionalFiles = await readArtifactTree(optionalDirectory);
+          assertChannelClosure({ files: optionalFiles, channel, rootPrefix: channel });
+        }
+      }
+    }
+    if (await exists(join(staging, "versions"))) {
+      for (const record of await versionRecords(join(staging, "versions"))) {
+        const versionFiles = await readArtifactTree(join(staging, "versions", record.name));
+        assertChannelClosure({
+          files: versionFiles,
+          channel: "current",
+          rootPrefix: `versions/${record.name}`,
+          immutableVersion: record.name,
+        });
+      }
+    }
+
     if (await exists(backup)) throw new Error("Promotion backup path already exists");
     await rename(publicDirectory, backup);
     try {
@@ -813,10 +1245,15 @@ export async function promoteClientRelease({
     }
     return Object.freeze({
       client,
-      manifestHash,
+      manifestHash: publishedClientManifest.manifestHash,
+      sourceManifestHash: targetHash,
       previous: nextRollout.previous[client],
       backupCleanupPending,
       optionalPacks: Object.freeze(Object.fromEntries([...optionalManifests].map(([packId, optionalManifest]) => [
+        packId,
+        publishedOptionalManifests.get(packId) ?? optionalManifest.manifestHash,
+      ]))),
+      sourceOptionalPacks: Object.freeze(Object.fromEntries([...optionalManifests].map(([packId, optionalManifest]) => [
         packId,
         optionalManifest.manifestHash,
       ]))),

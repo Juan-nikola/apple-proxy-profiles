@@ -7,37 +7,37 @@
       "currentAddresses": "359024882",
       "currentPrefixes": 7171,
       "divergenceBasisPoints": "2051",
-      "previousAddresses": "359024882",
-      "previousPrefixes": 7171,
-      "secondaryAddresses": "285360382",
-      "secondaryPrefixes": 4148,
+      "previousAddresses": "359041522",
+      "previousPrefixes": 7242,
+      "secondaryAddresses": "285360126",
+      "secondaryPrefixes": 4147,
       "shrinkBasisPoints": "0"
     },
     "ipv6": {
       "currentAddresses": "5104925933167855546564402630098944",
       "currentPrefixes": 3925,
       "divergenceBasisPoints": "6059",
-      "previousAddresses": "5104925933167855546564402630098944",
-      "previousPrefixes": 3925,
-      "secondaryAddresses": "2011464179346124038276040750006272",
-      "secondaryPrefixes": 1234,
+      "previousAddresses": "5105335412058994676456054883090432",
+      "previousPrefixes": 4145,
+      "secondaryAddresses": "2011543407508638302613634293956608",
+      "secondaryPrefixes": 1235,
       "shrinkBasisPoints": "0"
     }
   },
-  "generatedAt": "2026-08-18T04:03:33.559Z",
+  "generatedAt": "2026-08-16T22:54:58.126Z",
   "primary": {
-    "commit": "24e571ee44747a3adf1b3c618102fc9d2b1b61cd",
-    "committedAt": "2026-08-17T18:35:27Z",
+    "commit": "538b8a79532c44dfbcb8e694d2f43e753c60b157",
+    "committedAt": "2026-08-15T18:26:29Z",
     "repository": "https://github.com/blackmatrix7/ios_rule_script",
-    "sha256": "7a07f6a08c52b64b64928a4987ce95e725fbc1652cb0ad2d67a5e4fd7a7e1bc2"
+    "sha256": "440b4ede627f45d31f30d97d2d7951d82bf9e56eddcb85a5961deaf9bc1c1aa9"
   },
   "reportOnly": true,
   "schemaVersion": 1,
   "secondary": {
-    "commit": "3831be092c0b062ac468f646fddf17d12032f662",
-    "committedAt": "2026-08-18T03:31:09Z",
+    "commit": "dde25993121e8f169bd74ebd135bb3b8858f3162",
+    "committedAt": "2026-08-16T03:36:50Z",
     "repository": "https://github.com/gaoyifan/china-operator-ip",
-    "sha256": "2284aa9bba90fc17198c82437a5cff671a839ba1241a4f77b7458c895ad75c46"
+    "sha256": "70b50fa8a39d69c99ed30f5aa43d5eca8e73f49c071720cecee7f2b2ab77445e"
   },
   "warnings": [
     "ipv4:secondary-divergence",

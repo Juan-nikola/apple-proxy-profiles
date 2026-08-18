@@ -115,6 +115,19 @@ test("Anywhere File Operator accepts an exact safe collection name and forwards 
   }]);
 });
 
+test("Anywhere File Operator accepts every closed publication channel", async () => {
+  for (const channel of ["edge", "current", "previous"]) {
+    await assert.doesNotReject(operator({}, "Anywhere", {
+      arguments: { ...ARGUMENTS, channel },
+      produceArtifact: producer(inventory()),
+    }), channel);
+  }
+  await assert.rejects(operator({}, "Anywhere", {
+    arguments: { ...ARGUMENTS, channel: "beta" },
+    produceArtifact: producer(inventory()),
+  }), /channel/iu);
+});
+
 test("Anywhere File Operator enforces the chain-off and safe collection contract", async () => {
   let producerCalls = 0;
   const rejected = [

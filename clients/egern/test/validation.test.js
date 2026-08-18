@@ -111,8 +111,8 @@ test("rejects a complete profile whose continent group no longer matches canonic
   }), /group|schema|semantic|continent/i);
 });
 
-test("accepts only closed channel and optional-pack publication combinations", () => {
-  for (const channel of ["edge", "current"]) {
+test("accepts all closed channels and optional-pack publication combinations", () => {
+  for (const channel of ["edge", "current", "previous"]) {
     for (const adblockMode of ["off", "full"]) {
       assert.deepEqual(
         validateEgernProfile(validProfile({ channel, adblockMode })),

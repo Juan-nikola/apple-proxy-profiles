@@ -1,6 +1,6 @@
 # Apple Proxy Profiles · 零基础部署与维护手册
 
-这个仓库把你保存在 Sub-Store 里的私密节点，转换成五个客户端可导入的配置：
+这个仓库把你保存在 Sub-Store 里的私密节点，转换成七个 active 客户端可导入的配置。HAPP 与 OneXray 已接入真实 renderer、bundle、fixture 和发布清单；公开页面只放无节点脚本，节点凭据仍只在你的 Sub-Store 私密任务中处理：
 
 | 客户端 | 平台 | 本项目提供什么 |
 | --- | --- | --- |
@@ -9,8 +9,10 @@
 | Egern | macOS、iPhone、iPad | 节点文件 + 三个平台 Profile |
 | Anywhere | iPhone、iPad | 节点订阅 + 14 个公开业务规则包 |
 | sing-box | macOS、iPhone、iPad、Android | 四个平台完整 JSON 配置 |
+| OneXray | macOS、iPhone、iPad、Android、Windows、Linux | Xray JSON 节点订阅、结构化 Profile、路由审计 |
+| HAPP | iPhone、iPad、macOS、Android、Windows、Linux | HAPP JSON 订阅、路由审计 |
 
-Android 仅是 sing-box 的一个平台输出；项目客户端总数仍为五个。
+Android 仍是 sing-box 的一个平台输出；注册表和发布链路现在覆盖七个 active 客户端。Sub-Store 任务总数为 23：原有 17 个任务，加上 `apple-proxy-policy`、`onexray-nodes`、`onexray-profile`、`onexray-routing-audit`、`happ-subscription`、`happ-routing-audit` 六个私密任务。
 
 本仓库只保存公开脚本、公开规则和脱敏示例，**不保存你的订阅、节点、密码、UUID、私密输出 URL 或 Sub-Store 管理地址**。本项目不需要 MITM、HTTPS 解密、CA 证书或请求重写，这些功能请保持关闭。
 
@@ -21,12 +23,13 @@ Android 仅是 sing-box 的一个平台输出；项目客户端总数仍为五�
 | 你的目标 | 直接去这里 |
 | --- | --- |
 | 第一次部署全部客户端 | [第 1 节：首次部署](#第-1-节首次部署-sub-store) |
-| 把配置导入客户端 | [第 2 节：导入五个客户端](#第-2-节导入五个客户端) |
+| 把配置导入客户端 | [第 2 节：导入七个客户端](#第-2-节导入七个客户端) |
 | 增加、删除或筛选节点 | [3.1 节：增加或删除节点](#31-增加或删除节点) |
 | 修改 DNS、IPv6 等任务参数 | [3.2 节：修改一个任务参数](#32-修改一个任务参数) |
 | 更新公开规则 | [3.3 节：更新公开规则](#33-更新公开规则) |
 | 修改源码并发布 | [第 4 节：开发、验证和发布](#第-4-节开发验证和发布) |
 | 出问题需要恢复 | [第 5 节：验证与回滚](#第-5-节验证与回滚) |
+| 查看公开审计 | Pages 的 `current/audit/dashboard.json` 或首页中文审计入口；阻断项看 Issues 的 `audit-blocker` 标签 |
 | 查常见错误 | [第 6 节：常见问题](#第-6-节常见问题) |
 
 ---
@@ -53,7 +56,7 @@ Android 仅是 sing-box 的一个平台输出；项目客户端总数仍为五�
     ↓
 shared/rules/semantic-intents.js（统一业务语义）
     ↓
-五个客户端各自的格式生成器
+七个客户端各自的格式生成器
     ↓
 客户端中的业务组、规则集或 selector
 ```
@@ -69,9 +72,9 @@ shared/rules/semantic-intents.js（统一业务语义）
     ↓
 apple-proxy-all 总池
     ↓
-五个客户端 collection（由你筛选）
+七个 active 客户端 collection（由你筛选；Xray renderer 会报告并排除不兼容节点）
     ↓
-17 个 Sub-Store File 任务
+23 个 Sub-Store File 任务（17 个通用任务 + 6 个 HAPP/OneXray 私密任务）
     ↓
 客户端导入私密输出 URL
     ↓
@@ -101,7 +104,7 @@ apple-proxy-all 总池
 
 回滚方式：保留当前能联网的客户端 Profile 和 Sub-Store 备份，后续任何一步失败都可以切回。
 
-### 1.2 创建一个总池和五个客户端 collection
+### 1.2 创建一个总池和七个客户端 collection
 
 先创建或核对以下对象：
 
@@ -113,23 +116,25 @@ apple-proxy-all 总池
 | Shadowrocket | `apple-proxy-shadowrocket` |
 | Surge | `apple-proxy-surge` |
 | sing-box | `apple-proxy-singbox` |
+| OneXray | `apple-proxy-onexray` |
+| HAPP | `apple-proxy-happ` |
 
 操作：
 
 1. 把你确认可用的来源加入 `apple-proxy-all`。
-2. 从总池为五个客户端分别建立 collection。
-3. 在 Sub-Store 中自行筛选每个客户端要使用的协议和节点。
+2. 从总池为七个客户端分别建立 collection；也可以先把总池原样交给生成器，再由生成器按客户端能力审计并排除不兼容节点。
+3. 在 Sub-Store 中自行筛选每个客户端要使用的协议和节点。HAPP/OneXray 不会静默删除可表示节点，审计任务会给出输入数、兼容数和排除原因。
 4. 逐个点击 preview，记录节点总数和协议计数。
 
-成功标志：五个客户端 collection 都能预览，且每个集合只包含你愿意交给该客户端的节点。
+成功标志：七个客户端 collection 都能预览，且每个集合只包含你愿意交给该客户端的节点；HAPP/OneXray 审计中的排除计数可解释。
 
-失败怎么办：某一个 collection 为空时，只检查它的来源和筛选条件；不要同时改其他四个。
+失败怎么办：某一个 collection 为空时，只检查它的来源和筛选条件；不要同时改其他客户端。
 
 回滚方式：旧 collection、旧任务和旧输出 URL 继续保留，直到新客户端完成真机验证。
 
 完整的筛选边界和迁移顺序见 [Sub-Store 客户端节点池指南](docs/substore-client-pools.md)。
 
-### 1.3 创建或核对 17 个 File 任务
+### 1.3 创建或核对 23 个 active File 任务
 
 实际任务总数是 `4+1+4+4+4=17`。早期文档漏算了 `shadowrocket-nodes`，不要再按 16 个创建。
 
@@ -153,7 +158,7 @@ apple-proxy-all 总池
 | 16 | sing-box | `singbox-config-ipad` | iPad JSON |
 | 17 | sing-box | `singbox-config-android` | Android JSON |
 
-已有任务时逐个核对名称、脚本 URL、`name=` 和平台参数；没有任务时按 [Sub-Store 五客户端外置 JS + 任务引用总指南](docs/substore-two-layer-setup.md) 创建。不要复制 JavaScript 正文，File 应引用 Pages 上的远程脚本。
+已有任务时逐个核对名称、脚本 URL、`name=` 和平台参数；没有任务时按 [Sub-Store 七客户端外置 JS + 任务引用总指南](docs/substore-two-layer-setup.md) 创建。不要复制 JavaScript 正文，File 应引用 Pages 上的远程脚本。六个 HAPP/OneXray 任务仍是私密任务，不会把节点或策略内容发布到 Pages。
 
 建议刷新频率：节点类任务每 6 小时，配置类任务每天。Anywhere App 中的节点和规则仍需手动 Refresh/Update。
 
@@ -189,7 +194,7 @@ node scripts/check-substore-task.mjs '<完整任务 URL>'
 
 ---
 
-## 第 2 节：导入五个客户端
+## 第 2 节：导入七个客户端
 
 总原则：先保留旧 Profile，只在一台测试设备导入；macOS 通过后再做 iPhone、iPad，Android 最后单独验证。
 
@@ -318,7 +323,7 @@ Anywhere 分为三层，缺一层都不会完整生效：
 4. 只刷新对应客户端的节点任务和 Profile/Config。
 5. 先在一台设备手动更新。
 
-不要为了增加一个节点同时重建五个客户端，也不要修改公开 JavaScript。
+不要为了增加一个节点同时重建七个客户端，也不要修改公开 JavaScript。
 
 ### 3.2 修改一个任务参数
 
@@ -347,7 +352,7 @@ npm run verify
 - 各客户端格式：`clients/<client>/src/`。
 - Anywhere 14 个业务包：由统一语义聚合生成，不在文档里单独手写另一套来源映射。
 
-新增 App 时先判断它属于现有 AI、媒体、社交、国内平台、下载或游戏意图；只有现有业务意图确实无法表达时，才新增业务组。这样五个客户端的名称和行为不会越维护越散。
+新增 App 时先判断它属于现有 AI、媒体、社交、国内平台、下载或游戏意图；只有现有业务意图确实无法表达时，才新增业务组。这样七个客户端的名称和行为不会越维护越散。
 
 ---
 
@@ -479,8 +484,8 @@ Shadowrocket 和 Surge 首先检查 `subscriptionName`；Egern 和 Surge 再检�
 
 | 路径 | 作用 |
 | --- | --- |
-| `docs/substore-client-pools.md` | 五个客户端 collection 的筛选、迁移和回滚 |
-| `docs/substore-two-layer-setup.md` | 17 个 Sub-Store File 的完整 URL 和参数 |
+| `docs/substore-client-pools.md` | 七个 active 客户端 collection 的筛选、迁移和回滚 |
+| `docs/substore-two-layer-setup.md` | 23 个 active/private File 的完整 URL、频道、审计和回滚参数 |
 | `docs/maintenance.md` | 开发者维护、规则编译、发布与回滚 |
 | `docs/implementation-status.md` | 当前已完成和仍需真机执行的事项 |
 | `clients/<client>/docs/` | 每个客户端的部署、灰度和排障细节 |
