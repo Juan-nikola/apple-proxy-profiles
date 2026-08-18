@@ -1,0 +1,46 @@
+{
+  "blockers": [],
+  "calibrationEndsAt": "2026-08-23T13:33:56.957Z",
+  "calibrationStartedAt": "2026-08-09T13:33:56.957Z",
+  "families": {
+    "ipv4": {
+      "currentAddresses": "359024882",
+      "currentPrefixes": 7171,
+      "divergenceBasisPoints": "2051",
+      "previousAddresses": "359041522",
+      "previousPrefixes": 7242,
+      "secondaryAddresses": "285360126",
+      "secondaryPrefixes": 4147,
+      "shrinkBasisPoints": "0"
+    },
+    "ipv6": {
+      "currentAddresses": "5104925933167855546564402630098944",
+      "currentPrefixes": 3925,
+      "divergenceBasisPoints": "6059",
+      "previousAddresses": "5105335412058994676456054883090432",
+      "previousPrefixes": 4145,
+      "secondaryAddresses": "2011543407508638302613634293956608",
+      "secondaryPrefixes": 1235,
+      "shrinkBasisPoints": "0"
+    }
+  },
+  "generatedAt": "2026-08-16T22:54:58.126Z",
+  "primary": {
+    "commit": "538b8a79532c44dfbcb8e694d2f43e753c60b157",
+    "committedAt": "2026-08-15T18:26:29Z",
+    "repository": "https://github.com/blackmatrix7/ios_rule_script",
+    "sha256": "440b4ede627f45d31f30d97d2d7951d82bf9e56eddcb85a5961deaf9bc1c1aa9"
+  },
+  "reportOnly": true,
+  "schemaVersion": 1,
+  "secondary": {
+    "commit": "dde25993121e8f169bd74ebd135bb3b8858f3162",
+    "committedAt": "2026-08-16T03:36:50Z",
+    "repository": "https://github.com/gaoyifan/china-operator-ip",
+    "sha256": "70b50fa8a39d69c99ed30f5aa43d5eca8e73f49c071720cecee7f2b2ab77445e"
+  },
+  "warnings": [
+    "ipv4:secondary-divergence",
+    "ipv6:secondary-divergence"
+  ]
+}

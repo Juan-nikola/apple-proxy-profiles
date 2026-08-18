@@ -815,7 +815,7 @@ var SurgeProfileBundle = (() => {
   var REQUIRED_KEYS = Object.freeze(["output", "type", "name", "subscriptionName", "platform"]);
   var NODE_REQUIRED_KEYS = Object.freeze(["output", "type", "name"]);
   var DEFAULTS = Object.freeze({
-    channel: "edge",
+    channel: "current",
     dnsMode: "stable",
     chinaDns: "alidns",
     globalDns: "cloudflare",
