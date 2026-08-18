@@ -109,7 +109,8 @@ test("rejects unknown keys and invalid target values without exposing encoded po
 
 test("rejects non-Base64URL, malformed UTF-8 and non-object policy documents", () => {
   const malformedUtf8 = Buffer.from([0xff]).toString("base64url");
-  for (const encoded of ["eyJhaSI6IkZPTExPVyJ9=", "a+b", "a/b", malformedUtf8, base64url([]), base64url(null)]) {
+  const bomPolicy = Buffer.concat([Buffer.from([0xef, 0xbb, 0xbf]), Buffer.from('{"ai":"FOLLOW"}', "utf8")]).toString("base64url");
+  for (const encoded of ["eyJhaSI6IkZPTExPVyJ9=", "a+b", "a/b", malformedUtf8, bomPolicy, base64url([]), base64url(null)]) {
     assert.throws(
       () => parseBusinessOverrides(encoded),
       (error) => {

@@ -19,7 +19,10 @@ function asText(value, label) {
   }
   if (value instanceof Uint8Array) {
     try {
-      return { text: new TextDecoder("utf-8", { fatal: true }).decode(value), bytes: value.byteLength };
+      return {
+        text: new TextDecoder("utf-8", { fatal: true, ignoreBOM: true }).decode(value),
+        bytes: value.byteLength,
+      };
     } catch {
       throw failure(label, "invalid UTF-8 text");
     }

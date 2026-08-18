@@ -31,3 +31,11 @@ test("rejects malformed JSON and preserves valid Unicode", () => {
     assert.throws(() => parseStrictJson(text));
   }
 });
+
+test("preserves a UTF-8 BOM from byte input so it is rejected as non-JSON", () => {
+  const body = new TextEncoder().encode('{"ai":"FOLLOW"}');
+  const bytes = new Uint8Array(3 + body.length);
+  bytes.set([0xef, 0xbb, 0xbf]);
+  bytes.set(body, 3);
+  assert.throws(() => parseStrictJson(bytes), /JSON|invalid/i);
+});
