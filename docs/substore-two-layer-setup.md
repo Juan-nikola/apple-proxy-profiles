@@ -100,6 +100,21 @@ https://juan-nikola.github.io/apple-proxy-profiles/current/surge/scripts/surge-p
 
 五客户端总数为 4+1+4+4+4=17 个任务。
 
+## 4.1 七客户端目标与 23 个任务契约
+
+仓库注册表包含七个稳定 ID：五个 `active` 客户端（Anywhere、Egern、Shadowrocket、Surge、sing-box）以及两个 `planned` 客户端（OneXray、HAPP）。任务契约目标总数为 **23 个**：现有 17 个公开任务，加上下面 6 个未来任务。
+
+| # | 未来任务 | 状态 | 输入/绑定 | 说明 |
+| ---: | --- | --- | --- | --- |
+| 18 | `apple-proxy-policy` | private/planned | 私密 Sub-Store policy | 读取同名 policy revision、channel、公开 Manifest SHA-256 和 GeoData SHA-256；不放入公开 Pages |
+| 19 | `onexray-nodes` | planned | `apple-proxy-all` | OneXray 只规划 node-only 边界；原生 renderer 尚未实现，不可创建公开 URL |
+| 20 | `onexray-profile` | planned | `onexray-nodes` | 原生 Profile 尚未实现，不可创建公开 URL |
+| 21 | `onexray-routing-audit` | planned | audit metadata | 只规划审计输入，不读取私密策略正文 |
+| 22 | `happ-subscription` | planned | `apple-proxy-all` | HAPP 原生订阅 renderer 尚未实现，不可创建公开 URL |
+| 23 | `happ-routing-audit` | planned | audit metadata | 只规划审计输入，不读取私密策略正文 |
+
+未来任务必须接收同名 `channel`（仅 `edge`、`current`、`previous`）、policy revision、公开 Manifest SHA-256 和 GeoData SHA-256 绑定；OneXray node-only 任务也接收 `channel`，但不读取业务策略。直到状态从 `planned` 改为 `active` 并有真实 renderer、fixture、验证和 canary 证据前，不能把这些任务写成可复制的公开脚本 URL，也不能在生成器中伪造 HAPP/OneXray 配置。
+
 ## 5. Egern：1 个节点 File + 3 个 Profile File
 
 ### 5.1 `egern-nodes`
@@ -265,6 +280,8 @@ sing-box 默认 strict：任一已选节点无法完整渲染时 preview 失败�
 6. 逐个保存私密输出 URL；不要在聊天中回传。
 7. 先在一台 macOS 设备导入并 canary，再处理 Android、iPhone 和 iPad。
 
+审计查看入口：Pages 的 `current/audit/dashboard.json` 是机器可读摘要，首页提供中文审计入口；审计阻断项在仓库 Issues 的 `audit-blocker` 标签下查看。节点 URL、policy File、固定目标和私密 audit 只在你自己的 Sub-Store 任务日志中查看，不能复制到公开 Issue 或 README。
+
 ### 日常刷新
 
 节点源变化：`apple-proxy-all` 总池 → 用户更新对应 client collection 筛选 → 该客户端节点任务 → Profile/Config 任务 → 客户端手动更新。
@@ -274,6 +291,8 @@ sing-box 默认 strict：任一已选节点无法完整渲染时 preview 失败�
 ### 回滚
 
 失败时先在设备切回旧 Profile/Config。公开 JS 可在隔离任务中回退到 `/previous/` 或已验证的 `/versions/<manifestHash>/`；生产任务修复前不要直接把所有任务切到 `edge`。参数和私密输出 URL 不需要改变。
+
+维护者命令行回滚入口：`node scripts/update-rules.mjs --check --channel previous` 用于验证回滚频道；精确不可变版本使用 `/versions/<manifestHash>/`。不要手工替换单个规则文件，必须由 canonical generator 重新生成整棵频道快照。
 
 ## 12. 任务完成检查
 

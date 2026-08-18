@@ -12,9 +12,11 @@ import {
   buildSite,
   CLIENT_PUBLIC_PATHS,
   PUBLIC_RETENTION,
-  promoteClientRelease,
+  promoteClientRelease as promoteClientReleaseImpl,
   publishEdgeRelease,
+  sealPreviousRelease,
   snapshotMatches,
+  validateClientPublication,
 } from "../src/build-site.js";
 import { lightweightFixtureSnapshots } from "./lightweight-fixture.js";
 
@@ -68,6 +70,31 @@ function buildClientArtifacts(options) {
   });
 }
 
+function promoteClientRelease(options) {
+  return promoteClientReleaseImpl({
+    canary: { device: "fixture", passed: true },
+    ...options,
+  });
+}
+
+async function writeSnapshotForTest(directory, files) {
+  for (const [path, content] of files) {
+    const destination = join(directory, path);
+    await mkdir(join(destination, ".."), { recursive: true });
+    await writeFile(destination, content);
+  }
+}
+
+async function readTreeBytesForTest(directory, current = "") {
+  const entries = [];
+  for (const entry of await readdir(join(directory, current), { withFileTypes: true })) {
+    const relative = current ? `${current}/${entry.name}` : entry.name;
+    if (entry.isDirectory()) entries.push(...await readTreeBytesForTest(directory, relative));
+    else if (entry.isFile()) entries.push([relative, await readFile(join(directory, relative))]);
+  }
+  return entries.sort(([left], [right]) => left.localeCompare(right));
+}
+
 function artifact(hash, text, time = "2026-08-01T00:00:00Z") {
   const manifest = { manifestHash: hash.repeat(64), generatedAt: time, upstream: { commit: "d".repeat(40) } };
   return { manifest, files: new Map([["manifest.json", `${JSON.stringify(manifest)}\n`], ["rules/x.txt", `${text}\n`]]) };
@@ -84,6 +111,76 @@ test("builds current, previous, and immutable version snapshots atomically", asy
   assert.equal(await readFile(join(publicDirectory, "previous/rules/x.txt"), "utf8"), "first\n");
   assert.equal(await snapshotMatches(join(publicDirectory, `versions/${first.manifest.manifestHash}`), first.files), true);
   assert.equal(await snapshotMatches(join(publicDirectory, `versions/${second.manifest.manifestHash}`), second.files), true);
+});
+
+test("rejects a client publication whose manifest-closed bytes cross channels", () => {
+  const path = "edge/surge/rules.txt";
+  const content = Buffer.from("https://site/current/surge/rules.txt\n");
+  const base = {
+    schemaVersion: 1,
+    client: "surge",
+    files: [{ path, bytes: content.length, sha256: artifactSha256(content) }],
+  };
+  const manifest = { ...base, manifestHash: artifactSha256(canonicalJson(base)) };
+  const files = new Map([
+    [path, content],
+    ["edge/surge/client-manifest.json", canonicalJson(manifest)],
+  ]);
+
+  assert.throws(
+    () => validateClientPublication({ files, client: "surge", basePrefix: "edge" }),
+    /channel|current|edge/iu,
+  );
+});
+
+test("requires canary evidence and rejects planned client promotion", async () => {
+  const root = await mkdtemp(join(tmpdir(), "apple-proxy-promote-gates-"));
+  const publicDirectory = join(root, "public");
+  const artifacts = buildClientArtifacts({ snapshot: lightweightFixtureSnapshots(), upstream: lightweightUpstream });
+  const hash = artifacts.diagnostics.defaultManifest.clients.surge.manifestHash;
+  await publishEdgeRelease({
+    publicDirectory,
+    defaults: artifacts.defaults,
+    optionalPacks: artifacts.optionalPacks,
+    manifest: artifacts.diagnostics.defaultManifest,
+  });
+
+  await assert.rejects(
+    () => promoteClientReleaseImpl({ publicDirectory, client: "surge", expectedHash: hash }),
+    /canary/iu,
+  );
+  await assert.rejects(
+    () => promoteClientReleaseImpl({
+      publicDirectory,
+      client: "happ",
+      expectedHash: hash,
+      canary: { device: "fixture", passed: true },
+    }),
+    /planned|active|unsupported/u,
+  );
+});
+
+test("seals current into an independently closed previous channel idempotently", async () => {
+  const root = await mkdtemp(join(tmpdir(), "apple-proxy-seal-previous-"));
+  const publicDirectory = join(root, "public");
+  const artifacts = buildClientArtifacts({
+    snapshot: lightweightFixtureSnapshots(),
+    upstream: lightweightUpstream,
+    channel: "current",
+  });
+  await writeSnapshotForTest(join(publicDirectory, "current"), artifacts.defaults);
+  const first = await sealPreviousRelease({ publicDirectory });
+  const firstBytes = await readTreeBytesForTest(join(publicDirectory, "previous"));
+  const previousScript = firstBytes.find(([path]) => path.endsWith("/client-manifest.json"));
+  assert.ok(previousScript);
+  assert.equal(first.channel, "previous");
+  assert.doesNotMatch(firstBytes.map(([, value]) => value.toString("utf8")).join("\n"), /\/current\//u);
+  assert.match(firstBytes.map(([, value]) => value.toString("utf8")).join("\n"), /\/previous\//u);
+
+  const second = await sealPreviousRelease({ publicDirectory });
+  const secondBytes = await readTreeBytesForTest(join(publicDirectory, "previous"));
+  assert.deepEqual(second, first);
+  assert.deepEqual(secondBytes, firstBytes);
 });
 
 test("leaves the last known-good rollback snapshot intact on an identical update", async () => {
@@ -176,6 +273,20 @@ test("publishes frontier channel files without overwriting the stable snapshot",
   assert.equal(await readFile(join(publicDirectory, "current/rules/x.txt"), "utf8"), "stable\n");
   assert.equal(await readFile(join(publicDirectory, "edge/surge/scripts/profile.js"), "utf8"), "edge surge\n");
   assert.equal(await readFile(join(publicDirectory, "edge/sing-box/scripts/config.js"), "utf8"), "edge sing-box\n");
+});
+
+test("rejects frontier artifacts that reference another publication channel", async () => {
+  const root = await mkdtemp(join(tmpdir(), "apple-proxy-site-frontier-closure-"));
+  const publicDirectory = join(root, "public");
+  const stable = artifact("a", "stable");
+  const frontierFiles = new Map([
+    ["edge/surge/scripts/profile.js", "const url = '/current/surge/rules/Fixture.list';\n"],
+  ]);
+
+  await assert.rejects(
+    () => buildSite({ publicDirectory, ...stable, frontierFiles }),
+    /channel|current|edge/iu,
+  );
 });
 
 test("preserves binary artifact bytes in site emission and snapshot comparison", async () => {

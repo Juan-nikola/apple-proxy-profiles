@@ -1,6 +1,6 @@
 # Apple Proxy Profiles · 零基础部署与维护手册
 
-这个仓库把你保存在 Sub-Store 里的私密节点，转换成五个客户端可导入的配置：
+这个仓库把你保存在 Sub-Store 里的私密节点，转换成五个 active 客户端可导入的配置；OneXray 与 HAPP 已注册但仍为 planned，不生成伪造配置：
 
 | 客户端 | 平台 | 本项目提供什么 |
 | --- | --- | --- |
@@ -9,8 +9,10 @@
 | Egern | macOS、iPhone、iPad | 节点文件 + 三个平台 Profile |
 | Anywhere | iPhone、iPad | 节点订阅 + 14 个公开业务规则包 |
 | sing-box | macOS、iPhone、iPad、Android | 四个平台完整 JSON 配置 |
+| OneXray | 多平台 | planned：只保留任务/审计边界，暂无原生 renderer |
+| HAPP | iPhone、iPad、macOS、Android | planned：只保留任务/审计边界，暂无原生 renderer |
 
-Android 仅是 sing-box 的一个平台输出；项目客户端总数仍为五个。
+Android 仅是 sing-box 的一个平台输出；稳定客户端总数为五个，注册表总数为七个。Sub-Store 任务契约目标总数为 23：现有 17 个 active 公开任务，加上 6 个 planned/private 任务（包括 `apple-proxy-policy`、`onexray-nodes`、`onexray-profile`、`onexray-routing-audit`、`happ-subscription`、`happ-routing-audit`）。
 
 本仓库只保存公开脚本、公开规则和脱敏示例，**不保存你的订阅、节点、密码、UUID、私密输出 URL 或 Sub-Store 管理地址**。本项目不需要 MITM、HTTPS 解密、CA 证书或请求重写，这些功能请保持关闭。
 
@@ -27,6 +29,7 @@ Android 仅是 sing-box 的一个平台输出；项目客户端总数仍为五�
 | 更新公开规则 | [3.3 节：更新公开规则](#33-更新公开规则) |
 | 修改源码并发布 | [第 4 节：开发、验证和发布](#第-4-节开发验证和发布) |
 | 出问题需要恢复 | [第 5 节：验证与回滚](#第-5-节验证与回滚) |
+| 查看公开审计 | Pages 的 `current/audit/dashboard.json` 或首页中文审计入口；阻断项看 Issues 的 `audit-blocker` 标签 |
 | 查常见错误 | [第 6 节：常见问题](#第-6-节常见问题) |
 
 ---
@@ -69,9 +72,9 @@ shared/rules/semantic-intents.js（统一业务语义）
     ↓
 apple-proxy-all 总池
     ↓
-五个客户端 collection（由你筛选）
+五个 active 客户端 collection（由你筛选）
     ↓
-17 个 Sub-Store File 任务
+17 个 active Sub-Store File 任务 + 6 个 planned/private 任务契约
     ↓
 客户端导入私密输出 URL
     ↓
@@ -129,7 +132,7 @@ apple-proxy-all 总池
 
 完整的筛选边界和迁移顺序见 [Sub-Store 客户端节点池指南](docs/substore-client-pools.md)。
 
-### 1.3 创建或核对 17 个 File 任务
+### 1.3 创建或核对 17 个 active File 任务
 
 实际任务总数是 `4+1+4+4+4=17`。早期文档漏算了 `shadowrocket-nodes`，不要再按 16 个创建。
 
@@ -153,7 +156,7 @@ apple-proxy-all 总池
 | 16 | sing-box | `singbox-config-ipad` | iPad JSON |
 | 17 | sing-box | `singbox-config-android` | Android JSON |
 
-已有任务时逐个核对名称、脚本 URL、`name=` 和平台参数；没有任务时按 [Sub-Store 五客户端外置 JS + 任务引用总指南](docs/substore-two-layer-setup.md) 创建。不要复制 JavaScript 正文，File 应引用 Pages 上的远程脚本。
+已有任务时逐个核对名称、脚本 URL、`name=` 和平台参数；没有任务时按 [Sub-Store 五客户端外置 JS + 任务引用总指南](docs/substore-two-layer-setup.md) 创建。不要复制 JavaScript 正文，File 应引用 Pages 上的远程脚本。其余 6 个 planned/private 任务只记录契约，直到 renderer 完成前不可创建公开 URL。
 
 建议刷新频率：节点类任务每 6 小时，配置类任务每天。Anywhere App 中的节点和规则仍需手动 Refresh/Update。
 
@@ -479,8 +482,8 @@ Shadowrocket 和 Surge 首先检查 `subscriptionName`；Egern 和 Surge 再检�
 
 | 路径 | 作用 |
 | --- | --- |
-| `docs/substore-client-pools.md` | 五个客户端 collection 的筛选、迁移和回滚 |
-| `docs/substore-two-layer-setup.md` | 17 个 Sub-Store File 的完整 URL 和参数 |
+| `docs/substore-client-pools.md` | 五个 active 客户端 collection 的筛选、迁移和回滚 |
+| `docs/substore-two-layer-setup.md` | 17 个 active File 的完整 URL、6 个 planned 任务契约和参数 |
 | `docs/maintenance.md` | 开发者维护、规则编译、发布与回滚 |
 | `docs/implementation-status.md` | 当前已完成和仍需真机执行的事项 |
 | `clients/<client>/docs/` | 每个客户端的部署、灰度和排障细节 |

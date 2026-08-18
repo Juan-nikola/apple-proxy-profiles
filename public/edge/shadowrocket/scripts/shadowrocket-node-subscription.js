@@ -48,12 +48,30 @@ var ShadowrocketNodeSubscriptionBundle = (() => {
 
   // ../../../shared/contracts.js
   var CLIENT = Object.freeze({
-    shadowrocket: "shadowrocket",
-    egern: "egern",
     anywhere: "anywhere",
+    egern: "egern",
+    shadowrocket: "shadowrocket",
     surge: "surge",
-    singbox: "singbox"
+    singbox: "singbox",
+    onexray: "onexray",
+    happ: "happ"
   });
+  var PRIVATE_POLICY_CHANNELS = Object.freeze(["edge", "current", "previous"]);
+  var PRIVATE_POLICY_CLIENTS = Object.freeze([CLIENT.happ, CLIENT.onexray]);
+  var PRIVATE_POLICY_TARGET_IDS = Object.freeze([
+    "ai",
+    "github",
+    "youtube",
+    "overseasMedia",
+    "globalSocial",
+    "overseasGame",
+    "domesticCore",
+    "domesticPlatform",
+    "chinaIp",
+    "apple",
+    "microsoft",
+    "download"
+  ]);
   var OPTION_VALUES = Object.freeze({
     output: Object.freeze(["nodes", "config"]),
     type: Object.freeze(["collection"]),

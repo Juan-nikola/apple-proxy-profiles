@@ -24,7 +24,7 @@ const COMMON_ENUM_KEYS = Object.freeze([
   "ipv6Mode", "autoGroupMode", "clientChain",
 ]);
 
-const CHANNELS = Object.freeze(["edge", "current"]);
+const CHANNELS = Object.freeze(["edge", "current", "previous"]);
 const ADBLOCK_MODES = Object.freeze(["off", "full"]);
 const PROFILE_MODES = Object.freeze(["light", "diagnostic"]);
 const NODE_ERROR_MODES = Object.freeze(["strict", "compatible"]);
@@ -211,7 +211,11 @@ export function checkSubstoreTaskUrl(raw) {
       errors: Object.freeze([`Unexpected publication host '${parsed.url.hostname}'; expected ${PUBLIC_BASE} or a personal *.github.io fork`]),
     });
   }
-  const errors = checkTaskOptions(generator, parsed.params);
+  const errors = [...checkTaskOptions(generator, parsed.params)];
+  const pathChannel = parsed.scriptPath.split("/").find((segment) => PUBLISHED_CHANNELS.includes(segment));
+  if (pathChannel && parsed.params.channel && parsed.params.channel !== pathChannel) {
+    errors.push(`Option 'channel' must match the publication path '${pathChannel}'`);
+  }
   return Object.freeze({
     ok: errors.length === 0,
     taskUrl: raw,

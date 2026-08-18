@@ -7,6 +7,12 @@ import { compactRuleCidrs } from "./compact-rule-cidrs.js";
 import { artifactBuffer, artifactByteLength, artifactSha256 } from "./artifact-content.js";
 import { BLACKMATRIX7_BASELINE, catalogSha256 } from "./source-catalog.js";
 import { buildRoutingPlanAudit } from "./routing-plan-audit.js";
+import { validateV2flyDomainAudit } from "./v2fly-domain-audit.js";
+import {
+  buildPublicAuditDashboard,
+  renderPublicAuditDashboard,
+  validatePublicAuditDashboard,
+} from "./public-audit-dashboard.js";
 import {
   orderedRoutingPlan,
   MOBILE_RULE_SOURCE_IDS,
@@ -17,14 +23,17 @@ import { SEMANTIC_INTENTS } from "../../shared/rules/semantic-intents.js";
 import { RULE_KIND } from "../../shared/rules/model.js";
 import { buildImportBatches, renderImportPage } from "../../clients/anywhere/src/build-import-page.js";
 import { ANYWHERE_LIGHTWEIGHT_MIGRATION } from "../../clients/anywhere/src/shard-rules.js";
+import {
+  activeClientIds,
+  allClientIds,
+  clientAdapter,
+  publicDirectoryForClient,
+} from "../../shared/release/client-catalog.js";
+import { FRONTIER_CHANNELS } from "../../shared/release/frontier-manifest.js";
 
-const CLIENT_PATHS = Object.freeze({
-  shadowrocket: "shadowrocket",
-  surge: "surge",
-  egern: "egern",
-  singbox: "sing-box",
-  anywhere: "anywhere",
-});
+const CLIENT_PATHS = Object.freeze(Object.fromEntries(
+  activeClientIds().map((client) => [client, publicDirectoryForClient(client)]),
+));
 
 const OPTIONAL_PACK_CLIENTS = Object.freeze({
   "adblock-full": Object.freeze(Object.fromEntries(
@@ -174,6 +183,7 @@ function renderRuleSetMap({
   anywhereUrlPrefix = anywherePrefix,
   anywherePublicBase = "https://juan-nikola.github.io/apple-proxy-profiles/current",
   anywhereMode = "default",
+  channel = "current",
 }) {
   const files = new Map();
   const clientSources = { shadowrocket: [], surge: [], egern: [], singbox: [] };
@@ -240,7 +250,7 @@ function renderRuleSetMap({
   files.set(importPath, renderImportPage(
     buildImportBatches(anywhere.manifest.shards.map(({ url }) => url)),
     anywhere.manifest,
-    { mode: anywhereMode, channel: "current" },
+    { mode: anywhereMode, channel },
   ));
   return Object.freeze({ files, clientSources, anywhere });
 }
@@ -373,7 +383,7 @@ export function assertNoForbiddenDefaultReferences(files) {
   }
 }
 
-function buildOptionalPack({ packId, ruleSets, upstream, singBoxBinaries = null }) {
+function buildOptionalPack({ packId, ruleSets, upstream, singBoxBinaries = null, channel = "current" }) {
   const pathPrefix = `optional/${packId}`;
   const rendered = renderRuleSetMap({
     ruleSets,
@@ -382,8 +392,9 @@ function buildOptionalPack({ packId, ruleSets, upstream, singBoxBinaries = null 
     pathPrefix,
     anywherePrefix: `${pathPrefix}/anywhere`,
     anywhereUrlPrefix: "anywhere",
-    anywherePublicBase: `https://juan-nikola.github.io/apple-proxy-profiles/optional/${packId}/current`,
+    anywherePublicBase: `https://juan-nikola.github.io/apple-proxy-profiles/optional/${packId}/${channel}`,
     anywhereMode: "adblock-full",
+    channel,
   });
   const clientManifests = addClientManifests(rendered.files, upstream, OPTIONAL_PACK_CLIENTS[packId], pathPrefix);
   const records = fileRecords(rendered.files);
@@ -409,11 +420,14 @@ function buildOptionalPack({ packId, ruleSets, upstream, singBoxBinaries = null 
 export function buildClientArtifacts({
   snapshot,
   upstream = BLACKMATRIX7_BASELINE,
+  channel = "current",
   additionalFiles = null,
   singBoxBinaries = null,
   chinaIpAudit = null,
+  v2flyDomainAudit = null,
 }) {
   if (!(snapshot instanceof Map)) throw new TypeError("Complete rule snapshot is required");
+  if (!FRONTIER_CHANNELS.includes(channel)) throw new TypeError("Publication channel is unsupported");
   if (singBoxBinaries !== null) {
     if (!(singBoxBinaries instanceof Map)) throw new TypeError("Compiled sing-box rules must be a Map");
     const expected = [
@@ -448,6 +462,8 @@ export function buildClientArtifacts({
     mobileRuleSets: compactedMobile.ruleSets,
     upstream,
     singBoxBinaries,
+    anywherePublicBase: `https://juan-nikola.github.io/apple-proxy-profiles/${channel}`,
+    channel,
   });
   const defaults = rendered.files;
   let chinaIpAuditSha256 = null;
@@ -467,6 +483,23 @@ export function buildClientArtifacts({
     defaults.set("audit/china-ip-drift.json", chinaIpAudit);
     chinaIpAuditSha256 = artifactSha256(chinaIpAudit);
   }
+  if (v2flyDomainAudit !== null) {
+    if (defaults.has("audit/v2fly-domain-drift.json")) {
+      throw new Error("Duplicate public artifact path: audit/v2fly-domain-drift.json");
+    }
+    const v2flyBytes = artifactBuffer(v2flyDomainAudit);
+    let report;
+    try {
+      report = JSON.parse(v2flyBytes.toString("utf8"));
+    } catch {
+      throw new Error("v2fly audit report is invalid JSON");
+    }
+    validateV2flyDomainAudit(report);
+    if (!v2flyBytes.equals(artifactBuffer(canonicalJson(report)))) {
+      throw new Error("v2fly audit report bytes are not canonical");
+    }
+    defaults.set("audit/v2fly-domain-drift.json", v2flyBytes);
+  }
   if (defaults.has("audit/routing-plan.json")) {
     throw new Error("Duplicate public artifact path: audit/routing-plan.json");
   }
@@ -484,6 +517,7 @@ export function buildClientArtifacts({
     ruleSets: compactedAdblock.ruleSets,
     upstream,
     singBoxBinaries,
+    channel,
   });
   const optionalPacks = new Map([["adblock-full", adblockFull.files]]);
   const optionalSelections = Object.fromEntries(Object.keys(CLIENT_PATHS).map((client) => [client, {
@@ -499,6 +533,39 @@ export function buildClientArtifacts({
     optionalSelections,
     chinaIpAuditSha256,
   );
+  const parseAudit = (content) => {
+    if (content === null) return {};
+    try { return JSON.parse(artifactBuffer(content).toString("utf8")); } catch { throw new Error("Audit evidence is invalid JSON"); }
+  };
+  const publicAuditDashboard = buildPublicAuditDashboard({
+    generatedAt: upstream.committedAt,
+    upstream: {
+      repository: upstream.owner ?? "blackmatrix7",
+      commit: upstream.commit,
+      committedAt: upstream.committedAt,
+      sha256: catalogSha256(),
+    },
+    chinaIpAudit: parseAudit(chinaIpAudit),
+    v2flyDomainAudit: parseAudit(v2flyDomainAudit),
+    routingPlanAudit,
+    clientCatalog: allClientIds().map((client) => clientAdapter(client)),
+    releaseState: {
+      channels: {
+        edge: {
+          closure: true,
+          clients: Object.fromEntries(Object.entries(clientManifests).map(([client, value]) => [client, {
+            manifestHash: value.manifestHash,
+            closure: true,
+          }])),
+        },
+        current: { closure: true },
+        previous: { closure: true },
+      },
+    },
+  });
+  validatePublicAuditDashboard(publicAuditDashboard);
+  defaults.set("audit/dashboard.json", artifactBuffer(canonicalJson(publicAuditDashboard)));
+  defaults.set("audit/dashboard.html", renderPublicAuditDashboard(publicAuditDashboard));
   const records = fileRecords(defaults);
   const baseManifest = {
     schemaVersion: 2,
@@ -509,6 +576,14 @@ export function buildClientArtifacts({
       manifestHash: clientManifests[client].manifestHash,
       referencedDefaultBytes: referencedBytes[client],
     }])),
+    clientStates: Object.fromEntries(allClientIds().map((client) => {
+      const adapter = clientAdapter(client);
+      return [client, {
+        state: adapter.state,
+        adapterSchema: adapter.adapterSchema,
+        publicDirectory: adapter.publicDirectory,
+      }];
+    })),
     diagnostics: {
       defaultEntries: publicationDiagnostics.defaultEntries,
       rawDefaultEntries: publicationDiagnostics.rawDefaultEntries,
@@ -533,6 +608,7 @@ export function buildClientArtifacts({
       referencedBytes,
       defaultManifest,
       routingPlanAudit,
+      publicAuditDashboard,
       optionalManifests: Object.freeze({ "adblock-full": adblockFull.manifest }),
     }),
   });

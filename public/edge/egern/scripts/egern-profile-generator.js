@@ -25,12 +25,30 @@ var EgernProfileBundle = (() => {
 
   // ../../../shared/contracts.js
   var CLIENT = Object.freeze({
-    shadowrocket: "shadowrocket",
-    egern: "egern",
     anywhere: "anywhere",
+    egern: "egern",
+    shadowrocket: "shadowrocket",
     surge: "surge",
-    singbox: "singbox"
+    singbox: "singbox",
+    onexray: "onexray",
+    happ: "happ"
   });
+  var PRIVATE_POLICY_CHANNELS = Object.freeze(["edge", "current", "previous"]);
+  var PRIVATE_POLICY_CLIENTS = Object.freeze([CLIENT.happ, CLIENT.onexray]);
+  var PRIVATE_POLICY_TARGET_IDS = Object.freeze([
+    "ai",
+    "github",
+    "youtube",
+    "overseasMedia",
+    "globalSocial",
+    "overseasGame",
+    "domesticCore",
+    "domesticPlatform",
+    "chinaIp",
+    "apple",
+    "microsoft",
+    "download"
+  ]);
   var OPTION_VALUES = Object.freeze({
     output: Object.freeze(["nodes", "config"]),
     type: Object.freeze(["collection"]),
@@ -64,6 +82,119 @@ var EgernProfileBundle = (() => {
     }
     return node._profile;
   }
+
+  // ../../../shared/release/client-catalog.js
+  var freeze = (value) => {
+    if (value && typeof value === "object" && !Object.isFrozen(value)) {
+      for (const child of Object.values(value)) freeze(child);
+      Object.freeze(value);
+    }
+    return value;
+  };
+  var records = [
+    {
+      id: CLIENT.anywhere,
+      displayName: "Anywhere",
+      state: "active",
+      platforms: ["iphone", "ipad", "macos", "appletv"],
+      configFormat: "clash-yaml",
+      ruleFormat: "clash-yaml",
+      nodeValidator: "anywhere",
+      separatesProfile: false,
+      supportsPolicyOverrides: false,
+      adapterSchema: "anywhere-v1",
+      publicDirectory: "anywhere"
+    },
+    {
+      id: CLIENT.egern,
+      displayName: "Egern",
+      state: "active",
+      platforms: ["iphone", "ipad", "macos"],
+      configFormat: "yaml",
+      ruleFormat: "yaml",
+      nodeValidator: "egern",
+      separatesProfile: false,
+      supportsPolicyOverrides: false,
+      adapterSchema: "egern-v1",
+      publicDirectory: "egern"
+    },
+    {
+      id: CLIENT.shadowrocket,
+      displayName: "Shadowrocket",
+      state: "active",
+      platforms: ["iphone", "ipad", "macos"],
+      configFormat: "ini",
+      ruleFormat: "list",
+      nodeValidator: "shadowrocket",
+      separatesProfile: false,
+      supportsPolicyOverrides: false,
+      adapterSchema: "shadowrocket-v1",
+      publicDirectory: "shadowrocket"
+    },
+    {
+      id: CLIENT.surge,
+      displayName: "Surge",
+      state: "active",
+      platforms: ["macos", "iphone", "ipad"],
+      configFormat: "ini",
+      ruleFormat: "list",
+      nodeValidator: "surge",
+      separatesProfile: false,
+      supportsPolicyOverrides: false,
+      adapterSchema: "surge-v1",
+      publicDirectory: "surge"
+    },
+    {
+      id: CLIENT.singbox,
+      displayName: "sing-box",
+      state: "active",
+      platforms: ["macos", "iphone", "ipad", "android"],
+      configFormat: "json",
+      ruleFormat: "srs",
+      nodeValidator: "singbox",
+      separatesProfile: false,
+      supportsPolicyOverrides: false,
+      adapterSchema: "singbox-v1",
+      publicDirectory: "sing-box"
+    },
+    {
+      id: CLIENT.onexray,
+      displayName: "OneXray",
+      state: "planned",
+      platforms: ["macos", "iphone", "ipad", "android", "windows", "linux"],
+      configFormat: "xray-profile-json",
+      ruleFormat: "xray-geodata",
+      nodeValidator: "onexray",
+      separatesProfile: false,
+      supportsPolicyOverrides: false,
+      adapterSchema: "onexray-v1-planned",
+      publicDirectory: "onexray"
+    },
+    {
+      id: CLIENT.happ,
+      displayName: "HAPP",
+      state: "planned",
+      platforms: ["iphone", "ipad", "macos", "android"],
+      configFormat: "happ-json",
+      ruleFormat: "happ-json",
+      nodeValidator: "happ",
+      separatesProfile: false,
+      supportsPolicyOverrides: false,
+      adapterSchema: "happ-v4-planned",
+      publicDirectory: "happ"
+    }
+  ].map((record) => freeze(record));
+  var byId = new Map(records.map((record) => [record.id, record]));
+  var ids = freeze(records.map(({ id }) => id));
+  var activeIds = freeze(records.filter(({ state }) => state === "active").map(({ id }) => id));
+  var plannedIds = freeze(records.filter(({ state }) => state === "planned").map(({ id }) => id));
+
+  // ../../../shared/release/frontier-manifest.js
+  var FRONTIER_CHANNELS = Object.freeze(["edge", "current", "previous"]);
+  var FRONTIER_PLATFORMS = Object.freeze({
+    [CLIENT.surge]: Object.freeze(["macos", "iphone", "ipad"]),
+    [CLIENT.singbox]: Object.freeze(["macos", "iphone", "ipad", "android"])
+  });
 
   // ../../../shared/substore/collection-name.js
   var SAFE_COLLECTION_NAME = /^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$/u;
@@ -335,7 +466,7 @@ var EgernProfileBundle = (() => {
   ALLOWED_KEYS.add("channel");
   ALLOWED_KEYS.add("adblockMode");
   var SUPPORTED_PLATFORMS = /* @__PURE__ */ new Set(["macos", "iphone", "ipad"]);
-  var CHANNELS = /* @__PURE__ */ new Set(["edge", "current"]);
+  var CHANNELS = new Set(FRONTIER_CHANNELS);
   var ADBLOCK_MODES = /* @__PURE__ */ new Set(["off", "full"]);
   var PROTOTYPE_KEYS2 = /* @__PURE__ */ new Set(["__proto__", "constructor", "prototype"]);
   var FORBIDDEN_URL_CHARACTER = /[\u0000-\u001f\u007f\\]/u;
@@ -972,6 +1103,7 @@ var EgernProfileBundle = (() => {
     "security",
     "custom",
     "domesticCore",
+    "domesticPlatform",
     "domesticGame",
     "explicitOverseas",
     "overseasGame",
@@ -1067,7 +1199,7 @@ var EgernProfileBundle = (() => {
     Advertising_Domain: "\u{1F9F1} \u5E38\u89C1\u5E7F\u544A"
   });
   function uniqueMembership(id, memberships, label) {
-    const matches = Object.entries(memberships).filter(([, ids]) => ids.includes(id)).map(([name]) => name);
+    const matches = Object.entries(memberships).filter(([, ids2]) => ids2.includes(id)).map(([name]) => name);
     if (matches.length !== 1) {
       throw new Error(`Lightweight rule source ${id} must have exactly one ${label} membership`);
     }
@@ -1268,7 +1400,7 @@ var EgernProfileBundle = (() => {
       throw new Error("DNS option 'publicBaseUrl' is required");
     }
     const value = safeOption(options, "publicBaseUrl");
-    if (value !== `${PUBLIC_RULE_ROOT}/edge` && value !== `${PUBLIC_RULE_ROOT}/current`) {
+    if (!FRONTIER_CHANNELS.some((channel) => value === `${PUBLIC_RULE_ROOT}/${channel}`)) {
       throw new Error("DNS option 'publicBaseUrl' must use the fixed public snapshot base");
     }
     return value;
@@ -2026,7 +2158,7 @@ var EgernProfileBundle = (() => {
     const adblockDescriptor = descriptors.get("adblockMode");
     const base = baseDescriptor?.value;
     const adblockMode = adblockDescriptor?.value;
-    if (!baseDescriptor || "get" in baseDescriptor || "set" in baseDescriptor || base !== `${PUBLIC_RULE_ROOT}/edge` && base !== `${PUBLIC_RULE_ROOT}/current` || !adblockDescriptor || "get" in adblockDescriptor || "set" in adblockDescriptor || adblockMode !== "off" && adblockMode !== "full") {
+    if (!baseDescriptor || "get" in baseDescriptor || "set" in baseDescriptor || !FRONTIER_CHANNELS.some((channel) => base === `${PUBLIC_RULE_ROOT}/${channel}`) || !adblockDescriptor || "get" in adblockDescriptor || "set" in adblockDescriptor || adblockMode !== "off" && adblockMode !== "full") {
       throw new Error("Invalid Egern public rule base");
     }
     return { ruleBase: `${base}/egern/rules`, adblockMode };
@@ -4013,7 +4145,7 @@ var EgernProfileBundle = (() => {
   function validateParsedProfile(root) {
     validateRoot(root);
     let publicationValid = false;
-    for (const channel of ["edge", "current"]) {
+    for (const channel of FRONTIER_CHANNELS) {
       const publicBaseUrl2 = `${PUBLIC_RULE_ROOT}/${channel}`;
       for (const adblockMode of ["off", "full"]) {
         const expectedRules = renderEgernRules({ publicBaseUrl: publicBaseUrl2, adblockMode });
@@ -4565,9 +4697,9 @@ var EgernProfileBundle = (() => {
           suffixGroup.push(record);
           suffixGroups.set(record.suffix, suffixGroup);
         }
-        for (const records of suffixGroups.values()) {
-          records.forEach((record, index) => {
-            const suffix = records.length > 1 ? `${record.suffix}-${index + 1}` : record.suffix;
+        for (const records2 of suffixGroups.values()) {
+          records2.forEach((record, index) => {
+            const suffix = records2.length > 1 ? `${record.suffix}-${index + 1}` : record.suffix;
             record.node.name = `${protocolBase} #${suffix}`;
           });
         }

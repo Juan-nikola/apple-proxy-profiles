@@ -1,0 +1,176 @@
+{
+  "audits": {
+    "chinaIp": {
+      "blockerCount": 0,
+      "reportOnly": true,
+      "schemaVersion": 1,
+      "sha256": null,
+      "warningCount": 2
+    },
+    "routingPlan": {
+      "blockerCount": 0,
+      "reportOnly": false,
+      "schemaVersion": 1,
+      "sha256": "826322ef9fc614bda1153db11049df562690db27cd197f764860686245c6b1d5",
+      "warningCount": 0
+    },
+    "v2fly": {
+      "blockerCount": 0,
+      "reportOnly": true,
+      "schemaVersion": 1,
+      "sha256": null,
+      "warningCount": 1
+    }
+  },
+  "blockers": [],
+  "channels": {
+    "current": {
+      "closure": true,
+      "manifestCount": 0
+    },
+    "edge": {
+      "closure": true,
+      "manifestCount": 5
+    },
+    "previous": {
+      "closure": true,
+      "manifestCount": 0
+    }
+  },
+  "clients": {
+    "anywhere": {
+      "adapterSchema": "anywhere-v1",
+      "canary": null,
+      "current": {
+        "closure": true,
+        "manifestHash": null
+      },
+      "edge": {
+        "closure": true,
+        "manifestHash": "bc6abc0a3ab621d232293e5d2618baa65ff18dd77ca050441ca1c6c7c7b861a1"
+      },
+      "previous": {
+        "closure": true,
+        "manifestHash": null
+      },
+      "state": "active"
+    },
+    "egern": {
+      "adapterSchema": "egern-v1",
+      "canary": null,
+      "current": {
+        "closure": true,
+        "manifestHash": null
+      },
+      "edge": {
+        "closure": true,
+        "manifestHash": "6bd9200008edb2f05e1aa297629cca7d3702951eb3c3e8089198aeb43fc4e100"
+      },
+      "previous": {
+        "closure": true,
+        "manifestHash": null
+      },
+      "state": "active"
+    },
+    "happ": {
+      "adapterSchema": "happ-v4-planned",
+      "canary": null,
+      "current": {
+        "closure": true,
+        "manifestHash": null
+      },
+      "edge": {
+        "closure": true,
+        "manifestHash": null
+      },
+      "previous": {
+        "closure": true,
+        "manifestHash": null
+      },
+      "state": "planned"
+    },
+    "onexray": {
+      "adapterSchema": "onexray-v1-planned",
+      "canary": null,
+      "current": {
+        "closure": true,
+        "manifestHash": null
+      },
+      "edge": {
+        "closure": true,
+        "manifestHash": null
+      },
+      "previous": {
+        "closure": true,
+        "manifestHash": null
+      },
+      "state": "planned"
+    },
+    "shadowrocket": {
+      "adapterSchema": "shadowrocket-v1",
+      "canary": null,
+      "current": {
+        "closure": true,
+        "manifestHash": null
+      },
+      "edge": {
+        "closure": true,
+        "manifestHash": "2c7b864708fd5b2d98d0743d12d641b89c638178ddbb8ca12a2009c1b2913fe0"
+      },
+      "previous": {
+        "closure": true,
+        "manifestHash": null
+      },
+      "state": "active"
+    },
+    "singbox": {
+      "adapterSchema": "singbox-v1",
+      "canary": null,
+      "current": {
+        "closure": true,
+        "manifestHash": null
+      },
+      "edge": {
+        "closure": true,
+        "manifestHash": "580315fc44b0bd3ca0fb1ba395da582800ac093b3dd55cd0c272decd009b6282"
+      },
+      "previous": {
+        "closure": true,
+        "manifestHash": null
+      },
+      "state": "active"
+    },
+    "surge": {
+      "adapterSchema": "surge-v1",
+      "canary": null,
+      "current": {
+        "closure": true,
+        "manifestHash": null
+      },
+      "edge": {
+        "closure": true,
+        "manifestHash": "1af7ebb49fb47aea5e56c6cbd7a9a5fa50687730f6b30b57f95c89ef0c42d6f7"
+      },
+      "previous": {
+        "closure": true,
+        "manifestHash": null
+      },
+      "state": "active"
+    }
+  },
+  "generatedAt": "2026-08-17T18:35:27Z",
+  "privateDataExcluded": true,
+  "rules": {
+    "entries": 16840,
+    "phases": 6,
+    "semanticTargets": 0,
+    "sources": 32
+  },
+  "schemaVersion": 1,
+  "upstream": {
+    "commit": "24e571ee44747a3adf1b3c618102fc9d2b1b61cd",
+    "committedAt": "2026-08-17T18:35:27Z",
+    "repository": "blackmatrix7",
+    "sha256": "c2437ae35319f1e41b69a098fdc7c0b3c3c5a90e6deea906406f30f998bd9403"
+  }
+}

@@ -12,6 +12,7 @@ import { canonicalJson } from "../automation/src/render-anywhere-rules.js";
 import { lightweightFixtureSnapshots } from "../automation/test/lightweight-fixture.js";
 import {
   buildEdgeChinaIpAudit,
+  buildEdgeV2flyDomainAudit,
   loadCompiledSingBoxRules,
   loadCurrentChinaIpAudit,
   main as stageRuleArtifactsMain,
@@ -177,6 +178,29 @@ test("builds edge audit evidence from the pinned secondary and prior edge baseli
   assert.equal(report.families.ipv4.currentAddresses, "256");
   assert.equal(report.secondary.commit, "b".repeat(40));
   assert.deepEqual(bytes, Buffer.from(canonicalJson(report)));
+});
+
+test("builds the v2fly audit from domain entries only", async () => {
+  const artifacts = buildClientArtifacts({ snapshot: lightweightFixtureSnapshots(), upstream });
+  const bytes = await buildEdgeV2flyDomainAudit({
+    artifacts,
+    now: "2026-08-10T00:00:00Z",
+    fetchSnapshotImpl: async () => ({
+      source: {
+        repository: "https://github.com/v2fly/domain-list-community",
+        branch: "master",
+        commit: "a".repeat(40),
+        committedAt: "2026-08-09T00:00:00Z",
+        license: "MIT",
+      },
+      files: [],
+      entries: [{ kind: "domainSuffix", value: "example.cn", attributes: [] }],
+      sha256: "2".repeat(64),
+    }),
+  });
+  const report = JSON.parse(bytes);
+  assert.equal(report.reportOnly, true);
+  assert.equal(report.production.entryCount > 0, true);
 });
 
 test("reuses fresh identical edge audit evidence without refetching", async () => {

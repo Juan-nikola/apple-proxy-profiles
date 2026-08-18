@@ -40,6 +40,7 @@ jobs:
     timeout-minutes: 45
     permissions:
       contents: write
+      issues: write
     steps:
       - name: Check out main
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
@@ -79,6 +80,10 @@ jobs:
         run: npm run check:rules
       - name: Scan edge output
         run: npm run check:secrets
+      - name: Sync public audit blocker issues
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: node scripts/sync-audit-blocker-issues.mjs
       - name: Commit edge candidate changes
         shell: bash
         run: |

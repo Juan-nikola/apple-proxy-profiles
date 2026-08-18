@@ -23,7 +23,11 @@ import {
 const TEST_PROMOTION_NOW = "2026-08-10T01:00:00Z";
 
 function promoteClientRelease(options) {
-  return promoteClientReleaseImpl({ now: TEST_PROMOTION_NOW, ...options });
+  return promoteClientReleaseImpl({
+    now: TEST_PROMOTION_NOW,
+    canary: { device: "fixture", passed: true },
+    ...options,
+  });
 }
 
 const upstream = Object.freeze({
@@ -125,16 +129,41 @@ async function initializeTrackedCurrent(publicDirectory, artifacts) {
 }
 
 test("accepts only explicit edge, current-check, and client promotion operations", () => {
-  assert.deepEqual(parseUpdateRulesArguments(["--channel", "edge"]), { operation: "build-edge" });
-  assert.deepEqual(parseUpdateRulesArguments(["--check", "--channel", "current"]), { operation: "check-current" });
+  assert.deepEqual(parseUpdateRulesArguments(["--channel", "edge"]), { operation: "build-edge", channel: "edge" });
+  assert.deepEqual(parseUpdateRulesArguments(["--check", "--channel", "current"]), { operation: "check-current", channel: "current" });
+  assert.deepEqual(parseUpdateRulesArguments(["--check", "--channel", "previous"]), { operation: "check-previous", channel: "previous" });
+  assert.deepEqual(parseUpdateRulesArguments(["--seal-previous"]), { operation: "seal-previous" });
   assert.deepEqual(parseUpdateRulesArguments(["--promote", "singbox", "a".repeat(64)]), {
     operation: "promote",
     client: "singbox",
     manifestHash: "a".repeat(64),
   });
-  for (const args of [[], ["--check"], ["--channel", "current"], ["--promote", "unknown", "a".repeat(64)]]) {
+  for (const args of [[], ["--check"], ["--channel", "current"], ["--check", "--channel", "invalid"], ["--promote", "unknown", "a".repeat(64)]]) {
     assert.throws(() => parseUpdateRulesArguments(args), /update-rules arguments/u);
   }
+});
+
+test("records planned clients without emitting planned renderers or hashes", () => {
+  const artifacts = buildClientArtifactsImpl({
+    operation: "build-edge",
+    snapshot: lightweightFixtureSnapshots(),
+    upstream,
+    channel: "edge",
+    chinaIpAudit: chinaIpAuditBytes(),
+  });
+  assert.deepEqual(Object.keys(artifacts.diagnostics.defaultManifest.clients).sort(), [
+    "anywhere", "egern", "shadowrocket", "singbox", "surge",
+  ]);
+  assert.deepEqual(artifacts.diagnostics.defaultManifest.clientStates, {
+    anywhere: { state: "active", adapterSchema: "anywhere-v1", publicDirectory: "anywhere" },
+    egern: { state: "active", adapterSchema: "egern-v1", publicDirectory: "egern" },
+    shadowrocket: { state: "active", adapterSchema: "shadowrocket-v1", publicDirectory: "shadowrocket" },
+    surge: { state: "active", adapterSchema: "surge-v1", publicDirectory: "surge" },
+    singbox: { state: "active", adapterSchema: "singbox-v1", publicDirectory: "sing-box" },
+    onexray: { state: "planned", adapterSchema: "onexray-v1-planned", publicDirectory: "onexray" },
+    happ: { state: "planned", adapterSchema: "happ-v4-planned", publicDirectory: "happ" },
+  });
+  assert.equal([...artifacts.defaults.keys()].some((path) => /^(?:onexray|happ)\//u.test(path)), false);
 });
 
 test("build edge paces one production snapshot worker", async () => {
@@ -161,6 +190,20 @@ test("build edge paces one production snapshot worker", async () => {
   assert.equal(captured.commit, upstream.commit);
   assert.equal(captured.concurrency, 1);
   assert.equal(captured.requestIntervalMs, 250);
+});
+
+test("rewrites current static sing-box example links for edge artifacts", async () => {
+  const artifacts = await buildArtifactsFromScript({
+    operation: "build-edge",
+    publicDirectory: join(tmpdir(), "unused-public"),
+    channel: "edge",
+    upstreamOverride: upstream,
+    includeStaticFiles: true,
+    fetchSnapshotImpl: async () => lightweightFixtureSnapshots(),
+  });
+  const example = artifacts.defaults.get("sing-box/examples/sing-box-android.json").toString("utf8");
+  assert.doesNotMatch(example, /\/current\//u);
+  assert.match(example, /\/edge\/sing-box\/rule-sets\//u);
 });
 
 test("derives audit-only primary provenance from the production ChinaIP snapshot", () => {
@@ -575,11 +618,19 @@ test("promotes exact tested client bytes without changing other clients", async 
   assert.deepEqual(Object.keys(rollout.previous).sort(), ["anywhere", "egern", "shadowrocket", "singbox", "surge"]);
   assert.equal(Object.hasOwn(rollout, "onexray"), false);
   assert.equal(Object.hasOwn(rollout.optionalPacks["adblock-full"], "happ"), false);
-  assert.equal(rollout.clients.singbox, hash);
   assert.equal(rollout.clients.surge, null);
+  const publishedSingboxManifest = JSON.parse(await readFile(
+    join(publicDirectory, "current/sing-box/client-manifest.json"),
+    "utf8",
+  ));
+  const publishedSingboxOptionalManifest = JSON.parse(await readFile(
+    join(publicDirectory, "optional/adblock-full/current/sing-box/client-manifest.json"),
+    "utf8",
+  ));
+  assert.equal(rollout.clients.singbox, publishedSingboxManifest.manifestHash);
   assert.equal(
     rollout.optionalPacks["adblock-full"].singbox,
-    artifacts.diagnostics.optionalManifests["adblock-full"].clients.singbox.manifestHash,
+    publishedSingboxOptionalManifest.manifestHash,
   );
 });
 
@@ -638,6 +689,10 @@ test("promotes and rolls back optional bytes independently per client", async ()
     publicDirectory,
     "optional/adblock-full/current/surge/rules/Advertising.list",
   ));
+  const firstSurgeOptionalManifest = JSON.parse(await readFile(join(
+    publicDirectory,
+    "optional/adblock-full/current/surge/client-manifest.json",
+  ), "utf8"));
 
   const second = buildClientArtifacts({ snapshot: lightweightFixtureSnapshots(), upstream: nextUpstream });
   await publishEdgeRelease({
@@ -651,6 +706,10 @@ test("promotes and rolls back optional bytes independently per client", async ()
     client: "singbox",
     manifestHash: second.diagnostics.defaultManifest.clients.singbox.manifestHash,
   });
+  const secondSingboxOptionalManifest = JSON.parse(await readFile(join(
+    publicDirectory,
+    "optional/adblock-full/current/sing-box/client-manifest.json",
+  ), "utf8"));
 
   assert.deepEqual(await readFile(join(
     publicDirectory,
@@ -659,11 +718,11 @@ test("promotes and rolls back optional bytes independently per client", async ()
   const rollout = JSON.parse(await readFile(join(publicDirectory, "rollout.json"), "utf8"));
   assert.equal(
     rollout.optionalPacks["adblock-full"].surge,
-    first.diagnostics.optionalManifests["adblock-full"].clients.surge.manifestHash,
+    firstSurgeOptionalManifest.manifestHash,
   );
   assert.equal(
     rollout.optionalPacks["adblock-full"].singbox,
-    second.diagnostics.optionalManifests["adblock-full"].clients.singbox.manifestHash,
+    secondSingboxOptionalManifest.manifestHash,
   );
 
   await publishEdgeRelease({
@@ -680,11 +739,11 @@ test("promotes and rolls back optional bytes independently per client", async ()
   const rollback = JSON.parse(await readFile(join(publicDirectory, "rollout.json"), "utf8"));
   assert.equal(
     rollback.previousOptionalPacks["adblock-full"].singbox,
-    second.diagnostics.optionalManifests["adblock-full"].clients.singbox.manifestHash,
+    secondSingboxOptionalManifest.manifestHash,
   );
   assert.equal(
     rollback.optionalPacks["adblock-full"].surge,
-    first.diagnostics.optionalManifests["adblock-full"].clients.surge.manifestHash,
+    firstSurgeOptionalManifest.manifestHash,
   );
 });
 

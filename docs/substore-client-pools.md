@@ -4,7 +4,7 @@
 
 ## Collection 边界
 
-`apple-proxy-all` 是用户在自己 Sub-Store 中建立的总池，用于汇总用户自己选择的来源。它不是仓库发布物，也不是五个客户端任务的直接输入。五个客户端分别读取下列 client collection：
+`apple-proxy-all` 是用户在自己 Sub-Store 中建立的总池，用于汇总用户自己选择的来源。它不是仓库发布物，也不是五个 active 客户端任务的直接输入。五个 active 客户端分别读取下列 client collection；HAPP 与 OneXray 仍为 planned，不创建原生 renderer 或公开任务：
 
 | 客户端 | SubStore 组合 | 维护原则 |
 | --- | --- | --- |
@@ -13,6 +13,10 @@
 | Shadowrocket | `apple-proxy-shadowrocket` | 用户自行选择节点；AnyTLS 等已实现类型可直接包含 |
 | Surge | `apple-proxy-surge` | 用户自行选择节点；renderer 无法表示的协议跳过并计入 renderFailures |
 | sing-box | `apple-proxy-singbox` | 默认 strict；任一已选节点无法完整表示时失败，迁移期可显式使用 compatible |
+
+### Planned 客户端边界
+
+OneXray 与 HAPP 只保留注册表身份、任务契约和审计占位。`onexray-nodes`、`onexray-profile`、`onexray-routing-audit`、`happ-subscription`、`happ-routing-audit` 在 renderer、fixture、协议验证和真机 canary 完成前均不可创建；公开页不会生成伪造的 JSON、Profile 或节点订阅。未来任务仍要接收 `channel`、policy revision、公开 Manifest SHA-256 和 GeoData SHA-256，且 node-only 任务不读取业务策略。
 
 用户必须在 Sub-Store 中自行选择每个 client collection 的成员。生成器不做客户端能力白名单过滤：勾选什么节点就处理什么节点。sing-box 默认使用 `nodeErrorMode=strict`，任一已选节点无法完整渲染时整个任务失败；这能避免私密组合与实际配置不一致。只有迁移期显式使用 `nodeErrorMode=compatible` 时，才保留可渲染子集并把跳过计数写入 `renderFailures`，不会静默丢弃。其他客户端仍按各自文档的 `renderFailures` 边界执行。
 

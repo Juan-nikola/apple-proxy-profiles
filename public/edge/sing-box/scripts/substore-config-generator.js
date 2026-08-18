@@ -48,12 +48,30 @@ var SingBoxConfigBundle = (() => {
 
   // ../../shared/contracts.js
   var CLIENT = Object.freeze({
-    shadowrocket: "shadowrocket",
-    egern: "egern",
     anywhere: "anywhere",
+    egern: "egern",
+    shadowrocket: "shadowrocket",
     surge: "surge",
-    singbox: "singbox"
+    singbox: "singbox",
+    onexray: "onexray",
+    happ: "happ"
   });
+  var PRIVATE_POLICY_CHANNELS = Object.freeze(["edge", "current", "previous"]);
+  var PRIVATE_POLICY_CLIENTS = Object.freeze([CLIENT.happ, CLIENT.onexray]);
+  var PRIVATE_POLICY_TARGET_IDS = Object.freeze([
+    "ai",
+    "github",
+    "youtube",
+    "overseasMedia",
+    "globalSocial",
+    "overseasGame",
+    "domesticCore",
+    "domesticPlatform",
+    "chinaIp",
+    "apple",
+    "microsoft",
+    "download"
+  ]);
   var OPTION_VALUES = Object.freeze({
     output: Object.freeze(["nodes", "config"]),
     type: Object.freeze(["collection"]),
@@ -654,9 +672,9 @@ var SingBoxConfigBundle = (() => {
           suffixGroup.push(record);
           suffixGroups.set(record.suffix, suffixGroup);
         }
-        for (const records of suffixGroups.values()) {
-          records.forEach((record, index) => {
-            const suffix = records.length > 1 ? `${record.suffix}-${index + 1}` : record.suffix;
+        for (const records2 of suffixGroups.values()) {
+          records2.forEach((record, index) => {
+            const suffix = records2.length > 1 ? `${record.suffix}-${index + 1}` : record.suffix;
             record.node.name = `${protocolBase} #${suffix}`;
           });
         }
@@ -797,6 +815,119 @@ var SingBoxConfigBundle = (() => {
     if (counts) throw new Error(`${clientName} cannot render selected protocols: ${counts}`);
   }
 
+  // ../../shared/release/client-catalog.js
+  var freeze = (value) => {
+    if (value && typeof value === "object" && !Object.isFrozen(value)) {
+      for (const child of Object.values(value)) freeze(child);
+      Object.freeze(value);
+    }
+    return value;
+  };
+  var records = [
+    {
+      id: CLIENT.anywhere,
+      displayName: "Anywhere",
+      state: "active",
+      platforms: ["iphone", "ipad", "macos", "appletv"],
+      configFormat: "clash-yaml",
+      ruleFormat: "clash-yaml",
+      nodeValidator: "anywhere",
+      separatesProfile: false,
+      supportsPolicyOverrides: false,
+      adapterSchema: "anywhere-v1",
+      publicDirectory: "anywhere"
+    },
+    {
+      id: CLIENT.egern,
+      displayName: "Egern",
+      state: "active",
+      platforms: ["iphone", "ipad", "macos"],
+      configFormat: "yaml",
+      ruleFormat: "yaml",
+      nodeValidator: "egern",
+      separatesProfile: false,
+      supportsPolicyOverrides: false,
+      adapterSchema: "egern-v1",
+      publicDirectory: "egern"
+    },
+    {
+      id: CLIENT.shadowrocket,
+      displayName: "Shadowrocket",
+      state: "active",
+      platforms: ["iphone", "ipad", "macos"],
+      configFormat: "ini",
+      ruleFormat: "list",
+      nodeValidator: "shadowrocket",
+      separatesProfile: false,
+      supportsPolicyOverrides: false,
+      adapterSchema: "shadowrocket-v1",
+      publicDirectory: "shadowrocket"
+    },
+    {
+      id: CLIENT.surge,
+      displayName: "Surge",
+      state: "active",
+      platforms: ["macos", "iphone", "ipad"],
+      configFormat: "ini",
+      ruleFormat: "list",
+      nodeValidator: "surge",
+      separatesProfile: false,
+      supportsPolicyOverrides: false,
+      adapterSchema: "surge-v1",
+      publicDirectory: "surge"
+    },
+    {
+      id: CLIENT.singbox,
+      displayName: "sing-box",
+      state: "active",
+      platforms: ["macos", "iphone", "ipad", "android"],
+      configFormat: "json",
+      ruleFormat: "srs",
+      nodeValidator: "singbox",
+      separatesProfile: false,
+      supportsPolicyOverrides: false,
+      adapterSchema: "singbox-v1",
+      publicDirectory: "sing-box"
+    },
+    {
+      id: CLIENT.onexray,
+      displayName: "OneXray",
+      state: "planned",
+      platforms: ["macos", "iphone", "ipad", "android", "windows", "linux"],
+      configFormat: "xray-profile-json",
+      ruleFormat: "xray-geodata",
+      nodeValidator: "onexray",
+      separatesProfile: false,
+      supportsPolicyOverrides: false,
+      adapterSchema: "onexray-v1-planned",
+      publicDirectory: "onexray"
+    },
+    {
+      id: CLIENT.happ,
+      displayName: "HAPP",
+      state: "planned",
+      platforms: ["iphone", "ipad", "macos", "android"],
+      configFormat: "happ-json",
+      ruleFormat: "happ-json",
+      nodeValidator: "happ",
+      separatesProfile: false,
+      supportsPolicyOverrides: false,
+      adapterSchema: "happ-v4-planned",
+      publicDirectory: "happ"
+    }
+  ].map((record) => freeze(record));
+  var byId = new Map(records.map((record) => [record.id, record]));
+  var ids = freeze(records.map(({ id }) => id));
+  var activeIds = freeze(records.filter(({ state }) => state === "active").map(({ id }) => id));
+  var plannedIds = freeze(records.filter(({ state }) => state === "planned").map(({ id }) => id));
+
+  // ../../shared/release/frontier-manifest.js
+  var FRONTIER_CHANNELS = Object.freeze(["edge", "current", "previous"]);
+  var FRONTIER_PLATFORMS = Object.freeze({
+    [CLIENT.surge]: Object.freeze(["macos", "iphone", "ipad"]),
+    [CLIENT.singbox]: Object.freeze(["macos", "iphone", "ipad", "android"])
+  });
+
   // ../../shared/policies/platform-presets.js
   var POLICY_PLATFORM_PRESETS = Object.freeze({
     macos: Object.freeze({ testInterval: 600, timeout: 5, tolerance: 100 }),
@@ -840,7 +971,7 @@ var SingBoxConfigBundle = (() => {
     nodeErrorMode: "strict"
   });
   var PLATFORMS = /* @__PURE__ */ new Set(["macos", "iphone", "ipad", "android"]);
-  var CHANNELS = /* @__PURE__ */ new Set(["edge", "current"]);
+  var CHANNELS = new Set(FRONTIER_CHANNELS);
   var PROFILE_MODES = /* @__PURE__ */ new Set(["light", "diagnostic"]);
   var ADBLOCK_MODES = /* @__PURE__ */ new Set(["off", "full"]);
   var NODE_ERROR_MODES = /* @__PURE__ */ new Set(["strict", "compatible"]);
@@ -1799,6 +1930,7 @@ var SingBoxConfigBundle = (() => {
     "security",
     "custom",
     "domesticCore",
+    "domesticPlatform",
     "domesticGame",
     "explicitOverseas",
     "overseasGame",
@@ -1894,7 +2026,7 @@ var SingBoxConfigBundle = (() => {
     Advertising_Domain: "\u{1F9F1} \u5E38\u89C1\u5E7F\u544A"
   });
   function uniqueMembership(id, memberships, label) {
-    const matches = Object.entries(memberships).filter(([, ids]) => ids.includes(id)).map(([name]) => name);
+    const matches = Object.entries(memberships).filter(([, ids2]) => ids2.includes(id)).map(([name]) => name);
     if (matches.length !== 1) {
       throw new Error(`Lightweight rule source ${id} must have exactly one ${label} membership`);
     }
@@ -2028,9 +2160,9 @@ var SingBoxConfigBundle = (() => {
     return ["iphone", "ipad"].includes(platform) ? mobileRuleClientCatalog().filter(({ id }) => MOBILE_RULE_SOURCE_ID_SET.has(id)) : catalog;
   }
   function activeRoutingPlan(platform, adblockMode) {
-    const activeIds = new Set(activeRuleCatalog(platform, adblockMode).map(({ id }) => id));
+    const activeIds2 = new Set(activeRuleCatalog(platform, adblockMode).map(({ id }) => id));
     if (["iphone", "ipad"].includes(platform)) return mobileRuleClientCatalog();
-    return orderedRoutingPlan({ adblockMode }).filter(({ id }) => activeIds.has(id));
+    return orderedRoutingPlan({ adblockMode }).filter(({ id }) => activeIds2.has(id));
   }
   var LOCAL_RULES = Object.freeze([
     { ip_is_private: true, action: "route", outbound: "DIRECT" },
@@ -2342,9 +2474,9 @@ var SingBoxConfigBundle = (() => {
   }
 
   // src/validate-config.js
-  function uniqueTags(records, errors, label) {
+  function uniqueTags(records2, errors, label) {
     const tags = /* @__PURE__ */ new Set();
-    for (const record of records ?? []) {
+    for (const record of records2 ?? []) {
       if (!record || typeof record.tag !== "string" || record.tag.length === 0) {
         errors.push(`${label} tag missing`);
       } else if (tags.has(record.tag)) {

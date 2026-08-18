@@ -22,6 +22,27 @@ test("accepts a valid node task on edge channel", () => {
   assert.equal(result.ok, true, result.errors.join(", "));
 });
 
+test("accepts a valid previous-channel task and preserves its channel parameter", () => {
+  const url = `${PUBLIC}/previous/egern/scripts/egern-node-generator.js#output=nodes&type=collection&name=apple-proxy-sources&clientChain=off&channel=previous`;
+  const result = checkSubstoreTaskUrl(url);
+  assert.equal(result.ok, true, result.errors.join(", "));
+  assert.equal(parseTaskUrl(url).params.channel, "previous");
+});
+
+test("accepts the published previous Egern node URL from the rollback guide", () => {
+  const url = `${PUBLIC}/previous/egern/scripts/egern-node-generator.js#output=nodes&type=collection&name=apple-proxy-egern&clientChain=off`;
+  const result = checkSubstoreTaskUrl(url);
+  assert.equal(result.ok, true, result.errors.join(", "));
+});
+
+test("rejects unsupported channels, channel mismatches, and planned native renderers", () => {
+  const base = `${PUBLIC}/current/egern/scripts/egern-node-generator.js#output=nodes&type=collection&name=apple-proxy-egern&clientChain=off`;
+  assert.equal(checkSubstoreTaskUrl(base.replace("/current/", "/beta/")).ok, false);
+  assert.equal(checkSubstoreTaskUrl(`${base}&channel=edge`).ok, false);
+  assert.equal(checkSubstoreTaskUrl(`${PUBLIC}/current/happ/scripts/happ-generator.js#output=config`).ok, false);
+  assert.equal(checkSubstoreTaskUrl(`${PUBLIC}/current/onexray/scripts/onexray-generator.js#output=config`).ok, false);
+});
+
 test("accepts a client-specific collection slug and rejects unsafe collection names", () => {
   const safe = `${PUBLIC}/edge/egern/scripts/egern-node-generator.js#output=nodes&type=collection&name=apple-proxy-egern&clientChain=off`;
   assert.equal(checkSubstoreTaskUrl(safe).ok, true);

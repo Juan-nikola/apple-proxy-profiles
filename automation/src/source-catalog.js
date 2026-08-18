@@ -17,6 +17,16 @@ export const BLACKMATRIX7_BASELINE = Object.freeze({
   license: "GPL-2.0-only",
 });
 
+export const V2FLY_AUDIT_BASELINE = Object.freeze({
+  repository: "https://github.com/v2fly/domain-list-community",
+  owner: "v2fly",
+  name: "domain-list-community",
+  branch: "master",
+  commit: "9e582e167ca113188c1758bde9806aa260ba8c87",
+  committedAt: null,
+  license: "MIT",
+});
+
 const DOMAIN_SET_DIRECTORIES = Object.freeze({
   Advertising_Domain: "Advertising",
   ChinaMax_Domain: "ChinaMax",
