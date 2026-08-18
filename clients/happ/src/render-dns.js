@@ -19,8 +19,9 @@ export function renderHappDns(options = {}) {
 }
 export function renderHappDnsRoutes(options = {}) {
   const followTag = options.followTag ?? "happ-follow/current";
+  const globalOutboundTag = options.globalOutboundTag ?? followTag;
   return [
     { type: "field", domain: ["geosite:cn", "geosite:private"], outboundTag: "happ-direct", server: "happ-dns" },
-    { type: "field", domain: ["geosite:HAPP-PROXY"], outboundTag: followTag, server: "happ-dns" },
+    { type: "field", domain: ["geosite:HAPP-PROXY"], outboundTag: globalOutboundTag, server: "happ-dns" },
   ];
 }

@@ -25,7 +25,7 @@ export function renderHappRouting(context = {}) {
   const observatorySelectors = [];
   for (const fixed of fixedRecords) {
     if (fixed.nodeId && fixed.nodeId === context.followNodeId) continue;
-    const node = nodes.find((candidate) => (candidate._profile?.id ?? "") === fixed.nodeId);
+    const node = fixed.node ?? nodes.find((candidate) => (candidate._profile?.id ?? "") === fixed.nodeId);
     if (!node) continue;
     const suffix = hash(fixed.nodeId);
     const candidateTag = `happ-fixed/${suffix}/candidate`;
@@ -53,9 +53,19 @@ export function renderHappRouting(context = {}) {
     rules.push({ type: "field", ...(isIp ? { ip: [source] } : { domain: [source] }), ...target });
   }
   if (!quicRuleInserted && (options.quicMode === "proxy-block" || options.quicMode === "all-block")) rules.push({ type: "field", network: "quic", outboundTag: options.quicMode === "all-block" ? "happ-block" : "happ-direct" });
-  rules.splice(2, 0, ...renderHappDnsRoutes({ followTag }));
+  const dnsTarget = resolution?.targets?.dnsAndRules;
+  const dnsFixed = dnsTarget?.nodeId ? fixedById.get(dnsTarget.nodeId) : null;
+  const globalDnsOutbound = dnsTarget?.resolved === "DIRECT" ? "happ-direct" : dnsFixed?.candidateTag ?? followTag;
+  rules.splice(2, 0, ...renderHappDnsRoutes({ followTag, globalOutboundTag: globalDnsOutbound }));
   const finalTarget = targetFor("__final__", resolution, followTag, fixedById);
   rules.push({ type: "field", network: "tcp,udp", ...finalTarget });
   const routing = { domainStrategy: "IPIfNonMatch", rules };
-  return { routing, observatory: { subjectSelector: observatorySelectors, probeUrl: "https://www.gstatic.com/generate_204", probeInterval: "30s", enableConcurrency: true, timeout: 5000 }, policyTargets: Object.fromEntries([...fixedById].map(([id, value]) => [id, value.balancerTag])), fixedOutbounds: outbounds, balancers };
+  const policyTargets = {};
+  for (const [targetId, record] of Object.entries(resolution.targets ?? {})) {
+    if (record.resolved === "DIRECT") policyTargets[targetId] = "happ-direct";
+    else if (record.resolved === "FOLLOW") policyTargets[targetId] = followTag;
+    else if (fixedById.has(record.nodeId)) policyTargets[targetId] = fixedById.get(record.nodeId).balancerTag;
+    else policyTargets[targetId] = followTag;
+  }
+  return { routing, observatory: { subjectSelector: observatorySelectors, probeUrl: "https://www.gstatic.com/generate_204", probeInterval: "30s", enableConcurrency: true, timeout: 5000 }, policyTargets, fixedOutbounds: outbounds, balancers };
 }

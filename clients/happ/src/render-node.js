@@ -81,7 +81,15 @@ function renderHysteria2(node) {
   return { protocol: "hysteria", settings: { version: 2, ...server }, streamSettings: stream };
 }
 
-export function renderHappStreamSettings(node) { return streamSettings(node); }
+export function renderHappStreamSettings(node) {
+  const type = String(node?.type ?? "").toLowerCase();
+  if (type === "hysteria2" || type === "hy2") {
+    const tls = tlsSettings(node);
+    if (!tls || !tls.serverName && !tls.realitySettings) throw new Error("Happ Hysteria2 requires TLS");
+    return { network: "hysteria", method: "hysteria", ...(tls.realitySettings ? { security: "reality", realitySettings: tls.realitySettings } : { security: "tls", tlsSettings: tls }) };
+  }
+  return streamSettings(node);
+}
 export function renderHappOutbound(node, tag) {
   if (!node || typeof node !== "object") throw new TypeError("Happ node must be an object");
   const type = String(node.type ?? "").toLowerCase();

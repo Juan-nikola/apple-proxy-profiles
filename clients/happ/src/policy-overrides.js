@@ -17,12 +17,17 @@ const definitions = [
   ["download", "⬇️ 下载/P2P", ["下载/P2P", "download"], "DIRECT"],
   ["dnsAndRules", "🧭 DNS 与规则下载", ["DNS 与规则下载", "dnsAndRules"], "FOLLOW"],
   ["final", "最终兜底", ["final", "最终兜底"], "FOLLOW"],
-  ["domesticCore", "国内核心", ["国内核心", "domesticCore"], "DIRECT"],
-  ["chinaIp", "中国 IP", ["中国 IP", "chinaIp"], "DIRECT"],
 ];
 export const BUSINESS_KEYS = Object.freeze(definitions.map(([id, label, aliases, defaultTarget]) => Object.freeze({ id, label, aliases: Object.freeze(aliases), defaultTarget })));
 const BY_KEY = new Map();
 for (const target of BUSINESS_KEYS) { BY_KEY.set(target.label, target); for (const alias of target.aliases) BY_KEY.set(alias, target); }
+// Shared rule sources such as DomesticCore and ChinaIP intentionally map to
+// the domestic-platform policy; they are accepted as migration aliases but
+// do not create extra user-facing policy targets.
+BY_KEY.set("国内核心", BY_KEY.get("domestic"));
+BY_KEY.set("domesticCore", BY_KEY.get("domestic"));
+BY_KEY.set("中国 IP", BY_KEY.get("domestic"));
+BY_KEY.set("chinaIp", BY_KEY.get("domestic"));
 
 function error(message) { throw new Error(`Invalid Happ policyOverrides: ${message}`); }
 function canonicalTarget(value) {
@@ -32,6 +37,7 @@ function canonicalTarget(value) {
   if (!match || !match[1] || !match[1].trim() || /[\r\n\u2028\u2029]/u.test(match[1])) error("target must be DIRECT, FOLLOW, or NODE:<name>");
   return `NODE:${match[1]}`;
 }
+export const canonicalBusinessTarget = canonicalTarget;
 
 export function decodePolicyOverrides(encoded = "") {
   if (typeof encoded !== "string" || !BASE64URL.test(encoded) || encoded.length % 4 === 1) error("must be canonical Base64URL");
