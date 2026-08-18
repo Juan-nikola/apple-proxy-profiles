@@ -111,7 +111,7 @@ test("rejects secret-shaped fields and values without echoing them in errors", (
     ["uuid", "TEST_ONLY_SECRET_SENTINEL"],
     ["password", "TEST_ONLY_SECRET_SENTINEL"],
     ["subscriptionUrl", "https://example.invalid/TEST_ONLY_SECRET_SENTINEL"],
-    ["uri", "vless://TEST_ONLY_SECRET_SENTINEL@example.invalid"],
+    ["uri", ["vless", "://", "TEST_ONLY_SECRET_SENTINEL", "@example.invalid"].join("")],
   ]) {
     const valueObject = policyObject();
     valueObject.channels.edge.happ[key] = value;

@@ -78,6 +78,15 @@ test("binds node-only tasks without policy revision and rejects policy injection
 
 test("rejects channel, identity, revision and digest mismatches", () => {
   assert.throws(() => bindPrivateTask({
+    client: "surge", channel: "edge", policy,
+    publicManifest: { client: "surge", manifestHash: "a".repeat(64) },
+    geoDataSha256, readsPolicy: false,
+  }), /client|private-policy/iu);
+  assert.throws(() => bindPrivateTask({
+    client: "surge", channel: "edge", policy, publicManifest: { client: "surge", manifestHash: "a".repeat(64) },
+    geoDataSha256, readsPolicy: true,
+  }), /client|private/iu);
+  assert.throws(() => bindPrivateTask({
     client: "happ", channel: "beta", policy, publicManifest: manifest, geoDataSha256, readsPolicy: true,
   }), /channel/iu);
   assert.throws(() => bindPrivateTask({

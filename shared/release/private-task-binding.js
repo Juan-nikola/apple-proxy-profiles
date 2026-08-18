@@ -1,8 +1,8 @@
-import { CLIENT, PRIVATE_POLICY_CHANNELS } from "../contracts.js";
+import { PRIVATE_POLICY_CHANNELS, PRIVATE_POLICY_CLIENTS } from "../contracts.js";
 import { parsePrivatePolicy, policyRevisionForChannel } from "../policies/private-policy.js";
 
 const CHANNEL_SET = new Set(PRIVATE_POLICY_CHANNELS);
-const CLIENT_SET = new Set(Object.values(CLIENT));
+const CLIENT_SET = new Set(PRIVATE_POLICY_CLIENTS);
 const SHA256 = /^[0-9a-f]{64}$/u;
 
 function invalid(reason) {
