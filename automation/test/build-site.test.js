@@ -66,6 +66,10 @@ function chinaIpAuditBytes({
 function buildClientArtifacts(options) {
   return buildClientArtifactsImpl({
     ...options,
+    additionalFiles: options.additionalFiles ?? new Map([
+      ["onexray/scripts/onexray-node-generator.js", "native onexray generator\n"],
+      ["happ/scripts/happ-config-generator.js", "native happ generator\n"],
+    ]),
     chinaIpAudit: options.chinaIpAudit ?? chinaIpAuditBytes(),
   });
 }
@@ -133,7 +137,7 @@ test("rejects a client publication whose manifest-closed bytes cross channels", 
   );
 });
 
-test("requires canary evidence and rejects planned client promotion", async () => {
+test("requires canary evidence and rejects a mismatched native client promotion", async () => {
   const root = await mkdtemp(join(tmpdir(), "apple-proxy-promote-gates-"));
   const publicDirectory = join(root, "public");
   const artifacts = buildClientArtifacts({ snapshot: lightweightFixtureSnapshots(), upstream: lightweightUpstream });
@@ -156,7 +160,7 @@ test("requires canary evidence and rejects planned client promotion", async () =
       expectedHash: hash,
       canary: { device: "fixture", passed: true },
     }),
-    /planned|active|unsupported/u,
+    /manifest|client|hash|unsupported/u,
   );
 });
 

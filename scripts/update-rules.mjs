@@ -29,7 +29,11 @@ import {
   BLACKMATRIX7_BASELINE,
   FETCH_SOURCE_CATALOG,
 } from "../automation/src/source-catalog.js";
-import { activeClientIds, publicDirectoryForClient } from "../shared/release/client-catalog.js";
+import {
+  activeClientIds,
+  lightweightRuleClientIds,
+  publicDirectoryForClient,
+} from "../shared/release/client-catalog.js";
 import { FRONTIER_CHANNELS } from "../shared/release/frontier-manifest.js";
 import {
   DEFAULT_COMPILED_ROOT,
@@ -41,7 +45,7 @@ import {
 const repositoryRoot = dirname(dirname(fileURLToPath(import.meta.url)));
 const defaultPublicDirectory = join(repositoryRoot, "public");
 const PROMOTION_CLIENTS = new Set(activeClientIds());
-const OPTIONAL_CLIENTS = new Set(activeClientIds());
+const OPTIONAL_CLIENTS = new Set(lightweightRuleClientIds());
 const ACTIVE_CLIENT_DIRECTORIES = Object.freeze(Object.fromEntries(
   activeClientIds().map((client) => [client, publicDirectoryForClient(client)]),
 ));
@@ -385,10 +389,13 @@ export async function verifyTrackedPublications({ publicDirectory, defaults, opt
   }
   if (!rollout || rollout.schemaVersion !== 2 || typeof rollout.clients !== "object"
     || typeof rollout.optionalPacks !== "object") return false;
-  const expectedRolloutClients = [...PROMOTION_CLIENTS].sort();
-  if (JSON.stringify(Object.keys(rollout.clients).sort()) !== JSON.stringify(expectedRolloutClients)
-    || (rollout.previous !== undefined
-      && JSON.stringify(Object.keys(rollout.previous).sort()) !== JSON.stringify(expectedRolloutClients))) {
+  const validRolloutClientKeys = (value) => {
+    if (!value || typeof value !== "object" || Array.isArray(value)) return false;
+    const keys = Object.keys(value);
+    return keys.length > 0 && keys.every((client) => PROMOTION_CLIENTS.has(client));
+  };
+  if (!validRolloutClientKeys(rollout.clients)
+    || (rollout.previous !== undefined && !validRolloutClientKeys(rollout.previous))) {
     return false;
   }
 
@@ -549,6 +556,16 @@ async function staticFiles(channel = "current") {
     ["surge/examples/surge-ipad.conf", "clients/surge/examples/surge-ipad.conf"],
     ["sing-box/scripts/sing-box-config-generator.js", "clients/sing-box/dist/sing-box-config-generator.js"],
     ["sing-box/scripts/substore-config-generator.js", "clients/sing-box/dist/substore-config-generator.js"],
+    ["onexray/scripts/onexray-node-generator.js", "clients/onexray/dist/onexray-node-generator.js"],
+    ["onexray/scripts/substore-node-generator.js", "clients/onexray/dist/substore-node-generator.js"],
+    ["onexray/scripts/onexray-profile-generator.js", "clients/onexray/dist/onexray-profile-generator.js"],
+    ["onexray/scripts/substore-profile-generator.js", "clients/onexray/dist/substore-profile-generator.js"],
+    ["onexray/scripts/onexray-routing-audit.js", "clients/onexray/dist/onexray-routing-audit.js"],
+    ["onexray/scripts/substore-routing-audit.js", "clients/onexray/dist/substore-routing-audit.js"],
+    ["happ/scripts/happ-config-generator.js", "clients/happ/dist/happ-config-generator.js"],
+    ["happ/scripts/substore-config-generator.js", "clients/happ/dist/substore-config-generator.js"],
+    ["happ/scripts/happ-routing-audit.js", "clients/happ/dist/happ-routing-audit.js"],
+    ["happ/scripts/substore-routing-audit.js", "clients/happ/dist/substore-routing-audit.js"],
      ...["macos", "iphone", "ipad", "android"].flatMap((platform) => [
       [`sing-box/examples/sing-box-${platform}.json`, `clients/sing-box/examples/sing-box-${platform}.json`],
       [`sing-box/examples/sing-box-${platform}-diagnostic.json`, `clients/sing-box/examples/sing-box-${platform}-diagnostic.json`],

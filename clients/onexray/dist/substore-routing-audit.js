@@ -1898,27 +1898,27 @@ var OneXrayAuditBundle = (() => {
     {
       id: CLIENT.onexray,
       displayName: "OneXray",
-      state: "planned",
+      state: "active",
       platforms: ["macos", "iphone", "ipad", "android", "windows", "linux"],
       configFormat: "xray-profile-json",
       ruleFormat: "xray-geodata",
       nodeValidator: "onexray",
       separatesProfile: false,
       supportsPolicyOverrides: false,
-      adapterSchema: "onexray-v1-planned",
+      adapterSchema: "onexray-v1",
       publicDirectory: "onexray"
     },
     {
       id: CLIENT.happ,
       displayName: "HAPP",
-      state: "planned",
+      state: "active",
       platforms: ["iphone", "ipad", "macos", "android"],
       configFormat: "happ-json",
       ruleFormat: "happ-json",
       nodeValidator: "happ",
       separatesProfile: false,
       supportsPolicyOverrides: false,
-      adapterSchema: "happ-v4-planned",
+      adapterSchema: "happ-v4",
       publicDirectory: "happ"
     }
   ].map((record) => freeze2(record));
@@ -1926,6 +1926,13 @@ var OneXrayAuditBundle = (() => {
   var ids = freeze2(records.map(({ id }) => id));
   var activeIds = freeze2(records.filter(({ state }) => state === "active").map(({ id }) => id));
   var plannedIds = freeze2(records.filter(({ state }) => state === "planned").map(({ id }) => id));
+  var lightweightRuleIds = freeze2([
+    CLIENT.anywhere,
+    CLIENT.egern,
+    CLIENT.shadowrocket,
+    CLIENT.surge,
+    CLIENT.singbox
+  ]);
 
   // ../../shared/release/frontier-manifest.js
   var FRONTIER_CHANNELS = Object.freeze(["edge", "current", "previous"]);

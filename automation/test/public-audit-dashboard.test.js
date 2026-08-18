@@ -12,7 +12,7 @@ const baseInput = {
   generatedAt: "2026-08-18T03:23:00Z",
   upstream: { repository: "blackmatrix7", commit: "a".repeat(40), sha256: "b".repeat(64) },
   clientCatalog: [
-    { id: "happ", state: "planned", adapterSchema: "happ-v4-planned" },
+    { id: "happ", state: "active", adapterSchema: "happ-v4" },
     { id: "surge", state: "active", adapterSchema: "surge-v1" },
   ],
   canaryState: { surge: { edge: "passed" } },
@@ -22,10 +22,10 @@ const baseInput = {
   releaseState: { channels: { edge: {}, current: {}, previous: {} }, closure: {} },
 };
 
-test("builds a redacted dashboard with planned clients unavailable", () => {
+test("builds a redacted dashboard with active Xray clients awaiting channel manifests", () => {
   const dashboard = buildPublicAuditDashboard(baseInput);
   assert.equal(validatePublicAuditDashboard(dashboard), true);
-  assert.equal(dashboard.clients.happ.state, "planned");
+  assert.equal(dashboard.clients.happ.state, "active");
   assert.equal(dashboard.clients.happ.edge.manifestHash, null);
   assert.doesNotMatch(renderPublicAuditDashboard(dashboard), /password|uuid|subscription|NODE:/iu);
 });

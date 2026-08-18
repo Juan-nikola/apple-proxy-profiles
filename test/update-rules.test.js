@@ -11,6 +11,7 @@ import { canonicalJson } from "../automation/src/render-anywhere-rules.js";
 import { publishEdgeRelease } from "../automation/src/build-site.js";
 import { lightweightFixtureSnapshots } from "../automation/test/lightweight-fixture.js";
 import { MOBILE_RULE_SOURCE_IDS, ruleClientCatalog } from "../shared/rules/lightweight-policy.js";
+import { activeClientIds } from "../shared/release/client-catalog.js";
 import {
   buildArtifacts as buildArtifactsFromScript,
   chinaIpAuditPrimary,
@@ -83,6 +84,10 @@ function chinaIpAuditBytes({
 function buildClientArtifacts(options) {
   return buildClientArtifactsImpl({
     ...options,
+    additionalFiles: options.additionalFiles ?? new Map([
+      ["onexray/scripts/onexray-node-generator.js", "native onexray generator\n"],
+      ["happ/scripts/happ-config-generator.js", "native happ generator\n"],
+    ]),
     chinaIpAudit: options.chinaIpAudit ?? chinaIpAuditBytes({ publicationUpstream: options.upstream }),
   });
 }
@@ -119,7 +124,7 @@ async function initializeTrackedCurrent(publicDirectory, artifacts) {
     optionalPacks: artifacts.optionalPacks,
     manifest: artifacts.diagnostics.defaultManifest,
   });
-  for (const client of ["singbox", "surge", "shadowrocket", "egern", "anywhere"]) {
+  for (const client of activeClientIds()) {
     await promoteClientRelease({
       publicDirectory,
       client,
@@ -143,16 +148,16 @@ test("accepts only explicit edge, current-check, and client promotion operations
   }
 });
 
-test("records planned clients without emitting planned renderers or hashes", () => {
-  const artifacts = buildClientArtifactsImpl({
+test("publishes all seven active client manifests while keeping Xray scripts credential-free", async () => {
+  const artifacts = await buildArtifactsFromScript({
     operation: "build-edge",
-    snapshot: lightweightFixtureSnapshots(),
-    upstream,
-    channel: "edge",
-    chinaIpAudit: chinaIpAuditBytes(),
+    publicDirectory: join(tmpdir(), "unused-public"),
+    upstreamOverride: upstream,
+    includeStaticFiles: true,
+    fetchSnapshotImpl: async () => lightweightFixtureSnapshots(),
   });
   assert.deepEqual(Object.keys(artifacts.diagnostics.defaultManifest.clients).sort(), [
-    "anywhere", "egern", "shadowrocket", "singbox", "surge",
+    "anywhere", "egern", "happ", "onexray", "shadowrocket", "singbox", "surge",
   ]);
   assert.deepEqual(artifacts.diagnostics.defaultManifest.clientStates, {
     anywhere: { state: "active", adapterSchema: "anywhere-v1", publicDirectory: "anywhere" },
@@ -160,10 +165,12 @@ test("records planned clients without emitting planned renderers or hashes", () 
     shadowrocket: { state: "active", adapterSchema: "shadowrocket-v1", publicDirectory: "shadowrocket" },
     surge: { state: "active", adapterSchema: "surge-v1", publicDirectory: "surge" },
     singbox: { state: "active", adapterSchema: "singbox-v1", publicDirectory: "sing-box" },
-    onexray: { state: "planned", adapterSchema: "onexray-v1-planned", publicDirectory: "onexray" },
-    happ: { state: "planned", adapterSchema: "happ-v4-planned", publicDirectory: "happ" },
+    onexray: { state: "active", adapterSchema: "onexray-v1", publicDirectory: "onexray" },
+    happ: { state: "active", adapterSchema: "happ-v4", publicDirectory: "happ" },
   });
-  assert.equal([...artifacts.defaults.keys()].some((path) => /^(?:onexray|happ)\//u.test(path)), false);
+  assert.ok([...artifacts.defaults.keys()].some((path) => path === "onexray/scripts/onexray-node-generator.js"));
+  assert.ok([...artifacts.defaults.keys()].some((path) => path === "happ/scripts/happ-config-generator.js"));
+  assert.doesNotMatch(artifacts.defaults.get("onexray/scripts/onexray-node-generator.js").toString("utf8"), /TEST_ONLY_FIXTURE_UUID|192\.0\.2\.10/u);
 });
 
 test("build edge paces one production snapshot worker", async () => {
@@ -614,9 +621,8 @@ test("promotes exact tested client bytes without changing other clients", async 
     "old optional\n",
   );
   const rollout = JSON.parse(await readFile(join(publicDirectory, "rollout.json"), "utf8"));
-  assert.deepEqual(Object.keys(rollout.clients).sort(), ["anywhere", "egern", "shadowrocket", "singbox", "surge"]);
-  assert.deepEqual(Object.keys(rollout.previous).sort(), ["anywhere", "egern", "shadowrocket", "singbox", "surge"]);
-  assert.equal(Object.hasOwn(rollout, "onexray"), false);
+  assert.deepEqual(Object.keys(rollout.clients).sort(), ["anywhere", "egern", "happ", "onexray", "shadowrocket", "singbox", "surge"]);
+  assert.deepEqual(Object.keys(rollout.previous).sort(), ["anywhere", "egern", "happ", "onexray", "shadowrocket", "singbox", "surge"]);
   assert.equal(Object.hasOwn(rollout.optionalPacks["adblock-full"], "happ"), false);
   assert.equal(rollout.clients.surge, null);
   const publishedSingboxManifest = JSON.parse(await readFile(
@@ -632,6 +638,27 @@ test("promotes exact tested client bytes without changing other clients", async 
     rollout.optionalPacks["adblock-full"].singbox,
     publishedSingboxOptionalManifest.manifestHash,
   );
+});
+
+test("accepts a current rollout with only the active clients already promoted", async () => {
+  const root = await mkdtemp(join(tmpdir(), "apple-proxy-partial-current-rollout-"));
+  const publicDirectory = join(root, "public");
+  const artifacts = buildClientArtifacts({ snapshot: lightweightFixtureSnapshots(), upstream });
+  await initializeTrackedCurrent(publicDirectory, artifacts);
+
+  await rm(join(publicDirectory, "current/happ"), { recursive: true, force: true });
+  await rm(join(publicDirectory, "current/onexray"), { recursive: true, force: true });
+  await rm(join(publicDirectory, "previous/happ"), { recursive: true, force: true });
+  await rm(join(publicDirectory, "previous/onexray"), { recursive: true, force: true });
+  const rolloutPath = join(publicDirectory, "rollout.json");
+  const rollout = JSON.parse(await readFile(rolloutPath, "utf8"));
+  delete rollout.clients.happ;
+  delete rollout.clients.onexray;
+  delete rollout.previous.happ;
+  delete rollout.previous.onexray;
+  await writeFile(rolloutPath, `${JSON.stringify(rollout, null, 2)}\n`);
+
+  assert.equal(await verifyTrackedPublications({ publicDirectory, ...artifacts }), true);
 });
 
 test("script promotion rejects ChinaIP blockers before touching current", async () => {

@@ -24,7 +24,11 @@ import {
 import { canonicalJson } from "./render-anywhere-rules.js";
 import { assertChannelClosure } from "../../shared/release/channel-closure.js";
 import { FRONTIER_CHANNELS } from "../../shared/release/frontier-manifest.js";
-import { activeClientIds, publicDirectoryForClient } from "../../shared/release/client-catalog.js";
+import {
+  activeClientIds,
+  lightweightRuleClientIds,
+  publicDirectoryForClient,
+} from "../../shared/release/client-catalog.js";
 
 // Retention policy: the publication pipeline prunes immutable version
 // snapshots to MAX_VERSION_COUNT (8). check-actions.mjs validates the on-disk
@@ -40,7 +44,7 @@ const PUBLIC_AUDIT_DASHBOARD_PATH = "audit/dashboard.json";
 export const CLIENT_PUBLIC_PATHS = Object.freeze(Object.fromEntries(
   activeClientIds().map((client) => [client, publicDirectoryForClient(client)]),
 ));
-const OPTIONAL_CLIENTS = Object.freeze([...activeClientIds()]);
+const OPTIONAL_CLIENTS = lightweightRuleClientIds();
 
 async function exists(path) {
   try {

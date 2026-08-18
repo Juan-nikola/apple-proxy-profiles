@@ -27,6 +27,7 @@ import {
   activeClientIds,
   allClientIds,
   clientAdapter,
+  lightweightRuleClientIds,
   publicDirectoryForClient,
 } from "../../shared/release/client-catalog.js";
 import { FRONTIER_CHANNELS } from "../../shared/release/frontier-manifest.js";
@@ -34,10 +35,18 @@ import { FRONTIER_CHANNELS } from "../../shared/release/frontier-manifest.js";
 const CLIENT_PATHS = Object.freeze(Object.fromEntries(
   activeClientIds().map((client) => [client, publicDirectoryForClient(client)]),
 ));
+// HAPP and OneXray are native Xray adapters: their private generators emit
+// complete profiles/subscriptions and do not consume the shared lightweight
+// rule-file tree. Keep them in the public client-manifest set, but exclude
+// them from the optional rule-pack renderer and byte budget accounting.
+const RULE_CLIENT_IDS = lightweightRuleClientIds();
+const RULE_CLIENT_PATHS = Object.freeze(Object.fromEntries(
+  RULE_CLIENT_IDS.map((client) => [client, CLIENT_PATHS[client]]),
+));
 
 const OPTIONAL_PACK_CLIENTS = Object.freeze({
   "adblock-full": Object.freeze(Object.fromEntries(
-    Object.entries(CLIENT_PATHS),
+    Object.entries(RULE_CLIENT_PATHS),
   )),
 });
 
@@ -66,6 +75,16 @@ const OPTIONAL_AWARE_GENERATOR_PATHS = new Set([
   "surge/scripts/substore-profile-generator.js",
   "sing-box/scripts/sing-box-config-generator.js",
   "sing-box/scripts/substore-config-generator.js",
+  "onexray/scripts/onexray-node-generator.js",
+  "onexray/scripts/substore-node-generator.js",
+  "onexray/scripts/onexray-profile-generator.js",
+  "onexray/scripts/substore-profile-generator.js",
+  "onexray/scripts/onexray-routing-audit.js",
+  "onexray/scripts/substore-routing-audit.js",
+  "happ/scripts/happ-config-generator.js",
+  "happ/scripts/substore-config-generator.js",
+  "happ/scripts/happ-routing-audit.js",
+  "happ/scripts/substore-routing-audit.js",
 ]);
 
 function compiledText(entries) {
@@ -277,6 +296,7 @@ function compactRuleSetMap(ruleSets) {
 }
 
 function clientRuleRecords(files, client) {
+  if (!RULE_CLIENT_PATHS[client]) return [];
   const prefixes = client === "anywhere"
     ? ["anywhere/rules/"]
     : client === "singbox"
@@ -349,7 +369,13 @@ function addClientManifests(
   for (const [client, directory] of Object.entries(clientPaths)) {
     const prefix = basePrefix ? `${basePrefix}/${directory}` : directory;
     const records = fileRecords(new Map([...files].filter(([path]) => path.startsWith(`${prefix}/`))));
-    if (records.length === 0) throw new Error(`Client ${client} has no publication files`);
+    // Direct unit-level rule builds may intentionally omit native-generator
+    // statics; the full update-rules path supplies them before validating the
+    // publication. Existing rule clients must always have a non-empty tree.
+    if (records.length === 0 && !["happ", "onexray"].includes(client)) {
+      throw new Error(`Client ${client} has no publication files`);
+    }
+    if (records.length === 0) continue;
     const base = {
       schemaVersion: 1,
       client,
@@ -572,7 +598,7 @@ export function buildClientArtifacts({
     generatedAt: upstream.committedAt,
     upstream: provenance(upstream),
     catalogSha256: catalogSha256(),
-    clients: Object.fromEntries(Object.keys(CLIENT_PATHS).map((client) => [client, {
+    clients: Object.fromEntries(Object.keys(clientManifests).map((client) => [client, {
       manifestHash: clientManifests[client].manifestHash,
       referencedDefaultBytes: referencedBytes[client],
     }])),

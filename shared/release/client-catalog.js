@@ -77,27 +77,27 @@ const records = [
   {
     id: CLIENT.onexray,
     displayName: "OneXray",
-    state: "planned",
+    state: "active",
     platforms: ["macos", "iphone", "ipad", "android", "windows", "linux"],
     configFormat: "xray-profile-json",
     ruleFormat: "xray-geodata",
     nodeValidator: "onexray",
     separatesProfile: false,
     supportsPolicyOverrides: false,
-    adapterSchema: "onexray-v1-planned",
+    adapterSchema: "onexray-v1",
     publicDirectory: "onexray",
   },
   {
     id: CLIENT.happ,
     displayName: "HAPP",
-    state: "planned",
+    state: "active",
     platforms: ["iphone", "ipad", "macos", "android"],
     configFormat: "happ-json",
     ruleFormat: "happ-json",
     nodeValidator: "happ",
     separatesProfile: false,
     supportsPolicyOverrides: false,
-    adapterSchema: "happ-v4-planned",
+    adapterSchema: "happ-v4",
     publicDirectory: "happ",
   },
 ].map((record) => freeze(record));
@@ -106,6 +106,13 @@ const byId = new Map(records.map((record) => [record.id, record]));
 const ids = freeze(records.map(({ id }) => id));
 const activeIds = freeze(records.filter(({ state }) => state === "active").map(({ id }) => id));
 const plannedIds = freeze(records.filter(({ state }) => state === "planned").map(({ id }) => id));
+const lightweightRuleIds = freeze([
+  CLIENT.anywhere,
+  CLIENT.egern,
+  CLIENT.shadowrocket,
+  CLIENT.surge,
+  CLIENT.singbox,
+]);
 
 export function allClientIds() {
   return ids;
@@ -123,6 +130,10 @@ export function activeClientIds() {
 
 export function plannedClientIds() {
   return plannedIds;
+}
+
+export function lightweightRuleClientIds() {
+  return lightweightRuleIds;
 }
 
 export function publicDirectoryForClient(client) {

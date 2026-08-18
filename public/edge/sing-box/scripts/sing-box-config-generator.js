@@ -220,7 +220,7 @@ var SingBoxConfigBundle = (() => {
     });
   }
   var definitions = Object.freeze([
-    protocol(["ss", "shadowsocks"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox], {
+    protocol(["ss", "shadowsocks"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.onexray, CLIENT.happ], {
       requiredFields: ["cipher", "password"]
     }),
     protocol(["ssr"], [CLIENT.shadowrocket, CLIENT.surge], {
@@ -229,13 +229,13 @@ var SingBoxConfigBundle = (() => {
     protocol(["snell"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox], {
       requiredFields: ["psk", "version"]
     }),
-    protocol(["vmess"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox], {
+    protocol(["vmess"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox, CLIENT.onexray, CLIENT.happ], {
       requiredFields: ["uuid"]
     }),
-    protocol(["vless"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.singbox], {
+    protocol(["vless"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.singbox, CLIENT.onexray, CLIENT.happ], {
       requiredFields: ["uuid"]
     }),
-    protocol(["trojan"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox], {
+    protocol(["trojan"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.onexray, CLIENT.happ], {
       requiredFields: ["password"],
       tls: true
     }),
@@ -243,7 +243,7 @@ var SingBoxConfigBundle = (() => {
       requiredFields: ["password"],
       tls: true
     }),
-    protocol(["hysteria2", "hy2"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox], {
+    protocol(["hysteria2", "hy2"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.onexray, CLIENT.happ], {
       requiredFields: ["password"],
       tls: true
     }),
@@ -251,8 +251,8 @@ var SingBoxConfigBundle = (() => {
       requiredFields: ["uuid", "password"],
       tls: true
     }),
-    protocol(["socks5"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox]),
-    protocol(["http"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox]),
+    protocol(["socks5"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.onexray, CLIENT.happ]),
+    protocol(["http"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox, CLIENT.onexray]),
     protocol(["ssh"], [CLIENT.egern, CLIENT.singbox], {
       requiredFields: ["username"]
     }),
@@ -892,27 +892,27 @@ var SingBoxConfigBundle = (() => {
     {
       id: CLIENT.onexray,
       displayName: "OneXray",
-      state: "planned",
+      state: "active",
       platforms: ["macos", "iphone", "ipad", "android", "windows", "linux"],
       configFormat: "xray-profile-json",
       ruleFormat: "xray-geodata",
       nodeValidator: "onexray",
       separatesProfile: false,
       supportsPolicyOverrides: false,
-      adapterSchema: "onexray-v1-planned",
+      adapterSchema: "onexray-v1",
       publicDirectory: "onexray"
     },
     {
       id: CLIENT.happ,
       displayName: "HAPP",
-      state: "planned",
+      state: "active",
       platforms: ["iphone", "ipad", "macos", "android"],
       configFormat: "happ-json",
       ruleFormat: "happ-json",
       nodeValidator: "happ",
       separatesProfile: false,
       supportsPolicyOverrides: false,
-      adapterSchema: "happ-v4-planned",
+      adapterSchema: "happ-v4",
       publicDirectory: "happ"
     }
   ].map((record) => freeze(record));
@@ -920,6 +920,13 @@ var SingBoxConfigBundle = (() => {
   var ids = freeze(records.map(({ id }) => id));
   var activeIds = freeze(records.filter(({ state }) => state === "active").map(({ id }) => id));
   var plannedIds = freeze(records.filter(({ state }) => state === "planned").map(({ id }) => id));
+  var lightweightRuleIds = freeze([
+    CLIENT.anywhere,
+    CLIENT.egern,
+    CLIENT.shadowrocket,
+    CLIENT.surge,
+    CLIENT.singbox
+  ]);
 
   // ../../shared/release/frontier-manifest.js
   var FRONTIER_CHANNELS = Object.freeze(["edge", "current", "previous"]);

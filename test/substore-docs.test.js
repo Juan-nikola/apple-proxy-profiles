@@ -102,8 +102,8 @@ test("active documentation follows the maintained client and Anywhere package co
   const expectedCount = packageIds.length;
   const docs = await Promise.all(activeDocs.map(async (path) => [path, await text(path)]));
 
-  assert.deepEqual([...activeClientIds()].sort(), ["anywhere", "egern", "shadowrocket", "singbox", "surge"]);
-  assert.deepEqual([...plannedClientIds()].sort(), ["happ", "onexray"]);
+  assert.deepEqual([...activeClientIds()].sort(), ["anywhere", "egern", "happ", "onexray", "shadowrocket", "singbox", "surge"]);
+  assert.deepEqual([...plannedClientIds()].sort(), []);
   assert.deepEqual(Object.keys(CLIENT).sort(), [
     "anywhere", "egern", "happ", "onexray", "shadowrocket", "singbox", "surge",
   ]);
@@ -112,7 +112,7 @@ test("active documentation follows the maintained client and Anywhere package co
     assert.doesNotMatch(content, /六个客户端|六个 client collection|31 个默认(?:规则)?分片|31 个默认 shard/u, path);
     if (path === "README.md" || path === "docs/substore-two-layer-setup.md" || path === "docs/implementation-status.md") {
       assert.match(content, /HAPP|OneXray/iu, path);
-      assert.match(content, /planned/iu, path);
+      assert.match(content, /active|canary/iu, path);
     }
   }
 

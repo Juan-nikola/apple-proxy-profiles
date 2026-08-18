@@ -5,6 +5,7 @@ import {
   activeClientIds,
   allClientIds,
   clientAdapter,
+  lightweightRuleClientIds,
   plannedClientIds,
   publicDirectoryForClient,
 } from "../shared/release/client-catalog.js";
@@ -20,10 +21,13 @@ test("registers the seven clients in stable publication order", () => {
   assert.deepEqual(allClientIds(), [
     "anywhere", "egern", "shadowrocket", "surge", "singbox", "onexray", "happ",
   ]);
-  assert.deepEqual(activeClientIds(), ["anywhere", "egern", "shadowrocket", "surge", "singbox"]);
-  assert.deepEqual(plannedClientIds(), ["onexray", "happ"]);
-  assert.equal(clientAdapter("happ").state, "planned");
+  assert.deepEqual(activeClientIds(), ["anywhere", "egern", "shadowrocket", "surge", "singbox", "onexray", "happ"]);
+  assert.deepEqual(plannedClientIds(), []);
+  assert.equal(clientAdapter("happ").state, "active");
   assert.equal(publicDirectoryForClient("singbox"), "sing-box");
+  assert.deepEqual(lightweightRuleClientIds(), [
+    "anywhere", "egern", "shadowrocket", "surge", "singbox",
+  ]);
   assert.throws(() => clientAdapter("unknown"), /unknown client/i);
 });
 

@@ -1,4 +1,4 @@
-# Sub-Store 五客户端外置 JS + 任务引用总指南
+# Sub-Store 七客户端外置 JS + 任务引用总指南
 
 本指南把公开代码和私密节点分成两层：
 
@@ -7,7 +7,7 @@
 
 “引用”的含义是：Sub-Store 的 File 或 Script Operator 保存一个远程 JS URL；旧版单行模式在 URL 的 `#` 后用 `&` 传参数。不要复制 JavaScript 正文，也不要把私密 API、节点 URL 或输出链接提交到 GitHub。
 
-五个客户端的 collection 名称、用户自行筛选边界、迁移顺序和回滚方法统一见 [Sub-Store 客户端节点池指南](substore-client-pools.md)。
+七个客户端的 collection 名称、用户自行筛选边界、迁移顺序和回滚方法统一见 [Sub-Store 客户端节点池指南](substore-client-pools.md)。
 
 ## 0. 安全边界
 
@@ -21,18 +21,18 @@
 
 本项目不需要 MITM、HTTPS 解密、CA 证书、请求重写或“不验证证书”。`insecure` 永远关闭；`noCache` 生产任务默认关闭，只有隔离测试任务排查缓存时临时打开。
 
-## 1. 先建立总池和五个客户端组合
+## 1. 先建立总池和七个客户端组合
 
 在你自己的 Sub-Store 中：
 
 1. 保留已有来源、旧 collection、tasks 和旧 URL，先分别 preview 确认非空。
 2. 建立用户自己的 `apple-proxy-all` 总池。
-3. 按节点池指南建立五个 client collection，用户自行选择每个客户端要包含的节点；生成器不按客户端能力白名单过滤。
+3. 按节点池指南建立七个 client collection，用户自行选择每个客户端要包含的节点；HAPP/OneXray 会按已审计能力过滤不兼容节点，并在 audit 中记录排除原因。
 4. 逐个 preview 并记录计数，再一次只迁移一个客户端的 `name=`。
 
-新任务不再让五个客户端直接共享一个 collection。旧 `apple-proxy-sources` 继续保留作兼容/回滚入口，不要删除。
+新任务不再让七个客户端直接共享一个 collection。旧 `apple-proxy-sources` 继续保留作兼容/回滚入口，不要删除。
 
-## 2. 八个公开远程 JS
+## 2. 十三个公开远程 JS
 
 新任务优先使用 `current/`：
 
@@ -46,6 +46,11 @@
 | Surge node resource | `https://juan-nikola.github.io/apple-proxy-profiles/current/surge/scripts/surge-nodes-generator.js` | 一个 Surge 节点 File |
 | Surge Profile | `https://juan-nikola.github.io/apple-proxy-profiles/current/surge/scripts/surge-profile-generator.js` | 三个平台远程 Profile File |
 | sing-box config | `https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/scripts/sing-box-config-generator.js` | 四个平台 Config File |
+| OneXray nodes | `https://juan-nikola.github.io/apple-proxy-profiles/current/onexray/scripts/onexray-node-generator.js` | Xray JSON 节点订阅 |
+| OneXray Profile | `https://juan-nikola.github.io/apple-proxy-profiles/current/onexray/scripts/onexray-profile-generator.js` | 原生结构化 Profile |
+| OneXray audit | `https://juan-nikola.github.io/apple-proxy-profiles/current/onexray/scripts/onexray-routing-audit.js` | 脱敏分流审计 |
+| HAPP config | `https://juan-nikola.github.io/apple-proxy-profiles/current/happ/scripts/happ-config-generator.js` | HAPP JSON 配置数组 |
+| HAPP audit | `https://juan-nikola.github.io/apple-proxy-profiles/current/happ/scripts/happ-routing-audit.js` | 脱敏分流审计 |
 
 测试版只把路径中的 `current` 换成 `edge`。不要使用 GitHub `blob` 页面、`clients/*/dist/` 本地路径或旧兼容 URL 创建新任务。
 
@@ -100,20 +105,22 @@ https://juan-nikola.github.io/apple-proxy-profiles/current/surge/scripts/surge-p
 
 五客户端总数为 4+1+4+4+4=17 个任务。
 
-## 4.1 七客户端目标与 23 个任务契约
+## 4.1 七客户端目标与 23 个任务
 
-仓库注册表包含七个稳定 ID：五个 `active` 客户端（Anywhere、Egern、Shadowrocket、Surge、sing-box）以及两个 `planned` 客户端（OneXray、HAPP）。任务契约目标总数为 **23 个**：现有 17 个公开任务，加上下面 6 个未来任务。
+仓库注册表包含七个稳定 ID，七个都已进入 `active` 发布状态。任务总数为 **23 个**：现有 17 个公开规则/配置任务，加上下面 6 个私密 HAPP/OneXray 任务。
 
-| # | 未来任务 | 状态 | 输入/绑定 | 说明 |
+| # | 任务 | 状态 | 输入/绑定 | 说明 |
 | ---: | --- | --- | --- | --- |
-| 18 | `apple-proxy-policy` | private/planned | 私密 Sub-Store policy | 读取同名 policy revision、channel、公开 Manifest SHA-256 和 GeoData SHA-256；不放入公开 Pages |
-| 19 | `onexray-nodes` | planned | `apple-proxy-all` | OneXray 只规划 node-only 边界；原生 renderer 尚未实现，不可创建公开 URL |
-| 20 | `onexray-profile` | planned | `onexray-nodes` | 原生 Profile 尚未实现，不可创建公开 URL |
-| 21 | `onexray-routing-audit` | planned | audit metadata | 只规划审计输入，不读取私密策略正文 |
-| 22 | `happ-subscription` | planned | `apple-proxy-all` | HAPP 原生订阅 renderer 尚未实现，不可创建公开 URL |
-| 23 | `happ-routing-audit` | planned | audit metadata | 只规划审计输入，不读取私密策略正文 |
+| 18 | `apple-proxy-policy` | private | 私密 Sub-Store policy | 三频道严格 JSON；只在私密任务读取 revision、channel、公开 Manifest SHA-256 和 GeoData SHA-256，不放入公开 Pages |
+| 19 | `onexray-nodes` | active/private | `apple-proxy-onexray` 或总池 | 输出 Xray JSON outbounds；不复制完整 Profile，不包含公开凭据 |
+| 20 | `onexray-profile` | active/private | `apple-proxy-onexray` | 输出结构化 OneXray Profile；固定节点缺失/重复/不兼容时整项失败 |
+| 21 | `onexray-routing-audit` | active/private | 与 Profile 同一 collection/参数 | 只输出计数、目标解析和链状态，不输出节点凭据 |
+| 22 | `happ-subscription` | active/private | `apple-proxy-happ` 或总池 | 输出 HAPP JSON 配置数组；每个首页节点独立生成，固定节点故障回退 FOLLOW |
+| 23 | `happ-routing-audit` | active/private | 与 HAPP 配置同一 collection/参数 | 只输出兼容数、排除原因、业务目标和 warning |
 
-未来任务必须接收同名 `channel`（仅 `edge`、`current`、`previous`）、policy revision、公开 Manifest SHA-256 和 GeoData SHA-256 绑定；OneXray node-only 任务也接收 `channel`，但不读取业务策略。直到状态从 `planned` 改为 `active` 并有真实 renderer、fixture、验证和 canary 证据前，不能把这些任务写成可复制的公开脚本 URL，也不能在生成器中伪造 HAPP/OneXray 配置。
+所有读取策略的任务必须接收同名 `channel`（仅 `edge`、`current`、`previous`），并绑定该频道的 policy revision、公开 client Manifest SHA-256 和 GeoData SHA-256；OneXray node-only 任务也接收 `channel`，但不读取业务策略。公开脚本只在 Pages 提供无节点 bundle，真实输出仍只在私密 Sub-Store 任务日志和客户端导入结果中查看。
+
+真机 canary 尚未替用户完成：先在 macOS 或 Android 设备预览/导入，再逐平台记录通过结果；没有 canary 证据时不要把 `edge` 任务直接切成 `current`。
 
 ## 5. Egern：1 个节点 File + 3 个 Profile File
 

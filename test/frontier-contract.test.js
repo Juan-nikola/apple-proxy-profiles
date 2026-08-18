@@ -80,15 +80,15 @@ test("frontier platforms cover only maintained clients", () => {
   });
 });
 
-test("frontier identity validation accepts registered planned clients but emits no renderer platforms", () => {
-  assert.equal(clientAdapter(CLIENT.onexray).state, "planned");
-  assert.equal(clientAdapter(CLIENT.happ).state, "planned");
+test("native clients are active while frontier platform candidates remain explicit", () => {
+  assert.equal(clientAdapter(CLIENT.onexray).state, "active");
+  assert.equal(clientAdapter(CLIENT.happ).state, "active");
   assert.throws(() => createFrontierManifest({
     client: CLIENT.happ,
     platform: "iphone",
     channel: "edge",
     upstream: { branch: "main", commit: "a".repeat(40), fetchedAt: "2026-08-05T00:00:00Z" },
-    schemaVersion: "happ-v4-planned",
+    schemaVersion: "happ-v4",
     ruleManifestSha256: "b".repeat(64),
     configSha256: "c".repeat(64),
     status: "candidate",

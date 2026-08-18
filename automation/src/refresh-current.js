@@ -35,6 +35,11 @@ const CLIENT_RULE_PREFIXES = Object.freeze({
     "sing-box/mobile-rule-sets/",
   ],
   anywhere: ["anywhere/rules/"],
+  // Native Xray adapters publish private generator scripts rather than the
+  // shared lightweight rule-file tree, so their referenced rule-byte count is
+  // intentionally zero in root manifests.
+  onexray: [],
+  happ: [],
 });
 const SHA256 = /^[0-9a-f]{64}$/u;
 
@@ -90,6 +95,7 @@ function parseCanonicalManifest(bytes, label) {
 function referencedBytesForClient(records, client) {
   const prefixes = CLIENT_RULE_PREFIXES[client];
   if (!prefixes) throw new Error(`Unknown client: ${client}`);
+  if (prefixes.length === 0) return 0;
   return records
     .filter(({ path }) => (
       prefixes.some((prefix) => path.startsWith(prefix)) && !path.endsWith("/manifest.json")
