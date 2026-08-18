@@ -826,7 +826,7 @@ var SingBoxConfigBundle = (() => {
   // src/options.js
   var REQUIRED_KEYS = Object.freeze(["output", "type", "name", "subscriptionName", "platform"]);
   var DEFAULTS = Object.freeze({
-    channel: "edge",
+    channel: "current",
     dnsMode: "stable",
     chinaDns: "alidns",
     globalDns: "cloudflare",
