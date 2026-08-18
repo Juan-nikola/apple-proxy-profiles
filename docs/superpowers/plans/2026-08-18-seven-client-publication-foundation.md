@@ -194,27 +194,24 @@ git commit -m "feat: align shared business target contract"
 
 - [ ] **Step 1: 写三频道、覆盖合并和秘密边界失败测试**
 
-使用以下完整 fixture：
+使用以下代码生成完整 fixture；`edge`、`current`、`previous` 三个频道都接收同一组完整 defaults 的独立副本：
 
-```json
-{
-  "schemaVersion": 1,
-  "channels": {
-    "edge": {
-      "revision": "edge-2026-08-18-a",
-      "defaults": {
-        "targets": {"ai":"FOLLOW","github":"FOLLOW","youtube":"FOLLOW","overseasMedia":"FOLLOW","globalSocial":"FOLLOW","overseasGame":"FOLLOW","domesticCore":"DIRECT","domesticPlatform":"DIRECT","chinaIp":"DIRECT","apple":"DIRECT","microsoft":"DIRECT","download":"DIRECT"},
-        "dns": {"chinaDns":"alidns","globalDns":"cloudflare"},
-        "adblockMode":"off",
-        "clientChain": {"mode":"off"}
-      },
-      "happ": {},
-      "onexray": {}
-    },
-    "current": {"revision":"current-2026-08-18-a","defaults":{},"happ":{},"onexray":{}},
-    "previous": {"revision":"previous-2026-08-18-a","defaults":{},"happ":{},"onexray":{}}
-  }
-}
+```js
+const defaults = {
+  targets: { ai:"FOLLOW", github:"FOLLOW", youtube:"FOLLOW", overseasMedia:"FOLLOW", globalSocial:"FOLLOW", overseasGame:"FOLLOW", domesticCore:"DIRECT", domesticPlatform:"DIRECT", chinaIp:"DIRECT", apple:"DIRECT", microsoft:"DIRECT", download:"DIRECT" },
+  dns: { chinaDns:"alidns", globalDns:"cloudflare" },
+  adblockMode: "off",
+  clientChain: { mode: "off" },
+};
+const policy = JSON.stringify({
+  schemaVersion: 1,
+  channels: Object.fromEntries(["edge", "current", "previous"].map((channel) => [channel, {
+    revision: `${channel}-2026-08-18-a`,
+    defaults: structuredClone(defaults),
+    happ: {},
+    onexray: {},
+  }])),
+});
 ```
 
 测试要求三个频道各自完整存在；禁止缺频道、空 revision、未知键、重复键、非法 DNS/广告值、业务目标未知键、`NODE:` 空名、`clientChain.mode=on` 缺 `target`、安全字段覆盖、UUID/密码/URL/URI 字段和错误中出现秘密。验证 `resolvePrivatePolicy({ channel:"edge", client:"happ" })` 先应用 defaults 再应用 happ 覆盖。
@@ -254,6 +251,8 @@ git commit -m "feat: add private three-channel policy contract"
 - Modify: `clients/egern/src/render-rules.js`
 - Modify: `clients/egern/src/render-dns.js`
 - Modify: `clients/egern/src/validate-profile.js`
+- Modify: `clients/anywhere/src/build-import-page.js`
+- Modify: `clients/anywhere/src/substore-nodes-entry.js`
 - Modify: `clients/shadowrocket/src/options.js`
 - Modify: `clients/shadowrocket/src/render-rules.js`
 - Modify: `clients/surge/src/options.js`
@@ -264,6 +263,8 @@ git commit -m "feat: add private three-channel policy contract"
 - Modify: `clients/egern/test/profile.test.js`
 - Modify: `clients/egern/test/dns.test.js`
 - Modify: `clients/egern/test/validation.test.js`
+- Modify: `clients/anywhere/test/import-page.test.js`
+- Modify: `clients/anywhere/test/substore.test.js`
 - Modify: `clients/shadowrocket/test/options.test.js`
 - Modify: `clients/shadowrocket/test/profile.test.js`
 - Modify: `clients/surge/test/profile.test.js`
