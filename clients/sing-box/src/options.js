@@ -1,4 +1,5 @@
 import { OPTION_VALUES } from "../../../shared/contracts.js";
+import { FRONTIER_CHANNELS } from "../../../shared/release/frontier-manifest.js";
 import { platformPolicyPreset } from "../../../shared/policies/platform-presets.js";
 import { validateCollectionName } from "../../../shared/substore/collection-name.js";
 
@@ -18,7 +19,7 @@ const DEFAULTS = Object.freeze({
   nodeErrorMode: "strict",
 });
 const PLATFORMS = new Set(["macos", "iphone", "ipad", "android"]);
-const CHANNELS = new Set(["edge", "current"]);
+const CHANNELS = new Set(FRONTIER_CHANNELS);
 const PROFILE_MODES = new Set(["light", "diagnostic"]);
 const ADBLOCK_MODES = new Set(["off", "full"]);
 const NODE_ERROR_MODES = new Set(["strict", "compatible"]);

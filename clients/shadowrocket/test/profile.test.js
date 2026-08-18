@@ -82,6 +82,12 @@ test("renders the edge lightweight rules by default and permits GEOIP to resolve
   assert.equal(rules.at(-1), "FINAL,🚀 节点选择");
 });
 
+test("renders the previous lightweight rules without mixing publication channels", () => {
+  const profile = renderProfile({ ...baseOptions, channel: "previous" }, inventory(25));
+  assert.match(profile, /previous\/shadowrocket\/rules\/DomesticCore\.list/u);
+  assert.doesNotMatch(profile, /\/(?:edge|current)\/shadowrocket\/rules\//u);
+});
+
 test("renders current full adblock from the separate optional publication", () => {
   const profile = renderProfile({
     ...baseOptions,

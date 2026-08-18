@@ -1,5 +1,6 @@
 import { CUSTOM_AI, CUSTOM_BLOCK, CUSTOM_DIRECT, CUSTOM_PROXY } from "./custom-rules.js";
 import { ROUTING_PHASES, orderedRoutingPlan } from "../../../shared/rules/lightweight-policy.js";
+import { FRONTIER_CHANNELS } from "../../../shared/release/frontier-manifest.js";
 import { LOCAL_RULES } from "../../../shared/rules/local-rules.js";
 import { isValidRuleLine } from "./rule-validator.js";
 
@@ -91,7 +92,7 @@ function renderRuleSet(source, base, optionalBase) {
 }
 
 export function ruleBaseUrlForChannel(channel) {
-  if (channel !== "edge" && channel !== "current") {
+  if (!FRONTIER_CHANNELS.includes(channel)) {
     throw new Error(`Unsupported Shadowrocket publication channel: ${channel}`);
   }
   return `${PUBLIC_RULE_ROOT}/${channel}/shadowrocket/rules`;

@@ -240,7 +240,7 @@ function renderRuleSetMap({
   files.set(importPath, renderImportPage(
     buildImportBatches(anywhere.manifest.shards.map(({ url }) => url)),
     anywhere.manifest,
-    { mode: anywhereMode },
+    { mode: anywhereMode, channel: "current" },
   ));
   return Object.freeze({ files, clientSources, anywhere });
 }

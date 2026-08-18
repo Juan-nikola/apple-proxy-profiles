@@ -28,8 +28,10 @@ test("parseOptions applies the generator defaults", () => {
   });
 });
 
-test("parseOptions accepts only supported publication and adblock modes", () => {
-  assert.equal(parseOptions({ ...required, channel: "current" }).channel, "current");
+test("parseOptions accepts all closed publication channels and adblock modes", () => {
+  for (const channel of ["edge", "current", "previous"]) {
+    assert.equal(parseOptions({ ...required, channel }).channel, channel);
+  }
   assert.equal(parseOptions({ ...required, adblockMode: "full" }).adblockMode, "full");
   for (const [key, value] of [["channel", "beta"], ["adblockMode", "balanced"]]) {
     assert.throws(() => parseOptions({ ...required, [key]: value }), new RegExp(key, "iu"));

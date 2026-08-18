@@ -161,13 +161,14 @@ test("keeps full ad blocking isolated to exactly two optional Egern providers", 
   ]);
 });
 
-test("selects edge and current Egern rule publications without mixing channels", () => {
-  const edge = JSON.stringify(renderEgernProfile(rawOptions({ channel: "edge" }), allCompatibleNodes));
-  const current = JSON.stringify(renderEgernProfile(rawOptions({ channel: "current" }), allCompatibleNodes));
-  assert.match(edge, /\/edge\/egern\/rules\/DomesticCore\.yaml/u);
-  assert.doesNotMatch(edge, /\/current\/egern\/rules\//u);
-  assert.match(current, /\/current\/egern\/rules\/DomesticCore\.yaml/u);
-  assert.doesNotMatch(current, /\/edge\/egern\/rules\//u);
+test("selects edge, current, and previous Egern rule publications without mixing channels", () => {
+  for (const channel of ["edge", "current", "previous"]) {
+    const profile = JSON.stringify(renderEgernProfile(rawOptions({ channel }), allCompatibleNodes));
+    assert.match(profile, new RegExp(`/${channel}/egern/rules/DomesticCore\\.yaml`, "u"));
+    for (const other of ["edge", "current", "previous"].filter((value) => value !== channel)) {
+      assert.doesNotMatch(profile, new RegExp(`/${other}/egern/rules/`, "u"));
+    }
+  }
 });
 
 test("strictly translates supported shared custom rules with safe failures", () => {

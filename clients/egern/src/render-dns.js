@@ -2,6 +2,7 @@ import { OPTION_VALUES } from "../../../shared/contracts.js";
 import { chinaDnsProvider, globalDnsProvider } from "../../../shared/dns/providers.js";
 import { DOMESTIC_FALLBACK_DOMAIN_SUFFIXES } from "../../../shared/rules/domestic-fallback.js";
 import { orderedRoutingPlan } from "../../../shared/rules/lightweight-policy.js";
+import { FRONTIER_CHANNELS } from "../../../shared/release/frontier-manifest.js";
 import { PUBLIC_RULE_ROOT } from "./options.js";
 
 const proxyDnsSourceIds = Object.freeze(
@@ -29,7 +30,7 @@ function publicBaseUrl(options) {
     throw new Error("DNS option 'publicBaseUrl' is required");
   }
   const value = safeOption(options, "publicBaseUrl");
-  if (value !== `${PUBLIC_RULE_ROOT}/edge` && value !== `${PUBLIC_RULE_ROOT}/current`) {
+  if (!FRONTIER_CHANNELS.some((channel) => value === `${PUBLIC_RULE_ROOT}/${channel}`)) {
     throw new Error("DNS option 'publicBaseUrl' must use the fixed public snapshot base");
   }
   return value;

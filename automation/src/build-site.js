@@ -16,6 +16,8 @@ import { artifactBuffer, artifactSha256 } from "./artifact-content.js";
 import { validateChinaIpAuditForPromotion } from "./china-ip-audit.js";
 import { canRefreshChannel, refreshChannelManifest, refreshCurrentManifest } from "./refresh-current.js";
 import { canonicalJson } from "./render-anywhere-rules.js";
+import { assertChannelClosure } from "../../shared/release/channel-closure.js";
+import { FRONTIER_CHANNELS } from "../../shared/release/frontier-manifest.js";
 
 // Retention policy: the publication pipeline prunes immutable version
 // snapshots to MAX_VERSION_COUNT (8). check-actions.mjs validates the on-disk
@@ -72,6 +74,21 @@ async function subsetMatches(directory, files) {
     }
   }
   return true;
+}
+
+function validateFrontierPublicationFiles(files) {
+  const byChannel = new Map(FRONTIER_CHANNELS.map((channel) => [channel, new Map()]));
+  for (const [path, content] of files) {
+    const [channel] = path.split("/", 1);
+    if (!byChannel.has(channel)) {
+      throw new Error("Frontier public artifact must be scoped to edge, current, or previous");
+    }
+    byChannel.get(channel).set(path, content);
+  }
+  for (const [channel, scopedFiles] of byChannel) {
+    if (scopedFiles.size === 0) continue;
+    assertChannelClosure({ files: scopedFiles, channel, rootPrefix: channel });
+  }
 }
 
 async function fileMatches(path, content) {
@@ -212,8 +229,11 @@ export async function buildSite({
   if (frontierFiles !== null) {
     for (const [path, content] of frontierFiles) {
       if (!safeRelativePath(path)) throw new TypeError("Frontier public artifact is invalid");
-      if (!/^(?:edge|current)\//u.test(path)) throw new Error("Frontier public artifact must be scoped to edge or current");
+      if (!/^(?:edge|current|previous)\//u.test(path)) {
+        throw new Error("Frontier public artifact must be scoped to edge, current, or previous");
+      }
     }
+    validateFrontierPublicationFiles(frontierFiles);
   }
   const currentDirectory = join(publicDirectory, "current");
   if (await exists(currentDirectory) && await snapshotMatches(currentDirectory, files)
@@ -358,12 +378,38 @@ function verifyClientManifest(files, client, directory, basePrefix = "") {
   return manifest;
 }
 
+function publicationChannel(basePrefix, explicitChannel = null) {
+  if (explicitChannel !== null) {
+    if (!FRONTIER_CHANNELS.includes(explicitChannel)) {
+      throw new TypeError("Publication channel is unsupported");
+    }
+    return explicitChannel;
+  }
+  if (FRONTIER_CHANNELS.includes(basePrefix)) return basePrefix;
+  return "current";
+}
+
+function assertPublicationChannelClosure(files, {
+  channel,
+  rootPrefix = null,
+  immutableVersion = null,
+} = {}) {
+  assertChannelClosure({
+    files,
+    channel,
+    rootPrefix: rootPrefix ?? channel,
+    immutableVersion,
+  });
+}
+
 export function validateClientPublication({
   files,
   client,
   directory = CLIENT_PUBLIC_PATHS[client],
   basePrefix = "",
   expectedHash = null,
+  channel = null,
+  immutableVersion = null,
 }) {
   validatePublicationMap(files, `Client publication ${client}`);
   if (!directory) throw new TypeError("Client publication identity is invalid");
@@ -371,10 +417,15 @@ export function validateClientPublication({
   if (expectedHash !== null && manifest.manifestHash !== expectedHash) {
     throw new Error(`Client ${client} manifest hash does not match selected rollout`);
   }
+  assertPublicationChannelClosure(files, {
+    channel: publicationChannel(basePrefix, channel),
+    rootPrefix: basePrefix || publicationChannel(basePrefix, channel),
+    immutableVersion,
+  });
   return manifest;
 }
 
-export function validateDefaultPublication({ defaults, manifest }) {
+export function validateDefaultPublication({ defaults, manifest, channel = "current" }) {
   validatePublicationMap(defaults, "Default publication");
   const parsed = parseCanonicalManifest(defaults, "manifest.json", "Default publication");
   if (!manifest || parsed.manifestHash !== manifest.manifestHash
@@ -390,6 +441,7 @@ export function validateDefaultPublication({ defaults, manifest }) {
       throw new Error(`Default publication client hash mismatch for ${client}`);
     }
   }
+  assertPublicationChannelClosure(defaults, { channel, rootPrefix: channel });
   return parsed;
 }
 
@@ -411,6 +463,7 @@ export function validateOptionalPublication({ packId, files }) {
       throw new Error(`Optional publication ${packId} client hash mismatch for ${client}`);
     }
   }
+  assertPublicationChannelClosure(files, { channel: "current", rootPrefix: prefix });
   return manifest;
 }
 

@@ -1,4 +1,5 @@
 import { ROUTING_PHASES, orderedRoutingPlan } from "../../../shared/rules/lightweight-policy.js";
+import { FRONTIER_CHANNELS } from "../../../shared/release/frontier-manifest.js";
 import { CUSTOM_RULES } from "../../../shared/rules/custom-rules.js";
 import { PUBLIC_RULE_ROOT } from "./options.js";
 
@@ -230,7 +231,7 @@ function validatedOptions(options) {
   const adblockMode = adblockDescriptor?.value;
   if (
     !baseDescriptor || "get" in baseDescriptor || "set" in baseDescriptor
-    || (base !== `${PUBLIC_RULE_ROOT}/edge` && base !== `${PUBLIC_RULE_ROOT}/current`)
+    || !FRONTIER_CHANNELS.some((channel) => base === `${PUBLIC_RULE_ROOT}/${channel}`)
     || !adblockDescriptor || "get" in adblockDescriptor || "set" in adblockDescriptor
     || (adblockMode !== "off" && adblockMode !== "full")
   ) {

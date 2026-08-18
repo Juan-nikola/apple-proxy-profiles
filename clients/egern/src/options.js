@@ -1,4 +1,5 @@
 import { OPTION_VALUES } from "../../../shared/contracts.js";
+import { FRONTIER_CHANNELS } from "../../../shared/release/frontier-manifest.js";
 import { validateCollectionName } from "../../../shared/substore/collection-name.js";
 import { EgernUrlFallback } from "./runtime-fallbacks.js";
 
@@ -41,7 +42,7 @@ const ALLOWED_KEYS = new Set([...REQUIRED_KEYS, ...ENUM_KEYS]);
 ALLOWED_KEYS.add("channel");
 ALLOWED_KEYS.add("adblockMode");
 const SUPPORTED_PLATFORMS = new Set(["macos", "iphone", "ipad"]);
-const CHANNELS = new Set(["edge", "current"]);
+const CHANNELS = new Set(FRONTIER_CHANNELS);
 const ADBLOCK_MODES = new Set(["off", "full"]);
 const PROTOTYPE_KEYS = new Set(["__proto__", "constructor", "prototype"]);
 const FORBIDDEN_URL_CHARACTER = /[\u0000-\u001f\u007f\\]/u;

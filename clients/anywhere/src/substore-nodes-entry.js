@@ -1,4 +1,5 @@
 import { renderAnywhereSubscription } from "./render-subscription.js";
+import { FRONTIER_CHANNELS } from "../../../shared/release/frontier-manifest.js";
 import { validateCollectionName } from "../../../shared/substore/collection-name.js";
 import { installAnywhereRuntimeFallbacks } from "./runtime-fallbacks.js";
 import {
@@ -8,7 +9,7 @@ import {
   produceNormalizedNodes,
 } from "./substore-runtime.js";
 
-const ALLOWED_KEYS = new Set(["output", "type", "name", "clientChain"]);
+const ALLOWED_KEYS = new Set(["output", "type", "name", "clientChain", "channel"]);
 const PROTOTYPE_KEYS = new Set(["__proto__", "constructor", "prototype"]);
 
 function nodeArguments(raw) {
@@ -52,7 +53,9 @@ function nodeArguments(raw) {
   if (values.get("type") !== "collection") throw new Error("Anywhere node type must be collection");
   const name = validateCollectionName(values.get("name"), "Anywhere node name");
   if (values.get("clientChain") !== "off") throw new Error("Anywhere clientChain must be off");
-  return Object.freeze({ output: "nodes", type: "collection", name, clientChain: "off" });
+  const channel = values.get("channel") ?? "edge";
+  if (!FRONTIER_CHANNELS.includes(channel)) throw new Error("Anywhere node channel is unsupported");
+  return Object.freeze({ output: "nodes", type: "collection", name, clientChain: "off", channel });
 }
 
 function outputWithContent(input, content) {
