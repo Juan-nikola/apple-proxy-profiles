@@ -71,7 +71,10 @@ test("HAPP and OneXray expose only the audited Xray protocol boundary", () => {
     for (const protocol of ["vless", "vmess", "ss", "trojan", "hysteria2", "socks5"]) {
       assert.equal(protocolSupportsClient(protocol, client), true, `${client} should support ${protocol}`);
     }
-    for (const protocol of ["snell", "anytls", "tuic", "ssh", "wireguard", "ssr", "http"]) {
+    const unsupported = client === "onexray"
+      ? ["snell", "anytls", "tuic", "ssh", "wireguard", "ssr"]
+      : ["snell", "anytls", "tuic", "ssh", "wireguard", "ssr", "http"];
+    for (const protocol of unsupported) {
       assert.equal(protocolSupportsClient(protocol, client), false, `${client} must reject ${protocol}`);
     }
   }

@@ -1,5 +1,5 @@
 {
-  "name": "@apple-proxy-profiles/happ",
+  "name": "@apple-proxy-profiles/onexray",
   "private": true,
   "version": "0.1.0",
   "type": "module",
@@ -10,5 +10,8 @@
     "fixtures": "node scripts/render-fixtures.mjs",
     "check:secrets": "node ../../scripts/check-secrets.mjs",
     "verify": "npm test && npm run build && npm run fixtures && npm run check:secrets"
+  },
+  "devDependencies": {
+    "esbuild": "0.28.1"
   }
 }

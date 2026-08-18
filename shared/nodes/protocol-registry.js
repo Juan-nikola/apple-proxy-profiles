@@ -45,7 +45,7 @@ const definitions = Object.freeze([
     tls: true,
   }),
   protocol(["socks5"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.onexray, CLIENT.happ]),
-  protocol(["http"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox]),
+  protocol(["http"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox, CLIENT.onexray]),
   protocol(["ssh"], [CLIENT.egern, CLIENT.singbox], {
     requiredFields: ["username"],
   }),

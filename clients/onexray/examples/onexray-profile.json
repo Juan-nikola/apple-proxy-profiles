@@ -1,0 +1,185 @@
+{
+  "name": "onexray-fixture",
+  "dns": {
+    "servers": [
+      {
+        "tag": "china-dns",
+        "address": "223.5.5.5",
+        "domains": [
+          "geosite:cn",
+          "geosite:private"
+        ],
+        "queryStrategy": "UseIP"
+      },
+      {
+        "tag": "global-dns",
+        "address": "1.1.1.1",
+        "domains": [
+          "geosite:apple-proxy-overseas"
+        ],
+        "queryStrategy": "UseIP"
+      }
+    ],
+    "queryStrategy": "UseIP",
+    "tag": "dnsQuery"
+  },
+  "inbounds": [
+    {
+      "tag": "tun",
+      "protocol": "tun",
+      "settings": {
+        "mtu": 1500
+      },
+      "sniffing": {
+        "enabled": true,
+        "routeOnly": true
+      }
+    }
+  ],
+  "outbounds": [
+    {
+      "protocol": "freedom",
+      "tag": "direct"
+    },
+    {
+      "protocol": "blackhole",
+      "tag": "block"
+    }
+  ],
+  "routing": {
+    "domainStrategy": "IPIfNonMatch",
+    "rules": [
+      {
+        "domain": [
+          "geosite:private"
+        ],
+        "outboundTag": "direct",
+        "ruleTag": "private-direct"
+      },
+      {
+        "ip": [
+          "geoip:private"
+        ],
+        "outboundTag": "direct",
+        "ruleTag": "private-ip-direct"
+      },
+      {
+        "domain": [
+          "geosite:apple-proxy-security"
+        ],
+        "outboundTag": "block",
+        "ruleTag": "security-block"
+      },
+      {
+        "domain": [
+          "geosite:apple-proxy-privacy"
+        ],
+        "outboundTag": "direct",
+        "ruleTag": "privacy-direct"
+      },
+      {
+        "domain": [
+          "geosite:apple-proxy-ai"
+        ],
+        "outboundTag": "proxy",
+        "ruleTag": "business-ai"
+      },
+      {
+        "domain": [
+          "geosite:apple-proxy-github"
+        ],
+        "outboundTag": "proxy",
+        "ruleTag": "business-github"
+      },
+      {
+        "domain": [
+          "geosite:apple-proxy-youtube"
+        ],
+        "outboundTag": "proxy",
+        "ruleTag": "business-youtube"
+      },
+      {
+        "domain": [
+          "geosite:apple-proxy-overseasMedia"
+        ],
+        "outboundTag": "proxy",
+        "ruleTag": "business-overseasMedia"
+      },
+      {
+        "domain": [
+          "geosite:apple-proxy-globalSocial"
+        ],
+        "outboundTag": "proxy",
+        "ruleTag": "business-globalSocial"
+      },
+      {
+        "domain": [
+          "geosite:apple-proxy-overseasGame"
+        ],
+        "outboundTag": "proxy",
+        "ruleTag": "business-overseasGame"
+      },
+      {
+        "domain": [
+          "geosite:apple-proxy-domesticCore"
+        ],
+        "outboundTag": "direct",
+        "ruleTag": "business-domesticCore"
+      },
+      {
+        "domain": [
+          "geosite:apple-proxy-domesticPlatform"
+        ],
+        "outboundTag": "direct",
+        "ruleTag": "business-domesticPlatform"
+      },
+      {
+        "ip": [
+          "geoip:apple-proxy-china-ip"
+        ],
+        "outboundTag": "direct",
+        "ruleTag": "business-chinaIp"
+      },
+      {
+        "domain": [
+          "geosite:apple-proxy-apple"
+        ],
+        "outboundTag": "direct",
+        "ruleTag": "business-apple"
+      },
+      {
+        "domain": [
+          "geosite:apple-proxy-microsoft"
+        ],
+        "outboundTag": "direct",
+        "ruleTag": "business-microsoft"
+      },
+      {
+        "domain": [
+          "geosite:apple-proxy-download"
+        ],
+        "outboundTag": "direct",
+        "ruleTag": "business-download"
+      },
+      {
+        "domain": [
+          "geosite:cn"
+        ],
+        "outboundTag": "direct",
+        "ruleTag": "china-domain-direct"
+      },
+      {
+        "ip": [
+          "geoip:cn"
+        ],
+        "outboundTag": "direct",
+        "ruleTag": "china-ip-direct"
+      },
+      {
+        "network": "tcp,udp",
+        "outboundTag": "proxy",
+        "ruleTag": "final-follow"
+      }
+    ]
+  }
+}

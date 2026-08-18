@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "client": "happ",
+  "output": "audit",
+  "platform": "all",
+  "channel": "edge",
+  "counts": {
+    "configs": 2,
+    "eligibleNodes": 2,
+    "fixedNodes": 0,
+    "warnings": 0
+  },
+  "targets": {},
+  "warnings": []
+}
