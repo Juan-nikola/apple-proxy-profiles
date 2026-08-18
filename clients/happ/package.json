@@ -1,0 +1,13 @@
+{
+  "name": "@apple-proxy-profiles/happ",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "test": "node --test",
+    "build": "node -e \"console.log('happ core build handled by root publication')\"",
+    "fixtures": "node -e \"console.log('happ fixtures handled by root publication')\"",
+    "verify": "npm test"
+  }
+}
