@@ -16,10 +16,10 @@
     },
     "v2fly": {
       "blockerCount": 0,
-      "reportOnly": false,
-      "schemaVersion": 0,
+      "reportOnly": true,
+      "schemaVersion": 1,
       "sha256": null,
-      "warningCount": 0
+      "warningCount": 1
     }
   },
   "blockers": [],
@@ -47,7 +47,7 @@
       },
       "edge": {
         "closure": true,
-        "manifestHash": "4b9e5c2ce837d8d7008705f0c2db180f27798c31359e4865d0ed3e8f3d9655d4"
+        "manifestHash": "249b4671704a8accce75370063744935a8b9760842bfaed22ec03bfae46090e3"
       },
       "previous": {
         "closure": true,
@@ -64,7 +64,7 @@
       },
       "edge": {
         "closure": true,
-        "manifestHash": "66a5476db2bb4592ba10b2ad6c1374f99e25428002ccb72cbf6368a54ad985aa"
+        "manifestHash": "24cff1dfc2ae3fc883af3602da5a57526aa7375aa9c0ca52c8a95c3423d50b96"
       },
       "previous": {
         "closure": true,
@@ -81,7 +81,7 @@
       },
       "edge": {
         "closure": true,
-        "manifestHash": "e53e8ac00da94f8acb08ae6c7575521b5523c36325ee446d40f67955390d3fdc"
+        "manifestHash": "049b2382058ecd4c3e89ccd075379261fbce1447bb0be84f651ef12503bbf5a8"
       },
       "previous": {
         "closure": true,
@@ -98,7 +98,7 @@
       },
       "edge": {
         "closure": true,
-        "manifestHash": "650dc6c3eece31a83a2be0f4c6d6997e6c1191bc2f2113e17b7c969b820e3088"
+        "manifestHash": "08c398f7ad636feac5686849a0253a28ea548b16f8fc2dec7cb7e2749d4eb179"
       },
       "previous": {
         "closure": true,
@@ -115,7 +115,7 @@
       },
       "edge": {
         "closure": true,
-        "manifestHash": "72b2cea009819c2fce098ea018d3b529f43d9091079b2454c013c10fbde9441c"
+        "manifestHash": "e0f100887b675e77dcca9f964ca0ec625248bce248ab725cc0869520be50ceb1"
       },
       "previous": {
         "closure": true,
@@ -132,7 +132,7 @@
       },
       "edge": {
         "closure": true,
-        "manifestHash": "d10472d7b34336be9598bd0a53becbd91d3127a518b7273c2f3df69c864373b3"
+        "manifestHash": "53b9720abf66f478e6c9f77728ff05404ce90518660e365787a5531eb56b4bc9"
       },
       "previous": {
         "closure": true,
@@ -149,7 +149,7 @@
       },
       "edge": {
         "closure": true,
-        "manifestHash": "1ea7eae7907056b96a2b851011daa39b3790c0d278c7dac26225a4585cd9300d"
+        "manifestHash": "532bdeb91b1b8ad8954786d9359af5228e08b67d3f4c8ec13c547ed6a66f0329"
       },
       "previous": {
         "closure": true,
@@ -158,7 +158,7 @@
       "state": "active"
     }
   },
-  "generatedAt": "2026-08-15T18:26:29Z",
+  "generatedAt": "2026-08-17T18:35:27Z",
   "privateDataExcluded": true,
   "rules": {
     "entries": 16840,
@@ -168,8 +168,8 @@
   },
   "schemaVersion": 1,
   "upstream": {
-    "commit": "538b8a79532c44dfbcb8e694d2f43e753c60b157",
-    "committedAt": "2026-08-15T18:26:29Z",
+    "commit": "24e571ee44747a3adf1b3c618102fc9d2b1b61cd",
+    "committedAt": "2026-08-17T18:35:27Z",
     "repository": "blackmatrix7",
     "sha256": "c2437ae35319f1e41b69a098fdc7c0b3c3c5a90e6deea906406f30f998bd9403"
   }
