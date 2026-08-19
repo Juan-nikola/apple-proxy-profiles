@@ -47,11 +47,7 @@
       "referencedDefaultBytes": 394309
     },
     "happ": {
-<<<<<<< HEAD
-      "manifestHash": "991d7fbec811a12e2c56426cce2c5dd97be7a6ea0d7e879ab1f7a988110690bf",
-=======
       "manifestHash": "934dc5df92d923d23ee5d79d9c8f9606b45efb463abef0352ef24feac9fe7f1f",
->>>>>>> ff7c71b (fix: make HAPP routing compatible with bundled geodata)
       "referencedDefaultBytes": 0
     },
     "onexray": {
@@ -198,20 +194,12 @@
     {
       "bytes": 1888,
       "path": "audit/dashboard.html",
-<<<<<<< HEAD
-      "sha256": "713a581b104d25fbb254fc655b3f161d00376ea2fefd2048dc9fba315d4aaa20"
-=======
       "sha256": "75c2471e642a74ea03b6aeaea936fd2af9900995527ea1e94dd46939aeaa77b8"
->>>>>>> ff7c71b (fix: make HAPP routing compatible with bundled geodata)
     },
     {
       "bytes": 4120,
       "path": "audit/dashboard.json",
-<<<<<<< HEAD
-      "sha256": "a7be2007d6f21b376a664df872be778beb4b08b7467f4977391a4f90183ab823"
-=======
       "sha256": "95cd11e50b7fb7e24b681ee2c6d10b2e135eb2a9f5b6ca11d421f60dfbcee546"
->>>>>>> ff7c71b (fix: make HAPP routing compatible with bundled geodata)
     },
     {
       "bytes": 5175,
@@ -219,14 +207,6 @@
       "sha256": "49b800828169763cbc4f315132892be58cb403b9d2cc7b60d3f05f806098d7a3"
     },
     {
-<<<<<<< HEAD
-      "bytes": 7260,
-      "path": "audit/v2fly-domain-drift.json",
-      "sha256": "87dee729138f0438cbf20a43a0203a1f4c1241caac8bf99119dc968fa98caa33"
-    },
-    {
-=======
->>>>>>> ff7c71b (fix: make HAPP routing compatible with bundled geodata)
       "bytes": 6727,
       "path": "egern/client-manifest.json",
       "sha256": "e228d3a3b4564d7c12f0b56d60d36a2e30f8d9751f3c9e8ee7e03da2f31427da"
@@ -429,11 +409,7 @@
     {
       "bytes": 1457,
       "path": "happ/client-manifest.json",
-<<<<<<< HEAD
-      "sha256": "3ef21ab23c129267dfb854d9c431e2ca73f1bd056ed5e8d3030d622b162e6aca"
-=======
       "sha256": "0a293c216ba25d8b9c9f99e9cb1c55c0fdc28cf8203dbc956f6bee0099d7ed4c"
->>>>>>> ff7c71b (fix: make HAPP routing compatible with bundled geodata)
     },
     {
       "bytes": 181247,
@@ -451,15 +427,9 @@
       "sha256": "24e3638e1a409566d325419b4ed2909d7a128866833554026afc83ed8783ffb3"
     },
     {
-<<<<<<< HEAD
-      "bytes": 139454,
-      "path": "happ/scripts/happ-config-generator.js",
-      "sha256": "6e893d80338d666a264bdfc1bd3074ce6b08a515eb15d0fa1b9db814b5ce4b51"
-=======
       "bytes": 140932,
       "path": "happ/scripts/happ-config-generator.js",
       "sha256": "50264eab951bce6c64a815d6b138b850a9ca67d93869112abb48d9e690862afe"
->>>>>>> ff7c71b (fix: make HAPP routing compatible with bundled geodata)
     },
     {
       "bytes": 110758,
@@ -467,15 +437,9 @@
       "sha256": "d66e0daac55b00246b85bc1cab136fd36a2defbef211ca8909835a4c4f4c570f"
     },
     {
-<<<<<<< HEAD
-      "bytes": 139454,
-      "path": "happ/scripts/substore-config-generator.js",
-      "sha256": "6e893d80338d666a264bdfc1bd3074ce6b08a515eb15d0fa1b9db814b5ce4b51"
-=======
       "bytes": 140932,
       "path": "happ/scripts/substore-config-generator.js",
       "sha256": "50264eab951bce6c64a815d6b138b850a9ca67d93869112abb48d9e690862afe"
->>>>>>> ff7c71b (fix: make HAPP routing compatible with bundled geodata)
     },
     {
       "bytes": 110758,
@@ -1228,13 +1192,8 @@
       "sha256": "4b79769742f40c03e996861e165e1e8efa9f4113abc4c52bb1fcd5ccc21ab2eb"
     }
   ],
-<<<<<<< HEAD
-  "generatedAt": "2026-08-17T18:35:27Z",
-  "manifestHash": "cbbdb948daa688b2d6dae3017a4e991e5841f506b185a0b24d1bbaaa707440b4",
-=======
   "generatedAt": "2026-08-15T18:26:29Z",
   "manifestHash": "f911d3ef033315bb9d3e08b4ccc45182234c40d6cde57877002f46446f9fb081",
->>>>>>> ff7c71b (fix: make HAPP routing compatible with bundled geodata)
   "schemaVersion": 2,
   "upstream": {
     "branch": "master",

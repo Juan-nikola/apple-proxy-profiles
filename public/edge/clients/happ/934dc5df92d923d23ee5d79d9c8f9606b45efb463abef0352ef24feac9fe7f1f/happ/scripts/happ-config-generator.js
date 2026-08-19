@@ -2441,10 +2441,6 @@ var HappConfigBundle = (() => {
   }
 
   // src/render-dns.js
-<<<<<<<< HEAD:public/edge/clients/happ/991d7fbec811a12e2c56426cce2c5dd97be7a6ea0d7e879ab1f7a988110690bf/happ/scripts/happ-config-generator.js
-  var PROXY_GEOSITE_DOMAINS = Object.freeze(
-    EXPLICIT_OVERSEAS_RULE_SOURCE_IDS.map((id) => `geosite:HAPP-${id.toUpperCase()}`)
-========
   var HAPP_GEOSITE_ALIASES = Object.freeze({
     OpenAI: "OPENAI",
     Claude: "CATEGORY-AI-!CN",
@@ -2465,7 +2461,6 @@ var HappConfigBundle = (() => {
   });
   var PROXY_GEOSITE_DOMAINS = Object.freeze(
     EXPLICIT_OVERSEAS_RULE_SOURCE_IDS.map((id) => `geosite:${HAPP_GEOSITE_ALIASES[id] ?? id.toUpperCase()}`)
->>>>>>>> ff7c71b (fix: make HAPP routing compatible with bundled geodata):public/edge/clients/happ/934dc5df92d923d23ee5d79d9c8f9606b45efb463abef0352ef24feac9fe7f1f/happ/scripts/happ-config-generator.js
   );
   var defaults = { dnsMode: "stable", chinaDns: "alidns", globalDns: "cloudflare", ipv6Mode: "auto" };
   function renderHappDns(options = {}) {

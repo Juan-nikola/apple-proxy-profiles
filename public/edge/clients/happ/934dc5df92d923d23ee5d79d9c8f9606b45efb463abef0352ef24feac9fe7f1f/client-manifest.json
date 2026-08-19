@@ -18,15 +18,9 @@
       "sha256": "24e3638e1a409566d325419b4ed2909d7a128866833554026afc83ed8783ffb3"
     },
     {
-<<<<<<<< HEAD:public/edge/clients/happ/991d7fbec811a12e2c56426cce2c5dd97be7a6ea0d7e879ab1f7a988110690bf/client-manifest.json
-      "bytes": 139454,
-      "path": "happ/scripts/happ-config-generator.js",
-      "sha256": "6e893d80338d666a264bdfc1bd3074ce6b08a515eb15d0fa1b9db814b5ce4b51"
-========
       "bytes": 140932,
       "path": "happ/scripts/happ-config-generator.js",
       "sha256": "50264eab951bce6c64a815d6b138b850a9ca67d93869112abb48d9e690862afe"
->>>>>>>> ff7c71b (fix: make HAPP routing compatible with bundled geodata):public/edge/clients/happ/934dc5df92d923d23ee5d79d9c8f9606b45efb463abef0352ef24feac9fe7f1f/client-manifest.json
     },
     {
       "bytes": 110758,
@@ -34,15 +28,9 @@
       "sha256": "d66e0daac55b00246b85bc1cab136fd36a2defbef211ca8909835a4c4f4c570f"
     },
     {
-<<<<<<<< HEAD:public/edge/clients/happ/991d7fbec811a12e2c56426cce2c5dd97be7a6ea0d7e879ab1f7a988110690bf/client-manifest.json
-      "bytes": 139454,
-      "path": "happ/scripts/substore-config-generator.js",
-      "sha256": "6e893d80338d666a264bdfc1bd3074ce6b08a515eb15d0fa1b9db814b5ce4b51"
-========
       "bytes": 140932,
       "path": "happ/scripts/substore-config-generator.js",
       "sha256": "50264eab951bce6c64a815d6b138b850a9ca67d93869112abb48d9e690862afe"
->>>>>>>> ff7c71b (fix: make HAPP routing compatible with bundled geodata):public/edge/clients/happ/934dc5df92d923d23ee5d79d9c8f9606b45efb463abef0352ef24feac9fe7f1f/client-manifest.json
     },
     {
       "bytes": 110758,
@@ -50,13 +38,8 @@
       "sha256": "d66e0daac55b00246b85bc1cab136fd36a2defbef211ca8909835a4c4f4c570f"
     }
   ],
-<<<<<<<< HEAD:public/edge/clients/happ/991d7fbec811a12e2c56426cce2c5dd97be7a6ea0d7e879ab1f7a988110690bf/client-manifest.json
-  "generatedAt": "2026-08-17T18:35:27Z",
-  "manifestHash": "991d7fbec811a12e2c56426cce2c5dd97be7a6ea0d7e879ab1f7a988110690bf",
-========
   "generatedAt": "2026-08-15T18:26:29Z",
   "manifestHash": "934dc5df92d923d23ee5d79d9c8f9606b45efb463abef0352ef24feac9fe7f1f",
->>>>>>>> ff7c71b (fix: make HAPP routing compatible with bundled geodata):public/edge/clients/happ/934dc5df92d923d23ee5d79d9c8f9606b45efb463abef0352ef24feac9fe7f1f/client-manifest.json
   "optionalPacks": {},
   "schemaVersion": 1
 }
