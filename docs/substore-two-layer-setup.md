@@ -79,7 +79,7 @@ https://juan-nikola.github.io/apple-proxy-profiles/current/egern/scripts/egern-n
 https://juan-nikola.github.io/apple-proxy-profiles/current/surge/scripts/surge-profile-generator.js#output=config&type=collection&name=apple-proxy-surge&subscriptionName=Apple-Proxy-Nodes&platform=iphone&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&autoGroupMode=auto&clientChain=off
 ```
 
-## 4. 17 个任务总表
+## 4. 17 个通用任务总表
 
 下面的 `Apple-Proxy-Nodes` 是公开示例显示名。实际使用时，在 Shadowrocket、Surge 或 sing-box 中给节点订阅取一个你自己的显示名，并让同一客户端对应 Profile/Config 任务的 `subscriptionName` 逐字一致。每个 Profile/Config 只指向节点池指南定义的对应 client collection。
 
@@ -103,11 +103,11 @@ https://juan-nikola.github.io/apple-proxy-profiles/current/surge/scripts/surge-p
 | 16 | `singbox-config-ipad` | File | sing-box config | iPad | 每天 |
 | 17 | `singbox-config-android` | File | sing-box config | Android | 每天 |
 
-五客户端总数为 4+1+4+4+4=17 个任务。
+通用任务总数为 `4+1+4+4+4=17` 个。
 
-## 4.1 七客户端目标与 23 个任务
+## 4.1 七客户端目标与 28 个任务
 
-仓库注册表包含七个稳定 ID，七个都已进入 `active` 发布状态。任务总数为 **23 个**：现有 17 个公开规则/配置任务，加上下面 6 个私密 HAPP/OneXray 任务。
+仓库注册表包含七个稳定 ID，七个都已进入 `active` 发布状态。任务总数为 **28 个**：现有 17 个通用任务，加上 policy、3 个 OneXray 任务、6 个 HAPP 平台配置任务和 1 个 HAPP 审计任务。
 
 | # | 任务 | 状态 | 输入/绑定 | 说明 |
 | ---: | --- | --- | --- | --- |
@@ -115,12 +115,19 @@ https://juan-nikola.github.io/apple-proxy-profiles/current/surge/scripts/surge-p
 | 19 | `onexray-nodes` | active/private | `apple-proxy-onexray` 或总池 | 输出 Xray JSON outbounds；不复制完整 Profile，不包含公开凭据 |
 | 20 | `onexray-profile` | active/private | `apple-proxy-onexray` | 输出结构化 OneXray Profile；固定节点缺失/重复/不兼容时整项失败 |
 | 21 | `onexray-routing-audit` | active/private | 与 Profile 同一 collection/参数 | 只输出计数、目标解析和链状态，不输出节点凭据 |
-| 22 | `happ-subscription` | active/private | `apple-proxy-happ` 或总池 | 输出 HAPP JSON 配置数组；每个首页节点独立生成，固定节点故障回退 FOLLOW |
-| 23 | `happ-routing-audit` | active/private | 与 HAPP 配置同一 collection/参数 | 只输出兼容数、排除原因、业务目标和 warning |
+| 22 | `happ-macos` | active/private | `apple-proxy-happ` | 输出 macOS HAPP JSON 配置数组 |
+| 23 | `happ-iphone` | active/private | `apple-proxy-happ` | 输出 iPhone HAPP JSON 配置数组 |
+| 24 | `happ-ipad` | active/private | `apple-proxy-happ` | 输出 iPad HAPP JSON 配置数组 |
+| 25 | `happ-android` | active/private | `apple-proxy-happ` | 输出 Android HAPP JSON 配置数组 |
+| 26 | `happ-windows` | active/private | `apple-proxy-happ` | 输出 Windows HAPP JSON 配置数组 |
+| 27 | `happ-linux` | active/private | `apple-proxy-happ` | 输出 Linux HAPP JSON 配置数组 |
+| 28 | `happ-routing-audit` | active/private | 与 HAPP 配置同一 collection/参数 | 只输出兼容数、排除原因、业务目标和 warning |
 
 所有读取策略的任务必须接收同名 `channel`（仅 `edge`、`current`、`previous`），并绑定该频道的 policy revision、公开 client Manifest SHA-256 和 GeoData SHA-256；OneXray node-only 任务也接收 `channel`，但不读取业务策略。公开脚本只在 Pages 提供无节点 bundle，真实输出仍只在私密 Sub-Store 任务日志和客户端导入结果中查看。
 
 真机 canary 尚未替用户完成：先在 macOS 或 Android 设备预览/导入，再逐平台记录通过结果；没有 canary 证据时不要把 `edge` 任务直接切成 `current`。
+
+在 HAPP/OneXray 完成 canary 前，本项目为这 11 个任务使用 `channel=edge`；其余已有 17 个任务继续保留原来的 `current` URL。canary 通过后，再逐客户端把 HAPP/OneXray 任务的 `channel` 改为 `current`。
 
 ## 5. Egern：1 个节点 File + 3 个 Profile File
 
@@ -279,13 +286,14 @@ sing-box 默认 strict：任一已选节点无法完整渲染时 preview 失败�
 
 ### 首次建立
 
-1. 按节点池指南 preview 五个 client collection。
+1. 按节点池指南 preview 七个 client collection。
 2. 运行节点任务：Egern、Anywhere、Shadowrocket。
 3. 运行依赖节点输出 URL 的 Egern Profile。
 4. 运行 `surge-nodes`，再运行 Surge 三个平台 Profile；Profile 会自动携带节点资源 URL。
 5. 运行 Shadowrocket 和 sing-box Profile/Config。
-6. 逐个保存私密输出 URL；不要在聊天中回传。
-7. 先在一台 macOS 设备导入并 canary，再处理 Android、iPhone 和 iPad。
+6. 运行 OneXray 节点、Profile、审计任务，再运行 HAPP 六平台配置和审计任务。
+7. 逐个保存私密输出 URL；不要在聊天中回传。
+8. 先在一台 macOS 或 Android 设备导入并 canary，再处理 iPhone、iPad、Windows 和 Linux。
 
 审计查看入口：Pages 的 `current/audit/dashboard.json` 是机器可读摘要，首页提供中文审计入口；审计阻断项在仓库 Issues 的 `audit-blocker` 标签下查看。节点 URL、policy File、固定目标和私密 audit 只在你自己的 Sub-Store 任务日志中查看，不能复制到公开 Issue 或 README。
 
@@ -303,7 +311,7 @@ sing-box 默认 strict：任一已选节点无法完整渲染时 preview 失败�
 
 ## 12. 任务完成检查
 
-- 五个 client collection 都已 preview，且只包含用户为该客户端选择的协议和字段。
+- 七个 client collection 都已 preview，且只包含用户为该客户端选择的协议和字段。
 - 节点预览非空；Profile/Config 预览结构正确，不出现凭据。
 - `noCache` 正式任务关闭，`insecure` 始终关闭。
 - `subscriptionName` 在对应客户端和所有 Profile/Config 任务中逐字一致。

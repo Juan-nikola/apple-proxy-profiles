@@ -1,0 +1,32 @@
+// Minimal wire-compatible subset of the V2Ray/Xray geodata schema.
+// Source: https://github.com/v2ray/v2ray-core/blob/d80440f3d57b45c829dbf513306f7adf9a0f3f76/app/router/config.proto
+// Upstream commit: d80440f3d57b45c829dbf513306f7adf9a0f3f76; license: MIT.
+syntax = "proto3";
+
+package xray.app.router;
+
+message Domain {
+  enum Type { Plain = 0; Regex = 1; Domain = 2; Full = 3; }
+  Type type = 1;
+  string value = 2;
+}
+
+message GeoSite {
+  string country_code = 1;
+  repeated Domain domain = 2;
+}
+
+message GeoSiteList { repeated GeoSite entry = 1; }
+
+message CIDR {
+  bytes ip = 1;
+  uint32 prefix = 2;
+}
+
+message GeoIP {
+  string country_code = 1;
+  repeated CIDR cidr = 2;
+  bool reverse_match = 3;
+}
+
+message GeoIPList { repeated GeoIP entry = 1; }

@@ -12,7 +12,7 @@
 | OneXray | macOS、iPhone、iPad、Android、Windows、Linux | Xray JSON 节点订阅、结构化 Profile、路由审计 |
 | HAPP | iPhone、iPad、macOS、Android、Windows、Linux | HAPP JSON 订阅、路由审计 |
 
-Android 仍是 sing-box 的一个平台输出；注册表和发布链路现在覆盖七个 active 客户端。Sub-Store 任务总数为 23：原有 17 个任务，加上 `apple-proxy-policy`、`onexray-nodes`、`onexray-profile`、`onexray-routing-audit`、`happ-subscription`、`happ-routing-audit` 六个私密任务。
+Android 仍是 sing-box 的一个平台输出；注册表和发布链路现在覆盖七个 active 客户端。Sub-Store 任务总数为 28：原有 17 个通用任务，加上 `apple-proxy-policy`、3 个 OneXray 任务、6 个 HAPP 平台配置任务和 `happ-routing-audit`。
 
 本仓库只保存公开脚本、公开规则和脱敏示例，**不保存你的订阅、节点、密码、UUID、私密输出 URL 或 Sub-Store 管理地址**。本项目不需要 MITM、HTTPS 解密、CA 证书或请求重写，这些功能请保持关闭。
 
@@ -61,7 +61,7 @@ shared/rules/semantic-intents.js（统一业务语义）
 客户端中的业务组、规则集或 selector
 ```
 
-它不会把所有 AI、媒体、游戏和国内业务混成一个组。它固定“这些来源属于哪个业务意图”，再让不同客户端按自己的格式输出。以后新增 App 或替换上游规则时，维护者主要修改统一语义和测试，不需要分别手改五套互相漂移的规则。
+它不会把所有 AI、媒体、游戏和国内业务混成一个组。它固定“这些来源属于哪个业务意图”，再让不同客户端按自己的格式输出。以后新增 App 或替换上游规则时，维护者主要修改统一语义和测试，不需要分别手改七套互相漂移的规则。
 
 当前固定的主路由顺序是：国内核心 → 业务规则 → 海外游戏 → 中国域名后缀 → 中国 IP → 最终走主节点。具体客户端仍保留自己支持的业务选择器。
 
@@ -74,7 +74,7 @@ apple-proxy-all 总池
     ↓
 七个 active 客户端 collection（由你筛选；Xray renderer 会报告并排除不兼容节点）
     ↓
-23 个 Sub-Store File 任务（17 个通用任务 + 6 个 HAPP/OneXray 私密任务）
+28 个 Sub-Store File 任务（17 个通用任务 + 11 个 HAPP/OneXray 私密任务）
     ↓
 客户端导入私密输出 URL
     ↓
@@ -103,6 +103,20 @@ apple-proxy-all 总池
 失败怎么办：来源单独预览为空时，先修复来源，不要继续创建本项目任务。
 
 回滚方式：保留当前能联网的客户端 Profile 和 Sub-Store 备份，后续任何一步失败都可以切回。
+
+### 1.1.1 已提供私密入口时的本机配置
+
+如果你已经有 Sub-Store 的私密入口，可以在本机生成一份不进 Git 的任务清单。命令只把地址写入被 `.gitignore` 保护的 `secrets/substore.private.json`，不会上传、提交或写入公开 Pages：
+
+```bash
+SUBSTORE_SOURCE_URL='https://你的私密 Sub-Store 地址' \\
+SUBSTORE_CHANNEL=current \\
+npm run configure:substore
+```
+
+成功标志：终端显示 `Wrote private Sub-Store config`，且文件权限为 `0600`；文件中有 8 个 collection、28 个任务。切换灰度或回滚时，把 `SUBSTORE_CHANNEL` 改成 `edge` 或 `previous` 后重新运行即可。真实地址不要复制进 README、Issue 或聊天。
+
+这个命令会离线校验公开 JS URL 的 `#` 参数，但不会替你登录 Sub-Store 管理后台或自动删除旧任务；首次迁移仍按下面的 preview、canary 和回滚步骤执行。
 
 ### 1.2 创建一个总池和七个客户端 collection
 
@@ -134,9 +148,9 @@ apple-proxy-all 总池
 
 完整的筛选边界和迁移顺序见 [Sub-Store 客户端节点池指南](docs/substore-client-pools.md)。
 
-### 1.3 创建或核对 23 个 active File 任务
+### 1.3 创建或核对 28 个 active File 任务
 
-实际任务总数是 `4+1+4+4+4=17`。早期文档漏算了 `shadowrocket-nodes`，不要再按 16 个创建。
+通用任务总数是 `4+1+4+4+4=17`；加上 policy、3 个 OneXray 任务、6 个 HAPP 平台任务和 1 个 HAPP 审计任务后，canonical 任务总数是 28。早期文档漏算了 `shadowrocket-nodes`，不要再按 16 个创建。
 
 | # | 客户端 | File 任务名 | 作用 |
 | ---: | --- | --- | --- |
@@ -158,7 +172,7 @@ apple-proxy-all 总池
 | 16 | sing-box | `singbox-config-ipad` | iPad JSON |
 | 17 | sing-box | `singbox-config-android` | Android JSON |
 
-已有任务时逐个核对名称、脚本 URL、`name=` 和平台参数；没有任务时按 [Sub-Store 七客户端外置 JS + 任务引用总指南](docs/substore-two-layer-setup.md) 创建。不要复制 JavaScript 正文，File 应引用 Pages 上的远程脚本。六个 HAPP/OneXray 任务仍是私密任务，不会把节点或策略内容发布到 Pages。
+已有任务时逐个核对名称、脚本 URL、`name=` 和平台参数；没有任务时按 [Sub-Store 七客户端外置 JS + 任务引用总指南](docs/substore-two-layer-setup.md) 创建。不要复制 JavaScript 正文，File 应引用 Pages 上的远程脚本。11 个 HAPP/OneXray 任务仍是私密任务，不会把节点或策略内容发布到 Pages；HAPP 配置必须分别建立 `happ-macos`、`happ-iphone`、`happ-ipad`、`happ-android`、`happ-windows`、`happ-linux` 六个平台任务。
 
 建议刷新频率：节点类任务每 6 小时，配置类任务每天。Anywhere App 中的节点和规则仍需手动 Refresh/Update。
 
@@ -485,7 +499,7 @@ Shadowrocket 和 Surge 首先检查 `subscriptionName`；Egern 和 Surge 再检�
 | 路径 | 作用 |
 | --- | --- |
 | `docs/substore-client-pools.md` | 七个 active 客户端 collection 的筛选、迁移和回滚 |
-| `docs/substore-two-layer-setup.md` | 23 个 active/private File 的完整 URL、频道、审计和回滚参数 |
+| `docs/substore-two-layer-setup.md` | 28 个 active/private File 的完整 URL、频道、审计和回滚参数 |
 | `docs/maintenance.md` | 开发者维护、规则编译、发布与回滚 |
 | `docs/implementation-status.md` | 当前已完成和仍需真机执行的事项 |
 | `clients/<client>/docs/` | 每个客户端的部署、灰度和排障细节 |

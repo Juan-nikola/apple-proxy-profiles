@@ -42,9 +42,12 @@ test("publishes one hash-closed multi-client current snapshot", async () => {
     anywhere: "anywhere",
     surge: "surge",
     singbox: "sing-box",
+    onexray: "onexray",
+    happ: "happ",
   };
   for (const [client, directory] of Object.entries(clientDirectories)) {
     const hash = rollout.clients[client];
+    if (hash === undefined || hash === null) continue;
     assert.match(hash, /^[0-9a-f]{64}$/u, client);
     const manifest = JSON.parse(await readFile(new URL(`${directory}/client-manifest.json`, currentRoot), "utf8"));
     assert.equal(manifest.manifestHash, hash, client);
@@ -54,7 +57,7 @@ test("publishes one hash-closed multi-client current snapshot", async () => {
       assert.equal(sha256(content), record.sha256, record.path);
     }
   }
-  for (const path of [
+  const requiredCurrentPaths = [
     "shadowrocket/scripts/shadowrocket-node-operator.js",
     "shadowrocket/scripts/shadowrocket-profile-generator.js",
     "shadowrocket/scripts/substore-node-operator.js",
@@ -71,7 +74,20 @@ test("publishes one hash-closed multi-client current snapshot", async () => {
     "surge/scripts/substore-profile-generator.js",
     "sing-box/scripts/sing-box-config-generator.js",
     "sing-box/scripts/substore-config-generator.js",
-  ]) {
+  ];
+  if (rollout.clients.onexray) requiredCurrentPaths.push(
+    "onexray/index.html",
+    "onexray/geodata/geosite.dat",
+    "onexray/geodata/geoip.dat",
+    "onexray/geodata/manifest.json",
+  );
+  if (rollout.clients.happ) requiredCurrentPaths.push(
+    "happ/index.html",
+    "happ/geosite.dat",
+    "happ/geoip.dat",
+    "happ/scripts/happ-config-generator.js",
+  );
+  for (const path of requiredCurrentPaths) {
     await access(new URL(path, currentRoot));
   }
 });

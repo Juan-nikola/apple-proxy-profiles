@@ -20,6 +20,18 @@ const migrationMetadata = new Set([
   "anywhere/import.html",
   "anywhere/rules/manifest.json",
 ]);
+const optionalAwareGenerators = new Set([
+  "onexray/scripts/onexray-node-generator.js",
+  "onexray/scripts/substore-node-generator.js",
+  "onexray/scripts/onexray-profile-generator.js",
+  "onexray/scripts/substore-profile-generator.js",
+  "onexray/scripts/onexray-routing-audit.js",
+  "onexray/scripts/substore-routing-audit.js",
+  "happ/scripts/happ-config-generator.js",
+  "happ/scripts/substore-config-generator.js",
+  "happ/scripts/happ-routing-audit.js",
+  "happ/scripts/substore-routing-audit.js",
+]);
 const upstream = Object.freeze({
   repository: "https://github.com/blackmatrix7/ios_rule_script",
   branch: "master",
@@ -79,7 +91,10 @@ test("default artifacts contain no load-bearing legacy giant rule IDs or URLs", 
   for (const [path, content] of defaults) {
     assert.doesNotMatch(path, forbidden, path);
     if (!migrationMetadata.has(path)) {
-      assert.doesNotMatch(Buffer.from(content).toString("utf8"), forbidden, path);
+      const pattern = optionalAwareGenerators.has(path)
+        ? /\bChinaMax_Domain\b/u
+        : forbidden;
+      assert.doesNotMatch(Buffer.from(content).toString("utf8"), pattern, path);
     }
   }
 });

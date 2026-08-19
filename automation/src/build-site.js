@@ -24,6 +24,8 @@ import {
 import { canonicalJson } from "./render-anywhere-rules.js";
 import { assertChannelClosure } from "../../shared/release/channel-closure.js";
 import { FRONTIER_CHANNELS } from "../../shared/release/frontier-manifest.js";
+import { renderOneXrayImportPage } from "../../clients/onexray/src/build-import-page.js";
+import { oneXrayGeoNames } from "../../clients/onexray/src/geodata-contract.js";
 import {
   activeClientIds,
   lightweightRuleClientIds,
@@ -89,11 +91,81 @@ function rewritePublicationChannel(content, from, to) {
   return Buffer.from(rewritten, "utf8");
 }
 
+function parseOneXrayManifest(content) {
+  let manifest;
+  try {
+    manifest = JSON.parse(artifactBuffer(content).toString("utf8"));
+  } catch {
+    throw new Error("OneXray GeoData manifest is invalid JSON");
+  }
+  if (!manifest || typeof manifest !== "object" || Array.isArray(manifest)
+    || manifest.schema !== "apple-proxy-onexray-geodata-v1"
+    || !FRONTIER_CHANNELS.includes(manifest.channel)
+    || !Array.isArray(manifest.files) || manifest.files.length !== 2
+    || !/^[0-9a-f]{64}$/u.test(manifest.manifestHash ?? "")) {
+    throw new Error("OneXray GeoData manifest is invalid");
+  }
+  const { manifestHash, ...base } = manifest;
+  if (artifactSha256(canonicalJson(base)) !== manifestHash
+    || !artifactBuffer(content).equals(artifactBuffer(canonicalJson(manifest)))) {
+    throw new Error("OneXray GeoData manifest hash or canonical bytes are invalid");
+  }
+  return manifest;
+}
+
+function rebindOneXrayFiles(files, channel) {
+  const manifestPath = "onexray/geodata/manifest.json";
+  if (!files.has(manifestPath)) return files;
+  const source = parseOneXrayManifest(files.get(manifestPath));
+  if (source.channel === channel) return new Map(files);
+  const manifestBase = {
+    ...source,
+    channel,
+    releaseId: `${channel}-${source.upstream?.commit?.slice(0, 8) ?? "release"}`,
+    names: oneXrayGeoNames(channel),
+  };
+  delete manifestBase.manifestHash;
+  const manifest = Object.freeze({
+    ...manifestBase,
+    manifestHash: artifactSha256(canonicalJson(manifestBase)),
+  });
+  const dataFiles = new Map([
+    ["onexray/geodata/geosite.dat", artifactBuffer(files.get("onexray/geodata/geosite.dat"))],
+    ["onexray/geodata/geoip.dat", artifactBuffer(files.get("onexray/geodata/geoip.dat"))],
+  ]);
+  const page = renderOneXrayImportPage({
+    manifest,
+    files: dataFiles,
+    publicBase: "https://juan-nikola.github.io/apple-proxy-profiles",
+  });
+  const rebound = new Map(files);
+  rebound.set(manifestPath, Buffer.from(canonicalJson(manifest), "utf8"));
+  rebound.set("onexray/index.html", Buffer.from(page, "utf8"));
+  return rebound;
+}
+
 async function rewriteTreeChannel(directory, from, to) {
-  for (const relative of await relativeFiles(directory)) {
+  const relatives = await relativeFiles(directory);
+  for (const relative of relatives) {
     const path = join(directory, relative);
     const content = await readFile(path);
     await writeFile(path, rewritePublicationChannel(content, from, to));
+  }
+  const manifestSuffix = "onexray/geodata/manifest.json";
+  for (const relativeManifest of relatives.filter((path) => path === manifestSuffix || path.endsWith(`/${manifestSuffix}`))) {
+    const prefix = relativeManifest === manifestSuffix
+      ? ""
+      : relativeManifest.slice(0, -manifestSuffix.length);
+    const scoped = new Map();
+    for (const relative of relatives) {
+      if (relative === `${prefix}onexray/geodata/manifest.json` || relative.startsWith(`${prefix}onexray/`)) {
+        scoped.set(relative.slice(prefix.length), await readFile(join(directory, relative)));
+      }
+    }
+    const rebound = rebindOneXrayFiles(scoped, to);
+    for (const [relative, content] of rebound) {
+      await writeFile(join(directory, `${prefix}${relative}`), artifactBuffer(content));
+    }
   }
 }
 

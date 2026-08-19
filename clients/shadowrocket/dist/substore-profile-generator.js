@@ -882,7 +882,9 @@ var ShadowrocketProfileBundle = (() => {
   var FRONTIER_CHANNELS = Object.freeze(["edge", "current", "previous"]);
   var FRONTIER_PLATFORMS = Object.freeze({
     [CLIENT.surge]: Object.freeze(["macos", "iphone", "ipad"]),
-    [CLIENT.singbox]: Object.freeze(["macos", "iphone", "ipad", "android"])
+    [CLIENT.singbox]: Object.freeze(["macos", "iphone", "ipad", "android", "openwrt"]),
+    [CLIENT.onexray]: Object.freeze(["macos", "iphone", "ipad", "android", "windows", "linux"]),
+    [CLIENT.happ]: Object.freeze(["macos", "iphone", "ipad", "android", "windows", "linux"])
   });
 
   // ../../../shared/policies/platform-presets.js

@@ -31,14 +31,24 @@ function addReference(references, path, actualChannel, offset, kind) {
   references.push({ path, actualChannel, offset, kind });
 }
 
+// Private Sub-Store bundles intentionally contain a channel enum with a
+// default (`edge`) and validation tables for all three channels. Those
+// literals are executable policy input, not publication URLs; only concrete
+// channel-scoped paths/fields should participate in closure validation.
+function isNativeGeneratorPath(path) {
+  return /^(?:clients\/[^/]+\/[0-9a-f]{64}\/)?(?:happ|onexray)\/scripts\/[^/]+\.js$/u.test(path);
+}
+
 function scanText(path, text) {
   const references = [];
   const decoded = decodedOnce(text);
   for (const source of [text, decoded]) {
-    CHANNEL_FIELD.lastIndex = 0;
     let match;
-    while ((match = CHANNEL_FIELD.exec(source)) !== null) {
-      addReference(references, path, match[1].toLowerCase(), match.index, "field");
+    if (!isNativeGeneratorPath(path)) {
+      CHANNEL_FIELD.lastIndex = 0;
+      while ((match = CHANNEL_FIELD.exec(source)) !== null) {
+        addReference(references, path, match[1].toLowerCase(), match.index, "field");
+      }
     }
     CHANNEL_PATH_LOOSE.lastIndex = 0;
     while ((match = CHANNEL_PATH_LOOSE.exec(source)) !== null) {

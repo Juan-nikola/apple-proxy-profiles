@@ -1,6 +1,6 @@
 # 维护、编译与发布手册
 
-这份手册回答三个问题：以后增加节点或规则要改哪里、每个文件负责什么、在 macOS/Linux/CI 环境怎样构建和验证。公开仓库不保存节点；你的私密节点来源在 `apple-proxy-all` 总池与五个 client collection 中维护，详细边界见 [Sub-Store 客户端节点池指南](substore-client-pools.md)。旧 `apple-proxy-sources` 只保留作兼容/回滚入口。
+这份手册回答三个问题：以后增加节点或规则要改哪里、每个文件负责什么、在 macOS/Linux/CI 环境怎样构建和验证。公开仓库不保存节点；你的私密节点来源在 `apple-proxy-all` 总池与七个 client collection 中维护，详细边界见 [Sub-Store 客户端节点池指南](substore-client-pools.md)。旧 `apple-proxy-sources` 只保留作兼容/回滚入口。
 
 ## 1. 先判断你要改哪一层
 

@@ -77,7 +77,16 @@ test("central Sub-Store guide closes over all public scripts and private tasks",
     const rowPattern = new RegExp("\\| " + (index + 1) + " \\| `" + task + "` \\|", "u");
     assert.match(guide, rowPattern, `missing task-table row ${task}`);
   }
-  assert.match(guide, /(?:五客户端|客户端)总数为 4\+1\+4\+4\+4=17 个任务/u);
+  for (const [index, task] of [
+    "apple-proxy-policy", "onexray-nodes", "onexray-profile", "onexray-routing-audit",
+    "happ-macos", "happ-iphone", "happ-ipad", "happ-android", "happ-windows", "happ-linux",
+    "happ-routing-audit",
+  ].entries()) {
+    const rowPattern = new RegExp("\\| " + (index + 18) + " \\| `" + task + "` \\|", "u");
+    assert.match(guide, rowPattern, `missing private task-table row ${task}`);
+  }
+  assert.match(guide, /任务总数为 \*\*28 个\*\*/u);
+  assert.match(guide, /通用任务总数为 `4\+1\+4\+4\+4=17` 个/u);
   assert.match(guide, /#output=nodes[\s\S]*&/u);
   assert.match(guide, /#output=config[\s\S]*&/u);
   assert.match(guide, /channel=current[\s\S]*channel=edge/u);
@@ -127,7 +136,7 @@ test("beginner entry does not assume one private deployment already exists", asy
   assert.doesNotMatch(readme, /你的 Sub-Store 里已有|你自己的 Sub-Store 已经部署|已经全部建好|已经帮你建好/u);
 });
 
-test("canonical client pool guide defines five mappings, migration, rollback, and fail-closed rendering", async () => {
+test("canonical client pool guide defines seven mappings, migration, rollback, and fail-closed rendering", async () => {
   const guide = await optionalText("docs/substore-client-pools.md");
   for (const row of [
     "| Egern | `apple-proxy-egern` | 用户自行选择来源、AnyTLS 和字段形状 |",
@@ -135,6 +144,8 @@ test("canonical client pool guide defines five mappings, migration, rollback, an
     "| Shadowrocket | `apple-proxy-shadowrocket` | 用户自行选择节点；AnyTLS 等已实现类型可直接包含 |",
     "| Surge | `apple-proxy-surge` | 用户自行选择节点；renderer 无法表示的协议跳过并计入 renderFailures |",
     "| sing-box | `apple-proxy-singbox` | 默认 strict；任一已选节点无法完整表示时失败，迁移期可显式使用 compatible |",
+    "| OneXray | `apple-proxy-onexray` | 用户自行选择节点；节点任务输出 Xray JSON，Profile/审计对不兼容和固定节点问题失败关闭 |",
+    "| HAPP | `apple-proxy-happ` | 用户自行选择节点；六平台配置与审计共享同一策略覆盖，固定节点问题写入私密 warning |",
   ]) assert.ok(guide.includes(row), row);
   assert.match(guide, /`apple-proxy-all`[\s\S]{0,160}总池/u);
   assert.match(guide, /`apple-proxy-sources`[\s\S]{0,240}(?:兼容|回滚)/u);
@@ -144,7 +155,7 @@ test("canonical client pool guide defines five mappings, migration, rollback, an
   const orderedSteps = [
     "保留旧 collection 和 tasks",
     "建立 `apple-proxy-all` 总池",
-    "建立五个客户端组合",
+    "建立七个客户端组合",
     "用户自行筛选",
     "preview",
     "只修改对应客户端的 `name=`",

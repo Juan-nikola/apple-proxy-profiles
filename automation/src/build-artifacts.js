@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+
 import { buildAnywhereRuleSnapshot, canonicalJson } from "./render-anywhere-rules.js";
 import { renderEgernRuleSource } from "./render-egern-rules.js";
 import { renderShadowrocketRuleSource } from "./render-shadowrocket-rules.js";
@@ -23,6 +25,16 @@ import { SEMANTIC_INTENTS } from "../../shared/rules/semantic-intents.js";
 import { RULE_KIND } from "../../shared/rules/model.js";
 import { buildImportBatches, renderImportPage } from "../../clients/anywhere/src/build-import-page.js";
 import { ANYWHERE_LIGHTWEIGHT_MIGRATION } from "../../clients/anywhere/src/shard-rules.js";
+import { buildOneXrayGeoDataArtifacts } from "../../clients/onexray/src/build-import-page.js";
+import { renderHappGeodata } from "./render-happ-geodata.js";
+import {
+  renderHappImportPage,
+} from "../../clients/happ/src/build-import-page.js";
+import {
+  renderHappRoutingDeepLink,
+  renderHappRoutingProfile,
+  renderHappRoutingQrSvgSync,
+} from "../../clients/happ/src/render-routing-profile.js";
 import {
   activeClientIds,
   allClientIds,
@@ -86,6 +98,51 @@ const OPTIONAL_AWARE_GENERATOR_PATHS = new Set([
   "happ/scripts/happ-routing-audit.js",
   "happ/scripts/substore-routing-audit.js",
 ]);
+
+const ONEXRAY_SCRIPT_PATHS = Object.freeze([
+  "onexray/scripts/onexray-node-generator.js",
+  "onexray/scripts/substore-node-generator.js",
+  "onexray/scripts/onexray-profile-generator.js",
+  "onexray/scripts/substore-profile-generator.js",
+  "onexray/scripts/onexray-routing-audit.js",
+  "onexray/scripts/substore-routing-audit.js",
+]);
+const HAPP_SCRIPT_PATHS = Object.freeze([
+  "happ/scripts/happ-config-generator.js",
+  "happ/scripts/substore-config-generator.js",
+  "happ/scripts/happ-routing-audit.js",
+  "happ/scripts/substore-routing-audit.js",
+]);
+
+function happPublicScripts() {
+  const files = new Map();
+  for (const path of HAPP_SCRIPT_PATHS) {
+    const filename = path.slice("happ/scripts/".length);
+    const content = readFileSync(new URL(`../../clients/happ/dist/${filename}`, import.meta.url));
+    if (!Buffer.isBuffer(content) || content.length === 0) throw new Error(`Happ public script is empty: ${path}`);
+    files.set(path, content);
+  }
+  return files;
+}
+
+function onexrayPublicScripts() {
+  const files = new Map();
+  for (const path of ONEXRAY_SCRIPT_PATHS) {
+    const filename = path.slice("onexray/scripts/".length);
+    const content = readFileSync(new URL(`../../clients/onexray/dist/${filename}`, import.meta.url));
+    if (!Buffer.isBuffer(content) || content.length === 0) throw new Error(`OneXray public script is empty: ${path}`);
+    files.set(path, content);
+  }
+  return files;
+}
+
+function happPublicPage(channel, generatedAt) {
+  const baseUrl = `https://juan-nikola.github.io/apple-proxy-profiles/${channel}`;
+  const profile = renderHappRoutingProfile({ baseUrl, generatedAt });
+  const deepLink = renderHappRoutingDeepLink(profile);
+  const qrSvg = renderHappRoutingQrSvgSync(deepLink);
+  return new Map([["happ/index.html", Buffer.from(renderHappImportPage({ profile, deepLink, qrSvg }), "utf8")]]);
+}
 
 function compiledText(entries) {
   return `${entries.map((entry) => {
@@ -180,6 +237,19 @@ function anywhereLogicalRuleSets(compiledCatalog) {
 function addFiles(target, additions) {
   for (const [path, content] of additions) {
     if (target.has(path)) throw new Error(`Duplicate public artifact path: ${path}`);
+    target.set(path, content);
+  }
+}
+
+// The update pipeline supplies channel-rewritten copies of generated client
+// bundles through `additionalFiles`.  Keep those staged bytes authoritative
+// while still rejecting accidental collisions for every other artifact.
+function addAdditionalFiles(target, additions) {
+  const overridable = new Set([...HAPP_SCRIPT_PATHS, ...ONEXRAY_SCRIPT_PATHS]);
+  for (const [path, content] of additions) {
+    if (target.has(path) && !overridable.has(path)) {
+      throw new Error(`Duplicate public artifact path: ${path}`);
+    }
     target.set(path, content);
   }
 }
@@ -483,6 +553,13 @@ export function buildClientArtifacts({
       .reduce((sum, ruleSet) => sum + ruleSet.entries.length, 0),
   });
   const compactedMobile = compactRuleSetMap(compiled.mobileRuleSets);
+  const happGeoData = renderHappGeodata(compactedDefaults.ruleSets);
+  const onexrayGeoData = buildOneXrayGeoDataArtifacts({
+    ruleSets: compactedDefaults.ruleSets,
+    upstream,
+    channel,
+    publicBase: "https://juan-nikola.github.io/apple-proxy-profiles",
+  });
   const rendered = renderRuleSetMap({
     ruleSets: compactedDefaults.ruleSets,
     mobileRuleSets: compactedMobile.ruleSets,
@@ -492,6 +569,11 @@ export function buildClientArtifacts({
     channel,
   });
   const defaults = rendered.files;
+  addFiles(defaults, happGeoData.files);
+  addFiles(defaults, onexrayGeoData.files);
+  addFiles(defaults, happPublicPage(channel, upstream.committedAt));
+  addFiles(defaults, happPublicScripts());
+  addFiles(defaults, onexrayPublicScripts());
   let chinaIpAuditSha256 = null;
 
   const additions = typeof additionalFiles === "function"
@@ -499,7 +581,7 @@ export function buildClientArtifacts({
     : additionalFiles;
   if (additions !== null) {
     if (!(additions instanceof Map)) throw new TypeError("Additional public files must be a Map");
-    addFiles(defaults, additions);
+    addAdditionalFiles(defaults, additions);
   }
   if (chinaIpAudit !== null) {
     if (defaults.has("audit/china-ip-drift.json")) {
@@ -634,6 +716,8 @@ export function buildClientArtifacts({
       referencedBytes,
       defaultManifest,
       routingPlanAudit,
+      happGeoData: happGeoData.counts,
+      onexrayGeoData: onexrayGeoData.manifest,
       publicAuditDashboard,
       optionalManifests: Object.freeze({ "adblock-full": adblockFull.manifest }),
     }),

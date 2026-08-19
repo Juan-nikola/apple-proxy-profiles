@@ -71,3 +71,21 @@ test("allows the same frontier platform in independent channels", () => {
   assert.ok(files.has("edge/surge/macos/manifest.json"));
   assert.ok(files.has("current/surge/macos/manifest.json"));
 });
+
+test("renders six-platform HAPP and OneXray candidates without duplicating native bytes", () => {
+  const files = buildFrontierArtifacts({
+    ruleBaseUrl: "https://juan-nikola.github.io/apple-proxy-profiles/current",
+    manifests: [
+      record("happ", "windows", "edge"),
+      { ...record("onexray", "linux", "edge"), status: "candidate" },
+    ],
+    staticFiles: new Map([
+      ["happ/index.html", "https://juan-nikola.github.io/apple-proxy-profiles/current/happ/index.html\n"],
+      ["onexray/index.html", "https://juan-nikola.github.io/apple-profiles/current/onexray/index.html\n"],
+    ]),
+  });
+  assert.ok(files.has("edge/happ/windows/manifest.json"));
+  assert.ok(files.has("edge/onexray-linux/manifest.json"));
+  assert.match(files.get("edge/happ/index.html"), /\/edge\/happ\/index\.html/u);
+  assert.match(files.get("edge/onexray/index.html"), /\/edge\/onexray\/index\.html/u);
+});
