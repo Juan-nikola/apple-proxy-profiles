@@ -209,7 +209,7 @@
     {
       "bytes": 7260,
       "path": "audit/v2fly-domain-drift.json",
-      "sha256": "a68af6c429ecdd974d4676d2961301f30bf489a46370d28fd44912a908894dd0"
+      "sha256": "70fef160bc5109e7431597a09aa5518a0e3485c64f6ab6cbbaec8a8a9bd5b11e"
     },
     {
       "bytes": 6727,
@@ -1198,7 +1198,7 @@
     }
   ],
   "generatedAt": "2026-08-17T18:35:27Z",
-  "manifestHash": "ea6f546a18bcbf958a4fb039e1433637c678cee15fc98eef5c746ca610e16d12",
+  "manifestHash": "a9cacc220a4893de9096b39d5e0c94a514ff003976c1f52de3a4c59c9707eec8",
   "schemaVersion": 2,
   "upstream": {
     "branch": "master",
