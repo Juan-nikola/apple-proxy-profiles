@@ -3,6 +3,40 @@ import { businessTargetForSource } from "./policy-overrides.js";
 import { renderHappOutbound } from "./render-node.js";
 import { renderHappDnsRoutes } from "./render-dns.js";
 
+const HAPP_GEOSITE_ALIASES = Object.freeze({
+  Hijacking: "CATEGORY-ADS-ALL",
+  BlockHttpDNS: "CATEGORY-HTTPDNS-CN",
+  Privacy: "PRIVATE",
+  DomesticCore: "CN",
+  DomesticGame: "CATEGORY-GAMES-CN",
+  SteamCN: "STEAM",
+  BiliBili: "BILIBILI",
+  ByteDance: "BYTEDANCE",
+  XiaoHongShu: "XIAOHONGSHU",
+  Weibo: "CATEGORY-SOCIAL-MEDIA-CN",
+  OpenAI: "OPENAI",
+  Claude: "CATEGORY-AI-!CN",
+  Gemini: "GOOGLE-GEMINI",
+  Copilot: "GITHUB-COPILOT",
+  GitHub: "GITHUB",
+  YouTube: "YOUTUBE",
+  Netflix: "NETFLIX",
+  Disney: "DISNEY",
+  Spotify: "SPOTIFY",
+  GlobalMedia: "CATEGORY-MEDIA",
+  Telegram: "TELEGRAM",
+  Facebook: "FACEBOOK",
+  Instagram: "INSTAGRAM",
+  Twitter: "TWITTER",
+  TikTok: "TIKTOK",
+  Apple: "APPLE",
+  Microsoft: "MICROSOFT",
+  Download: "CATEGORY-NETDISK-!CN",
+  PrivateTracker: "CATEGORY-PT",
+  OverseasGame: "CATEGORY-GAMES-!CN",
+  ChinaTLD: "CN",
+});
+
 function hash(value) { let h = 2166136261; for (const c of String(value)) h = Math.imul(h ^ c.charCodeAt(0), 16777619); return (h >>> 0).toString(36); }
 function targetFor(id, resolution, followTag, fixedById) {
   const targetId = businessTargetForSource(id);
@@ -46,7 +80,7 @@ export function renderHappRouting(context = {}) {
       quicRuleInserted = true;
     }
     const isIp = item.id === "ChinaIP";
-    const source = `${isIp ? "geoip" : "geosite"}:HAPP-${item.id.toUpperCase()}`;
+    const source = `${isIp ? "geoip" : "geosite"}:${isIp ? "cn" : (HAPP_GEOSITE_ALIASES[item.id] ?? item.id.toUpperCase())}`;
     const target = item.policy === "REJECT"
       ? { outboundTag: options.blockMode === "off" ? "happ-direct" : "happ-block" }
       : targetFor(item.id, resolution, followTag, fixedById);

@@ -1,5 +1,5 @@
 {
-  "chinaIpAuditSha256": "9efd69e056baf8c42369e321474b94ef2cfc71f28966288ad32017ad71d874c4",
+  "chinaIpAuditSha256": "98f13d6021721417d0cd66ee09b9249f5125eefe85b9278841516dc61c5a4cfb",
   "client": "happ",
   "files": [
     {
@@ -13,14 +13,14 @@
       "sha256": "52de4978bef9970c4b0dd551834f8bf1a32246a648b09be6f705b6b16bbd9203"
     },
     {
-      "bytes": 315207,
+      "bytes": 314469,
       "path": "happ/index.html",
-      "sha256": "8a7196ead75a7121519ccfc4b59ae1fabe8c444526800abb332c80fd73c03e61"
+      "sha256": "53008c39d363240309949c60b8ddb4842723d9d778708fc4f9b60aa37d6bf1db"
     },
     {
-      "bytes": 139454,
+      "bytes": 140917,
       "path": "happ/scripts/happ-config-generator.js",
-      "sha256": "6e893d80338d666a264bdfc1bd3074ce6b08a515eb15d0fa1b9db814b5ce4b51"
+      "sha256": "6ae514c898162e15ef3bef69bb50a88cee9266282740fa11f80e74126e1bc611"
     },
     {
       "bytes": 110762,
@@ -28,9 +28,9 @@
       "sha256": "5a3501120891b9b7cfb39cde7f9dc0ef9cd2f45f28de64829f5f71edd43e9279"
     },
     {
-      "bytes": 139454,
+      "bytes": 140917,
       "path": "happ/scripts/substore-config-generator.js",
-      "sha256": "6e893d80338d666a264bdfc1bd3074ce6b08a515eb15d0fa1b9db814b5ce4b51"
+      "sha256": "6ae514c898162e15ef3bef69bb50a88cee9266282740fa11f80e74126e1bc611"
     },
     {
       "bytes": 110762,
@@ -38,8 +38,8 @@
       "sha256": "5a3501120891b9b7cfb39cde7f9dc0ef9cd2f45f28de64829f5f71edd43e9279"
     }
   ],
-  "generatedAt": "2026-08-17T18:35:27Z",
-  "manifestHash": "07990b79d48cd56bef17fe72706f26bb21c28df4f2be9e6c24b5fee9e699e817",
+  "generatedAt": "2026-08-15T18:26:29Z",
+  "manifestHash": "222d4640d450a956660b9316871544b733a27594f01655d80c0c5e17dd1cb3ae",
   "optionalPacks": {},
   "schemaVersion": 1
 }

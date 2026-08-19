@@ -3,7 +3,6 @@ import test from "node:test";
 
 import { decodeHappGeodata, renderHappGeodata } from "../../../automation/src/render-happ-geodata.js";
 import { happProxyGeositeDomains } from "../src/render-dns.js";
-import { EXPLICIT_OVERSEAS_RULE_SOURCE_IDS } from "../../../shared/rules/lightweight-policy.js";
 import { RULE_KIND } from "../../../shared/rules/model.js";
 
 function ruleSet(id, entries) {
@@ -42,12 +41,25 @@ test("HAPP GeoData rejects unsupported rule kinds", () => {
   ])), /unsupported Happ geodata rule kind/u);
 });
 
-test("HAPP proxy DNS domains are present in generated GeoData", () => {
-  const ruleSets = new Map(EXPLICIT_OVERSEAS_RULE_SOURCE_IDS.map((id) => [
-    id,
-    ruleSet(id, [{ kind: RULE_KIND.domainSuffix, value: `${id.toLowerCase()}.example` }]),
-  ]));
-  const geodata = decodeHappGeodata(renderHappGeodata(ruleSets).files);
-  const generatedCodes = new Set(geodata.geosite.map(({ countryCode }) => `geosite:${countryCode}`));
-  for (const domain of happProxyGeositeDomains()) assert.equal(generatedCodes.has(domain), true, domain);
+test("HAPP proxy DNS domains use bundled Xray-compatible geosite codes", () => {
+  const domains = happProxyGeositeDomains();
+  assert.equal(domains.some((domain) => domain.includes("HAPP-")), false);
+  assert.deepEqual(domains, [
+    "geosite:OPENAI",
+    "geosite:CATEGORY-AI-!CN",
+    "geosite:GOOGLE-GEMINI",
+    "geosite:GITHUB-COPILOT",
+    "geosite:GITHUB",
+    "geosite:YOUTUBE",
+    "geosite:NETFLIX",
+    "geosite:DISNEY",
+    "geosite:SPOTIFY",
+    "geosite:CATEGORY-MEDIA",
+    "geosite:TELEGRAM",
+    "geosite:FACEBOOK",
+    "geosite:INSTAGRAM",
+    "geosite:TWITTER",
+    "geosite:TIKTOK",
+    "geosite:CATEGORY-GAMES-!CN",
+  ]);
 });

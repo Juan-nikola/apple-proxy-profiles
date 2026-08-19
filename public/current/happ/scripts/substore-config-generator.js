@@ -1935,7 +1935,7 @@ var HappConfigBundle = (() => {
     quicMode: ["allow", "proxy-block", "all-block"],
     ipv6Mode: ["auto", "ipv4-only"]
   });
-  var DEFAULTS = Object.freeze({ channel: "edge", dnsMode: "stable", chinaDns: "alidns", globalDns: "cloudflare", blockMode: "balanced", quicMode: "proxy-block", ipv6Mode: "auto", policyOverrides: "" });
+  var DEFAULTS = Object.freeze({ channel: "current", dnsMode: "stable", chinaDns: "alidns", globalDns: "cloudflare", blockMode: "balanced", quicMode: "proxy-block", ipv6Mode: "auto", policyOverrides: "" });
   var REQUIRED = /* @__PURE__ */ new Set(["output", "type", "name", "subscriptionName", "platform"]);
   var ALLOWED = /* @__PURE__ */ new Set([...REQUIRED, "channel", "dnsMode", "chinaDns", "globalDns", "blockMode", "quicMode", "ipv6Mode", "policyOverrides"]);
   var PROTOTYPE = /* @__PURE__ */ new Set(["__proto__", "constructor", "prototype"]);
@@ -2441,8 +2441,26 @@ var HappConfigBundle = (() => {
   }
 
   // src/render-dns.js
+  var HAPP_GEOSITE_ALIASES = Object.freeze({
+    OpenAI: "OPENAI",
+    Claude: "CATEGORY-AI-!CN",
+    Gemini: "GOOGLE-GEMINI",
+    Copilot: "GITHUB-COPILOT",
+    GitHub: "GITHUB",
+    YouTube: "YOUTUBE",
+    Netflix: "NETFLIX",
+    Disney: "DISNEY",
+    Spotify: "SPOTIFY",
+    GlobalMedia: "CATEGORY-MEDIA",
+    Telegram: "TELEGRAM",
+    Facebook: "FACEBOOK",
+    Instagram: "INSTAGRAM",
+    Twitter: "TWITTER",
+    TikTok: "TIKTOK",
+    OverseasGame: "CATEGORY-GAMES-!CN"
+  });
   var PROXY_GEOSITE_DOMAINS = Object.freeze(
-    EXPLICIT_OVERSEAS_RULE_SOURCE_IDS.map((id) => `geosite:HAPP-${id.toUpperCase()}`)
+    EXPLICIT_OVERSEAS_RULE_SOURCE_IDS.map((id) => `geosite:${HAPP_GEOSITE_ALIASES[id] ?? id.toUpperCase()}`)
   );
   var defaults = { dnsMode: "stable", chinaDns: "alidns", globalDns: "cloudflare", ipv6Mode: "auto" };
   function renderHappDns(options = {}) {
@@ -2610,6 +2628,39 @@ var HappConfigBundle = (() => {
   }
 
   // src/render-routing.js
+  var HAPP_GEOSITE_ALIASES2 = Object.freeze({
+    Hijacking: "CATEGORY-ADS-ALL",
+    BlockHttpDNS: "CATEGORY-HTTPDNS-CN",
+    Privacy: "PRIVATE",
+    DomesticCore: "CN",
+    DomesticGame: "CATEGORY-GAMES-CN",
+    SteamCN: "STEAM",
+    BiliBili: "BILIBILI",
+    ByteDance: "BYTEDANCE",
+    XiaoHongShu: "XIAOHONGSHU",
+    Weibo: "CATEGORY-SOCIAL-MEDIA-CN",
+    OpenAI: "OPENAI",
+    Claude: "CATEGORY-AI-!CN",
+    Gemini: "GOOGLE-GEMINI",
+    Copilot: "GITHUB-COPILOT",
+    GitHub: "GITHUB",
+    YouTube: "YOUTUBE",
+    Netflix: "NETFLIX",
+    Disney: "DISNEY",
+    Spotify: "SPOTIFY",
+    GlobalMedia: "CATEGORY-MEDIA",
+    Telegram: "TELEGRAM",
+    Facebook: "FACEBOOK",
+    Instagram: "INSTAGRAM",
+    Twitter: "TWITTER",
+    TikTok: "TIKTOK",
+    Apple: "APPLE",
+    Microsoft: "MICROSOFT",
+    Download: "CATEGORY-NETDISK-!CN",
+    PrivateTracker: "CATEGORY-PT",
+    OverseasGame: "CATEGORY-GAMES-!CN",
+    ChinaTLD: "CN"
+  });
   function hash(value) {
     let h = 2166136261;
     for (const c of String(value)) h = Math.imul(h ^ c.charCodeAt(0), 16777619);
@@ -2656,7 +2707,7 @@ var HappConfigBundle = (() => {
         quicRuleInserted = true;
       }
       const isIp = item.id === "ChinaIP";
-      const source = `${isIp ? "geoip" : "geosite"}:HAPP-${item.id.toUpperCase()}`;
+      const source = `${isIp ? "geoip" : "geosite"}:${isIp ? "cn" : HAPP_GEOSITE_ALIASES2[item.id] ?? item.id.toUpperCase()}`;
       const target = item.policy === "REJECT" ? { outboundTag: options.blockMode === "off" ? "happ-direct" : "happ-block" } : targetFor(item.id, resolution, followTag, fixedById);
       rules.push({ type: "field", ...isIp ? { ip: [source] } : { domain: [source] }, ...target });
     }

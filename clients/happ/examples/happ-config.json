@@ -100,22 +100,22 @@
         {
           "address": "https://cloudflare-dns.com/dns-query",
           "domains": [
-            "geosite:HAPP-OPENAI",
-            "geosite:HAPP-CLAUDE",
-            "geosite:HAPP-GEMINI",
-            "geosite:HAPP-COPILOT",
-            "geosite:HAPP-GITHUB",
-            "geosite:HAPP-YOUTUBE",
-            "geosite:HAPP-NETFLIX",
-            "geosite:HAPP-DISNEY",
-            "geosite:HAPP-SPOTIFY",
-            "geosite:HAPP-GLOBALMEDIA",
-            "geosite:HAPP-TELEGRAM",
-            "geosite:HAPP-FACEBOOK",
-            "geosite:HAPP-INSTAGRAM",
-            "geosite:HAPP-TWITTER",
-            "geosite:HAPP-TIKTOK",
-            "geosite:HAPP-OVERSEASGAME"
+            "geosite:OPENAI",
+            "geosite:CATEGORY-AI-!CN",
+            "geosite:GOOGLE-GEMINI",
+            "geosite:GITHUB-COPILOT",
+            "geosite:GITHUB",
+            "geosite:YOUTUBE",
+            "geosite:NETFLIX",
+            "geosite:DISNEY",
+            "geosite:SPOTIFY",
+            "geosite:CATEGORY-MEDIA",
+            "geosite:TELEGRAM",
+            "geosite:FACEBOOK",
+            "geosite:INSTAGRAM",
+            "geosite:TWITTER",
+            "geosite:TIKTOK",
+            "geosite:CATEGORY-GAMES-!CN"
           ],
           "skipFallback": true,
           "clientIp": "1.1.1.1"
@@ -152,22 +152,22 @@
         {
           "type": "field",
           "domain": [
-            "geosite:HAPP-OPENAI",
-            "geosite:HAPP-CLAUDE",
-            "geosite:HAPP-GEMINI",
-            "geosite:HAPP-COPILOT",
-            "geosite:HAPP-GITHUB",
-            "geosite:HAPP-YOUTUBE",
-            "geosite:HAPP-NETFLIX",
-            "geosite:HAPP-DISNEY",
-            "geosite:HAPP-SPOTIFY",
-            "geosite:HAPP-GLOBALMEDIA",
-            "geosite:HAPP-TELEGRAM",
-            "geosite:HAPP-FACEBOOK",
-            "geosite:HAPP-INSTAGRAM",
-            "geosite:HAPP-TWITTER",
-            "geosite:HAPP-TIKTOK",
-            "geosite:HAPP-OVERSEASGAME"
+            "geosite:OPENAI",
+            "geosite:CATEGORY-AI-!CN",
+            "geosite:GOOGLE-GEMINI",
+            "geosite:GITHUB-COPILOT",
+            "geosite:GITHUB",
+            "geosite:YOUTUBE",
+            "geosite:NETFLIX",
+            "geosite:DISNEY",
+            "geosite:SPOTIFY",
+            "geosite:CATEGORY-MEDIA",
+            "geosite:TELEGRAM",
+            "geosite:FACEBOOK",
+            "geosite:INSTAGRAM",
+            "geosite:TWITTER",
+            "geosite:TIKTOK",
+            "geosite:CATEGORY-GAMES-!CN"
           ],
           "outboundTag": "happ-follow/h-874324393",
           "server": "happ-dns"
@@ -175,21 +175,21 @@
         {
           "type": "field",
           "domain": [
-            "geosite:HAPP-HIJACKING"
+            "geosite:CATEGORY-ADS-ALL"
           ],
           "outboundTag": "happ-block"
         },
         {
           "type": "field",
           "domain": [
-            "geosite:HAPP-BLOCKHTTPDNS"
+            "geosite:CATEGORY-HTTPDNS-CN"
           ],
           "outboundTag": "happ-block"
         },
         {
           "type": "field",
           "domain": [
-            "geosite:HAPP-PRIVACY"
+            "geosite:PRIVATE"
           ],
           "outboundTag": "happ-follow/h-874324393"
         },
@@ -201,203 +201,203 @@
         {
           "type": "field",
           "domain": [
-            "geosite:HAPP-DOMESTICCORE"
+            "geosite:CN"
           ],
           "outboundTag": "happ-direct"
         },
         {
           "type": "field",
           "domain": [
-            "geosite:HAPP-DOMESTICGAME"
+            "geosite:CATEGORY-GAMES-CN"
           ],
           "outboundTag": "happ-direct"
         },
         {
           "type": "field",
           "domain": [
-            "geosite:HAPP-STEAMCN"
+            "geosite:STEAM"
           ],
           "outboundTag": "happ-direct"
         },
         {
           "type": "field",
           "domain": [
-            "geosite:HAPP-BILIBILI"
+            "geosite:BILIBILI"
           ],
           "outboundTag": "happ-direct"
         },
         {
           "type": "field",
           "domain": [
-            "geosite:HAPP-BYTEDANCE"
+            "geosite:BYTEDANCE"
           ],
           "outboundTag": "happ-direct"
         },
         {
           "type": "field",
           "domain": [
-            "geosite:HAPP-XIAOHONGSHU"
+            "geosite:XIAOHONGSHU"
           ],
           "outboundTag": "happ-direct"
         },
         {
           "type": "field",
           "domain": [
-            "geosite:HAPP-WEIBO"
+            "geosite:CATEGORY-SOCIAL-MEDIA-CN"
           ],
           "outboundTag": "happ-direct"
         },
         {
           "type": "field",
           "domain": [
-            "geosite:HAPP-OPENAI"
+            "geosite:OPENAI"
           ],
           "outboundTag": "happ-follow/h-874324393"
         },
         {
           "type": "field",
           "domain": [
-            "geosite:HAPP-CLAUDE"
+            "geosite:CATEGORY-AI-!CN"
           ],
           "outboundTag": "happ-follow/h-874324393"
         },
         {
           "type": "field",
           "domain": [
-            "geosite:HAPP-GEMINI"
+            "geosite:GOOGLE-GEMINI"
           ],
           "outboundTag": "happ-follow/h-874324393"
         },
         {
           "type": "field",
           "domain": [
-            "geosite:HAPP-COPILOT"
+            "geosite:GITHUB-COPILOT"
           ],
           "outboundTag": "happ-follow/h-874324393"
         },
         {
           "type": "field",
           "domain": [
-            "geosite:HAPP-GITHUB"
+            "geosite:GITHUB"
           ],
           "outboundTag": "happ-follow/h-874324393"
         },
         {
           "type": "field",
           "domain": [
-            "geosite:HAPP-YOUTUBE"
+            "geosite:YOUTUBE"
           ],
           "outboundTag": "happ-follow/h-874324393"
         },
         {
           "type": "field",
           "domain": [
-            "geosite:HAPP-NETFLIX"
+            "geosite:NETFLIX"
           ],
           "outboundTag": "happ-follow/h-874324393"
         },
         {
           "type": "field",
           "domain": [
-            "geosite:HAPP-DISNEY"
+            "geosite:DISNEY"
           ],
           "outboundTag": "happ-follow/h-874324393"
         },
         {
           "type": "field",
           "domain": [
-            "geosite:HAPP-SPOTIFY"
+            "geosite:SPOTIFY"
           ],
           "outboundTag": "happ-follow/h-874324393"
         },
         {
           "type": "field",
           "domain": [
-            "geosite:HAPP-GLOBALMEDIA"
+            "geosite:CATEGORY-MEDIA"
           ],
           "outboundTag": "happ-follow/h-874324393"
         },
         {
           "type": "field",
           "domain": [
-            "geosite:HAPP-TELEGRAM"
+            "geosite:TELEGRAM"
           ],
           "outboundTag": "happ-follow/h-874324393"
         },
         {
           "type": "field",
           "domain": [
-            "geosite:HAPP-FACEBOOK"
+            "geosite:FACEBOOK"
           ],
           "outboundTag": "happ-follow/h-874324393"
         },
         {
           "type": "field",
           "domain": [
-            "geosite:HAPP-INSTAGRAM"
+            "geosite:INSTAGRAM"
           ],
           "outboundTag": "happ-follow/h-874324393"
         },
         {
           "type": "field",
           "domain": [
-            "geosite:HAPP-TWITTER"
+            "geosite:TWITTER"
           ],
           "outboundTag": "happ-follow/h-874324393"
         },
         {
           "type": "field",
           "domain": [
-            "geosite:HAPP-TIKTOK"
+            "geosite:TIKTOK"
           ],
           "outboundTag": "happ-follow/h-874324393"
         },
         {
           "type": "field",
           "domain": [
-            "geosite:HAPP-APPLE"
+            "geosite:APPLE"
           ],
           "outboundTag": "happ-direct"
         },
         {
           "type": "field",
           "domain": [
-            "geosite:HAPP-MICROSOFT"
+            "geosite:MICROSOFT"
           ],
           "outboundTag": "happ-direct"
         },
         {
           "type": "field",
           "domain": [
-            "geosite:HAPP-DOWNLOAD"
+            "geosite:CATEGORY-NETDISK-!CN"
           ],
           "outboundTag": "happ-direct"
         },
         {
           "type": "field",
           "domain": [
-            "geosite:HAPP-PRIVATETRACKER"
+            "geosite:CATEGORY-PT"
           ],
           "outboundTag": "happ-direct"
         },
         {
           "type": "field",
           "domain": [
-            "geosite:HAPP-OVERSEASGAME"
+            "geosite:CATEGORY-GAMES-!CN"
           ],
           "outboundTag": "happ-follow/h-874324393"
         },
         {
           "type": "field",
           "domain": [
-            "geosite:HAPP-CHINATLD"
+            "geosite:CN"
           ],
           "outboundTag": "happ-direct"
         },
         {
           "type": "field",
           "ip": [
-            "geoip:HAPP-CHINAIP"
+            "geoip:cn"
           ],
           "outboundTag": "happ-direct"
         },
@@ -504,22 +504,22 @@
         {
           "address": "https://cloudflare-dns.com/dns-query",
           "domains": [
-            "geosite:HAPP-OPENAI",
-            "geosite:HAPP-CLAUDE",
-            "geosite:HAPP-GEMINI",
-            "geosite:HAPP-COPILOT",
-            "geosite:HAPP-GITHUB",
-            "geosite:HAPP-YOUTUBE",
-            "geosite:HAPP-NETFLIX",
-            "geosite:HAPP-DISNEY",
-            "geosite:HAPP-SPOTIFY",
-            "geosite:HAPP-GLOBALMEDIA",
-            "geosite:HAPP-TELEGRAM",
-            "geosite:HAPP-FACEBOOK",
-            "geosite:HAPP-INSTAGRAM",
-            "geosite:HAPP-TWITTER",
-            "geosite:HAPP-TIKTOK",
-            "geosite:HAPP-OVERSEASGAME"
+            "geosite:OPENAI",
+            "geosite:CATEGORY-AI-!CN",
+            "geosite:GOOGLE-GEMINI",
+            "geosite:GITHUB-COPILOT",
+            "geosite:GITHUB",
+            "geosite:YOUTUBE",
+            "geosite:NETFLIX",
+            "geosite:DISNEY",
+            "geosite:SPOTIFY",
+            "geosite:CATEGORY-MEDIA",
+            "geosite:TELEGRAM",
+            "geosite:FACEBOOK",
+            "geosite:INSTAGRAM",
+            "geosite:TWITTER",
+            "geosite:TIKTOK",
+            "geosite:CATEGORY-GAMES-!CN"
           ],
           "skipFallback": true,
           "clientIp": "1.1.1.1"
@@ -556,22 +556,22 @@
         {
           "type": "field",
           "domain": [
-            "geosite:HAPP-OPENAI",
-            "geosite:HAPP-CLAUDE",
-            "geosite:HAPP-GEMINI",
-            "geosite:HAPP-COPILOT",
-            "geosite:HAPP-GITHUB",
-            "geosite:HAPP-YOUTUBE",
-            "geosite:HAPP-NETFLIX",
-            "geosite:HAPP-DISNEY",
-            "geosite:HAPP-SPOTIFY",
-            "geosite:HAPP-GLOBALMEDIA",
-            "geosite:HAPP-TELEGRAM",
-            "geosite:HAPP-FACEBOOK",
-            "geosite:HAPP-INSTAGRAM",
-            "geosite:HAPP-TWITTER",
-            "geosite:HAPP-TIKTOK",
-            "geosite:HAPP-OVERSEASGAME"
+            "geosite:OPENAI",
+            "geosite:CATEGORY-AI-!CN",
+            "geosite:GOOGLE-GEMINI",
+            "geosite:GITHUB-COPILOT",
+            "geosite:GITHUB",
+            "geosite:YOUTUBE",
+            "geosite:NETFLIX",
+            "geosite:DISNEY",
+            "geosite:SPOTIFY",
+            "geosite:CATEGORY-MEDIA",
+            "geosite:TELEGRAM",
+            "geosite:FACEBOOK",
+            "geosite:INSTAGRAM",
+            "geosite:TWITTER",
+            "geosite:TIKTOK",
+            "geosite:CATEGORY-GAMES-!CN"
           ],
           "outboundTag": "happ-follow/h-628157912",
           "server": "happ-dns"
@@ -579,21 +579,21 @@
         {
           "type": "field",
           "domain": [
-            "geosite:HAPP-HIJACKING"
+            "geosite:CATEGORY-ADS-ALL"
           ],
           "outboundTag": "happ-block"
         },
         {
           "type": "field",
           "domain": [
-            "geosite:HAPP-BLOCKHTTPDNS"
+            "geosite:CATEGORY-HTTPDNS-CN"
           ],
           "outboundTag": "happ-block"
         },
         {
           "type": "field",
           "domain": [
-            "geosite:HAPP-PRIVACY"
+            "geosite:PRIVATE"
           ],
           "outboundTag": "happ-follow/h-628157912"
         },
@@ -605,203 +605,203 @@
         {
           "type": "field",
           "domain": [
-            "geosite:HAPP-DOMESTICCORE"
+            "geosite:CN"
           ],
           "outboundTag": "happ-direct"
         },
         {
           "type": "field",
           "domain": [
-            "geosite:HAPP-DOMESTICGAME"
+            "geosite:CATEGORY-GAMES-CN"
           ],
           "outboundTag": "happ-direct"
         },
         {
           "type": "field",
           "domain": [
-            "geosite:HAPP-STEAMCN"
+            "geosite:STEAM"
           ],
           "outboundTag": "happ-direct"
         },
         {
           "type": "field",
           "domain": [
-            "geosite:HAPP-BILIBILI"
+            "geosite:BILIBILI"
           ],
           "outboundTag": "happ-direct"
         },
         {
           "type": "field",
           "domain": [
-            "geosite:HAPP-BYTEDANCE"
+            "geosite:BYTEDANCE"
           ],
           "outboundTag": "happ-direct"
         },
         {
           "type": "field",
           "domain": [
-            "geosite:HAPP-XIAOHONGSHU"
+            "geosite:XIAOHONGSHU"
           ],
           "outboundTag": "happ-direct"
         },
         {
           "type": "field",
           "domain": [
-            "geosite:HAPP-WEIBO"
+            "geosite:CATEGORY-SOCIAL-MEDIA-CN"
           ],
           "outboundTag": "happ-direct"
         },
         {
           "type": "field",
           "domain": [
-            "geosite:HAPP-OPENAI"
+            "geosite:OPENAI"
           ],
           "outboundTag": "happ-follow/h-628157912"
         },
         {
           "type": "field",
           "domain": [
-            "geosite:HAPP-CLAUDE"
+            "geosite:CATEGORY-AI-!CN"
           ],
           "outboundTag": "happ-follow/h-628157912"
         },
         {
           "type": "field",
           "domain": [
-            "geosite:HAPP-GEMINI"
+            "geosite:GOOGLE-GEMINI"
           ],
           "outboundTag": "happ-follow/h-628157912"
         },
         {
           "type": "field",
           "domain": [
-            "geosite:HAPP-COPILOT"
+            "geosite:GITHUB-COPILOT"
           ],
           "outboundTag": "happ-follow/h-628157912"
         },
         {
           "type": "field",
           "domain": [
-            "geosite:HAPP-GITHUB"
+            "geosite:GITHUB"
           ],
           "outboundTag": "happ-follow/h-628157912"
         },
         {
           "type": "field",
           "domain": [
-            "geosite:HAPP-YOUTUBE"
+            "geosite:YOUTUBE"
           ],
           "outboundTag": "happ-follow/h-628157912"
         },
         {
           "type": "field",
           "domain": [
-            "geosite:HAPP-NETFLIX"
+            "geosite:NETFLIX"
           ],
           "outboundTag": "happ-follow/h-628157912"
         },
         {
           "type": "field",
           "domain": [
-            "geosite:HAPP-DISNEY"
+            "geosite:DISNEY"
           ],
           "outboundTag": "happ-follow/h-628157912"
         },
         {
           "type": "field",
           "domain": [
-            "geosite:HAPP-SPOTIFY"
+            "geosite:SPOTIFY"
           ],
           "outboundTag": "happ-follow/h-628157912"
         },
         {
           "type": "field",
           "domain": [
-            "geosite:HAPP-GLOBALMEDIA"
+            "geosite:CATEGORY-MEDIA"
           ],
           "outboundTag": "happ-follow/h-628157912"
         },
         {
           "type": "field",
           "domain": [
-            "geosite:HAPP-TELEGRAM"
+            "geosite:TELEGRAM"
           ],
           "outboundTag": "happ-follow/h-628157912"
         },
         {
           "type": "field",
           "domain": [
-            "geosite:HAPP-FACEBOOK"
+            "geosite:FACEBOOK"
           ],
           "outboundTag": "happ-follow/h-628157912"
         },
         {
           "type": "field",
           "domain": [
-            "geosite:HAPP-INSTAGRAM"
+            "geosite:INSTAGRAM"
           ],
           "outboundTag": "happ-follow/h-628157912"
         },
         {
           "type": "field",
           "domain": [
-            "geosite:HAPP-TWITTER"
+            "geosite:TWITTER"
           ],
           "outboundTag": "happ-follow/h-628157912"
         },
         {
           "type": "field",
           "domain": [
-            "geosite:HAPP-TIKTOK"
+            "geosite:TIKTOK"
           ],
           "outboundTag": "happ-follow/h-628157912"
         },
         {
           "type": "field",
           "domain": [
-            "geosite:HAPP-APPLE"
+            "geosite:APPLE"
           ],
           "outboundTag": "happ-direct"
         },
         {
           "type": "field",
           "domain": [
-            "geosite:HAPP-MICROSOFT"
+            "geosite:MICROSOFT"
           ],
           "outboundTag": "happ-direct"
         },
         {
           "type": "field",
           "domain": [
-            "geosite:HAPP-DOWNLOAD"
+            "geosite:CATEGORY-NETDISK-!CN"
           ],
           "outboundTag": "happ-direct"
         },
         {
           "type": "field",
           "domain": [
-            "geosite:HAPP-PRIVATETRACKER"
+            "geosite:CATEGORY-PT"
           ],
           "outboundTag": "happ-direct"
         },
         {
           "type": "field",
           "domain": [
-            "geosite:HAPP-OVERSEASGAME"
+            "geosite:CATEGORY-GAMES-!CN"
           ],
           "outboundTag": "happ-follow/h-628157912"
         },
         {
           "type": "field",
           "domain": [
-            "geosite:HAPP-CHINATLD"
+            "geosite:CN"
           ],
           "outboundTag": "happ-direct"
         },
         {
           "type": "field",
           "ip": [
-            "geoip:HAPP-CHINAIP"
+            "geoip:cn"
           ],
           "outboundTag": "happ-direct"
         },
