@@ -91,6 +91,10 @@ test("central Sub-Store guide closes over all public scripts and private tasks",
   assert.match(guide, /#output=config[\s\S]*&/u);
   assert.match(guide, /channel=current[\s\S]*channel=edge/u);
   assert.match(readme, /apple-proxy-sources/u);
+  assert.match(readme, /HAPP：.*clients\/happ\/docs\/deployment\.md/iu);
+  assert.match(readme, /OneXray：.*clients\/onexray\/docs\/deployment\.md/iu);
+  assert.match(readme, /### 2\.6 HAPP[\s\S]*happ-routing-audit/u);
+  assert.match(readme, /### 2\.7 OneXray[\s\S]*onexray-routing-audit/u);
   assert.match(maintenance, /Node\.js 22/u);
   assert.match(maintenance, /sing-box.*\.srs/u);
   assert.match(guide, /`apple-proxy-sources`[\s\S]{0,240}(?:兼容|回滚)/iu);
