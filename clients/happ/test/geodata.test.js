@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { decodeHappGeodata, renderHappGeodata } from "../../../automation/src/render-happ-geodata.js";
+import { happProxyGeositeDomains } from "../src/render-dns.js";
+import { EXPLICIT_OVERSEAS_RULE_SOURCE_IDS } from "../../../shared/rules/lightweight-policy.js";
 import { RULE_KIND } from "../../../shared/rules/model.js";
 
 function ruleSet(id, entries) {
@@ -38,4 +40,14 @@ test("HAPP GeoData rejects unsupported rule kinds", () => {
   assert.throws(() => renderHappGeodata(new Map([
     ["Bad", ruleSet("Bad", [{ kind: RULE_KIND.geoip, value: "cn" }])],
   ])), /unsupported Happ geodata rule kind/u);
+});
+
+test("HAPP proxy DNS domains are present in generated GeoData", () => {
+  const ruleSets = new Map(EXPLICIT_OVERSEAS_RULE_SOURCE_IDS.map((id) => [
+    id,
+    ruleSet(id, [{ kind: RULE_KIND.domainSuffix, value: `${id.toLowerCase()}.example` }]),
+  ]));
+  const geodata = decodeHappGeodata(renderHappGeodata(ruleSets).files);
+  const generatedCodes = new Set(geodata.geosite.map(({ countryCode }) => `geosite:${countryCode}`));
+  for (const domain of happProxyGeositeDomains()) assert.equal(generatedCodes.has(domain), true, domain);
 });

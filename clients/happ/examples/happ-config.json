@@ -100,7 +100,22 @@
         {
           "address": "https://cloudflare-dns.com/dns-query",
           "domains": [
-            "geosite:HAPP-PROXY"
+            "geosite:HAPP-OPENAI",
+            "geosite:HAPP-CLAUDE",
+            "geosite:HAPP-GEMINI",
+            "geosite:HAPP-COPILOT",
+            "geosite:HAPP-GITHUB",
+            "geosite:HAPP-YOUTUBE",
+            "geosite:HAPP-NETFLIX",
+            "geosite:HAPP-DISNEY",
+            "geosite:HAPP-SPOTIFY",
+            "geosite:HAPP-GLOBALMEDIA",
+            "geosite:HAPP-TELEGRAM",
+            "geosite:HAPP-FACEBOOK",
+            "geosite:HAPP-INSTAGRAM",
+            "geosite:HAPP-TWITTER",
+            "geosite:HAPP-TIKTOK",
+            "geosite:HAPP-OVERSEASGAME"
           ],
           "skipFallback": true,
           "clientIp": "1.1.1.1"
@@ -137,7 +152,22 @@
         {
           "type": "field",
           "domain": [
-            "geosite:HAPP-PROXY"
+            "geosite:HAPP-OPENAI",
+            "geosite:HAPP-CLAUDE",
+            "geosite:HAPP-GEMINI",
+            "geosite:HAPP-COPILOT",
+            "geosite:HAPP-GITHUB",
+            "geosite:HAPP-YOUTUBE",
+            "geosite:HAPP-NETFLIX",
+            "geosite:HAPP-DISNEY",
+            "geosite:HAPP-SPOTIFY",
+            "geosite:HAPP-GLOBALMEDIA",
+            "geosite:HAPP-TELEGRAM",
+            "geosite:HAPP-FACEBOOK",
+            "geosite:HAPP-INSTAGRAM",
+            "geosite:HAPP-TWITTER",
+            "geosite:HAPP-TIKTOK",
+            "geosite:HAPP-OVERSEASGAME"
           ],
           "outboundTag": "happ-follow/h-874324393",
           "server": "happ-dns"
@@ -474,7 +504,22 @@
         {
           "address": "https://cloudflare-dns.com/dns-query",
           "domains": [
-            "geosite:HAPP-PROXY"
+            "geosite:HAPP-OPENAI",
+            "geosite:HAPP-CLAUDE",
+            "geosite:HAPP-GEMINI",
+            "geosite:HAPP-COPILOT",
+            "geosite:HAPP-GITHUB",
+            "geosite:HAPP-YOUTUBE",
+            "geosite:HAPP-NETFLIX",
+            "geosite:HAPP-DISNEY",
+            "geosite:HAPP-SPOTIFY",
+            "geosite:HAPP-GLOBALMEDIA",
+            "geosite:HAPP-TELEGRAM",
+            "geosite:HAPP-FACEBOOK",
+            "geosite:HAPP-INSTAGRAM",
+            "geosite:HAPP-TWITTER",
+            "geosite:HAPP-TIKTOK",
+            "geosite:HAPP-OVERSEASGAME"
           ],
           "skipFallback": true,
           "clientIp": "1.1.1.1"
@@ -511,7 +556,22 @@
         {
           "type": "field",
           "domain": [
-            "geosite:HAPP-PROXY"
+            "geosite:HAPP-OPENAI",
+            "geosite:HAPP-CLAUDE",
+            "geosite:HAPP-GEMINI",
+            "geosite:HAPP-COPILOT",
+            "geosite:HAPP-GITHUB",
+            "geosite:HAPP-YOUTUBE",
+            "geosite:HAPP-NETFLIX",
+            "geosite:HAPP-DISNEY",
+            "geosite:HAPP-SPOTIFY",
+            "geosite:HAPP-GLOBALMEDIA",
+            "geosite:HAPP-TELEGRAM",
+            "geosite:HAPP-FACEBOOK",
+            "geosite:HAPP-INSTAGRAM",
+            "geosite:HAPP-TWITTER",
+            "geosite:HAPP-TIKTOK",
+            "geosite:HAPP-OVERSEASGAME"
           ],
           "outboundTag": "happ-follow/h-628157912",
           "server": "happ-dns"
