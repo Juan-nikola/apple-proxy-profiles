@@ -55,6 +55,30 @@ test("Sub-Store sing-box entry requests a private collection and returns JSON co
   assert.equal(result.$content.endsWith("\n"), true);
 });
 
+test("Sub-Store sing-box entry accepts a manually selected node without sing-box-client label", async () => {
+  const manuallySelected = {
+    ...nodes[0],
+    name: "🇯🇵 手动选择节点 · SS｜自建",
+    _subName: "手动组合示例",
+  };
+  const result = await operator({}, "macos", {
+    arguments: {
+      output: "config",
+      type: "collection",
+      name: "apple-proxy-singbox",
+      subscriptionName: "sing-box-Nodes",
+      platform: "macos",
+      nodeErrorMode: "strict",
+    },
+    async produceArtifact() {
+      return [manuallySelected];
+    },
+  });
+  const config = JSON.parse(result.$content);
+  const outbound = config.outbounds.find(({ type }) => type === "shadowsocks");
+  assert.equal(outbound.tag, "🇯🇵 手动选择节点 · SS");
+});
+
 test("Sub-Store passes the light/diagnostic profile API and never emits source rules", async () => {
   const result = await operator(
     { id: "input" },

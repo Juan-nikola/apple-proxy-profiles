@@ -1,6 +1,8 @@
 # sing-box 配置生成器
 
-本目录生成 macOS、iPhone、iPad 和 Android 的 sing-box 配置。节点仍由你在 Sub-Store 的独立组合 `apple-proxy-singbox` 维护；生成器不会按机场、来源或地区静默删节点，默认 `nodeErrorMode=strict`，无法完整表达的节点会直接让预览失败。更多迁移和回滚说明见 [Sub-Store 客户端节点池指南](../../docs/substore-client-pools.md)。
+本目录生成 macOS、iPhone、iPad 和 Android 的 sing-box 配置。节点仍由你在 Sub-Store 的独立组合 `apple-proxy-singbox` 维护；`sing-box-client` 不是必需标签，可以删除标签筛选后手动勾选节点。生成器不会按机场、来源或地区静默删节点，默认 `nodeErrorMode=strict`，无法完整表达的节点会直接让预览失败。更多迁移和回滚说明见 [Sub-Store 客户端节点池指南](../../docs/substore-client-pools.md)。
+
+手动组合顺序：移除 `sing-box-client` 筛选条件 → 手动选择节点 → Preview `apple-proxy-singbox` → Preview 四个平台任务 → 通过后刷新客户端。collection slug 和任务参数中的 `name=apple-proxy-singbox` 必须保持原样。
 
 ## 分流模型
 

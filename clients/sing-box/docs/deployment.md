@@ -1,6 +1,8 @@
 # sing-box 部署
 
-sing-box 读取独立的 Sub-Store 组合 `apple-proxy-singbox`。组合中的节点由你维护；默认严格模式会保留所有可完整转换的节点，并对无效输入、未知字段或不支持的传输组合 fail closed。组合迁移和回滚见 [Sub-Store 客户端节点池指南](../../../docs/substore-client-pools.md)。
+sing-box 读取独立的 Sub-Store 组合 `apple-proxy-singbox`。组合中的节点由你维护；`sing-box-client` 不是必需标签，可以删除标签筛选后手动选择节点。默认严格模式会保留所有可完整转换的节点，并对无效输入、未知字段或不支持的传输组合 fail closed。组合迁移和回滚见 [Sub-Store 客户端节点池指南](../../../docs/substore-client-pools.md)。
+
+首次手动组合建议：记录旧 preview 数量，移除 `sing-box-client` 筛选，手动勾选节点，Preview collection，再 Preview 四个平台任务。不要修改 `name=apple-proxy-singbox`；如果 strict 失败，先移除不兼容节点或修正字段。
 
 ## Sub-Store File
 

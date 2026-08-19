@@ -140,6 +140,8 @@ npm run configure:substore
 3. 在 Sub-Store 中自行筛选每个客户端要使用的协议和节点。HAPP/OneXray 不会静默删除可表示节点，审计任务会给出输入数、兼容数和排除原因。
 4. 逐个点击 preview，记录节点总数和协议计数。
 
+**重要：`sing-box-client` 不是必需标签。** 它只是 Sub-Store 的筛选辅助，可以删除。要自己选择 sing-box 节点时，移除该标签筛选条件，直接在 `apple-proxy-singbox` 中手动勾选节点，然后按“collection preview → 四个 `singbox-config-*` 任务 preview → 客户端刷新”的顺序操作。请始终保留 collection slug `apple-proxy-singbox`，以及任务参数 `name=apple-proxy-singbox`；这两个是机器绑定键，不能改成中文。
+
 成功标志：七个客户端 collection 都能预览，且每个集合只包含你愿意交给该客户端的节点；HAPP/OneXray 审计中的排除计数可解释。
 
 失败怎么办：某一个 collection 为空时，只检查它的来源和筛选条件；不要同时改其他客户端。
@@ -362,6 +364,16 @@ HAPP 的公开安装页只提供无凭据的 GeoData 和脚本；节点与配置
 5. 先在一台设备手动更新。
 
 不要为了增加一个节点同时重建七个客户端，也不要修改公开 JavaScript。
+
+如果你只想调整 sing-box 使用的节点：
+
+1. 打开 `apple-proxy-singbox`，先 Preview 并记录旧节点数。
+2. 删除 `sing-box-client` 标签筛选条件。
+3. 手动勾选要使用的节点并再次 Preview。
+4. 依次 Preview `singbox-config-macos`、`singbox-config-iphone`、`singbox-config-ipad`、`singbox-config-android`。
+5. 四个平台都通过后，再刷新 sing-box 客户端。
+
+如果删除标签后 collection 变成空的，说明 Sub-Store 仍残留标签过滤条件，或没有手动勾选节点。`nodeErrorMode=strict` 报错则表示手选节点的协议或字段不能完整转换，应移除该节点或修正字段；不要用 `compatible` 掩盖节点丢失。
 
 ### 3.2 修改一个任务参数
 

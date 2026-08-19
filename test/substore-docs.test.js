@@ -184,6 +184,22 @@ test("canonical client pool guide uses only synthetic, non-secret examples", asy
   assert.doesNotMatch(guide, /NODE:(?!<name>)[^\s`]+/u);
 });
 
+test("sing-box documentation makes manual selection independent from sing-box-client labels", async () => {
+  const paths = [
+    "README.md",
+    "docs/substore-client-pools.md",
+    "docs/substore-two-layer-setup.md",
+    "clients/sing-box/README.md",
+    "clients/sing-box/docs/deployment.md",
+  ];
+  const content = (await Promise.all(paths.map((path) => text(path)))).join("\n");
+  assert.match(content, /sing-box-client[\s\S]{0,180}(?:不是|无需|不要求|可删除)/iu);
+  assert.match(content, /手动(?:选择|勾选)[\s\S]{0,220}apple-proxy-singbox/iu);
+  assert.match(content, /name=apple-proxy-singbox/u);
+  assert.match(content, /nodeErrorMode=strict[\s\S]{0,260}(?:失败|报错|不兼容)/iu);
+  assert.doesNotMatch(content, /必须(?:带有|关联|包含)[^\n]{0,80}sing-box-client/iu);
+});
+
 test("operational docs use client-owned pools and point to the canonical guide", async () => {
   for (const [path, collection] of Object.entries(operationalDocs)) {
     const content = await text(path);

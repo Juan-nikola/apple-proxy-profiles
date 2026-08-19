@@ -16,6 +16,23 @@
 | OneXray | `apple-proxy-onexray` | 用户自行选择节点；节点任务输出 Xray JSON，Profile/审计对不兼容和固定节点问题失败关闭 |
 | HAPP | `apple-proxy-happ` | 用户自行选择节点；六平台配置与审计共享同一策略覆盖，固定节点问题写入私密 warning |
 
+### 标签不是必需条件
+
+Sub-Store 里的 `sing-box-client` 只是筛选辅助标签，不是 sing-box 或本项目要求的节点字段。它可以删除，也可以完全不使用。真正决定节点是否进入配置的是 `apple-proxy-singbox` collection 中的最终手动选择结果，以及节点本身是否能被 sing-box 完整转换。
+
+推荐新手这样设置 `apple-proxy-singbox`：
+
+1. 先记录旧 collection 的 preview 节点数。
+2. 移除以 `sing-box-client` 为条件的筛选。
+3. 在 collection 中手动勾选想给 sing-box 使用的节点。
+4. Preview `apple-proxy-singbox`，确认节点数量大于 0。
+5. 再 Preview 四个平台的 `singbox-config-*` 任务。
+6. 全部通过后再刷新客户端。
+
+不要改动机器绑定键：collection slug 仍必须是 `apple-proxy-singbox`，任务 URL 里的 `name=apple-proxy-singbox` 也必须保持一致。标签可以中文、英文或不存在，但 collection slug 和 `name=` 不能中文化。
+
+HAPP 和 OneXray 使用同样的手动组合原则，分别维护 `apple-proxy-happ` 和 `apple-proxy-onexray`。它们不会要求节点带 `sing-box-client`，但仍会按各自协议能力过滤或拒绝不兼容节点。
+
 ### HAPP / OneXray 边界
 
 这两个客户端已经进入 `active` 发布状态，但仍必须先做设备 canary。`onexray-nodes` 只输出节点订阅，不读取业务策略；`onexray-profile`、`onexray-routing-audit`、六个平台 HAPP 配置任务和 `happ-routing-audit` 必须使用同一 `channel`、策略覆盖、公开 Manifest 和 GeoData 绑定。公开 Pages 只提供无凭据脚本、安装页和 GeoData，真实节点与策略仍只在私密 Sub-Store 任务中生成。

@@ -30,6 +30,8 @@
 3. 按节点池指南建立七个 client collection，用户自行选择每个客户端要包含的节点；HAPP/OneXray 会按已审计能力过滤不兼容节点，并在 audit 中记录排除原因。
 4. 逐个 preview 并记录计数，再一次只迁移一个客户端的 `name=`。
 
+`sing-box-client` 不是必需标签。它只是 Sub-Store 的筛选辅助，可以删除；如果要自定义 sing-box 节点组合，请移除该标签筛选条件后，直接手动勾选进入 `apple-proxy-singbox` 的节点。不要改 collection slug，也不要把任务参数里的 `name=apple-proxy-singbox` 改成中文。
+
 新任务不再让七个客户端直接共享一个 collection。旧 `apple-proxy-sources` 继续保留作兼容/回滚入口，不要删除。
 
 ## 2. 十三个公开远程 JS
@@ -270,6 +272,8 @@ https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/scripts/sing
 公共参数：`output=config&type=collection&name=apple-proxy-singbox&subscriptionName=Apple-Proxy-Nodes&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&autoGroupMode=auto&clientChain=off&nodeErrorMode=strict&channel=current`。
 
 sing-box 默认 strict：任一已选节点无法完整渲染时 preview 失败，用户应回到 `apple-proxy-singbox` 修正组合。迁移期可显式使用 `nodeErrorMode=compatible`，但必须检查 `renderFailures`。
+
+手动组合示例：先在 `apple-proxy-singbox` 中去掉 `sing-box-client` 标签筛选，再只勾选你确认需要的节点。Preview collection 后再 Preview 四个平台任务。若 `strict` 报协议或字段错误，说明刚刚手选的节点不能完整转换；应移除该节点或修正字段，不要用 `compatible` 掩盖节点缺失。
 
 | 任务 | 平台额外参数 | 官方客户端 |
 | --- | --- | --- |
