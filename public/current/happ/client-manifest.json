@@ -1,0 +1,45 @@
+{
+  "chinaIpAuditSha256": "9efd69e056baf8c42369e321474b94ef2cfc71f28966288ad32017ad71d874c4",
+  "client": "happ",
+  "files": [
+    {
+      "bytes": 181247,
+      "path": "happ/geoip.dat",
+      "sha256": "e3b37ed49d5e31d52b8f958a8c34588f8c261e9184d340135b87022ce5000bbc"
+    },
+    {
+      "bytes": 74239,
+      "path": "happ/geosite.dat",
+      "sha256": "52de4978bef9970c4b0dd551834f8bf1a32246a648b09be6f705b6b16bbd9203"
+    },
+    {
+      "bytes": 315207,
+      "path": "happ/index.html",
+      "sha256": "8a7196ead75a7121519ccfc4b59ae1fabe8c444526800abb332c80fd73c03e61"
+    },
+    {
+      "bytes": 139323,
+      "path": "happ/scripts/happ-config-generator.js",
+      "sha256": "4eecf02fcc9d4fc21582e80ee20b21902c9669d266c230da907aa1b966c95de8"
+    },
+    {
+      "bytes": 110761,
+      "path": "happ/scripts/happ-routing-audit.js",
+      "sha256": "310deaf23abb0a77b81118e4147c1fd283125e7334b188d4f1b054fc2a51c6e7"
+    },
+    {
+      "bytes": 139323,
+      "path": "happ/scripts/substore-config-generator.js",
+      "sha256": "4eecf02fcc9d4fc21582e80ee20b21902c9669d266c230da907aa1b966c95de8"
+    },
+    {
+      "bytes": 110761,
+      "path": "happ/scripts/substore-routing-audit.js",
+      "sha256": "310deaf23abb0a77b81118e4147c1fd283125e7334b188d4f1b054fc2a51c6e7"
+    }
+  ],
+  "generatedAt": "2026-08-17T18:35:27Z",
+  "manifestHash": "a9a6c855ffa57ab4dd5f5beb9ed1b72004e8fd81756dd28ada0fba03d9ccba52",
+  "optionalPacks": {},
+  "schemaVersion": 1
+}

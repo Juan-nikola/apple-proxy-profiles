@@ -815,7 +815,7 @@ var SurgeProfileBundle = (() => {
   var REQUIRED_KEYS = Object.freeze(["output", "type", "name", "subscriptionName", "platform"]);
   var NODE_REQUIRED_KEYS = Object.freeze(["output", "type", "name"]);
   var DEFAULTS = Object.freeze({
-    channel: "edge",
+    channel: "previous",
     dnsMode: "stable",
     chinaDns: "alidns",
     globalDns: "cloudflare",
@@ -1997,7 +1997,7 @@ ${renderSurgeRules({ ruleBaseUrl, adblockMode: options.adblockMode }).join("\n")
 
   // src/substore-profile-entry.js
   var PUBLIC_RULE_ROOT = "https://juan-nikola.github.io/apple-proxy-profiles";
-  var PUBLIC_RULE_BASE_URL = `${PUBLIC_RULE_ROOT}/current/surge/rules`;
+  var PUBLIC_RULE_BASE_URL = `${PUBLIC_RULE_ROOT}/previous/surge/rules`;
   function logDiagnostics(context, options, nodes, renderFailures) {
     const logger = context?.logger;
     const method = typeof logger === "function" ? logger : typeof logger?.info === "function" ? logger.info.bind(logger) : typeof logger?.log === "function" ? logger.log.bind(logger) : null;

@@ -471,7 +471,7 @@
         "type": "remote",
         "tag": "rule-Security",
         "format": "binary",
-        "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/mobile-rule-sets/Security.srs",
+        "url": "https://juan-nikola.github.io/apple-proxy-profiles/previous/sing-box/mobile-rule-sets/Security.srs",
         "http_client": "🧭 规则下载 HTTP",
         "update_interval": "24h"
       },
@@ -479,7 +479,7 @@
         "type": "remote",
         "tag": "rule-Privacy",
         "format": "binary",
-        "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/mobile-rule-sets/Privacy.srs",
+        "url": "https://juan-nikola.github.io/apple-proxy-profiles/previous/sing-box/mobile-rule-sets/Privacy.srs",
         "http_client": "🧭 规则下载 HTTP",
         "update_interval": "24h"
       },
@@ -487,7 +487,7 @@
         "type": "remote",
         "tag": "rule-DomesticCore",
         "format": "binary",
-        "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/mobile-rule-sets/DomesticCore.srs",
+        "url": "https://juan-nikola.github.io/apple-proxy-profiles/previous/sing-box/mobile-rule-sets/DomesticCore.srs",
         "http_client": "🧭 规则下载 HTTP",
         "update_interval": "24h"
       },
@@ -495,7 +495,7 @@
         "type": "remote",
         "tag": "rule-DomesticPlatform",
         "format": "binary",
-        "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/mobile-rule-sets/DomesticPlatform.srs",
+        "url": "https://juan-nikola.github.io/apple-proxy-profiles/previous/sing-box/mobile-rule-sets/DomesticPlatform.srs",
         "http_client": "🧭 规则下载 HTTP",
         "update_interval": "24h"
       },
@@ -503,7 +503,7 @@
         "type": "remote",
         "tag": "rule-AI",
         "format": "binary",
-        "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/mobile-rule-sets/AI.srs",
+        "url": "https://juan-nikola.github.io/apple-proxy-profiles/previous/sing-box/mobile-rule-sets/AI.srs",
         "http_client": "🧭 规则下载 HTTP",
         "update_interval": "24h"
       },
@@ -511,7 +511,7 @@
         "type": "remote",
         "tag": "rule-GitHub",
         "format": "binary",
-        "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/mobile-rule-sets/GitHub.srs",
+        "url": "https://juan-nikola.github.io/apple-proxy-profiles/previous/sing-box/mobile-rule-sets/GitHub.srs",
         "http_client": "🧭 规则下载 HTTP",
         "update_interval": "24h"
       },
@@ -519,7 +519,7 @@
         "type": "remote",
         "tag": "rule-YouTube",
         "format": "binary",
-        "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/mobile-rule-sets/YouTube.srs",
+        "url": "https://juan-nikola.github.io/apple-proxy-profiles/previous/sing-box/mobile-rule-sets/YouTube.srs",
         "http_client": "🧭 规则下载 HTTP",
         "update_interval": "24h"
       },
@@ -527,7 +527,7 @@
         "type": "remote",
         "tag": "rule-OverseasMedia",
         "format": "binary",
-        "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/mobile-rule-sets/OverseasMedia.srs",
+        "url": "https://juan-nikola.github.io/apple-proxy-profiles/previous/sing-box/mobile-rule-sets/OverseasMedia.srs",
         "http_client": "🧭 规则下载 HTTP",
         "update_interval": "24h"
       },
@@ -535,7 +535,7 @@
         "type": "remote",
         "tag": "rule-OverseasSocial",
         "format": "binary",
-        "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/mobile-rule-sets/OverseasSocial.srs",
+        "url": "https://juan-nikola.github.io/apple-proxy-profiles/previous/sing-box/mobile-rule-sets/OverseasSocial.srs",
         "http_client": "🧭 规则下载 HTTP",
         "update_interval": "24h"
       },
@@ -543,7 +543,7 @@
         "type": "remote",
         "tag": "rule-Apple",
         "format": "binary",
-        "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/mobile-rule-sets/Apple.srs",
+        "url": "https://juan-nikola.github.io/apple-proxy-profiles/previous/sing-box/mobile-rule-sets/Apple.srs",
         "http_client": "🧭 规则下载 HTTP",
         "update_interval": "24h"
       },
@@ -551,7 +551,7 @@
         "type": "remote",
         "tag": "rule-Microsoft",
         "format": "binary",
-        "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/mobile-rule-sets/Microsoft.srs",
+        "url": "https://juan-nikola.github.io/apple-proxy-profiles/previous/sing-box/mobile-rule-sets/Microsoft.srs",
         "http_client": "🧭 规则下载 HTTP",
         "update_interval": "24h"
       },
@@ -559,7 +559,7 @@
         "type": "remote",
         "tag": "rule-Download",
         "format": "binary",
-        "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/mobile-rule-sets/Download.srs",
+        "url": "https://juan-nikola.github.io/apple-proxy-profiles/previous/sing-box/mobile-rule-sets/Download.srs",
         "http_client": "🧭 规则下载 HTTP",
         "update_interval": "24h"
       },
@@ -567,7 +567,7 @@
         "type": "remote",
         "tag": "rule-OverseasGame",
         "format": "binary",
-        "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/mobile-rule-sets/OverseasGame.srs",
+        "url": "https://juan-nikola.github.io/apple-proxy-profiles/previous/sing-box/mobile-rule-sets/OverseasGame.srs",
         "http_client": "🧭 规则下载 HTTP",
         "update_interval": "24h"
       },
@@ -575,7 +575,7 @@
         "type": "remote",
         "tag": "rule-ChinaIP",
         "format": "binary",
-        "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/mobile-rule-sets/ChinaIP.srs",
+        "url": "https://juan-nikola.github.io/apple-proxy-profiles/previous/sing-box/mobile-rule-sets/ChinaIP.srs",
         "http_client": "🧭 规则下载 HTTP",
         "update_interval": "24h"
       }

@@ -3,19 +3,19 @@
   "client": "surge",
   "files": [
     {
-      "bytes": 10928,
+      "bytes": 10960,
       "path": "surge/examples/surge-ipad.conf",
-      "sha256": "6afdf37579583c1c60a7be8e93f64f0f34a55fad306ba2563f7d45555c994733"
+      "sha256": "e8f31748e6db1043bb8dff944458de9d51683d195d332ae90a84cbd80269b7a7"
     },
     {
-      "bytes": 10928,
+      "bytes": 10960,
       "path": "surge/examples/surge-iphone.conf",
-      "sha256": "6afdf37579583c1c60a7be8e93f64f0f34a55fad306ba2563f7d45555c994733"
+      "sha256": "e8f31748e6db1043bb8dff944458de9d51683d195d332ae90a84cbd80269b7a7"
     },
     {
-      "bytes": 10926,
+      "bytes": 10958,
       "path": "surge/examples/surge-macos.conf",
-      "sha256": "0a30c857a4f87b11c1e4be7aaf905f0f056697ab3280c65609893b6c8a552eb8"
+      "sha256": "59174bab5d80894f0cd0c6031c31abc3c7cf17db43925f97a0796968bf4bd2aa"
     },
     {
       "bytes": 985,
@@ -178,28 +178,28 @@
       "sha256": "8040fef0197d762dd3e46f369ab8df77dfe27d0cf450bc0740fe5334e97ad606"
     },
     {
-      "bytes": 48916,
+      "bytes": 48920,
       "path": "surge/scripts/substore-nodes-generator.js",
-      "sha256": "d4793e03701535f3472038e008ef57e89c71e3b028e360c88084e6455b6e004d"
+      "sha256": "8b2dd4dc36bdc4480e124e74492d9ad12b345f265daa83670c2a1eda0dffcc2e"
     },
     {
-      "bytes": 88152,
+      "bytes": 88157,
       "path": "surge/scripts/substore-profile-generator.js",
-      "sha256": "4cd99bd38a0f2362e1463236311528227a747bb7f2bd3b2e2c94ffa253017b78"
+      "sha256": "df8c6b2c0f04ac5a1e0e7ec727877ff07aeb1870b8630f7a25243e3739888c00"
     },
     {
-      "bytes": 48916,
+      "bytes": 48920,
       "path": "surge/scripts/surge-nodes-generator.js",
-      "sha256": "d4793e03701535f3472038e008ef57e89c71e3b028e360c88084e6455b6e004d"
+      "sha256": "8b2dd4dc36bdc4480e124e74492d9ad12b345f265daa83670c2a1eda0dffcc2e"
     },
     {
-      "bytes": 88152,
+      "bytes": 88157,
       "path": "surge/scripts/surge-profile-generator.js",
-      "sha256": "4cd99bd38a0f2362e1463236311528227a747bb7f2bd3b2e2c94ffa253017b78"
+      "sha256": "df8c6b2c0f04ac5a1e0e7ec727877ff07aeb1870b8630f7a25243e3739888c00"
     }
   ],
   "generatedAt": "2026-08-15T18:26:29Z",
-  "manifestHash": "0d637b275e827e1b125e71064e601bd36ceca0d900947bf8c6200292630eb7ee",
+  "manifestHash": "1ab28b90ec8b23bf9d157d49d54da00b05701c374c0dd0f07a1f56d714fc9258",
   "optionalPacks": {
     "adblock-full": "fddbcc80635cffcf188119f7408b53baf8bff9a530b9a2d0f90695202c3b76b5"
   },

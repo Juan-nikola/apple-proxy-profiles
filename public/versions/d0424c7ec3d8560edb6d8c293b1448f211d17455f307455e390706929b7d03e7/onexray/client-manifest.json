@@ -1,0 +1,60 @@
+{
+  "chinaIpAuditSha256": "9efd69e056baf8c42369e321474b94ef2cfc71f28966288ad32017ad71d874c4",
+  "client": "onexray",
+  "files": [
+    {
+      "bytes": 181416,
+      "path": "onexray/geodata/geoip.dat",
+      "sha256": "18e9d5074184ef5005261e31064cbfdc56536f9b485f120398e80d8f849f0b4c"
+    },
+    {
+      "bytes": 74223,
+      "path": "onexray/geodata/geosite.dat",
+      "sha256": "4bed4f09fb433437409d6ffd3f8e061f14babca334c64278110320c011ad7eb9"
+    },
+    {
+      "bytes": 10703,
+      "path": "onexray/geodata/manifest.json",
+      "sha256": "5bc3e497105490cfe29b2a0a3b2d38237c9fab2233e78051d2084eaa830351f0"
+    },
+    {
+      "bytes": 4028,
+      "path": "onexray/index.html",
+      "sha256": "0547ced44f3205252c1d78d1d930ba8949904f3552a8a75a41d6675d82240dab"
+    },
+    {
+      "bytes": 123976,
+      "path": "onexray/scripts/onexray-node-generator.js",
+      "sha256": "024116e04aa363510ed6229c0be7a5182c3fe22d05b1dc7e8833de1e7d4aef0f"
+    },
+    {
+      "bytes": 127257,
+      "path": "onexray/scripts/onexray-profile-generator.js",
+      "sha256": "136c7595e684edd04af61544a9f31e4e4b0bd758e70943cf8c6af081bdb2df5c"
+    },
+    {
+      "bytes": 118408,
+      "path": "onexray/scripts/onexray-routing-audit.js",
+      "sha256": "941b81c43cc0ce581f4589d1096bdbcb2c4f1e99db00020849483317cb963468"
+    },
+    {
+      "bytes": 123976,
+      "path": "onexray/scripts/substore-node-generator.js",
+      "sha256": "024116e04aa363510ed6229c0be7a5182c3fe22d05b1dc7e8833de1e7d4aef0f"
+    },
+    {
+      "bytes": 127257,
+      "path": "onexray/scripts/substore-profile-generator.js",
+      "sha256": "136c7595e684edd04af61544a9f31e4e4b0bd758e70943cf8c6af081bdb2df5c"
+    },
+    {
+      "bytes": 118408,
+      "path": "onexray/scripts/substore-routing-audit.js",
+      "sha256": "941b81c43cc0ce581f4589d1096bdbcb2c4f1e99db00020849483317cb963468"
+    }
+  ],
+  "generatedAt": "2026-08-17T18:35:27Z",
+  "manifestHash": "a4aece57a858e31cb550db83b1bc5203e3d955241a3132fd2924863d4382dead",
+  "optionalPacks": {},
+  "schemaVersion": 1
+}

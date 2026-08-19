@@ -1,0 +1,1205 @@
+{
+  "catalogSha256": "c2437ae35319f1e41b69a098fdc7c0b3c3c5a90e6deea906406f30f998bd9403",
+  "clientStates": {
+    "anywhere": {
+      "adapterSchema": "anywhere-v1",
+      "publicDirectory": "anywhere",
+      "state": "active"
+    },
+    "egern": {
+      "adapterSchema": "egern-v1",
+      "publicDirectory": "egern",
+      "state": "active"
+    },
+    "happ": {
+      "adapterSchema": "happ-v4",
+      "publicDirectory": "happ",
+      "state": "active"
+    },
+    "onexray": {
+      "adapterSchema": "onexray-v1",
+      "publicDirectory": "onexray",
+      "state": "active"
+    },
+    "shadowrocket": {
+      "adapterSchema": "shadowrocket-v1",
+      "publicDirectory": "shadowrocket",
+      "state": "active"
+    },
+    "singbox": {
+      "adapterSchema": "singbox-v1",
+      "publicDirectory": "sing-box",
+      "state": "active"
+    },
+    "surge": {
+      "adapterSchema": "surge-v1",
+      "publicDirectory": "surge",
+      "state": "active"
+    }
+  },
+  "clients": {
+    "anywhere": {
+      "manifestHash": "797d5b2b916be1927240486fb482431cfd627dc323ff67f684b046e8a8ea1ff9",
+      "referencedDefaultBytes": 321097
+    },
+    "egern": {
+      "manifestHash": "22d6836073d243a887bae99d1c35cce2015009627e7d48764ad54762f2cfa194",
+      "referencedDefaultBytes": 394309
+    },
+    "happ": {
+      "manifestHash": "a9a6c855ffa57ab4dd5f5beb9ed1b72004e8fd81756dd28ada0fba03d9ccba52",
+      "referencedDefaultBytes": 0
+    },
+    "onexray": {
+      "manifestHash": "a4aece57a858e31cb550db83b1bc5203e3d955241a3132fd2924863d4382dead",
+      "referencedDefaultBytes": 0
+    },
+    "shadowrocket": {
+      "manifestHash": "bc0d65ae4daab522ab08404ba36421cdf0ac2d8918acc5ade84e7c436699e174",
+      "referencedDefaultBytes": 593739
+    },
+    "singbox": {
+      "manifestHash": "9e47ceaa4cae3999e890503ba3118624ed5ffb37e33461896a2b5c192d3d5881",
+      "referencedDefaultBytes": 179855
+    },
+    "surge": {
+      "manifestHash": "7a3f7052a403337e0e0802883f968bf6ff2e80179965323d4e041a3f1be38485",
+      "referencedDefaultBytes": 593739
+    }
+  },
+  "diagnostics": {
+    "defaultEntries": 16840,
+    "domesticCoreEntries": 65,
+    "omittedByKind": {
+      "ipAsn": 9,
+      "logicalAnd": 1,
+      "logicalOr": 1,
+      "processName": 48,
+      "urlRegex": 16,
+      "userAgent": 111
+    },
+    "rawDefaultEntries": 28159
+  },
+  "files": [
+    {
+      "bytes": 18092,
+      "path": "LICENSE",
+      "sha256": "8177f97513213526df2cf6184d8ff986c675afb514d4e68a404010521b880643"
+    },
+    {
+      "bytes": 4782,
+      "path": "THIRD_PARTY_NOTICES.md",
+      "sha256": "b7c76d982f46785248a35659af82035cddac84cf6ad79a8c4ab87d63d65e87e2"
+    },
+    {
+      "bytes": 3431,
+      "path": "anywhere/client-manifest.json",
+      "sha256": "90fc379fc632c501de2222f461904fcac44156bd3cbb5f03da01db01390c7acf"
+    },
+    {
+      "bytes": 11094,
+      "path": "anywhere/import.html",
+      "sha256": "458111c64fb5a29bcc8778468eb67a67843badf968cba5a63865f773b7847d65"
+    },
+    {
+      "bytes": 1150,
+      "path": "anywhere/rules/AI-001.arrs",
+      "sha256": "c9e74526d8c66d0fc661b29597b75cc46edf922f535718fe7aae5bd09363871d"
+    },
+    {
+      "bytes": 687,
+      "path": "anywhere/rules/Apple-001.arrs",
+      "sha256": "8a51800567b203771142e92a00768be2f41f24babbf9e4ef8f00150b48fd7003"
+    },
+    {
+      "bytes": 217147,
+      "path": "anywhere/rules/ChinaIP-001.arrs",
+      "sha256": "f0f080446f9ce5ba98dd101b7bf5eb38a6c5837b3f45d1a953e9a30004abbae6"
+    },
+    {
+      "bytes": 2070,
+      "path": "anywhere/rules/DomesticCore-001.arrs",
+      "sha256": "74cb9c18fe9636d73d5fcf0c94cf0ba1303b910e435ffd82614be1d095bc911d"
+    },
+    {
+      "bytes": 7714,
+      "path": "anywhere/rules/DomesticPlatform-001.arrs",
+      "sha256": "38f93fa8aee2c95a67217f468bfd1e3637304bf09a6997b5290bfd85c571ba80"
+    },
+    {
+      "bytes": 2411,
+      "path": "anywhere/rules/Download-001.arrs",
+      "sha256": "f79f1c8e557150c5bfaf13802b0e7fbeadbedad5a502c8ec96ef3778f3051e31"
+    },
+    {
+      "bytes": 852,
+      "path": "anywhere/rules/GitHub-001.arrs",
+      "sha256": "65af5efee71a0b4a08257c19422e510cd17d240c15a6a4e7a312c98266984f17"
+    },
+    {
+      "bytes": 13150,
+      "path": "anywhere/rules/Microsoft-001.arrs",
+      "sha256": "353fdc19224a8cc27249702d320a681e597757ec68ecca0e3931846d78ff4fe3"
+    },
+    {
+      "bytes": 11012,
+      "path": "anywhere/rules/OverseasGame-001.arrs",
+      "sha256": "9fbc225d21889e0c7e4b463d37d572508b1a9353e62fe5a6cd4040d35c2be803"
+    },
+    {
+      "bytes": 43315,
+      "path": "anywhere/rules/OverseasMedia-001.arrs",
+      "sha256": "053ced062e6888e92757eafafdb29d98ca4a5b92f1ff758d3a38ba13261c906e"
+    },
+    {
+      "bytes": 12558,
+      "path": "anywhere/rules/OverseasSocial-001.arrs",
+      "sha256": "bc708a9d56c35f88ae2e18017202e54c6319555ef64d01136db41939874486bc"
+    },
+    {
+      "bytes": 638,
+      "path": "anywhere/rules/Privacy-001.arrs",
+      "sha256": "c697f78af460224edd916343758eed18f10f9f3a27737aab5703392cf9b26a6c"
+    },
+    {
+      "bytes": 5099,
+      "path": "anywhere/rules/Security-001.arrs",
+      "sha256": "193174ef061a10fe244ac2ad0fc5be9f866077ab4473793806e944674585fc59"
+    },
+    {
+      "bytes": 3294,
+      "path": "anywhere/rules/YouTube-001.arrs",
+      "sha256": "033cb0449d14f8f1f12dfddb1549bdebae9bb75ebd1252ef014e2aa3a06693fd"
+    },
+    {
+      "bytes": 43130,
+      "path": "anywhere/rules/manifest.json",
+      "sha256": "d37436483e8f53dc967e72916c914feac5e485ae695ab05bf416a629098fdb44"
+    },
+    {
+      "bytes": 88037,
+      "path": "anywhere/scripts/anywhere-node-generator.js",
+      "sha256": "dacd469123a9c406e2f309cc07071b99fc7547a5bb6d36dea02c1ed63c540490"
+    },
+    {
+      "bytes": 88037,
+      "path": "anywhere/scripts/substore-node-generator.js",
+      "sha256": "dacd469123a9c406e2f309cc07071b99fc7547a5bb6d36dea02c1ed63c540490"
+    },
+    {
+      "bytes": 1552,
+      "path": "audit/china-ip-drift.json",
+      "sha256": "9efd69e056baf8c42369e321474b94ef2cfc71f28966288ad32017ad71d874c4"
+    },
+    {
+      "bytes": 1888,
+      "path": "audit/dashboard.html",
+      "sha256": "1b94f94e5e7f1e05784f4701dcea8c2a085b59ea293f1b0bc42c98975b609852"
+    },
+    {
+      "bytes": 4120,
+      "path": "audit/dashboard.json",
+      "sha256": "4a899f2ddfaf78d9d51856548b6b5668914d612c917898dcc7572c324fe4838c"
+    },
+    {
+      "bytes": 5175,
+      "path": "audit/routing-plan.json",
+      "sha256": "49b800828169763cbc4f315132892be58cb403b9d2cc7b60d3f05f806098d7a3"
+    },
+    {
+      "bytes": 6727,
+      "path": "egern/client-manifest.json",
+      "sha256": "84a0af1f08aa8b3b79b790f193264d143b12a3191d5f692a09de52ce714baec8"
+    },
+    {
+      "bytes": 27784,
+      "path": "egern/examples/egern-ipad.yaml",
+      "sha256": "81f7ce0ed1f5bcc258c7223e29759b14d82c623590023cfd9da29864d1245685"
+    },
+    {
+      "bytes": 27784,
+      "path": "egern/examples/egern-iphone.yaml",
+      "sha256": "81f7ce0ed1f5bcc258c7223e29759b14d82c623590023cfd9da29864d1245685"
+    },
+    {
+      "bytes": 27781,
+      "path": "egern/examples/egern-macos.yaml",
+      "sha256": "b0b0b385b339111474605fc4c717e4ce3551084cce65c91168e2899c893049b9"
+    },
+    {
+      "bytes": 883,
+      "path": "egern/rules/Apple.yaml",
+      "sha256": "eefca2096c8110434bb5499da76b2175f772aa8605e54638d4b37c394b7e5dec"
+    },
+    {
+      "bytes": 4030,
+      "path": "egern/rules/BiliBili.yaml",
+      "sha256": "3aa44f60cfbbe5ee0c4a489890c0a37f906658128c34ec8c3cc185f5a421a9d7"
+    },
+    {
+      "bytes": 2058,
+      "path": "egern/rules/BlockHttpDNS.yaml",
+      "sha256": "5827752f9cdccf381268ceffe7e7c06c027804dc4dbfe8a8092495bf722e5f0c"
+    },
+    {
+      "bytes": 8001,
+      "path": "egern/rules/ByteDance.yaml",
+      "sha256": "3e423e6503729c38381043a1f79c001a6cfca6e90fe8d8ab73323c65c89e8397"
+    },
+    {
+      "bytes": 253133,
+      "path": "egern/rules/ChinaIP.yaml",
+      "sha256": "d3a718cf28d54a2fc7525d94b7191915e7476cb1b8cafa298c8d495a6c2c688d"
+    },
+    {
+      "bytes": 454,
+      "path": "egern/rules/ChinaTLD.yaml",
+      "sha256": "e76a33c6b41baf09c5d13fb1ab96fc27b2b8dacb15dca45c1d09d2b8a851150e"
+    },
+    {
+      "bytes": 498,
+      "path": "egern/rules/Claude.yaml",
+      "sha256": "af055b2c18898418312b35d1e8aff597a905954e288e64a5f3a8b5b7c2e5705b"
+    },
+    {
+      "bytes": 1730,
+      "path": "egern/rules/Copilot.yaml",
+      "sha256": "b72980b0cba66b0ef18448457dc05e83e54ca07f0482586610355d67d02dd546"
+    },
+    {
+      "bytes": 4437,
+      "path": "egern/rules/Disney.yaml",
+      "sha256": "c1fcf4059f4e720313b76c99b2fdb501c85af649410f09d94533cf0e7908589a"
+    },
+    {
+      "bytes": 1582,
+      "path": "egern/rules/DomesticCore.yaml",
+      "sha256": "82492867e2642b09d49be1c59bbe6dfa66fcaa63bcf97650ba34ac3b0cccaf9f"
+    },
+    {
+      "bytes": 1293,
+      "path": "egern/rules/DomesticGame.yaml",
+      "sha256": "d23a54463988c3c0161af512f171d1824266a08734f1616c92628736b99b8baa"
+    },
+    {
+      "bytes": 531,
+      "path": "egern/rules/Download.yaml",
+      "sha256": "3eae13dcab7ef6edec2290ea84c54f63b297880692f5caf74ef74393687901ce"
+    },
+    {
+      "bytes": 12940,
+      "path": "egern/rules/Facebook.yaml",
+      "sha256": "6a0b8e258f47f3784624234d78a964d84f9a097b7f4a2615437fefdc3afda463"
+    },
+    {
+      "bytes": 767,
+      "path": "egern/rules/Gemini.yaml",
+      "sha256": "b2119d1b99fddf270d5d0a14e28653e637f28cb857bfc947d52d09d285a15b08"
+    },
+    {
+      "bytes": 1130,
+      "path": "egern/rules/GitHub.yaml",
+      "sha256": "0d41176372eb556f199935e04cc9e90aae490cfe54d36aeef93f595f48cfe99b"
+    },
+    {
+      "bytes": 21912,
+      "path": "egern/rules/GlobalMedia.yaml",
+      "sha256": "3e65a178ff35f62f4503e5052d4eb7852f4f4a3a97bed4a8c78a577f2de4d31b"
+    },
+    {
+      "bytes": 4962,
+      "path": "egern/rules/Hijacking.yaml",
+      "sha256": "863f4dd39d68191e3adb26c35c9a05cda1a3a9a54a31a41bca5e264ca15234f4"
+    },
+    {
+      "bytes": 520,
+      "path": "egern/rules/Instagram.yaml",
+      "sha256": "30a865d10da27428c4f7d638f87108c6945ade04056d781add3749bced8395b2"
+    },
+    {
+      "bytes": 15358,
+      "path": "egern/rules/Microsoft.yaml",
+      "sha256": "ced59154bf7030514fda15e00c74b9089b00dd55e3e30de1d198c2a738bf85c3"
+    },
+    {
+      "bytes": 25718,
+      "path": "egern/rules/Netflix.yaml",
+      "sha256": "491b98e549e86dfd2d48fd5668c4217b2617d6046dcbc31c4c47c9e7e2ce01c6"
+    },
+    {
+      "bytes": 1314,
+      "path": "egern/rules/OpenAI.yaml",
+      "sha256": "2761cd3286975d39c3ffadd0b818c0342b633a57acb1b6c0e3df0873dd3cd803"
+    },
+    {
+      "bytes": 13986,
+      "path": "egern/rules/OverseasGame.yaml",
+      "sha256": "3f7ce7323122558cf274ea242dbd8899d8b5c074ecc48d41346c4a588ccadf85"
+    },
+    {
+      "bytes": 827,
+      "path": "egern/rules/Privacy.yaml",
+      "sha256": "9b3cf0189d1d51d98f726bc4be51f23010cea4491bb737ac4b91b20f995f75e6"
+    },
+    {
+      "bytes": 5893,
+      "path": "egern/rules/PrivateTracker.yaml",
+      "sha256": "52419b799ab5b1b8da588cf9e9cdc456ca96afcee1c9cf7c6fc9c7078cff3673"
+    },
+    {
+      "bytes": 1192,
+      "path": "egern/rules/Spotify.yaml",
+      "sha256": "df40ee1bcbd9a741a7a11a94850ba7a80e7b03983951516d86ca89a28d615a1d"
+    },
+    {
+      "bytes": 881,
+      "path": "egern/rules/SteamCN.yaml",
+      "sha256": "1bd27f9a459953bd70e7d25024dd92c72ee97f0e7f02963be782644a36942b07"
+    },
+    {
+      "bytes": 1117,
+      "path": "egern/rules/Telegram.yaml",
+      "sha256": "df2ae1bda29d13caaa671018c40b7250ddd6e52d2d1497f31eb7f6552c708ce5"
+    },
+    {
+      "bytes": 1090,
+      "path": "egern/rules/TikTok.yaml",
+      "sha256": "881d84749cca207328cc8ba41e2d2a01a05960109e0f6725a2067498b530e2d1"
+    },
+    {
+      "bytes": 1068,
+      "path": "egern/rules/Twitter.yaml",
+      "sha256": "a2625e857cb56b737be1bb8935fe4ed96e79dc30fd9ea346a30181de165dd482"
+    },
+    {
+      "bytes": 498,
+      "path": "egern/rules/Weibo.yaml",
+      "sha256": "7b2a6141c7f37fc0a731b559ac25674e3fa16ced45dea80c384851d4a31839bf"
+    },
+    {
+      "bytes": 531,
+      "path": "egern/rules/XiaoHongShu.yaml",
+      "sha256": "aec800de3773df53479af117cdf66581358394e6cd05f785f8bb81a1f5bab62e"
+    },
+    {
+      "bytes": 3975,
+      "path": "egern/rules/YouTube.yaml",
+      "sha256": "098d18a760a409a8c2a9273eb3ec04f4e604c1a738560f6611bf0b1cfb01be74"
+    },
+    {
+      "bytes": 120515,
+      "path": "egern/scripts/egern-node-generator.js",
+      "sha256": "e3bcc18ef007eeb740f9197cd2df2e8eb3ebd951a6bfed62c1b42abdd9cdeec6"
+    },
+    {
+      "bytes": 208838,
+      "path": "egern/scripts/egern-profile-generator.js",
+      "sha256": "07a7ca3ede8dd5925dcbee930eb3b2a4795b9a59f8f7012d6c1b49e3a06627a6"
+    },
+    {
+      "bytes": 120515,
+      "path": "egern/scripts/substore-node-generator.js",
+      "sha256": "e3bcc18ef007eeb740f9197cd2df2e8eb3ebd951a6bfed62c1b42abdd9cdeec6"
+    },
+    {
+      "bytes": 208838,
+      "path": "egern/scripts/substore-profile-generator.js",
+      "sha256": "07a7ca3ede8dd5925dcbee930eb3b2a4795b9a59f8f7012d6c1b49e3a06627a6"
+    },
+    {
+      "bytes": 1457,
+      "path": "happ/client-manifest.json",
+      "sha256": "27b6f1222920d41592f0cef10d315232f47a59e82a2b0940e311280f6e9a6054"
+    },
+    {
+      "bytes": 181247,
+      "path": "happ/geoip.dat",
+      "sha256": "e3b37ed49d5e31d52b8f958a8c34588f8c261e9184d340135b87022ce5000bbc"
+    },
+    {
+      "bytes": 74239,
+      "path": "happ/geosite.dat",
+      "sha256": "52de4978bef9970c4b0dd551834f8bf1a32246a648b09be6f705b6b16bbd9203"
+    },
+    {
+      "bytes": 315207,
+      "path": "happ/index.html",
+      "sha256": "8a7196ead75a7121519ccfc4b59ae1fabe8c444526800abb332c80fd73c03e61"
+    },
+    {
+      "bytes": 139323,
+      "path": "happ/scripts/happ-config-generator.js",
+      "sha256": "4eecf02fcc9d4fc21582e80ee20b21902c9669d266c230da907aa1b966c95de8"
+    },
+    {
+      "bytes": 110761,
+      "path": "happ/scripts/happ-routing-audit.js",
+      "sha256": "310deaf23abb0a77b81118e4147c1fd283125e7334b188d4f1b054fc2a51c6e7"
+    },
+    {
+      "bytes": 139323,
+      "path": "happ/scripts/substore-config-generator.js",
+      "sha256": "4eecf02fcc9d4fc21582e80ee20b21902c9669d266c230da907aa1b966c95de8"
+    },
+    {
+      "bytes": 110761,
+      "path": "happ/scripts/substore-routing-audit.js",
+      "sha256": "310deaf23abb0a77b81118e4147c1fd283125e7334b188d4f1b054fc2a51c6e7"
+    },
+    {
+      "bytes": 2025,
+      "path": "onexray/client-manifest.json",
+      "sha256": "fc2aab9fdd79d402d9b84fd32756910bfc62cde178760db918df96ad562e290a"
+    },
+    {
+      "bytes": 181416,
+      "path": "onexray/geodata/geoip.dat",
+      "sha256": "18e9d5074184ef5005261e31064cbfdc56536f9b485f120398e80d8f849f0b4c"
+    },
+    {
+      "bytes": 74223,
+      "path": "onexray/geodata/geosite.dat",
+      "sha256": "4bed4f09fb433437409d6ffd3f8e061f14babca334c64278110320c011ad7eb9"
+    },
+    {
+      "bytes": 10703,
+      "path": "onexray/geodata/manifest.json",
+      "sha256": "5bc3e497105490cfe29b2a0a3b2d38237c9fab2233e78051d2084eaa830351f0"
+    },
+    {
+      "bytes": 4028,
+      "path": "onexray/index.html",
+      "sha256": "0547ced44f3205252c1d78d1d930ba8949904f3552a8a75a41d6675d82240dab"
+    },
+    {
+      "bytes": 123976,
+      "path": "onexray/scripts/onexray-node-generator.js",
+      "sha256": "024116e04aa363510ed6229c0be7a5182c3fe22d05b1dc7e8833de1e7d4aef0f"
+    },
+    {
+      "bytes": 127257,
+      "path": "onexray/scripts/onexray-profile-generator.js",
+      "sha256": "136c7595e684edd04af61544a9f31e4e4b0bd758e70943cf8c6af081bdb2df5c"
+    },
+    {
+      "bytes": 118408,
+      "path": "onexray/scripts/onexray-routing-audit.js",
+      "sha256": "941b81c43cc0ce581f4589d1096bdbcb2c4f1e99db00020849483317cb963468"
+    },
+    {
+      "bytes": 123976,
+      "path": "onexray/scripts/substore-node-generator.js",
+      "sha256": "024116e04aa363510ed6229c0be7a5182c3fe22d05b1dc7e8833de1e7d4aef0f"
+    },
+    {
+      "bytes": 127257,
+      "path": "onexray/scripts/substore-profile-generator.js",
+      "sha256": "136c7595e684edd04af61544a9f31e4e4b0bd758e70943cf8c6af081bdb2df5c"
+    },
+    {
+      "bytes": 118408,
+      "path": "onexray/scripts/substore-routing-audit.js",
+      "sha256": "941b81c43cc0ce581f4589d1096bdbcb2c4f1e99db00020849483317cb963468"
+    },
+    {
+      "bytes": 7229,
+      "path": "shadowrocket/client-manifest.json",
+      "sha256": "c9407c6bbf44b6669d41aab74ab3c78187e0ac07edac665d14d58ef32aac61c7"
+    },
+    {
+      "bytes": 12865,
+      "path": "shadowrocket/examples/shadowrocket-ipad.conf",
+      "sha256": "682771581f46e95b65d4d2d135849187de56b5e811c8a1592f295fd90826077d"
+    },
+    {
+      "bytes": 12867,
+      "path": "shadowrocket/examples/shadowrocket-iphone.conf",
+      "sha256": "a7285cbd927b382447038c3c937d0302c391bfe44656ebd126e9dc8c72cd99fe"
+    },
+    {
+      "bytes": 12863,
+      "path": "shadowrocket/examples/shadowrocket-macos.conf",
+      "sha256": "efb75ace1f7b2e0c4861f3b69ae88ef7dc2c560c37af0df5549115c41ed7d586"
+    },
+    {
+      "bytes": 985,
+      "path": "shadowrocket/rules/Apple.list",
+      "sha256": "e0692231102c2f7f766f84bba02cc04b4500b5aaf3ec927e1fe45e3472ae24f6"
+    },
+    {
+      "bytes": 4550,
+      "path": "shadowrocket/rules/BiliBili.list",
+      "sha256": "6eb0459c2592c32bbc9e6b6cf0a674d48513be5f82704bf856abdb14281e1cf1"
+    },
+    {
+      "bytes": 2515,
+      "path": "shadowrocket/rules/BlockHttpDNS.list",
+      "sha256": "0a1e5ab5de42c5365f4727f4968c5fcb557f8a85a9ea9337dc06792c2a240653"
+    },
+    {
+      "bytes": 10830,
+      "path": "shadowrocket/rules/ByteDance.list",
+      "sha256": "ea81d8e737e0acf2f88fcf0d60be77dacc145300f6875e4664d236d2c5be021a"
+    },
+    {
+      "bytes": 401170,
+      "path": "shadowrocket/rules/ChinaIP.list",
+      "sha256": "53fd5b81411257e3cef0b28d3ef562518176a1515bcdb7006453106cd3ae5359"
+    },
+    {
+      "bytes": 323,
+      "path": "shadowrocket/rules/ChinaTLD.list",
+      "sha256": "da9b2c1ee8e3f262e85dfd0b9b580714fc71c910d917cbf580e922f560646ffd"
+    },
+    {
+      "bytes": 379,
+      "path": "shadowrocket/rules/Claude.list",
+      "sha256": "de749556429dfd95e8d7fe9f2436e5ffa0af00051707d806e8784109eb7d25fa"
+    },
+    {
+      "bytes": 1863,
+      "path": "shadowrocket/rules/Copilot.list",
+      "sha256": "9f63c0f28ac97030e2a211eb386e26ab00824d5d709aaf068a610a3d4ab74015"
+    },
+    {
+      "bytes": 5674,
+      "path": "shadowrocket/rules/Disney.list",
+      "sha256": "9fe27be9a5a2e3e6db2bcb3b0a61e058232da3bd7c9802ecc132f6b936c708e7"
+    },
+    {
+      "bytes": 1963,
+      "path": "shadowrocket/rules/DomesticCore.list",
+      "sha256": "510af662ea81c863465ae5611f756449f95cc8fff89fd89ab29ec80727e48bbe"
+    },
+    {
+      "bytes": 1474,
+      "path": "shadowrocket/rules/DomesticGame.list",
+      "sha256": "6489326d75d32fd8dfcf0d56e7f2b8c286d53fc338b86f64e9f639f44e058367"
+    },
+    {
+      "bytes": 448,
+      "path": "shadowrocket/rules/Download.list",
+      "sha256": "3bea32b2353c02642bc0d56efaec77dc904369338068981d2444eed98b0805e7"
+    },
+    {
+      "bytes": 17476,
+      "path": "shadowrocket/rules/Facebook.list",
+      "sha256": "b726f3f56e37115dbab836d90682c16968e920211836ebe9ce42195ed9c05363"
+    },
+    {
+      "bytes": 720,
+      "path": "shadowrocket/rules/Gemini.list",
+      "sha256": "d0cf6e74efec193aea076456b64258a6262c87133b6c22b16b4c1f0c22dc3987"
+    },
+    {
+      "bytes": 1243,
+      "path": "shadowrocket/rules/GitHub.list",
+      "sha256": "dc874c21fa42e9fbc303a95b743c958e9f68d2c4b44b4a579ce883bfc9455538"
+    },
+    {
+      "bytes": 34042,
+      "path": "shadowrocket/rules/GlobalMedia.list",
+      "sha256": "3fbd99c0cbcac8d6045a160ee709df6c64f51f7b39664e83a4f16be5f608b180"
+    },
+    {
+      "bytes": 6856,
+      "path": "shadowrocket/rules/Hijacking.list",
+      "sha256": "34441c31549fa1e1978f0f2ad106ef97ff712816b75707240fb8f24dffa244a8"
+    },
+    {
+      "bytes": 417,
+      "path": "shadowrocket/rules/Instagram.list",
+      "sha256": "cd919fad055b5922885fce9bb1efa5cfcacb74c8f56d2156fbdb67a81e3b1b56"
+    },
+    {
+      "bytes": 20566,
+      "path": "shadowrocket/rules/Microsoft.list",
+      "sha256": "0496c8f699b61509d1f4638e78bfc48044cc4dea28cc051bf89ed5d09170552a"
+    },
+    {
+      "bytes": 40421,
+      "path": "shadowrocket/rules/Netflix.list",
+      "sha256": "ba1bd59fb67ac84cc0b2dd9d6d9515d5e97181aeed266de66fc9cb5358cf7bae"
+    },
+    {
+      "bytes": 1418,
+      "path": "shadowrocket/rules/OpenAI.list",
+      "sha256": "4b0c1ab6203595bff323d2a20f0dcfc76347396e86d8820b469dfe884486bcc9"
+    },
+    {
+      "bytes": 18626,
+      "path": "shadowrocket/rules/OverseasGame.list",
+      "sha256": "f16c18d929fd5a507579d8aee7d0c588a1aa01243a0a7cd69f2d4379e591c2dc"
+    },
+    {
+      "bytes": 915,
+      "path": "shadowrocket/rules/Privacy.list",
+      "sha256": "abdee48494f1cb92afe03ed06fb1401ecacb41d06d40059c2420918e2b96bb55"
+    },
+    {
+      "bytes": 6940,
+      "path": "shadowrocket/rules/PrivateTracker.list",
+      "sha256": "c1a93405f3af7a45c46c0a39d73526fb56483ee6423a8def0c25525e4b7cdcc9"
+    },
+    {
+      "bytes": 1263,
+      "path": "shadowrocket/rules/Spotify.list",
+      "sha256": "711e9b1cd2cda26963628c1dfd872486a4ebbcab5f65ece18f53bdf315157b17"
+    },
+    {
+      "bytes": 797,
+      "path": "shadowrocket/rules/SteamCN.list",
+      "sha256": "9de9a8bade001bc70195fb6055f3e121d12a9f885340cba68b6159963ad97c0d"
+    },
+    {
+      "bytes": 1311,
+      "path": "shadowrocket/rules/Telegram.list",
+      "sha256": "f6ed0480277cbcb4aff37f001e5fbae3bd035dd59619a1c5403d8a89b17c9621"
+    },
+    {
+      "bytes": 1179,
+      "path": "shadowrocket/rules/TikTok.list",
+      "sha256": "88fa79af52e7b81387bf11f6dbc1f03f8e50bbd2592dd165ce7796816ba054cf"
+    },
+    {
+      "bytes": 1230,
+      "path": "shadowrocket/rules/Twitter.list",
+      "sha256": "f843ed89e11a7dc62d85ff4a2a2bee538df2805a21d33aa1e7186796abea6609"
+    },
+    {
+      "bytes": 395,
+      "path": "shadowrocket/rules/Weibo.list",
+      "sha256": "6680d84d120212bb65622fd33213c91650bba25d40c92e3131abc6919320f927"
+    },
+    {
+      "bytes": 424,
+      "path": "shadowrocket/rules/XiaoHongShu.list",
+      "sha256": "a1e518bf3a562cde536eae345be9c5a0a7d9dca28439a277e847be3d537c415b"
+    },
+    {
+      "bytes": 5326,
+      "path": "shadowrocket/rules/YouTube.list",
+      "sha256": "3efa65702afa40974e283084b2999eb9dee5a5257e6927bd5a2682d95126211e"
+    },
+    {
+      "bytes": 40699,
+      "path": "shadowrocket/scripts/shadowrocket-node-operator.js",
+      "sha256": "0894b46a8a2e33cf7ac35b9526d49f304b144666be0695a86a92fc9dbf36373d"
+    },
+    {
+      "bytes": 42388,
+      "path": "shadowrocket/scripts/shadowrocket-node-subscription.js",
+      "sha256": "5f19920f539db3e7fd275e0336da3fab048150e7a2a733a617fe19053d59ef71"
+    },
+    {
+      "bytes": 101369,
+      "path": "shadowrocket/scripts/shadowrocket-profile-generator.js",
+      "sha256": "3edd85b65bb1fcb133a438280a6a4c116b8e7eb1d591fcdc58d2d7e889c95e51"
+    },
+    {
+      "bytes": 40699,
+      "path": "shadowrocket/scripts/substore-node-operator.js",
+      "sha256": "0894b46a8a2e33cf7ac35b9526d49f304b144666be0695a86a92fc9dbf36373d"
+    },
+    {
+      "bytes": 101369,
+      "path": "shadowrocket/scripts/substore-profile-generator.js",
+      "sha256": "3edd85b65bb1fcb133a438280a6a4c116b8e7eb1d591fcdc58d2d7e889c95e51"
+    },
+    {
+      "bytes": 9920,
+      "path": "sing-box/client-manifest.json",
+      "sha256": "bcab166f43374ca5ee174bcd49140e7dec4dd396189604ab3d23971794becef5"
+    },
+    {
+      "bytes": 10576,
+      "path": "sing-box/examples/sing-box-android-diagnostic.json",
+      "sha256": "e8a3fd771a3466e74d3cf40c00aa05070b4f6c33898b7d71b2fb78446c735c51"
+    },
+    {
+      "bytes": 27625,
+      "path": "sing-box/examples/sing-box-android.json",
+      "sha256": "5140f5c9b1303addc573a969bfaa8e8637d4480b8ae1baa44538c4dd655b14da"
+    },
+    {
+      "bytes": 10617,
+      "path": "sing-box/examples/sing-box-ipad-diagnostic.json",
+      "sha256": "b0eb2f534c035e524e05804b4646695784a2e544da24356189e2bead883ca07d"
+    },
+    {
+      "bytes": 19379,
+      "path": "sing-box/examples/sing-box-ipad.json",
+      "sha256": "5a88bc4dbd4f1a1ddeff2eeb961af87a6d4dcf16185bbb0cc0e6be5519b164e1"
+    },
+    {
+      "bytes": 10617,
+      "path": "sing-box/examples/sing-box-iphone-diagnostic.json",
+      "sha256": "b0eb2f534c035e524e05804b4646695784a2e544da24356189e2bead883ca07d"
+    },
+    {
+      "bytes": 19379,
+      "path": "sing-box/examples/sing-box-iphone.json",
+      "sha256": "5a88bc4dbd4f1a1ddeff2eeb961af87a6d4dcf16185bbb0cc0e6be5519b164e1"
+    },
+    {
+      "bytes": 10548,
+      "path": "sing-box/examples/sing-box-macos-diagnostic.json",
+      "sha256": "2965f5b80bf3edd4052e040330e7464305c2fd0eba145c40a0665bb72865070a"
+    },
+    {
+      "bytes": 27597,
+      "path": "sing-box/examples/sing-box-macos.json",
+      "sha256": "20f583fa7e392031f54ffd875c198ab0ec00aa39ce2c51932ed327ddd278fc03"
+    },
+    {
+      "bytes": 959,
+      "path": "sing-box/mobile-rule-sets/AI.srs",
+      "sha256": "9d92a5b5a062f12acda68d6778259600eb900fc8d61f4eb50de931af67cd6469"
+    },
+    {
+      "bytes": 237,
+      "path": "sing-box/mobile-rule-sets/Apple.srs",
+      "sha256": "3ce05f569a082f65132f2782c90b88c1788f017ce0b521f40b3ef7a5f15b19e2"
+    },
+    {
+      "bytes": 48632,
+      "path": "sing-box/mobile-rule-sets/ChinaIP.srs",
+      "sha256": "03ef5fc65b90d123afcd2f3bd3180023bce46fb06c81112ccb60c897f32a56cb"
+    },
+    {
+      "bytes": 1074,
+      "path": "sing-box/mobile-rule-sets/DomesticCore.srs",
+      "sha256": "281a08c75ce24676800cde609a5e1ae050f60bdce8b91f07ccfd7e38d2060c6b"
+    },
+    {
+      "bytes": 4074,
+      "path": "sing-box/mobile-rule-sets/DomesticPlatform.srs",
+      "sha256": "36c82c1ecef870302487b42acedeba709f4594092051b80eacce3be43b1eff2b"
+    },
+    {
+      "bytes": 2615,
+      "path": "sing-box/mobile-rule-sets/Download.srs",
+      "sha256": "59afedac42953dbb4182c2c06d2fb1948ed99f5e4cb4f664117a928a383ea67c"
+    },
+    {
+      "bytes": 432,
+      "path": "sing-box/mobile-rule-sets/GitHub.srs",
+      "sha256": "8e7ae0b406596a831e3e822841f215a63dfc2e550dc603eeccc505fa2ad97057"
+    },
+    {
+      "bytes": 6120,
+      "path": "sing-box/mobile-rule-sets/Microsoft.srs",
+      "sha256": "51a1cc32887f293f431a40bfe1a0a59f790edb33cef825f42e5f12b8d1ba412a"
+    },
+    {
+      "bytes": 5340,
+      "path": "sing-box/mobile-rule-sets/OverseasGame.srs",
+      "sha256": "2d44e6d81f4673fe60ccc0c7c073af6e1333649b18798177401bdc74d3c260dc"
+    },
+    {
+      "bytes": 10654,
+      "path": "sing-box/mobile-rule-sets/OverseasMedia.srs",
+      "sha256": "7dfc992546cf04041d45a8e72e370fb31d6c48ca10aa29c78fe6fb6da3a459da"
+    },
+    {
+      "bytes": 5337,
+      "path": "sing-box/mobile-rule-sets/OverseasSocial.srs",
+      "sha256": "139deb26cfac0e7fb63bf3fb7bfda2be4e16c99d55792b0620f6920a0d890ad4"
+    },
+    {
+      "bytes": 148,
+      "path": "sing-box/mobile-rule-sets/Privacy.srs",
+      "sha256": "7d99871ced1458fe7a6c34cc95ae67b72d3099bdb304d5addc5818dbacfe7108"
+    },
+    {
+      "bytes": 2261,
+      "path": "sing-box/mobile-rule-sets/Security.srs",
+      "sha256": "699539e5a0bbb8cc430a81d1b50bc23d2f94f93ee72a0ecf635b798fda589a94"
+    },
+    {
+      "bytes": 1205,
+      "path": "sing-box/mobile-rule-sets/YouTube.srs",
+      "sha256": "da4163404185d0c106158bad3bc246a7df1388b1974bceace0dfa1f0443abd30"
+    },
+    {
+      "bytes": 237,
+      "path": "sing-box/rule-sets/Apple.srs",
+      "sha256": "3ce05f569a082f65132f2782c90b88c1788f017ce0b521f40b3ef7a5f15b19e2"
+    },
+    {
+      "bytes": 1384,
+      "path": "sing-box/rule-sets/BiliBili.srs",
+      "sha256": "4e9eadc4e859872231db02d61e781433a5902f213c5cac1763de6530ea9e6114"
+    },
+    {
+      "bytes": 622,
+      "path": "sing-box/rule-sets/BlockHttpDNS.srs",
+      "sha256": "0bb6e9e0724f214e637ac9e1ac519a84fb2709538daf913f9188c9931a0a3b64"
+    },
+    {
+      "bytes": 2758,
+      "path": "sing-box/rule-sets/ByteDance.srs",
+      "sha256": "ed15d8e75ef55fffbef039e204685fb61ab4e7ad7edb3d74ecc059888251bb8c"
+    },
+    {
+      "bytes": 48632,
+      "path": "sing-box/rule-sets/ChinaIP.srs",
+      "sha256": "03ef5fc65b90d123afcd2f3bd3180023bce46fb06c81112ccb60c897f32a56cb"
+    },
+    {
+      "bytes": 33,
+      "path": "sing-box/rule-sets/ChinaTLD.srs",
+      "sha256": "2e9217752e6178896c1a0087890d53cd762c626c679f8311681c85e2257ade3d"
+    },
+    {
+      "bytes": 93,
+      "path": "sing-box/rule-sets/Claude.srs",
+      "sha256": "e9c87ae24f336682fd8882b6d2753932cdac5d1946ace56d55bbc0cfbe358608"
+    },
+    {
+      "bytes": 741,
+      "path": "sing-box/rule-sets/Copilot.srs",
+      "sha256": "50463f9acc999482f4d3b791b0400a87aafe2a547d2bb29f23ffbea68e4c1a15"
+    },
+    {
+      "bytes": 1866,
+      "path": "sing-box/rule-sets/Disney.srs",
+      "sha256": "0eac62a359fe398b6934162a66ecde3155712b77a0cf02ac48bda3f967f5b9f9"
+    },
+    {
+      "bytes": 476,
+      "path": "sing-box/rule-sets/DomesticCore.srs",
+      "sha256": "5e5f430b60e8d93bc133de46aa701f4d0ad2ab6553e9ed32fe567d2a9ed76ff9"
+    },
+    {
+      "bytes": 448,
+      "path": "sing-box/rule-sets/DomesticGame.srs",
+      "sha256": "95fcc7ea15944088201f20c6a207bb3c316ac643880a58d078d89720e39092e7"
+    },
+    {
+      "bytes": 94,
+      "path": "sing-box/rule-sets/Download.srs",
+      "sha256": "9098eb4ef9c1fffed80bc7aaae6a3e9dec21fc0e46554143aaec5c5f8671f30f"
+    },
+    {
+      "bytes": 4466,
+      "path": "sing-box/rule-sets/Facebook.srs",
+      "sha256": "9b099cfe319b46173aeb0e2da35dbe3c19b2d8782a00651b40f3163911b235ed"
+    },
+    {
+      "bytes": 243,
+      "path": "sing-box/rule-sets/Gemini.srs",
+      "sha256": "fa7c1542d34ccb1b17d001f59e1e917b056d2491451b060300b51cf37b8b5923"
+    },
+    {
+      "bytes": 432,
+      "path": "sing-box/rule-sets/GitHub.srs",
+      "sha256": "8e7ae0b406596a831e3e822841f215a63dfc2e550dc603eeccc505fa2ad97057"
+    },
+    {
+      "bytes": 3014,
+      "path": "sing-box/rule-sets/GlobalMedia.srs",
+      "sha256": "97e614698b85b370b3c60dda85d31e3e7c41cc819ef787bd3e7fabe21460525c"
+    },
+    {
+      "bytes": 1737,
+      "path": "sing-box/rule-sets/Hijacking.srs",
+      "sha256": "a0884d211220af57ff0ed554cb6756e106cf9f976719b0ca93e1bb8e6fecac58"
+    },
+    {
+      "bytes": 84,
+      "path": "sing-box/rule-sets/Instagram.srs",
+      "sha256": "aca6527a961d7ad3ac86d98ebad03d50999acea3a18ff157ca65f67d440d0743"
+    },
+    {
+      "bytes": 6120,
+      "path": "sing-box/rule-sets/Microsoft.srs",
+      "sha256": "51a1cc32887f293f431a40bfe1a0a59f790edb33cef825f42e5f12b8d1ba412a"
+    },
+    {
+      "bytes": 5351,
+      "path": "sing-box/rule-sets/Netflix.srs",
+      "sha256": "89df6f7f4d0a67a2804b2f99c8ec378be62c171cd0ce13885ae3ed9404cbb965"
+    },
+    {
+      "bytes": 551,
+      "path": "sing-box/rule-sets/OpenAI.srs",
+      "sha256": "6739c84f6ce825a9bd229c207756ffbd5f84d6014dcdd0805dbc2560aad22a15"
+    },
+    {
+      "bytes": 5340,
+      "path": "sing-box/rule-sets/OverseasGame.srs",
+      "sha256": "2d44e6d81f4673fe60ccc0c7c073af6e1333649b18798177401bdc74d3c260dc"
+    },
+    {
+      "bytes": 148,
+      "path": "sing-box/rule-sets/Privacy.srs",
+      "sha256": "7d99871ced1458fe7a6c34cc95ae67b72d3099bdb304d5addc5818dbacfe7108"
+    },
+    {
+      "bytes": 2578,
+      "path": "sing-box/rule-sets/PrivateTracker.srs",
+      "sha256": "7e510c1a4e4c3e54ac979ba54d182ffa1709fe80cd466c56c545103e161fc890"
+    },
+    {
+      "bytes": 444,
+      "path": "sing-box/rule-sets/Spotify.srs",
+      "sha256": "ff2c00f92118178af58064955f1b28379961b9045f7bbeca1740151b11e2b57b"
+    },
+    {
+      "bytes": 299,
+      "path": "sing-box/rule-sets/SteamCN.srs",
+      "sha256": "d39e1720e141216438c8accd2eeb51c44b7d14fd66e4763bc2d7c2190602e302"
+    },
+    {
+      "bytes": 421,
+      "path": "sing-box/rule-sets/Telegram.srs",
+      "sha256": "8e8238ac4ca70429165441e76ec85d2ce304287c2a9444f33a778c344b873eb2"
+    },
+    {
+      "bytes": 403,
+      "path": "sing-box/rule-sets/TikTok.srs",
+      "sha256": "23ee5170a057ce8efde8c121d003d9d11abe23c45b59832e2b6cd14eb9946409"
+    },
+    {
+      "bytes": 373,
+      "path": "sing-box/rule-sets/Twitter.srs",
+      "sha256": "66707a1e5ad1675b7eaede680e138988c8adaee4223eaa0715f516ff8d22f829"
+    },
+    {
+      "bytes": 79,
+      "path": "sing-box/rule-sets/Weibo.srs",
+      "sha256": "f9ed1fccb24973cca6f1875e032814072e6b53c08b7326576934368143a33e66"
+    },
+    {
+      "bytes": 95,
+      "path": "sing-box/rule-sets/XiaoHongShu.srs",
+      "sha256": "8feb6ca20a9f12978bc9a27216b32fb8181252e6fd6ed4ee1a3f55c57338ca7e"
+    },
+    {
+      "bytes": 1205,
+      "path": "sing-box/rule-sets/YouTube.srs",
+      "sha256": "da4163404185d0c106158bad3bc246a7df1388b1974bceace0dfa1f0443abd30"
+    },
+    {
+      "bytes": 119520,
+      "path": "sing-box/scripts/sing-box-config-generator.js",
+      "sha256": "8a1c016167fa2a491a71b57e6b184413dd26f7312a257926dddcc4443b055c7c"
+    },
+    {
+      "bytes": 119520,
+      "path": "sing-box/scripts/substore-config-generator.js",
+      "sha256": "8a1c016167fa2a491a71b57e6b184413dd26f7312a257926dddcc4443b055c7c"
+    },
+    {
+      "bytes": 6726,
+      "path": "surge/client-manifest.json",
+      "sha256": "309368a75d2868e4affaa74e9a5e34d278ae16f6004abd5c3cda19bb65a425d7"
+    },
+    {
+      "bytes": 10928,
+      "path": "surge/examples/surge-ipad.conf",
+      "sha256": "6afdf37579583c1c60a7be8e93f64f0f34a55fad306ba2563f7d45555c994733"
+    },
+    {
+      "bytes": 10928,
+      "path": "surge/examples/surge-iphone.conf",
+      "sha256": "6afdf37579583c1c60a7be8e93f64f0f34a55fad306ba2563f7d45555c994733"
+    },
+    {
+      "bytes": 10926,
+      "path": "surge/examples/surge-macos.conf",
+      "sha256": "0a30c857a4f87b11c1e4be7aaf905f0f056697ab3280c65609893b6c8a552eb8"
+    },
+    {
+      "bytes": 985,
+      "path": "surge/rules/Apple.list",
+      "sha256": "6763212748a684369d44044629b16d19eda15e515e52b0d8da8db58cf4055720"
+    },
+    {
+      "bytes": 4550,
+      "path": "surge/rules/BiliBili.list",
+      "sha256": "affac38259cf9f87097ae84709e4a34158a693abc8e5036afaa0bc9fb6a71897"
+    },
+    {
+      "bytes": 2515,
+      "path": "surge/rules/BlockHttpDNS.list",
+      "sha256": "bbfca64bab18a9114060d253fb2d5701b26b5ade324d3d71c7a38b276b2ec4e9"
+    },
+    {
+      "bytes": 10830,
+      "path": "surge/rules/ByteDance.list",
+      "sha256": "5f9349c2ee323afd9b6037d225af9aa5c3d9260babdad110a02f6f4bb1078d47"
+    },
+    {
+      "bytes": 401170,
+      "path": "surge/rules/ChinaIP.list",
+      "sha256": "d0f407955f70a161b62df102cd5b7a28b09317f1368005f598356ae0decb957e"
+    },
+    {
+      "bytes": 323,
+      "path": "surge/rules/ChinaTLD.list",
+      "sha256": "a322f21632bde5806ccc938e2636ab07f651e4e97f49ffa511b992c47a4593f2"
+    },
+    {
+      "bytes": 379,
+      "path": "surge/rules/Claude.list",
+      "sha256": "49907d9a095ed5c02460dc1f03d9370b88b008760b497dcdbf752704c44d792b"
+    },
+    {
+      "bytes": 1863,
+      "path": "surge/rules/Copilot.list",
+      "sha256": "ea4ad737e830ec6b5c2ea9dddeb3445b80f3c350742142cc743d72f164bcb146"
+    },
+    {
+      "bytes": 5674,
+      "path": "surge/rules/Disney.list",
+      "sha256": "d8d45251fefb5bb9b7c3bbee4616391c07e9cdb50c66d72a79d3f6f97f70ced6"
+    },
+    {
+      "bytes": 1963,
+      "path": "surge/rules/DomesticCore.list",
+      "sha256": "a701d1b85e7096203c33b053adbb431a9dbc4ac9ef31bd813b74f933e496127a"
+    },
+    {
+      "bytes": 1474,
+      "path": "surge/rules/DomesticGame.list",
+      "sha256": "1d9d27940b0b0c585027321cda8d33a4057afe2f572b2c4a588fb74467630e4d"
+    },
+    {
+      "bytes": 448,
+      "path": "surge/rules/Download.list",
+      "sha256": "ca0a29724009d9944f206b1d50e9deb4a54bf0f51ec9071bf6b626265f8ee5fc"
+    },
+    {
+      "bytes": 17476,
+      "path": "surge/rules/Facebook.list",
+      "sha256": "04104f6bf185a27cb40b2c8be7182cf9231f53f900cad6396b4f4ed2bd5283ea"
+    },
+    {
+      "bytes": 720,
+      "path": "surge/rules/Gemini.list",
+      "sha256": "5657254b644f18389962055140a0cea07f407ac9126a7aa02e91fdf323e1c930"
+    },
+    {
+      "bytes": 1243,
+      "path": "surge/rules/GitHub.list",
+      "sha256": "aa84b450f87446524d78428a76e26bb91167acd4a2ed2eeece7dc080288bb08e"
+    },
+    {
+      "bytes": 34042,
+      "path": "surge/rules/GlobalMedia.list",
+      "sha256": "9898881301865c0daac464d69a1b111c962f4830050e2c68467f7428f107313a"
+    },
+    {
+      "bytes": 6856,
+      "path": "surge/rules/Hijacking.list",
+      "sha256": "a6580f7af4809356aa9bad782c052f01922ff404a5d5169669c419fb237570c0"
+    },
+    {
+      "bytes": 417,
+      "path": "surge/rules/Instagram.list",
+      "sha256": "b61cc8876604c0403559a2b6c0d959745705a2ebe38da82c2506cd9668d99465"
+    },
+    {
+      "bytes": 20566,
+      "path": "surge/rules/Microsoft.list",
+      "sha256": "93863dea71d67e612e257311e7eebb3fcdd8e0f37c11e80f770e3ce2fa796736"
+    },
+    {
+      "bytes": 40421,
+      "path": "surge/rules/Netflix.list",
+      "sha256": "b5867b15acf4e2cf89b023594c805fa0f48574affe414855476839c82a02b152"
+    },
+    {
+      "bytes": 1418,
+      "path": "surge/rules/OpenAI.list",
+      "sha256": "11432e754f5cc49f6c63436470738687cee61e0c35b7414b06884d91a54db853"
+    },
+    {
+      "bytes": 18626,
+      "path": "surge/rules/OverseasGame.list",
+      "sha256": "4e95fb494875a9b237c349a6408d422af55246105bffa9a15ec0f3f32553243d"
+    },
+    {
+      "bytes": 915,
+      "path": "surge/rules/Privacy.list",
+      "sha256": "372a005331d667b2ce6f5fdee831a57fb2279420d216ff36ce21de57d16ee644"
+    },
+    {
+      "bytes": 6940,
+      "path": "surge/rules/PrivateTracker.list",
+      "sha256": "53682a509d5ec75efe4fa56208b1d6b47a4ddcdd326b0a9eb9846bf055fd234f"
+    },
+    {
+      "bytes": 1263,
+      "path": "surge/rules/Spotify.list",
+      "sha256": "d8e0d46f2329534eb42af4aa96953913e2f22c287901ca67a8e7087f848d1320"
+    },
+    {
+      "bytes": 797,
+      "path": "surge/rules/SteamCN.list",
+      "sha256": "6aaf7827c835c076431195a4ade23d70aac079b7dd5337f3ec76fa637f19e147"
+    },
+    {
+      "bytes": 1311,
+      "path": "surge/rules/Telegram.list",
+      "sha256": "27644b0bb26f3de91b45eceb64d2ae272cd978683a9ef1047d6a0e9f596da951"
+    },
+    {
+      "bytes": 1179,
+      "path": "surge/rules/TikTok.list",
+      "sha256": "cc71309a2fe4611f2a446b3e29f91e1acd2da1a39b2a78ee2f7a8a0fa5910e0a"
+    },
+    {
+      "bytes": 1230,
+      "path": "surge/rules/Twitter.list",
+      "sha256": "9abcb67eb34b2d7a344d809b32f39aaceac52351b9caa3d9db831c614d2da8cc"
+    },
+    {
+      "bytes": 395,
+      "path": "surge/rules/Weibo.list",
+      "sha256": "0aba7d1fec0dc5cb61cce0c9768e5fed0cbdf486a20141e2056004e5331f0827"
+    },
+    {
+      "bytes": 424,
+      "path": "surge/rules/XiaoHongShu.list",
+      "sha256": "46dfd8d5aae6550996b167e0142374c5f748a66b463d5178d5072b22edfcb09b"
+    },
+    {
+      "bytes": 5326,
+      "path": "surge/rules/YouTube.list",
+      "sha256": "8040fef0197d762dd3e46f369ab8df77dfe27d0cf450bc0740fe5334e97ad606"
+    },
+    {
+      "bytes": 48919,
+      "path": "surge/scripts/substore-nodes-generator.js",
+      "sha256": "16d076a7c5bb2ae98ecc9ac208bcb3c816d934d24b0be6539c3da3ab18be925c"
+    },
+    {
+      "bytes": 88155,
+      "path": "surge/scripts/substore-profile-generator.js",
+      "sha256": "aaee67ca4bc494b3551f82388d8c84e513aca917979a94faf1175dab7fd3414b"
+    },
+    {
+      "bytes": 48919,
+      "path": "surge/scripts/surge-nodes-generator.js",
+      "sha256": "16d076a7c5bb2ae98ecc9ac208bcb3c816d934d24b0be6539c3da3ab18be925c"
+    },
+    {
+      "bytes": 88155,
+      "path": "surge/scripts/surge-profile-generator.js",
+      "sha256": "aaee67ca4bc494b3551f82388d8c84e513aca917979a94faf1175dab7fd3414b"
+    }
+  ],
+  "generatedAt": "2026-08-15T18:26:29Z",
+  "manifestHash": "9a1c3cf85f59358d079bfe32f3d5be30cb5f9efc1f8a3dd01f9cbc7d7e97a14f",
+  "schemaVersion": 2,
+  "upstream": {
+    "branch": "master",
+    "commit": "538b8a79532c44dfbcb8e694d2f43e753c60b157",
+    "committedAt": "2026-08-15T18:26:29Z",
+    "license": "GPL-2.0-only",
+    "repository": "https://github.com/blackmatrix7/ios_rule_script"
+  }
+}

@@ -278,7 +278,7 @@
         "BlockHttpDNS"
       ],
       "total": 1,
-      "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/Security-001.arrs"
+      "url": "https://juan-nikola.github.io/apple-proxy-profiles/previous/anywhere/rules/Security-001.arrs"
     },
     {
       "countsByType": {
@@ -297,7 +297,7 @@
         "Privacy"
       ],
       "total": 1,
-      "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/Privacy-001.arrs"
+      "url": "https://juan-nikola.github.io/apple-proxy-profiles/previous/anywhere/rules/Privacy-001.arrs"
     },
     {
       "countsByType": {
@@ -318,7 +318,7 @@
         "ChinaTLD"
       ],
       "total": 1,
-      "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/DomesticCore-001.arrs"
+      "url": "https://juan-nikola.github.io/apple-proxy-profiles/previous/anywhere/rules/DomesticCore-001.arrs"
     },
     {
       "countsByType": {
@@ -341,7 +341,7 @@
         "Weibo"
       ],
       "total": 1,
-      "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/DomesticPlatform-001.arrs"
+      "url": "https://juan-nikola.github.io/apple-proxy-profiles/previous/anywhere/rules/DomesticPlatform-001.arrs"
     },
     {
       "countsByType": {
@@ -364,7 +364,7 @@
         "Copilot"
       ],
       "total": 1,
-      "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/AI-001.arrs"
+      "url": "https://juan-nikola.github.io/apple-proxy-profiles/previous/anywhere/rules/AI-001.arrs"
     },
     {
       "countsByType": {
@@ -383,7 +383,7 @@
         "GitHub"
       ],
       "total": 1,
-      "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/GitHub-001.arrs"
+      "url": "https://juan-nikola.github.io/apple-proxy-profiles/previous/anywhere/rules/GitHub-001.arrs"
     },
     {
       "countsByType": {
@@ -404,7 +404,7 @@
         "YouTube"
       ],
       "total": 1,
-      "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/YouTube-001.arrs"
+      "url": "https://juan-nikola.github.io/apple-proxy-profiles/previous/anywhere/rules/YouTube-001.arrs"
     },
     {
       "countsByType": {
@@ -428,7 +428,7 @@
         "GlobalMedia"
       ],
       "total": 1,
-      "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/OverseasMedia-001.arrs"
+      "url": "https://juan-nikola.github.io/apple-proxy-profiles/previous/anywhere/rules/OverseasMedia-001.arrs"
     },
     {
       "countsByType": {
@@ -453,7 +453,7 @@
         "TikTok"
       ],
       "total": 1,
-      "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/OverseasSocial-001.arrs"
+      "url": "https://juan-nikola.github.io/apple-proxy-profiles/previous/anywhere/rules/OverseasSocial-001.arrs"
     },
     {
       "countsByType": {
@@ -473,7 +473,7 @@
         "Apple"
       ],
       "total": 1,
-      "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/Apple-001.arrs"
+      "url": "https://juan-nikola.github.io/apple-proxy-profiles/previous/anywhere/rules/Apple-001.arrs"
     },
     {
       "countsByType": {
@@ -492,7 +492,7 @@
         "Microsoft"
       ],
       "total": 1,
-      "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/Microsoft-001.arrs"
+      "url": "https://juan-nikola.github.io/apple-proxy-profiles/previous/anywhere/rules/Microsoft-001.arrs"
     },
     {
       "countsByType": {
@@ -513,7 +513,7 @@
         "PrivateTracker"
       ],
       "total": 1,
-      "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/Download-001.arrs"
+      "url": "https://juan-nikola.github.io/apple-proxy-profiles/previous/anywhere/rules/Download-001.arrs"
     },
     {
       "countsByType": {
@@ -533,7 +533,7 @@
         "OverseasGame"
       ],
       "total": 1,
-      "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/OverseasGame-001.arrs"
+      "url": "https://juan-nikola.github.io/apple-proxy-profiles/previous/anywhere/rules/OverseasGame-001.arrs"
     },
     {
       "countsByType": {
@@ -552,7 +552,7 @@
         "ChinaIP"
       ],
       "total": 1,
-      "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/ChinaIP-001.arrs"
+      "url": "https://juan-nikola.github.io/apple-proxy-profiles/previous/anywhere/rules/ChinaIP-001.arrs"
     }
   ],
   "sources": [

@@ -187,6 +187,26 @@ test("seals current into an independently closed previous channel idempotently",
   assert.deepEqual(secondBytes, firstBytes);
 });
 
+test("rewrites quoted channel fields when sealing current into previous", async () => {
+  const root = await mkdtemp(join(tmpdir(), "apple-proxy-seal-quoted-channel-"));
+  const publicDirectory = join(root, "public");
+  await mkdir(join(publicDirectory, "current/egern/scripts"), { recursive: true });
+  await writeFile(join(publicDirectory, "current/manifest.json"), "{}\n");
+  await writeFile(
+    join(publicDirectory, "current/egern/scripts/egern-profile-generator.js"),
+    'const defaults = { channel: "current" };\n',
+  );
+
+  await sealPreviousRelease({ publicDirectory });
+
+  const previous = await readFile(
+    join(publicDirectory, "previous/egern/scripts/egern-profile-generator.js"),
+    "utf8",
+  );
+  assert.match(previous, /channel: "previous"/u);
+  assert.doesNotMatch(previous, /channel: "current"/u);
+});
+
 test("leaves the last known-good rollback snapshot intact on an identical update", async () => {
   const root = await mkdtemp(join(tmpdir(), "apple-proxy-site-noop-"));
   const publicDirectory = join(root, "public");

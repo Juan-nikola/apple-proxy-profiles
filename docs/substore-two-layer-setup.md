@@ -125,9 +125,9 @@ https://juan-nikola.github.io/apple-proxy-profiles/current/surge/scripts/surge-p
 
 所有读取策略的任务必须接收同名 `channel`（仅 `edge`、`current`、`previous`），并绑定该频道的 policy revision、公开 client Manifest SHA-256 和 GeoData SHA-256；OneXray node-only 任务也接收 `channel`，但不读取业务策略。公开脚本只在 Pages 提供无节点 bundle，真实输出仍只在私密 Sub-Store 任务日志和客户端导入结果中查看。
 
-真机 canary 尚未替用户完成：先在 macOS 或 Android 设备预览/导入，再逐平台记录通过结果；没有 canary 证据时不要把 `edge` 任务直接切成 `current`。
+真机 canary 已按用户要求跳过。后续若修改节点池或公开规则，仍应先在 `edge` 灰度并完成设备验收，再推进 `current`。
 
-在 HAPP/OneXray 完成 canary 前，本项目为这 11 个任务使用 `channel=edge`；其余已有 17 个任务继续保留原来的 `current` URL。canary 通过后，再逐客户端把 HAPP/OneXray 任务的 `channel` 改为 `current`。
+当前 28 个任务统一使用 `channel=current`；`edge` 仅作为未来 HAPP/OneXray 变更的灰度频道，`previous` 用于回滚。
 
 ## 5. Egern：1 个节点 File + 3 个 Profile File
 

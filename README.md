@@ -319,11 +319,11 @@ Anywhere 分为三层，缺一层都不会完整生效：
 
 ### 2.6 HAPP
 
-HAPP 的公开安装页只提供无凭据的 GeoData 和脚本；节点与配置仍从 Sub-Store 的私密任务导入。先打开当前灰度通道的 [HAPP 安装页](https://juan-nikola.github.io/apple-proxy-profiles/edge/happ/index.html)，安装 `geoip.dat` 和 `geosite.dat`，再按设备导入对应的 `happ-macos`、`happ-iphone`、`happ-ipad`、`happ-android`、`happ-windows` 或 `happ-linux` 私密输出。
+HAPP 的公开安装页只提供无凭据的 GeoData 和脚本；节点与配置仍从 Sub-Store 的私密任务导入。生产版本请打开 [HAPP 安装页](https://juan-nikola.github.io/apple-proxy-profiles/current/happ/index.html)，安装 `geoip.dat` 和 `geosite.dat`，再按设备导入对应的 `happ-macos`、`happ-iphone`、`happ-ipad`、`happ-android`、`happ-windows` 或 `happ-linux` 私密输出。`edge` 仅保留给未来变更的灰度候选。
 
 成功标志：GeoData 与配置使用同一频道；配置数组非空；DNS、国内外业务和局域网测试正常；`happ-routing-audit` 的兼容数和排除原因可解释。
 
-失败怎么办：先分别 preview `apple-proxy-happ`、对应平台任务和审计任务，确认不是节点协议或固定节点不兼容；不要把 `edge` 任务直接改成 `current`。
+失败怎么办：先分别 preview 当前 `apple-proxy-happ`、对应平台任务和审计任务，确认不是节点协议或固定节点不兼容；未来变更先在 `edge` 灰度，不要把未经验证的候选直接替换生产任务。
 
 回滚方式：在 HAPP 中切回旧配置，并恢复旧 GeoData；保留新任务用于排查。
 
@@ -331,7 +331,7 @@ HAPP 的公开安装页只提供无凭据的 GeoData 和脚本；节点与配置
 
 ### 2.7 OneXray
 
-先在 OneXray 中导入 `onexray-nodes` 私密节点订阅，再导入 `onexray-profile` 私密 Profile。Profile 使用 `apple-proxy-policy` 的私密策略覆盖；`onexray-routing-audit` 只输出脱敏计数、目标解析和链状态。公开 [OneXray 安装页](https://juan-nikola.github.io/apple-proxy-profiles/edge/onexray/index.html) 只用于安装无凭据 GeoData。
+先在 OneXray 中导入 `onexray-nodes` 私密节点订阅，再导入 `onexray-profile` 私密 Profile。Profile 使用 `apple-proxy-policy` 的私密策略覆盖；`onexray-routing-audit` 只输出脱敏计数、目标解析和链状态。公开 [OneXray 安装页](https://juan-nikola.github.io/apple-proxy-profiles/current/onexray/index.html) 只用于安装无凭据 GeoData；`edge` 仅保留给未来变更灰度。
 
 成功标志：节点订阅非空；Profile 通过 OneXray 校验；业务组、DNS、国内外业务和回滚测试正常；节点任务、Profile 和审计都使用同一频道与 collection。
 

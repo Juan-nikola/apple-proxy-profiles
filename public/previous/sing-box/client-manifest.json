@@ -8,9 +8,9 @@
       "sha256": "e8a3fd771a3466e74d3cf40c00aa05070b4f6c33898b7d71b2fb78446c735c51"
     },
     {
-      "bytes": 27625,
+      "bytes": 27657,
       "path": "sing-box/examples/sing-box-android.json",
-      "sha256": "5140f5c9b1303addc573a969bfaa8e8637d4480b8ae1baa44538c4dd655b14da"
+      "sha256": "3a87a5810a735e6048c56e359d7aa36c7c693de45912cc729120271a7540b774"
     },
     {
       "bytes": 10617,
@@ -18,9 +18,9 @@
       "sha256": "b0eb2f534c035e524e05804b4646695784a2e544da24356189e2bead883ca07d"
     },
     {
-      "bytes": 19379,
+      "bytes": 19393,
       "path": "sing-box/examples/sing-box-ipad.json",
-      "sha256": "5a88bc4dbd4f1a1ddeff2eeb961af87a6d4dcf16185bbb0cc0e6be5519b164e1"
+      "sha256": "d568fcffec96f10bf85579aef5226555bccefadbd982de1385cb9e56505a6ef9"
     },
     {
       "bytes": 10617,
@@ -28,9 +28,9 @@
       "sha256": "b0eb2f534c035e524e05804b4646695784a2e544da24356189e2bead883ca07d"
     },
     {
-      "bytes": 19379,
+      "bytes": 19393,
       "path": "sing-box/examples/sing-box-iphone.json",
-      "sha256": "5a88bc4dbd4f1a1ddeff2eeb961af87a6d4dcf16185bbb0cc0e6be5519b164e1"
+      "sha256": "d568fcffec96f10bf85579aef5226555bccefadbd982de1385cb9e56505a6ef9"
     },
     {
       "bytes": 10548,
@@ -38,9 +38,9 @@
       "sha256": "2965f5b80bf3edd4052e040330e7464305c2fd0eba145c40a0665bb72865070a"
     },
     {
-      "bytes": 27597,
+      "bytes": 27629,
       "path": "sing-box/examples/sing-box-macos.json",
-      "sha256": "20f583fa7e392031f54ffd875c198ab0ec00aa39ce2c51932ed327ddd278fc03"
+      "sha256": "2d4cc96216dffd1f5f9018ad291d65870ec50a7100b22cb58ff9495ab4058249"
     },
     {
       "bytes": 959,
@@ -273,18 +273,18 @@
       "sha256": "da4163404185d0c106158bad3bc246a7df1388b1974bceace0dfa1f0443abd30"
     },
     {
-      "bytes": 114936,
+      "bytes": 114940,
       "path": "sing-box/scripts/sing-box-config-generator.js",
-      "sha256": "eb633ecb09059b56acc2a06437ed5ffcf8170c9c28633e13b4c8e7533c0e6e9f"
+      "sha256": "3b5175cebef415400ce8a2d85dd6317411ea8680e1c294c84f499c521b0cb4ca"
     },
     {
-      "bytes": 114936,
+      "bytes": 114940,
       "path": "sing-box/scripts/substore-config-generator.js",
-      "sha256": "eb633ecb09059b56acc2a06437ed5ffcf8170c9c28633e13b4c8e7533c0e6e9f"
+      "sha256": "3b5175cebef415400ce8a2d85dd6317411ea8680e1c294c84f499c521b0cb4ca"
     }
   ],
   "generatedAt": "2026-08-15T18:26:29Z",
-  "manifestHash": "10ee7fcd268b96582c806d62f065c7dc4ea9c76cc3a36cbab85b81a0aea69fed",
+  "manifestHash": "67c3ce79a8db5781aacd6569e7bb1c5cb93b6b192bb53067a69979168b33f56f",
   "optionalPacks": {
     "adblock-full": "7760abafda3af7ef1eb3bcf252fec97c9a4639cd3143f6810c7f787f96be2187"
   },

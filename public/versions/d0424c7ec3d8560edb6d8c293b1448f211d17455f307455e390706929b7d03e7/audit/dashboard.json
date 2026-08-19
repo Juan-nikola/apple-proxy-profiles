@@ -1,0 +1,176 @@
+{
+  "audits": {
+    "chinaIp": {
+      "blockerCount": 0,
+      "reportOnly": true,
+      "schemaVersion": 1,
+      "sha256": null,
+      "warningCount": 2
+    },
+    "routingPlan": {
+      "blockerCount": 0,
+      "reportOnly": false,
+      "schemaVersion": 1,
+      "sha256": "826322ef9fc614bda1153db11049df562690db27cd197f764860686245c6b1d5",
+      "warningCount": 0
+    },
+    "v2fly": {
+      "blockerCount": 0,
+      "reportOnly": false,
+      "schemaVersion": 0,
+      "sha256": null,
+      "warningCount": 0
+    }
+  },
+  "blockers": [],
+  "channels": {
+    "current": {
+      "closure": true,
+      "manifestCount": 0
+    },
+    "edge": {
+      "closure": true,
+      "manifestCount": 7
+    },
+    "previous": {
+      "closure": true,
+      "manifestCount": 0
+    }
+  },
+  "clients": {
+    "anywhere": {
+      "adapterSchema": "anywhere-v1",
+      "canary": null,
+      "current": {
+        "closure": true,
+        "manifestHash": null
+      },
+      "edge": {
+        "closure": true,
+        "manifestHash": "71ec230582e7eba31ed4c0db5214186a72e3cebbbfb6e8a27293a2581e16c745"
+      },
+      "previous": {
+        "closure": true,
+        "manifestHash": null
+      },
+      "state": "active"
+    },
+    "egern": {
+      "adapterSchema": "egern-v1",
+      "canary": null,
+      "current": {
+        "closure": true,
+        "manifestHash": null
+      },
+      "edge": {
+        "closure": true,
+        "manifestHash": "66a5476db2bb4592ba10b2ad6c1374f99e25428002ccb72cbf6368a54ad985aa"
+      },
+      "previous": {
+        "closure": true,
+        "manifestHash": null
+      },
+      "state": "active"
+    },
+    "happ": {
+      "adapterSchema": "happ-v4",
+      "canary": null,
+      "current": {
+        "closure": true,
+        "manifestHash": null
+      },
+      "edge": {
+        "closure": true,
+        "manifestHash": "e53e8ac00da94f8acb08ae6c7575521b5523c36325ee446d40f67955390d3fdc"
+      },
+      "previous": {
+        "closure": true,
+        "manifestHash": null
+      },
+      "state": "active"
+    },
+    "onexray": {
+      "adapterSchema": "onexray-v1",
+      "canary": null,
+      "current": {
+        "closure": true,
+        "manifestHash": null
+      },
+      "edge": {
+        "closure": true,
+        "manifestHash": "650dc6c3eece31a83a2be0f4c6d6997e6c1191bc2f2113e17b7c969b820e3088"
+      },
+      "previous": {
+        "closure": true,
+        "manifestHash": null
+      },
+      "state": "active"
+    },
+    "shadowrocket": {
+      "adapterSchema": "shadowrocket-v1",
+      "canary": null,
+      "current": {
+        "closure": true,
+        "manifestHash": null
+      },
+      "edge": {
+        "closure": true,
+        "manifestHash": "72b2cea009819c2fce098ea018d3b529f43d9091079b2454c013c10fbde9441c"
+      },
+      "previous": {
+        "closure": true,
+        "manifestHash": null
+      },
+      "state": "active"
+    },
+    "singbox": {
+      "adapterSchema": "singbox-v1",
+      "canary": null,
+      "current": {
+        "closure": true,
+        "manifestHash": null
+      },
+      "edge": {
+        "closure": true,
+        "manifestHash": "8e9c139700f6e60462634898364c935e3a5945edcab4f7e6b7193c3dc6abe751"
+      },
+      "previous": {
+        "closure": true,
+        "manifestHash": null
+      },
+      "state": "active"
+    },
+    "surge": {
+      "adapterSchema": "surge-v1",
+      "canary": null,
+      "current": {
+        "closure": true,
+        "manifestHash": null
+      },
+      "edge": {
+        "closure": true,
+        "manifestHash": "455fa187f19bd15716de45482fb341c8a59d769a065a4a2d8bf5768356f9c83b"
+      },
+      "previous": {
+        "closure": true,
+        "manifestHash": null
+      },
+      "state": "active"
+    }
+  },
+  "generatedAt": "2026-08-15T18:26:29Z",
+  "privateDataExcluded": true,
+  "rules": {
+    "entries": 16840,
+    "phases": 6,
+    "semanticTargets": 0,
+    "sources": 32
+  },
+  "schemaVersion": 1,
+  "upstream": {
+    "commit": "538b8a79532c44dfbcb8e694d2f43e753c60b157",
+    "committedAt": "2026-08-15T18:26:29Z",
+    "repository": "blackmatrix7",
+    "sha256": "c2437ae35319f1e41b69a098fdc7c0b3c3c5a90e6deea906406f30f998bd9403"
+  }
+}

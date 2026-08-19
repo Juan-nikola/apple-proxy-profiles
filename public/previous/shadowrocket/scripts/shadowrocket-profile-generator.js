@@ -782,7 +782,7 @@ var ShadowrocketProfileBundle = (() => {
     "platform"
   ]);
   var DEFAULTS = Object.freeze({
-    channel: "edge",
+    channel: "previous",
     dnsMode: "stable",
     chinaDns: "alidns",
     globalDns: "cloudflare",

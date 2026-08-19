@@ -82,7 +82,10 @@ function rewritePublicationChannel(content, from, to) {
   } catch {
     return Buffer.from(content);
   }
-  const rewritten = text
+  const rewritten = text.replace(
+    /\b(channel\s*(?:=|:)\s*)(["'])(edge|current|previous)\2/gu,
+    (match, prefix, quote, value) => value === from ? `${prefix}${quote}${to}${quote}` : match,
+  )
     .replaceAll(`/${from}/`, `/${to}/`)
     .replaceAll(`channel=${from}`, `channel=${to}`)
     .replaceAll(`channel%3D${from}`, `channel%3D${to}`)

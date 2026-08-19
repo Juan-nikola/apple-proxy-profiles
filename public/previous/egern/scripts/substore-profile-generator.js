@@ -311,7 +311,7 @@ var EgernProfileBundle = (() => {
     "platform"
   ]);
   var DEFAULTS = Object.freeze({
-    channel: "edge",
+    channel: "previous",
     adblockMode: "off",
     dnsMode: "stable",
     chinaDns: "alidns",

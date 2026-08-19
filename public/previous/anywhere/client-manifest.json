@@ -3,9 +3,9 @@
   "client": "anywhere",
   "files": [
     {
-      "bytes": 11178,
+      "bytes": 11206,
       "path": "anywhere/import.html",
-      "sha256": "b9eff4a2ce557fa2167b0e9e51c028ba7a17f56f956268c7ef841a1f7506e575"
+      "sha256": "3f00afc1312e45a5477942402fec6555596a7c5a5517c46e83f835043201dfd9"
     },
     {
       "bytes": 1150,
@@ -78,9 +78,9 @@
       "sha256": "c1ab85369aa455f1385c728a0feaa59c1d7a4e0553a7a3383f004eb8889658f8"
     },
     {
-      "bytes": 43130,
+      "bytes": 43144,
       "path": "anywhere/rules/manifest.json",
-      "sha256": "99e79558f3652a2bbfe3ebdfc71aada6d220c6bfdfa6ea5c54a45327cde4f42e"
+      "sha256": "53ca5b0e51363445a9e2c687591d72bab0dabc86cd3ae56e80d0f0fe220f7967"
     },
     {
       "bytes": 82920,
@@ -94,7 +94,7 @@
     }
   ],
   "generatedAt": "2026-08-15T18:26:29Z",
-  "manifestHash": "1c5137dab4a3ab3a0494dd9b84cae4328639952d92a0e769a2259db8ca706fd9",
+  "manifestHash": "7bf9d01d91d3aa11eb38eada144a567f8857eec2c5ceff1d74944e5f913f889c",
   "optionalPacks": {
     "adblock-full": "e3bb406f23c8a832d429c2a6dfbb760209a599935999a68424f36b11b5fccb58"
   },
