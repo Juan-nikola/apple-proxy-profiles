@@ -2,17 +2,17 @@
   "client": "singbox",
   "files": [
     {
-      "bytes": 4171,
-      "path": "optional/adblock-full/sing-box/Advertising.srs",
-      "sha256": "a26ac17f9bafea983d0e71241b8f964198dccbba54909e09b9e0616dbbdcf6a5"
-    },
-    {
       "bytes": 2035255,
       "path": "optional/adblock-full/sing-box/Advertising_Domain.srs",
       "sha256": "d17d5b0629dad4e409935824076b7f6a12b4f863b3add9867a8c077caf05bc84"
+    },
+    {
+      "bytes": 4171,
+      "path": "optional/adblock-full/sing-box/Advertising.srs",
+      "sha256": "a26ac17f9bafea983d0e71241b8f964198dccbba54909e09b9e0616dbbdcf6a5"
     }
   ],
   "generatedAt": "2026-08-15T18:26:29Z",
-  "manifestHash": "7760abafda3af7ef1eb3bcf252fec97c9a4639cd3143f6810c7f787f96be2187",
+  "manifestHash": "60c52858e99c1107d103fc6b90b0178651cbca3236520dbee22dcb4af56e5286",
   "schemaVersion": 1
 }

@@ -74,6 +74,24 @@ async function writeSnapshot(directory, files) {
   }
 }
 
+const HAPP_ROUTING_DEEPLINK_RE = /happ:\/\/routing\/onadd\/([A-Za-z0-9+/]+={0,2})/gu;
+
+function rewriteHappRoutingDeepLinks(text, from, to) {
+  return text.replace(HAPP_ROUTING_DEEPLINK_RE, (match, encoded) => {
+    let profile;
+    try {
+      profile = JSON.parse(Buffer.from(encoded, "base64").toString("utf8"));
+    } catch {
+      return match;
+    }
+    if (!profile || typeof profile !== "object" || Array.isArray(profile)) return match;
+    const serialized = JSON.stringify(profile);
+    if (!serialized.includes(`/${from}/`)) return match;
+    const rewritten = serialized.replaceAll(`/${from}/`, `/${to}/`);
+    return `happ://routing/onadd/${Buffer.from(rewritten, "utf8").toString("base64")}`;
+  });
+}
+
 function rewritePublicationChannel(content, from, to) {
   if (!(content instanceof Uint8Array)) return content;
   let text;
@@ -87,11 +105,13 @@ function rewritePublicationChannel(content, from, to) {
     (match, prefix, quote, value) => value === from ? `${prefix}${quote}${to}${quote}` : match,
   )
     .replaceAll(`/${from}/`, `/${to}/`)
+    .replace(new RegExp(`${from}%2f`, "giu"), `${to}%2F`)
+    .replace(new RegExp(`%2f${from}%2f`, "giu"), `%2F${to}%2F`)
     .replaceAll(`channel=${from}`, `channel=${to}`)
     .replaceAll(`channel%3D${from}`, `channel%3D${to}`)
     .replaceAll(`channel:${from}`, `channel:${to}`)
     .replaceAll(`channel: ${from}`, `channel: ${to}`);
-  return Buffer.from(rewritten, "utf8");
+  return Buffer.from(rewriteHappRoutingDeepLinks(rewritten, from, to), "utf8");
 }
 
 function parseOneXrayManifest(content) {
@@ -1124,6 +1144,31 @@ export async function promoteClientRelease({
   const backup = `${publicDirectory}.promote-backup-${client}-${targetHash.slice(0, 12)}`;
   try {
     await cp(publicDirectory, staging, { recursive: true, force: false, errorOnExist: false });
+    const optionalRootForSeal = join(staging, "optional");
+    if (await exists(optionalRootForSeal)) {
+      for (const packEntry of await readdir(optionalRootForSeal, { withFileTypes: true })) {
+        if (!packEntry.isDirectory()) continue;
+        const optionalCurrent = join(optionalRootForSeal, packEntry.name, "current");
+        if (!await exists(optionalCurrent)) continue;
+        const optionalPrevious = join(optionalRootForSeal, packEntry.name, "previous");
+        await rm(optionalPrevious, { recursive: true, force: true });
+        await mkdir(dirname(optionalPrevious), { recursive: true });
+        await cp(optionalCurrent, optionalPrevious, { recursive: true, errorOnExist: true });
+        await rewriteTreeChannel(optionalPrevious, "current", "previous");
+        for (const optionalClient of activeClientIds()) {
+          const optionalClientDirectory = publicDirectoryForClient(optionalClient);
+          const manifestPath = join(optionalPrevious, optionalClientDirectory, "client-manifest.json");
+          if (await exists(manifestPath)) {
+            await refreshNestedClientManifest({
+              treeRoot: join(optionalPrevious, optionalClientDirectory),
+              clientDirectory: optionalClientDirectory,
+              manifestPath,
+              recordPrefix: `optional/${packEntry.name}/${optionalClientDirectory}`,
+            });
+          }
+        }
+      }
+    }
     const stagedSource = join(staging, "edge", "clients", client, targetHash, directory);
     const current = join(staging, "current", directory);
     const previous = join(staging, "previous", directory);

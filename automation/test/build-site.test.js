@@ -207,6 +207,45 @@ test("rewrites quoted channel fields when sealing current into previous", async 
   assert.doesNotMatch(previous, /channel: "current"/u);
 });
 
+test("rewrites channel URLs embedded in HAPP routing deep links", async () => {
+  const root = await mkdtemp(join(tmpdir(), "apple-proxy-seal-happ-deeplink-"));
+  const publicDirectory = join(root, "public");
+  const profile = {
+    Geoipurl: "https://juan-nikola.github.io/apple-proxy-profiles/current/happ/geoip.dat",
+    Geositeurl: "https://juan-nikola.github.io/apple-proxy-profiles/current/happ/geosite.dat",
+  };
+  const deepLink = `happ://routing/onadd/${Buffer.from(JSON.stringify(profile), "utf8").toString("base64")}`;
+  await mkdir(join(publicDirectory, "current/happ"), { recursive: true });
+  await writeFile(join(publicDirectory, "current/manifest.json"), "{}\n");
+  await writeFile(join(publicDirectory, "current/happ/index.html"), `<a href="${deepLink}">HAPP</a>\n`);
+
+  await sealPreviousRelease({ publicDirectory });
+
+  const previous = await readFile(join(publicDirectory, "previous/happ/index.html"), "utf8");
+  const encoded = previous.match(/happ:\/\/routing\/onadd\/([A-Za-z0-9+/=]+)/u)?.[1];
+  assert.ok(encoded);
+  const rewritten = JSON.parse(Buffer.from(encoded, "base64").toString("utf8"));
+  assert.equal(rewritten.Geoipurl, "https://juan-nikola.github.io/apple-proxy-profiles/previous/happ/geoip.dat");
+  assert.equal(rewritten.Geositeurl, "https://juan-nikola.github.io/apple-proxy-profiles/previous/happ/geosite.dat");
+});
+
+test("rewrites percent-encoded channel URLs when sealing previous", async () => {
+  const root = await mkdtemp(join(tmpdir(), "apple-proxy-seal-encoded-channel-"));
+  const publicDirectory = join(root, "public");
+  await mkdir(join(publicDirectory, "current/anywhere"), { recursive: true });
+  await writeFile(join(publicDirectory, "current/manifest.json"), "{}\n");
+  await writeFile(
+    join(publicDirectory, "current/anywhere/import.html"),
+    "https%3A%2F%2Fjuan-nikola.github.io%2Fapple-proxy-profiles%2Fcurrent%2Fanywhere%2Frules%2FAI-001.arrs\n",
+  );
+
+  await sealPreviousRelease({ publicDirectory });
+
+  const previous = await readFile(join(publicDirectory, "previous/anywhere/import.html"), "utf8");
+  assert.doesNotMatch(previous, /%2Fcurrent%2F/iu);
+  assert.match(previous, /%2Fprevious%2F/iu);
+});
+
 test("leaves the last known-good rollback snapshot intact on an identical update", async () => {
   const root = await mkdtemp(join(tmpdir(), "apple-proxy-site-noop-"));
   const publicDirectory = join(root, "public");
@@ -392,6 +431,38 @@ test("binds optional client selections into the promoted client manifest", async
     () => promoteClientRelease({ publicDirectory, client: "singbox", manifestHash: hash }),
     /manifest hash does not match promotion target/u,
   );
+});
+
+test("repairs stale optional previous channel links during client promotion", async () => {
+  const root = await mkdtemp(join(tmpdir(), "apple-proxy-optional-previous-closure-"));
+  const publicDirectory = join(root, "public");
+  const artifacts = buildClientArtifacts({ snapshot: lightweightFixtureSnapshots(), upstream: lightweightUpstream });
+  const hash = artifacts.diagnostics.defaultManifest.clients.happ.manifestHash;
+  await publishEdgeRelease({
+    publicDirectory,
+    defaults: artifacts.defaults,
+    optionalPacks: artifacts.optionalPacks,
+    manifest: artifacts.diagnostics.defaultManifest,
+  });
+  const importText = "https%3A%2F%2Fjuan-nikola.github.io%2Fapple-proxy-profiles%2Fcurrent%2Fanywhere%2Frules%2FAI-001.arrs\n";
+  await mkdir(join(publicDirectory, "optional/adblock-full/current/anywhere"), { recursive: true });
+  await mkdir(join(publicDirectory, "optional/adblock-full/previous/anywhere"), { recursive: true });
+  await writeFile(join(publicDirectory, "optional/adblock-full/current/anywhere/import.html"), importText);
+  await writeFile(join(publicDirectory, "optional/adblock-full/previous/anywhere/import.html"), importText);
+
+  await promoteClientRelease({
+    publicDirectory,
+    client: "happ",
+    expectedHash: hash,
+    now: new Date("2026-08-09T12:00:00Z"),
+  });
+
+  const previous = await readFile(
+    join(publicDirectory, "optional/adblock-full/previous/anywhere/import.html"),
+    "utf8",
+  );
+  assert.match(previous, /%2Fprevious%2F/iu);
+  assert.doesNotMatch(previous, /%2Fcurrent%2F/iu);
 });
 
 test("promotes calibration warnings with the exact manifested audit bytes", async () => {
