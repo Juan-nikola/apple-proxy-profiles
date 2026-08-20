@@ -66,6 +66,17 @@ test("platform, DNS and routing preserve shared semantics", () => {
   assert.equal(routing.routing.rules.at(-1).network, "tcp,udp");
 });
 
+test("iOS Happ routing uses the compact bundled HAPP geodata categories", () => {
+  const mac = renderHappRouting({ policyResolution: { targets: {} }, followTag: "happ-follow/mac", fixedNodes: [], options: { platform: "macos" } });
+  assert.equal(JSON.stringify(mac.routing).includes("HAPP-OPENAI"), false);
+  for (const platform of ["iphone", "ipad"]) {
+    const output = renderHappRouting({ policyResolution: { targets: {} }, followTag: `happ-follow/${platform}`, fixedNodes: [], options: { platform } });
+    assert.match(JSON.stringify(output.routing), /geosite:HAPP-OPENAI/u);
+    assert.match(JSON.stringify(output.routing), /geoip:HAPP-CHINAIP/u);
+    assert.equal(JSON.stringify(output.routing).includes("geosite:OPENAI"), false);
+  }
+});
+
 test("subscription is one JSON object per eligible node and validates", () => {
   const options = parseHappOptions(base);
   const nodes = [node("vless", { uuid: "TEST_ONLY_UUID" }), node("trojan", { name: "TEST_ONLY_Node2", password: "TEST_ONLY_PASSWORD", tls: true })];
@@ -77,4 +88,15 @@ test("subscription is one JSON object per eligible node and validates", () => {
   assert.equal(audit.schemaVersion, 1);
   assert.equal(audit.counts.configs, 2);
   assert.doesNotMatch(JSON.stringify(audit), /password|uuid|server|port/i);
+});
+
+test("iOS Happ DNS uses the compact bundled geodata categories", () => {
+  const mac = renderHappDns({ platform: "macos", dnsMode: "stable", chinaDns: "alidns", globalDns: "cloudflare", ipv6Mode: "auto" });
+  assert.equal(JSON.stringify(mac).includes("HAPP-OPENAI"), false);
+  for (const platform of ["iphone", "ipad"]) {
+    const output = renderHappDns({ platform, dnsMode: "stable", chinaDns: "alidns", globalDns: "cloudflare", ipv6Mode: "auto" });
+    assert.match(JSON.stringify(output), /geosite:HAPP-OPENAI/u);
+    assert.match(JSON.stringify(output), /geoip:HAPP-CHINAIP/u);
+    assert.equal(JSON.stringify(output).includes("geosite:OPENAI"), false);
+  }
 });
