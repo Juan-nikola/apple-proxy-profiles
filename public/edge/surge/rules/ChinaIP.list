@@ -1,10 +1,10 @@
 # Upstream: https://github.com/blackmatrix7/ios_rule_script
 # Path: compiled/Surge/ChinaIP/ChinaIP.list
-# Commit: 538b8a79532c44dfbcb8e694d2f43e753c60b157
-# Committed at: 2026-08-15T18:26:29Z
+# Commit: ca20cf00887b50ec63de019317bec2a672c93ca9
+# Committed at: 2026-08-19T18:32:09Z
 # License: GPL-2.0-only
 # Changed by: Juan-nikola/apple-proxy-profiles
-# Output entries: 11096
+# Output entries: 11098
 # Omitted entries: 0
 IP-CIDR,1.0.1.0/24,no-resolve
 IP-CIDR,1.0.2.0/23,no-resolve
@@ -3386,6 +3386,7 @@ IP-CIDR,135.244.80.0/20,no-resolve
 IP-CIDR,135.84.255.0/24,no-resolve
 IP-CIDR,136.0.131.0/24,no-resolve
 IP-CIDR,136.0.133.0/24,no-resolve
+IP-CIDR,136.0.34.0/24,no-resolve
 IP-CIDR,136.175.177.145/32,no-resolve
 IP-CIDR,137.59.59.0/24,no-resolve
 IP-CIDR,137.59.88.0/22,no-resolve
@@ -4324,6 +4325,7 @@ IP-CIDR,192.171.224.0/21,no-resolve
 IP-CIDR,192.197.113.0/24,no-resolve
 IP-CIDR,192.23.191.0/24,no-resolve
 IP-CIDR,192.232.97.0/24,no-resolve
+IP-CIDR,192.51.173.0/24,no-resolve
 IP-CIDR,192.51.188.0/24,no-resolve
 IP-CIDR,192.55.10.0/23,no-resolve
 IP-CIDR,192.55.40.0/24,no-resolve
