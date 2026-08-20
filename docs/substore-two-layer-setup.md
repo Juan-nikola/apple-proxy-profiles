@@ -125,11 +125,11 @@ https://juan-nikola.github.io/apple-proxy-profiles/current/surge/scripts/surge-p
 | 27 | `happ-linux` | active/private | `apple-proxy-happ` | 输出 Linux HAPP JSON 配置数组 |
 | 28 | `happ-routing-audit` | active/private | 与 HAPP 配置同一 collection/参数 | 只输出兼容数、排除原因、业务目标和 warning |
 
-所有读取策略的任务必须接收同名 `channel`（仅 `edge`、`current`、`previous`），并绑定该频道的 policy revision、公开 client Manifest SHA-256 和 GeoData SHA-256；OneXray node-only 任务也接收 `channel`，但不读取业务策略。公开脚本只在 Pages 提供无节点 bundle，真实输出仍只在私密 Sub-Store 任务日志和客户端导入结果中查看。
+除 HAPP 外，读取策略的任务接收同名 `channel`（仅 `edge`、`current`、`previous`），并绑定该频道的 policy revision、公开 client Manifest SHA-256 和 GeoData SHA-256；OneXray node-only 任务也接收 `channel`，但不读取业务策略。HAPP 的 6 个平台配置任务和 `happ-routing-audit` 固定使用 `/current/happ/`，任务片段不接收或携带 `channel`；HAPP 审计只把 `current` 作为内部诊断元数据。公开脚本只在 Pages 提供无节点 bundle，真实输出仍只在私密 Sub-Store 任务日志和客户端导入结果中查看。
 
-真机 canary 已按用户要求跳过。后续若修改节点池或公开规则，仍应先在 `edge` 灰度并完成设备验收，再推进 `current`。
+当前尚无真机 canary 证据，因此新的 HAPP 候选只发布在 `edge`；只有完成设备验收后，才能把对应 client-manifest hash 晋级 `current`。后续若修改节点池或公开规则，仍应先在 `edge` 灰度并完成设备验收，再推进 `current`。
 
-当前 28 个任务统一使用 `channel=current`；`edge` 仅作为未来 HAPP/OneXray 变更的灰度频道，`previous` 用于回滚。
+当前任务的频道契约是：通用客户端、policy 和 OneXray 任务使用 `channel=current`；HAPP 任务固定使用 `/current/happ/` 且省略 `channel`；`edge` 仅作为维护者灰度频道，`previous` 用于回滚。
 
 ## 5. Egern：1 个节点 File + 3 个 Profile File
 
