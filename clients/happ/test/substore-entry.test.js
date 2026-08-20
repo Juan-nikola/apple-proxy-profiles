@@ -61,6 +61,8 @@ test("HAPP JSON file output binds the channel routing profile through response h
   assert.equal(requestOptions._res.headers["X-Test"], "keep");
   const encoded = routing.slice("happ://routing/onadd/".length);
   const profile = JSON.parse(Buffer.from(encoded, "base64").toString("utf8"));
+  assert.equal(requestOptions._res.headers["content-type"], "application/json; charset=utf-8");
+  assert.equal(requestOptions._res.headers["content-disposition"], 'attachment; filename="happ-iphone.json"');
   assert.equal(profile.Geositeurl, "https://juan-nikola.github.io/apple-proxy-profiles/edge/happ/geosite.dat");
   assert.equal(profile.Geoipurl, "https://juan-nikola.github.io/apple-proxy-profiles/edge/happ/geoip.dat");
   assert.ok(profile.DirectSites.includes("geosite:CN"));
