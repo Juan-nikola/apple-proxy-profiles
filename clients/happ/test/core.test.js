@@ -83,10 +83,24 @@ test("subscription is one JSON object per eligible node and validates", () => {
   assert.equal(configs.length, 2);
   assert.equal(configs[0].remarks, "TEST_ONLY_Node");
   assert.equal(validateHappSubscription(configs), true);
+  assert.ok(Array.isArray(configs[0].routing.balancers));
+  assert.equal(Object.hasOwn(configs[0], "balancers"), false);
   const audit = buildHappAudit({ options, policyResolution: { targets: {}, warnings: [] }, configs });
   assert.equal(audit.schemaVersion, 1);
   assert.equal(audit.counts.configs, 2);
   assert.doesNotMatch(JSON.stringify(audit), /password|uuid|server|port/i);
+});
+
+test("fixed-node balancer is nested under Xray routing", () => {
+  const fixed = node("vless", { uuid: "TEST_ONLY_UUID", _profile: { id: "fixed-node" } });
+  const follow = node("trojan", { name: "TEST_ONLY_Node2", password: "TEST_ONLY_PASSWORD", tls: true, _profile: { id: "follow-node" } });
+  const options = parseHappOptions({ ...base, policyOverrides: encodeBase64UrlUtf8(JSON.stringify({ "最终兜底": "NODE:TEST_ONLY_Node" })) });
+  const configs = renderHappSubscription({ nodes: [fixed, follow], options });
+  const config = configs.find((item) => item.remarks === "TEST_ONLY_Node2");
+  assert.ok(config);
+  assert.ok(config.routing.rules.some((rule) => rule.balancerTag));
+  assert.ok(config.routing.balancers.some((balancer) => balancer.tag));
+  assert.equal(validateHappSubscription(configs), true);
 });
 
 test("Happ DNS uses labels available in the Xray asset directory on every platform", () => {

@@ -7,15 +7,15 @@ export function validateHappSubscription(configs) {
     const inbounds = Array.isArray(config.inbounds) ? config.inbounds : [];
     duplicate(outbounds.map((item) => item.tag), "outbound");
     duplicate(inbounds.map((item) => item.tag), "inbound");
-    duplicate((config.balancers ?? []).map((item) => item.tag), "balancer");
+    duplicate((config.routing?.balancers ?? []).map((item) => item.tag), "balancer");
     const outboundTags = new Set(outbounds.map((item) => item.tag));
-    const balancerTags = new Set((config.balancers ?? []).map((item) => item.tag));
+    const balancerTags = new Set((config.routing?.balancers ?? []).map((item) => item.tag));
     if (!outboundTags.has("happ-direct") || !outboundTags.has("happ-block")) throw new Error("Happ config missing safety outbounds");
     for (const rule of config.routing?.rules ?? []) {
       if (rule.outboundTag && !outboundTags.has(rule.outboundTag)) throw new Error(`Dangling Happ outbound reference '${rule.outboundTag}'`);
       if (rule.balancerTag && !balancerTags.has(rule.balancerTag)) throw new Error(`Dangling Happ balancer reference '${rule.balancerTag}'`);
     }
-    for (const balancer of config.balancers ?? []) {
+    for (const balancer of config.routing?.balancers ?? []) {
       if (!balancer.fallbackTag || !outboundTags.has(balancer.fallbackTag)) throw new Error("Happ balancer fallback is missing");
       const candidates = (balancer.selector ?? []).flatMap((selector) => outbounds.filter((outbound) => outbound.tag.startsWith(selector)));
       if (candidates.length !== 1) throw new Error("Happ balancer selector must match exactly one outbound");

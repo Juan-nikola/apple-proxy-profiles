@@ -76,7 +76,6 @@
         "settings": {}
       }
     ],
-    "balancers": [],
     "observatory": {
       "subjectSelector": [],
       "probeUrl": "https://www.gstatic.com/generate_204",
@@ -406,7 +405,8 @@
           "network": "tcp,udp",
           "outboundTag": "happ-follow/h-874324393"
         }
-      ]
+      ],
+      "balancers": []
     },
     "meta": {
       "serverDescription": "Happ 分流：FOLLOW→FOLLOW；FOLLOW→FOLLOW；FOLLOW→FOLLOW；FOLLOW→FOLLOW；FOLLOW→FOLLOW；DIRECT→DIRECT；DIRECT→DIRECT；DIRECT→DIRECT；FOLLOW→FOLLOW；DIRECT→DIRECT；FOLLOW→FOLLOW；FOLLOW→FOLLOW",
@@ -480,7 +480,6 @@
         "settings": {}
       }
     ],
-    "balancers": [],
     "observatory": {
       "subjectSelector": [],
       "probeUrl": "https://www.gstatic.com/generate_204",
@@ -810,7 +809,8 @@
           "network": "tcp,udp",
           "outboundTag": "happ-follow/h-628157912"
         }
-      ]
+      ],
+      "balancers": []
     },
     "meta": {
       "serverDescription": "Happ 分流：FOLLOW→FOLLOW；FOLLOW→FOLLOW；FOLLOW→FOLLOW；FOLLOW→FOLLOW；FOLLOW→FOLLOW；DIRECT→DIRECT；DIRECT→DIRECT；DIRECT→DIRECT；FOLLOW→FOLLOW；DIRECT→DIRECT；FOLLOW→FOLLOW；FOLLOW→FOLLOW",

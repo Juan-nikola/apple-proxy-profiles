@@ -2768,10 +2768,9 @@ var HappConfigBundle = (() => {
         log: { loglevel: "warning" },
         inbounds: renderHappInbounds(options.platform),
         outbounds,
-        balancers: route.balancers,
         observatory: route.observatory,
         dns: renderHappDns(options),
-        routing: route.routing,
+        routing: { ...route.routing, balancers: route.balancers },
         meta: { serverDescription: summary(resolution), platform: options.platform, schemaVersion: 1 }
       });
     }
