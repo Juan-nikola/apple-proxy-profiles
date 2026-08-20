@@ -2878,13 +2878,13 @@ var HappConfigBundle = (() => {
     const candidates = [context?.requestOptions, input?.$options];
     return candidates.find((value) => value && typeof value === "object" && !Array.isArray(value));
   }
-  function setRoutingResponseHeader(requestOptions, routing) {
+  function setResponseHeader(requestOptions, name, value) {
     if (!requestOptions) return false;
     if (!requestOptions._res || typeof requestOptions._res !== "object" || Array.isArray(requestOptions._res)) requestOptions._res = {};
     const response = requestOptions._res;
     if (!response.headers || typeof response.headers !== "object" || Array.isArray(response.headers)) response.headers = {};
-    if (typeof response.headers.set === "function") response.headers.set("routing", routing);
-    else response.headers.routing = routing;
+    if (typeof response.headers.set === "function") response.headers.set(name, value);
+    else response.headers[name] = value;
     return true;
   }
   function attachRoutingProfile(input, context, options) {
@@ -2894,7 +2894,9 @@ var HappConfigBundle = (() => {
       baseUrl: PUBLIC_ROOT + "/" + options.channel,
       generatedAt: (/* @__PURE__ */ new Date()).toISOString()
     });
-    setRoutingResponseHeader(requestOptions, renderHappRoutingDeepLink(profile));
+    setResponseHeader(requestOptions, "routing", renderHappRoutingDeepLink(profile));
+    setResponseHeader(requestOptions, "content-type", "application/json; charset=utf-8");
+    setResponseHeader(requestOptions, "content-disposition", `attachment; filename="happ-${options.platform}.json"`);
   }
   function logDiagnostics(context, options, normalized, filtered) {
     const method = typeof context?.logger === "function" ? context.logger : typeof context?.logger?.info === "function" ? context.logger.info.bind(context.logger) : null;
