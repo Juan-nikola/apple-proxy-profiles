@@ -78,3 +78,16 @@ test("HAPP Preview without request options still emits JSON", async () => {
   }));
   assert.equal(Array.isArray(JSON.parse(result.$content)), true);
 });
+
+test("HAPP non-iOS JSON does not receive the iOS routing response header", async () => {
+  const requestOptions = { _res: { headers: {} } };
+  await configOperator({ $options: requestOptions }, "JSON", context({
+    output: "config",
+    type: "collection",
+    name: "TEST_ONLY_Happ_Collection",
+    subscriptionName: "TEST_ONLY_Happ_Subscription",
+    platform: "macos",
+    channel: "edge",
+  }, requestOptions));
+  assert.equal(requestOptions._res.headers.routing, undefined);
+});

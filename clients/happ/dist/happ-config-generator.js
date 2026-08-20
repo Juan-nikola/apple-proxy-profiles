@@ -2962,6 +2962,7 @@ var HappConfigBundle = (() => {
     return true;
   }
   function attachRoutingProfile(input, context, options) {
+    if (options.platform !== "iphone" && options.platform !== "ipad") return;
     const requestOptions = requestOptionsFrom(input, context);
     if (!requestOptions) return;
     const profile = renderHappRoutingProfile({
