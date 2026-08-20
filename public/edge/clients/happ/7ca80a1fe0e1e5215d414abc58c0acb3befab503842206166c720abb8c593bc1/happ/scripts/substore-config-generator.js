@@ -1,4 +1,4 @@
-var HappAuditBundle = (() => {
+var HappConfigBundle = (() => {
   var __defProp = Object.defineProperty;
   var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
   var __getOwnPropNames = Object.getOwnPropertyNames;
@@ -17,9 +17,9 @@ var HappAuditBundle = (() => {
   };
   var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
-  // src/substore-audit-entry.js
-  var substore_audit_entry_exports = {};
-  __export(substore_audit_entry_exports, {
+  // src/substore-config-entry.js
+  var substore_config_entry_exports = {};
+  __export(substore_config_entry_exports, {
     operator: () => operator
   });
 
@@ -1175,8 +1175,8 @@ var HappAuditBundle = (() => {
     return null;
   }
   function xrayNodeExclusionReason(node, client) {
-    const common = xrayCommonReason(node, client);
-    if (common) return common;
+    const common2 = xrayCommonReason(node, client);
+    if (common2) return common2;
     const protocol2 = normalizeProtocol(node.type);
     const tls = xrayTlsReason(node, client);
     if (tls) return tls;
@@ -1318,12 +1318,12 @@ var HappAuditBundle = (() => {
   }
   function fingerprint(node) {
     const value = identityKey(node);
-    let hash = 2166136261;
+    let hash2 = 2166136261;
     for (let index = 0; index < value.length; index += 1) {
-      hash ^= value.charCodeAt(index);
-      hash = Math.imul(hash, 16777619);
+      hash2 ^= value.charCodeAt(index);
+      hash2 = Math.imul(hash2, 16777619);
     }
-    return (hash >>> 0).toString(36).padStart(7, "0");
+    return (hash2 >>> 0).toString(36).padStart(7, "0");
   }
 
   // ../../shared/nodes/node-validation.js
@@ -1336,8 +1336,8 @@ var HappAuditBundle = (() => {
   }
   var OPAQUE_AUTH_FIELDS = /* @__PURE__ */ new Set(["password", "psk", "private-key", "public-key", "key"]);
   function isValidPort2(value) {
-    const port = typeof value === "string" && /^\d+$/.test(value) ? Number(value) : value;
-    return Number.isInteger(port) && port >= 1 && port <= 65535;
+    const port2 = typeof value === "string" && /^\d+$/.test(value) ? Number(value) : value;
+    return Number.isInteger(port2) && port2 >= 1 && port2 <= 65535;
   }
   function isValidAuthField(field, value) {
     if (field === "version") {
@@ -1792,19 +1792,6 @@ var HappAuditBundle = (() => {
     };
   }
 
-  // src/audit.js
-  var unsafe = /password|passwd|uuid|token|secret|credential|server|address|port|subscriptionurl|publickey|header/i;
-  function safeTarget(target) {
-    return { configured: target.configured, resolved: target.resolved, status: target.status, warningCode: target.warningCode ?? null, ...target.nodeId ? { nodeId: target.nodeId } : {} };
-  }
-  function buildHappAudit({ options = {}, policyResolution = {}, configs = [], eligibleNodes = null } = {}) {
-    const targets = Object.fromEntries(Object.entries(policyResolution.targets ?? {}).map(([key, value]) => [key, safeTarget(value)]));
-    const count = Array.isArray(eligibleNodes) ? eligibleNodes.length : configs.length;
-    const audit = { schemaVersion: 1, client: "happ", output: "audit", platform: options.platform ?? "all", channel: options.channel ?? "edge", counts: { configs: configs.length || count, eligibleNodes: count, fixedNodes: (policyResolution.fixedNodes ?? []).length, warnings: (policyResolution.warnings ?? []).length }, targets, warnings: (policyResolution.warnings ?? []).map(({ businessKey, warningCode }) => ({ businessKey, warningCode })) };
-    if (unsafe.test(JSON.stringify(audit))) throw new Error("Happ audit contains sensitive field");
-    return Object.freeze(audit);
-  }
-
   // ../../shared/release/client-catalog.js
   var freeze = (value) => {
     if (value && typeof value === "object" && !Object.isFrozen(value)) {
@@ -2009,6 +1996,544 @@ var HappAuditBundle = (() => {
   }
   var HAPP_PLATFORMS = Object.freeze([...PLATFORMS]);
 
+  // src/render-node.js
+  var SUPPORTED = /* @__PURE__ */ new Set(["vless", "vmess", "trojan", "ss", "shadowsocks", "socks5", "hysteria2", "hy2"]);
+  var TRANSPORTS = /* @__PURE__ */ new Set(["tcp", "raw", "ws", "grpc", "h2", "http2"]);
+  var has = (o, k) => Object.hasOwn(o, k);
+  var first = (o, keys) => keys.find((k) => has(o, k)) === void 0 ? void 0 : o[keys.find((k) => has(o, k))];
+  var required2 = (v, label) => {
+    if (typeof v !== "string" || !v) throw new Error(`Happ node ${label} is required`);
+    return v;
+  };
+  var port = (v) => {
+    const n = Number(v);
+    if (!Number.isInteger(n) || n < 1 || n > 65535) throw new Error("Happ node port is invalid");
+    return n;
+  };
+  function tlsSettings(node) {
+    const security = String(node.security ?? (node.tls ? "tls" : "none")).toLowerCase();
+    if (security === "none") return void 0;
+    if (security !== "tls" && security !== "reality") throw new Error("Unsupported Happ TLS security");
+    const settings = {};
+    const serverName = first(node, ["sni", "servername"]);
+    if (serverName !== void 0) settings.serverName = required2(serverName, "SNI");
+    if (node["skip-cert-verify"] !== void 0) settings.allowInsecure = node["skip-cert-verify"] === true;
+    else if (node["allow-insecure"] !== void 0) settings.allowInsecure = node["allow-insecure"] === true;
+    if (node.alpn !== void 0) settings.alpn = Array.isArray(node.alpn) ? [...node.alpn] : [node.alpn];
+    if (node["client-fingerprint"] !== void 0 || node.fingerprint !== void 0) settings.fingerprint = node["client-fingerprint"] ?? node.fingerprint;
+    if (security === "reality") {
+      const reality = node["reality-opts"] ?? node.reality ?? {};
+      const publicKey = reality["public-key"] ?? reality.publicKey;
+      if (!publicKey) throw new Error("Happ REALITY public key is required");
+      settings.realitySettings = { publicKey, ...reality["short-id"] || reality.shortId ? { shortId: reality["short-id"] ?? reality.shortId } : {}, ...reality["spider-x"] || reality.spiderX || reality["_spider-x"] ? { spiderX: reality["spider-x"] ?? reality.spiderX ?? reality["_spider-x"] } : {} };
+    }
+    return settings;
+  }
+  function streamSettings(node) {
+    const network = String(node.network ?? node._network ?? "tcp").toLowerCase();
+    if (!TRANSPORTS.has(network)) throw new Error(`Unsupported Happ transport '${network}'`);
+    const stream = { network: network === "raw" ? "tcp" : network };
+    const tls = tlsSettings(node);
+    if (tls) {
+      if (tls.realitySettings) {
+        stream.security = "reality";
+        stream.realitySettings = tls.realitySettings;
+        delete tls.realitySettings;
+      } else {
+        stream.security = "tls";
+        stream.tlsSettings = tls;
+      }
+    }
+    if (network === "ws") {
+      const opts = node["ws-opts"] ?? {};
+      stream.wsSettings = { path: opts.path ?? "/", ...opts.headers ? { headers: { ...opts.headers } } : {}, ...opts.maxEarlyData ? { maxEarlyData: opts.maxEarlyData } : {} };
+    } else if (network === "grpc") {
+      const opts = node["grpc-opts"] ?? {};
+      stream.grpcSettings = { serviceName: opts["grpc-service-name"] ?? opts.serviceName ?? "", ...opts["grpc-mode"] || opts.mode ? { multiMode: (opts["grpc-mode"] ?? opts.mode) === "multi" } : {} };
+    } else if (network === "h2" || network === "http2") {
+      const opts = node["h2-opts"] ?? node["http-opts"] ?? {};
+      stream.httpSettings = { path: opts.path ?? "/", ...opts.host ? { host: Array.isArray(opts.host) ? opts.host : [opts.host] } : {} };
+    }
+    return Object.keys(stream).length > 1 ? stream : void 0;
+  }
+  function common(node) {
+    return { address: required2(node.server, "server"), port: port(node.port) };
+  }
+  function renderVless(node) {
+    const user = { id: required2(node.uuid, "UUID"), encryption: node.encryption ?? "none" };
+    if (node.flow !== void 0) user.flow = node.flow;
+    return { protocol: "vless", settings: { vnext: [{ ...common(node), users: [user] }] }, ...streamSettings(node) ? { streamSettings: streamSettings(node) } : {} };
+  }
+  function renderVmess(node) {
+    const user = { id: required2(node.uuid, "UUID"), alterId: Number(node.alterId ?? node["alter-id"] ?? 0), security: node.cipher ?? node.security ?? "auto" };
+    return { protocol: "vmess", settings: { vnext: [{ ...common(node), users: [user] }] }, ...streamSettings(node) ? { streamSettings: streamSettings(node) } : {} };
+  }
+  function renderTrojan(node) {
+    const server = { ...common(node), password: required2(node.password, "password") };
+    if (node.flow !== void 0) server.flow = node.flow;
+    return { protocol: "trojan", settings: { servers: [server] }, ...streamSettings(node) ? { streamSettings: streamSettings(node) } : {} };
+  }
+  function renderShadowsocks(node) {
+    const server = { ...common(node), method: required2(node.cipher ?? node.method, "method"), password: required2(node.password, "password") };
+    if (node.udp !== void 0) server.ota = node.udp === true;
+    return { protocol: "shadowsocks", settings: { servers: [server] }, ...streamSettings(node) ? { streamSettings: streamSettings(node) } : {} };
+  }
+  function renderSocks(node) {
+    const server = { ...common(node) };
+    if (node.username !== void 0 || node.password !== void 0) server.users = [{ user: node.username ?? "", pass: node.password ?? "" }];
+    return { protocol: "socks", settings: { servers: [server] } };
+  }
+  function renderHysteria2(node) {
+    const tls = tlsSettings(node);
+    if (!tls || !tls.serverName && !tls.realitySettings) throw new Error("Happ Hysteria2 requires TLS");
+    const server = { ...common(node), ...node.password !== void 0 ? { auth: node.password } : {} };
+    const stream = { network: "hysteria", method: "hysteria", ...tls.realitySettings ? { security: "reality", realitySettings: tls.realitySettings } : { security: "tls", tlsSettings: tls }, ...node.obfs ? { hysteriaSettings: { obfs: node.obfs, ...node["obfs-password"] ? { obfsPassword: node["obfs-password"] } : {} } } : {} };
+    return { protocol: "hysteria", settings: { version: 2, ...server }, streamSettings: stream };
+  }
+  function renderHappOutbound(node, tag) {
+    if (!node || typeof node !== "object") throw new TypeError("Happ node must be an object");
+    const type = String(node.type ?? "").toLowerCase();
+    if (!SUPPORTED.has(type)) throw new Error(`Unsupported Happ protocol '${type}'`);
+    if (typeof tag !== "string" || !/^happ-[a-z0-9/_-]+$/u.test(tag)) throw new Error("Happ outbound tag must be opaque");
+    const output = type === "vless" ? renderVless(node) : type === "vmess" ? renderVmess(node) : type === "trojan" ? renderTrojan(node) : type === "ss" || type === "shadowsocks" ? renderShadowsocks(node) : type === "socks5" ? renderSocks(node) : renderHysteria2(node);
+    return Object.freeze({ tag, ...output });
+  }
+
+  // src/render-platform.js
+  var PLATFORM_METADATA = Object.freeze({
+    macos: { tun: false, proxy: "desktop" },
+    iphone: { tun: true, proxy: "network-extension" },
+    ipad: { tun: true, proxy: "network-extension" },
+    android: { tun: true, proxy: "vpn-service" },
+    windows: { tun: true, proxy: "wintun" },
+    linux: { tun: true, proxy: "tun" }
+  });
+  var PORTS = Object.freeze({ socks: 10808, http: 10809 });
+  function renderHappInbounds(platform) {
+    if (!PLATFORM_METADATA[platform]) throw new Error(`Unsupported Happ platform '${platform}'`);
+    const common2 = { listen: "127.0.0.1", sniffing: { enabled: true, destOverride: ["http", "tls"], routeOnly: true } };
+    return [
+      { tag: "happ-in-socks", port: PORTS.socks, protocol: "socks", settings: { auth: "noauth", udp: true }, ...common2 },
+      { tag: "happ-in-http", port: PORTS.http, protocol: "http", settings: {}, ...common2 }
+    ].map((entry) => Object.freeze(entry));
+  }
+
+  // ../../shared/dns/providers.js
+  var CHINA_DNS_PROVIDERS = Object.freeze({
+    alidns: Object.freeze({
+      address: "223.5.5.5",
+      doh: "https://dns.alidns.com/dns-query"
+    }),
+    dnspod: Object.freeze({
+      address: "119.29.29.29",
+      doh: "https://doh.pub/dns-query"
+    }),
+    system: Object.freeze({
+      address: "local",
+      doh: "system"
+    })
+  });
+  var GLOBAL_DNS_PROVIDERS = Object.freeze({
+    cloudflare: Object.freeze({
+      address: "1.1.1.1",
+      serverName: "cloudflare-dns.com",
+      doh: "https://cloudflare-dns.com/dns-query"
+    }),
+    google: Object.freeze({
+      address: "8.8.8.8",
+      serverName: "dns.google",
+      doh: "https://dns.google/dns-query"
+    }),
+    quad9: Object.freeze({
+      address: "9.9.9.9",
+      serverName: "dns.quad9.net",
+      doh: "https://dns.quad9.net/dns-query"
+    })
+  });
+  function provider(providers, id, label) {
+    const value = providers[id];
+    if (!value) throw new Error(`Unsupported ${label} DNS provider`);
+    return value;
+  }
+  function chinaDnsProvider(id) {
+    return provider(CHINA_DNS_PROVIDERS, id, "China");
+  }
+  function globalDnsProvider(id) {
+    return provider(GLOBAL_DNS_PROVIDERS, id, "global");
+  }
+
+  // ../../shared/rules/semantic-intents.js
+  var intent = ({ id, ruleId, label, sourceIds, policy, defaultTarget, phase, dnsClass }) => Object.freeze({
+    id,
+    ruleId,
+    label,
+    sourceIds: Object.freeze([...sourceIds]),
+    policy,
+    defaultTarget,
+    phase,
+    dnsClass
+  });
+  var SEMANTIC_INTENTS = Object.freeze([
+    intent({ id: "security", ruleId: "Security", label: "\u5B89\u5168\u62E6\u622A", sourceIds: ["Hijacking", "BlockHttpDNS"], policy: "REJECT", defaultTarget: "REJECT", phase: "security", dnsClass: "none" }),
+    intent({ id: "privacy", ruleId: "Privacy", label: "\u{1F575}\uFE0F \u4E25\u683C\u8DDF\u8E2A", sourceIds: ["Privacy"], policy: "\u{1F575}\uFE0F \u4E25\u683C\u8DDF\u8E2A", defaultTarget: "DIRECT", phase: "security", dnsClass: "none" }),
+    intent({ id: "domesticCore", ruleId: "DomesticCore", label: "\u56FD\u5185\u6838\u5FC3", sourceIds: ["DomesticCore", "DomesticGame", "SteamCN"], policy: "DIRECT", defaultTarget: "DIRECT", phase: "earlyDomestic", dnsClass: "china" }),
+    intent({ id: "domesticPlatform", ruleId: "DomesticPlatform", label: "\u{1F1E8}\u{1F1F3} \u56FD\u5185\u5E73\u53F0", sourceIds: ["BiliBili", "ByteDance", "XiaoHongShu", "Weibo"], policy: "\u{1F1E8}\u{1F1F3} \u56FD\u5185\u5E73\u53F0", defaultTarget: "DIRECT", phase: "serviceIntent", dnsClass: "china" }),
+    intent({ id: "ai", ruleId: "AI", label: "\u{1F916} AI \u4E13\u7528", sourceIds: ["OpenAI", "Claude", "Gemini", "Copilot"], policy: "\u{1F916} AI \u4E13\u7528", defaultTarget: "FOLLOW", phase: "serviceIntent", dnsClass: "proxy" }),
+    intent({ id: "github", ruleId: "GitHub", label: "\u{1F419} GitHub", sourceIds: ["GitHub"], policy: "\u{1F419} GitHub", defaultTarget: "FOLLOW", phase: "serviceIntent", dnsClass: "proxy" }),
+    intent({ id: "youtube", ruleId: "YouTube", label: "\u{1F4FA} YouTube", sourceIds: ["YouTube"], policy: "\u{1F4FA} YouTube", defaultTarget: "FOLLOW", phase: "serviceIntent", dnsClass: "proxy" }),
+    intent({ id: "overseasMedia", ruleId: "OverseasMedia", label: "\u{1F3AC} \u6D77\u5916\u6D41\u5A92\u4F53", sourceIds: ["Netflix", "Disney", "Spotify", "GlobalMedia"], policy: "\u{1F3AC} \u6D77\u5916\u6D41\u5A92\u4F53", defaultTarget: "FOLLOW", phase: "serviceIntent", dnsClass: "proxy" }),
+    intent({ id: "globalSocial", ruleId: "OverseasSocial", label: "\u{1F4AC} \u6D77\u5916\u793E\u4EA4", sourceIds: ["Telegram", "Facebook", "Instagram", "Twitter", "TikTok"], policy: "\u{1F4AC} \u6D77\u5916\u793E\u4EA4", defaultTarget: "FOLLOW", phase: "serviceIntent", dnsClass: "proxy" }),
+    intent({ id: "apple", ruleId: "Apple", label: "\u{1F34E} Apple", sourceIds: ["Apple"], policy: "\u{1F34E} Apple", defaultTarget: "DIRECT", phase: "serviceIntent", dnsClass: "china" }),
+    intent({ id: "microsoft", ruleId: "Microsoft", label: "\u{1FA9F} Microsoft", sourceIds: ["Microsoft"], policy: "\u{1FA9F} Microsoft", defaultTarget: "DIRECT", phase: "serviceIntent", dnsClass: "china" }),
+    intent({ id: "download", ruleId: "Download", label: "\u2B07\uFE0F \u4E0B\u8F7D/P2P", sourceIds: ["Download", "PrivateTracker"], policy: "\u2B07\uFE0F \u4E0B\u8F7D/P2P", defaultTarget: "DIRECT", phase: "serviceIntent", dnsClass: "china" }),
+    intent({ id: "overseasGame", ruleId: "OverseasGame", label: "\u{1F30D} \u6D77\u5916\u6E38\u620F", sourceIds: ["OverseasGame"], policy: "\u{1F30D} \u6D77\u5916\u6E38\u620F", defaultTarget: "FOLLOW", phase: "overseasGame", dnsClass: "proxy" }),
+    intent({ id: "chinaIp", ruleId: "ChinaIP", label: "\u4E2D\u56FD IP", sourceIds: ["ChinaIP"], policy: "DIRECT", defaultTarget: "DIRECT", phase: "resolvedChinaIp", dnsClass: "none" })
+  ]);
+  var SOURCE_TO_INTENT = new Map(
+    SEMANTIC_INTENTS.flatMap((entry) => entry.sourceIds.map((sourceId) => [sourceId, entry]))
+  );
+
+  // ../../shared/rules/lightweight-policy.js
+  var DEFAULT_RULE_SOURCE_IDS = Object.freeze([
+    "Hijacking",
+    "BlockHttpDNS",
+    "Privacy",
+    "DomesticCore",
+    "DomesticGame",
+    "SteamCN",
+    "BiliBili",
+    "ByteDance",
+    "XiaoHongShu",
+    "Weibo",
+    "OpenAI",
+    "Claude",
+    "Gemini",
+    "Copilot",
+    "GitHub",
+    "YouTube",
+    "Netflix",
+    "Disney",
+    "Spotify",
+    "GlobalMedia",
+    "Telegram",
+    "Facebook",
+    "Instagram",
+    "Twitter",
+    "TikTok",
+    "Apple",
+    "Microsoft",
+    "Download",
+    "PrivateTracker",
+    "OverseasGame",
+    "ChinaTLD",
+    "ChinaIP"
+  ]);
+  var MOBILE_RULE_BUNDLES = Object.freeze(SEMANTIC_INTENTS.map((entry) => Object.freeze({
+    id: entry.ruleId,
+    sourceIds: entry.sourceIds,
+    policy: entry.policy,
+    phase: entry.phase,
+    dnsClass: entry.dnsClass
+  })));
+  var MOBILE_RULE_SOURCE_IDS = Object.freeze(MOBILE_RULE_BUNDLES.map(({ id }) => id));
+  var FULL_ADBLOCK_SOURCE_IDS = Object.freeze([
+    "Advertising",
+    "Advertising_Domain"
+  ]);
+  var ROUTING_PHASES = Object.freeze([
+    "security",
+    "earlyDomestic",
+    "serviceIntent",
+    "overseasGame",
+    "lateDomestic",
+    "resolvedChinaIp"
+  ]);
+  var PHASE_SOURCE_IDS = Object.freeze({
+    security: Object.freeze([
+      "Hijacking",
+      "BlockHttpDNS",
+      "Privacy",
+      "Advertising",
+      "Advertising_Domain"
+    ]),
+    earlyDomestic: Object.freeze(["DomesticCore", "DomesticGame", "SteamCN"]),
+    serviceIntent: Object.freeze([
+      "BiliBili",
+      "ByteDance",
+      "XiaoHongShu",
+      "Weibo",
+      "OpenAI",
+      "Claude",
+      "Gemini",
+      "Copilot",
+      "GitHub",
+      "YouTube",
+      "Netflix",
+      "Disney",
+      "Spotify",
+      "GlobalMedia",
+      "Telegram",
+      "Facebook",
+      "Instagram",
+      "Twitter",
+      "TikTok",
+      "Apple",
+      "Microsoft",
+      "Download",
+      "PrivateTracker"
+    ]),
+    overseasGame: Object.freeze(["OverseasGame"]),
+    lateDomestic: Object.freeze(["ChinaTLD"]),
+    resolvedChinaIp: Object.freeze(["ChinaIP"])
+  });
+  var RULE_BUDGETS = Object.freeze({
+    domesticCoreEntries: 2e3,
+    defaultEntries: 25e3,
+    defaultBytes: 5e6,
+    startupInlineEntries: 64,
+    singBoxRuleRssBytes: 50 * 1024 * 1024,
+    singBoxTotalRssBytes: 200 * 1024 * 1024
+  });
+  var ROUTING_PRECEDENCE = Object.freeze([
+    "local",
+    "security",
+    "custom",
+    "domesticCore",
+    "domesticPlatform",
+    "domesticGame",
+    "explicitOverseas",
+    "overseasGame",
+    "chinaIp",
+    "defaultProxy"
+  ]);
+  var EXPLICIT_OVERSEAS_RULE_SOURCE_IDS = Object.freeze([
+    "OpenAI",
+    "Claude",
+    "Gemini",
+    "Copilot",
+    "GitHub",
+    "YouTube",
+    "Netflix",
+    "Disney",
+    "Spotify",
+    "GlobalMedia",
+    "Telegram",
+    "Facebook",
+    "Instagram",
+    "Twitter",
+    "TikTok",
+    "OverseasGame"
+  ]);
+  var DNS_CLASS_SOURCE_IDS = Object.freeze({
+    proxy: EXPLICIT_OVERSEAS_RULE_SOURCE_IDS,
+    china: Object.freeze([
+      "DomesticCore",
+      "DomesticGame",
+      "SteamCN",
+      "ChinaTLD",
+      "BiliBili",
+      "ByteDance",
+      "XiaoHongShu",
+      "Weibo",
+      "Apple",
+      "Microsoft",
+      "Download",
+      "PrivateTracker"
+    ]),
+    none: Object.freeze([
+      "Hijacking",
+      "BlockHttpDNS",
+      "Privacy",
+      "Advertising",
+      "Advertising_Domain",
+      "ChinaIP"
+    ])
+  });
+  var POLICY_TARGETS = Object.freeze({
+    direct: "DIRECT",
+    defaultProxy: "\u{1F680} \u8282\u70B9\u9009\u62E9",
+    overseasGame: "\u{1F30D} \u6D77\u5916\u6E38\u620F",
+    overseasMedia: "\u{1F3AC} \u6D77\u5916\u6D41\u5A92\u4F53",
+    overseasSocial: "\u{1F4AC} \u6D77\u5916\u793E\u4EA4",
+    domesticPlatform: "\u{1F1E8}\u{1F1F3} \u56FD\u5185\u5E73\u53F0",
+    reject: "REJECT"
+  });
+  var SOURCE_POLICIES = Object.freeze({
+    Hijacking: POLICY_TARGETS.reject,
+    BlockHttpDNS: POLICY_TARGETS.reject,
+    Privacy: "\u{1F575}\uFE0F \u4E25\u683C\u8DDF\u8E2A",
+    DomesticCore: POLICY_TARGETS.direct,
+    DomesticGame: POLICY_TARGETS.direct,
+    BiliBili: POLICY_TARGETS.domesticPlatform,
+    ByteDance: POLICY_TARGETS.domesticPlatform,
+    XiaoHongShu: POLICY_TARGETS.domesticPlatform,
+    Weibo: POLICY_TARGETS.domesticPlatform,
+    OpenAI: "\u{1F916} AI \u4E13\u7528",
+    Claude: "\u{1F916} AI \u4E13\u7528",
+    Gemini: "\u{1F916} AI \u4E13\u7528",
+    Copilot: "\u{1F916} AI \u4E13\u7528",
+    GitHub: "\u{1F419} GitHub",
+    YouTube: "\u{1F4FA} YouTube",
+    Netflix: POLICY_TARGETS.overseasMedia,
+    Disney: POLICY_TARGETS.overseasMedia,
+    Spotify: POLICY_TARGETS.overseasMedia,
+    GlobalMedia: POLICY_TARGETS.overseasMedia,
+    Telegram: POLICY_TARGETS.overseasSocial,
+    Facebook: POLICY_TARGETS.overseasSocial,
+    Instagram: POLICY_TARGETS.overseasSocial,
+    Twitter: POLICY_TARGETS.overseasSocial,
+    TikTok: POLICY_TARGETS.overseasSocial,
+    Apple: "\u{1F34E} Apple",
+    Microsoft: "\u{1FA9F} Microsoft",
+    SteamCN: POLICY_TARGETS.direct,
+    OverseasGame: POLICY_TARGETS.overseasGame,
+    Download: "\u2B07\uFE0F \u4E0B\u8F7D/P2P",
+    PrivateTracker: "\u2B07\uFE0F \u4E0B\u8F7D/P2P",
+    ChinaTLD: POLICY_TARGETS.direct,
+    ChinaIP: POLICY_TARGETS.direct,
+    Advertising: "\u{1F9F1} \u5E38\u89C1\u5E7F\u544A",
+    Advertising_Domain: "\u{1F9F1} \u5E38\u89C1\u5E7F\u544A"
+  });
+  function uniqueMembership(id, memberships, label) {
+    const matches = Object.entries(memberships).filter(([, ids2]) => ids2.includes(id)).map(([name]) => name);
+    if (matches.length !== 1) {
+      throw new Error(`Lightweight rule source ${id} must have exactly one ${label} membership`);
+    }
+    return matches[0];
+  }
+  function clientRecord(id) {
+    const policy = SOURCE_POLICIES[id];
+    if (!policy) throw new Error(`Missing policy for lightweight rule source: ${id}`);
+    const phase = uniqueMembership(id, PHASE_SOURCE_IDS, "routing phase");
+    const dnsClass = uniqueMembership(id, DNS_CLASS_SOURCE_IDS, "DNS class");
+    return Object.freeze({
+      id,
+      policy,
+      // The publication pipeline emits normalized, typed Surge/Shadowrocket
+      // lines for every compiled source, including domain-only inputs.
+      inputFormat: "RULE-SET",
+      phase,
+      dnsClass
+    });
+  }
+  var DEFAULT_RULE_CLIENT_CATALOG = Object.freeze(DEFAULT_RULE_SOURCE_IDS.map(clientRecord));
+  var FULL_ADBLOCK_RULE_CLIENT_CATALOG = Object.freeze(FULL_ADBLOCK_SOURCE_IDS.map(clientRecord));
+  var MOBILE_RULE_CLIENT_CATALOG = Object.freeze(MOBILE_RULE_BUNDLES.map((bundle) => Object.freeze({
+    id: bundle.id,
+    policy: bundle.policy,
+    inputFormat: "RULE-SET",
+    phase: bundle.phase,
+    dnsClass: bundle.dnsClass
+  })));
+  function ruleClientCatalog({ adblockMode = "off" } = {}) {
+    if (adblockMode !== "off" && adblockMode !== "full") {
+      throw new TypeError("adblockMode must be either off or full");
+    }
+    return adblockMode === "full" ? Object.freeze([...DEFAULT_RULE_CLIENT_CATALOG, ...FULL_ADBLOCK_RULE_CLIENT_CATALOG]) : DEFAULT_RULE_CLIENT_CATALOG;
+  }
+  function orderedRoutingPlan({ adblockMode = "off" } = {}) {
+    const selected = ruleClientCatalog({ adblockMode });
+    const phaseRank = new Map(ROUTING_PHASES.map((phase, index) => [phase, index]));
+    const sourceRank = new Map(
+      [...DEFAULT_RULE_SOURCE_IDS, ...FULL_ADBLOCK_SOURCE_IDS].map((id, index) => [id, index])
+    );
+    return Object.freeze([...selected].sort((left, right) => phaseRank.get(left.phase) - phaseRank.get(right.phase) || sourceRank.get(left.id) - sourceRank.get(right.id)));
+  }
+
+  // src/render-dns.js
+  var HAPP_GEOSITE_ALIASES = Object.freeze({
+    OpenAI: "OPENAI",
+    Claude: "CATEGORY-AI-!CN",
+    Gemini: "GOOGLE-GEMINI",
+    Copilot: "GITHUB-COPILOT",
+    GitHub: "GITHUB",
+    YouTube: "YOUTUBE",
+    Netflix: "NETFLIX",
+    Disney: "DISNEY",
+    Spotify: "SPOTIFY",
+    GlobalMedia: "CATEGORY-MEDIA",
+    Telegram: "TELEGRAM",
+    Facebook: "FACEBOOK",
+    Instagram: "INSTAGRAM",
+    Twitter: "TWITTER",
+    TikTok: "TIKTOK",
+    OverseasGame: "CATEGORY-GAMES-!CN"
+  });
+  var HAPP_COMPACT_GEOSITE_ALIASES = Object.freeze({
+    OpenAI: "HAPP-OPENAI",
+    Claude: "HAPP-CLAUDE",
+    Gemini: "HAPP-GEMINI",
+    Copilot: "HAPP-COPILOT",
+    GitHub: "HAPP-GITHUB",
+    YouTube: "HAPP-YOUTUBE",
+    Netflix: "HAPP-NETFLIX",
+    Disney: "HAPP-DISNEY",
+    Spotify: "HAPP-SPOTIFY",
+    GlobalMedia: "HAPP-GLOBALMEDIA",
+    Telegram: "HAPP-TELEGRAM",
+    Facebook: "HAPP-FACEBOOK",
+    Instagram: "HAPP-INSTAGRAM",
+    Twitter: "HAPP-TWITTER",
+    TikTok: "HAPP-TIKTOK",
+    OverseasGame: "HAPP-OVERSEASGAME"
+  });
+  var HAPP_COMPACT_DOMESTIC_GEOSITES = Object.freeze([
+    "HAPP-DOMESTICCORE",
+    "HAPP-DOMESTICGAME",
+    "HAPP-STEAMCN",
+    "HAPP-BILIBILI",
+    "HAPP-BYTEDANCE",
+    "HAPP-XIAOHONGSHU",
+    "HAPP-WEIBO",
+    "HAPP-APPLE",
+    "HAPP-MICROSOFT",
+    "HAPP-DOWNLOAD",
+    "HAPP-PRIVATETRACKER",
+    "HAPP-CHINATLD"
+  ]);
+  function usesCompactGeodata(platform) {
+    return platform === "iphone" || platform === "ipad";
+  }
+  function compactDomains(values) {
+    return values.map((value) => `geosite:${value}`);
+  }
+  var PROXY_GEOSITE_DOMAINS = Object.freeze(
+    EXPLICIT_OVERSEAS_RULE_SOURCE_IDS.map((id) => `geosite:${HAPP_GEOSITE_ALIASES[id] ?? id.toUpperCase()}`)
+  );
+  var defaults = { dnsMode: "stable", chinaDns: "alidns", globalDns: "cloudflare", ipv6Mode: "auto" };
+  function renderHappDns(options = {}) {
+    const value = { ...defaults, ...options };
+    if (!["stable", "privacy", "speed"].includes(value.dnsMode)) throw new Error("Unsupported Happ dnsMode");
+    if (!["alidns", "dnspod", "system"].includes(value.chinaDns)) throw new Error("Unsupported Happ chinaDns");
+    if (!["cloudflare", "google", "quad9"].includes(value.globalDns)) throw new Error("Unsupported Happ globalDns");
+    if (!["auto", "ipv4-only"].includes(value.ipv6Mode)) throw new Error("Unsupported Happ ipv6Mode");
+    const domestic = chinaDnsProvider(value.chinaDns);
+    const global = globalDnsProvider(value.globalDns);
+    const compact = usesCompactGeodata(value.platform);
+    const domesticDomains = compact ? ["geosite:private", ...compactDomains(HAPP_COMPACT_DOMESTIC_GEOSITES)] : ["geosite:cn", "geosite:private"];
+    const domesticExpectIPs = compact ? ["geoip:HAPP-CHINAIP"] : ["geoip:cn"];
+    const proxyDomains = compact ? EXPLICIT_OVERSEAS_RULE_SOURCE_IDS.map((id) => `geosite:${HAPP_COMPACT_GEOSITE_ALIASES[id] ?? id.toUpperCase()}`) : PROXY_GEOSITE_DOMAINS;
+    return Object.freeze({
+      tag: "happ-dns",
+      servers: [
+        { address: domestic.doh, domains: domesticDomains, expectIPs: domesticExpectIPs },
+        { address: global.doh, domains: proxyDomains, skipFallback: true, ...global.address ? { clientIp: global.address } : {} }
+      ],
+      queryStrategy: value.ipv6Mode === "ipv4-only" ? "UseIPv4" : "UseIP"
+    });
+  }
+  function renderHappDnsRoutes(options = {}) {
+    const followTag = options.followTag ?? "happ-follow/current";
+    const globalOutboundTag = options.globalOutboundTag ?? followTag;
+    const compact = usesCompactGeodata(options.platform);
+    const domesticDomains = compact ? ["geosite:private", ...compactDomains(HAPP_COMPACT_DOMESTIC_GEOSITES)] : ["geosite:cn", "geosite:private"];
+    const proxyDomains = compact ? EXPLICIT_OVERSEAS_RULE_SOURCE_IDS.map((id) => `geosite:${HAPP_COMPACT_GEOSITE_ALIASES[id] ?? id.toUpperCase()}`) : PROXY_GEOSITE_DOMAINS;
+    return [
+      { type: "field", domain: domesticDomains, outboundTag: "happ-direct", server: "happ-dns" },
+      { type: "field", domain: proxyDomains, outboundTag: globalOutboundTag, server: "happ-dns" }
+    ];
+  }
+
   // ../../shared/encoding/base64url.js
   var ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
   var REVERSE = new Map([...ALPHABET].map((character, index) => [character, index]));
@@ -2142,12 +2667,329 @@ var HappAuditBundle = (() => {
     const dedup = new Map(fixedNodes.map((item) => [item.nodeId, item]));
     return Object.freeze({ targets: Object.freeze(targets), fixedNodes: Object.freeze([...dedup.values()]), warnings: Object.freeze(warnings) });
   }
+  function businessTargetForSource(sourceId) {
+    const mapping = { OpenAI: "ai", Claude: "ai", Gemini: "ai", Copilot: "ai", GitHub: "github", YouTube: "youtube", Netflix: "globalMedia", Disney: "globalMedia", Spotify: "globalMedia", GlobalMedia: "globalMedia", Telegram: "globalSocial", Facebook: "globalSocial", Instagram: "globalSocial", Twitter: "globalSocial", TikTok: "globalSocial", Apple: "apple", Microsoft: "microsoft", Download: "download", PrivateTracker: "download", OverseasGame: "overseasGame", DomesticCore: "domestic", DomesticGame: "domestic", SteamCN: "domestic", BiliBili: "domestic", ByteDance: "domestic", XiaoHongShu: "domestic", Weibo: "domestic", ChinaTLD: "domestic", ChinaIP: "domestic" };
+    return mapping[sourceId] ?? "final";
+  }
 
-  // src/substore-audit-entry.js
+  // src/render-routing.js
+  var HAPP_GEOSITE_ALIASES2 = Object.freeze({
+    Hijacking: "CATEGORY-ADS-ALL",
+    BlockHttpDNS: "CATEGORY-HTTPDNS-CN",
+    Privacy: "PRIVATE",
+    DomesticCore: "CN",
+    DomesticGame: "CATEGORY-GAMES-CN",
+    SteamCN: "STEAM",
+    BiliBili: "BILIBILI",
+    ByteDance: "BYTEDANCE",
+    XiaoHongShu: "XIAOHONGSHU",
+    Weibo: "CATEGORY-SOCIAL-MEDIA-CN",
+    OpenAI: "OPENAI",
+    Claude: "CATEGORY-AI-!CN",
+    Gemini: "GOOGLE-GEMINI",
+    Copilot: "GITHUB-COPILOT",
+    GitHub: "GITHUB",
+    YouTube: "YOUTUBE",
+    Netflix: "NETFLIX",
+    Disney: "DISNEY",
+    Spotify: "SPOTIFY",
+    GlobalMedia: "CATEGORY-MEDIA",
+    Telegram: "TELEGRAM",
+    Facebook: "FACEBOOK",
+    Instagram: "INSTAGRAM",
+    Twitter: "TWITTER",
+    TikTok: "TIKTOK",
+    Apple: "APPLE",
+    Microsoft: "MICROSOFT",
+    Download: "CATEGORY-NETDISK-!CN",
+    PrivateTracker: "CATEGORY-PT",
+    OverseasGame: "CATEGORY-GAMES-!CN",
+    ChinaTLD: "CN"
+  });
+  var HAPP_COMPACT_GEOSITE_ALIASES2 = Object.freeze({
+    Hijacking: "HAPP-HIJACKING",
+    BlockHttpDNS: "HAPP-BLOCKHTTPDNS",
+    Privacy: "HAPP-PRIVACY",
+    DomesticCore: "HAPP-DOMESTICCORE",
+    DomesticGame: "HAPP-DOMESTICGAME",
+    SteamCN: "HAPP-STEAMCN",
+    BiliBili: "HAPP-BILIBILI",
+    ByteDance: "HAPP-BYTEDANCE",
+    XiaoHongShu: "HAPP-XIAOHONGSHU",
+    Weibo: "HAPP-WEIBO",
+    OpenAI: "HAPP-OPENAI",
+    Claude: "HAPP-CLAUDE",
+    Gemini: "HAPP-GEMINI",
+    Copilot: "HAPP-COPILOT",
+    GitHub: "HAPP-GITHUB",
+    YouTube: "HAPP-YOUTUBE",
+    Netflix: "HAPP-NETFLIX",
+    Disney: "HAPP-DISNEY",
+    Spotify: "HAPP-SPOTIFY",
+    GlobalMedia: "HAPP-GLOBALMEDIA",
+    Telegram: "HAPP-TELEGRAM",
+    Facebook: "HAPP-FACEBOOK",
+    Instagram: "HAPP-INSTAGRAM",
+    Twitter: "HAPP-TWITTER",
+    TikTok: "HAPP-TIKTOK",
+    Apple: "HAPP-APPLE",
+    Microsoft: "HAPP-MICROSOFT",
+    Download: "HAPP-DOWNLOAD",
+    PrivateTracker: "HAPP-PRIVATETRACKER",
+    OverseasGame: "HAPP-OVERSEASGAME",
+    ChinaTLD: "HAPP-CHINATLD"
+  });
+  function usesCompactGeodata2(platform) {
+    return platform === "iphone" || platform === "ipad";
+  }
+  function hash(value) {
+    let h = 2166136261;
+    for (const c of String(value)) h = Math.imul(h ^ c.charCodeAt(0), 16777619);
+    return (h >>> 0).toString(36);
+  }
+  function targetFor(id, resolution, followTag, fixedById) {
+    const targetId = businessTargetForSource(id);
+    const record = resolution?.targets?.[targetId];
+    if (!record || record.resolved === "FOLLOW") return { outboundTag: followTag };
+    if (record.resolved === "DIRECT") return { outboundTag: "happ-direct" };
+    const fixed = fixedById.get(record.nodeId);
+    return fixed ? { balancerTag: fixed.balancerTag } : { outboundTag: followTag };
+  }
+  function renderHappRouting(context = {}) {
+    const followTag = context.followTag ?? "happ-follow/current";
+    const resolution = context.policyResolution ?? { targets: {} };
+    const options = context.options ?? {};
+    const fixedRecords = Array.isArray(context.fixedNodes) ? context.fixedNodes : resolution.fixedNodes ?? [];
+    const nodes = Array.isArray(context.nodes) ? context.nodes : [];
+    const fixedById = /* @__PURE__ */ new Map();
+    const outbounds = [];
+    const balancers = [];
+    const observatorySelectors = [];
+    for (const fixed of fixedRecords) {
+      if (fixed.nodeId && fixed.nodeId === context.followNodeId) continue;
+      const node = fixed.node ?? nodes.find((candidate) => (candidate._profile?.id ?? "") === fixed.nodeId);
+      if (!node) continue;
+      const suffix = hash(fixed.nodeId);
+      const candidateTag = `happ-fixed/${suffix}/candidate`;
+      const balancerTag = `happ-fixed/${suffix}/balancer`;
+      fixedById.set(fixed.nodeId, { candidateTag, balancerTag });
+      outbounds.push((context.renderNode ?? renderHappOutbound)(node, candidateTag));
+      balancers.push({ tag: balancerTag, selector: [candidateTag], strategy: { type: "leastPing" }, fallbackTag: followTag });
+      observatorySelectors.push(candidateTag);
+    }
+    const rules = [
+      { type: "field", ip: ["geoip:private"], outboundTag: "happ-direct" },
+      { type: "field", domain: ["geosite:private"], outboundTag: "happ-direct" }
+    ];
+    let quicRuleInserted = false;
+    for (const item of orderedRoutingPlan({ adblockMode: "off" })) {
+      if (!quicRuleInserted && item.phase !== "security" && (options.quicMode === "proxy-block" || options.quicMode === "all-block")) {
+        rules.push({ type: "field", network: "quic", outboundTag: options.quicMode === "all-block" ? "happ-block" : "happ-direct" });
+        quicRuleInserted = true;
+      }
+      const isIp = item.id === "ChinaIP";
+      const compact = usesCompactGeodata2(options.platform);
+      const source = isIp ? compact ? "geoip:HAPP-CHINAIP" : "geoip:cn" : "geosite:" + ((compact ? HAPP_COMPACT_GEOSITE_ALIASES2[item.id] : HAPP_GEOSITE_ALIASES2[item.id]) ?? item.id.toUpperCase());
+      const target = item.policy === "REJECT" ? { outboundTag: options.blockMode === "off" ? "happ-direct" : "happ-block" } : targetFor(item.id, resolution, followTag, fixedById);
+      rules.push({ type: "field", ...isIp ? { ip: [source] } : { domain: [source] }, ...target });
+    }
+    if (!quicRuleInserted && (options.quicMode === "proxy-block" || options.quicMode === "all-block")) rules.push({ type: "field", network: "quic", outboundTag: options.quicMode === "all-block" ? "happ-block" : "happ-direct" });
+    const dnsTarget = resolution?.targets?.dnsAndRules;
+    const dnsFixed = dnsTarget?.nodeId ? fixedById.get(dnsTarget.nodeId) : null;
+    const globalDnsOutbound = dnsTarget?.resolved === "DIRECT" ? "happ-direct" : dnsFixed?.candidateTag ?? followTag;
+    rules.splice(2, 0, ...renderHappDnsRoutes({ followTag, globalOutboundTag: globalDnsOutbound, platform: options.platform }));
+    const finalTarget = targetFor("__final__", resolution, followTag, fixedById);
+    rules.push({ type: "field", network: "tcp,udp", ...finalTarget });
+    const routing = { domainStrategy: "IPIfNonMatch", rules };
+    const policyTargets = {};
+    for (const [targetId, record] of Object.entries(resolution.targets ?? {})) {
+      if (record.resolved === "DIRECT") policyTargets[targetId] = "happ-direct";
+      else if (record.resolved === "FOLLOW") policyTargets[targetId] = followTag;
+      else if (fixedById.has(record.nodeId)) policyTargets[targetId] = fixedById.get(record.nodeId).balancerTag;
+      else policyTargets[targetId] = followTag;
+    }
+    return { routing, observatory: { subjectSelector: observatorySelectors, probeUrl: "https://www.gstatic.com/generate_204", probeInterval: "30s", enableConcurrency: true, timeout: 5e3 }, policyTargets, fixedOutbounds: outbounds, balancers };
+  }
+
+  // src/render-subscription.js
+  function idFor(node) {
+    return node?._profile?.id ?? `h-${Math.abs([...JSON.stringify(node)].reduce((h, c) => h * 31 ^ c.charCodeAt(0) | 0, 17))}`;
+  }
+  function summary(resolution) {
+    const entries = Object.values(resolution?.targets ?? {}).map((target) => `${target.configured}\u2192${target.resolved}`).join("\uFF1B");
+    const warnings = (resolution?.warnings ?? []).map((warning) => `\u8B66\u544A:${warning.warningCode}`).join("\uFF0C");
+    return `Happ \u5206\u6D41\uFF1A${entries}${warnings ? `\uFF1B${warnings}` : ""}`;
+  }
+  function renderHappSubscription({ nodes = [], allNodes = nodes, options, policyResolution } = {}) {
+    if (!options || typeof options !== "object") throw new TypeError("Happ options are required");
+    const eligible = Array.isArray(nodes) ? nodes : [];
+    if (eligible.length === 0) throw new Error("\u6CA1\u6709\u53EF\u7528\u7684 Happ \u517C\u5BB9\u8282\u70B9\uFF0C\u62D2\u7EDD\u751F\u6210\u7A7A\u8BA2\u9605");
+    const resolution = policyResolution ?? resolvePolicyOverrides({ encoded: options.policyOverrides ?? "", allNodes, eligibleNodes: eligible });
+    const configs = [];
+    for (const followNode of eligible) {
+      const followId = idFor(followNode);
+      const followTag = `happ-follow/${followId}`;
+      const route = renderHappRouting({
+        nodes: eligible,
+        policyResolution: resolution,
+        fixedNodes: resolution.fixedNodes,
+        followTag,
+        followNodeId: followId,
+        options,
+        renderNode: renderHappOutbound
+      });
+      const followOutbound = renderHappOutbound(followNode, followTag);
+      const outbounds = [followOutbound, ...route.fixedOutbounds, { tag: "happ-direct", protocol: "freedom", settings: {} }, { tag: "happ-block", protocol: "blackhole", settings: {} }];
+      configs.push({
+        remarks: followNode.name,
+        log: { loglevel: "warning" },
+        inbounds: renderHappInbounds(options.platform),
+        outbounds,
+        observatory: route.observatory,
+        dns: renderHappDns(options),
+        routing: { ...route.routing, balancers: route.balancers },
+        meta: { serverDescription: summary(resolution), platform: options.platform, schemaVersion: 1 }
+      });
+    }
+    return configs;
+  }
+
+  // src/routing-profile-data.js
+  var PROFILE_NAME = "Apple Proxy Profiles Happ";
+  var REMOTE_DNS = Object.freeze({ type: "DoH", domain: "https://cloudflare-dns.com/dns-query", ip: "1.1.1.1" });
+  var DOMESTIC_DNS = Object.freeze({ type: "DoH", domain: "https://dns.alidns.com/dns-query", ip: "223.5.5.5" });
+  var DIRECT_SITES = Object.freeze([
+    "geosite:HAPP-PRIVACY",
+    "geosite:HAPP-DOMESTICCORE",
+    "geosite:HAPP-DOMESTICGAME",
+    "geosite:HAPP-STEAMCN",
+    "geosite:HAPP-BILIBILI",
+    "geosite:HAPP-BYTEDANCE",
+    "geosite:HAPP-XIAOHONGSHU",
+    "geosite:HAPP-WEIBO",
+    "geosite:HAPP-APPLE",
+    "geosite:HAPP-MICROSOFT",
+    "geosite:HAPP-DOWNLOAD",
+    "geosite:HAPP-PRIVATETRACKER",
+    "geosite:HAPP-CHINATLD"
+  ]);
+  var PROXY_SITES = Object.freeze([
+    "geosite:HAPP-OPENAI",
+    "geosite:HAPP-CLAUDE",
+    "geosite:HAPP-GEMINI",
+    "geosite:HAPP-COPILOT",
+    "geosite:HAPP-GITHUB",
+    "geosite:HAPP-YOUTUBE",
+    "geosite:HAPP-NETFLIX",
+    "geosite:HAPP-DISNEY",
+    "geosite:HAPP-SPOTIFY",
+    "geosite:HAPP-GLOBALMEDIA",
+    "geosite:HAPP-TELEGRAM",
+    "geosite:HAPP-FACEBOOK",
+    "geosite:HAPP-INSTAGRAM",
+    "geosite:HAPP-TWITTER",
+    "geosite:HAPP-TIKTOK",
+    "geosite:HAPP-OVERSEASGAME"
+  ]);
+  var BLOCK_SITES = Object.freeze([
+    "geosite:HAPP-HIJACKING",
+    "geosite:HAPP-BLOCKHTTPDNS"
+  ]);
+  var DIRECT_IP = Object.freeze([
+    "10.0.0.0/8",
+    "172.16.0.0/12",
+    "192.168.0.0/16",
+    "169.254.0.0/16",
+    "224.0.0.0/4",
+    "255.255.255.255",
+    "geoip:HAPP-CHINAIP"
+  ]);
+  function immutableBaseUrl(value) {
+    if (typeof value !== "string" || !/^https:\/\/[^\s?#]+(?:\/[^\s?#]+)*$/u.test(value)) {
+      throw new TypeError("Happ immutable base URL must be an HTTPS URL without query or fragment");
+    }
+    return value.replace(/\/+$/u, "");
+  }
+  function unixTimestamp(value) {
+    if (typeof value !== "string" || !Number.isFinite(Date.parse(value))) throw new TypeError("Happ generatedAt must be an ISO timestamp");
+    return String(Math.floor(Date.parse(value) / 1e3));
+  }
+  function renderHappRoutingProfile({ baseUrl, generatedAt }) {
+    const base = immutableBaseUrl(baseUrl);
+    return Object.freeze({
+      Name: PROFILE_NAME,
+      GlobalProxy: "true",
+      RouteOrder: "block-proxy-direct",
+      RemoteDNSType: REMOTE_DNS.type,
+      RemoteDNSDomain: REMOTE_DNS.domain,
+      RemoteDNSIP: REMOTE_DNS.ip,
+      DomesticDNSType: DOMESTIC_DNS.type,
+      DomesticDNSDomain: DOMESTIC_DNS.domain,
+      DomesticDNSIP: DOMESTIC_DNS.ip,
+      Geoipurl: base + "/happ/geoip.dat",
+      Geositeurl: base + "/happ/geosite.dat",
+      LastUpdated: unixTimestamp(generatedAt),
+      DnsHosts: Object.freeze({ "cloudflare-dns.com": REMOTE_DNS.ip, "dns.alidns.com": DOMESTIC_DNS.ip }),
+      DirectSites: DIRECT_SITES,
+      DirectIp: DIRECT_IP,
+      ProxySites: PROXY_SITES,
+      ProxyIp: Object.freeze([]),
+      BlockSites: BLOCK_SITES,
+      BlockIp: Object.freeze([]),
+      DomainStrategy: "IPIfNonMatch",
+      FakeDNS: "false",
+      UseChunkFiles: "true"
+    });
+  }
+  function renderHappRoutingDeepLink(profile) {
+    if (!profile || typeof profile !== "object" || Array.isArray(profile)) throw new TypeError("Happ routing profile must be an object");
+    return "happ://routing/onadd/" + Buffer.from(JSON.stringify(profile), "utf8").toString("base64");
+  }
+
+  // src/substore-config-entry.js
+  var PUBLIC_ROOT = "https://juan-nikola.github.io/apple-proxy-profiles";
+  function requestOptionsFrom(input, context) {
+    const candidates = [context?.requestOptions, input?.$options];
+    return candidates.find((value) => value && typeof value === "object" && !Array.isArray(value));
+  }
+  function setRoutingResponseHeader(requestOptions, routing) {
+    if (!requestOptions) return false;
+    if (!requestOptions._res || typeof requestOptions._res !== "object" || Array.isArray(requestOptions._res)) requestOptions._res = {};
+    const response = requestOptions._res;
+    if (!response.headers || typeof response.headers !== "object" || Array.isArray(response.headers)) response.headers = {};
+    if (typeof response.headers.set === "function") response.headers.set("routing", routing);
+    else response.headers.routing = routing;
+    return true;
+  }
+  function attachRoutingProfile(input, context, options) {
+    if (options.platform !== "iphone" && options.platform !== "ipad") return;
+    const requestOptions = requestOptionsFrom(input, context);
+    if (!requestOptions) return;
+    const profile = renderHappRoutingProfile({
+      baseUrl: PUBLIC_ROOT + "/" + options.channel,
+      generatedAt: (/* @__PURE__ */ new Date()).toISOString()
+    });
+    setRoutingResponseHeader(requestOptions, renderHappRoutingDeepLink(profile));
+  }
+  function logDiagnostics(context, options, normalized, filtered) {
+    const method = typeof context?.logger === "function" ? context.logger : typeof context?.logger?.info === "function" ? context.logger.info.bind(context.logger) : null;
+    if (!method) return;
+    try {
+      method(`[happ-config] ${JSON.stringify({
+        client: "happ",
+        platform: options.platform,
+        channel: options.channel,
+        accepted: filtered.nodes.length,
+        excluded: filtered.diagnostics.excluded,
+        normalized: normalized.diagnostics.total
+      })}`);
+    } catch {
+    }
+  }
   async function operator(input, targetPlatform, context = {}) {
     void targetPlatform;
     const options = parseHappOptions(context.arguments ?? {});
-    if (options.output !== "audit") throw new Error("HAPP audit entry requires output=audit");
+    if (options.output !== "config") throw new Error("HAPP config entry requires output=config");
     if (typeof context.produceArtifact !== "function") throw new Error("HAPP produceArtifact is unavailable");
     const raw = await context.produceArtifact({
       type: options.type,
@@ -2158,23 +3000,19 @@ var HappAuditBundle = (() => {
     if (!Array.isArray(raw) || raw.length === 0) throw new Error("HAPP source collection is empty");
     const normalized = normalizeNodes(raw, { clientChain: "off" });
     const filtered = filterNodesForClient(normalized.nodes, CLIENT.happ);
-    if (filtered.nodes.length === 0) throw new Error("HAPP audit has no compatible nodes");
-    const policyResolution = resolvePolicyOverrides({
-      encoded: options.policyOverrides,
+    if (filtered.nodes.length === 0) throw new Error("HAPP has no compatible nodes");
+    logDiagnostics(context, options, normalized, filtered);
+    const configs = renderHappSubscription({
+      nodes: filtered.nodes,
       allNodes: normalized.nodes,
-      eligibleNodes: filtered.nodes
+      options
     });
-    const audit = buildHappAudit({
-      options,
-      policyResolution,
-      eligibleNodes: filtered.nodes,
-      configs: []
-    });
-    return { ...input, $content: `${JSON.stringify(audit, null, 2)}
+    attachRoutingProfile(input, context, options);
+    return { ...input, $content: `${JSON.stringify(configs, null, 2)}
 ` };
   }
-  return __toCommonJS(substore_audit_entry_exports);
+  return __toCommonJS(substore_config_entry_exports);
 })();
 async function operator(input, targetPlatform) {
-  return HappAuditBundle.operator(input, targetPlatform, { arguments: $arguments, produceArtifact, logger: console });
+  return HappConfigBundle.operator(input, targetPlatform, { arguments: $arguments, produceArtifact, requestOptions: typeof $options === "undefined" ? undefined : $options, logger: console });
 }
