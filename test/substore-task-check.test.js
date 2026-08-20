@@ -39,13 +39,16 @@ test("accepts the active HAPP and OneXray generators and rejects unsupported cha
   const base = `${PUBLIC}/current/egern/scripts/egern-node-generator.js#output=nodes&type=collection&name=apple-proxy-egern&clientChain=off`;
   assert.equal(checkSubstoreTaskUrl(base.replace("/current/", "/beta/")).ok, false);
   assert.equal(checkSubstoreTaskUrl(`${base}&channel=edge`).ok, false);
-  const happ = `${PUBLIC}/current/happ/scripts/happ-config-generator.js#output=config&type=collection&name=apple-proxy-happ&subscriptionName=Apple-Proxy-Happ&platform=macos&channel=current`;
+  const happ = `${PUBLIC}/current/happ/scripts/happ-config-generator.js#output=config&type=collection&name=apple-proxy-happ&subscriptionName=Apple-Proxy-Happ&platform=macos`;
   assert.equal(checkSubstoreTaskUrl(happ).ok, true, checkSubstoreTaskUrl(happ).errors.join(", "));
+  assert.equal(checkSubstoreTaskUrl(`${happ}&channel=current`).ok, false);
+  assert.equal(checkSubstoreTaskUrl(happ.replace("/current/", "/edge/")).ok, false);
+  assert.equal(checkSubstoreTaskUrl(happ.replace("/current/", "/previous/")).ok, false);
   const onexrayNodes = `${PUBLIC}/current/onexray/scripts/onexray-node-generator.js#output=nodes&type=collection&name=apple-proxy-onexray&clientChain=off&channel=current`;
   assert.equal(checkSubstoreTaskUrl(onexrayNodes).ok, true, checkSubstoreTaskUrl(onexrayNodes).errors.join(", "));
   const onexrayProfile = `${PUBLIC}/edge/onexray/scripts/onexray-profile-generator.js#output=profile&type=collection&name=apple-proxy-onexray&channel=edge&clientChain=off`;
   assert.equal(checkSubstoreTaskUrl(onexrayProfile).ok, true, checkSubstoreTaskUrl(onexrayProfile).errors.join(", "));
-  const happAudit = `${PUBLIC}/previous/happ/scripts/happ-routing-audit.js#output=audit&type=collection&name=apple-proxy-happ&subscriptionName=Apple-Proxy-Happ&platform=all&channel=previous`;
+  const happAudit = `${PUBLIC}/current/happ/scripts/happ-routing-audit.js#output=audit&type=collection&name=apple-proxy-happ&subscriptionName=Apple-Proxy-Happ&platform=all`;
   assert.equal(checkSubstoreTaskUrl(happAudit).ok, true, checkSubstoreTaskUrl(happAudit).errors.join(", "));
 });
 

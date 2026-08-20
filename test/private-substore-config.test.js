@@ -54,6 +54,11 @@ test("canonical private task catalog covers all HAPP platforms", () => {
     "happ-linux",
     "happ-routing-audit",
   ]);
+  for (const task of catalog.filter(({ name }) => name.startsWith("happ-"))) {
+    assert.equal(task.channel, "current");
+    assert.equal(task.url.includes("/current/happ/scripts/"), true);
+    assert.equal(task.url.includes("channel="), false);
+  }
 });
 
 test("rejects invalid channel and source URL", () => {

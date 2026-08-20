@@ -17,11 +17,12 @@ const node = (type, extra = {}) => ({ name: "TEST_ONLY_Node", type, server: "exa
 test("Happ options are strict and platform scoped", () => {
   const parsed = parseHappOptions(base);
   assert.equal(parsed.platform, "macos");
-  assert.equal(parsed.channel, "current");
+  assert.equal(Object.hasOwn(parsed, "channel"), false);
   assert.equal(parsed.blockMode, "balanced");
   assert.throws(() => parseHappOptions({ ...base, platform: "all" }), /platform/);
   assert.equal(parseHappOptions({ ...base, output: "audit", platform: "all" }).output, "audit");
   assert.throws(() => parseHappOptions({ ...base, unknown: true }), /Unknown Happ option/);
+  assert.throws(() => parseHappOptions({ ...base, channel: "edge" }), /Unknown Happ option.*channel/u);
 });
 
 test("policy overrides decode, merge aliases and resolve exact nodes", () => {

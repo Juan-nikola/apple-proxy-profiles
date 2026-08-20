@@ -6,6 +6,7 @@ import { renderHappSubscription } from "./render-subscription.js";
 import { renderHappRoutingDeepLink, renderHappRoutingProfile } from "./routing-profile-data.js";
 
 const PUBLIC_ROOT = "https://juan-nikola.github.io/apple-proxy-profiles";
+const HAPP_PUBLIC_CHANNEL = "current";
 
 function requestOptionsFrom(input, context) {
   const candidates = [context?.requestOptions, input?.$options];
@@ -26,7 +27,7 @@ function attachRoutingProfile(input, context, options) {
   const requestOptions = requestOptionsFrom(input, context);
   if (!requestOptions) return;
   const profile = renderHappRoutingProfile({
-    baseUrl: PUBLIC_ROOT + "/" + options.channel,
+    baseUrl: `${PUBLIC_ROOT}/${HAPP_PUBLIC_CHANNEL}`,
     generatedAt: new Date().toISOString(),
   });
   setResponseHeader(requestOptions, "routing", renderHappRoutingDeepLink(profile));
@@ -45,7 +46,7 @@ function logDiagnostics(context, options, normalized, filtered) {
     method(`[happ-config] ${JSON.stringify({
       client: "happ",
       platform: options.platform,
-      channel: options.channel,
+      channel: HAPP_PUBLIC_CHANNEL,
       accepted: filtered.nodes.length,
       excluded: filtered.diagnostics.excluded,
       normalized: normalized.diagnostics.total,

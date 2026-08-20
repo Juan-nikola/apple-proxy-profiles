@@ -8,6 +8,7 @@ const ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
 const PRIVATE_CONFIG_PATH = resolve(ROOT, "secrets/substore.private.json");
 const PUBLIC_ROOT = "https://juan-nikola.github.io/apple-proxy-profiles";
 const CHANNELS = Object.freeze(["edge", "current", "previous"]);
+const HAPP_PUBLIC_CHANNEL = "current";
 const COLLECTIONS = Object.freeze([
   "apple-proxy-all",
   "apple-proxy-egern",
@@ -115,9 +116,9 @@ export function canonicalTaskCatalog(channel = "current") {
     remoteTask("onexray-profile", "onexray", `${base(channel, "onexray", "onexray-profile-generator.js")}#${fragment({ output: "profile", type: "collection", name: "apple-proxy-onexray", channel, clientChain: "off" })}`, { output: "profile", collection: "apple-proxy-onexray", channel, policyInput: "apple-proxy-policy" }),
     remoteTask("onexray-routing-audit", "onexray", `${base(channel, "onexray", "onexray-routing-audit.js")}#${fragment({ output: "audit", type: "collection", name: "apple-proxy-onexray", channel, clientChain: "off" })}`, { output: "audit", collection: "apple-proxy-onexray", channel, policyInput: "apple-proxy-policy" }),
     ...HAPP_PLATFORMS.filter((platform) => platform !== "all").map((platform) => (
-      configTask(`happ-${platform}`, "happ", "happ-config-generator.js", channel, "apple-proxy-happ", platform, "Apple-Proxy-Happ", {}, { policyInput: "apple-proxy-policy", omitKeys: ["clientChain", "autoGroupMode"] })
+      configTask(`happ-${platform}`, "happ", "happ-config-generator.js", HAPP_PUBLIC_CHANNEL, "apple-proxy-happ", platform, "Apple-Proxy-Happ", {}, { policyInput: "apple-proxy-policy", omitKeys: ["clientChain", "autoGroupMode", "channel"] })
     )),
-    remoteTask("happ-routing-audit", "happ", `${base(channel, "happ", "happ-routing-audit.js")}#${fragment({ output: "audit", type: "collection", name: "apple-proxy-happ", subscriptionName: "Apple-Proxy-Happ", platform: "all", channel })}`, { output: "audit", collection: "apple-proxy-happ", platform: "all", channel, policyInput: "apple-proxy-policy" }),
+    remoteTask("happ-routing-audit", "happ", `${base(HAPP_PUBLIC_CHANNEL, "happ", "happ-routing-audit.js")}#${fragment({ output: "audit", type: "collection", name: "apple-proxy-happ", subscriptionName: "Apple-Proxy-Happ", platform: "all" })}`, { output: "audit", collection: "apple-proxy-happ", platform: "all", channel: HAPP_PUBLIC_CHANNEL, policyInput: "apple-proxy-policy" }),
   ];
   if (tasks.length !== 28) throw new Error(`Expected 28 canonical tasks, got ${tasks.length}`);
   return Object.freeze(tasks);

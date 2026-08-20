@@ -116,7 +116,7 @@ npm run configure:substore
 
 成功标志：终端显示 `Wrote private Sub-Store config`，且文件权限为 `0600`；文件中有 8 个 collection、28 个任务。切换灰度或回滚时，把 `SUBSTORE_CHANNEL` 改成 `edge` 或 `previous` 后重新运行即可。真实地址不要复制进 README、Issue 或聊天。
 
-这个命令会离线校验公开 JS URL 的 `#` 参数，但不会替你登录 Sub-Store 管理后台或自动删除旧任务；首次迁移仍按下面的 preview、canary 和回滚步骤执行。
+这个命令会离线校验公开 JS URL 的 `#` 参数，但不会替你登录 Sub-Store 管理后台或自动删除旧任务；首次迁移仍按下面的 preview、canary 和回滚步骤执行。HAPP 任务固定使用 `/current/happ/`，片段中不再填写 `channel`；`SUBSTORE_CHANNEL` 只控制其他客户端和维护者的内部发布流程。
 
 ### 1.2 创建一个总池和七个客户端 collection
 

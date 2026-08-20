@@ -66,26 +66,26 @@ const GENERATOR_SCHEMAS = Object.freeze({
     platforms: ["macos", "iphone", "ipad", "android", "windows", "linux"],
     requiresSubscriptionName: true,
     extraKeys: ["policyOverrides"],
-    omitKeys: ["clientChain"],
+    omitKeys: ["clientChain", "channel"],
   }),
   "happ/scripts/substore-config-generator.js": configSchema({
     platforms: ["macos", "iphone", "ipad", "android", "windows", "linux"],
     requiresSubscriptionName: true,
     extraKeys: ["policyOverrides"],
-    omitKeys: ["clientChain"],
+    omitKeys: ["clientChain", "channel"],
   }),
   "happ/scripts/happ-routing-audit.js": configSchema({
     platforms: ["all"],
     requiresSubscriptionName: true,
     extraKeys: ["policyOverrides"],
-    omitKeys: ["clientChain"],
+    omitKeys: ["clientChain", "channel"],
     output: "audit",
   }),
   "happ/scripts/substore-routing-audit.js": configSchema({
     platforms: ["all"],
     requiresSubscriptionName: true,
     extraKeys: ["policyOverrides"],
-    omitKeys: ["clientChain"],
+    omitKeys: ["clientChain", "channel"],
     output: "audit",
   }),
 });
@@ -268,6 +268,10 @@ export function checkSubstoreTaskUrl(raw) {
   }
   const errors = [...checkTaskOptions(generator, parsed.params)];
   const pathChannel = parsed.scriptPath.split("/").find((segment) => PUBLISHED_CHANNELS.includes(segment));
+  const isHappGenerator = generatorPath.startsWith("happ/scripts/");
+  if (isHappGenerator && pathChannel !== "current") {
+    errors.push("HAPP tasks must use the /current/happ/ publication path");
+  }
   if (pathChannel && parsed.params.channel && parsed.params.channel !== pathChannel) {
     errors.push(`Option 'channel' must match the publication path '${pathChannel}'`);
   }

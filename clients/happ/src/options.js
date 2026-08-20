@@ -1,16 +1,14 @@
-import { FRONTIER_CHANNELS } from "../../../shared/release/frontier-manifest.js";
 import { validateCollectionName } from "../../../shared/substore/collection-name.js";
 
 const PLATFORMS = new Set(["macos", "iphone", "ipad", "android", "windows", "linux", "all"]);
-const CHANNELS = new Set(FRONTIER_CHANNELS ?? ["edge", "current", "previous"]);
 const ENUMS = Object.freeze({
   dnsMode: ["stable", "privacy", "speed"], chinaDns: ["alidns", "dnspod", "system"],
   globalDns: ["cloudflare", "google", "quad9"], blockMode: ["balanced", "security", "strict", "off"],
   quicMode: ["allow", "proxy-block", "all-block"], ipv6Mode: ["auto", "ipv4-only"],
 });
-const DEFAULTS = Object.freeze({ channel: "current", dnsMode: "stable", chinaDns: "alidns", globalDns: "cloudflare", blockMode: "balanced", quicMode: "proxy-block", ipv6Mode: "auto", policyOverrides: "" });
+const DEFAULTS = Object.freeze({ dnsMode: "stable", chinaDns: "alidns", globalDns: "cloudflare", blockMode: "balanced", quicMode: "proxy-block", ipv6Mode: "auto", policyOverrides: "" });
 const REQUIRED = new Set(["output", "type", "name", "subscriptionName", "platform"]);
-const ALLOWED = new Set([...REQUIRED, "channel", "dnsMode", "chinaDns", "globalDns", "blockMode", "quicMode", "ipv6Mode", "policyOverrides"]);
+const ALLOWED = new Set([...REQUIRED, "dnsMode", "chinaDns", "globalDns", "blockMode", "quicMode", "ipv6Mode", "policyOverrides"]);
 const PROTOTYPE = new Set(["__proto__", "constructor", "prototype"]);
 
 function ownOptions(raw) {
@@ -56,12 +54,11 @@ export function parseHappOptions(raw) {
   const options = {
     output, type: "collection", name: validateCollectionName(required(values, "name"), "Option 'name'"),
     subscriptionName: validateCollectionName(required(values, "subscriptionName"), "Option 'subscriptionName'"),
-    platform, channel: values.has("channel") ? values.get("channel") : DEFAULTS.channel,
+    platform,
     dnsMode: enumValue(values, "dnsMode"), chinaDns: enumValue(values, "chinaDns"), globalDns: enumValue(values, "globalDns"),
     blockMode: enumValue(values, "blockMode"), quicMode: enumValue(values, "quicMode"), ipv6Mode: enumValue(values, "ipv6Mode"),
     policyOverrides: values.has("policyOverrides") && values.get("policyOverrides") !== undefined ? values.get("policyOverrides") : DEFAULTS.policyOverrides,
   };
-  if (!CHANNELS.has(options.channel)) throw new Error("Option 'channel' has an unsupported value");
   if (typeof options.policyOverrides !== "string") throw new Error("Option 'policyOverrides' must be a string");
   return Object.freeze(options);
 }

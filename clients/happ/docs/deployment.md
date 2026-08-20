@@ -3,14 +3,14 @@
 ## 公开 GeoData
 
 1. 打开稳定入口：`https://juan-nikola.github.io/apple-proxy-profiles/current/happ/index.html`。
-2. 先安装 `current` 的 `geosite.dat` 和 `geoip.dat`，确认页面中的 hash 与下载结果一致。
-3. 日常设备和私密任务都固定使用 `current`；`edge` 只由维护者用于灰度验证，不要把它填入生产任务。
+2. HAPP 用户只使用最新的 `current/happ` 入口；任务片段不再填写或携带 `channel` 参数。
+3. 日常设备和私密任务都固定使用 `current`；`edge` 和 `previous` 只属于维护者的内部灰度与回滚流程。
 
 公开层不包含节点、订阅地址、密码、UUID 或 policy override。
 
 ## 私密 Sub-Store
 
-在自己的 Sub-Store 中使用 `current/happ/scripts/happ-config-generator.js`，并把真实 collection 名称放在私密任务参数中。六个平台任务分别使用 `macos`、`iphone`、`ipad`、`android`、`windows`、`linux`；另建一个 `happ-routing-audit` 任务检查兼容性和策略解析。维护者只有在灰度时才会临时生成 `edge` 任务。
+在自己的 Sub-Store 中使用 `current/happ/scripts/happ-config-generator.js`，并把真实 collection 名称放在私密任务参数中。六个平台任务分别使用 `macos`、`iphone`、`ipad`、`android`、`windows`、`linux`；另建一个 `happ-routing-audit` 任务检查兼容性和策略解析。HAPP URL 必须保持 `/current/happ/`，片段中不要添加 `channel=current`、`channel=edge` 或 `channel=previous`。维护者的灰度和回滚由发布系统在内部处理，不暴露给 HAPP 用户。
 
 ### HAPP 六平台 JSON 导入方式
 
@@ -25,7 +25,7 @@
 3. HAPP 实际请求 File URL 时会收到 `routing` 响应头，并下载同一 `current` channel 的 `geoip.dat`、`geosite.dat`。连接前等待两份 GeoData 下载完成。
 4. 连接后检查固定节点、国内外业务、局域网和 DNS；若仍出现 `geosite`/`geoip` 分类不存在、`NEAgentErrorDomain` 或 VPN 无效果，说明客户端仍在使用旧缓存，删除旧订阅后重新导入，不要只点击旧条目的 Refresh。
 
-普通节点列表仍可使用公开安装页导入 Profile；但 JSON 订阅的 Profile 必须由订阅响应携带，不能事后手动绑定。
+普通节点列表仍可使用公开安装页导入 Profile。JSON 订阅不要手动复制 routing.happ.su 的 Profile，也不要先绑定一个公共 Profile 再导入 JSON；Restricted Mode 下 Profile 必须由 JSON 订阅响应携带并自动绑定。
 
 策略值只允许 `DIRECT`、`FOLLOW` 或 `NODE:<精确节点名>`。策略修改后重新生成所有相关私密任务，再导入新 JSON。节点名和 Profile deep link 不要提交到仓库或公开聊天。
 
