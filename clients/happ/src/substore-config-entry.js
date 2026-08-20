@@ -3,6 +3,34 @@ import { filterNodesForClient } from "../../../shared/nodes/capabilities.js";
 import { normalizeNodes } from "../../../shared/nodes/normalize-nodes.js";
 import { parseHappOptions } from "./options.js";
 import { renderHappSubscription } from "./render-subscription.js";
+import { renderHappRoutingDeepLink, renderHappRoutingProfile } from "./routing-profile-data.js";
+
+const PUBLIC_ROOT = "https://juan-nikola.github.io/apple-proxy-profiles";
+
+function requestOptionsFrom(input, context) {
+  const candidates = [context?.requestOptions, input?.$options];
+  return candidates.find((value) => value && typeof value === "object" && !Array.isArray(value));
+}
+
+function setRoutingResponseHeader(requestOptions, routing) {
+  if (!requestOptions) return false;
+  if (!requestOptions._res || typeof requestOptions._res !== "object" || Array.isArray(requestOptions._res)) requestOptions._res = {};
+  const response = requestOptions._res;
+  if (!response.headers || typeof response.headers !== "object" || Array.isArray(response.headers)) response.headers = {};
+  if (typeof response.headers.set === "function") response.headers.set("routing", routing);
+  else response.headers.routing = routing;
+  return true;
+}
+
+function attachRoutingProfile(input, context, options) {
+  const requestOptions = requestOptionsFrom(input, context);
+  if (!requestOptions) return;
+  const profile = renderHappRoutingProfile({
+    baseUrl: PUBLIC_ROOT + "/" + options.channel,
+    generatedAt: new Date().toISOString(),
+  });
+  setRoutingResponseHeader(requestOptions, renderHappRoutingDeepLink(profile));
+}
 
 function logDiagnostics(context, options, normalized, filtered) {
   const method = typeof context?.logger === "function"
@@ -46,5 +74,6 @@ export async function operator(input, targetPlatform, context = {}) {
     allNodes: normalized.nodes,
     options,
   });
+  attachRoutingProfile(input, context, options);
   return { ...input, $content: `${JSON.stringify(configs, null, 2)}\n` };
 }

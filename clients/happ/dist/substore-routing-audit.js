@@ -2176,5 +2176,5 @@ var HappAuditBundle = (() => {
   return __toCommonJS(substore_audit_entry_exports);
 })();
 async function operator(input, targetPlatform) {
-  return HappAuditBundle.operator(input, targetPlatform, { arguments: $arguments, produceArtifact, logger: console });
+  return HappAuditBundle.operator(input, targetPlatform, { arguments: $arguments, produceArtifact, requestOptions: typeof $options === "undefined" ? undefined : $options, logger: console });
 }

@@ -66,13 +66,23 @@ test("platform, DNS and routing preserve shared semantics", () => {
   assert.equal(routing.routing.rules.at(-1).network, "tcp,udp");
 });
 
-test("Happ routing uses labels available in the Xray asset directory on every platform", () => {
-  for (const platform of ["macos", "iphone", "ipad", "android", "windows", "linux"]) {
+test("Happ routing uses bundled labels outside iOS", () => {
+  for (const platform of ["macos", "android", "windows", "linux"]) {
     const output = renderHappRouting({ policyResolution: { targets: {} }, followTag: `happ-follow/${platform}`, fixedNodes: [], options: { platform } });
     const serialized = JSON.stringify(output.routing);
     assert.match(serialized, /geosite:OPENAI/u);
     assert.match(serialized, /geoip:cn/u);
     assert.equal(serialized.includes("HAPP-"), false);
+  }
+});
+
+test("Happ iOS routing uses the subscription-bound compact HAPP GeoData", () => {
+  for (const platform of ["iphone", "ipad"]) {
+    const output = renderHappRouting({ policyResolution: { targets: {} }, followTag: `happ-follow/${platform}`, fixedNodes: [], options: { platform } });
+    const serialized = JSON.stringify(output.routing);
+    assert.match(serialized, /geosite:HAPP-OPENAI/u);
+    assert.match(serialized, /geoip:HAPP-CHINAIP/u);
+    assert.equal(serialized.includes("geosite:OPENAI"), false);
   }
 });
 
@@ -103,12 +113,22 @@ test("fixed-node balancer is nested under Xray routing", () => {
   assert.equal(validateHappSubscription(configs), true);
 });
 
-test("Happ DNS uses labels available in the Xray asset directory on every platform", () => {
-  for (const platform of ["macos", "iphone", "ipad", "android", "windows", "linux"]) {
+test("Happ DNS uses bundled labels outside iOS", () => {
+  for (const platform of ["macos", "android", "windows", "linux"]) {
     const output = renderHappDns({ platform, dnsMode: "stable", chinaDns: "alidns", globalDns: "cloudflare", ipv6Mode: "auto" });
     const serialized = JSON.stringify(output);
     assert.match(serialized, /geosite:OPENAI/u);
     assert.match(serialized, /geoip:cn/u);
     assert.equal(serialized.includes("HAPP-"), false);
+  }
+});
+
+test("Happ iOS DNS uses compact HAPP GeoData", () => {
+  for (const platform of ["iphone", "ipad"]) {
+    const output = renderHappDns({ platform, dnsMode: "stable", chinaDns: "alidns", globalDns: "cloudflare", ipv6Mode: "auto" });
+    const serialized = JSON.stringify(output);
+    assert.match(serialized, /geosite:HAPP-OPENAI/u);
+    assert.match(serialized, /geoip:HAPP-CHINAIP/u);
+    assert.equal(serialized.includes("geosite:OPENAI"), false);
   }
 });

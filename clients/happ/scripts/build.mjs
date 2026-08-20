@@ -22,7 +22,7 @@ for (const [entry, globalName, outputs] of targets) {
     write: false,
   });
   if (result.outputFiles.length !== 1) throw new Error("Unexpected HAPP bundle output count");
-  const wrapper = `\nasync function operator(input, targetPlatform) {\n  return ${globalName}.operator(input, targetPlatform, { arguments: $arguments, produceArtifact, logger: console });\n}\n`;
+  const wrapper = `\nasync function operator(input, targetPlatform) {\n  return ${globalName}.operator(input, targetPlatform, { arguments: $arguments, produceArtifact, requestOptions: typeof $options === "undefined" ? undefined : $options, logger: console });\n}\n`;
   const content = `${result.outputFiles[0].text.trimEnd()}${wrapper}`;
   for (const output of outputs) {
     const destination = resolve(sourceRoot, output);

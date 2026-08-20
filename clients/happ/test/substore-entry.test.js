@@ -10,10 +10,11 @@ const nodes = [
   { name: "TEST_ONLY_Snell", type: "snell", server: "example.test", port: 443, psk: "TEST_ONLY_PSK", version: 4 },
 ];
 
-function context(argumentsValue) {
+function context(argumentsValue, requestOptions) {
   return {
     arguments: argumentsValue,
     produceArtifact: async () => nodes,
+    requestOptions,
   };
 }
 
@@ -43,4 +44,37 @@ test("HAPP audit entry emits only redacted counts and routing status", async () 
   assert.equal(audit.client, "happ");
   assert.equal(audit.counts.eligibleNodes, 2);
   assert.doesNotMatch(result.$content, /TEST_ONLY_PASSWORD|TEST_ONLY_UUID|example\.test/);
+});
+
+test("HAPP JSON file output binds the channel routing profile through response headers", async () => {
+  const requestOptions = { _res: { headers: { "X-Test": "keep" } } };
+  const result = await configOperator({ $options: requestOptions }, "JSON", context({
+    output: "config",
+    type: "collection",
+    name: "TEST_ONLY_Happ_Collection",
+    subscriptionName: "TEST_ONLY_Happ_Subscription",
+    platform: "iphone",
+    channel: "edge",
+  }, requestOptions));
+  const routing = requestOptions._res.headers.routing;
+  assert.match(routing, /^happ:\/\/routing\/onadd\/[A-Za-z0-9+/=]+$/u);
+  assert.equal(requestOptions._res.headers["X-Test"], "keep");
+  const encoded = routing.slice("happ://routing/onadd/".length);
+  const profile = JSON.parse(Buffer.from(encoded, "base64").toString("utf8"));
+  assert.equal(profile.Geositeurl, "https://juan-nikola.github.io/apple-proxy-profiles/edge/happ/geosite.dat");
+  assert.equal(profile.Geoipurl, "https://juan-nikola.github.io/apple-proxy-profiles/edge/happ/geoip.dat");
+  assert.ok(profile.DirectSites.includes("geosite:HAPP-DOMESTICCORE"));
+  assert.ok(profile.ProxySites.includes("geosite:HAPP-OPENAI"));
+  assert.equal(JSON.parse(result.$content)[0].meta.platform, "iphone");
+});
+
+test("HAPP Preview without request options still emits JSON", async () => {
+  const result = await configOperator({}, "JSON", context({
+    output: "config",
+    type: "collection",
+    name: "TEST_ONLY_Happ_Collection",
+    subscriptionName: "TEST_ONLY_Happ_Subscription",
+    platform: "iphone",
+  }));
+  assert.equal(Array.isArray(JSON.parse(result.$content)), true);
 });

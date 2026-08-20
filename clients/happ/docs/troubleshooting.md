@@ -5,7 +5,9 @@
 - **JSON 为空**：在 Sub-Store 分别预览 collection 和 HAPP 任务，确认至少有一个兼容节点。
 - **固定节点未命中**：节点名必须大小写、空格和标点完全一致；修正策略后重新生成 JSON。
 - **内核提示 `balancer ... not found`**：这是旧版 HAPP JSON 的结构问题，旧输出把固定节点 balancer 放在了配置顶层。不要继续刷新旧订阅；在 Sub-Store 重新 Preview 对应平台任务，确认新版 JSON 将 balancer 放在 `routing.balancers`，然后删除 HAPP 旧订阅条目并重新导入。
-- **iOS 提示‘超出隧道内存限制（50 MB）’**：先在 Sub-Store 重新 Preview `happ-iphone` 或 `happ-ipad`，确认输出不含 `HAPP-*` 自定义标签；删除 HAPP 中旧的 iOS 订阅条目后重新导入新版 JSON，并重启 HAPP。公开频道 GeoData 下载成功不代表 HAPP Xray 核心会把它替换为应用内置资产；不要把 `happ-macos` 输出导入 iOS，也不要混用 `edge` 与 `current` 的 JSON。
+- **iOS 提示‘超出隧道内存限制（50 MB）’**：HAPP iOS 5.6.0 的 iPhone/iPad 输出应使用项目精简 `HAPP-*` GeoData。先在 Sub-Store 重新 Preview `happ-iphone` 或 `happ-ipad`，确认输出非空；真实 File 请求会通过 `routing` 响应头绑定 Profile，Preview 看不到响应头是正常的。删除 HAPP 中旧的 iOS 订阅条目后重新导入新版 JSON，并重启 HAPP。不要把 `happ-macos` 输出导入 iOS，也不要混用 `edge` 与 `current` 的 JSON。
+- **日志出现 `illegal domain rule: geosite:HAPP-*`、`NEAgentErrorDomain` 或 VPN 没有效果**：通常是旧 JSON 没有携带响应头，或旧 Profile/GeoData 缓存仍被使用。删除旧订阅，重新导入新版 iOS File URL，等待 GeoData 下载成功后再连接；不要在 JSON 订阅上手动复制公共 Profile。
+- **Sub-Store Preview 看不到 `routing` 响应头**：这是预览请求的限制，不代表生产 File 没有响应头。用真实私密 File URL 在 HAPP 中删除旧条目后重新导入，才会触发 Profile 绑定。
 - **导入后无流量**：确认先安装 GeoData，再导入相同通道的 JSON；检查 HAPP VPN 权限、DNS 和节点连通性。
 - **需要回滚**：切回旧 JSON，并同时安装 previous GeoData 和 previous Profile。不要把 current Profile 与 previous GeoData 混用。
 

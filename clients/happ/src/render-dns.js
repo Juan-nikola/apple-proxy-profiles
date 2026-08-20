@@ -22,6 +22,44 @@ const HAPP_GEOSITE_ALIASES = Object.freeze({
   TikTok: "TIKTOK",
   OverseasGame: "CATEGORY-GAMES-!CN",
 });
+const HAPP_COMPACT_GEOSITE_ALIASES = Object.freeze({
+  OpenAI: "HAPP-OPENAI",
+  Claude: "HAPP-CLAUDE",
+  Gemini: "HAPP-GEMINI",
+  Copilot: "HAPP-COPILOT",
+  GitHub: "HAPP-GITHUB",
+  YouTube: "HAPP-YOUTUBE",
+  Netflix: "HAPP-NETFLIX",
+  Disney: "HAPP-DISNEY",
+  Spotify: "HAPP-SPOTIFY",
+  GlobalMedia: "HAPP-GLOBALMEDIA",
+  Telegram: "HAPP-TELEGRAM",
+  Facebook: "HAPP-FACEBOOK",
+  Instagram: "HAPP-INSTAGRAM",
+  Twitter: "HAPP-TWITTER",
+  TikTok: "HAPP-TIKTOK",
+  OverseasGame: "HAPP-OVERSEASGAME",
+});
+const HAPP_COMPACT_DOMESTIC_GEOSITES = Object.freeze([
+  "HAPP-DOMESTICCORE",
+  "HAPP-DOMESTICGAME",
+  "HAPP-STEAMCN",
+  "HAPP-BILIBILI",
+  "HAPP-BYTEDANCE",
+  "HAPP-XIAOHONGSHU",
+  "HAPP-WEIBO",
+  "HAPP-APPLE",
+  "HAPP-MICROSOFT",
+  "HAPP-DOWNLOAD",
+  "HAPP-PRIVATETRACKER",
+  "HAPP-CHINATLD",
+]);
+function usesCompactGeodata(platform) {
+  return platform === "iphone" || platform === "ipad";
+}
+function compactDomains(values) {
+  return values.map((value) => `geosite:${value}`);
+}
 const PROXY_GEOSITE_DOMAINS = Object.freeze(
   EXPLICIT_OVERSEAS_RULE_SOURCE_IDS.map((id) => `geosite:${HAPP_GEOSITE_ALIASES[id] ?? id.toUpperCase()}`),
 );
@@ -34,9 +72,14 @@ export function renderHappDns(options = {}) {
   if (!["auto", "ipv4-only"].includes(value.ipv6Mode)) throw new Error("Unsupported Happ ipv6Mode");
   const domestic = chinaDnsProvider(value.chinaDns);
   const global = globalDnsProvider(value.globalDns);
-  const domesticDomains = ["geosite:cn", "geosite:private"];
-  const domesticExpectIPs = ["geoip:cn"];
-  const proxyDomains = PROXY_GEOSITE_DOMAINS;
+  const compact = usesCompactGeodata(value.platform);
+  const domesticDomains = compact
+    ? ["geosite:private", ...compactDomains(HAPP_COMPACT_DOMESTIC_GEOSITES)]
+    : ["geosite:cn", "geosite:private"];
+  const domesticExpectIPs = compact ? ["geoip:HAPP-CHINAIP"] : ["geoip:cn"];
+  const proxyDomains = compact
+    ? EXPLICIT_OVERSEAS_RULE_SOURCE_IDS.map((id) => `geosite:${HAPP_COMPACT_GEOSITE_ALIASES[id] ?? id.toUpperCase()}`)
+    : PROXY_GEOSITE_DOMAINS;
   return Object.freeze({
     tag: "happ-dns",
     servers: [
@@ -49,8 +92,13 @@ export function renderHappDns(options = {}) {
 export function renderHappDnsRoutes(options = {}) {
   const followTag = options.followTag ?? "happ-follow/current";
   const globalOutboundTag = options.globalOutboundTag ?? followTag;
-  const domesticDomains = ["geosite:cn", "geosite:private"];
-  const proxyDomains = PROXY_GEOSITE_DOMAINS;
+  const compact = usesCompactGeodata(options.platform);
+  const domesticDomains = compact
+    ? ["geosite:private", ...compactDomains(HAPP_COMPACT_DOMESTIC_GEOSITES)]
+    : ["geosite:cn", "geosite:private"];
+  const proxyDomains = compact
+    ? EXPLICIT_OVERSEAS_RULE_SOURCE_IDS.map((id) => `geosite:${HAPP_COMPACT_GEOSITE_ALIASES[id] ?? id.toUpperCase()}`)
+    : PROXY_GEOSITE_DOMAINS;
   return [
     { type: "field", domain: domesticDomains, outboundTag: "happ-direct", server: "happ-dns" },
     { type: "field", domain: proxyDomains, outboundTag: globalOutboundTag, server: "happ-dns" },

@@ -2459,6 +2459,44 @@ var HappConfigBundle = (() => {
     TikTok: "TIKTOK",
     OverseasGame: "CATEGORY-GAMES-!CN"
   });
+  var HAPP_COMPACT_GEOSITE_ALIASES = Object.freeze({
+    OpenAI: "HAPP-OPENAI",
+    Claude: "HAPP-CLAUDE",
+    Gemini: "HAPP-GEMINI",
+    Copilot: "HAPP-COPILOT",
+    GitHub: "HAPP-GITHUB",
+    YouTube: "HAPP-YOUTUBE",
+    Netflix: "HAPP-NETFLIX",
+    Disney: "HAPP-DISNEY",
+    Spotify: "HAPP-SPOTIFY",
+    GlobalMedia: "HAPP-GLOBALMEDIA",
+    Telegram: "HAPP-TELEGRAM",
+    Facebook: "HAPP-FACEBOOK",
+    Instagram: "HAPP-INSTAGRAM",
+    Twitter: "HAPP-TWITTER",
+    TikTok: "HAPP-TIKTOK",
+    OverseasGame: "HAPP-OVERSEASGAME"
+  });
+  var HAPP_COMPACT_DOMESTIC_GEOSITES = Object.freeze([
+    "HAPP-DOMESTICCORE",
+    "HAPP-DOMESTICGAME",
+    "HAPP-STEAMCN",
+    "HAPP-BILIBILI",
+    "HAPP-BYTEDANCE",
+    "HAPP-XIAOHONGSHU",
+    "HAPP-WEIBO",
+    "HAPP-APPLE",
+    "HAPP-MICROSOFT",
+    "HAPP-DOWNLOAD",
+    "HAPP-PRIVATETRACKER",
+    "HAPP-CHINATLD"
+  ]);
+  function usesCompactGeodata(platform) {
+    return platform === "iphone" || platform === "ipad";
+  }
+  function compactDomains(values) {
+    return values.map((value) => `geosite:${value}`);
+  }
   var PROXY_GEOSITE_DOMAINS = Object.freeze(
     EXPLICIT_OVERSEAS_RULE_SOURCE_IDS.map((id) => `geosite:${HAPP_GEOSITE_ALIASES[id] ?? id.toUpperCase()}`)
   );
@@ -2471,9 +2509,10 @@ var HappConfigBundle = (() => {
     if (!["auto", "ipv4-only"].includes(value.ipv6Mode)) throw new Error("Unsupported Happ ipv6Mode");
     const domestic = chinaDnsProvider(value.chinaDns);
     const global = globalDnsProvider(value.globalDns);
-    const domesticDomains = ["geosite:cn", "geosite:private"];
-    const domesticExpectIPs = ["geoip:cn"];
-    const proxyDomains = PROXY_GEOSITE_DOMAINS;
+    const compact = usesCompactGeodata(value.platform);
+    const domesticDomains = compact ? ["geosite:private", ...compactDomains(HAPP_COMPACT_DOMESTIC_GEOSITES)] : ["geosite:cn", "geosite:private"];
+    const domesticExpectIPs = compact ? ["geoip:HAPP-CHINAIP"] : ["geoip:cn"];
+    const proxyDomains = compact ? EXPLICIT_OVERSEAS_RULE_SOURCE_IDS.map((id) => `geosite:${HAPP_COMPACT_GEOSITE_ALIASES[id] ?? id.toUpperCase()}`) : PROXY_GEOSITE_DOMAINS;
     return Object.freeze({
       tag: "happ-dns",
       servers: [
@@ -2486,8 +2525,9 @@ var HappConfigBundle = (() => {
   function renderHappDnsRoutes(options = {}) {
     const followTag = options.followTag ?? "happ-follow/current";
     const globalOutboundTag = options.globalOutboundTag ?? followTag;
-    const domesticDomains = ["geosite:cn", "geosite:private"];
-    const proxyDomains = PROXY_GEOSITE_DOMAINS;
+    const compact = usesCompactGeodata(options.platform);
+    const domesticDomains = compact ? ["geosite:private", ...compactDomains(HAPP_COMPACT_DOMESTIC_GEOSITES)] : ["geosite:cn", "geosite:private"];
+    const proxyDomains = compact ? EXPLICIT_OVERSEAS_RULE_SOURCE_IDS.map((id) => `geosite:${HAPP_COMPACT_GEOSITE_ALIASES[id] ?? id.toUpperCase()}`) : PROXY_GEOSITE_DOMAINS;
     return [
       { type: "field", domain: domesticDomains, outboundTag: "happ-direct", server: "happ-dns" },
       { type: "field", domain: proxyDomains, outboundTag: globalOutboundTag, server: "happ-dns" }
@@ -2666,6 +2706,42 @@ var HappConfigBundle = (() => {
     OverseasGame: "CATEGORY-GAMES-!CN",
     ChinaTLD: "CN"
   });
+  var HAPP_COMPACT_GEOSITE_ALIASES2 = Object.freeze({
+    Hijacking: "HAPP-HIJACKING",
+    BlockHttpDNS: "HAPP-BLOCKHTTPDNS",
+    Privacy: "HAPP-PRIVACY",
+    DomesticCore: "HAPP-DOMESTICCORE",
+    DomesticGame: "HAPP-DOMESTICGAME",
+    SteamCN: "HAPP-STEAMCN",
+    BiliBili: "HAPP-BILIBILI",
+    ByteDance: "HAPP-BYTEDANCE",
+    XiaoHongShu: "HAPP-XIAOHONGSHU",
+    Weibo: "HAPP-WEIBO",
+    OpenAI: "HAPP-OPENAI",
+    Claude: "HAPP-CLAUDE",
+    Gemini: "HAPP-GEMINI",
+    Copilot: "HAPP-COPILOT",
+    GitHub: "HAPP-GITHUB",
+    YouTube: "HAPP-YOUTUBE",
+    Netflix: "HAPP-NETFLIX",
+    Disney: "HAPP-DISNEY",
+    Spotify: "HAPP-SPOTIFY",
+    GlobalMedia: "HAPP-GLOBALMEDIA",
+    Telegram: "HAPP-TELEGRAM",
+    Facebook: "HAPP-FACEBOOK",
+    Instagram: "HAPP-INSTAGRAM",
+    Twitter: "HAPP-TWITTER",
+    TikTok: "HAPP-TIKTOK",
+    Apple: "HAPP-APPLE",
+    Microsoft: "HAPP-MICROSOFT",
+    Download: "HAPP-DOWNLOAD",
+    PrivateTracker: "HAPP-PRIVATETRACKER",
+    OverseasGame: "HAPP-OVERSEASGAME",
+    ChinaTLD: "HAPP-CHINATLD"
+  });
+  function usesCompactGeodata2(platform) {
+    return platform === "iphone" || platform === "ipad";
+  }
   function hash(value) {
     let h = 2166136261;
     for (const c of String(value)) h = Math.imul(h ^ c.charCodeAt(0), 16777619);
@@ -2712,7 +2788,8 @@ var HappConfigBundle = (() => {
         quicRuleInserted = true;
       }
       const isIp = item.id === "ChinaIP";
-      const source = isIp ? "geoip:cn" : "geosite:" + (HAPP_GEOSITE_ALIASES2[item.id] ?? item.id.toUpperCase());
+      const compact = usesCompactGeodata2(options.platform);
+      const source = isIp ? compact ? "geoip:HAPP-CHINAIP" : "geoip:cn" : "geosite:" + ((compact ? HAPP_COMPACT_GEOSITE_ALIASES2[item.id] : HAPP_GEOSITE_ALIASES2[item.id]) ?? item.id.toUpperCase());
       const target = item.policy === "REJECT" ? { outboundTag: options.blockMode === "off" ? "happ-direct" : "happ-block" } : targetFor(item.id, resolution, followTag, fixedById);
       rules.push({ type: "field", ...isIp ? { ip: [source] } : { domain: [source] }, ...target });
     }
@@ -2777,7 +2854,122 @@ var HappConfigBundle = (() => {
     return configs;
   }
 
+  // src/routing-profile-data.js
+  var PROFILE_NAME = "Apple Proxy Profiles Happ";
+  var REMOTE_DNS = Object.freeze({ type: "DoH", domain: "https://cloudflare-dns.com/dns-query", ip: "1.1.1.1" });
+  var DOMESTIC_DNS = Object.freeze({ type: "DoH", domain: "https://dns.alidns.com/dns-query", ip: "223.5.5.5" });
+  var DIRECT_SITES = Object.freeze([
+    "geosite:HAPP-PRIVACY",
+    "geosite:HAPP-DOMESTICCORE",
+    "geosite:HAPP-DOMESTICGAME",
+    "geosite:HAPP-STEAMCN",
+    "geosite:HAPP-BILIBILI",
+    "geosite:HAPP-BYTEDANCE",
+    "geosite:HAPP-XIAOHONGSHU",
+    "geosite:HAPP-WEIBO",
+    "geosite:HAPP-APPLE",
+    "geosite:HAPP-MICROSOFT",
+    "geosite:HAPP-DOWNLOAD",
+    "geosite:HAPP-PRIVATETRACKER",
+    "geosite:HAPP-CHINATLD"
+  ]);
+  var PROXY_SITES = Object.freeze([
+    "geosite:HAPP-OPENAI",
+    "geosite:HAPP-CLAUDE",
+    "geosite:HAPP-GEMINI",
+    "geosite:HAPP-COPILOT",
+    "geosite:HAPP-GITHUB",
+    "geosite:HAPP-YOUTUBE",
+    "geosite:HAPP-NETFLIX",
+    "geosite:HAPP-DISNEY",
+    "geosite:HAPP-SPOTIFY",
+    "geosite:HAPP-GLOBALMEDIA",
+    "geosite:HAPP-TELEGRAM",
+    "geosite:HAPP-FACEBOOK",
+    "geosite:HAPP-INSTAGRAM",
+    "geosite:HAPP-TWITTER",
+    "geosite:HAPP-TIKTOK",
+    "geosite:HAPP-OVERSEASGAME"
+  ]);
+  var BLOCK_SITES = Object.freeze([
+    "geosite:HAPP-HIJACKING",
+    "geosite:HAPP-BLOCKHTTPDNS"
+  ]);
+  var DIRECT_IP = Object.freeze([
+    "10.0.0.0/8",
+    "172.16.0.0/12",
+    "192.168.0.0/16",
+    "169.254.0.0/16",
+    "224.0.0.0/4",
+    "255.255.255.255",
+    "geoip:HAPP-CHINAIP"
+  ]);
+  function immutableBaseUrl(value) {
+    if (typeof value !== "string" || !/^https:\/\/[^\s?#]+(?:\/[^\s?#]+)*$/u.test(value)) {
+      throw new TypeError("Happ immutable base URL must be an HTTPS URL without query or fragment");
+    }
+    return value.replace(/\/+$/u, "");
+  }
+  function unixTimestamp(value) {
+    if (typeof value !== "string" || !Number.isFinite(Date.parse(value))) throw new TypeError("Happ generatedAt must be an ISO timestamp");
+    return String(Math.floor(Date.parse(value) / 1e3));
+  }
+  function renderHappRoutingProfile({ baseUrl, generatedAt }) {
+    const base = immutableBaseUrl(baseUrl);
+    return Object.freeze({
+      Name: PROFILE_NAME,
+      GlobalProxy: "true",
+      RouteOrder: "block-proxy-direct",
+      RemoteDNSType: REMOTE_DNS.type,
+      RemoteDNSDomain: REMOTE_DNS.domain,
+      RemoteDNSIP: REMOTE_DNS.ip,
+      DomesticDNSType: DOMESTIC_DNS.type,
+      DomesticDNSDomain: DOMESTIC_DNS.domain,
+      DomesticDNSIP: DOMESTIC_DNS.ip,
+      Geoipurl: base + "/happ/geoip.dat",
+      Geositeurl: base + "/happ/geosite.dat",
+      LastUpdated: unixTimestamp(generatedAt),
+      DnsHosts: Object.freeze({ "cloudflare-dns.com": REMOTE_DNS.ip, "dns.alidns.com": DOMESTIC_DNS.ip }),
+      DirectSites: DIRECT_SITES,
+      DirectIp: DIRECT_IP,
+      ProxySites: PROXY_SITES,
+      ProxyIp: Object.freeze([]),
+      BlockSites: BLOCK_SITES,
+      BlockIp: Object.freeze([]),
+      DomainStrategy: "IPIfNonMatch",
+      FakeDNS: "false",
+      UseChunkFiles: "true"
+    });
+  }
+  function renderHappRoutingDeepLink(profile) {
+    if (!profile || typeof profile !== "object" || Array.isArray(profile)) throw new TypeError("Happ routing profile must be an object");
+    return "happ://routing/onadd/" + Buffer.from(JSON.stringify(profile), "utf8").toString("base64");
+  }
+
   // src/substore-config-entry.js
+  var PUBLIC_ROOT = "https://juan-nikola.github.io/apple-proxy-profiles";
+  function requestOptionsFrom(input, context) {
+    const candidates = [context?.requestOptions, input?.$options];
+    return candidates.find((value) => value && typeof value === "object" && !Array.isArray(value));
+  }
+  function setRoutingResponseHeader(requestOptions, routing) {
+    if (!requestOptions) return false;
+    if (!requestOptions._res || typeof requestOptions._res !== "object" || Array.isArray(requestOptions._res)) requestOptions._res = {};
+    const response = requestOptions._res;
+    if (!response.headers || typeof response.headers !== "object" || Array.isArray(response.headers)) response.headers = {};
+    if (typeof response.headers.set === "function") response.headers.set("routing", routing);
+    else response.headers.routing = routing;
+    return true;
+  }
+  function attachRoutingProfile(input, context, options) {
+    const requestOptions = requestOptionsFrom(input, context);
+    if (!requestOptions) return;
+    const profile = renderHappRoutingProfile({
+      baseUrl: PUBLIC_ROOT + "/" + options.channel,
+      generatedAt: (/* @__PURE__ */ new Date()).toISOString()
+    });
+    setRoutingResponseHeader(requestOptions, renderHappRoutingDeepLink(profile));
+  }
   function logDiagnostics(context, options, normalized, filtered) {
     const method = typeof context?.logger === "function" ? context.logger : typeof context?.logger?.info === "function" ? context.logger.info.bind(context.logger) : null;
     if (!method) return;
@@ -2814,11 +3006,12 @@ var HappConfigBundle = (() => {
       allNodes: normalized.nodes,
       options
     });
+    attachRoutingProfile(input, context, options);
     return { ...input, $content: `${JSON.stringify(configs, null, 2)}
 ` };
   }
   return __toCommonJS(substore_config_entry_exports);
 })();
 async function operator(input, targetPlatform) {
-  return HappConfigBundle.operator(input, targetPlatform, { arguments: $arguments, produceArtifact, logger: console });
+  return HappConfigBundle.operator(input, targetPlatform, { arguments: $arguments, produceArtifact, requestOptions: typeof $options === "undefined" ? undefined : $options, logger: console });
 }
