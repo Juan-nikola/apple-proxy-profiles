@@ -12,7 +12,7 @@
 
 在自己的 Sub-Store 中使用 `current/happ/scripts/happ-config-generator.js` 或 `edge/happ/scripts/happ-config-generator.js`，并把真实 collection 名称放在私密任务参数中。六个平台任务分别使用 `macos`、`iphone`、`ipad`、`android`、`windows`、`linux`；另建一个 `happ-routing-audit` 任务检查兼容性和策略解析。
 
-手机端注意：`happ-iphone` 与 `happ-ipad` 会自动使用项目 GeoData 中的紧凑 `HAPP-*` 分类，避免 iOS Network Extension 载入大型内置 GeoSite 后触发 50 MB 隧道内存限制。请始终把 iPhone/iPad 任务与同一频道安装页配对；不要把 macOS 任务输出或另一频道的旧 JSON 混用。
+手机端注意：HAPP JSON 统一使用客户端内置 Xray GeoData 能识别的标准 `geosite`/`geoip` 标签；公开频道 GeoData 不会自动替换 HAPP.app 的内置资产。请始终把 iPhone/iPad 任务与同一频道安装页配对；不要把 macOS 任务输出或另一频道的旧 JSON 混用。
 
 策略值只允许 `DIRECT`、`FOLLOW` 或 `NODE:<精确节点名>`。策略修改后重新生成所有相关私密任务，再导入新 JSON。节点名和 Profile deep link 不要提交到仓库或公开聊天。
 
