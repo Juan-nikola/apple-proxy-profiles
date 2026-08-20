@@ -3,6 +3,13 @@ import { readFileSync } from "node:fs";
 import protobuf from "protobufjs";
 
 import { parseCanonicalCidr, RULE_KIND } from "../../shared/rules/model.js";
+import {
+  HAPP_GEOSITE_ALIASES,
+  HAPP_GEOIP_ALIASES,
+  HAPP_PRIVATE_DOMAINS,
+  HAPP_PRIVATE_IPV4,
+  HAPP_PRIVATE_IPV6,
+} from "../../clients/happ/src/geodata-contract.js";
 
 const SCHEMA = protobuf.parse(readFileSync(new URL("../../clients/happ/proto/geodata.proto", import.meta.url), "utf8")).root;
 const GeoSiteList = SCHEMA.lookupType("xray.app.router.GeoSiteList");
@@ -45,6 +52,14 @@ function sourceEntries(ruleSets) {
     .sort(([left], [right]) => compareText(left, right));
 }
 
+function labelFor(id) {
+  return HAPP_GEOSITE_ALIASES[id] ?? id.toUpperCase();
+}
+
+function ipLabelFor(id) {
+  return HAPP_GEOIP_ALIASES[id] ?? labelFor(id);
+}
+
 function geoSiteEntry(id, entries) {
   const domain = [];
   for (const entry of entries) {
@@ -58,7 +73,7 @@ function geoSiteEntry(id, entries) {
   domain.sort((left, right) => GeoSiteList.root.lookupEnum("xray.app.router.Domain.Type").values[left.type]
     - GeoSiteList.root.lookupEnum("xray.app.router.Domain.Type").values[right.type]
     || compareText(left.value, right.value));
-  return { countryCode: `HAPP-${id.toUpperCase()}`, domain };
+  return { countryCode: labelFor(id), domain };
 }
 
 function geoIpEntry(id, entries) {
@@ -70,7 +85,52 @@ function geoIpEntry(id, entries) {
   }
   if (cidr.length === 0) return null;
   cidr.sort((left, right) => Buffer.compare(left.ip, right.ip) || left.prefix - right.prefix);
-  return { countryCode: `HAPP-${id.toUpperCase()}`, cidr, reverseMatch: false };
+  return { countryCode: ipLabelFor(id), cidr, reverseMatch: false };
+}
+
+function mergeGeositeEntries(entries) {
+  const merged = new Map();
+  for (const entry of entries) {
+    const current = merged.get(entry.countryCode) ?? { countryCode: entry.countryCode, domain: [] };
+    current.domain.push(...entry.domain);
+    merged.set(entry.countryCode, current);
+  }
+  return [...merged.values()].sort((left, right) => compareText(left.countryCode, right.countryCode)).map((entry) => ({
+    ...entry,
+    domain: [...new Map(entry.domain.map((item) => [`${item.type}\0${item.value}`, item])).values()]
+      .sort((left, right) => GeoSiteList.root.lookupEnum("xray.app.router.Domain.Type").values[left.type]
+        - GeoSiteList.root.lookupEnum("xray.app.router.Domain.Type").values[right.type]
+        || compareText(left.value, right.value)),
+  }));
+}
+
+function mergeGeoipEntries(entries) {
+  const merged = new Map();
+  for (const entry of entries) {
+    const current = merged.get(entry.countryCode) ?? { countryCode: entry.countryCode, cidr: [], reverseMatch: false };
+    current.cidr.push(...entry.cidr);
+    merged.set(entry.countryCode, current);
+  }
+  return [...merged.values()].sort((left, right) => compareText(left.countryCode, right.countryCode)).map((entry) => ({
+    ...entry,
+    cidr: [...new Map(entry.cidr.map((item) => [`${item.ip.toString("hex")}\0${item.prefix}`, item])).values()]
+      .sort((left, right) => Buffer.compare(left.ip, right.ip) || left.prefix - right.prefix),
+  }));
+}
+
+function privateGeositeEntry() {
+  return {
+    countryCode: "PRIVATE",
+    domain: HAPP_PRIVATE_DOMAINS.map((value) => ({ type: "Domain", value })),
+  };
+}
+
+function privateGeoipEntry() {
+  const cidr = [
+    ...HAPP_PRIVATE_IPV4.map((value) => ({ ip: canonicalIpBytes(value, 4), prefix: parseCanonicalCidr(value, 4).prefix })),
+    ...HAPP_PRIVATE_IPV6.map((value) => ({ ip: canonicalIpBytes(value, 6), prefix: parseCanonicalCidr(value, 6).prefix })),
+  ];
+  return { countryCode: "PRIVATE", cidr, reverseMatch: false };
 }
 
 function decodeList(type, buffer) {
@@ -106,8 +166,14 @@ export function decodeHappGeodata(files) {
 /** Compile compacted lightweight rules into the Xray geodata files used by Happ. */
 export function renderHappGeodata(ruleSets) {
   const sources = sourceEntries(ruleSets);
-  const geosite = sources.map(([id, entries]) => geoSiteEntry(id, entries)).filter(Boolean);
-  const geoip = sources.map(([id, entries]) => geoIpEntry(id, entries)).filter(Boolean);
+  const geosite = mergeGeositeEntries([
+    privateGeositeEntry(),
+    ...sources.map(([id, entries]) => geoSiteEntry(id, entries)).filter(Boolean),
+  ]);
+  const geoip = mergeGeoipEntries([
+    privateGeoipEntry(),
+    ...sources.map(([id, entries]) => geoIpEntry(id, entries)).filter(Boolean),
+  ]);
   const files = new Map([
     ["happ/geosite.dat", Buffer.from(GeoSiteList.encode(GeoSiteList.fromObject({ entry: geosite })).finish())],
     ["happ/geoip.dat", Buffer.from(GeoIPList.encode(GeoIPList.fromObject({ entry: geoip })).finish())],

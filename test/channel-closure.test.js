@@ -32,6 +32,19 @@ test("accepts matching channel references and immutable self references", () => 
   }), []);
 });
 
+test("ignores native generator channel defaults inside published client trees", () => {
+  const hash = "b".repeat(64);
+  const generator = "const DEFAULTS = { channel: \"current\" };";
+  assert.deepEqual(findChannelClosureViolations({
+    channel: "edge",
+    files: new Map([
+      ["edge/clients/happ/" + hash + "/happ/scripts/happ-config-generator.js", generator],
+      ["versions/" + hash + "/happ/scripts/happ-config-generator.js", generator],
+    ]),
+    rootPrefix: "edge",
+  }), []);
+});
+
 test("throws a non-secret closure error", () => {
   assert.throws(() => assertChannelClosure({
     channel: "current",

@@ -134,6 +134,25 @@ test("active documentation follows the maintained client and Anywhere package co
   for (const id of packageIds) assert.ok(entry.includes(`\`${id}\``), `README missing Anywhere package ${id}`);
 });
 
+test("HAPP user documentation exposes current as the only public channel", async () => {
+  const paths = [
+    "README.md",
+    "clients/happ/README.md",
+    "clients/happ/docs/deployment.md",
+    "clients/happ/docs/troubleshooting.md",
+  ];
+  const docs = await Promise.all(paths.map(async (path) => [path, await text(path)]));
+  const content = docs.map(([, value]) => value).join("\n");
+  assert.match(content, /HAPP[\s\S]{0,260}current\/happ/u);
+  assert.match(content, /edge[\s\S]{0,120}(?:内部|维护者|灰度)/iu);
+  assert.doesNotMatch(content, /HAPP-[A-Z0-9_-]+/u);
+  assert.doesNotMatch(content, /把 URL 中的 `current` 换成 `edge`/u);
+  assert.match(content, /JSON 配置由 Xray JSON 自己负责 DNS、路由和固定节点/iu);
+  assert.match(content, /HAPP 路由开关.*锁定.*JSON/iu);
+  assert.match(content, /macos.*iphone.*ipad.*android.*windows.*linux.*routing/isu);
+  assert.match(content, /删除旧.*订阅.*重新导入/isu);
+});
+
 test("beginner entry does not assume one private deployment already exists", async () => {
   const readme = await text("README.md");
   assert.doesNotMatch(readme, /substore\.sunyz\.uk|xiaov/u);

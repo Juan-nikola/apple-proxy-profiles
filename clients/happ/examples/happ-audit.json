@@ -3,7 +3,7 @@
   "client": "happ",
   "output": "audit",
   "platform": "all",
-  "channel": "edge",
+  "channel": "current",
   "counts": {
     "configs": 2,
     "eligibleNodes": 2,

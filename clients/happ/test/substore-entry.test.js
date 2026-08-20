@@ -63,8 +63,8 @@ test("HAPP JSON file output binds the channel routing profile through response h
   const profile = JSON.parse(Buffer.from(encoded, "base64").toString("utf8"));
   assert.equal(profile.Geositeurl, "https://juan-nikola.github.io/apple-proxy-profiles/edge/happ/geosite.dat");
   assert.equal(profile.Geoipurl, "https://juan-nikola.github.io/apple-proxy-profiles/edge/happ/geoip.dat");
-  assert.ok(profile.DirectSites.includes("geosite:HAPP-DOMESTICCORE"));
-  assert.ok(profile.ProxySites.includes("geosite:HAPP-OPENAI"));
+  assert.ok(profile.DirectSites.includes("geosite:CN"));
+  assert.ok(profile.ProxySites.includes("geosite:OPENAI"));
   assert.equal(JSON.parse(result.$content)[0].meta.platform, "iphone");
 });
 
@@ -79,15 +79,22 @@ test("HAPP Preview without request options still emits JSON", async () => {
   assert.equal(Array.isArray(JSON.parse(result.$content)), true);
 });
 
-test("HAPP non-iOS JSON does not receive the iOS routing response header", async () => {
-  const requestOptions = { _res: { headers: {} } };
-  await configOperator({ $options: requestOptions }, "JSON", context({
-    output: "config",
-    type: "collection",
-    name: "TEST_ONLY_Happ_Collection",
-    subscriptionName: "TEST_ONLY_Happ_Subscription",
-    platform: "macos",
-    channel: "edge",
-  }, requestOptions));
-  assert.equal(requestOptions._res.headers.routing, undefined);
+test("HAPP JSON binds the same routing profile on all six platforms", async () => {
+  for (const platform of ["macos", "iphone", "ipad", "android", "windows", "linux"]) {
+    const requestOptions = { _res: { headers: {} } };
+    await configOperator({ $options: requestOptions }, "JSON", context({
+      output: "config",
+      type: "collection",
+      name: "TEST_ONLY_Happ_Collection",
+      subscriptionName: "TEST_ONLY_Happ_Subscription",
+      platform,
+      channel: "edge",
+    }, requestOptions));
+    const routing = requestOptions._res.headers.routing;
+    assert.match(routing, /^happ:\/\/routing\/onadd\/[A-Za-z0-9+/=]+$/u, platform);
+    const encoded = routing.slice("happ://routing/onadd/".length);
+    const profile = JSON.parse(Buffer.from(encoded, "base64").toString("utf8"));
+    assert.equal(profile.Geoipurl, "https://juan-nikola.github.io/apple-proxy-profiles/edge/happ/geoip.dat", platform);
+    assert.ok(profile.DirectIp.includes("geoip:PRIVATE"), platform);
+  }
 });

@@ -11,6 +11,7 @@
     "fixtures": "npm --workspaces --if-present run fixtures",
     "check:secrets": "node scripts/check-secrets.mjs",
     "check:actions": "node scripts/check-actions.mjs",
+    "check:happ-xray": "npm --workspace @apple-proxy-profiles/happ run check:xray",
     "update:rules": "node scripts/update-rules.mjs --channel edge",
     "check:rules": "node scripts/update-rules.mjs --check --channel current",
     "explain:route": "node scripts/explain-route.mjs",

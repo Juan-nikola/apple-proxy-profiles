@@ -8,7 +8,7 @@ const ENUMS = Object.freeze({
   globalDns: ["cloudflare", "google", "quad9"], blockMode: ["balanced", "security", "strict", "off"],
   quicMode: ["allow", "proxy-block", "all-block"], ipv6Mode: ["auto", "ipv4-only"],
 });
-const DEFAULTS = Object.freeze({ channel: "edge", dnsMode: "stable", chinaDns: "alidns", globalDns: "cloudflare", blockMode: "balanced", quicMode: "proxy-block", ipv6Mode: "auto", policyOverrides: "" });
+const DEFAULTS = Object.freeze({ channel: "current", dnsMode: "stable", chinaDns: "alidns", globalDns: "cloudflare", blockMode: "balanced", quicMode: "proxy-block", ipv6Mode: "auto", policyOverrides: "" });
 const REQUIRED = new Set(["output", "type", "name", "subscriptionName", "platform"]);
 const ALLOWED = new Set([...REQUIRED, "channel", "dnsMode", "chinaDns", "globalDns", "blockMode", "quicMode", "ipv6Mode", "policyOverrides"]);
 const PROTOTYPE = new Set(["__proto__", "constructor", "prototype"]);

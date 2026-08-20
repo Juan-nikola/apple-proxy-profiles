@@ -2638,7 +2638,7 @@ var HappConfigBundle = (() => {
     BiliBili: "BILIBILI",
     ByteDance: "BYTEDANCE",
     XiaoHongShu: "XIAOHONGSHU",
-    Weibo: "WEIBO",
+    Weibo: "CATEGORY-SOCIAL-MEDIA-CN",
     OpenAI: "OPENAI",
     Claude: "CATEGORY-AI-!CN",
     Gemini: "GOOGLE-GEMINI",

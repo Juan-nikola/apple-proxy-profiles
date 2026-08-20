@@ -4,40 +4,40 @@
   "calibrationStartedAt": "2026-08-09T13:33:56.957Z",
   "families": {
     "ipv4": {
-      "currentAddresses": "359025394",
-      "currentPrefixes": 7173,
+      "currentAddresses": "359024882",
+      "currentPrefixes": 7171,
       "divergenceBasisPoints": "2051",
-      "previousAddresses": "359024882",
-      "previousPrefixes": 7171,
-      "secondaryAddresses": "285360638",
-      "secondaryPrefixes": 4148,
+      "previousAddresses": "359041522",
+      "previousPrefixes": 7242,
+      "secondaryAddresses": "285360126",
+      "secondaryPrefixes": 4147,
       "shrinkBasisPoints": "0"
     },
     "ipv6": {
       "currentAddresses": "5104925933167855546564402630098944",
       "currentPrefixes": 3925,
       "divergenceBasisPoints": "6059",
-      "previousAddresses": "5104925933167855546564402630098944",
-      "previousPrefixes": 3925,
-      "secondaryAddresses": "2011464203524640430568624244129792",
-      "secondaryPrefixes": 1236,
+      "previousAddresses": "5105335412058994676456054883090432",
+      "previousPrefixes": 4145,
+      "secondaryAddresses": "2011543407508638302613634293956608",
+      "secondaryPrefixes": 1235,
       "shrinkBasisPoints": "0"
     }
   },
-  "generatedAt": "2026-08-20T01:24:39.662Z",
+  "generatedAt": "2026-08-16T22:54:58.126Z",
   "primary": {
-    "commit": "ca20cf00887b50ec63de019317bec2a672c93ca9",
-    "committedAt": "2026-08-19T18:32:09Z",
+    "commit": "538b8a79532c44dfbcb8e694d2f43e753c60b157",
+    "committedAt": "2026-08-15T18:26:29Z",
     "repository": "https://github.com/blackmatrix7/ios_rule_script",
-    "sha256": "42ff70cc617ae21dbc252397284445f0f3f8e4e97b932ae9150159a7c1aabdde"
+    "sha256": "440b4ede627f45d31f30d97d2d7951d82bf9e56eddcb85a5961deaf9bc1c1aa9"
   },
   "reportOnly": true,
   "schemaVersion": 1,
   "secondary": {
-    "commit": "8896ee1284976c15eb4c137923d41dc9f9bce7b6",
-    "committedAt": "2026-08-19T03:33:33Z",
+    "commit": "dde25993121e8f169bd74ebd135bb3b8858f3162",
+    "committedAt": "2026-08-16T03:36:50Z",
     "repository": "https://github.com/gaoyifan/china-operator-ip",
-    "sha256": "8361259938a7b4dbb44a516d18ba5be5370e86b4621f93095da49251960fdc2f"
+    "sha256": "70b50fa8a39d69c99ed30f5aa43d5eca8e73f49c071720cecee7f2b2ab77445e"
   },
   "warnings": [
     "ipv4:secondary-divergence",

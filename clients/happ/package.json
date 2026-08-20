@@ -9,6 +9,7 @@
     "build": "node scripts/build.mjs",
     "fixtures": "node scripts/render-fixtures.mjs",
     "check:secrets": "node ../../scripts/check-secrets.mjs",
+    "check:xray": "node ../../scripts/check-happ-xray.mjs --config examples/happ-config-{platform}.json --geoip ../../public/current/happ/geoip.dat --geosite ../../public/current/happ/geosite.dat",
     "verify": "npm test && npm run build && npm run fixtures && npm run check:secrets"
   }
 }

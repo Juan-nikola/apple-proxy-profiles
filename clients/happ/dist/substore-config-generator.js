@@ -1935,7 +1935,7 @@ var HappConfigBundle = (() => {
     quicMode: ["allow", "proxy-block", "all-block"],
     ipv6Mode: ["auto", "ipv4-only"]
   });
-  var DEFAULTS = Object.freeze({ channel: "edge", dnsMode: "stable", chinaDns: "alidns", globalDns: "cloudflare", blockMode: "balanced", quicMode: "proxy-block", ipv6Mode: "auto", policyOverrides: "" });
+  var DEFAULTS = Object.freeze({ channel: "current", dnsMode: "stable", chinaDns: "alidns", globalDns: "cloudflare", blockMode: "balanced", quicMode: "proxy-block", ipv6Mode: "auto", policyOverrides: "" });
   var REQUIRED = /* @__PURE__ */ new Set(["output", "type", "name", "subscriptionName", "platform"]);
   var ALLOWED = /* @__PURE__ */ new Set([...REQUIRED, "channel", "dnsMode", "chinaDns", "globalDns", "blockMode", "quicMode", "ipv6Mode", "policyOverrides"]);
   var PROTOTYPE = /* @__PURE__ */ new Set(["__proto__", "constructor", "prototype"]);
@@ -2440,8 +2440,18 @@ var HappConfigBundle = (() => {
     return Object.freeze([...selected].sort((left, right) => phaseRank.get(left.phase) - phaseRank.get(right.phase) || sourceRank.get(left.id) - sourceRank.get(right.id)));
   }
 
-  // src/render-dns.js
+  // src/geodata-contract.js
   var HAPP_GEOSITE_ALIASES = Object.freeze({
+    Hijacking: "CATEGORY-ADS-ALL",
+    BlockHttpDNS: "CATEGORY-HTTPDNS-CN",
+    Privacy: "PRIVATE",
+    DomesticCore: "CN",
+    DomesticGame: "CATEGORY-GAMES-CN",
+    SteamCN: "STEAM",
+    BiliBili: "BILIBILI",
+    ByteDance: "BYTEDANCE",
+    XiaoHongShu: "XIAOHONGSHU",
+    Weibo: "CATEGORY-SOCIAL-MEDIA-CN",
     OpenAI: "OPENAI",
     Claude: "CATEGORY-AI-!CN",
     Gemini: "GOOGLE-GEMINI",
@@ -2457,46 +2467,80 @@ var HappConfigBundle = (() => {
     Instagram: "INSTAGRAM",
     Twitter: "TWITTER",
     TikTok: "TIKTOK",
-    OverseasGame: "CATEGORY-GAMES-!CN"
+    Apple: "APPLE",
+    Microsoft: "MICROSOFT",
+    Download: "CATEGORY-NETDISK-!CN",
+    PrivateTracker: "CATEGORY-PT",
+    OverseasGame: "CATEGORY-GAMES-!CN",
+    ChinaTLD: "CN"
   });
-  var HAPP_COMPACT_GEOSITE_ALIASES = Object.freeze({
-    OpenAI: "HAPP-OPENAI",
-    Claude: "HAPP-CLAUDE",
-    Gemini: "HAPP-GEMINI",
-    Copilot: "HAPP-COPILOT",
-    GitHub: "HAPP-GITHUB",
-    YouTube: "HAPP-YOUTUBE",
-    Netflix: "HAPP-NETFLIX",
-    Disney: "HAPP-DISNEY",
-    Spotify: "HAPP-SPOTIFY",
-    GlobalMedia: "HAPP-GLOBALMEDIA",
-    Telegram: "HAPP-TELEGRAM",
-    Facebook: "HAPP-FACEBOOK",
-    Instagram: "HAPP-INSTAGRAM",
-    Twitter: "HAPP-TWITTER",
-    TikTok: "HAPP-TIKTOK",
-    OverseasGame: "HAPP-OVERSEASGAME"
-  });
-  var HAPP_COMPACT_DOMESTIC_GEOSITES = Object.freeze([
-    "HAPP-DOMESTICCORE",
-    "HAPP-DOMESTICGAME",
-    "HAPP-STEAMCN",
-    "HAPP-BILIBILI",
-    "HAPP-BYTEDANCE",
-    "HAPP-XIAOHONGSHU",
-    "HAPP-WEIBO",
-    "HAPP-APPLE",
-    "HAPP-MICROSOFT",
-    "HAPP-DOWNLOAD",
-    "HAPP-PRIVATETRACKER",
-    "HAPP-CHINATLD"
+  var HAPP_GEOIP_ALIASES = Object.freeze({ ChinaIP: "CN" });
+  var HAPP_PROFILE_DIRECT_SITES = Object.freeze([
+    "geosite:PRIVATE",
+    "geosite:CN",
+    "geosite:CATEGORY-GAMES-CN",
+    "geosite:STEAM",
+    "geosite:BILIBILI",
+    "geosite:BYTEDANCE",
+    "geosite:XIAOHONGSHU",
+    "geosite:CATEGORY-SOCIAL-MEDIA-CN",
+    "geosite:APPLE",
+    "geosite:MICROSOFT",
+    "geosite:CATEGORY-NETDISK-!CN",
+    "geosite:CATEGORY-PT"
   ]);
-  function usesCompactGeodata(platform) {
-    return platform === "iphone" || platform === "ipad";
-  }
-  function compactDomains(values) {
-    return values.map((value) => `geosite:${value}`);
-  }
+  var HAPP_PROFILE_PROXY_SITES = Object.freeze([
+    "geosite:OPENAI",
+    "geosite:CATEGORY-AI-!CN",
+    "geosite:GOOGLE-GEMINI",
+    "geosite:GITHUB-COPILOT",
+    "geosite:GITHUB",
+    "geosite:YOUTUBE",
+    "geosite:NETFLIX",
+    "geosite:DISNEY",
+    "geosite:SPOTIFY",
+    "geosite:CATEGORY-MEDIA",
+    "geosite:TELEGRAM",
+    "geosite:FACEBOOK",
+    "geosite:INSTAGRAM",
+    "geosite:TWITTER",
+    "geosite:TIKTOK",
+    "geosite:CATEGORY-GAMES-!CN"
+  ]);
+  var HAPP_PROFILE_BLOCK_SITES = Object.freeze([
+    "geosite:CATEGORY-ADS-ALL",
+    "geosite:CATEGORY-HTTPDNS-CN"
+  ]);
+  var HAPP_PROFILE_DIRECT_IP = Object.freeze([
+    "10.0.0.0/8",
+    "172.16.0.0/12",
+    "192.168.0.0/16",
+    "169.254.0.0/16",
+    "224.0.0.0/4",
+    "255.255.255.255",
+    "geoip:PRIVATE",
+    "geoip:CN"
+  ]);
+  var HAPP_PRIVATE_IPV4 = Object.freeze([
+    "10.0.0.0/8",
+    "100.64.0.0/10",
+    "127.0.0.0/8",
+    "169.254.0.0/16",
+    "172.16.0.0/12",
+    "192.0.0.0/24",
+    "192.0.2.0/24",
+    "192.168.0.0/16",
+    "198.18.0.0/15",
+    "198.51.100.0/24",
+    "203.0.113.0/24",
+    "224.0.0.0/4",
+    "240.0.0.0/4",
+    "255.255.255.255/32"
+  ]);
+  var HAPP_PRIVATE_IPV6 = Object.freeze(["::1/128", "::ffff:0:0/96", "fc00::/7", "fe80::/10", "ff00::/8"]);
+  var HAPP_PRIVATE_DOMAINS = Object.freeze(["localhost", "localhost.localdomain", "local", "localdomain", "lan"]);
+
+  // src/render-dns.js
   var PROXY_GEOSITE_DOMAINS = Object.freeze(
     EXPLICIT_OVERSEAS_RULE_SOURCE_IDS.map((id) => `geosite:${HAPP_GEOSITE_ALIASES[id] ?? id.toUpperCase()}`)
   );
@@ -2509,10 +2553,9 @@ var HappConfigBundle = (() => {
     if (!["auto", "ipv4-only"].includes(value.ipv6Mode)) throw new Error("Unsupported Happ ipv6Mode");
     const domestic = chinaDnsProvider(value.chinaDns);
     const global = globalDnsProvider(value.globalDns);
-    const compact = usesCompactGeodata(value.platform);
-    const domesticDomains = compact ? ["geosite:private", ...compactDomains(HAPP_COMPACT_DOMESTIC_GEOSITES)] : ["geosite:cn", "geosite:private"];
-    const domesticExpectIPs = compact ? ["geoip:HAPP-CHINAIP"] : ["geoip:cn"];
-    const proxyDomains = compact ? EXPLICIT_OVERSEAS_RULE_SOURCE_IDS.map((id) => `geosite:${HAPP_COMPACT_GEOSITE_ALIASES[id] ?? id.toUpperCase()}`) : PROXY_GEOSITE_DOMAINS;
+    const domesticDomains = ["geosite:CN", "geosite:PRIVATE"];
+    const domesticExpectIPs = ["geoip:CN"];
+    const proxyDomains = PROXY_GEOSITE_DOMAINS;
     return Object.freeze({
       tag: "happ-dns",
       servers: [
@@ -2525,9 +2568,8 @@ var HappConfigBundle = (() => {
   function renderHappDnsRoutes(options = {}) {
     const followTag = options.followTag ?? "happ-follow/current";
     const globalOutboundTag = options.globalOutboundTag ?? followTag;
-    const compact = usesCompactGeodata(options.platform);
-    const domesticDomains = compact ? ["geosite:private", ...compactDomains(HAPP_COMPACT_DOMESTIC_GEOSITES)] : ["geosite:cn", "geosite:private"];
-    const proxyDomains = compact ? EXPLICIT_OVERSEAS_RULE_SOURCE_IDS.map((id) => `geosite:${HAPP_COMPACT_GEOSITE_ALIASES[id] ?? id.toUpperCase()}`) : PROXY_GEOSITE_DOMAINS;
+    const domesticDomains = ["geosite:CN", "geosite:PRIVATE"];
+    const proxyDomains = PROXY_GEOSITE_DOMAINS;
     return [
       { type: "field", domain: domesticDomains, outboundTag: "happ-direct", server: "happ-dns" },
       { type: "field", domain: proxyDomains, outboundTag: globalOutboundTag, server: "happ-dns" }
@@ -2673,75 +2715,6 @@ var HappConfigBundle = (() => {
   }
 
   // src/render-routing.js
-  var HAPP_GEOSITE_ALIASES2 = Object.freeze({
-    Hijacking: "CATEGORY-ADS-ALL",
-    BlockHttpDNS: "CATEGORY-HTTPDNS-CN",
-    Privacy: "PRIVATE",
-    DomesticCore: "CN",
-    DomesticGame: "CATEGORY-GAMES-CN",
-    SteamCN: "STEAM",
-    BiliBili: "BILIBILI",
-    ByteDance: "BYTEDANCE",
-    XiaoHongShu: "XIAOHONGSHU",
-    Weibo: "CATEGORY-SOCIAL-MEDIA-CN",
-    OpenAI: "OPENAI",
-    Claude: "CATEGORY-AI-!CN",
-    Gemini: "GOOGLE-GEMINI",
-    Copilot: "GITHUB-COPILOT",
-    GitHub: "GITHUB",
-    YouTube: "YOUTUBE",
-    Netflix: "NETFLIX",
-    Disney: "DISNEY",
-    Spotify: "SPOTIFY",
-    GlobalMedia: "CATEGORY-MEDIA",
-    Telegram: "TELEGRAM",
-    Facebook: "FACEBOOK",
-    Instagram: "INSTAGRAM",
-    Twitter: "TWITTER",
-    TikTok: "TIKTOK",
-    Apple: "APPLE",
-    Microsoft: "MICROSOFT",
-    Download: "CATEGORY-NETDISK-!CN",
-    PrivateTracker: "CATEGORY-PT",
-    OverseasGame: "CATEGORY-GAMES-!CN",
-    ChinaTLD: "CN"
-  });
-  var HAPP_COMPACT_GEOSITE_ALIASES2 = Object.freeze({
-    Hijacking: "HAPP-HIJACKING",
-    BlockHttpDNS: "HAPP-BLOCKHTTPDNS",
-    Privacy: "HAPP-PRIVACY",
-    DomesticCore: "HAPP-DOMESTICCORE",
-    DomesticGame: "HAPP-DOMESTICGAME",
-    SteamCN: "HAPP-STEAMCN",
-    BiliBili: "HAPP-BILIBILI",
-    ByteDance: "HAPP-BYTEDANCE",
-    XiaoHongShu: "HAPP-XIAOHONGSHU",
-    Weibo: "HAPP-WEIBO",
-    OpenAI: "HAPP-OPENAI",
-    Claude: "HAPP-CLAUDE",
-    Gemini: "HAPP-GEMINI",
-    Copilot: "HAPP-COPILOT",
-    GitHub: "HAPP-GITHUB",
-    YouTube: "HAPP-YOUTUBE",
-    Netflix: "HAPP-NETFLIX",
-    Disney: "HAPP-DISNEY",
-    Spotify: "HAPP-SPOTIFY",
-    GlobalMedia: "HAPP-GLOBALMEDIA",
-    Telegram: "HAPP-TELEGRAM",
-    Facebook: "HAPP-FACEBOOK",
-    Instagram: "HAPP-INSTAGRAM",
-    Twitter: "HAPP-TWITTER",
-    TikTok: "HAPP-TIKTOK",
-    Apple: "HAPP-APPLE",
-    Microsoft: "HAPP-MICROSOFT",
-    Download: "HAPP-DOWNLOAD",
-    PrivateTracker: "HAPP-PRIVATETRACKER",
-    OverseasGame: "HAPP-OVERSEASGAME",
-    ChinaTLD: "HAPP-CHINATLD"
-  });
-  function usesCompactGeodata2(platform) {
-    return platform === "iphone" || platform === "ipad";
-  }
   function hash(value) {
     let h = 2166136261;
     for (const c of String(value)) h = Math.imul(h ^ c.charCodeAt(0), 16777619);
@@ -2778,8 +2751,8 @@ var HappConfigBundle = (() => {
       observatorySelectors.push(candidateTag);
     }
     const rules = [
-      { type: "field", ip: ["geoip:private"], outboundTag: "happ-direct" },
-      { type: "field", domain: ["geosite:private"], outboundTag: "happ-direct" }
+      { type: "field", ip: ["geoip:PRIVATE"], outboundTag: "happ-direct" },
+      { type: "field", domain: ["geosite:PRIVATE"], outboundTag: "happ-direct" }
     ];
     let quicRuleInserted = false;
     for (const item of orderedRoutingPlan({ adblockMode: "off" })) {
@@ -2788,8 +2761,7 @@ var HappConfigBundle = (() => {
         quicRuleInserted = true;
       }
       const isIp = item.id === "ChinaIP";
-      const compact = usesCompactGeodata2(options.platform);
-      const source = isIp ? compact ? "geoip:HAPP-CHINAIP" : "geoip:cn" : "geosite:" + ((compact ? HAPP_COMPACT_GEOSITE_ALIASES2[item.id] : HAPP_GEOSITE_ALIASES2[item.id]) ?? item.id.toUpperCase());
+      const source = isIp ? "geoip:CN" : "geosite:" + (HAPP_GEOSITE_ALIASES[item.id] ?? item.id.toUpperCase());
       const target = item.policy === "REJECT" ? { outboundTag: options.blockMode === "off" ? "happ-direct" : "happ-block" } : targetFor(item.id, resolution, followTag, fixedById);
       rules.push({ type: "field", ...isIp ? { ip: [source] } : { domain: [source] }, ...target });
     }
@@ -2858,52 +2830,6 @@ var HappConfigBundle = (() => {
   var PROFILE_NAME = "Apple Proxy Profiles Happ";
   var REMOTE_DNS = Object.freeze({ type: "DoH", domain: "https://cloudflare-dns.com/dns-query", ip: "1.1.1.1" });
   var DOMESTIC_DNS = Object.freeze({ type: "DoH", domain: "https://dns.alidns.com/dns-query", ip: "223.5.5.5" });
-  var DIRECT_SITES = Object.freeze([
-    "geosite:HAPP-PRIVACY",
-    "geosite:HAPP-DOMESTICCORE",
-    "geosite:HAPP-DOMESTICGAME",
-    "geosite:HAPP-STEAMCN",
-    "geosite:HAPP-BILIBILI",
-    "geosite:HAPP-BYTEDANCE",
-    "geosite:HAPP-XIAOHONGSHU",
-    "geosite:HAPP-WEIBO",
-    "geosite:HAPP-APPLE",
-    "geosite:HAPP-MICROSOFT",
-    "geosite:HAPP-DOWNLOAD",
-    "geosite:HAPP-PRIVATETRACKER",
-    "geosite:HAPP-CHINATLD"
-  ]);
-  var PROXY_SITES = Object.freeze([
-    "geosite:HAPP-OPENAI",
-    "geosite:HAPP-CLAUDE",
-    "geosite:HAPP-GEMINI",
-    "geosite:HAPP-COPILOT",
-    "geosite:HAPP-GITHUB",
-    "geosite:HAPP-YOUTUBE",
-    "geosite:HAPP-NETFLIX",
-    "geosite:HAPP-DISNEY",
-    "geosite:HAPP-SPOTIFY",
-    "geosite:HAPP-GLOBALMEDIA",
-    "geosite:HAPP-TELEGRAM",
-    "geosite:HAPP-FACEBOOK",
-    "geosite:HAPP-INSTAGRAM",
-    "geosite:HAPP-TWITTER",
-    "geosite:HAPP-TIKTOK",
-    "geosite:HAPP-OVERSEASGAME"
-  ]);
-  var BLOCK_SITES = Object.freeze([
-    "geosite:HAPP-HIJACKING",
-    "geosite:HAPP-BLOCKHTTPDNS"
-  ]);
-  var DIRECT_IP = Object.freeze([
-    "10.0.0.0/8",
-    "172.16.0.0/12",
-    "192.168.0.0/16",
-    "169.254.0.0/16",
-    "224.0.0.0/4",
-    "255.255.255.255",
-    "geoip:HAPP-CHINAIP"
-  ]);
   function immutableBaseUrl(value) {
     if (typeof value !== "string" || !/^https:\/\/[^\s?#]+(?:\/[^\s?#]+)*$/u.test(value)) {
       throw new TypeError("Happ immutable base URL must be an HTTPS URL without query or fragment");
@@ -2930,11 +2856,11 @@ var HappConfigBundle = (() => {
       Geositeurl: base + "/happ/geosite.dat",
       LastUpdated: unixTimestamp(generatedAt),
       DnsHosts: Object.freeze({ "cloudflare-dns.com": REMOTE_DNS.ip, "dns.alidns.com": DOMESTIC_DNS.ip }),
-      DirectSites: DIRECT_SITES,
-      DirectIp: DIRECT_IP,
-      ProxySites: PROXY_SITES,
+      DirectSites: HAPP_PROFILE_DIRECT_SITES,
+      DirectIp: HAPP_PROFILE_DIRECT_IP,
+      ProxySites: HAPP_PROFILE_PROXY_SITES,
       ProxyIp: Object.freeze([]),
-      BlockSites: BLOCK_SITES,
+      BlockSites: HAPP_PROFILE_BLOCK_SITES,
       BlockIp: Object.freeze([]),
       DomainStrategy: "IPIfNonMatch",
       FakeDNS: "false",
@@ -2962,7 +2888,6 @@ var HappConfigBundle = (() => {
     return true;
   }
   function attachRoutingProfile(input, context, options) {
-    if (options.platform !== "iphone" && options.platform !== "ipad") return;
     const requestOptions = requestOptionsFrom(input, context);
     if (!requestOptions) return;
     const profile = renderHappRoutingProfile({

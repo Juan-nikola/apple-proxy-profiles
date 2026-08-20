@@ -1948,7 +1948,7 @@ var HappAuditBundle = (() => {
     quicMode: ["allow", "proxy-block", "all-block"],
     ipv6Mode: ["auto", "ipv4-only"]
   });
-  var DEFAULTS = Object.freeze({ channel: "edge", dnsMode: "stable", chinaDns: "alidns", globalDns: "cloudflare", blockMode: "balanced", quicMode: "proxy-block", ipv6Mode: "auto", policyOverrides: "" });
+  var DEFAULTS = Object.freeze({ channel: "current", dnsMode: "stable", chinaDns: "alidns", globalDns: "cloudflare", blockMode: "balanced", quicMode: "proxy-block", ipv6Mode: "auto", policyOverrides: "" });
   var REQUIRED = /* @__PURE__ */ new Set(["output", "type", "name", "subscriptionName", "platform"]);
   var ALLOWED = /* @__PURE__ */ new Set([...REQUIRED, "channel", "dnsMode", "chinaDns", "globalDns", "blockMode", "quicMode", "ipv6Mode", "policyOverrides"]);
   var PROTOTYPE = /* @__PURE__ */ new Set(["__proto__", "constructor", "prototype"]);

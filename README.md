@@ -321,9 +321,9 @@ Anywhere 分为三层，缺一层都不会完整生效：
 
 ### 2.6 HAPP
 
-HAPP 的公开安装页只提供无凭据的 GeoData 和脚本；节点与配置仍从 Sub-Store 的私密任务导入。生产版本请打开 [HAPP 安装页](https://juan-nikola.github.io/apple-proxy-profiles/current/happ/index.html)，安装 `geoip.dat` 和 `geosite.dat`，再按设备导入对应的 `happ-macos`、`happ-iphone`、`happ-ipad`、`happ-android`、`happ-windows` 或 `happ-linux` 私密输出。`edge` 仅保留给未来变更的灰度候选。
+HAPP 的公开安装页只提供无凭据的 GeoData 和脚本；节点与配置仍从 Sub-Store 的私密任务导入。生产版本请打开 [HAPP 安装页](https://juan-nikola.github.io/apple-proxy-profiles/current/happ/index.html)，安装 `geoip.dat` 和 `geosite.dat`，再按设备导入对应的 `happ-macos`、`happ-iphone`、`happ-ipad`、`happ-android`、`happ-windows` 或 `happ-linux` 私密输出。用户始终使用 `current`；`edge` 仅保留给维护者灰度候选。
 
-成功标志：GeoData 与配置使用同一频道；配置数组非空；DNS、国内外业务和局域网测试正常；`happ-routing-audit` 的兼容数和排除原因可解释。HAPP iPhone/iPad JSON 使用订阅绑定的项目精简 `HAPP-*` GeoData；macOS、Android、Windows、Linux 使用客户端内置标准标签。HAPP 5.6.0 的 JSON 订阅必须直接从私密 File 导入，生成器会在真实 HTTP 响应中附带 `routing: happ://routing/onadd/<base64>`，不能再把公共 Profile 手动复制绑定到 JSON 订阅。Sub-Store Preview 看不到响应头是正常的。如果 HAPP 提示‘超出隧道内存限制（50 MB）’或 `NEAgentErrorDomain`，先重新 Preview 对应任务，再删除旧订阅条目并重新导入新版 JSON，不能继续使用旧缓存。
+成功标志：GeoData 与配置使用同一 `current` 频道；配置数组非空；DNS、国内外业务、固定节点和局域网测试正常；`happ-routing-audit` 的兼容数和排除原因可解释。六个平台统一使用标准 Xray GeoData 标签和响应 Profile。JSON 配置由 Xray JSON 自己负责 DNS、路由和固定节点，HAPP 路由开关锁定是正常行为。HAPP JSON 订阅必须直接从私密 File 导入，生成器会在 macOS、iPhone、iPad、Android、Windows、Linux 六个平台的真实 HTTP 响应中附带 `routing: happ://routing/onadd/<base64>`，不能再把公共 Profile 手动复制绑定到 JSON 订阅。Sub-Store Preview 看不到响应头是正常的。如果 HAPP 提示‘超出隧道内存限制（50 MB）’或 `NEAgentErrorDomain`，先重新 Preview 对应任务，再删除旧订阅条目并重新导入新版 JSON，不能继续使用旧缓存。
 
 失败怎么办：先分别 preview 当前 `apple-proxy-happ`、对应平台任务和审计任务，确认不是节点协议或固定节点不兼容；未来变更先在 `edge` 灰度，不要把未经验证的候选直接替换生产任务。
 

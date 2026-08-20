@@ -1,53 +1,12 @@
 const PROFILE_NAME = "Apple Proxy Profiles Happ";
 const REMOTE_DNS = Object.freeze({ type: "DoH", domain: "https://cloudflare-dns.com/dns-query", ip: "1.1.1.1" });
 const DOMESTIC_DNS = Object.freeze({ type: "DoH", domain: "https://dns.alidns.com/dns-query", ip: "223.5.5.5" });
-
-const DIRECT_SITES = Object.freeze([
-  "geosite:HAPP-PRIVACY",
-  "geosite:HAPP-DOMESTICCORE",
-  "geosite:HAPP-DOMESTICGAME",
-  "geosite:HAPP-STEAMCN",
-  "geosite:HAPP-BILIBILI",
-  "geosite:HAPP-BYTEDANCE",
-  "geosite:HAPP-XIAOHONGSHU",
-  "geosite:HAPP-WEIBO",
-  "geosite:HAPP-APPLE",
-  "geosite:HAPP-MICROSOFT",
-  "geosite:HAPP-DOWNLOAD",
-  "geosite:HAPP-PRIVATETRACKER",
-  "geosite:HAPP-CHINATLD",
-]);
-const PROXY_SITES = Object.freeze([
-  "geosite:HAPP-OPENAI",
-  "geosite:HAPP-CLAUDE",
-  "geosite:HAPP-GEMINI",
-  "geosite:HAPP-COPILOT",
-  "geosite:HAPP-GITHUB",
-  "geosite:HAPP-YOUTUBE",
-  "geosite:HAPP-NETFLIX",
-  "geosite:HAPP-DISNEY",
-  "geosite:HAPP-SPOTIFY",
-  "geosite:HAPP-GLOBALMEDIA",
-  "geosite:HAPP-TELEGRAM",
-  "geosite:HAPP-FACEBOOK",
-  "geosite:HAPP-INSTAGRAM",
-  "geosite:HAPP-TWITTER",
-  "geosite:HAPP-TIKTOK",
-  "geosite:HAPP-OVERSEASGAME",
-]);
-const BLOCK_SITES = Object.freeze([
-  "geosite:HAPP-HIJACKING",
-  "geosite:HAPP-BLOCKHTTPDNS",
-]);
-const DIRECT_IP = Object.freeze([
-  "10.0.0.0/8",
-  "172.16.0.0/12",
-  "192.168.0.0/16",
-  "169.254.0.0/16",
-  "224.0.0.0/4",
-  "255.255.255.255",
-  "geoip:HAPP-CHINAIP",
-]);
+import {
+  HAPP_PROFILE_BLOCK_SITES,
+  HAPP_PROFILE_DIRECT_IP,
+  HAPP_PROFILE_DIRECT_SITES,
+  HAPP_PROFILE_PROXY_SITES,
+} from "./geodata-contract.js";
 
 function immutableBaseUrl(value) {
   if (typeof value !== "string" || !/^https:\/\/[^\s?#]+(?:\/[^\s?#]+)*$/u.test(value)) {
@@ -77,11 +36,11 @@ export function renderHappRoutingProfile({ baseUrl, generatedAt }) {
     Geositeurl: base + "/happ/geosite.dat",
     LastUpdated: unixTimestamp(generatedAt),
     DnsHosts: Object.freeze({ "cloudflare-dns.com": REMOTE_DNS.ip, "dns.alidns.com": DOMESTIC_DNS.ip }),
-    DirectSites: DIRECT_SITES,
-    DirectIp: DIRECT_IP,
-    ProxySites: PROXY_SITES,
+    DirectSites: HAPP_PROFILE_DIRECT_SITES,
+    DirectIp: HAPP_PROFILE_DIRECT_IP,
+    ProxySites: HAPP_PROFILE_PROXY_SITES,
     ProxyIp: Object.freeze([]),
-    BlockSites: BLOCK_SITES,
+    BlockSites: HAPP_PROFILE_BLOCK_SITES,
     BlockIp: Object.freeze([]),
     DomainStrategy: "IPIfNonMatch",
     FakeDNS: "false",

@@ -2,77 +2,7 @@ import { orderedRoutingPlan } from "../../../shared/rules/lightweight-policy.js"
 import { businessTargetForSource } from "./policy-overrides.js";
 import { renderHappOutbound } from "./render-node.js";
 import { renderHappDnsRoutes } from "./render-dns.js";
-
-const HAPP_GEOSITE_ALIASES = Object.freeze({
-  Hijacking: "CATEGORY-ADS-ALL",
-  BlockHttpDNS: "CATEGORY-HTTPDNS-CN",
-  Privacy: "PRIVATE",
-  DomesticCore: "CN",
-  DomesticGame: "CATEGORY-GAMES-CN",
-  SteamCN: "STEAM",
-  BiliBili: "BILIBILI",
-  ByteDance: "BYTEDANCE",
-  XiaoHongShu: "XIAOHONGSHU",
-  Weibo: "CATEGORY-SOCIAL-MEDIA-CN",
-  OpenAI: "OPENAI",
-  Claude: "CATEGORY-AI-!CN",
-  Gemini: "GOOGLE-GEMINI",
-  Copilot: "GITHUB-COPILOT",
-  GitHub: "GITHUB",
-  YouTube: "YOUTUBE",
-  Netflix: "NETFLIX",
-  Disney: "DISNEY",
-  Spotify: "SPOTIFY",
-  GlobalMedia: "CATEGORY-MEDIA",
-  Telegram: "TELEGRAM",
-  Facebook: "FACEBOOK",
-  Instagram: "INSTAGRAM",
-  Twitter: "TWITTER",
-  TikTok: "TIKTOK",
-  Apple: "APPLE",
-  Microsoft: "MICROSOFT",
-  Download: "CATEGORY-NETDISK-!CN",
-  PrivateTracker: "CATEGORY-PT",
-  OverseasGame: "CATEGORY-GAMES-!CN",
-  ChinaTLD: "CN",
-});
-const HAPP_COMPACT_GEOSITE_ALIASES = Object.freeze({
-  Hijacking: "HAPP-HIJACKING",
-  BlockHttpDNS: "HAPP-BLOCKHTTPDNS",
-  Privacy: "HAPP-PRIVACY",
-  DomesticCore: "HAPP-DOMESTICCORE",
-  DomesticGame: "HAPP-DOMESTICGAME",
-  SteamCN: "HAPP-STEAMCN",
-  BiliBili: "HAPP-BILIBILI",
-  ByteDance: "HAPP-BYTEDANCE",
-  XiaoHongShu: "HAPP-XIAOHONGSHU",
-  Weibo: "HAPP-WEIBO",
-  OpenAI: "HAPP-OPENAI",
-  Claude: "HAPP-CLAUDE",
-  Gemini: "HAPP-GEMINI",
-  Copilot: "HAPP-COPILOT",
-  GitHub: "HAPP-GITHUB",
-  YouTube: "HAPP-YOUTUBE",
-  Netflix: "HAPP-NETFLIX",
-  Disney: "HAPP-DISNEY",
-  Spotify: "HAPP-SPOTIFY",
-  GlobalMedia: "HAPP-GLOBALMEDIA",
-  Telegram: "HAPP-TELEGRAM",
-  Facebook: "HAPP-FACEBOOK",
-  Instagram: "HAPP-INSTAGRAM",
-  Twitter: "HAPP-TWITTER",
-  TikTok: "HAPP-TIKTOK",
-  Apple: "HAPP-APPLE",
-  Microsoft: "HAPP-MICROSOFT",
-  Download: "HAPP-DOWNLOAD",
-  PrivateTracker: "HAPP-PRIVATETRACKER",
-  OverseasGame: "HAPP-OVERSEASGAME",
-  ChinaTLD: "HAPP-CHINATLD",
-});
-
-function usesCompactGeodata(platform) {
-  return platform === "iphone" || platform === "ipad";
-}
+import { HAPP_GEOSITE_ALIASES } from "./geodata-contract.js";
 
 function hash(value) { let h = 2166136261; for (const c of String(value)) h = Math.imul(h ^ c.charCodeAt(0), 16777619); return (h >>> 0).toString(36); }
 function targetFor(id, resolution, followTag, fixedById) {
@@ -107,8 +37,8 @@ export function renderHappRouting(context = {}) {
     observatorySelectors.push(candidateTag);
   }
   const rules = [
-    { type: "field", ip: ["geoip:private"], outboundTag: "happ-direct" },
-    { type: "field", domain: ["geosite:private"], outboundTag: "happ-direct" },
+    { type: "field", ip: ["geoip:PRIVATE"], outboundTag: "happ-direct" },
+    { type: "field", domain: ["geosite:PRIVATE"], outboundTag: "happ-direct" },
   ];
   let quicRuleInserted = false;
   for (const item of orderedRoutingPlan({ adblockMode: "off" })) {
@@ -117,10 +47,9 @@ export function renderHappRouting(context = {}) {
       quicRuleInserted = true;
     }
     const isIp = item.id === "ChinaIP";
-    const compact = usesCompactGeodata(options.platform);
     const source = isIp
-      ? (compact ? "geoip:HAPP-CHINAIP" : "geoip:cn")
-      : "geosite:" + ((compact ? HAPP_COMPACT_GEOSITE_ALIASES[item.id] : HAPP_GEOSITE_ALIASES[item.id]) ?? item.id.toUpperCase());
+      ? "geoip:CN"
+      : "geosite:" + (HAPP_GEOSITE_ALIASES[item.id] ?? item.id.toUpperCase());
     const target = item.policy === "REJECT"
       ? { outboundTag: options.blockMode === "off" ? "happ-direct" : "happ-block" }
       : targetFor(item.id, resolution, followTag, fixedById);
