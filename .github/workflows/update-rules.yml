@@ -30,6 +30,7 @@ on:
 permissions: {}
 
 concurrency:
+  # Re-run the canonical edge build after merged generator changes.
   group: rule-update-main
   cancel-in-progress: false
 
