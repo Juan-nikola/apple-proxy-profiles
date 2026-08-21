@@ -47,7 +47,7 @@
       "referencedDefaultBytes": 394351
     },
     "happ": {
-      "manifestHash": "ba8c818433b1d457c74d0b84cef77e9528ddb33bb7f204469122a89f161a9f31",
+      "manifestHash": "b38a6b2673edb675373433e838b91b6d38b3c752a580eb34e67b086169635918",
       "referencedDefaultBytes": 0
     },
     "onexray": {
@@ -194,12 +194,12 @@
     {
       "bytes": 1888,
       "path": "audit/dashboard.html",
-      "sha256": "686835c647630d4bffd172a339e4eecb531be4af1d0c183f58159cceb9143cb8"
+      "sha256": "1015e64e826dbd836fcb3e11ee1a542f7ccdad8d00b76a321fd21cb9691e4621"
     },
     {
       "bytes": 4119,
       "path": "audit/dashboard.json",
-      "sha256": "3e05f67c74d2ec15776bd9b5dbb0da73ffc0066ec9fa4add27670856c8b636f3"
+      "sha256": "07bbe1302e979ebcb1c6557b4aaa664ed30b1b1eda3f60c81ba4d972422a39a8"
     },
     {
       "bytes": 5175,
@@ -209,7 +209,7 @@
     {
       "bytes": 7260,
       "path": "audit/v2fly-domain-drift.json",
-      "sha256": "1df1e6abd6e4cdc6f7e49fd18bf4b9a623064e01b499b677a916bdb113ffc635"
+      "sha256": "deb616396021242ee0597bd443ccf6bfb06649ff275a6086fc847548c3a10c30"
     },
     {
       "bytes": 6727,
@@ -414,7 +414,7 @@
     {
       "bytes": 1457,
       "path": "happ/client-manifest.json",
-      "sha256": "daa684f6fff7f82e6a9bac23603c0942578147363231fa2580b2b8a227b488b8"
+      "sha256": "36490e14fac233c0007de333f92021fff0de6e2db1f2d0d0b46729cfb7d5483c"
     },
     {
       "bytes": 181451,
@@ -427,14 +427,14 @@
       "sha256": "33de8c00cc3affbaf59be30b865e9d163fc2dae0a3c51555834437bd9454eadd"
     },
     {
-      "bytes": 632149,
+      "bytes": 630812,
       "path": "happ/index.html",
-      "sha256": "b56ada0e71a75df06b16a4cfb7dd07049e2bf9bc144b47f5ad50940819c5e644"
+      "sha256": "fa8aed4f1fcdfa03834cd0c403ff09fa934f087530fb38be8b62485712800f50"
     },
     {
-      "bytes": 142164,
+      "bytes": 142176,
       "path": "happ/scripts/happ-config-generator.js",
-      "sha256": "c7b828e0b82f7864f3ffdb17d7a372c7d9448bee153c30ee62f7ff720791e938"
+      "sha256": "b5ee3cb72c821b1c78bcd3a8d669293085f97ed766b8778f7c83dd54f0e91a73"
     },
     {
       "bytes": 106603,
@@ -442,9 +442,9 @@
       "sha256": "d4e62152d002f040a6a2ff6e1f5ab69d407bfa382649f862a671729c67c56ebe"
     },
     {
-      "bytes": 142164,
+      "bytes": 142176,
       "path": "happ/scripts/substore-config-generator.js",
-      "sha256": "c7b828e0b82f7864f3ffdb17d7a372c7d9448bee153c30ee62f7ff720791e938"
+      "sha256": "b5ee3cb72c821b1c78bcd3a8d669293085f97ed766b8778f7c83dd54f0e91a73"
     },
     {
       "bytes": 106603,
@@ -1198,7 +1198,7 @@
     }
   ],
   "generatedAt": "2026-08-19T18:32:09Z",
-  "manifestHash": "5f6040dd86f94ead1393d1246a9811b9c82b375dbd2c0ca175f06eefe87a9597",
+  "manifestHash": "f2242db0d7b9626aa8a80d182844bdf24808bdbacc384c9ced6e3641a2dcc600",
   "schemaVersion": 2,
   "upstream": {
     "branch": "master",
