@@ -2612,7 +2612,7 @@ var HappConfigBundle = (() => {
     const fixedById = /* @__PURE__ */ new Map();
     const outbounds = [];
     const balancers = [];
-    const observatorySelectors = [];
+    const observatorySelectors = [followTag];
     for (const fixed of fixedRecords) {
       if (fixed.nodeId && fixed.nodeId === context.followNodeId) continue;
       const node = fixed.node ?? nodes.find((candidate) => (candidate._profile?.id ?? "") === fixed.nodeId);
@@ -2702,7 +2702,7 @@ var HappConfigBundle = (() => {
   }
 
   // src/routing-profile-data.js
-  var PROFILE_NAME = "Apple Proxy Profiles Happ";
+  var PROFILE_NAME = "Apple Proxy Profiles HAPP v2";
   var REMOTE_DNS = Object.freeze({ type: "DoH", domain: "https://cloudflare-dns.com/dns-query", ip: "1.1.1.1" });
   var DOMESTIC_DNS = Object.freeze({ type: "DoH", domain: "https://dns.alidns.com/dns-query", ip: "223.5.5.5" });
   function immutableBaseUrl(value) {
