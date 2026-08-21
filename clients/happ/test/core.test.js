@@ -10,6 +10,7 @@ import { renderHappRouting } from "../src/render-routing.js";
 import { renderHappSubscription } from "../src/render-subscription.js";
 import { validateHappSubscription } from "../src/validate-subscription.js";
 import { buildHappAudit } from "../src/audit.js";
+import { buildHappDisplayTag } from "../src/tag-label.js";
 
 const base = { output: "config", type: "collection", name: "TEST_ONLY_Happ", subscriptionName: "TEST_ONLY_Sub", platform: "macos" };
 const node = (type, extra = {}) => ({ name: "TEST_ONLY_Node", type, server: "example.test", port: 443, ...extra });
@@ -72,6 +73,27 @@ test("Happ display tags sanitize route separators and control characters", () =>
     options,
   });
   assert.equal(configs[0].outbounds[0].tag, "happ-follow/测试-节点qqpw [sr-test]");
+});
+
+test("Happ display tags remove C1 controls and sensitive name fragments", () => {
+  const options = parseHappOptions(base);
+  const configs = renderHappSubscription({
+    nodes: [node("vless", {
+      name: "测试\u0085节点 https://secret.example/00000000-0000-4000-8000-000000000001",
+      uuid: "TEST_ONLY_UUID",
+      _profile: { id: "sr-test" },
+    })],
+    options,
+  });
+  const tag = configs[0].outbounds[0].tag;
+  assert.equal(tag, "happ-follow/测试节点 [sr-test]");
+  assert.doesNotMatch(tag, /secret\.example|00000000-0000-4000-8000-000000000001/u);
+});
+
+test("Happ display tags reject unsafe stable IDs", () => {
+  assert.throws(() => buildHappDisplayTag("happ-follow", "node", "bad/id"), /stable ID/u);
+  assert.throws(() => buildHappDisplayTag("happ-follow", "node", "bad\u0085id"), /stable ID/u);
+  assert.throws(() => buildHappDisplayTag("happ-follow", "node", "a".repeat(65)), /stable ID/u);
 });
 
 test("platform, DNS and routing preserve shared semantics", () => {
