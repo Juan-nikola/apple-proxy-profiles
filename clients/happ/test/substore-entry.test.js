@@ -62,6 +62,7 @@ test("HAPP JSON file output binds the latest routing profile through response he
   const profile = JSON.parse(Buffer.from(encoded, "base64").toString("utf8"));
   assert.equal(requestOptions._res.headers["content-type"], "application/json; charset=utf-8");
   assert.equal(requestOptions._res.headers["content-disposition"], 'attachment; filename="happ-iphone.json"');
+  assert.equal(requestOptions._res.headers["no-limit-enabled"], "1");
   assert.equal(profile.Geositeurl, "https://juan-nikola.github.io/apple-proxy-profiles/current/happ/geosite.dat");
   assert.equal(profile.Geoipurl, "https://juan-nikola.github.io/apple-proxy-profiles/current/happ/geoip.dat");
   assert.ok(profile.DirectSites.includes("geosite:CN"));

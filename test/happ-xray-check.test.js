@@ -1,7 +1,13 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { assertGeoDataClosure, collectGeoDataReferences } from "../scripts/check-happ-xray.mjs";
+import { assertGeoDataClosure, collectGeoDataReferences, xrayEnvironment } from "../scripts/check-happ-xray.mjs";
+
+test("HAPP Xray checker points the core at its temporary GeoData directory", () => {
+  const environment = xrayEnvironment("/tmp/happ-xray-check", { KEEP_ME: "1" });
+  assert.equal(environment["xray.location.asset"], "/tmp/happ-xray-check");
+  assert.equal(environment.KEEP_ME, "1");
+});
 
 test("HAPP Xray checker collects nested GeoData references", () => {
   assert.deepEqual(

@@ -2702,7 +2702,7 @@ var HappConfigBundle = (() => {
   }
 
   // src/routing-profile-data.js
-  var PROFILE_NAME = "Apple Proxy Profiles Happ";
+  var PROFILE_NAME = "Apple Proxy Profiles HAPP v2";
   var REMOTE_DNS = Object.freeze({ type: "DoH", domain: "https://cloudflare-dns.com/dns-query", ip: "1.1.1.1" });
   var DOMESTIC_DNS = Object.freeze({ type: "DoH", domain: "https://dns.alidns.com/dns-query", ip: "223.5.5.5" });
   function immutableBaseUrl(value) {
@@ -2773,6 +2773,7 @@ var HappConfigBundle = (() => {
     setResponseHeader(requestOptions, "routing", renderHappRoutingDeepLink(profile));
     setResponseHeader(requestOptions, "content-type", "application/json; charset=utf-8");
     setResponseHeader(requestOptions, "content-disposition", `attachment; filename="happ-${options.platform}.json"`);
+    setResponseHeader(requestOptions, "no-limit-enabled", "1");
   }
   function logDiagnostics(context, options, normalized, filtered) {
     const method = typeof context?.logger === "function" ? context.logger : typeof context?.logger?.info === "function" ? context.logger.info.bind(context.logger) : null;
