@@ -33,6 +33,8 @@ function attachRoutingProfile(input, context, options) {
   setResponseHeader(requestOptions, "routing", renderHappRoutingDeepLink(profile));
   setResponseHeader(requestOptions, "content-type", "application/json; charset=utf-8");
   setResponseHeader(requestOptions, "content-disposition", `attachment; filename="happ-${options.platform}.json"`);
+  // HAPP documents this header for raising the Xray core RAM limit before startup.
+  setResponseHeader(requestOptions, "no-limit-enabled", "1");
 }
 
 function logDiagnostics(context, options, normalized, filtered) {
