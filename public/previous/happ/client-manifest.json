@@ -3,43 +3,43 @@
   "client": "happ",
   "files": [
     {
-      "bytes": 181247,
+      "bytes": 181431,
       "path": "happ/geoip.dat",
-      "sha256": "e3b37ed49d5e31d52b8f958a8c34588f8c261e9184d340135b87022ce5000bbc"
+      "sha256": "94db82e989ff6cfad824f8b41b55188b949c786d3b8b75f97b528bc54ee38d0f"
     },
     {
-      "bytes": 74239,
+      "bytes": 74218,
       "path": "happ/geosite.dat",
-      "sha256": "52de4978bef9970c4b0dd551834f8bf1a32246a648b09be6f705b6b16bbd9203"
+      "sha256": "33de8c00cc3affbaf59be30b865e9d163fc2dae0a3c51555834437bd9454eadd"
     },
     {
-      "bytes": 314469,
+      "bytes": 630442,
       "path": "happ/index.html",
-      "sha256": "53008c39d363240309949c60b8ddb4842723d9d778708fc4f9b60aa37d6bf1db"
+      "sha256": "7acfe5b0a85cf2f4030302b3239cfcc961419370b58168c072dfe84732997df7"
     },
     {
-      "bytes": 140936,
+      "bytes": 146129,
       "path": "happ/scripts/happ-config-generator.js",
-      "sha256": "dbb66f414bc1fc540e4b791b9525e5d9a179c1dc686d4eea7de7d7f5ceb9101c"
+      "sha256": "6f025fd36a84146deef813eb7f1f095dee0ecda7d02d75f05f0d7e3311ad3516"
     },
     {
-      "bytes": 110762,
+      "bytes": 110834,
       "path": "happ/scripts/happ-routing-audit.js",
-      "sha256": "5a3501120891b9b7cfb39cde7f9dc0ef9cd2f45f28de64829f5f71edd43e9279"
+      "sha256": "c697bbbbf5c1de13904ba2686f63bcd04a5d43d3c191e88780d72323853009e2"
     },
     {
-      "bytes": 140936,
+      "bytes": 146129,
       "path": "happ/scripts/substore-config-generator.js",
-      "sha256": "dbb66f414bc1fc540e4b791b9525e5d9a179c1dc686d4eea7de7d7f5ceb9101c"
+      "sha256": "6f025fd36a84146deef813eb7f1f095dee0ecda7d02d75f05f0d7e3311ad3516"
     },
     {
-      "bytes": 110762,
+      "bytes": 110834,
       "path": "happ/scripts/substore-routing-audit.js",
-      "sha256": "5a3501120891b9b7cfb39cde7f9dc0ef9cd2f45f28de64829f5f71edd43e9279"
+      "sha256": "c697bbbbf5c1de13904ba2686f63bcd04a5d43d3c191e88780d72323853009e2"
     }
   ],
   "generatedAt": "2026-08-15T18:26:29Z",
-  "manifestHash": "7045d6360ec05a5f9e83f2d8d0d5fff8744848fad040562baf8368740d02efbd",
+  "manifestHash": "66df0251009509e471b0af2819227e7b2391a454852704f75ca0b3757df79ec3",
   "optionalPacks": {},
   "schemaVersion": 1
 }

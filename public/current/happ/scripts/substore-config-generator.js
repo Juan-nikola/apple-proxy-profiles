@@ -287,6 +287,7 @@ var HappConfigBundle = (() => {
   var SINGBOX_SNELL_MODES = /* @__PURE__ */ new Set(["default", "unshaped", "unsafe-raw"]);
   var EGERN_OBFS = /* @__PURE__ */ new Set(["http", "tls"]);
   var EGERN_VMESS_SECURITY = /* @__PURE__ */ new Set(["auto", "aes-128-gcm", "chacha20-poly1305", "none", "zero"]);
+  var XRAY_VMESS_SECURITY = EGERN_VMESS_SECURITY;
   var EGERN_TRANSPORTS = /* @__PURE__ */ new Set(["tcp", "raw", "ws", "grpc", "h2", "http2", "http", "http1"]);
   var EGERN_VLESS_FLOWS = /* @__PURE__ */ new Set(["xtls-rprx-vision"]);
   var EGERN_TUIC_UDP_MODES = /* @__PURE__ */ new Set(["native", "quic"]);
@@ -349,6 +350,12 @@ var HappConfigBundle = (() => {
   }
   function isNonblankString(value) {
     return typeof value === "string" && value.length > 0 && value.trim() === value;
+  }
+  function isDomainServer(value) {
+    if (!isNonblankString(value)) return false;
+    if (value.includes(":")) return false;
+    const parts = value.split(".");
+    return !(parts.length === 4 && parts.every((part) => /^\d+$/u.test(part) && Number(part) <= 255));
   }
   function isNonblankOpaqueString(value) {
     return typeof value === "string" && value.trim().length > 0;
@@ -1108,7 +1115,7 @@ var HappConfigBundle = (() => {
     else if (client === CLIENT.onexray) transportReason = oneXrayNodeExclusionReason(node ?? {});
     return transportReason ? { supported: false, reason: transportReason } : { supported: true, reason: null };
   }
-  var HAPP_XRAY_TRANSPORTS = /* @__PURE__ */ new Set(["tcp", "raw", "ws", "grpc", "h2", "http2"]);
+  var HAPP_XRAY_TRANSPORTS = /* @__PURE__ */ new Set(["tcp", "raw", "ws", "grpc"]);
   var ONEXRAY_TRANSPORTS = /* @__PURE__ */ new Set([
     "tcp",
     "raw",
@@ -1136,13 +1143,19 @@ var HappConfigBundle = (() => {
     return null;
   }
   function xrayTlsReason(node, client) {
-    const security = node.security === void 0 ? node.tls === true ? "tls" : "none" : String(node.security).toLowerCase();
+    const reality = node["reality-opts"];
+    if (Object.hasOwn(node, "reality")) return `unsupported-${client}-tls`;
+    const vmessCipherSecurity = normalizeProtocol(node.type) === "vmess" && typeof node.security === "string" && XRAY_VMESS_SECURITY.has(node.security.toLowerCase());
+    const security = node.security === void 0 || vmessCipherSecurity ? reality !== void 0 ? "reality" : node.tls === true ? "tls" : "none" : String(node.security).toLowerCase();
     if (!["none", "tls", "reality"].includes(security)) return `unsupported-${client}-tls`;
-    if (node.security === "none" && node.tls === true || node.tls === false && security !== "none") {
+    if (!vmessCipherSecurity && (node.security === "none" && node.tls === true || node.tls === false && security !== "none")) {
       return `unsupported-${client}-tls`;
     }
+    if (normalizeProtocol(node.type) === "vmess" && hasOption(node, "cipher") && vmessCipherSecurity && String(node.cipher).toLowerCase() !== String(node.security).toLowerCase()) {
+      return `unsupported-${client}-tls`;
+    }
+    if (security !== "reality" && reality !== void 0) return `unsupported-${client}-tls`;
     if (security === "reality") {
-      const reality = node["reality-opts"];
       if (!isPlainObject(reality) || !isNonblankOpaqueString(reality["public-key"])) {
         return client === "onexray" ? "incomplete-onexray-reality" : "incomplete-happ-reality";
       }
@@ -1182,6 +1195,22 @@ var HappConfigBundle = (() => {
     if (tls) return tls;
     const transport = xrayTransportReason(node, client, protocol2);
     if (transport) return transport;
+    if (client === "happ") {
+      const network = normalizeTransport(node);
+      const security = node.security === "reality" || node["reality-opts"] !== void 0 ? "reality" : node.tls === true || node.security === "tls" ? "tls" : "none";
+      if (security === "reality" && (protocol2 === "hysteria2" || protocol2 === "hy2" || !["tcp", "raw", "grpc"].includes(network))) {
+        return "unsupported-happ-tls";
+      }
+      if (protocol2 === "hysteria2" || protocol2 === "hy2") {
+        const obfs = node.obfs === void 0 ? void 0 : String(node.obfs).toLowerCase();
+        const obfsPassword = node["obfs-password"] ?? node.obfs_password;
+        if (obfs !== void 0 && (obfs !== "salamander" || typeof obfsPassword !== "string" || obfsPassword.length === 0)) {
+          return "unsupported-happ-hysteria2-obfs";
+        }
+        if (obfs === void 0 && obfsPassword !== void 0) return "unsupported-happ-hysteria2-obfs";
+        if (security === "tls" && !isNonblankString(node.sni ?? node.servername) && !isDomainServer(node.server)) return "incomplete-happ-tls";
+      }
+    }
     if (client === "happ" && protocol2 === "socks5" && (node.tls === true || node.security === "tls" || node.security === "reality")) {
       return "unsupported-happ-tls";
     }
@@ -1698,9 +1727,9 @@ var HappConfigBundle = (() => {
           suffixGroup.push(record);
           suffixGroups.set(record.suffix, suffixGroup);
         }
-        for (const records2 of suffixGroups.values()) {
-          records2.forEach((record, index) => {
-            const suffix = records2.length > 1 ? `${record.suffix}-${index + 1}` : record.suffix;
+        for (const records of suffixGroups.values()) {
+          records.forEach((record, index) => {
+            const suffix = records.length > 1 ? `${record.suffix}-${index + 1}` : record.suffix;
             record.node.name = `${protocolBase} #${suffix}`;
           });
         }
@@ -1792,128 +1821,6 @@ var HappConfigBundle = (() => {
     };
   }
 
-  // ../../shared/release/client-catalog.js
-  var freeze = (value) => {
-    if (value && typeof value === "object" && !Object.isFrozen(value)) {
-      for (const child of Object.values(value)) freeze(child);
-      Object.freeze(value);
-    }
-    return value;
-  };
-  var records = [
-    {
-      id: CLIENT.anywhere,
-      displayName: "Anywhere",
-      state: "active",
-      platforms: ["iphone", "ipad", "macos", "appletv"],
-      configFormat: "clash-yaml",
-      ruleFormat: "clash-yaml",
-      nodeValidator: "anywhere",
-      separatesProfile: false,
-      supportsPolicyOverrides: false,
-      adapterSchema: "anywhere-v1",
-      publicDirectory: "anywhere"
-    },
-    {
-      id: CLIENT.egern,
-      displayName: "Egern",
-      state: "active",
-      platforms: ["iphone", "ipad", "macos"],
-      configFormat: "yaml",
-      ruleFormat: "yaml",
-      nodeValidator: "egern",
-      separatesProfile: false,
-      supportsPolicyOverrides: false,
-      adapterSchema: "egern-v1",
-      publicDirectory: "egern"
-    },
-    {
-      id: CLIENT.shadowrocket,
-      displayName: "Shadowrocket",
-      state: "active",
-      platforms: ["iphone", "ipad", "macos"],
-      configFormat: "ini",
-      ruleFormat: "list",
-      nodeValidator: "shadowrocket",
-      separatesProfile: false,
-      supportsPolicyOverrides: false,
-      adapterSchema: "shadowrocket-v1",
-      publicDirectory: "shadowrocket"
-    },
-    {
-      id: CLIENT.surge,
-      displayName: "Surge",
-      state: "active",
-      platforms: ["macos", "iphone", "ipad"],
-      configFormat: "ini",
-      ruleFormat: "list",
-      nodeValidator: "surge",
-      separatesProfile: false,
-      supportsPolicyOverrides: false,
-      adapterSchema: "surge-v1",
-      publicDirectory: "surge"
-    },
-    {
-      id: CLIENT.singbox,
-      displayName: "sing-box",
-      state: "active",
-      platforms: ["macos", "iphone", "ipad", "android"],
-      configFormat: "json",
-      ruleFormat: "srs",
-      nodeValidator: "singbox",
-      separatesProfile: false,
-      supportsPolicyOverrides: false,
-      adapterSchema: "singbox-v1",
-      publicDirectory: "sing-box"
-    },
-    {
-      id: CLIENT.onexray,
-      displayName: "OneXray",
-      state: "active",
-      platforms: ["macos", "iphone", "ipad", "android", "windows", "linux"],
-      configFormat: "xray-profile-json",
-      ruleFormat: "xray-geodata",
-      nodeValidator: "onexray",
-      separatesProfile: false,
-      supportsPolicyOverrides: false,
-      adapterSchema: "onexray-v1",
-      publicDirectory: "onexray"
-    },
-    {
-      id: CLIENT.happ,
-      displayName: "HAPP",
-      state: "active",
-      platforms: ["iphone", "ipad", "macos", "android"],
-      configFormat: "happ-json",
-      ruleFormat: "happ-json",
-      nodeValidator: "happ",
-      separatesProfile: false,
-      supportsPolicyOverrides: false,
-      adapterSchema: "happ-v4",
-      publicDirectory: "happ"
-    }
-  ].map((record) => freeze(record));
-  var byId = new Map(records.map((record) => [record.id, record]));
-  var ids = freeze(records.map(({ id }) => id));
-  var activeIds = freeze(records.filter(({ state }) => state === "active").map(({ id }) => id));
-  var plannedIds = freeze(records.filter(({ state }) => state === "planned").map(({ id }) => id));
-  var lightweightRuleIds = freeze([
-    CLIENT.anywhere,
-    CLIENT.egern,
-    CLIENT.shadowrocket,
-    CLIENT.surge,
-    CLIENT.singbox
-  ]);
-
-  // ../../shared/release/frontier-manifest.js
-  var FRONTIER_CHANNELS = Object.freeze(["edge", "current", "previous"]);
-  var FRONTIER_PLATFORMS = Object.freeze({
-    [CLIENT.surge]: Object.freeze(["macos", "iphone", "ipad"]),
-    [CLIENT.singbox]: Object.freeze(["macos", "iphone", "ipad", "android", "openwrt"]),
-    [CLIENT.onexray]: Object.freeze(["macos", "iphone", "ipad", "android", "windows", "linux"]),
-    [CLIENT.happ]: Object.freeze(["macos", "iphone", "ipad", "android", "windows", "linux"])
-  });
-
   // ../../shared/substore/collection-name.js
   var SAFE_COLLECTION_NAME = /^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$/u;
   var PROTOTYPE_KEYS = /* @__PURE__ */ new Set(["__proto__", "constructor", "prototype"]);
@@ -1926,7 +1833,6 @@ var HappConfigBundle = (() => {
 
   // src/options.js
   var PLATFORMS = /* @__PURE__ */ new Set(["macos", "iphone", "ipad", "android", "windows", "linux", "all"]);
-  var CHANNELS = new Set(FRONTIER_CHANNELS ?? ["edge", "current", "previous"]);
   var ENUMS = Object.freeze({
     dnsMode: ["stable", "privacy", "speed"],
     chinaDns: ["alidns", "dnspod", "system"],
@@ -1935,9 +1841,9 @@ var HappConfigBundle = (() => {
     quicMode: ["allow", "proxy-block", "all-block"],
     ipv6Mode: ["auto", "ipv4-only"]
   });
-  var DEFAULTS = Object.freeze({ channel: "current", dnsMode: "stable", chinaDns: "alidns", globalDns: "cloudflare", blockMode: "balanced", quicMode: "proxy-block", ipv6Mode: "auto", policyOverrides: "" });
+  var DEFAULTS = Object.freeze({ dnsMode: "stable", chinaDns: "alidns", globalDns: "cloudflare", blockMode: "balanced", quicMode: "proxy-block", ipv6Mode: "auto", policyOverrides: "" });
   var REQUIRED = /* @__PURE__ */ new Set(["output", "type", "name", "subscriptionName", "platform"]);
-  var ALLOWED = /* @__PURE__ */ new Set([...REQUIRED, "channel", "dnsMode", "chinaDns", "globalDns", "blockMode", "quicMode", "ipv6Mode", "policyOverrides"]);
+  var ALLOWED = /* @__PURE__ */ new Set([...REQUIRED, "dnsMode", "chinaDns", "globalDns", "blockMode", "quicMode", "ipv6Mode", "policyOverrides"]);
   var PROTOTYPE = /* @__PURE__ */ new Set(["__proto__", "constructor", "prototype"]);
   function ownOptions(raw) {
     if (!raw || typeof raw !== "object" || Array.isArray(raw)) throw new TypeError("Happ options must be a plain object");
@@ -1981,7 +1887,6 @@ var HappConfigBundle = (() => {
       name: validateCollectionName(required(values, "name"), "Option 'name'"),
       subscriptionName: validateCollectionName(required(values, "subscriptionName"), "Option 'subscriptionName'"),
       platform,
-      channel: values.has("channel") ? values.get("channel") : DEFAULTS.channel,
       dnsMode: enumValue(values, "dnsMode"),
       chinaDns: enumValue(values, "chinaDns"),
       globalDns: enumValue(values, "globalDns"),
@@ -1990,7 +1895,6 @@ var HappConfigBundle = (() => {
       ipv6Mode: enumValue(values, "ipv6Mode"),
       policyOverrides: values.has("policyOverrides") && values.get("policyOverrides") !== void 0 ? values.get("policyOverrides") : DEFAULTS.policyOverrides
     };
-    if (!CHANNELS.has(options.channel)) throw new Error("Option 'channel' has an unsupported value");
     if (typeof options.policyOverrides !== "string") throw new Error("Option 'policyOverrides' must be a string");
     return Object.freeze(options);
   }
@@ -1998,7 +1902,8 @@ var HappConfigBundle = (() => {
 
   // src/render-node.js
   var SUPPORTED = /* @__PURE__ */ new Set(["vless", "vmess", "trojan", "ss", "shadowsocks", "socks5", "hysteria2", "hy2"]);
-  var TRANSPORTS = /* @__PURE__ */ new Set(["tcp", "raw", "ws", "grpc", "h2", "http2"]);
+  var TRANSPORTS = /* @__PURE__ */ new Set(["tcp", "raw", "ws", "grpc"]);
+  var VMESS_SECURITY = /* @__PURE__ */ new Set(["auto", "aes-128-gcm", "chacha20-poly1305", "none", "zero"]);
   var has = (o, k) => Object.hasOwn(o, k);
   var first = (o, keys) => keys.find((k) => has(o, k)) === void 0 ? void 0 : o[keys.find((k) => has(o, k))];
   var required2 = (v, label) => {
@@ -2010,23 +1915,38 @@ var HappConfigBundle = (() => {
     if (!Number.isInteger(n) || n < 1 || n > 65535) throw new Error("Happ node port is invalid");
     return n;
   };
-  function tlsSettings(node) {
-    const security = String(node.security ?? (node.tls ? "tls" : "none")).toLowerCase();
+  function isIpAddress(value) {
+    const text = String(value ?? "");
+    if (text.includes(":")) return true;
+    const parts = text.split(".");
+    return parts.length === 4 && parts.every((part) => /^\d+$/u.test(part) && Number(part) <= 255);
+  }
+  function tlsSettings(node, { defaultServerName = false } = {}) {
+    const reality = node["reality-opts"];
+    const vmessCipherSecurity = String(node.type ?? "").toLowerCase() === "vmess" && typeof node.security === "string" && VMESS_SECURITY.has(node.security.toLowerCase());
+    const security = String(vmessCipherSecurity ? reality ? "reality" : node.tls ? "tls" : "none" : node.security ?? (reality ? "reality" : node.tls ? "tls" : "none")).toLowerCase();
     if (security === "none") return void 0;
     if (security !== "tls" && security !== "reality") throw new Error("Unsupported Happ TLS security");
+    if (security !== "reality" && reality !== void 0) throw new Error("Happ TLS conflicts with Reality options");
     const settings = {};
     const serverName = first(node, ["sni", "servername"]);
     if (serverName !== void 0) settings.serverName = required2(serverName, "SNI");
+    else if (defaultServerName && !isIpAddress(node.server)) settings.serverName = required2(node.server, "server");
+    if (security === "reality") {
+      const realitySettings = {};
+      if (settings.serverName !== void 0) realitySettings.serverName = settings.serverName;
+      const fingerprint2 = node["client-fingerprint"] ?? node.fingerprint;
+      if (fingerprint2 !== void 0) realitySettings.fingerprint = fingerprint2;
+      const realityOptions = reality ?? {};
+      const publicKey = realityOptions["public-key"] ?? realityOptions.publicKey;
+      if (!publicKey) throw new Error("Happ REALITY public key is required");
+      settings.realitySettings = { ...realitySettings, publicKey, ...realityOptions["short-id"] || realityOptions.shortId ? { shortId: realityOptions["short-id"] ?? realityOptions.shortId } : {}, ...realityOptions["spider-x"] || realityOptions.spiderX || realityOptions["_spider-x"] ? { spiderX: realityOptions["spider-x"] ?? realityOptions.spiderX ?? realityOptions["_spider-x"] } : {} };
+      return settings;
+    }
     if (node["skip-cert-verify"] !== void 0) settings.allowInsecure = node["skip-cert-verify"] === true;
     else if (node["allow-insecure"] !== void 0) settings.allowInsecure = node["allow-insecure"] === true;
     if (node.alpn !== void 0) settings.alpn = Array.isArray(node.alpn) ? [...node.alpn] : [node.alpn];
     if (node["client-fingerprint"] !== void 0 || node.fingerprint !== void 0) settings.fingerprint = node["client-fingerprint"] ?? node.fingerprint;
-    if (security === "reality") {
-      const reality = node["reality-opts"] ?? node.reality ?? {};
-      const publicKey = reality["public-key"] ?? reality.publicKey;
-      if (!publicKey) throw new Error("Happ REALITY public key is required");
-      settings.realitySettings = { publicKey, ...reality["short-id"] || reality.shortId ? { shortId: reality["short-id"] ?? reality.shortId } : {}, ...reality["spider-x"] || reality.spiderX || reality["_spider-x"] ? { spiderX: reality["spider-x"] ?? reality.spiderX ?? reality["_spider-x"] } : {} };
-    }
     return settings;
   }
   function streamSettings(node) {
@@ -2046,13 +1966,39 @@ var HappConfigBundle = (() => {
     }
     if (network === "ws") {
       const opts = node["ws-opts"] ?? {};
-      stream.wsSettings = { path: opts.path ?? "/", ...opts.headers ? { headers: { ...opts.headers } } : {}, ...opts.maxEarlyData ? { maxEarlyData: opts.maxEarlyData } : {} };
+      const path = Array.isArray(opts.path) ? opts.path[0] : opts.path ?? "/";
+      const earlyData = opts["max-early-data"] ?? opts.maxEarlyData;
+      const earlyDataHeader = opts["early-data-header-name"];
+      if (earlyDataHeader !== void 0 && String(earlyDataHeader).toLowerCase() !== "sec-websocket-protocol") {
+        throw new Error("Happ WebSocket early-data header is unsupported");
+      }
+      let wsPath = path;
+      if (earlyData !== void 0) {
+        if (!Number.isInteger(earlyData) || earlyData < 0) throw new Error("Happ WebSocket max early data is invalid");
+        if (earlyData > 0) {
+          const separator = String(wsPath).includes("?") ? String(wsPath).endsWith("?") || String(wsPath).endsWith("&") ? "" : "&" : "?";
+          wsPath = `${wsPath}${separator}ed=${earlyData}`;
+        }
+      }
+      const headers = opts.headers ? { ...opts.headers } : void 0;
+      const host = headers?.Host ?? headers?.host;
+      if (headers) {
+        delete headers.Host;
+        delete headers.host;
+      }
+      stream.wsSettings = {
+        path: wsPath,
+        ...host !== void 0 ? { host: Array.isArray(host) ? host[0] : host } : {},
+        ...headers && Object.keys(headers).length > 0 ? { headers } : {}
+      };
     } else if (network === "grpc") {
       const opts = node["grpc-opts"] ?? {};
-      stream.grpcSettings = { serviceName: opts["grpc-service-name"] ?? opts.serviceName ?? "", ...opts["grpc-mode"] || opts.mode ? { multiMode: (opts["grpc-mode"] ?? opts.mode) === "multi" } : {} };
-    } else if (network === "h2" || network === "http2") {
-      const opts = node["h2-opts"] ?? node["http-opts"] ?? {};
-      stream.httpSettings = { path: opts.path ?? "/", ...opts.host ? { host: Array.isArray(opts.host) ? opts.host : [opts.host] } : {} };
+      stream.grpcSettings = {
+        serviceName: opts["grpc-service-name"] ?? opts.serviceName ?? "",
+        ...opts["grpc-mode"] || opts.mode ? { multiMode: (opts["grpc-mode"] ?? opts.mode) === "multi" } : {},
+        ...opts.authority ? { authority: opts.authority } : {},
+        ...opts["user-agent"] ? { user_agent: opts["user-agent"] } : {}
+      };
     }
     return Object.keys(stream).length > 1 ? stream : void 0;
   }
@@ -2065,7 +2011,9 @@ var HappConfigBundle = (() => {
     return { protocol: "vless", settings: { vnext: [{ ...common(node), users: [user] }] }, ...streamSettings(node) ? { streamSettings: streamSettings(node) } : {} };
   }
   function renderVmess(node) {
-    const user = { id: required2(node.uuid, "UUID"), alterId: Number(node.alterId ?? node["alter-id"] ?? 0), security: node.cipher ?? node.security ?? "auto" };
+    const cipher = node.cipher ?? (VMESS_SECURITY.has(String(node.security ?? "").toLowerCase()) ? String(node.security).toLowerCase() : "auto");
+    if (!VMESS_SECURITY.has(String(cipher).toLowerCase())) throw new Error("Unsupported Happ VMess security");
+    const user = { id: required2(node.uuid, "UUID"), alterId: Number(node.alterId ?? node["alter-id"] ?? 0), security: String(cipher).toLowerCase() };
     return { protocol: "vmess", settings: { vnext: [{ ...common(node), users: [user] }] }, ...streamSettings(node) ? { streamSettings: streamSettings(node) } : {} };
   }
   function renderTrojan(node) {
@@ -2075,7 +2023,6 @@ var HappConfigBundle = (() => {
   }
   function renderShadowsocks(node) {
     const server = { ...common(node), method: required2(node.cipher ?? node.method, "method"), password: required2(node.password, "password") };
-    if (node.udp !== void 0) server.ota = node.udp === true;
     return { protocol: "shadowsocks", settings: { servers: [server] }, ...streamSettings(node) ? { streamSettings: streamSettings(node) } : {} };
   }
   function renderSocks(node) {
@@ -2083,12 +2030,41 @@ var HappConfigBundle = (() => {
     if (node.username !== void 0 || node.password !== void 0) server.users = [{ user: node.username ?? "", pass: node.password ?? "" }];
     return { protocol: "socks", settings: { servers: [server] } };
   }
-  function renderHysteria2(node) {
-    const tls = tlsSettings(node);
+  function hysteriaSettings(node) {
+    const settings = { version: 2, ...node.password !== void 0 ? { auth: required2(node.password, "password") } : {} };
+    if (node.up !== void 0) settings.up = String(node.up);
+    if (node.down !== void 0) settings.down = String(node.down);
+    const ports = node["port-hopping"] ?? node.port_hopping ?? node.ports;
+    const interval = node["port-hopping-interval"] ?? node.port_hopping_interval ?? node["hop-interval"];
+    if (ports !== void 0) {
+      settings.udphop = { port: ports, ...interval !== void 0 ? { interval: Number(interval) } : {} };
+    }
+    return settings;
+  }
+  function hysteriaMasks(node) {
+    const obfs = node.obfs === void 0 ? void 0 : String(node.obfs).toLowerCase();
+    const obfsPassword = node["obfs-password"] ?? node.obfs_password;
+    if (obfs === void 0) {
+      if (obfsPassword !== void 0) throw new Error("Happ Hysteria2 obfs password requires salamander obfs");
+      return void 0;
+    }
+    if (obfs !== "salamander" || typeof obfsPassword !== "string" || obfsPassword.length === 0) {
+      throw new Error("Happ Hysteria2 supports only salamander obfs with a password");
+    }
+    return [{ type: "salamander", settings: { password: obfsPassword } }];
+  }
+  function hysteriaStreamSettings(node) {
+    const tls = tlsSettings(node, { defaultServerName: true });
     if (!tls || !tls.serverName && !tls.realitySettings) throw new Error("Happ Hysteria2 requires TLS");
-    const server = { ...common(node), ...node.password !== void 0 ? { auth: node.password } : {} };
-    const stream = { network: "hysteria", method: "hysteria", ...tls.realitySettings ? { security: "reality", realitySettings: tls.realitySettings } : { security: "tls", tlsSettings: tls }, ...node.obfs ? { hysteriaSettings: { obfs: node.obfs, ...node["obfs-password"] ? { obfsPassword: node["obfs-password"] } : {} } } : {} };
-    return { protocol: "hysteria", settings: { version: 2, ...server }, streamSettings: stream };
+    return {
+      network: "hysteria",
+      ...tls.realitySettings ? { security: "reality", realitySettings: tls.realitySettings } : { security: "tls", tlsSettings: tls },
+      hysteriaSettings: hysteriaSettings(node),
+      ...hysteriaMasks(node) ? { udpmasks: hysteriaMasks(node) } : {}
+    };
+  }
+  function renderHysteria2(node) {
+    return { protocol: "hysteria", settings: { version: 2, ...common(node) }, streamSettings: hysteriaStreamSettings(node) };
   }
   function renderHappOutbound(node, tag) {
     if (!node || typeof node !== "object") throw new TypeError("Happ node must be an object");
@@ -2395,7 +2371,7 @@ var HappConfigBundle = (() => {
     Advertising_Domain: "\u{1F9F1} \u5E38\u89C1\u5E7F\u544A"
   });
   function uniqueMembership(id, memberships, label) {
-    const matches = Object.entries(memberships).filter(([, ids2]) => ids2.includes(id)).map(([name]) => name);
+    const matches = Object.entries(memberships).filter(([, ids]) => ids.includes(id)).map(([name]) => name);
     if (matches.length !== 1) {
       throw new Error(`Lightweight rule source ${id} must have exactly one ${label} membership`);
     }
@@ -2518,6 +2494,7 @@ var HappConfigBundle = (() => {
     "169.254.0.0/16",
     "224.0.0.0/4",
     "255.255.255.255",
+    "geoip:PRIVATE",
     "geoip:CN"
   ]);
   var HAPP_PRIVATE_IPV4 = Object.freeze([
@@ -2736,7 +2713,7 @@ var HappConfigBundle = (() => {
     const fixedById = /* @__PURE__ */ new Map();
     const outbounds = [];
     const balancers = [];
-    const observatorySelectors = [];
+    const observatorySelectors = [followTag];
     for (const fixed of fixedRecords) {
       if (fixed.nodeId && fixed.nodeId === context.followNodeId) continue;
       const node = fixed.node ?? nodes.find((candidate) => (candidate._profile?.id ?? "") === fixed.nodeId);
@@ -2826,7 +2803,7 @@ var HappConfigBundle = (() => {
   }
 
   // src/routing-profile-data.js
-  var PROFILE_NAME = "Apple Proxy Profiles Happ";
+  var PROFILE_NAME = "Apple Proxy Profiles HAPP v2";
   var REMOTE_DNS = Object.freeze({ type: "DoH", domain: "https://cloudflare-dns.com/dns-query", ip: "1.1.1.1" });
   var DOMESTIC_DNS = Object.freeze({ type: "DoH", domain: "https://dns.alidns.com/dns-query", ip: "223.5.5.5" });
   function immutableBaseUrl(value) {
@@ -2873,28 +2850,31 @@ var HappConfigBundle = (() => {
 
   // src/substore-config-entry.js
   var PUBLIC_ROOT = "https://juan-nikola.github.io/apple-proxy-profiles";
+  var HAPP_PUBLIC_CHANNEL = "current";
   function requestOptionsFrom(input, context) {
     const candidates = [context?.requestOptions, input?.$options];
     return candidates.find((value) => value && typeof value === "object" && !Array.isArray(value));
   }
-  function setRoutingResponseHeader(requestOptions, routing) {
+  function setResponseHeader(requestOptions, name, value) {
     if (!requestOptions) return false;
     if (!requestOptions._res || typeof requestOptions._res !== "object" || Array.isArray(requestOptions._res)) requestOptions._res = {};
     const response = requestOptions._res;
     if (!response.headers || typeof response.headers !== "object" || Array.isArray(response.headers)) response.headers = {};
-    if (typeof response.headers.set === "function") response.headers.set("routing", routing);
-    else response.headers.routing = routing;
+    if (typeof response.headers.set === "function") response.headers.set(name, value);
+    else response.headers[name] = value;
     return true;
   }
   function attachRoutingProfile(input, context, options) {
-    if (options.platform !== "iphone" && options.platform !== "ipad") return;
     const requestOptions = requestOptionsFrom(input, context);
     if (!requestOptions) return;
     const profile = renderHappRoutingProfile({
-      baseUrl: PUBLIC_ROOT + "/" + options.channel,
+      baseUrl: `${PUBLIC_ROOT}/${HAPP_PUBLIC_CHANNEL}`,
       generatedAt: (/* @__PURE__ */ new Date()).toISOString()
     });
-    setRoutingResponseHeader(requestOptions, renderHappRoutingDeepLink(profile));
+    setResponseHeader(requestOptions, "routing", renderHappRoutingDeepLink(profile));
+    setResponseHeader(requestOptions, "content-type", "application/json; charset=utf-8");
+    setResponseHeader(requestOptions, "content-disposition", `attachment; filename="happ-${options.platform}.json"`);
+    setResponseHeader(requestOptions, "no-limit-enabled", "1");
   }
   function logDiagnostics(context, options, normalized, filtered) {
     const method = typeof context?.logger === "function" ? context.logger : typeof context?.logger?.info === "function" ? context.logger.info.bind(context.logger) : null;
@@ -2903,7 +2883,7 @@ var HappConfigBundle = (() => {
       method(`[happ-config] ${JSON.stringify({
         client: "happ",
         platform: options.platform,
-        channel: options.channel,
+        channel: HAPP_PUBLIC_CHANNEL,
         accepted: filtered.nodes.length,
         excluded: filtered.diagnostics.excluded,
         normalized: normalized.diagnostics.total

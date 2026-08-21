@@ -287,6 +287,7 @@ var HappAuditBundle = (() => {
   var SINGBOX_SNELL_MODES = /* @__PURE__ */ new Set(["default", "unshaped", "unsafe-raw"]);
   var EGERN_OBFS = /* @__PURE__ */ new Set(["http", "tls"]);
   var EGERN_VMESS_SECURITY = /* @__PURE__ */ new Set(["auto", "aes-128-gcm", "chacha20-poly1305", "none", "zero"]);
+  var XRAY_VMESS_SECURITY = EGERN_VMESS_SECURITY;
   var EGERN_TRANSPORTS = /* @__PURE__ */ new Set(["tcp", "raw", "ws", "grpc", "h2", "http2", "http", "http1"]);
   var EGERN_VLESS_FLOWS = /* @__PURE__ */ new Set(["xtls-rprx-vision"]);
   var EGERN_TUIC_UDP_MODES = /* @__PURE__ */ new Set(["native", "quic"]);
@@ -349,6 +350,12 @@ var HappAuditBundle = (() => {
   }
   function isNonblankString(value) {
     return typeof value === "string" && value.length > 0 && value.trim() === value;
+  }
+  function isDomainServer(value) {
+    if (!isNonblankString(value)) return false;
+    if (value.includes(":")) return false;
+    const parts = value.split(".");
+    return !(parts.length === 4 && parts.every((part) => /^\d+$/u.test(part) && Number(part) <= 255));
   }
   function isNonblankOpaqueString(value) {
     return typeof value === "string" && value.trim().length > 0;
@@ -1108,7 +1115,7 @@ var HappAuditBundle = (() => {
     else if (client === CLIENT.onexray) transportReason = oneXrayNodeExclusionReason(node ?? {});
     return transportReason ? { supported: false, reason: transportReason } : { supported: true, reason: null };
   }
-  var HAPP_XRAY_TRANSPORTS = /* @__PURE__ */ new Set(["tcp", "raw", "ws", "grpc", "h2", "http2"]);
+  var HAPP_XRAY_TRANSPORTS = /* @__PURE__ */ new Set(["tcp", "raw", "ws", "grpc"]);
   var ONEXRAY_TRANSPORTS = /* @__PURE__ */ new Set([
     "tcp",
     "raw",
@@ -1136,13 +1143,19 @@ var HappAuditBundle = (() => {
     return null;
   }
   function xrayTlsReason(node, client) {
-    const security = node.security === void 0 ? node.tls === true ? "tls" : "none" : String(node.security).toLowerCase();
+    const reality = node["reality-opts"];
+    if (Object.hasOwn(node, "reality")) return `unsupported-${client}-tls`;
+    const vmessCipherSecurity = normalizeProtocol(node.type) === "vmess" && typeof node.security === "string" && XRAY_VMESS_SECURITY.has(node.security.toLowerCase());
+    const security = node.security === void 0 || vmessCipherSecurity ? reality !== void 0 ? "reality" : node.tls === true ? "tls" : "none" : String(node.security).toLowerCase();
     if (!["none", "tls", "reality"].includes(security)) return `unsupported-${client}-tls`;
-    if (node.security === "none" && node.tls === true || node.tls === false && security !== "none") {
+    if (!vmessCipherSecurity && (node.security === "none" && node.tls === true || node.tls === false && security !== "none")) {
       return `unsupported-${client}-tls`;
     }
+    if (normalizeProtocol(node.type) === "vmess" && hasOption(node, "cipher") && vmessCipherSecurity && String(node.cipher).toLowerCase() !== String(node.security).toLowerCase()) {
+      return `unsupported-${client}-tls`;
+    }
+    if (security !== "reality" && reality !== void 0) return `unsupported-${client}-tls`;
     if (security === "reality") {
-      const reality = node["reality-opts"];
       if (!isPlainObject(reality) || !isNonblankOpaqueString(reality["public-key"])) {
         return client === "onexray" ? "incomplete-onexray-reality" : "incomplete-happ-reality";
       }
@@ -1182,6 +1195,22 @@ var HappAuditBundle = (() => {
     if (tls) return tls;
     const transport = xrayTransportReason(node, client, protocol2);
     if (transport) return transport;
+    if (client === "happ") {
+      const network = normalizeTransport(node);
+      const security = node.security === "reality" || node["reality-opts"] !== void 0 ? "reality" : node.tls === true || node.security === "tls" ? "tls" : "none";
+      if (security === "reality" && (protocol2 === "hysteria2" || protocol2 === "hy2" || !["tcp", "raw", "grpc"].includes(network))) {
+        return "unsupported-happ-tls";
+      }
+      if (protocol2 === "hysteria2" || protocol2 === "hy2") {
+        const obfs = node.obfs === void 0 ? void 0 : String(node.obfs).toLowerCase();
+        const obfsPassword = node["obfs-password"] ?? node.obfs_password;
+        if (obfs !== void 0 && (obfs !== "salamander" || typeof obfsPassword !== "string" || obfsPassword.length === 0)) {
+          return "unsupported-happ-hysteria2-obfs";
+        }
+        if (obfs === void 0 && obfsPassword !== void 0) return "unsupported-happ-hysteria2-obfs";
+        if (security === "tls" && !isNonblankString(node.sni ?? node.servername) && !isDomainServer(node.server)) return "incomplete-happ-tls";
+      }
+    }
     if (client === "happ" && protocol2 === "socks5" && (node.tls === true || node.security === "tls" || node.security === "reality")) {
       return "unsupported-happ-tls";
     }
@@ -1698,9 +1727,9 @@ var HappAuditBundle = (() => {
           suffixGroup.push(record);
           suffixGroups.set(record.suffix, suffixGroup);
         }
-        for (const records2 of suffixGroups.values()) {
-          records2.forEach((record, index) => {
-            const suffix = records2.length > 1 ? `${record.suffix}-${index + 1}` : record.suffix;
+        for (const records of suffixGroups.values()) {
+          records.forEach((record, index) => {
+            const suffix = records.length > 1 ? `${record.suffix}-${index + 1}` : record.suffix;
             record.node.name = `${protocolBase} #${suffix}`;
           });
         }
@@ -1800,132 +1829,10 @@ var HappAuditBundle = (() => {
   function buildHappAudit({ options = {}, policyResolution = {}, configs = [], eligibleNodes = null } = {}) {
     const targets = Object.fromEntries(Object.entries(policyResolution.targets ?? {}).map(([key, value]) => [key, safeTarget(value)]));
     const count = Array.isArray(eligibleNodes) ? eligibleNodes.length : configs.length;
-    const audit = { schemaVersion: 1, client: "happ", output: "audit", platform: options.platform ?? "all", channel: options.channel ?? "edge", counts: { configs: configs.length || count, eligibleNodes: count, fixedNodes: (policyResolution.fixedNodes ?? []).length, warnings: (policyResolution.warnings ?? []).length }, targets, warnings: (policyResolution.warnings ?? []).map(({ businessKey, warningCode }) => ({ businessKey, warningCode })) };
+    const audit = { schemaVersion: 1, client: "happ", output: "audit", platform: options.platform ?? "all", channel: "current", counts: { configs: configs.length || count, eligibleNodes: count, fixedNodes: (policyResolution.fixedNodes ?? []).length, warnings: (policyResolution.warnings ?? []).length }, targets, warnings: (policyResolution.warnings ?? []).map(({ businessKey, warningCode }) => ({ businessKey, warningCode })) };
     if (unsafe.test(JSON.stringify(audit))) throw new Error("Happ audit contains sensitive field");
     return Object.freeze(audit);
   }
-
-  // ../../shared/release/client-catalog.js
-  var freeze = (value) => {
-    if (value && typeof value === "object" && !Object.isFrozen(value)) {
-      for (const child of Object.values(value)) freeze(child);
-      Object.freeze(value);
-    }
-    return value;
-  };
-  var records = [
-    {
-      id: CLIENT.anywhere,
-      displayName: "Anywhere",
-      state: "active",
-      platforms: ["iphone", "ipad", "macos", "appletv"],
-      configFormat: "clash-yaml",
-      ruleFormat: "clash-yaml",
-      nodeValidator: "anywhere",
-      separatesProfile: false,
-      supportsPolicyOverrides: false,
-      adapterSchema: "anywhere-v1",
-      publicDirectory: "anywhere"
-    },
-    {
-      id: CLIENT.egern,
-      displayName: "Egern",
-      state: "active",
-      platforms: ["iphone", "ipad", "macos"],
-      configFormat: "yaml",
-      ruleFormat: "yaml",
-      nodeValidator: "egern",
-      separatesProfile: false,
-      supportsPolicyOverrides: false,
-      adapterSchema: "egern-v1",
-      publicDirectory: "egern"
-    },
-    {
-      id: CLIENT.shadowrocket,
-      displayName: "Shadowrocket",
-      state: "active",
-      platforms: ["iphone", "ipad", "macos"],
-      configFormat: "ini",
-      ruleFormat: "list",
-      nodeValidator: "shadowrocket",
-      separatesProfile: false,
-      supportsPolicyOverrides: false,
-      adapterSchema: "shadowrocket-v1",
-      publicDirectory: "shadowrocket"
-    },
-    {
-      id: CLIENT.surge,
-      displayName: "Surge",
-      state: "active",
-      platforms: ["macos", "iphone", "ipad"],
-      configFormat: "ini",
-      ruleFormat: "list",
-      nodeValidator: "surge",
-      separatesProfile: false,
-      supportsPolicyOverrides: false,
-      adapterSchema: "surge-v1",
-      publicDirectory: "surge"
-    },
-    {
-      id: CLIENT.singbox,
-      displayName: "sing-box",
-      state: "active",
-      platforms: ["macos", "iphone", "ipad", "android"],
-      configFormat: "json",
-      ruleFormat: "srs",
-      nodeValidator: "singbox",
-      separatesProfile: false,
-      supportsPolicyOverrides: false,
-      adapterSchema: "singbox-v1",
-      publicDirectory: "sing-box"
-    },
-    {
-      id: CLIENT.onexray,
-      displayName: "OneXray",
-      state: "active",
-      platforms: ["macos", "iphone", "ipad", "android", "windows", "linux"],
-      configFormat: "xray-profile-json",
-      ruleFormat: "xray-geodata",
-      nodeValidator: "onexray",
-      separatesProfile: false,
-      supportsPolicyOverrides: false,
-      adapterSchema: "onexray-v1",
-      publicDirectory: "onexray"
-    },
-    {
-      id: CLIENT.happ,
-      displayName: "HAPP",
-      state: "active",
-      platforms: ["iphone", "ipad", "macos", "android"],
-      configFormat: "happ-json",
-      ruleFormat: "happ-json",
-      nodeValidator: "happ",
-      separatesProfile: false,
-      supportsPolicyOverrides: false,
-      adapterSchema: "happ-v4",
-      publicDirectory: "happ"
-    }
-  ].map((record) => freeze(record));
-  var byId = new Map(records.map((record) => [record.id, record]));
-  var ids = freeze(records.map(({ id }) => id));
-  var activeIds = freeze(records.filter(({ state }) => state === "active").map(({ id }) => id));
-  var plannedIds = freeze(records.filter(({ state }) => state === "planned").map(({ id }) => id));
-  var lightweightRuleIds = freeze([
-    CLIENT.anywhere,
-    CLIENT.egern,
-    CLIENT.shadowrocket,
-    CLIENT.surge,
-    CLIENT.singbox
-  ]);
-
-  // ../../shared/release/frontier-manifest.js
-  var FRONTIER_CHANNELS = Object.freeze(["edge", "current", "previous"]);
-  var FRONTIER_PLATFORMS = Object.freeze({
-    [CLIENT.surge]: Object.freeze(["macos", "iphone", "ipad"]),
-    [CLIENT.singbox]: Object.freeze(["macos", "iphone", "ipad", "android", "openwrt"]),
-    [CLIENT.onexray]: Object.freeze(["macos", "iphone", "ipad", "android", "windows", "linux"]),
-    [CLIENT.happ]: Object.freeze(["macos", "iphone", "ipad", "android", "windows", "linux"])
-  });
 
   // ../../shared/substore/collection-name.js
   var SAFE_COLLECTION_NAME = /^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$/u;
@@ -1939,7 +1846,6 @@ var HappAuditBundle = (() => {
 
   // src/options.js
   var PLATFORMS = /* @__PURE__ */ new Set(["macos", "iphone", "ipad", "android", "windows", "linux", "all"]);
-  var CHANNELS = new Set(FRONTIER_CHANNELS ?? ["edge", "current", "previous"]);
   var ENUMS = Object.freeze({
     dnsMode: ["stable", "privacy", "speed"],
     chinaDns: ["alidns", "dnspod", "system"],
@@ -1948,9 +1854,9 @@ var HappAuditBundle = (() => {
     quicMode: ["allow", "proxy-block", "all-block"],
     ipv6Mode: ["auto", "ipv4-only"]
   });
-  var DEFAULTS = Object.freeze({ channel: "current", dnsMode: "stable", chinaDns: "alidns", globalDns: "cloudflare", blockMode: "balanced", quicMode: "proxy-block", ipv6Mode: "auto", policyOverrides: "" });
+  var DEFAULTS = Object.freeze({ dnsMode: "stable", chinaDns: "alidns", globalDns: "cloudflare", blockMode: "balanced", quicMode: "proxy-block", ipv6Mode: "auto", policyOverrides: "" });
   var REQUIRED = /* @__PURE__ */ new Set(["output", "type", "name", "subscriptionName", "platform"]);
-  var ALLOWED = /* @__PURE__ */ new Set([...REQUIRED, "channel", "dnsMode", "chinaDns", "globalDns", "blockMode", "quicMode", "ipv6Mode", "policyOverrides"]);
+  var ALLOWED = /* @__PURE__ */ new Set([...REQUIRED, "dnsMode", "chinaDns", "globalDns", "blockMode", "quicMode", "ipv6Mode", "policyOverrides"]);
   var PROTOTYPE = /* @__PURE__ */ new Set(["__proto__", "constructor", "prototype"]);
   function ownOptions(raw) {
     if (!raw || typeof raw !== "object" || Array.isArray(raw)) throw new TypeError("Happ options must be a plain object");
@@ -1994,7 +1900,6 @@ var HappAuditBundle = (() => {
       name: validateCollectionName(required(values, "name"), "Option 'name'"),
       subscriptionName: validateCollectionName(required(values, "subscriptionName"), "Option 'subscriptionName'"),
       platform,
-      channel: values.has("channel") ? values.get("channel") : DEFAULTS.channel,
       dnsMode: enumValue(values, "dnsMode"),
       chinaDns: enumValue(values, "chinaDns"),
       globalDns: enumValue(values, "globalDns"),
@@ -2003,7 +1908,6 @@ var HappAuditBundle = (() => {
       ipv6Mode: enumValue(values, "ipv6Mode"),
       policyOverrides: values.has("policyOverrides") && values.get("policyOverrides") !== void 0 ? values.get("policyOverrides") : DEFAULTS.policyOverrides
     };
-    if (!CHANNELS.has(options.channel)) throw new Error("Option 'channel' has an unsupported value");
     if (typeof options.policyOverrides !== "string") throw new Error("Option 'policyOverrides' must be a string");
     return Object.freeze(options);
   }

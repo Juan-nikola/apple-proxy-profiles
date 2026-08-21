@@ -2440,8 +2440,18 @@ var HappConfigBundle = (() => {
     return Object.freeze([...selected].sort((left, right) => phaseRank.get(left.phase) - phaseRank.get(right.phase) || sourceRank.get(left.id) - sourceRank.get(right.id)));
   }
 
-  // src/render-dns.js
+  // src/geodata-contract.js
   var HAPP_GEOSITE_ALIASES = Object.freeze({
+    Hijacking: "CATEGORY-ADS-ALL",
+    BlockHttpDNS: "CATEGORY-HTTPDNS-CN",
+    Privacy: "PRIVATE",
+    DomesticCore: "CN",
+    DomesticGame: "CATEGORY-GAMES-CN",
+    SteamCN: "STEAM",
+    BiliBili: "BILIBILI",
+    ByteDance: "BYTEDANCE",
+    XiaoHongShu: "XIAOHONGSHU",
+    Weibo: "CATEGORY-SOCIAL-MEDIA-CN",
     OpenAI: "OPENAI",
     Claude: "CATEGORY-AI-!CN",
     Gemini: "GOOGLE-GEMINI",
@@ -2457,8 +2467,79 @@ var HappConfigBundle = (() => {
     Instagram: "INSTAGRAM",
     Twitter: "TWITTER",
     TikTok: "TIKTOK",
-    OverseasGame: "CATEGORY-GAMES-!CN"
+    Apple: "APPLE",
+    Microsoft: "MICROSOFT",
+    Download: "CATEGORY-NETDISK-!CN",
+    PrivateTracker: "CATEGORY-PT",
+    OverseasGame: "CATEGORY-GAMES-!CN",
+    ChinaTLD: "CN"
   });
+  var HAPP_GEOIP_ALIASES = Object.freeze({ ChinaIP: "CN" });
+  var HAPP_PROFILE_DIRECT_SITES = Object.freeze([
+    "geosite:PRIVATE",
+    "geosite:CN",
+    "geosite:CATEGORY-GAMES-CN",
+    "geosite:STEAM",
+    "geosite:BILIBILI",
+    "geosite:BYTEDANCE",
+    "geosite:XIAOHONGSHU",
+    "geosite:CATEGORY-SOCIAL-MEDIA-CN",
+    "geosite:APPLE",
+    "geosite:MICROSOFT",
+    "geosite:CATEGORY-NETDISK-!CN",
+    "geosite:CATEGORY-PT"
+  ]);
+  var HAPP_PROFILE_PROXY_SITES = Object.freeze([
+    "geosite:OPENAI",
+    "geosite:CATEGORY-AI-!CN",
+    "geosite:GOOGLE-GEMINI",
+    "geosite:GITHUB-COPILOT",
+    "geosite:GITHUB",
+    "geosite:YOUTUBE",
+    "geosite:NETFLIX",
+    "geosite:DISNEY",
+    "geosite:SPOTIFY",
+    "geosite:CATEGORY-MEDIA",
+    "geosite:TELEGRAM",
+    "geosite:FACEBOOK",
+    "geosite:INSTAGRAM",
+    "geosite:TWITTER",
+    "geosite:TIKTOK",
+    "geosite:CATEGORY-GAMES-!CN"
+  ]);
+  var HAPP_PROFILE_BLOCK_SITES = Object.freeze([
+    "geosite:CATEGORY-ADS-ALL",
+    "geosite:CATEGORY-HTTPDNS-CN"
+  ]);
+  var HAPP_PROFILE_DIRECT_IP = Object.freeze([
+    "10.0.0.0/8",
+    "172.16.0.0/12",
+    "192.168.0.0/16",
+    "169.254.0.0/16",
+    "224.0.0.0/4",
+    "255.255.255.255",
+    "geoip:CN"
+  ]);
+  var HAPP_PRIVATE_IPV4 = Object.freeze([
+    "10.0.0.0/8",
+    "100.64.0.0/10",
+    "127.0.0.0/8",
+    "169.254.0.0/16",
+    "172.16.0.0/12",
+    "192.0.0.0/24",
+    "192.0.2.0/24",
+    "192.168.0.0/16",
+    "198.18.0.0/15",
+    "198.51.100.0/24",
+    "203.0.113.0/24",
+    "224.0.0.0/4",
+    "240.0.0.0/4",
+    "255.255.255.255/32"
+  ]);
+  var HAPP_PRIVATE_IPV6 = Object.freeze(["::1/128", "::ffff:0:0/96", "fc00::/7", "fe80::/10", "ff00::/8"]);
+  var HAPP_PRIVATE_DOMAINS = Object.freeze(["localhost", "localhost.localdomain", "local", "localdomain", "lan"]);
+
+  // src/render-dns.js
   var PROXY_GEOSITE_DOMAINS = Object.freeze(
     EXPLICIT_OVERSEAS_RULE_SOURCE_IDS.map((id) => `geosite:${HAPP_GEOSITE_ALIASES[id] ?? id.toUpperCase()}`)
   );
@@ -2471,11 +2552,14 @@ var HappConfigBundle = (() => {
     if (!["auto", "ipv4-only"].includes(value.ipv6Mode)) throw new Error("Unsupported Happ ipv6Mode");
     const domestic = chinaDnsProvider(value.chinaDns);
     const global = globalDnsProvider(value.globalDns);
+    const domesticDomains = ["geosite:CN", "geosite:PRIVATE"];
+    const domesticExpectIPs = ["geoip:CN"];
+    const proxyDomains = PROXY_GEOSITE_DOMAINS;
     return Object.freeze({
       tag: "happ-dns",
       servers: [
-        { address: domestic.doh, domains: ["geosite:cn", "geosite:private"], expectIPs: ["geoip:cn"] },
-        { address: global.doh, domains: PROXY_GEOSITE_DOMAINS, skipFallback: true, ...global.address ? { clientIp: global.address } : {} }
+        { address: domestic.doh, domains: domesticDomains, expectIPs: domesticExpectIPs },
+        { address: global.doh, domains: proxyDomains, skipFallback: true, ...global.address ? { clientIp: global.address } : {} }
       ],
       queryStrategy: value.ipv6Mode === "ipv4-only" ? "UseIPv4" : "UseIP"
     });
@@ -2483,9 +2567,11 @@ var HappConfigBundle = (() => {
   function renderHappDnsRoutes(options = {}) {
     const followTag = options.followTag ?? "happ-follow/current";
     const globalOutboundTag = options.globalOutboundTag ?? followTag;
+    const domesticDomains = ["geosite:CN", "geosite:PRIVATE"];
+    const proxyDomains = PROXY_GEOSITE_DOMAINS;
     return [
-      { type: "field", domain: ["geosite:cn", "geosite:private"], outboundTag: "happ-direct", server: "happ-dns" },
-      { type: "field", domain: PROXY_GEOSITE_DOMAINS, outboundTag: globalOutboundTag, server: "happ-dns" }
+      { type: "field", domain: domesticDomains, outboundTag: "happ-direct", server: "happ-dns" },
+      { type: "field", domain: proxyDomains, outboundTag: globalOutboundTag, server: "happ-dns" }
     ];
   }
 
@@ -2628,39 +2714,6 @@ var HappConfigBundle = (() => {
   }
 
   // src/render-routing.js
-  var HAPP_GEOSITE_ALIASES2 = Object.freeze({
-    Hijacking: "CATEGORY-ADS-ALL",
-    BlockHttpDNS: "CATEGORY-HTTPDNS-CN",
-    Privacy: "PRIVATE",
-    DomesticCore: "CN",
-    DomesticGame: "CATEGORY-GAMES-CN",
-    SteamCN: "STEAM",
-    BiliBili: "BILIBILI",
-    ByteDance: "BYTEDANCE",
-    XiaoHongShu: "XIAOHONGSHU",
-    Weibo: "CATEGORY-SOCIAL-MEDIA-CN",
-    OpenAI: "OPENAI",
-    Claude: "CATEGORY-AI-!CN",
-    Gemini: "GOOGLE-GEMINI",
-    Copilot: "GITHUB-COPILOT",
-    GitHub: "GITHUB",
-    YouTube: "YOUTUBE",
-    Netflix: "NETFLIX",
-    Disney: "DISNEY",
-    Spotify: "SPOTIFY",
-    GlobalMedia: "CATEGORY-MEDIA",
-    Telegram: "TELEGRAM",
-    Facebook: "FACEBOOK",
-    Instagram: "INSTAGRAM",
-    Twitter: "TWITTER",
-    TikTok: "TIKTOK",
-    Apple: "APPLE",
-    Microsoft: "MICROSOFT",
-    Download: "CATEGORY-NETDISK-!CN",
-    PrivateTracker: "CATEGORY-PT",
-    OverseasGame: "CATEGORY-GAMES-!CN",
-    ChinaTLD: "CN"
-  });
   function hash(value) {
     let h = 2166136261;
     for (const c of String(value)) h = Math.imul(h ^ c.charCodeAt(0), 16777619);
@@ -2697,8 +2750,8 @@ var HappConfigBundle = (() => {
       observatorySelectors.push(candidateTag);
     }
     const rules = [
-      { type: "field", ip: ["geoip:private"], outboundTag: "happ-direct" },
-      { type: "field", domain: ["geosite:private"], outboundTag: "happ-direct" }
+      { type: "field", ip: ["geoip:PRIVATE"], outboundTag: "happ-direct" },
+      { type: "field", domain: ["geosite:PRIVATE"], outboundTag: "happ-direct" }
     ];
     let quicRuleInserted = false;
     for (const item of orderedRoutingPlan({ adblockMode: "off" })) {
@@ -2707,7 +2760,7 @@ var HappConfigBundle = (() => {
         quicRuleInserted = true;
       }
       const isIp = item.id === "ChinaIP";
-      const source = `${isIp ? "geoip" : "geosite"}:${isIp ? "cn" : HAPP_GEOSITE_ALIASES2[item.id] ?? item.id.toUpperCase()}`;
+      const source = isIp ? "geoip:CN" : "geosite:" + (HAPP_GEOSITE_ALIASES[item.id] ?? item.id.toUpperCase());
       const target = item.policy === "REJECT" ? { outboundTag: options.blockMode === "off" ? "happ-direct" : "happ-block" } : targetFor(item.id, resolution, followTag, fixedById);
       rules.push({ type: "field", ...isIp ? { ip: [source] } : { domain: [source] }, ...target });
     }
@@ -2715,7 +2768,7 @@ var HappConfigBundle = (() => {
     const dnsTarget = resolution?.targets?.dnsAndRules;
     const dnsFixed = dnsTarget?.nodeId ? fixedById.get(dnsTarget.nodeId) : null;
     const globalDnsOutbound = dnsTarget?.resolved === "DIRECT" ? "happ-direct" : dnsFixed?.candidateTag ?? followTag;
-    rules.splice(2, 0, ...renderHappDnsRoutes({ followTag, globalOutboundTag: globalDnsOutbound }));
+    rules.splice(2, 0, ...renderHappDnsRoutes({ followTag, globalOutboundTag: globalDnsOutbound, platform: options.platform }));
     const finalTarget = targetFor("__final__", resolution, followTag, fixedById);
     rules.push({ type: "field", network: "tcp,udp", ...finalTarget });
     const routing = { domainStrategy: "IPIfNonMatch", rules };
@@ -2763,17 +2816,86 @@ var HappConfigBundle = (() => {
         log: { loglevel: "warning" },
         inbounds: renderHappInbounds(options.platform),
         outbounds,
-        balancers: route.balancers,
         observatory: route.observatory,
         dns: renderHappDns(options),
-        routing: route.routing,
+        routing: { ...route.routing, balancers: route.balancers },
         meta: { serverDescription: summary(resolution), platform: options.platform, schemaVersion: 1 }
       });
     }
     return configs;
   }
 
+  // src/routing-profile-data.js
+  var PROFILE_NAME = "Apple Proxy Profiles Happ";
+  var REMOTE_DNS = Object.freeze({ type: "DoH", domain: "https://cloudflare-dns.com/dns-query", ip: "1.1.1.1" });
+  var DOMESTIC_DNS = Object.freeze({ type: "DoH", domain: "https://dns.alidns.com/dns-query", ip: "223.5.5.5" });
+  function immutableBaseUrl(value) {
+    if (typeof value !== "string" || !/^https:\/\/[^\s?#]+(?:\/[^\s?#]+)*$/u.test(value)) {
+      throw new TypeError("Happ immutable base URL must be an HTTPS URL without query or fragment");
+    }
+    return value.replace(/\/+$/u, "");
+  }
+  function unixTimestamp(value) {
+    if (typeof value !== "string" || !Number.isFinite(Date.parse(value))) throw new TypeError("Happ generatedAt must be an ISO timestamp");
+    return String(Math.floor(Date.parse(value) / 1e3));
+  }
+  function renderHappRoutingProfile({ baseUrl, generatedAt }) {
+    const base = immutableBaseUrl(baseUrl);
+    return Object.freeze({
+      Name: PROFILE_NAME,
+      GlobalProxy: "true",
+      RouteOrder: "block-proxy-direct",
+      RemoteDNSType: REMOTE_DNS.type,
+      RemoteDNSDomain: REMOTE_DNS.domain,
+      RemoteDNSIP: REMOTE_DNS.ip,
+      DomesticDNSType: DOMESTIC_DNS.type,
+      DomesticDNSDomain: DOMESTIC_DNS.domain,
+      DomesticDNSIP: DOMESTIC_DNS.ip,
+      Geoipurl: base + "/happ/geoip.dat",
+      Geositeurl: base + "/happ/geosite.dat",
+      LastUpdated: unixTimestamp(generatedAt),
+      DnsHosts: Object.freeze({ "cloudflare-dns.com": REMOTE_DNS.ip, "dns.alidns.com": DOMESTIC_DNS.ip }),
+      DirectSites: HAPP_PROFILE_DIRECT_SITES,
+      DirectIp: HAPP_PROFILE_DIRECT_IP,
+      ProxySites: HAPP_PROFILE_PROXY_SITES,
+      ProxyIp: Object.freeze([]),
+      BlockSites: HAPP_PROFILE_BLOCK_SITES,
+      BlockIp: Object.freeze([]),
+      DomainStrategy: "IPIfNonMatch",
+      FakeDNS: "false",
+      UseChunkFiles: "true"
+    });
+  }
+  function renderHappRoutingDeepLink(profile) {
+    if (!profile || typeof profile !== "object" || Array.isArray(profile)) throw new TypeError("Happ routing profile must be an object");
+    return "happ://routing/onadd/" + Buffer.from(JSON.stringify(profile), "utf8").toString("base64");
+  }
+
   // src/substore-config-entry.js
+  var PUBLIC_ROOT = "https://juan-nikola.github.io/apple-proxy-profiles";
+  function requestOptionsFrom(input, context) {
+    const candidates = [context?.requestOptions, input?.$options];
+    return candidates.find((value) => value && typeof value === "object" && !Array.isArray(value));
+  }
+  function setRoutingResponseHeader(requestOptions, routing) {
+    if (!requestOptions) return false;
+    if (!requestOptions._res || typeof requestOptions._res !== "object" || Array.isArray(requestOptions._res)) requestOptions._res = {};
+    const response = requestOptions._res;
+    if (!response.headers || typeof response.headers !== "object" || Array.isArray(response.headers)) response.headers = {};
+    if (typeof response.headers.set === "function") response.headers.set("routing", routing);
+    else response.headers.routing = routing;
+    return true;
+  }
+  function attachRoutingProfile(input, context, options) {
+    if (options.platform !== "iphone" && options.platform !== "ipad") return;
+    const requestOptions = requestOptionsFrom(input, context);
+    if (!requestOptions) return;
+    const profile = renderHappRoutingProfile({
+      baseUrl: PUBLIC_ROOT + "/" + options.channel,
+      generatedAt: (/* @__PURE__ */ new Date()).toISOString()
+    });
+    setRoutingResponseHeader(requestOptions, renderHappRoutingDeepLink(profile));
+  }
   function logDiagnostics(context, options, normalized, filtered) {
     const method = typeof context?.logger === "function" ? context.logger : typeof context?.logger?.info === "function" ? context.logger.info.bind(context.logger) : null;
     if (!method) return;
@@ -2810,11 +2932,12 @@ var HappConfigBundle = (() => {
       allNodes: normalized.nodes,
       options
     });
+    attachRoutingProfile(input, context, options);
     return { ...input, $content: `${JSON.stringify(configs, null, 2)}
 ` };
   }
   return __toCommonJS(substore_config_entry_exports);
 })();
 async function operator(input, targetPlatform) {
-  return HappConfigBundle.operator(input, targetPlatform, { arguments: $arguments, produceArtifact, logger: console });
+  return HappConfigBundle.operator(input, targetPlatform, { arguments: $arguments, produceArtifact, requestOptions: typeof $options === "undefined" ? undefined : $options, logger: console });
 }
