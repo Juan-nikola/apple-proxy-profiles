@@ -1,4 +1,6 @@
-const PROFILE_NAME = "Apple Proxy Profiles Happ";
+// Change the routing profile identity after the GeoData contract migration so HAPP
+// does not reuse a stale cached profile/geodata pair from the previous schema.
+const PROFILE_NAME = "Apple Proxy Profiles HAPP v2";
 const REMOTE_DNS = Object.freeze({ type: "DoH", domain: "https://cloudflare-dns.com/dns-query", ip: "1.1.1.1" });
 const DOMESTIC_DNS = Object.freeze({ type: "DoH", domain: "https://dns.alidns.com/dns-query", ip: "223.5.5.5" });
 import {

@@ -63,9 +63,15 @@ function parseArgs(argv) {
   return args;
 }
 
+export function xrayEnvironment(cwd, baseEnv = process.env) {
+  if (typeof cwd !== "string" || cwd.length === 0) throw new TypeError("HAPP Xray asset directory is required");
+  return { ...baseEnv, "xray.location.asset": cwd };
+}
+
 function xrayTest(xrayBin, configPath, cwd) {
   const result = spawnSync(xrayBin, ["run", "-test", "-config", configPath], {
     cwd,
+    env: xrayEnvironment(cwd),
     encoding: "utf8",
     stdio: ["ignore", "pipe", "pipe"],
   });

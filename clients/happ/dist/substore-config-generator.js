@@ -2702,7 +2702,7 @@ var HappConfigBundle = (() => {
   }
 
   // src/routing-profile-data.js
-  var PROFILE_NAME = "Apple Proxy Profiles Happ";
+  var PROFILE_NAME = "Apple Proxy Profiles HAPP v2";
   var REMOTE_DNS = Object.freeze({ type: "DoH", domain: "https://cloudflare-dns.com/dns-query", ip: "1.1.1.1" });
   var DOMESTIC_DNS = Object.freeze({ type: "DoH", domain: "https://dns.alidns.com/dns-query", ip: "223.5.5.5" });
   function immutableBaseUrl(value) {

@@ -21,6 +21,7 @@ test("routing profile carries the node-subscription rule sets", () => {
     generatedAt: "2026-08-20T00:00:00Z",
   });
 
+  assert.equal(profile.Name, "Apple Proxy Profiles HAPP v2");
   assert.deepEqual(profile.DirectSites, [
     "geosite:PRIVATE",
     "geosite:CN",
