@@ -17,6 +17,6 @@ Sub-Store 当前的七个 active 客户端 collection 边界、迁移和回滚�
 | 私密 Sub-Store 任务 | 已配置 | 8 个 collection、28 个任务已写入 Sub-Store；七个客户端、policy、HAPP/OneXray 审计任务统一使用 `current`，旧入口保留作兼容/回滚 | canonical 配置校验、任务 URL 检查、公开脚本验证 |
 | HAPP / OneXray 任务契约 | active | HAPP 六平台 JSON/审计任务与 OneXray 节点/Profile/审计任务仍是私密任务；公开层只提供无凭据 GeoData、manifest、安装页和脚本 | workspace 测试、GeoData round-trip、发布闭包、秘密扫描 |
 | 公开审计与 blocker Issue | 已完成 | `audit/dashboard.json` 脱敏公开；edge blocker 使用 `audit-blocker` marker 同步，恢复后关闭 | dashboard/schema 测试、fake GitHub API 生命周期测试 |
-| 真机 canary | 已按用户授权跳过 | 用户明确要求直接发布最终版本，未执行真实设备导入、联网、DNS、规则和回滚验收；`current` 已切换为最终发布 | 自动测试不能替代设备验收 |
+| 真机 canary | 待执行 | HAPP 六个平台尚无可核验的真实设备导入、联网、DNS、规则、网络切换和回滚证据；新的可读标签只在 `edge` 候选，`current` 仍为旧稳定版本 | 自动测试不能替代设备验收；完成后才可用精确 edge manifest hash 推进 `current` |
 
 真实 Sub-Store API、节点 URL、凭据和生成后的私密输出 URL 不在本仓库保存。没有用户设备验收证据时，本项目不能描述为“已完成真机验证”。
