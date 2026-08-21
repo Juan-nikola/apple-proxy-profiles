@@ -3,6 +3,7 @@ import { businessTargetForSource } from "./policy-overrides.js";
 import { renderHappOutbound } from "./render-node.js";
 import { renderHappDnsRoutes } from "./render-dns.js";
 import { HAPP_GEOSITE_ALIASES } from "./geodata-contract.js";
+import { buildHappDisplayTag } from "./tag-label.js";
 
 function hash(value) { let h = 2166136261; for (const c of String(value)) h = Math.imul(h ^ c.charCodeAt(0), 16777619); return (h >>> 0).toString(36); }
 function targetFor(id, resolution, followTag, fixedById) {
@@ -31,8 +32,10 @@ export function renderHappRouting(context = {}) {
     const node = fixed.node ?? nodes.find((candidate) => (candidate._profile?.id ?? "") === fixed.nodeId);
     if (!node) continue;
     const suffix = hash(fixed.nodeId);
-    const candidateTag = `happ-fixed/${suffix}/candidate`;
-    const balancerTag = `happ-fixed/${suffix}/balancer`;
+    const displayName = fixed.name ?? node.name;
+    const stableTagId = `${fixed.nodeId}-${suffix}`;
+    const candidateTag = buildHappDisplayTag("happ-fixed", displayName, stableTagId, "candidate");
+    const balancerTag = buildHappDisplayTag("happ-fixed", displayName, stableTagId, "balancer");
     fixedById.set(fixed.nodeId, { candidateTag, balancerTag });
     outbounds.push((context.renderNode ?? renderHappOutbound)(node, candidateTag));
     balancers.push({ tag: balancerTag, selector: [candidateTag], strategy: { type: "leastPing" }, fallbackTag: followTag });

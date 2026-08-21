@@ -3,6 +3,7 @@ import { renderHappInbounds } from "./render-platform.js";
 import { renderHappDns } from "./render-dns.js";
 import { renderHappRouting } from "./render-routing.js";
 import { resolvePolicyOverrides } from "./policy-overrides.js";
+import { buildHappDisplayTag } from "./tag-label.js";
 
 function idFor(node) { return node?._profile?.id ?? `h-${Math.abs([...JSON.stringify(node)].reduce((h, c) => ((h * 31) ^ c.charCodeAt(0)) | 0, 17))}`; }
 function summary(resolution) {
@@ -19,7 +20,7 @@ export function renderHappSubscription({ nodes = [], allNodes = nodes, options, 
   const configs = [];
   for (const followNode of eligible) {
     const followId = idFor(followNode);
-    const followTag = `happ-follow/${followId}`;
+    const followTag = buildHappDisplayTag("happ-follow", followNode.name, followId);
     const route = renderHappRouting({
       nodes: eligible, policyResolution: resolution, fixedNodes: resolution.fixedNodes, followTag, followNodeId: followId, options,
       renderNode: renderHappOutbound,

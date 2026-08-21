@@ -4,6 +4,7 @@
 - **GeoData hash 不一致**：停止导入，重新下载同一通道的 manifest 和两个 `.dat` 文件；不要手工编辑二进制。
 - **JSON 为空**：在 Sub-Store 分别预览 collection 和 HAPP 任务，确认至少有一个兼容节点。
 - **所有节点测速显示 `n/a`**：检查每个 JSON 配置的 `observatory.subjectSelector` 是否包含该配置的 `happ-follow/...` 出站。Xray 只会观测 selector 匹配的出站；空数组不会产生延迟结果。重新导入包含观测目标的新版 JSON 后，再点击 Ping 测试。
+- **连接历史显示可读节点标签**：新版 JSON 会把规范化节点名和稳定 ID 一起写入路由标签，例如 `happ-follow/🇺🇸 qqpw家宽 · VLESS｜自建·U [sr-0psum4z]`。名称用于人工识别，方括号内的 ID 用于确认同一节点；标签不包含服务器地址、UUID 或密码。DNS/连接记录仍可能显示目标 IP，这是 `routeOnly` 保留原始连接目标的正常行为。
 - **固定节点未命中**：节点名必须大小写、空格和标点完全一致；修正策略后重新生成 JSON。
 - **HAPP 路由开关显示锁定**：JSON 配置由 Xray JSON 自己负责 DNS、路由和固定节点；HAPP 路由开关对 JSON 订阅会被锁定，这是正常行为。不要把“开关锁定”当成路由没有生效，也不要用 routing.happ.su 的链接手动覆盖 JSON 订阅 Profile。
 - **内核提示 `balancer ... not found`**：这是旧版 HAPP JSON 的结构问题，旧输出把固定节点 balancer 放在了配置顶层。不要继续刷新旧订阅；在 Sub-Store 重新 Preview 对应平台任务，确认新版 JSON 将 balancer 放在 `routing.balancers`，然后删除 HAPP 旧订阅条目并重新导入。

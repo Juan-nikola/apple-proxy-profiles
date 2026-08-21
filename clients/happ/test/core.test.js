@@ -48,8 +48,30 @@ test("all approved protocols render Xray outbounds without raw names in tags", (
     const out = renderHappOutbound(node(type, extra), `happ-follow/${type}`);
     assert.equal(out.tag, `happ-follow/${type}`);
     assert.ok(out.protocol);
-    assert.ok(!out.tag.includes("TEST_ONLY_Node"));
+    assert.ok(!out.tag.includes("TEST_ONLY_UUID"));
+    assert.ok(!out.tag.includes("TEST_ONLY_PASSWORD"));
+    assert.ok(!out.tag.includes("example.test"));
   }
+});
+
+test("Happ follow tags retain readable Unicode node names and stable IDs", () => {
+  const options = parseHappOptions(base);
+  const configs = renderHappSubscription({
+    nodes: [node("vless", { name: "🇺🇸 qqpw家宽 · VLESS｜自建·U", uuid: "TEST_ONLY_UUID", _profile: { id: "sr-0psum4z" } })],
+    options,
+  });
+  const tag = configs[0].outbounds[0].tag;
+  assert.equal(tag, "happ-follow/🇺🇸 qqpw家宽 · VLESS｜自建·U [sr-0psum4z]");
+  assert.equal(validateHappSubscription(configs), true);
+});
+
+test("Happ display tags sanitize route separators and control characters", () => {
+  const options = parseHappOptions(base);
+  const configs = renderHappSubscription({
+    nodes: [node("vless", { name: "测试/节点\nqqpw", uuid: "TEST_ONLY_UUID", _profile: { id: "sr-test" } })],
+    options,
+  });
+  assert.equal(configs[0].outbounds[0].tag, "happ-follow/测试-节点qqpw [sr-test]");
 });
 
 test("platform, DNS and routing preserve shared semantics", () => {
@@ -113,6 +135,8 @@ test("fixed-node balancer is nested under Xray routing", () => {
   assert.ok(config);
   assert.ok(config.routing.rules.some((rule) => rule.balancerTag));
   assert.ok(config.routing.balancers.some((balancer) => balancer.tag));
+  assert.match(config.routing.balancers[0].tag, /TEST_ONLY_Node/u);
+  assert.match(config.routing.balancers[0].tag, /fixed-node/u);
   assert.equal(validateHappSubscription(configs), true);
 });
 

@@ -22,7 +22,9 @@ export function validateHappSubscription(configs) {
       if (!(config.observatory?.subjectSelector ?? []).some((selector) => candidates[0].tag.startsWith(selector))) throw new Error("Happ fixed candidate is not observed");
     }
     if (outbounds.some((item) => item.protocol === "snell")) throw new Error("Happ config contains Snell");
-    if (outbounds.some((item) => /TEST_ONLY_Node/u.test(item.tag))) throw new Error("Happ internal tag contains raw node name");
+    if (outbounds.some((item) => /(?:TEST_ONLY_UUID|TEST_ONLY_PASSWORD|TEST_ONLY_USER|TEST_ONLY_SERVICE|example\.test)/u.test(item.tag))) {
+      throw new Error("Happ internal tag contains node credentials or endpoint");
+    }
     const rules = config.routing?.rules ?? [];
     if (rules.length === 0 || rules.at(-1).network !== "tcp,udp") throw new Error("Happ final route must be last");
   }

@@ -69,6 +69,8 @@ HAPP 没有可视化的业务策略组。业务出口由私密 Sub-Store 任务�
 
 `macos`、`iphone`、`ipad`、`android`、`windows`、`linux` 六个平台的真实 File 响应都会自动附带同一格式的 `routing: happ://routing/onadd/<base64>`，由 HAPP 把 Profile 绑定到当前 JSON 订阅。
 
+JSON 中的 follow/fixed 路由标签会包含规范化节点显示名和稳定内部 ID，例如 `happ-follow/🇺🇸 qqpw家宽 · VLESS｜自建·U [sr-0psum4z]`。标签只用于路由诊断和人工识别，不改变业务匹配；控制字符和路径分隔符会被清理，节点地址、UUID、密码不会写入标签。
+
 按下面顺序操作：
 
 1. 在 Sub-Store Preview 对应平台任务，确认输出是非空 JSON 数组；Preview 不会显示真实 HTTP 响应头，这是正常现象。

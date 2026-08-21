@@ -171,7 +171,9 @@ export function renderHappOutbound(node, tag) {
   if (!node || typeof node !== "object") throw new TypeError("Happ node must be an object");
   const type = String(node.type ?? "").toLowerCase();
   if (!SUPPORTED.has(type)) throw new Error(`Unsupported Happ protocol '${type}'`);
-  if (typeof tag !== "string" || !/^happ-[a-z0-9/_-]+$/u.test(tag)) throw new Error("Happ outbound tag must be opaque");
+  if (typeof tag !== "string" || tag.length > 256 || !/^happ-[^\u0000-\u001F\u007F\u2028\u2029]+$/u.test(tag) || tag.trim() !== tag) {
+    throw new Error("Happ outbound tag is invalid");
+  }
   const output = type === "vless" ? renderVless(node) : type === "vmess" ? renderVmess(node) : type === "trojan" ? renderTrojan(node) : type === "ss" || type === "shadowsocks" ? renderShadowsocks(node) : type === "socks5" ? renderSocks(node) : renderHysteria2(node);
   return Object.freeze({ tag, ...output });
 }
