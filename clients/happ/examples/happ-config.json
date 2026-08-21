@@ -77,7 +77,9 @@
       }
     ],
     "observatory": {
-      "subjectSelector": [],
+      "subjectSelector": [
+        "happ-follow/h-874324393"
+      ],
       "probeUrl": "https://www.gstatic.com/generate_204",
       "probeInterval": "30s",
       "enableConcurrency": true,
@@ -481,7 +483,9 @@
       }
     ],
     "observatory": {
-      "subjectSelector": [],
+      "subjectSelector": [
+        "happ-follow/h-628157912"
+      ],
       "probeUrl": "https://www.gstatic.com/generate_204",
       "probeInterval": "30s",
       "enableConcurrency": true,
