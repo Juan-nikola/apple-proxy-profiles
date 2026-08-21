@@ -2612,7 +2612,7 @@ var HappConfigBundle = (() => {
     const fixedById = /* @__PURE__ */ new Map();
     const outbounds = [];
     const balancers = [];
-    const observatorySelectors = [];
+    const observatorySelectors = [followTag];
     for (const fixed of fixedRecords) {
       if (fixed.nodeId && fixed.nodeId === context.followNodeId) continue;
       const node = fixed.node ?? nodes.find((candidate) => (candidate._profile?.id ?? "") === fixed.nodeId);

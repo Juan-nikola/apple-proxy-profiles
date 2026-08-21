@@ -78,6 +78,17 @@ test("Happ routing uses one standard Xray label scheme on every platform", () =>
   }
 });
 
+test("Happ observatory includes the active follow outbound for ping results", () => {
+  const followTag = "happ-follow/iphone";
+  const output = renderHappRouting({
+    policyResolution: { targets: {} },
+    followTag,
+    fixedNodes: [],
+    options: { platform: "iphone" },
+  });
+  assert.deepEqual(output.observatory.subjectSelector, [followTag]);
+});
+
 test("subscription is one JSON object per eligible node and validates", () => {
   const options = parseHappOptions(base);
   const nodes = [node("vless", { uuid: "TEST_ONLY_UUID" }), node("trojan", { name: "TEST_ONLY_Node2", password: "TEST_ONLY_PASSWORD", tls: true })];
