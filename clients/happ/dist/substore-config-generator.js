@@ -287,7 +287,6 @@ var HappConfigBundle = (() => {
   var SINGBOX_SNELL_MODES = /* @__PURE__ */ new Set(["default", "unshaped", "unsafe-raw"]);
   var EGERN_OBFS = /* @__PURE__ */ new Set(["http", "tls"]);
   var EGERN_VMESS_SECURITY = /* @__PURE__ */ new Set(["auto", "aes-128-gcm", "chacha20-poly1305", "none", "zero"]);
-  var XRAY_VMESS_SECURITY = EGERN_VMESS_SECURITY;
   var EGERN_TRANSPORTS = /* @__PURE__ */ new Set(["tcp", "raw", "ws", "grpc", "h2", "http2", "http", "http1"]);
   var EGERN_VLESS_FLOWS = /* @__PURE__ */ new Set(["xtls-rprx-vision"]);
   var EGERN_TUIC_UDP_MODES = /* @__PURE__ */ new Set(["native", "quic"]);
@@ -350,12 +349,6 @@ var HappConfigBundle = (() => {
   }
   function isNonblankString(value) {
     return typeof value === "string" && value.length > 0 && value.trim() === value;
-  }
-  function isDomainServer(value) {
-    if (!isNonblankString(value)) return false;
-    if (value.includes(":")) return false;
-    const parts = value.split(".");
-    return !(parts.length === 4 && parts.every((part) => /^\d+$/u.test(part) && Number(part) <= 255));
   }
   function isNonblankOpaqueString(value) {
     return typeof value === "string" && value.trim().length > 0;
@@ -1115,7 +1108,7 @@ var HappConfigBundle = (() => {
     else if (client === CLIENT.onexray) transportReason = oneXrayNodeExclusionReason(node ?? {});
     return transportReason ? { supported: false, reason: transportReason } : { supported: true, reason: null };
   }
-  var HAPP_XRAY_TRANSPORTS = /* @__PURE__ */ new Set(["tcp", "raw", "ws", "grpc"]);
+  var HAPP_XRAY_TRANSPORTS = /* @__PURE__ */ new Set(["tcp", "raw", "ws", "grpc", "h2", "http2"]);
   var ONEXRAY_TRANSPORTS = /* @__PURE__ */ new Set([
     "tcp",
     "raw",
@@ -1143,19 +1136,13 @@ var HappConfigBundle = (() => {
     return null;
   }
   function xrayTlsReason(node, client) {
-    const reality = node["reality-opts"];
-    if (Object.hasOwn(node, "reality")) return `unsupported-${client}-tls`;
-    const vmessCipherSecurity = normalizeProtocol(node.type) === "vmess" && typeof node.security === "string" && XRAY_VMESS_SECURITY.has(node.security.toLowerCase());
-    const security = node.security === void 0 || vmessCipherSecurity ? reality !== void 0 ? "reality" : node.tls === true ? "tls" : "none" : String(node.security).toLowerCase();
+    const security = node.security === void 0 ? node.tls === true ? "tls" : "none" : String(node.security).toLowerCase();
     if (!["none", "tls", "reality"].includes(security)) return `unsupported-${client}-tls`;
-    if (!vmessCipherSecurity && (node.security === "none" && node.tls === true || node.tls === false && security !== "none")) {
+    if (node.security === "none" && node.tls === true || node.tls === false && security !== "none") {
       return `unsupported-${client}-tls`;
     }
-    if (normalizeProtocol(node.type) === "vmess" && hasOption(node, "cipher") && vmessCipherSecurity && String(node.cipher).toLowerCase() !== String(node.security).toLowerCase()) {
-      return `unsupported-${client}-tls`;
-    }
-    if (security !== "reality" && reality !== void 0) return `unsupported-${client}-tls`;
     if (security === "reality") {
+      const reality = node["reality-opts"];
       if (!isPlainObject(reality) || !isNonblankOpaqueString(reality["public-key"])) {
         return client === "onexray" ? "incomplete-onexray-reality" : "incomplete-happ-reality";
       }
@@ -1195,22 +1182,6 @@ var HappConfigBundle = (() => {
     if (tls) return tls;
     const transport = xrayTransportReason(node, client, protocol2);
     if (transport) return transport;
-    if (client === "happ") {
-      const network = normalizeTransport(node);
-      const security = node.security === "reality" || node["reality-opts"] !== void 0 ? "reality" : node.tls === true || node.security === "tls" ? "tls" : "none";
-      if (security === "reality" && (protocol2 === "hysteria2" || protocol2 === "hy2" || !["tcp", "raw", "grpc"].includes(network))) {
-        return "unsupported-happ-tls";
-      }
-      if (protocol2 === "hysteria2" || protocol2 === "hy2") {
-        const obfs = node.obfs === void 0 ? void 0 : String(node.obfs).toLowerCase();
-        const obfsPassword = node["obfs-password"] ?? node.obfs_password;
-        if (obfs !== void 0 && (obfs !== "salamander" || typeof obfsPassword !== "string" || obfsPassword.length === 0)) {
-          return "unsupported-happ-hysteria2-obfs";
-        }
-        if (obfs === void 0 && obfsPassword !== void 0) return "unsupported-happ-hysteria2-obfs";
-        if (security === "tls" && !isNonblankString(node.sni ?? node.servername) && !isDomainServer(node.server)) return "incomplete-happ-tls";
-      }
-    }
     if (client === "happ" && protocol2 === "socks5" && (node.tls === true || node.security === "tls" || node.security === "reality")) {
       return "unsupported-happ-tls";
     }
@@ -1902,8 +1873,7 @@ var HappConfigBundle = (() => {
 
   // src/render-node.js
   var SUPPORTED = /* @__PURE__ */ new Set(["vless", "vmess", "trojan", "ss", "shadowsocks", "socks5", "hysteria2", "hy2"]);
-  var TRANSPORTS = /* @__PURE__ */ new Set(["tcp", "raw", "ws", "grpc"]);
-  var VMESS_SECURITY = /* @__PURE__ */ new Set(["auto", "aes-128-gcm", "chacha20-poly1305", "none", "zero"]);
+  var TRANSPORTS = /* @__PURE__ */ new Set(["tcp", "raw", "ws", "grpc", "h2", "http2"]);
   var has = (o, k) => Object.hasOwn(o, k);
   var first = (o, keys) => keys.find((k) => has(o, k)) === void 0 ? void 0 : o[keys.find((k) => has(o, k))];
   var required2 = (v, label) => {
@@ -1915,38 +1885,23 @@ var HappConfigBundle = (() => {
     if (!Number.isInteger(n) || n < 1 || n > 65535) throw new Error("Happ node port is invalid");
     return n;
   };
-  function isIpAddress(value) {
-    const text = String(value ?? "");
-    if (text.includes(":")) return true;
-    const parts = text.split(".");
-    return parts.length === 4 && parts.every((part) => /^\d+$/u.test(part) && Number(part) <= 255);
-  }
-  function tlsSettings(node, { defaultServerName = false } = {}) {
-    const reality = node["reality-opts"];
-    const vmessCipherSecurity = String(node.type ?? "").toLowerCase() === "vmess" && typeof node.security === "string" && VMESS_SECURITY.has(node.security.toLowerCase());
-    const security = String(vmessCipherSecurity ? reality ? "reality" : node.tls ? "tls" : "none" : node.security ?? (reality ? "reality" : node.tls ? "tls" : "none")).toLowerCase();
+  function tlsSettings(node) {
+    const security = String(node.security ?? (node.tls ? "tls" : "none")).toLowerCase();
     if (security === "none") return void 0;
     if (security !== "tls" && security !== "reality") throw new Error("Unsupported Happ TLS security");
-    if (security !== "reality" && reality !== void 0) throw new Error("Happ TLS conflicts with Reality options");
     const settings = {};
     const serverName = first(node, ["sni", "servername"]);
     if (serverName !== void 0) settings.serverName = required2(serverName, "SNI");
-    else if (defaultServerName && !isIpAddress(node.server)) settings.serverName = required2(node.server, "server");
-    if (security === "reality") {
-      const realitySettings = {};
-      if (settings.serverName !== void 0) realitySettings.serverName = settings.serverName;
-      const fingerprint2 = node["client-fingerprint"] ?? node.fingerprint;
-      if (fingerprint2 !== void 0) realitySettings.fingerprint = fingerprint2;
-      const realityOptions = reality ?? {};
-      const publicKey = realityOptions["public-key"] ?? realityOptions.publicKey;
-      if (!publicKey) throw new Error("Happ REALITY public key is required");
-      settings.realitySettings = { ...realitySettings, publicKey, ...realityOptions["short-id"] || realityOptions.shortId ? { shortId: realityOptions["short-id"] ?? realityOptions.shortId } : {}, ...realityOptions["spider-x"] || realityOptions.spiderX || realityOptions["_spider-x"] ? { spiderX: realityOptions["spider-x"] ?? realityOptions.spiderX ?? realityOptions["_spider-x"] } : {} };
-      return settings;
-    }
     if (node["skip-cert-verify"] !== void 0) settings.allowInsecure = node["skip-cert-verify"] === true;
     else if (node["allow-insecure"] !== void 0) settings.allowInsecure = node["allow-insecure"] === true;
     if (node.alpn !== void 0) settings.alpn = Array.isArray(node.alpn) ? [...node.alpn] : [node.alpn];
     if (node["client-fingerprint"] !== void 0 || node.fingerprint !== void 0) settings.fingerprint = node["client-fingerprint"] ?? node.fingerprint;
+    if (security === "reality") {
+      const reality = node["reality-opts"] ?? node.reality ?? {};
+      const publicKey = reality["public-key"] ?? reality.publicKey;
+      if (!publicKey) throw new Error("Happ REALITY public key is required");
+      settings.realitySettings = { publicKey, ...reality["short-id"] || reality.shortId ? { shortId: reality["short-id"] ?? reality.shortId } : {}, ...reality["spider-x"] || reality.spiderX || reality["_spider-x"] ? { spiderX: reality["spider-x"] ?? reality.spiderX ?? reality["_spider-x"] } : {} };
+    }
     return settings;
   }
   function streamSettings(node) {
@@ -1966,39 +1921,13 @@ var HappConfigBundle = (() => {
     }
     if (network === "ws") {
       const opts = node["ws-opts"] ?? {};
-      const path = Array.isArray(opts.path) ? opts.path[0] : opts.path ?? "/";
-      const earlyData = opts["max-early-data"] ?? opts.maxEarlyData;
-      const earlyDataHeader = opts["early-data-header-name"];
-      if (earlyDataHeader !== void 0 && String(earlyDataHeader).toLowerCase() !== "sec-websocket-protocol") {
-        throw new Error("Happ WebSocket early-data header is unsupported");
-      }
-      let wsPath = path;
-      if (earlyData !== void 0) {
-        if (!Number.isInteger(earlyData) || earlyData < 0) throw new Error("Happ WebSocket max early data is invalid");
-        if (earlyData > 0) {
-          const separator = String(wsPath).includes("?") ? String(wsPath).endsWith("?") || String(wsPath).endsWith("&") ? "" : "&" : "?";
-          wsPath = `${wsPath}${separator}ed=${earlyData}`;
-        }
-      }
-      const headers = opts.headers ? { ...opts.headers } : void 0;
-      const host = headers?.Host ?? headers?.host;
-      if (headers) {
-        delete headers.Host;
-        delete headers.host;
-      }
-      stream.wsSettings = {
-        path: wsPath,
-        ...host !== void 0 ? { host: Array.isArray(host) ? host[0] : host } : {},
-        ...headers && Object.keys(headers).length > 0 ? { headers } : {}
-      };
+      stream.wsSettings = { path: opts.path ?? "/", ...opts.headers ? { headers: { ...opts.headers } } : {}, ...opts.maxEarlyData ? { maxEarlyData: opts.maxEarlyData } : {} };
     } else if (network === "grpc") {
       const opts = node["grpc-opts"] ?? {};
-      stream.grpcSettings = {
-        serviceName: opts["grpc-service-name"] ?? opts.serviceName ?? "",
-        ...opts["grpc-mode"] || opts.mode ? { multiMode: (opts["grpc-mode"] ?? opts.mode) === "multi" } : {},
-        ...opts.authority ? { authority: opts.authority } : {},
-        ...opts["user-agent"] ? { user_agent: opts["user-agent"] } : {}
-      };
+      stream.grpcSettings = { serviceName: opts["grpc-service-name"] ?? opts.serviceName ?? "", ...opts["grpc-mode"] || opts.mode ? { multiMode: (opts["grpc-mode"] ?? opts.mode) === "multi" } : {} };
+    } else if (network === "h2" || network === "http2") {
+      const opts = node["h2-opts"] ?? node["http-opts"] ?? {};
+      stream.httpSettings = { path: opts.path ?? "/", ...opts.host ? { host: Array.isArray(opts.host) ? opts.host : [opts.host] } : {} };
     }
     return Object.keys(stream).length > 1 ? stream : void 0;
   }
@@ -2011,9 +1940,7 @@ var HappConfigBundle = (() => {
     return { protocol: "vless", settings: { vnext: [{ ...common(node), users: [user] }] }, ...streamSettings(node) ? { streamSettings: streamSettings(node) } : {} };
   }
   function renderVmess(node) {
-    const cipher = node.cipher ?? (VMESS_SECURITY.has(String(node.security ?? "").toLowerCase()) ? String(node.security).toLowerCase() : "auto");
-    if (!VMESS_SECURITY.has(String(cipher).toLowerCase())) throw new Error("Unsupported Happ VMess security");
-    const user = { id: required2(node.uuid, "UUID"), alterId: Number(node.alterId ?? node["alter-id"] ?? 0), security: String(cipher).toLowerCase() };
+    const user = { id: required2(node.uuid, "UUID"), alterId: Number(node.alterId ?? node["alter-id"] ?? 0), security: node.cipher ?? node.security ?? "auto" };
     return { protocol: "vmess", settings: { vnext: [{ ...common(node), users: [user] }] }, ...streamSettings(node) ? { streamSettings: streamSettings(node) } : {} };
   }
   function renderTrojan(node) {
@@ -2023,6 +1950,7 @@ var HappConfigBundle = (() => {
   }
   function renderShadowsocks(node) {
     const server = { ...common(node), method: required2(node.cipher ?? node.method, "method"), password: required2(node.password, "password") };
+    if (node.udp !== void 0) server.ota = node.udp === true;
     return { protocol: "shadowsocks", settings: { servers: [server] }, ...streamSettings(node) ? { streamSettings: streamSettings(node) } : {} };
   }
   function renderSocks(node) {
@@ -2030,41 +1958,12 @@ var HappConfigBundle = (() => {
     if (node.username !== void 0 || node.password !== void 0) server.users = [{ user: node.username ?? "", pass: node.password ?? "" }];
     return { protocol: "socks", settings: { servers: [server] } };
   }
-  function hysteriaSettings(node) {
-    const settings = { version: 2, ...node.password !== void 0 ? { auth: required2(node.password, "password") } : {} };
-    if (node.up !== void 0) settings.up = String(node.up);
-    if (node.down !== void 0) settings.down = String(node.down);
-    const ports = node["port-hopping"] ?? node.port_hopping ?? node.ports;
-    const interval = node["port-hopping-interval"] ?? node.port_hopping_interval ?? node["hop-interval"];
-    if (ports !== void 0) {
-      settings.udphop = { port: ports, ...interval !== void 0 ? { interval: Number(interval) } : {} };
-    }
-    return settings;
-  }
-  function hysteriaMasks(node) {
-    const obfs = node.obfs === void 0 ? void 0 : String(node.obfs).toLowerCase();
-    const obfsPassword = node["obfs-password"] ?? node.obfs_password;
-    if (obfs === void 0) {
-      if (obfsPassword !== void 0) throw new Error("Happ Hysteria2 obfs password requires salamander obfs");
-      return void 0;
-    }
-    if (obfs !== "salamander" || typeof obfsPassword !== "string" || obfsPassword.length === 0) {
-      throw new Error("Happ Hysteria2 supports only salamander obfs with a password");
-    }
-    return [{ type: "salamander", settings: { password: obfsPassword } }];
-  }
-  function hysteriaStreamSettings(node) {
-    const tls = tlsSettings(node, { defaultServerName: true });
-    if (!tls || !tls.serverName && !tls.realitySettings) throw new Error("Happ Hysteria2 requires TLS");
-    return {
-      network: "hysteria",
-      ...tls.realitySettings ? { security: "reality", realitySettings: tls.realitySettings } : { security: "tls", tlsSettings: tls },
-      hysteriaSettings: hysteriaSettings(node),
-      ...hysteriaMasks(node) ? { udpmasks: hysteriaMasks(node) } : {}
-    };
-  }
   function renderHysteria2(node) {
-    return { protocol: "hysteria", settings: { version: 2, ...common(node) }, streamSettings: hysteriaStreamSettings(node) };
+    const tls = tlsSettings(node);
+    if (!tls || !tls.serverName && !tls.realitySettings) throw new Error("Happ Hysteria2 requires TLS");
+    const server = { ...common(node), ...node.password !== void 0 ? { auth: node.password } : {} };
+    const stream = { network: "hysteria", method: "hysteria", ...tls.realitySettings ? { security: "reality", realitySettings: tls.realitySettings } : { security: "tls", tlsSettings: tls }, ...node.obfs ? { hysteriaSettings: { obfs: node.obfs, ...node["obfs-password"] ? { obfsPassword: node["obfs-password"] } : {} } } : {} };
+    return { protocol: "hysteria", settings: { version: 2, ...server }, streamSettings: stream };
   }
   function renderHappOutbound(node, tag) {
     if (!node || typeof node !== "object") throw new TypeError("Happ node must be an object");
