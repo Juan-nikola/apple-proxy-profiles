@@ -2773,6 +2773,7 @@ var HappConfigBundle = (() => {
     setResponseHeader(requestOptions, "routing", renderHappRoutingDeepLink(profile));
     setResponseHeader(requestOptions, "content-type", "application/json; charset=utf-8");
     setResponseHeader(requestOptions, "content-disposition", `attachment; filename="happ-${options.platform}.json"`);
+    setResponseHeader(requestOptions, "no-limit-enabled", "1");
   }
   function logDiagnostics(context, options, normalized, filtered) {
     const method = typeof context?.logger === "function" ? context.logger : typeof context?.logger?.info === "function" ? context.logger.info.bind(context.logger) : null;
