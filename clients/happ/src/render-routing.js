@@ -23,7 +23,9 @@ export function renderHappRouting(context = {}) {
   const fixedById = new Map();
   const outbounds = [];
   const balancers = [];
-  const observatorySelectors = [];
+  // Every JSON entry has one active follow outbound. Observe it so HAPP can
+  // report a ping result even when no fixed-node policy creates a balancer.
+  const observatorySelectors = [followTag];
   for (const fixed of fixedRecords) {
     if (fixed.nodeId && fixed.nodeId === context.followNodeId) continue;
     const node = fixed.node ?? nodes.find((candidate) => (candidate._profile?.id ?? "") === fixed.nodeId);
