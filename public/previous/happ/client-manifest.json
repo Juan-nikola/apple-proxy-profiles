@@ -1,11 +1,11 @@
 {
-  "chinaIpAuditSha256": "98f13d6021721417d0cd66ee09b9249f5125eefe85b9278841516dc61c5a4cfb",
+  "chinaIpAuditSha256": "8ae4940705b3bf2bceb101b9f5f5e9f8896dd89cfb517ba38b3dacbecbd51f6b",
   "client": "happ",
   "files": [
     {
-      "bytes": 181431,
+      "bytes": 181451,
       "path": "happ/geoip.dat",
-      "sha256": "94db82e989ff6cfad824f8b41b55188b949c786d3b8b75f97b528bc54ee38d0f"
+      "sha256": "195f252857d4d57186cce0b6ee523eaf36c0f22c27efe80d09792ab9cc71095b"
     },
     {
       "bytes": 74218,
@@ -13,33 +13,33 @@
       "sha256": "33de8c00cc3affbaf59be30b865e9d163fc2dae0a3c51555834437bd9454eadd"
     },
     {
-      "bytes": 630442,
+      "bytes": 630812,
       "path": "happ/index.html",
-      "sha256": "7acfe5b0a85cf2f4030302b3239cfcc961419370b58168c072dfe84732997df7"
+      "sha256": "fa8aed4f1fcdfa03834cd0c403ff09fa934f087530fb38be8b62485712800f50"
     },
     {
-      "bytes": 146129,
+      "bytes": 147882,
       "path": "happ/scripts/happ-config-generator.js",
-      "sha256": "6f025fd36a84146deef813eb7f1f095dee0ecda7d02d75f05f0d7e3311ad3516"
+      "sha256": "9cefa978ed915a59f4a46d90441991b13728227cdca83dc71312c323066017ab"
     },
     {
-      "bytes": 110834,
+      "bytes": 108635,
       "path": "happ/scripts/happ-routing-audit.js",
-      "sha256": "c697bbbbf5c1de13904ba2686f63bcd04a5d43d3c191e88780d72323853009e2"
+      "sha256": "8bede6bf1bd44f1f8fe728e01566d3d7ebcb74f9680450a6a644182cc47381fb"
     },
     {
-      "bytes": 146129,
+      "bytes": 147882,
       "path": "happ/scripts/substore-config-generator.js",
-      "sha256": "6f025fd36a84146deef813eb7f1f095dee0ecda7d02d75f05f0d7e3311ad3516"
+      "sha256": "9cefa978ed915a59f4a46d90441991b13728227cdca83dc71312c323066017ab"
     },
     {
-      "bytes": 110834,
+      "bytes": 108635,
       "path": "happ/scripts/substore-routing-audit.js",
-      "sha256": "c697bbbbf5c1de13904ba2686f63bcd04a5d43d3c191e88780d72323853009e2"
+      "sha256": "8bede6bf1bd44f1f8fe728e01566d3d7ebcb74f9680450a6a644182cc47381fb"
     }
   ],
-  "generatedAt": "2026-08-15T18:26:29Z",
-  "manifestHash": "66df0251009509e471b0af2819227e7b2391a454852704f75ca0b3757df79ec3",
+  "generatedAt": "2026-08-19T18:32:09Z",
+  "manifestHash": "abe10b5eb33990ab39ddc04f38aadf410ca49033e7356e9b9e6546dd74975410",
   "optionalPacks": {},
   "schemaVersion": 1
 }
