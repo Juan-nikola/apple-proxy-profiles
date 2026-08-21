@@ -131,6 +131,8 @@ https://juan-nikola.github.io/apple-proxy-profiles/current/surge/scripts/surge-p
 
 当前任务的频道契约是：通用客户端、policy 和 OneXray 任务使用 `channel=current`；HAPP 任务固定使用 `/current/happ/` 且省略 `channel`；`edge` 仅作为维护者灰度频道，`previous` 用于回滚。
 
+HAPP 没有客户端内的可视化业务组。要为 AI、GitHub、YouTube 等业务指定出口，在六个平台 HAPP 配置任务和 `happ-routing-audit` 中填入同一个 `policyOverrides` Base64URL：`FOLLOW` 跟随 HAPP 首页节点，`DIRECT` 直连，`NODE:<HAPP JSON remarks 的完整节点名>` 固定节点。建议先用 HAPP 安装页的本地策略助手生成编码，再 Preview 审计确认固定目标为 `status=fixed`；缺失、重名或不兼容时会退回 `FOLLOW`。完整业务键表见 [HAPP 部署文档](../clients/happ/docs/deployment.md#业务组节点设置)。
+
 ## 5. Egern：1 个节点 File + 3 个 Profile File
 
 ### 5.1 `egern-nodes`

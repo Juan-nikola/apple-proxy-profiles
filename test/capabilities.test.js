@@ -713,6 +713,63 @@ test("HAPP and OneXray capability dispatch rejects only shapes their renderers c
   assert.equal(happNodeExclusionReason({ ...base, type: "vless", network: "xhttp" }), "unsupported-happ-transport");
   assert.equal(oneXrayNodeExclusionReason({ ...base, type: "vless", network: "xhttp", "xhttp-opts": { path: "/" } }), null);
   assert.equal(oneXrayNodeExclusionReason({ ...base, type: "vless", security: "reality", "reality-opts": {} }), "incomplete-onexray-reality");
+  assert.equal(happNodeExclusionReason({
+    ...base,
+    type: "vless",
+    security: "tls",
+    "reality-opts": { "public-key": "TEST_ONLY_REALITY_PUBLIC_KEY" },
+  }), "unsupported-happ-tls");
+  assert.equal(happNodeExclusionReason({
+    ...base,
+    type: "vless",
+    security: "tls",
+    reality: { "public-key": "TEST_ONLY_REALITY_PUBLIC_KEY" },
+  }), "unsupported-happ-tls");
+  assert.equal(happNodeExclusionReason({
+    ...base,
+    type: "vless",
+    network: "ws",
+    "reality-opts": { "public-key": "TEST_ONLY_REALITY_PUBLIC_KEY" },
+  }), "unsupported-happ-tls");
+  assert.equal(happNodeExclusionReason({
+    ...base,
+    type: "vless",
+    network: "h2",
+  }), "unsupported-happ-transport");
+  assert.equal(happNodeExclusionReason({
+    ...base,
+    type: "hysteria2",
+    password: "TEST_ONLY_PASSWORD",
+    security: "reality",
+    "reality-opts": { "public-key": "TEST_ONLY_REALITY_PUBLIC_KEY" },
+  }), "unsupported-happ-tls");
+  assert.equal(happNodeExclusionReason({
+    ...base,
+    type: "hysteria2",
+    password: "TEST_ONLY_PASSWORD",
+    tls: true,
+    sni: "example.test",
+    obfs: "salamander",
+    "obfs-password": "TEST_ONLY_OBFS_PASSWORD",
+  }), null);
+  assert.equal(happNodeExclusionReason({
+    ...base,
+    type: "hysteria2",
+    password: "TEST_ONLY_PASSWORD",
+    server: "hy2.example.test",
+    tls: true,
+    sni: undefined,
+    servername: undefined,
+  }), null);
+  assert.equal(happNodeExclusionReason({
+    ...base,
+    type: "hysteria2",
+    password: "TEST_ONLY_PASSWORD",
+    server: "192.0.2.10",
+    tls: true,
+    sni: undefined,
+    servername: undefined,
+  }), "incomplete-happ-tls");
   assert.equal(happNodeExclusionReason({ ...base, type: "vless", "underlying-proxy": "TEST_ONLY_Landing" }), "unsupported-happ-chain");
   assert.equal(oneXrayNodeExclusionReason({ ...base, type: "vless", "underlying-proxy": "TEST_ONLY_Landing" }), "unsupported-onexray-chain");
 });

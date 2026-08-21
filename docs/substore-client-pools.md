@@ -37,7 +37,7 @@ HAPP 和 OneXray 使用同样的手动组合原则，分别维护 `apple-proxy-h
 
 这两个客户端已经进入 `active` 发布状态，但仍必须先做设备 canary。`onexray-nodes` 只输出节点订阅，不读取业务策略；`onexray-profile`、`onexray-routing-audit`、六个平台 HAPP 配置任务和 `happ-routing-audit` 必须使用同一 `channel`、策略覆盖、公开 Manifest 和 GeoData 绑定。公开 Pages 只提供无凭据脚本、安装页和 GeoData，真实节点与策略仍只在私密 Sub-Store 任务中生成。
 
-用户必须在 Sub-Store 中自行选择每个 client collection 的成员。生成器不做客户端能力白名单过滤：勾选什么节点就处理什么节点。sing-box 默认使用 `nodeErrorMode=strict`，任一已选节点无法完整渲染时整个任务失败；这能避免私密组合与实际配置不一致。只有迁移期显式使用 `nodeErrorMode=compatible` 时，才保留可渲染子集并把跳过计数写入 `renderFailures`，不会静默丢弃。其他客户端仍按各自文档的 `renderFailures` 边界执行。
+用户必须在 Sub-Store 中自行选择每个 client collection 的成员。选择决定输入范围，但各客户端适配层仍会按官方格式和字段能力过滤、拒绝或失败关闭；HAPP/OneXray 的审计会记录排除原因。sing-box 默认使用 `nodeErrorMode=strict`，任一已选节点无法完整渲染时整个任务失败；这能避免私密组合与实际配置不一致。只有迁移期显式使用 `nodeErrorMode=compatible` 时，才保留可渲染子集并把跳过计数写入 `renderFailures`，不会静默丢弃。其他客户端仍按各自文档的 `renderFailures` 边界执行。
 
 ## 手工迁移顺序
 

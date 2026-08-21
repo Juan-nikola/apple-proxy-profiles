@@ -325,6 +325,8 @@ HAPP 的公开安装页只提供无凭据的 GeoData 和脚本；节点与配置
 
 成功标志：GeoData 与配置使用同一 `current` 频道；配置数组非空；DNS、国内外业务、固定节点和局域网测试正常；`happ-routing-audit` 的兼容数和排除原因可解释。六个平台统一使用标准 Xray GeoData 标签和响应 Profile。JSON 配置由 Xray JSON 自己负责 DNS、路由和固定节点，HAPP 路由开关锁定是正常行为。HAPP JSON 订阅必须直接从私密 File 导入，生成器会在 macOS、iPhone、iPad、Android、Windows、Linux 六个平台的真实 HTTP 响应中附带 `routing: happ://routing/onadd/<base64>`，不能再把公共 Profile 手动复制绑定到 JSON 订阅。Sub-Store Preview 看不到响应头是正常的。如果 HAPP 提示‘超出隧道内存限制（50 MB）’或 `NEAgentErrorDomain`，先重新 Preview 对应任务，再删除旧订阅条目并重新导入新版 JSON，不能继续使用旧缓存。
 
+HAPP 没有客户端内的可视化业务组。业务节点通过私密任务的 `policyOverrides` 设置：`FOLLOW` 跟随首页节点，`DIRECT` 直连，`NODE:<完整节点名>` 固定节点。六个平台任务和 `happ-routing-audit` 必须复制同一个 Base64URL；固定节点名以 HAPP JSON 的 `remarks` 完整值为准。具体业务键和设置步骤见 [HAPP 部署文档](clients/happ/docs/deployment.md#业务组节点设置)。
+
 失败怎么办：先分别 preview 当前 `apple-proxy-happ`、对应平台任务和审计任务，确认不是节点协议或固定节点不兼容；未来变更先在 `edge` 灰度，不要把未经验证的候选直接替换生产任务。
 
 回滚方式：在 HAPP 中切回旧配置，并恢复旧 GeoData；保留新任务用于排查。

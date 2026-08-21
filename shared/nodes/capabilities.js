@@ -66,6 +66,7 @@ const SINGBOX_SNELL_OBFS_MODES = new Set(["none", "http"]);
 const SINGBOX_SNELL_MODES = new Set(["default", "unshaped", "unsafe-raw"]);
 const EGERN_OBFS = new Set(["http", "tls"]);
 const EGERN_VMESS_SECURITY = new Set(["auto", "aes-128-gcm", "chacha20-poly1305", "none", "zero"]);
+const XRAY_VMESS_SECURITY = EGERN_VMESS_SECURITY;
 const EGERN_TRANSPORTS = new Set(["tcp", "raw", "ws", "grpc", "h2", "http2", "http", "http1"]);
 const EGERN_VLESS_FLOWS = new Set(["xtls-rprx-vision"]);
 const EGERN_TUIC_UDP_MODES = new Set(["native", "quic"]);
@@ -104,6 +105,13 @@ function isPlainObject(value) {
 
 function isNonblankString(value) {
   return typeof value === "string" && value.length > 0 && value.trim() === value;
+}
+
+function isDomainServer(value) {
+  if (!isNonblankString(value)) return false;
+  if (value.includes(":")) return false;
+  const parts = value.split(".");
+  return !(parts.length === 4 && parts.every((part) => /^\d+$/u.test(part) && Number(part) <= 255));
 }
 
 function isNonblankOpaqueString(value) {
@@ -1182,7 +1190,7 @@ export function evaluateNodeForClient(node, client) {
     : { supported: true, reason: null };
 }
 
-const HAPP_XRAY_TRANSPORTS = new Set(["tcp", "raw", "ws", "grpc", "h2", "http2"]);
+const HAPP_XRAY_TRANSPORTS = new Set(["tcp", "raw", "ws", "grpc"]);
 const ONEXRAY_TRANSPORTS = new Set([
   "tcp", "raw", "ws", "grpc", "h2", "http2", "http", "httpupgrade", "xhttp", "kcp", "mkcp", "hysteria",
 ]);
@@ -1201,13 +1209,24 @@ function xrayCommonReason(node, client) {
 }
 
 function xrayTlsReason(node, client) {
-  const security = node.security === undefined ? (node.tls === true ? "tls" : "none") : String(node.security).toLowerCase();
+  const reality = node["reality-opts"];
+  if (Object.hasOwn(node, "reality")) return `unsupported-${client}-tls`;
+  const vmessCipherSecurity = normalizeProtocol(node.type) === "vmess"
+    && typeof node.security === "string"
+    && XRAY_VMESS_SECURITY.has(node.security.toLowerCase());
+  const security = node.security === undefined || vmessCipherSecurity
+    ? (reality !== undefined ? "reality" : (node.tls === true ? "tls" : "none"))
+    : String(node.security).toLowerCase();
   if (!["none", "tls", "reality"].includes(security)) return `unsupported-${client}-tls`;
-  if (node.security === "none" && node.tls === true || node.tls === false && security !== "none") {
+  if (!vmessCipherSecurity && (node.security === "none" && node.tls === true || node.tls === false && security !== "none")) {
     return `unsupported-${client}-tls`;
   }
+  if (normalizeProtocol(node.type) === "vmess" && hasOption(node, "cipher")
+    && vmessCipherSecurity && String(node.cipher).toLowerCase() !== String(node.security).toLowerCase()) {
+    return `unsupported-${client}-tls`;
+  }
+  if (security !== "reality" && reality !== undefined) return `unsupported-${client}-tls`;
   if (security === "reality") {
-    const reality = node["reality-opts"];
     if (!isPlainObject(reality) || !isNonblankOpaqueString(reality["public-key"])) {
       return client === "onexray" ? "incomplete-onexray-reality" : "incomplete-happ-reality";
     }
@@ -1256,6 +1275,22 @@ function xrayNodeExclusionReason(node, client) {
   if (tls) return tls;
   const transport = xrayTransportReason(node, client, protocol);
   if (transport) return transport;
+  if (client === "happ") {
+    const network = normalizeTransport(node);
+    const security = node.security === "reality" || node["reality-opts"] !== undefined ? "reality" : node.tls === true || node.security === "tls" ? "tls" : "none";
+    if (security === "reality" && (protocol === "hysteria2" || protocol === "hy2" || !["tcp", "raw", "grpc"].includes(network))) {
+      return "unsupported-happ-tls";
+    }
+    if (protocol === "hysteria2" || protocol === "hy2") {
+      const obfs = node.obfs === undefined ? undefined : String(node.obfs).toLowerCase();
+      const obfsPassword = node["obfs-password"] ?? node.obfs_password;
+      if (obfs !== undefined && (obfs !== "salamander" || typeof obfsPassword !== "string" || obfsPassword.length === 0)) {
+        return "unsupported-happ-hysteria2-obfs";
+      }
+      if (obfs === undefined && obfsPassword !== undefined) return "unsupported-happ-hysteria2-obfs";
+      if (security === "tls" && !isNonblankString(node.sni ?? node.servername) && !isDomainServer(node.server)) return "incomplete-happ-tls";
+    }
+  }
   if (client === "happ" && protocol === "socks5" && (node.tls === true || node.security === "tls" || node.security === "reality")) {
     return "unsupported-happ-tls";
   }

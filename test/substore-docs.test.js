@@ -149,6 +149,9 @@ test("HAPP user documentation exposes current as the only public channel", async
   assert.doesNotMatch(content, /把 URL 中的 `current` 换成 `edge`/u);
   assert.match(content, /JSON 配置由 Xray JSON 自己负责 DNS、路由和固定节点/iu);
   assert.match(content, /HAPP 路由开关.*锁定.*JSON/iu);
+  assert.match(content, /policyOverrides[\s\S]{0,260}FOLLOW[\s\S]{0,260}NODE:<完整节点名>/u);
+  assert.match(content, /六个平台任务和 `happ-routing-audit`.*同一个/u);
+  assert.match(content, /HAPP JSON.*remarks.*完整/u);
   assert.match(content, /macos.*iphone.*ipad.*android.*windows.*linux.*routing/isu);
   assert.match(content, /删除旧.*订阅.*重新导入/isu);
 });

@@ -52,6 +52,84 @@ test("all approved protocols render Xray outbounds without raw names in tags", (
   }
 });
 
+test("VLESS Reality options select Xray Reality security when security is omitted", () => {
+  const out = renderHappOutbound(node("vless", {
+    uuid: "TEST_ONLY_UUID",
+    tls: true,
+    sni: "example.test",
+    "client-fingerprint": "chrome",
+    "reality-opts": { "public-key": "TEST_ONLY_REALITY_PUBLIC_KEY", "short-id": "0123abcd" },
+  }), "happ-follow/reality");
+  assert.equal(out.streamSettings.security, "reality");
+  assert.deepEqual(out.streamSettings.realitySettings, {
+    serverName: "example.test",
+    fingerprint: "chrome",
+    publicKey: "TEST_ONLY_REALITY_PUBLIC_KEY",
+    shortId: "0123abcd",
+  });
+  assert.equal(Object.hasOwn(out.streamSettings, "tlsSettings"), false);
+});
+
+test("Hysteria2 uses the HAPP Xray transport schema for auth and Salamander", () => {
+  const out = renderHappOutbound(node("hysteria2", {
+    password: "TEST_ONLY_PASSWORD",
+    tls: true,
+    sni: "example.test",
+    obfs: "salamander",
+    "obfs-password": "TEST_ONLY_OBFS_PASSWORD",
+  }), "happ-follow/hysteria2");
+  assert.deepEqual(out.settings, {
+    version: 2,
+    address: "example.test",
+    port: 443,
+  });
+  assert.equal(Object.hasOwn(out.settings, "auth"), false);
+  assert.deepEqual(out.streamSettings.hysteriaSettings, {
+    version: 2,
+    auth: "TEST_ONLY_PASSWORD",
+  });
+  assert.deepEqual(out.streamSettings.udpmasks, [{
+    type: "salamander",
+    settings: { password: "TEST_ONLY_OBFS_PASSWORD" },
+  }]);
+});
+
+test("Hysteria2 uses a domain server as the default TLS serverName", () => {
+  const out = renderHappOutbound(node("hysteria2", {
+    password: "TEST_ONLY_PASSWORD",
+    tls: true,
+  }), "happ-follow/hysteria2-default-sni");
+  assert.equal(out.streamSettings.tlsSettings.serverName, "example.test");
+});
+
+test("VMess transport security does not become a VMess cipher", () => {
+  const out = renderHappOutbound(node("vmess", {
+    uuid: "TEST_ONLY_UUID",
+    tls: true,
+    security: "tls",
+    sni: "example.test",
+  }), "happ-follow/vmess");
+  assert.equal(out.settings.vnext[0].users[0].security, "auto");
+});
+
+test("VMess cipher security does not become a TLS setting", () => {
+  const out = renderHappOutbound(node("vmess", {
+    uuid: "TEST_ONLY_UUID",
+    security: "aes-128-gcm",
+  }), "happ-follow/vmess-cipher");
+  assert.equal(out.settings.vnext[0].users[0].security, "aes-128-gcm");
+  assert.equal(Object.hasOwn(out, "streamSettings"), false);
+});
+
+test("Shadowsocks UDP capability is not emitted as the obsolete OTA field", () => {
+  const out = renderHappOutbound(node("ss", {
+    cipher: "aes-256-gcm",
+    password: "TEST_ONLY_PASSWORD",
+    udp: true,
+  }), "happ-follow/ss");
+  assert.equal(Object.hasOwn(out.settings.servers[0], "ota"), false);
+});
+
 test("platform, DNS and routing preserve shared semantics", () => {
   const inbounds = renderHappInbounds("macos");
   assert.equal(inbounds.length, 2);
