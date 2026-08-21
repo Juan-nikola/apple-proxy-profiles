@@ -1,4 +1,4 @@
-var OneXrayNodesBundle = (() => {
+var OneXrayAuditBundle = (() => {
   var __defProp = Object.defineProperty;
   var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
   var __getOwnPropNames = Object.getOwnPropertyNames;
@@ -17,9 +17,9 @@ var OneXrayNodesBundle = (() => {
   };
   var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
-  // src/substore-nodes-entry.js
-  var substore_nodes_entry_exports = {};
-  __export(substore_nodes_entry_exports, {
+  // src/substore-audit-entry.js
+  var substore_audit_entry_exports = {};
+  __export(substore_audit_entry_exports, {
     operator: () => operator
   });
 
@@ -287,6 +287,7 @@ var OneXrayNodesBundle = (() => {
   var SINGBOX_SNELL_MODES = /* @__PURE__ */ new Set(["default", "unshaped", "unsafe-raw"]);
   var EGERN_OBFS = /* @__PURE__ */ new Set(["http", "tls"]);
   var EGERN_VMESS_SECURITY = /* @__PURE__ */ new Set(["auto", "aes-128-gcm", "chacha20-poly1305", "none", "zero"]);
+  var XRAY_VMESS_SECURITY = EGERN_VMESS_SECURITY;
   var EGERN_TRANSPORTS = /* @__PURE__ */ new Set(["tcp", "raw", "ws", "grpc", "h2", "http2", "http", "http1"]);
   var EGERN_VLESS_FLOWS = /* @__PURE__ */ new Set(["xtls-rprx-vision"]);
   var EGERN_TUIC_UDP_MODES = /* @__PURE__ */ new Set(["native", "quic"]);
@@ -349,6 +350,12 @@ var OneXrayNodesBundle = (() => {
   }
   function isNonblankString(value) {
     return typeof value === "string" && value.length > 0 && value.trim() === value;
+  }
+  function isDomainServer(value) {
+    if (!isNonblankString(value)) return false;
+    if (value.includes(":")) return false;
+    const parts = value.split(".");
+    return !(parts.length === 4 && parts.every((part) => /^\d+$/u.test(part) && Number(part) <= 255));
   }
   function isNonblankOpaqueString(value) {
     return typeof value === "string" && value.trim().length > 0;
@@ -471,15 +478,15 @@ var OneXrayNodesBundle = (() => {
       return "unsupported-egern-tls-shape";
     }
     if (hasOption(node, "security")) {
-      const security2 = node.security;
-      const vmessSecurity = normalizeProtocol(node.type) === "vmess" && EGERN_VMESS_SECURITY.has(security2);
-      if (!vmessSecurity && !["none", "tls", "reality"].includes(security2)) {
+      const security = node.security;
+      const vmessSecurity = normalizeProtocol(node.type) === "vmess" && EGERN_VMESS_SECURITY.has(security);
+      if (!vmessSecurity && !["none", "tls", "reality"].includes(security)) {
         return "unsupported-egern-tls-shape";
       }
-      if (security2 === "reality" && !hasOption(node, "reality-opts")) {
+      if (security === "reality" && !hasOption(node, "reality-opts")) {
         return "incomplete-egern-reality";
       }
-      if (node.tls === false && (security2 === "tls" || security2 === "reality")) {
+      if (node.tls === false && (security === "tls" || security === "reality")) {
         return "unsupported-egern-tls-shape";
       }
     }
@@ -768,8 +775,8 @@ var OneXrayNodesBundle = (() => {
     if (protocol2 === "vmess" || protocol2 === "vless") {
       if (!isNonblankString(node.uuid)) return "invalid-egern-node-shape";
       if (protocol2 === "vmess") {
-        const security2 = EGERN_VMESS_SECURITY.has(node.security) ? node.security : node.cipher ?? "auto";
-        if (!EGERN_VMESS_SECURITY.has(security2)) return "unsupported-egern-security";
+        const security = EGERN_VMESS_SECURITY.has(node.security) ? node.security : node.cipher ?? "auto";
+        if (!EGERN_VMESS_SECURITY.has(security)) return "unsupported-egern-security";
         if (hasOption(node, "legacy") && typeof node.legacy !== "boolean" || hasOption(node, "alter-id") && node["alter-id"] !== 0 || hasOption(node, "alterId") && node.alterId !== 0) {
           return "unsupported-egern-vmess-shape";
         }
@@ -1108,7 +1115,7 @@ var OneXrayNodesBundle = (() => {
     else if (client === CLIENT.onexray) transportReason = oneXrayNodeExclusionReason(node ?? {});
     return transportReason ? { supported: false, reason: transportReason } : { supported: true, reason: null };
   }
-  var HAPP_XRAY_TRANSPORTS = /* @__PURE__ */ new Set(["tcp", "raw", "ws", "grpc", "h2", "http2"]);
+  var HAPP_XRAY_TRANSPORTS = /* @__PURE__ */ new Set(["tcp", "raw", "ws", "grpc"]);
   var ONEXRAY_TRANSPORTS = /* @__PURE__ */ new Set([
     "tcp",
     "raw",
@@ -1136,13 +1143,19 @@ var OneXrayNodesBundle = (() => {
     return null;
   }
   function xrayTlsReason(node, client) {
-    const security2 = node.security === void 0 ? node.tls === true ? "tls" : "none" : String(node.security).toLowerCase();
-    if (!["none", "tls", "reality"].includes(security2)) return `unsupported-${client}-tls`;
-    if (node.security === "none" && node.tls === true || node.tls === false && security2 !== "none") {
+    const reality = node["reality-opts"];
+    if (Object.hasOwn(node, "reality")) return `unsupported-${client}-tls`;
+    const vmessCipherSecurity = normalizeProtocol(node.type) === "vmess" && typeof node.security === "string" && XRAY_VMESS_SECURITY.has(node.security.toLowerCase());
+    const security = node.security === void 0 || vmessCipherSecurity ? reality !== void 0 ? "reality" : node.tls === true ? "tls" : "none" : String(node.security).toLowerCase();
+    if (!["none", "tls", "reality"].includes(security)) return `unsupported-${client}-tls`;
+    if (!vmessCipherSecurity && (node.security === "none" && node.tls === true || node.tls === false && security !== "none")) {
       return `unsupported-${client}-tls`;
     }
-    if (security2 === "reality") {
-      const reality = node["reality-opts"];
+    if (normalizeProtocol(node.type) === "vmess" && hasOption(node, "cipher") && vmessCipherSecurity && String(node.cipher).toLowerCase() !== String(node.security).toLowerCase()) {
+      return `unsupported-${client}-tls`;
+    }
+    if (security !== "reality" && reality !== void 0) return `unsupported-${client}-tls`;
+    if (security === "reality") {
       if (!isPlainObject(reality) || !isNonblankOpaqueString(reality["public-key"])) {
         return client === "onexray" ? "incomplete-onexray-reality" : "incomplete-happ-reality";
       }
@@ -1180,8 +1193,24 @@ var OneXrayNodesBundle = (() => {
     const protocol2 = normalizeProtocol(node.type);
     const tls = xrayTlsReason(node, client);
     if (tls) return tls;
-    const transport2 = xrayTransportReason(node, client, protocol2);
-    if (transport2) return transport2;
+    const transport = xrayTransportReason(node, client, protocol2);
+    if (transport) return transport;
+    if (client === "happ") {
+      const network = normalizeTransport(node);
+      const security = node.security === "reality" || node["reality-opts"] !== void 0 ? "reality" : node.tls === true || node.security === "tls" ? "tls" : "none";
+      if (security === "reality" && (protocol2 === "hysteria2" || protocol2 === "hy2" || !["tcp", "raw", "grpc"].includes(network))) {
+        return "unsupported-happ-tls";
+      }
+      if (protocol2 === "hysteria2" || protocol2 === "hy2") {
+        const obfs = node.obfs === void 0 ? void 0 : String(node.obfs).toLowerCase();
+        const obfsPassword = node["obfs-password"] ?? node.obfs_password;
+        if (obfs !== void 0 && (obfs !== "salamander" || typeof obfsPassword !== "string" || obfsPassword.length === 0)) {
+          return "unsupported-happ-hysteria2-obfs";
+        }
+        if (obfs === void 0 && obfsPassword !== void 0) return "unsupported-happ-hysteria2-obfs";
+        if (security === "tls" && !isNonblankString(node.sni ?? node.servername) && !isDomainServer(node.server)) return "incomplete-happ-tls";
+      }
+    }
     if (client === "happ" && protocol2 === "socks5" && (node.tls === true || node.security === "tls" || node.security === "reality")) {
       return "unsupported-happ-tls";
     }
@@ -1336,8 +1365,8 @@ var OneXrayNodesBundle = (() => {
   }
   var OPAQUE_AUTH_FIELDS = /* @__PURE__ */ new Set(["password", "psk", "private-key", "public-key", "key"]);
   function isValidPort2(value) {
-    const port2 = typeof value === "string" && /^\d+$/.test(value) ? Number(value) : value;
-    return Number.isInteger(port2) && port2 >= 1 && port2 <= 65535;
+    const port = typeof value === "string" && /^\d+$/.test(value) ? Number(value) : value;
+    return Number.isInteger(port) && port >= 1 && port <= 65535;
   }
   function isValidAuthField(field, value) {
     if (field === "version") {
@@ -1792,10 +1821,39 @@ var OneXrayNodesBundle = (() => {
     };
   }
 
-  // ../../shared/release/client-catalog.js
-  var freeze = (value) => {
+  // src/audit.js
+  function freeze(value) {
     if (value && typeof value === "object" && !Object.isFrozen(value)) {
       for (const child of Object.values(value)) freeze(child);
+      Object.freeze(value);
+    }
+    return value;
+  }
+  function buildOneXrayAudit({ options = {}, normalized = null, filtered = null, resolution = null } = {}) {
+    const targets = Object.fromEntries(Object.entries(resolution?.targets ?? {}).map(([id, target]) => [id, {
+      status: target.status,
+      configuredKind: target.configured === "DIRECT" ? "DIRECT" : target.configured === "FOLLOW" ? "FOLLOW" : "NODE",
+      resolvedKind: target.resolvedTag === "direct" ? "DIRECT" : target.resolvedTag === "proxy" ? "FOLLOW" : "NODE"
+    }]));
+    return freeze({
+      schemaVersion: 1,
+      client: "onexray",
+      output: "audit",
+      channel: options.channel ?? "edge",
+      counts: {
+        inputNodes: normalized?.diagnostics?.total ?? 0,
+        eligibleNodes: filtered?.nodes?.length ?? 0,
+        fixedNodes: resolution?.fixedNodes?.length ?? 0
+      },
+      chain: { enabled: resolution?.chain?.enabled === true, entryCount: resolution?.chain?.entryCount ?? 0 },
+      targets
+    });
+  }
+
+  // ../../shared/release/client-catalog.js
+  var freeze2 = (value) => {
+    if (value && typeof value === "object" && !Object.isFrozen(value)) {
+      for (const child of Object.values(value)) freeze2(child);
       Object.freeze(value);
     }
     return value;
@@ -1892,12 +1950,12 @@ var OneXrayNodesBundle = (() => {
       adapterSchema: "happ-v4",
       publicDirectory: "happ"
     }
-  ].map((record) => freeze(record));
+  ].map((record) => freeze2(record));
   var byId = new Map(records.map((record) => [record.id, record]));
-  var ids = freeze(records.map(({ id }) => id));
-  var activeIds = freeze(records.filter(({ state }) => state === "active").map(({ id }) => id));
-  var plannedIds = freeze(records.filter(({ state }) => state === "planned").map(({ id }) => id));
-  var lightweightRuleIds = freeze([
+  var ids = freeze2(records.map(({ id }) => id));
+  var activeIds = freeze2(records.filter(({ state }) => state === "active").map(({ id }) => id));
+  var plannedIds = freeze2(records.filter(({ state }) => state === "planned").map(({ id }) => id));
+  var lightweightRuleIds = freeze2([
     CLIENT.anywhere,
     CLIENT.egern,
     CLIENT.shadowrocket,
@@ -1992,138 +2050,6 @@ var OneXrayNodesBundle = (() => {
       policyOverrides
     };
     return Object.freeze(options);
-  }
-
-  // src/render-outbound.js
-  var TAG = /^ap-[a-z0-9][a-z0-9/_-]{0,127}$/u;
-  function requiredString2(node, key) {
-    const value = node[key];
-    if (typeof value !== "string" || value.length === 0 || value.trim() !== value) throw new Error(`OneXray node field '${key}' is invalid`);
-    return value;
-  }
-  function port(node) {
-    const value = Number(node.port);
-    if (!Number.isInteger(value) || value < 1 || value > 65535) throw new Error("OneXray node port is invalid");
-    return value;
-  }
-  function transport(node) {
-    const network = String(node.network ?? "tcp").trim().toLowerCase();
-    if (["tcp", "raw"].includes(network)) return network === "raw" ? { network: "raw", rawSettings: {} } : void 0;
-    if (network === "ws") {
-      const source = node["ws-opts"] ?? {};
-      return { network: "ws", wsSettings: { path: Array.isArray(source.path) ? source.path[0] : source.path ?? "/", ...source.headers ? { headers: { ...source.headers } } : {} } };
-    }
-    if (network === "grpc") {
-      const source = node["grpc-opts"] ?? {};
-      return { network: "grpc", grpcSettings: { serviceName: source["grpc-service-name"] ?? source.service_name ?? "" } };
-    }
-    if (["h2", "http2", "http"].includes(network)) {
-      const source = node["h2-opts"] ?? node["http-opts"] ?? {};
-      return { network: "http", httpSettings: { path: Array.isArray(source.path) ? source.path[0] : source.path ?? "/", ...source.host ? { host: Array.isArray(source.host) ? source.host : [source.host] } : {} } };
-    }
-    if (network === "httpupgrade") {
-      const source = node["httpupgrade-opts"] ?? {};
-      return { network: "httpupgrade", httpupgradeSettings: { path: source.path ?? "/", ...source.host ? { host: source.host } : {} } };
-    }
-    if (network === "xhttp") {
-      const source = node["xhttp-opts"] ?? {};
-      return { network: "xhttp", xhttpSettings: { path: source.path ?? "/", ...source.mode ? { mode: source.mode } : {} } };
-    }
-    if (["kcp", "mkcp"].includes(network)) {
-      return { network: "kcp", kcpSettings: { ...node["kcp-opts"] ?? {} } };
-    }
-    if (network === "hysteria") return { network: "hysteria", hysteriaSettings: { ...node["hysteria-opts"] ?? {} } };
-    throw new Error("unsupported-onexray-transport");
-  }
-  function security(node, result) {
-    const reality = node["reality-opts"];
-    const securityName = node.security === "reality" || reality ? "reality" : node.tls === true || node.security === "tls" ? "tls" : "none";
-    if (securityName === "none") return;
-    result.security = securityName;
-    if (securityName === "reality") {
-      if (!reality || typeof reality["public-key"] !== "string" || reality["public-key"].length === 0) throw new Error("incomplete-onexray-reality");
-      result.realitySettings = {
-        serverName: node.sni ?? node.servername ?? "",
-        fingerprint: node["client-fingerprint"] ?? "chrome",
-        publicKey: reality["public-key"],
-        ...reality["short-id"] ? { shortId: reality["short-id"] } : {},
-        ...reality["spider-x"] || reality["_spider-x"] ? { spiderX: reality["spider-x"] ?? reality["_spider-x"] } : {}
-      };
-    } else {
-      result.tlsSettings = {
-        serverName: node.sni ?? node.servername ?? "",
-        allowInsecure: node["skip-cert-verify"] === true || node["allow-insecure"] === true,
-        ...node.alpn ? { alpn: [...node.alpn] } : {},
-        ...node["client-fingerprint"] ? { fingerprint: node["client-fingerprint"] } : {}
-      };
-    }
-  }
-  function base(node, tag, protocol2) {
-    if (!node || typeof node !== "object" || Array.isArray(node)) throw new TypeError("OneXray node is invalid");
-    if (typeof node.name !== "string" || node.name.length === 0 || /[\r\n]/u.test(node.name)) throw new Error("OneXray node name is invalid");
-    if (typeof tag !== "string" || !TAG.test(tag)) throw new Error("OneXray outbound tag is invalid");
-    if (!protocolSupportsClient(protocol2, "onexray")) throw new Error("unsupported-onexray-protocol");
-    return { name: node.name, protocol: protocol2, tag, settings: {} };
-  }
-  function server(node) {
-    return { address: requiredString2(node, "server"), port: port(node) };
-  }
-  function renderOneXrayOutbound(node, { tag } = {}) {
-    const protocol2 = normalizeProtocol(node?.type);
-    const common = base(node, tag, protocol2);
-    switch (protocol2) {
-      case "vless": {
-        const user = { id: requiredString2(node, "uuid"), encryption: node.encryption ?? "none" };
-        if (node.flow) user.flow = node.flow;
-        common.settings.vnext = [{ ...server(node), users: [user] }];
-        break;
-      }
-      case "vmess": {
-        common.settings.vnext = [{ ...server(node), users: [{ id: requiredString2(node, "uuid"), alterId: Number(node["alter-id"] ?? node.alterId ?? 0), security: node.security ?? node.cipher ?? "auto" }] }];
-        break;
-      }
-      case "ss":
-      case "shadowsocks":
-        common.protocol = "shadowsocks";
-        common.settings.servers = [{ ...server(node), method: requiredString2(node, "cipher"), password: requiredString2(node, "password") }];
-        break;
-      case "trojan":
-        common.settings.servers = [{ ...server(node), password: requiredString2(node, "password"), ...node.flow ? { flow: node.flow } : {} }];
-        break;
-      case "socks5":
-        common.protocol = "socks";
-        common.settings.servers = [{ ...server(node), ...node.username ? { users: [{ user: node.username, pass: node.password ?? "" }] } : {} }];
-        break;
-      case "http":
-        common.settings.servers = [{ ...server(node), ...node.username ? { users: [{ user: node.username, pass: node.password ?? "" }] } : {}, ...node["http-opts"] ? { headers: node["http-opts"].headers ?? {} } : {} }];
-        break;
-      case "hysteria2":
-      case "hy2":
-        common.protocol = "hysteria";
-        common.settings = { version: 2, ...server(node), ...node.password ? { auth: node.password } : {} };
-        break;
-      default:
-        throw new Error("unsupported-onexray-protocol");
-    }
-    const stream = transport(node);
-    if (stream) Object.assign(common, { streamSettings: stream });
-    security(node, common.streamSettings ?? (common.streamSettings = {}));
-    if (common.streamSettings && Object.keys(common.streamSettings).length === 0) delete common.streamSettings;
-    return common;
-  }
-
-  // src/render-subscription.js
-  function renderOneXraySubscription({ nodes } = {}) {
-    if (!Array.isArray(nodes) || nodes.length === 0) throw new Error("OneXray subscription cannot be empty");
-    const names = /* @__PURE__ */ new Set();
-    const outbounds = nodes.map((node, index) => {
-      if (names.has(node.name)) throw new Error("OneXray subscription contains duplicate node names");
-      names.add(node.name);
-      const rendered = renderOneXrayOutbound(node, { tag: `ap-node-${index.toString(36)}` });
-      return { ...rendered, tag: node.name };
-    });
-    return `${JSON.stringify({ outbounds })}
-`;
   }
 
   // ../../shared/encoding/base64url.js
@@ -2434,9 +2360,9 @@ var OneXrayNodesBundle = (() => {
     }
     return `ap-fixed-${(hash >>> 0).toString(16).padStart(8, "0")}`;
   }
-  function freeze2(value) {
+  function freeze3(value) {
     if (value && typeof value === "object" && !Object.isFrozen(value)) {
-      for (const child of Object.values(value)) freeze2(child);
+      for (const child of Object.values(value)) freeze3(child);
       Object.freeze(value);
     }
     return value;
@@ -2499,7 +2425,7 @@ var OneXrayNodesBundle = (() => {
       chain = { enabled: true, landingTag: "chainProxy", entryCount: homepageNodes.length };
       finalOutbound = { node: landingMatches[0], tag: "chainProxy" };
     }
-    return freeze2({
+    return freeze3({
       homepageNodes: [...homepageNodes],
       fixedNodes: [...fixedNodes],
       finalOutbound,
@@ -2508,20 +2434,24 @@ var OneXrayNodesBundle = (() => {
     });
   }
 
-  // src/substore-nodes-entry.js
+  // src/substore-audit-entry.js
   async function operator(input, targetPlatform, context = {}) {
     void targetPlatform;
-    const options = parseOneXrayOptions({ ...context.arguments ?? {}, output: "nodes" });
+    const options = parseOneXrayOptions(context.arguments ?? {});
+    if (options.output !== "audit") throw new Error("OneXray audit entry requires output=audit");
     if (typeof context.produceArtifact !== "function") throw new Error("OneXray produceArtifact is unavailable");
     const raw = await context.produceArtifact({ type: options.type, name: options.name, platform: "JSON", produceType: "internal" });
+    if (!Array.isArray(raw) || raw.length === 0) throw new Error("OneXray source collection is empty");
     const normalized = normalizeNodes(raw, { clientChain: options.clientChain });
     const filtered = filterNodesForClient(normalized.nodes, CLIENT.onexray);
-    if (filtered.nodes.length === 0) throw new Error("OneXray nodes: no compatible nodes");
+    if (filtered.nodes.length === 0) throw new Error("OneXray audit has no compatible nodes");
     const resolution = resolveOneXrayPolicy({ options, allNodes: normalized.nodes, eligibleNodes: filtered.nodes });
-    return { ...input, $content: renderOneXraySubscription({ nodes: resolution.homepageNodes }) };
+    const audit = buildOneXrayAudit({ options, normalized, filtered, resolution });
+    return { ...input, $content: `${JSON.stringify(audit, null, 2)}
+` };
   }
-  return __toCommonJS(substore_nodes_entry_exports);
+  return __toCommonJS(substore_audit_entry_exports);
 })();
 async function operator(input, targetPlatform) {
-  return OneXrayNodesBundle.operator(input, targetPlatform, { arguments: $arguments, produceArtifact, logger: console });
+  return OneXrayAuditBundle.operator(input, targetPlatform, { arguments: $arguments, produceArtifact, logger: console });
 }

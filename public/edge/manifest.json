@@ -47,11 +47,11 @@
       "referencedDefaultBytes": 394351
     },
     "happ": {
-      "manifestHash": "b38a6b2673edb675373433e838b91b6d38b3c752a580eb34e67b086169635918",
+      "manifestHash": "a22db3126c9483a487570b03e10eeab9a3ef7e92a9bb0f3f47dd7b523cd3b274",
       "referencedDefaultBytes": 0
     },
     "onexray": {
-      "manifestHash": "3b513fba1584b51a2f6f67f0feaaa4abfb45dd31acb21a452f8ecd5a633395b8",
+      "manifestHash": "a1fcd0af67016edb44440d4670543df89aa48e54d01ff4cdee2196bd06139cb3",
       "referencedDefaultBytes": 0
     },
     "shadowrocket": {
@@ -194,12 +194,12 @@
     {
       "bytes": 1888,
       "path": "audit/dashboard.html",
-      "sha256": "1015e64e826dbd836fcb3e11ee1a542f7ccdad8d00b76a321fd21cb9691e4621"
+      "sha256": "8f8b7b7da1c423fd8d2d561cb03b51a46d9390dd3623da18d3cece12c8f0e6a0"
     },
     {
       "bytes": 4119,
       "path": "audit/dashboard.json",
-      "sha256": "07bbe1302e979ebcb1c6557b4aaa664ed30b1b1eda3f60c81ba4d972422a39a8"
+      "sha256": "c8adf0cf2f007b348be04e29ac4058e3f69758d4cd76f9ad63a5c1de0ac04f09"
     },
     {
       "bytes": 5175,
@@ -209,7 +209,7 @@
     {
       "bytes": 7260,
       "path": "audit/v2fly-domain-drift.json",
-      "sha256": "deb616396021242ee0597bd443ccf6bfb06649ff275a6086fc847548c3a10c30"
+      "sha256": "d8f3060d8e285ab732b8c29404823d4a27fe8c6134734c982861c6701b8fd05d"
     },
     {
       "bytes": 6727,
@@ -414,7 +414,7 @@
     {
       "bytes": 1457,
       "path": "happ/client-manifest.json",
-      "sha256": "36490e14fac233c0007de333f92021fff0de6e2db1f2d0d0b46729cfb7d5483c"
+      "sha256": "e46372bcb910d2da4f9b2301b503cd0075fcbd20664cafea0793ca5b7cc01d02"
     },
     {
       "bytes": 181451,
@@ -432,29 +432,29 @@
       "sha256": "fa8aed4f1fcdfa03834cd0c403ff09fa934f087530fb38be8b62485712800f50"
     },
     {
-      "bytes": 142176,
+      "bytes": 147882,
       "path": "happ/scripts/happ-config-generator.js",
-      "sha256": "b5ee3cb72c821b1c78bcd3a8d669293085f97ed766b8778f7c83dd54f0e91a73"
+      "sha256": "9cefa978ed915a59f4a46d90441991b13728227cdca83dc71312c323066017ab"
     },
     {
-      "bytes": 106603,
+      "bytes": 108634,
       "path": "happ/scripts/happ-routing-audit.js",
-      "sha256": "d4e62152d002f040a6a2ff6e1f5ab69d407bfa382649f862a671729c67c56ebe"
+      "sha256": "3636f7a98b1acb24ad3143f1ffd3df6c7a531cf3ef44b80b6061777558feb1dc"
     },
     {
-      "bytes": 142176,
+      "bytes": 147882,
       "path": "happ/scripts/substore-config-generator.js",
-      "sha256": "b5ee3cb72c821b1c78bcd3a8d669293085f97ed766b8778f7c83dd54f0e91a73"
+      "sha256": "9cefa978ed915a59f4a46d90441991b13728227cdca83dc71312c323066017ab"
     },
     {
-      "bytes": 106603,
+      "bytes": 108634,
       "path": "happ/scripts/substore-routing-audit.js",
-      "sha256": "d4e62152d002f040a6a2ff6e1f5ab69d407bfa382649f862a671729c67c56ebe"
+      "sha256": "3636f7a98b1acb24ad3143f1ffd3df6c7a531cf3ef44b80b6061777558feb1dc"
     },
     {
       "bytes": 2025,
       "path": "onexray/client-manifest.json",
-      "sha256": "1b7c8f50d6838756c84b35ce50b3ca968f35d965ee86a20fc6aded60b2787bc1"
+      "sha256": "10d7bb5748fde018b6bc5eaad9154ef6362440bac4026a04b78d7cc9eb93f0ff"
     },
     {
       "bytes": 181436,
@@ -477,34 +477,34 @@
       "sha256": "d2d967b1b9f1658f9a922acd0f75ca46738007036a46b9c6f02fcfcc3604a705"
     },
     {
-      "bytes": 123973,
+      "bytes": 126008,
       "path": "onexray/scripts/onexray-node-generator.js",
-      "sha256": "f91202607ae4441a680b39f9cb0251bd51e359de9db73dc0297739a2249612a7"
+      "sha256": "f483a5fc5238a5ee75448292cf7980977604d1068cc1ddf74134e2d1b15086ca"
     },
     {
-      "bytes": 127254,
+      "bytes": 129289,
       "path": "onexray/scripts/onexray-profile-generator.js",
-      "sha256": "7af93df730e5a08c345cf9d5b08d490c27e7cb4cfa3b16d9db85953b055f3131"
+      "sha256": "bc193c6186bdce61aa709ba939fa936f7f0b4151fea55a1b098a26e4a326a574"
     },
     {
-      "bytes": 118405,
+      "bytes": 120436,
       "path": "onexray/scripts/onexray-routing-audit.js",
-      "sha256": "c34ae3d9d24ffab059fa222b85b375b4fb3b6fd53fd3f48859ffddedc956a0fe"
+      "sha256": "ee71d70728ccf33c61623f8cdff6a65d404471e3db021bb6b5a167ec57d0f988"
     },
     {
-      "bytes": 123973,
+      "bytes": 126008,
       "path": "onexray/scripts/substore-node-generator.js",
-      "sha256": "f91202607ae4441a680b39f9cb0251bd51e359de9db73dc0297739a2249612a7"
+      "sha256": "f483a5fc5238a5ee75448292cf7980977604d1068cc1ddf74134e2d1b15086ca"
     },
     {
-      "bytes": 127254,
+      "bytes": 129289,
       "path": "onexray/scripts/substore-profile-generator.js",
-      "sha256": "7af93df730e5a08c345cf9d5b08d490c27e7cb4cfa3b16d9db85953b055f3131"
+      "sha256": "bc193c6186bdce61aa709ba939fa936f7f0b4151fea55a1b098a26e4a326a574"
     },
     {
-      "bytes": 118405,
+      "bytes": 120436,
       "path": "onexray/scripts/substore-routing-audit.js",
-      "sha256": "c34ae3d9d24ffab059fa222b85b375b4fb3b6fd53fd3f48859ffddedc956a0fe"
+      "sha256": "ee71d70728ccf33c61623f8cdff6a65d404471e3db021bb6b5a167ec57d0f988"
     },
     {
       "bytes": 7229,
@@ -1198,7 +1198,7 @@
     }
   ],
   "generatedAt": "2026-08-19T18:32:09Z",
-  "manifestHash": "f2242db0d7b9626aa8a80d182844bdf24808bdbacc384c9ced6e3641a2dcc600",
+  "manifestHash": "a4be350e7acead8fb7677d724ef121cd6a4db103b0aea4d63f329cfddb0ca296",
   "schemaVersion": 2,
   "upstream": {
     "branch": "master",

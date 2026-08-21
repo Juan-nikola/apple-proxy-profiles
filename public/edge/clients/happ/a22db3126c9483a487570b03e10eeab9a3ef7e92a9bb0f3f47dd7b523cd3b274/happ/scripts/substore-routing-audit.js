@@ -1,4 +1,4 @@
-var OneXrayAuditBundle = (() => {
+var HappAuditBundle = (() => {
   var __defProp = Object.defineProperty;
   var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
   var __getOwnPropNames = Object.getOwnPropertyNames;
@@ -287,6 +287,7 @@ var OneXrayAuditBundle = (() => {
   var SINGBOX_SNELL_MODES = /* @__PURE__ */ new Set(["default", "unshaped", "unsafe-raw"]);
   var EGERN_OBFS = /* @__PURE__ */ new Set(["http", "tls"]);
   var EGERN_VMESS_SECURITY = /* @__PURE__ */ new Set(["auto", "aes-128-gcm", "chacha20-poly1305", "none", "zero"]);
+  var XRAY_VMESS_SECURITY = EGERN_VMESS_SECURITY;
   var EGERN_TRANSPORTS = /* @__PURE__ */ new Set(["tcp", "raw", "ws", "grpc", "h2", "http2", "http", "http1"]);
   var EGERN_VLESS_FLOWS = /* @__PURE__ */ new Set(["xtls-rprx-vision"]);
   var EGERN_TUIC_UDP_MODES = /* @__PURE__ */ new Set(["native", "quic"]);
@@ -349,6 +350,12 @@ var OneXrayAuditBundle = (() => {
   }
   function isNonblankString(value) {
     return typeof value === "string" && value.length > 0 && value.trim() === value;
+  }
+  function isDomainServer(value) {
+    if (!isNonblankString(value)) return false;
+    if (value.includes(":")) return false;
+    const parts = value.split(".");
+    return !(parts.length === 4 && parts.every((part) => /^\d+$/u.test(part) && Number(part) <= 255));
   }
   function isNonblankOpaqueString(value) {
     return typeof value === "string" && value.trim().length > 0;
@@ -1108,7 +1115,7 @@ var OneXrayAuditBundle = (() => {
     else if (client === CLIENT.onexray) transportReason = oneXrayNodeExclusionReason(node ?? {});
     return transportReason ? { supported: false, reason: transportReason } : { supported: true, reason: null };
   }
-  var HAPP_XRAY_TRANSPORTS = /* @__PURE__ */ new Set(["tcp", "raw", "ws", "grpc", "h2", "http2"]);
+  var HAPP_XRAY_TRANSPORTS = /* @__PURE__ */ new Set(["tcp", "raw", "ws", "grpc"]);
   var ONEXRAY_TRANSPORTS = /* @__PURE__ */ new Set([
     "tcp",
     "raw",
@@ -1136,13 +1143,19 @@ var OneXrayAuditBundle = (() => {
     return null;
   }
   function xrayTlsReason(node, client) {
-    const security = node.security === void 0 ? node.tls === true ? "tls" : "none" : String(node.security).toLowerCase();
+    const reality = node["reality-opts"];
+    if (Object.hasOwn(node, "reality")) return `unsupported-${client}-tls`;
+    const vmessCipherSecurity = normalizeProtocol(node.type) === "vmess" && typeof node.security === "string" && XRAY_VMESS_SECURITY.has(node.security.toLowerCase());
+    const security = node.security === void 0 || vmessCipherSecurity ? reality !== void 0 ? "reality" : node.tls === true ? "tls" : "none" : String(node.security).toLowerCase();
     if (!["none", "tls", "reality"].includes(security)) return `unsupported-${client}-tls`;
-    if (node.security === "none" && node.tls === true || node.tls === false && security !== "none") {
+    if (!vmessCipherSecurity && (node.security === "none" && node.tls === true || node.tls === false && security !== "none")) {
       return `unsupported-${client}-tls`;
     }
+    if (normalizeProtocol(node.type) === "vmess" && hasOption(node, "cipher") && vmessCipherSecurity && String(node.cipher).toLowerCase() !== String(node.security).toLowerCase()) {
+      return `unsupported-${client}-tls`;
+    }
+    if (security !== "reality" && reality !== void 0) return `unsupported-${client}-tls`;
     if (security === "reality") {
-      const reality = node["reality-opts"];
       if (!isPlainObject(reality) || !isNonblankOpaqueString(reality["public-key"])) {
         return client === "onexray" ? "incomplete-onexray-reality" : "incomplete-happ-reality";
       }
@@ -1182,6 +1195,22 @@ var OneXrayAuditBundle = (() => {
     if (tls) return tls;
     const transport = xrayTransportReason(node, client, protocol2);
     if (transport) return transport;
+    if (client === "happ") {
+      const network = normalizeTransport(node);
+      const security = node.security === "reality" || node["reality-opts"] !== void 0 ? "reality" : node.tls === true || node.security === "tls" ? "tls" : "none";
+      if (security === "reality" && (protocol2 === "hysteria2" || protocol2 === "hy2" || !["tcp", "raw", "grpc"].includes(network))) {
+        return "unsupported-happ-tls";
+      }
+      if (protocol2 === "hysteria2" || protocol2 === "hy2") {
+        const obfs = node.obfs === void 0 ? void 0 : String(node.obfs).toLowerCase();
+        const obfsPassword = node["obfs-password"] ?? node.obfs_password;
+        if (obfs !== void 0 && (obfs !== "salamander" || typeof obfsPassword !== "string" || obfsPassword.length === 0)) {
+          return "unsupported-happ-hysteria2-obfs";
+        }
+        if (obfs === void 0 && obfsPassword !== void 0) return "unsupported-happ-hysteria2-obfs";
+        if (security === "tls" && !isNonblankString(node.sni ?? node.servername) && !isDomainServer(node.server)) return "incomplete-happ-tls";
+      }
+    }
     if (client === "happ" && protocol2 === "socks5" && (node.tls === true || node.security === "tls" || node.security === "reality")) {
       return "unsupported-happ-tls";
     }
@@ -1698,9 +1727,9 @@ var OneXrayAuditBundle = (() => {
           suffixGroup.push(record);
           suffixGroups.set(record.suffix, suffixGroup);
         }
-        for (const records2 of suffixGroups.values()) {
-          records2.forEach((record, index) => {
-            const suffix = records2.length > 1 ? `${record.suffix}-${index + 1}` : record.suffix;
+        for (const records of suffixGroups.values()) {
+          records.forEach((record, index) => {
+            const suffix = records.length > 1 ? `${record.suffix}-${index + 1}` : record.suffix;
             record.node.name = `${protocolBase} #${suffix}`;
           });
         }
@@ -1793,155 +1822,17 @@ var OneXrayAuditBundle = (() => {
   }
 
   // src/audit.js
-  function freeze(value) {
-    if (value && typeof value === "object" && !Object.isFrozen(value)) {
-      for (const child of Object.values(value)) freeze(child);
-      Object.freeze(value);
-    }
-    return value;
+  var unsafe = /password|passwd|uuid|token|secret|credential|server|address|port|subscriptionurl|publickey|header/i;
+  function safeTarget(target) {
+    return { configured: target.configured, resolved: target.resolved, status: target.status, warningCode: target.warningCode ?? null, ...target.nodeId ? { nodeId: target.nodeId } : {} };
   }
-  function buildOneXrayAudit({ options = {}, normalized = null, filtered = null, resolution = null } = {}) {
-    const targets = Object.fromEntries(Object.entries(resolution?.targets ?? {}).map(([id, target]) => [id, {
-      status: target.status,
-      configuredKind: target.configured === "DIRECT" ? "DIRECT" : target.configured === "FOLLOW" ? "FOLLOW" : "NODE",
-      resolvedKind: target.resolvedTag === "direct" ? "DIRECT" : target.resolvedTag === "proxy" ? "FOLLOW" : "NODE"
-    }]));
-    return freeze({
-      schemaVersion: 1,
-      client: "onexray",
-      output: "audit",
-      channel: options.channel ?? "edge",
-      counts: {
-        inputNodes: normalized?.diagnostics?.total ?? 0,
-        eligibleNodes: filtered?.nodes?.length ?? 0,
-        fixedNodes: resolution?.fixedNodes?.length ?? 0
-      },
-      chain: { enabled: resolution?.chain?.enabled === true, entryCount: resolution?.chain?.entryCount ?? 0 },
-      targets
-    });
+  function buildHappAudit({ options = {}, policyResolution = {}, configs = [], eligibleNodes = null } = {}) {
+    const targets = Object.fromEntries(Object.entries(policyResolution.targets ?? {}).map(([key, value]) => [key, safeTarget(value)]));
+    const count = Array.isArray(eligibleNodes) ? eligibleNodes.length : configs.length;
+    const audit = { schemaVersion: 1, client: "happ", output: "audit", platform: options.platform ?? "all", channel: "current", counts: { configs: configs.length || count, eligibleNodes: count, fixedNodes: (policyResolution.fixedNodes ?? []).length, warnings: (policyResolution.warnings ?? []).length }, targets, warnings: (policyResolution.warnings ?? []).map(({ businessKey, warningCode }) => ({ businessKey, warningCode })) };
+    if (unsafe.test(JSON.stringify(audit))) throw new Error("Happ audit contains sensitive field");
+    return Object.freeze(audit);
   }
-
-  // ../../shared/release/client-catalog.js
-  var freeze2 = (value) => {
-    if (value && typeof value === "object" && !Object.isFrozen(value)) {
-      for (const child of Object.values(value)) freeze2(child);
-      Object.freeze(value);
-    }
-    return value;
-  };
-  var records = [
-    {
-      id: CLIENT.anywhere,
-      displayName: "Anywhere",
-      state: "active",
-      platforms: ["iphone", "ipad", "macos", "appletv"],
-      configFormat: "clash-yaml",
-      ruleFormat: "clash-yaml",
-      nodeValidator: "anywhere",
-      separatesProfile: false,
-      supportsPolicyOverrides: false,
-      adapterSchema: "anywhere-v1",
-      publicDirectory: "anywhere"
-    },
-    {
-      id: CLIENT.egern,
-      displayName: "Egern",
-      state: "active",
-      platforms: ["iphone", "ipad", "macos"],
-      configFormat: "yaml",
-      ruleFormat: "yaml",
-      nodeValidator: "egern",
-      separatesProfile: false,
-      supportsPolicyOverrides: false,
-      adapterSchema: "egern-v1",
-      publicDirectory: "egern"
-    },
-    {
-      id: CLIENT.shadowrocket,
-      displayName: "Shadowrocket",
-      state: "active",
-      platforms: ["iphone", "ipad", "macos"],
-      configFormat: "ini",
-      ruleFormat: "list",
-      nodeValidator: "shadowrocket",
-      separatesProfile: false,
-      supportsPolicyOverrides: false,
-      adapterSchema: "shadowrocket-v1",
-      publicDirectory: "shadowrocket"
-    },
-    {
-      id: CLIENT.surge,
-      displayName: "Surge",
-      state: "active",
-      platforms: ["macos", "iphone", "ipad"],
-      configFormat: "ini",
-      ruleFormat: "list",
-      nodeValidator: "surge",
-      separatesProfile: false,
-      supportsPolicyOverrides: false,
-      adapterSchema: "surge-v1",
-      publicDirectory: "surge"
-    },
-    {
-      id: CLIENT.singbox,
-      displayName: "sing-box",
-      state: "active",
-      platforms: ["macos", "iphone", "ipad", "android"],
-      configFormat: "json",
-      ruleFormat: "srs",
-      nodeValidator: "singbox",
-      separatesProfile: false,
-      supportsPolicyOverrides: false,
-      adapterSchema: "singbox-v1",
-      publicDirectory: "sing-box"
-    },
-    {
-      id: CLIENT.onexray,
-      displayName: "OneXray",
-      state: "active",
-      platforms: ["macos", "iphone", "ipad", "android", "windows", "linux"],
-      configFormat: "xray-profile-json",
-      ruleFormat: "xray-geodata",
-      nodeValidator: "onexray",
-      separatesProfile: false,
-      supportsPolicyOverrides: false,
-      adapterSchema: "onexray-v1",
-      publicDirectory: "onexray"
-    },
-    {
-      id: CLIENT.happ,
-      displayName: "HAPP",
-      state: "active",
-      platforms: ["iphone", "ipad", "macos", "android"],
-      configFormat: "happ-json",
-      ruleFormat: "happ-json",
-      nodeValidator: "happ",
-      separatesProfile: false,
-      supportsPolicyOverrides: false,
-      adapterSchema: "happ-v4",
-      publicDirectory: "happ"
-    }
-  ].map((record) => freeze2(record));
-  var byId = new Map(records.map((record) => [record.id, record]));
-  var ids = freeze2(records.map(({ id }) => id));
-  var activeIds = freeze2(records.filter(({ state }) => state === "active").map(({ id }) => id));
-  var plannedIds = freeze2(records.filter(({ state }) => state === "planned").map(({ id }) => id));
-  var lightweightRuleIds = freeze2([
-    CLIENT.anywhere,
-    CLIENT.egern,
-    CLIENT.shadowrocket,
-    CLIENT.surge,
-    CLIENT.singbox
-  ]);
-
-  // ../../shared/release/frontier-manifest.js
-  var FRONTIER_CHANNELS = Object.freeze(["edge", "current", "previous"]);
-  var FRONTIER_PLATFORMS = Object.freeze({
-    [CLIENT.surge]: Object.freeze(["macos", "iphone", "ipad"]),
-    [CLIENT.singbox]: Object.freeze(["macos", "iphone", "ipad", "android", "openwrt"]),
-    [CLIENT.onexray]: Object.freeze(["macos", "iphone", "ipad", "android", "windows", "linux"]),
-    [CLIENT.happ]: Object.freeze(["macos", "iphone", "ipad", "android", "windows", "linux"])
-  });
 
   // ../../shared/substore/collection-name.js
   var SAFE_COLLECTION_NAME = /^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$/u;
@@ -1954,74 +1845,73 @@ var OneXrayAuditBundle = (() => {
   }
 
   // src/options.js
-  var OUTPUTS = /* @__PURE__ */ new Set(["nodes", "profile", "audit"]);
-  var CHANNELS = new Set(FRONTIER_CHANNELS);
-  var DEFAULTS = Object.freeze({
-    channel: "edge",
-    dnsMode: "stable",
-    chinaDns: "alidns",
-    globalDns: "cloudflare",
-    blockMode: "balanced",
-    quicMode: "proxy-block",
-    ipv6Mode: "auto",
-    clientChain: "off",
-    clientChainTarget: "",
-    policyOverrides: ""
+  var PLATFORMS = /* @__PURE__ */ new Set(["macos", "iphone", "ipad", "android", "windows", "linux", "all"]);
+  var ENUMS = Object.freeze({
+    dnsMode: ["stable", "privacy", "speed"],
+    chinaDns: ["alidns", "dnspod", "system"],
+    globalDns: ["cloudflare", "google", "quad9"],
+    blockMode: ["balanced", "security", "strict", "off"],
+    quicMode: ["allow", "proxy-block", "all-block"],
+    ipv6Mode: ["auto", "ipv4-only"]
   });
-  var REQUIRED = Object.freeze(["output", "type", "name"]);
-  var ALLOWED = /* @__PURE__ */ new Set([...REQUIRED, ...Object.keys(DEFAULTS)]);
-  function requiredString(raw, key) {
-    const value = raw[key];
-    if (typeof value !== "string" || value.length === 0 || value.trim() !== value || /[\r\n]/u.test(value)) {
-      throw new Error(`OneXray option '${key}' must be a non-empty single-line string`);
+  var DEFAULTS = Object.freeze({ dnsMode: "stable", chinaDns: "alidns", globalDns: "cloudflare", blockMode: "balanced", quicMode: "proxy-block", ipv6Mode: "auto", policyOverrides: "" });
+  var REQUIRED = /* @__PURE__ */ new Set(["output", "type", "name", "subscriptionName", "platform"]);
+  var ALLOWED = /* @__PURE__ */ new Set([...REQUIRED, "dnsMode", "chinaDns", "globalDns", "blockMode", "quicMode", "ipv6Mode", "policyOverrides"]);
+  var PROTOTYPE = /* @__PURE__ */ new Set(["__proto__", "constructor", "prototype"]);
+  function ownOptions(raw) {
+    if (!raw || typeof raw !== "object" || Array.isArray(raw)) throw new TypeError("Happ options must be a plain object");
+    const proto = Object.getPrototypeOf(raw);
+    if (proto !== Object.prototype && proto !== null) throw new TypeError("Happ options must be a plain object");
+    const values = /* @__PURE__ */ new Map();
+    for (const key of Reflect.ownKeys(raw)) {
+      if (typeof key !== "string" || PROTOTYPE.has(key)) throw new Error("Happ options contain a forbidden key");
+      if (!ALLOWED.has(key)) throw new Error(`Unknown Happ option '${key}'`);
+      const descriptor = Object.getOwnPropertyDescriptor(raw, key);
+      if (!descriptor || !descriptor.enumerable || "get" in descriptor || "set" in descriptor) throw new Error("Happ options must contain data properties");
+      values.set(key, descriptor.value);
     }
+    return values;
+  }
+  function required(values, key) {
+    if (!values.has(key)) throw new Error(`Option '${key}' is required`);
+    return values.get(key);
+  }
+  function literal(values, key, expected) {
+    const value = required(values, key);
+    if (value !== expected) throw new Error(`Option '${key}' must be '${expected}'`);
     return value;
   }
-  function enumValue(raw, key) {
-    const value = raw[key] ?? DEFAULTS[key];
-    if (typeof value !== "string" || !OPTION_VALUES[key]?.includes(value)) {
-      throw new Error(`OneXray option '${key}' has an unsupported value`);
-    }
+  function enumValue(values, key) {
+    const value = values.has(key) && values.get(key) !== void 0 ? values.get(key) : DEFAULTS[key];
+    if (typeof value !== "string" || !ENUMS[key].includes(value)) throw new Error(`Option '${key}' has an unsupported value`);
     return value;
   }
-  function parseOneXrayOptions(raw) {
-    if (!raw || typeof raw !== "object" || Array.isArray(raw)) throw new TypeError("OneXray options must be an object");
-    for (const key of Object.keys(raw)) {
-      if (!key.startsWith("_") && !ALLOWED.has(key)) throw new Error(`Unknown OneXray option: ${key}`);
-    }
-    for (const key of REQUIRED) if (!Object.hasOwn(raw, key)) throw new Error(`OneXray option '${key}' is required`);
-    const output = requiredString(raw, "output");
-    if (!OUTPUTS.has(output)) throw new Error("OneXray option 'output' has an unsupported value");
-    if (requiredString(raw, "type") !== "collection") throw new Error("OneXray option 'type' must be collection");
-    const channel = raw.channel ?? DEFAULTS.channel;
-    if (typeof channel !== "string" || !CHANNELS.has(channel)) throw new Error("OneXray option 'channel' has an unsupported value");
-    const clientChain = raw.clientChain ?? DEFAULTS.clientChain;
-    if (!OPTION_VALUES.clientChain.includes(clientChain)) throw new Error("OneXray option 'clientChain' has an unsupported value");
-    const clientChainTarget = raw.clientChainTarget ?? DEFAULTS.clientChainTarget;
-    if (typeof clientChainTarget !== "string" || /[\r\n]/u.test(clientChainTarget)) {
-      throw new Error("OneXray option 'clientChainTarget' is invalid");
-    }
-    if (clientChain === "off" && clientChainTarget !== "") throw new Error("OneXray clientChainTarget requires clientChain=on");
-    if (clientChain === "on" && !/^NODE:.+$/u.test(clientChainTarget)) throw new Error("OneXray clientChainTarget is required when clientChain=on");
-    const policyOverrides = raw.policyOverrides ?? DEFAULTS.policyOverrides;
-    if (typeof policyOverrides !== "string" || /[\r\n]/u.test(policyOverrides)) throw new Error("OneXray option 'policyOverrides' is invalid");
+  function parseHappOptions(raw) {
+    const values = ownOptions(raw);
+    const output = values.get("output");
+    if (output !== "config" && output !== "audit") throw new Error("Option 'output' must be 'config' or 'audit'");
+    literal(values, "type", "collection");
+    const platform = required(values, "platform");
+    if (typeof platform !== "string" || !PLATFORMS.has(platform)) throw new Error("Option 'platform' has an unsupported value");
+    if (platform === "all" && output !== "audit") throw new Error("Option 'platform' 'all' is valid only for audit output");
     const options = {
       output,
       type: "collection",
-      name: validateCollectionName(raw.name, "OneXray option 'name'"),
-      channel,
-      dnsMode: enumValue(raw, "dnsMode"),
-      chinaDns: enumValue(raw, "chinaDns"),
-      globalDns: enumValue(raw, "globalDns"),
-      blockMode: enumValue(raw, "blockMode"),
-      quicMode: enumValue(raw, "quicMode"),
-      ipv6Mode: enumValue(raw, "ipv6Mode"),
-      clientChain,
-      clientChainTarget,
-      policyOverrides
+      name: validateCollectionName(required(values, "name"), "Option 'name'"),
+      subscriptionName: validateCollectionName(required(values, "subscriptionName"), "Option 'subscriptionName'"),
+      platform,
+      dnsMode: enumValue(values, "dnsMode"),
+      chinaDns: enumValue(values, "chinaDns"),
+      globalDns: enumValue(values, "globalDns"),
+      blockMode: enumValue(values, "blockMode"),
+      quicMode: enumValue(values, "quicMode"),
+      ipv6Mode: enumValue(values, "ipv6Mode"),
+      policyOverrides: values.has("policyOverrides") && values.get("policyOverrides") !== void 0 ? values.get("policyOverrides") : DEFAULTS.policyOverrides
     };
+    if (typeof options.policyOverrides !== "string") throw new Error("Option 'policyOverrides' must be a string");
     return Object.freeze(options);
   }
+  var HAPP_PLATFORMS = Object.freeze([...PLATFORMS]);
 
   // ../../shared/encoding/base64url.js
   var ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
@@ -2055,374 +1945,140 @@ var OneXrayAuditBundle = (() => {
     if (bits !== 0 && accumulator !== 0) throw new TypeError("Base64URL value is not canonical");
     return bytes;
   }
-
-  // ../../shared/serialization/strict-json.js
-  var DEFAULT_MAX_BYTES = 1 * 1024 * 1024;
-  var DEFAULT_MAX_DEPTH = 32;
-  var FORBIDDEN_KEYS = /* @__PURE__ */ new Set(["__proto__", "prototype", "constructor"]);
-  var WHITESPACE = /* @__PURE__ */ new Set([" ", "	", "\r", "\n"]);
-  function failure(label, reason) {
-    const prefix = typeof label === "string" && label.length > 0 ? `${label}: ` : "";
-    return new SyntaxError(`${prefix}${reason}`);
-  }
-  function asText(value, label) {
-    if (typeof value === "string") {
-      if (/[\uD800-\uDFFF]/u.test(value.replace(/[\uD800-\uDBFF](?=[\uDC00-\uDFFF])/gu, "").replace(/(?<=[\uD800-\uDBFF])[\uDC00-\uDFFF]/gu, ""))) {
-        throw failure(label, "invalid UTF-8 text");
-      }
-      return { text: value, bytes: new TextEncoder().encode(value).byteLength };
-    }
-    if (value instanceof Uint8Array) {
-      try {
-        return {
-          text: new TextDecoder("utf-8", { fatal: true, ignoreBOM: true }).decode(value),
-          bytes: value.byteLength
-        };
-      } catch {
-        throw failure(label, "invalid UTF-8 text");
-      }
-    }
-    throw failure(label, "input must be UTF-8 text");
-  }
-  function validateOptions(options, label) {
-    const { maxBytes = DEFAULT_MAX_BYTES, maxDepth = DEFAULT_MAX_DEPTH } = options ?? {};
-    if (!Number.isSafeInteger(maxBytes) || maxBytes < 0) throw failure(label, "maxBytes must be a non-negative integer");
-    if (!Number.isSafeInteger(maxDepth) || maxDepth < 0) throw failure(label, "maxDepth must be a non-negative integer");
-    return { maxBytes, maxDepth };
-  }
-  function validateAndParse(text, { label, maxDepth }) {
-    let index = 0;
-    const length = text.length;
-    const error = (reason) => {
-      throw failure(label, reason);
-    };
-    const skipWhitespace = () => {
-      while (index < length && WHITESPACE.has(text[index])) index += 1;
-    };
-    const parseString = () => {
-      if (text[index] !== '"') error("invalid JSON");
-      const start = index;
-      index += 1;
-      while (index < length) {
-        const character = text[index++];
-        if (character === '"') {
-          try {
-            return JSON.parse(text.slice(start, index));
-          } catch {
-            error("invalid JSON");
-          }
-        }
-        if (character === "\\") {
-          const escape = text[index++];
-          if (escape === "u") {
-            if (!/^[0-9a-f]{4}$/iu.test(text.slice(index, index + 4))) error("invalid JSON");
-            index += 4;
-          } else if (!'"\\/bfnrt'.includes(escape)) {
-            error("invalid JSON");
-          }
-        } else if (character < " ") {
-          error("invalid JSON");
-        }
-      }
-      error("invalid JSON");
-    };
-    const parseNumber = () => {
-      const match = /^-?(?:0|[1-9][0-9]*)(?:\.[0-9]+)?(?:[eE][+-]?[0-9]+)?/u.exec(text.slice(index));
-      if (!match) error("invalid JSON");
-      index += match[0].length;
-    };
-    const parseValue = (depth) => {
-      skipWhitespace();
-      const character = text[index];
-      if (character === "{" || character === "[") {
-        if (depth > maxDepth) error("maximum JSON depth exceeded");
-        const object = character === "{";
-        index += 1;
-        skipWhitespace();
-        if (text[index] === (object ? "}" : "]")) {
-          index += 1;
-          return;
-        }
-        const keys = object ? /* @__PURE__ */ new Set() : null;
-        while (index < length) {
-          skipWhitespace();
-          if (object) {
-            const key = parseString();
-            if (keys.has(key)) error("duplicate JSON key");
-            if (FORBIDDEN_KEYS.has(key)) error("unsupported prototype key");
-            keys.add(key);
-            skipWhitespace();
-            if (text[index++] !== ":") error("invalid JSON");
-          }
-          parseValue(depth + 1);
-          skipWhitespace();
-          const close = object ? "}" : "]";
-          if (text[index] === close) {
-            index += 1;
-            return;
-          }
-          if (text[index++] !== ",") error("invalid JSON");
-        }
-        error("invalid JSON");
-      }
-      if (character === '"') {
-        parseString();
-        return;
-      }
-      if (text.startsWith("true", index) || text.startsWith("false", index) || text.startsWith("null", index)) {
-        index += text.startsWith("true", index) ? 4 : text.startsWith("false", index) ? 5 : 4;
-        return;
-      }
-      parseNumber();
-    };
-    skipWhitespace();
-    parseValue(1);
-    skipWhitespace();
-    if (index !== length) error("invalid JSON");
+  function decodeBase64UrlUtf8(value) {
+    const bytes = decodeBase64Url(value);
     try {
-      return JSON.parse(text);
+      return new TextDecoder("utf-8", { fatal: true }).decode(bytes);
     } catch {
-      error("invalid JSON");
+      throw new TypeError("Base64URL value is not valid UTF-8");
     }
-  }
-  function parseStrictJson(value, options = {}) {
-    const label = options?.label;
-    const { maxBytes, maxDepth } = validateOptions(options, label);
-    const { text, bytes } = asText(value, label);
-    if (bytes > maxBytes) throw failure(label, "JSON exceeds byte limit");
-    return validateAndParse(text, { label, maxDepth });
-  }
-  var STRICT_JSON_DEFAULTS = Object.freeze({
-    maxBytes: DEFAULT_MAX_BYTES,
-    maxDepth: DEFAULT_MAX_DEPTH
-  });
-
-  // ../../shared/policies/business-targets.js
-  var TARGET_KEYWORD = /^(FOLLOW|DIRECT)$/iu;
-  var NODE_TARGET = /^NODE:(.*)$/iu;
-  var BASE64URL = /^[A-Za-z0-9_-]+$/u;
-  var LINE_TERMINATOR = /[\r\n\u2028\u2029]/u;
-  function frozenTarget(id, label, aliases, defaultTarget) {
-    return Object.freeze({ id, label, aliases: Object.freeze([...aliases]), defaultTarget });
-  }
-  var BUSINESS_TARGETS = Object.freeze([
-    frozenTarget("ai", "\u{1F916} AI \u4E13\u7528", ["AI \u4E13\u7528", "ai"], "FOLLOW"),
-    frozenTarget("github", "\u{1F419} GitHub", ["GitHub", "github"], "FOLLOW"),
-    frozenTarget("youtube", "\u{1F4FA} YouTube", ["YouTube", "youtube"], "FOLLOW"),
-    frozenTarget("overseasMedia", "\u{1F3AC} \u6D77\u5916\u6D41\u5A92\u4F53", [
-      "\u6D77\u5916\u6D41\u5A92\u4F53",
-      "overseasMedia",
-      "Netflix",
-      "netflix",
-      "Disney+",
-      "disney",
-      "Spotify",
-      "spotify",
-      "\u56FD\u9645\u5A92\u4F53",
-      "globalMedia"
-    ], "FOLLOW"),
-    frozenTarget("globalSocial", "\u{1F4AC} \u6D77\u5916\u793E\u4EA4", [
-      "\u6D77\u5916\u793E\u4EA4",
-      "globalSocial",
-      "Telegram",
-      "telegram",
-      "TikTok",
-      "tiktok"
-    ], "FOLLOW"),
-    frozenTarget("overseasGame", "\u{1F30D} \u6D77\u5916\u6E38\u620F", ["\u6D77\u5916\u6E38\u620F", "overseasGame"], "FOLLOW"),
-    frozenTarget("domesticCore", "\u56FD\u5185\u6838\u5FC3", ["\u56FD\u5185\u6838\u5FC3", "domesticCore"], "DIRECT"),
-    // Preserve all published domestic-platform spellings under the stable ID.
-    frozenTarget("domesticPlatform", "\u{1F1E8}\u{1F1F3} \u56FD\u5185\u5E73\u53F0", [
-      "\u56FD\u5185\u5E73\u53F0",
-      "domestic",
-      "\u{1F1E8}\u{1F1F3} \u56FD\u5185\u5E73\u53F0",
-      "domesticPlatform",
-      "\u54D4\u54E9\u54D4\u54E9",
-      "bilibili",
-      "\u6296\u97F3",
-      "bytedance",
-      "\u5C0F\u7EA2\u4E66",
-      "xiaohongshu",
-      "\u5FAE\u535A",
-      "weibo"
-    ], "DIRECT"),
-    frozenTarget("chinaIp", "\u4E2D\u56FD IP", ["\u4E2D\u56FD IP", "chinaIp"], "DIRECT"),
-    frozenTarget("apple", "\u{1F34E} Apple", ["Apple", "apple"], "DIRECT"),
-    frozenTarget("microsoft", "\u{1FA9F} Microsoft", ["Microsoft", "microsoft"], "DIRECT"),
-    frozenTarget("download", "\u2B07\uFE0F \u4E0B\u8F7D/P2P", ["\u4E0B\u8F7D/P2P", "download"], "DIRECT")
-  ]);
-  var TARGET_BY_KEY = /* @__PURE__ */ new Map();
-  for (const target of BUSINESS_TARGETS) {
-    TARGET_BY_KEY.set(target.label, target);
-    for (const alias of target.aliases) TARGET_BY_KEY.set(alias, target);
-  }
-  function businessTargetByKey(key) {
-    return typeof key === "string" ? TARGET_BY_KEY.get(key) : void 0;
-  }
-  function policyError(message) {
-    return new Error(`Invalid business policy overrides: ${message}`);
-  }
-  function targetError(target, message) {
-    return policyError(`${target.label}: ${message}`);
-  }
-  function decodePolicy(encoded) {
-    if (typeof encoded !== "string" || encoded !== "" && !BASE64URL.test(encoded) || encoded.length % 4 === 1) {
-      throw policyError("must be a Base64URL string");
-    }
-    if (encoded === "") return Object.freeze({});
-    let bytes;
-    try {
-      bytes = decodeBase64Url(encoded);
-    } catch {
-      throw policyError("must be a Base64URL string");
-    }
-    let values;
-    try {
-      values = parseStrictJson(bytes, { label: "business overrides", maxBytes: 64 * 1024, maxDepth: 8 });
-    } catch {
-      throw policyError("must contain JSON object");
-    }
-    if (values === null || Array.isArray(values) || typeof values !== "object" || Object.getPrototypeOf(values) !== Object.prototype) {
-      throw policyError("must contain a JSON object");
-    }
-    return values;
-  }
-  function canonicalBusinessTarget(value) {
-    if (typeof value !== "string") throw new TypeError("target must be a string");
-    if (TARGET_KEYWORD.test(value)) return value.toUpperCase();
-    const node = NODE_TARGET.exec(value);
-    if (!node || node[1].trim().length === 0 || LINE_TERMINATOR.test(node[1])) {
-      throw new TypeError("target must be FOLLOW, DIRECT, or NODE:<name>");
-    }
-    return `NODE:${node[1]}`;
-  }
-  function parseBusinessOverrides(encoded) {
-    const values = decodePolicy(encoded);
-    const overrides = {};
-    for (const [key, value] of Object.entries(values)) {
-      const target = businessTargetByKey(key);
-      if (!target) throw policyError("contains an unknown business key");
-      let canonical;
-      try {
-        canonical = canonicalBusinessTarget(value);
-      } catch {
-        throw targetError(target, "target must be FOLLOW, DIRECT, or NODE:<name>");
-      }
-      if (Object.hasOwn(overrides, target.id) && overrides[target.id] !== canonical) {
-        throw targetError(target, "has conflicting aliases");
-      }
-      overrides[target.id] = canonical;
-    }
-    return Object.freeze(overrides);
   }
 
-  // src/resolve-policy.js
-  function metadata(node) {
-    return node?._profile && typeof node._profile === "object" ? node._profile : {};
+  // src/policy-overrides.js
+  var TARGET_RE = /^(DIRECT|FOLLOW)$/iu;
+  var NODE_RE = /^NODE:(.*)$/iu;
+  var BASE64URL = /^[A-Za-z0-9_-]*$/u;
+  var definitions2 = [
+    ["ai", "\u{1F916} AI \u4E13\u7528", ["AI \u4E13\u7528", "ai"], "FOLLOW"],
+    ["github", "\u{1F419} GitHub", ["GitHub", "github"], "FOLLOW"],
+    ["youtube", "\u{1F4FA} YouTube", ["YouTube", "youtube"], "FOLLOW"],
+    ["globalMedia", "\u{1F3AC} \u6D77\u5916\u6D41\u5A92\u4F53", ["\u6D77\u5916\u6D41\u5A92\u4F53", "globalMedia", "overseasMedia"], "FOLLOW"],
+    ["globalSocial", "\u{1F4AC} \u6D77\u5916\u793E\u4EA4", ["\u6D77\u5916\u793E\u4EA4", "globalSocial", "overseasSocial"], "FOLLOW"],
+    ["apple", "\u{1F34E} Apple", ["Apple", "apple"], "DIRECT"],
+    ["microsoft", "\u{1FA9F} Microsoft", ["Microsoft", "microsoft"], "DIRECT"],
+    ["domestic", "\u{1F1E8}\u{1F1F3} \u56FD\u5185\u5E73\u53F0", ["\u56FD\u5185\u5E73\u53F0", "domestic", "domesticPlatform"], "DIRECT"],
+    ["overseasGame", "\u{1F30D} \u6D77\u5916\u6E38\u620F", ["\u6D77\u5916\u6E38\u620F", "overseasGame"], "FOLLOW"],
+    ["download", "\u2B07\uFE0F \u4E0B\u8F7D/P2P", ["\u4E0B\u8F7D/P2P", "download"], "DIRECT"],
+    ["dnsAndRules", "\u{1F9ED} DNS \u4E0E\u89C4\u5219\u4E0B\u8F7D", ["DNS \u4E0E\u89C4\u5219\u4E0B\u8F7D", "dnsAndRules"], "FOLLOW"],
+    ["final", "\u6700\u7EC8\u515C\u5E95", ["final", "\u6700\u7EC8\u515C\u5E95"], "FOLLOW"]
+  ];
+  var BUSINESS_KEYS = Object.freeze(definitions2.map(([id, label, aliases, defaultTarget]) => Object.freeze({ id, label, aliases: Object.freeze(aliases), defaultTarget })));
+  var BY_KEY = /* @__PURE__ */ new Map();
+  for (const target of BUSINESS_KEYS) {
+    BY_KEY.set(target.label, target);
+    for (const alias of target.aliases) BY_KEY.set(alias, target);
   }
-  function nodeName(node) {
+  BY_KEY.set("\u56FD\u5185\u6838\u5FC3", BY_KEY.get("domestic"));
+  BY_KEY.set("domesticCore", BY_KEY.get("domestic"));
+  BY_KEY.set("\u4E2D\u56FD IP", BY_KEY.get("domestic"));
+  BY_KEY.set("chinaIp", BY_KEY.get("domestic"));
+  function error(message) {
+    throw new Error(`Invalid Happ policyOverrides: ${message}`);
+  }
+  function canonicalTarget(value) {
+    if (typeof value !== "string") error("target must be a string");
+    if (TARGET_RE.test(value)) return value.toUpperCase();
+    const match = NODE_RE.exec(value);
+    if (!match || !match[1] || !match[1].trim() || /[\r\n\u2028\u2029]/u.test(match[1])) error("target must be DIRECT, FOLLOW, or NODE:<name>");
+    return `NODE:${match[1]}`;
+  }
+  function decodePolicyOverrides(encoded = "") {
+    if (typeof encoded !== "string" || !BASE64URL.test(encoded) || encoded.length % 4 === 1) error("must be canonical Base64URL");
+    if (!encoded) return Object.freeze({});
+    let parsed;
+    try {
+      parsed = JSON.parse(decodeBase64UrlUtf8(encoded));
+    } catch {
+      error("must contain UTF-8 JSON object");
+    }
+    if (!parsed || Array.isArray(parsed) || typeof parsed !== "object" || Object.getPrototypeOf(parsed) !== Object.prototype) error("must contain a JSON object");
+    const result = {};
+    for (const [key, value] of Object.entries(parsed)) {
+      const target = BY_KEY.get(key);
+      if (!target) error("contains an unknown business key");
+      const canonical = canonicalTarget(value);
+      if (Object.hasOwn(result, target.id) && result[target.id] !== canonical) error(`${target.label} has conflicting aliases`);
+      result[target.id] = canonical;
+    }
+    return Object.freeze(result);
+  }
+  function normalizedName(node) {
     return typeof node?.name === "string" ? node.name : "";
   }
-  function hashTag(value) {
-    let hash = 2166136261;
-    for (const character of String(value)) {
-      hash ^= character.charCodeAt(0);
-      hash = Math.imul(hash, 16777619);
-    }
-    return `ap-fixed-${(hash >>> 0).toString(16).padStart(8, "0")}`;
+  function nodeId(node) {
+    return node?._profile?.id ?? `node-${Math.abs([...JSON.stringify(node)].reduce((h, c) => h * 33 ^ c.charCodeAt(0) | 0, 5381))}`;
   }
-  function freeze3(value) {
-    if (value && typeof value === "object" && !Object.isFrozen(value)) {
-      for (const child of Object.values(value)) freeze3(child);
-      Object.freeze(value);
-    }
-    return value;
-  }
-  function fixedTargetError(target, name, reason) {
-    return new Error(`OneXray fixed target ${target.label} ${reason}: ${name}`);
-  }
-  function uniqueByName(nodes, name) {
-    return nodes.filter((node) => nodeName(node) === name);
-  }
-  function resolveOneXrayPolicy({ options, allNodes = [], eligibleNodes = [] } = {}) {
-    if (!options || typeof options !== "object") throw new TypeError("OneXray options are required");
-    if (!Array.isArray(allNodes) || !Array.isArray(eligibleNodes)) throw new TypeError("OneXray node inventories are required");
-    if (eligibleNodes.length === 0) throw new Error("OneXray has no compatible nodes");
-    const overrides = parseBusinessOverrides(options.policyOverrides ?? "");
-    const fixedByName = /* @__PURE__ */ new Map();
-    const fixedNodes = [];
+  function resolvePolicyOverrides({ encoded = "", allNodes = [], eligibleNodes = [] } = {}) {
+    const overrides = decodePolicyOverrides(encoded);
     const targets = {};
-    const tagOwners = /* @__PURE__ */ new Map();
-    const resolveFixed = (target, configured) => {
-      const wanted = configured.slice("NODE:".length);
-      if (fixedByName.has(wanted)) return fixedByName.get(wanted);
-      const matches = uniqueByName(eligibleNodes, wanted).filter((node2) => metadata(node2).chained !== true);
-      if (matches.length > 1) throw fixedTargetError(target, wanted, "is ambiguous");
-      if (matches.length === 0) {
-        const incompatible = uniqueByName(allNodes, wanted);
-        throw fixedTargetError(target, wanted, incompatible.length > 0 ? "is incompatible" : "is missing");
-      }
-      const node = matches[0];
-      let tag = hashTag(`${wanted}\0${metadata(node).id ?? ""}`);
-      if (tagOwners.has(tag) && tagOwners.get(tag) !== wanted) {
-        tag = hashTag(`${wanted}\0${metadata(node).id ?? ""}${node.type ?? ""}`);
-      }
-      const record = { node, name: wanted, tag };
-      fixedByName.set(wanted, record);
-      tagOwners.set(tag, wanted);
-      fixedNodes.push(record);
-      return record;
-    };
-    for (const target of BUSINESS_TARGETS) {
+    const fixedNodes = [];
+    const warnings = [];
+    for (const target of BUSINESS_KEYS) {
       const configured = overrides[target.id] ?? target.defaultTarget;
-      if (configured === "FOLLOW") {
-        targets[target.id] = { configured, resolvedTag: "proxy", status: "follow" };
-      } else if (configured === "DIRECT") {
-        targets[target.id] = { configured, resolvedTag: "direct", status: "direct" };
-      } else {
-        const fixed = resolveFixed(target, configured);
-        targets[target.id] = { configured, resolvedTag: fixed.tag, status: "fixed", nodeId: metadata(fixed.node).id ?? null };
+      const record = { configured, resolved: configured, status: configured === "DIRECT" ? "direct" : configured === "FOLLOW" ? "follow" : "fixed", warningCode: null, nodeId: null };
+      if (configured.startsWith("NODE:")) {
+        const wanted = configured.slice(5);
+        const matches = eligibleNodes.filter((node) => normalizedName(node) === wanted);
+        const allMatches = allNodes.filter((node) => normalizedName(node) === wanted);
+        if (matches.length === 1) {
+          record.nodeId = nodeId(matches[0]);
+          fixedNodes.push({ nodeId: record.nodeId, name: wanted });
+        } else {
+          record.resolved = "FOLLOW";
+          if (matches.length > 1) record.status = "duplicate-node-fallback", record.warningCode = "duplicate-node";
+          else if (allMatches.length > 0) record.status = "incompatible-node-fallback", record.warningCode = "incompatible-node";
+          else record.status = "missing-node-fallback", record.warningCode = "missing-node";
+          warnings.push({ businessKey: target.label, warningCode: record.warningCode });
+        }
       }
+      targets[target.id] = record;
     }
-    let homepageNodes = eligibleNodes.filter((node) => metadata(node).chained !== true);
-    let chain = { enabled: false, landingTag: null, entryCount: homepageNodes.length };
-    let finalOutbound = null;
-    if (options.clientChain === "on") {
-      const targetName = String(options.clientChainTarget).slice("NODE:".length);
-      const landingMatches = uniqueByName(allNodes, targetName).filter((node) => metadata(node).sourceKind === "landing" && metadata(node).chained !== true);
-      if (landingMatches.length !== 1) throw new Error(`OneXray client chain landing is not unique: ${targetName}`);
-      homepageNodes = eligibleNodes.filter((node) => metadata(node).entry === true && metadata(node).chained !== true);
-      if (homepageNodes.length === 0) throw new Error("OneXray client chain requires at least one entry node");
-      chain = { enabled: true, landingTag: "chainProxy", entryCount: homepageNodes.length };
-      finalOutbound = { node: landingMatches[0], tag: "chainProxy" };
-    }
-    return freeze3({
-      homepageNodes: [...homepageNodes],
-      fixedNodes: [...fixedNodes],
-      finalOutbound,
-      targets,
-      chain
-    });
+    const dedup = new Map(fixedNodes.map((item) => [item.nodeId, item]));
+    return Object.freeze({ targets: Object.freeze(targets), fixedNodes: Object.freeze([...dedup.values()]), warnings: Object.freeze(warnings) });
   }
 
   // src/substore-audit-entry.js
   async function operator(input, targetPlatform, context = {}) {
     void targetPlatform;
-    const options = parseOneXrayOptions(context.arguments ?? {});
-    if (options.output !== "audit") throw new Error("OneXray audit entry requires output=audit");
-    if (typeof context.produceArtifact !== "function") throw new Error("OneXray produceArtifact is unavailable");
-    const raw = await context.produceArtifact({ type: options.type, name: options.name, platform: "JSON", produceType: "internal" });
-    if (!Array.isArray(raw) || raw.length === 0) throw new Error("OneXray source collection is empty");
-    const normalized = normalizeNodes(raw, { clientChain: options.clientChain });
-    const filtered = filterNodesForClient(normalized.nodes, CLIENT.onexray);
-    if (filtered.nodes.length === 0) throw new Error("OneXray audit has no compatible nodes");
-    const resolution = resolveOneXrayPolicy({ options, allNodes: normalized.nodes, eligibleNodes: filtered.nodes });
-    const audit = buildOneXrayAudit({ options, normalized, filtered, resolution });
+    const options = parseHappOptions(context.arguments ?? {});
+    if (options.output !== "audit") throw new Error("HAPP audit entry requires output=audit");
+    if (typeof context.produceArtifact !== "function") throw new Error("HAPP produceArtifact is unavailable");
+    const raw = await context.produceArtifact({
+      type: options.type,
+      name: options.name,
+      platform: "JSON",
+      produceType: "internal"
+    });
+    if (!Array.isArray(raw) || raw.length === 0) throw new Error("HAPP source collection is empty");
+    const normalized = normalizeNodes(raw, { clientChain: "off" });
+    const filtered = filterNodesForClient(normalized.nodes, CLIENT.happ);
+    if (filtered.nodes.length === 0) throw new Error("HAPP audit has no compatible nodes");
+    const policyResolution = resolvePolicyOverrides({
+      encoded: options.policyOverrides,
+      allNodes: normalized.nodes,
+      eligibleNodes: filtered.nodes
+    });
+    const audit = buildHappAudit({
+      options,
+      policyResolution,
+      eligibleNodes: filtered.nodes,
+      configs: []
+    });
     return { ...input, $content: `${JSON.stringify(audit, null, 2)}
 ` };
   }
   return __toCommonJS(substore_audit_entry_exports);
 })();
 async function operator(input, targetPlatform) {
-  return OneXrayAuditBundle.operator(input, targetPlatform, { arguments: $arguments, produceArtifact, logger: console });
+  return HappAuditBundle.operator(input, targetPlatform, { arguments: $arguments, produceArtifact, requestOptions: typeof $options === "undefined" ? undefined : $options, logger: console });
 }
