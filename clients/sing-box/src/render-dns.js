@@ -1,4 +1,8 @@
-import { mobileRuleClientCatalog, orderedRoutingPlan } from "../../../shared/rules/lightweight-policy.js";
+import {
+  mobileRuleClientCatalog,
+  orderedRoutingPlan,
+  usesMobileRuleBundles,
+} from "../../../shared/rules/lightweight-policy.js";
 import { chinaDnsProvider, globalDnsProvider } from "../../../shared/dns/providers.js";
 import { PROXY_DNS_DOMAIN_SUFFIXES } from "../../../shared/rules/overseas-dns.js";
 import { CUSTOM_RULES } from "../../../shared/rules/custom-rules.js";
@@ -22,12 +26,8 @@ const MOBILE_CHINA_DNS_SOURCE_IDS = Object.freeze(
   mobileRuleClientCatalog().filter(({ dnsClass }) => dnsClass === "china").map(({ id }) => id),
 );
 
-function isIos(options) {
-  return options.platform === "iphone" || options.platform === "ipad";
-}
-
 function activeSourceIds(options, sourceIds, mobileSourceIds) {
-  return isIos(options) ? mobileSourceIds : sourceIds;
+  return usesMobileRuleBundles(options.platform) ? mobileSourceIds : sourceIds;
 }
 
 function customDnsRules() {

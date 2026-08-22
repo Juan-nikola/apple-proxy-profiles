@@ -4,6 +4,7 @@ import {
   ROUTING_PHASES,
   orderedRoutingPlan,
   ruleClientCatalog,
+  usesMobileRuleBundles,
 } from "../../../shared/rules/lightweight-policy.js";
 import { CUSTOM_RULES } from "../../../shared/rules/custom-rules.js";
 import { PROXY_DNS_DOMAIN_SUFFIXES } from "../../../shared/rules/overseas-dns.js";
@@ -15,14 +16,14 @@ const MOBILE_RULE_SOURCE_ID_SET = new Set(MOBILE_RULE_SOURCE_IDS);
 
 function activeRuleCatalog(platform, adblockMode) {
   const catalog = ruleClientCatalog({ adblockMode });
-  return ["iphone", "ipad"].includes(platform)
+  return usesMobileRuleBundles(platform)
     ? mobileRuleClientCatalog().filter(({ id }) => MOBILE_RULE_SOURCE_ID_SET.has(id))
     : catalog;
 }
 
 function activeRoutingPlan(platform, adblockMode) {
   const activeIds = new Set(activeRuleCatalog(platform, adblockMode).map(({ id }) => id));
-  if (["iphone", "ipad"].includes(platform)) return mobileRuleClientCatalog();
+  if (usesMobileRuleBundles(platform)) return mobileRuleClientCatalog();
   return orderedRoutingPlan({ adblockMode }).filter(({ id }) => activeIds.has(id));
 }
 
@@ -130,7 +131,7 @@ export function renderSingBoxRuleSets({ ruleBaseUrl, profileMode = "light", adbl
   if (profileMode === "diagnostic") return [];
   if (profileMode !== "light") throw new Error("Unsupported sing-box profile mode");
   const sources = activeRuleCatalog(platform, adblockMode);
-  const sourceBase = ["iphone", "ipad"].includes(platform) ? mobileRuleBase(base) : base;
+  const sourceBase = usesMobileRuleBundles(platform) ? mobileRuleBase(base) : base;
   const adblockBase = adblockMode === "full" ? optionalAdblockBase(base) : null;
   return sources.map((source) => ({
     type: "remote",
@@ -177,7 +178,7 @@ export function renderSingBoxRouteRules({
     balanced: ["Hijacking", "BlockHttpDNS", "Privacy", "Advertising", "Advertising_Domain"],
     strict: ["Hijacking", "BlockHttpDNS", "Privacy", "Advertising", "Advertising_Domain"],
   }[blockMode] ?? []);
-  if (["iphone", "ipad"].includes(platform)) {
+  if (usesMobileRuleBundles(platform)) {
     securityIds.clear();
     if (blockMode === "security") securityIds.add("Security");
     if (["balanced", "strict"].includes(blockMode)) {
@@ -204,7 +205,7 @@ export function renderSingBoxRouteRules({
     if (phase === "serviceIntent") {
       if (quicMode === "proxy-block") rules.push({ ...OVERSEAS_DNS_FALLBACK_RULE, ...QUIC_BLOCK_RULE });
       rules.push({ ...OVERSEAS_DNS_FALLBACK_RULE });
-      if (["iphone", "ipad"].includes(platform)) {
+      if (usesMobileRuleBundles(platform)) {
         rules.push({ domain_suffix: ["cn"], action: "route", outbound: "DIRECT" });
       }
     }

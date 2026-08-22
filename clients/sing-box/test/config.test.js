@@ -82,6 +82,15 @@ test("renders the previous sing-box rule publication without mixing channels", (
   assert.deepEqual(validateSingBoxConfig(config), { valid: true, errors: [] });
 });
 
+test("uses mobile rule bundles for Android while macOS keeps the full rule catalog", () => {
+  const android = render({ platform: "android" });
+  const macos = render({ platform: "macos" });
+  assert.ok(android.route.rule_set.length > 0);
+  assert.equal(android.route.rule_set.every(({ url }) => url.includes("/mobile-rule-sets/")), true);
+  assert.equal(macos.route.rule_set.every(({ url }) => url.includes("/rule-sets/")), true);
+  assert.equal(macos.route.rule_set.some(({ url }) => url.includes("/mobile-rule-sets/")), false);
+});
+
 test("defaults Apple platforms to IPv4-only without changing Android defaults", () => {
   for (const platform of ["macos", "iphone", "ipad"]) {
     const { ipv6Mode } = parseSingBoxOptions({ ...baseOptions, platform, ipv6Mode: undefined });
@@ -106,7 +115,7 @@ test("renders a complete latest-style config with response-based ChinaIP fallbac
   assert.equal(config.dns.servers.find(({ tag }) => tag === "dns-proxy")?.detour, "⚡ 全部自动");
 });
 
-test("routes iOS DNS classes through the compact mobile rule bundles", () => {
+test("routes mobile DNS classes through the compact mobile rule bundles", () => {
   const expectedProxy = [
     "rule-AI", "rule-GitHub", "rule-YouTube", "rule-OverseasMedia",
     "rule-OverseasSocial", "rule-OverseasGame",
@@ -116,7 +125,7 @@ test("routes iOS DNS classes through the compact mobile rule bundles", () => {
     "rule-Microsoft", "rule-Download",
   ];
 
-  for (const platform of ["iphone", "ipad"]) {
+  for (const platform of ["iphone", "ipad", "android"]) {
     const config = render({ platform });
     assert.deepEqual(
       config.dns.rules.find((rule) => rule.action === "route" && rule.server === "dns-proxy" && rule.rule_set)?.rule_set,
