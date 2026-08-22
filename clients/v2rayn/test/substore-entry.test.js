@@ -31,3 +31,11 @@ test("config operator returns parseable fail-closed diagnostics for an incompati
   assert.equal(profile.routing.rules.at(-1).outboundTag, "block");
   assert.equal(profile.renderFailures["unsupported-v2rayn-protocol"], 1);
 });
+
+test("config operator propagates malformed GeoData instead of hiding it", async () => {
+  await assert.rejects(() => configOperator({}, "JSON", {
+    arguments: { output: "config", type: "collection", name: "fixture", platform: "windows" },
+    produceArtifact: async () => [{ name: "fixture", type: "vless", server: "fixture.invalid", port: 443, uuid: "TEST_ONLY_UUID" }],
+    geoData: { manifest: { schemaVersion: 1, region: "windows", channel: "edge" } },
+  }), /GeoData/u);
+});

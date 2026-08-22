@@ -3063,8 +3063,9 @@ var V2rayNConfigBundle = (() => {
     context.logger?.info?.(`[v2rayn-config] ${JSON.stringify({ accepted: filtered.nodes.length, renderFailures: filtered.diagnostics.excluded })}`);
     let profile;
     try {
-      profile = renderV2rayNProfile({ options, nodes: filtered.nodes, filterFailures: filtered.diagnostics.excluded });
-    } catch {
+      profile = renderV2rayNProfile({ options, nodes: filtered.nodes, geoData: context.geoData, filterFailures: filtered.diagnostics.excluded });
+    } catch (error) {
+      if (error?.message !== "v2rayN policy target node is unavailable") throw error;
       const failures = { ...filtered.diagnostics.excluded, "policy-target-unavailable": 1 };
       profile = renderV2rayNProfile({ options: { ...options, policyOverrides: "" }, nodes: [], filterFailures: failures });
     }
