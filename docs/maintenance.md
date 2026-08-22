@@ -286,7 +286,11 @@ curl -L --fail --silent --show-error --head https://juan-nikola.github.io/apple-
 
 生产使用 `current/`，测试使用 `edge/`；公开规则回滚可使用 `previous/` 或 Manifest 中的 `versions/<manifestHash>/`。Sub-Store 任务通常不需要换 URL：修复后重新运行同一远程任务即可。设备侧失败先切回旧 Profile/Config，不要用更新脚本覆盖唯一可用配置。
 
-共享分流顺序固定为：`DomesticCore` → 服务规则 → `OverseasGame` → `ChinaTLD` → `ChinaIP` → FINAL。未知域名通过 DNS response matching 和 `ChinaIP` rule-set 判断；HTTPDNS、硬编码 IP、IPv6、QUIC 和手动服务组选择仍是残余风险。修改分流后，用 `npm run explain:route -- --channel current --domain <域名>` 离线核对预期结果；该命令只读取本地已发布规则，不执行 DNS，也不修改任何文件。
+共享分流顺序固定为：`DomesticCore` → 服务规则 → `OverseasGame` → `ChinaTLD` → `ChinaIP` → FINAL。未知域名遵循“先判断再连接”：先解析，解析到中国 IP 使用 `DIRECT`；解析到海外 IP 或无法确认时使用默认代理。它不是“直连失败后自动代理重试”，也不要求把完整 `ChinaMax_Domain` 塞进客户端。
+
+`dnsMode=stable` 继续作为默认的国内应用优先模式：显式海外服务走代理侧 DNS，未知查询先走国内 DNS，再由 `ChinaIP`/GeoIP 做结果判断。`privacy` 把未知查询交给代理 DNS，隐私更强但可能牺牲国内 CDN 的就近解析。两种模式都不应加载完整中国域名表；完整域名表只允许作为审计、对照或离线研究输入。
+
+sing-box 的 iPhone、iPad、Android 统一引用 `mobile-rule-sets`，macOS 引用完整业务规则目录。移动平台不能使用 `adblockMode=full`；生成器会直接拒绝该组合，而不是静默丢弃广告规则。HTTPDNS、硬编码 IP、IPv6、QUIC 和手动服务组选择仍是残余风险。修改分流后，用 `npm run explain:route -- --channel current --domain <域名>` 离线核对预期结果；该命令只读取本地已发布规则，不执行 DNS，也不修改任何文件。
 
 ## 9. 真机 canary 顺序
 

@@ -65,6 +65,16 @@ shared/rules/semantic-intents.js（统一业务语义）
 
 当前固定的主路由顺序是：国内核心 → 业务规则 → 海外游戏 → 中国域名后缀 → 中国 IP → 最终走主节点。具体客户端仍保留自己支持的业务选择器。
 
+### 0.2.1 未知域名怎样回落
+
+未命中已有业务规则的域名不会直接加载完整中国域名表，也不会先连代理再自动重试。客户端按下面的顺序做一次判断：
+
+1. 先解析域名；解析到中国 IP 时使用 `DIRECT`。
+2. 解析到海外 IP，或无法确认地址时，使用默认代理。
+3. 直连失败后的“再试代理”不是通用客户端契约；需要重试的业务应加入对应的显式业务规则。
+
+`dnsMode=stable` 是默认的国内应用优先模式：已知海外业务使用代理 DNS，其他未知查询先使用国内 DNS，再用 `ChinaIP`/GeoIP 判断结果。`dnsMode=privacy` 会把未知查询交给代理侧 DNS，隐私更强，但无法完全复现国内 DNS 的就近解析。完整 `ChinaMax_Domain` 之类的域名表只作为审计或研究输入，不进入默认客户端，尤其不进入 iPhone、iPad 和 Android 的 sing-box 配置。
+
 ### 0.3 数据从哪里到哪里
 
 ```text
@@ -311,7 +321,7 @@ Anywhere 分为三层，缺一层都不会完整生效：
 
 操作：在 sing-box 中导入当前平台对应的 `singbox-config-macos`、`singbox-config-iphone`、`singbox-config-ipad` 或 `singbox-config-android` 私密 URL，允许系统创建 VPN/TUN。
 
-成功标志：配置通过 sing-box 校验；节点不为空；国内网站、海外网站和局域网都正常。
+成功标志：配置通过 sing-box 校验；节点不为空；国内网站、海外网站和局域网都正常。Android、iPhone 和 iPad 默认只引用 `mobile-rule-sets`；macOS 才引用完整业务规则目录。移动平台请求 `adblockMode=full` 会被明确拒绝，以免把超大规则包静默装入受限内存客户端。
 
 失败怎么办：默认 `nodeErrorMode=strict` 会在任何已选节点无法完整转换时停止。回到 `apple-proxy-singbox` 修正节点或字段，不要直接用兼容模式掩盖丢节点。
 
@@ -516,7 +526,7 @@ Shadowrocket 和 Surge 首先检查 `subscriptionName`；Egern 和 Surge 再检�
 
 ### Q4：国内 App 变慢或误走代理
 
-确认没有开启全局模式；用 `explain:route` 检查域名；再查看客户端是否仍保留旧业务组选择、旧规则或 DNS 缓存。不要先打开 MITM。
+确认没有开启全局模式；用 `explain:route` 检查域名；再查看客户端是否仍保留旧业务组选择、旧规则或 DNS 缓存。默认逻辑是“先判断再连接”：未知域名解析到中国 IP 才直连，海外或未解析结果走代理；不是直连失败后自动重试。不要先打开 MITM，也不要重新加入完整 `ChinaMax_Domain`。
 
 ### Q5：更新后整个客户端不能联网
 
