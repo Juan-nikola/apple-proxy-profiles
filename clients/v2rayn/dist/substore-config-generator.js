@@ -3005,11 +3005,14 @@ var V2rayNConfigBundle = (() => {
   function actionForSource(sourceId, overrides, nodeTags, blockMode) {
     const configured = policyForRuleSource(sourceId);
     const target = configured ? businessTargetByKey(configured) : void 0;
-    const value = overrides[target?.id] ?? (configured === "REJECT" ? "REJECT" : target?.defaultTarget ?? "FOLLOW");
-    if (value === "DIRECT") return blockMode === "off" && (sourceId === "Hijacking" || sourceId === "BlockHttpDNS") ? "direct" : "direct";
+    const domestic = /* @__PURE__ */ new Set(["DomesticCore", "DomesticGame", "SteamCN", "BiliBili", "ByteDance", "XiaoHongShu", "Weibo", "Apple", "Microsoft", "Download", "PrivateTracker", "ChinaTLD", "ChinaIP"]);
+    const security2 = /* @__PURE__ */ new Set(["Hijacking", "BlockHttpDNS", "Advertising", "Advertising_Domain"]);
+    const defaultValue = security2.has(sourceId) ? "REJECT" : sourceId === "Privacy" || domestic.has(sourceId) ? "DIRECT" : "FOLLOW";
+    const value = overrides[target?.id] ?? defaultValue;
+    if (value === "DIRECT") return "direct";
     if (value === "FOLLOW") return "proxy";
     if (value === "NODE:".concat(value.slice(5)) && nodeTags.has(value.slice(5))) return nodeTags.get(value.slice(5));
-    if (value === "NODE:".concat(value.slice(5))) throw new Error(`v2rayN policy target node is missing: ${value.slice(5)}`);
+    if (value === "NODE:".concat(value.slice(5))) throw new Error("v2rayN policy target node is unavailable");
     return value === "REJECT" ? blockMode === "off" ? "direct" : "block" : "proxy";
   }
   function dns(options) {
@@ -3023,9 +3026,12 @@ var V2rayNConfigBundle = (() => {
     if (!Array.isArray(nodes)) throw new Error("v2rayN profile requires compatible nodes");
     const outbounds = [{ protocol: "freedom", tag: "direct" }, { protocol: "blackhole", tag: "block" }];
     const failures = { ...filterFailures };
+    const nodeTags = /* @__PURE__ */ new Map();
     nodes.forEach((node, index) => {
+      const tag = `ap-node-${index.toString(36)}`;
       try {
-        outbounds.push(renderXrayOutbound(node, { tag: `ap-node-${index.toString(36)}`, client: "v2rayn" }));
+        outbounds.push(renderXrayOutbound(node, { tag, client: "v2rayn" }));
+        nodeTags.set(node.name, tag);
       } catch (error) {
         const diagnostic = renderXrayNodeError(error, "v2rayn");
         Object.entries(diagnostic.excluded).forEach(([key, count]) => {
@@ -3033,9 +3039,8 @@ var V2rayNConfigBundle = (() => {
         });
       }
     });
-    const nodeTags = new Map(nodes.map((node, index) => [node.name, `ap-node-${index.toString(36)}`]));
     const overrides = parseBusinessOverrides(options.policyOverrides ?? "");
-    if (Object.values(overrides).some((value) => value.startsWith("NODE:") && !nodeTags.has(value.slice(5)))) throw new Error("v2rayN policy target node is missing");
+    if (Object.values(overrides).some((value) => value.startsWith("NODE:") && !nodeTags.has(value.slice(5)))) throw new Error("v2rayN policy target node is unavailable");
     const references = geoReferences(geoData, options);
     const rules = [{ domain: ["geosite:private"], outboundTag: "direct", ruleTag: "private-direct" }];
     const sourceRules = references.sources.map((source2) => ({ source: source2, outboundTag: actionForSource(source2.id, overrides, nodeTags, options.blockMode) }));
@@ -3056,7 +3061,14 @@ var V2rayNConfigBundle = (() => {
     const normalized = normalizeNodes(raw, { clientChain: options.clientChain });
     const filtered = filterNodesForClient(normalized.nodes, CLIENT.v2rayn);
     context.logger?.info?.(`[v2rayn-config] ${JSON.stringify({ accepted: filtered.nodes.length, renderFailures: filtered.diagnostics.excluded })}`);
-    return { ...input, $content: `${JSON.stringify(renderV2rayNProfile({ options, nodes: filtered.nodes, filterFailures: filtered.diagnostics.excluded }), null, 2)}
+    let profile;
+    try {
+      profile = renderV2rayNProfile({ options, nodes: filtered.nodes, filterFailures: filtered.diagnostics.excluded });
+    } catch {
+      const failures = { ...filtered.diagnostics.excluded, "policy-target-unavailable": 1 };
+      profile = renderV2rayNProfile({ options: { ...options, policyOverrides: "" }, nodes: [], filterFailures: failures });
+    }
+    return { ...input, $content: `${JSON.stringify(profile, null, 2)}
 ` };
   }
   return __toCommonJS(substore_config_entry_exports);

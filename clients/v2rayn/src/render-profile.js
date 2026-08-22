@@ -55,11 +55,14 @@ function geoReferences(geoData, options) {
 function actionForSource(sourceId, overrides, nodeTags, blockMode) {
   const configured = policyForRuleSource(sourceId);
   const target = configured ? businessTargetByKey(configured) : undefined;
-  const value = overrides[target?.id] ?? (configured === "REJECT" ? "REJECT" : target?.defaultTarget ?? "FOLLOW");
-  if (value === "DIRECT") return blockMode === "off" && (sourceId === "Hijacking" || sourceId === "BlockHttpDNS") ? "direct" : "direct";
+  const domestic = new Set(["DomesticCore", "DomesticGame", "SteamCN", "BiliBili", "ByteDance", "XiaoHongShu", "Weibo", "Apple", "Microsoft", "Download", "PrivateTracker", "ChinaTLD", "ChinaIP"]);
+  const security = new Set(["Hijacking", "BlockHttpDNS", "Advertising", "Advertising_Domain"]);
+  const defaultValue = security.has(sourceId) ? "REJECT" : sourceId === "Privacy" || domestic.has(sourceId) ? "DIRECT" : "FOLLOW";
+  const value = overrides[target?.id] ?? defaultValue;
+  if (value === "DIRECT") return "direct";
   if (value === "FOLLOW") return "proxy";
   if (value === "NODE:".concat(value.slice(5)) && nodeTags.has(value.slice(5))) return nodeTags.get(value.slice(5));
-  if (value === "NODE:".concat(value.slice(5))) throw new Error(`v2rayN policy target node is missing: ${value.slice(5)}`);
+  if (value === "NODE:".concat(value.slice(5))) throw new Error("v2rayN policy target node is unavailable");
   return value === "REJECT" ? (blockMode === "off" ? "direct" : "block") : "proxy";
 }
 
@@ -67,11 +70,10 @@ function dns(options) { const queryStrategy = options.ipv6Mode === "ipv4-only" ?
 export function renderV2rayNProfile({ nodes, options, geoData = null, filterFailures = {} } = {}) {
   if (!options || options.output !== "config") throw new Error("v2rayN profile options are required");
   if (!Array.isArray(nodes)) throw new Error("v2rayN profile requires compatible nodes");
-  const outbounds = [{ protocol: "freedom", tag: "direct" }, { protocol: "blackhole", tag: "block" }]; const failures = { ...filterFailures };
-  nodes.forEach((node, index) => { try { outbounds.push(renderXrayOutbound(node, { tag: `ap-node-${index.toString(36)}`, client: "v2rayn" })); } catch (error) { const diagnostic = renderXrayNodeError(error, "v2rayn"); Object.entries(diagnostic.excluded).forEach(([key, count]) => { failures[key] = (failures[key] ?? 0) + count; }); } });
-  const nodeTags = new Map(nodes.map((node, index) => [node.name, `ap-node-${index.toString(36)}`]));
+  const outbounds = [{ protocol: "freedom", tag: "direct" }, { protocol: "blackhole", tag: "block" }]; const failures = { ...filterFailures }; const nodeTags = new Map();
+  nodes.forEach((node, index) => { const tag = `ap-node-${index.toString(36)}`; try { outbounds.push(renderXrayOutbound(node, { tag, client: "v2rayn" })); nodeTags.set(node.name, tag); } catch (error) { const diagnostic = renderXrayNodeError(error, "v2rayn"); Object.entries(diagnostic.excluded).forEach(([key, count]) => { failures[key] = (failures[key] ?? 0) + count; }); } });
   const overrides = parseBusinessOverrides(options.policyOverrides ?? "");
-  if (Object.values(overrides).some((value) => value.startsWith("NODE:") && !nodeTags.has(value.slice(5)))) throw new Error("v2rayN policy target node is missing");
+  if (Object.values(overrides).some((value) => value.startsWith("NODE:") && !nodeTags.has(value.slice(5)))) throw new Error("v2rayN policy target node is unavailable");
   const references = geoReferences(geoData, options);
   const rules = [{ domain: ["geosite:private"], outboundTag: "direct", ruleTag: "private-direct" }];
   const sourceRules = references.sources.map((source) => ({ source, outboundTag: actionForSource(source.id, overrides, nodeTags, options.blockMode) }));
