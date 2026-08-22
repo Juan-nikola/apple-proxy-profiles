@@ -5,7 +5,7 @@ import { renderV2BoxAssetManifest } from "../src/render-assets.js";
 test("renders stable mobile GeoData asset manifest", () => {
   const hash = "a".repeat(64);
   const manifest = renderV2BoxAssetManifest({ region: "cn", channel: "current", geositeSha256: hash, geoipSha256: "b".repeat(64) });
-  assert.equal(manifest.geosite.url, "https://juan-nikola.github.io/apple-proxy-profiles/geodata/cn/AppleProxySiteCurrent.dat");
+  assert.equal(manifest.geosite.url, "https://juan-nikola.github.io/apple-proxy-profiles/current/geodata/cn/AppleProxySiteCurrent.dat");
   assert.equal(manifest.geoip.sha256, "b".repeat(64));
 });
 

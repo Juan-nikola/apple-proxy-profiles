@@ -11,5 +11,5 @@ export function renderV2BoxAssetManifest({ region, channel = "current", publicBa
   if (!HASH.test(geositeSha256) || !HASH.test(geoipSha256)) throw new Error("V2Box asset hash is invalid");
   const names = oneXrayGeoNames(channel);
   const base = publicBase.replace(/\/$/u, "");
-  return Object.freeze({ region, channel, names, geosite: Object.freeze({ name: names.domain, url: `${base}/geodata/${region}/${names.domain}.dat`, sha256: geositeSha256 }), geoip: Object.freeze({ name: names.ip, url: `${base}/geodata/${region}/${names.ip}.dat`, sha256: geoipSha256 }) });
+  return Object.freeze({ region, channel, names, hashes: Object.freeze({ geosite: geositeSha256, geoip: geoipSha256 }), geosite: Object.freeze({ name: names.domain, url: `${base}/${channel}/geodata/${region}/${names.domain}.dat`, sha256: geositeSha256 }), geoip: Object.freeze({ name: names.ip, url: `${base}/${channel}/geodata/${region}/${names.ip}.dat`, sha256: geoipSha256 }) });
 }

@@ -94,13 +94,31 @@
       },
       {
         "domain": [
-          "ext:AppleProxySiteEdge.dat:APP-REGION-CN"
+          "geosite:apple-proxy-security"
         ],
-        "ip": [
-          "ext:AppleProxyIPEdge.dat:APP-REGION-CN"
+        "outboundTag": "block",
+        "ruleTag": "inline-security"
+      },
+      {
+        "domain": [
+          "geosite:apple-proxy-privacy"
+        ],
+        "outboundTag": "direct",
+        "ruleTag": "inline-privacy"
+      },
+      {
+        "domain": [
+          "geosite:cn"
+        ],
+        "outboundTag": "direct",
+        "ruleTag": "inline-domestic"
+      },
+      {
+        "domain": [
+          "geosite:apple-proxy-overseas"
         ],
         "outboundTag": "proxy",
-        "ruleTag": "source-REGION-CN"
+        "ruleTag": "inline-overseas"
       },
       {
         "network": "quic",

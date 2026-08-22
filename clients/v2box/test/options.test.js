@@ -2,11 +2,11 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { parseV2BoxOptions } from "../src/options.js";
 
-test("parses v2rayN defaults and platforms", () => {
+test("parses V2Box defaults and mobile platforms", () => {
   assert.equal(parseV2BoxOptions({ output: "config", type: "collection", name: "fixture", platform: "iphone" }).region, "cn");
   assert.equal(parseV2BoxOptions({ output: "nodes", type: "collection", name: "fixture", platform: "ipad" }).output, "nodes");
 });
-test("rejects invalid v2rayN options", () => {
+test("rejects invalid V2Box options", () => {
   assert.throws(() => parseV2BoxOptions({ output: "config", type: "collection", name: "fixture", platform: "windows" }), /platform/u);
   assert.throws(() => parseV2BoxOptions({ output: "config", type: "collection", name: "fixture", platform: "iphone", unknown: 1 }), /Unknown/u);
   assert.throws(() => parseV2BoxOptions({ output: "config", type: "collection", name: "fixture", platform: "iphone", policyOverrides: "eyJhaSI6ImJhZCJ9" }), /business policy/u);

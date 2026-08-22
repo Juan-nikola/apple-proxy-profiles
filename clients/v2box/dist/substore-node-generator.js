@@ -2786,8 +2786,8 @@ var V2BoxNodesBundle = (() => {
   };
   function parseV2BoxOptions(raw) {
     if (!raw || typeof raw !== "object" || Array.isArray(raw)) throw new TypeError("v2rayN options must be an object");
-    for (const key of Object.keys(raw)) if (!key.startsWith("_") && !ALLOWED.has(key)) throw new Error(`Unknown v2rayN option: ${key}`);
-    for (const key of ["output", "type", "name", "platform"]) if (!Object.hasOwn(raw, key)) throw new Error(`v2rayN option '${key}' is required`);
+    for (const key of Object.keys(raw)) if (!key.startsWith("_") && !ALLOWED.has(key)) throw new Error(`Unknown V2Box option: ${key}`);
+    for (const key of ["output", "type", "name", "platform"]) if (!Object.hasOwn(raw, key)) throw new Error(`V2Box option '${key}' is required`);
     const output = required(raw, "output");
     if (!["nodes", "config"].includes(output)) throw new Error("v2rayN option 'output' is unsupported");
     if (required(raw, "type") !== "collection") throw new Error("v2rayN option 'type' must be collection");

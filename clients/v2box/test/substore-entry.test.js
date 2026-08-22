@@ -3,13 +3,13 @@ import test from "node:test";
 import { operator as nodesOperator } from "../src/substore-node-entry.js";
 import { operator as configOperator } from "../src/substore-config-entry.js";
 
-test("v2rayN node operator uses internal JSON artifact contract", async () => {
+test("V2Box node operator uses internal JSON artifact contract", async () => {
   const result = await nodesOperator({}, "JSON", { arguments: { output: "nodes", type: "collection", name: "fixture", platform: "iphone" }, produceArtifact: async (request) => { assert.deepEqual(request, { type: "collection", name: "fixture", platform: "JSON", produceType: "internal" }); return [{ name: "fixture", type: "vless", server: "fixture.invalid", port: 443, uuid: "TEST_ONLY_UUID" }]; } });
   assert.equal(JSON.parse(result.$content).outbounds.length, 1);
   assert.match(result.$content, /\n$/u);
 });
 
-test("operators enforce configured platform but accept JSON artifact targets", async () => {
+test("operators enforce mobile platform but accept JSON artifact targets", async () => {
   const args = { output: "nodes", type: "collection", name: "fixture", platform: "iphone" };
   await assert.rejects(() => nodesOperator({}, "ipad", { arguments: args, produceArtifact: async () => [] }), /target platform/u);
   const logs = [];

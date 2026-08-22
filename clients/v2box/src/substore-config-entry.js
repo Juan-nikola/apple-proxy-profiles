@@ -3,4 +3,20 @@ import { filterNodesForClient } from "../../../shared/nodes/capabilities.js";
 import { CLIENT } from "../../../shared/contracts.js";
 import { parseV2BoxOptions } from "./options.js";
 import { renderV2BoxProfile } from "./render-profile.js";
-export async function operator(input, targetPlatform, context = {}) { const options = parseV2BoxOptions({ ...(context.arguments ?? {}), output: "config" }); if (targetPlatform !== "JSON" && targetPlatform !== options.platform) throw new Error(`V2Box target platform mismatch`); if (typeof context.produceArtifact !== "function") throw new Error("V2Box produceArtifact is unavailable"); const raw = await context.produceArtifact({ type: "collection", name: options.name, platform: "JSON", produceType: "internal" }); const normalized = normalizeNodes(raw, { clientChain: options.clientChain }); const filtered = filterNodesForClient(normalized.nodes, CLIENT.v2box); context.logger?.info?.(`[v2box-config] ${JSON.stringify({ accepted: filtered.nodes.length, renderFailures: filtered.diagnostics.excluded })}`); let profile; try { profile = renderV2BoxProfile({ options, nodes: filtered.nodes, geoData: context.geoData, filterFailures: filtered.diagnostics.excluded }); } catch (error) { if (error?.message !== "v2rayN policy target node is unavailable") throw error; profile = renderV2BoxProfile({ options: { ...options, policyOverrides: "" }, nodes: [], filterFailures: { ...filtered.diagnostics.excluded, "policy-target-unavailable": 1 } }); } return { ...input, $content: `${JSON.stringify(profile, null, 2)}\n` }; }
+
+export async function operator(input, targetPlatform, context = {}) {
+  const options = parseV2BoxOptions({ ...(context.arguments ?? {}), output: "config" });
+  if (targetPlatform !== "JSON" && targetPlatform !== options.platform) throw new Error("V2Box target platform mismatch");
+  if (typeof context.produceArtifact !== "function") throw new Error("V2Box produceArtifact is unavailable");
+  const raw = await context.produceArtifact({ type: "collection", name: options.name, platform: "JSON", produceType: "internal" });
+  const normalized = normalizeNodes(raw, { clientChain: options.clientChain });
+  const filtered = filterNodesForClient(normalized.nodes, CLIENT.v2box);
+  let profile;
+  try {
+    profile = renderV2BoxProfile({ options, nodes: filtered.nodes, assetManifest: context.assetManifest, geoData: context.geoData, filterFailures: filtered.diagnostics.excluded });
+  } catch (error) {
+    if (error?.message !== "V2Box policy target node is unavailable") throw error;
+    profile = renderV2BoxProfile({ options: { ...options, policyOverrides: "" }, nodes: [], filterFailures: { ...filtered.diagnostics.excluded, "policy-target-unavailable": 1 } });
+  }
+  return { ...input, $content: `${JSON.stringify(profile, null, 2)}\n` };
+}

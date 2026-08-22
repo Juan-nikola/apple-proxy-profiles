@@ -24,11 +24,21 @@ function sha256(input) {
   return [...state].map((word) => (word >>> 0).toString(16).padStart(8, "0")).join("");
 }
 
-function geoReferences(geoData, options) {
+function geoReferences(geoData, options, assetManifest) {
   const names = oneXrayGeoNames(options.channel);
+  if (assetManifest) {
+    if (assetManifest.region !== options.region || assetManifest.channel !== options.channel || !assetManifest.names || assetManifest.names.domain !== names.domain || assetManifest.names.ip !== names.ip) throw new Error("V2Box asset manifest region/channel/names mismatch");
+    const base = `/${options.channel}/geodata/${options.region}/`;
+    for (const type of ["geosite", "geoip"]) {
+      const item = assetManifest[type];
+      if (!item || item.name !== names[type === "geosite" ? "domain" : "ip"] || item.sha256 !== assetManifest.hashes?.[type]) throw new Error("V2Box asset manifest hash or name mismatch");
+      let url; try { url = new URL(item.url); } catch { throw new Error("V2Box asset manifest URL is invalid"); }
+      if (url.protocol !== "https:" || url.search || url.hash || !url.pathname.endsWith(`${base}${item.name}.dat`)) throw new Error("V2Box asset manifest URL region/channel mismatch");
+    }
+    return { sources: [], assets: { geosite: assetManifest.geosite, geoip: assetManifest.geoip }, domain: [], ip: [] };
+  }
   if (geoData === null || geoData === undefined) {
-    const source = `REGION-${options.region.toUpperCase()}`;
-    return { sources: [{ id: source, code: oneXrayGeoCode(source) }], domain: [oneXrayGeoReference(options.channel, "domain", source)], ip: [oneXrayGeoReference(options.channel, "ip", source)] };
+    return { sources: [], domain: [], ip: [] };
   }
   if (!geoData || typeof geoData !== "object" || Array.isArray(geoData) || !geoData.manifest) throw new TypeError("v2rayN GeoData manifest is required");
   const manifest = geoData.manifest;
@@ -67,21 +77,21 @@ function actionForSource(sourceId, overrides, nodeTags, blockMode) {
 }
 
 function dns(options) { const queryStrategy = options.ipv6Mode === "ipv4-only" ? "UseIPv4" : "UseIP"; const china = options.chinaDns === "system" ? "localhost" : options.chinaDns === "dnspod" ? "119.29.29.29" : "223.5.5.5"; const global = options.globalDns === "google" ? "8.8.8.8" : options.globalDns === "quad9" ? "9.9.9.9" : "1.1.1.1"; return { servers: [{ tag: "china-dns", address: china, domains: ["geosite:cn", "geosite:private"], queryStrategy }, { tag: "global-dns", address: global, domains: ["geosite:apple-proxy-overseas"], queryStrategy }], queryStrategy, tag: "dnsQuery", mode: options.dnsMode }; }
-export function renderV2BoxProfile({ nodes, options, geoData = null, filterFailures = {} } = {}) {
-  if (!options || options.output !== "config") throw new Error("v2rayN profile options are required");
-  if (!Array.isArray(nodes)) throw new Error("v2rayN profile requires compatible nodes");
+export function renderV2BoxProfile({ nodes, options, assetManifest = null, geoData = null, filterFailures = {} } = {}) {
+  if (!options || options.output !== "config") throw new Error("V2Box profile options are required");
+  if (!Array.isArray(nodes)) throw new Error("V2Box profile requires compatible nodes");
   const outbounds = [{ protocol: "freedom", tag: "direct" }, { protocol: "blackhole", tag: "block" }]; const failures = { ...filterFailures }; const nodeTags = new Map();
   nodes.forEach((node, index) => { const tag = `ap-node-${index.toString(36)}`; try { outbounds.push(renderXrayOutbound(node, { tag, client: "v2box" })); nodeTags.set(node.name, tag); } catch (error) { const diagnostic = renderXrayNodeError(error, "v2box"); Object.entries(diagnostic.excluded).forEach(([key, count]) => { failures[key] = (failures[key] ?? 0) + count; }); } });
   const overrides = parseBusinessOverrides(options.policyOverrides ?? "");
-  if (Object.values(overrides).some((value) => value.startsWith("NODE:") && !nodeTags.has(value.slice(5)))) throw new Error("v2rayN policy target node is unavailable");
-  const references = geoReferences(geoData, options);
+  if (Object.values(overrides).some((value) => value.startsWith("NODE:") && !nodeTags.has(value.slice(5)))) throw new Error("V2Box policy target node is unavailable");
+  const references = geoReferences(geoData, options, assetManifest);
   const rules = [{ domain: ["geosite:private"], outboundTag: "direct", ruleTag: "private-direct" }];
+  if (!assetManifest && !geoData) rules.push({ domain: ["geosite:apple-proxy-security"], outboundTag: options.blockMode === "off" ? "direct" : "block", ruleTag: "inline-security" }, { domain: ["geosite:apple-proxy-privacy"], outboundTag: "direct", ruleTag: "inline-privacy" }, { domain: ["geosite:cn"], outboundTag: "direct", ruleTag: "inline-domestic" }, { domain: ["geosite:apple-proxy-overseas"], outboundTag: "proxy", ruleTag: "inline-overseas" });
   const sourceRules = references.sources.map((source) => ({ source, outboundTag: actionForSource(source.id, overrides, nodeTags, options.blockMode) }));
   const rank = (item) => ["Hijacking", "BlockHttpDNS", "Privacy"].includes(item.source.id) ? 0 : policyForRuleSource(item.source.id) ? 1 : 2;
   sourceRules.sort((a, b) => rank(a) - rank(b));
   for (const { source, outboundTag } of sourceRules) rules.push({ domain: [`ext:${oneXrayGeoNames(options.channel).domain}.dat:${source.code}`], ip: [`ext:${oneXrayGeoNames(options.channel).ip}.dat:${source.code}`], outboundTag, ruleTag: `source-${source.id}` });
   if (options.quicMode !== "allow") rules.push({ network: "quic", outboundTag: options.quicMode === "all-block" ? "block" : "direct", ruleTag: "quic-policy" });
   rules.push({ domain: [`geosite:${options.region}`], outboundTag: "direct", ruleTag: "china-domain-direct" }, { ip: [`geoip:${options.region}`], outboundTag: "direct", ruleTag: "china-ip-direct" }, { network: "tcp,udp", outboundTag: outbounds.length === 2 ? "block" : "proxy", ruleTag: "final-fail-closed" });
-  return { name: options.name, dns: dns(options), inbounds: [{ tag: "tun", protocol: "tun", settings: { mtu: 1500 }, sniffing: { enabled: true, routeOnly: true } }], outbounds: [...outbounds, ...(outbounds.length > 2 ? [{ protocol: "selector", tag: "proxy", settings: { selectors: outbounds.slice(2).map(({ tag }) => tag) } }] : [])], routing: { domainStrategy: "IPIfNonMatch", rules }, ...(Object.keys(failures).length ? { renderFailures: failures } : {}) };
+  return { name: options.name, dns: dns(options), ...(references.assets ? { assets: references.assets } : {}), inbounds: [{ tag: "tun", protocol: "tun", settings: { mtu: 1500 }, sniffing: { enabled: true, routeOnly: true } }], outbounds: [...outbounds, ...(outbounds.length > 2 ? [{ protocol: "selector", tag: "proxy", settings: { selectors: outbounds.slice(2).map(({ tag }) => tag) } }] : [])], routing: { domainStrategy: "IPIfNonMatch", rules }, ...(Object.keys(failures).length ? { renderFailures: failures } : {}) };
 }
-export const renderV2rayNProfile = renderV2BoxProfile;
