@@ -19,11 +19,11 @@ on:
   workflow_dispatch:
     inputs:
       client:
-        description: "Client to promote after automated verification (leave empty to build edge)"
+        description: "Approved client to promote (leave empty to build edge)"
         required: false
         type: string
       manifest_hash:
-        description: "Verified 64-character edge client-manifest hash"
+        description: "Tested 64-character edge client-manifest hash"
         required: false
         type: string
 
@@ -105,6 +105,7 @@ jobs:
     if: github.event_name == 'workflow_dispatch' && inputs.client != '' && inputs.manifest_hash != ''
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    environment: canary-approval
     permissions:
       contents: write
     env:
