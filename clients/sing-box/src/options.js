@@ -2,6 +2,7 @@ import { OPTION_VALUES } from "../../../shared/contracts.js";
 import { FRONTIER_CHANNELS } from "../../../shared/release/frontier-manifest.js";
 import { platformPolicyPreset } from "../../../shared/policies/platform-presets.js";
 import { validateCollectionName } from "../../../shared/substore/collection-name.js";
+import { usesMobileRuleBundles } from "../../../shared/rules/lightweight-policy.js";
 
 const REQUIRED_KEYS = Object.freeze(["output", "type", "name", "subscriptionName", "platform"]);
 const DEFAULTS = Object.freeze({
@@ -59,8 +60,8 @@ export function parseSingBoxOptions(raw) {
   if (typeof profileMode !== "string" || !PROFILE_MODES.has(profileMode)) throw new Error("Option 'profileMode' has an unsupported value");
   const adblockMode = raw.adblockMode === undefined ? DEFAULTS.adblockMode : raw.adblockMode;
   if (typeof adblockMode !== "string" || !ADBLOCK_MODES.has(adblockMode)) throw new Error("Option 'adblockMode' has an unsupported value");
-  if (["iphone", "ipad"].includes(platform) && adblockMode === "full") {
-    throw new Error("Option 'adblockMode=full' exceeds the iOS NetworkExtension memory budget");
+  if (usesMobileRuleBundles(platform) && adblockMode === "full") {
+    throw new Error("Option 'adblockMode=full' exceeds the mobile client memory budget");
   }
   const nodeErrorMode = raw.nodeErrorMode === undefined ? DEFAULTS.nodeErrorMode : raw.nodeErrorMode;
   if (typeof nodeErrorMode !== "string" || !NODE_ERROR_MODES.has(nodeErrorMode)) throw new Error("Option 'nodeErrorMode' has an unsupported value");

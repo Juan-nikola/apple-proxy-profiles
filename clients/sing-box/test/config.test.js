@@ -91,6 +91,16 @@ test("uses mobile rule bundles for Android while macOS keeps the full rule catal
   assert.equal(macos.route.rule_set.some(({ url }) => url.includes("/mobile-rule-sets/")), false);
 });
 
+test("rejects the full adblock pack on every mobile platform", () => {
+  for (const platform of ["iphone", "ipad", "android"]) {
+    assert.throws(
+      () => parseSingBoxOptions({ ...baseOptions, platform, adblockMode: "full" }),
+      /memory budget/iu,
+      platform,
+    );
+  }
+});
+
 test("defaults Apple platforms to IPv4-only without changing Android defaults", () => {
   for (const platform of ["macos", "iphone", "ipad"]) {
     const { ipv6Mode } = parseSingBoxOptions({ ...baseOptions, platform, ipv6Mode: undefined });
