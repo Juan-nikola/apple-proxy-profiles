@@ -1,0 +1,115 @@
+{
+  "name": "v2rayn-fixture",
+  "dns": {
+    "servers": [
+      {
+        "tag": "china-dns",
+        "address": "223.5.5.5",
+        "domains": [
+          "geosite:cn",
+          "geosite:private"
+        ]
+      },
+      {
+        "tag": "global-dns",
+        "address": "1.1.1.1",
+        "domains": [
+          "geosite:apple-proxy-overseas"
+        ]
+      }
+    ],
+    "queryStrategy": "UseIP",
+    "tag": "dnsQuery"
+  },
+  "inbounds": [
+    {
+      "tag": "tun",
+      "protocol": "tun",
+      "settings": {
+        "mtu": 1500
+      },
+      "sniffing": {
+        "enabled": true,
+        "routeOnly": true
+      }
+    }
+  ],
+  "outbounds": [
+    {
+      "protocol": "freedom",
+      "tag": "direct"
+    },
+    {
+      "protocol": "blackhole",
+      "tag": "block"
+    },
+    {
+      "name": "Fixture Windows",
+      "protocol": "vless",
+      "tag": "ap-node-0",
+      "settings": {
+        "vnext": [
+          {
+            "address": "192.0.2.10",
+            "port": 443,
+            "users": [
+              {
+                "id": "TEST_ONLY_UUID",
+                "encryption": "none"
+              }
+            ]
+          }
+        ]
+      },
+      "streamSettings": {
+        "security": "tls",
+        "tlsSettings": {
+          "serverName": "",
+          "allowInsecure": false
+        }
+      }
+    },
+    {
+      "protocol": "selector",
+      "tag": "proxy",
+      "settings": {
+        "selectors": [
+          "ap-node-0"
+        ]
+      }
+    }
+  ],
+  "routing": {
+    "domainStrategy": "IPIfNonMatch",
+    "rules": [
+      {
+        "domain": [
+          "geosite:apple-proxy-security"
+        ],
+        "outboundTag": "block"
+      },
+      {
+        "domain": [
+          "geosite:private"
+        ],
+        "outboundTag": "direct"
+      },
+      {
+        "domain": [
+          "geosite:geodata/cn/AppleProxySiteEdge.dat"
+        ],
+        "outboundTag": "direct"
+      },
+      {
+        "ip": [
+          "geoip:geodata/cn/AppleProxyIPEdge.dat"
+        ],
+        "outboundTag": "direct"
+      },
+      {
+        "network": "tcp,udp",
+        "outboundTag": "proxy"
+      }
+    ]
+  }
+}
