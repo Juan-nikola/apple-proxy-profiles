@@ -43,11 +43,11 @@
       "referencedDefaultBytes": 321170
     },
     "egern": {
-      "manifestHash": "c3c617376c9478fa30cb2e990adff35cf58f3d2a98b4e65142385e68f7fdd566",
+      "manifestHash": "e71ec3b6ffbb522d7346cea806cc5103dcd481eb1bef9dfba14df53ed9337211",
       "referencedDefaultBytes": 394394
     },
     "happ": {
-      "manifestHash": "d0edf194f8747d80700b432322e4cdaa7b6461808d9b08968bbd36bdc5851553",
+      "manifestHash": "0f06e7fb9a3645396a8ec138c4f6f05cb184725be0cf63974f13e63124322c01",
       "referencedDefaultBytes": 0
     },
     "onexray": {
@@ -55,15 +55,15 @@
       "referencedDefaultBytes": 0
     },
     "shadowrocket": {
-      "manifestHash": "de9e5eb201b54031a8f0eff760323d60e66ba4174c4b921ec7061e754f585caf",
+      "manifestHash": "89482de674b48ba89d5c052169881c512f5d7fcff930294c17f0fadf779181b5",
       "referencedDefaultBytes": 593876
     },
     "singbox": {
-      "manifestHash": "a7d1befcd5b28f40c1adeb75b535c72c9f888b5f1d66642b07745175e2f6c82f",
+      "manifestHash": "0b5fc8d1221fa2440beb654f1532cd80f3fff62a089ee94d523d23389a37b8ef",
       "referencedDefaultBytes": 179905
     },
     "surge": {
-      "manifestHash": "dc28539e076038feba043213f9ee6810808d2bd6a34500fa2f6e9252064c8816",
+      "manifestHash": "83bec4720d6ff02d12815f5c59731b79143d79ab0d3d029cd8a8fa16ae951d0d",
       "referencedDefaultBytes": 593876
     }
   },
@@ -194,12 +194,12 @@
     {
       "bytes": 1888,
       "path": "audit/dashboard.html",
-      "sha256": "f99bac9605bb9c5ccab520941d49a0309db765869e6dd9a9032c600ea0b6fa83"
+      "sha256": "d94eb0ef3652a9e3fb3f78a6783eb7e11b26dff6f04c32683edc149a40715560"
     },
     {
       "bytes": 4119,
       "path": "audit/dashboard.json",
-      "sha256": "95bdedc6bcb84ca961c4d17cfaddffac8fd916459e49d4f46e24ed497d7d9aa5"
+      "sha256": "e5b83382c52ee23bde36357fc79cdb14329e169e8949b66679ee4a0806ee0559"
     },
     {
       "bytes": 5175,
@@ -209,12 +209,12 @@
     {
       "bytes": 7260,
       "path": "audit/v2fly-domain-drift.json",
-      "sha256": "39566e79ff6d20b25840a25655c5af2158a9380730125b5b7056dec4814a3895"
+      "sha256": "ac01f23c36e0eaab601128fa94f7375c8bdf28878f5232f02e7c4f688f0db6aa"
     },
     {
       "bytes": 6727,
       "path": "egern/client-manifest.json",
-      "sha256": "e33fbfd6b0f6a34513c95c3b94b9c4be62694a95f36819174133bd9e67e54cc6"
+      "sha256": "3336b75d3dbd4b36c181ea4960a7a67316e2e24cfc2c9b3045ae55dec8f4015b"
     },
     {
       "bytes": 27637,
@@ -397,9 +397,9 @@
       "sha256": "e3bcc18ef007eeb740f9197cd2df2e8eb3ebd951a6bfed62c1b42abdd9cdeec6"
     },
     {
-      "bytes": 208835,
+      "bytes": 208927,
       "path": "egern/scripts/egern-profile-generator.js",
-      "sha256": "7f053e6228956fbc13c58949a3ff5ef54703b47c650e3e8758636c1386f4a3ba"
+      "sha256": "243b05198cc0565e7154b1e3c329f5dd7f394af51bcfc102a8142629d0ce6d50"
     },
     {
       "bytes": 120515,
@@ -407,14 +407,14 @@
       "sha256": "e3bcc18ef007eeb740f9197cd2df2e8eb3ebd951a6bfed62c1b42abdd9cdeec6"
     },
     {
-      "bytes": 208835,
+      "bytes": 208927,
       "path": "egern/scripts/substore-profile-generator.js",
-      "sha256": "7f053e6228956fbc13c58949a3ff5ef54703b47c650e3e8758636c1386f4a3ba"
+      "sha256": "243b05198cc0565e7154b1e3c329f5dd7f394af51bcfc102a8142629d0ce6d50"
     },
     {
       "bytes": 1457,
       "path": "happ/client-manifest.json",
-      "sha256": "4932b8999b6dcdcdbf2e1ae98ae1dc2a4f9f0b12714bf84b42e17ba4bd8e9ecd"
+      "sha256": "85b3bc192ecfb6d48a328a3b62028c65d47abdcf410bb1b3bc48ca24ce647b5f"
     },
     {
       "bytes": 181471,
@@ -432,9 +432,9 @@
       "sha256": "d2482fa8ce82bce219e78ca894e1406f0f44a21eadce1fc0cf017acbceda243f"
     },
     {
-      "bytes": 149721,
+      "bytes": 149813,
       "path": "happ/scripts/happ-config-generator.js",
-      "sha256": "ade7cb1387f6753aa209dac0df35ce7b98f98b629c3d47d092dffd50ff59bd38"
+      "sha256": "6323f6452b2d0fae509e625755e786514b095a43cc9af2cbc96db13fea40a90e"
     },
     {
       "bytes": 108634,
@@ -442,9 +442,9 @@
       "sha256": "3636f7a98b1acb24ad3143f1ffd3df6c7a531cf3ef44b80b6061777558feb1dc"
     },
     {
-      "bytes": 149721,
+      "bytes": 149813,
       "path": "happ/scripts/substore-config-generator.js",
-      "sha256": "ade7cb1387f6753aa209dac0df35ce7b98f98b629c3d47d092dffd50ff59bd38"
+      "sha256": "6323f6452b2d0fae509e625755e786514b095a43cc9af2cbc96db13fea40a90e"
     },
     {
       "bytes": 108634,
@@ -509,7 +509,7 @@
     {
       "bytes": 7229,
       "path": "shadowrocket/client-manifest.json",
-      "sha256": "6f2081a5d1afed26421f689ebee4793d6a48f98d6dd50349f8b713f0ff90a6bc"
+      "sha256": "5180a94592d30116f275832a61ad80a98764d9d7ea3ab25d7c6c8f3e1cf4e899"
     },
     {
       "bytes": 12769,
@@ -697,9 +697,9 @@
       "sha256": "5f19920f539db3e7fd275e0336da3fab048150e7a2a733a617fe19053d59ef71"
     },
     {
-      "bytes": 101366,
+      "bytes": 101458,
       "path": "shadowrocket/scripts/shadowrocket-profile-generator.js",
-      "sha256": "3ba0ca6c38f8ceb69163cebb04ad81a7b8d58d13b3a88955f808b2539b4e502b"
+      "sha256": "97b80b5ca172144ac2106ca5c8024d59f4985f96e04c2522d82dcd86685b0f8d"
     },
     {
       "bytes": 40699,
@@ -707,14 +707,14 @@
       "sha256": "0894b46a8a2e33cf7ac35b9526d49f304b144666be0695a86a92fc9dbf36373d"
     },
     {
-      "bytes": 101366,
+      "bytes": 101458,
       "path": "shadowrocket/scripts/substore-profile-generator.js",
-      "sha256": "3ba0ca6c38f8ceb69163cebb04ad81a7b8d58d13b3a88955f808b2539b4e502b"
+      "sha256": "97b80b5ca172144ac2106ca5c8024d59f4985f96e04c2522d82dcd86685b0f8d"
     },
     {
       "bytes": 9920,
       "path": "sing-box/client-manifest.json",
-      "sha256": "f7ad1507ec4c00f666509b31565e743dc391440af695e7f6b72bc97d75e862f3"
+      "sha256": "41877fa43abf00a01b49afbdef2f16d470c85b913b7664c823a5e206a529bfd0"
     },
     {
       "bytes": 10576,
@@ -722,9 +722,9 @@
       "sha256": "e8a3fd771a3466e74d3cf40c00aa05070b4f6c33898b7d71b2fb78446c735c51"
     },
     {
-      "bytes": 27529,
+      "bytes": 19296,
       "path": "sing-box/examples/sing-box-android.json",
-      "sha256": "aa188c58a1739c6b4d35d736a2e4de47fdfd4d357b0b558da2df2b33d635a712"
+      "sha256": "4038fedfc336b6e8addcd9292ce494f846703a88fa5854b5b8fd921803e4789e"
     },
     {
       "bytes": 10617,
@@ -987,19 +987,19 @@
       "sha256": "da4163404185d0c106158bad3bc246a7df1388b1974bceace0dfa1f0443abd30"
     },
     {
-      "bytes": 119517,
+      "bytes": 119588,
       "path": "sing-box/scripts/sing-box-config-generator.js",
-      "sha256": "9283b65a6fe32efacb2705468026590b42a107dd868b2a0fff734c296a341ac6"
+      "sha256": "0c9230354b0652677731167acb052e48bd46a771c5179c88b42b10d941b7d229"
     },
     {
-      "bytes": 119517,
+      "bytes": 119588,
       "path": "sing-box/scripts/substore-config-generator.js",
-      "sha256": "9283b65a6fe32efacb2705468026590b42a107dd868b2a0fff734c296a341ac6"
+      "sha256": "0c9230354b0652677731167acb052e48bd46a771c5179c88b42b10d941b7d229"
     },
     {
       "bytes": 6726,
       "path": "surge/client-manifest.json",
-      "sha256": "0c69c29a2a6328b32c5cd99a1605a06d91c723884fb9699870f18d5709a1fb9b"
+      "sha256": "1409c30e4865876f02cc78a13d0f6395c29cb531b7070d3482dcab768131171e"
     },
     {
       "bytes": 10832,
@@ -1182,9 +1182,9 @@
       "sha256": "7d3b034b16a8d8018cca619eb381044169074dd292078291bf5f42381a60936a"
     },
     {
-      "bytes": 92726,
+      "bytes": 92818,
       "path": "surge/scripts/substore-profile-generator.js",
-      "sha256": "4b79769742f40c03e996861e165e1e8efa9f4113abc4c52bb1fcd5ccc21ab2eb"
+      "sha256": "17bef24917517fa9239455f6c4109cd97ec0ca2b762314adcb045b4dc17f7d97"
     },
     {
       "bytes": 53530,
@@ -1192,13 +1192,13 @@
       "sha256": "7d3b034b16a8d8018cca619eb381044169074dd292078291bf5f42381a60936a"
     },
     {
-      "bytes": 92726,
+      "bytes": 92818,
       "path": "surge/scripts/surge-profile-generator.js",
-      "sha256": "4b79769742f40c03e996861e165e1e8efa9f4113abc4c52bb1fcd5ccc21ab2eb"
+      "sha256": "17bef24917517fa9239455f6c4109cd97ec0ca2b762314adcb045b4dc17f7d97"
     }
   ],
   "generatedAt": "2026-08-21T18:35:15Z",
-  "manifestHash": "a3849376748baf739a19ab07b78fd636c71c73a9b3b01816baaa9d5949963974",
+  "manifestHash": "3caa3b742e2f2a560950f1c904de1cf2a1119aeae8e7c8373447dd1934dadf0b",
   "schemaVersion": 2,
   "upstream": {
     "branch": "master",

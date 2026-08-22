@@ -49,7 +49,7 @@ const GENERATOR_SCHEMAS = Object.freeze({
   "sing-box/scripts/sing-box-config-generator.js": configSchema({
     platforms: ["macos", "iphone", "ipad", "android"],
     requiresSubscriptionName: true,
-    rejectFullAdblockPlatforms: ["iphone", "ipad"],
+    rejectFullAdblockPlatforms: ["iphone", "ipad", "android"],
     extraKeys: ["profileMode", "nodeErrorMode"],
     extraEnums: {
       profileMode: PROFILE_MODES,
@@ -230,7 +230,7 @@ export function checkTaskOptions(schema, params) {
     if (!Object.hasOwn(params, key)) errors.push(`Missing required option '${key}'`);
   }
   if (params.adblockMode === "full" && schema.rejectFullAdblockPlatforms?.includes(params.platform)) {
-    errors.push(`Option 'adblockMode=full' is not supported on ${params.platform} because of the iOS NetworkExtension memory budget`);
+    errors.push(`Option 'adblockMode=full' is not supported on ${params.platform} because of the mobile client memory budget`);
   }
   return Object.freeze(errors);
 }

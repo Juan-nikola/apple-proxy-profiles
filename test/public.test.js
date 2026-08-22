@@ -5,6 +5,7 @@ import test from "node:test";
 
 const publicRoot = new URL("../public/", import.meta.url);
 const currentRoot = new URL("current/", publicRoot);
+const edgeRoot = new URL("edge/", publicRoot);
 
 function sha256(content) {
   return createHash("sha256").update(content).digest("hex");
@@ -31,6 +32,13 @@ async function relativeFiles(url, prefix = "") {
     else throw new Error("public tree contains a non-regular entry");
   }
   return files;
+}
+
+function ruleSetUrls(value, urls = []) {
+  if (typeof value === "string" && value.includes("rule-sets")) urls.push(value);
+  else if (Array.isArray(value)) value.forEach((item) => ruleSetUrls(item, urls));
+  else if (value && typeof value === "object") Object.values(value).forEach((item) => ruleSetUrls(item, urls));
+  return urls;
 }
 
 test("publishes one hash-closed multi-client current snapshot", async () => {
@@ -172,6 +180,28 @@ test("publishes an independent lightweight edge candidate beside stable current"
   assert.match(surgeGenerator, /channel:\s*"edge"/u);
   assert.match(surgeGenerator, /\$\{PUBLIC_RULE_ROOT\}\/\$\{options\.channel\}\/surge\/rules/u);
   assert.ok((await stat(new URL("edge/sing-box/rule-sets/ChinaIP.srs", publicRoot))).size > 0);
+});
+
+test("keeps the edge sing-box bundle and Android example on the mobile contract", async () => {
+  for (const filename of ["sing-box-config-generator.js", "substore-config-generator.js"]) {
+    assert.equal(
+      await readFile(new URL(`sing-box/scripts/${filename}`, edgeRoot), "utf8"),
+      await readFile(new URL(`../clients/sing-box/dist/${filename}`, import.meta.url), "utf8"),
+      filename,
+    );
+  }
+
+  const android = JSON.parse(await readFile(new URL("sing-box/examples/sing-box-android.json", edgeRoot), "utf8"));
+  const androidUrls = ruleSetUrls(android);
+  assert.equal(androidUrls.length, 14);
+  assert.ok(androidUrls.every((url) => url.includes("/edge/sing-box/mobile-rule-sets/")));
+  assert.ok(androidUrls.every((url) => !url.includes("/edge/sing-box/rule-sets/")));
+
+  const macos = JSON.parse(await readFile(new URL("sing-box/examples/sing-box-macos.json", edgeRoot), "utf8"));
+  const macosUrls = ruleSetUrls(macos);
+  assert.ok(macosUrls.length > androidUrls.length);
+  assert.ok(macosUrls.every((url) => url.includes("/edge/sing-box/rule-sets/")));
+  assert.ok(macosUrls.every((url) => !url.includes("/edge/sing-box/mobile-rule-sets/")));
 });
 
 test("keeps current, previous, and an online version within the hard Pages budget", async () => {

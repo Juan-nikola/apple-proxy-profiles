@@ -1661,6 +1661,11 @@ var SurgeProfileBundle = (() => {
     dnsClass: entry.dnsClass
   })));
   var MOBILE_RULE_SOURCE_IDS = Object.freeze(MOBILE_RULE_BUNDLES.map(({ id }) => id));
+  var MOBILE_RULE_PLATFORMS = Object.freeze([
+    "iphone",
+    "ipad",
+    "android"
+  ]);
   var FULL_ADBLOCK_SOURCE_IDS = Object.freeze([
     "Advertising",
     "Advertising_Domain"
