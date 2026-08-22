@@ -30,5 +30,7 @@ test("end-to-end region selection accepts each selected overlay only", () => {
     const merged = mergeRuleSources({ region, snapshots });
     assert.equal(merged.region, region);
     assert.equal(merged.provenance.some(({ sourceId: id }) => id === "russia-v2ray-rules" || id === "iran-v2ray-rules"), Boolean(sourceId));
+    if (sourceId) assert.equal(merged.decisions[0].action, "PROXY");
+    else assert.equal(merged.decisions.length, 0);
   }
 });
