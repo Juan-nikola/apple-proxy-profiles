@@ -21,6 +21,7 @@ function safeProvenance(value, sourceId) {
   if (input.license !== undefined && (typeof input.license !== "string" || !input.license.trim() || /[\r\n]/u.test(input.license))) throw new Error(`Source ${sourceId}: invalid provenance license`);
   if (input.diagnostics !== undefined) validateDiagnostics(input.diagnostics, sourceId);
   if (external) {
+    if (input.license !== external.license) throw new Error(`External source ${sourceId}: provenance license mismatch`);
     for (const field of ["repository", "branch", "commit", "releaseTag", "retrievalUrl", "retrievedAt", "sha256"]) {
       if (input[field] !== external[field]) throw new Error(`External source ${sourceId}: provenance mismatch for ${field}`);
     }
@@ -120,7 +121,11 @@ export function mergeRuleSources({ snapshots, region = "cn", userRules = [], adb
     if (id !== undefined && valueSourceId !== undefined && id !== valueSourceId) throw new Error(`Snapshot identity mismatch for ${id}`);
     const sourceId = valueSourceId ?? id;
     if (value?.provenance?.sourceId !== undefined && value.provenance.sourceId !== sourceId) throw new Error(`Snapshot provenance identity mismatch for ${sourceId}`);
-    const prov = safeProvenance({ ...(value?.provenance ?? {}), license: value?.license ?? value?.provenance?.license, diagnostics: value?.diagnostics ?? value?.provenance?.diagnostics }, sourceId);
+    const nested = value?.provenance ?? {};
+    for (const field of ["license", "diagnostics"]) {
+      if (value?.[field] !== undefined && nested[field] !== undefined && JSON.stringify(value[field]) !== JSON.stringify(nested[field])) throw new Error(`Source ${sourceId}: conflicting top-level and nested ${field}`);
+    }
+    const prov = safeProvenance({ ...nested, license: nested.license ?? value?.license, diagnostics: nested.diagnostics ?? value?.diagnostics }, sourceId);
     if (!sourceId || !selected.has(sourceId)) continue;
     const entries = Array.isArray(value?.entries) ? value.entries : [];
     provenance.push(prov);

@@ -142,6 +142,9 @@ test("retains audited license and structured diagnostics safely", () => {
   assert.deepEqual(merged.decisions[0].provenance[0].diagnostics, diagnostics);
   assert.throws(() => mergeRuleSources({ region: "global", snapshots: new Map([[source.id, { sourceId: source.id, entries: [], provenance: { ...source, license: "MIT\nleak" } }]]) }), /license/u);
   assert.throws(() => mergeRuleSources({ region: "global", snapshots: new Map([[source.id, { sourceId: source.id, entries: [], provenance: { ...source, diagnostics: { nodeUri: "vmess://secret" } } }]]) }), /diagnostics/u);
+  assert.throws(() => mergeRuleSources({ region: "global", snapshots: new Map([[source.id, { sourceId: source.id, entries: [], provenance: { ...source, license: "GPL-3.0" } }]]) }), /license mismatch/u);
+  assert.throws(() => mergeRuleSources({ region: "global", snapshots: new Map([[source.id, { sourceId: source.id, entries: [], license: "GPL-3.0", provenance: { ...source, license: source.license } }]]) }), /conflicting top-level and nested license/u);
+  assert.throws(() => mergeRuleSources({ region: "global", snapshots: new Map([[source.id, { sourceId: source.id, entries: [], diagnostics: { candidateCount: 1 }, provenance: { ...source, diagnostics: { candidateCount: 2 } } }]]) }), /conflicting top-level and nested diagnostics/u);
 });
 
 test("rejects private internal provenance URLs and identity tampering", () => {
