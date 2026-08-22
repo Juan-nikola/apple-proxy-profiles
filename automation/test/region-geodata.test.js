@@ -31,3 +31,24 @@ test("builds a manifest whose hashes close over exact buffers", () => {
   assert.equal(result.manifest.ip.byteLength, result.geoip.length);
   assert.equal(result.manifest.region, "ir");
 });
+
+test("splits multi-source rule sets into stable source categories", () => {
+  const value = merged("cn");
+  value.ruleSets.set("Security", { id: "Security", policy: "REJECT", phase: "security", dnsClass: "none", region: "cn", sources: ["Hijacking", "BlockHttpDNS"], entries: [
+    { kind: "domainSuffix", value: "bad.example", sourceId: "Hijacking" },
+    { kind: "domainSuffix", value: "dns.example", sourceId: "BlockHttpDNS" },
+  ] });
+  const result = renderRegionGeoData({ ruleSets: value.ruleSets, region: "cn", channel: "edge" });
+  const codes = result.manifest.sources.map(({ code }) => code);
+  assert.ok(codes.includes("APP-HIJACKING"));
+  assert.ok(codes.includes("APP-BLOCKHTTPDNS"));
+});
+
+test("rejects unsafe public bases and emits stable public HTTPS URLs", () => {
+  const input = { merged: merged("cn"), region: "cn", channel: "current" };
+  for (const publicBase of ["http://example.com", "https://user:pass@example.com", "https://example.com/a?x=1", "https://localhost", "https://127.0.0.1", "vmess://node", "https://example.com/../secret"]) {
+    assert.throws(() => buildRegionGeoDataArtifacts({ ...input, publicBase }), /publicBase|HTTPS|URL|host|path/u);
+  }
+  const result = buildRegionGeoDataArtifacts({ ...input, publicBase: "https://cdn.example.com/geodata" });
+  assert.equal(result.manifest.urls.domain, "https://cdn.example.com/geodata/cn/AppleProxySiteCurrent.dat");
+});
