@@ -10,6 +10,10 @@ test("validates duplicate IDs, pins, regions, and source paths", () => {
   assert.throws(() => validateSourceCatalog(mutate(0, { commit: "main" })), /full commit/u);
   assert.throws(() => validateSourceCatalog(mutate(0, { region: "xx" })), /invalid region/u);
   assert.throws(() => validateSourceCatalog(mutate(0, { sourcePath: "../private.dat" })), /unsafe source path/u);
+  assert.throws(() => validateSourceCatalog(mutate(0, { retrievalUrl: undefined })), /retrieval URL/u);
+  assert.throws(() => validateSourceCatalog(mutate(0, { retrievedAt: undefined })), /timestamp/u);
+  assert.throws(() => validateSourceCatalog(mutate(0, { sha256: "short" })), /SHA-256/u);
+  assert.throws(() => validateSourceCatalog([]), /must not be empty/u);
 });
 
 test("returns an immutable copy and keeps the legacy catalog separate", () => {

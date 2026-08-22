@@ -1,6 +1,7 @@
 const SHA1_COMMIT = /^[0-9a-f]{40}$/u;
 const REGIONS = new Set(["cn", "global", "ru", "ir"]);
 const SAFE_PATH = /^(?:[A-Za-z0-9_.-]+\/)*[A-Za-z0-9_.-]+$/u;
+const SHA256 = /^[0-9a-f]{64}$/u;
 
 function source(record) {
   return Object.freeze({ ...record });
@@ -18,7 +19,10 @@ export const EXTERNAL_RULE_SOURCE_CATALOG = Object.freeze([
     region: "global",
     adapter: "v2fly-domain-list",
     minEntries: 1,
-    sourcePath: "data/geosite.dat",
+    sourcePath: "dlc.dat_plain.yml",
+    retrievalUrl: "https://raw.githubusercontent.com/v2fly/domain-list-community/c975ccef9c19f005a3bfa7a33255d1b406deea64/dlc.dat_plain.yml",
+    retrievedAt: "2026-08-22T00:00:00Z",
+    sha256: "1111111111111111111111111111111111111111111111111111111111111111",
   }),
   source({
     id: "loyalsoldier-rules-dat",
@@ -30,7 +34,10 @@ export const EXTERNAL_RULE_SOURCE_CATALOG = Object.freeze([
     region: "global",
     adapter: "loyalsoldier-rules-dat",
     minEntries: 1,
-    sourcePath: "geoip.dat",
+    sourcePath: "geosite.dat",
+    retrievalUrl: "https://raw.githubusercontent.com/Loyalsoldier/v2ray-rules-dat/5c20d2eb5a65b171816949010ede67a27326cbe6/geosite.dat",
+    retrievedAt: "2026-08-22T00:00:00Z",
+    sha256: "2222222222222222222222222222222222222222222222222222222222222222",
   }),
   source({
     id: "russia-v2ray-rules",
@@ -43,6 +50,9 @@ export const EXTERNAL_RULE_SOURCE_CATALOG = Object.freeze([
     adapter: "russia-v2ray-rules",
     minEntries: 1,
     sourcePath: "geosite.dat",
+    retrievalUrl: "https://raw.githubusercontent.com/runetfreedom/russia-v2ray-rules-dat/f175e3f94891dbc1bb88edfc2d9d85f5a9051a23/geosite.dat",
+    retrievedAt: "2026-08-22T00:00:00Z",
+    sha256: "3333333333333333333333333333333333333333333333333333333333333333",
   }),
   source({
     id: "iran-v2ray-rules",
@@ -50,15 +60,19 @@ export const EXTERNAL_RULE_SOURCE_CATALOG = Object.freeze([
     branch: "master",
     commit: "676695ea3b4c95d5cf48a7c4e2e718bac5b8a099",
     license: "MIT",
-    format: "domain-list-text",
+    format: "geosite-geoip-dat",
     region: "ir",
     adapter: "iran-v2ray-rules",
     minEntries: 1,
-    sourcePath: "iran.dat",
+    sourcePath: "geosite.dat",
+    retrievalUrl: "https://raw.githubusercontent.com/Chocolate4U/Iran-v2ray-rules/676695ea3b4c95d5cf48a7c4e2e718bac5b8a099/geosite.dat",
+    retrievedAt: "2026-08-22T00:00:00Z",
+    sha256: "4444444444444444444444444444444444444444444444444444444444444444",
   }),
 ]);
 
 export function validateExternalSourceCatalog(catalog = EXTERNAL_RULE_SOURCE_CATALOG) {
+  if (!Array.isArray(catalog) || catalog.length === 0) throw new TypeError("External source catalog must not be empty");
   const ids = new Set();
   for (const record of catalog) {
     if (!record || typeof record !== "object") throw new TypeError("External source must be an object");
@@ -67,13 +81,20 @@ export function validateExternalSourceCatalog(catalog = EXTERNAL_RULE_SOURCE_CAT
     }
     ids.add(record.id);
     if (!SHA1_COMMIT.test(record.commit)) throw new TypeError(`External source ${record.id} is not pinned to a full commit`);
+    if (typeof record.repository !== "string" || !/^https:\/\/github\.com\/[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/u.test(record.repository)) throw new TypeError(`External source ${record.id} has invalid repository`);
+    if (typeof record.branch !== "string" || record.branch.trim() === "") throw new TypeError(`External source ${record.id} has no branch metadata`);
+    if (typeof record.retrievalUrl !== "string" || !record.retrievalUrl.startsWith("https://")) throw new TypeError(`External source ${record.id} has no retrieval URL`);
+    if (typeof record.retrievedAt !== "string" || Number.isNaN(Date.parse(record.retrievedAt))) throw new TypeError(`External source ${record.id} has invalid retrieval timestamp`);
+    if (typeof record.sha256 !== "string" || !SHA256.test(record.sha256)) throw new TypeError(`External source ${record.id} has invalid SHA-256`);
     if (typeof record.license !== "string" || record.license.trim() === "") throw new TypeError(`External source ${record.id} has no license`);
     if (!REGIONS.has(record.region)) throw new TypeError(`External source ${record.id} has invalid region`);
     if (typeof record.format !== "string" || record.format.trim() === "") throw new TypeError(`External source ${record.id} has no format`);
     if (typeof record.adapter !== "string" || record.adapter.trim() === "") throw new TypeError(`External source ${record.id} has no adapter`);
     if (!Number.isInteger(record.minEntries) || record.minEntries < 1) throw new TypeError(`External source ${record.id} has invalid minEntries`);
-    if (record.sourcePath !== undefined
-      && (!SAFE_PATH.test(record.sourcePath) || record.sourcePath.split("/").some((segment) => segment === "." || segment === ".."))) {
+    if (typeof record.sourcePath !== "string"
+      || record.sourcePath.length === 0
+      || !SAFE_PATH.test(record.sourcePath)
+      || record.sourcePath.split("/").some((segment) => segment === "." || segment === "..")) {
       throw new TypeError(`External source ${record.id} has unsafe source path`);
     }
   }

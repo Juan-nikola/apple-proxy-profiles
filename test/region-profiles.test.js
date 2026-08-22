@@ -12,6 +12,10 @@ test("defines all pinned external sources with explicit adapter metadata", () =>
     assert.ok(source.format.length > 0);
     assert.ok(source.adapter.length > 0);
     assert.ok(Number.isInteger(source.minEntries) && source.minEntries > 0);
+    assert.match(source.sourcePath, /^(?:[A-Za-z0-9_.-]+\/)*[A-Za-z0-9_.-]+$/u);
+    assert.match(source.retrievalUrl, /^https:\/\/githubusercontent\.com|^https:\/\/raw\.githubusercontent\.com/u);
+    assert.match(source.retrievedAt, /^\d{4}-\d\d-\d\dT/u);
+    assert.match(source.sha256, /^[0-9a-f]{64}$/u);
   }
 });
 
@@ -33,4 +37,7 @@ test("selects only the opted-in regional overlay", () => {
   assert.equal(ru.includes("iran-v2ray-rules"), false);
   assert.equal(ir.includes("iran-v2ray-rules"), true);
   assert.equal(ir.includes("russia-v2ray-rules"), false);
+  assert.equal(sourcesForRegion("global").includes("ChinaTLD"), false);
+  assert.equal(sourcesForRegion("global").includes("DomesticCore"), false);
+  assert.throws(() => sourcesForRegion("cn", { adblockMode: "invalid" }), /adblockMode/u);
 });
