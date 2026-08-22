@@ -5,7 +5,7 @@ import { explainRoute, mergeRuleSources } from "../src/merge-rule-sources.js";
 import { EXTERNAL_RULE_SOURCE_CATALOG } from "../../shared/rules/external-sources.js";
 
 const entry = (value, sourceId, extra = {}) => ({ kind: RULE_KIND.domainSuffix, value, sourceId, ...extra });
-const snapshot = (sourceId, entries, extra = {}) => { const source = EXTERNAL_RULE_SOURCE_CATALOG.find(({ id }) => id === sourceId); return { sourceId, entries, provenance: { sourceId, ...(source ?? { commit: "a".repeat(40) }), ...extra } }; };
+const snapshot = (sourceId, entries, extra = {}) => { const source = EXTERNAL_RULE_SOURCE_CATALOG.find(({ id }) => id === sourceId); return { sourceId, entries, provenance: { sourceId, ...(source ?? {}), ...extra } }; };
 
 test("user rules override explicit business rules", () => {
   const merged = mergeRuleSources({ snapshots: new Map([
@@ -86,18 +86,53 @@ test("maps overlay security and domestic categories before overlay fallback", ()
 });
 
 test("preserves source-ID actions for advertising, security, privacy, and business", () => {
-  const ids = ["Advertising", "Hijacking", "Privacy", "OpenAI"];
+  const ids = ["Advertising", "Advertising_Domain", "Hijacking", "BlockHttpDNS", "Privacy", "OpenAI"];
   const merged = mergeRuleSources({ adblockMode: "full", snapshots: new Map(ids.map((id) => [id, { sourceId: id, entries: [entry(`${id.toLowerCase()}.example`, id)] }])) });
   assert.equal(merged.decisions.find(({ matcher }) => matcher.sourceId === "Advertising").action, "REJECT");
+  assert.equal(merged.decisions.find(({ matcher }) => matcher.sourceId === "Advertising_Domain").action, "REJECT");
+  assert.equal(merged.decisions.find(({ matcher }) => matcher.sourceId === "Advertising_Domain").policyGroup, "Advertising");
+  assert.equal(merged.decisions.find(({ matcher }) => matcher.sourceId === "Advertising_Domain").priority, 700);
   assert.equal(merged.decisions.find(({ matcher }) => matcher.sourceId === "Hijacking").action, "REJECT");
+  assert.equal(merged.decisions.find(({ matcher }) => matcher.sourceId === "BlockHttpDNS").action, "REJECT");
+  assert.equal(merged.decisions.find(({ matcher }) => matcher.sourceId === "BlockHttpDNS").policyGroup, "Security");
+  assert.equal(merged.decisions.find(({ matcher }) => matcher.sourceId === "BlockHttpDNS").priority, 700);
   assert.equal(merged.decisions.find(({ matcher }) => matcher.sourceId === "Privacy").action, "DIRECT");
   assert.equal(merged.decisions.find(({ matcher }) => matcher.sourceId === "OpenAI").action, "PROXY");
 });
 
+test("deeply exposes only the documented merged output shape", () => {
+  const source = EXTERNAL_RULE_SOURCE_CATALOG[0];
+  const merged = mergeRuleSources({ region: "global", snapshots: new Map([[source.id, { sourceId: source.id, entries: [entry("shape.example", source.id)], provenance: source }]]) });
+  for (const record of merged.ruleSets.values()) {
+    for (const field of ["id", "entries", "policy", "phase", "dnsClass", "region", "sources"]) assert.ok(field in record);
+  }
+  for (const decision of merged.decisions) {
+    for (const field of ["matcher", "action", "policy", "policyGroup", "priority", "reason", "matchedSources", "region", "provenance"]) assert.ok(field in decision);
+    assert.equal(Object.keys(decision.provenance[0]).some((key) => /password|uuid|token|node|subscription|userinfo/iu.test(key)), false);
+  }
+  assert.ok("sourceCount" in merged.diagnostics && "matcherCount" in merged.diagnostics);
+  assert.ok(Array.isArray(merged.provenance));
+});
+
+test("retains exact pinned provenance metadata for every external source", () => {
+  for (const source of EXTERNAL_RULE_SOURCE_CATALOG) {
+    const merged = mergeRuleSources({ region: source.region, snapshots: new Map([[source.id, { sourceId: source.id, entries: [entry(`${source.id}.example`, source.id)], provenance: source }]]) });
+    const provenance = merged.provenance[0];
+    for (const field of ["commit", "releaseTag", "sha256", "retrievalUrl", "retrievedAt"]) assert.equal(provenance[field], source[field]);
+    assert.equal(provenance.sourceId, source.id);
+  }
+});
+
 test("rejects private internal provenance URLs and identity tampering", () => {
-  assert.throws(() => mergeRuleSources({ snapshots: new Map([["OpenAI", { sourceId: "OpenAI", entries: [], provenance: { sourceId: "OpenAI", retrievalUrl: "https://user:pw@example.invalid/node" } }]]) }), /URLs are not allowed/u);
+  assert.throws(() => mergeRuleSources({ snapshots: new Map([["OpenAI", { sourceId: "OpenAI", entries: [], provenance: { sourceId: "OpenAI", retrievalUrl: "https://user:pw@example.invalid/node" } }]]) }), /non-external provenance|URLs are not allowed/u);
   assert.throws(() => mergeRuleSources({ snapshots: new Map([["OpenAI", { sourceId: "OpenAI", entries: [], provenance: { sourceId: "Hijacking" } }]]) }), /identity mismatch/u);
   assert.throws(() => mergeRuleSources({ snapshots: new Map([["Hijacking", { sourceId: "OpenAI", entries: [] }]]) }), /identity mismatch/u);
+  for (const field of ["retrievalUrl", "repository", "branch", "releaseTag", "commit", "sha256"]) {
+    assert.throws(() => mergeRuleSources({ snapshots: new Map([["OpenAI", { sourceId: "OpenAI", entries: [], provenance: { sourceId: "OpenAI", [field]: "https://node.example/sub" } }]]) }), /non-external provenance|URLs|identity/u);
+  }
+  for (const value of ["vmess://secret", "ss://secret", "https://user:pw@example.invalid/subscription"]) {
+    assert.throws(() => mergeRuleSources({ snapshots: new Map([["OpenAI", { sourceId: "OpenAI", entries: [], provenance: { sourceId: "OpenAI", retrievalUrl: value } }]]) }), /non-external provenance|URLs/u);
+  }
 });
 
 test("returns complete deterministic shape and chooses the narrower overlapping CIDR", () => {
