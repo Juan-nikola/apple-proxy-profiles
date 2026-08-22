@@ -71,3 +71,16 @@ test("rejects mismatched external provenance without leaking credentials", () =>
     provenance: { ...source, retrievalUrl: "https://user:password@example.invalid/private" },
   }]]) }), /provenance mismatch|unsafe provenance/u);
 });
+
+test("maps overlay security and domestic categories before overlay fallback", () => {
+  const merged = mergeRuleSources({ region: "ru", snapshots: new Map([
+    ["russia-v2ray-rules", snapshot("russia-v2ray-rules", [
+      entry("blocked.ru", "russia-v2ray-rules", { category: "security" }),
+      entry("local.ru", "russia-v2ray-rules", { category: "local" }),
+      entry("generic.ru", "russia-v2ray-rules", { category: "unknown" }),
+    ])],
+  ]) });
+  assert.equal(merged.decisions.find(({ matcher }) => matcher.value === "blocked.ru").action, "REJECT");
+  assert.equal(merged.decisions.find(({ matcher }) => matcher.value === "local.ru").action, "DIRECT");
+  assert.equal(merged.decisions.find(({ matcher }) => matcher.value === "generic.ru").priority, 600);
+});
