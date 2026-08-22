@@ -5,14 +5,18 @@ import protobuf from "protobufjs";
 import { readFileSync } from "node:fs";
 
 import { EXTERNAL_RULE_SOURCE_CATALOG } from "../../shared/rules/external-sources.js";
+import { sourcesForRegion } from "../../shared/rules/region-profiles.js";
 import { RULE_KIND, normalizeRuleEntry } from "../../shared/rules/model.js";
 import { parseExternalRuleSource } from "../src/rule-sources/adapter-contract.js";
 
 const proto = protobuf.parse(readFileSync(new URL("../proto/xray-geodata.proto", import.meta.url), "utf8")).root;
+const GeoSiteList = proto.lookupType("appleproxy.xray.geodata.GeoSiteList");
 const GeoIPList = proto.lookupType("appleproxy.xray.geodata.GeoIPList");
 
 const v2fly = EXTERNAL_RULE_SOURCE_CATALOG.find(({ id }) => id === "v2fly-domain-list");
 const loyalsoldier = EXTERNAL_RULE_SOURCE_CATALOG.find(({ id }) => id === "loyalsoldier-rules-dat");
+const russia = EXTERNAL_RULE_SOURCE_CATALOG.find(({ id }) => id === "russia-v2ray-rules");
+const iran = EXTERNAL_RULE_SOURCE_CATALOG.find(({ id }) => id === "iran-v2ray-rules");
 const hash = (text) => createHash("sha256").update(text).digest("hex");
 const metadata = (source, text) => ({ source, text, sourceSha256: source.sha256, retrievedAt: source.retrievedAt });
 
@@ -94,4 +98,45 @@ test("adapter entries satisfy the canonical rule contract", async () => {
   for (const entry of parsed.entries) assert.doesNotThrow(() => normalizeRuleEntry({ ...entry, sourceId: parsed.sourceId }));
   assert.equal(parsed.provenance.commit, v2fly.commit);
   assert.equal(parsed.provenance.retrievedAt, v2fly.retrievedAt);
+});
+
+test("regional adapters preserve region and source-local category metadata", () => {
+  const payload = GeoSiteList.encode(GeoSiteList.fromObject({ entry: [
+    { countryCode: "TEST_ONLY_RU_BLOCKED", domain: [{ type: "Full", value: "blocked.example.invalid" }, { type: "Full", value: "blocked.example.invalid" }] },
+    { countryCode: "TEST_ONLY_RU_LOCAL", domain: [{ type: "RootDomain", value: "local.example.invalid" }] },
+  ] })).finish();
+  const parsed = parseExternalRuleSource(metadata(russia, payload));
+  assert.deepEqual(parsed.entries.map(({ value, region, category, categoryId }) => ({ value, region, category, categoryId })), [
+    { value: "blocked.example.invalid", region: "ru", category: "TEST_ONLY_RU_BLOCKED", categoryId: "TEST_ONLY_RU_BLOCKED" },
+    { value: "blocked.example.invalid", region: "ru", category: "TEST_ONLY_RU_BLOCKED", categoryId: "TEST_ONLY_RU_BLOCKED" },
+    { value: "local.example.invalid", region: "ru", category: "TEST_ONLY_RU_LOCAL", categoryId: "TEST_ONLY_RU_LOCAL" },
+  ]);
+  assert.deepEqual(parsed.categories.map(({ id, sourceId, region }) => ({ id, sourceId, region })), [
+    { id: "TEST_ONLY_RU_BLOCKED", sourceId: russia.id, region: "ru" },
+    { id: "TEST_ONLY_RU_LOCAL", sourceId: russia.id, region: "ru" },
+  ]);
+  const iranPayload = GeoSiteList.encode(GeoSiteList.fromObject({ entry: [
+    { countryCode: "TEST_ONLY_IR_SECURITY", domain: [{ type: "Full", value: "security.example.invalid" }] },
+    { countryCode: "TEST_ONLY_IR_LOCAL", domain: [{ type: "Full", value: "local.example.invalid" }] },
+  ] })).finish();
+  const iranParsed = parseExternalRuleSource(metadata(iran, iranPayload));
+  assert.deepEqual(iranParsed.entries.map(({ region, categoryId }) => ({ region, categoryId })), [
+    { region: "ir", categoryId: "TEST_ONLY_IR_SECURITY" },
+    { region: "ir", categoryId: "TEST_ONLY_IR_LOCAL" },
+  ]);
+  assert.equal(sourcesForRegion("cn").includes(russia.id), false);
+  assert.equal(sourcesForRegion("cn").includes(iran.id), false);
+  assert.equal(sourcesForRegion("ru").includes(russia.id), true);
+  assert.equal(sourcesForRegion("ru").includes(iran.id), false);
+  assert.equal(sourcesForRegion("ir").includes(iran.id), true);
+  assert.equal(sourcesForRegion("ir").includes(russia.id), false);
+});
+
+test("regional adapters reject undocumented formats and oversized all-domain fixtures", () => {
+  assert.throws(() => parseExternalRuleSource(metadata(russia, "TEST_ONLY_RU_BLOCKED|domain|blocked.example.invalid\n")), /unsupported format/u);
+  const domains = Array.from({ length: 100_001 }, (_, index) => ({ type: "Full", value: `item-${index}.example.invalid` }));
+  const payload = GeoSiteList.encode(GeoSiteList.fromObject({ entry: [
+    { countryCode: "TEST_ONLY_ALL_DOMAIN", domain: domains },
+  ] })).finish();
+  assert.throws(() => parseExternalRuleSource(metadata(iran, payload)), /all-domain category exceeds entry budget/u);
 });

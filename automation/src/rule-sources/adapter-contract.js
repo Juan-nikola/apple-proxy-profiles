@@ -1,5 +1,7 @@
 import { parseLoyalsoldierRulesDat } from "./loyalsoldier-rules-dat.js";
 import { parseV2flyDomainList } from "./v2fly-domain-list.js";
+import { parseRussiaV2rayRules } from "./russia-v2ray-rules.js";
+import { parseIranV2rayRules } from "./iran-v2ray-rules.js";
 import { EXTERNAL_RULE_SOURCE_CATALOG } from "../../../shared/rules/external-sources.js";
 
 const SHA256 = /^[0-9a-f]{64}$/u;
@@ -7,10 +9,14 @@ const COMMIT = /^[0-9a-f]{40}$/u;
 const ADAPTERS = Object.freeze({
   "v2fly-domain-list": parseV2flyDomainList,
   "loyalsoldier-rules-dat": parseLoyalsoldierRulesDat,
+  "russia-v2ray-rules": parseRussiaV2rayRules,
+  "iran-v2ray-rules": parseIranV2rayRules,
 });
 const ADAPTER_IDS = Object.freeze({
   "v2fly-domain-list": "v2fly-domain-list",
   "loyalsoldier-rules-dat": "loyalsoldier-rules-dat",
+  "russia-v2ray-rules": "russia-v2ray-rules",
+  "iran-v2ray-rules": "iran-v2ray-rules",
 });
 
 function validateRequest({ source, text, sourceSha256, retrievedAt }) {
