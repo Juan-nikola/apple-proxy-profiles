@@ -12,4 +12,7 @@ test("renders stable mobile GeoData asset manifest", () => {
 test("rejects unsafe or incomplete asset manifests", () => {
   assert.throws(() => renderV2BoxAssetManifest({ region: "windows", channel: "current", geositeSha256: "a".repeat(64), geoipSha256: "b".repeat(64) }), /region/u);
   assert.throws(() => renderV2BoxAssetManifest({ region: "cn", channel: "current", geositeSha256: "bad", geoipSha256: "b".repeat(64) }), /hash/u);
+  for (const publicBase of [`https://user${"%3A"}pass@example.com`, "https://example.com:443", "https://localhost", "https://x.local", "https://192.168.1.1", "https://example.com/rules?x=1", "https://example.com/rules/../x"]) {
+    assert.throws(() => renderV2BoxAssetManifest({ region: "cn", channel: "current", publicBase, geositeSha256: "a".repeat(64), geoipSha256: "b".repeat(64) }), /publicBase/u);
+  }
 });

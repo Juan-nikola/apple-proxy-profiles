@@ -2781,15 +2781,15 @@ var V2BoxNodesBundle = (() => {
   var ALLOWED = /* @__PURE__ */ new Set(["output", "type", "name", "subscriptionName", "platform", ...Object.keys(DEFAULTS)]);
   var required = (raw, key) => {
     const value = raw[key];
-    if (typeof value !== "string" || !value || value.trim() !== value || /[\r\n]/u.test(value)) throw new Error(`v2rayN option '${key}' is invalid`);
+    if (typeof value !== "string" || !value || value.trim() !== value || /[\r\n]/u.test(value)) throw new Error(`V2Box option '${key}' is invalid`);
     return value;
   };
   function parseV2BoxOptions(raw) {
-    if (!raw || typeof raw !== "object" || Array.isArray(raw)) throw new TypeError("v2rayN options must be an object");
+    if (!raw || typeof raw !== "object" || Array.isArray(raw)) throw new TypeError("V2Box options must be an object");
     for (const key of Object.keys(raw)) if (!key.startsWith("_") && !ALLOWED.has(key)) throw new Error(`Unknown V2Box option: ${key}`);
     for (const key of ["output", "type", "name", "platform"]) if (!Object.hasOwn(raw, key)) throw new Error(`V2Box option '${key}' is required`);
     const output = required(raw, "output");
-    if (!["nodes", "config"].includes(output)) throw new Error("v2rayN option 'output' is unsupported");
+    if (!["nodes", "config"].includes(output)) throw new Error("V2Box option 'output' is unsupported");
     if (required(raw, "type") !== "collection") throw new Error("v2rayN option 'type' must be collection");
     const platform = required(raw, "platform");
     if (!["iphone", "ipad"].includes(platform)) throw new Error("V2Box option 'platform' is unsupported");

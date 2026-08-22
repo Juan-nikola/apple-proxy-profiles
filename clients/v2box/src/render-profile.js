@@ -33,27 +33,27 @@ function geoReferences(geoData, options, assetManifest) {
       const item = assetManifest[type];
       if (!item || item.name !== names[type === "geosite" ? "domain" : "ip"] || item.sha256 !== assetManifest.hashes?.[type]) throw new Error("V2Box asset manifest hash or name mismatch");
       let url; try { url = new URL(item.url); } catch { throw new Error("V2Box asset manifest URL is invalid"); }
-      if (url.protocol !== "https:" || url.search || url.hash || !url.pathname.endsWith(`${base}${item.name}.dat`)) throw new Error("V2Box asset manifest URL region/channel mismatch");
+      if (url.protocol !== "https:" || url.username || url.password || url.port || url.search || url.hash || /(?:localhost|\.local$|\.internal$|\.invalid$)/u.test(url.hostname) || url.hostname.includes(":") || /^\d+(?:\.\d+){0,3}$/u.test(url.hostname) || !url.pathname.endsWith(`${base}${item.name}.dat`)) throw new Error("V2Box asset manifest URL region/channel mismatch");
     }
     return { sources: [], assets: { geosite: assetManifest.geosite, geoip: assetManifest.geoip }, domain: [], ip: [] };
   }
   if (geoData === null || geoData === undefined) {
     return { sources: [], domain: [], ip: [] };
   }
-  if (!geoData || typeof geoData !== "object" || Array.isArray(geoData) || !geoData.manifest) throw new TypeError("v2rayN GeoData manifest is required");
+  if (!geoData || typeof geoData !== "object" || Array.isArray(geoData) || !geoData.manifest) throw new TypeError("V2Box GeoData manifest is required");
   const manifest = geoData.manifest;
-  if (manifest.schemaVersion !== 1 || manifest.region !== options.region || manifest.channel !== options.channel) throw new Error("v2rayN GeoData manifest region/channel mismatch");
-  if (!manifest.names || manifest.names.domain !== names.domain || manifest.names.ip !== names.ip) throw new Error("v2rayN GeoData manifest names mismatch");
+  if (manifest.schemaVersion !== 1 || manifest.region !== options.region || manifest.channel !== options.channel) throw new Error("V2Box GeoData manifest region/channel mismatch");
+  if (!manifest.names || manifest.names.domain !== names.domain || manifest.names.ip !== names.ip) throw new Error("V2Box GeoData manifest names mismatch");
   const domain = bytes(geoData.geosite ?? geoData.domain, "domain");
   const ip = bytes(geoData.geoip ?? geoData.ip, "ip");
   for (const type of ["domain", "ip"]) {
     const asset = type === "domain" ? domain : ip;
     const record = manifest[type];
     if (!record || record.name !== names[type] || record.byteLength !== asset.byteLength || record.sha256 !== sha256(asset) || manifest.hashes?.[type] !== sha256(asset)) {
-      throw new Error(`v2rayN GeoData ${type} manifest hash or byteLength mismatch`);
+      throw new Error(`V2Box GeoData ${type} manifest hash or byteLength mismatch`);
     }
   }
-  if (!Array.isArray(manifest.sources) || manifest.sources.length === 0) throw new Error("v2rayN GeoData manifest sources are missing");
+  if (!Array.isArray(manifest.sources) || manifest.sources.length === 0) throw new Error("V2Box GeoData manifest sources are missing");
   const codes = manifest.sources.map((source) => {
     if (!source || typeof source.id !== "string" || source.code !== oneXrayGeoCode(source.id)) throw new Error("v2rayN GeoData manifest source code mismatch");
     return source.code;
@@ -72,7 +72,7 @@ function actionForSource(sourceId, overrides, nodeTags, blockMode) {
   if (value === "DIRECT") return "direct";
   if (value === "FOLLOW") return "proxy";
   if (value === "NODE:".concat(value.slice(5)) && nodeTags.has(value.slice(5))) return nodeTags.get(value.slice(5));
-  if (value === "NODE:".concat(value.slice(5))) throw new Error("v2rayN policy target node is unavailable");
+  if (value === "NODE:".concat(value.slice(5))) throw new Error("V2Box policy target node is unavailable");
   return value === "REJECT" ? (blockMode === "off" ? "direct" : "block") : "proxy";
 }
 
