@@ -100,6 +100,32 @@ const records = [
     adapterSchema: "happ-v4",
     publicDirectory: "happ",
   },
+  {
+    id: CLIENT.v2rayn,
+    displayName: "v2rayN",
+    state: "active",
+    platforms: ["windows", "macos"],
+    configFormat: "xray-profile-json",
+    ruleFormat: "xray-geodata",
+    nodeValidator: "v2rayn",
+    separatesProfile: false,
+    supportsPolicyOverrides: false,
+    adapterSchema: "v2rayn-v1",
+    publicDirectory: "v2rayn",
+  },
+  {
+    id: CLIENT.v2box,
+    displayName: "V2Box",
+    state: "active",
+    platforms: ["iphone", "ipad"],
+    configFormat: "xray-profile-json",
+    ruleFormat: "xray-geodata",
+    nodeValidator: "v2box",
+    separatesProfile: false,
+    supportsPolicyOverrides: false,
+    adapterSchema: "v2box-v1",
+    publicDirectory: "v2box",
+  },
 ].map((record) => freeze(record));
 
 const byId = new Map(records.map((record) => [record.id, record]));

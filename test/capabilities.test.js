@@ -149,6 +149,23 @@ test("enforces the complete client protocol contracts including aliases", () => 
   assert.deepEqual(evaluateNodeForClient({ type: "ss" }, "unknown-client"), { supported: false, reason: "unsupported-client" });
 });
 
+test("applies the common Xray capability boundary to V2RayN and V2Box", () => {
+  const node = {
+    name: "Common Xray node",
+    type: "vless",
+    server: "common-xray.example.invalid",
+    port: 443,
+    uuid: "00000000-0000-4000-8000-000000000001",
+  };
+  for (const client of [CLIENT.v2rayn, CLIENT.v2box]) {
+    assert.deepEqual(evaluateNodeForClient(node, client), { supported: true, reason: null });
+    assert.deepEqual(evaluateNodeForClient({ ...node, type: "snell" }, client), {
+      supported: false,
+      reason: `unsupported-${client}-protocol`,
+    });
+  }
+});
+
 test("filters protocol variants that the official client schemas cannot decode", () => {
   const common = { server: "capability-filter.example.invalid", port: 443 };
   const surgeVless = {
