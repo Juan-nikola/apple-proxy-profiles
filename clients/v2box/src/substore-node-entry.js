@@ -1,0 +1,6 @@
+import { normalizeNodes } from "../../../shared/nodes/normalize-nodes.js";
+import { filterNodesForClient } from "../../../shared/nodes/capabilities.js";
+import { CLIENT } from "../../../shared/contracts.js";
+import { parseV2BoxOptions } from "./options.js";
+import { renderV2BoxSubscription } from "./render-node.js";
+export async function operator(input, targetPlatform, context = {}) { const options = parseV2BoxOptions({ ...(context.arguments ?? {}), output: "nodes" }); if (targetPlatform !== "JSON" && targetPlatform !== options.platform) throw new Error(`V2Box target platform mismatch`); if (typeof context.produceArtifact !== "function") throw new Error("V2Box produceArtifact is unavailable"); const raw = await context.produceArtifact({ type: "collection", name: options.name, platform: "JSON", produceType: "internal" }); const normalized = normalizeNodes(raw, { clientChain: options.clientChain }); const filtered = filterNodesForClient(normalized.nodes, CLIENT.v2box); context.logger?.info?.(`[v2box-nodes] ${JSON.stringify({ accepted: filtered.nodes.length, renderFailures: filtered.diagnostics.excluded })}`); return { ...input, $content: filtered.nodes.length ? renderV2BoxSubscription({ nodes: filtered.nodes }) : `${JSON.stringify({ outbounds: [], renderFailures: filtered.diagnostics.excluded })}\n` }; }
