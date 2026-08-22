@@ -116,12 +116,12 @@ test("deeply exposes only the documented merged output shape", () => {
 });
 
 test("retains safe internal provenance through merge and deduplication", () => {
-  const provenance = { sourceId: "OpenAI", commit: "b".repeat(40), sha256: "c".repeat(64), repository: "https://github.com/example/project", branch: "main", releaseTag: "v1.0", committedAt: "2026-08-23T00:00:00Z" };
+  const provenance = { sourceId: "OpenAI", license: "MIT", commit: "b".repeat(40), sha256: "c".repeat(64), repository: "https://github.com/example/project", branch: "main", releaseTag: "v1.0", committedAt: "2026-08-23T00:00:00Z" };
   const merged = mergeRuleSources({ snapshots: new Map([["OpenAI", { sourceId: "OpenAI", entries: [entry("retained.example", "OpenAI")], provenance }]]) });
   assert.deepEqual(merged.provenance[0], provenance);
   const decision = merged.decisions.find(({ matcher }) => matcher.value === "retained.example");
   assert.deepEqual(decision.provenance[0], provenance);
-  assert.deepEqual(Object.keys(decision.provenance[0]).sort(), ["branch", "committedAt", "commit", "releaseTag", "repository", "sha256", "sourceId"].sort());
+  assert.deepEqual(Object.keys(decision.provenance[0]).sort(), ["branch", "committedAt", "commit", "license", "releaseTag", "repository", "sha256", "sourceId"].sort());
   for (const license of ["https://private.example", "vmess://node", "MIT@private", "A".repeat(129)]) {
     assert.throws(() => mergeRuleSources({ snapshots: new Map([["OpenAI", { sourceId: "OpenAI", entries: [], provenance: { sourceId: "OpenAI", license } }]]) }), /invalid provenance license/u);
   }
