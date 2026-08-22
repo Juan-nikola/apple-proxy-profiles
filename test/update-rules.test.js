@@ -210,7 +210,10 @@ test("rewrites current static sing-box example links for edge artifacts", async 
   });
   const example = artifacts.defaults.get("sing-box/examples/sing-box-android.json").toString("utf8");
   assert.doesNotMatch(example, /\/current\//u);
-  assert.match(example, /\/edge\/sing-box\/rule-sets\//u);
+  assert.match(example, /\/edge\/sing-box\/mobile-rule-sets\//u);
+  const macos = artifacts.defaults.get("sing-box/examples/sing-box-macos.json").toString("utf8");
+  assert.match(macos, /\/edge\/sing-box\/rule-sets\//u);
+  assert.doesNotMatch(macos, /\/edge\/sing-box\/mobile-rule-sets\//u);
 });
 
 test("derives audit-only primary provenance from the production ChinaIP snapshot", () => {
