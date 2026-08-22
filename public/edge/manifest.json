@@ -194,12 +194,12 @@
     {
       "bytes": 1888,
       "path": "audit/dashboard.html",
-      "sha256": "d94eb0ef3652a9e3fb3f78a6783eb7e11b26dff6f04c32683edc149a40715560"
+      "sha256": "c38a989eda2727cde34744d093877ebb5be0adea9521f71c72563db5d0a581c3"
     },
     {
       "bytes": 4119,
       "path": "audit/dashboard.json",
-      "sha256": "e5b83382c52ee23bde36357fc79cdb14329e169e8949b66679ee4a0806ee0559"
+      "sha256": "d0f42688c748eda5fc0110de7ab1501d12bb953ecb3dd402a540aa2a89fd0835"
     },
     {
       "bytes": 5175,
@@ -209,7 +209,7 @@
     {
       "bytes": 7260,
       "path": "audit/v2fly-domain-drift.json",
-      "sha256": "ac01f23c36e0eaab601128fa94f7375c8bdf28878f5232f02e7c4f688f0db6aa"
+      "sha256": "f8b38d8336852c11cf127a4af5e945638c5d4d2b2c98b278ede8d1ac3644d293"
     },
     {
       "bytes": 6727,
@@ -1198,7 +1198,7 @@
     }
   ],
   "generatedAt": "2026-08-21T18:35:15Z",
-  "manifestHash": "9c0660632486be9aa534fafb5d0fe7eac22a84aa11aff725f52c497bf7cadc99",
+  "manifestHash": "b50fb5d0be413a5d51f93d5b3b46c380bd537380885856c8751f5736211299ad",
   "schemaVersion": 2,
   "upstream": {
     "branch": "master",
