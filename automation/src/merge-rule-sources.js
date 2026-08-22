@@ -3,9 +3,9 @@ import { normalizeRuleEntry, RULE_KIND } from "../../shared/rules/model.js";
 import { semanticIntentForSource } from "../../shared/rules/semantic-intents.js";
 import { sourcesForRegion, parseRegion } from "../../shared/rules/region-profiles.js";
 import { mappingForEntry, mappingForUserRule } from "../../shared/rules/source-mappings.js";
+import { EXTERNAL_RULE_SOURCE_CATALOG } from "../../shared/rules/external-sources.js";
 
-const ACTIONS = new Set(["DIRECT", "PROXY", "REJECT"]);
-const KIND_RANK = new Map([[RULE_KIND.domain, 4], [RULE_KIND.domainSuffix, 3], [RULE_KIND.domainKeyword, 2], [RULE_KIND.ipv4Cidr, 3], [RULE_KIND.ipv6Cidr, 3]]);
+const EXTERNAL_BY_ID = new Map(EXTERNAL_RULE_SOURCE_CATALOG.map((source) => [source.id, source]));
 
 function asSnapshots(snapshots) {
   if (snapshots instanceof Map) return [...snapshots.entries()].map(([id, value]) => ({ id, value }));
@@ -16,6 +16,15 @@ function asSnapshots(snapshots) {
 
 function safeProvenance(value, sourceId) {
   const input = value && typeof value === "object" ? value : {};
+  const external = EXTERNAL_BY_ID.get(sourceId);
+  if (external) {
+    for (const field of ["repository", "branch", "commit", "releaseTag", "retrievalUrl", "retrievedAt", "sha256"]) {
+      if (input[field] !== external[field]) throw new Error(`External source ${sourceId}: provenance mismatch for ${field}`);
+    }
+    if (!/^https:\/\/github\.com\/[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+\/releases\/download\/[A-Za-z0-9._-]+\/[A-Za-z0-9_.-]+$/u.test(input.retrievalUrl)
+      || !/^[0-9a-f]{40}$/u.test(input.commit) || !/^[0-9a-f]{64}$/u.test(input.sha256)
+      || Number.isNaN(Date.parse(input.retrievedAt))) throw new Error(`External source ${sourceId}: unsafe provenance`);
+  }
   const fields = ["sourceId", "repository", "branch", "commit", "releaseTag", "retrievalUrl", "retrievedAt", "sha256"];
   return Object.freeze(Object.fromEntries(fields.filter((key) => input[key] !== undefined).map((key) => [key, input[key]]).concat(input.sourceId ? [] : [["sourceId", sourceId]])));
 }
@@ -92,7 +101,6 @@ export function mergeRuleSources({ snapshots, region = "cn", userRules = [], adb
     addCandidate(groups, { ...raw, sourceId }, mappingForUserRule(raw), safeProvenance({ sourceId }, sourceId));
   }
   const decisions = [];
-  const winners = new Map();
   for (const [matcherKey, candidates] of groups) {
     candidates.sort(candidateSort);
     const winner = candidates[0];
@@ -101,14 +109,15 @@ export function mergeRuleSources({ snapshots, region = "cn", userRules = [], adb
     const matchedSources = [...new Set(candidates.map(({ entry }) => entry.sourceId))].sort();
     const matcher = Object.freeze({ ...winner.entry, noResolve: candidates.some(({ entry }) => entry.noResolve) });
     const decision = Object.freeze({ matcher, action: winner.mapping.action, policy: winner.mapping.policy ?? winner.mapping.action, policyGroup: winner.mapping.policyGroup, priority: winner.mapping.priority, reason: winner.mapping.reason, matchedSources, region: parseRegion(region), provenance: Object.freeze(candidates.map(({ provenance: p }) => p)) });
-    decisions.push(decision); winners.set(matcherKey, { winner, candidates, decision });
+    decisions.push(decision);
   }
   decisions.sort((a, b) => b.priority - a.priority || specificity(b.matcher) - specificity(a.matcher)
     || a.matcher.sourceId.localeCompare(b.matcher.sourceId) || a.matcher.value.localeCompare(b.matcher.value));
   const ruleSets = new Map();
   for (const decision of decisions) {
     const id = decision.policyGroup;
-    const record = ruleSets.get(id) ?? { id, entries: [], policy: decision.policy, phase: sourceMetadata(decision.matcher.sourceId, { policyGroup: decision.policyGroup, priority: decision.priority }).phase, dnsClass: sourceMetadata(decision.matcher.sourceId, { policyGroup: decision.policyGroup, priority: decision.priority }).dnsClass, region: parseRegion(region), sources: new Set() };
+    const metadata = sourceMetadata(decision.matcher.sourceId, { policyGroup: decision.policyGroup, priority: decision.priority });
+    const record = ruleSets.get(id) ?? { id, entries: [], policy: decision.policy, phase: metadata.phase, dnsClass: metadata.dnsClass, region: parseRegion(region), sources: new Set() };
     record.entries.push(decision.matcher); decision.matchedSources.forEach((sourceId) => record.sources.add(sourceId)); ruleSets.set(id, record);
   }
   for (const record of ruleSets.values()) { record.entries.sort((a, b) => specificity(b) - specificity(a) || a.value.localeCompare(b.value)); record.sources = Object.freeze([...record.sources].sort()); record.entries = Object.freeze(record.entries); ruleSets.set(record.id, Object.freeze(record)); }

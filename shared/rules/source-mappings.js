@@ -23,6 +23,13 @@ const CATEGORY_MAPPINGS = Object.freeze({
 const BUSINESS = new Set(["DomesticCore", "DomesticGame", "SteamCN", "ChinaTLD", "ChinaIP", "Advertising", "Advertising_Domain"]);
 const SECURITY = new Set(["Hijacking", "BlockHttpDNS", "Privacy"]);
 const CHINA = new Set(["ChinaTLD", "ChinaIP"]);
+const SOURCE_MAPPINGS = Object.freeze({
+  Advertising: { action: "REJECT", policy: "🧱 常见广告", policyGroup: "Advertising", priority: 700 },
+  Advertising_Domain: { action: "REJECT", policy: "🧱 常见广告", policyGroup: "Advertising", priority: 700 },
+  Hijacking: { action: "REJECT", policy: "REJECT", policyGroup: "Security", priority: 700 },
+  BlockHttpDNS: { action: "REJECT", policy: "REJECT", policyGroup: "Security", priority: 700 },
+  Privacy: { action: "DIRECT", policy: "🕵️ 严格跟踪", policyGroup: "Privacy", priority: 700 },
+});
 
 function externalCategory(entry) {
   return String(entry.categoryId ?? entry.category ?? "").trim().toLowerCase().replace(/[._-]+/gu, "-");
@@ -31,12 +38,17 @@ function externalCategory(entry) {
 export function mappingForEntry(entry, { sourceId = entry?.sourceId } = {}) {
   if (sourceId === "ChinaTLD") return { action: "DIRECT", policy: "DIRECT", policyGroup: "ChinaTLD", priority: 300, reason: "ChinaTLD domestic fallback", explicit: true, sourceId };
   if (sourceId === "ChinaIP") return { action: "DIRECT", policy: "DIRECT", policyGroup: "ChinaIP", priority: 200, reason: "ChinaIP resolved fallback", explicit: true, sourceId };
+  if (SOURCE_MAPPINGS[sourceId]) return { ...SOURCE_MAPPINGS[sourceId], reason: `explicit source ${sourceId}`, explicit: true, sourceId };
   const intent = semanticIntentForSource(sourceId);
   if (intent) {
     const action = intent.defaultTarget === "REJECT" ? "REJECT" : intent.defaultTarget === "DIRECT" ? "DIRECT" : "PROXY";
     return { action, policy: intent.policy, policyGroup: intent.ruleId, priority: BUSINESS.has(sourceId) ? 800 : SECURITY.has(sourceId) ? 700 : CHINA.has(sourceId) ? (sourceId === "ChinaTLD" ? 300 : 200) : 800, reason: `explicit business source ${sourceId}`, explicit: true, sourceId };
   }
   const category = externalCategory(entry);
+  if (/^(?:russia|ru|iran|ir)(?:-|$)/u.test(category) || /(?:russia|iran)-v2ray/u.test(sourceId)) {
+    const overlay = sourceId.startsWith("iran") ? "IranOverlay" : "RussiaOverlay";
+    return { action: "PROXY", policy: "PROXY", policyGroup: overlay, priority: 600, reason: `selected region overlay ${sourceId}`, explicit: true, sourceId };
+  }
   const mapped = CATEGORY_MAPPINGS[category] ?? CATEGORY_MAPPINGS[category.replace(/^(?:geosite|geoip)-/u, "")];
   if (mapped) return { ...mapped, policy: mapped.action, priority: mapped.policyGroup === "Security" ? 700 : 600, reason: `mapped source category ${entry.categoryId ?? entry.category}`, explicit: true, sourceId };
   if (/(?:security|malware|phish|hijack|block|ad)/u.test(category)) return { action: "REJECT", policy: "REJECT", policyGroup: "Security", priority: 700, reason: `security category ${entry.categoryId ?? entry.category}`, explicit: true, sourceId };
