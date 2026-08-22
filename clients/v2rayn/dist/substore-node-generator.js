@@ -2906,9 +2906,9 @@ var V2rayNNodesBundle = (() => {
     const raw = await context.produceArtifact({ type: "collection", name: options.name, platform: "JSON", produceType: "internal" });
     const normalized = normalizeNodes(raw, { clientChain: options.clientChain });
     const filtered = filterNodesForClient(normalized.nodes, CLIENT.v2rayn);
-    if (!filtered.nodes.length) throw new Error("v2rayN nodes: no compatible nodes");
     context.logger?.info?.(`[v2rayn-nodes] ${JSON.stringify({ accepted: filtered.nodes.length, renderFailures: filtered.diagnostics.excluded })}`);
-    return { ...input, $content: renderV2rayNSubscription({ nodes: filtered.nodes }) };
+    return { ...input, $content: filtered.nodes.length ? renderV2rayNSubscription({ nodes: filtered.nodes }) : `${JSON.stringify({ outbounds: [], renderFailures: filtered.diagnostics.excluded })}
+` };
   }
   return __toCommonJS(substore_node_entry_exports);
 })();

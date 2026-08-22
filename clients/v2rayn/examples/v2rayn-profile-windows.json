@@ -8,18 +8,21 @@
         "domains": [
           "geosite:cn",
           "geosite:private"
-        ]
+        ],
+        "queryStrategy": "UseIP"
       },
       {
         "tag": "global-dns",
         "address": "1.1.1.1",
         "domains": [
           "geosite:apple-proxy-overseas"
-        ]
+        ],
+        "queryStrategy": "UseIP"
       }
     ],
     "queryStrategy": "UseIP",
-    "tag": "dnsQuery"
+    "tag": "dnsQuery",
+    "mode": "stable"
   },
   "inbounds": [
     {
@@ -84,33 +87,44 @@
     "rules": [
       {
         "domain": [
-          "geosite:apple-proxy-security"
-        ],
-        "outboundTag": "block"
-      },
-      {
-        "domain": [
           "geosite:private"
         ],
-        "outboundTag": "direct"
+        "outboundTag": "direct",
+        "ruleTag": "private-direct"
       },
       {
         "domain": [
-          "geosite:cn",
           "ext:AppleProxySiteEdge.dat:APP-REGION-CN"
         ],
-        "outboundTag": "direct"
+        "ip": [
+          "ext:AppleProxyIPEdge.dat:APP-REGION-CN"
+        ],
+        "outboundTag": "proxy",
+        "ruleTag": "source-REGION-CN"
+      },
+      {
+        "network": "quic",
+        "outboundTag": "direct",
+        "ruleTag": "quic-policy"
+      },
+      {
+        "domain": [
+          "geosite:cn"
+        ],
+        "outboundTag": "direct",
+        "ruleTag": "china-domain-direct"
       },
       {
         "ip": [
-          "geoip:cn",
-          "ext:AppleProxyIPEdge.dat:APP-REGION-CN"
+          "geoip:cn"
         ],
-        "outboundTag": "direct"
+        "outboundTag": "direct",
+        "ruleTag": "china-ip-direct"
       },
       {
         "network": "tcp,udp",
-        "outboundTag": "proxy"
+        "outboundTag": "proxy",
+        "ruleTag": "final-fail-closed"
       }
     ]
   }
