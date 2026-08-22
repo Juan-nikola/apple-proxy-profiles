@@ -12,6 +12,7 @@ import {
   DEFAULT_RULE_SOURCE_IDS,
   MOBILE_RULE_SOURCE_IDS,
   RULE_BUDGETS,
+  usesMobileRuleBundles,
 } from "../shared/rules/lightweight-policy.js";
 
 const root = new URL("../", import.meta.url);
@@ -116,7 +117,7 @@ test("all default client profiles leave the optional advertising pack unreachabl
   for (const platform of ["macos", "iphone", "ipad", "android"]) {
     const path = `clients/sing-box/examples/sing-box-${platform}.json`;
     const singbox = JSON.parse(await readFile(new URL(path, root), "utf8"));
-    const expectedRuleIds = ["iphone", "ipad"].includes(platform)
+    const expectedRuleIds = usesMobileRuleBundles(platform)
       ? MOBILE_RULE_SOURCE_IDS
       : DEFAULT_RULE_SOURCE_IDS;
     for (const provider of singbox.route.rule_set) {
