@@ -122,6 +122,9 @@ test("retains safe internal provenance through merge and deduplication", () => {
   const decision = merged.decisions.find(({ matcher }) => matcher.value === "retained.example");
   assert.deepEqual(decision.provenance[0], provenance);
   assert.deepEqual(Object.keys(decision.provenance[0]).sort(), ["branch", "committedAt", "commit", "releaseTag", "repository", "sha256", "sourceId"].sort());
+  for (const license of ["https://private.example", "vmess://node", "MIT@private", "A".repeat(129)]) {
+    assert.throws(() => mergeRuleSources({ snapshots: new Map([["OpenAI", { sourceId: "OpenAI", entries: [], provenance: { sourceId: "OpenAI", license } }]]) }), /invalid provenance license/u);
+  }
 });
 
 test("retains exact pinned provenance metadata for every external source", () => {

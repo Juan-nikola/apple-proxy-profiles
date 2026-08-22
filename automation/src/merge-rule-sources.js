@@ -18,7 +18,7 @@ function safeProvenance(value, sourceId) {
   const input = value && typeof value === "object" ? value : {};
   if (input.sourceId !== undefined && input.sourceId !== sourceId) throw new Error(`Source ${sourceId}: provenance source identity mismatch`);
   const external = EXTERNAL_BY_ID.get(sourceId);
-  if (input.license !== undefined && (typeof input.license !== "string" || !input.license.trim() || /[\r\n]/u.test(input.license))) throw new Error(`Source ${sourceId}: invalid provenance license`);
+  if (input.license !== undefined && (typeof input.license !== "string" || !/^[A-Za-z0-9][A-Za-z0-9 .+()/_-]{0,127}$/u.test(input.license))) throw new Error(`Source ${sourceId}: invalid provenance license`);
   if (input.diagnostics !== undefined) validateDiagnostics(input.diagnostics, sourceId);
   if (external) {
     if (input.license !== external.license) throw new Error(`External source ${sourceId}: provenance license mismatch`);
