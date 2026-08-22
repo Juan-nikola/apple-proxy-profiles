@@ -22,13 +22,14 @@ test("security rules override a selected region overlay", () => {
   assert.equal(explainRoute({ hostname: "blocked.ru", merged }).action, "REJECT");
 });
 
-test("duplicate cross-source entries retain provenance deterministically", () => {
+test("duplicate cross-source entries retain both internal provenance records deterministically", () => {
   const merged = mergeRuleSources({ snapshots: new Map([
-    ["v2fly-domain-list", snapshot("v2fly-domain-list", [entry("same.example", "v2fly-domain-list")])],
-    ["loyalsoldier-rules-dat", snapshot("loyalsoldier-rules-dat", [entry("same.example", "loyalsoldier-rules-dat")])],
+    ["OpenAI", snapshot("OpenAI", [entry("same.example", "OpenAI")], { commit: "a".repeat(40), sha256: "b".repeat(64) })],
+    ["GitHub", snapshot("GitHub", [entry("same.example", "GitHub")], { commit: "c".repeat(40), sha256: "d".repeat(64) })],
   ]) });
   const decision = merged.decisions.find(({ matcher }) => matcher.value === "same.example");
-  assert.deepEqual(decision.matchedSources, ["loyalsoldier-rules-dat", "v2fly-domain-list"]);
+  assert.deepEqual(decision.matchedSources, ["GitHub", "OpenAI"]);
+  assert.deepEqual(decision.provenance.map(({ sourceId }) => sourceId).sort(), ["GitHub", "OpenAI"]);
 });
 
 test("ChinaTLD wins before ChinaIP fallback", () => {
@@ -130,6 +131,17 @@ test("retains exact pinned provenance metadata for every external source", () =>
     for (const field of ["commit", "releaseTag", "sha256", "retrievalUrl", "retrievedAt"]) assert.equal(provenance[field], source[field]);
     assert.equal(provenance.sourceId, source.id);
   }
+});
+
+test("retains audited license and structured diagnostics safely", () => {
+  const source = EXTERNAL_RULE_SOURCE_CATALOG[0];
+  const diagnostics = { candidateCount: 2, parsedCount: 2, unsupportedCount: 0, duplicates: 0, minEntries: 1, sourceSha256: source.sha256, unsupportedByReason: {} };
+  const merged = mergeRuleSources({ region: "global", snapshots: new Map([[source.id, { sourceId: source.id, entries: [entry("audit.example", source.id)], provenance: { ...source, license: "MIT", diagnostics } }]]) });
+  assert.equal(merged.provenance[0].license, "MIT");
+  assert.deepEqual(merged.provenance[0].diagnostics, diagnostics);
+  assert.deepEqual(merged.decisions[0].provenance[0].diagnostics, diagnostics);
+  assert.throws(() => mergeRuleSources({ region: "global", snapshots: new Map([[source.id, { sourceId: source.id, entries: [], provenance: { ...source, license: "MIT\nleak" } }]]) }), /license/u);
+  assert.throws(() => mergeRuleSources({ region: "global", snapshots: new Map([[source.id, { sourceId: source.id, entries: [], provenance: { ...source, diagnostics: { nodeUri: "vmess://secret" } } }]]) }), /diagnostics/u);
 });
 
 test("rejects private internal provenance URLs and identity tampering", () => {

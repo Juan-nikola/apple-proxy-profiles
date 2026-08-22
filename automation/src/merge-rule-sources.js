@@ -18,6 +18,8 @@ function safeProvenance(value, sourceId) {
   const input = value && typeof value === "object" ? value : {};
   if (input.sourceId !== undefined && input.sourceId !== sourceId) throw new Error(`Source ${sourceId}: provenance source identity mismatch`);
   const external = EXTERNAL_BY_ID.get(sourceId);
+  if (input.license !== undefined && (typeof input.license !== "string" || !input.license.trim() || /[\r\n]/u.test(input.license))) throw new Error(`Source ${sourceId}: invalid provenance license`);
+  if (input.diagnostics !== undefined) validateDiagnostics(input.diagnostics, sourceId);
   if (external) {
     for (const field of ["repository", "branch", "commit", "releaseTag", "retrievalUrl", "retrievedAt", "sha256"]) {
       if (input[field] !== external[field]) throw new Error(`External source ${sourceId}: provenance mismatch for ${field}`);
@@ -26,7 +28,7 @@ function safeProvenance(value, sourceId) {
       || !/^[0-9a-f]{40}$/u.test(input.commit) || !/^[0-9a-f]{64}$/u.test(input.sha256)
       || Number.isNaN(Date.parse(input.retrievedAt))) throw new Error(`External source ${sourceId}: unsafe provenance`);
   } else {
-    const allowed = new Set(["sourceId", "commit", "sha256", "repository", "branch", "releaseTag", "retrievedAt", "committedAt"]);
+    const allowed = new Set(["sourceId", "commit", "sha256", "repository", "branch", "releaseTag", "retrievedAt", "committedAt", "license", "diagnostics"]);
     if (Object.keys(input).some((field) => !allowed.has(field))) throw new Error(`Source ${sourceId}: non-external provenance field is not allowed`);
     if (input.commit !== undefined && !/^[0-9a-f]{40}$/u.test(input.commit)) throw new Error(`Source ${sourceId}: invalid provenance commit`);
     if (input.sha256 !== undefined && !/^[0-9a-f]{64}$/u.test(input.sha256)) throw new Error(`Source ${sourceId}: invalid provenance hash`);
@@ -36,9 +38,23 @@ function safeProvenance(value, sourceId) {
     if (input.releaseTag !== undefined && (typeof input.releaseTag !== "string" || !/^[A-Za-z0-9._-]+$/u.test(input.releaseTag))) throw new Error(`Source ${sourceId}: invalid provenance release`);
   }
   const fields = EXTERNAL_BY_ID.has(sourceId)
-    ? ["sourceId", "repository", "branch", "commit", "releaseTag", "retrievalUrl", "retrievedAt", "sha256"]
-    : ["sourceId", "commit", "sha256", "repository", "branch", "releaseTag", "retrievedAt", "committedAt"];
+    ? ["sourceId", "repository", "branch", "commit", "releaseTag", "retrievalUrl", "retrievedAt", "sha256", "license", "diagnostics"]
+    : ["sourceId", "commit", "sha256", "repository", "branch", "releaseTag", "retrievedAt", "committedAt", "license", "diagnostics"];
   return Object.freeze(Object.fromEntries(fields.filter((key) => input[key] !== undefined).map((key) => [key, input[key]]).concat(input.sourceId ? [] : [["sourceId", sourceId]])));
+}
+
+const DIAGNOSTIC_COUNTS = new Set(["candidateCount", "parsedCount", "unsupportedCount", "minEntries", "duplicates"]);
+function validateDiagnostics(value, sourceId) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) throw new TypeError(`Source ${sourceId}: diagnostics must be an object`);
+  const allowed = new Set([...DIAGNOSTIC_COUNTS, "unsupportedByReason", "sourceSha256"]);
+  if (Object.keys(value).some((key) => !allowed.has(key))) throw new Error(`Source ${sourceId}: unknown diagnostics field`);
+  for (const key of DIAGNOSTIC_COUNTS) if (value[key] !== undefined && (!Number.isSafeInteger(value[key]) || value[key] < 0)) throw new Error(`Source ${sourceId}: invalid diagnostic count`);
+  if (value.sourceSha256 !== undefined && !/^[0-9a-f]{64}$/u.test(value.sourceSha256)) throw new Error(`Source ${sourceId}: invalid diagnostic hash`);
+  if (value.unsupportedByReason !== undefined) {
+    const reasons = value.unsupportedByReason;
+    if (!reasons || typeof reasons !== "object" || Array.isArray(reasons) || Object.keys(reasons).some((key) => !/^[A-Za-z0-9._-]+$/u.test(key))) throw new Error(`Source ${sourceId}: invalid diagnostic reason`);
+    if (Object.values(reasons).some((count) => !Number.isSafeInteger(count) || count < 0)) throw new Error(`Source ${sourceId}: invalid diagnostic reason count`);
+  }
 }
 
 function specificity(entry) {
@@ -104,7 +120,7 @@ export function mergeRuleSources({ snapshots, region = "cn", userRules = [], adb
     if (id !== undefined && valueSourceId !== undefined && id !== valueSourceId) throw new Error(`Snapshot identity mismatch for ${id}`);
     const sourceId = valueSourceId ?? id;
     if (value?.provenance?.sourceId !== undefined && value.provenance.sourceId !== sourceId) throw new Error(`Snapshot provenance identity mismatch for ${sourceId}`);
-    const prov = safeProvenance(value?.provenance, sourceId);
+    const prov = safeProvenance({ ...(value?.provenance ?? {}), license: value?.license ?? value?.provenance?.license, diagnostics: value?.diagnostics ?? value?.provenance?.diagnostics }, sourceId);
     if (!sourceId || !selected.has(sourceId)) continue;
     const entries = Array.isArray(value?.entries) ? value.entries : [];
     provenance.push(prov);
