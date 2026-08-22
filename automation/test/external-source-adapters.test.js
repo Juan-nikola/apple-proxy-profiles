@@ -100,7 +100,7 @@ test("adapter entries satisfy the canonical rule contract", async () => {
   assert.equal(parsed.provenance.retrievedAt, v2fly.retrievedAt);
 });
 
-test("regional adapters preserve region and source-local category metadata", () => {
+test("regional adapters preserve region and source-local category metadata", async () => {
   const payload = GeoSiteList.encode(GeoSiteList.fromObject({ entry: [
     { countryCode: "TEST_ONLY_RU_BLOCKED", domain: [{ type: "Full", value: "blocked.example.invalid" }, { type: "Full", value: "blocked.example.invalid" }] },
     { countryCode: "TEST_ONLY_RU_LOCAL", domain: [{ type: "RootDomain", value: "local.example.invalid" }] },
@@ -130,13 +130,30 @@ test("regional adapters preserve region and source-local category metadata", () 
   assert.equal(sourcesForRegion("ru").includes(iran.id), false);
   assert.equal(sourcesForRegion("ir").includes(iran.id), true);
   assert.equal(sourcesForRegion("ir").includes(russia.id), false);
+
+  const cnSnapshot = sourcesForRegion("cn").filter((id) => id === v2fly.id || id === russia.id || id === iran.id);
+  const ruSnapshot = sourcesForRegion("ru").filter((id) => id === v2fly.id || id === russia.id || id === iran.id);
+  const irSnapshot = sourcesForRegion("ir").filter((id) => id === v2fly.id || id === russia.id || id === iran.id);
+  assert.deepEqual(cnSnapshot, [v2fly.id]);
+  assert.deepEqual(ruSnapshot, [v2fly.id, russia.id]);
+  assert.deepEqual(irSnapshot, [v2fly.id, iran.id]);
+
+  const duplicateV2fly = await parseExternalRuleSource(metadata(v2fly, "TEST_ONLY_SHARED:\n  - full:shared.example.invalid\n"));
+  const duplicateRussia = parseExternalRuleSource(metadata(russia, GeoSiteList.encode(GeoSiteList.fromObject({ entry: [
+    { countryCode: "TEST_ONLY_SHARED", domain: [{ type: "Full", value: "shared.example.invalid" }] },
+  ] })).finish()));
+  assert.equal(duplicateV2fly.entries[0].value, duplicateRussia.entries[0].value);
+  assert.equal(duplicateV2fly.entries[0].sourceId, v2fly.id);
+  assert.equal(duplicateRussia.entries[0].sourceId, russia.id);
+  assert.notEqual(duplicateV2fly.entries[0].sourceId, duplicateRussia.entries[0].sourceId);
 });
 
 test("regional adapters reject undocumented formats and oversized all-domain fixtures", () => {
   assert.throws(() => parseExternalRuleSource(metadata(russia, "TEST_ONLY_RU_BLOCKED|domain|blocked.example.invalid\n")), /unsupported format/u);
-  const domains = Array.from({ length: 100_001 }, (_, index) => ({ type: "Full", value: `item-${index}.example.invalid` }));
-  const payload = GeoSiteList.encode(GeoSiteList.fromObject({ entry: [
-    { countryCode: "TEST_ONLY_ALL_DOMAIN", domain: domains },
+  const makePayload = (count, extra = []) => GeoSiteList.encode(GeoSiteList.fromObject({ entry: [
+    { countryCode: "TEST_ONLY_ALL_DOMAIN", domain: [...Array.from({ length: count }, (_, index) => ({ type: "Full", value: `item-${index}.example.invalid` })), ...extra] },
   ] })).finish();
+  assert.doesNotThrow(() => parseExternalRuleSource(metadata(iran, makePayload(100_000))));
+  const payload = makePayload(100_000, [{ type: "Regex", value: "TEST_ONLY_unsupported" }]);
   assert.throws(() => parseExternalRuleSource(metadata(iran, payload)), /all-domain category exceeds entry budget/u);
 });
