@@ -5,12 +5,14 @@ import {
   DEFAULT_RULE_SOURCE_IDS,
   FULL_ADBLOCK_SOURCE_IDS,
   MOBILE_RULE_BUNDLES,
+  MOBILE_RULE_PLATFORMS,
   POLICY_TARGETS,
   ROUTING_PHASES,
   ROUTING_PRECEDENCE,
   RULE_BUDGETS,
   orderedRoutingPlan,
   ruleClientCatalog,
+  usesMobileRuleBundles,
 } from "../shared/rules/lightweight-policy.js";
 import {
   DOMESTIC_CORE_DOMAIN_SUFFIXES,
@@ -24,6 +26,16 @@ import * as policyFilters from "../shared/policies/filters.js";
 const { GROUP_KIND, STRATEGY, buildPolicyGroups } = policyCatalog;
 
 const PUBLIC_SUFFIXES = new Set(["com", "net", "cn", "com.cn"]);
+
+test("defines the shared mobile rule platform contract", () => {
+  assert.deepEqual([...MOBILE_RULE_PLATFORMS], ["iphone", "ipad", "android"]);
+  assert.equal(Object.isFrozen(MOBILE_RULE_PLATFORMS), true);
+  for (const platform of MOBILE_RULE_PLATFORMS) {
+    assert.equal(usesMobileRuleBundles(platform), true, platform);
+  }
+  assert.equal(usesMobileRuleBundles("macos"), false);
+  assert.equal(usesMobileRuleBundles("unknown"), false);
+});
 
 test("defines the default lightweight rule-set boundary", () => {
   assert.equal(DEFAULT_RULE_SOURCE_IDS.includes("Advertising"), false);

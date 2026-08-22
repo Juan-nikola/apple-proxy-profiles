@@ -23,6 +23,18 @@ export const MOBILE_RULE_BUNDLES = Object.freeze(SEMANTIC_INTENTS.map((entry) =>
 
 export const MOBILE_RULE_SOURCE_IDS = Object.freeze(MOBILE_RULE_BUNDLES.map(({ id }) => id));
 
+// These platforms share the compact rule catalog to keep mobile clients
+// within their tighter memory budgets.
+export const MOBILE_RULE_PLATFORMS = Object.freeze([
+  "iphone",
+  "ipad",
+  "android",
+]);
+
+export function usesMobileRuleBundles(platform) {
+  return MOBILE_RULE_PLATFORMS.includes(platform);
+}
+
 export const FULL_ADBLOCK_SOURCE_IDS = Object.freeze([
   "Advertising", "Advertising_Domain",
 ]);

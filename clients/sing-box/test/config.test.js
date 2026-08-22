@@ -6,6 +6,10 @@ import { renderSingBoxConfig } from "../src/render-config.js";
 import { renderSingBoxDns } from "../src/render-dns.js";
 import { renderSingBoxNode, renderSingBoxOutbound } from "../src/render-node.js";
 import { validateSingBoxConfig } from "../src/validate-config.js";
+import {
+  MOBILE_RULE_PLATFORMS,
+  usesMobileRuleBundles,
+} from "../../../shared/rules/lightweight-policy.js";
 
 const baseOptions = {
   output: "config",
@@ -62,6 +66,9 @@ test("accepts only the four terminal platforms and rejects deferred OpenWrt", ()
   for (const platform of ["macos", "iphone", "ipad", "android"]) {
     assert.equal(parseSingBoxOptions({ ...baseOptions, platform }).platform, platform);
   }
+  assert.deepEqual([...MOBILE_RULE_PLATFORMS], ["iphone", "ipad", "android"]);
+  assert.equal(MOBILE_RULE_PLATFORMS.every((platform) => usesMobileRuleBundles(platform)), true);
+  assert.equal(usesMobileRuleBundles("macos"), false);
   assert.throws(() => parseSingBoxOptions({ ...baseOptions, platform: "openwrt" }), /platform/iu);
   assert.equal(parseSingBoxOptions(baseOptions).channel, "edge");
   assert.equal(parseSingBoxOptions({ ...baseOptions, channel: "previous" }).channel, "previous");
