@@ -26,10 +26,18 @@ function safeProvenance(value, sourceId) {
       || !/^[0-9a-f]{40}$/u.test(input.commit) || !/^[0-9a-f]{64}$/u.test(input.sha256)
       || Number.isNaN(Date.parse(input.retrievedAt))) throw new Error(`External source ${sourceId}: unsafe provenance`);
   } else {
-    const forbidden = ["repository", "retrievalUrl", "branch", "releaseTag", "commit", "sha256"];
-    if (forbidden.some((field) => input[field] !== undefined)) throw new Error(`Source ${sourceId}: non-external provenance metadata is not allowed`);
+    const allowed = new Set(["sourceId", "commit", "sha256", "repository", "branch", "releaseTag", "retrievedAt", "committedAt"]);
+    if (Object.keys(input).some((field) => !allowed.has(field))) throw new Error(`Source ${sourceId}: non-external provenance field is not allowed`);
+    if (input.commit !== undefined && !/^[0-9a-f]{40}$/u.test(input.commit)) throw new Error(`Source ${sourceId}: invalid provenance commit`);
+    if (input.sha256 !== undefined && !/^[0-9a-f]{64}$/u.test(input.sha256)) throw new Error(`Source ${sourceId}: invalid provenance hash`);
+    if (input.repository !== undefined && !/^https:\/\/github\.com\/[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/u.test(input.repository)) throw new Error(`Source ${sourceId}: invalid provenance repository`);
+    for (const field of ["retrievedAt", "committedAt"]) if (input[field] !== undefined && (typeof input[field] !== "string" || Number.isNaN(Date.parse(input[field])))) throw new Error(`Source ${sourceId}: invalid provenance timestamp`);
+    if (input.branch !== undefined && (typeof input.branch !== "string" || !/^[A-Za-z0-9._/-]+$/u.test(input.branch))) throw new Error(`Source ${sourceId}: invalid provenance branch`);
+    if (input.releaseTag !== undefined && (typeof input.releaseTag !== "string" || !/^[A-Za-z0-9._-]+$/u.test(input.releaseTag))) throw new Error(`Source ${sourceId}: invalid provenance release`);
   }
-  const fields = ["sourceId", "repository", "branch", "commit", "releaseTag", "retrievalUrl", "retrievedAt", "sha256"];
+  const fields = EXTERNAL_BY_ID.has(sourceId)
+    ? ["sourceId", "repository", "branch", "commit", "releaseTag", "retrievalUrl", "retrievedAt", "sha256"]
+    : ["sourceId", "commit", "sha256", "repository", "branch", "releaseTag", "retrievedAt", "committedAt"];
   return Object.freeze(Object.fromEntries(fields.filter((key) => input[key] !== undefined).map((key) => [key, input[key]]).concat(input.sourceId ? [] : [["sourceId", sourceId]])));
 }
 

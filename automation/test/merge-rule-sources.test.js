@@ -114,6 +114,15 @@ test("deeply exposes only the documented merged output shape", () => {
   assert.ok(Array.isArray(merged.provenance));
 });
 
+test("retains safe internal provenance through merge and deduplication", () => {
+  const provenance = { sourceId: "OpenAI", commit: "b".repeat(40), sha256: "c".repeat(64), repository: "https://github.com/example/project", branch: "main", releaseTag: "v1.0", committedAt: "2026-08-23T00:00:00Z" };
+  const merged = mergeRuleSources({ snapshots: new Map([["OpenAI", { sourceId: "OpenAI", entries: [entry("retained.example", "OpenAI")], provenance }]]) });
+  assert.deepEqual(merged.provenance[0], provenance);
+  const decision = merged.decisions.find(({ matcher }) => matcher.value === "retained.example");
+  assert.deepEqual(decision.provenance[0], provenance);
+  assert.deepEqual(Object.keys(decision.provenance[0]).sort(), ["branch", "committedAt", "commit", "releaseTag", "repository", "sha256", "sourceId"].sort());
+});
+
 test("retains exact pinned provenance metadata for every external source", () => {
   for (const source of EXTERNAL_RULE_SOURCE_CATALOG) {
     const merged = mergeRuleSources({ region: source.region, snapshots: new Map([[source.id, { sourceId: source.id, entries: [entry(`${source.id}.example`, source.id)], provenance: source }]]) });
@@ -128,11 +137,29 @@ test("rejects private internal provenance URLs and identity tampering", () => {
   assert.throws(() => mergeRuleSources({ snapshots: new Map([["OpenAI", { sourceId: "OpenAI", entries: [], provenance: { sourceId: "Hijacking" } }]]) }), /identity mismatch/u);
   assert.throws(() => mergeRuleSources({ snapshots: new Map([["Hijacking", { sourceId: "OpenAI", entries: [] }]]) }), /identity mismatch/u);
   for (const field of ["retrievalUrl", "repository", "branch", "releaseTag", "commit", "sha256"]) {
-    assert.throws(() => mergeRuleSources({ snapshots: new Map([["OpenAI", { sourceId: "OpenAI", entries: [], provenance: { sourceId: "OpenAI", [field]: "https://node.example/sub" } }]]) }), /non-external provenance|URLs|identity/u);
+    assert.throws(() => mergeRuleSources({ snapshots: new Map([["OpenAI", { sourceId: "OpenAI", entries: [], provenance: { sourceId: "OpenAI", [field]: "https://node.example/sub" } }]]) }), /non-external provenance|URLs|identity|invalid provenance/u);
   }
   for (const value of ["vmess://secret", "ss://secret", "https://user:pw@example.invalid/subscription"]) {
     assert.throws(() => mergeRuleSources({ snapshots: new Map([["OpenAI", { sourceId: "OpenAI", entries: [], provenance: { sourceId: "OpenAI", retrievalUrl: value } }]]) }), /non-external provenance|URLs/u);
   }
+});
+
+test("applies the complete precedence matrix through fallback", () => {
+  const generic = EXTERNAL_RULE_SOURCE_CATALOG[0];
+  const snap = (id, value, provenance) => ({ sourceId: id, entries: [entry(value, id)], provenance });
+  const merged = mergeRuleSources({ region: "cn", snapshots: new Map([
+    [generic.id, snap(generic.id, "generic.example", generic)],
+    ["Hijacking", snap("Hijacking", "security.example")],
+    ["OpenAI", snap("OpenAI", "business.example")],
+    ["ChinaTLD", snap("ChinaTLD", "cn")],
+    ["ChinaIP", { sourceId: "ChinaIP", entries: [{ kind: "ipv4Cidr", value: "1.0.1.0/24", sourceId: "ChinaIP" }] }],
+  ]), userRules: [entry("business.example", "user", { action: "DIRECT" })] });
+  assert.equal(explainRoute({ hostname: "business.example", merged }).action, "DIRECT");
+  assert.equal(explainRoute({ hostname: "security.example", merged }).action, "REJECT");
+  assert.equal(explainRoute({ hostname: "generic.example", merged }).action, "PROXY");
+  assert.equal(explainRoute({ hostname: "x.cn", merged }).action, "DIRECT");
+  assert.equal(explainRoute({ hostname: "x.example", ip: "1.0.1.2", merged }).action, "DIRECT");
+  assert.equal(explainRoute({ hostname: "x.example", ip: "8.8.8.8", merged }).action, "PROXY");
 });
 
 test("returns complete deterministic shape and chooses the narrower overlapping CIDR", () => {
