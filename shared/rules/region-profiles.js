@@ -1,5 +1,6 @@
 import { RULE_SOURCE_CATALOG } from "./catalog.js";
 import { EXTERNAL_RULE_SOURCE_CATALOG } from "./external-sources.js";
+import { FULL_ADBLOCK_SOURCE_IDS } from "./lightweight-policy.js";
 
 const VALID_REGIONS = Object.freeze(["cn", "global", "ru", "ir"]);
 const BASELINE_IDS = Object.freeze(RULE_SOURCE_CATALOG.map(({ id }) => id));
@@ -29,7 +30,10 @@ export function parseRegion(value) {
 export function sourcesForRegion(region, { adblockMode = "off" } = {}) {
   if (adblockMode !== "off" && adblockMode !== "full") throw new TypeError("adblockMode must be either off or full");
   const profile = REGION_PROFILES[parseRegion(region)];
-  const ids = profile.sourceIds.filter((id) => adblockMode === "full" || !["Advertising", "Advertising_Domain"].includes(id));
+  const sourceIds = adblockMode === "full"
+    ? [...profile.sourceIds, ...FULL_ADBLOCK_SOURCE_IDS]
+    : profile.sourceIds;
+  const ids = sourceIds.filter((id) => adblockMode === "full" || !FULL_ADBLOCK_SOURCE_IDS.includes(id));
   return Object.freeze([...new Set(ids)]);
 }
 

@@ -20,9 +20,10 @@ export const EXTERNAL_RULE_SOURCE_CATALOG = Object.freeze([
     adapter: "v2fly-domain-list",
     minEntries: 1,
     sourcePath: "dlc.dat_plain.yml",
-    retrievalUrl: "https://raw.githubusercontent.com/v2fly/domain-list-community/c975ccef9c19f005a3bfa7a33255d1b406deea64/dlc.dat_plain.yml",
+    releaseTag: "20260819144818",
+    retrievalUrl: "https://github.com/v2fly/domain-list-community/releases/download/20260819144818/dlc.dat_plain.yml",
     retrievedAt: "2026-08-22T00:00:00Z",
-    sha256: "1111111111111111111111111111111111111111111111111111111111111111",
+    sha256: "d74dc15311117fe983180bf3245e083633d14bb148ea5cd9db79b1d15a8533c2",
   }),
   source({
     id: "loyalsoldier-rules-dat",
@@ -35,9 +36,10 @@ export const EXTERNAL_RULE_SOURCE_CATALOG = Object.freeze([
     adapter: "loyalsoldier-rules-dat",
     minEntries: 1,
     sourcePath: "geosite.dat",
-    retrievalUrl: "https://raw.githubusercontent.com/Loyalsoldier/v2ray-rules-dat/5c20d2eb5a65b171816949010ede67a27326cbe6/geosite.dat",
+    releaseTag: "202608212217",
+    retrievalUrl: "https://github.com/Loyalsoldier/v2ray-rules-dat/releases/download/202608212217/geosite.dat",
     retrievedAt: "2026-08-22T00:00:00Z",
-    sha256: "2222222222222222222222222222222222222222222222222222222222222222",
+    sha256: "b392a98a323777deab59d8208e856df09cf96f3a76d2869eb7a8e5289bc5d9f4",
   }),
   source({
     id: "russia-v2ray-rules",
@@ -50,9 +52,10 @@ export const EXTERNAL_RULE_SOURCE_CATALOG = Object.freeze([
     adapter: "russia-v2ray-rules",
     minEntries: 1,
     sourcePath: "geosite.dat",
-    retrievalUrl: "https://raw.githubusercontent.com/runetfreedom/russia-v2ray-rules-dat/f175e3f94891dbc1bb88edfc2d9d85f5a9051a23/geosite.dat",
+    releaseTag: "202608221547",
+    retrievalUrl: "https://github.com/runetfreedom/russia-v2ray-rules-dat/releases/download/202608221547/geosite.dat",
     retrievedAt: "2026-08-22T00:00:00Z",
-    sha256: "3333333333333333333333333333333333333333333333333333333333333333",
+    sha256: "76fdbe01687a6cc7683b50c38ceea84941458e8371d215918daf555665a537cd",
   }),
   source({
     id: "iran-v2ray-rules",
@@ -65,9 +68,10 @@ export const EXTERNAL_RULE_SOURCE_CATALOG = Object.freeze([
     adapter: "iran-v2ray-rules",
     minEntries: 1,
     sourcePath: "geosite.dat",
-    retrievalUrl: "https://raw.githubusercontent.com/Chocolate4U/Iran-v2ray-rules/676695ea3b4c95d5cf48a7c4e2e718bac5b8a099/geosite.dat",
+    releaseTag: "202608220502",
+    retrievalUrl: "https://github.com/Chocolate4U/Iran-v2ray-rules/releases/download/202608220502/geosite.dat",
     retrievedAt: "2026-08-22T00:00:00Z",
-    sha256: "4444444444444444444444444444444444444444444444444444444444444444",
+    sha256: "5ff22eb6bc59573253dce2655498db4ed8096380787f15f5d9268756a4940532",
   }),
 ]);
 
@@ -84,6 +88,9 @@ export function validateExternalSourceCatalog(catalog = EXTERNAL_RULE_SOURCE_CAT
     if (typeof record.repository !== "string" || !/^https:\/\/github\.com\/[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/u.test(record.repository)) throw new TypeError(`External source ${record.id} has invalid repository`);
     if (typeof record.branch !== "string" || record.branch.trim() === "") throw new TypeError(`External source ${record.id} has no branch metadata`);
     if (typeof record.retrievalUrl !== "string" || !record.retrievalUrl.startsWith("https://")) throw new TypeError(`External source ${record.id} has no retrieval URL`);
+    if (typeof record.releaseTag !== "string" || !/^[A-Za-z0-9][A-Za-z0-9._-]*$/u.test(record.releaseTag)) throw new TypeError(`External source ${record.id} has invalid release tag`);
+    const expectedUrl = `${record.repository}/releases/download/${record.releaseTag}/${record.sourcePath}`;
+    if (record.retrievalUrl !== expectedUrl) throw new TypeError(`External source ${record.id} has mismatched release asset URL`);
     if (typeof record.retrievedAt !== "string" || Number.isNaN(Date.parse(record.retrievedAt))) throw new TypeError(`External source ${record.id} has invalid retrieval timestamp`);
     if (typeof record.sha256 !== "string" || !SHA256.test(record.sha256)) throw new TypeError(`External source ${record.id} has invalid SHA-256`);
     if (typeof record.license !== "string" || record.license.trim() === "") throw new TypeError(`External source ${record.id} has no license`);
