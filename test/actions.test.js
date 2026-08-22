@@ -268,7 +268,7 @@ test("update workflow verifies official binary rules before building edge and ga
   assert.ok(currentCheckAt > currentCompileAt, "current verification consumes its own compiled binaries");
   assert.match(text, /^\s*client:\s*$/mu);
   assert.match(text, /^\s*manifest_hash:\s*$/mu);
-  assert.match(text, /^\s*environment:\s*canary-approval\s*$/mu);
+  assert.doesNotMatch(text, /^\s*environment:\s*canary-approval\s*$/mu);
   assert.match(text, /node scripts\/update-rules\.mjs --promote "\$PROMOTION_CLIENT" "\$PROMOTION_MANIFEST_HASH"/u);
   assert.match(text, /^\s*run: npm run update:rules\s*$/mu);
   assert.doesNotMatch(text, /run: npm run update:rules -- --channel edge/u);

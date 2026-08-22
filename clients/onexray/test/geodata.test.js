@@ -4,6 +4,9 @@ import test from "node:test";
 import { DEFAULT_RULE_SOURCE_IDS } from "../../../shared/rules/lightweight-policy.js";
 import { RULE_KIND } from "../../../shared/rules/model.js";
 import { oneXrayGeoCode, oneXrayGeoNames } from "../src/geodata-contract.js";
+import { buildOneXrayGeoDataArtifacts, renderOneXrayImportPage } from "../src/build-import-page.js";
+import { artifactSha256 } from "../../../automation/src/artifact-content.js";
+import { canonicalJson } from "../../../automation/src/render-anywhere-rules.js";
 import { decodeXrayGeoData, renderXrayGeoData } from "../../../automation/src/render-xray-geodata.js";
 
 function snapshot(reverse = false) {
@@ -46,4 +49,34 @@ test("OneXray GeoData rejects invalid channels and corrupt bytes", () => {
   const result = renderXrayGeoData(snapshot(), "edge");
   assert.throws(() => decodeXrayGeoData(result.domain.subarray(0, -1), "domain"), /decode|schema|invalid/u);
   assert.throws(() => renderXrayGeoData(snapshot(), "stable"), /channel/u);
+});
+
+test("OneXray import pages describe current as automation-released and edge as optional feedback", () => {
+  const edge = buildOneXrayGeoDataArtifacts({
+    ruleSets: snapshot(),
+    channel: "edge",
+    upstream: {
+      repository: "https://github.com/example/upstream",
+      branch: "main",
+      commit: "a".repeat(40),
+      committedAt: "2026-08-21T18:35:15Z",
+    },
+  });
+  const edgePage = renderOneXrayImportPage({
+    manifest: edge.manifest,
+    publicBase: "https://juan-nikola.github.io/apple-proxy-profiles",
+    files: edge.files,
+  });
+  assert.match(edgePage, /上线后的可选反馈/u);
+  assert.doesNotMatch(edgePage, /必须完成人工验证后再晋级/u);
+
+  const currentBase = { ...edge.manifest, channel: "current", releaseId: "current-test", names: oneXrayGeoNames("current") };
+  delete currentBase.manifestHash;
+  const current = { ...currentBase, manifestHash: artifactSha256(canonicalJson(currentBase)) };
+  const currentPage = renderOneXrayImportPage({
+    manifest: current,
+    publicBase: "https://juan-nikola.github.io/apple-proxy-profiles",
+    files: edge.files,
+  });
+  assert.match(currentPage, /自动化发布门禁通过后的生产版本/u);
 });

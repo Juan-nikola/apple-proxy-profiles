@@ -22,7 +22,7 @@ Surge 新任务只读取 `apple-proxy-surge`。先按 [Sub-Store 客户端节点
    https://juan-nikola.github.io/apple-proxy-profiles/current/surge/scripts/surge-profile-generator.js
    ```
 
-   首次灰度可将路径中的 `current` 改成 `edge`；通过验证后再切回 `current`。
+   如需维护者预览，可将路径中的 `current` 改成 `edge`；生产任务保持 `current`。
 
 ## 2. 创建三个 File
 
@@ -57,12 +57,12 @@ Profile 只包含一个隐藏组 `📦 远程节点池`。如果要临时使用�
 
 “关闭缓存/noCache”和“不验证证书/insecure”保持关闭。公开规则 URL 可以更新，但私密节点 URL、API、UUID 和密码永远不应出现在 Arguments、README、Issue 或终端日志中。
 
-## 3. 导入官方 Surge 与灰度
+## 3. 导入官方 Surge 与上线后反馈
 
-1. 先在 Intel Mac 或 Apple Silicon Mac 的官方 Surge 中保留旧 Profile，再添加 `surge-config-macos` 的私密 File URL。
+1. 在 Intel Mac 或 Apple Silicon Mac 的官方 Surge 中保留旧 Profile，再添加 `surge-config-macos` 的私密 File URL。
 2. 手动更新并验证：国内常用 App、国际站点、DNS、UDP、局域网设备、IPv4/IPv6、节点切换和断网恢复。
-3. macOS 通过后，再在 iPhone 导入 `surge-config-iphone`；iPhone 通过后，最后导入 `surge-config-ipad`。
-4. 任一平台失败，立刻切回旧 Profile，并保留失败任务和时间；不要删除旧 File。
+3. 需要设备反馈时，可按 macOS → iPhone → iPad 顺序观察；不要求等待前一台通过才能使用其他平台的 `current`。
+4. 任一平台出现异常，立刻切回旧 Profile，并保留失败任务和时间；不要删除旧 File。
 
 ## 4. 版本选择与刷新
 

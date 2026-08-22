@@ -11,7 +11,10 @@ import { canonicalJson } from "../automation/src/render-anywhere-rules.js";
 import {
   promoteClientRelease as promoteClientReleaseImpl,
   publishEdgeRelease,
+  refreshPublishedAuditDashboard,
+  enforceRetention,
   sealPreviousRelease,
+  snapshotCurrentVersion,
   snapshotMatches,
   validateClientPublication,
   validateOptionalPublication,
@@ -22,7 +25,11 @@ import {
 } from "../automation/src/public-audit-dashboard.js";
 import { fetchSnapshot } from "../automation/src/fetch-snapshot.js";
 import { parseSurgeRules } from "../automation/src/parse-surge.js";
-import { refreshCurrentManifest } from "../automation/src/refresh-current.js";
+import {
+  canRefreshChannel,
+  refreshChannelManifest,
+  refreshCurrentManifest,
+} from "../automation/src/refresh-current.js";
 import { assertChannelClosure } from "../shared/release/channel-closure.js";
 import { resolveUpstreamCommit } from "../automation/src/resolve-upstream.js";
 import {
@@ -677,7 +684,14 @@ export async function main(
 ) {
   const command = parseUpdateRulesArguments(args);
   if (command.operation === "refresh-current") {
+    await refreshPublishedAuditDashboard(join(publicDirectory, "current"));
     const manifest = await refreshCurrentManifest({ publicDirectory, adoptEdgeMetadata: true });
+    await snapshotCurrentVersion(publicDirectory);
+    await enforceRetention(publicDirectory, manifest.manifestHash);
+    if (await canRefreshChannel(join(publicDirectory, "previous"))) {
+      await refreshPublishedAuditDashboard(join(publicDirectory, "previous"));
+      await refreshChannelManifest({ publicDirectory, channel: "previous" });
+    }
     process.stdout.write(`Current manifest refreshed: ${manifest.manifestHash}\n`);
     return manifest;
   }
@@ -691,7 +705,6 @@ export async function main(
       publicDirectory,
       ...command,
       expectedHash: command.manifestHash,
-      canary: { device: env.CANARY_DEVICE, passed: env.CANARY_PASSED === "true" },
     });
     process.stdout.write(`Client promoted: ${result.client} ${result.manifestHash}\n`);
     return result;

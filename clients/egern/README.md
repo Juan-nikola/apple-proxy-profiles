@@ -7,7 +7,7 @@ Egern 新任务只读取 `apple-proxy-egern`。客户端 collection 边界、迁
 ## 从这里开始
 
 1. 先按根目录的 [Sub-Store 外置 JS + 任务引用总指南](../../docs/substore-two-layer-setup.md)，再按[部署指南](docs/deployment.md)让四个私密 File 任务以链接模式直接引用两条 Egern Pages JS URL 并导入 Profile。
-2. 按[灰度与回滚指南](docs/canary.md)严格以 Intel Mac、iPhone、iPad 的顺序逐台验证。
+2. 按[上线后可选反馈与回滚指南](docs/canary.md)可依 Intel Mac、iPhone、iPad 顺序记录设备反馈；不影响 `current` promotion。
 3. 遇到失败时按[排障指南](docs/troubleshooting.md)定位；第一原则是保留旧 Profile 并安全回滚。
 
 可执行产物是[节点生成器](dist/egern-node-generator.js)和[配置生成器](dist/egern-profile-generator.js)。仓库中的 [macOS 结构示例](examples/egern-macos.yaml)、[iPhone 结构示例](examples/egern-iphone.yaml)及 [iPad 结构示例](examples/egern-ipad.yaml)只用于检查结构，使用 `example.invalid` 保留域名，不能直接联网或实际使用。实际使用必须来自你自己的私密 Sub-Store File 输出。
@@ -127,7 +127,7 @@ https://juan-nikola.github.io/apple-proxy-profiles/current/egern/scripts/egern-p
 
 1. 复制三个 Profile File 各自的私密直链；不要把 `egern-nodes` 节点文件当成完整 Profile 导入。
 2. 先在 Intel Mac 的 Egern 新增远程 Profile，粘贴 `egern-macos` 的私密直链，旧 Profile 保留并排可选。
-3. 按[灰度清单](docs/canary.md)验证 DNS、规则、自动选择、节点切换和真实联网；通过后才依次导入 iPhone、iPad 对应的 Profile。
+3. 可按[反馈清单](docs/canary.md)验证 DNS、规则、自动选择、节点切换和真实联网；iPhone、iPad 可直接使用已通过自动化门禁的 `current` Profile。
 4. 任一步失败，立即切回旧 Profile；Sub-Store 中保留失败任务供排查，不改任务名、不改私密直链。修复后从 Intel Mac 重新开始。
 
 升级公开 `/current/` JS 时，四个任务名、参数和私密直链都不用改变；只需重新预览并按 Intel Mac → iPhone → iPad 的顺序更新。正式任务默认关闭 `noCache`；只有排查发布缓存时才临时开启，验收结束后恢复关闭。

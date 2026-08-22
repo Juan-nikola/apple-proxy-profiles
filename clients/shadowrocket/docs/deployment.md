@@ -6,12 +6,12 @@ Shadowrocket 新任务只读取 `apple-proxy-shadowrocket`。先按 [Sub-Store �
 
 ## 0. 部署前备份
 
-保留当前能用的节点订阅和 Profile，不重命名、不删除。记录在每台设备上切回旧 Profile 的位置。首次只在 Intel Mac 灰度。
+保留当前能用的节点订阅和 Profile，不重命名、不删除。记录在每台设备上切回旧 Profile 的位置。需要设备反馈时可先在 Intel Mac 观察；这不是 `current` 发布门禁。
 
 1. 在 Intel Mac、iPhone、iPad 上分别找到当前启用的旧 Profile，记下名称并确认仍能选中。
 2. 备份 Sub-Store 当前配置；至少记录现有来源、组合、脚本和文件。
 3. 不把含 Token、订阅 URL 或节点二维码的备份放入公开网盘、聊天群或截图。
-4. 先不要改 iPhone 和 iPad。Intel Mac 全部验收通过并稳定使用后才继续。
+4. iPhone 和 iPad 可直接使用已通过自动化门禁的 `current`；如需设备反馈，再按 Intel Mac、iPhone、iPad 顺序观察。
 
 成功标志：旧 Profile 仍在列表中，切回后可以恢复联网。做不到就停止部署，先修复备份或回滚入口。
 
@@ -119,7 +119,7 @@ output=nodes&type=collection&name=apple-proxy-shadowrocket&clientChain=off
 5. 保留旧 Profile；新旧 Profile 必须能在列表中分别选中。
 6. 选择新 Profile，连接后先测试一个中国网站、一个境外网站和路由器管理页；再按第 8 节检查一个境外业务组和一个国内直连优先业务组。
 
-逐项执行 `docs/canary-checklist.md`，也就是这份 [Intel Mac 灰度清单](canary-checklist.md)。全部通过并稳定使用后再继续。
+`docs/canary-checklist.md` 是上线后的可选反馈清单。需要时逐项执行；设备反馈不阻塞其他平台使用已发布的 `current`。
 
 失败停止点：任一关键网络、DNS 或局域网测试失败时，立即选择旧 Profile；不要删除新 Profile，不要同时修改多个参数。
 

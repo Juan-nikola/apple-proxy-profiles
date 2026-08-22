@@ -227,7 +227,7 @@ node --input-type=module -e 'import { compileRules } from "./clients/sing-box/sc
 1. 只在 Sub-Store 新建来源，再把来源加入 `apple-proxy-all`。
 2. 单独预览新增来源，由用户更新受影响 client collection 的筛选并逐个 preview。
 3. 依次刷新节点输出和平台输出。
-4. 一台设备 canary 通过后再推广，不修改仓库文件。
+4. 设备 canary 只作为上线后的可选反馈，不作为推广门槛；发布前以自动化验证和审计为准。
 
 ### 7.2 增加公开规则
 
@@ -292,7 +292,7 @@ curl -L --fail --silent --show-error --head https://juan-nikola.github.io/apple-
 
 sing-box 的 iPhone、iPad、Android 统一引用 `mobile-rule-sets`，macOS 引用完整业务规则目录。移动平台不能使用 `adblockMode=full`；生成器会直接拒绝该组合，而不是静默丢弃广告规则。HTTPDNS、硬编码 IP、IPv6、QUIC 和手动服务组选择仍是残余风险。修改分流后，用 `npm run explain:route -- --channel current --domain <域名>` 离线核对预期结果；该命令只读取本地已发布规则，不执行 DNS，也不修改任何文件。
 
-## 9. 真机 canary 顺序
+## 9. 上线后可选设备反馈
 
 - Egern：Intel Mac → iPhone → iPad。
 - Shadowrocket：Intel Mac → iPhone → iPad。
@@ -300,4 +300,4 @@ sing-box 的 iPhone、iPad、Android 统一引用 `mobile-rule-sets`，macOS 引
 - sing-box：Mac → Android → iPhone → iPad；OpenWrt 后续单独设计。
 - Anywhere：iPhone → iPad；节点、规则导入和本地绑定分别验证。
 
-每台设备保留旧配置并实际做一次回滚演练。自动测试通过不代表 App Store、TestFlight 或 Android 真机行为已经通过。
+以上顺序只用于上线后的实践反馈和故障定位，不阻塞发布，也不要求所有设备都完成。每台设备仍建议保留旧配置以便快速回滚；发布门禁以自动化测试、规则预算、manifest 闭合和审计为准。

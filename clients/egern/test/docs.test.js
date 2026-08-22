@@ -237,7 +237,7 @@ test("imports are private, percent-encoded, structure-only, and do not require M
   assert.match(text, /egernapp\.com\/zh-CN\/docs\/(?:configuration\/(?:url_rewrites|http_captures)|url-scheme)/u);
 });
 
-test("canary is an exact one-device-at-a-time Intel Mac to iPhone to iPad gate", async () => {
+test("canary is an optional one-device-at-a-time Intel Mac to iPhone to iPad feedback sequence", async () => {
   const { canary } = await loadDocs();
   ordered(canary, ["Intel Mac", "iPhone", "iPad"], "canary order");
   assert.match(canary, /(?:一次只|每次只).{0,10}(?:一台|1 台)|不得同时.{0,20}(?:设备|更新)/u);
@@ -300,7 +300,7 @@ test("canary proves both IPv4-only and available IPv6 paths on every device", as
   }
 });
 
-test("every device performs a real old-Profile rollback drill before promotion", async () => {
+test("optional device feedback documents a real old-Profile rollback drill", async () => {
   const { canary } = await loadDocs();
   assert.match(canary, /每台设备.{0,30}(?:实际|真的).{0,20}回滚/u);
   ordered(canary, ["断开新 Profile", "选择旧 Profile", "启动旧 Profile"], "rollback actions");

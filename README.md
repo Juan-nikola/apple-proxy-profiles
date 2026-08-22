@@ -126,7 +126,7 @@ npm run configure:substore
 
 成功标志：终端显示 `Wrote private Sub-Store config`，且文件权限为 `0600`；文件中有 8 个 collection、28 个任务。切换灰度或回滚时，把 `SUBSTORE_CHANNEL` 改成 `edge` 或 `previous` 后重新运行即可。真实地址不要复制进 README、Issue 或聊天。
 
-这个命令会离线校验公开 JS URL 的 `#` 参数，但不会替你登录 Sub-Store 管理后台或自动删除旧任务；首次迁移仍按下面的 preview、canary 和回滚步骤执行。HAPP 任务固定使用 `/current/happ/`，片段中不再填写 `channel`；`SUBSTORE_CHANNEL` 只控制其他客户端和维护者的内部发布流程。
+这个命令会离线校验公开 JS URL 的 `#` 参数，但不会替你登录 Sub-Store 管理后台或自动删除旧任务；首次迁移仍按下面的 preview、上线后可选反馈和回滚步骤执行。HAPP 任务固定使用 `/current/happ/`，片段中不再填写 `channel`；`SUBSTORE_CHANNEL` 只控制其他客户端和维护者的内部发布流程。
 
 ### 1.2 创建一个总池和七个客户端 collection
 
@@ -156,7 +156,7 @@ npm run configure:substore
 
 失败怎么办：某一个 collection 为空时，只检查它的来源和筛选条件；不要同时改其他客户端。
 
-回滚方式：旧 collection、旧任务和旧输出 URL 继续保留，直到新客户端完成真机验证。
+回滚方式：旧 collection、旧任务和旧输出 URL 继续保留，直到新客户端运行稳定；生产回滚使用 `previous` 或不可变版本快照。
 
 完整的筛选边界和迁移顺序见 [Sub-Store 客户端节点池指南](docs/substore-client-pools.md)。
 
@@ -331,21 +331,21 @@ Anywhere 分为三层，缺一层都不会完整生效：
 
 ### 2.6 HAPP
 
-HAPP 的公开安装页只提供无凭据的 GeoData 和脚本；节点与配置仍从 Sub-Store 的私密任务导入。生产版本请打开 [HAPP 安装页](https://juan-nikola.github.io/apple-proxy-profiles/current/happ/index.html)，安装 `geoip.dat` 和 `geosite.dat`，再按设备导入对应的 `happ-macos`、`happ-iphone`、`happ-ipad`、`happ-android`、`happ-windows` 或 `happ-linux` 私密输出。用户始终使用 `current`；`edge` 仅保留给维护者灰度候选。
+HAPP 的公开安装页只提供无凭据的 GeoData 和脚本；节点与配置仍从 Sub-Store 的私密任务导入。生产版本请打开 [HAPP 安装页](https://juan-nikola.github.io/apple-proxy-profiles/current/happ/index.html)，安装 `geoip.dat` 和 `geosite.dat`，再按设备导入对应的 `happ-macos`、`happ-iphone`、`happ-ipad`、`happ-android`、`happ-windows` 或 `happ-linux` 私密输出。用户始终使用 `current`；`edge` 仅保留给维护者预览，设备反馈不阻塞 promotion。
 
 成功标志：GeoData 与配置使用同一 `current` 频道；配置数组非空；DNS、国内外业务、固定节点和局域网测试正常；`happ-routing-audit` 的兼容数和排除原因可解释。六个平台统一使用标准 Xray GeoData 标签和响应 Profile。JSON 配置由 Xray JSON 自己负责 DNS、路由和固定节点，HAPP 路由开关锁定是正常行为。HAPP JSON 订阅必须直接从私密 File 导入，生成器会在 macOS、iPhone、iPad、Android、Windows、Linux 六个平台的真实 HTTP 响应中附带 `routing: happ://routing/onadd/<base64>`，不能再把公共 Profile 手动复制绑定到 JSON 订阅。Sub-Store Preview 看不到响应头是正常的。如果 HAPP 提示‘超出隧道内存限制（50 MB）’或 `NEAgentErrorDomain`，先重新 Preview 对应任务，再删除旧订阅条目并重新导入新版 JSON，不能继续使用旧缓存。
 
 HAPP 没有客户端内的可视化业务组。业务节点通过私密任务的 `policyOverrides` 设置：`FOLLOW` 跟随首页节点，`DIRECT` 直连，`NODE:<完整节点名>` 固定节点。六个平台任务和 `happ-routing-audit` 必须复制同一个 Base64URL；固定节点名以 HAPP JSON 的 `remarks` 完整值为准。具体业务键和设置步骤见 [HAPP 部署文档](clients/happ/docs/deployment.md#业务组节点设置)。
 
-失败怎么办：先分别 preview 当前 `apple-proxy-happ`、对应平台任务和审计任务，确认不是节点协议或固定节点不兼容；未来变更先在 `edge` 灰度，不要把未经验证的候选直接替换生产任务。
+失败怎么办：先分别 preview 当前 `apple-proxy-happ`、对应平台任务和审计任务，确认不是节点协议或固定节点不兼容；未来变更先在 `edge` 做自动化预览，门禁通过后再推进 `current`。
 
 回滚方式：在 HAPP 中切回旧配置，并恢复旧 GeoData；保留新任务用于排查。
 
-详细步骤见 [HAPP 部署指南](clients/happ/docs/deployment.md) 和 [HAPP 六平台灰度清单](clients/happ/docs/canary.md)。
+详细步骤见 [HAPP 部署指南](clients/happ/docs/deployment.md) 和 [HAPP 上线后可选反馈清单](clients/happ/docs/canary.md)。
 
 ### 2.7 OneXray
 
-先在 OneXray 中导入 `onexray-nodes` 私密节点订阅，再导入 `onexray-profile` 私密 Profile。Profile 使用 `apple-proxy-policy` 的私密策略覆盖；`onexray-routing-audit` 只输出脱敏计数、目标解析和链状态。公开 [OneXray 安装页](https://juan-nikola.github.io/apple-proxy-profiles/current/onexray/index.html) 只用于安装无凭据 GeoData；`edge` 仅保留给未来变更灰度。
+先在 OneXray 中导入 `onexray-nodes` 私密节点订阅，再导入 `onexray-profile` 私密 Profile。Profile 使用 `apple-proxy-policy` 的私密策略覆盖；`onexray-routing-audit` 只输出脱敏计数、目标解析和链状态。公开 [OneXray 安装页](https://juan-nikola.github.io/apple-proxy-profiles/current/onexray/index.html) 只用于安装无凭据 GeoData；`edge` 仅保留给维护者预览，设备反馈不阻塞 `current`。
 
 成功标志：节点订阅非空；Profile 通过 OneXray 校验；业务组、DNS、国内外业务和回滚测试正常；节点任务、Profile 和审计都使用同一频道与 collection。
 
@@ -353,7 +353,7 @@ HAPP 没有客户端内的可视化业务组。业务节点通过私密任务的
 
 回滚方式：切回旧 OneXray Profile 和节点订阅；公开规则或 GeoData 问题使用 `previous`，不要同时删除 Sub-Store 任务。
 
-详细步骤见 [OneXray 部署指南](clients/onexray/docs/deployment.md) 和 [OneXray 六平台灰度清单](clients/onexray/docs/canary.md)。
+详细步骤见 [OneXray 部署指南](clients/onexray/docs/deployment.md) 和 [OneXray 上线后可选反馈清单](clients/onexray/docs/canary.md)。
 
 ---
 
@@ -363,7 +363,7 @@ HAPP 没有客户端内的可视化业务组。业务节点通过私密任务的
 | --- | --- | --- | --- |
 | 增加或删除节点 | Sub-Store 总池和受影响的 client collection | preview 数量、协议符合预期 | 恢复旧筛选或旧 collection |
 | 修改 DNS、IPv6 等参数 | 单个 File 任务 | 预览结构正确，单台设备测试通过 | 恢复原参数或旧 Profile |
-| 更新公开规则 | `edge` 候选和规则工作流 | 自动测试通过，canary 命中正确 | 不推进 `current` 或使用 `previous` |
+| 更新公开规则 | `edge` 候选和规则工作流 | 自动测试、规则预算、manifest 闭合和审计通过 | 保持 `current` 或使用 `previous` |
 | 修改生成器源码 | 对应 `clients/<client>/src/` 和测试 | build、fixtures、test、verify 通过 | 回退提交或切回旧发布通道 |
 | 发布 Pages | GitHub Actions | 工作流成功，公开 URL 可下载 | 保持旧 `current` 或回退提交 |
 
@@ -403,7 +403,7 @@ npm test
 npm run verify
 ```
 
-定时工作流只构建 `edge`，不会自动替换生产 `current`。canary 通过后，在 GitHub Actions 的 **Update Rules** 工作流中填写要推进的客户端和经过测试的 64 位 client-manifest hash，才会把该客户端推进 `current`。
+定时工作流只构建 `edge`，不会自动替换生产 `current`。自动化验证、规则预算、ChinaIP 审计和 manifest 闭合全部通过后，在 GitHub Actions 的 **Update Rules** 工作流中填写要推进的客户端和已验证的 64 位 client-manifest hash，即可把该客户端推进 `current`。真机 canary 不再是发布门禁；如需收集设备侧实践反馈，可在上线后按客户端清单执行，不影响 promotion。
 
 失败怎么办：`edge` 验证失败就停止，不要手工编辑 `public/current/`。生产已经异常时临时使用 `previous` 或 Manifest 中的不可变 `versions/<manifestHash>/`。
 
@@ -549,7 +549,7 @@ Shadowrocket 和 Surge 首先检查 `subscriptionName`；Egern 和 Surge 再检�
 | `docs/substore-client-pools.md` | 七个 active 客户端 collection 的筛选、迁移和回滚 |
 | `docs/substore-two-layer-setup.md` | 28 个 active/private File 的完整 URL、频道、审计和回滚参数 |
 | `docs/maintenance.md` | 开发者维护、规则编译、发布与回滚 |
-| `docs/implementation-status.md` | 当前已完成和仍需真机执行的事项 |
+| `docs/implementation-status.md` | 当前自动化发布状态和可选设备反馈事项 |
 | `clients/<client>/docs/` | 每个客户端的部署、灰度和排障细节 |
 | `shared/rules/semantic-intents.js` | 统一业务语义中间层 |
 | `automation/src/source-catalog.js` | 固定公开规则来源 |
@@ -559,13 +559,13 @@ Shadowrocket 和 Surge 首先检查 `subscriptionName`；Egern 和 Surge 再检�
 
 客户端详细文档：
 
-- Shadowrocket：[部署](clients/shadowrocket/docs/deployment.md) · [灰度](clients/shadowrocket/docs/canary-checklist.md) · [维护](clients/shadowrocket/docs/maintenance.md) · [排障](clients/shadowrocket/docs/troubleshooting.md)
-- Surge：[部署](clients/surge/docs/deployment.md) · [灰度](clients/surge/docs/canary.md) · [排障](clients/surge/docs/troubleshooting.md)
-- Egern：[部署](clients/egern/docs/deployment.md) · [灰度](clients/egern/docs/canary.md) · [排障](clients/egern/docs/troubleshooting.md)
-- Anywhere：[部署](clients/anywhere/docs/deployment.md) · [灰度](clients/anywhere/docs/canary.md) · [排障](clients/anywhere/docs/troubleshooting.md)
-- sing-box：[部署](clients/sing-box/docs/deployment.md) · [灰度](clients/sing-box/docs/canary.md) · [排障](clients/sing-box/docs/troubleshooting.md)
-- HAPP：[部署](clients/happ/docs/deployment.md) · [灰度](clients/happ/docs/canary.md) · [排障](clients/happ/docs/troubleshooting.md)
-- OneXray：[部署](clients/onexray/docs/deployment.md) · [灰度](clients/onexray/docs/canary.md) · [排障](clients/onexray/docs/troubleshooting.md)
+- Shadowrocket：[部署](clients/shadowrocket/docs/deployment.md) · [上线后反馈](clients/shadowrocket/docs/canary-checklist.md) · [维护](clients/shadowrocket/docs/maintenance.md) · [排障](clients/shadowrocket/docs/troubleshooting.md)
+- Surge：[部署](clients/surge/docs/deployment.md) · [上线后反馈](clients/surge/docs/canary.md) · [排障](clients/surge/docs/troubleshooting.md)
+- Egern：[部署](clients/egern/docs/deployment.md) · [上线后反馈](clients/egern/docs/canary.md) · [排障](clients/egern/docs/troubleshooting.md)
+- Anywhere：[部署](clients/anywhere/docs/deployment.md) · [上线后反馈](clients/anywhere/docs/canary.md) · [排障](clients/anywhere/docs/troubleshooting.md)
+- sing-box：[部署](clients/sing-box/docs/deployment.md) · [上线后反馈](clients/sing-box/docs/canary.md) · [排障](clients/sing-box/docs/troubleshooting.md)
+- HAPP：[部署](clients/happ/docs/deployment.md) · [上线后反馈](clients/happ/docs/canary.md) · [排障](clients/happ/docs/troubleshooting.md)
+- OneXray：[部署](clients/onexray/docs/deployment.md) · [上线后反馈](clients/onexray/docs/canary.md) · [排障](clients/onexray/docs/troubleshooting.md)
 
 ## 许可
 

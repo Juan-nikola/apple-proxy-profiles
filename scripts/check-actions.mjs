@@ -159,10 +159,9 @@ export function validateWorkflowText(file, text) {
     }
     if (!/^\s*client:\s*$/mu.test(text)
       || !/^\s*manifest_hash:\s*$/mu.test(text)
-      || !/^\s*environment:\s*canary-approval\s*$/mu.test(text)
       || !/github\.event_name == 'workflow_dispatch'.*inputs\.client.*inputs\.manifest_hash/su.test(text)
       || !/node scripts\/update-rules\.mjs --promote "\$PROMOTION_CLIENT" "\$PROMOTION_MANIFEST_HASH"/u.test(text)) {
-      errors.push(`${file}: current promotion must require canary approval and exact client manifest inputs`);
+      errors.push(`${file}: current promotion must require automated verification and exact client manifest inputs`);
     }
     const edgeJobStart = text.indexOf("  build-edge:");
     const nextJobStart = text.indexOf("\n  promote-current:", edgeJobStart);

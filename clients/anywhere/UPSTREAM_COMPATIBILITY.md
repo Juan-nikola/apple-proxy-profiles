@@ -31,7 +31,8 @@ MITM, HTTPS decryption, a CA certificate, scripts, rewrites, or captures.
 The pinned machine-readable facts live in
 [`src/upstream-contract.js`](src/upstream-contract.js). Update that contract
 only after auditing a newer official commit and rerunning the compatibility,
-determinism, privacy, and physical-device canary gates.
+determinism, privacy, and automated publication gates. Physical-device canary
+is optional post-release feedback and does not block publication.
 
 ## Generated subscription contract
 

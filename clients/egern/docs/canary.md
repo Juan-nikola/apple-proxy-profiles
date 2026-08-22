@@ -1,8 +1,8 @@
-# Egern 灰度与回滚指南
+# Egern 上线后可选反馈与回滚指南
 
-发布顺序固定为：1. Intel Mac；2. iPhone；3. iPad。一次只验证一台设备，不得同时更新。任一检查失败就停止，后续设备保持原样。
+自动化测试、规则预算、manifest 闭合和审计通过后即可使用 `current`。本页是上线后的可选设备反馈清单；如需执行，建议按 Intel Mac、iPhone、iPad 顺序一次只观察一台，不得同时更新，任一检查失败就回滚受影响设备并停止继续反馈。
 
-## 每台设备开始前的共同门槛
+## 设备反馈前的共同检查
 
 1. 保留旧 Profile，不要覆盖或删除；给新 Profile 使用明显不同的名称。
 2. 记录当前选中的策略和节点，以及测试时间、网络和 Egern 版本。
@@ -36,40 +36,40 @@
 
 - macOS 默认是 `ipv4-only`；iPhone 默认是 `auto`；iPad 默认也是 `auto`。这些默认值不是测试结果，也不能代替通过证据。
 - 每台适用设备都必须分别验证 `ipv4-only` 路径和可用 IPv6 路径。前者使用该平台的 `ipv4-only` 变体，在 IPv4 可用网络上重做 DNS、国内直连和境外代理检查；后者使用该平台的 `auto` 变体，只在系统与运营商均确认提供 IPv6 的网络上重做相同检查，并记录实际观察到的 IPv6 地址族或连接。
-- 如果 ISP/运营商或当前网络没有 IPv6，记录为“未覆盖/不可验证”；未覆盖/不可验证不得算作通过，本设备不能晋级。不得仅凭 `auto`、网站能打开或默认值就假设存在 IPv6。
+- 如果 ISP/运营商或当前网络没有 IPv6，记录为“未覆盖/不可验证”；在设备反馈表中未覆盖/不可验证不得算作通过，但这不影响客户端 `current` promotion。不得仅凭 `auto`、网站能打开或默认值就假设存在 IPv6。
 - QUIC 只按可观察结果验证：依次比较 `allow`、`proxy-block`、`all-block`，记录连接成功、回退或阻止。HTTP/3 不保证一定被目标站点使用，因此不得仅凭页面能打开就假设命中 HTTP/3。
 - 默认保持 `clientChain=off`。若以后改为 on，必须同时存在合法、兼容的入口与落地节点；生成的落地 clone 的 `prev_hop` 必须精确指向 `🔗 入口节点`。任何缺失或反向引用都应停止生成。
 
-## 每台设备必做的真实回滚演练
+## 设备反馈时的回滚演练
 
-每台设备都必须实际执行回滚，不接受只阅读步骤或仅确认“旧配置还在”：
+如需设备反馈，每台设备都建议实际执行回滚，不要只阅读步骤或仅确认“旧配置还在”：
 
 1. 断开新 Profile。
 2. 选择旧 Profile。
 3. 启动旧 Profile。
 4. 用旧 Profile 检查一个中国站点是否直连/DIRECT，再检查一个境外站点是否正常代理或进入 `🚀 节点选择`。
-5. 只有回滚成功后才可返回新 Profile 并继续本机验证；若回滚失败，保留现场并停止发布。
+5. 回滚成功后才返回新 Profile 继续本机反馈；若回滚失败，保留现场并停止继续反馈。
 
-## 1. Intel Mac
+## 1. Intel Mac（可选）
 
-先在 Intel Mac 导入 macOS 私密 Profile。明确验证 `ipv4-only` 基线，再用 `auto` 变体在已确认具备可用 IPv6 的网络上验证真实 IPv6 路径；两项都要重做 DNS、国内直连和境外代理检查。完成共同门槛、全部功能检查与真实回滚演练，至少经过一次规则刷新和一次节点刷新观察窗口。确认没有 DNS 泄漏迹象、异常循环或意外直连后，记录通过结果。
+如需反馈，先在 Intel Mac 导入 macOS 私密 Profile。明确验证 `ipv4-only` 基线，再用 `auto` 变体在已确认具备可用 IPv6 的网络上观察真实 IPv6 路径；两项都可重做 DNS、国内直连和境外代理检查。完成检查与可选回滚演练后，记录观察结果。
 
-Intel Mac 出现任一不一致时，立即回滚，并停止 iPhone、iPad 和全部后续设备；它们保持原样。
+Intel Mac 出现任一不一致时，立即回滚并停止继续设备反馈；后续设备保持原样，不影响已发布的 `current`。
 
-## 2. iPhone
+## 2. iPhone（可选）
 
-只有 Intel Mac 全部通过后，才在 iPhone 导入手机 Profile。重复完整检查，不得复用 Mac 的结论。为 iPhone 单独验证 `ipv4-only` 变体，并在 Wi-Fi 或蜂窝网络确认具备可用 IPv6 后验证 `auto` 的真实 IPv6 路径；两种网络能测试时都要记录。最后实际完成旧 Profile 回滚演练。
+如需继续反馈，可在 Intel Mac 观察后于 iPhone 导入手机 Profile；重复完整检查，不复用 Mac 的结论。为 iPhone 单独验证 `ipv4-only` 变体，并在 Wi-Fi 或蜂窝网络确认具备可用 IPv6 后观察 `auto` 的真实 IPv6 路径；两种网络能测试时都记录。需要时完成旧 Profile 回滚演练。
 
-iPhone 出现任一不一致时，立即回滚，并停止 iPad 与后续设备；Intel Mac 的已验证状态不要顺手改动。
+iPhone 出现任一不一致时，立即回滚并停止继续设备反馈；不要顺手修改其他设备配置。
 
-## 3. iPad
+## 3. iPad（可选）
 
-只有前两台都通过后，才在 iPad 导入平板 Profile。再次独立完成全部检查：先验证 `ipv4-only` 变体，再在确认具备可用 IPv6 的网络上验证 `auto` 的真实 IPv6 路径；同时完成 Wi-Fi/蜂窝（若设备支持）测试和真实回滚演练。iPad 通过后，三设备灰度才完成。
+如需继续反馈，可在前两台观察后于 iPad 导入平板 Profile，再次独立完成全部检查：先验证 `ipv4-only` 变体，再在确认具备可用 IPv6 的网络上观察 `auto` 的真实 IPv6 路径；同时记录 Wi-Fi/蜂窝（若设备支持）测试和需要时的回滚演练。设备反馈完成与否不影响 `current`。
 
 ## 立即停止的条件
 
-出现以下任何一项都立即回滚：`accepted` 为 0、`renderFailures` 显示全部已选协议被跳过、必需策略组为空、引用悬空、私密节点或公开规则无法独立下载、国内流量意外代理、境外流量意外直连、DNS 持续失败、IPv4-only 或可用 IPv6 路径未验证、旧 Profile 无法恢复。不要为了继续发布而关闭证书验证/TLS 验证、启用 MITM、删除旧 Profile，或绕过 fail-closed 校验。
+出现以下任何一项都立即回滚设备并停止继续反馈：`accepted` 为 0、`renderFailures` 显示全部已选协议被跳过、必需策略组为空、引用悬空、私密节点或公开规则无法独立下载、国内流量意外代理、境外流量意外直连、DNS 持续失败、IPv4-only 或可用 IPv6 路径未覆盖、旧 Profile 无法恢复。不要为了继续使用而关闭证书验证/TLS 验证、启用 MITM、删除旧 Profile，或绕过 fail-closed 校验。
 
 ## 分流顺序、残余风险与离线解释
 
-共享分流顺序固定为：`DomesticCore` → 服务规则 → `OverseasGame` → `ChinaTLD` → `ChinaIP` → FINAL。稳定 DNS 优先国内解析；普通 `.cn` 域名应命中 `ChinaTLD`/DIRECT，未知国内 IPv4/IPv6 应命中 `GEOIP CN` 直连，未知境外与 DNS 失败走 `🚀 节点选择`。HTTPDNS、硬编码 IP、IPv6、QUIC 和手动服务组选择仍是残余风险。`npm run explain:route -- --channel current --domain <域名>` 只读取本地已发布规则、不执行 DNS，可用于离线核对预期分流。支持蜂窝的设备必须分别测试 Wi‑Fi 与蜂窝；保留旧 Profile，并实际完成一次回滚。
+共享分流顺序固定为：`DomesticCore` → 服务规则 → `OverseasGame` → `ChinaTLD` → `ChinaIP` → FINAL。稳定 DNS 优先国内解析；普通 `.cn` 域名应命中 `ChinaTLD`/DIRECT，未知国内 IPv4/IPv6 应命中 `GEOIP CN` 直连，未知境外与 DNS 失败走 `🚀 节点选择`。HTTPDNS、硬编码 IP、IPv6、QUIC 和手动服务组选择仍是残余风险。`npm run explain:route -- --channel current --domain <域名>` 只读取本地已发布规则、不执行 DNS，可用于离线核对预期分流。需要设备反馈时可分别测试 Wi‑Fi 与蜂窝并记录结果；建议保留旧 Profile 以便回滚。

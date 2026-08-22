@@ -2070,7 +2070,9 @@ var HappConfigBundle = (() => {
     if (!node || typeof node !== "object") throw new TypeError("Happ node must be an object");
     const type = String(node.type ?? "").toLowerCase();
     if (!SUPPORTED.has(type)) throw new Error(`Unsupported Happ protocol '${type}'`);
-    if (typeof tag !== "string" || !/^happ-[a-z0-9/_-]+$/u.test(tag)) throw new Error("Happ outbound tag must be opaque");
+    if (typeof tag !== "string" || tag.length > 256 || !/^happ-[^\u0000-\u001F\u007F-\u009F\u2028\u2029]+$/u.test(tag) || tag.trim() !== tag) {
+      throw new Error("Happ outbound tag is invalid");
+    }
     const output = type === "vless" ? renderVless(node) : type === "vmess" ? renderVmess(node) : type === "trojan" ? renderTrojan(node) : type === "ss" || type === "shadowsocks" ? renderShadowsocks(node) : type === "socks5" ? renderSocks(node) : renderHysteria2(node);
     return Object.freeze({ tag, ...output });
   }
@@ -2212,6 +2214,11 @@ var HappConfigBundle = (() => {
     dnsClass: entry.dnsClass
   })));
   var MOBILE_RULE_SOURCE_IDS = Object.freeze(MOBILE_RULE_BUNDLES.map(({ id }) => id));
+  var MOBILE_RULE_PLATFORMS = Object.freeze([
+    "iphone",
+    "ipad",
+    "android"
+  ]);
   var FULL_ADBLOCK_SOURCE_IDS = Object.freeze([
     "Advertising",
     "Advertising_Domain"
@@ -2690,6 +2697,33 @@ var HappConfigBundle = (() => {
     return mapping[sourceId] ?? "final";
   }
 
+  // src/tag-label.js
+  var CONTROL_CHARACTERS = /[\u0000-\u001F\u007F-\u009F\u2028\u2029]/gu;
+  var PATH_SEPARATORS = /[\\/]/gu;
+  var URL_FRAGMENT = /\b(?:https?|socks(?:4|5)?):\/\/[^\s]+/giu;
+  var IPV4_FRAGMENT = /\b(?:\d{1,3}\.){3}\d{1,3}\b/gu;
+  var UUID_FRAGMENT = /\b[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\b/giu;
+  var CREDENTIAL_FRAGMENT = /\b(?:password|passwd|token|secret|uuid|key)\s*[:=]\s*[^\s,;]+/giu;
+  var STABLE_ID = /^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$/u;
+  function trimCodePoints(value, limit) {
+    return [...value].slice(0, limit).join("");
+  }
+  function normalizeHappTagLabel(value, fallback = "node") {
+    const normalized = String(value ?? "").normalize("NFC").replace(URL_FRAGMENT, "").replace(UUID_FRAGMENT, "").replace(IPV4_FRAGMENT, "").replace(CREDENTIAL_FRAGMENT, "").replace(CONTROL_CHARACTERS, "").replace(PATH_SEPARATORS, "-").replace(/\s+/gu, " ").trim();
+    return trimCodePoints(normalized || fallback, 96);
+  }
+  function buildHappDisplayTag(namespace, nodeName, stableId, leaf) {
+    if (typeof namespace !== "string" || !/^happ-[a-z0-9-]+$/u.test(namespace)) {
+      throw new TypeError("Happ tag namespace is invalid");
+    }
+    if (typeof stableId !== "string" || !STABLE_ID.test(stableId)) {
+      throw new TypeError("Happ tag stable ID is invalid");
+    }
+    const label = normalizeHappTagLabel(nodeName);
+    const tag = `${namespace}/${label} [${stableId}]`;
+    return leaf === void 0 ? tag : `${tag}/${normalizeHappTagLabel(leaf, "route")}`;
+  }
+
   // src/render-routing.js
   function hash(value) {
     let h = 2166136261;
@@ -2719,8 +2753,10 @@ var HappConfigBundle = (() => {
       const node = fixed.node ?? nodes.find((candidate) => (candidate._profile?.id ?? "") === fixed.nodeId);
       if (!node) continue;
       const suffix = hash(fixed.nodeId);
-      const candidateTag = `happ-fixed/${suffix}/candidate`;
-      const balancerTag = `happ-fixed/${suffix}/balancer`;
+      const displayName = fixed.name ?? node.name;
+      const stableTagId = `${fixed.nodeId}-${suffix}`;
+      const candidateTag = buildHappDisplayTag("happ-fixed", displayName, stableTagId, "candidate");
+      const balancerTag = buildHappDisplayTag("happ-fixed", displayName, stableTagId, "balancer");
       fixedById.set(fixed.nodeId, { candidateTag, balancerTag });
       outbounds.push((context.renderNode ?? renderHappOutbound)(node, candidateTag));
       balancers.push({ tag: balancerTag, selector: [candidateTag], strategy: { type: "leastPing" }, fallbackTag: followTag });
@@ -2776,7 +2812,7 @@ var HappConfigBundle = (() => {
     const configs = [];
     for (const followNode of eligible) {
       const followId = idFor(followNode);
-      const followTag = `happ-follow/${followId}`;
+      const followTag = buildHappDisplayTag("happ-follow", followNode.name, followId);
       const route = renderHappRouting({
         nodes: eligible,
         policyResolution: resolution,

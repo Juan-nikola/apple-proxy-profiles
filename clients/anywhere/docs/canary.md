@@ -1,6 +1,6 @@
-# Anywhere 真机 Canary
+# Anywhere 上线后可选 Canary
 
-严格先 iPhone、后 iPad；前一台未通过时，后一台保持旧配置。每轮记录 stable/Beta/TestFlight、版本/build、Wi‑Fi/蜂窝和时间。
+本页是上线后的可选实践反馈清单，不是发布门禁。`current` 由自动化测试、规则预算、manifest 闭合和审计通过后发布；如需收集设备反馈，可按 iPhone、iPad 顺序记录 stable/Beta/TestFlight、版本/build、Wi‑Fi/蜂窝和时间。
 
 ## 节点门槛
 
@@ -24,9 +24,9 @@
 
 ## 分流顺序、残余风险与离线解释
 
-共享分流顺序固定为：`DomesticCore` → 服务规则 → `OverseasGame` → `ChinaTLD` → `ChinaIP` → FINAL。稳定 DNS 优先国内解析；普通 `.cn` 域名应命中 `ChinaTLD`/DIRECT，未知国内 IPv4/IPv6 应命中 `ChinaIP` 直连，未知境外与 DNS 失败走 `🚀 节点选择`。HTTPDNS、硬编码 IP、IPv6、QUIC 和手动服务组选择仍是残余风险。`npm run explain:route -- --channel current --domain <域名>` 只读取本地已发布规则、不执行 DNS，可用于离线核对预期分流；Anywhere 的本地 assignment 仍必须逐台人工核对。支持蜂窝的设备必须分别测试 Wi‑Fi 与蜂窝；保留旧配置，并实际完成一次回滚。
+共享分流顺序固定为：`DomesticCore` → 服务规则 → `OverseasGame` → `ChinaTLD` → `ChinaIP` → FINAL。稳定 DNS 优先国内解析；普通 `.cn` 域名应命中 `ChinaTLD`/DIRECT，未知国内 IPv4/IPv6 应命中 `ChinaIP` 直连，未知境外与 DNS 失败走 `🚀 节点选择`。HTTPDNS、硬编码 IP、IPv6、QUIC 和手动服务组选择仍是残余风险。`npm run explain:route -- --channel current --domain <域名>` 只读取本地已发布规则、不执行 DNS，可用于离线核对预期分流；Anywhere 的本地 assignment 可在需要时人工核对。支持蜂窝的设备可分别测试 Wi‑Fi 与蜂窝；保留旧配置便于回滚。
 
-## 每台设备必须做的真实回滚
+## 需要设备反馈时的真实回滚
 
 1. 停止新连接并选回旧节点或链。
 2. 恢复旧规则绑定，验证中国直连与境外代理。

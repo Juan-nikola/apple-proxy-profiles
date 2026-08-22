@@ -40,17 +40,24 @@ async function treeRecords(directory) {
 }
 
 async function fixtureTree() {
-  const artifacts = buildClientArtifacts({
+  const currentArtifacts = buildClientArtifacts({
     snapshot: lightweightFixtureSnapshots(),
+    channel: "current",
     additionalFiles: new Map([
       ["onexray/scripts/onexray-node-generator.js", "native onexray generator\n"],
       ["happ/scripts/happ-config-generator.js", "native happ generator\n"],
     ]),
   });
   const root = await mkdtemp(join(tmpdir(), "apple-proxy-refresh-"));
-  await writeFiles(join(root, "current"), artifacts.defaults);
-  await writeFiles(join(root, "edge"), artifacts.defaults);
-  return { root, defaults: artifacts.defaults };
+  await writeFiles(join(root, "current"), currentArtifacts.defaults);
+  const edgeDefaults = new Map([...currentArtifacts.defaults].map(([path, content]) => {
+    if (Buffer.isBuffer(content)) {
+      return [path, Buffer.from(content.toString("utf8").replaceAll("/current/", "/edge/"), "utf8")];
+    }
+    return [path, String(content).replaceAll("/current/", "/edge/")];
+  }));
+  await writeFiles(join(root, "edge"), edgeDefaults);
+  return { root, defaults: currentArtifacts.defaults };
 }
 
 test("refreshCurrentManifest repairs a stale current manifest from the actual tree", async () => {
@@ -127,6 +134,19 @@ test("refreshCurrentManifest refuses when current routing bytes diverge from edg
       () => refreshCurrentManifest({ publicDirectory: root, adoptEdgeMetadata: true }),
       /routing bytes|edge/iu,
     );
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test("refreshCurrentManifest accepts channel-rewritten Anywhere routing manifests", async () => {
+  const { root } = await fixtureTree();
+  try {
+    const path = join(root, "current/anywhere/rules/manifest.json");
+
+    const refreshed = await refreshCurrentManifest({ publicDirectory: root, adoptEdgeMetadata: true });
+    assert.equal(typeof refreshed.manifestHash, "string");
+    assert.match(await readFile(path, "utf8"), /\/current\/anywhere\/rules\//u);
   } finally {
     await rm(root, { recursive: true, force: true });
   }

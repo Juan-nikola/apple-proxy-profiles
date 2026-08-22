@@ -1,0 +1,60 @@
+{
+  "chinaIpAuditSha256": "c910e3febe83b66f9f47e433918e1e87dbb8354ee3f370c6d2a4d2b20d459758",
+  "client": "onexray",
+  "files": [
+    {
+      "bytes": 181456,
+      "path": "onexray/geodata/geoip.dat",
+      "sha256": "56e8d38a3909b277b76d241146643db6a379145cd73f3fe99028a750c5614cd9"
+    },
+    {
+      "bytes": 74223,
+      "path": "onexray/geodata/geosite.dat",
+      "sha256": "4bed4f09fb433437409d6ffd3f8e061f14babca334c64278110320c011ad7eb9"
+    },
+    {
+      "bytes": 10703,
+      "path": "onexray/geodata/manifest.json",
+      "sha256": "19dc7a0389a2b3f32a1cdf6521ba504ce621531d8d25580ceff76e42ae7c920a"
+    },
+    {
+      "bytes": 4034,
+      "path": "onexray/index.html",
+      "sha256": "60c1c9a233da7bdf381cb70e6dacdaee1185d55a028de65d2d6b32b19afbe478"
+    },
+    {
+      "bytes": 126011,
+      "path": "onexray/scripts/onexray-node-generator.js",
+      "sha256": "b7c799ab5d79290459ce35fac6cbff84cb244ed9dfade9560d65ced56d53067b"
+    },
+    {
+      "bytes": 129292,
+      "path": "onexray/scripts/onexray-profile-generator.js",
+      "sha256": "4bed13dfa6fa590aea5c1e4d828462215e5e5156789bb2b6f412af27f6cbd757"
+    },
+    {
+      "bytes": 120439,
+      "path": "onexray/scripts/onexray-routing-audit.js",
+      "sha256": "635a355f4d8ace71bd9af0b686fdacc508bc82276bdfd1636538d2b112776130"
+    },
+    {
+      "bytes": 126011,
+      "path": "onexray/scripts/substore-node-generator.js",
+      "sha256": "b7c799ab5d79290459ce35fac6cbff84cb244ed9dfade9560d65ced56d53067b"
+    },
+    {
+      "bytes": 129292,
+      "path": "onexray/scripts/substore-profile-generator.js",
+      "sha256": "4bed13dfa6fa590aea5c1e4d828462215e5e5156789bb2b6f412af27f6cbd757"
+    },
+    {
+      "bytes": 120439,
+      "path": "onexray/scripts/substore-routing-audit.js",
+      "sha256": "635a355f4d8ace71bd9af0b686fdacc508bc82276bdfd1636538d2b112776130"
+    }
+  ],
+  "generatedAt": "2026-08-21T18:35:15Z",
+  "manifestHash": "d8cce4979591a0888ea29187182aae5ac69be9332281c7c3e49c2377da8e0c63",
+  "optionalPacks": {},
+  "schemaVersion": 1
+}

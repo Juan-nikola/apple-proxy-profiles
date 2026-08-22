@@ -11,12 +11,12 @@ Sub-Store 当前的七个 active 客户端 collection 边界、迁移和回滚�
 | Surge | 已完成 | macOS/iPhone/iPad Profile 和 Sub-Store 远程入口 | workspace 测试、构建、示例校验 |
 | sing-box | 已完成 | macOS/iPhone/iPad/Android JSON、testing 最新 release edge、DNS response matching、ChinaIP rule-set、Egern 风格策略组；OpenWrt 暂缓 | workspace 测试、官方 core `format/check`、`.srs` 失败关闭测试 |
 | Sub-Store 客户端文档 | 已完成 | `apple-proxy-all`、7 个 client collection、公开 JS、28 个任务、维护/编译/回滚指南 | 文档测试、秘密扫描 |
-| GitHub Pages 公开发布 | 已完成 | 七个 active 客户端均已进入 `current/`；HAPP/OneXray 的无凭据 GeoData、安装页和私密 renderer 已纳入稳定发布，`edge/` 保留为未来灰度候选 | Actions 检查、current/previous 闭包与秘密扫描 |
+| GitHub Pages 公开发布 | 已完成 | 七个 active 客户端均已进入 `current/`；HAPP/OneXray 的无凭据 GeoData、安装页和私密 renderer 已纳入稳定发布，`edge/` 保留给维护者预览 | Actions 检查、current/previous 闭包与秘密扫描 |
 | 共享分流顺序与离线解释 | 已完成 | `DomesticCore` → 服务规则 → `OverseasGame` → `ChinaTLD` → `ChinaIP` → FINAL；`explain:route` 只读本地已发布规则、不执行 DNS | `npm run explain:route`、跨客户端回归与文档测试 |
 | 独立业务组 | 已完成 | 恢复 16 个独立业务组；Netflix、Disney+、Spotify、国际媒体、Telegram、TikTok，以及 B 站、抖音、小红书、微博重新使用独立策略目标；sing-box 主组继续使用洲级两级结构 | 全客户端测试、fixtures 与 edge/current 发布验证 |
 | 私密 Sub-Store 任务 | 已配置 | 8 个 collection、28 个任务已写入 Sub-Store；七个客户端、policy、HAPP/OneXray 审计任务统一使用 `current`，旧入口保留作兼容/回滚 | canonical 配置校验、任务 URL 检查、公开脚本验证 |
 | HAPP / OneXray 任务契约 | active | HAPP 六平台 JSON/审计任务与 OneXray 节点/Profile/审计任务仍是私密任务；公开层只提供无凭据 GeoData、manifest、安装页和脚本 | workspace 测试、GeoData round-trip、发布闭包、秘密扫描 |
 | 公开审计与 blocker Issue | 已完成 | `audit/dashboard.json` 脱敏公开；edge blocker 使用 `audit-blocker` marker 同步，恢复后关闭 | dashboard/schema 测试、fake GitHub API 生命周期测试 |
-| 真机 canary | 待执行 | HAPP 六个平台尚无可核验的真实设备导入、联网、DNS、规则、网络切换和回滚证据；新的可读标签只在 `edge` 候选，`current` 仍为旧稳定版本 | 自动测试不能替代设备验收；完成后才可用精确 edge manifest hash 推进 `current` |
+| 上线后设备反馈 | 可选 | HAPP 六个平台的导入、联网、DNS、规则、网络切换和回滚清单用于实践反馈与排障；没有设备证据也不阻塞 `current` | 自动测试、规则预算、manifest 闭合、ChinaIP/v2fly 审计和秘密扫描 |
 
-真实 Sub-Store API、节点 URL、凭据和生成后的私密输出 URL 不在本仓库保存。没有用户设备验收证据时，本项目不能描述为“已完成真机验证”。
+真实 Sub-Store API、节点 URL、凭据和生成后的私密输出 URL 不在本仓库保存。没有设备反馈时，只能说明自动化发布门禁已通过，不能描述为“已完成真机验证”。

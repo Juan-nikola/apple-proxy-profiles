@@ -1,6 +1,6 @@
-# sing-box 灰度与 testing 跟踪
+# sing-box 上线后可选反馈与 testing 跟踪
 
-`edge` 跟踪官方 sing-box testing 最新 release，`current` 保留可回滚快照。建议先在 macOS 预览和导入，再测试 Android、iPhone、iPad；不要把 testing 配置一次导入所有设备。
+自动化测试、规则预算、manifest 闭合和审计通过后即可使用 `current`。`edge` 跟踪官方 sing-box testing 最新 release，仅供维护者预览；设备检查是上线后的可选反馈，不阻塞 promotion。需要反馈时建议先在 macOS 观察，再测试 Android、iPhone、iPad；不要把 testing 配置一次导入所有设备。
 
 ## 路由顺序
 

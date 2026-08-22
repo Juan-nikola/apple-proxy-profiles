@@ -93,7 +93,7 @@ Egern 新任务只读取 `apple-proxy-egern`。先按 [Sub-Store 客户端节点
 
 节点挂载 URL 每 `21600` 秒（6 小时）刷新；公开规则 URL 每 `86400` 秒（24 小时）刷新。它们分别更新，节点失败不等于规则失败。默认省略 `auto_update` 是因为没有可安全写入生成器的私密 Profile 自更新 URL；修改参数后，请重新运行或刷新对应的 Sub-Store Profile File 任务，然后在 Egern 手动更新 Profile。
 
-规范 `/current/` Pages URL 保持不变。脚本版本升级时四个 File 继续直接引用原 URL，任务名、File 参数和私密输出 URL均不修改；发布后逐个重新预览并按 canary 顺序验证。
+规范 `/current/` Pages URL 保持不变。脚本版本升级时四个 File 继续直接引用原 URL，任务名、File 参数和私密输出 URL均不修改；发布后逐个重新预览即可，canary 清单只用于上线后的可选设备反馈。
 
 ## 导入 Egern
 

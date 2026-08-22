@@ -14,7 +14,10 @@ import { basename, dirname, join } from "node:path";
 
 import { artifactBuffer, artifactSha256 } from "./artifact-content.js";
 import { validateChinaIpAuditForPromotion } from "./china-ip-audit.js";
-import { validatePublicAuditDashboard } from "./public-audit-dashboard.js";
+import {
+  renderPublicAuditDashboard,
+  validatePublicAuditDashboard,
+} from "./public-audit-dashboard.js";
 import {
   canRefreshChannel,
   refreshChannelManifest,
@@ -55,6 +58,48 @@ async function exists(path) {
   } catch {
     return false;
   }
+}
+
+async function readPublishedClientHash(directory, client) {
+  const manifestPath = join(directory, publicDirectoryForClient(client), "client-manifest.json");
+  try {
+    const manifest = JSON.parse(await readFile(manifestPath, "utf8"));
+    if (!manifest || manifest.client !== client || !/^[0-9a-f]{64}$/u.test(manifest.manifestHash ?? "")) {
+      throw new Error(`Published ${client} client manifest is invalid`);
+    }
+    return manifest.manifestHash;
+  } catch (error) {
+    if (error?.code === "ENOENT") return null;
+    throw error;
+  }
+}
+
+export async function refreshPublishedAuditDashboard(channelDirectory) {
+  const dashboardPath = join(channelDirectory, "audit/dashboard.json");
+  if (!await exists(dashboardPath)) return false;
+  const dashboard = JSON.parse(await readFile(dashboardPath, "utf8"));
+  validatePublicAuditDashboard(dashboard);
+  const publicRoot = dirname(channelDirectory);
+  const clients = {};
+  for (const [client, previous] of Object.entries(dashboard.clients)) {
+    const channels = {};
+    for (const channel of FRONTIER_CHANNELS) {
+      channels[channel] = {
+        manifestHash: await readPublishedClientHash(join(publicRoot, channel), client),
+        closure: true,
+      };
+    }
+    clients[client] = { ...previous, ...channels };
+  }
+  const channels = Object.fromEntries(FRONTIER_CHANNELS.map((channel) => [channel, {
+    closure: true,
+    manifestCount: Object.values(clients).filter((client) => client[channel].manifestHash !== null).length,
+  }]));
+  const refreshed = { ...dashboard, channels, clients };
+  validatePublicAuditDashboard(refreshed);
+  await writeFile(dashboardPath, canonicalJson(refreshed), "utf8");
+  await writeFile(join(channelDirectory, "audit/dashboard.html"), renderPublicAuditDashboard(refreshed), "utf8");
+  return true;
 }
 
 function safeRelativePath(path) {
@@ -253,7 +298,7 @@ async function fileMatches(path, content) {
   }
 }
 
-async function snapshotCurrentVersion(directory) {
+export async function snapshotCurrentVersion(directory) {
   const manifestPath = join(directory, "current", "manifest.json");
   if (!await exists(manifestPath)) return null;
   const manifestBytes = await readFile(manifestPath);
@@ -321,7 +366,7 @@ async function versionRecords(versionsDirectory) {
   ));
 }
 
-async function enforceRetention(stagingDirectory, requiredVersion = null) {
+export async function enforceRetention(stagingDirectory, requiredVersion = null) {
   const versionsDirectory = join(stagingDirectory, "versions");
   let versions = await versionRecords(versionsDirectory);
   if (requiredVersion !== null) {
@@ -618,18 +663,6 @@ function validateAnywhereHostedUrls(files, channel) {
         throw new Error(`Anywhere hosted URL is not closed to ${channel}: ${path}`);
       }
     }
-  }
-}
-
-function validateCanaryEvidence(canary) {
-  if (!canary || typeof canary !== "object" || Array.isArray(canary)
-    || canary.passed !== true || typeof canary.device !== "string"
-    || canary.device.trim() === "") {
-    throw new Error("Canary evidence is required and must include device and passed=true");
-  }
-  const serialized = JSON.stringify(canary);
-  if (/(?:password|passwd|secret|token|uuid|private|public[-_ ]?key|subscription|profile|node)/iu.test(serialized)) {
-    throw new Error("Canary evidence contains a secret-shaped value");
   }
 }
 
@@ -994,6 +1027,7 @@ export async function sealPreviousRelease({ publicDirectory }) {
       }
     }
     if (await canRefreshChannel(join(staging, "previous"))) {
+      await refreshPublishedAuditDashboard(join(staging, "previous"));
       await refreshChannelManifest({ publicDirectory: staging, channel: "previous" });
     }
 
@@ -1075,7 +1109,6 @@ export async function promoteClientRelease({
   client,
   expectedHash = null,
   manifestHash,
-  canary = null,
   now = new Date(),
   cleanupBackupImpl = (path) => rm(path, { recursive: true, force: true }),
 }) {
@@ -1090,7 +1123,6 @@ export async function promoteClientRelease({
   if (!/^[0-9a-f]{64}$/u.test(targetHash)) {
     throw new TypeError("Client promotion target is invalid");
   }
-  validateCanaryEvidence(canary);
   const immutableSource = join(publicDirectory, "edge", "clients", client, targetHash);
   const clientManifest = JSON.parse(await readFile(join(immutableSource, "client-manifest.json"), "utf8"));
   if (clientManifest.manifestHash !== targetHash) throw new Error("Edge client manifest hash does not match promotion target");
@@ -1314,9 +1346,14 @@ export async function promoteClientRelease({
     };
     await writeFile(join(staging, "rollout.json"), `${JSON.stringify(nextRollout, null, 2)}\n`, "utf8");
     if (await canRefreshChannel(join(staging, "current"))) {
+      await refreshPublishedAuditDashboard(join(staging, "current"));
       const currentManifest = await refreshCurrentManifest({ publicDirectory: staging });
       await snapshotCurrentVersion(staging);
       await enforceRetention(staging, currentManifest.manifestHash);
+    }
+    if (await canRefreshChannel(join(staging, "previous"))) {
+      await refreshPublishedAuditDashboard(join(staging, "previous"));
+      await refreshChannelManifest({ publicDirectory: staging, channel: "previous" });
     }
 
     const currentFiles = await readArtifactTree(join(staging, "current"));

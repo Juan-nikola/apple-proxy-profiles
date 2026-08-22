@@ -51,7 +51,7 @@
       "referencedDefaultBytes": 0
     },
     "onexray": {
-      "manifestHash": "b9177098222f2d56a8bf4fbcee7b53551b06dca05c835133a529d101a65588b6",
+      "manifestHash": "950f8123742778a67a9e2a7d81933c3f8971f24ba45f60841e6b0b91f37fcbd1",
       "referencedDefaultBytes": 0
     },
     "shadowrocket": {
@@ -454,7 +454,7 @@
     {
       "bytes": 2025,
       "path": "onexray/client-manifest.json",
-      "sha256": "ea7edc920f0715a56b6e5ac0419a3b6bff76639fd0f1c64883e3922a6900826c"
+      "sha256": "aa78a71f3f7ad5f7669b37bcaa9a0920b58cd8a4281e1916812458b2cea69e7b"
     },
     {
       "bytes": 181456,
@@ -472,9 +472,9 @@
       "sha256": "19dc7a0389a2b3f32a1cdf6521ba504ce621531d8d25580ceff76e42ae7c920a"
     },
     {
-      "bytes": 4019,
+      "bytes": 4023,
       "path": "onexray/index.html",
-      "sha256": "4640306219ee6e12ce4467578315db5eff2e2f03aa453504212cfa6e10374728"
+      "sha256": "b11dd54fd6ef4cf77a26f456ee8d7523c28eb134f3d0866a4c8586d6a266088f"
     },
     {
       "bytes": 126008,
@@ -1198,7 +1198,7 @@
     }
   ],
   "generatedAt": "2026-08-21T18:35:15Z",
-  "manifestHash": "3caa3b742e2f2a560950f1c904de1cf2a1119aeae8e7c8373447dd1934dadf0b",
+  "manifestHash": "9c0660632486be9aa534fafb5d0fe7eac22a84aa11aff725f52c497bf7cadc99",
   "schemaVersion": 2,
   "upstream": {
     "branch": "master",

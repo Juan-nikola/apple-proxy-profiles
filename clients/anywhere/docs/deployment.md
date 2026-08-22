@@ -6,7 +6,7 @@ Anywhere 新任务只读取 `apple-proxy-anywhere`。先按 [Sub-Store 客户端
 
 ## 0. 先记录，不删除
 
-记录 App 版本/build、stable 或 Beta/TestFlight、当前节点/链、规则绑定、Rule/Global、五类 DNS、IPv6、UDP/QUIC 和 iCloud 状态。保留旧订阅与旧规则集。iCloud 不是完整配置备份，它不覆盖当前选择、规则绑定和大量 UserDefaults；灰度期间不要测试跨设备删除。
+记录 App 版本/build、stable 或 Beta/TestFlight、当前节点/链、规则绑定、Rule/Global、五类 DNS、IPv6、UDP/QUIC 和 iCloud 状态。保留旧订阅与旧规则集。iCloud 不是完整配置备份，它不覆盖当前选择、规则绑定和大量 UserDefaults；这些设备记录属于可选上线后反馈。
 
 ## 1. 创建私密节点任务
 
@@ -24,7 +24,7 @@ https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/scripts/anyw
 output=nodes&type=collection&name=apple-proxy-anywhere&clientChain=off
 ```
 
-旧版只有单行链接时使用 `JS_URL#output=nodes&type=collection&name=apple-proxy-anywhere&clientChain=off`，不能使用 `?` 连接脚本参数。以后更新 Anywhere Node Generator 不复制脚本正文；`anywhere-nodes` 的 JS URL、任务名、私密输出 URL和上述参数保持不动。发布后先重新预览，再在一台 canary 设备手动 Refresh。
+旧版只有单行链接时使用 `JS_URL#output=nodes&type=collection&name=apple-proxy-anywhere&clientChain=off`，不能使用 `?` 连接脚本参数。以后更新 Anywhere Node Generator 不复制脚本正文；`anywhere-nodes` 的 JS URL、任务名、私密输出 URL和上述参数保持不动。发布后先重新预览；需要设备反馈时再手动 Refresh。
 
 Anywhere 没有与 Shadowrocket/Egern 等价的完整 Profile File，不要创建 `anywhere-profile-generator.js`。这个 File 只完成私密节点层；规则、绑定和设备设置必须继续完成第 2—5 节。
 

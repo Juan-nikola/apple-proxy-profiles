@@ -1,14 +1,14 @@
-# Surge 灰度顺序
+# Surge 上线后可选 Canary
 
-建议按以下顺序做 canary：
+以下步骤是上线后的可选实践反馈，不是 `current` 发布门禁。`current` 由自动化测试、规则预算、manifest 闭合和审计通过后发布。需要设备反馈时，建议按以下顺序：
 
 1. 先在测试 Sub-Store 集合使用 `edge` 脚本，并显式设置 `channel=edge&adblockMode=off`。
 2. 先验证 Intel Mac，再验证 Apple Silicon Mac。
 3. 再验证一台 iPhone 和一台 iPad。
 4. 检查国内 App、国际站点、DNS、UDP、切换节点和断网恢复。
-5. 观察一个完整更新周期后，再把脚本 URL 和 `channel` 一起切换到 `current`。
+5. 观察一个完整更新周期；生产入口本身已经使用 `current`，无需等待设备反馈才能完成 promotion。
 
-只要出现配置解析失败、国内 App 变慢或规则下载失败，就回退到上一版 `current`，并保留失败时间、平台和生成参数用于排查。
+只要出现配置解析失败、国内 App 变慢或规则下载失败，就回退到上一版 `previous` 或不可变版本，并保留失败时间、平台和生成参数用于排查。
 
 ## 分流顺序、残余风险与离线解释
 

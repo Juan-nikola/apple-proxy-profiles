@@ -218,12 +218,12 @@ export function buildOneXrayGeoDataArtifacts({
 
 function modeNotice(channel) {
   if (channel === "edge") {
-    return "Edge 是仅供灰度验证的 canary 候选；不可直接作为 current，必须完成人工验证后再晋级。";
+    return "Edge 是仅供维护者预览的候选；真机 canary 属于上线后的可选反馈，不阻塞 current promotion。";
   }
   if (channel === "previous") {
     return "Previous 是回滚依赖，只应在 deliberate promotion 产生后与对应 Profile 一起使用。";
   }
-  return "Current 是稳定发布；Edge 只有在 deliberate promotion 后才能成为 current，Previous 才是独立的回滚依赖。";
+  return "Current 是自动化发布门禁通过后的生产版本；Edge 仅供维护者预览，Previous 是独立的回滚依赖。";
 }
 
 /** Renders a static, credential-free GeoData installation page. */

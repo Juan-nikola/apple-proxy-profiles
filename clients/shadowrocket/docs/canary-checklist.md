@@ -1,4 +1,6 @@
-# Intel Mac 灰度清单
+# Intel Mac 上线后可选反馈清单
+
+本页用于上线后的实践反馈与故障定位，不是 `current` 发布门禁。自动化测试、规则预算、manifest 闭合和审计通过后即可使用生产 `current`；如需设备反馈，再按清单记录并在异常时回滚。
 
 本清单验收 `apple-proxy-shadowrocket`；迁移顺序、preview 与旧 URL 回滚见 [Sub-Store 客户端节点池指南](../../../docs/substore-client-pools.md)。已有 `apple-proxy-sources` 入口继续保留。
 

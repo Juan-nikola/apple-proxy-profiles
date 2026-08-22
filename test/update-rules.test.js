@@ -26,7 +26,6 @@ const TEST_PROMOTION_NOW = "2026-08-10T01:00:00Z";
 function promoteClientRelease(options) {
   return promoteClientReleaseImpl({
     now: TEST_PROMOTION_NOW,
-    canary: { device: "fixture", passed: true },
     ...options,
   });
 }

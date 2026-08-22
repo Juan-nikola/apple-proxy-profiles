@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { access, mkdir, mkdtemp, readFile, readdir, writeFile } from "node:fs/promises";
+import { access, mkdir, mkdtemp, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
@@ -75,10 +75,7 @@ function buildClientArtifacts(options) {
 }
 
 function promoteClientRelease(options) {
-  return promoteClientReleaseImpl({
-    canary: { device: "fixture", passed: true },
-    ...options,
-  });
+  return promoteClientReleaseImpl(options);
 }
 
 async function writeSnapshotForTest(directory, files) {
@@ -137,7 +134,7 @@ test("rejects a client publication whose manifest-closed bytes cross channels", 
   );
 });
 
-test("requires canary evidence and rejects a mismatched native client promotion", async () => {
+test("promotes without real-device canary evidence and rejects a mismatched native client", async () => {
   const root = await mkdtemp(join(tmpdir(), "apple-proxy-promote-gates-"));
   const publicDirectory = join(root, "public");
   const artifacts = buildClientArtifacts({ snapshot: lightweightFixtureSnapshots(), upstream: lightweightUpstream });
@@ -149,10 +146,12 @@ test("requires canary evidence and rejects a mismatched native client promotion"
     manifest: artifacts.diagnostics.defaultManifest,
   });
 
-  await assert.rejects(
-    () => promoteClientReleaseImpl({ publicDirectory, client: "surge", expectedHash: hash }),
-    /canary/iu,
-  );
+  await promoteClientReleaseImpl({
+    publicDirectory,
+    client: "surge",
+    expectedHash: hash,
+    now: "2026-08-09T01:00:00Z",
+  });
   await assert.rejects(
     () => promoteClientReleaseImpl({
       publicDirectory,
@@ -162,6 +161,67 @@ test("requires canary evidence and rejects a mismatched native client promotion"
     }),
     /manifest|client|hash|unsupported/u,
   );
+});
+
+test("refreshes the public audit dashboard after independent client promotion", async () => {
+  const root = await mkdtemp(join(tmpdir(), "apple-proxy-promote-dashboard-"));
+  const publicDirectory = join(root, "public");
+  try {
+    const currentArtifacts = buildClientArtifacts({
+      snapshot: lightweightFixtureSnapshots(),
+      upstream: lightweightUpstream,
+      channel: "current",
+    });
+    const edgeArtifacts = buildClientArtifacts({
+      snapshot: lightweightFixtureSnapshots(),
+      upstream: lightweightUpstream,
+      channel: "edge",
+    });
+    const surgeHash = edgeArtifacts.diagnostics.defaultManifest.clients.surge.manifestHash;
+    const shadowrocketHash = edgeArtifacts.diagnostics.defaultManifest.clients.shadowrocket.manifestHash;
+    await buildSite({
+      publicDirectory,
+      files: currentArtifacts.defaults,
+      manifest: currentArtifacts.diagnostics.defaultManifest,
+    });
+    await publishEdgeRelease({
+      publicDirectory,
+      defaults: edgeArtifacts.defaults,
+      optionalPacks: edgeArtifacts.optionalPacks,
+      manifest: edgeArtifacts.diagnostics.defaultManifest,
+    });
+
+    await promoteClientReleaseImpl({
+      publicDirectory,
+      client: "surge",
+      expectedHash: surgeHash,
+      now: "2026-08-09T01:00:00Z",
+    });
+    let dashboard = JSON.parse(await readFile(join(publicDirectory, "current/audit/dashboard.json"), "utf8"));
+    const promotedSurgeHash = JSON.parse(await readFile(join(publicDirectory, "current/surge/client-manifest.json"), "utf8")).manifestHash;
+    const previousSurgeHash = JSON.parse(await readFile(join(publicDirectory, "previous/surge/client-manifest.json"), "utf8")).manifestHash;
+    assert.equal(dashboard.channels.current.manifestCount, 7);
+    assert.equal(dashboard.channels.previous.manifestCount, 7);
+    assert.equal(dashboard.clients.surge.current.manifestHash, promotedSurgeHash);
+    assert.equal(dashboard.clients.surge.previous.manifestHash, previousSurgeHash);
+
+    await promoteClientReleaseImpl({
+      publicDirectory,
+      client: "shadowrocket",
+      expectedHash: shadowrocketHash,
+      now: "2026-08-09T01:00:00Z",
+    });
+    dashboard = JSON.parse(await readFile(join(publicDirectory, "current/audit/dashboard.json"), "utf8"));
+    const promotedShadowrocketHash = JSON.parse(await readFile(join(publicDirectory, "current/shadowrocket/client-manifest.json"), "utf8")).manifestHash;
+    const previousShadowrocketHash = JSON.parse(await readFile(join(publicDirectory, "previous/shadowrocket/client-manifest.json"), "utf8")).manifestHash;
+    assert.equal(dashboard.channels.current.manifestCount, 7);
+    assert.equal(dashboard.channels.previous.manifestCount, 7);
+    assert.equal(dashboard.clients.surge.previous.manifestHash, previousSurgeHash);
+    assert.equal(dashboard.clients.shadowrocket.previous.manifestHash, previousShadowrocketHash);
+    assert.equal(dashboard.clients.shadowrocket.current.manifestHash, promotedShadowrocketHash);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
 });
 
 test("seals current into an independently closed previous channel idempotently", async () => {

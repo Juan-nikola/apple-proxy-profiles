@@ -50,7 +50,7 @@ https://juan-nikola.github.io/apple-proxy-profiles/current/surge/scripts/surge-p
 - 稳定节点资源版：`https://juan-nikola.github.io/apple-proxy-profiles/current/surge/scripts/surge-nodes-generator.js`
 - 测试版：`https://juan-nikola.github.io/apple-proxy-profiles/edge/surge/scripts/surge-profile-generator.js`
 
-先用 `edge` 在一台 Mac 灰度，再切回或提升到 `current`。Surge macOS 的两个架构共用 `platform=macos`；iPhone、iPad 分别使用各自参数。
+生产直接使用已通过自动化门禁的 `current`；`edge` 仅供维护者预览，设备 canary 是上线后的可选反馈。Surge macOS 的两个架构共用 `platform=macos`；iPhone、iPad 分别使用各自参数。
 
 `adblockMode=off` 是默认值，不下载完整广告分类。只有明确改为 `adblockMode=full` 时，才会加载与 `channel` 一致的独立可选广告包。
 
@@ -64,7 +64,7 @@ https://juan-nikola.github.io/apple-proxy-profiles/current/surge/scripts/surge-p
 | 改国内/国外分流 | `shared/rules/`、`clients/surge/src/render-rules.js` | 先改共享规则，再运行规则测试和构建。 |
 | 改 Surge 分组/参数 | `clients/surge/src/`、`clients/surge/src/options.js` | 必须同步测试与 README 参数表。 |
 | 改公开远程入口 | `clients/surge/scripts/build.mjs`、`public/` 生成流程 | `dist/` 和 `public/` 都是构建产物，不手工编辑。 |
-| 改使用步骤 | `clients/surge/docs/` 与根目录 `docs/` | 每次更新都保留旧 Profile，先做 canary。 |
+| 改使用步骤 | `clients/surge/docs/` 与根目录 `docs/` | 每次更新都保留旧 Profile；canary 仅作上线后反馈。 |
 
 ## 本地构建与检查
 

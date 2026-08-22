@@ -154,10 +154,10 @@ https://juan-nikola.github.io/apple-proxy-profiles/current/shadowrocket/scripts/
 ### 第 4 步：复制私密输出并导入对应客户端
 
 1. 先在 Intel Mac 的 Shadowrocket 中进入节点订阅页面，添加 `<Shadowrocket 节点私密输出 URL>`，显示名设为 `Shadowrocket-Nodes`；如果你使用其他显示名，必须先把三个 File 的 `subscriptionName` 同步改成完全相同的文字。手动更新后节点数必须大于 0。
-2. 在 Intel Mac 的配置/Profile 页面添加 `<macOS Profile 私密输出 URL>`。不要覆盖旧 Profile；让新旧 Profile 并排保留，再选择新 Profile 做 canary。
-3. macOS Profile 通过 [Intel Mac 灰度清单](docs/canary-checklist.md) 后，才在 iPhone 添加同一节点私密输出和 `<iPhone Profile 私密输出 URL>`。
-4. iPhone 通过后，最后在 iPad 添加同一节点私密输出和 `<iPad Profile 私密输出 URL>`。
-5. 每台设备都保持 HTTPS 解密关闭；任一设备失败立即停止，不继续推广。
+2. 在 Intel Mac 的配置/Profile 页面添加 `<macOS Profile 私密输出 URL>`。不要覆盖旧 Profile；让新旧 Profile 并排保留，设备 canary 仅作为可选反馈。
+3. iPhone 可直接添加同一节点私密输出和 `<iPhone Profile 私密输出 URL>`；如需反馈，按 Intel Mac、iPhone、iPad 顺序记录。
+4. iPad 可直接添加同一节点私密输出和 `<iPad Profile 私密输出 URL>`。
+5. 每台设备都保持 HTTPS 解密关闭；设备反馈失败时回滚该设备，不阻塞其他客户端。
 
 成功标志：节点订阅能手动更新，平台 Profile 能显示新的更新时间；`🚀 节点选择`下能看到固定的亚太、欧洲、美洲洲组，策略组和规则存在，旧 Profile 仍可立即选回。
 
@@ -167,7 +167,7 @@ https://juan-nikola.github.io/apple-proxy-profiles/current/shadowrocket/scripts/
 
 1. 先备份 Sub-Store，并保留每台设备的旧 Profile。
 2. 规范 `/current/` JS URL 不变。依次重新预览节点 Operator、macOS File、iPhone File、iPad File；正式任务的 noCache 与 insecure 仍保持关闭。
-3. 先只在 Intel Mac 更新并完成 canary，再按 iPhone、iPad 顺序推广。脚本升级不会自动更新客户端中的 Profile，仍需在客户端手动更新。
+3. 先更新公开 `current` 入口并重新预览；设备 canary 只作为可选反馈。脚本升级不会自动更新客户端中的 Profile，仍需在客户端手动更新。
 4. 若升级失败，立即在客户端切回旧 Profile，并在 Sub-Store 恢复备份或把测试任务脚本改回 `<已验证的旧版公开 JS URL>`。不要覆盖旧 File，不要更改任何私密输出 URL。
 5. 回滚后再次预览节点与 Profile；确认旧配置恢复联网后才结束处理，并保留失败版本和日期供排查。
 

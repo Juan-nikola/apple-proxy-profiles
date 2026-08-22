@@ -1,5 +1,5 @@
 import { readdir, readFile, writeFile } from "node:fs/promises";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
 
 import { artifactSha256 } from "./artifact-content.js";
 import { buildRoutingPlanAudit } from "./routing-plan-audit.js";
@@ -42,6 +42,7 @@ const CLIENT_RULE_PREFIXES = Object.freeze({
   happ: [],
 });
 const SHA256 = /^[0-9a-f]{64}$/u;
+const PUBLIC_CHANNEL_URL_RE = /(https:\/\/juan-nikola\.github\.io\/apple-proxy-profiles\/)(?:current|previous|edge)(\/)/gu;
 
 function safeChannel(value) {
   if (value !== "current" && value !== "previous" && value !== "edge") {
@@ -116,22 +117,33 @@ async function buildRoutingAudit(directory) {
   return buildRoutingPlanAudit({ plan, ruleSets });
 }
 
-async function assertRoutingBytesMatch(records, edgeDirectory) {
+async function assertRoutingBytesMatch(edgeDirectory) {
+  const currentDirectory = join(dirname(edgeDirectory), "current");
   const edgePaths = (await treeFiles(edgeDirectory)).sort();
   for (const prefix of ROUTING_PREFIXES) {
-    const current = records.filter(({ path }) => path.startsWith(prefix)).map(({ path }) => path).sort();
+    const currentPaths = (await treeFiles(currentDirectory)).filter((path) => path.startsWith(prefix)).sort();
     const edge = edgePaths.filter((path) => path.startsWith(prefix)).sort();
-    if (JSON.stringify(current) !== JSON.stringify(edge)) {
+    if (JSON.stringify(currentPaths) !== JSON.stringify(edge)) {
       throw new Error(`Current routing bytes diverge from edge under ${prefix}`);
     }
-    for (const path of current) {
-      const record = records.find(({ path: candidate }) => candidate === path);
-      const content = await readFile(join(edgeDirectory, path));
-      if (record.sha256 !== artifactSha256(content)) {
+    for (const path of currentPaths) {
+      const currentBytes = normalizeRoutingBytes(await readFile(join(currentDirectory, path)));
+      const edgeBytes = normalizeRoutingBytes(await readFile(join(edgeDirectory, path)));
+      if (artifactSha256(currentBytes) !== artifactSha256(edgeBytes)) {
         throw new Error(`Current routing bytes diverge from edge: ${path}`);
       }
     }
   }
+}
+
+function normalizeRoutingBytes(bytes) {
+  let text;
+  try {
+    text = new TextDecoder("utf-8", { fatal: true }).decode(bytes);
+  } catch {
+    return bytes;
+  }
+  return Buffer.from(text.replace(PUBLIC_CHANNEL_URL_RE, "$1edge$2"), "utf8");
 }
 
 /**
@@ -254,8 +266,7 @@ export async function refreshCurrentManifest({ publicDirectory, adoptEdgeMetadat
       await readFile(join(edgeDirectory, "manifest.json")),
       "edge",
     );
-    const records = await channelTreeRecords(currentDirectory);
-    await assertRoutingBytesMatch(records, edgeDirectory);
+    await assertRoutingBytesMatch(edgeDirectory);
     const manifest = await refreshChannelManifest({ publicDirectory, channel: "current" });
     const existingCurrent = parseCanonicalManifest(
       await readFile(join(currentDirectory, "manifest.json")),

@@ -2,37 +2,37 @@
   "client": "anywhere",
   "files": [
     {
-      "bytes": 2084687,
+      "bytes": 2116149,
       "path": "optional/adblock-full/anywhere/Advertising_Domain-001.arrs",
-      "sha256": "b77f3d1928871986b88f762373231f9d3e82bb57a2c929a1628dd7575d274f2e"
+      "sha256": "783b8cfc67664efda06f62d32955fd722d7c8cadf2bd7fc5d7315a93c1b7367e"
     },
     {
-      "bytes": 2125471,
+      "bytes": 2142313,
       "path": "optional/adblock-full/anywhere/Advertising_Domain-002.arrs",
-      "sha256": "42e3f531ef8ad99f6284e612c419a2ec52f7075d0516988f6087d27f3cc405bb"
+      "sha256": "ef7752b6b4a589c676b7e06cd0497b268fbb5d51b70c83a01dd6820b65ab368a"
     },
     {
-      "bytes": 1141544,
+      "bytes": 1615786,
       "path": "optional/adblock-full/anywhere/Advertising_Domain-003.arrs",
-      "sha256": "b52530c4e4d4f96ca955ab048f852617f12c03446a8c0eb1fba8991bb1dd8779"
+      "sha256": "682488e5fc7f0cbec415197aaf137bd5fea4724ed05962fbfc9fe82acd124422"
     },
     {
       "bytes": 15088,
       "path": "optional/adblock-full/anywhere/Advertising-001.arrs",
-      "sha256": "7deddfbbc85f1d22547d05488b07003995ca587359c1faabec7f3d19d7f1184b"
+      "sha256": "538abea92e507972c6ae7ba7de27e05fc7541fb022f96c167dddc1bf63de75c1"
     },
     {
       "bytes": 5441,
       "path": "optional/adblock-full/anywhere/import.html",
-      "sha256": "086208e9a3575badeae51c84865a2c0e78f808e5d7e917ed1c06909a38725097"
+      "sha256": "64aa6bfbdd8249c74d80c35685a366308eacc4f59192f558f56d9d6b8da27c21"
     },
     {
       "bytes": 7937,
       "path": "optional/adblock-full/anywhere/manifest.json",
-      "sha256": "df7263e3e48629686c5c0a5dfd40fff085ccd6715dd923aa3f6dba520dec69cf"
+      "sha256": "196f37eb2a4dcdfda3db367c9f1c150be30d9b95d699e31ad32c2aecae0d0dd2"
     }
   ],
-  "generatedAt": "2026-08-15T18:26:29Z",
-  "manifestHash": "c4509b5b713bda6e6a893407b77f074872c682b7f015570082658db04e1d834a",
+  "generatedAt": "2026-08-21T18:35:15Z",
+  "manifestHash": "684d8db41c8f54c91fb54886e1717a5a51ca19b9ed1732ed98f4c7b7a81f85fd",
   "schemaVersion": 1
 }

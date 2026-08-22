@@ -13,9 +13,9 @@
       "sha256": "33de8c00cc3affbaf59be30b865e9d163fc2dae0a3c51555834437bd9454eadd"
     },
     {
-      "bytes": 630812,
+      "bytes": 630824,
       "path": "happ/index.html",
-      "sha256": "fa8aed4f1fcdfa03834cd0c403ff09fa934f087530fb38be8b62485712800f50"
+      "sha256": "6f1f00e9626538a6e6b199286a7a7223deb7fa89d7ad0a70d668289fea38d2d4"
     },
     {
       "bytes": 147882,
@@ -39,7 +39,7 @@
     }
   ],
   "generatedAt": "2026-08-19T18:32:09Z",
-  "manifestHash": "abe10b5eb33990ab39ddc04f38aadf410ca49033e7356e9b9e6546dd74975410",
+  "manifestHash": "3ffb62eeedac5969a11d43af22d805ad9458d3806f0120f5f7559c8bf06cbcee",
   "optionalPacks": {},
   "schemaVersion": 1
 }

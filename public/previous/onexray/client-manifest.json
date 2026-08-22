@@ -1,0 +1,60 @@
+{
+  "chinaIpAuditSha256": "9efd69e056baf8c42369e321474b94ef2cfc71f28966288ad32017ad71d874c4",
+  "client": "onexray",
+  "files": [
+    {
+      "bytes": 181416,
+      "path": "onexray/geodata/geoip.dat",
+      "sha256": "18e9d5074184ef5005261e31064cbfdc56536f9b485f120398e80d8f849f0b4c"
+    },
+    {
+      "bytes": 74223,
+      "path": "onexray/geodata/geosite.dat",
+      "sha256": "4bed4f09fb433437409d6ffd3f8e061f14babca334c64278110320c011ad7eb9"
+    },
+    {
+      "bytes": 10703,
+      "path": "onexray/geodata/manifest.json",
+      "sha256": "5bc3e497105490cfe29b2a0a3b2d38237c9fab2233e78051d2084eaa830351f0"
+    },
+    {
+      "bytes": 4031,
+      "path": "onexray/index.html",
+      "sha256": "fb6b6f6b82a196440bb72cd94c4fcfa3286fc7b09c9314208021684c108b0c14"
+    },
+    {
+      "bytes": 123977,
+      "path": "onexray/scripts/onexray-node-generator.js",
+      "sha256": "255fc3f018962999d1be9471ad5739a5355471083740d3030b4a7abeedc7b173"
+    },
+    {
+      "bytes": 127258,
+      "path": "onexray/scripts/onexray-profile-generator.js",
+      "sha256": "f6d2e92f9bd26efd691669dc7506f7359854b0e0923dc562fc71b3f6e90a37c2"
+    },
+    {
+      "bytes": 118409,
+      "path": "onexray/scripts/onexray-routing-audit.js",
+      "sha256": "c4736a8b3f6c59165af18f06b77c9496a22d6d7dcc591784ca6861e87289d118"
+    },
+    {
+      "bytes": 123977,
+      "path": "onexray/scripts/substore-node-generator.js",
+      "sha256": "255fc3f018962999d1be9471ad5739a5355471083740d3030b4a7abeedc7b173"
+    },
+    {
+      "bytes": 127258,
+      "path": "onexray/scripts/substore-profile-generator.js",
+      "sha256": "f6d2e92f9bd26efd691669dc7506f7359854b0e0923dc562fc71b3f6e90a37c2"
+    },
+    {
+      "bytes": 118409,
+      "path": "onexray/scripts/substore-routing-audit.js",
+      "sha256": "c4736a8b3f6c59165af18f06b77c9496a22d6d7dcc591784ca6861e87289d118"
+    }
+  ],
+  "generatedAt": "2026-08-17T18:35:27Z",
+  "manifestHash": "5fcd04524f7537aed08b90602573484184b09aeb0d7beaa7bc2f130502edd7db",
+  "optionalPacks": {},
+  "schemaVersion": 1
+}

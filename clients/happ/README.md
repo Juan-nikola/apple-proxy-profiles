@@ -6,4 +6,4 @@ HAPP 的节点 JSON、Profile 和策略仍由私密 Sub-Store 任务生成。公
 
 HAPP 没有可视化业务组。需要把 AI、GitHub、YouTube 等业务固定到某个节点时，在私密任务中设置同一个 `policyOverrides` Base64URL；`FOLLOW` 跟随 HAPP 首页节点，`DIRECT` 直连，`NODE:<完整节点名>` 固定节点。完整设置步骤见[部署文档中的业务组说明](docs/deployment.md#业务组节点设置)。
 
-完整说明：[部署](docs/deployment.md) · [排障](docs/troubleshooting.md) · [六平台 canary](docs/canary.md)。自动化测试通过不等于设备验收完成。
+完整说明：[部署](docs/deployment.md) · [排障](docs/troubleshooting.md) · [六平台上线后可选反馈](docs/canary.md)。自动化门禁通过即可发布；设备反馈只用于实践观察和排障。
