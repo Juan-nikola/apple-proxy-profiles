@@ -147,6 +147,11 @@ const SOURCE_POLICIES = Object.freeze({
   Advertising_Domain: "🧱 常见广告",
 });
 
+/** Read-only access for shared compilers; the catalog remains the source of truth. */
+export function policyForRuleSource(sourceId) {
+  return SOURCE_POLICIES[sourceId];
+}
+
 function uniqueMembership(id, memberships, label) {
   const matches = Object.entries(memberships)
     .filter(([, ids]) => ids.includes(id))
