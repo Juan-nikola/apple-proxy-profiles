@@ -16,6 +16,7 @@ function asSnapshots(snapshots) {
 
 function safeProvenance(value, sourceId) {
   const input = value && typeof value === "object" ? value : {};
+  if (input.sourceId !== undefined && input.sourceId !== sourceId) throw new Error(`Source ${sourceId}: provenance source identity mismatch`);
   const external = EXTERNAL_BY_ID.get(sourceId);
   if (external) {
     for (const field of ["repository", "branch", "commit", "releaseTag", "retrievalUrl", "retrievedAt", "sha256"]) {
@@ -97,7 +98,10 @@ export function mergeRuleSources({ snapshots, region = "cn", userRules = [], adb
   const groups = new Map();
   const provenance = [];
   for (const { id, value } of asSnapshots(snapshots)) {
-    const sourceId = value?.sourceId ?? id;
+    const valueSourceId = value?.sourceId;
+    if (id !== undefined && valueSourceId !== undefined && id !== valueSourceId) throw new Error(`Snapshot identity mismatch for ${id}`);
+    const sourceId = valueSourceId ?? id;
+    if (value?.provenance?.sourceId !== undefined && value.provenance.sourceId !== sourceId) throw new Error(`Snapshot provenance identity mismatch for ${sourceId}`);
     const prov = safeProvenance(value?.provenance, sourceId);
     if (!sourceId || !selected.has(sourceId)) continue;
     const entries = Array.isArray(value?.entries) ? value.entries : [];

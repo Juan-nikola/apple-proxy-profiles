@@ -84,3 +84,31 @@ test("maps overlay security and domestic categories before overlay fallback", ()
   assert.equal(merged.decisions.find(({ matcher }) => matcher.value === "local.ru").action, "DIRECT");
   assert.equal(merged.decisions.find(({ matcher }) => matcher.value === "generic.ru").priority, 600);
 });
+
+test("preserves source-ID actions for advertising, security, privacy, and business", () => {
+  const ids = ["Advertising", "Hijacking", "Privacy", "OpenAI"];
+  const merged = mergeRuleSources({ adblockMode: "full", snapshots: new Map(ids.map((id) => [id, { sourceId: id, entries: [entry(`${id.toLowerCase()}.example`, id)] }])) });
+  assert.equal(merged.decisions.find(({ matcher }) => matcher.sourceId === "Advertising").action, "REJECT");
+  assert.equal(merged.decisions.find(({ matcher }) => matcher.sourceId === "Hijacking").action, "REJECT");
+  assert.equal(merged.decisions.find(({ matcher }) => matcher.sourceId === "Privacy").action, "DIRECT");
+  assert.equal(merged.decisions.find(({ matcher }) => matcher.sourceId === "OpenAI").action, "PROXY");
+});
+
+test("rejects private internal provenance URLs and identity tampering", () => {
+  assert.throws(() => mergeRuleSources({ snapshots: new Map([["OpenAI", { sourceId: "OpenAI", entries: [], provenance: { sourceId: "OpenAI", retrievalUrl: "https://user:pw@example.invalid/node" } }]]) }), /URLs are not allowed/u);
+  assert.throws(() => mergeRuleSources({ snapshots: new Map([["OpenAI", { sourceId: "OpenAI", entries: [], provenance: { sourceId: "Hijacking" } }]]) }), /identity mismatch/u);
+  assert.throws(() => mergeRuleSources({ snapshots: new Map([["Hijacking", { sourceId: "OpenAI", entries: [] }]]) }), /identity mismatch/u);
+});
+
+test("returns complete deterministic shape and chooses the narrower overlapping CIDR", () => {
+  const merged = mergeRuleSources({ snapshots: new Map([["ChinaIP", { sourceId: "ChinaIP", entries: [
+    { kind: "ipv4Cidr", value: "1.0.0.0/16", sourceId: "ChinaIP" },
+    { kind: "ipv4Cidr", value: "1.0.1.0/24", sourceId: "ChinaIP" },
+  ] }]]) });
+  assert.ok(merged.ruleSets instanceof Map);
+  assert.ok(Array.isArray(merged.decisions));
+  assert.ok(Array.isArray(merged.provenance));
+  const route = explainRoute({ hostname: "overlap.example", ip: "1.0.1.2", merged });
+  assert.equal(route.matcher.value, "1.0.1.0/24");
+  assert.equal(typeof route.reason, "string");
+});
