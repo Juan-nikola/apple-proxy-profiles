@@ -7,3 +7,15 @@ test("v2rayN node operator uses internal JSON artifact contract", async () => {
   assert.equal(JSON.parse(result.$content).outbounds.length, 1);
   assert.match(result.$content, /\n$/u);
 });
+
+test("operators enforce configured platform but accept JSON artifact targets", async () => {
+  const args = { output: "nodes", type: "collection", name: "fixture", platform: "windows" };
+  await assert.rejects(() => nodesOperator({}, "macos", { arguments: args, produceArtifact: async () => [] }), /target platform/u);
+  const logs = [];
+  const result = await nodesOperator({}, "JSON", { arguments: args, logger: { info: (line) => logs.push(line) }, produceArtifact: async () => [
+    { name: "fixture", type: "vless", server: "fixture.invalid", port: 443, uuid: "TEST_ONLY_UUID" },
+    { name: "future", type: "future-proto", server: "fixture.invalid", port: 443 },
+  ] });
+  assert.ok(result.$content);
+  assert.match(logs[0], /renderFailures/iu);
+});

@@ -2483,6 +2483,299 @@ var V2rayNNodesBundle = (() => {
     }
   }
 
+  // ../../shared/encoding/base64url.js
+  var ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
+  var REVERSE = new Map([...ALPHABET].map((character, index) => [character, index]));
+  function assertBase64Url(value) {
+    if (typeof value !== "string" || !/^[A-Za-z0-9_-]*$/u.test(value) || value.length % 4 === 1) {
+      throw new TypeError("Base64URL value is invalid");
+    }
+  }
+  function decodeBase64Url(value) {
+    assertBase64Url(value);
+    if (value.length === 0) return new Uint8Array();
+    const remainder = value.length % 4;
+    const last = REVERSE.get(value.at(-1));
+    if (remainder === 2 && (last & 15) !== 0 || remainder === 3 && (last & 3) !== 0) {
+      throw new TypeError("Base64URL value is not canonical");
+    }
+    const bytes = new Uint8Array(Math.floor(value.length * 6 / 8));
+    let accumulator = 0;
+    let bits = 0;
+    let offset = 0;
+    for (const character of value) {
+      accumulator = accumulator << 6 | REVERSE.get(character);
+      bits += 6;
+      if (bits < 8) continue;
+      bits -= 8;
+      bytes[offset] = accumulator >> bits & 255;
+      offset += 1;
+      accumulator &= (1 << bits) - 1;
+    }
+    if (bits !== 0 && accumulator !== 0) throw new TypeError("Base64URL value is not canonical");
+    return bytes;
+  }
+
+  // ../../shared/serialization/strict-json.js
+  var DEFAULT_MAX_BYTES = 1 * 1024 * 1024;
+  var DEFAULT_MAX_DEPTH = 32;
+  var FORBIDDEN_KEYS = /* @__PURE__ */ new Set(["__proto__", "prototype", "constructor"]);
+  var WHITESPACE = /* @__PURE__ */ new Set([" ", "	", "\r", "\n"]);
+  function failure(label2, reason) {
+    const prefix = typeof label2 === "string" && label2.length > 0 ? `${label2}: ` : "";
+    return new SyntaxError(`${prefix}${reason}`);
+  }
+  function asText(value, label2) {
+    if (typeof value === "string") {
+      if (/[\uD800-\uDFFF]/u.test(value.replace(/[\uD800-\uDBFF](?=[\uDC00-\uDFFF])/gu, "").replace(/(?<=[\uD800-\uDBFF])[\uDC00-\uDFFF]/gu, ""))) {
+        throw failure(label2, "invalid UTF-8 text");
+      }
+      return { text: value, bytes: new TextEncoder().encode(value).byteLength };
+    }
+    if (value instanceof Uint8Array) {
+      try {
+        return {
+          text: new TextDecoder("utf-8", { fatal: true, ignoreBOM: true }).decode(value),
+          bytes: value.byteLength
+        };
+      } catch {
+        throw failure(label2, "invalid UTF-8 text");
+      }
+    }
+    throw failure(label2, "input must be UTF-8 text");
+  }
+  function validateOptions(options, label2) {
+    const { maxBytes = DEFAULT_MAX_BYTES, maxDepth = DEFAULT_MAX_DEPTH } = options ?? {};
+    if (!Number.isSafeInteger(maxBytes) || maxBytes < 0) throw failure(label2, "maxBytes must be a non-negative integer");
+    if (!Number.isSafeInteger(maxDepth) || maxDepth < 0) throw failure(label2, "maxDepth must be a non-negative integer");
+    return { maxBytes, maxDepth };
+  }
+  function validateAndParse(text, { label: label2, maxDepth }) {
+    let index = 0;
+    const length = text.length;
+    const error = (reason) => {
+      throw failure(label2, reason);
+    };
+    const skipWhitespace = () => {
+      while (index < length && WHITESPACE.has(text[index])) index += 1;
+    };
+    const parseString = () => {
+      if (text[index] !== '"') error("invalid JSON");
+      const start = index;
+      index += 1;
+      while (index < length) {
+        const character = text[index++];
+        if (character === '"') {
+          try {
+            return JSON.parse(text.slice(start, index));
+          } catch {
+            error("invalid JSON");
+          }
+        }
+        if (character === "\\") {
+          const escape = text[index++];
+          if (escape === "u") {
+            if (!/^[0-9a-f]{4}$/iu.test(text.slice(index, index + 4))) error("invalid JSON");
+            index += 4;
+          } else if (!'"\\/bfnrt'.includes(escape)) {
+            error("invalid JSON");
+          }
+        } else if (character < " ") {
+          error("invalid JSON");
+        }
+      }
+      error("invalid JSON");
+    };
+    const parseNumber = () => {
+      const match = /^-?(?:0|[1-9][0-9]*)(?:\.[0-9]+)?(?:[eE][+-]?[0-9]+)?/u.exec(text.slice(index));
+      if (!match) error("invalid JSON");
+      index += match[0].length;
+    };
+    const parseValue = (depth) => {
+      skipWhitespace();
+      const character = text[index];
+      if (character === "{" || character === "[") {
+        if (depth > maxDepth) error("maximum JSON depth exceeded");
+        const object = character === "{";
+        index += 1;
+        skipWhitespace();
+        if (text[index] === (object ? "}" : "]")) {
+          index += 1;
+          return;
+        }
+        const keys = object ? /* @__PURE__ */ new Set() : null;
+        while (index < length) {
+          skipWhitespace();
+          if (object) {
+            const key = parseString();
+            if (keys.has(key)) error("duplicate JSON key");
+            if (FORBIDDEN_KEYS.has(key)) error("unsupported prototype key");
+            keys.add(key);
+            skipWhitespace();
+            if (text[index++] !== ":") error("invalid JSON");
+          }
+          parseValue(depth + 1);
+          skipWhitespace();
+          const close = object ? "}" : "]";
+          if (text[index] === close) {
+            index += 1;
+            return;
+          }
+          if (text[index++] !== ",") error("invalid JSON");
+        }
+        error("invalid JSON");
+      }
+      if (character === '"') {
+        parseString();
+        return;
+      }
+      if (text.startsWith("true", index) || text.startsWith("false", index) || text.startsWith("null", index)) {
+        index += text.startsWith("true", index) ? 4 : text.startsWith("false", index) ? 5 : 4;
+        return;
+      }
+      parseNumber();
+    };
+    skipWhitespace();
+    parseValue(1);
+    skipWhitespace();
+    if (index !== length) error("invalid JSON");
+    try {
+      return JSON.parse(text);
+    } catch {
+      error("invalid JSON");
+    }
+  }
+  function parseStrictJson(value, options = {}) {
+    const label2 = options?.label;
+    const { maxBytes, maxDepth } = validateOptions(options, label2);
+    const { text, bytes } = asText(value, label2);
+    if (bytes > maxBytes) throw failure(label2, "JSON exceeds byte limit");
+    return validateAndParse(text, { label: label2, maxDepth });
+  }
+  var STRICT_JSON_DEFAULTS = Object.freeze({
+    maxBytes: DEFAULT_MAX_BYTES,
+    maxDepth: DEFAULT_MAX_DEPTH
+  });
+
+  // ../../shared/policies/business-targets.js
+  var TARGET_KEYWORD = /^(FOLLOW|DIRECT)$/iu;
+  var NODE_TARGET = /^NODE:(.*)$/iu;
+  var BASE64URL = /^[A-Za-z0-9_-]+$/u;
+  var LINE_TERMINATOR = /[\r\n\u2028\u2029]/u;
+  function frozenTarget(id, label2, aliases, defaultTarget) {
+    return Object.freeze({ id, label: label2, aliases: Object.freeze([...aliases]), defaultTarget });
+  }
+  var BUSINESS_TARGETS = Object.freeze([
+    frozenTarget("ai", "\u{1F916} AI \u4E13\u7528", ["AI \u4E13\u7528", "ai"], "FOLLOW"),
+    frozenTarget("github", "\u{1F419} GitHub", ["GitHub", "github"], "FOLLOW"),
+    frozenTarget("youtube", "\u{1F4FA} YouTube", ["YouTube", "youtube"], "FOLLOW"),
+    frozenTarget("overseasMedia", "\u{1F3AC} \u6D77\u5916\u6D41\u5A92\u4F53", [
+      "\u6D77\u5916\u6D41\u5A92\u4F53",
+      "overseasMedia",
+      "Netflix",
+      "netflix",
+      "Disney+",
+      "disney",
+      "Spotify",
+      "spotify",
+      "\u56FD\u9645\u5A92\u4F53",
+      "globalMedia"
+    ], "FOLLOW"),
+    frozenTarget("globalSocial", "\u{1F4AC} \u6D77\u5916\u793E\u4EA4", [
+      "\u6D77\u5916\u793E\u4EA4",
+      "globalSocial",
+      "Telegram",
+      "telegram",
+      "TikTok",
+      "tiktok"
+    ], "FOLLOW"),
+    frozenTarget("overseasGame", "\u{1F30D} \u6D77\u5916\u6E38\u620F", ["\u6D77\u5916\u6E38\u620F", "overseasGame"], "FOLLOW"),
+    frozenTarget("domesticCore", "\u56FD\u5185\u6838\u5FC3", ["\u56FD\u5185\u6838\u5FC3", "domesticCore"], "DIRECT"),
+    // Preserve all published domestic-platform spellings under the stable ID.
+    frozenTarget("domesticPlatform", "\u{1F1E8}\u{1F1F3} \u56FD\u5185\u5E73\u53F0", [
+      "\u56FD\u5185\u5E73\u53F0",
+      "domestic",
+      "\u{1F1E8}\u{1F1F3} \u56FD\u5185\u5E73\u53F0",
+      "domesticPlatform",
+      "\u54D4\u54E9\u54D4\u54E9",
+      "bilibili",
+      "\u6296\u97F3",
+      "bytedance",
+      "\u5C0F\u7EA2\u4E66",
+      "xiaohongshu",
+      "\u5FAE\u535A",
+      "weibo"
+    ], "DIRECT"),
+    frozenTarget("chinaIp", "\u4E2D\u56FD IP", ["\u4E2D\u56FD IP", "chinaIp"], "DIRECT"),
+    frozenTarget("apple", "\u{1F34E} Apple", ["Apple", "apple"], "DIRECT"),
+    frozenTarget("microsoft", "\u{1FA9F} Microsoft", ["Microsoft", "microsoft"], "DIRECT"),
+    frozenTarget("download", "\u2B07\uFE0F \u4E0B\u8F7D/P2P", ["\u4E0B\u8F7D/P2P", "download"], "DIRECT")
+  ]);
+  var TARGET_BY_KEY = /* @__PURE__ */ new Map();
+  for (const target of BUSINESS_TARGETS) {
+    TARGET_BY_KEY.set(target.label, target);
+    for (const alias of target.aliases) TARGET_BY_KEY.set(alias, target);
+  }
+  function businessTargetByKey(key) {
+    return typeof key === "string" ? TARGET_BY_KEY.get(key) : void 0;
+  }
+  function policyError(message) {
+    return new Error(`Invalid business policy overrides: ${message}`);
+  }
+  function targetError(target, message) {
+    return policyError(`${target.label}: ${message}`);
+  }
+  function decodePolicy(encoded) {
+    if (typeof encoded !== "string" || encoded !== "" && !BASE64URL.test(encoded) || encoded.length % 4 === 1) {
+      throw policyError("must be a Base64URL string");
+    }
+    if (encoded === "") return Object.freeze({});
+    let bytes;
+    try {
+      bytes = decodeBase64Url(encoded);
+    } catch {
+      throw policyError("must be a Base64URL string");
+    }
+    let values;
+    try {
+      values = parseStrictJson(bytes, { label: "business overrides", maxBytes: 64 * 1024, maxDepth: 8 });
+    } catch {
+      throw policyError("must contain JSON object");
+    }
+    if (values === null || Array.isArray(values) || typeof values !== "object" || Object.getPrototypeOf(values) !== Object.prototype) {
+      throw policyError("must contain a JSON object");
+    }
+    return values;
+  }
+  function canonicalBusinessTarget(value) {
+    if (typeof value !== "string") throw new TypeError("target must be a string");
+    if (TARGET_KEYWORD.test(value)) return value.toUpperCase();
+    const node = NODE_TARGET.exec(value);
+    if (!node || node[1].trim().length === 0 || LINE_TERMINATOR.test(node[1])) {
+      throw new TypeError("target must be FOLLOW, DIRECT, or NODE:<name>");
+    }
+    return `NODE:${node[1]}`;
+  }
+  function parseBusinessOverrides(encoded) {
+    const values = decodePolicy(encoded);
+    const overrides = {};
+    for (const [key, value] of Object.entries(values)) {
+      const target = businessTargetByKey(key);
+      if (!target) throw policyError("contains an unknown business key");
+      let canonical;
+      try {
+        canonical = canonicalBusinessTarget(value);
+      } catch {
+        throw targetError(target, "target must be FOLLOW, DIRECT, or NODE:<name>");
+      }
+      if (Object.hasOwn(overrides, target.id) && overrides[target.id] !== canonical) {
+        throw targetError(target, "has conflicting aliases");
+      }
+      overrides[target.id] = canonical;
+    }
+    return Object.freeze(overrides);
+  }
+
   // src/options.js
   var DEFAULTS = Object.freeze({ channel: "edge", region: "cn", dnsMode: "stable", chinaDns: "alidns", globalDns: "cloudflare", blockMode: "balanced", quicMode: "proxy-block", ipv6Mode: "auto", clientChain: "off", clientChainTarget: "", policyOverrides: "" });
   var ALLOWED = /* @__PURE__ */ new Set(["output", "type", "name", "subscriptionName", "platform", ...Object.keys(DEFAULTS)]);
@@ -2506,6 +2799,7 @@ var V2rayNNodesBundle = (() => {
     if (options.clientChain === "off" && options.clientChainTarget !== "") throw new Error("v2rayN clientChainTarget requires clientChain=on");
     if (options.clientChain === "on" && !/^NODE:.+$/u.test(options.clientChainTarget)) throw new Error("v2rayN clientChainTarget is required when clientChain=on");
     if (typeof options.policyOverrides !== "string" || /[\r\n]/u.test(options.policyOverrides)) throw new Error("v2rayN policyOverrides is invalid");
+    parseBusinessOverrides(options.policyOverrides);
     return Object.freeze(options);
   }
 
@@ -2606,13 +2900,14 @@ var V2rayNNodesBundle = (() => {
 
   // src/substore-node-entry.js
   async function operator(input, targetPlatform, context = {}) {
-    void targetPlatform;
     const options = parseV2rayNOptions({ ...context.arguments ?? {}, output: "nodes" });
+    if (targetPlatform !== "JSON" && targetPlatform !== options.platform) throw new Error(`v2rayN target platform '${targetPlatform}' does not match ${options.platform}`);
     if (typeof context.produceArtifact !== "function") throw new Error("v2rayN produceArtifact is unavailable");
     const raw = await context.produceArtifact({ type: "collection", name: options.name, platform: "JSON", produceType: "internal" });
     const normalized = normalizeNodes(raw, { clientChain: options.clientChain });
     const filtered = filterNodesForClient(normalized.nodes, CLIENT.v2rayn);
     if (!filtered.nodes.length) throw new Error("v2rayN nodes: no compatible nodes");
+    context.logger?.info?.(`[v2rayn-nodes] ${JSON.stringify({ accepted: filtered.nodes.length, renderFailures: filtered.diagnostics.excluded })}`);
     return { ...input, $content: renderV2rayNSubscription({ nodes: filtered.nodes }) };
   }
   return __toCommonJS(substore_node_entry_exports);

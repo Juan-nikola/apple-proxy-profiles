@@ -2,6 +2,7 @@ import { OPTION_VALUES } from "../../../shared/contracts.js";
 import { FRONTIER_CHANNELS } from "../../../shared/release/frontier-manifest.js";
 import { validateCollectionName } from "../../../shared/substore/collection-name.js";
 import { parseRegion } from "../../../shared/rules/region-profiles.js";
+import { parseBusinessOverrides } from "../../../shared/policies/business-targets.js";
 
 const DEFAULTS = Object.freeze({ channel: "edge", region: "cn", dnsMode: "stable", chinaDns: "alidns", globalDns: "cloudflare", blockMode: "balanced", quicMode: "proxy-block", ipv6Mode: "auto", clientChain: "off", clientChainTarget: "", policyOverrides: "" });
 const ALLOWED = new Set(["output", "type", "name", "subscriptionName", "platform", ...Object.keys(DEFAULTS)]);
@@ -19,5 +20,6 @@ export function parseV2rayNOptions(raw) {
   if (options.clientChain === "off" && options.clientChainTarget !== "") throw new Error("v2rayN clientChainTarget requires clientChain=on");
   if (options.clientChain === "on" && !/^NODE:.+$/u.test(options.clientChainTarget)) throw new Error("v2rayN clientChainTarget is required when clientChain=on");
   if (typeof options.policyOverrides !== "string" || /[\r\n]/u.test(options.policyOverrides)) throw new Error("v2rayN policyOverrides is invalid");
+  parseBusinessOverrides(options.policyOverrides);
   return Object.freeze(options);
 }

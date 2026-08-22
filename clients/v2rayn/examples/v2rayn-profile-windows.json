@@ -96,13 +96,15 @@
       },
       {
         "domain": [
-          "geosite:geodata/cn/AppleProxySiteEdge.dat"
+          "geosite:cn",
+          "ext:AppleProxySiteEdge.dat:APP-REGION-CN"
         ],
         "outboundTag": "direct"
       },
       {
         "ip": [
-          "geoip:geodata/cn/AppleProxyIPEdge.dat"
+          "geoip:cn",
+          "ext:AppleProxyIPEdge.dat:APP-REGION-CN"
         ],
         "outboundTag": "direct"
       },

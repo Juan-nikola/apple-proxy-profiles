@@ -2483,6 +2483,299 @@ var V2rayNConfigBundle = (() => {
     }
   }
 
+  // ../../shared/encoding/base64url.js
+  var ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
+  var REVERSE = new Map([...ALPHABET].map((character, index) => [character, index]));
+  function assertBase64Url(value) {
+    if (typeof value !== "string" || !/^[A-Za-z0-9_-]*$/u.test(value) || value.length % 4 === 1) {
+      throw new TypeError("Base64URL value is invalid");
+    }
+  }
+  function decodeBase64Url(value) {
+    assertBase64Url(value);
+    if (value.length === 0) return new Uint8Array();
+    const remainder = value.length % 4;
+    const last = REVERSE.get(value.at(-1));
+    if (remainder === 2 && (last & 15) !== 0 || remainder === 3 && (last & 3) !== 0) {
+      throw new TypeError("Base64URL value is not canonical");
+    }
+    const bytes2 = new Uint8Array(Math.floor(value.length * 6 / 8));
+    let accumulator = 0;
+    let bits = 0;
+    let offset = 0;
+    for (const character of value) {
+      accumulator = accumulator << 6 | REVERSE.get(character);
+      bits += 6;
+      if (bits < 8) continue;
+      bits -= 8;
+      bytes2[offset] = accumulator >> bits & 255;
+      offset += 1;
+      accumulator &= (1 << bits) - 1;
+    }
+    if (bits !== 0 && accumulator !== 0) throw new TypeError("Base64URL value is not canonical");
+    return bytes2;
+  }
+
+  // ../../shared/serialization/strict-json.js
+  var DEFAULT_MAX_BYTES = 1 * 1024 * 1024;
+  var DEFAULT_MAX_DEPTH = 32;
+  var FORBIDDEN_KEYS = /* @__PURE__ */ new Set(["__proto__", "prototype", "constructor"]);
+  var WHITESPACE = /* @__PURE__ */ new Set([" ", "	", "\r", "\n"]);
+  function failure(label2, reason) {
+    const prefix = typeof label2 === "string" && label2.length > 0 ? `${label2}: ` : "";
+    return new SyntaxError(`${prefix}${reason}`);
+  }
+  function asText(value, label2) {
+    if (typeof value === "string") {
+      if (/[\uD800-\uDFFF]/u.test(value.replace(/[\uD800-\uDBFF](?=[\uDC00-\uDFFF])/gu, "").replace(/(?<=[\uD800-\uDBFF])[\uDC00-\uDFFF]/gu, ""))) {
+        throw failure(label2, "invalid UTF-8 text");
+      }
+      return { text: value, bytes: new TextEncoder().encode(value).byteLength };
+    }
+    if (value instanceof Uint8Array) {
+      try {
+        return {
+          text: new TextDecoder("utf-8", { fatal: true, ignoreBOM: true }).decode(value),
+          bytes: value.byteLength
+        };
+      } catch {
+        throw failure(label2, "invalid UTF-8 text");
+      }
+    }
+    throw failure(label2, "input must be UTF-8 text");
+  }
+  function validateOptions(options, label2) {
+    const { maxBytes = DEFAULT_MAX_BYTES, maxDepth = DEFAULT_MAX_DEPTH } = options ?? {};
+    if (!Number.isSafeInteger(maxBytes) || maxBytes < 0) throw failure(label2, "maxBytes must be a non-negative integer");
+    if (!Number.isSafeInteger(maxDepth) || maxDepth < 0) throw failure(label2, "maxDepth must be a non-negative integer");
+    return { maxBytes, maxDepth };
+  }
+  function validateAndParse(text, { label: label2, maxDepth }) {
+    let index = 0;
+    const length = text.length;
+    const error = (reason) => {
+      throw failure(label2, reason);
+    };
+    const skipWhitespace = () => {
+      while (index < length && WHITESPACE.has(text[index])) index += 1;
+    };
+    const parseString = () => {
+      if (text[index] !== '"') error("invalid JSON");
+      const start = index;
+      index += 1;
+      while (index < length) {
+        const character = text[index++];
+        if (character === '"') {
+          try {
+            return JSON.parse(text.slice(start, index));
+          } catch {
+            error("invalid JSON");
+          }
+        }
+        if (character === "\\") {
+          const escape = text[index++];
+          if (escape === "u") {
+            if (!/^[0-9a-f]{4}$/iu.test(text.slice(index, index + 4))) error("invalid JSON");
+            index += 4;
+          } else if (!'"\\/bfnrt'.includes(escape)) {
+            error("invalid JSON");
+          }
+        } else if (character < " ") {
+          error("invalid JSON");
+        }
+      }
+      error("invalid JSON");
+    };
+    const parseNumber = () => {
+      const match = /^-?(?:0|[1-9][0-9]*)(?:\.[0-9]+)?(?:[eE][+-]?[0-9]+)?/u.exec(text.slice(index));
+      if (!match) error("invalid JSON");
+      index += match[0].length;
+    };
+    const parseValue = (depth) => {
+      skipWhitespace();
+      const character = text[index];
+      if (character === "{" || character === "[") {
+        if (depth > maxDepth) error("maximum JSON depth exceeded");
+        const object = character === "{";
+        index += 1;
+        skipWhitespace();
+        if (text[index] === (object ? "}" : "]")) {
+          index += 1;
+          return;
+        }
+        const keys = object ? /* @__PURE__ */ new Set() : null;
+        while (index < length) {
+          skipWhitespace();
+          if (object) {
+            const key = parseString();
+            if (keys.has(key)) error("duplicate JSON key");
+            if (FORBIDDEN_KEYS.has(key)) error("unsupported prototype key");
+            keys.add(key);
+            skipWhitespace();
+            if (text[index++] !== ":") error("invalid JSON");
+          }
+          parseValue(depth + 1);
+          skipWhitespace();
+          const close = object ? "}" : "]";
+          if (text[index] === close) {
+            index += 1;
+            return;
+          }
+          if (text[index++] !== ",") error("invalid JSON");
+        }
+        error("invalid JSON");
+      }
+      if (character === '"') {
+        parseString();
+        return;
+      }
+      if (text.startsWith("true", index) || text.startsWith("false", index) || text.startsWith("null", index)) {
+        index += text.startsWith("true", index) ? 4 : text.startsWith("false", index) ? 5 : 4;
+        return;
+      }
+      parseNumber();
+    };
+    skipWhitespace();
+    parseValue(1);
+    skipWhitespace();
+    if (index !== length) error("invalid JSON");
+    try {
+      return JSON.parse(text);
+    } catch {
+      error("invalid JSON");
+    }
+  }
+  function parseStrictJson(value, options = {}) {
+    const label2 = options?.label;
+    const { maxBytes, maxDepth } = validateOptions(options, label2);
+    const { text, bytes: bytes2 } = asText(value, label2);
+    if (bytes2 > maxBytes) throw failure(label2, "JSON exceeds byte limit");
+    return validateAndParse(text, { label: label2, maxDepth });
+  }
+  var STRICT_JSON_DEFAULTS = Object.freeze({
+    maxBytes: DEFAULT_MAX_BYTES,
+    maxDepth: DEFAULT_MAX_DEPTH
+  });
+
+  // ../../shared/policies/business-targets.js
+  var TARGET_KEYWORD = /^(FOLLOW|DIRECT)$/iu;
+  var NODE_TARGET = /^NODE:(.*)$/iu;
+  var BASE64URL = /^[A-Za-z0-9_-]+$/u;
+  var LINE_TERMINATOR = /[\r\n\u2028\u2029]/u;
+  function frozenTarget(id, label2, aliases, defaultTarget) {
+    return Object.freeze({ id, label: label2, aliases: Object.freeze([...aliases]), defaultTarget });
+  }
+  var BUSINESS_TARGETS = Object.freeze([
+    frozenTarget("ai", "\u{1F916} AI \u4E13\u7528", ["AI \u4E13\u7528", "ai"], "FOLLOW"),
+    frozenTarget("github", "\u{1F419} GitHub", ["GitHub", "github"], "FOLLOW"),
+    frozenTarget("youtube", "\u{1F4FA} YouTube", ["YouTube", "youtube"], "FOLLOW"),
+    frozenTarget("overseasMedia", "\u{1F3AC} \u6D77\u5916\u6D41\u5A92\u4F53", [
+      "\u6D77\u5916\u6D41\u5A92\u4F53",
+      "overseasMedia",
+      "Netflix",
+      "netflix",
+      "Disney+",
+      "disney",
+      "Spotify",
+      "spotify",
+      "\u56FD\u9645\u5A92\u4F53",
+      "globalMedia"
+    ], "FOLLOW"),
+    frozenTarget("globalSocial", "\u{1F4AC} \u6D77\u5916\u793E\u4EA4", [
+      "\u6D77\u5916\u793E\u4EA4",
+      "globalSocial",
+      "Telegram",
+      "telegram",
+      "TikTok",
+      "tiktok"
+    ], "FOLLOW"),
+    frozenTarget("overseasGame", "\u{1F30D} \u6D77\u5916\u6E38\u620F", ["\u6D77\u5916\u6E38\u620F", "overseasGame"], "FOLLOW"),
+    frozenTarget("domesticCore", "\u56FD\u5185\u6838\u5FC3", ["\u56FD\u5185\u6838\u5FC3", "domesticCore"], "DIRECT"),
+    // Preserve all published domestic-platform spellings under the stable ID.
+    frozenTarget("domesticPlatform", "\u{1F1E8}\u{1F1F3} \u56FD\u5185\u5E73\u53F0", [
+      "\u56FD\u5185\u5E73\u53F0",
+      "domestic",
+      "\u{1F1E8}\u{1F1F3} \u56FD\u5185\u5E73\u53F0",
+      "domesticPlatform",
+      "\u54D4\u54E9\u54D4\u54E9",
+      "bilibili",
+      "\u6296\u97F3",
+      "bytedance",
+      "\u5C0F\u7EA2\u4E66",
+      "xiaohongshu",
+      "\u5FAE\u535A",
+      "weibo"
+    ], "DIRECT"),
+    frozenTarget("chinaIp", "\u4E2D\u56FD IP", ["\u4E2D\u56FD IP", "chinaIp"], "DIRECT"),
+    frozenTarget("apple", "\u{1F34E} Apple", ["Apple", "apple"], "DIRECT"),
+    frozenTarget("microsoft", "\u{1FA9F} Microsoft", ["Microsoft", "microsoft"], "DIRECT"),
+    frozenTarget("download", "\u2B07\uFE0F \u4E0B\u8F7D/P2P", ["\u4E0B\u8F7D/P2P", "download"], "DIRECT")
+  ]);
+  var TARGET_BY_KEY = /* @__PURE__ */ new Map();
+  for (const target of BUSINESS_TARGETS) {
+    TARGET_BY_KEY.set(target.label, target);
+    for (const alias of target.aliases) TARGET_BY_KEY.set(alias, target);
+  }
+  function businessTargetByKey(key) {
+    return typeof key === "string" ? TARGET_BY_KEY.get(key) : void 0;
+  }
+  function policyError(message) {
+    return new Error(`Invalid business policy overrides: ${message}`);
+  }
+  function targetError(target, message) {
+    return policyError(`${target.label}: ${message}`);
+  }
+  function decodePolicy(encoded) {
+    if (typeof encoded !== "string" || encoded !== "" && !BASE64URL.test(encoded) || encoded.length % 4 === 1) {
+      throw policyError("must be a Base64URL string");
+    }
+    if (encoded === "") return Object.freeze({});
+    let bytes2;
+    try {
+      bytes2 = decodeBase64Url(encoded);
+    } catch {
+      throw policyError("must be a Base64URL string");
+    }
+    let values;
+    try {
+      values = parseStrictJson(bytes2, { label: "business overrides", maxBytes: 64 * 1024, maxDepth: 8 });
+    } catch {
+      throw policyError("must contain JSON object");
+    }
+    if (values === null || Array.isArray(values) || typeof values !== "object" || Object.getPrototypeOf(values) !== Object.prototype) {
+      throw policyError("must contain a JSON object");
+    }
+    return values;
+  }
+  function canonicalBusinessTarget(value) {
+    if (typeof value !== "string") throw new TypeError("target must be a string");
+    if (TARGET_KEYWORD.test(value)) return value.toUpperCase();
+    const node = NODE_TARGET.exec(value);
+    if (!node || node[1].trim().length === 0 || LINE_TERMINATOR.test(node[1])) {
+      throw new TypeError("target must be FOLLOW, DIRECT, or NODE:<name>");
+    }
+    return `NODE:${node[1]}`;
+  }
+  function parseBusinessOverrides(encoded) {
+    const values = decodePolicy(encoded);
+    const overrides = {};
+    for (const [key, value] of Object.entries(values)) {
+      const target = businessTargetByKey(key);
+      if (!target) throw policyError("contains an unknown business key");
+      let canonical;
+      try {
+        canonical = canonicalBusinessTarget(value);
+      } catch {
+        throw targetError(target, "target must be FOLLOW, DIRECT, or NODE:<name>");
+      }
+      if (Object.hasOwn(overrides, target.id) && overrides[target.id] !== canonical) {
+        throw targetError(target, "has conflicting aliases");
+      }
+      overrides[target.id] = canonical;
+    }
+    return Object.freeze(overrides);
+  }
+
   // src/options.js
   var DEFAULTS = Object.freeze({ channel: "edge", region: "cn", dnsMode: "stable", chinaDns: "alidns", globalDns: "cloudflare", blockMode: "balanced", quicMode: "proxy-block", ipv6Mode: "auto", clientChain: "off", clientChainTarget: "", policyOverrides: "" });
   var ALLOWED = /* @__PURE__ */ new Set(["output", "type", "name", "subscriptionName", "platform", ...Object.keys(DEFAULTS)]);
@@ -2506,6 +2799,7 @@ var V2rayNConfigBundle = (() => {
     if (options.clientChain === "off" && options.clientChainTarget !== "") throw new Error("v2rayN clientChainTarget requires clientChain=on");
     if (options.clientChain === "on" && !/^NODE:.+$/u.test(options.clientChainTarget)) throw new Error("v2rayN clientChainTarget is required when clientChain=on");
     if (typeof options.policyOverrides !== "string" || /[\r\n]/u.test(options.policyOverrides)) throw new Error("v2rayN policyOverrides is invalid");
+    parseBusinessOverrides(options.policyOverrides);
     return Object.freeze(options);
   }
 
@@ -2599,6 +2893,8 @@ var V2rayNConfigBundle = (() => {
     previous: "Previous",
     edge: "Edge"
   });
+  var SOURCE_ID = /^[A-Za-z0-9]+(?:[-_][A-Za-z0-9]+)*$/u;
+  var CODE = /^APP-[A-Z0-9]+(?:-[A-Z0-9]+)*$/u;
   function requiredChannel(channel) {
     if (typeof channel !== "string" || !CHANNELS.includes(channel)) {
       throw new TypeError(`OneXray GeoData channel must be current, previous, or edge: ${String(channel)}`);
@@ -2618,16 +2914,99 @@ var V2rayNConfigBundle = (() => {
     });
     return Object.freeze(names);
   }
+  function oneXrayGeoCode(sourceId) {
+    if (typeof sourceId !== "string" || sourceId.trim() !== sourceId || !SOURCE_ID.test(sourceId)) {
+      throw new TypeError("OneXray GeoData source ID is invalid");
+    }
+    const normalized = sourceId.toUpperCase().replaceAll("_", "-");
+    const code = `APP-${normalized}`;
+    if (!CODE.test(code)) throw new TypeError("OneXray GeoData source ID is invalid");
+    return code;
+  }
+  function oneXrayGeoReference(channel, type, sourceId) {
+    const names = oneXrayGeoNames(channel);
+    if (type !== "domain" && type !== "ip") throw new TypeError("OneXray GeoData type is invalid");
+    return `ext:${names[type]}.dat:${oneXrayGeoCode(sourceId)}`;
+  }
 
   // src/render-profile.js
+  function bytes(value, label2) {
+    if (!(Buffer.isBuffer(value) || value instanceof Uint8Array)) throw new TypeError(`v2rayN GeoData ${label2} asset is missing or invalid`);
+    return Buffer.from(value);
+  }
+  function sha256(input) {
+    const bytes2 = new Uint8Array(input);
+    const words = new Uint32Array(64);
+    const state = new Uint32Array([1779033703, 3144134277, 1013904242, 2773480762, 1359893119, 2600822924, 528734635, 1541459225]);
+    const constants = [1116352408, 1899447441, 3049323471, 3921009573, 961987163, 1508970993, 2453635748, 2870763221, 3624381080, 310598401, 607225278, 1426881987, 1925078388, 2162078206, 2614888103, 3248222580, 3835390401, 4022224774, 264347078, 604807628, 770255983, 1249150122, 1555081692, 1996064986, 2554220882, 2821834349, 2952996808, 3210313671, 3336571891, 3584528711, 113926993, 338241895, 666307205, 773529912, 1294757372, 1396182291, 1695183700, 1986661051, 2177026350, 2456956037, 2730485921, 2820302411, 3259730800, 3345764771, 3516065817, 3600352804, 4094571909, 275423344, 430227734, 506948616, 659060556, 883997877, 958139571, 1322822218, 1537002063, 1747873779, 1955562222, 2024104815, 2227730452, 2361852424, 2428436474, 2756734187, 3204031479, 3329325298];
+    const padded = new Uint8Array(bytes2.length + 9 + 63 >> 6 << 6);
+    padded.set(bytes2);
+    padded[bytes2.length] = 128;
+    const bitLength = bytes2.length * 8;
+    new DataView(padded.buffer).setUint32(padded.length - 4, bitLength, false);
+    for (let offset = 0; offset < padded.length; offset += 64) {
+      for (let i = 0; i < 16; i++) words[i] = new DataView(padded.buffer, offset + i * 4, 4).getUint32(0, false);
+      for (let i = 16; i < 64; i++) {
+        const x = words[i - 15];
+        const y = words[i - 2];
+        words[i] = ((x >>> 7 | x << 25) ^ (x >>> 18 | x << 14) ^ x >>> 3) + words[i - 16] + ((y >>> 17 | y << 15) ^ (y >>> 19 | y << 13) ^ y >>> 10) + words[i - 7] | 0;
+      }
+      let [a, b, c, d, e, f, g, h] = state;
+      for (let i = 0; i < 64; i++) {
+        const s1 = (e >>> 6 | e << 26) ^ (e >>> 11 | e << 21) ^ (e >>> 25 | e << 7);
+        const ch = e & f ^ ~e & g;
+        const t1 = h + s1 + ch + constants[i] + words[i] | 0;
+        const s0 = (a >>> 2 | a << 30) ^ (a >>> 13 | a << 19) ^ (a >>> 22 | a << 10);
+        const maj = a & b ^ a & c ^ b & c;
+        const t2 = s0 + maj | 0;
+        [h, g, f, e, d, c, b, a] = [g, f, e, d + t1 | 0, c, b, a, t1 + t2 | 0];
+      }
+      state[0] = state[0] + a | 0;
+      state[1] = state[1] + b | 0;
+      state[2] = state[2] + c | 0;
+      state[3] = state[3] + d | 0;
+      state[4] = state[4] + e | 0;
+      state[5] = state[5] + f | 0;
+      state[6] = state[6] + g | 0;
+      state[7] = state[7] + h | 0;
+    }
+    return [...state].map((word) => (word >>> 0).toString(16).padStart(8, "0")).join("");
+  }
+  function geoReferences(geoData, options) {
+    const names = oneXrayGeoNames(options.channel);
+    if (geoData === null || geoData === void 0) {
+      const source2 = `REGION-${options.region.toUpperCase()}`;
+      return { domain: [oneXrayGeoReference(options.channel, "domain", source2)], ip: [oneXrayGeoReference(options.channel, "ip", source2)] };
+    }
+    if (!geoData || typeof geoData !== "object" || Array.isArray(geoData) || !geoData.manifest) throw new TypeError("v2rayN GeoData manifest is required");
+    const manifest = geoData.manifest;
+    if (manifest.schemaVersion !== 1 || manifest.region !== options.region || manifest.channel !== options.channel) throw new Error("v2rayN GeoData manifest region/channel mismatch");
+    if (!manifest.names || manifest.names.domain !== names.domain || manifest.names.ip !== names.ip) throw new Error("v2rayN GeoData manifest names mismatch");
+    const domain = bytes(geoData.geosite ?? geoData.domain, "domain");
+    const ip = bytes(geoData.geoip ?? geoData.ip, "ip");
+    for (const type of ["domain", "ip"]) {
+      const asset = type === "domain" ? domain : ip;
+      const record = manifest[type];
+      if (!record || record.name !== names[type] || record.byteLength !== asset.byteLength || record.sha256 !== sha256(asset) || manifest.hashes?.[type] !== sha256(asset)) {
+        throw new Error(`v2rayN GeoData ${type} manifest hash or byteLength mismatch`);
+      }
+    }
+    if (!Array.isArray(manifest.sources) || manifest.sources.length === 0) throw new Error("v2rayN GeoData manifest sources are missing");
+    const codes = manifest.sources.map((source2) => {
+      if (!source2 || typeof source2.id !== "string" || source2.code !== oneXrayGeoCode(source2.id)) throw new Error("v2rayN GeoData manifest source code mismatch");
+      return source2.code;
+    });
+    if (Array.isArray(manifest.sourceCodes) && JSON.stringify(manifest.sourceCodes.map(({ code }) => code)) !== JSON.stringify(codes)) throw new Error("v2rayN GeoData sourceCodes mismatch");
+    return { domain: codes.map((code) => `ext:${names.domain}.dat:${code}`), ip: codes.map((code) => `ext:${names.ip}.dat:${code}`) };
+  }
   function dns(options) {
     return { servers: [{ tag: "china-dns", address: options.chinaDns === "system" ? "localhost" : "223.5.5.5", domains: ["geosite:cn", "geosite:private"] }, { tag: "global-dns", address: options.globalDns === "google" ? "8.8.8.8" : "1.1.1.1", domains: ["geosite:apple-proxy-overseas"] }], queryStrategy: options.ipv6Mode === "ipv4-only" ? "UseIPv4" : "UseIP", tag: "dnsQuery" };
   }
-  function renderV2rayNProfile({ nodes, options, geoData = null } = {}) {
+  function renderV2rayNProfile({ nodes, options, geoData = null, filterFailures = {} } = {}) {
     if (!options || options.output !== "config") throw new Error("v2rayN profile options are required");
     if (!Array.isArray(nodes) || nodes.length === 0) throw new Error("v2rayN profile requires compatible nodes");
     const outbounds = [{ protocol: "freedom", tag: "direct" }, { protocol: "blackhole", tag: "block" }];
-    const failures = {};
+    const failures = { ...filterFailures };
     nodes.forEach((node, index) => {
       try {
         outbounds.push(renderXrayOutbound(node, { tag: `ap-node-${index.toString(36)}`, client: "v2rayn" }));
@@ -2639,9 +3018,8 @@ var V2rayNConfigBundle = (() => {
       }
     });
     if (outbounds.length === 2) throw new Error("v2rayN profile: no compatible nodes");
-    const names = geoData?.manifest?.names ?? oneXrayGeoNames(options.channel);
-    const geoPrefix = geoData?.urls ? geoData.urls : { domain: `geodata/${options.region}/${names.domain}.dat`, ip: `geodata/${options.region}/${names.ip}.dat` };
-    const rules = [{ domain: ["geosite:private"], outboundTag: "direct" }, { domain: [`geosite:${geoPrefix.domain}`], outboundTag: "direct" }, { ip: [`geoip:${geoPrefix.ip}`], outboundTag: "direct" }];
+    const references = geoReferences(geoData, options);
+    const rules = [{ domain: ["geosite:private"], outboundTag: "direct" }, { domain: [`geosite:${options.region}`, ...references.domain], outboundTag: "direct" }, { ip: [`geoip:${options.region}`, ...references.ip], outboundTag: "direct" }];
     if (options.blockMode !== "off") rules.unshift({ domain: ["geosite:apple-proxy-security"], outboundTag: "block" });
     rules.push({ network: "tcp,udp", outboundTag: "proxy" });
     return { name: options.name, dns: dns(options), inbounds: [{ tag: "tun", protocol: "tun", settings: { mtu: 1500 }, sniffing: { enabled: true, routeOnly: true } }], outbounds: [...outbounds, { protocol: "selector", tag: "proxy", settings: { selectors: outbounds.slice(2).map(({ tag }) => tag) } }], routing: { domainStrategy: "IPIfNonMatch", rules }, ...Object.keys(failures).length ? { renderFailures: failures } : {} };
@@ -2649,14 +3027,15 @@ var V2rayNConfigBundle = (() => {
 
   // src/substore-config-entry.js
   async function operator(input, targetPlatform, context = {}) {
-    void targetPlatform;
     const options = parseV2rayNOptions({ ...context.arguments ?? {}, output: "config" });
+    if (targetPlatform !== "JSON" && targetPlatform !== options.platform) throw new Error(`v2rayN target platform '${targetPlatform}' does not match ${options.platform}`);
     if (typeof context.produceArtifact !== "function") throw new Error("v2rayN produceArtifact is unavailable");
     const raw = await context.produceArtifact({ type: "collection", name: options.name, platform: "JSON", produceType: "internal" });
     const normalized = normalizeNodes(raw, { clientChain: options.clientChain });
     const filtered = filterNodesForClient(normalized.nodes, CLIENT.v2rayn);
     if (!filtered.nodes.length) throw new Error("v2rayN profile: no compatible nodes");
-    return { ...input, $content: `${JSON.stringify(renderV2rayNProfile({ options, nodes: filtered.nodes }), null, 2)}
+    context.logger?.info?.(`[v2rayn-config] ${JSON.stringify({ accepted: filtered.nodes.length, renderFailures: filtered.diagnostics.excluded })}`);
+    return { ...input, $content: `${JSON.stringify(renderV2rayNProfile({ options, nodes: filtered.nodes, filterFailures: filtered.diagnostics.excluded }), null, 2)}
 ` };
   }
   return __toCommonJS(substore_config_entry_exports);
