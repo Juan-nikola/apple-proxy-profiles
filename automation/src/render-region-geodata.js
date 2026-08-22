@@ -1,4 +1,5 @@
 import { oneXrayGeoCode, oneXrayGeoNames } from "../../clients/onexray/src/geodata-contract.js";
+import { isIP } from "node:net";
 import { renderXrayGeoData } from "./render-xray-geodata.js";
 import { artifactSha256 } from "./artifact-content.js";
 
@@ -81,10 +82,24 @@ function validatePublicBase(value) {
   if (typeof value !== "string" || !value || /[\x00-\x20\\]/u.test(value) || /(?:^|\/)\.\.(?:\/|$)/u.test(value)) throw new TypeError("publicBase must be a public HTTPS URL");
   let url;
   try { url = new URL(value); } catch { throw new TypeError("publicBase must be a public HTTPS URL"); }
-  if (url.protocol !== "https:" || url.username || url.password || url.search || url.hash || url.hostname === "localhost" || url.hostname.endsWith(".localhost") || url.hostname.endsWith(".local") || /\.\./u.test(url.pathname)) throw new TypeError("publicBase must be a public HTTPS URL");
-  const ip = url.hostname;
-  if (/^(?:127\.|10\.|192\.168\.|169\.254\.)/u.test(ip) || /^172\.(?:1[6-9]|2\d|3[01])\./u.test(ip) || ip === "::1" || ip.startsWith("fc") || ip.startsWith("fd")) throw new TypeError("publicBase must be a public HTTPS URL");
+  if (url.protocol !== "https:" || url.username || url.password || url.search || url.hash || /(?:localhost|\.local$|\.internal$|\.invalid$)/u.test(url.hostname) || /\.\./u.test(url.pathname)) throw new TypeError("publicBase must be a public HTTPS URL");
+  const host = url.hostname.replace(/^\[|\]$/gu, "");
+  if (isIP(host) && isPrivateAddress(host)) throw new TypeError("publicBase must be a public HTTPS URL");
   return url;
+}
+
+function isPrivateAddress(address) {
+  const v4 = isIP(address) === 4;
+  if (v4) {
+    const n = address.split(".").reduce((value, part) => value * 256 + Number(part), 0) >>> 0;
+    return [[0, 8], [167772160, 8], [1681915904, 10], [2130706432, 8], [2851995648, 16], [2886729728, 12], [3221225472, 24], [3221225984, 24], [3232235520, 16], [3323068416, 15], [3325256704, 24], [3405803776, 24], [4026531840, 4]].some(([base, bits]) => (n >>> (32 - bits)) === (base >>> (32 - bits)));
+  }
+  const pieces = address.toLowerCase().split("::");
+  const left = pieces[0] ? pieces[0].split(":") : [];
+  const right = pieces[1] ? pieces[1].split(":") : [];
+  const groups = [...left, ...Array(8 - left.length - right.length).fill("0"), ...right].map((part) => parseInt(part || "0", 16));
+  const first = groups[0];
+  return groups.every((part) => part === 0) || address === "::1" || (first & 0xfe00) === 0xfc00 || (first & 0xffc0) === 0xfe80 || (first & 0xff00) === 0xff00 || (groups[0] === 0x2001 && groups[1] === 0x0db8);
 }
 
 export function regionGeoCode(sourceId) { return oneXrayGeoCode(sourceId); }
