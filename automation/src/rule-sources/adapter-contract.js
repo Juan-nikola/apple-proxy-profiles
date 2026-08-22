@@ -1,5 +1,6 @@
 import { parseLoyalsoldierRulesDat } from "./loyalsoldier-rules-dat.js";
 import { parseV2flyDomainList } from "./v2fly-domain-list.js";
+import { EXTERNAL_RULE_SOURCE_CATALOG } from "../../../shared/rules/external-sources.js";
 
 const SHA256 = /^[0-9a-f]{64}$/u;
 const COMMIT = /^[0-9a-f]{40}$/u;
@@ -25,6 +26,11 @@ function validateRequest({ source, text, sourceSha256, retrievedAt }) {
   if (source.format !== (source.adapter === "v2fly-domain-list" ? "domain-list-yaml" : "geosite-geoip-dat")) {
     throw new Error(`External source ${source.id}: format does not match adapter`);
   }
+  const catalog = EXTERNAL_RULE_SOURCE_CATALOG.find(({ id }) => id === source.id);
+  if (!catalog) throw new Error(`External source ${source.id}: unknown catalog identity`);
+  for (const field of ["id", "repository", "branch", "commit", "releaseTag", "sourcePath", "retrievalUrl", "sha256", "retrievedAt", "format", "adapter", "minEntries", "region"]) {
+    if (source[field] !== catalog[field]) throw new Error(`External source ${source.id}: catalog metadata mismatch for ${field}`);
+  }
 }
 
 export function parseExternalRuleSource(request = {}) {
@@ -48,6 +54,7 @@ export function parseExternalRuleSource(request = {}) {
   }
   diagnostics.duplicates = parsed.diagnostics.duplicates ?? duplicates;
   if (diagnostics.candidateCount < request.source.minEntries) throw new Error(`External source ${request.source.id}: entry count below minimum`);
+  if (diagnostics.parsedCount + diagnostics.unsupportedCount !== diagnostics.candidateCount) throw new Error(`External source ${request.source.id}: diagnostics accounting mismatch`);
   return Object.freeze({
     sourceId: request.source.id,
     entries: Object.freeze(parsed.entries),

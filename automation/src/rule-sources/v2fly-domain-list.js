@@ -2,8 +2,18 @@ import { RULE_KIND, normalizeRuleEntry } from "../../../shared/rules/model.js";
 
 function bump(map, key) { map[key] = (map[key] ?? 0) + 1; }
 
+function stripComment(value) {
+  let quote = null;
+  for (let i = 0; i < value.length; i += 1) {
+    const char = value[i];
+    if ((char === "'" || char === '"') && (!quote || quote === char)) quote = quote ? null : char;
+    if (char === "#" && !quote && (i === 0 || /\s/u.test(value[i - 1]))) return value.slice(0, i).trim();
+  }
+  return value.trim();
+}
+
 function valueEntry(raw, category, sourceId) {
-  const value = raw.trim().replace(/^['"]|['"]$/gu, "");
+  const value = stripComment(raw).replace(/^['"]|['"]$/gu, "");
   const separator = value.indexOf(":");
   const marker = separator > 0 ? value.slice(0, separator).toLowerCase() : "domain";
   const content = separator > 0 ? value.slice(separator + 1).trim() : value;
@@ -21,7 +31,7 @@ export function parseV2flyDomainList({ text, sourceId }) {
   let candidateCount = 0;
   let comments = 0;
   for (const raw of lines) {
-    const line = raw.trim();
+    const line = stripComment(raw);
     if (!line) continue;
     if (line.startsWith("#")) { comments += 1; continue; }
     if (!raw.startsWith(" ") && !raw.startsWith("\t") && line.endsWith(":")) {
@@ -35,5 +45,5 @@ export function parseV2flyDomainList({ text, sourceId }) {
     candidateCount += 1;
     entries.push(valueEntry(item, category, sourceId));
   }
-  return { entries, categories, diagnostics: { candidateCount, parsedCount: candidateCount, unsupportedCount: 0, unsupportedByReason: {}, comments } };
+  return { entries, categories, diagnostics: { candidateCount, parsedCount: entries.length, unsupportedCount: 0, unsupportedByReason: {}, comments } };
 }
