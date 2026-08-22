@@ -4,13 +4,13 @@
   "calibrationStartedAt": "2026-08-09T13:33:56.957Z",
   "families": {
     "ipv4": {
-      "currentAddresses": "359025394",
-      "currentPrefixes": 7173,
+      "currentAddresses": "359026418",
+      "currentPrefixes": 7175,
       "divergenceBasisPoints": "2051",
       "previousAddresses": "359025394",
       "previousPrefixes": 7173,
-      "secondaryAddresses": "285363710",
-      "secondaryPrefixes": 4145,
+      "secondaryAddresses": "285363966",
+      "secondaryPrefixes": 4146,
       "shrinkBasisPoints": "0"
     },
     "ipv6": {
@@ -19,25 +19,25 @@
       "divergenceBasisPoints": "6059",
       "previousAddresses": "5104925933167855546564402630098944",
       "previousPrefixes": 3925,
-      "secondaryAddresses": "2011464511800724432299063794204672",
+      "secondaryAddresses": "2011465129561818255374572069060608",
       "secondaryPrefixes": 1236,
       "shrinkBasisPoints": "0"
     }
   },
-  "generatedAt": "2026-08-21T16:18:51.271Z",
+  "generatedAt": "2026-08-22T04:01:57.210Z",
   "primary": {
-    "commit": "ca20cf00887b50ec63de019317bec2a672c93ca9",
-    "committedAt": "2026-08-19T18:32:09Z",
+    "commit": "54abec88620d07187b1ba20ff06fdd8ed5b1f173",
+    "committedAt": "2026-08-21T18:35:15Z",
     "repository": "https://github.com/blackmatrix7/ios_rule_script",
-    "sha256": "42ff70cc617ae21dbc252397284445f0f3f8e4e97b932ae9150159a7c1aabdde"
+    "sha256": "2f40b1117910aeb4299b6c69f4e797593856a97d2b332fa7978439eb184eb97c"
   },
   "reportOnly": true,
   "schemaVersion": 1,
   "secondary": {
-    "commit": "2620daa9741dab4d11ee0d3d34241f24dc1635eb",
-    "committedAt": "2026-08-21T03:40:31Z",
+    "commit": "300564f096d7da366c4338199b709500e71043fa",
+    "committedAt": "2026-08-22T03:29:59Z",
     "repository": "https://github.com/gaoyifan/china-operator-ip",
-    "sha256": "3fcdab7f90c5d0603075beab5bc6302ac33d6acf317914d443c3472dc5442d32"
+    "sha256": "371de04b366b43620260846c4b1c0f575402f00c05af519092bc4656f2d3518e"
   },
   "warnings": [
     "ipv4:secondary-divergence",
