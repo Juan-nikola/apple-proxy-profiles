@@ -229,7 +229,12 @@ async function compileCommand(corePath, env) {
       const missing = expected.find((path) => !stagedBinaries.includes(path));
       throw new Error(`Staged current sing-box SRS closure failed: ${unexpected ? `unexpected ${unexpected}` : `missing ${missing}`}`);
     }
-    const allowed = new Set([...expected, "audit/china-ip-drift.json", "stage-manifest.json"]);
+    const allowed = new Set([
+      ...expected,
+      "audit/china-ip-drift.json",
+      "audit/v2fly-domain-drift.json",
+      "stage-manifest.json",
+    ]);
     const unexpected = discovered.find((path) => !allowed.has(path));
     if (unexpected) throw new Error(`Staged current sing-box tree contains an unexpected file: ${unexpected}`);
     const reused = new Map();

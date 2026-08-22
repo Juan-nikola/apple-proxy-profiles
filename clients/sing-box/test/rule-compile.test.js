@@ -145,6 +145,8 @@ test("compile command reuses a closed offline current SRS stage", async () => {
     await mkdir(join(artifactRoot, path, ".."), { recursive: true });
     await writeFile(join(artifactRoot, path), bytes);
   }
+  await mkdir(join(artifactRoot, "audit"), { recursive: true });
+  await writeFile(join(artifactRoot, "audit/v2fly-domain-drift.json"), Buffer.from("{}\n"));
 
   const result = await main(["compile"], { env: {
     SING_BOX_CORE: join(root, "unused-core"),
