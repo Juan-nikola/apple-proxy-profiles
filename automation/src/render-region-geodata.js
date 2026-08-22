@@ -94,10 +94,16 @@ function isPrivateAddress(address) {
     const n = address.split(".").reduce((value, part) => value * 256 + Number(part), 0) >>> 0;
     return [[0, 8], [167772160, 8], [1681915904, 10], [2130706432, 8], [2851995648, 16], [2886729728, 12], [3221225472, 24], [3221225984, 24], [3232235520, 16], [3323068416, 15], [3325256704, 24], [3405803776, 24], [4026531840, 4]].some(([base, bits]) => (n >>> (32 - bits)) === (base >>> (32 - bits)));
   }
+  const mapped = address.match(/^::ffff:(\d{1,3}(?:\.\d{1,3}){3})$/iu);
+  if (mapped && isIP(mapped[1]) === 4) return isPrivateAddress(mapped[1]);
   const pieces = address.toLowerCase().split("::");
   const left = pieces[0] ? pieces[0].split(":") : [];
   const right = pieces[1] ? pieces[1].split(":") : [];
   const groups = [...left, ...Array(8 - left.length - right.length).fill("0"), ...right].map((part) => parseInt(part || "0", 16));
+  if (groups.length !== 8 || groups.some((part) => !Number.isInteger(part) || part < 0 || part > 0xffff)) return true;
+  if (groups.slice(0, 5).every((part) => part === 0) && groups[5] === 0xffff) {
+    return isPrivateAddress(`${groups[6] >> 8}.${groups[6] & 255}.${groups[7] >> 8}.${groups[7] & 255}`);
+  }
   const first = groups[0];
   return groups.every((part) => part === 0) || address === "::1" || (first & 0xfe00) === 0xfc00 || (first & 0xffc0) === 0xfe80 || (first & 0xff00) === 0xff00 || (groups[0] === 0x2001 && groups[1] === 0x0db8);
 }
