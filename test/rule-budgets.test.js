@@ -16,6 +16,7 @@ import {
 
 const root = new URL("../", import.meta.url);
 const forbidden = /\b(?:Advertising|Advertising_Domain|ChinaMax_Domain)\b/u;
+const forbiddenFullDomainUrl = /https?:\/\/[^\s"'<>]*(?:ChinaMax_Domain|ChinaMax)(?:[./?#]|$)/iu;
 const migrationMetadata = new Set([
   "anywhere/import.html",
   "anywhere/rules/manifest.json",
@@ -95,6 +96,7 @@ test("default artifacts contain no load-bearing legacy giant rule IDs or URLs", 
         ? /\bChinaMax_Domain\b/u
         : forbidden;
       assert.doesNotMatch(Buffer.from(content).toString("utf8"), pattern, path);
+      assert.doesNotMatch(Buffer.from(content).toString("utf8"), forbiddenFullDomainUrl, path);
     }
   }
 });
