@@ -6,6 +6,21 @@ import {
   ROUTING_PHASES,
   ruleClientCatalog,
 } from "../../shared/rules/lightweight-policy.js";
+import {
+  EXTERNAL_RULE_SOURCE_CATALOG,
+  validateExternalSourceCatalog,
+} from "../../shared/rules/external-sources.js";
+
+export { EXTERNAL_RULE_SOURCE_CATALOG };
+export { REGION_PROFILES, parseRegion, sourcesForRegion } from "../../shared/rules/region-profiles.js";
+
+/** Validate pinned external metadata without changing the legacy fetch catalog. */
+export function validateSourceCatalog(catalog = EXTERNAL_RULE_SOURCE_CATALOG) {
+  validateExternalSourceCatalog(catalog);
+  return Object.freeze([...catalog]);
+}
+
+validateSourceCatalog();
 
 export const BLACKMATRIX7_BASELINE = Object.freeze({
   repository: "https://github.com/blackmatrix7/ios_rule_script",
