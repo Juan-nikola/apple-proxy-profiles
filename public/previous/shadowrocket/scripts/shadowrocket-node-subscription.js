@@ -48,16 +48,37 @@ var ShadowrocketNodeSubscriptionBundle = (() => {
 
   // ../../../shared/contracts.js
   var CLIENT = Object.freeze({
-    shadowrocket: "shadowrocket",
-    egern: "egern",
     anywhere: "anywhere",
+    egern: "egern",
+    shadowrocket: "shadowrocket",
     surge: "surge",
-    singbox: "singbox"
+    singbox: "singbox",
+    onexray: "onexray",
+    happ: "happ",
+    v2rayn: "v2rayn",
+    v2box: "v2box"
   });
+  var PRIVATE_POLICY_CHANNELS = Object.freeze(["edge", "current", "previous"]);
+  var PRIVATE_POLICY_CLIENTS = Object.freeze([CLIENT.happ, CLIENT.onexray]);
+  var PRIVATE_POLICY_TARGET_IDS = Object.freeze([
+    "ai",
+    "github",
+    "youtube",
+    "overseasMedia",
+    "globalSocial",
+    "overseasGame",
+    "domesticCore",
+    "domesticPlatform",
+    "chinaIp",
+    "apple",
+    "microsoft",
+    "download"
+  ]);
   var OPTION_VALUES = Object.freeze({
     output: Object.freeze(["nodes", "config"]),
     type: Object.freeze(["collection"]),
-    platform: Object.freeze(["iphone", "ipad", "macos", "appletv"]),
+    platform: Object.freeze(["iphone", "ipad", "macos", "appletv", "windows", "linux"]),
+    region: Object.freeze(["cn", "global", "ru", "ir"]),
     dnsMode: Object.freeze(["stable", "privacy", "speed"]),
     chinaDns: Object.freeze(["alidns", "dnspod", "system"]),
     globalDns: Object.freeze(["cloudflare", "google", "quad9"]),
@@ -202,7 +223,7 @@ var ShadowrocketNodeSubscriptionBundle = (() => {
     });
   }
   var definitions = Object.freeze([
-    protocol(["ss", "shadowsocks"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox], {
+    protocol(["ss", "shadowsocks"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.onexray, CLIENT.happ, CLIENT.v2rayn, CLIENT.v2box], {
       requiredFields: ["cipher", "password"]
     }),
     protocol(["ssr"], [CLIENT.shadowrocket, CLIENT.surge], {
@@ -211,13 +232,13 @@ var ShadowrocketNodeSubscriptionBundle = (() => {
     protocol(["snell"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox], {
       requiredFields: ["psk", "version"]
     }),
-    protocol(["vmess"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox], {
+    protocol(["vmess"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox, CLIENT.onexray, CLIENT.happ, CLIENT.v2rayn, CLIENT.v2box], {
       requiredFields: ["uuid"]
     }),
-    protocol(["vless"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.singbox], {
+    protocol(["vless"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.singbox, CLIENT.onexray, CLIENT.happ, CLIENT.v2rayn, CLIENT.v2box], {
       requiredFields: ["uuid"]
     }),
-    protocol(["trojan"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox], {
+    protocol(["trojan"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.onexray, CLIENT.happ, CLIENT.v2rayn, CLIENT.v2box], {
       requiredFields: ["password"],
       tls: true
     }),
@@ -225,7 +246,7 @@ var ShadowrocketNodeSubscriptionBundle = (() => {
       requiredFields: ["password"],
       tls: true
     }),
-    protocol(["hysteria2", "hy2"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox], {
+    protocol(["hysteria2", "hy2"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.onexray, CLIENT.happ, CLIENT.v2rayn, CLIENT.v2box], {
       requiredFields: ["password"],
       tls: true
     }),
@@ -233,8 +254,8 @@ var ShadowrocketNodeSubscriptionBundle = (() => {
       requiredFields: ["uuid", "password"],
       tls: true
     }),
-    protocol(["socks5"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox]),
-    protocol(["http"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox]),
+    protocol(["socks5"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.onexray, CLIENT.happ, CLIENT.v2rayn, CLIENT.v2box]),
+    protocol(["http"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox, CLIENT.onexray, CLIENT.v2rayn, CLIENT.v2box]),
     protocol(["ssh"], [CLIENT.egern, CLIENT.singbox], {
       requiredFields: ["username"]
     }),

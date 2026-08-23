@@ -137,6 +137,7 @@ test("accepts only explicit edge, current-check, and client promotion operations
   assert.deepEqual(parseUpdateRulesArguments(["--check", "--channel", "current"]), { operation: "check-current", channel: "current" });
   assert.deepEqual(parseUpdateRulesArguments(["--check", "--channel", "previous"]), { operation: "check-previous", channel: "previous" });
   assert.deepEqual(parseUpdateRulesArguments(["--seal-previous"]), { operation: "seal-previous" });
+  assert.deepEqual(parseUpdateRulesArguments(["--promote-all"]), { operation: "promote-all" });
   assert.deepEqual(parseUpdateRulesArguments(["--promote", "singbox", "a".repeat(64)]), {
     operation: "promote",
     client: "singbox",

@@ -30,7 +30,7 @@ on:
 permissions: {}
 
 concurrency:
-  # Re-run the canonical edge build after merged generator changes.
+  # Re-run the canonical release build after merged generator changes.
   group: rule-update-main
   cancel-in-progress: false
 
@@ -77,19 +77,21 @@ jobs:
         run: node scripts/stage-rule-artifacts.mjs --channel current
       - name: Compile pinned current binary rule sets
         run: npm --workspace @apple-proxy-profiles/sing-box run compile:rules
-      - name: Verify pinned current rules
+      - name: Promote all verified clients to current
+        run: node scripts/update-rules.mjs --promote-all
+      - name: Verify promoted current rules
         run: npm run check:rules
-      - name: Scan edge output
+      - name: Scan published output
         run: npm run check:secrets
       - name: Sync public audit blocker issues
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: node scripts/sync-audit-blocker-issues.mjs
-      - name: Commit edge candidate changes
+      - name: Commit current and edge release changes
         shell: bash
         run: |
           if git diff --quiet -- public; then
-            echo "Public edge candidates are already current."
+            echo "Public release channels are already current."
             exit 0
           fi
           git config user.name "github-actions[bot]"
@@ -98,7 +100,7 @@ jobs:
           if git diff --cached --quiet; then
             exit 0
           fi
-          git commit -m "chore: update edge rule candidates"
+          git commit -m "chore: update current and edge rule releases"
           git push origin main
 
   promote-current:

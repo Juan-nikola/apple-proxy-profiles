@@ -1,4 +1,4 @@
-import { access, readdir, readFile } from "node:fs/promises";
+import { access, cp, readdir, readFile, rm } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -11,6 +11,7 @@ import { canonicalJson } from "../automation/src/render-anywhere-rules.js";
 import {
   promoteClientRelease as promoteClientReleaseImpl,
   publishEdgeRelease,
+  prepareCurrentRootFromEdge,
   refreshPublishedAuditDashboard,
   enforceRetention,
   sealPreviousRelease,
@@ -83,11 +84,38 @@ export function parseUpdateRulesArguments(args) {
     && /^[0-9a-f]{64}$/u.test(args[2])) {
     return Object.freeze({ operation: "promote", client: args[1], manifestHash: args[2] });
   }
-  throw new Error("Invalid update-rules arguments; use --channel edge, --check --channel <edge|current|previous>, --seal-previous, --refresh-current, or --promote <client> <manifest-hash>");
+  if (JSON.stringify(args) === JSON.stringify(["--promote-all"])) {
+    return Object.freeze({ operation: "promote-all" });
+  }
+  throw new Error("Invalid update-rules arguments; use --channel edge, --check --channel <edge|current|previous>, --seal-previous, --refresh-current, --promote-all, or --promote <client> <manifest-hash>");
 }
 
 export async function promoteClientRelease(options) {
   return promoteClientReleaseImpl(options);
+}
+
+export async function promoteAllClients({ publicDirectory = defaultPublicDirectory } = {}) {
+  const edgeManifest = JSON.parse(await readFile(join(publicDirectory, "edge/manifest.json"), "utf8"));
+  if (edgeManifest.schemaVersion !== 2
+    || !/^[0-9a-f]{64}$/u.test(edgeManifest.manifestHash ?? "")
+    || !edgeManifest.clients || typeof edgeManifest.clients !== "object") {
+    throw new Error("Edge manifest is invalid for full promotion");
+  }
+  await prepareCurrentRootFromEdge({ publicDirectory });
+  const results = [];
+  for (const client of activeClientIds()) {
+    const manifestHash = edgeManifest.clients[client]?.manifestHash;
+    if (!/^[0-9a-f]{64}$/u.test(manifestHash ?? "")) {
+      throw new Error(`Edge manifest is missing a valid ${client} client hash`);
+    }
+    results.push(await promoteClientRelease({
+      publicDirectory,
+      client,
+      manifestHash,
+      expectedHash: manifestHash,
+    }));
+  }
+  return Object.freeze(results);
 }
 
 export function chinaIpAuditPrimary(snapshot, upstream) {
@@ -716,6 +744,11 @@ export async function main(
     });
     process.stdout.write(`Client promoted: ${result.client} ${result.manifestHash}\n`);
     return result;
+  }
+  if (command.operation === "promote-all") {
+    const results = await promoteAllClients({ publicDirectory });
+    process.stdout.write(`All active clients promoted: ${results.map(({ client, manifestHash }) => `${client} ${manifestHash}`).join(", ")}\n`);
+    return results;
   }
 
   const stageRoot = env.SING_BOX_ARTIFACT_ROOT || DEFAULT_STAGE_ROOT;

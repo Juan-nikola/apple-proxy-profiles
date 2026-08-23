@@ -1,6 +1,6 @@
 # Sub-Store 九客户端外置 JS + 任务引用总指南
 
-当前分支的九客户端候选已发布到 `edge`，而 `current`/`previous` 仍保留既有稳定快照。下表和任务示例中的 `current` 是完成显式 promotion 后的稳定 URL；在审核候选前，将脚本路径和 hash 参数中的频道一并替换为 `edge`。不要在未完成 promotion 时把新客户端的 `current` URL 当作可用地址。
+九个客户端都通过自动化门禁后发布到 `current`；`edge` 是维护者的隔离预览频道，`previous` 用于回滚。下表和任务示例中的 `current` 是正式 URL。需要预览候选时，将脚本路径和 hash 参数中的频道一并替换为 `edge`；不要把 `edge` URL 用作生产任务。
 
 本指南把公开代码和私密节点分成两层：
 

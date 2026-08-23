@@ -126,7 +126,7 @@ SUBSTORE_CHANNEL=current \\
 npm run configure:substore
 ```
 
-成功标志：终端显示 `Wrote private Sub-Store config`，且文件权限为 `0600`；文件中有 10 个 collection、34 个任务。切换灰度或回滚时，把 `SUBSTORE_CHANNEL` 改成 `edge` 或 `previous` 后重新运行即可。真实地址不要复制进 README、Issue 或聊天。
+成功标志：终端显示 `Wrote private Sub-Store config`，且文件权限为 `0600`；文件中有 10 个 collection、34 个任务。正式任务默认使用 `current`；只有维护者做隔离预览或回滚时才把 `SUBSTORE_CHANNEL` 改成 `edge` 或 `previous`。真实地址不要复制进 README、Issue 或聊天。
 
 这个命令会离线校验公开 JS URL 的 `#` 参数，但不会替你登录 Sub-Store 管理后台或自动删除旧任务；首次迁移仍按下面的 preview、上线后可选反馈和回滚步骤执行。HAPP 任务固定使用 `/current/happ/`，片段中不再填写 `channel`；`SUBSTORE_CHANNEL` 只控制其他客户端和维护者的内部发布流程。
 
@@ -341,7 +341,7 @@ HAPP 的公开安装页只提供无凭据的 GeoData 和脚本；节点与配置
 
 HAPP 没有客户端内的可视化业务组。业务节点通过私密任务的 `policyOverrides` 设置：`FOLLOW` 跟随首页节点，`DIRECT` 直连，`NODE:<完整节点名>` 固定节点。六个平台任务和 `happ-routing-audit` 必须复制同一个 Base64URL；固定节点名以 HAPP JSON 的 `remarks` 完整值为准。具体业务键和设置步骤见 [HAPP 部署文档](clients/happ/docs/deployment.md#业务组节点设置)。
 
-失败怎么办：先分别 preview 当前 `apple-proxy-happ`、对应平台任务和审计任务，确认不是节点协议或固定节点不兼容；未来变更先在 `edge` 做自动化预览，门禁通过后再推进 `current`。
+失败怎么办：先分别 preview 当前 `apple-proxy-happ`、对应平台任务和审计任务，确认不是节点协议或固定节点不兼容；未来变更会先在 `edge` 完成自动化验证，再由工作流自动推进 `current`。
 
 回滚方式：在 HAPP 中切回旧配置，并恢复旧 GeoData；保留新任务用于排查。
 
@@ -361,7 +361,7 @@ HAPP 没有客户端内的可视化业务组。业务节点通过私密任务的
 
 ### 2.8 v2rayN
 
-本次候选已经生成在 `edge`，`current` 仍是旧的稳定快照。审核前把下方任务 URL 中的频道替换为 `edge`（并将 hash 参数改为 `channel=edge`）；只有按已验证的 client-manifest hash 完成显式 promotion 后，才使用 `current`。
+v2rayN 已随自动化发布进入 `current`。正式任务直接使用 `current`；需要隔离验证时，把脚本路径和 hash 参数中的频道一并替换为 `edge`。
 
 在 Sub-Store 中使用 `apple-proxy-v2rayn`，先预览 `v2rayn-nodes`，再按设备选择 `v2rayn-config-windows` 或 `v2rayn-config-macos`。配置任务使用 `region=cn`，也可以在隔离任务中改为 `global`、`ru` 或 `ir`；节点任务和配置任务都只读取该 collection，不接管节点选择。
 
@@ -375,7 +375,7 @@ HAPP 没有客户端内的可视化业务组。业务节点通过私密任务的
 
 ### 2.9 V2Box
 
-本次候选已经生成在 `edge`，`current` 仍是旧的稳定快照。审核前把下方任务 URL 中的频道替换为 `edge`（并将 hash 参数改为 `channel=edge`）；只有按已验证的 client-manifest hash 完成显式 promotion 后，才使用 `current`。
+V2Box 已随自动化发布进入 `current`。正式任务直接使用 `current`；需要隔离验证时，把脚本路径和 hash 参数中的频道一并替换为 `edge`。
 
 在 Sub-Store 中使用 `apple-proxy-v2box`，先预览 `v2box-nodes`，再按设备选择 `v2box-config-iphone` 或 `v2box-config-ipad`。配置任务默认 `region=cn`，使用共享 GeoData 资产；地区切换只改变规则组合，不改变节点 collection。
 
@@ -430,12 +430,12 @@ HAPP 没有客户端内的可视化业务组。业务节点通过私密任务的
 普通用户不需要手工更新仓库规则；客户端会从公开 Pages 下载已发布文件。维护者更新规则时：
 
 ```bash
-npm run update:rules    # 生成 edge 候选
+npm run update:rules    # 本地生成 edge 候选
 npm test
 npm run verify
 ```
 
-定时工作流只构建 `edge`，不会自动替换生产 `current`。自动化验证、规则预算、ChinaIP 审计和 manifest 闭合全部通过后，在 GitHub Actions 的 **Update Rules** 工作流中填写要推进的客户端和已验证的 64 位 client-manifest hash，即可把该客户端推进 `current`。真机 canary 不再是发布门禁；如需收集设备侧实践反馈，可在上线后按客户端清单执行，不影响 promotion。
+GitHub Actions 的 **Update Rules** 工作流会先构建并验证 `edge`，然后自动把全部 active 客户端的字节 promotion 到 `current`，最后提交并触发 Pages 正式部署。`edge` 只用于维护者隔离预览；手动填写客户端和 manifest hash 的 promotion 入口保留给故障恢复或定向回滚。真机 canary 不再是发布门禁；如需收集设备侧实践反馈，可在上线后按客户端清单执行，不影响上线。
 
 失败怎么办：`edge` 验证失败就停止，不要手工编辑 `public/current/`。生产已经异常时临时使用 `previous` 或 Manifest 中的不可变 `versions/<manifestHash>/`。
 

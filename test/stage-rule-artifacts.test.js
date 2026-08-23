@@ -249,6 +249,56 @@ test("reuses fresh identical edge audit evidence without refetching", async () =
   assert.equal(fetched, 0);
 });
 
+test("rebuilds an expired report-only audit into formal evidence", async () => {
+  const root = await mkdtemp(join(tmpdir(), "china-ip-edge-audit-expiry-"));
+  const publicDirectory = join(root, "public");
+  const priorReport = chinaIpAuditBytes();
+  await mkdir(join(publicDirectory, "edge/audit"), { recursive: true });
+  await writeFile(join(publicDirectory, "edge/audit/china-ip-drift.json"), priorReport);
+  let fetched = 0;
+  const bytes = await buildEdgeChinaIpAudit({
+    publicDirectory,
+    primary: {
+      entries: [
+        { kind: "ipv4Cidr", value: "8.8.8.0/24", noResolve: true, sourceId: "ChinaIP" },
+        { kind: "ipv6Cidr", value: "2001:4860::/32", noResolve: true, sourceId: "ChinaIP" },
+      ],
+      source: {
+        repository: upstream.repository,
+        commit: upstream.commit,
+        committedAt: upstream.committedAt,
+        sha256: "1".repeat(64),
+      },
+    },
+    now: "2026-08-16T00:00:00Z",
+    resolveCommitImpl: async () => ({
+      sha: "b".repeat(40),
+      committedAt: "2026-08-15T00:00:00Z",
+    }),
+    fetchSnapshotImpl: async ({ commit }) => {
+      fetched += 1;
+      return {
+        source: {
+          repository: "https://github.com/gaoyifan/china-operator-ip",
+          commit: commit.sha,
+          committedAt: commit.committedAt,
+        },
+        entries: [
+          { kind: "ipv4Cidr", value: "8.8.8.0/24", noResolve: true, sourceId: "ChinaIP-audit" },
+          { kind: "ipv6Cidr", value: "2001:4860::/32", noResolve: true, sourceId: "ChinaIP-audit" },
+        ],
+        sha256: "2".repeat(64),
+      };
+    },
+  });
+
+  const report = JSON.parse(bytes);
+  assert.equal(fetched, 1);
+  assert.equal(report.reportOnly, false);
+  assert.equal(report.calibrationStartedAt, "2026-08-01T00:00:00.000Z");
+  assert.deepEqual(bytes, Buffer.from(canonicalJson(report)));
+});
+
 test("regenerates edge audit evidence when inputs change or the report is stale", async () => {
   const root = await mkdtemp(join(tmpdir(), "china-ip-edge-audit-regenerate-"));
   const publicDirectory = join(root, "public");

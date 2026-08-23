@@ -290,7 +290,7 @@ node --input-type=module -e 'import { compileRules } from "./clients/sing-box/sc
 
 公开审计查看处是 Pages 的 `current/audit/dashboard.json`（机器可读）和首页中文审计入口。Blackmatrix7 是唯一生产规则源；ChinaIP、v2fly 和 dnsmasq 只作 report-only 对照，不自动合并。
 
-审计阻断项由 edge 工作流同步到仓库 Issues，并使用 `audit-blocker` 标签和稳定 marker。打开仓库的 Issues → `audit-blocker` 可查看创建、更新、去重和恢复关闭记录；warning 只进入 JSON/看板，不创建 Issue。Issue 正文只保留脱敏键、首次/最近发现时间和 dashboard 相对路径，不包含节点、策略正文、URL 或凭据。
+审计阻断项由规则工作流同步到仓库 Issues，并使用 `audit-blocker` 标签和稳定 marker。打开仓库的 Issues → `audit-blocker` 可查看创建、更新、去重和恢复关闭记录；warning 只进入 JSON/看板，不创建 Issue。Issue 正文只保留脱敏键、首次/最近发现时间和 dashboard 相对路径，不包含节点、策略正文、URL 或凭据。
 
 回滚先验证频道，再切换任务：
 

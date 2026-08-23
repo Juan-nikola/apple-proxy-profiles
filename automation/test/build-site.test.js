@@ -11,6 +11,7 @@ import { canonicalJson } from "../src/render-anywhere-rules.js";
 import {
   buildSite,
   CLIENT_PUBLIC_PATHS,
+  prepareCurrentRootFromEdge,
   PUBLIC_RETENTION,
   promoteClientRelease as promoteClientReleaseImpl,
   publishEdgeRelease,
@@ -132,6 +133,61 @@ test("rejects a client publication whose manifest-closed bytes cross channels", 
     () => validateClientPublication({ files, client: "surge", basePrefix: "edge" }),
     /channel|current|edge/iu,
   );
+});
+
+test("rebinds shared region GeoData and the root manifest when preparing current", async () => {
+  const root = await mkdtemp(join(tmpdir(), "apple-proxy-current-root-rebind-"));
+  const publicDirectory = join(root, "public");
+  try {
+    const domain = Buffer.from("edge-domain");
+    const ip = Buffer.from("edge-ip");
+    const regionManifest = {
+      channel: "edge",
+      domain: { name: "AppleProxySiteEdge", sha256: artifactSha256(domain) },
+      ip: { name: "AppleProxyIPEdge", sha256: artifactSha256(ip) },
+      names: { domain: "AppleProxySiteEdge", ip: "AppleProxyIPEdge" },
+      urls: {
+        domain: "https://example.test/edge/geodata/cn/AppleProxySiteEdge.dat",
+        ip: "https://example.test/edge/geodata/cn/AppleProxyIPEdge.dat",
+      },
+    };
+    const rootBase = {
+      schemaVersion: 2,
+      files: [{ path: "geodata/cn/AppleProxySiteEdge.dat", bytes: domain.length, sha256: artifactSha256(domain) }],
+    };
+    const rootManifest = {
+      ...rootBase,
+      manifestHash: artifactSha256(canonicalJson(rootBase)),
+    };
+    await mkdir(join(publicDirectory, "edge/geodata/cn"), { recursive: true });
+    await writeFile(join(publicDirectory, "edge/geodata/cn/AppleProxySiteEdge.dat"), domain);
+    await writeFile(join(publicDirectory, "edge/geodata/cn/AppleProxyIPEdge.dat"), ip);
+    await writeFile(join(publicDirectory, "edge/geodata/cn/manifest.json"), canonicalJson(regionManifest));
+    await writeFile(join(publicDirectory, "edge/manifest.json"), canonicalJson(rootManifest));
+
+    await prepareCurrentRootFromEdge({ publicDirectory });
+
+    assert.equal(await readFile(join(publicDirectory, "current/geodata/cn/AppleProxySiteCurrent.dat"), "utf8"), "edge-domain");
+    assert.equal(await readFile(join(publicDirectory, "current/geodata/cn/AppleProxyIPCurrent.dat"), "utf8"), "edge-ip");
+    await assert.rejects(
+      () => readFile(join(publicDirectory, "current/geodata/cn/AppleProxySiteEdge.dat")),
+      { code: "ENOENT" },
+    );
+    const currentRegion = JSON.parse(await readFile(join(publicDirectory, "current/geodata/cn/manifest.json"), "utf8"));
+    assert.equal(currentRegion.channel, "current");
+    assert.equal(currentRegion.names.domain, "AppleProxySiteCurrent");
+    assert.match(currentRegion.urls.domain, /\/current\/geodata\/cn\/AppleProxySiteCurrent\.dat$/u);
+    const currentRootBytes = await readFile(join(publicDirectory, "current/manifest.json"));
+    const currentRoot = JSON.parse(currentRootBytes);
+    assert.equal(currentRoot.files[0].path, "geodata/cn/AppleProxySiteCurrent.dat");
+    assert.equal(currentRoot.manifestHash, artifactSha256(canonicalJson({
+      schemaVersion: 2,
+      files: currentRoot.files,
+    })));
+    assert.equal(currentRootBytes.equals(Buffer.from(canonicalJson(currentRoot))), true);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
 });
 
 test("promotes without real-device canary evidence and rejects a mismatched native client", async () => {

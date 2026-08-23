@@ -31,7 +31,9 @@ var OneXrayAuditBundle = (() => {
     surge: "surge",
     singbox: "singbox",
     onexray: "onexray",
-    happ: "happ"
+    happ: "happ",
+    v2rayn: "v2rayn",
+    v2box: "v2box"
   });
   var PRIVATE_POLICY_CHANNELS = Object.freeze(["edge", "current", "previous"]);
   var PRIVATE_POLICY_CLIENTS = Object.freeze([CLIENT.happ, CLIENT.onexray]);
@@ -52,7 +54,8 @@ var OneXrayAuditBundle = (() => {
   var OPTION_VALUES = Object.freeze({
     output: Object.freeze(["nodes", "config"]),
     type: Object.freeze(["collection"]),
-    platform: Object.freeze(["iphone", "ipad", "macos", "appletv"]),
+    platform: Object.freeze(["iphone", "ipad", "macos", "appletv", "windows", "linux"]),
+    region: Object.freeze(["cn", "global", "ru", "ir"]),
     dnsMode: Object.freeze(["stable", "privacy", "speed"]),
     chinaDns: Object.freeze(["alidns", "dnspod", "system"]),
     globalDns: Object.freeze(["cloudflare", "google", "quad9"]),
@@ -124,7 +127,7 @@ var OneXrayAuditBundle = (() => {
     });
   }
   var definitions = Object.freeze([
-    protocol(["ss", "shadowsocks"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.onexray, CLIENT.happ], {
+    protocol(["ss", "shadowsocks"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.onexray, CLIENT.happ, CLIENT.v2rayn, CLIENT.v2box], {
       requiredFields: ["cipher", "password"]
     }),
     protocol(["ssr"], [CLIENT.shadowrocket, CLIENT.surge], {
@@ -133,13 +136,13 @@ var OneXrayAuditBundle = (() => {
     protocol(["snell"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox], {
       requiredFields: ["psk", "version"]
     }),
-    protocol(["vmess"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox, CLIENT.onexray, CLIENT.happ], {
+    protocol(["vmess"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox, CLIENT.onexray, CLIENT.happ, CLIENT.v2rayn, CLIENT.v2box], {
       requiredFields: ["uuid"]
     }),
-    protocol(["vless"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.singbox, CLIENT.onexray, CLIENT.happ], {
+    protocol(["vless"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.singbox, CLIENT.onexray, CLIENT.happ, CLIENT.v2rayn, CLIENT.v2box], {
       requiredFields: ["uuid"]
     }),
-    protocol(["trojan"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.onexray, CLIENT.happ], {
+    protocol(["trojan"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.onexray, CLIENT.happ, CLIENT.v2rayn, CLIENT.v2box], {
       requiredFields: ["password"],
       tls: true
     }),
@@ -147,7 +150,7 @@ var OneXrayAuditBundle = (() => {
       requiredFields: ["password"],
       tls: true
     }),
-    protocol(["hysteria2", "hy2"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.onexray, CLIENT.happ], {
+    protocol(["hysteria2", "hy2"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.onexray, CLIENT.happ, CLIENT.v2rayn, CLIENT.v2box], {
       requiredFields: ["password"],
       tls: true
     }),
@@ -155,8 +158,8 @@ var OneXrayAuditBundle = (() => {
       requiredFields: ["uuid", "password"],
       tls: true
     }),
-    protocol(["socks5"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.onexray, CLIENT.happ]),
-    protocol(["http"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox, CLIENT.onexray]),
+    protocol(["socks5"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.onexray, CLIENT.happ, CLIENT.v2rayn, CLIENT.v2box]),
+    protocol(["http"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox, CLIENT.onexray, CLIENT.v2rayn, CLIENT.v2box]),
     protocol(["ssh"], [CLIENT.egern, CLIENT.singbox], {
       requiredFields: ["username"]
     }),
@@ -287,6 +290,7 @@ var OneXrayAuditBundle = (() => {
   var SINGBOX_SNELL_MODES = /* @__PURE__ */ new Set(["default", "unshaped", "unsafe-raw"]);
   var EGERN_OBFS = /* @__PURE__ */ new Set(["http", "tls"]);
   var EGERN_VMESS_SECURITY = /* @__PURE__ */ new Set(["auto", "aes-128-gcm", "chacha20-poly1305", "none", "zero"]);
+  var XRAY_VMESS_SECURITY = EGERN_VMESS_SECURITY;
   var EGERN_TRANSPORTS = /* @__PURE__ */ new Set(["tcp", "raw", "ws", "grpc", "h2", "http2", "http", "http1"]);
   var EGERN_VLESS_FLOWS = /* @__PURE__ */ new Set(["xtls-rprx-vision"]);
   var EGERN_TUIC_UDP_MODES = /* @__PURE__ */ new Set(["native", "quic"]);
@@ -349,6 +353,12 @@ var OneXrayAuditBundle = (() => {
   }
   function isNonblankString(value) {
     return typeof value === "string" && value.length > 0 && value.trim() === value;
+  }
+  function isDomainServer(value) {
+    if (!isNonblankString(value)) return false;
+    if (value.includes(":")) return false;
+    const parts = value.split(".");
+    return !(parts.length === 4 && parts.every((part) => /^\d+$/u.test(part) && Number(part) <= 255));
   }
   function isNonblankOpaqueString(value) {
     return typeof value === "string" && value.trim().length > 0;
@@ -1092,8 +1102,8 @@ var OneXrayAuditBundle = (() => {
       const reason = happNodeExclusionReason(node ?? {});
       return reason ? { supported: false, reason } : { supported: true, reason: null };
     }
-    if (client === CLIENT.onexray) {
-      const reason = oneXrayNodeExclusionReason(node ?? {});
+    if ([CLIENT.onexray, CLIENT.v2rayn, CLIENT.v2box].includes(client)) {
+      const reason = xrayNodeExclusionReason(node ?? {}, client);
       return reason ? { supported: false, reason } : { supported: true, reason: null };
     }
     const protocol2 = normalizeProtocol(node?.type);
@@ -1108,7 +1118,7 @@ var OneXrayAuditBundle = (() => {
     else if (client === CLIENT.onexray) transportReason = oneXrayNodeExclusionReason(node ?? {});
     return transportReason ? { supported: false, reason: transportReason } : { supported: true, reason: null };
   }
-  var HAPP_XRAY_TRANSPORTS = /* @__PURE__ */ new Set(["tcp", "raw", "ws", "grpc", "h2", "http2"]);
+  var HAPP_XRAY_TRANSPORTS = /* @__PURE__ */ new Set(["tcp", "raw", "ws", "grpc"]);
   var ONEXRAY_TRANSPORTS = /* @__PURE__ */ new Set([
     "tcp",
     "raw",
@@ -1123,9 +1133,24 @@ var OneXrayAuditBundle = (() => {
     "mkcp",
     "hysteria"
   ]);
-  var XRAY_CHAIN_REASON = Object.freeze({ happ: "unsupported-happ-chain", onexray: "unsupported-onexray-chain" });
-  var XRAY_PROTOCOL_REASON = Object.freeze({ happ: "unsupported-happ-protocol", onexray: "unsupported-onexray-protocol" });
-  var XRAY_TRANSPORT_REASON = Object.freeze({ happ: "unsupported-happ-transport", onexray: "unsupported-onexray-transport" });
+  var XRAY_CHAIN_REASON = Object.freeze({
+    happ: "unsupported-happ-chain",
+    onexray: "unsupported-onexray-chain",
+    v2rayn: "unsupported-v2rayn-chain",
+    v2box: "unsupported-v2box-chain"
+  });
+  var XRAY_PROTOCOL_REASON = Object.freeze({
+    happ: "unsupported-happ-protocol",
+    onexray: "unsupported-onexray-protocol",
+    v2rayn: "unsupported-v2rayn-protocol",
+    v2box: "unsupported-v2box-protocol"
+  });
+  var XRAY_TRANSPORT_REASON = Object.freeze({
+    happ: "unsupported-happ-transport",
+    onexray: "unsupported-onexray-transport",
+    v2rayn: "unsupported-v2rayn-transport",
+    v2box: "unsupported-v2box-transport"
+  });
   function xrayCommonReason(node, client) {
     if (!isPlainObject(node) || !isNonblankString(node.name) || !isNonblankString(node.server) || !isValidPort(node.port)) {
       return `invalid-${client}-node-shape`;
@@ -1136,15 +1161,21 @@ var OneXrayAuditBundle = (() => {
     return null;
   }
   function xrayTlsReason(node, client) {
-    const security = node.security === void 0 ? node.tls === true ? "tls" : "none" : String(node.security).toLowerCase();
+    const reality = node["reality-opts"];
+    if (Object.hasOwn(node, "reality")) return `unsupported-${client}-tls`;
+    const vmessCipherSecurity = normalizeProtocol(node.type) === "vmess" && typeof node.security === "string" && XRAY_VMESS_SECURITY.has(node.security.toLowerCase());
+    const security = node.security === void 0 || vmessCipherSecurity ? reality !== void 0 ? "reality" : node.tls === true ? "tls" : "none" : String(node.security).toLowerCase();
     if (!["none", "tls", "reality"].includes(security)) return `unsupported-${client}-tls`;
-    if (node.security === "none" && node.tls === true || node.tls === false && security !== "none") {
+    if (!vmessCipherSecurity && (node.security === "none" && node.tls === true || node.tls === false && security !== "none")) {
       return `unsupported-${client}-tls`;
     }
+    if (normalizeProtocol(node.type) === "vmess" && hasOption(node, "cipher") && vmessCipherSecurity && String(node.cipher).toLowerCase() !== String(node.security).toLowerCase()) {
+      return `unsupported-${client}-tls`;
+    }
+    if (security !== "reality" && reality !== void 0) return `unsupported-${client}-tls`;
     if (security === "reality") {
-      const reality = node["reality-opts"];
       if (!isPlainObject(reality) || !isNonblankOpaqueString(reality["public-key"])) {
-        return client === "onexray" ? "incomplete-onexray-reality" : "incomplete-happ-reality";
+        return client === "onexray" ? "incomplete-onexray-reality" : client === "happ" ? "incomplete-happ-reality" : `incomplete-${client}-reality`;
       }
       if (Object.keys(reality).some((key) => !["public-key", "short-id", "spider-x", "_spider-x"].includes(key))) {
         return `unsupported-${client}-tls`;
@@ -1182,8 +1213,24 @@ var OneXrayAuditBundle = (() => {
     if (tls) return tls;
     const transport = xrayTransportReason(node, client, protocol2);
     if (transport) return transport;
-    if (client === "happ" && protocol2 === "socks5" && (node.tls === true || node.security === "tls" || node.security === "reality")) {
-      return "unsupported-happ-tls";
+    if (client === "happ") {
+      const network = normalizeTransport(node);
+      const security = node.security === "reality" || node["reality-opts"] !== void 0 ? "reality" : node.tls === true || node.security === "tls" ? "tls" : "none";
+      if (security === "reality" && (protocol2 === "hysteria2" || protocol2 === "hy2" || !["tcp", "raw", "grpc"].includes(network))) {
+        return "unsupported-happ-tls";
+      }
+      if (protocol2 === "hysteria2" || protocol2 === "hy2") {
+        const obfs = node.obfs === void 0 ? void 0 : String(node.obfs).toLowerCase();
+        const obfsPassword = node["obfs-password"] ?? node.obfs_password;
+        if (obfs !== void 0 && (obfs !== "salamander" || typeof obfsPassword !== "string" || obfsPassword.length === 0)) {
+          return "unsupported-happ-hysteria2-obfs";
+        }
+        if (obfs === void 0 && obfsPassword !== void 0) return "unsupported-happ-hysteria2-obfs";
+        if (security === "tls" && !isNonblankString(node.sni ?? node.servername) && !isDomainServer(node.server)) return "incomplete-happ-tls";
+      }
+    }
+    if (["happ", "v2rayn", "v2box"].includes(client) && protocol2 === "socks5" && (node.tls === true || node.security === "tls" || node.security === "reality")) {
+      return `unsupported-${client}-tls`;
     }
     return null;
   }
@@ -1920,6 +1967,32 @@ var OneXrayAuditBundle = (() => {
       supportsPolicyOverrides: false,
       adapterSchema: "happ-v4",
       publicDirectory: "happ"
+    },
+    {
+      id: CLIENT.v2rayn,
+      displayName: "v2rayN",
+      state: "active",
+      platforms: ["windows", "macos"],
+      configFormat: "xray-profile-json",
+      ruleFormat: "xray-geodata",
+      nodeValidator: "v2rayn",
+      separatesProfile: false,
+      supportsPolicyOverrides: false,
+      adapterSchema: "v2rayn-v1",
+      publicDirectory: "v2rayn"
+    },
+    {
+      id: CLIENT.v2box,
+      displayName: "V2Box",
+      state: "active",
+      platforms: ["iphone", "ipad"],
+      configFormat: "xray-profile-json",
+      ruleFormat: "xray-geodata",
+      nodeValidator: "v2box",
+      separatesProfile: false,
+      supportsPolicyOverrides: false,
+      adapterSchema: "v2box-v1",
+      publicDirectory: "v2box"
     }
   ].map((record) => freeze2(record));
   var byId = new Map(records.map((record) => [record.id, record]));

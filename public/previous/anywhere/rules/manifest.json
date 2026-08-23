@@ -4,7 +4,7 @@
     "commit": "e15518fde1f5d2652dfc1c234c89a68b87cecec0",
     "repository": "https://github.com/NodePassProject/Anywhere"
   },
-  "generatedAt": "2026-08-15T18:26:29Z",
+  "generatedAt": "2026-08-21T18:35:15Z",
   "generatorVersion": "0.1.0",
   "logicalRuleSets": [
     {
@@ -194,7 +194,7 @@
       ]
     }
   ],
-  "manifestSha256": "1e5231aa9a57b2667949e26385cb46ddb18343ab4a00bdb9d592dd713826d140",
+  "manifestSha256": "623f0e2fc3c6c64e358721b564ceee97437ec27f2b656d2e12a53af4ff995be0",
   "optionalPacks": {
     "adblock-full": "../../optional/adblock-full/manifest.json"
   },
@@ -271,7 +271,7 @@
       "index": 1,
       "name": "REJECT · Security",
       "path": "anywhere/rules/Security-001.arrs",
-      "sha256": "e25375edb6f43da0cad73d37b10059b20d551b6a2bb321868f763b180f3dab89",
+      "sha256": "6a818f3c473785c09863c869777ace0533f885153d53f024df206662bb18178a",
       "sourceId": "Security",
       "sourceIds": [
         "Hijacking",
@@ -291,7 +291,7 @@
       "index": 1,
       "name": "🕵️ 严格跟踪 · Privacy",
       "path": "anywhere/rules/Privacy-001.arrs",
-      "sha256": "2f8e10c9fef65253126a90a4fb4b84d6299f6e4b57cf8c83a984fae669363d37",
+      "sha256": "fbf3c4d8e866e7fb09397df413b631dab5cf191fe9e608fc23edbf1c2a48d161",
       "sourceId": "Privacy",
       "sourceIds": [
         "Privacy"
@@ -309,7 +309,7 @@
       "index": 1,
       "name": "DIRECT · DomesticCore",
       "path": "anywhere/rules/DomesticCore-001.arrs",
-      "sha256": "26dd5af2f0c19a08be5ddbe56420e05b38bc7629cfb129d1e6c6a9348cafe9cb",
+      "sha256": "f57463ed15a88981e69237560c90a16e825bc15ecdd3842f5c2624d5cc847603",
       "sourceId": "DomesticCore",
       "sourceIds": [
         "DomesticCore",
@@ -332,7 +332,7 @@
       "index": 1,
       "name": "🇨🇳 国内平台 · DomesticPlatform",
       "path": "anywhere/rules/DomesticPlatform-001.arrs",
-      "sha256": "76f70816571d38ba87695dd2bb0cc02ea94cd3854402e1deb761440ee23a221b",
+      "sha256": "86bec3689e6095fac1eac564cc2a7f3e82f48f419b5bb18d6950e8f84d228bc5",
       "sourceId": "DomesticPlatform",
       "sourceIds": [
         "BiliBili",
@@ -355,7 +355,7 @@
       "index": 1,
       "name": "🤖 AI 专用 · AI",
       "path": "anywhere/rules/AI-001.arrs",
-      "sha256": "bcbe7fcfaa16c2805808a69cb536c0cb5ad1a15f2ed75b1aece2cc83ce7c3943",
+      "sha256": "3c7e8e9bb4783b78eb21b8f94bf00fcc015dab366ea53094b5d3afad59cfbc6f",
       "sourceId": "AI",
       "sourceIds": [
         "OpenAI",
@@ -377,7 +377,7 @@
       "index": 1,
       "name": "🐙 GitHub · GitHub",
       "path": "anywhere/rules/GitHub-001.arrs",
-      "sha256": "5ae1d41ebb741b29839bbf849e25baa8d1027ae01b59f18301de4969271503cd",
+      "sha256": "365c1ffe328bc57fdd98f79c12308c89a6e4b81cbb470da8ab5b624958ef0b14",
       "sourceId": "GitHub",
       "sourceIds": [
         "GitHub"
@@ -398,7 +398,7 @@
       "index": 1,
       "name": "📺 YouTube · YouTube",
       "path": "anywhere/rules/YouTube-001.arrs",
-      "sha256": "c1ab85369aa455f1385c728a0feaa59c1d7a4e0553a7a3383f004eb8889658f8",
+      "sha256": "ae2a819f5882d7cbe005fd5bd223dfacdf96076822dc0e95c7128e14dfcdd241",
       "sourceId": "YouTube",
       "sourceIds": [
         "YouTube"
@@ -419,7 +419,7 @@
       "index": 1,
       "name": "🎬 海外流媒体 · OverseasMedia",
       "path": "anywhere/rules/OverseasMedia-001.arrs",
-      "sha256": "a1b1ab289bb675f6ba14789613a41f7abba20ad643c28137360215d208113281",
+      "sha256": "e727bffe15548b1a4da91e765cacef745f8146a0431a736d5c5f2a5f33fc23fb",
       "sourceId": "OverseasMedia",
       "sourceIds": [
         "Netflix",
@@ -443,7 +443,7 @@
       "index": 1,
       "name": "💬 海外社交 · OverseasSocial",
       "path": "anywhere/rules/OverseasSocial-001.arrs",
-      "sha256": "56b7ef88b2b71b4b0a9fc4911424a00123654fce54bf1b17c2b389d2d53853af",
+      "sha256": "e87a0dbd9d7964695e314aec5aef0c5a050cf0f9d1282f5a65ff14202144cff6",
       "sourceId": "OverseasSocial",
       "sourceIds": [
         "Telegram",
@@ -467,7 +467,7 @@
       "index": 1,
       "name": "🍎 Apple · Apple",
       "path": "anywhere/rules/Apple-001.arrs",
-      "sha256": "f0df9aad4af00bdf58c586b42df208f174a5aa86e1ace1fbea3b9364d20726f6",
+      "sha256": "71fa5f8f787023a52522a6e6e0c022935df69522e6f09f651b82bf7ff9df093d",
       "sourceId": "Apple",
       "sourceIds": [
         "Apple"
@@ -486,7 +486,7 @@
       "index": 1,
       "name": "🪟 Microsoft · Microsoft",
       "path": "anywhere/rules/Microsoft-001.arrs",
-      "sha256": "d50b456b36bb76d143ae0adbf0ad7a0d5dd891d6700e8f019e2000f5efadcbeb",
+      "sha256": "9b54b50ca955949a2fece701ad4f068abb711d42a05719476e6f63c6b4be7b9d",
       "sourceId": "Microsoft",
       "sourceIds": [
         "Microsoft"
@@ -506,7 +506,7 @@
       "index": 1,
       "name": "⬇️ 下载/P2P · Download",
       "path": "anywhere/rules/Download-001.arrs",
-      "sha256": "474be6da61329f77c71890be9bf5ae56e42a485d2292ac3ffd8b0c88e47d6aa2",
+      "sha256": "5f8d0a3d6ffc68b3179a1bc798a52a7abcb12ddcdf751bdfb5de05307ffbc5e4",
       "sourceId": "Download",
       "sourceIds": [
         "Download",
@@ -527,7 +527,7 @@
       "index": 1,
       "name": "🌍 海外游戏 · OverseasGame",
       "path": "anywhere/rules/OverseasGame-001.arrs",
-      "sha256": "eb98f3cd9faff3d1a96555949dcd9c5d2973ce41479d2148294ea3ed873a9200",
+      "sha256": "cbc9ed663f51913749f3ae5af0562e9a3e7adac7d6ecc5f08b5c4807f916e297",
       "sourceId": "OverseasGame",
       "sourceIds": [
         "OverseasGame"
@@ -537,16 +537,16 @@
     },
     {
       "countsByType": {
-        "ipv4Cidr": 7028,
+        "ipv4Cidr": 7032,
         "ipv6Cidr": 3924
       },
-      "entryCount": 10952,
+      "entryCount": 10956,
       "familyId": "ChinaIP",
       "id": "ChinaIP-001",
       "index": 1,
       "name": "DIRECT · ChinaIP",
       "path": "anywhere/rules/ChinaIP-001.arrs",
-      "sha256": "30144e48ba8f23f07476fd54c43c3217586e8f3133d0a455bd5e5d244fb74813",
+      "sha256": "5c3e549a58803b715e7145fa31d55bd516d2ee3e708d7142a76b412db42bcbef",
       "sourceId": "ChinaIP",
       "sourceIds": [
         "ChinaIP"
@@ -606,8 +606,8 @@
       "policy": "REJECT",
       "priority": 10,
       "provenance": {
-        "commit": "538b8a79532c44dfbcb8e694d2f43e753c60b157",
-        "committedAt": "2026-08-15T18:26:29Z",
+        "commit": "54abec88620d07187b1ba20ff06fdd8ed5b1f173",
+        "committedAt": "2026-08-21T18:35:15Z",
         "license": "GPL-2.0-only",
         "repository": "https://github.com/blackmatrix7/ios_rule_script"
       },
@@ -664,8 +664,8 @@
       "policy": "🕵️ 严格跟踪",
       "priority": 30,
       "provenance": {
-        "commit": "538b8a79532c44dfbcb8e694d2f43e753c60b157",
-        "committedAt": "2026-08-15T18:26:29Z",
+        "commit": "54abec88620d07187b1ba20ff06fdd8ed5b1f173",
+        "committedAt": "2026-08-21T18:35:15Z",
         "license": "GPL-2.0-only",
         "repository": "https://github.com/blackmatrix7/ios_rule_script"
       },
@@ -750,8 +750,8 @@
       "policy": "DIRECT",
       "priority": 40,
       "provenance": {
-        "commit": "538b8a79532c44dfbcb8e694d2f43e753c60b157",
-        "committedAt": "2026-08-15T18:26:29Z",
+        "commit": "54abec88620d07187b1ba20ff06fdd8ed5b1f173",
+        "committedAt": "2026-08-21T18:35:15Z",
         "license": "GPL-2.0-only",
         "repository": "https://github.com/blackmatrix7/ios_rule_script"
       },
@@ -841,8 +841,8 @@
       "policy": "🇨🇳 国内平台",
       "priority": 70,
       "provenance": {
-        "commit": "538b8a79532c44dfbcb8e694d2f43e753c60b157",
-        "committedAt": "2026-08-15T18:26:29Z",
+        "commit": "54abec88620d07187b1ba20ff06fdd8ed5b1f173",
+        "committedAt": "2026-08-21T18:35:15Z",
         "license": "GPL-2.0-only",
         "repository": "https://github.com/blackmatrix7/ios_rule_script"
       },
@@ -932,8 +932,8 @@
       "policy": "🤖 AI 专用",
       "priority": 110,
       "provenance": {
-        "commit": "538b8a79532c44dfbcb8e694d2f43e753c60b157",
-        "committedAt": "2026-08-15T18:26:29Z",
+        "commit": "54abec88620d07187b1ba20ff06fdd8ed5b1f173",
+        "committedAt": "2026-08-21T18:35:15Z",
         "license": "GPL-2.0-only",
         "repository": "https://github.com/blackmatrix7/ios_rule_script"
       },
@@ -992,8 +992,8 @@
       "policy": "🐙 GitHub",
       "priority": 150,
       "provenance": {
-        "commit": "538b8a79532c44dfbcb8e694d2f43e753c60b157",
-        "committedAt": "2026-08-15T18:26:29Z",
+        "commit": "54abec88620d07187b1ba20ff06fdd8ed5b1f173",
+        "committedAt": "2026-08-21T18:35:15Z",
         "license": "GPL-2.0-only",
         "repository": "https://github.com/blackmatrix7/ios_rule_script"
       },
@@ -1047,8 +1047,8 @@
       "policy": "📺 YouTube",
       "priority": 160,
       "provenance": {
-        "commit": "538b8a79532c44dfbcb8e694d2f43e753c60b157",
-        "committedAt": "2026-08-15T18:26:29Z",
+        "commit": "54abec88620d07187b1ba20ff06fdd8ed5b1f173",
+        "committedAt": "2026-08-21T18:35:15Z",
         "license": "GPL-2.0-only",
         "repository": "https://github.com/blackmatrix7/ios_rule_script"
       },
@@ -1133,8 +1133,8 @@
       "policy": "🎬 海外流媒体",
       "priority": 170,
       "provenance": {
-        "commit": "538b8a79532c44dfbcb8e694d2f43e753c60b157",
-        "committedAt": "2026-08-15T18:26:29Z",
+        "commit": "54abec88620d07187b1ba20ff06fdd8ed5b1f173",
+        "committedAt": "2026-08-21T18:35:15Z",
         "license": "GPL-2.0-only",
         "repository": "https://github.com/blackmatrix7/ios_rule_script"
       },
@@ -1234,8 +1234,8 @@
       "policy": "💬 海外社交",
       "priority": 210,
       "provenance": {
-        "commit": "538b8a79532c44dfbcb8e694d2f43e753c60b157",
-        "committedAt": "2026-08-15T18:26:29Z",
+        "commit": "54abec88620d07187b1ba20ff06fdd8ed5b1f173",
+        "committedAt": "2026-08-21T18:35:15Z",
         "license": "GPL-2.0-only",
         "repository": "https://github.com/blackmatrix7/ios_rule_script"
       },
@@ -1295,8 +1295,8 @@
       "policy": "🍎 Apple",
       "priority": 260,
       "provenance": {
-        "commit": "538b8a79532c44dfbcb8e694d2f43e753c60b157",
-        "committedAt": "2026-08-15T18:26:29Z",
+        "commit": "54abec88620d07187b1ba20ff06fdd8ed5b1f173",
+        "committedAt": "2026-08-21T18:35:15Z",
         "license": "GPL-2.0-only",
         "repository": "https://github.com/blackmatrix7/ios_rule_script"
       },
@@ -1350,8 +1350,8 @@
       "policy": "🪟 Microsoft",
       "priority": 270,
       "provenance": {
-        "commit": "538b8a79532c44dfbcb8e694d2f43e753c60b157",
-        "committedAt": "2026-08-15T18:26:29Z",
+        "commit": "54abec88620d07187b1ba20ff06fdd8ed5b1f173",
+        "committedAt": "2026-08-21T18:35:15Z",
         "license": "GPL-2.0-only",
         "repository": "https://github.com/blackmatrix7/ios_rule_script"
       },
@@ -1418,8 +1418,8 @@
       "policy": "⬇️ 下载/P2P",
       "priority": 280,
       "provenance": {
-        "commit": "538b8a79532c44dfbcb8e694d2f43e753c60b157",
-        "committedAt": "2026-08-15T18:26:29Z",
+        "commit": "54abec88620d07187b1ba20ff06fdd8ed5b1f173",
+        "committedAt": "2026-08-21T18:35:15Z",
         "license": "GPL-2.0-only",
         "repository": "https://github.com/blackmatrix7/ios_rule_script"
       },
@@ -1476,8 +1476,8 @@
       "policy": "🌍 海外游戏",
       "priority": 300,
       "provenance": {
-        "commit": "538b8a79532c44dfbcb8e694d2f43e753c60b157",
-        "committedAt": "2026-08-15T18:26:29Z",
+        "commit": "54abec88620d07187b1ba20ff06fdd8ed5b1f173",
+        "committedAt": "2026-08-21T18:35:15Z",
         "license": "GPL-2.0-only",
         "repository": "https://github.com/blackmatrix7/ios_rule_script"
       },
@@ -1498,11 +1498,11 @@
       "canonicalPath": "compiled/Surge/ChinaIP/ChinaIP.list",
       "componentId": "rules",
       "counts": {
-        "candidate": 11096,
-        "convertible": 11096,
+        "candidate": 11100,
+        "convertible": 11100,
         "duplicates": 0,
-        "output": 10952,
-        "parsed": 11096,
+        "output": 10956,
+        "parsed": 11100,
         "shadowed": 144,
         "unresolved": 0,
         "unsupported": 0
@@ -1511,18 +1511,18 @@
       "familyId": "ChinaIP",
       "id": "ChinaIP",
       "ignoredModifiers": {
-        "noResolve": 11096
+        "noResolve": 11100
       },
       "inputFormat": "RULE-SET",
       "inputSources": [
         {
-          "candidate": 11096,
-          "convertible": 11096,
+          "candidate": 11100,
+          "convertible": 11100,
           "id": "ChinaIP",
-          "output": 10952,
-          "parsed": 11096,
-          "sourceBytes": 400862,
-          "sourceSha256": "5765925aa3394350a43568e1dcb3cbd2e1492c7683479d22aedbf3c1e581e9a6",
+          "output": 10956,
+          "parsed": 11100,
+          "sourceBytes": 400999,
+          "sourceSha256": "2879e286adcc2822a3fc675a49afd5add60357c3d50eed5c0dcec8b504f9b7ed",
           "unsupported": 0
         }
       ],
@@ -1533,8 +1533,8 @@
       "policy": "DIRECT",
       "priority": 320,
       "provenance": {
-        "commit": "538b8a79532c44dfbcb8e694d2f43e753c60b157",
-        "committedAt": "2026-08-15T18:26:29Z",
+        "commit": "54abec88620d07187b1ba20ff06fdd8ed5b1f173",
+        "committedAt": "2026-08-21T18:35:15Z",
         "license": "GPL-2.0-only",
         "repository": "https://github.com/blackmatrix7/ios_rule_script"
       },
@@ -1542,37 +1542,37 @@
       "shardIds": [
         "ChinaIP-001"
       ],
-      "sourceBytes": 400862,
+      "sourceBytes": 400999,
       "sourceIds": [
         "ChinaIP"
       ],
-      "sourceSha256": "5765925aa3394350a43568e1dcb3cbd2e1492c7683479d22aedbf3c1e581e9a6",
+      "sourceSha256": "2879e286adcc2822a3fc675a49afd5add60357c3d50eed5c0dcec8b504f9b7ed",
       "unsupportedByReason": {}
     }
   ],
   "totals": {
     "blankCount": 32,
-    "candidateCount": 16840,
+    "candidateCount": 16844,
     "commentCount": 0,
     "convertibleByKind": {
       "domainKeyword": 79,
       "domainSuffix": 3152,
-      "ipv4Cidr": 9405,
+      "ipv4Cidr": 9409,
       "ipv6Cidr": 3947
     },
-    "convertibleCount": 16583,
+    "convertibleCount": 16587,
     "duplicateCount": 163,
     "ignoredModifiers": {
-      "noResolve": 13352
+      "noResolve": 13356
     },
     "inputSourceCount": 32,
     "logicalRuleSetCount": 14,
-    "outputCount": 16260,
-    "parsedCount": 16840,
-    "physicalLineCount": 16872,
+    "outputCount": 16264,
+    "parsedCount": 16844,
+    "physicalLineCount": 16876,
     "shadowedCount": 160,
     "shardCount": 14,
-    "sourceBytes": 583894,
+    "sourceBytes": 584031,
     "sourceCount": 14,
     "unresolvedCount": 0,
     "unsupportedByReason": {
@@ -1582,8 +1582,8 @@
   },
   "upstream": {
     "branch": "master",
-    "commit": "538b8a79532c44dfbcb8e694d2f43e753c60b157",
-    "committedAt": "2026-08-15T18:26:29Z",
+    "commit": "54abec88620d07187b1ba20ff06fdd8ed5b1f173",
+    "committedAt": "2026-08-21T18:35:15Z",
     "license": "GPL-2.0-only",
     "repository": "https://github.com/blackmatrix7/ios_rule_script"
   }
