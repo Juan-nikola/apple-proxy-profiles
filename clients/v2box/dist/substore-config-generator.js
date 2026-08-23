@@ -2903,7 +2903,7 @@ var V2BoxConfigBundle = (() => {
   // src/substore-config-entry.js
   async function operator(input, targetPlatform, context = {}) {
     const options = parseV2BoxOptions({ ...context.arguments ?? {}, output: "config" });
-    if (targetPlatform !== "JSON" && targetPlatform !== options.platform) throw new Error("V2Box target platform mismatch");
+    if (targetPlatform !== void 0 && targetPlatform !== "JSON" && targetPlatform !== options.platform) throw new Error("V2Box target platform mismatch");
     if (typeof context.produceArtifact !== "function") throw new Error("V2Box produceArtifact is unavailable");
     const raw = await context.produceArtifact({ type: "collection", name: options.name, platform: "JSON", produceType: "internal" });
     const normalized = normalizeNodes(raw, { clientChain: options.clientChain });

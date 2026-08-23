@@ -33,6 +33,14 @@ test("config operator returns parseable fail-closed diagnostics for an incompati
   assert.equal(Object.values(profile.renderFailures)[0], 1);
 });
 
+test("config operator accepts the platform omitted by Sub-Store File processing", async () => {
+  const result = await configOperator({}, undefined, {
+    arguments: { output: "config", type: "collection", name: "fixture", platform: "iphone" },
+    produceArtifact: async () => [{ name: "fixture", type: "vless", server: "fixture.invalid", port: 443, uuid: "TEST_ONLY_UUID" }],
+  });
+  assert.equal(JSON.parse(result.$content).outbounds.length, 4);
+});
+
 test("config operator propagates malformed GeoData instead of hiding it", async () => {
   await assert.rejects(() => configOperator({}, "JSON", {
     arguments: { output: "config", type: "collection", name: "fixture", platform: "iphone" },
