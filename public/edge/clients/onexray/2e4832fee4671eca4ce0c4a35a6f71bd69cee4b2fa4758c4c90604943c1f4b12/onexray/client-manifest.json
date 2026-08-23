@@ -1,5 +1,5 @@
 {
-  "chinaIpAuditSha256": "c910e3febe83b66f9f47e433918e1e87dbb8354ee3f370c6d2a4d2b20d459758",
+  "chinaIpAuditSha256": "86eca2211d945576cd751f54896f8a1531e64e507fe89a148a2d6c03d7eb2b7a",
   "client": "onexray",
   "files": [
     {
@@ -54,7 +54,7 @@
     }
   ],
   "generatedAt": "2026-08-21T18:35:15Z",
-  "manifestHash": "950f8123742778a67a9e2a7d81933c3f8971f24ba45f60841e6b0b91f37fcbd1",
+  "manifestHash": "2e4832fee4671eca4ce0c4a35a6f71bd69cee4b2fa4758c4c90604943c1f4b12",
   "optionalPacks": {},
   "schemaVersion": 1
 }

@@ -1,5 +1,5 @@
 {
-  "chinaIpAuditSha256": "c910e3febe83b66f9f47e433918e1e87dbb8354ee3f370c6d2a4d2b20d459758",
+  "chinaIpAuditSha256": "86eca2211d945576cd751f54896f8a1531e64e507fe89a148a2d6c03d7eb2b7a",
   "client": "surge",
   "files": [
     {
@@ -199,7 +199,7 @@
     }
   ],
   "generatedAt": "2026-08-21T18:35:15Z",
-  "manifestHash": "83bec4720d6ff02d12815f5c59731b79143d79ab0d3d029cd8a8fa16ae951d0d",
+  "manifestHash": "294a76c01ca5f23ddcf38ef602b53da8292a5be64de3208946f182ba58bb72fd",
   "optionalPacks": {
     "adblock-full": "8ea648a5a10552ad74aefe5b265b51b99683a235169be6626fb087be62d5412b"
   },
