@@ -2793,15 +2793,15 @@ var V2BoxConfigBundle = (() => {
     for (const key of ["output", "type", "name", "platform"]) if (!Object.hasOwn(raw, key)) throw new Error(`V2Box option '${key}' is required`);
     const output = required(raw, "output");
     if (!["nodes", "config"].includes(output)) throw new Error("V2Box option 'output' is unsupported");
-    if (required(raw, "type") !== "collection") throw new Error("v2rayN option 'type' must be collection");
+    if (required(raw, "type") !== "collection") throw new Error("V2Box option 'type' must be collection");
     const platform = required(raw, "platform");
     if (!["iphone", "ipad"].includes(platform)) throw new Error("V2Box option 'platform' is unsupported");
-    const options = { output, type: "collection", name: validateCollectionName(raw.name, "v2rayN option 'name'"), subscriptionName: raw.subscriptionName === void 0 ? "" : required(raw, "subscriptionName"), platform, channel: raw.channel ?? DEFAULTS.channel, region: parseRegion(raw.region ?? DEFAULTS.region), dnsMode: raw.dnsMode ?? DEFAULTS.dnsMode, chinaDns: raw.chinaDns ?? DEFAULTS.chinaDns, globalDns: raw.globalDns ?? DEFAULTS.globalDns, blockMode: raw.blockMode ?? DEFAULTS.blockMode, quicMode: raw.quicMode ?? DEFAULTS.quicMode, ipv6Mode: raw.ipv6Mode ?? DEFAULTS.ipv6Mode, clientChain: raw.clientChain ?? DEFAULTS.clientChain, clientChainTarget: raw.clientChainTarget ?? DEFAULTS.clientChainTarget, policyOverrides: raw.policyOverrides ?? DEFAULTS.policyOverrides };
-    if (!FRONTIER_CHANNELS.includes(options.channel)) throw new Error("v2rayN option 'channel' is unsupported");
-    for (const key of ["dnsMode", "chinaDns", "globalDns", "blockMode", "quicMode", "ipv6Mode", "clientChain"]) if (!OPTION_VALUES[key]?.includes(options[key])) throw new Error(`v2rayN option '${key}' is unsupported`);
-    if (options.clientChain === "off" && options.clientChainTarget !== "") throw new Error("v2rayN clientChainTarget requires clientChain=on");
-    if (options.clientChain === "on" && !/^NODE:.+$/u.test(options.clientChainTarget)) throw new Error("v2rayN clientChainTarget is required when clientChain=on");
-    if (typeof options.policyOverrides !== "string" || /[\r\n]/u.test(options.policyOverrides)) throw new Error("v2rayN policyOverrides is invalid");
+    const options = { output, type: "collection", name: validateCollectionName(raw.name, "V2Box option 'name'"), subscriptionName: raw.subscriptionName === void 0 ? "" : required(raw, "subscriptionName"), platform, channel: raw.channel ?? DEFAULTS.channel, region: parseRegion(raw.region ?? DEFAULTS.region), dnsMode: raw.dnsMode ?? DEFAULTS.dnsMode, chinaDns: raw.chinaDns ?? DEFAULTS.chinaDns, globalDns: raw.globalDns ?? DEFAULTS.globalDns, blockMode: raw.blockMode ?? DEFAULTS.blockMode, quicMode: raw.quicMode ?? DEFAULTS.quicMode, ipv6Mode: raw.ipv6Mode ?? DEFAULTS.ipv6Mode, clientChain: raw.clientChain ?? DEFAULTS.clientChain, clientChainTarget: raw.clientChainTarget ?? DEFAULTS.clientChainTarget, policyOverrides: raw.policyOverrides ?? DEFAULTS.policyOverrides };
+    if (!FRONTIER_CHANNELS.includes(options.channel)) throw new Error("V2Box option 'channel' is unsupported");
+    for (const key of ["dnsMode", "chinaDns", "globalDns", "blockMode", "quicMode", "ipv6Mode", "clientChain"]) if (!OPTION_VALUES[key]?.includes(options[key])) throw new Error(`V2Box option '${key}' is unsupported`);
+    if (options.clientChain === "off" && options.clientChainTarget !== "") throw new Error("V2Box clientChainTarget requires clientChain=on");
+    if (options.clientChain === "on" && !/^NODE:.+$/u.test(options.clientChainTarget)) throw new Error("V2Box clientChainTarget is required when clientChain=on");
+    if (typeof options.policyOverrides !== "string" || /[\r\n]/u.test(options.policyOverrides)) throw new Error("V2Box policyOverrides is invalid");
     parseBusinessOverrides(options.policyOverrides);
     return Object.freeze(options);
   }
@@ -2927,9 +2927,57 @@ var V2BoxConfigBundle = (() => {
     return code;
   }
 
+  // src/asset-url.js
+  var V2BOX_PUBLIC_ROOT = "https://juan-nikola.github.io/apple-proxy-profiles";
+  function isIpv4(host) {
+    const parts = host.split(".").map(Number);
+    return parts.length === 4 && parts.every((part) => Number.isInteger(part) && part >= 0 && part <= 255);
+  }
+  function privateIpv4(host) {
+    const parts = host.split(".").map(Number);
+    if (parts.length !== 4 || parts.some((part) => !Number.isInteger(part) || part < 0 || part > 255)) return false;
+    const value = parts[0] * 16777216 + parts[1] * 65536 + parts[2] * 256 + parts[3];
+    return value < 16777216 || value >= 167772160 && value <= 184549375 || value >= 1681915904 && value <= 1686110207 || value >= 2130706432 && value <= 2147483647 || value >= 2851995648 && value <= 2852061183 || value >= 2886729728 && value <= 2887778303 || value >= 3221225472 && value <= 3221225727 || value >= 3221225984 && value <= 3221226239 || value >= 3232235520 && value <= 3232301055 || value >= 3323068416 && value <= 3323199487 || value >= 3325256704 && value <= 3325256959 || value >= 3405803776 && value <= 3405804031 || value >= 3758096384;
+  }
+  function isReservedIpv6(host) {
+    const normalized = host.toLowerCase();
+    const mapped = normalized.match(/^::ffff:(\d{1,3}(?:\.\d{1,3}){3})$/u);
+    if (mapped && isIpv4(mapped[1])) return privateIpv4(mapped[1]);
+    const pieces = normalized.split("::");
+    const left = pieces[0] ? pieces[0].split(":") : [];
+    const right = pieces[1] ? pieces[1].split(":") : [];
+    if (pieces.length > 2 || left.length + right.length > 8) return true;
+    const groups = [...left, ...Array(8 - left.length - right.length).fill("0"), ...right].map((part) => Number.parseInt(part || "0", 16));
+    if (groups.length !== 8 || groups.some((part) => !Number.isInteger(part) || part < 0 || part > 65535)) return true;
+    const first = groups[0];
+    return groups.every((part) => part === 0) || normalized === "::1" || (first & 65024) === 64512 || (first & 65472) === 65152 || (first & 65280) === 65280 || groups[0] === 8193 && groups[1] === 3512;
+  }
+  function isUnsafeHost(hostname) {
+    const host = hostname.replace(/^\[|\]$/gu, "").toLowerCase();
+    if (isIpv4(host)) return privateIpv4(host);
+    if (host.includes(":") && /^[0-9a-f:]+$/u.test(host)) return isReservedIpv6(host);
+    return host === "localhost" || /(?:\.local|\.internal|\.invalid)$/u.test(host) || host.length === 0;
+  }
+  function hasExplicitPort(value) {
+    const authority = value.match(/^https:\/\/([^/?#]*)/iu)?.[1] ?? "";
+    return /^(?:[^/@]+@)?[^/]+:\d+$/u.test(authority);
+  }
+  function validateAssetUrl(value, expectedPath, expectedOrigin = new URL(V2BOX_PUBLIC_ROOT).origin) {
+    let url;
+    try {
+      url = new URL(value);
+    } catch {
+      throw new Error("V2Box asset URL is invalid");
+    }
+    if (url.protocol !== "https:" || url.origin !== expectedOrigin || url.username || url.password || url.port || hasExplicitPort(value) || url.search || url.hash || isUnsafeHost(url.hostname) || url.pathname !== expectedPath || url.href !== `${url.origin}${expectedPath}`) {
+      throw new Error("V2Box asset URL is invalid or unbound");
+    }
+    return url;
+  }
+
   // src/render-profile.js
   function bytes(value, label2) {
-    if (!(Buffer.isBuffer(value) || value instanceof Uint8Array)) throw new TypeError(`v2rayN GeoData ${label2} asset is missing or invalid`);
+    if (!(Buffer.isBuffer(value) || value instanceof Uint8Array)) throw new TypeError(`V2Box GeoData ${label2} asset is missing or invalid`);
     return Buffer.from(value);
   }
   function sha256(input) {
@@ -2974,17 +3022,14 @@ var V2BoxConfigBundle = (() => {
     const names = oneXrayGeoNames(options.channel);
     if (assetManifest) {
       if (assetManifest.region !== options.region || assetManifest.channel !== options.channel || !assetManifest.names || assetManifest.names.domain !== names.domain || assetManifest.names.ip !== names.ip) throw new Error("V2Box asset manifest region/channel/names mismatch");
-      const base = `/${options.channel}/geodata/${options.region}/`;
+      const base = `${new URL(V2BOX_PUBLIC_ROOT).pathname}/${options.channel}/geodata/${options.region}/`;
+      let origin;
       for (const type of ["geosite", "geoip"]) {
         const item = assetManifest[type];
         if (!item || item.name !== names[type === "geosite" ? "domain" : "ip"] || item.sha256 !== assetManifest.hashes?.[type]) throw new Error("V2Box asset manifest hash or name mismatch");
-        let url;
-        try {
-          url = new URL(item.url);
-        } catch {
-          throw new Error("V2Box asset manifest URL is invalid");
-        }
-        if (url.protocol !== "https:" || url.username || url.password || url.port || url.search || url.hash || /(?:localhost|\.local$|\.internal$|\.invalid$)/u.test(url.hostname) || url.hostname.includes(":") || /^\d+(?:\.\d+){0,3}$/u.test(url.hostname) || !url.pathname.endsWith(`${base}${item.name}.dat`)) throw new Error("V2Box asset manifest URL region/channel mismatch");
+        const url = validateAssetUrl(item.url, `${base}${item.name}.dat`);
+        if (type === "geosite") origin = url.origin;
+        else if (origin !== url.origin) throw new Error("V2Box asset manifest origin mismatch");
       }
       return { sources: [], assets: { geosite: assetManifest.geosite, geoip: assetManifest.geoip }, domain: [], ip: [] };
     }
@@ -3006,10 +3051,10 @@ var V2BoxConfigBundle = (() => {
     }
     if (!Array.isArray(manifest.sources) || manifest.sources.length === 0) throw new Error("V2Box GeoData manifest sources are missing");
     const codes = manifest.sources.map((source2) => {
-      if (!source2 || typeof source2.id !== "string" || source2.code !== oneXrayGeoCode(source2.id)) throw new Error("v2rayN GeoData manifest source code mismatch");
+      if (!source2 || typeof source2.id !== "string" || source2.code !== oneXrayGeoCode(source2.id)) throw new Error("V2Box GeoData manifest source code mismatch");
       return source2.code;
     });
-    if (Array.isArray(manifest.sourceCodes) && JSON.stringify(manifest.sourceCodes.map(({ code }) => code)) !== JSON.stringify(codes)) throw new Error("v2rayN GeoData sourceCodes mismatch");
+    if (Array.isArray(manifest.sourceCodes) && JSON.stringify(manifest.sourceCodes.map(({ code }) => code)) !== JSON.stringify(codes)) throw new Error("V2Box GeoData sourceCodes mismatch");
     return { sources: manifest.sources, domain: codes.map((code) => `ext:${names.domain}.dat:${code}`), ip: codes.map((code) => `ext:${names.ip}.dat:${code}`) };
   }
   function actionForSource(sourceId, overrides, nodeTags, blockMode) {

@@ -2790,15 +2790,15 @@ var V2BoxNodesBundle = (() => {
     for (const key of ["output", "type", "name", "platform"]) if (!Object.hasOwn(raw, key)) throw new Error(`V2Box option '${key}' is required`);
     const output = required(raw, "output");
     if (!["nodes", "config"].includes(output)) throw new Error("V2Box option 'output' is unsupported");
-    if (required(raw, "type") !== "collection") throw new Error("v2rayN option 'type' must be collection");
+    if (required(raw, "type") !== "collection") throw new Error("V2Box option 'type' must be collection");
     const platform = required(raw, "platform");
     if (!["iphone", "ipad"].includes(platform)) throw new Error("V2Box option 'platform' is unsupported");
-    const options = { output, type: "collection", name: validateCollectionName(raw.name, "v2rayN option 'name'"), subscriptionName: raw.subscriptionName === void 0 ? "" : required(raw, "subscriptionName"), platform, channel: raw.channel ?? DEFAULTS.channel, region: parseRegion(raw.region ?? DEFAULTS.region), dnsMode: raw.dnsMode ?? DEFAULTS.dnsMode, chinaDns: raw.chinaDns ?? DEFAULTS.chinaDns, globalDns: raw.globalDns ?? DEFAULTS.globalDns, blockMode: raw.blockMode ?? DEFAULTS.blockMode, quicMode: raw.quicMode ?? DEFAULTS.quicMode, ipv6Mode: raw.ipv6Mode ?? DEFAULTS.ipv6Mode, clientChain: raw.clientChain ?? DEFAULTS.clientChain, clientChainTarget: raw.clientChainTarget ?? DEFAULTS.clientChainTarget, policyOverrides: raw.policyOverrides ?? DEFAULTS.policyOverrides };
-    if (!FRONTIER_CHANNELS.includes(options.channel)) throw new Error("v2rayN option 'channel' is unsupported");
-    for (const key of ["dnsMode", "chinaDns", "globalDns", "blockMode", "quicMode", "ipv6Mode", "clientChain"]) if (!OPTION_VALUES[key]?.includes(options[key])) throw new Error(`v2rayN option '${key}' is unsupported`);
-    if (options.clientChain === "off" && options.clientChainTarget !== "") throw new Error("v2rayN clientChainTarget requires clientChain=on");
-    if (options.clientChain === "on" && !/^NODE:.+$/u.test(options.clientChainTarget)) throw new Error("v2rayN clientChainTarget is required when clientChain=on");
-    if (typeof options.policyOverrides !== "string" || /[\r\n]/u.test(options.policyOverrides)) throw new Error("v2rayN policyOverrides is invalid");
+    const options = { output, type: "collection", name: validateCollectionName(raw.name, "V2Box option 'name'"), subscriptionName: raw.subscriptionName === void 0 ? "" : required(raw, "subscriptionName"), platform, channel: raw.channel ?? DEFAULTS.channel, region: parseRegion(raw.region ?? DEFAULTS.region), dnsMode: raw.dnsMode ?? DEFAULTS.dnsMode, chinaDns: raw.chinaDns ?? DEFAULTS.chinaDns, globalDns: raw.globalDns ?? DEFAULTS.globalDns, blockMode: raw.blockMode ?? DEFAULTS.blockMode, quicMode: raw.quicMode ?? DEFAULTS.quicMode, ipv6Mode: raw.ipv6Mode ?? DEFAULTS.ipv6Mode, clientChain: raw.clientChain ?? DEFAULTS.clientChain, clientChainTarget: raw.clientChainTarget ?? DEFAULTS.clientChainTarget, policyOverrides: raw.policyOverrides ?? DEFAULTS.policyOverrides };
+    if (!FRONTIER_CHANNELS.includes(options.channel)) throw new Error("V2Box option 'channel' is unsupported");
+    for (const key of ["dnsMode", "chinaDns", "globalDns", "blockMode", "quicMode", "ipv6Mode", "clientChain"]) if (!OPTION_VALUES[key]?.includes(options[key])) throw new Error(`V2Box option '${key}' is unsupported`);
+    if (options.clientChain === "off" && options.clientChainTarget !== "") throw new Error("V2Box clientChainTarget requires clientChain=on");
+    if (options.clientChain === "on" && !/^NODE:.+$/u.test(options.clientChainTarget)) throw new Error("V2Box clientChainTarget is required when clientChain=on");
+    if (typeof options.policyOverrides !== "string" || /[\r\n]/u.test(options.policyOverrides)) throw new Error("V2Box policyOverrides is invalid");
     parseBusinessOverrides(options.policyOverrides);
     return Object.freeze(options);
   }

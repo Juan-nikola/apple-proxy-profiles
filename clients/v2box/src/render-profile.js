@@ -1,10 +1,11 @@
 import { renderXrayOutbound, renderXrayNodeError } from "../../../shared/nodes/render-xray-outbound.js";
-import { oneXrayGeoCode, oneXrayGeoNames, oneXrayGeoReference } from "../../onexray/src/geodata-contract.js";
+import { oneXrayGeoCode, oneXrayGeoNames } from "../../onexray/src/geodata-contract.js";
 import { businessTargetByKey, parseBusinessOverrides } from "../../../shared/policies/business-targets.js";
 import { policyForRuleSource } from "../../../shared/rules/lightweight-policy.js";
+import { validateAssetUrl, V2BOX_PUBLIC_ROOT } from "./asset-url.js";
 
 function bytes(value, label) {
-  if (!(Buffer.isBuffer(value) || value instanceof Uint8Array)) throw new TypeError(`v2rayN GeoData ${label} asset is missing or invalid`);
+  if (!(Buffer.isBuffer(value) || value instanceof Uint8Array)) throw new TypeError(`V2Box GeoData ${label} asset is missing or invalid`);
   return Buffer.from(value);
 }
 
@@ -28,12 +29,14 @@ function geoReferences(geoData, options, assetManifest) {
   const names = oneXrayGeoNames(options.channel);
   if (assetManifest) {
     if (assetManifest.region !== options.region || assetManifest.channel !== options.channel || !assetManifest.names || assetManifest.names.domain !== names.domain || assetManifest.names.ip !== names.ip) throw new Error("V2Box asset manifest region/channel/names mismatch");
-    const base = `/${options.channel}/geodata/${options.region}/`;
+    const base = `${new URL(V2BOX_PUBLIC_ROOT).pathname}/${options.channel}/geodata/${options.region}/`;
+    let origin;
     for (const type of ["geosite", "geoip"]) {
       const item = assetManifest[type];
       if (!item || item.name !== names[type === "geosite" ? "domain" : "ip"] || item.sha256 !== assetManifest.hashes?.[type]) throw new Error("V2Box asset manifest hash or name mismatch");
-      let url; try { url = new URL(item.url); } catch { throw new Error("V2Box asset manifest URL is invalid"); }
-      if (url.protocol !== "https:" || url.username || url.password || url.port || url.search || url.hash || /(?:localhost|\.local$|\.internal$|\.invalid$)/u.test(url.hostname) || url.hostname.includes(":") || /^\d+(?:\.\d+){0,3}$/u.test(url.hostname) || !url.pathname.endsWith(`${base}${item.name}.dat`)) throw new Error("V2Box asset manifest URL region/channel mismatch");
+      const url = validateAssetUrl(item.url, `${base}${item.name}.dat`);
+      if (type === "geosite") origin = url.origin;
+      else if (origin !== url.origin) throw new Error("V2Box asset manifest origin mismatch");
     }
     return { sources: [], assets: { geosite: assetManifest.geosite, geoip: assetManifest.geoip }, domain: [], ip: [] };
   }
@@ -55,10 +58,10 @@ function geoReferences(geoData, options, assetManifest) {
   }
   if (!Array.isArray(manifest.sources) || manifest.sources.length === 0) throw new Error("V2Box GeoData manifest sources are missing");
   const codes = manifest.sources.map((source) => {
-    if (!source || typeof source.id !== "string" || source.code !== oneXrayGeoCode(source.id)) throw new Error("v2rayN GeoData manifest source code mismatch");
+    if (!source || typeof source.id !== "string" || source.code !== oneXrayGeoCode(source.id)) throw new Error("V2Box GeoData manifest source code mismatch");
     return source.code;
   });
-  if (Array.isArray(manifest.sourceCodes) && JSON.stringify(manifest.sourceCodes.map(({ code }) => code)) !== JSON.stringify(codes)) throw new Error("v2rayN GeoData sourceCodes mismatch");
+  if (Array.isArray(manifest.sourceCodes) && JSON.stringify(manifest.sourceCodes.map(({ code }) => code)) !== JSON.stringify(codes)) throw new Error("V2Box GeoData sourceCodes mismatch");
   return { sources: manifest.sources, domain: codes.map((code) => `ext:${names.domain}.dat:${code}`), ip: codes.map((code) => `ext:${names.ip}.dat:${code}`) };
 }
 

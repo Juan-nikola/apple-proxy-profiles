@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { operator as nodesOperator } from "../src/substore-node-entry.js";
 import { operator as configOperator } from "../src/substore-config-entry.js";
+import { renderV2BoxAssetManifest } from "../src/render-assets.js";
 
 test("V2Box node operator uses internal JSON artifact contract", async () => {
   const result = await nodesOperator({}, "JSON", { arguments: { output: "nodes", type: "collection", name: "fixture", platform: "iphone" }, produceArtifact: async (request) => { assert.deepEqual(request, { type: "collection", name: "fixture", platform: "JSON", produceType: "internal" }); return [{ name: "fixture", type: "vless", server: "fixture.invalid", port: 443, uuid: "TEST_ONLY_UUID" }]; } });
@@ -38,4 +39,16 @@ test("config operator propagates malformed GeoData instead of hiding it", async 
     produceArtifact: async () => [{ name: "fixture", type: "vless", server: "fixture.invalid", port: 443, uuid: "TEST_ONLY_UUID" }],
     assetManifest: { region: "cn", channel: "edge", names: {}, hashes: {}, geosite: {}, geoip: {} },
   }), /asset manifest/u);
+});
+
+test("config operator forwards the validated asset manifest", async () => {
+  const assetManifest = renderV2BoxAssetManifest({ region: "cn", channel: "edge", geositeSha256: "a".repeat(64), geoipSha256: "b".repeat(64) });
+  const result = await configOperator({}, "JSON", {
+    arguments: { output: "config", type: "collection", name: "fixture", platform: "iphone", region: "cn", channel: "edge" },
+    assetManifest,
+    produceArtifact: async () => [{ name: "fixture", type: "vless", server: "fixture.invalid", port: 443, uuid: "TEST_ONLY_UUID" }],
+  });
+  const profile = JSON.parse(result.$content);
+  assert.equal(profile.assets.geosite.url, assetManifest.geosite.url);
+  assert.equal(profile.assets.geoip.sha256, assetManifest.geoip.sha256);
 });
