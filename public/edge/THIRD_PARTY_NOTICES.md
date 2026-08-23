@@ -44,6 +44,18 @@ esbuild 是开发依赖；生成器源码不因此改用 MIT 许可。esbuild �
 - 用途：在构建时加载本仓库裁剪的 Xray GeoData protobuf schema，并对生成的
   `geosite.dat`/`geoip.dat` 做立即解码校验；运行时客户端不依赖 protobufjs。
 
+## Regional V2Ray rule overlays
+
+- 项目：[runetfreedom/russia-v2ray-rules-dat](https://github.com/runetfreedom/russia-v2ray-rules-dat)
+- 固定提交：`f175e3f94891dbc1bb88edfc2d9d85f5a9051a23`；固定发布：`202608221547`，资产 `geosite.dat`，SHA-256 `76fdbe01687a6cc7683b50c38ceea84941458e8371d215918daf555665a537cd`
+- 上游许可：MIT
+- 项目：[Chocolate4U/Iran-v2ray-rules](https://github.com/Chocolate4U/Iran-v2ray-rules)
+- 固定提交：`676695ea3b4c95d5cf48a7c4e2e718bac5b8a099`；固定发布：`202608220502`，资产 `geosite.dat`，SHA-256 `5ff22eb6bc59573253dce2655498db4ed8096380787f15f5d9268756a4940532`
+- 上游许可：MIT
+- 使用范围：仅在用户选择 `ru` 或 `ir` 区域时作为可选规则覆盖层读取。适配器只解析固定发布中的 Xray `geosite.dat`/`geoip.dat` 标准 protobuf，保留区域和来源类别 ID，规范化域名/CIDR，并统计或拒绝不支持的记录；不分配最终策略动作。
+
+本项目将上述固定数据转换为客户端特定的规则与 GeoData 产物。转换结果不是上游项目的官方发布物，上游作者不对本项目的转换、策略选择、客户端兼容性或运行结果负责。
+
 ## Xray GeoData schema
 
 - 兼容来源：[v2fly/domain-list-community `geo-site.proto`](https://github.com/v2fly/domain-list-community/blob/master/geo-site.proto)

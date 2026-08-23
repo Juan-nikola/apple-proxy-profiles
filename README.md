@@ -1,6 +1,6 @@
 # Apple Proxy Profiles · 零基础部署与维护手册
 
-这个仓库把你保存在 Sub-Store 里的私密节点，转换成七个 active 客户端可导入的配置。HAPP 与 OneXray 已接入真实 renderer、bundle、fixture 和发布清单；公开页面只放无节点脚本，节点凭据仍只在你的 Sub-Store 私密任务中处理：
+这个仓库把你保存在 Sub-Store 里的私密节点，转换成九个 active 客户端可导入的配置。HAPP、OneXray、v2rayN 和 V2Box 已接入真实 renderer、bundle、fixture 和发布清单；公开页面只放无节点脚本，节点凭据仍只在你的 Sub-Store 私密任务中处理：
 
 | 客户端 | 平台 | 本项目提供什么 |
 | --- | --- | --- |
@@ -11,8 +11,10 @@
 | sing-box | macOS、iPhone、iPad、Android | 四个平台完整 JSON 配置 |
 | OneXray | macOS、iPhone、iPad、Android、Windows、Linux | Xray JSON 节点订阅、结构化 Profile、路由审计 |
 | HAPP | iPhone、iPad、macOS、Android、Windows、Linux | HAPP JSON 订阅、路由审计 |
+| v2rayN | Windows、macOS | Xray JSON 节点订阅、Windows/macOS 配置、地区 GeoData |
+| V2Box | iPhone、iPad | Xray JSON 节点订阅、iPhone/iPad 配置、共享 GeoData 资产 |
 
-Android 仍是 sing-box 的一个平台输出；注册表和发布链路现在覆盖七个 active 客户端。Sub-Store 任务总数为 28：原有 17 个通用任务，加上 `apple-proxy-policy`、3 个 OneXray 任务、6 个 HAPP 平台配置任务和 `happ-routing-audit`。
+Android 仍是 sing-box 的一个平台输出；注册表和发布链路现在覆盖九个 active 客户端。Sub-Store 任务总数为 34：原有 17 个通用任务，加上 `apple-proxy-policy`、3 个 OneXray 任务、6 个 HAPP 平台配置任务、`happ-routing-audit` 和 6 个 v2rayN/V2Box 任务。
 
 本仓库只保存公开脚本、公开规则和脱敏示例，**不保存你的订阅、节点、密码、UUID、私密输出 URL 或 Sub-Store 管理地址**。本项目不需要 MITM、HTTPS 解密、CA 证书或请求重写，这些功能请保持关闭。
 
@@ -23,7 +25,7 @@ Android 仍是 sing-box 的一个平台输出；注册表和发布链路现在�
 | 你的目标 | 直接去这里 |
 | --- | --- |
 | 第一次部署全部客户端 | [第 1 节：首次部署](#第-1-节首次部署-sub-store) |
-| 把配置导入客户端 | [第 2 节：导入七个客户端](#第-2-节导入七个客户端) |
+| 把配置导入客户端 | [第 2 节：导入九个客户端](#第-2-节导入九个客户端) |
 | 增加、删除或筛选节点 | [3.1 节：增加或删除节点](#31-增加或删除节点) |
 | 修改 DNS、IPv6 等任务参数 | [3.2 节：修改一个任务参数](#32-修改一个任务参数) |
 | 更新公开规则 | [3.3 节：更新公开规则](#33-更新公开规则) |
@@ -56,7 +58,7 @@ Android 仍是 sing-box 的一个平台输出；注册表和发布链路现在�
     ↓
 shared/rules/semantic-intents.js（统一业务语义）
     ↓
-七个客户端各自的格式生成器
+九个客户端各自的格式生成器
     ↓
 客户端中的业务组、规则集或 selector
 ```
@@ -82,9 +84,9 @@ shared/rules/semantic-intents.js（统一业务语义）
     ↓
 apple-proxy-all 总池
     ↓
-七个 active 客户端 collection（由你筛选；Xray renderer 会报告并排除不兼容节点）
+九个 active 客户端 collection（由你筛选；Xray renderer 会报告并排除不兼容节点）
     ↓
-28 个 Sub-Store File 任务（17 个通用任务 + 11 个 HAPP/OneXray 私密任务）
+34 个 Sub-Store File 任务（17 个通用任务 + 11 个 HAPP/OneXray 私密任务 + 6 个 v2rayN/V2Box 私密任务）
     ↓
 客户端导入私密输出 URL
     ↓
@@ -124,11 +126,11 @@ SUBSTORE_CHANNEL=current \\
 npm run configure:substore
 ```
 
-成功标志：终端显示 `Wrote private Sub-Store config`，且文件权限为 `0600`；文件中有 8 个 collection、28 个任务。切换灰度或回滚时，把 `SUBSTORE_CHANNEL` 改成 `edge` 或 `previous` 后重新运行即可。真实地址不要复制进 README、Issue 或聊天。
+成功标志：终端显示 `Wrote private Sub-Store config`，且文件权限为 `0600`；文件中有 10 个 collection、34 个任务。切换灰度或回滚时，把 `SUBSTORE_CHANNEL` 改成 `edge` 或 `previous` 后重新运行即可。真实地址不要复制进 README、Issue 或聊天。
 
 这个命令会离线校验公开 JS URL 的 `#` 参数，但不会替你登录 Sub-Store 管理后台或自动删除旧任务；首次迁移仍按下面的 preview、上线后可选反馈和回滚步骤执行。HAPP 任务固定使用 `/current/happ/`，片段中不再填写 `channel`；`SUBSTORE_CHANNEL` 只控制其他客户端和维护者的内部发布流程。
 
-### 1.2 创建一个总池和七个客户端 collection
+### 1.2 创建一个总池和九个客户端 collection
 
 先创建或核对以下对象：
 
@@ -142,17 +144,19 @@ npm run configure:substore
 | sing-box | `apple-proxy-singbox` |
 | OneXray | `apple-proxy-onexray` |
 | HAPP | `apple-proxy-happ` |
+| v2rayN | `apple-proxy-v2rayn` |
+| V2Box | `apple-proxy-v2box` |
 
 操作：
 
 1. 把你确认可用的来源加入 `apple-proxy-all`。
-2. 从总池为七个客户端分别建立 collection；也可以先把总池原样交给生成器，再由生成器按客户端能力审计并排除不兼容节点。
+2. 从总池为九个客户端分别建立 collection；也可以先把总池原样交给生成器，再由生成器按客户端能力审计并排除不兼容节点。
 3. 在 Sub-Store 中自行筛选每个客户端要使用的协议和节点。HAPP/OneXray 不会静默删除可表示节点，审计任务会给出输入数、兼容数和排除原因。
 4. 逐个点击 preview，记录节点总数和协议计数。
 
 **重要：`sing-box-client` 不是必需标签。** 它只是 Sub-Store 的筛选辅助，可以删除。要自己选择 sing-box 节点时，移除该标签筛选条件，直接在 `apple-proxy-singbox` 中手动勾选节点，然后按“collection preview → 四个 `singbox-config-*` 任务 preview → 客户端刷新”的顺序操作。请始终保留 collection slug `apple-proxy-singbox`，以及任务参数 `name=apple-proxy-singbox`；这两个是机器绑定键，不能改成中文。
 
-成功标志：七个客户端 collection 都能预览，且每个集合只包含你愿意交给该客户端的节点；HAPP/OneXray 审计中的排除计数可解释。
+成功标志：九个客户端 collection 都能预览，且每个集合只包含你愿意交给该客户端的节点；HAPP/OneXray/v2rayN/V2Box 诊断中的排除计数可解释。
 
 失败怎么办：某一个 collection 为空时，只检查它的来源和筛选条件；不要同时改其他客户端。
 
@@ -160,9 +164,9 @@ npm run configure:substore
 
 完整的筛选边界和迁移顺序见 [Sub-Store 客户端节点池指南](docs/substore-client-pools.md)。
 
-### 1.3 创建或核对 28 个 active File 任务
+### 1.3 创建或核对 34 个 active File 任务
 
-通用任务总数是 `4+1+4+4+4=17`；加上 policy、3 个 OneXray 任务、6 个 HAPP 平台任务和 1 个 HAPP 审计任务后，canonical 任务总数是 28。早期文档漏算了 `shadowrocket-nodes`，不要再按 16 个创建。
+通用任务总数是 `4+1+4+4+4=17`；加上 policy、3 个 OneXray 任务、6 个 HAPP 平台任务、1 个 HAPP 审计任务和 6 个 v2rayN/V2Box 任务后，canonical 任务总数是 34。早期文档漏算了 `shadowrocket-nodes`，不要再按 16 个创建。
 
 | # | 客户端 | File 任务名 | 作用 |
 | ---: | --- | --- | --- |
@@ -184,7 +188,7 @@ npm run configure:substore
 | 16 | sing-box | `singbox-config-ipad` | iPad JSON |
 | 17 | sing-box | `singbox-config-android` | Android JSON |
 
-已有任务时逐个核对名称、脚本 URL、`name=` 和平台参数；没有任务时按 [Sub-Store 七客户端外置 JS + 任务引用总指南](docs/substore-two-layer-setup.md) 创建。不要复制 JavaScript 正文，File 应引用 Pages 上的远程脚本。11 个 HAPP/OneXray 任务仍是私密任务，不会把节点或策略内容发布到 Pages；HAPP 配置必须分别建立 `happ-macos`、`happ-iphone`、`happ-ipad`、`happ-android`、`happ-windows`、`happ-linux` 六个平台任务。
+已有任务时逐个核对名称、脚本 URL、`name=` 和平台参数；没有任务时按 [Sub-Store 九客户端外置 JS + 任务引用总指南](docs/substore-two-layer-setup.md) 创建。不要复制 JavaScript 正文，File 应引用 Pages 上的远程脚本。11 个 HAPP/OneXray 任务和 6 个 v2rayN/V2Box 任务仍是私密任务，不会把节点或策略内容发布到 Pages；HAPP 配置必须分别建立 `happ-macos`、`happ-iphone`、`happ-ipad`、`happ-android`、`happ-windows`、`happ-linux` 六个平台任务；v2rayN 使用 `v2rayn-config-windows`、`v2rayn-config-macos`，V2Box 使用 `v2box-config-iphone`、`v2box-config-ipad`。
 
 建议刷新频率：节点类任务每 6 小时，配置类任务每天。Anywhere App 中的节点和规则仍需手动 Refresh/Update。
 
@@ -355,6 +359,34 @@ HAPP 没有客户端内的可视化业务组。业务节点通过私密任务的
 
 详细步骤见 [OneXray 部署指南](clients/onexray/docs/deployment.md) 和 [OneXray 上线后可选反馈清单](clients/onexray/docs/canary.md)。
 
+### 2.8 v2rayN
+
+本次候选已经生成在 `edge`，`current` 仍是旧的稳定快照。审核前把下方任务 URL 中的频道替换为 `edge`（并将 hash 参数改为 `channel=edge`）；只有按已验证的 client-manifest hash 完成显式 promotion 后，才使用 `current`。
+
+在 Sub-Store 中使用 `apple-proxy-v2rayn`，先预览 `v2rayn-nodes`，再按设备选择 `v2rayn-config-windows` 或 `v2rayn-config-macos`。配置任务使用 `region=cn`，也可以在隔离任务中改为 `global`、`ru` 或 `ir`；节点任务和配置任务都只读取该 collection，不接管节点选择。
+
+成功标志：节点订阅输出非空 Xray JSON；配置含 TUN、DNS、outbounds 和 routing，GeoData 引用与当前频道 manifest 一致。v2rayN 任务不使用 `autoGroupMode`，Windows 与 macOS 不要交叉导入。
+
+失败怎么办：先检查 `apple-proxy-v2rayn` 是否非空，再看诊断中的 `renderFailures` 或 GeoData hash/频道错误。固定节点不可用时只修正该 collection 或私密策略参数。
+
+回滚方式：保留旧 v2rayN 订阅和配置，公开规则或 GeoData 问题切换到 `previous`，不要删除 Sub-Store 任务。
+
+详细参数见 [Sub-Store 九客户端外置 JS + 任务引用总指南](docs/substore-two-layer-setup.md) 和 [v2rayN renderer README](clients/v2rayn/README.md)。
+
+### 2.9 V2Box
+
+本次候选已经生成在 `edge`，`current` 仍是旧的稳定快照。审核前把下方任务 URL 中的频道替换为 `edge`（并将 hash 参数改为 `channel=edge`）；只有按已验证的 client-manifest hash 完成显式 promotion 后，才使用 `current`。
+
+在 Sub-Store 中使用 `apple-proxy-v2box`，先预览 `v2box-nodes`，再按设备选择 `v2box-config-iphone` 或 `v2box-config-ipad`。配置任务默认 `region=cn`，使用共享 GeoData 资产；地区切换只改变规则组合，不改变节点 collection。
+
+成功标志：节点订阅输出非空 Xray JSON；iPhone/iPad 配置可解析，资产 manifest 的地区、频道、名称和 SHA-256 与配置一致。V2Box 任务不使用 `autoGroupMode`，不要把其他客户端配置直接导入 V2Box。
+
+失败怎么办：先检查 `apple-proxy-v2box` 是否非空，再检查资产 URL 是否仍指向相同频道和地区。节点或资产不兼容时查看 count-only 诊断并修正对应任务。
+
+回滚方式：切回旧 V2Box 配置；公开规则或 GeoData 问题使用 `previous`，保留新任务供排查。
+
+详细参数见 [Sub-Store 九客户端外置 JS + 任务引用总指南](docs/substore-two-layer-setup.md) 和 [V2Box renderer README](clients/v2box/README.md)。
+
 ---
 
 ## 第 3 节：日常维护
@@ -375,7 +407,7 @@ HAPP 没有客户端内的可视化业务组。业务节点通过私密任务的
 4. 只刷新对应客户端的节点任务和 Profile/Config。
 5. 先在一台设备手动更新。
 
-不要为了增加一个节点同时重建七个客户端，也不要修改公开 JavaScript。
+不要为了增加一个节点同时重建九个客户端，也不要修改公开 JavaScript。
 
 如果你只想调整 sing-box 使用的节点：
 
@@ -414,7 +446,7 @@ npm run verify
 - 各客户端格式：`clients/<client>/src/`。
 - Anywhere 14 个业务包：由统一语义聚合生成，不在文档里单独手写另一套来源映射。
 
-新增 App 时先判断它属于现有 AI、媒体、社交、国内平台、下载或游戏意图；只有现有业务意图确实无法表达时，才新增业务组。这样七个客户端的名称和行为不会越维护越散。
+新增 App 时先判断它属于现有 AI、媒体、社交、国内平台、下载或游戏意图；只有现有业务意图确实无法表达时，才新增业务组。这样九个客户端的名称和行为不会越维护越散。
 
 ---
 
@@ -546,8 +578,8 @@ Shadowrocket 和 Surge 首先检查 `subscriptionName`；Egern 和 Surge 再检�
 
 | 路径 | 作用 |
 | --- | --- |
-| `docs/substore-client-pools.md` | 七个 active 客户端 collection 的筛选、迁移和回滚 |
-| `docs/substore-two-layer-setup.md` | 28 个 active/private File 的完整 URL、频道、审计和回滚参数 |
+| `docs/substore-client-pools.md` | 九个 active 客户端 collection 的筛选、迁移和回滚 |
+| `docs/substore-two-layer-setup.md` | 34 个 active/private File 的完整 URL、频道、审计和回滚参数 |
 | `docs/maintenance.md` | 开发者维护、规则编译、发布与回滚 |
 | `docs/implementation-status.md` | 当前自动化发布状态和可选设备反馈事项 |
 | `clients/<client>/docs/` | 每个客户端的部署、灰度和排障细节 |

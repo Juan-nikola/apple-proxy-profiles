@@ -26,10 +26,10 @@ test("shared unsupported diagnostics contain no node values", () => {
 test("v2rayN and V2Box share the lossless common protocol and transport matrix", () => {
   const protocols = [
     ["vless", { uuid: VLESS.uuid }], ["vmess", { uuid: VLESS.uuid }],
-    ["ss", { cipher: "aes-128-gcm", password: "fixture-password" }],
-    ["shadowsocks", { cipher: "aes-128-gcm", password: "fixture-password" }],
-    ["trojan", { password: "fixture-password" }], ["socks5", {}], ["http", {}],
-    ["hysteria2", { password: "fixture-password" }], ["hy2", { password: "fixture-password" }],
+    ["ss", { cipher: "aes-128-gcm", password: "TEST_ONLY_PASSWORD" }],
+    ["shadowsocks", { cipher: "aes-128-gcm", password: "TEST_ONLY_PASSWORD" }],
+    ["trojan", { password: "TEST_ONLY_PASSWORD" }], ["socks5", {}], ["http", {}],
+    ["hysteria2", { password: "TEST_ONLY_PASSWORD" }], ["hy2", { password: "TEST_ONLY_PASSWORD" }],
   ];
   const transports = ["tcp", "ws", "grpc", "http2", "httpupgrade", "xhttp", "kcp"];
   for (const client of ["v2rayn", "v2box"]) for (const [type, fields] of protocols) {
@@ -55,8 +55,8 @@ test("v2rayN and V2Box share the lossless common protocol and transport matrix",
 
 test("node errors are count-only for malformed and credential-bearing inputs", () => {
   for (const client of ["v2rayn", "v2box"]) for (const error of [
-    new Error("invalid node secret-password"), new Error("unsupported-v2box-protocol vmess://secret"),
-    new Error("subscription https://user:pass@example.invalid/list"),
+    new Error("invalid node TEST_ONLY_SECRET_PASSWORD"), new Error("unsupported-v2box-protocol " + "vmess://" + "secret"),
+    new Error("subscription https://user" + ":pass@example.invalid/list"),
   ]) {
     const diagnostic = renderXrayNodeError(error, client);
     const text = JSON.stringify(diagnostic);

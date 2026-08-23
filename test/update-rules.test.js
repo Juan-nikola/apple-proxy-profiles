@@ -147,7 +147,7 @@ test("accepts only explicit edge, current-check, and client promotion operations
   }
 });
 
-test("publishes all seven active client manifests while keeping Xray scripts credential-free", async () => {
+test("publishes all nine active client manifests while keeping Xray scripts credential-free", async () => {
   const artifacts = await buildArtifactsFromScript({
     operation: "build-edge",
     publicDirectory: join(tmpdir(), "unused-public"),
@@ -156,7 +156,7 @@ test("publishes all seven active client manifests while keeping Xray scripts cre
     fetchSnapshotImpl: async () => lightweightFixtureSnapshots(),
   });
   assert.deepEqual(Object.keys(artifacts.diagnostics.defaultManifest.clients).sort(), [
-    "anywhere", "egern", "happ", "onexray", "shadowrocket", "singbox", "surge",
+    "anywhere", "egern", "happ", "onexray", "shadowrocket", "singbox", "surge", "v2box", "v2rayn",
   ]);
   assert.deepEqual(artifacts.diagnostics.defaultManifest.clientStates, {
     anywhere: { state: "active", adapterSchema: "anywhere-v1", publicDirectory: "anywhere" },
@@ -166,6 +166,8 @@ test("publishes all seven active client manifests while keeping Xray scripts cre
     singbox: { state: "active", adapterSchema: "singbox-v1", publicDirectory: "sing-box" },
     onexray: { state: "active", adapterSchema: "onexray-v1", publicDirectory: "onexray" },
     happ: { state: "active", adapterSchema: "happ-v4", publicDirectory: "happ" },
+    v2rayn: { state: "active", adapterSchema: "v2rayn-v1", publicDirectory: "v2rayn" },
+    v2box: { state: "active", adapterSchema: "v2box-v1", publicDirectory: "v2box" },
   });
   assert.ok([...artifacts.defaults.keys()].some((path) => path === "onexray/scripts/onexray-node-generator.js"));
   assert.ok([...artifacts.defaults.keys()].some((path) => path === "happ/scripts/happ-config-generator.js"));
@@ -623,8 +625,8 @@ test("promotes exact tested client bytes without changing other clients", async 
     "old optional\n",
   );
   const rollout = JSON.parse(await readFile(join(publicDirectory, "rollout.json"), "utf8"));
-  assert.deepEqual(Object.keys(rollout.clients).sort(), ["anywhere", "egern", "happ", "onexray", "shadowrocket", "singbox", "surge"]);
-  assert.deepEqual(Object.keys(rollout.previous).sort(), ["anywhere", "egern", "happ", "onexray", "shadowrocket", "singbox", "surge"]);
+  assert.deepEqual(Object.keys(rollout.clients).sort(), ["anywhere", "egern", "happ", "onexray", "shadowrocket", "singbox", "surge", "v2box", "v2rayn"]);
+  assert.deepEqual(Object.keys(rollout.previous).sort(), ["anywhere", "egern", "happ", "onexray", "shadowrocket", "singbox", "surge", "v2box", "v2rayn"]);
   assert.equal(Object.hasOwn(rollout.optionalPacks["adblock-full"], "happ"), false);
   assert.equal(rollout.clients.surge, null);
   const publishedSingboxManifest = JSON.parse(await readFile(

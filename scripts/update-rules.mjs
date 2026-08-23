@@ -24,6 +24,7 @@ import {
   validatePublicAuditDashboard,
 } from "../automation/src/public-audit-dashboard.js";
 import { fetchSnapshot } from "../automation/src/fetch-snapshot.js";
+import { fetchExternalRuleSnapshots } from "../automation/src/fetch-external-sources.js";
 import { parseSurgeRules } from "../automation/src/parse-surge.js";
 import {
   canRefreshChannel,
@@ -635,6 +636,9 @@ export async function buildArtifacts({
   chinaIpAudit = null,
   v2flyDomainAudit = null,
   fetchSnapshotImpl = fetchSnapshot,
+  externalSnapshots = null,
+  fetchExternalSnapshotsImpl = fetchExternalRuleSnapshots,
+  loadExternalSnapshots = false,
 }) {
   let commit;
   let committedAt;
@@ -653,6 +657,9 @@ export async function buildArtifacts({
     ({ sha: commit, committedAt } = await resolveUpstreamCommit());
   }
   const upstream = Object.freeze({ ...BLACKMATRIX7_BASELINE, commit, committedAt });
+  const resolvedExternalSnapshots = externalSnapshots === null && loadExternalSnapshots
+    ? await fetchExternalSnapshotsImpl()
+    : externalSnapshots;
   const snapshot = await fetchSnapshotImpl({
     commit,
     catalog: FETCH_SOURCE_CATALOG,
@@ -662,6 +669,7 @@ export async function buildArtifacts({
   const statics = includeStaticFiles ? await staticFiles(channel) : null;
   const artifacts = buildClientArtifacts({
     snapshot,
+    externalSnapshots: resolvedExternalSnapshots,
     upstream,
     channel,
     additionalFiles: statics,
@@ -725,6 +733,7 @@ export async function main(
     singBoxBinaries,
     chinaIpAudit,
     v2flyDomainAudit,
+    loadExternalSnapshots: true,
   });
   if (command.operation === "check-current") {
     if (!await verifyTrackedPublications({ publicDirectory, ...artifacts })) {

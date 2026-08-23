@@ -25,6 +25,7 @@ const COMMON_ENUM_KEYS = Object.freeze([
 ]);
 
 const CHANNELS = Object.freeze(["edge", "current", "previous"]);
+const REGIONS = Object.freeze(["cn", "global", "ru", "ir"]);
 const ADBLOCK_MODES = Object.freeze(["off", "full"]);
 const PROFILE_MODES = Object.freeze(["light", "diagnostic"]);
 const NODE_ERROR_MODES = Object.freeze(["strict", "compatible"]);
@@ -87,6 +88,20 @@ const GENERATOR_SCHEMAS = Object.freeze({
     extraKeys: ["policyOverrides"],
     omitKeys: ["clientChain", "channel"],
     output: "audit",
+  }),
+  "v2rayn/scripts/substore-node-generator.js": nodeSchema(),
+  "v2rayn/scripts/substore-config-generator.js": configSchema({
+    platforms: ["windows", "macos"],
+    extraKeys: ["region"],
+    extraEnums: { region: REGIONS },
+    omitKeys: ["autoGroupMode"],
+  }),
+  "v2box/scripts/substore-node-generator.js": nodeSchema(),
+  "v2box/scripts/substore-config-generator.js": configSchema({
+    platforms: ["iphone", "ipad"],
+    extraKeys: ["region"],
+    extraEnums: { region: REGIONS },
+    omitKeys: ["autoGroupMode"],
   }),
 });
 

@@ -21,12 +21,14 @@ import {
   RULE_BUDGETS,
   ruleClientCatalog,
 } from "../../shared/rules/lightweight-policy.js";
+import { sourcesForRegion } from "../../shared/rules/region-profiles.js";
 import { SEMANTIC_INTENTS } from "../../shared/rules/semantic-intents.js";
 import { RULE_KIND } from "../../shared/rules/model.js";
 import { buildImportBatches, renderImportPage } from "../../clients/anywhere/src/build-import-page.js";
 import { ANYWHERE_LIGHTWEIGHT_MIGRATION } from "../../clients/anywhere/src/shard-rules.js";
 import { buildOneXrayGeoDataArtifacts } from "../../clients/onexray/src/build-import-page.js";
 import { renderHappGeodata } from "./render-happ-geodata.js";
+import { buildRegionGeoDataArtifacts } from "./render-region-geodata.js";
 import {
   renderHappImportPage,
 } from "../../clients/happ/src/build-import-page.js";
@@ -97,6 +99,10 @@ const OPTIONAL_AWARE_GENERATOR_PATHS = new Set([
   "happ/scripts/substore-config-generator.js",
   "happ/scripts/happ-routing-audit.js",
   "happ/scripts/substore-routing-audit.js",
+  "v2rayn/scripts/substore-node-generator.js",
+  "v2rayn/scripts/substore-config-generator.js",
+  "v2box/scripts/substore-node-generator.js",
+  "v2box/scripts/substore-config-generator.js",
 ]);
 
 const ONEXRAY_SCRIPT_PATHS = Object.freeze([
@@ -113,6 +119,19 @@ const HAPP_SCRIPT_PATHS = Object.freeze([
   "happ/scripts/happ-routing-audit.js",
   "happ/scripts/substore-routing-audit.js",
 ]);
+const V2RAYN_SCRIPT_PATHS = Object.freeze([
+  "v2rayn/scripts/substore-node-generator.js",
+  "v2rayn/scripts/substore-config-generator.js",
+]);
+const V2BOX_SCRIPT_PATHS = Object.freeze([
+  "v2box/scripts/substore-node-generator.js",
+  "v2box/scripts/substore-config-generator.js",
+]);
+const NATIVE_POLICY_GENERATOR_PATHS = new Set([
+  ...V2RAYN_SCRIPT_PATHS,
+  ...V2BOX_SCRIPT_PATHS,
+]);
+const REGION_GEO_DATA_REGIONS = Object.freeze(["cn", "global", "ru", "ir"]);
 
 function happPublicScripts() {
   const files = new Map();
@@ -131,6 +150,25 @@ function onexrayPublicScripts() {
     const filename = path.slice("onexray/scripts/".length);
     const content = readFileSync(new URL(`../../clients/onexray/dist/${filename}`, import.meta.url));
     if (!Buffer.isBuffer(content) || content.length === 0) throw new Error(`OneXray public script is empty: ${path}`);
+    files.set(path, content);
+  }
+  return files;
+}
+
+function v2raynPublicScripts() {
+  return nativePublicScripts("v2rayn", V2RAYN_SCRIPT_PATHS);
+}
+
+function v2boxPublicScripts() {
+  return nativePublicScripts("v2box", V2BOX_SCRIPT_PATHS);
+}
+
+function nativePublicScripts(client, paths) {
+  const files = new Map();
+  for (const path of paths) {
+    const filename = path.slice(`${client}/scripts/`.length);
+    const content = readFileSync(new URL(`../../clients/${client}/dist/${filename}`, import.meta.url));
+    if (!Buffer.isBuffer(content) || content.length === 0) throw new Error(`${client} public script is empty: ${path}`);
     files.set(path, content);
   }
   return files;
@@ -245,7 +283,12 @@ function addFiles(target, additions) {
 // bundles through `additionalFiles`.  Keep those staged bytes authoritative
 // while still rejecting accidental collisions for every other artifact.
 function addAdditionalFiles(target, additions) {
-  const overridable = new Set([...HAPP_SCRIPT_PATHS, ...ONEXRAY_SCRIPT_PATHS]);
+  const overridable = new Set([
+    ...HAPP_SCRIPT_PATHS,
+    ...ONEXRAY_SCRIPT_PATHS,
+    ...V2RAYN_SCRIPT_PATHS,
+    ...V2BOX_SCRIPT_PATHS,
+  ]);
   for (const [path, content] of additions) {
     if (target.has(path) && !overridable.has(path)) {
       throw new Error(`Duplicate public artifact path: ${path}`);
@@ -431,6 +474,7 @@ function addClientManifests(
   basePrefix = "",
   optionalSelections = null,
   chinaIpAuditSha256 = null,
+  sharedAssets = null,
 ) {
   if (chinaIpAuditSha256 !== null && !/^[0-9a-f]{64}$/u.test(chinaIpAuditSha256)) {
     throw new TypeError("ChinaIP audit digest is invalid");
@@ -452,6 +496,7 @@ function addClientManifests(
       generatedAt: upstream.committedAt,
       ...(optionalSelections === null ? {} : { optionalPacks: optionalSelections[client] ?? {} }),
       ...(chinaIpAuditSha256 === null ? {} : { chinaIpAuditSha256 }),
+      ...(sharedAssets?.[client] ? { sharedAssets: sharedAssets[client] } : {}),
       files: records,
     };
     const manifestHash = artifactSha256(canonicalJson(base));
@@ -462,12 +507,104 @@ function addClientManifests(
   return Object.freeze(manifests);
 }
 
+function unifiedSnapshots(ruleSets, externalSnapshots, upstream) {
+  if (!(ruleSets instanceof Map)) throw new TypeError("Compiled rule sets are required");
+  const baseline = new Map();
+  for (const [id, ruleSet] of ruleSets) {
+    if (!ruleSet || !Array.isArray(ruleSet.entries)) throw new TypeError(`Compiled rule set ${id} is malformed`);
+    baseline.set(id, {
+      sourceId: id,
+      entries: ruleSet.entries,
+      provenance: {
+        sourceId: id,
+        ...(upstream?.repository ? { repository: upstream.repository } : {}),
+        ...(upstream?.branch ? { branch: upstream.branch } : {}),
+        ...(upstream?.commit ? { commit: upstream.commit } : {}),
+        ...(upstream?.committedAt ? { committedAt: upstream.committedAt } : {}),
+        ...(upstream?.license ? { license: upstream.license } : {}),
+      },
+    });
+  }
+  if (externalSnapshots === null || externalSnapshots === undefined) return baseline;
+  if (!(externalSnapshots instanceof Map)) throw new TypeError("External rule snapshots must be a Map");
+  const unified = new Map(baseline);
+  for (const [sourceId, value] of externalSnapshots) {
+    if (unified.has(sourceId)) throw new Error(`Duplicate unified rule snapshot: ${sourceId}`);
+    if (!value || !Array.isArray(value.entries)) throw new TypeError(`External rule snapshot ${sourceId} must contain parsed entries`);
+    unified.set(sourceId, value);
+  }
+  return unified;
+}
+
+function selectedGeoDataRegions(regions) {
+  if (regions === null || regions === undefined) return REGION_GEO_DATA_REGIONS;
+  if (!Array.isArray(regions) || regions.length === 0
+    || regions.some((region) => !REGION_GEO_DATA_REGIONS.includes(region))
+    || new Set(regions).size !== regions.length) {
+    throw new TypeError("GeoData publication regions are invalid");
+  }
+  return Object.freeze([...regions]);
+}
+
+function sharedGeoDataArtifacts({ ruleSets, externalSnapshots, upstream, regions, channel }) {
+  const unified = unifiedSnapshots(ruleSets, externalSnapshots, upstream);
+  const provenanceBySource = new Map([...unified.values()]
+    .map((value) => [value.sourceId, value.provenance])
+    .filter(([sourceId, provenance]) => sourceId && provenance));
+  const files = new Map();
+  const manifests = {};
+  for (const region of selectedGeoDataRegions(regions)) {
+    // GeoData is a category projection, not a second routing decision. The
+    // inputs are already compiled and normalized, so selecting them directly
+    // avoids re-running policy precedence (and preserves equal-name entries
+    // that belong to different clients or source categories).
+    const selected = new Set(sourcesForRegion(region));
+    const selectedRuleSets = new Map([...unified]
+      .filter(([sourceId]) => selected.has(sourceId))
+      .map(([sourceId, value]) => [sourceId, {
+        id: sourceId,
+        sources: [sourceId],
+        entries: value.entries,
+      }]));
+    const merged = {
+      ruleSets: selectedRuleSets,
+      provenance: [...provenanceBySource]
+        .filter(([sourceId]) => selected.has(sourceId))
+        .map(([, provenance]) => provenance),
+      diagnostics: {
+        sourceCount: selectedRuleSets.size,
+        matcherCount: [...selectedRuleSets.values()]
+          .reduce((total, value) => total + value.entries.length, 0),
+      },
+    };
+    const rendered = buildRegionGeoDataArtifacts({
+      merged,
+      region,
+      channel,
+      publicBase: `https://juan-nikola.github.io/apple-proxy-profiles/${channel}/geodata`,
+    });
+    const prefix = `geodata/${region}`;
+    files.set(`${prefix}/${rendered.manifest.names.domain}.dat`, artifactBuffer(rendered.geosite));
+    files.set(`${prefix}/${rendered.manifest.names.ip}.dat`, artifactBuffer(rendered.geoip));
+    files.set(`${prefix}/manifest.json`, artifactBuffer(canonicalJson(rendered.manifest)));
+    manifests[region] = rendered.manifest;
+  }
+  return Object.freeze({
+    files,
+    manifests: Object.freeze(manifests),
+    records: Object.freeze(fileRecords(files)),
+  });
+}
+
 export function assertNoForbiddenDefaultReferences(files) {
   if (!(files instanceof Map)) throw new TypeError("Default publication files must be a Map");
   for (const [path, content] of files) {
     const forbiddenPath = FORBIDDEN_DEFAULT_RULE_IDS.find((id) => path.includes(id));
     if (forbiddenPath) throw new Error(`Forbidden default rule path ${forbiddenPath} in ${path}`);
     if (NON_ROUTING_NOTICE_PATHS.has(path)) continue;
+    // Native policy bundles contain rule IDs as executable mapping input; they
+    // do not publish those optional rule files into the default tree.
+    if (NATIVE_POLICY_GENERATOR_PATHS.has(path)) continue;
     const text = artifactBuffer(content).toString("utf8");
     const match = (OPTIONAL_AWARE_GENERATOR_PATHS.has(path)
       ? FORBIDDEN_LEGACY_CONTENT
@@ -515,6 +652,8 @@ function buildOptionalPack({ packId, ruleSets, upstream, singBoxBinaries = null,
 
 export function buildClientArtifacts({
   snapshot,
+  externalSnapshots = null,
+  regions = null,
   upstream = BLACKMATRIX7_BASELINE,
   channel = "current",
   additionalFiles = null,
@@ -553,6 +692,13 @@ export function buildClientArtifacts({
       .reduce((sum, ruleSet) => sum + ruleSet.entries.length, 0),
   });
   const compactedMobile = compactRuleSetMap(compiled.mobileRuleSets);
+  const sharedGeoData = sharedGeoDataArtifacts({
+    ruleSets: compactedDefaults.ruleSets,
+    externalSnapshots,
+    upstream,
+    regions,
+    channel,
+  });
   const happGeoData = renderHappGeodata(compactedDefaults.ruleSets);
   const onexrayGeoData = buildOneXrayGeoDataArtifacts({
     ruleSets: compactedDefaults.ruleSets,
@@ -574,6 +720,9 @@ export function buildClientArtifacts({
   addFiles(defaults, happPublicPage(channel, upstream.committedAt));
   addFiles(defaults, happPublicScripts());
   addFiles(defaults, onexrayPublicScripts());
+  addFiles(defaults, v2raynPublicScripts());
+  addFiles(defaults, v2boxPublicScripts());
+  addFiles(defaults, sharedGeoData.files);
   let chinaIpAuditSha256 = null;
 
   const additions = typeof additionalFiles === "function"
@@ -640,6 +789,10 @@ export function buildClientArtifacts({
     "",
     optionalSelections,
     chinaIpAuditSha256,
+    {
+      v2rayn: sharedGeoData.records,
+      v2box: sharedGeoData.records,
+    },
   );
   const parseAudit = (content) => {
     if (content === null) return {};
@@ -718,6 +871,7 @@ export function buildClientArtifacts({
       routingPlanAudit,
       happGeoData: happGeoData.counts,
       onexrayGeoData: onexrayGeoData.manifest,
+      sharedGeoData: sharedGeoData.manifests,
       publicAuditDashboard,
       optionalManifests: Object.freeze({ "adblock-full": adblockFull.manifest }),
     }),

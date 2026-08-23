@@ -53,18 +53,27 @@ function binaryParse(buffer, sourceId) {
 }
 
 function binaryGeosite(message, sourceId) {
-  const entries = []; const categories = []; const categoryCandidateCounts = {}; let candidateCount = 0; let unsupportedCount = 0;
+  const entries = []; const categories = []; const categoryCandidateCounts = {}; const unsupportedByReason = {}; let candidateCount = 0; let unsupportedCount = 0;
   for (const group of message.entry) {
     const category = group.countryCode; categories.push({ id: category, sourceId });
     for (const domain of group.domain) {
       candidateCount += 1;
       categoryCandidateCounts[category] = (categoryCandidateCounts[category] ?? 0) + 1;
       const kind = DOMAIN_TYPES[domain.type] ?? ({ 0: RULE_KIND.domainKeyword, 2: RULE_KIND.domainSuffix, 3: RULE_KIND.domain }[domain.type]);
-      if (!kind) { unsupportedCount += 1; continue; }
-      entries.push({ ...normalizeRuleEntry({ kind, value: domain.value, sourceId }), category, categoryId: category });
+      if (!kind) {
+        unsupportedCount += 1;
+        unsupportedByReason["unsupported-domain-type"] = (unsupportedByReason["unsupported-domain-type"] ?? 0) + 1;
+        continue;
+      }
+      try {
+        entries.push({ ...normalizeRuleEntry({ kind, value: domain.value, sourceId }), category, categoryId: category });
+      } catch {
+        unsupportedCount += 1;
+        unsupportedByReason["malformed-domain"] = (unsupportedByReason["malformed-domain"] ?? 0) + 1;
+      }
     }
   }
-  return { entries, categories, diagnostics: { candidateCount, categoryCandidateCounts, parsedCount: entries.length, unsupportedCount, unsupportedByReason: unsupportedCount ? { "unsupported-domain-type": unsupportedCount } : {} } };
+  return { entries, categories, diagnostics: { candidateCount, categoryCandidateCounts, parsedCount: entries.length, unsupportedCount, unsupportedByReason } };
 }
 
 function binaryGeoip(message, sourceId) {

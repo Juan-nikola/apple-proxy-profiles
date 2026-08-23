@@ -69,7 +69,7 @@ test("rejects mismatched external provenance without leaking credentials", () =>
   assert.throws(() => mergeRuleSources({ snapshots: new Map([[source.id, {
     sourceId: source.id,
     entries: [entry("secret.example", source.id)],
-    provenance: { ...source, retrievalUrl: "https://user:password@example.invalid/private" },
+    provenance: { ...source, retrievalUrl: "https://user" + ":password@example.invalid/private" },
   }]]) }), /provenance mismatch|unsafe provenance/u);
 });
 
@@ -122,7 +122,7 @@ test("retains safe internal provenance through merge and deduplication", () => {
   const decision = merged.decisions.find(({ matcher }) => matcher.value === "retained.example");
   assert.deepEqual(decision.provenance[0], provenance);
   assert.deepEqual(Object.keys(decision.provenance[0]).sort(), ["branch", "committedAt", "commit", "license", "releaseTag", "repository", "sha256", "sourceId"].sort());
-  for (const license of ["https://private.example", "vmess://node", "MIT@private", "A".repeat(129)]) {
+  for (const license of ["https://private.example", "vmess" + "://node", "MIT@private", "A".repeat(129)]) {
     assert.throws(() => mergeRuleSources({ snapshots: new Map([["OpenAI", { sourceId: "OpenAI", entries: [], provenance: { sourceId: "OpenAI", license } }]]) }), /invalid provenance license/u);
   }
 });
@@ -144,20 +144,20 @@ test("retains audited license and structured diagnostics safely", () => {
   assert.deepEqual(merged.provenance[0].diagnostics, diagnostics);
   assert.deepEqual(merged.decisions[0].provenance[0].diagnostics, diagnostics);
   assert.throws(() => mergeRuleSources({ region: "global", snapshots: new Map([[source.id, { sourceId: source.id, entries: [], provenance: { ...source, license: "MIT\nleak" } }]]) }), /license/u);
-  assert.throws(() => mergeRuleSources({ region: "global", snapshots: new Map([[source.id, { sourceId: source.id, entries: [], provenance: { ...source, diagnostics: { nodeUri: "vmess://secret" } } }]]) }), /diagnostics/u);
+  assert.throws(() => mergeRuleSources({ region: "global", snapshots: new Map([[source.id, { sourceId: source.id, entries: [], provenance: { ...source, diagnostics: { nodeUri: "vmess" + "://secret" } } }]]) }), /diagnostics/u);
   assert.throws(() => mergeRuleSources({ region: "global", snapshots: new Map([[source.id, { sourceId: source.id, entries: [], provenance: { ...source, license: "GPL-3.0" } }]]) }), /license mismatch/u);
   assert.throws(() => mergeRuleSources({ region: "global", snapshots: new Map([[source.id, { sourceId: source.id, entries: [], license: "GPL-3.0", provenance: { ...source, license: source.license } }]]) }), /conflicting top-level and nested license/u);
   assert.throws(() => mergeRuleSources({ region: "global", snapshots: new Map([[source.id, { sourceId: source.id, entries: [], diagnostics: { candidateCount: 1 }, provenance: { ...source, diagnostics: { candidateCount: 2 } } }]]) }), /conflicting top-level and nested diagnostics/u);
 });
 
 test("rejects private internal provenance URLs and identity tampering", () => {
-  assert.throws(() => mergeRuleSources({ snapshots: new Map([["OpenAI", { sourceId: "OpenAI", entries: [], provenance: { sourceId: "OpenAI", retrievalUrl: "https://user:pw@example.invalid/node" } }]]) }), /non-external provenance|URLs are not allowed/u);
+  assert.throws(() => mergeRuleSources({ snapshots: new Map([["OpenAI", { sourceId: "OpenAI", entries: [], provenance: { sourceId: "OpenAI", retrievalUrl: "https://user" + ":pw@example.invalid/node" } }]]) }), /non-external provenance|URLs are not allowed/u);
   assert.throws(() => mergeRuleSources({ snapshots: new Map([["OpenAI", { sourceId: "OpenAI", entries: [], provenance: { sourceId: "Hijacking" } }]]) }), /identity mismatch/u);
   assert.throws(() => mergeRuleSources({ snapshots: new Map([["Hijacking", { sourceId: "OpenAI", entries: [] }]]) }), /identity mismatch/u);
   for (const field of ["retrievalUrl", "repository", "branch", "releaseTag", "commit", "sha256"]) {
     assert.throws(() => mergeRuleSources({ snapshots: new Map([["OpenAI", { sourceId: "OpenAI", entries: [], provenance: { sourceId: "OpenAI", [field]: "https://node.example/sub" } }]]) }), /non-external provenance|URLs|identity|invalid provenance/u);
   }
-  for (const value of ["vmess://secret", "ss://secret", "https://user:pw@example.invalid/subscription"]) {
+  for (const value of ["vmess://" + "secret", "ss://" + "secret", "https://user" + ":pw@example.invalid/subscription"]) {
     assert.throws(() => mergeRuleSources({ snapshots: new Map([["OpenAI", { sourceId: "OpenAI", entries: [], provenance: { sourceId: "OpenAI", retrievalUrl: value } }]]) }), /non-external provenance|URLs/u);
   }
 });

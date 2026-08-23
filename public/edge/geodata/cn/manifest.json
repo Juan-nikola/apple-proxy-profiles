@@ -1,0 +1,744 @@
+{
+  "channel": "edge",
+  "counts": {
+    "domainCategories": 34,
+    "domainRules": 375593,
+    "ipCategories": 34,
+    "ipRules": 13356
+  },
+  "domain": {
+    "byteLength": 8346922,
+    "categoryCount": 34,
+    "name": "AppleProxySiteEdge",
+    "ruleCount": 375593,
+    "sha256": "a58f131ae298815f340794171ea5a370068d05a91b7c9670acc273983e78ee69"
+  },
+  "hashes": {
+    "domain": "a58f131ae298815f340794171ea5a370068d05a91b7c9670acc273983e78ee69",
+    "ip": "eadc3b497ae0225c7c1bf41584d078781181d7314ec44047ecd20f85ab21c9f7"
+  },
+  "inputHashes": {
+    "Apple": "9894cfae238a347124e841e7e067b9b67dd24a7226e0043c641753fe26b462ff",
+    "BiliBili": "c310fc1361dab30ecba0619541845e48611cc00be8eee57d75165343d7ae1e84",
+    "BlockHttpDNS": "50c8918e3335bcc661f118fc349bec89e433ada4f60514748c1dce560707f07e",
+    "ByteDance": "d690d7e3a15bf9bed4d26b43052ec69b47a7a74a14714e745147d71cdada3d35",
+    "ChinaIP": "4819b36c0e4804dee994412285dcfc75e1701b7486b19a37a0fdb21b35b19ebd",
+    "ChinaTLD": "402d13bce30990961413c4b08c05eeab73b711398d8ac34e67cf6e0b06f667f0",
+    "Claude": "7095f2c34a2fa91d8f45fa65080ed9e0227f402fbcfb0b39f017dc8dc63f988e",
+    "Copilot": "903b724aeeb5409bf7ca0d8d4d6e94ba84bd8f3bab10135db774241389140082",
+    "Disney": "5b5dd9c434b16b52c0eb8fcb440cd8936ab1c7f486e18632139f5b949ff74a75",
+    "DomesticCore": "b28089f639f26d79a37996173e84ab2b0655b3be8887d0d6b8f7bd8e43ff6ece",
+    "DomesticGame": "30251fe06c8326b745c1b70ab0ac978505507b19771b929e83384cefef1d1aac",
+    "Download": "946f4ccf96dc5e7c2988f1f7b8c30b1f5680b76e2db45390f5d9c25492028b36",
+    "Facebook": "e786078d11b12311f192d5670d3e4a7163fea98731e4c373fa70c86057271fb5",
+    "Gemini": "c210a995b9bdd7bdfd26c07ca2dc4208c90e8d76ef5bf5d5729f55f1fde20b5d",
+    "GitHub": "e9808232026d6bfe09e299c2c40d81096c74f2d6da3f79c86eadbec50d3878af",
+    "GlobalMedia": "3c05f9f90db75b8f6d806b0e764724e80b0acbf46533b288b64da7b9d32a4e3c",
+    "Hijacking": "bf16f53d63d3973a87db43078e2ae89c52a0e2e3c4687bfb784a00fa085c8ef6",
+    "Instagram": "088d3136cc66f8e81b6835cf5f6cd5593b84f68da905a2069f6831f1fd937da2",
+    "Microsoft": "35db67bbb136c5db6bf2c470aed9b1e483f562935703a68855dcbc9acf4389be",
+    "Netflix": "3cd7d9259eae8c6e6bebd9cd616d8fc39c63807472b179fe80a473fe8b858172",
+    "OpenAI": "3e81adb05cb253225c3b773d082f9b3e7b4c22de8ce97b71400ead2ecb6f36ba",
+    "OverseasGame": "845d709f15dc355273523ca34c047ba3e64079fc568bc68dcb947e781dbd8547",
+    "Privacy": "c42363611caad0e21259731ca6efd92264cc377a8e544de3ef49cc7ebdc50181",
+    "PrivateTracker": "12a06736d237ffea1567a929d670098619b5d6d5a36ff4ff42ca56e34670aabd",
+    "Spotify": "02c494692d6e7ed772aa5d05514b52d10fd4003d28503783967fb285e5b87ef6",
+    "SteamCN": "7d5c48b2d4aead327b570d2776653e0b5c95133af7c83dadba7fe49105712d6d",
+    "Telegram": "11f0c6efcd9ff2d9ad902306d8d4e422f12eab31329428bc70a63785602d53fb",
+    "TikTok": "536c830fe57a2b7066d5301626e5a6e3dc42fdb3f77a6d642bf06d160fe13aaf",
+    "Twitter": "69b4a766afa7af16e8599897dec3e8e2a1dbf2c73b5c4f44a6905b053d745ac0",
+    "Weibo": "54dd4c6c740906e521107f0992ebd1334ccff5fe551c042d9aa619b1c4928045",
+    "XiaoHongShu": "93710ce8cd8025cbf0b836a7f35feee2737c06ad07f4f16d5e9eba47829f39fb",
+    "YouTube": "e14f01cd18d0c5c60a4d7aa4ccb26ec191358392af76411cfaba2ec85687b89b",
+    "loyalsoldier-rules-dat": "7dbc68bc311c8bc6e576676806ed57f2c0962ed6ca72783e3dbda180f6a9d725",
+    "v2fly-domain-list": "04c41f24c89f0dacd9633eb0a543394a87e0f4d3c4576bc8b6d45c3d0dce298d"
+  },
+  "ip": {
+    "byteLength": 181511,
+    "categoryCount": 34,
+    "name": "AppleProxyIPEdge",
+    "ruleCount": 13356,
+    "sha256": "eadc3b497ae0225c7c1bf41584d078781181d7314ec44047ecd20f85ab21c9f7"
+  },
+  "names": {
+    "domain": "AppleProxySiteEdge",
+    "ip": "AppleProxyIPEdge"
+  },
+  "provenance": {
+    "diagnostics": {
+      "matcherCount": 641865,
+      "sourceCount": 34
+    },
+    "inputSha256": "5423c43033b9065788ba921f099b0694a46ac2217626a71351273d4fcf4d00ec",
+    "inputSourceCount": 34,
+    "source": "shared-lightweight-rule-snapshot",
+    "sources": [
+      {
+        "branch": "master",
+        "commit": "54abec88620d07187b1ba20ff06fdd8ed5b1f173",
+        "committedAt": "2026-08-21T18:35:15Z",
+        "license": "GPL-2.0-only",
+        "repository": "https://github.com/blackmatrix7/ios_rule_script",
+        "sourceId": "Hijacking"
+      },
+      {
+        "branch": "master",
+        "commit": "54abec88620d07187b1ba20ff06fdd8ed5b1f173",
+        "committedAt": "2026-08-21T18:35:15Z",
+        "license": "GPL-2.0-only",
+        "repository": "https://github.com/blackmatrix7/ios_rule_script",
+        "sourceId": "BlockHttpDNS"
+      },
+      {
+        "branch": "master",
+        "commit": "54abec88620d07187b1ba20ff06fdd8ed5b1f173",
+        "committedAt": "2026-08-21T18:35:15Z",
+        "license": "GPL-2.0-only",
+        "repository": "https://github.com/blackmatrix7/ios_rule_script",
+        "sourceId": "Privacy"
+      },
+      {
+        "branch": "master",
+        "commit": "54abec88620d07187b1ba20ff06fdd8ed5b1f173",
+        "committedAt": "2026-08-21T18:35:15Z",
+        "license": "GPL-2.0-only",
+        "repository": "https://github.com/blackmatrix7/ios_rule_script",
+        "sourceId": "DomesticCore"
+      },
+      {
+        "branch": "master",
+        "commit": "54abec88620d07187b1ba20ff06fdd8ed5b1f173",
+        "committedAt": "2026-08-21T18:35:15Z",
+        "license": "GPL-2.0-only",
+        "repository": "https://github.com/blackmatrix7/ios_rule_script",
+        "sourceId": "DomesticGame"
+      },
+      {
+        "branch": "master",
+        "commit": "54abec88620d07187b1ba20ff06fdd8ed5b1f173",
+        "committedAt": "2026-08-21T18:35:15Z",
+        "license": "GPL-2.0-only",
+        "repository": "https://github.com/blackmatrix7/ios_rule_script",
+        "sourceId": "SteamCN"
+      },
+      {
+        "branch": "master",
+        "commit": "54abec88620d07187b1ba20ff06fdd8ed5b1f173",
+        "committedAt": "2026-08-21T18:35:15Z",
+        "license": "GPL-2.0-only",
+        "repository": "https://github.com/blackmatrix7/ios_rule_script",
+        "sourceId": "BiliBili"
+      },
+      {
+        "branch": "master",
+        "commit": "54abec88620d07187b1ba20ff06fdd8ed5b1f173",
+        "committedAt": "2026-08-21T18:35:15Z",
+        "license": "GPL-2.0-only",
+        "repository": "https://github.com/blackmatrix7/ios_rule_script",
+        "sourceId": "ByteDance"
+      },
+      {
+        "branch": "master",
+        "commit": "54abec88620d07187b1ba20ff06fdd8ed5b1f173",
+        "committedAt": "2026-08-21T18:35:15Z",
+        "license": "GPL-2.0-only",
+        "repository": "https://github.com/blackmatrix7/ios_rule_script",
+        "sourceId": "XiaoHongShu"
+      },
+      {
+        "branch": "master",
+        "commit": "54abec88620d07187b1ba20ff06fdd8ed5b1f173",
+        "committedAt": "2026-08-21T18:35:15Z",
+        "license": "GPL-2.0-only",
+        "repository": "https://github.com/blackmatrix7/ios_rule_script",
+        "sourceId": "Weibo"
+      },
+      {
+        "branch": "master",
+        "commit": "54abec88620d07187b1ba20ff06fdd8ed5b1f173",
+        "committedAt": "2026-08-21T18:35:15Z",
+        "license": "GPL-2.0-only",
+        "repository": "https://github.com/blackmatrix7/ios_rule_script",
+        "sourceId": "OpenAI"
+      },
+      {
+        "branch": "master",
+        "commit": "54abec88620d07187b1ba20ff06fdd8ed5b1f173",
+        "committedAt": "2026-08-21T18:35:15Z",
+        "license": "GPL-2.0-only",
+        "repository": "https://github.com/blackmatrix7/ios_rule_script",
+        "sourceId": "Claude"
+      },
+      {
+        "branch": "master",
+        "commit": "54abec88620d07187b1ba20ff06fdd8ed5b1f173",
+        "committedAt": "2026-08-21T18:35:15Z",
+        "license": "GPL-2.0-only",
+        "repository": "https://github.com/blackmatrix7/ios_rule_script",
+        "sourceId": "Gemini"
+      },
+      {
+        "branch": "master",
+        "commit": "54abec88620d07187b1ba20ff06fdd8ed5b1f173",
+        "committedAt": "2026-08-21T18:35:15Z",
+        "license": "GPL-2.0-only",
+        "repository": "https://github.com/blackmatrix7/ios_rule_script",
+        "sourceId": "Copilot"
+      },
+      {
+        "branch": "master",
+        "commit": "54abec88620d07187b1ba20ff06fdd8ed5b1f173",
+        "committedAt": "2026-08-21T18:35:15Z",
+        "license": "GPL-2.0-only",
+        "repository": "https://github.com/blackmatrix7/ios_rule_script",
+        "sourceId": "GitHub"
+      },
+      {
+        "branch": "master",
+        "commit": "54abec88620d07187b1ba20ff06fdd8ed5b1f173",
+        "committedAt": "2026-08-21T18:35:15Z",
+        "license": "GPL-2.0-only",
+        "repository": "https://github.com/blackmatrix7/ios_rule_script",
+        "sourceId": "YouTube"
+      },
+      {
+        "branch": "master",
+        "commit": "54abec88620d07187b1ba20ff06fdd8ed5b1f173",
+        "committedAt": "2026-08-21T18:35:15Z",
+        "license": "GPL-2.0-only",
+        "repository": "https://github.com/blackmatrix7/ios_rule_script",
+        "sourceId": "Netflix"
+      },
+      {
+        "branch": "master",
+        "commit": "54abec88620d07187b1ba20ff06fdd8ed5b1f173",
+        "committedAt": "2026-08-21T18:35:15Z",
+        "license": "GPL-2.0-only",
+        "repository": "https://github.com/blackmatrix7/ios_rule_script",
+        "sourceId": "Disney"
+      },
+      {
+        "branch": "master",
+        "commit": "54abec88620d07187b1ba20ff06fdd8ed5b1f173",
+        "committedAt": "2026-08-21T18:35:15Z",
+        "license": "GPL-2.0-only",
+        "repository": "https://github.com/blackmatrix7/ios_rule_script",
+        "sourceId": "Spotify"
+      },
+      {
+        "branch": "master",
+        "commit": "54abec88620d07187b1ba20ff06fdd8ed5b1f173",
+        "committedAt": "2026-08-21T18:35:15Z",
+        "license": "GPL-2.0-only",
+        "repository": "https://github.com/blackmatrix7/ios_rule_script",
+        "sourceId": "GlobalMedia"
+      },
+      {
+        "branch": "master",
+        "commit": "54abec88620d07187b1ba20ff06fdd8ed5b1f173",
+        "committedAt": "2026-08-21T18:35:15Z",
+        "license": "GPL-2.0-only",
+        "repository": "https://github.com/blackmatrix7/ios_rule_script",
+        "sourceId": "Telegram"
+      },
+      {
+        "branch": "master",
+        "commit": "54abec88620d07187b1ba20ff06fdd8ed5b1f173",
+        "committedAt": "2026-08-21T18:35:15Z",
+        "license": "GPL-2.0-only",
+        "repository": "https://github.com/blackmatrix7/ios_rule_script",
+        "sourceId": "Facebook"
+      },
+      {
+        "branch": "master",
+        "commit": "54abec88620d07187b1ba20ff06fdd8ed5b1f173",
+        "committedAt": "2026-08-21T18:35:15Z",
+        "license": "GPL-2.0-only",
+        "repository": "https://github.com/blackmatrix7/ios_rule_script",
+        "sourceId": "Instagram"
+      },
+      {
+        "branch": "master",
+        "commit": "54abec88620d07187b1ba20ff06fdd8ed5b1f173",
+        "committedAt": "2026-08-21T18:35:15Z",
+        "license": "GPL-2.0-only",
+        "repository": "https://github.com/blackmatrix7/ios_rule_script",
+        "sourceId": "Twitter"
+      },
+      {
+        "branch": "master",
+        "commit": "54abec88620d07187b1ba20ff06fdd8ed5b1f173",
+        "committedAt": "2026-08-21T18:35:15Z",
+        "license": "GPL-2.0-only",
+        "repository": "https://github.com/blackmatrix7/ios_rule_script",
+        "sourceId": "TikTok"
+      },
+      {
+        "branch": "master",
+        "commit": "54abec88620d07187b1ba20ff06fdd8ed5b1f173",
+        "committedAt": "2026-08-21T18:35:15Z",
+        "license": "GPL-2.0-only",
+        "repository": "https://github.com/blackmatrix7/ios_rule_script",
+        "sourceId": "Apple"
+      },
+      {
+        "branch": "master",
+        "commit": "54abec88620d07187b1ba20ff06fdd8ed5b1f173",
+        "committedAt": "2026-08-21T18:35:15Z",
+        "license": "GPL-2.0-only",
+        "repository": "https://github.com/blackmatrix7/ios_rule_script",
+        "sourceId": "Microsoft"
+      },
+      {
+        "branch": "master",
+        "commit": "54abec88620d07187b1ba20ff06fdd8ed5b1f173",
+        "committedAt": "2026-08-21T18:35:15Z",
+        "license": "GPL-2.0-only",
+        "repository": "https://github.com/blackmatrix7/ios_rule_script",
+        "sourceId": "Download"
+      },
+      {
+        "branch": "master",
+        "commit": "54abec88620d07187b1ba20ff06fdd8ed5b1f173",
+        "committedAt": "2026-08-21T18:35:15Z",
+        "license": "GPL-2.0-only",
+        "repository": "https://github.com/blackmatrix7/ios_rule_script",
+        "sourceId": "PrivateTracker"
+      },
+      {
+        "branch": "master",
+        "commit": "54abec88620d07187b1ba20ff06fdd8ed5b1f173",
+        "committedAt": "2026-08-21T18:35:15Z",
+        "license": "GPL-2.0-only",
+        "repository": "https://github.com/blackmatrix7/ios_rule_script",
+        "sourceId": "OverseasGame"
+      },
+      {
+        "branch": "master",
+        "commit": "54abec88620d07187b1ba20ff06fdd8ed5b1f173",
+        "committedAt": "2026-08-21T18:35:15Z",
+        "license": "GPL-2.0-only",
+        "repository": "https://github.com/blackmatrix7/ios_rule_script",
+        "sourceId": "ChinaTLD"
+      },
+      {
+        "branch": "master",
+        "commit": "54abec88620d07187b1ba20ff06fdd8ed5b1f173",
+        "committedAt": "2026-08-21T18:35:15Z",
+        "license": "GPL-2.0-only",
+        "repository": "https://github.com/blackmatrix7/ios_rule_script",
+        "sourceId": "ChinaIP"
+      },
+      {
+        "branch": "master",
+        "commit": "c975ccef9c19f005a3bfa7a33255d1b406deea64",
+        "license": "MIT",
+        "releaseTag": "20260819144818",
+        "repository": "https://github.com/v2fly/domain-list-community",
+        "retrievalUrl": "https://github.com/v2fly/domain-list-community/releases/download/20260819144818/dlc.dat_plain.yml",
+        "retrievedAt": "2026-08-22T00:00:00Z",
+        "sha256": "d74dc15311117fe983180bf3245e083633d14bb148ea5cd9db79b1d15a8533c2",
+        "sourceId": "v2fly-domain-list"
+      },
+      {
+        "branch": "release",
+        "commit": "5c20d2eb5a65b171816949010ede67a27326cbe6",
+        "license": "MIT",
+        "releaseTag": "202608212217",
+        "repository": "https://github.com/Loyalsoldier/v2ray-rules-dat",
+        "retrievalUrl": "https://github.com/Loyalsoldier/v2ray-rules-dat/releases/download/202608212217/geosite.dat",
+        "retrievedAt": "2026-08-22T00:00:00Z",
+        "sha256": "b392a98a323777deab59d8208e856df09cf96f3a76d2869eb7a8e5289bc5d9f4",
+        "sourceId": "loyalsoldier-rules-dat"
+      }
+    ]
+  },
+  "region": "cn",
+  "schema": "apple-proxy-onexray-geodata-v1",
+  "schemaVersion": 1,
+  "sourceCodes": [
+    {
+      "code": "APP-HIJACKING",
+      "id": "Hijacking"
+    },
+    {
+      "code": "APP-BLOCKHTTPDNS",
+      "id": "BlockHttpDNS"
+    },
+    {
+      "code": "APP-PRIVACY",
+      "id": "Privacy"
+    },
+    {
+      "code": "APP-DOMESTICCORE",
+      "id": "DomesticCore"
+    },
+    {
+      "code": "APP-DOMESTICGAME",
+      "id": "DomesticGame"
+    },
+    {
+      "code": "APP-STEAMCN",
+      "id": "SteamCN"
+    },
+    {
+      "code": "APP-BILIBILI",
+      "id": "BiliBili"
+    },
+    {
+      "code": "APP-BYTEDANCE",
+      "id": "ByteDance"
+    },
+    {
+      "code": "APP-XIAOHONGSHU",
+      "id": "XiaoHongShu"
+    },
+    {
+      "code": "APP-WEIBO",
+      "id": "Weibo"
+    },
+    {
+      "code": "APP-OPENAI",
+      "id": "OpenAI"
+    },
+    {
+      "code": "APP-CLAUDE",
+      "id": "Claude"
+    },
+    {
+      "code": "APP-GEMINI",
+      "id": "Gemini"
+    },
+    {
+      "code": "APP-COPILOT",
+      "id": "Copilot"
+    },
+    {
+      "code": "APP-GITHUB",
+      "id": "GitHub"
+    },
+    {
+      "code": "APP-YOUTUBE",
+      "id": "YouTube"
+    },
+    {
+      "code": "APP-NETFLIX",
+      "id": "Netflix"
+    },
+    {
+      "code": "APP-DISNEY",
+      "id": "Disney"
+    },
+    {
+      "code": "APP-SPOTIFY",
+      "id": "Spotify"
+    },
+    {
+      "code": "APP-GLOBALMEDIA",
+      "id": "GlobalMedia"
+    },
+    {
+      "code": "APP-TELEGRAM",
+      "id": "Telegram"
+    },
+    {
+      "code": "APP-FACEBOOK",
+      "id": "Facebook"
+    },
+    {
+      "code": "APP-INSTAGRAM",
+      "id": "Instagram"
+    },
+    {
+      "code": "APP-TWITTER",
+      "id": "Twitter"
+    },
+    {
+      "code": "APP-TIKTOK",
+      "id": "TikTok"
+    },
+    {
+      "code": "APP-APPLE",
+      "id": "Apple"
+    },
+    {
+      "code": "APP-MICROSOFT",
+      "id": "Microsoft"
+    },
+    {
+      "code": "APP-DOWNLOAD",
+      "id": "Download"
+    },
+    {
+      "code": "APP-PRIVATETRACKER",
+      "id": "PrivateTracker"
+    },
+    {
+      "code": "APP-OVERSEASGAME",
+      "id": "OverseasGame"
+    },
+    {
+      "code": "APP-CHINATLD",
+      "id": "ChinaTLD"
+    },
+    {
+      "code": "APP-CHINAIP",
+      "id": "ChinaIP"
+    },
+    {
+      "code": "APP-LOYALSOLDIER-RULES-DAT",
+      "id": "loyalsoldier-rules-dat"
+    },
+    {
+      "code": "APP-V2FLY-DOMAIN-LIST",
+      "id": "v2fly-domain-list"
+    }
+  ],
+  "sourceCount": 34,
+  "sources": [
+    {
+      "code": "APP-HIJACKING",
+      "domain": 186,
+      "id": "Hijacking",
+      "inputSha256": "bf16f53d63d3973a87db43078e2ae89c52a0e2e3c4687bfb784a00fa085c8ef6",
+      "ip": 42
+    },
+    {
+      "code": "APP-BLOCKHTTPDNS",
+      "domain": 22,
+      "id": "BlockHttpDNS",
+      "inputSha256": "50c8918e3335bcc661f118fc349bec89e433ada4f60514748c1dce560707f07e",
+      "ip": 41
+    },
+    {
+      "code": "APP-PRIVACY",
+      "domain": 9,
+      "id": "Privacy",
+      "inputSha256": "c42363611caad0e21259731ca6efd92264cc377a8e544de3ef49cc7ebdc50181",
+      "ip": 11
+    },
+    {
+      "code": "APP-DOMESTICCORE",
+      "domain": 65,
+      "id": "DomesticCore",
+      "inputSha256": "b28089f639f26d79a37996173e84ab2b0655b3be8887d0d6b8f7bd8e43ff6ece",
+      "ip": 0
+    },
+    {
+      "code": "APP-DOMESTICGAME",
+      "domain": 40,
+      "id": "DomesticGame",
+      "inputSha256": "30251fe06c8326b745c1b70ab0ac978505507b19771b929e83384cefef1d1aac",
+      "ip": 0
+    },
+    {
+      "code": "APP-STEAMCN",
+      "domain": 17,
+      "id": "SteamCN",
+      "inputSha256": "7d5c48b2d4aead327b570d2776653e0b5c95133af7c83dadba7fe49105712d6d",
+      "ip": 0
+    },
+    {
+      "code": "APP-BILIBILI",
+      "domain": 115,
+      "id": "BiliBili",
+      "inputSha256": "c310fc1361dab30ecba0619541845e48611cc00be8eee57d75165343d7ae1e84",
+      "ip": 8
+    },
+    {
+      "code": "APP-BYTEDANCE",
+      "domain": 369,
+      "id": "ByteDance",
+      "inputSha256": "d690d7e3a15bf9bed4d26b43052ec69b47a7a74a14714e745147d71cdada3d35",
+      "ip": 1
+    },
+    {
+      "code": "APP-XIAOHONGSHU",
+      "domain": 4,
+      "id": "XiaoHongShu",
+      "inputSha256": "93710ce8cd8025cbf0b836a7f35feee2737c06ad07f4f16d5e9eba47829f39fb",
+      "ip": 0
+    },
+    {
+      "code": "APP-WEIBO",
+      "domain": 4,
+      "id": "Weibo",
+      "inputSha256": "54dd4c6c740906e521107f0992ebd1334ccff5fe551c042d9aa619b1c4928045",
+      "ip": 0
+    },
+    {
+      "code": "APP-OPENAI",
+      "domain": 32,
+      "id": "OpenAI",
+      "inputSha256": "3e81adb05cb253225c3b773d082f9b3e7b4c22de8ce97b71400ead2ecb6f36ba",
+      "ip": 2
+    },
+    {
+      "code": "APP-CLAUDE",
+      "domain": 3,
+      "id": "Claude",
+      "inputSha256": "7095f2c34a2fa91d8f45fa65080ed9e0227f402fbcfb0b39f017dc8dc63f988e",
+      "ip": 0
+    },
+    {
+      "code": "APP-GEMINI",
+      "domain": 13,
+      "id": "Gemini",
+      "inputSha256": "c210a995b9bdd7bdfd26c07ca2dc4208c90e8d76ef5bf5d5729f55f1fde20b5d",
+      "ip": 0
+    },
+    {
+      "code": "APP-COPILOT",
+      "domain": 47,
+      "id": "Copilot",
+      "inputSha256": "903b724aeeb5409bf7ca0d8d4d6e94ba84bd8f3bab10135db774241389140082",
+      "ip": 2
+    },
+    {
+      "code": "APP-GITHUB",
+      "domain": 31,
+      "id": "GitHub",
+      "inputSha256": "e9808232026d6bfe09e299c2c40d81096c74f2d6da3f79c86eadbec50d3878af",
+      "ip": 0
+    },
+    {
+      "code": "APP-YOUTUBE",
+      "domain": 180,
+      "id": "YouTube",
+      "inputSha256": "e14f01cd18d0c5c60a4d7aa4ccb26ec191358392af76411cfaba2ec85687b89b",
+      "ip": 3
+    },
+    {
+      "code": "APP-NETFLIX",
+      "domain": 37,
+      "id": "Netflix",
+      "inputSha256": "3cd7d9259eae8c6e6bebd9cd616d8fc39c63807472b179fe80a473fe8b858172",
+      "ip": 1119
+    },
+    {
+      "code": "APP-DISNEY",
+      "domain": 172,
+      "id": "Disney",
+      "inputSha256": "5b5dd9c434b16b52c0eb8fcb440cd8936ab1c7f486e18632139f5b949ff74a75",
+      "ip": 0
+    },
+    {
+      "code": "APP-SPOTIFY",
+      "domain": 27,
+      "id": "Spotify",
+      "inputSha256": "02c494692d6e7ed772aa5d05514b52d10fd4003d28503783967fb285e5b87ef6",
+      "ip": 2
+    },
+    {
+      "code": "APP-GLOBALMEDIA",
+      "domain": 27,
+      "id": "GlobalMedia",
+      "inputSha256": "3c05f9f90db75b8f6d806b0e764724e80b0acbf46533b288b64da7b9d32a4e3c",
+      "ip": 924
+    },
+    {
+      "code": "APP-TELEGRAM",
+      "domain": 25,
+      "id": "Telegram",
+      "inputSha256": "11f0c6efcd9ff2d9ad902306d8d4e422f12eab31329428bc70a63785602d53fb",
+      "ip": 10
+    },
+    {
+      "code": "APP-FACEBOOK",
+      "domain": 546,
+      "id": "Facebook",
+      "inputSha256": "e786078d11b12311f192d5670d3e4a7163fea98731e4c373fa70c86057271fb5",
+      "ip": 23
+    },
+    {
+      "code": "APP-INSTAGRAM",
+      "domain": 4,
+      "id": "Instagram",
+      "inputSha256": "088d3136cc66f8e81b6835cf5f6cd5593b84f68da905a2069f6831f1fd937da2",
+      "ip": 0
+    },
+    {
+      "code": "APP-TWITTER",
+      "domain": 27,
+      "id": "Twitter",
+      "inputSha256": "69b4a766afa7af16e8599897dec3e8e2a1dbf2c73b5c4f44a6905b053d745ac0",
+      "ip": 6
+    },
+    {
+      "code": "APP-TIKTOK",
+      "domain": 31,
+      "id": "TikTok",
+      "inputSha256": "536c830fe57a2b7066d5301626e5a6e3dc42fdb3f77a6d642bf06d160fe13aaf",
+      "ip": 0
+    },
+    {
+      "code": "APP-APPLE",
+      "domain": 7,
+      "id": "Apple",
+      "inputSha256": "9894cfae238a347124e841e7e067b9b67dd24a7226e0043c641753fe26b462ff",
+      "ip": 13
+    },
+    {
+      "code": "APP-MICROSOFT",
+      "domain": 668,
+      "id": "Microsoft",
+      "inputSha256": "35db67bbb136c5db6bf2c470aed9b1e483f562935703a68855dcbc9acf4389be",
+      "ip": 0
+    },
+    {
+      "code": "APP-DOWNLOAD",
+      "domain": 6,
+      "id": "Download",
+      "inputSha256": "946f4ccf96dc5e7c2988f1f7b8c30b1f5680b76e2db45390f5d9c25492028b36",
+      "ip": 0
+    },
+    {
+      "code": "APP-PRIVATETRACKER",
+      "domain": 245,
+      "id": "PrivateTracker",
+      "inputSha256": "12a06736d237ffea1567a929d670098619b5d6d5a36ff4ff42ca56e34670aabd",
+      "ip": 3
+    },
+    {
+      "code": "APP-OVERSEASGAME",
+      "domain": 528,
+      "id": "OverseasGame",
+      "inputSha256": "845d709f15dc355273523ca34c047ba3e64079fc568bc68dcb947e781dbd8547",
+      "ip": 46
+    },
+    {
+      "code": "APP-CHINATLD",
+      "domain": 1,
+      "id": "ChinaTLD",
+      "inputSha256": "402d13bce30990961413c4b08c05eeab73b711398d8ac34e67cf6e0b06f667f0",
+      "ip": 0
+    },
+    {
+      "code": "APP-CHINAIP",
+      "domain": 0,
+      "id": "ChinaIP",
+      "inputSha256": "4819b36c0e4804dee994412285dcfc75e1701b7486b19a37a0fdb21b35b19ebd",
+      "ip": 11100
+    },
+    {
+      "code": "APP-LOYALSOLDIER-RULES-DAT",
+      "domain": 333855,
+      "id": "loyalsoldier-rules-dat",
+      "inputSha256": "7dbc68bc311c8bc6e576676806ed57f2c0962ed6ca72783e3dbda180f6a9d725",
+      "ip": 0,
+      "sourceSha256": "b392a98a323777deab59d8208e856df09cf96f3a76d2869eb7a8e5289bc5d9f4"
+    },
+    {
+      "code": "APP-V2FLY-DOMAIN-LIST",
+      "domain": 38250,
+      "id": "v2fly-domain-list",
+      "inputSha256": "04c41f24c89f0dacd9633eb0a543394a87e0f4d3c4576bc8b6d45c3d0dce298d",
+      "ip": 0,
+      "sourceSha256": "d74dc15311117fe983180bf3245e083633d14bb148ea5cd9db79b1d15a8533c2"
+    }
+  ],
+  "urls": {
+    "domain": "https://juan-nikola.github.io/apple-proxy-profiles/edge/geodata/cn/AppleProxySiteEdge.dat",
+    "ip": "https://juan-nikola.github.io/apple-proxy-profiles/edge/geodata/cn/AppleProxyIPEdge.dat"
+  }
+}

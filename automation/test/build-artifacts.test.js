@@ -5,6 +5,7 @@ import { buildClientArtifacts } from "../src/build-artifacts.js";
 import { artifactSha256 } from "../src/artifact-content.js";
 import { buildChinaIpAudit } from "../src/china-ip-audit.js";
 import { canonicalJson } from "../src/render-anywhere-rules.js";
+import { parseSurgeRules } from "../src/parse-surge.js";
 import { validateRoutingPlanAudit } from "../src/routing-plan-audit.js";
 import {
   DEFAULT_PUBLISH_SOURCE_CATALOG,
@@ -66,6 +67,21 @@ test("fans compiled lightweight defaults out without publishing input-only rules
   assert.match(chinaIp, /IP-CIDR6,2400:3200::\/32,no-resolve/u);
   assert.equal(chinaIp.includes("/25"), false);
   assert.equal(result.diagnostics.compaction.ChinaIP.removed, 2);
+});
+
+test("projects compiled GeoData categories without re-running conflicting route precedence", () => {
+  const snapshots = lightweightFixtureSnapshots();
+  const source = FETCH_SOURCE_CATALOG.find(({ id }) => id === "TikTok");
+  const prior = snapshots.get("TikTok");
+  const parsed = parseSurgeRules("DOMAIN-SUFFIX,ibytedtos.com\n", { ...source, minEntries: 0 });
+  snapshots.set("TikTok", {
+    ...prior,
+    text: `${prior.text}\nDOMAIN-SUFFIX,ibytedtos.com\n`,
+    entries: [...prior.entries, ...parsed.entries],
+  });
+
+  const result = buildClientArtifacts({ snapshot: snapshots, upstream });
+  assert.ok(result.defaults.get("geodata/cn/AppleProxySiteCurrent.dat").length > 0);
 });
 
 test("publishes Anywhere as semantic business packages while other clients keep source-level rules", () => {

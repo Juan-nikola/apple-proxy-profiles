@@ -17,7 +17,11 @@ function sourceMap(ruleSets, provenance = []) {
   const map = new Map();
   for (const [id, value] of ruleSets) {
     if (!value || typeof value !== "object" || !Array.isArray(value.entries)) throw new TypeError(`Region GeoData rule set ${id} is malformed`);
-    const declared = new Set(Array.isArray(value.sources) ? value.sources : []);
+    // Compiled rule sets may carry their input source IDs (for example
+    // DomesticGame <- Game) while their normalized entries use the stable
+    // output rule-set ID. Accept both identities and retain the output ID in
+    // the GeoData category so transformed sets remain deterministic.
+    const declared = new Set([id, ...(Array.isArray(value.sources) ? value.sources : [])]);
     const bySource = new Map();
     for (const entry of value.entries) {
       const sourceId = entry.sourceId;

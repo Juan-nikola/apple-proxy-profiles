@@ -42,6 +42,27 @@ test("parses v2fly YAML domains, normalizes values, and preserves categories/com
   assert.equal(parsed.categories[0].id, "TEST_ONLY_CATEGORY");
 });
 
+test("parses the pinned v2fly lists document and accounts for unsupported records", async () => {
+  const text = [
+    "lists:",
+    "  - name: TEST_ONLY_CATEGORY",
+    "    length: 3",
+    "    rules:",
+    "      - \"domain:Example.COM\"",
+    "      - \"full:full.example.invalid:@ads\"",
+    "      - \"regexp:^example\\\\.invalid$\"",
+  ].join("\n");
+  const parsed = await parseExternalRuleSource(metadata(v2fly, text));
+  assert.deepEqual(parsed.entries.map(({ kind, value }) => ({ kind, value })), [
+    { kind: RULE_KIND.domainSuffix, value: "example.com" },
+    { kind: RULE_KIND.domain, value: "full.example.invalid" },
+  ]);
+  assert.equal(parsed.diagnostics.candidateCount, 3);
+  assert.equal(parsed.diagnostics.parsedCount, 2);
+  assert.equal(parsed.diagnostics.unsupportedCount, 1);
+  assert.equal(parsed.diagnostics.unsupportedByReason["unsupported-domain-regex"], 1);
+});
+
 test("parses Loyalsoldier text categories and compact IPv4/IPv6 CIDRs", async () => {
   const text = [
     "# TEST_ONLY_fixture",

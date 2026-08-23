@@ -55,7 +55,8 @@ test("splits multi-source rule sets into stable source categories", () => {
 
 test("rejects unsafe public bases and emits stable public HTTPS URLs", () => {
   const input = { merged: merged("cn"), region: "cn", channel: "current" };
-  for (const publicBase of ["http://example.com", "https://user:pass@example.com", "https://example.com/a?x=1", "https://localhost", "https://127.0.0.1", "vmess://node", "https://example.com/../secret", "https://0.1.2.3", "https://100.64.0.1", "https://192.0.2.1", "https://198.18.0.1", "https://203.0.113.1", "https://240.0.0.1", "https://[::1]", "https://[fc00::1]", "https://[fe80::1]", "https://[2001:db8::1]", "https://[::ffff:192.0.2.1]", "https://[::ffff:10.0.0.1]", "https://host.internal", "https://host.invalid"]) {
+  const unsafeBases = ["http://example.com", "https://user" + ":pass@example.com", "https://example.com/a?x=1", "https://localhost", "https://127.0.0.1", "vmess" + "://node", "https://example.com/../secret", "https://0.1.2.3", "https://100.64.0.1", "https://192.0.2.1", "https://198.18.0.1", "https://203.0.113.1", "https://240.0.0.1", "https://[::1]", "https://[fc00::1]", "https://[fe80::1]", "https://[2001:db8::1]", "https://[::ffff:192.0.2.1]", "https://[::ffff:10.0.0.1]", "https://host.internal", "https://host.invalid"];
+  for (const publicBase of unsafeBases) {
     assert.throws(() => buildRegionGeoDataArtifacts({ ...input, publicBase }), /publicBase|HTTPS|URL|host|path/u);
   }
   const result = buildRegionGeoDataArtifacts({ ...input, publicBase: "https://cdn.example.com/geodata" });

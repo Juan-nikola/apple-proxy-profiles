@@ -4,7 +4,7 @@
 
 ## Collection 边界
 
-`apple-proxy-all` 是用户在自己 Sub-Store 中建立的总池，用于汇总用户自己选择的来源。它不是仓库发布物，也不是七个 active 客户端任务的直接输入。七个 active 客户端分别读取下列 client collection；HAPP 与 OneXray 已有原生 renderer、公开无凭据脚本和私密任务契约：
+`apple-proxy-all` 是用户在自己 Sub-Store 中建立的总池，用于汇总用户自己选择的来源。它不是仓库发布物，也不是九个 active 客户端任务的直接输入。九个 active 客户端分别读取下列 client collection；HAPP、OneXray、v2rayN 和 V2Box 已有原生 renderer、公开无凭据脚本和私密任务契约：
 
 | 客户端 | SubStore 组合 | 维护原则 |
 | --- | --- | --- |
@@ -15,6 +15,8 @@
 | sing-box | `apple-proxy-singbox` | 默认 strict；任一已选节点无法完整表示时失败，迁移期可显式使用 compatible |
 | OneXray | `apple-proxy-onexray` | 用户自行选择节点；节点任务输出 Xray JSON，Profile/审计对不兼容和固定节点问题失败关闭 |
 | HAPP | `apple-proxy-happ` | 用户自行选择节点；六平台配置与审计共享同一策略覆盖，固定节点问题写入私密 warning |
+| v2rayN | `apple-proxy-v2rayn` | 用户自行选择节点；Windows/macOS 使用统一 Xray renderer 和地区 GeoData |
+| V2Box | `apple-proxy-v2box` | 用户自行选择节点；iPhone/iPad 使用统一 Xray renderer 和共享 GeoData 资产 |
 
 ### 标签不是必需条件
 
@@ -45,16 +47,18 @@ HAPP 和 OneXray 使用同样的手动组合原则，分别维护 `apple-proxy-h
 
 1. **保留旧 collection 和 tasks**：不重命名、不覆盖、不删除现有输出。
 2. **建立 `apple-proxy-all` 总池**：只添加用户已单独预览过的来源。
-3. **建立七个客户端组合**：按上表精确创建七个名称，并从总池选择成员。
+3. **建立九个客户端组合**：按上表精确创建九个名称，并从总池选择成员。
 4. **用户自行筛选**：直接编辑对应 collection 选择要包含的节点；生成器不按客户端能力白名单过滤。sing-box 默认 strict，无法表示任一已选节点就失败；其他客户端和 sing-box 的显式 compatible 模式才会跳过并计入 `renderFailures`。
-5. **preview**：逐个预览七个 client collection，记录节点总数和各协议计数；任何失败先停止迁移。
+5. **preview**：逐个预览九个 client collection，记录节点总数和各协议计数；任何失败先停止迁移。
 6. **只修改对应客户端的 `name=`**：将该客户端的 File/Script tasks 指向它自己的 collection，不改其他客户端任务。
 7. **refresh 并对比计数**：刷新该客户端的节点与 Profile/Config 任务，将输入数、输出数与 preview 记录对比。
 8. **保留旧 URL 回滚**：新输出完成客户端灰度验收前，旧 URL 始终保留可用。
 
 ## 兼容与回滚
 
-`apple-proxy-sources` 是保留的兼容/回滚路径，不是新部署的七客户端共享输入。迁移期间保留该 collection、所有旧 tasks 与私密旧 URL。若新任务 preview、refresh、计数对比或客户端灰度任一失败，立即在该客户端切回旧 URL，无需更改其他客户端。
+`apple-proxy-sources` 是保留的兼容/回滚路径，不是新部署的九客户端共享输入。迁移期间保留该 collection、所有旧 tasks 与私密旧 URL。若新任务 preview、refresh、计数对比或客户端灰度任一失败，立即在该客户端切回旧 URL，无需更改其他客户端。
+
+v2rayN 和 V2Box 的配置任务分别固定读取 `apple-proxy-v2rayn`、`apple-proxy-v2box`。Windows/macOS 只使用 v2rayN 任务，iPhone/iPad 只使用 V2Box 任务；配置默认 `region=cn`，地区切换只改规则资产组合，不改节点 collection。节点任务不需要 `platform`，配置任务必须填写对应平台。
 
 ## 协议标签与固定节点名称迁移
 

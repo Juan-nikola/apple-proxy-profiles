@@ -18,6 +18,8 @@ const COLLECTIONS = Object.freeze([
   "apple-proxy-singbox",
   "apple-proxy-onexray",
   "apple-proxy-happ",
+  "apple-proxy-v2rayn",
+  "apple-proxy-v2box",
 ]);
 const HAPP_PLATFORMS = Object.freeze(["macos", "iphone", "ipad", "android", "windows", "linux"]);
 
@@ -57,6 +59,8 @@ function nodeTask(name, client, channel, collection) {
     ? "shadowrocket-node-subscription.js"
     : client === "surge"
       ? "surge-nodes-generator.js"
+      : ["v2rayn", "v2box"].includes(client)
+        ? "substore-node-generator.js"
       : `${client}-node-generator.js`;
   return remoteTask(
     name,
@@ -119,8 +123,14 @@ export function canonicalTaskCatalog(channel = "current") {
       configTask(`happ-${platform}`, "happ", "happ-config-generator.js", HAPP_PUBLIC_CHANNEL, "apple-proxy-happ", platform, "Apple-Proxy-Happ", {}, { policyInput: "apple-proxy-policy", omitKeys: ["clientChain", "autoGroupMode", "channel"] })
     )),
     remoteTask("happ-routing-audit", "happ", `${base(HAPP_PUBLIC_CHANNEL, "happ", "happ-routing-audit.js")}#${fragment({ output: "audit", type: "collection", name: "apple-proxy-happ", subscriptionName: "Apple-Proxy-Happ", platform: "all" })}`, { output: "audit", collection: "apple-proxy-happ", platform: "all", channel: HAPP_PUBLIC_CHANNEL, policyInput: "apple-proxy-policy" }),
+    nodeTask("v2rayn-nodes", "v2rayn", channel, "apple-proxy-v2rayn"),
+    configTask("v2rayn-config-windows", "v2rayn", "substore-config-generator.js", channel, "apple-proxy-v2rayn", "windows", "Apple-Proxy-v2rayN", { region: "cn" }, { omitKeys: ["autoGroupMode"] }),
+    configTask("v2rayn-config-macos", "v2rayn", "substore-config-generator.js", channel, "apple-proxy-v2rayn", "macos", "Apple-Proxy-v2rayN", { region: "cn" }, { omitKeys: ["autoGroupMode"] }),
+    nodeTask("v2box-nodes", "v2box", channel, "apple-proxy-v2box"),
+    configTask("v2box-config-iphone", "v2box", "substore-config-generator.js", channel, "apple-proxy-v2box", "iphone", "Apple-Proxy-V2Box", { region: "cn" }, { omitKeys: ["autoGroupMode"] }),
+    configTask("v2box-config-ipad", "v2box", "substore-config-generator.js", channel, "apple-proxy-v2box", "ipad", "Apple-Proxy-V2Box", { region: "cn" }, { omitKeys: ["autoGroupMode"] }),
   ];
-  if (tasks.length !== 28) throw new Error(`Expected 28 canonical tasks, got ${tasks.length}`);
+  if (tasks.length !== 34) throw new Error(`Expected 34 canonical tasks, got ${tasks.length}`);
   return Object.freeze(tasks);
 }
 
@@ -150,7 +160,7 @@ export function validatePrivateSubstoreConfig(config) {
     const result = checkSubstoreTaskUrl(task.url);
     if (!result.ok) return false;
   }
-  return config.tasks.length === 28;
+  return config.tasks.length === 34;
 }
 
 export async function writePrivateSubstoreConfig({ sourceUrl, channel = "current", path = PRIVATE_CONFIG_PATH } = {}) {

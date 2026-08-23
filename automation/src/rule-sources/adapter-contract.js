@@ -75,6 +75,7 @@ export function parseExternalRuleSource(request = {}) {
       retrievalUrl: request.source.retrievalUrl,
       retrievedAt: request.retrievedAt,
       sha256: request.sourceSha256,
+      license: request.source.license,
     }),
   });
 }

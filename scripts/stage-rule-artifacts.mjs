@@ -457,6 +457,7 @@ export async function main(args = process.argv.slice(2), {
     operation: "build-edge",
     publicDirectory,
     includeStaticFiles: false,
+    loadExternalSnapshots: true,
   });
   const chinaIpAudit = await buildEdgeChinaIpAuditImpl({
     publicDirectory,

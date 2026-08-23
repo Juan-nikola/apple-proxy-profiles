@@ -7,9 +7,9 @@
       "currentAddresses": "359026418",
       "currentPrefixes": 7175,
       "divergenceBasisPoints": "2051",
-      "previousAddresses": "359025394",
-      "previousPrefixes": 7173,
-      "secondaryAddresses": "285363966",
+      "previousAddresses": "359026418",
+      "previousPrefixes": 7175,
+      "secondaryAddresses": "285357566",
       "secondaryPrefixes": 4146,
       "shrinkBasisPoints": "0"
     },
@@ -19,12 +19,12 @@
       "divergenceBasisPoints": "6059",
       "previousAddresses": "5104925933167855546564402630098944",
       "previousPrefixes": 3925,
-      "secondaryAddresses": "2011465129561818255374572069060608",
-      "secondaryPrefixes": 1236,
+      "secondaryAddresses": "2011464510591798612684434619498496",
+      "secondaryPrefixes": 1235,
       "shrinkBasisPoints": "0"
     }
   },
-  "generatedAt": "2026-08-22T04:01:57.210Z",
+  "generatedAt": "2026-08-23T07:11:10.049Z",
   "primary": {
     "commit": "54abec88620d07187b1ba20ff06fdd8ed5b1f173",
     "committedAt": "2026-08-21T18:35:15Z",
@@ -34,10 +34,10 @@
   "reportOnly": true,
   "schemaVersion": 1,
   "secondary": {
-    "commit": "300564f096d7da366c4338199b709500e71043fa",
-    "committedAt": "2026-08-22T03:29:59Z",
+    "commit": "3436f54e8db1d63139d08365e98cf9626f3e96ad",
+    "committedAt": "2026-08-23T03:39:59Z",
     "repository": "https://github.com/gaoyifan/china-operator-ip",
-    "sha256": "371de04b366b43620260846c4b1c0f575402f00c05af519092bc4656f2d3518e"
+    "sha256": "ca37b433da5662483c8a750d3d8b5680385125c53b1dba39eddfc03cd6c8fbb0"
   },
   "warnings": [
     "ipv4:secondary-divergence",

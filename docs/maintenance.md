@@ -1,6 +1,6 @@
 # 维护、编译与发布手册
 
-这份手册回答三个问题：以后增加节点或规则要改哪里、每个文件负责什么、在 macOS/Linux/CI 环境怎样构建和验证。公开仓库不保存节点；你的私密节点来源在 `apple-proxy-all` 总池与七个 client collection 中维护，详细边界见 [Sub-Store 客户端节点池指南](substore-client-pools.md)。旧 `apple-proxy-sources` 只保留作兼容/回滚入口。
+这份手册回答三个问题：以后增加节点或规则要改哪里、每个文件负责什么、在 macOS/Linux/CI 环境怎样构建和验证。公开仓库不保存节点；你的私密节点来源在 `apple-proxy-all` 总池与九个 client collection 中维护，详细边界见 [Sub-Store 客户端节点池指南](substore-client-pools.md)。旧 `apple-proxy-sources` 只保留作兼容/回滚入口。
 
 ## 1. 先判断你要改哪一层
 
@@ -63,6 +63,16 @@ clients/sing-box/
   src/render-platform.js       macOS/移动端 TUN 平台差异
   src/render-rules.js          规则集引用
   scripts/compile-rules.mjs    官方 core `.srs` 编译边界
+
+clients/v2rayn/
+  src/substore-node-entry.js   v2rayN 节点订阅入口
+  src/substore-config-entry.js v2rayN Windows/macOS 配置入口
+  src/render-profile.js        Xray JSON、DNS、TUN 和 GeoData 引用
+
+clients/v2box/
+  src/substore-node-entry.js   V2Box 节点订阅入口
+  src/substore-config-entry.js V2Box iPhone/iPad 配置入口
+  src/render-assets.js          共享 GeoData 资产 manifest
 
 clients/*/scripts/
   build.mjs                    用 esbuild 生成 dist
@@ -203,6 +213,30 @@ npm --workspace @apple-proxy-profiles/sing-box run verify
 ```
 
 生成 `clients/sing-box/dist/sing-box-config-generator.js` 和兼容别名；平台由 `platform=macos|iphone|ipad|android` 选择。
+
+### v2rayN
+
+```bash
+npm --workspace @apple-proxy-profiles/v2rayn run test
+npm --workspace @apple-proxy-profiles/v2rayn run build
+npm --workspace @apple-proxy-profiles/v2rayn run fixtures
+npm --workspace @apple-proxy-profiles/v2rayn run check:secrets
+npm --workspace @apple-proxy-profiles/v2rayn run verify
+```
+
+生成 `clients/v2rayn/dist/substore-node-generator.js` 和 `substore-config-generator.js`；节点任务不需要平台，配置任务使用 `platform=windows|macos` 与 `region=cn|global|ru|ir`。
+
+### V2Box
+
+```bash
+npm --workspace @apple-proxy-profiles/v2box run test
+npm --workspace @apple-proxy-profiles/v2box run build
+npm --workspace @apple-proxy-profiles/v2box run fixtures
+npm --workspace @apple-proxy-profiles/v2box run check:secrets
+npm --workspace @apple-proxy-profiles/v2box run verify
+```
+
+生成 `clients/v2box/dist/substore-node-generator.js` 和 `substore-config-generator.js`；配置任务使用 `platform=iphone|ipad`，并通过共享 `geodata/<region>/` 资产 manifest 校验地区、频道和 hash。
 
 ## 6. sing-box 官方 core 和 `.srs` 编译
 

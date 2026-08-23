@@ -1,8 +1,8 @@
 import { RULE_SOURCE_CATALOG } from "./catalog.js";
 import { EXTERNAL_RULE_SOURCE_CATALOG } from "./external-sources.js";
 import { FULL_ADBLOCK_SOURCE_IDS } from "./lightweight-policy.js";
+import { parseRegion } from "./region-values.js";
 
-const VALID_REGIONS = Object.freeze(["cn", "global", "ru", "ir"]);
 const BASELINE_IDS = Object.freeze(RULE_SOURCE_CATALOG.map(({ id }) => id));
 const CHINA_LOCAL_IDS = new Set(["DomesticCore", "DomesticGame", "SteamCN", "ChinaTLD", "ChinaIP", "ChinaMax", "ChinaMax_Domain"]);
 const GLOBAL_BASELINE_IDS = Object.freeze(BASELINE_IDS.filter((id) => !CHINA_LOCAL_IDS.has(id)));
@@ -21,11 +21,7 @@ export const REGION_PROFILES = Object.freeze({
   ir: Object.freeze({ region: "ir", sourceIds: Object.freeze([...GLOBAL_BASELINE_IDS, ...COMMON_EXTERNAL_IDS, ...OVERLAY_IDS.ir]), overlays: OVERLAY_IDS.ir }),
 });
 
-export function parseRegion(value) {
-  if (value === undefined || value === null || value === "") return "cn";
-  if (!VALID_REGIONS.includes(value)) throw new RangeError(`Unsupported region: ${value}`);
-  return value;
-}
+export { parseRegion };
 
 export function sourcesForRegion(region, { adblockMode = "off" } = {}) {
   if (adblockMode !== "off" && adblockMode !== "full") throw new TypeError("adblockMode must be either off or full");
