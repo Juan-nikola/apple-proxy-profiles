@@ -7,6 +7,7 @@ import { renderV2BoxAssetManifest } from "../src/render-assets.js";
 test("renders importable iPhone profile with inline fallback", () => {
   const profile = renderV2BoxProfile({ options: parseV2BoxOptions({ output: "config", type: "collection", name: "fixture", platform: "iphone", region: "ru" }), nodes: [{ name: "fixture", type: "vless", server: "fixture.invalid", port: 443, uuid: "TEST_ONLY_UUID" }] });
   assert.equal(profile.inbounds[0].protocol, "tun");
+  assert.equal(Object.hasOwn(profile.outbounds.find(({ tag }) => tag === "ap-node-0"), "name"), false);
   assert.ok(profile.routing.rules.some(({ domain }) => domain?.some((value) => value.includes("ru"))));
   assert.equal(profile.routing.rules.at(-1).outboundTag, "proxy");
 });

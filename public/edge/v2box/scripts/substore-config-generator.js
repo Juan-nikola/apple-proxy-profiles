@@ -2888,6 +2888,7 @@ var V2BoxConfigBundle = (() => {
     });
     const overrides = parseBusinessOverrides(options.policyOverrides ?? "");
     if (Object.values(overrides).some((value) => value.startsWith("NODE:") && !nodeTags.has(value.slice(5)))) throw new Error("V2Box policy target node is unavailable");
+    for (const outbound of outbounds) delete outbound.name;
     const references = geoReferences(geoData, options, assetManifest);
     const rules = [{ domain: ["geosite:private"], outboundTag: "direct", ruleTag: "private-direct" }];
     if (!assetManifest && !geoData) rules.push({ domain: ["geosite:apple-proxy-security"], outboundTag: options.blockMode === "off" ? "direct" : "block", ruleTag: "inline-security" }, { domain: ["geosite:apple-proxy-privacy"], outboundTag: "direct", ruleTag: "inline-privacy" }, { domain: ["geosite:cn"], outboundTag: "direct", ruleTag: "inline-domestic" }, { domain: ["geosite:apple-proxy-overseas"], outboundTag: "proxy", ruleTag: "inline-overseas" });
@@ -2903,7 +2904,7 @@ var V2BoxConfigBundle = (() => {
   // src/substore-config-entry.js
   async function operator(input, targetPlatform, context = {}) {
     const options = parseV2BoxOptions({ ...context.arguments ?? {}, output: "config" });
-    if (targetPlatform !== "JSON" && targetPlatform !== options.platform) throw new Error("V2Box target platform mismatch");
+    if (targetPlatform !== void 0 && targetPlatform !== "JSON" && targetPlatform !== options.platform) throw new Error("V2Box target platform mismatch");
     if (typeof context.produceArtifact !== "function") throw new Error("V2Box produceArtifact is unavailable");
     const raw = await context.produceArtifact({ type: "collection", name: options.name, platform: "JSON", produceType: "internal" });
     const normalized = normalizeNodes(raw, { clientChain: options.clientChain });

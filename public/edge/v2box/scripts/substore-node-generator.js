@@ -2418,7 +2418,9 @@ var V2BoxNodesBundle = (() => {
 
   // src/render-node.js
   function renderV2BoxSubscription({ nodes }) {
-    return renderXraySubscription({ nodes, client: "v2box" });
+    const payload = JSON.parse(renderXraySubscription({ nodes, client: "v2box" }));
+    payload.outbounds = payload.outbounds.map(({ name: _displayName, ...outbound }) => outbound);
+    return JSON.stringify(payload) + "\n";
   }
 
   // src/substore-node-entry.js

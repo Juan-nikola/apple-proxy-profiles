@@ -47,7 +47,7 @@
       },
       "edge": {
         "closure": true,
-        "manifestHash": "4eb6eec8e1b9d427ab2fdef1256060709dae687457ffb511924031e5ff7f3846"
+        "manifestHash": "80637516d33a3a2e68122a94811ef58ca49f23e0d89d5c995d5a85d6da97a8d4"
       },
       "previous": {
         "closure": true,
@@ -64,7 +64,7 @@
       },
       "edge": {
         "closure": true,
-        "manifestHash": "d49ef25f7c8aa3de672e164333e24788704807a95d2265cb676da2e4b1fce783"
+        "manifestHash": "ec078f0e44e555a23204d05a56cebdfbc6ac884e511d9a5603a48ea62564af7f"
       },
       "previous": {
         "closure": true,
@@ -81,7 +81,7 @@
       },
       "edge": {
         "closure": true,
-        "manifestHash": "03c1d3bcdc21a793cd41934df4267d529b4348540745ac93097201477da4a402"
+        "manifestHash": "2ea5abcfbbbd2be5584be419fd6dbf405a79044e7d96fbe866b4effddffe50a1"
       },
       "previous": {
         "closure": true,
@@ -98,7 +98,7 @@
       },
       "edge": {
         "closure": true,
-        "manifestHash": "52a909c325b8f9abdcf82ec7ca0b85e65ed6a01f5b3aef42aa850d459f036605"
+        "manifestHash": "b6bea5e3e0eea3e59dce42abc01c4f8c7f37fe7e392eada1b94a2afc9759289b"
       },
       "previous": {
         "closure": true,
@@ -115,7 +115,7 @@
       },
       "edge": {
         "closure": true,
-        "manifestHash": "0986a6d0d16c36bdbcc48a9e94a1cda7713a5563ff8221b32d210c7d148868f8"
+        "manifestHash": "d112cd9da19529af85d554541d2fdec395fd3d8579a303bb25ba5b81560aa61e"
       },
       "previous": {
         "closure": true,
@@ -132,7 +132,7 @@
       },
       "edge": {
         "closure": true,
-        "manifestHash": "870d6013c5ee4e8f3063b8deec3832b8c531d6c95680dd5f43e31d0d0fc79742"
+        "manifestHash": "17a01ef87f50363426162fa0a65e7745929d0dddc1c18b80234c085ad46b1c0e"
       },
       "previous": {
         "closure": true,
@@ -149,7 +149,7 @@
       },
       "edge": {
         "closure": true,
-        "manifestHash": "557552f61ed29a1a9917f017f549c797f1324a9829c6642eca433f0e7b3ca29e"
+        "manifestHash": "690211c97dbd91de0c27355f7244b075145220aa6223d523a6ac518e585438b7"
       },
       "previous": {
         "closure": true,
@@ -166,7 +166,7 @@
       },
       "edge": {
         "closure": true,
-        "manifestHash": "8b3f1675defda8f645862c826105313387253f62d32dca94120cdd60d6df08f1"
+        "manifestHash": "6139b204ed564bd3343d2f1532f9fb7ea4d7840f403e0d2c8ff2aa53e717a32d"
       },
       "previous": {
         "closure": true,
@@ -183,7 +183,7 @@
       },
       "edge": {
         "closure": true,
-        "manifestHash": "e872117a8e03c4d954017b391bded542b6f76202c9b01d5bb51f4dac9ac371d1"
+        "manifestHash": "76eac20d89f46f5dacd57c57e02c915213f9f50b98e188e7467aa2ccac25b1d0"
       },
       "previous": {
         "closure": true,
@@ -192,7 +192,7 @@
       "state": "active"
     }
   },
-  "generatedAt": "2026-08-21T18:35:15Z",
+  "generatedAt": "2026-08-23T18:28:35Z",
   "privateDataExcluded": true,
   "rules": {
     "entries": 16844,
@@ -202,8 +202,8 @@
   },
   "schemaVersion": 1,
   "upstream": {
-    "commit": "54abec88620d07187b1ba20ff06fdd8ed5b1f173",
-    "committedAt": "2026-08-21T18:35:15Z",
+    "commit": "f42be99379fcd1a1dd03469e8b56dcb46888fcea",
+    "committedAt": "2026-08-23T18:28:35Z",
     "repository": "blackmatrix7",
     "sha256": "c2437ae35319f1e41b69a098fdc7c0b3c3c5a90e6deea906406f30f998bd9403"
   }

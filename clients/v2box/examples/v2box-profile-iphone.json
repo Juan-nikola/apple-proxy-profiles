@@ -47,7 +47,6 @@
       "tag": "block"
     },
     {
-      "name": "Fixture iPhone",
       "protocol": "vless",
       "tag": "ap-node-0",
       "settings": {

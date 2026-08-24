@@ -87,6 +87,7 @@ export function renderV2BoxProfile({ nodes, options, assetManifest = null, geoDa
   nodes.forEach((node, index) => { const tag = `ap-node-${index.toString(36)}`; try { outbounds.push(renderXrayOutbound(node, { tag, client: "v2box" })); nodeTags.set(node.name, tag); } catch (error) { const diagnostic = renderXrayNodeError(error, "v2box"); Object.entries(diagnostic.excluded).forEach(([key, count]) => { failures[key] = (failures[key] ?? 0) + count; }); } });
   const overrides = parseBusinessOverrides(options.policyOverrides ?? "");
   if (Object.values(overrides).some((value) => value.startsWith("NODE:") && !nodeTags.has(value.slice(5)))) throw new Error("V2Box policy target node is unavailable");
+  for (const outbound of outbounds) delete outbound.name;
   const references = geoReferences(geoData, options, assetManifest);
   const rules = [{ domain: ["geosite:private"], outboundTag: "direct", ruleTag: "private-direct" }];
   if (!assetManifest && !geoData) rules.push({ domain: ["geosite:apple-proxy-security"], outboundTag: options.blockMode === "off" ? "direct" : "block", ruleTag: "inline-security" }, { domain: ["geosite:apple-proxy-privacy"], outboundTag: "direct", ruleTag: "inline-privacy" }, { domain: ["geosite:cn"], outboundTag: "direct", ruleTag: "inline-domestic" }, { domain: ["geosite:apple-proxy-overseas"], outboundTag: "proxy", ruleTag: "inline-overseas" });
