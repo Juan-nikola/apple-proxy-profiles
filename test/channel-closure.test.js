@@ -56,6 +56,40 @@ test("ignores native generator channel defaults for v2rayN and V2Box", () => {
   }), []);
 });
 
+test("ignores native generator channel defaults for Anywhere strategy", () => {
+  const generator = "const DEFAULTS = { channel: \"current\" };";
+  assert.deepEqual(findChannelClosureViolations({
+    channel: "edge",
+    files: new Map([
+      ["anywhere/scripts/anywhere-strategy-generator.js", generator],
+      ["edge/anywhere/scripts/anywhere-strategy-generator.js", generator],
+    ]),
+  }), []);
+});
+
+test("ignores channel defaults for interactive Sub-Store generators", () => {
+  const generator = "const DEFAULTS = { channel: \"current\" };";
+  assert.deepEqual(findChannelClosureViolations({
+    channel: "edge",
+    files: new Map([
+      ["shadowrocket/scripts/shadowrocket-profile-generator.js", generator],
+      ["surge/scripts/surge-profile-generator.js", generator],
+      ["sing-box/scripts/sing-box-config-generator.js", generator],
+    ]),
+  }), []);
+});
+
+test("ignores native generator channel defaults for Egern profiles", () => {
+  const generator = "const DEFAULTS = { channel: \"current\" };";
+  assert.deepEqual(findChannelClosureViolations({
+    channel: "edge",
+    files: new Map([
+      ["egern/scripts/egern-profile-generator.js", generator],
+      ["egern/scripts/substore-profile-generator.js", generator],
+    ]),
+  }), []);
+});
+
 test("throws a non-secret closure error", () => {
   assert.throws(() => assertChannelClosure({
     channel: "current",

@@ -47,6 +47,7 @@
 | Egern node | `https://juan-nikola.github.io/apple-proxy-profiles/current/egern/scripts/egern-node-generator.js` | 节点 File |
 | Egern Profile | `https://juan-nikola.github.io/apple-proxy-profiles/current/egern/scripts/egern-profile-generator.js` | 三个 Profile File |
 | Anywhere node | `https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/scripts/anywhere-node-generator.js` | 节点 File |
+| Anywhere strategy | `https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/scripts/anywhere-strategy-generator.js` | 策略校验/映射 File，不生成完整 Profile |
 | Surge node resource | `https://juan-nikola.github.io/apple-proxy-profiles/current/surge/scripts/surge-nodes-generator.js` | 一个 Surge 节点 File |
 | Surge Profile | `https://juan-nikola.github.io/apple-proxy-profiles/current/surge/scripts/surge-profile-generator.js` | 三个平台远程 Profile File |
 | sing-box config | `https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/scripts/sing-box-config-generator.js` | 四个平台 Config File |
@@ -113,31 +114,32 @@ https://juan-nikola.github.io/apple-proxy-profiles/current/surge/scripts/surge-p
 
 通用任务总数为 `4+1+4+4+4=17` 个。
 
-## 4.1 九客户端目标与 34 个任务
+## 4.1 九客户端目标与 35 个任务
 
-仓库注册表包含九个稳定 ID，九个都已进入 `active` 发布状态。任务总数为 **34 个**：现有 17 个通用任务，加上 policy、3 个 OneXray 任务、6 个 HAPP 平台配置任务、1 个 HAPP 审计任务和 6 个 v2rayN/V2Box 任务。
+仓库注册表包含九个稳定 ID，九个都已进入 `active` 发布状态。任务总数为 **35 个**：现有 17 个通用任务，加上 Anywhere 策略校验/映射、policy、3 个 OneXray 任务、6 个 HAPP 平台配置任务、1 个 HAPP 审计任务和 6 个 v2rayN/V2Box 任务。
 
 | # | 任务 | 状态 | 输入/绑定 | 说明 |
 | ---: | --- | --- | --- | --- |
-| 18 | `apple-proxy-policy` | private | 私密 Sub-Store policy | 三频道严格 JSON；只在私密任务读取 revision、channel、公开 Manifest SHA-256 和 GeoData SHA-256，不放入公开 Pages |
-| 19 | `onexray-nodes` | active/private | `apple-proxy-onexray` 或总池 | 输出 Xray JSON outbounds；不复制完整 Profile，不包含公开凭据 |
-| 20 | `onexray-profile` | active/private | `apple-proxy-onexray` | 输出结构化 OneXray Profile；固定节点缺失/重复/不兼容时整项失败 |
-| 21 | `onexray-routing-audit` | active/private | 与 Profile 同一 collection/参数 | 只输出计数、目标解析和链状态，不输出节点凭据 |
-| 22 | `happ-macos` | active/private | `apple-proxy-happ` | 输出 macOS HAPP JSON 配置数组 |
-| 23 | `happ-iphone` | active/private | `apple-proxy-happ` | 输出 iPhone HAPP JSON 配置数组 |
-| 24 | `happ-ipad` | active/private | `apple-proxy-happ` | 输出 iPad HAPP JSON 配置数组 |
-| 25 | `happ-android` | active/private | `apple-proxy-happ` | 输出 Android HAPP JSON 配置数组 |
-| 26 | `happ-windows` | active/private | `apple-proxy-happ` | 输出 Windows HAPP JSON 配置数组 |
-| 27 | `happ-linux` | active/private | `apple-proxy-happ` | 输出 Linux HAPP JSON 配置数组 |
-| 28 | `happ-routing-audit` | active/private | 与 HAPP 配置同一 collection/参数 | 只输出兼容数、排除原因、业务目标和 warning |
-| 29 | `v2rayn-nodes` | active/private | `apple-proxy-v2rayn` | 输出 Windows/macOS 可导入的 Xray JSON 节点订阅 |
-| 30 | `v2rayn-config-windows` | active/private | `apple-proxy-v2rayn` | 输出 Windows v2rayN 配置；默认 `region=cn` |
-| 31 | `v2rayn-config-macos` | active/private | `apple-proxy-v2rayn` | 输出 macOS v2rayN 配置；默认 `region=cn` |
-| 32 | `v2box-nodes` | active/private | `apple-proxy-v2box` | 输出 iPhone/iPad 可导入的 Xray JSON 节点订阅 |
-| 33 | `v2box-config-iphone` | active/private | `apple-proxy-v2box` | 输出 iPhone V2Box 配置；默认 `region=cn` |
-| 34 | `v2box-config-ipad` | active/private | `apple-proxy-v2box` | 输出 iPad V2Box 配置；默认 `region=cn` |
+| 18 | `anywhere-strategy` | active/private | `apple-proxy-anywhere` + `policyInput=apple-proxy-policy` | 只输出策略目标校验/映射和脱敏计数，不伪造完整 Anywhere Profile |
+| 19 | `apple-proxy-policy` | private | 私密 Sub-Store policy | schema v2 单层 `targets`；reader 保持 schema v1 兼容；只在私密任务读取 revision、channel、公开 Manifest SHA-256 和 GeoData SHA-256，不放入公开 Pages |
+| 20 | `onexray-nodes` | active/private | `apple-proxy-onexray` 或总池 | 输出 Xray JSON outbounds；不复制完整 Profile，不包含公开凭据 |
+| 21 | `onexray-profile` | active/private | `apple-proxy-onexray` | 输出结构化 OneXray Profile；固定节点缺失/重复/不兼容时整项失败 |
+| 22 | `onexray-routing-audit` | active/private | 与 Profile 同一 collection/参数 | 只输出计数、目标解析和链状态，不输出节点凭据 |
+| 23 | `happ-macos` | active/private | `apple-proxy-happ` | 输出 macOS HAPP JSON 配置数组 |
+| 24 | `happ-iphone` | active/private | `apple-proxy-happ` | 输出 iPhone HAPP JSON 配置数组 |
+| 25 | `happ-ipad` | active/private | `apple-proxy-happ` | 输出 iPad HAPP JSON 配置数组 |
+| 26 | `happ-android` | active/private | `apple-proxy-happ` | 输出 Android HAPP JSON 配置数组 |
+| 27 | `happ-windows` | active/private | `apple-proxy-happ` | 输出 Windows HAPP JSON 配置数组 |
+| 28 | `happ-linux` | active/private | `apple-proxy-happ` | 输出 Linux HAPP JSON 配置数组 |
+| 29 | `happ-routing-audit` | active/private | `apple-proxy-happ` + `policyInput=apple-proxy-policy` | 只输出兼容数、排除原因、业务目标和 warning |
+| 30 | `v2rayn-nodes` | active/private | `apple-proxy-v2rayn` | 输出 Windows/macOS 可导入的 Xray JSON 节点订阅 |
+| 31 | `v2rayn-config-windows` | active/private | `apple-proxy-v2rayn` | 输出 Windows v2rayN 配置；默认 `region=cn` |
+| 32 | `v2rayn-config-macos` | active/private | `apple-proxy-v2rayn` | 输出 macOS v2rayN 配置；默认 `region=cn` |
+| 33 | `v2box-nodes` | active/private | `apple-proxy-v2box` | 输出 iPhone/iPad 可导入的 Xray JSON 节点订阅 |
+| 34 | `v2box-config-iphone` | active/private | `apple-proxy-v2box` | 输出 iPhone V2Box 配置；默认 `region=cn` |
+| 35 | `v2box-config-ipad` | active/private | `apple-proxy-v2box` | 输出 iPad V2Box 配置；默认 `region=cn` |
 
-除 HAPP 外，读取策略的任务接收同名 `channel`（仅 `edge`、`current`、`previous`），并绑定该频道的 policy revision、公开 client Manifest SHA-256 和 GeoData SHA-256；OneXray node-only 任务也接收 `channel`，但不读取业务策略。HAPP 的 6 个平台配置任务和 `happ-routing-audit` 固定使用 `/current/happ/`，任务片段不接收或携带 `channel`；HAPP 审计只把 `current` 作为内部诊断元数据。公开脚本只在 Pages 提供无节点 bundle，真实输出仍只在私密 Sub-Store 任务日志和客户端导入结果中查看。
+除节点订阅任务外，所有配置、Profile 和 audit 任务的 Sub-Store 元数据都设置 `policyInput=apple-proxy-policy`；节点任务不读取策略。policy File 使用 schema v2 单层 `targets`，读取器继续兼容 schema v1。读取策略的任务接收同名 `channel`（仅 `edge`、`current`、`previous`），并绑定该频道的 policy revision、公开 client Manifest SHA-256 和 GeoData SHA-256；OneXray node-only 任务也接收 `channel`，但不读取业务策略。HAPP 的 6 个平台配置任务和 `happ-routing-audit` 固定使用 `/current/happ/`，任务片段不接收或携带 `channel`；HAPP 审计只把 `current` 作为内部诊断元数据。公开脚本只在 Pages 提供无节点 bundle，真实输出仍只在私密 Sub-Store 任务日志和客户端导入结果中查看。
 
 真机 canary 不再是发布门禁。自动化测试、规则预算、manifest 闭合、ChinaIP/v2fly 审计和秘密扫描通过后，客户端可以直接使用 `current`；`edge` 只作为维护者预览入口。设备清单保留为上线后的可选实践反馈，失败时回滚受影响客户端并修正后续发布。
 
@@ -185,7 +187,7 @@ https://juan-nikola.github.io/apple-proxy-profiles/current/egern/scripts/egern-p
 
 预览必须出现 `ipv6:`、`dns:`、`policy_groups:`、`rules:` 和 `default_subscription_group:`；没有自更新 URL 时不应出现无效的空 `auto_update: {}`。
 
-## 6. Anywhere：1 个节点 File + 公开规则导入
+## 6. Anywhere：节点 File + 策略审计 + 公开规则导入
 
 脚本：
 
@@ -200,6 +202,20 @@ output=nodes&type=collection&name=apple-proxy-anywhere&clientChain=off
 ```
 
 预览顶层必须有 `proxies:`。保存 `anywhere-nodes` 私密输出 URL 后，在 Anywhere 的节点订阅页面导入它。
+
+Anywhere 的策略校验/映射是独立任务，不替代节点 File，也不生成虚假的完整 Profile：
+
+```text
+https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/scripts/anywhere-strategy-generator.js
+```
+
+参数：
+
+```text
+output=strategy&type=collection&name=apple-proxy-anywhere&channel=current
+```
+
+它读取同一个私密 `apple-proxy-policy` 文件，输出业务目标状态、固定节点映射和脱敏计数；节点订阅任务只读取 collection，不读取策略。策略任务失败时应修复策略或节点匹配，不回退成默认或空 Profile。
 
 公开规则全部导入页：
 

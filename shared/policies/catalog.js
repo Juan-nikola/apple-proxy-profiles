@@ -132,7 +132,36 @@ export function effectiveAutoMode(requested, nodeCount) {
   return "minimal";
 }
 
-export function buildPolicyGroups(options, nodes) {
+export function applyUnifiedPolicyDefaults(groups, resolution) {
+  if (!resolution || typeof resolution !== "object") return groups;
+  const byLabel = new Map();
+  const targetDefaults = {
+    "🤖 AI 专用": resolution.targets?.ai,
+    "🐙 GitHub": resolution.targets?.github,
+    "📺 YouTube": resolution.targets?.youtube,
+    "🎬 海外流媒体": resolution.targets?.overseasMedia,
+    "💬 海外社交": resolution.targets?.globalSocial,
+    "🍎 Apple": resolution.targets?.apple,
+    "🪟 Microsoft": resolution.targets?.microsoft,
+    "🇨🇳 国内平台": resolution.targets?.domesticPlatform,
+    "🌍 海外游戏": resolution.targets?.overseasGame,
+    "🎮 游戏连接": resolution.targets?.game,
+    "⬇️ 下载/P2P": resolution.targets?.download,
+    "🧭 DNS 与规则下载": resolution.targets?.dnsAndRules,
+  };
+  for (const [name, record] of Object.entries(targetDefaults)) {
+    if (!record) continue;
+    const value = record.resolved === "DIRECT" ? "DIRECT" : record.resolved === "FOLLOW" ? "🚀 节点选择" : record.resolved;
+    byLabel.set(name, value);
+  }
+  return groups.map((group) => {
+    const defaultChoice = byLabel.get(group.name);
+    if (defaultChoice === undefined) return group;
+    return { ...group, defaultChoice };
+  });
+}
+
+export function buildPolicyGroups(options, nodes, policyResolution = null) {
   const normalizedNodes = Array.isArray(nodes) ? nodes : [];
   const preset = platformPolicyPreset(options.platform);
   const mode = effectiveAutoMode(options.autoGroupMode, normalizedNodes.length);
@@ -217,5 +246,6 @@ export function buildPolicyGroups(options, nodes) {
   if (chainEligible) {
     groups.push(subscriptionGroup(GROUP_KIND.chain, "🔗 入口节点", ENTRY_FILTER, ["⚡ 入口自动"]));
   }
-  return [...groups, ...helpers];
+  const result = [...groups, ...helpers];
+  return applyUnifiedPolicyDefaults(result, policyResolution);
 }

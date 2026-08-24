@@ -31,12 +31,12 @@ function addReference(references, path, actualChannel, offset, kind) {
   references.push({ path, actualChannel, offset, kind });
 }
 
-// Private Sub-Store bundles intentionally contain a channel enum with a
+// Sub-Store generator bundles intentionally contain a channel enum with a
 // default (`edge`) and validation tables for all three channels. Those
 // literals are executable policy input, not publication URLs; only concrete
 // channel-scoped paths/fields should participate in closure validation.
 function isNativeGeneratorPath(path) {
-  return /^(?:(?:edge|current|previous)\/|versions\/[0-9a-f]{64}\/)?(?:clients\/[^/]+\/[0-9a-f]{64}\/)?(?:happ|onexray|v2rayn|v2box)\/scripts\/[^/]+\.js$/u.test(path);
+  return /^(?:(?:edge|current|previous)\/|versions\/[0-9a-f]{64}\/)?(?:clients\/[^/]+\/[0-9a-f]{64}\/)?(?:anywhere|egern|happ|onexray|shadowrocket|sing-box|surge|v2rayn|v2box)\/scripts\/[^/]+\.js$/u.test(path);
 }
 
 function scanText(path, text) {

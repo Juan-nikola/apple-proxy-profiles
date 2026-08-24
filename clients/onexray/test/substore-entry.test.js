@@ -11,9 +11,18 @@ const nodes = [
   { name: "TEST_ONLY_Fixed", type: "trojan", server: "fixed.invalid", port: 443, password: "TEST_ONLY_PASSWORD", tls: true, sni: "fixed.invalid", _profile: { id: "fixed", entry: true, sourceKind: "selfHosted", chained: false } },
   { name: "TEST_ONLY_Snell", type: "snell", server: "snell.invalid", port: 443, psk: "TEST_ONLY_PSK", version: 4 },
 ];
+const POLICY = {
+  $content: JSON.stringify({
+    schemaVersion: 2,
+    targets: { "🤖 AI 专用": "NODE:TEST_ONLY_Fixed|trojan" },
+  }),
+};
 
 function context(argumentsValue) {
-  return { arguments: argumentsValue, produceArtifact: async () => nodes };
+  return {
+    arguments: argumentsValue,
+    produceArtifact: async (request) => request.type === "file" ? POLICY : nodes,
+  };
 }
 
 const common = {

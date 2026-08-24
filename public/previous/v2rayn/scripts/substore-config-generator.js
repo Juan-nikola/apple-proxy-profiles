@@ -2847,7 +2847,7 @@ var V2rayNConfigBundle = (() => {
   // src/substore-config-entry.js
   async function operator(input, targetPlatform, context = {}) {
     const options = parseV2rayNOptions({ ...context.arguments ?? {}, output: "config" });
-    if (targetPlatform !== "JSON" && targetPlatform !== options.platform) throw new Error(`v2rayN target platform '${targetPlatform}' does not match ${options.platform}`);
+    if (targetPlatform !== void 0 && targetPlatform !== "JSON" && targetPlatform !== options.platform) throw new Error(`v2rayN target platform '${targetPlatform}' does not match ${options.platform}`);
     if (typeof context.produceArtifact !== "function") throw new Error("v2rayN produceArtifact is unavailable");
     const raw = await context.produceArtifact({ type: "collection", name: options.name, platform: "JSON", produceType: "internal" });
     const normalized = normalizeNodes(raw, { clientChain: options.clientChain });

@@ -34,6 +34,7 @@ test("documents the exact three-layer boundary and pinned compatibility", async 
 test("deployment pins private arguments, all import layers, and manual refresh", async () => {
   const { deployment } = await docs();
   for (const phrase of [
+    "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/scripts/anywhere-strategy-generator.js",
     "output=nodes&type=collection&name=apple-proxy-anywhere&clientChain=off",
     "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/import.html",
     "https://juan-nikola.github.io/apple-proxy-profiles/optional/adblock-full/current/anywhere/import.html",
@@ -58,6 +59,7 @@ test("deployment pins private arguments, all import layers, and manual refresh",
 test("README is independently copyable for the two-layer Sub-Store node setup", async () => {
   const { readme, deployment } = await docs();
   for (const phrase of [
+    "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/scripts/anywhere-strategy-generator.js",
     "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/scripts/anywhere-node-generator.js",
     "output=nodes&type=collection&name=apple-proxy-anywhere&clientChain=off",
     "Sub-Store 不需要先创建独立脚本记录",

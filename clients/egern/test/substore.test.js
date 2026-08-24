@@ -19,6 +19,7 @@ const PROFILE_ARGUMENTS = Object.freeze({
   nodeSubscriptionUrl: PRIVATE_URL,
   platform: "macos",
 });
+const EMPTY_POLICY = { $content: JSON.stringify({ schemaVersion: 2, targets: {} }) };
 
 function rawInventory() {
   return [
@@ -82,7 +83,7 @@ function logger(lines, { throwing = false } = {}) {
 function producer(nodes, calls = []) {
   return async (request) => {
     calls.push(request);
-    return structuredClone(nodes);
+    return request.type === "file" ? EMPTY_POLICY : structuredClone(nodes);
   };
 }
 
@@ -175,10 +176,16 @@ test("profile File Operator normalizes once and emits a validated credential-fre
   });
 
   assert.equal(profileOperator.length, 2);
-  assert.equal(calls.length, 1);
+  assert.equal(calls.length, 2);
   assert.deepEqual(calls[0], {
     type: "collection",
     name: "apple-proxy-egern",
+    platform: "JSON",
+    produceType: "internal",
+  });
+  assert.deepEqual(calls[1], {
+    type: "file",
+    name: "apple-proxy-policy",
     platform: "JSON",
     produceType: "internal",
   });
@@ -272,7 +279,7 @@ test("profile File Operator uses one immutable pre-await option snapshot", async
         platform: "ipad",
         nodeSubscriptionUrl: `https://replacement.example.invalid/${mutatedSecret}`,
       };
-      return structuredClone(rawInventory());
+      return request.type === "file" ? EMPTY_POLICY : structuredClone(rawInventory());
     },
     logger: logger(lines),
   };
@@ -283,6 +290,11 @@ test("profile File Operator uses one immutable pre-await option snapshot", async
   assert.deepEqual(calls, [{
     type: "collection",
     name: "apple-proxy-egern",
+    platform: "JSON",
+    produceType: "internal",
+  }, {
+    type: "file",
+    name: "apple-proxy-policy",
     platform: "JSON",
     produceType: "internal",
   }]);

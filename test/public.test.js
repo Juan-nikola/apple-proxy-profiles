@@ -76,6 +76,8 @@ test("publishes one hash-closed multi-client current snapshot", async () => {
     "egern/scripts/substore-profile-generator.js",
     "anywhere/scripts/anywhere-node-generator.js",
     "anywhere/scripts/substore-node-generator.js",
+    "anywhere/scripts/anywhere-strategy-generator.js",
+    "anywhere/scripts/substore-strategy-generator.js",
     "surge/scripts/surge-nodes-generator.js",
     "surge/scripts/surge-profile-generator.js",
     "surge/scripts/substore-nodes-generator.js",
@@ -152,6 +154,7 @@ test("public client entrypoints close over hosted channels and never raw master"
     ["egern/scripts/egern-node-generator.js", "egern/scripts/substore-node-generator.js"],
     ["egern/scripts/egern-profile-generator.js", "egern/scripts/substore-profile-generator.js"],
     ["anywhere/scripts/anywhere-node-generator.js", "anywhere/scripts/substore-node-generator.js"],
+    ["anywhere/scripts/anywhere-strategy-generator.js", "anywhere/scripts/substore-strategy-generator.js"],
   ]) {
     assert.equal(
       await readFile(new URL(canonical, currentRoot), "utf8"),

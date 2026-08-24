@@ -91,7 +91,7 @@ function configTask(name, client, script, channel, collection, platform, subscri
   const { omitKeys = [], ...taskMetadata } = metadata;
   for (const key of omitKeys) delete options[key];
   return remoteTask(name, client, `${base(channel, client, script)}#${fragment(options)}`, {
-    output: "config", collection, platform, channel, ...taskMetadata,
+    output: "config", collection, platform, channel, policyInput: "apple-proxy-policy", ...taskMetadata,
   });
 }
 
@@ -103,6 +103,7 @@ export function canonicalTaskCatalog(channel = "current") {
     configTask("egern-iphone", "egern", "egern-profile-generator.js", channel, "apple-proxy-egern", "iphone", "Apple-Proxy-Egern", { nodeSubscriptionUrl: "<PRIVATE_EGERN_NODES_URL>" }),
     configTask("egern-ipad", "egern", "egern-profile-generator.js", channel, "apple-proxy-egern", "ipad", "Apple-Proxy-Egern", { nodeSubscriptionUrl: "<PRIVATE_EGERN_NODES_URL>" }),
     nodeTask("anywhere-nodes", "anywhere", channel, "apple-proxy-anywhere"),
+    remoteTask("anywhere-strategy", "anywhere", `${base(channel, "anywhere", "anywhere-strategy-generator.js")}#${fragment({ output: "strategy", type: "collection", name: "apple-proxy-anywhere", channel })}`, { output: "strategy", collection: "apple-proxy-anywhere", channel, policyInput: "apple-proxy-policy" }),
     nodeTask("shadowrocket-nodes", "shadowrocket", channel, "apple-proxy-shadowrocket"),
     configTask("shadowrocket-config-macos", "shadowrocket", "shadowrocket-profile-generator.js", channel, "apple-proxy-shadowrocket", "macos", "Apple-Proxy-Nodes"),
     configTask("shadowrocket-config-iphone", "shadowrocket", "shadowrocket-profile-generator.js", channel, "apple-proxy-shadowrocket", "iphone", "Apple-Proxy-Nodes"),
@@ -115,7 +116,7 @@ export function canonicalTaskCatalog(channel = "current") {
     configTask("singbox-config-iphone", "sing-box", "sing-box-config-generator.js", channel, "apple-proxy-singbox", "iphone", "Apple-Proxy-Nodes", { profileMode: "light", nodeErrorMode: "strict" }),
     configTask("singbox-config-ipad", "sing-box", "sing-box-config-generator.js", channel, "apple-proxy-singbox", "ipad", "Apple-Proxy-Nodes", { profileMode: "light", nodeErrorMode: "strict" }),
     configTask("singbox-config-android", "sing-box", "sing-box-config-generator.js", channel, "apple-proxy-singbox", "android", "Apple-Proxy-Nodes", { profileMode: "light", nodeErrorMode: "strict" }),
-    Object.freeze({ name: "apple-proxy-policy", client: "shared", kind: "private-policy", channel, policySchema: "schemaVersion=1; channels=edge,current,previous", url: null }),
+    Object.freeze({ name: "apple-proxy-policy", client: "shared", kind: "private-policy", channel, policySchema: "schemaVersion=2; targets=single-layer; channels=edge,current,previous; readers accept schemaVersion=1", url: null }),
     nodeTask("onexray-nodes", "onexray", channel, "apple-proxy-onexray"),
     remoteTask("onexray-profile", "onexray", `${base(channel, "onexray", "onexray-profile-generator.js")}#${fragment({ output: "profile", type: "collection", name: "apple-proxy-onexray", channel, clientChain: "off" })}`, { output: "profile", collection: "apple-proxy-onexray", channel, policyInput: "apple-proxy-policy" }),
     remoteTask("onexray-routing-audit", "onexray", `${base(channel, "onexray", "onexray-routing-audit.js")}#${fragment({ output: "audit", type: "collection", name: "apple-proxy-onexray", channel, clientChain: "off" })}`, { output: "audit", collection: "apple-proxy-onexray", channel, policyInput: "apple-proxy-policy" }),
@@ -130,7 +131,7 @@ export function canonicalTaskCatalog(channel = "current") {
     configTask("v2box-config-iphone", "v2box", "substore-config-generator.js", channel, "apple-proxy-v2box", "iphone", "Apple-Proxy-V2Box", { region: "cn" }, { omitKeys: ["autoGroupMode"] }),
     configTask("v2box-config-ipad", "v2box", "substore-config-generator.js", channel, "apple-proxy-v2box", "ipad", "Apple-Proxy-V2Box", { region: "cn" }, { omitKeys: ["autoGroupMode"] }),
   ];
-  if (tasks.length !== 34) throw new Error(`Expected 34 canonical tasks, got ${tasks.length}`);
+  if (tasks.length !== 35) throw new Error(`Expected 35 canonical tasks, got ${tasks.length}`);
   return Object.freeze(tasks);
 }
 
@@ -160,7 +161,7 @@ export function validatePrivateSubstoreConfig(config) {
     const result = checkSubstoreTaskUrl(task.url);
     if (!result.ok) return false;
   }
-  return config.tasks.length === 34;
+  return config.tasks.length === 35;
 }
 
 export async function writePrivateSubstoreConfig({ sourceUrl, channel = "current", path = PRIVATE_CONFIG_PATH } = {}) {

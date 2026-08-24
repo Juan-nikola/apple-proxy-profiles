@@ -1,8 +1,8 @@
 import { buildPolicyGroups, effectiveAutoMode } from "../../../shared/policies/catalog.js";
 export { effectiveAutoMode };
 
-export function buildGroups(options, nodes) {
-  const groups = buildPolicyGroups(options, nodes).map((group) => ({
+export function buildGroups(options, nodes, policyResolution = null) {
+  const groups = buildPolicyGroups(options, nodes, policyResolution).map((group) => ({
     name: group.name,
     type: group.strategy === "auto-test" ? "url-test" : group.strategy,
     items: [...group.candidates],

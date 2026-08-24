@@ -2,17 +2,17 @@
   "client": "surge",
   "files": [
     {
-      "bytes": 9147465,
+      "bytes": 9164622,
       "path": "optional/adblock-full/surge/rules/Advertising_Domain.list",
-      "sha256": "d9c2c3bcb097d781ba9913707e36063d3255af94f5a3b715cfb9a0cb7032e82a"
+      "sha256": "b886ea1465dd58369c3bd2c37eedcfa4faf18edd8fe9c835e000c250f6240905"
     },
     {
       "bytes": 26244,
       "path": "optional/adblock-full/surge/rules/Advertising.list",
-      "sha256": "9e053932245e0932ab5ded4674bf95d482869d09706963c48e3877d1ed45b6f2"
+      "sha256": "d123495a944a24b0977bf5b5575ae414ec8fa1f8d911ab34f98a0933a43a0507"
     }
   ],
-  "generatedAt": "2026-08-21T18:35:15Z",
-  "manifestHash": "ee67ffa8a8fcfa920f46618b904c9d7946c3cf217199a9cb5eae2ec7cff01fac",
+  "generatedAt": "2026-08-23T18:28:35Z",
+  "manifestHash": "01a6c87844de890f9d3bf36b365e882b9986878398dc72b64bddf23b180fa9bf",
   "schemaVersion": 1
 }

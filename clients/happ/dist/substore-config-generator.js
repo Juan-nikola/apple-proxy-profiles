@@ -198,6 +198,10 @@ var HappConfigBundle = (() => {
   function protocolDefinition(value) {
     return registry.get(normalizeProtocol(value)) ?? null;
   }
+  function canonicalProtocol(value) {
+    const definition = protocolDefinition(value);
+    return definition?.names[0] ?? null;
+  }
   function protocolSupportsClient(value, client) {
     const protocol2 = normalizeProtocol(value);
     const definition = protocolDefinition(protocol2);
@@ -1740,15 +1744,15 @@ var HappConfigBundle = (() => {
         }
         const byIdentity = protocolGroup.map((node) => ({ node, identity: getIdentity(node), suffix: getFingerprint(node).slice(-5) })).sort((left, right) => left.identity < right.identity ? -1 : left.identity > right.identity ? 1 : 0);
         const suffixGroups = /* @__PURE__ */ new Map();
-        for (const record of byIdentity) {
-          const suffixGroup = suffixGroups.get(record.suffix) ?? [];
-          suffixGroup.push(record);
-          suffixGroups.set(record.suffix, suffixGroup);
+        for (const record2 of byIdentity) {
+          const suffixGroup = suffixGroups.get(record2.suffix) ?? [];
+          suffixGroup.push(record2);
+          suffixGroups.set(record2.suffix, suffixGroup);
         }
         for (const records of suffixGroups.values()) {
-          records.forEach((record, index) => {
-            const suffix = records.length > 1 ? `${record.suffix}-${index + 1}` : record.suffix;
-            record.node.name = `${protocolBase} #${suffix}`;
+          records.forEach((record2, index) => {
+            const suffix = records.length > 1 ? `${record2.suffix}-${index + 1}` : record2.suffix;
+            record2.node.name = `${protocolBase} #${suffix}`;
           });
         }
       }
@@ -1814,6 +1818,7 @@ var HappConfigBundle = (() => {
       CLEANED_DISPLAY_NAMES.set(cloned, displayName);
       cloned._profile = {
         id,
+        originalName: String(original.name),
         protocol: cloned.type,
         protocolLabel,
         sourceKind: source.kind,
@@ -1837,6 +1842,719 @@ var HappConfigBundle = (() => {
       nodes: outputNodes,
       diagnostics
     };
+  }
+
+  // ../../shared/serialization/strict-json.js
+  var DEFAULT_MAX_BYTES = 1 * 1024 * 1024;
+  var DEFAULT_MAX_DEPTH = 32;
+  var FORBIDDEN_KEYS = /* @__PURE__ */ new Set(["__proto__", "prototype", "constructor"]);
+  var WHITESPACE = /* @__PURE__ */ new Set([" ", "	", "\r", "\n"]);
+  function failure(label, reason) {
+    const prefix = typeof label === "string" && label.length > 0 ? `${label}: ` : "";
+    return new SyntaxError(`${prefix}${reason}`);
+  }
+  function asText(value, label) {
+    if (typeof value === "string") {
+      if (/[\uD800-\uDFFF]/u.test(value.replace(/[\uD800-\uDBFF](?=[\uDC00-\uDFFF])/gu, "").replace(/(?<=[\uD800-\uDBFF])[\uDC00-\uDFFF]/gu, ""))) {
+        throw failure(label, "invalid UTF-8 text");
+      }
+      return { text: value, bytes: new TextEncoder().encode(value).byteLength };
+    }
+    if (value instanceof Uint8Array) {
+      try {
+        return {
+          text: new TextDecoder("utf-8", { fatal: true, ignoreBOM: true }).decode(value),
+          bytes: value.byteLength
+        };
+      } catch {
+        throw failure(label, "invalid UTF-8 text");
+      }
+    }
+    throw failure(label, "input must be UTF-8 text");
+  }
+  function validateOptions(options, label) {
+    const { maxBytes = DEFAULT_MAX_BYTES, maxDepth = DEFAULT_MAX_DEPTH } = options ?? {};
+    if (!Number.isSafeInteger(maxBytes) || maxBytes < 0) throw failure(label, "maxBytes must be a non-negative integer");
+    if (!Number.isSafeInteger(maxDepth) || maxDepth < 0) throw failure(label, "maxDepth must be a non-negative integer");
+    return { maxBytes, maxDepth };
+  }
+  function validateAndParse(text, { label, maxDepth }) {
+    let index = 0;
+    const length = text.length;
+    const error2 = (reason) => {
+      throw failure(label, reason);
+    };
+    const skipWhitespace = () => {
+      while (index < length && WHITESPACE.has(text[index])) index += 1;
+    };
+    const parseString = () => {
+      if (text[index] !== '"') error2("invalid JSON");
+      const start = index;
+      index += 1;
+      while (index < length) {
+        const character = text[index++];
+        if (character === '"') {
+          try {
+            return JSON.parse(text.slice(start, index));
+          } catch {
+            error2("invalid JSON");
+          }
+        }
+        if (character === "\\") {
+          const escape = text[index++];
+          if (escape === "u") {
+            if (!/^[0-9a-f]{4}$/iu.test(text.slice(index, index + 4))) error2("invalid JSON");
+            index += 4;
+          } else if (!'"\\/bfnrt'.includes(escape)) {
+            error2("invalid JSON");
+          }
+        } else if (character < " ") {
+          error2("invalid JSON");
+        }
+      }
+      error2("invalid JSON");
+    };
+    const parseNumber = () => {
+      const match = /^-?(?:0|[1-9][0-9]*)(?:\.[0-9]+)?(?:[eE][+-]?[0-9]+)?/u.exec(text.slice(index));
+      if (!match) error2("invalid JSON");
+      index += match[0].length;
+    };
+    const parseValue = (depth) => {
+      skipWhitespace();
+      const character = text[index];
+      if (character === "{" || character === "[") {
+        if (depth > maxDepth) error2("maximum JSON depth exceeded");
+        const object = character === "{";
+        index += 1;
+        skipWhitespace();
+        if (text[index] === (object ? "}" : "]")) {
+          index += 1;
+          return;
+        }
+        const keys = object ? /* @__PURE__ */ new Set() : null;
+        while (index < length) {
+          skipWhitespace();
+          if (object) {
+            const key = parseString();
+            if (keys.has(key)) error2("duplicate JSON key");
+            if (FORBIDDEN_KEYS.has(key)) error2("unsupported prototype key");
+            keys.add(key);
+            skipWhitespace();
+            if (text[index++] !== ":") error2("invalid JSON");
+          }
+          parseValue(depth + 1);
+          skipWhitespace();
+          const close = object ? "}" : "]";
+          if (text[index] === close) {
+            index += 1;
+            return;
+          }
+          if (text[index++] !== ",") error2("invalid JSON");
+        }
+        error2("invalid JSON");
+      }
+      if (character === '"') {
+        parseString();
+        return;
+      }
+      if (text.startsWith("true", index) || text.startsWith("false", index) || text.startsWith("null", index)) {
+        index += text.startsWith("true", index) ? 4 : text.startsWith("false", index) ? 5 : 4;
+        return;
+      }
+      parseNumber();
+    };
+    skipWhitespace();
+    parseValue(1);
+    skipWhitespace();
+    if (index !== length) error2("invalid JSON");
+    try {
+      return JSON.parse(text);
+    } catch {
+      error2("invalid JSON");
+    }
+  }
+  function parseStrictJson(value, options = {}) {
+    const label = options?.label;
+    const { maxBytes, maxDepth } = validateOptions(options, label);
+    const { text, bytes } = asText(value, label);
+    if (bytes > maxBytes) throw failure(label, "JSON exceeds byte limit");
+    return validateAndParse(text, { label, maxDepth });
+  }
+  var STRICT_JSON_DEFAULTS = Object.freeze({
+    maxBytes: DEFAULT_MAX_BYTES,
+    maxDepth: DEFAULT_MAX_DEPTH
+  });
+
+  // ../../shared/nodes/node-reference.js
+  var LINE_TERMINATOR = /[\r\n\u2028\u2029]/u;
+  var PROTOCOL_QUALIFIER = /^[a-z][a-z0-9_-]*$/iu;
+  function invalid(message) {
+    return new Error(`Invalid node reference: ${message}`);
+  }
+  function freeze(value) {
+    return Object.freeze(value);
+  }
+  function parseNodeReference(target) {
+    if (typeof target !== "string" || !target.startsWith("NODE:")) {
+      throw invalid("target must be NODE:<name> or NODE:<name>|<protocol>");
+    }
+    const body = target.slice("NODE:".length);
+    if (body.length === 0 || body.trim() !== body || LINE_TERMINATOR.test(body)) {
+      throw invalid("node name is empty or contains a line break");
+    }
+    const separator = body.lastIndexOf("|");
+    let name = body;
+    let protocol2 = null;
+    if (separator > 0 && separator < body.length - 1) {
+      const qualifier = body.slice(separator + 1);
+      if (!PROTOCOL_QUALIFIER.test(qualifier)) throw invalid("protocol qualifier is invalid");
+      protocol2 = canonicalProtocol(qualifier);
+      if (!protocol2) throw invalid("protocol qualifier is unsupported");
+      name = body.slice(0, separator);
+    }
+    if (name.length === 0 || name.trim() !== name || LINE_TERMINATOR.test(name)) {
+      throw invalid("node name is empty or contains a line break");
+    }
+    return freeze({ name, protocol: protocol2 });
+  }
+  function metadata(node) {
+    return node?._profile && typeof node._profile === "object" ? node._profile : {};
+  }
+  function originalName(node) {
+    return typeof metadata(node).originalName === "string" ? metadata(node).originalName : node?.name;
+  }
+  function nodeProtocol(node) {
+    return canonicalProtocol(metadata(node).protocol ?? node?.type);
+  }
+  function selectable(node) {
+    return Boolean(node) && metadata(node).chained !== true;
+  }
+  function resolveNodeReference({ target, allNodes = [], eligibleNodes = [], client } = {}) {
+    const reference = parseNodeReference(target);
+    const all = (Array.isArray(allNodes) ? allNodes : []).filter(selectable);
+    const eligible = (Array.isArray(eligibleNodes) ? eligibleNodes : []).filter(selectable);
+    const matchingAll = all.filter((node) => originalName(node) === reference.name && (reference.protocol === null || nodeProtocol(node) === reference.protocol));
+    const matchingEligible = eligible.filter((node) => originalName(node) === reference.name && (reference.protocol === null || nodeProtocol(node) === reference.protocol));
+    if (client && matchingEligible.length === 0 && matchingAll.length > 0) {
+      const supported = matchingAll.filter((node) => protocolSupportsClient(nodeProtocol(node), client));
+      if (supported.length === 0) {
+        throw new Error("Node reference is incompatible with this client");
+      }
+    }
+    if (matchingEligible.length === 1) return matchingEligible[0];
+    if (matchingEligible.length > 1) throw new Error("Node reference is ambiguous");
+    if (matchingAll.length > 0) throw new Error("Node reference is incompatible with this client");
+    throw new Error("Node reference is missing");
+  }
+
+  // ../../shared/encoding/base64url.js
+  var ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
+  var REVERSE = new Map([...ALPHABET].map((character, index) => [character, index]));
+  function assertBase64Url(value) {
+    if (typeof value !== "string" || !/^[A-Za-z0-9_-]*$/u.test(value) || value.length % 4 === 1) {
+      throw new TypeError("Base64URL value is invalid");
+    }
+  }
+  function decodeBase64Url(value) {
+    assertBase64Url(value);
+    if (value.length === 0) return new Uint8Array();
+    const remainder = value.length % 4;
+    const last = REVERSE.get(value.at(-1));
+    if (remainder === 2 && (last & 15) !== 0 || remainder === 3 && (last & 3) !== 0) {
+      throw new TypeError("Base64URL value is not canonical");
+    }
+    const bytes = new Uint8Array(Math.floor(value.length * 6 / 8));
+    let accumulator = 0;
+    let bits = 0;
+    let offset = 0;
+    for (const character of value) {
+      accumulator = accumulator << 6 | REVERSE.get(character);
+      bits += 6;
+      if (bits < 8) continue;
+      bits -= 8;
+      bytes[offset] = accumulator >> bits & 255;
+      offset += 1;
+      accumulator &= (1 << bits) - 1;
+    }
+    if (bits !== 0 && accumulator !== 0) throw new TypeError("Base64URL value is not canonical");
+    return bytes;
+  }
+  function decodeBase64UrlUtf8(value) {
+    const bytes = decodeBase64Url(value);
+    try {
+      return new TextDecoder("utf-8", { fatal: true }).decode(bytes);
+    } catch {
+      throw new TypeError("Base64URL value is not valid UTF-8");
+    }
+  }
+
+  // ../../shared/policies/business-targets.js
+  var TARGET_KEYWORD = /^(FOLLOW|DIRECT)$/iu;
+  var NODE_TARGET = /^NODE:(.*)$/iu;
+  var LINE_TERMINATOR2 = /[\r\n\u2028\u2029]/u;
+  function frozenTarget(id, label, aliases, defaultTarget) {
+    return Object.freeze({ id, label, aliases: Object.freeze([...aliases]), defaultTarget });
+  }
+  var BUSINESS_TARGETS = Object.freeze([
+    frozenTarget("ai", "\u{1F916} AI \u4E13\u7528", ["AI \u4E13\u7528", "ai"], "FOLLOW"),
+    frozenTarget("github", "\u{1F419} GitHub", ["GitHub", "github"], "FOLLOW"),
+    frozenTarget("youtube", "\u{1F4FA} YouTube", ["YouTube", "youtube"], "FOLLOW"),
+    frozenTarget("overseasMedia", "\u{1F3AC} \u6D77\u5916\u6D41\u5A92\u4F53", [
+      "\u6D77\u5916\u6D41\u5A92\u4F53",
+      "overseasMedia",
+      "Netflix",
+      "netflix",
+      "Disney+",
+      "disney",
+      "Spotify",
+      "spotify",
+      "\u56FD\u9645\u5A92\u4F53",
+      "globalMedia"
+    ], "FOLLOW"),
+    frozenTarget("globalSocial", "\u{1F4AC} \u6D77\u5916\u793E\u4EA4", [
+      "\u6D77\u5916\u793E\u4EA4",
+      "globalSocial",
+      "Telegram",
+      "telegram",
+      "TikTok",
+      "tiktok"
+    ], "FOLLOW"),
+    frozenTarget("overseasGame", "\u{1F30D} \u6D77\u5916\u6E38\u620F", ["\u6D77\u5916\u6E38\u620F", "overseasGame"], "FOLLOW"),
+    frozenTarget("domesticCore", "\u56FD\u5185\u6838\u5FC3", ["\u56FD\u5185\u6838\u5FC3", "domesticCore"], "DIRECT"),
+    // Preserve all published domestic-platform spellings under the stable ID.
+    frozenTarget("domesticPlatform", "\u{1F1E8}\u{1F1F3} \u56FD\u5185\u5E73\u53F0", [
+      "\u56FD\u5185\u5E73\u53F0",
+      "domestic",
+      "\u{1F1E8}\u{1F1F3} \u56FD\u5185\u5E73\u53F0",
+      "domesticPlatform",
+      "\u54D4\u54E9\u54D4\u54E9",
+      "bilibili",
+      "\u6296\u97F3",
+      "bytedance",
+      "\u5C0F\u7EA2\u4E66",
+      "xiaohongshu",
+      "\u5FAE\u535A",
+      "weibo"
+    ], "DIRECT"),
+    frozenTarget("chinaIp", "\u4E2D\u56FD IP", ["\u4E2D\u56FD IP", "chinaIp"], "DIRECT"),
+    frozenTarget("apple", "\u{1F34E} Apple", ["Apple", "apple"], "DIRECT"),
+    frozenTarget("microsoft", "\u{1FA9F} Microsoft", ["Microsoft", "microsoft"], "DIRECT"),
+    frozenTarget("download", "\u2B07\uFE0F \u4E0B\u8F7D/P2P", ["\u4E0B\u8F7D/P2P", "download"], "DIRECT")
+  ]);
+  var TARGET_BY_KEY = /* @__PURE__ */ new Map();
+  for (const target of BUSINESS_TARGETS) {
+    TARGET_BY_KEY.set(target.label, target);
+    for (const alias of target.aliases) TARGET_BY_KEY.set(alias, target);
+  }
+  function canonicalBusinessTarget(value) {
+    if (typeof value !== "string") throw new TypeError("target must be a string");
+    if (TARGET_KEYWORD.test(value)) return value.toUpperCase();
+    const node = NODE_TARGET.exec(value);
+    if (!node || node[1].trim().length === 0 || LINE_TERMINATOR2.test(node[1])) {
+      throw new TypeError("target must be FOLLOW, DIRECT, or NODE:<name>");
+    }
+    return `NODE:${node[1]}`;
+  }
+
+  // ../../shared/policies/unified-policy.js
+  var TARGETS = [
+    ["ai", "\u{1F916} AI \u4E13\u7528", "FOLLOW"],
+    ["github", "\u{1F419} GitHub", "FOLLOW"],
+    ["youtube", "\u{1F4FA} YouTube", "FOLLOW"],
+    ["overseasMedia", "\u{1F3AC} \u6D77\u5916\u6D41\u5A92\u4F53", "FOLLOW"],
+    ["globalSocial", "\u{1F4AC} \u6D77\u5916\u793E\u4EA4", "FOLLOW"],
+    ["apple", "\u{1F34E} Apple", "DIRECT"],
+    ["microsoft", "\u{1FA9F} Microsoft", "DIRECT"],
+    ["domesticPlatform", "\u{1F1E8}\u{1F1F3} \u56FD\u5185\u5E73\u53F0", "DIRECT"],
+    ["overseasGame", "\u{1F30D} \u6D77\u5916\u6E38\u620F", "FOLLOW"],
+    ["game", "\u{1F3AE} \u6E38\u620F\u8FDE\u63A5", "DIRECT"],
+    ["download", "\u2B07\uFE0F \u4E0B\u8F7D/P2P", "DIRECT"],
+    ["dnsAndRules", "\u{1F9ED} DNS \u4E0E\u89C4\u5219\u4E0B\u8F7D", "FOLLOW"],
+    ["final", "\u6700\u7EC8\u515C\u5E95", "FOLLOW"]
+  ].map(([id, label, defaultTarget]) => Object.freeze({ id, label, defaultTarget }));
+  var UNIFIED_POLICY_TARGETS = Object.freeze(TARGETS);
+  var UNIFIED_POLICY_TARGET_IDS = Object.freeze(TARGETS.map(({ id }) => id));
+  var TARGET_BY_KEY2 = /* @__PURE__ */ new Map();
+  for (const target of UNIFIED_POLICY_TARGETS) {
+    TARGET_BY_KEY2.set(target.id, target);
+    TARGET_BY_KEY2.set(target.label, target);
+  }
+  for (const [alias, id] of Object.entries({
+    "AI \u4E13\u7528": "ai",
+    AI: "ai",
+    GitHub: "github",
+    YouTube: "youtube",
+    "\u6D77\u5916\u6D41\u5A92\u4F53": "overseasMedia",
+    "\u6D77\u5916\u793E\u4EA4": "globalSocial",
+    Apple: "apple",
+    Microsoft: "microsoft",
+    "\u56FD\u5185\u5E73\u53F0": "domesticPlatform",
+    domestic: "domesticPlatform",
+    domesticCore: "domesticPlatform",
+    chinaIp: "domesticPlatform",
+    "\u56FD\u5185\u6838\u5FC3": "domesticPlatform",
+    "\u4E2D\u56FD IP": "domesticPlatform",
+    "\u6D77\u5916\u6E38\u620F": "overseasGame",
+    "\u6E38\u620F\u8FDE\u63A5": "game",
+    "\u4E0B\u8F7D/P2P": "download",
+    "DNS \u4E0E\u89C4\u5219\u4E0B\u8F7D": "dnsAndRules"
+  })) {
+    TARGET_BY_KEY2.set(alias, TARGET_BY_KEY2.get(id));
+  }
+  function unifiedPolicyTargetByKey(key) {
+    return typeof key === "string" ? TARGET_BY_KEY2.get(key) : void 0;
+  }
+  function defaultUnifiedPolicyTargets() {
+    return Object.fromEntries(UNIFIED_POLICY_TARGETS.map(({ id, defaultTarget }) => [id, defaultTarget]));
+  }
+  function canonicalUnifiedPolicyTarget(value) {
+    return canonicalBusinessTarget(value);
+  }
+
+  // ../../shared/policies/private-policy.js
+  var CHANNEL_KEYS = /* @__PURE__ */ new Set(["revision", "defaults", "happ", "onexray"]);
+  var DEFAULT_KEYS = /* @__PURE__ */ new Set(["targets", "dns", "adblockMode", "clientChain"]);
+  var OVERRIDE_KEYS = DEFAULT_KEYS;
+  var DNS_KEYS = /* @__PURE__ */ new Set(["chinaDns", "globalDns"]);
+  var CHAIN_KEYS = /* @__PURE__ */ new Set(["mode", "target"]);
+  var TARGET_ID_SET = new Set(PRIVATE_POLICY_TARGET_IDS);
+  var CHANNEL_SET = new Set(PRIVATE_POLICY_CHANNELS);
+  var CLIENT_SET = new Set(PRIVATE_POLICY_CLIENTS);
+  var CHINA_DNS_SET = new Set(OPTION_VALUES.chinaDns);
+  var GLOBAL_DNS_SET = new Set(OPTION_VALUES.globalDns);
+  var AD_BLOCK_MODES = /* @__PURE__ */ new Set(["off", "full"]);
+  var LINE_TERMINATOR3 = /[\r\n\u2028\u2029]/u;
+  var URI_VALUE = /(?:[a-z][a-z0-9+.-]{1,15}:\/\/|https?:\/\/)/iu;
+  var SECRET_VALUE = /(?:password|passwd|secret|token|uuid|psk|private[-_ ]?key|subscription|credential)/iu;
+  var MAX_REVISION_LENGTH = 160;
+  var MAX_NODE_NAME_LENGTH = 256;
+  function invalid2(reason) {
+    return new Error(`Invalid apple-proxy-policy: ${reason}`);
+  }
+  function isRecord(value) {
+    return value !== null && typeof value === "object" && !Array.isArray(value) && Object.getPrototypeOf(value) === Object.prototype;
+  }
+  function requireRecord(value, reason) {
+    if (!isRecord(value)) throw invalid2(reason);
+    return value;
+  }
+  function requireKeys(value, required3, allowed = required3) {
+    const allowedSet = allowed instanceof Set ? allowed : new Set(allowed);
+    for (const key of Object.keys(value)) {
+      if (!allowedSet.has(key)) throw invalid2("contains an unsupported field");
+    }
+    for (const key of required3) {
+      if (!Object.hasOwn(value, key)) throw invalid2("is missing a required field");
+    }
+  }
+  function rejectSecretLikeString(value) {
+    if (URI_VALUE.test(value) || SECRET_VALUE.test(value)) {
+      throw invalid2("contains a secret or URI");
+    }
+  }
+  function normalizeRevision(value) {
+    if (typeof value !== "string" || value.length === 0 || value.length > MAX_REVISION_LENGTH || value.trim() !== value || LINE_TERMINATOR3.test(value)) {
+      throw invalid2("revision must be a non-empty single-line string");
+    }
+    rejectSecretLikeString(value);
+    return value;
+  }
+  function normalizeTarget(value) {
+    if (typeof value !== "string" || LINE_TERMINATOR3.test(value)) {
+      throw invalid2("target must be FOLLOW, DIRECT, or NODE:<name>");
+    }
+    if (/^(?:FOLLOW|DIRECT)$/iu.test(value)) return value.toUpperCase();
+    if (!value.startsWith("NODE:")) throw invalid2("target must be FOLLOW, DIRECT, or NODE:<name>");
+    const name = value.slice("NODE:".length);
+    if (name.length === 0 || name.length > MAX_NODE_NAME_LENGTH || name.trim() !== name) {
+      throw invalid2("target must be FOLLOW, DIRECT, or NODE:<name>");
+    }
+    rejectSecretLikeString(name);
+    return `NODE:${name}`;
+  }
+  function normalizeUnifiedTarget(value) {
+    if (typeof value !== "string" || LINE_TERMINATOR3.test(value)) {
+      throw invalid2("target must be FOLLOW, DIRECT, or NODE:<name>[|<protocol>]");
+    }
+    try {
+      const canonical = canonicalUnifiedPolicyTarget(value);
+      if (!canonical.startsWith("NODE:")) return canonical;
+      const reference = parseNodeReference(canonical);
+      return `NODE:${reference.name}${reference.protocol ? `|${reference.protocol}` : ""}`;
+    } catch {
+      throw invalid2("target must be FOLLOW, DIRECT, or NODE:<name>[|<protocol>]");
+    }
+  }
+  function normalizeTargetMap(value, { complete }) {
+    requireRecord(value, "targets must be an object");
+    if (complete) {
+      for (const key of Object.keys(value)) {
+        if (!TARGET_ID_SET.has(key)) throw invalid2("contains an unsupported business target");
+      }
+      for (const id of PRIVATE_POLICY_TARGET_IDS) {
+        if (!Object.hasOwn(value, id)) throw invalid2("is missing a required business target");
+      }
+    } else {
+      for (const key of Object.keys(value)) {
+        if (!TARGET_ID_SET.has(key)) throw invalid2("contains an unsupported business target");
+      }
+    }
+    const result = {};
+    for (const id of PRIVATE_POLICY_TARGET_IDS) {
+      if (Object.hasOwn(value, id)) result[id] = normalizeTarget(value[id]);
+    }
+    return result;
+  }
+  function normalizeDns(value, { complete }) {
+    requireRecord(value, "dns must be an object");
+    requireKeys(value, complete ? ["chinaDns", "globalDns"] : [], DNS_KEYS);
+    const result = {};
+    if (Object.hasOwn(value, "chinaDns")) {
+      if (typeof value.chinaDns !== "string" || !CHINA_DNS_SET.has(value.chinaDns)) {
+        throw invalid2("contains an invalid China DNS provider");
+      }
+      result.chinaDns = value.chinaDns;
+    }
+    if (Object.hasOwn(value, "globalDns")) {
+      if (typeof value.globalDns !== "string" || !GLOBAL_DNS_SET.has(value.globalDns)) {
+        throw invalid2("contains an invalid global DNS provider");
+      }
+      result.globalDns = value.globalDns;
+    }
+    return result;
+  }
+  function normalizeChain(value) {
+    requireRecord(value, "clientChain must be an object");
+    requireKeys(value, ["mode"], CHAIN_KEYS);
+    if (value.mode === "off") {
+      if (Object.hasOwn(value, "target")) throw invalid2("clientChain off cannot contain a target");
+      return { mode: "off" };
+    }
+    if (value.mode !== "on" || !Object.hasOwn(value, "target")) {
+      throw invalid2("clientChain on requires a target");
+    }
+    const target = normalizeTarget(value.target);
+    if (!target.startsWith("NODE:")) throw invalid2("clientChain target must be NODE:<name>");
+    return { mode: "on", target };
+  }
+  function normalizeDefaults(value) {
+    requireRecord(value, "defaults must be an object");
+    requireKeys(value, ["targets", "dns", "adblockMode", "clientChain"], DEFAULT_KEYS);
+    if (typeof value.adblockMode !== "string" || !AD_BLOCK_MODES.has(value.adblockMode)) {
+      throw invalid2("contains an invalid adblock mode");
+    }
+    return {
+      targets: normalizeTargetMap(value.targets, { complete: true }),
+      dns: normalizeDns(value.dns, { complete: true }),
+      adblockMode: value.adblockMode,
+      clientChain: normalizeChain(value.clientChain)
+    };
+  }
+  function normalizeOverride(value) {
+    requireRecord(value, "client override must be an object");
+    requireKeys(value, [], OVERRIDE_KEYS);
+    const result = {};
+    if (Object.hasOwn(value, "targets")) result.targets = normalizeTargetMap(value.targets, { complete: false });
+    if (Object.hasOwn(value, "dns")) result.dns = normalizeDns(value.dns, { complete: false });
+    if (Object.hasOwn(value, "adblockMode")) {
+      if (typeof value.adblockMode !== "string" || !AD_BLOCK_MODES.has(value.adblockMode)) {
+        throw invalid2("contains an invalid adblock mode");
+      }
+      result.adblockMode = value.adblockMode;
+    }
+    if (Object.hasOwn(value, "clientChain")) result.clientChain = normalizeChain(value.clientChain);
+    return result;
+  }
+  function normalizePolicyObject(value) {
+    requireRecord(value, "policy must be an object");
+    requireKeys(value, ["schemaVersion", "channels"], /* @__PURE__ */ new Set(["schemaVersion", "channels"]));
+    if (value.schemaVersion !== 1) throw invalid2("schemaVersion must be 1");
+    requireRecord(value.channels, "channels must be an object");
+    requireKeys(value.channels, PRIVATE_POLICY_CHANNELS, CHANNEL_SET);
+    const channels = {};
+    for (const channel of PRIVATE_POLICY_CHANNELS) {
+      const record2 = requireRecord(value.channels[channel], "channel must be an object");
+      requireKeys(record2, ["revision", "defaults", "happ", "onexray"], CHANNEL_KEYS);
+      channels[channel] = {
+        revision: normalizeRevision(record2.revision),
+        defaults: normalizeDefaults(record2.defaults),
+        happ: normalizeOverride(record2.happ),
+        onexray: normalizeOverride(record2.onexray)
+      };
+    }
+    return deepFreeze({ schemaVersion: 1, channels });
+  }
+  function normalizeUnifiedPolicyObject(value) {
+    requireRecord(value, "policy must be an object");
+    requireKeys(value, ["schemaVersion", "targets"], /* @__PURE__ */ new Set(["schemaVersion", "targets"]));
+    if (value.schemaVersion !== 2) throw invalid2("schemaVersion must be 2");
+    requireRecord(value.targets, "targets must be an object");
+    const targets = defaultUnifiedPolicyTargets();
+    const seen = /* @__PURE__ */ new Map();
+    for (const [key, rawTarget] of Object.entries(value.targets)) {
+      const target = unifiedPolicyTargetByKey(key);
+      if (!target) throw invalid2("contains an unsupported business target");
+      const canonical = normalizeUnifiedTarget(rawTarget);
+      if (seen.has(target.id) && seen.get(target.id) !== canonical) {
+        throw invalid2("contains conflicting business target aliases");
+      }
+      seen.set(target.id, canonical);
+      targets[target.id] = canonical;
+    }
+    for (const id of UNIFIED_POLICY_TARGET_IDS) {
+      if (!Object.hasOwn(targets, id)) throw invalid2("contains an incomplete business target map");
+    }
+    return deepFreeze({ schemaVersion: 2, targets });
+  }
+  function deepFreeze(value) {
+    if (value && typeof value === "object" && !Object.isFrozen(value)) {
+      for (const child of Object.values(value)) deepFreeze(child);
+      Object.freeze(value);
+    }
+    return value;
+  }
+  function parsePrivatePolicy(text) {
+    let parsed;
+    try {
+      parsed = parseStrictJson(text, {
+        label: "apple-proxy-policy",
+        maxBytes: 256 * 1024,
+        maxDepth: 16
+      });
+    } catch (error2) {
+      throw error2;
+    }
+    if (parsed?.schemaVersion === 2) return normalizeUnifiedPolicyObject(parsed);
+    return normalizePolicyObject(parsed);
+  }
+  function resolvePrivatePolicy({ policy, channel, client } = {}) {
+    const normalized = typeof policy === "string" || policy instanceof Uint8Array ? parsePrivatePolicy(policy) : policy?.schemaVersion === 2 ? normalizeUnifiedPolicyObject(policy) : normalizePolicyObject(policy);
+    if (normalized.schemaVersion === 2) {
+      return deepFreeze({
+        targets: { ...normalized.targets },
+        dns: { chinaDns: "alidns", globalDns: "cloudflare" },
+        adblockMode: "off",
+        clientChain: { mode: "off" }
+      });
+    }
+    if (!CHANNEL_SET.has(channel)) throw invalid2("contains an unsupported channel");
+    if (!CLIENT_SET.has(client)) throw invalid2("contains an unsupported policy client");
+    const record2 = normalized.channels[channel];
+    const override = record2[client];
+    const result = {
+      targets: { ...record2.defaults.targets, ...override.targets ?? {} },
+      dns: { ...record2.defaults.dns, ...override.dns ?? {} },
+      adblockMode: override.adblockMode ?? record2.defaults.adblockMode,
+      clientChain: { ...override.clientChain ?? record2.defaults.clientChain }
+    };
+    return deepFreeze(result);
+  }
+
+  // ../../shared/substore/policy-artifact.js
+  var POLICY_ARTIFACT_NAME = "apple-proxy-policy";
+  function contentOf(artifact) {
+    if (typeof artifact === "string" || artifact instanceof Uint8Array) return artifact;
+    if (!artifact || typeof artifact !== "object" || Array.isArray(artifact)) return null;
+    if (typeof artifact.$content === "string" || artifact.$content instanceof Uint8Array) return artifact.$content;
+    if (typeof artifact.content === "string" || artifact.content instanceof Uint8Array) return artifact.content;
+    if (Object.hasOwn(artifact, "schemaVersion")) return JSON.stringify(artifact);
+    return null;
+  }
+  async function loadSubstorePolicyArtifact(context, name = POLICY_ARTIFACT_NAME) {
+    if (!context || typeof context.produceArtifact !== "function") {
+      throw new Error("Sub-Store policy artifact is unavailable");
+    }
+    const artifact = await context.produceArtifact({
+      type: "file",
+      name,
+      platform: "JSON",
+      produceType: "internal"
+    });
+    const content = contentOf(artifact);
+    if (content === null) throw new Error("Sub-Store policy artifact has no content");
+    return parsePrivatePolicy(content);
+  }
+
+  // ../../shared/policies/resolve-unified.js
+  var LEGACY_TO_UNIFIED = Object.freeze({
+    ai: "ai",
+    github: "github",
+    youtube: "youtube",
+    overseasMedia: "overseasMedia",
+    globalMedia: "overseasMedia",
+    globalSocial: "globalSocial",
+    overseasGame: "overseasGame",
+    domesticCore: "domesticPlatform",
+    domesticPlatform: "domesticPlatform",
+    domestic: "domesticPlatform",
+    chinaIp: "domesticPlatform",
+    apple: "apple",
+    microsoft: "microsoft",
+    download: "download",
+    dnsAndRules: "dnsAndRules",
+    final: "final",
+    game: "game"
+  });
+  function freeze2(value) {
+    if (value && typeof value === "object" && !Object.isFrozen(value)) {
+      for (const child of Object.values(value)) freeze2(child);
+      Object.freeze(value);
+    }
+    return value;
+  }
+  function configuredTargets(policy, { channel, client }) {
+    const defaults2 = defaultUnifiedPolicyTargets();
+    if (!policy) return defaults2;
+    const parsed = typeof policy === "string" || policy instanceof Uint8Array ? parsePrivatePolicy(policy) : policy;
+    const resolved = resolvePrivatePolicy({ policy: parsed, channel, client });
+    if (parsed.schemaVersion === 2) return { ...defaults2, ...resolved.targets };
+    const result = { ...defaults2 };
+    for (const [legacyId, value] of Object.entries(resolved.targets ?? {})) {
+      const id = LEGACY_TO_UNIFIED[legacyId];
+      if (id) result[id] = value;
+    }
+    return result;
+  }
+  function record(configured) {
+    if (configured === "DIRECT") return { configured, resolved: "DIRECT", status: "direct", warningCode: null, nodeId: null };
+    if (configured === "FOLLOW") return { configured, resolved: "FOLLOW", status: "follow", warningCode: null, nodeId: null };
+    return { configured, resolved: configured, status: "fixed", warningCode: null, nodeId: null };
+  }
+  function addLegacyAliases(targets) {
+    targets.globalMedia = targets.overseasMedia;
+    targets.domestic = targets.domesticPlatform;
+    targets.domesticCore = targets.domesticPlatform;
+    targets.chinaIp = targets.domesticPlatform;
+    return targets;
+  }
+  function resolveUnifiedPolicy({
+    policy = null,
+    channel = "current",
+    client = CLIENT.happ,
+    allNodes = [],
+    eligibleNodes = allNodes
+  } = {}) {
+    const values = configuredTargets(policy, { channel, client });
+    const targets = {};
+    const fixedNodes = [];
+    const fixedIds = /* @__PURE__ */ new Set();
+    for (const target of UNIFIED_POLICY_TARGETS) {
+      const configured = values[target.id] ?? target.defaultTarget;
+      const resolved = record(configured);
+      if (configured.startsWith("NODE:")) {
+        const node = resolveNodeReference({ target: configured, allNodes, eligibleNodes, client });
+        const nodeId2 = node?._profile?.id ?? `node-${fixedNodes.length}`;
+        resolved.resolved = node.name;
+        resolved.nodeId = nodeId2;
+        if (!fixedIds.has(nodeId2)) {
+          fixedIds.add(nodeId2);
+          fixedNodes.push({ nodeId: nodeId2, node, name: node.name });
+        }
+      }
+      targets[target.id] = resolved;
+    }
+    addLegacyAliases(targets);
+    return freeze2({ targets, fixedNodes, warnings: [] });
   }
 
   // ../../shared/substore/collection-name.js
@@ -2577,47 +3295,6 @@ var HappConfigBundle = (() => {
     ];
   }
 
-  // ../../shared/encoding/base64url.js
-  var ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
-  var REVERSE = new Map([...ALPHABET].map((character, index) => [character, index]));
-  function assertBase64Url(value) {
-    if (typeof value !== "string" || !/^[A-Za-z0-9_-]*$/u.test(value) || value.length % 4 === 1) {
-      throw new TypeError("Base64URL value is invalid");
-    }
-  }
-  function decodeBase64Url(value) {
-    assertBase64Url(value);
-    if (value.length === 0) return new Uint8Array();
-    const remainder = value.length % 4;
-    const last = REVERSE.get(value.at(-1));
-    if (remainder === 2 && (last & 15) !== 0 || remainder === 3 && (last & 3) !== 0) {
-      throw new TypeError("Base64URL value is not canonical");
-    }
-    const bytes = new Uint8Array(Math.floor(value.length * 6 / 8));
-    let accumulator = 0;
-    let bits = 0;
-    let offset = 0;
-    for (const character of value) {
-      accumulator = accumulator << 6 | REVERSE.get(character);
-      bits += 6;
-      if (bits < 8) continue;
-      bits -= 8;
-      bytes[offset] = accumulator >> bits & 255;
-      offset += 1;
-      accumulator &= (1 << bits) - 1;
-    }
-    if (bits !== 0 && accumulator !== 0) throw new TypeError("Base64URL value is not canonical");
-    return bytes;
-  }
-  function decodeBase64UrlUtf8(value) {
-    const bytes = decodeBase64Url(value);
-    try {
-      return new TextDecoder("utf-8", { fatal: true }).decode(bytes);
-    } catch {
-      throw new TypeError("Base64URL value is not valid UTF-8");
-    }
-  }
-
   // src/policy-overrides.js
   var TARGET_RE = /^(DIRECT|FOLLOW)$/iu;
   var NODE_RE = /^NODE:(.*)$/iu;
@@ -2689,23 +3366,23 @@ var HappConfigBundle = (() => {
     const warnings = [];
     for (const target of BUSINESS_KEYS) {
       const configured = overrides[target.id] ?? target.defaultTarget;
-      const record = { configured, resolved: configured, status: configured === "DIRECT" ? "direct" : configured === "FOLLOW" ? "follow" : "fixed", warningCode: null, nodeId: null };
+      const record2 = { configured, resolved: configured, status: configured === "DIRECT" ? "direct" : configured === "FOLLOW" ? "follow" : "fixed", warningCode: null, nodeId: null };
       if (configured.startsWith("NODE:")) {
         const wanted = configured.slice(5);
         const matches = eligibleNodes.filter((node) => normalizedName(node) === wanted);
         const allMatches = allNodes.filter((node) => normalizedName(node) === wanted);
         if (matches.length === 1) {
-          record.nodeId = nodeId(matches[0]);
-          fixedNodes.push({ nodeId: record.nodeId, name: wanted });
+          record2.nodeId = nodeId(matches[0]);
+          fixedNodes.push({ nodeId: record2.nodeId, name: wanted });
         } else {
-          record.resolved = "FOLLOW";
-          if (matches.length > 1) record.status = "duplicate-node-fallback", record.warningCode = "duplicate-node";
-          else if (allMatches.length > 0) record.status = "incompatible-node-fallback", record.warningCode = "incompatible-node";
-          else record.status = "missing-node-fallback", record.warningCode = "missing-node";
-          warnings.push({ businessKey: target.label, warningCode: record.warningCode });
+          record2.resolved = "FOLLOW";
+          if (matches.length > 1) record2.status = "duplicate-node-fallback", record2.warningCode = "duplicate-node";
+          else if (allMatches.length > 0) record2.status = "incompatible-node-fallback", record2.warningCode = "incompatible-node";
+          else record2.status = "missing-node-fallback", record2.warningCode = "missing-node";
+          warnings.push({ businessKey: target.label, warningCode: record2.warningCode });
         }
       }
-      targets[target.id] = record;
+      targets[target.id] = record2;
     }
     const dedup = new Map(fixedNodes.map((item) => [item.nodeId, item]));
     return Object.freeze({ targets: Object.freeze(targets), fixedNodes: Object.freeze([...dedup.values()]), warnings: Object.freeze(warnings) });
@@ -2748,13 +3425,15 @@ var HappConfigBundle = (() => {
     for (const c of String(value)) h = Math.imul(h ^ c.charCodeAt(0), 16777619);
     return (h >>> 0).toString(36);
   }
-  function targetFor(id, resolution, followTag, fixedById) {
+  function targetFor(id, resolution, followTag, fixedById, followNodeId) {
     const targetId = businessTargetForSource(id);
-    const record = resolution?.targets?.[targetId];
-    if (!record || record.resolved === "FOLLOW") return { outboundTag: followTag };
-    if (record.resolved === "DIRECT") return { outboundTag: "happ-direct" };
-    const fixed = fixedById.get(record.nodeId);
-    return fixed ? { balancerTag: fixed.balancerTag } : { outboundTag: followTag };
+    const record2 = resolution?.targets?.[targetId];
+    if (!record2 || record2.resolved === "FOLLOW") return { outboundTag: followTag };
+    if (record2.resolved === "DIRECT") return { outboundTag: "happ-direct" };
+    if (record2.nodeId === followNodeId) return { outboundTag: followTag };
+    const fixed = fixedById.get(record2.nodeId);
+    if (!fixed) throw new Error("HAPP fixed policy node is unavailable");
+    return { balancerTag: fixed.balancerTag };
   }
   function renderHappRouting(context = {}) {
     const followTag = context.followTag ?? "happ-follow/current";
@@ -2792,7 +3471,7 @@ var HappConfigBundle = (() => {
       }
       const isIp = item.id === "ChinaIP";
       const source = isIp ? "geoip:CN" : "geosite:" + (HAPP_GEOSITE_ALIASES[item.id] ?? item.id.toUpperCase());
-      const target = item.policy === "REJECT" ? { outboundTag: options.blockMode === "off" ? "happ-direct" : "happ-block" } : targetFor(item.id, resolution, followTag, fixedById);
+      const target = item.policy === "REJECT" ? { outboundTag: options.blockMode === "off" ? "happ-direct" : "happ-block" } : targetFor(item.id, resolution, followTag, fixedById, context.followNodeId);
       rules.push({ type: "field", ...isIp ? { ip: [source] } : { domain: [source] }, ...target });
     }
     if (!quicRuleInserted && (options.quicMode === "proxy-block" || options.quicMode === "all-block")) rules.push({ type: "field", network: "quic", outboundTag: options.quicMode === "all-block" ? "happ-block" : "happ-direct" });
@@ -2800,14 +3479,14 @@ var HappConfigBundle = (() => {
     const dnsFixed = dnsTarget?.nodeId ? fixedById.get(dnsTarget.nodeId) : null;
     const globalDnsOutbound = dnsTarget?.resolved === "DIRECT" ? "happ-direct" : dnsFixed?.candidateTag ?? followTag;
     rules.splice(2, 0, ...renderHappDnsRoutes({ followTag, globalOutboundTag: globalDnsOutbound, platform: options.platform }));
-    const finalTarget = targetFor("__final__", resolution, followTag, fixedById);
+    const finalTarget = targetFor("__final__", resolution, followTag, fixedById, context.followNodeId);
     rules.push({ type: "field", network: "tcp,udp", ...finalTarget });
     const routing = { domainStrategy: "IPIfNonMatch", rules };
     const policyTargets = {};
-    for (const [targetId, record] of Object.entries(resolution.targets ?? {})) {
-      if (record.resolved === "DIRECT") policyTargets[targetId] = "happ-direct";
-      else if (record.resolved === "FOLLOW") policyTargets[targetId] = followTag;
-      else if (fixedById.has(record.nodeId)) policyTargets[targetId] = fixedById.get(record.nodeId).balancerTag;
+    for (const [targetId, record2] of Object.entries(resolution.targets ?? {})) {
+      if (record2.resolved === "DIRECT") policyTargets[targetId] = "happ-direct";
+      else if (record2.resolved === "FOLLOW") policyTargets[targetId] = followTag;
+      else if (fixedById.has(record2.nodeId)) policyTargets[targetId] = fixedById.get(record2.nodeId).balancerTag;
       else policyTargets[targetId] = followTag;
     }
     return { routing, observatory: { subjectSelector: observatorySelectors, probeUrl: "https://www.gstatic.com/generate_204", probeInterval: "30s", enableConcurrency: true, timeout: 5e3 }, policyTargets, fixedOutbounds: outbounds, balancers };
@@ -2960,11 +3639,20 @@ var HappConfigBundle = (() => {
     const normalized = normalizeNodes(raw, { clientChain: "off" });
     const filtered = filterNodesForClient(normalized.nodes, CLIENT.happ);
     if (filtered.nodes.length === 0) throw new Error("HAPP has no compatible nodes");
+    const policy = await loadSubstorePolicyArtifact(context);
+    const policyResolution = resolveUnifiedPolicy({
+      policy,
+      channel: HAPP_PUBLIC_CHANNEL,
+      client: CLIENT.happ,
+      allNodes: normalized.nodes,
+      eligibleNodes: filtered.nodes
+    });
     logDiagnostics(context, options, normalized, filtered);
     const configs = renderHappSubscription({
       nodes: filtered.nodes,
       allNodes: normalized.nodes,
-      options
+      options,
+      policyResolution
     });
     attachRoutingProfile(input, context, options);
     return { ...input, $content: `${JSON.stringify(configs, null, 2)}

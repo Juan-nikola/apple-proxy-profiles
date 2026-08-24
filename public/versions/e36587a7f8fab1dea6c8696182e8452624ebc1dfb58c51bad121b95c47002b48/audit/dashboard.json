@@ -1,0 +1,210 @@
+{
+  "audits": {
+    "chinaIp": {
+      "blockerCount": 0,
+      "reportOnly": true,
+      "schemaVersion": 1,
+      "sha256": null,
+      "warningCount": 2
+    },
+    "routingPlan": {
+      "blockerCount": 0,
+      "reportOnly": false,
+      "schemaVersion": 1,
+      "sha256": "a6f09b5abce68110fcef6942cb3ac3b6b4135e003fb8eb4f63d7c2c189214116",
+      "warningCount": 0
+    },
+    "v2fly": {
+      "blockerCount": 0,
+      "reportOnly": true,
+      "schemaVersion": 1,
+      "sha256": null,
+      "warningCount": 1
+    }
+  },
+  "blockers": [],
+  "channels": {
+    "current": {
+      "closure": true,
+      "manifestCount": 9
+    },
+    "edge": {
+      "closure": true,
+      "manifestCount": 9
+    },
+    "previous": {
+      "closure": true,
+      "manifestCount": 9
+    }
+  },
+  "clients": {
+    "anywhere": {
+      "adapterSchema": "anywhere-v1",
+      "canary": null,
+      "current": {
+        "closure": true,
+        "manifestHash": "df6f755bd8e1a5399a5ed204c516ee0944e22a9af7e55eaede259420328cdd4e"
+      },
+      "edge": {
+        "closure": true,
+        "manifestHash": "395fcc14178385734036341056967a5593e7aae42e11163ec7043cede6f3f99e"
+      },
+      "previous": {
+        "closure": true,
+        "manifestHash": "c9c625536fbf014e47c2c8ff509161eaf97f7adb1e55d193a2caa414ba93e4bb"
+      },
+      "state": "active"
+    },
+    "egern": {
+      "adapterSchema": "egern-v1",
+      "canary": null,
+      "current": {
+        "closure": true,
+        "manifestHash": "e554ccd460c27dc4a08c1aa96c1d45c3dc38e9436b66246e3b8a1d5e38c7d599"
+      },
+      "edge": {
+        "closure": true,
+        "manifestHash": "b47327ee88cbe9985b6ff7ec784e912931b3661a33755a0d4478f4152a0789f7"
+      },
+      "previous": {
+        "closure": true,
+        "manifestHash": "912ceecb5a6db4008bf4d01827782b5507aa9dfefec186ed88eea3fe9ed5e847"
+      },
+      "state": "active"
+    },
+    "happ": {
+      "adapterSchema": "happ-v4",
+      "canary": null,
+      "current": {
+        "closure": true,
+        "manifestHash": "9ab15e9946c732257429721cb4add6daa4347fa322846594a478a7845c828e09"
+      },
+      "edge": {
+        "closure": true,
+        "manifestHash": "2ea5abcfbbbd2be5584be419fd6dbf405a79044e7d96fbe866b4effddffe50a1"
+      },
+      "previous": {
+        "closure": true,
+        "manifestHash": "65292fd0ede674e26297c904772be53534ecf39983cf88fffe6adadf2f97e85b"
+      },
+      "state": "active"
+    },
+    "onexray": {
+      "adapterSchema": "onexray-v1",
+      "canary": null,
+      "current": {
+        "closure": true,
+        "manifestHash": "b058fee4e6c32a6377f1e938ba7e35d566e4e28f80b2ef59d005a1311b400671"
+      },
+      "edge": {
+        "closure": true,
+        "manifestHash": "b6bea5e3e0eea3e59dce42abc01c4f8c7f37fe7e392eada1b94a2afc9759289b"
+      },
+      "previous": {
+        "closure": true,
+        "manifestHash": "c0d4935b237046821f5a27ab09f7113a88aa2082a756924324f8310babe7409c"
+      },
+      "state": "active"
+    },
+    "shadowrocket": {
+      "adapterSchema": "shadowrocket-v1",
+      "canary": null,
+      "current": {
+        "closure": true,
+        "manifestHash": "1f87ef675cb43750a5c0fa45243b3caebdcded32b0c752181d83688fda9a27c6"
+      },
+      "edge": {
+        "closure": true,
+        "manifestHash": "d112cd9da19529af85d554541d2fdec395fd3d8579a303bb25ba5b81560aa61e"
+      },
+      "previous": {
+        "closure": true,
+        "manifestHash": "72068c24afab51034790d21aef10c17a61656f237eb5ffabcfd2599570548bee"
+      },
+      "state": "active"
+    },
+    "singbox": {
+      "adapterSchema": "singbox-v1",
+      "canary": null,
+      "current": {
+        "closure": true,
+        "manifestHash": "5e83137d2cf53d50bd8755346dba02e0b2505a5b0d1b9506a7ddf3cf010640c1"
+      },
+      "edge": {
+        "closure": true,
+        "manifestHash": "17a01ef87f50363426162fa0a65e7745929d0dddc1c18b80234c085ad46b1c0e"
+      },
+      "previous": {
+        "closure": true,
+        "manifestHash": "826d1c1276182807ac828131487450c9d40b980775bcf35410852195d066732f"
+      },
+      "state": "active"
+    },
+    "surge": {
+      "adapterSchema": "surge-v1",
+      "canary": null,
+      "current": {
+        "closure": true,
+        "manifestHash": "900578138b8eae0e4cea7ec8be7e810a1d360aff9d34d6f513106029145a26c4"
+      },
+      "edge": {
+        "closure": true,
+        "manifestHash": "690211c97dbd91de0c27355f7244b075145220aa6223d523a6ac518e585438b7"
+      },
+      "previous": {
+        "closure": true,
+        "manifestHash": "11433ad96ddc2f1be92aa9a4343491682de2aa94989ec8cf33b31e56ee911eef"
+      },
+      "state": "active"
+    },
+    "v2box": {
+      "adapterSchema": "v2box-v1",
+      "canary": null,
+      "current": {
+        "closure": true,
+        "manifestHash": "c54a371a6c34616bc06a3d5c2528a176dbd0a77fe26e39c8100bc6f25ced7df0"
+      },
+      "edge": {
+        "closure": true,
+        "manifestHash": "6139b204ed564bd3343d2f1532f9fb7ea4d7840f403e0d2c8ff2aa53e717a32d"
+      },
+      "previous": {
+        "closure": true,
+        "manifestHash": "5e1d424ea020ebf00833d77ef5c0b40846ca391c7846c3ef6a24cdfdd8715ce3"
+      },
+      "state": "active"
+    },
+    "v2rayn": {
+      "adapterSchema": "v2rayn-v1",
+      "canary": null,
+      "current": {
+        "closure": true,
+        "manifestHash": "9c07de281781a5618dff5d10a0a9a759c9bf0bf7f2517aad4a4155055dea2d0d"
+      },
+      "edge": {
+        "closure": true,
+        "manifestHash": "76eac20d89f46f5dacd57c57e02c915213f9f50b98e188e7467aa2ccac25b1d0"
+      },
+      "previous": {
+        "closure": true,
+        "manifestHash": "d96595f2030acc847bfc09dee4c6d1c3539d2a0caec1ed95ff3fd0d3832338f2"
+      },
+      "state": "active"
+    }
+  },
+  "generatedAt": "2026-08-23T18:28:35Z",
+  "privateDataExcluded": true,
+  "rules": {
+    "entries": 16844,
+    "phases": 6,
+    "semanticTargets": 0,
+    "sources": 32
+  },
+  "schemaVersion": 1,
+  "upstream": {
+    "commit": "f42be99379fcd1a1dd03469e8b56dcb46888fcea",
+    "committedAt": "2026-08-23T18:28:35Z",
+    "repository": "blackmatrix7",
+    "sha256": "c2437ae35319f1e41b69a098fdc7c0b3c3c5a90e6deea906406f30f998bd9403"
+  }
+}

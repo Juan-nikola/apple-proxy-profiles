@@ -26,6 +26,14 @@ output=nodes&type=collection&name=apple-proxy-anywhere&clientChain=off
 
 旧版只有单行链接时使用 `JS_URL#output=nodes&type=collection&name=apple-proxy-anywhere&clientChain=off`，不能使用 `?` 连接脚本参数。以后更新 Anywhere Node Generator 不复制脚本正文；`anywhere-nodes` 的 JS URL、任务名、私密输出 URL和上述参数保持不动。发布后先重新预览；需要设备反馈时再手动 Refresh。
 
+如需校验统一策略，在同一个 Sub-Store 另建 `anywhere-strategy` File，使用：
+
+```text
+https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/scripts/anywhere-strategy-generator.js#output=strategy&type=collection&name=apple-proxy-anywhere&channel=current
+```
+
+它读取私密 `apple-proxy-policy`，只输出脱敏的业务目标状态和固定节点映射；缺失策略、精确节点名找不到或协议不兼容时失败关闭。节点 `anywhere-nodes` 仍只读取 collection。
+
 Anywhere 没有与 Shadowrocket/Egern 等价的完整 Profile File，不要创建 `anywhere-profile-generator.js`。这个 File 只完成私密节点层；规则、绑定和设备设置必须继续完成第 2—5 节。
 
 预览应显示至少一个 accepted 节点，诊断只有计数。私密输出 URL 不得进入仓库、Issue、截图或共享终端记录。可以手动粘贴私密 HTTPS URL，也可在本地构造 `anywhere://add-proxy?link=<百分号编码私密URL>`；不要把真实 deep link 写进文档。

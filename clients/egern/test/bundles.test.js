@@ -82,6 +82,8 @@ function loadBundle(source, { arguments: arguments_, produced, producerError } =
   const requests = [];
   const context = vm.createContext({
     URL,
+    TextDecoder,
+    TextEncoder,
     console: {
       info(value) { lines.push(String(value)); },
       log(value) { lines.push(String(value)); },
@@ -99,7 +101,9 @@ function loadBundle(source, { arguments: arguments_, produced, producerError } =
   context.produceArtifact = async (request) => {
     requests.push({ ...request });
     if (producerError) throw new Error(producerError);
-    return context.__produced;
+    return request.type === "file"
+      ? { $content: JSON.stringify({ schemaVersion: 2, targets: {} }) }
+      : context.__produced;
   };
   vm.runInContext(source, context, { timeout: 2_000 });
   return { context, lines, requests };
@@ -113,6 +117,8 @@ function loadRestrictedBundle(source, {
   const lines = [];
   const requests = [];
   const context = vm.createContext({
+    TextDecoder,
+    TextEncoder,
     console: {
       info(value) { lines.push(String(value)); },
       log(value) { lines.push(String(value)); },
@@ -129,7 +135,7 @@ function loadRestrictedBundle(source, {
     "  const produced = JSON.parse(globalThis.__producedJson);",
     "  const producerHook = globalThis.__producerHook;",
     "  globalThis.$arguments = JSON.parse(globalThis.__argumentsJson);",
-    "  globalThis.produceArtifact = async (request) => { producerHook(request); return produced; };",
+    "  globalThis.produceArtifact = async (request) => { producerHook(request); return request.type === \"file\" ? { $content: JSON.stringify({ schemaVersion: 2, targets: {} }) } : produced; };",
     "}",
     "delete globalThis.__argumentsJson;",
     "delete globalThis.__producedJson;",
@@ -137,7 +143,7 @@ function loadRestrictedBundle(source, {
   ].join("\n"), context);
   assert.deepEqual(
     Array.from(vm.runInContext("Object.keys(globalThis).sort()", context)),
-    ["$arguments", "console", "produceArtifact"],
+    ["$arguments", "TextDecoder", "TextEncoder", "console", "produceArtifact"],
   );
   assert.equal(vm.runInContext("typeof URL", context), "undefined");
   assert.equal(vm.runInContext("typeof structuredClone", context), "undefined");
@@ -152,7 +158,9 @@ async function sourceRun(operator, arguments_, produced) {
     arguments: arguments_,
     async produceArtifact(request) {
       requests.push(request);
-      return structuredClone(produced);
+      return request.type === "file"
+        ? { $content: JSON.stringify({ schemaVersion: 2, targets: {} }) }
+        : structuredClone(produced);
     },
     logger: { info(line) { lines.push(line); } },
   });
@@ -245,15 +253,15 @@ test("profile bundle matches source and never inlines nodes or private diagnosti
 
 test("bundles succeed in a restricted Egern realm without injected URL or structuredClone", async () => {
   const cases = [
-    [NODE_BUNDLE, NODE_ARGUMENTS, /^proxies:\n/u],
-    [PROFILE_BUNDLE, PROFILE_ARGUMENTS, /^ipv6: false\n/u],
+    [NODE_BUNDLE, NODE_ARGUMENTS, /^proxies:\n/u, 1],
+    [PROFILE_BUNDLE, PROFILE_ARGUMENTS, /^ipv6: false\n/u, 2],
   ];
-  for (const [url, arguments_, outputPattern] of cases) {
+  for (const [url, arguments_, outputPattern, requestCount] of cases) {
     const source = await readFile(url, "utf8");
     const restricted = loadRestrictedBundle(source, { arguments: arguments_, produced: rawInventory() });
     const result = await restricted.context.operator({}, "Egern");
     assert.match(result.$content, outputPattern);
-    assert.equal(restricted.requests.length, 1);
+    assert.equal(restricted.requests.length, requestCount);
     assert.equal(restricted.lines.length, 1);
   }
 });

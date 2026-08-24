@@ -4,6 +4,8 @@ import { normalizeNodes } from "../../../shared/nodes/normalize-nodes.js";
 import { buildOneXrayAudit } from "./audit.js";
 import { parseOneXrayOptions } from "./options.js";
 import { resolveOneXrayPolicy } from "./resolve-policy.js";
+import { loadSubstorePolicyArtifact } from "../../../shared/substore/policy-artifact.js";
+import { resolveUnifiedPolicy } from "../../../shared/policies/resolve-unified.js";
 
 export async function operator(input, targetPlatform, context = {}) {
   void targetPlatform;
@@ -15,7 +17,20 @@ export async function operator(input, targetPlatform, context = {}) {
   const normalized = normalizeNodes(raw, { clientChain: options.clientChain });
   const filtered = filterNodesForClient(normalized.nodes, CLIENT.onexray);
   if (filtered.nodes.length === 0) throw new Error("OneXray audit has no compatible nodes");
-  const resolution = resolveOneXrayPolicy({ options, allNodes: normalized.nodes, eligibleNodes: filtered.nodes });
+  const policy = await loadSubstorePolicyArtifact(context);
+  const unified = policy === null ? null : resolveUnifiedPolicy({
+    policy,
+    channel: options.channel,
+    client: CLIENT.onexray,
+    allNodes: normalized.nodes,
+    eligibleNodes: filtered.nodes,
+  });
+  const resolution = resolveOneXrayPolicy({
+    options,
+    allNodes: normalized.nodes,
+    eligibleNodes: filtered.nodes,
+    policyResolution: unified,
+  });
   const audit = buildOneXrayAudit({ options, normalized, filtered, resolution });
   return { ...input, $content: `${JSON.stringify(audit, null, 2)}\n` };
 }
