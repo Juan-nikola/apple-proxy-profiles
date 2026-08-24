@@ -6,13 +6,15 @@ import { HAPP_GEOSITE_ALIASES } from "./geodata-contract.js";
 import { buildHappDisplayTag } from "./tag-label.js";
 
 function hash(value) { let h = 2166136261; for (const c of String(value)) h = Math.imul(h ^ c.charCodeAt(0), 16777619); return (h >>> 0).toString(36); }
-function targetFor(id, resolution, followTag, fixedById) {
+function targetFor(id, resolution, followTag, fixedById, followNodeId) {
   const targetId = businessTargetForSource(id);
   const record = resolution?.targets?.[targetId];
   if (!record || record.resolved === "FOLLOW") return { outboundTag: followTag };
   if (record.resolved === "DIRECT") return { outboundTag: "happ-direct" };
+  if (record.nodeId === followNodeId) return { outboundTag: followTag };
   const fixed = fixedById.get(record.nodeId);
-  return fixed ? { balancerTag: fixed.balancerTag } : { outboundTag: followTag };
+  if (!fixed) throw new Error("HAPP fixed policy node is unavailable");
+  return { balancerTag: fixed.balancerTag };
 }
 
 export function renderHappRouting(context = {}) {
@@ -57,7 +59,7 @@ export function renderHappRouting(context = {}) {
       : "geosite:" + (HAPP_GEOSITE_ALIASES[item.id] ?? item.id.toUpperCase());
     const target = item.policy === "REJECT"
       ? { outboundTag: options.blockMode === "off" ? "happ-direct" : "happ-block" }
-      : targetFor(item.id, resolution, followTag, fixedById);
+      : targetFor(item.id, resolution, followTag, fixedById, context.followNodeId);
     rules.push({ type: "field", ...(isIp ? { ip: [source] } : { domain: [source] }), ...target });
   }
   if (!quicRuleInserted && (options.quicMode === "proxy-block" || options.quicMode === "all-block")) rules.push({ type: "field", network: "quic", outboundTag: options.quicMode === "all-block" ? "happ-block" : "happ-direct" });
@@ -65,7 +67,7 @@ export function renderHappRouting(context = {}) {
   const dnsFixed = dnsTarget?.nodeId ? fixedById.get(dnsTarget.nodeId) : null;
   const globalDnsOutbound = dnsTarget?.resolved === "DIRECT" ? "happ-direct" : dnsFixed?.candidateTag ?? followTag;
   rules.splice(2, 0, ...renderHappDnsRoutes({ followTag, globalOutboundTag: globalDnsOutbound, platform: options.platform }));
-  const finalTarget = targetFor("__final__", resolution, followTag, fixedById);
+  const finalTarget = targetFor("__final__", resolution, followTag, fixedById, context.followNodeId);
   rules.push({ type: "field", network: "tcp,udp", ...finalTarget });
   const routing = { domainStrategy: "IPIfNonMatch", rules };
   const policyTargets = {};

@@ -3,7 +3,8 @@ import { filterNodesForClient } from "../../../shared/nodes/capabilities.js";
 import { normalizeNodes } from "../../../shared/nodes/normalize-nodes.js";
 import { buildHappAudit } from "./audit.js";
 import { parseHappOptions } from "./options.js";
-import { resolvePolicyOverrides } from "./policy-overrides.js";
+import { loadSubstorePolicyArtifact } from "../../../shared/substore/policy-artifact.js";
+import { resolveUnifiedPolicy } from "../../../shared/policies/resolve-unified.js";
 
 export async function operator(input, targetPlatform, context = {}) {
   void targetPlatform;
@@ -20,8 +21,11 @@ export async function operator(input, targetPlatform, context = {}) {
   const normalized = normalizeNodes(raw, { clientChain: "off" });
   const filtered = filterNodesForClient(normalized.nodes, CLIENT.happ);
   if (filtered.nodes.length === 0) throw new Error("HAPP audit has no compatible nodes");
-  const policyResolution = resolvePolicyOverrides({
-    encoded: options.policyOverrides,
+  const policy = await loadSubstorePolicyArtifact(context);
+  const policyResolution = resolveUnifiedPolicy({
+    policy,
+    channel: "current",
+    client: CLIENT.happ,
     allNodes: normalized.nodes,
     eligibleNodes: filtered.nodes,
   });

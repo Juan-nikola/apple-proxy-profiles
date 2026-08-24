@@ -21,6 +21,44 @@ const ROOT_KEYS = Object.freeze([
   "default_subscription_group",
 ]);
 
+const EXTERNAL_NODE_POLICY = /^.+ · (?:SS|SSR|Snell|VMess|VLESS|Trojan|AnyTLS|Hy2|Tuic|SOCKS5|HTTP|SSH|WireGuard)(?:｜|·|$)/u;
+const INTERACTIVE_POLICY_VALUES = new Set(["🚀 节点选择", "DIRECT"]);
+
+function isExternalNodePolicy(value) {
+  return typeof value === "string" && EXTERNAL_NODE_POLICY.test(value);
+}
+
+function normalizedFieldsWithCandidates(fields, candidates) {
+  const normalized = { ...fields };
+  if (candidates.length === 0) delete normalized.policies;
+  else normalized.policies = candidates;
+  return normalized;
+}
+
+function canonicalCandidates(fields, schema) {
+  const candidates = fields.policies ?? [];
+  const external = candidates.filter(isExternalNodePolicy);
+  if (external.length > 1 || (external.length === 1 && candidates[0] !== external[0])) {
+    throw new Error("Invalid Egern policy group node reference");
+  }
+  const withoutExternal = candidates.filter((candidate) => !isExternalNodePolicy(candidate));
+  if (external.length === 1) return withoutExternal;
+
+  const first = withoutExternal[0];
+  if (!INTERACTIVE_POLICY_VALUES.has(first)) return withoutExternal;
+  if (first === "DIRECT" && schema.defaultChoice !== "DIRECT"
+    && withoutExternal.slice(1).includes("🚀 节点选择")) {
+    return [...withoutExternal.slice(1), "DIRECT"];
+  }
+  if (first === "🚀 节点选择" && schema.defaultChoice === "DIRECT") {
+    const remainder = withoutExternal.slice(1);
+    if (remainder.includes("DIRECT")) {
+      return ["DIRECT", "🚀 节点选择", ...remainder.filter((candidate) => candidate !== "DIRECT")];
+    }
+  }
+  return withoutExternal;
+}
+
 const BYPASS_TUNNEL_PROXY = Object.freeze([
   "localhost", "*.local", "*.lan", "*.home.arpa",
   "10.0.0.0/8", "100.64.0.0/10", "127.0.0.0/8", "169.254.0.0/16",
@@ -228,8 +266,8 @@ function reconstructGroups(policyGroups) {
   }
   let nodeSubscriptionUrl;
   const overrides = new Set();
-  const stripped = [];
-  const shared = [];
+  let stripped = [];
+  let shared = [];
 
   for (const record of policyGroups) {
     if (record === null || typeof record !== "object" || Array.isArray(record)) {
@@ -252,14 +290,13 @@ function reconstructGroups(policyGroups) {
       overrides.add(fields.name);
       delete fields.block_quic;
     }
-    stripped.push({ [type]: fields });
-
     if (typeof fields.name !== "string" || !Object.hasOwn(POLICY_GROUP_SCHEMA.groups, fields.name)) {
       throw new Error("Invalid Egern policy group schema");
     }
     const schema = POLICY_GROUP_SCHEMA.groups[fields.name];
     const strategy = type === "auto_test" ? "auto-test" : type;
-    const candidates = fields.policies ?? [];
+    const sharedCandidates = canonicalCandidates(fields, schema);
+    stripped.push({ [type]: normalizedFieldsWithCandidates(fields, sharedCandidates) });
     const nodeFilter = fields.urls !== undefined && fields.name !== PRIMARY_GROUP_NAME
       ? fields.filter
       : null;
@@ -283,7 +320,7 @@ function reconstructGroups(policyGroups) {
       kind: schema.kind,
       name: fields.name,
       strategy,
-      candidates,
+      candidates: sharedCandidates,
       nodeFilter,
       test,
       hidden: fields.hidden,

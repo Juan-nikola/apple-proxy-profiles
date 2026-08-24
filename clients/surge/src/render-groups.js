@@ -24,9 +24,9 @@ function matches(filter, node) {
   }
 }
 
-export function renderSurgeGroups(options, nodes) {
+export function renderSurgeGroups(options, nodes, policyResolution = null) {
   const inventory = Array.isArray(nodes) ? nodes : [];
-  const shared = buildPolicyGroups(options, inventory);
+  const shared = buildPolicyGroups(options, inventory, policyResolution);
   const names = new Set(shared.map(({ name }) => name));
   const remotePolicy = typeof options.proxyPolicyUrl === "string"
     ? { name: REMOTE_POLICY_POOL_NAME, url: options.proxyPolicyUrl }

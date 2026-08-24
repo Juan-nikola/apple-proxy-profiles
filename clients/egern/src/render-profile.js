@@ -1,5 +1,6 @@
 import { buildPolicyGroups } from "../../../shared/policies/catalog.js";
 import { POLICY_TARGET } from "../../../shared/policies/intents.js";
+import { UNIFIED_POLICY_TARGETS } from "../../../shared/policies/unified-policy.js";
 import { renderEgernDns } from "./render-dns.js";
 import { renderEgernGroups } from "./render-groups.js";
 import { isParsedEgernOptions, parseEgernOptions } from "./options.js";
@@ -73,14 +74,54 @@ function applyProxyQuicOverrides(rendered, shared, quicMode) {
   });
 }
 
-export function renderEgernProfileFromOptions(options, nodes, { onDiagnostics } = {}) {
+const POLICY_GROUP_BY_TARGET = Object.freeze(Object.fromEntries(UNIFIED_POLICY_TARGETS.map(({ id, label }) => [id, label])));
+
+function policyValue(record) {
+  if (!record || typeof record.resolved !== "string") return null;
+  if (record.resolved === "FOLLOW") return "🚀 节点选择";
+  return record.resolved;
+}
+
+function movePolicyToFront(policies, value) {
+  const withoutValue = policies.filter((candidate) => candidate !== value);
+  return [value, ...withoutValue];
+}
+
+function applyEgernPolicyResolution(rendered, resolution) {
+  if (!resolution || typeof resolution !== "object") return rendered;
+  const byName = new Map(rendered.map((record) => {
+    const type = Object.keys(record)[0];
+    return [record[type].name, type];
+  }));
+  return rendered.map((record) => {
+    const type = Object.keys(record)[0];
+    const fields = record[type];
+    const target = UNIFIED_POLICY_TARGETS.find(({ id }) => POLICY_GROUP_BY_TARGET[id] === fields.name);
+    if (!target || !byName.has(fields.name)) return record;
+    const value = policyValue(resolution.targets?.[target.id]);
+    if (value === null) return record;
+    const baselinePolicies = [...(fields.policies ?? [])];
+    if (baselinePolicies.length === 0 && value === "🚀 节点选择") return record;
+    const policies = movePolicyToFront(baselinePolicies, value);
+    return { [type]: { ...fields, policies } };
+  });
+}
+
+export function renderEgernProfileFromOptions(options, nodes, {
+  onDiagnostics,
+  policyResolution = null,
+  preparedInventory = null,
+} = {}) {
   if (!isParsedEgernOptions(options)) throw new Error("Parsed Egern options are required");
-  const prepared = prepareEgernInventory(nodes, {
+  const prepared = preparedInventory ?? prepareEgernInventory(nodes, {
     clientChain: options.clientChain,
     onDiagnostics,
   });
   const sharedGroups = buildPolicyGroups(options, prepared.nodes);
-  const renderedGroups = renderEgernGroups(sharedGroups, options.nodeSubscriptionUrl);
+  const renderedGroups = applyEgernPolicyResolution(
+    renderEgernGroups(sharedGroups, options.nodeSubscriptionUrl),
+    policyResolution,
+  );
   const root = {
     ipv6: options.ipv6Mode === "auto",
     block_quic: options.quicMode === "all-block",

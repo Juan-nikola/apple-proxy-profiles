@@ -1,5 +1,8 @@
 import { normalizeNodes } from "../../../shared/nodes/normalize-nodes.js";
+import { CLIENT } from "../../../shared/contracts.js";
 import { partitionRenderableNodes } from "../../../shared/nodes/renderability.js";
+import { loadSubstorePolicyArtifact } from "../../../shared/substore/policy-artifact.js";
+import { resolveUnifiedPolicy } from "../../../shared/policies/resolve-unified.js";
 import { parseSurgeOptions } from "./options.js";
 import { renderSurgeProfile } from "./render-profile.js";
 import { renderSurgeProxy, sanitizeSurgeNode } from "./render-node.js";
@@ -38,8 +41,16 @@ export async function operator(input, targetPlatform, context = {}) {
   const normalized = normalizeNodes(rawNodes, { clientChain: options.clientChain });
   const probe = (node) => renderSurgeProxy(sanitizeSurgeNode(node));
   const partitioned = partitionRenderableNodes(normalized.nodes, "Surge", probe);
+  const policy = await loadSubstorePolicyArtifact(context);
+  const policyResolution = resolveUnifiedPolicy({
+    policy,
+    channel: options.channel,
+    client: CLIENT.surge,
+    allNodes: normalized.nodes,
+    eligibleNodes: partitioned.renderable,
+  });
   logDiagnostics(context, options, partitioned.renderable, partitioned.failureProtocols);
   const ruleBaseUrl = `${PUBLIC_RULE_ROOT}/${options.channel}/surge/rules`;
-  const profile = renderSurgeProfile(options, partitioned.renderable.map(sanitizeSurgeNode), { ruleBaseUrl });
+  const profile = renderSurgeProfile(options, partitioned.renderable.map(sanitizeSurgeNode), { ruleBaseUrl, policyResolution });
   return { ...input, $content: profile };
 }

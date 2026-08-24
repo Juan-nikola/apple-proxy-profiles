@@ -16,12 +16,15 @@ const profileArguments = {
   subscriptionName: "Shadowrocket-Nodes",
   platform: "macos",
 };
+const EMPTY_POLICY = { $content: JSON.stringify({ schemaVersion: 2, targets: {} }) };
 
 function loadBundle(source, globals) {
   const lines = [];
   const context = vm.createContext({
     ...globals,
     structuredClone,
+    TextDecoder,
+    TextEncoder,
     console: { log(value) { lines.push(String(value)); }, info(value) { lines.push(String(value)); } },
   });
   vm.runInContext(source, context, { timeout: 2_000 });
@@ -187,17 +190,22 @@ test("profile bundle is self-contained and runs with Sub-Store globals", async (
     udp: true,
     _subName: "[机场]示例",
   })), anytlsNode()];
+  const calls = [];
   const { context } = loadBundle(source, {
     $arguments: profileArguments,
     async produceArtifact(request) {
-      assert.deepEqual({ ...request }, { type: "collection", name: "apple-proxy-shadowrocket", platform: "JSON", produceType: "internal" });
-      return inventory;
+      calls.push({ ...request });
+      return request.type === "file" ? EMPTY_POLICY : inventory;
     },
   });
   assert.equal(typeof context.ShadowrocketProfileBundle, "object");
   assert.equal(typeof context.operator, "function");
   assert.equal(context.operator.length, 2);
   const result = await context.operator({ url: "https://example.invalid/sub" }, "Shadowrocket");
+  assert.deepEqual(calls, [
+    { type: "collection", name: "apple-proxy-shadowrocket", platform: "JSON", produceType: "internal" },
+    { type: "file", name: "apple-proxy-policy", platform: "JSON", produceType: "internal" },
+  ]);
   assert.match(result.$content, /\[General\]/);
   assert.match(result.$content, /\[Proxy Group\]/);
   assert.match(result.$content, /\[Rule\]/);

@@ -21,6 +21,11 @@ const nodes = [{
     chained: false,
   },
 }];
+const EMPTY_POLICY = { $content: JSON.stringify({ schemaVersion: 2, targets: {} }) };
+
+function artifact(request, value) {
+  return request.type === "file" ? EMPTY_POLICY : value;
+}
 
 test("Sub-Store sing-box entry requests a private collection and returns JSON content", async () => {
   const calls = [];
@@ -38,13 +43,18 @@ test("Sub-Store sing-box entry requests a private collection and returns JSON co
       },
       async produceArtifact(request) {
         calls.push(request);
-        return nodes;
+        return artifact(request, nodes);
       },
     },
   );
   assert.deepEqual(calls, [{
     type: "collection",
     name: "apple-proxy-singbox",
+    platform: "JSON",
+    produceType: "internal",
+  }, {
+    type: "file",
+    name: "apple-proxy-policy",
     platform: "JSON",
     produceType: "internal",
   }]);
@@ -70,8 +80,8 @@ test("Sub-Store sing-box entry accepts a manually selected node without sing-box
       platform: "macos",
       nodeErrorMode: "strict",
     },
-    async produceArtifact() {
-      return [manuallySelected];
+    async produceArtifact(request) {
+      return artifact(request, [manuallySelected]);
     },
   });
   const config = JSON.parse(result.$content);
@@ -92,7 +102,7 @@ test("Sub-Store passes the light/diagnostic profile API and never emits source r
         platform: "macos",
         profileMode: "diagnostic",
       },
-      async produceArtifact() { return nodes; },
+      async produceArtifact(request) { return artifact(request, nodes); },
     },
   );
   const config = JSON.parse(result.$content);
@@ -113,8 +123,8 @@ test("Sub-Store sing-box entry normalizes raw collection nodes before rendering"
         subscriptionName: "Apple-Proxy-Nodes",
         platform: "macos",
       },
-      async produceArtifact() {
-        return rawNodes;
+      async produceArtifact(request) {
+        return artifact(request, rawNodes);
       },
     },
   );
@@ -132,8 +142,8 @@ test("Sub-Store sing-box entry retains normalized AnyTLS fields in the complete 
       subscriptionName: "sing-box-Nodes",
       platform: "macos",
     },
-    async produceArtifact() {
-      return [{
+    async produceArtifact(request) {
+      return artifact(request, [{
         name: "Tokyo AnyTLS",
         type: "anytls",
         server: "anytls.example.invalid",
@@ -147,7 +157,7 @@ test("Sub-Store sing-box entry retains normalized AnyTLS fields in the complete 
         "idle-session-timeout": 60,
         "min-idle-session": 1,
         _subName: "[自建] AnyTLS",
-      }];
+      }]);
     },
   });
   const outbound = JSON.parse(result.$content).outbounds.find(({ type }) => type === "anytls");
@@ -179,8 +189,8 @@ test("Sub-Store sing-box entry keeps VLESS, AnyTLS and Snell from a real mixed i
       subscriptionName: "sing-box-Nodes",
       platform: "macos",
     },
-    async produceArtifact() {
-      return [{
+    async produceArtifact(request) {
+      return artifact(request, [{
         name: "🇭🇰 阿里云香港 · VLESS｜自建·U",
         type: "vless",
         server: "vless.example.invalid",
@@ -228,7 +238,7 @@ test("Sub-Store sing-box entry keeps VLESS, AnyTLS and Snell from a real mixed i
         reuse: true,
         tfo: true,
         _subName: "[自建] Snell",
-      }];
+      }]);
     },
     logger: { info(line) { lines.push(line); } },
   });
@@ -279,7 +289,7 @@ test("Sub-Store sing-box entry fails closed when a selected node cannot be rende
       subscriptionName: "sing-box-Nodes",
       platform: "macos",
     },
-    async produceArtifact() { return [nodes[0], privateNode]; },
+    async produceArtifact(request) { return artifact(request, [nodes[0], privateNode]); },
   }), /sing-box cannot render selected protocols: sudoku=1/u);
 });
 
@@ -302,7 +312,7 @@ test("Sub-Store sing-box entry keeps the compatible subset and reports skipped p
       platform: "macos",
       nodeErrorMode: "compatible",
     },
-    async produceArtifact() { return [nodes[0], privateNode]; },
+    async produceArtifact(request) { return artifact(request, [nodes[0], privateNode]); },
     logger: { info(line) { lines.push(line); } },
   });
   const config = JSON.parse(result.$content);
@@ -334,7 +344,7 @@ test("Sub-Store sing-box renderability skips an unsupported selected AnyTLS fiel
       platform: "macos",
       nodeErrorMode: "compatible",
     },
-    async produceArtifact() { return [nodes[0], privateNode]; },
+    async produceArtifact(request) { return artifact(request, [nodes[0], privateNode]); },
     logger: { info(line) { lines.push(line); } },
   });
   const config = JSON.parse(result.$content);
@@ -371,7 +381,7 @@ test("Sub-Store sing-box probe skips an unmapped nested AnyTLS Reality field", a
       platform: "macos",
       nodeErrorMode: "compatible",
     },
-    async produceArtifact() { return [nodes[0], privateNode]; },
+    async produceArtifact(request) { return artifact(request, [nodes[0], privateNode]); },
     logger: { info(line) { lines.push(line); } },
   });
   const config = JSON.parse(result.$content);

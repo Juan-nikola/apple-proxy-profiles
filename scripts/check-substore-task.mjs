@@ -42,6 +42,8 @@ const GENERATOR_SCHEMAS = Object.freeze({
     requiresNodeSubscriptionUrl: true,
   }),
   "anywhere/scripts/anywhere-node-generator.js": nodeSchema(),
+  "anywhere/scripts/anywhere-strategy-generator.js": strategySchema(),
+  "anywhere/scripts/substore-strategy-generator.js": strategySchema(),
   "surge/scripts/surge-nodes-generator.js": nodeSchema(),
   "surge/scripts/surge-profile-generator.js": configSchema({
     platforms: ["macos", "iphone", "ipad"],
@@ -107,10 +109,21 @@ const GENERATOR_SCHEMAS = Object.freeze({
 
 function nodeSchema() {
   return Object.freeze({
+    policyInput: null,
     required: Object.freeze(["output", "type", "name"]),
     allowed: Object.freeze(["output", "type", "name", "clientChain", "channel"]),
     outputValues: Object.freeze(["nodes"]),
     enums: Object.freeze({ clientChain: OPTION_VALUES.clientChain }),
+  });
+}
+
+function strategySchema() {
+  return Object.freeze({
+    policyInput: "apple-proxy-policy",
+    required: Object.freeze(["output", "type", "name", "channel"]),
+    allowed: Object.freeze(["output", "type", "name", "channel"]),
+    outputValues: Object.freeze(["strategy"]),
+    enums: Object.freeze({}),
   });
 }
 
@@ -135,6 +148,7 @@ function configSchema({
     ...(requiresNodeSubscriptionUrl ? ["nodeSubscriptionUrl"] : []),
   ];
   return Object.freeze({
+    policyInput: "apple-proxy-policy",
     required: Object.freeze(required),
     allowed: Object.freeze(allowed),
     outputValues: Object.freeze([output]),
@@ -156,6 +170,7 @@ function configSchema({
 
 function xraySchema(output) {
   return Object.freeze({
+    policyInput: "apple-proxy-policy",
     required: Object.freeze(["output", "type", "name"]),
     allowed: Object.freeze([
       "output", "type", "name", "channel", "dnsMode", "chinaDns", "globalDns",
@@ -261,10 +276,14 @@ function normalizeScriptPath(scriptPath) {
   return scriptPath;
 }
 
+export function getSubstoreTaskSchema(scriptPath) {
+  return GENERATOR_SCHEMAS[normalizeScriptPath(scriptPath)] ?? null;
+}
+
 export function checkSubstoreTaskUrl(raw) {
   const parsed = parseTaskUrl(raw);
   const generatorPath = normalizeScriptPath(parsed.scriptPath);
-  const generator = GENERATOR_SCHEMAS[generatorPath];
+  const generator = getSubstoreTaskSchema(generatorPath);
   if (!generator) {
     return Object.freeze({
       ok: false,

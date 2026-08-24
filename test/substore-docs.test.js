@@ -65,6 +65,7 @@ test("central Sub-Store guide closes over all public scripts and private tasks",
     "egern-node-generator.js",
     "egern-profile-generator.js",
     "anywhere-node-generator.js",
+    "anywhere-strategy-generator.js",
     "surge-nodes-generator.js",
     "surge-profile-generator.js",
     "sing-box-config-generator.js",
@@ -87,7 +88,7 @@ test("central Sub-Store guide closes over all public scripts and private tasks",
     assert.match(guide, rowPattern, `missing task-table row ${task}`);
   }
   for (const [index, task] of [
-    "apple-proxy-policy", "onexray-nodes", "onexray-profile", "onexray-routing-audit",
+    "anywhere-strategy", "apple-proxy-policy", "onexray-nodes", "onexray-profile", "onexray-routing-audit",
     "happ-macos", "happ-iphone", "happ-ipad", "happ-android", "happ-windows", "happ-linux",
     "happ-routing-audit", "v2rayn-nodes", "v2rayn-config-windows", "v2rayn-config-macos",
     "v2box-nodes", "v2box-config-iphone", "v2box-config-ipad",
@@ -95,12 +96,14 @@ test("central Sub-Store guide closes over all public scripts and private tasks",
     const rowPattern = new RegExp("\\| " + (index + 18) + " \\| `" + task + "` \\|", "u");
     assert.match(guide, rowPattern, `missing private task-table row ${task}`);
   }
-  assert.match(guide, /任务总数为 \*\*34 个\*\*/u);
+  assert.match(guide, /任务总数为 \*\*35 个\*\*/u);
   assert.match(guide, /通用任务总数为 `4\+1\+4\+4\+4=17` 个/u);
   assert.match(guide, /#output=nodes[\s\S]*&/u);
   assert.match(guide, /#output=config[\s\S]*&/u);
   assert.match(guide, /channel=current[\s\S]*channel=edge/u);
   assert.match(readme, /apple-proxy-sources/u);
+  assert.match(guide, /schema v2[\s\S]{0,180}schema v1[\s\S]{0,180}(?:兼容|读取)/iu);
+  assert.match(guide, /policyInput[\s\S]{0,120}apple-proxy-policy/iu);
   assert.match(readme, /HAPP：.*clients\/happ\/docs\/deployment\.md/iu);
   assert.match(readme, /OneXray：.*clients\/onexray\/docs\/deployment\.md/iu);
   assert.match(readme, /### 2\.6 HAPP[\s\S]*happ-routing-audit/u);

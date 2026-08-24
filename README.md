@@ -14,7 +14,7 @@
 | v2rayN | Windows、macOS | Xray JSON 节点订阅、Windows/macOS 配置、地区 GeoData |
 | V2Box | iPhone、iPad | Xray JSON 节点订阅、iPhone/iPad 配置、共享 GeoData 资产 |
 
-Android 仍是 sing-box 的一个平台输出；注册表和发布链路现在覆盖九个 active 客户端。Sub-Store 任务总数为 34：原有 17 个通用任务，加上 `apple-proxy-policy`、3 个 OneXray 任务、6 个 HAPP 平台配置任务、`happ-routing-audit` 和 6 个 v2rayN/V2Box 任务。
+Android 仍是 sing-box 的一个平台输出；注册表和发布链路现在覆盖九个 active 客户端。Sub-Store 任务总数为 35：原有 17 个通用任务，加上 Anywhere 策略校验/映射、`apple-proxy-policy`、3 个 OneXray 任务、6 个 HAPP 平台配置任务、`happ-routing-audit` 和 6 个 v2rayN/V2Box 任务。
 
 本仓库只保存公开脚本、公开规则和脱敏示例，**不保存你的订阅、节点、密码、UUID、私密输出 URL 或 Sub-Store 管理地址**。本项目不需要 MITM、HTTPS 解密、CA 证书或请求重写，这些功能请保持关闭。
 
@@ -86,7 +86,7 @@ apple-proxy-all 总池
     ↓
 九个 active 客户端 collection（由你筛选；Xray renderer 会报告并排除不兼容节点）
     ↓
-34 个 Sub-Store File 任务（17 个通用任务 + 11 个 HAPP/OneXray 私密任务 + 6 个 v2rayN/V2Box 私密任务）
+35 个 Sub-Store File 任务（17 个通用任务 + 1 个 Anywhere 策略任务 + 11 个 HAPP/OneXray 私密任务 + 6 个 v2rayN/V2Box 私密任务）
     ↓
 客户端导入私密输出 URL
     ↓
@@ -126,7 +126,7 @@ SUBSTORE_CHANNEL=current \\
 npm run configure:substore
 ```
 
-成功标志：终端显示 `Wrote private Sub-Store config`，且文件权限为 `0600`；文件中有 10 个 collection、34 个任务。正式任务默认使用 `current`；只有维护者做隔离预览或回滚时才把 `SUBSTORE_CHANNEL` 改成 `edge` 或 `previous`。真实地址不要复制进 README、Issue 或聊天。
+成功标志：终端显示 `Wrote private Sub-Store config`，且文件权限为 `0600`；文件中有 10 个 collection、35 个任务。正式任务默认使用 `current`；只有维护者做隔离预览或回滚时才把 `SUBSTORE_CHANNEL` 改成 `edge` 或 `previous`。真实地址不要复制进 README、Issue 或聊天。
 
 这个命令会离线校验公开 JS URL 的 `#` 参数，但不会替你登录 Sub-Store 管理后台或自动删除旧任务；首次迁移仍按下面的 preview、上线后可选反馈和回滚步骤执行。HAPP 任务固定使用 `/current/happ/`，片段中不再填写 `channel`；`SUBSTORE_CHANNEL` 只控制其他客户端和维护者的内部发布流程。
 
@@ -164,9 +164,9 @@ npm run configure:substore
 
 完整的筛选边界和迁移顺序见 [Sub-Store 客户端节点池指南](docs/substore-client-pools.md)。
 
-### 1.3 创建或核对 34 个 active File 任务
+### 1.3 创建或核对 35 个 active File 任务
 
-通用任务总数是 `4+1+4+4+4=17`；加上 policy、3 个 OneXray 任务、6 个 HAPP 平台任务、1 个 HAPP 审计任务和 6 个 v2rayN/V2Box 任务后，canonical 任务总数是 34。早期文档漏算了 `shadowrocket-nodes`，不要再按 16 个创建。
+通用任务总数是 `4+1+4+4+4=17`；加上 1 个 Anywhere 策略任务、policy、3 个 OneXray 任务、6 个 HAPP 平台任务、1 个 HAPP 审计任务和 6 个 v2rayN/V2Box 任务后，canonical 任务总数是 35。早期文档漏算了 `shadowrocket-nodes`，不要再按 16 个创建。
 
 | # | 客户端 | File 任务名 | 作用 |
 | ---: | --- | --- | --- |
@@ -175,18 +175,19 @@ npm run configure:substore
 | 3 | Egern | `egern-iphone` | iPhone Profile |
 | 4 | Egern | `egern-ipad` | iPad Profile |
 | 5 | Anywhere | `anywhere-nodes` | 私密 Clash 节点 YAML |
-| 6 | Shadowrocket | `shadowrocket-nodes` | 私密排序节点订阅 |
-| 7 | Shadowrocket | `shadowrocket-config-macos` | macOS Profile |
-| 8 | Shadowrocket | `shadowrocket-config-iphone` | iPhone Profile |
-| 9 | Shadowrocket | `shadowrocket-config-ipad` | iPad Profile |
-| 10 | Surge | `surge-nodes` | 私密 `[Proxy]` 节点资源 |
-| 11 | Surge | `surge-config-macos` | macOS Profile |
-| 12 | Surge | `surge-config-iphone` | iPhone Profile |
-| 13 | Surge | `surge-config-ipad` | iPad Profile |
-| 14 | sing-box | `singbox-config-macos` | macOS JSON |
-| 15 | sing-box | `singbox-config-iphone` | iPhone JSON |
-| 16 | sing-box | `singbox-config-ipad` | iPad JSON |
-| 17 | sing-box | `singbox-config-android` | Android JSON |
+| 6 | Anywhere | `anywhere-strategy` | 策略校验/映射 JSON |
+| 7 | Shadowrocket | `shadowrocket-nodes` | 私密排序节点订阅 |
+| 8 | Shadowrocket | `shadowrocket-config-macos` | macOS Profile |
+| 9 | Shadowrocket | `shadowrocket-config-iphone` | iPhone Profile |
+| 10 | Shadowrocket | `shadowrocket-config-ipad` | iPad Profile |
+| 11 | Surge | `surge-nodes` | 私密 `[Proxy]` 节点资源 |
+| 12 | Surge | `surge-config-macos` | macOS Profile |
+| 13 | Surge | `surge-config-iphone` | iPhone Profile |
+| 14 | Surge | `surge-config-ipad` | iPad Profile |
+| 15 | sing-box | `singbox-config-macos` | macOS JSON |
+| 16 | sing-box | `singbox-config-iphone` | iPhone JSON |
+| 17 | sing-box | `singbox-config-ipad` | iPad JSON |
+| 18 | sing-box | `singbox-config-android` | Android JSON |
 
 已有任务时逐个核对名称、脚本 URL、`name=` 和平台参数；没有任务时按 [Sub-Store 九客户端外置 JS + 任务引用总指南](docs/substore-two-layer-setup.md) 创建。不要复制 JavaScript 正文，File 应引用 Pages 上的远程脚本。11 个 HAPP/OneXray 任务和 6 个 v2rayN/V2Box 任务仍是私密任务，不会把节点或策略内容发布到 Pages；HAPP 配置必须分别建立 `happ-macos`、`happ-iphone`、`happ-ipad`、`happ-android`、`happ-windows`、`happ-linux` 六个平台任务；v2rayN 使用 `v2rayn-config-windows`、`v2rayn-config-macos`，V2Box 使用 `v2box-config-iphone`、`v2box-config-ipad`。
 

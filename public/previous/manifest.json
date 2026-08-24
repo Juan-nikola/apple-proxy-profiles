@@ -67,11 +67,11 @@
       "referencedDefaultBytes": 593876
     },
     "v2box": {
-      "manifestHash": "5e1d424ea020ebf00833d77ef5c0b40846ca391c7846c3ef6a24cdfdd8715ce3",
+      "manifestHash": "f6b0ffdd020d4e5c6ba941d976ac6b1db2fc0f98cf187cd546eae07d8797691a",
       "referencedDefaultBytes": 0
     },
     "v2rayn": {
-      "manifestHash": "d96595f2030acc847bfc09dee4c6d1c3539d2a0caec1ed95ff3fd0d3832338f2",
+      "manifestHash": "d15aa9335c8419f9475147c4ed1615b13b7f992937623bebc44942a468f13651",
       "referencedDefaultBytes": 0
     }
   },
@@ -202,12 +202,12 @@
     {
       "bytes": 3292,
       "path": "audit/dashboard.html",
-      "sha256": "464d8988a23f51fe573dac14da258951f90349c7691584c765a39c47a88d30a8"
+      "sha256": "29daa0475d7fb8d684462469fe594403b2f3849775dfae2a8831de457d85caf4"
     },
     {
       "bytes": 6056,
       "path": "audit/dashboard.json",
-      "sha256": "8890448ee32b2ada682d219f76a62e87b6ab2adc31bd9476296ee2f9a7c98d46"
+      "sha256": "f2803dcb77f0e0e3c904a3bf105dd367ef4570b2b6db6f28f0014efeba1709d6"
     },
     {
       "bytes": 5175,
@@ -1202,27 +1202,27 @@
     {
       "bytes": 661,
       "path": "v2box/client-manifest.json",
-      "sha256": "96335c18c8c249d44ccbc930f84164e350b7361b29ef5b4700e5928d9f55cd01"
+      "sha256": "e03804181b0936754337c1ff735c30fdab41f28ebec8c48b2162d24d5bcf8e4c"
     },
     {
-      "bytes": 149397,
+      "bytes": 149457,
       "path": "v2box/scripts/substore-config-generator.js",
-      "sha256": "7756520dde124c6e22d404d9ec2dc5f61ebbf789a7f73e89c6f03284d51b9b9f"
+      "sha256": "b38a9a54c33d1c16e04e3066fca375ab867e4f03f6ef031f9b4c0d2031a20aa3"
     },
     {
-      "bytes": 123263,
+      "bytes": 123425,
       "path": "v2box/scripts/substore-node-generator.js",
-      "sha256": "b19b919b5930df7629d93992ac69a561ef2e43eb19e9a86f0f58969d657b28ad"
+      "sha256": "f4aeca92beb78a2a1fb5e757f5cb24c6a85b94f4a1973f2626414b46c0c51ea9"
     },
     {
       "bytes": 664,
       "path": "v2rayn/client-manifest.json",
-      "sha256": "08168fdf5df85b68b19077f701a73ade570104bb23eae4a79f2200d5be6271ca"
+      "sha256": "e79b0580bf92bde5d15dc039fc5e6faed416bbc792a46e21cabc64ab0036373f"
     },
     {
-      "bytes": 145264,
+      "bytes": 145293,
       "path": "v2rayn/scripts/substore-config-generator.js",
-      "sha256": "52e185858bd1f25006208777aaca81d489bf531b529ca0d8656ff20e501300f2"
+      "sha256": "5baf974e979afbdbcc23e1b21cdb9e8fe73017d47e8a7be47df56637ccc89c27"
     },
     {
       "bytes": 123336,
@@ -1231,7 +1231,7 @@
     }
   ],
   "generatedAt": "2026-08-15T18:26:29Z",
-  "manifestHash": "6f12a7520adbd62a1793adb105ae2665ad202e6f004a6b3ee9ff0839d80ddd95",
+  "manifestHash": "d397e078dfc0b7fe8c8ae7e8eac4845d5d521fcb4c9e6ef64c9a54575f3dc219",
   "schemaVersion": 2,
   "upstream": {
     "branch": "master",

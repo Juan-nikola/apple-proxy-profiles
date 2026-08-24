@@ -89,6 +89,11 @@ export function protocolDefinition(value) {
   return registry.get(normalizeProtocol(value)) ?? null;
 }
 
+export function canonicalProtocol(value) {
+  const definition = protocolDefinition(value);
+  return definition?.names[0] ?? null;
+}
+
 export function protocolSupportsClient(value, client) {
   const protocol = normalizeProtocol(value);
   const definition = protocolDefinition(protocol);

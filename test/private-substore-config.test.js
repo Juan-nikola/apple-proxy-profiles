@@ -24,8 +24,19 @@ test("builds a private Sub-Store config without exposing the source value", () =
     "apple-proxy-v2rayn",
     "apple-proxy-v2box",
   ]);
-  assert.equal(config.tasks.length, 34);
-  assert.equal(config.tasks.filter(({ kind }) => kind === "remote-js").length, 33);
+  assert.equal(config.tasks.length, 35);
+  assert.equal(config.tasks.filter(({ kind }) => kind === "remote-js").length, 34);
+  assert.equal(config.tasks.filter(({ policyInput }) => policyInput === "apple-proxy-policy").length, 27);
+  assert.deepEqual(config.tasks.find(({ name }) => name === "anywhere-strategy"), {
+    name: "anywhere-strategy",
+    client: "anywhere",
+    kind: "remote-js",
+    url: "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/scripts/anywhere-strategy-generator.js#output=strategy&type=collection&name=apple-proxy-anywhere&channel=current",
+    output: "strategy",
+    collection: "apple-proxy-anywhere",
+    channel: "current",
+    policyInput: "apple-proxy-policy",
+  });
   assert.deepEqual(config.tasks.filter(({ name }) => name.startsWith("happ-") && name !== "happ-routing-audit").map(({ name, platform }) => [name, platform]), [
     ["happ-macos", "macos"],
     ["happ-iphone", "iphone"],
@@ -57,7 +68,7 @@ test("builds a private Sub-Store config without exposing the source value", () =
 
 test("canonical private task catalog covers all HAPP platforms", () => {
   const catalog = canonicalTaskCatalog("current");
-  assert.equal(catalog.length, 34);
+  assert.equal(catalog.length, 35);
   assert.deepEqual(catalog.slice(0, 4).map(({ name }) => name), [
     "egern-nodes", "egern-macos", "egern-iphone", "egern-ipad",
   ]);
@@ -89,6 +100,20 @@ test("canonical private task catalog covers all HAPP platforms", () => {
     assert.match(task.url, /\/\/(?:juan-nikola\.github\.io)\/apple-proxy-profiles\/(?:current)\/(?:v2rayn|v2box)\/scripts\//u);
     if (task.output === "config") assert.match(task.url, /region=cn/u);
   }
+});
+
+test("binds the shared policy to every config and audit task, never node tasks", () => {
+  const catalog = canonicalTaskCatalog("current");
+  const policyTasks = catalog.filter(({ output }) => output === "config" || output === "profile" || output === "audit");
+  assert.equal(policyTasks.length, 26);
+  assert.ok(policyTasks.every((task) => task.policyInput === "apple-proxy-policy"));
+  assert.equal(catalog.filter(({ policyInput }) => policyInput === "apple-proxy-policy").length, 27);
+  assert.equal(catalog.find(({ name }) => name === "anywhere-strategy").output, "strategy");
+  assert.ok(catalog.filter(({ output }) => output === "nodes").every((task) => !Object.hasOwn(task, "policyInput")));
+  assert.equal(
+    catalog.find(({ name }) => name === "apple-proxy-policy").policySchema,
+    "schemaVersion=2; targets=single-layer; channels=edge,current,previous; readers accept schemaVersion=1",
+  );
 });
 
 test("rejects invalid channel and source URL", () => {

@@ -583,6 +583,8 @@ async function staticFiles(channel = "current") {
     ["egern/examples/egern-ipad.yaml", "clients/egern/examples/egern-ipad.yaml"],
     ["anywhere/scripts/anywhere-node-generator.js", "clients/anywhere/dist/anywhere-node-generator.js"],
     ["anywhere/scripts/substore-node-generator.js", "clients/anywhere/dist/substore-node-generator.js"],
+    ["anywhere/scripts/anywhere-strategy-generator.js", "clients/anywhere/dist/anywhere-strategy-generator.js"],
+    ["anywhere/scripts/substore-strategy-generator.js", "clients/anywhere/dist/substore-strategy-generator.js"],
     ["surge/scripts/surge-profile-generator.js", "clients/surge/dist/surge-profile-generator.js"],
     ["surge/scripts/substore-profile-generator.js", "clients/surge/dist/substore-profile-generator.js"],
     ["surge/scripts/surge-nodes-generator.js", "clients/surge/dist/surge-nodes-generator.js"],
@@ -646,6 +648,7 @@ async function staticFiles(channel = "current") {
     ["egern/scripts/egern-node-generator.js", "egern/scripts/substore-node-generator.js"],
     ["egern/scripts/egern-profile-generator.js", "egern/scripts/substore-profile-generator.js"],
     ["anywhere/scripts/anywhere-node-generator.js", "anywhere/scripts/substore-node-generator.js"],
+    ["anywhere/scripts/anywhere-strategy-generator.js", "anywhere/scripts/substore-strategy-generator.js"],
   ]) {
     if (loaded.get(canonical) !== loaded.get(legacy)) {
       throw new Error(`Public compatibility alias drifted for ${canonical}`);

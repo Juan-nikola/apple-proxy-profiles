@@ -29,6 +29,15 @@ function options(overrides = {}) {
   });
 }
 
+function expectedTag(value) {
+  let hash = 0x811c9dc5;
+  for (const character of String(value)) {
+    hash ^= character.charCodeAt(0);
+    hash = Math.imul(hash, 0x01000193);
+  }
+  return `ap-fixed-${(hash >>> 0).toString(16).padStart(8, "0")}`;
+}
+
 test("resolves exact fixed business nodes and stable proxy tags", () => {
   const nodes = [entry("TEST_ONLY_Entry"), entry("TEST_ONLY_Tokyo")];
   const encoded = encodeBase64UrlUtf8(JSON.stringify({ "🤖 AI 专用": "NODE:TEST_ONLY_Tokyo", github: "DIRECT" }));
@@ -42,6 +51,22 @@ test("resolves exact fixed business nodes and stable proxy tags", () => {
   assert.match(result.targets.ai.resolvedTag, /^ap-fixed-[a-f0-9]{8}$/u);
   assert.equal(result.targets.github.resolvedTag, "direct");
   assert.equal(result.fixedNodes.length, 1);
+});
+
+test("unified fixed-node tags use a NUL separator between display name and node id", () => {
+  const node = entry("TEST_ONLY_Fixed");
+  const result = resolveOneXrayPolicy({
+    options: options(),
+    allNodes: [node],
+    eligibleNodes: [node],
+    policyResolution: {
+      fixedNodes: [{ node, nodeId: node._profile.id, name: node.name }],
+      targets: {
+        ai: { configured: "NODE:TEST_ONLY_Fixed", resolved: node.name, status: "fixed", nodeId: node._profile.id },
+      },
+    },
+  });
+  assert.equal(result.targets.ai.resolvedTag, expectedTag(`${node.name}\u0000${node._profile.id}`));
 });
 
 test("rejects missing, duplicate, and incompatible fixed nodes before emitting a profile", () => {

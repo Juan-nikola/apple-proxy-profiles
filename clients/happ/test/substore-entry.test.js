@@ -9,11 +9,12 @@ const nodes = [
   { name: "TEST_ONLY_Happ_2", type: "trojan", server: "example.test", port: 443, password: "TEST_ONLY_PASSWORD", tls: true, sni: "example.test" },
   { name: "TEST_ONLY_Snell", type: "snell", server: "example.test", port: 443, psk: "TEST_ONLY_PSK", version: 4 },
 ];
+const EMPTY_POLICY = { $content: JSON.stringify({ schemaVersion: 2, targets: {} }) };
 
 function context(argumentsValue, requestOptions) {
   return {
     arguments: argumentsValue,
-    produceArtifact: async () => nodes,
+    produceArtifact: async (request) => request.type === "file" ? EMPTY_POLICY : nodes,
     requestOptions,
   };
 }

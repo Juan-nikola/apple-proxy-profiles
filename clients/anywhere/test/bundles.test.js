@@ -9,6 +9,8 @@ import { operator as sourceOperator } from "../src/substore-nodes-entry.js";
 
 const BUNDLE = new URL("../dist/anywhere-node-generator.js", import.meta.url);
 const LEGACY_BUNDLE = new URL("../dist/substore-node-generator.js", import.meta.url);
+const STRATEGY_BUNDLE = new URL("../dist/anywhere-strategy-generator.js", import.meta.url);
+const LEGACY_STRATEGY_BUNDLE = new URL("../dist/substore-strategy-generator.js", import.meta.url);
 const BUILD = new URL("../scripts/build.mjs", import.meta.url);
 const ARGUMENTS = { output: "nodes", type: "collection", name: "apple-proxy-sources", clientChain: "off" };
 
@@ -26,6 +28,15 @@ function inventory() {
 
 test("Anywhere client-prefixed bundle matches the legacy compatibility alias", async () => {
   assert.equal(await readFile(BUNDLE, "utf8"), await readFile(LEGACY_BUNDLE, "utf8"));
+});
+
+test("Anywhere strategy bundle is self-contained and matches its legacy compatibility alias", async () => {
+  const source = await readFile(STRATEGY_BUNDLE, "utf8");
+  assert.equal(source, await readFile(LEGACY_STRATEGY_BUNDLE, "utf8"));
+  assert.match(source, /^var AnywhereStrategyBundle = \(\(\) => \{/u);
+  assert.doesNotMatch(source, /^\s*(?:import|export)\s/mu);
+  assert.doesNotMatch(source, /\bprocess\b|\bnode:|\brequire\s*\(/u);
+  assert.match(source, /async function operator\(input, targetPlatform\)/u);
 });
 
 function loadBundle(source, { restricted = false, produced = inventory(), onProduce } = {}) {

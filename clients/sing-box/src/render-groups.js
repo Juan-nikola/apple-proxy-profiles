@@ -100,10 +100,10 @@ function renderGroup(group, nodes, { compact = false, ios = false } = {}) {
   return selector;
 }
 
-export function renderSingBoxGroups(options, nodes) {
+export function renderSingBoxGroups(options, nodes, { policyResolution = null } = {}) {
   const inventory = Array.isArray(nodes) ? nodes : [];
   const compact = isMobileMemoryConstrained(options);
-  const shared = buildPolicyGroups(options, inventory);
+  const shared = buildPolicyGroups(options, inventory, policyResolution);
   const rendered = [];
 
   for (const group of shared) {

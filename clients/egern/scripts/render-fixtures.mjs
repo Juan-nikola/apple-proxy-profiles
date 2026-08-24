@@ -52,6 +52,9 @@ const rawNodes = Object.freeze([
     _subName: "[落地] Singapore",
   }),
 ]);
+const EMPTY_POLICY = Object.freeze({
+  $content: JSON.stringify({ schemaVersion: 2, targets: {} }),
+});
 
 function independentlyParse(profile) {
   const result = spawnSync(
@@ -74,7 +77,9 @@ for (const [platform, expectedIpv6] of platforms) {
       channel: "edge",
       adblockMode: "off",
     },
-    async produceArtifact() { return structuredClone(rawNodes); },
+    async produceArtifact(request) {
+      return request.type === "file" ? EMPTY_POLICY : structuredClone(rawNodes);
+    },
   });
   const profile = result.$content;
   const validation = validateEgernProfile(profile);

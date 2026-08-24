@@ -5,6 +5,7 @@ import test from "node:test";
 import {
   checkSubstoreTaskUrl,
   checkTaskOptions,
+  getSubstoreTaskSchema,
   parseTaskUrl,
 } from "../scripts/check-substore-task.mjs";
 
@@ -20,6 +21,40 @@ test("accepts a valid node task on edge channel", () => {
   const url = `${PUBLIC}/edge/egern/scripts/egern-node-generator.js#output=nodes&type=collection&name=apple-proxy-sources&clientChain=off`;
   const result = checkSubstoreTaskUrl(url);
   assert.equal(result.ok, true, result.errors.join(", "));
+});
+
+test("checker schema marks policy readers and excludes node subscriptions", () => {
+  for (const scriptPath of [
+    "egern/scripts/egern-profile-generator.js",
+    "shadowrocket/scripts/shadowrocket-profile-generator.js",
+    "surge/scripts/surge-profile-generator.js",
+    "sing-box/scripts/sing-box-config-generator.js",
+    "onexray/scripts/onexray-profile-generator.js",
+    "onexray/scripts/onexray-routing-audit.js",
+    "happ/scripts/happ-config-generator.js",
+    "happ/scripts/happ-routing-audit.js",
+    "v2rayn/scripts/substore-config-generator.js",
+    "v2box/scripts/substore-config-generator.js",
+  ]) {
+    assert.equal(getSubstoreTaskSchema(scriptPath).policyInput, "apple-proxy-policy", scriptPath);
+  }
+  assert.equal(getSubstoreTaskSchema("egern/scripts/egern-node-generator.js").policyInput, null);
+  assert.equal(getSubstoreTaskSchema("v2rayn/scripts/substore-node-generator.js").policyInput, null);
+  for (const scriptPath of [
+    "anywhere/scripts/anywhere-strategy-generator.js",
+    "anywhere/scripts/substore-strategy-generator.js",
+  ]) {
+    assert.equal(getSubstoreTaskSchema(scriptPath).policyInput, "apple-proxy-policy", scriptPath);
+  }
+});
+
+test("accepts the published Anywhere strategy task and rejects extra options", () => {
+  const url = `${PUBLIC}/current/anywhere/scripts/anywhere-strategy-generator.js#output=strategy&type=collection&name=apple-proxy-anywhere&channel=current`;
+  assert.equal(checkSubstoreTaskUrl(url).ok, true, checkSubstoreTaskUrl(url).errors.join(", "));
+  assert.equal(checkSubstoreTaskUrl(url.replace("anywhere-strategy-generator", "substore-strategy-generator")).ok, true);
+  assert.equal(checkSubstoreTaskUrl(`${url}&clientChain=off`).ok, false);
+  assert.equal(checkSubstoreTaskUrl(url.replace("channel=current", "channel=beta")).ok, false);
+  assert.equal(checkSubstoreTaskUrl(url.replace("name=apple-proxy-anywhere", "name=bad%2Fname")).ok, false);
 });
 
 test("accepts a valid previous-channel task and preserves its channel parameter", () => {

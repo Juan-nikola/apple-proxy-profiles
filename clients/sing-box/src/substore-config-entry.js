@@ -1,5 +1,8 @@
 import { normalizeNodes } from "../../../shared/nodes/normalize-nodes.js";
+import { CLIENT } from "../../../shared/contracts.js";
 import { assertRenderableNodes, partitionRenderableNodes } from "../../../shared/nodes/renderability.js";
+import { loadSubstorePolicyArtifact } from "../../../shared/substore/policy-artifact.js";
+import { resolveUnifiedPolicy } from "../../../shared/policies/resolve-unified.js";
 import { parseSingBoxOptions } from "./options.js";
 import { renderSingBoxConfig } from "./render-config.js";
 import { renderSingBoxNode } from "./render-node.js";
@@ -52,8 +55,16 @@ export async function operator(input, targetPlatform, context = {}) {
     renderable = normalized.nodes;
     renderFailures = {};
   }
+  const policy = await loadSubstorePolicyArtifact(context);
+  const policyResolution = resolveUnifiedPolicy({
+    policy,
+    channel: options.channel,
+    client: CLIENT.singbox,
+    allNodes: normalized.nodes,
+    eligibleNodes: renderable,
+  });
   logDiagnostics(context, options, renderable, renderFailures);
   const ruleBaseUrl = `${PUBLIC_RULE_ROOT}/${options.channel}/sing-box/rule-sets`;
-  const config = renderSingBoxConfig(options, renderable, { ruleBaseUrl });
+  const config = renderSingBoxConfig(options, renderable, { ruleBaseUrl, policyResolution });
   return { ...input, $content: `${JSON.stringify(config, null, 2)}\n` };
 }

@@ -11,6 +11,7 @@ const argumentsForProfile = Object.freeze({
   subscriptionName: "Shadowrocket-Nodes",
   platform: "macos",
 });
+const EMPTY_POLICY = { $content: JSON.stringify({ schemaVersion: 2, targets: {} }) };
 
 function anytlsNode() {
   return {
@@ -58,11 +59,14 @@ test("file operator produces a Profile artifact and preserves the input", async 
     arguments: argumentsForProfile,
     async produceArtifact(request) {
       calls.push(request);
-      return [...fakeNodes, anytlsNode()];
+      return request.type === "file" ? EMPTY_POLICY : [...fakeNodes, anytlsNode()];
     },
   });
 
-  assert.deepEqual(calls, [{ type: "collection", name: "apple-proxy-shadowrocket", platform: "JSON", produceType: "internal" }]);
+  assert.deepEqual(calls, [
+    { type: "collection", name: "apple-proxy-shadowrocket", platform: "JSON", produceType: "internal" },
+    { type: "file", name: "apple-proxy-policy", platform: "JSON", produceType: "internal" },
+  ]);
   assert.deepEqual({ url: result.url, unchanged: result.unchanged }, input);
   assert.equal(typeof result.$content, "string");
   assert.deepEqual(Object.keys(result).sort(), ["$content", "unchanged", "url"]);
@@ -89,7 +93,7 @@ test("file operator accepts the full documented option set", async () => {
       adblockMode: "full",
       _internal: "ignored",
     },
-    async produceArtifact() { return fakeNodes; },
+    async produceArtifact(request) { return request.type === "file" ? EMPTY_POLICY : fakeNodes; },
   });
 
   assert.equal(typeof result.$content, "string");
@@ -101,7 +105,7 @@ test("file operator accepts the full documented option set", async () => {
 test("Profile operator accepts the generated clientChain clone through the shared assertion", async () => {
   const result = await operator({}, "Shadowrocket", {
     arguments: { ...argumentsForProfile, clientChain: "on" },
-    async produceArtifact() { return clientChainInventory(); },
+    async produceArtifact(request) { return request.type === "file" ? EMPTY_POLICY : clientChainInventory(); },
   });
 
   assert.match(result.$content, /node-count=3/u);
@@ -152,7 +156,7 @@ test("file operator skips unknown mixed inventory while rendering the supported 
   };
   const result = await operator({}, "Shadowrocket", {
     arguments: argumentsForProfile,
-    async produceArtifact() { return [anytlsNode(), privateNode]; },
+    async produceArtifact(request) { return request.type === "file" ? EMPTY_POLICY : [anytlsNode(), privateNode]; },
   });
   assert.match(result.$content, /node-count=1/u);
   for (const secret of [privateNode.name, privateNode.server, privateNode.password]) {

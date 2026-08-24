@@ -4,6 +4,8 @@ import { operator as nodesOperator } from "../src/substore-node-entry.js";
 import { operator as configOperator } from "../src/substore-config-entry.js";
 import { renderV2BoxAssetManifest } from "../src/render-assets.js";
 
+const EMPTY_POLICY = { $content: JSON.stringify({ schemaVersion: 2, targets: {} }) };
+
 test("V2Box node operator uses internal JSON artifact contract", async () => {
   const result = await nodesOperator({}, "JSON", { arguments: { output: "nodes", type: "collection", name: "fixture", platform: "iphone" }, produceArtifact: async (request) => { assert.deepEqual(request, { type: "collection", name: "fixture", platform: "JSON", produceType: "internal" }); return [{ name: "fixture", type: "vless", server: "fixture.invalid", port: 443, uuid: "TEST_ONLY_UUID" }]; } });
   const subscription = JSON.parse(result.$content);
@@ -27,7 +29,9 @@ test("operators enforce mobile platform but accept JSON artifact targets", async
 test("config operator returns parseable fail-closed diagnostics for an incompatible inventory", async () => {
   const result = await configOperator({}, "JSON", {
     arguments: { output: "config", type: "collection", name: "fixture", platform: "ipad" },
-    produceArtifact: async () => [{ name: "bad", type: "future-proto", server: "fixture.invalid", port: 443 }],
+    produceArtifact: async (request) => request.type === "file"
+      ? EMPTY_POLICY
+      : [{ name: "bad", type: "future-proto", server: "fixture.invalid", port: 443 }],
   });
   const profile = JSON.parse(result.$content);
   assert.deepEqual(profile.outbounds.map(({ tag }) => tag), ["direct", "block"]);
@@ -38,7 +42,9 @@ test("config operator returns parseable fail-closed diagnostics for an incompati
 test("config operator accepts the platform omitted by Sub-Store File processing", async () => {
   const result = await configOperator({}, undefined, {
     arguments: { output: "config", type: "collection", name: "fixture", platform: "iphone" },
-    produceArtifact: async () => [{ name: "fixture", type: "vless", server: "fixture.invalid", port: 443, uuid: "TEST_ONLY_UUID" }],
+    produceArtifact: async (request) => request.type === "file"
+      ? EMPTY_POLICY
+      : [{ name: "fixture", type: "vless", server: "fixture.invalid", port: 443, uuid: "TEST_ONLY_UUID" }],
   });
   assert.equal(JSON.parse(result.$content).outbounds.length, 4);
 });
@@ -46,7 +52,9 @@ test("config operator accepts the platform omitted by Sub-Store File processing"
 test("config operator propagates malformed GeoData instead of hiding it", async () => {
   await assert.rejects(() => configOperator({}, "JSON", {
     arguments: { output: "config", type: "collection", name: "fixture", platform: "iphone" },
-    produceArtifact: async () => [{ name: "fixture", type: "vless", server: "fixture.invalid", port: 443, uuid: "TEST_ONLY_UUID" }],
+    produceArtifact: async (request) => request.type === "file"
+      ? EMPTY_POLICY
+      : [{ name: "fixture", type: "vless", server: "fixture.invalid", port: 443, uuid: "TEST_ONLY_UUID" }],
     assetManifest: { region: "cn", channel: "edge", names: {}, hashes: {}, geosite: {}, geoip: {} },
   }), /asset manifest/u);
 });
@@ -56,7 +64,9 @@ test("config operator forwards the validated asset manifest", async () => {
   const result = await configOperator({}, "JSON", {
     arguments: { output: "config", type: "collection", name: "fixture", platform: "iphone", region: "cn", channel: "edge" },
     assetManifest,
-    produceArtifact: async () => [{ name: "fixture", type: "vless", server: "fixture.invalid", port: 443, uuid: "TEST_ONLY_UUID" }],
+    produceArtifact: async (request) => request.type === "file"
+      ? EMPTY_POLICY
+      : [{ name: "fixture", type: "vless", server: "fixture.invalid", port: 443, uuid: "TEST_ONLY_UUID" }],
   });
   const profile = JSON.parse(result.$content);
   assert.equal(profile.assets.geosite.url, assetManifest.geosite.url);

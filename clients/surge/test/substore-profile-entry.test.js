@@ -21,6 +21,7 @@ const nodes = [{
     chained: false,
   },
 }];
+const EMPTY_POLICY = { $content: JSON.stringify({ schemaVersion: 2, targets: {} }) };
 
 test("Sub-Store Surge entry requests a private JSON collection and returns Profile content", async () => {
   const calls = [];
@@ -37,13 +38,18 @@ test("Sub-Store Surge entry requests a private JSON collection and returns Profi
       },
       async produceArtifact(request) {
         calls.push(request);
-        return nodes;
+        return request.type === "file" ? EMPTY_POLICY : nodes;
       },
     },
   );
   assert.deepEqual(calls, [{
     type: "collection",
     name: "surge-sources",
+    platform: "JSON",
+    produceType: "internal",
+  }, {
+    type: "file",
+    name: "apple-proxy-policy",
     platform: "JSON",
     produceType: "internal",
   }]);
@@ -67,8 +73,8 @@ test("Sub-Store Surge entry applies current channel and full adblock options to 
         channel: "current",
         adblockMode: "full",
       },
-      async produceArtifact() {
-        return nodes;
+      async produceArtifact(request) {
+        return request.type === "file" ? EMPTY_POLICY : nodes;
       },
     },
   );
@@ -91,8 +97,8 @@ test("Sub-Store Surge entry normalizes raw collection nodes before rendering", a
         subscriptionName: "Apple-Proxy-Nodes",
         platform: "macos",
       },
-      async produceArtifact() {
-        return rawNodes;
+      async produceArtifact(request) {
+        return request.type === "file" ? EMPTY_POLICY : rawNodes;
       },
     },
   );
@@ -113,8 +119,8 @@ test("Sub-Store Surge profile carries the private remote provider URL", async ()
         platform: "macos",
         proxyPolicyUrl: "https://substore.example.invalid/surge-nodes",
       },
-      async produceArtifact() {
-        return nodes;
+      async produceArtifact(request) {
+        return request.type === "file" ? EMPTY_POLICY : nodes;
       },
     },
   );
@@ -149,7 +155,7 @@ test("Sub-Store Surge profile skips an unrenderable selected protocol", async ()
       subscriptionName: "Surge-Nodes",
       platform: "macos",
     },
-    async produceArtifact() { return [nodes[0], privateAnyTls, privateVless]; },
+    async produceArtifact(request) { return request.type === "file" ? EMPTY_POLICY : [nodes[0], privateAnyTls, privateVless]; },
   });
   assert.match(result.$content, /PRIVATE_SURGE_ANYTLS/u);
   for (const secret of [privateVless.name, privateVless.server, privateVless.uuid]) {

@@ -1,6 +1,8 @@
 import { CLIENT } from "../../../shared/contracts.js";
 import { filterNodesForClient } from "../../../shared/nodes/capabilities.js";
 import { normalizeNodes } from "../../../shared/nodes/normalize-nodes.js";
+import { loadSubstorePolicyArtifact } from "../../../shared/substore/policy-artifact.js";
+import { resolveUnifiedPolicy } from "../../../shared/policies/resolve-unified.js";
 import { parseHappOptions } from "./options.js";
 import { renderHappSubscription } from "./render-subscription.js";
 import { renderHappRoutingDeepLink, renderHappRoutingProfile } from "./routing-profile-data.js";
@@ -74,11 +76,20 @@ export async function operator(input, targetPlatform, context = {}) {
   const normalized = normalizeNodes(raw, { clientChain: "off" });
   const filtered = filterNodesForClient(normalized.nodes, CLIENT.happ);
   if (filtered.nodes.length === 0) throw new Error("HAPP has no compatible nodes");
+  const policy = await loadSubstorePolicyArtifact(context);
+  const policyResolution = resolveUnifiedPolicy({
+    policy,
+    channel: HAPP_PUBLIC_CHANNEL,
+    client: CLIENT.happ,
+    allNodes: normalized.nodes,
+    eligibleNodes: filtered.nodes,
+  });
   logDiagnostics(context, options, normalized, filtered);
   const configs = renderHappSubscription({
     nodes: filtered.nodes,
     allNodes: normalized.nodes,
     options,
+    policyResolution,
   });
   attachRoutingProfile(input, context, options);
   return { ...input, $content: `${JSON.stringify(configs, null, 2)}\n` };

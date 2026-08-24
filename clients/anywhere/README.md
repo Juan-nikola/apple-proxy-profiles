@@ -7,6 +7,7 @@ Anywhere 不能用一个远程文件表达 Shadowrocket/Egern 的完整 Profile�
 | 层 | 本项目提供 | 必须留在本地 |
 |---|---|---|
 | 私密节点订阅 | `dist/anywhere-node-generator.js` 生成仅含 `proxies` 的 Clash YAML | 私密订阅 URL、节点凭据、当前节点 |
+| 策略校验/映射 | `dist/anywhere-strategy-generator.js` 生成脱敏目标状态和固定节点映射 | 私密 `apple-proxy-policy` 文件和节点选择 |
 | 公开规则 | 固定上游输入聚合成 14 个稳定 `.arrs` 业务包及 schema-v2 Manifest | 每个业务包最终绑定到 DIRECT、REJECT、节点或链 |
 | 设备设置 | 部署、灰度和回滚说明 | Rule/Global、DNS、链、IPv6、QUIC、Purify 等 |
 
@@ -17,6 +18,7 @@ Anywhere 不能用一个远程文件表达 Shadowrocket/Egern 的完整 Profile�
 ## 已生成产物
 
 - `dist/anywhere-node-generator.js`：自包含私密节点 File Operator。
+- `dist/anywhere-strategy-generator.js`：自包含私密策略校验/映射 File Operator，不生成完整 Anywhere Profile。
 - `examples/rules/manifest.json`：固定提交、输入哈希、计数、优先级归并和分片闭包。
 - `examples/rules/*.arrs`：每片最多 95,000 条，低于源码 100,000 条上限。
 - `examples/import.html`：默认轻量分片导入页，含 schema-v2 迁移提示。
@@ -33,6 +35,7 @@ Anywhere 不能用一个远程文件表达 Shadowrocket/Egern 的完整 Profile�
 | 外置 JS 文件名 | JavaScript URL |
 | --- | --- |
 | `anywhere-node-generator.js` | `https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/scripts/anywhere-node-generator.js` |
+| `anywhere-strategy-generator.js` | `https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/scripts/anywhere-strategy-generator.js` |
 
 新建 File `anywhere-nodes`，脚本来源选择“链接/远程脚本”，直接粘贴上面的 URL，然后在这个 File 的可视化参数编辑器中填写：
 
@@ -41,6 +44,22 @@ output=nodes&type=collection&name=apple-proxy-anywhere&clientChain=off
 ```
 
 旧版只有单行链接时使用 `JS_URL#output=nodes&type=collection&name=apple-proxy-anywhere&clientChain=off`，不能使用 `?` 连接脚本参数。保存后先预览，确认 `accepted` 至少为 1，再把这个 File 的私密输出 URL 加入 Anywhere；不要在 File 中粘贴 JavaScript 正文。以后脚本升级不改 JS URL、File 名称、参数或私密 URL。
+
+### 独立策略校验/映射 File
+
+如果要检查统一策略中的业务目标和固定节点是否能被 Anywhere 识别，另建 `anywhere-strategy` File，使用：
+
+```text
+https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/scripts/anywhere-strategy-generator.js
+```
+
+参数为：
+
+```text
+output=strategy&type=collection&name=apple-proxy-anywhere&channel=current
+```
+
+它读取私密 `apple-proxy-policy`，只返回脱敏的目标状态、固定节点映射和计数；不返回 `proxies`，也不替代 `anywhere-nodes`。节点 File 仍是 collection-only；策略文件缺失、节点名不精确或协议不兼容时必须失败关闭。
 
 ## 新手部署：从节点 File 到规则导入
 
