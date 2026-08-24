@@ -199,8 +199,13 @@ export async function buildEdgeChinaIpAudit({
       const existing = canonicalChinaIpAudit(existingBytes).report;
       const generatedAt = Date.parse(existing.generatedAt);
       const age = Number.isFinite(generatedAt) ? nowMillis - generatedAt : Infinity;
+      const calibrationEndsAt = Date.parse(existing.calibrationEndsAt);
+      const calibrationExpired = existing.reportOnly === true
+        && Number.isFinite(calibrationEndsAt)
+        && nowMillis >= calibrationEndsAt;
       if (existing.schemaVersion === 1
         && age >= 0 && age < REUSE_MAX_AGE_MS
+        && !calibrationExpired
         && existing.primary?.commit === primary.source.commit
         && existing.primary?.sha256 === primary.source.sha256
         && /^[0-9a-f]{40}$/u.test(existing.secondary?.commit ?? "")
@@ -457,6 +462,7 @@ export async function main(args = process.argv.slice(2), {
     operation: "build-edge",
     publicDirectory,
     includeStaticFiles: false,
+    loadExternalSnapshots: true,
   });
   const chinaIpAudit = await buildEdgeChinaIpAuditImpl({
     publicDirectory,

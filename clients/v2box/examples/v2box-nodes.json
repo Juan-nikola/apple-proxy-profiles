@@ -1,0 +1,1 @@
+{"outbounds":[{"protocol":"vless","tag":"Fixture iPhone","settings":{"vnext":[{"address":"192.0.2.10","port":443,"users":[{"id":"TEST_ONLY_UUID","encryption":"none"}]}]},"streamSettings":{"security":"tls","tlsSettings":{"serverName":"","allowInsecure":false}}}]}

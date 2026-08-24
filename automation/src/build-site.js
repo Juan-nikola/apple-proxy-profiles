@@ -77,7 +77,22 @@ async function readPublishedClientHash(directory, client) {
 export async function refreshPublishedAuditDashboard(channelDirectory) {
   const dashboardPath = join(channelDirectory, "audit/dashboard.json");
   if (!await exists(dashboardPath)) return false;
-  const dashboard = JSON.parse(await readFile(dashboardPath, "utf8"));
+  let dashboard = JSON.parse(await readFile(dashboardPath, "utf8"));
+  const edgeDashboardPath = join(dirname(channelDirectory), "edge/audit/dashboard.json");
+  if (await exists(edgeDashboardPath)) {
+    const edgeDashboard = JSON.parse(await readFile(edgeDashboardPath, "utf8"));
+    validatePublicAuditDashboard(edgeDashboard);
+    const clients = { ...dashboard.clients };
+    for (const [client, edgeState] of Object.entries(edgeDashboard.clients)) {
+      if (Object.hasOwn(clients, client)) continue;
+      clients[client] = {
+        ...edgeState,
+        current: { manifestHash: null, closure: true },
+        previous: { manifestHash: null, closure: true },
+      };
+    }
+    dashboard = { ...dashboard, clients };
+  }
   validatePublicAuditDashboard(dashboard);
   const publicRoot = dirname(channelDirectory);
   const clients = {};
@@ -137,7 +152,7 @@ function rewriteHappRoutingDeepLinks(text, from, to) {
   });
 }
 
-function rewritePublicationChannel(content, from, to) {
+function rewritePublicationChannel(content, from, to, { rewriteGeoDataNames = true } = {}) {
   if (!(content instanceof Uint8Array)) return content;
   let text;
   try {
@@ -145,7 +160,7 @@ function rewritePublicationChannel(content, from, to) {
   } catch {
     return Buffer.from(content);
   }
-  const rewritten = text.replace(
+  let rewritten = text.replace(
     /\b(channel\s*(?:=|:)\s*)(["'])(edge|current|previous)\2/gu,
     (match, prefix, quote, value) => value === from ? `${prefix}${quote}${to}${quote}` : match,
   )
@@ -155,7 +170,14 @@ function rewritePublicationChannel(content, from, to) {
     .replaceAll(`channel=${from}`, `channel=${to}`)
     .replaceAll(`channel%3D${from}`, `channel%3D${to}`)
     .replaceAll(`channel:${from}`, `channel:${to}`)
-    .replaceAll(`channel: ${from}`, `channel: ${to}`);
+    .replaceAll(`channel: ${from}`, `channel: ${to}`)
+    .replaceAll(`"channel":"${from}"`, `"channel":"${to}"`)
+    .replaceAll(`"channel": "${from}"`, `"channel": "${to}"`);
+  if (rewriteGeoDataNames) {
+    rewritten = rewritten
+      .replaceAll(oneXrayGeoNames(from).domain, oneXrayGeoNames(to).domain)
+      .replaceAll(oneXrayGeoNames(from).ip, oneXrayGeoNames(to).ip);
+  }
   return Buffer.from(rewriteHappRoutingDeepLinks(rewritten, from, to), "utf8");
 }
 
@@ -217,7 +239,24 @@ async function rewriteTreeChannel(directory, from, to) {
   for (const relative of relatives) {
     const path = join(directory, relative);
     const content = await readFile(path);
-    await writeFile(path, rewritePublicationChannel(content, from, to));
+    const oneXrayManifest = relative === "onexray/geodata/manifest.json"
+      || relative.endsWith("/onexray/geodata/manifest.json");
+    await writeFile(path, oneXrayManifest
+      ? content
+      : rewritePublicationChannel(content, from, to));
+  }
+  const fromGeoNames = oneXrayGeoNames(from);
+  const toGeoNames = oneXrayGeoNames(to);
+  for (const relative of relatives) {
+    const match = /^(?:(?:geodata)\/)?(?:cn|global|ru|ir)\/(AppleProxy(?:Site|IP))(?:Edge|Current|Previous)\.dat$/u.exec(relative);
+    if (!match || !relative.endsWith(`${fromGeoNames.domain}.dat`)
+      && !relative.endsWith(`${fromGeoNames.ip}.dat`)) continue;
+    const destination = relative.endsWith(`${fromGeoNames.domain}.dat`)
+      ? relative.slice(0, -`${fromGeoNames.domain}.dat`.length) + `${toGeoNames.domain}.dat`
+      : relative.slice(0, -`${fromGeoNames.ip}.dat`.length) + `${toGeoNames.ip}.dat`;
+    if (relative === destination) continue;
+    await rm(join(directory, destination), { force: true });
+    await rename(join(directory, relative), join(directory, destination));
   }
   const manifestSuffix = "onexray/geodata/manifest.json";
   for (const relativeManifest of relatives.filter((path) => path === manifestSuffix || path.endsWith(`/${manifestSuffix}`))) {
@@ -235,6 +274,61 @@ async function rewriteTreeChannel(directory, from, to) {
       await writeFile(join(directory, `${prefix}${relative}`), artifactBuffer(content));
     }
   }
+  if (relatives.includes("manifest.json")) await refreshRootManifestHash(join(directory, "manifest.json"));
+}
+
+async function refreshRootManifestHash(manifestPath) {
+  try {
+    const manifest = JSON.parse(await readFile(manifestPath, "utf8"));
+    if (!manifest || typeof manifest !== "object" || Array.isArray(manifest)
+      || !/^[0-9a-f]{64}$/u.test(manifest.manifestHash ?? "")) return;
+    const { manifestHash: ignored, ...base } = manifest;
+    const files = Array.isArray(base.files)
+      ? await Promise.all(base.files.map(async (record) => {
+        if (!record || typeof record.path !== "string" || record.path.startsWith("/")
+          || record.path.split("/").includes("..")) return record;
+        try {
+          const content = await readFile(join(dirname(manifestPath), record.path));
+          return { ...record, bytes: content.length, sha256: artifactSha256(content) };
+        } catch (error) {
+          if (error.code === "ENOENT") return record;
+          throw error;
+        }
+      }))
+      : base.files;
+    const reboundBase = { ...base, ...(files === undefined ? {} : { files }) };
+    await writeFile(manifestPath, canonicalJson({
+      ...reboundBase,
+      manifestHash: artifactSha256(canonicalJson(reboundBase)),
+    }), "utf8");
+  } catch (error) {
+    if (error.code !== "ENOENT") throw error;
+  }
+}
+
+export async function prepareCurrentRootFromEdge({ publicDirectory } = {}) {
+  const edgeDirectory = join(publicDirectory, "edge");
+  const currentDirectory = join(publicDirectory, "current");
+  const clientDirectories = new Set(Object.values(CLIENT_PUBLIC_PATHS));
+  for (const entry of await readdir(edgeDirectory, { withFileTypes: true })) {
+    if (clientDirectories.has(entry.name)
+      || entry.name === "clients"
+      || entry.name === "optional"
+      || entry.name === "optional-versions") continue;
+    const source = join(edgeDirectory, entry.name);
+    const destination = join(currentDirectory, entry.name);
+    await rm(destination, { recursive: true, force: true });
+    if (entry.isDirectory()) {
+      await cp(source, destination, { recursive: true });
+      await rewriteTreeChannel(destination, "edge", "current");
+    } else {
+      await mkdir(dirname(destination), { recursive: true });
+      await writeFile(destination, rewritePublicationChannel(await readFile(source), "edge", "current"));
+      if (entry.name === "manifest.json") await refreshRootManifestHash(destination);
+    }
+  }
+  await refreshRootManifestHash(join(currentDirectory, "manifest.json"));
+  return true;
 }
 
 async function refreshNestedClientManifest({ treeRoot, clientDirectory, manifestPath, recordPrefix }) {

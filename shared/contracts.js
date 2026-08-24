@@ -6,6 +6,8 @@ export const CLIENT = Object.freeze({
   singbox: "singbox",
   onexray: "onexray",
   happ: "happ",
+  v2rayn: "v2rayn",
+  v2box: "v2box",
 });
 
 export const PRIVATE_POLICY_CHANNELS = Object.freeze(["edge", "current", "previous"]);
@@ -28,7 +30,8 @@ export const PRIVATE_POLICY_TARGET_IDS = Object.freeze([
 export const OPTION_VALUES = Object.freeze({
   output: Object.freeze(["nodes", "config"]),
   type: Object.freeze(["collection"]),
-  platform: Object.freeze(["iphone", "ipad", "macos", "appletv"]),
+  platform: Object.freeze(["iphone", "ipad", "macos", "appletv", "windows", "linux"]),
+  region: Object.freeze(["cn", "global", "ru", "ir"]),
   dnsMode: Object.freeze(["stable", "privacy", "speed"]),
   chinaDns: Object.freeze(["alidns", "dnspod", "system"]),
   globalDns: Object.freeze(["cloudflare", "google", "quad9"]),

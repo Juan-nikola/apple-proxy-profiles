@@ -53,7 +53,9 @@ var ShadowrocketProfileBundle = (() => {
     surge: "surge",
     singbox: "singbox",
     onexray: "onexray",
-    happ: "happ"
+    happ: "happ",
+    v2rayn: "v2rayn",
+    v2box: "v2box"
   });
   var PRIVATE_POLICY_CHANNELS = Object.freeze(["edge", "current", "previous"]);
   var PRIVATE_POLICY_CLIENTS = Object.freeze([CLIENT.happ, CLIENT.onexray]);
@@ -74,7 +76,8 @@ var ShadowrocketProfileBundle = (() => {
   var OPTION_VALUES = Object.freeze({
     output: Object.freeze(["nodes", "config"]),
     type: Object.freeze(["collection"]),
-    platform: Object.freeze(["iphone", "ipad", "macos", "appletv"]),
+    platform: Object.freeze(["iphone", "ipad", "macos", "appletv", "windows", "linux"]),
+    region: Object.freeze(["cn", "global", "ru", "ir"]),
     dnsMode: Object.freeze(["stable", "privacy", "speed"]),
     chinaDns: Object.freeze(["alidns", "dnspod", "system"]),
     globalDns: Object.freeze(["cloudflare", "google", "quad9"]),
@@ -219,7 +222,7 @@ var ShadowrocketProfileBundle = (() => {
     });
   }
   var definitions = Object.freeze([
-    protocol(["ss", "shadowsocks"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.onexray, CLIENT.happ], {
+    protocol(["ss", "shadowsocks"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.onexray, CLIENT.happ, CLIENT.v2rayn, CLIENT.v2box], {
       requiredFields: ["cipher", "password"]
     }),
     protocol(["ssr"], [CLIENT.shadowrocket, CLIENT.surge], {
@@ -228,13 +231,13 @@ var ShadowrocketProfileBundle = (() => {
     protocol(["snell"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox], {
       requiredFields: ["psk", "version"]
     }),
-    protocol(["vmess"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox, CLIENT.onexray, CLIENT.happ], {
+    protocol(["vmess"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox, CLIENT.onexray, CLIENT.happ, CLIENT.v2rayn, CLIENT.v2box], {
       requiredFields: ["uuid"]
     }),
-    protocol(["vless"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.singbox, CLIENT.onexray, CLIENT.happ], {
+    protocol(["vless"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.singbox, CLIENT.onexray, CLIENT.happ, CLIENT.v2rayn, CLIENT.v2box], {
       requiredFields: ["uuid"]
     }),
-    protocol(["trojan"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.onexray, CLIENT.happ], {
+    protocol(["trojan"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.onexray, CLIENT.happ, CLIENT.v2rayn, CLIENT.v2box], {
       requiredFields: ["password"],
       tls: true
     }),
@@ -242,7 +245,7 @@ var ShadowrocketProfileBundle = (() => {
       requiredFields: ["password"],
       tls: true
     }),
-    protocol(["hysteria2", "hy2"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.onexray, CLIENT.happ], {
+    protocol(["hysteria2", "hy2"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.onexray, CLIENT.happ, CLIENT.v2rayn, CLIENT.v2box], {
       requiredFields: ["password"],
       tls: true
     }),
@@ -250,8 +253,8 @@ var ShadowrocketProfileBundle = (() => {
       requiredFields: ["uuid", "password"],
       tls: true
     }),
-    protocol(["socks5"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.onexray, CLIENT.happ]),
-    protocol(["http"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox, CLIENT.onexray]),
+    protocol(["socks5"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.onexray, CLIENT.happ, CLIENT.v2rayn, CLIENT.v2box]),
+    protocol(["http"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox, CLIENT.onexray, CLIENT.v2rayn, CLIENT.v2box]),
     protocol(["ssh"], [CLIENT.egern, CLIENT.singbox], {
       requiredFields: ["username"]
     }),
@@ -864,6 +867,32 @@ var ShadowrocketProfileBundle = (() => {
       supportsPolicyOverrides: false,
       adapterSchema: "happ-v4",
       publicDirectory: "happ"
+    },
+    {
+      id: CLIENT.v2rayn,
+      displayName: "v2rayN",
+      state: "active",
+      platforms: ["windows", "macos"],
+      configFormat: "xray-profile-json",
+      ruleFormat: "xray-geodata",
+      nodeValidator: "v2rayn",
+      separatesProfile: false,
+      supportsPolicyOverrides: false,
+      adapterSchema: "v2rayn-v1",
+      publicDirectory: "v2rayn"
+    },
+    {
+      id: CLIENT.v2box,
+      displayName: "V2Box",
+      state: "active",
+      platforms: ["iphone", "ipad"],
+      configFormat: "xray-profile-json",
+      ruleFormat: "xray-geodata",
+      nodeValidator: "v2box",
+      separatesProfile: false,
+      supportsPolicyOverrides: false,
+      adapterSchema: "v2box-v1",
+      publicDirectory: "v2box"
     }
   ].map((record) => freeze(record));
   var byId = new Map(records.map((record) => [record.id, record]));

@@ -17,14 +17,16 @@ const REQUIRED_FIELDS = [
   "publicDirectory",
 ];
 
-test("registers the seven clients in stable publication order", () => {
+test("registers clients in stable publication order", () => {
   assert.deepEqual(allClientIds(), [
-    "anywhere", "egern", "shadowrocket", "surge", "singbox", "onexray", "happ",
+    "anywhere", "egern", "shadowrocket", "surge", "singbox", "onexray", "happ", "v2rayn", "v2box",
   ]);
-  assert.deepEqual(activeClientIds(), ["anywhere", "egern", "shadowrocket", "surge", "singbox", "onexray", "happ"]);
+  assert.deepEqual(activeClientIds(), ["anywhere", "egern", "shadowrocket", "surge", "singbox", "onexray", "happ", "v2rayn", "v2box"]);
   assert.deepEqual(plannedClientIds(), []);
   assert.equal(clientAdapter("happ").state, "active");
   assert.equal(publicDirectoryForClient("singbox"), "sing-box");
+  assert.deepEqual(clientAdapter("v2rayn").platforms, ["windows", "macos"]);
+  assert.deepEqual(clientAdapter("v2box").platforms, ["iphone", "ipad"]);
   assert.deepEqual(lightweightRuleClientIds(), [
     "anywhere", "egern", "shadowrocket", "surge", "singbox",
   ]);
@@ -79,6 +81,17 @@ test("HAPP and OneXray expose only the audited Xray protocol boundary", () => {
       ? ["snell", "anytls", "tuic", "ssh", "wireguard", "ssr"]
       : ["snell", "anytls", "tuic", "ssh", "wireguard", "ssr", "http"];
     for (const protocol of unsupported) {
+      assert.equal(protocolSupportsClient(protocol, client), false, `${client} must reject ${protocol}`);
+    }
+  }
+});
+
+test("V2RayN and V2Box expose only the common Xray protocol boundary", () => {
+  for (const client of ["v2rayn", "v2box"]) {
+    for (const protocol of ["vless", "vmess", "ss", "shadowsocks", "trojan", "socks5", "http", "hysteria2", "hy2"]) {
+      assert.equal(protocolSupportsClient(protocol, client), true, `${client} should support ${protocol}`);
+    }
+    for (const protocol of ["ssr", "snell", "anytls", "tuic", "ssh", "wireguard", "sudoku"]) {
       assert.equal(protocolSupportsClient(protocol, client), false, `${client} must reject ${protocol}`);
     }
   }

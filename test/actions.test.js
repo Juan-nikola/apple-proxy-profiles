@@ -246,7 +246,7 @@ test("update workflow is source-push/daily/manual, verifies output, and commits 
   assert.match(text, /cancel-in-progress:\s*false/u);
 });
 
-test("update workflow verifies official binary rules before building edge and gates byte-exact promotion", async () => {
+test("update workflow verifies official binary rules before building and promoting the release", async () => {
   const text = await workflowText(updateWorkflow);
   const installAt = text.indexOf("node scripts/install-sing-box-core.mjs");
   const stageAt = text.indexOf("node scripts/stage-rule-artifacts.mjs --channel edge");
@@ -257,6 +257,7 @@ test("update workflow verifies official binary rules before building edge and ga
   const currentStageAt = text.indexOf("node scripts/stage-rule-artifacts.mjs --channel current");
   const currentCompileAt = text.lastIndexOf("npm --workspace @apple-proxy-profiles/sing-box run compile:rules");
   const currentCheckAt = text.indexOf("npm run check:rules");
+  const promoteAllAt = text.indexOf("node scripts/update-rules.mjs --promote-all");
   assert.ok(installAt > text.indexOf("npm ci"), "official core installs after dependencies");
   assert.ok(stageAt > installAt, "the stage command resolves all immutable network inputs");
   assert.ok(compileAt > stageAt, "binary rule compilation consumes the closed stage");
@@ -265,7 +266,8 @@ test("update workflow verifies official binary rules before building edge and ga
   assert.ok(edgeAt > verifyAt, "edge candidates are generated only after verification");
   assert.ok(currentStageAt > edgeAt, "current is restaged only after the tested edge bytes are emitted");
   assert.ok(currentCompileAt > currentStageAt, "current uses binaries compiled from its own immutable stage");
-  assert.ok(currentCheckAt > currentCompileAt, "current verification consumes its own compiled binaries");
+  assert.ok(promoteAllAt > currentCompileAt, "current promotion consumes the tested edge bytes");
+  assert.ok(currentCheckAt > promoteAllAt, "current verification consumes the promoted bytes");
   assert.match(text, /^\s*client:\s*$/mu);
   assert.match(text, /^\s*manifest_hash:\s*$/mu);
   assert.doesNotMatch(text, /^\s*environment:\s*canary-approval\s*$/mu);
@@ -275,8 +277,8 @@ test("update workflow verifies official binary rules before building edge and ga
   assert.match(text, /github\.event_name == 'workflow_dispatch'.*inputs\.client.*inputs\.manifest_hash/su);
   const scheduleBlock = text.slice(text.indexOf("build-edge:"), text.indexOf("promote-current:"));
   assert.match(scheduleBlock, /--channel edge/u);
-  assert.doesNotMatch(scheduleBlock, /--promote|canary-approval/u);
-  assert.doesNotMatch(scheduleBlock, /onexray.*current|promote.*onexray/iu);
+  assert.match(scheduleBlock, /--promote-all/u);
+  assert.doesNotMatch(scheduleBlock, /canary-approval/u);
   assert.match(text, /name: Fetch immutable ChinaIP audit and stage lightweight rules/u);
   assert.equal(
     text.match(/node scripts\/stage-rule-artifacts\.mjs --channel edge/gu)?.length,

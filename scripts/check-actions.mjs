@@ -149,6 +149,7 @@ export function validateWorkflowText(file, text) {
       "npm run verify",
       "git diff --exit-code -- . \":(exclude)public/**\"",
       edgeCommand,
+      "node scripts/update-rules.mjs --promote-all",
       "npm run check:rules",
       "npm run check:secrets",
     ];
@@ -167,15 +168,15 @@ export function validateWorkflowText(file, text) {
     const nextJobStart = text.indexOf("\n  promote-current:", edgeJobStart);
     const edgeJob = edgeJobStart === -1 ? "" : text.slice(edgeJobStart, nextJobStart === -1 ? undefined : nextJobStart);
     const promoteJob = nextJobStart === -1 ? "" : text.slice(nextJobStart);
-    if (!edgeJob.includes("--channel edge") || edgeJob.includes("--promote")) {
-      errors.push(`${file}: scheduled job must update edge only and never promote current`);
+    if (!edgeJob.includes("--channel edge") || !edgeJob.includes("--promote-all")) {
+      errors.push(`${file}: scheduled job must verify edge and promote all active clients to current`);
     }
     if (!/^\s*issues:\s*write\s*$/mu.test(edgeJob) || /^\s*issues:\s*write\s*$/mu.test(promoteJob)) {
       errors.push(`${file}: only build-edge may request issues: write`);
     }
     const syncAt = commandPosition(text, "node scripts/sync-audit-blocker-issues.mjs");
     const secretsAt = commandPosition(text, "npm run check:secrets");
-    const commitAt = text.indexOf("git commit -m \"chore: update edge rule candidates\"");
+    const commitAt = text.indexOf("git commit -m \"chore: update current and edge rule releases\"");
     if (syncAt === -1 || secretsAt === -1 || syncAt <= secretsAt || (commitAt !== -1 && syncAt >= commitAt)) {
       errors.push(`${file}: audit blocker sync must run after secret scan and before edge commit`);
     }

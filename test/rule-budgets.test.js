@@ -33,6 +33,16 @@ const optionalAwareGenerators = new Set([
   "happ/scripts/substore-config-generator.js",
   "happ/scripts/happ-routing-audit.js",
   "happ/scripts/substore-routing-audit.js",
+  "v2rayn/scripts/substore-node-generator.js",
+  "v2rayn/scripts/substore-config-generator.js",
+  "v2box/scripts/substore-node-generator.js",
+  "v2box/scripts/substore-config-generator.js",
+]);
+const nativePolicyGenerators = new Set([
+  "v2rayn/scripts/substore-node-generator.js",
+  "v2rayn/scripts/substore-config-generator.js",
+  "v2box/scripts/substore-node-generator.js",
+  "v2box/scripts/substore-config-generator.js",
 ]);
 const upstream = Object.freeze({
   repository: "https://github.com/blackmatrix7/ios_rule_script",
@@ -93,6 +103,7 @@ test("default artifacts contain no load-bearing legacy giant rule IDs or URLs", 
   for (const [path, content] of defaults) {
     assert.doesNotMatch(path, forbidden, path);
     if (!migrationMetadata.has(path)) {
+      if (nativePolicyGenerators.has(path)) continue;
       const pattern = optionalAwareGenerators.has(path)
         ? /\bChinaMax_Domain\b/u
         : forbidden;

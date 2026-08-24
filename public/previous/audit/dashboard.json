@@ -26,15 +26,15 @@
   "channels": {
     "current": {
       "closure": true,
-      "manifestCount": 7
+      "manifestCount": 9
     },
     "edge": {
       "closure": true,
-      "manifestCount": 7
+      "manifestCount": 9
     },
     "previous": {
       "closure": true,
-      "manifestCount": 7
+      "manifestCount": 9
     }
   },
   "clients": {
@@ -43,15 +43,15 @@
       "canary": null,
       "current": {
         "closure": true,
-        "manifestHash": "e321bc8a448a9eb32654347f5da43e3c0c0cff24753ca842e2b5446b0303db45"
+        "manifestHash": "0ee1e2b198a90a74e91dee0e37cee90c9a7f1d170c9844bc1329efb23f6ec45f"
       },
       "edge": {
         "closure": true,
-        "manifestHash": "40bed6458d3cb2ec34f6c8118486bfff148552412149cf62e86e5fc3fd605bf9"
+        "manifestHash": "80637516d33a3a2e68122a94811ef58ca49f23e0d89d5c995d5a85d6da97a8d4"
       },
       "previous": {
         "closure": true,
-        "manifestHash": "5de134e2c6107bbd13155b2bd57268b702bde2ba23b93f97db4271542e81cd7d"
+        "manifestHash": "c9c625536fbf014e47c2c8ff509161eaf97f7adb1e55d193a2caa414ba93e4bb"
       },
       "state": "active"
     },
@@ -60,15 +60,15 @@
       "canary": null,
       "current": {
         "closure": true,
-        "manifestHash": "f21cfd5a025ba0dbd6eb1ef2f74f28d50a283eb06d1b36574ea31dda96957585"
+        "manifestHash": "a056098b9907eeac746e4314bc34c22335aa7653e52e7b1797db48bef0710bb2"
       },
       "edge": {
         "closure": true,
-        "manifestHash": "e71ec3b6ffbb522d7346cea806cc5103dcd481eb1bef9dfba14df53ed9337211"
+        "manifestHash": "ec078f0e44e555a23204d05a56cebdfbc6ac884e511d9a5603a48ea62564af7f"
       },
       "previous": {
         "closure": true,
-        "manifestHash": "1fb092ee16e3a168f0e42a05702d507e514c9b48b2c34d238216ff3245cf2dee"
+        "manifestHash": "912ceecb5a6db4008bf4d01827782b5507aa9dfefec186ed88eea3fe9ed5e847"
       },
       "state": "active"
     },
@@ -77,15 +77,15 @@
       "canary": null,
       "current": {
         "closure": true,
-        "manifestHash": "c9c8af249deae2729a5e7b7bc97aa360c219921e291a5361c9587d70f29782f1"
+        "manifestHash": "9ab15e9946c732257429721cb4add6daa4347fa322846594a478a7845c828e09"
       },
       "edge": {
         "closure": true,
-        "manifestHash": "0f06e7fb9a3645396a8ec138c4f6f05cb184725be0cf63974f13e63124322c01"
+        "manifestHash": "2ea5abcfbbbd2be5584be419fd6dbf405a79044e7d96fbe866b4effddffe50a1"
       },
       "previous": {
         "closure": true,
-        "manifestHash": "3ffb62eeedac5969a11d43af22d805ad9458d3806f0120f5f7559c8bf06cbcee"
+        "manifestHash": "65292fd0ede674e26297c904772be53534ecf39983cf88fffe6adadf2f97e85b"
       },
       "state": "active"
     },
@@ -94,15 +94,15 @@
       "canary": null,
       "current": {
         "closure": true,
-        "manifestHash": "a3e7f7d41d08439982010b514c6f344f7d79e7f583f3111f5398096ee095c4d1"
+        "manifestHash": "b058fee4e6c32a6377f1e938ba7e35d566e4e28f80b2ef59d005a1311b400671"
       },
       "edge": {
         "closure": true,
-        "manifestHash": "950f8123742778a67a9e2a7d81933c3f8971f24ba45f60841e6b0b91f37fcbd1"
+        "manifestHash": "b6bea5e3e0eea3e59dce42abc01c4f8c7f37fe7e392eada1b94a2afc9759289b"
       },
       "previous": {
         "closure": true,
-        "manifestHash": "5fcd04524f7537aed08b90602573484184b09aeb0d7beaa7bc2f130502edd7db"
+        "manifestHash": "c0d4935b237046821f5a27ab09f7113a88aa2082a756924324f8310babe7409c"
       },
       "state": "active"
     },
@@ -111,15 +111,15 @@
       "canary": null,
       "current": {
         "closure": true,
-        "manifestHash": "8bb9635dabc451dd37cf38f5742ff1fe8687c0070895e4fe4c4f14436be4b5b4"
+        "manifestHash": "ed47d3a911c37d8a3377783bdc79079446716ea59bb36ba0970ce38767f50152"
       },
       "edge": {
         "closure": true,
-        "manifestHash": "89482de674b48ba89d5c052169881c512f5d7fcff930294c17f0fadf779181b5"
+        "manifestHash": "d112cd9da19529af85d554541d2fdec395fd3d8579a303bb25ba5b81560aa61e"
       },
       "previous": {
         "closure": true,
-        "manifestHash": "f86c59e7dc5a4f9f539e8d534bd8166a92df7781803b3283723745e0fcf791b7"
+        "manifestHash": "72068c24afab51034790d21aef10c17a61656f237eb5ffabcfd2599570548bee"
       },
       "state": "active"
     },
@@ -128,15 +128,15 @@
       "canary": null,
       "current": {
         "closure": true,
-        "manifestHash": "9ca50e3adc4ec01b61134d2e79526e1083ee401a1b068f0472bae62c899dc700"
+        "manifestHash": "5e83137d2cf53d50bd8755346dba02e0b2505a5b0d1b9506a7ddf3cf010640c1"
       },
       "edge": {
         "closure": true,
-        "manifestHash": "0b5fc8d1221fa2440beb654f1532cd80f3fff62a089ee94d523d23389a37b8ef"
+        "manifestHash": "17a01ef87f50363426162fa0a65e7745929d0dddc1c18b80234c085ad46b1c0e"
       },
       "previous": {
         "closure": true,
-        "manifestHash": "67c3ce79a8db5781aacd6569e7bb1c5cb93b6b192bb53067a69979168b33f56f"
+        "manifestHash": "826d1c1276182807ac828131487450c9d40b980775bcf35410852195d066732f"
       },
       "state": "active"
     },
@@ -145,15 +145,49 @@
       "canary": null,
       "current": {
         "closure": true,
-        "manifestHash": "5d5fa4f7fe59435f572bb3cb1675f3cf7d27be55455012ce12f1e01390591d6e"
+        "manifestHash": "900578138b8eae0e4cea7ec8be7e810a1d360aff9d34d6f513106029145a26c4"
       },
       "edge": {
         "closure": true,
-        "manifestHash": "83bec4720d6ff02d12815f5c59731b79143d79ab0d3d029cd8a8fa16ae951d0d"
+        "manifestHash": "690211c97dbd91de0c27355f7244b075145220aa6223d523a6ac518e585438b7"
       },
       "previous": {
         "closure": true,
-        "manifestHash": "1ab28b90ec8b23bf9d157d49d54da00b05701c374c0dd0f07a1f56d714fc9258"
+        "manifestHash": "11433ad96ddc2f1be92aa9a4343491682de2aa94989ec8cf33b31e56ee911eef"
+      },
+      "state": "active"
+    },
+    "v2box": {
+      "adapterSchema": "v2box-v1",
+      "canary": null,
+      "current": {
+        "closure": true,
+        "manifestHash": "c54a371a6c34616bc06a3d5c2528a176dbd0a77fe26e39c8100bc6f25ced7df0"
+      },
+      "edge": {
+        "closure": true,
+        "manifestHash": "6139b204ed564bd3343d2f1532f9fb7ea4d7840f403e0d2c8ff2aa53e717a32d"
+      },
+      "previous": {
+        "closure": true,
+        "manifestHash": "5e1d424ea020ebf00833d77ef5c0b40846ca391c7846c3ef6a24cdfdd8715ce3"
+      },
+      "state": "active"
+    },
+    "v2rayn": {
+      "adapterSchema": "v2rayn-v1",
+      "canary": null,
+      "current": {
+        "closure": true,
+        "manifestHash": "9c07de281781a5618dff5d10a0a9a759c9bf0bf7f2517aad4a4155055dea2d0d"
+      },
+      "edge": {
+        "closure": true,
+        "manifestHash": "76eac20d89f46f5dacd57c57e02c915213f9f50b98e188e7467aa2ccac25b1d0"
+      },
+      "previous": {
+        "closure": true,
+        "manifestHash": "d96595f2030acc847bfc09dee4c6d1c3539d2a0caec1ed95ff3fd0d3832338f2"
       },
       "state": "active"
     }

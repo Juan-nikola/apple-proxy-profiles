@@ -1,0 +1,82 @@
+{
+  "chinaIpAuditSha256": "fc27eb15d6a20c833cf7984a0516521d6befba6f262b691b04c01676490adf82",
+  "client": "v2rayn",
+  "files": [
+    {
+      "bytes": 145289,
+      "path": "v2rayn/scripts/substore-config-generator.js",
+      "sha256": "a926b90ae2ab666d762c5348ba9afda81cab2621ddb3654d28d920a8093c9dfa"
+    },
+    {
+      "bytes": 123332,
+      "path": "v2rayn/scripts/substore-node-generator.js",
+      "sha256": "fdfa7d5b1c09984f05665321d94b6e7341a463f10c4737bea2649b24191dd15b"
+    }
+  ],
+  "generatedAt": "2026-08-23T18:28:35Z",
+  "manifestHash": "76eac20d89f46f5dacd57c57e02c915213f9f50b98e188e7467aa2ccac25b1d0",
+  "optionalPacks": {},
+  "schemaVersion": 1,
+  "sharedAssets": [
+    {
+      "bytes": 181511,
+      "path": "geodata/cn/AppleProxyIPEdge.dat",
+      "sha256": "e85eeae3c6ff4c646f61aab25edc7e62e391d31d71ed5442f7d0f4d75c796edf"
+    },
+    {
+      "bytes": 8346922,
+      "path": "geodata/cn/AppleProxySiteEdge.dat",
+      "sha256": "a58f131ae298815f340794171ea5a370068d05a91b7c9670acc273983e78ee69"
+    },
+    {
+      "bytes": 23880,
+      "path": "geodata/cn/manifest.json",
+      "sha256": "aee5cf0dbacbb487875e3eac9cf52aafa7bd3686a536d11233aff39b9d58f651"
+    },
+    {
+      "bytes": 23323,
+      "path": "geodata/global/AppleProxyIPEdge.dat",
+      "sha256": "ec27eb4161ddaadf174bbd0f095ceaf115875a56b517abe9ea0cebd42c39246a"
+    },
+    {
+      "bytes": 8344540,
+      "path": "geodata/global/AppleProxySiteEdge.dat",
+      "sha256": "35c7be80d4a5a787169d6b6226555b8fb45886268c7072ae26233a2af1ba6850"
+    },
+    {
+      "bytes": 20686,
+      "path": "geodata/global/manifest.json",
+      "sha256": "d583c48de0dbd687aca7ef56a35e404be256bee839d077c11510eaab655d934b"
+    },
+    {
+      "bytes": 23347,
+      "path": "geodata/ir/AppleProxyIPEdge.dat",
+      "sha256": "fe8433957a8e9b9d4e617ebfbdd4b5a78deb211e706b697e6daba319f7141cc2"
+    },
+    {
+      "bytes": 13672066,
+      "path": "geodata/ir/AppleProxySiteEdge.dat",
+      "sha256": "0f53809589a1f7826d06a44da3fab4441d0c737df6713a0c2b71d5855eb1ad2f"
+    },
+    {
+      "bytes": 21683,
+      "path": "geodata/ir/manifest.json",
+      "sha256": "d44d97d7f6a3a702822a196b352df4595b3851f38c7a327149c3630260522818"
+    },
+    {
+      "bytes": 23349,
+      "path": "geodata/ru/AppleProxyIPEdge.dat",
+      "sha256": "8943816d512d85465c1b3c11911556138090a3e20e95cea3e0a75f8a4ec8ff50"
+    },
+    {
+      "bytes": 45284216,
+      "path": "geodata/ru/AppleProxySiteEdge.dat",
+      "sha256": "0624b8ec8ad504fa4aaa7db802784e2c7d01dfaae91e08f886638efab2ee9018"
+    },
+    {
+      "bytes": 21713,
+      "path": "geodata/ru/manifest.json",
+      "sha256": "61f09487d7da4f10a191b4214a4e11cb83feb8faa02d3ffc092c712b99a8d17e"
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "chinaIpAuditSha256": "d66303986c1be68330de89209f6600bfd0e559433ca2cecede861ba5c530c183",
+  "client": "v2rayn",
+  "files": [
+    {
+      "bytes": 145263,
+      "path": "v2rayn/scripts/substore-config-generator.js",
+      "sha256": "f68c3e14bf3db07e888c5e73cd1f18f414cec05aefb8ffb6c5cbc60b4b58b5d1"
+    },
+    {
+      "bytes": 123335,
+      "path": "v2rayn/scripts/substore-node-generator.js",
+      "sha256": "b4502ecdccf09d30d169344df0f146f81162c2c1313ba4b9dd10da4bf2b1a611"
+    }
+  ],
+  "generatedAt": "2026-08-21T18:35:15Z",
+  "manifestHash": "a595356ce8f2563f036ba6aba40663d634e15a2195458c4e50b609de2a8f7b47",
+  "optionalPacks": {},
+  "schemaVersion": 1
+}

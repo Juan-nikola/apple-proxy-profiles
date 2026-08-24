@@ -1,0 +1,148 @@
+{
+  "name": "v2box-fixture",
+  "dns": {
+    "servers": [
+      {
+        "tag": "china-dns",
+        "address": "223.5.5.5",
+        "domains": [
+          "geosite:cn",
+          "geosite:private"
+        ],
+        "queryStrategy": "UseIP"
+      },
+      {
+        "tag": "global-dns",
+        "address": "1.1.1.1",
+        "domains": [
+          "geosite:apple-proxy-overseas"
+        ],
+        "queryStrategy": "UseIP"
+      }
+    ],
+    "queryStrategy": "UseIP",
+    "tag": "dnsQuery",
+    "mode": "stable"
+  },
+  "inbounds": [
+    {
+      "tag": "tun",
+      "protocol": "tun",
+      "settings": {
+        "mtu": 1500
+      },
+      "sniffing": {
+        "enabled": true,
+        "routeOnly": true
+      }
+    }
+  ],
+  "outbounds": [
+    {
+      "protocol": "freedom",
+      "tag": "direct"
+    },
+    {
+      "protocol": "blackhole",
+      "tag": "block"
+    },
+    {
+      "protocol": "vless",
+      "tag": "ap-node-0",
+      "settings": {
+        "vnext": [
+          {
+            "address": "192.0.2.10",
+            "port": 443,
+            "users": [
+              {
+                "id": "TEST_ONLY_UUID",
+                "encryption": "none"
+              }
+            ]
+          }
+        ]
+      },
+      "streamSettings": {
+        "security": "tls",
+        "tlsSettings": {
+          "serverName": "",
+          "allowInsecure": false
+        }
+      }
+    },
+    {
+      "protocol": "selector",
+      "tag": "proxy",
+      "settings": {
+        "selectors": [
+          "ap-node-0"
+        ]
+      }
+    }
+  ],
+  "routing": {
+    "domainStrategy": "IPIfNonMatch",
+    "rules": [
+      {
+        "domain": [
+          "geosite:private"
+        ],
+        "outboundTag": "direct",
+        "ruleTag": "private-direct"
+      },
+      {
+        "domain": [
+          "geosite:apple-proxy-security"
+        ],
+        "outboundTag": "block",
+        "ruleTag": "inline-security"
+      },
+      {
+        "domain": [
+          "geosite:apple-proxy-privacy"
+        ],
+        "outboundTag": "direct",
+        "ruleTag": "inline-privacy"
+      },
+      {
+        "domain": [
+          "geosite:cn"
+        ],
+        "outboundTag": "direct",
+        "ruleTag": "inline-domestic"
+      },
+      {
+        "domain": [
+          "geosite:apple-proxy-overseas"
+        ],
+        "outboundTag": "proxy",
+        "ruleTag": "inline-overseas"
+      },
+      {
+        "network": "quic",
+        "outboundTag": "direct",
+        "ruleTag": "quic-policy"
+      },
+      {
+        "domain": [
+          "geosite:cn"
+        ],
+        "outboundTag": "direct",
+        "ruleTag": "china-domain-direct"
+      },
+      {
+        "ip": [
+          "geoip:cn"
+        ],
+        "outboundTag": "direct",
+        "ruleTag": "china-ip-direct"
+      },
+      {
+        "network": "tcp,udp",
+        "outboundTag": "proxy",
+        "ruleTag": "final-fail-closed"
+      }
+    ]
+  }
+}

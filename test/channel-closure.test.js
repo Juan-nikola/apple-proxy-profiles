@@ -45,6 +45,17 @@ test("ignores native generator channel defaults inside published client trees", 
   }), []);
 });
 
+test("ignores native generator channel defaults for v2rayN and V2Box", () => {
+  const generator = "const DEFAULTS = { channel: \"edge\" };";
+  assert.deepEqual(findChannelClosureViolations({
+    channel: "current",
+    files: new Map([
+      ["v2rayn/scripts/substore-config-generator.js", generator],
+      ["v2box/scripts/substore-config-generator.js", generator],
+    ]),
+  }), []);
+});
+
 test("throws a non-secret closure error", () => {
   assert.throws(() => assertChannelClosure({
     channel: "current",

@@ -31,7 +31,9 @@ var OneXrayNodesBundle = (() => {
     surge: "surge",
     singbox: "singbox",
     onexray: "onexray",
-    happ: "happ"
+    happ: "happ",
+    v2rayn: "v2rayn",
+    v2box: "v2box"
   });
   var PRIVATE_POLICY_CHANNELS = Object.freeze(["edge", "current", "previous"]);
   var PRIVATE_POLICY_CLIENTS = Object.freeze([CLIENT.happ, CLIENT.onexray]);
@@ -52,7 +54,8 @@ var OneXrayNodesBundle = (() => {
   var OPTION_VALUES = Object.freeze({
     output: Object.freeze(["nodes", "config"]),
     type: Object.freeze(["collection"]),
-    platform: Object.freeze(["iphone", "ipad", "macos", "appletv"]),
+    platform: Object.freeze(["iphone", "ipad", "macos", "appletv", "windows", "linux"]),
+    region: Object.freeze(["cn", "global", "ru", "ir"]),
     dnsMode: Object.freeze(["stable", "privacy", "speed"]),
     chinaDns: Object.freeze(["alidns", "dnspod", "system"]),
     globalDns: Object.freeze(["cloudflare", "google", "quad9"]),
@@ -124,7 +127,7 @@ var OneXrayNodesBundle = (() => {
     });
   }
   var definitions = Object.freeze([
-    protocol(["ss", "shadowsocks"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.onexray, CLIENT.happ], {
+    protocol(["ss", "shadowsocks"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.onexray, CLIENT.happ, CLIENT.v2rayn, CLIENT.v2box], {
       requiredFields: ["cipher", "password"]
     }),
     protocol(["ssr"], [CLIENT.shadowrocket, CLIENT.surge], {
@@ -133,13 +136,13 @@ var OneXrayNodesBundle = (() => {
     protocol(["snell"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox], {
       requiredFields: ["psk", "version"]
     }),
-    protocol(["vmess"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox, CLIENT.onexray, CLIENT.happ], {
+    protocol(["vmess"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox, CLIENT.onexray, CLIENT.happ, CLIENT.v2rayn, CLIENT.v2box], {
       requiredFields: ["uuid"]
     }),
-    protocol(["vless"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.singbox, CLIENT.onexray, CLIENT.happ], {
+    protocol(["vless"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.singbox, CLIENT.onexray, CLIENT.happ, CLIENT.v2rayn, CLIENT.v2box], {
       requiredFields: ["uuid"]
     }),
-    protocol(["trojan"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.onexray, CLIENT.happ], {
+    protocol(["trojan"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.onexray, CLIENT.happ, CLIENT.v2rayn, CLIENT.v2box], {
       requiredFields: ["password"],
       tls: true
     }),
@@ -147,7 +150,7 @@ var OneXrayNodesBundle = (() => {
       requiredFields: ["password"],
       tls: true
     }),
-    protocol(["hysteria2", "hy2"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.onexray, CLIENT.happ], {
+    protocol(["hysteria2", "hy2"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.onexray, CLIENT.happ, CLIENT.v2rayn, CLIENT.v2box], {
       requiredFields: ["password"],
       tls: true
     }),
@@ -155,8 +158,8 @@ var OneXrayNodesBundle = (() => {
       requiredFields: ["uuid", "password"],
       tls: true
     }),
-    protocol(["socks5"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.onexray, CLIENT.happ]),
-    protocol(["http"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox, CLIENT.onexray]),
+    protocol(["socks5"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.onexray, CLIENT.happ, CLIENT.v2rayn, CLIENT.v2box]),
+    protocol(["http"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox, CLIENT.onexray, CLIENT.v2rayn, CLIENT.v2box]),
     protocol(["ssh"], [CLIENT.egern, CLIENT.singbox], {
       requiredFields: ["username"]
     }),
@@ -1099,8 +1102,8 @@ var OneXrayNodesBundle = (() => {
       const reason = happNodeExclusionReason(node ?? {});
       return reason ? { supported: false, reason } : { supported: true, reason: null };
     }
-    if (client === CLIENT.onexray) {
-      const reason = oneXrayNodeExclusionReason(node ?? {});
+    if ([CLIENT.onexray, CLIENT.v2rayn, CLIENT.v2box].includes(client)) {
+      const reason = xrayNodeExclusionReason(node ?? {}, client);
       return reason ? { supported: false, reason } : { supported: true, reason: null };
     }
     const protocol2 = normalizeProtocol(node?.type);
@@ -1130,9 +1133,24 @@ var OneXrayNodesBundle = (() => {
     "mkcp",
     "hysteria"
   ]);
-  var XRAY_CHAIN_REASON = Object.freeze({ happ: "unsupported-happ-chain", onexray: "unsupported-onexray-chain" });
-  var XRAY_PROTOCOL_REASON = Object.freeze({ happ: "unsupported-happ-protocol", onexray: "unsupported-onexray-protocol" });
-  var XRAY_TRANSPORT_REASON = Object.freeze({ happ: "unsupported-happ-transport", onexray: "unsupported-onexray-transport" });
+  var XRAY_CHAIN_REASON = Object.freeze({
+    happ: "unsupported-happ-chain",
+    onexray: "unsupported-onexray-chain",
+    v2rayn: "unsupported-v2rayn-chain",
+    v2box: "unsupported-v2box-chain"
+  });
+  var XRAY_PROTOCOL_REASON = Object.freeze({
+    happ: "unsupported-happ-protocol",
+    onexray: "unsupported-onexray-protocol",
+    v2rayn: "unsupported-v2rayn-protocol",
+    v2box: "unsupported-v2box-protocol"
+  });
+  var XRAY_TRANSPORT_REASON = Object.freeze({
+    happ: "unsupported-happ-transport",
+    onexray: "unsupported-onexray-transport",
+    v2rayn: "unsupported-v2rayn-transport",
+    v2box: "unsupported-v2box-transport"
+  });
   function xrayCommonReason(node, client) {
     if (!isPlainObject(node) || !isNonblankString(node.name) || !isNonblankString(node.server) || !isValidPort(node.port)) {
       return `invalid-${client}-node-shape`;
@@ -1157,7 +1175,7 @@ var OneXrayNodesBundle = (() => {
     if (security2 !== "reality" && reality !== void 0) return `unsupported-${client}-tls`;
     if (security2 === "reality") {
       if (!isPlainObject(reality) || !isNonblankOpaqueString(reality["public-key"])) {
-        return client === "onexray" ? "incomplete-onexray-reality" : "incomplete-happ-reality";
+        return client === "onexray" ? "incomplete-onexray-reality" : client === "happ" ? "incomplete-happ-reality" : `incomplete-${client}-reality`;
       }
       if (Object.keys(reality).some((key) => !["public-key", "short-id", "spider-x", "_spider-x"].includes(key))) {
         return `unsupported-${client}-tls`;
@@ -1211,8 +1229,8 @@ var OneXrayNodesBundle = (() => {
         if (security2 === "tls" && !isNonblankString(node.sni ?? node.servername) && !isDomainServer(node.server)) return "incomplete-happ-tls";
       }
     }
-    if (client === "happ" && protocol2 === "socks5" && (node.tls === true || node.security === "tls" || node.security === "reality")) {
-      return "unsupported-happ-tls";
+    if (["happ", "v2rayn", "v2box"].includes(client) && protocol2 === "socks5" && (node.tls === true || node.security === "tls" || node.security === "reality")) {
+      return `unsupported-${client}-tls`;
     }
     return null;
   }
@@ -1507,7 +1525,7 @@ var OneXrayNodesBundle = (() => {
       latinMatcher: new RegExp(latinTerms.map(latinTermPattern).join("|"), "iu")
     };
   });
-  var REGION_LABELS = new Map(RAW_REGIONS.map(({ flag, label }) => [flag, label]));
+  var REGION_LABELS = new Map(RAW_REGIONS.map(({ flag, label: label2 }) => [flag, label2]));
   function inferRegion(name) {
     return REGIONS.find((region) => region.latinMatcher.test(name) || region.chineseTerms.some((term) => name.includes(term))) ?? null;
   }
@@ -1708,10 +1726,10 @@ var OneXrayNodesBundle = (() => {
       if (group.length < 2) continue;
       const byProtocol = /* @__PURE__ */ new Map();
       for (const node of group) {
-        const label = protocolDisplayLabel(node.type);
-        const protocolGroup = byProtocol.get(label) ?? [];
+        const label2 = protocolDisplayLabel(node.type);
+        const protocolGroup = byProtocol.get(label2) ?? [];
         protocolGroup.push(node);
-        byProtocol.set(label, protocolGroup);
+        byProtocol.set(label2, protocolGroup);
       }
       const multipleProtocols = byProtocol.size > 1;
       for (const [protocolLabel, protocolGroup] of byProtocol) {
@@ -1920,6 +1938,32 @@ var OneXrayNodesBundle = (() => {
       supportsPolicyOverrides: false,
       adapterSchema: "happ-v4",
       publicDirectory: "happ"
+    },
+    {
+      id: CLIENT.v2rayn,
+      displayName: "v2rayN",
+      state: "active",
+      platforms: ["windows", "macos"],
+      configFormat: "xray-profile-json",
+      ruleFormat: "xray-geodata",
+      nodeValidator: "v2rayn",
+      separatesProfile: false,
+      supportsPolicyOverrides: false,
+      adapterSchema: "v2rayn-v1",
+      publicDirectory: "v2rayn"
+    },
+    {
+      id: CLIENT.v2box,
+      displayName: "V2Box",
+      state: "active",
+      platforms: ["iphone", "ipad"],
+      configFormat: "xray-profile-json",
+      ruleFormat: "xray-geodata",
+      nodeValidator: "v2box",
+      separatesProfile: false,
+      supportsPolicyOverrides: false,
+      adapterSchema: "v2box-v1",
+      publicDirectory: "v2box"
     }
   ].map((record) => freeze(record));
   var byId = new Map(records.map((record) => [record.id, record]));
@@ -1946,9 +1990,9 @@ var OneXrayNodesBundle = (() => {
   // ../../shared/substore/collection-name.js
   var SAFE_COLLECTION_NAME = /^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$/u;
   var PROTOTYPE_KEYS = /* @__PURE__ */ new Set(["__proto__", "constructor", "prototype"]);
-  function validateCollectionName(value, label = "collection name") {
+  function validateCollectionName(value, label2 = "collection name") {
     if (typeof value !== "string" || !SAFE_COLLECTION_NAME.test(value) || PROTOTYPE_KEYS.has(value)) {
-      throw new Error(`${label} must be a safe collection slug`);
+      throw new Error(`${label2} must be a safe collection slug`);
     }
     return value;
   }
@@ -2023,19 +2067,20 @@ var OneXrayNodesBundle = (() => {
     return Object.freeze(options);
   }
 
-  // src/render-outbound.js
+  // ../../shared/nodes/render-xray-outbound.js
   var TAG = /^ap-[a-z0-9][a-z0-9/_-]{0,127}$/u;
-  function requiredString2(node, key) {
+  var label = (client) => client === "onexray" ? "OneXray" : String(client ?? "Xray");
+  function required(node, key, client) {
     const value = node[key];
-    if (typeof value !== "string" || value.length === 0 || value.trim() !== value) throw new Error(`OneXray node field '${key}' is invalid`);
+    if (typeof value !== "string" || !value || value.trim() !== value) throw new Error(`${label(client)} node field '${key}' is invalid`);
     return value;
   }
-  function port(node) {
+  function port(node, client) {
     const value = Number(node.port);
-    if (!Number.isInteger(value) || value < 1 || value > 65535) throw new Error("OneXray node port is invalid");
+    if (!Number.isInteger(value) || value < 1 || value > 65535) throw new Error(`${label(client)} node port is invalid`);
     return value;
   }
-  function transport(node) {
+  function transport(node, client) {
     const network = String(node.network ?? "tcp").trim().toLowerCase();
     if (["tcp", "raw"].includes(network)) return network === "raw" ? { network: "raw", rawSettings: {} } : void 0;
     if (network === "ws") {
@@ -2052,107 +2097,69 @@ var OneXrayNodesBundle = (() => {
     }
     if (network === "httpupgrade") {
       const source = node["httpupgrade-opts"] ?? {};
-      return { network: "httpupgrade", httpupgradeSettings: { path: source.path ?? "/", ...source.host ? { host: source.host } : {} } };
+      return { network, httpupgradeSettings: { path: source.path ?? "/", ...source.host ? { host: source.host } : {} } };
     }
     if (network === "xhttp") {
       const source = node["xhttp-opts"] ?? {};
-      return { network: "xhttp", xhttpSettings: { path: source.path ?? "/", ...source.mode ? { mode: source.mode } : {} } };
+      return { network, xhttpSettings: { path: source.path ?? "/", ...source.mode ? { mode: source.mode } : {} } };
     }
-    if (["kcp", "mkcp"].includes(network)) {
-      return { network: "kcp", kcpSettings: { ...node["kcp-opts"] ?? {} } };
-    }
-    if (network === "hysteria") return { network: "hysteria", hysteriaSettings: { ...node["hysteria-opts"] ?? {} } };
-    throw new Error("unsupported-onexray-transport");
+    if (["kcp", "mkcp"].includes(network)) return { network: "kcp", kcpSettings: { ...node["kcp-opts"] ?? {} } };
+    if (network === "hysteria") return { network, hysteriaSettings: { ...node["hysteria-opts"] ?? {} } };
+    throw new Error(`unsupported-${client}-transport`);
   }
-  function security(node, result) {
+  function security(node, result, client) {
     const reality = node["reality-opts"];
-    const securityName = node.security === "reality" || reality ? "reality" : node.tls === true || node.security === "tls" ? "tls" : "none";
-    if (securityName === "none") return;
-    result.security = securityName;
-    if (securityName === "reality") {
-      if (!reality || typeof reality["public-key"] !== "string" || reality["public-key"].length === 0) throw new Error("incomplete-onexray-reality");
-      result.realitySettings = {
-        serverName: node.sni ?? node.servername ?? "",
-        fingerprint: node["client-fingerprint"] ?? "chrome",
-        publicKey: reality["public-key"],
-        ...reality["short-id"] ? { shortId: reality["short-id"] } : {},
-        ...reality["spider-x"] || reality["_spider-x"] ? { spiderX: reality["spider-x"] ?? reality["_spider-x"] } : {}
-      };
-    } else {
-      result.tlsSettings = {
-        serverName: node.sni ?? node.servername ?? "",
-        allowInsecure: node["skip-cert-verify"] === true || node["allow-insecure"] === true,
-        ...node.alpn ? { alpn: [...node.alpn] } : {},
-        ...node["client-fingerprint"] ? { fingerprint: node["client-fingerprint"] } : {}
-      };
-    }
+    const name = node.security === "reality" || reality ? "reality" : node.tls === true || node.security === "tls" ? "tls" : "none";
+    if (name === "none") return;
+    result.security = name;
+    if (name === "reality") {
+      if (!reality || typeof reality["public-key"] !== "string" || !reality["public-key"]) throw new Error(`incomplete-${client}-reality`);
+      result.realitySettings = { serverName: node.sni ?? node.servername ?? "", fingerprint: node["client-fingerprint"] ?? "chrome", publicKey: reality["public-key"], ...reality["short-id"] ? { shortId: reality["short-id"] } : {}, ...reality["spider-x"] || reality["_spider-x"] ? { spiderX: reality["spider-x"] ?? reality["_spider-x"] } : {} };
+    } else result.tlsSettings = { serverName: node.sni ?? node.servername ?? "", allowInsecure: node["skip-cert-verify"] === true || node["allow-insecure"] === true, ...node.alpn ? { alpn: [...node.alpn] } : {}, ...node["client-fingerprint"] ? { fingerprint: node["client-fingerprint"] } : {} };
   }
-  function base(node, tag, protocol2) {
-    if (!node || typeof node !== "object" || Array.isArray(node)) throw new TypeError("OneXray node is invalid");
-    if (typeof node.name !== "string" || node.name.length === 0 || /[\r\n]/u.test(node.name)) throw new Error("OneXray node name is invalid");
-    if (typeof tag !== "string" || !TAG.test(tag)) throw new Error("OneXray outbound tag is invalid");
-    if (!protocolSupportsClient(protocol2, "onexray")) throw new Error("unsupported-onexray-protocol");
-    return { name: node.name, protocol: protocol2, tag, settings: {} };
+  function renderXrayOutbound(node, { tag, client = "onexray" } = {}) {
+    if (!node || typeof node !== "object" || Array.isArray(node)) throw new TypeError(`${label(client)} node is invalid`);
+    if (typeof node.name !== "string" || !node.name || /[\r\n]/u.test(node.name)) throw new Error(`${label(client)} node name is invalid`);
+    if (typeof tag !== "string" || !TAG.test(tag)) throw new Error(`${label(client)} outbound tag is invalid`);
+    const protocol2 = normalizeProtocol(node.type);
+    if (!protocolSupportsClient(protocol2, client)) throw new Error(`unsupported-${client}-protocol`);
+    const out = { name: node.name, protocol: protocol2, tag, settings: {} };
+    const server = { address: required(node, "server", client), port: port(node, client) };
+    if (protocol2 === "vless") out.settings.vnext = [{ ...server, users: [{ id: required(node, "uuid", client), encryption: node.encryption ?? "none", ...node.flow ? { flow: node.flow } : {} }] }];
+    else if (protocol2 === "vmess") out.settings.vnext = [{ ...server, users: [{ id: required(node, "uuid", client), alterId: Number(node["alter-id"] ?? node.alterId ?? 0), security: node.security ?? node.cipher ?? "auto" }] }];
+    else if (["ss", "shadowsocks"].includes(protocol2)) {
+      out.protocol = "shadowsocks";
+      out.settings.servers = [{ ...server, method: required(node, "cipher", client), password: required(node, "password", client) }];
+    } else if (protocol2 === "trojan") out.settings.servers = [{ ...server, password: required(node, "password", client), ...node.flow ? { flow: node.flow } : {} }];
+    else if (protocol2 === "socks5") {
+      out.protocol = "socks";
+      out.settings.servers = [{ ...server, ...node.username ? { users: [{ user: node.username, pass: node.password ?? "" }] } : {} }];
+    } else if (protocol2 === "http") out.settings.servers = [{ ...server, ...node.username ? { users: [{ user: node.username, pass: node.password ?? "" }] } : {}, ...node["http-opts"] ? { headers: node["http-opts"].headers ?? {} } : {} }];
+    else if (["hysteria2", "hy2"].includes(protocol2)) {
+      out.protocol = "hysteria";
+      out.settings = { version: 2, ...server, ...node.password ? { auth: node.password } : {} };
+    } else throw new Error(`unsupported-${client}-protocol`);
+    const stream = transport(node, client);
+    if (stream) out.streamSettings = stream;
+    security(node, out.streamSettings ?? (out.streamSettings = {}), client);
+    if (out.streamSettings && Object.keys(out.streamSettings).length === 0) delete out.streamSettings;
+    return out;
   }
-  function server(node) {
-    return { address: requiredString2(node, "server"), port: port(node) };
-  }
-  function renderOneXrayOutbound(node, { tag } = {}) {
-    const protocol2 = normalizeProtocol(node?.type);
-    const common = base(node, tag, protocol2);
-    switch (protocol2) {
-      case "vless": {
-        const user = { id: requiredString2(node, "uuid"), encryption: node.encryption ?? "none" };
-        if (node.flow) user.flow = node.flow;
-        common.settings.vnext = [{ ...server(node), users: [user] }];
-        break;
-      }
-      case "vmess": {
-        common.settings.vnext = [{ ...server(node), users: [{ id: requiredString2(node, "uuid"), alterId: Number(node["alter-id"] ?? node.alterId ?? 0), security: node.security ?? node.cipher ?? "auto" }] }];
-        break;
-      }
-      case "ss":
-      case "shadowsocks":
-        common.protocol = "shadowsocks";
-        common.settings.servers = [{ ...server(node), method: requiredString2(node, "cipher"), password: requiredString2(node, "password") }];
-        break;
-      case "trojan":
-        common.settings.servers = [{ ...server(node), password: requiredString2(node, "password"), ...node.flow ? { flow: node.flow } : {} }];
-        break;
-      case "socks5":
-        common.protocol = "socks";
-        common.settings.servers = [{ ...server(node), ...node.username ? { users: [{ user: node.username, pass: node.password ?? "" }] } : {} }];
-        break;
-      case "http":
-        common.settings.servers = [{ ...server(node), ...node.username ? { users: [{ user: node.username, pass: node.password ?? "" }] } : {}, ...node["http-opts"] ? { headers: node["http-opts"].headers ?? {} } : {} }];
-        break;
-      case "hysteria2":
-      case "hy2":
-        common.protocol = "hysteria";
-        common.settings = { version: 2, ...server(node), ...node.password ? { auth: node.password } : {} };
-        break;
-      default:
-        throw new Error("unsupported-onexray-protocol");
-    }
-    const stream = transport(node);
-    if (stream) Object.assign(common, { streamSettings: stream });
-    security(node, common.streamSettings ?? (common.streamSettings = {}));
-    if (common.streamSettings && Object.keys(common.streamSettings).length === 0) delete common.streamSettings;
-    return common;
-  }
-
-  // src/render-subscription.js
-  function renderOneXraySubscription({ nodes } = {}) {
-    if (!Array.isArray(nodes) || nodes.length === 0) throw new Error("OneXray subscription cannot be empty");
+  function renderXraySubscription({ nodes, client = "onexray" } = {}) {
+    if (!Array.isArray(nodes) || nodes.length === 0) throw new Error(`${label(client)} subscription cannot be empty`);
     const names = /* @__PURE__ */ new Set();
     const outbounds = nodes.map((node, index) => {
-      if (names.has(node.name)) throw new Error("OneXray subscription contains duplicate node names");
+      if (names.has(node.name)) throw new Error(`${label(client)} subscription contains duplicate node names`);
       names.add(node.name);
-      const rendered = renderOneXrayOutbound(node, { tag: `ap-node-${index.toString(36)}` });
-      return { ...rendered, tag: node.name };
+      return { ...renderXrayOutbound(node, { tag: `ap-node-${index.toString(36)}`, client }), tag: node.name };
     });
     return `${JSON.stringify({ outbounds })}
 `;
+  }
+
+  // src/render-subscription.js
+  function renderOneXraySubscription(options = {}) {
+    return renderXraySubscription({ ...options, client: "onexray" });
   }
 
   // ../../shared/encoding/base64url.js
@@ -2193,14 +2200,14 @@ var OneXrayNodesBundle = (() => {
   var DEFAULT_MAX_DEPTH = 32;
   var FORBIDDEN_KEYS = /* @__PURE__ */ new Set(["__proto__", "prototype", "constructor"]);
   var WHITESPACE = /* @__PURE__ */ new Set([" ", "	", "\r", "\n"]);
-  function failure(label, reason) {
-    const prefix = typeof label === "string" && label.length > 0 ? `${label}: ` : "";
+  function failure(label2, reason) {
+    const prefix = typeof label2 === "string" && label2.length > 0 ? `${label2}: ` : "";
     return new SyntaxError(`${prefix}${reason}`);
   }
-  function asText(value, label) {
+  function asText(value, label2) {
     if (typeof value === "string") {
       if (/[\uD800-\uDFFF]/u.test(value.replace(/[\uD800-\uDBFF](?=[\uDC00-\uDFFF])/gu, "").replace(/(?<=[\uD800-\uDBFF])[\uDC00-\uDFFF]/gu, ""))) {
-        throw failure(label, "invalid UTF-8 text");
+        throw failure(label2, "invalid UTF-8 text");
       }
       return { text: value, bytes: new TextEncoder().encode(value).byteLength };
     }
@@ -2211,22 +2218,22 @@ var OneXrayNodesBundle = (() => {
           bytes: value.byteLength
         };
       } catch {
-        throw failure(label, "invalid UTF-8 text");
+        throw failure(label2, "invalid UTF-8 text");
       }
     }
-    throw failure(label, "input must be UTF-8 text");
+    throw failure(label2, "input must be UTF-8 text");
   }
-  function validateOptions(options, label) {
+  function validateOptions(options, label2) {
     const { maxBytes = DEFAULT_MAX_BYTES, maxDepth = DEFAULT_MAX_DEPTH } = options ?? {};
-    if (!Number.isSafeInteger(maxBytes) || maxBytes < 0) throw failure(label, "maxBytes must be a non-negative integer");
-    if (!Number.isSafeInteger(maxDepth) || maxDepth < 0) throw failure(label, "maxDepth must be a non-negative integer");
+    if (!Number.isSafeInteger(maxBytes) || maxBytes < 0) throw failure(label2, "maxBytes must be a non-negative integer");
+    if (!Number.isSafeInteger(maxDepth) || maxDepth < 0) throw failure(label2, "maxDepth must be a non-negative integer");
     return { maxBytes, maxDepth };
   }
-  function validateAndParse(text, { label, maxDepth }) {
+  function validateAndParse(text, { label: label2, maxDepth }) {
     let index = 0;
     const length = text.length;
     const error = (reason) => {
-      throw failure(label, reason);
+      throw failure(label2, reason);
     };
     const skipWhitespace = () => {
       while (index < length && WHITESPACE.has(text[index])) index += 1;
@@ -2318,11 +2325,11 @@ var OneXrayNodesBundle = (() => {
     }
   }
   function parseStrictJson(value, options = {}) {
-    const label = options?.label;
-    const { maxBytes, maxDepth } = validateOptions(options, label);
-    const { text, bytes } = asText(value, label);
-    if (bytes > maxBytes) throw failure(label, "JSON exceeds byte limit");
-    return validateAndParse(text, { label, maxDepth });
+    const label2 = options?.label;
+    const { maxBytes, maxDepth } = validateOptions(options, label2);
+    const { text, bytes } = asText(value, label2);
+    if (bytes > maxBytes) throw failure(label2, "JSON exceeds byte limit");
+    return validateAndParse(text, { label: label2, maxDepth });
   }
   var STRICT_JSON_DEFAULTS = Object.freeze({
     maxBytes: DEFAULT_MAX_BYTES,
@@ -2334,8 +2341,8 @@ var OneXrayNodesBundle = (() => {
   var NODE_TARGET = /^NODE:(.*)$/iu;
   var BASE64URL = /^[A-Za-z0-9_-]+$/u;
   var LINE_TERMINATOR = /[\r\n\u2028\u2029]/u;
-  function frozenTarget(id, label, aliases, defaultTarget) {
-    return Object.freeze({ id, label, aliases: Object.freeze([...aliases]), defaultTarget });
+  function frozenTarget(id, label2, aliases, defaultTarget) {
+    return Object.freeze({ id, label: label2, aliases: Object.freeze([...aliases]), defaultTarget });
   }
   var BUSINESS_TARGETS = Object.freeze([
     frozenTarget("ai", "\u{1F916} AI \u4E13\u7528", ["AI \u4E13\u7528", "ai"], "FOLLOW"),

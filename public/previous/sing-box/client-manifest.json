@@ -1,5 +1,5 @@
 {
-  "chinaIpAuditSha256": "98f13d6021721417d0cd66ee09b9249f5125eefe85b9278841516dc61c5a4cfb",
+  "chinaIpAuditSha256": "d66303986c1be68330de89209f6600bfd0e559433ca2cecede861ba5c530c183",
   "client": "singbox",
   "files": [
     {
@@ -8,9 +8,9 @@
       "sha256": "e8a3fd771a3466e74d3cf40c00aa05070b4f6c33898b7d71b2fb78446c735c51"
     },
     {
-      "bytes": 27657,
+      "bytes": 19352,
       "path": "sing-box/examples/sing-box-android.json",
-      "sha256": "3a87a5810a735e6048c56e359d7aa36c7c693de45912cc729120271a7540b774"
+      "sha256": "6bff7262c5f1f9a8f761397acc6de82a2b50184ba273c8698ac18dddee571095"
     },
     {
       "bytes": 10617,
@@ -53,9 +53,9 @@
       "sha256": "3ce05f569a082f65132f2782c90b88c1788f017ce0b521f40b3ef7a5f15b19e2"
     },
     {
-      "bytes": 48632,
+      "bytes": 48657,
       "path": "sing-box/mobile-rule-sets/ChinaIP.srs",
-      "sha256": "03ef5fc65b90d123afcd2f3bd3180023bce46fb06c81112ccb60c897f32a56cb"
+      "sha256": "11f6a2d3e2f2500610994ae03c43d228cb168c4bf51a3521b1fa4d56b8a3c19e"
     },
     {
       "bytes": 1074,
@@ -133,9 +133,9 @@
       "sha256": "ed15d8e75ef55fffbef039e204685fb61ab4e7ad7edb3d74ecc059888251bb8c"
     },
     {
-      "bytes": 48632,
+      "bytes": 48657,
       "path": "sing-box/rule-sets/ChinaIP.srs",
-      "sha256": "03ef5fc65b90d123afcd2f3bd3180023bce46fb06c81112ccb60c897f32a56cb"
+      "sha256": "11f6a2d3e2f2500610994ae03c43d228cb168c4bf51a3521b1fa4d56b8a3c19e"
     },
     {
       "bytes": 33,
@@ -273,20 +273,20 @@
       "sha256": "da4163404185d0c106158bad3bc246a7df1388b1974bceace0dfa1f0443abd30"
     },
     {
-      "bytes": 114940,
+      "bytes": 120647,
       "path": "sing-box/scripts/sing-box-config-generator.js",
-      "sha256": "3b5175cebef415400ce8a2d85dd6317411ea8680e1c294c84f499c521b0cb4ca"
+      "sha256": "2d4150c7269c667b6a34e31c18db839dd60795dd428ebd9fa0a6f525ac1f561b"
     },
     {
-      "bytes": 114940,
+      "bytes": 120647,
       "path": "sing-box/scripts/substore-config-generator.js",
-      "sha256": "3b5175cebef415400ce8a2d85dd6317411ea8680e1c294c84f499c521b0cb4ca"
+      "sha256": "2d4150c7269c667b6a34e31c18db839dd60795dd428ebd9fa0a6f525ac1f561b"
     }
   ],
-  "generatedAt": "2026-08-15T18:26:29Z",
-  "manifestHash": "67c3ce79a8db5781aacd6569e7bb1c5cb93b6b192bb53067a69979168b33f56f",
+  "generatedAt": "2026-08-21T18:35:15Z",
+  "manifestHash": "826d1c1276182807ac828131487450c9d40b980775bcf35410852195d066732f",
   "optionalPacks": {
-    "adblock-full": "7760abafda3af7ef1eb3bcf252fec97c9a4639cd3143f6810c7f787f96be2187"
+    "adblock-full": "d2aac8a3f75ac30af85b355baa6fecf0801561bb2b9e68bc0ec790c1b6481c0b"
   },
   "schemaVersion": 1
 }

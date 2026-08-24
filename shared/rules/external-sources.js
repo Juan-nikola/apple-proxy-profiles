@@ -1,6 +1,7 @@
 const SHA1_COMMIT = /^[0-9a-f]{40}$/u;
 const REGIONS = new Set(["cn", "global", "ru", "ir"]);
 const SAFE_PATH = /^(?:[A-Za-z0-9_.-]+\/)*[A-Za-z0-9_.-]+$/u;
+const SHA256 = /^[0-9a-f]{64}$/u;
 
 function source(record) {
   return Object.freeze({ ...record });
@@ -18,7 +19,11 @@ export const EXTERNAL_RULE_SOURCE_CATALOG = Object.freeze([
     region: "global",
     adapter: "v2fly-domain-list",
     minEntries: 1,
-    sourcePath: "data/geosite.dat",
+    sourcePath: "dlc.dat_plain.yml",
+    releaseTag: "20260819144818",
+    retrievalUrl: "https://github.com/v2fly/domain-list-community/releases/download/20260819144818/dlc.dat_plain.yml",
+    retrievedAt: "2026-08-22T00:00:00Z",
+    sha256: "d74dc15311117fe983180bf3245e083633d14bb148ea5cd9db79b1d15a8533c2",
   }),
   source({
     id: "loyalsoldier-rules-dat",
@@ -30,7 +35,11 @@ export const EXTERNAL_RULE_SOURCE_CATALOG = Object.freeze([
     region: "global",
     adapter: "loyalsoldier-rules-dat",
     minEntries: 1,
-    sourcePath: "geoip.dat",
+    sourcePath: "geosite.dat",
+    releaseTag: "202608212217",
+    retrievalUrl: "https://github.com/Loyalsoldier/v2ray-rules-dat/releases/download/202608212217/geosite.dat",
+    retrievedAt: "2026-08-22T00:00:00Z",
+    sha256: "b392a98a323777deab59d8208e856df09cf96f3a76d2869eb7a8e5289bc5d9f4",
   }),
   source({
     id: "russia-v2ray-rules",
@@ -43,6 +52,10 @@ export const EXTERNAL_RULE_SOURCE_CATALOG = Object.freeze([
     adapter: "russia-v2ray-rules",
     minEntries: 1,
     sourcePath: "geosite.dat",
+    releaseTag: "202608221547",
+    retrievalUrl: "https://github.com/runetfreedom/russia-v2ray-rules-dat/releases/download/202608221547/geosite.dat",
+    retrievedAt: "2026-08-22T00:00:00Z",
+    sha256: "76fdbe01687a6cc7683b50c38ceea84941458e8371d215918daf555665a537cd",
   }),
   source({
     id: "iran-v2ray-rules",
@@ -50,15 +63,20 @@ export const EXTERNAL_RULE_SOURCE_CATALOG = Object.freeze([
     branch: "master",
     commit: "676695ea3b4c95d5cf48a7c4e2e718bac5b8a099",
     license: "MIT",
-    format: "domain-list-text",
+    format: "geosite-geoip-dat",
     region: "ir",
     adapter: "iran-v2ray-rules",
     minEntries: 1,
-    sourcePath: "iran.dat",
+    sourcePath: "geosite.dat",
+    releaseTag: "202608220502",
+    retrievalUrl: "https://github.com/Chocolate4U/Iran-v2ray-rules/releases/download/202608220502/geosite.dat",
+    retrievedAt: "2026-08-22T00:00:00Z",
+    sha256: "5ff22eb6bc59573253dce2655498db4ed8096380787f15f5d9268756a4940532",
   }),
 ]);
 
 export function validateExternalSourceCatalog(catalog = EXTERNAL_RULE_SOURCE_CATALOG) {
+  if (!Array.isArray(catalog) || catalog.length === 0) throw new TypeError("External source catalog must not be empty");
   const ids = new Set();
   for (const record of catalog) {
     if (!record || typeof record !== "object") throw new TypeError("External source must be an object");
@@ -67,13 +85,23 @@ export function validateExternalSourceCatalog(catalog = EXTERNAL_RULE_SOURCE_CAT
     }
     ids.add(record.id);
     if (!SHA1_COMMIT.test(record.commit)) throw new TypeError(`External source ${record.id} is not pinned to a full commit`);
+    if (typeof record.repository !== "string" || !/^https:\/\/github\.com\/[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/u.test(record.repository)) throw new TypeError(`External source ${record.id} has invalid repository`);
+    if (typeof record.branch !== "string" || record.branch.trim() === "") throw new TypeError(`External source ${record.id} has no branch metadata`);
+    if (typeof record.retrievalUrl !== "string" || !record.retrievalUrl.startsWith("https://")) throw new TypeError(`External source ${record.id} has no retrieval URL`);
+    if (typeof record.releaseTag !== "string" || !/^[A-Za-z0-9][A-Za-z0-9._-]*$/u.test(record.releaseTag)) throw new TypeError(`External source ${record.id} has invalid release tag`);
+    const expectedUrl = `${record.repository}/releases/download/${record.releaseTag}/${record.sourcePath}`;
+    if (record.retrievalUrl !== expectedUrl) throw new TypeError(`External source ${record.id} has mismatched release asset URL`);
+    if (typeof record.retrievedAt !== "string" || Number.isNaN(Date.parse(record.retrievedAt))) throw new TypeError(`External source ${record.id} has invalid retrieval timestamp`);
+    if (typeof record.sha256 !== "string" || !SHA256.test(record.sha256)) throw new TypeError(`External source ${record.id} has invalid SHA-256`);
     if (typeof record.license !== "string" || record.license.trim() === "") throw new TypeError(`External source ${record.id} has no license`);
     if (!REGIONS.has(record.region)) throw new TypeError(`External source ${record.id} has invalid region`);
     if (typeof record.format !== "string" || record.format.trim() === "") throw new TypeError(`External source ${record.id} has no format`);
     if (typeof record.adapter !== "string" || record.adapter.trim() === "") throw new TypeError(`External source ${record.id} has no adapter`);
     if (!Number.isInteger(record.minEntries) || record.minEntries < 1) throw new TypeError(`External source ${record.id} has invalid minEntries`);
-    if (record.sourcePath !== undefined
-      && (!SAFE_PATH.test(record.sourcePath) || record.sourcePath.split("/").some((segment) => segment === "." || segment === ".."))) {
+    if (typeof record.sourcePath !== "string"
+      || record.sourcePath.length === 0
+      || !SAFE_PATH.test(record.sourcePath)
+      || record.sourcePath.split("/").some((segment) => segment === "." || segment === "..")) {
       throw new TypeError(`External source ${record.id} has unsafe source path`);
     }
   }

@@ -40,6 +40,8 @@ const CLIENT_RULE_PREFIXES = Object.freeze({
   // intentionally zero in root manifests.
   onexray: [],
   happ: [],
+  v2rayn: [],
+  v2box: [],
 });
 const SHA256 = /^[0-9a-f]{64}$/u;
 const PUBLIC_CHANNEL_URL_RE = /(https:\/\/juan-nikola\.github\.io\/apple-proxy-profiles\/)(?:current|previous|edge)(\/)/gu;
@@ -221,6 +223,7 @@ export async function refreshClientManifest({ publicDirectory, channel, client }
     generatedAt: existing.generatedAt,
     ...(existing.optionalPacks === undefined ? {} : { optionalPacks: existing.optionalPacks }),
     ...(existing.chinaIpAuditSha256 === undefined ? {} : { chinaIpAuditSha256: existing.chinaIpAuditSha256 }),
+    ...(existing.sharedAssets === undefined ? {} : { sharedAssets: existing.sharedAssets }),
     files: records,
   };
   const manifest = Object.freeze({

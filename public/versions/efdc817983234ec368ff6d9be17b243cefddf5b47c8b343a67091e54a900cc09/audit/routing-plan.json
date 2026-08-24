@@ -1,0 +1,232 @@
+{
+  "phases": [
+    {
+      "phase": "security",
+      "sources": [
+        {
+          "dnsClass": "none",
+          "entries": 228,
+          "id": "Hijacking",
+          "policy": "REJECT"
+        },
+        {
+          "dnsClass": "none",
+          "entries": 63,
+          "id": "BlockHttpDNS",
+          "policy": "REJECT"
+        },
+        {
+          "dnsClass": "none",
+          "entries": 20,
+          "id": "Privacy",
+          "policy": "🕵️ 严格跟踪"
+        }
+      ]
+    },
+    {
+      "phase": "earlyDomestic",
+      "sources": [
+        {
+          "dnsClass": "china",
+          "entries": 65,
+          "id": "DomesticCore",
+          "policy": "DIRECT"
+        },
+        {
+          "dnsClass": "china",
+          "entries": 40,
+          "id": "DomesticGame",
+          "policy": "DIRECT"
+        },
+        {
+          "dnsClass": "china",
+          "entries": 17,
+          "id": "SteamCN",
+          "policy": "DIRECT"
+        }
+      ]
+    },
+    {
+      "phase": "serviceIntent",
+      "sources": [
+        {
+          "dnsClass": "china",
+          "entries": 123,
+          "id": "BiliBili",
+          "policy": "🇨🇳 国内平台"
+        },
+        {
+          "dnsClass": "china",
+          "entries": 370,
+          "id": "ByteDance",
+          "policy": "🇨🇳 国内平台"
+        },
+        {
+          "dnsClass": "china",
+          "entries": 4,
+          "id": "XiaoHongShu",
+          "policy": "🇨🇳 国内平台"
+        },
+        {
+          "dnsClass": "china",
+          "entries": 4,
+          "id": "Weibo",
+          "policy": "🇨🇳 国内平台"
+        },
+        {
+          "dnsClass": "proxy",
+          "entries": 34,
+          "id": "OpenAI",
+          "policy": "🤖 AI 专用"
+        },
+        {
+          "dnsClass": "proxy",
+          "entries": 3,
+          "id": "Claude",
+          "policy": "🤖 AI 专用"
+        },
+        {
+          "dnsClass": "proxy",
+          "entries": 13,
+          "id": "Gemini",
+          "policy": "🤖 AI 专用"
+        },
+        {
+          "dnsClass": "proxy",
+          "entries": 49,
+          "id": "Copilot",
+          "policy": "🤖 AI 专用"
+        },
+        {
+          "dnsClass": "proxy",
+          "entries": 31,
+          "id": "GitHub",
+          "policy": "🐙 GitHub"
+        },
+        {
+          "dnsClass": "proxy",
+          "entries": 183,
+          "id": "YouTube",
+          "policy": "📺 YouTube"
+        },
+        {
+          "dnsClass": "proxy",
+          "entries": 1156,
+          "id": "Netflix",
+          "policy": "🎬 海外流媒体"
+        },
+        {
+          "dnsClass": "proxy",
+          "entries": 172,
+          "id": "Disney",
+          "policy": "🎬 海外流媒体"
+        },
+        {
+          "dnsClass": "proxy",
+          "entries": 29,
+          "id": "Spotify",
+          "policy": "🎬 海外流媒体"
+        },
+        {
+          "dnsClass": "proxy",
+          "entries": 951,
+          "id": "GlobalMedia",
+          "policy": "🎬 海外流媒体"
+        },
+        {
+          "dnsClass": "proxy",
+          "entries": 35,
+          "id": "Telegram",
+          "policy": "💬 海外社交"
+        },
+        {
+          "dnsClass": "proxy",
+          "entries": 569,
+          "id": "Facebook",
+          "policy": "💬 海外社交"
+        },
+        {
+          "dnsClass": "proxy",
+          "entries": 4,
+          "id": "Instagram",
+          "policy": "💬 海外社交"
+        },
+        {
+          "dnsClass": "proxy",
+          "entries": 33,
+          "id": "Twitter",
+          "policy": "💬 海外社交"
+        },
+        {
+          "dnsClass": "proxy",
+          "entries": 31,
+          "id": "TikTok",
+          "policy": "💬 海外社交"
+        },
+        {
+          "dnsClass": "china",
+          "entries": 20,
+          "id": "Apple",
+          "policy": "🍎 Apple"
+        },
+        {
+          "dnsClass": "china",
+          "entries": 668,
+          "id": "Microsoft",
+          "policy": "🪟 Microsoft"
+        },
+        {
+          "dnsClass": "china",
+          "entries": 6,
+          "id": "Download",
+          "policy": "⬇️ 下载/P2P"
+        },
+        {
+          "dnsClass": "china",
+          "entries": 248,
+          "id": "PrivateTracker",
+          "policy": "⬇️ 下载/P2P"
+        }
+      ]
+    },
+    {
+      "phase": "overseasGame",
+      "sources": [
+        {
+          "dnsClass": "proxy",
+          "entries": 574,
+          "id": "OverseasGame",
+          "policy": "🌍 海外游戏"
+        }
+      ]
+    },
+    {
+      "phase": "lateDomestic",
+      "sources": [
+        {
+          "dnsClass": "china",
+          "entries": 1,
+          "id": "ChinaTLD",
+          "policy": "DIRECT"
+        }
+      ]
+    },
+    {
+      "phase": "resolvedChinaIp",
+      "sources": [
+        {
+          "dnsClass": "none",
+          "entries": 11100,
+          "id": "ChinaIP",
+          "policy": "DIRECT"
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 1,
+  "sha256": "a6f09b5abce68110fcef6942cb3ac3b6b4135e003fb8eb4f63d7c2c189214116",
+  "totals": {
+    "entries": 16844,
+    "sources": 32
+  }
+}

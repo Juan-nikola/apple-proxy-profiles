@@ -12,6 +12,7 @@ import {
   catalogSha256,
   pinnedRawUrl,
 } from "../src/source-catalog.js";
+import { EXTERNAL_RULE_SOURCE_CATALOG, validateSourceCatalog } from "../src/source-catalog.js";
 
 const EXPECTED_INPUT_IDS = [
   "Hijacking", "BlockHttpDNS", "Advertising", "Advertising_Domain", "Privacy",
@@ -109,4 +110,18 @@ test("pins immutable provenance and raw URLs", () => {
   const chinaIps = FETCH_SOURCE_CATALOG.find(({ id }) => id === "ChinaIPs");
   assert.equal(pinnedRawUrl(chinaIps),
     "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/dab47069a30c4ae70f7f5f4c919d639d9aaf79dc/rule/Surge/ChinaIPs/ChinaIPs.list");
+});
+
+test("pins documented release assets with verified digests", () => {
+  const expected = [
+    ["v2fly-domain-list", "20260819144818", "dlc.dat_plain.yml", "d74dc15311117fe983180bf3245e083633d14bb148ea5cd9db79b1d15a8533c2"],
+    ["loyalsoldier-rules-dat", "202608212217", "geosite.dat", "b392a98a323777deab59d8208e856df09cf96f3a76d2869eb7a8e5289bc5d9f4"],
+    ["russia-v2ray-rules", "202608221547", "geosite.dat", "76fdbe01687a6cc7683b50c38ceea84941458e8371d215918daf555665a537cd"],
+    ["iran-v2ray-rules", "202608220502", "geosite.dat", "5ff22eb6bc59573253dce2655498db4ed8096380787f15f5d9268756a4940532"],
+  ];
+  assert.deepEqual(EXTERNAL_RULE_SOURCE_CATALOG.map(({ id, releaseTag, sourcePath, sha256 }) => [id, releaseTag, sourcePath, sha256]), expected);
+  assert.doesNotThrow(() => validateSourceCatalog());
+  const broken = EXTERNAL_RULE_SOURCE_CATALOG.map((source, index) => index === 0 ? { ...source, sha256: "short" } : source);
+  assert.throws(() => validateSourceCatalog(broken), /SHA-256/u);
+  assert.throws(() => validateSourceCatalog([]), /must not be empty/u);
 });

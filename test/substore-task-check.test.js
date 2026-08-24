@@ -112,6 +112,20 @@ test("accepts valid sing-box output safety modes", () => {
   assert.equal(result.ok, true, result.errors.join(", "));
 });
 
+test("accepts v2rayN and V2Box task schemas and validates region/platform", () => {
+  const v2rayn = `${PUBLIC}/current/v2rayn/scripts/substore-config-generator.js#output=config&type=collection&name=apple-proxy-v2rayn&subscriptionName=Apple-Proxy-v2rayN&platform=windows&channel=current&region=cn&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&clientChain=off`;
+  const v2box = `${PUBLIC}/current/v2box/scripts/substore-config-generator.js#output=config&type=collection&name=apple-proxy-v2box&subscriptionName=Apple-Proxy-V2Box&platform=ipad&channel=current&region=ru&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&clientChain=off`;
+  assert.equal(checkSubstoreTaskUrl(v2rayn).ok, true, checkSubstoreTaskUrl(v2rayn).errors.join(", "));
+  assert.equal(checkSubstoreTaskUrl(v2box).ok, true, checkSubstoreTaskUrl(v2box).errors.join(", "));
+  assert.equal(checkSubstoreTaskUrl(v2box.replace("region=ru", "region=moon")).ok, false);
+  assert.equal(checkSubstoreTaskUrl(v2rayn.replace("platform=windows", "platform=iphone")).ok, false);
+  assert.equal(checkSubstoreTaskUrl(v2rayn.replace("channel=current", "unknown=value&channel=current")).ok, false);
+  const v2raynNodes = `${PUBLIC}/edge/v2rayn/scripts/substore-node-generator.js#output=nodes&type=collection&name=apple-proxy-v2rayn&clientChain=off&channel=edge`;
+  const v2boxNodes = `${PUBLIC}/previous/v2box/scripts/substore-node-generator.js#output=nodes&type=collection&name=apple-proxy-v2box&clientChain=off&channel=previous`;
+  assert.equal(checkSubstoreTaskUrl(v2raynNodes).ok, true, checkSubstoreTaskUrl(v2raynNodes).errors.join(", "));
+  assert.equal(checkSubstoreTaskUrl(v2boxNodes).ok, true, checkSubstoreTaskUrl(v2boxNodes).errors.join(", "));
+});
+
 test("rejects full adblock for mobile sing-box tasks before preview", () => {
   for (const platform of ["iphone", "ipad", "android"]) {
     const url = `${PUBLIC}/current/sing-box/scripts/sing-box-config-generator.js#output=config&type=collection&name=apple-proxy-sources&subscriptionName=Apple-Proxy-Nodes&platform=${platform}&adblockMode=full`;

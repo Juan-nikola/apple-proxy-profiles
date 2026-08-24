@@ -39,6 +39,8 @@ const operationalDocs = Object.freeze({
   "clients/sing-box/README.md": "apple-proxy-singbox",
   "clients/sing-box/docs/deployment.md": "apple-proxy-singbox",
   "clients/sing-box/docs/openwrt.md": "apple-proxy-singbox",
+  "clients/v2rayn/README.md": "apple-proxy-v2rayn",
+  "clients/v2box/README.md": "apple-proxy-v2box",
 });
 
 const activeDocs = Object.freeze([
@@ -49,6 +51,8 @@ const activeDocs = Object.freeze([
   "clients/anywhere/docs/canary.md",
   "clients/anywhere/docs/deployment.md",
   "clients/anywhere/docs/troubleshooting.md",
+  "clients/v2rayn/README.md",
+  "clients/v2box/README.md",
 ]);
 
 test("central Sub-Store guide closes over all public scripts and private tasks", async () => {
@@ -64,14 +68,19 @@ test("central Sub-Store guide closes over all public scripts and private tasks",
     "surge-nodes-generator.js",
     "surge-profile-generator.js",
     "sing-box-config-generator.js",
+    "substore-node-generator.js",
+    "substore-config-generator.js",
   ];
-  for (const script of scripts) assert.match(guide, new RegExp(`current/.+/${script.replaceAll(".", "\\.")}`, "u"), script);
+  for (const script of scripts) {
+    const client = script.startsWith("substore-") ? (script === "substore-node-generator.js" ? "v2rayn|v2box" : "v2rayn|v2box") : ".+";
+    assert.match(guide, new RegExp(`current/(?:${client})/scripts/${script.replaceAll(".", "\\.")}`, "u"), script);
+  }
   const tasks = [
     "egern-nodes", "egern-macos", "egern-iphone", "egern-ipad", "anywhere-nodes",
     "shadowrocket-nodes",
     "shadowrocket-config-macos", "shadowrocket-config-iphone", "shadowrocket-config-ipad",
     "surge-nodes", "surge-config-macos", "surge-config-iphone", "surge-config-ipad",
-     "singbox-config-macos", "singbox-config-iphone", "singbox-config-ipad", "singbox-config-android",
+    "singbox-config-macos", "singbox-config-iphone", "singbox-config-ipad", "singbox-config-android",
   ];
   for (const [index, task] of tasks.entries()) {
     const rowPattern = new RegExp("\\| " + (index + 1) + " \\| `" + task + "` \\|", "u");
@@ -80,12 +89,13 @@ test("central Sub-Store guide closes over all public scripts and private tasks",
   for (const [index, task] of [
     "apple-proxy-policy", "onexray-nodes", "onexray-profile", "onexray-routing-audit",
     "happ-macos", "happ-iphone", "happ-ipad", "happ-android", "happ-windows", "happ-linux",
-    "happ-routing-audit",
+    "happ-routing-audit", "v2rayn-nodes", "v2rayn-config-windows", "v2rayn-config-macos",
+    "v2box-nodes", "v2box-config-iphone", "v2box-config-ipad",
   ].entries()) {
     const rowPattern = new RegExp("\\| " + (index + 18) + " \\| `" + task + "` \\|", "u");
     assert.match(guide, rowPattern, `missing private task-table row ${task}`);
   }
-  assert.match(guide, /任务总数为 \*\*28 个\*\*/u);
+  assert.match(guide, /任务总数为 \*\*34 个\*\*/u);
   assert.match(guide, /通用任务总数为 `4\+1\+4\+4\+4=17` 个/u);
   assert.match(guide, /#output=nodes[\s\S]*&/u);
   assert.match(guide, /#output=config[\s\S]*&/u);
@@ -115,10 +125,10 @@ test("active documentation follows the maintained client and Anywhere package co
   const expectedCount = packageIds.length;
   const docs = await Promise.all(activeDocs.map(async (path) => [path, await text(path)]));
 
-  assert.deepEqual([...activeClientIds()].sort(), ["anywhere", "egern", "happ", "onexray", "shadowrocket", "singbox", "surge"]);
+  assert.deepEqual([...activeClientIds()].sort(), ["anywhere", "egern", "happ", "onexray", "shadowrocket", "singbox", "surge", "v2box", "v2rayn"]);
   assert.deepEqual([...plannedClientIds()].sort(), []);
   assert.deepEqual(Object.keys(CLIENT).sort(), [
-    "anywhere", "egern", "happ", "onexray", "shadowrocket", "singbox", "surge",
+    "anywhere", "egern", "happ", "onexray", "shadowrocket", "singbox", "surge", "v2box", "v2rayn",
   ]);
   assert.equal(expectedCount, 14);
   for (const [path, content] of docs) {
@@ -162,7 +172,7 @@ test("beginner entry does not assume one private deployment already exists", asy
   assert.doesNotMatch(readme, /你的 Sub-Store 里已有|你自己的 Sub-Store 已经部署|已经全部建好|已经帮你建好/u);
 });
 
-test("canonical client pool guide defines seven mappings, migration, rollback, and fail-closed rendering", async () => {
+test("canonical client pool guide defines nine mappings, migration, rollback, and fail-closed rendering", async () => {
   const guide = await optionalText("docs/substore-client-pools.md");
   for (const row of [
     "| Egern | `apple-proxy-egern` | 用户自行选择来源、AnyTLS 和字段形状 |",
@@ -172,6 +182,8 @@ test("canonical client pool guide defines seven mappings, migration, rollback, a
     "| sing-box | `apple-proxy-singbox` | 默认 strict；任一已选节点无法完整表示时失败，迁移期可显式使用 compatible |",
     "| OneXray | `apple-proxy-onexray` | 用户自行选择节点；节点任务输出 Xray JSON，Profile/审计对不兼容和固定节点问题失败关闭 |",
     "| HAPP | `apple-proxy-happ` | 用户自行选择节点；六平台配置与审计共享同一策略覆盖，固定节点问题写入私密 warning |",
+    "| v2rayN | `apple-proxy-v2rayn` | 用户自行选择节点；Windows/macOS 使用统一 Xray renderer 和地区 GeoData |",
+    "| V2Box | `apple-proxy-v2box` | 用户自行选择节点；iPhone/iPad 使用统一 Xray renderer 和共享 GeoData 资产 |",
   ]) assert.ok(guide.includes(row), row);
   assert.match(guide, /`apple-proxy-all`[\s\S]{0,160}总池/u);
   assert.match(guide, /`apple-proxy-sources`[\s\S]{0,240}(?:兼容|回滚)/u);
@@ -181,7 +193,7 @@ test("canonical client pool guide defines seven mappings, migration, rollback, a
   const orderedSteps = [
     "保留旧 collection 和 tasks",
     "建立 `apple-proxy-all` 总池",
-    "建立七个客户端组合",
+    "建立九个客户端组合",
     "用户自行筛选",
     "preview",
     "只修改对应客户端的 `name=`",
