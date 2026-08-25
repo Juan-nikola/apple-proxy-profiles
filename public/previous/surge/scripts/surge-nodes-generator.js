@@ -743,6 +743,7 @@ var SurgeNodesBundle = (() => {
       CLEANED_DISPLAY_NAMES.set(cloned, displayName);
       cloned._profile = {
         id,
+        originalName: String(original.name),
         protocol: cloned.type,
         protocolLabel,
         sourceKind: source.kind,

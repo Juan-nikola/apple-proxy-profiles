@@ -198,6 +198,10 @@ var OneXrayAuditBundle = (() => {
   function protocolDefinition(value) {
     return registry.get(normalizeProtocol(value)) ?? null;
   }
+  function canonicalProtocol(value) {
+    const definition = protocolDefinition(value);
+    return definition?.names[0] ?? null;
+  }
   function protocolSupportsClient(value, client) {
     const protocol2 = normalizeProtocol(value);
     const definition = protocolDefinition(protocol2);
@@ -1740,15 +1744,15 @@ var OneXrayAuditBundle = (() => {
         }
         const byIdentity = protocolGroup.map((node) => ({ node, identity: getIdentity(node), suffix: getFingerprint(node).slice(-5) })).sort((left, right) => left.identity < right.identity ? -1 : left.identity > right.identity ? 1 : 0);
         const suffixGroups = /* @__PURE__ */ new Map();
-        for (const record of byIdentity) {
-          const suffixGroup = suffixGroups.get(record.suffix) ?? [];
-          suffixGroup.push(record);
-          suffixGroups.set(record.suffix, suffixGroup);
+        for (const record2 of byIdentity) {
+          const suffixGroup = suffixGroups.get(record2.suffix) ?? [];
+          suffixGroup.push(record2);
+          suffixGroups.set(record2.suffix, suffixGroup);
         }
         for (const records2 of suffixGroups.values()) {
-          records2.forEach((record, index) => {
-            const suffix = records2.length > 1 ? `${record.suffix}-${index + 1}` : record.suffix;
-            record.node.name = `${protocolBase} #${suffix}`;
+          records2.forEach((record2, index) => {
+            const suffix = records2.length > 1 ? `${record2.suffix}-${index + 1}` : record2.suffix;
+            record2.node.name = `${protocolBase} #${suffix}`;
           });
         }
       }
@@ -1814,6 +1818,7 @@ var OneXrayAuditBundle = (() => {
       CLEANED_DISPLAY_NAMES.set(cloned, displayName);
       cloned._profile = {
         id,
+        originalName: String(original.name),
         protocol: cloned.type,
         protocolLabel,
         sourceKind: source.kind,
@@ -1994,8 +1999,8 @@ var OneXrayAuditBundle = (() => {
       adapterSchema: "v2box-v1",
       publicDirectory: "v2box"
     }
-  ].map((record) => freeze2(record));
-  var byId = new Map(records.map((record) => [record.id, record]));
+  ].map((record2) => freeze2(record2));
+  var byId = new Map(records.map((record2) => [record2.id, record2]));
   var ids = freeze2(records.map(({ id }) => id));
   var activeIds = freeze2(records.filter(({ state }) => state === "active").map(({ id }) => id));
   var plannedIds = freeze2(records.filter(({ state }) => state === "planned").map(({ id }) => id));
@@ -2389,8 +2394,70 @@ var OneXrayAuditBundle = (() => {
     return Object.freeze(overrides);
   }
 
-  // src/resolve-policy.js
+  // ../../shared/nodes/node-reference.js
+  var LINE_TERMINATOR2 = /[\r\n\u2028\u2029]/u;
+  var PROTOCOL_QUALIFIER = /^[a-z][a-z0-9_-]*$/iu;
+  function invalid(message) {
+    return new Error(`Invalid node reference: ${message}`);
+  }
+  function freeze3(value) {
+    return Object.freeze(value);
+  }
+  function parseNodeReference(target) {
+    if (typeof target !== "string" || !target.startsWith("NODE:")) {
+      throw invalid("target must be NODE:<name> or NODE:<name>|<protocol>");
+    }
+    const body = target.slice("NODE:".length);
+    if (body.length === 0 || body.trim() !== body || LINE_TERMINATOR2.test(body)) {
+      throw invalid("node name is empty or contains a line break");
+    }
+    const separator = body.lastIndexOf("|");
+    let name = body;
+    let protocol2 = null;
+    if (separator > 0 && separator < body.length - 1) {
+      const qualifier = body.slice(separator + 1);
+      if (!PROTOCOL_QUALIFIER.test(qualifier)) throw invalid("protocol qualifier is invalid");
+      protocol2 = canonicalProtocol(qualifier);
+      if (!protocol2) throw invalid("protocol qualifier is unsupported");
+      name = body.slice(0, separator);
+    }
+    if (name.length === 0 || name.trim() !== name || LINE_TERMINATOR2.test(name)) {
+      throw invalid("node name is empty or contains a line break");
+    }
+    return freeze3({ name, protocol: protocol2 });
+  }
   function metadata(node) {
+    return node?._profile && typeof node._profile === "object" ? node._profile : {};
+  }
+  function originalName(node) {
+    return typeof metadata(node).originalName === "string" ? metadata(node).originalName : node?.name;
+  }
+  function nodeProtocol(node) {
+    return canonicalProtocol(metadata(node).protocol ?? node?.type);
+  }
+  function selectable(node) {
+    return Boolean(node) && metadata(node).chained !== true;
+  }
+  function resolveNodeReference({ target, allNodes = [], eligibleNodes = [], client } = {}) {
+    const reference = parseNodeReference(target);
+    const all = (Array.isArray(allNodes) ? allNodes : []).filter(selectable);
+    const eligible = (Array.isArray(eligibleNodes) ? eligibleNodes : []).filter(selectable);
+    const matchingAll = all.filter((node) => originalName(node) === reference.name && (reference.protocol === null || nodeProtocol(node) === reference.protocol));
+    const matchingEligible = eligible.filter((node) => originalName(node) === reference.name && (reference.protocol === null || nodeProtocol(node) === reference.protocol));
+    if (client && matchingEligible.length === 0 && matchingAll.length > 0) {
+      const supported = matchingAll.filter((node) => protocolSupportsClient(nodeProtocol(node), client));
+      if (supported.length === 0) {
+        throw new Error("Node reference is incompatible with this client");
+      }
+    }
+    if (matchingEligible.length === 1) return matchingEligible[0];
+    if (matchingEligible.length > 1) throw new Error("Node reference is ambiguous");
+    if (matchingAll.length > 0) throw new Error("Node reference is incompatible with this client");
+    throw new Error("Node reference is missing");
+  }
+
+  // src/resolve-policy.js
+  function metadata2(node) {
     return node?._profile && typeof node._profile === "object" ? node._profile : {};
   }
   function nodeName(node) {
@@ -2404,9 +2471,9 @@ var OneXrayAuditBundle = (() => {
     }
     return `ap-fixed-${(hash >>> 0).toString(16).padStart(8, "0")}`;
   }
-  function freeze3(value) {
+  function freeze4(value) {
     if (value && typeof value === "object" && !Object.isFrozen(value)) {
-      for (const child of Object.values(value)) freeze3(child);
+      for (const child of Object.values(value)) freeze4(child);
       Object.freeze(value);
     }
     return value;
@@ -2417,7 +2484,7 @@ var OneXrayAuditBundle = (() => {
   function uniqueByName(nodes, name) {
     return nodes.filter((node) => nodeName(node) === name);
   }
-  function resolveOneXrayPolicy({ options, allNodes = [], eligibleNodes = [] } = {}) {
+  function legacyResolution({ options, allNodes = [], eligibleNodes = [] } = {}) {
     if (!options || typeof options !== "object") throw new TypeError("OneXray options are required");
     if (!Array.isArray(allNodes) || !Array.isArray(eligibleNodes)) throw new TypeError("OneXray node inventories are required");
     if (eligibleNodes.length === 0) throw new Error("OneXray has no compatible nodes");
@@ -2429,22 +2496,22 @@ var OneXrayAuditBundle = (() => {
     const resolveFixed = (target, configured) => {
       const wanted = configured.slice("NODE:".length);
       if (fixedByName.has(wanted)) return fixedByName.get(wanted);
-      const matches = uniqueByName(eligibleNodes, wanted).filter((node2) => metadata(node2).chained !== true);
+      const matches = uniqueByName(eligibleNodes, wanted).filter((node2) => metadata2(node2).chained !== true);
       if (matches.length > 1) throw fixedTargetError(target, wanted, "is ambiguous");
       if (matches.length === 0) {
         const incompatible = uniqueByName(allNodes, wanted);
         throw fixedTargetError(target, wanted, incompatible.length > 0 ? "is incompatible" : "is missing");
       }
       const node = matches[0];
-      let tag = hashTag(`${wanted}\0${metadata(node).id ?? ""}`);
+      let tag = hashTag(`${wanted}\0${metadata2(node).id ?? ""}`);
       if (tagOwners.has(tag) && tagOwners.get(tag) !== wanted) {
-        tag = hashTag(`${wanted}\0${metadata(node).id ?? ""}${node.type ?? ""}`);
+        tag = hashTag(`${wanted}\0${metadata2(node).id ?? ""}${node.type ?? ""}`);
       }
-      const record = { node, name: wanted, tag };
-      fixedByName.set(wanted, record);
+      const record2 = { node, name: wanted, tag };
+      fixedByName.set(wanted, record2);
       tagOwners.set(tag, wanted);
-      fixedNodes.push(record);
-      return record;
+      fixedNodes.push(record2);
+      return record2;
     };
     for (const target of BUSINESS_TARGETS) {
       const configured = overrides[target.id] ?? target.defaultTarget;
@@ -2454,28 +2521,485 @@ var OneXrayAuditBundle = (() => {
         targets[target.id] = { configured, resolvedTag: "direct", status: "direct" };
       } else {
         const fixed = resolveFixed(target, configured);
-        targets[target.id] = { configured, resolvedTag: fixed.tag, status: "fixed", nodeId: metadata(fixed.node).id ?? null };
+        targets[target.id] = { configured, resolvedTag: fixed.tag, status: "fixed", nodeId: metadata2(fixed.node).id ?? null };
       }
     }
-    let homepageNodes = eligibleNodes.filter((node) => metadata(node).chained !== true);
+    let homepageNodes = eligibleNodes.filter((node) => metadata2(node).chained !== true);
     let chain = { enabled: false, landingTag: null, entryCount: homepageNodes.length };
     let finalOutbound = null;
     if (options.clientChain === "on") {
       const targetName = String(options.clientChainTarget).slice("NODE:".length);
-      const landingMatches = uniqueByName(allNodes, targetName).filter((node) => metadata(node).sourceKind === "landing" && metadata(node).chained !== true);
+      const landingMatches = uniqueByName(allNodes, targetName).filter((node) => metadata2(node).sourceKind === "landing" && metadata2(node).chained !== true);
       if (landingMatches.length !== 1) throw new Error(`OneXray client chain landing is not unique: ${targetName}`);
-      homepageNodes = eligibleNodes.filter((node) => metadata(node).entry === true && metadata(node).chained !== true);
+      homepageNodes = eligibleNodes.filter((node) => metadata2(node).entry === true && metadata2(node).chained !== true);
       if (homepageNodes.length === 0) throw new Error("OneXray client chain requires at least one entry node");
       chain = { enabled: true, landingTag: "chainProxy", entryCount: homepageNodes.length };
       finalOutbound = { node: landingMatches[0], tag: "chainProxy" };
     }
-    return freeze3({
+    return freeze4({
       homepageNodes: [...homepageNodes],
       fixedNodes: [...fixedNodes],
       finalOutbound,
       targets,
       chain
     });
+  }
+  function unifiedTargetId(id) {
+    if (id === "domesticCore" || id === "chinaIp") return "domesticPlatform";
+    return id;
+  }
+  function unifiedResolution({ options, allNodes, eligibleNodes, policyResolution }) {
+    if (!policyResolution || typeof policyResolution !== "object") {
+      throw new TypeError("OneXray unified policy resolution is required");
+    }
+    if (eligibleNodes.length === 0) throw new Error("OneXray has no compatible nodes");
+    const fixedNodes = (policyResolution.fixedNodes ?? []).map((fixed) => {
+      const node = fixed.node ?? eligibleNodes.find((candidate) => nodeMetadata(candidate).id === fixed.nodeId);
+      if (!node) throw new Error("OneXray fixed policy node is unavailable");
+      const nodeId = fixed.nodeId ?? nodeMetadata(node).id;
+      const name = fixed.name ?? node.name;
+      return { node, name, nodeId, tag: hashTag(String(name) + "\0" + String(nodeId ?? "")) };
+    });
+    const fixedById = new Map(fixedNodes.map((fixed) => [fixed.nodeId, fixed]));
+    const targets = {};
+    for (const target of BUSINESS_TARGETS) {
+      const record2 = policyResolution.targets?.[unifiedTargetId(target.id)];
+      const configured = record2?.configured ?? target.defaultTarget;
+      if (record2?.status === "fixed" || configured.startsWith("NODE:")) {
+        const fixed = fixedById.get(record2?.nodeId);
+        if (!fixed) throw fixedTargetError(target, record2?.resolved ?? configured, "is unavailable");
+        targets[target.id] = { configured, resolvedTag: fixed.tag, status: "fixed", nodeId: fixed.nodeId };
+      } else if (record2?.resolved === "DIRECT" || configured === "DIRECT") {
+        targets[target.id] = { configured, resolvedTag: "direct", status: "direct" };
+      } else {
+        targets[target.id] = { configured, resolvedTag: "proxy", status: "follow" };
+      }
+    }
+    let homepageNodes = eligibleNodes.filter((node) => metadata2(node).chained !== true);
+    let chain = { enabled: false, landingTag: null, entryCount: homepageNodes.length };
+    let finalOutbound = null;
+    if (options.clientChain === "on") {
+      const landing = resolveNodeReference({
+        target: options.clientChainTarget,
+        allNodes,
+        eligibleNodes: allNodes,
+        client: CLIENT.onexray
+      });
+      if (metadata2(landing).sourceKind !== "landing" || metadata2(landing).chained === true) {
+        throw new Error("OneXray client chain target must resolve to one landing node");
+      }
+      homepageNodes = eligibleNodes.filter((node) => metadata2(node).entry === true && metadata2(node).chained !== true);
+      if (homepageNodes.length === 0) throw new Error("OneXray client chain requires at least one entry node");
+      chain = { enabled: true, landingTag: "chainProxy", entryCount: homepageNodes.length };
+      finalOutbound = { node: landing, tag: "chainProxy" };
+    }
+    return freeze4({ homepageNodes: [...homepageNodes], fixedNodes, finalOutbound, targets, chain });
+  }
+  function resolveOneXrayPolicy({ options, allNodes = [], eligibleNodes = [], policyResolution = null } = {}) {
+    if (!options || typeof options !== "object") throw new TypeError("OneXray options are required");
+    if (!Array.isArray(allNodes) || !Array.isArray(eligibleNodes)) throw new TypeError("OneXray node inventories are required");
+    return policyResolution === null ? legacyResolution({ options, allNodes, eligibleNodes }) : unifiedResolution({ options, allNodes, eligibleNodes, policyResolution });
+  }
+
+  // ../../shared/policies/unified-policy.js
+  var TARGETS = [
+    ["ai", "\u{1F916} AI \u4E13\u7528", "FOLLOW"],
+    ["github", "\u{1F419} GitHub", "FOLLOW"],
+    ["youtube", "\u{1F4FA} YouTube", "FOLLOW"],
+    ["overseasMedia", "\u{1F3AC} \u6D77\u5916\u6D41\u5A92\u4F53", "FOLLOW"],
+    ["globalSocial", "\u{1F4AC} \u6D77\u5916\u793E\u4EA4", "FOLLOW"],
+    ["apple", "\u{1F34E} Apple", "DIRECT"],
+    ["microsoft", "\u{1FA9F} Microsoft", "DIRECT"],
+    ["domesticPlatform", "\u{1F1E8}\u{1F1F3} \u56FD\u5185\u5E73\u53F0", "DIRECT"],
+    ["overseasGame", "\u{1F30D} \u6D77\u5916\u6E38\u620F", "FOLLOW"],
+    ["game", "\u{1F3AE} \u6E38\u620F\u8FDE\u63A5", "DIRECT"],
+    ["download", "\u2B07\uFE0F \u4E0B\u8F7D/P2P", "DIRECT"],
+    ["dnsAndRules", "\u{1F9ED} DNS \u4E0E\u89C4\u5219\u4E0B\u8F7D", "FOLLOW"],
+    ["final", "\u6700\u7EC8\u515C\u5E95", "FOLLOW"]
+  ].map(([id, label, defaultTarget]) => Object.freeze({ id, label, defaultTarget }));
+  var UNIFIED_POLICY_TARGETS = Object.freeze(TARGETS);
+  var UNIFIED_POLICY_TARGET_IDS = Object.freeze(TARGETS.map(({ id }) => id));
+  var TARGET_BY_KEY2 = /* @__PURE__ */ new Map();
+  for (const target of UNIFIED_POLICY_TARGETS) {
+    TARGET_BY_KEY2.set(target.id, target);
+    TARGET_BY_KEY2.set(target.label, target);
+  }
+  for (const [alias, id] of Object.entries({
+    "AI \u4E13\u7528": "ai",
+    AI: "ai",
+    GitHub: "github",
+    YouTube: "youtube",
+    "\u6D77\u5916\u6D41\u5A92\u4F53": "overseasMedia",
+    "\u6D77\u5916\u793E\u4EA4": "globalSocial",
+    Apple: "apple",
+    Microsoft: "microsoft",
+    "\u56FD\u5185\u5E73\u53F0": "domesticPlatform",
+    domestic: "domesticPlatform",
+    domesticCore: "domesticPlatform",
+    chinaIp: "domesticPlatform",
+    "\u56FD\u5185\u6838\u5FC3": "domesticPlatform",
+    "\u4E2D\u56FD IP": "domesticPlatform",
+    "\u6D77\u5916\u6E38\u620F": "overseasGame",
+    "\u6E38\u620F\u8FDE\u63A5": "game",
+    "\u4E0B\u8F7D/P2P": "download",
+    "DNS \u4E0E\u89C4\u5219\u4E0B\u8F7D": "dnsAndRules"
+  })) {
+    TARGET_BY_KEY2.set(alias, TARGET_BY_KEY2.get(id));
+  }
+  function unifiedPolicyTargetByKey(key) {
+    return typeof key === "string" ? TARGET_BY_KEY2.get(key) : void 0;
+  }
+  function defaultUnifiedPolicyTargets() {
+    return Object.fromEntries(UNIFIED_POLICY_TARGETS.map(({ id, defaultTarget }) => [id, defaultTarget]));
+  }
+  function canonicalUnifiedPolicyTarget(value) {
+    return canonicalBusinessTarget(value);
+  }
+
+  // ../../shared/policies/private-policy.js
+  var CHANNEL_KEYS = /* @__PURE__ */ new Set(["revision", "defaults", "happ", "onexray"]);
+  var DEFAULT_KEYS = /* @__PURE__ */ new Set(["targets", "dns", "adblockMode", "clientChain"]);
+  var OVERRIDE_KEYS = DEFAULT_KEYS;
+  var DNS_KEYS = /* @__PURE__ */ new Set(["chinaDns", "globalDns"]);
+  var CHAIN_KEYS = /* @__PURE__ */ new Set(["mode", "target"]);
+  var TARGET_ID_SET = new Set(PRIVATE_POLICY_TARGET_IDS);
+  var CHANNEL_SET = new Set(PRIVATE_POLICY_CHANNELS);
+  var CLIENT_SET = new Set(PRIVATE_POLICY_CLIENTS);
+  var CHINA_DNS_SET = new Set(OPTION_VALUES.chinaDns);
+  var GLOBAL_DNS_SET = new Set(OPTION_VALUES.globalDns);
+  var AD_BLOCK_MODES = /* @__PURE__ */ new Set(["off", "full"]);
+  var LINE_TERMINATOR3 = /[\r\n\u2028\u2029]/u;
+  var URI_VALUE = /(?:[a-z][a-z0-9+.-]{1,15}:\/\/|https?:\/\/)/iu;
+  var SECRET_VALUE = /(?:password|passwd|secret|token|uuid|psk|private[-_ ]?key|subscription|credential)/iu;
+  var MAX_REVISION_LENGTH = 160;
+  var MAX_NODE_NAME_LENGTH = 256;
+  function invalid2(reason) {
+    return new Error(`Invalid apple-proxy-policy: ${reason}`);
+  }
+  function isRecord(value) {
+    return value !== null && typeof value === "object" && !Array.isArray(value) && Object.getPrototypeOf(value) === Object.prototype;
+  }
+  function requireRecord(value, reason) {
+    if (!isRecord(value)) throw invalid2(reason);
+    return value;
+  }
+  function requireKeys(value, required, allowed = required) {
+    const allowedSet = allowed instanceof Set ? allowed : new Set(allowed);
+    for (const key of Object.keys(value)) {
+      if (!allowedSet.has(key)) throw invalid2("contains an unsupported field");
+    }
+    for (const key of required) {
+      if (!Object.hasOwn(value, key)) throw invalid2("is missing a required field");
+    }
+  }
+  function rejectSecretLikeString(value) {
+    if (URI_VALUE.test(value) || SECRET_VALUE.test(value)) {
+      throw invalid2("contains a secret or URI");
+    }
+  }
+  function normalizeRevision(value) {
+    if (typeof value !== "string" || value.length === 0 || value.length > MAX_REVISION_LENGTH || value.trim() !== value || LINE_TERMINATOR3.test(value)) {
+      throw invalid2("revision must be a non-empty single-line string");
+    }
+    rejectSecretLikeString(value);
+    return value;
+  }
+  function normalizeTarget(value) {
+    if (typeof value !== "string" || LINE_TERMINATOR3.test(value)) {
+      throw invalid2("target must be FOLLOW, DIRECT, or NODE:<name>");
+    }
+    if (/^(?:FOLLOW|DIRECT)$/iu.test(value)) return value.toUpperCase();
+    if (!value.startsWith("NODE:")) throw invalid2("target must be FOLLOW, DIRECT, or NODE:<name>");
+    const name = value.slice("NODE:".length);
+    if (name.length === 0 || name.length > MAX_NODE_NAME_LENGTH || name.trim() !== name) {
+      throw invalid2("target must be FOLLOW, DIRECT, or NODE:<name>");
+    }
+    rejectSecretLikeString(name);
+    return `NODE:${name}`;
+  }
+  function normalizeUnifiedTarget(value) {
+    if (typeof value !== "string" || LINE_TERMINATOR3.test(value)) {
+      throw invalid2("target must be FOLLOW, DIRECT, or NODE:<name>[|<protocol>]");
+    }
+    try {
+      const canonical = canonicalUnifiedPolicyTarget(value);
+      if (!canonical.startsWith("NODE:")) return canonical;
+      const reference = parseNodeReference(canonical);
+      return `NODE:${reference.name}${reference.protocol ? `|${reference.protocol}` : ""}`;
+    } catch {
+      throw invalid2("target must be FOLLOW, DIRECT, or NODE:<name>[|<protocol>]");
+    }
+  }
+  function normalizeTargetMap(value, { complete }) {
+    requireRecord(value, "targets must be an object");
+    if (complete) {
+      for (const key of Object.keys(value)) {
+        if (!TARGET_ID_SET.has(key)) throw invalid2("contains an unsupported business target");
+      }
+      for (const id of PRIVATE_POLICY_TARGET_IDS) {
+        if (!Object.hasOwn(value, id)) throw invalid2("is missing a required business target");
+      }
+    } else {
+      for (const key of Object.keys(value)) {
+        if (!TARGET_ID_SET.has(key)) throw invalid2("contains an unsupported business target");
+      }
+    }
+    const result = {};
+    for (const id of PRIVATE_POLICY_TARGET_IDS) {
+      if (Object.hasOwn(value, id)) result[id] = normalizeTarget(value[id]);
+    }
+    return result;
+  }
+  function normalizeDns(value, { complete }) {
+    requireRecord(value, "dns must be an object");
+    requireKeys(value, complete ? ["chinaDns", "globalDns"] : [], DNS_KEYS);
+    const result = {};
+    if (Object.hasOwn(value, "chinaDns")) {
+      if (typeof value.chinaDns !== "string" || !CHINA_DNS_SET.has(value.chinaDns)) {
+        throw invalid2("contains an invalid China DNS provider");
+      }
+      result.chinaDns = value.chinaDns;
+    }
+    if (Object.hasOwn(value, "globalDns")) {
+      if (typeof value.globalDns !== "string" || !GLOBAL_DNS_SET.has(value.globalDns)) {
+        throw invalid2("contains an invalid global DNS provider");
+      }
+      result.globalDns = value.globalDns;
+    }
+    return result;
+  }
+  function normalizeChain(value) {
+    requireRecord(value, "clientChain must be an object");
+    requireKeys(value, ["mode"], CHAIN_KEYS);
+    if (value.mode === "off") {
+      if (Object.hasOwn(value, "target")) throw invalid2("clientChain off cannot contain a target");
+      return { mode: "off" };
+    }
+    if (value.mode !== "on" || !Object.hasOwn(value, "target")) {
+      throw invalid2("clientChain on requires a target");
+    }
+    const target = normalizeTarget(value.target);
+    if (!target.startsWith("NODE:")) throw invalid2("clientChain target must be NODE:<name>");
+    return { mode: "on", target };
+  }
+  function normalizeDefaults(value) {
+    requireRecord(value, "defaults must be an object");
+    requireKeys(value, ["targets", "dns", "adblockMode", "clientChain"], DEFAULT_KEYS);
+    if (typeof value.adblockMode !== "string" || !AD_BLOCK_MODES.has(value.adblockMode)) {
+      throw invalid2("contains an invalid adblock mode");
+    }
+    return {
+      targets: normalizeTargetMap(value.targets, { complete: true }),
+      dns: normalizeDns(value.dns, { complete: true }),
+      adblockMode: value.adblockMode,
+      clientChain: normalizeChain(value.clientChain)
+    };
+  }
+  function normalizeOverride(value) {
+    requireRecord(value, "client override must be an object");
+    requireKeys(value, [], OVERRIDE_KEYS);
+    const result = {};
+    if (Object.hasOwn(value, "targets")) result.targets = normalizeTargetMap(value.targets, { complete: false });
+    if (Object.hasOwn(value, "dns")) result.dns = normalizeDns(value.dns, { complete: false });
+    if (Object.hasOwn(value, "adblockMode")) {
+      if (typeof value.adblockMode !== "string" || !AD_BLOCK_MODES.has(value.adblockMode)) {
+        throw invalid2("contains an invalid adblock mode");
+      }
+      result.adblockMode = value.adblockMode;
+    }
+    if (Object.hasOwn(value, "clientChain")) result.clientChain = normalizeChain(value.clientChain);
+    return result;
+  }
+  function normalizePolicyObject(value) {
+    requireRecord(value, "policy must be an object");
+    requireKeys(value, ["schemaVersion", "channels"], /* @__PURE__ */ new Set(["schemaVersion", "channels"]));
+    if (value.schemaVersion !== 1) throw invalid2("schemaVersion must be 1");
+    requireRecord(value.channels, "channels must be an object");
+    requireKeys(value.channels, PRIVATE_POLICY_CHANNELS, CHANNEL_SET);
+    const channels = {};
+    for (const channel of PRIVATE_POLICY_CHANNELS) {
+      const record2 = requireRecord(value.channels[channel], "channel must be an object");
+      requireKeys(record2, ["revision", "defaults", "happ", "onexray"], CHANNEL_KEYS);
+      channels[channel] = {
+        revision: normalizeRevision(record2.revision),
+        defaults: normalizeDefaults(record2.defaults),
+        happ: normalizeOverride(record2.happ),
+        onexray: normalizeOverride(record2.onexray)
+      };
+    }
+    return deepFreeze({ schemaVersion: 1, channels });
+  }
+  function normalizeUnifiedPolicyObject(value) {
+    requireRecord(value, "policy must be an object");
+    requireKeys(value, ["schemaVersion", "targets"], /* @__PURE__ */ new Set(["schemaVersion", "targets"]));
+    if (value.schemaVersion !== 2) throw invalid2("schemaVersion must be 2");
+    requireRecord(value.targets, "targets must be an object");
+    const targets = defaultUnifiedPolicyTargets();
+    const seen = /* @__PURE__ */ new Map();
+    for (const [key, rawTarget] of Object.entries(value.targets)) {
+      const target = unifiedPolicyTargetByKey(key);
+      if (!target) throw invalid2("contains an unsupported business target");
+      const canonical = normalizeUnifiedTarget(rawTarget);
+      if (seen.has(target.id) && seen.get(target.id) !== canonical) {
+        throw invalid2("contains conflicting business target aliases");
+      }
+      seen.set(target.id, canonical);
+      targets[target.id] = canonical;
+    }
+    for (const id of UNIFIED_POLICY_TARGET_IDS) {
+      if (!Object.hasOwn(targets, id)) throw invalid2("contains an incomplete business target map");
+    }
+    return deepFreeze({ schemaVersion: 2, targets });
+  }
+  function deepFreeze(value) {
+    if (value && typeof value === "object" && !Object.isFrozen(value)) {
+      for (const child of Object.values(value)) deepFreeze(child);
+      Object.freeze(value);
+    }
+    return value;
+  }
+  function parsePrivatePolicy(text) {
+    let parsed;
+    try {
+      parsed = parseStrictJson(text, {
+        label: "apple-proxy-policy",
+        maxBytes: 256 * 1024,
+        maxDepth: 16
+      });
+    } catch (error) {
+      throw error;
+    }
+    if (parsed?.schemaVersion === 2) return normalizeUnifiedPolicyObject(parsed);
+    return normalizePolicyObject(parsed);
+  }
+  function resolvePrivatePolicy({ policy, channel, client } = {}) {
+    const normalized = typeof policy === "string" || policy instanceof Uint8Array ? parsePrivatePolicy(policy) : policy?.schemaVersion === 2 ? normalizeUnifiedPolicyObject(policy) : normalizePolicyObject(policy);
+    if (normalized.schemaVersion === 2) {
+      return deepFreeze({
+        targets: { ...normalized.targets },
+        dns: { chinaDns: "alidns", globalDns: "cloudflare" },
+        adblockMode: "off",
+        clientChain: { mode: "off" }
+      });
+    }
+    if (!CHANNEL_SET.has(channel)) throw invalid2("contains an unsupported channel");
+    if (!CLIENT_SET.has(client)) throw invalid2("contains an unsupported policy client");
+    const record2 = normalized.channels[channel];
+    const override = record2[client];
+    const result = {
+      targets: { ...record2.defaults.targets, ...override.targets ?? {} },
+      dns: { ...record2.defaults.dns, ...override.dns ?? {} },
+      adblockMode: override.adblockMode ?? record2.defaults.adblockMode,
+      clientChain: { ...override.clientChain ?? record2.defaults.clientChain }
+    };
+    return deepFreeze(result);
+  }
+
+  // ../../shared/substore/policy-artifact.js
+  var POLICY_ARTIFACT_NAME = "apple-proxy-policy";
+  function contentOf(artifact) {
+    if (typeof artifact === "string" || artifact instanceof Uint8Array) return artifact;
+    if (!artifact || typeof artifact !== "object" || Array.isArray(artifact)) return null;
+    if (typeof artifact.$content === "string" || artifact.$content instanceof Uint8Array) return artifact.$content;
+    if (typeof artifact.content === "string" || artifact.content instanceof Uint8Array) return artifact.content;
+    if (Object.hasOwn(artifact, "schemaVersion")) return JSON.stringify(artifact);
+    return null;
+  }
+  async function loadSubstorePolicyArtifact(context, name = POLICY_ARTIFACT_NAME) {
+    if (!context || typeof context.produceArtifact !== "function") {
+      throw new Error("Sub-Store policy artifact is unavailable");
+    }
+    const artifact = await context.produceArtifact({
+      type: "file",
+      name,
+      platform: "JSON",
+      produceType: "internal"
+    });
+    const content = contentOf(artifact);
+    if (content === null) throw new Error("Sub-Store policy artifact has no content");
+    return parsePrivatePolicy(content);
+  }
+
+  // ../../shared/policies/resolve-unified.js
+  var LEGACY_TO_UNIFIED = Object.freeze({
+    ai: "ai",
+    github: "github",
+    youtube: "youtube",
+    overseasMedia: "overseasMedia",
+    globalMedia: "overseasMedia",
+    globalSocial: "globalSocial",
+    overseasGame: "overseasGame",
+    domesticCore: "domesticPlatform",
+    domesticPlatform: "domesticPlatform",
+    domestic: "domesticPlatform",
+    chinaIp: "domesticPlatform",
+    apple: "apple",
+    microsoft: "microsoft",
+    download: "download",
+    dnsAndRules: "dnsAndRules",
+    final: "final",
+    game: "game"
+  });
+  function freeze5(value) {
+    if (value && typeof value === "object" && !Object.isFrozen(value)) {
+      for (const child of Object.values(value)) freeze5(child);
+      Object.freeze(value);
+    }
+    return value;
+  }
+  function configuredTargets(policy, { channel, client }) {
+    const defaults = defaultUnifiedPolicyTargets();
+    if (!policy) return defaults;
+    const parsed = typeof policy === "string" || policy instanceof Uint8Array ? parsePrivatePolicy(policy) : policy;
+    const resolved = resolvePrivatePolicy({ policy: parsed, channel, client });
+    if (parsed.schemaVersion === 2) return { ...defaults, ...resolved.targets };
+    const result = { ...defaults };
+    for (const [legacyId, value] of Object.entries(resolved.targets ?? {})) {
+      const id = LEGACY_TO_UNIFIED[legacyId];
+      if (id) result[id] = value;
+    }
+    return result;
+  }
+  function record(configured) {
+    if (configured === "DIRECT") return { configured, resolved: "DIRECT", status: "direct", warningCode: null, nodeId: null };
+    if (configured === "FOLLOW") return { configured, resolved: "FOLLOW", status: "follow", warningCode: null, nodeId: null };
+    return { configured, resolved: configured, status: "fixed", warningCode: null, nodeId: null };
+  }
+  function addLegacyAliases(targets) {
+    targets.globalMedia = targets.overseasMedia;
+    targets.domestic = targets.domesticPlatform;
+    targets.domesticCore = targets.domesticPlatform;
+    targets.chinaIp = targets.domesticPlatform;
+    return targets;
+  }
+  function resolveUnifiedPolicy({
+    policy = null,
+    channel = "previous",
+    client = CLIENT.happ,
+    allNodes = [],
+    eligibleNodes = allNodes
+  } = {}) {
+    const values = configuredTargets(policy, { channel, client });
+    const targets = {};
+    const fixedNodes = [];
+    const fixedIds = /* @__PURE__ */ new Set();
+    for (const target of UNIFIED_POLICY_TARGETS) {
+      const configured = values[target.id] ?? target.defaultTarget;
+      const resolved = record(configured);
+      if (configured.startsWith("NODE:")) {
+        const node = resolveNodeReference({ target: configured, allNodes, eligibleNodes, client });
+        const nodeId = node?._profile?.id ?? `node-${fixedNodes.length}`;
+        resolved.resolved = node.name;
+        resolved.nodeId = nodeId;
+        if (!fixedIds.has(nodeId)) {
+          fixedIds.add(nodeId);
+          fixedNodes.push({ nodeId, node, name: node.name });
+        }
+      }
+      targets[target.id] = resolved;
+    }
+    addLegacyAliases(targets);
+    return freeze5({ targets, fixedNodes, warnings: [] });
   }
 
   // src/substore-audit-entry.js
@@ -2489,7 +3013,20 @@ var OneXrayAuditBundle = (() => {
     const normalized = normalizeNodes(raw, { clientChain: options.clientChain });
     const filtered = filterNodesForClient(normalized.nodes, CLIENT.onexray);
     if (filtered.nodes.length === 0) throw new Error("OneXray audit has no compatible nodes");
-    const resolution = resolveOneXrayPolicy({ options, allNodes: normalized.nodes, eligibleNodes: filtered.nodes });
+    const policy = await loadSubstorePolicyArtifact(context);
+    const unified = policy === null ? null : resolveUnifiedPolicy({
+      policy,
+      channel: options.channel,
+      client: CLIENT.onexray,
+      allNodes: normalized.nodes,
+      eligibleNodes: filtered.nodes
+    });
+    const resolution = resolveOneXrayPolicy({
+      options,
+      allNodes: normalized.nodes,
+      eligibleNodes: filtered.nodes,
+      policyResolution: unified
+    });
     const audit = buildOneXrayAudit({ options, normalized, filtered, resolution });
     return { ...input, $content: `${JSON.stringify(audit, null, 2)}
 ` };

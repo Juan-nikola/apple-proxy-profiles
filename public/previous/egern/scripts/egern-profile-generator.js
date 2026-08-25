@@ -4659,7 +4659,9 @@ var EgernProfileBundle = (() => {
       if (!target || !byName.has(fields.name)) return record2;
       const value = policyValue(resolution.targets?.[target.id]);
       if (value === null) return record2;
-      const policies = movePolicyToFront([...fields.policies ?? []], value);
+      const baselinePolicies = [...fields.policies ?? []];
+      if (baselinePolicies.length === 0 && value === "\u{1F680} \u8282\u70B9\u9009\u62E9") return record2;
+      const policies = movePolicyToFront(baselinePolicies, value);
       return { [type]: { ...fields, policies } };
     });
   }

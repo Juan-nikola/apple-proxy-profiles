@@ -1,6 +1,17 @@
 {
   "schemaVersion": 2,
   "clients": {
+    "anywhere": "68d0ed037ab1b9e4ae1b1a2d9b70f621f91ee3a767ff3ab5ef928cdb6edfa95c",
+    "egern": "e716f49556c4d69ca543442d948cf7bbd4cfe0d248af2c807c313e267e19003a",
+    "shadowrocket": "9a89a2f346659c03609476fe13dd5e90b14630b2bae6e5942975c49e039b931c",
+    "surge": "77cc0093539956fa86d94bd2880c7862cefef0f21eca4b8d94f5c12fa6437bdc",
+    "singbox": "d534295a23f504426fc6b4a04d24519ae3561d4104f0f97b50f717a9a8b9f140",
+    "onexray": "10d79c47fc3de8a05017142d74a7f38e15351c8560ab5dbab915877d386563c7",
+    "happ": "dfba29815fa450b083cf5583de8387281a69691c06fc2f0b39ae5fbabdc2ed57",
+    "v2rayn": "acd01588c6b3c1df48d1637417aa87afd07de77b9024af9b037b845f9e40df84",
+    "v2box": "b8d5bce819fc25bf9338db6329216e38ac4df1d5a423e8939ff7ca4766a634cc"
+  },
+  "previous": {
     "anywhere": "df6f755bd8e1a5399a5ed204c516ee0944e22a9af7e55eaede259420328cdd4e",
     "egern": "aef9308e7de7ef7977da205302fec94f2365960bd401079ce554ccfcfde160d8",
     "shadowrocket": "7f5fad30e0ae6e99b139df6b34171f01326dca2a54f5bef771ed22555b6dba57",
@@ -11,24 +22,13 @@
     "v2rayn": "8fb1da1001a5be5480c314490b1113b258f7b7461c43c0808c2d5a33324c6e26",
     "v2box": "e2a527354554db3408322722061f234723ce93dc5b9f9eaa75f595db7199138a"
   },
-  "previous": {
-    "anywhere": "df6f755bd8e1a5399a5ed204c516ee0944e22a9af7e55eaede259420328cdd4e",
-    "egern": "e554ccd460c27dc4a08c1aa96c1d45c3dc38e9436b66246e3b8a1d5e38c7d599",
-    "shadowrocket": "1f87ef675cb43750a5c0fa45243b3caebdcded32b0c752181d83688fda9a27c6",
-    "surge": "b837958488ab2e86ae66e302476e63093fbffc4cbf536b20dbd774561b83e6c2",
-    "singbox": "715fd928279a6e1059ddfef1c9b65bfe8712d99fe3d3969417792c88d19de580",
-    "onexray": "26ddfb256f2c79f693267a278bdb78002284f1ead525364fb5ecb2ba945fb575",
-    "happ": "b05f3140afa4e68dde6af42580c49e4a9cb08e18cdd21082fe25e17047f8072f",
-    "v2rayn": "140461d2235b4bff96df7114a797f85213294f2560932dd77f532050a066a22c",
-    "v2box": "c54a371a6c34616bc06a3d5c2528a176dbd0a77fe26e39c8100bc6f25ced7df0"
-  },
   "optionalPacks": {
     "adblock-full": {
       "anywhere": "00f8338af945fca80e81da1f9a2c29a6238a8c69568e3ab8d679d713d26be34f",
       "egern": "42d55c5dfb7162f5bcd361f66288499ca98ccf13799dd0cbcb75bbc02072186a",
       "shadowrocket": "502dbfe3d2fc6504b9764f9bbe72b55b974c775a965fefa250b0db09357e00b4",
       "surge": "01a6c87844de890f9d3bf36b365e882b9986878398dc72b64bddf23b180fa9bf",
-      "singbox": "d10a484393526b61cd476eb07af33b8427cbff404f86caa89128fabd977be60d"
+      "singbox": "e71a784ba98972d176f025398e6ed9100a25d806d0655f2e3a8c093c9d44d5ae"
     }
   },
   "previousOptionalPacks": {

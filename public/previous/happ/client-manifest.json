@@ -18,28 +18,28 @@
       "sha256": "f1e667e91b5301862bd36c06d80a9038f17cbfcefa56d336da8561c7e61724c4"
     },
     {
-      "bytes": 150540,
+      "bytes": 180033,
       "path": "happ/scripts/happ-config-generator.js",
-      "sha256": "a65bbb3bf61c2c47b6f485a78ebbd54c3250d3ce9ab533b1688c34c7b86f32ed"
+      "sha256": "2a560489cfaa56540376c5031d83a7fc0769f3559b50baca543ab5f0c57d2b24"
     },
     {
-      "bytes": 109362,
+      "bytes": 131695,
       "path": "happ/scripts/happ-routing-audit.js",
-      "sha256": "59ccd7e30fd9e55346ed3682af1484df7a8af206154c9f62440f7f7caf5ced4f"
+      "sha256": "a5f6c8c35c2f46670e3ba6b3e2b90dd52c930f6b467f6a400c9505f360e17819"
     },
     {
-      "bytes": 150540,
+      "bytes": 180033,
       "path": "happ/scripts/substore-config-generator.js",
-      "sha256": "a65bbb3bf61c2c47b6f485a78ebbd54c3250d3ce9ab533b1688c34c7b86f32ed"
+      "sha256": "2a560489cfaa56540376c5031d83a7fc0769f3559b50baca543ab5f0c57d2b24"
     },
     {
-      "bytes": 109362,
+      "bytes": 131695,
       "path": "happ/scripts/substore-routing-audit.js",
-      "sha256": "59ccd7e30fd9e55346ed3682af1484df7a8af206154c9f62440f7f7caf5ced4f"
+      "sha256": "a5f6c8c35c2f46670e3ba6b3e2b90dd52c930f6b467f6a400c9505f360e17819"
     }
   ],
   "generatedAt": "2026-08-23T18:28:35Z",
-  "manifestHash": "42d0c1f5f7a18608b4c1db8deb8317bb0e92eba5250c86a73a8a870a1fe20194",
+  "manifestHash": "6b63db599814b41f7fd31f3cde575d6f7c55f16cace6217ad5405d9bc51949bf",
   "optionalPacks": {},
   "schemaVersion": 1
 }
