@@ -96,6 +96,10 @@ test("canonical private task catalog covers all HAPP platforms", () => {
     assert.equal(task.url.includes("/current/happ/scripts/"), true);
     assert.equal(task.url.includes("channel="), false);
   }
+  assert.doesNotMatch(
+    catalog.find(({ name }) => name === "happ-routing-audit").url,
+    /(?:^|[&#])channel=/u,
+  );
   for (const task of catalog.filter(({ name }) => name.startsWith("v2rayn-") || name.startsWith("v2box-"))) {
     assert.match(task.url, /\/\/(?:juan-nikola\.github\.io)\/apple-proxy-profiles\/(?:current)\/(?:v2rayn|v2box)\/scripts\//u);
     if (task.output === "config") assert.match(task.url, /region=cn/u);
