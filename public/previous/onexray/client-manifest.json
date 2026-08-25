@@ -1,11 +1,11 @@
 {
-  "chinaIpAuditSha256": "d66303986c1be68330de89209f6600bfd0e559433ca2cecede861ba5c530c183",
+  "chinaIpAuditSha256": "fc27eb15d6a20c833cf7984a0516521d6befba6f262b691b04c01676490adf82",
   "client": "onexray",
   "files": [
     {
       "bytes": 181456,
       "path": "onexray/geodata/geoip.dat",
-      "sha256": "56e8d38a3909b277b76d241146643db6a379145cd73f3fe99028a750c5614cd9"
+      "sha256": "503f7954ff77499e2fe2b5c203fee2c9d635e633c3bbc5181e8de6fad6c78eb0"
     },
     {
       "bytes": 74223,
@@ -13,14 +13,14 @@
       "sha256": "4bed4f09fb433437409d6ffd3f8e061f14babca334c64278110320c011ad7eb9"
     },
     {
-      "bytes": 10703,
+      "bytes": 10723,
       "path": "onexray/geodata/manifest.json",
-      "sha256": "19dc7a0389a2b3f32a1cdf6521ba504ce621531d8d25580ceff76e42ae7c920a"
+      "sha256": "f40f7d08bbba0b576ae9b7fbed0984cd0a9941092eadb36d5f3728f8c5b1620d"
     },
     {
-      "bytes": 4043,
+      "bytes": 4051,
       "path": "onexray/index.html",
-      "sha256": "56807ab0c4a697bd78aafe2dd97964924f1b8a742903faf0aa5021f6d2b506df"
+      "sha256": "af0ea3268792a1facefac4d7fea947baaf8bbb130ecbde54267fe3fa88e1d32d"
     },
     {
       "bytes": 127320,
@@ -53,8 +53,8 @@
       "sha256": "8f4b8554b0cbadddf6da0ae18d4c19decb57f1fec6fac043ec8299ee02a91e66"
     }
   ],
-  "generatedAt": "2026-08-21T18:35:15Z",
-  "manifestHash": "c0d4935b237046821f5a27ab09f7113a88aa2082a756924324f8310babe7409c",
+  "generatedAt": "2026-08-23T18:28:35Z",
+  "manifestHash": "b184eac82e5a23143226d58dc399e913df19b9409d557fc7e3e0d2ee7ad50448",
   "optionalPacks": {},
   "schemaVersion": 1
 }

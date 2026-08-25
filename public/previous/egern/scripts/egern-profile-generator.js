@@ -212,8 +212,8 @@ var EgernProfileBundle = (() => {
       adapterSchema: "v2box-v1",
       publicDirectory: "v2box"
     }
-  ].map((record) => freeze(record));
-  var byId = new Map(records.map((record) => [record.id, record]));
+  ].map((record2) => freeze(record2));
+  var byId = new Map(records.map((record2) => [record2.id, record2]));
   var ids = freeze(records.map(({ id }) => id));
   var activeIds = freeze(records.filter(({ state }) => state === "active").map(({ id }) => id));
   var plannedIds = freeze(records.filter(({ state }) => state === "planned").map(({ id }) => id));
@@ -745,12 +745,12 @@ var EgernProfileBundle = (() => {
     Object.freeze({ kind: SOURCE_KIND.serverChain, name: "\u26D3\uFE0F \u94FE\u5F0F\u4EE3\u7406", filter: "^.+\uFF5C\u94FE\u5F0F\u4EE3\u7406(?:\xB7.*)?$" })
   ]);
   function continentFilter(continent) {
-    const record = CONTINENTS.find((entry) => entry.key === continent.key) ?? continent;
-    if (record.key === CONTINENT.other) {
-      const knownFlags = CONTINENTS.flatMap((record2) => record2.flags).join("|");
+    const record2 = CONTINENTS.find((entry) => entry.key === continent.key) ?? continent;
+    if (record2.key === CONTINENT.other) {
+      const knownFlags = CONTINENTS.flatMap((record3) => record3.flags).join("|");
       return `^(?!(?:\u{1F517}|${knownFlags})).+$`;
     }
-    return `^(?:${record.flags.join("|")}).+$`;
+    return `^(?:${record2.flags.join("|")}).+$`;
   }
 
   // ../../../shared/policies/platform-presets.js
@@ -876,7 +876,35 @@ var EgernProfileBundle = (() => {
     if (nodeCount <= 100) return "balanced";
     return "minimal";
   }
-  function buildPolicyGroups(options, nodes) {
+  function applyUnifiedPolicyDefaults(groups, resolution) {
+    if (!resolution || typeof resolution !== "object") return groups;
+    const byLabel = /* @__PURE__ */ new Map();
+    const targetDefaults = {
+      "\u{1F916} AI \u4E13\u7528": resolution.targets?.ai,
+      "\u{1F419} GitHub": resolution.targets?.github,
+      "\u{1F4FA} YouTube": resolution.targets?.youtube,
+      "\u{1F3AC} \u6D77\u5916\u6D41\u5A92\u4F53": resolution.targets?.overseasMedia,
+      "\u{1F4AC} \u6D77\u5916\u793E\u4EA4": resolution.targets?.globalSocial,
+      "\u{1F34E} Apple": resolution.targets?.apple,
+      "\u{1FA9F} Microsoft": resolution.targets?.microsoft,
+      "\u{1F1E8}\u{1F1F3} \u56FD\u5185\u5E73\u53F0": resolution.targets?.domesticPlatform,
+      "\u{1F30D} \u6D77\u5916\u6E38\u620F": resolution.targets?.overseasGame,
+      "\u{1F3AE} \u6E38\u620F\u8FDE\u63A5": resolution.targets?.game,
+      "\u2B07\uFE0F \u4E0B\u8F7D/P2P": resolution.targets?.download,
+      "\u{1F9ED} DNS \u4E0E\u89C4\u5219\u4E0B\u8F7D": resolution.targets?.dnsAndRules
+    };
+    for (const [name, record2] of Object.entries(targetDefaults)) {
+      if (!record2) continue;
+      const value = record2.resolved === "DIRECT" ? "DIRECT" : record2.resolved === "FOLLOW" ? "\u{1F680} \u8282\u70B9\u9009\u62E9" : record2.resolved;
+      byLabel.set(name, value);
+    }
+    return groups.map((group) => {
+      const defaultChoice = byLabel.get(group.name);
+      if (defaultChoice === void 0) return group;
+      return { ...group, defaultChoice };
+    });
+  }
+  function buildPolicyGroups(options, nodes, policyResolution = null) {
     const normalizedNodes = Array.isArray(nodes) ? nodes : [];
     const preset = platformPolicyPreset(options.platform);
     const mode = effectiveAutoMode(options.autoGroupMode, normalizedNodes.length);
@@ -952,13 +980,282 @@ var EgernProfileBundle = (() => {
     if (chainEligible) {
       groups.push(subscriptionGroup(GROUP_KIND.chain, "\u{1F517} \u5165\u53E3\u8282\u70B9", ENTRY_FILTER, ["\u26A1 \u5165\u53E3\u81EA\u52A8"]));
     }
-    return [...groups, ...helpers];
+    const result = [...groups, ...helpers];
+    return applyUnifiedPolicyDefaults(result, policyResolution);
   }
 
   // ../../../shared/policies/intents.js
   var POLICY_TARGET = Object.freeze({
     primaryProxy: "primary-proxy"
   });
+
+  // ../../../shared/encoding/base64url.js
+  var ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
+  var REVERSE = new Map([...ALPHABET].map((character, index) => [character, index]));
+
+  // ../../../shared/serialization/strict-json.js
+  var DEFAULT_MAX_BYTES = 1 * 1024 * 1024;
+  var DEFAULT_MAX_DEPTH = 32;
+  var FORBIDDEN_KEYS = /* @__PURE__ */ new Set(["__proto__", "prototype", "constructor"]);
+  var WHITESPACE = /* @__PURE__ */ new Set([" ", "	", "\r", "\n"]);
+  function failure(label, reason) {
+    const prefix = typeof label === "string" && label.length > 0 ? `${label}: ` : "";
+    return new SyntaxError(`${prefix}${reason}`);
+  }
+  function asText(value, label) {
+    if (typeof value === "string") {
+      if (/[\uD800-\uDFFF]/u.test(value.replace(/[\uD800-\uDBFF](?=[\uDC00-\uDFFF])/gu, "").replace(/(?<=[\uD800-\uDBFF])[\uDC00-\uDFFF]/gu, ""))) {
+        throw failure(label, "invalid UTF-8 text");
+      }
+      return { text: value, bytes: new TextEncoder().encode(value).byteLength };
+    }
+    if (value instanceof Uint8Array) {
+      try {
+        return {
+          text: new TextDecoder("utf-8", { fatal: true, ignoreBOM: true }).decode(value),
+          bytes: value.byteLength
+        };
+      } catch {
+        throw failure(label, "invalid UTF-8 text");
+      }
+    }
+    throw failure(label, "input must be UTF-8 text");
+  }
+  function validateOptions(options, label) {
+    const { maxBytes = DEFAULT_MAX_BYTES, maxDepth = DEFAULT_MAX_DEPTH } = options ?? {};
+    if (!Number.isSafeInteger(maxBytes) || maxBytes < 0) throw failure(label, "maxBytes must be a non-negative integer");
+    if (!Number.isSafeInteger(maxDepth) || maxDepth < 0) throw failure(label, "maxDepth must be a non-negative integer");
+    return { maxBytes, maxDepth };
+  }
+  function validateAndParse(text, { label, maxDepth }) {
+    let index = 0;
+    const length = text.length;
+    const error = (reason) => {
+      throw failure(label, reason);
+    };
+    const skipWhitespace = () => {
+      while (index < length && WHITESPACE.has(text[index])) index += 1;
+    };
+    const parseString = () => {
+      if (text[index] !== '"') error("invalid JSON");
+      const start = index;
+      index += 1;
+      while (index < length) {
+        const character = text[index++];
+        if (character === '"') {
+          try {
+            return JSON.parse(text.slice(start, index));
+          } catch {
+            error("invalid JSON");
+          }
+        }
+        if (character === "\\") {
+          const escape = text[index++];
+          if (escape === "u") {
+            if (!/^[0-9a-f]{4}$/iu.test(text.slice(index, index + 4))) error("invalid JSON");
+            index += 4;
+          } else if (!'"\\/bfnrt'.includes(escape)) {
+            error("invalid JSON");
+          }
+        } else if (character < " ") {
+          error("invalid JSON");
+        }
+      }
+      error("invalid JSON");
+    };
+    const parseNumber = () => {
+      const match = /^-?(?:0|[1-9][0-9]*)(?:\.[0-9]+)?(?:[eE][+-]?[0-9]+)?/u.exec(text.slice(index));
+      if (!match) error("invalid JSON");
+      index += match[0].length;
+    };
+    const parseValue = (depth) => {
+      skipWhitespace();
+      const character = text[index];
+      if (character === "{" || character === "[") {
+        if (depth > maxDepth) error("maximum JSON depth exceeded");
+        const object = character === "{";
+        index += 1;
+        skipWhitespace();
+        if (text[index] === (object ? "}" : "]")) {
+          index += 1;
+          return;
+        }
+        const keys = object ? /* @__PURE__ */ new Set() : null;
+        while (index < length) {
+          skipWhitespace();
+          if (object) {
+            const key = parseString();
+            if (keys.has(key)) error("duplicate JSON key");
+            if (FORBIDDEN_KEYS.has(key)) error("unsupported prototype key");
+            keys.add(key);
+            skipWhitespace();
+            if (text[index++] !== ":") error("invalid JSON");
+          }
+          parseValue(depth + 1);
+          skipWhitespace();
+          const close = object ? "}" : "]";
+          if (text[index] === close) {
+            index += 1;
+            return;
+          }
+          if (text[index++] !== ",") error("invalid JSON");
+        }
+        error("invalid JSON");
+      }
+      if (character === '"') {
+        parseString();
+        return;
+      }
+      if (text.startsWith("true", index) || text.startsWith("false", index) || text.startsWith("null", index)) {
+        index += text.startsWith("true", index) ? 4 : text.startsWith("false", index) ? 5 : 4;
+        return;
+      }
+      parseNumber();
+    };
+    skipWhitespace();
+    parseValue(1);
+    skipWhitespace();
+    if (index !== length) error("invalid JSON");
+    try {
+      return JSON.parse(text);
+    } catch {
+      error("invalid JSON");
+    }
+  }
+  function parseStrictJson(value, options = {}) {
+    const label = options?.label;
+    const { maxBytes, maxDepth } = validateOptions(options, label);
+    const { text, bytes } = asText(value, label);
+    if (bytes > maxBytes) throw failure(label, "JSON exceeds byte limit");
+    return validateAndParse(text, { label, maxDepth });
+  }
+  var STRICT_JSON_DEFAULTS = Object.freeze({
+    maxBytes: DEFAULT_MAX_BYTES,
+    maxDepth: DEFAULT_MAX_DEPTH
+  });
+
+  // ../../../shared/policies/business-targets.js
+  var TARGET_KEYWORD = /^(FOLLOW|DIRECT)$/iu;
+  var NODE_TARGET = /^NODE:(.*)$/iu;
+  var LINE_TERMINATOR = /[\r\n\u2028\u2029]/u;
+  function frozenTarget(id, label, aliases, defaultTarget) {
+    return Object.freeze({ id, label, aliases: Object.freeze([...aliases]), defaultTarget });
+  }
+  var BUSINESS_TARGETS = Object.freeze([
+    frozenTarget("ai", "\u{1F916} AI \u4E13\u7528", ["AI \u4E13\u7528", "ai"], "FOLLOW"),
+    frozenTarget("github", "\u{1F419} GitHub", ["GitHub", "github"], "FOLLOW"),
+    frozenTarget("youtube", "\u{1F4FA} YouTube", ["YouTube", "youtube"], "FOLLOW"),
+    frozenTarget("overseasMedia", "\u{1F3AC} \u6D77\u5916\u6D41\u5A92\u4F53", [
+      "\u6D77\u5916\u6D41\u5A92\u4F53",
+      "overseasMedia",
+      "Netflix",
+      "netflix",
+      "Disney+",
+      "disney",
+      "Spotify",
+      "spotify",
+      "\u56FD\u9645\u5A92\u4F53",
+      "globalMedia"
+    ], "FOLLOW"),
+    frozenTarget("globalSocial", "\u{1F4AC} \u6D77\u5916\u793E\u4EA4", [
+      "\u6D77\u5916\u793E\u4EA4",
+      "globalSocial",
+      "Telegram",
+      "telegram",
+      "TikTok",
+      "tiktok"
+    ], "FOLLOW"),
+    frozenTarget("overseasGame", "\u{1F30D} \u6D77\u5916\u6E38\u620F", ["\u6D77\u5916\u6E38\u620F", "overseasGame"], "FOLLOW"),
+    frozenTarget("domesticCore", "\u56FD\u5185\u6838\u5FC3", ["\u56FD\u5185\u6838\u5FC3", "domesticCore"], "DIRECT"),
+    // Preserve all published domestic-platform spellings under the stable ID.
+    frozenTarget("domesticPlatform", "\u{1F1E8}\u{1F1F3} \u56FD\u5185\u5E73\u53F0", [
+      "\u56FD\u5185\u5E73\u53F0",
+      "domestic",
+      "\u{1F1E8}\u{1F1F3} \u56FD\u5185\u5E73\u53F0",
+      "domesticPlatform",
+      "\u54D4\u54E9\u54D4\u54E9",
+      "bilibili",
+      "\u6296\u97F3",
+      "bytedance",
+      "\u5C0F\u7EA2\u4E66",
+      "xiaohongshu",
+      "\u5FAE\u535A",
+      "weibo"
+    ], "DIRECT"),
+    frozenTarget("chinaIp", "\u4E2D\u56FD IP", ["\u4E2D\u56FD IP", "chinaIp"], "DIRECT"),
+    frozenTarget("apple", "\u{1F34E} Apple", ["Apple", "apple"], "DIRECT"),
+    frozenTarget("microsoft", "\u{1FA9F} Microsoft", ["Microsoft", "microsoft"], "DIRECT"),
+    frozenTarget("download", "\u2B07\uFE0F \u4E0B\u8F7D/P2P", ["\u4E0B\u8F7D/P2P", "download"], "DIRECT")
+  ]);
+  var TARGET_BY_KEY = /* @__PURE__ */ new Map();
+  for (const target of BUSINESS_TARGETS) {
+    TARGET_BY_KEY.set(target.label, target);
+    for (const alias of target.aliases) TARGET_BY_KEY.set(alias, target);
+  }
+  function canonicalBusinessTarget(value) {
+    if (typeof value !== "string") throw new TypeError("target must be a string");
+    if (TARGET_KEYWORD.test(value)) return value.toUpperCase();
+    const node = NODE_TARGET.exec(value);
+    if (!node || node[1].trim().length === 0 || LINE_TERMINATOR.test(node[1])) {
+      throw new TypeError("target must be FOLLOW, DIRECT, or NODE:<name>");
+    }
+    return `NODE:${node[1]}`;
+  }
+
+  // ../../../shared/policies/unified-policy.js
+  var TARGETS = [
+    ["ai", "\u{1F916} AI \u4E13\u7528", "FOLLOW"],
+    ["github", "\u{1F419} GitHub", "FOLLOW"],
+    ["youtube", "\u{1F4FA} YouTube", "FOLLOW"],
+    ["overseasMedia", "\u{1F3AC} \u6D77\u5916\u6D41\u5A92\u4F53", "FOLLOW"],
+    ["globalSocial", "\u{1F4AC} \u6D77\u5916\u793E\u4EA4", "FOLLOW"],
+    ["apple", "\u{1F34E} Apple", "DIRECT"],
+    ["microsoft", "\u{1FA9F} Microsoft", "DIRECT"],
+    ["domesticPlatform", "\u{1F1E8}\u{1F1F3} \u56FD\u5185\u5E73\u53F0", "DIRECT"],
+    ["overseasGame", "\u{1F30D} \u6D77\u5916\u6E38\u620F", "FOLLOW"],
+    ["game", "\u{1F3AE} \u6E38\u620F\u8FDE\u63A5", "DIRECT"],
+    ["download", "\u2B07\uFE0F \u4E0B\u8F7D/P2P", "DIRECT"],
+    ["dnsAndRules", "\u{1F9ED} DNS \u4E0E\u89C4\u5219\u4E0B\u8F7D", "FOLLOW"],
+    ["final", "\u6700\u7EC8\u515C\u5E95", "FOLLOW"]
+  ].map(([id, label, defaultTarget]) => Object.freeze({ id, label, defaultTarget }));
+  var UNIFIED_POLICY_TARGETS = Object.freeze(TARGETS);
+  var UNIFIED_POLICY_TARGET_IDS = Object.freeze(TARGETS.map(({ id }) => id));
+  var TARGET_BY_KEY2 = /* @__PURE__ */ new Map();
+  for (const target of UNIFIED_POLICY_TARGETS) {
+    TARGET_BY_KEY2.set(target.id, target);
+    TARGET_BY_KEY2.set(target.label, target);
+  }
+  for (const [alias, id] of Object.entries({
+    "AI \u4E13\u7528": "ai",
+    AI: "ai",
+    GitHub: "github",
+    YouTube: "youtube",
+    "\u6D77\u5916\u6D41\u5A92\u4F53": "overseasMedia",
+    "\u6D77\u5916\u793E\u4EA4": "globalSocial",
+    Apple: "apple",
+    Microsoft: "microsoft",
+    "\u56FD\u5185\u5E73\u53F0": "domesticPlatform",
+    domestic: "domesticPlatform",
+    domesticCore: "domesticPlatform",
+    chinaIp: "domesticPlatform",
+    "\u56FD\u5185\u6838\u5FC3": "domesticPlatform",
+    "\u4E2D\u56FD IP": "domesticPlatform",
+    "\u6D77\u5916\u6E38\u620F": "overseasGame",
+    "\u6E38\u620F\u8FDE\u63A5": "game",
+    "\u4E0B\u8F7D/P2P": "download",
+    "DNS \u4E0E\u89C4\u5219\u4E0B\u8F7D": "dnsAndRules"
+  })) {
+    TARGET_BY_KEY2.set(alias, TARGET_BY_KEY2.get(id));
+  }
+  function unifiedPolicyTargetByKey(key) {
+    return typeof key === "string" ? TARGET_BY_KEY2.get(key) : void 0;
+  }
+  function defaultUnifiedPolicyTargets() {
+    return Object.fromEntries(UNIFIED_POLICY_TARGETS.map(({ id, defaultTarget }) => [id, defaultTarget]));
+  }
+  function canonicalUnifiedPolicyTarget(value) {
+    return canonicalBusinessTarget(value);
+  }
 
   // ../../../shared/dns/providers.js
   var CHINA_DNS_PROVIDERS = Object.freeze({
@@ -1948,12 +2245,12 @@ var EgernProfileBundle = (() => {
     const names = /* @__PURE__ */ new Set();
     const groups = /* @__PURE__ */ new Map();
     for (let index = 0; index < rendered.length; index += 1) {
-      const record = rendered[index];
-      const keys = Object.keys(record);
+      const record2 = rendered[index];
+      const keys = Object.keys(record2);
       if (keys.length !== 1 || !["select", "auto_test", "fallback"].includes(keys[0])) {
         throw graphError("has an invalid rendered strategy");
       }
-      const fields = record[keys[0]];
+      const fields = record2[keys[0]];
       if (fields.name !== sharedGroups[index].name || names.has(fields.name)) {
         throw graphError("changed or duplicated a rendered group name");
       }
@@ -2335,6 +2632,15 @@ var EgernProfileBundle = (() => {
   }
   function protocolDefinition(value) {
     return registry.get(normalizeProtocol(value)) ?? null;
+  }
+  function canonicalProtocol(value) {
+    const definition = protocolDefinition(value);
+    return definition?.names[0] ?? null;
+  }
+  function protocolSupportsClient(value, client) {
+    const protocol2 = normalizeProtocol(value);
+    const definition = protocolDefinition(protocol2);
+    return definition?.clients.includes(client) === true && (definition.clientNames[client] ?? definition.names).includes(protocol2);
   }
   function diagnosticProtocol(value) {
     const normalized = normalizeProtocol(value);
@@ -3890,6 +4196,38 @@ var EgernProfileBundle = (() => {
     "rules",
     "default_subscription_group"
   ]);
+  var EXTERNAL_NODE_POLICY = /^.+ · (?:SS|SSR|Snell|VMess|VLESS|Trojan|AnyTLS|Hy2|Tuic|SOCKS5|HTTP|SSH|WireGuard)(?:｜|·|$)/u;
+  var INTERACTIVE_POLICY_VALUES = /* @__PURE__ */ new Set(["\u{1F680} \u8282\u70B9\u9009\u62E9", "DIRECT"]);
+  function isExternalNodePolicy(value) {
+    return typeof value === "string" && EXTERNAL_NODE_POLICY.test(value);
+  }
+  function normalizedFieldsWithCandidates(fields, candidates) {
+    const normalized = { ...fields };
+    if (candidates.length === 0) delete normalized.policies;
+    else normalized.policies = candidates;
+    return normalized;
+  }
+  function canonicalCandidates(fields, schema) {
+    const candidates = fields.policies ?? [];
+    const external = candidates.filter(isExternalNodePolicy);
+    if (external.length > 1 || external.length === 1 && candidates[0] !== external[0]) {
+      throw new Error("Invalid Egern policy group node reference");
+    }
+    const withoutExternal = candidates.filter((candidate) => !isExternalNodePolicy(candidate));
+    if (external.length === 1) return withoutExternal;
+    const first = withoutExternal[0];
+    if (!INTERACTIVE_POLICY_VALUES.has(first)) return withoutExternal;
+    if (first === "DIRECT" && schema.defaultChoice !== "DIRECT" && withoutExternal.slice(1).includes("\u{1F680} \u8282\u70B9\u9009\u62E9")) {
+      return [...withoutExternal.slice(1), "DIRECT"];
+    }
+    if (first === "\u{1F680} \u8282\u70B9\u9009\u62E9" && schema.defaultChoice === "DIRECT") {
+      const remainder = withoutExternal.slice(1);
+      if (remainder.includes("DIRECT")) {
+        return ["DIRECT", "\u{1F680} \u8282\u70B9\u9009\u62E9", ...remainder.filter((candidate) => candidate !== "DIRECT")];
+      }
+    }
+    return withoutExternal;
+  }
   var BYPASS_TUNNEL_PROXY = Object.freeze([
     "localhost",
     "*.local",
@@ -4080,18 +4418,18 @@ var EgernProfileBundle = (() => {
     }
     let nodeSubscriptionUrl;
     const overrides = /* @__PURE__ */ new Set();
-    const stripped = [];
-    const shared = [];
-    for (const record of policyGroups) {
-      if (record === null || typeof record !== "object" || Array.isArray(record)) {
+    let stripped = [];
+    let shared = [];
+    for (const record2 of policyGroups) {
+      if (record2 === null || typeof record2 !== "object" || Array.isArray(record2)) {
         throw new Error("Invalid Egern policy group schema");
       }
-      const wrapperKeys = Object.keys(record);
+      const wrapperKeys = Object.keys(record2);
       if (wrapperKeys.length !== 1 || !["select", "auto_test", "fallback"].includes(wrapperKeys[0])) {
         throw new Error("Invalid Egern policy group schema");
       }
       const type = wrapperKeys[0];
-      const originalFields = record[type];
+      const originalFields = record2[type];
       if (originalFields === null || typeof originalFields !== "object" || Array.isArray(originalFields)) {
         throw new Error("Invalid Egern policy group schema");
       }
@@ -4103,13 +4441,13 @@ var EgernProfileBundle = (() => {
         overrides.add(fields.name);
         delete fields.block_quic;
       }
-      stripped.push({ [type]: fields });
       if (typeof fields.name !== "string" || !Object.hasOwn(POLICY_GROUP_SCHEMA.groups, fields.name)) {
         throw new Error("Invalid Egern policy group schema");
       }
       const schema = POLICY_GROUP_SCHEMA.groups[fields.name];
       const strategy = type === "auto_test" ? "auto-test" : type;
-      const candidates = fields.policies ?? [];
+      const sharedCandidates = canonicalCandidates(fields, schema);
+      stripped.push({ [type]: normalizedFieldsWithCandidates(fields, sharedCandidates) });
       const nodeFilter = fields.urls !== void 0 && fields.name !== PRIMARY_GROUP_NAME2 ? fields.filter : null;
       let test = null;
       if (type === "auto_test") {
@@ -4131,7 +4469,7 @@ var EgernProfileBundle = (() => {
         kind: schema.kind,
         name: fields.name,
         strategy,
-        candidates,
+        candidates: sharedCandidates,
         nodeFilter,
         test,
         hidden: fields.hidden,
@@ -4155,9 +4493,9 @@ var EgernProfileBundle = (() => {
       throw new Error("Invalid Egern policy group schema");
     }
     if (!sameValue(stripped, canonical)) throw new Error("Invalid Egern policy group order or schema");
-    const validPreset = GROUP_TEST_PRESETS.some((preset) => stripped.every((record) => {
-      const [type] = Object.keys(record);
-      const fields = record[type];
+    const validPreset = GROUP_TEST_PRESETS.some((preset) => stripped.every((record2) => {
+      const [type] = Object.keys(record2);
+      const fields = record2[type];
       if (type === "auto_test") {
         return fields.latency_test_url === LATENCY_TEST_URL && fields.interval === preset.interval && fields.timeout === preset.timeout && fields.tolerance === preset.tolerance;
       }
@@ -4291,21 +4629,55 @@ var EgernProfileBundle = (() => {
   function applyProxyQuicOverrides(rendered, shared, quicMode) {
     if (quicMode !== "proxy-block") return rendered;
     const proxyDefaults = proxyDefaultGroups(shared);
-    return rendered.map((record) => {
-      const type = Object.keys(record)[0];
-      const fields = record[type];
-      if (!proxyDefaults.has(fields.name)) return record;
+    return rendered.map((record2) => {
+      const type = Object.keys(record2)[0];
+      const fields = record2[type];
+      if (!proxyDefaults.has(fields.name)) return record2;
       return { [type]: { ...fields, block_quic: true } };
     });
   }
-  function renderEgernProfileFromOptions(options, nodes, { onDiagnostics } = {}) {
+  var POLICY_GROUP_BY_TARGET = Object.freeze(Object.fromEntries(UNIFIED_POLICY_TARGETS.map(({ id, label }) => [id, label])));
+  function policyValue(record2) {
+    if (!record2 || typeof record2.resolved !== "string") return null;
+    if (record2.resolved === "FOLLOW") return "\u{1F680} \u8282\u70B9\u9009\u62E9";
+    return record2.resolved;
+  }
+  function movePolicyToFront(policies, value) {
+    const withoutValue = policies.filter((candidate) => candidate !== value);
+    return [value, ...withoutValue];
+  }
+  function applyEgernPolicyResolution(rendered, resolution) {
+    if (!resolution || typeof resolution !== "object") return rendered;
+    const byName = new Map(rendered.map((record2) => {
+      const type = Object.keys(record2)[0];
+      return [record2[type].name, type];
+    }));
+    return rendered.map((record2) => {
+      const type = Object.keys(record2)[0];
+      const fields = record2[type];
+      const target = UNIFIED_POLICY_TARGETS.find(({ id }) => POLICY_GROUP_BY_TARGET[id] === fields.name);
+      if (!target || !byName.has(fields.name)) return record2;
+      const value = policyValue(resolution.targets?.[target.id]);
+      if (value === null) return record2;
+      const policies = movePolicyToFront([...fields.policies ?? []], value);
+      return { [type]: { ...fields, policies } };
+    });
+  }
+  function renderEgernProfileFromOptions(options, nodes, {
+    onDiagnostics,
+    policyResolution = null,
+    preparedInventory = null
+  } = {}) {
     if (!isParsedEgernOptions(options)) throw new Error("Parsed Egern options are required");
-    const prepared = prepareEgernInventory(nodes, {
+    const prepared = preparedInventory ?? prepareEgernInventory(nodes, {
       clientChain: options.clientChain,
       onDiagnostics
     });
     const sharedGroups = buildPolicyGroups(options, prepared.nodes);
-    const renderedGroups = renderEgernGroups(sharedGroups, options.nodeSubscriptionUrl);
+    const renderedGroups = applyEgernPolicyResolution(
+      renderEgernGroups(sharedGroups, options.nodeSubscriptionUrl),
+      policyResolution
+    );
     const root = {
       ipv6: options.ipv6Mode === "auto",
       block_quic: options.quicMode === "all-block",
@@ -4324,6 +4696,414 @@ var EgernProfileBundle = (() => {
     const yaml = renderYaml(root);
     assertValidEgernProfile(yaml);
     return yaml;
+  }
+
+  // ../../../shared/nodes/node-reference.js
+  var LINE_TERMINATOR2 = /[\r\n\u2028\u2029]/u;
+  var PROTOCOL_QUALIFIER = /^[a-z][a-z0-9_-]*$/iu;
+  function invalid(message) {
+    return new Error(`Invalid node reference: ${message}`);
+  }
+  function freeze2(value) {
+    return Object.freeze(value);
+  }
+  function parseNodeReference(target) {
+    if (typeof target !== "string" || !target.startsWith("NODE:")) {
+      throw invalid("target must be NODE:<name> or NODE:<name>|<protocol>");
+    }
+    const body = target.slice("NODE:".length);
+    if (body.length === 0 || body.trim() !== body || LINE_TERMINATOR2.test(body)) {
+      throw invalid("node name is empty or contains a line break");
+    }
+    const separator = body.lastIndexOf("|");
+    let name = body;
+    let protocol2 = null;
+    if (separator > 0 && separator < body.length - 1) {
+      const qualifier = body.slice(separator + 1);
+      if (!PROTOCOL_QUALIFIER.test(qualifier)) throw invalid("protocol qualifier is invalid");
+      protocol2 = canonicalProtocol(qualifier);
+      if (!protocol2) throw invalid("protocol qualifier is unsupported");
+      name = body.slice(0, separator);
+    }
+    if (name.length === 0 || name.trim() !== name || LINE_TERMINATOR2.test(name)) {
+      throw invalid("node name is empty or contains a line break");
+    }
+    return freeze2({ name, protocol: protocol2 });
+  }
+  function metadata(node) {
+    return node?._profile && typeof node._profile === "object" ? node._profile : {};
+  }
+  function originalName(node) {
+    return typeof metadata(node).originalName === "string" ? metadata(node).originalName : node?.name;
+  }
+  function nodeProtocol(node) {
+    return canonicalProtocol(metadata(node).protocol ?? node?.type);
+  }
+  function selectable(node) {
+    return Boolean(node) && metadata(node).chained !== true;
+  }
+  function resolveNodeReference({ target, allNodes = [], eligibleNodes = [], client } = {}) {
+    const reference = parseNodeReference(target);
+    const all = (Array.isArray(allNodes) ? allNodes : []).filter(selectable);
+    const eligible = (Array.isArray(eligibleNodes) ? eligibleNodes : []).filter(selectable);
+    const matchingAll = all.filter((node) => originalName(node) === reference.name && (reference.protocol === null || nodeProtocol(node) === reference.protocol));
+    const matchingEligible = eligible.filter((node) => originalName(node) === reference.name && (reference.protocol === null || nodeProtocol(node) === reference.protocol));
+    if (client && matchingEligible.length === 0 && matchingAll.length > 0) {
+      const supported = matchingAll.filter((node) => protocolSupportsClient(nodeProtocol(node), client));
+      if (supported.length === 0) {
+        throw new Error("Node reference is incompatible with this client");
+      }
+    }
+    if (matchingEligible.length === 1) return matchingEligible[0];
+    if (matchingEligible.length > 1) throw new Error("Node reference is ambiguous");
+    if (matchingAll.length > 0) throw new Error("Node reference is incompatible with this client");
+    throw new Error("Node reference is missing");
+  }
+
+  // ../../../shared/policies/private-policy.js
+  var CHANNEL_KEYS = /* @__PURE__ */ new Set(["revision", "defaults", "happ", "onexray"]);
+  var DEFAULT_KEYS = /* @__PURE__ */ new Set(["targets", "dns", "adblockMode", "clientChain"]);
+  var OVERRIDE_KEYS = DEFAULT_KEYS;
+  var DNS_KEYS = /* @__PURE__ */ new Set(["chinaDns", "globalDns"]);
+  var CHAIN_KEYS = /* @__PURE__ */ new Set(["mode", "target"]);
+  var TARGET_ID_SET = new Set(PRIVATE_POLICY_TARGET_IDS);
+  var CHANNEL_SET = new Set(PRIVATE_POLICY_CHANNELS);
+  var CLIENT_SET = new Set(PRIVATE_POLICY_CLIENTS);
+  var CHINA_DNS_SET = new Set(OPTION_VALUES.chinaDns);
+  var GLOBAL_DNS_SET = new Set(OPTION_VALUES.globalDns);
+  var AD_BLOCK_MODES = /* @__PURE__ */ new Set(["off", "full"]);
+  var LINE_TERMINATOR3 = /[\r\n\u2028\u2029]/u;
+  var URI_VALUE = /(?:[a-z][a-z0-9+.-]{1,15}:\/\/|https?:\/\/)/iu;
+  var SECRET_VALUE = /(?:password|passwd|secret|token|uuid|psk|private[-_ ]?key|subscription|credential)/iu;
+  var MAX_REVISION_LENGTH = 160;
+  var MAX_NODE_NAME_LENGTH = 256;
+  function invalid2(reason) {
+    return new Error(`Invalid apple-proxy-policy: ${reason}`);
+  }
+  function isRecord(value) {
+    return value !== null && typeof value === "object" && !Array.isArray(value) && Object.getPrototypeOf(value) === Object.prototype;
+  }
+  function requireRecord(value, reason) {
+    if (!isRecord(value)) throw invalid2(reason);
+    return value;
+  }
+  function requireKeys(value, required, allowed = required) {
+    const allowedSet = allowed instanceof Set ? allowed : new Set(allowed);
+    for (const key of Object.keys(value)) {
+      if (!allowedSet.has(key)) throw invalid2("contains an unsupported field");
+    }
+    for (const key of required) {
+      if (!Object.hasOwn(value, key)) throw invalid2("is missing a required field");
+    }
+  }
+  function rejectSecretLikeString(value) {
+    if (URI_VALUE.test(value) || SECRET_VALUE.test(value)) {
+      throw invalid2("contains a secret or URI");
+    }
+  }
+  function normalizeRevision(value) {
+    if (typeof value !== "string" || value.length === 0 || value.length > MAX_REVISION_LENGTH || value.trim() !== value || LINE_TERMINATOR3.test(value)) {
+      throw invalid2("revision must be a non-empty single-line string");
+    }
+    rejectSecretLikeString(value);
+    return value;
+  }
+  function normalizeTarget(value) {
+    if (typeof value !== "string" || LINE_TERMINATOR3.test(value)) {
+      throw invalid2("target must be FOLLOW, DIRECT, or NODE:<name>");
+    }
+    if (/^(?:FOLLOW|DIRECT)$/iu.test(value)) return value.toUpperCase();
+    if (!value.startsWith("NODE:")) throw invalid2("target must be FOLLOW, DIRECT, or NODE:<name>");
+    const name = value.slice("NODE:".length);
+    if (name.length === 0 || name.length > MAX_NODE_NAME_LENGTH || name.trim() !== name) {
+      throw invalid2("target must be FOLLOW, DIRECT, or NODE:<name>");
+    }
+    rejectSecretLikeString(name);
+    return `NODE:${name}`;
+  }
+  function normalizeUnifiedTarget(value) {
+    if (typeof value !== "string" || LINE_TERMINATOR3.test(value)) {
+      throw invalid2("target must be FOLLOW, DIRECT, or NODE:<name>[|<protocol>]");
+    }
+    try {
+      const canonical = canonicalUnifiedPolicyTarget(value);
+      if (!canonical.startsWith("NODE:")) return canonical;
+      const reference = parseNodeReference(canonical);
+      return `NODE:${reference.name}${reference.protocol ? `|${reference.protocol}` : ""}`;
+    } catch {
+      throw invalid2("target must be FOLLOW, DIRECT, or NODE:<name>[|<protocol>]");
+    }
+  }
+  function normalizeTargetMap(value, { complete }) {
+    requireRecord(value, "targets must be an object");
+    if (complete) {
+      for (const key of Object.keys(value)) {
+        if (!TARGET_ID_SET.has(key)) throw invalid2("contains an unsupported business target");
+      }
+      for (const id of PRIVATE_POLICY_TARGET_IDS) {
+        if (!Object.hasOwn(value, id)) throw invalid2("is missing a required business target");
+      }
+    } else {
+      for (const key of Object.keys(value)) {
+        if (!TARGET_ID_SET.has(key)) throw invalid2("contains an unsupported business target");
+      }
+    }
+    const result = {};
+    for (const id of PRIVATE_POLICY_TARGET_IDS) {
+      if (Object.hasOwn(value, id)) result[id] = normalizeTarget(value[id]);
+    }
+    return result;
+  }
+  function normalizeDns(value, { complete }) {
+    requireRecord(value, "dns must be an object");
+    requireKeys(value, complete ? ["chinaDns", "globalDns"] : [], DNS_KEYS);
+    const result = {};
+    if (Object.hasOwn(value, "chinaDns")) {
+      if (typeof value.chinaDns !== "string" || !CHINA_DNS_SET.has(value.chinaDns)) {
+        throw invalid2("contains an invalid China DNS provider");
+      }
+      result.chinaDns = value.chinaDns;
+    }
+    if (Object.hasOwn(value, "globalDns")) {
+      if (typeof value.globalDns !== "string" || !GLOBAL_DNS_SET.has(value.globalDns)) {
+        throw invalid2("contains an invalid global DNS provider");
+      }
+      result.globalDns = value.globalDns;
+    }
+    return result;
+  }
+  function normalizeChain(value) {
+    requireRecord(value, "clientChain must be an object");
+    requireKeys(value, ["mode"], CHAIN_KEYS);
+    if (value.mode === "off") {
+      if (Object.hasOwn(value, "target")) throw invalid2("clientChain off cannot contain a target");
+      return { mode: "off" };
+    }
+    if (value.mode !== "on" || !Object.hasOwn(value, "target")) {
+      throw invalid2("clientChain on requires a target");
+    }
+    const target = normalizeTarget(value.target);
+    if (!target.startsWith("NODE:")) throw invalid2("clientChain target must be NODE:<name>");
+    return { mode: "on", target };
+  }
+  function normalizeDefaults(value) {
+    requireRecord(value, "defaults must be an object");
+    requireKeys(value, ["targets", "dns", "adblockMode", "clientChain"], DEFAULT_KEYS);
+    if (typeof value.adblockMode !== "string" || !AD_BLOCK_MODES.has(value.adblockMode)) {
+      throw invalid2("contains an invalid adblock mode");
+    }
+    return {
+      targets: normalizeTargetMap(value.targets, { complete: true }),
+      dns: normalizeDns(value.dns, { complete: true }),
+      adblockMode: value.adblockMode,
+      clientChain: normalizeChain(value.clientChain)
+    };
+  }
+  function normalizeOverride(value) {
+    requireRecord(value, "client override must be an object");
+    requireKeys(value, [], OVERRIDE_KEYS);
+    const result = {};
+    if (Object.hasOwn(value, "targets")) result.targets = normalizeTargetMap(value.targets, { complete: false });
+    if (Object.hasOwn(value, "dns")) result.dns = normalizeDns(value.dns, { complete: false });
+    if (Object.hasOwn(value, "adblockMode")) {
+      if (typeof value.adblockMode !== "string" || !AD_BLOCK_MODES.has(value.adblockMode)) {
+        throw invalid2("contains an invalid adblock mode");
+      }
+      result.adblockMode = value.adblockMode;
+    }
+    if (Object.hasOwn(value, "clientChain")) result.clientChain = normalizeChain(value.clientChain);
+    return result;
+  }
+  function normalizePolicyObject(value) {
+    requireRecord(value, "policy must be an object");
+    requireKeys(value, ["schemaVersion", "channels"], /* @__PURE__ */ new Set(["schemaVersion", "channels"]));
+    if (value.schemaVersion !== 1) throw invalid2("schemaVersion must be 1");
+    requireRecord(value.channels, "channels must be an object");
+    requireKeys(value.channels, PRIVATE_POLICY_CHANNELS, CHANNEL_SET);
+    const channels = {};
+    for (const channel of PRIVATE_POLICY_CHANNELS) {
+      const record2 = requireRecord(value.channels[channel], "channel must be an object");
+      requireKeys(record2, ["revision", "defaults", "happ", "onexray"], CHANNEL_KEYS);
+      channels[channel] = {
+        revision: normalizeRevision(record2.revision),
+        defaults: normalizeDefaults(record2.defaults),
+        happ: normalizeOverride(record2.happ),
+        onexray: normalizeOverride(record2.onexray)
+      };
+    }
+    return deepFreeze({ schemaVersion: 1, channels });
+  }
+  function normalizeUnifiedPolicyObject(value) {
+    requireRecord(value, "policy must be an object");
+    requireKeys(value, ["schemaVersion", "targets"], /* @__PURE__ */ new Set(["schemaVersion", "targets"]));
+    if (value.schemaVersion !== 2) throw invalid2("schemaVersion must be 2");
+    requireRecord(value.targets, "targets must be an object");
+    const targets = defaultUnifiedPolicyTargets();
+    const seen = /* @__PURE__ */ new Map();
+    for (const [key, rawTarget] of Object.entries(value.targets)) {
+      const target = unifiedPolicyTargetByKey(key);
+      if (!target) throw invalid2("contains an unsupported business target");
+      const canonical = normalizeUnifiedTarget(rawTarget);
+      if (seen.has(target.id) && seen.get(target.id) !== canonical) {
+        throw invalid2("contains conflicting business target aliases");
+      }
+      seen.set(target.id, canonical);
+      targets[target.id] = canonical;
+    }
+    for (const id of UNIFIED_POLICY_TARGET_IDS) {
+      if (!Object.hasOwn(targets, id)) throw invalid2("contains an incomplete business target map");
+    }
+    return deepFreeze({ schemaVersion: 2, targets });
+  }
+  function deepFreeze(value) {
+    if (value && typeof value === "object" && !Object.isFrozen(value)) {
+      for (const child of Object.values(value)) deepFreeze(child);
+      Object.freeze(value);
+    }
+    return value;
+  }
+  function parsePrivatePolicy(text) {
+    let parsed;
+    try {
+      parsed = parseStrictJson(text, {
+        label: "apple-proxy-policy",
+        maxBytes: 256 * 1024,
+        maxDepth: 16
+      });
+    } catch (error) {
+      throw error;
+    }
+    if (parsed?.schemaVersion === 2) return normalizeUnifiedPolicyObject(parsed);
+    return normalizePolicyObject(parsed);
+  }
+  function resolvePrivatePolicy({ policy, channel, client } = {}) {
+    const normalized = typeof policy === "string" || policy instanceof Uint8Array ? parsePrivatePolicy(policy) : policy?.schemaVersion === 2 ? normalizeUnifiedPolicyObject(policy) : normalizePolicyObject(policy);
+    if (normalized.schemaVersion === 2) {
+      return deepFreeze({
+        targets: { ...normalized.targets },
+        dns: { chinaDns: "alidns", globalDns: "cloudflare" },
+        adblockMode: "off",
+        clientChain: { mode: "off" }
+      });
+    }
+    if (!CHANNEL_SET.has(channel)) throw invalid2("contains an unsupported channel");
+    if (!CLIENT_SET.has(client)) throw invalid2("contains an unsupported policy client");
+    const record2 = normalized.channels[channel];
+    const override = record2[client];
+    const result = {
+      targets: { ...record2.defaults.targets, ...override.targets ?? {} },
+      dns: { ...record2.defaults.dns, ...override.dns ?? {} },
+      adblockMode: override.adblockMode ?? record2.defaults.adblockMode,
+      clientChain: { ...override.clientChain ?? record2.defaults.clientChain }
+    };
+    return deepFreeze(result);
+  }
+
+  // ../../../shared/substore/policy-artifact.js
+  var POLICY_ARTIFACT_NAME = "apple-proxy-policy";
+  function contentOf(artifact) {
+    if (typeof artifact === "string" || artifact instanceof Uint8Array) return artifact;
+    if (!artifact || typeof artifact !== "object" || Array.isArray(artifact)) return null;
+    if (typeof artifact.$content === "string" || artifact.$content instanceof Uint8Array) return artifact.$content;
+    if (typeof artifact.content === "string" || artifact.content instanceof Uint8Array) return artifact.content;
+    if (Object.hasOwn(artifact, "schemaVersion")) return JSON.stringify(artifact);
+    return null;
+  }
+  async function loadSubstorePolicyArtifact(context, name = POLICY_ARTIFACT_NAME) {
+    if (!context || typeof context.produceArtifact !== "function") {
+      throw new Error("Sub-Store policy artifact is unavailable");
+    }
+    const artifact = await context.produceArtifact({
+      type: "file",
+      name,
+      platform: "JSON",
+      produceType: "internal"
+    });
+    const content = contentOf(artifact);
+    if (content === null) throw new Error("Sub-Store policy artifact has no content");
+    return parsePrivatePolicy(content);
+  }
+
+  // ../../../shared/policies/resolve-unified.js
+  var LEGACY_TO_UNIFIED = Object.freeze({
+    ai: "ai",
+    github: "github",
+    youtube: "youtube",
+    overseasMedia: "overseasMedia",
+    globalMedia: "overseasMedia",
+    globalSocial: "globalSocial",
+    overseasGame: "overseasGame",
+    domesticCore: "domesticPlatform",
+    domesticPlatform: "domesticPlatform",
+    domestic: "domesticPlatform",
+    chinaIp: "domesticPlatform",
+    apple: "apple",
+    microsoft: "microsoft",
+    download: "download",
+    dnsAndRules: "dnsAndRules",
+    final: "final",
+    game: "game"
+  });
+  function freeze3(value) {
+    if (value && typeof value === "object" && !Object.isFrozen(value)) {
+      for (const child of Object.values(value)) freeze3(child);
+      Object.freeze(value);
+    }
+    return value;
+  }
+  function configuredTargets(policy, { channel, client }) {
+    const defaults = defaultUnifiedPolicyTargets();
+    if (!policy) return defaults;
+    const parsed = typeof policy === "string" || policy instanceof Uint8Array ? parsePrivatePolicy(policy) : policy;
+    const resolved = resolvePrivatePolicy({ policy: parsed, channel, client });
+    if (parsed.schemaVersion === 2) return { ...defaults, ...resolved.targets };
+    const result = { ...defaults };
+    for (const [legacyId, value] of Object.entries(resolved.targets ?? {})) {
+      const id = LEGACY_TO_UNIFIED[legacyId];
+      if (id) result[id] = value;
+    }
+    return result;
+  }
+  function record(configured) {
+    if (configured === "DIRECT") return { configured, resolved: "DIRECT", status: "direct", warningCode: null, nodeId: null };
+    if (configured === "FOLLOW") return { configured, resolved: "FOLLOW", status: "follow", warningCode: null, nodeId: null };
+    return { configured, resolved: configured, status: "fixed", warningCode: null, nodeId: null };
+  }
+  function addLegacyAliases(targets) {
+    targets.globalMedia = targets.overseasMedia;
+    targets.domestic = targets.domesticPlatform;
+    targets.domesticCore = targets.domesticPlatform;
+    targets.chinaIp = targets.domesticPlatform;
+    return targets;
+  }
+  function resolveUnifiedPolicy({
+    policy = null,
+    channel = "previous",
+    client = CLIENT.happ,
+    allNodes = [],
+    eligibleNodes = allNodes
+  } = {}) {
+    const values = configuredTargets(policy, { channel, client });
+    const targets = {};
+    const fixedNodes = [];
+    const fixedIds = /* @__PURE__ */ new Set();
+    for (const target of UNIFIED_POLICY_TARGETS) {
+      const configured = values[target.id] ?? target.defaultTarget;
+      const resolved = record(configured);
+      if (configured.startsWith("NODE:")) {
+        const node = resolveNodeReference({ target: configured, allNodes, eligibleNodes, client });
+        const nodeId = node?._profile?.id ?? `node-${fixedNodes.length}`;
+        resolved.resolved = node.name;
+        resolved.nodeId = nodeId;
+        if (!fixedIds.has(nodeId)) {
+          fixedIds.add(nodeId);
+          fixedNodes.push({ nodeId, node, name: node.name });
+        }
+      }
+      targets[target.id] = resolved;
+    }
+    addLegacyAliases(targets);
+    return freeze3({ targets, fixedNodes, warnings: [] });
   }
 
   // ../../../shared/nodes/client-chain.js
@@ -4753,15 +5533,15 @@ var EgernProfileBundle = (() => {
         }
         const byIdentity = protocolGroup.map((node) => ({ node, identity: getIdentity(node), suffix: getFingerprint(node).slice(-5) })).sort((left, right) => left.identity < right.identity ? -1 : left.identity > right.identity ? 1 : 0);
         const suffixGroups = /* @__PURE__ */ new Map();
-        for (const record of byIdentity) {
-          const suffixGroup = suffixGroups.get(record.suffix) ?? [];
-          suffixGroup.push(record);
-          suffixGroups.set(record.suffix, suffixGroup);
+        for (const record2 of byIdentity) {
+          const suffixGroup = suffixGroups.get(record2.suffix) ?? [];
+          suffixGroup.push(record2);
+          suffixGroups.set(record2.suffix, suffixGroup);
         }
         for (const records2 of suffixGroups.values()) {
-          records2.forEach((record, index) => {
-            const suffix = records2.length > 1 ? `${record.suffix}-${index + 1}` : record.suffix;
-            record.node.name = `${protocolBase} #${suffix}`;
+          records2.forEach((record2, index) => {
+            const suffix = records2.length > 1 ? `${record2.suffix}-${index + 1}` : record2.suffix;
+            record2.node.name = `${protocolBase} #${suffix}`;
           });
         }
       }
@@ -4827,6 +5607,7 @@ var EgernProfileBundle = (() => {
       CLEANED_DISPLAY_NAMES.set(cloned, displayName);
       cloned._profile = {
         id,
+        originalName: String(original.name),
         protocol: cloned.type,
         protocolLabel,
         sourceKind: source.kind,
@@ -4945,10 +5726,23 @@ var EgernProfileBundle = (() => {
     const options = parseEgernOptions(argumentsFrom(context));
     const normalized = await produceNormalizedNodes(options, context);
     let egernDiagnostics;
-    const content = renderEgernProfileFromOptions(options, normalized.nodes, {
+    const prepared = prepareEgernInventory(normalized.nodes, {
+      clientChain: options.clientChain,
       onDiagnostics(value) {
         egernDiagnostics = value;
       }
+    });
+    const policy = await loadSubstorePolicyArtifact(context);
+    const policyResolution = policy === null ? null : resolveUnifiedPolicy({
+      policy,
+      channel: options.channel,
+      client: CLIENT.egern,
+      allNodes: normalized.nodes,
+      eligibleNodes: prepared.nodes
+    });
+    const content = renderEgernProfileFromOptions(options, normalized.nodes, {
+      preparedInventory: prepared,
+      policyResolution
     });
     const diagnostics = mergedEgernDiagnostics(normalized.diagnostics, egernDiagnostics);
     logEgernDiagnostics(context, diagnostics);
