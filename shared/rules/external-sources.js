@@ -89,6 +89,12 @@ export function validateExternalSourceCatalog(catalog = EXTERNAL_RULE_SOURCE_CAT
     if (typeof record.branch !== "string" || record.branch.trim() === "") throw new TypeError(`External source ${record.id} has no branch metadata`);
     if (typeof record.retrievalUrl !== "string" || !record.retrievalUrl.startsWith("https://")) throw new TypeError(`External source ${record.id} has no retrieval URL`);
     if (typeof record.releaseTag !== "string" || !/^[A-Za-z0-9][A-Za-z0-9._-]*$/u.test(record.releaseTag)) throw new TypeError(`External source ${record.id} has invalid release tag`);
+    if (typeof record.sourcePath !== "string"
+      || record.sourcePath.length === 0
+      || !SAFE_PATH.test(record.sourcePath)
+      || record.sourcePath.split("/").some((segment) => segment === "." || segment === "..")) {
+      throw new TypeError(`External source ${record.id} has unsafe source path`);
+    }
     const expectedUrl = `${record.repository}/releases/download/${record.releaseTag}/${record.sourcePath}`;
     if (record.retrievalUrl !== expectedUrl) throw new TypeError(`External source ${record.id} has mismatched release asset URL`);
     if (typeof record.retrievedAt !== "string" || Number.isNaN(Date.parse(record.retrievedAt))) throw new TypeError(`External source ${record.id} has invalid retrieval timestamp`);
@@ -98,12 +104,6 @@ export function validateExternalSourceCatalog(catalog = EXTERNAL_RULE_SOURCE_CAT
     if (typeof record.format !== "string" || record.format.trim() === "") throw new TypeError(`External source ${record.id} has no format`);
     if (typeof record.adapter !== "string" || record.adapter.trim() === "") throw new TypeError(`External source ${record.id} has no adapter`);
     if (!Number.isInteger(record.minEntries) || record.minEntries < 1) throw new TypeError(`External source ${record.id} has invalid minEntries`);
-    if (typeof record.sourcePath !== "string"
-      || record.sourcePath.length === 0
-      || !SAFE_PATH.test(record.sourcePath)
-      || record.sourcePath.split("/").some((segment) => segment === "." || segment === "..")) {
-      throw new TypeError(`External source ${record.id} has unsafe source path`);
-    }
   }
   return true;
 }

@@ -39,7 +39,7 @@
 
 - Create: `automation/src/rule-sources/adapter-contract.js` — adapter input/output validators.
 - Create: `automation/src/rule-sources/v2fly-domain-list.js` — v2fly YAML/domain-list adapter.
-- Create: `automation/src/rule-sources/loyalsoldier-rules-dat.js` — Loyalsoldier geosite/geoip adapter.
+- Create: `automation/src/rule-sources/loyalsoldier-rules-dat.js` — Loyalsoldier geosite/geoip text and protobuf `.dat` adapter.
 - Create: `automation/src/rule-sources/russia-v2ray-rules.js` — Russia overlay adapter.
 - Create: `automation/src/rule-sources/iran-v2ray-rules.js` — Iran overlay adapter.
 - Create: `automation/src/merge-rule-sources.js` — normalization, deduplication, provenance, and deterministic conflict resolution.
@@ -215,7 +215,7 @@ git commit -m "feat: add regional Russia and Iran rule adapters"
 - Create: `automation/src/merge-rule-sources.js`
 - Modify: `shared/rules/lightweight-policy.js`
 - Modify: `shared/rules/semantic-intents.js`
-- Test: `automation/test/merge-rule-sources.test.js`, `test/external-rule-routing.test.js`
+- Test: `automation/test/merge-rule-sources.test.js`
 
 **Interfaces:**
 - `mergeRuleSources({ snapshots, region, userRules, adblockMode })` returns `{ ruleSets, decisions, provenance, diagnostics }`.
@@ -233,7 +233,7 @@ Expected: FAIL because the mapping and merge functions do not exist.
 - [ ] **Step 3: Implement `source-mappings.js`.** Map source-local categories to existing semantic intent IDs or explicit actions. Keep `DIRECT`, `PROXY`, and `REJECT` mapping outside the parsers.
 - [ ] **Step 4: Implement deterministic deduplication.** Normalize entries, merge `noResolve` conservatively, retain all provenance, and sort by precedence, matcher specificity, source ID, and value.
 - [ ] **Step 5: Implement region selection and conflict resolution.** Apply the exact precedence from the spec and throw on two equal-priority mappings that produce different actions without an explicit mapping decision.
-- [ ] **Step 6: Add `explainRoute` integration.** Reuse the existing `explain:route` command’s local-only behavior and include source IDs/commits without exposing node data.
+- [ ] **Step 6: Add `explainRoute` integration.** Reuse the existing `explain:route` command’s local-only behavior and include source IDs/commits without exposing node data. Leave the cross-client external routing corpus to Task 12 so it is created once.
 - [ ] **Step 7: Run tests and verify pass.**
 
 Run: `node --test automation/test/merge-rule-sources.test.js test/external-rule-routing.test.js test/rule-model.test.js test/cross-client-routing.test.js`

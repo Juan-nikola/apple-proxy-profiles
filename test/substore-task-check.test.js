@@ -55,6 +55,7 @@ test("accepts the published Anywhere strategy task and rejects extra options", (
   assert.equal(checkSubstoreTaskUrl(`${url}&clientChain=off`).ok, false);
   assert.equal(checkSubstoreTaskUrl(url.replace("channel=current", "channel=beta")).ok, false);
   assert.equal(checkSubstoreTaskUrl(url.replace("name=apple-proxy-anywhere", "name=bad%2Fname")).ok, false);
+  assert.equal(getSubstoreTaskSchema("shadowrocket/scripts/shadowrocket-node-subscription.js").policyInput, null);
 });
 
 test("accepts a valid previous-channel task and preserves its channel parameter", () => {

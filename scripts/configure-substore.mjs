@@ -70,7 +70,7 @@ function nodeTask(name, client, channel, collection) {
   );
 }
 
-function configTask(name, client, script, channel, collection, platform, subscriptionName, extra = {}, metadata = {}) {
+function configTask(name, client, script, channel, collection, platform, subscriptionName, extra = {}, metadata = { policyInput: "apple-proxy-policy" }) {
   const options = {
     output: "config",
     type: "collection",

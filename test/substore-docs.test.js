@@ -111,6 +111,8 @@ test("central Sub-Store guide closes over all public scripts and private tasks",
   assert.match(maintenance, /Node\.js 22/u);
   assert.match(maintenance, /sing-box.*\.srs/u);
   assert.match(guide, /`apple-proxy-sources`[\s\S]{0,240}(?:兼容|回滚)/iu);
+  assert.match(guide, /schema v2[\s\S]{0,180}schema v1[\s\S]{0,180}(?:兼容|读取)/iu);
+  assert.match(guide, /policyInput[\s\S]{0,120}apple-proxy-policy/iu);
   assert.match(guide, /Shadowrocket[\s\S]{0,600}name=apple-proxy-shadowrocket/iu);
 });
 

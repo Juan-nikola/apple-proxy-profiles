@@ -139,6 +139,7 @@ https://juan-nikola.github.io/apple-proxy-profiles/current/surge/scripts/surge-p
 | 34 | `v2box-config-iphone` | active/private | `apple-proxy-v2box` | 输出 iPhone V2Box 配置；默认 `region=cn` |
 | 35 | `v2box-config-ipad` | active/private | `apple-proxy-v2box` | 输出 iPad V2Box 配置；默认 `region=cn` |
 
+
 除节点订阅任务外，所有配置、Profile 和 audit 任务的 Sub-Store 元数据都设置 `policyInput=apple-proxy-policy`；节点任务不读取策略。policy File 使用 schema v2 单层 `targets`，读取器继续兼容 schema v1。读取策略的任务接收同名 `channel`（仅 `edge`、`current`、`previous`），并绑定该频道的 policy revision、公开 client Manifest SHA-256 和 GeoData SHA-256；OneXray node-only 任务也接收 `channel`，但不读取业务策略。HAPP 的 6 个平台配置任务和 `happ-routing-audit` 固定使用 `/current/happ/`，任务片段不接收或携带 `channel`；HAPP 审计只把 `current` 作为内部诊断元数据。公开脚本只在 Pages 提供无节点 bundle，真实输出仍只在私密 Sub-Store 任务日志和客户端导入结果中查看。
 
 真机 canary 不再是发布门禁。自动化测试、规则预算、manifest 闭合、ChinaIP/v2fly 审计和秘密扫描通过后，客户端可以直接使用 `current`；`edge` 只作为维护者预览入口。设备清单保留为上线后的可选实践反馈，失败时回滚受影响客户端并修正后续发布。
