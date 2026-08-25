@@ -18,6 +18,7 @@ import {
   policyGroupDefaults,
   resolveUnifiedPolicy,
 } from "../shared/policies/resolve-unified.js";
+import { defaultUnifiedPolicyTargets } from "../shared/policies/unified-policy.js";
 import { applyUnifiedPolicyDefaults, buildPolicyGroups } from "../shared/policies/catalog.js";
 
 function rawNode(name, type = "vless", overrides = {}) {
@@ -116,6 +117,24 @@ test("parses the simple schemaVersion 2 policy and applies built-in defaults", (
   const resolved = resolvePrivatePolicy({ policy, channel: "current", client: "happ" });
   assert.equal(resolved.targets.ai, "NODE:🇺🇸qqpw家宽|vless");
   assert.equal(resolved.targets.final, "FOLLOW");
+});
+
+test("exposes the complete 13-target unified policy defaults", () => {
+  assert.deepEqual(defaultUnifiedPolicyTargets(), {
+    ai: "FOLLOW",
+    github: "FOLLOW",
+    youtube: "FOLLOW",
+    overseasMedia: "FOLLOW",
+    globalSocial: "FOLLOW",
+    apple: "DIRECT",
+    microsoft: "DIRECT",
+    domesticPlatform: "DIRECT",
+    overseasGame: "FOLLOW",
+    game: "DIRECT",
+    download: "DIRECT",
+    dnsAndRules: "FOLLOW",
+    final: "FOLLOW",
+  });
 });
 
 test("loads one private Sub-Store policy artifact and rejects an unavailable artifact", async () => {

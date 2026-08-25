@@ -171,6 +171,31 @@ test("HAPP user documentation exposes current as the only public channel", async
   assert.match(content, /删除旧.*订阅.*重新导入/isu);
 });
 
+test("substore guide publishes the complete 13-target policy example", async () => {
+  const guide = await text("docs/substore-two-layer-setup.md");
+  const match = guide.match(/### 完整 `apple-proxy-policy` 示例[\s\S]*?```json\n([\s\S]*?)\n```/u);
+
+  assert.ok(match, "missing complete apple-proxy-policy JSON example");
+  assert.deepEqual(JSON.parse(match[1]), {
+    schemaVersion: 2,
+    targets: {
+      "🤖 AI 专用": "FOLLOW",
+      "🐙 GitHub": "FOLLOW",
+      "📺 YouTube": "FOLLOW",
+      "🎬 海外流媒体": "FOLLOW",
+      "💬 海外社交": "FOLLOW",
+      "🍎 Apple": "DIRECT",
+      "🪟 Microsoft": "DIRECT",
+      "🇨🇳 国内平台": "DIRECT",
+      "🌍 海外游戏": "FOLLOW",
+      "🎮 游戏连接": "DIRECT",
+      "⬇️ 下载/P2P": "DIRECT",
+      "🧭 DNS 与规则下载": "FOLLOW",
+      "最终兜底": "FOLLOW",
+    },
+  });
+});
+
 test("beginner entry does not assume one private deployment already exists", async () => {
   const readme = await text("README.md");
   assert.doesNotMatch(readme, /substore\.sunyz\.uk|xiaov/u);

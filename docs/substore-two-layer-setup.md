@@ -146,6 +146,31 @@ https://juan-nikola.github.io/apple-proxy-profiles/current/surge/scripts/surge-p
 
 当前任务的频道契约是：通用客户端、policy 和 OneXray 任务使用 `channel=current`；HAPP 任务固定使用 `/current/happ/` 且省略 `channel`；`edge` 仅作为维护者灰度频道，`previous` 用于回滚。
 
+### 完整 `apple-proxy-policy` 示例
+
+公开文档中的 `apple-proxy-policy` 必须列全 13 个业务目标，不能只保留缩减版示例。
+
+```json
+{
+  "schemaVersion": 2,
+  "targets": {
+    "🤖 AI 专用": "FOLLOW",
+    "🐙 GitHub": "FOLLOW",
+    "📺 YouTube": "FOLLOW",
+    "🎬 海外流媒体": "FOLLOW",
+    "💬 海外社交": "FOLLOW",
+    "🍎 Apple": "DIRECT",
+    "🪟 Microsoft": "DIRECT",
+    "🇨🇳 国内平台": "DIRECT",
+    "🌍 海外游戏": "FOLLOW",
+    "🎮 游戏连接": "DIRECT",
+    "⬇️ 下载/P2P": "DIRECT",
+    "🧭 DNS 与规则下载": "FOLLOW",
+    "最终兜底": "FOLLOW"
+  }
+}
+```
+
 ## 5. Egern：1 个节点 File + 3 个 Profile File
 
 ### 5.1 `egern-nodes`
