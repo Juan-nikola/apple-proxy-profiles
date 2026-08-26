@@ -1212,6 +1212,7 @@ export async function promoteClientRelease({
     throw new Error(`Client ${client} is not an active promotion target`);
   }
   const targetHash = expectedHash ?? manifestHash;
+  const hadCurrentRoot = await exists(join(publicDirectory, "current"));
   if (expectedHash !== null && manifestHash !== undefined && expectedHash !== manifestHash) {
     throw new Error("Expected client manifest hash does not match legacy manifestHash");
   }
@@ -1329,9 +1330,11 @@ export async function promoteClientRelease({
         recordPrefix: directory,
       });
     }
-    const currentAudit = join(staging, "current", CHINA_IP_AUDIT_PATH);
-    await mkdir(dirname(currentAudit), { recursive: true });
-    await writeFile(currentAudit, chinaIpAudit);
+    if (!hadCurrentRoot || !await exists(join(staging, "current", CHINA_IP_AUDIT_PATH))) {
+      const currentAudit = join(staging, "current", CHINA_IP_AUDIT_PATH);
+      await mkdir(dirname(currentAudit), { recursive: true });
+      await writeFile(currentAudit, chinaIpAudit);
+    }
     for (const [packId] of optionalManifests) {
       const stableOptional = join(staging, "optional", packId, "current", directory);
       const previousOptional = join(staging, "optional", packId, "previous", directory);

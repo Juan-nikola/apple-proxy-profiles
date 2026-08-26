@@ -238,6 +238,39 @@ test("promotes without real-device canary evidence and rejects a mismatched nati
   );
 });
 
+test("preserves stable current audit evidence during an existing-root client promotion", async () => {
+  const root = await mkdtemp(join(tmpdir(), "apple-proxy-promote-current-audit-"));
+  const publicDirectory = join(root, "public");
+  try {
+    const artifacts = buildClientArtifacts({ snapshot: lightweightFixtureSnapshots(), upstream: lightweightUpstream });
+    const hash = artifacts.diagnostics.defaultManifest.clients.surge.manifestHash;
+    await publishEdgeRelease({
+      publicDirectory,
+      defaults: artifacts.defaults,
+      optionalPacks: artifacts.optionalPacks,
+      manifest: artifacts.diagnostics.defaultManifest,
+    });
+    await mkdir(join(publicDirectory, "current"), { recursive: true });
+    const stableAudit = Buffer.from("stable-current-audit\\n");
+    await mkdir(join(publicDirectory, "current/audit"), { recursive: true });
+    await writeFile(join(publicDirectory, "current/audit/china-ip-drift.json"), stableAudit);
+
+    await promoteClientRelease({
+      publicDirectory,
+      client: "surge",
+      manifestHash: hash,
+      now: "2026-08-09T01:00:00Z",
+    });
+
+    assert.deepEqual(
+      await readFile(join(publicDirectory, "current/audit/china-ip-drift.json")),
+      stableAudit,
+    );
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
 test("refreshes the public audit dashboard after independent client promotion", async () => {
   const root = await mkdtemp(join(tmpdir(), "apple-proxy-promote-dashboard-"));
   const publicDirectory = join(root, "public");

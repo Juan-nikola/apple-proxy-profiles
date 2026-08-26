@@ -60,6 +60,11 @@ const ACTIVE_CLIENT_DIRECTORIES = Object.freeze(Object.fromEntries(
 ));
 const ACTIVE_CLIENT_PREFIXES = Object.freeze(Object.values(ACTIVE_CLIENT_DIRECTORIES).map((directory) => `${directory}/`));
 const PUBLIC_AUDIT_DASHBOARD_PATHS = new Set(["audit/dashboard.json", "audit/dashboard.html"]);
+const INDEPENDENT_AUDIT_PATHS = new Set([
+  "audit/china-ip-drift.json",
+  "audit/v2fly-domain-drift.json",
+  "audit/routing-plan.json",
+]);
 const LEGACY_CURRENT_EXTRA_FILES = Object.freeze([
   /^frontier-manifest\.json$/u,
   /^surge\/(?:macos|iphone|ipad)\/manifest\.json$/u,
@@ -244,7 +249,7 @@ function rootManifestMatchesWithIndependentAudit(content, expectedManifest) {
         ),
         files: Array.isArray(base.files)
           ? base.files.filter(({ path }) => (
-            path !== "audit/china-ip-drift.json"
+            !INDEPENDENT_AUDIT_PATHS.has(path)
               && !PUBLIC_AUDIT_DASHBOARD_PATHS.has(path)
               && !ACTIVE_CLIENT_PREFIXES.some((prefix) => path.startsWith(prefix))
           ))
@@ -465,7 +470,7 @@ export async function verifyTrackedPublications({ publicDirectory, defaults, opt
   if (JSON.stringify(actualRootEntries) !== JSON.stringify([...expectedRootEntries].sort())) return false;
   for (const [path, content] of defaults) {
     if ([...clientPrefixes].some((prefix) => path.startsWith(prefix))) continue;
-    if (PUBLIC_AUDIT_DASHBOARD_PATHS.has(path)) continue;
+    if (PUBLIC_AUDIT_DASHBOARD_PATHS.has(path) || INDEPENDENT_AUDIT_PATHS.has(path)) continue;
     try {
       const tracked = await readFile(join(currentDirectory, path));
       if (path === "manifest.json") {
