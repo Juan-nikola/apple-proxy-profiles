@@ -41,6 +41,20 @@ test("parses the final Clash Apple option contract", () => {
   assert.equal(options.publicBaseUrl, PUBLIC_SNAPSHOT_BASE_URL);
 });
 
+test("uses a stable IPv4-only default on macOS while preserving mobile IPv6 defaults", () => {
+  assert.equal(parseClashOptions(rawOptions()).ipv6Mode, "ipv4-only");
+  assert.equal(parseClashOptions(rawOptions({ platform: "iphone" })).ipv6Mode, "auto");
+  assert.equal(parseClashOptions(rawOptions({ platform: "ipad" })).ipv6Mode, "auto");
+  assert.equal(parseClashOptions(rawOptions({ platform: "appletv" })).ipv6Mode, "auto");
+  assert.equal(parseClashOptions(rawOptions({ ipv6Mode: "auto" })).ipv6Mode, "auto");
+});
+
+test("disables IPv6 in both Clash root and DNS defaults on macOS", () => {
+  const yaml = renderClashProfile(rawOptions(), allCompatibleNodes);
+  assert.match(yaml, /^ipv6: false$/mu);
+  assert.match(yaml, /^  ipv6: false$/mu);
+});
+
 test("renders a complete mihomo profile with nodes, groups, DNS, providers, and terminal rules", () => {
   const yaml = renderClashProfile(rawOptions(), allCompatibleNodes);
   assert.deepEqual(validateClashProfile(yaml), { valid: true, errors: [] });

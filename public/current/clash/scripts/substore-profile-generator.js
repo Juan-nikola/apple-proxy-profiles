@@ -1090,6 +1090,7 @@ var ClashProfileBundle = (() => {
     if (!FRONTIER_CHANNELS.includes(channel)) throw new Error("Clash channel is unsupported");
     const adblockMode = values.has("adblockMode") ? values.get("adblockMode") : "off";
     if (!AD_BLOCK.has(adblockMode)) throw new Error("Clash adblockMode is unsupported");
+    const defaultIpv6Mode = platform === "macos" ? "ipv4-only" : "auto";
     const options = Object.freeze({
       output: "config",
       type: "collection",
@@ -1105,7 +1106,7 @@ var ClashProfileBundle = (() => {
       globalDns: enumValue(values, "globalDns", "cloudflare"),
       blockMode: enumValue(values, "blockMode", "balanced"),
       quicMode: enumValue(values, "quicMode", "proxy-block"),
-      ipv6Mode: enumValue(values, "ipv6Mode", "auto"),
+      ipv6Mode: enumValue(values, "ipv6Mode", defaultIpv6Mode),
       autoGroupMode: enumValue(values, "autoGroupMode", "auto"),
       clientChain: enumValue(values, "clientChain", "off")
     });
