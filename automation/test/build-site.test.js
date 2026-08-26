@@ -190,6 +190,25 @@ test("rebinds shared region GeoData and the root manifest when preparing current
   }
 });
 
+test("keeps an existing current root when preparing client promotions", async () => {
+  const root = await mkdtemp(join(tmpdir(), "apple-proxy-current-root-preserve-"));
+  const publicDirectory = join(root, "public");
+  try {
+    const currentBytes = Buffer.from("current-root\n");
+    const edgeBytes = Buffer.from("edge-root\n");
+    await mkdir(join(publicDirectory, "current"), { recursive: true });
+    await mkdir(join(publicDirectory, "edge"), { recursive: true });
+    await writeFile(join(publicDirectory, "current/root.txt"), currentBytes);
+    await writeFile(join(publicDirectory, "edge/root.txt"), edgeBytes);
+
+    await prepareCurrentRootFromEdge({ publicDirectory });
+
+    assert.equal(await readFile(join(publicDirectory, "current/root.txt"), "utf8"), "current-root\n");
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
 test("promotes without real-device canary evidence and rejects a mismatched native client", async () => {
   const root = await mkdtemp(join(tmpdir(), "apple-proxy-promote-gates-"));
   const publicDirectory = join(root, "public");

@@ -309,6 +309,7 @@ async function refreshRootManifestHash(manifestPath) {
 export async function prepareCurrentRootFromEdge({ publicDirectory } = {}) {
   const edgeDirectory = join(publicDirectory, "edge");
   const currentDirectory = join(publicDirectory, "current");
+  if (await exists(currentDirectory)) return false;
   const clientDirectories = new Set(Object.values(CLIENT_PUBLIC_PATHS));
   for (const entry of await readdir(edgeDirectory, { withFileTypes: true })) {
     if (clientDirectories.has(entry.name)
