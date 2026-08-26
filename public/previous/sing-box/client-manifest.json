@@ -1,5 +1,5 @@
 {
-  "chinaIpAuditSha256": "fc27eb15d6a20c833cf7984a0516521d6befba6f262b691b04c01676490adf82",
+  "chinaIpAuditSha256": "05b0639e02b20fbf36f8c1412cadd88f9b7e91bc9c5e845e0269405bb89e6641",
   "client": "singbox",
   "files": [
     {
@@ -53,9 +53,9 @@
       "sha256": "3ce05f569a082f65132f2782c90b88c1788f017ce0b521f40b3ef7a5f15b19e2"
     },
     {
-      "bytes": 48657,
+      "bytes": 48659,
       "path": "sing-box/mobile-rule-sets/ChinaIP.srs",
-      "sha256": "11f6a2d3e2f2500610994ae03c43d228cb168c4bf51a3521b1fa4d56b8a3c19e"
+      "sha256": "c3767cac693914d3f26f9f6cd2e2d628a5fe754cbefd9ae6373ae59e6ada7225"
     },
     {
       "bytes": 1074,
@@ -133,9 +133,9 @@
       "sha256": "ed15d8e75ef55fffbef039e204685fb61ab4e7ad7edb3d74ecc059888251bb8c"
     },
     {
-      "bytes": 48657,
+      "bytes": 48659,
       "path": "sing-box/rule-sets/ChinaIP.srs",
-      "sha256": "11f6a2d3e2f2500610994ae03c43d228cb168c4bf51a3521b1fa4d56b8a3c19e"
+      "sha256": "c3767cac693914d3f26f9f6cd2e2d628a5fe754cbefd9ae6373ae59e6ada7225"
     },
     {
       "bytes": 33,
@@ -284,9 +284,9 @@
     }
   ],
   "generatedAt": "2026-08-23T18:28:35Z",
-  "manifestHash": "0fc7b7ad601300b54d88755a1cb41d5b529b656b21cf7ea29096c83c63e605e1",
+  "manifestHash": "ef1d5b9667a647b066c6bca0d7fd442cbb53e9c9ce1c0c9a98e6d842f111aea9",
   "optionalPacks": {
-    "adblock-full": "d10a484393526b61cd476eb07af33b8427cbff404f86caa89128fabd977be60d"
+    "adblock-full": "e71a784ba98972d176f025398e6ed9100a25d806d0655f2e3a8c093c9d44d5ae"
   },
   "schemaVersion": 1
 }

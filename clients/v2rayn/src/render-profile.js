@@ -80,6 +80,16 @@ function actionForSource(sourceId, overrides, nodeTags, nodeTagsById, blockMode,
 }
 
 function dns(options) { const queryStrategy = options.ipv6Mode === "ipv4-only" ? "UseIPv4" : "UseIP"; const china = options.chinaDns === "system" ? "localhost" : options.chinaDns === "dnspod" ? "119.29.29.29" : "223.5.5.5"; const global = options.globalDns === "google" ? "8.8.8.8" : options.globalDns === "quad9" ? "9.9.9.9" : "1.1.1.1"; return { servers: [{ tag: "china-dns", address: china, domains: ["geosite:cn", "geosite:private"], queryStrategy }, { tag: "global-dns", address: global, domains: ["geosite:apple-proxy-overseas"], queryStrategy }], queryStrategy, tag: "dnsQuery", mode: options.dnsMode }; }
+function tunInbound(options) {
+  const settings = { mtu: 1500 };
+  if (options.platform === "macos") {
+    settings.gateway = ["169.254.10.1/30"];
+    settings.autoSystemRoutingTable = ["0.0.0.0/0", "::/0"];
+    settings.autoOutboundsInterface = "auto";
+  }
+  return { tag: "tun", protocol: "tun", settings, sniffing: { enabled: true, routeOnly: true } };
+}
+
 export function renderV2rayNProfile({ nodes, options, geoData = null, filterFailures = {}, policyResolution = null } = {}) {
   if (!options || options.output !== "config") throw new Error("v2rayN profile options are required");
   if (!Array.isArray(nodes)) throw new Error("v2rayN profile requires compatible nodes");
@@ -102,5 +112,5 @@ export function renderV2rayNProfile({ nodes, options, geoData = null, filterFail
     if (!finalOutboundTag) throw new Error("v2rayN policy target node is unavailable");
   }
   rules.push({ domain: [`geosite:${options.region}`], outboundTag: "direct", ruleTag: "china-domain-direct" }, { ip: [`geoip:${options.region}`], outboundTag: "direct", ruleTag: "china-ip-direct" }, { network: "tcp,udp", outboundTag: finalOutboundTag, ruleTag: "final-fail-closed" });
-  return { name: options.name, dns: dns(options), inbounds: [{ tag: "tun", protocol: "tun", settings: { mtu: 1500 }, sniffing: { enabled: true, routeOnly: true } }], outbounds: [...outbounds, ...(outbounds.length > 2 ? [{ protocol: "selector", tag: "proxy", settings: { selectors: outbounds.slice(2).map(({ tag }) => tag) } }] : [])], routing: { domainStrategy: "IPIfNonMatch", rules }, ...(Object.keys(failures).length ? { renderFailures: failures } : {}) };
+  return { name: options.name, dns: dns(options), inbounds: [tunInbound(options)], outbounds: [...outbounds, ...(outbounds.length > 2 ? [{ protocol: "selector", tag: "proxy", settings: { selectors: outbounds.slice(2).map(({ tag }) => tag) } }] : [])], routing: { domainStrategy: "IPIfNonMatch", rules }, ...(Object.keys(failures).length ? { renderFailures: failures } : {}) };
 }

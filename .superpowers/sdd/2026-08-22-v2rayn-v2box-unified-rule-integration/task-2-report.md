@@ -1,19 +1,9 @@
 # Task 2 Report
 
-## Files
-
-- `shared/rules/external-sources.js`
-- `shared/rules/region-profiles.js`
-- `automation/src/source-catalog.js`
-- `test/region-profiles.test.js`
-- `automation/test/source-catalog-task2.test.js`
-
-## Tests
-
-- `node --test test/region-profiles.test.js automation/test/source-catalog-task2.test.js automation/test/source-catalog.test.js`
-- Result: all tests pass.
-
-## Concerns
-
-- The task brief referenced by the assignment was not present in the checkout; pins use the current full commit SHAs supplied for the four public repositories.
-- The legacy Blackmatrix7/v2fly fetch catalog remains unchanged; external records are additive and region-selected.
+- Changed file: `shared/rules/external-sources.js`
+- Root cause: `validateExternalSourceCatalog` derived and compared `retrievalUrl` before validating `sourcePath`, so an unsafe mutated value like `../private.dat` failed as a URL mismatch instead of being rejected as an unsafe source path.
+- Tests:
+  - `node --test automation/test/source-catalog-task2.test.js`
+  - `node --test automation/test/source-catalog.test.js`
+- Commit: `17b714380726847986f3e9fd4ac1a394a9ea9ece`
+- Concerns: none identified from the targeted fix; unrelated Sub-Store worktree changes were left untouched.

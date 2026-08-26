@@ -52,6 +52,9 @@ test("publishes one hash-closed multi-client current snapshot", async () => {
     singbox: "sing-box",
     onexray: "onexray",
     happ: "happ",
+    v2rayn: "v2rayn",
+    v2box: "v2box",
+    clash: "clash",
   };
   for (const [client, directory] of Object.entries(clientDirectories)) {
     const hash = rollout.clients[client];
@@ -112,6 +115,8 @@ test("public client entrypoints close over hosted channels and never raw master"
     "surge/scripts/substore-profile-generator.js": /surge\/rules/u,
     "sing-box/scripts/sing-box-config-generator.js": /sing-box\/rule-sets/u,
     "sing-box/scripts/substore-config-generator.js": /sing-box\/rule-sets/u,
+    "clash/scripts/clash-profile-generator.js": /clash\/rules/u,
+    "clash/scripts/substore-profile-generator.js": /clash\/rules/u,
   };
   for (const [path, marker] of Object.entries(scriptMarkers)) {
     const content = await readFile(new URL(path, currentRoot), "utf8");
@@ -177,7 +182,7 @@ test("publishes an independent lightweight edge candidate beside stable current"
   assert.equal(edge.generatedAt, edge.upstream.committedAt);
   assert.match(edge.upstream.commit, /^[0-9a-f]{40}$/u);
   assert.equal(current.upstream.commit.length, 40);
-  assert.deepEqual(Object.keys(edge.clients).sort(), ["anywhere", "egern", "happ", "onexray", "shadowrocket", "singbox", "surge", "v2box", "v2rayn"]);
+  assert.deepEqual(Object.keys(edge.clients).sort(), ["anywhere", "clash", "egern", "happ", "onexray", "shadowrocket", "singbox", "surge", "v2box", "v2rayn"]);
   assert.ok(edge.clients.singbox.referencedDefaultBytes > 0);
   const surgeGenerator = await readFile(new URL("edge/surge/scripts/surge-profile-generator.js", publicRoot), "utf8");
   assert.match(surgeGenerator, /channel:\s*"edge"/u);

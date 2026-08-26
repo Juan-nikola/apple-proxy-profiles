@@ -1,0 +1,15 @@
+# Upstream: https://github.com/blackmatrix7/ios_rule_script
+# Path: compiled/Surge/Download/Download.list
+# Commit: f42be99379fcd1a1dd03469e8b56dcb46888fcea
+# Committed at: 2026-08-23T18:28:35Z
+# License: GPL-2.0-only
+# Changed by: Juan-nikola/apple-proxy-profiles
+# Output entries: 6
+# Omitted entries: 0
+payload:
+  - "DOMAIN-SUFFIX,qbittorrent.org"
+  - "DOMAIN-KEYWORD,aria2"
+  - "DOMAIN-KEYWORD,thunder"
+  - "DOMAIN-KEYWORD,xlliveud"
+  - "DOMAIN-KEYWORD,xunlei"
+  - "DOMAIN-KEYWORD,yunpan"

@@ -4,6 +4,7 @@ import { buildAnywhereRuleSnapshot, canonicalJson } from "./render-anywhere-rule
 import { renderEgernRuleSource } from "./render-egern-rules.js";
 import { renderShadowrocketRuleSource } from "./render-shadowrocket-rules.js";
 import { renderSingBoxRuleSource } from "./render-sing-box-rules.js";
+import { renderClashRuleSource } from "./render-clash-rules.js";
 import { compileLightweightRules } from "./compile-lightweight-rules.js";
 import { compactRuleCidrs } from "./compact-rule-cidrs.js";
 import { artifactBuffer, artifactByteLength, artifactSha256 } from "./artifact-content.js";
@@ -103,6 +104,10 @@ const OPTIONAL_AWARE_GENERATOR_PATHS = new Set([
   "v2rayn/scripts/substore-config-generator.js",
   "v2box/scripts/substore-node-generator.js",
   "v2box/scripts/substore-config-generator.js",
+  "clash/scripts/clash-node-generator.js",
+  "clash/scripts/substore-node-generator.js",
+  "clash/scripts/clash-profile-generator.js",
+  "clash/scripts/substore-profile-generator.js",
 ]);
 
 const ONEXRAY_SCRIPT_PATHS = Object.freeze([
@@ -127,9 +132,16 @@ const V2BOX_SCRIPT_PATHS = Object.freeze([
   "v2box/scripts/substore-node-generator.js",
   "v2box/scripts/substore-config-generator.js",
 ]);
+const CLASH_SCRIPT_PATHS = Object.freeze([
+  "clash/scripts/clash-node-generator.js",
+  "clash/scripts/substore-node-generator.js",
+  "clash/scripts/clash-profile-generator.js",
+  "clash/scripts/substore-profile-generator.js",
+]);
 const NATIVE_POLICY_GENERATOR_PATHS = new Set([
   ...V2RAYN_SCRIPT_PATHS,
   ...V2BOX_SCRIPT_PATHS,
+  ...CLASH_SCRIPT_PATHS,
 ]);
 const REGION_GEO_DATA_REGIONS = Object.freeze(["cn", "global", "ru", "ir"]);
 
@@ -161,6 +173,10 @@ function v2raynPublicScripts() {
 
 function v2boxPublicScripts() {
   return nativePublicScripts("v2box", V2BOX_SCRIPT_PATHS);
+}
+
+function clashPublicScripts() {
+  return nativePublicScripts("clash", CLASH_SCRIPT_PATHS);
 }
 
 function nativePublicScripts(client, paths) {
@@ -288,6 +304,7 @@ function addAdditionalFiles(target, additions) {
     ...ONEXRAY_SCRIPT_PATHS,
     ...V2RAYN_SCRIPT_PATHS,
     ...V2BOX_SCRIPT_PATHS,
+    ...CLASH_SCRIPT_PATHS,
   ]);
   for (const [path, content] of additions) {
     if (target.has(path) && !overridable.has(path)) {
@@ -318,7 +335,7 @@ function renderRuleSetMap({
   channel = "current",
 }) {
   const files = new Map();
-  const clientSources = { shadowrocket: [], surge: [], egern: [], singbox: [] };
+  const clientSources = { shadowrocket: [], surge: [], egern: [], singbox: [], clash: [] };
   const compiledSnapshot = new Map();
   const compiledCatalog = [];
 
@@ -327,10 +344,12 @@ function renderRuleSetMap({
     const shadowrocket = renderShadowrocketRuleSource(input);
     const egern = renderEgernRuleSource(input);
     const singbox = renderSingBoxRuleSource(input);
+    const clash = renderClashRuleSource(input);
     const prefix = pathPrefix ? `${pathPrefix}/` : "";
     files.set(`${prefix}shadowrocket/rules/${id}.list`, shadowrocket.content);
     files.set(`${prefix}surge/rules/${id}.list`, shadowrocket.content);
     files.set(`${prefix}egern/rules/${id}.yaml`, egern.content);
+    files.set(`${prefix}clash/rules/${id}.yaml`, clash.content);
     if (singBoxBinaries === null) {
       files.set(`${prefix}sing-box/rules/${id}.json`, singbox.content);
     } else {
@@ -345,6 +364,7 @@ function renderRuleSetMap({
     clientSources.surge.push({ id, ...shadowrocket.counts });
     clientSources.egern.push({ id, ...egern.counts });
     clientSources.singbox.push({ id, ...singbox.counts });
+    clientSources.clash.push({ id, ...clash.counts });
     compiledSnapshot.set(id, input.fetched);
     compiledCatalog.push(input.source);
   }
@@ -722,6 +742,7 @@ export function buildClientArtifacts({
   addFiles(defaults, onexrayPublicScripts());
   addFiles(defaults, v2raynPublicScripts());
   addFiles(defaults, v2boxPublicScripts());
+  addFiles(defaults, clashPublicScripts());
   addFiles(defaults, sharedGeoData.files);
   let chinaIpAuditSha256 = null;
 

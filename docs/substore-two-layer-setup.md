@@ -1,6 +1,6 @@
-# Sub-Store 九客户端外置 JS + 任务引用总指南
+# Sub-Store 十客户端外置 JS + 任务引用总指南
 
-九个客户端都通过自动化门禁后发布到 `current`；`edge` 是维护者的隔离预览频道，`previous` 用于回滚。下表和任务示例中的 `current` 是正式 URL。需要预览候选时，将脚本路径和 hash 参数中的频道一并替换为 `edge`；不要把 `edge` URL 用作生产任务。
+十个客户端都通过自动化门禁后发布到 `current`；`edge` 是维护者的隔离预览频道，`previous` 用于回滚。下表和任务示例中的 `current` 是正式 URL。需要预览候选时，将脚本路径和 hash 参数中的频道一并替换为 `edge`；不要把 `edge` URL 用作生产任务。
 
 本指南把公开代码和私密节点分成两层：
 
@@ -9,7 +9,7 @@
 
 “引用”的含义是：Sub-Store 的 File 或 Script Operator 保存一个远程 JS URL；旧版单行模式在 URL 的 `#` 后用 `&` 传参数。不要复制 JavaScript 正文，也不要把私密 API、节点 URL 或输出链接提交到 GitHub。
 
-九个客户端的 collection 名称、用户自行筛选边界、迁移顺序和回滚方法统一见 [Sub-Store 客户端节点池指南](substore-client-pools.md)。
+十个客户端的 collection 名称、用户自行筛选边界、迁移顺序和回滚方法统一见 [Sub-Store 客户端节点池指南](substore-client-pools.md)。
 
 ## 0. 安全边界
 
@@ -23,20 +23,20 @@
 
 本项目不需要 MITM、HTTPS 解密、CA 证书、请求重写或“不验证证书”。`insecure` 永远关闭；`noCache` 生产任务默认关闭，只有隔离测试任务排查缓存时临时打开。
 
-## 1. 先建立总池和九个客户端组合
+## 1. 先建立总池和十个客户端组合
 
 在你自己的 Sub-Store 中：
 
 1. 保留已有来源、旧 collection、tasks 和旧 URL，先分别 preview 确认非空。
 2. 建立用户自己的 `apple-proxy-all` 总池。
-3. 按节点池指南建立九个 client collection，用户自行选择每个客户端要包含的节点；HAPP/OneXray/v2rayN/V2Box 会按已审计能力过滤不兼容节点，并在诊断中记录排除原因。
+3. 按节点池指南建立十个 client collection，用户自行选择每个客户端要包含的节点；HAPP/OneXray/v2rayN/V2Box/Clash Apple 会按已审计能力过滤不兼容节点，并在诊断中记录排除原因。
 4. 逐个 preview 并记录计数，再一次只迁移一个客户端的 `name=`。
 
 `sing-box-client` 不是必需标签。它只是 Sub-Store 的筛选辅助，可以删除；如果要自定义 sing-box 节点组合，请移除该标签筛选条件后，直接手动勾选进入 `apple-proxy-singbox` 的节点。不要改 collection slug，也不要把任务参数里的 `name=apple-proxy-singbox` 改成中文。
 
-新任务不再让九个客户端直接共享一个 collection。旧 `apple-proxy-sources` 继续保留作兼容/回滚入口，不要删除。
+新任务不再让十个客户端直接共享一个 collection。旧 `apple-proxy-sources` 继续保留作兼容/回滚入口，不要删除。
 
-## 2. 十七个公开远程 JS
+## 2. 二十个公开远程 JS
 
 新任务优先使用 `current/`：
 
@@ -60,6 +60,8 @@
 | v2rayN config | `https://juan-nikola.github.io/apple-proxy-profiles/current/v2rayn/scripts/substore-config-generator.js` | Windows/macOS Xray JSON 配置 |
 | V2Box nodes | `https://juan-nikola.github.io/apple-proxy-profiles/current/v2box/scripts/substore-node-generator.js` | iPhone/iPad Xray 节点订阅 |
 | V2Box config | `https://juan-nikola.github.io/apple-proxy-profiles/current/v2box/scripts/substore-config-generator.js` | iPhone/iPad Xray JSON 配置 |
+| Clash Apple nodes | `https://juan-nikola.github.io/apple-proxy-profiles/current/clash/scripts/clash-node-generator.js` | macOS/iPhone/iPad/Apple TV Mihomo 节点 YAML |
+| Clash Apple Profile | `https://juan-nikola.github.io/apple-proxy-profiles/current/clash/scripts/clash-profile-generator.js` | 四个平台完整 Mihomo YAML 配置 |
 
 测试版只把路径中的 `current` 换成 `edge`。不要使用 GitHub `blob` 页面、`clients/*/dist/` 本地路径或旧兼容 URL 创建新任务。
 
@@ -114,9 +116,9 @@ https://juan-nikola.github.io/apple-proxy-profiles/current/surge/scripts/surge-p
 
 通用任务总数为 `4+1+4+4+4=17` 个。
 
-## 4.1 九客户端目标与 35 个任务
+## 4.1 十客户端目标与 40 个任务
 
-仓库注册表包含九个稳定 ID，九个都已进入 `active` 发布状态。任务总数为 **35 个**：现有 17 个通用任务，加上 Anywhere 策略校验/映射、policy、3 个 OneXray 任务、6 个 HAPP 平台配置任务、1 个 HAPP 审计任务和 6 个 v2rayN/V2Box 任务。
+仓库注册表包含十个稳定 ID，十个都已进入 `active` 发布状态。任务总数为 **40 个**：现有 17 个通用任务，加上 Anywhere 策略校验/映射、policy、3 个 OneXray 任务、6 个 HAPP 平台配置任务、1 个 HAPP 审计任务、3 个 v2rayN 任务、1 个 V2Box 节点任务、5 个 Clash Apple 任务和 2 个 V2Box 配置任务。
 
 | # | 任务 | 状态 | 输入/绑定 | 说明 |
 | ---: | --- | --- | --- | --- |
@@ -136,8 +138,13 @@ https://juan-nikola.github.io/apple-proxy-profiles/current/surge/scripts/surge-p
 | 31 | `v2rayn-config-windows` | active/private | `apple-proxy-v2rayn` | 输出 Windows v2rayN 配置；默认 `region=cn` |
 | 32 | `v2rayn-config-macos` | active/private | `apple-proxy-v2rayn` | 输出 macOS v2rayN 配置；默认 `region=cn` |
 | 33 | `v2box-nodes` | active/private | `apple-proxy-v2box` | 输出 iPhone/iPad 可导入的 Xray JSON 节点订阅 |
-| 34 | `v2box-config-iphone` | active/private | `apple-proxy-v2box` | 输出 iPhone V2Box 配置；默认 `region=cn` |
-| 35 | `v2box-config-ipad` | active/private | `apple-proxy-v2box` | 输出 iPad V2Box 配置；默认 `region=cn` |
+| 34 | `clash-nodes` | active/private | `apple-proxy-clash` | 输出 Mihomo `proxies` 节点 YAML |
+| 35 | `clash-config-macos` | active/private | `apple-proxy-clash` | 输出 macOS Clash Apple 配置；默认稳定 DNS、TUN 和自动测速组 |
+| 36 | `clash-config-iphone` | active/private | `apple-proxy-clash` | 输出 iPhone Clash Apple 配置 |
+| 37 | `clash-config-ipad` | active/private | `apple-proxy-clash` | 输出 iPad Clash Apple 配置 |
+| 38 | `clash-config-appletv` | active/private | `apple-proxy-clash` | 输出 Apple TV Clash Apple 配置 |
+| 39 | `v2box-config-iphone` | active/private | `apple-proxy-v2box` | 输出 iPhone V2Box 配置；默认 `region=cn` |
+| 40 | `v2box-config-ipad` | active/private | `apple-proxy-v2box` | 输出 iPad V2Box 配置；默认 `region=cn` |
 
 
 除节点订阅任务外，所有配置、Profile 和 audit 任务的 Sub-Store 元数据都设置 `policyInput=apple-proxy-policy`；节点任务不读取策略。policy File 使用 schema v2 单层 `targets`，读取器继续兼容 schema v1。读取策略的任务接收同名 `channel`（仅 `edge`、`current`、`previous`），并绑定该频道的 policy revision、公开 client Manifest SHA-256 和 GeoData SHA-256；OneXray node-only 任务也接收 `channel`，但不读取业务策略。HAPP 的 6 个平台配置任务和 `happ-routing-audit` 固定使用 `/current/happ/`，任务片段不接收或携带 `channel`；HAPP 审计只把 `current` 作为内部诊断元数据。公开脚本只在 Pages 提供无节点 bundle，真实输出仍只在私密 Sub-Store 任务日志和客户端导入结果中查看。

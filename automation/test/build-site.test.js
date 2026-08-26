@@ -256,8 +256,8 @@ test("refreshes the public audit dashboard after independent client promotion", 
     let dashboard = JSON.parse(await readFile(join(publicDirectory, "current/audit/dashboard.json"), "utf8"));
     const promotedSurgeHash = JSON.parse(await readFile(join(publicDirectory, "current/surge/client-manifest.json"), "utf8")).manifestHash;
     const previousSurgeHash = JSON.parse(await readFile(join(publicDirectory, "previous/surge/client-manifest.json"), "utf8")).manifestHash;
-    assert.equal(dashboard.channels.current.manifestCount, 9);
-    assert.equal(dashboard.channels.previous.manifestCount, 9);
+    assert.equal(dashboard.channels.current.manifestCount, 10);
+    assert.equal(dashboard.channels.previous.manifestCount, 10);
     assert.equal(dashboard.clients.surge.current.manifestHash, promotedSurgeHash);
     assert.equal(dashboard.clients.surge.previous.manifestHash, previousSurgeHash);
 
@@ -270,8 +270,8 @@ test("refreshes the public audit dashboard after independent client promotion", 
     dashboard = JSON.parse(await readFile(join(publicDirectory, "current/audit/dashboard.json"), "utf8"));
     const promotedShadowrocketHash = JSON.parse(await readFile(join(publicDirectory, "current/shadowrocket/client-manifest.json"), "utf8")).manifestHash;
     const previousShadowrocketHash = JSON.parse(await readFile(join(publicDirectory, "previous/shadowrocket/client-manifest.json"), "utf8")).manifestHash;
-    assert.equal(dashboard.channels.current.manifestCount, 9);
-    assert.equal(dashboard.channels.previous.manifestCount, 9);
+    assert.equal(dashboard.channels.current.manifestCount, 10);
+    assert.equal(dashboard.channels.previous.manifestCount, 10);
     assert.equal(dashboard.clients.surge.previous.manifestHash, previousSurgeHash);
     assert.equal(dashboard.clients.shadowrocket.previous.manifestHash, previousShadowrocketHash);
     assert.equal(dashboard.clients.shadowrocket.current.manifestHash, promotedShadowrocketHash);

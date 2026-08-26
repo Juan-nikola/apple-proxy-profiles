@@ -604,6 +604,13 @@ async function staticFiles(channel = "current") {
     ["happ/scripts/substore-config-generator.js", "clients/happ/dist/substore-config-generator.js"],
     ["happ/scripts/happ-routing-audit.js", "clients/happ/dist/happ-routing-audit.js"],
     ["happ/scripts/substore-routing-audit.js", "clients/happ/dist/substore-routing-audit.js"],
+    ["clash/scripts/clash-node-generator.js", "clients/clash/dist/clash-node-generator.js"],
+    ["clash/scripts/substore-node-generator.js", "clients/clash/dist/substore-node-generator.js"],
+    ["clash/scripts/clash-profile-generator.js", "clients/clash/dist/clash-profile-generator.js"],
+    ["clash/scripts/substore-profile-generator.js", "clients/clash/dist/substore-profile-generator.js"],
+    ...["macos", "iphone", "ipad", "appletv"].flatMap((platform) => [
+      [`clash/examples/clash-${platform}.yaml`, `clients/clash/examples/clash-${platform}.yaml`],
+    ]),
      ...["macos", "iphone", "ipad", "android"].flatMap((platform) => [
       [`sing-box/examples/sing-box-${platform}.json`, `clients/sing-box/examples/sing-box-${platform}.json`],
       [`sing-box/examples/sing-box-${platform}-diagnostic.json`, `clients/sing-box/examples/sing-box-${platform}-diagnostic.json`],

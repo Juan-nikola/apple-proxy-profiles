@@ -1,6 +1,6 @@
 # 维护、编译与发布手册
 
-这份手册回答三个问题：以后增加节点或规则要改哪里、每个文件负责什么、在 macOS/Linux/CI 环境怎样构建和验证。公开仓库不保存节点；你的私密节点来源在 `apple-proxy-all` 总池与九个 client collection 中维护，详细边界见 [Sub-Store 客户端节点池指南](substore-client-pools.md)。旧 `apple-proxy-sources` 只保留作兼容/回滚入口。
+这份手册回答三个问题：以后增加节点或规则要改哪里、每个文件负责什么、在 macOS/Linux/CI 环境怎样构建和验证。公开仓库不保存节点；你的私密节点来源在 `apple-proxy-all` 总池与十个 client collection 中维护，详细边界见 [Sub-Store 客户端节点池指南](substore-client-pools.md)。旧 `apple-proxy-sources` 只保留作兼容/回滚入口。
 
 ## 1. 先判断你要改哪一层
 
@@ -70,6 +70,7 @@ clients/v2rayn/
   src/render-profile.js        Xray JSON、DNS、TUN 和 GeoData 引用
 
 clients/v2box/
+clients/clash/
   src/substore-node-entry.js   V2Box 节点订阅入口
   src/substore-config-entry.js V2Box iPhone/iPad 配置入口
   src/render-assets.js          共享 GeoData 资产 manifest
@@ -237,6 +238,18 @@ npm --workspace @apple-proxy-profiles/v2box run verify
 ```
 
 生成 `clients/v2box/dist/substore-node-generator.js` 和 `substore-config-generator.js`；配置任务使用 `platform=iphone|ipad`，并通过共享 `geodata/<region>/` 资产 manifest 校验地区、频道和 hash。
+
+### Clash Apple
+
+```bash
+npm --workspace @apple-proxy-profiles/clash run test
+npm --workspace @apple-proxy-profiles/clash run build
+npm --workspace @apple-proxy-profiles/clash run fixtures
+npm --workspace @apple-proxy-profiles/clash run check:secrets
+npm --workspace @apple-proxy-profiles/clash run verify
+```
+
+生成 `clients/clash/dist/` 下的节点与 Profile bundle，以及 macOS/iPhone/iPad/Apple TV 脱敏 YAML fixtures。配置任务使用 `platform=macos|iphone|ipad|appletv`；规则文件由 `clash/rules/` 发布并通过 Mihomo `rule-providers` 引用。
 
 ## 6. sing-box 官方 core 和 `.srs` 编译
 

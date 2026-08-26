@@ -1,5 +1,5 @@
 {
-  "chinaIpAuditSha256": "fc27eb15d6a20c833cf7984a0516521d6befba6f262b691b04c01676490adf82",
+  "chinaIpAuditSha256": "05b0639e02b20fbf36f8c1412cadd88f9b7e91bc9c5e845e0269405bb89e6641",
   "client": "v2box",
   "files": [
     {
@@ -14,7 +14,7 @@
     }
   ],
   "generatedAt": "2026-08-23T18:28:35Z",
-  "manifestHash": "ae36a7dcb72c01a6562077f9a3a18b6b58bbdd72fed052df8d50f34b6677e962",
+  "manifestHash": "d041b0366b7efae7b477eebdc9d599d3906784047a330294f7e7c800e673f866",
   "optionalPacks": {},
   "schemaVersion": 1
 }

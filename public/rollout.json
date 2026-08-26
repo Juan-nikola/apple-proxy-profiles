@@ -1,6 +1,18 @@
 {
   "schemaVersion": 2,
   "clients": {
+    "anywhere": "18f13c754bd97f1863cc92d93cb30786704f83ee9b159c421a774a4e7f261ce4",
+    "egern": "28ebbbe87e31f071d330b64cf0a0cd48474c43a4c72a2a60b323853a5cc75e66",
+    "shadowrocket": "9c1af5c31b3054dbf4f1a15fe266f6eca3591a81f1d951f064df0c1e1eedc227",
+    "surge": "14a7da4bfbef302cabcd2d2abc5143032a224aa170d1c1c0856f4df929c275fb",
+    "singbox": "c0d09b7ad29f4fc63d6dbc8ea31ca5c937343a1b96e9987a092e0e062caa4a1f",
+    "onexray": "d1d1168f5a6c3c2b8952fec160f3ce3b055b75d6ef1fc3562af5aa65bf2fbc82",
+    "happ": "c19a17baf96a642cf2c7d62e191920eac6720eda7f79c4295b00aa748430fb70",
+    "v2rayn": "8e9a2862d36e2d4f0d5f4e2052c1fb56e0718e7c54d9a56c94869a43ece47f44",
+    "v2box": "2df79d4283cc90c9537518255b5bbee0775cb01547a002856178293dcae9a1d6",
+    "clash": "665f7e8674d4761e4b0aa903dd4a54e52fcacb3ef417aabc91c0ad1f037ac52e"
+  },
+  "previous": {
     "anywhere": "68d0ed037ab1b9e4ae1b1a2d9b70f621f91ee3a767ff3ab5ef928cdb6edfa95c",
     "egern": "e716f49556c4d69ca543442d948cf7bbd4cfe0d248af2c807c313e267e19003a",
     "shadowrocket": "9a89a2f346659c03609476fe13dd5e90b14630b2bae6e5942975c49e039b931c",
@@ -9,18 +21,8 @@
     "onexray": "10d79c47fc3de8a05017142d74a7f38e15351c8560ab5dbab915877d386563c7",
     "happ": "dfba29815fa450b083cf5583de8387281a69691c06fc2f0b39ae5fbabdc2ed57",
     "v2rayn": "acd01588c6b3c1df48d1637417aa87afd07de77b9024af9b037b845f9e40df84",
-    "v2box": "b8d5bce819fc25bf9338db6329216e38ac4df1d5a423e8939ff7ca4766a634cc"
-  },
-  "previous": {
-    "anywhere": "df6f755bd8e1a5399a5ed204c516ee0944e22a9af7e55eaede259420328cdd4e",
-    "egern": "aef9308e7de7ef7977da205302fec94f2365960bd401079ce554ccfcfde160d8",
-    "shadowrocket": "7f5fad30e0ae6e99b139df6b34171f01326dca2a54f5bef771ed22555b6dba57",
-    "surge": "e198e59a064f48699ec7f369876e8d0f044e47e28f0cf0e8c01c145bf45ce8d3",
-    "singbox": "307687fb431d52145b72ae851ee557e5112922ea28f3eea5fd4ab83ec518805b",
-    "onexray": "8dd38c501999d87af24fbef2002f3415211c812bb129e0a56b61768fffaa978d",
-    "happ": "3253738a5ff66544b4088bc7c19554f4b8fef893feb547a0312b302d03660f99",
-    "v2rayn": "8fb1da1001a5be5480c314490b1113b258f7b7461c43c0808c2d5a33324c6e26",
-    "v2box": "e2a527354554db3408322722061f234723ce93dc5b9f9eaa75f595db7199138a"
+    "v2box": "b8d5bce819fc25bf9338db6329216e38ac4df1d5a423e8939ff7ca4766a634cc",
+    "clash": null
   },
   "optionalPacks": {
     "adblock-full": {
@@ -28,7 +30,8 @@
       "egern": "42d55c5dfb7162f5bcd361f66288499ca98ccf13799dd0cbcb75bbc02072186a",
       "shadowrocket": "502dbfe3d2fc6504b9764f9bbe72b55b974c775a965fefa250b0db09357e00b4",
       "surge": "01a6c87844de890f9d3bf36b365e882b9986878398dc72b64bddf23b180fa9bf",
-      "singbox": "e71a784ba98972d176f025398e6ed9100a25d806d0655f2e3a8c093c9d44d5ae"
+      "singbox": "e71a784ba98972d176f025398e6ed9100a25d806d0655f2e3a8c093c9d44d5ae",
+      "clash": "abfb81225fe23ff2a6e9e9219422ba4181fe81c442a42d3507d167153a46ae9e"
     }
   },
   "previousOptionalPacks": {
@@ -37,7 +40,8 @@
       "egern": "42d55c5dfb7162f5bcd361f66288499ca98ccf13799dd0cbcb75bbc02072186a",
       "shadowrocket": "502dbfe3d2fc6504b9764f9bbe72b55b974c775a965fefa250b0db09357e00b4",
       "surge": "01a6c87844de890f9d3bf36b365e882b9986878398dc72b64bddf23b180fa9bf",
-      "singbox": "d10a484393526b61cd476eb07af33b8427cbff404f86caa89128fabd977be60d"
+      "singbox": "e71a784ba98972d176f025398e6ed9100a25d806d0655f2e3a8c093c9d44d5ae",
+      "clash": null
     }
   }
 }

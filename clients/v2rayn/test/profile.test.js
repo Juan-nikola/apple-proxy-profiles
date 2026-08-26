@@ -31,6 +31,18 @@ test("uses legal external GeoData references and validates exact assets", () => 
   assert.throws(() => renderV2rayNProfile({ options, nodes: [{ name: "fixture", type: "vless", server: "fixture.invalid", port: 443, uuid: "TEST_ONLY_UUID" }], geoData: { geosite: Buffer.from("changed"), geoip: ip, manifest } }), /hash|byteLength/u);
 });
 
+test("renders macOS TUN system routes and protects the Xray uplink", () => {
+  const options = parseV2rayNOptions({ output: "config", type: "collection", name: "fixture", platform: "macos", region: "cn" });
+  const profile = renderV2rayNProfile({
+    options,
+    nodes: [{ name: "fixture", type: "vless", server: "fixture.invalid", port: 443, uuid: "TEST_ONLY_UUID" }],
+  });
+  const tun = profile.inbounds.find(({ protocol }) => protocol === "tun");
+  assert.deepEqual(tun.settings.gateway, ["169.254.10.1/30"]);
+  assert.deepEqual(tun.settings.autoSystemRoutingTable, ["0.0.0.0/0", "::/0"]);
+  assert.equal(tun.settings.autoOutboundsInterface, "auto");
+});
+
 function requireHash(value) {
   return createHash("sha256").update(value).digest("hex");
 }

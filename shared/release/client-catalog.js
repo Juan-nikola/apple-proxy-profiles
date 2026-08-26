@@ -126,6 +126,19 @@ const records = [
     adapterSchema: "v2box-v1",
     publicDirectory: "v2box",
   },
+  {
+    id: CLIENT.clash,
+    displayName: "Clash Apple",
+    state: "active",
+    platforms: ["iphone", "ipad", "macos", "appletv"],
+    configFormat: "mihomo-yaml",
+    ruleFormat: "mihomo-classical-yaml",
+    nodeValidator: "clash",
+    separatesProfile: false,
+    supportsPolicyOverrides: false,
+    adapterSchema: "clash-v1",
+    publicDirectory: "clash",
+  },
 ].map((record) => freeze(record));
 
 const byId = new Map(records.map((record) => [record.id, record]));
@@ -138,6 +151,7 @@ const lightweightRuleIds = freeze([
   CLIENT.shadowrocket,
   CLIENT.surge,
   CLIENT.singbox,
+  CLIENT.clash,
 ]);
 
 export function allClientIds() {

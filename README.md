@@ -1,6 +1,6 @@
 # Apple Proxy Profiles · 零基础部署与维护手册
 
-这个仓库把你保存在 Sub-Store 里的私密节点，转换成九个 active 客户端可导入的配置。HAPP、OneXray、v2rayN 和 V2Box 已接入真实 renderer、bundle、fixture 和发布清单；公开页面只放无节点脚本，节点凭据仍只在你的 Sub-Store 私密任务中处理：
+这个仓库把你保存在 Sub-Store 里的私密节点，转换成十个 active 客户端可导入的配置。HAPP、OneXray、v2rayN、V2Box 和 Clash Apple 已接入真实 renderer、bundle、fixture 和发布清单；公开页面只放无节点脚本，节点凭据仍只在你的 Sub-Store 私密任务中处理：
 
 | 客户端 | 平台 | 本项目提供什么 |
 | --- | --- | --- |
@@ -13,8 +13,9 @@
 | HAPP | iPhone、iPad、macOS、Android、Windows、Linux | HAPP JSON 订阅、路由审计 |
 | v2rayN | Windows、macOS | Xray JSON 节点订阅、Windows/macOS 配置、地区 GeoData |
 | V2Box | iPhone、iPad | Xray JSON 节点订阅、iPhone/iPad 配置、共享 GeoData 资产 |
+| Clash Apple | macOS、iPhone、iPad、Apple TV | Mihomo 节点 YAML、四个平台完整 YAML 配置、自动测速/故障转移组和规则集 |
 
-Android 仍是 sing-box 的一个平台输出；注册表和发布链路现在覆盖九个 active 客户端。Sub-Store 任务总数为 35：原有 17 个通用任务，加上 Anywhere 策略校验/映射、`apple-proxy-policy`、3 个 OneXray 任务、6 个 HAPP 平台配置任务、`happ-routing-audit` 和 6 个 v2rayN/V2Box 任务。
+Android 仍是 sing-box 的一个平台输出；注册表和发布链路现在覆盖十个 active 客户端。Sub-Store 任务总数为 40：原有 17 个通用任务，加上 Anywhere 策略校验/映射、`apple-proxy-policy`、3 个 OneXray 任务、6 个 HAPP 平台配置任务、`happ-routing-audit`、3 个 v2rayN 任务、1 个 V2Box 节点任务、5 个 Clash Apple 任务和 2 个 V2Box 配置任务。
 
 本仓库只保存公开脚本、公开规则和脱敏示例，**不保存你的订阅、节点、密码、UUID、私密输出 URL 或 Sub-Store 管理地址**。本项目不需要 MITM、HTTPS 解密、CA 证书或请求重写，这些功能请保持关闭。
 
@@ -25,7 +26,7 @@ Android 仍是 sing-box 的一个平台输出；注册表和发布链路现在�
 | 你的目标 | 直接去这里 |
 | --- | --- |
 | 第一次部署全部客户端 | [第 1 节：首次部署](#第-1-节首次部署-sub-store) |
-| 把配置导入客户端 | [第 2 节：导入九个客户端](#第-2-节导入九个客户端) |
+| 把配置导入客户端 | [第 2 节：导入十个客户端](#第-2-节导入十个客户端) |
 | 增加、删除或筛选节点 | [3.1 节：增加或删除节点](#31-增加或删除节点) |
 | 修改 DNS、IPv6 等任务参数 | [3.2 节：修改一个任务参数](#32-修改一个任务参数) |
 | 更新公开规则 | [3.3 节：更新公开规则](#33-更新公开规则) |
@@ -58,7 +59,7 @@ Android 仍是 sing-box 的一个平台输出；注册表和发布链路现在�
     ↓
 shared/rules/semantic-intents.js（统一业务语义）
     ↓
-九个客户端各自的格式生成器
+十个客户端各自的格式生成器
     ↓
 客户端中的业务组、规则集或 selector
 ```
@@ -84,9 +85,9 @@ shared/rules/semantic-intents.js（统一业务语义）
     ↓
 apple-proxy-all 总池
     ↓
-九个 active 客户端 collection（由你筛选；Xray renderer 会报告并排除不兼容节点）
+十个 active 客户端 collection（由你筛选；各 renderer 会报告并排除不兼容节点）
     ↓
-35 个 Sub-Store File 任务（17 个通用任务 + 1 个 Anywhere 策略任务 + 11 个 HAPP/OneXray 私密任务 + 6 个 v2rayN/V2Box 私密任务）
+40 个 Sub-Store File 任务（17 个通用任务 + 1 个 Anywhere 策略任务 + 11 个 HAPP/OneXray 私密任务 + 3 个 v2rayN 任务 + 1 个 V2Box 节点任务 + 5 个 Clash Apple 任务 + 2 个 V2Box 配置任务）
     ↓
 客户端导入私密输出 URL
     ↓
@@ -126,11 +127,11 @@ SUBSTORE_CHANNEL=current \\
 npm run configure:substore
 ```
 
-成功标志：终端显示 `Wrote private Sub-Store config`，且文件权限为 `0600`；文件中有 10 个 collection、35 个任务。正式任务默认使用 `current`；只有维护者做隔离预览或回滚时才把 `SUBSTORE_CHANNEL` 改成 `edge` 或 `previous`。真实地址不要复制进 README、Issue 或聊天。
+成功标志：终端显示 `Wrote private Sub-Store config`，且文件权限为 `0600`；文件中有 11 个 collection、40 个任务。正式任务默认使用 `current`；只有维护者做隔离预览或回滚时才把 `SUBSTORE_CHANNEL` 改成 `edge` 或 `previous`。真实地址不要复制进 README、Issue 或聊天。
 
 这个命令会离线校验公开 JS URL 的 `#` 参数，但不会替你登录 Sub-Store 管理后台或自动删除旧任务；首次迁移仍按下面的 preview、上线后可选反馈和回滚步骤执行。HAPP 任务固定使用 `/current/happ/`，片段中不再填写 `channel`；`SUBSTORE_CHANNEL` 只控制其他客户端和维护者的内部发布流程。
 
-### 1.2 创建一个总池和九个客户端 collection
+### 1.2 创建一个总池和十个客户端 collection
 
 先创建或核对以下对象：
 
@@ -146,17 +147,18 @@ npm run configure:substore
 | HAPP | `apple-proxy-happ` |
 | v2rayN | `apple-proxy-v2rayn` |
 | V2Box | `apple-proxy-v2box` |
+| Clash Apple | `apple-proxy-clash` |
 
 操作：
 
 1. 把你确认可用的来源加入 `apple-proxy-all`。
-2. 从总池为九个客户端分别建立 collection；也可以先把总池原样交给生成器，再由生成器按客户端能力审计并排除不兼容节点。
+2. 从总池为十个客户端分别建立 collection；也可以先把总池原样交给生成器，再由生成器按客户端能力审计并排除不兼容节点。
 3. 在 Sub-Store 中自行筛选每个客户端要使用的协议和节点。HAPP/OneXray 不会静默删除可表示节点，审计任务会给出输入数、兼容数和排除原因。
 4. 逐个点击 preview，记录节点总数和协议计数。
 
 **重要：`sing-box-client` 不是必需标签。** 它只是 Sub-Store 的筛选辅助，可以删除。要自己选择 sing-box 节点时，移除该标签筛选条件，直接在 `apple-proxy-singbox` 中手动勾选节点，然后按“collection preview → 四个 `singbox-config-*` 任务 preview → 客户端刷新”的顺序操作。请始终保留 collection slug `apple-proxy-singbox`，以及任务参数 `name=apple-proxy-singbox`；这两个是机器绑定键，不能改成中文。
 
-成功标志：九个客户端 collection 都能预览，且每个集合只包含你愿意交给该客户端的节点；HAPP/OneXray/v2rayN/V2Box 诊断中的排除计数可解释。
+成功标志：十个客户端 collection 都能预览，且每个集合只包含你愿意交给该客户端的节点；HAPP/OneXray/v2rayN/V2Box/Clash Apple 诊断中的排除计数可解释。
 
 失败怎么办：某一个 collection 为空时，只检查它的来源和筛选条件；不要同时改其他客户端。
 
@@ -164,9 +166,9 @@ npm run configure:substore
 
 完整的筛选边界和迁移顺序见 [Sub-Store 客户端节点池指南](docs/substore-client-pools.md)。
 
-### 1.3 创建或核对 35 个 active File 任务
+### 1.3 创建或核对 40 个 active File 任务
 
-通用任务总数是 `4+1+4+4+4=17`；加上 1 个 Anywhere 策略任务、policy、3 个 OneXray 任务、6 个 HAPP 平台任务、1 个 HAPP 审计任务和 6 个 v2rayN/V2Box 任务后，canonical 任务总数是 35。早期文档漏算了 `shadowrocket-nodes`，不要再按 16 个创建。
+通用任务总数是 `4+1+4+4+4=17`；加上 1 个 Anywhere 策略任务、policy、3 个 OneXray 任务、6 个 HAPP 平台任务、1 个 HAPP 审计任务、3 个 v2rayN 任务、1 个 V2Box 节点任务、5 个 Clash Apple 任务和 2 个 V2Box 配置任务后，canonical 任务总数是 40。早期文档漏算了 `shadowrocket-nodes`，不要再按 16 个创建。
 
 | # | 客户端 | File 任务名 | 作用 |
 | ---: | --- | --- | --- |
@@ -188,8 +190,13 @@ npm run configure:substore
 | 16 | sing-box | `singbox-config-iphone` | iPhone JSON |
 | 17 | sing-box | `singbox-config-ipad` | iPad JSON |
 | 18 | sing-box | `singbox-config-android` | Android JSON |
+| 19 | Clash Apple | `clash-nodes` | 私密 Mihomo 节点 YAML |
+| 20 | Clash Apple | `clash-config-macos` | macOS Mihomo YAML |
+| 21 | Clash Apple | `clash-config-iphone` | iPhone Mihomo YAML |
+| 22 | Clash Apple | `clash-config-ipad` | iPad Mihomo YAML |
+| 23 | Clash Apple | `clash-config-appletv` | Apple TV Mihomo YAML |
 
-已有任务时逐个核对名称、脚本 URL、`name=` 和平台参数；没有任务时按 [Sub-Store 九客户端外置 JS + 任务引用总指南](docs/substore-two-layer-setup.md) 创建。不要复制 JavaScript 正文，File 应引用 Pages 上的远程脚本。11 个 HAPP/OneXray 任务和 6 个 v2rayN/V2Box 任务仍是私密任务，不会把节点或策略内容发布到 Pages；HAPP 配置必须分别建立 `happ-macos`、`happ-iphone`、`happ-ipad`、`happ-android`、`happ-windows`、`happ-linux` 六个平台任务；v2rayN 使用 `v2rayn-config-windows`、`v2rayn-config-macos`，V2Box 使用 `v2box-config-iphone`、`v2box-config-ipad`。
+已有任务时逐个核对名称、脚本 URL、`name=` 和平台参数；没有任务时按 [Sub-Store 十客户端外置 JS + 任务引用总指南](docs/substore-two-layer-setup.md) 创建。不要复制 JavaScript 正文，File 应引用 Pages 上的远程脚本。11 个 HAPP/OneXray 任务、3 个 v2rayN 任务、1 个 V2Box 节点任务、5 个 Clash Apple 任务和 2 个 V2Box 配置任务仍是私密任务，不会把节点或策略内容发布到 Pages；HAPP 配置必须分别建立 `happ-macos`、`happ-iphone`、`happ-ipad`、`happ-android`、`happ-windows`、`happ-linux` 六个平台任务；v2rayN 使用 `v2rayn-config-windows`、`v2rayn-config-macos`，V2Box 使用 `v2box-config-iphone`、`v2box-config-ipad`，Clash Apple 使用 `clash-nodes` 与四个平台 `clash-config-*` 任务。
 
 建议刷新频率：节点类任务每 6 小时，配置类任务每天。Anywhere App 中的节点和规则仍需手动 Refresh/Update。
 
@@ -225,7 +232,7 @@ node scripts/check-substore-task.mjs '<完整任务 URL>'
 
 ---
 
-## 第 2 节：导入七个客户端
+## 第 2 节：导入十个客户端
 
 总原则：先保留旧 Profile，只在一台测试设备导入；macOS 通过后再做 iPhone、iPad，Android 最后单独验证。
 
@@ -372,7 +379,7 @@ v2rayN 已随自动化发布进入 `current`。正式任务直接使用 `current
 
 回滚方式：保留旧 v2rayN 订阅和配置，公开规则或 GeoData 问题切换到 `previous`，不要删除 Sub-Store 任务。
 
-详细参数见 [Sub-Store 九客户端外置 JS + 任务引用总指南](docs/substore-two-layer-setup.md) 和 [v2rayN renderer README](clients/v2rayn/README.md)。
+详细参数见 [Sub-Store 十客户端外置 JS + 任务引用总指南](docs/substore-two-layer-setup.md) 和 [v2rayN renderer README](clients/v2rayn/README.md)。
 
 ### 2.9 V2Box
 
@@ -386,7 +393,21 @@ V2Box 已随自动化发布进入 `current`。正式任务直接使用 `current`
 
 回滚方式：切回旧 V2Box 配置；公开规则或 GeoData 问题使用 `previous`，保留新任务供排查。
 
-详细参数见 [Sub-Store 九客户端外置 JS + 任务引用总指南](docs/substore-two-layer-setup.md) 和 [V2Box renderer README](clients/v2box/README.md)。
+详细参数见 [Sub-Store 十客户端外置 JS + 任务引用总指南](docs/substore-two-layer-setup.md) 和 [V2Box renderer README](clients/v2box/README.md)。
+
+### 2.10 Clash Apple
+
+Clash Apple 使用 Mihomo YAML 格式，覆盖 macOS、iPhone、iPad 和 Apple TV。先在 Sub-Store 中预览 `apple-proxy-clash`，再运行 `clash-nodes`；节点任务输出只有 `proxies:`，不会把公开规则或私密节点写入 Pages。
+
+然后按设备选择 `clash-config-macos`、`clash-config-iphone`、`clash-config-ipad` 或 `clash-config-appletv`。配置默认启用 mixed-port、TUN、Fake-IP DNS、自动测速组、故障转移组、地区自动组、业务策略组和 Mihomo `rule-providers`；`adblockMode=full` 只在确实需要完整广告包时启用，默认保持关闭。
+
+成功标志：YAML 中有 `proxies`、`proxy-groups`、`dns`、`rule-providers` 和以 `MATCH` 结束的 `rules`；节点组可切换，国内、海外、局域网和 Apple TV 网络均可验证。无法表示的协议会计入 `renderFailures`，不会静默生成空节点。
+
+失败怎么办：先检查 `apple-proxy-clash` 是否非空，再检查平台参数和 `nodeSubscriptionUrl` 是否只填写在私密任务；规则下载问题检查 `current/clash/rules/` 和 `current/manifest.json`，不要直接把 `edge` 地址用于生产。
+
+回滚方式：切回旧 Clash Profile；公开规则或脚本问题使用 `previous` 或对应不可变版本，保留新任务供排查。
+
+详细参数见 [Clash Apple renderer README](clients/clash/README.md) 和 [Clash Apple 部署指南](clients/clash/docs/deployment.md)。
 
 ---
 
@@ -408,7 +429,7 @@ V2Box 已随自动化发布进入 `current`。正式任务直接使用 `current`
 4. 只刷新对应客户端的节点任务和 Profile/Config。
 5. 先在一台设备手动更新。
 
-不要为了增加一个节点同时重建九个客户端，也不要修改公开 JavaScript。
+不要为了增加一个节点同时重建十个客户端，也不要修改公开 JavaScript。
 
 如果你只想调整 sing-box 使用的节点：
 
@@ -447,7 +468,7 @@ GitHub Actions 的 **Update Rules** 工作流会先构建并验证 `edge`，然�
 - 各客户端格式：`clients/<client>/src/`。
 - Anywhere 14 个业务包：由统一语义聚合生成，不在文档里单独手写另一套来源映射。
 
-新增 App 时先判断它属于现有 AI、媒体、社交、国内平台、下载或游戏意图；只有现有业务意图确实无法表达时，才新增业务组。这样九个客户端的名称和行为不会越维护越散。
+新增 App 时先判断它属于现有 AI、媒体、社交、国内平台、下载或游戏意图；只有现有业务意图确实无法表达时，才新增业务组。这样十个客户端的名称和行为不会越维护越散。
 
 ---
 
@@ -579,8 +600,8 @@ Shadowrocket 和 Surge 首先检查 `subscriptionName`；Egern 和 Surge 再检�
 
 | 路径 | 作用 |
 | --- | --- |
-| `docs/substore-client-pools.md` | 九个 active 客户端 collection 的筛选、迁移和回滚 |
-| `docs/substore-two-layer-setup.md` | 34 个 active/private File 的完整 URL、频道、审计和回滚参数 |
+| `docs/substore-client-pools.md` | 十个 active 客户端 collection 的筛选、迁移和回滚 |
+| `docs/substore-two-layer-setup.md` | 40 个 active/private File 的完整 URL、频道、审计和回滚参数 |
 | `docs/maintenance.md` | 开发者维护、规则编译、发布与回滚 |
 | `docs/implementation-status.md` | 当前自动化发布状态和可选设备反馈事项 |
 | `clients/<client>/docs/` | 每个客户端的部署、灰度和排障细节 |
@@ -599,6 +620,7 @@ Shadowrocket 和 Surge 首先检查 `subscriptionName`；Egern 和 Surge 再检�
 - sing-box：[部署](clients/sing-box/docs/deployment.md) · [上线后反馈](clients/sing-box/docs/canary.md) · [排障](clients/sing-box/docs/troubleshooting.md)
 - HAPP：[部署](clients/happ/docs/deployment.md) · [上线后反馈](clients/happ/docs/canary.md) · [排障](clients/happ/docs/troubleshooting.md)
 - OneXray：[部署](clients/onexray/docs/deployment.md) · [上线后反馈](clients/onexray/docs/canary.md) · [排障](clients/onexray/docs/troubleshooting.md)
+- Clash Apple：[部署](clients/clash/docs/deployment.md) · [排障](clients/clash/docs/troubleshooting.md)
 
 ## 许可
 

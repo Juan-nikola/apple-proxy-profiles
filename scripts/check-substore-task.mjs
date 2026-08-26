@@ -105,6 +105,18 @@ const GENERATOR_SCHEMAS = Object.freeze({
     extraEnums: { region: REGIONS },
     omitKeys: ["autoGroupMode"],
   }),
+  "clash/scripts/substore-node-generator.js": nodeSchema(),
+  "clash/scripts/clash-node-generator.js": nodeSchema(),
+  "clash/scripts/substore-profile-generator.js": configSchema({
+    platforms: ["macos", "iphone", "ipad", "appletv"],
+    requiresSubscriptionName: true,
+    requiresNodeSubscriptionUrl: true,
+  }),
+  "clash/scripts/clash-profile-generator.js": configSchema({
+    platforms: ["macos", "iphone", "ipad", "appletv"],
+    requiresSubscriptionName: true,
+    requiresNodeSubscriptionUrl: true,
+  }),
 });
 
 function nodeSchema() {

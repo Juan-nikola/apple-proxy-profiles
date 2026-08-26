@@ -17,6 +17,7 @@ const ROUTING_PREFIXES = Object.freeze([
   "sing-box/rule-sets/",
   "anywhere/rules/",
   "egern/rules/",
+  "clash/rules/",
 ]);
 
 const ARCHIVE_PREFIXES = Object.freeze([
@@ -29,6 +30,7 @@ const CLIENT_RULE_PREFIXES = Object.freeze({
   shadowrocket: ["shadowrocket/rules/"],
   surge: ["surge/rules/"],
   egern: ["egern/rules/"],
+  clash: ["clash/rules/"],
   singbox: [
     "sing-box/rules/",
     "sing-box/rule-sets/",

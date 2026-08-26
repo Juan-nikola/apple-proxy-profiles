@@ -1,5 +1,5 @@
 {
-  "chinaIpAuditSha256": "fc27eb15d6a20c833cf7984a0516521d6befba6f262b691b04c01676490adf82",
+  "chinaIpAuditSha256": "05b0639e02b20fbf36f8c1412cadd88f9b7e91bc9c5e845e0269405bb89e6641",
   "client": "v2rayn",
   "files": [
     {
@@ -14,7 +14,7 @@
     }
   ],
   "generatedAt": "2026-08-23T18:28:35Z",
-  "manifestHash": "e7999a55fbee9f13fbdd76e91f67366f9249e8f6ed3bb69abbe36eeb2a5fec67",
+  "manifestHash": "ba368d38e9415c7e02ac3e11fe8849043e56a54dbf5472f1f0fc7a3889558634",
   "optionalPacks": {},
   "schemaVersion": 1
 }

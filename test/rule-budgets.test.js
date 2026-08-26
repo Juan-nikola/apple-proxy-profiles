@@ -37,12 +37,20 @@ const optionalAwareGenerators = new Set([
   "v2rayn/scripts/substore-config-generator.js",
   "v2box/scripts/substore-node-generator.js",
   "v2box/scripts/substore-config-generator.js",
+  "clash/scripts/clash-node-generator.js",
+  "clash/scripts/substore-node-generator.js",
+  "clash/scripts/clash-profile-generator.js",
+  "clash/scripts/substore-profile-generator.js",
 ]);
 const nativePolicyGenerators = new Set([
   "v2rayn/scripts/substore-node-generator.js",
   "v2rayn/scripts/substore-config-generator.js",
   "v2box/scripts/substore-node-generator.js",
   "v2box/scripts/substore-config-generator.js",
+  "clash/scripts/clash-node-generator.js",
+  "clash/scripts/substore-node-generator.js",
+  "clash/scripts/clash-profile-generator.js",
+  "clash/scripts/substore-profile-generator.js",
 ]);
 const upstream = Object.freeze({
   repository: "https://github.com/blackmatrix7/ios_rule_script",

@@ -41,6 +41,9 @@ const operationalDocs = Object.freeze({
   "clients/sing-box/docs/openwrt.md": "apple-proxy-singbox",
   "clients/v2rayn/README.md": "apple-proxy-v2rayn",
   "clients/v2box/README.md": "apple-proxy-v2box",
+  "clients/clash/README.md": "apple-proxy-clash",
+  "clients/clash/docs/deployment.md": "apple-proxy-clash",
+  "clients/clash/docs/troubleshooting.md": "apple-proxy-clash",
 });
 
 const activeDocs = Object.freeze([
@@ -53,6 +56,9 @@ const activeDocs = Object.freeze([
   "clients/anywhere/docs/troubleshooting.md",
   "clients/v2rayn/README.md",
   "clients/v2box/README.md",
+  "clients/clash/README.md",
+  "clients/clash/docs/deployment.md",
+  "clients/clash/docs/troubleshooting.md",
 ]);
 
 test("central Sub-Store guide closes over all public scripts and private tasks", async () => {
@@ -91,12 +97,13 @@ test("central Sub-Store guide closes over all public scripts and private tasks",
     "anywhere-strategy", "apple-proxy-policy", "onexray-nodes", "onexray-profile", "onexray-routing-audit",
     "happ-macos", "happ-iphone", "happ-ipad", "happ-android", "happ-windows", "happ-linux",
     "happ-routing-audit", "v2rayn-nodes", "v2rayn-config-windows", "v2rayn-config-macos",
-    "v2box-nodes", "v2box-config-iphone", "v2box-config-ipad",
+    "v2box-nodes", "clash-nodes", "clash-config-macos", "clash-config-iphone", "clash-config-ipad", "clash-config-appletv",
+    "v2box-config-iphone", "v2box-config-ipad",
   ].entries()) {
     const rowPattern = new RegExp("\\| " + (index + 18) + " \\| `" + task + "` \\|", "u");
     assert.match(guide, rowPattern, `missing private task-table row ${task}`);
   }
-  assert.match(guide, /任务总数为 \*\*35 个\*\*/u);
+  assert.match(guide, /任务总数为 \*\*40 个\*\*/u);
   assert.match(guide, /通用任务总数为 `4\+1\+4\+4\+4=17` 个/u);
   assert.match(guide, /#output=nodes[\s\S]*&/u);
   assert.match(guide, /#output=config[\s\S]*&/u);
@@ -108,6 +115,7 @@ test("central Sub-Store guide closes over all public scripts and private tasks",
   assert.match(readme, /OneXray：.*clients\/onexray\/docs\/deployment\.md/iu);
   assert.match(readme, /### 2\.6 HAPP[\s\S]*happ-routing-audit/u);
   assert.match(readme, /### 2\.7 OneXray[\s\S]*onexray-routing-audit/u);
+  assert.match(readme, /### 2\.10 Clash Apple[\s\S]*clash-config-appletv/u);
   assert.match(maintenance, /Node\.js 22/u);
   assert.match(maintenance, /sing-box.*\.srs/u);
   assert.match(guide, /`apple-proxy-sources`[\s\S]{0,240}(?:兼容|回滚)/iu);
@@ -130,10 +138,10 @@ test("active documentation follows the maintained client and Anywhere package co
   const expectedCount = packageIds.length;
   const docs = await Promise.all(activeDocs.map(async (path) => [path, await text(path)]));
 
-  assert.deepEqual([...activeClientIds()].sort(), ["anywhere", "egern", "happ", "onexray", "shadowrocket", "singbox", "surge", "v2box", "v2rayn"]);
+  assert.deepEqual([...activeClientIds()].sort(), ["anywhere", "clash", "egern", "happ", "onexray", "shadowrocket", "singbox", "surge", "v2box", "v2rayn"]);
   assert.deepEqual([...plannedClientIds()].sort(), []);
   assert.deepEqual(Object.keys(CLIENT).sort(), [
-    "anywhere", "egern", "happ", "onexray", "shadowrocket", "singbox", "surge", "v2box", "v2rayn",
+    "anywhere", "clash", "egern", "happ", "onexray", "shadowrocket", "singbox", "surge", "v2box", "v2rayn",
   ]);
   assert.equal(expectedCount, 14);
   for (const [path, content] of docs) {
@@ -202,7 +210,7 @@ test("beginner entry does not assume one private deployment already exists", asy
   assert.doesNotMatch(readme, /你的 Sub-Store 里已有|你自己的 Sub-Store 已经部署|已经全部建好|已经帮你建好/u);
 });
 
-test("canonical client pool guide defines nine mappings, migration, rollback, and fail-closed rendering", async () => {
+test("canonical client pool guide defines ten mappings, migration, rollback, and fail-closed rendering", async () => {
   const guide = await optionalText("docs/substore-client-pools.md");
   for (const row of [
     "| Egern | `apple-proxy-egern` | 用户自行选择来源、AnyTLS 和字段形状 |",
@@ -214,6 +222,7 @@ test("canonical client pool guide defines nine mappings, migration, rollback, an
     "| HAPP | `apple-proxy-happ` | 用户自行选择节点；六平台配置与审计共享同一策略覆盖，固定节点问题写入私密 warning |",
     "| v2rayN | `apple-proxy-v2rayn` | 用户自行选择节点；Windows/macOS 使用统一 Xray renderer 和地区 GeoData |",
     "| V2Box | `apple-proxy-v2box` | 用户自行选择节点；iPhone/iPad 使用统一 Xray renderer 和共享 GeoData 资产 |",
+    "| Clash Apple | `apple-proxy-clash` | 用户自行选择节点；macOS/iPhone/iPad/Apple TV 使用 Mihomo YAML renderer 和共享规则集 |",
   ]) assert.ok(guide.includes(row), row);
   assert.match(guide, /`apple-proxy-all`[\s\S]{0,160}总池/u);
   assert.match(guide, /`apple-proxy-sources`[\s\S]{0,240}(?:兼容|回滚)/u);
@@ -223,7 +232,7 @@ test("canonical client pool guide defines nine mappings, migration, rollback, an
   const orderedSteps = [
     "保留旧 collection 和 tasks",
     "建立 `apple-proxy-all` 总池",
-    "建立九个客户端组合",
+    "建立十个客户端组合",
     "用户自行筛选",
     "preview",
     "只修改对应客户端的 `name=`",

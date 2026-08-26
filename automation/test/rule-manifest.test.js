@@ -51,10 +51,10 @@ test("isolates the full ad pack from every default manifest path", () => {
   )));
   assert.deepEqual(
     [...new Set(optionalManifest.files.map(({ path }) => path.split("/")[2]))].sort(),
-    ["anywhere", "egern", "shadowrocket", "sing-box", "surge"],
+    ["anywhere", "clash", "egern", "shadowrocket", "sing-box", "surge"],
   );
   assert.deepEqual(Object.keys(optionalManifest.clients).sort(), [
-    "anywhere", "egern", "shadowrocket", "singbox", "surge",
+    "anywhere", "clash", "egern", "shadowrocket", "singbox", "surge",
   ]);
   const optionalPagePath = "optional/adblock-full/anywhere/import.html";
   assert.equal(pack.has(optionalPagePath), true);

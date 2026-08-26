@@ -1,5 +1,5 @@
 {
-  "chinaIpAuditSha256": "fc27eb15d6a20c833cf7984a0516521d6befba6f262b691b04c01676490adf82",
+  "chinaIpAuditSha256": "05b0639e02b20fbf36f8c1412cadd88f9b7e91bc9c5e845e0269405bb89e6641",
   "client": "happ",
   "files": [
     {
@@ -39,7 +39,7 @@
     }
   ],
   "generatedAt": "2026-08-23T18:28:35Z",
-  "manifestHash": "6b63db599814b41f7fd31f3cde575d6f7c55f16cace6217ad5405d9bc51949bf",
+  "manifestHash": "a4654b661413312b1937edb1facd37e47d06a69980978ae38e77d33831120ed0",
   "optionalPacks": {},
   "schemaVersion": 1
 }

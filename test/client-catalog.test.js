@@ -19,16 +19,17 @@ const REQUIRED_FIELDS = [
 
 test("registers clients in stable publication order", () => {
   assert.deepEqual(allClientIds(), [
-    "anywhere", "egern", "shadowrocket", "surge", "singbox", "onexray", "happ", "v2rayn", "v2box",
+    "anywhere", "egern", "shadowrocket", "surge", "singbox", "onexray", "happ", "v2rayn", "v2box", "clash",
   ]);
-  assert.deepEqual(activeClientIds(), ["anywhere", "egern", "shadowrocket", "surge", "singbox", "onexray", "happ", "v2rayn", "v2box"]);
+  assert.deepEqual(activeClientIds(), ["anywhere", "egern", "shadowrocket", "surge", "singbox", "onexray", "happ", "v2rayn", "v2box", "clash"]);
   assert.deepEqual(plannedClientIds(), []);
   assert.equal(clientAdapter("happ").state, "active");
   assert.equal(publicDirectoryForClient("singbox"), "sing-box");
   assert.deepEqual(clientAdapter("v2rayn").platforms, ["windows", "macos"]);
   assert.deepEqual(clientAdapter("v2box").platforms, ["iphone", "ipad"]);
+  assert.deepEqual(clientAdapter("clash").platforms, ["iphone", "ipad", "macos", "appletv"]);
   assert.deepEqual(lightweightRuleClientIds(), [
-    "anywhere", "egern", "shadowrocket", "surge", "singbox",
+    "anywhere", "egern", "shadowrocket", "surge", "singbox", "clash",
   ]);
   assert.throws(() => clientAdapter("unknown"), /unknown client/i);
 });
@@ -95,4 +96,11 @@ test("V2RayN and V2Box expose only the common Xray protocol boundary", () => {
       assert.equal(protocolSupportsClient(protocol, client), false, `${client} must reject ${protocol}`);
     }
   }
+});
+
+test("Clash exposes its audited Mihomo protocol boundary", () => {
+  for (const protocol of ["ss", "shadowsocks", "ssr", "snell", "vmess", "vless", "trojan", "anytls", "hysteria2", "hy2", "tuic", "socks5", "http", "ssh", "wireguard"]) {
+    assert.equal(protocolSupportsClient(protocol, "clash"), true, `clash should support ${protocol}`);
+  }
+  assert.equal(protocolSupportsClient("sudoku", "clash"), false);
 });

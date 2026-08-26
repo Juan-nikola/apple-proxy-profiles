@@ -36,6 +36,10 @@ test("builds native clients and shared region GeoData into the closed default pu
     "v2rayn/scripts/substore-config-generator.js",
     "v2box/scripts/substore-node-generator.js",
     "v2box/scripts/substore-config-generator.js",
+    "clash/scripts/clash-node-generator.js",
+    "clash/scripts/substore-node-generator.js",
+    "clash/scripts/clash-profile-generator.js",
+    "clash/scripts/substore-profile-generator.js",
     "v2rayn/client-manifest.json",
     "v2box/client-manifest.json",
   ]) {
@@ -46,6 +50,7 @@ test("builds native clients and shared region GeoData into the closed default pu
   }
   assert.equal(result.diagnostics.defaultManifest.clients.happ !== undefined, true);
   assert.equal(result.diagnostics.defaultManifest.clients.onexray !== undefined, true);
+  assert.equal(result.diagnostics.defaultManifest.clients.clash !== undefined, true);
   for (const client of ["v2rayn", "v2box"]) {
     const manifest = JSON.parse(result.defaults.get(`${client}/client-manifest.json`));
     assert.equal(manifest.files.some(({ path }) => path.startsWith("geodata/")), false, client);

@@ -8,6 +8,7 @@ export const CLIENT = Object.freeze({
   happ: "happ",
   v2rayn: "v2rayn",
   v2box: "v2box",
+  clash: "clash",
 });
 
 export const PRIVATE_POLICY_CHANNELS = Object.freeze(["edge", "current", "previous"]);
