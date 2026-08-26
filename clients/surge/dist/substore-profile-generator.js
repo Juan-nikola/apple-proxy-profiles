@@ -1647,7 +1647,7 @@ var SurgeProfileBundle = (() => {
   ]);
 
   // ../../shared/release/frontier-manifest.js
-  var FRONTIER_CHANNELS = Object.freeze(["edge", "current", "previous"]);
+  var FRONTIER_CHANNELS = Object.freeze(["current"]);
   var FRONTIER_PLATFORMS = Object.freeze({
     [CLIENT.surge]: Object.freeze(["macos", "iphone", "ipad"]),
     [CLIENT.singbox]: Object.freeze(["macos", "iphone", "ipad", "android", "openwrt"]),
@@ -1685,7 +1685,7 @@ var SurgeProfileBundle = (() => {
   var REQUIRED_KEYS = Object.freeze(["output", "type", "name", "subscriptionName", "platform"]);
   var NODE_REQUIRED_KEYS = Object.freeze(["output", "type", "name"]);
   var DEFAULTS = Object.freeze({
-    channel: "edge",
+    channel: "current",
     dnsMode: "stable",
     chinaDns: "alidns",
     globalDns: "cloudflare",
@@ -2476,12 +2476,17 @@ var SurgeProfileBundle = (() => {
     resolvedChinaIp: Object.freeze(["ChinaIP"])
   });
   var RULE_BUDGETS = Object.freeze({
-    domesticCoreEntries: 2e3,
-    defaultEntries: 25e3,
-    defaultBytes: 5e6,
+    domesticCoreEntries: 13e4,
+    defaultEntries: 4e5,
+    defaultBytes: 3e7,
     startupInlineEntries: 64,
     singBoxRuleRssBytes: 50 * 1024 * 1024,
-    singBoxTotalRssBytes: 200 * 1024 * 1024
+    singBoxTotalRssBytes: 200 * 1024 * 1024,
+    // Binary SRS budgets are enforced independently from text/client bundle
+    // budgets. This prevents a large external source from being inlined into a
+    // sing-box runtime while still allowing compact binary rule sets.
+    singBoxRuleSetBytes: 50 * 1024 * 1024,
+    singBoxTotalRuleSetBytes: 200 * 1024 * 1024
   });
   var ROUTING_PRECEDENCE = Object.freeze([
     "local",

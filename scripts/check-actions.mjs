@@ -12,14 +12,9 @@ export const ACTION_PINS = Object.freeze({
 
 const SHA_PIN = /^[0-9a-f]{40}$/;
 
-// Deployment budget. maxVersions (9) intentionally allows one more snapshot
-// than the publication pipeline's retention target (8, see
-// automation/src/build-site.js PUBLIC_RETENTION.maxVersions): the tree can
-// briefly hold a freshly added version before the prune step removes it.
 export const PUBLIC_PAGES_LIMITS = Object.freeze({
   githubMaxBytes: 1024 * 1024 * 1024,
   maxBytes: 750 * 1024 * 1024,
-  maxVersions: 9,
 });
 
 function workflowUses(text) {
@@ -139,17 +134,16 @@ export function validateWorkflowText(file, text) {
     if (!/github\.event_name == 'schedule' \|\| github\.ref == 'refs\/heads\/main'/u.test(text)) {
       errors.push(`${file}: update job must restrict writes to scheduled or main-ref runs`);
     }
-    const edgeCommand = "npm run update:rules";
-    const edgeAt = commandPosition(text, edgeCommand);
+    const currentCommand = "npm run update:rules";
+    const currentAt = commandPosition(text, currentCommand);
     if (!/^\s*run:\s*npm run update:rules\s*$/mu.test(text)) {
-      errors.push(`${file}: edge update must invoke the package script without duplicate arguments`);
+      errors.push(`${file}: current update must invoke the package script without duplicate arguments`);
     }
-    errors.push(...validateOfficialCoreGate(file, text, edgeAt, "edge"));
+    errors.push(...validateOfficialCoreGate(file, text, currentAt, "current"));
     const orderedCommands = [
       "npm run verify",
       "git diff --exit-code -- . \":(exclude)public/**\"",
-      edgeCommand,
-      "node scripts/update-rules.mjs --promote-all",
+      currentCommand,
       "npm run check:rules",
       "npm run check:secrets",
     ];
@@ -158,27 +152,19 @@ export function validateWorkflowText(file, text) {
       || positions.some((position, index) => index > 0 && position <= positions[index - 1])) {
       errors.push(`${file}: verification, clean-tree gate, update, rule check, and secret scan are not closed in order`);
     }
-    if (!/^\s*client:\s*$/mu.test(text)
-      || !/^\s*manifest_hash:\s*$/mu.test(text)
-      || !/github\.event_name == 'workflow_dispatch'.*inputs\.client.*inputs\.manifest_hash/su.test(text)
-      || !/node scripts\/update-rules\.mjs --promote "\$PROMOTION_CLIENT" "\$PROMOTION_MANIFEST_HASH"/u.test(text)) {
-      errors.push(`${file}: current promotion must require automated verification and exact client manifest inputs`);
+    const currentJobStart = text.indexOf("  build-current:");
+    const currentJob = currentJobStart === -1 ? "" : text.slice(currentJobStart);
+    if (!currentJob.includes("--channel current") || currentJob.includes("--promote")) {
+      errors.push(`${file}: scheduled job must publish current directly without promotion`);
     }
-    const edgeJobStart = text.indexOf("  build-edge:");
-    const nextJobStart = text.indexOf("\n  promote-current:", edgeJobStart);
-    const edgeJob = edgeJobStart === -1 ? "" : text.slice(edgeJobStart, nextJobStart === -1 ? undefined : nextJobStart);
-    const promoteJob = nextJobStart === -1 ? "" : text.slice(nextJobStart);
-    if (!edgeJob.includes("--channel edge") || !edgeJob.includes("--promote-all")) {
-      errors.push(`${file}: scheduled job must verify edge and promote all active clients to current`);
-    }
-    if (!/^\s*issues:\s*write\s*$/mu.test(edgeJob) || /^\s*issues:\s*write\s*$/mu.test(promoteJob)) {
-      errors.push(`${file}: only build-edge may request issues: write`);
+    if (!/^\s*issues:\s*write\s*$/mu.test(currentJob)) {
+      errors.push(`${file}: current update job requires issues: write`);
     }
     const syncAt = commandPosition(text, "node scripts/sync-audit-blocker-issues.mjs");
     const secretsAt = commandPosition(text, "npm run check:secrets");
-    const commitAt = text.indexOf("git commit -m \"chore: update current and edge rule releases\"");
+    const commitAt = text.indexOf("git commit -m \"chore: update current rule release\"");
     if (syncAt === -1 || secretsAt === -1 || syncAt <= secretsAt || (commitAt !== -1 && syncAt >= commitAt)) {
-      errors.push(`${file}: audit blocker sync must run after secret scan and before edge commit`);
+      errors.push(`${file}: audit blocker sync must run after secret scan and before current commit`);
     }
   }
 
@@ -229,23 +215,21 @@ async function treeBytes(directory) {
 export async function checkPublicPagesTree(repositoryRoot) {
   const rootPath = repositoryRoot instanceof URL ? fileURLToPath(repositoryRoot) : repositoryRoot;
   const publicDirectory = new URL("public/", pathToFileURL(`${resolve(rootPath)}/`));
-  const versionsDirectory = new URL("versions/", publicDirectory);
   const errors = [];
   const bytes = await treeBytes(publicDirectory);
-  const versions = await readdir(versionsDirectory, { withFileTypes: true });
-  const validVersions = versions.filter((entry) => entry.isDirectory() && /^[0-9a-f]{64}$/u.test(entry.name));
-
-  if (validVersions.length !== versions.length) {
-    errors.push("public/versions contains an invalid entry");
-  }
-  if (validVersions.length > PUBLIC_PAGES_LIMITS.maxVersions) {
-    errors.push(`public/versions exceeds ${PUBLIC_PAGES_LIMITS.maxVersions} retained versions`);
+  for (const legacyDirectory of ["edge", "previous", "versions"]) {
+    try {
+      await readdir(new URL(`${legacyDirectory}/`, publicDirectory));
+      errors.push(`public/${legacyDirectory} is not allowed in current-only publication`);
+    } catch (error) {
+      if (error.code !== "ENOENT") throw error;
+    }
   }
   if (bytes > PUBLIC_PAGES_LIMITS.maxBytes) {
     errors.push(`public exceeds the ${PUBLIC_PAGES_LIMITS.maxBytes} byte deployment budget`);
   }
 
-  return { bytes, errors, versionCount: validVersions.length };
+  return { bytes, errors, versionCount: 0 };
 }
 
 export async function checkActions(repositoryRoot) {

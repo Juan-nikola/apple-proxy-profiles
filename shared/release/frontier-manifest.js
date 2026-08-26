@@ -1,7 +1,7 @@
 import { CLIENT } from "../contracts.js";
 import { activeClientIds, clientAdapter } from "./client-catalog.js";
 
-export const FRONTIER_CHANNELS = Object.freeze(["edge", "current", "previous"]);
+export const FRONTIER_CHANNELS = Object.freeze(["current"]);
 
 export const FRONTIER_PLATFORMS = Object.freeze({
   [CLIENT.surge]: Object.freeze(["macos", "iphone", "ipad"]),

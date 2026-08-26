@@ -203,8 +203,8 @@ test("assigns every client source one legal phase and DNS class", () => {
 
 test("defines the shared policy targets and resource budgets", () => {
   assert.equal(POLICY_TARGETS.overseasGame, "🌍 海外游戏");
-  assert.equal(RULE_BUDGETS.defaultEntries, 25_000);
-  assert.equal(RULE_BUDGETS.defaultBytes, 5_000_000);
+  assert.equal(RULE_BUDGETS.defaultEntries, 400_000);
+  assert.equal(RULE_BUDGETS.defaultBytes, 30_000_000);
   assert.equal(RULE_BUDGETS.startupInlineEntries, 64);
   assert.equal(RULE_BUDGETS.singBoxRuleRssBytes, 50 * 1024 * 1024);
   assert.equal(RULE_BUDGETS.singBoxTotalRssBytes, 200 * 1024 * 1024);

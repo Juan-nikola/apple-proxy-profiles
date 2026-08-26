@@ -54,49 +54,224 @@
   },
   "clients": {
     "anywhere": {
-      "manifestHash": "338a90079bb82735208cb2722a488450ae21f1f7dd5a823b3c6670289316d1ff",
-      "referencedDefaultBytes": 321189
+      "manifestHash": "984b239aed088b24f320f297f2ae6be3ff46f30ff21001a4c3453d5a591f0e8a",
+      "referencedDefaultBytes": 6562149
     },
     "clash": {
-      "manifestHash": "52e6ff8f826f6b834692f5cd692a08724c29a4a9eff4f2686b8de562e765fdca",
-      "referencedDefaultBytes": 695269
+      "manifestHash": "56426a84aed3f2b91f3fda39d407e929c751264094b604bcf5cce9b48aea52df",
+      "referencedDefaultBytes": 12096093
     },
     "egern": {
-      "manifestHash": "8dd4e7b34717a8becf6db6c8228325f978e4cbde52e637ac4f28c9e3671870cd",
-      "referencedDefaultBytes": 394416
+      "manifestHash": "8d0d99a49320d5f07ebf5fc8133f736b1cad3b689c46e83b3583544c3100b12f",
+      "referencedDefaultBytes": 7557168
     },
     "happ": {
-      "manifestHash": "12fb154ed11ed824719b05a755b64fe8267e1e31a543f8519ef370c631bf7b3c",
+      "manifestHash": "335cff636a58305ec4a800f0ba573c1d71f4c33eec10adeebdd497fa7db0102a",
       "referencedDefaultBytes": 0
     },
     "onexray": {
-      "manifestHash": "6849fe30d403ffc408044622674c45fe2304d4160abef3fe0ac2846e60e564a8",
+      "manifestHash": "95592e170e219a24c923a2346c036a6ba8634f6b0a93d448140c6c0867c4b46a",
       "referencedDefaultBytes": 0
     },
     "shadowrocket": {
-      "manifestHash": "461ee64872b22e7360f17c05e3c1b2aeeec362f2dbf893ef08cb55360e503b41",
-      "referencedDefaultBytes": 593911
+      "manifestHash": "ee04fb982452edf696e386b2ebd3b07290b99982164fe18a7ccf7536dba22167",
+      "referencedDefaultBytes": 10178469
     },
     "singbox": {
-      "manifestHash": "2071b0ea3645e5fb1584482599a9bd029e2d9fb7c152e252d3a4ed156a6cfb78",
+      "manifestHash": "32897f3efb1479024934ddc2d3faf9b23525f6e8d06ba1d57d600b36aef5f76a",
       "referencedDefaultBytes": 179921
     },
     "surge": {
-      "manifestHash": "a20b0cf0d6ec1f19272159b516b939a3ae55b6a67e2376fccba81528dde80f09",
-      "referencedDefaultBytes": 593911
+      "manifestHash": "b1413ccd1dc2b4dbde46dea4fb84ef90141f633c8a66a1e9009b4a0449036647",
+      "referencedDefaultBytes": 10178469
     },
     "v2box": {
-      "manifestHash": "2b5b8819ac2acb8b28380097a812e13aa6a129f1f3c0f57dc2db3a495e87ba94",
+      "manifestHash": "67686be184ab802ea8ae2cf08570c8a327b1bd0c1a68cfee503622b5b7443e51",
       "referencedDefaultBytes": 0
     },
     "v2rayn": {
-      "manifestHash": "c21d47d2a3a843590762931dc583a527bf99ba4f39998a381d32499f8a852565",
+      "manifestHash": "673d09b8ba64804de567450d58be525b5ef7a590de6e9342987eb1b8308a56e7",
       "referencedDefaultBytes": 0
     }
   },
   "diagnostics": {
-    "defaultEntries": 16844,
+    "defaultEntries": 319556,
     "domesticCoreEntries": 65,
+    "external": {
+      "candidateCount": 4434530,
+      "conflicts": 6561,
+      "duplicates": 1954626,
+      "parsedCount": 4433043,
+      "retained": 302716,
+      "sources": {
+        "iran-v2ray-rules": {
+          "candidateCount": 347027,
+          "conflicts": 0,
+          "duplicates": 114842,
+          "parsedCount": 346654,
+          "retained": 0,
+          "supplementary": 0,
+          "unsupportedByReason": {
+            "unsupported-domain-type": 373
+          },
+          "unsupportedCount": 373
+        },
+        "loyalsoldier-clash-apple": {
+          "candidateCount": 164,
+          "conflicts": 163,
+          "duplicates": 0,
+          "parsedCount": 164,
+          "retained": 1,
+          "supplementary": 1,
+          "unsupportedByReason": {},
+          "unsupportedCount": 0
+        },
+        "loyalsoldier-clash-applications": {
+          "candidateCount": 98,
+          "conflicts": 0,
+          "duplicates": 0,
+          "parsedCount": 98,
+          "retained": 0,
+          "supplementary": 0,
+          "unsupportedByReason": {},
+          "unsupportedCount": 0
+        },
+        "loyalsoldier-clash-cncidr": {
+          "candidateCount": 5384,
+          "conflicts": 5384,
+          "duplicates": 0,
+          "parsedCount": 5384,
+          "retained": 0,
+          "supplementary": 0,
+          "unsupportedByReason": {},
+          "unsupportedCount": 0
+        },
+        "loyalsoldier-clash-direct": {
+          "candidateCount": 111558,
+          "conflicts": 506,
+          "duplicates": 49,
+          "parsedCount": 111558,
+          "retained": 111052,
+          "supplementary": 111052,
+          "unsupportedByReason": {},
+          "unsupportedCount": 0
+        },
+        "loyalsoldier-clash-gfw": {
+          "candidateCount": 4385,
+          "conflicts": 154,
+          "duplicates": 0,
+          "parsedCount": 4385,
+          "retained": 4231,
+          "supplementary": 4231,
+          "unsupportedByReason": {},
+          "unsupportedCount": 0
+        },
+        "loyalsoldier-clash-icloud": {
+          "candidateCount": 53,
+          "conflicts": 0,
+          "duplicates": 0,
+          "parsedCount": 53,
+          "retained": 53,
+          "supplementary": 53,
+          "unsupportedByReason": {},
+          "unsupportedCount": 0
+        },
+        "loyalsoldier-clash-lancidr": {
+          "candidateCount": 18,
+          "conflicts": 0,
+          "duplicates": 0,
+          "parsedCount": 18,
+          "retained": 18,
+          "supplementary": 18,
+          "unsupportedByReason": {},
+          "unsupportedCount": 0
+        },
+        "loyalsoldier-clash-private": {
+          "candidateCount": 130,
+          "conflicts": 5,
+          "duplicates": 0,
+          "parsedCount": 130,
+          "retained": 125,
+          "supplementary": 125,
+          "unsupportedByReason": {},
+          "unsupportedCount": 0
+        },
+        "loyalsoldier-clash-reject": {
+          "candidateCount": 186744,
+          "conflicts": 337,
+          "duplicates": 0,
+          "parsedCount": 186744,
+          "retained": 186407,
+          "supplementary": 186407,
+          "unsupportedByReason": {},
+          "unsupportedCount": 0
+        },
+        "loyalsoldier-clash-telegramcidr": {
+          "candidateCount": 12,
+          "conflicts": 4,
+          "duplicates": 0,
+          "parsedCount": 12,
+          "retained": 8,
+          "supplementary": 8,
+          "unsupportedByReason": {},
+          "unsupportedCount": 0
+        },
+        "loyalsoldier-clash-tld-not-cn": {
+          "candidateCount": 829,
+          "conflicts": 8,
+          "duplicates": 0,
+          "parsedCount": 829,
+          "retained": 821,
+          "supplementary": 821,
+          "unsupportedByReason": {},
+          "unsupportedCount": 0
+        },
+        "loyalsoldier-rules-dat": {
+          "candidateCount": 516530,
+          "conflicts": 0,
+          "duplicates": 182304,
+          "parsedCount": 516159,
+          "retained": 0,
+          "supplementary": 0,
+          "unsupportedByReason": {
+            "unsupported-domain-type": 371
+          },
+          "unsupportedCount": 371
+        },
+        "russia-v2ray-rules": {
+          "candidateCount": 3152362,
+          "conflicts": 0,
+          "duplicates": 1586819,
+          "parsedCount": 3151993,
+          "retained": 0,
+          "supplementary": 0,
+          "unsupportedByReason": {
+            "malformed-domain": 2,
+            "unsupported-domain-type": 367
+          },
+          "unsupportedCount": 369
+        },
+        "v2fly-domain-list": {
+          "candidateCount": 109236,
+          "conflicts": 0,
+          "duplicates": 70612,
+          "parsedCount": 108862,
+          "retained": 0,
+          "supplementary": 0,
+          "unsupportedByReason": {
+            "unsupported-domain-regex": 374
+          },
+          "unsupportedCount": 374
+        }
+      },
+      "supplementary": 302716,
+      "unsupportedByReason": {
+        "malformed-domain": 2,
+        "unsupported-domain-regex": 374,
+        "unsupported-domain-type": 1111
+      },
+      "unsupportedCount": 1487
+    },
     "omittedByKind": {
       "ipAsn": 9,
       "logicalAnd": 1,
@@ -105,28 +280,28 @@
       "urlRegex": 16,
       "userAgent": 111
     },
-    "rawDefaultEntries": 28172
+    "rawDefaultEntries": 330887
   },
   "files": [
     {
-      "bytes": 18092,
+      "bytes": 35149,
       "path": "LICENSE",
-      "sha256": "8177f97513213526df2cf6184d8ff986c675afb514d4e68a404010521b880643"
+      "sha256": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986"
     },
     {
-      "bytes": 5978,
+      "bytes": 6797,
       "path": "THIRD_PARTY_NOTICES.md",
-      "sha256": "78e83ab50c9bd7a9d6ec64d2dd2b99de5aa4f254f5d3ac7b924c22e5efd019c0"
+      "sha256": "ef37989cbe25069fc50e6262e8b3e74ea2127e4e7b89e14af599a102e4bcfc7c"
     },
     {
-      "bytes": 3799,
+      "bytes": 4149,
       "path": "anywhere/client-manifest.json",
-      "sha256": "bf61f222b8ec86be25530144c15663d9ea8346f1d153eb87759c0901a4a1402f"
+      "sha256": "5424ab499ce25cd5e0c90e9b636c6046cfd85bba2ded1fcc9eb10aab7e16b33b"
     },
     {
-      "bytes": 11178,
+      "bytes": 12199,
       "path": "anywhere/import.html",
-      "sha256": "4f05194806e7846237a2ea69d5251251bdbe62ee87e4f9a2b137d1470ad0117a"
+      "sha256": "b0d7338affa044703cef0020b58c6a9e9988ad0240e312d3e115e38749e49441"
     },
     {
       "bytes": 1150,
@@ -134,9 +309,9 @@
       "sha256": "78c7f2d91d32507e0a2e26844ce6c0b0c36d6606e6a83aef824ecc795c1795c3"
     },
     {
-      "bytes": 687,
+      "bytes": 1322,
       "path": "anywhere/rules/Apple-001.arrs",
-      "sha256": "1d224236a513067490f386159855da81bf2b0f481b355b6694367316bf2026aa"
+      "sha256": "ad542b9026c88380c850b105b44d5c911b39b2d4e07a4801ddb3659af88372f3"
     },
     {
       "bytes": 217239,
@@ -144,19 +319,24 @@
       "sha256": "1b10009ec87c598e72187f560d5ca7a936ad05d8d5bbcaae724c2a5c7119f5d4"
     },
     {
-      "bytes": 2070,
+      "bytes": 1492420,
       "path": "anywhere/rules/DomesticCore-001.arrs",
-      "sha256": "f381da406164a7894781878450113e56110534356148295aa944fe300693f1db"
+      "sha256": "9a5e34f438324063b28fd9921ab0928c3655dca9c8c07ee70786e9e8b2688e5c"
     },
     {
-      "bytes": 7714,
+      "bytes": 253578,
+      "path": "anywhere/rules/DomesticCore-002.arrs",
+      "sha256": "f6faec42cfc6a7cf4531394ce154a2e10fc3fe6c66dec4bdba2d2924dc963731"
+    },
+    {
+      "bytes": 7621,
       "path": "anywhere/rules/DomesticPlatform-001.arrs",
-      "sha256": "ec376e0ecf570aba1474d12af264e637ebbcd2948a9056a4c39792c8d2ca6d7e"
+      "sha256": "db6b2285bbfa2ab5c5dcb285adeab34a48fb1f283b98408c8cafc06cb23ca80b"
     },
     {
-      "bytes": 2411,
+      "bytes": 2127,
       "path": "anywhere/rules/Download-001.arrs",
-      "sha256": "c3708b781864522100217b1085bfe3dea4a207ae2dd512b13ed4342b30c493fa"
+      "sha256": "66d227e68cc06d362623d10e5992470dc4626958e118b3231ebbd909dc968ed0"
     },
     {
       "bytes": 852,
@@ -164,24 +344,24 @@
       "sha256": "e6d8ffd212c9bf5e0b595c141baa98f1e29a24eba89551ba8b03c714500d4e41"
     },
     {
-      "bytes": 13150,
+      "bytes": 11904,
       "path": "anywhere/rules/Microsoft-001.arrs",
-      "sha256": "f7b216ac7d47893bbc0e785c1ef20929f050bfb977cd72a866b9c50aa7135593"
+      "sha256": "1b07c28ee5968dd07d52ac57653798ff44bb90b5aff65f0c6a05cd80f5f5e2ed"
     },
     {
-      "bytes": 11012,
+      "bytes": 9116,
       "path": "anywhere/rules/OverseasGame-001.arrs",
-      "sha256": "9b8576dcc39e5c197edbea51a20ca17528faf5f393ce729496966bcfb639596a"
+      "sha256": "5952a4753dedac3a22fcb6d0b856885799c023e0e3a412da0cd5c6ecef0a0693"
     },
     {
-      "bytes": 43315,
+      "bytes": 112698,
       "path": "anywhere/rules/OverseasMedia-001.arrs",
-      "sha256": "d7ff47a63e5830c7aee0befa4699d34d6c3c68ed4024fe7c0106a6b922592fdc"
+      "sha256": "4fbc4091b439897955e8d30703b194d5bc8307ed73026bfe76214372413a1bf8"
     },
     {
-      "bytes": 12558,
+      "bytes": 12232,
       "path": "anywhere/rules/OverseasSocial-001.arrs",
-      "sha256": "d92297c34e9ad6aac97b187089ce714b7a53c8c6eefbcd17c010524ae7e9f040"
+      "sha256": "a7bc8393893e9d41e5893052500cb790f6f265431e3cc0039dd43db27c17064b"
     },
     {
       "bytes": 638,
@@ -189,9 +369,14 @@
       "sha256": "530d87cd41af93f7daee6973bd9fd974f5db5078701a5a871d7971a0bb73a569"
     },
     {
-      "bytes": 5099,
+      "bytes": 2272718,
       "path": "anywhere/rules/Security-001.arrs",
-      "sha256": "e3ccb5d130bd89b3b9546ba4271ff57a8bf258b805a9b10ab7c755814b9a1500"
+      "sha256": "9e854ad13d05b7d4b22331e3bd882a59d315c8eccdc4abd41d4bd0cf6fc18250"
+    },
+    {
+      "bytes": 2163240,
+      "path": "anywhere/rules/Security-002.arrs",
+      "sha256": "635eab46d09e557437434774cd113a2a1f22358155260998dabd38daa90bcabe"
     },
     {
       "bytes": 3294,
@@ -199,59 +384,59 @@
       "sha256": "c556f02bc12183008c3a853ea9f18a87004d3f314cb4bda07e946128b0078e4e"
     },
     {
-      "bytes": 43130,
+      "bytes": 44604,
       "path": "anywhere/rules/manifest.json",
-      "sha256": "8fa9bbcc20be609d1ee58ecf49596e5101af33c9da334a0588b9e634b0200f47"
+      "sha256": "dc06cf2b07640c3a28d57453758c76c5d1b875083bca191cea8429fc90e48e6e"
     },
     {
-      "bytes": 90027,
+      "bytes": 90010,
       "path": "anywhere/scripts/anywhere-node-generator.js",
-      "sha256": "8840a08c0694b2e671bd5d5a79aec890f4ebdc79cc123f17aebda81569251e7e"
+      "sha256": "6e62923c0275d66869d298ab4f37be024a538f6c23e060a79ed8a80896d1b8e1"
     },
     {
-      "bytes": 135682,
+      "bytes": 135665,
       "path": "anywhere/scripts/anywhere-strategy-generator.js",
-      "sha256": "303b9b87415deada2eab2309dfd2317a6d260394481228bad54b7fca861bb0c0"
+      "sha256": "4c7df44314119b74d1e20dd6f46463e991fe733f34e74ebd06fd1e89f87a56c5"
     },
     {
-      "bytes": 90027,
+      "bytes": 90010,
       "path": "anywhere/scripts/substore-node-generator.js",
-      "sha256": "8840a08c0694b2e671bd5d5a79aec890f4ebdc79cc123f17aebda81569251e7e"
+      "sha256": "6e62923c0275d66869d298ab4f37be024a538f6c23e060a79ed8a80896d1b8e1"
     },
     {
-      "bytes": 135682,
+      "bytes": 135665,
       "path": "anywhere/scripts/substore-strategy-generator.js",
-      "sha256": "303b9b87415deada2eab2309dfd2317a6d260394481228bad54b7fca861bb0c0"
+      "sha256": "4c7df44314119b74d1e20dd6f46463e991fe733f34e74ebd06fd1e89f87a56c5"
     },
     {
       "bytes": 1518,
       "path": "audit/china-ip-drift.json",
-      "sha256": "05b0639e02b20fbf36f8c1412cadd88f9b7e91bc9c5e845e0269405bb89e6641"
+      "sha256": "bd8b22453da86ce18f8a0aa819838448b36411ff5446463b6bfe7e155867343d"
     },
     {
-      "bytes": 3566,
+      "bytes": 2346,
       "path": "audit/dashboard.html",
-      "sha256": "0c995844d5b7436986e39556acf2ba01574b17d81e3bf4489f91d9e3f2cf1cef"
+      "sha256": "51906f536ef56296c2290305af80f3ffab07e6d59664bf0741173dc8c6cc1010"
     },
     {
-      "bytes": 6592,
+      "bytes": 5351,
       "path": "audit/dashboard.json",
-      "sha256": "0140feb6f6d268c41871a6885271106fec75c319be9770e2dcef2b04d6fb05cd"
+      "sha256": "15fe1cf0c5da6876bed5a42a1c87fa4a9901af335be184a2d13af5d4981643e2"
     },
     {
-      "bytes": 5175,
+      "bytes": 5184,
       "path": "audit/routing-plan.json",
-      "sha256": "d3477de5c878935976fac574090dd780a8d0a719e73349a2284cdbb5e42ce198"
+      "sha256": "6a67fb5c23595d02609a27e76bd34affc2eb2443a601fcdf7cf71604ff0c45d1"
     },
     {
       "bytes": 7260,
       "path": "audit/v2fly-domain-drift.json",
-      "sha256": "58c6ad199e28a4450544521b216aba68af65383439195e08212ee453047c0ac1"
+      "sha256": "f692ce59633a4f865c989b87c23581f15f5cc1c03e73a1ab39483406854719c5"
     },
     {
-      "bytes": 6895,
+      "bytes": 6902,
       "path": "clash/client-manifest.json",
-      "sha256": "5d4c6829342513ea155b78d8604e6205ddb285ba04891ea98f3f9c2c105e2e67"
+      "sha256": "8dd3ae69483b4573509973fc65b1d64852ef32202a43403cd086fcd47b87fbea"
     },
     {
       "bytes": 25506,
@@ -274,9 +459,9 @@
       "sha256": "0a13fb59c2254c4d67c432ea8328442c503c11f8266a6b7c27eda71c1ddd6aac"
     },
     {
-      "bytes": 1114,
+      "bytes": 2917,
       "path": "clash/rules/Apple.yaml",
-      "sha256": "c1a79cc0527d746a3b1ce45645645a36a7edfbc8a94faeede89e9002b9dc2020"
+      "sha256": "6e6b44e5046cd8f84ad4163ee4ea65c1fd75ca5314a2b5bcb6466dfcfd2e086b"
     },
     {
       "bytes": 5297,
@@ -319,9 +504,9 @@
       "sha256": "9c08ea716dce7ef1465f1807c4e7872caab0f4a14c1a563cf7cd40662bd9e0c1"
     },
     {
-      "bytes": 2362,
+      "bytes": 3638396,
       "path": "clash/rules/DomesticCore.yaml",
-      "sha256": "f99d1c435af407a6481767e51128c8bf514a905a2b127a1fbacfedf88bcfb781"
+      "sha256": "7c17771389aba74f641005e71eeada9959a34d55c678aa960c3e52005b222434"
     },
     {
       "bytes": 1723,
@@ -349,14 +534,14 @@
       "sha256": "3de59f3158fd8cc0b1853c4d6d2e5d84c95902a0dfb9d4711592c37492cc77d1"
     },
     {
-      "bytes": 39757,
+      "bytes": 203037,
       "path": "clash/rules/GlobalMedia.yaml",
-      "sha256": "e68b7019dc47c11886d96cd4fa3562990f706352319b27291f9c6e029a636c3b"
+      "sha256": "7538b5556ed684cfa058db8f0ff3b6b3f4aaaba3d052d9f407863f31d699afd5"
     },
     {
-      "bytes": 8233,
+      "bytes": 7607818,
       "path": "clash/rules/Hijacking.yaml",
-      "sha256": "4dea03d9d0a197a173a0c08ab477bd81da24f603cf381a2e64c14a610010d8eb"
+      "sha256": "a38eff5ec5fbb40ce08bddca8f2e058959b05c51fef053acb6c7e9eeb6023ce7"
     },
     {
       "bytes": 450,
@@ -404,9 +589,9 @@
       "sha256": "ddee6e1ed8f8141f24d4273c23ab1f4ce8b4fa284eda46d2a40d44c014d2309f"
     },
     {
-      "bytes": 1530,
+      "bytes": 1652,
       "path": "clash/rules/Telegram.yaml",
-      "sha256": "13d8139342acf655a5458e8910a4cceb43808785c0be87557a05edff5ce68355"
+      "sha256": "1d4ccfee4c6c61881a40d690aeea9458f23e8d50eda98ceb5c8fcb91a23e146a"
     },
     {
       "bytes": 1374,
@@ -434,29 +619,29 @@
       "sha256": "1579f4cc64520655de4868d7daf0d251c46a37394c0a8f7f87b33e6d5eaa7468"
     },
     {
-      "bytes": 75606,
+      "bytes": 75906,
       "path": "clash/scripts/clash-node-generator.js",
-      "sha256": "173fe70bbba0d88628b0b39dffe91aa4289d541516aac95dea000ec808cac738"
+      "sha256": "e5de0f4bf2493a3343c796aa3df3e354dc65af75f04bd5471fd4a434941ba6e2"
     },
     {
-      "bytes": 96705,
+      "bytes": 97008,
       "path": "clash/scripts/clash-profile-generator.js",
-      "sha256": "f3ab096180797def6b3d7ffaf53ab9a8f751034827693c3027778730f49e95bb"
+      "sha256": "dc2910f006462bb7cdb9afc4830e897b0225ca0ee15594ff8ee033ae3eaed88f"
     },
     {
-      "bytes": 75606,
+      "bytes": 75906,
       "path": "clash/scripts/substore-node-generator.js",
-      "sha256": "173fe70bbba0d88628b0b39dffe91aa4289d541516aac95dea000ec808cac738"
+      "sha256": "e5de0f4bf2493a3343c796aa3df3e354dc65af75f04bd5471fd4a434941ba6e2"
     },
     {
-      "bytes": 96705,
+      "bytes": 97008,
       "path": "clash/scripts/substore-profile-generator.js",
-      "sha256": "f3ab096180797def6b3d7ffaf53ab9a8f751034827693c3027778730f49e95bb"
+      "sha256": "dc2910f006462bb7cdb9afc4830e897b0225ca0ee15594ff8ee033ae3eaed88f"
     },
     {
-      "bytes": 6727,
+      "bytes": 6735,
       "path": "egern/client-manifest.json",
-      "sha256": "d891220773099a77838e7c120f6a979993296f5da4fddf42b2898425811a9b8c"
+      "sha256": "17a21a570087fac06fa3a3bdd607b00941e14cb4ec30da48c7ff4a538f56f0a5"
     },
     {
       "bytes": 27784,
@@ -474,9 +659,9 @@
       "sha256": "b0b0b385b339111474605fc4c717e4ce3551084cce65c91168e2899c893049b9"
     },
     {
-      "bytes": 883,
+      "bytes": 1927,
       "path": "egern/rules/Apple.yaml",
-      "sha256": "7ff3310658cf2b82654e45dc9b9db6999bc7529c6b6b88489668d6de383565a8"
+      "sha256": "df7f20e6aabf457fb6120fc2e28e6a3179c8d1c69e745e7f834f491629359a24"
     },
     {
       "bytes": 4030,
@@ -519,9 +704,9 @@
       "sha256": "71ffcfed56898f156446957595ceb53aba6662125b0074dc015996ff276a178a"
     },
     {
-      "bytes": 1582,
+      "bytes": 2080786,
       "path": "egern/rules/DomesticCore.yaml",
-      "sha256": "7701d0732e0b8b17841ce6f88836abdac5f6e29f4ee7b6b6e46169a1ce35c7cf"
+      "sha256": "0a6db741ce343a2edc193578067d27e8fe08e5e00db87ebda0212f341eb34290"
     },
     {
       "bytes": 1293,
@@ -549,14 +734,14 @@
       "sha256": "51d0403a0bfc4a72d442731dd0274713c41fa15afd92c7493472b5c50105bb7b"
     },
     {
-      "bytes": 21912,
+      "bytes": 114464,
       "path": "egern/rules/GlobalMedia.yaml",
-      "sha256": "ceea90d440c6f8ba5feafe32b22bea02470df7467aef80f21a3a980980db3508"
+      "sha256": "15786bdb82f21bed9366a9c09127ffce6fa2947aa45e532d6a35e883ee508a99"
     },
     {
-      "bytes": 4962,
+      "bytes": 4994849,
       "path": "egern/rules/Hijacking.yaml",
-      "sha256": "bd59136196562e6c6d32e5db92c5622d2d05411ab186b100938850bb9921fcf1"
+      "sha256": "f82cef7188443fe6e38c97ffe0e2945cd8b56b7fca3b020c652607f73ad39e2e"
     },
     {
       "bytes": 520,
@@ -604,9 +789,9 @@
       "sha256": "7443d9886cc1ec78d3f4117910d614a518f613cc09ef7c591e181ac622c2b7e7"
     },
     {
-      "bytes": 1117,
+      "bytes": 1182,
       "path": "egern/rules/Telegram.yaml",
-      "sha256": "e6ce2b89156c493a9adee4d6f1d77fe26ea218605cb0a5dbaf14f847249cfba9"
+      "sha256": "d6a25381d2b21ac18896a16676661500d8e1a8c5faf8d0064b72728e8ae74084"
     },
     {
       "bytes": 1090,
@@ -639,9 +824,9 @@
       "sha256": "499fd2db857eaa7aab2f7898f0e09f4a63892b231e80edeb1c42cad749c717d5"
     },
     {
-      "bytes": 245940,
+      "bytes": 246240,
       "path": "egern/scripts/egern-profile-generator.js",
-      "sha256": "b4613954d085b09ce95be3690f2db2b5b49b5d08a06b2da7c55af2f36c3a4e62"
+      "sha256": "4a19305c5b13710ab020b4113f139291d94817e91ac8eb10938eb96d2468cd33"
     },
     {
       "bytes": 121362,
@@ -649,94 +834,94 @@
       "sha256": "499fd2db857eaa7aab2f7898f0e09f4a63892b231e80edeb1c42cad749c717d5"
     },
     {
-      "bytes": 245940,
+      "bytes": 246240,
       "path": "egern/scripts/substore-profile-generator.js",
-      "sha256": "b4613954d085b09ce95be3690f2db2b5b49b5d08a06b2da7c55af2f36c3a4e62"
+      "sha256": "4a19305c5b13710ab020b4113f139291d94817e91ac8eb10938eb96d2468cd33"
     },
     {
-      "bytes": 181511,
+      "bytes": 250970,
       "path": "geodata/cn/AppleProxyIPCurrent.dat",
-      "sha256": "e85eeae3c6ff4c646f61aab25edc7e62e391d31d71ed5442f7d0f4d75c796edf"
+      "sha256": "1431ecfb96fbe57c861cc565808c0c2f66e4c8d062bb177e2e73dd213eb4121c"
     },
     {
-      "bytes": 8346922,
+      "bytes": 15229838,
       "path": "geodata/cn/AppleProxySiteCurrent.dat",
-      "sha256": "a58f131ae298815f340794171ea5a370068d05a91b7c9670acc273983e78ee69"
+      "sha256": "b3a06027317337df9650c1f67182250e028d11b335ed994b22ab48dfd1b18219"
     },
     {
-      "bytes": 23907,
+      "bytes": 36934,
       "path": "geodata/cn/manifest.json",
-      "sha256": "7fc08b4877a9e474c928ba2bc2765f5c6c6bef4ec3c18c7b2d0b67f69adee1f3"
+      "sha256": "d8006298900d1f6f5f18d1213210253338f5bd5de36e287558c57ec6a1b3fec2"
     },
     {
-      "bytes": 23323,
+      "bytes": 92772,
       "path": "geodata/global/AppleProxyIPCurrent.dat",
-      "sha256": "ec27eb4161ddaadf174bbd0f095ceaf115875a56b517abe9ea0cebd42c39246a"
+      "sha256": "189a73728c0a97d3388c15c02e73161a1e1af258b7a532acceeb6f2de9e514d7"
     },
     {
-      "bytes": 8344540,
+      "bytes": 15227456,
       "path": "geodata/global/AppleProxySiteCurrent.dat",
-      "sha256": "35c7be80d4a5a787169d6b6226555b8fb45886268c7072ae26233a2af1ba6850"
+      "sha256": "95f685a0237e6a54f0e427b9b7efa42dbec9598b2b402d7b980431a955968522"
     },
     {
-      "bytes": 20713,
+      "bytes": 33740,
       "path": "geodata/global/manifest.json",
-      "sha256": "728521c462e8abd8f0c1713b9547d025b5d9e0ff048fe2f947d98f3e72cdbe42"
+      "sha256": "7d1533b22520ddd5a6cc2f73e1f63f335c970c23aced6089a16a96f72a33ef8d"
     },
     {
-      "bytes": 23347,
+      "bytes": 92796,
       "path": "geodata/ir/AppleProxyIPCurrent.dat",
-      "sha256": "fe8433957a8e9b9d4e617ebfbdd4b5a78deb211e706b697e6daba319f7141cc2"
+      "sha256": "5367df50cf24c72a9917ae6700daa77aecaf42fc8ffc9588e895d80c6fd2b80f"
     },
     {
-      "bytes": 13672066,
+      "bytes": 20554982,
       "path": "geodata/ir/AppleProxySiteCurrent.dat",
-      "sha256": "0f53809589a1f7826d06a44da3fab4441d0c737df6713a0c2b71d5855eb1ad2f"
+      "sha256": "72cba744bbfff6e8afeeeecca4a7ff192a8fb67c1f304cdbcf7cbf68884bc83f"
     },
     {
-      "bytes": 21710,
+      "bytes": 34737,
       "path": "geodata/ir/manifest.json",
-      "sha256": "21208f9638c63044694269455ea49afe6694155ec2183df4f8a72e044bc90905"
+      "sha256": "2141722ec703141de3477729b2654144e1d03d98dbdf3a49f08556886c8f4732"
     },
     {
-      "bytes": 23349,
+      "bytes": 92798,
       "path": "geodata/ru/AppleProxyIPCurrent.dat",
-      "sha256": "8943816d512d85465c1b3c11911556138090a3e20e95cea3e0a75f8a4ec8ff50"
+      "sha256": "0ba79bba52aae0096a45090e3e2e7dc6a5e34ba7d45f0fe8389313eabec0067e"
     },
     {
-      "bytes": 45284216,
+      "bytes": 52167132,
       "path": "geodata/ru/AppleProxySiteCurrent.dat",
-      "sha256": "0624b8ec8ad504fa4aaa7db802784e2c7d01dfaae91e08f886638efab2ee9018"
+      "sha256": "a2f5d66c7f52924bebac8878f5d4a1a74239ca6d1c11e2e07cb4b1113aabaafa"
     },
     {
-      "bytes": 21740,
+      "bytes": 34766,
       "path": "geodata/ru/manifest.json",
-      "sha256": "1370c09544533a40eac8aa99e94294450f3352f81f718178886d4369d81bcf08"
+      "sha256": "f4b4dc729f8b578fe028e9f2dd56edcd0aa212c93e24a81302321878a407858a"
     },
     {
-      "bytes": 1457,
+      "bytes": 1459,
       "path": "happ/client-manifest.json",
-      "sha256": "ed31b944a5ef2ccf6c266e687c111e2aa59545dd1a320e7f5d6f52d75b710bea"
+      "sha256": "a9f613f828f8688944c30a1d78b96e9d49d478a1bfaa57e03d9b19b8a517bbcf"
     },
     {
-      "bytes": 181481,
+      "bytes": 181739,
       "path": "happ/geoip.dat",
-      "sha256": "9a4538534cd8610075775ca6b148c117173d37c554b005adcee81f5a79457275"
+      "sha256": "1dd82acafad5ed5999997edc31d2a2f76eae28c2be0d7350ead248d55938ecb9"
     },
     {
-      "bytes": 74218,
+      "bytes": 6933888,
       "path": "happ/geosite.dat",
-      "sha256": "33de8c00cc3affbaf59be30b865e9d163fc2dae0a3c51555834437bd9454eadd"
+      "sha256": "4100ca5a34935a903c45f630b92a9e689d2f21c6ae24ba4cd88bcccec5d7b34e"
     },
     {
-      "bytes": 630895,
+      "bytes": 630119,
       "path": "happ/index.html",
-      "sha256": "7071cf724f8ed2a93219362c8c2d5a04cd51207ab408ca9d80da5b47e1fd2dc5"
+      "sha256": "5bc9b3d5789fc97ea5418c6477ef94d9b5f75881c45871e997aba9e947d8235f"
     },
     {
-      "bytes": 180234,
+      "bytes": 180554,
       "path": "happ/scripts/happ-config-generator.js",
-      "sha256": "608e86d5396b289cb471a3dc150ab83d6a992088b4ad465c38f3a6e4bc0b04e1"
+      "sha256": "2f4d752cb3732181a1287d1048030f0d33b7b44efb58f15a57cb5447d110cb33"
     },
     {
       "bytes": 131894,
@@ -744,9 +929,9 @@
       "sha256": "314cbffe71622c61a00ddea4e2f6847d65821bdf6200c1daddac1bd9f19ca74e"
     },
     {
-      "bytes": 180234,
+      "bytes": 180554,
       "path": "happ/scripts/substore-config-generator.js",
-      "sha256": "608e86d5396b289cb471a3dc150ab83d6a992088b4ad465c38f3a6e4bc0b04e1"
+      "sha256": "2f4d752cb3732181a1287d1048030f0d33b7b44efb58f15a57cb5447d110cb33"
     },
     {
       "bytes": 131894,
@@ -754,64 +939,64 @@
       "sha256": "314cbffe71622c61a00ddea4e2f6847d65821bdf6200c1daddac1bd9f19ca74e"
     },
     {
-      "bytes": 2025,
+      "bytes": 2027,
       "path": "onexray/client-manifest.json",
-      "sha256": "92fb091ebd15d4e0cfc1d496ac959e470f2557e0ea2d07ee4cdafeb71ef2aaee"
+      "sha256": "151282b3b2725cd6f214a5701585ae86937a7138b0504a7396b10a7a55cefda8"
     },
     {
-      "bytes": 181466,
+      "bytes": 181725,
       "path": "onexray/geodata/geoip.dat",
-      "sha256": "9f7c6fcef4dc3338c1801b190934dae2fb407e1c4a0732d7fd6f65e77576060e"
+      "sha256": "89b7b947ea79676055c5a18c59aa5094dca7e4595908d32f7f857f79d1017800"
     },
     {
-      "bytes": 74223,
+      "bytes": 6933893,
       "path": "onexray/geodata/geosite.dat",
-      "sha256": "4bed4f09fb433437409d6ffd3f8e061f14babca334c64278110320c011ad7eb9"
+      "sha256": "7c3546f538a7bcbb5d396f7cd3971a3912c9bd9a06c0834184a1ca7c479f0af9"
     },
     {
-      "bytes": 10718,
+      "bytes": 10740,
       "path": "onexray/geodata/manifest.json",
-      "sha256": "c6e87ed8e603839a148671f2c2b1e1472e28031194ae4194d0373558ad6209c6"
+      "sha256": "ea5fc73460e7195c0e8dd753594c95f6bf452e47ac572518214babbe01988ba0"
     },
     {
-      "bytes": 4044,
+      "bytes": 4063,
       "path": "onexray/index.html",
-      "sha256": "e67acc49535d57293f8f710a03bd81196564f7bd9da8ae8e5ba5659aae072a9d"
+      "sha256": "835956b18c4defe4ab084ee6fe5b4e1240d9aa32c3014ff0a92e9e4acd515722"
     },
     {
-      "bytes": 134687,
+      "bytes": 134667,
       "path": "onexray/scripts/onexray-node-generator.js",
-      "sha256": "333ac627ffb1e0840734f7b3507b7b230d59c053434ebd87c7c8034d5d3ee0a6"
+      "sha256": "a96084be49de291e6ca23613fe224736beeece5a323e256a45d13a03b230cada"
     },
     {
-      "bytes": 156048,
+      "bytes": 156028,
       "path": "onexray/scripts/onexray-profile-generator.js",
-      "sha256": "1043ee8a046ac641de308e9f41828157d41a8dd554abcd6b58cadb949b9491cd"
+      "sha256": "5d1eec4036ea2d0774b6fbcfd12399c4c687e6893cbeceb4d6a0e76c41364f7c"
     },
     {
-      "bytes": 147305,
+      "bytes": 147288,
       "path": "onexray/scripts/onexray-routing-audit.js",
-      "sha256": "e79f52672554ca9faeb3183dcf2adff1bec3d4119e368b86cba52650c5643ca7"
+      "sha256": "9bc6a0d77c371a95ac5533ab622392bc0d9790e748a54f9c9f79372e5abe008e"
     },
     {
-      "bytes": 134687,
+      "bytes": 134667,
       "path": "onexray/scripts/substore-node-generator.js",
-      "sha256": "333ac627ffb1e0840734f7b3507b7b230d59c053434ebd87c7c8034d5d3ee0a6"
+      "sha256": "a96084be49de291e6ca23613fe224736beeece5a323e256a45d13a03b230cada"
     },
     {
-      "bytes": 156048,
+      "bytes": 156028,
       "path": "onexray/scripts/substore-profile-generator.js",
-      "sha256": "1043ee8a046ac641de308e9f41828157d41a8dd554abcd6b58cadb949b9491cd"
+      "sha256": "5d1eec4036ea2d0774b6fbcfd12399c4c687e6893cbeceb4d6a0e76c41364f7c"
     },
     {
-      "bytes": 147305,
+      "bytes": 147288,
       "path": "onexray/scripts/substore-routing-audit.js",
-      "sha256": "e79f52672554ca9faeb3183dcf2adff1bec3d4119e368b86cba52650c5643ca7"
+      "sha256": "9bc6a0d77c371a95ac5533ab622392bc0d9790e748a54f9c9f79372e5abe008e"
     },
     {
-      "bytes": 7229,
+      "bytes": 7237,
       "path": "shadowrocket/client-manifest.json",
-      "sha256": "f3891e0325ec47409afc16ec76e99bcdfbe63f14592d14978bf22da74b7f31ad"
+      "sha256": "a482c0cc095b211b70a027d93557dd4a7f926ca5ae14adc7c3377601a229843c"
     },
     {
       "bytes": 12865,
@@ -829,9 +1014,9 @@
       "sha256": "efb75ace1f7b2e0c4861f3b69ae88ef7dc2c560c37af0df5549115c41ed7d586"
     },
     {
-      "bytes": 985,
+      "bytes": 2464,
       "path": "shadowrocket/rules/Apple.list",
-      "sha256": "daa0d602b6f688dc89fc1aaefce1a72e08eee151c16989b4100b31785c4b1a82"
+      "sha256": "ce9ca76e386dec8a9559250bce7b5a87b8dbfbf386cb04969c6d5c38e5347a21"
     },
     {
       "bytes": 4550,
@@ -874,9 +1059,9 @@
       "sha256": "aba1295e326cb52ffef44e6ce15255c97dee3fa2ddcd78bc17ee63ee5c34db09"
     },
     {
-      "bytes": 1963,
+      "bytes": 2970827,
       "path": "shadowrocket/rules/DomesticCore.list",
-      "sha256": "57594fe79da2e3e3a27a185f124674af2972d7ee6c35184c4a2e4f30967bd3fb"
+      "sha256": "e7a2fa7cdfcf834ada271bc7041ab12c3d067a8994f0cb32e280e2227dad82cf"
     },
     {
       "bytes": 1474,
@@ -904,14 +1089,14 @@
       "sha256": "d293fc751ef6d90f5fcae0d5c065e9bf253101c2a499382f80c201ba8d88b824"
     },
     {
-      "bytes": 34042,
+      "bytes": 167010,
       "path": "shadowrocket/rules/GlobalMedia.list",
-      "sha256": "107ae63f171207fb5c07556f2ba39ab58aa359230503604432007847124f3411"
+      "sha256": "ed6d904cad49cff923bd406511df9bb6c3dee7bb9d6c88e1b9c8c522468c7433"
     },
     {
-      "bytes": 6856,
+      "bytes": 6487999,
       "path": "shadowrocket/rules/Hijacking.list",
-      "sha256": "9286b608633671354ddda640241e5193f656370207691c03184ad4578e5c291f"
+      "sha256": "ed1dcdb1a3290d8f4c54a2ad69bc8b024a154d48eed086917dd642731e526f77"
     },
     {
       "bytes": 417,
@@ -959,9 +1144,9 @@
       "sha256": "3f0f0e90a080a102c9a161ca149b2e46a308a138ecbd000994bcfa0e202c3e8d"
     },
     {
-      "bytes": 1311,
+      "bytes": 1415,
       "path": "shadowrocket/rules/Telegram.list",
-      "sha256": "ca116908054a27f23f59fffe84440513d0d0c9a1507823eee6460171530f5d35"
+      "sha256": "9a02e87d428d1f4beca21a2b07a311a53818425bab801c10443297bded71bc28"
     },
     {
       "bytes": 1179,
@@ -999,9 +1184,9 @@
       "sha256": "17388d644c18777f7fe91fba5efe264a84f88e8e70bff0a4adf5273f0ca76ca1"
     },
     {
-      "bytes": 134663,
+      "bytes": 134963,
       "path": "shadowrocket/scripts/shadowrocket-profile-generator.js",
-      "sha256": "de34e65e6367a33e5668a8da28904df26c292f212b141de563e87281458871ec"
+      "sha256": "ca771e5f399e51132792075ac130ca79e49cbfeb61be6517efe622ca424024b7"
     },
     {
       "bytes": 41268,
@@ -1009,14 +1194,14 @@
       "sha256": "2f9bfe96ee32b2279d992d9cafb1b501f74b607f2303f7fbf6f1869e2041adfb"
     },
     {
-      "bytes": 134663,
+      "bytes": 134963,
       "path": "shadowrocket/scripts/substore-profile-generator.js",
-      "sha256": "de34e65e6367a33e5668a8da28904df26c292f212b141de563e87281458871ec"
+      "sha256": "ca771e5f399e51132792075ac130ca79e49cbfeb61be6517efe622ca424024b7"
     },
     {
       "bytes": 9920,
       "path": "sing-box/client-manifest.json",
-      "sha256": "fc2dec9b5ea1d844eaddd461855b2a11cd41a5d4f55889ac27d22f89332388b3"
+      "sha256": "7ccd9abda852624bfb6bb2e2b643c5083bd80854bf6e4acce85eae9c0a2f9bfc"
     },
     {
       "bytes": 10576,
@@ -1289,19 +1474,19 @@
       "sha256": "da4163404185d0c106158bad3bc246a7df1388b1974bceace0dfa1f0443abd30"
     },
     {
-      "bytes": 152762,
+      "bytes": 153062,
       "path": "sing-box/scripts/sing-box-config-generator.js",
-      "sha256": "acfcfea099c94240f6295c11f6f7374c3da71170fe9736868856f67053f4a8bd"
+      "sha256": "65647b8582b3aa10cb6e0fb4538ef6eef28df657850df5233211fa68b82619fb"
     },
     {
-      "bytes": 152762,
+      "bytes": 153062,
       "path": "sing-box/scripts/substore-config-generator.js",
-      "sha256": "acfcfea099c94240f6295c11f6f7374c3da71170fe9736868856f67053f4a8bd"
+      "sha256": "65647b8582b3aa10cb6e0fb4538ef6eef28df657850df5233211fa68b82619fb"
     },
     {
-      "bytes": 6728,
+      "bytes": 6736,
       "path": "surge/client-manifest.json",
-      "sha256": "af4cc9120f8cc4a9a71e047b8165f45785eaa572a51ee0b9e6f84c0ef83e250c"
+      "sha256": "6791cf3889550398bbb18c72bf974db738e665b2523ac9898d4f6859a1299534"
     },
     {
       "bytes": 10928,
@@ -1319,9 +1504,9 @@
       "sha256": "0a30c857a4f87b11c1e4be7aaf905f0f056697ab3280c65609893b6c8a552eb8"
     },
     {
-      "bytes": 985,
+      "bytes": 2464,
       "path": "surge/rules/Apple.list",
-      "sha256": "daa0d602b6f688dc89fc1aaefce1a72e08eee151c16989b4100b31785c4b1a82"
+      "sha256": "ce9ca76e386dec8a9559250bce7b5a87b8dbfbf386cb04969c6d5c38e5347a21"
     },
     {
       "bytes": 4550,
@@ -1364,9 +1549,9 @@
       "sha256": "aba1295e326cb52ffef44e6ce15255c97dee3fa2ddcd78bc17ee63ee5c34db09"
     },
     {
-      "bytes": 1963,
+      "bytes": 2970827,
       "path": "surge/rules/DomesticCore.list",
-      "sha256": "57594fe79da2e3e3a27a185f124674af2972d7ee6c35184c4a2e4f30967bd3fb"
+      "sha256": "e7a2fa7cdfcf834ada271bc7041ab12c3d067a8994f0cb32e280e2227dad82cf"
     },
     {
       "bytes": 1474,
@@ -1394,14 +1579,14 @@
       "sha256": "d293fc751ef6d90f5fcae0d5c065e9bf253101c2a499382f80c201ba8d88b824"
     },
     {
-      "bytes": 34042,
+      "bytes": 167010,
       "path": "surge/rules/GlobalMedia.list",
-      "sha256": "107ae63f171207fb5c07556f2ba39ab58aa359230503604432007847124f3411"
+      "sha256": "ed6d904cad49cff923bd406511df9bb6c3dee7bb9d6c88e1b9c8c522468c7433"
     },
     {
-      "bytes": 6856,
+      "bytes": 6487999,
       "path": "surge/rules/Hijacking.list",
-      "sha256": "9286b608633671354ddda640241e5193f656370207691c03184ad4578e5c291f"
+      "sha256": "ed1dcdb1a3290d8f4c54a2ad69bc8b024a154d48eed086917dd642731e526f77"
     },
     {
       "bytes": 417,
@@ -1449,9 +1634,9 @@
       "sha256": "3f0f0e90a080a102c9a161ca149b2e46a308a138ecbd000994bcfa0e202c3e8d"
     },
     {
-      "bytes": 1311,
+      "bytes": 1415,
       "path": "surge/rules/Telegram.list",
-      "sha256": "ca116908054a27f23f59fffe84440513d0d0c9a1507823eee6460171530f5d35"
+      "sha256": "9a02e87d428d1f4beca21a2b07a311a53818425bab801c10443297bded71bc28"
     },
     {
       "bytes": 1179,
@@ -1479,63 +1664,63 @@
       "sha256": "e76a499b29882e5354107a91a44d60825c1b490e1bfc4d34c03205a6a7744fe8"
     },
     {
-      "bytes": 55245,
+      "bytes": 55225,
       "path": "surge/scripts/substore-nodes-generator.js",
-      "sha256": "3a803651317338cca6275b5337a49a29855e28f1829c6f845bd7ae2b15d3681a"
+      "sha256": "de05dfdb9228c949b0e1b43b12bf0c533e82902574e784b8c2f837bcf044cd33"
     },
     {
-      "bytes": 125995,
+      "bytes": 126295,
       "path": "surge/scripts/substore-profile-generator.js",
-      "sha256": "97ec8eac906922b1fdeebdcec0598847e0de0c49277b0e791ad5a60e8bdafbfe"
+      "sha256": "1be9dbf6c2ecea0e6f2fce91e7daf1a54726af152ecc3a56bd3c3fed69a8a116"
     },
     {
-      "bytes": 55245,
+      "bytes": 55225,
       "path": "surge/scripts/surge-nodes-generator.js",
-      "sha256": "3a803651317338cca6275b5337a49a29855e28f1829c6f845bd7ae2b15d3681a"
+      "sha256": "de05dfdb9228c949b0e1b43b12bf0c533e82902574e784b8c2f837bcf044cd33"
     },
     {
-      "bytes": 125995,
+      "bytes": 126295,
       "path": "surge/scripts/surge-profile-generator.js",
-      "sha256": "97ec8eac906922b1fdeebdcec0598847e0de0c49277b0e791ad5a60e8bdafbfe"
+      "sha256": "1be9dbf6c2ecea0e6f2fce91e7daf1a54726af152ecc3a56bd3c3fed69a8a116"
     },
     {
-      "bytes": 661,
+      "bytes": 2718,
       "path": "v2box/client-manifest.json",
-      "sha256": "a9b0aaf201e34795e97fcbbe230ce748f692465d51a0a6b9602ebcd6dcef7421"
+      "sha256": "fb298087dc801b079c775b45181aa68c885e7a0354b3780bb9386ae86a8d92d2"
     },
     {
-      "bytes": 172303,
+      "bytes": 172603,
       "path": "v2box/scripts/substore-config-generator.js",
-      "sha256": "0bf2f30282ddba89e89e515ee6c77ed988b1f7cf01d0aa1c3871a9258714ab05"
+      "sha256": "e10247fe77338ddd421f10a9e0500d823b426dd672227651363d2f9d4ab4d6c2"
     },
     {
-      "bytes": 124081,
+      "bytes": 124061,
       "path": "v2box/scripts/substore-node-generator.js",
-      "sha256": "624b0501a8c6195d4b556becbc81f4c8930086923bcd955aa87f7a1ac1655719"
+      "sha256": "9f99a46b28e144789d985dc5130d556c89b05f1e4e8251b4e92e73472e679784"
     },
     {
-      "bytes": 664,
+      "bytes": 2721,
       "path": "v2rayn/client-manifest.json",
-      "sha256": "80b0c9fca29f370754bdde843ae9e487d8b04f192d15a4d3e7964fcb4b04b979"
+      "sha256": "0351bda09f97cbef4d53dd3410615f203ef6d1210be3ff9cb3260a68394052dc"
     },
     {
-      "bytes": 168348,
+      "bytes": 168648,
       "path": "v2rayn/scripts/substore-config-generator.js",
-      "sha256": "e173366d77b8cf41475428b2b324e83d1edcd0478b433aee447b58c7e820bb23"
+      "sha256": "e1504169b65e7991a2225ae014f1465ad706b49b04ad9caf4d70dfce240d9e47"
     },
     {
-      "bytes": 123992,
+      "bytes": 123972,
       "path": "v2rayn/scripts/substore-node-generator.js",
-      "sha256": "6fd61ca3f0eab1cdfb41b0e7695698183274f5b5854959151ae0cf0e0fd9e978"
+      "sha256": "d700bf72b908c1f323a4099a828df2bb151a08d19f2c6fa8cb784ef769f92d26"
     }
   ],
-  "generatedAt": "2026-08-23T18:28:35Z",
-  "manifestHash": "b35c6fb24f2520c08a1581fbeec5d379c54ec714aab286ed94c0e25f677c1c00",
+  "generatedAt": "2026-08-25T18:39:12Z",
+  "manifestHash": "6acf6df70793d7c36bffedc89c5270715480787e3835d87726900700c02457f8",
   "schemaVersion": 2,
   "upstream": {
     "branch": "master",
-    "commit": "f42be99379fcd1a1dd03469e8b56dcb46888fcea",
-    "committedAt": "2026-08-23T18:28:35Z",
+    "commit": "2df6b08dfc2707c8099056ffab6778092e7d6d3e",
+    "committedAt": "2026-08-25T18:39:12Z",
     "license": "GPL-2.0-only",
     "repository": "https://github.com/blackmatrix7/ios_rule_script"
   }

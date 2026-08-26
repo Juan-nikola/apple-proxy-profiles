@@ -49,3 +49,15 @@ test("is byte-identical for identical input and enforces GPL provenance", () => 
     /GPL-2\.0-only/u,
   );
 });
+
+test("accepts the pinned GPL-3 Loyalsoldier provenance without rewriting its license", () => {
+  const text = "DOMAIN,exact.example\n";
+  const parsed = parseSurgeRules(text, source);
+  const result = renderShadowrocketRuleSource({
+    source,
+    parsed,
+    fetched: { text },
+    upstream: { ...upstream, repository: "https://github.com/Loyalsoldier/clash-rules", license: "GPL-3.0" },
+  });
+  assert.match(result.content, /# License: GPL-3\.0\n/u);
+});

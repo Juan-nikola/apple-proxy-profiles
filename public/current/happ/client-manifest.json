@@ -1,26 +1,26 @@
 {
-  "chinaIpAuditSha256": "6a1a8561c85f0683095ff1a76fb035a4cb5707f14d7f3778f8a5115e6f60502c",
+  "chinaIpAuditSha256": "bd8b22453da86ce18f8a0aa819838448b36411ff5446463b6bfe7e155867343d",
   "client": "happ",
   "files": [
     {
-      "bytes": 181481,
+      "bytes": 181739,
       "path": "happ/geoip.dat",
-      "sha256": "9a4538534cd8610075775ca6b148c117173d37c554b005adcee81f5a79457275"
+      "sha256": "1dd82acafad5ed5999997edc31d2a2f76eae28c2be0d7350ead248d55938ecb9"
     },
     {
-      "bytes": 74218,
+      "bytes": 6933888,
       "path": "happ/geosite.dat",
-      "sha256": "33de8c00cc3affbaf59be30b865e9d163fc2dae0a3c51555834437bd9454eadd"
+      "sha256": "4100ca5a34935a903c45f630b92a9e689d2f21c6ae24ba4cd88bcccec5d7b34e"
     },
     {
-      "bytes": 630895,
+      "bytes": 630119,
       "path": "happ/index.html",
-      "sha256": "7071cf724f8ed2a93219362c8c2d5a04cd51207ab408ca9d80da5b47e1fd2dc5"
+      "sha256": "5bc9b3d5789fc97ea5418c6477ef94d9b5f75881c45871e997aba9e947d8235f"
     },
     {
-      "bytes": 180234,
+      "bytes": 180554,
       "path": "happ/scripts/happ-config-generator.js",
-      "sha256": "608e86d5396b289cb471a3dc150ab83d6a992088b4ad465c38f3a6e4bc0b04e1"
+      "sha256": "2f4d752cb3732181a1287d1048030f0d33b7b44efb58f15a57cb5447d110cb33"
     },
     {
       "bytes": 131894,
@@ -28,9 +28,9 @@
       "sha256": "314cbffe71622c61a00ddea4e2f6847d65821bdf6200c1daddac1bd9f19ca74e"
     },
     {
-      "bytes": 180234,
+      "bytes": 180554,
       "path": "happ/scripts/substore-config-generator.js",
-      "sha256": "608e86d5396b289cb471a3dc150ab83d6a992088b4ad465c38f3a6e4bc0b04e1"
+      "sha256": "2f4d752cb3732181a1287d1048030f0d33b7b44efb58f15a57cb5447d110cb33"
     },
     {
       "bytes": 131894,
@@ -39,7 +39,7 @@
     }
   ],
   "generatedAt": "2026-08-25T18:39:12Z",
-  "manifestHash": "12fb154ed11ed824719b05a755b64fe8267e1e31a543f8519ef370c631bf7b3c",
+  "manifestHash": "335cff636a58305ec4a800f0ba573c1d71f4c33eec10adeebdd497fa7db0102a",
   "optionalPacks": {},
   "schemaVersion": 1
 }

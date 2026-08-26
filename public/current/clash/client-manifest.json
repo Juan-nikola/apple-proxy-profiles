@@ -1,5 +1,5 @@
 {
-  "chinaIpAuditSha256": "6a1a8561c85f0683095ff1a76fb035a4cb5707f14d7f3778f8a5115e6f60502c",
+  "chinaIpAuditSha256": "bd8b22453da86ce18f8a0aa819838448b36411ff5446463b6bfe7e155867343d",
   "client": "clash",
   "files": [
     {
@@ -23,9 +23,9 @@
       "sha256": "0a13fb59c2254c4d67c432ea8328442c503c11f8266a6b7c27eda71c1ddd6aac"
     },
     {
-      "bytes": 1114,
+      "bytes": 2917,
       "path": "clash/rules/Apple.yaml",
-      "sha256": "c1a79cc0527d746a3b1ce45645645a36a7edfbc8a94faeede89e9002b9dc2020"
+      "sha256": "6e6b44e5046cd8f84ad4163ee4ea65c1fd75ca5314a2b5bcb6466dfcfd2e086b"
     },
     {
       "bytes": 5297,
@@ -68,9 +68,9 @@
       "sha256": "9c08ea716dce7ef1465f1807c4e7872caab0f4a14c1a563cf7cd40662bd9e0c1"
     },
     {
-      "bytes": 2362,
+      "bytes": 3638396,
       "path": "clash/rules/DomesticCore.yaml",
-      "sha256": "f99d1c435af407a6481767e51128c8bf514a905a2b127a1fbacfedf88bcfb781"
+      "sha256": "7c17771389aba74f641005e71eeada9959a34d55c678aa960c3e52005b222434"
     },
     {
       "bytes": 1723,
@@ -98,14 +98,14 @@
       "sha256": "3de59f3158fd8cc0b1853c4d6d2e5d84c95902a0dfb9d4711592c37492cc77d1"
     },
     {
-      "bytes": 39757,
+      "bytes": 203037,
       "path": "clash/rules/GlobalMedia.yaml",
-      "sha256": "e68b7019dc47c11886d96cd4fa3562990f706352319b27291f9c6e029a636c3b"
+      "sha256": "7538b5556ed684cfa058db8f0ff3b6b3f4aaaba3d052d9f407863f31d699afd5"
     },
     {
-      "bytes": 8233,
+      "bytes": 7607818,
       "path": "clash/rules/Hijacking.yaml",
-      "sha256": "4dea03d9d0a197a173a0c08ab477bd81da24f603cf381a2e64c14a610010d8eb"
+      "sha256": "a38eff5ec5fbb40ce08bddca8f2e058959b05c51fef053acb6c7e9eeb6023ce7"
     },
     {
       "bytes": 450,
@@ -153,9 +153,9 @@
       "sha256": "ddee6e1ed8f8141f24d4273c23ab1f4ce8b4fa284eda46d2a40d44c014d2309f"
     },
     {
-      "bytes": 1530,
+      "bytes": 1652,
       "path": "clash/rules/Telegram.yaml",
-      "sha256": "13d8139342acf655a5458e8910a4cceb43808785c0be87557a05edff5ce68355"
+      "sha256": "1d4ccfee4c6c61881a40d690aeea9458f23e8d50eda98ceb5c8fcb91a23e146a"
     },
     {
       "bytes": 1374,
@@ -183,30 +183,30 @@
       "sha256": "1579f4cc64520655de4868d7daf0d251c46a37394c0a8f7f87b33e6d5eaa7468"
     },
     {
-      "bytes": 75606,
+      "bytes": 75906,
       "path": "clash/scripts/clash-node-generator.js",
-      "sha256": "173fe70bbba0d88628b0b39dffe91aa4289d541516aac95dea000ec808cac738"
+      "sha256": "e5de0f4bf2493a3343c796aa3df3e354dc65af75f04bd5471fd4a434941ba6e2"
     },
     {
-      "bytes": 96705,
+      "bytes": 97008,
       "path": "clash/scripts/clash-profile-generator.js",
-      "sha256": "f3ab096180797def6b3d7ffaf53ab9a8f751034827693c3027778730f49e95bb"
+      "sha256": "dc2910f006462bb7cdb9afc4830e897b0225ca0ee15594ff8ee033ae3eaed88f"
     },
     {
-      "bytes": 75606,
+      "bytes": 75906,
       "path": "clash/scripts/substore-node-generator.js",
-      "sha256": "173fe70bbba0d88628b0b39dffe91aa4289d541516aac95dea000ec808cac738"
+      "sha256": "e5de0f4bf2493a3343c796aa3df3e354dc65af75f04bd5471fd4a434941ba6e2"
     },
     {
-      "bytes": 96705,
+      "bytes": 97008,
       "path": "clash/scripts/substore-profile-generator.js",
-      "sha256": "f3ab096180797def6b3d7ffaf53ab9a8f751034827693c3027778730f49e95bb"
+      "sha256": "dc2910f006462bb7cdb9afc4830e897b0225ca0ee15594ff8ee033ae3eaed88f"
     }
   ],
   "generatedAt": "2026-08-25T18:39:12Z",
-  "manifestHash": "52e6ff8f826f6b834692f5cd692a08724c29a4a9eff4f2686b8de562e765fdca",
+  "manifestHash": "56426a84aed3f2b91f3fda39d407e929c751264094b604bcf5cce9b48aea52df",
   "optionalPacks": {
-    "adblock-full": "621609f97141834193f4944c2c7ae377dd018bb2e98241cd79d541b97298b5fc"
+    "adblock-full": "e359a7ee4367ed128d93c86e0b74bf99909fce03a488582424e38f9c98c13e26"
   },
   "schemaVersion": 1
 }

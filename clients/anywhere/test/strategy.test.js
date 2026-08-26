@@ -15,7 +15,7 @@ const STRATEGY_ARGUMENTS = Object.freeze({
   output: "strategy",
   type: "collection",
   name: "apple-proxy-anywhere",
-  channel: "edge",
+  channel: "current",
 });
 
 const policy = JSON.stringify({

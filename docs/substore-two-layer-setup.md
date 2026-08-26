@@ -1,6 +1,6 @@
 # Sub-Store 十客户端外置 JS + 任务引用总指南
 
-十个客户端都通过自动化门禁后发布到 `current`；`edge` 是维护者的隔离预览频道，`previous` 用于回滚。下表和任务示例中的 `current` 是正式 URL。需要预览候选时，将脚本路径和 hash 参数中的频道一并替换为 `edge`；不要把 `edge` URL 用作生产任务。
+十个客户端都通过自动化门禁后发布到唯一的 `current`；公开站点不再提供 edge/previous/versions 目录。下表和任务示例中的 `current` 是正式 URL。设备侧回滚使用本地保留的旧 Profile/Config，服务端修复后重新生成同一 `current` 内容。
 
 本指南把公开代码和私密节点分成两层：
 
@@ -63,7 +63,7 @@
 | Clash Apple nodes | `https://juan-nikola.github.io/apple-proxy-profiles/current/clash/scripts/clash-node-generator.js` | macOS/iPhone/iPad/Apple TV Mihomo 节点 YAML |
 | Clash Apple Profile | `https://juan-nikola.github.io/apple-proxy-profiles/current/clash/scripts/clash-profile-generator.js` | 四个平台完整 Mihomo YAML 配置 |
 
-测试版只把路径中的 `current` 换成 `edge`。不要使用 GitHub `blob` 页面、`clients/*/dist/` 本地路径或旧兼容 URL 创建新任务。
+不要把路径改成不存在的测试频道，也不要使用 GitHub `blob` 页面、`clients/*/dist/` 本地路径或旧兼容 URL 创建新任务。
 
 ## 3. 参数填写方式
 
@@ -149,9 +149,9 @@ https://juan-nikola.github.io/apple-proxy-profiles/current/surge/scripts/surge-p
 
 除节点订阅任务外，所有配置、Profile 和 audit 任务的 Sub-Store 元数据都设置 `policyInput=apple-proxy-policy`；节点任务不读取策略。policy File 使用 schema v2 单层 `targets`，读取器继续兼容 schema v1。读取策略的任务接收同名 `channel`（仅 `edge`、`current`、`previous`），并绑定该频道的 policy revision、公开 client Manifest SHA-256 和 GeoData SHA-256；OneXray node-only 任务也接收 `channel`，但不读取业务策略。HAPP 的 6 个平台配置任务和 `happ-routing-audit` 固定使用 `/current/happ/`，任务片段不接收或携带 `channel`；HAPP 审计只把 `current` 作为内部诊断元数据。公开脚本只在 Pages 提供无节点 bundle，真实输出仍只在私密 Sub-Store 任务日志和客户端导入结果中查看。
 
-真机 canary 不再是发布门禁。自动化测试、规则预算、manifest 闭合、ChinaIP/v2fly 审计和秘密扫描通过后，客户端可以直接使用 `current`；`edge` 只作为维护者预览入口。设备清单保留为上线后的可选实践反馈，失败时回滚受影响客户端并修正后续发布。
+真机 canary 不再是发布门禁。自动化测试、规则预算、manifest 闭合、ChinaIP/v2fly 审计和秘密扫描通过后，客户端可以直接使用唯一的 `current`；设备清单保留为上线后的可选实践反馈，失败时回到设备上保留的旧 Profile/Config，并修正后重新发布 current。
 
-当前任务的频道契约是：通用客户端、policy 和 OneXray 任务使用 `channel=current`；HAPP 任务固定使用 `/current/happ/` 且省略 `channel`；`edge` 仅作为维护者灰度频道，`previous` 用于回滚。
+当前任务的频道契约是：通用客户端、policy 和 OneXray 任务使用 `channel=current`；HAPP 任务固定使用 `/current/happ/` 且省略 `channel`。公开发布不接受 edge/previous/versions URL。
 
 ### 完整 `apple-proxy-policy` 示例
 
@@ -343,7 +343,7 @@ sing-box 默认 strict：任一已选节点无法完整渲染时 preview 失败�
 | `singbox-config-ipad` | `platform=ipad&ipv6Mode=ipv4-only` | sing-box for iPad |
 | `singbox-config-android` | `platform=android&ipv6Mode=auto` | sing-box for Android |
 
-本项目的 sing-box edge 构建会自动解析官方 testing 最新 release。测试时把 JS URL 的 `current` 改成 `edge`，并把 `channel=current` 改成 `channel=edge`；生产任务保留 current 作为回滚入口。
+本项目的 sing-box current 构建会在工作流中解析并验证官方 testing 最新 release。任务始终使用 current URL 与 `channel=current`；设备侧回滚请切换本地保留的旧 Config，不修改公开 URL。
 
 预览必须是 JSON，且能通过配置校验。四个平台都使用终端 TUN；未知域名通过 DNS response matching 和 `ChinaIP` rule-set 自动判断国内/海外。iPhone/iPad 任务不得设置 `adblockMode=full`，且应确认没有 URLTest、持久 DNS 缓存和 IPv6 直连探测。当前不生成 OpenWrt 透明网关配置。
 
@@ -429,9 +429,9 @@ https://juan-nikola.github.io/apple-proxy-profiles/current/v2box/scripts/substor
 
 ### 回滚
 
-失败时先在设备切回旧 Profile/Config。公开 JS 可在隔离任务中回退到 `/previous/` 或已验证的 `/versions/<manifestHash>/`；生产任务修复前不要直接把所有任务切到 `edge`。参数和私密输出 URL 不需要改变。
+失败时先在设备切回旧 Profile/Config。公开 JS 只使用 `/current/`；修复后重新运行同一个远程任务，参数和私密输出 URL 不需要改变。
 
-维护者命令行回滚入口：`node scripts/update-rules.mjs --check --channel previous` 用于验证回滚频道；精确不可变版本使用 `/versions/<manifestHash>/`。不要手工替换单个规则文件，必须由 canonical generator 重新生成整棵频道快照。
+维护者命令行校验入口：`node scripts/update-rules.mjs --check --channel current`。不要手工替换单个规则文件，必须由 canonical generator 重新生成整棵 current 快照。
 
 ## 12. 任务完成检查
 

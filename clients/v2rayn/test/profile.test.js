@@ -12,21 +12,21 @@ test("renders importable Windows profile with region GeoData and fallback", () =
 });
 
 test("uses legal external GeoData references and validates exact assets", () => {
-  const options = parseV2rayNOptions({ output: "config", type: "collection", name: "fixture", platform: "macos", region: "cn", channel: "edge" });
+  const options = parseV2rayNOptions({ output: "config", type: "collection", name: "fixture", platform: "macos", region: "cn", channel: "current" });
   const domain = Buffer.from("domain-fixture");
   const ip = Buffer.from("ip-fixture");
   const manifest = {
-    schemaVersion: 1, region: "cn", channel: "edge",
-    names: { domain: "AppleProxySiteEdge", ip: "AppleProxyIPEdge" },
+    schemaVersion: 1, region: "cn", channel: "current",
+    names: { domain: "AppleProxySiteCurrent", ip: "AppleProxyIPCurrent" },
     hashes: { domain: requireHash(domain), ip: requireHash(ip) },
-    domain: { name: "AppleProxySiteEdge", byteLength: domain.length, sha256: requireHash(domain) },
-    ip: { name: "AppleProxyIPEdge", byteLength: ip.length, sha256: requireHash(ip) },
+    domain: { name: "AppleProxySiteCurrent", byteLength: domain.length, sha256: requireHash(domain) },
+    ip: { name: "AppleProxyIPCurrent", byteLength: ip.length, sha256: requireHash(ip) },
     sources: [{ id: "DomesticCore", code: "APP-DOMESTICCORE" }],
     sourceCodes: [{ id: "DomesticCore", code: "APP-DOMESTICCORE" }],
   };
   const profile = renderV2rayNProfile({ options, nodes: [{ name: "fixture", type: "vless", server: "fixture.invalid", port: 443, uuid: "TEST_ONLY_UUID" }], geoData: { geosite: domain, geoip: ip, manifest } });
   const matchers = profile.routing.rules.flatMap((rule) => [...(rule.domain ?? []), ...(rule.ip ?? [])]);
-  assert.ok(matchers.includes("ext:AppleProxySiteEdge.dat:APP-DOMESTICCORE"));
+  assert.ok(matchers.includes("ext:AppleProxySiteCurrent.dat:APP-DOMESTICCORE"));
   assert.equal(matchers.some((value) => value.includes("geodata/") || value.startsWith("http")), false);
   assert.throws(() => renderV2rayNProfile({ options, nodes: [{ name: "fixture", type: "vless", server: "fixture.invalid", port: 443, uuid: "TEST_ONLY_UUID" }], geoData: { geosite: Buffer.from("changed"), geoip: ip, manifest } }), /hash|byteLength/u);
 });

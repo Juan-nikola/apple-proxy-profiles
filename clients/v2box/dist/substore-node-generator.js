@@ -1995,7 +1995,7 @@ var V2BoxNodesBundle = (() => {
   ]);
 
   // ../../shared/release/frontier-manifest.js
-  var FRONTIER_CHANNELS = Object.freeze(["edge", "current", "previous"]);
+  var FRONTIER_CHANNELS = Object.freeze(["current"]);
   var FRONTIER_PLATFORMS = Object.freeze({
     [CLIENT.surge]: Object.freeze(["macos", "iphone", "ipad"]),
     [CLIENT.singbox]: Object.freeze(["macos", "iphone", "ipad", "android", "openwrt"]),
@@ -2315,7 +2315,7 @@ var V2BoxNodesBundle = (() => {
   }
 
   // src/options.js
-  var DEFAULTS = Object.freeze({ channel: "edge", region: "cn", dnsMode: "stable", chinaDns: "alidns", globalDns: "cloudflare", blockMode: "balanced", quicMode: "proxy-block", ipv6Mode: "auto", clientChain: "off", clientChainTarget: "", policyOverrides: "" });
+  var DEFAULTS = Object.freeze({ channel: "current", region: "cn", dnsMode: "stable", chinaDns: "alidns", globalDns: "cloudflare", blockMode: "balanced", quicMode: "proxy-block", ipv6Mode: "auto", clientChain: "off", clientChainTarget: "", policyOverrides: "" });
   var ALLOWED = /* @__PURE__ */ new Set(["output", "type", "name", "subscriptionName", "platform", ...Object.keys(DEFAULTS)]);
   var required = (raw, key) => {
     const value = raw[key];

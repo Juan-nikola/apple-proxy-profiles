@@ -4,7 +4,7 @@ import { validateCollectionName } from "../../../shared/substore/collection-name
 import { parseRegion } from "../../../shared/rules/region-values.js";
 import { parseBusinessOverrides } from "../../../shared/policies/business-targets.js";
 
-const DEFAULTS = Object.freeze({ channel: "edge", region: "cn", dnsMode: "stable", chinaDns: "alidns", globalDns: "cloudflare", blockMode: "balanced", quicMode: "proxy-block", ipv6Mode: "auto", clientChain: "off", clientChainTarget: "", policyOverrides: "" });
+const DEFAULTS = Object.freeze({ channel: "current", region: "cn", dnsMode: "stable", chinaDns: "alidns", globalDns: "cloudflare", blockMode: "balanced", quicMode: "proxy-block", ipv6Mode: "auto", clientChain: "off", clientChainTarget: "", policyOverrides: "" });
 const ALLOWED = new Set(["output", "type", "name", "subscriptionName", "platform", ...Object.keys(DEFAULTS)]);
 const required = (raw, key) => { const value = raw[key]; if (typeof value !== "string" || !value || value.trim() !== value || /[\r\n]/u.test(value)) throw new Error(`v2rayN option '${key}' is invalid`); return value; };
 export function parseV2rayNOptions(raw) {

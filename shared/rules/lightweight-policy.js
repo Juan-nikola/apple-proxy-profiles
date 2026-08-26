@@ -66,12 +66,17 @@ const PHASE_SOURCE_IDS = Object.freeze({
 });
 
 export const RULE_BUDGETS = Object.freeze({
-  domesticCoreEntries: 2_000,
-  defaultEntries: 25_000,
-  defaultBytes: 5_000_000,
+  domesticCoreEntries: 130_000,
+  defaultEntries: 400_000,
+  defaultBytes: 30_000_000,
   startupInlineEntries: 64,
   singBoxRuleRssBytes: 50 * 1024 * 1024,
   singBoxTotalRssBytes: 200 * 1024 * 1024,
+  // Binary SRS budgets are enforced independently from text/client bundle
+  // budgets. This prevents a large external source from being inlined into a
+  // sing-box runtime while still allowing compact binary rule sets.
+  singBoxRuleSetBytes: 50 * 1024 * 1024,
+  singBoxTotalRuleSetBytes: 200 * 1024 * 1024,
 });
 
 export const ROUTING_PRECEDENCE = Object.freeze([

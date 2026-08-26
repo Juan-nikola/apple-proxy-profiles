@@ -48,7 +48,7 @@ https://juan-nikola.github.io/apple-proxy-profiles/current/surge/scripts/surge-p
 
 - 稳定版：`https://juan-nikola.github.io/apple-proxy-profiles/current/surge/scripts/surge-profile-generator.js`
 - 稳定节点资源版：`https://juan-nikola.github.io/apple-proxy-profiles/current/surge/scripts/surge-nodes-generator.js`
-- 测试版：`https://juan-nikola.github.io/apple-proxy-profiles/edge/surge/scripts/surge-profile-generator.js`
+- 测试版：`https://juan-nikola.github.io/apple-proxy-profiles/current/surge/scripts/surge-profile-generator.js`
 
 生产直接使用已通过自动化门禁的 `current`；`edge` 仅供维护者预览，设备 canary 是上线后的可选反馈。Surge macOS 的两个架构共用 `platform=macos`；iPhone、iPad 分别使用各自参数。
 
@@ -77,4 +77,4 @@ npm --workspace @apple-proxy-profiles/surge run build
 npm --workspace @apple-proxy-profiles/surge run check:secrets
 ```
 
-生成的 `dist/*.js`、`public/current/surge/` 和 `public/edge/surge/` 只读使用，不要直接编辑；源码、测试和文档才是修改入口。
+生成的 `dist/*.js`、`public/current/surge/` 和 `public/current/surge/` 只读使用，不要直接编辑；源码、测试和文档才是修改入口。

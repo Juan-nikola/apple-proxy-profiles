@@ -1010,7 +1010,7 @@ var ClashProfileBundle = (() => {
   ]);
 
   // ../../../shared/release/frontier-manifest.js
-  var FRONTIER_CHANNELS = Object.freeze(["edge", "current", "previous"]);
+  var FRONTIER_CHANNELS = Object.freeze(["current"]);
   var FRONTIER_PLATFORMS = Object.freeze({
     [CLIENT.surge]: Object.freeze(["macos", "iphone", "ipad"]),
     [CLIENT.singbox]: Object.freeze(["macos", "iphone", "ipad", "android", "openwrt"]),
@@ -1086,7 +1086,7 @@ var ClashProfileBundle = (() => {
     }
     const platform = required(values, "platform");
     if (typeof platform !== "string" || !PLATFORMS.has(platform)) throw new Error("Clash platform is unsupported");
-    const channel = values.has("channel") ? values.get("channel") : "edge";
+    const channel = values.has("channel") ? values.get("channel") : "current";
     if (!FRONTIER_CHANNELS.includes(channel)) throw new Error("Clash channel is unsupported");
     const adblockMode = values.has("adblockMode") ? values.get("adblockMode") : "off";
     if (!AD_BLOCK.has(adblockMode)) throw new Error("Clash adblockMode is unsupported");
@@ -1845,12 +1845,17 @@ var ClashProfileBundle = (() => {
     resolvedChinaIp: Object.freeze(["ChinaIP"])
   });
   var RULE_BUDGETS = Object.freeze({
-    domesticCoreEntries: 2e3,
-    defaultEntries: 25e3,
-    defaultBytes: 5e6,
+    domesticCoreEntries: 13e4,
+    defaultEntries: 4e5,
+    defaultBytes: 3e7,
     startupInlineEntries: 64,
     singBoxRuleRssBytes: 50 * 1024 * 1024,
-    singBoxTotalRssBytes: 200 * 1024 * 1024
+    singBoxTotalRssBytes: 200 * 1024 * 1024,
+    // Binary SRS budgets are enforced independently from text/client bundle
+    // budgets. This prevents a large external source from being inlined into a
+    // sing-box runtime while still allowing compact binary rule sets.
+    singBoxRuleSetBytes: 50 * 1024 * 1024,
+    singBoxTotalRuleSetBytes: 200 * 1024 * 1024
   });
   var ROUTING_PRECEDENCE = Object.freeze([
     "local",

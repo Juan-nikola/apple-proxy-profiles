@@ -23,7 +23,7 @@ test("Happ options are strict and platform scoped", () => {
   assert.throws(() => parseHappOptions({ ...base, platform: "all" }), /platform/);
   assert.equal(parseHappOptions({ ...base, output: "audit", platform: "all" }).output, "audit");
   assert.throws(() => parseHappOptions({ ...base, unknown: true }), /Unknown Happ option/);
-  assert.throws(() => parseHappOptions({ ...base, channel: "edge" }), /Unknown Happ option.*channel/u);
+  assert.throws(() => parseHappOptions({ ...base, channel: "current" }), /Unknown Happ option.*channel/u);
 });
 
 test("policy overrides decode, merge aliases and resolve exact nodes", () => {

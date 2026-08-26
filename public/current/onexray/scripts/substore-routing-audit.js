@@ -1863,7 +1863,7 @@ var OneXrayAuditBundle = (() => {
       schemaVersion: 1,
       client: "onexray",
       output: "audit",
-      channel: options.channel ?? "edge",
+      channel: options.channel ?? "current",
       counts: {
         inputNodes: normalized?.diagnostics?.total ?? 0,
         eligibleNodes: filtered?.nodes?.length ?? 0,
@@ -2028,7 +2028,7 @@ var OneXrayAuditBundle = (() => {
   ]);
 
   // ../../shared/release/frontier-manifest.js
-  var FRONTIER_CHANNELS = Object.freeze(["edge", "current", "previous"]);
+  var FRONTIER_CHANNELS = Object.freeze(["current"]);
   var FRONTIER_PLATFORMS = Object.freeze({
     [CLIENT.surge]: Object.freeze(["macos", "iphone", "ipad"]),
     [CLIENT.singbox]: Object.freeze(["macos", "iphone", "ipad", "android", "openwrt"]),

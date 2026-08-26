@@ -54,8 +54,8 @@ function renderShadowrocketRuleSourceForValidation(input) {
     upstream,
     outputCount: parsed.diagnostics.parsedCount,
   });
-  if (upstream.license !== "GPL-2.0-only" || !/^[0-9a-f]{40}$/u.test(upstream.commit)) {
-    throw new TypeError("Invalid Egern rule provenance");
+  if (!(upstream.license === "GPL-2.0-only" || upstream.license === "GPL-3.0") || !/^[0-9a-f]{40}$/u.test(upstream.commit)) {
+    throw new TypeError("Invalid Egern rule provenance license or commit");
   }
   if (parsed.entries.length !== parsed.diagnostics.parsedCount
     || parsed.diagnostics.parsedCount !== parsed.diagnostics.candidateCount) {

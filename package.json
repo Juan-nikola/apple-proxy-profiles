@@ -12,7 +12,7 @@
     "check:secrets": "node scripts/check-secrets.mjs",
     "check:actions": "node scripts/check-actions.mjs",
     "check:happ-xray": "npm --workspace @apple-proxy-profiles/happ run check:xray",
-    "update:rules": "node scripts/update-rules.mjs --channel edge",
+    "update:rules": "node scripts/update-rules.mjs --channel current",
     "check:rules": "node scripts/update-rules.mjs --check --channel current",
     "explain:route": "node scripts/explain-route.mjs",
     "verify:anywhere": "npm --workspace @apple-proxy-profiles/anywhere run verify",

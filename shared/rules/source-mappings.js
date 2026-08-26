@@ -29,6 +29,18 @@ const SOURCE_MAPPINGS = Object.freeze({
   Hijacking: { action: "REJECT", policy: "REJECT", policyGroup: "Security", priority: 700 },
   BlockHttpDNS: { action: "REJECT", policy: "REJECT", policyGroup: "Security", priority: 700 },
   Privacy: { action: "DIRECT", policy: "🕵️ 严格跟踪", policyGroup: "Privacy", priority: 700 },
+  "loyalsoldier-clash-direct": { action: "DIRECT", policy: "DIRECT", policyGroup: "DomesticCore", priority: 650 },
+  "loyalsoldier-clash-reject": { action: "REJECT", policy: "REJECT", policyGroup: "Security", priority: 750 },
+  "loyalsoldier-clash-applications": { action: "PROXY", policy: "PROXY", policyGroup: "Applications", priority: 400 },
+  "loyalsoldier-clash-google": { action: "PROXY", policy: "PROXY", policyGroup: "GoogleAudit", priority: 100 },
+  "loyalsoldier-clash-private": { action: "DIRECT", policy: "DIRECT", policyGroup: "DomesticCore", priority: 650 },
+  "loyalsoldier-clash-apple": { action: "DIRECT", policy: "DIRECT", policyGroup: "Apple", priority: 650 },
+  "loyalsoldier-clash-icloud": { action: "DIRECT", policy: "DIRECT", policyGroup: "Apple", priority: 650 },
+  "loyalsoldier-clash-cncidr": { action: "DIRECT", policy: "DIRECT", policyGroup: "ChinaIP", priority: 650 },
+  "loyalsoldier-clash-lancidr": { action: "DIRECT", policy: "DIRECT", policyGroup: "DomesticCore", priority: 650 },
+  "loyalsoldier-clash-gfw": { action: "PROXY", policy: "PROXY", policyGroup: "GenericGeo", priority: 500 },
+  "loyalsoldier-clash-tld-not-cn": { action: "PROXY", policy: "PROXY", policyGroup: "GenericGeo", priority: 500 },
+  "loyalsoldier-clash-telegramcidr": { action: "PROXY", policy: "PROXY", policyGroup: "Telegram", priority: 650 },
 });
 
 function externalCategory(entry) {

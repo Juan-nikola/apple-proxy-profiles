@@ -6,7 +6,7 @@ import { validateCollectionName } from "../../../shared/substore/collection-name
 const REQUIRED_KEYS = Object.freeze(["output", "type", "name", "subscriptionName", "platform"]);
 const NODE_REQUIRED_KEYS = Object.freeze(["output", "type", "name"]);
 const DEFAULTS = Object.freeze({
-  channel: "edge",
+  channel: "current",
   dnsMode: "stable",
   chinaDns: "alidns",
   globalDns: "cloudflare",

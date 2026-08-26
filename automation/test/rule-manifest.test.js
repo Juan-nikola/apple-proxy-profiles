@@ -126,7 +126,7 @@ test("rejects over-budget compilation before returning publication bytes", () =>
   });
   assert.throws(
     () => buildClientArtifacts({ snapshot: snapshots, upstream }),
-    /default entries actual \d+ limit 25000/u,
+    new RegExp(`default entries actual \u005cd+ limit ${RULE_BUDGETS.defaultEntries}`),
   );
 });
 
@@ -134,10 +134,10 @@ test("reports the DomesticCore limit and largest emitted files", () => {
   const files = new Map([["surge/rules/DomesticCore.list", "12345"]]);
   assert.throws(
     () => enforcePublicationBudgets({
-      diagnostics: { domesticCoreEntries: 2_001, defaultEntries: 2_001 },
+      diagnostics: { domesticCoreEntries: RULE_BUDGETS.domesticCoreEntries + 1, defaultEntries: 1 },
       files,
     }),
-    /DomesticCore entries actual 2001 limit 2000; client all; largest five surge\/rules\/DomesticCore\.list=5/u,
+    new RegExp(`DomesticCore entries actual ${RULE_BUDGETS.domesticCoreEntries + 1} limit ${RULE_BUDGETS.domesticCoreEntries}; client all; largest five surge\/rules\/DomesticCore\.list=5`),
   );
 });
 
@@ -148,6 +148,6 @@ test("reports the client and largest files for referenced-byte overflow", () => 
       diagnostics: { domesticCoreEntries: 1, defaultEntries: 1 },
       files,
     }),
-    /referenced default bytes actual 5000001 limit 5000000; client shadowrocket; largest five shadowrocket\/rules\/huge\.list=5000001/u,
+    new RegExp(`referenced default bytes actual ${RULE_BUDGETS.defaultBytes + 1} limit ${RULE_BUDGETS.defaultBytes}; client shadowrocket; largest five shadowrocket\/rules\/huge\.list=${RULE_BUDGETS.defaultBytes + 1}`),
   );
 });

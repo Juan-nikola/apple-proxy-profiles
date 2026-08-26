@@ -11,12 +11,34 @@ import {
   FETCH_SOURCE_CATALOG,
   OPTIONAL_PUBLISH_SOURCE_CATALOGS,
 } from "./source-catalog.js";
+import { EXTERNAL_RULE_SOURCE_CATALOG } from "../../shared/rules/external-sources.js";
 
 const DOMAIN_KINDS = new Set([RULE_KIND.domain, RULE_KIND.domainSuffix, RULE_KIND.domainKeyword]);
 const ADDRESS_KINDS = new Set([RULE_KIND.ipv4Cidr, RULE_KIND.ipv6Cidr]);
 const COMPILABLE_KINDS = new Set([...DOMAIN_KINDS, ...ADDRESS_KINDS]);
 const KIND_ORDER = new Map(Object.values(RULE_KIND).map((kind, index) => [kind, index]));
 const DEFAULT_CATALOG_BY_ID = new Map(DEFAULT_PUBLISH_SOURCE_CATALOG.map((source) => [source.id, source]));
+const EXTERNAL_CATALOG_BY_ID = new Map(EXTERNAL_RULE_SOURCE_CATALOG.map((source) => [source.id, source]));
+
+// External sources supplement the existing business rule files. They are
+// deliberately projected into stable built-in intents so every renderer
+// receives the same canonical entries without introducing client-specific
+// rule IDs. Existing entries win exact matcher conflicts; unsupported
+// PROCESS-NAME records are counted and omitted for domain/CIDR clients.
+const EXTERNAL_TARGETS = Object.freeze({
+  "loyalsoldier-clash-reject": "Hijacking",
+  "loyalsoldier-clash-direct": "DomesticCore",
+  "loyalsoldier-clash-private": "DomesticCore",
+  "loyalsoldier-clash-lancidr": "DomesticCore",
+  "loyalsoldier-clash-cncidr": "ChinaIP",
+  "loyalsoldier-clash-apple": "Apple",
+  "loyalsoldier-clash-icloud": "Apple",
+  "loyalsoldier-clash-telegramcidr": "Telegram",
+  "loyalsoldier-clash-gfw": "GlobalMedia",
+  "loyalsoldier-clash-tld-not-cn": "GlobalMedia",
+  "loyalsoldier-clash-applications": null,
+  "loyalsoldier-clash-google": null,
+});
 
 function entryKey(entry) {
   return `${entry.kind}\0${entry.value}`;
@@ -123,6 +145,101 @@ function domainSuffixEntries(suffixes, sourceId) {
   }));
 }
 
+function externalSupplementDiagnostics() {
+  return {
+    candidateCount: 0,
+    parsedCount: 0,
+    unsupportedCount: 0,
+    unsupportedByReason: {},
+    duplicates: 0,
+    conflicts: 0,
+    retained: 0,
+    supplementary: 0,
+    sources: {},
+  };
+}
+
+function mergeExternalSupplements(defaultRuleSets, externalSnapshots) {
+  const diagnostics = externalSupplementDiagnostics();
+  if (externalSnapshots === null || externalSnapshots === undefined) {
+    return Object.freeze({ ruleSets: defaultRuleSets, diagnostics: Object.freeze(diagnostics) });
+  }
+  if (!(externalSnapshots instanceof Map)) throw new TypeError("External rule snapshots must be a Map");
+  const merged = new Map([...defaultRuleSets].map(([id, ruleSet]) => [id, {
+    ...ruleSet,
+    entries: [...ruleSet.entries],
+    supplementarySources: new Set(ruleSet.supplementarySources ?? []),
+  }]));
+  const existing = new Map();
+  for (const [targetId, ruleSet] of merged) {
+    for (const entry of ruleSet.entries) existing.set(entryKey(entry), targetId);
+  }
+  for (const [sourceId, snapshot] of externalSnapshots) {
+    const source = EXTERNAL_CATALOG_BY_ID.get(sourceId);
+    if (!source || source.auditOnly === true) continue;
+    const entries = Array.isArray(snapshot?.entries) ? snapshot.entries : [];
+    const targetId = EXTERNAL_TARGETS[sourceId];
+    const sourceDiagnostics = snapshot?.diagnostics ?? {};
+    const sourceRecord = {
+      candidateCount: Number.isSafeInteger(sourceDiagnostics.candidateCount) ? sourceDiagnostics.candidateCount : entries.length,
+      parsedCount: Number.isSafeInteger(sourceDiagnostics.parsedCount) ? sourceDiagnostics.parsedCount : entries.length,
+      unsupportedCount: Number.isSafeInteger(sourceDiagnostics.unsupportedCount) ? sourceDiagnostics.unsupportedCount : 0,
+      duplicates: Number.isSafeInteger(sourceDiagnostics.duplicates) ? sourceDiagnostics.duplicates : 0,
+      unsupportedByReason: sourceDiagnostics.unsupportedByReason ?? {},
+      retained: 0,
+      conflicts: 0,
+      supplementary: 0,
+    };
+    diagnostics.candidateCount += sourceRecord.candidateCount;
+    diagnostics.parsedCount += sourceRecord.parsedCount;
+    diagnostics.unsupportedCount += sourceRecord.unsupportedCount;
+    diagnostics.duplicates += sourceRecord.duplicates;
+    for (const [reason, count] of Object.entries(sourceRecord.unsupportedByReason)) {
+      diagnostics.unsupportedByReason[reason] = (diagnostics.unsupportedByReason[reason] ?? 0) + count;
+    }
+    if (!targetId) {
+      diagnostics.sources[sourceId] = sourceRecord;
+      continue;
+    }
+    const target = merged.get(targetId);
+    if (!target) {
+      diagnostics.sources[sourceId] = sourceRecord;
+      continue;
+    }
+    target.supplementarySources.add(sourceId);
+    for (const rawEntry of entries) {
+      if (!COMPILABLE_KINDS.has(rawEntry.kind)) {
+        sourceRecord.unsupportedCount += 1;
+        const reason = rawEntry.kind === "processName" || rawEntry.kind === "process-name"
+          ? "process-name-unsupported"
+          : `kind-${rawEntry.kind}`;
+        sourceRecord.unsupportedByReason[reason] = (sourceRecord.unsupportedByReason[reason] ?? 0) + 1;
+        continue;
+      }
+      const normalized = normalizeRuleEntry({ ...rawEntry, sourceId });
+      const key = entryKey(normalized);
+      if (existing.has(key)) {
+        sourceRecord.conflicts += 1;
+        diagnostics.conflicts += 1;
+        continue;
+      }
+      target.entries.push(normalized);
+      existing.set(key, targetId);
+      sourceRecord.retained += 1;
+      sourceRecord.supplementary += 1;
+      diagnostics.retained += 1;
+      diagnostics.supplementary += 1;
+    }
+    diagnostics.sources[sourceId] = sourceRecord;
+  }
+  const result = new Map([...merged].map(([id, ruleSet]) => [id, Object.freeze({
+    ...ruleSet,
+    entries: Object.freeze(normalizeEntries(ruleSet.entries, id)),
+    supplementarySources: Object.freeze([...ruleSet.supplementarySources].sort()),
+  })]));
+  return Object.freeze({ ruleSets: result, diagnostics: Object.freeze(diagnostics) });
+}
+
 function gameOutputs(gameEntries, omittedByKind) {
   const domestic = [];
   const overseas = [];
@@ -197,7 +314,7 @@ function assertNoGameOverlap(domestic, overseas) {
   return Object.freeze(overlap);
 }
 
-export function compileLightweightRules({ snapshots }) {
+export function compileLightweightRules({ snapshots, externalSnapshots = null }) {
   if (!(snapshots instanceof Map)) throw new TypeError("Rule snapshots must be a Map");
   const parsed = parseSnapshots(snapshots);
   const omittedByKind = new Map();
@@ -273,11 +390,16 @@ export function compileLightweightRules({ snapshots }) {
     defaultRuleSets.set(id, compiledSet(id, entries, [id], fetchedBytes(snapshots, id), omittedByKind));
   }
 
+  const external = mergeExternalSupplements(defaultRuleSets, externalSnapshots);
+  const supplementedDefaultRuleSets = external.ruleSets;
   const adblockFull = new Map(FULL_ADBLOCK_SOURCE_IDS.map((id) => [
     id,
     compiledSet(id, parsedSnapshot(parsed, id), [id], fetchedBytes(snapshots, id), omittedByKind),
   ]));
   const mobileRuleSets = new Map(MOBILE_RULE_BUNDLES.map((bundle) => {
+    // Mobile bundles stay on the compact first-party baseline. Desktop and
+    // full-capability clients consume the external supplements above; mobile
+    // runtimes must not eagerly materialize the 100k+ domain overlays.
     const entries = bundle.sourceIds.flatMap((sourceId) => defaultRuleSets.get(sourceId)?.entries ?? []);
     const source = Object.freeze({
       id: bundle.id,
@@ -293,14 +415,15 @@ export function compileLightweightRules({ snapshots }) {
     ), 0);
     return [bundle.id, compiledSet(bundle.id, entries, bundle.sourceIds, sourceBytes, omittedByKind, source)];
   }));
-  const defaultInputIds = new Set([...defaultRuleSets.values()].flatMap(({ sourceIds }) => sourceIds));
+  const defaultInputIds = new Set([...supplementedDefaultRuleSets.values()].flatMap(({ sourceIds }) => sourceIds));
   const defaultSourceBytes = [...defaultInputIds]
     .reduce((total, id) => total + fetchedBytes(snapshots, id), 0);
-  const defaultEntries = [...defaultRuleSets.values()]
+  const defaultEntries = [...supplementedDefaultRuleSets.values()]
     .reduce((total, set) => total + set.entries.length, 0);
 
   return Object.freeze({
-    defaultRuleSets,
+    baselineRuleSets: defaultRuleSets,
+    defaultRuleSets: supplementedDefaultRuleSets,
     mobileRuleSets,
     optionalPacks: Object.freeze({ adblockFull }),
     diagnostics: Object.freeze({
@@ -311,6 +434,7 @@ export function compileLightweightRules({ snapshots }) {
       omittedByKind: Object.freeze(Object.fromEntries([...omittedByKind].sort(([left], [right]) => (
         left < right ? -1 : left > right ? 1 : 0
       )))),
+      external: external.diagnostics,
     }),
   });
 }

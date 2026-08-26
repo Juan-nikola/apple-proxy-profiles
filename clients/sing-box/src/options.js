@@ -6,7 +6,7 @@ import { usesMobileRuleBundles } from "../../../shared/rules/lightweight-policy.
 
 const REQUIRED_KEYS = Object.freeze(["output", "type", "name", "subscriptionName", "platform"]);
 const DEFAULTS = Object.freeze({
-  channel: "edge",
+  channel: "current",
   dnsMode: "stable",
   chinaDns: "alidns",
   globalDns: "cloudflare",

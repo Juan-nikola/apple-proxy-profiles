@@ -14,7 +14,7 @@
 - [ ] 一个未列规则的境外目标命中 `FINAL,🚀 节点选择`。
 - [ ] `🚀 节点选择`包含 `PROXY`、全自动和固定的亚太、欧洲、美洲洲组；首页切换洲组后，此处不再保存或显示具体节点名。
 - [ ] 动态组按匹配的 `subscriptionName` 显示具体节点；若名称不匹配，`DIRECT`、`🚀 节点选择`、自动测速和地区等显式选择仍可用，但不会显示该订阅的服务器。
-- [ ] 已重新运行当前平台中直接引用 `shadowrocket-profile-generator.js` 规范 Pages URL 的 File，并更新 Profile；三个 File 不粘贴脚本正文。`clients/shadowrocket/dist/` 与 `clients/shadowrocket/examples/` 已重新构建校验。默认参数为 `channel=edge`、`adblockMode=off`；若灰度稳定通道则明确改为 `channel=current`，只有专门测试完整广告时才使用 `adblockMode=full` 和独立 optional 包。既有 File 若仍引用旧 `substore-profile-generator.js` 兼容 URL，可保持原 URL，只需确认内容已更新。
+- [ ] 已重新运行当前平台中直接引用 `shadowrocket-profile-generator.js` 规范 Pages URL 的 File，并更新 Profile；三个 File 不粘贴脚本正文。`clients/shadowrocket/dist/` 与 `clients/shadowrocket/examples/` 已重新构建校验。默认参数为唯一公开的 `channel=current`、`adblockMode=off`；只有专门测试完整广告时才使用 `adblockMode=full` 和独立 optional 包。既有 File 若仍引用旧 `substore-profile-generator.js` 兼容 URL，可保持原 URL，只需确认内容已更新。
 - [ ] 规则顺序明确为 `DomesticCore`、`DomesticGame`、`SteamCN` DIRECT，随后是境外服务，`OverseasGame` 进入 `🌍 海外游戏`，再到 `ChinaIP`、`GEOIP,CN,DIRECT`，最后 `FINAL,🚀 节点选择`。
 - [ ] 规则顺序包含 `ChinaTLD`：普通 `.cn` 域名命中 `ChinaTLD`/DIRECT，位置在 `OverseasGame` 之后、`ChinaIP`/`GEOIP,CN` 之前。
 - [ ] 稳定 DNS 优先国内解析；未知国内 IPv4/IPv6 命中 `GEOIP,CN,DIRECT`，未知境外与 DNS 失败走 `FINAL,🚀 节点选择`；HTTPDNS、硬编码 IP、IPv6、QUIC 和手动服务组选择仍作为残余风险记录。

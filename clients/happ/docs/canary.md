@@ -11,4 +11,4 @@
 | Windows | 待执行 | 待执行 | 待执行 | 待执行 | 待执行 | 待执行 | 待执行 | candidate |
 | Linux | 待执行 | 待执行 | 待执行 | 待执行 | 待执行 | 待执行 | 待执行 | candidate |
 
-每个平台如需反馈，可记录：应用版本、通道、GeoData hash、Profile hash、DNS 结果、DIRECT/FOLLOW/NODE 路由、IPv4/IPv6、QUIC、网络切换、固定节点失败与恢复，以及 previous 回滚结果。未完成的设备反馈不影响对应客户端晋级 `current`。
+每个平台如需反馈，可记录：应用版本、current Manifest、GeoData hash、Profile hash、DNS 结果、DIRECT/FOLLOW/NODE 路由、IPv4/IPv6、QUIC、网络切换、固定节点失败与恢复，以及本地旧 JSON/Profile 回滚结果。未完成的设备反馈不影响对应客户端使用 `current`。

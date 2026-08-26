@@ -15,7 +15,7 @@ const required = {
 test("parseOptions applies the generator defaults", () => {
   assert.deepEqual(parseOptions(required), {
     ...required,
-    channel: "edge",
+    channel: "current",
     dnsMode: "stable",
     chinaDns: "alidns",
     globalDns: "cloudflare",
@@ -28,9 +28,10 @@ test("parseOptions applies the generator defaults", () => {
   });
 });
 
-test("parseOptions accepts all closed publication channels and adblock modes", () => {
-  for (const channel of ["edge", "current", "previous"]) {
-    assert.equal(parseOptions({ ...required, channel }).channel, channel);
+test("parseOptions accepts current-only publication and adblock modes", () => {
+  assert.equal(parseOptions({ ...required, channel: "current" }).channel, "current");
+  for (const channel of ["edge", "previous"]) {
+    assert.throws(() => parseOptions({ ...required, channel }), /channel/iu);
   }
   assert.equal(parseOptions({ ...required, adblockMode: "full" }).adblockMode, "full");
   for (const [key, value] of [["channel", "beta"], ["adblockMode", "balanced"]]) {

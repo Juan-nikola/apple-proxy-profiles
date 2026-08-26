@@ -16,7 +16,7 @@ export function buildOneXrayAudit({ options = {}, normalized = null, filtered = 
     schemaVersion: 1,
     client: "onexray",
     output: "audit",
-    channel: options.channel ?? "edge",
+    channel: options.channel ?? "current",
     counts: {
       inputNodes: normalized?.diagnostics?.total ?? 0,
       eligibleNodes: filtered?.nodes?.length ?? 0,

@@ -111,22 +111,15 @@ test("rejects a complete profile whose continent group no longer matches canonic
   }), /group|schema|semantic|continent/i);
 });
 
-test("accepts all closed channels and optional-pack publication combinations", () => {
-  for (const channel of ["edge", "current", "previous"]) {
-    for (const adblockMode of ["off", "full"]) {
-      assert.deepEqual(
-        validateEgernProfile(validProfile({ channel, adblockMode })),
-        { valid: true, errors: [] },
-        `${channel}/${adblockMode}`,
-      );
-    }
+test("accepts current publication and optional-pack combinations", () => {
+  for (const adblockMode of ["off", "full"]) {
+    assert.deepEqual(
+      validateEgernProfile(validProfile({ channel: "current", adblockMode })),
+      { valid: true, errors: [] },
+      `current/${adblockMode}`,
+    );
   }
-
-  const edgeOff = validProfile({ channel: "edge", adblockMode: "off" });
-  assertInvalid(edgeOff.replace(
-    "/edge/egern/rules/DomesticCore.yaml",
-    "/current/egern/rules/DomesticCore.yaml",
-  ), /DNS|rule|publication/i);
+  const edgeOff = validProfile({ channel: "current", adblockMode: "off" });
   assertInvalid(edgeOff.replaceAll("DomesticCore.yaml", "ChinaMax_Domain.yaml"), /DNS|rule|publication/i);
 
   const currentFull = validProfile({ channel: "current", adblockMode: "full" });
@@ -218,10 +211,10 @@ test("rejects unknown, swapped, duplicate, non-terminal, and URL-mutated rules",
   assertInvalid(profile.replace(geo, "TEST_ONLY_GEO_RULE").replace(final, geo).replace("TEST_ONLY_GEO_RULE", final), /rule|terminal|order/i);
   assertInvalid(profile.replace(final, `${final}\n${final}`), /rule|default|duplicate/i);
 
-  const alternate = "https://example.invalid/edge/egern/rules/DomesticCore.yaml";
-  assertInvalid(profile.replace(/https:\/\/juan-nikola\.github\.io\/apple-proxy-profiles\/edge\/egern\/rules\/DomesticCore\.yaml/u, alternate), /rule|URL|catalog/i, [alternate]);
-  const credentialed = `https://${["us", "er"].join("")}@juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/OverseasGame.yaml`;
-  assertInvalid(profile.replace("https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/OverseasGame.yaml", credentialed), /rule|URL|catalog/i, [credentialed]);
+  const alternate = "https://example.invalid/current/egern/rules/DomesticCore.yaml";
+  assertInvalid(profile.replace(/https:\/\/juan-nikola\.github\.io\/apple-proxy-profiles\/current\/egern\/rules\/DomesticCore\.yaml/u, alternate), /rule|URL|catalog/i, [alternate]);
+  const credentialed = `https://${["us", "er"].join("")}@juan-nikola.github.io/apple-proxy-profiles/current/egern/rules/OverseasGame.yaml`;
+  assertInvalid(profile.replace("https://juan-nikola.github.io/apple-proxy-profiles/current/egern/rules/OverseasGame.yaml", credentialed), /rule|URL|catalog/i, [credentialed]);
 });
 
 test("rejects DNS drift and inline proxy-bearing content", () => {

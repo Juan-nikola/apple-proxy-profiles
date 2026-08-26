@@ -10,7 +10,7 @@
 
 ## 分流错误
 
-确认 Rule 模式、所有 shard、同一逻辑集绑定一致，并且没有混用 current/previous/version。看到规则被 reset to Default 时，不要理解为关闭：Default 可能直接走当前节点或链。
+确认 Rule 模式、所有 shard、同一逻辑集绑定一致，并且所有 shard 都来自同一份 `current` Manifest；不要混用旧缓存、旧快照或其他路径。看到规则被 reset to Default 时，不要理解为关闭：Default 可能直接走当前节点或链。
 
 国内 App 偶发慢、切换开关后暂时恢复时，先确认旧 `ChinaMax_Domain` 和通用 `Game` 已删除或禁用，再确认 `DomesticCore`、`DomesticPlatform`、`ChinaIP` 为 DIRECT。切换开关只会暂时重建 DNS/连接缓存，不会修正旧业务包的路由。
 

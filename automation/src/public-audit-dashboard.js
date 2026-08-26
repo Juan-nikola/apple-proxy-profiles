@@ -3,6 +3,7 @@ import { canonicalJson } from "./render-anywhere-rules.js";
 import { allClientIds, clientAdapter } from "../../shared/release/client-catalog.js";
 
 const CHANNELS = Object.freeze(["edge", "current", "previous"]);
+const CANARY_CHANNELS = Object.freeze(["edge", "current", "previous"]);
 const REPORT_KEYS = Object.freeze([
   "schemaVersion",
   "generatedAt",
@@ -106,11 +107,11 @@ function extractClientChannel(releaseState, channel, client) {
 function extractCanary(canaryState, client) {
   const value = canaryState?.[client];
   if (value === undefined) return null;
-  if (typeof value === "string") return { edge: value };
+  if (typeof value === "string") return { current: value };
   if (!value || typeof value !== "object" || Array.isArray(value)) throw new TypeError(`Canary state for ${client} is invalid`);
   const result = {};
   for (const [channel, status] of Object.entries(value)) {
-    if (!CHANNELS.includes(channel) || !SAFE_CODE.test(status)) throw new TypeError(`Canary state for ${client} is invalid`);
+    if (!CANARY_CHANNELS.includes(channel) || !SAFE_CODE.test(status)) throw new TypeError(`Canary state for ${client} is invalid`);
     result[channel] = status;
   }
   return result;
@@ -234,7 +235,7 @@ export function validatePublicAuditDashboard(report) {
     if (value.canary !== null) {
       assertObject(value.canary, `dashboard clients.${id}.canary`);
       for (const [channel, status] of Object.entries(value.canary)) {
-        if (!CHANNELS.includes(channel) || !SAFE_CODE.test(status)) throw new Error(`dashboard clients.${id}.canary is invalid`);
+        if (!CANARY_CHANNELS.includes(channel) || !SAFE_CODE.test(status)) throw new Error(`dashboard clients.${id}.canary is invalid`);
       }
     }
   }

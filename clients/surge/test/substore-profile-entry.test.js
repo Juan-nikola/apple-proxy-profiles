@@ -55,7 +55,7 @@ test("Sub-Store Surge entry requests a private JSON collection and returns Profi
   }]);
   assert.equal(result.id, "input");
   assert.match(result.$content, /^\[General\]/mu);
-  assert.match(result.$content, /edge\/surge\/rules/u);
+  assert.match(result.$content, /current\/surge\/rules/u);
   assert.doesNotMatch(result.$content, /_profile|_subName/u);
 });
 

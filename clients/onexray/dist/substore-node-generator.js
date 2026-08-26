@@ -1999,7 +1999,7 @@ var OneXrayNodesBundle = (() => {
   ]);
 
   // ../../shared/release/frontier-manifest.js
-  var FRONTIER_CHANNELS = Object.freeze(["edge", "current", "previous"]);
+  var FRONTIER_CHANNELS = Object.freeze(["current"]);
   var FRONTIER_PLATFORMS = Object.freeze({
     [CLIENT.surge]: Object.freeze(["macos", "iphone", "ipad"]),
     [CLIENT.singbox]: Object.freeze(["macos", "iphone", "ipad", "android", "openwrt"]),
@@ -2021,7 +2021,7 @@ var OneXrayNodesBundle = (() => {
   var OUTPUTS = /* @__PURE__ */ new Set(["nodes", "profile", "audit"]);
   var CHANNELS = new Set(FRONTIER_CHANNELS);
   var DEFAULTS = Object.freeze({
-    channel: "edge",
+    channel: "current",
     dnsMode: "stable",
     chinaDns: "alidns",
     globalDns: "cloudflare",

@@ -116,14 +116,14 @@ test("loads canonical current audit evidence offline and rejects changed bytes",
   );
 });
 
-test("builds edge audit evidence from the pinned secondary and prior edge baseline", async () => {
-  const root = await mkdtemp(join(tmpdir(), "china-ip-edge-audit-"));
+test("builds current audit evidence from the pinned secondary and prior current baseline", async () => {
+  const root = await mkdtemp(join(tmpdir(), "china-ip-current-audit-build-"));
   const publicDirectory = join(root, "public");
   const priorReport = chinaIpAuditBytes();
-  await mkdir(join(publicDirectory, "edge/audit"), { recursive: true });
-  await mkdir(join(publicDirectory, "edge/surge/rules"), { recursive: true });
-  await writeFile(join(publicDirectory, "edge/audit/china-ip-drift.json"), priorReport);
-  await writeFile(join(publicDirectory, "edge/surge/rules/ChinaIP.list"), [
+  await mkdir(join(publicDirectory, "current/audit"), { recursive: true });
+  await mkdir(join(publicDirectory, "current/surge/rules"), { recursive: true });
+  await writeFile(join(publicDirectory, "current/audit/china-ip-drift.json"), priorReport);
+  await writeFile(join(publicDirectory, "current/surge/rules/ChinaIP.list"), [
     "IP-CIDR,8.8.8.0/23,no-resolve",
     "IP-CIDR6,2001:4860::/32,no-resolve",
     "",
@@ -203,12 +203,12 @@ test("builds the v2fly audit from domain entries only", async () => {
   assert.equal(report.production.entryCount > 0, true);
 });
 
-test("reuses fresh identical edge audit evidence without refetching", async () => {
-  const root = await mkdtemp(join(tmpdir(), "china-ip-edge-audit-reuse-"));
+test("reuses fresh identical current audit evidence without refetching", async () => {
+  const root = await mkdtemp(join(tmpdir(), "china-ip-current-audit-reuse-"));
   const publicDirectory = join(root, "public");
   const priorReport = chinaIpAuditBytes();
-  await mkdir(join(publicDirectory, "edge/audit"), { recursive: true });
-  await writeFile(join(publicDirectory, "edge/audit/china-ip-drift.json"), priorReport);
+  await mkdir(join(publicDirectory, "current/audit"), { recursive: true });
+  await writeFile(join(publicDirectory, "current/audit/china-ip-drift.json"), priorReport);
   let resolved = 0;
   let fetched = 0;
   const bytes = await buildEdgeChinaIpAudit({
@@ -250,11 +250,11 @@ test("reuses fresh identical edge audit evidence without refetching", async () =
 });
 
 test("rebuilds an expired report-only audit into formal evidence", async () => {
-  const root = await mkdtemp(join(tmpdir(), "china-ip-edge-audit-expiry-"));
+  const root = await mkdtemp(join(tmpdir(), "china-ip-current-audit-expiry-"));
   const publicDirectory = join(root, "public");
   const priorReport = chinaIpAuditBytes();
-  await mkdir(join(publicDirectory, "edge/audit"), { recursive: true });
-  await writeFile(join(publicDirectory, "edge/audit/china-ip-drift.json"), priorReport);
+  await mkdir(join(publicDirectory, "current/audit"), { recursive: true });
+  await writeFile(join(publicDirectory, "current/audit/china-ip-drift.json"), priorReport);
   let fetched = 0;
   const bytes = await buildEdgeChinaIpAudit({
     publicDirectory,
@@ -299,12 +299,12 @@ test("rebuilds an expired report-only audit into formal evidence", async () => {
   assert.deepEqual(bytes, Buffer.from(canonicalJson(report)));
 });
 
-test("regenerates edge audit evidence when inputs change or the report is stale", async () => {
-  const root = await mkdtemp(join(tmpdir(), "china-ip-edge-audit-regenerate-"));
+test("regenerates current audit evidence when inputs change or the report is stale", async () => {
+  const root = await mkdtemp(join(tmpdir(), "china-ip-current-audit-regenerate-"));
   const publicDirectory = join(root, "public");
   const priorReport = chinaIpAuditBytes();
-  await mkdir(join(publicDirectory, "edge/audit"), { recursive: true });
-  await writeFile(join(publicDirectory, "edge/audit/china-ip-drift.json"), priorReport);
+  await mkdir(join(publicDirectory, "current/audit"), { recursive: true });
+  await writeFile(join(publicDirectory, "current/audit/china-ip-drift.json"), priorReport);
   const base = {
     publicDirectory,
     primary: {

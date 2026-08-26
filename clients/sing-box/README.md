@@ -33,7 +33,7 @@ iPhone/iPad 为 NetworkExtension 低内存配置：保留低频 URLTest（1800 �
 四个平台共用同一套参数，只改变 `platform` 和 `ipv6Mode`：
 
 ```text
-output=config&type=collection&name=apple-proxy-singbox&subscriptionName=Apple-Proxy-Nodes&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&autoGroupMode=auto&clientChain=off&nodeErrorMode=strict&channel=edge
+output=config&type=collection&name=apple-proxy-singbox&subscriptionName=Apple-Proxy-Nodes&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&autoGroupMode=auto&clientChain=off&nodeErrorMode=strict&channel=current
 ```
 
 | File | `platform` | 推荐 `ipv6Mode` |
@@ -43,7 +43,7 @@ output=config&type=collection&name=apple-proxy-singbox&subscriptionName=Apple-Pr
 | sing-box-ipad | `ipad` | `ipv4-only` |
 | sing-box-android | `android` | `auto` |
 
-`edge` 每天使用官方 testing 最新发布版构建；`current` 用于保留经验证的生产快照。当前阶段不生成 OpenWrt 配置，避免把终端 TUN 配置误当透明网关配置。
+公开发布只保留唯一的 `current` 指针；更新时工作流会解析并验证官方 testing release，再原子替换已验证的 `current` 快照。当前阶段不生成 OpenWrt 配置，避免把终端 TUN 配置误当透明网关配置。
 
 ## 构建与检查
 

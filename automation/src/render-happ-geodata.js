@@ -92,7 +92,7 @@ function mergeGeositeEntries(entries) {
   const merged = new Map();
   for (const entry of entries) {
     const current = merged.get(entry.countryCode) ?? { countryCode: entry.countryCode, domain: [] };
-    current.domain.push(...entry.domain);
+    for (const domain of entry.domain) current.domain.push(domain);
     merged.set(entry.countryCode, current);
   }
   return [...merged.values()].sort((left, right) => compareText(left.countryCode, right.countryCode)).map((entry) => ({
@@ -108,7 +108,7 @@ function mergeGeoipEntries(entries) {
   const merged = new Map();
   for (const entry of entries) {
     const current = merged.get(entry.countryCode) ?? { countryCode: entry.countryCode, cidr: [], reverseMatch: false };
-    current.cidr.push(...entry.cidr);
+    for (const cidr of entry.cidr) current.cidr.push(cidr);
     merged.set(entry.countryCode, current);
   }
   return [...merged.values()].sort((left, right) => compareText(left.countryCode, right.countryCode)).map((entry) => ({

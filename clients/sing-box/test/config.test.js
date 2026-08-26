@@ -17,7 +17,7 @@ const baseOptions = {
   name: "sing-box-sources",
   subscriptionName: "sing-box-Nodes",
   platform: "macos",
-  channel: "edge",
+  channel: "current",
   dnsMode: "stable",
   chinaDns: "alidns",
   globalDns: "cloudflare",
@@ -70,16 +70,12 @@ test("accepts only the four terminal platforms and rejects deferred OpenWrt", ()
   assert.equal(MOBILE_RULE_PLATFORMS.every((platform) => usesMobileRuleBundles(platform)), true);
   assert.equal(usesMobileRuleBundles("macos"), false);
   assert.throws(() => parseSingBoxOptions({ ...baseOptions, platform: "openwrt" }), /platform/iu);
-  assert.equal(parseSingBoxOptions(baseOptions).channel, "edge");
-  assert.equal(parseSingBoxOptions({ ...baseOptions, channel: "previous" }).channel, "previous");
+  assert.equal(parseSingBoxOptions(baseOptions).channel, "current");
+  assert.throws(() => parseSingBoxOptions({ ...baseOptions, channel: "previous" }), /channel/iu);
 });
 
-test("renders the previous sing-box rule publication without mixing channels", () => {
-  const config = render({ channel: "previous" });
-  const urls = config.route.rule_set.map(({ url }) => url);
-  assert.ok(urls.some((url) => url.includes("/previous/sing-box/")));
-  assert.equal(urls.some((url) => /\/(?:edge|current)\/sing-box\//u.test(url)), false);
-  assert.deepEqual(validateSingBoxConfig(config), { valid: true, errors: [] });
+test("rejects legacy sing-box publication channels", () => {
+  assert.throws(() => render({ channel: "previous" }), /channel|unsupported/iu);
 });
 
 test("uses mobile rule bundles for Android while macOS keeps the full rule catalog", () => {

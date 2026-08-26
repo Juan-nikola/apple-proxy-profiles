@@ -4,7 +4,7 @@
 
 1. 打开稳定入口：`https://juan-nikola.github.io/apple-proxy-profiles/current/happ/index.html`。
 2. HAPP 用户只使用最新的 `current/happ` 入口；任务片段不再填写或携带 `channel` 参数。
-3. 日常设备和私密任务都固定使用 `current`；`edge` 和 `previous` 只属于维护者的内部灰度与回滚流程。
+3. 日常设备和私密任务都固定使用唯一公开的 `current`；设备侧回滚使用本地保留的旧 JSON/Profile。
 
 公开层不包含节点、订阅地址、密码、UUID 或 policy override。
 
@@ -84,4 +84,4 @@ JSON 中的 follow/fixed 路由标签会包含规范化节点显示名和稳定�
 
 ## 回滚
 
-保留旧 JSON 和旧 Profile。回滚时同时切换到 `previous` GeoData 与对应的 previous Profile；对应平台 JSON 必须重新导入 `previous` 任务，让响应头和 GeoData URL 一起回滚，避免通道名称和规则数据不匹配。
+保留旧 JSON、旧 Profile 和其配套 GeoData。回滚时同时切回本地成套旧文件，对应平台 JSON 必须重新导入旧的私密任务，避免 JSON、Profile 和 GeoData 跨快照混用；服务端修复后重新生成 current。

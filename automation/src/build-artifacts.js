@@ -480,8 +480,25 @@ export function enforcePublicationBudgets({ diagnostics, files }) {
     const records = clientRuleRecords(files, client);
     const actual = records.reduce((sum, { bytes }) => sum + bytes, 0);
     referencedBytes[client] = actual;
-    if (actual > RULE_BUDGETS.defaultBytes) {
+    const isSingBox = client === "singbox";
+    const nonBinaryRecords = isSingBox
+      ? records.filter(({ path }) => !/\.srs$/u.test(path))
+      : records;
+    const nonBinaryBytes = nonBinaryRecords.reduce((sum, { bytes }) => sum + bytes, 0);
+    if (nonBinaryBytes > RULE_BUDGETS.defaultBytes) {
       throw budgetError("referenced default bytes", actual, RULE_BUDGETS.defaultBytes, client, records);
+    }
+    if (isSingBox) {
+      const binaryRecords = records.filter(({ path }) => /(?:^|\/)sing-box\/(?:rule-sets|mobile-rule-sets)\/[^/]+\.srs$/u.test(path));
+      const binaryTotal = binaryRecords.reduce((sum, { bytes }) => sum + bytes, 0);
+      for (const record of binaryRecords) {
+        if (record.bytes > RULE_BUDGETS.singBoxRuleSetBytes) {
+          throw budgetError("sing-box rule-set bytes", record.bytes, RULE_BUDGETS.singBoxRuleSetBytes, client, [record]);
+        }
+      }
+      if (binaryTotal > RULE_BUDGETS.singBoxTotalRuleSetBytes) {
+        throw budgetError("sing-box total rule-set bytes", binaryTotal, RULE_BUDGETS.singBoxTotalRuleSetBytes, client, binaryRecords);
+      }
     }
   }
   return Object.freeze(referencedBytes);
@@ -702,8 +719,9 @@ export function buildClientArtifacts({
       }
     }
   }
-  const compiled = compileLightweightRules({ snapshots: snapshot });
+  const compiled = compileLightweightRules({ snapshots: snapshot, externalSnapshots });
   const compactedDefaults = compactRuleSetMap(compiled.defaultRuleSets);
+  const compactedBaselineDefaults = compactRuleSetMap(compiled.baselineRuleSets ?? compiled.defaultRuleSets);
   const compactedAdblock = compactRuleSetMap(compiled.optionalPacks.adblockFull);
   const publicationDiagnostics = Object.freeze({
     ...compiled.diagnostics,
@@ -713,7 +731,7 @@ export function buildClientArtifacts({
   });
   const compactedMobile = compactRuleSetMap(compiled.mobileRuleSets);
   const sharedGeoData = sharedGeoDataArtifacts({
-    ruleSets: compactedDefaults.ruleSets,
+    ruleSets: compactedBaselineDefaults.ruleSets,
     externalSnapshots,
     upstream,
     regions,
@@ -833,15 +851,13 @@ export function buildClientArtifacts({
     clientCatalog: allClientIds().map((client) => clientAdapter(client)),
     releaseState: {
       channels: {
-        edge: {
+        current: {
           closure: true,
           clients: Object.fromEntries(Object.entries(clientManifests).map(([client, value]) => [client, {
             manifestHash: value.manifestHash,
             closure: true,
           }])),
         },
-        current: { closure: true },
-        previous: { closure: true },
       },
     },
   });
@@ -871,6 +887,7 @@ export function buildClientArtifacts({
       rawDefaultEntries: publicationDiagnostics.rawDefaultEntries,
       domesticCoreEntries: publicationDiagnostics.domesticCoreEntries,
       omittedByKind: publicationDiagnostics.omittedByKind,
+      external: compiled.diagnostics.external,
     },
     files: records,
   };

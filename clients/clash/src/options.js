@@ -69,7 +69,7 @@ export function parseClashOptions(raw) {
   }
   const platform = required(values, "platform");
   if (typeof platform !== "string" || !PLATFORMS.has(platform)) throw new Error("Clash platform is unsupported");
-  const channel = values.has("channel") ? values.get("channel") : "edge";
+  const channel = values.has("channel") ? values.get("channel") : "current";
   if (!FRONTIER_CHANNELS.includes(channel)) throw new Error("Clash channel is unsupported");
   const adblockMode = values.has("adblockMode") ? values.get("adblockMode") : "off";
   if (!AD_BLOCK.has(adblockMode)) throw new Error("Clash adblockMode is unsupported");

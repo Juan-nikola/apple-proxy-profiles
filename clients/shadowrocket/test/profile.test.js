@@ -71,21 +71,22 @@ test("renders a complete, valid macOS profile without node credentials", () => {
   assert.deepEqual(validateProfile(profile), { valid: true, errors: [] });
 });
 
-test("renders the edge lightweight rules by default and permits GEOIP to resolve", () => {
+test("renders the current lightweight rules by default and permits GEOIP to resolve", () => {
   const profile = renderProfile(baseOptions, inventory(25));
   const rules = profile.slice(profile.indexOf("[Rule]")).split("\n").filter(Boolean);
 
-  assert.match(profile, /edge\/shadowrocket\/rules\/DomesticCore\.list/u);
+  assert.match(profile, /current\/shadowrocket\/rules\/DomesticCore\.list/u);
   assert.doesNotMatch(profile, /\/(?:Advertising|Advertising_Domain|ChinaMax_Domain|ChinaMax|Game)\.list/u);
   assert.match(profile, /^RULE-SET,.*\/OverseasGame\.list,🌍 海外游戏,/mu);
   assert.equal(rules.at(-2), "GEOIP,CN,DIRECT");
   assert.equal(rules.at(-1), "FINAL,🚀 节点选择");
 });
 
-test("renders the previous lightweight rules without mixing publication channels", () => {
-  const profile = renderProfile({ ...baseOptions, channel: "previous" }, inventory(25));
-  assert.match(profile, /previous\/shadowrocket\/rules\/DomesticCore\.list/u);
-  assert.doesNotMatch(profile, /\/(?:edge|current)\/shadowrocket\/rules\//u);
+test("rejects legacy publication channels", () => {
+  assert.throws(
+    () => renderProfile({ ...baseOptions, channel: "previous" }, inventory(25)),
+    /channel|unsupported/iu,
+  );
 });
 
 test("renders current full adblock from the separate optional publication", () => {

@@ -53,7 +53,7 @@ function nodeArguments(raw) {
   if (values.get("type") !== "collection") throw new Error("Anywhere node type must be collection");
   const name = validateCollectionName(values.get("name"), "Anywhere node name");
   if (values.get("clientChain") !== "off") throw new Error("Anywhere clientChain must be off");
-  const channel = values.get("channel") ?? "edge";
+  const channel = values.get("channel") ?? "current";
   if (!FRONTIER_CHANNELS.includes(channel)) throw new Error("Anywhere node channel is unsupported");
   return Object.freeze({ output: "nodes", type: "collection", name, clientChain: "off", channel });
 }

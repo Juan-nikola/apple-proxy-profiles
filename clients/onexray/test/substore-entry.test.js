@@ -28,7 +28,7 @@ function context(argumentsValue) {
 const common = {
   type: "collection",
   name: "TEST_ONLY_OneXray_Collection",
-  channel: "edge",
+  channel: "current",
 };
 
 test("OneXray nodes entry emits only compatible homepage outbounds", async () => {

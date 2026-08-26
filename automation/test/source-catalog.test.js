@@ -118,6 +118,18 @@ test("pins documented release assets with verified digests", () => {
     ["loyalsoldier-rules-dat", "202608212217", "geosite.dat", "b392a98a323777deab59d8208e856df09cf96f3a76d2869eb7a8e5289bc5d9f4"],
     ["russia-v2ray-rules", "202608221547", "geosite.dat", "76fdbe01687a6cc7683b50c38ceea84941458e8371d215918daf555665a537cd"],
     ["iran-v2ray-rules", "202608220502", "geosite.dat", "5ff22eb6bc59573253dce2655498db4ed8096380787f15f5d9268756a4940532"],
+    ["loyalsoldier-clash-direct", "202608252255", "direct.txt", "555003affe662bc61f668aaa4efba5ede7b43921efc0331faeda33dc8d0852cf"],
+    ["loyalsoldier-clash-reject", "202608252255", "reject.txt", "106bc6dfae726634b21bd9112da80f679419b71009af8e6a376915404f6992a5"],
+    ["loyalsoldier-clash-applications", "202608252255", "applications.txt", "33bc8f07bacf74082fcb5f361eded1f6f9d3abcedcbe37ada2eb2ab4ae031732"],
+    ["loyalsoldier-clash-google", "202608252255", "google.txt", "21a04f287800943b3fdfdef1f843173086171d9a0b5c9c33c3f73e1ec77d4c9e"],
+    ["loyalsoldier-clash-private", "202608252255", "private.txt", "3a04b128200ef8097d73b1496cbb23d24bc1e05d42fffb09f07c51699efb00b2"],
+    ["loyalsoldier-clash-apple", "202608252255", "apple.txt", "70f9f77e0022fc1e79d597d2fca5a3bbfa8bfe0f7542694b455f8a70004f5ba3"],
+    ["loyalsoldier-clash-icloud", "202608252255", "icloud.txt", "f1fb7e9d17400071bf77d853b2a3148ccb6a13d785cb97e73f1693142682b23f"],
+    ["loyalsoldier-clash-gfw", "202608252255", "gfw.txt", "841c83b1536777b9088bf879d9ea3516a7a70ea63a4066eeafa5ba2cdf601cbc"],
+    ["loyalsoldier-clash-tld-not-cn", "202608252255", "tld-not-cn.txt", "330816293887779168d577a95f606c33702322654249e4c00051a3827830e310"],
+    ["loyalsoldier-clash-telegramcidr", "202608252255", "telegramcidr.txt", "328fca88c675763111c7f7585ec504e5c21ab9afb7a8ce6df33b7ac01b8a3ee0"],
+    ["loyalsoldier-clash-lancidr", "202608252255", "lancidr.txt", "82920b241dc328f1dc99849cf733ed8675a00a4ee0bdf64c892b332dfb7e1e2e"],
+    ["loyalsoldier-clash-cncidr", "202608252255", "cncidr.txt", "019b753c347b7b06ae8a9f9f74f2443d6b35bc9e4d6db70c134306503621b2d1"],
   ];
   assert.deepEqual(EXTERNAL_RULE_SOURCE_CATALOG.map(({ id, releaseTag, sourcePath, sha256 }) => [id, releaseTag, sourcePath, sha256]), expected);
   assert.doesNotThrow(() => validateSourceCatalog());

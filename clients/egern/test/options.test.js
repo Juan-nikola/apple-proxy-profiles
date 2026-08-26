@@ -18,7 +18,7 @@ const required = Object.freeze({
 });
 
 const defaults = Object.freeze({
-  channel: "edge",
+  channel: "current",
   adblockMode: "off",
   dnsMode: "stable",
   chinaDns: "alidns",
@@ -35,7 +35,7 @@ test("parses exact Egern profile options with platform IPv6 defaults", () => {
     assert.deepEqual(parsed, {
       ...required,
       platform,
-      publicBaseUrl: "https://juan-nikola.github.io/apple-proxy-profiles/edge",
+      publicBaseUrl: "https://juan-nikola.github.io/apple-proxy-profiles/current",
       ...defaults,
       ipv6Mode: platform === "macos" ? "ipv4-only" : "auto",
     });
@@ -63,9 +63,10 @@ test("accepts every shared option enum without cloning or widening the contracts
   }
 });
 
-test("accepts all three publication channels and explicit full ad blocking", () => {
-  for (const channel of ["edge", "current", "previous"]) {
-    assert.equal(parseEgernOptions({ ...required, channel }).channel, channel);
+test("accepts current-only publication and explicit full ad blocking", () => {
+  assert.equal(parseEgernOptions({ ...required, channel: "current" }).channel, "current");
+  for (const channel of ["edge", "previous"]) {
+    assert.throws(() => parseEgernOptions({ ...required, channel }), /channel/iu);
   }
   assert.equal(parseEgernOptions({ ...required, adblockMode: "full" }).adblockMode, "full");
   for (const [key, value] of [["channel", "beta"], ["adblockMode", "balanced"]]) {

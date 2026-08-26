@@ -9,13 +9,7 @@ import {
 import { artifactBuffer, artifactSha256 } from "../automation/src/artifact-content.js";
 import { canonicalJson } from "../automation/src/render-anywhere-rules.js";
 import {
-  promoteClientRelease as promoteClientReleaseImpl,
-  publishEdgeRelease,
-  prepareCurrentRootFromEdge,
-  refreshPublishedAuditDashboard,
-  enforceRetention,
-  sealPreviousRelease,
-  snapshotCurrentVersion,
+  publishCurrentRelease,
   snapshotMatches,
   validateClientPublication,
   validateOptionalPublication,
@@ -27,11 +21,6 @@ import {
 import { fetchSnapshot } from "../automation/src/fetch-snapshot.js";
 import { fetchExternalRuleSnapshots } from "../automation/src/fetch-external-sources.js";
 import { parseSurgeRules } from "../automation/src/parse-surge.js";
-import {
-  canRefreshChannel,
-  refreshChannelManifest,
-  refreshCurrentManifest,
-} from "../automation/src/refresh-current.js";
 import { assertChannelClosure } from "../shared/release/channel-closure.js";
 import { resolveUpstreamCommit } from "../automation/src/resolve-upstream.js";
 import {
@@ -43,7 +32,6 @@ import {
   lightweightRuleClientIds,
   publicDirectoryForClient,
 } from "../shared/release/client-catalog.js";
-import { FRONTIER_CHANNELS } from "../shared/release/frontier-manifest.js";
 import {
   DEFAULT_COMPILED_ROOT,
   DEFAULT_STAGE_ROOT,
@@ -53,7 +41,6 @@ import {
 
 const repositoryRoot = dirname(dirname(fileURLToPath(import.meta.url)));
 const defaultPublicDirectory = join(repositoryRoot, "public");
-const PROMOTION_CLIENTS = new Set(activeClientIds());
 const OPTIONAL_CLIENTS = new Set(lightweightRuleClientIds());
 const ACTIVE_CLIENT_DIRECTORIES = Object.freeze(Object.fromEntries(
   activeClientIds().map((client) => [client, publicDirectoryForClient(client)]),
@@ -72,55 +59,13 @@ const LEGACY_CURRENT_EXTRA_FILES = Object.freeze([
 ]);
 
 export function parseUpdateRulesArguments(args) {
-  if (JSON.stringify(args) === JSON.stringify(["--channel", "edge"])) {
-    return Object.freeze({ operation: "build-edge", channel: "edge" });
+  if (args.length === 0 || JSON.stringify(args) === JSON.stringify(["--channel", "current"])) {
+    return Object.freeze({ operation: "build-current", channel: "current" });
   }
-  if (args.length === 3 && args[0] === "--check" && args[1] === "--channel"
-    && FRONTIER_CHANNELS.includes(args[2])) {
-    return Object.freeze({ operation: `check-${args[2]}`, channel: args[2] });
+  if (JSON.stringify(args) === JSON.stringify(["--check", "--channel", "current"])) {
+    return Object.freeze({ operation: "check-current", channel: "current" });
   }
-  if (JSON.stringify(args) === JSON.stringify(["--seal-previous"])) {
-    return Object.freeze({ operation: "seal-previous" });
-  }
-  if (JSON.stringify(args) === JSON.stringify(["--refresh-current"])) {
-    return Object.freeze({ operation: "refresh-current" });
-  }
-  if (args.length === 3 && args[0] === "--promote" && PROMOTION_CLIENTS.has(args[1])
-    && /^[0-9a-f]{64}$/u.test(args[2])) {
-    return Object.freeze({ operation: "promote", client: args[1], manifestHash: args[2] });
-  }
-  if (JSON.stringify(args) === JSON.stringify(["--promote-all"])) {
-    return Object.freeze({ operation: "promote-all" });
-  }
-  throw new Error("Invalid update-rules arguments; use --channel edge, --check --channel <edge|current|previous>, --seal-previous, --refresh-current, --promote-all, or --promote <client> <manifest-hash>");
-}
-
-export async function promoteClientRelease(options) {
-  return promoteClientReleaseImpl(options);
-}
-
-export async function promoteAllClients({ publicDirectory = defaultPublicDirectory } = {}) {
-  const edgeManifest = JSON.parse(await readFile(join(publicDirectory, "edge/manifest.json"), "utf8"));
-  if (edgeManifest.schemaVersion !== 2
-    || !/^[0-9a-f]{64}$/u.test(edgeManifest.manifestHash ?? "")
-    || !edgeManifest.clients || typeof edgeManifest.clients !== "object") {
-    throw new Error("Edge manifest is invalid for full promotion");
-  }
-  await prepareCurrentRootFromEdge({ publicDirectory });
-  const results = [];
-  for (const client of activeClientIds()) {
-    const manifestHash = edgeManifest.clients[client]?.manifestHash;
-    if (!/^[0-9a-f]{64}$/u.test(manifestHash ?? "")) {
-      throw new Error(`Edge manifest is missing a valid ${client} client hash`);
-    }
-    results.push(await promoteClientRelease({
-      publicDirectory,
-      client,
-      manifestHash,
-      expectedHash: manifestHash,
-    }));
-  }
-  return Object.freeze(results);
+  throw new Error("Invalid update-rules arguments; use --channel current or --check --channel current");
 }
 
 export function chinaIpAuditPrimary(snapshot, upstream) {
@@ -422,7 +367,7 @@ export async function verifyTrackedPublications({ publicDirectory, defaults, opt
     } else if (!await snapshotMatches(currentDirectory, defaults)) return false;
     for (const [packId, files] of optionalPacks) {
       validateOptionalPublication({ packId, files });
-      const stableDirectory = join(publicDirectory, "optional", packId);
+      const stableDirectory = join(publicDirectory, "optional", packId, "current");
       if (!await pathExists(stableDirectory)) continue;
       if (!await snapshotMatches(stableDirectory, optionalTreeFiles(packId, files))) return false;
     }
@@ -532,7 +477,7 @@ export async function verifyTrackedPublications({ publicDirectory, defaults, opt
 }
 
 export async function verifyPublishedChannel({ publicDirectory, channel }) {
-  if (!FRONTIER_CHANNELS.includes(channel)) throw new TypeError("Publication channel is unsupported");
+  if (channel !== "current") throw new TypeError("Publication channel is unsupported; only current is published");
   const directory = join(publicDirectory, channel);
   if (!await pathExists(directory)) return false;
   try {
@@ -649,7 +594,7 @@ async function staticFiles(channel = "current") {
   ]) {
     const content = loaded.get(path);
     if (content.includes(rawRoot)
-      || !content.includes("https://juan-nikola.github.io/apple-proxy-profiles/edge/shadowrocket/rules/")) {
+      || !content.includes("https://juan-nikola.github.io/apple-proxy-profiles/current/shadowrocket/rules/")) {
       throw new Error(`Shadowrocket public snapshot URL closure failed for ${path}`);
     }
   }
@@ -672,7 +617,7 @@ async function staticFiles(channel = "current") {
 export async function buildArtifacts({
   operation,
   publicDirectory,
-  channel = "edge",
+  channel = "current",
   upstreamOverride = null,
   singBoxBinaries = null,
   includeStaticFiles = true,
@@ -683,6 +628,7 @@ export async function buildArtifacts({
   fetchExternalSnapshotsImpl = fetchExternalRuleSnapshots,
   loadExternalSnapshots = false,
 }) {
+  if (channel !== "current") throw new TypeError("Current-only publication requires channel=current");
   let commit;
   let committedAt;
   if (upstreamOverride !== null) {
@@ -734,38 +680,6 @@ export async function main(
   { publicDirectory = defaultPublicDirectory, env = process.env } = {},
 ) {
   const command = parseUpdateRulesArguments(args);
-  if (command.operation === "refresh-current") {
-    await refreshPublishedAuditDashboard(join(publicDirectory, "current"));
-    const manifest = await refreshCurrentManifest({ publicDirectory, adoptEdgeMetadata: true });
-    await snapshotCurrentVersion(publicDirectory);
-    await enforceRetention(publicDirectory, manifest.manifestHash);
-    if (await canRefreshChannel(join(publicDirectory, "previous"))) {
-      await refreshPublishedAuditDashboard(join(publicDirectory, "previous"));
-      await refreshChannelManifest({ publicDirectory, channel: "previous" });
-    }
-    process.stdout.write(`Current manifest refreshed: ${manifest.manifestHash}\n`);
-    return manifest;
-  }
-  if (command.operation === "seal-previous") {
-    const result = await sealPreviousRelease({ publicDirectory });
-    process.stdout.write(`Previous channel sealed: ${result.manifestHash}\n`);
-    return result;
-  }
-  if (command.operation === "promote") {
-    const result = await promoteClientRelease({
-      publicDirectory,
-      ...command,
-      expectedHash: command.manifestHash,
-    });
-    process.stdout.write(`Client promoted: ${result.client} ${result.manifestHash}\n`);
-    return result;
-  }
-  if (command.operation === "promote-all") {
-    const results = await promoteAllClients({ publicDirectory });
-    process.stdout.write(`All active clients promoted: ${results.map(({ client, manifestHash }) => `${client} ${manifestHash}`).join(", ")}\n`);
-    return results;
-  }
-
   const stageRoot = env.SING_BOX_ARTIFACT_ROOT || DEFAULT_STAGE_ROOT;
   const stage = await readRuleStageManifest(stageRoot);
   const chinaIpAudit = await readFile(join(stageRoot, stage.chinaIpAudit.path));
@@ -777,11 +691,11 @@ export async function main(
     operation: command.operation,
     publicDirectory,
     upstreamOverride: stage.upstream,
-    channel: command.channel ?? "edge",
+    channel: "current",
     singBoxBinaries,
     chinaIpAudit,
     v2flyDomainAudit,
-    loadExternalSnapshots: true,
+    loadExternalSnapshots: env.APPLE_PROXY_SKIP_EXTERNAL !== "1",
   });
   if (command.operation === "check-current") {
     if (!await verifyTrackedPublications({ publicDirectory, ...artifacts })) {
@@ -790,23 +704,15 @@ export async function main(
     process.stdout.write(`Public snapshot verified: ${artifacts.diagnostics.defaultManifest.upstream.commit}\n`);
     return artifacts.diagnostics;
   }
-  if (command.operation === "check-edge" || command.operation === "check-previous") {
-    if (!await verifyPublishedChannel({ publicDirectory, channel: command.channel })) {
-      throw new Error(`Published ${command.channel} channel failed closure verification`);
-    }
-    process.stdout.write(`Published ${command.channel} channel verified.\n`);
-    return artifacts.diagnostics;
-  }
-
-  const result = await publishEdgeRelease({
+  const result = await publishCurrentRelease({
     publicDirectory,
     defaults: artifacts.defaults,
     optionalPacks: artifacts.optionalPacks,
     manifest: artifacts.diagnostics.defaultManifest,
-    channel: command.channel ?? "edge",
+    channel: "current",
   });
   process.stdout.write(
-    `Edge candidate updated: ${artifacts.diagnostics.defaultManifest.upstream.commit}; ${result.files} files; ${result.manifestHash}\n`,
+    `Current publication updated: ${artifacts.diagnostics.defaultManifest.upstream.commit}; ${result.files} files; ${result.manifestHash}\n`,
   );
   return result;
 }

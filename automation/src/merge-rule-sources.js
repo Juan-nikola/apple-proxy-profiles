@@ -22,11 +22,12 @@ function safeProvenance(value, sourceId) {
   if (input.diagnostics !== undefined) validateDiagnostics(input.diagnostics, sourceId);
   if (external) {
     if (input.license !== external.license) throw new Error(`External source ${sourceId}: provenance license mismatch`);
-    for (const field of ["repository", "branch", "commit", "releaseTag", "retrievalUrl", "retrievedAt", "sha256"]) {
+    for (const field of ["repository", "branch", "commit", "tree", "blob", "releaseTag", "retrievalUrl", "retrievedAt", "sha256"]) {
       if (input[field] !== external[field]) throw new Error(`External source ${sourceId}: provenance mismatch for ${field}`);
     }
     if (!/^https:\/\/github\.com\/[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+\/releases\/download\/[A-Za-z0-9._-]+\/[A-Za-z0-9_.-]+$/u.test(input.retrievalUrl)
-      || !/^[0-9a-f]{40}$/u.test(input.commit) || !/^[0-9a-f]{64}$/u.test(input.sha256)
+      || !/^[0-9a-f]{40}$/u.test(input.commit) || (input.tree !== undefined && !/^[0-9a-f]{40}$/u.test(input.tree))
+      || (input.blob !== undefined && !/^[0-9a-f]{40}$/u.test(input.blob)) || !/^[0-9a-f]{64}$/u.test(input.sha256)
       || Number.isNaN(Date.parse(input.retrievedAt))) throw new Error(`External source ${sourceId}: unsafe provenance`);
   } else {
     const allowed = new Set(["sourceId", "commit", "sha256", "repository", "branch", "releaseTag", "retrievedAt", "committedAt", "license", "diagnostics"]);
@@ -39,7 +40,7 @@ function safeProvenance(value, sourceId) {
     if (input.releaseTag !== undefined && (typeof input.releaseTag !== "string" || !/^[A-Za-z0-9._-]+$/u.test(input.releaseTag))) throw new Error(`Source ${sourceId}: invalid provenance release`);
   }
   const fields = EXTERNAL_BY_ID.has(sourceId)
-    ? ["sourceId", "repository", "branch", "commit", "releaseTag", "retrievalUrl", "retrievedAt", "sha256", "license", "diagnostics"]
+    ? ["sourceId", "repository", "branch", "commit", "tree", "blob", "releaseTag", "retrievalUrl", "retrievedAt", "sha256", "license", "diagnostics"]
     : ["sourceId", "commit", "sha256", "repository", "branch", "releaseTag", "retrievedAt", "committedAt", "license", "diagnostics"];
   return Object.freeze(Object.fromEntries(fields.filter((key) => input[key] !== undefined).map((key) => [key, input[key]]).concat(input.sourceId ? [] : [["sourceId", sourceId]])));
 }

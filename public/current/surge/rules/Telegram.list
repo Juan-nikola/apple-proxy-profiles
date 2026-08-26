@@ -4,7 +4,7 @@
 # Committed at: 2026-08-25T18:39:12Z
 # License: GPL-2.0-only
 # Changed by: Juan-nikola/apple-proxy-profiles
-# Output entries: 35
+# Output entries: 38
 # Omitted entries: 0
 DOMAIN,api.imem.app
 DOMAIN,api.swiftgram.app
@@ -34,9 +34,12 @@ DOMAIN-KEYWORD,nicegram
 IP-CIDR,109.239.140.0/24,no-resolve
 IP-CIDR,139.59.210.98/32,no-resolve
 IP-CIDR,149.154.160.0/20,no-resolve
+IP-CIDR,185.76.151.0/24,no-resolve
 IP-CIDR,196.55.216.167/32,no-resolve
 IP-CIDR,5.28.192.0/18,no-resolve
+IP-CIDR,91.105.192.0/23,no-resolve
 IP-CIDR,91.108.0.0/16,no-resolve
+IP-CIDR,95.161.64.0/20,no-resolve
 IP-CIDR6,2001:67c:4e8::/48,no-resolve
 IP-CIDR6,2001:b28:f23c::/47,no-resolve
 IP-CIDR6,2001:b28:f23f::/48,no-resolve

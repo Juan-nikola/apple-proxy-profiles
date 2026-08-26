@@ -1227,7 +1227,7 @@ var AnywhereNodeBundle = (() => {
   ]);
 
   // ../../../shared/release/frontier-manifest.js
-  var FRONTIER_CHANNELS = Object.freeze(["edge", "current", "previous"]);
+  var FRONTIER_CHANNELS = Object.freeze(["current"]);
   var FRONTIER_PLATFORMS = Object.freeze({
     [CLIENT.surge]: Object.freeze(["macos", "iphone", "ipad"]),
     [CLIENT.singbox]: Object.freeze(["macos", "iphone", "ipad", "android", "openwrt"]),
@@ -2008,7 +2008,7 @@ var AnywhereNodeBundle = (() => {
     if (values.get("type") !== "collection") throw new Error("Anywhere node type must be collection");
     const name = validateCollectionName(values.get("name"), "Anywhere node name");
     if (values.get("clientChain") !== "off") throw new Error("Anywhere clientChain must be off");
-    const channel = values.get("channel") ?? "edge";
+    const channel = values.get("channel") ?? "current";
     if (!FRONTIER_CHANNELS.includes(channel)) throw new Error("Anywhere node channel is unsupported");
     return Object.freeze({ output: "nodes", type: "collection", name, clientChain: "off", channel });
   }

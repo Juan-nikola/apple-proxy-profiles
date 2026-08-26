@@ -4,8 +4,8 @@ import { canonicalJson } from "../../../automation/src/render-anywhere-rules.js"
 import { renderXrayGeoData } from "../../../automation/src/render-xray-geodata.js";
 import { oneXrayGeoNames } from "./geodata-contract.js";
 
-const CHANNELS = Object.freeze(["current", "previous", "edge"]);
-const CHANNEL_LABELS = Object.freeze({ current: "Current", previous: "Previous", edge: "Edge" });
+const CHANNELS = Object.freeze(["current"]);
+const CHANNEL_LABELS = Object.freeze({ current: "Current" });
 const PLATFORM_ORDER = Object.freeze(["macOS", "iPhone", "iPad", "Android", "Windows", "Linux"]);
 const ONEXRAY_UPSTREAM_VERSION = "26.8.3";
 const APP_LINK_BASE = "onexray://onexray.com/dat/add";

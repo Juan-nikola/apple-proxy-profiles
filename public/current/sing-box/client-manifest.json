@@ -1,5 +1,5 @@
 {
-  "chinaIpAuditSha256": "6a1a8561c85f0683095ff1a76fb035a4cb5707f14d7f3778f8a5115e6f60502c",
+  "chinaIpAuditSha256": "bd8b22453da86ce18f8a0aa819838448b36411ff5446463b6bfe7e155867343d",
   "client": "singbox",
   "files": [
     {
@@ -273,20 +273,20 @@
       "sha256": "da4163404185d0c106158bad3bc246a7df1388b1974bceace0dfa1f0443abd30"
     },
     {
-      "bytes": 152762,
+      "bytes": 153062,
       "path": "sing-box/scripts/sing-box-config-generator.js",
-      "sha256": "acfcfea099c94240f6295c11f6f7374c3da71170fe9736868856f67053f4a8bd"
+      "sha256": "65647b8582b3aa10cb6e0fb4538ef6eef28df657850df5233211fa68b82619fb"
     },
     {
-      "bytes": 152762,
+      "bytes": 153062,
       "path": "sing-box/scripts/substore-config-generator.js",
-      "sha256": "acfcfea099c94240f6295c11f6f7374c3da71170fe9736868856f67053f4a8bd"
+      "sha256": "65647b8582b3aa10cb6e0fb4538ef6eef28df657850df5233211fa68b82619fb"
     }
   ],
   "generatedAt": "2026-08-25T18:39:12Z",
-  "manifestHash": "2071b0ea3645e5fb1584482599a9bd029e2d9fb7c152e252d3a4ed156a6cfb78",
+  "manifestHash": "32897f3efb1479024934ddc2d3faf9b23525f6e8d06ba1d57d600b36aef5f76a",
   "optionalPacks": {
-    "adblock-full": "2c976a360f631a98c231057e04cfeaa4a1ca3ed2fa02d1759c7dde09c92bdac9"
+    "adblock-full": "fd5d92109cf8cad0bcddea70641b28e49085ceaef959850e8ffb7ce60afed95e"
   },
   "schemaVersion": 1
 }

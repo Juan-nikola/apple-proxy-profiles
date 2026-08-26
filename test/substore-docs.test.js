@@ -107,7 +107,8 @@ test("central Sub-Store guide closes over all public scripts and private tasks",
   assert.match(guide, /通用任务总数为 `4\+1\+4\+4\+4=17` 个/u);
   assert.match(guide, /#output=nodes[\s\S]*&/u);
   assert.match(guide, /#output=config[\s\S]*&/u);
-  assert.match(guide, /channel=current[\s\S]*channel=edge/u);
+  assert.match(guide, /channel=current/u);
+  assert.doesNotMatch(guide, /channel=edge|channel=previous|\/versions\//u);
   assert.match(readme, /apple-proxy-sources/u);
   assert.match(guide, /schema v2[\s\S]{0,180}schema v1[\s\S]{0,180}(?:兼容|读取)/iu);
   assert.match(guide, /policyInput[\s\S]{0,120}apple-proxy-policy/iu);

@@ -11,11 +11,11 @@ function merged(region) {
 }
 
 test("renders deterministic region GeoData and excludes unrelated overlays", () => {
-  const cn = renderRegionGeoData({ ruleSets: merged("cn").ruleSets, region: "cn", channel: "edge" });
-  const global = renderRegionGeoData({ ruleSets: merged("global").ruleSets, region: "global", channel: "edge" });
-  const ru = renderRegionGeoData({ ruleSets: merged("ru").ruleSets, region: "ru", channel: "edge" });
-  const ir = renderRegionGeoData({ ruleSets: merged("ir").ruleSets, region: "ir", channel: "edge" });
-  assert.deepEqual(cn.geosite, renderRegionGeoData({ ruleSets: merged("cn").ruleSets, region: "cn", channel: "edge" }).geosite);
+  const cn = renderRegionGeoData({ ruleSets: merged("cn").ruleSets, region: "cn", channel: "current" });
+  const global = renderRegionGeoData({ ruleSets: merged("global").ruleSets, region: "global", channel: "current" });
+  const ru = renderRegionGeoData({ ruleSets: merged("ru").ruleSets, region: "ru", channel: "current" });
+  const ir = renderRegionGeoData({ ruleSets: merged("ir").ruleSets, region: "ir", channel: "current" });
+  assert.deepEqual(cn.geosite, renderRegionGeoData({ ruleSets: merged("cn").ruleSets, region: "cn", channel: "current" }).geosite);
   assert.deepEqual(decodeXrayGeoData(cn.geosite, "domain").entries.map(({ code }) => code), ["APP-DOMESTICCORE"]);
   assert.ok(decodeXrayGeoData(ru.geosite, "domain").entries.some(({ code }) => code === "APP-RUSSIA-V2RAY-RULES"));
   assert.ok(decodeXrayGeoData(ir.geosite, "domain").entries.some(({ code }) => code === "APP-IRAN-V2RAY-RULES"));
@@ -47,7 +47,7 @@ test("splits multi-source rule sets into stable source categories", () => {
     { kind: "domainSuffix", value: "bad.example", sourceId: "Hijacking" },
     { kind: "domainSuffix", value: "dns.example", sourceId: "BlockHttpDNS" },
   ] });
-  const result = renderRegionGeoData({ ruleSets: value.ruleSets, region: "cn", channel: "edge" });
+  const result = renderRegionGeoData({ ruleSets: value.ruleSets, region: "cn", channel: "current" });
   const codes = result.manifest.sources.map(({ code }) => code);
   assert.ok(codes.includes("APP-HIJACKING"));
   assert.ok(codes.includes("APP-BLOCKHTTPDNS"));

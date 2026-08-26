@@ -55,14 +55,14 @@ test("config operator propagates malformed GeoData instead of hiding it", async 
     produceArtifact: async (request) => request.type === "file"
       ? EMPTY_POLICY
       : [{ name: "fixture", type: "vless", server: "fixture.invalid", port: 443, uuid: "TEST_ONLY_UUID" }],
-    assetManifest: { region: "cn", channel: "edge", names: {}, hashes: {}, geosite: {}, geoip: {} },
+    assetManifest: { region: "cn", channel: "current", names: {}, hashes: {}, geosite: {}, geoip: {} },
   }), /asset manifest/u);
 });
 
 test("config operator forwards the validated asset manifest", async () => {
-  const assetManifest = renderV2BoxAssetManifest({ region: "cn", channel: "edge", geositeSha256: "a".repeat(64), geoipSha256: "b".repeat(64) });
+  const assetManifest = renderV2BoxAssetManifest({ region: "cn", channel: "current", geositeSha256: "a".repeat(64), geoipSha256: "b".repeat(64) });
   const result = await configOperator({}, "JSON", {
-    arguments: { output: "config", type: "collection", name: "fixture", platform: "iphone", region: "cn", channel: "edge" },
+    arguments: { output: "config", type: "collection", name: "fixture", platform: "iphone", region: "cn", channel: "current" },
     assetManifest,
     produceArtifact: async (request) => request.type === "file"
       ? EMPTY_POLICY

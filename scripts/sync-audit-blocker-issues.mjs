@@ -15,7 +15,7 @@ export async function main({ env = process.env, fetchImpl = globalThis.fetch, no
   }
   if (typeof credential !== "string" || !credential.trim()) throw new Error("GITHUB_TOKEN is required");
   const publicDirectory = env.PUBLIC_DIRECTORY || resolve(repositoryRoot, "public");
-  const dashboardBytes = await readFile(join(publicDirectory, "edge/audit/dashboard.json"));
+  const dashboardBytes = await readFile(join(publicDirectory, "current/audit/dashboard.json"));
   let dashboard;
   try { dashboard = JSON.parse(dashboardBytes.toString("utf8")); } catch { throw new Error("Public audit dashboard is invalid JSON"); }
   validatePublicAuditDashboard(dashboard);

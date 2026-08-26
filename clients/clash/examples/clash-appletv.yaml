@@ -676,224 +676,224 @@ rule-providers:
     behavior: "classical"
     format: "yaml"
     path: "./rules/Hijacking.yaml"
-    url: "https://juan-nikola.github.io/apple-proxy-profiles/edge/clash/rules/Hijacking.yaml"
+    url: "https://juan-nikola.github.io/apple-proxy-profiles/current/clash/rules/Hijacking.yaml"
     interval: 86400
   BlockHttpDNS:
     type: "http"
     behavior: "classical"
     format: "yaml"
     path: "./rules/BlockHttpDNS.yaml"
-    url: "https://juan-nikola.github.io/apple-proxy-profiles/edge/clash/rules/BlockHttpDNS.yaml"
+    url: "https://juan-nikola.github.io/apple-proxy-profiles/current/clash/rules/BlockHttpDNS.yaml"
     interval: 86400
   Privacy:
     type: "http"
     behavior: "classical"
     format: "yaml"
     path: "./rules/Privacy.yaml"
-    url: "https://juan-nikola.github.io/apple-proxy-profiles/edge/clash/rules/Privacy.yaml"
+    url: "https://juan-nikola.github.io/apple-proxy-profiles/current/clash/rules/Privacy.yaml"
     interval: 86400
   DomesticCore:
     type: "http"
     behavior: "classical"
     format: "yaml"
     path: "./rules/DomesticCore.yaml"
-    url: "https://juan-nikola.github.io/apple-proxy-profiles/edge/clash/rules/DomesticCore.yaml"
+    url: "https://juan-nikola.github.io/apple-proxy-profiles/current/clash/rules/DomesticCore.yaml"
     interval: 86400
   DomesticGame:
     type: "http"
     behavior: "classical"
     format: "yaml"
     path: "./rules/DomesticGame.yaml"
-    url: "https://juan-nikola.github.io/apple-proxy-profiles/edge/clash/rules/DomesticGame.yaml"
+    url: "https://juan-nikola.github.io/apple-proxy-profiles/current/clash/rules/DomesticGame.yaml"
     interval: 86400
   SteamCN:
     type: "http"
     behavior: "classical"
     format: "yaml"
     path: "./rules/SteamCN.yaml"
-    url: "https://juan-nikola.github.io/apple-proxy-profiles/edge/clash/rules/SteamCN.yaml"
+    url: "https://juan-nikola.github.io/apple-proxy-profiles/current/clash/rules/SteamCN.yaml"
     interval: 86400
   BiliBili:
     type: "http"
     behavior: "classical"
     format: "yaml"
     path: "./rules/BiliBili.yaml"
-    url: "https://juan-nikola.github.io/apple-proxy-profiles/edge/clash/rules/BiliBili.yaml"
+    url: "https://juan-nikola.github.io/apple-proxy-profiles/current/clash/rules/BiliBili.yaml"
     interval: 86400
   ByteDance:
     type: "http"
     behavior: "classical"
     format: "yaml"
     path: "./rules/ByteDance.yaml"
-    url: "https://juan-nikola.github.io/apple-proxy-profiles/edge/clash/rules/ByteDance.yaml"
+    url: "https://juan-nikola.github.io/apple-proxy-profiles/current/clash/rules/ByteDance.yaml"
     interval: 86400
   XiaoHongShu:
     type: "http"
     behavior: "classical"
     format: "yaml"
     path: "./rules/XiaoHongShu.yaml"
-    url: "https://juan-nikola.github.io/apple-proxy-profiles/edge/clash/rules/XiaoHongShu.yaml"
+    url: "https://juan-nikola.github.io/apple-proxy-profiles/current/clash/rules/XiaoHongShu.yaml"
     interval: 86400
   Weibo:
     type: "http"
     behavior: "classical"
     format: "yaml"
     path: "./rules/Weibo.yaml"
-    url: "https://juan-nikola.github.io/apple-proxy-profiles/edge/clash/rules/Weibo.yaml"
+    url: "https://juan-nikola.github.io/apple-proxy-profiles/current/clash/rules/Weibo.yaml"
     interval: 86400
   OpenAI:
     type: "http"
     behavior: "classical"
     format: "yaml"
     path: "./rules/OpenAI.yaml"
-    url: "https://juan-nikola.github.io/apple-proxy-profiles/edge/clash/rules/OpenAI.yaml"
+    url: "https://juan-nikola.github.io/apple-proxy-profiles/current/clash/rules/OpenAI.yaml"
     interval: 86400
   Claude:
     type: "http"
     behavior: "classical"
     format: "yaml"
     path: "./rules/Claude.yaml"
-    url: "https://juan-nikola.github.io/apple-proxy-profiles/edge/clash/rules/Claude.yaml"
+    url: "https://juan-nikola.github.io/apple-proxy-profiles/current/clash/rules/Claude.yaml"
     interval: 86400
   Gemini:
     type: "http"
     behavior: "classical"
     format: "yaml"
     path: "./rules/Gemini.yaml"
-    url: "https://juan-nikola.github.io/apple-proxy-profiles/edge/clash/rules/Gemini.yaml"
+    url: "https://juan-nikola.github.io/apple-proxy-profiles/current/clash/rules/Gemini.yaml"
     interval: 86400
   Copilot:
     type: "http"
     behavior: "classical"
     format: "yaml"
     path: "./rules/Copilot.yaml"
-    url: "https://juan-nikola.github.io/apple-proxy-profiles/edge/clash/rules/Copilot.yaml"
+    url: "https://juan-nikola.github.io/apple-proxy-profiles/current/clash/rules/Copilot.yaml"
     interval: 86400
   GitHub:
     type: "http"
     behavior: "classical"
     format: "yaml"
     path: "./rules/GitHub.yaml"
-    url: "https://juan-nikola.github.io/apple-proxy-profiles/edge/clash/rules/GitHub.yaml"
+    url: "https://juan-nikola.github.io/apple-proxy-profiles/current/clash/rules/GitHub.yaml"
     interval: 86400
   YouTube:
     type: "http"
     behavior: "classical"
     format: "yaml"
     path: "./rules/YouTube.yaml"
-    url: "https://juan-nikola.github.io/apple-proxy-profiles/edge/clash/rules/YouTube.yaml"
+    url: "https://juan-nikola.github.io/apple-proxy-profiles/current/clash/rules/YouTube.yaml"
     interval: 86400
   Netflix:
     type: "http"
     behavior: "classical"
     format: "yaml"
     path: "./rules/Netflix.yaml"
-    url: "https://juan-nikola.github.io/apple-proxy-profiles/edge/clash/rules/Netflix.yaml"
+    url: "https://juan-nikola.github.io/apple-proxy-profiles/current/clash/rules/Netflix.yaml"
     interval: 86400
   Disney:
     type: "http"
     behavior: "classical"
     format: "yaml"
     path: "./rules/Disney.yaml"
-    url: "https://juan-nikola.github.io/apple-proxy-profiles/edge/clash/rules/Disney.yaml"
+    url: "https://juan-nikola.github.io/apple-proxy-profiles/current/clash/rules/Disney.yaml"
     interval: 86400
   Spotify:
     type: "http"
     behavior: "classical"
     format: "yaml"
     path: "./rules/Spotify.yaml"
-    url: "https://juan-nikola.github.io/apple-proxy-profiles/edge/clash/rules/Spotify.yaml"
+    url: "https://juan-nikola.github.io/apple-proxy-profiles/current/clash/rules/Spotify.yaml"
     interval: 86400
   GlobalMedia:
     type: "http"
     behavior: "classical"
     format: "yaml"
     path: "./rules/GlobalMedia.yaml"
-    url: "https://juan-nikola.github.io/apple-proxy-profiles/edge/clash/rules/GlobalMedia.yaml"
+    url: "https://juan-nikola.github.io/apple-proxy-profiles/current/clash/rules/GlobalMedia.yaml"
     interval: 86400
   Telegram:
     type: "http"
     behavior: "classical"
     format: "yaml"
     path: "./rules/Telegram.yaml"
-    url: "https://juan-nikola.github.io/apple-proxy-profiles/edge/clash/rules/Telegram.yaml"
+    url: "https://juan-nikola.github.io/apple-proxy-profiles/current/clash/rules/Telegram.yaml"
     interval: 86400
   Facebook:
     type: "http"
     behavior: "classical"
     format: "yaml"
     path: "./rules/Facebook.yaml"
-    url: "https://juan-nikola.github.io/apple-proxy-profiles/edge/clash/rules/Facebook.yaml"
+    url: "https://juan-nikola.github.io/apple-proxy-profiles/current/clash/rules/Facebook.yaml"
     interval: 86400
   Instagram:
     type: "http"
     behavior: "classical"
     format: "yaml"
     path: "./rules/Instagram.yaml"
-    url: "https://juan-nikola.github.io/apple-proxy-profiles/edge/clash/rules/Instagram.yaml"
+    url: "https://juan-nikola.github.io/apple-proxy-profiles/current/clash/rules/Instagram.yaml"
     interval: 86400
   Twitter:
     type: "http"
     behavior: "classical"
     format: "yaml"
     path: "./rules/Twitter.yaml"
-    url: "https://juan-nikola.github.io/apple-proxy-profiles/edge/clash/rules/Twitter.yaml"
+    url: "https://juan-nikola.github.io/apple-proxy-profiles/current/clash/rules/Twitter.yaml"
     interval: 86400
   TikTok:
     type: "http"
     behavior: "classical"
     format: "yaml"
     path: "./rules/TikTok.yaml"
-    url: "https://juan-nikola.github.io/apple-proxy-profiles/edge/clash/rules/TikTok.yaml"
+    url: "https://juan-nikola.github.io/apple-proxy-profiles/current/clash/rules/TikTok.yaml"
     interval: 86400
   Apple:
     type: "http"
     behavior: "classical"
     format: "yaml"
     path: "./rules/Apple.yaml"
-    url: "https://juan-nikola.github.io/apple-proxy-profiles/edge/clash/rules/Apple.yaml"
+    url: "https://juan-nikola.github.io/apple-proxy-profiles/current/clash/rules/Apple.yaml"
     interval: 86400
   Microsoft:
     type: "http"
     behavior: "classical"
     format: "yaml"
     path: "./rules/Microsoft.yaml"
-    url: "https://juan-nikola.github.io/apple-proxy-profiles/edge/clash/rules/Microsoft.yaml"
+    url: "https://juan-nikola.github.io/apple-proxy-profiles/current/clash/rules/Microsoft.yaml"
     interval: 86400
   Download:
     type: "http"
     behavior: "classical"
     format: "yaml"
     path: "./rules/Download.yaml"
-    url: "https://juan-nikola.github.io/apple-proxy-profiles/edge/clash/rules/Download.yaml"
+    url: "https://juan-nikola.github.io/apple-proxy-profiles/current/clash/rules/Download.yaml"
     interval: 86400
   PrivateTracker:
     type: "http"
     behavior: "classical"
     format: "yaml"
     path: "./rules/PrivateTracker.yaml"
-    url: "https://juan-nikola.github.io/apple-proxy-profiles/edge/clash/rules/PrivateTracker.yaml"
+    url: "https://juan-nikola.github.io/apple-proxy-profiles/current/clash/rules/PrivateTracker.yaml"
     interval: 86400
   OverseasGame:
     type: "http"
     behavior: "classical"
     format: "yaml"
     path: "./rules/OverseasGame.yaml"
-    url: "https://juan-nikola.github.io/apple-proxy-profiles/edge/clash/rules/OverseasGame.yaml"
+    url: "https://juan-nikola.github.io/apple-proxy-profiles/current/clash/rules/OverseasGame.yaml"
     interval: 86400
   ChinaTLD:
     type: "http"
     behavior: "classical"
     format: "yaml"
     path: "./rules/ChinaTLD.yaml"
-    url: "https://juan-nikola.github.io/apple-proxy-profiles/edge/clash/rules/ChinaTLD.yaml"
+    url: "https://juan-nikola.github.io/apple-proxy-profiles/current/clash/rules/ChinaTLD.yaml"
     interval: 86400
   ChinaIP:
     type: "http"
     behavior: "classical"
     format: "yaml"
     path: "./rules/ChinaIP.yaml"
-    url: "https://juan-nikola.github.io/apple-proxy-profiles/edge/clash/rules/ChinaIP.yaml"
+    url: "https://juan-nikola.github.io/apple-proxy-profiles/current/clash/rules/ChinaIP.yaml"
     interval: 86400
 dns:
   enable: true

@@ -52,6 +52,6 @@ test("config operator propagates malformed GeoData instead of hiding it", async 
     produceArtifact: async (request) => request.type === "file"
       ? EMPTY_POLICY
       : [{ name: "fixture", type: "vless", server: "fixture.invalid", port: 443, uuid: "TEST_ONLY_UUID" }],
-    geoData: { manifest: { schemaVersion: 1, region: "windows", channel: "edge" } },
+    geoData: { manifest: { schemaVersion: 1, region: "windows", channel: "current" } },
   }), /GeoData/u);
 });

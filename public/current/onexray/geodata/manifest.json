@@ -2,36 +2,36 @@
   "channel": "current",
   "counts": {
     "domainCategories": 32,
-    "domainRules": 3488,
+    "domainRules": 306178,
     "ipCategories": 32,
-    "ipRules": 13357
+    "ipRules": 13378
   },
   "domain": {
-    "byteLength": 74223,
+    "byteLength": 6933893,
     "categoryCount": 32,
     "name": "AppleProxySiteCurrent",
-    "ruleCount": 3488,
-    "sha256": "4bed4f09fb433437409d6ffd3f8e061f14babca334c64278110320c011ad7eb9"
+    "ruleCount": 306178,
+    "sha256": "7c3546f538a7bcbb5d396f7cd3971a3912c9bd9a06c0834184a1ca7c479f0af9"
   },
   "files": [
     {
-      "bytes": 74223,
+      "bytes": 6933893,
       "path": "onexray/geodata/geosite.dat",
-      "sha256": "4bed4f09fb433437409d6ffd3f8e061f14babca334c64278110320c011ad7eb9"
+      "sha256": "7c3546f538a7bcbb5d396f7cd3971a3912c9bd9a06c0834184a1ca7c479f0af9"
     },
     {
-      "bytes": 181466,
+      "bytes": 181725,
       "path": "onexray/geodata/geoip.dat",
-      "sha256": "9f7c6fcef4dc3338c1801b190934dae2fb407e1c4a0732d7fd6f65e77576060e"
+      "sha256": "89b7b947ea79676055c5a18c59aa5094dca7e4595908d32f7f857f79d1017800"
     }
   ],
   "generatedAt": "2026-08-25T18:39:12Z",
   "hashes": {
-    "domain": "4bed4f09fb433437409d6ffd3f8e061f14babca334c64278110320c011ad7eb9",
-    "ip": "9f7c6fcef4dc3338c1801b190934dae2fb407e1c4a0732d7fd6f65e77576060e"
+    "domain": "7c3546f538a7bcbb5d396f7cd3971a3912c9bd9a06c0834184a1ca7c479f0af9",
+    "ip": "89b7b947ea79676055c5a18c59aa5094dca7e4595908d32f7f857f79d1017800"
   },
   "inputHashes": {
-    "Apple": "9894cfae238a347124e841e7e067b9b67dd24a7226e0043c641753fe26b462ff",
+    "Apple": "4e708252a8c74f78dbc6cb76d89698cdfa6eb696935c549f3bfa444131b4c778",
     "BiliBili": "c310fc1361dab30ecba0619541845e48611cc00be8eee57d75165343d7ae1e84",
     "BlockHttpDNS": "50c8918e3335bcc661f118fc349bec89e433ada4f60514748c1dce560707f07e",
     "ByteDance": "d690d7e3a15bf9bed4d26b43052ec69b47a7a74a14714e745147d71cdada3d35",
@@ -40,14 +40,14 @@
     "Claude": "7095f2c34a2fa91d8f45fa65080ed9e0227f402fbcfb0b39f017dc8dc63f988e",
     "Copilot": "903b724aeeb5409bf7ca0d8d4d6e94ba84bd8f3bab10135db774241389140082",
     "Disney": "5b5dd9c434b16b52c0eb8fcb440cd8936ab1c7f486e18632139f5b949ff74a75",
-    "DomesticCore": "b28089f639f26d79a37996173e84ab2b0655b3be8887d0d6b8f7bd8e43ff6ece",
+    "DomesticCore": "5086593b9220fa33a82fc8291f14316d38ae86485e33f2dff41bc79ca5798842",
     "DomesticGame": "30251fe06c8326b745c1b70ab0ac978505507b19771b929e83384cefef1d1aac",
     "Download": "946f4ccf96dc5e7c2988f1f7b8c30b1f5680b76e2db45390f5d9c25492028b36",
     "Facebook": "e786078d11b12311f192d5670d3e4a7163fea98731e4c373fa70c86057271fb5",
     "Gemini": "c210a995b9bdd7bdfd26c07ca2dc4208c90e8d76ef5bf5d5729f55f1fde20b5d",
     "GitHub": "e9808232026d6bfe09e299c2c40d81096c74f2d6da3f79c86eadbec50d3878af",
-    "GlobalMedia": "3c05f9f90db75b8f6d806b0e764724e80b0acbf46533b288b64da7b9d32a4e3c",
-    "Hijacking": "bf16f53d63d3973a87db43078e2ae89c52a0e2e3c4687bfb784a00fa085c8ef6",
+    "GlobalMedia": "7b803944c8c9933d9f94e52a4fbccbb2f5f86eba996815ee82bc645882b6536d",
+    "Hijacking": "6e395820da10da915a38ccfded8a2606affeb70757c8724c24ed8d79b6337dca",
     "Instagram": "088d3136cc66f8e81b6835cf5f6cd5593b84f68da905a2069f6831f1fd937da2",
     "Microsoft": "35db67bbb136c5db6bf2c470aed9b1e483f562935703a68855dcbc9acf4389be",
     "Netflix": "3cd7d9259eae8c6e6bebd9cd616d8fc39c63807472b179fe80a473fe8b858172",
@@ -57,7 +57,7 @@
     "PrivateTracker": "12a06736d237ffea1567a929d670098619b5d6d5a36ff4ff42ca56e34670aabd",
     "Spotify": "02c494692d6e7ed772aa5d05514b52d10fd4003d28503783967fb285e5b87ef6",
     "SteamCN": "7d5c48b2d4aead327b570d2776653e0b5c95133af7c83dadba7fe49105712d6d",
-    "Telegram": "11f0c6efcd9ff2d9ad902306d8d4e422f12eab31329428bc70a63785602d53fb",
+    "Telegram": "5047b52316854c6958908a91c3d1885c79880057c87c2dd8b5576c72199701ae",
     "TikTok": "536c830fe57a2b7066d5301626e5a6e3dc42fdb3f77a6d642bf06d160fe13aaf",
     "Twitter": "69b4a766afa7af16e8599897dec3e8e2a1dbf2c73b5c4f44a6905b053d745ac0",
     "Weibo": "54dd4c6c740906e521107f0992ebd1334ccff5fe551c042d9aa619b1c4928045",
@@ -65,32 +65,32 @@
     "YouTube": "e14f01cd18d0c5c60a4d7aa4ccb26ec191358392af76411cfaba2ec85687b89b"
   },
   "ip": {
-    "byteLength": 181466,
+    "byteLength": 181725,
     "categoryCount": 32,
     "name": "AppleProxyIPCurrent",
-    "ruleCount": 13357,
-    "sha256": "9f7c6fcef4dc3338c1801b190934dae2fb407e1c4a0732d7fd6f65e77576060e"
+    "ruleCount": 13378,
+    "sha256": "89b7b947ea79676055c5a18c59aa5094dca7e4595908d32f7f857f79d1017800"
   },
-  "manifestHash": "14c0ff7560e930120b6838813892bf8f9b61df766a680fbda9449f1278b7d29b",
+  "manifestHash": "df479828662259bcfc6315423a0ab29f503742c3e269f89ac0e8c4458fd56472",
   "names": {
     "domain": "AppleProxySiteCurrent",
     "ip": "AppleProxyIPCurrent"
   },
   "provenance": {
-    "inputSha256": "54b29e5bea9c44256950cc65ec7f4f98f11f6ca9bbce9edad3f8ef417df00b83",
+    "inputSha256": "dd778c1b49fd3b633415544bbb53c44c8f6e9ff2b2b07faadf7b597f21654638",
     "inputSourceCount": 32,
     "source": "shared-lightweight-rule-snapshot"
   },
-  "releaseId": "edge-2df6b08d",
+  "releaseId": "current-2df6b08d",
   "schema": "apple-proxy-onexray-geodata-v1",
   "schemaVersion": 1,
   "sourceCount": 32,
   "sources": [
     {
       "code": "APP-HIJACKING",
-      "domain": 186,
+      "domain": 186593,
       "id": "Hijacking",
-      "inputSha256": "bf16f53d63d3973a87db43078e2ae89c52a0e2e3c4687bfb784a00fa085c8ef6",
+      "inputSha256": "6e395820da10da915a38ccfded8a2606affeb70757c8724c24ed8d79b6337dca",
       "ip": 42
     },
     {
@@ -109,10 +109,10 @@
     },
     {
       "code": "APP-DOMESTICCORE",
-      "domain": 65,
+      "domain": 111242,
       "id": "DomesticCore",
-      "inputSha256": "b28089f639f26d79a37996173e84ab2b0655b3be8887d0d6b8f7bd8e43ff6ece",
-      "ip": 0
+      "inputSha256": "5086593b9220fa33a82fc8291f14316d38ae86485e33f2dff41bc79ca5798842",
+      "ip": 18
     },
     {
       "code": "APP-DOMESTICGAME",
@@ -221,17 +221,17 @@
     },
     {
       "code": "APP-GLOBALMEDIA",
-      "domain": 27,
+      "domain": 5079,
       "id": "GlobalMedia",
-      "inputSha256": "3c05f9f90db75b8f6d806b0e764724e80b0acbf46533b288b64da7b9d32a4e3c",
+      "inputSha256": "7b803944c8c9933d9f94e52a4fbccbb2f5f86eba996815ee82bc645882b6536d",
       "ip": 924
     },
     {
       "code": "APP-TELEGRAM",
       "domain": 25,
       "id": "Telegram",
-      "inputSha256": "11f0c6efcd9ff2d9ad902306d8d4e422f12eab31329428bc70a63785602d53fb",
-      "ip": 10
+      "inputSha256": "5047b52316854c6958908a91c3d1885c79880057c87c2dd8b5576c72199701ae",
+      "ip": 13
     },
     {
       "code": "APP-FACEBOOK",
@@ -263,9 +263,9 @@
     },
     {
       "code": "APP-APPLE",
-      "domain": 7,
+      "domain": 61,
       "id": "Apple",
-      "inputSha256": "9894cfae238a347124e841e7e067b9b67dd24a7226e0043c641753fe26b462ff",
+      "inputSha256": "4e708252a8c74f78dbc6cb76d89698cdfa6eb696935c549f3bfa444131b4c778",
       "ip": 13
     },
     {

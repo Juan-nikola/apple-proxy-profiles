@@ -34,67 +34,67 @@ dns:
       - "https://cloudflare-dns.com/dns-query"
   forward:
     - proxy_rule_set:
-        match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/OpenAI.yaml"
+        match: "https://juan-nikola.github.io/apple-proxy-profiles/current/egern/rules/OpenAI.yaml"
         value: "global"
         update_interval: 86400
     - proxy_rule_set:
-        match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/Claude.yaml"
+        match: "https://juan-nikola.github.io/apple-proxy-profiles/current/egern/rules/Claude.yaml"
         value: "global"
         update_interval: 86400
     - proxy_rule_set:
-        match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/Gemini.yaml"
+        match: "https://juan-nikola.github.io/apple-proxy-profiles/current/egern/rules/Gemini.yaml"
         value: "global"
         update_interval: 86400
     - proxy_rule_set:
-        match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/Copilot.yaml"
+        match: "https://juan-nikola.github.io/apple-proxy-profiles/current/egern/rules/Copilot.yaml"
         value: "global"
         update_interval: 86400
     - proxy_rule_set:
-        match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/GitHub.yaml"
+        match: "https://juan-nikola.github.io/apple-proxy-profiles/current/egern/rules/GitHub.yaml"
         value: "global"
         update_interval: 86400
     - proxy_rule_set:
-        match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/YouTube.yaml"
+        match: "https://juan-nikola.github.io/apple-proxy-profiles/current/egern/rules/YouTube.yaml"
         value: "global"
         update_interval: 86400
     - proxy_rule_set:
-        match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/Netflix.yaml"
+        match: "https://juan-nikola.github.io/apple-proxy-profiles/current/egern/rules/Netflix.yaml"
         value: "global"
         update_interval: 86400
     - proxy_rule_set:
-        match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/Disney.yaml"
+        match: "https://juan-nikola.github.io/apple-proxy-profiles/current/egern/rules/Disney.yaml"
         value: "global"
         update_interval: 86400
     - proxy_rule_set:
-        match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/Spotify.yaml"
+        match: "https://juan-nikola.github.io/apple-proxy-profiles/current/egern/rules/Spotify.yaml"
         value: "global"
         update_interval: 86400
     - proxy_rule_set:
-        match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/GlobalMedia.yaml"
+        match: "https://juan-nikola.github.io/apple-proxy-profiles/current/egern/rules/GlobalMedia.yaml"
         value: "global"
         update_interval: 86400
     - proxy_rule_set:
-        match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/Telegram.yaml"
+        match: "https://juan-nikola.github.io/apple-proxy-profiles/current/egern/rules/Telegram.yaml"
         value: "global"
         update_interval: 86400
     - proxy_rule_set:
-        match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/Facebook.yaml"
+        match: "https://juan-nikola.github.io/apple-proxy-profiles/current/egern/rules/Facebook.yaml"
         value: "global"
         update_interval: 86400
     - proxy_rule_set:
-        match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/Instagram.yaml"
+        match: "https://juan-nikola.github.io/apple-proxy-profiles/current/egern/rules/Instagram.yaml"
         value: "global"
         update_interval: 86400
     - proxy_rule_set:
-        match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/Twitter.yaml"
+        match: "https://juan-nikola.github.io/apple-proxy-profiles/current/egern/rules/Twitter.yaml"
         value: "global"
         update_interval: 86400
     - proxy_rule_set:
-        match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/TikTok.yaml"
+        match: "https://juan-nikola.github.io/apple-proxy-profiles/current/egern/rules/TikTok.yaml"
         value: "global"
         update_interval: 86400
     - proxy_rule_set:
-        match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/OverseasGame.yaml"
+        match: "https://juan-nikola.github.io/apple-proxy-profiles/current/egern/rules/OverseasGame.yaml"
         value: "global"
         update_interval: 86400
     - domain_suffix:
@@ -293,7 +293,7 @@ dns:
         match: "sandbox.itunes.apple.com"
         value: "china"
     - proxy_rule_set:
-        match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/DomesticCore.yaml"
+        match: "https://juan-nikola.github.io/apple-proxy-profiles/current/egern/rules/DomesticCore.yaml"
         value: "china"
         update_interval: 86400
     - domain_wildcard:
@@ -593,15 +593,15 @@ rules:
       policy: "DIRECT"
       no_resolve: true
   - rule_set:
-      match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/Hijacking.yaml"
+      match: "https://juan-nikola.github.io/apple-proxy-profiles/current/egern/rules/Hijacking.yaml"
       policy: "REJECT"
       update_interval: 86400
   - rule_set:
-      match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/BlockHttpDNS.yaml"
+      match: "https://juan-nikola.github.io/apple-proxy-profiles/current/egern/rules/BlockHttpDNS.yaml"
       policy: "REJECT"
       update_interval: 86400
   - rule_set:
-      match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/Privacy.yaml"
+      match: "https://juan-nikola.github.io/apple-proxy-profiles/current/egern/rules/Privacy.yaml"
       policy: "🕵️ 严格跟踪"
       update_interval: 86400
   - domain_suffix:
@@ -623,119 +623,119 @@ rules:
       match: "poecdn.net"
       policy: "🤖 AI 专用"
   - rule_set:
-      match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/DomesticCore.yaml"
+      match: "https://juan-nikola.github.io/apple-proxy-profiles/current/egern/rules/DomesticCore.yaml"
       policy: "DIRECT"
       update_interval: 86400
   - rule_set:
-      match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/DomesticGame.yaml"
+      match: "https://juan-nikola.github.io/apple-proxy-profiles/current/egern/rules/DomesticGame.yaml"
       policy: "DIRECT"
       update_interval: 86400
   - rule_set:
-      match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/SteamCN.yaml"
+      match: "https://juan-nikola.github.io/apple-proxy-profiles/current/egern/rules/SteamCN.yaml"
       policy: "DIRECT"
       update_interval: 86400
   - rule_set:
-      match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/BiliBili.yaml"
+      match: "https://juan-nikola.github.io/apple-proxy-profiles/current/egern/rules/BiliBili.yaml"
       policy: "🇨🇳 国内平台"
       update_interval: 86400
   - rule_set:
-      match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/ByteDance.yaml"
+      match: "https://juan-nikola.github.io/apple-proxy-profiles/current/egern/rules/ByteDance.yaml"
       policy: "🇨🇳 国内平台"
       update_interval: 86400
   - rule_set:
-      match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/XiaoHongShu.yaml"
+      match: "https://juan-nikola.github.io/apple-proxy-profiles/current/egern/rules/XiaoHongShu.yaml"
       policy: "🇨🇳 国内平台"
       update_interval: 86400
   - rule_set:
-      match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/Weibo.yaml"
+      match: "https://juan-nikola.github.io/apple-proxy-profiles/current/egern/rules/Weibo.yaml"
       policy: "🇨🇳 国内平台"
       update_interval: 86400
   - rule_set:
-      match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/OpenAI.yaml"
+      match: "https://juan-nikola.github.io/apple-proxy-profiles/current/egern/rules/OpenAI.yaml"
       policy: "🤖 AI 专用"
       update_interval: 86400
   - rule_set:
-      match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/Claude.yaml"
+      match: "https://juan-nikola.github.io/apple-proxy-profiles/current/egern/rules/Claude.yaml"
       policy: "🤖 AI 专用"
       update_interval: 86400
   - rule_set:
-      match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/Gemini.yaml"
+      match: "https://juan-nikola.github.io/apple-proxy-profiles/current/egern/rules/Gemini.yaml"
       policy: "🤖 AI 专用"
       update_interval: 86400
   - rule_set:
-      match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/Copilot.yaml"
+      match: "https://juan-nikola.github.io/apple-proxy-profiles/current/egern/rules/Copilot.yaml"
       policy: "🤖 AI 专用"
       update_interval: 86400
   - rule_set:
-      match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/GitHub.yaml"
+      match: "https://juan-nikola.github.io/apple-proxy-profiles/current/egern/rules/GitHub.yaml"
       policy: "🐙 GitHub"
       update_interval: 86400
   - rule_set:
-      match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/YouTube.yaml"
+      match: "https://juan-nikola.github.io/apple-proxy-profiles/current/egern/rules/YouTube.yaml"
       policy: "📺 YouTube"
       update_interval: 86400
   - rule_set:
-      match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/Netflix.yaml"
+      match: "https://juan-nikola.github.io/apple-proxy-profiles/current/egern/rules/Netflix.yaml"
       policy: "🎬 海外流媒体"
       update_interval: 86400
   - rule_set:
-      match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/Disney.yaml"
+      match: "https://juan-nikola.github.io/apple-proxy-profiles/current/egern/rules/Disney.yaml"
       policy: "🎬 海外流媒体"
       update_interval: 86400
   - rule_set:
-      match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/Spotify.yaml"
+      match: "https://juan-nikola.github.io/apple-proxy-profiles/current/egern/rules/Spotify.yaml"
       policy: "🎬 海外流媒体"
       update_interval: 86400
   - rule_set:
-      match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/GlobalMedia.yaml"
+      match: "https://juan-nikola.github.io/apple-proxy-profiles/current/egern/rules/GlobalMedia.yaml"
       policy: "🎬 海外流媒体"
       update_interval: 86400
   - rule_set:
-      match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/Telegram.yaml"
+      match: "https://juan-nikola.github.io/apple-proxy-profiles/current/egern/rules/Telegram.yaml"
       policy: "💬 海外社交"
       update_interval: 86400
   - rule_set:
-      match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/Facebook.yaml"
+      match: "https://juan-nikola.github.io/apple-proxy-profiles/current/egern/rules/Facebook.yaml"
       policy: "💬 海外社交"
       update_interval: 86400
   - rule_set:
-      match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/Instagram.yaml"
+      match: "https://juan-nikola.github.io/apple-proxy-profiles/current/egern/rules/Instagram.yaml"
       policy: "💬 海外社交"
       update_interval: 86400
   - rule_set:
-      match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/Twitter.yaml"
+      match: "https://juan-nikola.github.io/apple-proxy-profiles/current/egern/rules/Twitter.yaml"
       policy: "💬 海外社交"
       update_interval: 86400
   - rule_set:
-      match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/TikTok.yaml"
+      match: "https://juan-nikola.github.io/apple-proxy-profiles/current/egern/rules/TikTok.yaml"
       policy: "💬 海外社交"
       update_interval: 86400
   - rule_set:
-      match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/Apple.yaml"
+      match: "https://juan-nikola.github.io/apple-proxy-profiles/current/egern/rules/Apple.yaml"
       policy: "🍎 Apple"
       update_interval: 86400
   - rule_set:
-      match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/Microsoft.yaml"
+      match: "https://juan-nikola.github.io/apple-proxy-profiles/current/egern/rules/Microsoft.yaml"
       policy: "🪟 Microsoft"
       update_interval: 86400
   - rule_set:
-      match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/Download.yaml"
+      match: "https://juan-nikola.github.io/apple-proxy-profiles/current/egern/rules/Download.yaml"
       policy: "⬇️ 下载/P2P"
       update_interval: 86400
   - rule_set:
-      match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/PrivateTracker.yaml"
+      match: "https://juan-nikola.github.io/apple-proxy-profiles/current/egern/rules/PrivateTracker.yaml"
       policy: "⬇️ 下载/P2P"
       update_interval: 86400
   - rule_set:
-      match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/OverseasGame.yaml"
+      match: "https://juan-nikola.github.io/apple-proxy-profiles/current/egern/rules/OverseasGame.yaml"
       policy: "🌍 海外游戏"
       update_interval: 86400
   - rule_set:
-      match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/ChinaTLD.yaml"
+      match: "https://juan-nikola.github.io/apple-proxy-profiles/current/egern/rules/ChinaTLD.yaml"
       policy: "DIRECT"
       update_interval: 86400
   - rule_set:
-      match: "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/ChinaIP.yaml"
+      match: "https://juan-nikola.github.io/apple-proxy-profiles/current/egern/rules/ChinaIP.yaml"
       policy: "DIRECT"
       update_interval: 86400
   - geoip:

@@ -5,7 +5,7 @@ import { validateCollectionName } from "../../../shared/substore/collection-name
 const OUTPUTS = new Set(["nodes", "profile", "audit"]);
 const CHANNELS = new Set(FRONTIER_CHANNELS);
 const DEFAULTS = Object.freeze({
-  channel: "edge",
+  channel: "current",
   dnsMode: "stable",
   chinaDns: "alidns",
   globalDns: "cloudflare",

@@ -5,7 +5,7 @@ import { EXTERNAL_RULE_SOURCE_CATALOG } from "../shared/rules/external-sources.j
 import { REGION_PROFILES, parseRegion, sourcesForRegion } from "../shared/rules/region-profiles.js";
 
 test("defines all pinned external sources with explicit adapter metadata", () => {
-  assert.equal(EXTERNAL_RULE_SOURCE_CATALOG.length, 4);
+  assert.equal(EXTERNAL_RULE_SOURCE_CATALOG.length, 16);
   for (const source of EXTERNAL_RULE_SOURCE_CATALOG) {
     assert.match(source.commit, /^[0-9a-f]{40}$/u);
     assert.ok(source.license.length > 0);
@@ -42,4 +42,8 @@ test("selects only the opted-in regional overlay", () => {
   assert.equal(sourcesForRegion("cn", { adblockMode: "off" }).includes("Advertising"), false);
   assert.equal(sourcesForRegion("cn", { adblockMode: "full" }).includes("Advertising"), true);
   assert.throws(() => sourcesForRegion("cn", { adblockMode: "invalid" }), /adblockMode/u);
+  assert.equal(cn.includes("loyalsoldier-clash-google"), false);
+  assert.equal(sourcesForRegion("global").includes("loyalsoldier-clash-google"), false);
+  assert.equal(cn.includes("loyalsoldier-clash-direct"), true);
+  assert.equal(cn.includes("loyalsoldier-clash-reject"), true);
 });

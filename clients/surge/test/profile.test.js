@@ -55,11 +55,11 @@ test("parses a strict Surge option set for each Apple platform", () => {
   for (const platform of ["macos", "iphone", "ipad"]) {
     const options = parseSurgeOptions({ ...baseOptions, platform });
     assert.equal(options.platform, platform);
-    assert.equal(options.channel, "edge");
+    assert.equal(options.channel, "current");
     assert.equal(options.adblockMode, "off");
   }
   assert.equal(parseSurgeOptions({ ...baseOptions, channel: "current" }).channel, "current");
-  assert.equal(parseSurgeOptions({ ...baseOptions, channel: "previous" }).channel, "previous");
+  assert.throws(() => parseSurgeOptions({ ...baseOptions, channel: "previous" }), /channel/iu);
   assert.equal(parseSurgeOptions({ ...baseOptions, adblockMode: "full" }).adblockMode, "full");
   assert.throws(() => parseSurgeOptions({ ...baseOptions, platform: "android" }), /platform/iu);
   assert.throws(() => parseSurgeOptions({ ...baseOptions, channel: "beta" }), /channel/iu);
@@ -67,14 +67,8 @@ test("parses a strict Surge option set for each Apple platform", () => {
   assert.throws(() => parseSurgeOptions({ ...baseOptions, unknown: "value" }), /unknown/iu);
 });
 
-test("renders the previous Surge rule publication without mixing channels", () => {
-  const profile = renderSurgeProfile(
-    parseSurgeOptions({ ...baseOptions, channel: "previous" }),
-    [normalizedSsNode],
-    { ruleBaseUrl: "https://example.invalid/previous/surge/rules" },
-  );
-  assert.match(profile, /\/previous\/surge\/rules\/DomesticCore\.list/u);
-  assert.doesNotMatch(profile, /\/(?:edge|current)\/surge\/rules\//u);
+test("rejects legacy Surge publication channels", () => {
+  assert.throws(() => parseSurgeOptions({ ...baseOptions, channel: "previous" }), /channel/iu);
 });
 
 test("matches compact and normalized country-flag node names", () => {

@@ -17,8 +17,8 @@ test("accepts a valid Shadowrocket config task", () => {
   assert.equal(result.ok, true, result.errors.join(", "));
 });
 
-test("accepts a valid node task on edge channel", () => {
-  const url = `${PUBLIC}/edge/egern/scripts/egern-node-generator.js#output=nodes&type=collection&name=apple-proxy-sources&clientChain=off`;
+test("accepts a valid node task on current channel", () => {
+  const url = `${PUBLIC}/current/egern/scripts/egern-node-generator.js#output=nodes&type=collection&name=apple-proxy-sources&clientChain=off`;
   const result = checkSubstoreTaskUrl(url);
   assert.equal(result.ok, true, result.errors.join(", "));
 });
@@ -58,18 +58,6 @@ test("accepts the published Anywhere strategy task and rejects extra options", (
   assert.equal(getSubstoreTaskSchema("shadowrocket/scripts/shadowrocket-node-subscription.js").policyInput, null);
 });
 
-test("accepts a valid previous-channel task and preserves its channel parameter", () => {
-  const url = `${PUBLIC}/previous/egern/scripts/egern-node-generator.js#output=nodes&type=collection&name=apple-proxy-sources&clientChain=off&channel=previous`;
-  const result = checkSubstoreTaskUrl(url);
-  assert.equal(result.ok, true, result.errors.join(", "));
-  assert.equal(parseTaskUrl(url).params.channel, "previous");
-});
-
-test("accepts the published previous Egern node URL from the rollback guide", () => {
-  const url = `${PUBLIC}/previous/egern/scripts/egern-node-generator.js#output=nodes&type=collection&name=apple-proxy-egern&clientChain=off`;
-  const result = checkSubstoreTaskUrl(url);
-  assert.equal(result.ok, true, result.errors.join(", "));
-});
 
 test("accepts the active HAPP and OneXray generators and rejects unsupported channels", () => {
   const base = `${PUBLIC}/current/egern/scripts/egern-node-generator.js#output=nodes&type=collection&name=apple-proxy-egern&clientChain=off`;
@@ -78,21 +66,21 @@ test("accepts the active HAPP and OneXray generators and rejects unsupported cha
   const happ = `${PUBLIC}/current/happ/scripts/happ-config-generator.js#output=config&type=collection&name=apple-proxy-happ&subscriptionName=Apple-Proxy-Happ&platform=macos`;
   assert.equal(checkSubstoreTaskUrl(happ).ok, true, checkSubstoreTaskUrl(happ).errors.join(", "));
   assert.equal(checkSubstoreTaskUrl(`${happ}&channel=current`).ok, false);
-  assert.equal(checkSubstoreTaskUrl(happ.replace("/current/", "/edge/")).ok, false);
+  assert.equal(checkSubstoreTaskUrl(`${happ}&channel=edge`).ok, false);
   assert.equal(checkSubstoreTaskUrl(happ.replace("/current/", "/previous/")).ok, false);
   const onexrayNodes = `${PUBLIC}/current/onexray/scripts/onexray-node-generator.js#output=nodes&type=collection&name=apple-proxy-onexray&clientChain=off&channel=current`;
   assert.equal(checkSubstoreTaskUrl(onexrayNodes).ok, true, checkSubstoreTaskUrl(onexrayNodes).errors.join(", "));
-  const onexrayProfile = `${PUBLIC}/edge/onexray/scripts/onexray-profile-generator.js#output=profile&type=collection&name=apple-proxy-onexray&channel=edge&clientChain=off`;
+  const onexrayProfile = `${PUBLIC}/current/onexray/scripts/onexray-profile-generator.js#output=profile&type=collection&name=apple-proxy-onexray&channel=current&clientChain=off`;
   assert.equal(checkSubstoreTaskUrl(onexrayProfile).ok, true, checkSubstoreTaskUrl(onexrayProfile).errors.join(", "));
   const happAudit = `${PUBLIC}/current/happ/scripts/happ-routing-audit.js#output=audit&type=collection&name=apple-proxy-happ&subscriptionName=Apple-Proxy-Happ&platform=all`;
   assert.equal(checkSubstoreTaskUrl(happAudit).ok, true, checkSubstoreTaskUrl(happAudit).errors.join(", "));
 });
 
 test("accepts a client-specific collection slug and rejects unsafe collection names", () => {
-  const safe = `${PUBLIC}/edge/egern/scripts/egern-node-generator.js#output=nodes&type=collection&name=apple-proxy-egern&clientChain=off`;
+  const safe = `${PUBLIC}/current/egern/scripts/egern-node-generator.js#output=nodes&type=collection&name=apple-proxy-egern&clientChain=off`;
   assert.equal(checkSubstoreTaskUrl(safe).ok, true);
   for (const name of ["", "bad%2Fname", "bad%3Fname", "bad%23name", "%E4%B8%AD%E6%96%87", "bad%0Aname", "__proto__"]) {
-    const url = `${PUBLIC}/edge/egern/scripts/egern-node-generator.js#output=nodes&type=collection&name=${name}&clientChain=off`;
+    const url = `${PUBLIC}/current/egern/scripts/egern-node-generator.js#output=nodes&type=collection&name=${name}&clientChain=off`;
     assert.equal(checkSubstoreTaskUrl(url).ok, false, name);
   }
 });
@@ -156,8 +144,8 @@ test("accepts v2rayN and V2Box task schemas and validates region/platform", () =
   assert.equal(checkSubstoreTaskUrl(v2box.replace("region=ru", "region=moon")).ok, false);
   assert.equal(checkSubstoreTaskUrl(v2rayn.replace("platform=windows", "platform=iphone")).ok, false);
   assert.equal(checkSubstoreTaskUrl(v2rayn.replace("channel=current", "unknown=value&channel=current")).ok, false);
-  const v2raynNodes = `${PUBLIC}/edge/v2rayn/scripts/substore-node-generator.js#output=nodes&type=collection&name=apple-proxy-v2rayn&clientChain=off&channel=edge`;
-  const v2boxNodes = `${PUBLIC}/previous/v2box/scripts/substore-node-generator.js#output=nodes&type=collection&name=apple-proxy-v2box&clientChain=off&channel=previous`;
+  const v2raynNodes = `${PUBLIC}/current/v2rayn/scripts/substore-node-generator.js#output=nodes&type=collection&name=apple-proxy-v2rayn&clientChain=off&channel=current`;
+  const v2boxNodes = `${PUBLIC}/current/v2box/scripts/substore-node-generator.js#output=nodes&type=collection&name=apple-proxy-v2box&clientChain=off&channel=current`;
   assert.equal(checkSubstoreTaskUrl(v2raynNodes).ok, true, checkSubstoreTaskUrl(v2raynNodes).errors.join(", "));
   assert.equal(checkSubstoreTaskUrl(v2boxNodes).ok, true, checkSubstoreTaskUrl(v2boxNodes).errors.join(", "));
 });

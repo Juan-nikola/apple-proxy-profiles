@@ -102,10 +102,10 @@
       },
       {
         "domain": [
-          "ext:AppleProxySiteEdge.dat:APP-REGION-CN"
+          "ext:AppleProxySiteCurrent.dat:APP-REGION-CN"
         ],
         "ip": [
-          "ext:AppleProxyIPEdge.dat:APP-REGION-CN"
+          "ext:AppleProxyIPCurrent.dat:APP-REGION-CN"
         ],
         "outboundTag": "proxy",
         "ruleTag": "source-REGION-CN"

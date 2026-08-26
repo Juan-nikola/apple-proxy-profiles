@@ -193,7 +193,7 @@ export async function buildEdgeChinaIpAudit({
     typeof now === "number" ? now : Date.parse(now)
   );
   if (!Number.isFinite(nowMillis)) throw new TypeError("ChinaIP audit generation time is invalid");
-  const existingBytes = await optionalFile(join(publicDirectory, "edge", CHINA_IP_AUDIT_PATH));
+  const existingBytes = await optionalFile(join(publicDirectory, "current", CHINA_IP_AUDIT_PATH));
   if (existingBytes !== null) {
     try {
       const existing = canonicalChinaIpAudit(existingBytes).report;
@@ -219,11 +219,11 @@ export async function buildEdgeChinaIpAudit({
   const commit = await resolveCommitImpl(fetchImpl, nowMillis);
   const secondarySnapshot = await fetchSnapshotImpl({ commit, fetchImpl });
 
-  const previousRule = await optionalFile(join(publicDirectory, "edge/surge/rules/ChinaIP.list"));
+  const previousRule = await optionalFile(join(publicDirectory, "current/surge/rules/ChinaIP.list"));
   const previousPrimaryEntries = previousRule === null
     ? primary.entries
     : previousChinaIpEntries(previousRule.toString("utf8"));
-  const previousReportBytes = await optionalFile(join(publicDirectory, "edge", CHINA_IP_AUDIT_PATH));
+  const previousReportBytes = await optionalFile(join(publicDirectory, "current", CHINA_IP_AUDIT_PATH));
   let calibrationStartedAt;
   if (previousReportBytes !== null) {
     const previousReport = canonicalChinaIpAudit(previousReportBytes).report;
@@ -433,8 +433,8 @@ export async function main(args = process.argv.slice(2), {
   buildEdgeChinaIpAuditImpl = buildEdgeChinaIpAudit,
   now = new Date(),
 } = {}) {
-  if (args.length !== 2 || args[0] !== "--channel" || !["edge", "current"].includes(args[1])) {
-    throw new Error("Usage: stage-rule-artifacts.mjs --channel <edge|current>");
+  if (args.length !== 2 || args[0] !== "--channel" || args[1] !== "current") {
+    throw new Error("Usage: stage-rule-artifacts.mjs --channel current");
   }
   const publicDirectory = env.PUBLIC_DIRECTORY || resolve(REPOSITORY_ROOT, "public");
   const channel = args[1];
@@ -456,31 +456,7 @@ export async function main(args = process.argv.slice(2), {
     process.stdout.write(`Staged ${manifest.files.length} tracked current sing-box rules at ${manifest.upstream.commit}\n`);
     return manifest;
   }
-  let buildArtifacts = buildArtifactsImpl;
-  if (buildArtifacts === null) ({ buildArtifacts } = await import("./update-rules.mjs"));
-  const artifacts = await buildArtifacts({
-    operation: "build-edge",
-    publicDirectory,
-    includeStaticFiles: false,
-    loadExternalSnapshots: true,
-  });
-  const chinaIpAudit = await buildEdgeChinaIpAuditImpl({
-    publicDirectory,
-    primary: artifacts.diagnostics?.chinaIpAuditPrimary,
-    now,
-  });
-  const v2flyDomainAudit = await buildEdgeV2flyDomainAudit({
-    artifacts,
-    now,
-  });
-  const manifest = await stageSingBoxAuditArtifactsWithV2fly({
-    artifacts,
-    chinaIpAudit,
-    v2flyDomainAudit,
-    outputRoot: env.SING_BOX_ARTIFACT_ROOT || DEFAULT_STAGE_ROOT,
-  });
-  process.stdout.write(`Staged ${manifest.files.length} sing-box audit inputs at ${manifest.upstream.commit}\n`);
-  return manifest;
+  throw new Error("Current-only staging does not build an unpublished channel");
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {

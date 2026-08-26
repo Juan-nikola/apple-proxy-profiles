@@ -16,7 +16,7 @@ test("builds native clients and shared region GeoData into the closed default pu
   const result = buildClientArtifacts({
     snapshot: lightweightFixtureSnapshots(),
     upstream,
-    channel: "edge",
+    channel: "current",
     additionalFiles: new Map([
       ["happ/scripts/happ-config-generator.js", Buffer.from("happ fixture")],
       ["onexray/scripts/onexray-profile-generator.js", Buffer.from("onexray fixture")],

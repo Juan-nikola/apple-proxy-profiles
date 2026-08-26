@@ -5,7 +5,7 @@
       "sources": [
         {
           "dnsClass": "none",
-          "entries": 228,
+          "entries": 186635,
           "id": "Hijacking",
           "policy": "REJECT"
         },
@@ -28,7 +28,7 @@
       "sources": [
         {
           "dnsClass": "china",
-          "entries": 65,
+          "entries": 111260,
           "id": "DomesticCore",
           "policy": "DIRECT"
         },
@@ -129,13 +129,13 @@
         },
         {
           "dnsClass": "proxy",
-          "entries": 951,
+          "entries": 6003,
           "id": "GlobalMedia",
           "policy": "🎬 海外流媒体"
         },
         {
           "dnsClass": "proxy",
-          "entries": 35,
+          "entries": 38,
           "id": "Telegram",
           "policy": "💬 海外社交"
         },
@@ -165,7 +165,7 @@
         },
         {
           "dnsClass": "china",
-          "entries": 20,
+          "entries": 74,
           "id": "Apple",
           "policy": "🍎 Apple"
         },
@@ -224,9 +224,9 @@
     }
   ],
   "schemaVersion": 1,
-  "sha256": "249cd0aeacb75b4a85f5b5cd96d18297725ee73bbd85f246984d166a4166905a",
+  "sha256": "5b67ea5d1912131bdd5cf6365ce87860495c9fd09b4705cd1b647142370d67c1",
   "totals": {
-    "entries": 16845,
+    "entries": 319556,
     "sources": 32
   }
 }

@@ -11,7 +11,7 @@
 5. 查看生成诊断，比较 `total`（归一化总数）与 `accepted`（接受数），解释排除原因；`accepted` 至少为 1。
 6. 检查所有引用：不得有悬空引用，也不得有空的必需策略组。
 7. 检查 Profile 预览以 `ipv6:` 开头，且不含 `auto_update: {}`；空的自动更新对象会被 Egern 拒绝为缺少 `url`。参数或结构变化后，重新运行 Sub-Store Profile File，再在 Egern 手动更新远程 Profile。
-8. 确认脚本 URL 与 Profile 参数选择同一发布阶段：灰度使用 `channel=edge&adblockMode=off`，稳定任务使用 `channel=current&adblockMode=off`。
+8. 确认脚本 URL 与 Profile 参数都使用唯一公开频道：`channel=current&adblockMode=off`。设备反馈不会创建第二个公开发布频道。
 
 ## 每台设备都要执行的功能检查
 

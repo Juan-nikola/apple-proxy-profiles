@@ -2755,7 +2755,7 @@ var V2BoxConfigBundle = (() => {
   ]);
 
   // ../../shared/release/frontier-manifest.js
-  var FRONTIER_CHANNELS = Object.freeze(["edge", "current", "previous"]);
+  var FRONTIER_CHANNELS = Object.freeze(["current"]);
   var FRONTIER_PLATFORMS = Object.freeze({
     [CLIENT.surge]: Object.freeze(["macos", "iphone", "ipad"]),
     [CLIENT.singbox]: Object.freeze(["macos", "iphone", "ipad", "android", "openwrt"]),
@@ -2782,7 +2782,7 @@ var V2BoxConfigBundle = (() => {
   }
 
   // src/options.js
-  var DEFAULTS = Object.freeze({ channel: "edge", region: "cn", dnsMode: "stable", chinaDns: "alidns", globalDns: "cloudflare", blockMode: "balanced", quicMode: "proxy-block", ipv6Mode: "auto", clientChain: "off", clientChainTarget: "", policyOverrides: "" });
+  var DEFAULTS = Object.freeze({ channel: "current", region: "cn", dnsMode: "stable", chinaDns: "alidns", globalDns: "cloudflare", blockMode: "balanced", quicMode: "proxy-block", ipv6Mode: "auto", clientChain: "off", clientChainTarget: "", policyOverrides: "" });
   var ALLOWED = /* @__PURE__ */ new Set(["output", "type", "name", "subscriptionName", "platform", ...Object.keys(DEFAULTS)]);
   var required = (raw, key) => {
     const value = raw[key];
@@ -3060,12 +3060,17 @@ var V2BoxConfigBundle = (() => {
     resolvedChinaIp: Object.freeze(["ChinaIP"])
   });
   var RULE_BUDGETS = Object.freeze({
-    domesticCoreEntries: 2e3,
-    defaultEntries: 25e3,
-    defaultBytes: 5e6,
+    domesticCoreEntries: 13e4,
+    defaultEntries: 4e5,
+    defaultBytes: 3e7,
     startupInlineEntries: 64,
     singBoxRuleRssBytes: 50 * 1024 * 1024,
-    singBoxTotalRssBytes: 200 * 1024 * 1024
+    singBoxTotalRssBytes: 200 * 1024 * 1024,
+    // Binary SRS budgets are enforced independently from text/client bundle
+    // budgets. This prevents a large external source from being inlined into a
+    // sing-box runtime while still allowing compact binary rule sets.
+    singBoxRuleSetBytes: 50 * 1024 * 1024,
+    singBoxTotalRuleSetBytes: 200 * 1024 * 1024
   });
   var ROUTING_PRECEDENCE = Object.freeze([
     "local",

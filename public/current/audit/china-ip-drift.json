@@ -4,10 +4,10 @@
   "calibrationStartedAt": "2026-08-09T13:33:56.957Z",
   "families": {
     "ipv4": {
-      "currentAddresses": "359026674",
-      "currentPrefixes": 7175,
+      "currentAddresses": "359026930",
+      "currentPrefixes": 7176,
       "divergenceBasisPoints": "409",
-      "previousAddresses": "359026418",
+      "previousAddresses": "359026674",
       "previousPrefixes": 7175,
       "secondaryAddresses": "344333054",
       "secondaryPrefixes": 6253,
@@ -24,12 +24,12 @@
       "shrinkBasisPoints": "0"
     }
   },
-  "generatedAt": "2026-08-25T07:00:40.424Z",
+  "generatedAt": "2026-08-26T03:11:50.585Z",
   "primary": {
-    "commit": "f42be99379fcd1a1dd03469e8b56dcb46888fcea",
-    "committedAt": "2026-08-23T18:28:35Z",
+    "commit": "2df6b08dfc2707c8099056ffab6778092e7d6d3e",
+    "committedAt": "2026-08-25T18:39:12Z",
     "repository": "https://github.com/blackmatrix7/ios_rule_script",
-    "sha256": "e4a01558e7f069e09bc6c74886ce1b9ae1419dec64844944fb4a420ac50bd1c6"
+    "sha256": "fe47a9b1193811f9b71b3f973e7c7f2bcfcf7de431876a959ffa692787217ea6"
   },
   "reportOnly": false,
   "schemaVersion": 1,

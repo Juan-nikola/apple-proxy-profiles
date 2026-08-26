@@ -35,10 +35,10 @@ function regionalNodes() {
 test("parses the final Clash Apple option contract", () => {
   const options = parseClashOptions(rawOptions());
   assert.equal(options.platform, "macos");
-  assert.equal(options.channel, "edge");
+  assert.equal(options.channel, "current");
   assert.equal(options.adblockMode, "off");
   assert.equal(options.dnsMode, "stable");
-  assert.equal(options.publicBaseUrl, PUBLIC_SNAPSHOT_BASE_URL.replace("/current", "/edge"));
+  assert.equal(options.publicBaseUrl, PUBLIC_SNAPSHOT_BASE_URL);
 });
 
 test("renders a complete mihomo profile with nodes, groups, DNS, providers, and terminal rules", () => {

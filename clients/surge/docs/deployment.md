@@ -22,7 +22,7 @@ Surge 新任务只读取 `apple-proxy-surge`。先按 [Sub-Store 客户端节点
    https://juan-nikola.github.io/apple-proxy-profiles/current/surge/scripts/surge-profile-generator.js
    ```
 
-   如需维护者预览，可将路径中的 `current` 改成 `edge`；生产任务保持 `current`。
+   公开路径只使用 `current`；不要改成不存在的测试频道。
 
 ## 2. 创建三个 File
 
@@ -51,7 +51,7 @@ Surge 新任务只读取 `apple-proxy-surge`。先按 [Sub-Store 客户端节点
 
 Profile 只包含一个隐藏组 `📦 远程节点池`。如果要临时使用另一份 Surge 节点订阅，下载 Profile 后只编辑该组的 `policy-path`；保持组名、`include-other-group` 和 `policy-regex-filter` 不变，地区、流媒体和自动测速组会继续分类新来源。手动替换的 URL 必须返回 Surge 兼容的 `[Proxy]`（例如 Sub-Store 的 `t=surge` 输出），不能使用 JSON、通用 API 或其他客户端格式。
 
-`adblockMode=off` 保持轻量默认分流；确实需要完整广告分类时才使用 `full`。`channel` 和脚本发布通道应保持一致：灰度两者都用 `edge`，稳定任务两者都用 `current`。
+`adblockMode=off` 保持轻量默认分流；确实需要完整广告分类时才使用 `full`。公开脚本和任务始终使用唯一的 `channel=current`。
 
 `globalDns` 为共享参数兼容位，这份 Surge Profile 不会在本地使用它。海外规则命中后由代理端解析；其他域名使用 `chinaDns`，解析失败时通过 `dns-failed` 交给代理，这样才能同时兼容 macOS、iPhone 和 iPad。
 
@@ -66,14 +66,14 @@ Profile 只包含一个隐藏组 `📦 远程节点池`。如果要临时使用�
 
 ## 4. 版本选择与刷新
 
-`current` 是稳定发布指针，`edge` 是测试指针。节点资源建议每 6 小时刷新，Profile 结构每天刷新。脚本升级后先只重新预览 `surge-config-macos`，再按 macOS → iPhone → iPad 手动更新。正式任务不需要打开 `noCache`；只有确认 CDN 缓存问题时临时使用，验收后恢复关闭。
+`current` 是唯一公开发布指针。节点资源建议每 6 小时刷新，Profile 结构每天刷新。脚本升级后先只重新预览 `surge-config-macos`，再按 macOS → iPhone → iPad 手动更新。正式任务不需要打开 `noCache`；只有确认 CDN 缓存问题时临时使用，验收后恢复关闭。
 
 ## 5. 文件与构建
 
 - `clients/surge/src/`：生成器源码、参数解析、节点、分组、规则和 Profile 渲染；可修改。
 - `clients/surge/test/`：单元、文档和 bundle 契约；改源码后必须同步运行。
 - `clients/surge/examples/`：使用 `example.invalid` 的结构样例；不可当作真实订阅。
-- `clients/surge/dist/`、`public/current/surge/`、`public/edge/surge/`：构建产物，只读，不手工编辑。
+- `clients/surge/dist/`、`public/current/surge/`、`public/current/surge/`：构建产物，只读，不手工编辑。
 
 ```bash
 npm --workspace @apple-proxy-profiles/surge test

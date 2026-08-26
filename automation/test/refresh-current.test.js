@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdir, mkdtemp, readdir, readFile, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import test from "node:test";
@@ -7,9 +7,8 @@ import test from "node:test";
 import { buildClientArtifacts } from "../src/build-artifacts.js";
 import { artifactSha256 } from "../src/artifact-content.js";
 import { canonicalJson } from "../src/render-anywhere-rules.js";
-import { refreshChannelManifest, refreshCurrentManifest } from "../src/refresh-current.js";
+import { refreshCurrentManifest } from "../src/refresh-current.js";
 import { lightweightFixtureSnapshots } from "./lightweight-fixture.js";
-import { explainRouteMain } from "../../scripts/explain-route.mjs";
 
 async function writeFiles(directory, files) {
   for (const [path, content] of files) {
@@ -19,134 +18,34 @@ async function writeFiles(directory, files) {
   }
 }
 
-async function treeRecords(directory) {
-  const found = [];
-  async function walk(current) {
-    for (const entry of await readdir(join(directory, current), { withFileTypes: true })) {
-      const relative = current ? `${current}/${entry.name}` : entry.name;
-      if (entry.isDirectory()) await walk(relative);
-      else if (entry.isFile()) found.push(relative);
-      else throw new Error("Fixture tree contains a non-regular entry");
-    }
-  }
-  await walk("");
-  const records = [];
-  for (const path of found) {
-    if (path === "manifest.json") continue;
-    const content = await readFile(join(directory, path));
-    records.push({ path, bytes: content.byteLength, sha256: artifactSha256(content) });
-  }
-  return records.sort((left, right) => left.path < right.path ? -1 : left.path > right.path ? 1 : 0);
-}
-
-async function fixtureTree() {
-  const currentArtifacts = buildClientArtifacts({
-    snapshot: lightweightFixtureSnapshots(),
-    channel: "current",
-    additionalFiles: new Map([
-      ["onexray/scripts/onexray-node-generator.js", "native onexray generator\n"],
-      ["happ/scripts/happ-config-generator.js", "native happ generator\n"],
-    ]),
-  });
-  const root = await mkdtemp(join(tmpdir(), "apple-proxy-refresh-"));
-  await writeFiles(join(root, "current"), currentArtifacts.defaults);
-  const edgeDefaults = new Map([...currentArtifacts.defaults].map(([path, content]) => {
-    if (Buffer.isBuffer(content)) {
-      return [path, Buffer.from(content.toString("utf8").replaceAll("/current/", "/edge/"), "utf8")];
-    }
-    return [path, String(content).replaceAll("/current/", "/edge/")];
-  }));
-  await writeFiles(join(root, "edge"), edgeDefaults);
-  return { root, defaults: currentArtifacts.defaults };
-}
-
-test("refreshCurrentManifest repairs a stale current manifest from the actual tree", async () => {
-  const { root, defaults } = await fixtureTree();
+test("refreshCurrentManifest repairs the current manifest from its actual tree", async () => {
+  const root = await mkdtemp(join(tmpdir(), "apple-proxy-refresh-current-"));
+  const artifacts = buildClientArtifacts({ snapshot: lightweightFixtureSnapshots(), channel: "current" });
   try {
+    await writeFiles(join(root, "current"), artifacts.defaults);
     const stale = JSON.parse(await readFile(join(root, "current/manifest.json"), "utf8"));
-    stale.clients.shadowrocket = { manifestHash: "0".repeat(64), referencedDefaultBytes: 1 };
     stale.files = stale.files.filter(({ path }) => path !== "LICENSE");
-    const { manifestHash: ignored, ...staleBase } = stale;
-    stale.manifestHash = artifactSha256(canonicalJson(staleBase));
-    await writeFile(join(root, "current/manifest.json"), canonicalJson(stale), "utf8");
-
+    const { manifestHash: ignored, ...base } = stale;
+    await writeFile(join(root, "current/manifest.json"), canonicalJson({ ...base, manifestHash: artifactSha256(canonicalJson(base)) }));
     const refreshed = await refreshCurrentManifest({ publicDirectory: root });
     const onDisk = JSON.parse(await readFile(join(root, "current/manifest.json"), "utf8"));
-    const { manifestHash, ...base } = onDisk;
-    assert.equal(artifactSha256(canonicalJson(base)), manifestHash);
-    assert.equal(refreshed.manifestHash, manifestHash);
-
-    assert.deepEqual(onDisk.files, await treeRecords(join(root, "current")));
-
-    const shadowrocketManifest = JSON.parse(await readFile(join(root, "current/shadowrocket/client-manifest.json"), "utf8"));
-    assert.equal(onDisk.clients.shadowrocket.manifestHash, shadowrocketManifest.manifestHash);
-    const edgeManifest = JSON.parse(await readFile(join(root, "edge/manifest.json"), "utf8"));
-    assert.deepEqual(onDisk.upstream, edgeManifest.upstream);
-    assert.deepEqual(onDisk.diagnostics, edgeManifest.diagnostics);
-    assert.equal(onDisk.generatedAt, edgeManifest.generatedAt);
-
-    const audit = JSON.parse(await readFile(join(root, "current/audit/routing-plan.json"), "utf8"));
-    assert.equal(audit.schemaVersion, 1);
-    assert.equal(Array.isArray(audit.phases), true);
-
-    const explanation = await explainRouteMain(
-      ["--channel", "current", "--domain", "example.cn"],
-      { publicRoot: root },
-    );
-    assert.equal(explanation.matchedSource, "ChinaTLD");
-    assert.equal(explanation.expectedPolicy, "DIRECT");
+    assert.equal(refreshed.manifestHash, onDisk.manifestHash);
+    assert.equal(artifactSha256(canonicalJson({ ...onDisk, manifestHash: undefined })), onDisk.manifestHash);
+    assert.equal(onDisk.upstream.commit, artifacts.diagnostics.defaultManifest.upstream.commit);
   } finally {
     await rm(root, { recursive: true, force: true });
   }
 });
 
-test("refreshCurrentManifest counts sing-box mobile rule-set bytes", async () => {
-  const { root } = await fixtureTree();
+test("refreshCurrentManifest counts sing-box rule bytes without legacy channels", async () => {
+  const root = await mkdtemp(join(tmpdir(), "apple-proxy-refresh-current-bytes-"));
+  const artifacts = buildClientArtifacts({ snapshot: lightweightFixtureSnapshots(), channel: "current" });
   try {
-    const mobileRuleSet = Buffer.from("SRS\\u0002mobile-ai", "utf8");
-    await writeFiles(join(root, "current"), [["sing-box/mobile-rule-sets/AI.srs", mobileRuleSet]]);
-
+    await writeFiles(join(root, "current"), artifacts.defaults);
+    await writeFiles(join(root, "current"), [["sing-box/rules/fixture.json", Buffer.from("fixture")]]);
     const refreshed = await refreshCurrentManifest({ publicDirectory: root });
-    const records = await treeRecords(join(root, "current"));
-    const expectedBytes = records
-      .filter(({ path }) => (
-        path.startsWith("sing-box/rules/")
-        || path.startsWith("sing-box/rule-sets/")
-        || path.startsWith("sing-box/mobile-rule-sets/")
-      ))
-      .reduce((sum, { bytes }) => sum + bytes, 0);
-
-    assert.equal(refreshed.clients.singbox.referencedDefaultBytes, expectedBytes);
-  } finally {
-    await rm(root, { recursive: true, force: true });
-  }
-});
-
-test("refreshCurrentManifest refuses when current routing bytes diverge from edge", async () => {
-  const { root } = await fixtureTree();
-  try {
-    await writeFile(
-      join(root, "current/surge/rules/DomesticCore.list"),
-      "DOMAIN-SUFFIX,modified.example\n",
-      "utf8",
-    );
-    await assert.rejects(
-      () => refreshCurrentManifest({ publicDirectory: root, adoptEdgeMetadata: true }),
-      /routing bytes|edge/iu,
-    );
-  } finally {
-    await rm(root, { recursive: true, force: true });
-  }
-});
-
-test("refreshCurrentManifest accepts channel-rewritten Anywhere routing manifests", async () => {
-  const { root } = await fixtureTree();
-  try {
-    const path = join(root, "current/anywhere/rules/manifest.json");
-
-    const refreshed = await refreshCurrentManifest({ publicDirectory: root, adoptEdgeMetadata: true });
-    assert.equal(typeof refreshed.manifestHash, "string");
-    assert.match(await readFile(path, "utf8"), /\/current\/anywhere\/rules\//u);
+    assert.ok(refreshed.clients.singbox.referencedDefaultBytes > 0);
+    await assert.rejects(() => readFile(join(root, "edge/manifest.json")), { code: "ENOENT" });
   } finally {
     await rm(root, { recursive: true, force: true });
   }

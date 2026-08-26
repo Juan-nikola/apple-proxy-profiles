@@ -246,42 +246,33 @@ test("update workflow is source-push/daily/manual, verifies output, and commits 
   assert.match(text, /cancel-in-progress:\s*false/u);
 });
 
-test("update workflow verifies official binary rules before building and promoting the release", async () => {
+test("update workflow verifies official binary rules before publishing current", async () => {
   const text = await workflowText(updateWorkflow);
   const installAt = text.indexOf("node scripts/install-sing-box-core.mjs");
-  const stageAt = text.indexOf("node scripts/stage-rule-artifacts.mjs --channel edge");
+  const stageAt = text.indexOf("node scripts/stage-rule-artifacts.mjs --channel current");
   const compileAt = text.indexOf("npm --workspace @apple-proxy-profiles/sing-box run compile:rules");
   const configAt = text.indexOf("npm --workspace @apple-proxy-profiles/sing-box run check:config");
   const verifyAt = text.indexOf("npm run verify:lightweight");
-  const edgeAt = text.indexOf("run: npm run update:rules");
-  const currentStageAt = text.indexOf("node scripts/stage-rule-artifacts.mjs --channel current");
-  const currentCompileAt = text.lastIndexOf("npm --workspace @apple-proxy-profiles/sing-box run compile:rules");
+  const currentAt = text.indexOf("run: npm run update:rules");
   const currentCheckAt = text.indexOf("npm run check:rules");
-  const promoteAllAt = text.indexOf("node scripts/update-rules.mjs --promote-all");
   assert.ok(installAt > text.indexOf("npm ci"), "official core installs after dependencies");
   assert.ok(stageAt > installAt, "the stage command resolves all immutable network inputs");
   assert.ok(compileAt > stageAt, "binary rule compilation consumes the closed stage");
   assert.ok(configAt > compileAt, "both generated profile modes are checked after compilation");
   assert.ok(verifyAt > configAt, "lightweight tests and budgets run after official config checks");
-  assert.ok(edgeAt > verifyAt, "edge candidates are generated only after verification");
-  assert.ok(currentStageAt > edgeAt, "current is restaged only after the tested edge bytes are emitted");
-  assert.ok(currentCompileAt > currentStageAt, "current uses binaries compiled from its own immutable stage");
-  assert.ok(promoteAllAt > currentCompileAt, "current promotion consumes the tested edge bytes");
-  assert.ok(currentCheckAt > promoteAllAt, "current verification consumes the promoted bytes");
-  assert.match(text, /^\s*client:\s*$/mu);
-  assert.match(text, /^\s*manifest_hash:\s*$/mu);
-  assert.doesNotMatch(text, /^\s*environment:\s*canary-approval\s*$/mu);
-  assert.match(text, /node scripts\/update-rules\.mjs --promote "\$PROMOTION_CLIENT" "\$PROMOTION_MANIFEST_HASH"/u);
+  assert.ok(currentAt > verifyAt, "current is published only after verification");
+  assert.ok(currentCheckAt > currentAt, "current verification consumes the published bytes");
+  assert.doesNotMatch(text, /^\s*client:\s*$/mu);
+  assert.doesNotMatch(text, /^\s*manifest_hash:\s*$/mu);
+  assert.doesNotMatch(text, /--promote(?:-all)?/u);
   assert.match(text, /^\s*run: npm run update:rules\s*$/mu);
   assert.doesNotMatch(text, /run: npm run update:rules -- --channel edge/u);
-  assert.match(text, /github\.event_name == 'workflow_dispatch'.*inputs\.client.*inputs\.manifest_hash/su);
-  const scheduleBlock = text.slice(text.indexOf("build-edge:"), text.indexOf("promote-current:"));
-  assert.match(scheduleBlock, /--channel edge/u);
-  assert.match(scheduleBlock, /--promote-all/u);
+  const scheduleBlock = text.slice(text.indexOf("build-current:"));
+  assert.match(scheduleBlock, /--channel current/u);
   assert.doesNotMatch(scheduleBlock, /canary-approval/u);
   assert.match(text, /name: Fetch immutable ChinaIP audit and stage lightweight rules/u);
   assert.equal(
-    text.match(/node scripts\/stage-rule-artifacts\.mjs --channel edge/gu)?.length,
+    text.match(/node scripts\/stage-rule-artifacts\.mjs --channel current/gu)?.length,
     1,
   );
   assert.doesNotMatch(text, /fetch-china-ip-audit|gaoyifan/u);
@@ -380,15 +371,13 @@ test("checker rejects workflows that omit the official compiler gate", () => {
   assert.equal(errors.some((error) => error.includes("official sing-box compiler gate")), true);
 });
 
-test("Pages tree stays inside the guarded size and immutable-version window", async () => {
+test("Pages tree stays inside the guarded size and current-only layout", async () => {
   assert.deepEqual(PUBLIC_PAGES_LIMITS, {
     githubMaxBytes: 1024 * 1024 * 1024,
     maxBytes: 750 * 1024 * 1024,
-    maxVersions: 9,
   });
   const result = await checkPublicPagesTree(repositoryRoot);
   assert.deepEqual(result.errors, []);
   assert.ok(result.bytes > 0);
-  assert.ok(result.versionCount >= 2);
-  assert.ok(result.versionCount <= PUBLIC_PAGES_LIMITS.maxVersions);
+  assert.equal(result.versionCount, 0);
 });

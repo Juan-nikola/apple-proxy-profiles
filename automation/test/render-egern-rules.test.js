@@ -87,6 +87,18 @@ test("emits empty typed arrays and deterministic bytes", () => {
   assert.equal(first.counts.omitted, 1);
 });
 
+test("accepts GPL-3 Loyalsoldier provenance", () => {
+  const text = "DOMAIN,exact.example\n";
+  const parsed = parseSurgeRules(text, source);
+  const result = renderEgernRuleSource({
+    source,
+    parsed,
+    fetched: { text },
+    upstream: { ...upstream, repository: "https://github.com/Loyalsoldier/clash-rules", license: "GPL-3.0" },
+  });
+  assert.match(result.content, /# License: GPL-3\.0\n/u);
+});
+
 test("profile rules add a domestic safety net without changing upstream accounting", () => {
   const chinaSource = { ...source, id: "ChinaMax_Domain", inputFormat: "DOMAIN-SET" };
   const text = ".existing.example\n";

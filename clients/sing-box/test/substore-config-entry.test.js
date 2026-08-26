@@ -39,7 +39,7 @@ test("Sub-Store sing-box entry requests a private collection and returns JSON co
         name: "apple-proxy-singbox",
         subscriptionName: "sing-box-Nodes",
         platform: "macos",
-        channel: "edge",
+        channel: "current",
       },
       async produceArtifact(request) {
         calls.push(request);
@@ -60,7 +60,7 @@ test("Sub-Store sing-box entry requests a private collection and returns JSON co
   }]);
   const config = JSON.parse(result.$content);
   assert.equal(config.inbounds[0].auto_redirect, undefined);
-  assert.ok(config.route.rule_set[0].url.includes("/edge/sing-box/rule-sets/"));
+  assert.ok(config.route.rule_set[0].url.includes("/current/sing-box/rule-sets/"));
   assert.equal(config.route.rule_set.every(({ format, url }) => format === "binary" && url.endsWith(".srs")), true);
   assert.equal(result.$content.endsWith("\n"), true);
 });

@@ -2,17 +2,17 @@
   "client": "clash",
   "files": [
     {
-      "bytes": 10836920,
-      "path": "optional/adblock-full/clash/rules/Advertising_Domain.yaml",
-      "sha256": "dd760afe8af720895bafbe238edf0c6c58241b6395271c84602bc7a9db8a6e27"
-    },
-    {
       "bytes": 30855,
       "path": "optional/adblock-full/clash/rules/Advertising.yaml",
       "sha256": "a7ef143843c9404a7ac81a6a2a0aaa6e6439f81bad411c3de04b92d3e1592b76"
+    },
+    {
+      "bytes": 10836920,
+      "path": "optional/adblock-full/clash/rules/Advertising_Domain.yaml",
+      "sha256": "dd760afe8af720895bafbe238edf0c6c58241b6395271c84602bc7a9db8a6e27"
     }
   ],
   "generatedAt": "2026-08-25T18:39:12Z",
-  "manifestHash": "621609f97141834193f4944c2c7ae377dd018bb2e98241cd79d541b97298b5fc",
+  "manifestHash": "e359a7ee4367ed128d93c86e0b74bf99909fce03a488582424e38f9c98c13e26",
   "schemaVersion": 1
 }

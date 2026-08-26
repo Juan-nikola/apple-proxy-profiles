@@ -1,8 +1,8 @@
 import { FRONTIER_CHANNELS } from "./frontier-manifest.js";
 
 const CHANNEL_SET = new Set(FRONTIER_CHANNELS);
-const CHANNEL_PATH_LOOSE = /(?:^|[\s/"'`])((?:edge|current|previous))(?=\/)/giu;
-const CHANNEL_FIELD = /\bchannel\s*(?:=|:)\s*["']?\s*(edge|current|previous)\b/giu;
+const CHANNEL_PATH_LOOSE = /(?:^|[\s/"'`])(current)(?=\/)/giu;
+const CHANNEL_FIELD = /\bchannel\s*(?:=|:)\s*["']?\s*(current)\b/giu;
 const VERSION_PATH = /(?:^|[\s/"'`])versions\/([0-9a-f]{64})(?=\/)/giu;
 
 function closureError(reason) {

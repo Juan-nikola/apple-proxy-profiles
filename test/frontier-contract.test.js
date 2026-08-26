@@ -25,7 +25,7 @@ test("frontier manifest records platform-specific upstream and rejects secret-sh
   const input = {
     client: CLIENT.singbox,
     platform: "macos",
-    channel: "edge",
+    channel: "current",
     upstream: {
       branch: "testing",
       commit: "a".repeat(40),
@@ -50,7 +50,7 @@ test("frontier manifest preserves failure details without reflecting node values
   const manifest = createFrontierManifest({
     client: CLIENT.surge,
     platform: "iphone",
-    channel: "edge",
+    channel: "current",
     upstream: {
       branch: "beta",
       commit: "d".repeat(40),
@@ -88,7 +88,7 @@ test("native clients are active and frontier candidates remain explicit", () => 
   assert.equal(clientAdapter(CLIENT.happ).state, "active");
   const base = {
     platform: "iphone",
-    channel: "edge",
+    channel: "current",
     upstream: { branch: "main", commit: "a".repeat(40), fetchedAt: "2026-08-05T00:00:00Z" },
     schemaVersion: "happ-v4",
     ruleManifestSha256: "b".repeat(64),
@@ -101,7 +101,7 @@ test("native clients are active and frontier candidates remain explicit", () => 
 
 test("fans OneXray out to six candidate platforms without copying profile bytes", () => {
   const candidates = createOneXrayFrontierCandidates({
-    channel: "edge",
+    channel: "current",
     upstream: { branch: "main", commit: "a".repeat(40), fetchedAt: "2026-08-05T00:00:00Z" },
     schemaVersion: "onexray-profile-v1",
     ruleManifestSha256: "b".repeat(64),
@@ -121,7 +121,7 @@ test("rejects a frontier manifest whose platform key does not match its identity
   const manifest = createFrontierManifest({
     client: CLIENT.surge,
     platform: "macos",
-    channel: "edge",
+    channel: "current",
     upstream: { branch: "master", commit: "a".repeat(40), fetchedAt: "2026-08-05T00:00:00Z" },
     schemaVersion: "surge-profile-v1",
     ruleManifestSha256: "b".repeat(64),

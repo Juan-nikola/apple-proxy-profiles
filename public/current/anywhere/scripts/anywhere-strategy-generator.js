@@ -1431,7 +1431,7 @@ var AnywhereStrategyBundle = (() => {
   ]);
 
   // ../../../shared/release/frontier-manifest.js
-  var FRONTIER_CHANNELS = Object.freeze(["edge", "current", "previous"]);
+  var FRONTIER_CHANNELS = Object.freeze(["current"]);
   var FRONTIER_PLATFORMS = Object.freeze({
     [CLIENT.surge]: Object.freeze(["macos", "iphone", "ipad"]),
     [CLIENT.singbox]: Object.freeze(["macos", "iphone", "ipad", "android", "openwrt"]),
@@ -2776,7 +2776,7 @@ var AnywhereStrategyBundle = (() => {
     if (values.get("output") !== "strategy") throw new Error("Anywhere strategy output must be strategy");
     if (values.get("type") !== "collection") throw new Error("Anywhere strategy type must be collection");
     const name = validateCollectionName(values.get("name"), "Anywhere strategy name");
-    const channel = values.get("channel") ?? "edge";
+    const channel = values.get("channel") ?? "current";
     if (!FRONTIER_CHANNELS.includes(channel)) throw new Error("Anywhere strategy channel is unsupported");
     return Object.freeze({ output: "strategy", type: "collection", name, channel, clientChain: "off" });
   }

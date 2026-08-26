@@ -10,7 +10,7 @@ test("parses OneXray profile defaults", () => {
     output: "profile",
     type: "collection",
     name: "apple-proxy-onexray",
-    channel: "edge",
+    channel: "current",
     dnsMode: "stable",
     chinaDns: "alidns",
     globalDns: "cloudflare",

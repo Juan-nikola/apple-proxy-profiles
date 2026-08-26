@@ -305,14 +305,13 @@ node --input-type=module -e 'import { compileRules } from "./clients/sing-box/sc
 
 审计阻断项由规则工作流同步到仓库 Issues，并使用 `audit-blocker` 标签和稳定 marker。打开仓库的 Issues → `audit-blocker` 可查看创建、更新、去重和恢复关闭记录；warning 只进入 JSON/看板，不创建 Issue。Issue 正文只保留脱敏键、首次/最近发现时间和 dashboard 相对路径，不包含节点、策略正文、URL 或凭据。
 
-回滚先验证频道，再切换任务：
+回滚不切换公开频道；先保留设备上的旧 Profile/Config，修复后重新验证唯一的 current：
 
 ```bash
-node scripts/update-rules.mjs --check --channel previous
 node scripts/update-rules.mjs --check --channel current
 ```
 
-精确回滚使用 `/versions/<manifestHash>/` 不可变目录；不要手工替换单个规则文件，也不要把所有任务一次改成 `edge`。
+公开目录只保留 `/current/`；不要手工替换单个规则文件。构建失败时发布器不会替换现有 current，修复后重新运行同一任务。
 
 发布前：
 
@@ -331,7 +330,7 @@ curl -L --fail --silent --show-error --head https://juan-nikola.github.io/apple-
 curl -L --fail --silent --show-error --head https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/import.html
 ```
 
-生产使用 `current/`，测试使用 `edge/`；公开规则回滚可使用 `previous/` 或 Manifest 中的 `versions/<manifestHash>/`。Sub-Store 任务通常不需要换 URL：修复后重新运行同一远程任务即可。设备侧失败先切回旧 Profile/Config，不要用更新脚本覆盖唯一可用配置。
+生产只使用 `current/`，不再公开 edge/previous/versions。Sub-Store 任务通常不需要换 URL：修复后重新运行同一远程任务即可。设备侧失败先保留旧 Profile/Config，不要手工编辑规则文件。
 
 共享分流顺序固定为：`DomesticCore` → 服务规则 → `OverseasGame` → `ChinaTLD` → `ChinaIP` → FINAL。未知域名遵循“先判断再连接”：先解析，解析到中国 IP 使用 `DIRECT`；解析到海外 IP 或无法确认时使用默认代理。它不是“直连失败后自动代理重试”，也不要求把完整 `ChinaMax_Domain` 塞进客户端。
 

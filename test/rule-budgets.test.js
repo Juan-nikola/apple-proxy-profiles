@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
 
-import { buildClientArtifacts } from "../automation/src/build-artifacts.js";
+import { buildClientArtifacts, enforcePublicationBudgets } from "../automation/src/build-artifacts.js";
 import { artifactSha256 } from "../automation/src/artifact-content.js";
 import { lightweightFixtureSnapshots } from "../automation/test/lightweight-fixture.js";
 import { compileRules } from "../clients/sing-box/scripts/compile-rules.mjs";
@@ -185,4 +185,28 @@ test("the sing-box binary manifest closes over every referenced non-empty SRS wi
     assert.equal(content.length, record.bytes, record.path);
     assert.equal(artifactSha256(content), record.sha256, record.path);
   }
+});
+
+test("enforces sing-box per-rule-set and aggregate binary budgets", () => {
+  const diagnostics = { domesticCoreEntries: 0, defaultEntries: 0 };
+  const within = new Map([
+    ["sing-box/rule-sets/A.srs", Buffer.alloc(RULE_BUDGETS.singBoxRuleSetBytes)],
+    ["sing-box/rule-sets/B.srs", Buffer.alloc(RULE_BUDGETS.singBoxRuleSetBytes)],
+  ]);
+  assert.doesNotThrow(() => enforcePublicationBudgets({ diagnostics, files: within }));
+
+  const oversized = new Map([["sing-box/rule-sets/A.srs", Buffer.alloc(RULE_BUDGETS.singBoxRuleSetBytes + 1)]]);
+  assert.throws(
+    () => enforcePublicationBudgets({ diagnostics, files: oversized }),
+    /sing-box rule-set bytes|single rule-set|budget exceeded/iu,
+  );
+
+  const aggregate = new Map();
+  const chunk = Math.floor(RULE_BUDGETS.singBoxTotalRuleSetBytes / 2) + 1;
+  aggregate.set("sing-box/rule-sets/A.srs", Buffer.alloc(chunk));
+  aggregate.set("sing-box/rule-sets/B.srs", Buffer.alloc(chunk));
+  assert.throws(
+    () => enforcePublicationBudgets({ diagnostics, files: aggregate }),
+    /sing-box total rule-set bytes|aggregate|budget exceeded/iu,
+  );
 });

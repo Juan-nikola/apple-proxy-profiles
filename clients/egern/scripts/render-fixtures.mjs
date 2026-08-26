@@ -7,7 +7,7 @@ import { validateEgernProfile } from "../src/validate-profile.js";
 
 const root = resolve(import.meta.dirname, "..");
 const privateNodeUrl = "https://example.invalid/private/egern-nodes";
-const publicRuleUrl = "https://juan-nikola.github.io/apple-proxy-profiles/edge/egern/rules/DomesticCore.yaml";
+const publicRuleUrl = "https://juan-nikola.github.io/apple-proxy-profiles/current/egern/rules/DomesticCore.yaml";
 const platforms = Object.freeze([
   Object.freeze(["macos", false]),
   Object.freeze(["iphone", true]),
@@ -74,7 +74,7 @@ for (const [platform, expectedIpv6] of platforms) {
       name: "egern-sources",
       nodeSubscriptionUrl: privateNodeUrl,
       platform,
-      channel: "edge",
+      channel: "current",
       adblockMode: "off",
     },
     async produceArtifact(request) {

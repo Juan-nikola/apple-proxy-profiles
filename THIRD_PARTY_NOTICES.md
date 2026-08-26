@@ -1,6 +1,6 @@
 # Third-Party Notices
 
-本文件说明 `Juan-nikola/apple-proxy-profiles` 使用、转换或审计的第三方项目。根目录 [LICENSE](LICENSE) 是本仓库的 `GPL-2.0-only` 许可文本；每个第三方项目仍受其自己的许可、版权和商标条款约束。
+本文件说明 `Juan-nikola/apple-proxy-profiles` 使用、转换或审计的第三方项目。根目录 [LICENSE](LICENSE) 是本仓库的 `GPL-3.0-or-later` 许可文本；每个第三方项目仍受其自己的许可、版权和商标条款约束。
 
 ## Blackmatrix7 ios_rule_script
 
@@ -15,7 +15,17 @@
 
 修改/转换声明日期：2026-08-03。为保证可复现性，生成文件中的 `generatedAt` 或转换时间固定为该快照的上游提交时间，不使用构建机器的墙上时钟；这不表示转换工作由上游作者完成。定时更新可以把后续快照提升到 Blackmatrix7 `master` 的新完整提交，因此不应把上面的初始 SHA 当成所有未来快照的永久值。每个公开规则产物和 Manifest 应继续保留上游仓库、完整提交 SHA、原始路径、许可、转换者和内容哈希。
 
-这些转换结果不是 Blackmatrix7 官方发布物，Blackmatrix7 作者不对本项目的转换、策略选择、客户端兼容性或运行结果负责。本项目同样不提供适销性、特定用途适用性或无错误保证；完整免责声明见 GPL v2 第 11、12 节。
+这些转换结果不是 Blackmatrix7 官方发布物，Blackmatrix7 作者不对本项目的转换、策略选择、客户端兼容性或运行结果负责。本项目同样不提供适销性、特定用途适用性或无错误保证；完整免责声明见其 GPL v2 第 11、12 节。
+
+## Loyalsoldier clash-rules
+
+- 项目：[Loyalsoldier/clash-rules](https://github.com/Loyalsoldier/clash-rules)
+- 固定 release 提交：`6f188ab71421eb1dc5094f8877cd467b256c1a95`
+- 固定 release tree：`48f825328014eef805065de40be0a25bec604075`
+- 上游许可：`GPL-3.0`
+- 使用范围：`direct.txt`、`reject.txt`、`applications.txt` 作为补充规则源；`google.txt` 仅保留审计快照，不进入生产路由。
+
+本项目只读取固定发布资产，记录每个 blob SHA-1、SHA-256、抓取时间和解析诊断，并将 Clash YAML payload 规范化为共享规则模型。现有业务规则优先；冲突保留现有语义并写入审计数据。`PROCESS-NAME` 规则仅在客户端能力允许时输出，其余客户端记录省略原因。生成物不是 Loyalsoldier 官方发布物。
 
 ## NodePassProject Anywhere
 

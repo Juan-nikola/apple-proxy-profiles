@@ -164,7 +164,7 @@ Sub-Store 中先找“订阅/组合订阅”查看 `apple-proxy-shadowrocket` �
 
 ## 8. 首次使用策略组
 
-1. 重新运行当前平台中直接引用 `shadowrocket-profile-generator.js` 规范 Pages URL 的 File 并更新 Profile；节点脚本 URL、组合 Operator 和私密 URL都不改。当前轻量默认是 `channel=edge`、`adblockMode=off`：`DomesticCore`、`DomesticGame`、`SteamCN` 先 DIRECT，明确境外服务随后匹配，`OverseasGame` 进入 `🌍 海外游戏`，`ChinaIP` 与 `GEOIP,CN,DIRECT` 负责国内回退，最后是 `FINAL,🚀 节点选择`。只有明确设置 `adblockMode=full` 才加载独立 optional 广告包。打开 `🚀 节点选择`，确认它包含 `PROXY`、全自动和固定的亚太、欧洲、美洲洲组；洲组内是“洲自动 + 该洲全部具体服务器”，不再有国旗/国家组；如果仍显示单个 `PROXY` 或直接出现国旗/具体节点名，当前设备使用的还是旧 Profile。
+1. 重新运行当前平台中直接引用 `shadowrocket-profile-generator.js` 规范 Pages URL 的 File 并更新 Profile；节点脚本 URL、组合 Operator 和私密 URL都不改。当前轻量默认是唯一公开的 `channel=current`、`adblockMode=off`：`DomesticCore`、`DomesticGame`、`SteamCN` 先 DIRECT，明确境外服务随后匹配，`OverseasGame` 进入 `🌍 海外游戏`，`ChinaIP` 与 `GEOIP,CN,DIRECT` 负责国内回退，最后是 `FINAL,🚀 节点选择`。只有明确设置 `adblockMode=full` 才加载独立 optional 广告包。打开 `🚀 节点选择`，确认它包含 `PROXY`、全自动和固定的亚太、欧洲、美洲洲组；洲组内是“洲自动 + 该洲全部具体服务器”，不再有国旗/国家组；如果仍显示单个 `PROXY` 或直接出现国旗/具体节点名，当前设备使用的还是旧 Profile。
 2. 统一业务组提供自动测速、地区和具体节点选择。GitHub、YouTube、海外流媒体、海外社交和海外游戏组以 `policy-select-name=🚀 节点选择` 设为首项；Apple、Microsoft 和国内平台组以 `policy-select-name=DIRECT` 设为首项。检查至少一个境外组和一个国内组，确认各自首项、完整显式候选和匹配订阅中的具体服务器均可见。
 3. 打开 `🤖 AI 专用`，直接选择任意已勾选具体节点。AI 组的选择不会改变主线路。
 4. Apple、Microsoft 和国内平台默认直连；需要时可在对应平台组选择 `🚀 节点选择`或具体节点。

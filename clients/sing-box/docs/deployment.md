@@ -9,13 +9,13 @@ sing-box 读取独立的 Sub-Store 组合 `apple-proxy-singbox`。组合中的�
 脚本地址：
 
 ```text
-https://juan-nikola.github.io/apple-proxy-profiles/edge/sing-box/scripts/sing-box-config-generator.js
+https://juan-nikola.github.io/apple-proxy-profiles/current/sing-box/scripts/sing-box-config-generator.js
 ```
 
 公共参数：
 
 ```text
-output=config&type=collection&name=apple-proxy-singbox&subscriptionName=Apple-Proxy-Nodes&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&autoGroupMode=auto&clientChain=off&nodeErrorMode=strict&channel=edge
+output=config&type=collection&name=apple-proxy-singbox&subscriptionName=Apple-Proxy-Nodes&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&autoGroupMode=auto&clientChain=off&nodeErrorMode=strict&channel=current
 ```
 
 `subscriptionName` 必须是节点 File 在客户端显示的名称。不要把私密节点 URL、密码、UUID 或 Sub-Store API 放进公开脚本参数。
@@ -42,9 +42,9 @@ output=config&type=collection&name=apple-proxy-singbox&subscriptionName=Apple-Pr
 
 未知域名使用 DNS response matching 和 `ChinaIP` rule-set 自动分类，但不承诺对已经失败的请求进行跨出口重放。被墙的中国域名应加入自定义 proxy 规则。
 
-## edge 与 current
+## current-only 发布
 
-`edge` 在 GitHub Actions 中解析官方 sing-box testing 最新 release，安装官方校验过的 core，重新编译 `.srs`、生成四个平台配置并执行 `sing-box check`。`current` 是可回滚的已发布快照；不要把 edge 直接用于全部设备，除非你接受 testing 核心的字段变更风险。
+更新工作流解析官方 sing-box testing 最新 release，安装官方校验过的 core，重新编译 `.srs`、生成四个平台配置并执行 `sing-box check`，通过后原子替换唯一公开的 `current` 快照。设备侧如需回滚，使用本地保留的旧 Config，不切换不存在的公开回滚频道。
 
 iPhone/iPad/Android 的配置统一按移动端内存预算生成：日志为 `warn`、缓存文件和 `store_dns` 关闭、规则集限制为 14 个，且不允许 `adblockMode=full`。macOS 继续使用完整规则目录。
 

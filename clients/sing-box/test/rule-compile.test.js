@@ -5,7 +5,7 @@ import { join } from "node:path";
 import test from "node:test";
 
 import { checkConfigs, compileRules, main } from "../scripts/compile-rules.mjs";
-import { MOBILE_RULE_SOURCE_IDS, ruleClientCatalog } from "../../../shared/rules/lightweight-policy.js";
+import { MOBILE_RULE_SOURCE_IDS, RULE_BUDGETS, ruleClientCatalog } from "../../../shared/rules/lightweight-policy.js";
 
 async function fixtureCore(mode) {
   const root = await mkdtemp(join(tmpdir(), "sing-box-core-"));
@@ -14,6 +14,7 @@ async function fixtureCore(mode) {
     valid: "printf 'SRS\\0021234567890123' > \"$out\"",
     text: "printf '%s' '{\\\"fake\\\":true}' > \"$out\"",
     corrupt: "printf '\\000NOT-SRS-CORRUPT-BYTES' > \"$out\"",
+    large: `{ printf 'SRS\\002'; dd if=/dev/zero bs=1048576 count=${Math.floor(RULE_BUDGETS.singBoxRuleSetBytes / (1024 * 1024)) + 1} 2>/dev/null; } > \"$out\"`,
   }[mode];
   if (!payload) throw new Error(`Unknown fixture core mode: ${mode}`);
   const output = `#!/bin/sh\nif [ "$1" = "check" ] || [ "$1" = "format" ]; then exit 0; fi\nout=''\nwhile [ $# -gt 0 ]; do if [ "$1" = "--output" ]; then shift; out=$1; fi; shift; done\n${payload}\n`;
@@ -112,6 +113,18 @@ test("rejects long NUL-containing output without the official SRS magic in both 
       artifacts: new Map([["audit/sing-box/rules/Fixture.json", JSON.stringify({ version: 5, rules: [] })]]),
     }),
     /SRS magic|valid.*SRS|SRS.*header/iu,
+  );
+});
+
+test("rejects a compiled sing-box rule set that exceeds the single-set memory budget", async () => {
+  const root = await mkdtemp(join(tmpdir(), "sing-box-rules-budget-"));
+  const sourceDirectory = join(root, "source");
+  await mkdir(sourceDirectory, { recursive: true });
+  await writeFile(join(sourceDirectory, "Fixture.json"), JSON.stringify({ version: 5, rules: [] }));
+  const core = await fixtureCore("large");
+  await assert.rejects(
+    () => compileRules({ corePath: core, sourceDirectory, outputDirectory: join(root, "compiled") }),
+    /sing-box rule-set bytes|single.*budget|budget exceeded/iu,
   );
 });
 

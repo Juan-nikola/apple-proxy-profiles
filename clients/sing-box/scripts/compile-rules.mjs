@@ -5,7 +5,7 @@ import { tmpdir } from "node:os";
 import { basename, dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { MOBILE_RULE_SOURCE_IDS, ruleClientCatalog } from "../../../shared/rules/lightweight-policy.js";
+import { MOBILE_RULE_SOURCE_IDS, RULE_BUDGETS, ruleClientCatalog } from "../../../shared/rules/lightweight-policy.js";
 
 // Official sing-box binary rule sets start with ASCII "SRS" followed by the
 // binary format version byte 0x02. Even an empty v5 source compiles to 17 bytes.
@@ -86,6 +86,18 @@ function validateSrsBinary(buffer, label) {
   return buffer;
 }
 
+function enforceSrsBudgets(records, label = "sing-box") {
+  const total = records.reduce((sum, record) => sum + record.bytes, 0);
+  for (const record of records) {
+    if (record.bytes > RULE_BUDGETS.singBoxRuleSetBytes) {
+      throw new Error(`${label} rule-set bytes exceeded for ${record.path}: ${record.bytes} > ${RULE_BUDGETS.singBoxRuleSetBytes}`);
+    }
+  }
+  if (total > RULE_BUDGETS.singBoxTotalRuleSetBytes) {
+    throw new Error(`${label} total rule-set bytes exceeded: ${total} > ${RULE_BUDGETS.singBoxTotalRuleSetBytes}`);
+  }
+}
+
 export async function compileRules(options) {
   if (options?.artifacts !== undefined) return compileArtifactMap(options);
   const { corePath, sourceDirectory, outputDirectory } = options ?? {};
@@ -114,6 +126,7 @@ export async function compileRules(options) {
     validateSrsBinary(binary, `sing-box output ${outputName}`);
     files.push(Object.freeze({ path: outputName, bytes: binary.length, sha256: sha256(binary) }));
   }
+  enforceSrsBudgets(files);
   return Object.freeze({ version, files: Object.freeze(files) });
 }
 
@@ -147,6 +160,7 @@ async function compileArtifactMap({ corePath, artifacts, expectedPaths = null })
       for (const path of expectedPaths) if (!ordered.has(path)) throw new Error(`Expected sing-box rule-set artifact is missing: ${path}`);
       for (const path of ordered.keys()) if (!expectedPaths.includes(path)) throw new Error(`Unexpected sing-box rule-set artifact: ${path}`);
     }
+    enforceSrsBudgets([...ordered].map(([path, content]) => ({ path, bytes: content.length })));
     return ordered;
   } finally {
     await rm(tempRoot, { recursive: true, force: true });
@@ -239,16 +253,19 @@ async function compileCommand(corePath, env) {
     if (unexpected) throw new Error(`Staged current sing-box tree contains an unexpected file: ${unexpected}`);
     const reused = new Map();
     await rm(outputRoot, { recursive: true, force: true });
+    const reusedRecords = [];
     for (const path of expected) {
       const content = validateSrsBinary(
         await readFile(join(artifactRoot, path)),
         `staged current sing-box rule ${path}`,
       );
+      reusedRecords.push({ path, bytes: content.length });
       const destination = join(outputRoot, path);
       await mkdir(dirname(destination), { recursive: true });
       await writeFile(destination, content);
       reused.set(path, content);
     }
+    enforceSrsBudgets(reusedRecords, "staged sing-box");
     return reused;
   }
   const paths = discovered.filter((path) => (

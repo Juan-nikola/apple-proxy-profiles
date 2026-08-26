@@ -129,6 +129,7 @@ test("retains safe internal provenance through merge and deduplication", () => {
 
 test("retains exact pinned provenance metadata for every external source", () => {
   for (const source of EXTERNAL_RULE_SOURCE_CATALOG) {
+    if (source.auditOnly) continue;
     const merged = mergeRuleSources({ region: source.region, snapshots: new Map([[source.id, { sourceId: source.id, entries: [entry(`${source.id}.example`, source.id)], provenance: source }]]) });
     const provenance = merged.provenance[0];
     for (const field of ["commit", "releaseTag", "sha256", "retrievalUrl", "retrievedAt"]) assert.equal(provenance[field], source[field]);

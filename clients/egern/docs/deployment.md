@@ -70,7 +70,7 @@ Egern 新任务只读取 `apple-proxy-egern`。先按 [Sub-Store 客户端节点
 
 | 参数 | 可选值 |
 | --- | --- |
-| channel | edge、current |
+| channel | current |
 | adblockMode | off、full |
 | dnsMode | stable、privacy、speed |
 | chinaDns | alidns、dnspod、system |
@@ -83,7 +83,7 @@ Egern 新任务只读取 `apple-proxy-egern`。先按 [Sub-Store 客户端节点
 
 `clientChain=off` 是默认值。只有明确、合法且兼容的入口节点和落地节点同时存在，并能验证 `prev_hop` 引用时，才考虑开启。
 
-`adblockMode=off` 默认不加载完整广告包；只有专门验证广告时才改为 `full`。`channel` 与规则发布必须一致：灰度使用 `edge`，稳定任务使用 `current`。
+`adblockMode=off` 默认不加载完整广告包；只有专门验证广告时才改为 `full`。公开发布只使用 `channel=current`；设备反馈不另设灰度频道。
 
 ## 私密 URL 的唯一替换位置
 

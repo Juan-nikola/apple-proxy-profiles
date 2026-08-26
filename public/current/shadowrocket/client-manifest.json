@@ -1,5 +1,5 @@
 {
-  "chinaIpAuditSha256": "6a1a8561c85f0683095ff1a76fb035a4cb5707f14d7f3778f8a5115e6f60502c",
+  "chinaIpAuditSha256": "bd8b22453da86ce18f8a0aa819838448b36411ff5446463b6bfe7e155867343d",
   "client": "shadowrocket",
   "files": [
     {
@@ -18,9 +18,9 @@
       "sha256": "efb75ace1f7b2e0c4861f3b69ae88ef7dc2c560c37af0df5549115c41ed7d586"
     },
     {
-      "bytes": 985,
+      "bytes": 2464,
       "path": "shadowrocket/rules/Apple.list",
-      "sha256": "daa0d602b6f688dc89fc1aaefce1a72e08eee151c16989b4100b31785c4b1a82"
+      "sha256": "ce9ca76e386dec8a9559250bce7b5a87b8dbfbf386cb04969c6d5c38e5347a21"
     },
     {
       "bytes": 4550,
@@ -63,9 +63,9 @@
       "sha256": "aba1295e326cb52ffef44e6ce15255c97dee3fa2ddcd78bc17ee63ee5c34db09"
     },
     {
-      "bytes": 1963,
+      "bytes": 2970827,
       "path": "shadowrocket/rules/DomesticCore.list",
-      "sha256": "57594fe79da2e3e3a27a185f124674af2972d7ee6c35184c4a2e4f30967bd3fb"
+      "sha256": "e7a2fa7cdfcf834ada271bc7041ab12c3d067a8994f0cb32e280e2227dad82cf"
     },
     {
       "bytes": 1474,
@@ -93,14 +93,14 @@
       "sha256": "d293fc751ef6d90f5fcae0d5c065e9bf253101c2a499382f80c201ba8d88b824"
     },
     {
-      "bytes": 34042,
+      "bytes": 167010,
       "path": "shadowrocket/rules/GlobalMedia.list",
-      "sha256": "107ae63f171207fb5c07556f2ba39ab58aa359230503604432007847124f3411"
+      "sha256": "ed6d904cad49cff923bd406511df9bb6c3dee7bb9d6c88e1b9c8c522468c7433"
     },
     {
-      "bytes": 6856,
+      "bytes": 6487999,
       "path": "shadowrocket/rules/Hijacking.list",
-      "sha256": "9286b608633671354ddda640241e5193f656370207691c03184ad4578e5c291f"
+      "sha256": "ed1dcdb1a3290d8f4c54a2ad69bc8b024a154d48eed086917dd642731e526f77"
     },
     {
       "bytes": 417,
@@ -148,9 +148,9 @@
       "sha256": "3f0f0e90a080a102c9a161ca149b2e46a308a138ecbd000994bcfa0e202c3e8d"
     },
     {
-      "bytes": 1311,
+      "bytes": 1415,
       "path": "shadowrocket/rules/Telegram.list",
-      "sha256": "ca116908054a27f23f59fffe84440513d0d0c9a1507823eee6460171530f5d35"
+      "sha256": "9a02e87d428d1f4beca21a2b07a311a53818425bab801c10443297bded71bc28"
     },
     {
       "bytes": 1179,
@@ -188,9 +188,9 @@
       "sha256": "17388d644c18777f7fe91fba5efe264a84f88e8e70bff0a4adf5273f0ca76ca1"
     },
     {
-      "bytes": 134663,
+      "bytes": 134963,
       "path": "shadowrocket/scripts/shadowrocket-profile-generator.js",
-      "sha256": "de34e65e6367a33e5668a8da28904df26c292f212b141de563e87281458871ec"
+      "sha256": "ca771e5f399e51132792075ac130ca79e49cbfeb61be6517efe622ca424024b7"
     },
     {
       "bytes": 41268,
@@ -198,15 +198,15 @@
       "sha256": "2f9bfe96ee32b2279d992d9cafb1b501f74b607f2303f7fbf6f1869e2041adfb"
     },
     {
-      "bytes": 134663,
+      "bytes": 134963,
       "path": "shadowrocket/scripts/substore-profile-generator.js",
-      "sha256": "de34e65e6367a33e5668a8da28904df26c292f212b141de563e87281458871ec"
+      "sha256": "ca771e5f399e51132792075ac130ca79e49cbfeb61be6517efe622ca424024b7"
     }
   ],
   "generatedAt": "2026-08-25T18:39:12Z",
-  "manifestHash": "461ee64872b22e7360f17c05e3c1b2aeeec362f2dbf893ef08cb55360e503b41",
+  "manifestHash": "ee04fb982452edf696e386b2ebd3b07290b99982164fe18a7ccf7536dba22167",
   "optionalPacks": {
-    "adblock-full": "bf213aaff8841c20bcbdad6b829efc847151887e33d117e70fba0514ae164657"
+    "adblock-full": "66513b2ba687a9048e33988dfe8f1d2a6f2836587c5dd42355ac68951f059337"
   },
   "schemaVersion": 1
 }

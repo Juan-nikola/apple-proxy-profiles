@@ -112,14 +112,11 @@ test("closes the lightweight domestic DNS rule URL over the publishing snapshot 
   }
 });
 
-test("keeps DNS rule providers on the selected publication channel", () => {
-  for (const channel of ["edge", "current", "previous"]) {
-    const serialized = JSON.stringify(renderEgernDns(options({ channel })));
-    assert.match(serialized, new RegExp(`/${channel}/egern/rules/DomesticCore\\.yaml`, "u"));
-    for (const other of ["edge", "current", "previous"].filter((value) => value !== channel)) {
-      assert.doesNotMatch(serialized, new RegExp(`/${other}/egern/rules/`, "u"));
-    }
-  }
+test("keeps DNS rule providers on the current publication channel", () => {
+  const serialized = JSON.stringify(renderEgernDns(options({ channel: "current" })));
+  assert.match(serialized, /\/current\/egern\/rules\/DomesticCore\.yaml/u);
+  assert.doesNotMatch(serialized, /\/(?:edge|previous)\/egern\/rules\//u);
+  assert.throws(() => options({ channel: "previous" }), /channel/iu);
 });
 
 test("renders privacy globally and stable/speed with China-first catch-all", () => {

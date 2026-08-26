@@ -26,8 +26,8 @@ function validateInputs({ source, parsed, fetched, upstream }) {
   }
   requiredSingleLine(upstream.committedAt, "Upstream commit time");
   requiredSingleLine(upstream.license, "Upstream license");
-  if (upstream.license !== "GPL-2.0-only") {
-    throw new TypeError("Upstream license must remain GPL-2.0-only");
+  if (!(upstream.license === "GPL-2.0-only" || upstream.license === "GPL-3.0")) {
+    throw new TypeError("Upstream license must be GPL-2.0-only or GPL-3.0");
   }
   if (parsed.entries.length !== parsed.diagnostics.parsedCount) {
     throw new Error(`Rule source ${source.id}: parsed entry accounting mismatch`);

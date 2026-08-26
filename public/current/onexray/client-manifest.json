@@ -1,60 +1,60 @@
 {
-  "chinaIpAuditSha256": "6a1a8561c85f0683095ff1a76fb035a4cb5707f14d7f3778f8a5115e6f60502c",
+  "chinaIpAuditSha256": "bd8b22453da86ce18f8a0aa819838448b36411ff5446463b6bfe7e155867343d",
   "client": "onexray",
   "files": [
     {
-      "bytes": 181466,
+      "bytes": 181725,
       "path": "onexray/geodata/geoip.dat",
-      "sha256": "9f7c6fcef4dc3338c1801b190934dae2fb407e1c4a0732d7fd6f65e77576060e"
+      "sha256": "89b7b947ea79676055c5a18c59aa5094dca7e4595908d32f7f857f79d1017800"
     },
     {
-      "bytes": 74223,
+      "bytes": 6933893,
       "path": "onexray/geodata/geosite.dat",
-      "sha256": "4bed4f09fb433437409d6ffd3f8e061f14babca334c64278110320c011ad7eb9"
+      "sha256": "7c3546f538a7bcbb5d396f7cd3971a3912c9bd9a06c0834184a1ca7c479f0af9"
     },
     {
-      "bytes": 10718,
+      "bytes": 10740,
       "path": "onexray/geodata/manifest.json",
-      "sha256": "c6e87ed8e603839a148671f2c2b1e1472e28031194ae4194d0373558ad6209c6"
+      "sha256": "ea5fc73460e7195c0e8dd753594c95f6bf452e47ac572518214babbe01988ba0"
     },
     {
-      "bytes": 4044,
+      "bytes": 4063,
       "path": "onexray/index.html",
-      "sha256": "e67acc49535d57293f8f710a03bd81196564f7bd9da8ae8e5ba5659aae072a9d"
+      "sha256": "835956b18c4defe4ab084ee6fe5b4e1240d9aa32c3014ff0a92e9e4acd515722"
     },
     {
-      "bytes": 134687,
+      "bytes": 134667,
       "path": "onexray/scripts/onexray-node-generator.js",
-      "sha256": "333ac627ffb1e0840734f7b3507b7b230d59c053434ebd87c7c8034d5d3ee0a6"
+      "sha256": "a96084be49de291e6ca23613fe224736beeece5a323e256a45d13a03b230cada"
     },
     {
-      "bytes": 156048,
+      "bytes": 156028,
       "path": "onexray/scripts/onexray-profile-generator.js",
-      "sha256": "1043ee8a046ac641de308e9f41828157d41a8dd554abcd6b58cadb949b9491cd"
+      "sha256": "5d1eec4036ea2d0774b6fbcfd12399c4c687e6893cbeceb4d6a0e76c41364f7c"
     },
     {
-      "bytes": 147305,
+      "bytes": 147288,
       "path": "onexray/scripts/onexray-routing-audit.js",
-      "sha256": "e79f52672554ca9faeb3183dcf2adff1bec3d4119e368b86cba52650c5643ca7"
+      "sha256": "9bc6a0d77c371a95ac5533ab622392bc0d9790e748a54f9c9f79372e5abe008e"
     },
     {
-      "bytes": 134687,
+      "bytes": 134667,
       "path": "onexray/scripts/substore-node-generator.js",
-      "sha256": "333ac627ffb1e0840734f7b3507b7b230d59c053434ebd87c7c8034d5d3ee0a6"
+      "sha256": "a96084be49de291e6ca23613fe224736beeece5a323e256a45d13a03b230cada"
     },
     {
-      "bytes": 156048,
+      "bytes": 156028,
       "path": "onexray/scripts/substore-profile-generator.js",
-      "sha256": "1043ee8a046ac641de308e9f41828157d41a8dd554abcd6b58cadb949b9491cd"
+      "sha256": "5d1eec4036ea2d0774b6fbcfd12399c4c687e6893cbeceb4d6a0e76c41364f7c"
     },
     {
-      "bytes": 147305,
+      "bytes": 147288,
       "path": "onexray/scripts/substore-routing-audit.js",
-      "sha256": "e79f52672554ca9faeb3183dcf2adff1bec3d4119e368b86cba52650c5643ca7"
+      "sha256": "9bc6a0d77c371a95ac5533ab622392bc0d9790e748a54f9c9f79372e5abe008e"
     }
   ],
   "generatedAt": "2026-08-25T18:39:12Z",
-  "manifestHash": "6849fe30d403ffc408044622674c45fe2304d4160abef3fe0ac2846e60e564a8",
+  "manifestHash": "95592e170e219a24c923a2346c036a6ba8634f6b0a93d448140c6c0867c4b46a",
   "optionalPacks": {},
   "schemaVersion": 1
 }

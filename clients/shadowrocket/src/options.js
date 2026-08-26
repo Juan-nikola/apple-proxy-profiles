@@ -12,7 +12,7 @@ const REQUIRED_KEYS = Object.freeze([
 ]);
 
 const DEFAULTS = Object.freeze({
-  channel: "edge",
+  channel: "current",
   dnsMode: "stable",
   chinaDns: "alidns",
   globalDns: "cloudflare",

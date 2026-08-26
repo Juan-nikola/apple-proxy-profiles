@@ -7,6 +7,12 @@ const MAX_SOURCE_BYTES = 128 * 1024 * 1024;
 const REQUEST_TIMEOUT_MS = 30_000;
 const RELEASE_ASSET_HOST = "release-assets.githubusercontent.com";
 
+function rawReleaseUrl(source) {
+  const repository = new URL(source.repository);
+  const [, owner, repo] = repository.pathname.split("/");
+  return new URL(`https://raw.githubusercontent.com/${owner}/${repo}/${source.branch}/${source.sourcePath}`);
+}
+
 function sourceError(sourceId, reason) {
   return new Error(`External rule source ${sourceId}: ${reason}`);
 }
@@ -98,7 +104,17 @@ async function fetchOne(source, {
       signal: AbortSignal.timeout(timeoutMs),
     });
   } catch {
-    throw sourceError(source.id, "network failure");
+    const fallback = rawReleaseUrl(source);
+    if (fallback === null) throw sourceError(source.id, "network failure");
+    try {
+      response = await fetchImpl(fallback, {
+        redirect: "error",
+        headers: { Accept: "text/plain, application/octet-stream" },
+        signal: AbortSignal.timeout(timeoutMs),
+      });
+    } catch {
+      throw sourceError(source.id, "network failure");
+    }
   }
   if (response.status >= 300 && response.status < 400) {
     const location = response.headers.get("location");
@@ -133,7 +149,7 @@ async function fetchOne(source, {
   const digest = createHash("sha256").update(bytes).digest("hex");
   if (digest !== source.sha256) throw sourceError(source.id, "SHA-256 does not match catalog");
   let input = bytes;
-  if (source.adapter === "v2fly-domain-list") {
+  if (["v2fly-domain-list", "clash-rules-yaml"].includes(source.adapter)) {
     try {
       input = new TextDecoder("utf-8", { fatal: true }).decode(bytes);
     } catch {

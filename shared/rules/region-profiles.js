@@ -7,7 +7,7 @@ const BASELINE_IDS = Object.freeze(RULE_SOURCE_CATALOG.map(({ id }) => id));
 const CHINA_LOCAL_IDS = new Set(["DomesticCore", "DomesticGame", "SteamCN", "ChinaTLD", "ChinaIP", "ChinaMax", "ChinaMax_Domain"]);
 const GLOBAL_BASELINE_IDS = Object.freeze(BASELINE_IDS.filter((id) => !CHINA_LOCAL_IDS.has(id)));
 const COMMON_EXTERNAL_IDS = Object.freeze(EXTERNAL_RULE_SOURCE_CATALOG
-  .filter(({ region }) => region === "global")
+  .filter(({ region, auditOnly }) => region === "global" && !auditOnly)
   .map(({ id }) => id));
 const OVERLAY_IDS = Object.freeze({
   ru: Object.freeze(EXTERNAL_RULE_SOURCE_CATALOG.filter(({ region }) => region === "ru").map(({ id }) => id)),

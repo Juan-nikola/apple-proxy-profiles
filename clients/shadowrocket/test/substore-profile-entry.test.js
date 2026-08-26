@@ -71,7 +71,7 @@ test("file operator produces a Profile artifact and preserves the input", async 
   assert.equal(typeof result.$content, "string");
   assert.deepEqual(Object.keys(result).sort(), ["$content", "unchanged", "url"]);
   assert.match(result.$content, /\[Proxy Group\]/);
-  assert.match(result.$content, /edge\/shadowrocket\/rules\/DomesticCore\.list/u);
+  assert.match(result.$content, /current\/shadowrocket\/rules\/DomesticCore\.list/u);
   assert.match(result.$content, /node-count=5/u);
   assert.doesNotMatch(result.$content, /\/Advertising(?:_Domain)?\.list/u);
 });

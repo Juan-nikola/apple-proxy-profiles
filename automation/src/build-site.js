@@ -307,6 +307,8 @@ async function refreshRootManifestHash(manifestPath) {
 }
 
 export async function prepareCurrentRootFromEdge({ publicDirectory } = {}) {
+  throw new Error("Edge-to-current promotion is no longer supported; publish the complete current tree");
+  /* c8 ignore next */
   const edgeDirectory = join(publicDirectory, "edge");
   const currentDirectory = join(publicDirectory, "current");
   if (await exists(currentDirectory)) return false;
@@ -394,6 +396,8 @@ async function fileMatches(path, content) {
 }
 
 export async function snapshotCurrentVersion(directory) {
+  throw new Error("Immutable public versions are no longer supported; publish current only");
+  /* c8 ignore next */
   const manifestPath = join(directory, "current", "manifest.json");
   if (!await exists(manifestPath)) return null;
   const manifestBytes = await readFile(manifestPath);
@@ -462,6 +466,8 @@ async function versionRecords(versionsDirectory) {
 }
 
 export async function enforceRetention(stagingDirectory, requiredVersion = null) {
+  throw new Error("Immutable public versions are no longer supported; publish current only");
+  /* c8 ignore next */
   const versionsDirectory = join(stagingDirectory, "versions");
   let versions = await versionRecords(versionsDirectory);
   if (requiredVersion !== null) {
@@ -491,7 +497,7 @@ export async function enforceRetention(stagingDirectory, requiredVersion = null)
 function indexHtml(manifest) {
   return `<!doctype html>
 <html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Apple Proxy Profiles</title></head>
-<body><main><h1>Apple Proxy Profiles</h1><p>Blackmatrix7 commit: <code>${manifest.upstream.commit}</code></p><p>公开页不包含私密节点、策略正文或凭据。</p><ul><li><a href="current/manifest.json">Current manifest</a></li><li><a href="edge/manifest.json">Frontier edge manifest</a></li><li><a href="current/frontier-manifest.json">Current frontier manifest</a></li><li><a href="previous/manifest.json">Previous manifest</a></li><li><a href="current/audit/dashboard.html">中文公开审计看板</a></li><li><a href="current/audit/dashboard.json">审计 JSON</a></li><li><a href="current/anywhere/import.html">Anywhere import</a></li><li><a href="current/surge/scripts/surge-profile-generator.js">Surge Sub-Store script</a></li><li><a href="current/sing-box/scripts/sing-box-config-generator.js">sing-box Sub-Store script</a></li></ul></main></body></html>
+<body><main><h1>Apple Proxy Profiles</h1><p>Blackmatrix7 commit: <code>${manifest.upstream.commit}</code></p><p>公开页不包含私密节点、策略正文或凭据。</p><ul><li><a href="current/manifest.json">Current manifest</a></li><li><a href="current/audit/dashboard.html">中文公开审计看板</a></li><li><a href="current/audit/dashboard.json">审计 JSON</a></li><li><a href="current/anywhere/import.html">Anywhere import</a></li><li><a href="current/surge/scripts/surge-profile-generator.js">Surge Sub-Store script</a></li><li><a href="current/sing-box/scripts/sing-box-config-generator.js">sing-box Sub-Store script</a></li></ul></main></body></html>
 `;
 }
 
@@ -513,82 +519,81 @@ export async function buildSite({
   files,
   manifest,
   frontierFiles = null,
+  optionalPacks = null,
+  currentOnly = false,
 }) {
   if (!(files instanceof Map) || !manifest || !/^[0-9a-f]{64}$/u.test(manifest.manifestHash)) {
     throw new TypeError("Verified public artifacts are required");
   }
-  if (frontierFiles !== null && !(frontierFiles instanceof Map)) {
-    throw new TypeError("Frontier public artifacts must be a Map");
-  }
   if (frontierFiles !== null) {
-    for (const [path, content] of frontierFiles) {
-      if (!safeRelativePath(path)) throw new TypeError("Frontier public artifact is invalid");
-      if (!/^(?:edge|current|previous)\//u.test(path)) {
-        throw new Error("Frontier public artifact must be scoped to edge, current, or previous");
-      }
+    throw new Error("Frontier publication is no longer supported; publish current artifacts instead");
+  }
+  if (currentOnly) {
+    if (!(optionalPacks instanceof Map)) throw new TypeError("Current-only optional publications must be a Map");
+    validateDefaultPublication({ defaults: files, manifest, channel: "current" });
+    const optionalManifests = new Map();
+    for (const [packId, packFiles] of optionalPacks) {
+      optionalManifests.set(packId, validateOptionalPublication({ packId, files: packFiles, channel: "current" }));
     }
-    validateFrontierPublicationFiles(frontierFiles);
+    const parent = dirname(publicDirectory);
+    const staging = await mkdtemp(join(parent, `.${basename(publicDirectory)}-current-staging-`));
+    const backup = `${publicDirectory}.backup-${manifest.manifestHash.slice(0, 12)}`;
+    try {
+      await writeSnapshot(join(staging, "current"), files);
+      for (const [packId, packFiles] of optionalPacks) {
+        const prefix = `optional/${packId}/`;
+        const target = join(staging, "optional", packId, "current");
+        for (const [path, content] of packFiles) {
+          if (!path.startsWith(prefix)) throw new Error(`Optional publication ${packId} escaped its tree`);
+          const relativePath = path.slice(prefix.length);
+          await mkdir(dirname(join(target, relativePath)), { recursive: true });
+          await writeFile(join(target, relativePath), artifactBuffer(content));
+        }
+      }
+      const currentFiles = await readArtifactTree(join(staging, "current"), "current");
+      assertChannelClosure({ files: currentFiles, channel: "current", rootPrefix: "current" });
+      await writeFile(join(staging, "manifest.json"), artifactBuffer(files.get("manifest.json")));
+      await writeFile(join(staging, "index.html"), indexHtml(manifest), "utf8");
+      await writeFile(join(staging, ".nojekyll"), "", "utf8");
+      if (await exists(backup)) throw new Error("Public backup path already exists");
+      const hadPublic = await exists(publicDirectory);
+      if (hadPublic) await rename(publicDirectory, backup);
+      try {
+        await rename(staging, publicDirectory);
+      } catch (error) {
+        if (hadPublic) await rename(backup, publicDirectory);
+        throw error;
+      }
+      if (hadPublic) await rm(backup, { recursive: true, force: true });
+      return { bytes: await directoryBytes(publicDirectory), versionCount: 0, files: files.size, manifestHash: manifest.manifestHash };
+    } catch (error) {
+      await rm(staging, { recursive: true, force: true });
+      throw error;
+    }
+  }
+  for (const [path] of files) {
+    if (!safeRelativePath(path)) throw new TypeError("Public snapshot file is invalid");
   }
   const currentDirectory = join(publicDirectory, "current");
-  if (await exists(currentDirectory) && await snapshotMatches(currentDirectory, files)
-    && (frontierFiles === null || await subsetMatches(publicDirectory, frontierFiles))
+  const hasLegacyDirectory = (await Promise.all([
+    exists(join(publicDirectory, "edge")),
+    exists(join(publicDirectory, "previous")),
+    exists(join(publicDirectory, "versions")),
+  ])).some(Boolean);
+  if (!hasLegacyDirectory && await exists(currentDirectory) && await snapshotMatches(currentDirectory, files)
     && await fileMatches(join(publicDirectory, "index.html"), indexHtml(manifest))) {
-    const versionsDirectory = join(publicDirectory, "versions");
-    const versionDirectory = join(versionsDirectory, manifest.manifestHash);
-    if (await exists(versionDirectory) && !await snapshotMatches(versionDirectory, files)) {
-      throw new Error("Immutable public version bytes changed or are missing");
-    }
-    if (await exists(versionDirectory)) {
-      const versions = await versionRecords(versionsDirectory);
-      return { bytes: await directoryBytes(publicDirectory), versionCount: versions.length };
-    }
+    return { bytes: await directoryBytes(publicDirectory), versionCount: 0 };
   }
   const parent = dirname(publicDirectory);
   const staging = await mkdtemp(join(parent, `.${basename(publicDirectory)}-staging-`));
   const backup = `${publicDirectory}.backup-${manifest.manifestHash.slice(0, 12)}`;
   try {
-    if (await exists(publicDirectory)) {
-      const versions = join(publicDirectory, "versions");
-      if (await exists(versions)) await cp(versions, join(staging, "versions"), { recursive: true, errorOnExist: true });
-      await cp(join(publicDirectory, "current"), join(staging, "previous"), { recursive: true, errorOnExist: true });
-      const edge = join(publicDirectory, "edge");
-      if (await exists(edge)) await cp(edge, join(staging, "edge"), { recursive: true, errorOnExist: true });
-    } else {
-      await writeSnapshot(join(staging, "previous"), files);
-    }
     await writeSnapshot(join(staging, "current"), files);
-    if (frontierFiles !== null) await writeSnapshot(staging, frontierFiles);
-    const versionDirectory = join(staging, "versions", manifest.manifestHash);
-    if (await exists(versionDirectory)) {
-      if (!await snapshotMatches(versionDirectory, files)) throw new Error("Immutable public version bytes changed");
-    } else {
-      await writeSnapshot(versionDirectory, files);
-    }
-    if (await exists(join(staging, "previous"))) {
-      await rewriteTreeChannel(join(staging, "previous"), "current", "previous");
-      for (const client of activeClientIds()) {
-        const clientDirectory = publicDirectoryForClient(client);
-        if (await exists(join(staging, "previous", clientDirectory, "client-manifest.json"))) {
-          await refreshClientManifest({ publicDirectory: staging, channel: "previous", client });
-        }
-      }
-      if (await canRefreshChannel(join(staging, "previous"))) {
-        await refreshChannelManifest({ publicDirectory: staging, channel: "previous" });
-      }
-      const previousFiles = await readArtifactTree(join(staging, "previous"));
-      assertChannelClosure({ files: previousFiles, channel: "previous", rootPrefix: "previous" });
-    }
-    const versionFiles = await readArtifactTree(versionDirectory);
-    assertChannelClosure({
-      files: versionFiles,
-      channel: "current",
-      rootPrefix: `versions/${manifest.manifestHash}`,
-      immutableVersion: manifest.manifestHash,
-    });
+    const currentFiles = await readArtifactTree(join(staging, "current"), "current");
+    assertChannelClosure({ files: currentFiles, channel: "current", rootPrefix: "current" });
     await writeFile(join(staging, "manifest.json"), artifactBuffer(files.get("manifest.json")));
     await writeFile(join(staging, "index.html"), indexHtml(manifest), "utf8");
     await writeFile(join(staging, ".nojekyll"), "", "utf8");
-    const retention = await enforceRetention(staging, manifest.manifestHash);
 
     if (await exists(backup)) throw new Error("Public backup path already exists");
     const hadPublic = await exists(publicDirectory);
@@ -600,11 +605,37 @@ export async function buildSite({
       throw error;
     }
     if (hadPublic) await rm(backup, { recursive: true, force: true });
-    return retention;
+    return { bytes: await directoryBytes(publicDirectory), versionCount: 0, files: files.size, manifestHash: manifest.manifestHash };
   } catch (error) {
     await rm(staging, { recursive: true, force: true });
     throw error;
   }
+}
+
+export async function publishCurrentRelease({
+  publicDirectory,
+  defaults,
+  optionalPacks,
+  manifest,
+  channel = "current",
+}) {
+  if (channel !== "current") throw new TypeError("Current-only publication requires channel=current");
+  const merged = mergePublicationFiles(defaults, optionalPacks);
+  validateDefaultPublication({ defaults, manifest, channel });
+  const optionalManifests = new Map([...optionalPacks].map(([packId, files]) => [
+    packId,
+    validateOptionalPublication({ packId, files, channel }),
+  ]));
+  for (const [client, directory] of Object.entries(CLIENT_PUBLIC_PATHS)) {
+    const clientManifest = verifyClientManifest(defaults, client, directory);
+    const expectedSelections = Object.fromEntries([...optionalManifests]
+      .filter(([, optionalManifest]) => optionalManifest.clients[client] !== undefined)
+      .map(([packId, optionalManifest]) => [packId, optionalManifest.clients[client].manifestHash]));
+    if (canonicalJson(clientManifest.optionalPacks ?? {}) !== canonicalJson(expectedSelections)) {
+      throw new Error(`Default client optional selection mismatch for ${client}`);
+    }
+  }
+  return buildSite({ publicDirectory, files: defaults, manifest, optionalPacks, currentOnly: true });
 }
 
 export const PUBLIC_RETENTION = Object.freeze({
@@ -848,6 +879,8 @@ export async function publishEdgeRelease({
   manifest,
   channel = null,
 }) {
+  throw new Error("Edge publication is no longer supported; publish current artifacts instead");
+  /* c8 ignore next */
   const merged = mergePublicationFiles(defaults, optionalPacks);
   const selectedChannel = channel ?? inferArtifactChannel(defaults) ?? "edge";
   if (!FRONTIER_CHANNELS.includes(selectedChannel)) throw new TypeError("Publication channel is unsupported");
@@ -1099,6 +1132,8 @@ function knownOptionalPacks(value) {
 }
 
 export async function sealPreviousRelease({ publicDirectory }) {
+  throw new Error("Previous publication is no longer supported; publish current artifacts instead");
+  /* c8 ignore next */
   if (typeof publicDirectory !== "string" || publicDirectory.length === 0) {
     throw new TypeError("Public directory is required");
   }
@@ -1207,6 +1242,8 @@ export async function promoteClientRelease({
   now = new Date(),
   cleanupBackupImpl = (path) => rm(path, { recursive: true, force: true }),
 }) {
+  throw new Error("Client promotion is no longer supported; publish the complete current tree");
+  /* c8 ignore next */
   const directory = CLIENT_PUBLIC_PATHS[client];
   if (!activeClientIds().includes(client) || !directory) {
     throw new Error(`Client ${client} is not an active promotion target`);

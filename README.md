@@ -459,7 +459,7 @@ npm run verify
 
 GitHub Actions 的 **Update Rules** 工作流会先构建并验证 `edge`，然后自动把全部 active 客户端的字节 promotion 到 `current`，最后提交并触发 Pages 正式部署。`edge` 只用于维护者隔离预览；手动填写客户端和 manifest hash 的 promotion 入口保留给故障恢复或定向回滚。真机 canary 不再是发布门禁；如需收集设备侧实践反馈，可在上线后按客户端清单执行，不影响上线。
 
-失败怎么办：`edge` 验证失败就停止，不要手工编辑 `public/current/`。生产已经异常时临时使用 `previous` 或 Manifest 中的不可变 `versions/<manifestHash>/`。
+失败怎么办：current 验证失败就停止，不要手工编辑 `public/current/`。修复后重新运行同一个构建任务；发布器使用原子替换，失败会保留上一份 current。
 
 ### 3.4 业务分组怎么维护
 
@@ -492,7 +492,7 @@ npm ci
 | `clients/<client>/src/` | 客户端生成器源码 | 可以，同时加测试 |
 | `automation/src/` | 规则获取、编译和发布逻辑 | 可以，同时加测试 |
 | `clients/<client>/dist/` | 自动构建产物 | 不可以 |
-| `public/current/`、`public/edge/` | 自动发布产物 | 不可以 |
+| `public/current/` | 自动发布产物 | 不可以 |
 
 ### 4.3 修改后的完整验证
 
@@ -558,7 +558,7 @@ npm run explain:route -- --channel current --domain baidu.com
 
 1. **设备层**：先切回旧 Profile/Config，这是最快恢复方法。
 2. **Sub-Store 层**：恢复旧参数、旧 collection 或旧 File 输出，再 preview。
-3. **公开发布层**：规则或脚本问题使用 `previous`；需要精确版本时使用 `versions/<manifestHash>/`。
+3. **公开发布层**：仅公开 `current/`；失败构建不会替换上一份 current。
 
 一次只回滚一层。节点问题不要同时删除规则，规则问题也不要重建全部节点任务。
 
@@ -608,8 +608,7 @@ Shadowrocket 和 Surge 首先检查 `subscriptionName`；Egern 和 Surge 再检�
 | `shared/rules/semantic-intents.js` | 统一业务语义中间层 |
 | `automation/src/source-catalog.js` | 固定公开规则来源 |
 | `public/current/` | 生产通道 |
-| `public/edge/` | 测试候选通道 |
-| `public/previous/` | 快速回滚通道 |
+| `public/current/` | 唯一公开生产通道 |
 
 客户端详细文档：
 

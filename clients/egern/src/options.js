@@ -16,7 +16,7 @@ const REQUIRED_KEYS = Object.freeze([
 ]);
 
 const DEFAULTS = Object.freeze({
-  channel: "edge",
+  channel: "current",
   adblockMode: "off",
   dnsMode: "stable",
   chinaDns: "alidns",

@@ -73,6 +73,92 @@ export const EXTERNAL_RULE_SOURCE_CATALOG = Object.freeze([
     retrievedAt: "2026-08-22T00:00:00Z",
     sha256: "5ff22eb6bc59573253dce2655498db4ed8096380787f15f5d9268756a4940532",
   }),
+  source({
+    id: "loyalsoldier-clash-direct",
+    repository: "https://github.com/Loyalsoldier/clash-rules",
+    branch: "release",
+    commit: "6f188ab71421eb1dc5094f8877cd467b256c1a95",
+    tree: "48f825328014eef805065de40be0a25bec604075",
+    blob: "99e83b33316491bb4a312ffa6d2d96c321b7bc53",
+    license: "GPL-3.0",
+    format: "clash-rules-yaml",
+    region: "global",
+    adapter: "clash-rules-yaml",
+    minEntries: 1,
+    sourcePath: "direct.txt",
+    releaseTag: "202608252255",
+    retrievalUrl: "https://github.com/Loyalsoldier/clash-rules/releases/download/202608252255/direct.txt",
+    retrievedAt: "2026-08-26T00:00:00Z",
+    sha256: "555003affe662bc61f668aaa4efba5ede7b43921efc0331faeda33dc8d0852cf",
+  }),
+  source({
+    id: "loyalsoldier-clash-reject",
+    repository: "https://github.com/Loyalsoldier/clash-rules",
+    branch: "release",
+    commit: "6f188ab71421eb1dc5094f8877cd467b256c1a95",
+    tree: "48f825328014eef805065de40be0a25bec604075",
+    blob: "e2b569d2c601a0a48c1c3ea7c3d4cfc0d41a0e4b",
+    license: "GPL-3.0",
+    format: "clash-rules-yaml",
+    region: "global",
+    adapter: "clash-rules-yaml",
+    minEntries: 1,
+    sourcePath: "reject.txt",
+    releaseTag: "202608252255",
+    retrievalUrl: "https://github.com/Loyalsoldier/clash-rules/releases/download/202608252255/reject.txt",
+    retrievedAt: "2026-08-26T00:00:00Z",
+    sha256: "106bc6dfae726634b21bd9112da80f679419b71009af8e6a376915404f6992a5",
+  }),
+  source({
+    id: "loyalsoldier-clash-applications",
+    repository: "https://github.com/Loyalsoldier/clash-rules",
+    branch: "release",
+    commit: "6f188ab71421eb1dc5094f8877cd467b256c1a95",
+    tree: "48f825328014eef805065de40be0a25bec604075",
+    blob: "e409d8e43c33c3b82ca033825a6d6026ac8a9e6e",
+    license: "GPL-3.0",
+    format: "clash-rules-yaml",
+    region: "global",
+    adapter: "clash-rules-yaml",
+    minEntries: 1,
+    sourcePath: "applications.txt",
+    releaseTag: "202608252255",
+    retrievalUrl: "https://github.com/Loyalsoldier/clash-rules/releases/download/202608252255/applications.txt",
+    retrievedAt: "2026-08-26T00:00:00Z",
+    sha256: "33bc8f07bacf74082fcb5f361eded1f6f9d3abcedcbe37ada2eb2ab4ae031732",
+  }),
+  source({
+    id: "loyalsoldier-clash-google",
+    repository: "https://github.com/Loyalsoldier/clash-rules",
+    branch: "release",
+    commit: "6f188ab71421eb1dc5094f8877cd467b256c1a95",
+    tree: "48f825328014eef805065de40be0a25bec604075",
+    blob: "9766421c32efb5ff9442d9998c8b0dc561ab7b04",
+    license: "GPL-3.0",
+    format: "clash-rules-yaml",
+    region: "global",
+    adapter: "clash-rules-yaml",
+    auditOnly: true,
+    minEntries: 1,
+    sourcePath: "google.txt",
+    releaseTag: "202608252255",
+    retrievalUrl: "https://github.com/Loyalsoldier/clash-rules/releases/download/202608252255/google.txt",
+    retrievedAt: "2026-08-26T00:00:00Z",
+    sha256: "21a04f287800943b3fdfdef1f843173086171d9a0b5c9c33c3f73e1ec77d4c9e",
+  }),
+  ...[
+    ["private", "62c87f8501cb221de661dba97a17d3eaba4c9592", "3a04b128200ef8097d73b1496cbb23d24bc1e05d42fffb09f07c51699efb00b2"],
+    ["apple", "3fbaf85c498ce62ec854a370b1919aeb7a6f4cbb", "70f9f77e0022fc1e79d597d2fca5a3bbfa8bfe0f7542694b455f8a70004f5ba3"],
+    ["icloud", "0c0de8fb5b244eb4a24bee6452e255576ec8ab75", "f1fb7e9d17400071bf77d853b2a3148ccb6a13d785cb97e73f1693142682b23f"],
+    ["gfw", "7d3951772d1c25862c4ddc76b999dc571f8c84cc", "841c83b1536777b9088bf879d9ea3516a7a70ea63a4066eeafa5ba2cdf601cbc"],
+    ["tld-not-cn", "f3d8313d7d645c9044eefbce1cefecc32b12e90e", "330816293887779168d577a95f606c33702322654249e4c00051a3827830e310"],
+    ["telegramcidr", "b3d48b7dc56c78089d701a44a86d5ab058a13403", "328fca88c675763111c7f7585ec504e5c21ab9afb7a8ce6df33b7ac01b8a3ee0"],
+    ["lancidr", "43b23b5a34c37cdf3f69f714bd86f1fc6ac59e01", "82920b241dc328f1dc99849cf733ed8675a00a4ee0bdf64c892b332dfb7e1e2e"],
+    ["cncidr", "1c2af0f2b98d4613b21e321558254e7ba44fdd54", "019b753c347b7b06ae8a9f9f74f2443d6b35bc9e4d6db70c134306503621b2d1"],
+  ].map(([name, blob, sha256]) => source({
+    id: `loyalsoldier-clash-${name}`, repository: "https://github.com/Loyalsoldier/clash-rules", branch: "release",
+    commit: "6f188ab71421eb1dc5094f8877cd467b256c1a95", tree: "48f825328014eef805065de40be0a25bec604075", blob, license: "GPL-3.0", format: "clash-rules-yaml", region: "global", adapter: "clash-rules-yaml", minEntries: 1, sourcePath: `${name}.txt`, releaseTag: "202608252255", retrievalUrl: `https://github.com/Loyalsoldier/clash-rules/releases/download/202608252255/${name}.txt`, retrievedAt: "2026-08-26T00:00:00Z", sha256,
+  })),
 ]);
 
 export function validateExternalSourceCatalog(catalog = EXTERNAL_RULE_SOURCE_CATALOG) {
@@ -104,6 +190,9 @@ export function validateExternalSourceCatalog(catalog = EXTERNAL_RULE_SOURCE_CAT
     if (typeof record.format !== "string" || record.format.trim() === "") throw new TypeError(`External source ${record.id} has no format`);
     if (typeof record.adapter !== "string" || record.adapter.trim() === "") throw new TypeError(`External source ${record.id} has no adapter`);
     if (!Number.isInteger(record.minEntries) || record.minEntries < 1) throw new TypeError(`External source ${record.id} has invalid minEntries`);
+    if (record.tree !== undefined && !SHA1_COMMIT.test(record.tree)) throw new TypeError(`External source ${record.id} has invalid tree hash`);
+    if (record.blob !== undefined && !SHA1_COMMIT.test(record.blob)) throw new TypeError(`External source ${record.id} has invalid blob hash`);
+    if (record.auditOnly !== undefined && typeof record.auditOnly !== "boolean") throw new TypeError(`External source ${record.id} has invalid auditOnly flag`);
   }
   return true;
 }

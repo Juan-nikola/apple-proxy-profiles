@@ -42,7 +42,7 @@ test("interactive entries load apple-proxy-policy and preserve a fixed-node cand
   const calls = [];
   const singbox = await singboxOperator({}, "JSON", context({
     output: "config", type: "collection", name: "fixture",
-    subscriptionName: "Fixture", platform: "iphone", channel: "edge",
+    subscriptionName: "Fixture", platform: "iphone", channel: "current",
   }, calls));
   const singboxConfig = JSON.parse(singbox.$content);
   const singboxAi = singboxConfig.outbounds.find(({ tag }) => tag === "🤖 AI 专用");
@@ -51,7 +51,7 @@ test("interactive entries load apple-proxy-policy and preserve a fixed-node cand
 
   const shadowrocket = await shadowrocketOperator({}, "JSON", context({
     output: "config", type: "collection", name: "fixture",
-    subscriptionName: "Fixture", platform: "iphone", channel: "edge",
+    subscriptionName: "Fixture", platform: "iphone", channel: "current",
     dnsMode: "stable", chinaDns: "alidns", globalDns: "cloudflare",
     blockMode: "balanced", quicMode: "proxy-block", ipv6Mode: "auto",
     autoGroupMode: "auto", clientChain: "off",
@@ -60,7 +60,7 @@ test("interactive entries load apple-proxy-policy and preserve a fixed-node cand
 
   const surge = await surgeOperator({}, "JSON", context({
     output: "config", type: "collection", name: "fixture",
-    subscriptionName: "Fixture", platform: "iphone", channel: "edge",
+    subscriptionName: "Fixture", platform: "iphone", channel: "current",
     dnsMode: "stable", chinaDns: "alidns", globalDns: "cloudflare",
     blockMode: "balanced", quicMode: "proxy-block", ipv6Mode: "auto",
     autoGroupMode: "auto", clientChain: "off",
@@ -72,7 +72,7 @@ test("interactive entries load apple-proxy-policy and preserve a fixed-node cand
   const egern = await egernOperator({}, "JSON", context({
     output: "config", type: "collection", name: "fixture",
     nodeSubscriptionUrl: "https://example.invalid/private/egern-nodes",
-    platform: "iphone", channel: "edge",
+    platform: "iphone", channel: "current",
   }, calls));
   assert.match(egern.$content, /name: "🤖 AI 专用"/u);
   assert.match(egern.$content, /- "🇺🇸 qqpw家宽 · Trojan"/u);
@@ -108,7 +108,7 @@ test("fixed policy references use the shared original-name resolver in non-inter
   assert.ok(fixedConfig.routing.rules.some((rule) => rule.domain?.includes("geosite:OPENAI") && rule.balancerTag));
 
   const onexray = await onexrayOperator({}, "JSON", {
-    arguments: { output: "profile", type: "collection", name: "fixture", channel: "edge" },
+    arguments: { output: "profile", type: "collection", name: "fixture", channel: "current" },
     produceArtifact: async (request) => {
       calls.push(request);
       return request.type === "file" ? { $content: policy } : nodes;
@@ -134,7 +134,7 @@ test("v2rayN and V2Box config entries load the shared policy artifact and route 
   });
   const v2rayn = await v2raynOperator({}, "JSON", fixedContext({
     output: "config", type: "collection", name: "fixture",
-    subscriptionName: "Fixture", platform: "windows", channel: "edge",
+    subscriptionName: "Fixture", platform: "windows", channel: "current",
     region: "cn", clientChain: "off",
   }, calls));
   const v2raynProfile = JSON.parse(v2rayn.$content);
@@ -142,7 +142,7 @@ test("v2rayN and V2Box config entries load the shared policy artifact and route 
 
   const v2box = await v2boxOperator({}, "JSON", fixedContext({
     output: "config", type: "collection", name: "fixture",
-    subscriptionName: "Fixture", platform: "iphone", channel: "edge",
+    subscriptionName: "Fixture", platform: "iphone", channel: "current",
     region: "cn", clientChain: "off",
   }, calls));
   const v2boxProfile = JSON.parse(v2box.$content);

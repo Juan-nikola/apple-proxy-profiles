@@ -194,7 +194,7 @@
       ]
     }
   ],
-  "manifestSha256": "4481bd19357156a4cf57a582ef6eff7d31f0e9a55425a1b44a96ba1b6e2c0d7c",
+  "manifestSha256": "34422bb81e178dde7b0e3c597221eef54fb56e3057a3e18cd45ca88f04d5bd5e",
   "optionalPacks": {
     "adblock-full": "../../optional/adblock-full/manifest.json"
   },
@@ -261,24 +261,43 @@
   "shards": [
     {
       "countsByType": {
-        "domainSuffix": 189,
+        "domainSuffix": 94917,
         "ipv4Cidr": 79,
         "ipv6Cidr": 4
       },
-      "entryCount": 272,
+      "entryCount": 95000,
       "familyId": "Security",
       "id": "Security-001",
       "index": 1,
-      "name": "REJECT · Security",
+      "name": "REJECT · Security (1/2)",
       "path": "anywhere/rules/Security-001.arrs",
-      "sha256": "e3ccb5d130bd89b3b9546ba4271ff57a8bf258b805a9b10ab7c755814b9a1500",
+      "sha256": "9e854ad13d05b7d4b22331e3bd882a59d315c8eccdc4abd41d4bd0cf6fc18250",
       "sourceId": "Security",
       "sourceIds": [
         "Hijacking",
         "BlockHttpDNS"
       ],
-      "total": 1,
+      "total": 2,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/Security-001.arrs"
+    },
+    {
+      "countsByType": {
+        "domainSuffix": 91675
+      },
+      "entryCount": 91675,
+      "familyId": "Security",
+      "id": "Security-002",
+      "index": 2,
+      "name": "REJECT · Security (2/2)",
+      "path": "anywhere/rules/Security-002.arrs",
+      "sha256": "635eab46d09e557437434774cd113a2a1f22358155260998dabd38daa90bcabe",
+      "sourceId": "Security",
+      "sourceIds": [
+        "Hijacking",
+        "BlockHttpDNS"
+      ],
+      "total": 2,
+      "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/Security-002.arrs"
     },
     {
       "countsByType": {
@@ -301,15 +320,17 @@
     },
     {
       "countsByType": {
-        "domainSuffix": 111
+        "domainSuffix": 94982,
+        "ipv4Cidr": 14,
+        "ipv6Cidr": 4
       },
-      "entryCount": 111,
+      "entryCount": 95000,
       "familyId": "DomesticCore",
       "id": "DomesticCore-001",
       "index": 1,
-      "name": "DIRECT · DomesticCore",
+      "name": "DIRECT · DomesticCore (1/2)",
       "path": "anywhere/rules/DomesticCore-001.arrs",
-      "sha256": "f381da406164a7894781878450113e56110534356148295aa944fe300693f1db",
+      "sha256": "9a5e34f438324063b28fd9921ab0928c3655dca9c8c07ee70786e9e8b2688e5c",
       "sourceId": "DomesticCore",
       "sourceIds": [
         "DomesticCore",
@@ -317,22 +338,43 @@
         "SteamCN",
         "ChinaTLD"
       ],
-      "total": 1,
+      "total": 2,
       "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/DomesticCore-001.arrs"
     },
     {
       "countsByType": {
+        "domainSuffix": 16229
+      },
+      "entryCount": 16229,
+      "familyId": "DomesticCore",
+      "id": "DomesticCore-002",
+      "index": 2,
+      "name": "DIRECT · DomesticCore (2/2)",
+      "path": "anywhere/rules/DomesticCore-002.arrs",
+      "sha256": "f6faec42cfc6a7cf4531394ce154a2e10fc3fe6c66dec4bdba2d2924dc963731",
+      "sourceId": "DomesticCore",
+      "sourceIds": [
+        "DomesticCore",
+        "DomesticGame",
+        "SteamCN",
+        "ChinaTLD"
+      ],
+      "total": 2,
+      "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/rules/DomesticCore-002.arrs"
+    },
+    {
+      "countsByType": {
         "domainKeyword": 1,
-        "domainSuffix": 416,
+        "domainSuffix": 413,
         "ipv4Cidr": 8
       },
-      "entryCount": 425,
+      "entryCount": 422,
       "familyId": "DomesticPlatform",
       "id": "DomesticPlatform-001",
       "index": 1,
       "name": "🇨🇳 国内平台 · DomesticPlatform",
       "path": "anywhere/rules/DomesticPlatform-001.arrs",
-      "sha256": "ec376e0ecf570aba1474d12af264e637ebbcd2948a9056a4c39792c8d2ca6d7e",
+      "sha256": "db6b2285bbfa2ab5c5dcb285adeab34a48fb1f283b98408c8cafc06cb23ca80b",
       "sourceId": "DomesticPlatform",
       "sourceIds": [
         "BiliBili",
@@ -409,17 +451,17 @@
     {
       "countsByType": {
         "domainKeyword": 25,
-        "domainSuffix": 220,
+        "domainSuffix": 4757,
         "ipv4Cidr": 1976,
         "ipv6Cidr": 5
       },
-      "entryCount": 2226,
+      "entryCount": 6763,
       "familyId": "OverseasMedia",
       "id": "OverseasMedia-001",
       "index": 1,
       "name": "🎬 海外流媒体 · OverseasMedia",
       "path": "anywhere/rules/OverseasMedia-001.arrs",
-      "sha256": "d7ff47a63e5830c7aee0befa4699d34d6c3c68ed4024fe7c0106a6b922592fdc",
+      "sha256": "4fbc4091b439897955e8d30703b194d5bc8307ed73026bfe76214372413a1bf8",
       "sourceId": "OverseasMedia",
       "sourceIds": [
         "Netflix",
@@ -433,17 +475,17 @@
     {
       "countsByType": {
         "domainKeyword": 7,
-        "domainSuffix": 613,
-        "ipv4Cidr": 35,
+        "domainSuffix": 587,
+        "ipv4Cidr": 38,
         "ipv6Cidr": 4
       },
-      "entryCount": 659,
+      "entryCount": 636,
       "familyId": "OverseasSocial",
       "id": "OverseasSocial-001",
       "index": 1,
       "name": "💬 海外社交 · OverseasSocial",
       "path": "anywhere/rules/OverseasSocial-001.arrs",
-      "sha256": "d92297c34e9ad6aac97b187089ce714b7a53c8c6eefbcd17c010524ae7e9f040",
+      "sha256": "a7bc8393893e9d41e5893052500cb790f6f265431e3cc0039dd43db27c17064b",
       "sourceId": "OverseasSocial",
       "sourceIds": [
         "Telegram",
@@ -458,16 +500,17 @@
     {
       "countsByType": {
         "domainKeyword": 7,
+        "domainSuffix": 35,
         "ipv4Cidr": 10,
         "ipv6Cidr": 3
       },
-      "entryCount": 20,
+      "entryCount": 55,
       "familyId": "Apple",
       "id": "Apple-001",
       "index": 1,
       "name": "🍎 Apple · Apple",
       "path": "anywhere/rules/Apple-001.arrs",
-      "sha256": "1d224236a513067490f386159855da81bf2b0f481b355b6694367316bf2026aa",
+      "sha256": "ad542b9026c88380c850b105b44d5c911b39b2d4e07a4801ddb3659af88372f3",
       "sourceId": "Apple",
       "sourceIds": [
         "Apple"
@@ -478,15 +521,15 @@
     {
       "countsByType": {
         "domainKeyword": 4,
-        "domainSuffix": 661
+        "domainSuffix": 580
       },
-      "entryCount": 665,
+      "entryCount": 584,
       "familyId": "Microsoft",
       "id": "Microsoft-001",
       "index": 1,
       "name": "🪟 Microsoft · Microsoft",
       "path": "anywhere/rules/Microsoft-001.arrs",
-      "sha256": "f7b216ac7d47893bbc0e785c1ef20929f050bfb977cd72a866b9c50aa7135593",
+      "sha256": "1b07c28ee5968dd07d52ac57653798ff44bb90b5aff65f0c6a05cd80f5f5e2ed",
       "sourceId": "Microsoft",
       "sourceIds": [
         "Microsoft"
@@ -497,16 +540,16 @@
     {
       "countsByType": {
         "domainKeyword": 9,
-        "domainSuffix": 124,
+        "domainSuffix": 105,
         "ipv4Cidr": 3
       },
-      "entryCount": 136,
+      "entryCount": 117,
       "familyId": "Download",
       "id": "Download-001",
       "index": 1,
       "name": "⬇️ 下载/P2P · Download",
       "path": "anywhere/rules/Download-001.arrs",
-      "sha256": "c3708b781864522100217b1085bfe3dea4a207ae2dd512b13ed4342b30c493fa",
+      "sha256": "66d227e68cc06d362623d10e5992470dc4626958e118b3231ebbd909dc968ed0",
       "sourceId": "Download",
       "sourceIds": [
         "Download",
@@ -518,16 +561,16 @@
     {
       "countsByType": {
         "domainKeyword": 4,
-        "domainSuffix": 472,
+        "domainSuffix": 381,
         "ipv4Cidr": 42
       },
-      "entryCount": 518,
+      "entryCount": 427,
       "familyId": "OverseasGame",
       "id": "OverseasGame-001",
       "index": 1,
       "name": "🌍 海外游戏 · OverseasGame",
       "path": "anywhere/rules/OverseasGame-001.arrs",
-      "sha256": "9b8576dcc39e5c197edbea51a20ca17528faf5f393ce729496966bcfb639596a",
+      "sha256": "5952a4753dedac3a22fcb6d0b856885799c023e0e3a412da0cd5c6ecef0a0693",
       "sourceId": "OverseasGame",
       "sourceIds": [
         "OverseasGame"
@@ -560,13 +603,13 @@
       "canonicalPath": "compiled/Anywhere/Security.arrs",
       "componentId": "rules",
       "counts": {
-        "candidate": 291,
-        "convertible": 272,
+        "candidate": 186698,
+        "convertible": 186679,
         "duplicates": 0,
         "inputSources": 2,
-        "output": 272,
-        "parsed": 291,
-        "shadowed": 0,
+        "output": 186675,
+        "parsed": 186698,
+        "shadowed": 4,
         "unresolved": 0,
         "unsupported": 19
       },
@@ -579,13 +622,13 @@
       "inputFormat": "RULE-SET",
       "inputSources": [
         {
-          "candidate": 228,
-          "convertible": 227,
+          "candidate": 186635,
+          "convertible": 186634,
           "id": "Hijacking",
-          "output": 227,
-          "parsed": 228,
-          "sourceBytes": 6546,
-          "sourceSha256": "b976714a9cecf0e3da92fdf2857db1076d689497fd0e4b2b6309e61b480a1a55",
+          "output": 186630,
+          "parsed": 186635,
+          "sourceBytes": 6487686,
+          "sourceSha256": "a9d54525b6d21e8b931076dbf6fb282767a2b685efa04d83655b5fc8c2882e45",
           "unsupported": 1
         },
         {
@@ -613,14 +656,15 @@
       },
       "routing": 2,
       "shardIds": [
-        "Security-001"
+        "Security-001",
+        "Security-002"
       ],
-      "sourceBytes": 8746,
+      "sourceBytes": 6489886,
       "sourceIds": [
         "Hijacking",
         "BlockHttpDNS"
       ],
-      "sourceSha256": "b1b19ad18a43727ad814e6226c82e284bfbd1a5788c1c4216e7d3354c6c52967",
+      "sourceSha256": "486a19f71985c1c89b8a07007fc4096b2c46156018b9ab3afec2f8f9df3fb61e",
       "unsupportedByReason": {
         "unsupported-exact-domain": 19
       }
@@ -684,13 +728,13 @@
       "canonicalPath": "compiled/Anywhere/DomesticCore.arrs",
       "componentId": "rules",
       "counts": {
-        "candidate": 123,
-        "convertible": 111,
+        "candidate": 111318,
+        "convertible": 111306,
         "duplicates": 0,
         "inputSources": 4,
-        "output": 111,
-        "parsed": 123,
-        "shadowed": 0,
+        "output": 111229,
+        "parsed": 111318,
+        "shadowed": 77,
         "unresolved": 0,
         "unsupported": 12
       },
@@ -698,18 +742,18 @@
       "familyId": "DomesticCore",
       "id": "DomesticCore",
       "ignoredModifiers": {
-        "noResolve": 0
+        "noResolve": 18
       },
       "inputFormat": "RULE-SET",
       "inputSources": [
         {
-          "candidate": 65,
-          "convertible": 65,
+          "candidate": 111260,
+          "convertible": 111260,
           "id": "DomesticCore",
-          "output": 65,
-          "parsed": 65,
-          "sourceBytes": 1648,
-          "sourceSha256": "0cf7111b9dfab22edd9187f73c2fc463703ba61300faceaf4fe98a6e5aae0ec2",
+          "output": 111183,
+          "parsed": 111260,
+          "sourceBytes": 2970508,
+          "sourceSha256": "e7c46035489614fc987ac5bd7fb3f93bee582a2cc4c3afa8dc5bee6bf3a2c838",
           "unsupported": 0
         },
         {
@@ -757,16 +801,17 @@
       },
       "routing": 1,
       "shardIds": [
-        "DomesticCore-001"
+        "DomesticCore-001",
+        "DomesticCore-002"
       ],
-      "sourceBytes": 3316,
+      "sourceBytes": 2972176,
       "sourceIds": [
         "DomesticCore",
         "DomesticGame",
         "SteamCN",
         "ChinaTLD"
       ],
-      "sourceSha256": "6d8002b7bb44b53463504c0465620daf8807731232ce29c4856796feed9b925e",
+      "sourceSha256": "37bca93f0cde0005d82718c20d86574fc2e24046760cb9a05c5116008ea3f266",
       "unsupportedByReason": {
         "unsupported-exact-domain": 12
       }
@@ -779,9 +824,9 @@
         "convertible": 448,
         "duplicates": 22,
         "inputSources": 4,
-        "output": 425,
+        "output": 422,
         "parsed": 501,
-        "shadowed": 1,
+        "shadowed": 4,
         "unresolved": 0,
         "unsupported": 53
       },
@@ -797,7 +842,7 @@
           "candidate": 123,
           "convertible": 70,
           "id": "BiliBili",
-          "output": 59,
+          "output": 56,
           "parsed": 123,
           "sourceBytes": 4242,
           "sourceSha256": "278312b9b569f96e4a9504ba46e7537bf5aaecd5674f28a9fd63c56ca42c3924",
@@ -1067,13 +1112,13 @@
       "canonicalPath": "compiled/Anywhere/OverseasMedia.arrs",
       "componentId": "rules",
       "counts": {
-        "candidate": 2308,
-        "convertible": 2299,
+        "candidate": 7360,
+        "convertible": 7351,
         "duplicates": 71,
         "inputSources": 4,
-        "output": 2226,
-        "parsed": 2308,
-        "shadowed": 2,
+        "output": 6763,
+        "parsed": 7360,
+        "shadowed": 517,
         "unresolved": 0,
         "unsupported": 9
       },
@@ -1099,7 +1144,7 @@
           "candidate": 172,
           "convertible": 172,
           "id": "Disney",
-          "output": 170,
+          "output": 163,
           "parsed": 172,
           "sourceBytes": 5370,
           "sourceSha256": "dd32b132007877b6818cf8475866cfacd5087d510dc0df4d4e3e2a7cda5ae9fe",
@@ -1116,13 +1161,13 @@
           "unsupported": 6
         },
         {
-          "candidate": 951,
-          "convertible": 951,
+          "candidate": 6003,
+          "convertible": 6003,
           "id": "GlobalMedia",
-          "output": 880,
-          "parsed": 951,
-          "sourceBytes": 33728,
-          "sourceSha256": "5608892d5c707da8f23c9c4adcccc63516aa5542cb072097f83ef3d79e04ffbc",
+          "output": 5424,
+          "parsed": 6003,
+          "sourceBytes": 166695,
+          "sourceSha256": "1fb591fa61f5f33e0285727ccf7ec2a68406abb98d1944d1ea1f0bdc962cecb1",
           "unsupported": 0
         }
       ],
@@ -1142,14 +1187,14 @@
       "shardIds": [
         "OverseasMedia-001"
       ],
-      "sourceBytes": 80170,
+      "sourceBytes": 213137,
       "sourceIds": [
         "Netflix",
         "Disney",
         "Spotify",
         "GlobalMedia"
       ],
-      "sourceSha256": "9d8bac952ad97b4e2acd1b569454d95d40f0475ce328b55719664ca4bd6d1afa",
+      "sourceSha256": "135462489d506aa9e1035dcc82c8fd968125e8fd79766919e044a7510f79470b",
       "unsupportedByReason": {
         "unsupported-exact-domain": 9
       }
@@ -1158,13 +1203,13 @@
       "canonicalPath": "compiled/Anywhere/OverseasSocial.arrs",
       "componentId": "rules",
       "counts": {
-        "candidate": 672,
-        "convertible": 666,
-        "duplicates": 5,
+        "candidate": 675,
+        "convertible": 669,
+        "duplicates": 4,
         "inputSources": 5,
-        "output": 659,
-        "parsed": 672,
-        "shadowed": 2,
+        "output": 636,
+        "parsed": 675,
+        "shadowed": 29,
         "unresolved": 0,
         "unsupported": 6
       },
@@ -1172,25 +1217,25 @@
       "familyId": "OverseasSocial",
       "id": "OverseasSocial",
       "ignoredModifiers": {
-        "noResolve": 39
+        "noResolve": 42
       },
       "inputFormat": "RULE-SET",
       "inputSources": [
         {
-          "candidate": 35,
-          "convertible": 33,
+          "candidate": 38,
+          "convertible": 36,
           "id": "Telegram",
-          "output": 33,
-          "parsed": 35,
-          "sourceBytes": 1004,
-          "sourceSha256": "437cbe7b1a4b6865876519792858d304fedaafa38a8b6d382407d8f97a49fcd8",
+          "output": 29,
+          "parsed": 38,
+          "sourceBytes": 1108,
+          "sourceSha256": "b9d5f34081bb04d016ff44f3207d0dd08b2e246e3ededf2cad5d9a0f1d5690c3",
           "unsupported": 2
         },
         {
           "candidate": 569,
           "convertible": 569,
           "id": "Facebook",
-          "output": 569,
+          "output": 556,
           "parsed": 569,
           "sourceBytes": 17168,
           "sourceSha256": "b0c3dfda8a3c6fbead12c6d0c28e3e0a3ed3b9f55e7fd318fdad16f701f4a754",
@@ -1210,7 +1255,7 @@
           "candidate": 33,
           "convertible": 33,
           "id": "Twitter",
-          "output": 33,
+          "output": 31,
           "parsed": 33,
           "sourceBytes": 925,
           "sourceSha256": "371a1ead914bfa4ff5ff4ca338111d6e088517cf4792dd0bd43448b9331d1eb8",
@@ -1220,7 +1265,7 @@
           "candidate": 31,
           "convertible": 27,
           "id": "TikTok",
-          "output": 23,
+          "output": 19,
           "parsed": 31,
           "sourceBytes": 876,
           "sourceSha256": "d82ba26ccefadb5645dae38609e8ae3d7e566284c99c05e011d15b575ef0659a",
@@ -1243,7 +1288,7 @@
       "shardIds": [
         "OverseasSocial-001"
       ],
-      "sourceBytes": 20082,
+      "sourceBytes": 20186,
       "sourceIds": [
         "Telegram",
         "Facebook",
@@ -1251,7 +1296,7 @@
         "Twitter",
         "TikTok"
       ],
-      "sourceSha256": "4571a6a9b42fde6cc4d0402a7cafc88dc610a33602954b54a99f1903831fba82",
+      "sourceSha256": "59e8409f6dbd882c3eef0616e58f7f3b14240960a47e4391fa4d2be064b8a297",
       "unsupportedByReason": {
         "unsupported-exact-domain": 6
       }
@@ -1260,12 +1305,12 @@
       "canonicalPath": "compiled/Surge/Apple/Apple.list",
       "componentId": "rules",
       "counts": {
-        "candidate": 20,
-        "convertible": 20,
+        "candidate": 74,
+        "convertible": 74,
         "duplicates": 0,
-        "output": 20,
-        "parsed": 20,
-        "shadowed": 0,
+        "output": 55,
+        "parsed": 74,
+        "shadowed": 19,
         "unresolved": 0,
         "unsupported": 0
       },
@@ -1278,13 +1323,13 @@
       "inputFormat": "RULE-SET",
       "inputSources": [
         {
-          "candidate": 20,
-          "convertible": 20,
+          "candidate": 74,
+          "convertible": 74,
           "id": "Apple",
-          "output": 20,
-          "parsed": 20,
-          "sourceBytes": 684,
-          "sourceSha256": "58b398a570f78bad0a787f4eb3fd3c66b81115b305ac82ca75afdc9070c45c09",
+          "output": 55,
+          "parsed": 74,
+          "sourceBytes": 2163,
+          "sourceSha256": "1ba01d3977f7118404b2be8544cb4432ec4eac548e0d62bcd931d2fb767dfb87",
           "unsupported": 0
         }
       ],
@@ -1304,11 +1349,11 @@
       "shardIds": [
         "Apple-001"
       ],
-      "sourceBytes": 684,
+      "sourceBytes": 2163,
       "sourceIds": [
         "Apple"
       ],
-      "sourceSha256": "58b398a570f78bad0a787f4eb3fd3c66b81115b305ac82ca75afdc9070c45c09",
+      "sourceSha256": "1ba01d3977f7118404b2be8544cb4432ec4eac548e0d62bcd931d2fb767dfb87",
       "unsupportedByReason": {}
     },
     {
@@ -1318,9 +1363,9 @@
         "candidate": 668,
         "convertible": 667,
         "duplicates": 1,
-        "output": 665,
+        "output": 584,
         "parsed": 668,
-        "shadowed": 1,
+        "shadowed": 82,
         "unresolved": 0,
         "unsupported": 1
       },
@@ -1336,7 +1381,7 @@
           "candidate": 668,
           "convertible": 667,
           "id": "Microsoft",
-          "output": 665,
+          "output": 584,
           "parsed": 668,
           "sourceBytes": 20256,
           "sourceSha256": "9bf85ec738899b70a01a6657e4c4714a62fe9f08488bf2241f6039de76293ec5",
@@ -1376,9 +1421,9 @@
         "convertible": 136,
         "duplicates": 0,
         "inputSources": 2,
-        "output": 136,
+        "output": 117,
         "parsed": 254,
-        "shadowed": 0,
+        "shadowed": 19,
         "unresolved": 0,
         "unsupported": 118
       },
@@ -1404,7 +1449,7 @@
           "candidate": 248,
           "convertible": 130,
           "id": "PrivateTracker",
-          "output": 130,
+          "output": 111,
           "parsed": 248,
           "sourceBytes": 6620,
           "sourceSha256": "f894ddfd5791debca01f07f6bf33c7bc1ac03c6e423e3e1826ea79e9de35cd16",
@@ -1443,10 +1488,10 @@
       "counts": {
         "candidate": 574,
         "convertible": 566,
-        "duplicates": 40,
-        "output": 518,
+        "duplicates": 36,
+        "output": 427,
         "parsed": 574,
-        "shadowed": 8,
+        "shadowed": 103,
         "unresolved": 0,
         "unsupported": 8
       },
@@ -1462,7 +1507,7 @@
           "candidate": 574,
           "convertible": 566,
           "id": "OverseasGame",
-          "output": 518,
+          "output": 427,
           "parsed": 574,
           "sourceBytes": 18310,
           "sourceSha256": "e194fe3677d030af4a0f57e1bccf7e475080892f28fceabd0a17ff2c42581ae6",
@@ -1552,27 +1597,27 @@
   ],
   "totals": {
     "blankCount": 32,
-    "candidateCount": 16845,
+    "candidateCount": 319556,
     "commentCount": 0,
     "convertibleByKind": {
       "domainKeyword": 79,
-      "domainSuffix": 3152,
-      "ipv4Cidr": 9410,
-      "ipv6Cidr": 3947
+      "domainSuffix": 305842,
+      "ipv4Cidr": 9427,
+      "ipv6Cidr": 3951
     },
-    "convertibleCount": 16588,
-    "duplicateCount": 163,
+    "convertibleCount": 319299,
+    "duplicateCount": 158,
     "ignoredModifiers": {
-      "noResolve": 13357
+      "noResolve": 13378
     },
     "inputSourceCount": 32,
     "logicalRuleSetCount": 14,
-    "outputCount": 16265,
-    "parsedCount": 16845,
-    "physicalLineCount": 16877,
-    "shadowedCount": 160,
-    "shardCount": 14,
-    "sourceBytes": 584066,
+    "outputCount": 318141,
+    "parsedCount": 319556,
+    "physicalLineCount": 319588,
+    "shadowedCount": 1000,
+    "shardCount": 16,
+    "sourceBytes": 10168616,
     "sourceCount": 14,
     "unresolvedCount": 0,
     "unsupportedByReason": {

@@ -11,7 +11,7 @@ Sub-Store 当前的十个 active 客户端 collection 边界、迁移和回滚�
 | Surge | 已完成 | macOS/iPhone/iPad Profile 和 Sub-Store 远程入口 | workspace 测试、构建、示例校验 |
 | sing-box | 已完成 | macOS/iPhone/iPad/Android JSON、testing 最新 release edge、DNS response matching、ChinaIP rule-set、Egern 风格策略组；OpenWrt 暂缓 | workspace 测试、官方 core `format/check`、`.srs` 失败关闭测试 |
 | Sub-Store 客户端文档 | 已完成 | `apple-proxy-all`、10 个 client collection、公开 JS、40 个任务、维护/编译/回滚指南 | 文档测试、秘密扫描 |
-| GitHub Pages 公开发布 | 已完成 | 十个 active 客户端的无凭据 GeoData、安装页和私密 renderer 已通过自动化门禁并发布到 `current/`；`edge/` 保留为隔离预览，`previous/` 保留为回滚快照 | Actions 检查、edge/current/previous 闭包与秘密扫描 |
+| GitHub Pages 公开发布 | 已完成 | 十个 active 客户端的无凭据 GeoData、安装页和私密 renderer 已通过自动化门禁并发布到唯一公开通道 `current/` | Actions 检查、current 闭包与秘密扫描 |
 | 共享分流顺序与离线解释 | 已完成 | `DomesticCore` → 服务规则 → `OverseasGame` → `ChinaTLD` → `ChinaIP` → FINAL；`explain:route` 只读本地已发布规则、不执行 DNS | `npm run explain:route`、跨客户端回归与文档测试 |
 | 独立业务组 | 已完成 | 恢复 16 个独立业务组；Netflix、Disney+、Spotify、国际媒体、Telegram、TikTok，以及 B 站、抖音、小红书、微博重新使用独立策略目标；sing-box 主组继续使用洲级两级结构 | 全客户端测试、fixtures 与 edge/current 发布验证 |
 | 私密 Sub-Store 任务 | 已配置 | 11 个 collection、40 个任务已配置；正式任务使用 `current`，维护者可用同构的 `edge` URL 做隔离预览，旧入口保留作兼容/回滚 | canonical 配置校验、任务 URL 检查、公开脚本验证 |

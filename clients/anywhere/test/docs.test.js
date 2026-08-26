@@ -96,7 +96,7 @@ test("README contains the complete current-UI beginner deployment path", async (
 test("canary and troubleshooting lock safe order, UUID risks, and real rollback", async () => {
   const { canary, troubleshooting } = await docs();
   assert.ok(canary.indexOf("iPhone") < canary.indexOf("iPad"));
-  for (const phrase of ["stable", "Beta/TestFlight", "版本/build", "真实回滚", "/current/", "/previous/", "versions/<hash>", "现有规则集点 Update"]) {
+  for (const phrase of ["stable", "Beta/TestFlight", "版本/build", "真实回滚", "Manifest hash", "现有规则集点 Update"]) {
     assert.ok(canary.includes(phrase), `canary missing ${phrase}`);
   }
   for (const phrase of ["UUID", "名称 + 同名序号", "不要反复删订阅", "iCloud", "不是完整备份", "100,000", "95,000"]) {

@@ -4,7 +4,7 @@ import { renderXrayGeoData } from "./render-xray-geodata.js";
 import { artifactSha256 } from "./artifact-content.js";
 
 const REGIONS = new Set(["cn", "global", "ru", "ir"]);
-const CHANNELS = new Set(["edge", "current", "previous"]);
+const CHANNELS = new Set(["current"]);
 const SAFE_ID = /^[A-Za-z0-9][A-Za-z0-9._-]*$/u;
 
 function validate({ region, channel }) {

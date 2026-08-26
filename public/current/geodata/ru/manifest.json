@@ -1,21 +1,21 @@
 {
   "channel": "current",
   "counts": {
-    "domainCategories": 30,
-    "domainRules": 1940644,
-    "ipCategories": 30,
-    "ipRules": 2256
+    "domainCategories": 41,
+    "domainRules": 2244458,
+    "ipCategories": 41,
+    "ipRules": 7670
   },
   "domain": {
-    "byteLength": 45284216,
-    "categoryCount": 30,
+    "byteLength": 52167132,
+    "categoryCount": 41,
     "name": "AppleProxySiteCurrent",
-    "ruleCount": 1940644,
-    "sha256": "0624b8ec8ad504fa4aaa7db802784e2c7d01dfaae91e08f886638efab2ee9018"
+    "ruleCount": 2244458,
+    "sha256": "a2f5d66c7f52924bebac8878f5d4a1a74239ca6d1c11e2e07cb4b1113aabaafa"
   },
   "hashes": {
-    "domain": "0624b8ec8ad504fa4aaa7db802784e2c7d01dfaae91e08f886638efab2ee9018",
-    "ip": "8943816d512d85465c1b3c11911556138090a3e20e95cea3e0a75f8a4ec8ff50"
+    "domain": "a2f5d66c7f52924bebac8878f5d4a1a74239ca6d1c11e2e07cb4b1113aabaafa",
+    "ip": "0ba79bba52aae0096a45090e3e2e7dc6a5e34ba7d45f0fe8389313eabec0067e"
   },
   "inputHashes": {
     "Apple": "9894cfae238a347124e841e7e067b9b67dd24a7226e0043c641753fe26b462ff",
@@ -45,16 +45,27 @@
     "Weibo": "54dd4c6c740906e521107f0992ebd1334ccff5fe551c042d9aa619b1c4928045",
     "XiaoHongShu": "93710ce8cd8025cbf0b836a7f35feee2737c06ad07f4f16d5e9eba47829f39fb",
     "YouTube": "e14f01cd18d0c5c60a4d7aa4ccb26ec191358392af76411cfaba2ec85687b89b",
+    "loyalsoldier-clash-apple": "f64a84a111d2ef6b79683358fe33d36b067ca630f8488ebd286d979cf8ef477c",
+    "loyalsoldier-clash-applications": "b464ccfbf4c310112c68f64aa853004fc15eefe8eca017b5b11b78256c6b4c9c",
+    "loyalsoldier-clash-cncidr": "b498a296e7f9475e4c3ff978336688d3a5bba940183aa066a5098872ee0da2ff",
+    "loyalsoldier-clash-direct": "63201d7e939bc4c3361270b7f5edde47d94dcfb9efd21bf2af34da11bd4bd851",
+    "loyalsoldier-clash-gfw": "07d8c1ff0daa2e843bd36bffbfa9b71e7575e984744215087ccbf62f74bc4a1a",
+    "loyalsoldier-clash-icloud": "94bbfeefd13a293f9ff5c0341f246c384f21ee5fd306bcb31b354c23b48cb361",
+    "loyalsoldier-clash-lancidr": "d646bde4a3d4727822d9094dd52205d9f11601890d11207d0a761d2bcad290cf",
+    "loyalsoldier-clash-private": "1b88b1322307a36492734e0a3611a31dbdac842d6227720e97231b8b6364f55e",
+    "loyalsoldier-clash-reject": "35205b07af8be615bd24d1696b9ea7cff2dd3c21b227c100f7a31ee500aabe73",
+    "loyalsoldier-clash-telegramcidr": "d84b16330d9018dcbbdb83cec1c737283ed7b8b8848533284a8937c297f2bd60",
+    "loyalsoldier-clash-tld-not-cn": "80e80834ce6226ab94dea14db91a8a5bab16f1ab5f53b22106bdc382e854c8e0",
     "loyalsoldier-rules-dat": "7dbc68bc311c8bc6e576676806ed57f2c0962ed6ca72783e3dbda180f6a9d725",
     "russia-v2ray-rules": "57a05c2d004bb701bbe0120d2ea4f419a44ab460a1e7cf4695a782ebfa7e9129",
     "v2fly-domain-list": "04c41f24c89f0dacd9633eb0a543394a87e0f4d3c4576bc8b6d45c3d0dce298d"
   },
   "ip": {
-    "byteLength": 23349,
-    "categoryCount": 30,
+    "byteLength": 92798,
+    "categoryCount": 41,
     "name": "AppleProxyIPCurrent",
-    "ruleCount": 2256,
-    "sha256": "8943816d512d85465c1b3c11911556138090a3e20e95cea3e0a75f8a4ec8ff50"
+    "ruleCount": 7670,
+    "sha256": "0ba79bba52aae0096a45090e3e2e7dc6a5e34ba7d45f0fe8389313eabec0067e"
   },
   "names": {
     "domain": "AppleProxySiteCurrent",
@@ -62,225 +73,225 @@
   },
   "provenance": {
     "diagnostics": {
-      "matcherCount": 3782635,
-      "sourceCount": 30
+      "matcherCount": 4092010,
+      "sourceCount": 41
     },
-    "inputSha256": "d50b2adf78c05a169d9a97bb598cfcff144f2d9e21f6973526bda292265a7789",
-    "inputSourceCount": 30,
+    "inputSha256": "db88d696ed77f0929f33807461611658c8656be1bc82b660669ab1549e7b2fb5",
+    "inputSourceCount": 41,
     "source": "shared-lightweight-rule-snapshot",
     "sources": [
       {
         "branch": "master",
-        "commit": "f42be99379fcd1a1dd03469e8b56dcb46888fcea",
-        "committedAt": "2026-08-23T18:28:35Z",
+        "commit": "2df6b08dfc2707c8099056ffab6778092e7d6d3e",
+        "committedAt": "2026-08-25T18:39:12Z",
         "license": "GPL-2.0-only",
         "repository": "https://github.com/blackmatrix7/ios_rule_script",
         "sourceId": "Hijacking"
       },
       {
         "branch": "master",
-        "commit": "f42be99379fcd1a1dd03469e8b56dcb46888fcea",
-        "committedAt": "2026-08-23T18:28:35Z",
+        "commit": "2df6b08dfc2707c8099056ffab6778092e7d6d3e",
+        "committedAt": "2026-08-25T18:39:12Z",
         "license": "GPL-2.0-only",
         "repository": "https://github.com/blackmatrix7/ios_rule_script",
         "sourceId": "BlockHttpDNS"
       },
       {
         "branch": "master",
-        "commit": "f42be99379fcd1a1dd03469e8b56dcb46888fcea",
-        "committedAt": "2026-08-23T18:28:35Z",
+        "commit": "2df6b08dfc2707c8099056ffab6778092e7d6d3e",
+        "committedAt": "2026-08-25T18:39:12Z",
         "license": "GPL-2.0-only",
         "repository": "https://github.com/blackmatrix7/ios_rule_script",
         "sourceId": "Privacy"
       },
       {
         "branch": "master",
-        "commit": "f42be99379fcd1a1dd03469e8b56dcb46888fcea",
-        "committedAt": "2026-08-23T18:28:35Z",
+        "commit": "2df6b08dfc2707c8099056ffab6778092e7d6d3e",
+        "committedAt": "2026-08-25T18:39:12Z",
         "license": "GPL-2.0-only",
         "repository": "https://github.com/blackmatrix7/ios_rule_script",
         "sourceId": "BiliBili"
       },
       {
         "branch": "master",
-        "commit": "f42be99379fcd1a1dd03469e8b56dcb46888fcea",
-        "committedAt": "2026-08-23T18:28:35Z",
+        "commit": "2df6b08dfc2707c8099056ffab6778092e7d6d3e",
+        "committedAt": "2026-08-25T18:39:12Z",
         "license": "GPL-2.0-only",
         "repository": "https://github.com/blackmatrix7/ios_rule_script",
         "sourceId": "ByteDance"
       },
       {
         "branch": "master",
-        "commit": "f42be99379fcd1a1dd03469e8b56dcb46888fcea",
-        "committedAt": "2026-08-23T18:28:35Z",
+        "commit": "2df6b08dfc2707c8099056ffab6778092e7d6d3e",
+        "committedAt": "2026-08-25T18:39:12Z",
         "license": "GPL-2.0-only",
         "repository": "https://github.com/blackmatrix7/ios_rule_script",
         "sourceId": "XiaoHongShu"
       },
       {
         "branch": "master",
-        "commit": "f42be99379fcd1a1dd03469e8b56dcb46888fcea",
-        "committedAt": "2026-08-23T18:28:35Z",
+        "commit": "2df6b08dfc2707c8099056ffab6778092e7d6d3e",
+        "committedAt": "2026-08-25T18:39:12Z",
         "license": "GPL-2.0-only",
         "repository": "https://github.com/blackmatrix7/ios_rule_script",
         "sourceId": "Weibo"
       },
       {
         "branch": "master",
-        "commit": "f42be99379fcd1a1dd03469e8b56dcb46888fcea",
-        "committedAt": "2026-08-23T18:28:35Z",
+        "commit": "2df6b08dfc2707c8099056ffab6778092e7d6d3e",
+        "committedAt": "2026-08-25T18:39:12Z",
         "license": "GPL-2.0-only",
         "repository": "https://github.com/blackmatrix7/ios_rule_script",
         "sourceId": "OpenAI"
       },
       {
         "branch": "master",
-        "commit": "f42be99379fcd1a1dd03469e8b56dcb46888fcea",
-        "committedAt": "2026-08-23T18:28:35Z",
+        "commit": "2df6b08dfc2707c8099056ffab6778092e7d6d3e",
+        "committedAt": "2026-08-25T18:39:12Z",
         "license": "GPL-2.0-only",
         "repository": "https://github.com/blackmatrix7/ios_rule_script",
         "sourceId": "Claude"
       },
       {
         "branch": "master",
-        "commit": "f42be99379fcd1a1dd03469e8b56dcb46888fcea",
-        "committedAt": "2026-08-23T18:28:35Z",
+        "commit": "2df6b08dfc2707c8099056ffab6778092e7d6d3e",
+        "committedAt": "2026-08-25T18:39:12Z",
         "license": "GPL-2.0-only",
         "repository": "https://github.com/blackmatrix7/ios_rule_script",
         "sourceId": "Gemini"
       },
       {
         "branch": "master",
-        "commit": "f42be99379fcd1a1dd03469e8b56dcb46888fcea",
-        "committedAt": "2026-08-23T18:28:35Z",
+        "commit": "2df6b08dfc2707c8099056ffab6778092e7d6d3e",
+        "committedAt": "2026-08-25T18:39:12Z",
         "license": "GPL-2.0-only",
         "repository": "https://github.com/blackmatrix7/ios_rule_script",
         "sourceId": "Copilot"
       },
       {
         "branch": "master",
-        "commit": "f42be99379fcd1a1dd03469e8b56dcb46888fcea",
-        "committedAt": "2026-08-23T18:28:35Z",
+        "commit": "2df6b08dfc2707c8099056ffab6778092e7d6d3e",
+        "committedAt": "2026-08-25T18:39:12Z",
         "license": "GPL-2.0-only",
         "repository": "https://github.com/blackmatrix7/ios_rule_script",
         "sourceId": "GitHub"
       },
       {
         "branch": "master",
-        "commit": "f42be99379fcd1a1dd03469e8b56dcb46888fcea",
-        "committedAt": "2026-08-23T18:28:35Z",
+        "commit": "2df6b08dfc2707c8099056ffab6778092e7d6d3e",
+        "committedAt": "2026-08-25T18:39:12Z",
         "license": "GPL-2.0-only",
         "repository": "https://github.com/blackmatrix7/ios_rule_script",
         "sourceId": "YouTube"
       },
       {
         "branch": "master",
-        "commit": "f42be99379fcd1a1dd03469e8b56dcb46888fcea",
-        "committedAt": "2026-08-23T18:28:35Z",
+        "commit": "2df6b08dfc2707c8099056ffab6778092e7d6d3e",
+        "committedAt": "2026-08-25T18:39:12Z",
         "license": "GPL-2.0-only",
         "repository": "https://github.com/blackmatrix7/ios_rule_script",
         "sourceId": "Netflix"
       },
       {
         "branch": "master",
-        "commit": "f42be99379fcd1a1dd03469e8b56dcb46888fcea",
-        "committedAt": "2026-08-23T18:28:35Z",
+        "commit": "2df6b08dfc2707c8099056ffab6778092e7d6d3e",
+        "committedAt": "2026-08-25T18:39:12Z",
         "license": "GPL-2.0-only",
         "repository": "https://github.com/blackmatrix7/ios_rule_script",
         "sourceId": "Disney"
       },
       {
         "branch": "master",
-        "commit": "f42be99379fcd1a1dd03469e8b56dcb46888fcea",
-        "committedAt": "2026-08-23T18:28:35Z",
+        "commit": "2df6b08dfc2707c8099056ffab6778092e7d6d3e",
+        "committedAt": "2026-08-25T18:39:12Z",
         "license": "GPL-2.0-only",
         "repository": "https://github.com/blackmatrix7/ios_rule_script",
         "sourceId": "Spotify"
       },
       {
         "branch": "master",
-        "commit": "f42be99379fcd1a1dd03469e8b56dcb46888fcea",
-        "committedAt": "2026-08-23T18:28:35Z",
+        "commit": "2df6b08dfc2707c8099056ffab6778092e7d6d3e",
+        "committedAt": "2026-08-25T18:39:12Z",
         "license": "GPL-2.0-only",
         "repository": "https://github.com/blackmatrix7/ios_rule_script",
         "sourceId": "GlobalMedia"
       },
       {
         "branch": "master",
-        "commit": "f42be99379fcd1a1dd03469e8b56dcb46888fcea",
-        "committedAt": "2026-08-23T18:28:35Z",
+        "commit": "2df6b08dfc2707c8099056ffab6778092e7d6d3e",
+        "committedAt": "2026-08-25T18:39:12Z",
         "license": "GPL-2.0-only",
         "repository": "https://github.com/blackmatrix7/ios_rule_script",
         "sourceId": "Telegram"
       },
       {
         "branch": "master",
-        "commit": "f42be99379fcd1a1dd03469e8b56dcb46888fcea",
-        "committedAt": "2026-08-23T18:28:35Z",
+        "commit": "2df6b08dfc2707c8099056ffab6778092e7d6d3e",
+        "committedAt": "2026-08-25T18:39:12Z",
         "license": "GPL-2.0-only",
         "repository": "https://github.com/blackmatrix7/ios_rule_script",
         "sourceId": "Facebook"
       },
       {
         "branch": "master",
-        "commit": "f42be99379fcd1a1dd03469e8b56dcb46888fcea",
-        "committedAt": "2026-08-23T18:28:35Z",
+        "commit": "2df6b08dfc2707c8099056ffab6778092e7d6d3e",
+        "committedAt": "2026-08-25T18:39:12Z",
         "license": "GPL-2.0-only",
         "repository": "https://github.com/blackmatrix7/ios_rule_script",
         "sourceId": "Instagram"
       },
       {
         "branch": "master",
-        "commit": "f42be99379fcd1a1dd03469e8b56dcb46888fcea",
-        "committedAt": "2026-08-23T18:28:35Z",
+        "commit": "2df6b08dfc2707c8099056ffab6778092e7d6d3e",
+        "committedAt": "2026-08-25T18:39:12Z",
         "license": "GPL-2.0-only",
         "repository": "https://github.com/blackmatrix7/ios_rule_script",
         "sourceId": "Twitter"
       },
       {
         "branch": "master",
-        "commit": "f42be99379fcd1a1dd03469e8b56dcb46888fcea",
-        "committedAt": "2026-08-23T18:28:35Z",
+        "commit": "2df6b08dfc2707c8099056ffab6778092e7d6d3e",
+        "committedAt": "2026-08-25T18:39:12Z",
         "license": "GPL-2.0-only",
         "repository": "https://github.com/blackmatrix7/ios_rule_script",
         "sourceId": "TikTok"
       },
       {
         "branch": "master",
-        "commit": "f42be99379fcd1a1dd03469e8b56dcb46888fcea",
-        "committedAt": "2026-08-23T18:28:35Z",
+        "commit": "2df6b08dfc2707c8099056ffab6778092e7d6d3e",
+        "committedAt": "2026-08-25T18:39:12Z",
         "license": "GPL-2.0-only",
         "repository": "https://github.com/blackmatrix7/ios_rule_script",
         "sourceId": "Apple"
       },
       {
         "branch": "master",
-        "commit": "f42be99379fcd1a1dd03469e8b56dcb46888fcea",
-        "committedAt": "2026-08-23T18:28:35Z",
+        "commit": "2df6b08dfc2707c8099056ffab6778092e7d6d3e",
+        "committedAt": "2026-08-25T18:39:12Z",
         "license": "GPL-2.0-only",
         "repository": "https://github.com/blackmatrix7/ios_rule_script",
         "sourceId": "Microsoft"
       },
       {
         "branch": "master",
-        "commit": "f42be99379fcd1a1dd03469e8b56dcb46888fcea",
-        "committedAt": "2026-08-23T18:28:35Z",
+        "commit": "2df6b08dfc2707c8099056ffab6778092e7d6d3e",
+        "committedAt": "2026-08-25T18:39:12Z",
         "license": "GPL-2.0-only",
         "repository": "https://github.com/blackmatrix7/ios_rule_script",
         "sourceId": "Download"
       },
       {
         "branch": "master",
-        "commit": "f42be99379fcd1a1dd03469e8b56dcb46888fcea",
-        "committedAt": "2026-08-23T18:28:35Z",
+        "commit": "2df6b08dfc2707c8099056ffab6778092e7d6d3e",
+        "committedAt": "2026-08-25T18:39:12Z",
         "license": "GPL-2.0-only",
         "repository": "https://github.com/blackmatrix7/ios_rule_script",
         "sourceId": "PrivateTracker"
       },
       {
         "branch": "master",
-        "commit": "f42be99379fcd1a1dd03469e8b56dcb46888fcea",
-        "committedAt": "2026-08-23T18:28:35Z",
+        "commit": "2df6b08dfc2707c8099056ffab6778092e7d6d3e",
+        "committedAt": "2026-08-25T18:39:12Z",
         "license": "GPL-2.0-only",
         "repository": "https://github.com/blackmatrix7/ios_rule_script",
         "sourceId": "OverseasGame"
@@ -317,6 +328,149 @@
         "retrievedAt": "2026-08-22T00:00:00Z",
         "sha256": "76fdbe01687a6cc7683b50c38ceea84941458e8371d215918daf555665a537cd",
         "sourceId": "russia-v2ray-rules"
+      },
+      {
+        "blob": "99e83b33316491bb4a312ffa6d2d96c321b7bc53",
+        "branch": "release",
+        "commit": "6f188ab71421eb1dc5094f8877cd467b256c1a95",
+        "license": "GPL-3.0",
+        "releaseTag": "202608252255",
+        "repository": "https://github.com/Loyalsoldier/clash-rules",
+        "retrievalUrl": "https://github.com/Loyalsoldier/clash-rules/releases/download/202608252255/direct.txt",
+        "retrievedAt": "2026-08-26T00:00:00Z",
+        "sha256": "555003affe662bc61f668aaa4efba5ede7b43921efc0331faeda33dc8d0852cf",
+        "sourceId": "loyalsoldier-clash-direct",
+        "tree": "48f825328014eef805065de40be0a25bec604075"
+      },
+      {
+        "blob": "e2b569d2c601a0a48c1c3ea7c3d4cfc0d41a0e4b",
+        "branch": "release",
+        "commit": "6f188ab71421eb1dc5094f8877cd467b256c1a95",
+        "license": "GPL-3.0",
+        "releaseTag": "202608252255",
+        "repository": "https://github.com/Loyalsoldier/clash-rules",
+        "retrievalUrl": "https://github.com/Loyalsoldier/clash-rules/releases/download/202608252255/reject.txt",
+        "retrievedAt": "2026-08-26T00:00:00Z",
+        "sha256": "106bc6dfae726634b21bd9112da80f679419b71009af8e6a376915404f6992a5",
+        "sourceId": "loyalsoldier-clash-reject",
+        "tree": "48f825328014eef805065de40be0a25bec604075"
+      },
+      {
+        "blob": "e409d8e43c33c3b82ca033825a6d6026ac8a9e6e",
+        "branch": "release",
+        "commit": "6f188ab71421eb1dc5094f8877cd467b256c1a95",
+        "license": "GPL-3.0",
+        "releaseTag": "202608252255",
+        "repository": "https://github.com/Loyalsoldier/clash-rules",
+        "retrievalUrl": "https://github.com/Loyalsoldier/clash-rules/releases/download/202608252255/applications.txt",
+        "retrievedAt": "2026-08-26T00:00:00Z",
+        "sha256": "33bc8f07bacf74082fcb5f361eded1f6f9d3abcedcbe37ada2eb2ab4ae031732",
+        "sourceId": "loyalsoldier-clash-applications",
+        "tree": "48f825328014eef805065de40be0a25bec604075"
+      },
+      {
+        "blob": "62c87f8501cb221de661dba97a17d3eaba4c9592",
+        "branch": "release",
+        "commit": "6f188ab71421eb1dc5094f8877cd467b256c1a95",
+        "license": "GPL-3.0",
+        "releaseTag": "202608252255",
+        "repository": "https://github.com/Loyalsoldier/clash-rules",
+        "retrievalUrl": "https://github.com/Loyalsoldier/clash-rules/releases/download/202608252255/private.txt",
+        "retrievedAt": "2026-08-26T00:00:00Z",
+        "sha256": "3a04b128200ef8097d73b1496cbb23d24bc1e05d42fffb09f07c51699efb00b2",
+        "sourceId": "loyalsoldier-clash-private",
+        "tree": "48f825328014eef805065de40be0a25bec604075"
+      },
+      {
+        "blob": "3fbaf85c498ce62ec854a370b1919aeb7a6f4cbb",
+        "branch": "release",
+        "commit": "6f188ab71421eb1dc5094f8877cd467b256c1a95",
+        "license": "GPL-3.0",
+        "releaseTag": "202608252255",
+        "repository": "https://github.com/Loyalsoldier/clash-rules",
+        "retrievalUrl": "https://github.com/Loyalsoldier/clash-rules/releases/download/202608252255/apple.txt",
+        "retrievedAt": "2026-08-26T00:00:00Z",
+        "sha256": "70f9f77e0022fc1e79d597d2fca5a3bbfa8bfe0f7542694b455f8a70004f5ba3",
+        "sourceId": "loyalsoldier-clash-apple",
+        "tree": "48f825328014eef805065de40be0a25bec604075"
+      },
+      {
+        "blob": "0c0de8fb5b244eb4a24bee6452e255576ec8ab75",
+        "branch": "release",
+        "commit": "6f188ab71421eb1dc5094f8877cd467b256c1a95",
+        "license": "GPL-3.0",
+        "releaseTag": "202608252255",
+        "repository": "https://github.com/Loyalsoldier/clash-rules",
+        "retrievalUrl": "https://github.com/Loyalsoldier/clash-rules/releases/download/202608252255/icloud.txt",
+        "retrievedAt": "2026-08-26T00:00:00Z",
+        "sha256": "f1fb7e9d17400071bf77d853b2a3148ccb6a13d785cb97e73f1693142682b23f",
+        "sourceId": "loyalsoldier-clash-icloud",
+        "tree": "48f825328014eef805065de40be0a25bec604075"
+      },
+      {
+        "blob": "7d3951772d1c25862c4ddc76b999dc571f8c84cc",
+        "branch": "release",
+        "commit": "6f188ab71421eb1dc5094f8877cd467b256c1a95",
+        "license": "GPL-3.0",
+        "releaseTag": "202608252255",
+        "repository": "https://github.com/Loyalsoldier/clash-rules",
+        "retrievalUrl": "https://github.com/Loyalsoldier/clash-rules/releases/download/202608252255/gfw.txt",
+        "retrievedAt": "2026-08-26T00:00:00Z",
+        "sha256": "841c83b1536777b9088bf879d9ea3516a7a70ea63a4066eeafa5ba2cdf601cbc",
+        "sourceId": "loyalsoldier-clash-gfw",
+        "tree": "48f825328014eef805065de40be0a25bec604075"
+      },
+      {
+        "blob": "f3d8313d7d645c9044eefbce1cefecc32b12e90e",
+        "branch": "release",
+        "commit": "6f188ab71421eb1dc5094f8877cd467b256c1a95",
+        "license": "GPL-3.0",
+        "releaseTag": "202608252255",
+        "repository": "https://github.com/Loyalsoldier/clash-rules",
+        "retrievalUrl": "https://github.com/Loyalsoldier/clash-rules/releases/download/202608252255/tld-not-cn.txt",
+        "retrievedAt": "2026-08-26T00:00:00Z",
+        "sha256": "330816293887779168d577a95f606c33702322654249e4c00051a3827830e310",
+        "sourceId": "loyalsoldier-clash-tld-not-cn",
+        "tree": "48f825328014eef805065de40be0a25bec604075"
+      },
+      {
+        "blob": "b3d48b7dc56c78089d701a44a86d5ab058a13403",
+        "branch": "release",
+        "commit": "6f188ab71421eb1dc5094f8877cd467b256c1a95",
+        "license": "GPL-3.0",
+        "releaseTag": "202608252255",
+        "repository": "https://github.com/Loyalsoldier/clash-rules",
+        "retrievalUrl": "https://github.com/Loyalsoldier/clash-rules/releases/download/202608252255/telegramcidr.txt",
+        "retrievedAt": "2026-08-26T00:00:00Z",
+        "sha256": "328fca88c675763111c7f7585ec504e5c21ab9afb7a8ce6df33b7ac01b8a3ee0",
+        "sourceId": "loyalsoldier-clash-telegramcidr",
+        "tree": "48f825328014eef805065de40be0a25bec604075"
+      },
+      {
+        "blob": "43b23b5a34c37cdf3f69f714bd86f1fc6ac59e01",
+        "branch": "release",
+        "commit": "6f188ab71421eb1dc5094f8877cd467b256c1a95",
+        "license": "GPL-3.0",
+        "releaseTag": "202608252255",
+        "repository": "https://github.com/Loyalsoldier/clash-rules",
+        "retrievalUrl": "https://github.com/Loyalsoldier/clash-rules/releases/download/202608252255/lancidr.txt",
+        "retrievedAt": "2026-08-26T00:00:00Z",
+        "sha256": "82920b241dc328f1dc99849cf733ed8675a00a4ee0bdf64c892b332dfb7e1e2e",
+        "sourceId": "loyalsoldier-clash-lancidr",
+        "tree": "48f825328014eef805065de40be0a25bec604075"
+      },
+      {
+        "blob": "1c2af0f2b98d4613b21e321558254e7ba44fdd54",
+        "branch": "release",
+        "commit": "6f188ab71421eb1dc5094f8877cd467b256c1a95",
+        "license": "GPL-3.0",
+        "releaseTag": "202608252255",
+        "repository": "https://github.com/Loyalsoldier/clash-rules",
+        "retrievalUrl": "https://github.com/Loyalsoldier/clash-rules/releases/download/202608252255/cncidr.txt",
+        "retrievedAt": "2026-08-26T00:00:00Z",
+        "sha256": "019b753c347b7b06ae8a9f9f74f2443d6b35bc9e4d6db70c134306503621b2d1",
+        "sourceId": "loyalsoldier-clash-cncidr",
+        "tree": "48f825328014eef805065de40be0a25bec604075"
       }
     ]
   },
@@ -433,6 +587,50 @@
       "id": "OverseasGame"
     },
     {
+      "code": "APP-LOYALSOLDIER-CLASH-APPLE",
+      "id": "loyalsoldier-clash-apple"
+    },
+    {
+      "code": "APP-LOYALSOLDIER-CLASH-APPLICATIONS",
+      "id": "loyalsoldier-clash-applications"
+    },
+    {
+      "code": "APP-LOYALSOLDIER-CLASH-CNCIDR",
+      "id": "loyalsoldier-clash-cncidr"
+    },
+    {
+      "code": "APP-LOYALSOLDIER-CLASH-DIRECT",
+      "id": "loyalsoldier-clash-direct"
+    },
+    {
+      "code": "APP-LOYALSOLDIER-CLASH-GFW",
+      "id": "loyalsoldier-clash-gfw"
+    },
+    {
+      "code": "APP-LOYALSOLDIER-CLASH-ICLOUD",
+      "id": "loyalsoldier-clash-icloud"
+    },
+    {
+      "code": "APP-LOYALSOLDIER-CLASH-LANCIDR",
+      "id": "loyalsoldier-clash-lancidr"
+    },
+    {
+      "code": "APP-LOYALSOLDIER-CLASH-PRIVATE",
+      "id": "loyalsoldier-clash-private"
+    },
+    {
+      "code": "APP-LOYALSOLDIER-CLASH-REJECT",
+      "id": "loyalsoldier-clash-reject"
+    },
+    {
+      "code": "APP-LOYALSOLDIER-CLASH-TELEGRAMCIDR",
+      "id": "loyalsoldier-clash-telegramcidr"
+    },
+    {
+      "code": "APP-LOYALSOLDIER-CLASH-TLD-NOT-CN",
+      "id": "loyalsoldier-clash-tld-not-cn"
+    },
+    {
       "code": "APP-LOYALSOLDIER-RULES-DAT",
       "id": "loyalsoldier-rules-dat"
     },
@@ -445,7 +643,7 @@
       "id": "v2fly-domain-list"
     }
   ],
-  "sourceCount": 30,
+  "sourceCount": 41,
   "sources": [
     {
       "code": "APP-HIJACKING",
@@ -635,6 +833,94 @@
       "id": "OverseasGame",
       "inputSha256": "845d709f15dc355273523ca34c047ba3e64079fc568bc68dcb947e781dbd8547",
       "ip": 46
+    },
+    {
+      "code": "APP-LOYALSOLDIER-CLASH-APPLE",
+      "domain": 164,
+      "id": "loyalsoldier-clash-apple",
+      "inputSha256": "f64a84a111d2ef6b79683358fe33d36b067ca630f8488ebd286d979cf8ef477c",
+      "ip": 0,
+      "sourceSha256": "70f9f77e0022fc1e79d597d2fca5a3bbfa8bfe0f7542694b455f8a70004f5ba3"
+    },
+    {
+      "code": "APP-LOYALSOLDIER-CLASH-APPLICATIONS",
+      "domain": 0,
+      "id": "loyalsoldier-clash-applications",
+      "inputSha256": "b464ccfbf4c310112c68f64aa853004fc15eefe8eca017b5b11b78256c6b4c9c",
+      "ip": 0,
+      "sourceSha256": "33bc8f07bacf74082fcb5f361eded1f6f9d3abcedcbe37ada2eb2ab4ae031732"
+    },
+    {
+      "code": "APP-LOYALSOLDIER-CLASH-CNCIDR",
+      "domain": 0,
+      "id": "loyalsoldier-clash-cncidr",
+      "inputSha256": "b498a296e7f9475e4c3ff978336688d3a5bba940183aa066a5098872ee0da2ff",
+      "ip": 5384,
+      "sourceSha256": "019b753c347b7b06ae8a9f9f74f2443d6b35bc9e4d6db70c134306503621b2d1"
+    },
+    {
+      "code": "APP-LOYALSOLDIER-CLASH-DIRECT",
+      "domain": 111509,
+      "id": "loyalsoldier-clash-direct",
+      "inputSha256": "63201d7e939bc4c3361270b7f5edde47d94dcfb9efd21bf2af34da11bd4bd851",
+      "ip": 0,
+      "sourceSha256": "555003affe662bc61f668aaa4efba5ede7b43921efc0331faeda33dc8d0852cf"
+    },
+    {
+      "code": "APP-LOYALSOLDIER-CLASH-GFW",
+      "domain": 4385,
+      "id": "loyalsoldier-clash-gfw",
+      "inputSha256": "07d8c1ff0daa2e843bd36bffbfa9b71e7575e984744215087ccbf62f74bc4a1a",
+      "ip": 0,
+      "sourceSha256": "841c83b1536777b9088bf879d9ea3516a7a70ea63a4066eeafa5ba2cdf601cbc"
+    },
+    {
+      "code": "APP-LOYALSOLDIER-CLASH-ICLOUD",
+      "domain": 53,
+      "id": "loyalsoldier-clash-icloud",
+      "inputSha256": "94bbfeefd13a293f9ff5c0341f246c384f21ee5fd306bcb31b354c23b48cb361",
+      "ip": 0,
+      "sourceSha256": "f1fb7e9d17400071bf77d853b2a3148ccb6a13d785cb97e73f1693142682b23f"
+    },
+    {
+      "code": "APP-LOYALSOLDIER-CLASH-LANCIDR",
+      "domain": 0,
+      "id": "loyalsoldier-clash-lancidr",
+      "inputSha256": "d646bde4a3d4727822d9094dd52205d9f11601890d11207d0a761d2bcad290cf",
+      "ip": 18,
+      "sourceSha256": "82920b241dc328f1dc99849cf733ed8675a00a4ee0bdf64c892b332dfb7e1e2e"
+    },
+    {
+      "code": "APP-LOYALSOLDIER-CLASH-PRIVATE",
+      "domain": 130,
+      "id": "loyalsoldier-clash-private",
+      "inputSha256": "1b88b1322307a36492734e0a3611a31dbdac842d6227720e97231b8b6364f55e",
+      "ip": 0,
+      "sourceSha256": "3a04b128200ef8097d73b1496cbb23d24bc1e05d42fffb09f07c51699efb00b2"
+    },
+    {
+      "code": "APP-LOYALSOLDIER-CLASH-REJECT",
+      "domain": 186744,
+      "id": "loyalsoldier-clash-reject",
+      "inputSha256": "35205b07af8be615bd24d1696b9ea7cff2dd3c21b227c100f7a31ee500aabe73",
+      "ip": 0,
+      "sourceSha256": "106bc6dfae726634b21bd9112da80f679419b71009af8e6a376915404f6992a5"
+    },
+    {
+      "code": "APP-LOYALSOLDIER-CLASH-TELEGRAMCIDR",
+      "domain": 0,
+      "id": "loyalsoldier-clash-telegramcidr",
+      "inputSha256": "d84b16330d9018dcbbdb83cec1c737283ed7b8b8848533284a8937c297f2bd60",
+      "ip": 12,
+      "sourceSha256": "328fca88c675763111c7f7585ec504e5c21ab9afb7a8ce6df33b7ac01b8a3ee0"
+    },
+    {
+      "code": "APP-LOYALSOLDIER-CLASH-TLD-NOT-CN",
+      "domain": 829,
+      "id": "loyalsoldier-clash-tld-not-cn",
+      "inputSha256": "80e80834ce6226ab94dea14db91a8a5bab16f1ab5f53b22106bdc382e854c8e0",
+      "ip": 0,
+      "sourceSha256": "330816293887779168d577a95f606c33702322654249e4c00051a3827830e310"
     },
     {
       "code": "APP-LOYALSOLDIER-RULES-DAT",

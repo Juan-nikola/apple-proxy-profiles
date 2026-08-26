@@ -4,7 +4,7 @@
   "comparison": {
     "branch": "master",
     "commit": "9e582e167ca113188c1758bde9806aa260ba8c87",
-    "committedAt": "2026-08-23T18:28:35Z",
+    "committedAt": "2026-08-25T18:39:12Z",
     "comparisonOnlyCount": 8034,
     "comparisonOnlySampleHashes": [
       "07278086d205fc7deba6141322cdc8dd6930209b5a3d3b587dd2888fafee8f30",
@@ -93,11 +93,11 @@
     "sha256": "4aaa658c7848b6020f1e90f1c7e05fcc3ada7f74cdbee634609c9652ee3d819d",
     "totalBytes": 176759
   },
-  "generatedAt": "2026-08-25T07:00:40.424Z",
+  "generatedAt": "2026-08-26T03:11:50.585Z",
   "production": {
     "branch": "master",
-    "commit": "f42be99379fcd1a1dd03469e8b56dcb46888fcea",
-    "committedAt": "2026-08-23T18:28:35Z",
+    "commit": "2df6b08dfc2707c8099056ffab6778092e7d6d3e",
+    "committedAt": "2026-08-25T18:39:12Z",
     "entryCount": 3385,
     "repository": "https://github.com/blackmatrix7/ios_rule_script",
     "sampleHashes": [

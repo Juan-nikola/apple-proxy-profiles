@@ -48,7 +48,7 @@ Anywhere 没有与 Shadowrocket/Egern 等价的完整 Profile File，不要创�
 https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/import.html
 ```
 
-已导入旧版的设备，旧分片包括 `Advertising`、`Advertising_Domain`、`ChinaMax_Domain` 和通用 `Game`；导入前必须删除或禁用这些旧分片。然后点默认页最上方的总导入 deep link；如果无法一次打开，按页面顺序点击全部回退批次。deep link 使用 `anywhere://add-rule-set`，只打开确认流程。不要混用 `current`、`previous` 与某个 `versions/<hash>` 的分片。
+已导入旧版的设备，旧分片包括 `Advertising`、`Advertising_Domain`、`ChinaMax_Domain` 和通用 `Game`；导入前必须删除或禁用这些旧分片。然后点默认页最上方的总导入 deep link；如果无法一次打开，按页面顺序点击全部回退批次。deep link 使用 `anywhere://add-rule-set`，只打开确认流程。所有分片必须来自同一份 `current` Manifest，不要混用旧缓存或历史快照。
 
 Manifest 中每个逻辑规则集的所有 shard 必须绑定相同目标。漏一个 shard 就是部分生效。
 导入完成后应看到总计 14 个稳定业务包，并逐一核对它们的本地 assignment。可选广告包的独立页是：
