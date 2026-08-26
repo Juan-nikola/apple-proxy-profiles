@@ -3,24 +3,24 @@
   "client": "clash",
   "files": [
     {
-      "bytes": 25506,
+      "bytes": 26052,
       "path": "clash/examples/clash-appletv.yaml",
-      "sha256": "11aa7d700e4e94906c80f40f42a6017af3d597cf0e0cc5ca74f0dd250edc4581"
+      "sha256": "705639fad9a73535a20b05c73b27da056a974045c985f191fbea7a789a5f309c"
     },
     {
-      "bytes": 25506,
+      "bytes": 26052,
       "path": "clash/examples/clash-ipad.yaml",
-      "sha256": "0cee56711ec694c0aa0abe2ddb25035de10146a6b21675b8c2e595a57f1946a9"
+      "sha256": "af648f96105afbca6b7e2f6c6691545c7de170d7f69d600b0d4f01f8c579c39a"
     },
     {
-      "bytes": 25506,
+      "bytes": 26052,
       "path": "clash/examples/clash-iphone.yaml",
-      "sha256": "0cee56711ec694c0aa0abe2ddb25035de10146a6b21675b8c2e595a57f1946a9"
+      "sha256": "af648f96105afbca6b7e2f6c6691545c7de170d7f69d600b0d4f01f8c579c39a"
     },
     {
-      "bytes": 25506,
+      "bytes": 26052,
       "path": "clash/examples/clash-macos.yaml",
-      "sha256": "9f3cba827da18a387c1a87dc96aaf333d87f93d6f29f5695c3a412a1f075b379"
+      "sha256": "fd34dfc64dee0223517ad6ff2898c27c7a9b3a19fe4e9c852c362bb1138e7dd1"
     },
     {
       "bytes": 2917,
@@ -183,28 +183,28 @@
       "sha256": "1579f4cc64520655de4868d7daf0d251c46a37394c0a8f7f87b33e6d5eaa7468"
     },
     {
-      "bytes": 75906,
+      "bytes": 76975,
       "path": "clash/scripts/clash-node-generator.js",
-      "sha256": "e5de0f4bf2493a3343c796aa3df3e354dc65af75f04bd5471fd4a434941ba6e2"
+      "sha256": "bf80695a1e11728b396f6feb944163042745f8810dd97d96d8261a2a092d3504"
     },
     {
-      "bytes": 97090,
+      "bytes": 98460,
       "path": "clash/scripts/clash-profile-generator.js",
-      "sha256": "4cb9f0475dd0ea04293f5af187801be05a9712429b7de731ef01fb9a69666214"
+      "sha256": "e3a8ed7a5ba2da474e24785cbafc739076a1a79cdd10a57d27b876cd0e879700"
     },
     {
-      "bytes": 75906,
+      "bytes": 76975,
       "path": "clash/scripts/substore-node-generator.js",
-      "sha256": "e5de0f4bf2493a3343c796aa3df3e354dc65af75f04bd5471fd4a434941ba6e2"
+      "sha256": "bf80695a1e11728b396f6feb944163042745f8810dd97d96d8261a2a092d3504"
     },
     {
-      "bytes": 97090,
+      "bytes": 98460,
       "path": "clash/scripts/substore-profile-generator.js",
-      "sha256": "4cb9f0475dd0ea04293f5af187801be05a9712429b7de731ef01fb9a69666214"
+      "sha256": "e3a8ed7a5ba2da474e24785cbafc739076a1a79cdd10a57d27b876cd0e879700"
     }
   ],
   "generatedAt": "2026-08-25T18:39:12Z",
-  "manifestHash": "86655891b9e388d058b0107ce8122618ac62dd4d6fe266f00e769588e5df019d",
+  "manifestHash": "bfa1e159775e0a1f025d6e7522b573df00149cf385dff7a74990a16f9e9e76e7",
   "optionalPacks": {
     "adblock-full": "e359a7ee4367ed128d93c86e0b74bf99909fce03a488582424e38f9c98c13e26"
   },

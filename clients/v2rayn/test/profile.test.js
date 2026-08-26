@@ -8,6 +8,7 @@ test("renders importable Windows profile with region GeoData and fallback", () =
   const profile = renderV2rayNProfile({ options: parseV2rayNOptions({ output: "config", type: "collection", name: "fixture", platform: "windows", region: "ru" }), nodes: [{ name: "fixture", type: "vless", server: "fixture.invalid", port: 443, uuid: "TEST_ONLY_UUID" }] });
   assert.equal(profile.inbounds[0].protocol, "tun");
   assert.ok(profile.routing.rules.some(({ domain }) => domain?.some((value) => value.includes("ru"))));
+  assert.ok(profile.routing.rules.some(({ domain }) => domain?.includes("domain:baidupcs.com")));
   assert.equal(profile.routing.rules.at(-1).outboundTag, "proxy");
 });
 

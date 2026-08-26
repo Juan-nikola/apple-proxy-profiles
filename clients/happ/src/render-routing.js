@@ -1,4 +1,5 @@
 import { orderedRoutingPlan } from "../../../shared/rules/lightweight-policy.js";
+import { CRITICAL_DOMESTIC_DOMAIN_SUFFIXES } from "../../../shared/rules/critical-domestic.js";
 import { businessTargetForSource } from "./policy-overrides.js";
 import { renderHappOutbound } from "./render-node.js";
 import { renderHappDnsRoutes } from "./render-dns.js";
@@ -46,6 +47,9 @@ export function renderHappRouting(context = {}) {
   const rules = [
     { type: "field", ip: ["geoip:PRIVATE"], outboundTag: "happ-direct" },
     { type: "field", domain: ["geosite:PRIVATE"], outboundTag: "happ-direct" },
+    ...CRITICAL_DOMESTIC_DOMAIN_SUFFIXES.map((suffix) => ({
+      type: "field", domain: [`domain:${suffix}`], outboundTag: "happ-direct",
+    })),
   ];
   let quicRuleInserted = false;
   for (const item of orderedRoutingPlan({ adblockMode: "off" })) {

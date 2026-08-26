@@ -101,6 +101,8 @@ test("keeps the shared routing plan ordered and channel closed", () => {
   const game = rules.rules.findIndex((rule) => rule === "RULE-SET,OverseasGame,🌍 海外游戏");
   const chinaIp = rules.rules.findIndex((rule) => rule === "RULE-SET,ChinaIP,DIRECT");
   assert.ok(domestic >= 0 && domestic < game && game < chinaIp);
+  const baidu = rules.rules.findIndex((rule) => rule === "DOMAIN-SUFFIX,baidupcs.com,DIRECT");
+  assert.ok(baidu >= 0 && baidu < domestic);
   for (const rule of rules.rules) assert.doesNotMatch(rule, /current|previous/u);
 });
 

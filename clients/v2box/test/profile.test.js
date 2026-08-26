@@ -9,6 +9,7 @@ test("renders importable iPhone profile with inline fallback", () => {
   assert.equal(profile.inbounds[0].protocol, "tun");
   assert.equal(Object.hasOwn(profile.outbounds.find(({ tag }) => tag === "ap-node-0"), "name"), false);
   assert.ok(profile.routing.rules.some(({ domain }) => domain?.some((value) => value.includes("ru"))));
+  assert.ok(profile.routing.rules.some(({ domain }) => domain?.includes("domain:baidupcs.com")));
   assert.equal(profile.routing.rules.at(-1).outboundTag, "proxy");
 });
 

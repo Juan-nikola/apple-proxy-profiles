@@ -2892,6 +2892,20 @@ var V2BoxConfigBundle = (() => {
     return Object.freeze({ client, excluded: Object.freeze({ [reason]: 1 }) });
   }
 
+  // ../../shared/rules/critical-domestic.js
+  var CRITICAL_DOMESTIC_DOMAIN_SUFFIXES = Object.freeze([
+    "baidupcs.com",
+    "baidupcs.net",
+    "baiduyun.com",
+    "baiduyuncdn.com",
+    "baidubce.com",
+    "bcebos.com",
+    "bdstatic.com"
+  ]);
+  var CRITICAL_DOMESTIC_RULES = Object.freeze(
+    CRITICAL_DOMESTIC_DOMAIN_SUFFIXES.map((suffix) => `DOMAIN-SUFFIX,${suffix}`)
+  );
+
   // ../onexray/src/geodata-contract.js
   var CHANNELS = Object.freeze(["current", "previous", "edge"]);
   var CHANNEL_SUFFIX = Object.freeze({
@@ -3366,7 +3380,8 @@ var V2BoxConfigBundle = (() => {
     const queryStrategy = options.ipv6Mode === "ipv4-only" ? "UseIPv4" : "UseIP";
     const china = options.chinaDns === "system" ? "localhost" : options.chinaDns === "dnspod" ? "119.29.29.29" : "223.5.5.5";
     const global = options.globalDns === "google" ? "8.8.8.8" : options.globalDns === "quad9" ? "9.9.9.9" : "1.1.1.1";
-    return { servers: [{ tag: "china-dns", address: china, domains: ["geosite:cn", "geosite:private"], queryStrategy }, { tag: "global-dns", address: global, domains: ["geosite:apple-proxy-overseas"], queryStrategy }], queryStrategy, tag: "dnsQuery", mode: options.dnsMode };
+    const domesticDomains = ["geosite:cn", "geosite:private", ...CRITICAL_DOMESTIC_DOMAIN_SUFFIXES.map((suffix) => `domain:${suffix}`)];
+    return { servers: [{ tag: "china-dns", address: china, domains: domesticDomains, queryStrategy }, { tag: "global-dns", address: global, domains: ["geosite:apple-proxy-overseas"], queryStrategy }], queryStrategy, tag: "dnsQuery", mode: options.dnsMode };
   }
   function renderV2BoxProfile({ nodes, options, assetManifest = null, geoData = null, filterFailures = {}, policyResolution = null } = {}) {
     if (!options || options.output !== "config") throw new Error("V2Box profile options are required");
@@ -3392,7 +3407,14 @@ var V2BoxConfigBundle = (() => {
     if (Object.values(overrides).some((value) => value.startsWith("NODE:") && !nodeTags.has(value.slice(5)))) throw new Error("V2Box policy target node is unavailable");
     for (const outbound of outbounds) delete outbound.name;
     const references = geoReferences(geoData, options, assetManifest);
-    const rules = [{ domain: ["geosite:private"], outboundTag: "direct", ruleTag: "private-direct" }];
+    const rules = [
+      { domain: ["geosite:private"], outboundTag: "direct", ruleTag: "private-direct" },
+      ...CRITICAL_DOMESTIC_DOMAIN_SUFFIXES.map((suffix) => ({
+        domain: [`domain:${suffix}`],
+        outboundTag: "direct",
+        ruleTag: `critical-domestic-${suffix}`
+      }))
+    ];
     if (!assetManifest && !geoData) rules.push({ domain: ["geosite:apple-proxy-security"], outboundTag: options.blockMode === "off" ? "direct" : "block", ruleTag: "inline-security" }, { domain: ["geosite:apple-proxy-privacy"], outboundTag: "direct", ruleTag: "inline-privacy" }, { domain: ["geosite:cn"], outboundTag: "direct", ruleTag: "inline-domestic" }, { domain: ["geosite:apple-proxy-overseas"], outboundTag: "proxy", ruleTag: "inline-overseas" });
     const sourceRules = references.sources.map((source) => ({ source, outboundTag: actionForSource(source.id, overrides, nodeTags, nodeTagsById, options.blockMode, policyResolution) }));
     const rank = (item) => ["Hijacking", "BlockHttpDNS", "Privacy"].includes(item.source.id) ? 0 : policyForRuleSource(item.source.id) ? 1 : 2;

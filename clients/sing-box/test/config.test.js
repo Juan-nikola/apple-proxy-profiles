@@ -111,6 +111,7 @@ test("renders a complete latest-style config with response-based ChinaIP fallbac
   assert.equal(config.inbounds[0].type, "tun");
   assert.equal(config.route.final, "🚀 节点选择");
   assert.ok(config.route.rules.some((rule) => rule.action === "resolve" && rule.server === undefined));
+  assert.ok(config.route.rules.some((rule) => rule.domain_suffix?.includes("baidupcs.com") && rule.outbound === "DIRECT"));
   assert.ok(config.route.rules.some((rule) => rule.rule_set?.includes("rule-ChinaIP") && rule.outbound === "DIRECT"));
   assert.equal(config.route.rules.some((rule) => Object.hasOwn(rule, "geoip") || Object.hasOwn(rule, "geosite")), false);
   assert.ok(config.dns.rules.some((rule) => rule.action === "evaluate" && rule.server === "dns-direct"));

@@ -92,7 +92,14 @@
           "address": "https://dns.alidns.com/dns-query",
           "domains": [
             "geosite:CN",
-            "geosite:PRIVATE"
+            "geosite:PRIVATE",
+            "domain:baidupcs.com",
+            "domain:baidupcs.net",
+            "domain:baiduyun.com",
+            "domain:baiduyuncdn.com",
+            "domain:baidubce.com",
+            "domain:bcebos.com",
+            "domain:bdstatic.com"
           ],
           "expectIPs": [
             "geoip:CN"
@@ -172,6 +179,55 @@
           ],
           "outboundTag": "happ-follow/🌐 Fixture Tokyo · VLESS [h-874324393]",
           "server": "happ-dns"
+        },
+        {
+          "type": "field",
+          "domain": [
+            "domain:baidupcs.com"
+          ],
+          "outboundTag": "happ-direct"
+        },
+        {
+          "type": "field",
+          "domain": [
+            "domain:baidupcs.net"
+          ],
+          "outboundTag": "happ-direct"
+        },
+        {
+          "type": "field",
+          "domain": [
+            "domain:baiduyun.com"
+          ],
+          "outboundTag": "happ-direct"
+        },
+        {
+          "type": "field",
+          "domain": [
+            "domain:baiduyuncdn.com"
+          ],
+          "outboundTag": "happ-direct"
+        },
+        {
+          "type": "field",
+          "domain": [
+            "domain:baidubce.com"
+          ],
+          "outboundTag": "happ-direct"
+        },
+        {
+          "type": "field",
+          "domain": [
+            "domain:bcebos.com"
+          ],
+          "outboundTag": "happ-direct"
+        },
+        {
+          "type": "field",
+          "domain": [
+            "domain:bdstatic.com"
+          ],
+          "outboundTag": "happ-direct"
         },
         {
           "type": "field",
@@ -498,7 +554,14 @@
           "address": "https://dns.alidns.com/dns-query",
           "domains": [
             "geosite:CN",
-            "geosite:PRIVATE"
+            "geosite:PRIVATE",
+            "domain:baidupcs.com",
+            "domain:baidupcs.net",
+            "domain:baiduyun.com",
+            "domain:baiduyuncdn.com",
+            "domain:baidubce.com",
+            "domain:bcebos.com",
+            "domain:bdstatic.com"
           ],
           "expectIPs": [
             "geoip:CN"
@@ -578,6 +641,55 @@
           ],
           "outboundTag": "happ-follow/🌐 Fixture Los Angeles · SS [h-628157912]",
           "server": "happ-dns"
+        },
+        {
+          "type": "field",
+          "domain": [
+            "domain:baidupcs.com"
+          ],
+          "outboundTag": "happ-direct"
+        },
+        {
+          "type": "field",
+          "domain": [
+            "domain:baidupcs.net"
+          ],
+          "outboundTag": "happ-direct"
+        },
+        {
+          "type": "field",
+          "domain": [
+            "domain:baiduyun.com"
+          ],
+          "outboundTag": "happ-direct"
+        },
+        {
+          "type": "field",
+          "domain": [
+            "domain:baiduyuncdn.com"
+          ],
+          "outboundTag": "happ-direct"
+        },
+        {
+          "type": "field",
+          "domain": [
+            "domain:baidubce.com"
+          ],
+          "outboundTag": "happ-direct"
+        },
+        {
+          "type": "field",
+          "domain": [
+            "domain:bcebos.com"
+          ],
+          "outboundTag": "happ-direct"
+        },
+        {
+          "type": "field",
+          "domain": [
+            "domain:bdstatic.com"
+          ],
+          "outboundTag": "happ-direct"
         },
         {
           "type": "field",

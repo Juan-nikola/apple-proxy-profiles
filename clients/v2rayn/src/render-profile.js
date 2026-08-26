@@ -1,4 +1,5 @@
 import { renderXrayOutbound, renderXrayNodeError } from "../../../shared/nodes/render-xray-outbound.js";
+import { CRITICAL_DOMESTIC_DOMAIN_SUFFIXES } from "../../../shared/rules/critical-domestic.js";
 import { oneXrayGeoCode, oneXrayGeoNames, oneXrayGeoReference } from "../../onexray/src/geodata-contract.js";
 import { businessTargetByKey, parseBusinessOverrides } from "../../../shared/policies/business-targets.js";
 import { policyForRuleSource } from "../../../shared/rules/lightweight-policy.js";
@@ -79,7 +80,7 @@ function actionForSource(sourceId, overrides, nodeTags, nodeTagsById, blockMode,
   return value === "REJECT" ? (blockMode === "off" ? "direct" : "block") : "proxy";
 }
 
-function dns(options) { const queryStrategy = options.ipv6Mode === "ipv4-only" ? "UseIPv4" : "UseIP"; const china = options.chinaDns === "system" ? "localhost" : options.chinaDns === "dnspod" ? "119.29.29.29" : "223.5.5.5"; const global = options.globalDns === "google" ? "8.8.8.8" : options.globalDns === "quad9" ? "9.9.9.9" : "1.1.1.1"; return { servers: [{ tag: "china-dns", address: china, domains: ["geosite:cn", "geosite:private"], queryStrategy }, { tag: "global-dns", address: global, domains: ["geosite:apple-proxy-overseas"], queryStrategy }], queryStrategy, tag: "dnsQuery", mode: options.dnsMode }; }
+function dns(options) { const queryStrategy = options.ipv6Mode === "ipv4-only" ? "UseIPv4" : "UseIP"; const china = options.chinaDns === "system" ? "localhost" : options.chinaDns === "dnspod" ? "119.29.29.29" : "223.5.5.5"; const global = options.globalDns === "google" ? "8.8.8.8" : options.globalDns === "quad9" ? "9.9.9.9" : "1.1.1.1"; const domesticDomains = ["geosite:cn", "geosite:private", ...CRITICAL_DOMESTIC_DOMAIN_SUFFIXES.map((suffix) => `domain:${suffix}`)]; return { servers: [{ tag: "china-dns", address: china, domains: domesticDomains, queryStrategy }, { tag: "global-dns", address: global, domains: ["geosite:apple-proxy-overseas"], queryStrategy }], queryStrategy, tag: "dnsQuery", mode: options.dnsMode }; }
 function tunInbound(options) {
   const settings = { mtu: 1500 };
   if (options.platform === "macos") {
@@ -98,7 +99,12 @@ export function renderV2rayNProfile({ nodes, options, geoData = null, filterFail
   const overrides = policyResolution === null ? parseBusinessOverrides(options.policyOverrides ?? "") : {};
   if (Object.values(overrides).some((value) => value.startsWith("NODE:") && !nodeTags.has(value.slice(5)))) throw new Error("v2rayN policy target node is unavailable");
   const references = geoReferences(geoData, options);
-  const rules = [{ domain: ["geosite:private"], outboundTag: "direct", ruleTag: "private-direct" }];
+  const rules = [
+    { domain: ["geosite:private"], outboundTag: "direct", ruleTag: "private-direct" },
+    ...CRITICAL_DOMESTIC_DOMAIN_SUFFIXES.map((suffix) => ({
+      domain: [`domain:${suffix}`], outboundTag: "direct", ruleTag: `critical-domestic-${suffix}`,
+    })),
+  ];
   const sourceRules = references.sources.map((source) => ({ source, outboundTag: actionForSource(source.id, overrides, nodeTags, nodeTagsById, options.blockMode, policyResolution) }));
   const rank = (item) => ["Hijacking", "BlockHttpDNS", "Privacy"].includes(item.source.id) ? 0 : policyForRuleSource(item.source.id) ? 1 : 2;
   sourceRules.sort((a, b) => rank(a) - rank(b));

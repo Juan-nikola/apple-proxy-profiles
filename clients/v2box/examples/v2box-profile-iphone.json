@@ -7,7 +7,14 @@
         "address": "223.5.5.5",
         "domains": [
           "geosite:cn",
-          "geosite:private"
+          "geosite:private",
+          "domain:baidupcs.com",
+          "domain:baidupcs.net",
+          "domain:baiduyun.com",
+          "domain:baiduyuncdn.com",
+          "domain:baidubce.com",
+          "domain:bcebos.com",
+          "domain:bdstatic.com"
         ],
         "queryStrategy": "UseIP"
       },
@@ -90,6 +97,55 @@
         ],
         "outboundTag": "direct",
         "ruleTag": "private-direct"
+      },
+      {
+        "domain": [
+          "domain:baidupcs.com"
+        ],
+        "outboundTag": "direct",
+        "ruleTag": "critical-domestic-baidupcs.com"
+      },
+      {
+        "domain": [
+          "domain:baidupcs.net"
+        ],
+        "outboundTag": "direct",
+        "ruleTag": "critical-domestic-baidupcs.net"
+      },
+      {
+        "domain": [
+          "domain:baiduyun.com"
+        ],
+        "outboundTag": "direct",
+        "ruleTag": "critical-domestic-baiduyun.com"
+      },
+      {
+        "domain": [
+          "domain:baiduyuncdn.com"
+        ],
+        "outboundTag": "direct",
+        "ruleTag": "critical-domestic-baiduyuncdn.com"
+      },
+      {
+        "domain": [
+          "domain:baidubce.com"
+        ],
+        "outboundTag": "direct",
+        "ruleTag": "critical-domestic-baidubce.com"
+      },
+      {
+        "domain": [
+          "domain:bcebos.com"
+        ],
+        "outboundTag": "direct",
+        "ruleTag": "critical-domestic-bcebos.com"
+      },
+      {
+        "domain": [
+          "domain:bdstatic.com"
+        ],
+        "outboundTag": "direct",
+        "ruleTag": "critical-domestic-bdstatic.com"
       },
       {
         "domain": [

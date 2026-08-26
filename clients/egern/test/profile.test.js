@@ -105,6 +105,9 @@ test("renders the lightweight Egern-native rule precedence and terminal ordering
     { geoip: { match: "CN", policy: "DIRECT" } },
     { default: { policy: "🚀 节点选择" } },
   ]);
+  const baidu = rules.findIndex((rule) => rule.domain_suffix?.match === "baidupcs.com");
+  const domestic = rules.findIndex((rule) => rule.rule_set?.match.endsWith("/DomesticCore.yaml"));
+  assert.ok(baidu >= 0 && baidu < domestic);
 
   assert.deepEqual(rules.slice(0, 14), [
     { domain_suffix: { match: "local", policy: "DIRECT" } },

@@ -1,4 +1,5 @@
 import { orderedRoutingPlan } from "../../../shared/rules/lightweight-policy.js";
+import { CUSTOM_RULES } from "../../../shared/rules/custom-rules.js";
 
 const PRIVATE_RULES = [
   "DOMAIN-SUFFIX,local,DIRECT",
@@ -46,9 +47,14 @@ export function renderClashRules({ publicBaseUrl, adblockMode = "off" } = {}) {
       interval: 86400,
     };
   }
-  const rules = [...PRIVATE_RULES];
+  const rules = [
+    ...PRIVATE_RULES,
+    ...CUSTOM_RULES.block.map((rule) => `${rule},REJECT`),
+    ...CUSTOM_RULES.direct.map((rule) => `${rule},DIRECT`),
+    ...CUSTOM_RULES.proxy.map((rule) => `${rule},🚀 节点选择`),
+    ...CUSTOM_RULES.ai.map((rule) => `${rule},🤖 AI 专用`),
+  ];
   for (const source of plan) rules.push("RULE-SET," + source.id + "," + source.policy);
   rules.push("GEOIP,CN,DIRECT,no-resolve", "MATCH,🚀 节点选择");
   return Object.freeze({ providers: Object.freeze(providers), rules: Object.freeze(rules) });
 }
-

@@ -2004,6 +2004,39 @@ var ClashProfileBundle = (() => {
     return Object.freeze([...selected].sort((left, right) => phaseRank.get(left.phase) - phaseRank.get(right.phase) || sourceRank.get(left.id) - sourceRank.get(right.id)));
   }
 
+  // ../../../shared/rules/critical-domestic.js
+  var CRITICAL_DOMESTIC_DOMAIN_SUFFIXES = Object.freeze([
+    "baidupcs.com",
+    "baidupcs.net",
+    "baiduyun.com",
+    "baiduyuncdn.com",
+    "baidubce.com",
+    "bcebos.com",
+    "bdstatic.com"
+  ]);
+  var CRITICAL_DOMESTIC_RULES = Object.freeze(
+    CRITICAL_DOMESTIC_DOMAIN_SUFFIXES.map((suffix) => `DOMAIN-SUFFIX,${suffix}`)
+  );
+
+  // ../../../shared/rules/custom-rules.js
+  var CUSTOM_RULE_PRECEDENCE_INDEX = ROUTING_PRECEDENCE.indexOf("custom");
+  if (CUSTOM_RULE_PRECEDENCE_INDEX < 0 || CUSTOM_RULE_PRECEDENCE_INDEX > ROUTING_PRECEDENCE.indexOf("domesticCore")) {
+    throw new Error("Custom rules must precede generated lightweight rules");
+  }
+  var CUSTOM_RULES = Object.freeze({
+    block: Object.freeze([]),
+    direct: CRITICAL_DOMESTIC_RULES,
+    proxy: Object.freeze([]),
+    ai: Object.freeze([
+      "DOMAIN-SUFFIX,perplexity.ai",
+      "DOMAIN-SUFFIX,pplx.ai",
+      "DOMAIN-SUFFIX,x.ai",
+      "DOMAIN-SUFFIX,grok.com",
+      "DOMAIN-SUFFIX,poe.com",
+      "DOMAIN-SUFFIX,poecdn.net"
+    ])
+  });
+
   // render-rules.js
   var PRIVATE_RULES = [
     "DOMAIN-SUFFIX,local,DIRECT",
@@ -2046,7 +2079,13 @@ var ClashProfileBundle = (() => {
         interval: 86400
       };
     }
-    const rules = [...PRIVATE_RULES];
+    const rules = [
+      ...PRIVATE_RULES,
+      ...CUSTOM_RULES.block.map((rule) => `${rule},REJECT`),
+      ...CUSTOM_RULES.direct.map((rule) => `${rule},DIRECT`),
+      ...CUSTOM_RULES.proxy.map((rule) => `${rule},\u{1F680} \u8282\u70B9\u9009\u62E9`),
+      ...CUSTOM_RULES.ai.map((rule) => `${rule},\u{1F916} AI \u4E13\u7528`)
+    ];
     for (const source of plan) rules.push("RULE-SET," + source.id + "," + source.policy);
     rules.push("GEOIP,CN,DIRECT,no-resolve", "MATCH,\u{1F680} \u8282\u70B9\u9009\u62E9");
     return Object.freeze({ providers: Object.freeze(providers), rules: Object.freeze(rules) });

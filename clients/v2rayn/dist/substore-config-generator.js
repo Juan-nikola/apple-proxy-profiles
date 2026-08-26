@@ -2892,6 +2892,20 @@ var V2rayNConfigBundle = (() => {
     return Object.freeze({ client, excluded: Object.freeze({ [reason]: 1 }) });
   }
 
+  // ../../shared/rules/critical-domestic.js
+  var CRITICAL_DOMESTIC_DOMAIN_SUFFIXES = Object.freeze([
+    "baidupcs.com",
+    "baidupcs.net",
+    "baiduyun.com",
+    "baiduyuncdn.com",
+    "baidubce.com",
+    "bcebos.com",
+    "bdstatic.com"
+  ]);
+  var CRITICAL_DOMESTIC_RULES = Object.freeze(
+    CRITICAL_DOMESTIC_DOMAIN_SUFFIXES.map((suffix) => `DOMAIN-SUFFIX,${suffix}`)
+  );
+
   // ../onexray/src/geodata-contract.js
   var CHANNELS = Object.freeze(["current", "previous", "edge"]);
   var CHANNEL_SUFFIX = Object.freeze({
@@ -3311,7 +3325,8 @@ var V2rayNConfigBundle = (() => {
     const queryStrategy = options.ipv6Mode === "ipv4-only" ? "UseIPv4" : "UseIP";
     const china = options.chinaDns === "system" ? "localhost" : options.chinaDns === "dnspod" ? "119.29.29.29" : "223.5.5.5";
     const global = options.globalDns === "google" ? "8.8.8.8" : options.globalDns === "quad9" ? "9.9.9.9" : "1.1.1.1";
-    return { servers: [{ tag: "china-dns", address: china, domains: ["geosite:cn", "geosite:private"], queryStrategy }, { tag: "global-dns", address: global, domains: ["geosite:apple-proxy-overseas"], queryStrategy }], queryStrategy, tag: "dnsQuery", mode: options.dnsMode };
+    const domesticDomains = ["geosite:cn", "geosite:private", ...CRITICAL_DOMESTIC_DOMAIN_SUFFIXES.map((suffix) => `domain:${suffix}`)];
+    return { servers: [{ tag: "china-dns", address: china, domains: domesticDomains, queryStrategy }, { tag: "global-dns", address: global, domains: ["geosite:apple-proxy-overseas"], queryStrategy }], queryStrategy, tag: "dnsQuery", mode: options.dnsMode };
   }
   function tunInbound(options) {
     const settings = { mtu: 1500 };
@@ -3345,7 +3360,14 @@ var V2rayNConfigBundle = (() => {
     const overrides = policyResolution === null ? parseBusinessOverrides(options.policyOverrides ?? "") : {};
     if (Object.values(overrides).some((value) => value.startsWith("NODE:") && !nodeTags.has(value.slice(5)))) throw new Error("v2rayN policy target node is unavailable");
     const references = geoReferences(geoData, options);
-    const rules = [{ domain: ["geosite:private"], outboundTag: "direct", ruleTag: "private-direct" }];
+    const rules = [
+      { domain: ["geosite:private"], outboundTag: "direct", ruleTag: "private-direct" },
+      ...CRITICAL_DOMESTIC_DOMAIN_SUFFIXES.map((suffix) => ({
+        domain: [`domain:${suffix}`],
+        outboundTag: "direct",
+        ruleTag: `critical-domestic-${suffix}`
+      }))
+    ];
     const sourceRules = references.sources.map((source) => ({ source, outboundTag: actionForSource(source.id, overrides, nodeTags, nodeTagsById, options.blockMode, policyResolution) }));
     const rank = (item) => ["Hijacking", "BlockHttpDNS", "Privacy"].includes(item.source.id) ? 0 : policyForRuleSource(item.source.id) ? 1 : 2;
     sourceRules.sort((a, b) => rank(a) - rank(b));

@@ -68,6 +68,10 @@ function parseTextPolicies(profile, client) {
   assert.ok(geoip >= 0 && final > geoip, `${client}: resolved CN must precede proxy final`);
   assert.ok(custom >= 0 && domestic > custom, `${client}: custom rules must precede DomesticCore`);
   assert.ok(
+    lines.findIndex((line) => line === "DOMAIN-SUFFIX,baidupcs.com,DIRECT") >= 0,
+    `${client}: critical Baidu download domain must be inline DIRECT`,
+  );
+  assert.ok(
     overseasGame >= 0 && chinaTld > overseasGame && geoip > chinaTld,
     `${client}: ChinaTLD must follow OverseasGame and precede GEOIP CN`,
   );

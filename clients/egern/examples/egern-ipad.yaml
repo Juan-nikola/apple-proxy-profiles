@@ -605,6 +605,27 @@ rules:
       policy: "🕵️ 严格跟踪"
       update_interval: 86400
   - domain_suffix:
+      match: "baidupcs.com"
+      policy: "DIRECT"
+  - domain_suffix:
+      match: "baidupcs.net"
+      policy: "DIRECT"
+  - domain_suffix:
+      match: "baiduyun.com"
+      policy: "DIRECT"
+  - domain_suffix:
+      match: "baiduyuncdn.com"
+      policy: "DIRECT"
+  - domain_suffix:
+      match: "baidubce.com"
+      policy: "DIRECT"
+  - domain_suffix:
+      match: "bcebos.com"
+      policy: "DIRECT"
+  - domain_suffix:
+      match: "bdstatic.com"
+      policy: "DIRECT"
+  - domain_suffix:
       match: "perplexity.ai"
       policy: "🤖 AI 专用"
   - domain_suffix:

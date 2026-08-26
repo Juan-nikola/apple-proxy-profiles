@@ -28,9 +28,9 @@
       "sha256": "a96084be49de291e6ca23613fe224736beeece5a323e256a45d13a03b230cada"
     },
     {
-      "bytes": 156028,
+      "bytes": 156719,
       "path": "onexray/scripts/onexray-profile-generator.js",
-      "sha256": "5d1eec4036ea2d0774b6fbcfd12399c4c687e6893cbeceb4d6a0e76c41364f7c"
+      "sha256": "925e38d35c3e2a85db9820f8ffe05d5f141f5fc8b706ae766ce13ab5a3e6a77e"
     },
     {
       "bytes": 147288,
@@ -43,9 +43,9 @@
       "sha256": "a96084be49de291e6ca23613fe224736beeece5a323e256a45d13a03b230cada"
     },
     {
-      "bytes": 156028,
+      "bytes": 156719,
       "path": "onexray/scripts/substore-profile-generator.js",
-      "sha256": "5d1eec4036ea2d0774b6fbcfd12399c4c687e6893cbeceb4d6a0e76c41364f7c"
+      "sha256": "925e38d35c3e2a85db9820f8ffe05d5f141f5fc8b706ae766ce13ab5a3e6a77e"
     },
     {
       "bytes": 147288,
@@ -54,7 +54,7 @@
     }
   ],
   "generatedAt": "2026-08-25T18:39:12Z",
-  "manifestHash": "95592e170e219a24c923a2346c036a6ba8634f6b0a93d448140c6c0867c4b46a",
+  "manifestHash": "1395b2fd9ff30c065e480dd22008b24c078452d2c316043c29679cabb7c1fc71",
   "optionalPacks": {},
   "schemaVersion": 1
 }

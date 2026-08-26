@@ -10,4 +10,6 @@ If DNS or LAN access fails, test with the generated profile's DNS and TUN settin
 
 If logs show `dial DIRECT (match RuleSet/ChinaIP)` to a `2408:*`/other IPv6 address followed by `no route to host`, the device has no usable IPv6 route. Refresh the macOS profile so its default `ipv6: false` and DNS IPv6 setting take effect; do not change ChinaIP to proxy. Only override with `ipv6Mode=auto` after confirming the network can reach IPv6 destinations.
 
+If a Baidu Cloud download host such as `bd-cu22.baidupcs.com` appears under a proxy node, first refresh the profile and its rule providers. The public `DomesticCore` set contains `baidupcs.com`, and generated profiles also include a small inline `DIRECT` safety net for Baidu Cloud endpoints so a 24-hour provider cache cannot send them to the final proxy. Do not add Baidu Cloud to the overseas proxy group.
+
 For rollback, restore the previous Clash profile or use the immutable version named by the public manifest. Keep the failing task and its count-only diagnostics for follow-up.

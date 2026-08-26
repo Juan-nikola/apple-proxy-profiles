@@ -109,6 +109,7 @@ test("platform, DNS and routing preserve shared semantics", () => {
   assert.equal(JSON.stringify(dnsRules).includes("HAPP-PROXY"), false);
   const routing = renderHappRouting({ policyResolution: { targets: {} }, followTag: "happ-follow/x", fixedNodes: [], options: {} });
   assert.equal(routing.routing.domainStrategy, "IPIfNonMatch");
+  assert.ok(routing.routing.rules.some((rule) => rule.domain?.includes("domain:baidupcs.com") && rule.outboundTag === "happ-direct"));
   assert.equal(routing.routing.rules.at(-1).network, "tcp,udp");
 });
 

@@ -2303,6 +2303,20 @@ var EgernProfileBundle = (() => {
     return rendered;
   }
 
+  // ../../../shared/rules/critical-domestic.js
+  var CRITICAL_DOMESTIC_DOMAIN_SUFFIXES = Object.freeze([
+    "baidupcs.com",
+    "baidupcs.net",
+    "baiduyun.com",
+    "baiduyuncdn.com",
+    "baidubce.com",
+    "bcebos.com",
+    "bdstatic.com"
+  ]);
+  var CRITICAL_DOMESTIC_RULES = Object.freeze(
+    CRITICAL_DOMESTIC_DOMAIN_SUFFIXES.map((suffix) => `DOMAIN-SUFFIX,${suffix}`)
+  );
+
   // ../../../shared/rules/custom-rules.js
   var CUSTOM_RULE_PRECEDENCE_INDEX = ROUTING_PRECEDENCE.indexOf("custom");
   if (CUSTOM_RULE_PRECEDENCE_INDEX < 0 || CUSTOM_RULE_PRECEDENCE_INDEX > ROUTING_PRECEDENCE.indexOf("domesticCore")) {
@@ -2310,7 +2324,7 @@ var EgernProfileBundle = (() => {
   }
   var CUSTOM_RULES = Object.freeze({
     block: Object.freeze([]),
-    direct: Object.freeze([]),
+    direct: CRITICAL_DOMESTIC_RULES,
     proxy: Object.freeze([]),
     ai: Object.freeze([
       "DOMAIN-SUFFIX,perplexity.ai",

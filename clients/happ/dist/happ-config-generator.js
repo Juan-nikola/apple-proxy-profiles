@@ -3165,6 +3165,20 @@ var HappConfigBundle = (() => {
     return Object.freeze([...selected].sort((left, right) => phaseRank.get(left.phase) - phaseRank.get(right.phase) || sourceRank.get(left.id) - sourceRank.get(right.id)));
   }
 
+  // ../../shared/rules/critical-domestic.js
+  var CRITICAL_DOMESTIC_DOMAIN_SUFFIXES = Object.freeze([
+    "baidupcs.com",
+    "baidupcs.net",
+    "baiduyun.com",
+    "baiduyuncdn.com",
+    "baidubce.com",
+    "bcebos.com",
+    "bdstatic.com"
+  ]);
+  var CRITICAL_DOMESTIC_RULES = Object.freeze(
+    CRITICAL_DOMESTIC_DOMAIN_SUFFIXES.map((suffix) => `DOMAIN-SUFFIX,${suffix}`)
+  );
+
   // src/geodata-contract.js
   var HAPP_GEOSITE_ALIASES = Object.freeze({
     Hijacking: "CATEGORY-ADS-ALL",
@@ -3278,7 +3292,7 @@ var HappConfigBundle = (() => {
     if (!["auto", "ipv4-only"].includes(value.ipv6Mode)) throw new Error("Unsupported Happ ipv6Mode");
     const domestic = chinaDnsProvider(value.chinaDns);
     const global = globalDnsProvider(value.globalDns);
-    const domesticDomains = ["geosite:CN", "geosite:PRIVATE"];
+    const domesticDomains = ["geosite:CN", "geosite:PRIVATE", ...CRITICAL_DOMESTIC_DOMAIN_SUFFIXES.map((suffix) => `domain:${suffix}`)];
     const domesticExpectIPs = ["geoip:CN"];
     const proxyDomains = PROXY_GEOSITE_DOMAINS;
     return Object.freeze({
@@ -3467,7 +3481,12 @@ var HappConfigBundle = (() => {
     }
     const rules = [
       { type: "field", ip: ["geoip:PRIVATE"], outboundTag: "happ-direct" },
-      { type: "field", domain: ["geosite:PRIVATE"], outboundTag: "happ-direct" }
+      { type: "field", domain: ["geosite:PRIVATE"], outboundTag: "happ-direct" },
+      ...CRITICAL_DOMESTIC_DOMAIN_SUFFIXES.map((suffix) => ({
+        type: "field",
+        domain: [`domain:${suffix}`],
+        outboundTag: "happ-direct"
+      }))
     ];
     let quicRuleInserted = false;
     for (const item of orderedRoutingPlan({ adblockMode: "off" })) {

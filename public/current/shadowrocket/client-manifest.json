@@ -3,19 +3,19 @@
   "client": "shadowrocket",
   "files": [
     {
-      "bytes": 12865,
+      "bytes": 13104,
       "path": "shadowrocket/examples/shadowrocket-ipad.conf",
-      "sha256": "682771581f46e95b65d4d2d135849187de56b5e811c8a1592f295fd90826077d"
+      "sha256": "ffc9bf68316218f37bfee9592b8338fe07a090e2f3545b4577af0e538a1dacaf"
     },
     {
-      "bytes": 12867,
+      "bytes": 13106,
       "path": "shadowrocket/examples/shadowrocket-iphone.conf",
-      "sha256": "a7285cbd927b382447038c3c937d0302c391bfe44656ebd126e9dc8c72cd99fe"
+      "sha256": "af895cb99b1a39226a0fedc4d091db3a76d6a577ba0f0252b2e0417eac7ecdeb"
     },
     {
-      "bytes": 12863,
+      "bytes": 13102,
       "path": "shadowrocket/examples/shadowrocket-macos.conf",
-      "sha256": "efb75ace1f7b2e0c4861f3b69ae88ef7dc2c560c37af0df5549115c41ed7d586"
+      "sha256": "64b3ca9c8457bfb0ec5310c6b32769793f7b14cd18fd6cab09db8f8787d4369a"
     },
     {
       "bytes": 2464,
@@ -188,9 +188,9 @@
       "sha256": "17388d644c18777f7fe91fba5efe264a84f88e8e70bff0a4adf5273f0ca76ca1"
     },
     {
-      "bytes": 134963,
+      "bytes": 135355,
       "path": "shadowrocket/scripts/shadowrocket-profile-generator.js",
-      "sha256": "ca771e5f399e51132792075ac130ca79e49cbfeb61be6517efe622ca424024b7"
+      "sha256": "0a8a9f6bdbbffcec75c3e965a01922eb67f5def0bb2033420b43b1074fe3496b"
     },
     {
       "bytes": 41268,
@@ -198,13 +198,13 @@
       "sha256": "2f9bfe96ee32b2279d992d9cafb1b501f74b607f2303f7fbf6f1869e2041adfb"
     },
     {
-      "bytes": 134963,
+      "bytes": 135355,
       "path": "shadowrocket/scripts/substore-profile-generator.js",
-      "sha256": "ca771e5f399e51132792075ac130ca79e49cbfeb61be6517efe622ca424024b7"
+      "sha256": "0a8a9f6bdbbffcec75c3e965a01922eb67f5def0bb2033420b43b1074fe3496b"
     }
   ],
   "generatedAt": "2026-08-25T18:39:12Z",
-  "manifestHash": "ee04fb982452edf696e386b2ebd3b07290b99982164fe18a7ccf7536dba22167",
+  "manifestHash": "5a42fb1ff933dcdf64425372ca80907649514551a66d0a193e5510393fdcdb04",
   "optionalPacks": {
     "adblock-full": "66513b2ba687a9048e33988dfe8f1d2a6f2836587c5dd42355ac68951f059337"
   },

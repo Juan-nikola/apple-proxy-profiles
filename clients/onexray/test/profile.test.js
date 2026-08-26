@@ -45,6 +45,8 @@ test("renders OneXray structured profile with direct, block, DNS, and final prox
   assert.equal(profile.dns.servers[0].address, "223.5.5.5");
   assert.equal(profile.dns.servers[1].address, "1.1.1.1");
   assert.equal(profile.inbounds[0].tag, "tun");
+  const baidu = profile.routing.rules.findIndex((rule) => rule.domain?.includes("domain:baidupcs.com"));
+  assert.ok(baidu > 0 && baidu < profile.routing.rules.length - 1);
 });
 
 test("profile renders fixed business outbounds and optional chain without copying homepage nodes", () => {

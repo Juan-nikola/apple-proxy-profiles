@@ -52,6 +52,55 @@
       },
       {
         "domain_suffix": [
+          "baidupcs.com"
+        ],
+        "action": "route",
+        "server": "dns-direct"
+      },
+      {
+        "domain_suffix": [
+          "baidupcs.net"
+        ],
+        "action": "route",
+        "server": "dns-direct"
+      },
+      {
+        "domain_suffix": [
+          "baiduyun.com"
+        ],
+        "action": "route",
+        "server": "dns-direct"
+      },
+      {
+        "domain_suffix": [
+          "baiduyuncdn.com"
+        ],
+        "action": "route",
+        "server": "dns-direct"
+      },
+      {
+        "domain_suffix": [
+          "baidubce.com"
+        ],
+        "action": "route",
+        "server": "dns-direct"
+      },
+      {
+        "domain_suffix": [
+          "bcebos.com"
+        ],
+        "action": "route",
+        "server": "dns-direct"
+      },
+      {
+        "domain_suffix": [
+          "bdstatic.com"
+        ],
+        "action": "route",
+        "server": "dns-direct"
+      },
+      {
+        "domain_suffix": [
           "perplexity.ai"
         ],
         "action": "route",
@@ -446,6 +495,19 @@
       {
         "ip_cidr": [
           "223.5.5.5/32"
+        ],
+        "action": "route",
+        "outbound": "DIRECT"
+      },
+      {
+        "domain_suffix": [
+          "baidupcs.com",
+          "baidupcs.net",
+          "baiduyun.com",
+          "baiduyuncdn.com",
+          "baidubce.com",
+          "bcebos.com",
+          "bdstatic.com"
         ],
         "action": "route",
         "outbound": "DIRECT"

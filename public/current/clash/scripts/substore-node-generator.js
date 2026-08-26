@@ -1665,6 +1665,39 @@ var ClashNodeBundle = (() => {
     dnsClass: bundle.dnsClass
   })));
 
+  // ../../../shared/rules/critical-domestic.js
+  var CRITICAL_DOMESTIC_DOMAIN_SUFFIXES = Object.freeze([
+    "baidupcs.com",
+    "baidupcs.net",
+    "baiduyun.com",
+    "baiduyuncdn.com",
+    "baidubce.com",
+    "bcebos.com",
+    "bdstatic.com"
+  ]);
+  var CRITICAL_DOMESTIC_RULES = Object.freeze(
+    CRITICAL_DOMESTIC_DOMAIN_SUFFIXES.map((suffix) => `DOMAIN-SUFFIX,${suffix}`)
+  );
+
+  // ../../../shared/rules/custom-rules.js
+  var CUSTOM_RULE_PRECEDENCE_INDEX = ROUTING_PRECEDENCE.indexOf("custom");
+  if (CUSTOM_RULE_PRECEDENCE_INDEX < 0 || CUSTOM_RULE_PRECEDENCE_INDEX > ROUTING_PRECEDENCE.indexOf("domesticCore")) {
+    throw new Error("Custom rules must precede generated lightweight rules");
+  }
+  var CUSTOM_RULES = Object.freeze({
+    block: Object.freeze([]),
+    direct: CRITICAL_DOMESTIC_RULES,
+    proxy: Object.freeze([]),
+    ai: Object.freeze([
+      "DOMAIN-SUFFIX,perplexity.ai",
+      "DOMAIN-SUFFIX,pplx.ai",
+      "DOMAIN-SUFFIX,x.ai",
+      "DOMAIN-SUFFIX,grok.com",
+      "DOMAIN-SUFFIX,poe.com",
+      "DOMAIN-SUFFIX,poecdn.net"
+    ])
+  });
+
   // render-node.js
   var CHAIN_KEYS = ["underlying-proxy", "chain", "dialer-proxy", "detour", "prev_hop"];
   function own(source, key) {

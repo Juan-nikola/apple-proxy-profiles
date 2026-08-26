@@ -445,6 +445,8 @@ Clash Apple 使用 Mihomo YAML 格式，覆盖 macOS、iPhone、iPad 和 Apple T
 
 常见参数包括 `dnsMode`、`chinaDns`、`globalDns`、`ipv6Mode`、`quicMode`、`autoGroupMode`、`clientChain`、`adblockMode`。
 
+所有客户端都保留 BlackMatrix7 主规则与 Loyalsoldier Clash 规则的聚合覆盖；对百度云下载等高频国内端点，配置还内置了极小的 `DIRECT` 优先层。这样即使客户端的远程 RuleSet 尚未过 `update_interval`，`baidupcs.com` 等域名也不会落到最终代理组。
+
 每次只改一个参数：复制原值 → 修改测试任务 → preview → 导入一台设备 → 完成联网和回滚测试 → 再修改正式任务。失败时恢复刚才保存的原值。
 
 ### 3.3 更新公开规则

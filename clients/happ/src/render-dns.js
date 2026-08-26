@@ -1,5 +1,6 @@
 import { chinaDnsProvider, globalDnsProvider } from "../../../shared/dns/providers.js";
 import { EXPLICIT_OVERSEAS_RULE_SOURCE_IDS } from "../../../shared/rules/lightweight-policy.js";
+import { CRITICAL_DOMESTIC_DOMAIN_SUFFIXES } from "../../../shared/rules/critical-domestic.js";
 import { HAPP_GEOSITE_ALIASES } from "./geodata-contract.js";
 
 const PROXY_GEOSITE_DOMAINS = Object.freeze(
@@ -14,7 +15,7 @@ export function renderHappDns(options = {}) {
   if (!["auto", "ipv4-only"].includes(value.ipv6Mode)) throw new Error("Unsupported Happ ipv6Mode");
   const domestic = chinaDnsProvider(value.chinaDns);
   const global = globalDnsProvider(value.globalDns);
-  const domesticDomains = ["geosite:CN", "geosite:PRIVATE"];
+  const domesticDomains = ["geosite:CN", "geosite:PRIVATE", ...CRITICAL_DOMESTIC_DOMAIN_SUFFIXES.map((suffix) => `domain:${suffix}`)];
   const domesticExpectIPs = ["geoip:CN"];
   const proxyDomains = PROXY_GEOSITE_DOMAINS;
   return Object.freeze({

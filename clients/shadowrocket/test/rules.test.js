@@ -34,6 +34,7 @@ test("renders ChinaTLD after OverseasGame and before ChinaIP in the shared light
   assert.ok(indexOf(lines, "IP-CIDR,192.168.0.0/16") < indexOf(lines, "# CUSTOM_PROXY"));
   assert.ok(indexOf(lines, "/Hijacking.list") < indexOf(lines, "# CUSTOM_BLOCK"));
   assert.ok(indexOf(lines, "# CUSTOM_AI") < indexOf(lines, "/DomesticCore.list"));
+  assert.ok(indexOf(lines, "DOMAIN-SUFFIX,baidupcs.com,DIRECT") < indexOf(lines, "/DomesticCore.list"));
   assert.ok(indexOf(lines, "/DomesticCore.list") < indexOf(lines, "/DomesticGame.list"));
   assert.ok(indexOf(lines, "/DomesticGame.list") < indexOf(lines, "/SteamCN.list"));
   assert.ok(indexOf(lines, "/SteamCN.list") < indexOf(lines, "/OpenAI.list"));
