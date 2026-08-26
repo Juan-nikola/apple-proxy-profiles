@@ -1072,6 +1072,94 @@ var ClashNodeBundle = (() => {
 `;
   }
 
+  // ../../../shared/policies/filters.js
+  var CONTINENTS = Object.freeze([
+    Object.freeze({
+      key: CONTINENT.asiaPacific,
+      name: "\u{1F30F} \u4E9A\u592A",
+      helperName: "\u4E9A\u592A",
+      flags: CONTINENT_FLAGS[CONTINENT.asiaPacific]
+    }),
+    Object.freeze({
+      key: CONTINENT.europe,
+      name: "\u{1F30D} \u6B27\u6D32",
+      helperName: "\u6B27\u6D32",
+      flags: CONTINENT_FLAGS[CONTINENT.europe]
+    }),
+    Object.freeze({
+      key: CONTINENT.americas,
+      name: "\u{1F30E} \u7F8E\u6D32",
+      helperName: "\u7F8E\u6D32",
+      flags: CONTINENT_FLAGS[CONTINENT.americas]
+    }),
+    Object.freeze({
+      key: CONTINENT.other,
+      name: "\u{1F310} \u5176\u4ED6/\u672A\u5206\u7C7B",
+      helperName: "\u5176\u4ED6/\u672A\u5206\u7C7B",
+      flags: Object.freeze([])
+    })
+  ]);
+  var SOURCE_GROUPS = Object.freeze([
+    Object.freeze({ kind: SOURCE_KIND.selfHosted, name: "\u{1F3E0} \u81EA\u5EFA\u8282\u70B9", filter: "^.+\uFF5C\u81EA\u5EFA(?:\xB7.*)?$" }),
+    Object.freeze({ kind: SOURCE_KIND.airport, name: "\u{1F3E2} \u673A\u573A\u8282\u70B9", filter: "^.+\uFF5C\u673A\u573A(?:\xB7.*)?$" }),
+    Object.freeze({ kind: SOURCE_KIND.realm, name: "\u21AA\uFE0F Realm \u8F6C\u53D1", filter: "^.+\uFF5CRealm(?:\xB7.*)?$" }),
+    Object.freeze({ kind: SOURCE_KIND.serverChain, name: "\u26D3\uFE0F \u94FE\u5F0F\u4EE3\u7406", filter: "^.+\uFF5C\u94FE\u5F0F\u4EE3\u7406(?:\xB7.*)?$" })
+  ]);
+
+  // ../../../shared/policies/platform-presets.js
+  var POLICY_PLATFORM_PRESETS = Object.freeze({
+    macos: Object.freeze({ testInterval: 600, timeout: 5, tolerance: 100 }),
+    iphone: Object.freeze({ testInterval: 1800, timeout: 7, tolerance: 150 }),
+    ipad: Object.freeze({ testInterval: 1800, timeout: 7, tolerance: 150 }),
+    android: Object.freeze({ testInterval: 1800, timeout: 7, tolerance: 150 }),
+    openwrt: Object.freeze({ testInterval: 600, timeout: 5, tolerance: 100 }),
+    appletv: Object.freeze({ testInterval: 3600, timeout: 8, tolerance: 200 })
+  });
+
+  // ../../../shared/policies/catalog.js
+  var STRATEGY = Object.freeze({
+    select: "select",
+    autoTest: "auto-test",
+    fallback: "fallback"
+  });
+  var GROUP_KIND = Object.freeze({
+    helper: "helper",
+    primary: "primary",
+    continent: "continent",
+    source: "source",
+    ai: "ai",
+    service: "service",
+    special: "special",
+    security: "security",
+    chain: "chain"
+  });
+  var PROXY_THEN_DIRECT = Object.freeze(["\u{1F680} \u8282\u70B9\u9009\u62E9", "DIRECT"]);
+  var PROXY_FIRST_SERVICE_DEFAULTS = Object.freeze({
+    beforeCandidates: Object.freeze(["\u{1F680} \u8282\u70B9\u9009\u62E9"]),
+    afterCandidates: Object.freeze(["DIRECT"]),
+    defaultChoice: "\u{1F680} \u8282\u70B9\u9009\u62E9"
+  });
+  var DIRECT_FIRST_SERVICE_DEFAULTS = Object.freeze({
+    beforeCandidates: Object.freeze(["DIRECT", "\u{1F680} \u8282\u70B9\u9009\u62E9"]),
+    afterCandidates: Object.freeze([]),
+    defaultChoice: "DIRECT"
+  });
+  var SERVICE_GROUPS = Object.freeze([
+    Object.freeze(["\u{1F419} GitHub", PROXY_FIRST_SERVICE_DEFAULTS]),
+    Object.freeze(["\u{1F4FA} YouTube", PROXY_FIRST_SERVICE_DEFAULTS]),
+    Object.freeze(["\u{1F3AC} \u6D77\u5916\u6D41\u5A92\u4F53", PROXY_FIRST_SERVICE_DEFAULTS]),
+    Object.freeze(["\u{1F4AC} \u6D77\u5916\u793E\u4EA4", PROXY_FIRST_SERVICE_DEFAULTS]),
+    Object.freeze(["\u{1F34E} Apple", DIRECT_FIRST_SERVICE_DEFAULTS]),
+    Object.freeze(["\u{1FA9F} Microsoft", DIRECT_FIRST_SERVICE_DEFAULTS]),
+    Object.freeze(["\u{1F1E8}\u{1F1F3} \u56FD\u5185\u5E73\u53F0", DIRECT_FIRST_SERVICE_DEFAULTS]),
+    Object.freeze(["\u{1F30D} \u6D77\u5916\u6E38\u620F", PROXY_FIRST_SERVICE_DEFAULTS])
+  ]);
+
+  // ../../../shared/policies/intents.js
+  var POLICY_TARGET = Object.freeze({
+    primaryProxy: "primary-proxy"
+  });
+
   // ../../../shared/nodes/renderability.js
   function protocolOf(node) {
     try {
@@ -1701,7 +1789,6 @@ var ClashNodeBundle = (() => {
   }
 
   // render-profile.js
-  var CONTINENT_LABELS = Object.freeze({ asiaPacific: "\u{1F30F} \u4E9A\u592A", europe: "\u{1F30D} \u6B27\u6D32", americas: "\u{1F30E} \u7F8E\u6D32", other: "\u{1F310} \u5176\u4ED6" });
   function prepareClashInventory(nodes, { onDiagnostics } = {}) {
     if (!Array.isArray(nodes)) throw new Error("Clash node inventory must be an array");
     const partitioned = partitionRenderableNodes(nodes, "Clash", toClashProxy);

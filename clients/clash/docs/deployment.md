@@ -6,6 +6,6 @@
 4. Keep `nodeSubscriptionUrl` pointed at the private `clash-nodes` output. Do not put that URL in GitHub, screenshots, or issue reports.
 5. Import the generated YAML into the Clash/Mihomo client and enable Rule mode.
 
-The default profile includes DNS, Fake-IP, TUN, automatic latency testing, fallback, continent groups, business selectors, shared `rule-providers`, and ordered rules. Leave `adblockMode=off` unless the optional full advertising pack is required.
+The default profile includes DNS, Fake-IP, TUN, sing-box-compatible continent selectors (`🌏 亚太`, `🌍 欧洲`, `🌎 美洲` when populated), concrete node choices inside each continent, hidden automatic latency-test helpers at the end of the group list, business selectors, shared `rule-providers`, and ordered rules. Leave `adblockMode=off` unless the optional full advertising pack is required.
 
 Verify domestic sites, overseas services, LAN devices, DNS resolution, group switching, and a reconnect after changing networks. Keep the previous profile until the new one is confirmed.

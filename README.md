@@ -13,7 +13,7 @@
 | HAPP | iPhone、iPad、macOS、Android、Windows、Linux | HAPP JSON 订阅、路由审计 |
 | v2rayN | Windows、macOS | Xray JSON 节点订阅、Windows/macOS 配置、地区 GeoData |
 | V2Box | iPhone、iPad | Xray JSON 节点订阅、iPhone/iPad 配置、共享 GeoData 资产 |
-| Clash Apple | macOS、iPhone、iPad、Apple TV | Mihomo 节点 YAML、四个平台完整 YAML 配置、自动测速/故障转移组和规则集 |
+| Clash Apple | macOS、iPhone、iPad、Apple TV | Mihomo 节点 YAML、四个平台完整 YAML 配置、洲级选择组、隐藏自动测速组和规则集 |
 
 Android 仍是 sing-box 的一个平台输出；注册表和发布链路现在覆盖十个 active 客户端。Sub-Store 任务总数为 40：原有 17 个通用任务，加上 Anywhere 策略校验/映射、`apple-proxy-policy`、3 个 OneXray 任务、6 个 HAPP 平台配置任务、`happ-routing-audit`、3 个 v2rayN 任务、1 个 V2Box 节点任务、5 个 Clash Apple 任务和 2 个 V2Box 配置任务。
 
@@ -399,7 +399,7 @@ V2Box 已随自动化发布进入 `current`。正式任务直接使用 `current`
 
 Clash Apple 使用 Mihomo YAML 格式，覆盖 macOS、iPhone、iPad 和 Apple TV。先在 Sub-Store 中预览 `apple-proxy-clash`，再运行 `clash-nodes`；节点任务输出只有 `proxies:`，不会把公开规则或私密节点写入 Pages。
 
-然后按设备选择 `clash-config-macos`、`clash-config-iphone`、`clash-config-ipad` 或 `clash-config-appletv`。配置默认启用 mixed-port、TUN、Fake-IP DNS、自动测速组、故障转移组、地区自动组、业务策略组和 Mihomo `rule-providers`；`adblockMode=full` 只在确实需要完整广告包时启用，默认保持关闭。
+然后按设备选择 `clash-config-macos`、`clash-config-iphone`、`clash-config-ipad` 或 `clash-config-appletv`。配置默认启用 mixed-port、TUN、Fake-IP DNS、与 sing-box 一致的 `🌏 亚太`/`🌍 欧洲`/`🌎 美洲` 洲级选择组、各洲具体节点、末尾隐藏的自动测速组、业务策略组和 Mihomo `rule-providers`；`adblockMode=full` 只在确实需要完整广告包时启用，默认保持关闭。
 
 成功标志：YAML 中有 `proxies`、`proxy-groups`、`dns`、`rule-providers` 和以 `MATCH` 结束的 `rules`；节点组可切换，国内、海外、局域网和 Apple TV 网络均可验证。无法表示的协议会计入 `renderFailures`，不会静默生成空节点。
 

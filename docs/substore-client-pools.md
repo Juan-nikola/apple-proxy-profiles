@@ -36,7 +36,7 @@ Sub-Store 里的 `sing-box-client` 只是筛选辅助标签，不是 sing-box �
 
 HAPP 和 OneXray 使用同样的手动组合原则，分别维护 `apple-proxy-happ` 和 `apple-proxy-onexray`。它们不会要求节点带 `sing-box-client`，但仍会按各自协议能力过滤或拒绝不兼容节点。
 
-Clash Apple 使用 `apple-proxy-clash`，节点任务输出 Mihomo `proxies` YAML，四个平台配置任务输出完整的 DNS、TUN、自动测速/故障转移组、业务策略组和 `rule-providers`。Clash 支持的节点协议会在 renderer 中显式校验；无法表示的节点进入 `renderFailures`，不会伪造空代理。
+Clash Apple 使用 `apple-proxy-clash`，节点任务输出 Mihomo `proxies` YAML，四个平台配置任务输出完整的 DNS、TUN、与 sing-box 对齐的洲级选择组、具体节点和末尾隐藏自动测速组、业务策略组以及 `rule-providers`。Clash 支持的节点协议会在 renderer 中显式校验；无法表示的节点进入 `renderFailures`，不会伪造空代理。
 
 ### HAPP / OneXray 边界
 

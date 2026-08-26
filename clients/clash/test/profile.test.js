@@ -7,7 +7,7 @@ import {
 } from "../../../shared/rules/lightweight-policy.js";
 import { allCompatibleNodes } from "../../egern/test/fixtures/nodes.js";
 import { parseClashOptions, PUBLIC_SNAPSHOT_BASE_URL } from "../src/options.js";
-import { renderClashProfile } from "../src/render-profile.js";
+import { renderClashGroups, renderClashProfile } from "../src/render-profile.js";
 import { renderClashRules } from "../src/render-rules.js";
 import { validateClashProfile } from "../src/validate-profile.js";
 
@@ -22,6 +22,14 @@ function rawOptions(overrides = {}) {
     platform: "macos",
     ...overrides,
   };
+}
+
+function regionalNodes() {
+  return [
+    { ...allCompatibleNodes[0], name: "🇸🇬 亚太节点", _profile: { ...allCompatibleNodes[0]._profile, continent: "asiaPacific", flag: "🇸🇬" } },
+    { ...allCompatibleNodes[1], name: "🇩🇪 欧洲节点", _profile: { ...allCompatibleNodes[1]._profile, continent: "europe", flag: "🇩🇪" } },
+    { ...allCompatibleNodes[2], name: "🇺🇸 美洲节点", _profile: { ...allCompatibleNodes[2]._profile, continent: "americas", flag: "🇺🇸" } },
+  ];
 }
 
 test("parses the final Clash Apple option contract", () => {
@@ -45,6 +53,28 @@ test("renders a complete mihomo profile with nodes, groups, DNS, providers, and 
   assert.match(yaml, /RULE-SET,OpenAI,🤖 AI 专用/u);
   assert.match(yaml, /GEOIP,CN,DIRECT/u);
   assert.match(yaml, /MATCH,🚀 节点选择/u);
+});
+
+test("matches sing-box region selection semantics and hides automatic helpers at the end", () => {
+  const groups = renderClashGroups(regionalNodes(), parseClashOptions(rawOptions()));
+  const names = groups.map((item) => item.name);
+  assert.deepEqual(names.slice(0, 4), ["🚀 节点选择", "🌏 亚太", "🌍 欧洲", "🌎 美洲"]);
+
+  const primary = groups[0];
+  assert.equal(primary.type, "select");
+  assert.deepEqual(primary.proxies, ["⚡ 全部自动", "🌏 亚太", "🌍 欧洲", "🌎 美洲"]);
+
+  for (const [region, helper] of [["🌏 亚太", "⚡ 亚太自动"], ["🌍 欧洲", "⚡ 欧洲自动"], ["🌎 美洲", "⚡ 美洲自动"]]) {
+    const group = groups.find((item) => item.name === region);
+    assert.equal(group.type, "select");
+    assert.ok(group.proxies.includes(helper));
+    assert.ok(group.proxies.some((value) => value.endsWith("节点")));
+  }
+
+  const firstHelper = groups.findIndex((item) => item.hidden === true);
+  assert.ok(firstHelper > 0);
+  assert.ok(groups.slice(firstHelper).every((item) => item.hidden === true));
+  assert.ok(groups.slice(firstHelper).every((item) => item.type === "url-test"));
 });
 
 test("keeps the shared routing plan ordered and channel closed", () => {
