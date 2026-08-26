@@ -2,17 +2,17 @@
   "client": "egern",
   "files": [
     {
-      "bytes": 7046502,
+      "bytes": 7044517,
       "path": "optional/adblock-full/egern/rules/Advertising_Domain.yaml",
-      "sha256": "7541fb071c57057b8ac1bba3d7739a83784167d37c79ff4e42cd523c0c5570a7"
+      "sha256": "3a67c60732537f7694a2c3fbb8712e6723fb375a4df127afaaa7c7b1ef0e26d4"
     },
     {
       "bytes": 17515,
       "path": "optional/adblock-full/egern/rules/Advertising.yaml",
-      "sha256": "20d7bec84377ce865ec922d9dfe9ed47ebef4eaa7707ec424fc25650132c2d89"
+      "sha256": "452b37c5075b72ab9c1d3550edd9e12a1b71c83c4bc7e5b836f6498a74bbcdfb"
     }
   ],
-  "generatedAt": "2026-08-23T18:28:35Z",
-  "manifestHash": "42d55c5dfb7162f5bcd361f66288499ca98ccf13799dd0cbcb75bbc02072186a",
+  "generatedAt": "2026-08-25T18:39:12Z",
+  "manifestHash": "08aeaee58f63c648579afd23d8b17f1d6ef86ce0d9af0de927a2d17ab50f790b",
   "schemaVersion": 1
 }

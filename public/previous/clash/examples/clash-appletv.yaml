@@ -1,0 +1,779 @@
+mixed-port: 7890
+allow-lan: false
+mode: "rule"
+log-level: "warning"
+ipv6: true
+disable-quic: false
+unified-delay: true
+tcp-concurrent: true
+profile:
+  store-selected: true
+  store-fake-ip: true
+sniffer:
+  enable: true
+  parse-pure-ip: true
+  override-destination: true
+tun:
+  enable: true
+  stack: "mixed"
+  auto-route: true
+  auto-detect-interface: true
+proxies:
+  - name: "SS 2022"
+    type: "ss"
+    server: "ss-2022.example.invalid"
+    port: 443
+    cipher: "2022-blake3-aes-128-gcm"
+    password: "TEST_ONLY_SS_2022_KEY"
+    udp: true
+  - name: "SS Alias"
+    type: "ss"
+    server: "ss-alias.example.invalid"
+    port: 443
+    cipher: "aes-256-gcm"
+    password: "TEST_ONLY_SS_ALIAS_PASSWORD"
+    udp: false
+  - name: "Snell V4"
+    type: "snell"
+    server: "snell-v4.example.invalid"
+    port: 443
+    psk: "TEST_ONLY_SNELL_PSK"
+    version: 4
+    reuse: true
+    obfs: "tls"
+    obfs-host: "snell-obfs.example.invalid"
+    udp: true
+  - name: "VMess Raw"
+    type: "vmess"
+    server: "vmess-raw.example.invalid"
+    port: 443
+    uuid: "00000000-0000-4000-8000-000000000001"
+    cipher: "auto"
+    udp: true
+  - name: "VMess TLS"
+    type: "vmess"
+    server: "vmess-tls.example.invalid"
+    port: 443
+    uuid: "00000000-0000-4000-8000-000000000001"
+    cipher: "aes-128-gcm"
+    tls: true
+    servername: "vmess-tls.example.invalid"
+    skip-cert-verify: false
+  - name: "VMess WSS"
+    type: "vmess"
+    server: "vmess-wss.example.invalid"
+    port: 443
+    uuid: "00000000-0000-4000-8000-000000000001"
+    cipher: "chacha20-poly1305"
+    tls: true
+    servername: "vmess-wss.example.invalid"
+    network: "ws"
+    ws-opts:
+      path: "/vmess"
+      headers:
+        Host: "vmess-host.example.invalid"
+  - name: "VMess gRPC"
+    type: "vmess"
+    server: "vmess-grpc.example.invalid"
+    port: 443
+    uuid: "00000000-0000-4000-8000-000000000001"
+    cipher: "none"
+    tls: true
+    servername: "vmess-grpc.example.invalid"
+    network: "grpc"
+    grpc-opts:
+      grpc-service-name: "VMessService"
+  - name: "VMess HTTP1"
+    type: "vmess"
+    server: "vmess-http1.example.invalid"
+    port: 443
+    uuid: "00000000-0000-4000-8000-000000000001"
+    cipher: "zero"
+    network: "http"
+    http-opts:
+      method: "GET"
+      path:
+        - "/vmess-http"
+      headers:
+        Host:
+          - "vmess-http.example.invalid"
+  - name: "VLESS Raw"
+    type: "vless"
+    server: "vless-raw.example.invalid"
+    port: 443
+    uuid: "00000000-0000-4000-8000-000000000001"
+    udp: false
+  - name: "VLESS Reality"
+    type: "vless"
+    server: "vless-reality.example.invalid"
+    port: 443
+    uuid: "00000000-0000-4000-8000-000000000001"
+    flow: "xtls-rprx-vision"
+    udp: true
+    tls: true
+    servername: "www.example.com"
+    reality-opts:
+      public-key: "TEST_ONLY_REALITY_PUBLIC_KEY"
+      short-id: "0123abcd"
+  - name: "VLESS WSS"
+    type: "vless"
+    server: "vless-wss.example.invalid"
+    port: 443
+    uuid: "00000000-0000-4000-8000-000000000001"
+    tls: true
+    servername: "vless-wss.example.invalid"
+    network: "ws"
+    ws-opts:
+      path: "/vless"
+      headers:
+        Host: "vless-host.example.invalid"
+  - name: "VLESS gRPC Reality"
+    type: "vless"
+    server: "vless-grpc-reality.example.invalid"
+    port: 443
+    uuid: "00000000-0000-4000-8000-000000000001"
+    tls: true
+    servername: "www.example.com"
+    reality-opts:
+      public-key: "TEST_ONLY_GRPC_REALITY_PUBLIC_KEY"
+    network: "grpc"
+    grpc-opts:
+      grpc-service-name: "VlessService"
+  - name: "VLESS HTTP2"
+    type: "vless"
+    server: "vless-http2.example.invalid"
+    port: 443
+    uuid: "00000000-0000-4000-8000-000000000001"
+    tls: true
+    servername: "vless-h2.example.invalid"
+    network: "h2"
+    h2-opts:
+      method: "GET"
+      path: "/vless-h2"
+      host:
+        - "vless-h2-host.example.invalid"
+      headers:
+        Accept: "*/*"
+  - name: "Trojan TLS"
+    type: "trojan"
+    server: "trojan-tls.example.invalid"
+    port: 443
+    password: "TEST_ONLY_TROJAN_PASSWORD"
+    udp: true
+    servername: "trojan.example.invalid"
+    skip-cert-verify: false
+  - name: "Trojan WebSocket"
+    type: "trojan"
+    server: "trojan-websocket.example.invalid"
+    port: 443
+    password: "TEST_ONLY_TROJAN_WS_PASSWORD"
+    servername: "trojan-ws.example.invalid"
+    network: "ws"
+    ws-opts:
+      path: "/trojan"
+      headers:
+        Host: "trojan-host.example.invalid"
+  - name: "Trojan Reality"
+    type: "trojan"
+    server: "trojan-reality.example.invalid"
+    port: 443
+    password: "TEST_ONLY_TROJAN_REALITY_PASSWORD"
+    tls: true
+    servername: "www.example.com"
+    reality-opts:
+      public-key: "TEST_ONLY_TROJAN_REALITY_PUBLIC_KEY"
+      short-id: "abcd"
+  - name: "AnyTLS"
+    type: "anytls"
+    server: "anytls.example.invalid"
+    port: 443
+    password: "TEST_ONLY_ANYTLS_PASSWORD"
+    udp: true
+    servername: "anytls.example.invalid"
+    skip-cert-verify: false
+  - name: "Hysteria2"
+    type: "hysteria2"
+    server: "hysteria2.example.invalid"
+    port: 443
+    password: "TEST_ONLY_HYSTERIA2_AUTH"
+    obfs: "salamander"
+    obfs-password: "TEST_ONLY_HYSTERIA2_OBFS_PASSWORD"
+    ports: "20000-30000"
+    hop-interval: 30
+    up: 100
+    servername: "hysteria2.example.invalid"
+  - name: "Hysteria2 Alias"
+    type: "hysteria2"
+    server: "hysteria2-alias.example.invalid"
+    port: 443
+    password: "TEST_ONLY_HY2_AUTH"
+    servername: "hy2.example.invalid"
+  - name: "TUIC"
+    type: "tuic"
+    server: "tuic.example.invalid"
+    port: 443
+    uuid: "00000000-0000-4000-8000-000000000001"
+    password: "TEST_ONLY_TUIC_PASSWORD"
+    udp-relay-mode: "native"
+    alpn:
+      - "h3"
+    port-hopping: "443,445,447"
+    port-hopping-interval: 30
+    servername: "tuic.example.invalid"
+    skip-cert-verify: true
+  - name: "SOCKS5"
+    type: "socks5"
+    server: "socks5.example.invalid"
+    port: 443
+    username: "TEST_ONLY_SOCKS_USERNAME"
+    password: "TEST_ONLY_SOCKS_PASSWORD"
+    udp: true
+  - name: "SOCKS5 TLS"
+    type: "socks5"
+    server: "socks5-tls.example.invalid"
+    port: 443
+    username: "TEST_ONLY_SOCKS_TLS_USERNAME"
+    password: "TEST_ONLY_SOCKS_TLS_PASSWORD"
+    tls: true
+    servername: "socks-tls.example.invalid"
+    skip-cert-verify: false
+  - name: "HTTP"
+    type: "http"
+    server: "http.example.invalid"
+    port: 443
+    username: "TEST_ONLY_HTTP_USERNAME"
+    password: "TEST_ONLY_HTTP_PASSWORD"
+  - name: "HTTPS"
+    type: "https"
+    server: "https.example.invalid"
+    port: 443
+    username: "TEST_ONLY_HTTPS_USERNAME"
+    password: "TEST_ONLY_HTTPS_PASSWORD"
+    headers:
+      User-Agent: "TEST_ONLY_HTTP_AGENT"
+    tls: true
+    servername: "https.example.invalid"
+    skip-cert-verify: false
+  - name: "SSH"
+    type: "ssh"
+    server: "ssh.example.invalid"
+    port: 443
+    username: "TEST_ONLY_SSH_USERNAME"
+    password: "TEST_ONLY_SSH_PASSWORD"
+    private-key: "TEST_ONLY_SSH_PRIVATE_KEY"
+    host-keys:
+      - "ssh-ed25519 TEST_ONLY_SSH_HOST_KEY"
+    tfo: true
+  - name: "WireGuard IPv4"
+    type: "wireguard"
+    server: "wireguard-ipv4.example.invalid"
+    port: 443
+    private-key: "TEST_ONLY_WIREGUARD_PRIVATE_KEY"
+    public-key: "TEST_ONLY_WIREGUARD_PUBLIC_KEY"
+    pre-shared-key: "TEST_ONLY_WIREGUARD_PRESHARED_KEY"
+    reserved:
+      - 1
+      - 2
+      - 3
+    ip: "192.0.2.2/32"
+    dns:
+      - "192.0.2.53"
+    mtu: 1280
+    keepalive: 25
+  - name: "WireGuard IPv6"
+    type: "wireguard"
+    server: "wireguard-ipv6.example.invalid"
+    port: 443
+    private-key: "TEST_ONLY_WIREGUARD_V6_PRIVATE_KEY"
+    public-key: "TEST_ONLY_WIREGUARD_V6_PUBLIC_KEY"
+    ipv6: "2001:db8::2/128"
+proxy-groups:
+  - name: "🚀 节点选择"
+    type: "select"
+    proxies:
+      - "⚡ 全部自动"
+      - "🛟 全部故障转移"
+      - "🌏 亚太自动"
+      - "DIRECT"
+  - name: "⚡ 全部自动"
+    type: "url-test"
+    proxies:
+      - "SS 2022"
+      - "SS Alias"
+      - "Snell V4"
+      - "VMess Raw"
+      - "VMess TLS"
+      - "VMess WSS"
+      - "VMess gRPC"
+      - "VMess HTTP1"
+      - "VLESS Raw"
+      - "VLESS Reality"
+      - "VLESS WSS"
+      - "VLESS gRPC Reality"
+      - "VLESS HTTP2"
+      - "Trojan TLS"
+      - "Trojan WebSocket"
+      - "Trojan Reality"
+      - "AnyTLS"
+      - "Hysteria2"
+      - "Hysteria2 Alias"
+      - "TUIC"
+      - "SOCKS5"
+      - "SOCKS5 TLS"
+      - "HTTP"
+      - "HTTPS"
+      - "SSH"
+      - "WireGuard IPv4"
+      - "WireGuard IPv6"
+    url: "http://www.gstatic.com/generate_204"
+    interval: 600
+    tolerance: 100
+  - name: "🛟 全部故障转移"
+    type: "fallback"
+    proxies:
+      - "⚡ 全部自动"
+      - "SS 2022"
+      - "SS Alias"
+      - "Snell V4"
+      - "VMess Raw"
+      - "VMess TLS"
+      - "VMess WSS"
+      - "VMess gRPC"
+      - "VMess HTTP1"
+      - "VLESS Raw"
+      - "VLESS Reality"
+      - "VLESS WSS"
+      - "VLESS gRPC Reality"
+      - "VLESS HTTP2"
+      - "Trojan TLS"
+      - "Trojan WebSocket"
+      - "Trojan Reality"
+      - "AnyTLS"
+      - "Hysteria2"
+      - "Hysteria2 Alias"
+      - "TUIC"
+      - "SOCKS5"
+      - "SOCKS5 TLS"
+      - "HTTP"
+      - "HTTPS"
+      - "SSH"
+      - "WireGuard IPv4"
+      - "WireGuard IPv6"
+    url: "http://www.gstatic.com/generate_204"
+    interval: 600
+  - name: "🌏 亚太自动"
+    type: "url-test"
+    proxies:
+      - "SS 2022"
+      - "SS Alias"
+      - "Snell V4"
+      - "VMess Raw"
+      - "VMess TLS"
+      - "VMess WSS"
+      - "VMess gRPC"
+      - "VMess HTTP1"
+      - "VLESS Raw"
+      - "VLESS Reality"
+      - "VLESS WSS"
+      - "VLESS gRPC Reality"
+      - "VLESS HTTP2"
+      - "Trojan TLS"
+      - "Trojan WebSocket"
+      - "Trojan Reality"
+      - "AnyTLS"
+      - "Hysteria2"
+      - "Hysteria2 Alias"
+      - "TUIC"
+      - "SOCKS5"
+      - "SOCKS5 TLS"
+      - "HTTP"
+      - "HTTPS"
+      - "SSH"
+      - "WireGuard IPv4"
+      - "WireGuard IPv6"
+    url: "http://www.gstatic.com/generate_204"
+    interval: 600
+    tolerance: 120
+  - name: "🤖 AI 专用"
+    type: "select"
+    proxies:
+      - "🚀 节点选择"
+      - "DIRECT"
+      - "REJECT"
+  - name: "🐙 GitHub"
+    type: "select"
+    proxies:
+      - "🚀 节点选择"
+      - "DIRECT"
+      - "REJECT"
+  - name: "📺 YouTube"
+    type: "select"
+    proxies:
+      - "🚀 节点选择"
+      - "DIRECT"
+      - "REJECT"
+  - name: "🎬 海外流媒体"
+    type: "select"
+    proxies:
+      - "🚀 节点选择"
+      - "DIRECT"
+      - "REJECT"
+  - name: "💬 海外社交"
+    type: "select"
+    proxies:
+      - "🚀 节点选择"
+      - "DIRECT"
+      - "REJECT"
+  - name: "🌍 海外游戏"
+    type: "select"
+    proxies:
+      - "🚀 节点选择"
+      - "DIRECT"
+      - "REJECT"
+  - name: "🍎 Apple"
+    type: "select"
+    proxies:
+      - "DIRECT"
+      - "🚀 节点选择"
+      - "REJECT"
+  - name: "🪟 Microsoft"
+    type: "select"
+    proxies:
+      - "DIRECT"
+      - "🚀 节点选择"
+      - "REJECT"
+  - name: "🇨🇳 国内平台"
+    type: "select"
+    proxies:
+      - "DIRECT"
+      - "🚀 节点选择"
+      - "REJECT"
+  - name: "⬇️ 下载/P2P"
+    type: "select"
+    proxies:
+      - "DIRECT"
+      - "🚀 节点选择"
+      - "REJECT"
+  - name: "☣️ 安全威胁"
+    type: "select"
+    proxies:
+      - "REJECT"
+      - "🚀 节点选择"
+      - "DIRECT"
+  - name: "🧱 常见广告"
+    type: "select"
+    proxies:
+      - "DIRECT"
+      - "🚀 节点选择"
+      - "REJECT"
+  - name: "🕵️ 严格跟踪"
+    type: "select"
+    proxies:
+      - "DIRECT"
+      - "🚀 节点选择"
+      - "REJECT"
+rule-providers:
+  Hijacking:
+    type: "http"
+    behavior: "classical"
+    format: "yaml"
+    path: "./rules/Hijacking.yaml"
+    url: "https://juan-nikola.github.io/apple-proxy-profiles/previous/clash/rules/Hijacking.yaml"
+    interval: 86400
+  BlockHttpDNS:
+    type: "http"
+    behavior: "classical"
+    format: "yaml"
+    path: "./rules/BlockHttpDNS.yaml"
+    url: "https://juan-nikola.github.io/apple-proxy-profiles/previous/clash/rules/BlockHttpDNS.yaml"
+    interval: 86400
+  Privacy:
+    type: "http"
+    behavior: "classical"
+    format: "yaml"
+    path: "./rules/Privacy.yaml"
+    url: "https://juan-nikola.github.io/apple-proxy-profiles/previous/clash/rules/Privacy.yaml"
+    interval: 86400
+  DomesticCore:
+    type: "http"
+    behavior: "classical"
+    format: "yaml"
+    path: "./rules/DomesticCore.yaml"
+    url: "https://juan-nikola.github.io/apple-proxy-profiles/previous/clash/rules/DomesticCore.yaml"
+    interval: 86400
+  DomesticGame:
+    type: "http"
+    behavior: "classical"
+    format: "yaml"
+    path: "./rules/DomesticGame.yaml"
+    url: "https://juan-nikola.github.io/apple-proxy-profiles/previous/clash/rules/DomesticGame.yaml"
+    interval: 86400
+  SteamCN:
+    type: "http"
+    behavior: "classical"
+    format: "yaml"
+    path: "./rules/SteamCN.yaml"
+    url: "https://juan-nikola.github.io/apple-proxy-profiles/previous/clash/rules/SteamCN.yaml"
+    interval: 86400
+  BiliBili:
+    type: "http"
+    behavior: "classical"
+    format: "yaml"
+    path: "./rules/BiliBili.yaml"
+    url: "https://juan-nikola.github.io/apple-proxy-profiles/previous/clash/rules/BiliBili.yaml"
+    interval: 86400
+  ByteDance:
+    type: "http"
+    behavior: "classical"
+    format: "yaml"
+    path: "./rules/ByteDance.yaml"
+    url: "https://juan-nikola.github.io/apple-proxy-profiles/previous/clash/rules/ByteDance.yaml"
+    interval: 86400
+  XiaoHongShu:
+    type: "http"
+    behavior: "classical"
+    format: "yaml"
+    path: "./rules/XiaoHongShu.yaml"
+    url: "https://juan-nikola.github.io/apple-proxy-profiles/previous/clash/rules/XiaoHongShu.yaml"
+    interval: 86400
+  Weibo:
+    type: "http"
+    behavior: "classical"
+    format: "yaml"
+    path: "./rules/Weibo.yaml"
+    url: "https://juan-nikola.github.io/apple-proxy-profiles/previous/clash/rules/Weibo.yaml"
+    interval: 86400
+  OpenAI:
+    type: "http"
+    behavior: "classical"
+    format: "yaml"
+    path: "./rules/OpenAI.yaml"
+    url: "https://juan-nikola.github.io/apple-proxy-profiles/previous/clash/rules/OpenAI.yaml"
+    interval: 86400
+  Claude:
+    type: "http"
+    behavior: "classical"
+    format: "yaml"
+    path: "./rules/Claude.yaml"
+    url: "https://juan-nikola.github.io/apple-proxy-profiles/previous/clash/rules/Claude.yaml"
+    interval: 86400
+  Gemini:
+    type: "http"
+    behavior: "classical"
+    format: "yaml"
+    path: "./rules/Gemini.yaml"
+    url: "https://juan-nikola.github.io/apple-proxy-profiles/previous/clash/rules/Gemini.yaml"
+    interval: 86400
+  Copilot:
+    type: "http"
+    behavior: "classical"
+    format: "yaml"
+    path: "./rules/Copilot.yaml"
+    url: "https://juan-nikola.github.io/apple-proxy-profiles/previous/clash/rules/Copilot.yaml"
+    interval: 86400
+  GitHub:
+    type: "http"
+    behavior: "classical"
+    format: "yaml"
+    path: "./rules/GitHub.yaml"
+    url: "https://juan-nikola.github.io/apple-proxy-profiles/previous/clash/rules/GitHub.yaml"
+    interval: 86400
+  YouTube:
+    type: "http"
+    behavior: "classical"
+    format: "yaml"
+    path: "./rules/YouTube.yaml"
+    url: "https://juan-nikola.github.io/apple-proxy-profiles/previous/clash/rules/YouTube.yaml"
+    interval: 86400
+  Netflix:
+    type: "http"
+    behavior: "classical"
+    format: "yaml"
+    path: "./rules/Netflix.yaml"
+    url: "https://juan-nikola.github.io/apple-proxy-profiles/previous/clash/rules/Netflix.yaml"
+    interval: 86400
+  Disney:
+    type: "http"
+    behavior: "classical"
+    format: "yaml"
+    path: "./rules/Disney.yaml"
+    url: "https://juan-nikola.github.io/apple-proxy-profiles/previous/clash/rules/Disney.yaml"
+    interval: 86400
+  Spotify:
+    type: "http"
+    behavior: "classical"
+    format: "yaml"
+    path: "./rules/Spotify.yaml"
+    url: "https://juan-nikola.github.io/apple-proxy-profiles/previous/clash/rules/Spotify.yaml"
+    interval: 86400
+  GlobalMedia:
+    type: "http"
+    behavior: "classical"
+    format: "yaml"
+    path: "./rules/GlobalMedia.yaml"
+    url: "https://juan-nikola.github.io/apple-proxy-profiles/previous/clash/rules/GlobalMedia.yaml"
+    interval: 86400
+  Telegram:
+    type: "http"
+    behavior: "classical"
+    format: "yaml"
+    path: "./rules/Telegram.yaml"
+    url: "https://juan-nikola.github.io/apple-proxy-profiles/previous/clash/rules/Telegram.yaml"
+    interval: 86400
+  Facebook:
+    type: "http"
+    behavior: "classical"
+    format: "yaml"
+    path: "./rules/Facebook.yaml"
+    url: "https://juan-nikola.github.io/apple-proxy-profiles/previous/clash/rules/Facebook.yaml"
+    interval: 86400
+  Instagram:
+    type: "http"
+    behavior: "classical"
+    format: "yaml"
+    path: "./rules/Instagram.yaml"
+    url: "https://juan-nikola.github.io/apple-proxy-profiles/previous/clash/rules/Instagram.yaml"
+    interval: 86400
+  Twitter:
+    type: "http"
+    behavior: "classical"
+    format: "yaml"
+    path: "./rules/Twitter.yaml"
+    url: "https://juan-nikola.github.io/apple-proxy-profiles/previous/clash/rules/Twitter.yaml"
+    interval: 86400
+  TikTok:
+    type: "http"
+    behavior: "classical"
+    format: "yaml"
+    path: "./rules/TikTok.yaml"
+    url: "https://juan-nikola.github.io/apple-proxy-profiles/previous/clash/rules/TikTok.yaml"
+    interval: 86400
+  Apple:
+    type: "http"
+    behavior: "classical"
+    format: "yaml"
+    path: "./rules/Apple.yaml"
+    url: "https://juan-nikola.github.io/apple-proxy-profiles/previous/clash/rules/Apple.yaml"
+    interval: 86400
+  Microsoft:
+    type: "http"
+    behavior: "classical"
+    format: "yaml"
+    path: "./rules/Microsoft.yaml"
+    url: "https://juan-nikola.github.io/apple-proxy-profiles/previous/clash/rules/Microsoft.yaml"
+    interval: 86400
+  Download:
+    type: "http"
+    behavior: "classical"
+    format: "yaml"
+    path: "./rules/Download.yaml"
+    url: "https://juan-nikola.github.io/apple-proxy-profiles/previous/clash/rules/Download.yaml"
+    interval: 86400
+  PrivateTracker:
+    type: "http"
+    behavior: "classical"
+    format: "yaml"
+    path: "./rules/PrivateTracker.yaml"
+    url: "https://juan-nikola.github.io/apple-proxy-profiles/previous/clash/rules/PrivateTracker.yaml"
+    interval: 86400
+  OverseasGame:
+    type: "http"
+    behavior: "classical"
+    format: "yaml"
+    path: "./rules/OverseasGame.yaml"
+    url: "https://juan-nikola.github.io/apple-proxy-profiles/previous/clash/rules/OverseasGame.yaml"
+    interval: 86400
+  ChinaTLD:
+    type: "http"
+    behavior: "classical"
+    format: "yaml"
+    path: "./rules/ChinaTLD.yaml"
+    url: "https://juan-nikola.github.io/apple-proxy-profiles/previous/clash/rules/ChinaTLD.yaml"
+    interval: 86400
+  ChinaIP:
+    type: "http"
+    behavior: "classical"
+    format: "yaml"
+    path: "./rules/ChinaIP.yaml"
+    url: "https://juan-nikola.github.io/apple-proxy-profiles/previous/clash/rules/ChinaIP.yaml"
+    interval: 86400
+dns:
+  enable: true
+  ipv6: true
+  enhanced-mode: "fake-ip"
+  fake-ip-range: "198.18.0.1/16"
+  fake-ip-filter:
+    - "*.lan"
+    - "*.local"
+    - "*.home.arpa"
+    - "+.push.apple.com"
+  listen: "0.0.0.0:1053"
+  respect-rules: true
+  prefer-h3: true
+  nameserver:
+    - "https://dns.alidns.com/dns-query"
+  fallback:
+    - "https://cloudflare-dns.com/dns-query"
+  nameserver-policy:
+    "geosite:geolocation-!cn":
+      - "https://cloudflare-dns.com/dns-query"
+    "+.openai.com":
+      - "https://cloudflare-dns.com/dns-query"
+    "+.github.com":
+      - "https://cloudflare-dns.com/dns-query"
+    "+.youtube.com":
+      - "https://cloudflare-dns.com/dns-query"
+  fallback-filter:
+    geoip: true
+    geoip-code: "CN"
+    geosite:
+      - "gfw"
+rules:
+  - "DOMAIN-SUFFIX,local,DIRECT"
+  - "DOMAIN-SUFFIX,lan,DIRECT"
+  - "DOMAIN-SUFFIX,home.arpa,DIRECT"
+  - "IP-CIDR,10.0.0.0/8,DIRECT,no-resolve"
+  - "IP-CIDR,100.64.0.0/10,DIRECT,no-resolve"
+  - "IP-CIDR,127.0.0.0/8,DIRECT,no-resolve"
+  - "IP-CIDR,169.254.0.0/16,DIRECT,no-resolve"
+  - "IP-CIDR,172.16.0.0/12,DIRECT,no-resolve"
+  - "IP-CIDR,192.168.0.0/16,DIRECT,no-resolve"
+  - "IP-CIDR,224.0.0.0/4,DIRECT,no-resolve"
+  - "IP-CIDR6,::1/128,DIRECT,no-resolve"
+  - "IP-CIDR6,fc00::/7,DIRECT,no-resolve"
+  - "IP-CIDR6,fe80::/10,DIRECT,no-resolve"
+  - "IP-CIDR6,ff00::/8,DIRECT,no-resolve"
+  - "RULE-SET,Hijacking,REJECT"
+  - "RULE-SET,BlockHttpDNS,REJECT"
+  - "RULE-SET,Privacy,🕵️ 严格跟踪"
+  - "RULE-SET,DomesticCore,DIRECT"
+  - "RULE-SET,DomesticGame,DIRECT"
+  - "RULE-SET,SteamCN,DIRECT"
+  - "RULE-SET,BiliBili,🇨🇳 国内平台"
+  - "RULE-SET,ByteDance,🇨🇳 国内平台"
+  - "RULE-SET,XiaoHongShu,🇨🇳 国内平台"
+  - "RULE-SET,Weibo,🇨🇳 国内平台"
+  - "RULE-SET,OpenAI,🤖 AI 专用"
+  - "RULE-SET,Claude,🤖 AI 专用"
+  - "RULE-SET,Gemini,🤖 AI 专用"
+  - "RULE-SET,Copilot,🤖 AI 专用"
+  - "RULE-SET,GitHub,🐙 GitHub"
+  - "RULE-SET,YouTube,📺 YouTube"
+  - "RULE-SET,Netflix,🎬 海外流媒体"
+  - "RULE-SET,Disney,🎬 海外流媒体"
+  - "RULE-SET,Spotify,🎬 海外流媒体"
+  - "RULE-SET,GlobalMedia,🎬 海外流媒体"
+  - "RULE-SET,Telegram,💬 海外社交"
+  - "RULE-SET,Facebook,💬 海外社交"
+  - "RULE-SET,Instagram,💬 海外社交"
+  - "RULE-SET,Twitter,💬 海外社交"
+  - "RULE-SET,TikTok,💬 海外社交"
+  - "RULE-SET,Apple,🍎 Apple"
+  - "RULE-SET,Microsoft,🪟 Microsoft"
+  - "RULE-SET,Download,⬇️ 下载/P2P"
+  - "RULE-SET,PrivateTracker,⬇️ 下载/P2P"
+  - "RULE-SET,OverseasGame,🌍 海外游戏"
+  - "RULE-SET,ChinaTLD,DIRECT"
+  - "RULE-SET,ChinaIP,DIRECT"
+  - "GEOIP,CN,DIRECT,no-resolve"
+  - "MATCH,🚀 节点选择"

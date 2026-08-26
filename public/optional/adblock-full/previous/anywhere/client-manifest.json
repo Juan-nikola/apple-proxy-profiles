@@ -2,37 +2,37 @@
   "client": "anywhere",
   "files": [
     {
-      "bytes": 2116166,
+      "bytes": 2115756,
       "path": "optional/adblock-full/anywhere/Advertising_Domain-001.arrs",
-      "sha256": "9e766d44d29ea1d7e4efdecf1ec79da915cc0e3171ee7d64751a70ffd5e120ec"
+      "sha256": "dd5dd0acce03fab37ff64991f44451fa70d69a9b34a4755580f9cf4666bed1c4"
     },
     {
-      "bytes": 2141344,
+      "bytes": 2141260,
       "path": "optional/adblock-full/anywhere/Advertising_Domain-002.arrs",
-      "sha256": "352cc228948344bb810e28273ef609e07648486b39618fda38c4cdd2cc6a229e"
+      "sha256": "64d1e8036b027534c9e3a344abc4d0c17e48214c160b025d55d1165ee9caaf8a"
     },
     {
-      "bytes": 1628147,
+      "bytes": 1626812,
       "path": "optional/adblock-full/anywhere/Advertising_Domain-003.arrs",
-      "sha256": "90645391860c32b88ad597604599ecfdd4f08e19a8dccb9697956796823d8af3"
+      "sha256": "e768679bea2abc6b4fabaf3e354a8e9ec8b22c1daa23e970a20bb818f88baa66"
     },
     {
       "bytes": 15088,
       "path": "optional/adblock-full/anywhere/Advertising-001.arrs",
-      "sha256": "936a073cbff58155f8a108747844976e98b2946dc59a8b76487291441e1d43c7"
+      "sha256": "6eb4fff957412d580d58240628c6d635f8dce12666f69cb4a650954d2d705d5e"
     },
     {
       "bytes": 5441,
       "path": "optional/adblock-full/anywhere/import.html",
-      "sha256": "b38b8ce5e843a4556b87441dc4dac7607c258d71a81265ef9b46757d57e73a51"
+      "sha256": "4fb3774d19c2b94547f1fce8e422f849f530b631838576faf8f60078e97fd86c"
     },
     {
       "bytes": 7937,
       "path": "optional/adblock-full/anywhere/manifest.json",
-      "sha256": "da3c114b5f14b65ef3309798f968add553706d43ecfdddd6c80dd1c4326ef586"
+      "sha256": "dd38679d754bed7aabd98bd821b075d801074c6bfc6c827c8667e6981445ff5e"
     }
   ],
-  "generatedAt": "2026-08-23T18:28:35Z",
-  "manifestHash": "ca05c750be20a16bb7013f6f26b5bf53b80a080466d75ee6296cabce7af467dd",
+  "generatedAt": "2026-08-25T18:39:12Z",
+  "manifestHash": "1edec5bdb16a4509bc03331cabda6643fb16599c08479d9417236ab88464ce89",
   "schemaVersion": 1
 }

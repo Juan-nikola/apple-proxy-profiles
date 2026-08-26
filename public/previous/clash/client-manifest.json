@@ -1,0 +1,212 @@
+{
+  "chinaIpAuditSha256": "05b0639e02b20fbf36f8c1412cadd88f9b7e91bc9c5e845e0269405bb89e6641",
+  "client": "clash",
+  "files": [
+    {
+      "bytes": 21431,
+      "path": "clash/examples/clash-appletv.yaml",
+      "sha256": "ed36c33dc7e124c6530428e6eb38b0ea856aecf7b731c83fcd213690754f14a0"
+    },
+    {
+      "bytes": 21431,
+      "path": "clash/examples/clash-ipad.yaml",
+      "sha256": "ed36c33dc7e124c6530428e6eb38b0ea856aecf7b731c83fcd213690754f14a0"
+    },
+    {
+      "bytes": 21431,
+      "path": "clash/examples/clash-iphone.yaml",
+      "sha256": "ed36c33dc7e124c6530428e6eb38b0ea856aecf7b731c83fcd213690754f14a0"
+    },
+    {
+      "bytes": 21431,
+      "path": "clash/examples/clash-macos.yaml",
+      "sha256": "ed36c33dc7e124c6530428e6eb38b0ea856aecf7b731c83fcd213690754f14a0"
+    },
+    {
+      "bytes": 1114,
+      "path": "clash/rules/Apple.yaml",
+      "sha256": "1b743b524f3a109689af0959d6b1837bd12f577bb05fb19ed23fa2f93aeed48e"
+    },
+    {
+      "bytes": 5297,
+      "path": "clash/rules/BiliBili.yaml",
+      "sha256": "8eed8035817d4a7214ffe438009b372f8c4a870d6508ab025bb6d64b7bd7331a"
+    },
+    {
+      "bytes": 2902,
+      "path": "clash/rules/BlockHttpDNS.yaml",
+      "sha256": "aade6c1a73100c0a920ebb8a518e40589d5c611488bb019dc980a068e8894ce1"
+    },
+    {
+      "bytes": 13059,
+      "path": "clash/rules/ByteDance.yaml",
+      "sha256": "c47207acaca5efdd02032668d09db90e4d09e5f1bad759fdbc6d3ce6381be22f"
+    },
+    {
+      "bytes": 467916,
+      "path": "clash/rules/ChinaIP.yaml",
+      "sha256": "e83c966afb757ab238912b1206454e6ef2158663c2eef79613b73042f8fcda87"
+    },
+    {
+      "bytes": 338,
+      "path": "clash/rules/ChinaTLD.yaml",
+      "sha256": "b2e9f6c492d2761872785662b625dca8951c0cbe450e649468a3babdb8abe201"
+    },
+    {
+      "bytes": 406,
+      "path": "clash/rules/Claude.yaml",
+      "sha256": "a74bd2d2f970ce289213185ab1b762c4d476098abbabdfc1a99f7288c8bff6c2"
+    },
+    {
+      "bytes": 2166,
+      "path": "clash/rules/Copilot.yaml",
+      "sha256": "13e52a4509e220c59437ce07534c2b60a80d13c3dfbeaf896ef6e24357c741e5"
+    },
+    {
+      "bytes": 6715,
+      "path": "clash/rules/Disney.yaml",
+      "sha256": "94d7f3e7e426e7ae6bd6a700f2d4001f22fe5a8c69fd4408e540a5f60d1336f0"
+    },
+    {
+      "bytes": 2362,
+      "path": "clash/rules/DomesticCore.yaml",
+      "sha256": "2ade261a71af931942c91812720db747edf101aa2819f7d1eb18e486a5311707"
+    },
+    {
+      "bytes": 1723,
+      "path": "clash/rules/DomesticGame.yaml",
+      "sha256": "fac2762e6d05152c1e6da65edab4d283436550a692b460498b0200b2bf1d1442"
+    },
+    {
+      "bytes": 493,
+      "path": "clash/rules/Download.yaml",
+      "sha256": "a0ae09e366f360b45b76f3b7d013b3858b9fb1c73a9cf2cc9c5c4fd4e739f87e"
+    },
+    {
+      "bytes": 20899,
+      "path": "clash/rules/Facebook.yaml",
+      "sha256": "302d1222a975b4fcca2baf49d46ebd1fb3d5a6af2bbcc9bd780fa12b9ce1a4fb"
+    },
+    {
+      "bytes": 807,
+      "path": "clash/rules/Gemini.yaml",
+      "sha256": "3f8c15cee9b9166b67f145fc7af5c1b9ad1883f73b6ce16aa52e2c83fcaa863d"
+    },
+    {
+      "bytes": 1438,
+      "path": "clash/rules/GitHub.yaml",
+      "sha256": "d4492714d34c36e00ffea33e2b6facdb10f3ffbb4a95e22c08a99700168b882d"
+    },
+    {
+      "bytes": 39757,
+      "path": "clash/rules/GlobalMedia.yaml",
+      "sha256": "17cbbd8111cf41995bb62f4e736dca2f0c5852f2354fc6eb2613c54ca8f7241c"
+    },
+    {
+      "bytes": 8233,
+      "path": "clash/rules/Hijacking.yaml",
+      "sha256": "8e990d5496e30ad77bc821567c4d473ea2f3ccea49fca167b166b8df96cb188a"
+    },
+    {
+      "bytes": 450,
+      "path": "clash/rules/Instagram.yaml",
+      "sha256": "9dc44590116170b417638946da2cbb565862b1da8e540cc6f9ab926aacc25a1b"
+    },
+    {
+      "bytes": 24583,
+      "path": "clash/rules/Microsoft.yaml",
+      "sha256": "52c6d91c94d8d570452bc522d118e1f62d6e032278572b21c27edbccf085d775"
+    },
+    {
+      "bytes": 47366,
+      "path": "clash/rules/Netflix.yaml",
+      "sha256": "b36e5cf1d0e260cd65d8b7a0240dcbe52e3e310a6617612b79ad4fc87b1ad82c"
+    },
+    {
+      "bytes": 1631,
+      "path": "clash/rules/OpenAI.yaml",
+      "sha256": "cebd24e60d237900f0dc75c719bda6fb4d78f85b78e10dc585b02af22b91cd7b"
+    },
+    {
+      "bytes": 22079,
+      "path": "clash/rules/OverseasGame.yaml",
+      "sha256": "c5612ff0f8040180ad54600858fa1ff7c26ff30cbc34bc54a14daebdfc3311e7"
+    },
+    {
+      "bytes": 1044,
+      "path": "clash/rules/Privacy.yaml",
+      "sha256": "f321c7bb9a99cc3114000130b9586fac4231f06187e6f17765a35a40b7fa303c"
+    },
+    {
+      "bytes": 8437,
+      "path": "clash/rules/PrivateTracker.yaml",
+      "sha256": "881bba250f741a48a041da9421cea5ad0b608f24a2db30b6a232a636dd46cbd0"
+    },
+    {
+      "bytes": 1446,
+      "path": "clash/rules/Spotify.yaml",
+      "sha256": "2133359bc7533e77652c7fbe90cdeada55df882ae89f8bdf74da23671fefb63c"
+    },
+    {
+      "bytes": 908,
+      "path": "clash/rules/SteamCN.yaml",
+      "sha256": "e61d3de8a2cbb6ed74dc7bed80ae853e8eef660aa1e85d3f9b09bac99f4fb592"
+    },
+    {
+      "bytes": 1530,
+      "path": "clash/rules/Telegram.yaml",
+      "sha256": "b55d74b9414bab7884ab0ddc64934dc8577be71034d8b691d94bc934a22bc52d"
+    },
+    {
+      "bytes": 1374,
+      "path": "clash/rules/TikTok.yaml",
+      "sha256": "1fbc6dfcd023aca60d1e7442f716ca5a33ecfc679382c30fbb26489548747ecb"
+    },
+    {
+      "bytes": 1437,
+      "path": "clash/rules/Twitter.yaml",
+      "sha256": "96a009ed8c79ce99ee50c385b893044ca978bca01725d4e826ea392d2052df54"
+    },
+    {
+      "bytes": 428,
+      "path": "clash/rules/Weibo.yaml",
+      "sha256": "f8ae6858c64931d40cca1db2db5c8f816e2c614abc78751d4e3c52c94167b4cf"
+    },
+    {
+      "bytes": 457,
+      "path": "clash/rules/XiaoHongShu.yaml",
+      "sha256": "fb17d9d079cc1528f073a1c8eabf94f9dac357b2768856826f05307f17193565"
+    },
+    {
+      "bytes": 6433,
+      "path": "clash/rules/YouTube.yaml",
+      "sha256": "efaf10f56bac0cc69d16742ac5eeecfa1e7c468e5ab656f1d19796483a6dc765"
+    },
+    {
+      "bytes": 72016,
+      "path": "clash/scripts/clash-node-generator.js",
+      "sha256": "60045fb59ef4dd9f43cdb8990fe989575fd85302079115cd22a0b7d3a333c898"
+    },
+    {
+      "bytes": 85486,
+      "path": "clash/scripts/clash-profile-generator.js",
+      "sha256": "8a4ab36c3c9ae0207009cb18c581cfab1b54cdd474023bb3dac0184f85955928"
+    },
+    {
+      "bytes": 72016,
+      "path": "clash/scripts/substore-node-generator.js",
+      "sha256": "60045fb59ef4dd9f43cdb8990fe989575fd85302079115cd22a0b7d3a333c898"
+    },
+    {
+      "bytes": 85486,
+      "path": "clash/scripts/substore-profile-generator.js",
+      "sha256": "8a4ab36c3c9ae0207009cb18c581cfab1b54cdd474023bb3dac0184f85955928"
+    }
+  ],
+  "generatedAt": "2026-08-23T18:28:35Z",
+  "manifestHash": "aad4a8f8c7e1560b8a10d4b4424d4983a4b3f984bca86b509b54fe063713f221",
+  "optionalPacks": {
+    "adblock-full": "abfb81225fe23ff2a6e9e9219422ba4181fe81c442a42d3507d167153a46ae9e"
+  },
+  "schemaVersion": 1
+}

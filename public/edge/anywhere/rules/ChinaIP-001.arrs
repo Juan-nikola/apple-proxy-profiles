@@ -1,7 +1,7 @@
 # Upstream: https://github.com/blackmatrix7/ios_rule_script
 # Source: ChinaIP
-# Commit: f42be99379fcd1a1dd03469e8b56dcb46888fcea
-# Converted at upstream commit time: 2026-08-23T18:28:35Z
+# Commit: 2df6b08dfc2707c8099056ffab6778092e7d6d3e
+# Converted at upstream commit time: 2026-08-25T18:39:12Z
 # License: GPL-2.0-only
 # Converted by: Juan-nikola/apple-proxy-profiles
 name = DIRECT · ChinaIP
@@ -544,7 +544,7 @@ routing = 1
 0, 103.144.148.0/23
 0, 103.144.158.0/23
 0, 103.144.240.0/23
-0, 103.144.244.0/24
+0, 103.144.244.0/23
 0, 103.144.40.0/23
 0, 103.144.52.0/23
 0, 103.144.66.0/23
@@ -3691,7 +3691,7 @@ routing = 1
 0, 156.154.62.0/23
 0, 156.224.128.0/17
 0, 156.227.239.0/24
-0, 156.232.10.0/23
+0, 156.232.11.0/24
 0, 156.232.9.0/24
 0, 156.251.144.0/20
 0, 156.251.161.0/24
@@ -6037,6 +6037,7 @@ routing = 1
 0, 38.181.40.0/21
 0, 38.181.48.0/20
 0, 38.196.176.0/24
+0, 38.226.199.0/24
 0, 38.47.192.0/20
 0, 38.47.208.0/21
 0, 38.47.216.0/22

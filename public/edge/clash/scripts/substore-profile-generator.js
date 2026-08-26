@@ -648,14 +648,14 @@ var ClashProfileBundle = (() => {
   function resolveNameCollisions(nodes, getIdentity = identityKey, getFingerprint = fingerprint) {
     const groups = /* @__PURE__ */ new Map();
     for (const node of nodes) {
-      const group2 = groups.get(node.name) ?? [];
-      group2.push(node);
-      groups.set(node.name, group2);
+      const group = groups.get(node.name) ?? [];
+      group.push(node);
+      groups.set(node.name, group);
     }
-    for (const [baseName, group2] of groups) {
-      if (group2.length < 2) continue;
+    for (const [baseName, group] of groups) {
+      if (group.length < 2) continue;
       const byProtocol = /* @__PURE__ */ new Map();
-      for (const node of group2) {
+      for (const node of group) {
         const label = protocolDisplayLabel(node.type);
         const protocolGroup = byProtocol.get(label) ?? [];
         protocolGroup.push(node);
@@ -703,8 +703,8 @@ var ClashProfileBundle = (() => {
       const identity = identityKey(cloned);
       const source = classifySource(original);
       const region = classifyRegion(original.name);
-      const group2 = candidatesByIdentity.get(identity) ?? [];
-      group2.push({
+      const group = candidatesByIdentity.get(identity) ?? [];
+      group.push({
         original,
         cloned,
         source,
@@ -719,12 +719,12 @@ var ClashProfileBundle = (() => {
         ].filter((value) => typeof value === "string").join("\0"),
         fullKey: identityKey({ value: original })
       });
-      candidatesByIdentity.set(identity, group2);
+      candidatesByIdentity.set(identity, group);
     }
-    for (const group2 of candidatesByIdentity.values()) {
-      group2.sort(compareDuplicateCandidates);
-      const { original, cloned, source, region, validation, existingChain } = group2[0];
-      if (group2.length > 1) increment(diagnostics.excluded, "exact-duplicate", group2.length - 1);
+    for (const group of candidatesByIdentity.values()) {
+      group.sort(compareDuplicateCandidates);
+      const { original, cloned, source, region, validation, existingChain } = group[0];
+      if (group.length > 1) increment(diagnostics.excluded, "exact-duplicate", group.length - 1);
       increment(diagnostics.protocol, diagnosticProtocol(cloned.type));
       increment(diagnostics.source, source.kind);
       increment(diagnostics.region, region.continent);
@@ -1115,6 +1115,289 @@ var ClashProfileBundle = (() => {
   function isParsedClashOptions(value) {
     return value !== null && typeof value === "object" && PARSED.has(value);
   }
+
+  // ../../../shared/policies/filters.js
+  var ALL_NODES_FILTER = "^.+$";
+  var NON_CHAINED_FILTER = "^(?!\u{1F517} ).+$";
+  var ENTRY_FILTER = "^(?!\u{1F517} )(?!.*\xB7\u94FE).+\uFF5C(?:\u673A\u573A|\u81EA\u5EFA|Realm)(?:\xB7.*)?$";
+  var P2P_FILTER = "^(?!\u{1F517} ).+\uFF5C(?:\u81EA\u5EFA|Realm|\u94FE\u5F0F\u4EE3\u7406)(?:\xB7.*)?$";
+  var GAME_FILTER = "^(?!\u{1F517} ).+\xB7U$";
+  var CONTINENTS = Object.freeze([
+    Object.freeze({
+      key: CONTINENT.asiaPacific,
+      name: "\u{1F30F} \u4E9A\u592A",
+      helperName: "\u4E9A\u592A",
+      flags: CONTINENT_FLAGS[CONTINENT.asiaPacific]
+    }),
+    Object.freeze({
+      key: CONTINENT.europe,
+      name: "\u{1F30D} \u6B27\u6D32",
+      helperName: "\u6B27\u6D32",
+      flags: CONTINENT_FLAGS[CONTINENT.europe]
+    }),
+    Object.freeze({
+      key: CONTINENT.americas,
+      name: "\u{1F30E} \u7F8E\u6D32",
+      helperName: "\u7F8E\u6D32",
+      flags: CONTINENT_FLAGS[CONTINENT.americas]
+    }),
+    Object.freeze({
+      key: CONTINENT.other,
+      name: "\u{1F310} \u5176\u4ED6/\u672A\u5206\u7C7B",
+      helperName: "\u5176\u4ED6/\u672A\u5206\u7C7B",
+      flags: Object.freeze([])
+    })
+  ]);
+  var SOURCE_GROUPS = Object.freeze([
+    Object.freeze({ kind: SOURCE_KIND.selfHosted, name: "\u{1F3E0} \u81EA\u5EFA\u8282\u70B9", filter: "^.+\uFF5C\u81EA\u5EFA(?:\xB7.*)?$" }),
+    Object.freeze({ kind: SOURCE_KIND.airport, name: "\u{1F3E2} \u673A\u573A\u8282\u70B9", filter: "^.+\uFF5C\u673A\u573A(?:\xB7.*)?$" }),
+    Object.freeze({ kind: SOURCE_KIND.realm, name: "\u21AA\uFE0F Realm \u8F6C\u53D1", filter: "^.+\uFF5CRealm(?:\xB7.*)?$" }),
+    Object.freeze({ kind: SOURCE_KIND.serverChain, name: "\u26D3\uFE0F \u94FE\u5F0F\u4EE3\u7406", filter: "^.+\uFF5C\u94FE\u5F0F\u4EE3\u7406(?:\xB7.*)?$" })
+  ]);
+  function continentFilter(continent) {
+    const record = CONTINENTS.find((entry) => entry.key === continent.key) ?? continent;
+    if (record.key === CONTINENT.other) {
+      const knownFlags = CONTINENTS.flatMap((record2) => record2.flags).join("|");
+      return `^(?!(?:\u{1F517}|${knownFlags})).+$`;
+    }
+    return `^(?:${record.flags.join("|")}).+$`;
+  }
+
+  // ../../../shared/policies/platform-presets.js
+  var POLICY_PLATFORM_PRESETS = Object.freeze({
+    macos: Object.freeze({ testInterval: 600, timeout: 5, tolerance: 100 }),
+    iphone: Object.freeze({ testInterval: 1800, timeout: 7, tolerance: 150 }),
+    ipad: Object.freeze({ testInterval: 1800, timeout: 7, tolerance: 150 }),
+    android: Object.freeze({ testInterval: 1800, timeout: 7, tolerance: 150 }),
+    openwrt: Object.freeze({ testInterval: 600, timeout: 5, tolerance: 100 }),
+    appletv: Object.freeze({ testInterval: 3600, timeout: 8, tolerance: 200 })
+  });
+  function platformPolicyPreset(platform) {
+    if (typeof platform !== "string" || !Object.hasOwn(POLICY_PLATFORM_PRESETS, platform)) {
+      throw new Error(`Unsupported platform: ${platform}`);
+    }
+    return POLICY_PLATFORM_PRESETS[platform];
+  }
+
+  // ../../../shared/policies/catalog.js
+  var TEST_URL = "http://www.gstatic.com/generate_204";
+  var STRATEGY = Object.freeze({
+    select: "select",
+    autoTest: "auto-test",
+    fallback: "fallback"
+  });
+  var GROUP_KIND = Object.freeze({
+    helper: "helper",
+    primary: "primary",
+    continent: "continent",
+    source: "source",
+    ai: "ai",
+    service: "service",
+    special: "special",
+    security: "security",
+    chain: "chain"
+  });
+  var PROXY_THEN_DIRECT = Object.freeze(["\u{1F680} \u8282\u70B9\u9009\u62E9", "DIRECT"]);
+  var PROXY_FIRST_SERVICE_DEFAULTS = Object.freeze({
+    beforeCandidates: Object.freeze(["\u{1F680} \u8282\u70B9\u9009\u62E9"]),
+    afterCandidates: Object.freeze(["DIRECT"]),
+    defaultChoice: "\u{1F680} \u8282\u70B9\u9009\u62E9"
+  });
+  var DIRECT_FIRST_SERVICE_DEFAULTS = Object.freeze({
+    beforeCandidates: Object.freeze(["DIRECT", "\u{1F680} \u8282\u70B9\u9009\u62E9"]),
+    afterCandidates: Object.freeze([]),
+    defaultChoice: "DIRECT"
+  });
+  var SERVICE_GROUPS = Object.freeze([
+    Object.freeze(["\u{1F419} GitHub", PROXY_FIRST_SERVICE_DEFAULTS]),
+    Object.freeze(["\u{1F4FA} YouTube", PROXY_FIRST_SERVICE_DEFAULTS]),
+    Object.freeze(["\u{1F3AC} \u6D77\u5916\u6D41\u5A92\u4F53", PROXY_FIRST_SERVICE_DEFAULTS]),
+    Object.freeze(["\u{1F4AC} \u6D77\u5916\u793E\u4EA4", PROXY_FIRST_SERVICE_DEFAULTS]),
+    Object.freeze(["\u{1F34E} Apple", DIRECT_FIRST_SERVICE_DEFAULTS]),
+    Object.freeze(["\u{1FA9F} Microsoft", DIRECT_FIRST_SERVICE_DEFAULTS]),
+    Object.freeze(["\u{1F1E8}\u{1F1F3} \u56FD\u5185\u5E73\u53F0", DIRECT_FIRST_SERVICE_DEFAULTS]),
+    Object.freeze(["\u{1F30D} \u6D77\u5916\u6E38\u620F", PROXY_FIRST_SERVICE_DEFAULTS])
+  ]);
+  function policyGroup({
+    kind,
+    name,
+    strategy = STRATEGY.select,
+    candidates = [],
+    nodeFilter = null,
+    test = null,
+    hidden,
+    defaultChoice
+  }) {
+    return { kind, name, strategy, candidates, nodeFilter, test, hidden, defaultChoice };
+  }
+  function helper(kind, name, strategy, preset, nodeFilter, candidates = []) {
+    return policyGroup({
+      kind,
+      name,
+      strategy,
+      candidates,
+      nodeFilter,
+      test: {
+        url: TEST_URL,
+        interval: preset.testInterval,
+        timeout: preset.timeout,
+        tolerance: preset.tolerance
+      },
+      hidden: true
+    });
+  }
+  function subscriptionGroup(kind, name, nodeFilter, candidates = ["DIRECT"], options = {}) {
+    return policyGroup({ kind, name, candidates, nodeFilter, ...options });
+  }
+  function automaticHelperName(continent) {
+    return `\u26A1 ${continent.helperName}\u81EA\u52A8`;
+  }
+  function continentHelperItems(continent, mode) {
+    void mode;
+    return [automaticHelperName(continent)];
+  }
+  function serviceChoiceItems(defaults, presentContinentNames) {
+    return [
+      ...defaults.beforeCandidates,
+      "\u26A1 \u5168\u90E8\u81EA\u52A8",
+      ...presentContinentNames,
+      ...defaults.afterCandidates
+    ];
+  }
+  function securityGroups(blockMode) {
+    const defaults = {
+      off: ["DIRECT", "DIRECT", "DIRECT"],
+      security: ["REJECT", "DIRECT", "DIRECT"],
+      balanced: ["REJECT", "REJECT", "DIRECT"],
+      strict: ["REJECT", "REJECT", "REJECT"]
+    }[blockMode] ?? ["REJECT", "REJECT", "DIRECT"];
+    return ["\u2623\uFE0F \u5B89\u5168\u5A01\u80C1", "\u{1F9F1} \u5E38\u89C1\u5E7F\u544A", "\u{1F575}\uFE0F \u4E25\u683C\u8DDF\u8E2A"].map((name, index) => {
+      const primary = defaults[index];
+      return policyGroup({
+        kind: GROUP_KIND.security,
+        name,
+        candidates: [primary, primary === "REJECT" ? "DIRECT" : "REJECT"]
+      });
+    });
+  }
+  function effectiveAutoMode(requested, nodeCount) {
+    if (requested !== "auto") return requested;
+    if (nodeCount <= 30) return "full";
+    if (nodeCount <= 100) return "balanced";
+    return "minimal";
+  }
+  function applyUnifiedPolicyDefaults(groups, resolution) {
+    if (!resolution || typeof resolution !== "object") return groups;
+    const byLabel = /* @__PURE__ */ new Map();
+    const targetDefaults = {
+      "\u{1F916} AI \u4E13\u7528": resolution.targets?.ai,
+      "\u{1F419} GitHub": resolution.targets?.github,
+      "\u{1F4FA} YouTube": resolution.targets?.youtube,
+      "\u{1F3AC} \u6D77\u5916\u6D41\u5A92\u4F53": resolution.targets?.overseasMedia,
+      "\u{1F4AC} \u6D77\u5916\u793E\u4EA4": resolution.targets?.globalSocial,
+      "\u{1F34E} Apple": resolution.targets?.apple,
+      "\u{1FA9F} Microsoft": resolution.targets?.microsoft,
+      "\u{1F1E8}\u{1F1F3} \u56FD\u5185\u5E73\u53F0": resolution.targets?.domesticPlatform,
+      "\u{1F30D} \u6D77\u5916\u6E38\u620F": resolution.targets?.overseasGame,
+      "\u{1F3AE} \u6E38\u620F\u8FDE\u63A5": resolution.targets?.game,
+      "\u2B07\uFE0F \u4E0B\u8F7D/P2P": resolution.targets?.download,
+      "\u{1F9ED} DNS \u4E0E\u89C4\u5219\u4E0B\u8F7D": resolution.targets?.dnsAndRules
+    };
+    for (const [name, record] of Object.entries(targetDefaults)) {
+      if (!record) continue;
+      const value = record.resolved === "DIRECT" ? "DIRECT" : record.resolved === "FOLLOW" ? "\u{1F680} \u8282\u70B9\u9009\u62E9" : record.resolved;
+      byLabel.set(name, value);
+    }
+    return groups.map((group) => {
+      const defaultChoice = byLabel.get(group.name);
+      if (defaultChoice === void 0) return group;
+      return { ...group, defaultChoice };
+    });
+  }
+  function buildPolicyGroups(options, nodes, policyResolution = null) {
+    const normalizedNodes = Array.isArray(nodes) ? nodes : [];
+    const preset = platformPolicyPreset(options.platform);
+    const mode = effectiveAutoMode(options.autoGroupMode, normalizedNodes.length);
+    const presentContinents = CONTINENTS.filter((continent) => normalizedNodes.some((node) => nodeMetadata(node).continent === continent.key && !nodeMetadata(node).chained));
+    const chainEligible = options.clientChain === "on" && normalizedNodes.some((node) => nodeMetadata(node).entry === true && !nodeMetadata(node).chained) && normalizedNodes.some((node) => nodeMetadata(node).chained === true);
+    const helpers = [
+      helper(GROUP_KIND.helper, "\u26A1 \u5168\u90E8\u81EA\u52A8", STRATEGY.autoTest, preset, NON_CHAINED_FILTER)
+    ];
+    if (chainEligible) {
+      helpers.push(helper(GROUP_KIND.chain, "\u26A1 \u5165\u53E3\u81EA\u52A8", STRATEGY.autoTest, preset, ENTRY_FILTER));
+    }
+    for (const continent of presentContinents) {
+      helpers.push(helper(
+        GROUP_KIND.helper,
+        automaticHelperName(continent),
+        STRATEGY.autoTest,
+        preset,
+        continentFilter(continent)
+      ));
+    }
+    const groups = [];
+    groups.push(policyGroup({
+      kind: GROUP_KIND.primary,
+      name: "\u{1F680} \u8282\u70B9\u9009\u62E9",
+      candidates: [
+        "\u26A1 \u5168\u90E8\u81EA\u52A8",
+        ...presentContinents.map((continent) => continent.name)
+      ]
+    }));
+    for (const continent of presentContinents) {
+      groups.push(policyGroup({
+        kind: GROUP_KIND.continent,
+        name: continent.name,
+        candidates: continentHelperItems(continent, mode),
+        nodeFilter: continentFilter(continent)
+      }));
+    }
+    if (chainEligible) {
+      groups.push(subscriptionGroup(GROUP_KIND.chain, "\u{1F3AF} \u5BA2\u6237\u7AEF\u843D\u5730", "^\u{1F517} .+$"));
+    }
+    groups.push(subscriptionGroup(
+      GROUP_KIND.ai,
+      "\u{1F916} AI \u4E13\u7528",
+      ALL_NODES_FILTER,
+      []
+    ));
+    const presentContinentNames = presentContinents.map((continent) => continent.name);
+    for (const [name, defaults] of SERVICE_GROUPS) {
+      groups.push(subscriptionGroup(
+        GROUP_KIND.service,
+        name,
+        ALL_NODES_FILTER,
+        serviceChoiceItems(defaults, presentContinentNames),
+        { defaultChoice: defaults.defaultChoice }
+      ));
+    }
+    if (normalizedNodes.some((node) => nodeMetadata(node).udp === true && !nodeMetadata(node).chained)) {
+      groups.push(subscriptionGroup(GROUP_KIND.special, "\u{1F3AE} \u6E38\u620F\u8FDE\u63A5", GAME_FILTER));
+    } else {
+      groups.push(policyGroup({ kind: GROUP_KIND.special, name: "\u{1F3AE} \u6E38\u620F\u8FDE\u63A5", candidates: ["DIRECT"] }));
+    }
+    if (normalizedNodes.some((node) => nodeMetadata(node).p2p === true && !nodeMetadata(node).chained)) {
+      groups.push(subscriptionGroup(GROUP_KIND.special, "\u2B07\uFE0F \u4E0B\u8F7D/P2P", P2P_FILTER));
+    } else {
+      groups.push(policyGroup({ kind: GROUP_KIND.special, name: "\u2B07\uFE0F \u4E0B\u8F7D/P2P", candidates: ["DIRECT"] }));
+    }
+    groups.push(policyGroup({
+      kind: GROUP_KIND.special,
+      name: "\u{1F9ED} DNS \u4E0E\u89C4\u5219\u4E0B\u8F7D",
+      candidates: [...PROXY_THEN_DIRECT]
+    }));
+    groups.push(...securityGroups(options.blockMode));
+    if (chainEligible) {
+      groups.push(subscriptionGroup(GROUP_KIND.chain, "\u{1F517} \u5165\u53E3\u8282\u70B9", ENTRY_FILTER, ["\u26A1 \u5165\u53E3\u81EA\u52A8"]));
+    }
+    const result = [...groups, ...helpers];
+    return applyUnifiedPolicyDefaults(result, policyResolution);
+  }
+
+  // ../../../shared/policies/intents.js
+  var POLICY_TARGET = Object.freeze({
+    primaryProxy: "primary-proxy"
+  });
 
   // ../../../shared/nodes/renderability.js
   function protocolOf(node) {
@@ -1907,8 +2190,7 @@ var ClashProfileBundle = (() => {
   }
 
   // render-profile.js
-  var TEST_URL = "http://www.gstatic.com/generate_204";
-  var CONTINENT_LABELS = Object.freeze({ asiaPacific: "\u{1F30F} \u4E9A\u592A", europe: "\u{1F30D} \u6B27\u6D32", americas: "\u{1F30E} \u7F8E\u6D32", other: "\u{1F310} \u5176\u4ED6" });
+  var TEST_URL2 = "http://www.gstatic.com/generate_204";
   function prepareClashInventory(nodes, { onDiagnostics } = {}) {
     if (!Array.isArray(nodes)) throw new Error("Clash node inventory must be an array");
     const partitioned = partitionRenderableNodes(nodes, "Clash", toClashProxy);
@@ -1924,50 +2206,56 @@ var ClashProfileBundle = (() => {
     onDiagnostics?.(structuredClone(diagnostics));
     return { nodes: partitioned.renderable, proxies, diagnostics };
   }
-  function namesFor(nodes) {
-    return nodes.map((node) => toClashProxy(node).name);
+  function filterNodes(filter, nodes) {
+    if (filter === null) return [];
+    let pattern;
+    try {
+      pattern = new RegExp(filter, "u");
+    } catch {
+      throw new Error("Invalid Clash policy filter");
+    }
+    return nodes.filter((node) => pattern.test(node.name)).map((node) => toClashProxy(node).name);
   }
-  function group(name, type, proxies, extra = {}) {
-    return { name, type, proxies, ...extra };
+  function targetName(value) {
+    return value === POLICY_TARGET.primaryProxy ? "\u26A1 \u5168\u90E8\u81EA\u52A8" : value;
   }
-  function renderGroups(nodes, options, policyResolution) {
-    const names = namesFor(nodes);
-    const byContinent = /* @__PURE__ */ new Map();
-    for (const node of nodes) {
-      const continent = node?._profile?.continent || "other";
-      if (!byContinent.has(continent)) byContinent.set(continent, []);
-      byContinent.get(continent).push(toClashProxy(node).name);
-    }
-    const groups = [
-      group("\u26A1 \u5168\u90E8\u81EA\u52A8", "url-test", names, { url: TEST_URL, interval: 600, tolerance: 100 }),
-      group("\u{1F6DF} \u5168\u90E8\u6545\u969C\u8F6C\u79FB", "fallback", ["\u26A1 \u5168\u90E8\u81EA\u52A8", ...names], { url: TEST_URL, interval: 600 })
+  function candidateList(policyGroup2, nodes) {
+    const candidates = [
+      ...policyGroup2.candidates.map(targetName),
+      ...filterNodes(policyGroup2.nodeFilter, nodes)
     ];
-    for (const [key, values] of byContinent) {
-      const label = CONTINENT_LABELS[key] || CONTINENT_LABELS.other;
-      groups.push(group(label + "\u81EA\u52A8", "url-test", values, { url: TEST_URL, interval: 600, tolerance: 120 }));
+    return candidates.filter((item, index, all) => all.indexOf(item) === index);
+  }
+  function renderPolicyGroup(policyGroup2, nodes) {
+    let candidates = candidateList(policyGroup2, nodes);
+    if (policyGroup2.kind === "ai" && candidates[0] !== "\u26A1 \u5168\u90E8\u81EA\u52A8") candidates.unshift("\u26A1 \u5168\u90E8\u81EA\u52A8");
+    if (policyGroup2.defaultChoice !== void 0) {
+      const defaultChoice = targetName(policyGroup2.defaultChoice);
+      if (candidates.includes(defaultChoice)) {
+        candidates = [defaultChoice, ...candidates.filter((candidate) => candidate !== defaultChoice)];
+      }
     }
-    const regional = [...byContinent.keys()].map((key) => (CONTINENT_LABELS[key] || CONTINENT_LABELS.other) + "\u81EA\u52A8");
-    groups.unshift(group("\u{1F680} \u8282\u70B9\u9009\u62E9", "select", ["\u26A1 \u5168\u90E8\u81EA\u52A8", "\u{1F6DF} \u5168\u90E8\u6545\u969C\u8F6C\u79FB", ...regional, "DIRECT"]));
-    const serviceDefaults = [
-      ["\u{1F916} AI \u4E13\u7528", "\u{1F680} \u8282\u70B9\u9009\u62E9"],
-      ["\u{1F419} GitHub", "\u{1F680} \u8282\u70B9\u9009\u62E9"],
-      ["\u{1F4FA} YouTube", "\u{1F680} \u8282\u70B9\u9009\u62E9"],
-      ["\u{1F3AC} \u6D77\u5916\u6D41\u5A92\u4F53", "\u{1F680} \u8282\u70B9\u9009\u62E9"],
-      ["\u{1F4AC} \u6D77\u5916\u793E\u4EA4", "\u{1F680} \u8282\u70B9\u9009\u62E9"],
-      ["\u{1F30D} \u6D77\u5916\u6E38\u620F", "\u{1F680} \u8282\u70B9\u9009\u62E9"],
-      ["\u{1F34E} Apple", "DIRECT"],
-      ["\u{1FA9F} Microsoft", "DIRECT"],
-      ["\u{1F1E8}\u{1F1F3} \u56FD\u5185\u5E73\u53F0", "DIRECT"],
-      ["\u2B07\uFE0F \u4E0B\u8F7D/P2P", "DIRECT"],
-      ["\u2623\uFE0F \u5B89\u5168\u5A01\u80C1", options.blockMode === "off" ? "DIRECT" : "REJECT"],
-      ["\u{1F9F1} \u5E38\u89C1\u5E7F\u544A", options.blockMode === "strict" ? "REJECT" : "DIRECT"],
-      ["\u{1F575}\uFE0F \u4E25\u683C\u8DDF\u8E2A", options.blockMode === "strict" ? "REJECT" : "DIRECT"]
-    ];
-    for (const [name, fallback] of serviceDefaults) {
-      const resolved = policyResolution?.targets?.[name]?.resolved;
-      groups.push(group(name, "select", [resolved || fallback, "\u{1F680} \u8282\u70B9\u9009\u62E9", "DIRECT", "REJECT"].filter((value, index, all) => all.indexOf(value) === index)));
+    if (candidates.length === 0) candidates = ["DIRECT"];
+    if (policyGroup2.strategy === "auto-test") {
+      return {
+        name: policyGroup2.name,
+        type: "url-test",
+        proxies: candidates,
+        url: policyGroup2.test?.url || TEST_URL2,
+        interval: Number(policyGroup2.test?.interval ?? 600),
+        tolerance: Number(policyGroup2.test?.tolerance ?? 100),
+        ...policyGroup2.hidden ? { hidden: true } : {}
+      };
     }
-    return groups;
+    return {
+      name: policyGroup2.name,
+      type: "select",
+      proxies: candidates,
+      ...policyGroup2.hidden ? { hidden: true } : {}
+    };
+  }
+  function renderClashGroups(nodes, options, policyResolution = null) {
+    return buildPolicyGroups(options, nodes, policyResolution).map((policyGroup2) => renderPolicyGroup(policyGroup2, nodes));
   }
   function renderClashProfileFromOptions(options, nodes, { onDiagnostics, policyResolution = null, preparedInventory = null } = {}) {
     if (!isParsedClashOptions(options)) throw new Error("Parsed Clash options are required");
@@ -1987,7 +2275,7 @@ var ClashProfileBundle = (() => {
       sniffer: { enable: true, "parse-pure-ip": true, "override-destination": true },
       tun: { enable: true, stack: "mixed", "auto-route": true, "auto-detect-interface": true },
       proxies: prepared.proxies,
-      "proxy-groups": renderGroups(prepared.nodes, options, policyResolution),
+      "proxy-groups": renderClashGroups(prepared.nodes, options, policyResolution),
       "rule-providers": renderedRules.providers,
       dns: renderClashDns(options),
       rules: renderedRules.rules

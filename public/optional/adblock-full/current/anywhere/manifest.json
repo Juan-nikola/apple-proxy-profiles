@@ -4,7 +4,7 @@
     "commit": "e15518fde1f5d2652dfc1c234c89a68b87cecec0",
     "repository": "https://github.com/NodePassProject/Anywhere"
   },
-  "generatedAt": "2026-08-23T18:28:35Z",
+  "generatedAt": "2026-08-25T18:39:12Z",
   "generatorVersion": "0.1.0",
   "logicalRuleSets": [
     {
@@ -32,7 +32,7 @@
       ]
     }
   ],
-  "manifestSha256": "ffff40f2a17c2c38add4bee1ba289671aa96dce9da480d3c2c8df69af669fa25",
+  "manifestSha256": "62c4fa9c99170a405ecdf82fe8fce2d5bb02ca3ec74a5dc27cbabadf703b2277",
   "schemaVersion": 1,
   "shards": [
     {
@@ -47,7 +47,7 @@
       "index": 1,
       "name": "🧱 常见广告 · Advertising",
       "path": "optional/adblock-full/anywhere/Advertising-001.arrs",
-      "sha256": "936a073cbff58155f8a108747844976e98b2946dc59a8b76487291441e1d43c7",
+      "sha256": "6eb4fff957412d580d58240628c6d635f8dce12666f69cb4a650954d2d705d5e",
       "sourceId": "Advertising",
       "sourceIds": [
         "Advertising"
@@ -65,7 +65,7 @@
       "index": 1,
       "name": "🧱 常见广告 · Advertising Domain (1/3)",
       "path": "optional/adblock-full/anywhere/Advertising_Domain-001.arrs",
-      "sha256": "9e766d44d29ea1d7e4efdecf1ec79da915cc0e3171ee7d64751a70ffd5e120ec",
+      "sha256": "dd5dd0acce03fab37ff64991f44451fa70d69a9b34a4755580f9cf4666bed1c4",
       "sourceId": "Advertising_Domain",
       "sourceIds": [
         "Advertising_Domain"
@@ -83,7 +83,7 @@
       "index": 2,
       "name": "🧱 常见广告 · Advertising Domain (2/3)",
       "path": "optional/adblock-full/anywhere/Advertising_Domain-002.arrs",
-      "sha256": "352cc228948344bb810e28273ef609e07648486b39618fda38c4cdd2cc6a229e",
+      "sha256": "64d1e8036b027534c9e3a344abc4d0c17e48214c160b025d55d1165ee9caaf8a",
       "sourceId": "Advertising_Domain",
       "sourceIds": [
         "Advertising_Domain"
@@ -93,15 +93,15 @@
     },
     {
       "countsByType": {
-        "domainSuffix": 72727
+        "domainSuffix": 72675
       },
-      "entryCount": 72727,
+      "entryCount": 72675,
       "familyId": "Advertising_Domain",
       "id": "Advertising_Domain-003",
       "index": 3,
       "name": "🧱 常见广告 · Advertising Domain (3/3)",
       "path": "optional/adblock-full/anywhere/Advertising_Domain-003.arrs",
-      "sha256": "90645391860c32b88ad597604599ecfdd4f08e19a8dccb9697956796823d8af3",
+      "sha256": "e768679bea2abc6b4fabaf3e354a8e9ec8b22c1daa23e970a20bb818f88baa66",
       "sourceId": "Advertising_Domain",
       "sourceIds": [
         "Advertising_Domain"
@@ -150,8 +150,8 @@
       "policy": "🧱 常见广告",
       "priority": 30,
       "provenance": {
-        "commit": "f42be99379fcd1a1dd03469e8b56dcb46888fcea",
-        "committedAt": "2026-08-23T18:28:35Z",
+        "commit": "2df6b08dfc2707c8099056ffab6778092e7d6d3e",
+        "committedAt": "2026-08-25T18:39:12Z",
         "license": "GPL-2.0-only",
         "repository": "https://github.com/blackmatrix7/ios_rule_script"
       },
@@ -170,11 +170,11 @@
       "canonicalPath": "rule/Surge/Advertising/Advertising_Domain.list",
       "componentId": "domains",
       "counts": {
-        "candidate": 279167,
-        "convertible": 262727,
+        "candidate": 279115,
+        "convertible": 262675,
         "duplicates": 0,
-        "output": 262727,
-        "parsed": 279167,
+        "output": 262675,
+        "parsed": 279115,
         "shadowed": 0,
         "unresolved": 0,
         "unsupported": 16440
@@ -188,13 +188,13 @@
       "inputFormat": "RULE-SET",
       "inputSources": [
         {
-          "candidate": 279167,
-          "convertible": 262727,
+          "candidate": 279115,
+          "convertible": 262675,
           "id": "Advertising_Domain",
-          "output": 262727,
-          "parsed": 279167,
-          "sourceBytes": 9164302,
-          "sourceSha256": "ce6659fa22c28b606c39bcd45d8b29b3a0bc8c020398239b6d6e2c3fc11cf65e",
+          "output": 262675,
+          "parsed": 279115,
+          "sourceBytes": 9161901,
+          "sourceSha256": "6d87fe4119a76d127a52531f15889846041a28a0c18b07bbd8ca00a49a85a2aa",
           "unsupported": 16440
         }
       ],
@@ -205,8 +205,8 @@
       "policy": "🧱 常见广告",
       "priority": 40,
       "provenance": {
-        "commit": "f42be99379fcd1a1dd03469e8b56dcb46888fcea",
-        "committedAt": "2026-08-23T18:28:35Z",
+        "commit": "2df6b08dfc2707c8099056ffab6778092e7d6d3e",
+        "committedAt": "2026-08-25T18:39:12Z",
         "license": "GPL-2.0-only",
         "repository": "https://github.com/blackmatrix7/ios_rule_script"
       },
@@ -216,11 +216,11 @@
         "Advertising_Domain-002",
         "Advertising_Domain-003"
       ],
-      "sourceBytes": 9164302,
+      "sourceBytes": 9161901,
       "sourceIds": [
         "Advertising_Domain"
       ],
-      "sourceSha256": "ce6659fa22c28b606c39bcd45d8b29b3a0bc8c020398239b6d6e2c3fc11cf65e",
+      "sourceSha256": "6d87fe4119a76d127a52531f15889846041a28a0c18b07bbd8ca00a49a85a2aa",
       "unsupportedByReason": {
         "unsupported-exact-domain": 16440
       }
@@ -228,27 +228,27 @@
   ],
   "totals": {
     "blankCount": 2,
-    "candidateCount": 279934,
+    "candidateCount": 279882,
     "commentCount": 0,
     "convertibleByKind": {
       "domainKeyword": 278,
-      "domainSuffix": 262727,
+      "domainSuffix": 262675,
       "ipv4Cidr": 486,
       "ipv6Cidr": 3
     },
-    "convertibleCount": 263494,
+    "convertibleCount": 263442,
     "duplicateCount": 0,
     "ignoredModifiers": {
       "noResolve": 489
     },
     "inputSourceCount": 2,
     "logicalRuleSetCount": 2,
-    "outputCount": 263494,
-    "parsedCount": 279934,
-    "physicalLineCount": 279936,
+    "outputCount": 263442,
+    "parsedCount": 279882,
+    "physicalLineCount": 279884,
     "shadowedCount": 0,
     "shardCount": 4,
-    "sourceBytes": 9190236,
+    "sourceBytes": 9187835,
     "sourceCount": 2,
     "unresolvedCount": 0,
     "unsupportedByReason": {
@@ -258,8 +258,8 @@
   },
   "upstream": {
     "branch": "master",
-    "commit": "f42be99379fcd1a1dd03469e8b56dcb46888fcea",
-    "committedAt": "2026-08-23T18:28:35Z",
+    "commit": "2df6b08dfc2707c8099056ffab6778092e7d6d3e",
+    "committedAt": "2026-08-25T18:39:12Z",
     "license": "GPL-2.0-only",
     "repository": "https://github.com/blackmatrix7/ios_rule_script"
   }

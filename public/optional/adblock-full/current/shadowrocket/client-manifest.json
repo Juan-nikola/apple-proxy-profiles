@@ -2,17 +2,17 @@
   "client": "shadowrocket",
   "files": [
     {
-      "bytes": 9164622,
+      "bytes": 9162221,
       "path": "optional/adblock-full/shadowrocket/rules/Advertising_Domain.list",
-      "sha256": "b886ea1465dd58369c3bd2c37eedcfa4faf18edd8fe9c835e000c250f6240905"
+      "sha256": "bf6521d27f2c15e094469361164c71e362f5cdb03486ca8ef36d2a70c0807039"
     },
     {
       "bytes": 26244,
       "path": "optional/adblock-full/shadowrocket/rules/Advertising.list",
-      "sha256": "d123495a944a24b0977bf5b5575ae414ec8fa1f8d911ab34f98a0933a43a0507"
+      "sha256": "4ab30fa7948fa5a8f03f67c707a2a400e30483448e3273c9e6d590b14ae110b7"
     }
   ],
-  "generatedAt": "2026-08-23T18:28:35Z",
-  "manifestHash": "502dbfe3d2fc6504b9764f9bbe72b55b974c775a965fefa250b0db09357e00b4",
+  "generatedAt": "2026-08-25T18:39:12Z",
+  "manifestHash": "bf213aaff8841c20bcbdad6b829efc847151887e33d117e70fba0514ae164657",
   "schemaVersion": 1
 }

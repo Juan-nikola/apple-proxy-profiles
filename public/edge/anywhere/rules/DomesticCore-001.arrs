@@ -1,7 +1,7 @@
 # Upstream: https://github.com/blackmatrix7/ios_rule_script
 # Source: DomesticCore
-# Commit: f42be99379fcd1a1dd03469e8b56dcb46888fcea
-# Converted at upstream commit time: 2026-08-23T18:28:35Z
+# Commit: 2df6b08dfc2707c8099056ffab6778092e7d6d3e
+# Converted at upstream commit time: 2026-08-25T18:39:12Z
 # License: GPL-2.0-only
 # Converted by: Juan-nikola/apple-proxy-profiles
 name = DIRECT · DomesticCore

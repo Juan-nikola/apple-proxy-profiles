@@ -4,13 +4,13 @@
   "calibrationStartedAt": "2026-08-09T13:33:56.957Z",
   "families": {
     "ipv4": {
-      "currentAddresses": "359026674",
-      "currentPrefixes": 7175,
+      "currentAddresses": "359026930",
+      "currentPrefixes": 7176,
       "divergenceBasisPoints": "409",
-      "previousAddresses": "359026418",
+      "previousAddresses": "359026674",
       "previousPrefixes": 7175,
-      "secondaryAddresses": "344333054",
-      "secondaryPrefixes": 6253,
+      "secondaryAddresses": "344332800",
+      "secondaryPrefixes": 6223,
       "shrinkBasisPoints": "0"
     },
     "ipv6": {
@@ -19,25 +19,25 @@
       "divergenceBasisPoints": "635",
       "previousAddresses": "5104925933167855546564402630098944",
       "previousPrefixes": 3925,
-      "secondaryAddresses": "5429395309615155892901655963762688",
-      "secondaryPrefixes": 3429,
+      "secondaryAddresses": "5429385406094841609859456770768896",
+      "secondaryPrefixes": 3428,
       "shrinkBasisPoints": "0"
     }
   },
-  "generatedAt": "2026-08-25T07:00:40.424Z",
+  "generatedAt": "2026-08-26T06:03:10.100Z",
   "primary": {
-    "commit": "f42be99379fcd1a1dd03469e8b56dcb46888fcea",
-    "committedAt": "2026-08-23T18:28:35Z",
+    "commit": "2df6b08dfc2707c8099056ffab6778092e7d6d3e",
+    "committedAt": "2026-08-25T18:39:12Z",
     "repository": "https://github.com/blackmatrix7/ios_rule_script",
-    "sha256": "e4a01558e7f069e09bc6c74886ce1b9ae1419dec64844944fb4a420ac50bd1c6"
+    "sha256": "fe47a9b1193811f9b71b3f973e7c7f2bcfcf7de431876a959ffa692787217ea6"
   },
   "reportOnly": false,
   "schemaVersion": 1,
   "secondary": {
-    "commit": "ae4b3cb74aaf62976e1668d389aa1b7521d3ec5b",
-    "committedAt": "2026-08-25T03:37:29Z",
+    "commit": "67658e3ee888e18db8fedba17f888ebff77afa52",
+    "committedAt": "2026-08-26T03:45:21Z",
     "repository": "https://github.com/gaoyifan/china-operator-ip",
-    "sha256": "57152bb531c50a492cffddd977d90529d0f0e210844764db633011a16d28fd10"
+    "sha256": "9640bcbdfbd4023d1f136e6613a1e38ad4ee5ff9a60bead76fd97107fe494bb5"
   },
   "warnings": [
     "ipv6:secondary-divergence"

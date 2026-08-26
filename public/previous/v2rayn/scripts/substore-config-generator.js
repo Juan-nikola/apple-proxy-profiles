@@ -61,7 +61,8 @@ var V2rayNConfigBundle = (() => {
     onexray: "onexray",
     happ: "happ",
     v2rayn: "v2rayn",
-    v2box: "v2box"
+    v2box: "v2box",
+    clash: "clash"
   });
   var PRIVATE_POLICY_CHANNELS = Object.freeze(["edge", "current", "previous"]);
   var PRIVATE_POLICY_CLIENTS = Object.freeze([CLIENT.happ, CLIENT.onexray]);
@@ -228,43 +229,43 @@ var V2rayNConfigBundle = (() => {
     });
   }
   var definitions = Object.freeze([
-    protocol(["ss", "shadowsocks"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.onexray, CLIENT.happ, CLIENT.v2rayn, CLIENT.v2box], {
+    protocol(["ss", "shadowsocks"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.onexray, CLIENT.happ, CLIENT.v2rayn, CLIENT.v2box, CLIENT.clash], {
       requiredFields: ["cipher", "password"]
     }),
-    protocol(["ssr"], [CLIENT.shadowrocket, CLIENT.surge], {
+    protocol(["ssr"], [CLIENT.shadowrocket, CLIENT.surge, CLIENT.clash], {
       requiredFields: ["cipher", "password", "protocol", "obfs"]
     }),
-    protocol(["snell"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox], {
+    protocol(["snell"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox, CLIENT.clash], {
       requiredFields: ["psk", "version"]
     }),
-    protocol(["vmess"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox, CLIENT.onexray, CLIENT.happ, CLIENT.v2rayn, CLIENT.v2box], {
+    protocol(["vmess"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox, CLIENT.onexray, CLIENT.happ, CLIENT.v2rayn, CLIENT.v2box, CLIENT.clash], {
       requiredFields: ["uuid"]
     }),
-    protocol(["vless"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.singbox, CLIENT.onexray, CLIENT.happ, CLIENT.v2rayn, CLIENT.v2box], {
+    protocol(["vless"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.singbox, CLIENT.onexray, CLIENT.happ, CLIENT.v2rayn, CLIENT.v2box, CLIENT.clash], {
       requiredFields: ["uuid"]
     }),
-    protocol(["trojan"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.onexray, CLIENT.happ, CLIENT.v2rayn, CLIENT.v2box], {
+    protocol(["trojan"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.onexray, CLIENT.happ, CLIENT.v2rayn, CLIENT.v2box, CLIENT.clash], {
       requiredFields: ["password"],
       tls: true
     }),
-    protocol(["anytls"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox], {
+    protocol(["anytls"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.clash], {
       requiredFields: ["password"],
       tls: true
     }),
-    protocol(["hysteria2", "hy2"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.onexray, CLIENT.happ, CLIENT.v2rayn, CLIENT.v2box], {
+    protocol(["hysteria2", "hy2"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.onexray, CLIENT.happ, CLIENT.v2rayn, CLIENT.v2box, CLIENT.clash], {
       requiredFields: ["password"],
       tls: true
     }),
-    protocol(["tuic"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox], {
+    protocol(["tuic"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox, CLIENT.clash], {
       requiredFields: ["uuid", "password"],
       tls: true
     }),
-    protocol(["socks5"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.onexray, CLIENT.happ, CLIENT.v2rayn, CLIENT.v2box]),
-    protocol(["http"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox, CLIENT.onexray, CLIENT.v2rayn, CLIENT.v2box]),
-    protocol(["ssh"], [CLIENT.egern, CLIENT.singbox], {
+    protocol(["socks5"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.onexray, CLIENT.happ, CLIENT.v2rayn, CLIENT.v2box, CLIENT.clash]),
+    protocol(["http"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox, CLIENT.onexray, CLIENT.v2rayn, CLIENT.v2box, CLIENT.clash]),
+    protocol(["ssh"], [CLIENT.egern, CLIENT.singbox, CLIENT.clash], {
       requiredFields: ["username"]
     }),
-    protocol(["wireguard"], [CLIENT.egern, CLIENT.singbox], {
+    protocol(["wireguard"], [CLIENT.egern, CLIENT.singbox, CLIENT.clash], {
       requiredFields: ["private-key", "public-key"]
     }),
     protocol(["sudoku"], [CLIENT.anywhere], {
@@ -2725,6 +2726,19 @@ var V2rayNConfigBundle = (() => {
       supportsPolicyOverrides: false,
       adapterSchema: "v2box-v1",
       publicDirectory: "v2box"
+    },
+    {
+      id: CLIENT.clash,
+      displayName: "Clash Apple",
+      state: "active",
+      platforms: ["iphone", "ipad", "macos", "appletv"],
+      configFormat: "mihomo-yaml",
+      ruleFormat: "mihomo-classical-yaml",
+      nodeValidator: "clash",
+      separatesProfile: false,
+      supportsPolicyOverrides: false,
+      adapterSchema: "clash-v1",
+      publicDirectory: "clash"
     }
   ].map((record2) => freeze3(record2));
   var byId = new Map(records.map((record2) => [record2.id, record2]));
@@ -2736,7 +2750,8 @@ var V2rayNConfigBundle = (() => {
     CLIENT.egern,
     CLIENT.shadowrocket,
     CLIENT.surge,
-    CLIENT.singbox
+    CLIENT.singbox,
+    CLIENT.clash
   ]);
 
   // ../../shared/release/frontier-manifest.js
@@ -3293,6 +3308,15 @@ var V2rayNConfigBundle = (() => {
     const global = options.globalDns === "google" ? "8.8.8.8" : options.globalDns === "quad9" ? "9.9.9.9" : "1.1.1.1";
     return { servers: [{ tag: "china-dns", address: china, domains: ["geosite:cn", "geosite:private"], queryStrategy }, { tag: "global-dns", address: global, domains: ["geosite:apple-proxy-overseas"], queryStrategy }], queryStrategy, tag: "dnsQuery", mode: options.dnsMode };
   }
+  function tunInbound(options) {
+    const settings = { mtu: 1500 };
+    if (options.platform === "macos") {
+      settings.gateway = ["169.254.10.1/30"];
+      settings.autoSystemRoutingTable = ["0.0.0.0/0", "::/0"];
+      settings.autoOutboundsInterface = "auto";
+    }
+    return { tag: "tun", protocol: "tun", settings, sniffing: { enabled: true, routeOnly: true } };
+  }
   function renderV2rayNProfile({ nodes, options, geoData = null, filterFailures = {}, policyResolution = null } = {}) {
     if (!options || options.output !== "config") throw new Error("v2rayN profile options are required");
     if (!Array.isArray(nodes)) throw new Error("v2rayN profile requires compatible nodes");
@@ -3330,7 +3354,7 @@ var V2rayNConfigBundle = (() => {
       if (!finalOutboundTag) throw new Error("v2rayN policy target node is unavailable");
     }
     rules.push({ domain: [`geosite:${options.region}`], outboundTag: "direct", ruleTag: "china-domain-direct" }, { ip: [`geoip:${options.region}`], outboundTag: "direct", ruleTag: "china-ip-direct" }, { network: "tcp,udp", outboundTag: finalOutboundTag, ruleTag: "final-fail-closed" });
-    return { name: options.name, dns: dns(options), inbounds: [{ tag: "tun", protocol: "tun", settings: { mtu: 1500 }, sniffing: { enabled: true, routeOnly: true } }], outbounds: [...outbounds, ...outbounds.length > 2 ? [{ protocol: "selector", tag: "proxy", settings: { selectors: outbounds.slice(2).map(({ tag }) => tag) } }] : []], routing: { domainStrategy: "IPIfNonMatch", rules }, ...Object.keys(failures).length ? { renderFailures: failures } : {} };
+    return { name: options.name, dns: dns(options), inbounds: [tunInbound(options)], outbounds: [...outbounds, ...outbounds.length > 2 ? [{ protocol: "selector", tag: "proxy", settings: { selectors: outbounds.slice(2).map(({ tag }) => tag) } }] : []], routing: { domainStrategy: "IPIfNonMatch", rules }, ...Object.keys(failures).length ? { renderFailures: failures } : {} };
   }
 
   // src/substore-config-entry.js

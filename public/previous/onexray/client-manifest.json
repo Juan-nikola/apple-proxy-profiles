@@ -23,38 +23,38 @@
       "sha256": "af0ea3268792a1facefac4d7fea947baaf8bbb130ecbde54267fe3fa88e1d32d"
     },
     {
-      "bytes": 134076,
+      "bytes": 134688,
       "path": "onexray/scripts/onexray-node-generator.js",
-      "sha256": "fc7508fd80a06eac83528e086bd6b0417dae1f78d18f3a48ac690c44f910bca5"
+      "sha256": "31d6ae81b691229ca6137f22d2c9a72cdea4f9d43eed905759b14d7071e62022"
     },
     {
-      "bytes": 155438,
+      "bytes": 156050,
       "path": "onexray/scripts/onexray-profile-generator.js",
-      "sha256": "fe14b445800aab7d32a8f1c6bf64b7a8b2f07e480a897d7202373f6a02b3fca6"
+      "sha256": "3c5c9025de04e5418201b44df0b4dc72732278aad2d2a52a1cb1f4819828272a"
     },
     {
-      "bytes": 146695,
+      "bytes": 147307,
       "path": "onexray/scripts/onexray-routing-audit.js",
-      "sha256": "f6ed46d15fc0232ed49cff215c2dee9592f1fafbc0fc8e4438c28f3f6e908193"
+      "sha256": "97167a8b5b5ac7972595590d3815d5c23c80f2af47ba99ed36d2b80c1e25eb45"
     },
     {
-      "bytes": 134076,
+      "bytes": 134688,
       "path": "onexray/scripts/substore-node-generator.js",
-      "sha256": "fc7508fd80a06eac83528e086bd6b0417dae1f78d18f3a48ac690c44f910bca5"
+      "sha256": "31d6ae81b691229ca6137f22d2c9a72cdea4f9d43eed905759b14d7071e62022"
     },
     {
-      "bytes": 155438,
+      "bytes": 156050,
       "path": "onexray/scripts/substore-profile-generator.js",
-      "sha256": "fe14b445800aab7d32a8f1c6bf64b7a8b2f07e480a897d7202373f6a02b3fca6"
+      "sha256": "3c5c9025de04e5418201b44df0b4dc72732278aad2d2a52a1cb1f4819828272a"
     },
     {
-      "bytes": 146695,
+      "bytes": 147307,
       "path": "onexray/scripts/substore-routing-audit.js",
-      "sha256": "f6ed46d15fc0232ed49cff215c2dee9592f1fafbc0fc8e4438c28f3f6e908193"
+      "sha256": "97167a8b5b5ac7972595590d3815d5c23c80f2af47ba99ed36d2b80c1e25eb45"
     }
   ],
   "generatedAt": "2026-08-23T18:28:35Z",
-  "manifestHash": "354474845630a95a1507aded58df4cf7bf3d6bb0c5d5c8fe8bb9abd4b0a23420",
+  "manifestHash": "b7a75d2d5602dbb4b337a507158ca4772d7f653f54c24008915153504590208d",
   "optionalPacks": {},
   "schemaVersion": 1
 }

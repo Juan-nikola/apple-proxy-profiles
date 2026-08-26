@@ -273,18 +273,18 @@
       "sha256": "da4163404185d0c106158bad3bc246a7df1388b1974bceace0dfa1f0443abd30"
     },
     {
-      "bytes": 152152,
+      "bytes": 152764,
       "path": "sing-box/scripts/sing-box-config-generator.js",
-      "sha256": "6bc312b06487e3b492897df113a24accf510a3657151264e17922b81049a22ab"
+      "sha256": "1d696f5bea98d9dd597bcd2691b155619851ac790f18a66a770649ba3babf5d6"
     },
     {
-      "bytes": 152152,
+      "bytes": 152764,
       "path": "sing-box/scripts/substore-config-generator.js",
-      "sha256": "6bc312b06487e3b492897df113a24accf510a3657151264e17922b81049a22ab"
+      "sha256": "1d696f5bea98d9dd597bcd2691b155619851ac790f18a66a770649ba3babf5d6"
     }
   ],
   "generatedAt": "2026-08-23T18:28:35Z",
-  "manifestHash": "ef1d5b9667a647b066c6bca0d7fd442cbb53e9c9ce1c0c9a98e6d842f111aea9",
+  "manifestHash": "0e36351b819ef466bca09ae18ff87099431f12a5a64c86868555ea58c5360780",
   "optionalPacks": {
     "adblock-full": "e71a784ba98972d176f025398e6ed9100a25d806d0655f2e3a8c093c9d44d5ae"
   },

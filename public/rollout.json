@@ -1,6 +1,18 @@
 {
   "schemaVersion": 2,
   "clients": {
+    "anywhere": "338a90079bb82735208cb2722a488450ae21f1f7dd5a823b3c6670289316d1ff",
+    "egern": "8dd4e7b34717a8becf6db6c8228325f978e4cbde52e637ac4f28c9e3671870cd",
+    "shadowrocket": "461ee64872b22e7360f17c05e3c1b2aeeec362f2dbf893ef08cb55360e503b41",
+    "surge": "a20b0cf0d6ec1f19272159b516b939a3ae55b6a67e2376fccba81528dde80f09",
+    "singbox": "2071b0ea3645e5fb1584482599a9bd029e2d9fb7c152e252d3a4ed156a6cfb78",
+    "onexray": "6849fe30d403ffc408044622674c45fe2304d4160abef3fe0ac2846e60e564a8",
+    "happ": "12fb154ed11ed824719b05a755b64fe8267e1e31a543f8519ef370c631bf7b3c",
+    "v2rayn": "c21d47d2a3a843590762931dc583a527bf99ba4f39998a381d32499f8a852565",
+    "v2box": "2b5b8819ac2acb8b28380097a812e13aa6a129f1f3c0f57dc2db3a495e87ba94",
+    "clash": "52e6ff8f826f6b834692f5cd692a08724c29a4a9eff4f2686b8de562e765fdca"
+  },
+  "previous": {
     "anywhere": "18f13c754bd97f1863cc92d93cb30786704f83ee9b159c421a774a4e7f261ce4",
     "egern": "28ebbbe87e31f071d330b64cf0a0cd48474c43a4c72a2a60b323853a5cc75e66",
     "shadowrocket": "9c1af5c31b3054dbf4f1a15fe266f6eca3591a81f1d951f064df0c1e1eedc227",
@@ -12,26 +24,14 @@
     "v2box": "2df79d4283cc90c9537518255b5bbee0775cb01547a002856178293dcae9a1d6",
     "clash": "665f7e8674d4761e4b0aa903dd4a54e52fcacb3ef417aabc91c0ad1f037ac52e"
   },
-  "previous": {
-    "anywhere": "68d0ed037ab1b9e4ae1b1a2d9b70f621f91ee3a767ff3ab5ef928cdb6edfa95c",
-    "egern": "e716f49556c4d69ca543442d948cf7bbd4cfe0d248af2c807c313e267e19003a",
-    "shadowrocket": "9a89a2f346659c03609476fe13dd5e90b14630b2bae6e5942975c49e039b931c",
-    "surge": "77cc0093539956fa86d94bd2880c7862cefef0f21eca4b8d94f5c12fa6437bdc",
-    "singbox": "d534295a23f504426fc6b4a04d24519ae3561d4104f0f97b50f717a9a8b9f140",
-    "onexray": "10d79c47fc3de8a05017142d74a7f38e15351c8560ab5dbab915877d386563c7",
-    "happ": "dfba29815fa450b083cf5583de8387281a69691c06fc2f0b39ae5fbabdc2ed57",
-    "v2rayn": "acd01588c6b3c1df48d1637417aa87afd07de77b9024af9b037b845f9e40df84",
-    "v2box": "b8d5bce819fc25bf9338db6329216e38ac4df1d5a423e8939ff7ca4766a634cc",
-    "clash": null
-  },
   "optionalPacks": {
     "adblock-full": {
-      "anywhere": "00f8338af945fca80e81da1f9a2c29a6238a8c69568e3ab8d679d713d26be34f",
-      "egern": "42d55c5dfb7162f5bcd361f66288499ca98ccf13799dd0cbcb75bbc02072186a",
-      "shadowrocket": "502dbfe3d2fc6504b9764f9bbe72b55b974c775a965fefa250b0db09357e00b4",
-      "surge": "01a6c87844de890f9d3bf36b365e882b9986878398dc72b64bddf23b180fa9bf",
-      "singbox": "e71a784ba98972d176f025398e6ed9100a25d806d0655f2e3a8c093c9d44d5ae",
-      "clash": "abfb81225fe23ff2a6e9e9219422ba4181fe81c442a42d3507d167153a46ae9e"
+      "anywhere": "9a879aefa393465cc10c0aa51eaa4b834a71ec65b5b0ee237954662f36290008",
+      "egern": "08aeaee58f63c648579afd23d8b17f1d6ef86ce0d9af0de927a2d17ab50f790b",
+      "shadowrocket": "bf213aaff8841c20bcbdad6b829efc847151887e33d117e70fba0514ae164657",
+      "surge": "643f5ac043912657a754a00b2271fd864cd2d944b6da935ef5ab6f7ff0b55d5b",
+      "singbox": "2c976a360f631a98c231057e04cfeaa4a1ca3ed2fa02d1759c7dde09c92bdac9",
+      "clash": "621609f97141834193f4944c2c7ae377dd018bb2e98241cd79d541b97298b5fc"
     }
   },
   "previousOptionalPacks": {
@@ -41,7 +41,7 @@
       "shadowrocket": "502dbfe3d2fc6504b9764f9bbe72b55b974c775a965fefa250b0db09357e00b4",
       "surge": "01a6c87844de890f9d3bf36b365e882b9986878398dc72b64bddf23b180fa9bf",
       "singbox": "e71a784ba98972d176f025398e6ed9100a25d806d0655f2e3a8c093c9d44d5ae",
-      "clash": null
+      "clash": "abfb81225fe23ff2a6e9e9219422ba4181fe81c442a42d3507d167153a46ae9e"
     }
   }
 }

@@ -2,9 +2,9 @@
   "client": "singbox",
   "files": [
     {
-      "bytes": 2228509,
+      "bytes": 2227816,
       "path": "optional/adblock-full/sing-box/Advertising_Domain.srs",
-      "sha256": "dcde6bc7caeabc0bc18fc75715b9b246a0e33c62a2592cff6472c0e44fd8abfd"
+      "sha256": "5b0161a991205a2e8662188a029823b8556d6555ed2b434a2076e9dbc35a6df4"
     },
     {
       "bytes": 4171,
@@ -12,7 +12,7 @@
       "sha256": "a26ac17f9bafea983d0e71241b8f964198dccbba54909e09b9e0616dbbdcf6a5"
     }
   ],
-  "generatedAt": "2026-08-23T18:28:35Z",
-  "manifestHash": "e71a784ba98972d176f025398e6ed9100a25d806d0655f2e3a8c093c9d44d5ae",
+  "generatedAt": "2026-08-25T18:39:12Z",
+  "manifestHash": "2c976a360f631a98c231057e04cfeaa4a1ca3ed2fa02d1759c7dde09c92bdac9",
   "schemaVersion": 1
 }

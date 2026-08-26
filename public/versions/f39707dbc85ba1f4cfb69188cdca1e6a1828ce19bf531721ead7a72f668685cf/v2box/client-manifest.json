@@ -1,0 +1,20 @@
+{
+  "chinaIpAuditSha256": "05b0639e02b20fbf36f8c1412cadd88f9b7e91bc9c5e845e0269405bb89e6641",
+  "client": "v2box",
+  "files": [
+    {
+      "bytes": 172303,
+      "path": "v2box/scripts/substore-config-generator.js",
+      "sha256": "0bf2f30282ddba89e89e515ee6c77ed988b1f7cf01d0aa1c3871a9258714ab05"
+    },
+    {
+      "bytes": 124081,
+      "path": "v2box/scripts/substore-node-generator.js",
+      "sha256": "624b0501a8c6195d4b556becbc81f4c8930086923bcd955aa87f7a1ac1655719"
+    }
+  ],
+  "generatedAt": "2026-08-23T18:28:35Z",
+  "manifestHash": "2df79d4283cc90c9537518255b5bbee0775cb01547a002856178293dcae9a1d6",
+  "optionalPacks": {},
+  "schemaVersion": 1
+}

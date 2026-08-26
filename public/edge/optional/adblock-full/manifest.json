@@ -1,106 +1,106 @@
 {
-  "bytes": 44467154,
+  "bytes": 44455132,
   "clients": {
     "anywhere": {
-      "manifestHash": "7985c476c31a47d22654e5a126b105d31050cb39b9cc5a2d728c595faf169cae"
+      "manifestHash": "f434328c08f5edd8470d7c40ff670e0a9cfe654943a788825186e7b9561c5762"
     },
     "clash": {
-      "manifestHash": "c26ab0e2f2f766f79c07843acda12053f733243bb35cfdc305b9f50d19b6b89d"
+      "manifestHash": "e359a7ee4367ed128d93c86e0b74bf99909fce03a488582424e38f9c98c13e26"
     },
     "egern": {
-      "manifestHash": "20aabac5583b6cce81b377505784d3930ef45e29b674278dcff241a2fa4c8d94"
+      "manifestHash": "a8227f63091e4e112cf0e4e2a6f8b7ff33fcd0bd242ee2067be742aeee8e4090"
     },
     "shadowrocket": {
-      "manifestHash": "89f12cba82b26e9760ae8b147c5fc344c0497ef94148c76ac8f5a49920c24b22"
+      "manifestHash": "66513b2ba687a9048e33988dfe8f1d2a6f2836587c5dd42355ac68951f059337"
     },
     "singbox": {
-      "manifestHash": "73ad697340ea1de2d5a7a8397aa138e4777b3e16a1cd67747890da21c578e94c"
+      "manifestHash": "fd5d92109cf8cad0bcddea70641b28e49085ceaef959850e8ffb7ce60afed95e"
     },
     "surge": {
-      "manifestHash": "d0f87b0084c40fd5b089c3f3de401433039599591fe5a89eb22f195910da37aa"
+      "manifestHash": "3cb1d3311910f528d4cd1fa9984821059b21c54dbec35127b2176e22cca03285"
     }
   },
-  "entries": 279934,
+  "entries": 279882,
   "files": [
     {
       "bytes": 15088,
       "path": "optional/adblock-full/anywhere/Advertising-001.arrs",
-      "sha256": "936a073cbff58155f8a108747844976e98b2946dc59a8b76487291441e1d43c7"
+      "sha256": "6eb4fff957412d580d58240628c6d635f8dce12666f69cb4a650954d2d705d5e"
     },
     {
-      "bytes": 2116166,
+      "bytes": 2115756,
       "path": "optional/adblock-full/anywhere/Advertising_Domain-001.arrs",
-      "sha256": "9e766d44d29ea1d7e4efdecf1ec79da915cc0e3171ee7d64751a70ffd5e120ec"
+      "sha256": "dd5dd0acce03fab37ff64991f44451fa70d69a9b34a4755580f9cf4666bed1c4"
     },
     {
-      "bytes": 2141344,
+      "bytes": 2141260,
       "path": "optional/adblock-full/anywhere/Advertising_Domain-002.arrs",
-      "sha256": "352cc228948344bb810e28273ef609e07648486b39618fda38c4cdd2cc6a229e"
+      "sha256": "64d1e8036b027534c9e3a344abc4d0c17e48214c160b025d55d1165ee9caaf8a"
     },
     {
-      "bytes": 1628147,
+      "bytes": 1626812,
       "path": "optional/adblock-full/anywhere/Advertising_Domain-003.arrs",
-      "sha256": "90645391860c32b88ad597604599ecfdd4f08e19a8dccb9697956796823d8af3"
+      "sha256": "e768679bea2abc6b4fabaf3e354a8e9ec8b22c1daa23e970a20bb818f88baa66"
     },
     {
       "bytes": 1324,
       "path": "optional/adblock-full/anywhere/client-manifest.json",
-      "sha256": "012447ff34a3871646ace0897df552133ca4291cdb5129b19f3402bd92167bcf"
+      "sha256": "cf74e1d82c346a8753a8ee19912620d1bfe6fb289ec6b27c76d96bd77350ee16"
     },
     {
       "bytes": 5377,
       "path": "optional/adblock-full/anywhere/import.html",
-      "sha256": "2b257d4ca34fc6009f477584d79e916dc0d1ebe497d1f83809dd074c28f962bd"
+      "sha256": "d89094fbaa24f32c2484efe4b8abb04c213b3210074a5c59cdfedd753ea5bfe2"
     },
     {
       "bytes": 7921,
       "path": "optional/adblock-full/anywhere/manifest.json",
-      "sha256": "56d42c47a88f67e1ac115852c7a64a6d6c81222b08cfc11678aef8c2b3a2e966"
+      "sha256": "cd38a4768400ca38aea7250d2a4bc0bf414aa1ae99a7d0d257fedc38e2fbd319"
     },
     {
       "bytes": 572,
       "path": "optional/adblock-full/clash/client-manifest.json",
-      "sha256": "f2b185e44ca275f5c65de00a5257c96d26c87713769ed249b96692c4b4828082"
+      "sha256": "2c9892050258f7aff1c09aefae7cc1a4ddfc483118e478da67e8a4b816401f38"
     },
     {
       "bytes": 30855,
       "path": "optional/adblock-full/clash/rules/Advertising.yaml",
-      "sha256": "972b6180763dad79a328e58b0fea90491e3ea5a63461e3d1cef344847236cce6"
+      "sha256": "a7ef143843c9404a7ac81a6a2a0aaa6e6439f81bad411c3de04b92d3e1592b76"
     },
     {
-      "bytes": 10839633,
+      "bytes": 10836920,
       "path": "optional/adblock-full/clash/rules/Advertising_Domain.yaml",
-      "sha256": "8e630ae8e3300d23b7422292762f62259ac4799a7cd250a26e26cf145040a123"
+      "sha256": "dd760afe8af720895bafbe238edf0c6c58241b6395271c84602bc7a9db8a6e27"
     },
     {
       "bytes": 571,
       "path": "optional/adblock-full/egern/client-manifest.json",
-      "sha256": "c08813289c61a07ae6aa82c0b1e6073d0a6bdd6e03380cae525db2c287278791"
+      "sha256": "9df8c2972ca06ee4209e1e24353f1ca69fb025836d02219fa51251eca6525080"
     },
     {
       "bytes": 17515,
       "path": "optional/adblock-full/egern/rules/Advertising.yaml",
-      "sha256": "20d7bec84377ce865ec922d9dfe9ed47ebef4eaa7707ec424fc25650132c2d89"
+      "sha256": "452b37c5075b72ab9c1d3550edd9e12a1b71c83c4bc7e5b836f6498a74bbcdfb"
     },
     {
-      "bytes": 7046502,
+      "bytes": 7044517,
       "path": "optional/adblock-full/egern/rules/Advertising_Domain.yaml",
-      "sha256": "7541fb071c57057b8ac1bba3d7739a83784167d37c79ff4e42cd523c0c5570a7"
+      "sha256": "3a67c60732537f7694a2c3fbb8712e6723fb375a4df127afaaa7c7b1ef0e26d4"
     },
     {
       "bytes": 592,
       "path": "optional/adblock-full/shadowrocket/client-manifest.json",
-      "sha256": "d5b35466975a99c5e4f3057b15e32c7843cd84627e50e9a274a1cc917beebb6b"
+      "sha256": "3a717c65c11d7e7e29c33871f1348228c5acb84f73581a27dd5fd7bd92c73b35"
     },
     {
       "bytes": 26244,
       "path": "optional/adblock-full/shadowrocket/rules/Advertising.list",
-      "sha256": "d123495a944a24b0977bf5b5575ae414ec8fa1f8d911ab34f98a0933a43a0507"
+      "sha256": "4ab30fa7948fa5a8f03f67c707a2a400e30483448e3273c9e6d590b14ae110b7"
     },
     {
-      "bytes": 9164622,
+      "bytes": 9162221,
       "path": "optional/adblock-full/shadowrocket/rules/Advertising_Domain.list",
-      "sha256": "b886ea1465dd58369c3bd2c37eedcfa4faf18edd8fe9c835e000c250f6240905"
+      "sha256": "bf6521d27f2c15e094469361164c71e362f5cdb03486ca8ef36d2a70c0807039"
     },
     {
       "bytes": 4171,
@@ -108,33 +108,33 @@
       "sha256": "a26ac17f9bafea983d0e71241b8f964198dccbba54909e09b9e0616dbbdcf6a5"
     },
     {
-      "bytes": 2228509,
+      "bytes": 2227816,
       "path": "optional/adblock-full/sing-box/Advertising_Domain.srs",
-      "sha256": "dcde6bc7caeabc0bc18fc75715b9b246a0e33c62a2592cff6472c0e44fd8abfd"
+      "sha256": "5b0161a991205a2e8662188a029823b8556d6555ed2b434a2076e9dbc35a6df4"
     },
     {
       "bytes": 564,
       "path": "optional/adblock-full/sing-box/client-manifest.json",
-      "sha256": "00d37efaeef4cc31657066a68d9db92e19b4bfdd3cc497435760c2bd7d5fa2aa"
+      "sha256": "faf6488f1c75e1d6cdde40d6d41f470403cfa050175d0b283698b2478b394d14"
     },
     {
       "bytes": 571,
       "path": "optional/adblock-full/surge/client-manifest.json",
-      "sha256": "b65ac9b566b895e3123f143c4fbedc0531f7d882240bce2bac98bfc7f3a1f1ed"
+      "sha256": "ef20100f3bbfd7630c7c81d2a2e1587e0ca203720137ca1a4c6b86095d28942a"
     },
     {
       "bytes": 26244,
       "path": "optional/adblock-full/surge/rules/Advertising.list",
-      "sha256": "d123495a944a24b0977bf5b5575ae414ec8fa1f8d911ab34f98a0933a43a0507"
+      "sha256": "4ab30fa7948fa5a8f03f67c707a2a400e30483448e3273c9e6d590b14ae110b7"
     },
     {
-      "bytes": 9164622,
+      "bytes": 9162221,
       "path": "optional/adblock-full/surge/rules/Advertising_Domain.list",
-      "sha256": "b886ea1465dd58369c3bd2c37eedcfa4faf18edd8fe9c835e000c250f6240905"
+      "sha256": "bf6521d27f2c15e094469361164c71e362f5cdb03486ca8ef36d2a70c0807039"
     }
   ],
-  "generatedAt": "2026-08-23T18:28:35Z",
-  "manifestHash": "b217a98ce28a7666b9d52652b3a22844168ebd81a33c57b3fcade7ec70f95ea9",
+  "generatedAt": "2026-08-25T18:39:12Z",
+  "manifestHash": "04f9cc6798f2340a57b68050ce06657eec30c4978de3067fc1f63ed6f5c7b02b",
   "packId": "adblock-full",
   "schemaVersion": 1
 }

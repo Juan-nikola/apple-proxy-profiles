@@ -4,7 +4,7 @@
     "domainCategories": 34,
     "domainRules": 375593,
     "ipCategories": 34,
-    "ipRules": 13356
+    "ipRules": 13357
   },
   "domain": {
     "byteLength": 8346922,
@@ -15,14 +15,14 @@
   },
   "hashes": {
     "domain": "a58f131ae298815f340794171ea5a370068d05a91b7c9670acc273983e78ee69",
-    "ip": "e85eeae3c6ff4c646f61aab25edc7e62e391d31d71ed5442f7d0f4d75c796edf"
+    "ip": "1027ca398e4a6a536a7aae1b36124dd5c70b5ec373afa8468be17255066822f5"
   },
   "inputHashes": {
     "Apple": "9894cfae238a347124e841e7e067b9b67dd24a7226e0043c641753fe26b462ff",
     "BiliBili": "c310fc1361dab30ecba0619541845e48611cc00be8eee57d75165343d7ae1e84",
     "BlockHttpDNS": "50c8918e3335bcc661f118fc349bec89e433ada4f60514748c1dce560707f07e",
     "ByteDance": "d690d7e3a15bf9bed4d26b43052ec69b47a7a74a14714e745147d71cdada3d35",
-    "ChinaIP": "4770b067f6a4089f6ec1448aa444431c5ca839f5593f58f8a29842361c6325c5",
+    "ChinaIP": "20e4854b8c650e7122d53ee78c51e4d7e498041a7751d3f568e6c18a93299058",
     "ChinaTLD": "402d13bce30990961413c4b08c05eeab73b711398d8ac34e67cf6e0b06f667f0",
     "Claude": "7095f2c34a2fa91d8f45fa65080ed9e0227f402fbcfb0b39f017dc8dc63f988e",
     "Copilot": "903b724aeeb5409bf7ca0d8d4d6e94ba84bd8f3bab10135db774241389140082",
@@ -54,11 +54,11 @@
     "v2fly-domain-list": "04c41f24c89f0dacd9633eb0a543394a87e0f4d3c4576bc8b6d45c3d0dce298d"
   },
   "ip": {
-    "byteLength": 181511,
+    "byteLength": 181521,
     "categoryCount": 34,
     "name": "AppleProxyIPEdge",
-    "ruleCount": 13356,
-    "sha256": "e85eeae3c6ff4c646f61aab25edc7e62e391d31d71ed5442f7d0f4d75c796edf"
+    "ruleCount": 13357,
+    "sha256": "1027ca398e4a6a536a7aae1b36124dd5c70b5ec373afa8468be17255066822f5"
   },
   "names": {
     "domain": "AppleProxySiteEdge",
@@ -66,265 +66,265 @@
   },
   "provenance": {
     "diagnostics": {
-      "matcherCount": 641865,
+      "matcherCount": 641866,
       "sourceCount": 34
     },
-    "inputSha256": "fa6e45a6c542fea4bf21379e71478b9b068e9732f61fad1bf9131aa9afe25d08",
+    "inputSha256": "552cba5a3de447468607301654890f11b4209d141c283426f052188e051f656b",
     "inputSourceCount": 34,
     "source": "shared-lightweight-rule-snapshot",
     "sources": [
       {
         "branch": "master",
-        "commit": "f42be99379fcd1a1dd03469e8b56dcb46888fcea",
-        "committedAt": "2026-08-23T18:28:35Z",
+        "commit": "2df6b08dfc2707c8099056ffab6778092e7d6d3e",
+        "committedAt": "2026-08-25T18:39:12Z",
         "license": "GPL-2.0-only",
         "repository": "https://github.com/blackmatrix7/ios_rule_script",
         "sourceId": "Hijacking"
       },
       {
         "branch": "master",
-        "commit": "f42be99379fcd1a1dd03469e8b56dcb46888fcea",
-        "committedAt": "2026-08-23T18:28:35Z",
+        "commit": "2df6b08dfc2707c8099056ffab6778092e7d6d3e",
+        "committedAt": "2026-08-25T18:39:12Z",
         "license": "GPL-2.0-only",
         "repository": "https://github.com/blackmatrix7/ios_rule_script",
         "sourceId": "BlockHttpDNS"
       },
       {
         "branch": "master",
-        "commit": "f42be99379fcd1a1dd03469e8b56dcb46888fcea",
-        "committedAt": "2026-08-23T18:28:35Z",
+        "commit": "2df6b08dfc2707c8099056ffab6778092e7d6d3e",
+        "committedAt": "2026-08-25T18:39:12Z",
         "license": "GPL-2.0-only",
         "repository": "https://github.com/blackmatrix7/ios_rule_script",
         "sourceId": "Privacy"
       },
       {
         "branch": "master",
-        "commit": "f42be99379fcd1a1dd03469e8b56dcb46888fcea",
-        "committedAt": "2026-08-23T18:28:35Z",
+        "commit": "2df6b08dfc2707c8099056ffab6778092e7d6d3e",
+        "committedAt": "2026-08-25T18:39:12Z",
         "license": "GPL-2.0-only",
         "repository": "https://github.com/blackmatrix7/ios_rule_script",
         "sourceId": "DomesticCore"
       },
       {
         "branch": "master",
-        "commit": "f42be99379fcd1a1dd03469e8b56dcb46888fcea",
-        "committedAt": "2026-08-23T18:28:35Z",
+        "commit": "2df6b08dfc2707c8099056ffab6778092e7d6d3e",
+        "committedAt": "2026-08-25T18:39:12Z",
         "license": "GPL-2.0-only",
         "repository": "https://github.com/blackmatrix7/ios_rule_script",
         "sourceId": "DomesticGame"
       },
       {
         "branch": "master",
-        "commit": "f42be99379fcd1a1dd03469e8b56dcb46888fcea",
-        "committedAt": "2026-08-23T18:28:35Z",
+        "commit": "2df6b08dfc2707c8099056ffab6778092e7d6d3e",
+        "committedAt": "2026-08-25T18:39:12Z",
         "license": "GPL-2.0-only",
         "repository": "https://github.com/blackmatrix7/ios_rule_script",
         "sourceId": "SteamCN"
       },
       {
         "branch": "master",
-        "commit": "f42be99379fcd1a1dd03469e8b56dcb46888fcea",
-        "committedAt": "2026-08-23T18:28:35Z",
+        "commit": "2df6b08dfc2707c8099056ffab6778092e7d6d3e",
+        "committedAt": "2026-08-25T18:39:12Z",
         "license": "GPL-2.0-only",
         "repository": "https://github.com/blackmatrix7/ios_rule_script",
         "sourceId": "BiliBili"
       },
       {
         "branch": "master",
-        "commit": "f42be99379fcd1a1dd03469e8b56dcb46888fcea",
-        "committedAt": "2026-08-23T18:28:35Z",
+        "commit": "2df6b08dfc2707c8099056ffab6778092e7d6d3e",
+        "committedAt": "2026-08-25T18:39:12Z",
         "license": "GPL-2.0-only",
         "repository": "https://github.com/blackmatrix7/ios_rule_script",
         "sourceId": "ByteDance"
       },
       {
         "branch": "master",
-        "commit": "f42be99379fcd1a1dd03469e8b56dcb46888fcea",
-        "committedAt": "2026-08-23T18:28:35Z",
+        "commit": "2df6b08dfc2707c8099056ffab6778092e7d6d3e",
+        "committedAt": "2026-08-25T18:39:12Z",
         "license": "GPL-2.0-only",
         "repository": "https://github.com/blackmatrix7/ios_rule_script",
         "sourceId": "XiaoHongShu"
       },
       {
         "branch": "master",
-        "commit": "f42be99379fcd1a1dd03469e8b56dcb46888fcea",
-        "committedAt": "2026-08-23T18:28:35Z",
+        "commit": "2df6b08dfc2707c8099056ffab6778092e7d6d3e",
+        "committedAt": "2026-08-25T18:39:12Z",
         "license": "GPL-2.0-only",
         "repository": "https://github.com/blackmatrix7/ios_rule_script",
         "sourceId": "Weibo"
       },
       {
         "branch": "master",
-        "commit": "f42be99379fcd1a1dd03469e8b56dcb46888fcea",
-        "committedAt": "2026-08-23T18:28:35Z",
+        "commit": "2df6b08dfc2707c8099056ffab6778092e7d6d3e",
+        "committedAt": "2026-08-25T18:39:12Z",
         "license": "GPL-2.0-only",
         "repository": "https://github.com/blackmatrix7/ios_rule_script",
         "sourceId": "OpenAI"
       },
       {
         "branch": "master",
-        "commit": "f42be99379fcd1a1dd03469e8b56dcb46888fcea",
-        "committedAt": "2026-08-23T18:28:35Z",
+        "commit": "2df6b08dfc2707c8099056ffab6778092e7d6d3e",
+        "committedAt": "2026-08-25T18:39:12Z",
         "license": "GPL-2.0-only",
         "repository": "https://github.com/blackmatrix7/ios_rule_script",
         "sourceId": "Claude"
       },
       {
         "branch": "master",
-        "commit": "f42be99379fcd1a1dd03469e8b56dcb46888fcea",
-        "committedAt": "2026-08-23T18:28:35Z",
+        "commit": "2df6b08dfc2707c8099056ffab6778092e7d6d3e",
+        "committedAt": "2026-08-25T18:39:12Z",
         "license": "GPL-2.0-only",
         "repository": "https://github.com/blackmatrix7/ios_rule_script",
         "sourceId": "Gemini"
       },
       {
         "branch": "master",
-        "commit": "f42be99379fcd1a1dd03469e8b56dcb46888fcea",
-        "committedAt": "2026-08-23T18:28:35Z",
+        "commit": "2df6b08dfc2707c8099056ffab6778092e7d6d3e",
+        "committedAt": "2026-08-25T18:39:12Z",
         "license": "GPL-2.0-only",
         "repository": "https://github.com/blackmatrix7/ios_rule_script",
         "sourceId": "Copilot"
       },
       {
         "branch": "master",
-        "commit": "f42be99379fcd1a1dd03469e8b56dcb46888fcea",
-        "committedAt": "2026-08-23T18:28:35Z",
+        "commit": "2df6b08dfc2707c8099056ffab6778092e7d6d3e",
+        "committedAt": "2026-08-25T18:39:12Z",
         "license": "GPL-2.0-only",
         "repository": "https://github.com/blackmatrix7/ios_rule_script",
         "sourceId": "GitHub"
       },
       {
         "branch": "master",
-        "commit": "f42be99379fcd1a1dd03469e8b56dcb46888fcea",
-        "committedAt": "2026-08-23T18:28:35Z",
+        "commit": "2df6b08dfc2707c8099056ffab6778092e7d6d3e",
+        "committedAt": "2026-08-25T18:39:12Z",
         "license": "GPL-2.0-only",
         "repository": "https://github.com/blackmatrix7/ios_rule_script",
         "sourceId": "YouTube"
       },
       {
         "branch": "master",
-        "commit": "f42be99379fcd1a1dd03469e8b56dcb46888fcea",
-        "committedAt": "2026-08-23T18:28:35Z",
+        "commit": "2df6b08dfc2707c8099056ffab6778092e7d6d3e",
+        "committedAt": "2026-08-25T18:39:12Z",
         "license": "GPL-2.0-only",
         "repository": "https://github.com/blackmatrix7/ios_rule_script",
         "sourceId": "Netflix"
       },
       {
         "branch": "master",
-        "commit": "f42be99379fcd1a1dd03469e8b56dcb46888fcea",
-        "committedAt": "2026-08-23T18:28:35Z",
+        "commit": "2df6b08dfc2707c8099056ffab6778092e7d6d3e",
+        "committedAt": "2026-08-25T18:39:12Z",
         "license": "GPL-2.0-only",
         "repository": "https://github.com/blackmatrix7/ios_rule_script",
         "sourceId": "Disney"
       },
       {
         "branch": "master",
-        "commit": "f42be99379fcd1a1dd03469e8b56dcb46888fcea",
-        "committedAt": "2026-08-23T18:28:35Z",
+        "commit": "2df6b08dfc2707c8099056ffab6778092e7d6d3e",
+        "committedAt": "2026-08-25T18:39:12Z",
         "license": "GPL-2.0-only",
         "repository": "https://github.com/blackmatrix7/ios_rule_script",
         "sourceId": "Spotify"
       },
       {
         "branch": "master",
-        "commit": "f42be99379fcd1a1dd03469e8b56dcb46888fcea",
-        "committedAt": "2026-08-23T18:28:35Z",
+        "commit": "2df6b08dfc2707c8099056ffab6778092e7d6d3e",
+        "committedAt": "2026-08-25T18:39:12Z",
         "license": "GPL-2.0-only",
         "repository": "https://github.com/blackmatrix7/ios_rule_script",
         "sourceId": "GlobalMedia"
       },
       {
         "branch": "master",
-        "commit": "f42be99379fcd1a1dd03469e8b56dcb46888fcea",
-        "committedAt": "2026-08-23T18:28:35Z",
+        "commit": "2df6b08dfc2707c8099056ffab6778092e7d6d3e",
+        "committedAt": "2026-08-25T18:39:12Z",
         "license": "GPL-2.0-only",
         "repository": "https://github.com/blackmatrix7/ios_rule_script",
         "sourceId": "Telegram"
       },
       {
         "branch": "master",
-        "commit": "f42be99379fcd1a1dd03469e8b56dcb46888fcea",
-        "committedAt": "2026-08-23T18:28:35Z",
+        "commit": "2df6b08dfc2707c8099056ffab6778092e7d6d3e",
+        "committedAt": "2026-08-25T18:39:12Z",
         "license": "GPL-2.0-only",
         "repository": "https://github.com/blackmatrix7/ios_rule_script",
         "sourceId": "Facebook"
       },
       {
         "branch": "master",
-        "commit": "f42be99379fcd1a1dd03469e8b56dcb46888fcea",
-        "committedAt": "2026-08-23T18:28:35Z",
+        "commit": "2df6b08dfc2707c8099056ffab6778092e7d6d3e",
+        "committedAt": "2026-08-25T18:39:12Z",
         "license": "GPL-2.0-only",
         "repository": "https://github.com/blackmatrix7/ios_rule_script",
         "sourceId": "Instagram"
       },
       {
         "branch": "master",
-        "commit": "f42be99379fcd1a1dd03469e8b56dcb46888fcea",
-        "committedAt": "2026-08-23T18:28:35Z",
+        "commit": "2df6b08dfc2707c8099056ffab6778092e7d6d3e",
+        "committedAt": "2026-08-25T18:39:12Z",
         "license": "GPL-2.0-only",
         "repository": "https://github.com/blackmatrix7/ios_rule_script",
         "sourceId": "Twitter"
       },
       {
         "branch": "master",
-        "commit": "f42be99379fcd1a1dd03469e8b56dcb46888fcea",
-        "committedAt": "2026-08-23T18:28:35Z",
+        "commit": "2df6b08dfc2707c8099056ffab6778092e7d6d3e",
+        "committedAt": "2026-08-25T18:39:12Z",
         "license": "GPL-2.0-only",
         "repository": "https://github.com/blackmatrix7/ios_rule_script",
         "sourceId": "TikTok"
       },
       {
         "branch": "master",
-        "commit": "f42be99379fcd1a1dd03469e8b56dcb46888fcea",
-        "committedAt": "2026-08-23T18:28:35Z",
+        "commit": "2df6b08dfc2707c8099056ffab6778092e7d6d3e",
+        "committedAt": "2026-08-25T18:39:12Z",
         "license": "GPL-2.0-only",
         "repository": "https://github.com/blackmatrix7/ios_rule_script",
         "sourceId": "Apple"
       },
       {
         "branch": "master",
-        "commit": "f42be99379fcd1a1dd03469e8b56dcb46888fcea",
-        "committedAt": "2026-08-23T18:28:35Z",
+        "commit": "2df6b08dfc2707c8099056ffab6778092e7d6d3e",
+        "committedAt": "2026-08-25T18:39:12Z",
         "license": "GPL-2.0-only",
         "repository": "https://github.com/blackmatrix7/ios_rule_script",
         "sourceId": "Microsoft"
       },
       {
         "branch": "master",
-        "commit": "f42be99379fcd1a1dd03469e8b56dcb46888fcea",
-        "committedAt": "2026-08-23T18:28:35Z",
+        "commit": "2df6b08dfc2707c8099056ffab6778092e7d6d3e",
+        "committedAt": "2026-08-25T18:39:12Z",
         "license": "GPL-2.0-only",
         "repository": "https://github.com/blackmatrix7/ios_rule_script",
         "sourceId": "Download"
       },
       {
         "branch": "master",
-        "commit": "f42be99379fcd1a1dd03469e8b56dcb46888fcea",
-        "committedAt": "2026-08-23T18:28:35Z",
+        "commit": "2df6b08dfc2707c8099056ffab6778092e7d6d3e",
+        "committedAt": "2026-08-25T18:39:12Z",
         "license": "GPL-2.0-only",
         "repository": "https://github.com/blackmatrix7/ios_rule_script",
         "sourceId": "PrivateTracker"
       },
       {
         "branch": "master",
-        "commit": "f42be99379fcd1a1dd03469e8b56dcb46888fcea",
-        "committedAt": "2026-08-23T18:28:35Z",
+        "commit": "2df6b08dfc2707c8099056ffab6778092e7d6d3e",
+        "committedAt": "2026-08-25T18:39:12Z",
         "license": "GPL-2.0-only",
         "repository": "https://github.com/blackmatrix7/ios_rule_script",
         "sourceId": "OverseasGame"
       },
       {
         "branch": "master",
-        "commit": "f42be99379fcd1a1dd03469e8b56dcb46888fcea",
-        "committedAt": "2026-08-23T18:28:35Z",
+        "commit": "2df6b08dfc2707c8099056ffab6778092e7d6d3e",
+        "committedAt": "2026-08-25T18:39:12Z",
         "license": "GPL-2.0-only",
         "repository": "https://github.com/blackmatrix7/ios_rule_script",
         "sourceId": "ChinaTLD"
       },
       {
         "branch": "master",
-        "commit": "f42be99379fcd1a1dd03469e8b56dcb46888fcea",
-        "committedAt": "2026-08-23T18:28:35Z",
+        "commit": "2df6b08dfc2707c8099056ffab6778092e7d6d3e",
+        "committedAt": "2026-08-25T18:39:12Z",
         "license": "GPL-2.0-only",
         "repository": "https://github.com/blackmatrix7/ios_rule_script",
         "sourceId": "ChinaIP"
@@ -717,8 +717,8 @@
       "code": "APP-CHINAIP",
       "domain": 0,
       "id": "ChinaIP",
-      "inputSha256": "4770b067f6a4089f6ec1448aa444431c5ca839f5593f58f8a29842361c6325c5",
-      "ip": 11100
+      "inputSha256": "20e4854b8c650e7122d53ee78c51e4d7e498041a7751d3f568e6c18a93299058",
+      "ip": 11101
     },
     {
       "code": "APP-LOYALSOLDIER-RULES-DAT",
