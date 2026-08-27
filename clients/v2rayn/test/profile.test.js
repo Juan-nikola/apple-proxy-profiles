@@ -89,6 +89,46 @@ test("keeps explicitly fixed policy nodes as template outbounds", () => {
   assert.equal(template.routing.rules.at(-1).outboundTag, "ap-fixed-0");
 });
 
+test("applies the unified JSON policy to built-in AI rules without GeoData", () => {
+  const options = parseV2rayNOptions({ output: "config", type: "collection", name: "fixture", platform: "macos" });
+  const homeNode = {
+    name: "TEST_ONLY_Home_Node",
+    type: "vless",
+    server: "home.invalid",
+    port: 443,
+    uuid: "TEST_ONLY_HOME_UUID",
+    _profile: { id: "home-id" },
+  };
+  const template = renderV2rayNProfile({
+    options,
+    nodes: [homeNode, { name: "TEST_ONLY_Follow_Node", type: "vless", server: "follow.invalid", port: 443, uuid: "TEST_ONLY_FOLLOW_UUID" }],
+    policyResolution: {
+      fixedNodes: [{ nodeId: "home-id", node: homeNode, name: homeNode.name }],
+      targets: {
+        ai: { resolved: homeNode.name, nodeId: "home-id" },
+        github: { resolved: "FOLLOW", nodeId: null },
+      },
+    },
+  });
+  const ruleFor = (category) => template.routing.rules.find(({ domain }) => domain?.includes(`geosite:${category}`));
+  const aiRules = ["openai", "anthropic", "google-gemini", "github-copilot"].map(ruleFor);
+  const githubRule = template.routing.rules.find(({ domain }) => domain?.includes("geosite:github"));
+  assert.deepEqual(aiRules.map(({ outboundTag }) => outboundTag), ["ap-fixed-0", "ap-fixed-0", "ap-fixed-0", "ap-fixed-0"]);
+  assert.equal(githubRule?.outboundTag, "proxy");
+});
+
+test("renders default direct, proxy, and block business categories without GeoData", () => {
+  const options = parseV2rayNOptions({ output: "config", type: "collection", name: "fixture", platform: "macos" });
+  const profile = renderV2rayNProfile({
+    options,
+    nodes: [{ name: "fixture", type: "vless", server: "fixture.invalid", port: 443, uuid: "TEST_ONLY_UUID" }],
+  });
+  const ruleFor = (category) => profile.routing.rules.find(({ domain }) => domain?.includes(`geosite:${category}`));
+  assert.equal(ruleFor("apple")?.outboundTag, "direct");
+  assert.equal(ruleFor("category-games-!cn")?.outboundTag, "proxy");
+  assert.equal(ruleFor("category-ads-all")?.outboundTag, "block");
+});
+
 function requireHash(value) {
   return createHash("sha256").update(value).digest("hex");
 }

@@ -4,6 +4,40 @@ import { oneXrayGeoCode, oneXrayGeoNames } from "../../onexray/src/geodata-contr
 import { businessTargetByKey, parseBusinessOverrides } from "../../../shared/policies/business-targets.js";
 import { policyForRuleSource } from "../../../shared/rules/lightweight-policy.js";
 
+// These categories are provided by the Xray geosite.dat bundled with v2rayN.
+// Broad CN/TLD/IP categories stay in the late fallback rules so specific
+// business categories can still honor the unified policy.
+const BUILTIN_GEOSITE_SOURCES = Object.freeze([
+  ["Hijacking", "category-ads-all"],
+  ["BlockHttpDNS", "category-httpdns-cn"],
+  ["DomesticGame", "category-games-cn"],
+  ["SteamCN", "steam"],
+  ["BiliBili", "bilibili"],
+  ["ByteDance", "bytedance"],
+  ["XiaoHongShu", "xiaohongshu"],
+  ["Weibo", "category-social-media-cn"],
+  ["OpenAI", "openai"],
+  ["Claude", "anthropic"],
+  ["Gemini", "google-gemini"],
+  ["Copilot", "github-copilot"],
+  ["GitHub", "github"],
+  ["YouTube", "youtube"],
+  ["Netflix", "netflix"],
+  ["Disney", "disney"],
+  ["Spotify", "spotify"],
+  ["GlobalMedia", "category-media"],
+  ["Telegram", "telegram"],
+  ["Facebook", "facebook"],
+  ["Instagram", "instagram"],
+  ["Twitter", "twitter"],
+  ["TikTok", "tiktok"],
+  ["Apple", "apple"],
+  ["Microsoft", "microsoft"],
+  ["Download", "category-netdisk-!cn"],
+  ["PrivateTracker", "category-pt"],
+  ["OverseasGame", "category-games-!cn"],
+]);
+
 function bytes(value, label) {
   if (!(Buffer.isBuffer(value) || value instanceof Uint8Array)) throw new TypeError(`v2rayN GeoData ${label} asset is missing or invalid`);
   return Buffer.from(value);
@@ -79,6 +113,14 @@ function actionForSource(sourceId, overrides, nodeTags, nodeTagsById, blockMode,
   return value === "REJECT" ? (blockMode === "off" ? "direct" : "block") : "proxy";
 }
 
+function builtinSourceRules(overrides, nodeTags, nodeTagsById, blockMode, policyResolution) {
+  return BUILTIN_GEOSITE_SOURCES.map(([sourceId, category]) => ({
+    domain: [`geosite:${category}`],
+    outboundTag: actionForSource(sourceId, overrides, nodeTags, nodeTagsById, blockMode, policyResolution),
+    ruleTag: `builtin-source-${sourceId}`,
+  }));
+}
+
 function dns(options) { const queryStrategy = options.ipv6Mode === "ipv4-only" ? "UseIPv4" : "UseIP"; const china = options.chinaDns === "system" ? "localhost" : options.chinaDns === "dnspod" ? "119.29.29.29" : "223.5.5.5"; const global = options.globalDns === "google" ? "8.8.8.8" : options.globalDns === "quad9" ? "9.9.9.9" : "1.1.1.1"; const domesticDomains = ["geosite:cn", "geosite:private", ...CRITICAL_DOMESTIC_DOMAIN_SUFFIXES.map((suffix) => `domain:${suffix}`)]; return { servers: [{ tag: "china-dns", address: china, domains: domesticDomains, queryStrategy }, { tag: "global-dns", address: global, domains: ["geosite:geolocation-!cn"], queryStrategy }], queryStrategy, tag: "dnsQuery", mode: options.dnsMode }; }
 function tunInbound(options) {
   const settings = { mtu: 1500 };
@@ -128,7 +170,7 @@ export function renderV2rayNProfile({ nodes, options, geoData = null, filterFail
       domain: [`domain:${suffix}`], outboundTag: "direct", ruleTag: `critical-domestic-${suffix}`,
     })),
   ];
-  if (!references.hasExternalAssets) rules.push({ domain: ["geosite:geolocation-!cn"], outboundTag: "proxy", ruleTag: "builtin-overseas-proxy" });
+  if (!references.hasExternalAssets) rules.push(...builtinSourceRules(overrides, nodeTags, nodeTagsById, options.blockMode, policyResolution), { domain: ["geosite:geolocation-!cn"], outboundTag: "proxy", ruleTag: "builtin-overseas-proxy" });
   const sourceRules = references.sources.map((source) => ({ source, outboundTag: actionForSource(source.id, overrides, nodeTags, nodeTagsById, options.blockMode, policyResolution) }));
   const rank = (item) => ["Hijacking", "BlockHttpDNS", "Privacy"].includes(item.source.id) ? 0 : policyForRuleSource(item.source.id) ? 1 : 2;
   sourceRules.sort((a, b) => rank(a) - rank(b));
