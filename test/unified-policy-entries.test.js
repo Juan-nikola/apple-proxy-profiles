@@ -138,7 +138,8 @@ test("v2rayN and V2Box config entries load the shared policy artifact and route 
     region: "cn", clientChain: "off",
   }, calls));
   const v2raynProfile = JSON.parse(v2rayn.$content);
-  assert.ok(v2raynProfile.routing.rules.some(({ outboundTag }) => outboundTag === "ap-node-0"));
+  assert.ok(v2raynProfile.outbounds.some(({ tag }) => tag === "ap-fixed-0"));
+  assert.ok(v2raynProfile.routing.rules.some(({ outboundTag }) => outboundTag === "ap-fixed-0"));
 
   const v2box = await v2boxOperator({}, "JSON", fixedContext({
     output: "config", type: "collection", name: "fixture",

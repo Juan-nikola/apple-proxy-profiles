@@ -22,7 +22,7 @@
         "tag": "global-dns",
         "address": "1.1.1.1",
         "domains": [
-          "geosite:apple-proxy-overseas"
+          "geosite:geolocation-!cn"
         ],
         "queryStrategy": "UseIP"
       }
@@ -52,51 +52,7 @@
       }
     }
   ],
-  "outbounds": [
-    {
-      "protocol": "freedom",
-      "tag": "direct"
-    },
-    {
-      "protocol": "blackhole",
-      "tag": "block"
-    },
-    {
-      "name": "Fixture Windows",
-      "protocol": "vless",
-      "tag": "ap-node-0",
-      "settings": {
-        "vnext": [
-          {
-            "address": "192.0.2.10",
-            "port": 443,
-            "users": [
-              {
-                "id": "TEST_ONLY_UUID",
-                "encryption": "none"
-              }
-            ]
-          }
-        ]
-      },
-      "streamSettings": {
-        "security": "tls",
-        "tlsSettings": {
-          "serverName": "",
-          "allowInsecure": false
-        }
-      }
-    },
-    {
-      "protocol": "selector",
-      "tag": "proxy",
-      "settings": {
-        "selectors": [
-          "ap-node-0"
-        ]
-      }
-    }
-  ],
+  "outbounds": [],
   "routing": {
     "domainStrategy": "IPIfNonMatch",
     "rules": [
@@ -158,13 +114,10 @@
       },
       {
         "domain": [
-          "ext:AppleProxySiteCurrent.dat:APP-REGION-CN"
-        ],
-        "ip": [
-          "ext:AppleProxyIPCurrent.dat:APP-REGION-CN"
+          "geosite:geolocation-!cn"
         ],
         "outboundTag": "proxy",
-        "ruleTag": "source-REGION-CN"
+        "ruleTag": "builtin-overseas-proxy"
       },
       {
         "network": "quic",

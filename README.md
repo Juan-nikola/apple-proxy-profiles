@@ -371,9 +371,11 @@ HAPP 没有客户端内的可视化业务组。业务节点通过私密任务的
 
 v2rayN 已随自动化发布进入 `current`。正式任务直接使用 `current`；需要隔离验证时，把脚本路径和 hash 参数中的频道一并替换为 `edge`。
 
-在 Sub-Store 中使用 `apple-proxy-v2rayn`，先预览 `v2rayn-nodes`，再按设备选择 `v2rayn-config-windows` 或 `v2rayn-config-macos`。配置任务使用 `region=cn`，也可以在隔离任务中改为 `global`、`ru` 或 `ir`；节点任务和配置任务都只读取该 collection，不接管节点选择。
+在 Sub-Store 中使用 `apple-proxy-v2rayn`，先预览 `v2rayn-nodes`，把它作为 v2rayN 节点订阅导入并在主列表选择节点；再预览 `v2rayn-config-windows` 或 `v2rayn-config-macos`，把返回的 JSON 粘贴到 v2rayN 的“完整配置模板”中，而不是作为 `Custom` 配置直接运行。模板只负责 TUN、DNS、routing 和明确固定的策略节点，普通代理节点由 v2rayN 当前选择的 `proxy` 出站提供，因此可以在主列表切换节点。
 
-成功标志：节点订阅输出非空 Xray JSON；配置含 TUN、DNS、outbounds 和 routing，GeoData 引用与当前频道 manifest 一致。v2rayN 任务不使用 `autoGroupMode`，Windows 与 macOS 不要交叉导入。
+macOS 当前模板按 TUN 模式生成：粘贴到“xray tun config template json”并开启 TUN。Windows 与 macOS 不要交叉导入。配置任务使用 `region=cn`，也可以在隔离任务中改为 `global`、`ru` 或 `ir`；节点任务和配置任务都读取同一个 collection，但模板不接管节点选择。
+
+成功标志：节点订阅输出非空 Xray JSON；完整配置模板启用后，主列表仍可选择节点，规则按模板的 DNS/TUN/routing 生效，GeoData 引用与当前频道 manifest 一致。v2rayN 任务不使用 `autoGroupMode`。
 
 失败怎么办：先检查 `apple-proxy-v2rayn` 是否非空，再看诊断中的 `renderFailures` 或 GeoData hash/频道错误。固定节点不可用时只修正该 collection 或私密策略参数。
 

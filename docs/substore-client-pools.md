@@ -15,7 +15,7 @@
 | sing-box | `apple-proxy-singbox` | 默认 strict；任一已选节点无法完整表示时失败，迁移期可显式使用 compatible |
 | OneXray | `apple-proxy-onexray` | 用户自行选择节点；节点任务输出 Xray JSON，Profile/审计对不兼容和固定节点问题失败关闭 |
 | HAPP | `apple-proxy-happ` | 用户自行选择节点；六平台配置与审计共享同一策略覆盖，固定节点问题写入私密 warning |
-| v2rayN | `apple-proxy-v2rayn` | 用户自行选择节点；Windows/macOS 使用统一 Xray renderer 和地区 GeoData |
+| v2rayN | `apple-proxy-v2rayn` | 用户自行选择节点；Windows/macOS 使用 Xray Full Config Template、TUN 和地区 GeoData |
 | V2Box | `apple-proxy-v2box` | 用户自行选择节点；iPhone/iPad 使用统一 Xray renderer 和共享 GeoData 资产 |
 | Clash Apple | `apple-proxy-clash` | 用户自行选择节点；macOS/iPhone/iPad/Apple TV 使用 Mihomo YAML renderer 和共享规则集 |
 

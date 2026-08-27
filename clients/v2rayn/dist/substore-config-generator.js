@@ -2943,11 +2943,6 @@ var V2rayNConfigBundle = (() => {
     if (!CODE.test(code)) throw new TypeError("OneXray GeoData source ID is invalid");
     return code;
   }
-  function oneXrayGeoReference(channel, type, sourceId) {
-    const names = oneXrayGeoNames(channel);
-    if (type !== "domain" && type !== "ip") throw new TypeError("OneXray GeoData type is invalid");
-    return `ext:${names[type]}.dat:${oneXrayGeoCode(sourceId)}`;
-  }
 
   // ../../shared/rules/semantic-intents.js
   var intent = ({ id, ruleId, label: label2, sourceIds, policy, defaultTarget, phase, dnsClass }) => Object.freeze({
@@ -3272,8 +3267,7 @@ var V2rayNConfigBundle = (() => {
   function geoReferences(geoData, options) {
     const names = oneXrayGeoNames(options.channel);
     if (geoData === null || geoData === void 0) {
-      const source = `REGION-${options.region.toUpperCase()}`;
-      return { sources: [{ id: source, code: oneXrayGeoCode(source) }], domain: [oneXrayGeoReference(options.channel, "domain", source)], ip: [oneXrayGeoReference(options.channel, "ip", source)] };
+      return { sources: [], domain: [], ip: [], hasExternalAssets: false };
     }
     if (!geoData || typeof geoData !== "object" || Array.isArray(geoData) || !geoData.manifest) throw new TypeError("v2rayN GeoData manifest is required");
     const manifest = geoData.manifest;
@@ -3294,7 +3288,7 @@ var V2rayNConfigBundle = (() => {
       return source.code;
     });
     if (Array.isArray(manifest.sourceCodes) && JSON.stringify(manifest.sourceCodes.map(({ code }) => code)) !== JSON.stringify(codes)) throw new Error("v2rayN GeoData sourceCodes mismatch");
-    return { sources: manifest.sources, domain: codes.map((code) => `ext:${names.domain}.dat:${code}`), ip: codes.map((code) => `ext:${names.ip}.dat:${code}`) };
+    return { sources: manifest.sources, domain: codes.map((code) => `ext:${names.domain}.dat:${code}`), ip: codes.map((code) => `ext:${names.ip}.dat:${code}`), hasExternalAssets: true };
   }
   function unifiedTargetId(id) {
     if (id === "domesticCore" || id === "chinaIp") return "domesticPlatform";
@@ -3326,7 +3320,7 @@ var V2rayNConfigBundle = (() => {
     const china = options.chinaDns === "system" ? "localhost" : options.chinaDns === "dnspod" ? "119.29.29.29" : "223.5.5.5";
     const global = options.globalDns === "google" ? "8.8.8.8" : options.globalDns === "quad9" ? "9.9.9.9" : "1.1.1.1";
     const domesticDomains = ["geosite:cn", "geosite:private", ...CRITICAL_DOMESTIC_DOMAIN_SUFFIXES.map((suffix) => `domain:${suffix}`)];
-    return { servers: [{ tag: "china-dns", address: china, domains: domesticDomains, queryStrategy }, { tag: "global-dns", address: global, domains: ["geosite:apple-proxy-overseas"], queryStrategy }], queryStrategy, tag: "dnsQuery", mode: options.dnsMode };
+    return { servers: [{ tag: "china-dns", address: china, domains: domesticDomains, queryStrategy }, { tag: "global-dns", address: global, domains: ["geosite:geolocation-!cn"], queryStrategy }], queryStrategy, tag: "dnsQuery", mode: options.dnsMode };
   }
   function tunInbound(options) {
     const settings = { mtu: 1500 };
@@ -3340,16 +3334,27 @@ var V2rayNConfigBundle = (() => {
   function renderV2rayNProfile({ nodes, options, geoData = null, filterFailures = {}, policyResolution = null } = {}) {
     if (!options || options.output !== "config") throw new Error("v2rayN profile options are required");
     if (!Array.isArray(nodes)) throw new Error("v2rayN profile requires compatible nodes");
-    const outbounds = [{ protocol: "freedom", tag: "direct" }, { protocol: "blackhole", tag: "block" }];
+    const outbounds = [];
     const failures = { ...filterFailures };
     const nodeTags = /* @__PURE__ */ new Map();
     const nodeTagsById = /* @__PURE__ */ new Map();
-    nodes.forEach((node, index) => {
-      const tag = `ap-node-${index.toString(36)}`;
+    const overrides = policyResolution === null ? parseBusinessOverrides(options.policyOverrides ?? "") : {};
+    const fixedNodes = policyResolution?.fixedNodes?.length ? policyResolution.fixedNodes.map(({ nodeId, node, name }) => ({ nodeId, node, name })) : Object.values(overrides).filter((value) => value.startsWith("NODE:")).map((value) => {
+      const name = value.slice(5);
+      const node = nodes.find((candidate) => candidate.name === name);
+      if (!node) throw new Error("v2rayN policy target node is unavailable");
+      return { nodeId: node?._profile?.id ?? name, node, name };
+    });
+    const seenFixedNodes = /* @__PURE__ */ new Set();
+    fixedNodes.forEach(({ nodeId, node, name }) => {
+      const identity = nodeId ?? node?._profile?.id ?? name;
+      if (seenFixedNodes.has(identity)) return;
+      seenFixedNodes.add(identity);
+      const tag = `ap-fixed-${(seenFixedNodes.size - 1).toString(36)}`;
       try {
         outbounds.push(renderXrayOutbound(node, { tag, client: "v2rayn" }));
-        nodeTags.set(node.name, tag);
-        if (node?._profile?.id) nodeTagsById.set(node._profile.id, tag);
+        nodeTags.set(name, tag);
+        nodeTagsById.set(identity, tag);
       } catch (error) {
         const diagnostic = renderXrayNodeError(error, "v2rayn");
         Object.entries(diagnostic.excluded).forEach(([key, count]) => {
@@ -3357,7 +3362,6 @@ var V2rayNConfigBundle = (() => {
         });
       }
     });
-    const overrides = policyResolution === null ? parseBusinessOverrides(options.policyOverrides ?? "") : {};
     if (Object.values(overrides).some((value) => value.startsWith("NODE:") && !nodeTags.has(value.slice(5)))) throw new Error("v2rayN policy target node is unavailable");
     const references = geoReferences(geoData, options);
     const rules = [
@@ -3368,20 +3372,22 @@ var V2rayNConfigBundle = (() => {
         ruleTag: `critical-domestic-${suffix}`
       }))
     ];
+    if (!references.hasExternalAssets) rules.push({ domain: ["geosite:geolocation-!cn"], outboundTag: "proxy", ruleTag: "builtin-overseas-proxy" });
     const sourceRules = references.sources.map((source) => ({ source, outboundTag: actionForSource(source.id, overrides, nodeTags, nodeTagsById, options.blockMode, policyResolution) }));
     const rank = (item) => ["Hijacking", "BlockHttpDNS", "Privacy"].includes(item.source.id) ? 0 : policyForRuleSource(item.source.id) ? 1 : 2;
     sourceRules.sort((a, b) => rank(a) - rank(b));
     for (const { source, outboundTag } of sourceRules) rules.push({ domain: [`ext:${oneXrayGeoNames(options.channel).domain}.dat:${source.code}`], ip: [`ext:${oneXrayGeoNames(options.channel).ip}.dat:${source.code}`], outboundTag, ruleTag: `source-${source.id}` });
     if (options.quicMode !== "allow") rules.push({ network: "quic", outboundTag: options.quicMode === "all-block" ? "block" : "direct", ruleTag: "quic-policy" });
     const finalRecord = policyResolution?.targets?.final;
-    let finalOutboundTag = outbounds.length === 2 ? "block" : "proxy";
+    let finalOutboundTag = nodes.length === 0 ? "block" : "proxy";
     if (finalRecord?.resolved === "DIRECT") finalOutboundTag = "direct";
     else if (finalRecord?.resolved && finalRecord.resolved !== "FOLLOW") {
       finalOutboundTag = nodeTagsById.get(finalRecord.nodeId);
       if (!finalOutboundTag) throw new Error("v2rayN policy target node is unavailable");
     }
-    rules.push({ domain: [`geosite:${options.region}`], outboundTag: "direct", ruleTag: "china-domain-direct" }, { ip: [`geoip:${options.region}`], outboundTag: "direct", ruleTag: "china-ip-direct" }, { network: "tcp,udp", outboundTag: finalOutboundTag, ruleTag: "final-fail-closed" });
-    return { name: options.name, dns: dns(options), inbounds: [tunInbound(options)], outbounds: [...outbounds, ...outbounds.length > 2 ? [{ protocol: "selector", tag: "proxy", settings: { selectors: outbounds.slice(2).map(({ tag }) => tag) } }] : []], routing: { domainStrategy: "IPIfNonMatch", rules }, ...Object.keys(failures).length ? { renderFailures: failures } : {} };
+    const directRegion = references.hasExternalAssets ? options.region : "cn";
+    rules.push({ domain: [`geosite:${directRegion}`], outboundTag: "direct", ruleTag: "china-domain-direct" }, { ip: [`geoip:${directRegion}`], outboundTag: "direct", ruleTag: "china-ip-direct" }, { network: "tcp,udp", outboundTag: finalOutboundTag, ruleTag: "final-fail-closed" });
+    return { name: options.name, dns: dns(options), inbounds: [tunInbound(options)], outbounds, routing: { domainStrategy: "IPIfNonMatch", rules }, ...Object.keys(failures).length ? { renderFailures: failures } : {} };
   }
 
   // src/substore-config-entry.js

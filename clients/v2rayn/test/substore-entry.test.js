@@ -31,7 +31,7 @@ test("config operator returns parseable fail-closed diagnostics for an incompati
       : [{ name: "bad", type: "future-proto", server: "fixture.invalid", port: 443 }],
   });
   const profile = JSON.parse(result.$content);
-  assert.deepEqual(profile.outbounds.map(({ tag }) => tag), ["direct", "block"]);
+  assert.deepEqual(profile.outbounds.map(({ tag }) => tag), []);
   assert.equal(profile.routing.rules.at(-1).outboundTag, "block");
   assert.equal(profile.renderFailures["unsupported-v2rayn-protocol"], 1);
 });
@@ -43,7 +43,7 @@ test("config operator accepts the platform omitted by Sub-Store File processing"
       ? EMPTY_POLICY
       : [{ name: "fixture", type: "vless", server: "fixture.invalid", port: 443, uuid: "TEST_ONLY_UUID" }],
   });
-  assert.equal(JSON.parse(result.$content).outbounds.length, 4);
+  assert.equal(JSON.parse(result.$content).outbounds.length, 0);
 });
 
 test("config operator propagates malformed GeoData instead of hiding it", async () => {

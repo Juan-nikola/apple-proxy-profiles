@@ -134,9 +134,9 @@ https://juan-nikola.github.io/apple-proxy-profiles/current/surge/scripts/surge-p
 | 27 | `happ-windows` | active/private | `apple-proxy-happ` | 输出 Windows HAPP JSON 配置数组 |
 | 28 | `happ-linux` | active/private | `apple-proxy-happ` | 输出 Linux HAPP JSON 配置数组 |
 | 29 | `happ-routing-audit` | active/private | `apple-proxy-happ` + `policyInput=apple-proxy-policy` | 只输出兼容数、排除原因、业务目标和 warning |
-| 30 | `v2rayn-nodes` | active/private | `apple-proxy-v2rayn` | 输出 Windows/macOS 可导入的 Xray JSON 节点订阅 |
-| 31 | `v2rayn-config-windows` | active/private | `apple-proxy-v2rayn` | 输出 Windows v2rayN 配置；默认 `region=cn` |
-| 32 | `v2rayn-config-macos` | active/private | `apple-proxy-v2rayn` | 输出 macOS v2rayN 配置；默认 `region=cn` |
+| 30 | `v2rayn-nodes` | active/private | `apple-proxy-v2rayn` | 输出 Windows/macOS 可导入的 Xray JSON 节点订阅；节点由 v2rayN 主列表选择 |
+| 31 | `v2rayn-config-windows` | active/private | `apple-proxy-v2rayn` | 输出 Windows v2rayN Xray Full Config Template；默认 `region=cn` |
+| 32 | `v2rayn-config-macos` | active/private | `apple-proxy-v2rayn` | 输出 macOS TUN Xray Full Config Template；默认 `region=cn` |
 | 33 | `v2box-nodes` | active/private | `apple-proxy-v2box` | 输出 iPhone/iPad 可导入的 Xray JSON 节点订阅 |
 | 34 | `clash-nodes` | active/private | `apple-proxy-clash` | 输出 Mihomo `proxies` 节点 YAML |
 | 35 | `clash-config-macos` | active/private | `apple-proxy-clash` | 输出 macOS Clash Apple 配置；默认稳定 DNS、TUN 和自动测速组 |
@@ -349,7 +349,7 @@ sing-box 默认 strict：任一已选节点无法完整渲染时 preview 失败�
 
 ## 10. v2rayN 与 V2Box：Xray JSON 任务
 
-两个客户端共享同一份地区 GeoData manifest，但 collection 和平台任务相互独立。节点任务只输出用户选择的节点，不需要 `platform`；配置任务必须使用对应平台，并且不使用 `autoGroupMode`。
+两个客户端共享同一份地区 GeoData manifest，但 collection 和平台任务相互独立。节点任务只输出用户选择的节点，不需要 `platform`；v2rayN 配置任务输出 Full Config Template，不把普通节点写进模板，因此节点仍由 v2rayN 主列表选择；配置任务必须使用对应平台，并且不使用 `autoGroupMode`。
 
 ### 10.1 v2rayN
 
@@ -377,6 +377,8 @@ https://juan-nikola.github.io/apple-proxy-profiles/current/v2rayn/scripts/substo
 | `v2rayn-config-macos` | macOS | `platform=macos&region=cn&ipv6Mode=ipv4-only` |
 
 公共配置参数为 `output=config&type=collection&name=apple-proxy-v2rayn&subscriptionName=Apple-Proxy-v2rayN&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&clientChain=off&channel=current`。地区可改为 `global`、`ru` 或 `ir`；不要把真实节点值写入公开文档。
+
+使用顺序：先把 `v2rayn-nodes` 导入 v2rayN 的订阅并在主列表选择节点，再 Preview `v2rayn-config-macos` 或 `v2rayn-config-windows`，复制 JSON 到 `Settings → Full Config Template Settings → v2ray Full Config Template`。macOS 任务当前按 TUN 模式生成，复制到 `xray tun config template json` 并开启 TUN。不要把配置 JSON 作为 `Custom` 配置项运行；那会绕过 v2rayN 主列表的当前节点。普通代理规则使用 v2rayN 当前的 `proxy` 出站，明确固定的策略节点才会作为模板出站附加。
 
 ### 10.2 V2Box
 
