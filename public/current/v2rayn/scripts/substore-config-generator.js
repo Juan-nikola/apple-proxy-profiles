@@ -3222,6 +3222,36 @@ var V2rayNConfigBundle = (() => {
   })));
 
   // src/render-profile.js
+  var BUILTIN_GEOSITE_SOURCES = Object.freeze([
+    ["Hijacking", "category-ads-all"],
+    ["BlockHttpDNS", "category-httpdns-cn"],
+    ["DomesticGame", "category-games-cn"],
+    ["SteamCN", "steam"],
+    ["BiliBili", "bilibili"],
+    ["ByteDance", "bytedance"],
+    ["XiaoHongShu", "xiaohongshu"],
+    ["Weibo", "category-social-media-cn"],
+    ["OpenAI", "openai"],
+    ["Claude", "anthropic"],
+    ["Gemini", "google-gemini"],
+    ["Copilot", "github-copilot"],
+    ["GitHub", "github"],
+    ["YouTube", "youtube"],
+    ["Netflix", "netflix"],
+    ["Disney", "disney"],
+    ["Spotify", "spotify"],
+    ["GlobalMedia", "category-media"],
+    ["Telegram", "telegram"],
+    ["Facebook", "facebook"],
+    ["Instagram", "instagram"],
+    ["Twitter", "twitter"],
+    ["TikTok", "tiktok"],
+    ["Apple", "apple"],
+    ["Microsoft", "microsoft"],
+    ["Download", "category-netdisk-!cn"],
+    ["PrivateTracker", "category-pt"],
+    ["OverseasGame", "category-games-!cn"]
+  ]);
   function bytes(value, label2) {
     if (!(Buffer.isBuffer(value) || value instanceof Uint8Array)) throw new TypeError(`v2rayN GeoData ${label2} asset is missing or invalid`);
     return Buffer.from(value);
@@ -3315,6 +3345,13 @@ var V2rayNConfigBundle = (() => {
     if (value === "NODE:".concat(value.slice(5))) throw new Error("v2rayN policy target node is unavailable");
     return value === "REJECT" ? blockMode === "off" ? "direct" : "block" : "proxy";
   }
+  function builtinSourceRules(overrides, nodeTags, nodeTagsById, blockMode, policyResolution) {
+    return BUILTIN_GEOSITE_SOURCES.map(([sourceId, category]) => ({
+      domain: [`geosite:${category}`],
+      outboundTag: actionForSource(sourceId, overrides, nodeTags, nodeTagsById, blockMode, policyResolution),
+      ruleTag: `builtin-source-${sourceId}`
+    }));
+  }
   function dns(options) {
     const queryStrategy = options.ipv6Mode === "ipv4-only" ? "UseIPv4" : "UseIP";
     const china = options.chinaDns === "system" ? "localhost" : options.chinaDns === "dnspod" ? "119.29.29.29" : "223.5.5.5";
@@ -3372,7 +3409,7 @@ var V2rayNConfigBundle = (() => {
         ruleTag: `critical-domestic-${suffix}`
       }))
     ];
-    if (!references.hasExternalAssets) rules.push({ domain: ["geosite:geolocation-!cn"], outboundTag: "proxy", ruleTag: "builtin-overseas-proxy" });
+    if (!references.hasExternalAssets) rules.push(...builtinSourceRules(overrides, nodeTags, nodeTagsById, options.blockMode, policyResolution), { domain: ["geosite:geolocation-!cn"], outboundTag: "proxy", ruleTag: "builtin-overseas-proxy" });
     const sourceRules = references.sources.map((source) => ({ source, outboundTag: actionForSource(source.id, overrides, nodeTags, nodeTagsById, options.blockMode, policyResolution) }));
     const rank = (item) => ["Hijacking", "BlockHttpDNS", "Privacy"].includes(item.source.id) ? 0 : policyForRuleSource(item.source.id) ? 1 : 2;
     sourceRules.sort((a, b) => rank(a) - rank(b));
