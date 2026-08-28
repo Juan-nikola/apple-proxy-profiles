@@ -2,23 +2,23 @@
   "client": "happ",
   "files": [
     {
-      "bytes": 181739,
+      "bytes": 181481,
       "path": "happ/geoip.dat",
-      "sha256": "1dd82acafad5ed5999997edc31d2a2f76eae28c2be0d7350ead248d55938ecb9"
+      "sha256": "9a4538534cd8610075775ca6b148c117173d37c554b005adcee81f5a79457275"
     },
     {
-      "bytes": 6933888,
+      "bytes": 74218,
       "path": "happ/geosite.dat",
-      "sha256": "4100ca5a34935a903c45f630b92a9e689d2f21c6ae24ba4cd88bcccec5d7b34e"
+      "sha256": "33de8c00cc3affbaf59be30b865e9d163fc2dae0a3c51555834437bd9454eadd"
     }
   ],
   "generatedAt": "2026-08-25T18:39:12Z",
   "geodata": {
-    "cidrs": 13397,
-    "domains": 306183,
+    "cidrs": 13376,
+    "domains": 3493,
     "geoip": 18,
     "geosite": 30
   },
-  "manifestHash": "6a02ec1880f88d4918f748fc30a499077143eceb50851da23598a8a158bf9472",
+  "manifestHash": "85bb2c094d4c722b0d395bf01c0df46b1b2d4dd8c4f7912553fdb8de3f8c6e11",
   "schemaVersion": 2
 }
