@@ -99,6 +99,20 @@ test("retains third-party license notices that name optional rule inputs", () =>
   assert.equal(result.defaults.get("THIRD_PARTY_NOTICES.md"), notice);
 });
 
+test("accepts the tested HAPP bundles as authoritative static publication files", () => {
+  const replacement = "// tested HAPP bundle\n";
+  const result = buildClientArtifacts({
+    snapshot: lightweightFixtureSnapshots(),
+    upstream,
+    additionalFiles: new Map([[
+      "happ/scripts/happ-config-generator.js",
+      replacement,
+    ]]),
+  });
+
+  assert.equal(result.defaults.get("happ/scripts/happ-config-generator.js"), replacement);
+});
+
 test("rejects bare forbidden rule IDs and forbidden default filenames", () => {
   for (const additionalFiles of [
     new Map([["surge/examples/bare.conf", "RULE-SET,Advertising,REJECT\n"]]),

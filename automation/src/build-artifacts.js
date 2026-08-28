@@ -254,6 +254,7 @@ function addAdditionalFiles(target, additions) {
   const overridable = new Set([
     ...V2BOX_SCRIPT_PATHS,
     ...CLASH_SCRIPT_PATHS,
+    ...HAPP_SCRIPT_PATHS,
   ]);
   for (const [path, content] of additions) {
     if (target.has(path) && !overridable.has(path)) {
