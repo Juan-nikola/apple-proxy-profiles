@@ -13,7 +13,7 @@ function protocol(names, clients, { requiredFields = [], tls = false, clientName
 }
 
 const definitions = Object.freeze([
-  protocol(["ss", "shadowsocks"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.v2box, CLIENT.clash], {
+  protocol(["ss", "shadowsocks"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.happ, CLIENT.v2box, CLIENT.clash], {
     requiredFields: ["cipher", "password"],
   }),
   protocol(["ssr"], [CLIENT.shadowrocket, CLIENT.surge, CLIENT.clash], {
@@ -22,13 +22,13 @@ const definitions = Object.freeze([
   protocol(["snell"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox, CLIENT.clash], {
     requiredFields: ["psk", "version"],
   }),
-  protocol(["vmess"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox, CLIENT.v2box, CLIENT.clash], {
+  protocol(["vmess"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox, CLIENT.happ, CLIENT.v2box, CLIENT.clash], {
     requiredFields: ["uuid"],
   }),
-  protocol(["vless"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.singbox, CLIENT.v2box, CLIENT.clash], {
+  protocol(["vless"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.singbox, CLIENT.happ, CLIENT.v2box, CLIENT.clash], {
     requiredFields: ["uuid"],
   }),
-  protocol(["trojan"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.v2box, CLIENT.clash], {
+  protocol(["trojan"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.happ, CLIENT.v2box, CLIENT.clash], {
     requiredFields: ["password"],
     tls: true,
   }),
@@ -36,7 +36,7 @@ const definitions = Object.freeze([
     requiredFields: ["password"],
     tls: true,
   }),
-  protocol(["hysteria2", "hy2"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.v2box, CLIENT.clash], {
+  protocol(["hysteria2", "hy2"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.happ, CLIENT.v2box, CLIENT.clash], {
     requiredFields: ["password"],
     tls: true,
   }),

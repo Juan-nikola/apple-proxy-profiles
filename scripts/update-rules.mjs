@@ -548,6 +548,13 @@ async function staticFiles(channel = "current") {
     ["clash/scripts/substore-node-generator.js", "clients/clash/dist/substore-node-generator.js"],
     ["clash/scripts/clash-profile-generator.js", "clients/clash/dist/clash-profile-generator.js"],
     ["clash/scripts/substore-profile-generator.js", "clients/clash/dist/substore-profile-generator.js"],
+    ["happ/scripts/happ-config-generator.js", "clients/happ/dist/happ-config-generator.js"],
+    ["happ/scripts/substore-config-generator.js", "clients/happ/dist/substore-config-generator.js"],
+    ["happ/scripts/happ-routing-audit.js", "clients/happ/dist/happ-routing-audit.js"],
+    ["happ/scripts/substore-routing-audit.js", "clients/happ/dist/substore-routing-audit.js"],
+    ["happ/examples/happ-config-macos.json", "clients/happ/examples/happ-config-macos.json"],
+    ["happ/examples/happ-config-iphone.json", "clients/happ/examples/happ-config-iphone.json"],
+    ["happ/examples/happ-config-ipad.json", "clients/happ/examples/happ-config-ipad.json"],
     ...["macos", "iphone", "ipad", "appletv"].flatMap((platform) => [
       [`clash/examples/clash-${platform}.yaml`, `clients/clash/examples/clash-${platform}.yaml`],
     ]),

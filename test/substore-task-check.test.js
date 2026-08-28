@@ -30,6 +30,7 @@ test("checker schema marks policy readers and excludes node subscriptions", () =
     "surge/scripts/surge-profile-generator.js",
     "sing-box/scripts/sing-box-config-generator.js",
     "v2box/scripts/substore-config-generator.js",
+    "happ/scripts/happ-config-generator.js",
   ]) {
     assert.equal(getSubstoreTaskSchema(scriptPath).policyInput, "apple-proxy-policy", scriptPath);
   }
@@ -40,6 +41,13 @@ test("checker schema marks policy readers and excludes node subscriptions", () =
   ]) {
     assert.equal(getSubstoreTaskSchema(scriptPath).policyInput, "apple-proxy-policy", scriptPath);
   }
+});
+
+test("accepts a valid HAPP Apple platform task", () => {
+  const url = `${PUBLIC}/current/happ/scripts/happ-config-generator.js#output=config&type=collection&name=apple-proxy-happ&subscriptionName=Apple-Proxy-Happ&platform=ipad&channel=current&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto`;
+  const result = checkSubstoreTaskUrl(url);
+  assert.equal(result.ok, true, result.errors.join(", "));
+  assert.equal(checkSubstoreTaskUrl(url.replace("platform=ipad", "platform=android")).ok, false);
 });
 
 test("accepts the published Anywhere strategy task and rejects extra options", () => {

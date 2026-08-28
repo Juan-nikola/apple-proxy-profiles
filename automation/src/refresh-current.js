@@ -37,6 +37,7 @@ const CLIENT_RULE_PREFIXES = Object.freeze({
     "sing-box/mobile-rule-sets/",
   ],
   anywhere: ["anywhere/rules/"],
+  happ: [],
   v2box: [],
 });
 const SHA256 = /^[0-9a-f]{64}$/u;

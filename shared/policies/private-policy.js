@@ -14,8 +14,8 @@ import {
 } from "./unified-policy.js";
 
 // Schema v1 is migration-only. Keep reading historical per-client overrides,
-// while allowing the active seven-client set to resolve without those keys.
-const CHANNEL_KEYS = new Set(["revision", "defaults", "happ", "onexray", "clients", ...PRIVATE_POLICY_CLIENTS]);
+// while allowing the active client set to resolve without those keys.
+const CHANNEL_KEYS = new Set(["revision", "defaults", "clients", ...PRIVATE_POLICY_CLIENTS]);
 const DEFAULT_KEYS = new Set(["targets", "dns", "adblockMode", "clientChain"]);
 const OVERRIDE_KEYS = DEFAULT_KEYS;
 const DNS_KEYS = new Set(["chinaDns", "globalDns"]);
@@ -87,15 +87,16 @@ function normalizeTarget(value) {
 
 function normalizeUnifiedTarget(value) {
   if (typeof value !== "string" || LINE_TERMINATOR.test(value)) {
-    throw invalid("target must be FOLLOW, DIRECT, or NODE:<name>[|<protocol>]");
+    throw invalid("target must be FOLLOW, DIRECT, NODE:<name>[|<protocol>], or NODE~<query>");
   }
   try {
     const canonical = canonicalUnifiedPolicyTarget(value);
-    if (!canonical.startsWith("NODE:")) return canonical;
+    if (!/^NODE[:~]/iu.test(canonical)) return canonical;
     const reference = parseNodeReference(canonical);
-    return `NODE:${reference.name}${reference.protocol ? `|${reference.protocol}` : ""}`;
+    const normalizedValue = reference.mode === "fuzzy" ? reference.query : reference.name;
+    return `${reference.mode === "fuzzy" ? "NODE~" : "NODE:"}${normalizedValue}${reference.protocol ? `|${reference.protocol}` : ""}`;
   } catch {
-    throw invalid("target must be FOLLOW, DIRECT, or NODE:<name>[|<protocol>]");
+    throw invalid("target must be FOLLOW, DIRECT, NODE:<name>[|<protocol>], or NODE~<query>");
   }
 }
 
@@ -197,9 +198,6 @@ function normalizePolicyObject(value) {
     const legacyClients = isRecord(record.clients) ? record.clients : {};
     const overrides = {};
     for (const [key, override] of Object.entries(legacyClients)) overrides[key] = normalizeOverride(override);
-    for (const key of ["happ", "onexray"]) {
-      if (Object.hasOwn(record, key)) overrides[key] = normalizeOverride(record[key]);
-    }
     for (const key of PRIVATE_POLICY_CLIENTS) {
       if (Object.hasOwn(record, key)) overrides[key] = normalizeOverride(record[key]);
     }

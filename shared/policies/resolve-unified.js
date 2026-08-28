@@ -74,7 +74,7 @@ export function resolveUnifiedPolicy({
   for (const target of UNIFIED_POLICY_TARGETS) {
     const configured = values[target.id] ?? target.defaultTarget;
     const resolved = record(configured);
-    if (configured.startsWith("NODE:")) {
+    if (/^NODE[:~]/iu.test(configured)) {
       const node = resolveNodeReference({ target: configured, allNodes, eligibleNodes, client });
       const nodeId = node?._profile?.id ?? `node-${fixedNodes.length}`;
       resolved.resolved = node.name;

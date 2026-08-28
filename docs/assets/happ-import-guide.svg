@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 430" role="img" aria-labelledby="title desc">
+  <title id="title">HAPP 导入与业务节点选择流程</title>
+  <desc id="desc">手动选择 collection，生成 policy JSON，安装公开 GeoData，再导入 HAPP JSON 配置。</desc>
+  <defs>
+    <style>
+      .bg{fill:#f7f8fa}.box{fill:#fff;stroke:#243447;stroke-width:2}.accent{fill:#e7f5ee;stroke:#16834b;stroke-width:2}.arrow{fill:none;stroke:#51606f;stroke-width:3;marker-end:url(#m)}.title{font:700 24px system-ui,sans-serif;fill:#172033}.label{font:600 20px system-ui,sans-serif;fill:#172033}.small{font:16px system-ui,sans-serif;fill:#51606f}.mono{font:15px ui-monospace,monospace;fill:#172033}
+    </style>
+    <marker id="m" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0L10 5L0 10z" fill="#51606f"/></marker>
+  </defs>
+  <rect class="bg" width="1200" height="430" rx="16"/>
+  <text class="title" x="40" y="48">HAPP 三端导入：公开规则 + 私密节点 + policy 默认值</text>
+  <rect class="box" x="40" y="100" width="245" height="180" rx="10"/>
+  <text class="label" x="64" y="140">1  手动 collection</text>
+  <text class="small" x="64" y="176">勾选真实订阅来源</text>
+  <text class="small" x="64" y="204">标签字段留空</text>
+  <text class="mono" x="64" y="244">apple-proxy-happ</text>
+  <path class="arrow" d="M285 190H330"/>
+  <rect class="box" x="330" y="100" width="245" height="180" rx="10"/>
+  <text class="label" x="354" y="140">2  policy JSON</text>
+  <text class="small" x="354" y="176">只写 FOLLOW / DIRECT</text>
+  <text class="small" x="354" y="204">或唯一 NODE~ 查询词</text>
+  <text class="mono" x="354" y="244">"ai":"NODE~美国 家宽"</text>
+  <path class="arrow" d="M575 190H620"/>
+  <rect class="accent" x="620" y="100" width="245" height="180" rx="10"/>
+  <text class="label" x="644" y="140">3  安装 GeoData</text>
+  <text class="small" x="644" y="176">打开 current/happ</text>
+  <text class="small" x="644" y="204">扫码或点击导入</text>
+  <text class="mono" x="644" y="244">geoip.dat + geosite.dat</text>
+  <path class="arrow" d="M865 190H910"/>
+  <rect class="box" x="910" y="100" width="245" height="180" rx="10"/>
+  <text class="label" x="934" y="140">4  导入 JSON</text>
+  <text class="small" x="934" y="176">macOS / iPhone / iPad</text>
+  <text class="small" x="934" y="204">固定出口写入 Xray</text>
+  <text class="small" x="934" y="232">故障时 balancer 回退 FOLLOW</text>
+  <text class="small" x="40" y="350">修改业务节点：更新 policy → Preview → 重新导入；生成失败时保持上一份可用配置。</text>
+</svg>

@@ -98,6 +98,56 @@ test("rejects ambiguous, missing, and incompatible exact references instead of f
   );
 });
 
+test("resolves a unique fuzzy node reference after normalizing labels", () => {
+  const nodes = normalized([
+    rawNode("🇺🇸 美国｜家宽 · Premium", "vless"),
+    rawNode("🇯🇵 东京｜中转", "trojan", { password: "test-password" }),
+  ]);
+
+  const result = resolveNodeReference({
+    target: "NODE~美国 家宽|vless",
+    eligibleNodes: nodes,
+    allNodes: nodes,
+  });
+
+  assert.equal(result._profile.originalName, "🇺🇸 美国｜家宽 · Premium");
+  assert.deepEqual(parseNodeReference("NODE~美国 家宽|vless"), {
+    mode: "fuzzy",
+    query: "美国 家宽",
+    protocol: "vless",
+  });
+});
+
+test("rejects missing and ambiguous fuzzy references with stable error codes", () => {
+  const missing = normalized([rawNode("🇯🇵 东京｜中转", "trojan", { password: "test-password" })]);
+  assert.throws(
+    () => resolveNodeReference({ target: "NODE~美国 家宽", eligibleNodes: missing, allNodes: missing }),
+    (error) => error.code === "missing-node",
+  );
+
+  const ambiguous = normalized([
+    rawNode("🇺🇸 美国｜家宽 A", "vless", { server: "a.invalid" }),
+    rawNode("🇺🇸 美国｜家宽 B", "vless", { server: "b.invalid" }),
+  ]);
+  assert.throws(
+    () => resolveNodeReference({ target: "NODE~美国 家宽", eligibleNodes: ambiguous, allNodes: ambiguous }),
+    (error) => error.code === "ambiguous-node",
+  );
+});
+
+test("distinguishes fuzzy protocol incompatibility from a missing node", () => {
+  const nodes = normalized([rawNode("🇺🇸 美国｜家宽", "anytls", { password: "test-password" })]);
+  assert.throws(
+    () => resolveNodeReference({
+      target: "NODE~美国 家宽",
+      eligibleNodes: [],
+      allNodes: nodes,
+      client: "v2box",
+    }),
+    (error) => error.code === "incompatible-node",
+  );
+});
+
 test("parses the simple schemaVersion 2 policy and applies built-in defaults", () => {
   const policy = parsePrivatePolicy(JSON.stringify({
     schemaVersion: 2,
@@ -117,6 +167,14 @@ test("parses the simple schemaVersion 2 policy and applies built-in defaults", (
   const resolved = resolvePrivatePolicy({ policy, channel: "current", client: "surge" });
   assert.equal(resolved.targets.ai, "NODE:🇺🇸qqpw家宽|vless");
   assert.equal(resolved.targets.final, "FOLLOW");
+});
+
+test("accepts fuzzy NODE~ targets in unified policy v2", () => {
+  const policy = parsePrivatePolicy(JSON.stringify({
+    schemaVersion: 2,
+    targets: { "🤖 AI 专用": "NODE~美国 家宽" },
+  }));
+  assert.equal(policy.targets.ai, "NODE~美国 家宽");
 });
 
 test("exposes the complete 13-target unified policy defaults", () => {

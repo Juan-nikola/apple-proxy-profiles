@@ -58,6 +58,7 @@ var V2BoxNodesBundle = (() => {
     shadowrocket: "shadowrocket",
     surge: "surge",
     singbox: "singbox",
+    happ: "happ",
     v2box: "v2box",
     clash: "clash"
   });
@@ -68,6 +69,7 @@ var V2BoxNodesBundle = (() => {
     CLIENT.shadowrocket,
     CLIENT.surge,
     CLIENT.singbox,
+    CLIENT.happ,
     CLIENT.v2box,
     CLIENT.clash
   ]);
@@ -234,7 +236,7 @@ var V2BoxNodesBundle = (() => {
     });
   }
   var definitions = Object.freeze([
-    protocol(["ss", "shadowsocks"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.v2box, CLIENT.clash], {
+    protocol(["ss", "shadowsocks"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.happ, CLIENT.v2box, CLIENT.clash], {
       requiredFields: ["cipher", "password"]
     }),
     protocol(["ssr"], [CLIENT.shadowrocket, CLIENT.surge, CLIENT.clash], {
@@ -243,13 +245,13 @@ var V2BoxNodesBundle = (() => {
     protocol(["snell"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox, CLIENT.clash], {
       requiredFields: ["psk", "version"]
     }),
-    protocol(["vmess"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox, CLIENT.v2box, CLIENT.clash], {
+    protocol(["vmess"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox, CLIENT.happ, CLIENT.v2box, CLIENT.clash], {
       requiredFields: ["uuid"]
     }),
-    protocol(["vless"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.singbox, CLIENT.v2box, CLIENT.clash], {
+    protocol(["vless"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.singbox, CLIENT.happ, CLIENT.v2box, CLIENT.clash], {
       requiredFields: ["uuid"]
     }),
-    protocol(["trojan"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.v2box, CLIENT.clash], {
+    protocol(["trojan"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.happ, CLIENT.v2box, CLIENT.clash], {
       requiredFields: ["password"],
       tls: true
     }),
@@ -257,7 +259,7 @@ var V2BoxNodesBundle = (() => {
       requiredFields: ["password"],
       tls: true
     }),
-    protocol(["hysteria2", "hy2"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.v2box, CLIENT.clash], {
+    protocol(["hysteria2", "hy2"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.happ, CLIENT.v2box, CLIENT.clash], {
       requiredFields: ["password"],
       tls: true
     }),
@@ -1877,6 +1879,19 @@ var V2BoxNodesBundle = (() => {
       publicDirectory: "sing-box"
     },
     {
+      id: CLIENT.happ,
+      displayName: "HAPP",
+      state: "active",
+      platforms: ["macos", "iphone", "ipad"],
+      configFormat: "happ-json",
+      ruleFormat: "xray-geodata",
+      nodeValidator: "happ",
+      separatesProfile: false,
+      supportsPolicyOverrides: false,
+      adapterSchema: "happ-v1",
+      publicDirectory: "happ"
+    },
+    {
       id: CLIENT.v2box,
       displayName: "V2Box",
       state: "active",
@@ -2117,7 +2132,7 @@ var V2BoxNodesBundle = (() => {
 
   // ../../shared/policies/business-targets.js
   var TARGET_KEYWORD = /^(FOLLOW|DIRECT)$/iu;
-  var NODE_TARGET = /^NODE:(.*)$/iu;
+  var NODE_TARGET = /^(NODE:|NODE~)(.*)$/iu;
   var BASE64URL = /^[A-Za-z0-9_-]+$/u;
   var LINE_TERMINATOR = /[\r\n\u2028\u2029]/u;
   function frozenTarget(id, label2, aliases, defaultTarget) {
@@ -2209,10 +2224,11 @@ var V2BoxNodesBundle = (() => {
     if (typeof value !== "string") throw new TypeError("target must be a string");
     if (TARGET_KEYWORD.test(value)) return value.toUpperCase();
     const node = NODE_TARGET.exec(value);
-    if (!node || node[1].trim().length === 0 || LINE_TERMINATOR.test(node[1])) {
-      throw new TypeError("target must be FOLLOW, DIRECT, or NODE:<name>");
+    if (!node || node[2].trim().length === 0 || LINE_TERMINATOR.test(node[2])) {
+      throw new TypeError("target must be FOLLOW, DIRECT, NODE:<name>, or NODE~<query>");
     }
-    return `NODE:${node[1]}`;
+    const prefix = node[1].toUpperCase();
+    return `${prefix}${prefix === "NODE:" ? node[2] : node[2].trim()}`;
   }
   function parseBusinessOverrides(encoded) {
     const values = decodePolicy(encoded);

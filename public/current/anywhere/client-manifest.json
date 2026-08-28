@@ -93,28 +93,28 @@
       "sha256": "dc06cf2b07640c3a28d57453758c76c5d1b875083bca191cea8429fc90e48e6e"
     },
     {
-      "bytes": 88048,
+      "bytes": 88507,
       "path": "anywhere/scripts/anywhere-node-generator.js",
-      "sha256": "4e98c93c003b9d0ad3d26aab03a41911724bfa8323bf2df73373d7ca95c615e9"
+      "sha256": "9ec1e77c6058294e0aaa04e7447356f93cb8841033f8d36032b370dd7c87068c"
     },
     {
-      "bytes": 131951,
+      "bytes": 134026,
       "path": "anywhere/scripts/anywhere-strategy-generator.js",
-      "sha256": "64798bf7aeaa089b6b0ab1e116fb16c0ea8619265af7b77728124f779617eb29"
+      "sha256": "7b37ab8104a8c8f34be321e1d6ce873a99e840ee68cd23a64ed5c08c9c570b7a"
     },
     {
-      "bytes": 88048,
+      "bytes": 88507,
       "path": "anywhere/scripts/substore-node-generator.js",
-      "sha256": "4e98c93c003b9d0ad3d26aab03a41911724bfa8323bf2df73373d7ca95c615e9"
+      "sha256": "9ec1e77c6058294e0aaa04e7447356f93cb8841033f8d36032b370dd7c87068c"
     },
     {
-      "bytes": 131951,
+      "bytes": 134026,
       "path": "anywhere/scripts/substore-strategy-generator.js",
-      "sha256": "64798bf7aeaa089b6b0ab1e116fb16c0ea8619265af7b77728124f779617eb29"
+      "sha256": "7b37ab8104a8c8f34be321e1d6ce873a99e840ee68cd23a64ed5c08c9c570b7a"
     }
   ],
   "generatedAt": "2026-08-25T18:39:12Z",
-  "manifestHash": "77d175d88881dc4a634c804ff9654835b72d064b07572dd7638bf25312b8c330",
+  "manifestHash": "c554f617827992db6ea1fd92e220620566f2e72e5a551859be3ca77c28e18df2",
   "optionalPacks": {
     "adblock-full": "94c813099b5c53de588899e43b3a37f3e67557afba301b80fab02430fc595b80"
   },

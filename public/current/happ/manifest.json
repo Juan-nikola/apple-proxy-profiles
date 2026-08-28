@@ -1,0 +1,24 @@
+{
+  "client": "happ",
+  "files": [
+    {
+      "bytes": 181739,
+      "path": "happ/geoip.dat",
+      "sha256": "1dd82acafad5ed5999997edc31d2a2f76eae28c2be0d7350ead248d55938ecb9"
+    },
+    {
+      "bytes": 6933888,
+      "path": "happ/geosite.dat",
+      "sha256": "4100ca5a34935a903c45f630b92a9e689d2f21c6ae24ba4cd88bcccec5d7b34e"
+    }
+  ],
+  "generatedAt": "2026-08-25T18:39:12Z",
+  "geodata": {
+    "cidrs": 13397,
+    "domains": 306183,
+    "geoip": 18,
+    "geosite": 30
+  },
+  "manifestHash": "6a02ec1880f88d4918f748fc30a499077143eceb50851da23598a8a158bf9472",
+  "schemaVersion": 2
+}

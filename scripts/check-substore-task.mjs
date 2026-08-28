@@ -78,6 +78,10 @@ const GENERATOR_SCHEMAS = Object.freeze({
     requiresSubscriptionName: true,
     requiresNodeSubscriptionUrl: true,
   }),
+  "happ/scripts/happ-config-generator.js": configSchema({
+    platforms: ["macos", "iphone", "ipad"],
+    omitKeys: ["autoGroupMode", "clientChain"],
+  }),
 });
 
 function nodeSchema() {

@@ -405,7 +405,7 @@ export async function enforceRetention(stagingDirectory, requiredVersion = null)
 function indexHtml(manifest) {
   return `<!doctype html>
 <html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Apple Proxy Profiles</title></head>
-<body><main><h1>Apple Proxy Profiles</h1><p>Blackmatrix7 commit: <code>${manifest.upstream.commit}</code></p><p>公开页不包含私密节点、策略正文或凭据。</p><ul><li><a href="current/manifest.json">Current manifest</a></li><li><a href="current/audit/dashboard.html">中文公开审计看板</a></li><li><a href="current/audit/dashboard.json">审计 JSON</a></li><li><a href="current/anywhere/import.html">Anywhere import</a></li><li><a href="current/surge/scripts/surge-profile-generator.js">Surge Sub-Store script</a></li><li><a href="current/sing-box/scripts/sing-box-config-generator.js">sing-box Sub-Store script</a></li></ul></main></body></html>
+<body><main><h1>Apple Proxy Profiles</h1><p>Blackmatrix7 commit: <code>${manifest.upstream.commit}</code></p><p>公开页不包含私密节点、策略正文或凭据。</p><ul><li><a href="current/manifest.json">Current manifest</a></li><li><a href="current/audit/dashboard.html">中文公开审计看板</a></li><li><a href="current/audit/dashboard.json">审计 JSON</a></li><li><a href="current/anywhere/import.html">Anywhere import</a></li><li><a href="current/happ/index.html">HAPP GeoData import</a></li><li><a href="current/surge/scripts/surge-profile-generator.js">Surge Sub-Store script</a></li><li><a href="current/sing-box/scripts/sing-box-config-generator.js">sing-box Sub-Store script</a></li></ul></main></body></html>
 `;
 }
 

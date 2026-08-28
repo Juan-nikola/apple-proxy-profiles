@@ -1,0 +1,123 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import { parseHappOptions } from "../src/options.js";
+import { renderHappOutbound } from "../src/render-node.js";
+import { renderHappInbounds } from "../src/render-platform.js";
+import { happProxyGeositeDomains, renderHappDns, renderHappDnsRoutes } from "../src/render-dns.js";
+import { renderHappRouting } from "../src/render-routing.js";
+import { renderHappSubscription } from "../src/render-subscription.js";
+import { validateHappSubscription } from "../src/validate-subscription.js";
+import { buildHappAudit } from "../src/audit.js";
+import { parsePrivatePolicy } from "../../../shared/policies/private-policy.js";
+import { resolveUnifiedPolicy } from "../../../shared/policies/resolve-unified.js";
+
+const base = { output: "config", type: "collection", name: "TEST_ONLY_Happ", subscriptionName: "TEST_ONLY_Sub", platform: "macos" };
+const node = (type, extra = {}) => ({ name: "TEST_ONLY_Node", type, server: "example.test", port: 443, ...extra });
+
+test("Happ options are strict and platform scoped", () => {
+  const parsed = parseHappOptions(base);
+  assert.equal(parsed.platform, "macos");
+  assert.equal(parsed.channel, "current");
+  assert.equal(parsed.blockMode, "balanced");
+  assert.throws(() => parseHappOptions({ ...base, platform: "all" }), /platform/);
+  for (const platform of ["android", "windows", "linux"]) {
+    assert.throws(() => parseHappOptions({ ...base, platform }), /unsupported value/u);
+  }
+  assert.equal(parseHappOptions({ ...base, output: "audit", platform: "all" }).output, "audit");
+  assert.throws(() => parseHappOptions({ ...base, unknown: true }), /Unknown Happ option/);
+  assert.equal(parseHappOptions({ ...base, channel: "edge" }).channel, "edge");
+  assert.throws(() => parseHappOptions({ ...base, policyOverrides: "e30" }), /Unknown Happ option.*policyOverrides/u);
+});
+
+test("all approved protocols render Xray outbounds without raw names in tags", () => {
+  const fixtures = [
+    ["vless", { uuid: "TEST_ONLY_UUID", network: "ws", tls: true, sni: "example.test", "ws-opts": { path: "/x", headers: { Host: "example.test" } } }],
+    ["vmess", { uuid: "TEST_ONLY_UUID", alterId: 0, cipher: "auto", network: "grpc", tls: true, "grpc-opts": { "grpc-service-name": "TEST_ONLY_SERVICE" } }],
+    ["trojan", { password: "TEST_ONLY_PASSWORD", network: "tcp", tls: true, sni: "example.test" }],
+    ["ss", { cipher: "aes-256-gcm", password: "TEST_ONLY_PASSWORD" }],
+    ["socks5", { username: "TEST_ONLY_USER", password: "TEST_ONLY_PASSWORD" }],
+    ["hysteria2", { password: "TEST_ONLY_PASSWORD", tls: true, sni: "example.test" }],
+  ];
+  for (const [type, extra] of fixtures) {
+    const out = renderHappOutbound(node(type, extra), `happ-follow/${type}`);
+    assert.equal(out.tag, `happ-follow/${type}`);
+    assert.ok(out.protocol);
+    assert.ok(!out.tag.includes("TEST_ONLY_Node"));
+  }
+});
+
+test("platform, DNS and routing preserve shared semantics", () => {
+  const inbounds = renderHappInbounds("macos");
+  assert.equal(inbounds.length, 2);
+  assert.deepEqual(inbounds.map((x) => x.listen), ["127.0.0.1", "127.0.0.1"]);
+  const dns = renderHappDns({ dnsMode: "stable", chinaDns: "alidns", globalDns: "cloudflare", ipv6Mode: "ipv4-only" });
+  assert.equal(dns.queryStrategy, "UseIPv4");
+  assert.ok(happProxyGeositeDomains().length > 0);
+  assert.equal(JSON.stringify(dns).includes("HAPP-PROXY"), false);
+  const dnsRules = renderHappDnsRoutes({});
+  assert.ok(dnsRules.length >= 2);
+  assert.equal(JSON.stringify(dnsRules).includes("HAPP-PROXY"), false);
+  const routing = renderHappRouting({ policyResolution: { targets: {} }, followTag: "happ-follow/x", fixedNodes: [], options: {} });
+  assert.equal(routing.routing.domainStrategy, "IPIfNonMatch");
+  assert.equal(routing.routing.rules.at(-1).network, "tcp,udp");
+});
+
+test("Happ routing uses one standard Xray label scheme on every supported platform", () => {
+  for (const platform of ["macos", "iphone", "ipad"]) {
+    const output = renderHappRouting({ policyResolution: { targets: {} }, followTag: `happ-follow/${platform}`, fixedNodes: [], options: { platform } });
+    const serialized = JSON.stringify(output.routing);
+    assert.match(serialized, /geosite:OPENAI/u);
+    assert.match(serialized, /geoip:CN/u);
+    assert.equal(serialized.includes("HAPP-"), false);
+  }
+});
+
+test("Happ observatory includes the active follow outbound for ping results", () => {
+  const followTag = "happ-follow/iphone";
+  const output = renderHappRouting({
+    policyResolution: { targets: {} },
+    followTag,
+    fixedNodes: [],
+    options: { platform: "iphone" },
+  });
+  assert.deepEqual(output.observatory.subjectSelector, [followTag]);
+});
+
+test("subscription is one JSON object per eligible node and validates", () => {
+  const options = parseHappOptions(base);
+  const nodes = [node("vless", { uuid: "TEST_ONLY_UUID" }), node("trojan", { name: "TEST_ONLY_Node2", password: "TEST_ONLY_PASSWORD", tls: true })];
+  const configs = renderHappSubscription({ nodes, options });
+  assert.equal(configs.length, 2);
+  assert.equal(configs[0].remarks, "TEST_ONLY_Node");
+  assert.equal(validateHappSubscription(configs), true);
+  assert.ok(Array.isArray(configs[0].routing.balancers));
+  assert.equal(Object.hasOwn(configs[0], "balancers"), false);
+  const audit = buildHappAudit({ options, policyResolution: { targets: {}, warnings: [] }, configs });
+  assert.equal(audit.schemaVersion, 2);
+  assert.equal(audit.counts.configs, 2);
+  assert.doesNotMatch(JSON.stringify(audit), /password|uuid|server|port/i);
+});
+
+test("fixed-node balancer is nested under Xray routing", () => {
+  const fixed = node("vless", { uuid: "TEST_ONLY_UUID", _profile: { id: "fixed-node" } });
+  const follow = node("trojan", { name: "TEST_ONLY_Node2", password: "TEST_ONLY_PASSWORD", tls: true, _profile: { id: "follow-node" } });
+  const options = parseHappOptions(base);
+  const policy = parsePrivatePolicy(JSON.stringify({ schemaVersion: 2, targets: { "最终兜底": "NODE:TEST_ONLY_Node" } }));
+  const policyResolution = resolveUnifiedPolicy({ policy, channel: "current", client: "happ", allNodes: [fixed, follow], eligibleNodes: [fixed, follow] });
+  const configs = renderHappSubscription({ nodes: [fixed, follow], options, policyResolution });
+  const config = configs.find((item) => item.remarks === "TEST_ONLY_Node2");
+  assert.ok(config);
+  assert.ok(config.routing.rules.some((rule) => rule.balancerTag));
+  assert.ok(config.routing.balancers.some((balancer) => balancer.tag));
+  assert.equal(validateHappSubscription(configs), true);
+});
+
+test("Happ DNS uses one standard Xray label scheme on every supported platform", () => {
+  for (const platform of ["macos", "iphone", "ipad"]) {
+    const output = renderHappDns({ platform, dnsMode: "stable", chinaDns: "alidns", globalDns: "cloudflare", ipv6Mode: "auto" });
+    const serialized = JSON.stringify(output);
+    assert.match(serialized, /geosite:OPENAI/u);
+    assert.match(serialized, /geoip:CN/u);
+    assert.equal(serialized.includes("HAPP-"), false);
+  }
+});

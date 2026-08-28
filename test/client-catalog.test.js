@@ -19,12 +19,13 @@ const REQUIRED_FIELDS = [
 
 test("registers clients in stable publication order", () => {
   assert.deepEqual(allClientIds(), [
-    "anywhere", "egern", "shadowrocket", "surge", "singbox", "v2box", "clash",
+    "anywhere", "egern", "shadowrocket", "surge", "singbox", "happ", "v2box", "clash",
   ]);
-  assert.deepEqual(activeClientIds(), ["anywhere", "egern", "shadowrocket", "surge", "singbox", "v2box", "clash"]);
+  assert.deepEqual(activeClientIds(), ["anywhere", "egern", "shadowrocket", "surge", "singbox", "happ", "v2box", "clash"]);
   assert.deepEqual(plannedClientIds(), []);
   assert.equal(publicDirectoryForClient("singbox"), "sing-box");
   assert.deepEqual(clientAdapter("v2box").platforms, ["iphone", "ipad"]);
+  assert.deepEqual(clientAdapter("happ").platforms, ["macos", "iphone", "ipad"]);
   assert.deepEqual(clientAdapter("clash").platforms, ["iphone", "ipad", "macos", "appletv"]);
   assert.deepEqual(lightweightRuleClientIds(), [
     "anywhere", "egern", "shadowrocket", "surge", "singbox", "clash",

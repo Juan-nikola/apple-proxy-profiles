@@ -58,6 +58,7 @@ var V2BoxConfigBundle = (() => {
     shadowrocket: "shadowrocket",
     surge: "surge",
     singbox: "singbox",
+    happ: "happ",
     v2box: "v2box",
     clash: "clash"
   });
@@ -68,6 +69,7 @@ var V2BoxConfigBundle = (() => {
     CLIENT.shadowrocket,
     CLIENT.surge,
     CLIENT.singbox,
+    CLIENT.happ,
     CLIENT.v2box,
     CLIENT.clash
   ]);
@@ -234,7 +236,7 @@ var V2BoxConfigBundle = (() => {
     });
   }
   var definitions = Object.freeze([
-    protocol(["ss", "shadowsocks"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.v2box, CLIENT.clash], {
+    protocol(["ss", "shadowsocks"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.happ, CLIENT.v2box, CLIENT.clash], {
       requiredFields: ["cipher", "password"]
     }),
     protocol(["ssr"], [CLIENT.shadowrocket, CLIENT.surge, CLIENT.clash], {
@@ -243,13 +245,13 @@ var V2BoxConfigBundle = (() => {
     protocol(["snell"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox, CLIENT.clash], {
       requiredFields: ["psk", "version"]
     }),
-    protocol(["vmess"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox, CLIENT.v2box, CLIENT.clash], {
+    protocol(["vmess"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox, CLIENT.happ, CLIENT.v2box, CLIENT.clash], {
       requiredFields: ["uuid"]
     }),
-    protocol(["vless"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.singbox, CLIENT.v2box, CLIENT.clash], {
+    protocol(["vless"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.singbox, CLIENT.happ, CLIENT.v2box, CLIENT.clash], {
       requiredFields: ["uuid"]
     }),
-    protocol(["trojan"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.v2box, CLIENT.clash], {
+    protocol(["trojan"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.happ, CLIENT.v2box, CLIENT.clash], {
       requiredFields: ["password"],
       tls: true
     }),
@@ -257,7 +259,7 @@ var V2BoxConfigBundle = (() => {
       requiredFields: ["password"],
       tls: true
     }),
-    protocol(["hysteria2", "hy2"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.v2box, CLIENT.clash], {
+    protocol(["hysteria2", "hy2"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.happ, CLIENT.v2box, CLIENT.clash], {
       requiredFields: ["password"],
       tls: true
     }),
@@ -1950,34 +1952,45 @@ var V2BoxConfigBundle = (() => {
   // ../../shared/nodes/node-reference.js
   var LINE_TERMINATOR = /[\r\n\u2028\u2029]/u;
   var PROTOCOL_QUALIFIER = /^[a-z][a-z0-9_-]*$/iu;
+  var EXACT_TARGET = /^NODE:(.*)$/iu;
+  var FUZZY_TARGET = /^NODE~(.*)$/iu;
+  var LABEL_SEPARATOR = /[\p{P}\p{S}]+/gu;
+  var DISPLAY_MARK = /[\p{Extended_Pictographic}\p{Regional_Indicator}]/gu;
   function invalid(message) {
-    return new Error(`Invalid node reference: ${message}`);
+    const error = new Error(`Invalid node reference: ${message}`);
+    error.code = "invalid-node-reference";
+    return error;
   }
   function freeze(value) {
     return Object.freeze(value);
   }
   function parseNodeReference(target) {
-    if (typeof target !== "string" || !target.startsWith("NODE:")) {
-      throw invalid("target must be NODE:<name> or NODE:<name>|<protocol>");
+    if (typeof target !== "string") throw invalid("target must be NODE:<name> or NODE~<query>");
+    const exact = EXACT_TARGET.exec(target);
+    const fuzzy = FUZZY_TARGET.exec(target);
+    if (!exact && !fuzzy) throw invalid("target must be NODE:<name> or NODE~<query>");
+    const mode = exact ? "exact" : "fuzzy";
+    const body = (exact ?? fuzzy)[1];
+    if (body.length === 0 || LINE_TERMINATOR.test(body)) {
+      throw invalid("node name or query is empty or contains a line break");
     }
-    const body = target.slice("NODE:".length);
-    if (body.length === 0 || body.trim() !== body || LINE_TERMINATOR.test(body)) {
-      throw invalid("node name is empty or contains a line break");
-    }
-    const separator = body.lastIndexOf("|");
-    let name = body;
+    if (mode === "exact" && body.trim() !== body) throw invalid("node name has surrounding whitespace");
+    const value = mode === "fuzzy" ? body.trim() : body;
+    if (value.length === 0) throw invalid("node name or query is empty");
+    const separator = value.lastIndexOf("|");
+    let name = value;
     let protocol2 = null;
-    if (separator > 0 && separator < body.length - 1) {
-      const qualifier = body.slice(separator + 1);
+    if (separator > 0 && separator < value.length - 1) {
+      const qualifier = value.slice(separator + 1);
       if (!PROTOCOL_QUALIFIER.test(qualifier)) throw invalid("protocol qualifier is invalid");
       protocol2 = canonicalProtocol(qualifier);
       if (!protocol2) throw invalid("protocol qualifier is unsupported");
-      name = body.slice(0, separator);
+      name = value.slice(0, separator);
     }
-    if (name.length === 0 || name.trim() !== name || LINE_TERMINATOR.test(name)) {
+    if (name.length === 0 || mode === "exact" && name.trim() !== name || LINE_TERMINATOR.test(name)) {
       throw invalid("node name is empty or contains a line break");
     }
-    return freeze({ name, protocol: protocol2 });
+    return freeze(mode === "fuzzy" ? { mode, query: name, protocol: protocol2 } : { mode, name, protocol: protocol2 });
   }
   function metadata(node) {
     return node?._profile && typeof node._profile === "object" ? node._profile : {};
@@ -1991,22 +2004,39 @@ var V2BoxConfigBundle = (() => {
   function selectable(node) {
     return Boolean(node) && metadata(node).chained !== true;
   }
+  function normalizedLabel(value) {
+    return String(value ?? "").normalize("NFKC").replace(DISPLAY_MARK, "").replace(LABEL_SEPARATOR, " ").toLocaleLowerCase().replace(/\s+/gu, " ").trim();
+  }
+  function fuzzyMatches(node, query) {
+    const candidate = normalizedLabel(originalName(node));
+    const terms = normalizedLabel(query).split(" ").filter(Boolean);
+    return terms.length > 0 && terms.every((term) => candidate.includes(term));
+  }
+  function referenceMatches(node, reference) {
+    if (reference.protocol !== null && nodeProtocol(node) !== reference.protocol) return false;
+    return reference.mode === "fuzzy" ? fuzzyMatches(node, reference.query) : originalName(node) === reference.name;
+  }
+  function resolutionError(code, message) {
+    const error = new Error(message);
+    error.code = code;
+    return error;
+  }
   function resolveNodeReference({ target, allNodes = [], eligibleNodes = [], client } = {}) {
     const reference = parseNodeReference(target);
     const all = (Array.isArray(allNodes) ? allNodes : []).filter(selectable);
     const eligible = (Array.isArray(eligibleNodes) ? eligibleNodes : []).filter(selectable);
-    const matchingAll = all.filter((node) => originalName(node) === reference.name && (reference.protocol === null || nodeProtocol(node) === reference.protocol));
-    const matchingEligible = eligible.filter((node) => originalName(node) === reference.name && (reference.protocol === null || nodeProtocol(node) === reference.protocol));
+    const matchingAll = all.filter((node) => referenceMatches(node, reference));
+    const matchingEligible = eligible.filter((node) => referenceMatches(node, reference));
     if (client && matchingEligible.length === 0 && matchingAll.length > 0) {
       const supported = matchingAll.filter((node) => protocolSupportsClient(nodeProtocol(node), client));
       if (supported.length === 0) {
-        throw new Error("Node reference is incompatible with this client");
+        throw resolutionError("incompatible-node", "Node reference is incompatible with this client");
       }
     }
     if (matchingEligible.length === 1) return matchingEligible[0];
-    if (matchingEligible.length > 1) throw new Error("Node reference is ambiguous");
-    if (matchingAll.length > 0) throw new Error("Node reference is incompatible with this client");
-    throw new Error("Node reference is missing");
+    if (matchingEligible.length > 1) throw resolutionError("ambiguous-node", "Node reference is ambiguous");
+    if (matchingAll.length > 0) throw resolutionError("incompatible-node", "Node reference is incompatible with this client");
+    throw resolutionError("missing-node", "Node reference is missing");
   }
 
   // ../../shared/encoding/base64url.js
@@ -2044,7 +2074,7 @@ var V2BoxConfigBundle = (() => {
 
   // ../../shared/policies/business-targets.js
   var TARGET_KEYWORD = /^(FOLLOW|DIRECT)$/iu;
-  var NODE_TARGET = /^NODE:(.*)$/iu;
+  var NODE_TARGET = /^(NODE:|NODE~)(.*)$/iu;
   var BASE64URL = /^[A-Za-z0-9_-]+$/u;
   var LINE_TERMINATOR2 = /[\r\n\u2028\u2029]/u;
   function frozenTarget(id, label2, aliases, defaultTarget) {
@@ -2136,10 +2166,11 @@ var V2BoxConfigBundle = (() => {
     if (typeof value !== "string") throw new TypeError("target must be a string");
     if (TARGET_KEYWORD.test(value)) return value.toUpperCase();
     const node = NODE_TARGET.exec(value);
-    if (!node || node[1].trim().length === 0 || LINE_TERMINATOR2.test(node[1])) {
-      throw new TypeError("target must be FOLLOW, DIRECT, or NODE:<name>");
+    if (!node || node[2].trim().length === 0 || LINE_TERMINATOR2.test(node[2])) {
+      throw new TypeError("target must be FOLLOW, DIRECT, NODE:<name>, or NODE~<query>");
     }
-    return `NODE:${node[1]}`;
+    const prefix = node[1].toUpperCase();
+    return `${prefix}${prefix === "NODE:" ? node[2] : node[2].trim()}`;
   }
   function parseBusinessOverrides(encoded) {
     const values = decodePolicy(encoded);
@@ -2217,7 +2248,7 @@ var V2BoxConfigBundle = (() => {
   }
 
   // ../../shared/policies/private-policy.js
-  var CHANNEL_KEYS = /* @__PURE__ */ new Set(["revision", "defaults", "happ", "onexray", "clients", ...PRIVATE_POLICY_CLIENTS]);
+  var CHANNEL_KEYS = /* @__PURE__ */ new Set(["revision", "defaults", "clients", ...PRIVATE_POLICY_CLIENTS]);
   var DEFAULT_KEYS = /* @__PURE__ */ new Set(["targets", "dns", "adblockMode", "clientChain"]);
   var OVERRIDE_KEYS = DEFAULT_KEYS;
   var DNS_KEYS = /* @__PURE__ */ new Set(["chinaDns", "globalDns"]);
@@ -2279,15 +2310,16 @@ var V2BoxConfigBundle = (() => {
   }
   function normalizeUnifiedTarget(value) {
     if (typeof value !== "string" || LINE_TERMINATOR3.test(value)) {
-      throw invalid2("target must be FOLLOW, DIRECT, or NODE:<name>[|<protocol>]");
+      throw invalid2("target must be FOLLOW, DIRECT, NODE:<name>[|<protocol>], or NODE~<query>");
     }
     try {
       const canonical = canonicalUnifiedPolicyTarget(value);
-      if (!canonical.startsWith("NODE:")) return canonical;
+      if (!/^NODE[:~]/iu.test(canonical)) return canonical;
       const reference = parseNodeReference(canonical);
-      return `NODE:${reference.name}${reference.protocol ? `|${reference.protocol}` : ""}`;
+      const normalizedValue = reference.mode === "fuzzy" ? reference.query : reference.name;
+      return `${reference.mode === "fuzzy" ? "NODE~" : "NODE:"}${normalizedValue}${reference.protocol ? `|${reference.protocol}` : ""}`;
     } catch {
-      throw invalid2("target must be FOLLOW, DIRECT, or NODE:<name>[|<protocol>]");
+      throw invalid2("target must be FOLLOW, DIRECT, NODE:<name>[|<protocol>], or NODE~<query>");
     }
   }
   function normalizeTargetMap(value, { complete }) {
@@ -2383,9 +2415,6 @@ var V2BoxConfigBundle = (() => {
       const legacyClients = isRecord(record2.clients) ? record2.clients : {};
       const overrides = {};
       for (const [key, override] of Object.entries(legacyClients)) overrides[key] = normalizeOverride(override);
-      for (const key of ["happ", "onexray"]) {
-        if (Object.hasOwn(record2, key)) overrides[key] = normalizeOverride(record2[key]);
-      }
       for (const key of PRIVATE_POLICY_CLIENTS) {
         if (Object.hasOwn(record2, key)) overrides[key] = normalizeOverride(record2[key]);
       }
@@ -2554,7 +2583,7 @@ var V2BoxConfigBundle = (() => {
     for (const target of UNIFIED_POLICY_TARGETS) {
       const configured = values[target.id] ?? target.defaultTarget;
       const resolved = record(configured);
-      if (configured.startsWith("NODE:")) {
+      if (/^NODE[:~]/iu.test(configured)) {
         const node = resolveNodeReference({ target: configured, allNodes, eligibleNodes, client });
         const nodeId = node?._profile?.id ?? `node-${fixedNodes.length}`;
         resolved.resolved = node.name;
@@ -2643,6 +2672,19 @@ var V2BoxConfigBundle = (() => {
       supportsPolicyOverrides: false,
       adapterSchema: "singbox-v1",
       publicDirectory: "sing-box"
+    },
+    {
+      id: CLIENT.happ,
+      displayName: "HAPP",
+      state: "active",
+      platforms: ["macos", "iphone", "ipad"],
+      configFormat: "happ-json",
+      ruleFormat: "xray-geodata",
+      nodeValidator: "happ",
+      separatesProfile: false,
+      supportsPolicyOverrides: false,
+      adapterSchema: "happ-v1",
+      publicDirectory: "happ"
     },
     {
       id: CLIENT.v2box,

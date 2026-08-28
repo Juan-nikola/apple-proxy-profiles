@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 2,
+  "client": "happ",
+  "output": "audit",
+  "platform": "all",
+  "channel": "current",
+  "counts": {
+    "configs": 2,
+    "eligibleNodes": 2,
+    "fixedNodes": 0,
+    "warnings": 0
+  },
+  "targets": {},
+  "warnings": []
+}

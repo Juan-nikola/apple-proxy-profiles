@@ -36,7 +36,7 @@ test("buildArtifacts produces current-only artifacts with all active clients", a
     fetchSnapshotImpl: async () => lightweightFixtureSnapshots(),
   });
   assert.equal(result.diagnostics.defaultManifest.upstream.commit, upstream.commit);
-  assert.equal(Object.keys(result.diagnostics.defaultManifest.clients).length, 7);
+  assert.equal(Object.keys(result.diagnostics.defaultManifest.clients).length, 8);
   assert.ok(result.defaults.has("manifest.json"));
   assert.ok(result.defaults.has("audit/dashboard.json"));
   assert.ok(result.optionalPacks.has("adblock-full"));

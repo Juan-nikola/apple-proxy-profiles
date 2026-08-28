@@ -4,6 +4,7 @@ export const CLIENT = Object.freeze({
   shadowrocket: "shadowrocket",
   surge: "surge",
   singbox: "singbox",
+  happ: "happ",
   v2box: "v2box",
   clash: "clash",
 });
@@ -11,7 +12,7 @@ export const CLIENT = Object.freeze({
 export const PRIVATE_POLICY_CHANNELS = Object.freeze(["edge", "current", "previous"]);
 export const PRIVATE_POLICY_CLIENTS = Object.freeze([
   CLIENT.anywhere, CLIENT.egern, CLIENT.shadowrocket, CLIENT.surge,
-  CLIENT.singbox, CLIENT.v2box, CLIENT.clash,
+  CLIENT.singbox, CLIENT.happ, CLIENT.v2box, CLIENT.clash,
 ]);
 export const PRIVATE_POLICY_TARGET_IDS = Object.freeze([
   "ai",

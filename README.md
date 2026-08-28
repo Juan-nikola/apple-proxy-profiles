@@ -12,7 +12,7 @@
 
 ### 5 分钟上手
 
-#### 1. 在 Sub-Store 建立 8 个 collection
+#### 1. 在 Sub-Store 建立 9 个手动 collection
 
 创建以下 collection，并从你的来源中手动选择节点：
 
@@ -23,6 +23,7 @@ apple-proxy-anywhere
 apple-proxy-shadowrocket
 apple-proxy-surge
 apple-proxy-singbox
+apple-proxy-happ
 apple-proxy-v2box
 apple-proxy-clash
 ```
@@ -31,7 +32,7 @@ apple-proxy-clash
 
 ![手动选择 collection 的界面示意](docs/assets/substore-collections-guide.svg)
 
-图中绿色勾选框代表你在“手动选择的订阅”列表中实际勾选的来源。8 个 collection 都按这个方式配置；“标签”字段留空，保存后应看到“手动选择的订阅”，而不是“关联订阅标签”。
+图中绿色勾选框代表你在“手动选择的订阅”列表中实际勾选的来源。所有 collection 都按这个方式配置；“标签”字段留空，保存后应看到“手动选择的订阅”，而不是“关联订阅标签”。另外建立一个私密 File task 输出 `apple-proxy-policy` JSON，这个任务不放节点。
 
 #### 2. 创建 Surge Profile File task
 
@@ -62,7 +63,7 @@ channel=current
 
 ![创建远程 File task 的界面示意](docs/assets/substore-file-task-guide.svg)
 
-新版界面中选择“文件 → 远程”，把完整 generator URL 粘贴到“链接”框，再点击 Preview 和保存。仓库的 27 个 canonical task 已按同样字段组织；参数中的私密节点 URL 只填写在你自己的 Sub-Store，不要回填到 README 或 GitHub。
+新版界面中选择“文件 → 远程”，把完整 generator URL 粘贴到“链接”框，再点击 Preview 和保存。仓库的 30 个 canonical task 已按同样字段组织；参数中的私密节点 URL 只填写在你自己的 Sub-Store，不要回填到 README 或 GitHub。
 
 macOS 将 `platform` 改为 `macos`、`ipv6Mode` 改为 `ipv4-only`；iPad 使用 `platform=ipad`。旧版 Sub-Store 如果只有一个 URL 输入框，把参数放在 `#` 后并用 `&` 分隔，不能写成 `?output=config`。
 
@@ -77,19 +78,41 @@ macOS 将 `platform` 改为 `macos`、`ipv6Mode` 改为 `ipv4-only`；iPad 使�
 - 未命中前两层的目标进入默认代理；
 - 规则和节点凭据没有被发布到公开 Pages。
 
+#### 4. 设置统一业务节点（可选）
+
+在 `apple-proxy-policy` 的私密 JSON 文件中只写节点大致名称，不写凭据：
+
+```json
+{
+  "ai": "NODE~美国 家宽",
+  "github": "NODE~东京",
+  "youtube": "FOLLOW",
+  "apple": "DIRECT",
+  "final": "FOLLOW"
+}
+```
+
+`NODE~` 必须唯一命中；零个或多个候选都会拒绝生成，不会自动猜节点。Surge、sing-box、Egern、Shadowrocket、Clash、Anywhere 会把结果放在业务组默认位置，仍允许你在客户端内切换；HAPP 和 V2Box 会把结果写入生成后的 Xray 路由，修改后需要重新 Preview。
+
+![HAPP 导入与固定业务出口](docs/assets/happ-import-guide.svg)
+
+#### 5. 日常更新与回滚
+
+HAPP 首先打开 `current/happ/index.html` 扫码或点击链接安装 GeoData，再导入对应平台的私密 JSON。固定节点故障时仅 balancer 在运行时回退到 FOLLOW；若 policy 解析失败，生成器直接失败并保留上一份可用配置。
+
 ![统一路由顺序](docs/assets/routing-order.svg)
 
-#### 4. 日常更新
+#### 6. 日常更新
 
 Surge 中保留同一个 Profile URL，按客户端的更新按钮即可。公开规则更新不会改变你的 Sub-Store collection；节点变化只需要更新对应 collection 后再次 Preview。
 
-#### 5. 出错时回滚
+#### 7. 出错时回滚
 
 先在设备上切回本地旧 Profile，确认网络恢复；再回到同一个 Sub-Store task 修正不兼容节点并重新 Preview。不要临时改用未知脚本，也不要删除旧 Profile。
 
 ![更新失败时的回滚流程](docs/assets/rollback-flow.svg)
 
-## 七个 active 客户端
+## 八个 active 客户端
 
 | 推荐顺序 | 客户端 | 适合场景 |
 | --- | --- | --- |
@@ -99,9 +122,10 @@ Surge 中保留同一个 Profile URL，按客户端的更新按钮即可。公�
 | 4 | sing-box | 高级用户和跨平台 |
 | 5 | Clash Apple | Mihomo/Clash 生态 |
 | 6 | Anywhere | `.arrs` 规则和手动绑定 |
-| 7 | V2Box | Xray 兼容路线；使用共享 GeoData |
+| 7 | HAPP | macOS、iPhone、iPad，Xray JSON 固定业务出口 |
+| 8 | V2Box | Xray 兼容路线；使用共享 GeoData |
 
-HAPP、OneXray、v2rayN 已从源码、测试、发布物和注册表移除。V2Box 的 GeoData URL 保持为 `public/current/geodata/<region>/`，不会因为客户端收敛而断链。
+OneXray、v2rayN 保持移除。HAPP 的稳定 GeoData URL 为 `public/current/happ/geoip.dat` 和 `public/current/happ/geosite.dat`；V2Box 的 GeoData URL 继续保持 `public/current/geodata/<region>/`。
 
 ## 统一行为
 
@@ -114,7 +138,7 @@ HAPP、OneXray、v2rayN 已从源码、测试、发布物和注册表移除。V2
 
 ## Sub-Store 规模
 
-当前 canonical catalog 为 8 个 collection、27 个 File task：
+当前 canonical catalog 为 9 个手动 collection、30 个 File task：
 
 | 客户端 | 任务数 | 输出 |
 | --- | ---: | --- |
@@ -123,11 +147,12 @@ HAPP、OneXray、v2rayN 已从源码、测试、发布物和注册表移除。V2
 | Shadowrocket | 4 | 节点 + macOS/iPhone/iPad Profile |
 | Surge | 4 | 节点资源 + macOS/iPhone/iPad Profile |
 | sing-box | 4 | macOS/iPhone/iPad/Android Config |
+| HAPP | 3 | macOS/iPhone/iPad JSON Config |
 | V2Box | 3 | 节点 + iPhone/iPad Config |
 | Clash Apple | 5 | 节点 + 四个平台 Config |
 | Unified policy | 1 | schema v2 私密 policy |
 
-旧后台对象需要手动删除：collection `apple-proxy-happ`、`apple-proxy-onexray`、`apple-proxy-v2rayn`，以及对应的 13 个 `happ-*`、`onexray-*`、`v2rayn-*` File task。本地仓库不会再生成这些入口。
+后台只保留上述 9 个手动 collection 和 30 个 canonical task；删除旧的 OneXray/v2rayN 对象及其任务。不要在 Sub-Store 使用 `subscriptionTags` 自动识别，所有节点来源通过 collection 手动勾选。
 
 ## 维护与验证
 

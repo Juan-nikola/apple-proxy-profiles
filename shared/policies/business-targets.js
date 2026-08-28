@@ -2,7 +2,7 @@ import { decodeBase64Url } from "../encoding/base64url.js";
 import { parseStrictJson } from "../serialization/strict-json.js";
 
 const TARGET_KEYWORD = /^(FOLLOW|DIRECT)$/iu;
-const NODE_TARGET = /^NODE:(.*)$/iu;
+const NODE_TARGET = /^(NODE:|NODE~)(.*)$/iu;
 const BASE64URL = /^[A-Za-z0-9_-]+$/u;
 const LINE_TERMINATOR = /[\r\n\u2028\u2029]/u;
 
@@ -79,10 +79,11 @@ export function canonicalBusinessTarget(value) {
   if (typeof value !== "string") throw new TypeError("target must be a string");
   if (TARGET_KEYWORD.test(value)) return value.toUpperCase();
   const node = NODE_TARGET.exec(value);
-  if (!node || node[1].trim().length === 0 || LINE_TERMINATOR.test(node[1])) {
-    throw new TypeError("target must be FOLLOW, DIRECT, or NODE:<name>");
+  if (!node || node[2].trim().length === 0 || LINE_TERMINATOR.test(node[2])) {
+    throw new TypeError("target must be FOLLOW, DIRECT, NODE:<name>, or NODE~<query>");
   }
-  return `NODE:${node[1]}`;
+  const prefix = node[1].toUpperCase();
+  return `${prefix}${prefix === "NODE:" ? node[2] : node[2].trim()}`;
 }
 
 export function parseBusinessOverrides(encoded) {

@@ -1,4 +1,5 @@
 import { readFileSync } from "node:fs";
+import QRCode from "qrcode";
 
 import { buildAnywhereRuleSnapshot, canonicalJson } from "./render-anywhere-rules.js";
 import { renderEgernRuleSource } from "./render-egern-rules.js";
@@ -28,6 +29,9 @@ import { RULE_KIND } from "../../shared/rules/model.js";
 import { buildImportBatches, renderImportPage } from "../../clients/anywhere/src/build-import-page.js";
 import { ANYWHERE_LIGHTWEIGHT_MIGRATION } from "../../clients/anywhere/src/shard-rules.js";
 import { buildRegionGeoDataArtifacts } from "./render-region-geodata.js";
+import { renderHappGeodata } from "./render-happ-geodata.js";
+import { renderHappImportPage } from "../../clients/happ/src/build-import-page.js";
+import { renderHappRoutingDeepLink, renderHappRoutingProfile } from "../../clients/happ/src/render-routing-profile.js";
 import {
   activeClientIds,
   allClientIds,
@@ -82,6 +86,10 @@ const OPTIONAL_AWARE_GENERATOR_PATHS = new Set([
   "clash/scripts/substore-node-generator.js",
   "clash/scripts/clash-profile-generator.js",
   "clash/scripts/substore-profile-generator.js",
+  "happ/scripts/happ-config-generator.js",
+  "happ/scripts/substore-config-generator.js",
+  "happ/scripts/happ-routing-audit.js",
+  "happ/scripts/substore-routing-audit.js",
 ]);
 
 const V2BOX_SCRIPT_PATHS = Object.freeze([
@@ -94,9 +102,16 @@ const CLASH_SCRIPT_PATHS = Object.freeze([
   "clash/scripts/clash-profile-generator.js",
   "clash/scripts/substore-profile-generator.js",
 ]);
+const HAPP_SCRIPT_PATHS = Object.freeze([
+  "happ/scripts/happ-config-generator.js",
+  "happ/scripts/substore-config-generator.js",
+  "happ/scripts/happ-routing-audit.js",
+  "happ/scripts/substore-routing-audit.js",
+]);
 const NATIVE_POLICY_GENERATOR_PATHS = new Set([
   ...V2BOX_SCRIPT_PATHS,
   ...CLASH_SCRIPT_PATHS,
+  ...HAPP_SCRIPT_PATHS,
 ]);
 const REGION_GEO_DATA_REGIONS = Object.freeze(["cn", "global", "ru", "ir"]);
 
@@ -106,6 +121,22 @@ function v2boxPublicScripts() {
 
 function clashPublicScripts() {
   return nativePublicScripts("clash", CLASH_SCRIPT_PATHS);
+}
+
+function happPublicScripts() {
+  return nativePublicScripts("happ", HAPP_SCRIPT_PATHS);
+}
+
+function renderQrSvg(value) {
+  const qr = QRCode.create(value, { errorCorrectionLevel: "M" });
+  const size = qr.modules.size;
+  const cells = [];
+  for (let y = 0; y < size; y += 1) {
+    for (let x = 0; x < size; x += 1) {
+      if (qr.modules.data[y * size + x]) cells.push(`M${x},${y}h1v1h-1z`);
+    }
+  }
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${size} ${size}" role="img" aria-label="HAPP 导入二维码"><path fill="#000" d="${cells.join("")}"/></svg>`;
 }
 
 function nativePublicScripts(client, paths) {
@@ -666,6 +697,7 @@ export function buildClientArtifacts({
   const defaults = rendered.files;
   addFiles(defaults, v2boxPublicScripts());
   addFiles(defaults, clashPublicScripts());
+  addFiles(defaults, happPublicScripts());
   addFiles(defaults, sharedGeoData.files);
   let chinaIpAuditSha256 = null;
 
@@ -712,6 +744,31 @@ export function buildClientArtifacts({
 
   assertNoForbiddenDefaultReferences(defaults);
   const referencedBytes = enforcePublicationBudgets({ diagnostics: publicationDiagnostics, files: defaults });
+
+  const happGeoData = renderHappGeodata(compactedBaselineDefaults.ruleSets);
+  addFiles(defaults, happGeoData.files);
+  const happGeoManifestBase = {
+    schemaVersion: 2,
+    client: "happ",
+    generatedAt: upstream.committedAt,
+    geodata: happGeoData.counts,
+    files: fileRecords(happGeoData.files),
+  };
+  const happGeoManifest = Object.freeze({
+    ...happGeoManifestBase,
+    manifestHash: artifactSha256(canonicalJson(happGeoManifestBase)),
+  });
+  defaults.set("happ/manifest.json", canonicalJson(happGeoManifest));
+  const happProfile = renderHappRoutingProfile({
+    baseUrl: `https://juan-nikola.github.io/apple-proxy-profiles/${channel}`,
+    generatedAt: upstream.committedAt,
+  });
+  const happDeepLink = renderHappRoutingDeepLink(happProfile);
+  defaults.set("happ/index.html", renderHappImportPage({
+    profile: happProfile,
+    deepLink: happDeepLink,
+    qrSvg: renderQrSvg(happDeepLink),
+  }));
 
   const adblockFull = buildOptionalPack({
     packId: "adblock-full",

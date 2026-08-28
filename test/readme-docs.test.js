@@ -10,6 +10,7 @@ test("README quick-start guide links to maintained screenshot-style diagrams", a
     "docs/assets/substore-to-surge.svg",
     "docs/assets/routing-order.svg",
     "docs/assets/rollback-flow.svg",
+    "docs/assets/happ-import-guide.svg",
   ]) {
     assert.match(readme, new RegExp(asset.replaceAll("/", "\\/"), "u"), asset);
     await access(new URL(asset, root));
@@ -19,10 +20,10 @@ test("README quick-start guide links to maintained screenshot-style diagrams", a
   }
 });
 
-test("README tutorial keeps the seven-client and current-only contracts visible", async () => {
+test("README tutorial keeps the eight-client and current-only contracts visible", async () => {
   const readme = await readFile(new URL("README.md", root), "utf8");
-  assert.match(readme, /七个 active 客户端/u);
-  assert.match(readme, /8 个 collection、27 个 File task/u);
+  assert.match(readme, /八个 active 客户端/u);
+  assert.match(readme, /9 个手动 collection、30 个 File task/u);
   assert.match(readme, /current\/surge\/scripts\/surge-profile-generator\.js/u);
   assert.match(readme, /ChinaTLD -> ChinaIP -> 默认代理/u);
   assert.doesNotMatch(readme, /https?:\/\/[^\s`]+(?:api|token|uuid|password)=/iu);

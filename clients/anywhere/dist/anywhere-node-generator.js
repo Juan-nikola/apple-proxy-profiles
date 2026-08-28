@@ -52,6 +52,7 @@ var AnywhereNodeBundle = (() => {
     shadowrocket: "shadowrocket",
     surge: "surge",
     singbox: "singbox",
+    happ: "happ",
     v2box: "v2box",
     clash: "clash"
   });
@@ -62,6 +63,7 @@ var AnywhereNodeBundle = (() => {
     CLIENT.shadowrocket,
     CLIENT.surge,
     CLIENT.singbox,
+    CLIENT.happ,
     CLIENT.v2box,
     CLIENT.clash
   ]);
@@ -127,7 +129,7 @@ var AnywhereNodeBundle = (() => {
     });
   }
   var definitions = Object.freeze([
-    protocol(["ss", "shadowsocks"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.v2box, CLIENT.clash], {
+    protocol(["ss", "shadowsocks"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.happ, CLIENT.v2box, CLIENT.clash], {
       requiredFields: ["cipher", "password"]
     }),
     protocol(["ssr"], [CLIENT.shadowrocket, CLIENT.surge, CLIENT.clash], {
@@ -136,13 +138,13 @@ var AnywhereNodeBundle = (() => {
     protocol(["snell"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox, CLIENT.clash], {
       requiredFields: ["psk", "version"]
     }),
-    protocol(["vmess"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox, CLIENT.v2box, CLIENT.clash], {
+    protocol(["vmess"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox, CLIENT.happ, CLIENT.v2box, CLIENT.clash], {
       requiredFields: ["uuid"]
     }),
-    protocol(["vless"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.singbox, CLIENT.v2box, CLIENT.clash], {
+    protocol(["vless"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.singbox, CLIENT.happ, CLIENT.v2box, CLIENT.clash], {
       requiredFields: ["uuid"]
     }),
-    protocol(["trojan"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.v2box, CLIENT.clash], {
+    protocol(["trojan"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.happ, CLIENT.v2box, CLIENT.clash], {
       requiredFields: ["password"],
       tls: true
     }),
@@ -150,7 +152,7 @@ var AnywhereNodeBundle = (() => {
       requiredFields: ["password"],
       tls: true
     }),
-    protocol(["hysteria2", "hy2"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.v2box, CLIENT.clash], {
+    protocol(["hysteria2", "hy2"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.happ, CLIENT.v2box, CLIENT.clash], {
       requiredFields: ["password"],
       tls: true
     }),
@@ -1142,6 +1144,19 @@ var AnywhereNodeBundle = (() => {
       supportsPolicyOverrides: false,
       adapterSchema: "singbox-v1",
       publicDirectory: "sing-box"
+    },
+    {
+      id: CLIENT.happ,
+      displayName: "HAPP",
+      state: "active",
+      platforms: ["macos", "iphone", "ipad"],
+      configFormat: "happ-json",
+      ruleFormat: "xray-geodata",
+      nodeValidator: "happ",
+      separatesProfile: false,
+      supportsPolicyOverrides: false,
+      adapterSchema: "happ-v1",
+      publicDirectory: "happ"
     },
     {
       id: CLIENT.v2box,
