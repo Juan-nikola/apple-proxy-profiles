@@ -3252,6 +3252,7 @@ var V2rayNConfigBundle = (() => {
     ["PrivateTracker", "category-pt"],
     ["OverseasGame", "category-games-!cn"]
   ]);
+  var EXPLICIT_AI_DOMAINS = Object.freeze(["chatgpt.com", "chat.openai.com", "openai.com"]);
   function bytes(value, label2) {
     if (!(Buffer.isBuffer(value) || value instanceof Uint8Array)) throw new TypeError(`v2rayN GeoData ${label2} asset is missing or invalid`);
     return Buffer.from(value);
@@ -3352,6 +3353,13 @@ var V2rayNConfigBundle = (() => {
       ruleTag: `builtin-source-${sourceId}`
     }));
   }
+  function explicitAiRule(overrides, nodeTags, nodeTagsById, blockMode, policyResolution) {
+    return {
+      domain: EXPLICIT_AI_DOMAINS.map((domain) => `domain:${domain}`),
+      outboundTag: actionForSource("OpenAI", overrides, nodeTags, nodeTagsById, blockMode, policyResolution),
+      ruleTag: "explicit-ai-domains"
+    };
+  }
   function dns(options) {
     const queryStrategy = options.ipv6Mode === "ipv4-only" ? "UseIPv4" : "UseIP";
     const china = options.chinaDns === "system" ? "localhost" : options.chinaDns === "dnspod" ? "119.29.29.29" : "223.5.5.5";
@@ -3409,6 +3417,7 @@ var V2rayNConfigBundle = (() => {
         ruleTag: `critical-domestic-${suffix}`
       }))
     ];
+    rules.push(explicitAiRule(overrides, nodeTags, nodeTagsById, options.blockMode, policyResolution));
     if (!references.hasExternalAssets) rules.push(...builtinSourceRules(overrides, nodeTags, nodeTagsById, options.blockMode, policyResolution), { domain: ["geosite:geolocation-!cn"], outboundTag: "proxy", ruleTag: "builtin-overseas-proxy" });
     const sourceRules = references.sources.map((source) => ({ source, outboundTag: actionForSource(source.id, overrides, nodeTags, nodeTagsById, options.blockMode, policyResolution) }));
     const rank = (item) => ["Hijacking", "BlockHttpDNS", "Privacy"].includes(item.source.id) ? 0 : policyForRuleSource(item.source.id) ? 1 : 2;
