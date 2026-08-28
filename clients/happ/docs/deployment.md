@@ -16,14 +16,21 @@
 
 当前兼容基线是 HAPP `4.0.5`/`5.6.0` 系列与 Xray `26.7.28`。JSON 配置由 Xray JSON 自己负责 DNS、路由和固定节点；HAPP Profile 只负责 GeoData 与 Tunnel DNS。HAPP 路由开关对 JSON 订阅会被锁定，这是客户端的正常限制，不是路由关闭。
 
-`macos`、`iphone`、`ipad` 三个平台的真实 File 响应都会自动附带同一格式的 `routing: happ://routing/onadd/<base64>`，由 HAPP 把 Profile 绑定到当前 JSON 订阅。
+`macos`、`iphone`、`ipad` 三个平台的真实 File 响应都会自动附带同一格式的 `routing: happ://routing/onadd/<base64>`，并发送 `routing-enable: 1`。前者负责把 Profile 绑定到当前 JSON 订阅并在 GeoData 下载完成后激活，后者明确保持订阅级路由为开启状态。
+
+> 重要：请在 HAPP 中添加 **订阅 URL**，不要先在浏览器下载 JSON 再使用“从文件导入节点”。下载到本地的文件不会保留 HTTP 响应头，所以 HAPP 无法从它自动绑定路由 Profile；旧版 HAPP 还可能把 JSON 数组当作单个配置而提示“无法解析配置”。
 
 按下面顺序操作：
 
 1. 在 Sub-Store Preview 对应平台任务，确认输出是非空 JSON 数组；Preview 不会显示真实 HTTP 响应头，这是正常现象。
-2. 在 HAPP 删除旧订阅条目和旧绑定 Profile，再导入同一平台的私密 File URL；不要跨平台混用 JSON，也不要手动复制公共 Profile。
-3. HAPP 实际请求 File URL 时会收到 `routing` 响应头，并下载同一 `current` channel 的 `geoip.dat`、`geosite.dat`。连接前等待两份 GeoData 下载完成。
-4. 连接后检查固定节点、国内外业务、局域网和 DNS；若仍出现 `geosite`/`geoip` 分类不存在、`NEAgentErrorDomain` 或 VPN 无效果，说明客户端仍在使用旧缓存，删除旧订阅后重新导入，不要只点击旧条目的 Refresh。
+2. 复制真实的 **File URL**（不是 Preview 下载文件，也不是 `/subs?api=...` 管理页面 URL）。在 HAPP 的“添加订阅/URL”入口粘贴该 URL。
+3. HAPP 删除旧订阅条目后重新请求 URL，会收到 `routing` 和 `routing-enable` 响应头，并下载同一 `current` channel 的 `geoip.dat`、`geosite.dat`。连接前等待两份 GeoData 下载完成。
+4. 进入该订阅的设置页，JSON 订阅的路由开关显示为锁定是正常的；它由提供商配置控制，不能手动复制或编辑 Profile。重新连接后检查固定节点、国内外业务、局域网和 DNS。
+5. 若仍出现“无法解析配置”、`geosite`/`geoip` 分类不存在、`NEAgentErrorDomain` 或 VPN 无效果，先删除旧订阅和旧 Profile，再重新导入同一平台 File URL，不要只点击旧条目的 Refresh。
+
+#### 本地文件导入的边界
+
+本项目输出的是“多配置 JSON 数组”，用于 HAPP 订阅页的节点选择。当前 HAPP 版本对本地文件导入的兼容性不一致，而且本地文件不可能携带 `routing` HTTP 头；因此本地文件导入不能保证自动安装或启用路由。需要离线传输时，只能先通过公开安装页手动安装 GeoData，再在 HAPP 中单独导入路由深链，最后手动导入一个 JSON 配置对象；这不属于推荐的自动更新流程。
 
 普通节点列表仍可使用公开安装页导入 Profile。JSON 订阅不要手动复制 routing.happ.su 的 Profile，也不要先绑定一个公共 Profile 再导入 JSON；Restricted Mode 下 Profile 必须由 JSON 订阅响应携带并自动绑定。
 

@@ -29,7 +29,7 @@ current/happ/scripts/happ-config-generator.js
 
 ```json
 {
-  "ai": "NODE~美国 家宽",
+  "ai": "NODE~美国 家宽|vless",
   "github": "NODE~东京",
   "youtube": "FOLLOW",
   "apple": "DIRECT",
@@ -37,7 +37,7 @@ current/happ/scripts/happ-config-generator.js
 }
 ```
 
-不填写 `subscriptionTags`。查询词经过 Unicode 规范化后必须唯一命中同一节点；缺失、多候选或协议不兼容都会阻止生成。Surge、sing-box、Egern、Shadowrocket、Clash、Anywhere 保留客户端内切换；HAPP/V2Box 需要重新生成后才改变业务出口。
+不填写 `subscriptionTags`。查询词经过 Unicode 规范化后必须唯一命中同一节点；缺失、多候选或协议不兼容都会阻止生成。节点展示名的旗帜、协议和 `·U` UDP 标记由生成器自动追加，不要把这些后缀复制进查询词；同名节点按协议区分时使用 `NODE~查询词|vless`。Surge、sing-box、Egern、Shadowrocket、Clash、Anywhere 保留客户端内切换；HAPP/V2Box 需要重新生成后才改变业务出口。
 
 ## 迁移
 

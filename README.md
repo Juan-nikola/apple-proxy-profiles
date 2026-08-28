@@ -84,7 +84,7 @@ macOS 将 `platform` 改为 `macos`、`ipv6Mode` 改为 `ipv4-only`；iPad 使�
 
 ```json
 {
-  "ai": "NODE~美国 家宽",
+  "ai": "NODE~美国 家宽|vless",
   "github": "NODE~东京",
   "youtube": "FOLLOW",
   "apple": "DIRECT",
@@ -92,21 +92,34 @@ macOS 将 `platform` 改为 `macos`、`ipv6Mode` 改为 `ipv4-only`；iPad 使�
 }
 ```
 
-`NODE~` 必须唯一命中；零个或多个候选都会拒绝生成，不会自动猜节点。Surge、sing-box、Egern、Shadowrocket、Clash、Anywhere 会把结果放在业务组默认位置，仍允许你在客户端内切换；HAPP 和 V2Box 会把结果写入生成后的 Xray 路由，修改后需要重新 Preview。
+`NODE~` 必须唯一命中；零个或多个候选都会拒绝生成，不会自动猜节点。节点显示名中的地区旗帜、协议（例如 `· VLESS`）和 UDP 能力（例如 `·U`）由生成器自动追加，策略匹配的是原始节点名。节点原始名称相同但协议不同的时候，在查询词后加 `|协议`，例如 `NODE~qqpw家宽|vless`；协议限定大小写不敏感，但必须是项目支持的协议。Surge、sing-box、Egern、Shadowrocket、Clash、Anywhere 会把结果放在业务组默认位置，仍允许你在客户端内切换；HAPP 和 V2Box 会把结果写入生成后的 Xray 路由，修改后需要重新 Preview。
+
+#### 5. HAPP 导入顺序（避免“无法解析配置”）
+
+HAPP 必须通过真实订阅 URL 获取 JSON 数组和响应头。不要点击 Sub-Store 的 Preview 下载 JSON，再走“文件导入节点”；本地文件没有 `routing` 响应头，部分 HAPP 版本也不接受数组文件。
 
 ![HAPP 导入与固定业务出口](docs/assets/happ-import-guide.svg)
 
-#### 5. 日常更新与回滚
+正确顺序：
 
-HAPP 首先打开 `current/happ/index.html` 扫码或点击链接安装 GeoData，再导入对应平台的私密 JSON。固定节点故障时仅 balancer 在运行时回退到 FOLLOW；若 policy 解析失败，生成器直接失败并保留上一份可用配置。
+1. 打开 `current/happ/index.html`，扫码或点击链接安装 GeoData。
+2. 在 Sub-Store 复制对应平台的私密 **File URL**。
+3. 在 HAPP 的“添加订阅/URL”中粘贴 URL，等待 `routing` Profile 和 GeoData 完成。
+4. 重新连接。JSON 订阅设置里的路由开关显示锁定是正常的，路由由 JSON 和订阅响应头共同控制。
+
+生成器会同时发送 `routing: happ://routing/onadd/...` 和 `routing-enable: 1`：前者绑定并自动激活 Profile，后者明确保持路由开启。若使用本地文件，只能作为离线兜底，不能保证自动绑定或自动启用。
+
+#### 6. 日常更新与回滚
+
+HAPP 首先打开 `current/happ/index.html` 扫码或点击链接安装 GeoData，再通过 HAPP 的“添加订阅/URL”导入对应平台的私密 File URL。固定节点故障时仅 balancer 在运行时回退到 FOLLOW；若 policy 解析失败，生成器直接失败并保留上一份可用配置。
 
 ![统一路由顺序](docs/assets/routing-order.svg)
 
-#### 6. 日常更新
+#### 7. 日常更新
 
 Surge 中保留同一个 Profile URL，按客户端的更新按钮即可。公开规则更新不会改变你的 Sub-Store collection；节点变化只需要更新对应 collection 后再次 Preview。
 
-#### 7. 出错时回滚
+#### 8. 出错时回滚
 
 先在设备上切回本地旧 Profile，确认网络恢复；再回到同一个 Sub-Store task 修正不兼容节点并重新 Preview。不要临时改用未知脚本，也不要删除旧 Profile。
 
