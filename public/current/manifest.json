@@ -16,6 +16,11 @@
       "publicDirectory": "egern",
       "state": "active"
     },
+    "happ": {
+      "adapterSchema": "happ-v1",
+      "publicDirectory": "happ",
+      "state": "active"
+    },
     "shadowrocket": {
       "adapterSchema": "shadowrocket-v1",
       "publicDirectory": "shadowrocket",
@@ -51,7 +56,7 @@
       "referencedDefaultBytes": 7557168
     },
     "happ": {
-      "manifestHash": "6eb4fe3dc67417d4a35124642cf57bb59d5a1631280cfd2d19a14c1e8aa54f63",
+      "manifestHash": "f70d271f66e69f7ea52cdcb1c4b2995bb94cff6ae2a35b149a91b1e8d691aeed",
       "referencedDefaultBytes": 0
     },
     "shadowrocket": {
@@ -391,14 +396,14 @@
       "sha256": "bd8b22453da86ce18f8a0aa819838448b36411ff5446463b6bfe7e155867343d"
     },
     {
-      "bytes": 1886,
+      "bytes": 2036,
       "path": "audit/dashboard.html",
-      "sha256": "ae57b02cd001c065f574bdf0aa51b3188289f04a0d8f095c1c0397d2e2125391"
+      "sha256": "379e36e0fd80aa3e302ef64fb7b0d81e2ccb3b2c60f1f9de5857bef88d83594c"
     },
     {
-      "bytes": 4119,
+      "bytes": 4526,
       "path": "audit/dashboard.json",
-      "sha256": "0749ea6b6de33458eb777d8fd58ef1f0169b4fa7b06b33bb9690e3bab4d55235"
+      "sha256": "b913dc652d1248179e2a10866dbfcb61f4f6811bcd5a9ee4174468264c9ed2cf"
     },
     {
       "bytes": 5184,
@@ -876,19 +881,34 @@
       "sha256": "d9e8a20c40a9797de411b564aeb551c76d9d1de084b3717918078ec675373901"
     },
     {
-      "bytes": 1496,
+      "bytes": 2125,
       "path": "happ/client-manifest.json",
-      "sha256": "0caea6c4ed3260795ea4f2ec5ffe57386e2e18f33eb6c376e83148b8b66f725c"
+      "sha256": "f67e89711d05ae092ce6b725ae56570a11682f0da1a5ee60bb50a6592a78a211"
     },
     {
-      "bytes": 181739,
+      "bytes": 19926,
+      "path": "happ/examples/happ-config-ipad.json",
+      "sha256": "4f0e64a2b13a00a2ec5fc9c4470ebc25aa79e66a1d4e7ee41378ce6bfbebe3e1"
+    },
+    {
+      "bytes": 19930,
+      "path": "happ/examples/happ-config-iphone.json",
+      "sha256": "dea773bfd59b43ebe0ea63120b6a9d60bb9ef1f1c86f00fbb482324baa232733"
+    },
+    {
+      "bytes": 19928,
+      "path": "happ/examples/happ-config-macos.json",
+      "sha256": "47522b68a00154667f3217866b90c6f7253685cb53152cff2554209113cd8372"
+    },
+    {
+      "bytes": 181481,
       "path": "happ/geoip.dat",
-      "sha256": "1dd82acafad5ed5999997edc31d2a2f76eae28c2be0d7350ead248d55938ecb9"
+      "sha256": "9a4538534cd8610075775ca6b148c117173d37c554b005adcee81f5a79457275"
     },
     {
-      "bytes": 6933888,
+      "bytes": 74218,
       "path": "happ/geosite.dat",
-      "sha256": "4100ca5a34935a903c45f630b92a9e689d2f21c6ae24ba4cd88bcccec5d7b34e"
+      "sha256": "33de8c00cc3affbaf59be30b865e9d163fc2dae0a3c51555834437bd9454eadd"
     },
     {
       "bytes": 216194,
@@ -896,9 +916,9 @@
       "sha256": "930296292bb830bb22fb5247d42f14f6975532a437e708bd47b09c4432dc53df"
     },
     {
-      "bytes": 592,
+      "bytes": 588,
       "path": "happ/manifest.json",
-      "sha256": "ecdb35ab3003bf6b3d90f6499b8cd6dd858460b9e96546b4a5a421e8e849d5c2"
+      "sha256": "3d45256d794ee5ddfabb593669a92e3ba6e865d80fa25f33da7c5c4afdede16c"
     },
     {
       "bytes": 167285,
@@ -1627,7 +1647,7 @@
     }
   ],
   "generatedAt": "2026-08-25T18:39:12Z",
-  "manifestHash": "4918cdba1a156c01e276047bf370a8bcf173e96fdd60e4ff7ea1a7b9fd97015e",
+  "manifestHash": "295ddd506f832b1ca22c7751dea38e62b996faa0d4ba1bbbd9b11a04d2a973e5",
   "schemaVersion": 2,
   "upstream": {
     "branch": "master",
