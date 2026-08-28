@@ -398,12 +398,12 @@
     {
       "bytes": 2036,
       "path": "audit/dashboard.html",
-      "sha256": "87254871f8e300dc5f56eaadc71de8342fd6394d40343eb23186df6ba387ddc6"
+      "sha256": "7af0ac38f53bdd76f1209c6bdf80dfd9d72a805c7ea53fc417a50bf867c076b3"
     },
     {
       "bytes": 4526,
       "path": "audit/dashboard.json",
-      "sha256": "8f3c8e4aaf1f97200b44a872f9283649260aa51de638356ec23f9ae9581ee808"
+      "sha256": "e971de08aaa5fa646bbc685d87af5b2405f1e37c063c9c2be48a273032e71ac6"
     },
     {
       "bytes": 5184,
@@ -883,7 +883,7 @@
     {
       "bytes": 2125,
       "path": "happ/client-manifest.json",
-      "sha256": "66c22d20e6f2c1dfa98c22951da7076e6c415de32337a176d2dbae71d7621bc2"
+      "sha256": "dfab3e326acf222e35df15acb941b84c30b22f06bb7c5bacd4d10afa4b43b5f9"
     },
     {
       "bytes": 19926,
@@ -1647,7 +1647,7 @@
     }
   ],
   "generatedAt": "2026-08-25T18:39:12Z",
-  "manifestHash": "9e2e63ac686955300f529d305d5115a74f5788b096c53c6e9d4d6b71957ed907",
+  "manifestHash": "a09b9ee8d6a3322407201636eb9d5666e73cf481c8eaf6ab5c7fa51fd0305764",
   "schemaVersion": 2,
   "upstream": {
     "branch": "master",
