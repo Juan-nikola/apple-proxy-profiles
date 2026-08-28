@@ -46,6 +46,32 @@ test("all approved protocols render Xray outbounds without raw names in tags", (
   }
 });
 
+test("Happ preserves Reality when the source uses tls plus reality-opts", () => {
+  const out = renderHappOutbound(node("vless", {
+    uuid: "TEST_ONLY_UUID",
+    network: "tcp",
+    tls: true,
+    sni: "www.example.com",
+    "client-fingerprint": "chrome",
+    "reality-opts": { "public-key": "TEST_ONLY_REALITY_KEY", "short-id": "0123abcd" },
+  }), "happ-follow/reality");
+  assert.equal(out.streamSettings.security, "reality");
+  assert.equal(out.streamSettings.realitySettings.publicKey, "TEST_ONLY_REALITY_KEY");
+  assert.equal(out.streamSettings.realitySettings.serverName, "www.example.com");
+  assert.equal(out.streamSettings.realitySettings.fingerprint, "chrome");
+});
+
+test("Happ treats VMess security cipher separately from transport TLS", () => {
+  const out = renderHappOutbound(node("vmess", {
+    uuid: "TEST_ONLY_UUID",
+    security: "auto",
+    tls: true,
+    sni: "www.example.com",
+  }), "happ-follow/vmess-tls");
+  assert.equal(out.streamSettings.security, "tls");
+  assert.equal(out.streamSettings.tlsSettings.serverName, "www.example.com");
+});
+
 test("platform, DNS and routing preserve shared semantics", () => {
   const inbounds = renderHappInbounds("macos");
   assert.equal(inbounds.length, 2);

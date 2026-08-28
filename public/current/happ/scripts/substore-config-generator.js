@@ -2609,6 +2609,7 @@ var HappConfigBundle = (() => {
 
   // src/render-node.js
   var SUPPORTED = /* @__PURE__ */ new Set(["vless", "vmess", "trojan", "ss", "shadowsocks", "socks5", "hysteria2", "hy2"]);
+  var VMESS_CIPHER_SECURITY = /* @__PURE__ */ new Set(["auto", "aes-128-gcm", "chacha20-poly1305", "none", "zero"]);
   var TRANSPORTS = /* @__PURE__ */ new Set(["tcp", "raw", "ws", "grpc", "h2", "http2"]);
   var has = (o, k) => Object.hasOwn(o, k);
   var first = (o, keys) => keys.find((k) => has(o, k)) === void 0 ? void 0 : o[keys.find((k) => has(o, k))];
@@ -2622,22 +2623,33 @@ var HappConfigBundle = (() => {
     return n;
   };
   function tlsSettings(node) {
-    const security = String(node.security ?? (node.tls ? "tls" : "none")).toLowerCase();
+    const reality = node["reality-opts"] ?? node.reality;
+    const vmessCipher = String(node.type ?? "").toLowerCase() === "vmess" && typeof node.security === "string" && VMESS_CIPHER_SECURITY.has(node.security.toLowerCase());
+    const explicitSecurity = vmessCipher ? void 0 : node.security;
+    const security = reality ? "reality" : String(explicitSecurity ?? (node.tls ? "tls" : "none")).toLowerCase();
     if (security === "none") return void 0;
     if (security !== "tls" && security !== "reality") throw new Error("Unsupported Happ TLS security");
-    const settings = {};
     const serverName = first(node, ["sni", "servername"]);
+    if (security === "reality") {
+      const realitySettings = reality ?? {};
+      const publicKey = realitySettings["public-key"] ?? realitySettings.publicKey;
+      if (!publicKey) throw new Error("Happ REALITY public key is required");
+      return {
+        realitySettings: {
+          serverName: serverName === void 0 ? "" : required2(serverName, "SNI"),
+          fingerprint: node["client-fingerprint"] ?? node.fingerprint ?? "chrome",
+          publicKey,
+          ...realitySettings["short-id"] || realitySettings.shortId ? { shortId: realitySettings["short-id"] ?? realitySettings.shortId } : {},
+          ...realitySettings["spider-x"] || realitySettings.spiderX || realitySettings["_spider-x"] ? { spiderX: realitySettings["spider-x"] ?? realitySettings.spiderX ?? realitySettings["_spider-x"] } : {}
+        }
+      };
+    }
+    const settings = {};
     if (serverName !== void 0) settings.serverName = required2(serverName, "SNI");
     if (node["skip-cert-verify"] !== void 0) settings.allowInsecure = node["skip-cert-verify"] === true;
     else if (node["allow-insecure"] !== void 0) settings.allowInsecure = node["allow-insecure"] === true;
     if (node.alpn !== void 0) settings.alpn = Array.isArray(node.alpn) ? [...node.alpn] : [node.alpn];
     if (node["client-fingerprint"] !== void 0 || node.fingerprint !== void 0) settings.fingerprint = node["client-fingerprint"] ?? node.fingerprint;
-    if (security === "reality") {
-      const reality = node["reality-opts"] ?? node.reality ?? {};
-      const publicKey = reality["public-key"] ?? reality.publicKey;
-      if (!publicKey) throw new Error("Happ REALITY public key is required");
-      settings.realitySettings = { publicKey, ...reality["short-id"] || reality.shortId ? { shortId: reality["short-id"] ?? reality.shortId } : {}, ...reality["spider-x"] || reality.spiderX || reality["_spider-x"] ? { spiderX: reality["spider-x"] ?? reality.spiderX ?? reality["_spider-x"] } : {} };
-    }
     return settings;
   }
   function streamSettings(node) {
