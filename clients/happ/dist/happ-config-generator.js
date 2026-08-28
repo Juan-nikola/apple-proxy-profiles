@@ -3254,7 +3254,7 @@ var HappConfigBundle = (() => {
     const dnsTarget = resolution?.targets?.dnsAndRules;
     const dnsFixed = dnsTarget?.nodeId ? fixedById.get(dnsTarget.nodeId) : null;
     const globalDnsOutbound = dnsTarget?.resolved === "DIRECT" ? "happ-direct" : dnsFixed?.candidateTag ?? followTag;
-    rules.splice(2, 0, ...renderHappDnsRoutes({ followTag, globalOutboundTag: globalDnsOutbound, platform: options.platform }));
+    rules.push(...renderHappDnsRoutes({ followTag, globalOutboundTag: globalDnsOutbound, platform: options.platform }));
     const finalTarget = targetFor("__final__", resolution, followTag, fixedById);
     rules.push({ type: "field", network: "tcp,udp", ...finalTarget });
     const routing = { domainStrategy: "IPIfNonMatch", rules };

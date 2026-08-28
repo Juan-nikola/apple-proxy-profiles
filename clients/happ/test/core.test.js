@@ -112,6 +112,25 @@ test("fixed-node balancer is nested under Xray routing", () => {
   assert.equal(validateHappSubscription(configs), true);
 });
 
+test("specific business routing wins over the generic proxy DNS route", () => {
+  const fixed = node("vless", { name: "🌐 qqpw家宽 · VLESS", uuid: "TEST_ONLY_QQPW_UUID", _profile: { id: "qqpw" } });
+  const follow = node("vless", { name: "🇭🇰 香港 · VLESS", uuid: "TEST_ONLY_HK_UUID", _profile: { id: "hong-kong" } });
+  const policy = parsePrivatePolicy(JSON.stringify({ schemaVersion: 2, targets: { ai: "NODE~qqpw家宽|vless" } }));
+  const policyResolution = resolveUnifiedPolicy({
+    policy,
+    channel: "current",
+    client: "happ",
+    allNodes: [fixed, follow],
+    eligibleNodes: [fixed, follow],
+  });
+  const options = parseHappOptions(base);
+  const config = renderHappSubscription({ nodes: [follow], options, policyResolution })[0];
+  const matching = config.routing.rules.filter((rule) => rule.domain?.includes("geosite:OPENAI"));
+  assert.ok(matching.length >= 2);
+  assert.equal(matching[0].balancerTag, config.routing.balancers[0].tag);
+  assert.equal(matching[0].outboundTag, undefined);
+});
+
 test("Happ DNS uses one standard Xray label scheme on every supported platform", () => {
   for (const platform of ["macos", "iphone", "ipad"]) {
     const output = renderHappDns({ platform, dnsMode: "stable", chinaDns: "alidns", globalDns: "cloudflare", ipv6Mode: "auto" });

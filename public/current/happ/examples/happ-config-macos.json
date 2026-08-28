@@ -144,38 +144,6 @@
         {
           "type": "field",
           "domain": [
-            "geosite:CN",
-            "geosite:PRIVATE"
-          ],
-          "outboundTag": "happ-direct",
-          "server": "happ-dns"
-        },
-        {
-          "type": "field",
-          "domain": [
-            "geosite:OPENAI",
-            "geosite:CATEGORY-AI-!CN",
-            "geosite:GOOGLE-GEMINI",
-            "geosite:GITHUB-COPILOT",
-            "geosite:GITHUB",
-            "geosite:YOUTUBE",
-            "geosite:NETFLIX",
-            "geosite:DISNEY",
-            "geosite:SPOTIFY",
-            "geosite:CATEGORY-MEDIA",
-            "geosite:TELEGRAM",
-            "geosite:FACEBOOK",
-            "geosite:INSTAGRAM",
-            "geosite:TWITTER",
-            "geosite:TIKTOK",
-            "geosite:CATEGORY-GAMES-!CN"
-          ],
-          "outboundTag": "happ-follow/h-874324393",
-          "server": "happ-dns"
-        },
-        {
-          "type": "field",
-          "domain": [
             "geosite:CATEGORY-ADS-ALL"
           ],
           "outboundTag": "happ-block"
@@ -401,6 +369,38 @@
             "geoip:CN"
           ],
           "outboundTag": "happ-direct"
+        },
+        {
+          "type": "field",
+          "domain": [
+            "geosite:CN",
+            "geosite:PRIVATE"
+          ],
+          "outboundTag": "happ-direct",
+          "server": "happ-dns"
+        },
+        {
+          "type": "field",
+          "domain": [
+            "geosite:OPENAI",
+            "geosite:CATEGORY-AI-!CN",
+            "geosite:GOOGLE-GEMINI",
+            "geosite:GITHUB-COPILOT",
+            "geosite:GITHUB",
+            "geosite:YOUTUBE",
+            "geosite:NETFLIX",
+            "geosite:DISNEY",
+            "geosite:SPOTIFY",
+            "geosite:CATEGORY-MEDIA",
+            "geosite:TELEGRAM",
+            "geosite:FACEBOOK",
+            "geosite:INSTAGRAM",
+            "geosite:TWITTER",
+            "geosite:TIKTOK",
+            "geosite:CATEGORY-GAMES-!CN"
+          ],
+          "outboundTag": "happ-follow/h-874324393",
+          "server": "happ-dns"
         },
         {
           "type": "field",
@@ -550,38 +550,6 @@
         {
           "type": "field",
           "domain": [
-            "geosite:CN",
-            "geosite:PRIVATE"
-          ],
-          "outboundTag": "happ-direct",
-          "server": "happ-dns"
-        },
-        {
-          "type": "field",
-          "domain": [
-            "geosite:OPENAI",
-            "geosite:CATEGORY-AI-!CN",
-            "geosite:GOOGLE-GEMINI",
-            "geosite:GITHUB-COPILOT",
-            "geosite:GITHUB",
-            "geosite:YOUTUBE",
-            "geosite:NETFLIX",
-            "geosite:DISNEY",
-            "geosite:SPOTIFY",
-            "geosite:CATEGORY-MEDIA",
-            "geosite:TELEGRAM",
-            "geosite:FACEBOOK",
-            "geosite:INSTAGRAM",
-            "geosite:TWITTER",
-            "geosite:TIKTOK",
-            "geosite:CATEGORY-GAMES-!CN"
-          ],
-          "outboundTag": "happ-follow/h-628157912",
-          "server": "happ-dns"
-        },
-        {
-          "type": "field",
-          "domain": [
             "geosite:CATEGORY-ADS-ALL"
           ],
           "outboundTag": "happ-block"
@@ -807,6 +775,38 @@
             "geoip:CN"
           ],
           "outboundTag": "happ-direct"
+        },
+        {
+          "type": "field",
+          "domain": [
+            "geosite:CN",
+            "geosite:PRIVATE"
+          ],
+          "outboundTag": "happ-direct",
+          "server": "happ-dns"
+        },
+        {
+          "type": "field",
+          "domain": [
+            "geosite:OPENAI",
+            "geosite:CATEGORY-AI-!CN",
+            "geosite:GOOGLE-GEMINI",
+            "geosite:GITHUB-COPILOT",
+            "geosite:GITHUB",
+            "geosite:YOUTUBE",
+            "geosite:NETFLIX",
+            "geosite:DISNEY",
+            "geosite:SPOTIFY",
+            "geosite:CATEGORY-MEDIA",
+            "geosite:TELEGRAM",
+            "geosite:FACEBOOK",
+            "geosite:INSTAGRAM",
+            "geosite:TWITTER",
+            "geosite:TIKTOK",
+            "geosite:CATEGORY-GAMES-!CN"
+          ],
+          "outboundTag": "happ-follow/h-628157912",
+          "server": "happ-dns"
         },
         {
           "type": "field",
