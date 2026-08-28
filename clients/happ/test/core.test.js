@@ -72,6 +72,32 @@ test("Happ treats VMess security cipher separately from transport TLS", () => {
   assert.equal(out.streamSettings.tlsSettings.serverName, "www.example.com");
 });
 
+test("Happ preserves Xray transport-specific settings and normalizes HTTP/2", () => {
+  const cases = [
+    ["vless", { network: "ws", tls: true, sni: "example.test", "ws-opts": { path: "/ws", headers: { Host: "example.test" } } }, "ws", "wsSettings"],
+    ["vmess", { uuid: "TEST_ONLY_UUID", network: "grpc", tls: true, sni: "example.test", "grpc-opts": { "grpc-service-name": "svc" } }, "grpc", "grpcSettings"],
+    ["trojan", { password: "TEST_ONLY_PASSWORD", network: "h2", tls: true, sni: "example.test", "h2-opts": { path: "/h2", host: ["example.test"] } }, "http", "httpSettings"],
+    ["vless", { network: "http2", tls: true, sni: "example.test", "http-opts": { path: "/http2", host: "example.test" } }, "http", "httpSettings"],
+    ["vless", { network: "httpupgrade", tls: true, sni: "example.test", "httpupgrade-opts": { path: "/upgrade", host: "example.test" } }, "httpupgrade", "httpupgradeSettings"],
+    ["vmess", { uuid: "TEST_ONLY_UUID", network: "xhttp", tls: true, sni: "example.test", "xhttp-opts": { path: "/xhttp", mode: "stream-up" } }, "xhttp", "xhttpSettings"],
+    ["vless", { network: "kcp", tls: false, "kcp-opts": { mtu: 1350, tti: 50 } }, "kcp", "kcpSettings"],
+  ];
+  for (const [type, extra, expectedNetwork, settingsKey] of cases) {
+    const out = renderHappOutbound(node(type, { uuid: "TEST_ONLY_UUID", ...extra }), `happ-transport/${expectedNetwork}`);
+    assert.equal(out.streamSettings.network, expectedNetwork);
+    assert.ok(Object.hasOwn(out.streamSettings, settingsKey), `${type}/${expectedNetwork}`);
+    assert.equal(out.streamSettings.security, extra.tls ? "tls" : undefined);
+  }
+});
+
+test("Happ rejects contradictory TLS fields instead of silently downgrading", () => {
+  assert.throws(() => renderHappOutbound(node("vless", {
+    uuid: "TEST_ONLY_UUID",
+    tls: true,
+    security: "none",
+  }), "happ-transport/conflict"), /Unsupported Happ TLS security|contradictory/u);
+});
+
 test("platform, DNS and routing preserve shared semantics", () => {
   const inbounds = renderHappInbounds("macos");
   assert.equal(inbounds.length, 2);

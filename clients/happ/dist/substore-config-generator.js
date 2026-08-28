@@ -2610,7 +2610,7 @@ var HappConfigBundle = (() => {
   // src/render-node.js
   var SUPPORTED = /* @__PURE__ */ new Set(["vless", "vmess", "trojan", "ss", "shadowsocks", "socks5", "hysteria2", "hy2"]);
   var VMESS_CIPHER_SECURITY = /* @__PURE__ */ new Set(["auto", "aes-128-gcm", "chacha20-poly1305", "none", "zero"]);
-  var TRANSPORTS = /* @__PURE__ */ new Set(["tcp", "raw", "ws", "grpc", "h2", "http2"]);
+  var TRANSPORTS = /* @__PURE__ */ new Set(["tcp", "raw", "ws", "grpc", "h2", "http2", "http", "httpupgrade", "xhttp", "kcp", "mkcp"]);
   var has = (o, k) => Object.hasOwn(o, k);
   var first = (o, keys) => keys.find((k) => has(o, k)) === void 0 ? void 0 : o[keys.find((k) => has(o, k))];
   var required2 = (v, label) => {
@@ -2626,7 +2626,9 @@ var HappConfigBundle = (() => {
     const reality = node["reality-opts"] ?? node.reality;
     const vmessCipher = String(node.type ?? "").toLowerCase() === "vmess" && typeof node.security === "string" && VMESS_CIPHER_SECURITY.has(node.security.toLowerCase());
     const explicitSecurity = vmessCipher ? void 0 : node.security;
-    const security = reality ? "reality" : String(explicitSecurity ?? (node.tls ? "tls" : "none")).toLowerCase();
+    const normalizedExplicitSecurity = typeof explicitSecurity === "string" ? explicitSecurity.toLowerCase() : explicitSecurity;
+    const security = reality ? "reality" : String(normalizedExplicitSecurity ?? (node.tls ? "tls" : "none")).toLowerCase();
+    if (!vmessCipher && (normalizedExplicitSecurity === "none" && node.tls === true || node.tls === false && (security === "tls" || security === "reality"))) throw new Error("Happ node has contradictory TLS fields");
     if (security === "none") return void 0;
     if (security !== "tls" && security !== "reality") throw new Error("Unsupported Happ TLS security");
     const serverName = first(node, ["sni", "servername"]);
@@ -2655,7 +2657,7 @@ var HappConfigBundle = (() => {
   function streamSettings(node) {
     const network = String(node.network ?? node._network ?? "tcp").toLowerCase();
     if (!TRANSPORTS.has(network)) throw new Error(`Unsupported Happ transport '${network}'`);
-    const stream = { network: network === "raw" ? "tcp" : network };
+    const stream = { network: network === "raw" ? "tcp" : ["h2", "http2", "http"].includes(network) ? "http" : ["kcp", "mkcp"].includes(network) ? "kcp" : network };
     const tls = tlsSettings(node);
     if (tls) {
       if (tls.realitySettings) {
@@ -2673,9 +2675,17 @@ var HappConfigBundle = (() => {
     } else if (network === "grpc") {
       const opts = node["grpc-opts"] ?? {};
       stream.grpcSettings = { serviceName: opts["grpc-service-name"] ?? opts.serviceName ?? "", ...opts["grpc-mode"] || opts.mode ? { multiMode: (opts["grpc-mode"] ?? opts.mode) === "multi" } : {} };
-    } else if (network === "h2" || network === "http2") {
+    } else if (network === "h2" || network === "http2" || network === "http") {
       const opts = node["h2-opts"] ?? node["http-opts"] ?? {};
-      stream.httpSettings = { path: opts.path ?? "/", ...opts.host ? { host: Array.isArray(opts.host) ? opts.host : [opts.host] } : {} };
+      stream.httpSettings = { path: Array.isArray(opts.path) ? opts.path[0] ?? "/" : opts.path ?? "/", ...opts.host ? { host: Array.isArray(opts.host) ? opts.host : [opts.host] } : {} };
+    } else if (network === "httpupgrade") {
+      const opts = node["httpupgrade-opts"] ?? {};
+      stream.httpupgradeSettings = { path: opts.path ?? "/", ...opts.host ? { host: opts.host } : {} };
+    } else if (network === "xhttp") {
+      const opts = node["xhttp-opts"] ?? {};
+      stream.xhttpSettings = { path: opts.path ?? "/", ...opts.mode ? { mode: opts.mode } : {} };
+    } else if (network === "kcp" || network === "mkcp") {
+      stream.kcpSettings = { ...node["kcp-opts"] ?? {} };
     }
     return Object.keys(stream).length > 1 ? stream : void 0;
   }
