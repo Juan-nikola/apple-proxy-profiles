@@ -27,8 +27,7 @@ import {
 import { canonicalJson } from "./render-anywhere-rules.js";
 import { assertChannelClosure } from "../../shared/release/channel-closure.js";
 import { FRONTIER_CHANNELS } from "../../shared/release/frontier-manifest.js";
-import { renderOneXrayImportPage } from "../../clients/onexray/src/build-import-page.js";
-import { oneXrayGeoNames } from "../../clients/onexray/src/geodata-contract.js";
+import { xrayGeoNames } from "../../shared/xray-geodata-contract.js";
 import {
   activeClientIds,
   lightweightRuleClientIds,
@@ -134,24 +133,6 @@ async function writeSnapshot(directory, files) {
   }
 }
 
-const HAPP_ROUTING_DEEPLINK_RE = /happ:\/\/routing\/onadd\/([A-Za-z0-9+/]+={0,2})/gu;
-
-function rewriteHappRoutingDeepLinks(text, from, to) {
-  return text.replace(HAPP_ROUTING_DEEPLINK_RE, (match, encoded) => {
-    let profile;
-    try {
-      profile = JSON.parse(Buffer.from(encoded, "base64").toString("utf8"));
-    } catch {
-      return match;
-    }
-    if (!profile || typeof profile !== "object" || Array.isArray(profile)) return match;
-    const serialized = JSON.stringify(profile);
-    if (!serialized.includes(`/${from}/`)) return match;
-    const rewritten = serialized.replaceAll(`/${from}/`, `/${to}/`);
-    return `happ://routing/onadd/${Buffer.from(rewritten, "utf8").toString("base64")}`;
-  });
-}
-
 function rewritePublicationChannel(content, from, to, { rewriteGeoDataNames = true } = {}) {
   if (!(content instanceof Uint8Array)) return content;
   let text;
@@ -175,63 +156,10 @@ function rewritePublicationChannel(content, from, to, { rewriteGeoDataNames = tr
     .replaceAll(`"channel": "${from}"`, `"channel": "${to}"`);
   if (rewriteGeoDataNames) {
     rewritten = rewritten
-      .replaceAll(oneXrayGeoNames(from).domain, oneXrayGeoNames(to).domain)
-      .replaceAll(oneXrayGeoNames(from).ip, oneXrayGeoNames(to).ip);
+      .replaceAll(xrayGeoNames(from).domain, xrayGeoNames(to).domain)
+      .replaceAll(xrayGeoNames(from).ip, xrayGeoNames(to).ip);
   }
-  return Buffer.from(rewriteHappRoutingDeepLinks(rewritten, from, to), "utf8");
-}
-
-function parseOneXrayManifest(content) {
-  let manifest;
-  try {
-    manifest = JSON.parse(artifactBuffer(content).toString("utf8"));
-  } catch {
-    throw new Error("OneXray GeoData manifest is invalid JSON");
-  }
-  if (!manifest || typeof manifest !== "object" || Array.isArray(manifest)
-    || manifest.schema !== "apple-proxy-onexray-geodata-v1"
-    || !FRONTIER_CHANNELS.includes(manifest.channel)
-    || !Array.isArray(manifest.files) || manifest.files.length !== 2
-    || !/^[0-9a-f]{64}$/u.test(manifest.manifestHash ?? "")) {
-    throw new Error("OneXray GeoData manifest is invalid");
-  }
-  const { manifestHash, ...base } = manifest;
-  if (artifactSha256(canonicalJson(base)) !== manifestHash
-    || !artifactBuffer(content).equals(artifactBuffer(canonicalJson(manifest)))) {
-    throw new Error("OneXray GeoData manifest hash or canonical bytes are invalid");
-  }
-  return manifest;
-}
-
-function rebindOneXrayFiles(files, channel) {
-  const manifestPath = "onexray/geodata/manifest.json";
-  if (!files.has(manifestPath)) return files;
-  const source = parseOneXrayManifest(files.get(manifestPath));
-  if (source.channel === channel) return new Map(files);
-  const manifestBase = {
-    ...source,
-    channel,
-    releaseId: `${channel}-${source.upstream?.commit?.slice(0, 8) ?? "release"}`,
-    names: oneXrayGeoNames(channel),
-  };
-  delete manifestBase.manifestHash;
-  const manifest = Object.freeze({
-    ...manifestBase,
-    manifestHash: artifactSha256(canonicalJson(manifestBase)),
-  });
-  const dataFiles = new Map([
-    ["onexray/geodata/geosite.dat", artifactBuffer(files.get("onexray/geodata/geosite.dat"))],
-    ["onexray/geodata/geoip.dat", artifactBuffer(files.get("onexray/geodata/geoip.dat"))],
-  ]);
-  const page = renderOneXrayImportPage({
-    manifest,
-    files: dataFiles,
-    publicBase: "https://juan-nikola.github.io/apple-proxy-profiles",
-  });
-  const rebound = new Map(files);
-  rebound.set(manifestPath, Buffer.from(canonicalJson(manifest), "utf8"));
-  rebound.set("onexray/index.html", Buffer.from(page, "utf8"));
-  return rebound;
+  return Buffer.from(rewritten, "utf8");
 }
 
 async function rewriteTreeChannel(directory, from, to) {
@@ -239,14 +167,10 @@ async function rewriteTreeChannel(directory, from, to) {
   for (const relative of relatives) {
     const path = join(directory, relative);
     const content = await readFile(path);
-    const oneXrayManifest = relative === "onexray/geodata/manifest.json"
-      || relative.endsWith("/onexray/geodata/manifest.json");
-    await writeFile(path, oneXrayManifest
-      ? content
-      : rewritePublicationChannel(content, from, to));
+    await writeFile(path, rewritePublicationChannel(content, from, to));
   }
-  const fromGeoNames = oneXrayGeoNames(from);
-  const toGeoNames = oneXrayGeoNames(to);
+  const fromGeoNames = xrayGeoNames(from);
+  const toGeoNames = xrayGeoNames(to);
   for (const relative of relatives) {
     const match = /^(?:(?:geodata)\/)?(?:cn|global|ru|ir)\/(AppleProxy(?:Site|IP))(?:Edge|Current|Previous)\.dat$/u.exec(relative);
     if (!match || !relative.endsWith(`${fromGeoNames.domain}.dat`)
@@ -257,22 +181,6 @@ async function rewriteTreeChannel(directory, from, to) {
     if (relative === destination) continue;
     await rm(join(directory, destination), { force: true });
     await rename(join(directory, relative), join(directory, destination));
-  }
-  const manifestSuffix = "onexray/geodata/manifest.json";
-  for (const relativeManifest of relatives.filter((path) => path === manifestSuffix || path.endsWith(`/${manifestSuffix}`))) {
-    const prefix = relativeManifest === manifestSuffix
-      ? ""
-      : relativeManifest.slice(0, -manifestSuffix.length);
-    const scoped = new Map();
-    for (const relative of relatives) {
-      if (relative === `${prefix}onexray/geodata/manifest.json` || relative.startsWith(`${prefix}onexray/`)) {
-        scoped.set(relative.slice(prefix.length), await readFile(join(directory, relative)));
-      }
-    }
-    const rebound = rebindOneXrayFiles(scoped, to);
-    for (const [relative, content] of rebound) {
-      await writeFile(join(directory, `${prefix}${relative}`), artifactBuffer(content));
-    }
   }
   if (relatives.includes("manifest.json")) await refreshRootManifestHash(join(directory, "manifest.json"));
 }

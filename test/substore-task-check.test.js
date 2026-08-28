@@ -29,17 +29,11 @@ test("checker schema marks policy readers and excludes node subscriptions", () =
     "shadowrocket/scripts/shadowrocket-profile-generator.js",
     "surge/scripts/surge-profile-generator.js",
     "sing-box/scripts/sing-box-config-generator.js",
-    "onexray/scripts/onexray-profile-generator.js",
-    "onexray/scripts/onexray-routing-audit.js",
-    "happ/scripts/happ-config-generator.js",
-    "happ/scripts/happ-routing-audit.js",
-    "v2rayn/scripts/substore-config-generator.js",
     "v2box/scripts/substore-config-generator.js",
   ]) {
     assert.equal(getSubstoreTaskSchema(scriptPath).policyInput, "apple-proxy-policy", scriptPath);
   }
   assert.equal(getSubstoreTaskSchema("egern/scripts/egern-node-generator.js").policyInput, null);
-  assert.equal(getSubstoreTaskSchema("v2rayn/scripts/substore-node-generator.js").policyInput, null);
   for (const scriptPath of [
     "anywhere/scripts/anywhere-strategy-generator.js",
     "anywhere/scripts/substore-strategy-generator.js",
@@ -59,22 +53,6 @@ test("accepts the published Anywhere strategy task and rejects extra options", (
 });
 
 
-test("accepts the active HAPP and OneXray generators and rejects unsupported channels", () => {
-  const base = `${PUBLIC}/current/egern/scripts/egern-node-generator.js#output=nodes&type=collection&name=apple-proxy-egern&clientChain=off`;
-  assert.equal(checkSubstoreTaskUrl(base.replace("/current/", "/beta/")).ok, false);
-  assert.equal(checkSubstoreTaskUrl(`${base}&channel=edge`).ok, false);
-  const happ = `${PUBLIC}/current/happ/scripts/happ-config-generator.js#output=config&type=collection&name=apple-proxy-happ&subscriptionName=Apple-Proxy-Happ&platform=macos`;
-  assert.equal(checkSubstoreTaskUrl(happ).ok, true, checkSubstoreTaskUrl(happ).errors.join(", "));
-  assert.equal(checkSubstoreTaskUrl(`${happ}&channel=current`).ok, false);
-  assert.equal(checkSubstoreTaskUrl(`${happ}&channel=edge`).ok, false);
-  assert.equal(checkSubstoreTaskUrl(happ.replace("/current/", "/previous/")).ok, false);
-  const onexrayNodes = `${PUBLIC}/current/onexray/scripts/onexray-node-generator.js#output=nodes&type=collection&name=apple-proxy-onexray&clientChain=off&channel=current`;
-  assert.equal(checkSubstoreTaskUrl(onexrayNodes).ok, true, checkSubstoreTaskUrl(onexrayNodes).errors.join(", "));
-  const onexrayProfile = `${PUBLIC}/current/onexray/scripts/onexray-profile-generator.js#output=profile&type=collection&name=apple-proxy-onexray&channel=current&clientChain=off`;
-  assert.equal(checkSubstoreTaskUrl(onexrayProfile).ok, true, checkSubstoreTaskUrl(onexrayProfile).errors.join(", "));
-  const happAudit = `${PUBLIC}/current/happ/scripts/happ-routing-audit.js#output=audit&type=collection&name=apple-proxy-happ&subscriptionName=Apple-Proxy-Happ&platform=all`;
-  assert.equal(checkSubstoreTaskUrl(happAudit).ok, true, checkSubstoreTaskUrl(happAudit).errors.join(", "));
-});
 
 test("accepts a client-specific collection slug and rejects unsafe collection names", () => {
   const safe = `${PUBLIC}/current/egern/scripts/egern-node-generator.js#output=nodes&type=collection&name=apple-proxy-egern&clientChain=off`;
@@ -136,17 +114,11 @@ test("accepts valid sing-box output safety modes", () => {
   assert.equal(result.ok, true, result.errors.join(", "));
 });
 
-test("accepts v2rayN and V2Box task schemas and validates region/platform", () => {
-  const v2rayn = `${PUBLIC}/current/v2rayn/scripts/substore-config-generator.js#output=config&type=collection&name=apple-proxy-v2rayn&subscriptionName=Apple-Proxy-v2rayN&platform=windows&channel=current&region=cn&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&clientChain=off`;
+test("accepts V2Box task schemas and validates region/platform", () => {
   const v2box = `${PUBLIC}/current/v2box/scripts/substore-config-generator.js#output=config&type=collection&name=apple-proxy-v2box&subscriptionName=Apple-Proxy-V2Box&platform=ipad&channel=current&region=ru&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&clientChain=off`;
-  assert.equal(checkSubstoreTaskUrl(v2rayn).ok, true, checkSubstoreTaskUrl(v2rayn).errors.join(", "));
   assert.equal(checkSubstoreTaskUrl(v2box).ok, true, checkSubstoreTaskUrl(v2box).errors.join(", "));
   assert.equal(checkSubstoreTaskUrl(v2box.replace("region=ru", "region=moon")).ok, false);
-  assert.equal(checkSubstoreTaskUrl(v2rayn.replace("platform=windows", "platform=iphone")).ok, false);
-  assert.equal(checkSubstoreTaskUrl(v2rayn.replace("channel=current", "unknown=value&channel=current")).ok, false);
-  const v2raynNodes = `${PUBLIC}/current/v2rayn/scripts/substore-node-generator.js#output=nodes&type=collection&name=apple-proxy-v2rayn&clientChain=off&channel=current`;
   const v2boxNodes = `${PUBLIC}/current/v2box/scripts/substore-node-generator.js#output=nodes&type=collection&name=apple-proxy-v2box&clientChain=off&channel=current`;
-  assert.equal(checkSubstoreTaskUrl(v2raynNodes).ok, true, checkSubstoreTaskUrl(v2raynNodes).errors.join(", "));
   assert.equal(checkSubstoreTaskUrl(v2boxNodes).ok, true, checkSubstoreTaskUrl(v2boxNodes).errors.join(", "));
 });
 

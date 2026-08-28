@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="680" viewBox="0 0 1200 680" role="img" aria-labelledby="title desc">
+  <title id="title">Sub-Store 到 Surge 的配置流程</title>
+  <desc id="desc">三步截图式流程：建立 collection，创建 current 任务，在 Surge 导入 Profile。</desc>
+  <defs>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%"><feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#0f172a" flood-opacity=".12"/></filter>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#0f766e"/></marker>
+  </defs>
+  <rect width="1200" height="680" fill="#f8fafc"/>
+  <text x="60" y="66" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="30" font-weight="700" fill="#0f172a">新手上手：Sub-Store → Surge</text>
+  <text x="60" y="100" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="16" fill="#475569">公开脚本只负责规则和渲染，节点凭据始终留在你的 Sub-Store。</text>
+  <g filter="url(#shadow)">
+    <rect x="55" y="145" width="330" height="440" rx="12" fill="#ffffff"/>
+    <rect x="435" y="145" width="330" height="440" rx="12" fill="#ffffff"/>
+    <rect x="815" y="145" width="330" height="440" rx="12" fill="#ffffff"/>
+  </g>
+  <g font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">
+    <circle cx="92" cy="185" r="22" fill="#0f766e"/><text x="92" y="193" text-anchor="middle" font-size="18" font-weight="700" fill="#fff">1</text>
+    <text x="130" y="192" font-size="21" font-weight="700" fill="#0f172a">建立客户端池</text>
+    <text x="82" y="237" font-size="14" fill="#64748b">Sub-Store / Collections</text>
+    <rect x="82" y="258" width="276" height="42" rx="6" fill="#f1f5f9"/><text x="98" y="284" font-size="15" fill="#0f172a">apple-proxy-surge</text><rect x="296" y="270" width="46" height="18" rx="9" fill="#ccfbf1"/><text x="319" y="283" text-anchor="middle" font-size="11" fill="#115e59">8 items</text>
+    <rect x="82" y="316" width="276" height="42" rx="6" fill="#f1f5f9"/><text x="98" y="342" font-size="15" fill="#0f172a">选择你信任的节点</text><text x="98" y="388" font-size="14" fill="#475569">✓ 不上传私密 URL</text><text x="98" y="416" font-size="14" fill="#475569">✓ 可按协议手动筛选</text><text x="98" y="444" font-size="14" fill="#475569">✓ 预览必须非空</text>
+
+    <circle cx="472" cy="185" r="22" fill="#0f766e"/><text x="472" y="193" text-anchor="middle" font-size="18" font-weight="700" fill="#fff">2</text>
+    <text x="510" y="192" font-size="21" font-weight="700" fill="#0f172a">创建 current 任务</text>
+    <text x="462" y="237" font-size="14" fill="#64748b">File / Remote JS</text>
+    <rect x="462" y="258" width="276" height="62" rx="6" fill="#ecfeff" stroke="#99f6e4"/><text x="478" y="282" font-size="12" fill="#0f766e">URL</text><text x="478" y="304" font-size="12" fill="#0f172a">.../current/surge/</text><text x="478" y="319" font-size="12" fill="#0f172a">scripts/surge-profile-generator.js</text>
+    <rect x="462" y="338" width="130" height="36" rx="6" fill="#0f766e"/><text x="527" y="361" text-anchor="middle" font-size="14" font-weight="600" fill="#fff">Preview</text><rect x="606" y="338" width="132" height="36" rx="6" fill="#e2e8f0"/><text x="672" y="361" text-anchor="middle" font-size="14" fill="#334155">Save task</text>
+    <text x="462" y="420" font-size="14" fill="#475569">platform=iphone / ipad / macos</text><text x="462" y="450" font-size="14" fill="#475569">channel=current</text><text x="462" y="480" font-size="14" fill="#475569">clientChain=off</text>
+
+    <circle cx="852" cy="185" r="22" fill="#0f766e"/><text x="852" y="193" text-anchor="middle" font-size="18" font-weight="700" fill="#fff">3</text>
+    <text x="890" y="192" font-size="21" font-weight="700" fill="#0f172a">导入 Surge</text>
+    <text x="842" y="237" font-size="14" fill="#64748b">Surge / Profile</text>
+    <rect x="842" y="258" width="276" height="52" rx="6" fill="#f1f5f9"/><text x="858" y="282" font-size="13" fill="#64748b">Profile URL</text><text x="858" y="300" font-size="12" fill="#0f172a">Sub-Store 私密输出 URL</text>
+    <rect x="842" y="330" width="276" height="42" rx="6" fill="#0f766e"/><text x="980" y="357" text-anchor="middle" font-size="15" font-weight="600" fill="#fff">Download &amp; Install</text>
+    <text x="842" y="420" font-size="14" fill="#475569">[Proxy] 远程节点池</text><text x="842" y="450" font-size="14" fill="#475569">[Rule] ChinaTLD → ChinaIP</text><text x="842" y="480" font-size="14" fill="#475569">自动更新：同一 current URL</text>
+  </g>
+  <path d="M390 365H425" stroke="#0f766e" stroke-width="4" marker-end="url(#arrow)"/><path d="M770 365H805" stroke="#0f766e" stroke-width="4" marker-end="url(#arrow)"/>
+</svg>

@@ -63,7 +63,7 @@ export function defaultUnifiedPolicyResolution() {
 export function resolveUnifiedPolicy({
   policy = null,
   channel = "current",
-  client = CLIENT.happ,
+  client = CLIENT.surge,
   allNodes = [],
   eligibleNodes = allNodes,
 } = {}) {

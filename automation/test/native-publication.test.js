@@ -17,30 +17,16 @@ test("builds native clients and shared region GeoData into the closed default pu
     snapshot: lightweightFixtureSnapshots(),
     upstream,
     channel: "current",
-    additionalFiles: new Map([
-      ["happ/scripts/happ-config-generator.js", Buffer.from("happ fixture")],
-      ["onexray/scripts/onexray-profile-generator.js", Buffer.from("onexray fixture")],
-    ]),
+    additionalFiles: new Map(),
   });
 
   for (const path of [
-    "happ/geosite.dat",
-    "happ/geoip.dat",
-    "onexray/geodata/geosite.dat",
-    "onexray/geodata/geoip.dat",
-    "onexray/geodata/manifest.json",
-    "onexray/index.html",
-    "happ/client-manifest.json",
-    "onexray/client-manifest.json",
-    "v2rayn/scripts/substore-node-generator.js",
-    "v2rayn/scripts/substore-config-generator.js",
     "v2box/scripts/substore-node-generator.js",
     "v2box/scripts/substore-config-generator.js",
     "clash/scripts/clash-node-generator.js",
     "clash/scripts/substore-node-generator.js",
     "clash/scripts/clash-profile-generator.js",
     "clash/scripts/substore-profile-generator.js",
-    "v2rayn/client-manifest.json",
     "v2box/client-manifest.json",
   ]) {
     assert.equal(result.defaults.has(path), true, path);
@@ -48,10 +34,8 @@ test("builds native clients and shared region GeoData into the closed default pu
   for (const region of ["cn", "global", "ru", "ir"]) {
     assert.equal(result.defaults.has(`geodata/${region}/manifest.json`), true, region);
   }
-  assert.equal(result.diagnostics.defaultManifest.clients.happ !== undefined, true);
-  assert.equal(result.diagnostics.defaultManifest.clients.onexray !== undefined, true);
   assert.equal(result.diagnostics.defaultManifest.clients.clash !== undefined, true);
-  for (const client of ["v2rayn", "v2box"]) {
+  for (const client of ["v2box"]) {
     const manifest = JSON.parse(result.defaults.get(`${client}/client-manifest.json`));
     assert.equal(manifest.files.some(({ path }) => path.startsWith("geodata/")), false, client);
       assert.equal(manifest.sharedAssets.length, 12, client);
@@ -62,5 +46,4 @@ test("builds native clients and shared region GeoData into the closed default pu
         if (record.path.endsWith(".dat")) assert.ok(record.bytes > 0, record.path);
       }
   }
-  assert.match(result.defaults.get("onexray/index.html").toString("utf8"), /credential-free|无凭据/u);
 });

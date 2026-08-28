@@ -1,6 +1,6 @@
 import { renderXrayOutbound, renderXrayNodeError } from "../../../shared/nodes/render-xray-outbound.js";
 import { CRITICAL_DOMESTIC_DOMAIN_SUFFIXES } from "../../../shared/rules/critical-domestic.js";
-import { oneXrayGeoCode, oneXrayGeoNames } from "../../onexray/src/geodata-contract.js";
+import { xrayGeoCode, xrayGeoNames } from "../../../shared/xray-geodata-contract.js";
 import { businessTargetByKey, parseBusinessOverrides } from "../../../shared/policies/business-targets.js";
 import { policyForRuleSource } from "../../../shared/rules/lightweight-policy.js";
 import { validateAssetUrl, V2BOX_PUBLIC_ROOT } from "./asset-url.js";
@@ -27,7 +27,7 @@ function sha256(input) {
 }
 
 function geoReferences(geoData, options, assetManifest) {
-  const names = oneXrayGeoNames(options.channel);
+  const names = xrayGeoNames(options.channel);
   if (assetManifest) {
     if (assetManifest.region !== options.region || assetManifest.channel !== options.channel || !assetManifest.names || assetManifest.names.domain !== names.domain || assetManifest.names.ip !== names.ip) throw new Error("V2Box asset manifest region/channel/names mismatch");
     const base = `${new URL(V2BOX_PUBLIC_ROOT).pathname}/${options.channel}/geodata/${options.region}/`;
@@ -59,7 +59,7 @@ function geoReferences(geoData, options, assetManifest) {
   }
   if (!Array.isArray(manifest.sources) || manifest.sources.length === 0) throw new Error("V2Box GeoData manifest sources are missing");
   const codes = manifest.sources.map((source) => {
-    if (!source || typeof source.id !== "string" || source.code !== oneXrayGeoCode(source.id)) throw new Error("V2Box GeoData manifest source code mismatch");
+    if (!source || typeof source.id !== "string" || source.code !== xrayGeoCode(source.id)) throw new Error("V2Box GeoData manifest source code mismatch");
     return source.code;
   });
   if (Array.isArray(manifest.sourceCodes) && JSON.stringify(manifest.sourceCodes.map(({ code }) => code)) !== JSON.stringify(codes)) throw new Error("V2Box GeoData sourceCodes mismatch");
@@ -113,7 +113,7 @@ export function renderV2BoxProfile({ nodes, options, assetManifest = null, geoDa
   const sourceRules = references.sources.map((source) => ({ source, outboundTag: actionForSource(source.id, overrides, nodeTags, nodeTagsById, options.blockMode, policyResolution) }));
   const rank = (item) => ["Hijacking", "BlockHttpDNS", "Privacy"].includes(item.source.id) ? 0 : policyForRuleSource(item.source.id) ? 1 : 2;
   sourceRules.sort((a, b) => rank(a) - rank(b));
-  for (const { source, outboundTag } of sourceRules) rules.push({ domain: [`ext:${oneXrayGeoNames(options.channel).domain}.dat:${source.code}`], ip: [`ext:${oneXrayGeoNames(options.channel).ip}.dat:${source.code}`], outboundTag, ruleTag: `source-${source.id}` });
+  for (const { source, outboundTag } of sourceRules) rules.push({ domain: [`ext:${xrayGeoNames(options.channel).domain}.dat:${source.code}`], ip: [`ext:${xrayGeoNames(options.channel).ip}.dat:${source.code}`], outboundTag, ruleTag: `source-${source.id}` });
   if (options.quicMode !== "allow") rules.push({ network: "quic", outboundTag: options.quicMode === "all-block" ? "block" : "direct", ruleTag: "quic-policy" });
   const finalRecord = policyResolution?.targets?.final;
   let finalOutboundTag = outbounds.length === 2 ? "block" : "proxy";

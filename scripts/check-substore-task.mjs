@@ -59,45 +59,6 @@ const GENERATOR_SCHEMAS = Object.freeze({
       nodeErrorMode: NODE_ERROR_MODES,
     },
   }),
-  "onexray/scripts/onexray-node-generator.js": nodeSchema(),
-  "onexray/scripts/substore-node-generator.js": nodeSchema(),
-  "onexray/scripts/onexray-profile-generator.js": xraySchema("profile"),
-  "onexray/scripts/substore-profile-generator.js": xraySchema("profile"),
-  "onexray/scripts/onexray-routing-audit.js": xraySchema("audit"),
-  "onexray/scripts/substore-routing-audit.js": xraySchema("audit"),
-  "happ/scripts/happ-config-generator.js": configSchema({
-    platforms: ["macos", "iphone", "ipad", "android", "windows", "linux"],
-    requiresSubscriptionName: true,
-    extraKeys: ["policyOverrides"],
-    omitKeys: ["clientChain", "channel"],
-  }),
-  "happ/scripts/substore-config-generator.js": configSchema({
-    platforms: ["macos", "iphone", "ipad", "android", "windows", "linux"],
-    requiresSubscriptionName: true,
-    extraKeys: ["policyOverrides"],
-    omitKeys: ["clientChain", "channel"],
-  }),
-  "happ/scripts/happ-routing-audit.js": configSchema({
-    platforms: ["all"],
-    requiresSubscriptionName: true,
-    extraKeys: ["policyOverrides"],
-    omitKeys: ["clientChain", "channel"],
-    output: "audit",
-  }),
-  "happ/scripts/substore-routing-audit.js": configSchema({
-    platforms: ["all"],
-    requiresSubscriptionName: true,
-    extraKeys: ["policyOverrides"],
-    omitKeys: ["clientChain", "channel"],
-    output: "audit",
-  }),
-  "v2rayn/scripts/substore-node-generator.js": nodeSchema(),
-  "v2rayn/scripts/substore-config-generator.js": configSchema({
-    platforms: ["windows", "macos"],
-    extraKeys: ["region"],
-    extraEnums: { region: REGIONS },
-    omitKeys: ["autoGroupMode"],
-  }),
   "v2box/scripts/substore-node-generator.js": nodeSchema(),
   "v2box/scripts/substore-config-generator.js": configSchema({
     platforms: ["iphone", "ipad"],
@@ -314,10 +275,6 @@ export function checkSubstoreTaskUrl(raw) {
   }
   const errors = [...checkTaskOptions(generator, parsed.params)];
   const pathChannel = parsed.scriptPath.split("/").find((segment) => PUBLISHED_CHANNELS.includes(segment));
-  const isHappGenerator = generatorPath.startsWith("happ/scripts/");
-  if (isHappGenerator && pathChannel !== "current") {
-    errors.push("HAPP tasks must use the /current/happ/ publication path");
-  }
   if (pathChannel && parsed.params.channel && parsed.params.channel !== pathChannel) {
     errors.push(`Option 'channel' must match the publication path '${pathChannel}'`);
   }

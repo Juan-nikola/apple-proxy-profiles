@@ -5,14 +5,14 @@ import { fileURLToPath } from "node:url";
 import protobuf from "protobufjs";
 
 import {
-  oneXrayGeoCode,
-  oneXrayGeoNames,
-  ONE_XRAY_GEO_CODE_PATTERN,
-} from "../../clients/onexray/src/geodata-contract.js";
+  xrayGeoCode,
+  xrayGeoNames,
+  XRAY_GEO_CODE_PATTERN,
+} from "../../shared/xray-geodata-contract.js";
 import { DEFAULT_RULE_SOURCE_IDS, FULL_ADBLOCK_SOURCE_IDS } from "../../shared/rules/lightweight-policy.js";
 import { normalizeRuleEntry, RULE_KIND } from "../../shared/rules/model.js";
 
-const SCHEMA = "apple-proxy-onexray-geodata-v1";
+const SCHEMA = "apple-proxy-xray-geodata-v1";
 const DOMAIN_TYPES = new Map([
   [RULE_KIND.domain, 3],
   [RULE_KIND.domainSuffix, 2],
@@ -21,7 +21,7 @@ const DOMAIN_TYPES = new Map([
 const DOMAIN_KINDS = new Set(DOMAIN_TYPES.keys());
 const IP_KINDS = new Set([RULE_KIND.ipv4Cidr, RULE_KIND.ipv6Cidr]);
 const OPTIONAL_IDS = new Set(FULL_ADBLOCK_SOURCE_IDS);
-const OPTIONAL_CODES = new Set(FULL_ADBLOCK_SOURCE_IDS.map((sourceId) => oneXrayGeoCode(sourceId)));
+const OPTIONAL_CODES = new Set(FULL_ADBLOCK_SOURCE_IDS.map((sourceId) => xrayGeoCode(sourceId)));
 const DEFAULT_ID_ORDER = new Map(DEFAULT_RULE_SOURCE_IDS.map((id, index) => [id, index]));
 const SHA256 = /^[a-f0-9]{64}$/u;
 const PROVENANCE_PATTERNS = Object.freeze({
@@ -49,7 +49,7 @@ function compareText(left, right) {
 
 function assertBuffer(buffer) {
   if (!(Buffer.isBuffer(buffer) || buffer instanceof Uint8Array)) {
-    throw new TypeError("OneXray GeoData buffer must be bytes");
+    throw new TypeError("Xray GeoData buffer must be bytes");
   }
   return Buffer.from(buffer);
 }
@@ -57,29 +57,29 @@ function assertBuffer(buffer) {
 function sourceMapFrom(snapshot) {
   if (snapshot instanceof Map) return { map: snapshot, strictDefaults: false };
   if (!snapshot || typeof snapshot !== "object" || Array.isArray(snapshot)) {
-    throw new TypeError("OneXray GeoData snapshot must be a Map or compiled result");
+    throw new TypeError("Xray GeoData snapshot must be a Map or compiled result");
   }
   const map = snapshot.defaultRuleSets;
   if (map instanceof Map) return { map, strictDefaults: true };
   if (map && typeof map === "object" && !Array.isArray(map)) {
     return { map: new Map(Object.entries(map)), strictDefaults: true };
   }
-  throw new TypeError("OneXray GeoData snapshot.defaultRuleSets must be a Map");
+  throw new TypeError("Xray GeoData snapshot.defaultRuleSets must be a Map");
 }
 
 function sourceEntries(value, sourceId) {
   if (Array.isArray(value)) return value;
   if (value && typeof value === "object" && Array.isArray(value.entries)) return value.entries;
-  throw new TypeError(`OneXray GeoData source ${sourceId} entries are missing`);
+  throw new TypeError(`Xray GeoData source ${sourceId} entries are missing`);
 }
 
 function sourceIdForKey(key, value) {
   const candidate = typeof key === "string" ? key : value?.id;
   if (typeof candidate !== "string" || candidate.trim() !== candidate || candidate.length === 0) {
-    throw new TypeError("OneXray GeoData source ID is missing");
+    throw new TypeError("Xray GeoData source ID is missing");
   }
   if (value?.id !== undefined && value.id !== candidate) {
-    throw new Error(`OneXray GeoData source ${candidate}: source ID mismatch`);
+    throw new Error(`Xray GeoData source ${candidate}: source ID mismatch`);
   }
   return candidate;
 }
@@ -88,7 +88,7 @@ function sourceSha256(value, sourceId) {
   const candidate = value?.sourceSha256 ?? value?.source?.sha256;
   if (candidate === undefined) return undefined;
   if (typeof candidate !== "string" || !SHA256.test(candidate)) {
-    throw new Error(`OneXray GeoData source ${sourceId}: source hash must be lowercase SHA-256`);
+    throw new Error(`Xray GeoData source ${sourceId}: source hash must be lowercase SHA-256`);
   }
   return candidate;
 }
@@ -99,10 +99,10 @@ function sortedSourceRecords(snapshot) {
   const seenCodes = new Map();
   for (const [key, value] of map.entries()) {
     const sourceId = sourceIdForKey(key, value);
-    const code = oneXrayGeoCode(sourceId);
+    const code = xrayGeoCode(sourceId);
     if (OPTIONAL_IDS.has(sourceId) || OPTIONAL_CODES.has(code)) continue;
     const prior = seenCodes.get(code);
-    if (prior) throw new Error(`OneXray GeoData duplicate category code ${code} (${prior} and ${sourceId})`);
+    if (prior) throw new Error(`Xray GeoData duplicate category code ${code} (${prior} and ${sourceId})`);
     seenCodes.set(code, sourceId);
     records.push({
       sourceId,
@@ -112,9 +112,9 @@ function sortedSourceRecords(snapshot) {
     });
   }
   if (strictDefaults) {
-    const missing = DEFAULT_RULE_SOURCE_IDS.filter((sourceId) => !seenCodes.has(oneXrayGeoCode(sourceId)));
+    const missing = DEFAULT_RULE_SOURCE_IDS.filter((sourceId) => !seenCodes.has(xrayGeoCode(sourceId)));
     if (missing.length > 0) {
-      throw new Error(`OneXray GeoData missing source reference: ${missing.join(", ")}`);
+      throw new Error(`Xray GeoData missing source reference: ${missing.join(", ")}`);
     }
   }
   records.sort((left, right) => (
@@ -131,10 +131,10 @@ function normalizedEntries(records) {
     const cidrs = new Map();
     for (const raw of record.entries) {
       if (!raw || typeof raw !== "object" || Array.isArray(raw)) {
-        throw new TypeError(`OneXray GeoData source ${record.sourceId} contains an invalid entry`);
+      throw new TypeError(`Xray GeoData source ${record.sourceId} contains an invalid entry`);
       }
       if (raw.sourceId !== undefined && raw.sourceId !== record.sourceId) {
-        throw new Error(`OneXray GeoData source ${record.sourceId}: entry source reference is missing`);
+      throw new Error(`Xray GeoData source ${record.sourceId}: entry source reference is missing`);
       }
       if (DOMAIN_KINDS.has(raw.kind)) {
         const entry = normalizeRuleEntry({ ...raw, sourceId: record.sourceId });
@@ -155,7 +155,7 @@ function normalizedEntries(records) {
             ? Object.freeze({ ...existing, noResolve: true })
             : entry);
       } else if (!Object.values(RULE_KIND).includes(raw.kind)) {
-        throw new TypeError(`OneXray GeoData source ${record.sourceId}: rule kind is invalid`);
+      throw new TypeError(`Xray GeoData source ${record.sourceId}: rule kind is invalid`);
       }
     }
     const sortEntry = (left, right) => (
@@ -186,7 +186,7 @@ function cidrBytes(entry) {
   if (entry.kind === RULE_KIND.ipv4Cidr) {
     const octets = network.split(".").map(Number);
     if (octets.length !== 4 || octets.some((octet) => !Number.isInteger(octet) || octet < 0 || octet > 255)) {
-      throw new Error(`OneXray GeoData invalid IPv4 prefix ${entry.value}`);
+    throw new Error(`Xray GeoData invalid IPv4 prefix ${entry.value}`);
     }
     return { ip: Uint8Array.from(octets), prefix };
   }
@@ -201,16 +201,16 @@ function cidrBytes(entry) {
 
 function expandIPv6(address) {
   const pieces = address.toLowerCase().split("::");
-  if (pieces.length > 2) throw new Error(`OneXray GeoData invalid IPv6 prefix ${address}`);
+  if (pieces.length > 2) throw new Error(`Xray GeoData invalid IPv6 prefix ${address}`);
   const left = pieces[0] ? pieces[0].split(":") : [];
   const right = pieces.length === 2 && pieces[1] ? pieces[1].split(":") : [];
   const groups = [...left, ...right];
   if (groups.some((group) => !/^[0-9a-f]{1,4}$/u.test(group))) {
-    throw new Error(`OneXray GeoData invalid IPv6 prefix ${address}`);
+    throw new Error(`Xray GeoData invalid IPv6 prefix ${address}`);
   }
   const missing = 8 - groups.length;
   if ((pieces.length === 1 && missing !== 0) || (pieces.length === 2 && missing < 1)) {
-    throw new Error(`OneXray GeoData invalid IPv6 prefix ${address}`);
+    throw new Error(`Xray GeoData invalid IPv6 prefix ${address}`);
   }
   return [...left, ...Array(missing).fill("0"), ...right].map((group) => Number.parseInt(group, 16));
 }
@@ -239,7 +239,7 @@ function renderIpData(records) {
 function typeName(type) {
   if (type === "domain" || type === "geosite" || type === "site") return "domain";
   if (type === "ip" || type === "geoip") return "ip";
-  throw new TypeError("OneXray GeoData type must be domain or ip");
+  throw new TypeError("Xray GeoData type must be domain or ip");
 }
 
 function decodeRaw(buffer, type) {
@@ -250,39 +250,39 @@ function decodeRaw(buffer, type) {
   try {
     message = Message.decode(bytes);
   } catch (error) {
-    throw new Error(`OneXray GeoData decode failed: ${error.message}`);
+    throw new Error(`Xray GeoData decode failed: ${error.message}`);
   }
   const verification = Message.verify(message);
-  if (verification) throw new Error(`OneXray GeoData schema validation failed: ${verification}`);
-  if (!Array.isArray(message.entry)) throw new Error("OneXray GeoData schema validation failed: entry is missing");
+  if (verification) throw new Error(`Xray GeoData schema validation failed: ${verification}`);
+  if (!Array.isArray(message.entry)) throw new Error("Xray GeoData schema validation failed: entry is missing");
 
   const codes = new Set();
   const entries = message.entry.map((item) => {
-    if (typeof item.country_code !== "string" || !ONE_XRAY_GEO_CODE_PATTERN.test(item.country_code)) {
-      throw new Error("OneXray GeoData missing or invalid category code");
+    if (typeof item.country_code !== "string" || !XRAY_GEO_CODE_PATTERN.test(item.country_code)) {
+      throw new Error("Xray GeoData missing or invalid category code");
     }
-    if (codes.has(item.country_code)) throw new Error(`OneXray GeoData duplicate category code ${item.country_code}`);
+    if (codes.has(item.country_code)) throw new Error(`Xray GeoData duplicate category code ${item.country_code}`);
     codes.add(item.country_code);
     if (normalizedType === "domain") {
-      if (!Array.isArray(item.domain)) throw new Error("OneXray GeoData domain list is missing");
+      if (!Array.isArray(item.domain)) throw new Error("Xray GeoData domain list is missing");
       return {
         code: item.country_code,
         domains: item.domain.map((domain) => {
           if (![0, 1, 2, 3].includes(domain.type) || typeof domain.value !== "string" || domain.value.length === 0) {
-            throw new Error("OneXray GeoData contains an invalid domain");
+            throw new Error("Xray GeoData contains an invalid domain");
           }
           return { type: domain.type, value: domain.value };
         }),
       };
     }
-    if (!Array.isArray(item.cidr)) throw new Error("OneXray GeoData CIDR list is missing");
+    if (!Array.isArray(item.cidr)) throw new Error("Xray GeoData CIDR list is missing");
     return {
       code: item.country_code,
       cidrs: item.cidr.map((cidr) => {
         const ip = Buffer.from(cidr.ip ?? []);
         if (![4, 16].includes(ip.length) || !Number.isInteger(cidr.prefix)
           || cidr.prefix < 0 || cidr.prefix > ip.length * 8) {
-          throw new Error("OneXray GeoData contains an invalid CIDR prefix");
+          throw new Error("Xray GeoData contains an invalid CIDR prefix");
         }
         return { ip: renderIp(ip), prefix: cidr.prefix };
       }),
@@ -390,7 +390,7 @@ function manifestFor({ channel, names, records, domain, ip, provenance }) {
 
 /** Compiles the shared rule snapshot to deterministic Xray geosite/geoip bytes. */
 export function renderXrayGeoData(snapshot, channel) {
-  const names = oneXrayGeoNames(channel);
+  const names = xrayGeoNames(channel);
   const records = normalizedEntries(sortedSourceRecords(snapshot));
   const domain = Buffer.from(renderDomainData(records));
   const ip = Buffer.from(renderIpData(records));
@@ -400,15 +400,15 @@ export function renderXrayGeoData(snapshot, channel) {
   const decodedDomain = decodeRaw(domain, "domain");
   const decodedIp = decodeRaw(ip, "ip");
   if (decodedDomain.categoryCount !== records.length || decodedIp.categoryCount !== records.length) {
-    throw new Error("OneXray GeoData category count mismatch");
+    throw new Error("Xray GeoData category count mismatch");
   }
   const expectedHashes = snapshot?.expectedHashes ?? snapshot?.manifest?.hashes;
   if (expectedHashes && typeof expectedHashes === "object") {
     if (expectedHashes.domain !== undefined && expectedHashes.domain !== sha256(domain)) {
-      throw new Error("OneXray GeoData domain hash mismatch");
+      throw new Error("Xray GeoData domain hash mismatch");
     }
     if (expectedHashes.ip !== undefined && expectedHashes.ip !== sha256(ip)) {
-      throw new Error("OneXray GeoData IP hash mismatch");
+      throw new Error("Xray GeoData IP hash mismatch");
     }
   }
   const result = {

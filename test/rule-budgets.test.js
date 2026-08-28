@@ -23,18 +23,6 @@ const migrationMetadata = new Set([
   "anywhere/rules/manifest.json",
 ]);
 const optionalAwareGenerators = new Set([
-  "onexray/scripts/onexray-node-generator.js",
-  "onexray/scripts/substore-node-generator.js",
-  "onexray/scripts/onexray-profile-generator.js",
-  "onexray/scripts/substore-profile-generator.js",
-  "onexray/scripts/onexray-routing-audit.js",
-  "onexray/scripts/substore-routing-audit.js",
-  "happ/scripts/happ-config-generator.js",
-  "happ/scripts/substore-config-generator.js",
-  "happ/scripts/happ-routing-audit.js",
-  "happ/scripts/substore-routing-audit.js",
-  "v2rayn/scripts/substore-node-generator.js",
-  "v2rayn/scripts/substore-config-generator.js",
   "v2box/scripts/substore-node-generator.js",
   "v2box/scripts/substore-config-generator.js",
   "clash/scripts/clash-node-generator.js",
@@ -43,8 +31,6 @@ const optionalAwareGenerators = new Set([
   "clash/scripts/substore-profile-generator.js",
 ]);
 const nativePolicyGenerators = new Set([
-  "v2rayn/scripts/substore-node-generator.js",
-  "v2rayn/scripts/substore-config-generator.js",
   "v2box/scripts/substore-node-generator.js",
   "v2box/scripts/substore-config-generator.js",
   "clash/scripts/clash-node-generator.js",

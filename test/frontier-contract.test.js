@@ -5,7 +5,6 @@ import { CLIENT } from "../shared/contracts.js";
 import { clientAdapter } from "../shared/release/client-catalog.js";
 import { protocolSupportsClient } from "../shared/nodes/protocol-registry.js";
 import {
-  createOneXrayFrontierCandidates,
   createFrontierManifest,
   FRONTIER_PLATFORMS,
   validateFrontierManifest,
@@ -78,44 +77,9 @@ test("frontier platforms cover only maintained clients", () => {
   assert.deepEqual(FRONTIER_PLATFORMS, {
     surge: ["macos", "iphone", "ipad"],
     singbox: ["macos", "iphone", "ipad", "android", "openwrt"],
-    onexray: ["macos", "iphone", "ipad", "android", "windows", "linux"],
-    happ: ["macos", "iphone", "ipad", "android", "windows", "linux"],
   });
 });
 
-test("native clients are active and frontier candidates remain explicit", () => {
-  assert.equal(clientAdapter(CLIENT.onexray).state, "active");
-  assert.equal(clientAdapter(CLIENT.happ).state, "active");
-  const base = {
-    platform: "iphone",
-    channel: "current",
-    upstream: { branch: "main", commit: "a".repeat(40), fetchedAt: "2026-08-05T00:00:00Z" },
-    schemaVersion: "happ-v4",
-    ruleManifestSha256: "b".repeat(64),
-    configSha256: "c".repeat(64),
-    status: "candidate",
-  };
-  assert.equal(createFrontierManifest({ ...base, client: CLIENT.happ }).platformKey, "happ/iphone");
-  assert.equal(createFrontierManifest({ ...base, client: CLIENT.onexray }).platformKey, "onexray-iphone");
-});
-
-test("fans OneXray out to six candidate platforms without copying profile bytes", () => {
-  const candidates = createOneXrayFrontierCandidates({
-    channel: "current",
-    upstream: { branch: "main", commit: "a".repeat(40), fetchedAt: "2026-08-05T00:00:00Z" },
-    schemaVersion: "onexray-profile-v1",
-    ruleManifestSha256: "b".repeat(64),
-    profileSha256: "c".repeat(64),
-  });
-  assert.deepEqual(candidates.map(({ platformKey }) => platformKey), [
-    "onexray-macos", "onexray-iphone", "onexray-ipad", "onexray-android", "onexray-windows", "onexray-linux",
-  ]);
-  assert.equal(new Set(candidates.map(({ configSha256 }) => configSha256)).size, 1);
-  for (const candidate of candidates) {
-    assert.equal(Object.hasOwn(candidate, "profile"), false);
-    assert.equal(Object.hasOwn(candidate, "profileBytes"), false);
-  }
-});
 
 test("rejects a frontier manifest whose platform key does not match its identity", () => {
   const manifest = createFrontierManifest({

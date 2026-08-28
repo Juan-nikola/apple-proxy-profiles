@@ -58,14 +58,19 @@ var V2BoxConfigBundle = (() => {
     shadowrocket: "shadowrocket",
     surge: "surge",
     singbox: "singbox",
-    onexray: "onexray",
-    happ: "happ",
-    v2rayn: "v2rayn",
     v2box: "v2box",
     clash: "clash"
   });
   var PRIVATE_POLICY_CHANNELS = Object.freeze(["edge", "current", "previous"]);
-  var PRIVATE_POLICY_CLIENTS = Object.freeze([CLIENT.happ, CLIENT.onexray]);
+  var PRIVATE_POLICY_CLIENTS = Object.freeze([
+    CLIENT.anywhere,
+    CLIENT.egern,
+    CLIENT.shadowrocket,
+    CLIENT.surge,
+    CLIENT.singbox,
+    CLIENT.v2box,
+    CLIENT.clash
+  ]);
   var PRIVATE_POLICY_TARGET_IDS = Object.freeze([
     "ai",
     "github",
@@ -229,7 +234,7 @@ var V2BoxConfigBundle = (() => {
     });
   }
   var definitions = Object.freeze([
-    protocol(["ss", "shadowsocks"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.onexray, CLIENT.happ, CLIENT.v2rayn, CLIENT.v2box, CLIENT.clash], {
+    protocol(["ss", "shadowsocks"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.v2box, CLIENT.clash], {
       requiredFields: ["cipher", "password"]
     }),
     protocol(["ssr"], [CLIENT.shadowrocket, CLIENT.surge, CLIENT.clash], {
@@ -238,13 +243,13 @@ var V2BoxConfigBundle = (() => {
     protocol(["snell"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox, CLIENT.clash], {
       requiredFields: ["psk", "version"]
     }),
-    protocol(["vmess"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox, CLIENT.onexray, CLIENT.happ, CLIENT.v2rayn, CLIENT.v2box, CLIENT.clash], {
+    protocol(["vmess"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox, CLIENT.v2box, CLIENT.clash], {
       requiredFields: ["uuid"]
     }),
-    protocol(["vless"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.singbox, CLIENT.onexray, CLIENT.happ, CLIENT.v2rayn, CLIENT.v2box, CLIENT.clash], {
+    protocol(["vless"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.singbox, CLIENT.v2box, CLIENT.clash], {
       requiredFields: ["uuid"]
     }),
-    protocol(["trojan"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.onexray, CLIENT.happ, CLIENT.v2rayn, CLIENT.v2box, CLIENT.clash], {
+    protocol(["trojan"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.v2box, CLIENT.clash], {
       requiredFields: ["password"],
       tls: true
     }),
@@ -252,7 +257,7 @@ var V2BoxConfigBundle = (() => {
       requiredFields: ["password"],
       tls: true
     }),
-    protocol(["hysteria2", "hy2"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.onexray, CLIENT.happ, CLIENT.v2rayn, CLIENT.v2box, CLIENT.clash], {
+    protocol(["hysteria2", "hy2"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.v2box, CLIENT.clash], {
       requiredFields: ["password"],
       tls: true
     }),
@@ -260,8 +265,8 @@ var V2BoxConfigBundle = (() => {
       requiredFields: ["uuid", "password"],
       tls: true
     }),
-    protocol(["socks5"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.onexray, CLIENT.happ, CLIENT.v2rayn, CLIENT.v2box, CLIENT.clash]),
-    protocol(["http"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox, CLIENT.onexray, CLIENT.v2rayn, CLIENT.v2box, CLIENT.clash]),
+    protocol(["socks5"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.v2box, CLIENT.clash]),
+    protocol(["http"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox, CLIENT.v2box, CLIENT.clash]),
     protocol(["ssh"], [CLIENT.egern, CLIENT.singbox, CLIENT.clash], {
       requiredFields: ["username"]
     }),
@@ -926,12 +931,6 @@ var V2BoxConfigBundle = (() => {
   }
   function isNonblankString(value) {
     return typeof value === "string" && value.length > 0 && value.trim() === value;
-  }
-  function isDomainServer(value) {
-    if (!isNonblankString(value)) return false;
-    if (value.includes(":")) return false;
-    const parts = value.split(".");
-    return !(parts.length === 4 && parts.every((part) => /^\d+$/u.test(part) && Number(part) <= 255));
   }
   function isNonblankOpaqueString2(value) {
     return typeof value === "string" && value.trim().length > 0;
@@ -1671,12 +1670,8 @@ var V2BoxConfigBundle = (() => {
   }
   function evaluateNodeForClient(node, client) {
     if (!Object.values(CLIENT).includes(client)) return { supported: false, reason: "unsupported-client" };
-    if (client === CLIENT.happ) {
-      const reason = happNodeExclusionReason(node ?? {});
-      return reason ? { supported: false, reason } : { supported: true, reason: null };
-    }
-    if ([CLIENT.onexray, CLIENT.v2rayn, CLIENT.v2box].includes(client)) {
-      const reason = xrayNodeExclusionReason(node ?? {}, client);
+    if (client === CLIENT.v2box) {
+      const reason = evaluateXrayNodeExclusionReason(node ?? {}, client);
       return reason ? { supported: false, reason } : { supported: true, reason: null };
     }
     const protocol2 = normalizeProtocol(node?.type);
@@ -1687,12 +1682,9 @@ var V2BoxConfigBundle = (() => {
     if (client === CLIENT.anywhere) transportReason = anywhereNodeExclusionReason(node ?? {});
     else if (client === CLIENT.egern) transportReason = egernNodeExclusionReason(node ?? {});
     else if (client === CLIENT.singbox) transportReason = singBoxNodeExclusionReason(node ?? {});
-    else if (client === CLIENT.happ) transportReason = happNodeExclusionReason(node ?? {});
-    else if (client === CLIENT.onexray) transportReason = oneXrayNodeExclusionReason(node ?? {});
     return transportReason ? { supported: false, reason: transportReason } : { supported: true, reason: null };
   }
-  var HAPP_XRAY_TRANSPORTS = /* @__PURE__ */ new Set(["tcp", "raw", "ws", "grpc"]);
-  var ONEXRAY_TRANSPORTS = /* @__PURE__ */ new Set([
+  var XRAY_TRANSPORTS = /* @__PURE__ */ new Set([
     "tcp",
     "raw",
     "ws",
@@ -1707,21 +1699,12 @@ var V2BoxConfigBundle = (() => {
     "hysteria"
   ]);
   var XRAY_CHAIN_REASON = Object.freeze({
-    happ: "unsupported-happ-chain",
-    onexray: "unsupported-onexray-chain",
-    v2rayn: "unsupported-v2rayn-chain",
     v2box: "unsupported-v2box-chain"
   });
   var XRAY_PROTOCOL_REASON = Object.freeze({
-    happ: "unsupported-happ-protocol",
-    onexray: "unsupported-onexray-protocol",
-    v2rayn: "unsupported-v2rayn-protocol",
     v2box: "unsupported-v2box-protocol"
   });
   var XRAY_TRANSPORT_REASON = Object.freeze({
-    happ: "unsupported-happ-transport",
-    onexray: "unsupported-onexray-transport",
-    v2rayn: "unsupported-v2rayn-transport",
     v2box: "unsupported-v2box-transport"
   });
   function xrayCommonReason(node, client) {
@@ -1748,7 +1731,7 @@ var V2BoxConfigBundle = (() => {
     if (security2 !== "reality" && reality !== void 0) return `unsupported-${client}-tls`;
     if (security2 === "reality") {
       if (!isPlainObject(reality) || !isNonblankOpaqueString2(reality["public-key"])) {
-        return client === "onexray" ? "incomplete-onexray-reality" : client === "happ" ? "incomplete-happ-reality" : `incomplete-${client}-reality`;
+        return `incomplete-${client}-reality`;
       }
       if (Object.keys(reality).some((key) => !["public-key", "short-id", "spider-x", "_spider-x"].includes(key))) {
         return `unsupported-${client}-tls`;
@@ -1765,7 +1748,7 @@ var V2BoxConfigBundle = (() => {
       return network2 !== "tcp" && network2 !== "udp" && network2 !== "quic" ? XRAY_TRANSPORT_REASON[client] : null;
     }
     const network = normalizeTransport(node);
-    const allowed = client === "happ" ? HAPP_XRAY_TRANSPORTS : ONEXRAY_TRANSPORTS;
+    const allowed = XRAY_TRANSPORTS;
     if (!allowed.has(network)) return XRAY_TRANSPORT_REASON[client];
     if (protocol2 === "socks5" && network !== "tcp" && network !== "raw") return XRAY_TRANSPORT_REASON[client];
     if ((protocol2 === "ss" || protocol2 === "shadowsocks") && (hasShadowsocksPlugin(node) || network !== "tcp" && network !== "raw")) {
@@ -1778,7 +1761,7 @@ var V2BoxConfigBundle = (() => {
     for (const key of present) if (!isPlainObject(node[key])) return XRAY_TRANSPORT_REASON[client];
     return null;
   }
-  function xrayNodeExclusionReason(node, client) {
+  function evaluateXrayNodeExclusionReason(node, client) {
     const common = xrayCommonReason(node, client);
     if (common) return common;
     const protocol2 = normalizeProtocol(node.type);
@@ -1786,32 +1769,10 @@ var V2BoxConfigBundle = (() => {
     if (tls) return tls;
     const transport2 = xrayTransportReason(node, client, protocol2);
     if (transport2) return transport2;
-    if (client === "happ") {
-      const network = normalizeTransport(node);
-      const security2 = node.security === "reality" || node["reality-opts"] !== void 0 ? "reality" : node.tls === true || node.security === "tls" ? "tls" : "none";
-      if (security2 === "reality" && (protocol2 === "hysteria2" || protocol2 === "hy2" || !["tcp", "raw", "grpc"].includes(network))) {
-        return "unsupported-happ-tls";
-      }
-      if (protocol2 === "hysteria2" || protocol2 === "hy2") {
-        const obfs = node.obfs === void 0 ? void 0 : String(node.obfs).toLowerCase();
-        const obfsPassword = node["obfs-password"] ?? node.obfs_password;
-        if (obfs !== void 0 && (obfs !== "salamander" || typeof obfsPassword !== "string" || obfsPassword.length === 0)) {
-          return "unsupported-happ-hysteria2-obfs";
-        }
-        if (obfs === void 0 && obfsPassword !== void 0) return "unsupported-happ-hysteria2-obfs";
-        if (security2 === "tls" && !isNonblankString(node.sni ?? node.servername) && !isDomainServer(node.server)) return "incomplete-happ-tls";
-      }
-    }
-    if (["happ", "v2rayn", "v2box"].includes(client) && protocol2 === "socks5" && (node.tls === true || node.security === "tls" || node.security === "reality")) {
+    if (client === "v2box" && protocol2 === "socks5" && (node.tls === true || node.security === "tls" || node.security === "reality")) {
       return `unsupported-${client}-tls`;
     }
     return null;
-  }
-  function happNodeExclusionReason(node) {
-    return xrayNodeExclusionReason(node, "happ");
-  }
-  function oneXrayNodeExclusionReason(node) {
-    return xrayNodeExclusionReason(node, "onexray");
   }
   function singBoxNodeExclusionReason(node) {
     if (normalizeProtocol(node?.type) !== "snell") return null;
@@ -2256,7 +2217,7 @@ var V2BoxConfigBundle = (() => {
   }
 
   // ../../shared/policies/private-policy.js
-  var CHANNEL_KEYS = /* @__PURE__ */ new Set(["revision", "defaults", "happ", "onexray"]);
+  var CHANNEL_KEYS = /* @__PURE__ */ new Set(["revision", "defaults", "happ", "onexray", "clients", ...PRIVATE_POLICY_CLIENTS]);
   var DEFAULT_KEYS = /* @__PURE__ */ new Set(["targets", "dns", "adblockMode", "clientChain"]);
   var OVERRIDE_KEYS = DEFAULT_KEYS;
   var DNS_KEYS = /* @__PURE__ */ new Set(["chinaDns", "globalDns"]);
@@ -2418,12 +2379,20 @@ var V2BoxConfigBundle = (() => {
     const channels = {};
     for (const channel of PRIVATE_POLICY_CHANNELS) {
       const record2 = requireRecord(value.channels[channel], "channel must be an object");
-      requireKeys(record2, ["revision", "defaults", "happ", "onexray"], CHANNEL_KEYS);
+      requireKeys(record2, ["revision", "defaults"], CHANNEL_KEYS);
+      const legacyClients = isRecord(record2.clients) ? record2.clients : {};
+      const overrides = {};
+      for (const [key, override] of Object.entries(legacyClients)) overrides[key] = normalizeOverride(override);
+      for (const key of ["happ", "onexray"]) {
+        if (Object.hasOwn(record2, key)) overrides[key] = normalizeOverride(record2[key]);
+      }
+      for (const key of PRIVATE_POLICY_CLIENTS) {
+        if (Object.hasOwn(record2, key)) overrides[key] = normalizeOverride(record2[key]);
+      }
       channels[channel] = {
         revision: normalizeRevision(record2.revision),
         defaults: normalizeDefaults(record2.defaults),
-        happ: normalizeOverride(record2.happ),
-        onexray: normalizeOverride(record2.onexray)
+        ...overrides
       };
     }
     return deepFreeze({ schemaVersion: 1, channels });
@@ -2484,7 +2453,7 @@ var V2BoxConfigBundle = (() => {
     if (!CHANNEL_SET.has(channel)) throw invalid2("contains an unsupported channel");
     if (!CLIENT_SET.has(client)) throw invalid2("contains an unsupported policy client");
     const record2 = normalized.channels[channel];
-    const override = record2[client];
+    const override = record2[client] ?? {};
     const result = {
       targets: { ...record2.defaults.targets, ...override.targets ?? {} },
       dns: { ...record2.defaults.dns, ...override.dns ?? {} },
@@ -2574,7 +2543,7 @@ var V2BoxConfigBundle = (() => {
   function resolveUnifiedPolicy({
     policy = null,
     channel = "current",
-    client = CLIENT.happ,
+    client = CLIENT.surge,
     allNodes = [],
     eligibleNodes = allNodes
   } = {}) {
@@ -2676,45 +2645,6 @@ var V2BoxConfigBundle = (() => {
       publicDirectory: "sing-box"
     },
     {
-      id: CLIENT.onexray,
-      displayName: "OneXray",
-      state: "active",
-      platforms: ["macos", "iphone", "ipad", "android", "windows", "linux"],
-      configFormat: "xray-profile-json",
-      ruleFormat: "xray-geodata",
-      nodeValidator: "onexray",
-      separatesProfile: false,
-      supportsPolicyOverrides: false,
-      adapterSchema: "onexray-v1",
-      publicDirectory: "onexray"
-    },
-    {
-      id: CLIENT.happ,
-      displayName: "HAPP",
-      state: "active",
-      platforms: ["iphone", "ipad", "macos", "android"],
-      configFormat: "happ-json",
-      ruleFormat: "happ-json",
-      nodeValidator: "happ",
-      separatesProfile: false,
-      supportsPolicyOverrides: false,
-      adapterSchema: "happ-v4",
-      publicDirectory: "happ"
-    },
-    {
-      id: CLIENT.v2rayn,
-      displayName: "v2rayN",
-      state: "active",
-      platforms: ["windows", "macos"],
-      configFormat: "xray-profile-json",
-      ruleFormat: "xray-geodata",
-      nodeValidator: "v2rayn",
-      separatesProfile: false,
-      supportsPolicyOverrides: false,
-      adapterSchema: "v2rayn-v1",
-      publicDirectory: "v2rayn"
-    },
-    {
       id: CLIENT.v2box,
       displayName: "V2Box",
       state: "active",
@@ -2758,9 +2688,7 @@ var V2BoxConfigBundle = (() => {
   var FRONTIER_CHANNELS = Object.freeze(["current"]);
   var FRONTIER_PLATFORMS = Object.freeze({
     [CLIENT.surge]: Object.freeze(["macos", "iphone", "ipad"]),
-    [CLIENT.singbox]: Object.freeze(["macos", "iphone", "ipad", "android", "openwrt"]),
-    [CLIENT.onexray]: Object.freeze(["macos", "iphone", "ipad", "android", "windows", "linux"]),
-    [CLIENT.happ]: Object.freeze(["macos", "iphone", "ipad", "android", "windows", "linux"])
+    [CLIENT.singbox]: Object.freeze(["macos", "iphone", "ipad", "android", "openwrt"])
   });
 
   // ../../shared/substore/collection-name.js
@@ -2811,7 +2739,7 @@ var V2BoxConfigBundle = (() => {
 
   // ../../shared/nodes/render-xray-outbound.js
   var TAG = /^ap-[a-z0-9][a-z0-9/_-]{0,127}$/u;
-  var label = (client) => client === "onexray" ? "OneXray" : String(client ?? "Xray");
+  var label = (client) => String(client ?? "Xray");
   function required2(node, key, client) {
     const value = node[key];
     if (typeof value !== "string" || !value || value.trim() !== value) throw new Error(`${label(client)} node field '${key}' is invalid`);
@@ -2859,7 +2787,7 @@ var V2BoxConfigBundle = (() => {
       result.realitySettings = { serverName: node.sni ?? node.servername ?? "", fingerprint: node["client-fingerprint"] ?? "chrome", publicKey: reality["public-key"], ...reality["short-id"] ? { shortId: reality["short-id"] } : {}, ...reality["spider-x"] || reality["_spider-x"] ? { spiderX: reality["spider-x"] ?? reality["_spider-x"] } : {} };
     } else result.tlsSettings = { serverName: node.sni ?? node.servername ?? "", allowInsecure: node["skip-cert-verify"] === true || node["allow-insecure"] === true, ...node.alpn ? { alpn: [...node.alpn] } : {}, ...node["client-fingerprint"] ? { fingerprint: node["client-fingerprint"] } : {} };
   }
-  function renderXrayOutbound(node, { tag, client = "onexray" } = {}) {
+  function renderXrayOutbound(node, { tag, client = "v2box" } = {}) {
     if (!node || typeof node !== "object" || Array.isArray(node)) throw new TypeError(`${label(client)} node is invalid`);
     if (typeof node.name !== "string" || !node.name || /[\r\n]/u.test(node.name)) throw new Error(`${label(client)} node name is invalid`);
     if (typeof tag !== "string" || !TAG.test(tag)) throw new Error(`${label(client)} outbound tag is invalid`);
@@ -2887,7 +2815,7 @@ var V2BoxConfigBundle = (() => {
     if (out.streamSettings && Object.keys(out.streamSettings).length === 0) delete out.streamSettings;
     return out;
   }
-  function renderXrayNodeError(error, client = "onexray") {
+  function renderXrayNodeError(error, client = "v2box") {
     const reason = error?.message?.match(/^unsupported-[a-z0-9-]+/u)?.[0] ?? `render-failure-${client}`;
     return Object.freeze({ client, excluded: Object.freeze({ [reason]: 1 }) });
   }
@@ -2906,7 +2834,7 @@ var V2BoxConfigBundle = (() => {
     CRITICAL_DOMESTIC_DOMAIN_SUFFIXES.map((suffix) => `DOMAIN-SUFFIX,${suffix}`)
   );
 
-  // ../onexray/src/geodata-contract.js
+  // ../../shared/xray-geodata-contract.js
   var CHANNELS = Object.freeze(["current", "previous", "edge"]);
   var CHANNEL_SUFFIX = Object.freeze({
     current: "Current",
@@ -2917,11 +2845,11 @@ var V2BoxConfigBundle = (() => {
   var CODE = /^APP-[A-Z0-9]+(?:-[A-Z0-9]+)*$/u;
   function requiredChannel(channel) {
     if (typeof channel !== "string" || !CHANNELS.includes(channel)) {
-      throw new TypeError(`OneXray GeoData channel must be current, previous, or edge: ${String(channel)}`);
+      throw new TypeError(`Xray GeoData channel must be current, previous, or edge: ${String(channel)}`);
     }
     return channel;
   }
-  function oneXrayGeoNames(channel) {
+  function xrayGeoNames(channel) {
     const suffix = CHANNEL_SUFFIX[requiredChannel(channel)];
     const names = {
       domain: `AppleProxySite${suffix}`,
@@ -2934,13 +2862,13 @@ var V2BoxConfigBundle = (() => {
     });
     return Object.freeze(names);
   }
-  function oneXrayGeoCode(sourceId) {
+  function xrayGeoCode(sourceId) {
     if (typeof sourceId !== "string" || sourceId.trim() !== sourceId || !SOURCE_ID.test(sourceId)) {
-      throw new TypeError("OneXray GeoData source ID is invalid");
+      throw new TypeError("Xray GeoData source ID is invalid");
     }
     const normalized = sourceId.toUpperCase().replaceAll("_", "-");
     const code = `APP-${normalized}`;
-    if (!CODE.test(code)) throw new TypeError("OneXray GeoData source ID is invalid");
+    if (!CODE.test(code)) throw new TypeError("Xray GeoData source ID is invalid");
     return code;
   }
 
@@ -3313,7 +3241,7 @@ var V2BoxConfigBundle = (() => {
     return [...state].map((word) => (word >>> 0).toString(16).padStart(8, "0")).join("");
   }
   function geoReferences(geoData, options, assetManifest) {
-    const names = oneXrayGeoNames(options.channel);
+    const names = xrayGeoNames(options.channel);
     if (assetManifest) {
       if (assetManifest.region !== options.region || assetManifest.channel !== options.channel || !assetManifest.names || assetManifest.names.domain !== names.domain || assetManifest.names.ip !== names.ip) throw new Error("V2Box asset manifest region/channel/names mismatch");
       const base = `${new URL(V2BOX_PUBLIC_ROOT).pathname}/${options.channel}/geodata/${options.region}/`;
@@ -3345,7 +3273,7 @@ var V2BoxConfigBundle = (() => {
     }
     if (!Array.isArray(manifest.sources) || manifest.sources.length === 0) throw new Error("V2Box GeoData manifest sources are missing");
     const codes = manifest.sources.map((source) => {
-      if (!source || typeof source.id !== "string" || source.code !== oneXrayGeoCode(source.id)) throw new Error("V2Box GeoData manifest source code mismatch");
+      if (!source || typeof source.id !== "string" || source.code !== xrayGeoCode(source.id)) throw new Error("V2Box GeoData manifest source code mismatch");
       return source.code;
     });
     if (Array.isArray(manifest.sourceCodes) && JSON.stringify(manifest.sourceCodes.map(({ code }) => code)) !== JSON.stringify(codes)) throw new Error("V2Box GeoData sourceCodes mismatch");
@@ -3419,7 +3347,7 @@ var V2BoxConfigBundle = (() => {
     const sourceRules = references.sources.map((source) => ({ source, outboundTag: actionForSource(source.id, overrides, nodeTags, nodeTagsById, options.blockMode, policyResolution) }));
     const rank = (item) => ["Hijacking", "BlockHttpDNS", "Privacy"].includes(item.source.id) ? 0 : policyForRuleSource(item.source.id) ? 1 : 2;
     sourceRules.sort((a, b) => rank(a) - rank(b));
-    for (const { source, outboundTag } of sourceRules) rules.push({ domain: [`ext:${oneXrayGeoNames(options.channel).domain}.dat:${source.code}`], ip: [`ext:${oneXrayGeoNames(options.channel).ip}.dat:${source.code}`], outboundTag, ruleTag: `source-${source.id}` });
+    for (const { source, outboundTag } of sourceRules) rules.push({ domain: [`ext:${xrayGeoNames(options.channel).domain}.dat:${source.code}`], ip: [`ext:${xrayGeoNames(options.channel).ip}.dat:${source.code}`], outboundTag, ruleTag: `source-${source.id}` });
     if (options.quicMode !== "allow") rules.push({ network: "quic", outboundTag: options.quicMode === "all-block" ? "block" : "direct", ruleTag: "quic-policy" });
     const finalRecord = policyResolution?.targets?.final;
     let finalOutboundTag = outbounds.length === 2 ? "block" : "proxy";

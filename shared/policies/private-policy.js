@@ -13,7 +13,9 @@ import {
   unifiedPolicyTargetByKey,
 } from "./unified-policy.js";
 
-const CHANNEL_KEYS = new Set(["revision", "defaults", "happ", "onexray"]);
+// Schema v1 is migration-only. Keep reading historical per-client overrides,
+// while allowing the active seven-client set to resolve without those keys.
+const CHANNEL_KEYS = new Set(["revision", "defaults", "happ", "onexray", "clients", ...PRIVATE_POLICY_CLIENTS]);
 const DEFAULT_KEYS = new Set(["targets", "dns", "adblockMode", "clientChain"]);
 const OVERRIDE_KEYS = DEFAULT_KEYS;
 const DNS_KEYS = new Set(["chinaDns", "globalDns"]);
@@ -191,12 +193,20 @@ function normalizePolicyObject(value) {
   const channels = {};
   for (const channel of PRIVATE_POLICY_CHANNELS) {
     const record = requireRecord(value.channels[channel], "channel must be an object");
-    requireKeys(record, ["revision", "defaults", "happ", "onexray"], CHANNEL_KEYS);
+    requireKeys(record, ["revision", "defaults"], CHANNEL_KEYS);
+    const legacyClients = isRecord(record.clients) ? record.clients : {};
+    const overrides = {};
+    for (const [key, override] of Object.entries(legacyClients)) overrides[key] = normalizeOverride(override);
+    for (const key of ["happ", "onexray"]) {
+      if (Object.hasOwn(record, key)) overrides[key] = normalizeOverride(record[key]);
+    }
+    for (const key of PRIVATE_POLICY_CLIENTS) {
+      if (Object.hasOwn(record, key)) overrides[key] = normalizeOverride(record[key]);
+    }
     channels[channel] = {
       revision: normalizeRevision(record.revision),
       defaults: normalizeDefaults(record.defaults),
-      happ: normalizeOverride(record.happ),
-      onexray: normalizeOverride(record.onexray),
+      ...overrides,
     };
   }
   return deepFreeze({ schemaVersion: 1, channels });
@@ -268,7 +278,7 @@ export function resolvePrivatePolicy({ policy, channel, client } = {}) {
   if (!CHANNEL_SET.has(channel)) throw invalid("contains an unsupported channel");
   if (!CLIENT_SET.has(client)) throw invalid("contains an unsupported policy client");
   const record = normalized.channels[channel];
-  const override = record[client];
+  const override = record[client] ?? {};
   const result = {
     targets: { ...record.defaults.targets, ...(override.targets ?? {}) },
     dns: { ...record.defaults.dns, ...(override.dns ?? {}) },

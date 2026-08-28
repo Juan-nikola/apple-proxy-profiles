@@ -8,7 +8,6 @@ const ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
 const PRIVATE_CONFIG_PATH = resolve(ROOT, "secrets/substore.private.json");
 const PUBLIC_ROOT = "https://juan-nikola.github.io/apple-proxy-profiles";
 const CHANNELS = Object.freeze(["edge", "current", "previous"]);
-const HAPP_PUBLIC_CHANNEL = "current";
 const COLLECTIONS = Object.freeze([
   "apple-proxy-all",
   "apple-proxy-egern",
@@ -16,13 +15,9 @@ const COLLECTIONS = Object.freeze([
   "apple-proxy-shadowrocket",
   "apple-proxy-surge",
   "apple-proxy-singbox",
-  "apple-proxy-onexray",
-  "apple-proxy-happ",
-  "apple-proxy-v2rayn",
   "apple-proxy-v2box",
   "apple-proxy-clash",
 ]);
-const HAPP_PLATFORMS = Object.freeze(["macos", "iphone", "ipad", "android", "windows", "linux"]);
 
 function assertChannel(channel) {
   if (!CHANNELS.includes(channel)) throw new Error(`channel must be one of ${CHANNELS.join(", ")}`);
@@ -60,7 +55,7 @@ function nodeTask(name, client, channel, collection) {
     ? "shadowrocket-node-subscription.js"
     : client === "surge"
       ? "surge-nodes-generator.js"
-      : ["v2rayn", "v2box"].includes(client)
+      : client === "v2box"
         ? "substore-node-generator.js"
       : `${client}-node-generator.js`;
   return remoteTask(
@@ -118,16 +113,6 @@ export function canonicalTaskCatalog(channel = "current") {
     configTask("singbox-config-ipad", "sing-box", "sing-box-config-generator.js", channel, "apple-proxy-singbox", "ipad", "Apple-Proxy-Nodes", { profileMode: "light", nodeErrorMode: "strict" }),
     configTask("singbox-config-android", "sing-box", "sing-box-config-generator.js", channel, "apple-proxy-singbox", "android", "Apple-Proxy-Nodes", { profileMode: "light", nodeErrorMode: "strict" }),
     Object.freeze({ name: "apple-proxy-policy", client: "shared", kind: "private-policy", channel, policySchema: "schemaVersion=2; targets=single-layer; channels=edge,current,previous; readers accept schemaVersion=1", url: null }),
-    nodeTask("onexray-nodes", "onexray", channel, "apple-proxy-onexray"),
-    remoteTask("onexray-profile", "onexray", `${base(channel, "onexray", "onexray-profile-generator.js")}#${fragment({ output: "profile", type: "collection", name: "apple-proxy-onexray", channel, clientChain: "off" })}`, { output: "profile", collection: "apple-proxy-onexray", channel, policyInput: "apple-proxy-policy" }),
-    remoteTask("onexray-routing-audit", "onexray", `${base(channel, "onexray", "onexray-routing-audit.js")}#${fragment({ output: "audit", type: "collection", name: "apple-proxy-onexray", channel, clientChain: "off" })}`, { output: "audit", collection: "apple-proxy-onexray", channel, policyInput: "apple-proxy-policy" }),
-    ...HAPP_PLATFORMS.filter((platform) => platform !== "all").map((platform) => (
-      configTask(`happ-${platform}`, "happ", "happ-config-generator.js", HAPP_PUBLIC_CHANNEL, "apple-proxy-happ", platform, "Apple-Proxy-Happ", {}, { policyInput: "apple-proxy-policy", omitKeys: ["clientChain", "autoGroupMode", "channel"] })
-    )),
-    remoteTask("happ-routing-audit", "happ", `${base(HAPP_PUBLIC_CHANNEL, "happ", "happ-routing-audit.js")}#${fragment({ output: "audit", type: "collection", name: "apple-proxy-happ", subscriptionName: "Apple-Proxy-Happ", platform: "all" })}`, { output: "audit", collection: "apple-proxy-happ", platform: "all", channel: HAPP_PUBLIC_CHANNEL, policyInput: "apple-proxy-policy" }),
-    nodeTask("v2rayn-nodes", "v2rayn", channel, "apple-proxy-v2rayn"),
-    configTask("v2rayn-config-windows", "v2rayn", "substore-config-generator.js", channel, "apple-proxy-v2rayn", "windows", "Apple-Proxy-v2rayN", { region: "cn" }, { omitKeys: ["autoGroupMode"] }),
-    configTask("v2rayn-config-macos", "v2rayn", "substore-config-generator.js", channel, "apple-proxy-v2rayn", "macos", "Apple-Proxy-v2rayN", { region: "cn" }, { omitKeys: ["autoGroupMode"] }),
     nodeTask("v2box-nodes", "v2box", channel, "apple-proxy-v2box"),
     nodeTask("clash-nodes", "clash", channel, "apple-proxy-clash"),
     configTask("clash-config-macos", "clash", "clash-profile-generator.js", channel, "apple-proxy-clash", "macos", "Apple-Proxy-Clash", { nodeSubscriptionUrl: "<PRIVATE_CLASH_NODES_URL>" }),
@@ -137,7 +122,7 @@ export function canonicalTaskCatalog(channel = "current") {
     configTask("v2box-config-iphone", "v2box", "substore-config-generator.js", channel, "apple-proxy-v2box", "iphone", "Apple-Proxy-V2Box", { region: "cn" }, { omitKeys: ["autoGroupMode"] }),
     configTask("v2box-config-ipad", "v2box", "substore-config-generator.js", channel, "apple-proxy-v2box", "ipad", "Apple-Proxy-V2Box", { region: "cn" }, { omitKeys: ["autoGroupMode"] }),
   ];
-  if (tasks.length !== 40) throw new Error(`Expected 40 canonical tasks, got ${tasks.length}`);
+  if (tasks.length !== 27) throw new Error(`Expected 27 canonical tasks, got ${tasks.length}`);
   return Object.freeze(tasks);
 }
 
@@ -167,7 +152,7 @@ export function validatePrivateSubstoreConfig(config) {
     const result = checkSubstoreTaskUrl(task.url);
     if (!result.ok) return false;
   }
-  return config.tasks.length === 40;
+  return config.tasks.length === 27;
 }
 
 export async function writePrivateSubstoreConfig({ sourceUrl, channel = "current", path = PRIVATE_CONFIG_PATH } = {}) {

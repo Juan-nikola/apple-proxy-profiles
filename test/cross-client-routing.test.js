@@ -122,24 +122,6 @@ function parseSingBoxPolicies(config) {
   return policies;
 }
 
-function assertHappFallbackOrder(config) {
-  const rules = config.routing?.rules;
-  assert.ok(Array.isArray(rules), "HAPP routing rules must be an array");
-  const chinaIp = rules.findIndex((rule) => rule.ip?.includes("geoip:CN"));
-  const final = rules.findIndex((rule) => rule.network === "tcp,udp");
-  assert.ok(chinaIp >= 0, "HAPP must retain geoip:CN fallback");
-  assert.ok(final > chinaIp, "HAPP geoip:CN must precede the final proxy rule");
-}
-
-function assertOneXrayFallbackOrder(profile) {
-  const rules = profile.routing?.rules;
-  assert.ok(Array.isArray(rules), "OneXray routing rules must be an array");
-  const chinaIp = rules.findIndex((rule) => rule.ip?.includes("geoip:apple-proxy-china-ip"));
-  const final = rules.findIndex((rule) => rule.ruleTag === "final-follow");
-  assert.ok(chinaIp >= 0, "OneXray must retain apple-proxy China IP fallback");
-  assert.ok(final > chinaIp, "OneXray China IP fallback must precede the final proxy rule");
-}
-
 function expectedForCase(client, routingCase, policies, anywhere) {
   if (["local-domain", "private-ipv4", "private-ipv6"].includes(routingCase.kind)) return "DIRECT";
   if (client === "anywhere" && routingCase.kind === "security-privacy") {
@@ -202,13 +184,4 @@ test("all five generated client formats implement the shared lightweight behavio
       }
     });
   }
-});
-
-test("native HAPP and OneXray formats keep China IP fallback before their final proxy", async () => {
-  const happConfigs = JSON.parse(await readFile(new URL("clients/happ/examples/happ-config-macos.json", root), "utf8"));
-  assert.ok(happConfigs.length > 0, "HAPP example must contain a generated config");
-  assertHappFallbackOrder(happConfigs[0]);
-
-  const oneXray = JSON.parse(await readFile(new URL("clients/onexray/examples/onexray-profile.json", root), "utf8"));
-  assertOneXrayFallbackOrder(oneXray);
 });

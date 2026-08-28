@@ -30,14 +30,19 @@ var AnywhereStrategyBundle = (() => {
     shadowrocket: "shadowrocket",
     surge: "surge",
     singbox: "singbox",
-    onexray: "onexray",
-    happ: "happ",
-    v2rayn: "v2rayn",
     v2box: "v2box",
     clash: "clash"
   });
   var PRIVATE_POLICY_CHANNELS = Object.freeze(["edge", "current", "previous"]);
-  var PRIVATE_POLICY_CLIENTS = Object.freeze([CLIENT.happ, CLIENT.onexray]);
+  var PRIVATE_POLICY_CLIENTS = Object.freeze([
+    CLIENT.anywhere,
+    CLIENT.egern,
+    CLIENT.shadowrocket,
+    CLIENT.surge,
+    CLIENT.singbox,
+    CLIENT.v2box,
+    CLIENT.clash
+  ]);
   var PRIVATE_POLICY_TARGET_IDS = Object.freeze([
     "ai",
     "github",
@@ -128,7 +133,7 @@ var AnywhereStrategyBundle = (() => {
     });
   }
   var definitions = Object.freeze([
-    protocol(["ss", "shadowsocks"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.onexray, CLIENT.happ, CLIENT.v2rayn, CLIENT.v2box, CLIENT.clash], {
+    protocol(["ss", "shadowsocks"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.v2box, CLIENT.clash], {
       requiredFields: ["cipher", "password"]
     }),
     protocol(["ssr"], [CLIENT.shadowrocket, CLIENT.surge, CLIENT.clash], {
@@ -137,13 +142,13 @@ var AnywhereStrategyBundle = (() => {
     protocol(["snell"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox, CLIENT.clash], {
       requiredFields: ["psk", "version"]
     }),
-    protocol(["vmess"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox, CLIENT.onexray, CLIENT.happ, CLIENT.v2rayn, CLIENT.v2box, CLIENT.clash], {
+    protocol(["vmess"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox, CLIENT.v2box, CLIENT.clash], {
       requiredFields: ["uuid"]
     }),
-    protocol(["vless"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.singbox, CLIENT.onexray, CLIENT.happ, CLIENT.v2rayn, CLIENT.v2box, CLIENT.clash], {
+    protocol(["vless"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.singbox, CLIENT.v2box, CLIENT.clash], {
       requiredFields: ["uuid"]
     }),
-    protocol(["trojan"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.onexray, CLIENT.happ, CLIENT.v2rayn, CLIENT.v2box, CLIENT.clash], {
+    protocol(["trojan"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.v2box, CLIENT.clash], {
       requiredFields: ["password"],
       tls: true
     }),
@@ -151,7 +156,7 @@ var AnywhereStrategyBundle = (() => {
       requiredFields: ["password"],
       tls: true
     }),
-    protocol(["hysteria2", "hy2"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.onexray, CLIENT.happ, CLIENT.v2rayn, CLIENT.v2box, CLIENT.clash], {
+    protocol(["hysteria2", "hy2"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.v2box, CLIENT.clash], {
       requiredFields: ["password"],
       tls: true
     }),
@@ -159,8 +164,8 @@ var AnywhereStrategyBundle = (() => {
       requiredFields: ["uuid", "password"],
       tls: true
     }),
-    protocol(["socks5"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.onexray, CLIENT.happ, CLIENT.v2rayn, CLIENT.v2box, CLIENT.clash]),
-    protocol(["http"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox, CLIENT.onexray, CLIENT.v2rayn, CLIENT.v2box, CLIENT.clash]),
+    protocol(["socks5"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.v2box, CLIENT.clash]),
+    protocol(["http"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox, CLIENT.v2box, CLIENT.clash]),
     protocol(["ssh"], [CLIENT.egern, CLIENT.singbox, CLIENT.clash], {
       requiredFields: ["username"]
     }),
@@ -358,12 +363,6 @@ var AnywhereStrategyBundle = (() => {
   }
   function isNonblankString(value) {
     return typeof value === "string" && value.length > 0 && value.trim() === value;
-  }
-  function isDomainServer(value) {
-    if (!isNonblankString(value)) return false;
-    if (value.includes(":")) return false;
-    const parts = value.split(".");
-    return !(parts.length === 4 && parts.every((part) => /^\d+$/u.test(part) && Number(part) <= 255));
   }
   function isNonblankOpaqueString(value) {
     return typeof value === "string" && value.trim().length > 0;
@@ -1103,12 +1102,8 @@ var AnywhereStrategyBundle = (() => {
   }
   function evaluateNodeForClient(node, client) {
     if (!Object.values(CLIENT).includes(client)) return { supported: false, reason: "unsupported-client" };
-    if (client === CLIENT.happ) {
-      const reason = happNodeExclusionReason(node ?? {});
-      return reason ? { supported: false, reason } : { supported: true, reason: null };
-    }
-    if ([CLIENT.onexray, CLIENT.v2rayn, CLIENT.v2box].includes(client)) {
-      const reason = xrayNodeExclusionReason(node ?? {}, client);
+    if (client === CLIENT.v2box) {
+      const reason = evaluateXrayNodeExclusionReason(node ?? {}, client);
       return reason ? { supported: false, reason } : { supported: true, reason: null };
     }
     const protocol2 = normalizeProtocol(node?.type);
@@ -1119,12 +1114,9 @@ var AnywhereStrategyBundle = (() => {
     if (client === CLIENT.anywhere) transportReason = anywhereNodeExclusionReason(node ?? {});
     else if (client === CLIENT.egern) transportReason = egernNodeExclusionReason(node ?? {});
     else if (client === CLIENT.singbox) transportReason = singBoxNodeExclusionReason(node ?? {});
-    else if (client === CLIENT.happ) transportReason = happNodeExclusionReason(node ?? {});
-    else if (client === CLIENT.onexray) transportReason = oneXrayNodeExclusionReason(node ?? {});
     return transportReason ? { supported: false, reason: transportReason } : { supported: true, reason: null };
   }
-  var HAPP_XRAY_TRANSPORTS = /* @__PURE__ */ new Set(["tcp", "raw", "ws", "grpc"]);
-  var ONEXRAY_TRANSPORTS = /* @__PURE__ */ new Set([
+  var XRAY_TRANSPORTS = /* @__PURE__ */ new Set([
     "tcp",
     "raw",
     "ws",
@@ -1139,21 +1131,12 @@ var AnywhereStrategyBundle = (() => {
     "hysteria"
   ]);
   var XRAY_CHAIN_REASON = Object.freeze({
-    happ: "unsupported-happ-chain",
-    onexray: "unsupported-onexray-chain",
-    v2rayn: "unsupported-v2rayn-chain",
     v2box: "unsupported-v2box-chain"
   });
   var XRAY_PROTOCOL_REASON = Object.freeze({
-    happ: "unsupported-happ-protocol",
-    onexray: "unsupported-onexray-protocol",
-    v2rayn: "unsupported-v2rayn-protocol",
     v2box: "unsupported-v2box-protocol"
   });
   var XRAY_TRANSPORT_REASON = Object.freeze({
-    happ: "unsupported-happ-transport",
-    onexray: "unsupported-onexray-transport",
-    v2rayn: "unsupported-v2rayn-transport",
     v2box: "unsupported-v2box-transport"
   });
   function xrayCommonReason(node, client) {
@@ -1180,7 +1163,7 @@ var AnywhereStrategyBundle = (() => {
     if (security !== "reality" && reality !== void 0) return `unsupported-${client}-tls`;
     if (security === "reality") {
       if (!isPlainObject(reality) || !isNonblankOpaqueString(reality["public-key"])) {
-        return client === "onexray" ? "incomplete-onexray-reality" : client === "happ" ? "incomplete-happ-reality" : `incomplete-${client}-reality`;
+        return `incomplete-${client}-reality`;
       }
       if (Object.keys(reality).some((key) => !["public-key", "short-id", "spider-x", "_spider-x"].includes(key))) {
         return `unsupported-${client}-tls`;
@@ -1197,7 +1180,7 @@ var AnywhereStrategyBundle = (() => {
       return network2 !== "tcp" && network2 !== "udp" && network2 !== "quic" ? XRAY_TRANSPORT_REASON[client] : null;
     }
     const network = normalizeTransport(node);
-    const allowed = client === "happ" ? HAPP_XRAY_TRANSPORTS : ONEXRAY_TRANSPORTS;
+    const allowed = XRAY_TRANSPORTS;
     if (!allowed.has(network)) return XRAY_TRANSPORT_REASON[client];
     if (protocol2 === "socks5" && network !== "tcp" && network !== "raw") return XRAY_TRANSPORT_REASON[client];
     if ((protocol2 === "ss" || protocol2 === "shadowsocks") && (hasShadowsocksPlugin(node) || network !== "tcp" && network !== "raw")) {
@@ -1210,7 +1193,7 @@ var AnywhereStrategyBundle = (() => {
     for (const key of present) if (!isPlainObject(node[key])) return XRAY_TRANSPORT_REASON[client];
     return null;
   }
-  function xrayNodeExclusionReason(node, client) {
+  function evaluateXrayNodeExclusionReason(node, client) {
     const common = xrayCommonReason(node, client);
     if (common) return common;
     const protocol2 = normalizeProtocol(node.type);
@@ -1218,32 +1201,10 @@ var AnywhereStrategyBundle = (() => {
     if (tls) return tls;
     const transport = xrayTransportReason(node, client, protocol2);
     if (transport) return transport;
-    if (client === "happ") {
-      const network = normalizeTransport(node);
-      const security = node.security === "reality" || node["reality-opts"] !== void 0 ? "reality" : node.tls === true || node.security === "tls" ? "tls" : "none";
-      if (security === "reality" && (protocol2 === "hysteria2" || protocol2 === "hy2" || !["tcp", "raw", "grpc"].includes(network))) {
-        return "unsupported-happ-tls";
-      }
-      if (protocol2 === "hysteria2" || protocol2 === "hy2") {
-        const obfs = node.obfs === void 0 ? void 0 : String(node.obfs).toLowerCase();
-        const obfsPassword = node["obfs-password"] ?? node.obfs_password;
-        if (obfs !== void 0 && (obfs !== "salamander" || typeof obfsPassword !== "string" || obfsPassword.length === 0)) {
-          return "unsupported-happ-hysteria2-obfs";
-        }
-        if (obfs === void 0 && obfsPassword !== void 0) return "unsupported-happ-hysteria2-obfs";
-        if (security === "tls" && !isNonblankString(node.sni ?? node.servername) && !isDomainServer(node.server)) return "incomplete-happ-tls";
-      }
-    }
-    if (["happ", "v2rayn", "v2box"].includes(client) && protocol2 === "socks5" && (node.tls === true || node.security === "tls" || node.security === "reality")) {
+    if (client === "v2box" && protocol2 === "socks5" && (node.tls === true || node.security === "tls" || node.security === "reality")) {
       return `unsupported-${client}-tls`;
     }
     return null;
-  }
-  function happNodeExclusionReason(node) {
-    return xrayNodeExclusionReason(node, "happ");
-  }
-  function oneXrayNodeExclusionReason(node) {
-    return xrayNodeExclusionReason(node, "onexray");
   }
   function singBoxNodeExclusionReason(node) {
     if (normalizeProtocol(node?.type) !== "snell") return null;
@@ -1352,45 +1313,6 @@ var AnywhereStrategyBundle = (() => {
       publicDirectory: "sing-box"
     },
     {
-      id: CLIENT.onexray,
-      displayName: "OneXray",
-      state: "active",
-      platforms: ["macos", "iphone", "ipad", "android", "windows", "linux"],
-      configFormat: "xray-profile-json",
-      ruleFormat: "xray-geodata",
-      nodeValidator: "onexray",
-      separatesProfile: false,
-      supportsPolicyOverrides: false,
-      adapterSchema: "onexray-v1",
-      publicDirectory: "onexray"
-    },
-    {
-      id: CLIENT.happ,
-      displayName: "HAPP",
-      state: "active",
-      platforms: ["iphone", "ipad", "macos", "android"],
-      configFormat: "happ-json",
-      ruleFormat: "happ-json",
-      nodeValidator: "happ",
-      separatesProfile: false,
-      supportsPolicyOverrides: false,
-      adapterSchema: "happ-v4",
-      publicDirectory: "happ"
-    },
-    {
-      id: CLIENT.v2rayn,
-      displayName: "v2rayN",
-      state: "active",
-      platforms: ["windows", "macos"],
-      configFormat: "xray-profile-json",
-      ruleFormat: "xray-geodata",
-      nodeValidator: "v2rayn",
-      separatesProfile: false,
-      supportsPolicyOverrides: false,
-      adapterSchema: "v2rayn-v1",
-      publicDirectory: "v2rayn"
-    },
-    {
       id: CLIENT.v2box,
       displayName: "V2Box",
       state: "active",
@@ -1434,9 +1356,7 @@ var AnywhereStrategyBundle = (() => {
   var FRONTIER_CHANNELS = Object.freeze(["current"]);
   var FRONTIER_PLATFORMS = Object.freeze({
     [CLIENT.surge]: Object.freeze(["macos", "iphone", "ipad"]),
-    [CLIENT.singbox]: Object.freeze(["macos", "iphone", "ipad", "android", "openwrt"]),
-    [CLIENT.onexray]: Object.freeze(["macos", "iphone", "ipad", "android", "windows", "linux"]),
-    [CLIENT.happ]: Object.freeze(["macos", "iphone", "ipad", "android", "windows", "linux"])
+    [CLIENT.singbox]: Object.freeze(["macos", "iphone", "ipad", "android", "openwrt"])
   });
 
   // ../../../shared/serialization/strict-json.js
@@ -1770,7 +1690,7 @@ var AnywhereStrategyBundle = (() => {
   }
 
   // ../../../shared/policies/private-policy.js
-  var CHANNEL_KEYS = /* @__PURE__ */ new Set(["revision", "defaults", "happ", "onexray"]);
+  var CHANNEL_KEYS = /* @__PURE__ */ new Set(["revision", "defaults", "happ", "onexray", "clients", ...PRIVATE_POLICY_CLIENTS]);
   var DEFAULT_KEYS = /* @__PURE__ */ new Set(["targets", "dns", "adblockMode", "clientChain"]);
   var OVERRIDE_KEYS = DEFAULT_KEYS;
   var DNS_KEYS = /* @__PURE__ */ new Set(["chinaDns", "globalDns"]);
@@ -1932,12 +1852,20 @@ var AnywhereStrategyBundle = (() => {
     const channels = {};
     for (const channel of PRIVATE_POLICY_CHANNELS) {
       const record2 = requireRecord(value.channels[channel], "channel must be an object");
-      requireKeys(record2, ["revision", "defaults", "happ", "onexray"], CHANNEL_KEYS);
+      requireKeys(record2, ["revision", "defaults"], CHANNEL_KEYS);
+      const legacyClients = isRecord(record2.clients) ? record2.clients : {};
+      const overrides = {};
+      for (const [key, override] of Object.entries(legacyClients)) overrides[key] = normalizeOverride(override);
+      for (const key of ["happ", "onexray"]) {
+        if (Object.hasOwn(record2, key)) overrides[key] = normalizeOverride(record2[key]);
+      }
+      for (const key of PRIVATE_POLICY_CLIENTS) {
+        if (Object.hasOwn(record2, key)) overrides[key] = normalizeOverride(record2[key]);
+      }
       channels[channel] = {
         revision: normalizeRevision(record2.revision),
         defaults: normalizeDefaults(record2.defaults),
-        happ: normalizeOverride(record2.happ),
-        onexray: normalizeOverride(record2.onexray)
+        ...overrides
       };
     }
     return deepFreeze({ schemaVersion: 1, channels });
@@ -1998,7 +1926,7 @@ var AnywhereStrategyBundle = (() => {
     if (!CHANNEL_SET.has(channel)) throw invalid2("contains an unsupported channel");
     if (!CLIENT_SET.has(client)) throw invalid2("contains an unsupported policy client");
     const record2 = normalized.channels[channel];
-    const override = record2[client];
+    const override = record2[client] ?? {};
     const result = {
       targets: { ...record2.defaults.targets, ...override.targets ?? {} },
       dns: { ...record2.defaults.dns, ...override.dns ?? {} },
@@ -2088,7 +2016,7 @@ var AnywhereStrategyBundle = (() => {
   function resolveUnifiedPolicy({
     policy = null,
     channel = "current",
-    client = CLIENT.happ,
+    client = CLIENT.surge,
     allNodes = [],
     eligibleNodes = allNodes
   } = {}) {
