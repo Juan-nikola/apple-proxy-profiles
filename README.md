@@ -29,6 +29,10 @@ apple-proxy-clash
 
 第一次建议只配置 `apple-proxy-surge`。选择节点时保留你确认可用的协议；不要把真实订阅 URL、UUID、密码或私钥写进 GitHub。
 
+![手动选择 collection 的界面示意](docs/assets/substore-collections-guide.svg)
+
+图中绿色勾选框代表你在“手动选择的订阅”列表中实际勾选的来源。8 个 collection 都按这个方式配置；“标签”字段留空，保存后应看到“手动选择的订阅”，而不是“关联订阅标签”。
+
 #### 2. 创建 Surge Profile File task
 
 在 Sub-Store 新建 File，选择远程脚本：
@@ -55,6 +59,10 @@ autoGroupMode=auto
 clientChain=off
 channel=current
 ```
+
+![创建远程 File task 的界面示意](docs/assets/substore-file-task-guide.svg)
+
+新版界面中选择“文件 → 远程”，把完整 generator URL 粘贴到“链接”框，再点击 Preview 和保存。仓库的 27 个 canonical task 已按同样字段组织；参数中的私密节点 URL 只填写在你自己的 Sub-Store，不要回填到 README 或 GitHub。
 
 macOS 将 `platform` 改为 `macos`、`ipv6Mode` 改为 `ipv4-only`；iPad 使用 `platform=ipad`。旧版 Sub-Store 如果只有一个 URL 输入框，把参数放在 `#` 后并用 `&` 分隔，不能写成 `?output=config`。
 

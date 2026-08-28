@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="620" viewBox="0 0 1200 620">
+  <rect width="1200" height="620" fill="#f8fafc"/>
+  <rect x="30" y="24" width="1140" height="572" rx="8" fill="#ffffff" stroke="#cbd5e1"/>
+  <rect x="30" y="24" width="1140" height="58" rx="8" fill="#0f172a"/>
+  <text x="60" y="60" fill="#ffffff" font-family="Arial, sans-serif" font-size="22" font-weight="700">Sub-Store · 组合订阅（界面示意）</text>
+  <rect x="58" y="108" width="1084" height="48" rx="5" fill="#e2e8f0"/>
+  <text x="82" y="139" fill="#334155" font-family="Arial, sans-serif" font-size="18">组合订阅</text>
+  <text x="294" y="139" fill="#64748b" font-family="Arial, sans-serif" font-size="17">名称：Apple Proxy Surge</text>
+  <text x="670" y="139" fill="#64748b" font-family="Arial, sans-serif" font-size="17">标签：留空</text>
+  <rect x="58" y="180" width="1084" height="310" rx="5" fill="#f1f5f9" stroke="#cbd5e1"/>
+  <text x="84" y="217" fill="#0f172a" font-family="Arial, sans-serif" font-size="19" font-weight="700">手动选择的订阅</text>
+  <text x="84" y="248" fill="#64748b" font-family="Arial, sans-serif" font-size="16">不要填写“关联订阅标签”，点击右侧选择按钮后勾选来源。</text>
+  <g font-family="Arial, sans-serif" font-size="17">
+    <rect x="84" y="276" width="500" height="48" rx="4" fill="#ffffff" stroke="#22c55e" stroke-width="2"/>
+    <text x="108" y="307" fill="#166534">✓ [自建]snell</text>
+    <rect x="610" y="276" width="500" height="48" rx="4" fill="#ffffff" stroke="#22c55e" stroke-width="2"/>
+    <text x="634" y="307" fill="#166534">✓ [自建]Vlesshy2</text>
+    <rect x="84" y="342" width="500" height="48" rx="4" fill="#ffffff" stroke="#22c55e" stroke-width="2"/>
+    <text x="108" y="373" fill="#166534">✓ anytls</text>
+    <rect x="610" y="342" width="500" height="48" rx="4" fill="#ffffff" stroke="#22c55e" stroke-width="2"/>
+    <text x="634" y="373" fill="#166534">✓ [realm]</text>
+  </g>
+  <rect x="84" y="425" width="1026" height="38" rx="4" fill="#dcfce7"/>
+  <text x="104" y="450" fill="#166534" font-family="Arial, sans-serif" font-size="16">保存后应显示：手动选择的订阅（4 个来源），不显示“关联的订阅标签”。</text>
+  <text x="60" y="558" fill="#64748b" font-family="Arial, sans-serif" font-size="15">示意图不含真实订阅地址、节点、账号或 API Token。</text>
+</svg>
