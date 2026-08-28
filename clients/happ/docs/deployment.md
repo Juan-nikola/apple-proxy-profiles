@@ -10,7 +10,7 @@
 
 ## 私密 Sub-Store
 
-在自己的 Sub-Store 中使用 `current/happ/scripts/happ-config-generator.js`，并把真实 collection 名称放在私密任务参数中。只建立 `macos`、`iphone`、`ipad` 三个平台任务；另建一个 `happ-routing-audit` 任务检查兼容性和策略解析。HAPP URL 必须保持 `/current/happ/`，不要把私密节点 URL、token 或 policy 正文写入公开文档。
+在自己的 Sub-Store 中创建 File 后，给它添加“脚本操作/Script Operator”，并在脚本操作里以“远程链接”引用 `current/happ/scripts/happ-config-generator.js`；File 源内容保持为空。不要把 generator URL 填到 File 的“远程源文件”字段，否则 Preview 会原样显示 JavaScript 源码。把真实 collection 名称放在私密任务参数中。只建立 `macos`、`iphone`、`ipad` 三个平台任务；另建一个 `happ-routing-audit` 任务检查兼容性和策略解析。HAPP URL 必须保持 `/current/happ/`，不要把私密节点 URL、token 或 policy 正文写入公开文档。
 
 ### HAPP 三平台 JSON 导入方式
 

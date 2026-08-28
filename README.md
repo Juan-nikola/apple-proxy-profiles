@@ -63,7 +63,7 @@ channel=current
 
 ![创建远程 File task 的界面示意](docs/assets/substore-file-task-guide.svg)
 
-新版界面中选择“文件 → 远程”，把完整 generator URL 粘贴到“链接”框，再点击 Preview 和保存。仓库的 30 个 canonical task 已按同样字段组织；参数中的私密节点 URL 只填写在你自己的 Sub-Store，不要回填到 README 或 GitHub。
+新版界面中创建一个文件后，在“文件操作”里添加“脚本操作/Script Operator”，将 generator URL 填入脚本操作的“远程链接”；文件本身保持空内容，不要把 generator URL 填到“文件 → 远程”的源文件链接，否则 Preview 只会显示 JavaScript 源码。然后点击 Preview 和保存。仓库的 30 个 canonical task 已按同样字段组织；参数中的私密节点 URL 只填写在你自己的 Sub-Store，不要回填到 README 或 GitHub。
 
 macOS 将 `platform` 改为 `macos`、`ipv6Mode` 改为 `ipv4-only`；iPad 使用 `platform=ipad`。旧版 Sub-Store 如果只有一个 URL 输入框，把参数放在 `#` 后并用 `&` 分隔，不能写成 `?output=config`。
 

@@ -8,7 +8,7 @@
 
 ## 脚本与任务
 
-canonical catalog 共 30 个 File task。配置任务读取 schema v2 policy，节点任务不读取 policy。典型路径：
+canonical catalog 共 30 个 File task。每个 generator task 都是“File + Script Operator”：File 源内容留空，Script Operator 以远程链接引用下面的 JS；不要把 JS 放到 File 的远程源文件字段。配置任务读取 schema v2 policy，节点任务不读取 policy。典型路径：
 
 ```text
 current/egern/scripts/egern-node-generator.js
