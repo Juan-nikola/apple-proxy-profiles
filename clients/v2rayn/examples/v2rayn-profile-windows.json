@@ -106,6 +106,15 @@
       },
       {
         "domain": [
+          "domain:chatgpt.com",
+          "domain:chat.openai.com",
+          "domain:openai.com"
+        ],
+        "outboundTag": "proxy",
+        "ruleTag": "explicit-ai-domains"
+      },
+      {
+        "domain": [
           "geosite:category-ads-all"
         ],
         "outboundTag": "block",

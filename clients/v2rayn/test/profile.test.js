@@ -117,6 +117,30 @@ test("applies the unified JSON policy to built-in AI rules without GeoData", () 
   assert.equal(githubRule?.outboundTag, "proxy");
 });
 
+test("routes ChatGPT hostnames through the fixed AI target before GeoData fallbacks", () => {
+  const options = parseV2rayNOptions({ output: "config", type: "collection", name: "fixture", platform: "macos" });
+  const homeNode = {
+    name: "TEST_ONLY_Home_Node",
+    type: "vless",
+    server: "home.invalid",
+    port: 443,
+    uuid: "TEST_ONLY_HOME_UUID",
+    _profile: { id: "home-id" },
+  };
+  const profile = renderV2rayNProfile({
+    options,
+    nodes: [homeNode],
+    policyResolution: {
+      fixedNodes: [{ nodeId: "home-id", node: homeNode, name: homeNode.name }],
+      targets: { ai: { resolved: homeNode.name, nodeId: "home-id" } },
+    },
+  });
+  const rule = profile.routing.rules.find(({ domain }) => domain?.includes("domain:chatgpt.com"));
+  assert.deepEqual(rule?.domain, ["domain:chatgpt.com", "domain:chat.openai.com", "domain:openai.com"]);
+  assert.equal(rule?.outboundTag, "ap-fixed-0");
+  assert.ok(profile.routing.rules.indexOf(rule) < profile.routing.rules.findIndex(({ ruleTag }) => ruleTag === "builtin-overseas-proxy"));
+});
+
 test("renders default direct, proxy, and block business categories without GeoData", () => {
   const options = parseV2rayNOptions({ output: "config", type: "collection", name: "fixture", platform: "macos" });
   const profile = renderV2rayNProfile({
