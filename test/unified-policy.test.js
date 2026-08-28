@@ -92,7 +92,7 @@ test("rejects ambiguous, missing, and incompatible exact references instead of f
       target: "NODE:🇺🇸仅支持节点",
       eligibleNodes: [],
       allNodes: incompatible,
-      client: "happ",
+      client: "surge",
     }),
     /incompatible/iu,
   );
@@ -114,7 +114,7 @@ test("parses the simple schemaVersion 2 policy and applies built-in defaults", (
   assert.equal(policy.targets.apple, "DIRECT");
   assert.equal(policy.targets.download, "DIRECT");
 
-  const resolved = resolvePrivatePolicy({ policy, channel: "current", client: "happ" });
+  const resolved = resolvePrivatePolicy({ policy, channel: "current", client: "surge" });
   assert.equal(resolved.targets.ai, "NODE:🇺🇸qqpw家宽|vless");
   assert.equal(resolved.targets.final, "FOLLOW");
 });
@@ -180,7 +180,7 @@ test("resolves unified v2 NODE targets against original names and exposes displa
   }));
   const resolution = resolveUnifiedPolicy({
     policy,
-    client: "happ",
+    client: "surge",
     allNodes: nodes,
     eligibleNodes: nodes,
   });

@@ -37,12 +37,6 @@ const CLIENT_RULE_PREFIXES = Object.freeze({
     "sing-box/mobile-rule-sets/",
   ],
   anywhere: ["anywhere/rules/"],
-  // Native Xray adapters publish private generator scripts rather than the
-  // shared lightweight rule-file tree, so their referenced rule-byte count is
-  // intentionally zero in root manifests.
-  onexray: [],
-  happ: [],
-  v2rayn: [],
   v2box: [],
 });
 const SHA256 = /^[0-9a-f]{64}$/u;

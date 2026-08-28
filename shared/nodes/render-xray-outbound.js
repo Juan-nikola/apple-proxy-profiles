@@ -1,7 +1,7 @@
 import { normalizeProtocol, protocolSupportsClient } from "../nodes/protocol-registry.js";
 
 const TAG = /^ap-[a-z0-9][a-z0-9/_-]{0,127}$/u;
-const label = (client) => client === "onexray" ? "OneXray" : String(client ?? "Xray");
+const label = (client) => String(client ?? "Xray");
 function required(node, key, client) { const value = node[key]; if (typeof value !== "string" || !value || value.trim() !== value) throw new Error(`${label(client)} node field '${key}' is invalid`); return value; }
 function port(node, client) { const value = Number(node.port); if (!Number.isInteger(value) || value < 1 || value > 65535) throw new Error(`${label(client)} node port is invalid`); return value; }
 function transport(node, client) {
@@ -17,7 +17,7 @@ function transport(node, client) {
   throw new Error(`unsupported-${client}-transport`);
 }
 function security(node, result, client) { const reality = node["reality-opts"]; const name = node.security === "reality" || reality ? "reality" : node.tls === true || node.security === "tls" ? "tls" : "none"; if (name === "none") return; result.security = name; if (name === "reality") { if (!reality || typeof reality["public-key"] !== "string" || !reality["public-key"]) throw new Error(`incomplete-${client}-reality`); result.realitySettings = { serverName: node.sni ?? node.servername ?? "", fingerprint: node["client-fingerprint"] ?? "chrome", publicKey: reality["public-key"], ...(reality["short-id"] ? { shortId: reality["short-id"] } : {}), ...(reality["spider-x"] || reality["_spider-x"] ? { spiderX: reality["spider-x"] ?? reality["_spider-x"] } : {}) }; } else result.tlsSettings = { serverName: node.sni ?? node.servername ?? "", allowInsecure: node["skip-cert-verify"] === true || node["allow-insecure"] === true, ...(node.alpn ? { alpn: [...node.alpn] } : {}), ...(node["client-fingerprint"] ? { fingerprint: node["client-fingerprint"] } : {}) }; }
-export function renderXrayOutbound(node, { tag, client = "onexray" } = {}) {
+export function renderXrayOutbound(node, { tag, client = "v2box" } = {}) {
   if (!node || typeof node !== "object" || Array.isArray(node)) throw new TypeError(`${label(client)} node is invalid`);
   if (typeof node.name !== "string" || !node.name || /[\r\n]/u.test(node.name)) throw new Error(`${label(client)} node name is invalid`);
   if (typeof tag !== "string" || !TAG.test(tag)) throw new Error(`${label(client)} outbound tag is invalid`);
@@ -33,5 +33,5 @@ export function renderXrayOutbound(node, { tag, client = "onexray" } = {}) {
   else throw new Error(`unsupported-${client}-protocol`);
   const stream = transport(node, client); if (stream) out.streamSettings = stream; security(node, out.streamSettings ?? (out.streamSettings = {}), client); if (out.streamSettings && Object.keys(out.streamSettings).length === 0) delete out.streamSettings; return out;
 }
-export function renderXraySubscription({ nodes, client = "onexray" } = {}) { if (!Array.isArray(nodes) || nodes.length === 0) throw new Error(`${label(client)} subscription cannot be empty`); const names = new Set(); const outbounds = nodes.map((node, index) => { if (names.has(node.name)) throw new Error(`${label(client)} subscription contains duplicate node names`); names.add(node.name); return { ...renderXrayOutbound(node, { tag: `ap-node-${index.toString(36)}`, client }), tag: node.name }; }); return `${JSON.stringify({ outbounds })}\n`; }
-export function renderXrayNodeError(error, client = "onexray") { const reason = error?.message?.match(/^unsupported-[a-z0-9-]+/u)?.[0] ?? `render-failure-${client}`; return Object.freeze({ client, excluded: Object.freeze({ [reason]: 1 }) }); }
+export function renderXraySubscription({ nodes, client = "v2box" } = {}) { if (!Array.isArray(nodes) || nodes.length === 0) throw new Error(`${label(client)} subscription cannot be empty`); const names = new Set(); const outbounds = nodes.map((node, index) => { if (names.has(node.name)) throw new Error(`${label(client)} subscription contains duplicate node names`); names.add(node.name); return { ...renderXrayOutbound(node, { tag: `ap-node-${index.toString(36)}`, client }), tag: node.name }; }); return `${JSON.stringify({ outbounds })}\n`; }
+export function renderXrayNodeError(error, client = "v2box") { const reason = error?.message?.match(/^unsupported-[a-z0-9-]+/u)?.[0] ?? `render-failure-${client}`; return Object.freeze({ client, excluded: Object.freeze({ [reason]: 1 }) }); }

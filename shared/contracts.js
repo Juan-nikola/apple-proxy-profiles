@@ -4,15 +4,15 @@ export const CLIENT = Object.freeze({
   shadowrocket: "shadowrocket",
   surge: "surge",
   singbox: "singbox",
-  onexray: "onexray",
-  happ: "happ",
-  v2rayn: "v2rayn",
   v2box: "v2box",
   clash: "clash",
 });
 
 export const PRIVATE_POLICY_CHANNELS = Object.freeze(["edge", "current", "previous"]);
-export const PRIVATE_POLICY_CLIENTS = Object.freeze([CLIENT.happ, CLIENT.onexray]);
+export const PRIVATE_POLICY_CLIENTS = Object.freeze([
+  CLIENT.anywhere, CLIENT.egern, CLIENT.shadowrocket, CLIENT.surge,
+  CLIENT.singbox, CLIENT.v2box, CLIENT.clash,
+]);
 export const PRIVATE_POLICY_TARGET_IDS = Object.freeze([
   "ai",
   "github",

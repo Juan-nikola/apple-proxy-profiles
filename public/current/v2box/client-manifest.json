@@ -3,18 +3,18 @@
   "client": "v2box",
   "files": [
     {
-      "bytes": 173306,
+      "bytes": 169526,
       "path": "v2box/scripts/substore-config-generator.js",
-      "sha256": "bbbfee56408f4f416c5fdb663c5c6fcc5a8df5d0a19f592dcd3035a988462e99"
+      "sha256": "080333d0629a1541e32192d54cfce922da3286d98100bf819fe72ae26052be2f"
     },
     {
-      "bytes": 124061,
+      "bytes": 119843,
       "path": "v2box/scripts/substore-node-generator.js",
-      "sha256": "9f99a46b28e144789d985dc5130d556c89b05f1e4e8251b4e92e73472e679784"
+      "sha256": "51c20e718810a63758e802188f2341040da393ac0bbf252eab97ef3bcad679ac"
     }
   ],
   "generatedAt": "2026-08-25T18:39:12Z",
-  "manifestHash": "364b969fc737d139726089681fa03f90eb11b6f0802679e59496f0286e2445d3",
+  "manifestHash": "9efc91638d96682cf36445c0a311e342950740f1c8041104bdf3bc2f2ea748ec",
   "optionalPacks": {},
   "schemaVersion": 1,
   "sharedAssets": [
@@ -29,9 +29,9 @@
       "sha256": "b3a06027317337df9650c1f67182250e028d11b335ed994b22ab48dfd1b18219"
     },
     {
-      "bytes": 36934,
+      "bytes": 36931,
       "path": "geodata/cn/manifest.json",
-      "sha256": "d8006298900d1f6f5f18d1213210253338f5bd5de36e287558c57ec6a1b3fec2"
+      "sha256": "b21cc3121a6e411f86b03c945283d4ffcb4c44da2ca5ec65a0eaa71085b675e1"
     },
     {
       "bytes": 92772,
@@ -44,9 +44,9 @@
       "sha256": "95f685a0237e6a54f0e427b9b7efa42dbec9598b2b402d7b980431a955968522"
     },
     {
-      "bytes": 33740,
+      "bytes": 33737,
       "path": "geodata/global/manifest.json",
-      "sha256": "7d1533b22520ddd5a6cc2f73e1f63f335c970c23aced6089a16a96f72a33ef8d"
+      "sha256": "875fced58489ef90af298d03c2087bc8a23792526f2dbd27e03c4b024c969451"
     },
     {
       "bytes": 92796,
@@ -59,9 +59,9 @@
       "sha256": "72cba744bbfff6e8afeeeecca4a7ff192a8fb67c1f304cdbcf7cbf68884bc83f"
     },
     {
-      "bytes": 34737,
+      "bytes": 34734,
       "path": "geodata/ir/manifest.json",
-      "sha256": "2141722ec703141de3477729b2654144e1d03d98dbdf3a49f08556886c8f4732"
+      "sha256": "f19972a787b23610bd6c6d8740505d3b5e8ce8b196d74ba45aac367eb7896673"
     },
     {
       "bytes": 92798,
@@ -74,9 +74,9 @@
       "sha256": "a2f5d66c7f52924bebac8878f5d4a1a74239ca6d1c11e2e07cb4b1113aabaafa"
     },
     {
-      "bytes": 34766,
+      "bytes": 34763,
       "path": "geodata/ru/manifest.json",
-      "sha256": "f4b4dc729f8b578fe028e9f2dd56edcd0aa212c93e24a81302321878a407858a"
+      "sha256": "d9e8a20c40a9797de411b564aeb551c76d9d1de084b3717918078ec675373901"
     }
   ]
 }

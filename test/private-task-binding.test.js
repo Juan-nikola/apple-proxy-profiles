@@ -19,17 +19,16 @@ const policy = parsePrivatePolicy(JSON.stringify({
       adblockMode: "off",
       clientChain: { mode: "off" },
     },
-    happ: {},
-    onexray: {},
+    clients: { surge: {} },
   }])),
 }));
 
-const manifest = { client: "happ", manifestHash: "a".repeat(64) };
+const manifest = { client: "surge", manifestHash: "a".repeat(64) };
 const geoDataSha256 = "b".repeat(64);
 
 test("binds a policy-reading task to one channel and public evidence hashes", () => {
   const binding = bindPrivateTask({
-    client: "happ",
+    client: "surge",
     channel: "edge",
     policy,
     publicManifest: manifest,
@@ -37,7 +36,7 @@ test("binds a policy-reading task to one channel and public evidence hashes", ()
     readsPolicy: true,
   });
   assert.deepEqual(binding, {
-    client: "happ",
+    client: "surge",
     channel: "edge",
     policyRevision: "edge-2026-08-18-a",
     publicClientManifestSha256: "a".repeat(64),
@@ -52,14 +51,14 @@ test("binds a policy-reading task to one channel and public evidence hashes", ()
 
 test("binds node-only tasks without policy revision and rejects policy injection", () => {
   const binding = bindPrivateTask({
-    client: "onexray",
+    client: "v2box",
     channel: "previous",
-    publicManifest: { client: "onexray", manifestHash: "c".repeat(64) },
+    publicManifest: { client: "v2box", manifestHash: "c".repeat(64) },
     geoDataSha256: "d".repeat(64),
     readsPolicy: false,
   });
   assert.deepEqual(binding, {
-    client: "onexray",
+    client: "v2box",
     channel: "previous",
     policyRevision: null,
     publicClientManifestSha256: "c".repeat(64),
@@ -67,10 +66,10 @@ test("binds node-only tasks without policy revision and rejects policy injection
     readsPolicy: false,
   });
   assert.throws(() => bindPrivateTask({
-    client: "onexray",
+    client: "v2box",
     channel: "previous",
     policy,
-    publicManifest: { client: "onexray", manifestHash: "c".repeat(64) },
+    publicManifest: { client: "v2box", manifestHash: "c".repeat(64) },
     geoDataSha256: "d".repeat(64),
     readsPolicy: false,
   }), /policy|override|node-only/iu);
@@ -81,30 +80,23 @@ test("rejects channel, identity, revision and digest mismatches", () => {
     client: "surge", channel: "edge", policy,
     publicManifest: { client: "surge", manifestHash: "a".repeat(64) },
     geoDataSha256, readsPolicy: false,
-  }), /client|private-policy/iu);
+  }), /client|private-policy|node-only/iu);
   assert.throws(() => bindPrivateTask({
-    client: "surge", channel: "edge", policy, publicManifest: { client: "surge", manifestHash: "a".repeat(64) },
-    geoDataSha256, readsPolicy: true,
-  }), /client|private/iu);
-  assert.throws(() => bindPrivateTask({
-    client: "happ", channel: "beta", policy, publicManifest: manifest, geoDataSha256, readsPolicy: true,
+    client: "surge", channel: "beta", policy, publicManifest: manifest, geoDataSha256, readsPolicy: true,
   }), /channel/iu);
-  assert.throws(() => bindPrivateTask({
-    client: "onexray", channel: "edge", policy, publicManifest: manifest, geoDataSha256, readsPolicy: true,
-  }), /client|identity/iu);
   for (const badHash of ["A".repeat(64), "a".repeat(63), "g".repeat(64), "a".repeat(65)]) {
     assert.throws(() => bindPrivateTask({
-      client: "happ", channel: "edge", policy,
-      publicManifest: { client: "happ", manifestHash: badHash }, geoDataSha256, readsPolicy: true,
+      client: "surge", channel: "edge", policy,
+      publicManifest: { client: "surge", manifestHash: badHash }, geoDataSha256, readsPolicy: true,
     }), /sha|digest|manifest/iu);
   }
   assert.throws(() => bindPrivateTask({
-    client: "happ", channel: "edge", policy,
+    client: "surge", channel: "edge", policy,
     publicManifest: manifest, geoDataSha256: "A".repeat(64), readsPolicy: true,
   }), /sha|digest|geo/iu);
   assert.throws(() => bindPrivateTask({
-    client: "happ", channel: "edge", policy,
-    publicManifest: { client: "happ", manifestHash: "a".repeat(64), channel: "current" },
+    client: "surge", channel: "edge", policy,
+    publicManifest: { client: "surge", manifestHash: "a".repeat(64), channel: "current" },
     geoDataSha256, readsPolicy: true,
   }), /channel/iu);
 });
@@ -115,12 +107,12 @@ test("requires a non-empty revision for policy-reading tasks and does not leak s
   const secret = "TEST_ONLY_SECRET_SENTINEL";
   assert.throws(
     () => bindPrivateTask({
-      client: "happ", channel: "edge", policy: malformedPolicy,
+      client: "surge", channel: "edge", policy: malformedPolicy,
       publicManifest: manifest, geoDataSha256, readsPolicy: true,
     }),
     (error) => !error.message.includes(secret) && /revision|policy/iu.test(error.message),
   );
   assert.throws(() => bindPrivateTask({
-    client: "happ", channel: "edge", policy, publicManifest: manifest, geoDataSha256, readsPolicy: "true",
+    client: "surge", channel: "edge", policy, publicManifest: manifest, geoDataSha256, readsPolicy: "true",
   }), /readsPolicy|boolean/iu);
 });

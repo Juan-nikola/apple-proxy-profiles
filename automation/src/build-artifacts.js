@@ -27,17 +27,7 @@ import { SEMANTIC_INTENTS } from "../../shared/rules/semantic-intents.js";
 import { RULE_KIND } from "../../shared/rules/model.js";
 import { buildImportBatches, renderImportPage } from "../../clients/anywhere/src/build-import-page.js";
 import { ANYWHERE_LIGHTWEIGHT_MIGRATION } from "../../clients/anywhere/src/shard-rules.js";
-import { buildOneXrayGeoDataArtifacts } from "../../clients/onexray/src/build-import-page.js";
-import { renderHappGeodata } from "./render-happ-geodata.js";
 import { buildRegionGeoDataArtifacts } from "./render-region-geodata.js";
-import {
-  renderHappImportPage,
-} from "../../clients/happ/src/build-import-page.js";
-import {
-  renderHappRoutingDeepLink,
-  renderHappRoutingProfile,
-  renderHappRoutingQrSvgSync,
-} from "../../clients/happ/src/render-routing-profile.js";
 import {
   activeClientIds,
   allClientIds,
@@ -50,10 +40,6 @@ import { FRONTIER_CHANNELS } from "../../shared/release/frontier-manifest.js";
 const CLIENT_PATHS = Object.freeze(Object.fromEntries(
   activeClientIds().map((client) => [client, publicDirectoryForClient(client)]),
 ));
-// HAPP and OneXray are native Xray adapters: their private generators emit
-// complete profiles/subscriptions and do not consume the shared lightweight
-// rule-file tree. Keep them in the public client-manifest set, but exclude
-// them from the optional rule-pack renderer and byte budget accounting.
 const RULE_CLIENT_IDS = lightweightRuleClientIds();
 const RULE_CLIENT_PATHS = Object.freeze(Object.fromEntries(
   RULE_CLIENT_IDS.map((client) => [client, CLIENT_PATHS[client]]),
@@ -90,18 +76,6 @@ const OPTIONAL_AWARE_GENERATOR_PATHS = new Set([
   "surge/scripts/substore-profile-generator.js",
   "sing-box/scripts/sing-box-config-generator.js",
   "sing-box/scripts/substore-config-generator.js",
-  "onexray/scripts/onexray-node-generator.js",
-  "onexray/scripts/substore-node-generator.js",
-  "onexray/scripts/onexray-profile-generator.js",
-  "onexray/scripts/substore-profile-generator.js",
-  "onexray/scripts/onexray-routing-audit.js",
-  "onexray/scripts/substore-routing-audit.js",
-  "happ/scripts/happ-config-generator.js",
-  "happ/scripts/substore-config-generator.js",
-  "happ/scripts/happ-routing-audit.js",
-  "happ/scripts/substore-routing-audit.js",
-  "v2rayn/scripts/substore-node-generator.js",
-  "v2rayn/scripts/substore-config-generator.js",
   "v2box/scripts/substore-node-generator.js",
   "v2box/scripts/substore-config-generator.js",
   "clash/scripts/clash-node-generator.js",
@@ -110,24 +84,6 @@ const OPTIONAL_AWARE_GENERATOR_PATHS = new Set([
   "clash/scripts/substore-profile-generator.js",
 ]);
 
-const ONEXRAY_SCRIPT_PATHS = Object.freeze([
-  "onexray/scripts/onexray-node-generator.js",
-  "onexray/scripts/substore-node-generator.js",
-  "onexray/scripts/onexray-profile-generator.js",
-  "onexray/scripts/substore-profile-generator.js",
-  "onexray/scripts/onexray-routing-audit.js",
-  "onexray/scripts/substore-routing-audit.js",
-]);
-const HAPP_SCRIPT_PATHS = Object.freeze([
-  "happ/scripts/happ-config-generator.js",
-  "happ/scripts/substore-config-generator.js",
-  "happ/scripts/happ-routing-audit.js",
-  "happ/scripts/substore-routing-audit.js",
-]);
-const V2RAYN_SCRIPT_PATHS = Object.freeze([
-  "v2rayn/scripts/substore-node-generator.js",
-  "v2rayn/scripts/substore-config-generator.js",
-]);
 const V2BOX_SCRIPT_PATHS = Object.freeze([
   "v2box/scripts/substore-node-generator.js",
   "v2box/scripts/substore-config-generator.js",
@@ -139,37 +95,10 @@ const CLASH_SCRIPT_PATHS = Object.freeze([
   "clash/scripts/substore-profile-generator.js",
 ]);
 const NATIVE_POLICY_GENERATOR_PATHS = new Set([
-  ...V2RAYN_SCRIPT_PATHS,
   ...V2BOX_SCRIPT_PATHS,
   ...CLASH_SCRIPT_PATHS,
 ]);
 const REGION_GEO_DATA_REGIONS = Object.freeze(["cn", "global", "ru", "ir"]);
-
-function happPublicScripts() {
-  const files = new Map();
-  for (const path of HAPP_SCRIPT_PATHS) {
-    const filename = path.slice("happ/scripts/".length);
-    const content = readFileSync(new URL(`../../clients/happ/dist/${filename}`, import.meta.url));
-    if (!Buffer.isBuffer(content) || content.length === 0) throw new Error(`Happ public script is empty: ${path}`);
-    files.set(path, content);
-  }
-  return files;
-}
-
-function onexrayPublicScripts() {
-  const files = new Map();
-  for (const path of ONEXRAY_SCRIPT_PATHS) {
-    const filename = path.slice("onexray/scripts/".length);
-    const content = readFileSync(new URL(`../../clients/onexray/dist/${filename}`, import.meta.url));
-    if (!Buffer.isBuffer(content) || content.length === 0) throw new Error(`OneXray public script is empty: ${path}`);
-    files.set(path, content);
-  }
-  return files;
-}
-
-function v2raynPublicScripts() {
-  return nativePublicScripts("v2rayn", V2RAYN_SCRIPT_PATHS);
-}
 
 function v2boxPublicScripts() {
   return nativePublicScripts("v2box", V2BOX_SCRIPT_PATHS);
@@ -188,14 +117,6 @@ function nativePublicScripts(client, paths) {
     files.set(path, content);
   }
   return files;
-}
-
-function happPublicPage(channel, generatedAt) {
-  const baseUrl = `https://juan-nikola.github.io/apple-proxy-profiles/${channel}`;
-  const profile = renderHappRoutingProfile({ baseUrl, generatedAt });
-  const deepLink = renderHappRoutingDeepLink(profile);
-  const qrSvg = renderHappRoutingQrSvgSync(deepLink);
-  return new Map([["happ/index.html", Buffer.from(renderHappImportPage({ profile, deepLink, qrSvg }), "utf8")]]);
 }
 
 function compiledText(entries) {
@@ -300,9 +221,6 @@ function addFiles(target, additions) {
 // while still rejecting accidental collisions for every other artifact.
 function addAdditionalFiles(target, additions) {
   const overridable = new Set([
-    ...HAPP_SCRIPT_PATHS,
-    ...ONEXRAY_SCRIPT_PATHS,
-    ...V2RAYN_SCRIPT_PATHS,
     ...V2BOX_SCRIPT_PATHS,
     ...CLASH_SCRIPT_PATHS,
   ]);
@@ -523,7 +441,7 @@ function addClientManifests(
     // Direct unit-level rule builds may intentionally omit native-generator
     // statics; the full update-rules path supplies them before validating the
     // publication. Existing rule clients must always have a non-empty tree.
-    if (records.length === 0 && !["happ", "onexray"].includes(client)) {
+    if (records.length === 0) {
       throw new Error(`Client ${client} has no publication files`);
     }
     if (records.length === 0) continue;
@@ -737,13 +655,6 @@ export function buildClientArtifacts({
     regions,
     channel,
   });
-  const happGeoData = renderHappGeodata(compactedDefaults.ruleSets);
-  const onexrayGeoData = buildOneXrayGeoDataArtifacts({
-    ruleSets: compactedDefaults.ruleSets,
-    upstream,
-    channel,
-    publicBase: "https://juan-nikola.github.io/apple-proxy-profiles",
-  });
   const rendered = renderRuleSetMap({
     ruleSets: compactedDefaults.ruleSets,
     mobileRuleSets: compactedMobile.ruleSets,
@@ -753,12 +664,6 @@ export function buildClientArtifacts({
     channel,
   });
   const defaults = rendered.files;
-  addFiles(defaults, happGeoData.files);
-  addFiles(defaults, onexrayGeoData.files);
-  addFiles(defaults, happPublicPage(channel, upstream.committedAt));
-  addFiles(defaults, happPublicScripts());
-  addFiles(defaults, onexrayPublicScripts());
-  addFiles(defaults, v2raynPublicScripts());
   addFiles(defaults, v2boxPublicScripts());
   addFiles(defaults, clashPublicScripts());
   addFiles(defaults, sharedGeoData.files);
@@ -829,7 +734,6 @@ export function buildClientArtifacts({
     optionalSelections,
     chinaIpAuditSha256,
     {
-      v2rayn: sharedGeoData.records,
       v2box: sharedGeoData.records,
     },
   );
@@ -907,8 +811,6 @@ export function buildClientArtifacts({
       referencedBytes,
       defaultManifest,
       routingPlanAudit,
-      happGeoData: happGeoData.counts,
-      onexrayGeoData: onexrayGeoData.manifest,
       sharedGeoData: sharedGeoData.manifests,
       publicAuditDashboard,
       optionalManifests: Object.freeze({ "adblock-full": adblockFull.manifest }),

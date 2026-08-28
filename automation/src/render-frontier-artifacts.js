@@ -2,7 +2,7 @@ import { createHash } from "node:crypto";
 
 import { createFrontierManifest, validateFrontierManifest } from "../../shared/release/frontier-manifest.js";
 
-const CLIENT_DIRECTORY = Object.freeze({ surge: "surge", singbox: "sing-box", onexray: "onexray", happ: "happ" });
+const CLIENT_DIRECTORY = Object.freeze({ surge: "surge", singbox: "sing-box" });
 
 function sha256(value) {
   return createHash("sha256").update(value).digest("hex");
@@ -63,7 +63,7 @@ export function buildFrontierArtifacts({ ruleBaseUrl, manifests, staticFiles }) 
     }
   }
   for (const record of records) {
-    const keyPath = record.client === "onexray" ? record.platformKey : `${record.client}/${record.platform}`;
+    const keyPath = `${record.client}/${record.platform}`;
     files.set(`${record.channel}/${keyPath}/manifest.json`, canonicalJson(record));
   }
   for (const channel of channels) {

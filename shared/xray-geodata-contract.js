@@ -9,13 +9,13 @@ const CODE = /^APP-[A-Z0-9]+(?:-[A-Z0-9]+)*$/u;
 
 function requiredChannel(channel) {
   if (typeof channel !== "string" || !CHANNELS.includes(channel)) {
-    throw new TypeError(`OneXray GeoData channel must be current, previous, or edge: ${String(channel)}`);
+    throw new TypeError(`Xray GeoData channel must be current, previous, or edge: ${String(channel)}`);
   }
   return channel;
 }
 
 /** Returns the stable Xray geosite/geoip names for one release channel. */
-export function oneXrayGeoNames(channel) {
+export function xrayGeoNames(channel) {
   const suffix = CHANNEL_SUFFIX[requiredChannel(channel)];
   const names = {
     domain: `AppleProxySite${suffix}`,
@@ -33,22 +33,22 @@ export function oneXrayGeoNames(channel) {
 }
 
 /** Maps an internal source ID to a stable, display-label-independent code. */
-export function oneXrayGeoCode(sourceId) {
+export function xrayGeoCode(sourceId) {
   if (typeof sourceId !== "string" || sourceId.trim() !== sourceId || !SOURCE_ID.test(sourceId)) {
-    throw new TypeError("OneXray GeoData source ID is invalid");
+    throw new TypeError("Xray GeoData source ID is invalid");
   }
   const normalized = sourceId.toUpperCase().replaceAll("_", "-");
   const code = `APP-${normalized}`;
-  if (!CODE.test(code)) throw new TypeError("OneXray GeoData source ID is invalid");
+  if (!CODE.test(code)) throw new TypeError("Xray GeoData source ID is invalid");
   return code;
 }
 
 /** Returns a stable `ext:<Name>.dat:<APP-CODE>` reference for Profile rules. */
-export function oneXrayGeoReference(channel, type, sourceId) {
-  const names = oneXrayGeoNames(channel);
-  if (type !== "domain" && type !== "ip") throw new TypeError("OneXray GeoData type is invalid");
-  return `ext:${names[type]}.dat:${oneXrayGeoCode(sourceId)}`;
+export function xrayGeoReference(channel, type, sourceId) {
+  const names = xrayGeoNames(channel);
+  if (type !== "domain" && type !== "ip") throw new TypeError("Xray GeoData type is invalid");
+  return `ext:${names[type]}.dat:${xrayGeoCode(sourceId)}`;
 }
 
-export const ONE_XRAY_GEO_CHANNELS = CHANNELS;
-export const ONE_XRAY_GEO_CODE_PATTERN = CODE;
+export const XRAY_GEO_CHANNELS = CHANNELS;
+export const XRAY_GEO_CODE_PATTERN = CODE;

@@ -15,8 +15,8 @@ function buildFixtureArtifacts() {
     snapshot: lightweightFixtureSnapshots(),
     channel: "current",
     additionalFiles: new Map([
-      ["onexray/scripts/onexray-node-generator.js", "native onexray generator\\n"],
-      ["happ/scripts/happ-config-generator.js", "native happ generator\\n"],
+      ["v2box/scripts/substore-node-generator.js", "native v2box generator\\n"],
+      ["clash/scripts/clash-profile-generator.js", "native clash generator\\n"],
     ]),
   });
 }

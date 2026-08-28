@@ -1,4 +1,4 @@
-import { oneXrayGeoCode, oneXrayGeoNames } from "../../clients/onexray/src/geodata-contract.js";
+import { xrayGeoCode, xrayGeoNames } from "../../shared/xray-geodata-contract.js";
 import { isIP } from "node:net";
 import { renderXrayGeoData } from "./render-xray-geodata.js";
 import { artifactSha256 } from "./artifact-content.js";
@@ -58,7 +58,7 @@ export function buildRegionGeoDataArtifacts({ merged, region, channel, publicBas
   if (!merged || !(merged.ruleSets instanceof Map)) throw new TypeError("Region GeoData merged.ruleSets must be a Map");
   if (publicBase !== undefined) validatePublicBase(publicBase);
   const rendered = renderRegionGeoData({ ruleSets: merged.ruleSets, region, channel, provenance: merged.provenance });
-  const names = oneXrayGeoNames(channel);
+  const names = xrayGeoNames(channel);
   const manifest = Object.freeze({
     ...rendered.manifest,
     schemaVersion: 1,
@@ -112,4 +112,4 @@ function isPrivateAddress(address) {
   return groups.every((part) => part === 0) || address === "::1" || (first & 0xfe00) === 0xfc00 || (first & 0xffc0) === 0xfe80 || (first & 0xff00) === 0xff00 || (groups[0] === 0x2001 && groups[1] === 0x0db8);
 }
 
-export function regionGeoCode(sourceId) { return oneXrayGeoCode(sourceId); }
+export function regionGeoCode(sourceId) { return xrayGeoCode(sourceId); }

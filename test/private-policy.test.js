@@ -21,8 +21,7 @@ function policyObject(overrides = {}) {
     channels: Object.fromEntries(["edge", "current", "previous"].map((channel) => [channel, {
       revision: `${channel}-2026-08-18-a`,
       defaults: structuredClone(defaults),
-      happ: {},
-      onexray: {},
+      clients: { surge: {}, v2box: {} },
       ...(overrides[channel] ?? {}),
     }])),
   };
@@ -57,7 +56,7 @@ test("parses complete independent edge/current/previous snapshots and deep-freez
 test("merges defaults before a client override without mutating the policy", () => {
   const policy = parsePrivatePolicy(policyText({
     edge: {
-      happ: {
+      surge: {
         targets: { github: "NODE:Tokyo-01" },
         dns: { globalDns: "google" },
         adblockMode: "full",
@@ -65,7 +64,7 @@ test("merges defaults before a client override without mutating the policy", () 
       },
     },
   }));
-  const resolved = resolvePrivatePolicy({ policy, channel: "edge", client: "happ" });
+  const resolved = resolvePrivatePolicy({ policy, channel: "edge", client: "surge" });
   assert.deepEqual(resolved, {
     targets: { ...defaults.targets, github: "NODE:Tokyo-01" },
     dns: { chinaDns: "alidns", globalDns: "google" },
@@ -101,7 +100,7 @@ test("rejects duplicate keys and protected security or privacy overrides", () =>
   assertRejectedWithoutSecret(duplicate, /duplicate|json/iu);
   for (const key of ["security", "privacy", "httpdns", "internalTraffic"]) {
     const value = policyObject();
-    value.channels.edge.happ[key] = "DIRECT";
+    value.channels.edge.clients.surge[key] = "DIRECT";
     assertRejectedWithoutSecret(JSON.stringify(value), /unsupported|security|privacy|override/iu);
   }
 });
@@ -114,7 +113,7 @@ test("rejects secret-shaped fields and values without echoing them in errors", (
     ["uri", ["vless", "://", "TEST_ONLY_SECRET_SENTINEL", "@example.invalid"].join("")],
   ]) {
     const valueObject = policyObject();
-    valueObject.channels.edge.happ[key] = value;
+    valueObject.channels.edge.clients.surge[key] = value;
     assertRejectedWithoutSecret(JSON.stringify(valueObject), /secret|unsupported|policy/iu);
   }
 });

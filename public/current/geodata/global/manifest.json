@@ -463,7 +463,7 @@
     ]
   },
   "region": "global",
-  "schema": "apple-proxy-onexray-geodata-v1",
+  "schema": "apple-proxy-xray-geodata-v1",
   "schemaVersion": 1,
   "sourceCodes": [
     {
