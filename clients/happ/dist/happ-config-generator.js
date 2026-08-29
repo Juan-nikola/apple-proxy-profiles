@@ -1336,12 +1336,12 @@ var HappConfigBundle = (() => {
   }
   function fingerprint(node) {
     const value = identityKey(node);
-    let hash2 = 2166136261;
+    let hash = 2166136261;
     for (let index = 0; index < value.length; index += 1) {
-      hash2 ^= value.charCodeAt(index);
-      hash2 = Math.imul(hash2, 16777619);
+      hash ^= value.charCodeAt(index);
+      hash = Math.imul(hash, 16777619);
     }
-    return (hash2 >>> 0).toString(36).padStart(7, "0");
+    return (hash >>> 0).toString(36).padStart(7, "0");
   }
 
   // ../../shared/nodes/node-validation.js
@@ -2610,6 +2610,106 @@ var HappConfigBundle = (() => {
   }
   var HAPP_PLATFORMS = Object.freeze([...PLATFORMS]);
 
+  // src/tag-plan.js
+  var CONTROL_CHARACTERS = /[\u0000-\u001f\u007f-\u009f\r\n\u2028\u2029]/gu;
+  var CONTROL_CHARACTER_TEST = /[\u0000-\u001f\u007f-\u009f\r\n\u2028\u2029]/u;
+  var DISPLAY_MARKS = /[\p{Extended_Pictographic}\p{Regional_Indicator}]/gu;
+  var SOURCE_SUFFIX = /\s*[｜|]\s*(?:机场|自建|realm|链式代理|落地)(?=\s*[·|｜]|$)/giu;
+  var UUID = /\b[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\b/giu;
+  var IPV4 = /\b(?:\d{1,3}\.){3}\d{1,3}(?::\d{1,5})?\b/gu;
+  var URL2 = /\b(?:https?|ss|vmess|vless|trojan|hysteria2?):\/\/[^\s]+/giu;
+  var MAX_LABEL_LENGTH = 112;
+  var MAX_TAG_LENGTH = 180;
+  function fnv(value) {
+    let hash = 2166136261;
+    for (const character of String(value)) hash = Math.imul(hash ^ character.charCodeAt(0), 16777619);
+    return (hash >>> 0).toString(36).padStart(7, "0");
+  }
+  function nodeIdFor(node) {
+    if (typeof node?._profile?.id === "string" && node._profile.id) return node._profile.id;
+    const stable = JSON.stringify({ name: node?.name ?? "", type: node?.type ?? "" });
+    return `h-${fnv(stable)}`;
+  }
+  function sensitiveValues(node) {
+    const values = [];
+    const add = (value) => {
+      if (typeof value === "string" && value.length > 2) values.push(value);
+    };
+    for (const key of ["server", "uuid", "password", "psk", "token", "private-key", "private_key"]) add(node?.[key]);
+    const reality = node?.["reality-opts"] ?? node?.reality;
+    for (const key of ["public-key", "publicKey", "short-id", "shortId", "spider-x", "spiderX", "_spider-x"]) add(reality?.[key]);
+    return values;
+  }
+  function safeDisplayLabel(node) {
+    let value = String(node?.name ?? "\u672A\u547D\u540D\u8282\u70B9").normalize("NFKC");
+    for (const secret of sensitiveValues(node)) value = value.replaceAll(secret, " ");
+    value = value.replace(URL2, " ").replace(UUID, " ").replace(IPV4, " ").replace(DISPLAY_MARKS, " ").replace(CONTROL_CHARACTERS, " ").replace(/[\\/]+/gu, " ").replace(/\s*\[\s*(?:udp|未标记|已有链)\s*\]/giu, " ").replace(SOURCE_SUFFIX, " ").replace(/\s*·\s*/gu, " \xB7 ").replace(/\s+/gu, " ").trim();
+    const profile = node?._profile ?? {};
+    const protocol2 = String(profile.protocolLabel ?? protocolDisplayLabel(node?.type)).trim();
+    if (protocol2 && !new RegExp(`(?:^|[ \xB7\uFF5C|])${protocol2.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?:$|[ \xB7\uFF5C|])`, "iu").test(value)) {
+      value = `${value} \xB7 ${protocol2}`.trim();
+    }
+    if (profile.udp === true && !/(?:^|[ ·])U$/u.test(value)) value = `${value} \xB7 U`.trim();
+    value = value.replace(/[·｜|\s]+$/gu, "").trim() || "\u672A\u547D\u540D\u8282\u70B9";
+    return value.slice(0, MAX_LABEL_LENGTH).trim();
+  }
+  function shortId(nodeId) {
+    return fnv(nodeId).slice(-7);
+  }
+  function validateTag(tag) {
+    if (typeof tag !== "string" || tag.length === 0 || tag.length > MAX_TAG_LENGTH || tag !== tag.trim()) {
+      throw new Error("Happ tag is empty or too long");
+    }
+    const separator = tag.indexOf("/");
+    const label = separator === -1 ? "" : tag.slice(separator + 1);
+    if (CONTROL_CHARACTER_TEST.test(tag) || tag.includes("\\") || label.includes("/") || !/^happ-[a-z0-9-]+(?:\/[\p{L}\p{N}\p{P}\p{S}\p{Zs}]+)?$/u.test(tag)) {
+      throw new Error("Happ tag contains unsafe characters");
+    }
+    return tag;
+  }
+  function validateHappTag(tag) {
+    return validateTag(tag);
+  }
+  function createHappTagPlan(nodes = []) {
+    const entries = [];
+    const seenIds = /* @__PURE__ */ new Set();
+    for (const node of Array.isArray(nodes) ? nodes : []) {
+      if (!node || typeof node !== "object") continue;
+      const id = nodeIdFor(node);
+      if (seenIds.has(id)) continue;
+      seenIds.add(id);
+      entries.push({ id, node, label: safeDisplayLabel(node) });
+    }
+    const counts = /* @__PURE__ */ new Map();
+    for (const entry of entries) counts.set(entry.label, (counts.get(entry.label) ?? 0) + 1);
+    const byId = new Map(entries.map((entry) => [entry.id, {
+      ...entry,
+      label: counts.get(entry.label) > 1 ? `${entry.label} #${shortId(entry.id)}` : entry.label
+    }]));
+    const entryFor = (nodeId) => {
+      const entry = byId.get(nodeId);
+      if (!entry) throw new Error(`Unknown Happ node '${nodeId}'`);
+      return entry;
+    };
+    return Object.freeze({
+      follow(nodeId) {
+        return validateTag(`happ-follow/${entryFor(nodeId).label}`);
+      },
+      fixedCandidate(nodeId) {
+        return validateTag(`happ-fixed/${entryFor(nodeId).label} [candidate]`);
+      },
+      fixedBalancer(nodeId) {
+        return validateTag(`happ-fixed/${entryFor(nodeId).label} [balancer]`);
+      },
+      nodeLabel(nodeId) {
+        return entryFor(nodeId).label;
+      },
+      has(nodeId) {
+        return byId.has(nodeId);
+      }
+    });
+  }
+
   // src/render-node.js
   var SUPPORTED = /* @__PURE__ */ new Set(["vless", "vmess", "trojan", "ss", "shadowsocks", "socks5", "hysteria2", "hy2"]);
   var VMESS_CIPHER_SECURITY = /* @__PURE__ */ new Set(["auto", "aes-128-gcm", "chacha20-poly1305", "none", "zero"]);
@@ -2729,7 +2829,7 @@ var HappConfigBundle = (() => {
     if (!node || typeof node !== "object") throw new TypeError("Happ node must be an object");
     const type = String(node.type ?? "").toLowerCase();
     if (!SUPPORTED.has(type)) throw new Error(`Unsupported Happ protocol '${type}'`);
-    if (typeof tag !== "string" || !/^happ-[a-z0-9/_-]+$/u.test(tag)) throw new Error("Happ outbound tag must be opaque");
+    validateHappTag(tag);
     const output = type === "vless" ? renderVless(node) : type === "vmess" ? renderVmess(node) : type === "trojan" ? renderTrojan(node) : type === "ss" || type === "shadowsocks" ? renderShadowsocks(node) : type === "socks5" ? renderSocks(node) : renderHysteria2(node);
     return Object.freeze({ tag, ...output });
   }
@@ -2743,7 +2843,7 @@ var HappConfigBundle = (() => {
   var PORTS = Object.freeze({ socks: 10808, http: 10809 });
   function renderHappInbounds(platform) {
     if (!PLATFORM_METADATA[platform]) throw new Error(`Unsupported Happ platform '${platform}'`);
-    const common2 = { listen: "127.0.0.1", sniffing: { enabled: true, destOverride: ["http", "tls", "quic"], routeOnly: true } };
+    const common2 = { listen: "127.0.0.1", sniffing: { enabled: true, destOverride: ["http", "tls", "quic"], routeOnly: false } };
     return [
       { tag: "happ-in-socks", port: PORTS.socks, protocol: "socks", settings: { auth: "noauth", udp: true }, ...common2 },
       { tag: "happ-in-http", port: PORTS.http, protocol: "http", settings: {}, ...common2 }
@@ -3220,11 +3320,6 @@ var HappConfigBundle = (() => {
   }
 
   // src/render-routing.js
-  function hash(value) {
-    let h = 2166136261;
-    for (const c of String(value)) h = Math.imul(h ^ c.charCodeAt(0), 16777619);
-    return (h >>> 0).toString(36);
-  }
   function businessTargetForSource(sourceId) {
     if (sourceId === "__final__") return "final";
     if (["DomesticCore", "DomesticGame", "SteamCN", "BiliBili", "ByteDance", "XiaoHongShu", "Weibo", "ChinaTLD", "ChinaIP"].includes(sourceId)) return "domesticPlatform";
@@ -3239,11 +3334,19 @@ var HappConfigBundle = (() => {
     return fixed ? { balancerTag: fixed.balancerTag } : { outboundTag: followTag };
   }
   function renderHappRouting(context = {}) {
-    const followTag = context.followTag ?? "happ-follow/current";
     const resolution = context.policyResolution ?? { targets: {} };
     const options = context.options ?? {};
     const fixedRecords = Array.isArray(context.fixedNodes) ? context.fixedNodes : resolution.fixedNodes ?? [];
     const nodes = Array.isArray(context.nodes) ? context.nodes : [];
+    const fixedTagNodes = fixedRecords.map((fixed) => {
+      if (!fixed?.node || !fixed.nodeId || nodeIdFor(fixed.node) === fixed.nodeId) return fixed?.node;
+      return { ...fixed.node, _profile: { ...fixed.node._profile ?? {}, id: fixed.nodeId } };
+    }).filter(Boolean);
+    const tagPlan = context.tagPlan ?? createHappTagPlan([
+      ...nodes,
+      ...fixedTagNodes
+    ]);
+    const followTag = context.followNodeId && tagPlan.has(context.followNodeId) ? tagPlan.follow(context.followNodeId) : context.followTag ?? "happ-follow/current";
     const fixedById = /* @__PURE__ */ new Map();
     const outbounds = [];
     const balancers = [];
@@ -3252,10 +3355,10 @@ var HappConfigBundle = (() => {
       if (fixed.nodeId && fixed.nodeId === context.followNodeId) continue;
       const node = fixed.node ?? nodes.find((candidate) => (candidate._profile?.id ?? "") === fixed.nodeId);
       if (!node) continue;
-      const suffix = hash(fixed.nodeId);
-      const candidateTag = `happ-fixed/${suffix}/candidate`;
-      const balancerTag = `happ-fixed/${suffix}/balancer`;
-      fixedById.set(fixed.nodeId, { candidateTag, balancerTag });
+      const fixedNodeId = fixed.nodeId ?? nodeIdFor(node);
+      const candidateTag = tagPlan.fixedCandidate(fixedNodeId);
+      const balancerTag = tagPlan.fixedBalancer(fixedNodeId);
+      fixedById.set(fixedNodeId, { candidateTag, balancerTag });
       outbounds.push((context.renderNode ?? renderHappOutbound)(node, candidateTag));
       balancers.push({ tag: balancerTag, selector: [candidateTag], strategy: { type: "leastPing" }, fallbackTag: followTag });
       observatorySelectors.push(candidateTag);
@@ -3299,9 +3402,6 @@ var HappConfigBundle = (() => {
   }
 
   // src/render-subscription.js
-  function idFor(node) {
-    return node?._profile?.id ?? `h-${Math.abs([...JSON.stringify(node)].reduce((h, c) => h * 31 ^ c.charCodeAt(0) | 0, 17))}`;
-  }
   function summary(resolution) {
     const entries = Object.values(resolution?.targets ?? {}).map((target) => `${target.configured}\u2192${target.resolved}`).join("\uFF1B");
     const warnings = (resolution?.warnings ?? []).map((warning) => `\u8B66\u544A:${warning.warningCode}`).join("\uFF0C");
@@ -3312,10 +3412,18 @@ var HappConfigBundle = (() => {
     const eligible = Array.isArray(nodes) ? nodes : [];
     if (eligible.length === 0) throw new Error("\u6CA1\u6709\u53EF\u7528\u7684 Happ \u517C\u5BB9\u8282\u70B9\uFF0C\u62D2\u7EDD\u751F\u6210\u7A7A\u8BA2\u9605");
     const resolution = policyResolution ?? defaultUnifiedPolicyResolution();
+    const fixedTagNodes = (resolution.fixedNodes ?? []).map((fixed) => {
+      if (!fixed?.node || !fixed.nodeId || nodeIdFor(fixed.node) === fixed.nodeId) return fixed?.node;
+      return { ...fixed.node, _profile: { ...fixed.node._profile ?? {}, id: fixed.nodeId } };
+    }).filter(Boolean);
+    const tagPlan = createHappTagPlan([
+      ...eligible,
+      ...fixedTagNodes
+    ]);
     const configs = [];
     for (const followNode of eligible) {
-      const followId = idFor(followNode);
-      const followTag = `happ-follow/${followId}`;
+      const followId = nodeIdFor(followNode);
+      const followTag = tagPlan.follow(followId);
       const route = renderHappRouting({
         nodes: eligible,
         policyResolution: resolution,
@@ -3323,13 +3431,14 @@ var HappConfigBundle = (() => {
         followTag,
         followNodeId: followId,
         options,
+        tagPlan,
         renderNode: renderHappOutbound
       });
       const followOutbound = renderHappOutbound(followNode, followTag);
       const outbounds = [followOutbound, ...route.fixedOutbounds, { tag: "happ-direct", protocol: "freedom", settings: {} }, { tag: "happ-block", protocol: "blackhole", settings: {} }];
       configs.push({
         remarks: followNode.name,
-        log: { loglevel: "warning" },
+        log: { loglevel: "info" },
         inbounds: renderHappInbounds(options.platform),
         outbounds,
         observatory: route.observatory,

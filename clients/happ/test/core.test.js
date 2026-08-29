@@ -6,6 +6,7 @@ import { renderHappInbounds } from "../src/render-platform.js";
 import { happProxyGeositeDomains, renderHappDns, renderHappDnsRoutes } from "../src/render-dns.js";
 import { renderHappRouting } from "../src/render-routing.js";
 import { renderHappSubscription } from "../src/render-subscription.js";
+import { createHappTagPlan } from "../src/tag-plan.js";
 import { validateHappSubscription } from "../src/validate-subscription.js";
 import { buildHappAudit } from "../src/audit.js";
 import { parsePrivatePolicy } from "../../../shared/policies/private-policy.js";
@@ -112,6 +113,7 @@ test("platform, DNS and routing preserve shared semantics", () => {
   assert.equal(inbounds.length, 2);
   assert.deepEqual(inbounds.map((x) => x.listen), ["127.0.0.1", "127.0.0.1"]);
   assert.ok(inbounds.every((entry) => entry.sniffing.destOverride.includes("quic")));
+  assert.ok(inbounds.every((entry) => entry.sniffing.routeOnly === false));
   const dns = renderHappDns({ dnsMode: "stable", chinaDns: "alidns", globalDns: "cloudflare", ipv6Mode: "ipv4-only" });
   assert.equal(dns.queryStrategy, "UseIPv4");
   assert.ok(happProxyGeositeDomains().length > 0);
@@ -122,6 +124,52 @@ test("platform, DNS and routing preserve shared semantics", () => {
   const routing = renderHappRouting({ policyResolution: { targets: {} }, followTag: "happ-follow/x", fixedNodes: [], options: {} });
   assert.equal(routing.routing.domainStrategy, "IPIfNonMatch");
   assert.equal(routing.routing.rules.at(-1).network, "tcp,udp");
+});
+
+test("HAPP tag plan keeps readable normalized node labels", () => {
+  const nodes = [
+    {
+      name: "🌐 小秘书GEN2 · VLESS｜自建·U",
+      type: "vless",
+      server: "secret.example",
+      port: 443,
+      uuid: "TEST_ONLY_UUID",
+      _profile: { id: "node-a", protocolLabel: "VLESS", udp: true },
+    },
+  ];
+  const plan = createHappTagPlan(nodes);
+  const tag = plan.follow("node-a");
+  assert.equal(tag, "happ-follow/小秘书GEN2 · VLESS · U");
+  assert.doesNotMatch(tag, /secret\.example|TEST_ONLY_UUID|443/u);
+  assert.equal(plan.fixedCandidate("node-a"), "happ-fixed/小秘书GEN2 · VLESS · U [candidate]");
+  assert.equal(plan.fixedBalancer("node-a"), "happ-fixed/小秘书GEN2 · VLESS · U [balancer]");
+});
+
+test("HAPP tag plan disambiguates duplicate display names with stable short IDs", () => {
+  const baseNode = {
+    name: "🇭🇰 香港 · VLESS · U",
+    type: "vless",
+    server: "secret.example",
+    port: 443,
+    uuid: "TEST_ONLY_UUID",
+  };
+  const plan = createHappTagPlan([
+    { ...baseNode, _profile: { id: "node-b", protocolLabel: "VLESS", udp: true } },
+    { ...baseNode, uuid: "TEST_ONLY_UUID_2", _profile: { id: "node-a", protocolLabel: "VLESS", udp: true } },
+  ]);
+  const first = plan.follow("node-a");
+  const second = plan.follow("node-b");
+  assert.notEqual(first, second);
+  assert.match(first, /^happ-follow\/香港 · VLESS · U #[a-z0-9-]+$/u);
+  assert.match(second, /^happ-follow\/香港 · VLESS · U #[a-z0-9-]+$/u);
+});
+
+test("HAPP tag plan rejects unsafe labels and unknown nodes", () => {
+  const plan = createHappTagPlan([
+    { name: "\u0000 bad\\name/with\nsecrets", type: "vless", _profile: { id: "unsafe" } },
+  ]);
+  assert.match(plan.follow("unsafe"), /^happ-follow\/bad name with secrets/u);
+  assert.throws(() => plan.follow("missing"), /Unknown Happ node/u);
 });
 
 test("Happ blocks or bypasses proxy QUIC using Xray UDP/443 matching", () => {
@@ -182,6 +230,8 @@ test("subscription is one JSON object per eligible node and validates", () => {
   const configs = renderHappSubscription({ nodes, options });
   assert.equal(configs.length, 2);
   assert.equal(configs[0].remarks, "TEST_ONLY_Node");
+  assert.equal(configs[0].log.loglevel, "info");
+  assert.match(configs[0].outbounds[0].tag, /^happ-follow\//u);
   assert.equal(validateHappSubscription(configs), true);
   assert.ok(Array.isArray(configs[0].routing.balancers));
   assert.equal(Object.hasOwn(configs[0], "balancers"), false);
@@ -200,7 +250,7 @@ test("fixed-node balancer is nested under Xray routing", () => {
   const configs = renderHappSubscription({ nodes: [fixed, follow], options, policyResolution });
   const config = configs.find((item) => item.remarks === "TEST_ONLY_Node2");
   assert.ok(config);
-  assert.ok(config.routing.rules.some((rule) => rule.balancerTag?.includes("/balancer")));
+  assert.ok(config.routing.rules.some((rule) => rule.balancerTag?.includes("[balancer]")));
   assert.ok(config.routing.balancers.some((balancer) => balancer.tag));
   assert.equal(validateHappSubscription(configs), true);
 });

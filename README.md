@@ -109,7 +109,9 @@ HAPP 必须通过真实订阅 URL 获取 JSON 数组和响应头。不要点击 
 
 生成器会同时发送 `routing: happ://routing/onadd/...` 和 `routing-enable: 1`：前者绑定并自动激活 Profile，后者明确保持路由开启。若使用本地文件，只能作为离线兜底，不能保证自动绑定或自动启用。
 
-HAPP 对 JSON 订阅会把路由显示为“开”并锁定，点击时提示“无法手动启用/禁用路由”属于正常限制。请以日志中的 `happ-direct`、`happ-follow/...` 和 `happ-fixed/.../candidate` 判断路由结果；`proxy-block` 会让应用 UDP/443（QUIC）直连回落，避免送入仅支持 TCP 的 Reality。
+HAPP 对 JSON 订阅会把路由显示为“开”并锁定，点击时提示“无法手动启用/禁用路由”属于正常限制。请以日志中的 `happ-direct`、`happ-follow/<节点展示名>` 和 `happ-fixed/<节点展示名> [candidate]` 判断路由结果；`proxy-block` 会让应用 UDP/443（QUIC）直连回落，避免送入仅支持 TCP 的 Reality。
+
+HAPP 日志默认级别为 `info`。入口会嗅探 `http`、`tls`、`quic` 并以 `routeOnly:false` 写回目标，因此嗅探成功时可看到 `chat.openai.com` 等域名；纯 IP、未加密 TCP、ECH 或嗅探失败时显示 IP 属于正常边界。出站会显示脱敏节点名，例如 `happ-follow/小秘书GEN2 · VLESS · U`，重复名称才追加短 ID。macOS 需将系统 HTTP/HTTPS 代理设为 `127.0.0.1:10809` 或 SOCKS `127.0.0.1:10808`，可用 `scutil --proxy` 检查；其他代理软件抢占系统代理时，应用不走 HAPP 不属于路由规则故障。
 
 #### 6. 日常更新与回滚
 
