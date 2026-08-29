@@ -44,35 +44,35 @@
   },
   "clients": {
     "anywhere": {
-      "manifestHash": "c554f617827992db6ea1fd92e220620566f2e72e5a551859be3ca77c28e18df2",
+      "manifestHash": "b855cfb99011f8666c12e684d5a11b62615f1b645683c9ac1d4f38bd2896805f",
       "referencedDefaultBytes": 6562149
     },
     "clash": {
-      "manifestHash": "c00acce0e79c8746619e9475cf718e0f948beed7e8a400669c91623952d51ef8",
+      "manifestHash": "22c75d4fa357fcdbd1a0c6869410aa5d911866192a0f2d7e6eb40425657504b6",
       "referencedDefaultBytes": 12096093
     },
     "egern": {
-      "manifestHash": "3477d84921c17413d85628d21927a668e56507e8388590d5b24b269f1c5169de",
+      "manifestHash": "fff8f9d34a7cf308bb6af9458db58d9316d06a758b5980be56956beb83cdb263",
       "referencedDefaultBytes": 7557168
     },
     "happ": {
-      "manifestHash": "1e230d67ee37bc7e63532fc221d9e0f3989ba2b95ad6f7c7c1102a2a6b97b4c9",
+      "manifestHash": "f39b0677592c52a4d0e2c82601b7ca3b4b26a019f4981a463408b735ba987cde",
       "referencedDefaultBytes": 0
     },
     "shadowrocket": {
-      "manifestHash": "69a7678fc7cf3751d3f662ea4943b130fb86550312d3242d3c2dba139402df4c",
+      "manifestHash": "8706b6b2b4162d6472ac7ce3d01f514b7bfbd2df90771fc8ba846f868aaf751f",
       "referencedDefaultBytes": 10178469
     },
     "singbox": {
-      "manifestHash": "69f1ae878290b5b848249d30e4306e2b0ca42f67b57a6ff2205a6d2c54bc9118",
+      "manifestHash": "dd6928af34469cab9e0d9fe287fc6b9b5e5a191494c5f1ad70bc5fa647744df8",
       "referencedDefaultBytes": 179921
     },
     "surge": {
-      "manifestHash": "182e30754853ecde6103ef59285a39f07a679861de60fc01b4a06ab8f22cc8c3",
+      "manifestHash": "60a7741c8f8c6396f90e2c8e959d5ea4c382b6bd869bb43ebd1b8305610b1b4d",
       "referencedDefaultBytes": 10178469
     },
     "v2box": {
-      "manifestHash": "790f75d2b0c3797c2023e4ceba4e56e63c4f480c8e5589ce92656cf7fe3733ae",
+      "manifestHash": "eb846c13cf5e85623486e1a6ac410237fd1de41dca00d729bb3e618addc6a1dd",
       "referencedDefaultBytes": 0
     }
   },
@@ -278,7 +278,7 @@
     {
       "bytes": 4149,
       "path": "anywhere/client-manifest.json",
-      "sha256": "fb45de2545a727b819fc23e8bf91ad0c016019408faa44b223aab7210ea151f0"
+      "sha256": "39fcd951a6965d8f6e12e72224b381327e9694140b82bb7c00a812ddc8356985"
     },
     {
       "bytes": 12199,
@@ -371,24 +371,24 @@
       "sha256": "dc06cf2b07640c3a28d57453758c76c5d1b875083bca191cea8429fc90e48e6e"
     },
     {
-      "bytes": 88507,
+      "bytes": 88635,
       "path": "anywhere/scripts/anywhere-node-generator.js",
-      "sha256": "9ec1e77c6058294e0aaa04e7447356f93cb8841033f8d36032b370dd7c87068c"
+      "sha256": "cd7f70c2ebe90060c6b69e10429177b66d9cd9049fa4d6c1b658d04e3a63e67c"
     },
     {
-      "bytes": 134026,
+      "bytes": 134203,
       "path": "anywhere/scripts/anywhere-strategy-generator.js",
-      "sha256": "7b37ab8104a8c8f34be321e1d6ce873a99e840ee68cd23a64ed5c08c9c570b7a"
+      "sha256": "c71c0a7a39349517dddb0d07884d52dfac8ffc3734f11c020d7dce74bc3e687a"
     },
     {
-      "bytes": 88507,
+      "bytes": 88635,
       "path": "anywhere/scripts/substore-node-generator.js",
-      "sha256": "9ec1e77c6058294e0aaa04e7447356f93cb8841033f8d36032b370dd7c87068c"
+      "sha256": "cd7f70c2ebe90060c6b69e10429177b66d9cd9049fa4d6c1b658d04e3a63e67c"
     },
     {
-      "bytes": 134026,
+      "bytes": 134203,
       "path": "anywhere/scripts/substore-strategy-generator.js",
-      "sha256": "7b37ab8104a8c8f34be321e1d6ce873a99e840ee68cd23a64ed5c08c9c570b7a"
+      "sha256": "c71c0a7a39349517dddb0d07884d52dfac8ffc3734f11c020d7dce74bc3e687a"
     },
     {
       "bytes": 1518,
@@ -398,12 +398,12 @@
     {
       "bytes": 2036,
       "path": "audit/dashboard.html",
-      "sha256": "2824b9733e422ef5583d78ced48ab1de1155fb93343e80233a80963d94760530"
+      "sha256": "c6e2d94dd63093b9364d7ed48ac11e889d9b788be91e6692f1c18c3ac1d1b534"
     },
     {
       "bytes": 4526,
       "path": "audit/dashboard.json",
-      "sha256": "a7d6c831db51487f22489ed10686fcede66ba172f9974b9c1efaca6c3bab2ce8"
+      "sha256": "40a5c07f01a52ecf1e94a31b2743a56ddd52b22ac863e81c818a6852d17257c8"
     },
     {
       "bytes": 5184,
@@ -418,7 +418,7 @@
     {
       "bytes": 6902,
       "path": "clash/client-manifest.json",
-      "sha256": "cb84c31a77f0dbea415d357f74666454878fc45fbcd1a9206873ae9f1a8a9ca4"
+      "sha256": "b689229d2d7648a67b6f307817f140c92913d6ddc82d3d0c830861f0b8c050c6"
     },
     {
       "bytes": 26052,
@@ -601,29 +601,29 @@
       "sha256": "1579f4cc64520655de4868d7daf0d251c46a37394c0a8f7f87b33e6d5eaa7468"
     },
     {
-      "bytes": 75847,
+      "bytes": 75860,
       "path": "clash/scripts/clash-node-generator.js",
-      "sha256": "9c3c7b585cf3ee76993073c9dbd2c273c129e871de5f0b7cb9bb3b406ce7f2f4"
+      "sha256": "f5370f8816de88d7824717c1f0dcea0e54d2bc82801a5f572fd59a0e66faf010"
     },
     {
-      "bytes": 97332,
+      "bytes": 97345,
       "path": "clash/scripts/clash-profile-generator.js",
-      "sha256": "c7f5f3c49487aeb7020698a3b0931b185d3f7c41935966d4b08b600b27488c71"
+      "sha256": "defc7ff2b6feb26e0416b37b5759fb80f742d64eaaea3982f0f85f211a5a5e71"
     },
     {
-      "bytes": 75847,
+      "bytes": 75860,
       "path": "clash/scripts/substore-node-generator.js",
-      "sha256": "9c3c7b585cf3ee76993073c9dbd2c273c129e871de5f0b7cb9bb3b406ce7f2f4"
+      "sha256": "f5370f8816de88d7824717c1f0dcea0e54d2bc82801a5f572fd59a0e66faf010"
     },
     {
-      "bytes": 97332,
+      "bytes": 97345,
       "path": "clash/scripts/substore-profile-generator.js",
-      "sha256": "c7f5f3c49487aeb7020698a3b0931b185d3f7c41935966d4b08b600b27488c71"
+      "sha256": "defc7ff2b6feb26e0416b37b5759fb80f742d64eaaea3982f0f85f211a5a5e71"
     },
     {
       "bytes": 6735,
       "path": "egern/client-manifest.json",
-      "sha256": "5ddf1d614f019fe4d56b6c5f25869cfb352dd59caa2a2f9ff3c2b083aca783cf"
+      "sha256": "6ea6ca4be36a25f782de8e2536c3919c39c45c243d4a1a3770f18a7f98d04245"
     },
     {
       "bytes": 28275,
@@ -801,24 +801,24 @@
       "sha256": "376840d4275a6c1db76ff3804bb0f9c88f03a24376fd6647067b6bf3a46a3a5c"
     },
     {
-      "bytes": 120841,
+      "bytes": 120969,
       "path": "egern/scripts/egern-node-generator.js",
-      "sha256": "170dd889b23e74fff2f4bb71bbe71239ea9b244869dec1f83c0327a01debb82f"
+      "sha256": "6f299a996add3bbe384503385c6c296d8e337e8dbc1efc68423192717f89fc64"
     },
     {
-      "bytes": 247207,
+      "bytes": 247335,
       "path": "egern/scripts/egern-profile-generator.js",
-      "sha256": "d860e6b75d17a280313b387b59a3ce982c18b4853d5d331607a1ade2b0001c63"
+      "sha256": "ace1d2889782c7750f8787fb90dc5f0fa948e434acbc68757c91521084a89b05"
     },
     {
-      "bytes": 120841,
+      "bytes": 120969,
       "path": "egern/scripts/substore-node-generator.js",
-      "sha256": "170dd889b23e74fff2f4bb71bbe71239ea9b244869dec1f83c0327a01debb82f"
+      "sha256": "6f299a996add3bbe384503385c6c296d8e337e8dbc1efc68423192717f89fc64"
     },
     {
-      "bytes": 247207,
+      "bytes": 247335,
       "path": "egern/scripts/substore-profile-generator.js",
-      "sha256": "d860e6b75d17a280313b387b59a3ce982c18b4853d5d331607a1ade2b0001c63"
+      "sha256": "ace1d2889782c7750f8787fb90dc5f0fa948e434acbc68757c91521084a89b05"
     },
     {
       "bytes": 250970,
@@ -883,7 +883,7 @@
     {
       "bytes": 2125,
       "path": "happ/client-manifest.json",
-      "sha256": "59e82b58f1140a7aec3a8165a9371558b319c8516221ead9dae46301c9f86c6c"
+      "sha256": "e862fea523ae8525cf9723cf27b6efada94c1e9a3336e41680c9bc9570bcc043"
     },
     {
       "bytes": 19926,
@@ -921,29 +921,29 @@
       "sha256": "3d45256d794ee5ddfabb593669a92e3ba6e865d80fa25f33da7c5c4afdede16c"
     },
     {
-      "bytes": 169073,
+      "bytes": 169189,
       "path": "happ/scripts/happ-config-generator.js",
-      "sha256": "f295239231772e1dbeb5d3a49f8347fa71109b0e828e8ff8ad95c35cb07d9998"
+      "sha256": "3e372aa63ce6033810584664d3c7ffe8a77f8146d223076e1a19ca5c5e498390"
     },
     {
-      "bytes": 131283,
+      "bytes": 131460,
       "path": "happ/scripts/happ-routing-audit.js",
-      "sha256": "b34edd7bf4ffa49fde832ac05cbe602ff4893be791ad12315854ebc21b774759"
+      "sha256": "e886a2b7764e857b41dc1242ab9065824b70a844a217b8d3825bfb371cb7c6bd"
     },
     {
-      "bytes": 169073,
+      "bytes": 169189,
       "path": "happ/scripts/substore-config-generator.js",
-      "sha256": "f295239231772e1dbeb5d3a49f8347fa71109b0e828e8ff8ad95c35cb07d9998"
+      "sha256": "3e372aa63ce6033810584664d3c7ffe8a77f8146d223076e1a19ca5c5e498390"
     },
     {
-      "bytes": 131283,
+      "bytes": 131460,
       "path": "happ/scripts/substore-routing-audit.js",
-      "sha256": "b34edd7bf4ffa49fde832ac05cbe602ff4893be791ad12315854ebc21b774759"
+      "sha256": "e886a2b7764e857b41dc1242ab9065824b70a844a217b8d3825bfb371cb7c6bd"
     },
     {
       "bytes": 7237,
       "path": "shadowrocket/client-manifest.json",
-      "sha256": "208f8d45850b1684133a2a35661092658426abaa2731e8e1e7fc106f8a88fc92"
+      "sha256": "958883c29fd8e3b79035e16efd9e70bc82517bfbde5c7097805d779a92a4cad5"
     },
     {
       "bytes": 13104,
@@ -1121,34 +1121,34 @@
       "sha256": "e76a499b29882e5354107a91a44d60825c1b490e1bfc4d34c03205a6a7744fe8"
     },
     {
-      "bytes": 41122,
+      "bytes": 41135,
       "path": "shadowrocket/scripts/shadowrocket-node-operator.js",
-      "sha256": "4ebab1fd83d3fadff1ed177869ed92ff476a7d6580be8fb01cd60bfe30bcbdca"
+      "sha256": "402aa8980e4aa02e91b791496b55824f1baa05f52844a96e15bf5d13104d6904"
     },
     {
-      "bytes": 42811,
+      "bytes": 42824,
       "path": "shadowrocket/scripts/shadowrocket-node-subscription.js",
-      "sha256": "d02a8e4b6582a86b9da61c13c4cce2af8e790f8ee8278fbf64b3525e186df533"
+      "sha256": "27c502b5f6ebc35b3d0f39c3790b150fe47bd8636fbbde7a1067541e8199d52a"
     },
     {
-      "bytes": 136305,
+      "bytes": 136318,
       "path": "shadowrocket/scripts/shadowrocket-profile-generator.js",
-      "sha256": "b9f1ae5ab077574a9445c1bfe9d13618db3c12d10a4b0486a64a02fc186d1ca3"
+      "sha256": "c15c9cc0ccf2024b9d061b36b41e5421b45675b5553f4425a70c38a2af1457f3"
     },
     {
-      "bytes": 41122,
+      "bytes": 41135,
       "path": "shadowrocket/scripts/substore-node-operator.js",
-      "sha256": "4ebab1fd83d3fadff1ed177869ed92ff476a7d6580be8fb01cd60bfe30bcbdca"
+      "sha256": "402aa8980e4aa02e91b791496b55824f1baa05f52844a96e15bf5d13104d6904"
     },
     {
-      "bytes": 136305,
+      "bytes": 136318,
       "path": "shadowrocket/scripts/substore-profile-generator.js",
-      "sha256": "b9f1ae5ab077574a9445c1bfe9d13618db3c12d10a4b0486a64a02fc186d1ca3"
+      "sha256": "c15c9cc0ccf2024b9d061b36b41e5421b45675b5553f4425a70c38a2af1457f3"
     },
     {
       "bytes": 9920,
       "path": "sing-box/client-manifest.json",
-      "sha256": "d991470dbf1a9b571445296c21c8ccd067aa404e92b78defa0da984ac7ab6f87"
+      "sha256": "6bc108f0ab76b5c276484e24b4d162d8b7c84ba1c1764df23b002e71869753f5"
     },
     {
       "bytes": 11836,
@@ -1421,19 +1421,19 @@
       "sha256": "da4163404185d0c106158bad3bc246a7df1388b1974bceace0dfa1f0443abd30"
     },
     {
-      "bytes": 154401,
+      "bytes": 154414,
       "path": "sing-box/scripts/sing-box-config-generator.js",
-      "sha256": "8421c94598d3e06005919da3ccc789b3597d4fe2d7a23ed42091f6dc840ee724"
+      "sha256": "464efd40999400a7934e383d7ed7d8c081c11263ca6a6b2e1db78d4246d2be96"
     },
     {
-      "bytes": 154401,
+      "bytes": 154414,
       "path": "sing-box/scripts/substore-config-generator.js",
-      "sha256": "8421c94598d3e06005919da3ccc789b3597d4fe2d7a23ed42091f6dc840ee724"
+      "sha256": "464efd40999400a7934e383d7ed7d8c081c11263ca6a6b2e1db78d4246d2be96"
     },
     {
       "bytes": 6736,
       "path": "surge/client-manifest.json",
-      "sha256": "f3e3be4f51418d7b7873661f99e701feb5c14c8e3292c5d585cf52ec26ff6d2b"
+      "sha256": "cf6b378d0238785323400aa2eed3ac9faec2db203d05c64d4a38c76484fa37da"
     },
     {
       "bytes": 11167,
@@ -1611,43 +1611,43 @@
       "sha256": "e76a499b29882e5354107a91a44d60825c1b490e1bfc4d34c03205a6a7744fe8"
     },
     {
-      "bytes": 54097,
+      "bytes": 54110,
       "path": "surge/scripts/substore-nodes-generator.js",
-      "sha256": "8bd97548c6e67455ba6a521ad73772ec70ccd0dc4165d6254b8ca0fd801d55ad"
+      "sha256": "cbf7ee0aa6631a42d0b296443f1d2bfcb6c3137f4d73e4351e7b3fc79ed1fe93"
     },
     {
-      "bytes": 127634,
+      "bytes": 127647,
       "path": "surge/scripts/substore-profile-generator.js",
-      "sha256": "bad47a4c6f41ad509efc6c64c3ca27f77e716812d2d0d1737ab7790d67a4dcdb"
+      "sha256": "0eb6213b48dcabad68a0ce2ae1d05d12b784f13841f717d6c26349b5d2697b48"
     },
     {
-      "bytes": 54097,
+      "bytes": 54110,
       "path": "surge/scripts/surge-nodes-generator.js",
-      "sha256": "8bd97548c6e67455ba6a521ad73772ec70ccd0dc4165d6254b8ca0fd801d55ad"
+      "sha256": "cbf7ee0aa6631a42d0b296443f1d2bfcb6c3137f4d73e4351e7b3fc79ed1fe93"
     },
     {
-      "bytes": 127634,
+      "bytes": 127647,
       "path": "surge/scripts/surge-profile-generator.js",
-      "sha256": "bad47a4c6f41ad509efc6c64c3ca27f77e716812d2d0d1737ab7790d67a4dcdb"
+      "sha256": "0eb6213b48dcabad68a0ce2ae1d05d12b784f13841f717d6c26349b5d2697b48"
     },
     {
       "bytes": 2718,
       "path": "v2box/client-manifest.json",
-      "sha256": "dab756eb146c7f9cf98162d39bf4fc5fe912fc76065c6751352f860ff681d396"
+      "sha256": "2de99c450847954bbd3e1a30598a767c1d85f99be79233bd5a3da8dc3b272a5c"
     },
     {
-      "bytes": 171601,
+      "bytes": 171778,
       "path": "v2box/scripts/substore-config-generator.js",
-      "sha256": "ee33dc35d2f1f6b2a01977f5f591460f82dd6961bad19e68fe2f87ebe15f73ae"
+      "sha256": "f67869ce0149f3344feead23801c0f1fa1d0f717cae4b90ca74ee3283b1b8c3c"
     },
     {
-      "bytes": 120408,
+      "bytes": 120585,
       "path": "v2box/scripts/substore-node-generator.js",
-      "sha256": "1221442103488f3fd779d61895f52f0d2d3d78b5830ada33b578ae2452c19c51"
+      "sha256": "46d831d41717c85007ac2dcc2190ff546a5bc99ab5b950facd5f945ec5522b16"
     }
   ],
   "generatedAt": "2026-08-25T18:39:12Z",
-  "manifestHash": "3beb6d997bdcb6a83dcb103c165fe8c9671b5422ec28581f1ddbf07fa3382bf1",
+  "manifestHash": "7e9b72d9507604d827d6e85b42f3f54d5f990da775492836467fb2eed5ad112f",
   "schemaVersion": 2,
   "upstream": {
     "branch": "master",
