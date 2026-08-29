@@ -56,7 +56,7 @@
       "referencedDefaultBytes": 7557168
     },
     "happ": {
-      "manifestHash": "95a04a778327f9d709d70fa4eb08cd8f5b4115a2896cf9b29300c0a208885b2a",
+      "manifestHash": "951ea3714ad37abdc75bbe8629cd8bcc830405ec6198e1323d5b8df9985df981",
       "referencedDefaultBytes": 0
     },
     "shadowrocket": {
@@ -398,12 +398,12 @@
     {
       "bytes": 2036,
       "path": "audit/dashboard.html",
-      "sha256": "5cf409bdacf7cc5e14c47ebd1eba98de185543fc08c0bd81743e37a9bbb378f7"
+      "sha256": "ffd17ce00c9bdb7d368494d0d3b9ccedbfc601eda82937b4c040bf39d8e3bae5"
     },
     {
       "bytes": 4526,
       "path": "audit/dashboard.json",
-      "sha256": "6006a4ecccd7ab9973c24e57b55268d916acfbfacb6cbf0c59b430a6e0fab614"
+      "sha256": "0501b6ba6e98119cdb4ff450008e2c5fba909431039f4cc5481898fc892689be"
     },
     {
       "bytes": 5184,
@@ -883,7 +883,7 @@
     {
       "bytes": 2125,
       "path": "happ/client-manifest.json",
-      "sha256": "6fe33bb51e003ff964440029bcec3c77427b6d6182be4fb1b1d59d205cfb9028"
+      "sha256": "bf90491dbf9bfef7a7317ee45a0aff866d91c3172dfc1d9c7d3848595aff034f"
     },
     {
       "bytes": 20573,
@@ -921,9 +921,9 @@
       "sha256": "3d45256d794ee5ddfabb593669a92e3ba6e865d80fa25f33da7c5c4afdede16c"
     },
     {
-      "bytes": 174989,
+      "bytes": 174666,
       "path": "happ/scripts/happ-config-generator.js",
-      "sha256": "5a87ad60608173b25100b2a4af7b1072d9403558a18264f55dcf272d3a4baf3e"
+      "sha256": "67aa55a45b3b84a70df1c2ffc849f0c10d20dab8ae6fb501ecf9bebe8d8614ab"
     },
     {
       "bytes": 131460,
@@ -931,9 +931,9 @@
       "sha256": "e886a2b7764e857b41dc1242ab9065824b70a844a217b8d3825bfb371cb7c6bd"
     },
     {
-      "bytes": 174989,
+      "bytes": 174666,
       "path": "happ/scripts/substore-config-generator.js",
-      "sha256": "5a87ad60608173b25100b2a4af7b1072d9403558a18264f55dcf272d3a4baf3e"
+      "sha256": "67aa55a45b3b84a70df1c2ffc849f0c10d20dab8ae6fb501ecf9bebe8d8614ab"
     },
     {
       "bytes": 131460,
@@ -1647,7 +1647,7 @@
     }
   ],
   "generatedAt": "2026-08-25T18:39:12Z",
-  "manifestHash": "7b3a21373bb20248bc6e1ba0c7d970db61d27a4cd37d9036981115a018402643",
+  "manifestHash": "e375060cd309b48e6396f387503ec4e3c1490e66053cd0e9ff9e50e1d90ffca6",
   "schemaVersion": 2,
   "upstream": {
     "branch": "master",
