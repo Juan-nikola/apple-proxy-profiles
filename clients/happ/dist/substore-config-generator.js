@@ -2743,7 +2743,7 @@ var HappConfigBundle = (() => {
   var PORTS = Object.freeze({ socks: 10808, http: 10809 });
   function renderHappInbounds(platform) {
     if (!PLATFORM_METADATA[platform]) throw new Error(`Unsupported Happ platform '${platform}'`);
-    const common2 = { listen: "127.0.0.1", sniffing: { enabled: true, destOverride: ["http", "tls"], routeOnly: true } };
+    const common2 = { listen: "127.0.0.1", sniffing: { enabled: true, destOverride: ["http", "tls", "quic"], routeOnly: true } };
     return [
       { tag: "happ-in-socks", port: PORTS.socks, protocol: "socks", settings: { auth: "noauth", udp: true }, ...common2 },
       { tag: "happ-in-http", port: PORTS.http, protocol: "http", settings: {}, ...common2 }
@@ -3266,7 +3266,7 @@ var HappConfigBundle = (() => {
     let quicRuleInserted = false;
     for (const item of orderedRoutingPlan({ adblockMode: "off" })) {
       if (!quicRuleInserted && item.phase !== "security" && (options.quicMode === "proxy-block" || options.quicMode === "all-block")) {
-        rules.push({ type: "field", network: "quic", outboundTag: options.quicMode === "all-block" ? "happ-block" : "happ-direct" });
+        rules.push({ type: "field", network: "udp", port: 443, outboundTag: options.quicMode === "all-block" ? "happ-block" : "happ-direct" });
         quicRuleInserted = true;
       }
       const isIp = item.id === "ChinaIP";
@@ -3274,7 +3274,7 @@ var HappConfigBundle = (() => {
       const target = item.policy === "REJECT" ? { outboundTag: options.blockMode === "off" ? "happ-direct" : "happ-block" } : targetFor(item.id, resolution, followTag, fixedById);
       rules.push({ type: "field", ...isIp ? { ip: [source] } : { domain: [source] }, ...target });
     }
-    if (!quicRuleInserted && (options.quicMode === "proxy-block" || options.quicMode === "all-block")) rules.push({ type: "field", network: "quic", outboundTag: options.quicMode === "all-block" ? "happ-block" : "happ-direct" });
+    if (!quicRuleInserted && (options.quicMode === "proxy-block" || options.quicMode === "all-block")) rules.push({ type: "field", network: "udp", port: 443, outboundTag: options.quicMode === "all-block" ? "happ-block" : "happ-direct" });
     const dnsTarget = resolution?.targets?.dnsAndRules;
     const dnsFixed = dnsTarget?.nodeId ? fixedById.get(dnsTarget.nodeId) : null;
     const globalDnsOutbound = dnsTarget?.resolved === "DIRECT" ? "happ-direct" : dnsFixed?.candidateTag ?? followTag;

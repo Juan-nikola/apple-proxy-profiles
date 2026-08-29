@@ -111,6 +111,7 @@ test("platform, DNS and routing preserve shared semantics", () => {
   const inbounds = renderHappInbounds("macos");
   assert.equal(inbounds.length, 2);
   assert.deepEqual(inbounds.map((x) => x.listen), ["127.0.0.1", "127.0.0.1"]);
+  assert.ok(inbounds.every((entry) => entry.sniffing.destOverride.includes("quic")));
   const dns = renderHappDns({ dnsMode: "stable", chinaDns: "alidns", globalDns: "cloudflare", ipv6Mode: "ipv4-only" });
   assert.equal(dns.queryStrategy, "UseIPv4");
   assert.ok(happProxyGeositeDomains().length > 0);
@@ -121,6 +122,37 @@ test("platform, DNS and routing preserve shared semantics", () => {
   const routing = renderHappRouting({ policyResolution: { targets: {} }, followTag: "happ-follow/x", fixedNodes: [], options: {} });
   assert.equal(routing.routing.domainStrategy, "IPIfNonMatch");
   assert.equal(routing.routing.rules.at(-1).network, "tcp,udp");
+});
+
+test("Happ blocks or bypasses proxy QUIC using Xray UDP/443 matching", () => {
+  const output = renderHappRouting({
+    policyResolution: { targets: {} },
+    followTag: "happ-follow/quic",
+    fixedNodes: [],
+    options: { platform: "iphone", quicMode: "proxy-block" },
+  });
+  const quicRule = output.routing.rules.find((rule) => rule.port === 443 && rule.network === "udp");
+  assert.deepEqual(quicRule, { type: "field", network: "udp", port: 443, outboundTag: "happ-direct" });
+  assert.equal(output.routing.rules.some((rule) => rule.network === "quic"), false);
+
+  const allBlock = renderHappRouting({
+    policyResolution: { targets: {} },
+    followTag: "happ-follow/quic-block",
+    fixedNodes: [],
+    options: { platform: "iphone", quicMode: "all-block" },
+  });
+  assert.deepEqual(
+    allBlock.routing.rules.find((rule) => rule.port === 443 && rule.network === "udp"),
+    { type: "field", network: "udp", port: 443, outboundTag: "happ-block" },
+  );
+
+  const allow = renderHappRouting({
+    policyResolution: { targets: {} },
+    followTag: "happ-follow/quic-allow",
+    fixedNodes: [],
+    options: { platform: "iphone", quicMode: "allow" },
+  });
+  assert.equal(allow.routing.rules.some((rule) => rule.port === 443 && rule.network === "udp"), false);
 });
 
 test("Happ routing uses one standard Xray label scheme on every supported platform", () => {

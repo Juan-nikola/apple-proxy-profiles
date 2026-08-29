@@ -51,7 +51,9 @@ export function renderHappRouting(context = {}) {
   let quicRuleInserted = false;
   for (const item of orderedRoutingPlan({ adblockMode: "off" })) {
     if (!quicRuleInserted && item.phase !== "security" && (options.quicMode === "proxy-block" || options.quicMode === "all-block")) {
-      rules.push({ type: "field", network: "quic", outboundTag: options.quicMode === "all-block" ? "happ-block" : "happ-direct" });
+      // Xray's network matcher only accepts tcp/udp. QUIC is UDP/443 at the
+      // routing layer; using network=quic is silently ignored by the core.
+      rules.push({ type: "field", network: "udp", port: 443, outboundTag: options.quicMode === "all-block" ? "happ-block" : "happ-direct" });
       quicRuleInserted = true;
     }
     const isIp = item.id === "ChinaIP";
@@ -63,7 +65,7 @@ export function renderHappRouting(context = {}) {
       : targetFor(item.id, resolution, followTag, fixedById);
     rules.push({ type: "field", ...(isIp ? { ip: [source] } : { domain: [source] }), ...target });
   }
-  if (!quicRuleInserted && (options.quicMode === "proxy-block" || options.quicMode === "all-block")) rules.push({ type: "field", network: "quic", outboundTag: options.quicMode === "all-block" ? "happ-block" : "happ-direct" });
+  if (!quicRuleInserted && (options.quicMode === "proxy-block" || options.quicMode === "all-block")) rules.push({ type: "field", network: "udp", port: 443, outboundTag: options.quicMode === "all-block" ? "happ-block" : "happ-direct" });
   const dnsTarget = resolution?.targets?.dnsAndRules;
   const dnsFixed = dnsTarget?.nodeId ? fixedById.get(dnsTarget.nodeId) : null;
   const globalDnsOutbound = dnsTarget?.resolved === "DIRECT" ? "happ-direct" : dnsFixed?.candidateTag ?? followTag;

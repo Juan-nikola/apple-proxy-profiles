@@ -166,7 +166,7 @@ var HappConfigBundle = (() => {
       requiredFields: ["uuid", "password"],
       tls: true
     }),
-    protocol(["socks5"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.v2box, CLIENT.clash]),
+    protocol(["socks5"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.happ, CLIENT.v2box, CLIENT.clash]),
     protocol(["http"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox, CLIENT.v2box, CLIENT.clash]),
     protocol(["ssh"], [CLIENT.egern, CLIENT.singbox, CLIENT.clash], {
       requiredFields: ["username"]
@@ -1104,7 +1104,7 @@ var HappConfigBundle = (() => {
   }
   function evaluateNodeForClient(node, client) {
     if (!Object.values(CLIENT).includes(client)) return { supported: false, reason: "unsupported-client" };
-    if (client === CLIENT.v2box) {
+    if (client === CLIENT.v2box || client === CLIENT.happ) {
       const reason = evaluateXrayNodeExclusionReason(node ?? {}, client);
       return reason ? { supported: false, reason } : { supported: true, reason: null };
     }
@@ -1133,13 +1133,16 @@ var HappConfigBundle = (() => {
     "hysteria"
   ]);
   var XRAY_CHAIN_REASON = Object.freeze({
-    v2box: "unsupported-v2box-chain"
+    v2box: "unsupported-v2box-chain",
+    happ: "unsupported-happ-chain"
   });
   var XRAY_PROTOCOL_REASON = Object.freeze({
-    v2box: "unsupported-v2box-protocol"
+    v2box: "unsupported-v2box-protocol",
+    happ: "unsupported-happ-protocol"
   });
   var XRAY_TRANSPORT_REASON = Object.freeze({
-    v2box: "unsupported-v2box-transport"
+    v2box: "unsupported-v2box-transport",
+    happ: "unsupported-happ-transport"
   });
   function xrayCommonReason(node, client) {
     if (!isPlainObject(node) || !isNonblankString(node.name) || !isNonblankString(node.server) || !isValidPort(node.port)) {
@@ -1203,7 +1206,7 @@ var HappConfigBundle = (() => {
     if (tls) return tls;
     const transport = xrayTransportReason(node, client, protocol2);
     if (transport) return transport;
-    if (client === "v2box" && protocol2 === "socks5" && (node.tls === true || node.security === "tls" || node.security === "reality")) {
+    if ((client === "v2box" || client === "happ") && protocol2 === "socks5" && (node.tls === true || node.security === "tls" || node.security === "reality")) {
       return `unsupported-${client}-tls`;
     }
     return null;
@@ -2708,7 +2711,6 @@ var HappConfigBundle = (() => {
   }
   function renderShadowsocks(node) {
     const server = { ...common(node), method: required2(node.cipher ?? node.method, "method"), password: required2(node.password, "password") };
-    if (node.udp !== void 0) server.ota = node.udp === true;
     return { protocol: "shadowsocks", settings: { servers: [server] }, ...streamSettings(node) ? { streamSettings: streamSettings(node) } : {} };
   }
   function renderSocks(node) {
@@ -2741,7 +2743,7 @@ var HappConfigBundle = (() => {
   var PORTS = Object.freeze({ socks: 10808, http: 10809 });
   function renderHappInbounds(platform) {
     if (!PLATFORM_METADATA[platform]) throw new Error(`Unsupported Happ platform '${platform}'`);
-    const common2 = { listen: "127.0.0.1", sniffing: { enabled: true, destOverride: ["http", "tls"], routeOnly: true } };
+    const common2 = { listen: "127.0.0.1", sniffing: { enabled: true, destOverride: ["http", "tls", "quic"], routeOnly: true } };
     return [
       { tag: "happ-in-socks", port: PORTS.socks, protocol: "socks", settings: { auth: "noauth", udp: true }, ...common2 },
       { tag: "happ-in-http", port: PORTS.http, protocol: "http", settings: {}, ...common2 }
@@ -3264,7 +3266,7 @@ var HappConfigBundle = (() => {
     let quicRuleInserted = false;
     for (const item of orderedRoutingPlan({ adblockMode: "off" })) {
       if (!quicRuleInserted && item.phase !== "security" && (options.quicMode === "proxy-block" || options.quicMode === "all-block")) {
-        rules.push({ type: "field", network: "quic", outboundTag: options.quicMode === "all-block" ? "happ-block" : "happ-direct" });
+        rules.push({ type: "field", network: "udp", port: 443, outboundTag: options.quicMode === "all-block" ? "happ-block" : "happ-direct" });
         quicRuleInserted = true;
       }
       const isIp = item.id === "ChinaIP";
@@ -3272,7 +3274,7 @@ var HappConfigBundle = (() => {
       const target = item.policy === "REJECT" ? { outboundTag: options.blockMode === "off" ? "happ-direct" : "happ-block" } : targetFor(item.id, resolution, followTag, fixedById);
       rules.push({ type: "field", ...isIp ? { ip: [source] } : { domain: [source] }, ...target });
     }
-    if (!quicRuleInserted && (options.quicMode === "proxy-block" || options.quicMode === "all-block")) rules.push({ type: "field", network: "quic", outboundTag: options.quicMode === "all-block" ? "happ-block" : "happ-direct" });
+    if (!quicRuleInserted && (options.quicMode === "proxy-block" || options.quicMode === "all-block")) rules.push({ type: "field", network: "udp", port: 443, outboundTag: options.quicMode === "all-block" ? "happ-block" : "happ-direct" });
     const dnsTarget = resolution?.targets?.dnsAndRules;
     const dnsFixed = dnsTarget?.nodeId ? fixedById.get(dnsTarget.nodeId) : null;
     const globalDnsOutbound = dnsTarget?.resolved === "DIRECT" ? "happ-direct" : dnsFixed?.candidateTag ?? followTag;

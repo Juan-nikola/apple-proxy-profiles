@@ -18,7 +18,8 @@
           "enabled": true,
           "destOverride": [
             "http",
-            "tls"
+            "tls",
+            "quic"
           ],
           "routeOnly": true
         }
@@ -33,7 +34,8 @@
           "enabled": true,
           "destOverride": [
             "http",
-            "tls"
+            "tls",
+            "quic"
           ],
           "routeOnly": true
         }
@@ -164,7 +166,8 @@
         },
         {
           "type": "field",
-          "network": "quic",
+          "network": "udp",
+          "port": 443,
           "outboundTag": "happ-direct"
         },
         {
@@ -435,7 +438,8 @@
           "enabled": true,
           "destOverride": [
             "http",
-            "tls"
+            "tls",
+            "quic"
           ],
           "routeOnly": true
         }
@@ -450,7 +454,8 @@
           "enabled": true,
           "destOverride": [
             "http",
-            "tls"
+            "tls",
+            "quic"
           ],
           "routeOnly": true
         }
@@ -570,7 +575,8 @@
         },
         {
           "type": "field",
-          "network": "quic",
+          "network": "udp",
+          "port": 443,
           "outboundTag": "happ-direct"
         },
         {

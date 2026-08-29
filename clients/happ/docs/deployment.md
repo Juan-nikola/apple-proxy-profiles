@@ -34,6 +34,8 @@
 
 普通节点列表仍可使用公开安装页导入 Profile。JSON 订阅不要手动复制 routing.happ.su 的 Profile，也不要先绑定一个公共 Profile 再导入 JSON；Restricted Mode 下 Profile 必须由 JSON 订阅响应携带并自动绑定。
 
+验证路由时不要以“开关是否可点击”为准。HAPP 对 JSON 订阅会固定显示已开启并禁止手动切换；请在日志中确认 `happ-direct`、`happ-follow/...` 和需要时的 `happ-fixed/.../candidate`。`proxy-block` 会把应用 UDP/443（QUIC）直连回落，避免送入只支持 TCP 的 Reality；`all-block` 才会完全丢弃 UDP/443。
+
 策略值只允许 `DIRECT`、`FOLLOW`、`NODE:<精确节点名>` 或唯一 `NODE~<大致名称>`。策略修改后重新生成所有相关私密任务，再导入新 JSON。节点名和 Profile deep link 不要提交到仓库或公开聊天。
 
 ## 回滚

@@ -3,18 +3,18 @@
   "client": "v2box",
   "files": [
     {
-      "bytes": 171601,
+      "bytes": 171778,
       "path": "v2box/scripts/substore-config-generator.js",
-      "sha256": "ee33dc35d2f1f6b2a01977f5f591460f82dd6961bad19e68fe2f87ebe15f73ae"
+      "sha256": "f67869ce0149f3344feead23801c0f1fa1d0f717cae4b90ca74ee3283b1b8c3c"
     },
     {
-      "bytes": 120408,
+      "bytes": 120585,
       "path": "v2box/scripts/substore-node-generator.js",
-      "sha256": "1221442103488f3fd779d61895f52f0d2d3d78b5830ada33b578ae2452c19c51"
+      "sha256": "46d831d41717c85007ac2dcc2190ff546a5bc99ab5b950facd5f945ec5522b16"
     }
   ],
   "generatedAt": "2026-08-25T18:39:12Z",
-  "manifestHash": "790f75d2b0c3797c2023e4ceba4e56e63c4f480c8e5589ce92656cf7fe3733ae",
+  "manifestHash": "eb846c13cf5e85623486e1a6ac410237fd1de41dca00d729bb3e618addc6a1dd",
   "optionalPacks": {},
   "schemaVersion": 1,
   "sharedAssets": [
