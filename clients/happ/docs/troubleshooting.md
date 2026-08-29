@@ -3,7 +3,8 @@
 - **页面打不开或下载失败**：先确认设备能访问 GitHub Pages，再检查 URL 是否为 `https` 且使用公开稳定入口 `current/happ`。生产任务固定 `channel=current`；`edge` 和 `previous` 只供维护者内部灰度或回滚。
 - **GeoData hash 不一致**：停止导入，重新下载同一通道的 manifest 和两个 `.dat` 文件；不要手工编辑二进制。
 - **JSON 为空**：在 Sub-Store 分别预览 collection 和 HAPP 任务，确认至少有一个兼容节点。
-- **所有节点测速显示 `n/a`**：检查每个 JSON 配置的 `observatory.subjectSelector` 是否包含该配置的 `happ-follow/...` 出站。Xray 只会观测 selector 匹配的出站；空数组不会产生延迟结果。重新导入包含观测目标的新版 JSON 后，再点击 Ping 测试。
+- **所有节点测速显示 `n/a`**：`n/a` 表示 HAPP 还没有执行 Ping，不是生成器把节点判定为不可用。点订阅标题右侧的测速表盘，或左滑节点后点测速；也可以在 HAPP 的 `Settings → Subscriptions → Ping on Launch` 开启启动测速。生成的 JSON 会把当前 `happ-follow/...` 出站写入 `observatory.subjectSelector`，因此手动 Ping 后才会出现延迟结果。
+- **Reality 节点显示 `tcp`**：这是正常的两层表示：`network: tcp` 是 VLESS/VMess 的传输层，Reality 必须看同一出站的 `security: reality` 和 `realitySettings.publicKey`。只有同时看到 `security: tls` 且没有 `realitySettings` 才是错误；此时重新刷新订阅，确认任务远程脚本 URL 使用最新版本。
 - **固定节点未命中**：节点名必须大小写、空格和标点完全一致；修正策略后重新生成 JSON。
 - **HAPP 路由开关显示锁定**：JSON 配置由 Xray JSON 自己负责 DNS、路由和固定节点；HAPP 路由开关对 JSON 订阅会被锁定，这是正常行为。不要把“开关锁定”当成路由没有生效，也不要用 routing.happ.su 的链接手动覆盖 JSON 订阅 Profile。
 - **从文件导入提示“无法解析配置”**：不要导入浏览器下载的 JSON 数组。文件导入丢失了 `routing`/`routing-enable` 响应头，且部分 HAPP 版本不接受数组文件；删除该条目后，改用对应平台的私密 File URL 从 HAPP 的“添加订阅/URL”入口导入。
