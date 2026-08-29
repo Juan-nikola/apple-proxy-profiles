@@ -141,6 +141,17 @@ test("rejects full adblock for mobile sing-box tasks before preview", () => {
   assert.equal(checkSubstoreTaskUrl(macos).ok, true);
 });
 
+test("rejects full adblock for Clash mobile tasks before preview", () => {
+  for (const platform of ["iphone", "ipad", "appletv"]) {
+    const url = `${PUBLIC}/current/clash/scripts/clash-profile-generator.js#output=config&type=collection&name=apple-proxy-clash&subscriptionName=Apple-Proxy-Clash&nodeSubscriptionUrl=https%3A%2F%2Fexample.invalid%2Fclash-nodes&platform=${platform}&adblockMode=full`;
+    const result = checkSubstoreTaskUrl(url);
+    assert.equal(result.ok, false, platform);
+    assert.match(result.errors.join(", "), /adblockMode=full.*mobile.*memory/iu);
+  }
+  const macos = `${PUBLIC}/current/clash/scripts/clash-profile-generator.js#output=config&type=collection&name=apple-proxy-clash&subscriptionName=Apple-Proxy-Clash&nodeSubscriptionUrl=https%3A%2F%2Fexample.invalid%2Fclash-nodes&platform=macos&adblockMode=full`;
+  assert.equal(checkSubstoreTaskUrl(macos).ok, true);
+});
+
 test("rejects an unsupported sing-box nodeErrorMode", () => {
   const url = `${PUBLIC}/current/sing-box/scripts/sing-box-config-generator.js#output=config&type=collection&name=apple-proxy-sources&subscriptionName=Apple-Proxy-Nodes&platform=macos&nodeErrorMode=partial`;
   const result = checkSubstoreTaskUrl(url);

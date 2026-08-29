@@ -4,6 +4,8 @@ See the [Sub-Store client pool guide](../../../docs/substore-client-pools.md) be
 
 If the node task is empty, preview `apple-proxy-clash` and check the collection name in the task fragment. If a profile has no usable proxies, inspect the private task diagnostic for `renderFailures`; remove or repair the incompatible node instead of forcing an empty profile.
 
+If iPhone, iPad, or Apple TV still reports insufficient memory after refreshing the profile, confirm that the generated YAML references `clash/mobile-rules/` and does not reference `clash/rules/Hijacking.yaml` or `clash/rules/DomesticCore.yaml`. Do not set `adblockMode=full` on mobile; the task checker and generator reject it by design. Keep the node collection to confirmed usable nodes and close older VPN profiles before retrying.
+
 If rules do not load, confirm the profile uses the same `current` channel as `current/clash/rules/` and the root `manifest.json`. Do not switch a production task to `edge` as a workaround.
 
 If DNS or LAN access fails, test with the generated profile's DNS and TUN settings, then temporarily return to the previous profile. Do not enable MITM or disable certificate validation.

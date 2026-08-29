@@ -2,7 +2,7 @@
 
 Generates Mihomo/Clash YAML node subscriptions and complete profiles for macOS, iPhone, iPad, and Apple TV from the user-owned `apple-proxy-clash` Sub-Store collection. Public artifacts contain no node credentials or private subscription URL.
 
-The profile renderer emits mixed-port, TUN, DNS with Fake-IP, sing-box-compatible continent selectors, concrete node choices, hidden automatic helpers at the end of the group list, business selectors, shared `rule-providers`, and an ordered `rules` list ending in `MATCH`. Default `adblockMode=off` keeps the large advertising pack out of the normal profile; use `full` only when the device can carry the optional pack.
+The profile renderer emits mixed-port, TUN, DNS with Fake-IP, sing-box-compatible continent selectors, concrete node choices, hidden automatic helpers at the end of the group list, business selectors, shared `rule-providers`, and an ordered `rules` list ending in `MATCH`. iPhone, iPad, and Apple TV use the compact semantic providers under `clash/mobile-rules`; macOS keeps the full source-level providers under `clash/rules`. Mobile tasks reject `adblockMode=full` because the optional advertising pack exceeds the Network Extension memory budget.
 
 IPv6 defaults are platform-aware: macOS uses `ipv4-only` for stability on networks without a usable IPv6 route, while iPhone, iPad, and Apple TV keep `auto` for IPv6/NAT64 compatibility. Pass `ipv6Mode=auto` explicitly when a macOS network is known to provide working IPv6.
 

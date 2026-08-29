@@ -997,6 +997,307 @@ var ClashProfileBundle = (() => {
     [CLIENT.singbox]: Object.freeze(["macos", "iphone", "ipad", "android", "openwrt"])
   });
 
+  // ../../../shared/rules/semantic-intents.js
+  var intent = ({ id, ruleId, label, sourceIds, policy, defaultTarget, phase, dnsClass }) => Object.freeze({
+    id,
+    ruleId,
+    label,
+    sourceIds: Object.freeze([...sourceIds]),
+    policy,
+    defaultTarget,
+    phase,
+    dnsClass
+  });
+  var SEMANTIC_INTENTS = Object.freeze([
+    intent({ id: "security", ruleId: "Security", label: "\u5B89\u5168\u62E6\u622A", sourceIds: ["Hijacking", "BlockHttpDNS"], policy: "REJECT", defaultTarget: "REJECT", phase: "security", dnsClass: "none" }),
+    intent({ id: "privacy", ruleId: "Privacy", label: "\u{1F575}\uFE0F \u4E25\u683C\u8DDF\u8E2A", sourceIds: ["Privacy"], policy: "\u{1F575}\uFE0F \u4E25\u683C\u8DDF\u8E2A", defaultTarget: "DIRECT", phase: "security", dnsClass: "none" }),
+    intent({ id: "domesticCore", ruleId: "DomesticCore", label: "\u56FD\u5185\u6838\u5FC3", sourceIds: ["DomesticCore", "DomesticGame", "SteamCN"], policy: "DIRECT", defaultTarget: "DIRECT", phase: "earlyDomestic", dnsClass: "china" }),
+    intent({ id: "domesticPlatform", ruleId: "DomesticPlatform", label: "\u{1F1E8}\u{1F1F3} \u56FD\u5185\u5E73\u53F0", sourceIds: ["BiliBili", "ByteDance", "XiaoHongShu", "Weibo"], policy: "\u{1F1E8}\u{1F1F3} \u56FD\u5185\u5E73\u53F0", defaultTarget: "DIRECT", phase: "serviceIntent", dnsClass: "china" }),
+    intent({ id: "ai", ruleId: "AI", label: "\u{1F916} AI \u4E13\u7528", sourceIds: ["OpenAI", "Claude", "Gemini", "Copilot"], policy: "\u{1F916} AI \u4E13\u7528", defaultTarget: "FOLLOW", phase: "serviceIntent", dnsClass: "proxy" }),
+    intent({ id: "github", ruleId: "GitHub", label: "\u{1F419} GitHub", sourceIds: ["GitHub"], policy: "\u{1F419} GitHub", defaultTarget: "FOLLOW", phase: "serviceIntent", dnsClass: "proxy" }),
+    intent({ id: "youtube", ruleId: "YouTube", label: "\u{1F4FA} YouTube", sourceIds: ["YouTube"], policy: "\u{1F4FA} YouTube", defaultTarget: "FOLLOW", phase: "serviceIntent", dnsClass: "proxy" }),
+    intent({ id: "overseasMedia", ruleId: "OverseasMedia", label: "\u{1F3AC} \u6D77\u5916\u6D41\u5A92\u4F53", sourceIds: ["Netflix", "Disney", "Spotify", "GlobalMedia"], policy: "\u{1F3AC} \u6D77\u5916\u6D41\u5A92\u4F53", defaultTarget: "FOLLOW", phase: "serviceIntent", dnsClass: "proxy" }),
+    intent({ id: "globalSocial", ruleId: "OverseasSocial", label: "\u{1F4AC} \u6D77\u5916\u793E\u4EA4", sourceIds: ["Telegram", "Facebook", "Instagram", "Twitter", "TikTok"], policy: "\u{1F4AC} \u6D77\u5916\u793E\u4EA4", defaultTarget: "FOLLOW", phase: "serviceIntent", dnsClass: "proxy" }),
+    intent({ id: "apple", ruleId: "Apple", label: "\u{1F34E} Apple", sourceIds: ["Apple"], policy: "\u{1F34E} Apple", defaultTarget: "DIRECT", phase: "serviceIntent", dnsClass: "china" }),
+    intent({ id: "microsoft", ruleId: "Microsoft", label: "\u{1FA9F} Microsoft", sourceIds: ["Microsoft"], policy: "\u{1FA9F} Microsoft", defaultTarget: "DIRECT", phase: "serviceIntent", dnsClass: "china" }),
+    intent({ id: "download", ruleId: "Download", label: "\u2B07\uFE0F \u4E0B\u8F7D/P2P", sourceIds: ["Download", "PrivateTracker"], policy: "\u2B07\uFE0F \u4E0B\u8F7D/P2P", defaultTarget: "DIRECT", phase: "serviceIntent", dnsClass: "china" }),
+    intent({ id: "overseasGame", ruleId: "OverseasGame", label: "\u{1F30D} \u6D77\u5916\u6E38\u620F", sourceIds: ["OverseasGame"], policy: "\u{1F30D} \u6D77\u5916\u6E38\u620F", defaultTarget: "FOLLOW", phase: "overseasGame", dnsClass: "proxy" }),
+    intent({ id: "chinaIp", ruleId: "ChinaIP", label: "\u4E2D\u56FD IP", sourceIds: ["ChinaIP"], policy: "DIRECT", defaultTarget: "DIRECT", phase: "resolvedChinaIp", dnsClass: "none" })
+  ]);
+  var SOURCE_TO_INTENT = new Map(
+    SEMANTIC_INTENTS.flatMap((entry) => entry.sourceIds.map((sourceId) => [sourceId, entry]))
+  );
+
+  // ../../../shared/rules/lightweight-policy.js
+  var DEFAULT_RULE_SOURCE_IDS = Object.freeze([
+    "Hijacking",
+    "BlockHttpDNS",
+    "Privacy",
+    "DomesticCore",
+    "DomesticGame",
+    "SteamCN",
+    "BiliBili",
+    "ByteDance",
+    "XiaoHongShu",
+    "Weibo",
+    "OpenAI",
+    "Claude",
+    "Gemini",
+    "Copilot",
+    "GitHub",
+    "YouTube",
+    "Netflix",
+    "Disney",
+    "Spotify",
+    "GlobalMedia",
+    "Telegram",
+    "Facebook",
+    "Instagram",
+    "Twitter",
+    "TikTok",
+    "Apple",
+    "Microsoft",
+    "Download",
+    "PrivateTracker",
+    "OverseasGame",
+    "ChinaTLD",
+    "ChinaIP"
+  ]);
+  var MOBILE_RULE_BUNDLES = Object.freeze(SEMANTIC_INTENTS.map((entry) => Object.freeze({
+    id: entry.ruleId,
+    sourceIds: entry.sourceIds,
+    policy: entry.policy,
+    phase: entry.phase,
+    dnsClass: entry.dnsClass
+  })));
+  var MOBILE_RULE_SOURCE_IDS = Object.freeze(MOBILE_RULE_BUNDLES.map(({ id }) => id));
+  var MOBILE_RULE_PLATFORMS = Object.freeze([
+    "iphone",
+    "ipad",
+    "android"
+  ]);
+  var CLASH_MOBILE_RULE_PLATFORMS = Object.freeze([
+    "iphone",
+    "ipad",
+    "appletv"
+  ]);
+  function usesClashMobileRuleBundles(platform) {
+    return CLASH_MOBILE_RULE_PLATFORMS.includes(platform);
+  }
+  var FULL_ADBLOCK_SOURCE_IDS = Object.freeze([
+    "Advertising",
+    "Advertising_Domain"
+  ]);
+  var ROUTING_PHASES = Object.freeze([
+    "security",
+    "earlyDomestic",
+    "serviceIntent",
+    "overseasGame",
+    "lateDomestic",
+    "resolvedChinaIp"
+  ]);
+  var PHASE_SOURCE_IDS = Object.freeze({
+    security: Object.freeze([
+      "Hijacking",
+      "BlockHttpDNS",
+      "Privacy",
+      "Advertising",
+      "Advertising_Domain"
+    ]),
+    earlyDomestic: Object.freeze(["DomesticCore", "DomesticGame", "SteamCN"]),
+    serviceIntent: Object.freeze([
+      "BiliBili",
+      "ByteDance",
+      "XiaoHongShu",
+      "Weibo",
+      "OpenAI",
+      "Claude",
+      "Gemini",
+      "Copilot",
+      "GitHub",
+      "YouTube",
+      "Netflix",
+      "Disney",
+      "Spotify",
+      "GlobalMedia",
+      "Telegram",
+      "Facebook",
+      "Instagram",
+      "Twitter",
+      "TikTok",
+      "Apple",
+      "Microsoft",
+      "Download",
+      "PrivateTracker"
+    ]),
+    overseasGame: Object.freeze(["OverseasGame"]),
+    lateDomestic: Object.freeze(["ChinaTLD"]),
+    resolvedChinaIp: Object.freeze(["ChinaIP"])
+  });
+  var RULE_BUDGETS = Object.freeze({
+    domesticCoreEntries: 13e4,
+    defaultEntries: 4e5,
+    defaultBytes: 3e7,
+    mobileEntries: 5e4,
+    mobileBytes: 5e6,
+    startupInlineEntries: 64,
+    singBoxRuleRssBytes: 50 * 1024 * 1024,
+    singBoxTotalRssBytes: 200 * 1024 * 1024,
+    // Binary SRS budgets are enforced independently from text/client bundle
+    // budgets. This prevents a large external source from being inlined into a
+    // sing-box runtime while still allowing compact binary rule sets.
+    singBoxRuleSetBytes: 50 * 1024 * 1024,
+    singBoxTotalRuleSetBytes: 200 * 1024 * 1024
+  });
+  var ROUTING_PRECEDENCE = Object.freeze([
+    "local",
+    "security",
+    "custom",
+    "domesticCore",
+    "domesticPlatform",
+    "domesticGame",
+    "explicitOverseas",
+    "overseasGame",
+    "chinaIp",
+    "defaultProxy"
+  ]);
+  var EXPLICIT_OVERSEAS_RULE_SOURCE_IDS = Object.freeze([
+    "OpenAI",
+    "Claude",
+    "Gemini",
+    "Copilot",
+    "GitHub",
+    "YouTube",
+    "Netflix",
+    "Disney",
+    "Spotify",
+    "GlobalMedia",
+    "Telegram",
+    "Facebook",
+    "Instagram",
+    "Twitter",
+    "TikTok",
+    "OverseasGame"
+  ]);
+  var DNS_CLASS_SOURCE_IDS = Object.freeze({
+    proxy: EXPLICIT_OVERSEAS_RULE_SOURCE_IDS,
+    china: Object.freeze([
+      "DomesticCore",
+      "DomesticGame",
+      "SteamCN",
+      "ChinaTLD",
+      "BiliBili",
+      "ByteDance",
+      "XiaoHongShu",
+      "Weibo",
+      "Apple",
+      "Microsoft",
+      "Download",
+      "PrivateTracker"
+    ]),
+    none: Object.freeze([
+      "Hijacking",
+      "BlockHttpDNS",
+      "Privacy",
+      "Advertising",
+      "Advertising_Domain",
+      "ChinaIP"
+    ])
+  });
+  var POLICY_TARGETS = Object.freeze({
+    direct: "DIRECT",
+    defaultProxy: "\u{1F680} \u8282\u70B9\u9009\u62E9",
+    overseasGame: "\u{1F30D} \u6D77\u5916\u6E38\u620F",
+    overseasMedia: "\u{1F3AC} \u6D77\u5916\u6D41\u5A92\u4F53",
+    overseasSocial: "\u{1F4AC} \u6D77\u5916\u793E\u4EA4",
+    domesticPlatform: "\u{1F1E8}\u{1F1F3} \u56FD\u5185\u5E73\u53F0",
+    reject: "REJECT"
+  });
+  var SOURCE_POLICIES = Object.freeze({
+    Hijacking: POLICY_TARGETS.reject,
+    BlockHttpDNS: POLICY_TARGETS.reject,
+    Privacy: "\u{1F575}\uFE0F \u4E25\u683C\u8DDF\u8E2A",
+    DomesticCore: POLICY_TARGETS.direct,
+    DomesticGame: POLICY_TARGETS.direct,
+    BiliBili: POLICY_TARGETS.domesticPlatform,
+    ByteDance: POLICY_TARGETS.domesticPlatform,
+    XiaoHongShu: POLICY_TARGETS.domesticPlatform,
+    Weibo: POLICY_TARGETS.domesticPlatform,
+    OpenAI: "\u{1F916} AI \u4E13\u7528",
+    Claude: "\u{1F916} AI \u4E13\u7528",
+    Gemini: "\u{1F916} AI \u4E13\u7528",
+    Copilot: "\u{1F916} AI \u4E13\u7528",
+    GitHub: "\u{1F419} GitHub",
+    YouTube: "\u{1F4FA} YouTube",
+    Netflix: POLICY_TARGETS.overseasMedia,
+    Disney: POLICY_TARGETS.overseasMedia,
+    Spotify: POLICY_TARGETS.overseasMedia,
+    GlobalMedia: POLICY_TARGETS.overseasMedia,
+    Telegram: POLICY_TARGETS.overseasSocial,
+    Facebook: POLICY_TARGETS.overseasSocial,
+    Instagram: POLICY_TARGETS.overseasSocial,
+    Twitter: POLICY_TARGETS.overseasSocial,
+    TikTok: POLICY_TARGETS.overseasSocial,
+    Apple: "\u{1F34E} Apple",
+    Microsoft: "\u{1FA9F} Microsoft",
+    SteamCN: POLICY_TARGETS.direct,
+    OverseasGame: POLICY_TARGETS.overseasGame,
+    Download: "\u2B07\uFE0F \u4E0B\u8F7D/P2P",
+    PrivateTracker: "\u2B07\uFE0F \u4E0B\u8F7D/P2P",
+    ChinaTLD: POLICY_TARGETS.direct,
+    ChinaIP: POLICY_TARGETS.direct,
+    Advertising: "\u{1F9F1} \u5E38\u89C1\u5E7F\u544A",
+    Advertising_Domain: "\u{1F9F1} \u5E38\u89C1\u5E7F\u544A"
+  });
+  function uniqueMembership(id, memberships, label) {
+    const matches = Object.entries(memberships).filter(([, ids2]) => ids2.includes(id)).map(([name]) => name);
+    if (matches.length !== 1) {
+      throw new Error(`Lightweight rule source ${id} must have exactly one ${label} membership`);
+    }
+    return matches[0];
+  }
+  function clientRecord(id) {
+    const policy = SOURCE_POLICIES[id];
+    if (!policy) throw new Error(`Missing policy for lightweight rule source: ${id}`);
+    const phase = uniqueMembership(id, PHASE_SOURCE_IDS, "routing phase");
+    const dnsClass = uniqueMembership(id, DNS_CLASS_SOURCE_IDS, "DNS class");
+    return Object.freeze({
+      id,
+      policy,
+      // The publication pipeline emits normalized, typed Surge/Shadowrocket
+      // lines for every compiled source, including domain-only inputs.
+      inputFormat: "RULE-SET",
+      phase,
+      dnsClass
+    });
+  }
+  var DEFAULT_RULE_CLIENT_CATALOG = Object.freeze(DEFAULT_RULE_SOURCE_IDS.map(clientRecord));
+  var FULL_ADBLOCK_RULE_CLIENT_CATALOG = Object.freeze(FULL_ADBLOCK_SOURCE_IDS.map(clientRecord));
+  var MOBILE_RULE_CLIENT_CATALOG = Object.freeze(MOBILE_RULE_BUNDLES.map((bundle) => Object.freeze({
+    id: bundle.id,
+    policy: bundle.policy,
+    inputFormat: "RULE-SET",
+    phase: bundle.phase,
+    dnsClass: bundle.dnsClass
+  })));
+  function mobileRuleClientCatalog() {
+    return MOBILE_RULE_CLIENT_CATALOG;
+  }
+  function ruleClientCatalog({ adblockMode = "off" } = {}) {
+    if (adblockMode !== "off" && adblockMode !== "full") {
+      throw new TypeError("adblockMode must be either off or full");
+    }
+    return adblockMode === "full" ? Object.freeze([...DEFAULT_RULE_CLIENT_CATALOG, ...FULL_ADBLOCK_RULE_CLIENT_CATALOG]) : DEFAULT_RULE_CLIENT_CATALOG;
+  }
+  function orderedRoutingPlan({ adblockMode = "off" } = {}) {
+    const selected = ruleClientCatalog({ adblockMode });
+    const phaseRank = new Map(ROUTING_PHASES.map((phase, index) => [phase, index]));
+    const sourceRank = new Map(
+      [...DEFAULT_RULE_SOURCE_IDS, ...FULL_ADBLOCK_SOURCE_IDS].map((id, index) => [id, index])
+    );
+    return Object.freeze([...selected].sort((left, right) => phaseRank.get(left.phase) - phaseRank.get(right.phase) || sourceRank.get(left.id) - sourceRank.get(right.id)));
+  }
+
   // ../../../shared/substore/collection-name.js
   var SAFE_COLLECTION_NAME = /^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$/u;
   var PROTOTYPE_KEYS = /* @__PURE__ */ new Set(["__proto__", "constructor", "prototype"]);
@@ -1069,6 +1370,9 @@ var ClashProfileBundle = (() => {
     if (!FRONTIER_CHANNELS.includes(channel)) throw new Error("Clash channel is unsupported");
     const adblockMode = values.has("adblockMode") ? values.get("adblockMode") : "off";
     if (!AD_BLOCK.has(adblockMode)) throw new Error("Clash adblockMode is unsupported");
+    if (usesClashMobileRuleBundles(platform) && adblockMode === "full") {
+      throw new Error("Option 'adblockMode=full' exceeds the mobile Clash memory budget");
+    }
     const defaultIpv6Mode = platform === "macos" ? "ipv4-only" : "auto";
     const options = Object.freeze({
       output: "config",
@@ -1695,294 +1999,6 @@ var ClashProfileBundle = (() => {
     };
   }
 
-  // ../../../shared/rules/semantic-intents.js
-  var intent = ({ id, ruleId, label, sourceIds, policy, defaultTarget, phase, dnsClass }) => Object.freeze({
-    id,
-    ruleId,
-    label,
-    sourceIds: Object.freeze([...sourceIds]),
-    policy,
-    defaultTarget,
-    phase,
-    dnsClass
-  });
-  var SEMANTIC_INTENTS = Object.freeze([
-    intent({ id: "security", ruleId: "Security", label: "\u5B89\u5168\u62E6\u622A", sourceIds: ["Hijacking", "BlockHttpDNS"], policy: "REJECT", defaultTarget: "REJECT", phase: "security", dnsClass: "none" }),
-    intent({ id: "privacy", ruleId: "Privacy", label: "\u{1F575}\uFE0F \u4E25\u683C\u8DDF\u8E2A", sourceIds: ["Privacy"], policy: "\u{1F575}\uFE0F \u4E25\u683C\u8DDF\u8E2A", defaultTarget: "DIRECT", phase: "security", dnsClass: "none" }),
-    intent({ id: "domesticCore", ruleId: "DomesticCore", label: "\u56FD\u5185\u6838\u5FC3", sourceIds: ["DomesticCore", "DomesticGame", "SteamCN"], policy: "DIRECT", defaultTarget: "DIRECT", phase: "earlyDomestic", dnsClass: "china" }),
-    intent({ id: "domesticPlatform", ruleId: "DomesticPlatform", label: "\u{1F1E8}\u{1F1F3} \u56FD\u5185\u5E73\u53F0", sourceIds: ["BiliBili", "ByteDance", "XiaoHongShu", "Weibo"], policy: "\u{1F1E8}\u{1F1F3} \u56FD\u5185\u5E73\u53F0", defaultTarget: "DIRECT", phase: "serviceIntent", dnsClass: "china" }),
-    intent({ id: "ai", ruleId: "AI", label: "\u{1F916} AI \u4E13\u7528", sourceIds: ["OpenAI", "Claude", "Gemini", "Copilot"], policy: "\u{1F916} AI \u4E13\u7528", defaultTarget: "FOLLOW", phase: "serviceIntent", dnsClass: "proxy" }),
-    intent({ id: "github", ruleId: "GitHub", label: "\u{1F419} GitHub", sourceIds: ["GitHub"], policy: "\u{1F419} GitHub", defaultTarget: "FOLLOW", phase: "serviceIntent", dnsClass: "proxy" }),
-    intent({ id: "youtube", ruleId: "YouTube", label: "\u{1F4FA} YouTube", sourceIds: ["YouTube"], policy: "\u{1F4FA} YouTube", defaultTarget: "FOLLOW", phase: "serviceIntent", dnsClass: "proxy" }),
-    intent({ id: "overseasMedia", ruleId: "OverseasMedia", label: "\u{1F3AC} \u6D77\u5916\u6D41\u5A92\u4F53", sourceIds: ["Netflix", "Disney", "Spotify", "GlobalMedia"], policy: "\u{1F3AC} \u6D77\u5916\u6D41\u5A92\u4F53", defaultTarget: "FOLLOW", phase: "serviceIntent", dnsClass: "proxy" }),
-    intent({ id: "globalSocial", ruleId: "OverseasSocial", label: "\u{1F4AC} \u6D77\u5916\u793E\u4EA4", sourceIds: ["Telegram", "Facebook", "Instagram", "Twitter", "TikTok"], policy: "\u{1F4AC} \u6D77\u5916\u793E\u4EA4", defaultTarget: "FOLLOW", phase: "serviceIntent", dnsClass: "proxy" }),
-    intent({ id: "apple", ruleId: "Apple", label: "\u{1F34E} Apple", sourceIds: ["Apple"], policy: "\u{1F34E} Apple", defaultTarget: "DIRECT", phase: "serviceIntent", dnsClass: "china" }),
-    intent({ id: "microsoft", ruleId: "Microsoft", label: "\u{1FA9F} Microsoft", sourceIds: ["Microsoft"], policy: "\u{1FA9F} Microsoft", defaultTarget: "DIRECT", phase: "serviceIntent", dnsClass: "china" }),
-    intent({ id: "download", ruleId: "Download", label: "\u2B07\uFE0F \u4E0B\u8F7D/P2P", sourceIds: ["Download", "PrivateTracker"], policy: "\u2B07\uFE0F \u4E0B\u8F7D/P2P", defaultTarget: "DIRECT", phase: "serviceIntent", dnsClass: "china" }),
-    intent({ id: "overseasGame", ruleId: "OverseasGame", label: "\u{1F30D} \u6D77\u5916\u6E38\u620F", sourceIds: ["OverseasGame"], policy: "\u{1F30D} \u6D77\u5916\u6E38\u620F", defaultTarget: "FOLLOW", phase: "overseasGame", dnsClass: "proxy" }),
-    intent({ id: "chinaIp", ruleId: "ChinaIP", label: "\u4E2D\u56FD IP", sourceIds: ["ChinaIP"], policy: "DIRECT", defaultTarget: "DIRECT", phase: "resolvedChinaIp", dnsClass: "none" })
-  ]);
-  var SOURCE_TO_INTENT = new Map(
-    SEMANTIC_INTENTS.flatMap((entry) => entry.sourceIds.map((sourceId) => [sourceId, entry]))
-  );
-
-  // ../../../shared/rules/lightweight-policy.js
-  var DEFAULT_RULE_SOURCE_IDS = Object.freeze([
-    "Hijacking",
-    "BlockHttpDNS",
-    "Privacy",
-    "DomesticCore",
-    "DomesticGame",
-    "SteamCN",
-    "BiliBili",
-    "ByteDance",
-    "XiaoHongShu",
-    "Weibo",
-    "OpenAI",
-    "Claude",
-    "Gemini",
-    "Copilot",
-    "GitHub",
-    "YouTube",
-    "Netflix",
-    "Disney",
-    "Spotify",
-    "GlobalMedia",
-    "Telegram",
-    "Facebook",
-    "Instagram",
-    "Twitter",
-    "TikTok",
-    "Apple",
-    "Microsoft",
-    "Download",
-    "PrivateTracker",
-    "OverseasGame",
-    "ChinaTLD",
-    "ChinaIP"
-  ]);
-  var MOBILE_RULE_BUNDLES = Object.freeze(SEMANTIC_INTENTS.map((entry) => Object.freeze({
-    id: entry.ruleId,
-    sourceIds: entry.sourceIds,
-    policy: entry.policy,
-    phase: entry.phase,
-    dnsClass: entry.dnsClass
-  })));
-  var MOBILE_RULE_SOURCE_IDS = Object.freeze(MOBILE_RULE_BUNDLES.map(({ id }) => id));
-  var MOBILE_RULE_PLATFORMS = Object.freeze([
-    "iphone",
-    "ipad",
-    "android"
-  ]);
-  var FULL_ADBLOCK_SOURCE_IDS = Object.freeze([
-    "Advertising",
-    "Advertising_Domain"
-  ]);
-  var ROUTING_PHASES = Object.freeze([
-    "security",
-    "earlyDomestic",
-    "serviceIntent",
-    "overseasGame",
-    "lateDomestic",
-    "resolvedChinaIp"
-  ]);
-  var PHASE_SOURCE_IDS = Object.freeze({
-    security: Object.freeze([
-      "Hijacking",
-      "BlockHttpDNS",
-      "Privacy",
-      "Advertising",
-      "Advertising_Domain"
-    ]),
-    earlyDomestic: Object.freeze(["DomesticCore", "DomesticGame", "SteamCN"]),
-    serviceIntent: Object.freeze([
-      "BiliBili",
-      "ByteDance",
-      "XiaoHongShu",
-      "Weibo",
-      "OpenAI",
-      "Claude",
-      "Gemini",
-      "Copilot",
-      "GitHub",
-      "YouTube",
-      "Netflix",
-      "Disney",
-      "Spotify",
-      "GlobalMedia",
-      "Telegram",
-      "Facebook",
-      "Instagram",
-      "Twitter",
-      "TikTok",
-      "Apple",
-      "Microsoft",
-      "Download",
-      "PrivateTracker"
-    ]),
-    overseasGame: Object.freeze(["OverseasGame"]),
-    lateDomestic: Object.freeze(["ChinaTLD"]),
-    resolvedChinaIp: Object.freeze(["ChinaIP"])
-  });
-  var RULE_BUDGETS = Object.freeze({
-    domesticCoreEntries: 13e4,
-    defaultEntries: 4e5,
-    defaultBytes: 3e7,
-    startupInlineEntries: 64,
-    singBoxRuleRssBytes: 50 * 1024 * 1024,
-    singBoxTotalRssBytes: 200 * 1024 * 1024,
-    // Binary SRS budgets are enforced independently from text/client bundle
-    // budgets. This prevents a large external source from being inlined into a
-    // sing-box runtime while still allowing compact binary rule sets.
-    singBoxRuleSetBytes: 50 * 1024 * 1024,
-    singBoxTotalRuleSetBytes: 200 * 1024 * 1024
-  });
-  var ROUTING_PRECEDENCE = Object.freeze([
-    "local",
-    "security",
-    "custom",
-    "domesticCore",
-    "domesticPlatform",
-    "domesticGame",
-    "explicitOverseas",
-    "overseasGame",
-    "chinaIp",
-    "defaultProxy"
-  ]);
-  var EXPLICIT_OVERSEAS_RULE_SOURCE_IDS = Object.freeze([
-    "OpenAI",
-    "Claude",
-    "Gemini",
-    "Copilot",
-    "GitHub",
-    "YouTube",
-    "Netflix",
-    "Disney",
-    "Spotify",
-    "GlobalMedia",
-    "Telegram",
-    "Facebook",
-    "Instagram",
-    "Twitter",
-    "TikTok",
-    "OverseasGame"
-  ]);
-  var DNS_CLASS_SOURCE_IDS = Object.freeze({
-    proxy: EXPLICIT_OVERSEAS_RULE_SOURCE_IDS,
-    china: Object.freeze([
-      "DomesticCore",
-      "DomesticGame",
-      "SteamCN",
-      "ChinaTLD",
-      "BiliBili",
-      "ByteDance",
-      "XiaoHongShu",
-      "Weibo",
-      "Apple",
-      "Microsoft",
-      "Download",
-      "PrivateTracker"
-    ]),
-    none: Object.freeze([
-      "Hijacking",
-      "BlockHttpDNS",
-      "Privacy",
-      "Advertising",
-      "Advertising_Domain",
-      "ChinaIP"
-    ])
-  });
-  var POLICY_TARGETS = Object.freeze({
-    direct: "DIRECT",
-    defaultProxy: "\u{1F680} \u8282\u70B9\u9009\u62E9",
-    overseasGame: "\u{1F30D} \u6D77\u5916\u6E38\u620F",
-    overseasMedia: "\u{1F3AC} \u6D77\u5916\u6D41\u5A92\u4F53",
-    overseasSocial: "\u{1F4AC} \u6D77\u5916\u793E\u4EA4",
-    domesticPlatform: "\u{1F1E8}\u{1F1F3} \u56FD\u5185\u5E73\u53F0",
-    reject: "REJECT"
-  });
-  var SOURCE_POLICIES = Object.freeze({
-    Hijacking: POLICY_TARGETS.reject,
-    BlockHttpDNS: POLICY_TARGETS.reject,
-    Privacy: "\u{1F575}\uFE0F \u4E25\u683C\u8DDF\u8E2A",
-    DomesticCore: POLICY_TARGETS.direct,
-    DomesticGame: POLICY_TARGETS.direct,
-    BiliBili: POLICY_TARGETS.domesticPlatform,
-    ByteDance: POLICY_TARGETS.domesticPlatform,
-    XiaoHongShu: POLICY_TARGETS.domesticPlatform,
-    Weibo: POLICY_TARGETS.domesticPlatform,
-    OpenAI: "\u{1F916} AI \u4E13\u7528",
-    Claude: "\u{1F916} AI \u4E13\u7528",
-    Gemini: "\u{1F916} AI \u4E13\u7528",
-    Copilot: "\u{1F916} AI \u4E13\u7528",
-    GitHub: "\u{1F419} GitHub",
-    YouTube: "\u{1F4FA} YouTube",
-    Netflix: POLICY_TARGETS.overseasMedia,
-    Disney: POLICY_TARGETS.overseasMedia,
-    Spotify: POLICY_TARGETS.overseasMedia,
-    GlobalMedia: POLICY_TARGETS.overseasMedia,
-    Telegram: POLICY_TARGETS.overseasSocial,
-    Facebook: POLICY_TARGETS.overseasSocial,
-    Instagram: POLICY_TARGETS.overseasSocial,
-    Twitter: POLICY_TARGETS.overseasSocial,
-    TikTok: POLICY_TARGETS.overseasSocial,
-    Apple: "\u{1F34E} Apple",
-    Microsoft: "\u{1FA9F} Microsoft",
-    SteamCN: POLICY_TARGETS.direct,
-    OverseasGame: POLICY_TARGETS.overseasGame,
-    Download: "\u2B07\uFE0F \u4E0B\u8F7D/P2P",
-    PrivateTracker: "\u2B07\uFE0F \u4E0B\u8F7D/P2P",
-    ChinaTLD: POLICY_TARGETS.direct,
-    ChinaIP: POLICY_TARGETS.direct,
-    Advertising: "\u{1F9F1} \u5E38\u89C1\u5E7F\u544A",
-    Advertising_Domain: "\u{1F9F1} \u5E38\u89C1\u5E7F\u544A"
-  });
-  function uniqueMembership(id, memberships, label) {
-    const matches = Object.entries(memberships).filter(([, ids2]) => ids2.includes(id)).map(([name]) => name);
-    if (matches.length !== 1) {
-      throw new Error(`Lightweight rule source ${id} must have exactly one ${label} membership`);
-    }
-    return matches[0];
-  }
-  function clientRecord(id) {
-    const policy = SOURCE_POLICIES[id];
-    if (!policy) throw new Error(`Missing policy for lightweight rule source: ${id}`);
-    const phase = uniqueMembership(id, PHASE_SOURCE_IDS, "routing phase");
-    const dnsClass = uniqueMembership(id, DNS_CLASS_SOURCE_IDS, "DNS class");
-    return Object.freeze({
-      id,
-      policy,
-      // The publication pipeline emits normalized, typed Surge/Shadowrocket
-      // lines for every compiled source, including domain-only inputs.
-      inputFormat: "RULE-SET",
-      phase,
-      dnsClass
-    });
-  }
-  var DEFAULT_RULE_CLIENT_CATALOG = Object.freeze(DEFAULT_RULE_SOURCE_IDS.map(clientRecord));
-  var FULL_ADBLOCK_RULE_CLIENT_CATALOG = Object.freeze(FULL_ADBLOCK_SOURCE_IDS.map(clientRecord));
-  var MOBILE_RULE_CLIENT_CATALOG = Object.freeze(MOBILE_RULE_BUNDLES.map((bundle) => Object.freeze({
-    id: bundle.id,
-    policy: bundle.policy,
-    inputFormat: "RULE-SET",
-    phase: bundle.phase,
-    dnsClass: bundle.dnsClass
-  })));
-  function ruleClientCatalog({ adblockMode = "off" } = {}) {
-    if (adblockMode !== "off" && adblockMode !== "full") {
-      throw new TypeError("adblockMode must be either off or full");
-    }
-    return adblockMode === "full" ? Object.freeze([...DEFAULT_RULE_CLIENT_CATALOG, ...FULL_ADBLOCK_RULE_CLIENT_CATALOG]) : DEFAULT_RULE_CLIENT_CATALOG;
-  }
-  function orderedRoutingPlan({ adblockMode = "off" } = {}) {
-    const selected = ruleClientCatalog({ adblockMode });
-    const phaseRank = new Map(ROUTING_PHASES.map((phase, index) => [phase, index]));
-    const sourceRank = new Map(
-      [...DEFAULT_RULE_SOURCE_IDS, ...FULL_ADBLOCK_SOURCE_IDS].map((id, index) => [id, index])
-    );
-    return Object.freeze([...selected].sort((left, right) => phaseRank.get(left.phase) - phaseRank.get(right.phase) || sourceRank.get(left.id) - sourceRank.get(right.id)));
-  }
-
   // ../../../shared/rules/critical-domestic.js
   var CRITICAL_DOMESTIC_DOMAIN_SUFFIXES = Object.freeze([
     "baidupcs.com",
@@ -2039,22 +2055,34 @@ var ClashProfileBundle = (() => {
     }
     return value;
   }
-  function providerUrl(base, id, adblockMode) {
-    const root = adblockMode === "full" && ["Advertising", "Advertising_Domain"].includes(id) ? base.replace(/\/(?:edge|current|previous)$/u, "/optional/adblock-full") : base;
-    return root + "/clash/rules/" + id + ".yaml";
+  function activeRuleCatalog(platform, adblockMode) {
+    if (usesClashMobileRuleBundles(platform)) {
+      if (adblockMode === "full") {
+        throw new Error("Option 'adblockMode=full' exceeds the mobile Clash memory budget");
+      }
+      return mobileRuleClientCatalog();
+    }
+    return ruleClientCatalog({ adblockMode });
   }
-  function renderClashRules({ publicBaseUrl, adblockMode = "off" } = {}) {
+  function providerUrl(base, id, adblockMode, platform) {
+    const root = adblockMode === "full" && ["Advertising", "Advertising_Domain"].includes(id) ? base.replace(/\/(?:edge|current|previous)$/u, "/optional/adblock-full") : base;
+    const directory = usesClashMobileRuleBundles(platform) ? "mobile-rules" : "rules";
+    return root + "/clash/" + directory + "/" + id + ".yaml";
+  }
+  function renderClashRules({ publicBaseUrl, platform = "macos", adblockMode = "off" } = {}) {
     const base = validateBase(publicBaseUrl);
     if (adblockMode !== "off" && adblockMode !== "full") throw new Error("Clash adblockMode is unsupported");
-    const plan = orderedRoutingPlan({ adblockMode });
+    const mobile = usesClashMobileRuleBundles(platform);
+    const plan = mobile ? activeRuleCatalog(platform, adblockMode) : orderedRoutingPlan({ adblockMode });
+    const catalog = activeRuleCatalog(platform, adblockMode);
     const providers = {};
-    for (const source of plan) {
+    for (const source of catalog) {
       providers[source.id] = {
         type: "http",
         behavior: "classical",
         format: "yaml",
-        path: "./rules/" + source.id + ".yaml",
-        url: providerUrl(base, source.id, adblockMode),
+        path: "./" + (mobile ? "mobile-rules/" : "rules/") + source.id + ".yaml",
+        url: providerUrl(base, source.id, adblockMode, platform),
         interval: 86400
       };
     }
@@ -2285,7 +2313,11 @@ var ClashProfileBundle = (() => {
     if (!isParsedClashOptions(options)) throw new Error("Parsed Clash options are required");
     const prepared = preparedInventory || prepareClashInventory(nodes, { onDiagnostics });
     if (prepared.proxies.length === 0) throw new Error("No compatible Clash nodes");
-    const renderedRules = renderClashRules({ publicBaseUrl: options.publicBaseUrl, adblockMode: options.adblockMode });
+    const renderedRules = renderClashRules({
+      publicBaseUrl: options.publicBaseUrl,
+      platform: options.platform,
+      adblockMode: options.adblockMode
+    });
     const root = {
       "mixed-port": 7890,
       "allow-lan": false,

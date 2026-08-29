@@ -322,6 +322,7 @@ function renderRuleSetMap({
   for (const [id, compiled] of mobileRuleSets) {
     const input = renderInput(compiled, upstream);
     const singbox = renderSingBoxRuleSource(input);
+    const clash = renderClashRuleSource(input);
     const prefix = pathPrefix ? `${pathPrefix}/` : "";
     if (singBoxBinaries === null) {
       files.set(`${prefix}sing-box/rules/mobile_${id}.json`, singbox.content);
@@ -333,6 +334,8 @@ function renderRuleSetMap({
       if (!Buffer.isBuffer(binary)) throw new Error(`Compiled sing-box mobile rule set is missing: ${binaryPath}`);
       files.set(binaryPath, binary);
     }
+    files.set(`${prefix}clash/mobile-rules/${id}.yaml`, clash.content);
+    clientSources.clash.push({ id, ...clash.counts });
   }
 
   const anywhere = buildAnywhereRuleSnapshot({
@@ -384,7 +387,9 @@ function clientRuleRecords(files, client) {
     ? ["anywhere/rules/"]
     : client === "singbox"
       ? ["sing-box/rules/", "sing-box/rule-sets/", "sing-box/mobile-rule-sets/"]
-      : [`${CLIENT_PATHS[client]}/rules/`];
+      : client === "clash"
+        ? ["clash/rules/", "clash/mobile-rules/"]
+        : [`${CLIENT_PATHS[client]}/rules/`];
   return fileRecords(new Map([...files].filter(([path]) => (
     prefixes.some((prefix) => path.startsWith(prefix)) && !path.endsWith("/manifest.json")
   ))));
@@ -437,6 +442,16 @@ export function enforcePublicationBudgets({ diagnostics, files }) {
     const nonBinaryBytes = nonBinaryRecords.reduce((sum, { bytes }) => sum + bytes, 0);
     if (nonBinaryBytes > RULE_BUDGETS.defaultBytes) {
       throw budgetError("referenced default bytes", actual, RULE_BUDGETS.defaultBytes, client, records);
+    }
+    if (client === "clash") {
+      const mobileRecords = records.filter(({ path }) => path.startsWith("clash/mobile-rules/"));
+      const mobileBytes = mobileRecords.reduce((sum, { bytes }) => sum + bytes, 0);
+      if (diagnostics.mobileEntries > RULE_BUDGETS.mobileEntries) {
+        throw budgetError("Clash mobile entries", diagnostics.mobileEntries, RULE_BUDGETS.mobileEntries, client, mobileRecords);
+      }
+      if (mobileBytes > RULE_BUDGETS.mobileBytes) {
+        throw budgetError("Clash mobile rule bytes", mobileBytes, RULE_BUDGETS.mobileBytes, client, mobileRecords);
+      }
     }
     if (isSingBox) {
       const binaryRecords = records.filter(({ path }) => /(?:^|\/)sing-box\/(?:rule-sets|mobile-rule-sets)\/[^/]+\.srs$/u.test(path));
@@ -847,6 +862,7 @@ export function buildClientArtifacts({
     diagnostics: {
       defaultEntries: publicationDiagnostics.defaultEntries,
       rawDefaultEntries: publicationDiagnostics.rawDefaultEntries,
+      mobileEntries: publicationDiagnostics.mobileEntries,
       domesticCoreEntries: publicationDiagnostics.domesticCoreEntries,
       omittedByKind: publicationDiagnostics.omittedByKind,
       external: compiled.diagnostics.external,

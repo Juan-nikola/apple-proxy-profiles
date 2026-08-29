@@ -420,6 +420,8 @@ export function compileLightweightRules({ snapshots, externalSnapshots = null })
     .reduce((total, id) => total + fetchedBytes(snapshots, id), 0);
   const defaultEntries = [...supplementedDefaultRuleSets.values()]
     .reduce((total, set) => total + set.entries.length, 0);
+  const mobileEntries = [...mobileRuleSets.values()]
+    .reduce((total, set) => total + set.entries.length, 0);
 
   return Object.freeze({
     baselineRuleSets: defaultRuleSets,
@@ -428,6 +430,7 @@ export function compileLightweightRules({ snapshots, externalSnapshots = null })
     optionalPacks: Object.freeze({ adblockFull }),
     diagnostics: Object.freeze({
       defaultEntries,
+      mobileEntries,
       defaultSourceBytes,
       domesticCoreEntries: domesticCoreEntries.length,
       overlap,

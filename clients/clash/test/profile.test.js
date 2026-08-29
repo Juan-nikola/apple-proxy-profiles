@@ -4,6 +4,7 @@ import test from "node:test";
 import {
   DEFAULT_RULE_SOURCE_IDS,
   FULL_ADBLOCK_SOURCE_IDS,
+  MOBILE_RULE_SOURCE_IDS,
 } from "../../../shared/rules/lightweight-policy.js";
 import { allCompatibleNodes } from "../../egern/test/fixtures/nodes.js";
 import { parseClashOptions, PUBLIC_SNAPSHOT_BASE_URL } from "../src/options.js";
@@ -41,6 +42,41 @@ test("parses the final Clash Apple option contract", () => {
   assert.equal(options.publicBaseUrl, PUBLIC_SNAPSHOT_BASE_URL);
 });
 
+test("uses compact rule providers for Clash mobile platforms", () => {
+  for (const platform of ["iphone", "ipad", "appletv"]) {
+    const rules = renderClashRules({
+      publicBaseUrl: PUBLIC_SNAPSHOT_BASE_URL,
+      platform,
+      adblockMode: "off",
+    });
+    assert.deepEqual(Object.keys(rules.providers), MOBILE_RULE_SOURCE_IDS, platform);
+    for (const provider of Object.values(rules.providers)) {
+      assert.match(provider.url, /\/clash\/mobile-rules\/[^/]+\.yaml$/u, platform);
+    }
+  }
+});
+
+test("keeps the complete rule providers on Clash macOS", () => {
+  const rules = renderClashRules({
+    publicBaseUrl: PUBLIC_SNAPSHOT_BASE_URL,
+    platform: "macos",
+    adblockMode: "off",
+  });
+  assert.deepEqual(Object.keys(rules.providers), DEFAULT_RULE_SOURCE_IDS);
+  assert.equal(Object.values(rules.providers).some(({ url }) => url.includes("/mobile-rules/")), false);
+});
+
+test("rejects the full advertising pack for Clash mobile platforms", () => {
+  for (const platform of ["iphone", "ipad", "appletv"]) {
+    assert.throws(
+      () => parseClashOptions(rawOptions({ platform, adblockMode: "full" })),
+      /adblockMode=full.*mobile.*memory/iu,
+      platform,
+    );
+  }
+  assert.doesNotThrow(() => parseClashOptions(rawOptions({ platform: "macos", adblockMode: "full" })));
+});
+
 test("uses a stable IPv4-only default on macOS while preserving mobile IPv6 defaults", () => {
   assert.equal(parseClashOptions(rawOptions()).ipv6Mode, "ipv4-only");
   assert.equal(parseClashOptions(rawOptions({ platform: "iphone" })).ipv6Mode, "auto");
@@ -67,6 +103,14 @@ test("renders a complete mihomo profile with nodes, groups, DNS, providers, and 
   assert.match(yaml, /RULE-SET,OpenAI,🤖 AI 专用/u);
   assert.match(yaml, /GEOIP,CN,DIRECT/u);
   assert.match(yaml, /MATCH,🚀 节点选择/u);
+});
+
+test("renders mobile profiles against compact provider files", () => {
+  const yaml = renderClashProfile(rawOptions({ platform: "iphone" }), allCompatibleNodes);
+  for (const id of MOBILE_RULE_SOURCE_IDS) {
+    assert.match(yaml, new RegExp(`url: "${PUBLIC_SNAPSHOT_BASE_URL}/clash/mobile-rules/${id}\\.yaml"`, "u"), id);
+  }
+  assert.doesNotMatch(yaml, /\/clash\/rules\/(?:Hijacking|DomesticCore)\.yaml/u);
 });
 
 test("matches sing-box region selection semantics and hides automatic helpers at the end", () => {

@@ -1449,6 +1449,11 @@ var ClashNodeBundle = (() => {
     "ipad",
     "android"
   ]);
+  var CLASH_MOBILE_RULE_PLATFORMS = Object.freeze([
+    "iphone",
+    "ipad",
+    "appletv"
+  ]);
   var FULL_ADBLOCK_SOURCE_IDS = Object.freeze([
     "Advertising",
     "Advertising_Domain"
@@ -1503,6 +1508,8 @@ var ClashNodeBundle = (() => {
     domesticCoreEntries: 13e4,
     defaultEntries: 4e5,
     defaultBytes: 3e7,
+    mobileEntries: 5e4,
+    mobileBytes: 5e6,
     startupInlineEntries: 64,
     singBoxRuleRssBytes: 50 * 1024 * 1024,
     singBoxTotalRssBytes: 200 * 1024 * 1024,

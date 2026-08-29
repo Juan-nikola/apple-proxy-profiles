@@ -671,229 +671,103 @@ proxy-groups:
     tolerance: 150
     hidden: true
 rule-providers:
-  Hijacking:
+  Security:
     type: "http"
     behavior: "classical"
     format: "yaml"
-    path: "./rules/Hijacking.yaml"
-    url: "https://juan-nikola.github.io/apple-proxy-profiles/current/clash/rules/Hijacking.yaml"
-    interval: 86400
-  BlockHttpDNS:
-    type: "http"
-    behavior: "classical"
-    format: "yaml"
-    path: "./rules/BlockHttpDNS.yaml"
-    url: "https://juan-nikola.github.io/apple-proxy-profiles/current/clash/rules/BlockHttpDNS.yaml"
+    path: "./mobile-rules/Security.yaml"
+    url: "https://juan-nikola.github.io/apple-proxy-profiles/current/clash/mobile-rules/Security.yaml"
     interval: 86400
   Privacy:
     type: "http"
     behavior: "classical"
     format: "yaml"
-    path: "./rules/Privacy.yaml"
-    url: "https://juan-nikola.github.io/apple-proxy-profiles/current/clash/rules/Privacy.yaml"
+    path: "./mobile-rules/Privacy.yaml"
+    url: "https://juan-nikola.github.io/apple-proxy-profiles/current/clash/mobile-rules/Privacy.yaml"
     interval: 86400
   DomesticCore:
     type: "http"
     behavior: "classical"
     format: "yaml"
-    path: "./rules/DomesticCore.yaml"
-    url: "https://juan-nikola.github.io/apple-proxy-profiles/current/clash/rules/DomesticCore.yaml"
+    path: "./mobile-rules/DomesticCore.yaml"
+    url: "https://juan-nikola.github.io/apple-proxy-profiles/current/clash/mobile-rules/DomesticCore.yaml"
     interval: 86400
-  DomesticGame:
+  DomesticPlatform:
     type: "http"
     behavior: "classical"
     format: "yaml"
-    path: "./rules/DomesticGame.yaml"
-    url: "https://juan-nikola.github.io/apple-proxy-profiles/current/clash/rules/DomesticGame.yaml"
+    path: "./mobile-rules/DomesticPlatform.yaml"
+    url: "https://juan-nikola.github.io/apple-proxy-profiles/current/clash/mobile-rules/DomesticPlatform.yaml"
     interval: 86400
-  SteamCN:
+  AI:
     type: "http"
     behavior: "classical"
     format: "yaml"
-    path: "./rules/SteamCN.yaml"
-    url: "https://juan-nikola.github.io/apple-proxy-profiles/current/clash/rules/SteamCN.yaml"
-    interval: 86400
-  BiliBili:
-    type: "http"
-    behavior: "classical"
-    format: "yaml"
-    path: "./rules/BiliBili.yaml"
-    url: "https://juan-nikola.github.io/apple-proxy-profiles/current/clash/rules/BiliBili.yaml"
-    interval: 86400
-  ByteDance:
-    type: "http"
-    behavior: "classical"
-    format: "yaml"
-    path: "./rules/ByteDance.yaml"
-    url: "https://juan-nikola.github.io/apple-proxy-profiles/current/clash/rules/ByteDance.yaml"
-    interval: 86400
-  XiaoHongShu:
-    type: "http"
-    behavior: "classical"
-    format: "yaml"
-    path: "./rules/XiaoHongShu.yaml"
-    url: "https://juan-nikola.github.io/apple-proxy-profiles/current/clash/rules/XiaoHongShu.yaml"
-    interval: 86400
-  Weibo:
-    type: "http"
-    behavior: "classical"
-    format: "yaml"
-    path: "./rules/Weibo.yaml"
-    url: "https://juan-nikola.github.io/apple-proxy-profiles/current/clash/rules/Weibo.yaml"
-    interval: 86400
-  OpenAI:
-    type: "http"
-    behavior: "classical"
-    format: "yaml"
-    path: "./rules/OpenAI.yaml"
-    url: "https://juan-nikola.github.io/apple-proxy-profiles/current/clash/rules/OpenAI.yaml"
-    interval: 86400
-  Claude:
-    type: "http"
-    behavior: "classical"
-    format: "yaml"
-    path: "./rules/Claude.yaml"
-    url: "https://juan-nikola.github.io/apple-proxy-profiles/current/clash/rules/Claude.yaml"
-    interval: 86400
-  Gemini:
-    type: "http"
-    behavior: "classical"
-    format: "yaml"
-    path: "./rules/Gemini.yaml"
-    url: "https://juan-nikola.github.io/apple-proxy-profiles/current/clash/rules/Gemini.yaml"
-    interval: 86400
-  Copilot:
-    type: "http"
-    behavior: "classical"
-    format: "yaml"
-    path: "./rules/Copilot.yaml"
-    url: "https://juan-nikola.github.io/apple-proxy-profiles/current/clash/rules/Copilot.yaml"
+    path: "./mobile-rules/AI.yaml"
+    url: "https://juan-nikola.github.io/apple-proxy-profiles/current/clash/mobile-rules/AI.yaml"
     interval: 86400
   GitHub:
     type: "http"
     behavior: "classical"
     format: "yaml"
-    path: "./rules/GitHub.yaml"
-    url: "https://juan-nikola.github.io/apple-proxy-profiles/current/clash/rules/GitHub.yaml"
+    path: "./mobile-rules/GitHub.yaml"
+    url: "https://juan-nikola.github.io/apple-proxy-profiles/current/clash/mobile-rules/GitHub.yaml"
     interval: 86400
   YouTube:
     type: "http"
     behavior: "classical"
     format: "yaml"
-    path: "./rules/YouTube.yaml"
-    url: "https://juan-nikola.github.io/apple-proxy-profiles/current/clash/rules/YouTube.yaml"
+    path: "./mobile-rules/YouTube.yaml"
+    url: "https://juan-nikola.github.io/apple-proxy-profiles/current/clash/mobile-rules/YouTube.yaml"
     interval: 86400
-  Netflix:
+  OverseasMedia:
     type: "http"
     behavior: "classical"
     format: "yaml"
-    path: "./rules/Netflix.yaml"
-    url: "https://juan-nikola.github.io/apple-proxy-profiles/current/clash/rules/Netflix.yaml"
+    path: "./mobile-rules/OverseasMedia.yaml"
+    url: "https://juan-nikola.github.io/apple-proxy-profiles/current/clash/mobile-rules/OverseasMedia.yaml"
     interval: 86400
-  Disney:
+  OverseasSocial:
     type: "http"
     behavior: "classical"
     format: "yaml"
-    path: "./rules/Disney.yaml"
-    url: "https://juan-nikola.github.io/apple-proxy-profiles/current/clash/rules/Disney.yaml"
-    interval: 86400
-  Spotify:
-    type: "http"
-    behavior: "classical"
-    format: "yaml"
-    path: "./rules/Spotify.yaml"
-    url: "https://juan-nikola.github.io/apple-proxy-profiles/current/clash/rules/Spotify.yaml"
-    interval: 86400
-  GlobalMedia:
-    type: "http"
-    behavior: "classical"
-    format: "yaml"
-    path: "./rules/GlobalMedia.yaml"
-    url: "https://juan-nikola.github.io/apple-proxy-profiles/current/clash/rules/GlobalMedia.yaml"
-    interval: 86400
-  Telegram:
-    type: "http"
-    behavior: "classical"
-    format: "yaml"
-    path: "./rules/Telegram.yaml"
-    url: "https://juan-nikola.github.io/apple-proxy-profiles/current/clash/rules/Telegram.yaml"
-    interval: 86400
-  Facebook:
-    type: "http"
-    behavior: "classical"
-    format: "yaml"
-    path: "./rules/Facebook.yaml"
-    url: "https://juan-nikola.github.io/apple-proxy-profiles/current/clash/rules/Facebook.yaml"
-    interval: 86400
-  Instagram:
-    type: "http"
-    behavior: "classical"
-    format: "yaml"
-    path: "./rules/Instagram.yaml"
-    url: "https://juan-nikola.github.io/apple-proxy-profiles/current/clash/rules/Instagram.yaml"
-    interval: 86400
-  Twitter:
-    type: "http"
-    behavior: "classical"
-    format: "yaml"
-    path: "./rules/Twitter.yaml"
-    url: "https://juan-nikola.github.io/apple-proxy-profiles/current/clash/rules/Twitter.yaml"
-    interval: 86400
-  TikTok:
-    type: "http"
-    behavior: "classical"
-    format: "yaml"
-    path: "./rules/TikTok.yaml"
-    url: "https://juan-nikola.github.io/apple-proxy-profiles/current/clash/rules/TikTok.yaml"
+    path: "./mobile-rules/OverseasSocial.yaml"
+    url: "https://juan-nikola.github.io/apple-proxy-profiles/current/clash/mobile-rules/OverseasSocial.yaml"
     interval: 86400
   Apple:
     type: "http"
     behavior: "classical"
     format: "yaml"
-    path: "./rules/Apple.yaml"
-    url: "https://juan-nikola.github.io/apple-proxy-profiles/current/clash/rules/Apple.yaml"
+    path: "./mobile-rules/Apple.yaml"
+    url: "https://juan-nikola.github.io/apple-proxy-profiles/current/clash/mobile-rules/Apple.yaml"
     interval: 86400
   Microsoft:
     type: "http"
     behavior: "classical"
     format: "yaml"
-    path: "./rules/Microsoft.yaml"
-    url: "https://juan-nikola.github.io/apple-proxy-profiles/current/clash/rules/Microsoft.yaml"
+    path: "./mobile-rules/Microsoft.yaml"
+    url: "https://juan-nikola.github.io/apple-proxy-profiles/current/clash/mobile-rules/Microsoft.yaml"
     interval: 86400
   Download:
     type: "http"
     behavior: "classical"
     format: "yaml"
-    path: "./rules/Download.yaml"
-    url: "https://juan-nikola.github.io/apple-proxy-profiles/current/clash/rules/Download.yaml"
-    interval: 86400
-  PrivateTracker:
-    type: "http"
-    behavior: "classical"
-    format: "yaml"
-    path: "./rules/PrivateTracker.yaml"
-    url: "https://juan-nikola.github.io/apple-proxy-profiles/current/clash/rules/PrivateTracker.yaml"
+    path: "./mobile-rules/Download.yaml"
+    url: "https://juan-nikola.github.io/apple-proxy-profiles/current/clash/mobile-rules/Download.yaml"
     interval: 86400
   OverseasGame:
     type: "http"
     behavior: "classical"
     format: "yaml"
-    path: "./rules/OverseasGame.yaml"
-    url: "https://juan-nikola.github.io/apple-proxy-profiles/current/clash/rules/OverseasGame.yaml"
-    interval: 86400
-  ChinaTLD:
-    type: "http"
-    behavior: "classical"
-    format: "yaml"
-    path: "./rules/ChinaTLD.yaml"
-    url: "https://juan-nikola.github.io/apple-proxy-profiles/current/clash/rules/ChinaTLD.yaml"
+    path: "./mobile-rules/OverseasGame.yaml"
+    url: "https://juan-nikola.github.io/apple-proxy-profiles/current/clash/mobile-rules/OverseasGame.yaml"
     interval: 86400
   ChinaIP:
     type: "http"
     behavior: "classical"
     format: "yaml"
-    path: "./rules/ChinaIP.yaml"
-    url: "https://juan-nikola.github.io/apple-proxy-profiles/current/clash/rules/ChinaIP.yaml"
+    path: "./mobile-rules/ChinaIP.yaml"
+    url: "https://juan-nikola.github.io/apple-proxy-profiles/current/clash/mobile-rules/ChinaIP.yaml"
     interval: 86400
 dns:
   enable: true
@@ -954,37 +828,19 @@ rules:
   - "DOMAIN-SUFFIX,grok.com,🤖 AI 专用"
   - "DOMAIN-SUFFIX,poe.com,🤖 AI 专用"
   - "DOMAIN-SUFFIX,poecdn.net,🤖 AI 专用"
-  - "RULE-SET,Hijacking,REJECT"
-  - "RULE-SET,BlockHttpDNS,REJECT"
+  - "RULE-SET,Security,REJECT"
   - "RULE-SET,Privacy,🕵️ 严格跟踪"
   - "RULE-SET,DomesticCore,DIRECT"
-  - "RULE-SET,DomesticGame,DIRECT"
-  - "RULE-SET,SteamCN,DIRECT"
-  - "RULE-SET,BiliBili,🇨🇳 国内平台"
-  - "RULE-SET,ByteDance,🇨🇳 国内平台"
-  - "RULE-SET,XiaoHongShu,🇨🇳 国内平台"
-  - "RULE-SET,Weibo,🇨🇳 国内平台"
-  - "RULE-SET,OpenAI,🤖 AI 专用"
-  - "RULE-SET,Claude,🤖 AI 专用"
-  - "RULE-SET,Gemini,🤖 AI 专用"
-  - "RULE-SET,Copilot,🤖 AI 专用"
+  - "RULE-SET,DomesticPlatform,🇨🇳 国内平台"
+  - "RULE-SET,AI,🤖 AI 专用"
   - "RULE-SET,GitHub,🐙 GitHub"
   - "RULE-SET,YouTube,📺 YouTube"
-  - "RULE-SET,Netflix,🎬 海外流媒体"
-  - "RULE-SET,Disney,🎬 海外流媒体"
-  - "RULE-SET,Spotify,🎬 海外流媒体"
-  - "RULE-SET,GlobalMedia,🎬 海外流媒体"
-  - "RULE-SET,Telegram,💬 海外社交"
-  - "RULE-SET,Facebook,💬 海外社交"
-  - "RULE-SET,Instagram,💬 海外社交"
-  - "RULE-SET,Twitter,💬 海外社交"
-  - "RULE-SET,TikTok,💬 海外社交"
+  - "RULE-SET,OverseasMedia,🎬 海外流媒体"
+  - "RULE-SET,OverseasSocial,💬 海外社交"
   - "RULE-SET,Apple,🍎 Apple"
   - "RULE-SET,Microsoft,🪟 Microsoft"
   - "RULE-SET,Download,⬇️ 下载/P2P"
-  - "RULE-SET,PrivateTracker,⬇️ 下载/P2P"
   - "RULE-SET,OverseasGame,🌍 海外游戏"
-  - "RULE-SET,ChinaTLD,DIRECT"
   - "RULE-SET,ChinaIP,DIRECT"
   - "GEOIP,CN,DIRECT,no-resolve"
   - "MATCH,🚀 节点选择"

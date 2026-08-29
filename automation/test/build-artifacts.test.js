@@ -69,6 +69,23 @@ test("fans compiled lightweight defaults out without publishing input-only rules
   assert.equal(result.diagnostics.compaction.ChinaIP.removed, 2);
 });
 
+test("publishes compact Clash mobile rule artifacts and records them in its manifest", () => {
+  const result = buildClientArtifacts({ snapshot: lightweightFixtureSnapshots(), upstream });
+  const mobilePaths = [...result.defaults.keys()]
+    .filter((path) => path.startsWith("clash/mobile-rules/"))
+    .sort();
+  assert.deepEqual(
+    mobilePaths,
+    MOBILE_RULE_SOURCE_IDS.map((id) => `clash/mobile-rules/${id}.yaml`).sort(),
+  );
+  const clashManifest = JSON.parse(result.defaults.get("clash/client-manifest.json"));
+  assert.deepEqual(
+    clashManifest.files.filter(({ path }) => path.startsWith("clash/mobile-rules/")).map(({ path }) => path).sort(),
+    mobilePaths,
+  );
+  assert.ok(result.diagnostics.compiler.mobileEntries > 0);
+});
+
 test("projects compiled GeoData categories without re-running conflicting route precedence", () => {
   const snapshots = lightweightFixtureSnapshots();
   const source = FETCH_SOURCE_CATALOG.find(({ id }) => id === "TikTok");

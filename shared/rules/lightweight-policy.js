@@ -35,6 +35,18 @@ export function usesMobileRuleBundles(platform) {
   return MOBILE_RULE_PLATFORMS.includes(platform);
 }
 
+// Clash Apple TV has the same constrained Network Extension profile as the
+// other Apple mobile targets, but is not a platform supported by sing-box.
+export const CLASH_MOBILE_RULE_PLATFORMS = Object.freeze([
+  "iphone",
+  "ipad",
+  "appletv",
+]);
+
+export function usesClashMobileRuleBundles(platform) {
+  return CLASH_MOBILE_RULE_PLATFORMS.includes(platform);
+}
+
 export const FULL_ADBLOCK_SOURCE_IDS = Object.freeze([
   "Advertising", "Advertising_Domain",
 ]);
@@ -69,6 +81,8 @@ export const RULE_BUDGETS = Object.freeze({
   domesticCoreEntries: 130_000,
   defaultEntries: 400_000,
   defaultBytes: 30_000_000,
+  mobileEntries: 50_000,
+  mobileBytes: 5_000_000,
   startupInlineEntries: 64,
   singBoxRuleRssBytes: 50 * 1024 * 1024,
   singBoxTotalRssBytes: 200 * 1024 * 1024,

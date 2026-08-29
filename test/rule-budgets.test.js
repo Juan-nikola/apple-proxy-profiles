@@ -81,7 +81,7 @@ test("emitted default manifests stay inside all entry and byte budgets", () => {
   assert.deepEqual(artifacts.diagnostics.defaultRuleIds, DEFAULT_RULE_SOURCE_IDS);
 
   const report = {};
-  for (const client of ["shadowrocket", "surge", "egern", "singbox", "anywhere"]) {
+  for (const client of ["shadowrocket", "surge", "egern", "singbox", "anywhere", "clash"]) {
     const bytes = defaultManifest.clients[client].referencedDefaultBytes;
     assert.ok(bytes > 0 && bytes <= RULE_BUDGETS.defaultBytes, `${client}: ${bytes}`);
     report[client] = { entries: defaultManifest.diagnostics.defaultEntries, bytes };
@@ -91,6 +91,18 @@ test("emitted default manifests stay inside all entry and byte budgets", () => {
     assert.equal(artifactSha256(artifacts.defaults.get(record.path)), record.sha256, record.path);
   }
   console.log(`lightweight budgets ${JSON.stringify(report)}`);
+});
+
+test("Clash mobile rule artifacts stay inside their dedicated memory budget", () => {
+  const artifacts = fixtureArtifacts();
+  const mobileRecords = artifacts.diagnostics.defaultManifest.files.filter(({ path }) => (
+    path.startsWith("clash/mobile-rules/")
+  ));
+  const bytes = mobileRecords.reduce((sum, record) => sum + record.bytes, 0);
+  assert.equal(mobileRecords.length, 14);
+  assert.ok(artifacts.diagnostics.compiler.mobileEntries > 0);
+  assert.ok(artifacts.diagnostics.compiler.mobileEntries <= RULE_BUDGETS.mobileEntries);
+  assert.ok(bytes > 0 && bytes <= RULE_BUDGETS.mobileBytes);
 });
 
 test("the pinned real Anywhere snapshot remains within the shared entry budget", async () => {

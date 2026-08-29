@@ -88,7 +88,11 @@ export function renderClashProfileFromOptions(options, nodes, { onDiagnostics, p
   if (!isParsedClashOptions(options)) throw new Error("Parsed Clash options are required");
   const prepared = preparedInventory || prepareClashInventory(nodes, { onDiagnostics });
   if (prepared.proxies.length === 0) throw new Error("No compatible Clash nodes");
-  const renderedRules = renderClashRules({ publicBaseUrl: options.publicBaseUrl, adblockMode: options.adblockMode });
+  const renderedRules = renderClashRules({
+    publicBaseUrl: options.publicBaseUrl,
+    platform: options.platform,
+    adblockMode: options.adblockMode,
+  });
   const root = {
     "mixed-port": 7890,
     "allow-lan": false,

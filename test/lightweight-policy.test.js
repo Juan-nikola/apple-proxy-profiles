@@ -3,6 +3,7 @@ import test from "node:test";
 
 import {
   DEFAULT_RULE_SOURCE_IDS,
+  CLASH_MOBILE_RULE_PLATFORMS,
   FULL_ADBLOCK_SOURCE_IDS,
   MOBILE_RULE_BUNDLES,
   MOBILE_RULE_PLATFORMS,
@@ -13,6 +14,7 @@ import {
   orderedRoutingPlan,
   ruleClientCatalog,
   usesMobileRuleBundles,
+  usesClashMobileRuleBundles,
 } from "../shared/rules/lightweight-policy.js";
 import {
   DOMESTIC_CORE_DOMAIN_SUFFIXES,
@@ -35,6 +37,16 @@ test("defines the shared mobile rule platform contract", () => {
   }
   assert.equal(usesMobileRuleBundles("macos"), false);
   assert.equal(usesMobileRuleBundles("unknown"), false);
+});
+
+test("defines the Clash Apple mobile rule platform contract", () => {
+  assert.deepEqual([...CLASH_MOBILE_RULE_PLATFORMS], ["iphone", "ipad", "appletv"]);
+  assert.equal(Object.isFrozen(CLASH_MOBILE_RULE_PLATFORMS), true);
+  for (const platform of CLASH_MOBILE_RULE_PLATFORMS) {
+    assert.equal(usesClashMobileRuleBundles(platform), true, platform);
+  }
+  assert.equal(usesClashMobileRuleBundles("macos"), false);
+  assert.equal(usesClashMobileRuleBundles("android"), false);
 });
 
 test("defines the default lightweight rule-set boundary", () => {
@@ -205,6 +217,8 @@ test("defines the shared policy targets and resource budgets", () => {
   assert.equal(POLICY_TARGETS.overseasGame, "🌍 海外游戏");
   assert.equal(RULE_BUDGETS.defaultEntries, 400_000);
   assert.equal(RULE_BUDGETS.defaultBytes, 30_000_000);
+  assert.equal(RULE_BUDGETS.mobileEntries, 50_000);
+  assert.equal(RULE_BUDGETS.mobileBytes, 5_000_000);
   assert.equal(RULE_BUDGETS.startupInlineEntries, 64);
   assert.equal(RULE_BUDGETS.singBoxRuleRssBytes, 50 * 1024 * 1024);
   assert.equal(RULE_BUDGETS.singBoxTotalRssBytes, 200 * 1024 * 1024);

@@ -77,6 +77,7 @@ const GENERATOR_SCHEMAS = Object.freeze({
     platforms: ["macos", "iphone", "ipad", "appletv"],
     requiresSubscriptionName: true,
     requiresNodeSubscriptionUrl: true,
+    rejectFullAdblockPlatforms: ["iphone", "ipad", "appletv"],
   }),
   "happ/scripts/happ-config-generator.js": configSchema({
     platforms: ["macos", "iphone", "ipad"],

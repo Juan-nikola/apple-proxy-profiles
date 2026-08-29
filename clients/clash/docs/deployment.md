@@ -6,7 +6,7 @@
 4. Keep `nodeSubscriptionUrl` pointed at the private `clash-nodes` output. Do not put that URL in GitHub, screenshots, or issue reports.
 5. Import the generated YAML into the Clash/Mihomo client and enable Rule mode.
 
-The default profile includes DNS, Fake-IP, TUN, sing-box-compatible continent selectors (`🌏 亚太`, `🌍 欧洲`, `🌎 美洲` when populated), concrete node choices inside each continent, hidden automatic latency-test helpers at the end of the group list, business selectors, shared `rule-providers`, and ordered rules. Leave `adblockMode=off` unless the optional full advertising pack is required.
+The default profile includes DNS, Fake-IP, TUN, sing-box-compatible continent selectors (`🌏 亚太`, `🌍 欧洲`, `🌎 美洲` when populated), concrete node choices inside each continent, hidden automatic latency-test helpers at the end of the group list, business selectors, shared `rule-providers`, and ordered rules. iPhone, iPad, and Apple TV reference the compact `clash/mobile-rules` providers; macOS references the full `clash/rules` providers. Mobile tasks reject `adblockMode=full` to prevent the optional advertising pack from exhausting the Network Extension memory budget.
 
 On macOS, the generated profile defaults to `ipv6: false` and DNS IPv6 disabled to avoid failed direct connections when the local network advertises unreachable Chinese IPv6 addresses. iPhone, iPad, and Apple TV retain IPv6 auto-detection; use an explicit `ipv6Mode=auto` override on macOS only when IPv6 connectivity has been verified.
 

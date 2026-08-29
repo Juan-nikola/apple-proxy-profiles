@@ -1,5 +1,6 @@
 import { OPTION_VALUES } from "../../../shared/contracts.js";
 import { FRONTIER_CHANNELS } from "../../../shared/release/frontier-manifest.js";
+import { usesClashMobileRuleBundles } from "../../../shared/rules/lightweight-policy.js";
 import { validateCollectionName } from "../../../shared/substore/collection-name.js";
 
 export const PUBLIC_SNAPSHOT_BASE_URL = "https://juan-nikola.github.io/apple-proxy-profiles/current";
@@ -73,6 +74,9 @@ export function parseClashOptions(raw) {
   if (!FRONTIER_CHANNELS.includes(channel)) throw new Error("Clash channel is unsupported");
   const adblockMode = values.has("adblockMode") ? values.get("adblockMode") : "off";
   if (!AD_BLOCK.has(adblockMode)) throw new Error("Clash adblockMode is unsupported");
+  if (usesClashMobileRuleBundles(platform) && adblockMode === "full") {
+    throw new Error("Option 'adblockMode=full' exceeds the mobile Clash memory budget");
+  }
   const defaultIpv6Mode = platform === "macos" ? "ipv4-only" : "auto";
   const options = Object.freeze({
     output: "config",

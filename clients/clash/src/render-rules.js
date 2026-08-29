@@ -1,4 +1,9 @@
-import { orderedRoutingPlan } from "../../../shared/rules/lightweight-policy.js";
+import {
+  mobileRuleClientCatalog,
+  orderedRoutingPlan,
+  ruleClientCatalog,
+  usesClashMobileRuleBundles,
+} from "../../../shared/rules/lightweight-policy.js";
 import { CUSTOM_RULES } from "../../../shared/rules/custom-rules.js";
 
 const PRIVATE_RULES = [
@@ -25,25 +30,38 @@ function validateBase(value) {
   return value;
 }
 
-function providerUrl(base, id, adblockMode) {
+function activeRuleCatalog(platform, adblockMode) {
+  if (usesClashMobileRuleBundles(platform)) {
+    if (adblockMode === "full") {
+      throw new Error("Option 'adblockMode=full' exceeds the mobile Clash memory budget");
+    }
+    return mobileRuleClientCatalog();
+  }
+  return ruleClientCatalog({ adblockMode });
+}
+
+function providerUrl(base, id, adblockMode, platform) {
   const root = adblockMode === "full" && ["Advertising", "Advertising_Domain"].includes(id)
     ? base.replace(/\/(?:edge|current|previous)$/u, "/optional/adblock-full")
     : base;
-  return root + "/clash/rules/" + id + ".yaml";
+  const directory = usesClashMobileRuleBundles(platform) ? "mobile-rules" : "rules";
+  return root + "/clash/" + directory + "/" + id + ".yaml";
 }
 
-export function renderClashRules({ publicBaseUrl, adblockMode = "off" } = {}) {
+export function renderClashRules({ publicBaseUrl, platform = "macos", adblockMode = "off" } = {}) {
   const base = validateBase(publicBaseUrl);
   if (adblockMode !== "off" && adblockMode !== "full") throw new Error("Clash adblockMode is unsupported");
-  const plan = orderedRoutingPlan({ adblockMode });
+  const mobile = usesClashMobileRuleBundles(platform);
+  const plan = mobile ? activeRuleCatalog(platform, adblockMode) : orderedRoutingPlan({ adblockMode });
+  const catalog = activeRuleCatalog(platform, adblockMode);
   const providers = {};
-  for (const source of plan) {
+  for (const source of catalog) {
     providers[source.id] = {
       type: "http",
       behavior: "classical",
       format: "yaml",
-      path: "./rules/" + source.id + ".yaml",
-      url: providerUrl(base, source.id, adblockMode),
+      path: "./" + (mobile ? "mobile-rules/" : "rules/") + source.id + ".yaml",
+      url: providerUrl(base, source.id, adblockMode, platform),
       interval: 86400,
     };
   }

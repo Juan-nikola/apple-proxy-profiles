@@ -3,9 +3,9 @@
   "client": "v2box",
   "files": [
     {
-      "bytes": 171778,
+      "bytes": 171922,
       "path": "v2box/scripts/substore-config-generator.js",
-      "sha256": "f67869ce0149f3344feead23801c0f1fa1d0f717cae4b90ca74ee3283b1b8c3c"
+      "sha256": "41301a0d003f400cb01a0c1e045469e15db55223387c3069986e5bb9601af38c"
     },
     {
       "bytes": 120585,
@@ -14,7 +14,7 @@
     }
   ],
   "generatedAt": "2026-08-25T18:39:12Z",
-  "manifestHash": "eb846c13cf5e85623486e1a6ac410237fd1de41dca00d729bb3e618addc6a1dd",
+  "manifestHash": "7e4bf611e05d024860725e0afb7ef5b3d35cf62f316c5e75c05f7f0260994b1f",
   "optionalPacks": {},
   "schemaVersion": 1,
   "sharedAssets": [
