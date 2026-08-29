@@ -94,7 +94,6 @@ function renderTrojan(node) {
 }
 function renderShadowsocks(node) {
   const server = { ...common(node), method: required(node.cipher ?? node.method, "method"), password: required(node.password, "password") };
-  if (node.udp !== undefined) server.ota = node.udp === true;
   return { protocol: "shadowsocks", settings: { servers: [server] }, ...(streamSettings(node) ? { streamSettings: streamSettings(node) } : {}) };
 }
 function renderSocks(node) {

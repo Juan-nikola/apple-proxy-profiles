@@ -46,6 +46,15 @@ test("all approved protocols render Xray outbounds without raw names in tags", (
   }
 });
 
+test("Happ does not reinterpret Shadowsocks UDP as Xray OTA", () => {
+  const out = renderHappOutbound(node("ss", {
+    cipher: "aes-256-gcm",
+    password: "TEST_ONLY_PASSWORD",
+    udp: true,
+  }), "happ-follow/ss-udp");
+  assert.equal(Object.hasOwn(out.settings.servers[0], "ota"), false);
+});
+
 test("Happ preserves Reality when the source uses tls plus reality-opts", () => {
   const out = renderHappOutbound(node("vless", {
     uuid: "TEST_ONLY_UUID",

@@ -726,6 +726,41 @@ test("V2Box capability dispatch rejects only shapes its renderer cannot preserve
   assert.equal(xrayNodeExclusionReason({ ...base, type: "vless", "underlying-proxy": "TEST_ONLY_Landing" }), "unsupported-v2box-chain");
 });
 
+test("HAPP capability dispatch rejects fields its Xray renderer cannot preserve", () => {
+  const common = {
+    name: "TEST_ONLY_HAPP_Node",
+    server: "happ-capability.example.invalid",
+    port: 443,
+  };
+  const shadowsocksPlugin = {
+    ...common,
+    type: "ss",
+    cipher: "aes-128-gcm",
+    password: "TEST_ONLY_HAPP_PASSWORD",
+    plugin: "obfs",
+    "plugin-opts": { mode: "tls" },
+  };
+  const socksTls = { ...common, type: "socks5", tls: true, sni: "example.invalid" };
+  const reality = {
+    ...common,
+    type: "vless",
+    uuid: "00000000-0000-4000-8000-000000000001",
+    tls: true,
+    sni: "example.invalid",
+    "reality-opts": { "public-key": "TEST_ONLY_REALITY_KEY", "short-id": "0123abcd" },
+  };
+
+  assert.deepEqual(evaluateNodeForClient(shadowsocksPlugin, CLIENT.happ), {
+    supported: false,
+    reason: "unsupported-happ-transport",
+  });
+  assert.deepEqual(evaluateNodeForClient(socksTls, CLIENT.happ), {
+    supported: false,
+    reason: "unsupported-happ-tls",
+  });
+  assert.deepEqual(evaluateNodeForClient(reality, CLIENT.happ), { supported: true, reason: null });
+});
+
 test("filterNodesForClient uses audited Xray reasons without changing existing client diagnostics", () => {
   const nodes = [
     { name: "TEST_ONLY_VLESS", type: "vless", server: "example.test", port: 443, uuid: "TEST_ONLY_UUID" },

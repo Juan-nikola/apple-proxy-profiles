@@ -2607,7 +2607,7 @@ var EgernProfileBundle = (() => {
       requiredFields: ["uuid", "password"],
       tls: true
     }),
-    protocol(["socks5"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.v2box, CLIENT.clash]),
+    protocol(["socks5"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.happ, CLIENT.v2box, CLIENT.clash]),
     protocol(["http"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox, CLIENT.v2box, CLIENT.clash]),
     protocol(["ssh"], [CLIENT.egern, CLIENT.singbox, CLIENT.clash], {
       requiredFields: ["username"]
@@ -3670,13 +3670,16 @@ var EgernProfileBundle = (() => {
     return null;
   }
   var XRAY_CHAIN_REASON = Object.freeze({
-    v2box: "unsupported-v2box-chain"
+    v2box: "unsupported-v2box-chain",
+    happ: "unsupported-happ-chain"
   });
   var XRAY_PROTOCOL_REASON = Object.freeze({
-    v2box: "unsupported-v2box-protocol"
+    v2box: "unsupported-v2box-protocol",
+    happ: "unsupported-happ-protocol"
   });
   var XRAY_TRANSPORT_REASON = Object.freeze({
-    v2box: "unsupported-v2box-transport"
+    v2box: "unsupported-v2box-transport",
+    happ: "unsupported-happ-transport"
   });
 
   // render-node.js
