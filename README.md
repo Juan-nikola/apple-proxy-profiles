@@ -107,7 +107,7 @@ HAPP 必须通过真实订阅 URL 获取 JSON 数组和响应头。不要点击 
 3. 在 HAPP 的“添加订阅/URL”中粘贴 URL，等待 `routing` Profile 和 GeoData 完成。
 4. 重新连接。JSON 订阅设置里的路由开关显示锁定是正常的，路由由 JSON 和订阅响应头共同控制。
 
-生成器会同时发送 `routing: happ://routing/onadd/...` 和 `routing-enable: 1`：前者绑定并自动激活 Profile，后者明确保持路由开启。若使用本地文件，只能作为离线兜底，不能保证自动绑定或自动启用。
+生成器会同时发送 `routing: happ://routing/onadd/...` 和 `routing-enable: 1`：前者绑定并自动激活 Profile，后者明确保持路由开启。macOS 任务还发送 HAPP 官方 `proxy-enable: 1`，导入/更新时自动打开桌面 Proxy 模式；iPhone/iPad 使用 Network Extension。若使用本地文件，只能作为离线兜底，不能保证自动绑定或自动启用。
 
 HAPP 对 JSON 订阅会把路由显示为“开”并锁定，点击时提示“无法手动启用/禁用路由”属于正常限制。请以日志中的 `happ-direct`、`happ-follow/<节点展示名>` 和 `happ-fixed/<节点展示名> [candidate]` 判断路由结果；`proxy-block` 会让应用 UDP/443（QUIC）直连回落，避免送入仅支持 TCP 的 Reality。
 
@@ -115,7 +115,7 @@ HAPP 日志默认级别为 `info`。入口会嗅探 `http`、`tls`、`quic` 并�
 
 #### 6. 日常更新与回滚
 
-HAPP 首先打开 `current/happ/index.html` 扫码或点击链接安装 GeoData，再通过 HAPP 的“添加订阅/URL”导入对应平台的私密 File URL。固定节点故障时仅 balancer 在运行时回退到 FOLLOW；若 policy 解析失败，生成器直接失败并保留上一份可用配置。
+HAPP 首先打开 `current/happ/index.html` 扫码或点击链接安装 GeoData，再通过 HAPP 的“添加订阅/URL”导入对应平台的私密 File URL。macOS 导入最新任务后会自动启用桌面 Proxy；旧任务需删除后重新导入。固定节点故障时仅 balancer 在运行时回退到 FOLLOW；若 policy 解析失败，生成器直接失败并保留上一份可用配置。
 
 ![统一路由顺序](docs/assets/routing-order.svg)
 

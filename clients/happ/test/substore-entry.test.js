@@ -101,3 +101,29 @@ test("HAPP JSON binds the same routing profile on the supported Apple platforms"
     assert.ok(profile.DirectIp.includes("geoip:PRIVATE"), platform);
   }
 });
+
+test("HAPP macOS subscriptions request automatic desktop Proxy mode", async () => {
+  const macosOptions = { _res: { headers: {} } };
+  await configOperator({}, "JSON", context({
+    output: "config",
+    type: "collection",
+    name: "TEST_ONLY_Happ_Collection",
+    subscriptionName: "TEST_ONLY_Happ_Subscription",
+    platform: "macos",
+  }, macosOptions));
+  assert.equal(macosOptions._res.headers["proxy-enable"], "1");
+  assert.equal(macosOptions._res.headers["tun-enable"], undefined);
+
+  for (const platform of ["iphone", "ipad"]) {
+    const mobileOptions = { _res: { headers: {} } };
+    await configOperator({}, "JSON", context({
+      output: "config",
+      type: "collection",
+      name: "TEST_ONLY_Happ_Collection",
+      subscriptionName: "TEST_ONLY_Happ_Subscription",
+      platform,
+    }, mobileOptions));
+    assert.equal(mobileOptions._res.headers["proxy-enable"], undefined, platform);
+    assert.equal(mobileOptions._res.headers["tun-enable"], undefined, platform);
+  }
+});

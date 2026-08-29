@@ -16,7 +16,7 @@
 
 当前兼容基线是 HAPP `4.0.5`/`5.6.0` 系列与 Xray `26.7.28`。JSON 配置由 Xray JSON 自己负责 DNS、路由和固定节点；HAPP Profile 只负责 GeoData 与 Tunnel DNS。HAPP 路由开关对 JSON 订阅会被锁定，这是客户端的正常限制，不是路由关闭。
 
-`macos`、`iphone`、`ipad` 三个平台的真实 File 响应都会自动附带同一格式的 `routing: happ://routing/onadd/<base64>`，并发送 `routing-enable: 1`。前者负责把 Profile 绑定到当前 JSON 订阅并在 GeoData 下载完成后激活，后者明确保持订阅级路由为开启状态。
+`macos`、`iphone`、`ipad` 三个平台的真实 File 响应都会自动附带同一格式的 `routing: happ://routing/onadd/<base64>`，并发送 `routing-enable: 1`。前者负责把 Profile 绑定到当前 JSON 订阅并在 GeoData 下载完成后激活，后者明确保持订阅级路由为开启状态。macOS 任务还会发送 HAPP 官方桌面参数 `proxy-enable: 1`，导入或更新订阅时自动选择 Proxy 模式并接管系统 HTTP/SOCKS 代理；iPhone/iPad 使用 Network Extension，不发送这个桌面专用参数。
 
 > 重要：请在 HAPP 中添加 **订阅 URL**，不要先在浏览器下载 JSON 再使用“从文件导入节点”。下载到本地的文件不会保留 HTTP 响应头，所以 HAPP 无法从它自动绑定路由 Profile；旧版 HAPP 还可能把 JSON 数组当作单个配置而提示“无法解析配置”。
 
@@ -24,7 +24,7 @@
 
 1. 在 Sub-Store Preview 对应平台任务，确认输出是非空 JSON 数组；Preview 不会显示真实 HTTP 响应头，这是正常现象。
 2. 复制真实的 **File URL**（不是 Preview 下载文件，也不是 `/subs?api=...` 管理页面 URL）。在 HAPP 的“添加订阅/URL”入口粘贴该 URL。
-3. HAPP 删除旧订阅条目后重新请求 URL，会收到 `routing` 和 `routing-enable` 响应头，并下载同一 `current` channel 的 `geoip.dat`、`geosite.dat`。连接前等待两份 GeoData 下载完成。
+3. HAPP 删除旧订阅条目后重新请求 URL，会收到 `routing`、`routing-enable: 1` 和（仅 macOS）`proxy-enable: 1` 响应头，并下载同一 `current` channel 的 `geoip.dat`、`geosite.dat`。连接前等待两份 GeoData 下载完成。已经导入过旧任务时建议删除后重新添加，确保客户端重新应用桌面模式参数。
 4. 进入该订阅的设置页，JSON 订阅的路由开关显示为锁定是正常的；它由提供商配置控制，不能手动复制或编辑 Profile。重新连接后检查固定节点、国内外业务、局域网和 DNS。
 5. 若仍出现“无法解析配置”、`geosite`/`geoip` 分类不存在、`NEAgentErrorDomain` 或 VPN 无效果，先删除旧订阅和旧 Profile，再重新导入同一平台 File URL，不要只点击旧条目的 Refresh。
 
@@ -40,7 +40,7 @@
 
 HAPP JSON 默认日志级别为 `info`。入口对 HTTP、TLS、QUIC 开启嗅探并使用 `routeOnly: false`，因此嗅探成功时日志目标会显示域名；纯 IP、未加密 TCP、ECH 或嗅探失败只能显示 IP。出站 tag 使用节点展示名，例如 `happ-follow/小秘书GEN2 · VLESS · U`，固定业务出口使用 `[candidate]`/`[balancer]` 后缀，且不会泄露节点凭据。
 
-macOS 需要把系统代理指向 HAPP：HTTP/HTTPS 为 `127.0.0.1:10809`，SOCKS 为 `127.0.0.1:10808`。用 `scutil --proxy` 查看 `HTTPEnable`、`HTTPSEnable`、`SOCKSEnable`；端口关闭或被其他 VPN/代理软件覆盖时，浏览器不走 HAPP，即使节点测速正常。此类问题属于系统代理设置，不属于统一策略路由。
+macOS 的 HAPP 任务会在订阅导入/更新时请求自动 Proxy 模式（`proxy-enable: 1`），正常情况下无需手动打开系统代理。它使用 HTTP/HTTPS `127.0.0.1:10809`、SOCKS `127.0.0.1:10808`；可用 `scutil --proxy` 查看 `HTTPEnable`、`HTTPSEnable`、`SOCKSEnable` 是否已被 HAPP 打开。若仍为 `0`，删除 HAPP 旧订阅后重新添加最新 File URL；若被 Surge、Shadowrocket、Clash、系统 VPN 或其他网络扩展覆盖，只保留一个软件接管系统代理。显式 `curl --socks5-hostname 127.0.0.1:10808 https://www.google.com` 成功而浏览器失败时，问题属于系统代理接管，不属于统一策略路由。断开 HAPP 后应确认系统代理恢复为关闭或原来的设置。
 
 策略值只允许 `DIRECT`、`FOLLOW`、`NODE:<精确节点名>` 或唯一 `NODE~<大致名称>`。策略修改后重新生成所有相关私密任务，再导入新 JSON。节点名和 Profile deep link 不要提交到仓库或公开聊天。
 

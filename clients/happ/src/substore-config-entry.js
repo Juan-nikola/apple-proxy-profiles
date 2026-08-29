@@ -38,6 +38,9 @@ function attachRoutingProfile(input, context, options) {
   // HAPP documents this header as the explicit subscription-level enable flag.
   // The onadd deep link still owns profile binding and activation ordering.
   setResponseHeader(requestOptions, "routing-enable", "1");
+  // Desktop HAPP can apply the system HTTP/SOCKS proxy automatically when the
+  // subscription is imported. Mobile HAPP uses its Network Extension instead.
+  if (options.platform === "macos") setResponseHeader(requestOptions, "proxy-enable", "1");
   // HAPP's default 50 MB tunnel cap is too small for a multi-node Xray JSON subscription.
   // Use the documented subscription header so the core raises its RAM limit before startup.
   setResponseHeader(requestOptions, "no-limit-enabled", "1");

@@ -3523,6 +3523,7 @@ var HappConfigBundle = (() => {
     setResponseHeader(requestOptions, "content-type", "application/json; charset=utf-8");
     setResponseHeader(requestOptions, "content-disposition", `attachment; filename="happ-${options.platform}.json"`);
     setResponseHeader(requestOptions, "routing-enable", "1");
+    if (options.platform === "macos") setResponseHeader(requestOptions, "proxy-enable", "1");
     setResponseHeader(requestOptions, "no-limit-enabled", "1");
   }
   function logDiagnostics(context, options, normalized, filtered) {
