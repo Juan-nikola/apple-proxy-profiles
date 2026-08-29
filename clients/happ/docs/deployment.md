@@ -36,6 +36,12 @@
 
 验证路由时不要以“开关是否可点击”为准。HAPP 对 JSON 订阅会固定显示已开启并禁止手动切换；请在日志中确认 `happ-direct`、`happ-follow/...` 和需要时的 `happ-fixed/.../candidate`。`proxy-block` 会把应用 UDP/443（QUIC）直连回落，避免送入只支持 TCP 的 Reality；`all-block` 才会完全丢弃 UDP/443。
 
+### 日志与 macOS 系统代理
+
+HAPP JSON 默认日志级别为 `info`。入口对 HTTP、TLS、QUIC 开启嗅探并使用 `routeOnly: false`，因此嗅探成功时日志目标会显示域名；纯 IP、未加密 TCP、ECH 或嗅探失败只能显示 IP。出站 tag 使用节点展示名，例如 `happ-follow/小秘书GEN2 · VLESS · U`，固定业务出口使用 `[candidate]`/`[balancer]` 后缀，且不会泄露节点凭据。
+
+macOS 需要把系统代理指向 HAPP：HTTP/HTTPS 为 `127.0.0.1:10809`，SOCKS 为 `127.0.0.1:10808`。用 `scutil --proxy` 查看 `HTTPEnable`、`HTTPSEnable`、`SOCKSEnable`；端口关闭或被其他 VPN/代理软件覆盖时，浏览器不走 HAPP，即使节点测速正常。此类问题属于系统代理设置，不属于统一策略路由。
+
 策略值只允许 `DIRECT`、`FOLLOW`、`NODE:<精确节点名>` 或唯一 `NODE~<大致名称>`。策略修改后重新生成所有相关私密任务，再导入新 JSON。节点名和 Profile deep link 不要提交到仓库或公开聊天。
 
 ## 回滚

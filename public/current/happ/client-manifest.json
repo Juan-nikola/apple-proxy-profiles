@@ -3,19 +3,19 @@
   "client": "happ",
   "files": [
     {
-      "bytes": 20050,
+      "bytes": 20573,
       "path": "happ/examples/happ-config-ipad.json",
-      "sha256": "f490b245fc0ea665633e11329a76729d1bf85f9c577115eecfdac9398071ddd5"
+      "sha256": "4561812a31cd7646faec9c547a422172e7b6f190e48bef61e66f0eab500d0075"
     },
     {
-      "bytes": 20054,
+      "bytes": 20577,
       "path": "happ/examples/happ-config-iphone.json",
-      "sha256": "796b45081e54107100ff6d4f71af597459a5204a4e0a597e23ed17c99b2c8b15"
+      "sha256": "8aba28a4852a2f44cafe80a5d5b96a2bb4b42dbbb1b0908646bda170ea86cd31"
     },
     {
-      "bytes": 20052,
+      "bytes": 20575,
       "path": "happ/examples/happ-config-macos.json",
-      "sha256": "90900ec0604f9deed678b35c0435e8caacd35cc324b81fd8d51fd0224194cad1"
+      "sha256": "49d97e53ff2cada88faf42271e3a68c56df929f670f29d406373b9790264d1ac"
     },
     {
       "bytes": 181481,
@@ -38,9 +38,9 @@
       "sha256": "3d45256d794ee5ddfabb593669a92e3ba6e865d80fa25f33da7c5c4afdede16c"
     },
     {
-      "bytes": 169380,
+      "bytes": 174989,
       "path": "happ/scripts/happ-config-generator.js",
-      "sha256": "ae6c37c00bf9ce7265292673ae569d47fa4834b33c90d5e2296a189fcae64c66"
+      "sha256": "5a87ad60608173b25100b2a4af7b1072d9403558a18264f55dcf272d3a4baf3e"
     },
     {
       "bytes": 131460,
@@ -48,9 +48,9 @@
       "sha256": "e886a2b7764e857b41dc1242ab9065824b70a844a217b8d3825bfb371cb7c6bd"
     },
     {
-      "bytes": 169380,
+      "bytes": 174989,
       "path": "happ/scripts/substore-config-generator.js",
-      "sha256": "ae6c37c00bf9ce7265292673ae569d47fa4834b33c90d5e2296a189fcae64c66"
+      "sha256": "5a87ad60608173b25100b2a4af7b1072d9403558a18264f55dcf272d3a4baf3e"
     },
     {
       "bytes": 131460,
@@ -59,7 +59,7 @@
     }
   ],
   "generatedAt": "2026-08-25T18:39:12Z",
-  "manifestHash": "a231773e8df5355616409f04a2bd5ea35835b1e7513f5bee5ca9c8baa27dffd5",
+  "manifestHash": "95a04a778327f9d709d70fa4eb08cd8f5b4115a2896cf9b29300c0a208885b2a",
   "optionalPacks": {},
   "schemaVersion": 1
 }

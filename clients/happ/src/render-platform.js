@@ -4,7 +4,7 @@ const PLATFORM_METADATA = Object.freeze({
 const PORTS = Object.freeze({ socks: 10808, http: 10809 });
 export function renderHappInbounds(platform) {
   if (!PLATFORM_METADATA[platform]) throw new Error(`Unsupported Happ platform '${platform}'`);
-  const common = { listen: "127.0.0.1", sniffing: { enabled: true, destOverride: ["http", "tls", "quic"], routeOnly: true } };
+  const common = { listen: "127.0.0.1", sniffing: { enabled: true, destOverride: ["http", "tls", "quic"], routeOnly: false } };
   return [
     { tag: "happ-in-socks", port: PORTS.socks, protocol: "socks", settings: { auth: "noauth", udp: true }, ...common },
     { tag: "happ-in-http", port: PORTS.http, protocol: "http", settings: {}, ...common },

@@ -2,9 +2,9 @@ import { renderHappOutbound } from "./render-node.js";
 import { renderHappInbounds } from "./render-platform.js";
 import { renderHappDns } from "./render-dns.js";
 import { renderHappRouting } from "./render-routing.js";
+import { createHappTagPlan, nodeIdFor } from "./tag-plan.js";
 import { defaultUnifiedPolicyResolution } from "../../../shared/policies/resolve-unified.js";
 
-function idFor(node) { return node?._profile?.id ?? `h-${Math.abs([...JSON.stringify(node)].reduce((h, c) => ((h * 31) ^ c.charCodeAt(0)) | 0, 17))}`; }
 function summary(resolution) {
   const entries = Object.values(resolution?.targets ?? {}).map((target) => `${target.configured}→${target.resolved}`).join("；");
   const warnings = (resolution?.warnings ?? []).map((warning) => `警告:${warning.warningCode}`).join("，");
@@ -16,19 +16,28 @@ export function renderHappSubscription({ nodes = [], allNodes = nodes, options, 
   const eligible = Array.isArray(nodes) ? nodes : [];
   if (eligible.length === 0) throw new Error("没有可用的 Happ 兼容节点，拒绝生成空订阅");
   const resolution = policyResolution ?? defaultUnifiedPolicyResolution();
+  const fixedTagNodes = (resolution.fixedNodes ?? []).map((fixed) => {
+    if (!fixed?.node || !fixed.nodeId || nodeIdFor(fixed.node) === fixed.nodeId) return fixed?.node;
+    return { ...fixed.node, _profile: { ...(fixed.node._profile ?? {}), id: fixed.nodeId } };
+  }).filter(Boolean);
+  const tagPlan = createHappTagPlan([
+    ...eligible,
+    ...fixedTagNodes,
+  ]);
   const configs = [];
   for (const followNode of eligible) {
-    const followId = idFor(followNode);
-    const followTag = `happ-follow/${followId}`;
+    const followId = nodeIdFor(followNode);
+    const followTag = tagPlan.follow(followId);
     const route = renderHappRouting({
       nodes: eligible, policyResolution: resolution, fixedNodes: resolution.fixedNodes, followTag, followNodeId: followId, options,
+      tagPlan,
       renderNode: renderHappOutbound,
     });
     const followOutbound = renderHappOutbound(followNode, followTag);
     const outbounds = [followOutbound, ...route.fixedOutbounds, { tag: "happ-direct", protocol: "freedom", settings: {} }, { tag: "happ-block", protocol: "blackhole", settings: {} }];
     configs.push({
       remarks: followNode.name,
-      log: { loglevel: "warning" },
+      log: { loglevel: "info" },
       inbounds: renderHappInbounds(options.platform),
       outbounds,
       observatory: route.observatory,

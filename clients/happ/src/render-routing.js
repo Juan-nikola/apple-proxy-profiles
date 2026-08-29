@@ -3,9 +3,9 @@ import { policyForRuleSource } from "../../../shared/rules/lightweight-policy.js
 import { unifiedPolicyTargetByKey } from "../../../shared/policies/unified-policy.js";
 import { renderHappOutbound } from "./render-node.js";
 import { renderHappDnsRoutes } from "./render-dns.js";
+import { createHappTagPlan, nodeIdFor } from "./tag-plan.js";
 import { HAPP_GEOSITE_ALIASES } from "../../../shared/happ-geodata-contract.js";
 
-function hash(value) { let h = 2166136261; for (const c of String(value)) h = Math.imul(h ^ c.charCodeAt(0), 16777619); return (h >>> 0).toString(36); }
 function businessTargetForSource(sourceId) {
   if (sourceId === "__final__") return "final";
   if (["DomesticCore", "DomesticGame", "SteamCN", "BiliBili", "ByteDance", "XiaoHongShu", "Weibo", "ChinaTLD", "ChinaIP"].includes(sourceId)) return "domesticPlatform";
@@ -24,11 +24,21 @@ function targetFor(id, resolution, followTag, fixedById) {
 }
 
 export function renderHappRouting(context = {}) {
-  const followTag = context.followTag ?? "happ-follow/current";
   const resolution = context.policyResolution ?? { targets: {} };
   const options = context.options ?? {};
   const fixedRecords = Array.isArray(context.fixedNodes) ? context.fixedNodes : (resolution.fixedNodes ?? []);
   const nodes = Array.isArray(context.nodes) ? context.nodes : [];
+  const fixedTagNodes = fixedRecords.map((fixed) => {
+    if (!fixed?.node || !fixed.nodeId || nodeIdFor(fixed.node) === fixed.nodeId) return fixed?.node;
+    return { ...fixed.node, _profile: { ...(fixed.node._profile ?? {}), id: fixed.nodeId } };
+  }).filter(Boolean);
+  const tagPlan = context.tagPlan ?? createHappTagPlan([
+    ...nodes,
+    ...fixedTagNodes,
+  ]);
+  const followTag = context.followNodeId && tagPlan.has(context.followNodeId)
+    ? tagPlan.follow(context.followNodeId)
+    : context.followTag ?? "happ-follow/current";
   const fixedById = new Map();
   const outbounds = [];
   const balancers = [];
@@ -39,10 +49,10 @@ export function renderHappRouting(context = {}) {
     if (fixed.nodeId && fixed.nodeId === context.followNodeId) continue;
     const node = fixed.node ?? nodes.find((candidate) => (candidate._profile?.id ?? "") === fixed.nodeId);
     if (!node) continue;
-    const suffix = hash(fixed.nodeId);
-    const candidateTag = `happ-fixed/${suffix}/candidate`;
-    const balancerTag = `happ-fixed/${suffix}/balancer`;
-    fixedById.set(fixed.nodeId, { candidateTag, balancerTag });
+    const fixedNodeId = fixed.nodeId ?? nodeIdFor(node);
+    const candidateTag = tagPlan.fixedCandidate(fixedNodeId);
+    const balancerTag = tagPlan.fixedBalancer(fixedNodeId);
+    fixedById.set(fixedNodeId, { candidateTag, balancerTag });
     outbounds.push((context.renderNode ?? renderHappOutbound)(node, candidateTag));
     balancers.push({ tag: balancerTag, selector: [candidateTag], strategy: { type: "leastPing" }, fallbackTag: followTag });
     observatorySelectors.push(candidateTag);

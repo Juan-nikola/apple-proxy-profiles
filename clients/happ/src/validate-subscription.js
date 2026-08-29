@@ -1,3 +1,5 @@
+import { validateHappTag } from "./tag-plan.js";
+
 function duplicate(values, label) { const seen = new Set(); for (const value of values) { if (seen.has(value)) throw new Error(`Duplicate Happ ${label} tag`); seen.add(value); } }
 export function validateHappSubscription(configs) {
   if (!Array.isArray(configs) || configs.length === 0) throw new Error("Happ subscription must be a non-empty array");
@@ -10,6 +12,8 @@ export function validateHappSubscription(configs) {
     duplicate((config.routing?.balancers ?? []).map((item) => item.tag), "balancer");
     const outboundTags = new Set(outbounds.map((item) => item.tag));
     const balancerTags = new Set((config.routing?.balancers ?? []).map((item) => item.tag));
+    outbounds.forEach(({ tag }) => validateHappTag(tag));
+    (config.routing?.balancers ?? []).forEach(({ tag }) => validateHappTag(tag));
     if (!outboundTags.has("happ-direct") || !outboundTags.has("happ-block")) throw new Error("Happ config missing safety outbounds");
     for (const rule of config.routing?.rules ?? []) {
       if (rule.outboundTag && !outboundTags.has(rule.outboundTag)) throw new Error(`Dangling Happ outbound reference '${rule.outboundTag}'`);
@@ -22,7 +26,6 @@ export function validateHappSubscription(configs) {
       if (!(config.observatory?.subjectSelector ?? []).some((selector) => candidates[0].tag.startsWith(selector))) throw new Error("Happ fixed candidate is not observed");
     }
     if (outbounds.some((item) => item.protocol === "snell")) throw new Error("Happ config contains Snell");
-    if (outbounds.some((item) => /TEST_ONLY_Node/u.test(item.tag))) throw new Error("Happ internal tag contains raw node name");
     const rules = config.routing?.rules ?? [];
     if (rules.length === 0 || rules.at(-1).network !== "tcp,udp") throw new Error("Happ final route must be last");
   }
