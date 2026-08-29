@@ -1336,12 +1336,12 @@ var HappConfigBundle = (() => {
   }
   function fingerprint(node) {
     const value = identityKey(node);
-    let hash2 = 2166136261;
+    let hash = 2166136261;
     for (let index = 0; index < value.length; index += 1) {
-      hash2 ^= value.charCodeAt(index);
-      hash2 = Math.imul(hash2, 16777619);
+      hash ^= value.charCodeAt(index);
+      hash = Math.imul(hash, 16777619);
     }
-    return (hash2 >>> 0).toString(36).padStart(7, "0");
+    return (hash >>> 0).toString(36).padStart(7, "0");
   }
 
   // ../../shared/nodes/node-validation.js
@@ -2621,9 +2621,9 @@ var HappConfigBundle = (() => {
   var MAX_LABEL_LENGTH = 112;
   var MAX_TAG_LENGTH = 180;
   function fnv(value) {
-    let hash2 = 2166136261;
-    for (const character of String(value)) hash2 = Math.imul(hash2 ^ character.charCodeAt(0), 16777619);
-    return (hash2 >>> 0).toString(36).padStart(7, "0");
+    let hash = 2166136261;
+    for (const character of String(value)) hash = Math.imul(hash ^ character.charCodeAt(0), 16777619);
+    return (hash >>> 0).toString(36).padStart(7, "0");
   }
   function nodeIdFor(node) {
     if (typeof node?._profile?.id === "string" && node._profile.id) return node._profile.id;
@@ -3320,11 +3320,6 @@ var HappConfigBundle = (() => {
   }
 
   // src/render-routing.js
-  function hash(value) {
-    let h = 2166136261;
-    for (const c of String(value)) h = Math.imul(h ^ c.charCodeAt(0), 16777619);
-    return (h >>> 0).toString(36);
-  }
   function businessTargetForSource(sourceId) {
     if (sourceId === "__final__") return "final";
     if (["DomesticCore", "DomesticGame", "SteamCN", "BiliBili", "ByteDance", "XiaoHongShu", "Weibo", "ChinaTLD", "ChinaIP"].includes(sourceId)) return "domesticPlatform";
@@ -3361,8 +3356,8 @@ var HappConfigBundle = (() => {
       const node = fixed.node ?? nodes.find((candidate) => (candidate._profile?.id ?? "") === fixed.nodeId);
       if (!node) continue;
       const fixedNodeId = fixed.nodeId ?? nodeIdFor(node);
-      const candidateTag = tagPlan.has(fixedNodeId) ? tagPlan.fixedCandidate(fixedNodeId) : `happ-fixed/${hash(fixedNodeId)}/candidate`;
-      const balancerTag = tagPlan.has(fixedNodeId) ? tagPlan.fixedBalancer(fixedNodeId) : `happ-fixed/${hash(fixedNodeId)}/balancer`;
+      const candidateTag = tagPlan.fixedCandidate(fixedNodeId);
+      const balancerTag = tagPlan.fixedBalancer(fixedNodeId);
       fixedById.set(fixedNodeId, { candidateTag, balancerTag });
       outbounds.push((context.renderNode ?? renderHappOutbound)(node, candidateTag));
       balancers.push({ tag: balancerTag, selector: [candidateTag], strategy: { type: "leastPing" }, fallbackTag: followTag });
