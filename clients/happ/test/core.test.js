@@ -200,7 +200,7 @@ test("fixed-node balancer is nested under Xray routing", () => {
   const configs = renderHappSubscription({ nodes: [fixed, follow], options, policyResolution });
   const config = configs.find((item) => item.remarks === "TEST_ONLY_Node2");
   assert.ok(config);
-  assert.ok(config.routing.rules.some((rule) => rule.balancerTag));
+  assert.ok(config.routing.rules.some((rule) => rule.balancerTag?.includes("/balancer")));
   assert.ok(config.routing.balancers.some((balancer) => balancer.tag));
   assert.equal(validateHappSubscription(configs), true);
 });
@@ -221,7 +221,25 @@ test("specific business routing wins over the generic proxy DNS route", () => {
   const matching = config.routing.rules.filter((rule) => rule.domain?.includes("geosite:OPENAI"));
   assert.ok(matching.length >= 2);
   assert.equal(matching[0].balancerTag, config.routing.balancers[0].tag);
-  assert.equal(matching[0].outboundTag, undefined);
+  assert.equal(Object.hasOwn(matching[0], "outboundTag"), false);
+});
+
+test("fixed DNS routing uses the balancer instead of bypassing its fallback", () => {
+  const fixed = node("vless", { name: "🌐 qqpw家宽 · VLESS", uuid: "TEST_ONLY_QQPW_DNS_UUID", _profile: { id: "qqpw-dns" } });
+  const follow = node("vless", { name: "🇭🇰 香港 · VLESS", uuid: "TEST_ONLY_HK_DNS_UUID", _profile: { id: "hong-kong-dns" } });
+  const policy = parsePrivatePolicy(JSON.stringify({ schemaVersion: 2, targets: { dnsAndRules: "NODE~qqpw家宽|vless" } }));
+  const policyResolution = resolveUnifiedPolicy({
+    policy,
+    channel: "current",
+    client: "happ",
+    allNodes: [fixed, follow],
+    eligibleNodes: [fixed, follow],
+  });
+  const options = parseHappOptions(base);
+  const config = renderHappSubscription({ nodes: [follow], options, policyResolution })[0];
+  const dnsRule = config.routing.rules.find((rule) => rule.server === "happ-dns" && rule.domain?.includes("geosite:OPENAI"));
+  assert.equal(dnsRule.balancerTag, config.routing.balancers[0].tag);
+  assert.equal(Object.hasOwn(dnsRule, "outboundTag"), false);
 });
 
 test("Happ DNS uses one standard Xray label scheme on every supported platform", () => {

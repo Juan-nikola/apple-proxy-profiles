@@ -17,6 +17,9 @@ function targetFor(id, resolution, followTag, fixedById) {
   if (!record || record.resolved === "FOLLOW") return { outboundTag: followTag };
   if (record.resolved === "DIRECT") return { outboundTag: "happ-direct" };
   const fixed = fixedById.get(record.nodeId);
+  // Xray requires balancerTag for a routing rule that targets a balancer.
+  // outboundTag would make the generated config fail at runtime because a
+  // balancer is not an outbound entry.
   return fixed ? { balancerTag: fixed.balancerTag } : { outboundTag: followTag };
 }
 
@@ -68,12 +71,17 @@ export function renderHappRouting(context = {}) {
   if (!quicRuleInserted && (options.quicMode === "proxy-block" || options.quicMode === "all-block")) rules.push({ type: "field", network: "udp", port: 443, outboundTag: options.quicMode === "all-block" ? "happ-block" : "happ-direct" });
   const dnsTarget = resolution?.targets?.dnsAndRules;
   const dnsFixed = dnsTarget?.nodeId ? fixedById.get(dnsTarget.nodeId) : null;
-  const globalDnsOutbound = dnsTarget?.resolved === "DIRECT" ? "happ-direct" : dnsFixed?.candidateTag ?? followTag;
+  const globalDnsOutbound = dnsTarget?.resolved === "DIRECT" ? "happ-direct" : followTag;
   // DNS server hints are deliberately appended after concrete business rules.
   // Xray stops at the first matching rule; placing the grouped proxy DNS rule
   // before OpenAI/GitHub/etc. would force those targets back to FOLLOW and
   // make NODE~/NODE: policy selections appear to be ignored.
-  rules.push(...renderHappDnsRoutes({ followTag, globalOutboundTag: globalDnsOutbound, platform: options.platform }));
+  rules.push(...renderHappDnsRoutes({
+    followTag,
+    globalOutboundTag: globalDnsOutbound,
+    globalBalancerTag: dnsFixed?.balancerTag,
+    platform: options.platform,
+  }));
   const finalTarget = targetFor("__final__", resolution, followTag, fixedById);
   rules.push({ type: "field", network: "tcp,udp", ...finalTarget });
   const routing = { domainStrategy: "IPIfNonMatch", rules };

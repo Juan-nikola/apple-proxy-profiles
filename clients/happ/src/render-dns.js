@@ -29,11 +29,14 @@ export function renderHappDns(options = {}) {
 export function renderHappDnsRoutes(options = {}) {
   const followTag = options.followTag ?? "happ-follow/current";
   const globalOutboundTag = options.globalOutboundTag ?? followTag;
+  const globalTarget = options.globalBalancerTag
+    ? { balancerTag: options.globalBalancerTag }
+    : { outboundTag: globalOutboundTag };
   const domesticDomains = ["geosite:CN", "geosite:PRIVATE"];
   const proxyDomains = PROXY_GEOSITE_DOMAINS;
   return [
     { type: "field", domain: domesticDomains, outboundTag: "happ-direct", server: "happ-dns" },
-    { type: "field", domain: proxyDomains, outboundTag: globalOutboundTag, server: "happ-dns" },
+    { type: "field", domain: proxyDomains, ...globalTarget, server: "happ-dns" },
   ];
 }
 

@@ -3210,11 +3210,12 @@ var HappConfigBundle = (() => {
   function renderHappDnsRoutes(options = {}) {
     const followTag = options.followTag ?? "happ-follow/current";
     const globalOutboundTag = options.globalOutboundTag ?? followTag;
+    const globalTarget = options.globalBalancerTag ? { balancerTag: options.globalBalancerTag } : { outboundTag: globalOutboundTag };
     const domesticDomains = ["geosite:CN", "geosite:PRIVATE"];
     const proxyDomains = PROXY_GEOSITE_DOMAINS;
     return [
       { type: "field", domain: domesticDomains, outboundTag: "happ-direct", server: "happ-dns" },
-      { type: "field", domain: proxyDomains, outboundTag: globalOutboundTag, server: "happ-dns" }
+      { type: "field", domain: proxyDomains, ...globalTarget, server: "happ-dns" }
     ];
   }
 
@@ -3277,8 +3278,13 @@ var HappConfigBundle = (() => {
     if (!quicRuleInserted && (options.quicMode === "proxy-block" || options.quicMode === "all-block")) rules.push({ type: "field", network: "udp", port: 443, outboundTag: options.quicMode === "all-block" ? "happ-block" : "happ-direct" });
     const dnsTarget = resolution?.targets?.dnsAndRules;
     const dnsFixed = dnsTarget?.nodeId ? fixedById.get(dnsTarget.nodeId) : null;
-    const globalDnsOutbound = dnsTarget?.resolved === "DIRECT" ? "happ-direct" : dnsFixed?.candidateTag ?? followTag;
-    rules.push(...renderHappDnsRoutes({ followTag, globalOutboundTag: globalDnsOutbound, platform: options.platform }));
+    const globalDnsOutbound = dnsTarget?.resolved === "DIRECT" ? "happ-direct" : followTag;
+    rules.push(...renderHappDnsRoutes({
+      followTag,
+      globalOutboundTag: globalDnsOutbound,
+      globalBalancerTag: dnsFixed?.balancerTag,
+      platform: options.platform
+    }));
     const finalTarget = targetFor("__final__", resolution, followTag, fixedById);
     rules.push({ type: "field", network: "tcp,udp", ...finalTarget });
     const routing = { domainStrategy: "IPIfNonMatch", rules };
