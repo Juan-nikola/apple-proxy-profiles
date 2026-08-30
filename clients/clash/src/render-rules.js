@@ -73,6 +73,6 @@ export function renderClashRules({ publicBaseUrl, platform = "macos", adblockMod
     ...CUSTOM_RULES.ai.map((rule) => `${rule},🤖 AI 专用`),
   ];
   for (const source of plan) rules.push("RULE-SET," + source.id + "," + source.policy);
-  rules.push("GEOIP,CN,DIRECT,no-resolve", "MATCH,🚀 节点选择");
+  rules.push("GEOIP,CN,DIRECT", "MATCH,🚀 节点选择");
   return Object.freeze({ providers: Object.freeze(providers), rules: Object.freeze(rules) });
 }

@@ -986,5 +986,5 @@ rules:
   - "RULE-SET,OverseasGame,🌍 海外游戏"
   - "RULE-SET,ChinaTLD,DIRECT"
   - "RULE-SET,ChinaIP,DIRECT"
-  - "GEOIP,CN,DIRECT,no-resolve"
+  - "GEOIP,CN,DIRECT"
   - "MATCH,🚀 节点选择"

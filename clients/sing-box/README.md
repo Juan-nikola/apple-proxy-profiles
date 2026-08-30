@@ -41,7 +41,7 @@ output=config&type=collection&name=apple-proxy-singbox&subscriptionName=Apple-Pr
 | sing-box-macos | `macos` | `ipv4-only` |
 | sing-box-iphone | `iphone` | `ipv4-only` |
 | sing-box-ipad | `ipad` | `ipv4-only` |
-| sing-box-android | `android` | `auto` |
+| sing-box-android | `android` | `ipv4-only` |
 
 公开发布只保留唯一的 `current` 指针；更新时工作流会解析并验证官方 testing release，再原子替换已验证的 `current` 快照。当前阶段不生成 OpenWrt 配置，避免把终端 TUN 配置误当透明网关配置。
 

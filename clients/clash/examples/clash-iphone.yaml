@@ -842,5 +842,5 @@ rules:
   - "RULE-SET,Download,⬇️ 下载/P2P"
   - "RULE-SET,OverseasGame,🌍 海外游戏"
   - "RULE-SET,ChinaIP,DIRECT"
-  - "GEOIP,CN,DIRECT,no-resolve"
+  - "GEOIP,CN,DIRECT"
   - "MATCH,🚀 节点选择"

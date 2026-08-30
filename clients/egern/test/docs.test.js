@@ -175,7 +175,7 @@ test("copy-safe arguments use the exact collection and three distinct platform c
   assert.deepEqual(platforms, new Set(["macos", "iphone", "ipad"]));
   assert.match(profiles.find((line) => line.includes("platform=macos")), /ipv6Mode=ipv4-only/u);
   for (const platform of ["iphone", "ipad"]) {
-    assert.match(profiles.find((line) => line.includes(`platform=${platform}`)), /ipv6Mode=auto/u);
+    assert.match(profiles.find((line) => line.includes(`platform=${platform}`)), /ipv6Mode=ipv4-only/u);
   }
 });
 

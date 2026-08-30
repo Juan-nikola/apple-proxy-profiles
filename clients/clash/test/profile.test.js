@@ -56,6 +56,30 @@ test("uses compact rule providers for Clash mobile platforms", () => {
   }
 });
 
+test("resolves unknown domains before the final China IP fallback on every Apple platform", () => {
+  for (const platform of ["macos", "iphone", "ipad", "appletv"]) {
+    const rules = renderClashRules({
+      publicBaseUrl: PUBLIC_SNAPSHOT_BASE_URL,
+      platform,
+      adblockMode: "off",
+    });
+    const fallbackIndex = rules.rules.indexOf("GEOIP,CN,DIRECT");
+
+    assert.ok(fallbackIndex >= 0, platform);
+    assert.equal(rules.rules.filter((rule) => rule === "GEOIP,CN,DIRECT").length, 1, platform);
+    assert.equal(rules.rules.includes("GEOIP,CN,DIRECT,no-resolve"), false, platform);
+    assert.equal(rules.rules[fallbackIndex + 1], "MATCH,🚀 节点选择", platform);
+
+    const privateAddressRules = rules.rules.filter((rule) => /^(?:IP-CIDR|IP-CIDR6),/u.test(rule));
+    assert.ok(privateAddressRules.length > 0, platform);
+    assert.ok(privateAddressRules.every((rule) => rule.endsWith(",DIRECT,no-resolve")), platform);
+
+    if (["iphone", "ipad", "appletv"].includes(platform)) {
+      assert.ok(Object.values(rules.providers).every(({ url }) => url.includes("/clash/mobile-rules/")), platform);
+    }
+  }
+});
+
 test("keeps the complete rule providers on Clash macOS", () => {
   const rules = renderClashRules({
     publicBaseUrl: PUBLIC_SNAPSHOT_BASE_URL,

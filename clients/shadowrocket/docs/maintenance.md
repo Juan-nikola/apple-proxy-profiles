@@ -10,7 +10,7 @@ Shadowrocket 维护对象是 `apple-proxy-shadowrocket`；统一迁移、回滚�
 - 客户端链式：只有落地标 `[落地]`；必须按下文创建完整隔离的版本化测试栈，不修改正式组合、节点脚本、节点订阅或 Profile；Hysteria2 不生成链式副本。
 - DNS：修改 `dnsMode`、`chinaDns`、`globalDns` 后重新生成并更新 Profile，不是热切换。
 - QUIC：修改 `quicMode=allow|proxy-block|all-block` 后更新 Profile，不是热切换。
-- IPv6：iPhone/iPad 使用 `ipv6Mode=auto`；macOS 稳定优先使用 `ipv4-only`。
+- IPv6：当前三个生产任务统一使用 `ipv6Mode=ipv4-only`；`auto` 只用于已确认 IPv6 可达的独立测试任务。
 - 广告：默认 `adblockMode=off` 不下载完整广告包；明确使用 `adblockMode=full` 时才从独立 optional 发布加载两份广告规则，策略仍可在 `🧱 常见广告` 中热切换。
 - HTTPS 解密：保持关闭；广告规则中的域名/IP 项仍会工作，需要解密 HTTPS 路径的 URL 正则不会生效，不为提高拦截率安装证书。
 - AI：在 `🤖 AI 专用`里直接选择任意已勾选具体节点作为出口；它可以与主线路使用不同节点，更新后确认选择仍保留。
@@ -66,7 +66,7 @@ Shadowrocket 维护对象是 `apple-proxy-shadowrocket`；统一迁移、回滚�
 | `chinaDns` | `alidns`、`dnspod`、`system` | 日常使用 `alidns` |
 | `globalDns` | `cloudflare`、`google`、`quad9` | 日常使用 `cloudflare` |
 | `quicMode` | `allow`、`proxy-block`、`all-block` | 日常使用 `proxy-block`；只阻止代理侧应用 QUIC |
-| `ipv6Mode` | `auto`、`ipv4-only` | iPhone/iPad 用 `auto`；macOS 稳定优先用 `ipv4-only` |
+| `ipv6Mode` | `auto`、`ipv4-only` | 生产任务统一用 `ipv4-only`；`auto` 仅用于 IPv6 可达性测试 |
 | `blockMode` | `balanced`、`security`、`strict`、`off` | 只决定首次默认值，日常在客户端热切换 |
 | `autoGroupMode` | `auto`、`full`、`balanced`、`minimal` | 使用 `auto`，节点增多会自动降低测速负担 |
 | `clientChain` | `off`、`on` | 无明确客户端落地时保持 `off` |

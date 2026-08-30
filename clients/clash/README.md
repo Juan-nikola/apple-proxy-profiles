@@ -4,7 +4,7 @@ Generates Mihomo/Clash YAML node subscriptions and complete profiles for macOS, 
 
 The profile renderer emits mixed-port, TUN, DNS with Fake-IP, sing-box-compatible continent selectors, concrete node choices, hidden automatic helpers at the end of the group list, business selectors, shared `rule-providers`, and an ordered `rules` list ending in `MATCH`. iPhone, iPad, and Apple TV use the compact semantic providers under `clash/mobile-rules`; macOS keeps the full source-level providers under `clash/rules`. Mobile tasks reject `adblockMode=full` because the optional advertising pack exceeds the Network Extension memory budget.
 
-IPv6 defaults are platform-aware: macOS uses `ipv4-only` for stability on networks without a usable IPv6 route, while iPhone, iPad, and Apple TV keep `auto` for IPv6/NAT64 compatibility. Pass `ipv6Mode=auto` explicitly when a macOS network is known to provide working IPv6.
+All current canonical Clash tasks use `ipv4-only` for stability on networks without a usable IPv6 route. The generator also accepts `auto` for networks where IPv6/NAT64 compatibility has been explicitly verified; change the private Sub-Store task parameter only after that test.
 
 Domestic download endpoints include a small inline Baidu Cloud `DIRECT` safety net in addition to the remote `DomesticCore` provider. This prevents a newly published rule from waiting for the provider refresh interval before taking effect.
 

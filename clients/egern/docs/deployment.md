@@ -49,17 +49,17 @@ Egern 新任务只读取 `apple-proxy-egern`。先按 [Sub-Store 客户端节点
 在 Sub-Store 中新建第三个 File 任务，名称设为 `egern-iphone`：
 
 - 继续以链接模式引用同一个 `egern-profile-generator.js` 规范 Pages URL，不要粘贴脚本正文。
-- 参数原样复制：`output=config&type=collection&name=apple-proxy-egern&nodeSubscriptionUrl=https://example.invalid/private/egern-nodes&platform=iphone&channel=current&adblockMode=off&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&autoGroupMode=auto&clientChain=off`
+- 参数原样复制：`output=config&type=collection&name=apple-proxy-egern&nodeSubscriptionUrl=https://example.invalid/private/egern-nodes&platform=iphone&channel=current&adblockMode=off&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=ipv4-only&autoGroupMode=auto&clientChain=off`
 - 同样只在这个私密任务的参数编辑器中替换节点占位 URL。
 
-保存、运行并检查结构。iPhone 默认 `ipv6Mode=auto`，不要照抄 macOS 的 `ipv4-only`。
+保存、运行并检查结构。当前生产任务统一使用 `ipv6Mode=ipv4-only`；如需验证 IPv6，另建测试任务，不要直接覆盖生产任务。
 
 ## 4. 创建 iPad 任务 `egern-ipad`
 
 在 Sub-Store 中新建第四个 File 任务，名称设为 `egern-ipad`：
 
 - 继续以链接模式引用同一个 `egern-profile-generator.js` 规范 Pages URL，不要粘贴脚本正文。
-- 参数原样复制：`output=config&type=collection&name=apple-proxy-egern&nodeSubscriptionUrl=https://example.invalid/private/egern-nodes&platform=ipad&channel=current&adblockMode=off&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&autoGroupMode=auto&clientChain=off`
+- 参数原样复制：`output=config&type=collection&name=apple-proxy-egern&nodeSubscriptionUrl=https://example.invalid/private/egern-nodes&platform=ipad&channel=current&adblockMode=off&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=ipv4-only&autoGroupMode=auto&clientChain=off`
 - 同样只在这个私密任务的参数编辑器中替换节点占位 URL。
 
 保存、运行并检查结构。到这里，四个任务才算完整。

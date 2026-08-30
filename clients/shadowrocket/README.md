@@ -28,8 +28,8 @@ Shadowrocket 新任务只读取 `apple-proxy-shadowrocket`。客户端 collectio
 | --- | --- | --- |
 | `shadowrocket-nodes` | Node File → Node JS URL | `output=nodes&type=collection&name=apple-proxy-shadowrocket&clientChain=off` |
 | `shadowrocket-config-macos` | Profile File → Profile JS URL | `output=config&type=collection&name=apple-proxy-shadowrocket&subscriptionName=Shadowrocket-Nodes&platform=macos&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=ipv4-only&autoGroupMode=auto&clientChain=off` |
-| `shadowrocket-config-iphone` | Profile File → Profile JS URL | `output=config&type=collection&name=apple-proxy-shadowrocket&subscriptionName=Shadowrocket-Nodes&platform=iphone&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&autoGroupMode=auto&clientChain=off` |
-| `shadowrocket-config-ipad` | Profile File → Profile JS URL | `output=config&type=collection&name=apple-proxy-shadowrocket&subscriptionName=Shadowrocket-Nodes&platform=ipad&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&autoGroupMode=auto&clientChain=off` |
+| `shadowrocket-config-iphone` | Profile File → Profile JS URL | `output=config&type=collection&name=apple-proxy-shadowrocket&subscriptionName=Shadowrocket-Nodes&platform=iphone&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=ipv4-only&autoGroupMode=auto&clientChain=off` |
+| `shadowrocket-config-ipad` | Profile File → Profile JS URL | `output=config&type=collection&name=apple-proxy-shadowrocket&subscriptionName=Shadowrocket-Nodes&platform=ipad&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=ipv4-only&autoGroupMode=auto&clientChain=off` |
 
 创建顺序：先建立保留来源标记的原始组合 `apple-proxy-shadowrocket` → 创建直接引用 Node JS URL 的 `shadowrocket-nodes` → 再创建三个直接引用 Profile JS URL 的 File。不要把 Node JS 挂到 collection 的 Script Operator；它只在 `shadowrocket-nodes` File 中运行。
 
@@ -135,15 +135,15 @@ https://juan-nikola.github.io/apple-proxy-profiles/current/shadowrocket/scripts/
 | `globalDns` | `cloudflare` | `cloudflare` | `cloudflare` | 境外 DNS |
 | `blockMode` | `balanced` | `balanced` | `balanced` | 平衡拦截 |
 | `quicMode` | `proxy-block` | `proxy-block` | `proxy-block` | 代理流量阻止 QUIC |
-| `ipv6Mode` | `ipv4-only` | `auto` | `auto` | macOS 与移动端不同 |
+| `ipv6Mode` | `ipv4-only` | `ipv4-only` | `ipv4-only` | 当前 3 个任务统一关闭 IPv6 |
 | `autoGroupMode` | `auto` | `auto` | `auto` | 自动选择分组规模 |
 | `clientChain` | `off` | `off` | `off` | 正式任务关闭客户端链式 |
 
 用于复制核对的三条完整参数如下；不要加引号、前导 `?` 或换行：
 
 - macOS：`output=config&type=collection&name=apple-proxy-shadowrocket&subscriptionName=Shadowrocket-Nodes&platform=macos&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=ipv4-only&autoGroupMode=auto&clientChain=off`
-- iPhone：`output=config&type=collection&name=apple-proxy-shadowrocket&subscriptionName=Shadowrocket-Nodes&platform=iphone&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&autoGroupMode=auto&clientChain=off`
-- iPad：`output=config&type=collection&name=apple-proxy-shadowrocket&subscriptionName=Shadowrocket-Nodes&platform=ipad&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&autoGroupMode=auto&clientChain=off`
+- iPhone：`output=config&type=collection&name=apple-proxy-shadowrocket&subscriptionName=Shadowrocket-Nodes&platform=iphone&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=ipv4-only&autoGroupMode=auto&clientChain=off`
+- iPad：`output=config&type=collection&name=apple-proxy-shadowrocket&subscriptionName=Shadowrocket-Nodes&platform=ipad&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=ipv4-only&autoGroupMode=auto&clientChain=off`
 
 `Shadowrocket-Nodes` 只是便于首次照填的 ASCII 示例。它必须与稍后添加到 Shadowrocket 的节点订阅显示名完全一致，包括大小写、emoji、空格和标点。如果界面提供参数名/值输入框，直接填写显示名；如果旧版只有单行链接，包含中文、emoji、空格、`&`、`#` 或 `%` 的值必须先进行百分号编码，不能编码分隔参数的 `&` 和 `=`。
 
