@@ -1104,7 +1104,7 @@ var ShadowrocketProfileBundle = (() => {
     ["game", "\u{1F3AE} \u6E38\u620F\u8FDE\u63A5", "DIRECT"],
     ["download", "\u2B07\uFE0F \u4E0B\u8F7D/P2P", "DIRECT"],
     ["dnsAndRules", "\u{1F9ED} DNS \u4E0E\u89C4\u5219\u4E0B\u8F7D", "FOLLOW"],
-    ["final", "\u6700\u7EC8\u515C\u5E95", "FOLLOW"]
+    ["final", "\u6F0F\u7F51\u4E4B\u9C7C", "FOLLOW"]
   ].map(([id, label, defaultTarget]) => Object.freeze({ id, label, defaultTarget }));
   var UNIFIED_POLICY_TARGETS = Object.freeze(TARGETS);
   var UNIFIED_POLICY_TARGET_IDS = Object.freeze(TARGETS.map(({ id }) => id));
@@ -1131,7 +1131,9 @@ var ShadowrocketProfileBundle = (() => {
     "\u6D77\u5916\u6E38\u620F": "overseasGame",
     "\u6E38\u620F\u8FDE\u63A5": "game",
     "\u4E0B\u8F7D/P2P": "download",
-    "DNS \u4E0E\u89C4\u5219\u4E0B\u8F7D": "dnsAndRules"
+    "DNS \u4E0E\u89C4\u5219\u4E0B\u8F7D": "dnsAndRules",
+    "\u6700\u7EC8\u515C\u5E95": "final",
+    "\u6F0F\u7F51\u4E4B\u9C7C": "final"
   })) {
     TARGET_BY_KEY2.set(alias, TARGET_BY_KEY2.get(id));
   }
@@ -2076,6 +2078,7 @@ var ShadowrocketProfileBundle = (() => {
     Object.freeze(["\u{1F1E8}\u{1F1F3} \u56FD\u5185\u5E73\u53F0", DIRECT_FIRST_SERVICE_DEFAULTS]),
     Object.freeze(["\u{1F30D} \u6D77\u5916\u6E38\u620F", PROXY_FIRST_SERVICE_DEFAULTS])
   ]);
+  var LEAK_GROUP_NAME = "\u6F0F\u7F51\u4E4B\u9C7C";
   function policyGroup({
     kind,
     name,
@@ -2159,7 +2162,8 @@ var ShadowrocketProfileBundle = (() => {
       "\u{1F30D} \u6D77\u5916\u6E38\u620F": resolution.targets?.overseasGame,
       "\u{1F3AE} \u6E38\u620F\u8FDE\u63A5": resolution.targets?.game,
       "\u2B07\uFE0F \u4E0B\u8F7D/P2P": resolution.targets?.download,
-      "\u{1F9ED} DNS \u4E0E\u89C4\u5219\u4E0B\u8F7D": resolution.targets?.dnsAndRules
+      "\u{1F9ED} DNS \u4E0E\u89C4\u5219\u4E0B\u8F7D": resolution.targets?.dnsAndRules,
+      [LEAK_GROUP_NAME]: resolution.targets?.final
     };
     for (const [name, record2] of Object.entries(targetDefaults)) {
       if (!record2) continue;
@@ -2244,6 +2248,12 @@ var ShadowrocketProfileBundle = (() => {
       name: "\u{1F9ED} DNS \u4E0E\u89C4\u5219\u4E0B\u8F7D",
       candidates: [...PROXY_THEN_DIRECT]
     }));
+    groups.push(subscriptionGroup(
+      GROUP_KIND.special,
+      LEAK_GROUP_NAME,
+      ALL_NODES_FILTER,
+      ["\u{1F680} \u8282\u70B9\u9009\u62E9", "DIRECT", "REJECT"]
+    ));
     groups.push(...securityGroups(options.blockMode));
     if (chainEligible) {
       groups.push(subscriptionGroup(GROUP_KIND.chain, "\u{1F517} \u5165\u53E3\u8282\u70B9", ENTRY_FILTER, ["\u26A1 \u5165\u53E3\u81EA\u52A8"]));
@@ -2970,7 +2980,7 @@ var ShadowrocketProfileBundle = (() => {
     for (const phase of ROUTING_PHASES.filter((value) => value !== "security")) {
       lines.push(...plan.filter((source) => source.phase === phase).map(render));
     }
-    lines.push("GEOIP,CN,DIRECT", "FINAL,\u{1F680} \u8282\u70B9\u9009\u62E9");
+    lines.push("GEOIP,CN,DIRECT", `FINAL,${LEAK_GROUP_NAME}`);
     return lines;
   }
 

@@ -3,24 +3,24 @@
   "client": "clash",
   "files": [
     {
-      "bytes": 21513,
+      "bytes": 22298,
       "path": "clash/examples/clash-appletv.yaml",
-      "sha256": "c54a036645071c93e92b0eb260b1d0427a51847f3c8e2f0eea91110bb9eba23d"
+      "sha256": "efd5a7b53980292ac356d6cef9c987e8c0c5a824f302798f1380176542e0de5c"
     },
     {
-      "bytes": 21513,
+      "bytes": 22298,
       "path": "clash/examples/clash-ipad.yaml",
-      "sha256": "bba18061ac1591c934e0f002976da9cc36b29f5ebcec92e6cfdb6492fe833aa4"
+      "sha256": "3f5ff75c6b52f9a47ec95cb3f412c708d2e6b7b094e912bad7b0f3269bbfd030"
     },
     {
-      "bytes": 21513,
+      "bytes": 22298,
       "path": "clash/examples/clash-iphone.yaml",
-      "sha256": "bba18061ac1591c934e0f002976da9cc36b29f5ebcec92e6cfdb6492fe833aa4"
+      "sha256": "3f5ff75c6b52f9a47ec95cb3f412c708d2e6b7b094e912bad7b0f3269bbfd030"
     },
     {
-      "bytes": 26041,
+      "bytes": 26826,
       "path": "clash/examples/clash-macos.yaml",
-      "sha256": "5ea9a2cf8498a9bbc67cd9c7615eb1899ff1cda88e78c059fee664c3e0ec2310"
+      "sha256": "0116eb7f03a204b421f6213057d22f969c3c05a78a5d49c000677201872665d7"
     },
     {
       "bytes": 2895,
@@ -258,9 +258,9 @@
       "sha256": "09f23c064bcba59d220c20c0217c2ff0084a2dae02abd407b867cf815e61ba9a"
     },
     {
-      "bytes": 98577,
+      "bytes": 130834,
       "path": "clash/scripts/clash-profile-generator.js",
-      "sha256": "e403b2056a4156029207c15f370bee1fae9ac33bcea3a7a7dbb5987bb37ecfe0"
+      "sha256": "f143e0253464c8a11374433c528335c7026d4a350be471079499e0bcec5334f7"
     },
     {
       "bytes": 76004,
@@ -268,13 +268,13 @@
       "sha256": "09f23c064bcba59d220c20c0217c2ff0084a2dae02abd407b867cf815e61ba9a"
     },
     {
-      "bytes": 98577,
+      "bytes": 130834,
       "path": "clash/scripts/substore-profile-generator.js",
-      "sha256": "e403b2056a4156029207c15f370bee1fae9ac33bcea3a7a7dbb5987bb37ecfe0"
+      "sha256": "f143e0253464c8a11374433c528335c7026d4a350be471079499e0bcec5334f7"
     }
   ],
   "generatedAt": "2026-08-25T18:39:12Z",
-  "manifestHash": "c77f1da0a019559cb37be67ef19417f9f993f7154bceb138e3a7d01718d172bd",
+  "manifestHash": "ad38799326c1a07e09c64495a8209c24fb89346369fbc8791651309dbe526ba5",
   "optionalPacks": {
     "adblock-full": "e359a7ee4367ed128d93c86e0b74bf99909fce03a488582424e38f9c98c13e26"
   },

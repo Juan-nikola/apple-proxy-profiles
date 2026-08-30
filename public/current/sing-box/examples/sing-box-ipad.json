@@ -431,6 +431,18 @@
     },
     {
       "type": "selector",
+      "tag": "漏网之鱼",
+      "outbounds": [
+        "🚀 节点选择",
+        "DIRECT",
+        "REJECT",
+        "示例 · Tokyo",
+        "示例 · Frankfurt"
+      ],
+      "interrupt_exist_connections": true
+    },
+    {
+      "type": "selector",
       "tag": "☣️ 安全威胁",
       "outbounds": [
         "REJECT",
@@ -865,7 +877,7 @@
         "method": "drop"
       }
     ],
-    "final": "🚀 节点选择"
+    "final": "漏网之鱼"
   },
   "experimental": {
     "cache_file": {

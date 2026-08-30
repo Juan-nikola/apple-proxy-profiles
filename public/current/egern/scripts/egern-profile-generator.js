@@ -802,6 +802,7 @@ var EgernProfileBundle = (() => {
     Object.freeze(["\u{1F1E8}\u{1F1F3} \u56FD\u5185\u5E73\u53F0", DIRECT_FIRST_SERVICE_DEFAULTS]),
     Object.freeze(["\u{1F30D} \u6D77\u5916\u6E38\u620F", PROXY_FIRST_SERVICE_DEFAULTS])
   ]);
+  var LEAK_GROUP_NAME = "\u6F0F\u7F51\u4E4B\u9C7C";
   function policyGroup({
     kind,
     name,
@@ -885,7 +886,8 @@ var EgernProfileBundle = (() => {
       "\u{1F30D} \u6D77\u5916\u6E38\u620F": resolution.targets?.overseasGame,
       "\u{1F3AE} \u6E38\u620F\u8FDE\u63A5": resolution.targets?.game,
       "\u2B07\uFE0F \u4E0B\u8F7D/P2P": resolution.targets?.download,
-      "\u{1F9ED} DNS \u4E0E\u89C4\u5219\u4E0B\u8F7D": resolution.targets?.dnsAndRules
+      "\u{1F9ED} DNS \u4E0E\u89C4\u5219\u4E0B\u8F7D": resolution.targets?.dnsAndRules,
+      [LEAK_GROUP_NAME]: resolution.targets?.final
     };
     for (const [name, record2] of Object.entries(targetDefaults)) {
       if (!record2) continue;
@@ -970,6 +972,12 @@ var EgernProfileBundle = (() => {
       name: "\u{1F9ED} DNS \u4E0E\u89C4\u5219\u4E0B\u8F7D",
       candidates: [...PROXY_THEN_DIRECT]
     }));
+    groups.push(subscriptionGroup(
+      GROUP_KIND.special,
+      LEAK_GROUP_NAME,
+      ALL_NODES_FILTER,
+      ["\u{1F680} \u8282\u70B9\u9009\u62E9", "DIRECT", "REJECT"]
+    ));
     groups.push(...securityGroups(options.blockMode));
     if (chainEligible) {
       groups.push(subscriptionGroup(GROUP_KIND.chain, "\u{1F517} \u5165\u53E3\u8282\u70B9", ENTRY_FILTER, ["\u26A1 \u5165\u53E3\u81EA\u52A8"]));
@@ -1211,7 +1219,7 @@ var EgernProfileBundle = (() => {
     ["game", "\u{1F3AE} \u6E38\u620F\u8FDE\u63A5", "DIRECT"],
     ["download", "\u2B07\uFE0F \u4E0B\u8F7D/P2P", "DIRECT"],
     ["dnsAndRules", "\u{1F9ED} DNS \u4E0E\u89C4\u5219\u4E0B\u8F7D", "FOLLOW"],
-    ["final", "\u6700\u7EC8\u515C\u5E95", "FOLLOW"]
+    ["final", "\u6F0F\u7F51\u4E4B\u9C7C", "FOLLOW"]
   ].map(([id, label, defaultTarget]) => Object.freeze({ id, label, defaultTarget }));
   var UNIFIED_POLICY_TARGETS = Object.freeze(TARGETS);
   var UNIFIED_POLICY_TARGET_IDS = Object.freeze(TARGETS.map(({ id }) => id));
@@ -1238,7 +1246,9 @@ var EgernProfileBundle = (() => {
     "\u6D77\u5916\u6E38\u620F": "overseasGame",
     "\u6E38\u620F\u8FDE\u63A5": "game",
     "\u4E0B\u8F7D/P2P": "download",
-    "DNS \u4E0E\u89C4\u5219\u4E0B\u8F7D": "dnsAndRules"
+    "DNS \u4E0E\u89C4\u5219\u4E0B\u8F7D": "dnsAndRules",
+    "\u6700\u7EC8\u515C\u5E95": "final",
+    "\u6F0F\u7F51\u4E4B\u9C7C": "final"
   })) {
     TARGET_BY_KEY2.set(alias, TARGET_BY_KEY2.get(id));
   }
@@ -1826,6 +1836,7 @@ var EgernProfileBundle = (() => {
     "\u{1F3AE} \u6E38\u620F\u8FDE\u63A5",
     "\u2B07\uFE0F \u4E0B\u8F7D/P2P",
     "\u{1F9ED} DNS \u4E0E\u89C4\u5219\u4E0B\u8F7D",
+    "\u6F0F\u7F51\u4E4B\u9C7C",
     "\u2623\uFE0F \u5B89\u5168\u5A01\u80C1",
     "\u{1F9F1} \u5E38\u89C1\u5E7F\u544A",
     "\u{1F575}\uFE0F \u4E25\u683C\u8DDF\u8E2A"
@@ -1850,6 +1861,7 @@ var EgernProfileBundle = (() => {
     ["\u{1F3AE} \u6E38\u620F\u8FDE\u63A5", policySchema(GROUP_KIND.special, STRATEGY.select, [GAME_FILTER, null])],
     ["\u2B07\uFE0F \u4E0B\u8F7D/P2P", policySchema(GROUP_KIND.special, STRATEGY.select, [P2P_FILTER, null])],
     ["\u{1F9ED} DNS \u4E0E\u89C4\u5219\u4E0B\u8F7D", policySchema(GROUP_KIND.special, STRATEGY.select, [null])],
+    ["\u6F0F\u7F51\u4E4B\u9C7C", policySchema(GROUP_KIND.special, STRATEGY.select, [ALL_NODES_FILTER])],
     ["\u2623\uFE0F \u5B89\u5168\u5A01\u80C1", policySchema(GROUP_KIND.security, STRATEGY.select, [null])],
     ["\u{1F9F1} \u5E38\u89C1\u5E7F\u544A", policySchema(GROUP_KIND.security, STRATEGY.select, [null])],
     ["\u{1F575}\uFE0F \u4E25\u683C\u8DDF\u8E2A", policySchema(GROUP_KIND.security, STRATEGY.select, [null])],
@@ -2543,7 +2555,7 @@ var EgernProfileBundle = (() => {
     }
     rules.push(
       { geoip: { match: "CN", policy: "DIRECT" } },
-      { default: { policy: "\u{1F680} \u8282\u70B9\u9009\u62E9" } }
+      { default: { policy: LEAK_GROUP_NAME } }
     );
     return rules;
   }
@@ -4230,9 +4242,15 @@ var EgernProfileBundle = (() => {
     }
     const withoutExternal = candidates.filter((candidate) => !isExternalNodePolicy(candidate));
     if (external.length === 1) return withoutExternal;
+    if (fields.name === LEAK_GROUP_NAME && withoutExternal.length === 3 && new Set(withoutExternal).size === 3 && ["\u{1F680} \u8282\u70B9\u9009\u62E9", "DIRECT", "REJECT"].every((candidate) => withoutExternal.includes(candidate))) {
+      return ["\u{1F680} \u8282\u70B9\u9009\u62E9", "DIRECT", "REJECT"];
+    }
     const first = withoutExternal[0];
     if (!INTERACTIVE_POLICY_VALUES.has(first)) return withoutExternal;
     if (first === "DIRECT" && schema.defaultChoice !== "DIRECT" && withoutExternal.slice(1).includes("\u{1F680} \u8282\u70B9\u9009\u62E9")) {
+      if (fields.name === LEAK_GROUP_NAME) {
+        return [withoutExternal[1], withoutExternal[0], ...withoutExternal.slice(2)];
+      }
       return [...withoutExternal.slice(1), "DIRECT"];
     }
     if (first === "\u{1F680} \u8282\u70B9\u9009\u62E9" && schema.defaultChoice === "DIRECT") {
@@ -4409,7 +4427,7 @@ var EgernProfileBundle = (() => {
     if (keys.length !== ROOT_KEYS.length || keys.some((key, index) => key !== ROOT_KEYS[index])) {
       throw new Error("Invalid Egern root fields");
     }
-    if (typeof root.ipv6 !== "boolean" || typeof root.block_quic !== "boolean" || root.close_connections_on_policy_change !== true || !sameValue(root.bypass_tunnel_proxy, BYPASS_TUNNEL_PROXY) || !sameValue(root.real_ip_domains, REAL_IP_DOMAINS) || !sameValue(root.hijack_dns, ["*"]) || root.default_subscription_group !== "\u{1F680} \u8282\u70B9\u9009\u62E9") throw new Error("Invalid Egern root field values");
+    if (typeof root.ipv6 !== "boolean" || typeof root.block_quic !== "boolean" || root.close_connections_on_policy_change !== true || !sameValue(root.bypass_tunnel_proxy, BYPASS_TUNNEL_PROXY) || !sameValue(root.real_ip_domains, REAL_IP_DOMAINS) || !sameValue(root.hijack_dns, ["*"]) || root.default_subscription_group !== "\u6F0F\u7F51\u4E4B\u9C7C") throw new Error("Invalid Egern root field values");
   }
   function validDns(dns, publicBaseUrl2) {
     for (const dnsMode of OPTION_VALUES.dnsMode) {
@@ -4708,7 +4726,7 @@ var EgernProfileBundle = (() => {
         publicBaseUrl: options.publicBaseUrl,
         adblockMode: options.adblockMode
       }),
-      default_subscription_group: "\u{1F680} \u8282\u70B9\u9009\u62E9"
+      default_subscription_group: LEAK_GROUP_NAME
     };
     const yaml = renderYaml(root);
     assertValidEgernProfile(yaml);

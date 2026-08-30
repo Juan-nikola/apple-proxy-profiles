@@ -3,19 +3,19 @@
   "client": "surge",
   "files": [
     {
-      "bytes": 11167,
+      "bytes": 11282,
       "path": "surge/examples/surge-ipad.conf",
-      "sha256": "288f2ffdf1906bfde442de77495c27bcd58fc96973d46821932c4b36ed5c530d"
+      "sha256": "dc2531ef582d8772996c237e567374ad7faf67b1b3088e853b5e1dd8d7617e86"
     },
     {
-      "bytes": 11167,
+      "bytes": 11282,
       "path": "surge/examples/surge-iphone.conf",
-      "sha256": "288f2ffdf1906bfde442de77495c27bcd58fc96973d46821932c4b36ed5c530d"
+      "sha256": "dc2531ef582d8772996c237e567374ad7faf67b1b3088e853b5e1dd8d7617e86"
     },
     {
-      "bytes": 11165,
+      "bytes": 11280,
       "path": "surge/examples/surge-macos.conf",
-      "sha256": "47a665c8cbec3627f92c842f681871e77613469bfa0172cf7de54f02de022855"
+      "sha256": "9c960db3bc92612bab07eebb8b72865cb55d200a7425a6c6ee3638e2aa75c769"
     },
     {
       "bytes": 2464,
@@ -183,9 +183,9 @@
       "sha256": "cbf7ee0aa6631a42d0b296443f1d2bfcb6c3137f4d73e4351e7b3fc79ed1fe93"
     },
     {
-      "bytes": 127791,
+      "bytes": 128142,
       "path": "surge/scripts/substore-profile-generator.js",
-      "sha256": "20d1fa9605bf544f88ed9cf7d079b696c424c859b0c7556e4fde2a450e6069ac"
+      "sha256": "60c55b52e43df81147ab71d6f6f92728e90c94468cc3a850e3ce0c1c29c53095"
     },
     {
       "bytes": 54110,
@@ -193,13 +193,13 @@
       "sha256": "cbf7ee0aa6631a42d0b296443f1d2bfcb6c3137f4d73e4351e7b3fc79ed1fe93"
     },
     {
-      "bytes": 127791,
+      "bytes": 128142,
       "path": "surge/scripts/surge-profile-generator.js",
-      "sha256": "20d1fa9605bf544f88ed9cf7d079b696c424c859b0c7556e4fde2a450e6069ac"
+      "sha256": "60c55b52e43df81147ab71d6f6f92728e90c94468cc3a850e3ce0c1c29c53095"
     }
   ],
   "generatedAt": "2026-08-25T18:39:12Z",
-  "manifestHash": "c7f71455b3c047d1c47f16a9fe1f7193a52f80825274f3b38f2ae7325b58c915",
+  "manifestHash": "95a49bf661fe8fca74f25be6808b8106b5060dc7695a2371f7f693513bcecd22",
   "optionalPacks": {
     "adblock-full": "3cb1d3311910f528d4cd1fa9984821059b21c54dbec35127b2176e22cca03285"
   },
