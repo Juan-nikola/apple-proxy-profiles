@@ -77,7 +77,7 @@ Egern 新任务只读取 `apple-proxy-egern`。先按 [Sub-Store 客户端节点
 | globalDns | cloudflare、google、quad9 |
 | blockMode | balanced、security、strict、off |
 | quicMode | allow、proxy-block、all-block |
-| ipv6Mode | auto、ipv4-only |
+| ipv6Mode | ipv4-only（生产）；auto（独立 IPv6 测试） |
 | autoGroupMode | auto、full、balanced、minimal |
 | clientChain | off、on |
 

@@ -121,7 +121,7 @@ https://juan-nikola.github.io/apple-proxy-profiles/current/egern/scripts/egern-p
 
 三个任务都保持“关闭缓存”未勾选、“不验证服务器证书”未勾选。逐个即时预览：输出应以 `ipv6:` 开头，并包含 `dns:`、`policy_groups:`、`rules:` 和 `default_subscription_group:`。Profile 通过私密 URL 挂载 `egern-nodes`，因此顶层不出现 `proxies:` 是正确结构；没有自更新 URL 时也不会输出 `auto_update:`，这是为了避免 Egern 将空对象判定为缺少必填的 `url`。任何一个仍显示占位内容或错误时都不要导入设备。
 
-`adblockMode=off` 是轻量默认，不下载完整广告分类。只有明确改为 `full` 时，才从与 `channel` 一致的独立 optional 发布加载 `Advertising` 与 `Advertising_Domain`。默认路由使用 `DomesticCore`/`DomesticGame`/`SteamCN` 直连、`OverseasGame` 进入 `🌍 海外游戏`、`ChinaIP` 和可解析的 `GEOIP CN` 国内回退，未识别或 DNS 失败流量最终进入 `🚀 节点选择`。
+`adblockMode=off` 是轻量默认，不下载完整广告分类。只有明确改为 `full` 时，才从与 `channel` 一致的独立 optional 发布加载 `Advertising` 与 `Advertising_Domain`。完整 Profile 读取私密 `apple-proxy-policy`：`final=FOLLOW`、`DIRECT` 或 `NODE~查询词` 分别让原生 `漏网之鱼` 组默认选择 `🚀 节点选择`、`DIRECT` 或唯一匹配节点；该组还保留 `REJECT` 手动选项。默认路由使用 `DomesticCore`/`DomesticGame`/`SteamCN` 直连、`OverseasGame` 进入 `🌍 海外游戏`、`ChinaIP` 和可解析的 `GEOIP CN` 国内回退，未识别或 DNS 失败流量最终进入 `漏网之鱼`。
 
 ### 4. 导入、灰度与回滚
 

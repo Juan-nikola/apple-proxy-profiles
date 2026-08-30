@@ -3,6 +3,8 @@ import test from "node:test";
 import { parseV2BoxOptions } from "../src/options.js";
 import { renderV2BoxProfile } from "../src/render-profile.js";
 import { renderV2BoxAssetManifest } from "../src/render-assets.js";
+import { parsePrivatePolicy } from "../../../shared/policies/private-policy.js";
+import { resolveUnifiedPolicy } from "../../../shared/policies/resolve-unified.js";
 
 test("renders importable iPhone profile with inline fallback", () => {
   const profile = renderV2BoxProfile({ options: parseV2BoxOptions({ output: "config", type: "collection", name: "fixture", platform: "iphone", region: "ru" }), nodes: [{ name: "fixture", type: "vless", server: "fixture.invalid", port: 443, uuid: "TEST_ONLY_UUID" }] });
@@ -11,6 +13,21 @@ test("renders importable iPhone profile with inline fallback", () => {
   assert.ok(profile.routing.rules.some(({ domain }) => domain?.some((value) => value.includes("ru"))));
   assert.ok(profile.routing.rules.some(({ domain }) => domain?.includes("domain:baidupcs.com")));
   assert.equal(profile.routing.rules.at(-1).outboundTag, "proxy");
+});
+
+test("applies final DIRECT and fixed-node policies to the V2Box catch-all", () => {
+  const options = parseV2BoxOptions({ output: "config", type: "collection", name: "fixture", platform: "iphone", region: "cn" });
+  const fixed = { name: "TEST_ONLY_Fixed", type: "vless", server: "fixed.invalid", port: 443, uuid: "TEST_ONLY_FIXED_UUID", _profile: { id: "fixed-v2box" } };
+  const follow = { name: "TEST_ONLY_Follow", type: "vless", server: "follow.invalid", port: 443, uuid: "TEST_ONLY_FOLLOW_UUID", _profile: { id: "follow-v2box" } };
+  const directPolicy = parsePrivatePolicy(JSON.stringify({ schemaVersion: 2, targets: { final: "DIRECT" } }));
+  const directResolution = resolveUnifiedPolicy({ policy: directPolicy, client: "v2box", allNodes: [fixed, follow], eligibleNodes: [fixed, follow] });
+  const directProfile = renderV2BoxProfile({ nodes: [fixed, follow], options, policyResolution: directResolution });
+  assert.equal(directProfile.routing.rules.at(-1).outboundTag, "direct");
+
+  const fixedPolicy = parsePrivatePolicy(JSON.stringify({ schemaVersion: 2, targets: { final: "NODE~TEST_ONLY_Fixed" } }));
+  const fixedResolution = resolveUnifiedPolicy({ policy: fixedPolicy, client: "v2box", allNodes: [fixed, follow], eligibleNodes: [fixed, follow] });
+  const fixedProfile = renderV2BoxProfile({ nodes: [fixed, follow], options, policyResolution: fixedResolution });
+  assert.equal(fixedProfile.routing.rules.at(-1).outboundTag, "ap-node-0");
 });
 
 test("binds asset-backed profile URLs to region and channel", () => {

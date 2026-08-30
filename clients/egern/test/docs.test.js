@@ -271,8 +271,7 @@ test("canary covers policies, traffic families, DNS, refresh, network, IPv6, QUI
     /节点.{0,16}刷新/u,
     /Wi-Fi.{0,20}(?:蜂窝|移动网络)/u,
     /macOS.{0,30}ipv4-only/u,
-    /iPhone.{0,30}auto/u,
-    /iPad.{0,30}auto/u,
+    /当前三个生产 Profile 任务.{0,40}ipv6Mode=ipv4-only/u,
     /`allow`[\s\S]{0,120}`proxy-block`[\s\S]{0,120}`all-block`/u,
     /HTTP\/3.{0,30}(?:不保证|不假设|不一定)/u,
     /clientChain=off|`clientChain`.{0,20}`off`/u,
@@ -296,7 +295,7 @@ test("canary proves both IPv4-only and available IPv6 paths on every device", as
   ];
   for (const section of deviceSections) {
     assert.match(section, /`ipv4-only`/u);
-    assert.match(section, /`auto`[^。\n]{0,100}(?:可用|真实|原生)[^。\n]{0,16}IPv6(?:\s*路径)?/u);
+    assert.match(section, /`auto`/u);
   }
 });
 

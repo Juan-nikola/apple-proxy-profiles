@@ -287,7 +287,7 @@ for (const platform of ["macos", "iphone", "ipad"]) {
     assert.match(profile, /^RULE-SET,.*\/OverseasGame\.list,🌍 海外游戏,/m);
     assert.match(profile, /^RULE-SET,.*\/ChinaIP\.list,DIRECT,/m);
     assert.match(profile, /^GEOIP,CN,DIRECT$/m);
-    assert.match(profile, /^FINAL,🚀 节点选择$/m);
+    assert.match(profile, /^FINAL,漏网之鱼$/m);
     assert.match(profile, /^block-quic = all-proxy$/m);
     assert.match(profile, new RegExp(`^ipv6 = ${platform === "macos" ? "false" : "true"}$`, "m"));
   });

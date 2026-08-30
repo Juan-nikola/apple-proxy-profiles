@@ -11,13 +11,14 @@
 - [ ] 升级已有安装时，macOS、iPhone、iPad 三个 Profile File Operator 的 `subscriptionName` 已逐一核对；节点 URL 和节点 Script Operator 未更换。若旧占位值不匹配当前显示名，已改参数或重命名订阅，并重新发布和更新各平台 Profile。
 - [ ] 常用中国网站直连，常用境外网站经 `🚀 节点选择`。
 - [ ] 一个未列规则但解析为中国 IP 的测试目标命中 `GEOIP,CN,DIRECT`。
-- [ ] 一个未列规则的境外目标命中 `FINAL,🚀 节点选择`。
+- [ ] 一个未列规则的境外目标命中 `FINAL,漏网之鱼`，并确认该组默认值与 `apple-proxy-policy.final` 一致。
+- [ ] `漏网之鱼` 包含 `🚀 节点选择`、`DIRECT`、`REJECT`；`REJECT` 仅手动使用，不是默认值。
 - [ ] `🚀 节点选择`包含 `PROXY`、全自动和固定的亚太、欧洲、美洲洲组；首页切换洲组后，此处不再保存或显示具体节点名。
 - [ ] 动态组按匹配的 `subscriptionName` 显示具体节点；若名称不匹配，`DIRECT`、`🚀 节点选择`、自动测速和地区等显式选择仍可用，但不会显示该订阅的服务器。
 - [ ] 已重新运行当前平台中直接引用 `shadowrocket-profile-generator.js` 规范 Pages URL 的 File，并更新 Profile；三个 File 不粘贴脚本正文。`clients/shadowrocket/dist/` 与 `clients/shadowrocket/examples/` 已重新构建校验。默认参数为唯一公开的 `channel=current`、`adblockMode=off`；只有专门测试完整广告时才使用 `adblockMode=full` 和独立 optional 包。既有 File 若仍引用旧 `substore-profile-generator.js` 兼容 URL，可保持原 URL，只需确认内容已更新。
-- [ ] 规则顺序明确为 `DomesticCore`、`DomesticGame`、`SteamCN` DIRECT，随后是境外服务，`OverseasGame` 进入 `🌍 海外游戏`，再到 `ChinaIP`、`GEOIP,CN,DIRECT`，最后 `FINAL,🚀 节点选择`。
+- [ ] 规则顺序明确为 `DomesticCore`、`DomesticGame`、`SteamCN` DIRECT，随后是境外服务，`OverseasGame` 进入 `🌍 海外游戏`，再到 `ChinaIP`、`GEOIP,CN,DIRECT`，最后 `FINAL,漏网之鱼`。
 - [ ] 规则顺序包含 `ChinaTLD`：普通 `.cn` 域名命中 `ChinaTLD`/DIRECT，位置在 `OverseasGame` 之后、`ChinaIP`/`GEOIP,CN` 之前。
-- [ ] 稳定 DNS 优先国内解析；未知国内 IPv4/IPv6 命中 `GEOIP,CN,DIRECT`，未知境外与 DNS 失败走 `FINAL,🚀 节点选择`；HTTPDNS、硬编码 IP、IPv6、QUIC 和手动服务组选择仍作为残余风险记录。
+- [ ] 稳定 DNS 优先国内解析；未知国内 IPv4/IPv6 命中 `GEOIP,CN,DIRECT`，未知境外与 DNS 失败进入 `FINAL,漏网之鱼`；默认出口由 `apple-proxy-policy.final` 控制。HTTPDNS、硬编码 IP、IPv6、QUIC 和手动服务组选择仍作为残余风险记录。
 - [ ] 用 `npm run explain:route -- --channel current --domain <域名>` 离线核对过预期分流（只读取本地已发布规则，不执行 DNS）。
 - [ ] 统一业务组都有自动测速、固定顺序地区组和符合筛选条件的具体节点；没有国家组。
 - [ ] 打开 `🐙 GitHub` 和 `🍎 Apple`：确认两组的自动、地区、`DIRECT`、`🚀 节点选择`等所有显式选择及匹配订阅的具体服务器都存在；GitHub 的 `policy-select-name=🚀 节点选择`，Apple 的 `policy-select-name=DIRECT`。
@@ -60,7 +61,7 @@
 
 1. 保持规则日志打开，访问一个自己知道解析到境外、但不确定是否有专用规则的普通站点候选。
 2. 如果日志命中 AI、GitHub、媒体、社交或任何其他命名规则集，丢弃并换一个。
-3. 只有日志明确显示 `FINAL,🚀 节点选择`，才勾选境外未知路由项。
+3. 只有日志明确显示 `FINAL,漏网之鱼`，才勾选境外未知路由项；再核对该组当前选择是否符合 `apple-proxy-policy.final`。
 4. 同样记录候选目标和测试日期；只看到页面成功打开不能勾选。
 
 ## 记录

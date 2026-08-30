@@ -6,7 +6,7 @@ Surge 新任务只读取 `apple-proxy-surge`。客户端 collection 边界、迁
 
 ## 先看这三份文档
 
-1. [五客户端总指南](../../docs/substore-two-layer-setup.md)：创建 `apple-proxy-surge`、加入你已验证的私密来源，以及 17 个私密任务的总表。
+1. [Sub-Store 八客户端指南](../../docs/substore-two-layer-setup.md)：创建 `apple-proxy-surge`、加入你已验证的私密来源，以及 30 个私密任务的总表。
 2. [Surge 部署](docs/deployment.md)：先创建 Surge 节点资源 File，再按 macOS → iPhone → iPad 创建三个远程 Profile File。
 3. [灰度与排障](docs/canary.md)：确认国内 App、DNS、UDP、局域网和回滚顺序。
 
@@ -55,6 +55,8 @@ https://juan-nikola.github.io/apple-proxy-profiles/current/surge/scripts/surge-p
 `adblockMode=off` 是默认值，不下载完整广告分类。只有明确改为 `adblockMode=full` 时，才会加载与 `channel` 一致的独立可选广告包。
 
 `globalDns` 暂保留为跨客户端参数兼容位，Surge 的三端可移植 Profile 不在本地使用它。明确的海外域名在 IP 规则之前命中代理，由代理端解析；未命中域名使用 `chinaDns`，若国内 DNS 解析失败则由 `FINAL` 的 `dns-failed` 回退到代理。
+
+三个完整 Profile 都读取私密 `apple-proxy-policy`。`final=FOLLOW`、`DIRECT` 或 `NODE~查询词` 分别让 `漏网之鱼` 默认选择 `🚀 节点选择`、`DIRECT` 或唯一匹配节点；该组始终保留三种候选，`REJECT` 只用于手动排查。Surge 的最终规则固定为 `FINAL,漏网之鱼,dns-failed`。
 
 ## 改什么去哪里
 

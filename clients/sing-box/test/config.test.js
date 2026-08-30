@@ -10,6 +10,8 @@ import {
   MOBILE_RULE_PLATFORMS,
   usesMobileRuleBundles,
 } from "../../../shared/rules/lightweight-policy.js";
+import { parsePrivatePolicy } from "../../../shared/policies/private-policy.js";
+import { resolveUnifiedPolicy } from "../../../shared/policies/resolve-unified.js";
 
 const baseOptions = {
   output: "config",
@@ -109,7 +111,7 @@ test("renders a complete latest-style config with response-based ChinaIP fallbac
   const config = render();
   assert.deepEqual(validateSingBoxConfig(config), { valid: true, errors: [] });
   assert.equal(config.inbounds[0].type, "tun");
-  assert.equal(config.route.final, "🚀 节点选择");
+  assert.equal(config.route.final, "漏网之鱼");
   assert.ok(config.route.rules.some((rule) => rule.action === "resolve" && rule.server === undefined));
   assert.ok(config.route.rules.some((rule) => rule.domain_suffix?.includes("baidupcs.com") && rule.outbound === "DIRECT"));
   assert.ok(config.route.rules.some((rule) => rule.rule_set?.includes("rule-ChinaIP") && rule.outbound === "DIRECT"));
@@ -120,6 +122,20 @@ test("renders a complete latest-style config with response-based ChinaIP fallbac
   assert.equal(config.dns.final, "dns-proxy");
   assert.equal(config.dns.servers.find(({ tag }) => tag === "dns-direct")?.detour, undefined);
   assert.equal(config.dns.servers.find(({ tag }) => tag === "dns-proxy")?.detour, "⚡ 全部自动");
+});
+
+test("routes unmatched traffic through a policy-driven leak selector", () => {
+  const policy = parsePrivatePolicy(JSON.stringify({ schemaVersion: 2, targets: { final: "DIRECT" } }));
+  const resolution = resolveUnifiedPolicy({ policy, client: "singbox", allNodes: nodes, eligibleNodes: nodes });
+  const config = renderSingBoxConfig(parseSingBoxOptions(baseOptions), nodes, {
+    ruleBaseUrl: `https://example.invalid/${baseOptions.channel}/sing-box/rule-sets`,
+    policyResolution: resolution,
+  });
+  const leak = config.outbounds.find(({ tag }) => tag === "漏网之鱼");
+
+  assert.deepEqual(leak?.outbounds.slice(0, 3), ["🚀 节点选择", "DIRECT", "REJECT"]);
+  assert.equal(leak?.default, "DIRECT");
+  assert.equal(config.route.final, "漏网之鱼");
 });
 
 test("routes mobile DNS classes through the compact mobile rule bundles", () => {

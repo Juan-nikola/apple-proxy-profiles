@@ -80,7 +80,7 @@ function configTask(name, client, script, channel, collection, platform, subscri
     globalDns: "cloudflare",
     blockMode: "balanced",
     quicMode: "proxy-block",
-    ipv6Mode: platform === "macos" ? "ipv4-only" : "auto",
+    ipv6Mode: "ipv4-only",
     autoGroupMode: "auto",
     clientChain: "off",
     ...extra,
@@ -96,9 +96,9 @@ export function canonicalTaskCatalog(channel = "current") {
   assertChannel(channel);
   const tasks = [
     nodeTask("egern-nodes", "egern", channel, "apple-proxy-egern"),
-    configTask("egern-macos", "egern", "egern-profile-generator.js", channel, "apple-proxy-egern", "macos", "Apple-Proxy-Egern", { nodeSubscriptionUrl: "<PRIVATE_EGERN_NODES_URL>" }),
-    configTask("egern-iphone", "egern", "egern-profile-generator.js", channel, "apple-proxy-egern", "iphone", "Apple-Proxy-Egern", { nodeSubscriptionUrl: "<PRIVATE_EGERN_NODES_URL>" }),
-    configTask("egern-ipad", "egern", "egern-profile-generator.js", channel, "apple-proxy-egern", "ipad", "Apple-Proxy-Egern", { nodeSubscriptionUrl: "<PRIVATE_EGERN_NODES_URL>" }),
+    configTask("egern-macos", "egern", "egern-profile-generator.js", channel, "apple-proxy-egern", "macos", "Apple-Proxy-Egern", { nodeSubscriptionUrl: "<PRIVATE_EGERN_NODES_URL>" }, { omitKeys: ["subscriptionName"] }),
+    configTask("egern-iphone", "egern", "egern-profile-generator.js", channel, "apple-proxy-egern", "iphone", "Apple-Proxy-Egern", { nodeSubscriptionUrl: "<PRIVATE_EGERN_NODES_URL>" }, { omitKeys: ["subscriptionName"] }),
+    configTask("egern-ipad", "egern", "egern-profile-generator.js", channel, "apple-proxy-egern", "ipad", "Apple-Proxy-Egern", { nodeSubscriptionUrl: "<PRIVATE_EGERN_NODES_URL>" }, { omitKeys: ["subscriptionName"] }),
     nodeTask("anywhere-nodes", "anywhere", channel, "apple-proxy-anywhere"),
     remoteTask("anywhere-strategy", "anywhere", `${base(channel, "anywhere", "anywhere-strategy-generator.js")}#${fragment({ output: "strategy", type: "collection", name: "apple-proxy-anywhere", channel })}`, { output: "strategy", collection: "apple-proxy-anywhere", channel, policyInput: "apple-proxy-policy" }),
     nodeTask("shadowrocket-nodes", "shadowrocket", channel, "apple-proxy-shadowrocket"),

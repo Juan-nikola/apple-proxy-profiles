@@ -4,7 +4,7 @@
 
 如果 `current` 失败，先保留设备上的旧 Profile/Config，不要反复刷新或切换不存在的公开频道。检查私密 Sub-Store 的 `name`、`subscriptionName`、节点产物是否为空，以及规则镜像是否可访问；修复后重新生成 current。
 
-如果 Surge 提示“规则必须以 FINAL 结尾”，不要导入组合订阅/API 总地址；必须使用 Sub-Store 中对应平台的 `surge-config-macos`、`surge-config-iphone` 或 `surge-config-ipad` Profile File 私有输出。正确预览的 `[Rule]` 最后一行必须是 `FINAL,🚀 节点选择,dns-failed`。重新预览并刷新 File；若仍疑似拿到旧 CDN 内容，临时打开该远程脚本操作的 `关闭缓存/noCache`，确认新 Profile 生效后再恢复缓存。
+如果 Surge 提示“规则必须以 FINAL 结尾”，不要导入组合订阅/API 总地址；必须使用 Sub-Store 中对应平台的 `surge-config-macos`、`surge-config-iphone` 或 `surge-config-ipad` Profile File 私有输出。正确预览的 `[Rule]` 最后一行必须是 `FINAL,漏网之鱼,dns-failed`。重新预览并刷新 File；若仍疑似拿到旧 CDN 内容，临时打开该远程脚本操作的 `关闭缓存/noCache`，确认新 Profile 生效后再恢复缓存。
 
 Surge 不识别 VLESS 节点类型。生成器不做客户端能力白名单过滤，也不静默丢弃已选节点；VLESS 和其他 renderer 无法表示的协议会跳过，并在诊断中计入 `renderFailures`。如果没有任何可渲染节点，任务会失败并保留旧输出。参见 [Surge Proxy Policy](https://manual.nssurge.com/policy/proxy.html)。
 ## 远程节点池

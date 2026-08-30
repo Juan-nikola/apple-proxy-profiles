@@ -164,8 +164,8 @@ Sub-Store 中先找“订阅/组合订阅”查看 `apple-proxy-shadowrocket` �
 
 ## 8. 首次使用策略组
 
-1. 重新运行当前平台中直接引用 `shadowrocket-profile-generator.js` 规范 Pages URL 的 File 并更新 Profile；节点脚本 URL、组合 Operator 和私密 URL都不改。当前轻量默认是唯一公开的 `channel=current`、`adblockMode=off`：`DomesticCore`、`DomesticGame`、`SteamCN` 先 DIRECT，明确境外服务随后匹配，`OverseasGame` 进入 `🌍 海外游戏`，`ChinaIP` 与 `GEOIP,CN,DIRECT` 负责国内回退，最后是 `FINAL,🚀 节点选择`。只有明确设置 `adblockMode=full` 才加载独立 optional 广告包。打开 `🚀 节点选择`，确认它包含 `PROXY`、全自动和固定的亚太、欧洲、美洲洲组；洲组内是“洲自动 + 该洲全部具体服务器”，不再有国旗/国家组；如果仍显示单个 `PROXY` 或直接出现国旗/具体节点名，当前设备使用的还是旧 Profile。
-2. 统一业务组提供自动测速、地区和具体节点选择。GitHub、YouTube、海外流媒体、海外社交和海外游戏组以 `policy-select-name=🚀 节点选择` 设为首项；Apple、Microsoft 和国内平台组以 `policy-select-name=DIRECT` 设为首项。检查至少一个境外组和一个国内组，确认各自首项、完整显式候选和匹配订阅中的具体服务器均可见。
+1. 重新运行当前平台中直接引用 `shadowrocket-profile-generator.js` 规范 Pages URL 的 File 并更新 Profile；节点脚本 URL、组合 Operator 和私密 URL都不改。当前轻量默认是唯一公开的 `channel=current`、`adblockMode=off`：`DomesticCore`、`DomesticGame`、`SteamCN` 先 DIRECT，明确境外服务随后匹配，`OverseasGame` 进入 `🌍 海外游戏`，`ChinaIP` 与 `GEOIP,CN,DIRECT` 负责国内回退，最后是 `FINAL,漏网之鱼`。只有明确设置 `adblockMode=full` 才加载独立 optional 广告包。打开 `🚀 节点选择`，确认它包含 `PROXY`、全自动和固定的亚太、欧洲、美洲洲组；洲组内是“洲自动 + 该洲全部具体服务器”，不再有国旗/国家组；如果仍显示单个 `PROXY` 或直接出现国旗/具体节点名，当前设备使用的还是旧 Profile。
+2. 统一业务组提供自动测速、地区和具体节点选择，默认值由私密 `apple-proxy-policy` 控制。`FOLLOW`、`DIRECT`、`NODE~查询词` 分别写入首页节点、直连或唯一固定节点；检查至少一个境外组和一个国内组，确认各自 policy 默认值、完整显式候选和匹配订阅中的具体服务器均可见。
 3. 打开 `🤖 AI 专用`，直接选择任意已勾选具体节点。AI 组的选择不会改变主线路。
 4. Apple、Microsoft 和国内平台默认直连；需要时可在对应平台组选择 `🚀 节点选择`或具体节点。
 5. `☣️ 安全威胁`和`🕵️ 严格跟踪`可以在客户端即时切换；`🧱 常见广告`只有 `adblockMode=full` 加载 optional 广告规则后才有规则命中。
@@ -173,6 +173,6 @@ Sub-Store 中先找“订阅/组合订阅”查看 `apple-proxy-shadowrocket` �
 
 本次从旧版恢复服务组时，只更新当前平台 Profile；只更新节点订阅不会改变分组，且不需要更新节点 Script Operator。先在 Intel Mac 更新并核对 Profile 时间和 `🚀 节点选择` 的洲组层级，通过后再依次更新 iPhone、iPad。
 
-Shadowrocket 可能保留业务组里仍有效的旧选择，生成器写入的首项默认值不会自动覆盖它。更新后检查常用组：境外组希望跟随首页时，手动选择第一项 `🚀 节点选择`；国内组希望恢复默认直连时，手动选择第一项 `DIRECT`。如果摘要仍是具体节点、自动测速或地区组，该业务会继续按这个旧选择工作。
+Shadowrocket 可能保留业务组里仍有效的旧选择，生成器写入的 policy 默认值不会自动覆盖它。更新后检查常用组：需要应用 policy 默认值时手动选择对应首项；`final` 的默认值在 `漏网之鱼` 组中同样遵循这一规则。如果摘要仍是具体节点、自动测速或地区组，该业务会继续按客户端缓存的旧选择工作。
 
 全部检查完成后，才把新 Profile 作为日常使用配置。任何时候都不要为了“清理”而删除旧 Profile；等三台设备稳定一段时间并完成维护记录后再自行决定是否归档。

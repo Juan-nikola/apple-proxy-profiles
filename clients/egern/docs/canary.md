@@ -18,6 +18,7 @@
 ### 策略组
 
 - `🚀 节点选择` 存在并能选择一个实际可用节点。
+- `漏网之鱼` 存在，候选包含 `🚀 节点选择`、`DIRECT`、`REJECT`；默认值与私密 `apple-proxy-policy.final` 一致，`REJECT` 只用于手动排查。
 - 境外规则是代理优先，最终能进入 `🚀 节点选择`；国内规则是直连优先，最终能进入 `DIRECT`。
 - `🧭 DNS 与规则下载` 是代理优先，并保留直连回退。
 - 按当前 `blockMode` 检查安全组：平衡模式覆盖 `☣️ 安全威胁`，严格模式还应观察跟踪拦截。`adblockMode=off` 时 `🧱 常见广告` 不应产生远程广告包请求；只有专门灰度 `full` 时才检查两个 optional 提供器。
@@ -28,14 +29,16 @@
 - 局域网或路由器管理页可以直连访问。
 - 中国网站或应用命中 `DIRECT`。
 - 境外网站命中 `🚀 节点选择`，并能观察到实际代理节点。
+- 未命中业务规则或 DNS 失败的流量进入 `漏网之鱼`；`final=FOLLOW`、`DIRECT`、`NODE~查询词` 分别对应首页节点、直连和固定节点。
 - AI 服务按 `🤖 AI 专用` 策略运行；国内游戏命中 `DIRECT`，境外游戏命中 `🌍 海外游戏`；广告只在明确的 `adblockMode=full` 专项测试中产生符合预期的阻止。
 - DNS 解析正常，分别观察 bootstrap 与 upstream；规则刷新和节点刷新分别成功。
 - 在移动设备上分别测试 Wi-Fi 与蜂窝/移动网络；切换网络后再次确认 DNS、规则和节点。
 
 ### IPv6、QUIC 与链路
 
-- macOS 默认是 `ipv4-only`；iPhone 默认是 `auto`；iPad 默认也是 `auto`。这些默认值不是测试结果，也不能代替通过证据。
-- 每台适用设备都必须分别验证 `ipv4-only` 路径和可用 IPv6 路径。前者使用该平台的 `ipv4-only` 变体，在 IPv4 可用网络上重做 DNS、国内直连和境外代理检查；后者使用该平台的 `auto` 变体，只在系统与运营商均确认提供 IPv6 的网络上重做相同检查，并记录实际观察到的 IPv6 地址族或连接。
+- 每台设备都分别验证 `ipv4-only` 基线；只有在已确认具备可用 IPv6 的网络上，才另行验证真实 IPv6 路径。
+- 当前三个生产 Profile 任务统一使用 `ipv6Mode=ipv4-only`；默认值不是测试结果或验证结果，这些参数只是稳定基线。
+- 如需验证 IPv6，只能另建不覆盖生产任务的 `auto` 测试变体，并在系统与运营商均确认提供 IPv6 的网络上记录实际观察到的地址族或连接。
 - 如果 ISP/运营商或当前网络没有 IPv6，记录为“未覆盖/不可验证”；在设备反馈表中未覆盖/不可验证不得算作通过，但这不影响客户端 `current` promotion。不得仅凭 `auto`、网站能打开或默认值就假设存在 IPv6。
 - QUIC 只按可观察结果验证：依次比较 `allow`、`proxy-block`、`all-block`，记录连接成功、回退或阻止。HTTP/3 不保证一定被目标站点使用，因此不得仅凭页面能打开就假设命中 HTTP/3。
 - 默认保持 `clientChain=off`。若以后改为 on，必须同时存在合法、兼容的入口与落地节点；生成的落地 clone 的 `prev_hop` 必须精确指向 `🔗 入口节点`。任何缺失或反向引用都应停止生成。
@@ -58,13 +61,13 @@ Intel Mac 出现任一不一致时，立即回滚并停止继续设备反馈；�
 
 ## 2. iPhone（可选）
 
-如需继续反馈，可在 Intel Mac 观察后于 iPhone 导入手机 Profile；重复完整检查，不复用 Mac 的结论。为 iPhone 单独验证 `ipv4-only` 变体，并在 Wi-Fi 或蜂窝网络确认具备可用 IPv6 后观察 `auto` 的真实 IPv6 路径；两种网络能测试时都记录。需要时完成旧 Profile 回滚演练。
+如需继续反馈，可在 Intel Mac 观察后于 iPhone 导入手机 Profile；重复完整检查，不复用 Mac 的结论。生产任务使用 `ipv4-only`，如需 IPv6 观察则另建 `auto` 测试任务，不覆盖生产任务；两种网络能测试时都记录。需要时完成旧 Profile 回滚演练。
 
 iPhone 出现任一不一致时，立即回滚并停止继续设备反馈；不要顺手修改其他设备配置。
 
 ## 3. iPad（可选）
 
-如需继续反馈，可在前两台观察后于 iPad 导入平板 Profile，再次独立完成全部检查：先验证 `ipv4-only` 变体，再在确认具备可用 IPv6 的网络上观察 `auto` 的真实 IPv6 路径；同时记录 Wi-Fi/蜂窝（若设备支持）测试和需要时的回滚演练。设备反馈完成与否不影响 `current`。
+如需继续反馈，可在前两台观察后于 iPad 导入平板 Profile，再次独立完成全部检查。生产任务使用 `ipv4-only`；如需 IPv6 观察则另建 `auto` 测试任务，不覆盖生产任务；同时记录 Wi-Fi/蜂窝（若设备支持）测试和需要时的回滚演练。设备反馈完成与否不影响 `current`。
 
 ## 立即停止的条件
 
@@ -72,4 +75,4 @@ iPhone 出现任一不一致时，立即回滚并停止继续设备反馈；不�
 
 ## 分流顺序、残余风险与离线解释
 
-共享分流顺序固定为：`DomesticCore` → 服务规则 → `OverseasGame` → `ChinaTLD` → `ChinaIP` → FINAL。稳定 DNS 优先国内解析；普通 `.cn` 域名应命中 `ChinaTLD`/DIRECT，未知国内 IPv4/IPv6 应命中 `GEOIP CN` 直连，未知境外与 DNS 失败走 `🚀 节点选择`。HTTPDNS、硬编码 IP、IPv6、QUIC 和手动服务组选择仍是残余风险。`npm run explain:route -- --channel current --domain <域名>` 只读取本地已发布规则、不执行 DNS，可用于离线核对预期分流。需要设备反馈时可分别测试 Wi‑Fi 与蜂窝并记录结果；建议保留旧 Profile 以便回滚。
+共享分流顺序固定为：`DomesticCore` → 服务规则 → `OverseasGame` → `ChinaTLD` → `ChinaIP` → `漏网之鱼`。稳定 DNS 优先国内解析；普通 `.cn` 域名应命中 `ChinaTLD`/DIRECT，未知国内 IPv4/IPv6 应命中 `GEOIP CN` 直连，未知境外与 DNS 失败进入 `漏网之鱼`。其默认出口由私密 `apple-proxy-policy.final` 控制。HTTPDNS、硬编码 IP、IPv6、QUIC 和手动服务组选择仍是残余风险。`npm run explain:route -- --channel current --domain <域名>` 只读取本地已发布规则、不执行 DNS，可用于离线核对预期分流。需要设备反馈时可分别测试 Wi‑Fi 与蜂窝并记录结果；建议保留旧 Profile 以便回滚。

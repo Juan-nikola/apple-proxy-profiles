@@ -2129,7 +2129,7 @@ var HappAuditBundle = (() => {
     ["game", "\u{1F3AE} \u6E38\u620F\u8FDE\u63A5", "DIRECT"],
     ["download", "\u2B07\uFE0F \u4E0B\u8F7D/P2P", "DIRECT"],
     ["dnsAndRules", "\u{1F9ED} DNS \u4E0E\u89C4\u5219\u4E0B\u8F7D", "FOLLOW"],
-    ["final", "\u6700\u7EC8\u515C\u5E95", "FOLLOW"]
+    ["final", "\u6F0F\u7F51\u4E4B\u9C7C", "FOLLOW"]
   ].map(([id, label, defaultTarget]) => Object.freeze({ id, label, defaultTarget }));
   var UNIFIED_POLICY_TARGETS = Object.freeze(TARGETS);
   var UNIFIED_POLICY_TARGET_IDS = Object.freeze(TARGETS.map(({ id }) => id));
@@ -2156,7 +2156,9 @@ var HappAuditBundle = (() => {
     "\u6D77\u5916\u6E38\u620F": "overseasGame",
     "\u6E38\u620F\u8FDE\u63A5": "game",
     "\u4E0B\u8F7D/P2P": "download",
-    "DNS \u4E0E\u89C4\u5219\u4E0B\u8F7D": "dnsAndRules"
+    "DNS \u4E0E\u89C4\u5219\u4E0B\u8F7D": "dnsAndRules",
+    "\u6700\u7EC8\u515C\u5E95": "final",
+    "\u6F0F\u7F51\u4E4B\u9C7C": "final"
   })) {
     TARGET_BY_KEY2.set(alias, TARGET_BY_KEY2.get(id));
   }

@@ -476,6 +476,17 @@ policy_groups:
         - "DIRECT"
       block_quic: true
   - select:
+      name: "漏网之鱼"
+      policies:
+        - "🚀 节点选择"
+        - "DIRECT"
+        - "REJECT"
+      urls:
+        - "https://example.invalid/private/egern-nodes"
+      filter: "^.+$"
+      update_interval: 21600
+      block_quic: true
+  - select:
       name: "☣️ 安全威胁"
       policies:
         - "REJECT"
@@ -763,5 +774,5 @@ rules:
       match: "CN"
       policy: "DIRECT"
   - default:
-      policy: "🚀 节点选择"
-default_subscription_group: "🚀 节点选择"
+      policy: "漏网之鱼"
+default_subscription_group: "漏网之鱼"

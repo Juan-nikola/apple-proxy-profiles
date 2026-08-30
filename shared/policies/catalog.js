@@ -52,6 +52,8 @@ export const SERVICE_GROUPS = Object.freeze([
   Object.freeze(["🌍 海外游戏", PROXY_FIRST_SERVICE_DEFAULTS]),
 ]);
 
+export const LEAK_GROUP_NAME = "漏网之鱼";
+
 function policyGroup({
   kind,
   name,
@@ -148,6 +150,7 @@ export function applyUnifiedPolicyDefaults(groups, resolution) {
     "🎮 游戏连接": resolution.targets?.game,
     "⬇️ 下载/P2P": resolution.targets?.download,
     "🧭 DNS 与规则下载": resolution.targets?.dnsAndRules,
+    [LEAK_GROUP_NAME]: resolution.targets?.final,
   };
   for (const [name, record] of Object.entries(targetDefaults)) {
     if (!record) continue;
@@ -242,6 +245,12 @@ export function buildPolicyGroups(options, nodes, policyResolution = null) {
     name: "🧭 DNS 与规则下载",
     candidates: [...PROXY_THEN_DIRECT],
   }));
+  groups.push(subscriptionGroup(
+    GROUP_KIND.special,
+    LEAK_GROUP_NAME,
+    ALL_NODES_FILTER,
+    ["🚀 节点选择", "DIRECT", "REJECT"],
+  ));
   groups.push(...securityGroups(options.blockMode));
   if (chainEligible) {
     groups.push(subscriptionGroup(GROUP_KIND.chain, "🔗 入口节点", ENTRY_FILTER, ["⚡ 入口自动"]));

@@ -32,7 +32,7 @@ output=nodes&type=collection&name=apple-proxy-anywhere&clientChain=off
 https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/scripts/anywhere-strategy-generator.js#output=strategy&type=collection&name=apple-proxy-anywhere&channel=current
 ```
 
-它读取私密 `apple-proxy-policy`，只输出脱敏的业务目标状态和固定节点映射；缺失策略、精确节点名找不到或协议不兼容时失败关闭。节点 `anywhere-nodes` 仍只读取 collection。
+它读取私密 `apple-proxy-policy`，只输出脱敏的业务目标状态和固定节点映射，并完整记录 `final`；缺失策略、精确节点名找不到或协议不兼容时失败关闭。节点 `anywhere-nodes` 仍只读取 collection。
 
 Anywhere 没有与 Shadowrocket/Egern 等价的完整 Profile File，不要创建 `anywhere-profile-generator.js`。这个 File 只完成私密节点层；规则、绑定和设备设置必须继续完成第 2—5 节。
 
@@ -63,7 +63,7 @@ https://juan-nikola.github.io/apple-proxy-profiles/optional/adblock-full/current
 
 - `routing = 2`：默认业务包 `Security` 应为 REJECT；它聚合旧的 Hijacking 与 BlockHttpDNS 输入。可选包的 `Advertising`、`Advertising_Domain` 也应为 REJECT。
 - `routing = 1`：`Privacy`、`DomesticCore`、`DomesticPlatform`、`Apple`、`Microsoft`、`Download`、`ChinaIP` 首次为 DIRECT。
-- `routing = 0`：境外服务与 `OverseasGame` 首次为 Default/当前代理。若当前版本支持专用组，在 App 内手动将 `OverseasGame` 绑定到海外游戏组。
+- `routing = 0`：境外服务与 `OverseasGame` 首次为 Default/当前代理。若当前版本支持专用组，在 App 内手动将 `OverseasGame` 绑定到海外游戏组；未知流量的最终绑定按 `anywhere-strategy` 的 `final` 记录核对。
 
 Default 不是停用，而是回退到当前节点或链。`AI` 业务包聚合 OpenAI、Claude、Gemini 和 Copilot；如需 AI 独立出口，在每台设备只需把 `AI` 业务包绑定到同一个 AI 节点或链，再分别实测四项服务。其他境外业务包需要独立出口时同理。`Download` 聚合下载与 PrivateTracker 输入，默认 DIRECT；除非服务商明确允许 P2P，不要随意绑定机场。
 
@@ -75,7 +75,7 @@ Default 不是停用，而是回退到当前节点或链。`AI` 业务包聚合 
 
 在 Advanced Settings 检查 Advertise IPv6 to Apps；验证时关闭 Hide VPN Icon，因为它会影响 IPv6。QUIC 有 Blocked、Automatic、Unblocked 三种状态，Egern 的 proxy-block 语义最接近 Automatic。Block UDP 开启时 QUIC 控件不再具有独立验证意义。
 
-共享分流顺序为 `DomesticCore` → 服务规则 → `OverseasGame` → `ChinaTLD` → `ChinaIP` → FINAL；普通 `.cn` 命中 `ChinaTLD`/DIRECT，未知国内 IP 命中 `ChinaIP` 直连。可用 `npm run explain:route -- --channel current --domain <域名>` 离线核对预期分流，该命令只读取本地已发布规则、不执行 DNS。
+共享分流顺序为 `DomesticCore` → 服务规则 → `OverseasGame` → `ChinaTLD` → `ChinaIP` → `漏网之鱼`；普通 `.cn` 命中 `ChinaTLD`/DIRECT，未知国内 IP 命中 `ChinaIP` 直连，未知境外或 DNS 失败进入 `漏网之鱼`。可用 `npm run explain:route -- --channel current --domain <域名>` 离线核对预期分流，该命令只读取本地已发布规则、不执行 DNS。
 
 ## 5. 更新节奏
 

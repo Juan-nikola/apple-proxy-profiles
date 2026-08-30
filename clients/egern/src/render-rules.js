@@ -1,6 +1,7 @@
 import { ROUTING_PHASES, orderedRoutingPlan } from "../../../shared/rules/lightweight-policy.js";
 import { FRONTIER_CHANNELS } from "../../../shared/release/frontier-manifest.js";
 import { CUSTOM_RULES } from "../../../shared/rules/custom-rules.js";
+import { LEAK_GROUP_NAME } from "../../../shared/policies/catalog.js";
 import { PUBLIC_RULE_ROOT } from "./options.js";
 
 const CUSTOM_FIELDS = Object.freeze(["block", "direct", "proxy", "ai"]);
@@ -263,7 +264,7 @@ export function renderEgernRules(options) {
   }
   rules.push(
     { geoip: { match: "CN", policy: "DIRECT" } },
-    { default: { policy: "🚀 节点选择" } },
+    { default: { policy: LEAK_GROUP_NAME } },
   );
   return rules;
 }

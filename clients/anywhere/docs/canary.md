@@ -16,6 +16,7 @@
 - 验证 Privacy/DomesticCore/DomesticPlatform/Apple/Microsoft/Download/ChinaIP DIRECT、Security REJECT，普通境外流量走当前代理；仅在显式启用可选广告包时验证 Advertising REJECT 和内存余量。
 - 把 `AI` 业务包绑定到一个 AI 专用节点/链，再分别实测 OpenAI、Claude、Gemini、Copilot。
 - 验证 GitHub、YouTube/海外媒体、海外社交、DomesticCore 中的国内游戏/OverseasGame UDP，以及 Download 中的私有 Tracker 不误走不允许 P2P 的机场。
+- 预览 `anywhere-strategy`，确认 `final` 与各业务目标完整记录，并与私密 `apple-proxy-policy` 一致；`final=FOLLOW`、`DIRECT`、`NODE~查询词` 分别对应当前节点/链、直连和唯一固定节点。
 - 不把 Default 当停用；用 Requests 和可辨别出口证明它确实跟随当前节点/链。
 
 ## DNS、IPv6 与 QUIC
@@ -24,7 +25,7 @@
 
 ## 分流顺序、残余风险与离线解释
 
-共享分流顺序固定为：`DomesticCore` → 服务规则 → `OverseasGame` → `ChinaTLD` → `ChinaIP` → FINAL。稳定 DNS 优先国内解析；普通 `.cn` 域名应命中 `ChinaTLD`/DIRECT，未知国内 IPv4/IPv6 应命中 `ChinaIP` 直连，未知境外与 DNS 失败走 `🚀 节点选择`。HTTPDNS、硬编码 IP、IPv6、QUIC 和手动服务组选择仍是残余风险。`npm run explain:route -- --channel current --domain <域名>` 只读取本地已发布规则、不执行 DNS，可用于离线核对预期分流；Anywhere 的本地 assignment 可在需要时人工核对。支持蜂窝的设备可分别测试 Wi‑Fi 与蜂窝；保留旧配置便于回滚。
+共享分流顺序固定为：`DomesticCore` → 服务规则 → `OverseasGame` → `ChinaTLD` → `ChinaIP` → `漏网之鱼`。稳定 DNS 优先国内解析；普通 `.cn` 域名应命中 `ChinaTLD`/DIRECT，未知国内 IPv4/IPv6 应命中 `ChinaIP` 直连，未知境外与 DNS 失败进入 `漏网之鱼`。Anywhere 本身没有同一配置内的 selector，实际默认出口由本地 assignment 按 `anywhere-strategy` 的 `final` 结果设置。HTTPDNS、硬编码 IP、IPv6、QUIC 和手动服务组选择仍是残余风险。`npm run explain:route -- --channel current --domain <域名>` 只读取本地已发布规则、不执行 DNS，可用于离线核对预期分流；Anywhere 的本地 assignment 可在需要时人工核对。支持蜂窝的设备可分别测试 Wi‑Fi 与蜂窝；保留旧配置便于回滚。
 
 ## 需要设备反馈时的真实回滚
 

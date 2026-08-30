@@ -177,6 +177,20 @@ test("accepts fuzzy NODE~ targets in unified policy v2", () => {
   assert.equal(policy.targets.ai, "NODE~美国 家宽");
 });
 
+test("accepts the leak-group label while preserving the stable final target id", () => {
+  const policy = parsePrivatePolicy(JSON.stringify({
+    schemaVersion: 2,
+    targets: { "漏网之鱼": "DIRECT" },
+  }));
+  const legacy = parsePrivatePolicy(JSON.stringify({
+    schemaVersion: 2,
+    targets: { "最终兜底": "DIRECT" },
+  }));
+
+  assert.equal(policy.targets.final, "DIRECT");
+  assert.equal(legacy.targets.final, "DIRECT");
+});
+
 test("exposes the complete 13-target unified policy defaults", () => {
   assert.deepEqual(defaultUnifiedPolicyTargets(), {
     ai: "FOLLOW",
@@ -270,4 +284,22 @@ test("applies unified defaults while retaining interactive group candidates", ()
   assert.equal(media.defaultChoice, "DIRECT");
   assert.ok(ai.nodeFilter);
   assert.ok(media.candidates.includes("DIRECT"));
+});
+
+test("builds a switchable leak group whose default follows policy.final", () => {
+  const nodes = normalized([rawNode("🇺🇸qqpw家宽", "vless")]);
+  const policy = parsePrivatePolicy(JSON.stringify({
+    schemaVersion: 2,
+    targets: { final: "DIRECT" },
+  }));
+  const resolution = resolveUnifiedPolicy({ policy, client: "clash", allNodes: nodes, eligibleNodes: nodes });
+  const groups = applyUnifiedPolicyDefaults(
+    buildPolicyGroups({ platform: "macos", autoGroupMode: "auto", blockMode: "balanced", clientChain: "off" }, nodes),
+    resolution,
+  );
+  const leak = groups.find(({ name }) => name === "漏网之鱼");
+
+  assert.deepEqual(leak?.candidates, ["🚀 节点选择", "DIRECT", "REJECT"]);
+  assert.equal(leak?.defaultChoice, "DIRECT");
+  assert.equal(leak?.nodeFilter, "^.+$");
 });

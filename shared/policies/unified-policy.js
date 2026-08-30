@@ -13,7 +13,7 @@ const TARGETS = [
   ["game", "🎮 游戏连接", "DIRECT"],
   ["download", "⬇️ 下载/P2P", "DIRECT"],
   ["dnsAndRules", "🧭 DNS 与规则下载", "FOLLOW"],
-  ["final", "最终兜底", "FOLLOW"],
+  ["final", "漏网之鱼", "FOLLOW"],
 ].map(([id, label, defaultTarget]) => Object.freeze({ id, label, defaultTarget }));
 
 export const UNIFIED_POLICY_TARGETS = Object.freeze(TARGETS);
@@ -44,6 +44,8 @@ for (const [alias, id] of Object.entries({
   "游戏连接": "game",
   "下载/P2P": "download",
   "DNS 与规则下载": "dnsAndRules",
+  "最终兜底": "final",
+  "漏网之鱼": "final",
 })) {
   TARGET_BY_KEY.set(alias, TARGET_BY_KEY.get(id));
 }

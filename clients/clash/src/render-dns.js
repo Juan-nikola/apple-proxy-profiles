@@ -13,6 +13,7 @@ export function renderClashDns(options) {
     listen: "0.0.0.0:1053",
     "respect-rules": true,
     "prefer-h3": true,
+    "proxy-server-nameserver": [china.doh, global.doh],
     nameserver: privacy ? [global.doh] : [china.doh],
     fallback: [global.doh],
     "nameserver-policy": privacy ? {} : {

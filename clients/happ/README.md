@@ -4,6 +4,8 @@ HAPP 的节点 JSON、Profile 和策略仍由私密 Sub-Store 任务生成。公
 
 日常使用只需要一套公开入口：打开稳定且持续晋级最新已验证产物的 [HAPP 安装页](https://juan-nikola.github.io/apple-proxy-profiles/current/happ/index.html)，安装 `geosite.dat` 与 `geoip.dat`；再从私密 Sub-Store 导入节点 JSON。JSON 配置由 Xray JSON 自己负责 DNS、路由和固定节点，HAPP 路由开关锁定是正常行为。`edge` 仅供维护者灰度，`previous` 只在回滚时使用。
 
+三个完整配置任务都读取私密 `apple-proxy-policy`。`final=FOLLOW`、`DIRECT`、`NODE~查询词` 分别在生成阶段使用当前 JSON 节点、`happ-direct` 或唯一固定节点；HAPP 一份 JSON 对应一个节点，不在同一配置内模拟 `漏网之鱼` selector。节点任务只输出节点，不读取 policy；当前生产任务的 `ipv6Mode` 统一为 `ipv4-only`。
+
 完整说明：[部署](docs/deployment.md) · [排障](docs/troubleshooting.md) · [三平台 canary](docs/canary.md)。自动化测试通过不等于设备验收完成。
 
 ## 可读日志

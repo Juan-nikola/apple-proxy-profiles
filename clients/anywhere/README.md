@@ -7,11 +7,11 @@ Anywhere 不能用一个远程文件表达 Shadowrocket/Egern 的完整 Profile�
 | 层 | 本项目提供 | 必须留在本地 |
 |---|---|---|
 | 私密节点订阅 | `dist/anywhere-node-generator.js` 生成仅含 `proxies` 的 Clash YAML | 私密订阅 URL、节点凭据、当前节点 |
-| 策略校验/映射 | `dist/anywhere-strategy-generator.js` 生成脱敏目标状态和固定节点映射 | 私密 `apple-proxy-policy` 文件和节点选择 |
+| 策略校验/映射 | `dist/anywhere-strategy-generator.js` 读取私密 `apple-proxy-policy`，生成脱敏目标状态和固定节点映射 | 私密 policy 文件和节点选择 |
 | 公开规则 | 固定上游输入聚合成 14 个稳定 `.arrs` 业务包及 schema-v2 Manifest | 每个业务包最终绑定到 DIRECT、REJECT、节点或链 |
 | 设备设置 | 部署、灰度和回滚说明 | Rule/Global、DNS、链、IPv6、QUIC、Purify 等 |
 
-三层任一缺失，都不能称为完整配置。`.arrs` 的 `routing = 0/1/2` 仅控制首次导入的 Default、DIRECT、REJECT。特别注意：`Default` 并非停用；在审计的 Anywhere 源码中，它会让自定义规则集回退到当前选择的节点或链。
+三层任一缺失，都不能称为完整配置。`.arrs` 的 `routing = 0/1/2` 仅控制首次导入的 Default、DIRECT、REJECT。特别注意：`Default` 并非停用；在审计的 Anywhere 源码中，它会让自定义规则集回退到当前选择的节点或链。`anywhere-strategy` 的 `final` 会完整记录为 `FOLLOW`、`DIRECT` 或固定节点结果，供本地绑定核对。
 
 默认 14 个稳定业务包是：`AI`、`Apple`、`ChinaIP`、`DomesticCore`、`DomesticPlatform`、`Download`、`GitHub`、`Microsoft`、`OverseasGame`、`OverseasMedia`、`OverseasSocial`、`Privacy`、`Security`、`YouTube`。上游来源如何聚合、每包规则数量和 SHA-256 以 schema-v2 Manifest 为唯一事实源。
 
@@ -59,7 +59,7 @@ https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/scripts/anyw
 output=strategy&type=collection&name=apple-proxy-anywhere&channel=current
 ```
 
-它读取私密 `apple-proxy-policy`，只返回脱敏的目标状态、固定节点映射和计数；不返回 `proxies`，也不替代 `anywhere-nodes`。节点 File 仍是 collection-only；策略文件缺失、节点名不精确或协议不兼容时必须失败关闭。
+它读取私密 `apple-proxy-policy`，只返回脱敏的目标状态、固定节点映射和计数；其中包含 `final` 的 `configured`/`resolved` 状态，不返回 `proxies`，也不替代 `anywhere-nodes`。节点 File 仍是 collection-only；策略文件缺失、节点名不精确或协议不兼容时必须失败关闭。
 
 ## 新手部署：从节点 File 到规则导入
 

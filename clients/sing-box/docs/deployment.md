@@ -20,12 +20,14 @@ output=config&type=collection&name=apple-proxy-singbox&subscriptionName=Apple-Pr
 
 `subscriptionName` 必须是节点 File 在客户端显示的名称。不要把私密节点 URL、密码、UUID 或 Sub-Store API 放进公开脚本参数。
 
+完整配置任务同时读取私密 `apple-proxy-policy`；节点任务只输出节点。policy 的每个业务目标会写入对应 selector 的默认值，`final=FOLLOW`、`DIRECT`、`NODE~查询词` 分别让 `漏网之鱼` 默认选择 `🚀 节点选择`、`DIRECT` 或唯一固定节点。该 selector 始终保留 `🚀 节点选择`、`DIRECT`、`REJECT`，其中 `REJECT` 不作为默认值；客户端刷新可能保留既有手动选择。
+
 | File | `platform` | `ipv6Mode` |
 | --- | --- | --- |
 | `sing-box-macos` | `macos` | `ipv4-only` |
 | `sing-box-iphone` | `iphone` | `ipv4-only` |
 | `sing-box-ipad` | `ipad` | `ipv4-only` |
-| `sing-box-android` | `android` | `auto` |
+| `sing-box-android` | `android` | `ipv4-only` |
 
 预览必须是合法 JSON，并包含 `dns`、`inbounds`、`outbounds`、`route`。如果 `strict` 失败，查看 Sub-Store 日志中的协议和字段错误，不要改成兼容模式来掩盖节点丢失。
 
@@ -36,11 +38,11 @@ output=config&type=collection&name=apple-proxy-singbox&subscriptionName=Apple-Pr
 - `baidu.com`、`bilibili.com` 和局域网地址直连。
 - `google.com`、`youtube.com`、GitHub 和 AI 服务走相应业务组。
 - 未配置但解析到中国 IP 的域名直连。
-- 未配置且解析到非中国 IP 的域名走 `🚀 节点选择`。
+- 未配置且解析到非中国 IP 的域名进入 `漏网之鱼`，首次默认值由 `apple-proxy-policy.final` 决定。
 - 代理节点切换后，海外服务的新连接使用新节点。
 - 关闭代理后系统网络恢复。
 
-未知域名使用 DNS response matching 和 `ChinaIP` rule-set 自动分类，但不承诺对已经失败的请求进行跨出口重放。被墙的中国域名应加入自定义 proxy 规则。
+未知域名使用 DNS response matching 和 `ChinaIP` rule-set 自动分类，但不承诺对已经失败的请求进行跨出口重放。被墙的中国域名应加入自定义 proxy 规则。`route.final` 固定指向 `漏网之鱼`。
 
 ## current-only 发布
 
