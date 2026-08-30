@@ -2094,7 +2094,7 @@ var ClashProfileBundle = (() => {
       ...CUSTOM_RULES.ai.map((rule) => `${rule},\u{1F916} AI \u4E13\u7528`)
     ];
     for (const source of plan) rules.push("RULE-SET," + source.id + "," + source.policy);
-    rules.push("GEOIP,CN,DIRECT,no-resolve", "MATCH,\u{1F680} \u8282\u70B9\u9009\u62E9");
+    rules.push("GEOIP,CN,DIRECT", "MATCH,\u{1F680} \u8282\u70B9\u9009\u62E9");
     return Object.freeze({ providers: Object.freeze(providers), rules: Object.freeze(rules) });
   }
 
