@@ -1,4 +1,5 @@
 import { CUSTOM_RULES } from "../../../shared/rules/custom-rules.js";
+import { LEAK_GROUP_NAME } from "../../../shared/policies/catalog.js";
 import { ROUTING_PHASES, orderedRoutingPlan } from "../../../shared/rules/lightweight-policy.js";
 import { LOCAL_RULES } from "../../../shared/rules/local-rules.js";
 
@@ -59,6 +60,6 @@ export function renderSurgeRules({ ruleBaseUrl, adblockMode = "off" }) {
   for (const phase of ROUTING_PHASES.filter((value) => value !== "security")) {
     lines.push(...plan.filter((source) => source.phase === phase).map(render));
   }
-  lines.push("GEOIP,CN,DIRECT", "FINAL,🚀 节点选择,dns-failed");
+  lines.push("GEOIP,CN,DIRECT", `FINAL,${LEAK_GROUP_NAME},dns-failed`);
   return lines;
 }

@@ -59,7 +59,7 @@ test("builds a private Sub-Store config without exposing the source value", () =
     assert.match(task.url, /blockMode=balanced/u, task.name);
     assert.match(task.url, /quicMode=proxy-block/u, task.name);
     assert.doesNotMatch(task.url, /autoGroupMode=/u, task.name);
-    assert.match(task.url, task.platform === "macos" ? /ipv6Mode=ipv4-only/u : /ipv6Mode=auto/u, task.name);
+    assert.match(task.url, /ipv6Mode=ipv4-only/u, task.name);
   }
   for (const task of config.tasks.filter(({ name }) => name.startsWith("clash-config-"))) {
     assert.match(task.url, /nodeSubscriptionUrl=%3CPRIVATE_CLASH_NODES_URL%3E/u, task.name);
@@ -67,6 +67,10 @@ test("builds a private Sub-Store config without exposing the source value", () =
     assert.match(task.url, /blockMode=balanced/u, task.name);
     assert.match(task.url, /quicMode=proxy-block/u, task.name);
     assert.match(task.url, /autoGroupMode=auto/u, task.name);
+  }
+  for (const task of config.tasks.filter(({ name, output }) => name.startsWith("egern-") && output === "config")) {
+    assert.doesNotMatch(task.url, /subscriptionName=/u, task.name);
+    assert.match(task.url, /nodeSubscriptionUrl=%3CPRIVATE_EGERN_NODES_URL%3E/u, task.name);
   }
   assert.equal(validatePrivateSubstoreConfig(config), true);
 });

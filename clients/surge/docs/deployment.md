@@ -43,7 +43,7 @@ Surge 新任务只读取 `apple-proxy-surge`。先按 [Sub-Store 客户端节点
 | `globalDns` | `cloudflare` | `cloudflare` | `cloudflare` |
 | `blockMode` | `balanced` | `balanced` | `balanced` |
 | `quicMode` | `proxy-block` | `proxy-block` | `proxy-block` |
-| `ipv6Mode` | `ipv4-only` | `auto` | `auto` |
+| `ipv6Mode` | `ipv4-only` | `ipv4-only` | `ipv4-only` |
 | `autoGroupMode` | `auto` | `auto` | `auto` |
 | `clientChain` | `off` | `off` | `off` |
 

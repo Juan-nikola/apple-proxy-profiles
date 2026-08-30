@@ -8,4 +8,4 @@
 | iPhone | 待执行 | 待执行 | 待执行 | 待执行 | 待执行 | 待执行 | 待执行 | candidate |
 | iPad | 待执行 | 待执行 | 待执行 | 待执行 | 待执行 | 待执行 | 待执行 | candidate |
 
-每个平台至少记录：应用版本、通道、GeoData hash、Profile hash、DNS 结果、DIRECT/FOLLOW/NODE 路由、IPv4/IPv6、QUIC、网络切换、固定节点失败与恢复、以及 previous 回滚结果。全部平台完成后才允许把对应候选晋级 current。
+每个平台至少记录：应用版本、通道、GeoData hash、Profile hash、DNS 结果、DIRECT/FOLLOW/NODE 路由、IPv4/IPv6、QUIC、网络切换、固定节点失败与恢复、以及 previous 回滚结果。完整配置的默认出口由 `apple-proxy-policy.final` 控制：`FOLLOW`、`DIRECT`、`NODE~查询词` 分别对应当前节点、直连和固定节点。HAPP 不模拟同一配置内的 selector，策略修改后必须重新 Preview 三个平台 JSON。全部平台完成后才允许把对应候选晋级 current。

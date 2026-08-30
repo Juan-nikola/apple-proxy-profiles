@@ -40,6 +40,7 @@ const GENERATOR_SCHEMAS = Object.freeze({
   "egern/scripts/egern-profile-generator.js": configSchema({
     platforms: ["macos", "iphone", "ipad"],
     requiresNodeSubscriptionUrl: true,
+    omitKeys: ["subscriptionName"],
   }),
   "anywhere/scripts/anywhere-node-generator.js": nodeSchema(),
   "anywhere/scripts/anywhere-strategy-generator.js": strategySchema(),

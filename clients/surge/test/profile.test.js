@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { DEFAULT_RULE_SOURCE_IDS } from "../../../shared/rules/lightweight-policy.js";
+import { parsePrivatePolicy } from "../../../shared/policies/private-policy.js";
+import { resolveUnifiedPolicy } from "../../../shared/policies/resolve-unified.js";
 import { parseSurgeOptions } from "../src/options.js";
 import { renderSurgeProxy } from "../src/render-node.js";
 import { renderSurgeProfile } from "../src/render-profile.js";
@@ -102,6 +104,16 @@ test("renders a private Surge profile with shared policy sections and no interna
   assert.deepEqual(validateSurgeProfile(profile), { valid: true, errors: [] });
 });
 
+test("uses policy.final as the default of the switchable leak group", () => {
+  const options = parseSurgeOptions(baseOptions);
+  const policy = parsePrivatePolicy(JSON.stringify({ schemaVersion: 2, targets: { final: "DIRECT" } }));
+  const resolution = resolveUnifiedPolicy({ policy, client: "surge", allNodes: [normalizedSsNode], eligibleNodes: [normalizedSsNode] });
+  const profile = renderSurgeProfile(options, [normalizedSsNode], { ruleBaseUrl, policyResolution: resolution });
+
+  assert.match(profile, /^漏网之鱼 = select,🚀 节点选择,DIRECT,REJECT,.*policy-select-name=DIRECT/mu);
+  assert.match(profile, /^FINAL,漏网之鱼,dns-failed$/mu);
+});
+
 test("renders ChinaTLD after OverseasGame and before ChinaIP in the lightweight Surge precedence", () => {
   const profile = renderSurgeProfile(parseSurgeOptions(baseOptions), [normalizedSsNode], { ruleBaseUrl });
   const rules = ruleLines(profile);
@@ -119,7 +131,7 @@ test("renders ChinaTLD after OverseasGame and before ChinaIP in the lightweight 
   assert.match(profile, new RegExp(`^RULE-SET,${ruleBaseUrl}/ChinaIP\\.list,DIRECT,`, "mu"));
   assert.match(profile, /^GEOIP,CN,DIRECT$/mu);
   assert.doesNotMatch(profile, /^GEOIP,CN,DIRECT,no-resolve$/mu);
-  assert.equal(rules.at(-1), "FINAL,🚀 节点选择,dns-failed");
+  assert.equal(rules.at(-1), "FINAL,漏网之鱼,dns-failed");
 
   assert.ok(indexOf("/Hijacking.list") < indexOf("# CUSTOM_BLOCK"));
   assert.ok(indexOf("# CUSTOM_AI") < indexOf("/DomesticCore.list"));
@@ -165,7 +177,7 @@ test("renders every Surge platform without changing shared group names", () => {
     const profile = renderSurgeProfile(parseSurgeOptions({ ...baseOptions, platform }), [normalizedSsNode], {
       ruleBaseUrl,
     });
-    assert.match(profile, /^FINAL,🚀 节点选择,dns-failed$/mu);
+    assert.match(profile, /^FINAL,漏网之鱼,dns-failed$/mu);
     assert.match(profile, /^🚀 节点选择 = /mu);
     assert.deepEqual(validateSurgeProfile(profile), { valid: true, errors: [] }, platform);
   }

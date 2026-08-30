@@ -7,6 +7,8 @@ import {
   FULL_ADBLOCK_SOURCE_IDS,
 } from "../../../shared/rules/lightweight-policy.js";
 import { buildPolicyGroups } from "../../../shared/policies/catalog.js";
+import { parsePrivatePolicy } from "../../../shared/policies/private-policy.js";
+import { resolveUnifiedPolicy } from "../../../shared/policies/resolve-unified.js";
 import { CONTINENTS, continentFilter } from "../../../shared/policies/filters.js";
 import { parseEgernOptions, PUBLIC_SNAPSHOT_BASE_URL } from "../src/options.js";
 import {
@@ -92,6 +94,21 @@ test("rendered profiles validate with the primary-to-continent hierarchy", () =>
   });
 });
 
+test("uses the policy-driven leak group as Egern's default subscription group", () => {
+  const options = parseEgernOptions(rawOptions());
+  const policy = parsePrivatePolicy(JSON.stringify({ schemaVersion: 2, targets: { final: "DIRECT" } }));
+  const resolution = resolveUnifiedPolicy({
+    policy,
+    client: "egern",
+    allNodes: allCompatibleNodes,
+    eligibleNodes: allCompatibleNodes,
+  });
+  const profile = rubyParse(renderEgernProfileFromOptions(options, allCompatibleNodes, { policyResolution: resolution }));
+
+  assert.equal(profile.default_subscription_group, "漏网之鱼");
+  assert.deepEqual(namedGroup(profile, "漏网之鱼").policies.slice(0, 3), ["DIRECT", "🚀 节点选择", "REJECT"]);
+});
+
 test("renders the lightweight Egern-native rule precedence and terminal ordering", () => {
   const rules = renderEgernRules({ publicBaseUrl: PUBLIC_SNAPSHOT_BASE_URL, adblockMode: "off" });
   const remote = rules.filter((record) => Object.hasOwn(record, "rule_set"));
@@ -103,7 +120,7 @@ test("renders the lightweight Egern-native rule precedence and terminal ordering
   );
   assert.deepEqual(rules.slice(-2), [
     { geoip: { match: "CN", policy: "DIRECT" } },
-    { default: { policy: "🚀 节点选择" } },
+    { default: { policy: "漏网之鱼" } },
   ]);
   const baidu = rules.findIndex((rule) => rule.domain_suffix?.match === "baidupcs.com");
   const domestic = rules.findIndex((rule) => rule.rule_set?.match.endsWith("/DomesticCore.yaml"));
@@ -309,7 +326,7 @@ test("renders the complete root without inline proxies or private node material"
   assert.equal(profile.block_quic, false);
   assert.equal(profile.close_connections_on_policy_change, true);
   assert.deepEqual(profile.hijack_dns, ["*"]);
-  assert.equal(profile.default_subscription_group, "🚀 节点选择");
+  assert.equal(profile.default_subscription_group, "漏网之鱼");
   assert.deepEqual(profile.real_ip_domains, [
     "*.local",
     "*.lan",

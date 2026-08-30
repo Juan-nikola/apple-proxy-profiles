@@ -60,7 +60,7 @@ function parseTextPolicies(profile, client) {
     if (id) policies.set(id, fields[2]);
   }
   const geoip = lines.findIndex((line) => line === "GEOIP,CN,DIRECT");
-  const final = lines.findIndex((line) => line.startsWith("FINAL,🚀 节点选择"));
+  const final = lines.findIndex((line) => line.startsWith("FINAL,漏网之鱼"));
   const custom = lines.findIndex((line) => line === "DOMAIN-SUFFIX,perplexity.ai,🤖 AI 专用");
   const domestic = lines.findIndex((line) => /\/DomesticCore\.list,/u.test(line));
   const overseasGame = lines.findIndex((line) => /\/OverseasGame\.list,/u.test(line));
@@ -83,7 +83,7 @@ function parseEgernPolicies(yaml) {
   const policies = new Map();
   const pattern = /- rule_set:\n\s+match: "[^"]+\/([^/]+)\.yaml"\n\s+policy: "([^"]+)"/gu;
   for (const match of yaml.matchAll(pattern)) policies.set(match[1], match[2]);
-  assert.match(yaml, /- geoip:\n\s+match: "CN"\n\s+policy: "DIRECT"\n\s+- default:\n\s+policy: "🚀 节点选择"/u);
+  assert.match(yaml, /- geoip:\n\s+match: "CN"\n\s+policy: "DIRECT"\n\s+- default:\n\s+policy: "漏网之鱼"/u);
   const custom = yaml.indexOf('match: "perplexity.ai"');
   const domestic = yaml.lastIndexOf("/DomesticCore.yaml");
   const overseasGame = yaml.lastIndexOf("/OverseasGame.yaml");
@@ -118,7 +118,7 @@ function parseSingBoxPolicies(config) {
     overseasGame >= 0 && chinaTld > overseasGame && chinaIp > chinaTld,
     "sing-box: ChinaTLD must follow OverseasGame and precede ChinaIP",
   );
-  assert.equal(config.route.final, "🚀 节点选择");
+  assert.equal(config.route.final, "漏网之鱼");
   return policies;
 }
 

@@ -142,7 +142,7 @@ test("beginner docs contain every operational checkpoint and warning", async () 
     docs["docs/maintenance.md"].includes("`clientChain` 不使用这套仅复制 File 的流程"),
     "maintenance: generic versioned Profile workflow must exclude clientChain",
   );
-  for (const phrase of ["页面能打开不是证明", "记录候选目标和测试日期", "GEOIP,CN,DIRECT", "FINAL,🚀 节点选择"]) {
+  for (const phrase of ["页面能打开不是证明", "记录候选目标和测试日期", "GEOIP,CN,DIRECT", "FINAL,漏网之鱼"]) {
     assert.ok(docs["docs/canary-checklist.md"].includes(phrase), `canary: missing executable unknown-route check: ${phrase}`);
   }
   for (const phrase of ["ChinaTLD", "explain:route", "HTTPDNS", "硬编码 IP", "分别测试 Wi‑Fi 与蜂窝"]) {
@@ -177,7 +177,7 @@ test("current-user docs describe only lightweight defaults and isolate legacy au
     "🌍 海外游戏",
     "ChinaIP",
     "GEOIP,CN,DIRECT",
-    "FINAL,🚀 节点选择",
+    "FINAL,漏网之鱼",
   ]) assert.ok(text.includes(phrase), `missing lightweight current-user guidance: ${phrase}`);
 
   for (let index = 0; index < paths.length; index += 1) {

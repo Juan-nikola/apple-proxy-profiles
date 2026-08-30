@@ -50,7 +50,7 @@ test("renders ChinaTLD after OverseasGame and before ChinaIP in the shared light
   assert.match(lines[indexOf(lines, "/ChinaTLD.list")], /ChinaTLD\.list,DIRECT,/u);
   assert.match(lines[indexOf(lines, "/ChinaIP.list")], /^RULE-SET,.*\/ChinaIP\.list,DIRECT,/u);
   assert.equal(lines.at(-2), "GEOIP,CN,DIRECT");
-  assert.equal(lines.at(-1), "FINAL,🚀 节点选择");
+  assert.equal(lines.at(-1), "FINAL,漏网之鱼");
 });
 
 test("uses the selected publication and keeps rule downloads on the fallback policy", () => {

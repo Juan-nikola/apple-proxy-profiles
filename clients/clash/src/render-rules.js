@@ -5,6 +5,7 @@ import {
   usesClashMobileRuleBundles,
 } from "../../../shared/rules/lightweight-policy.js";
 import { CUSTOM_RULES } from "../../../shared/rules/custom-rules.js";
+import { LEAK_GROUP_NAME } from "../../../shared/policies/catalog.js";
 
 const PRIVATE_RULES = [
   "DOMAIN-SUFFIX,local,DIRECT",
@@ -73,6 +74,6 @@ export function renderClashRules({ publicBaseUrl, platform = "macos", adblockMod
     ...CUSTOM_RULES.ai.map((rule) => `${rule},🤖 AI 专用`),
   ];
   for (const source of plan) rules.push("RULE-SET," + source.id + "," + source.policy);
-  rules.push("GEOIP,CN,DIRECT,no-resolve", "MATCH,🚀 节点选择");
+  rules.push("GEOIP,CN,DIRECT", "MATCH," + LEAK_GROUP_NAME);
   return Object.freeze({ providers: Object.freeze(providers), rules: Object.freeze(rules) });
 }

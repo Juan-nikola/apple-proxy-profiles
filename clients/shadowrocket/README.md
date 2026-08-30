@@ -28,8 +28,8 @@ Shadowrocket 新任务只读取 `apple-proxy-shadowrocket`。客户端 collectio
 | --- | --- | --- |
 | `shadowrocket-nodes` | Node File → Node JS URL | `output=nodes&type=collection&name=apple-proxy-shadowrocket&clientChain=off` |
 | `shadowrocket-config-macos` | Profile File → Profile JS URL | `output=config&type=collection&name=apple-proxy-shadowrocket&subscriptionName=Shadowrocket-Nodes&platform=macos&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=ipv4-only&autoGroupMode=auto&clientChain=off` |
-| `shadowrocket-config-iphone` | Profile File → Profile JS URL | `output=config&type=collection&name=apple-proxy-shadowrocket&subscriptionName=Shadowrocket-Nodes&platform=iphone&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&autoGroupMode=auto&clientChain=off` |
-| `shadowrocket-config-ipad` | Profile File → Profile JS URL | `output=config&type=collection&name=apple-proxy-shadowrocket&subscriptionName=Shadowrocket-Nodes&platform=ipad&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&autoGroupMode=auto&clientChain=off` |
+| `shadowrocket-config-iphone` | Profile File → Profile JS URL | `output=config&type=collection&name=apple-proxy-shadowrocket&subscriptionName=Shadowrocket-Nodes&platform=iphone&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=ipv4-only&autoGroupMode=auto&clientChain=off` |
+| `shadowrocket-config-ipad` | Profile File → Profile JS URL | `output=config&type=collection&name=apple-proxy-shadowrocket&subscriptionName=Shadowrocket-Nodes&platform=ipad&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=ipv4-only&autoGroupMode=auto&clientChain=off` |
 
 创建顺序：先建立保留来源标记的原始组合 `apple-proxy-shadowrocket` → 创建直接引用 Node JS URL 的 `shadowrocket-nodes` → 再创建三个直接引用 Profile JS URL 的 File。不要把 Node JS 挂到 collection 的 Script Operator；它只在 `shadowrocket-nodes` File 中运行。
 
@@ -39,8 +39,8 @@ Shadowrocket 新任务只读取 `apple-proxy-shadowrocket`。客户端 collectio
 
 - 一份所有设备共用、每 6 小时更新的私密节点订阅（`shadowrocket-nodes` 输出）。
 - 三份每天更新的平台 Profile：`shadowrocket-config-macos`、`shadowrocket-config-iphone`、`shadowrocket-config-ipad`。
-- 一个只负责跟随 Shadowrocket 首页节点的 `🚀 节点选择`，以及精简后的业务组：境外服务组首项为 `🚀 节点选择`，Apple、Microsoft 和国内平台组首项为 `DIRECT`；每组都有自动测速、地区和具体节点选择。
-- 默认使用轻量混合规则：`DomesticCore + DomesticGame + SteamCN` 直连、`OverseasGame` 进入 `🌍 海外游戏`、`ChinaIP + GEOIP CN` 作为国内回退，其他未识别流量最终进入 `🚀 节点选择`。完整广告包默认关闭，只有设置 `adblockMode=full` 才从独立 optional 发布加载 `Advertising.list` 与 `Advertising_Domain.list`。
+- 一个只负责跟随 Shadowrocket 首页节点的 `🚀 节点选择`，以及精简后的业务组：每组默认值由私密 `apple-proxy-policy` 控制；未覆盖的策略仍按境外跟随首页、Apple/Microsoft/国内平台直连的共享默认值生成。每组都有自动测速、地区和具体节点选择。
+- 默认使用轻量混合规则：`DomesticCore + DomesticGame + SteamCN` 直连、`OverseasGame` 进入 `🌍 海外游戏`、`ChinaIP + GEOIP CN` 作为国内回退，其他未识别流量最终进入可切换的 `漏网之鱼`。`final=FOLLOW`、`DIRECT`、`NODE~查询词` 分别选择首页节点、直连或唯一固定节点；该组始终保留 `🚀 节点选择`、`DIRECT`、`REJECT`，`REJECT` 仅供手动排查。完整广告包默认关闭，只有设置 `adblockMode=full` 才从独立 optional 发布加载 `Advertising.list` 与 `Advertising_Domain.list`。
 
 Apple TV 已在生成器中预留参数，但不属于本轮部署范围。首轮顺序必须是 Intel Mac、iPhone、iPad；每台设备都保留原来的可用 Profile。
 
@@ -49,13 +49,13 @@ Apple TV 已在生成器中预留参数，但不属于本轮部署范围。首�
 Profile 使用职责分开的两层结构：
 
 1. 根组为 `🚀 节点选择 = select,PROXY,⚡ 全部自动,🌏 亚太,🌍 欧洲,🌎 美洲`；`PROXY` 负责跟随 Shadowrocket 首页当前节点，自动测速和洲组则从 `subscriptionName` 指定的节点订阅中筛选服务器。洲组内列出该洲全部已选节点，不按客户端能力过滤。
-2. 境外业务分组默认跟随 `🚀 节点选择`：每组都有 `⚡ 全部自动`、亚太/欧洲/美洲等地区组和符合筛选条件的具体节点。
-3. 国内业务分组默认 `DIRECT`：每组同样都有 `🚀 节点选择`、自动测速、地区组和具体节点，按需要再切换，避免国内 App 因误走代理而变慢。
+2. 业务分组默认值由 `apple-proxy-policy` 的对应目标控制；未指定时，境外业务分组默认跟随 `🚀 节点选择`，国内业务分组默认 `DIRECT`。每组都有 `⚡ 全部自动`、亚太/欧洲/美洲等地区组和符合筛选条件的具体节点。
+3. 刷新后客户端可能保留用户手动选择，这是客户端缓存行为；需要应用新的 policy 默认值时，首次导入或在客户端手动选择对应首项。
 4. `🤖 AI 专用`继续直接列出全部已勾选节点，不会跟着首页主线路一起变化。
 
 除 `🚀 节点选择`外，需要枚举节点的动态组会按 `subscriptionName` 只从指定的 Shadowrocket 节点订阅中筛选。显示名可自由命名（支持中文、内部空格和普通标点），但不能以空白开头或结尾，也不能包含换行；macOS、iPhone、iPad 三个 Profile File 的 `subscriptionName` 必须与 Shadowrocket 中的显示名**完全一致**，包括大小写、emoji、空格和标点。本手册的示例显示名是 `Shadowrocket-Nodes`，生成的动态候选写作 `Shadowrocket-Nodes,use=true`；它不是强制名称。若截图中节点订阅的真实显示名是 `SHADOWROCKET-NODES`，三个 Profile File Operator 的 `subscriptionName` 都必须精确填写 `SHADOWROCKET-NODES`，不能仍填示例值。名称不匹配时，策略组中的 `DIRECT`、`🚀 节点选择`、自动测速和地区等显式选项仍在，但动态组不会列出这个订阅的具体服务器。洲顺序固定为亚太、欧洲、美洲、其他；没有节点的洲不会显示。每个洲组直接列出该洲全部已选节点，不再生成国家策略组。
 
-生成器用 `policy-select-name=🚀 节点选择` 让境外业务组默认跟随首页节点，用 `policy-select-name=DIRECT` 让国内业务组默认直连；这两个默认项不影响每组完整的显式候选和具体服务器列表。
+生成器把 `apple-proxy-policy` 的解析结果写入对应业务组默认位置；`FOLLOW` 映射为 `policy-select-name=🚀 节点选择`，`DIRECT` 映射为 `policy-select-name=DIRECT`，固定节点写入对应节点名。这些默认项不影响每组完整的显式候选和具体服务器列表。
 
 地区识别覆盖 ISO 3166-1 的 249 个国家和地区国旗。中东与大洋洲归入亚太，俄罗斯归入欧洲，美洲含加勒比，非洲、南极洲以及无法识别的国旗归入其他。不会因此生成任何国家策略组。节点已有国旗时以最左侧国旗为准；没有国旗时才使用内置的常见国家/地区、城市、机场代码和缩写推断，仍无法确认就进入 `🌐 其他/未分类`。
 
@@ -135,15 +135,15 @@ https://juan-nikola.github.io/apple-proxy-profiles/current/shadowrocket/scripts/
 | `globalDns` | `cloudflare` | `cloudflare` | `cloudflare` | 境外 DNS |
 | `blockMode` | `balanced` | `balanced` | `balanced` | 平衡拦截 |
 | `quicMode` | `proxy-block` | `proxy-block` | `proxy-block` | 代理流量阻止 QUIC |
-| `ipv6Mode` | `ipv4-only` | `auto` | `auto` | macOS 与移动端不同 |
+| `ipv6Mode` | `ipv4-only` | `ipv4-only` | `ipv4-only` | 当前 3 个任务统一关闭 IPv6 |
 | `autoGroupMode` | `auto` | `auto` | `auto` | 自动选择分组规模 |
 | `clientChain` | `off` | `off` | `off` | 正式任务关闭客户端链式 |
 
 用于复制核对的三条完整参数如下；不要加引号、前导 `?` 或换行：
 
 - macOS：`output=config&type=collection&name=apple-proxy-shadowrocket&subscriptionName=Shadowrocket-Nodes&platform=macos&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=ipv4-only&autoGroupMode=auto&clientChain=off`
-- iPhone：`output=config&type=collection&name=apple-proxy-shadowrocket&subscriptionName=Shadowrocket-Nodes&platform=iphone&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&autoGroupMode=auto&clientChain=off`
-- iPad：`output=config&type=collection&name=apple-proxy-shadowrocket&subscriptionName=Shadowrocket-Nodes&platform=ipad&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=auto&autoGroupMode=auto&clientChain=off`
+- iPhone：`output=config&type=collection&name=apple-proxy-shadowrocket&subscriptionName=Shadowrocket-Nodes&platform=iphone&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=ipv4-only&autoGroupMode=auto&clientChain=off`
+- iPad：`output=config&type=collection&name=apple-proxy-shadowrocket&subscriptionName=Shadowrocket-Nodes&platform=ipad&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=ipv4-only&autoGroupMode=auto&clientChain=off`
 
 `Shadowrocket-Nodes` 只是便于首次照填的 ASCII 示例。它必须与稍后添加到 Shadowrocket 的节点订阅显示名完全一致，包括大小写、emoji、空格和标点。如果界面提供参数名/值输入框，直接填写显示名；如果旧版只有单行链接，包含中文、emoji、空格、`&`、`#` 或 `%` 的值必须先进行百分号编码，不能编码分隔参数的 `&` 和 `=`。
 

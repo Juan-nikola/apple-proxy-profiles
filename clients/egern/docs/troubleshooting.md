@@ -50,7 +50,7 @@
 
 - DNS 完全失败：分别检查 bootstrap 能否解析上游域名，以及 upstream 是否可达；先排除当前网络门户认证。
 - 国内外分流异常：确认 rule-set/规则集下载成功、顺序没有被手工改写，并检查命中的最后规则。
-- 国内 App 偶发变慢、切换开关后暂时恢复：先确认 `DomesticCore`、`DomesticGame`、`SteamCN` 在明确境外规则之前直连，`ChinaIP` 与可解析的 `GEOIP CN` 在最终代理之前。稳定/速度 DNS 模式应使用同一 `channel` 的 `DomesticCore` 转发到国内 DNS；不应再看到 `ChinaMax_Domain`。若 DNS 失败，未命中流量落入 `🚀 节点选择` 是预期的 fail-safe，不要通过恢复大分类包解决。
+- 国内 App 偶发变慢、切换开关后暂时恢复：先确认 `DomesticCore`、`DomesticGame`、`SteamCN` 在明确境外规则之前直连，`ChinaIP` 与可解析的 `GEOIP CN` 在最终代理之前。稳定/速度 DNS 模式应使用同一 `channel` 的 `DomesticCore` 转发到国内 DNS；不应再看到 `ChinaMax_Domain`。若 DNS 失败，未命中流量落入 `漏网之鱼` 是预期的 fail-safe，不要通过恢复大分类包解决；其默认出口由 `apple-proxy-policy.final` 控制。
 - 只有公开规则失败：测试 `🧭 DNS 与规则下载` 的代理优先路径和直连回退，不要改私密节点 URL。
 - 只有节点失败：重跑私密节点 File，不要把公开规则刷新当成节点修复。
 
@@ -64,7 +64,7 @@
 
 ## 7. IPv6 平台差异
 
-- Intel Mac 默认 `ipv4-only`，iPhone、iPad 默认 `auto`；默认值不是实际验证。每台适用设备仍要在 IPv4 可用网络验证 `ipv4-only`，并在确认有 IPv6 的网络验证 `auto` 的真实 IPv6 路径。
+- 当前三个生产任务统一使用 `ipv6Mode=ipv4-only`；如需验证 IPv6，另建 `auto` 测试任务，不要覆盖生产任务。参数默认值不是实际网络验证结果。
 - ISP/运营商或当前网络不提供 IPv6 时，标为“未覆盖/不可验证”，不得把页面可打开或 `auto` 已启用当成通过，也不得假设网络有 IPv6；换到可验证网络后重新灰度。
 - 在 IPv6-only 和双栈网络分别观察 DNS 与连接，不要照搬其他设备的结果。
 - IPv4/IPv6 变化引发失败时，保留网络类型、时间和非敏感错误码；不要公开地址、节点或订阅。

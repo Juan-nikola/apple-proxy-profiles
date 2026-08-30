@@ -9,6 +9,7 @@ import {
 import { CUSTOM_RULES } from "../../../shared/rules/custom-rules.js";
 import { PROXY_DNS_DOMAIN_SUFFIXES } from "../../../shared/rules/overseas-dns.js";
 import { chinaDnsProvider, globalDnsProvider } from "../../../shared/dns/providers.js";
+import { LEAK_GROUP_NAME } from "../../../shared/policies/catalog.js";
 
 export const RULE_DOWNLOAD_HTTP_CLIENT = "🧭 规则下载 HTTP";
 export const RULE_DOWNLOAD_GROUP = "🧭 DNS 与规则下载";
@@ -168,7 +169,7 @@ export function renderSingBoxRouteRules({
   if (quicMode === "all-block") rules.push({ ...QUIC_BLOCK_RULE });
   if (profileMode === "diagnostic") {
     rules.push(...renderCustomRules(quicMode));
-    return { ruleSets, rules, final: "🚀 节点选择" };
+    return { ruleSets, rules, final: LEAK_GROUP_NAME };
   }
 
   const plan = activeRoutingPlan(platform, adblockMode);
@@ -218,5 +219,5 @@ export function renderSingBoxRouteRules({
     .filter(({ phase }) => phase === "resolvedChinaIp")
     .map(taggedRule));
   if (quicMode === "proxy-block") rules.push({ ...QUIC_BLOCK_RULE });
-  return { ruleSets, rules, final: "🚀 节点选择" };
+  return { ruleSets, rules, final: LEAK_GROUP_NAME };
 }

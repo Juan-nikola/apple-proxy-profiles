@@ -1,4 +1,4 @@
-import { buildPolicyGroups } from "../../../shared/policies/catalog.js";
+import { buildPolicyGroups, LEAK_GROUP_NAME } from "../../../shared/policies/catalog.js";
 import { POLICY_TARGET } from "../../../shared/policies/intents.js";
 import { UNIFIED_POLICY_TARGETS } from "../../../shared/policies/unified-policy.js";
 import { renderEgernDns } from "./render-dns.js";
@@ -135,7 +135,7 @@ export function renderEgernProfileFromOptions(options, nodes, {
       publicBaseUrl: options.publicBaseUrl,
       adblockMode: options.adblockMode,
     }),
-    default_subscription_group: "🚀 节点选择",
+    default_subscription_group: LEAK_GROUP_NAME,
   };
   const yaml = renderYaml(root);
   assertValidEgernProfile(yaml);

@@ -3,6 +3,7 @@ import { ROUTING_PHASES, orderedRoutingPlan } from "../../../shared/rules/lightw
 import { FRONTIER_CHANNELS } from "../../../shared/release/frontier-manifest.js";
 import { LOCAL_RULES } from "../../../shared/rules/local-rules.js";
 import { isValidRuleLine } from "./rule-validator.js";
+import { LEAK_GROUP_NAME } from "../../../shared/policies/catalog.js";
 
 export const PUBLIC_RULE_ROOT = "https://juan-nikola.github.io/apple-proxy-profiles";
 
@@ -124,6 +125,6 @@ export function renderRules({ ruleBaseUrl, adblockMode = "off" } = {}) {
   for (const phase of ROUTING_PHASES.filter((value) => value !== "security")) {
     lines.push(...plan.filter((source) => source.phase === phase).map(render));
   }
-  lines.push("GEOIP,CN,DIRECT", "FINAL,🚀 节点选择");
+  lines.push("GEOIP,CN,DIRECT", `FINAL,${LEAK_GROUP_NAME}`);
   return lines;
 }

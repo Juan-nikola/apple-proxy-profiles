@@ -6,9 +6,11 @@ import {
   FULL_ADBLOCK_SOURCE_IDS,
   MOBILE_RULE_SOURCE_IDS,
 } from "../../../shared/rules/lightweight-policy.js";
+import { parsePrivatePolicy } from "../../../shared/policies/private-policy.js";
+import { resolveUnifiedPolicy } from "../../../shared/policies/resolve-unified.js";
 import { allCompatibleNodes } from "../../egern/test/fixtures/nodes.js";
 import { parseClashOptions, PUBLIC_SNAPSHOT_BASE_URL } from "../src/options.js";
-import { renderClashGroups, renderClashProfile } from "../src/render-profile.js";
+import { renderClashGroups, renderClashProfile, renderClashProfileFromOptions } from "../src/render-profile.js";
 import { renderClashRules } from "../src/render-rules.js";
 import { validateClashProfile } from "../src/validate-profile.js";
 
@@ -52,6 +54,30 @@ test("uses compact rule providers for Clash mobile platforms", () => {
     assert.deepEqual(Object.keys(rules.providers), MOBILE_RULE_SOURCE_IDS, platform);
     for (const provider of Object.values(rules.providers)) {
       assert.match(provider.url, /\/clash\/mobile-rules\/[^/]+\.yaml$/u, platform);
+    }
+  }
+});
+
+test("resolves unknown domains before the final China IP fallback on every Apple platform", () => {
+  for (const platform of ["macos", "iphone", "ipad", "appletv"]) {
+    const rules = renderClashRules({
+      publicBaseUrl: PUBLIC_SNAPSHOT_BASE_URL,
+      platform,
+      adblockMode: "off",
+    });
+    const fallbackIndex = rules.rules.indexOf("GEOIP,CN,DIRECT");
+
+    assert.ok(fallbackIndex >= 0, platform);
+    assert.equal(rules.rules.filter((rule) => rule === "GEOIP,CN,DIRECT").length, 1, platform);
+    assert.equal(rules.rules.includes("GEOIP,CN,DIRECT,no-resolve"), false, platform);
+    assert.equal(rules.rules[fallbackIndex + 1], "MATCH,漏网之鱼", platform);
+
+    const privateAddressRules = rules.rules.filter((rule) => /^(?:IP-CIDR|IP-CIDR6),/u.test(rule));
+    assert.ok(privateAddressRules.length > 0, platform);
+    assert.ok(privateAddressRules.every((rule) => rule.endsWith(",DIRECT,no-resolve")), platform);
+
+    if (["iphone", "ipad", "appletv"].includes(platform)) {
+      assert.ok(Object.values(rules.providers).every(({ url }) => url.includes("/clash/mobile-rules/")), platform);
     }
   }
 });
@@ -102,7 +128,29 @@ test("renders a complete mihomo profile with nodes, groups, DNS, providers, and 
   assert.match(yaml, /RULE-SET,DomesticCore,DIRECT/u);
   assert.match(yaml, /RULE-SET,OpenAI,🤖 AI 专用/u);
   assert.match(yaml, /GEOIP,CN,DIRECT/u);
-  assert.match(yaml, /MATCH,🚀 节点选择/u);
+  assert.match(yaml, /MATCH,漏网之鱼/u);
+});
+
+test("renders policy defaults and routes unmatched traffic through the leak group", () => {
+  const options = parseClashOptions(rawOptions());
+  const policy = parsePrivatePolicy(JSON.stringify({
+    schemaVersion: 2,
+    targets: {
+      "🤖 AI 专用": "NODE~SSH",
+      final: "DIRECT",
+    },
+  }));
+  const resolution = resolveUnifiedPolicy({
+    policy,
+    client: "clash",
+    allNodes: allCompatibleNodes,
+    eligibleNodes: allCompatibleNodes,
+  });
+  const groups = renderClashGroups(allCompatibleNodes, options, resolution);
+  const leak = groups.find(({ name }) => name === "漏网之鱼");
+
+  assert.deepEqual(leak?.proxies.slice(0, 3), ["DIRECT", "🚀 节点选择", "REJECT"]);
+  assert.match(renderClashProfileFromOptions(options, allCompatibleNodes, { policyResolution: resolution }), /MATCH,漏网之鱼/u);
 });
 
 test("renders mobile profiles against compact provider files", () => {

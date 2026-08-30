@@ -1,5 +1,6 @@
 import { OPTION_VALUES } from "../../../shared/contracts.js";
 import { FRONTIER_CHANNELS } from "../../../shared/release/frontier-manifest.js";
+import { LEAK_GROUP_NAME } from "../../../shared/policies/catalog.js";
 import { POLICY_TARGET } from "../../../shared/policies/intents.js";
 import { POLICY_GROUP_SCHEMA } from "../../../shared/policies/schema.js";
 import { renderEgernDns } from "./render-dns.js";
@@ -44,10 +45,20 @@ function canonicalCandidates(fields, schema) {
   const withoutExternal = candidates.filter((candidate) => !isExternalNodePolicy(candidate));
   if (external.length === 1) return withoutExternal;
 
+  if (fields.name === LEAK_GROUP_NAME
+    && withoutExternal.length === 3
+    && new Set(withoutExternal).size === 3
+    && ["🚀 节点选择", "DIRECT", "REJECT"].every((candidate) => withoutExternal.includes(candidate))) {
+    return ["🚀 节点选择", "DIRECT", "REJECT"];
+  }
+
   const first = withoutExternal[0];
   if (!INTERACTIVE_POLICY_VALUES.has(first)) return withoutExternal;
   if (first === "DIRECT" && schema.defaultChoice !== "DIRECT"
     && withoutExternal.slice(1).includes("🚀 节点选择")) {
+    if (fields.name === LEAK_GROUP_NAME) {
+      return [withoutExternal[1], withoutExternal[0], ...withoutExternal.slice(2)];
+    }
     return [...withoutExternal.slice(1), "DIRECT"];
   }
   if (first === "🚀 节点选择" && schema.defaultChoice === "DIRECT") {
@@ -239,7 +250,7 @@ function validateRoot(root) {
     || !sameValue(root.bypass_tunnel_proxy, BYPASS_TUNNEL_PROXY)
     || !sameValue(root.real_ip_domains, REAL_IP_DOMAINS)
     || !sameValue(root.hijack_dns, ["*"])
-    || root.default_subscription_group !== "🚀 节点选择"
+    || root.default_subscription_group !== "漏网之鱼"
   ) throw new Error("Invalid Egern root field values");
 }
 

@@ -186,7 +186,7 @@ test("rejects group record swaps, duplicates, dangling policies, and private URL
   ].join("\n");
   assertInvalid(profile.replace(helperA, "TEST_ONLY_HELPER_A").replace(helperB, helperA).replace("TEST_ONLY_HELPER_A", helperB), /group|order|schema/i);
   assertInvalid(profile.replace('name: "⚡ 亚太自动"', 'name: "⚡ 全部自动"'), /group|duplicate|schema/i);
-  assertInvalid(profile.replace('policy: "🚀 节点选择"', 'policy: "TEST_ONLY_MISSING_POLICY"'), /rule|policy|group|schema/i, [
+  assertInvalid(profile.replace('policy: "漏网之鱼"', 'policy: "TEST_ONLY_MISSING_POLICY"'), /rule|policy|group|schema/i, [
     "TEST_ONLY_MISSING_POLICY",
   ]);
 
@@ -206,7 +206,7 @@ test("rejects unknown, swapped, duplicate, non-terminal, and URL-mutated rules",
   ].join("\n");
   const final = [
     "  - default:",
-    "      policy: \"🚀 节点选择\"",
+    "      policy: \"漏网之鱼\"",
   ].join("\n");
   assertInvalid(profile.replace(geo, "TEST_ONLY_GEO_RULE").replace(final, geo).replace("TEST_ONLY_GEO_RULE", final), /rule|terminal|order/i);
   assertInvalid(profile.replace(final, `${final}\n${final}`), /rule|default|duplicate/i);

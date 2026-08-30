@@ -3,6 +3,8 @@ import test from "node:test";
 
 import { buildGroups } from "../src/group-catalog.js";
 import { normalizeNodes } from "../../../shared/nodes/normalize-nodes.js";
+import { parsePrivatePolicy } from "../../../shared/policies/private-policy.js";
+import { resolveUnifiedPolicy } from "../../../shared/policies/resolve-unified.js";
 import { renderProfile } from "../src/render-profile.js";
 import { validateProfile } from "../src/validate-profile.js";
 
@@ -71,6 +73,16 @@ test("renders a complete, valid macOS profile without node credentials", () => {
   assert.deepEqual(validateProfile(profile), { valid: true, errors: [] });
 });
 
+test("uses policy.final as the default of the switchable leak group", () => {
+  const nodes = inventory(25);
+  const policy = parsePrivatePolicy(JSON.stringify({ schemaVersion: 2, targets: { final: "DIRECT" } }));
+  const resolution = resolveUnifiedPolicy({ policy, client: "shadowrocket", allNodes: nodes, eligibleNodes: nodes });
+  const profile = renderProfile(baseOptions, nodes, { policyResolution: resolution });
+
+  assert.match(profile, /^漏网之鱼 = select,🚀 节点选择,DIRECT,REJECT,.*policy-select-name=DIRECT/mu);
+  assert.match(profile, /^FINAL,漏网之鱼$/mu);
+});
+
 test("renders the current lightweight rules by default and permits GEOIP to resolve", () => {
   const profile = renderProfile(baseOptions, inventory(25));
   const rules = profile.slice(profile.indexOf("[Rule]")).split("\n").filter(Boolean);
@@ -79,7 +91,7 @@ test("renders the current lightweight rules by default and permits GEOIP to reso
   assert.doesNotMatch(profile, /\/(?:Advertising|Advertising_Domain|ChinaMax_Domain|ChinaMax|Game)\.list/u);
   assert.match(profile, /^RULE-SET,.*\/OverseasGame\.list,🌍 海外游戏,/mu);
   assert.equal(rules.at(-2), "GEOIP,CN,DIRECT");
-  assert.equal(rules.at(-1), "FINAL,🚀 节点选择");
+  assert.equal(rules.at(-1), "FINAL,漏网之鱼");
 });
 
 test("rejects legacy publication channels", () => {

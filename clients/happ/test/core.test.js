@@ -292,6 +292,23 @@ test("fixed DNS routing uses the balancer instead of bypassing its fallback", ()
   assert.equal(Object.hasOwn(dnsRule, "outboundTag"), false);
 });
 
+test("final policy selects direct or a fixed-node balancer", () => {
+  const fixed = node("vless", { name: "TEST_ONLY_Fixed", uuid: "TEST_ONLY_FIXED_UUID", _profile: { id: "fixed-final" } });
+  const follow = node("trojan", { name: "TEST_ONLY_Follow", password: "TEST_ONLY_FOLLOW_PASSWORD", _profile: { id: "follow-final" } });
+  const options = parseHappOptions(base);
+  const directPolicy = parsePrivatePolicy(JSON.stringify({ schemaVersion: 2, targets: { final: "DIRECT" } }));
+  const directResolution = resolveUnifiedPolicy({ policy: directPolicy, client: "happ", allNodes: [fixed, follow], eligibleNodes: [follow] });
+  const directConfig = renderHappSubscription({ nodes: [follow], allNodes: [fixed, follow], options, policyResolution: directResolution })[0];
+  assert.equal(directConfig.routing.rules.at(-1).outboundTag, "happ-direct");
+
+  const fixedPolicy = parsePrivatePolicy(JSON.stringify({ schemaVersion: 2, targets: { final: "NODE~TEST_ONLY_Fixed" } }));
+  const fixedResolution = resolveUnifiedPolicy({ policy: fixedPolicy, client: "happ", allNodes: [fixed, follow], eligibleNodes: [fixed, follow] });
+  const fixedConfig = renderHappSubscription({ nodes: [fixed, follow], allNodes: [fixed, follow], options, policyResolution: fixedResolution })
+    .find((item) => item.remarks === "TEST_ONLY_Follow");
+  assert.ok(fixedConfig);
+  assert.equal(fixedConfig.routing.rules.at(-1).balancerTag, fixedConfig.routing.balancers[0].tag);
+});
+
 test("Happ DNS uses one standard Xray label scheme on every supported platform", () => {
   for (const platform of ["macos", "iphone", "ipad"]) {
     const output = renderHappDns({ platform, dnsMode: "stable", chinaDns: "alidns", globalDns: "cloudflare", ipv6Mode: "auto" });

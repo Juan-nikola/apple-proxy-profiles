@@ -25,6 +25,6 @@ test("README tutorial keeps the eight-client and current-only contracts visible"
   assert.match(readme, /八个 active 客户端/u);
   assert.match(readme, /9 个手动 collection、30 个 File task/u);
   assert.match(readme, /current\/surge\/scripts\/surge-profile-generator\.js/u);
-  assert.match(readme, /ChinaTLD -> ChinaIP -> 默认代理/u);
+  assert.match(readme, /ChinaTLD -> ChinaIP -> 漏网之鱼/u);
   assert.doesNotMatch(readme, /https?:\/\/[^\s`]+(?:api|token|uuid|password)=/iu);
 });

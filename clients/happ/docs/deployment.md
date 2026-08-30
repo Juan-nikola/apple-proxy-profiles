@@ -12,6 +12,8 @@
 
 在自己的 Sub-Store 中创建 File 后，给它添加“脚本操作/Script Operator”，并在脚本操作里以“远程链接”引用 `current/happ/scripts/happ-config-generator.js`；File 源内容保持为空。不要把 generator URL 填到 File 的“远程源文件”字段，否则 Preview 会原样显示 JavaScript 源码。把真实 collection 名称放在私密任务参数中。只建立 `macos`、`iphone`、`ipad` 三个平台任务；另建一个 `happ-routing-audit` 任务检查兼容性和策略解析。HAPP URL 必须保持 `/current/happ/`，不要把私密节点 URL、token 或 policy 正文写入公开文档。
 
+三个生产配置任务的参数都显式填写 `ipv6Mode=ipv4-only`；其余 DNS、拦截和 QUIC 参数按根目录 [Sub-Store 参数表](../../../docs/substore-two-layer-setup.md) 填写。完整配置任务读取 `apple-proxy-policy`，节点任务只输出节点。
+
 ### HAPP 三平台 JSON 导入方式
 
 当前兼容基线是 HAPP `4.0.5`/`5.6.0` 系列与 Xray `26.7.28`。JSON 配置由 Xray JSON 自己负责 DNS、路由和固定节点；HAPP Profile 只负责 GeoData 与 Tunnel DNS。HAPP 路由开关对 JSON 订阅会被锁定，这是客户端的正常限制，不是路由关闭。
@@ -42,7 +44,7 @@ HAPP JSON 默认日志级别为 `info`。入口对 HTTP、TLS、QUIC 开启嗅�
 
 macOS 的 HAPP 任务会在订阅导入/更新时请求自动 Proxy 模式（`proxy-enable: 1`），正常情况下无需手动打开系统代理。它使用 HTTP/HTTPS `127.0.0.1:10809`、SOCKS `127.0.0.1:10808`；可用 `scutil --proxy` 查看 `HTTPEnable`、`HTTPSEnable`、`SOCKSEnable` 是否已被 HAPP 打开。若仍为 `0`，删除 HAPP 旧订阅后重新添加最新 File URL；若被 Surge、Shadowrocket、Clash、系统 VPN 或其他网络扩展覆盖，只保留一个软件接管系统代理。显式 `curl --socks5-hostname 127.0.0.1:10808 https://www.google.com` 成功而浏览器失败时，问题属于系统代理接管，不属于统一策略路由。断开 HAPP 后应确认系统代理恢复为关闭或原来的设置。
 
-策略值只允许 `DIRECT`、`FOLLOW`、`NODE:<精确节点名>` 或唯一 `NODE~<大致名称>`。策略修改后重新生成所有相关私密任务，再导入新 JSON。节点名和 Profile deep link 不要提交到仓库或公开聊天。
+策略值只允许 `DIRECT`、`FOLLOW` 或唯一 `NODE~<大致名称>`（兼容读取旧的 `NODE:<精确节点名>`）。`final=FOLLOW` 使用当前 JSON 的 follow 节点，`final=DIRECT` 使用 `happ-direct`，固定节点使用独立 balancer；HAPP 每个节点对应一个 JSON，不模拟同一配置内的 selector。策略修改后重新生成所有相关私密任务，再导入新 JSON。节点名和 Profile deep link 不要提交到仓库或公开聊天。
 
 ## 回滚
 
