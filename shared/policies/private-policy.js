@@ -23,6 +23,7 @@ const CHAIN_KEYS = new Set(["mode", "target"]);
 const TARGET_ID_SET = new Set(PRIVATE_POLICY_TARGET_IDS);
 const CHANNEL_SET = new Set(PRIVATE_POLICY_CHANNELS);
 const CLIENT_SET = new Set(PRIVATE_POLICY_CLIENTS);
+const UNIFIED_POLICY_CLIENT_KEYS = new Set([...PRIVATE_POLICY_CLIENTS, "sing-box"]);
 const CHINA_DNS_SET = new Set(OPTION_VALUES.chinaDns);
 const GLOBAL_DNS_SET = new Set(OPTION_VALUES.globalDns);
 const AD_BLOCK_MODES = new Set(["off", "full"]);
@@ -210,13 +211,10 @@ function normalizePolicyObject(value) {
   return deepFreeze({ schemaVersion: 1, channels });
 }
 
-function normalizeUnifiedPolicyObject(value) {
-  requireRecord(value, "policy must be an object");
-  requireKeys(value, ["schemaVersion", "targets"], new Set(["schemaVersion", "targets"]));
-  if (value.schemaVersion !== 2) throw invalid("schemaVersion must be 2");
+function normalizeUnifiedTargets(value, { complete }) {
   requireRecord(value.targets, "targets must be an object");
 
-  const targets = defaultUnifiedPolicyTargets();
+  const targets = complete ? {} : defaultUnifiedPolicyTargets();
   const seen = new Map();
   for (const [key, rawTarget] of Object.entries(value.targets)) {
     const target = unifiedPolicyTargetByKey(key);
@@ -229,10 +227,51 @@ function normalizeUnifiedPolicyObject(value) {
     targets[target.id] = canonical;
   }
 
+  if (complete && Object.keys(value.targets).length !== UNIFIED_POLICY_TARGET_IDS.length) {
+    throw invalid("contains an incomplete business target map");
+  }
   for (const id of UNIFIED_POLICY_TARGET_IDS) {
     if (!Object.hasOwn(targets, id)) throw invalid("contains an incomplete business target map");
   }
-  return deepFreeze({ schemaVersion: 2, targets });
+  return targets;
+}
+
+function normalizeUnifiedPolicyLayer(value, { complete }) {
+  requireRecord(value, "client policy must be an object");
+  requireKeys(value, ["schemaVersion", "targets"], new Set(["schemaVersion", "targets"]));
+  if (value.schemaVersion !== 2) throw invalid("client policy schemaVersion must be 2");
+  return {
+    schemaVersion: 2,
+    targets: normalizeUnifiedTargets(value, { complete }),
+  };
+}
+
+function normalizeUnifiedPolicyObject(value) {
+  requireRecord(value, "policy must be an object");
+  requireKeys(value, ["schemaVersion", "targets"], new Set(["schemaVersion", "targets"]));
+  if (value.schemaVersion !== 2) throw invalid("schemaVersion must be 2");
+  return deepFreeze(normalizeUnifiedPolicyLayer(value, { complete: false }));
+}
+
+function normalizeUnifiedPolicyByClient(value) {
+  requireRecord(value, "policy must be an object");
+  requireKeys(value, ["schemaVersion", "clients"], new Set(["schemaVersion", "clients"]));
+  if (value.schemaVersion !== 3) throw invalid("schemaVersion must be 3");
+  requireRecord(value.clients, "clients must be an object");
+
+  const clients = {};
+  const seen = new Set();
+  for (const [key, layer] of Object.entries(value.clients)) {
+    if (!UNIFIED_POLICY_CLIENT_KEYS.has(key)) throw invalid("contains an unsupported policy client");
+    const client = key === "sing-box" ? "singbox" : key;
+    if (seen.has(client)) throw invalid("contains conflicting policy client aliases");
+    seen.add(client);
+    clients[client] = normalizeUnifiedPolicyLayer(layer, { complete: true });
+  }
+  for (const client of PRIVATE_POLICY_CLIENTS) {
+    if (!Object.hasOwn(clients, client)) throw invalid("is missing a required policy client");
+  }
+  return deepFreeze({ schemaVersion: 3, clients });
 }
 
 function deepFreeze(value) {
@@ -255,6 +294,7 @@ export function parsePrivatePolicy(text) {
     // parseStrictJson already guarantees that input values are not reflected in errors.
     throw error;
   }
+  if (parsed?.schemaVersion === 3) return normalizeUnifiedPolicyByClient(parsed);
   if (parsed?.schemaVersion === 2) return normalizeUnifiedPolicyObject(parsed);
   return normalizePolicyObject(parsed);
 }
@@ -262,12 +302,20 @@ export function parsePrivatePolicy(text) {
 export function resolvePrivatePolicy({ policy, channel, client } = {}) {
   const normalized = typeof policy === "string" || policy instanceof Uint8Array
     ? parsePrivatePolicy(policy)
-    : policy?.schemaVersion === 2
-      ? normalizeUnifiedPolicyObject(policy)
+    : policy?.schemaVersion === 3
+      ? normalizeUnifiedPolicyByClient(policy)
+      : policy?.schemaVersion === 2
+        ? normalizeUnifiedPolicyObject(policy)
       : normalizePolicyObject(policy);
-  if (normalized.schemaVersion === 2) {
+  if (normalized.schemaVersion === 2 || normalized.schemaVersion === 3) {
+    const targets = normalized.schemaVersion === 3
+      ? normalized.clients[client]?.targets
+      : normalized.targets;
+    if (normalized.schemaVersion === 3 && !CLIENT_SET.has(client)) {
+      throw invalid("contains an unsupported policy client");
+    }
     return deepFreeze({
-      targets: { ...normalized.targets },
+      targets: { ...targets },
       dns: { chinaDns: "alidns", globalDns: "cloudflare" },
       adblockMode: "off",
       clientChain: { mode: "off" },
@@ -289,10 +337,13 @@ export function resolvePrivatePolicy({ policy, channel, client } = {}) {
 export function policyRevisionForChannel(policy, channel) {
   const normalized = typeof policy === "string" || policy instanceof Uint8Array
     ? parsePrivatePolicy(policy)
-    : policy?.schemaVersion === 2
-      ? normalizeUnifiedPolicyObject(policy)
+    : policy?.schemaVersion === 3
+      ? normalizeUnifiedPolicyByClient(policy)
+      : policy?.schemaVersion === 2
+        ? normalizeUnifiedPolicyObject(policy)
       : normalizePolicyObject(policy);
   if (normalized.schemaVersion === 2) return "schema-2";
+  if (normalized.schemaVersion === 3) return "schema-3";
   if (!CHANNEL_SET.has(channel)) throw invalid("contains an unsupported channel");
   return normalized.channels[channel].revision;
 }

@@ -286,6 +286,32 @@ test("applies unified defaults while retaining interactive group candidates", ()
   assert.ok(media.candidates.includes("DIRECT"));
 });
 
+test("applies the client-specific AI default across every active client", () => {
+  const nodes = normalized([rawNode("🇺🇸qqpw家宽", "vless")]);
+  const policy = parsePrivatePolicy(JSON.stringify({
+    schemaVersion: 3,
+    clients: Object.fromEntries([
+      ["anywhere", "NODE~🇺🇸qqpw家宽|vless"],
+      ["egern", "NODE~🇺🇸qqpw家宽|vless"],
+      ["shadowrocket", "NODE~🇺🇸qqpw家宽|vless"],
+      ["surge", "FOLLOW"],
+      ["sing-box", "NODE~🇺🇸qqpw家宽|vless"],
+      ["happ", "NODE~🇺🇸qqpw家宽|vless"],
+      ["v2box", "NODE~🇺🇸qqpw家宽|vless"],
+      ["clash", "NODE~🇺🇸qqpw家宽|vless"],
+    ].map(([client, ai]) => [client, {
+      schemaVersion: 2,
+      targets: { ...defaultUnifiedPolicyTargets(), ai },
+    }])),
+  }));
+
+  for (const client of ["anywhere", "egern", "shadowrocket", "surge", "singbox", "happ", "v2box", "clash"]) {
+    const resolution = resolveUnifiedPolicy({ policy, client, allNodes: nodes, eligibleNodes: nodes });
+    assert.equal(resolution.targets.ai.configured, client === "surge" ? "FOLLOW" : "NODE~🇺🇸qqpw家宽|vless");
+    assert.equal(resolution.targets.ai.status, client === "surge" ? "follow" : "fixed");
+  }
+});
+
 test("builds a switchable leak group whose default follows policy.final", () => {
   const nodes = normalized([rawNode("🇺🇸qqpw家宽", "vless")]);
   const policy = parsePrivatePolicy(JSON.stringify({

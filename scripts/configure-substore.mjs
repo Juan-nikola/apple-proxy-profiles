@@ -113,7 +113,7 @@ export function canonicalTaskCatalog(channel = "current") {
     configTask("singbox-config-iphone", "sing-box", "sing-box-config-generator.js", channel, "apple-proxy-singbox", "iphone", "Apple-Proxy-Nodes", { profileMode: "light", nodeErrorMode: "strict" }),
     configTask("singbox-config-ipad", "sing-box", "sing-box-config-generator.js", channel, "apple-proxy-singbox", "ipad", "Apple-Proxy-Nodes", { profileMode: "light", nodeErrorMode: "strict" }),
     configTask("singbox-config-android", "sing-box", "sing-box-config-generator.js", channel, "apple-proxy-singbox", "android", "Apple-Proxy-Nodes", { profileMode: "light", nodeErrorMode: "strict" }),
-    Object.freeze({ name: "apple-proxy-policy", client: "shared", kind: "private-policy", channel, policySchema: "schemaVersion=2; targets=single-layer; channels=edge,current,previous; readers accept schemaVersion=1", url: null }),
+    Object.freeze({ name: "apple-proxy-policy", client: "shared", kind: "private-policy", channel, policySchema: "schemaVersion=3; clients=anywhere,egern,shadowrocket,surge,sing-box,happ,v2box,clash; each client has schemaVersion=2 and complete 13-target map; readers accept schemaVersion=1/2", url: null }),
     configTask("happ-config-macos", "happ", "happ-config-generator.js", channel, "apple-proxy-happ", "macos", "Apple-Proxy-Happ", {}, { omitKeys: ["autoGroupMode", "clientChain"] }),
     configTask("happ-config-iphone", "happ", "happ-config-generator.js", channel, "apple-proxy-happ", "iphone", "Apple-Proxy-Happ", {}, { omitKeys: ["autoGroupMode", "clientChain"] }),
     configTask("happ-config-ipad", "happ", "happ-config-generator.js", channel, "apple-proxy-happ", "ipad", "Apple-Proxy-Happ", {}, { omitKeys: ["autoGroupMode", "clientChain"] }),

@@ -8,7 +8,7 @@
 
 ## 脚本与任务
 
-canonical catalog 共 30 个 File task。每个 generator task 都是“File + Script Operator”：File 源内容留空，Script Operator 以远程链接引用下面的 JS；不要把 JS 放到 File 的远程源文件字段。配置任务读取 schema v2 policy，节点任务不读取 policy。典型路径：
+canonical catalog 共 30 个 File task。每个 generator task 都是“File + Script Operator”：File 源内容留空，Script Operator 以远程链接引用下面的 JS；不要把 JS 放到 File 的远程源文件字段。配置任务读取 schema v3 按客户端分层的 policy，节点任务不读取 policy。典型路径：
 
 ```text
 current/egern/scripts/egern-node-generator.js
@@ -54,22 +54,53 @@ current/happ/scripts/happ-config-generator.js
 
 ## policy JSON
 
-单独建立一个私密 File task，内容输出名为 `apple-proxy-policy`，例如：
+单独建立一个私密 File task，内容输出名为 `apple-proxy-policy`。使用 schema v3：顶层包含 8 个客户端层，每层嵌套 schema v2，并完整填写以下 13 个业务目标。业务组显示名由生成器固定为中文，不要在各客户端另建英文同名组：
 
 ```json
 {
-  "schemaVersion": 2,
-  "targets": {
-    "ai": "NODE~美国 家宽|vless",
-    "github": "NODE~东京",
-    "youtube": "FOLLOW",
-    "apple": "DIRECT",
-    "final": "FOLLOW"
+  "schemaVersion": 3,
+  "clients": {
+    "surge": {
+      "schemaVersion": 2,
+      "targets": {
+        "ai": "FOLLOW",
+        "github": "FOLLOW",
+        "youtube": "FOLLOW",
+        "overseasMedia": "FOLLOW",
+        "globalSocial": "FOLLOW",
+        "apple": "DIRECT",
+        "microsoft": "DIRECT",
+        "domesticPlatform": "DIRECT",
+        "overseasGame": "FOLLOW",
+        "game": "DIRECT",
+        "download": "DIRECT",
+        "dnsAndRules": "FOLLOW",
+        "final": "FOLLOW"
+      }
+    },
+    "sing-box": {
+      "schemaVersion": 2,
+      "targets": {
+        "ai": "NODE~🇺🇸qqpw家宽|vless",
+        "github": "FOLLOW",
+        "youtube": "FOLLOW",
+        "overseasMedia": "FOLLOW",
+        "globalSocial": "FOLLOW",
+        "apple": "DIRECT",
+        "microsoft": "DIRECT",
+        "domesticPlatform": "DIRECT",
+        "overseasGame": "FOLLOW",
+        "game": "DIRECT",
+        "download": "DIRECT",
+        "dnsAndRules": "FOLLOW",
+        "final": "FOLLOW"
+      }
+    }
   }
 }
 ```
 
-不填写 `subscriptionTags`。所有完整配置任务读取这一个 policy，节点订阅任务只输出节点、不读取 policy。`final` 可填写 `FOLLOW`（默认 `🚀 节点选择`）、`DIRECT`（默认直连）或 `NODE~查询词`（默认固定节点）；旧字段名 `最终兜底` 仍会映射到 `final`。支持策略组的客户端会把 `漏网之鱼` 生成为 `🚀 节点选择`、`DIRECT`、`REJECT` 三选一，且 `REJECT` 仅供手动排查，不作为默认值。查询词经过 Unicode 规范化后必须唯一命中同一节点；缺失、多候选或协议不兼容都会阻止生成。节点展示名的旗帜、协议和 `·U` UDP 标记由生成器自动追加，不要把这些后缀复制进查询词；同名节点按协议区分时使用 `NODE~查询词|vless`。Surge、sing-box、Egern、Shadowrocket、Clash 会写入业务组默认值；Anywhere 的 `anywhere-strategy` 只输出脱敏的 `localAssignments` 核对结果，不能通过远程文件自动导入业务组绑定或 `漏网之鱼` 默认出口，必须在 App 内手动设置；HAPP/V2Box 需要重新 Preview 后才改变生成的 Xray 出口。固定节点不存在或不兼容时任务失败，不静默回退。
+示例只展开 Surge 和 sing-box；实际 policy 还必须包含 `anywhere`、`egern`、`shadowrocket`、`happ`、`v2box`、`clash` 六层，且每层都完整填写同一组 targets。Surge 的 `ai` 保持 `FOLLOW`；sing-box、Egern、Shadowrocket、Anywhere、HAPP、V2Box、Clash 的 `ai` 使用 `NODE~🇺🇸qqpw家宽|vless`。不填写 `subscriptionTags`。所有完整配置任务读取这一个 policy，节点订阅任务只输出节点、不读取 policy。`final` 可填写 `FOLLOW`（默认 `🚀 节点选择`）、`DIRECT`（默认直连）或 `NODE~查询词`（默认固定节点）；旧字段名 `最终兜底` 仍会映射到 `final`。支持策略组的客户端会把 `漏网之鱼` 生成为 `🚀 节点选择`、`DIRECT`、`REJECT` 三选一，且 `REJECT` 仅供手动排查，不作为默认值。查询词经过 Unicode 规范化后必须唯一命中同一节点；缺失、多候选或协议不兼容都会阻止生成。节点展示名的旗帜、协议和 `·U` UDP 标记由生成器自动追加，不要把这些后缀复制进查询词；同名节点按协议区分时使用 `NODE~查询词|vless`。Surge 当前不支持 VLESS，使用该固定目标会让 Surge 任务按设计失败关闭，需保持 `FOLLOW` 或改用 Surge 支持的协议。Anywhere 的 `anywhere-strategy` 只输出脱敏的 `localAssignments` 核对结果，不能通过远程文件自动导入业务组绑定或 `漏网之鱼` 默认出口，必须在 App 内手动设置；HAPP/V2Box 需要重新 Preview 后才改变生成的 Xray 出口。固定节点不存在或不兼容时任务失败，不静默回退。
 
 `final` 不改变前面的业务规则、广告/劫持拦截或 `ChinaTLD`/`ChinaIP` 规则；它只负责最后的未知流量。完整配置首次导入会采用 policy 默认值，但客户端若已缓存用户手动选择，刷新时可能继续保留该选择，需要在客户端手动切换一次。生产默认保持 `FOLLOW` 或按 policy 指定节点，不要把所有未知流量默认设成 `REJECT`。
 

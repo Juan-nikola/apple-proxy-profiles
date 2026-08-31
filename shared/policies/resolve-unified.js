@@ -28,7 +28,7 @@ function configuredTargets(policy, { channel, client }) {
     ? parsePrivatePolicy(policy)
     : policy;
   const resolved = resolvePrivatePolicy({ policy: parsed, channel, client });
-  if (parsed.schemaVersion === 2) return { ...defaults, ...resolved.targets };
+  if (parsed.schemaVersion === 2 || parsed.schemaVersion === 3) return { ...defaults, ...resolved.targets };
   const result = { ...defaults };
   for (const [legacyId, value] of Object.entries(resolved.targets ?? {})) {
     const id = LEGACY_TO_UNIFIED[legacyId];

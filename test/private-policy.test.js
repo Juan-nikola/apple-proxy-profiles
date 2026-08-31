@@ -1,7 +1,12 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { parsePrivatePolicy, resolvePrivatePolicy } from "../shared/policies/private-policy.js";
+import {
+  parsePrivatePolicy,
+  policyRevisionForChannel,
+  resolvePrivatePolicy,
+} from "../shared/policies/private-policy.js";
+import { defaultUnifiedPolicyTargets } from "../shared/policies/unified-policy.js";
 
 const TARGET_IDS = [
   "ai", "github", "youtube", "overseasMedia", "globalSocial", "overseasGame",
@@ -29,6 +34,13 @@ function policyObject(overrides = {}) {
 
 function policyText(overrides = {}) {
   return JSON.stringify(policyObject(overrides));
+}
+
+function clientLayer(ai) {
+  return {
+    schemaVersion: 2,
+    targets: { ...defaultUnifiedPolicyTargets(), ai },
+  };
 }
 
 function assertRejectedWithoutSecret(text, pattern = /policy|invalid|unsupported|unknown|target|channel|revision/iu) {
@@ -116,4 +128,54 @@ test("rejects secret-shaped fields and values without echoing them in errors", (
     valueObject.channels.edge.clients.surge[key] = value;
     assertRejectedWithoutSecret(JSON.stringify(valueObject), /secret|unsupported|policy/iu);
   }
+});
+
+test("selects each client layer from unified policy schema v3", () => {
+  const policy = parsePrivatePolicy(JSON.stringify({
+    schemaVersion: 3,
+    clients: {
+      anywhere: clientLayer("NODE~🇺🇸qqpw家宽|vless"),
+      egern: clientLayer("NODE~🇺🇸qqpw家宽|vless"),
+      shadowrocket: clientLayer("NODE~🇺🇸qqpw家宽|vless"),
+      surge: clientLayer("FOLLOW"),
+      "sing-box": clientLayer("NODE~🇺🇸qqpw家宽|vless"),
+      happ: clientLayer("NODE~🇺🇸qqpw家宽|vless"),
+      v2box: clientLayer("NODE~🇺🇸qqpw家宽|vless"),
+      clash: clientLayer("NODE~🇺🇸qqpw家宽|vless"),
+    },
+  }));
+
+  assert.equal(policy.schemaVersion, 3);
+  assert.equal(policy.clients.singbox.targets.ai, "NODE~🇺🇸qqpw家宽|vless");
+  assert.equal(resolvePrivatePolicy({ policy, channel: "current", client: "surge" }).targets.ai, "FOLLOW");
+  assert.equal(resolvePrivatePolicy({ policy, channel: "current", client: "singbox" }).targets.ai, "NODE~🇺🇸qqpw家宽|vless");
+  assert.equal(policyRevisionForChannel(policy, "current"), "schema-3");
+});
+
+test("requires every unified policy v3 client layer to be complete and unique", () => {
+  const base = {
+    schemaVersion: 3,
+    clients: Object.fromEntries([
+      ["anywhere", clientLayer("NODE~🇺🇸qqpw家宽|vless")],
+      ["egern", clientLayer("NODE~🇺🇸qqpw家宽|vless")],
+      ["shadowrocket", clientLayer("NODE~🇺🇸qqpw家宽|vless")],
+      ["surge", clientLayer("FOLLOW")],
+      ["sing-box", clientLayer("NODE~🇺🇸qqpw家宽|vless")],
+      ["happ", clientLayer("NODE~🇺🇸qqpw家宽|vless")],
+      ["v2box", clientLayer("NODE~🇺🇸qqpw家宽|vless")],
+      ["clash", clientLayer("NODE~🇺🇸qqpw家宽|vless")],
+    ]),
+  };
+
+  const incomplete = structuredClone(base);
+  delete incomplete.clients.surge.targets.final;
+  assertRejectedWithoutSecret(JSON.stringify(incomplete), /incomplete|business target/iu);
+
+  const duplicateAlias = structuredClone(base);
+  duplicateAlias.clients.singbox = duplicateAlias.clients["sing-box"];
+  assertRejectedWithoutSecret(JSON.stringify(duplicateAlias), /conflicting|client/iu);
+
+  const missingClient = structuredClone(base);
+  delete missingClient.clients.anywhere;
+  assertRejectedWithoutSecret(JSON.stringify(missingClient), /missing|required|client/iu);
 });

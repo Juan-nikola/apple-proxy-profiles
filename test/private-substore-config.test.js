@@ -109,7 +109,7 @@ test("binds the shared policy to every config and audit task, never node tasks",
   assert.ok(catalog.filter(({ output }) => output === "nodes").every((task) => !Object.hasOwn(task, "policyInput")));
   assert.equal(
     catalog.find(({ name }) => name === "apple-proxy-policy").policySchema,
-    "schemaVersion=2; targets=single-layer; channels=edge,current,previous; readers accept schemaVersion=1",
+    "schemaVersion=3; clients=anywhere,egern,shadowrocket,surge,sing-box,happ,v2box,clash; each client has schemaVersion=2 and complete 13-target map; readers accept schemaVersion=1/2",
   );
 });
 

@@ -109,22 +109,55 @@ Sub-Store 界面的“关闭缓存/noCache”和“不验证服务器证书/inse
 - 未命中业务规则和中国 IP 回落的目标进入 `漏网之鱼`；它的默认值由 `apple-proxy-policy` 的 `final` 控制；
 - 规则和节点凭据没有被发布到公开 Pages。
 
-#### 4. 设置统一业务节点（可选）
+#### 4. 设置统一业务节点
 
-在 `apple-proxy-policy` 的私密 JSON 文件中只写节点大致名称，不写凭据：
+在 `apple-proxy-policy` 的私密 JSON 文件中按客户端分层设置默认值，只写节点大致名称，不写凭据。每个客户端层都使用相同的中文业务组映射；只有 Surge 的 AI 业务保持 `FOLLOW`，因为 Surge 当前不支持 VLESS：
 
 ```json
 {
-  "schemaVersion": 2,
-  "targets": {
-    "ai": "NODE~美国 家宽|vless",
-    "github": "NODE~东京",
-    "youtube": "FOLLOW",
-    "apple": "DIRECT",
-    "final": "FOLLOW"
+  "schemaVersion": 3,
+  "clients": {
+    "surge": {
+      "schemaVersion": 2,
+      "targets": {
+        "ai": "FOLLOW",
+        "github": "FOLLOW",
+        "youtube": "FOLLOW",
+        "overseasMedia": "FOLLOW",
+        "globalSocial": "FOLLOW",
+        "apple": "DIRECT",
+        "microsoft": "DIRECT",
+        "domesticPlatform": "DIRECT",
+        "overseasGame": "FOLLOW",
+        "game": "DIRECT",
+        "download": "DIRECT",
+        "dnsAndRules": "FOLLOW",
+        "final": "FOLLOW"
+      }
+    },
+    "sing-box": {
+      "schemaVersion": 2,
+      "targets": {
+        "ai": "NODE~🇺🇸qqpw家宽|vless",
+        "github": "FOLLOW",
+        "youtube": "FOLLOW",
+        "overseasMedia": "FOLLOW",
+        "globalSocial": "FOLLOW",
+        "apple": "DIRECT",
+        "microsoft": "DIRECT",
+        "domesticPlatform": "DIRECT",
+        "overseasGame": "FOLLOW",
+        "game": "DIRECT",
+        "download": "DIRECT",
+        "dnsAndRules": "FOLLOW",
+        "final": "FOLLOW"
+      }
+    }
   }
 }
 ```
+
+示例只展开 Surge 和 sing-box；实际 policy 必须包含 `anywhere`、`egern`、`shadowrocket`、`surge`、`sing-box`、`happ`、`v2box`、`clash` 八个客户端层，每层都必须完整填写 13 个 target。业务组名称固定为 `🤖 AI 专用`、`🐙 GitHub`、`📺 YouTube`、`🎬 海外流媒体`、`💬 海外社交`、`🍎 Apple`、`🪟 Microsoft`、`🇨🇳 国内平台`、`🌍 海外游戏`、`🎮 游戏连接`、`⬇️ 下载/P2P`、`🧭 DNS 与规则下载`、`漏网之鱼`。
 
 `final` 支持 `FOLLOW`（默认使用 `🚀 节点选择`）、`DIRECT`（默认直连）和 `NODE~查询词`（默认固定到唯一匹配节点）。`漏网之鱼` 始终提供 `🚀 节点选择`、`DIRECT`、`REJECT` 三个手动选项，`REJECT` 不会成为默认值；旧 JSON 中的 `最终兜底` 仍可作为 `final` 的兼容键。`NODE~` 必须唯一命中；零个或多个候选都会拒绝生成，不会自动猜节点。节点显示名中的地区旗帜、协议（例如 `· VLESS`）和 UDP 能力（例如 `·U`）由生成器自动追加，策略匹配的是原始节点名。节点原始名称相同但协议不同的时候，在查询词后加 `|协议`，例如 `NODE~qqpw家宽|vless`；协议限定大小写不敏感，但必须是项目支持的协议。Surge、sing-box、Egern、Shadowrocket、Clash 会把结果写入业务组默认位置，仍允许你在客户端内切换；Anywhere 的 `anywhere-strategy` 只输出脱敏的 `localAssignments` 核对结果，不能通过远程文件自动导入业务组绑定或 `漏网之鱼` 默认出口，必须在 App 内手动设置。HAPP 和 V2Box 会把结果写入生成后的 Xray 路由，修改后需要重新 Preview。固定节点不存在或不兼容时会直接失败，不会静默换节点。
 
@@ -180,7 +213,7 @@ OneXray、v2rayN 保持移除。HAPP 的稳定 GeoData URL 为 `public/current/h
 
 ## 统一行为
 
-- unified policy 只输出 schema v2；schema v1 仅作为隔离迁移读取器。
+- unified policy 使用 schema v3 按客户端分层；每层嵌套 schema v2 的完整 13 项 targets，schema v1/v2 仅作为兼容读取器。
 - 所有客户端使用同一 routing plan：`ChinaTLD -> ChinaIP -> 漏网之鱼`；`final` 只控制未命中业务规则后的最终出口。
 - Surge 使用单远程节点池，避免 Profile 和节点订阅漂移。
 - 只发布 `current`，采用原子发布并保留 `previous` 回滚数据。
@@ -201,7 +234,7 @@ OneXray、v2rayN 保持移除。HAPP 的稳定 GeoData URL 为 `public/current/h
 | HAPP | 3 | macOS/iPhone/iPad JSON Config |
 | V2Box | 3 | 节点 + iPhone/iPad Config |
 | Clash Apple | 5 | 节点 + 四个平台 Config |
-| Unified policy | 1 | schema v2 私密 policy |
+| Unified policy | 1 | schema v3 按客户端分层的私密 policy |
 
 后台只保留上述 9 个手动 collection 和 30 个 canonical task；删除旧的 OneXray/v2rayN 对象及其任务。不要在 Sub-Store 使用 `subscriptionTags` 自动识别，所有节点来源通过 collection 手动勾选。
 
