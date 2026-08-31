@@ -2,19 +2,19 @@
   "channel": "current",
   "counts": {
     "domainCategories": 41,
-    "domainRules": 911096,
+    "domainRules": 910933,
     "ipCategories": 41,
     "ipRules": 7670
   },
   "domain": {
-    "byteLength": 20554982,
+    "byteLength": 20557806,
     "categoryCount": 41,
     "name": "AppleProxySiteCurrent",
-    "ruleCount": 911096,
-    "sha256": "72cba744bbfff6e8afeeeecca4a7ff192a8fb67c1f304cdbcf7cbf68884bc83f"
+    "ruleCount": 910933,
+    "sha256": "405da6d307e4f987ff90c759acf7e537acd2a64000aaba349ac6b5244ba69f27"
   },
   "hashes": {
-    "domain": "72cba744bbfff6e8afeeeecca4a7ff192a8fb67c1f304cdbcf7cbf68884bc83f",
+    "domain": "405da6d307e4f987ff90c759acf7e537acd2a64000aaba349ac6b5244ba69f27",
     "ip": "5367df50cf24c72a9917ae6700daa77aecaf42fc8ffc9588e895d80c6fd2b80f"
   },
   "inputHashes": {
@@ -45,7 +45,7 @@
     "Weibo": "54dd4c6c740906e521107f0992ebd1334ccff5fe551c042d9aa619b1c4928045",
     "XiaoHongShu": "93710ce8cd8025cbf0b836a7f35feee2737c06ad07f4f16d5e9eba47829f39fb",
     "YouTube": "e14f01cd18d0c5c60a4d7aa4ccb26ec191358392af76411cfaba2ec85687b89b",
-    "iran-v2ray-rules": "ddb5827442817cac0112bfbe7dd573747cc05ca85749b358b023c11549a00b2e",
+    "iran-v2ray-rules": "dbb8c61fc01acdd09e81a9a9e0da991e2b438a5af66313a39098c183ebb15a56",
     "loyalsoldier-clash-apple": "f64a84a111d2ef6b79683358fe33d36b067ca630f8488ebd286d979cf8ef477c",
     "loyalsoldier-clash-applications": "b464ccfbf4c310112c68f64aa853004fc15eefe8eca017b5b11b78256c6b4c9c",
     "loyalsoldier-clash-cncidr": "b498a296e7f9475e4c3ff978336688d3a5bba940183aa066a5098872ee0da2ff",
@@ -73,10 +73,10 @@
   },
   "provenance": {
     "diagnostics": {
-      "matcherCount": 1286671,
+      "matcherCount": 1286525,
       "sourceCount": 41
     },
-    "inputSha256": "8ffc1c76bf4ed7f58aa28727b7fef2082242ce530882e4464acfa8610329aaf5",
+    "inputSha256": "5294d0558ca27edcafc899a5552ccf82ea81d60cedc00a51e650a3f925bd6119",
     "inputSourceCount": 41,
     "source": "shared-lightweight-rule-snapshot",
     "sources": [
@@ -322,11 +322,11 @@
         "branch": "master",
         "commit": "676695ea3b4c95d5cf48a7c4e2e718bac5b8a099",
         "license": "MIT",
-        "releaseTag": "202608220502",
+        "releaseTag": "202608311106",
         "repository": "https://github.com/Chocolate4U/Iran-v2ray-rules",
-        "retrievalUrl": "https://github.com/Chocolate4U/Iran-v2ray-rules/releases/download/202608220502/geosite.dat",
-        "retrievedAt": "2026-08-22T00:00:00Z",
-        "sha256": "5ff22eb6bc59573253dce2655498db4ed8096380787f15f5d9268756a4940532",
+        "retrievalUrl": "https://github.com/Chocolate4U/Iran-v2ray-rules/releases/download/202608311106/geosite.dat",
+        "retrievedAt": "2026-08-31T11:08:56Z",
+        "sha256": "994a6f6b725cfecfaa2c95593ae51cec2d4fafe5614f0797044020ce05bb0184",
         "sourceId": "iran-v2ray-rules"
       },
       {
@@ -836,11 +836,11 @@
     },
     {
       "code": "APP-IRAN-V2RAY-RULES",
-      "domain": 231812,
+      "domain": 231649,
       "id": "iran-v2ray-rules",
-      "inputSha256": "ddb5827442817cac0112bfbe7dd573747cc05ca85749b358b023c11549a00b2e",
+      "inputSha256": "dbb8c61fc01acdd09e81a9a9e0da991e2b438a5af66313a39098c183ebb15a56",
       "ip": 0,
-      "sourceSha256": "5ff22eb6bc59573253dce2655498db4ed8096380787f15f5d9268756a4940532"
+      "sourceSha256": "994a6f6b725cfecfaa2c95593ae51cec2d4fafe5614f0797044020ce05bb0184"
     },
     {
       "code": "APP-LOYALSOLDIER-CLASH-APPLE",

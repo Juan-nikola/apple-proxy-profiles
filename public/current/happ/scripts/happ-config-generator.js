@@ -2181,6 +2181,7 @@ var HappConfigBundle = (() => {
   var TARGET_ID_SET = new Set(PRIVATE_POLICY_TARGET_IDS);
   var CHANNEL_SET = new Set(PRIVATE_POLICY_CHANNELS);
   var CLIENT_SET = new Set(PRIVATE_POLICY_CLIENTS);
+  var UNIFIED_POLICY_CLIENT_KEYS = /* @__PURE__ */ new Set([...PRIVATE_POLICY_CLIENTS, "sing-box"]);
   var CHINA_DNS_SET = new Set(OPTION_VALUES.chinaDns);
   var GLOBAL_DNS_SET = new Set(OPTION_VALUES.globalDns);
   var AD_BLOCK_MODES = /* @__PURE__ */ new Set(["off", "full"]);
@@ -2351,12 +2352,9 @@ var HappConfigBundle = (() => {
     }
     return deepFreeze({ schemaVersion: 1, channels });
   }
-  function normalizeUnifiedPolicyObject(value) {
-    requireRecord(value, "policy must be an object");
-    requireKeys(value, ["schemaVersion", "targets"], /* @__PURE__ */ new Set(["schemaVersion", "targets"]));
-    if (value.schemaVersion !== 2) throw invalid2("schemaVersion must be 2");
+  function normalizeUnifiedTargets(value, { complete }) {
     requireRecord(value.targets, "targets must be an object");
-    const targets = defaultUnifiedPolicyTargets();
+    const targets = complete ? {} : defaultUnifiedPolicyTargets();
     const seen = /* @__PURE__ */ new Map();
     for (const [key, rawTarget] of Object.entries(value.targets)) {
       const target = unifiedPolicyTargetByKey(key);
@@ -2368,10 +2366,47 @@ var HappConfigBundle = (() => {
       seen.set(target.id, canonical);
       targets[target.id] = canonical;
     }
+    if (complete && Object.keys(value.targets).length !== UNIFIED_POLICY_TARGET_IDS.length) {
+      throw invalid2("contains an incomplete business target map");
+    }
     for (const id of UNIFIED_POLICY_TARGET_IDS) {
       if (!Object.hasOwn(targets, id)) throw invalid2("contains an incomplete business target map");
     }
-    return deepFreeze({ schemaVersion: 2, targets });
+    return targets;
+  }
+  function normalizeUnifiedPolicyLayer(value, { complete }) {
+    requireRecord(value, "client policy must be an object");
+    requireKeys(value, ["schemaVersion", "targets"], /* @__PURE__ */ new Set(["schemaVersion", "targets"]));
+    if (value.schemaVersion !== 2) throw invalid2("client policy schemaVersion must be 2");
+    return {
+      schemaVersion: 2,
+      targets: normalizeUnifiedTargets(value, { complete })
+    };
+  }
+  function normalizeUnifiedPolicyObject(value) {
+    requireRecord(value, "policy must be an object");
+    requireKeys(value, ["schemaVersion", "targets"], /* @__PURE__ */ new Set(["schemaVersion", "targets"]));
+    if (value.schemaVersion !== 2) throw invalid2("schemaVersion must be 2");
+    return deepFreeze(normalizeUnifiedPolicyLayer(value, { complete: false }));
+  }
+  function normalizeUnifiedPolicyByClient(value) {
+    requireRecord(value, "policy must be an object");
+    requireKeys(value, ["schemaVersion", "clients"], /* @__PURE__ */ new Set(["schemaVersion", "clients"]));
+    if (value.schemaVersion !== 3) throw invalid2("schemaVersion must be 3");
+    requireRecord(value.clients, "clients must be an object");
+    const clients = {};
+    const seen = /* @__PURE__ */ new Set();
+    for (const [key, layer] of Object.entries(value.clients)) {
+      if (!UNIFIED_POLICY_CLIENT_KEYS.has(key)) throw invalid2("contains an unsupported policy client");
+      const client = key === "sing-box" ? "singbox" : key;
+      if (seen.has(client)) throw invalid2("contains conflicting policy client aliases");
+      seen.add(client);
+      clients[client] = normalizeUnifiedPolicyLayer(layer, { complete: true });
+    }
+    for (const client of PRIVATE_POLICY_CLIENTS) {
+      if (!Object.hasOwn(clients, client)) throw invalid2("is missing a required policy client");
+    }
+    return deepFreeze({ schemaVersion: 3, clients });
   }
   function deepFreeze(value) {
     if (value && typeof value === "object" && !Object.isFrozen(value)) {
@@ -2391,14 +2426,19 @@ var HappConfigBundle = (() => {
     } catch (error) {
       throw error;
     }
+    if (parsed?.schemaVersion === 3) return normalizeUnifiedPolicyByClient(parsed);
     if (parsed?.schemaVersion === 2) return normalizeUnifiedPolicyObject(parsed);
     return normalizePolicyObject(parsed);
   }
   function resolvePrivatePolicy({ policy, channel, client } = {}) {
-    const normalized = typeof policy === "string" || policy instanceof Uint8Array ? parsePrivatePolicy(policy) : policy?.schemaVersion === 2 ? normalizeUnifiedPolicyObject(policy) : normalizePolicyObject(policy);
-    if (normalized.schemaVersion === 2) {
+    const normalized = typeof policy === "string" || policy instanceof Uint8Array ? parsePrivatePolicy(policy) : policy?.schemaVersion === 3 ? normalizeUnifiedPolicyByClient(policy) : policy?.schemaVersion === 2 ? normalizeUnifiedPolicyObject(policy) : normalizePolicyObject(policy);
+    if (normalized.schemaVersion === 2 || normalized.schemaVersion === 3) {
+      const targets = normalized.schemaVersion === 3 ? normalized.clients[client]?.targets : normalized.targets;
+      if (normalized.schemaVersion === 3 && !CLIENT_SET.has(client)) {
+        throw invalid2("contains an unsupported policy client");
+      }
       return deepFreeze({
-        targets: { ...normalized.targets },
+        targets: { ...targets },
         dns: { chinaDns: "alidns", globalDns: "cloudflare" },
         adblockMode: "off",
         clientChain: { mode: "off" }
@@ -2474,7 +2514,7 @@ var HappConfigBundle = (() => {
     if (!policy) return defaults2;
     const parsed = typeof policy === "string" || policy instanceof Uint8Array ? parsePrivatePolicy(policy) : policy;
     const resolved = resolvePrivatePolicy({ policy: parsed, channel, client });
-    if (parsed.schemaVersion === 2) return { ...defaults2, ...resolved.targets };
+    if (parsed.schemaVersion === 2 || parsed.schemaVersion === 3) return { ...defaults2, ...resolved.targets };
     const result = { ...defaults2 };
     for (const [legacyId, value] of Object.entries(resolved.targets ?? {})) {
       const id = LEGACY_TO_UNIFIED[legacyId];

@@ -3,9 +3,9 @@
   "client": "v2box",
   "files": [
     {
-      "bytes": 172004,
+      "bytes": 174358,
       "path": "v2box/scripts/substore-config-generator.js",
-      "sha256": "34fb6fb0380b9db7978afe020888f3e48b1e4588a64494d7471dc7af576a0887"
+      "sha256": "862eb5457064c76c6867eb0dca4f093f88eb7cdd1c8ad3f999b13b1a496e9703"
     },
     {
       "bytes": 120585,
@@ -14,7 +14,7 @@
     }
   ],
   "generatedAt": "2026-08-25T18:39:12Z",
-  "manifestHash": "902c80f3717cf7440d0eb5f5b666dfac1a7eb4389e9cdb76b6a628a44fa01d0e",
+  "manifestHash": "49434b6e6a55cf1d95fe6ce0d659627be24d7cf8640be2bde074986274413c6e",
   "optionalPacks": {},
   "schemaVersion": 1,
   "sharedAssets": [
@@ -54,14 +54,14 @@
       "sha256": "5367df50cf24c72a9917ae6700daa77aecaf42fc8ffc9588e895d80c6fd2b80f"
     },
     {
-      "bytes": 20554982,
+      "bytes": 20557806,
       "path": "geodata/ir/AppleProxySiteCurrent.dat",
-      "sha256": "72cba744bbfff6e8afeeeecca4a7ff192a8fb67c1f304cdbcf7cbf68884bc83f"
+      "sha256": "405da6d307e4f987ff90c759acf7e537acd2a64000aaba349ac6b5244ba69f27"
     },
     {
       "bytes": 34734,
       "path": "geodata/ir/manifest.json",
-      "sha256": "f19972a787b23610bd6c6d8740505d3b5e8ce8b196d74ba45aac367eb7896673"
+      "sha256": "0bd9b2bc0c6bcc26e134f2745208bddcb6af5be2a005b39b05ed5f2d41f280c8"
     },
     {
       "bytes": 92798,

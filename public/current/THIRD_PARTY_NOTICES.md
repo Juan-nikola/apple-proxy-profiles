@@ -60,7 +60,7 @@ esbuild 是开发依赖；生成器源码不因此改用 MIT 许可。esbuild �
 - 固定提交：`f175e3f94891dbc1bb88edfc2d9d85f5a9051a23`；固定发布：`202608221547`，资产 `geosite.dat`，SHA-256 `76fdbe01687a6cc7683b50c38ceea84941458e8371d215918daf555665a537cd`
 - 上游许可：MIT
 - 项目：[Chocolate4U/Iran-v2ray-rules](https://github.com/Chocolate4U/Iran-v2ray-rules)
-- 固定提交：`676695ea3b4c95d5cf48a7c4e2e718bac5b8a099`；固定发布：`202608220502`，资产 `geosite.dat`，SHA-256 `5ff22eb6bc59573253dce2655498db4ed8096380787f15f5d9268756a4940532`
+- 固定提交：`676695ea3b4c95d5cf48a7c4e2e718bac5b8a099`；固定发布：`202608311106`，资产 `geosite.dat`，SHA-256 `994a6f6b725cfecfaa2c95593ae51cec2d4fafe5614f0797044020ce05bb0184`
 - 上游许可：MIT
 - 使用范围：仅在用户选择 `ru` 或 `ir` 区域时作为可选规则覆盖层读取。适配器只解析固定发布中的 Xray `geosite.dat`/`geoip.dat` 标准 protobuf，保留区域和来源类别 ID，规范化域名/CIDR，并统计或拒绝不支持的记录；不分配最终策略动作。
 
