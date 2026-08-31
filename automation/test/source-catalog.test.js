@@ -117,7 +117,7 @@ test("pins documented release assets with verified digests", () => {
     ["v2fly-domain-list", "20260819144818", "dlc.dat_plain.yml", "d74dc15311117fe983180bf3245e083633d14bb148ea5cd9db79b1d15a8533c2"],
     ["loyalsoldier-rules-dat", "202608212217", "geosite.dat", "b392a98a323777deab59d8208e856df09cf96f3a76d2869eb7a8e5289bc5d9f4"],
     ["russia-v2ray-rules", "202608221547", "geosite.dat", "76fdbe01687a6cc7683b50c38ceea84941458e8371d215918daf555665a537cd"],
-    ["iran-v2ray-rules", "202608220502", "geosite.dat", "5ff22eb6bc59573253dce2655498db4ed8096380787f15f5d9268756a4940532"],
+    ["iran-v2ray-rules", "202608311106", "geosite.dat", "994a6f6b725cfecfaa2c95593ae51cec2d4fafe5614f0797044020ce05bb0184"],
     ["loyalsoldier-clash-direct", "202608252255", "direct.txt", "555003affe662bc61f668aaa4efba5ede7b43921efc0331faeda33dc8d0852cf"],
     ["loyalsoldier-clash-reject", "202608252255", "reject.txt", "106bc6dfae726634b21bd9112da80f679419b71009af8e6a376915404f6992a5"],
     ["loyalsoldier-clash-applications", "202608252255", "applications.txt", "33bc8f07bacf74082fcb5f361eded1f6f9d3abcedcbe37ada2eb2ab4ae031732"],
