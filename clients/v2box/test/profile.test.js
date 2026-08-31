@@ -30,6 +30,17 @@ test("applies final DIRECT and fixed-node policies to the V2Box catch-all", () =
   assert.equal(fixedProfile.routing.rules.at(-1).outboundTag, "ap-node-0");
 });
 
+test("uses published GeoData assets and routes AI when Sub-Store omits asset context", () => {
+  const options = parseV2BoxOptions({ output: "config", type: "collection", name: "fixture", platform: "iphone", region: "cn", channel: "current" });
+  const fixed = { name: "🇺🇸qqpw家宽", type: "vless", server: "fixed.invalid", port: 443, uuid: "TEST_ONLY_FIXED_UUID", _profile: { id: "fixed-v2box" } };
+  const policy = parsePrivatePolicy(JSON.stringify({ schemaVersion: 2, targets: { "🤖 AI 专用": "NODE~🇺🇸qqpw家宽|vless" } }));
+  const resolution = resolveUnifiedPolicy({ policy, client: "v2box", allNodes: [fixed], eligibleNodes: [fixed] });
+  const profile = renderV2BoxProfile({ options, nodes: [fixed], policyResolution: resolution });
+  assert.equal(profile.assets.geosite.url, "https://juan-nikola.github.io/apple-proxy-profiles/current/geodata/cn/AppleProxySiteCurrent.dat");
+  assert.equal(profile.assets.geoip.url, "https://juan-nikola.github.io/apple-proxy-profiles/current/geodata/cn/AppleProxyIPCurrent.dat");
+  assert.equal(profile.routing.rules.find(({ ruleTag }) => ruleTag === "source-OpenAI").outboundTag, "ap-node-0");
+});
+
 test("binds asset-backed profile URLs to region and channel", () => {
   const options = parseV2BoxOptions({ output: "config", type: "collection", name: "fixture", platform: "ipad", region: "ru", channel: "current" });
   const assets = renderV2BoxAssetManifest({ region: "ru", channel: "current", geositeSha256: "a".repeat(64), geoipSha256: "b".repeat(64) });
