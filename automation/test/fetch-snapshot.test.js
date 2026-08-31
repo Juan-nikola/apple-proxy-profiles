@@ -33,6 +33,20 @@ test("fetches immutable raw bytes and hashes them without resolving master", asy
   assert.deepEqual(snapshot.get("Fixture").source, source);
 });
 
+test("sends a descriptive user agent to GitHub raw sources", async () => {
+  let headers;
+  await fetchSnapshot({
+    commit,
+    catalog: [source],
+    retries: 0,
+    fetchImpl: async (url, options) => {
+      headers = options.headers;
+      return response("DOMAIN-SUFFIX,example.com\n");
+    },
+  });
+  assert.match(headers["User-Agent"], /^apple-proxy-profiles\//u);
+});
+
 test("fails closed for redirects, HTML, invalid UTF-8, and oversized bodies", async () => {
   const cases = [
     [() => new Response(null, { status: 302, headers: { location: "https://example.invalid" } }), /redirect status 302/u],

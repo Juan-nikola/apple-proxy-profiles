@@ -2277,7 +2277,16 @@ var ShadowrocketProfileBundle = (() => {
       hidden: group.hidden,
       policySelectName: group.defaultChoice
     }));
-    return groups.map((group) => {
+    const withPolicyDefaults = groups.map((group) => {
+      if (group.policySelectName !== "\u{1F680} \u8282\u70B9\u9009\u62E9" || group.items.includes(group.policySelectName)) {
+        return group;
+      }
+      return {
+        ...group,
+        items: [group.policySelectName, ...group.items]
+      };
+    });
+    return withPolicyDefaults.map((group) => {
       if (group.name !== "\u{1F680} \u8282\u70B9\u9009\u62E9") return group;
       return {
         ...group,

@@ -26,6 +26,7 @@ test("documents the exact three-layer boundary and pinned compatibility", async 
   assert.match(content.readme, /e15518fde1f5d2652dfc1c234c89a68b87cecec0|上游兼容性/u);
   assert.equal(packageIds.length, 14);
   assert.match(content.readme, /14 个稳定.*业务包/u);
+  assert.match(content.readme, /localAssignments\.importable[\s\S]*false[\s\S]*不能.*自动.*绑定/u);
   for (const id of packageIds) assert.ok(content.readme.includes(`\`${id}\``), `README missing package ${id}`);
   assert.match(content.readme, /Advertising[\s\S]*Advertising_Domain[\s\S]*可选/u);
   assert.match(content.readme, /95,000.*100,000/u);
@@ -54,6 +55,7 @@ test("deployment pins private arguments, all import layers, and manual refresh",
   assert.doesNotMatch(deployment, /默认的 Hijacking、BlockHttpDNS|四个 AI (?:规则集|分片)/u);
   assert.match(deployment, /Advertising[\s\S]*Advertising_Domain[\s\S]*删除或禁用/u);
   assert.match(deployment, /OverseasGame[\s\S]*海外游戏/u);
+  assert.match(deployment, /localAssignments\.importable[\s\S]*false[\s\S]*手动/u);
 });
 
 test("README is independently copyable for the two-layer Sub-Store node setup", async () => {
@@ -88,7 +90,7 @@ test("README contains the complete current-UI beginner deployment path", async (
   const ruleImportSection = readme.split("### 4. 导入公开 `.arrs` 规则\n", 2)[1]?.split("\n### 5. ", 1)[0] ?? "";
   assert.deepEqual(
     [...ruleImportSection.matchAll(/^(\d+)\. /gmu)].map((match) => Number(match[1])),
-    [1, 2, 3, 4, 5],
+    [1, 2, 3, 4, 5, 6],
     "README rule import steps must be sequential",
   );
 });

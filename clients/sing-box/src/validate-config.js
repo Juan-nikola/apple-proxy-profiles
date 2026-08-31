@@ -80,7 +80,12 @@ export function validateSingBoxConfig(config) {
   }
   for (const outbound of outbounds ?? []) {
     for (const target of outbound.outbounds ?? []) if (!outboundTags.has(target)) errors.push("outbound references missing tag");
-    if (outbound.default !== undefined && !outboundTags.has(outbound.default)) errors.push("selector default references missing tag");
+    if (outbound.default !== undefined) {
+      if (!outboundTags.has(outbound.default)) errors.push("selector default references missing tag");
+      else if (outbound.type === "selector" && !outbound.outbounds?.includes(outbound.default)) {
+        errors.push("selector default is not an outbound candidate");
+      }
+    }
     if (outbound.type === "urltest" && typeof outbound.url !== "string") errors.push("urltest URL is missing");
   }
   for (const endpoint of config.endpoints ?? []) {

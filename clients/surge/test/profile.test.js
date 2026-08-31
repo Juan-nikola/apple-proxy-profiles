@@ -110,8 +110,24 @@ test("uses policy.final as the default of the switchable leak group", () => {
   const resolution = resolveUnifiedPolicy({ policy, client: "surge", allNodes: [normalizedSsNode], eligibleNodes: [normalizedSsNode] });
   const profile = renderSurgeProfile(options, [normalizedSsNode], { ruleBaseUrl, policyResolution: resolution });
 
-  assert.match(profile, /^漏网之鱼 = select,🚀 节点选择,DIRECT,REJECT,.*policy-select-name=DIRECT/mu);
+  assert.match(profile, /^漏网之鱼 = select,DIRECT,🚀 节点选择,REJECT,.*policy-select-name=DIRECT/mu);
   assert.match(profile, /^FINAL,漏网之鱼,dns-failed$/mu);
+});
+
+test("makes policy-driven AI defaults selectable in Surge", () => {
+  const options = parseSurgeOptions(baseOptions);
+  const policy = parsePrivatePolicy(JSON.stringify({ schemaVersion: 2, targets: { "🤖 AI 专用": "FOLLOW" } }));
+  const resolution = resolveUnifiedPolicy({
+    policy,
+    client: "surge",
+    allNodes: [normalizedSsNode],
+    eligibleNodes: [normalizedSsNode],
+  });
+  const profile = renderSurgeProfile(options, [normalizedSsNode], { ruleBaseUrl, policyResolution: resolution });
+  const line = profile.split("\n").find((value) => value.startsWith("🤖 AI 专用 ="));
+
+  assert.match(line, /,🚀 节点选择(?:,|$)/u);
+  assert.match(line, /policy-select-name=🚀 节点选择$/u);
 });
 
 test("renders ChinaTLD after OverseasGame and before ChinaIP in the lightweight Surge precedence", () => {
@@ -219,6 +235,26 @@ test("renders a pure remote Surge profile without embedding node transport detai
     `🌏 亚太 = select,⚡ 亚太自动,include-other-group=📦 远程节点池,policy-regex-filter=${continentFilter(asia)}`,
   );
   assert.doesNotMatch(profile, /^🇯🇵 日本 = /mu);
+  assert.deepEqual(validateSurgeProfile(profile), { valid: true, errors: [] });
+});
+
+test("keeps fixed policy defaults dynamic when Surge uses a remote node pool", () => {
+  const options = parseSurgeOptions({
+    ...baseOptions,
+    proxyPolicyUrl: "https://substore.example.invalid/surge-nodes",
+  });
+  const policy = parsePrivatePolicy(JSON.stringify({ schemaVersion: 2, targets: { "🤖 AI 专用": "NODE~Tokyo A" } }));
+  const resolution = resolveUnifiedPolicy({
+    policy,
+    client: "surge",
+    allNodes: [normalizedSsNode],
+    eligibleNodes: [normalizedSsNode],
+  });
+  const profile = renderSurgeProfile(options, [normalizedSsNode], { ruleBaseUrl, policyResolution: resolution });
+  const line = profile.split("\n").find((value) => value.startsWith("🤖 AI 专用 ="));
+
+  assert.match(line, /policy-select-name=🇯🇵 Tokyo A｜机场·U$/u);
+  assert.doesNotMatch(line, /,🇯🇵 Tokyo A｜机场·U,/u);
   assert.deepEqual(validateSurgeProfile(profile), { valid: true, errors: [] });
 });
 

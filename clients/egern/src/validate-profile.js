@@ -53,6 +53,11 @@ function canonicalCandidates(fields, schema) {
   }
 
   const first = withoutExternal[0];
+  if (fields.name === "🤖 AI 专用"
+    && withoutExternal.length === 1
+    && ["🚀 节点选择", "DIRECT"].includes(withoutExternal[0])) {
+    return [];
+  }
   if (!INTERACTIVE_POLICY_VALUES.has(first)) return withoutExternal;
   if (first === "DIRECT" && schema.defaultChoice !== "DIRECT"
     && withoutExternal.slice(1).includes("🚀 节点选择")) {

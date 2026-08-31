@@ -16,7 +16,7 @@
 - 验证 Privacy/DomesticCore/DomesticPlatform/Apple/Microsoft/Download/ChinaIP DIRECT、Security REJECT，普通境外流量走当前代理；仅在显式启用可选广告包时验证 Advertising REJECT 和内存余量。
 - 把 `AI` 业务包绑定到一个 AI 专用节点/链，再分别实测 OpenAI、Claude、Gemini、Copilot。
 - 验证 GitHub、YouTube/海外媒体、海外社交、DomesticCore 中的国内游戏/OverseasGame UDP，以及 Download 中的私有 Tracker 不误走不允许 P2P 的机场。
-- 预览 `anywhere-strategy`，确认 `final` 与各业务目标完整记录，并与私密 `apple-proxy-policy` 一致；`final=FOLLOW`、`DIRECT`、`NODE~查询词` 分别对应当前节点/链、直连和唯一固定节点。
+- 预览 `anywhere-strategy`，确认 `final`、各业务目标和 `localAssignments` 完整记录，并与私密 `apple-proxy-policy` 一致；`localAssignments.importable` 应为 `false`，它只是核对表，不会自动导入本地绑定。`final=FOLLOW`、`DIRECT`、`NODE~查询词` 分别对应当前节点/链、直连和唯一固定节点；随后在 App 内手动设置 `localAssignments.leakGroup.default` 和需要固定出口的业务组。
 - 不把 Default 当停用；用 Requests 和可辨别出口证明它确实跟随当前节点/链。
 
 ## DNS、IPv6 与 QUIC

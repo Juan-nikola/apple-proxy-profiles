@@ -63,6 +63,9 @@ test("Anywhere strategy entry maps the shared policy without exposing a profile"
   assert.equal(strategy.targets.ai.status, "fixed");
   assert.equal(strategy.targets.ai.resolved, "🌐 Anywhere · VLESS");
   assert.equal(strategy.targets.apple.status, "direct");
+  assert.equal(strategy.localAssignments.leakGroup.name, "漏网之鱼");
+  assert.equal(strategy.localAssignments.leakGroup.default.resolved, "🚀 节点选择");
+  assert.equal(strategy.localAssignments.businessGroups["🤖 AI 专用"].default.resolved, "🌐 Anywhere · VLESS");
   assert.equal(Object.hasOwn(strategy, "proxies"), false);
   assert.doesNotMatch(result.$content, /TEST_ONLY_ANYWHERE_SERVER|TEST_ONLY_ANYWHERE_UUID|TEST_ONLY_ANYWHERE_SNI/u);
 });

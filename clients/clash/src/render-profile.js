@@ -54,9 +54,8 @@ function renderPolicyGroup(policyGroup, nodes) {
   if (policyGroup.kind === "ai" && candidates[0] !== "⚡ 全部自动") candidates.unshift("⚡ 全部自动");
   if (policyGroup.defaultChoice !== undefined) {
     const defaultChoice = targetName(policyGroup.defaultChoice);
-    if (candidates.includes(defaultChoice)) {
-      candidates = [defaultChoice, ...candidates.filter((candidate) => candidate !== defaultChoice)];
-    }
+    if (!candidates.includes(defaultChoice)) candidates.unshift(defaultChoice);
+    else candidates = [defaultChoice, ...candidates.filter((candidate) => candidate !== defaultChoice)];
   }
   if (candidates.length === 0) candidates = ["DIRECT"];
 

@@ -73,6 +73,14 @@ test("rejects duplicate outbound tags", () => {
   assert.match(result.errors.join("\n"), /duplicate.*tag/iu);
 });
 
+test("rejects selector defaults that are not selectable candidates", () => {
+  const config = validConfig();
+  config.outbounds[2].default = "REJECT";
+  const result = validateSingBoxConfig(config);
+  assert.equal(result.valid, false);
+  assert.match(result.errors.join("\n"), /selector default.*candidate|default.*outbound/iu);
+});
+
 test("rejects URL-shaped structured HTTPS DNS servers", () => {
   const withScheme = validConfig();
   withScheme.dns.servers[0].server = "https://1.1.1.1/dns-query";

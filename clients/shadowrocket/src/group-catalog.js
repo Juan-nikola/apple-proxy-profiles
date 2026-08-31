@@ -15,7 +15,16 @@ export function buildGroups(options, nodes, policyResolution = null) {
     hidden: group.hidden,
     policySelectName: group.defaultChoice,
   }));
-  return groups.map((group) => {
+  const withPolicyDefaults = groups.map((group) => {
+    if (group.policySelectName !== "🚀 节点选择" || group.items.includes(group.policySelectName)) {
+      return group;
+    }
+    return {
+      ...group,
+      items: [group.policySelectName, ...group.items],
+    };
+  });
+  return withPolicyDefaults.map((group) => {
     if (group.name !== "🚀 节点选择") return group;
     return {
       ...group,

@@ -7,6 +7,7 @@ const MAX_RETRY_DELAY_MS = 5 * 60_000;
 const RETRYABLE_STATUS = new Set([408, 425, 429, 500, 502, 503, 504]);
 const TRANSIENT_RETRY_DELAYS_MS = Object.freeze([1_000, 2_000]);
 const RATE_LIMIT_RETRY_DELAYS_MS = Object.freeze([30_000, 60_000]);
+const FETCH_USER_AGENT = "apple-proxy-profiles/0.1";
 
 function sleep(delayMs) {
   return new Promise((resolvePromise) => setTimeout(resolvePromise, delayMs));
@@ -123,7 +124,7 @@ async function fetchOne(source, {
     try {
       response = await startRequest(() => fetchImpl(rawUrl, {
         redirect: "manual",
-        headers: { Accept: "text/plain" },
+        headers: { Accept: "text/plain", "User-Agent": FETCH_USER_AGENT },
         signal: AbortSignal.timeout(timeoutMs),
       }));
     } catch {

@@ -2839,8 +2839,13 @@ var SingBoxConfigBundle = (() => {
   }
   function renderGroup(group, nodes, { compact = false, ios = false } = {}) {
     if (group.name === RULE_DOWNLOAD_GROUP) return renderDownloadGroup();
-    const candidates = candidateList(group, nodes, { compact, ios });
+    let candidates = candidateList(group, nodes, { compact, ios });
     if (group.kind === "ai" && candidates[0] !== AUTO_GROUP) candidates.unshift(AUTO_GROUP);
+    if (group.defaultChoice !== void 0 && !isDisabledFallback(group.defaultChoice)) {
+      const defaultChoice = targetName(group.defaultChoice);
+      if (!candidates.includes(defaultChoice)) candidates.unshift(defaultChoice);
+      else candidates = [defaultChoice, ...candidates.filter((candidate) => candidate !== defaultChoice)];
+    }
     const outbounds = candidates.length > 0 ? candidates : ["DIRECT"];
     if (group.name === PRIMARY_GROUP) {
       const primary = outbounds.filter((candidate) => candidate !== "DIRECT");
@@ -3371,7 +3376,12 @@ var SingBoxConfigBundle = (() => {
     }
     for (const outbound of outbounds ?? []) {
       for (const target of outbound.outbounds ?? []) if (!outboundTags.has(target)) errors.push("outbound references missing tag");
-      if (outbound.default !== void 0 && !outboundTags.has(outbound.default)) errors.push("selector default references missing tag");
+      if (outbound.default !== void 0) {
+        if (!outboundTags.has(outbound.default)) errors.push("selector default references missing tag");
+        else if (outbound.type === "selector" && !outbound.outbounds?.includes(outbound.default)) {
+          errors.push("selector default is not an outbound candidate");
+        }
+      }
       if (outbound.type === "urltest" && typeof outbound.url !== "string") errors.push("urltest URL is missing");
     }
     for (const endpoint of config.endpoints ?? []) {

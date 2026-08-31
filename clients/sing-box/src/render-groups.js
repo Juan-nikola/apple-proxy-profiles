@@ -61,8 +61,13 @@ function renderDownloadGroup() {
 function renderGroup(group, nodes, { compact = false, ios = false } = {}) {
   if (group.name === RULE_DOWNLOAD_GROUP) return renderDownloadGroup();
 
-  const candidates = candidateList(group, nodes, { compact, ios });
+  let candidates = candidateList(group, nodes, { compact, ios });
   if (group.kind === "ai" && candidates[0] !== AUTO_GROUP) candidates.unshift(AUTO_GROUP);
+  if (group.defaultChoice !== undefined && !isDisabledFallback(group.defaultChoice)) {
+    const defaultChoice = targetName(group.defaultChoice);
+    if (!candidates.includes(defaultChoice)) candidates.unshift(defaultChoice);
+    else candidates = [defaultChoice, ...candidates.filter((candidate) => candidate !== defaultChoice)];
+  }
   const outbounds = candidates.length > 0 ? candidates : ["DIRECT"];
 
   if (group.name === PRIMARY_GROUP) {

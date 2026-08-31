@@ -4,6 +4,8 @@ import test from "node:test";
 import { buildGroups, effectiveAutoMode } from "../src/group-catalog.js";
 import { normalizeNodes } from "../../../shared/nodes/normalize-nodes.js";
 import { renderGroups } from "../src/render-groups.js";
+import { parsePrivatePolicy } from "../../../shared/policies/private-policy.js";
+import { resolveUnifiedPolicy } from "../../../shared/policies/resolve-unified.js";
 import { CONTINENTS, continentFilter } from "../../../shared/policies/filters.js";
 import { fakeNodes } from "./fixtures/nodes.js";
 
@@ -202,6 +204,36 @@ test("keeps service manual access and gates special service groups by eligibilit
     assert.equal(group.useSubscription, undefined);
     assert.equal(group.filter, undefined);
   }
+});
+
+test("makes a policy-driven AI default selectable in Shadowrocket", () => {
+  const nodes = [node("🇯🇵 JP｜机场", { entry: true })];
+  const policy = parsePrivatePolicy(JSON.stringify({ schemaVersion: 2, targets: { "🤖 AI 专用": "FOLLOW" } }));
+  const resolution = resolveUnifiedPolicy({
+    policy,
+    client: "shadowrocket",
+    allNodes: nodes,
+    eligibleNodes: nodes,
+  });
+  const ai = named(buildGroups(options(), nodes, resolution), "🤖 AI 专用");
+
+  assert.ok(ai.items.includes("🚀 节点选择"));
+  assert.equal(ai.policySelectName, "🚀 节点选择");
+});
+
+test("keeps a fixed policy node as the dynamic Shadowrocket default", () => {
+  const nodes = [node("🇯🇵 JP｜机场", { entry: true })];
+  const policy = parsePrivatePolicy(JSON.stringify({ schemaVersion: 2, targets: { "🤖 AI 专用": "NODE~🇯🇵 JP｜机场" } }));
+  const resolution = resolveUnifiedPolicy({
+    policy,
+    client: "shadowrocket",
+    allNodes: nodes,
+    eligibleNodes: nodes,
+  });
+  const ai = named(buildGroups(options(), nodes, resolution), "🤖 AI 专用");
+
+  assert.deepEqual(ai.items, []);
+  assert.equal(ai.policySelectName, "🇯🇵 JP｜机场");
 });
 
 test("excludes chained clones from continent and special-candidate eligibility", () => {

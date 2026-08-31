@@ -343,6 +343,8 @@ policy_groups:
         - "https://example.invalid/private/egern-nodes"
       filter: "^.+$"
       update_interval: 21600
+      policies:
+        - "🚀 节点选择"
       block_quic: true
   - select:
       name: "🐙 GitHub"

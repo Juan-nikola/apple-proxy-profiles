@@ -2764,6 +2764,28 @@ var AnywhereStrategyBundle = (() => {
       ...target.nodeId ? { nodeId: target.nodeId } : {}
     };
   }
+  function localAssignment(target) {
+    const value = safeTarget(target);
+    return {
+      ...value,
+      resolved: target.resolved === "FOLLOW" ? "\u{1F680} \u8282\u70B9\u9009\u62E9" : target.resolved
+    };
+  }
+  function buildLocalAssignments(resolution) {
+    const businessGroups = Object.fromEntries(
+      UNIFIED_POLICY_TARGETS.filter(({ id }) => id !== "final").map(({ id, label }) => [label, { default: localAssignment(resolution.targets[id]) }])
+    );
+    return {
+      importable: false,
+      reason: "Anywhere does not accept remote business-group or final-outlet assignments",
+      businessGroups,
+      leakGroup: {
+        name: "\u6F0F\u7F51\u4E4B\u9C7C",
+        candidates: ["\u{1F680} \u8282\u70B9\u9009\u62E9", "DIRECT", "REJECT"],
+        default: localAssignment(resolution.targets.final)
+      }
+    };
+  }
   function buildStrategy({ options, normalized, filtered, resolution }) {
     return {
       schemaVersion: 1,
@@ -2778,7 +2800,8 @@ var AnywhereStrategyBundle = (() => {
       },
       targets: Object.fromEntries(
         UNIFIED_POLICY_TARGETS.map(({ id }) => [id, safeTarget(resolution.targets[id])])
-      )
+      ),
+      localAssignments: buildLocalAssignments(resolution)
     };
   }
   async function operator(input, targetPlatform, context = {}) {

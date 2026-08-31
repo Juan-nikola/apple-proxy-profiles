@@ -11,7 +11,7 @@ Anywhere 不能用一个远程文件表达 Shadowrocket/Egern 的完整 Profile�
 | 公开规则 | 固定上游输入聚合成 14 个稳定 `.arrs` 业务包及 schema-v2 Manifest | 每个业务包最终绑定到 DIRECT、REJECT、节点或链 |
 | 设备设置 | 部署、灰度和回滚说明 | Rule/Global、DNS、链、IPv6、QUIC、Purify 等 |
 
-三层任一缺失，都不能称为完整配置。`.arrs` 的 `routing = 0/1/2` 仅控制首次导入的 Default、DIRECT、REJECT。特别注意：`Default` 并非停用；在审计的 Anywhere 源码中，它会让自定义规则集回退到当前选择的节点或链。`anywhere-strategy` 的 `final` 会完整记录为 `FOLLOW`、`DIRECT` 或固定节点结果，供本地绑定核对。
+三层任一缺失，都不能称为完整配置。`.arrs` 的 `routing = 0/1/2` 仅控制首次导入的 Default、DIRECT、REJECT。特别注意：`Default` 并非停用；在审计的 Anywhere 源码中，它会让自定义规则集回退到当前选择的节点或链。`anywhere-strategy` 的 `final` 会完整记录为 `FOLLOW`、`DIRECT` 或固定节点结果，供本地绑定核对；输出中的 `localAssignments.importable` 固定为 `false`，它不能通过远程 JSON 自动创建业务组绑定或设置 `漏网之鱼` 默认出口，仍需在 Anywhere App 内手动完成。
 
 默认 14 个稳定业务包是：`AI`、`Apple`、`ChinaIP`、`DomesticCore`、`DomesticPlatform`、`Download`、`GitHub`、`Microsoft`、`OverseasGame`、`OverseasMedia`、`OverseasSocial`、`Privacy`、`Security`、`YouTube`。上游来源如何聚合、每包规则数量和 SHA-256 以 schema-v2 Manifest 为唯一事实源。
 
@@ -59,7 +59,7 @@ https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/scripts/anyw
 output=strategy&type=collection&name=apple-proxy-anywhere&channel=current
 ```
 
-它读取私密 `apple-proxy-policy`，只返回脱敏的目标状态、固定节点映射和计数；其中包含 `final` 的 `configured`/`resolved` 状态，不返回 `proxies`，也不替代 `anywhere-nodes`。节点 File 仍是 collection-only；策略文件缺失、节点名不精确或协议不兼容时必须失败关闭。
+它读取私密 `apple-proxy-policy`，只返回脱敏的目标状态、固定节点映射和计数；其中包含 `final` 的 `configured`/`resolved` 状态，并以 `localAssignments` 给出业务组和 `漏网之鱼` 的本地默认建议。`localAssignments.importable` 固定为 `false`：Anywhere 不接受由这个远程文件自动写入业务组或最终出口，生成结果只能用来逐项核对后手动绑定。不返回 `proxies`，也不替代 `anywhere-nodes`。节点 File 仍是 collection-only；策略文件缺失、节点名不精确或协议不兼容时必须失败关闭。
 
 ## 新手部署：从节点 File 到规则导入
 
@@ -68,6 +68,7 @@ output=strategy&type=collection&name=apple-proxy-anywhere&channel=current
 1. 在 Anywhere 保留当前能联网的节点、Rule Mode 规则集及本地策略绑定，不删除旧设置。
 2. 备份 Sub-Store；确认组合订阅 `apple-proxy-anywhere` 已存在、包含你已验证的私密来源且预览节点数大于 0。
 3. 真实来源 URL、节点、File 输出 URL 和 Anywhere 本地绑定不得进入公开仓库、截图或聊天。
+4. 由于 Anywhere 不支持远程导入本地策略绑定，记录 `anywhere-strategy` 中的 `localAssignments`，作为后续 App 内逐项设置的核对表。
 
 ### 2. 创建 `anywhere-nodes`
 
@@ -105,7 +106,8 @@ output=strategy&type=collection&name=apple-proxy-anywhere&channel=current
 2. 打开 Pages 的 `current/anywhere/import.html`，优先使用总导入 deep link；若当前系统或分享链路无法打开，再按页面顺序完成所有回退批次。总 deep link 只会打开 Anywhere 的确认页面，不会创建单个聚合 `.arrs` 订阅。
 3. 回到 Anywhere，确认 14 个稳定业务包全部出现。`routing=1` 是 DIRECT，`routing=2` 是 REJECT，`routing=0` 的 Default 会回退到当前节点或链，并不表示停用。
 4. `Privacy`、`DomesticCore`、`DomesticPlatform`、`Apple`、`Microsoft`、`Download` 和 `ChinaIP` 应为 DIRECT，`Security` 应为 REJECT；其余六个境外业务包首次使用 Default/代理。
-5. 配置 DNS、IPv6、QUIC、链与 Purify 等设备设置，然后切换到 Rule Mode。节点 File 不会自动完成这些步骤。
+5. 对照 `localAssignments.businessGroups`，在 App 内把 policy 指定的业务组默认逐项绑定；对照 `localAssignments.leakGroup.default`，手动设置 `漏网之鱼` 的默认出口。远程节点或策略文件不会自动完成这两类绑定。
+6. 配置 DNS、IPv6、QUIC、链与 Purify 等设备设置，然后切换到 Rule Mode。节点 File 不会自动完成这些步骤。
 
 ### 5. 灰度和回滚
 
@@ -114,7 +116,7 @@ output=strategy&type=collection&name=apple-proxy-anywhere&channel=current
 3. 失败时切回旧节点订阅和旧本地规则绑定；若是公开规则问题，恢复旧 `.arrs` 导入；若是节点问题，只回滚 `anywhere-nodes`，不要混改规则层。
 4. 公开 `/current/` JS 升级时任务名、参数和私密直链保持不变。先在 iPhone 重新预览和刷新，通过后再推广到 iPad。
 
-成功标志：节点 File 预览非空；iPhone、iPad 都能手动刷新节点；14 个稳定业务包和本地绑定完整；旧配置仍可立即恢复。
+成功标志：节点 File 预览非空；iPhone、iPad 都能手动刷新节点；14 个稳定业务包和 `localAssignments` 对应的本地绑定完整；旧配置仍可立即恢复。
 
 Anywhere 只有这一条 Sub-Store 节点生成链。它不能用一个远程文件表达完整 Profile，所以本项目不会创建虚假的 `anywhere-profile-generator.js`：公开 `.arrs` 规则、规则目标绑定、DNS、IPv6、QUIC、链和 Rule 模式必须继续在 Anywhere 部署链路中完成。完整步骤见[部署指南](docs/deployment.md)。
 

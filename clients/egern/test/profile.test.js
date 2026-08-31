@@ -109,6 +109,19 @@ test("uses the policy-driven leak group as Egern's default subscription group", 
   assert.deepEqual(namedGroup(profile, "漏网之鱼").policies.slice(0, 3), ["DIRECT", "🚀 节点选择", "REJECT"]);
 });
 
+test("makes a policy-driven AI default selectable in Egern", () => {
+  const policy = parsePrivatePolicy(JSON.stringify({ schemaVersion: 2, targets: { "🤖 AI 专用": "FOLLOW" } }));
+  const resolution = resolveUnifiedPolicy({
+    policy,
+    client: "egern",
+    allNodes: allCompatibleNodes,
+    eligibleNodes: allCompatibleNodes,
+  });
+  const profile = rubyParse(renderEgernProfile(rawOptions(), allCompatibleNodes, { policyResolution: resolution }));
+
+  assert.deepEqual(namedGroup(profile, "🤖 AI 专用")?.policies?.slice(0, 1), ["🚀 节点选择"]);
+});
+
 test("renders the lightweight Egern-native rule precedence and terminal ordering", () => {
   const rules = renderEgernRules({ publicBaseUrl: PUBLIC_SNAPSHOT_BASE_URL, adblockMode: "off" });
   const remote = rules.filter((record) => Object.hasOwn(record, "rule_set"));

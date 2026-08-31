@@ -3014,9 +3014,8 @@ var ClashProfileBundle = (() => {
     if (policyGroup2.kind === "ai" && candidates[0] !== "\u26A1 \u5168\u90E8\u81EA\u52A8") candidates.unshift("\u26A1 \u5168\u90E8\u81EA\u52A8");
     if (policyGroup2.defaultChoice !== void 0) {
       const defaultChoice = targetName(policyGroup2.defaultChoice);
-      if (candidates.includes(defaultChoice)) {
-        candidates = [defaultChoice, ...candidates.filter((candidate) => candidate !== defaultChoice)];
-      }
+      if (!candidates.includes(defaultChoice)) candidates.unshift(defaultChoice);
+      else candidates = [defaultChoice, ...candidates.filter((candidate) => candidate !== defaultChoice)];
     }
     if (candidates.length === 0) candidates = ["DIRECT"];
     if (policyGroup2.strategy === "auto-test") {

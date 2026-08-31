@@ -133,7 +133,7 @@ test("routes unmatched traffic through a policy-driven leak selector", () => {
   });
   const leak = config.outbounds.find(({ tag }) => tag === "漏网之鱼");
 
-  assert.deepEqual(leak?.outbounds.slice(0, 3), ["🚀 节点选择", "DIRECT", "REJECT"]);
+  assert.deepEqual(leak?.outbounds.slice(0, 3), ["DIRECT", "🚀 节点选择", "REJECT"]);
   assert.equal(leak?.default, "DIRECT");
   assert.equal(config.route.final, "漏网之鱼");
 });
@@ -178,6 +178,32 @@ test("renders Egern-like selectors without pretending urltest is request fallbac
   assert.equal(auto.type, "urltest");
   assert.equal(Object.hasOwn(auto, "timeout"), false);
   assert.equal(auto.url, "https://www.gstatic.com/generate_204");
+});
+
+test("keeps policy-driven selector defaults inside each selector candidate list", () => {
+  const targets = [
+    ["FOLLOW", "🚀 节点选择"],
+    ["DIRECT", "DIRECT"],
+    ["NODE:🇯🇵 Tokyo · SS｜机场·U", nodes[0].name],
+  ];
+
+  for (const [target, expected] of targets) {
+    const policy = parsePrivatePolicy(JSON.stringify({ schemaVersion: 2, targets: { "🤖 AI 专用": target } }));
+    const resolution = resolveUnifiedPolicy({
+      policy,
+      client: "singbox",
+      allNodes: nodes,
+      eligibleNodes: nodes,
+    });
+    const config = renderSingBoxConfig(parseSingBoxOptions(baseOptions), nodes, {
+      ruleBaseUrl: `https://example.invalid/${baseOptions.channel}/sing-box/rule-sets`,
+      policyResolution: resolution,
+    });
+    const ai = config.outbounds.find(({ tag }) => tag === "🤖 AI 专用");
+
+    assert.equal(ai.default, expected, target);
+    assert.ok(ai.outbounds.includes(ai.default), target);
+  }
 });
 
 test("keeps low-frequency iOS URLTests and the complete compact business catalog", () => {

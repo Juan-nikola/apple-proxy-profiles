@@ -2349,7 +2349,15 @@ var SurgeProfileBundle = (() => {
     }
     for (const group of shared) {
       const filteredNodes = remoteMode ? [] : inventory.filter((node) => matches(group.nodeFilter, node)).map(({ name }) => name);
-      const items = [...group.candidates.map(targetName), ...filteredNodes].filter((item, index, all) => all.indexOf(item) === index);
+      let items = [...group.candidates.map(targetName), ...filteredNodes].filter((item, index, all) => all.indexOf(item) === index);
+      if (group.defaultChoice !== void 0) {
+        const defaultChoice = targetName(group.defaultChoice);
+        const canDeclareStaticCandidate = !remoteMode || defaultChoice === "DIRECT" || defaultChoice === "REJECT" || names.has(defaultChoice);
+        if (canDeclareStaticCandidate) {
+          if (!items.includes(defaultChoice)) items.unshift(defaultChoice);
+          else items = [defaultChoice, ...items.filter((item) => item !== defaultChoice)];
+        }
+      }
       if (items.length === 0 && (!remoteMode || group.nodeFilter === null)) items.push("DIRECT");
       const fields = [group.strategy === "auto-test" ? "url-test" : group.strategy, ...items.map(escapeValue2)];
       if (remoteMode && group.nodeFilter !== null) {

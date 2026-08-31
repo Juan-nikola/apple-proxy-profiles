@@ -4246,6 +4246,9 @@ var EgernProfileBundle = (() => {
       return ["\u{1F680} \u8282\u70B9\u9009\u62E9", "DIRECT", "REJECT"];
     }
     const first = withoutExternal[0];
+    if (fields.name === "\u{1F916} AI \u4E13\u7528" && withoutExternal.length === 1 && ["\u{1F680} \u8282\u70B9\u9009\u62E9", "DIRECT"].includes(withoutExternal[0])) {
+      return [];
+    }
     if (!INTERACTIVE_POLICY_VALUES.has(first)) return withoutExternal;
     if (first === "DIRECT" && schema.defaultChoice !== "DIRECT" && withoutExternal.slice(1).includes("\u{1F680} \u8282\u70B9\u9009\u62E9")) {
       if (fields.name === LEAK_GROUP_NAME) {
@@ -4693,7 +4696,6 @@ var EgernProfileBundle = (() => {
       const value = policyValue(resolution.targets?.[target.id]);
       if (value === null) return record2;
       const baselinePolicies = [...fields.policies ?? []];
-      if (baselinePolicies.length === 0 && value === "\u{1F680} \u8282\u70B9\u9009\u62E9") return record2;
       const policies = movePolicyToFront(baselinePolicies, value);
       return { [type]: { ...fields, policies } };
     });

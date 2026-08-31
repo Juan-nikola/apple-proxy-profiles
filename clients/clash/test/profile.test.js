@@ -153,6 +153,30 @@ test("renders policy defaults and routes unmatched traffic through the leak grou
   assert.match(renderClashProfileFromOptions(options, allCompatibleNodes, { policyResolution: resolution }), /MATCH,漏网之鱼/u);
 });
 
+test("makes policy-driven AI defaults selectable in Clash", () => {
+  const options = parseClashOptions(rawOptions());
+  const targets = [
+    ["FOLLOW", "🚀 节点选择"],
+    ["DIRECT", "DIRECT"],
+    ["NODE~SSH", "SSH"],
+  ];
+
+  for (const [target, expected] of targets) {
+    const policy = parsePrivatePolicy(JSON.stringify({ schemaVersion: 2, targets: { "🤖 AI 专用": target } }));
+    const resolution = resolveUnifiedPolicy({
+      policy,
+      client: "clash",
+      allNodes: allCompatibleNodes,
+      eligibleNodes: allCompatibleNodes,
+    });
+    const ai = renderClashGroups(allCompatibleNodes, options, resolution)
+      .find(({ name }) => name === "🤖 AI 专用");
+
+    assert.equal(ai.proxies[0], expected, target);
+    assert.ok(ai.proxies.includes(expected), target);
+  }
+});
+
 test("renders mobile profiles against compact provider files", () => {
   const yaml = renderClashProfile(rawOptions({ platform: "iphone" }), allCompatibleNodes);
   for (const id of MOBILE_RULE_SOURCE_IDS) {

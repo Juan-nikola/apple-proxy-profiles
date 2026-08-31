@@ -54,6 +54,32 @@ function safeTarget(target) {
   };
 }
 
+function localAssignment(target) {
+  const value = safeTarget(target);
+  return {
+    ...value,
+    resolved: target.resolved === "FOLLOW" ? "🚀 节点选择" : target.resolved,
+  };
+}
+
+function buildLocalAssignments(resolution) {
+  const businessGroups = Object.fromEntries(
+    UNIFIED_POLICY_TARGETS
+      .filter(({ id }) => id !== "final")
+      .map(({ id, label }) => [label, { default: localAssignment(resolution.targets[id]) }]),
+  );
+  return {
+    importable: false,
+    reason: "Anywhere does not accept remote business-group or final-outlet assignments",
+    businessGroups,
+    leakGroup: {
+      name: "漏网之鱼",
+      candidates: ["🚀 节点选择", "DIRECT", "REJECT"],
+      default: localAssignment(resolution.targets.final),
+    },
+  };
+}
+
 function buildStrategy({ options, normalized, filtered, resolution }) {
   return {
     schemaVersion: 1,
@@ -69,6 +95,7 @@ function buildStrategy({ options, normalized, filtered, resolution }) {
     targets: Object.fromEntries(
       UNIFIED_POLICY_TARGETS.map(({ id }) => [id, safeTarget(resolution.targets[id])]),
     ),
+    localAssignments: buildLocalAssignments(resolution),
   };
 }
 

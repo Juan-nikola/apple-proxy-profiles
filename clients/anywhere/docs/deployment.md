@@ -32,7 +32,7 @@ output=nodes&type=collection&name=apple-proxy-anywhere&clientChain=off
 https://juan-nikola.github.io/apple-proxy-profiles/current/anywhere/scripts/anywhere-strategy-generator.js#output=strategy&type=collection&name=apple-proxy-anywhere&channel=current
 ```
 
-它读取私密 `apple-proxy-policy`，只输出脱敏的业务目标状态和固定节点映射，并完整记录 `final`；缺失策略、精确节点名找不到或协议不兼容时失败关闭。节点 `anywhere-nodes` 仍只读取 collection。
+它读取私密 `apple-proxy-policy`，只输出脱敏的业务目标状态、固定节点映射和 `localAssignments`，并完整记录 `final`。`localAssignments.importable` 固定为 `false`；Anywhere 不支持通过远程文件自动创建业务组绑定或设置 `漏网之鱼` 默认出口，必须在 App 内按照该核对结果手动设置。缺失策略、精确节点名找不到或协议不兼容时失败关闭。节点 `anywhere-nodes` 仍只读取 collection。
 
 Anywhere 没有与 Shadowrocket/Egern 等价的完整 Profile File，不要创建 `anywhere-profile-generator.js`。这个 File 只完成私密节点层；规则、绑定和设备设置必须继续完成第 2—5 节。
 
@@ -63,9 +63,10 @@ https://juan-nikola.github.io/apple-proxy-profiles/optional/adblock-full/current
 
 - `routing = 2`：默认业务包 `Security` 应为 REJECT；它聚合旧的 Hijacking 与 BlockHttpDNS 输入。可选包的 `Advertising`、`Advertising_Domain` 也应为 REJECT。
 - `routing = 1`：`Privacy`、`DomesticCore`、`DomesticPlatform`、`Apple`、`Microsoft`、`Download`、`ChinaIP` 首次为 DIRECT。
-- `routing = 0`：境外服务与 `OverseasGame` 首次为 Default/当前代理。若当前版本支持专用组，在 App 内手动将 `OverseasGame` 绑定到海外游戏组；未知流量的最终绑定按 `anywhere-strategy` 的 `final` 记录核对。
+- `routing = 0`：境外服务与 `OverseasGame` 首次为 Default/当前代理。若当前版本支持专用组，在 App 内手动将 `OverseasGame` 绑定到海外游戏组；未知流量的最终绑定按 `anywhere-strategy` 的 `localAssignments.leakGroup.default` 记录，并在 App 内手动设置。
 
 Default 不是停用，而是回退到当前节点或链。`AI` 业务包聚合 OpenAI、Claude、Gemini 和 Copilot；如需 AI 独立出口，在每台设备只需把 `AI` 业务包绑定到同一个 AI 节点或链，再分别实测四项服务。其他境外业务包需要独立出口时同理。`Download` 聚合下载与 PrivateTracker 输入，默认 DIRECT；除非服务商明确允许 P2P，不要随意绑定机场。
+策略 File 输出的 `localAssignments.businessGroups` 和 `localAssignments.leakGroup.default` 只是脱敏核对结果，Anywhere 不会据此自动写入本地业务组或 `漏网之鱼` 默认；请在 App 内手动完成对应绑定。
 
 ## 4. 链与本地设置
 

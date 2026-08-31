@@ -69,7 +69,7 @@ current/happ/scripts/happ-config-generator.js
 }
 ```
 
-不填写 `subscriptionTags`。所有完整配置任务读取这一个 policy，节点订阅任务只输出节点、不读取 policy。`final` 可填写 `FOLLOW`（默认 `🚀 节点选择`）、`DIRECT`（默认直连）或 `NODE~查询词`（默认固定节点）；旧字段名 `最终兜底` 仍会映射到 `final`。支持策略组的客户端会把 `漏网之鱼` 生成为 `🚀 节点选择`、`DIRECT`、`REJECT` 三选一，且 `REJECT` 仅供手动排查，不作为默认值。查询词经过 Unicode 规范化后必须唯一命中同一节点；缺失、多候选或协议不兼容都会阻止生成。节点展示名的旗帜、协议和 `·U` UDP 标记由生成器自动追加，不要把这些后缀复制进查询词；同名节点按协议区分时使用 `NODE~查询词|vless`。Surge、sing-box、Egern、Shadowrocket、Clash、Anywhere 会写入业务组默认值；HAPP/V2Box 需要重新 Preview 后才改变生成的 Xray 出口。固定节点不存在或不兼容时任务失败，不静默回退。
+不填写 `subscriptionTags`。所有完整配置任务读取这一个 policy，节点订阅任务只输出节点、不读取 policy。`final` 可填写 `FOLLOW`（默认 `🚀 节点选择`）、`DIRECT`（默认直连）或 `NODE~查询词`（默认固定节点）；旧字段名 `最终兜底` 仍会映射到 `final`。支持策略组的客户端会把 `漏网之鱼` 生成为 `🚀 节点选择`、`DIRECT`、`REJECT` 三选一，且 `REJECT` 仅供手动排查，不作为默认值。查询词经过 Unicode 规范化后必须唯一命中同一节点；缺失、多候选或协议不兼容都会阻止生成。节点展示名的旗帜、协议和 `·U` UDP 标记由生成器自动追加，不要把这些后缀复制进查询词；同名节点按协议区分时使用 `NODE~查询词|vless`。Surge、sing-box、Egern、Shadowrocket、Clash 会写入业务组默认值；Anywhere 的 `anywhere-strategy` 只输出脱敏的 `localAssignments` 核对结果，不能通过远程文件自动导入业务组绑定或 `漏网之鱼` 默认出口，必须在 App 内手动设置；HAPP/V2Box 需要重新 Preview 后才改变生成的 Xray 出口。固定节点不存在或不兼容时任务失败，不静默回退。
 
 `final` 不改变前面的业务规则、广告/劫持拦截或 `ChinaTLD`/`ChinaIP` 规则；它只负责最后的未知流量。完整配置首次导入会采用 policy 默认值，但客户端若已缓存用户手动选择，刷新时可能继续保留该选择，需要在客户端手动切换一次。生产默认保持 `FOLLOW` 或按 policy 指定节点，不要把所有未知流量默认设成 `REJECT`。
 

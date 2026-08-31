@@ -101,7 +101,6 @@ function applyEgernPolicyResolution(rendered, resolution) {
     const value = policyValue(resolution.targets?.[target.id]);
     if (value === null) return record;
     const baselinePolicies = [...(fields.policies ?? [])];
-    if (baselinePolicies.length === 0 && value === "🚀 节点选择") return record;
     const policies = movePolicyToFront(baselinePolicies, value);
     return { [type]: { ...fields, policies } };
   });
