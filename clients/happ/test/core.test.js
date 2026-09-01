@@ -213,6 +213,22 @@ test("Happ routing uses one standard Xray label scheme on every supported platfo
   }
 });
 
+test("Happ evaluates known domains before China-IP and final fallbacks", () => {
+  const output = renderHappRouting({
+    policyResolution: { targets: {} },
+    followTag: "happ-follow/domain-first",
+    fixedNodes: [],
+    options: { platform: "iphone", quicMode: "allow" },
+  });
+  const rules = output.routing.rules;
+  const chinaIpIndex = rules.findIndex((rule) => rule.ip?.includes("geoip:CN"));
+  const finalIndex = rules.length - 1;
+  assert.ok(chinaIpIndex > 0);
+  assert.equal(rules[finalIndex].network, "tcp,udp");
+  assert.ok(rules.findIndex((rule) => rule.domain?.includes("geosite:OPENAI")) < chinaIpIndex);
+  assert.ok(rules.findIndex((rule) => rule.domain?.includes("geosite:CN")) < chinaIpIndex);
+});
+
 test("Happ observatory includes the active follow outbound for ping results", () => {
   const followTag = "happ-follow/iphone";
   const output = renderHappRouting({
