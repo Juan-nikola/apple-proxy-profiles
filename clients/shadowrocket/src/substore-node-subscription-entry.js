@@ -1,11 +1,12 @@
 import { normalizeNodes } from "../../../shared/nodes/normalize-nodes.js";
+import { FRONTIER_CHANNELS } from "../../../shared/release/frontier-manifest.js";
 import { validateCollectionName } from "../../../shared/substore/collection-name.js";
 import {
   partitionShadowrocketNodeSet,
   renderShadowrocketProxyRecord,
 } from "./render-node.js";
 
-const ALLOWED_OPTIONS = new Set(["output", "type", "name", "clientChain"]);
+const ALLOWED_OPTIONS = new Set(["output", "type", "name", "clientChain", "channel"]);
 
 function parseArguments(rawArguments) {
   if (!rawArguments || typeof rawArguments !== "object" || Array.isArray(rawArguments)) {
@@ -21,7 +22,9 @@ function parseArguments(rawArguments) {
   const name = validateCollectionName(rawArguments.name, "name");
   const clientChain = Object.hasOwn(rawArguments, "clientChain") ? rawArguments.clientChain : "off";
   if (clientChain !== "off" && clientChain !== "on") throw new Error("clientChain must be off or on");
-  return { type: rawArguments.type, name, clientChain };
+  const channel = Object.hasOwn(rawArguments, "channel") ? rawArguments.channel : "current";
+  if (!FRONTIER_CHANNELS.includes(channel)) throw new Error("channel must be current");
+  return { type: rawArguments.type, name, clientChain, channel };
 }
 
 function logDiagnostics(context, diagnostics) {

@@ -985,7 +985,7 @@ var SurgeNodesBundle = (() => {
   var CHANNELS = new Set(FRONTIER_CHANNELS);
   var PARSED_NODES = /* @__PURE__ */ new WeakSet();
   var ALLOWED_KEYS = /* @__PURE__ */ new Set([...REQUIRED_KEYS, ...Object.keys(DEFAULTS), "proxyPolicyUrl"]);
-  var NODE_ALLOWED_KEYS = /* @__PURE__ */ new Set([...NODE_REQUIRED_KEYS, "clientChain"]);
+  var NODE_ALLOWED_KEYS = /* @__PURE__ */ new Set([...NODE_REQUIRED_KEYS, "clientChain", "channel"]);
   function requiredString(raw, key) {
     const value = raw[key];
     if (typeof value !== "string" || value.length === 0 || value.trim() !== value || /[\r\n]/u.test(value)) {
@@ -1014,8 +1014,12 @@ var SurgeNodesBundle = (() => {
       output: "nodes",
       type: "collection",
       name: validateCollectionName(raw.name, "Option 'name'"),
-      clientChain: enumValue(raw, "clientChain", DEFAULTS.clientChain)
+      clientChain: enumValue(raw, "clientChain", DEFAULTS.clientChain),
+      channel: raw.channel === void 0 ? DEFAULTS.channel : raw.channel
     };
+    if (typeof options.channel !== "string" || !CHANNELS.has(options.channel)) {
+      throw new Error("Option 'channel' has an unsupported value");
+    }
     Object.freeze(options);
     PARSED_NODES.add(options);
     return options;

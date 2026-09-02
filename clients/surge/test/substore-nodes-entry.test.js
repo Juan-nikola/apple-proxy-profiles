@@ -71,6 +71,7 @@ test("Surge node entry skips an unrenderable VLESS selection and logs render-fai
       type: "collection",
       name: "apple-proxy-surge",
       clientChain: "off",
+      channel: "current",
     },
     async produceArtifact(request) {
       calls.push(request);
@@ -109,5 +110,11 @@ test("Surge node entry forwards the parsed safe collection name and rejects unsa
     arguments: { output: "nodes", type: "collection", name: "surge/sources", clientChain: "off" },
     async produceArtifact(request) { calls.push(request); return nodes; },
   }), /name/i);
+  assert.deepEqual(calls, []);
+
+  await assert.rejects(operator({}, "macos", {
+    arguments: { output: "nodes", type: "collection", name: "apple-proxy-surge", clientChain: "off", channel: "edge" },
+    async produceArtifact(request) { calls.push(request); return nodes; },
+  }), /channel/i);
   assert.deepEqual(calls, []);
 });
