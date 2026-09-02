@@ -85,7 +85,7 @@ channel=current
 | `globalDns` | 境外域名使用的 DNS | `cloudflare`、`google`、`quad9` | `cloudflare` |
 | `blockMode` | 安全、广告和跟踪规则的默认拦截强度 | `balanced`、`security`、`strict`、`off` | `balanced` |
 | `quicMode` | UDP/443（QUIC）处理方式 | `allow`、`proxy-block`、`all-block` | `proxy-block` |
-| `ipv6Mode` | DNS 和连接选择 IPv4/IPv6 的方式 | `auto`、`ipv4-only` | 所有 22 个配置任务均为 `ipv4-only` |
+| `ipv6Mode` | DNS 和连接选择 IPv4/IPv6 的方式 | `auto`、`ipv4-only` | 所有 30 个配置任务均为 `ipv4-only` |
 | `autoGroupMode` | 自动测速/地区分组的生成规模 | `auto`、`full`、`balanced`、`minimal` | `auto` |
 | `clientChain` | 是否生成客户端链式入口/落地节点 | `off`、`on` | `off` |
 | `adblockMode` | 是否加载完整广告规则包 | `off`、`full` | `off` |

@@ -26,7 +26,7 @@ current/incy/scripts/incy-config-generator.js
 
 ## 参数含义与可用值
 
-以下参数由各客户端生成器共同使用或按客户端扩展。参数名和值区分大小写；只填写表中的值。当前私密 Sub-Store 的 22 个配置任务已统一设置为 `ipv6Mode=ipv4-only`，以避免无可用 IPv6 路由时出现连接失败。
+以下参数由各客户端生成器共同使用或按客户端扩展。参数名和值区分大小写；只填写表中的值。当前私密 Sub-Store 的 30 个配置任务已统一设置为 `ipv6Mode=ipv4-only`，以避免无可用 IPv6 路由时出现连接失败。
 
 | 参数 | 含义 | 可用值 | 当前生产配置 |
 | --- | --- | --- | --- |
@@ -41,7 +41,7 @@ current/incy/scripts/incy-config-generator.js
 | `globalDns` | 境外域名 DNS | `cloudflare`、`google`、`quad9` | `cloudflare` |
 | `blockMode` | 安全/广告/跟踪规则拦截强度 | `balanced`、`security`、`strict`、`off` | `balanced` |
 | `quicMode` | UDP/443（QUIC）处理策略 | `allow`、`proxy-block`、`all-block` | `proxy-block` |
-| `ipv6Mode` | IPv4/IPv6 解析和连接策略 | `auto`、`ipv4-only` | 所有配置任务 `ipv4-only` |
+| `ipv6Mode` | IPv4/IPv6 解析和连接策略 | `auto`、`ipv4-only` | 所有 30 个配置任务 `ipv4-only` |
 | `autoGroupMode` | 自动测速和地区分组规模 | `auto`、`full`、`balanced`、`minimal` | `auto` |
 | `clientChain` | 是否启用客户端链式入口/落地 | `off`、`on` | `off` |
 | `adblockMode` | 是否加载完整广告规则包 | `off`、`full` | `off` |

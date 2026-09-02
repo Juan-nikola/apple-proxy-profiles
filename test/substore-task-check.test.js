@@ -69,6 +69,7 @@ test("accepts INCY config tasks and rejects invalid INCY variants", () => {
   assert.equal(checkSubstoreTaskUrl(url.replace("name=apple-proxy-incy", "name=apple-proxy-egern")).ok, false);
   assert.equal(checkSubstoreTaskUrl(url.replace("output=config", "output=nodes")).ok, false);
   assert.equal(checkSubstoreTaskUrl(url.replace("&subscriptionName=INCY", "")).ok, false);
+  assert.equal(checkSubstoreTaskUrl(url.replace("&channel=current", "")).ok, false);
 });
 
 test("accepts a client-specific collection slug and rejects unsafe collection names", () => {

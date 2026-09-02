@@ -88,6 +88,7 @@ const GENERATOR_SCHEMAS = Object.freeze({
     platforms: ["iphone", "ipad", "appletv", "android", "androidtv", "macos", "windows", "linux"],
     requiresSubscriptionName: true,
     expectedName: "apple-proxy-incy",
+    requiresChannel: true,
     extraKeys: ["adblockMode", "autoGroupMode", "clientChain"],
   }),
 });
@@ -117,6 +118,7 @@ function configSchema({
   platforms,
   requiresSubscriptionName = false,
   requiresNodeSubscriptionUrl = false,
+  requiresChannel = false,
   expectedName = null,
   rejectFullAdblockPlatforms = [],
   extraKeys = [],
@@ -131,6 +133,7 @@ function configSchema({
   const required = [
     "output", "type", "name", "platform",
     ...(requiresSubscriptionName ? ["subscriptionName"] : []),
+    ...(requiresChannel ? ["channel"] : []),
     ...(requiresNodeSubscriptionUrl ? ["nodeSubscriptionUrl"] : []),
   ];
   return Object.freeze({
