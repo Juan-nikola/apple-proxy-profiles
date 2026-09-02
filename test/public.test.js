@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { access, readFile, readdir, stat } from "node:fs/promises";
+import { artifactSha256 } from "../automation/src/artifact-content.js";
 import test from "node:test";
 
 const publicRoot = new URL("../public/", import.meta.url);
@@ -28,13 +29,17 @@ test("public site contains one current snapshot and no legacy publication roots"
 });
 
 test("current client manifests close over their emitted bytes", async () => {
-  const directories = ["anywhere", "clash", "egern", "shadowrocket", "sing-box", "surge", "v2box"];
+  const directories = ["anywhere", "clash", "egern", "happ", "incy", "shadowrocket", "sing-box", "surge", "v2box"];
   for (const directory of directories) {
     const manifest = JSON.parse(await readFile(new URL(directory + "/client-manifest.json", currentRoot), "utf8"));
     assert.match(manifest.manifestHash, /^[0-9a-f]{64}$/u, directory);
+    const { manifestHash, ...manifestBase } = manifest;
+    assert.equal(artifactSha256(`${JSON.stringify(manifestBase, null, 2)}\n`), manifestHash, `${directory}: manifest hash`);
     for (const record of manifest.files) {
       const bytes = await readFile(new URL(record.path, currentRoot));
       assert.equal(bytes.byteLength, record.bytes, record.path);
+      assert.match(record.sha256, /^[0-9a-f]{64}$/u, record.path);
+      assert.equal(artifactSha256(bytes), record.sha256, record.path);
     }
   }
 });

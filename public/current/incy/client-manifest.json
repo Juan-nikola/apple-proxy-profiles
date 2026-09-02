@@ -1,0 +1,45 @@
+{
+  "chinaIpAuditSha256": "bd8b22453da86ce18f8a0aa819838448b36411ff5446463b6bfe7e155867343d",
+  "client": "incy",
+  "files": [
+    {
+      "bytes": 181466,
+      "path": "incy/geoip.dat",
+      "sha256": "9f7c6fcef4dc3338c1801b190934dae2fb407e1c4a0732d7fd6f65e77576060e"
+    },
+    {
+      "bytes": 65,
+      "path": "incy/geoip.dat.sha256",
+      "sha256": "bf0d53b38a0fb58b4d9fa4d87c120feecf8dd80cb251718b566b97c248ff8755"
+    },
+    {
+      "bytes": 74223,
+      "path": "incy/geosite.dat",
+      "sha256": "4bed4f09fb433437409d6ffd3f8e061f14babca334c64278110320c011ad7eb9"
+    },
+    {
+      "bytes": 65,
+      "path": "incy/geosite.dat.sha256",
+      "sha256": "33111cef32b9c8de698e24bf029afb198bfecf6daf854068a6a81bc582cf2e8e"
+    },
+    {
+      "bytes": 1423,
+      "path": "incy/routing.json",
+      "sha256": "16598e286e9190bf37c31c9467f9f0a3d019797a2247ef284de8ce77ae641624"
+    },
+    {
+      "bytes": 144439,
+      "path": "incy/scripts/incy-config-generator.js",
+      "sha256": "ee034b5dcc4e3e2c354fc24e3d86ae2059061ea2d4244f53928347485108fcad"
+    },
+    {
+      "bytes": 144439,
+      "path": "incy/scripts/substore-config-generator.js",
+      "sha256": "ee034b5dcc4e3e2c354fc24e3d86ae2059061ea2d4244f53928347485108fcad"
+    }
+  ],
+  "generatedAt": "2026-08-25T18:39:12Z",
+  "manifestHash": "374a31fd3c47d389895a184f38122d5eff77a97412cd98e24d4aabcb52bae89c",
+  "optionalPacks": {},
+  "schemaVersion": 1
+}

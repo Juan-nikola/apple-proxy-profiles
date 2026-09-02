@@ -24,3 +24,8 @@ test("ignores channel defaults in native generators while enforcing hosted URLs"
   ]);
   assert.deepEqual(findChannelClosureViolations({ files, channel: "current", rootPrefix: "current" }), []);
 });
+
+test("recognizes INCY native generator scripts without widening non-script channel checks", () => {
+  const scripts = new Map([["current/incy/scripts/incy-config-generator.js", "const DEFAULTS = { channel: 'previous' };"]]);
+  assert.deepEqual(findChannelClosureViolations({ files: scripts, channel: "current", rootPrefix: "current" }), []);
+});

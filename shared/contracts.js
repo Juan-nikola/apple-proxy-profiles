@@ -1,6 +1,7 @@
 export const CLIENT = Object.freeze({
   anywhere: "anywhere",
   egern: "egern",
+  incy: "incy",
   shadowrocket: "shadowrocket",
   surge: "surge",
   singbox: "singbox",
@@ -12,7 +13,7 @@ export const CLIENT = Object.freeze({
 export const PRIVATE_POLICY_CHANNELS = Object.freeze(["edge", "current", "previous"]);
 export const PRIVATE_POLICY_CLIENTS = Object.freeze([
   CLIENT.anywhere, CLIENT.egern, CLIENT.shadowrocket, CLIENT.surge,
-  CLIENT.singbox, CLIENT.happ, CLIENT.v2box, CLIENT.clash,
+  CLIENT.singbox, CLIENT.happ, CLIENT.v2box, CLIENT.clash, CLIENT.incy,
 ]);
 export const PRIVATE_POLICY_TARGET_IDS = Object.freeze([
   "ai",
@@ -40,6 +41,7 @@ export const OPTION_VALUES = Object.freeze({
   blockMode: Object.freeze(["balanced", "security", "strict", "off"]),
   quicMode: Object.freeze(["allow", "proxy-block", "all-block"]),
   ipv6Mode: Object.freeze(["auto", "ipv4-only"]),
+  adblockMode: Object.freeze(["off", "full"]),
   autoGroupMode: Object.freeze(["auto", "full", "balanced", "minimal"]),
   clientChain: Object.freeze(["off", "on"]),
 });

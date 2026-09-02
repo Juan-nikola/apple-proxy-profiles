@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { execFile } from "node:child_process";
-import { mkdtemp, rm, writeFile } from "node:fs/promises";
+import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import test from "node:test";
@@ -23,6 +23,13 @@ import {
   sanitizeSyntheticPlaceholders as sanitizeSyntheticPlaceholdersFromWorkspaceScript,
   scanFiles as scanFilesFromWorkspaceScript,
 } from "../clients/shadowrocket/scripts/check-secrets.mjs";
+import { CLIENT } from "../shared/contracts.js";
+import { parsePrivatePolicy } from "../shared/policies/private-policy.js";
+import { resolveUnifiedPolicy } from "../shared/policies/resolve-unified.js";
+import { parseIncyOptions } from "../clients/incy/src/options.js";
+import { renderIncyRoutingProfile } from "../clients/incy/src/render-routing-profile.js";
+import { renderIncySubscription } from "../clients/incy/src/render-subscription.js";
+import { fixtureNodes, fixturePolicy } from "../clients/incy/test/fixtures.js";
 
 const execFileAsync = promisify(execFile);
 const repositoryRoot = dirname(fileURLToPath(new URL("../package.json", import.meta.url)));
@@ -194,9 +201,48 @@ test("findings expose only paths and rule IDs", async () => {
       { file, ruleId: "credential-assignment" },
       { file, ruleId: "credential-high-entropy" },
     ]);
-  } finally {
-    await rm(directory, { recursive: true, force: true });
+    } finally {
+      await rm(directory, { recursive: true, force: true });
+    }
+});
+
+test("INCY public metadata stays secret-free while private configs remain private", async () => {
+  const nodes = fixtureNodes();
+  const options = parseIncyOptions({
+    output: "config",
+    type: "collection",
+    name: "apple-proxy-incy",
+    subscriptionName: "INCY",
+    platform: "macos",
+  });
+  const policyResolution = resolveUnifiedPolicy({
+    policy: parsePrivatePolicy(JSON.stringify(fixturePolicy())),
+    channel: "current",
+    client: CLIENT.incy,
+    allNodes: nodes,
+    eligibleNodes: nodes,
+  });
+  const configs = renderIncySubscription({ nodes, options, policyResolution });
+  const routingProfile = renderIncyRoutingProfile({
+    baseUrl: "https://juan-nikola.github.io/apple-proxy-profiles/current",
+    generatedAt: "2026-09-02T00:00:00Z",
+  });
+  const manifest = await readFile(new URL("../public/current/incy/client-manifest.json", import.meta.url), "utf8");
+  const routing = await readFile(new URL("../public/current/incy/routing.json", import.meta.url), "utf8");
+
+  for (const [label, text] of [
+    ["meta", JSON.stringify(configs[0].meta)],
+    ["routing-profile", JSON.stringify(routingProfile)],
+    ["client-manifest", manifest],
+    ["routing-json", routing],
+  ]) {
+    assert.equal(scanText(label, text).length, 0, label);
   }
+  assert.equal(JSON.stringify(configs[0]).includes("TEST_ONLY_INCY_AI_PASSWORD"), true);
+  assert.equal(JSON.stringify(configs[0].meta).includes("TEST_ONLY_"), false);
+  assert.equal(JSON.stringify(routingProfile).includes("TEST_ONLY_"), false);
+  assert.equal(manifest.includes("TEST_ONLY_"), false);
+  assert.equal(routing.includes("TEST_ONLY_"), false);
 });
 
 test("subscription paths reject only credential-bearing path segments", () => {

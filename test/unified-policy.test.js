@@ -299,13 +299,14 @@ test("applies the client-specific AI default across every active client", () => 
       ["happ", "NODE~🇺🇸qqpw家宽|vless"],
       ["v2box", "NODE~🇺🇸qqpw家宽|vless"],
       ["clash", "NODE~🇺🇸qqpw家宽|vless"],
+      ["incy", "NODE~🇺🇸qqpw家宽|vless"],
     ].map(([client, ai]) => [client, {
       schemaVersion: 2,
       targets: { ...defaultUnifiedPolicyTargets(), ai },
     }])),
   }));
 
-  for (const client of ["anywhere", "egern", "shadowrocket", "surge", "singbox", "happ", "v2box", "clash"]) {
+  for (const client of ["anywhere", "egern", "shadowrocket", "surge", "singbox", "happ", "v2box", "clash", "incy"]) {
     const resolution = resolveUnifiedPolicy({ policy, client, allNodes: nodes, eligibleNodes: nodes });
     assert.equal(resolution.targets.ai.configured, client === "surge" ? "FOLLOW" : "NODE~🇺🇸qqpw家宽|vless");
     assert.equal(resolution.targets.ai.status, client === "surge" ? "follow" : "fixed");

@@ -36,7 +36,7 @@ function addReference(references, path, actualChannel, offset, kind) {
 // literals are executable policy input, not publication URLs; only concrete
 // channel-scoped paths/fields should participate in closure validation.
 function isNativeGeneratorPath(path) {
-  return /^(?:(?:edge|current|previous)\/|versions\/[0-9a-f]{64}\/)?(?:clients\/[^/]+\/[0-9a-f]{64}\/)?(?:anywhere|egern|shadowrocket|sing-box|surge|v2box|clash|happ)\/scripts\/[^/]+\.js$/u.test(path);
+  return /^(?:(?:edge|current|previous)\/|versions\/[0-9a-f]{64}\/)?(?:clients\/[^/]+\/[0-9a-f]{64}\/)?(?:anywhere|egern|shadowrocket|sing-box|surge|v2box|clash|happ|incy)\/scripts\/[^/]+\.js$/u.test(path);
 }
 
 function scanText(path, text) {

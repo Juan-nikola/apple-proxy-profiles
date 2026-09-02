@@ -1,0 +1,58 @@
+{
+  "Block": [
+    "geosite:CATEGORY-ADS-ALL",
+    "geosite:CATEGORY-HTTPDNS-CN"
+  ],
+  "DNS": [
+    "geosite:PRIVATE",
+    "geosite:CN",
+    "geoip:PRIVATE",
+    "geoip:CN"
+  ],
+  "Direct": [
+    "geosite:PRIVATE",
+    "geosite:CN",
+    "geosite:CATEGORY-GAMES-CN",
+    "geosite:STEAM",
+    "geosite:BILIBILI",
+    "geosite:BYTEDANCE",
+    "geosite:XIAOHONGSHU",
+    "geosite:CATEGORY-SOCIAL-MEDIA-CN",
+    "geosite:APPLE",
+    "geosite:MICROSOFT",
+    "geosite:CATEGORY-NETDISK-!CN",
+    "geosite:CATEGORY-PT",
+    "10.0.0.0/8",
+    "172.16.0.0/12",
+    "192.168.0.0/16",
+    "169.254.0.0/16",
+    "224.0.0.0/4",
+    "255.255.255.255",
+    "geoip:PRIVATE",
+    "geoip:CN"
+  ],
+  "DomainStrategy": "IPIfNonMatch",
+  "Geoipurl": "https://juan-nikola.github.io/apple-proxy-profiles/current/incy/geoip.dat",
+  "Geositeurl": "https://juan-nikola.github.io/apple-proxy-profiles/current/incy/geosite.dat",
+  "LastUpdated": "1787683152",
+  "Name": "Apple Proxy Profiles INCY",
+  "Proxy": [
+    "geosite:OPENAI",
+    "geosite:CATEGORY-AI-!CN",
+    "geosite:GOOGLE-GEMINI",
+    "geosite:GITHUB-COPILOT",
+    "geosite:GITHUB",
+    "geosite:YOUTUBE",
+    "geosite:NETFLIX",
+    "geosite:DISNEY",
+    "geosite:SPOTIFY",
+    "geosite:CATEGORY-MEDIA",
+    "geosite:TELEGRAM",
+    "geosite:FACEBOOK",
+    "geosite:INSTAGRAM",
+    "geosite:TWITTER",
+    "geosite:TIKTOK",
+    "geosite:CATEGORY-GAMES-!CN"
+  ],
+  "useChunkFiles": "true"
+}

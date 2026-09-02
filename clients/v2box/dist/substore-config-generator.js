@@ -55,6 +55,7 @@ var V2BoxConfigBundle = (() => {
   var CLIENT = Object.freeze({
     anywhere: "anywhere",
     egern: "egern",
+    incy: "incy",
     shadowrocket: "shadowrocket",
     surge: "surge",
     singbox: "singbox",
@@ -71,7 +72,8 @@ var V2BoxConfigBundle = (() => {
     CLIENT.singbox,
     CLIENT.happ,
     CLIENT.v2box,
-    CLIENT.clash
+    CLIENT.clash,
+    CLIENT.incy
   ]);
   var PRIVATE_POLICY_TARGET_IDS = Object.freeze([
     "ai",
@@ -98,6 +100,7 @@ var V2BoxConfigBundle = (() => {
     blockMode: Object.freeze(["balanced", "security", "strict", "off"]),
     quicMode: Object.freeze(["allow", "proxy-block", "all-block"]),
     ipv6Mode: Object.freeze(["auto", "ipv4-only"]),
+    adblockMode: Object.freeze(["off", "full"]),
     autoGroupMode: Object.freeze(["auto", "full", "balanced", "minimal"]),
     clientChain: Object.freeze(["off", "on"])
   });
@@ -236,7 +239,7 @@ var V2BoxConfigBundle = (() => {
     });
   }
   var definitions = Object.freeze([
-    protocol(["ss", "shadowsocks"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.happ, CLIENT.v2box, CLIENT.clash], {
+    protocol(["ss", "shadowsocks"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.happ, CLIENT.v2box, CLIENT.clash, CLIENT.incy], {
       requiredFields: ["cipher", "password"]
     }),
     protocol(["ssr"], [CLIENT.shadowrocket, CLIENT.surge, CLIENT.clash], {
@@ -245,13 +248,13 @@ var V2BoxConfigBundle = (() => {
     protocol(["snell"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox, CLIENT.clash], {
       requiredFields: ["psk", "version"]
     }),
-    protocol(["vmess"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox, CLIENT.happ, CLIENT.v2box, CLIENT.clash], {
+    protocol(["vmess"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox, CLIENT.happ, CLIENT.v2box, CLIENT.clash, CLIENT.incy], {
       requiredFields: ["uuid"]
     }),
-    protocol(["vless"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.singbox, CLIENT.happ, CLIENT.v2box, CLIENT.clash], {
+    protocol(["vless"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.singbox, CLIENT.happ, CLIENT.v2box, CLIENT.clash, CLIENT.incy], {
       requiredFields: ["uuid"]
     }),
-    protocol(["trojan"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.happ, CLIENT.v2box, CLIENT.clash], {
+    protocol(["trojan"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.happ, CLIENT.v2box, CLIENT.clash, CLIENT.incy], {
       requiredFields: ["password"],
       tls: true
     }),
@@ -259,7 +262,7 @@ var V2BoxConfigBundle = (() => {
       requiredFields: ["password"],
       tls: true
     }),
-    protocol(["hysteria2", "hy2"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.happ, CLIENT.v2box, CLIENT.clash], {
+    protocol(["hysteria2", "hy2"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.happ, CLIENT.v2box, CLIENT.clash, CLIENT.incy], {
       requiredFields: ["password"],
       tls: true
     }),
@@ -267,8 +270,8 @@ var V2BoxConfigBundle = (() => {
       requiredFields: ["uuid", "password"],
       tls: true
     }),
-    protocol(["socks5"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.happ, CLIENT.v2box, CLIENT.clash]),
-    protocol(["http"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox, CLIENT.v2box, CLIENT.clash]),
+    protocol(["socks5"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.happ, CLIENT.v2box, CLIENT.clash, CLIENT.incy]),
+    protocol(["http"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox, CLIENT.v2box, CLIENT.clash, CLIENT.incy]),
     protocol(["ssh"], [CLIENT.egern, CLIENT.singbox, CLIENT.clash], {
       requiredFields: ["username"]
     }),
@@ -2756,6 +2759,19 @@ var V2BoxConfigBundle = (() => {
       supportsPolicyOverrides: false,
       adapterSchema: "clash-v1",
       publicDirectory: "clash"
+    },
+    {
+      id: CLIENT.incy,
+      displayName: "INCY",
+      state: "active",
+      platforms: ["iphone", "ipad", "appletv", "android", "androidtv", "macos", "windows", "linux"],
+      configFormat: "xray-json-array",
+      ruleFormat: "xray-geodata",
+      nodeValidator: "incy",
+      separatesProfile: false,
+      supportsPolicyOverrides: false,
+      adapterSchema: "incy-v1",
+      publicDirectory: "incy"
     }
   ].map((record2) => freeze3(record2));
   var byId = new Map(records.map((record2) => [record2.id, record2]));

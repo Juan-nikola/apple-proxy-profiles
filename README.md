@@ -1,6 +1,6 @@
 # Apple Proxy Profiles
 
-把你在 Sub-Store 中选择的私密节点，转换成 Apple 设备可以直接导入的配置。仓库仍采用 monorepo：共享策略和协议放在 `shared/`，各客户端 renderer 放在 `clients/*`，自动化发布放在 `automation/`，公开产物只发布到 `public/current/`。
+把你在 Sub-Store 中选择的私密节点，转换成 Apple 与跨平台客户端可以直接导入的配置。仓库仍采用 monorepo：共享策略和协议放在 `shared/`，各客户端 renderer 放在 `clients/*`，自动化发布放在 `automation/`，公开产物只发布到 `public/current/`。
 
 ## 新手推荐：先用 Surge
 
@@ -12,7 +12,7 @@
 
 ### 5 分钟上手
 
-#### 1. 在 Sub-Store 建立 9 个手动 collection
+#### 1. 在 Sub-Store 建立 10 个手动 collection
 
 创建以下 collection，并从你的来源中手动选择节点：
 
@@ -26,6 +26,7 @@ apple-proxy-singbox
 apple-proxy-happ
 apple-proxy-v2box
 apple-proxy-clash
+apple-proxy-incy
 ```
 
 第一次建议只配置 `apple-proxy-surge`。选择节点时保留你确认可用的协议；不要把真实订阅 URL、UUID、密码或私钥写进 GitHub。
@@ -63,7 +64,7 @@ channel=current
 
 ![创建远程 File task 的界面示意](docs/assets/substore-file-task-guide.svg)
 
-新版界面中创建一个文件后，在“文件操作”里添加“脚本操作/Script Operator”，将 generator URL 填入脚本操作的“远程链接”；文件本身保持空内容，不要把 generator URL 填到“文件 → 远程”的源文件链接，否则 Preview 只会显示 JavaScript 源码。然后点击 Preview 和保存。仓库的 30 个 canonical task 已按同样字段组织；参数中的私密节点 URL 只填写在你自己的 Sub-Store，不要回填到 README 或 GitHub。
+新版界面中创建一个文件后，在“文件操作”里添加“脚本操作/Script Operator”，将 generator URL 填入脚本操作的“远程链接”；文件本身保持空内容，不要把 generator URL 填到“文件 → 远程”的源文件链接，否则 Preview 只会显示 JavaScript 源码。然后点击 Preview 和保存。仓库的 38 个 canonical task 已按同样字段组织；参数中的私密节点 URL 只填写在你自己的 Sub-Store，不要回填到 README 或 GitHub。
 
 所有当前 canonical Profile task 都统一使用 `ipv6Mode=ipv4-only`，平台只通过 `platform` 区分：macOS 为 `macos`、iPhone 为 `iphone`、iPad 为 `ipad`。旧版 Sub-Store 如果只有一个 URL 输入框，把参数放在 `#` 后并用 `&` 分隔，不能写成 `?output=config`。
 
@@ -77,14 +78,14 @@ channel=current
 | `type` | Sub-Store 数据来源类型 | `collection` | `collection` |
 | `name` | 要读取的 collection 标识 | 你的 collection 名称 | 按客户端固定为对应的 `apple-proxy-*` |
 | `subscriptionName` | 生成配置中引用的节点订阅显示名 | 任意非空单行文本 | 必须与节点 File 在客户端中的显示名完全一致 |
-| `platform` | 目标客户端平台 | `macos`、`iphone`、`ipad`、`appletv`、`android`（按客户端限制） | 按任务平台填写 |
+| `platform` | 目标客户端平台 | `macos`、`iphone`、`ipad`、`appletv`、`android`、`androidtv`、`windows`、`linux`（按客户端限制） | 按任务平台填写 |
 | `channel` | 公开脚本、规则和 GeoData 发布通道 | 当前生产只用 `current` | `current` |
 | `dnsMode` | DNS 组合策略 | `stable`、`privacy`、`speed` | `stable` |
 | `chinaDns` | 国内域名使用的 DNS | `alidns`、`dnspod`、`system` | `alidns` |
 | `globalDns` | 境外域名使用的 DNS | `cloudflare`、`google`、`quad9` | `cloudflare` |
 | `blockMode` | 安全、广告和跟踪规则的默认拦截强度 | `balanced`、`security`、`strict`、`off` | `balanced` |
 | `quicMode` | UDP/443（QUIC）处理方式 | `allow`、`proxy-block`、`all-block` | `proxy-block` |
-| `ipv6Mode` | DNS 和连接选择 IPv4/IPv6 的方式 | `auto`、`ipv4-only` | 所有 30 个配置任务均为 `ipv6Mode=ipv4-only` |
+| `ipv6Mode` | DNS 和连接选择 IPv4/IPv6 的方式 | `auto`、`ipv4-only` | 所有 30 个配置任务均为 `ipv4-only` |
 | `autoGroupMode` | 自动测速/地区分组的生成规模 | `auto`、`full`、`balanced`、`minimal` | `auto` |
 | `clientChain` | 是否生成客户端链式入口/落地节点 | `off`、`on` | `off` |
 | `adblockMode` | 是否加载完整广告规则包 | `off`、`full` | `off` |
@@ -157,7 +158,7 @@ Sub-Store 界面的“关闭缓存/noCache”和“不验证服务器证书/inse
 }
 ```
 
-示例只展开 Surge 和 sing-box；实际 policy 必须包含 `anywhere`、`egern`、`shadowrocket`、`surge`、`sing-box`、`happ`、`v2box`、`clash` 八个客户端层，每层都必须完整填写 13 个 target。业务组名称固定为 `🤖 AI 专用`、`🐙 GitHub`、`📺 YouTube`、`🎬 海外流媒体`、`💬 海外社交`、`🍎 Apple`、`🪟 Microsoft`、`🇨🇳 国内平台`、`🌍 海外游戏`、`🎮 游戏连接`、`⬇️ 下载/P2P`、`🧭 DNS 与规则下载`、`漏网之鱼`。
+示例只展开 Surge 和 sing-box；实际 policy 必须包含 `anywhere`、`egern`、`shadowrocket`、`surge`、`sing-box`、`happ`、`v2box`、`clash`、`incy` 九个客户端层，每层都必须完整填写 13 个 target。业务组名称固定为 `🤖 AI 专用`、`🐙 GitHub`、`📺 YouTube`、`🎬 海外流媒体`、`💬 海外社交`、`🍎 Apple`、`🪟 Microsoft`、`🇨🇳 国内平台`、`🌍 海外游戏`、`🎮 游戏连接`、`⬇️ 下载/P2P`、`🧭 DNS 与规则下载`、`漏网之鱼`。
 
 `final` 支持 `FOLLOW`（默认使用 `🚀 节点选择`）、`DIRECT`（默认直连）和 `NODE~查询词`（默认固定到唯一匹配节点）。`漏网之鱼` 始终提供 `🚀 节点选择`、`DIRECT`、`REJECT` 三个手动选项，`REJECT` 不会成为默认值；旧 JSON 中的 `最终兜底` 仍可作为 `final` 的兼容键。`NODE~` 必须唯一命中；零个或多个候选都会拒绝生成，不会自动猜节点。节点显示名中的地区旗帜、协议（例如 `· VLESS`）和 UDP 能力（例如 `·U`）由生成器自动追加，策略匹配的是原始节点名。节点原始名称相同但协议不同的时候，在查询词后加 `|协议`，例如 `NODE~qqpw家宽|vless`；协议限定大小写不敏感，但必须是项目支持的协议。Surge、sing-box、Egern、Shadowrocket、Clash 会把结果写入业务组默认位置，仍允许你在客户端内切换；Anywhere 的 `anywhere-strategy` 只输出脱敏的 `localAssignments` 核对结果，不能通过远程文件自动导入业务组绑定或 `漏网之鱼` 默认出口，必须在 App 内手动设置。HAPP 和 V2Box 会把结果写入生成后的 Xray 路由，修改后需要重新 Preview。固定节点不存在或不兼容时会直接失败，不会静默换节点。
 
@@ -196,7 +197,7 @@ Surge 中保留同一个 Profile URL，按客户端的更新按钮即可。公�
 
 ![更新失败时的回滚流程](docs/assets/rollback-flow.svg)
 
-## 八个 active 客户端
+## 九个 active 客户端
 
 | 推荐顺序 | 客户端 | 适合场景 |
 | --- | --- | --- |
@@ -208,12 +209,13 @@ Surge 中保留同一个 Profile URL，按客户端的更新按钮即可。公�
 | 6 | Anywhere | `.arrs` 规则和手动绑定 |
 | 7 | HAPP | macOS、iPhone、iPad，Xray JSON 固定业务出口 |
 | 8 | V2Box | Xray 兼容路线；使用共享 GeoData |
+| 9 | INCY | HAPP 式 JSON 数组、Xray 路由和跨平台导入 |
 
 OneXray、v2rayN 保持移除。HAPP 的稳定 GeoData URL 为 `public/current/happ/geoip.dat` 和 `public/current/happ/geosite.dat`；V2Box 的 GeoData URL 继续保持 `public/current/geodata/<region>/`。
 
 ## 统一行为
 
-- unified policy 使用 schema v3 按客户端分层；每层嵌套 schema v2 的完整 13 项 targets，schema v1/v2 仅作为兼容读取器。
+- unified policy 使用 schema v3 按客户端分层；每层嵌套 schema v2 的完整 13 项 targets，当前包含九个 active client，schema v1/v2 仅作为兼容读取器。
 - 所有客户端使用同一 routing plan：`ChinaTLD -> ChinaIP -> 漏网之鱼`；`final` 只控制未命中业务规则后的最终出口。
 - Surge 使用单远程节点池，避免 Profile 和节点订阅漂移。
 - 只发布 `current`，采用原子发布并保留 `previous` 回滚数据。
@@ -222,7 +224,7 @@ OneXray、v2rayN 保持移除。HAPP 的稳定 GeoData URL 为 `public/current/h
 
 ## Sub-Store 规模
 
-当前 canonical catalog 为 9 个手动 collection、30 个 File task：
+当前 canonical catalog 为 10 个手动 collection、38 个 File task：
 
 | 客户端 | 任务数 | 输出 |
 | --- | ---: | --- |
@@ -234,9 +236,12 @@ OneXray、v2rayN 保持移除。HAPP 的稳定 GeoData URL 为 `public/current/h
 | HAPP | 3 | macOS/iPhone/iPad JSON Config |
 | V2Box | 3 | 节点 + iPhone/iPad Config |
 | Clash Apple | 5 | 节点 + 四个平台 Config |
+| INCY | 8 | JSON 数组 + autorouting，支持 `macos`、`iphone`、`ipad`、`appletv`、`android`、`androidtv`、`windows`、`linux` |
 | Unified policy | 1 | schema v3 按客户端分层的私密 policy |
 
-后台只保留上述 9 个手动 collection 和 30 个 canonical task；删除旧的 OneXray/v2rayN 对象及其任务。不要在 Sub-Store 使用 `subscriptionTags` 自动识别，所有节点来源通过 collection 手动勾选。
+INCY 的 8 个任务对应 `macos`、`iphone`、`ipad`、`appletv`、`android`、`androidtv`、`windows`、`linux`；它们都使用 JSON 数组 + autorouting，和上面的 Apple/HAPP/Surge Profile 任务是不同的任务族。
+
+后台只保留上述 10 个手动 collection 和 38 个 canonical task；删除旧的 OneXray/v2rayN 对象及其任务。不要在 Sub-Store 使用 `subscriptionTags` 自动识别，所有节点来源通过 collection 手动勾选。
 
 ## 维护与验证
 

@@ -22,10 +22,11 @@ test("builds a private Sub-Store config without exposing the source value", () =
     "apple-proxy-happ",
     "apple-proxy-v2box",
     "apple-proxy-clash",
+    "apple-proxy-incy",
   ]);
-  assert.equal(config.tasks.length, 30);
-  assert.equal(config.tasks.filter(({ kind }) => kind === "remote-js").length, 29);
-  assert.equal(config.tasks.filter(({ policyInput }) => policyInput === "apple-proxy-policy").length, 23);
+  assert.equal(config.tasks.length, 38);
+  assert.equal(config.tasks.filter(({ kind }) => kind === "remote-js").length, 37);
+  assert.equal(config.tasks.filter(({ policyInput }) => policyInput === "apple-proxy-policy").length, 31);
   assert.deepEqual(config.tasks.find(({ name }) => name === "anywhere-strategy"), {
     name: "anywhere-strategy",
     client: "anywhere",
@@ -48,11 +49,22 @@ test("builds a private Sub-Store config without exposing the source value", () =
     ["clash-config-ipad", "ipad", "config"],
     ["clash-config-appletv", "appletv", "config"],
   ]);
+  assert.deepEqual(config.tasks.filter(({ name }) => name.startsWith("incy-")).map(({ name, platform, output, collection }) => [name, platform, output, collection]), [
+    ["incy-config-iphone", "iphone", "config", "apple-proxy-incy"],
+    ["incy-config-ipad", "ipad", "config", "apple-proxy-incy"],
+    ["incy-config-appletv", "appletv", "config", "apple-proxy-incy"],
+    ["incy-config-android", "android", "config", "apple-proxy-incy"],
+    ["incy-config-androidtv", "androidtv", "config", "apple-proxy-incy"],
+    ["incy-config-macos", "macos", "config", "apple-proxy-incy"],
+    ["incy-config-windows", "windows", "config", "apple-proxy-incy"],
+    ["incy-config-linux", "linux", "config", "apple-proxy-incy"],
+  ]);
   assert.deepEqual(config.tasks.filter(({ name }) => name.startsWith("happ-")).map(({ name, platform, output }) => [name, platform, output]), [
     ["happ-config-macos", "macos", "config"],
     ["happ-config-iphone", "iphone", "config"],
     ["happ-config-ipad", "ipad", "config"],
   ]);
+  assert.doesNotMatch(JSON.stringify(config.tasks), /https:\/\/substore\.example\.test\/subs\?api=synthetic-private-key/u);
   for (const task of config.tasks.filter(({ name }) => name.startsWith("v2box-config-"))) {
     assert.match(task.url, /region=cn/u, task.name);
     assert.match(task.url, /clientChain=off/u, task.name);
@@ -77,11 +89,11 @@ test("builds a private Sub-Store config without exposing the source value", () =
 
 test("canonical private task catalog covers retained clients", () => {
   const catalog = canonicalTaskCatalog("current");
-  assert.equal(catalog.length, 30);
+  assert.equal(catalog.length, 38);
   assert.deepEqual(catalog.slice(0, 4).map(({ name }) => name), [
     "egern-nodes", "egern-macos", "egern-iphone", "egern-ipad",
   ]);
-  assert.deepEqual(catalog.slice(-12).map(({ name }) => name), [
+  assert.deepEqual(catalog.slice(-20).map(({ name }) => name), [
     "apple-proxy-policy",
     "happ-config-macos", "happ-config-iphone", "happ-config-ipad",
     "v2box-nodes",
@@ -92,6 +104,14 @@ test("canonical private task catalog covers retained clients", () => {
     "clash-config-appletv",
     "v2box-config-iphone",
     "v2box-config-ipad",
+    "incy-config-iphone",
+    "incy-config-ipad",
+    "incy-config-appletv",
+    "incy-config-android",
+    "incy-config-androidtv",
+    "incy-config-macos",
+    "incy-config-windows",
+    "incy-config-linux",
   ]);
   for (const task of catalog.filter(({ name }) => name.startsWith("v2box-"))) {
     assert.match(task.url, /\/\/(?:juan-nikola\.github\.io)\/apple-proxy-profiles\/(?:current)\/v2box\/scripts\//u);
@@ -102,14 +122,14 @@ test("canonical private task catalog covers retained clients", () => {
 test("binds the shared policy to every config and audit task, never node tasks", () => {
   const catalog = canonicalTaskCatalog("current");
   const policyTasks = catalog.filter(({ output }) => output === "config" || output === "profile" || output === "audit");
-  assert.equal(policyTasks.length, 22);
+  assert.equal(policyTasks.length, 30);
   assert.ok(policyTasks.every((task) => task.policyInput === "apple-proxy-policy"));
-  assert.equal(catalog.filter(({ policyInput }) => policyInput === "apple-proxy-policy").length, 23);
+  assert.equal(catalog.filter(({ policyInput }) => policyInput === "apple-proxy-policy").length, 31);
   assert.equal(catalog.find(({ name }) => name === "anywhere-strategy").output, "strategy");
   assert.ok(catalog.filter(({ output }) => output === "nodes").every((task) => !Object.hasOwn(task, "policyInput")));
   assert.equal(
     catalog.find(({ name }) => name === "apple-proxy-policy").policySchema,
-    "schemaVersion=3; clients=anywhere,egern,shadowrocket,surge,sing-box,happ,v2box,clash; each client has schemaVersion=2 and complete 13-target map; readers accept schemaVersion=1/2",
+    "schemaVersion=3; clients=anywhere,egern,shadowrocket,surge,sing-box,happ,v2box,clash,incy; each client has schemaVersion=2 and complete 13-target map; readers accept schemaVersion=1/2",
   );
 });
 

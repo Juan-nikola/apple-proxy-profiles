@@ -1,6 +1,6 @@
 # Sub-Store 客户端节点池
 
-Sub-Store 由用户自己保存节点来源和筛选结果。仓库只提供公开 renderer，不接触你的私密订阅地址。当前维护 9 个手动 collection：一个总池和八个客户端池。
+Sub-Store 由用户自己保存节点来源和筛选结果。仓库只提供公开 renderer，不接触你的私密订阅地址。当前维护 10 个手动 collection：一个总池和九个客户端池。
 
 | 客户端 | Collection | 说明 |
 | --- | --- | --- |
@@ -13,6 +13,7 @@ Sub-Store 由用户自己保存节点来源和筛选结果。仓库只提供公�
 | HAPP | `apple-proxy-happ` | macOS、iPhone、iPad 的 Xray JSON 固定业务出口 |
 | V2Box | `apple-proxy-v2box` | Xray JSON；使用共享 GeoData |
 | Clash Apple | `apple-proxy-clash` | Mihomo YAML 节点和 Config |
+| INCY | `apple-proxy-incy` | JSON 数组 + autorouting |
 
 ## 选择规则
 

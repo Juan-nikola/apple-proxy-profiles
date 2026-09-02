@@ -84,6 +84,13 @@ const GENERATOR_SCHEMAS = Object.freeze({
     platforms: ["macos", "iphone", "ipad"],
     omitKeys: ["autoGroupMode", "clientChain"],
   }),
+  "incy/scripts/incy-config-generator.js": configSchema({
+    platforms: ["iphone", "ipad", "appletv", "android", "androidtv", "macos", "windows", "linux"],
+    requiresSubscriptionName: true,
+    expectedName: "apple-proxy-incy",
+    requiresChannel: true,
+    extraKeys: ["adblockMode", "autoGroupMode", "clientChain"],
+  }),
 });
 
 function nodeSchema() {
@@ -111,6 +118,8 @@ function configSchema({
   platforms,
   requiresSubscriptionName = false,
   requiresNodeSubscriptionUrl = false,
+  requiresChannel = false,
+  expectedName = null,
   rejectFullAdblockPlatforms = [],
   extraKeys = [],
   extraEnums = {},
@@ -124,6 +133,7 @@ function configSchema({
   const required = [
     "output", "type", "name", "platform",
     ...(requiresSubscriptionName ? ["subscriptionName"] : []),
+    ...(requiresChannel ? ["channel"] : []),
     ...(requiresNodeSubscriptionUrl ? ["nodeSubscriptionUrl"] : []),
   ];
   return Object.freeze({
@@ -132,6 +142,7 @@ function configSchema({
     allowed: Object.freeze(allowed),
     outputValues: Object.freeze([output]),
     platforms: Object.freeze(platforms),
+    expectedName,
     rejectFullAdblockPlatforms: Object.freeze(rejectFullAdblockPlatforms),
     enums: Object.freeze({
       dnsMode: OPTION_VALUES.dnsMode,
@@ -203,6 +214,7 @@ export function parseTaskUrl(raw) {
 
 export function checkTaskOptions(schema, params) {
   const errors = [];
+  const expectedName = schema.expectedName ?? null;
   for (const key of Object.keys(params)) {
     if (!schema.allowed.includes(key)) {
       errors.push(`Unknown option '${key}' (allowed: ${schema.allowed.join(", ")})`);
@@ -229,6 +241,10 @@ export function checkTaskOptions(schema, params) {
         validateCollectionName(params[key], "Option 'name'");
       } catch (error) {
         errors.push(error.message);
+        continue;
+      }
+      if (expectedName !== null && params[key] !== expectedName) {
+        errors.push(`Option 'name' has unsupported value '${params[key]}' (expected: ${expectedName})`);
       }
     }
     if (key === "subscriptionName" && /[\r\n]/u.test(params[key])) {
@@ -305,6 +321,7 @@ function writeResult(result) {
 async function main(args) {
   let urls = args.filter((arg) => arg !== "--stdin");
   const useStdin = args.includes("--stdin");
+  let catalogSummary = null;
   if (useStdin) {
     const input = await new Promise((resolvePromise) => {
       let buffer = "";
@@ -315,7 +332,12 @@ async function main(args) {
     urls = [...urls, ...input.split(/\r?\n/u).map((line) => line.trim()).filter(Boolean)];
   }
   if (urls.length === 0) {
-    throw new Error("Usage: node scripts/check-substore-task.mjs '<task-url>' [more urls...] (or --stdin)");
+    const { canonicalTaskCatalog } = await import("./configure-substore.mjs");
+    const tasks = canonicalTaskCatalog("current");
+    urls = tasks
+      .filter((task) => task.kind === "remote-js" && typeof task.url === "string")
+      .map((task) => task.url);
+    catalogSummary = { taskCount: tasks.length, urlCount: urls.length };
   }
   let allOk = true;
   for (const url of urls) {
@@ -327,6 +349,9 @@ async function main(args) {
       process.stderr.write(`ERROR: ${error instanceof Error ? error.message : String(error)}\n`);
       allOk = false;
     }
+  }
+  if (catalogSummary) {
+    process.stdout.write(`OK: validated ${catalogSummary.taskCount} configured tasks (${catalogSummary.urlCount} URL tasks)\n`);
   }
   if (!allOk) process.exitCode = 1;
 }

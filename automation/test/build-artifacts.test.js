@@ -15,6 +15,11 @@ import { DEFAULT_RULE_SOURCE_IDS, MOBILE_RULE_SOURCE_IDS } from "../../shared/ru
 import { lightweightFixtureSnapshots } from "./lightweight-fixture.js";
 import { renderRules as renderShadowrocketRules } from "../../clients/shadowrocket/src/render-rules.js";
 import { renderSurgeRules } from "../../clients/surge/src/render-rules.js";
+import { incyAutoroutingUrl } from "../../clients/incy/src/link-encoder.js";
+import {
+  renderIncyRoutingDeepLink,
+  renderIncyRoutingProfile,
+} from "../../clients/incy/src/render-routing-profile.js";
 import { ruleClientCatalog } from "../../shared/rules/lightweight-policy.js";
 
 const upstream = {
@@ -283,4 +288,49 @@ test("Shadowrocket and Surge profile provider types match every emitted rule bod
       }
     }
   }
+});
+
+test("publishes INCY native scripts, routing profile, and GeoData into the closed default tree", () => {
+  const result = buildClientArtifacts({ snapshot: lightweightFixtureSnapshots(), upstream, channel: "current" });
+  for (const path of [
+    "incy/scripts/incy-config-generator.js",
+    "incy/scripts/substore-config-generator.js",
+    "incy/client-manifest.json",
+    "incy/routing.json",
+    "incy/geoip.dat",
+    "incy/geoip.dat.sha256",
+    "incy/geosite.dat",
+    "incy/geosite.dat.sha256",
+  ]) {
+    assert.equal(result.defaults.has(path), true, path);
+  }
+  assert.equal(result.defaults.get("incy/geoip.dat.sha256"), `${artifactSha256(result.defaults.get("incy/geoip.dat"))}\n`);
+  assert.equal(result.defaults.get("incy/geosite.dat.sha256"), `${artifactSha256(result.defaults.get("incy/geosite.dat"))}\n`);
+
+  const manifest = JSON.parse(result.defaults.get("incy/client-manifest.json"));
+  assert.equal(manifest.client, "incy");
+  assert.equal(
+    result.diagnostics.defaultManifest.clients.incy.referencedDefaultBytes,
+    manifest.files.reduce((sum, { bytes }) => sum + bytes, 0),
+  );
+  assert.equal(
+    result.diagnostics.defaultManifest.clients.incy.manifestHash,
+    manifest.manifestHash,
+  );
+
+  const profile = JSON.parse(result.defaults.get("incy/routing.json"));
+  assert.equal(profile.DomainStrategy, "IPIfNonMatch");
+  assert.equal(profile.Geoipurl, "https://juan-nikola.github.io/apple-proxy-profiles/current/incy/geoip.dat");
+  assert.equal(profile.Geositeurl, "https://juan-nikola.github.io/apple-proxy-profiles/current/incy/geosite.dat");
+  assert.equal(profile.useChunkFiles, "true");
+  assert.equal(profile.LastUpdated, String(Math.floor(Date.parse(upstream.committedAt) / 1000)));
+  assert.equal(
+    renderIncyRoutingDeepLink(profile),
+    `incy://autorouting/onadd/${encodeURIComponent(incyAutoroutingUrl("current"))}`,
+  );
+  assert.deepEqual(renderIncyRoutingProfile({
+    baseUrl: "https://juan-nikola.github.io/apple-proxy-profiles/current",
+    generatedAt: upstream.committedAt,
+    channel: "current",
+  }), profile);
 });

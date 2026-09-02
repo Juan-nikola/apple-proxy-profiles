@@ -28,7 +28,9 @@ import { SEMANTIC_INTENTS } from "../../shared/rules/semantic-intents.js";
 import { RULE_KIND } from "../../shared/rules/model.js";
 import { buildImportBatches, renderImportPage } from "../../clients/anywhere/src/build-import-page.js";
 import { ANYWHERE_LIGHTWEIGHT_MIGRATION } from "../../clients/anywhere/src/shard-rules.js";
+import { renderIncyRoutingProfile } from "../../clients/incy/src/render-routing-profile.js";
 import { buildRegionGeoDataArtifacts } from "./render-region-geodata.js";
+import { renderIncyGeoData } from "./render-incy-geodata.js";
 import { renderHappGeodata } from "./render-happ-geodata.js";
 import { renderHappImportPage } from "../../clients/happ/src/build-import-page.js";
 import { renderHappRoutingDeepLink, renderHappRoutingProfile } from "../../clients/happ/src/render-routing-profile.js";
@@ -108,10 +110,15 @@ const HAPP_SCRIPT_PATHS = Object.freeze([
   "happ/scripts/happ-routing-audit.js",
   "happ/scripts/substore-routing-audit.js",
 ]);
+const INCY_SCRIPT_PATHS = Object.freeze([
+  "incy/scripts/incy-config-generator.js",
+  "incy/scripts/substore-config-generator.js",
+]);
 const NATIVE_POLICY_GENERATOR_PATHS = new Set([
   ...V2BOX_SCRIPT_PATHS,
   ...CLASH_SCRIPT_PATHS,
   ...HAPP_SCRIPT_PATHS,
+  ...INCY_SCRIPT_PATHS,
 ]);
 const REGION_GEO_DATA_REGIONS = Object.freeze(["cn", "global", "ru", "ir"]);
 
@@ -125,6 +132,10 @@ function clashPublicScripts() {
 
 function happPublicScripts() {
   return nativePublicScripts("happ", HAPP_SCRIPT_PATHS);
+}
+
+function incyPublicScripts() {
+  return nativePublicScripts("incy", INCY_SCRIPT_PATHS);
 }
 
 function renderQrSvg(value) {
@@ -244,6 +255,14 @@ function addFiles(target, additions) {
   for (const [path, content] of additions) {
     if (target.has(path)) throw new Error(`Duplicate public artifact path: ${path}`);
     target.set(path, content);
+  }
+}
+
+function addSha256Sidecars(target, additions) {
+  for (const [path, content] of additions) {
+    const sidecarPath = `${path}.sha256`;
+    if (target.has(sidecarPath)) throw new Error(`Duplicate public artifact path: ${sidecarPath}`);
+    target.set(sidecarPath, `${artifactSha256(content)}\n`);
   }
 }
 
@@ -382,6 +401,9 @@ function compactRuleSetMap(ruleSets) {
 }
 
 function clientRuleRecords(files, client) {
+  if (client === "incy") {
+    return fileRecords(new Map([...files].filter(([path]) => path.startsWith("incy/") && !path.endsWith("/manifest.json"))));
+  }
   if (!RULE_CLIENT_PATHS[client]) return [];
   const prefixes = client === "anywhere"
     ? ["anywhere/rules/"]
@@ -714,6 +736,7 @@ export function buildClientArtifacts({
   addFiles(defaults, v2boxPublicScripts());
   addFiles(defaults, clashPublicScripts());
   addFiles(defaults, happPublicScripts());
+  addFiles(defaults, incyPublicScripts());
   addFiles(defaults, sharedGeoData.files);
   let chinaIpAuditSha256 = null;
 
@@ -758,9 +781,6 @@ export function buildClientArtifacts({
   });
   defaults.set("audit/routing-plan.json", artifactBuffer(canonicalJson(routingPlanAudit)));
 
-  assertNoForbiddenDefaultReferences(defaults);
-  const referencedBytes = enforcePublicationBudgets({ diagnostics: publicationDiagnostics, files: defaults });
-
   const happGeoData = renderHappGeodata(compactedBaselineDefaults.ruleSets);
   addFiles(defaults, happGeoData.files);
   const happGeoManifestBase = {
@@ -785,6 +805,19 @@ export function buildClientArtifacts({
     deepLink: happDeepLink,
     qrSvg: renderQrSvg(happDeepLink),
   }));
+
+  const incyGeoData = renderIncyGeoData(compactedBaselineDefaults.ruleSets, channel);
+  addFiles(defaults, incyGeoData);
+  addSha256Sidecars(defaults, incyGeoData);
+  const incyProfile = renderIncyRoutingProfile({
+    baseUrl: `https://juan-nikola.github.io/apple-proxy-profiles/${channel}`,
+    generatedAt: upstream.committedAt,
+    channel,
+  });
+  defaults.set("incy/routing.json", canonicalJson(incyProfile));
+
+  assertNoForbiddenDefaultReferences(defaults);
+  const referencedBytes = enforcePublicationBudgets({ diagnostics: publicationDiagnostics, files: defaults });
 
   const adblockFull = buildOptionalPack({
     packId: "adblock-full",
