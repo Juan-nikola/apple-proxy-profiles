@@ -142,14 +142,20 @@ function policyRuleForSource(sourceId, resolution, tags) {
   return { outboundTag: routeTargetForPolicy(record, tags) };
 }
 
-function ruleForItem(item, resolution, tags) {
+const BLOCKED_SECURITY_SOURCES = new Set(["Hijacking", "BlockHttpDNS", "Advertising", "Advertising_Domain"]);
+
+function ruleForItem(item, resolution, tags, options) {
   const isChinaIp = item.id === "ChinaIP";
   const isChinaTld = item.id === "ChinaTLD";
   const source = isChinaIp
     ? `geoip:${HAPP_GEOIP_ALIASES[item.id] ?? "CN"}`
     : `geosite:${HAPP_GEOSITE_ALIASES[item.id] ?? item.id.toUpperCase()}`;
-  const target = item.policy === "REJECT"
-    ? { outboundTag: tags.blockTag }
+  const target = BLOCKED_SECURITY_SOURCES.has(item.id)
+    ? { outboundTag: options.blockMode === "off" ? tags.directTag : tags.blockTag }
+    : item.id === "Privacy"
+      ? { outboundTag: tags.directTag }
+      : item.policy === "REJECT"
+        ? { outboundTag: tags.blockTag }
     : policyRuleForSource(item.id, resolution, tags);
   return {
     type: "field",
@@ -190,7 +196,7 @@ export function renderIncyRouting({
 
   let chinaIpRule = null;
   for (const item of orderedRoutingPlan({ adblockMode: value.adblockMode })) {
-    const rule = ruleForItem(item, resolution, tags);
+    const rule = ruleForItem(item, resolution, tags, value);
     if (item.id === "ChinaIP") {
       chinaIpRule = rule;
       continue;

@@ -37,6 +37,15 @@ function policyResolution() {
   });
 }
 
+function firstMatchingRule(rules, request) {
+  return rules.find((rule) => {
+    if (rule.network === "tcp,udp") return true;
+    if (request.domainCategory && rule.domain?.includes(request.domainCategory)) return true;
+    if (request.ipCategory && rule.ip?.includes(request.ipCategory)) return true;
+    return false;
+  });
+}
+
 test("shared policy targets resolve identically for HAPP, sing-box, and INCY", () => {
   const resolution = policyResolution();
   const happ = renderHappRouting({
@@ -112,6 +121,26 @@ test("shared policy targets resolve identically for HAPP, sing-box, and INCY", (
   assert.equal(incySubscription[0].meta.platform, "macos");
   assert.equal(incySubscription[0].meta.schemaVersion, 2);
   assert.doesNotMatch(JSON.stringify(incySubscription[0].meta), /TEST_ONLY_|198\.51\.100\.10|203\.0\.113\.10|192\.0\.2\.10/u);
+
+  const routeCases = [
+    { label: "domestic domain", domainCategory: "geosite:CN", ipCategory: "geoip:CN", expected: "ap-incy-direct" },
+    { label: "unknown domain resolving to China IP", ipCategory: "geoip:CN", expected: "ap-incy-direct" },
+    { label: "OpenAI", domainCategory: "geosite:OPENAI", expected: "balancer-ap-incy-fixed/fixed-ai" },
+    { label: "GitHub", domainCategory: "geosite:GITHUB", expected: "balancer-ap-incy-fixed/fixed-github" },
+    { label: "YouTube", domainCategory: "geosite:YOUTUBE", expected: "ap-incy-follow/follow-node" },
+    { label: "Netflix", domainCategory: "geosite:NETFLIX", expected: "balancer-ap-incy-fixed/fixed-media" },
+    { label: "blocked ad", domainCategory: "geosite:ADVERTISING", expected: "ap-incy-block" },
+    { label: "literal China IP", ipCategory: "geoip:CN", expected: "ap-incy-direct" },
+    { label: "unmatched traffic", expected: "ap-incy-follow/follow-node" },
+  ];
+  for (const request of routeCases) {
+    const matched = firstMatchingRule(incyRouting.rules, request);
+    assert.ok(matched, `${request.label} must match a routing rule`);
+    assert.equal(matched.outboundTag, request.expected, request.label);
+  }
+  const chinaTldIndex = incyRouting.rules.findIndex((rule) => rule.domain?.includes("geosite:CN") && rule.outboundTag === "ap-incy-direct");
+  const chinaIpIndex = incyRouting.rules.findIndex((rule) => rule.ip?.includes("geoip:CN"));
+  assert.ok(chinaTldIndex >= 0 && chinaIpIndex > chinaTldIndex, "ChinaTLD must precede ChinaIP fallback");
 });
 
 test("the INCY workspace verify script includes JSON validation", async () => {

@@ -65,4 +65,3 @@ export function fixtureNodes() {
 export function fixturePolicy() {
   return FIXTURE_POLICY;
 }
-

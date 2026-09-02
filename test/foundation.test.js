@@ -13,6 +13,7 @@ test("monorepo exposes all client workspaces and root verification", async () =>
   await access(new URL("../clients/clash/package.json", import.meta.url));
   await access(new URL("../clients/incy/package.json", import.meta.url));
   const root = JSON.parse(await readFile(new URL("../package.json", import.meta.url), "utf8"));
+  const verifyScript = await readFile(new URL("../scripts/verify.mjs", import.meta.url), "utf8");
   const incy = JSON.parse(await readFile(new URL("../clients/incy/package.json", import.meta.url), "utf8"));
   const lockfile = JSON.parse(await readFile(new URL("../package-lock.json", import.meta.url), "utf8"));
   assert.deepEqual(root.workspaces, ["clients/*"]);
@@ -41,6 +42,8 @@ test("monorepo exposes all client workspaces and root verification", async () =>
     "node --test test/cross-client-routing.test.js test/rule-budgets.test.js",
   ].join(" && "));
   assert.equal(root.scripts.verify, "npm run verify:lightweight && node scripts/verify.mjs");
+  assert.match(verifyScript, /\["npm", \["run", "verify:incy"\]\]/u);
+  assert.match(verifyScript, /\["npm", \["run", "check:task"\]\]/u);
 });
 
 test("normalized nodes expose neutral metadata only", () => {
