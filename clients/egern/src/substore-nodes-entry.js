@@ -1,4 +1,5 @@
 import { renderEgernSubscription } from "./render-subscription.js";
+import { FRONTIER_CHANNELS } from "../../../shared/release/frontier-manifest.js";
 import { validateCollectionName } from "../../../shared/substore/collection-name.js";
 import { installEgernRuntimeFallbacks } from "./runtime-fallbacks.js";
 import {
@@ -8,7 +9,7 @@ import {
   produceNormalizedNodes,
 } from "./substore-runtime.js";
 
-const ALLOWED_KEYS = new Set(["output", "type", "name", "clientChain"]);
+const ALLOWED_KEYS = new Set(["output", "type", "name", "clientChain", "channel"]);
 const PROTOTYPE_KEYS = new Set(["__proto__", "constructor", "prototype"]);
 
 function nodeArguments(raw) {
@@ -51,7 +52,9 @@ function nodeArguments(raw) {
   if (clientChain !== "off" && clientChain !== "on") {
     throw new Error("Egern node clientChain must be off or on");
   }
-  return Object.freeze({ output: "nodes", type: "collection", name, clientChain });
+  const channel = values.has("channel") ? values.get("channel") : "current";
+  if (!FRONTIER_CHANNELS.includes(channel)) throw new Error("Egern node channel is unsupported");
+  return Object.freeze({ output: "nodes", type: "collection", name, clientChain, channel });
 }
 
 export async function operator(input, targetPlatform, context = {}) {

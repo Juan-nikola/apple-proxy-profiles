@@ -224,6 +224,21 @@ test("operator produces a continent-grouped subscription from the collection", a
   assert.equal(records[4].name.startsWith("🇺🇸"), true);
 });
 
+test("operator accepts the canonical publication channel parameter", async () => {
+  const result = await operator({}, "Shadowrocket", {
+    arguments: {
+      output: "nodes",
+      type: "collection",
+      name: "apple-proxy-shadowrocket",
+      clientChain: "off",
+      channel: "current",
+    },
+    async produceArtifact() { return [node()]; },
+  });
+
+  assert.equal(recordsOf(result.$content).length, 1);
+});
+
 test("node subscription accepts the generated clientChain clone through the shared assertion", async () => {
   const result = await operator({}, "Shadowrocket", {
     arguments: {

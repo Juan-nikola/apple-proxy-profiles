@@ -23,7 +23,7 @@ const ADBLOCK_MODES = new Set(["off", "full"]);
 const PARSED = new WeakSet();
 const PARSED_NODES = new WeakSet();
 const ALLOWED_KEYS = new Set([...REQUIRED_KEYS, ...Object.keys(DEFAULTS), "proxyPolicyUrl"]);
-const NODE_ALLOWED_KEYS = new Set([...NODE_REQUIRED_KEYS, "clientChain"]);
+const NODE_ALLOWED_KEYS = new Set([...NODE_REQUIRED_KEYS, "clientChain", "channel"]);
 
 function requiredString(raw, key) {
   const value = raw[key];
@@ -121,7 +121,11 @@ export function parseSurgeNodeOptions(raw) {
     type: "collection",
     name: validateCollectionName(raw.name, "Option 'name'"),
     clientChain: enumValue(raw, "clientChain", DEFAULTS.clientChain),
+    channel: raw.channel === undefined ? DEFAULTS.channel : raw.channel,
   };
+  if (typeof options.channel !== "string" || !CHANNELS.has(options.channel)) {
+    throw new Error("Option 'channel' has an unsupported value");
+  }
   Object.freeze(options);
   PARSED_NODES.add(options);
   return options;
