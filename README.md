@@ -12,7 +12,7 @@
 
 ### 5 分钟上手
 
-#### 1. 在 Sub-Store 建立 9 个手动 collection
+#### 1. 在 Sub-Store 建立 10 个手动 collection
 
 创建以下 collection，并从你的来源中手动选择节点：
 
@@ -26,6 +26,7 @@ apple-proxy-singbox
 apple-proxy-happ
 apple-proxy-v2box
 apple-proxy-clash
+apple-proxy-incy
 ```
 
 第一次建议只配置 `apple-proxy-surge`。选择节点时保留你确认可用的协议；不要把真实订阅 URL、UUID、密码或私钥写进 GitHub。
@@ -63,7 +64,7 @@ channel=current
 
 ![创建远程 File task 的界面示意](docs/assets/substore-file-task-guide.svg)
 
-新版界面中创建一个文件后，在“文件操作”里添加“脚本操作/Script Operator”，将 generator URL 填入脚本操作的“远程链接”；文件本身保持空内容，不要把 generator URL 填到“文件 → 远程”的源文件链接，否则 Preview 只会显示 JavaScript 源码。然后点击 Preview 和保存。仓库的 30 个 canonical task 已按同样字段组织；参数中的私密节点 URL 只填写在你自己的 Sub-Store，不要回填到 README 或 GitHub。
+新版界面中创建一个文件后，在“文件操作”里添加“脚本操作/Script Operator”，将 generator URL 填入脚本操作的“远程链接”；文件本身保持空内容，不要把 generator URL 填到“文件 → 远程”的源文件链接，否则 Preview 只会显示 JavaScript 源码。然后点击 Preview 和保存。仓库的 38 个 canonical task 已按同样字段组织；参数中的私密节点 URL 只填写在你自己的 Sub-Store，不要回填到 README 或 GitHub。
 
 所有当前 canonical Profile task 都统一使用 `ipv6Mode=ipv4-only`，平台只通过 `platform` 区分：macOS 为 `macos`、iPhone 为 `iphone`、iPad 为 `ipad`。旧版 Sub-Store 如果只有一个 URL 输入框，把参数放在 `#` 后并用 `&` 分隔，不能写成 `?output=config`。
 
@@ -222,7 +223,7 @@ OneXray、v2rayN 保持移除。HAPP 的稳定 GeoData URL 为 `public/current/h
 
 ## Sub-Store 规模
 
-当前 canonical catalog 为 9 个手动 collection、30 个 File task：
+当前 canonical catalog 为 10 个手动 collection、38 个 File task：
 
 | 客户端 | 任务数 | 输出 |
 | --- | ---: | --- |
@@ -234,9 +235,10 @@ OneXray、v2rayN 保持移除。HAPP 的稳定 GeoData URL 为 `public/current/h
 | HAPP | 3 | macOS/iPhone/iPad JSON Config |
 | V2Box | 3 | 节点 + iPhone/iPad Config |
 | Clash Apple | 5 | 节点 + 四个平台 Config |
+| INCY | 8 | JSON 数组 + autorouting |
 | Unified policy | 1 | schema v3 按客户端分层的私密 policy |
 
-后台只保留上述 9 个手动 collection 和 30 个 canonical task；删除旧的 OneXray/v2rayN 对象及其任务。不要在 Sub-Store 使用 `subscriptionTags` 自动识别，所有节点来源通过 collection 手动勾选。
+后台只保留上述 10 个手动 collection 和 38 个 canonical task；删除旧的 OneXray/v2rayN 对象及其任务。不要在 Sub-Store 使用 `subscriptionTags` 自动识别，所有节点来源通过 collection 手动勾选。
 
 ## 维护与验证
 

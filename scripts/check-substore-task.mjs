@@ -84,6 +84,12 @@ const GENERATOR_SCHEMAS = Object.freeze({
     platforms: ["macos", "iphone", "ipad"],
     omitKeys: ["autoGroupMode", "clientChain"],
   }),
+  "incy/scripts/incy-config-generator.js": configSchema({
+    platforms: ["iphone", "ipad", "appletv", "android", "androidtv", "macos", "windows", "linux"],
+    requiresSubscriptionName: true,
+    expectedName: "apple-proxy-incy",
+    extraKeys: ["adblockMode", "autoGroupMode", "clientChain"],
+  }),
 });
 
 function nodeSchema() {
@@ -111,6 +117,7 @@ function configSchema({
   platforms,
   requiresSubscriptionName = false,
   requiresNodeSubscriptionUrl = false,
+  expectedName = null,
   rejectFullAdblockPlatforms = [],
   extraKeys = [],
   extraEnums = {},
@@ -132,6 +139,7 @@ function configSchema({
     allowed: Object.freeze(allowed),
     outputValues: Object.freeze([output]),
     platforms: Object.freeze(platforms),
+    expectedName,
     rejectFullAdblockPlatforms: Object.freeze(rejectFullAdblockPlatforms),
     enums: Object.freeze({
       dnsMode: OPTION_VALUES.dnsMode,
@@ -203,6 +211,7 @@ export function parseTaskUrl(raw) {
 
 export function checkTaskOptions(schema, params) {
   const errors = [];
+  const expectedName = schema.expectedName ?? null;
   for (const key of Object.keys(params)) {
     if (!schema.allowed.includes(key)) {
       errors.push(`Unknown option '${key}' (allowed: ${schema.allowed.join(", ")})`);
@@ -229,6 +238,10 @@ export function checkTaskOptions(schema, params) {
         validateCollectionName(params[key], "Option 'name'");
       } catch (error) {
         errors.push(error.message);
+        continue;
+      }
+      if (expectedName !== null && params[key] !== expectedName) {
+        errors.push(`Option 'name' has unsupported value '${params[key]}' (expected: ${expectedName})`);
       }
     }
     if (key === "subscriptionName" && /[\r\n]/u.test(params[key])) {

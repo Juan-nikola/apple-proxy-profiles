@@ -4,11 +4,11 @@
 
 ## Collection
 
-9 个手动 collection：`apple-proxy-all`、`apple-proxy-egern`、`apple-proxy-anywhere`、`apple-proxy-shadowrocket`、`apple-proxy-surge`、`apple-proxy-singbox`、`apple-proxy-happ`、`apple-proxy-v2box`、`apple-proxy-clash`。
+10 个手动 collection：`apple-proxy-all`、`apple-proxy-egern`、`apple-proxy-anywhere`、`apple-proxy-shadowrocket`、`apple-proxy-surge`、`apple-proxy-singbox`、`apple-proxy-happ`、`apple-proxy-v2box`、`apple-proxy-clash`、`apple-proxy-incy`。
 
 ## 脚本与任务
 
-canonical catalog 共 30 个 File task。每个 generator task 都是“File + Script Operator”：File 源内容留空，Script Operator 以远程链接引用下面的 JS；不要把 JS 放到 File 的远程源文件字段。配置任务读取 schema v3 按客户端分层的 policy，节点任务不读取 policy。典型路径：
+canonical catalog 共 38 个 File task。每个 generator task 都是“File + Script Operator”：File 源内容留空，Script Operator 以远程链接引用下面的 JS；不要把 JS 放到 File 的远程源文件字段。配置任务读取 schema v3 按客户端分层的 policy，节点任务不读取 policy。典型路径：
 
 ```text
 current/egern/scripts/egern-node-generator.js
@@ -19,6 +19,7 @@ current/sing-box/scripts/sing-box-config-generator.js
 current/v2box/scripts/substore-config-generator.js
 current/clash/scripts/clash-profile-generator.js
 current/happ/scripts/happ-config-generator.js
+current/incy/scripts/incy-config-generator.js
 ```
 
 参数放在 URL 的 `#` 后并用 `&` 分隔，不使用 `?`；生产任务固定 `channel=current`。HAPP 只允许 `macos`、`iphone`、`ipad`。
@@ -33,7 +34,7 @@ current/happ/scripts/happ-config-generator.js
 | `type` | Sub-Store 输入类型 | `collection` | `collection` |
 | `name` | 输入 collection 名称 | 对应 collection 标识 | 各客户端的 `apple-proxy-*` |
 | `subscriptionName` | 输出中引用的节点订阅名称 | 任意非空单行文本 | 与客户端节点订阅显示名完全一致 |
-| `platform` | 目标平台 | 由客户端限制为 `macos`、`iphone`、`ipad`、`appletv` 或 `android` | 按任务填写 |
+| `platform` | 目标平台 | 由客户端限制为 `macos`、`iphone`、`ipad`、`appletv`、`android`、`androidtv`、`windows` 或 `linux` | 按任务填写 |
 | `channel` | 公开脚本与规则发布通道 | 当前生产只用 `current` | `current` |
 | `dnsMode` | DNS 策略预设 | `stable`、`privacy`、`speed` | `stable` |
 | `chinaDns` | 国内域名 DNS | `alidns`、`dnspod`、`system` | `alidns` |
@@ -106,4 +107,4 @@ current/happ/scripts/happ-config-generator.js
 
 ## 迁移
 
-先 Preview 9 个 collection 和 30 个任务，再逐个替换客户端订阅。失败时切换设备上的旧 Profile/Config；HAPP 固定节点运行时仅允许 balancer 回退 FOLLOW。后台删除 OneXray、v2rayN 遗留对象及旧任务，保留新的 `apple-proxy-happ` collection。
+先 Preview 10 个 collection 和 38 个任务，再逐个替换客户端订阅。失败时切换设备上的旧 Profile/Config；HAPP 固定节点运行时仅允许 balancer 回退 FOLLOW。后台删除 OneXray、v2rayN 遗留对象及旧任务，保留新的 `apple-proxy-happ` collection。

@@ -60,7 +60,16 @@ test("accepts the published Anywhere strategy task and rejects extra options", (
   assert.equal(getSubstoreTaskSchema("shadowrocket/scripts/shadowrocket-node-subscription.js").policyInput, null);
 });
 
-
+test("accepts INCY config tasks and rejects invalid INCY variants", () => {
+  const url = `${PUBLIC}/current/incy/scripts/incy-config-generator.js#output=config&type=collection&name=apple-proxy-incy&subscriptionName=INCY&platform=androidtv&channel=current&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=ipv4-only&adblockMode=off&autoGroupMode=auto&clientChain=off`;
+  const result = checkSubstoreTaskUrl(url);
+  assert.equal(result.ok, true, result.errors.join(", "));
+  assert.equal(getSubstoreTaskSchema("incy/scripts/incy-config-generator.js").policyInput, "apple-proxy-policy");
+  assert.equal(checkSubstoreTaskUrl(url.replace("platform=androidtv", "platform=tvos")).ok, false);
+  assert.equal(checkSubstoreTaskUrl(url.replace("name=apple-proxy-incy", "name=apple-proxy-egern")).ok, false);
+  assert.equal(checkSubstoreTaskUrl(url.replace("output=config", "output=nodes")).ok, false);
+  assert.equal(checkSubstoreTaskUrl(url.replace("&subscriptionName=INCY", "")).ok, false);
+});
 
 test("accepts a client-specific collection slug and rejects unsafe collection names", () => {
   const safe = `${PUBLIC}/current/egern/scripts/egern-node-generator.js#output=nodes&type=collection&name=apple-proxy-egern&clientChain=off`;
