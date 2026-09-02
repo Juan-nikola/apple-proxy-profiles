@@ -1,6 +1,6 @@
 # 维护手册
 
-项目保持 monorepo 分层：`shared/`、`clients/*`、`automation/`、`public/`。当前 active 客户端为 Anywhere、Egern、Shadowrocket、Surge、sing-box、HAPP、V2Box、Clash Apple，共 8 个。
+项目保持 monorepo 分层：`shared/`、`clients/*`、`automation/`、`public/`。当前 active 客户端为 Anywhere、Egern、Shadowrocket、Surge、sing-box、HAPP、V2Box、Clash Apple、INCY，共 9 个。
 
 发布只生成 `public/current/`，由统一 policy、routing plan 和规则 manifest 驱动。节点渲染严格失败关闭，公开规则与私密节点分离。
 

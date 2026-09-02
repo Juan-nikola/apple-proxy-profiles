@@ -20,9 +20,9 @@ test("README quick-start guide links to maintained screenshot-style diagrams", a
   }
 });
 
-test("README tutorial keeps the eight-client and current-only contracts visible", async () => {
+test("README tutorial keeps the nine-client and current-only contracts visible", async () => {
   const readme = await readFile(new URL("README.md", root), "utf8");
-  assert.match(readme, /八个 active 客户端/u);
+  assert.match(readme, /九个 active 客户端/u);
   assert.match(readme, /10 个手动 collection、38 个 File task/u);
   assert.match(readme, /apple-proxy-incy/u);
   assert.match(readme, /androidtv/u);
