@@ -1,13 +1,23 @@
 import { validateCollectionName } from "../../../shared/substore/collection-name.js";
+import { FRONTIER_CHANNELS } from "../../../shared/release/frontier-manifest.js";
 import { argumentsFrom, produceNormalizedNodes, mergedClashDiagnostics, logClashDiagnostics } from "./substore-runtime.js";
 import { renderClashSubscription } from "./render-subscription.js";
 
 function nodeArguments(raw) {
   if (!raw || typeof raw !== "object" || Array.isArray(raw)) throw new Error("Clash node arguments must be a plain object");
   const values = new Map(Object.entries(raw));
+  for (const key of values.keys()) {
+    if (!key.startsWith("_") && !["output", "type", "name", "clientChain", "channel"].includes(key)) {
+      throw new Error(`Unknown Clash node option: ${key}`);
+    }
+  }
   if (values.get("output") !== "nodes" || values.get("type") !== "collection") throw new Error("Clash node output must be nodes/collection");
   const name = validateCollectionName(values.get("name"), "Clash node name");
-  return Object.freeze({ output: "nodes", type: "collection", name });
+  const clientChain = values.get("clientChain") ?? "off";
+  if (clientChain !== "off") throw new Error("Clash node clientChain must be off");
+  const channel = values.get("channel") ?? "current";
+  if (!FRONTIER_CHANNELS.includes(channel)) throw new Error("Clash node channel is unsupported");
+  return Object.freeze({ output: "nodes", type: "collection", name, clientChain, channel });
 }
 
 export async function operator(input, targetPlatform, context = {}) {
@@ -20,4 +30,3 @@ export async function operator(input, targetPlatform, context = {}) {
   logClashDiagnostics(context, diagnostics);
   return { ...input, $content: content };
 }
-

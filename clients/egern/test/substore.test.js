@@ -11,6 +11,7 @@ const NODE_ARGUMENTS = Object.freeze({
   type: "collection",
   name: "apple-proxy-egern",
   clientChain: "off",
+  channel: "current",
 });
 const PROFILE_ARGUMENTS = Object.freeze({
   output: "config",
