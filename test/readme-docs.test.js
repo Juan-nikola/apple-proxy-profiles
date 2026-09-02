@@ -28,3 +28,25 @@ test("README tutorial keeps the eight-client and current-only contracts visible"
   assert.match(readme, /ChinaTLD -> ChinaIP -> 漏网之鱼/u);
   assert.doesNotMatch(readme, /https?:\/\/[^\s`]+(?:api|token|uuid|password)=/iu);
 });
+
+test("Sub-Store policy examples use the Chinese business-group labels", async () => {
+  const paths = ["README.md", "docs/substore-two-layer-setup.md"];
+  const expectedLabels = [
+    "🤖 AI 专用", "🐙 GitHub", "📺 YouTube", "🎬 海外流媒体", "💬 海外社交",
+    "🍎 Apple", "🪟 Microsoft", "🇨🇳 国内平台", "🌍 海外游戏", "🎮 游戏连接",
+    "⬇️ 下载/P2P", "🧭 DNS 与规则下载", "漏网之鱼",
+  ];
+
+  for (const path of paths) {
+    const document = await readFile(new URL(path, root), "utf8");
+    const examples = [...document.matchAll(/```json\n([\s\S]*?)\n```/gu)]
+      .map(([, source]) => JSON.parse(source))
+      .filter((value) => value.schemaVersion === 3);
+    assert.ok(examples.length > 0, `${path} should include a schema v3 policy example`);
+    for (const example of examples) {
+      for (const layer of Object.values(example.clients)) {
+        assert.deepEqual(Object.keys(layer.targets), expectedLabels, `${path} policy targets`);
+      }
+    }
+  }
+});

@@ -25,7 +25,7 @@ current/happ/scripts/happ-config-generator.js
 
 ## 参数含义与可用值
 
-以下参数由各客户端生成器共同使用或按客户端扩展。参数名和值区分大小写；只填写表中的值。当前私密 Sub-Store 的 22 个配置任务已统一设置为 `ipv6Mode=ipv4-only`，以避免无可用 IPv6 路由时出现连接失败。
+以下参数由各客户端生成器共同使用或按客户端扩展。参数名和值区分大小写；只填写表中的值。当前私密 Sub-Store 的 30 个配置任务已统一设置为 `ipv6Mode=ipv4-only`，以避免无可用 IPv6 路由时出现连接失败。
 
 | 参数 | 含义 | 可用值 | 当前生产配置 |
 | --- | --- | --- | --- |
@@ -63,37 +63,37 @@ current/happ/scripts/happ-config-generator.js
     "surge": {
       "schemaVersion": 2,
       "targets": {
-        "ai": "FOLLOW",
-        "github": "FOLLOW",
-        "youtube": "FOLLOW",
-        "overseasMedia": "FOLLOW",
-        "globalSocial": "FOLLOW",
-        "apple": "DIRECT",
-        "microsoft": "DIRECT",
-        "domesticPlatform": "DIRECT",
-        "overseasGame": "FOLLOW",
-        "game": "DIRECT",
-        "download": "DIRECT",
-        "dnsAndRules": "FOLLOW",
-        "final": "FOLLOW"
+        "🤖 AI 专用": "FOLLOW",
+        "🐙 GitHub": "FOLLOW",
+        "📺 YouTube": "FOLLOW",
+        "🎬 海外流媒体": "FOLLOW",
+        "💬 海外社交": "FOLLOW",
+        "🍎 Apple": "DIRECT",
+        "🪟 Microsoft": "DIRECT",
+        "🇨🇳 国内平台": "DIRECT",
+        "🌍 海外游戏": "FOLLOW",
+        "🎮 游戏连接": "DIRECT",
+        "⬇️ 下载/P2P": "DIRECT",
+        "🧭 DNS 与规则下载": "FOLLOW",
+        "漏网之鱼": "FOLLOW"
       }
     },
     "sing-box": {
       "schemaVersion": 2,
       "targets": {
-        "ai": "NODE~🇺🇸qqpw家宽|vless",
-        "github": "FOLLOW",
-        "youtube": "FOLLOW",
-        "overseasMedia": "FOLLOW",
-        "globalSocial": "FOLLOW",
-        "apple": "DIRECT",
-        "microsoft": "DIRECT",
-        "domesticPlatform": "DIRECT",
-        "overseasGame": "FOLLOW",
-        "game": "DIRECT",
-        "download": "DIRECT",
-        "dnsAndRules": "FOLLOW",
-        "final": "FOLLOW"
+        "🤖 AI 专用": "NODE~🇺🇸qqpw家宽|vless",
+        "🐙 GitHub": "FOLLOW",
+        "📺 YouTube": "FOLLOW",
+        "🎬 海外流媒体": "FOLLOW",
+        "💬 海外社交": "FOLLOW",
+        "🍎 Apple": "DIRECT",
+        "🪟 Microsoft": "DIRECT",
+        "🇨🇳 国内平台": "DIRECT",
+        "🌍 海外游戏": "FOLLOW",
+        "🎮 游戏连接": "DIRECT",
+        "⬇️ 下载/P2P": "DIRECT",
+        "🧭 DNS 与规则下载": "FOLLOW",
+        "漏网之鱼": "FOLLOW"
       }
     }
   }

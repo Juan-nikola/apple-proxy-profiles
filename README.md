@@ -84,7 +84,7 @@ channel=current
 | `globalDns` | 境外域名使用的 DNS | `cloudflare`、`google`、`quad9` | `cloudflare` |
 | `blockMode` | 安全、广告和跟踪规则的默认拦截强度 | `balanced`、`security`、`strict`、`off` | `balanced` |
 | `quicMode` | UDP/443（QUIC）处理方式 | `allow`、`proxy-block`、`all-block` | `proxy-block` |
-| `ipv6Mode` | DNS 和连接选择 IPv4/IPv6 的方式 | `auto`、`ipv4-only` | 所有 22 个配置任务均为 `ipv4-only` |
+| `ipv6Mode` | DNS 和连接选择 IPv4/IPv6 的方式 | `auto`、`ipv4-only` | 所有 30 个配置任务均为 `ipv6Mode=ipv4-only` |
 | `autoGroupMode` | 自动测速/地区分组的生成规模 | `auto`、`full`、`balanced`、`minimal` | `auto` |
 | `clientChain` | 是否生成客户端链式入口/落地节点 | `off`、`on` | `off` |
 | `adblockMode` | 是否加载完整广告规则包 | `off`、`full` | `off` |
@@ -120,37 +120,37 @@ Sub-Store 界面的“关闭缓存/noCache”和“不验证服务器证书/inse
     "surge": {
       "schemaVersion": 2,
       "targets": {
-        "ai": "FOLLOW",
-        "github": "FOLLOW",
-        "youtube": "FOLLOW",
-        "overseasMedia": "FOLLOW",
-        "globalSocial": "FOLLOW",
-        "apple": "DIRECT",
-        "microsoft": "DIRECT",
-        "domesticPlatform": "DIRECT",
-        "overseasGame": "FOLLOW",
-        "game": "DIRECT",
-        "download": "DIRECT",
-        "dnsAndRules": "FOLLOW",
-        "final": "FOLLOW"
+        "🤖 AI 专用": "FOLLOW",
+        "🐙 GitHub": "FOLLOW",
+        "📺 YouTube": "FOLLOW",
+        "🎬 海外流媒体": "FOLLOW",
+        "💬 海外社交": "FOLLOW",
+        "🍎 Apple": "DIRECT",
+        "🪟 Microsoft": "DIRECT",
+        "🇨🇳 国内平台": "DIRECT",
+        "🌍 海外游戏": "FOLLOW",
+        "🎮 游戏连接": "DIRECT",
+        "⬇️ 下载/P2P": "DIRECT",
+        "🧭 DNS 与规则下载": "FOLLOW",
+        "漏网之鱼": "FOLLOW"
       }
     },
     "sing-box": {
       "schemaVersion": 2,
       "targets": {
-        "ai": "NODE~🇺🇸qqpw家宽|vless",
-        "github": "FOLLOW",
-        "youtube": "FOLLOW",
-        "overseasMedia": "FOLLOW",
-        "globalSocial": "FOLLOW",
-        "apple": "DIRECT",
-        "microsoft": "DIRECT",
-        "domesticPlatform": "DIRECT",
-        "overseasGame": "FOLLOW",
-        "game": "DIRECT",
-        "download": "DIRECT",
-        "dnsAndRules": "FOLLOW",
-        "final": "FOLLOW"
+        "🤖 AI 专用": "NODE~🇺🇸qqpw家宽|vless",
+        "🐙 GitHub": "FOLLOW",
+        "📺 YouTube": "FOLLOW",
+        "🎬 海外流媒体": "FOLLOW",
+        "💬 海外社交": "FOLLOW",
+        "🍎 Apple": "DIRECT",
+        "🪟 Microsoft": "DIRECT",
+        "🇨🇳 国内平台": "DIRECT",
+        "🌍 海外游戏": "FOLLOW",
+        "🎮 游戏连接": "DIRECT",
+        "⬇️ 下载/P2P": "DIRECT",
+        "🧭 DNS 与规则下载": "FOLLOW",
+        "漏网之鱼": "FOLLOW"
       }
     }
   }
@@ -174,11 +174,11 @@ HAPP 必须通过真实订阅 URL 获取 JSON 数组和响应头。不要点击 
 3. 在 HAPP 的“添加订阅/URL”中粘贴 URL，等待 `routing` Profile 和 GeoData 完成。
 4. 重新连接。JSON 订阅设置里的路由开关显示锁定是正常的，路由由 JSON 和订阅响应头共同控制。
 
-生成器会同时发送 `routing: happ://routing/onadd/...` 和 `routing-enable: 1`：前者绑定并自动激活 Profile，后者明确保持路由开启。macOS 任务还发送 HAPP 官方 `proxy-enable: 1`，导入/更新时自动打开桌面 Proxy 模式；iPhone/iPad 使用 Network Extension。若使用本地文件，只能作为离线兜底，不能保证自动绑定或自动启用。
+生成器会同时发送 `routing: happ://routing/onadd/...`、`routing-enable: 1` 和 `sniffing-enable: 1`：前者绑定并自动激活 Profile，第二项明确保持路由开启，第三项打开 HAPP 运行时 TUN 的协议/SNI 嗅探，使 `geosite:OPENAI` 等域名规则可以在 IP 回落前匹配。macOS 任务还发送 HAPP 官方 `proxy-enable: 1`，导入/更新时自动打开桌面 Proxy 模式；iPhone/iPad 使用 Network Extension。若使用本地文件，只能作为离线兜底，不能保证自动绑定或自动启用。
 
 HAPP 对 JSON 订阅会把路由显示为“开”并锁定，点击时提示“无法手动启用/禁用路由”属于正常限制。请以日志中的 `happ-direct`、`happ-follow/<节点展示名>` 和 `happ-fixed/<节点展示名> [candidate]` 判断路由结果；`proxy-block` 会让应用 UDP/443（QUIC）直连回落，避免送入仅支持 TCP 的 Reality。
 
-HAPP 日志默认级别为 `info`。入口会嗅探 `http`、`tls`、`quic` 并以 `routeOnly:false` 写回目标，因此嗅探成功时可看到 `chat.openai.com` 等域名；纯 IP、未加密 TCP、ECH 或嗅探失败时显示 IP 属于正常边界。出站会显示脱敏节点名，例如 `happ-follow/小秘书GEN2 · VLESS · U`，重复名称才追加短 ID。macOS 需将系统 HTTP/HTTPS 代理设为 `127.0.0.1:10809` 或 SOCKS `127.0.0.1:10808`，可用 `scutil --proxy` 检查；其他代理软件抢占系统代理时，应用不走 HAPP 不属于路由规则故障。
+HAPP 日志默认级别为 `info`。订阅会通过 `sniffing-enable: 1` 打开运行时 TUN 嗅探，入口再分析 `http`、`tls`、`quic` 并以 `routeOnly:false` 写回目标，因此嗅探成功时可看到 `chat.openai.com` 等域名；纯 IP、未加密 TCP、ECH 或嗅探失败时显示 IP 属于正常边界。出站会显示脱敏节点名，例如 `happ-follow/小秘书GEN2 · VLESS · U`，重复名称才追加短 ID。macOS 需将系统 HTTP/HTTPS 代理设为 `127.0.0.1:10809` 或 SOCKS `127.0.0.1:10808`，可用 `scutil --proxy` 检查；其他代理软件抢占系统代理时，应用不走 HAPP 不属于路由规则故障。
 
 #### 6. 日常更新与回滚
 
