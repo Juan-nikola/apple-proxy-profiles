@@ -124,5 +124,14 @@ export function renderIncyOutbound(node, { tag, rawOutbound = null } = {}) {
   }
   validateRequiredFields(node);
   requiredTag(tag);
-  return renderXrayOutbound({ ...node, name: node?.name ?? tag }, { tag, client: "incy" });
+  const outbound = renderXrayOutbound({ ...node, name: node?.name ?? tag }, { tag, client: "incy" });
+  if (outbound.protocol !== "hysteria") return outbound;
+  return Object.freeze({
+    ...outbound,
+    streamSettings: {
+      ...(outbound.streamSettings ?? {}),
+      network: "hysteria",
+      hysteriaSettings: { version: 2, ...(outbound.streamSettings?.hysteriaSettings ?? {}) },
+    },
+  });
 }

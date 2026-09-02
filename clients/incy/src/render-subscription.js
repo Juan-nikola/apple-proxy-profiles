@@ -7,6 +7,7 @@ import { validateIncySubscription } from "./validate-subscription.js";
 
 const DIRECT_TAG = "ap-incy-direct";
 const BLOCK_TAG = "ap-incy-block";
+const AGGREGATE_FOLLOW_TAG = "balancer-ap-incy-follow";
 const CHAIN_ENTRY_POLICY = "🔗 入口节点";
 const CHAIN_ENTRY_PREFIX = "ap-incy-chain-entry/";
 
@@ -120,6 +121,79 @@ function buildConfig(node, options, policyResolution, allNodes) {
   };
 }
 
+function appendUniqueOutbound(outbounds, seen, outbound) {
+  const existing = seen.get(outbound.tag);
+  if (existing) {
+    if (JSON.stringify(existing) !== JSON.stringify(outbound)) {
+      throw new Error(`INCY aggregate contains conflicting outbound '${outbound.tag}'`);
+    }
+    return;
+  }
+  seen.set(outbound.tag, outbound);
+  outbounds.push(outbound);
+}
+
+function buildAggregateConfig(configs, options, policyResolution) {
+  const uniqueFollowTags = [...new Set(configs
+    .flatMap((config) => config.outbounds)
+    .filter(({ tag }) => tag.startsWith("ap-incy-follow/"))
+    .map(({ tag }) => tag))];
+  if (uniqueFollowTags.length === 0) throw new Error("INCY aggregate has no follow outbounds");
+
+  const fixedOutbounds = buildFixedOutbounds(policyResolution);
+  const outbounds = [];
+  const seen = new Map();
+  for (const config of configs) {
+    for (const outbound of config.outbounds) {
+      if (outbound.tag === DIRECT_TAG || outbound.tag === BLOCK_TAG || outbound.tag.startsWith("ap-incy-fixed/")) continue;
+      appendUniqueOutbound(outbounds, seen, outbound);
+    }
+  }
+  for (const outbound of fixedOutbounds) appendUniqueOutbound(outbounds, seen, stripOutboundMetadata(outbound));
+  appendUniqueOutbound(outbounds, seen, { tag: DIRECT_TAG, protocol: "freedom", settings: {} });
+  appendUniqueOutbound(outbounds, seen, { tag: BLOCK_TAG, protocol: "blackhole", settings: {} });
+
+  const route = renderIncyRouting({
+    options,
+    policyResolution,
+    fixedOutbounds,
+    followTag: AGGREGATE_FOLLOW_TAG,
+    directTag: DIRECT_TAG,
+    blockTag: BLOCK_TAG,
+  });
+  const { balancers, observatory } = renderIncyBalancers(policyResolution, fixedOutbounds, uniqueFollowTags[0], {
+    platform: options.platform,
+    autoGroupMode: options.autoGroupMode,
+    followSelectors: uniqueFollowTags,
+    fallbackTag: uniqueFollowTags[0],
+  });
+  balancers.push({
+    tag: AGGREGATE_FOLLOW_TAG,
+    selector: uniqueFollowTags,
+    strategy: { type: "leastPing" },
+    fallbackTag: uniqueFollowTags[0],
+  });
+
+  return {
+    remarks: `${options.subscriptionName} · INCY 自动选择`,
+    log: { loglevel: "info" },
+    inbounds: renderIncyInbounds(options.platform),
+    outbounds,
+    dns: renderIncyDns(options, {
+      followTag: AGGREGATE_FOLLOW_TAG,
+      directTag: DIRECT_TAG,
+      dnsRulesTag: "ap-incy-dns/aggregate",
+    }),
+    routing: { ...route, balancers },
+    observatory,
+    meta: {
+      platform: options.platform,
+      schemaVersion: 2,
+      serverDescription: `${summarizePolicy(policyResolution)}；${uniqueFollowTags.length} 个节点自动选择`,
+    },
+  };
+}
+
 export function renderIncySubscription({ nodes = [], options, policyResolution } = {}) {
   if (!Array.isArray(nodes) || nodes.length === 0) {
     throw new Error("INCY subscription cannot be empty");
@@ -128,5 +202,10 @@ export function renderIncySubscription({ nodes = [], options, policyResolution }
   const resolution = policyResolution ?? defaultUnifiedPolicyResolution();
   const configs = nodes.map((node) => buildConfig(node, options, resolution, nodes));
   validateIncySubscription(configs);
+  if (options.format === "single") {
+    const aggregate = buildAggregateConfig(configs, options, resolution);
+    validateIncySubscription(aggregate);
+    return aggregate;
+  }
   return configs;
 }

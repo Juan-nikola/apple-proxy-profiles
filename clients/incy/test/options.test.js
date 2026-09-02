@@ -14,7 +14,21 @@ test("accepts all eight INCY platforms and applies stable defaults", () => {
 
   assert.equal(options.dnsMode, "stable");
   assert.equal(options.ipv6Mode, "ipv4-only");
+  assert.equal(options.format, "array");
   assert.deepEqual(INCY_PLATFORMS, ["iphone", "ipad", "appletv", "android", "androidtv", "macos", "windows", "linux"]);
+});
+
+test("accepts the official single full-Xray output format", () => {
+  const options = parseIncyOptions({
+    output: "config",
+    type: "collection",
+    name: "apple-proxy-incy",
+    subscriptionName: "INCY",
+    platform: "macos",
+    format: "single",
+  });
+
+  assert.equal(options.format, "single");
 });
 
 test("rejects unknown keys, non-collection output, and unsupported platforms", () => {

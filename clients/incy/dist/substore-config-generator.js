@@ -1718,6 +1718,7 @@ var INCYConfigBundle = (() => {
     quicMode: "proxy-block",
     ipv6Mode: "ipv4-only",
     adblockMode: "off",
+    format: "array",
     autoGroupMode: "auto",
     clientChain: "off"
   });
@@ -1735,6 +1736,7 @@ var INCYConfigBundle = (() => {
     "quicMode",
     "ipv6Mode",
     "adblockMode",
+    "format",
     "autoGroupMode",
     "clientChain"
   ]);
@@ -1747,6 +1749,7 @@ var INCYConfigBundle = (() => {
     quicMode: Object.freeze(["allow", "proxy-block", "all-block"]),
     ipv6Mode: Object.freeze(["auto", "ipv4-only"]),
     adblockMode: Object.freeze(["off", "full"]),
+    format: Object.freeze(["array", "single"]),
     autoGroupMode: Object.freeze(["auto", "full", "balanced", "minimal"]),
     clientChain: Object.freeze(["off", "on"])
   });
@@ -1813,6 +1816,7 @@ var INCYConfigBundle = (() => {
       quicMode: enumValue(values, "quicMode"),
       ipv6Mode: enumValue(values, "ipv6Mode"),
       adblockMode: enumValue(values, "adblockMode"),
+      format: enumValue(values, "format"),
       autoGroupMode: enumValue(values, "autoGroupMode"),
       clientChain: enumValue(values, "clientChain")
     };
@@ -2026,7 +2030,16 @@ var INCYConfigBundle = (() => {
     }
     validateRequiredFields(node);
     requiredTag(tag);
-    return renderXrayOutbound({ ...node, name: node?.name ?? tag }, { tag, client: "incy" });
+    const outbound = renderXrayOutbound({ ...node, name: node?.name ?? tag }, { tag, client: "incy" });
+    if (outbound.protocol !== "hysteria") return outbound;
+    return Object.freeze({
+      ...outbound,
+      streamSettings: {
+        ...outbound.streamSettings ?? {},
+        network: "hysteria",
+        hysteriaSettings: { version: 2, ...outbound.streamSettings?.hysteriaSettings ?? {} }
+      }
+    });
   }
 
   // src/render-platform.js
@@ -2043,7 +2056,7 @@ var INCYConfigBundle = (() => {
   });
   var COMMON_SNIFFING = Object.freeze({
     enabled: true,
-    destOverride: Object.freeze(["udp", "http", "tls", "quic"]),
+    destOverride: Object.freeze(["http", "tls", "quic"]),
     routeOnly: false
   });
   function ensurePlatform(platform) {
@@ -2668,7 +2681,9 @@ var INCYConfigBundle = (() => {
     const preset = platformPolicyPreset(options.platform ?? "iphone");
     const { fixed, outboundByKey } = fixedPolicyNodes(policyResolution, fixedOutbounds);
     const balancers = [];
-    const subjectSelector = [followTag];
+    const followSelectors = Array.isArray(options.followSelectors) ? options.followSelectors : [];
+    const fallbackTag = options.fallbackTag ?? followTag;
+    const subjectSelector = [.../* @__PURE__ */ new Set([followTag, ...followSelectors])];
     for (const entry of fixed) {
       const candidateTag = outboundByKey.get(entry.nodeId) ?? outboundByKey.get(entry.name);
       if (!candidateTag) {
@@ -2679,7 +2694,7 @@ var INCYConfigBundle = (() => {
         tag: balancerTag,
         selector: [candidateTag],
         strategy: { type: "leastPing" },
-        fallbackTag: followTag
+        fallbackTag
       });
       subjectSelector.push(candidateTag);
     }
@@ -2809,7 +2824,7 @@ var INCYConfigBundle = (() => {
   ]);
   var STANDARD_SNIFFING = Object.freeze({
     enabled: true,
-    destOverride: Object.freeze(["udp", "http", "tls", "quic"]),
+    destOverride: Object.freeze(["http", "tls", "quic"]),
     routeOnly: false
   });
   var DIRECT_TAG = "ap-incy-direct";
@@ -2818,6 +2833,7 @@ var INCYConfigBundle = (() => {
   var FIXED_PREFIX = "ap-incy-fixed/";
   var DNS_PREFIX = "ap-incy-dns/";
   var BALANCER_PREFIX = "balancer-ap-incy-fixed/";
+  var AGGREGATE_BALANCER_TAG = "balancer-ap-incy-follow";
   var SECRET_VALUE_PATTERNS = [
     /TEST_ONLY_/u,
     /https?:\/\/[^\s]+/iu,
@@ -2957,7 +2973,7 @@ var INCYConfigBundle = (() => {
       throw new Error("INCY inbound sniffing is invalid");
     }
   }
-  function validateDns(config, outboundTags, followTag) {
+  function validateDns(config, outboundTags, followTag, balancerTags) {
     if (!isPlainObject2(config.dns)) {
       throw new Error("INCY DNS config is invalid");
     }
@@ -2974,11 +2990,11 @@ var INCYConfigBundle = (() => {
     if (typeof config.dns.queryStrategy !== "string" || !["UseIPv4", "UseIP"].includes(config.dns.queryStrategy)) {
       throw new Error("INCY DNS query strategy is invalid");
     }
-    if (!outboundTags.has(DIRECT_TAG) || !outboundTags.has(followTag)) {
+    if (!outboundTags.has(DIRECT_TAG) || !outboundTags.has(followTag) && !balancerTags.has(followTag)) {
       throw new Error("INCY DNS references missing outbound tags");
     }
   }
-  function validateRouting(config, outboundTags, balancerTags, followTag, observatorySelectors) {
+  function validateRouting(config, outboundTags, balancerTags, followTag, observatorySelectors, followTags) {
     if (!isPlainObject2(config.routing)) {
       throw new Error("INCY routing config is invalid");
     }
@@ -3007,32 +3023,37 @@ var INCYConfigBundle = (() => {
       if (!isPlainObject2(balancer)) {
         throw new Error("INCY balancer must be a plain object");
       }
-      if (typeof balancer.tag !== "string" || !balancer.tag.startsWith(BALANCER_PREFIX)) {
+      if (typeof balancer.tag !== "string" || !balancer.tag.startsWith(BALANCER_PREFIX) && balancer.tag !== AGGREGATE_BALANCER_TAG) {
         throw new Error("INCY balancer tag is invalid");
       }
       if (!balancerTags.has(balancer.tag)) {
         throw new Error("INCY balancer tag is missing from routing references");
       }
-      if (!Array.isArray(balancer.selector) || balancer.selector.length !== 1 || !outboundTags.has(balancer.selector[0])) {
+      const isAggregate = balancer.tag === AGGREGATE_BALANCER_TAG;
+      const expectedSelectors = isAggregate ? followTags : [balancer.selector?.[0]];
+      if (!Array.isArray(balancer.selector) || balancer.selector.length !== expectedSelectors.length || !expectedSelectors.every((tag) => balancer.selector.includes(tag) && outboundTags.has(tag))) {
         throw new Error("INCY balancer selector is invalid");
       }
-      if (balancer.fallbackTag !== followTag) {
+      if (typeof balancer.fallbackTag !== "string" || !isAggregate && balancer.fallbackTag !== followTag && !followTags.includes(balancer.fallbackTag) || isAggregate && !followTags.includes(balancer.fallbackTag)) {
         throw new Error("INCY balancer fallback must target the follow outbound");
       }
-      if (!observatorySelectors.includes(followTag) || !observatorySelectors.includes(balancer.selector[0])) {
+      if (!balancer.selector.every((tag) => observatorySelectors.includes(tag))) {
         throw new Error("INCY balancer selector is not observed");
       }
     }
   }
-  function validateObservatory(config, followTag, fixedTags) {
+  function validateObservatory(config, followTag, fixedTags, followTags) {
     if (!isPlainObject2(config.observatory)) {
       throw new Error("INCY observatory config is invalid");
     }
     if (!Array.isArray(config.observatory.subjectSelector) || config.observatory.subjectSelector.length === 0) {
       throw new Error("INCY observatory selectors are invalid");
     }
-    if (config.observatory.subjectSelector[0] !== followTag) {
+    if (followTags.length > 0 && !followTags.includes(followTag) || config.observatory.subjectSelector[0] !== followTag) {
       throw new Error("INCY observatory must prioritize the follow outbound");
+    }
+    if (!followTags.every((tag) => config.observatory.subjectSelector.includes(tag))) {
+      throw new Error("INCY observatory is missing a follow selector");
     }
     for (const tag of fixedTags) {
       if (!config.observatory.subjectSelector.includes(tag)) {
@@ -3092,17 +3113,20 @@ var INCYConfigBundle = (() => {
     const balancerTags = new Set((config.routing?.balancers ?? []).map((balancer) => balancer.tag));
     const directOutbound = config.outbounds.find((outbound) => outbound.tag === DIRECT_TAG);
     const blockOutbound = config.outbounds.find((outbound) => outbound.tag === BLOCK_TAG);
-    if (followTags.length !== 1) {
+    const aggregate = balancerTags.has(AGGREGATE_BALANCER_TAG);
+    if (!aggregate && followTags.length !== 1 || aggregate && followTags.length === 0) {
       throw new Error("INCY config requires exactly one follow outbound");
     }
+    const expectedFollowTag = aggregate ? AGGREGATE_BALANCER_TAG : followTags[0];
+    const observatoryFollowTag = followTags[0];
     if (!outboundTags.has(DIRECT_TAG) || !outboundTags.has(BLOCK_TAG)) {
       throw new Error("INCY config is missing direct or block outbounds");
     }
     validateReservedOutbound(directOutbound, DIRECT_TAG, "freedom");
     validateReservedOutbound(blockOutbound, BLOCK_TAG, "blackhole");
-    validateDns(config, outboundTags, followTags[0]);
-    validateRouting(config, outboundTags, balancerTags, followTags[0], config.observatory?.subjectSelector ?? []);
-    validateObservatory(config, followTags[0], fixedTags);
+    validateDns(config, outboundTags, expectedFollowTag, balancerTags);
+    validateRouting(config, outboundTags, balancerTags, expectedFollowTag, config.observatory?.subjectSelector ?? [], followTags);
+    validateObservatory(config, observatoryFollowTag, fixedTags, aggregate ? followTags : []);
     validateMeta(config);
   }
   function assertIncyOutbound(container) {
@@ -3114,6 +3138,10 @@ var INCYConfigBundle = (() => {
     return true;
   }
   function validateIncySubscription(configs) {
+    if (isPlainObject2(configs)) {
+      validateIncyConfig(configs);
+      return true;
+    }
     if (!Array.isArray(configs) || configs.length === 0) {
       throw new Error("INCY subscription set must be a non-empty array");
     }
@@ -3126,6 +3154,7 @@ var INCYConfigBundle = (() => {
   // src/render-subscription.js
   var DIRECT_TAG2 = "ap-incy-direct";
   var BLOCK_TAG2 = "ap-incy-block";
+  var AGGREGATE_FOLLOW_TAG = "balancer-ap-incy-follow";
   var CHAIN_ENTRY_POLICY = "\u{1F517} \u5165\u53E3\u8282\u70B9";
   var CHAIN_ENTRY_PREFIX = "ap-incy-chain-entry/";
   function ensurePlainObject(value, label2) {
@@ -3219,6 +3248,71 @@ var INCYConfigBundle = (() => {
       }
     };
   }
+  function appendUniqueOutbound(outbounds, seen, outbound) {
+    const existing = seen.get(outbound.tag);
+    if (existing) {
+      if (JSON.stringify(existing) !== JSON.stringify(outbound)) {
+        throw new Error(`INCY aggregate contains conflicting outbound '${outbound.tag}'`);
+      }
+      return;
+    }
+    seen.set(outbound.tag, outbound);
+    outbounds.push(outbound);
+  }
+  function buildAggregateConfig(configs, options, policyResolution) {
+    const uniqueFollowTags = [...new Set(configs.flatMap((config) => config.outbounds).filter(({ tag }) => tag.startsWith("ap-incy-follow/")).map(({ tag }) => tag))];
+    if (uniqueFollowTags.length === 0) throw new Error("INCY aggregate has no follow outbounds");
+    const fixedOutbounds = buildFixedOutbounds(policyResolution);
+    const outbounds = [];
+    const seen = /* @__PURE__ */ new Map();
+    for (const config of configs) {
+      for (const outbound of config.outbounds) {
+        if (outbound.tag === DIRECT_TAG2 || outbound.tag === BLOCK_TAG2 || outbound.tag.startsWith("ap-incy-fixed/")) continue;
+        appendUniqueOutbound(outbounds, seen, outbound);
+      }
+    }
+    for (const outbound of fixedOutbounds) appendUniqueOutbound(outbounds, seen, stripOutboundMetadata(outbound));
+    appendUniqueOutbound(outbounds, seen, { tag: DIRECT_TAG2, protocol: "freedom", settings: {} });
+    appendUniqueOutbound(outbounds, seen, { tag: BLOCK_TAG2, protocol: "blackhole", settings: {} });
+    const route = renderIncyRouting({
+      options,
+      policyResolution,
+      fixedOutbounds,
+      followTag: AGGREGATE_FOLLOW_TAG,
+      directTag: DIRECT_TAG2,
+      blockTag: BLOCK_TAG2
+    });
+    const { balancers, observatory } = renderIncyBalancers(policyResolution, fixedOutbounds, uniqueFollowTags[0], {
+      platform: options.platform,
+      autoGroupMode: options.autoGroupMode,
+      followSelectors: uniqueFollowTags,
+      fallbackTag: uniqueFollowTags[0]
+    });
+    balancers.push({
+      tag: AGGREGATE_FOLLOW_TAG,
+      selector: uniqueFollowTags,
+      strategy: { type: "leastPing" },
+      fallbackTag: uniqueFollowTags[0]
+    });
+    return {
+      remarks: `${options.subscriptionName} \xB7 INCY \u81EA\u52A8\u9009\u62E9`,
+      log: { loglevel: "info" },
+      inbounds: renderIncyInbounds(options.platform),
+      outbounds,
+      dns: renderIncyDns(options, {
+        followTag: AGGREGATE_FOLLOW_TAG,
+        directTag: DIRECT_TAG2,
+        dnsRulesTag: "ap-incy-dns/aggregate"
+      }),
+      routing: { ...route, balancers },
+      observatory,
+      meta: {
+        platform: options.platform,
+        schemaVersion: 2,
+        serverDescription: `${summarizePolicy(policyResolution)}\uFF1B${uniqueFollowTags.length} \u4E2A\u8282\u70B9\u81EA\u52A8\u9009\u62E9`
+      }
+    };
+  }
   function renderIncySubscription({ nodes = [], options, policyResolution } = {}) {
     if (!Array.isArray(nodes) || nodes.length === 0) {
       throw new Error("INCY subscription cannot be empty");
@@ -3227,6 +3321,11 @@ var INCYConfigBundle = (() => {
     const resolution = policyResolution ?? defaultUnifiedPolicyResolution();
     const configs = nodes.map((node) => buildConfig(node, options, resolution, nodes));
     validateIncySubscription(configs);
+    if (options.format === "single") {
+      const aggregate = buildAggregateConfig(configs, options, resolution);
+      validateIncySubscription(aggregate);
+      return aggregate;
+    }
     return configs;
   }
 

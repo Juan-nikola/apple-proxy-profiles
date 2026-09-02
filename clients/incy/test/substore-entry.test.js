@@ -90,6 +90,17 @@ test("Sub-Store INCY config entry returns a JSON array and sets the public respo
   assert.match(result.$content, /\n$/u);
 });
 
+test("Sub-Store INCY config entry returns one official full-Xray object when requested", async () => {
+  const { context } = makeContext({ arguments: { format: "single" } });
+
+  const result = await operator({}, "JSON", context);
+  const config = JSON.parse(result.$content);
+
+  assert.equal(Array.isArray(config), false);
+  assert.equal(config.inbounds.length, 2);
+  assert.ok(config.routing.balancers.some(({ tag }) => tag === "balancer-ap-incy-follow"));
+});
+
 test("Sub-Store INCY config entry keeps nodes whose source uses string ports and padded protocol names", async () => {
   const { context } = makeContext();
   context.produceArtifact = async (request) => request.type === "file"

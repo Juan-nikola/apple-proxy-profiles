@@ -9,7 +9,7 @@ test("renders stable local inbounds for every platform", () => {
     const ports = inbounds.map(({ port }) => port);
     assert.deepEqual(ports, [10808, 10809]);
     for (const inbound of inbounds) {
-      assert.deepEqual(inbound.sniffing.destOverride, ["udp", "http", "tls", "quic"]);
+      assert.deepEqual(inbound.sniffing.destOverride, ["http", "tls", "quic"]);
       assert.equal(inbound.sniffing.routeOnly, false);
     }
   }

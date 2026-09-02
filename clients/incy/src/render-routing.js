@@ -111,7 +111,9 @@ export function renderIncyBalancers(policyResolution, fixedOutbounds, followTag,
   const preset = platformPolicyPreset(options.platform ?? "iphone");
   const { fixed, outboundByKey } = fixedPolicyNodes(policyResolution, fixedOutbounds);
   const balancers = [];
-  const subjectSelector = [followTag];
+  const followSelectors = Array.isArray(options.followSelectors) ? options.followSelectors : [];
+  const fallbackTag = options.fallbackTag ?? followTag;
+  const subjectSelector = [...new Set([followTag, ...followSelectors])];
 
   for (const entry of fixed) {
     const candidateTag = outboundByKey.get(entry.nodeId) ?? outboundByKey.get(entry.name);
@@ -123,7 +125,7 @@ export function renderIncyBalancers(policyResolution, fixedOutbounds, followTag,
       tag: balancerTag,
       selector: [candidateTag],
       strategy: { type: "leastPing" },
-      fallbackTag: followTag,
+      fallbackTag,
     });
     subjectSelector.push(candidateTag);
   }

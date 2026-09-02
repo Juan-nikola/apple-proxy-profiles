@@ -14,6 +14,7 @@
     "quicMode": "proxy-block",
     "ipv6Mode": "ipv4-only",
     "adblockMode": "off",
+    "format": "array",
     "autoGroupMode": "auto",
     "clientChain": "off"
   },
@@ -30,7 +31,6 @@
       "sniffing": {
         "enabled": true,
         "destOverride": [
-          "udp",
           "http",
           "tls",
           "quic"
@@ -47,7 +47,6 @@
       "sniffing": {
         "enabled": true,
         "destOverride": [
-          "udp",
           "http",
           "tls",
           "quic"

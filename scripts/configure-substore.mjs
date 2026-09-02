@@ -126,14 +126,14 @@ export function canonicalTaskCatalog(channel = "current") {
     configTask("clash-config-appletv", "clash", "clash-profile-generator.js", channel, "apple-proxy-clash", "appletv", "Apple-Proxy-Clash", { nodeSubscriptionUrl: "<PRIVATE_CLASH_NODES_URL>" }),
     configTask("v2box-config-iphone", "v2box", "substore-config-generator.js", channel, "apple-proxy-v2box", "iphone", "Apple-Proxy-V2Box", { region: "cn" }, { omitKeys: ["autoGroupMode"] }),
     configTask("v2box-config-ipad", "v2box", "substore-config-generator.js", channel, "apple-proxy-v2box", "ipad", "Apple-Proxy-V2Box", { region: "cn" }, { omitKeys: ["autoGroupMode"] }),
-    configTask("incy-config-iphone", "incy", "incy-config-generator.js", channel, "apple-proxy-incy", "iphone", "INCY", { adblockMode: "off" }),
-    configTask("incy-config-ipad", "incy", "incy-config-generator.js", channel, "apple-proxy-incy", "ipad", "INCY", { adblockMode: "off" }),
-    configTask("incy-config-appletv", "incy", "incy-config-generator.js", channel, "apple-proxy-incy", "appletv", "INCY", { adblockMode: "off" }),
-    configTask("incy-config-android", "incy", "incy-config-generator.js", channel, "apple-proxy-incy", "android", "INCY", { adblockMode: "off" }),
-    configTask("incy-config-androidtv", "incy", "incy-config-generator.js", channel, "apple-proxy-incy", "androidtv", "INCY", { adblockMode: "off" }),
-    configTask("incy-config-macos", "incy", "incy-config-generator.js", channel, "apple-proxy-incy", "macos", "INCY", { adblockMode: "off" }),
-    configTask("incy-config-windows", "incy", "incy-config-generator.js", channel, "apple-proxy-incy", "windows", "INCY", { adblockMode: "off" }),
-    configTask("incy-config-linux", "incy", "incy-config-generator.js", channel, "apple-proxy-incy", "linux", "INCY", { adblockMode: "off" }),
+    configTask("incy-config-iphone", "incy", "incy-config-generator.js", channel, "apple-proxy-incy", "iphone", "INCY", { adblockMode: "off", format: "single" }),
+    configTask("incy-config-ipad", "incy", "incy-config-generator.js", channel, "apple-proxy-incy", "ipad", "INCY", { adblockMode: "off", format: "single" }),
+    configTask("incy-config-appletv", "incy", "incy-config-generator.js", channel, "apple-proxy-incy", "appletv", "INCY", { adblockMode: "off", format: "single" }),
+    configTask("incy-config-android", "incy", "incy-config-generator.js", channel, "apple-proxy-incy", "android", "INCY", { adblockMode: "off", format: "single" }),
+    configTask("incy-config-androidtv", "incy", "incy-config-generator.js", channel, "apple-proxy-incy", "androidtv", "INCY", { adblockMode: "off", format: "single" }),
+    configTask("incy-config-macos", "incy", "incy-config-generator.js", channel, "apple-proxy-incy", "macos", "INCY", { adblockMode: "off", format: "single" }),
+    configTask("incy-config-windows", "incy", "incy-config-generator.js", channel, "apple-proxy-incy", "windows", "INCY", { adblockMode: "off", format: "single" }),
+    configTask("incy-config-linux", "incy", "incy-config-generator.js", channel, "apple-proxy-incy", "linux", "INCY", { adblockMode: "off", format: "single" }),
   ];
   if (tasks.length !== 38) throw new Error(`Expected 38 canonical tasks, got ${tasks.length}`);
   return Object.freeze(tasks);

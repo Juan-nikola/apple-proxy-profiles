@@ -152,6 +152,10 @@ test("renders VMess, Trojan, Shadowsocks, Hy2, SOCKS5, and HTTP outbounds", () =
     } else {
       assert.equal(outbound.streamSettings.security, expected.streamSecurity, label);
     }
+    if (label === "hy2") {
+      assert.equal(outbound.streamSettings.network, "hysteria", label);
+      assert.equal(outbound.streamSettings.hysteriaSettings.version, 2, label);
+    }
   }
 });
 

@@ -4,13 +4,13 @@
 
 按顺序检查脚本路径是否为 `current/incy/scripts/incy-config-generator.js`、参数是否在 `#` 后，以及 `output=config`、`type=collection`、`name=apple-proxy-incy`、`subscriptionName` 和 `platform` 是否正确。collection 必须非空，节点必须属于 VLESS、VMess、Trojan、Shadowsocks、Hysteria2/Hy2、SOCKS5 或 HTTP；SSR、TUIC、Snell、AnyTLS、SSH 和未验证 WireGuard 会让整个 task 失败。私密 policy 必须绑定 `channel=current`，固定 `NODE~`/`NODE:` 目标必须唯一命中。
 
-一个不兼容节点会阻止整个数组输出，不要复制错误响应中的部分配置；修正 collection 后重新 Preview，客户端上一份配置仍可保留。
+一个不兼容节点会阻止整个单对象输出，不要复制错误响应中的部分配置；修正 collection 后重新 Preview，客户端上一份配置仍可保留。
 
 ## 路由、DNS 和协议异常
 
 确认 `DomainStrategy=IPIfNonMatch`，最后一条规则指向当前 `ap-incy-follow/<id>`。域名命中 ChinaTLD、业务域名或安全规则后不会继续解析 IP；只有域名未命中才匹配 `geoip:CN`。OpenAI、GitHub、YouTube、海外媒体、社交、游戏、下载和广告目标应与 policy 一致，固定 balancer 故障时回退 follow。DNS 国内/海外服务器、`quicMode=proxy-block` 和 `ipv6Mode=ipv4-only` 不应被手工改写。
 
-如果只在一个平台出现，对照 `clients/incy/examples/` 中的配置，确认 `127.0.0.1:10808` SOCKS、`127.0.0.1:10809` HTTP 和 sniffing 没有被改坏。
+如果只在一个平台出现，对照 `clients/incy/examples/` 中的配置，确认 `127.0.0.1:10808` SOCKS、`127.0.0.1:10809` HTTP、sniffing 的 `destOverride` 仅包含 `http`、`tls`、`quic`，且导入内容是单个 JSON 对象而不是数组。
 
 ## GeoData、缓存与回滚
 

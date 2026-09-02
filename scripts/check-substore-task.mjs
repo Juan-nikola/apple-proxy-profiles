@@ -89,7 +89,8 @@ const GENERATOR_SCHEMAS = Object.freeze({
     requiresSubscriptionName: true,
     expectedName: "apple-proxy-incy",
     requiresChannel: true,
-    extraKeys: ["adblockMode", "autoGroupMode", "clientChain"],
+    extraKeys: ["adblockMode", "autoGroupMode", "clientChain", "format"],
+    extraEnums: { format: ["array", "single"] },
   }),
 });
 

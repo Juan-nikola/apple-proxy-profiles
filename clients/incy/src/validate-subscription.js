@@ -15,7 +15,7 @@ const STANDARD_INBOUNDS = Object.freeze([
 ]);
 const STANDARD_SNIFFING = Object.freeze({
   enabled: true,
-  destOverride: Object.freeze(["udp", "http", "tls", "quic"]),
+  destOverride: Object.freeze(["http", "tls", "quic"]),
   routeOnly: false,
 });
 const DIRECT_TAG = "ap-incy-direct";
@@ -24,6 +24,7 @@ const FOLLOW_PREFIX = "ap-incy-follow/";
 const FIXED_PREFIX = "ap-incy-fixed/";
 const DNS_PREFIX = "ap-incy-dns/";
 const BALANCER_PREFIX = "balancer-ap-incy-fixed/";
+const AGGREGATE_BALANCER_TAG = "balancer-ap-incy-follow";
 const SECRET_VALUE_PATTERNS = [
   /TEST_ONLY_/u,
   /https?:\/\/[^\s]+/iu,
@@ -176,7 +177,7 @@ function validateInboundShape(inbound, index) {
   }
 }
 
-function validateDns(config, outboundTags, followTag) {
+function validateDns(config, outboundTags, followTag, balancerTags) {
   if (!isPlainObject(config.dns)) {
     throw new Error("INCY DNS config is invalid");
   }
@@ -193,12 +194,12 @@ function validateDns(config, outboundTags, followTag) {
   if (typeof config.dns.queryStrategy !== "string" || !["UseIPv4", "UseIP"].includes(config.dns.queryStrategy)) {
     throw new Error("INCY DNS query strategy is invalid");
   }
-  if (!outboundTags.has(DIRECT_TAG) || !outboundTags.has(followTag)) {
+  if (!outboundTags.has(DIRECT_TAG) || (!outboundTags.has(followTag) && !balancerTags.has(followTag))) {
     throw new Error("INCY DNS references missing outbound tags");
   }
 }
 
-function validateRouting(config, outboundTags, balancerTags, followTag, observatorySelectors) {
+function validateRouting(config, outboundTags, balancerTags, followTag, observatorySelectors, followTags) {
   if (!isPlainObject(config.routing)) {
     throw new Error("INCY routing config is invalid");
   }
@@ -227,33 +228,42 @@ function validateRouting(config, outboundTags, balancerTags, followTag, observat
     if (!isPlainObject(balancer)) {
       throw new Error("INCY balancer must be a plain object");
     }
-    if (typeof balancer.tag !== "string" || !balancer.tag.startsWith(BALANCER_PREFIX)) {
+    if (typeof balancer.tag !== "string" || (!balancer.tag.startsWith(BALANCER_PREFIX) && balancer.tag !== AGGREGATE_BALANCER_TAG)) {
       throw new Error("INCY balancer tag is invalid");
     }
     if (!balancerTags.has(balancer.tag)) {
       throw new Error("INCY balancer tag is missing from routing references");
     }
-    if (!Array.isArray(balancer.selector) || balancer.selector.length !== 1 || !outboundTags.has(balancer.selector[0])) {
+    const isAggregate = balancer.tag === AGGREGATE_BALANCER_TAG;
+    const expectedSelectors = isAggregate ? followTags : [balancer.selector?.[0]];
+    if (!Array.isArray(balancer.selector)
+      || balancer.selector.length !== expectedSelectors.length
+      || !expectedSelectors.every((tag) => balancer.selector.includes(tag) && outboundTags.has(tag))) {
       throw new Error("INCY balancer selector is invalid");
     }
-    if (balancer.fallbackTag !== followTag) {
+    if (typeof balancer.fallbackTag !== "string"
+      || (!isAggregate && balancer.fallbackTag !== followTag && !followTags.includes(balancer.fallbackTag))
+      || (isAggregate && !followTags.includes(balancer.fallbackTag))) {
       throw new Error("INCY balancer fallback must target the follow outbound");
     }
-    if (!observatorySelectors.includes(followTag) || !observatorySelectors.includes(balancer.selector[0])) {
+    if (!balancer.selector.every((tag) => observatorySelectors.includes(tag))) {
       throw new Error("INCY balancer selector is not observed");
     }
   }
 }
 
-function validateObservatory(config, followTag, fixedTags) {
+function validateObservatory(config, followTag, fixedTags, followTags) {
   if (!isPlainObject(config.observatory)) {
     throw new Error("INCY observatory config is invalid");
   }
   if (!Array.isArray(config.observatory.subjectSelector) || config.observatory.subjectSelector.length === 0) {
     throw new Error("INCY observatory selectors are invalid");
   }
-  if (config.observatory.subjectSelector[0] !== followTag) {
+  if ((followTags.length > 0 && !followTags.includes(followTag)) || config.observatory.subjectSelector[0] !== followTag) {
     throw new Error("INCY observatory must prioritize the follow outbound");
+  }
+  if (!followTags.every((tag) => config.observatory.subjectSelector.includes(tag))) {
+    throw new Error("INCY observatory is missing a follow selector");
   }
   for (const tag of fixedTags) {
     if (!config.observatory.subjectSelector.includes(tag)) {
@@ -317,17 +327,20 @@ function validateIncyConfig(config) {
   const directOutbound = config.outbounds.find((outbound) => outbound.tag === DIRECT_TAG);
   const blockOutbound = config.outbounds.find((outbound) => outbound.tag === BLOCK_TAG);
 
-  if (followTags.length !== 1) {
+  const aggregate = balancerTags.has(AGGREGATE_BALANCER_TAG);
+  if ((!aggregate && followTags.length !== 1) || (aggregate && followTags.length === 0)) {
     throw new Error("INCY config requires exactly one follow outbound");
   }
+  const expectedFollowTag = aggregate ? AGGREGATE_BALANCER_TAG : followTags[0];
+  const observatoryFollowTag = followTags[0];
   if (!outboundTags.has(DIRECT_TAG) || !outboundTags.has(BLOCK_TAG)) {
     throw new Error("INCY config is missing direct or block outbounds");
   }
   validateReservedOutbound(directOutbound, DIRECT_TAG, "freedom");
   validateReservedOutbound(blockOutbound, BLOCK_TAG, "blackhole");
-  validateDns(config, outboundTags, followTags[0]);
-  validateRouting(config, outboundTags, balancerTags, followTags[0], config.observatory?.subjectSelector ?? []);
-  validateObservatory(config, followTags[0], fixedTags);
+  validateDns(config, outboundTags, expectedFollowTag, balancerTags);
+  validateRouting(config, outboundTags, balancerTags, expectedFollowTag, config.observatory?.subjectSelector ?? [], followTags);
+  validateObservatory(config, observatoryFollowTag, fixedTags, aggregate ? followTags : []);
   validateMeta(config);
 }
 
@@ -341,6 +354,10 @@ export function assertIncyOutbound(container) {
 }
 
 export function validateIncySubscription(configs) {
+  if (isPlainObject(configs)) {
+    validateIncyConfig(configs);
+    return true;
+  }
   if (!Array.isArray(configs) || configs.length === 0) {
     throw new Error("INCY subscription set must be a non-empty array");
   }

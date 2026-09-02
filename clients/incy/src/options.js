@@ -11,6 +11,7 @@ const DEFAULTS = Object.freeze({
   quicMode: "proxy-block",
   ipv6Mode: "ipv4-only",
   adblockMode: "off",
+  format: "array",
   autoGroupMode: "auto",
   clientChain: "off",
 });
@@ -29,6 +30,7 @@ const ALLOWED_KEYS = new Set([
   "quicMode",
   "ipv6Mode",
   "adblockMode",
+  "format",
   "autoGroupMode",
   "clientChain",
 ]);
@@ -41,6 +43,7 @@ const ENUM_VALUES = Object.freeze({
   quicMode: Object.freeze(["allow", "proxy-block", "all-block"]),
   ipv6Mode: Object.freeze(["auto", "ipv4-only"]),
   adblockMode: Object.freeze(["off", "full"]),
+  format: Object.freeze(["array", "single"]),
   autoGroupMode: Object.freeze(["auto", "full", "balanced", "minimal"]),
   clientChain: Object.freeze(["off", "on"]),
 });
@@ -112,6 +115,7 @@ export function parseIncyOptions(raw) {
     quicMode: enumValue(values, "quicMode"),
     ipv6Mode: enumValue(values, "ipv6Mode"),
     adblockMode: enumValue(values, "adblockMode"),
+    format: enumValue(values, "format"),
     autoGroupMode: enumValue(values, "autoGroupMode"),
     clientChain: enumValue(values, "clientChain"),
   };

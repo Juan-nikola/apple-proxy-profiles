@@ -65,8 +65,8 @@
       "referencedDefaultBytes": 0
     },
     "incy": {
-      "manifestHash": "374a31fd3c47d389895a184f38122d5eff77a97412cd98e24d4aabcb52bae89c",
-      "referencedDefaultBytes": 546120
+      "manifestHash": "7a4c54147dd14f2a6da473bfbae27c99efa5e55499363d7a437d067aeaf6256a",
+      "referencedDefaultBytes": 555756
     },
     "shadowrocket": {
       "manifestHash": "c2311bc516c05b8dd5b7846e87bc530d9a35984975c2156a475953ae9578ddd1",
@@ -1023,7 +1023,7 @@
     {
       "bytes": 1421,
       "path": "incy/client-manifest.json",
-      "sha256": "672bff4c0c88d9057eef7d73cbcdaed289de1e94844258620f69b062fe90d5f9"
+      "sha256": "52b5ff9c88fb585655c20cb18ef8c3194046975be17992d1d98a523dedd1eaae"
     },
     {
       "bytes": 181466,
@@ -1051,14 +1051,14 @@
       "sha256": "16598e286e9190bf37c31c9467f9f0a3d019797a2247ef284de8ce77ae641624"
     },
     {
-      "bytes": 144439,
+      "bytes": 149257,
       "path": "incy/scripts/incy-config-generator.js",
-      "sha256": "ee034b5dcc4e3e2c354fc24e3d86ae2059061ea2d4244f53928347485108fcad"
+      "sha256": "51b5258fd400f663ed72a1bd1c563181fd912edd233cb1364add08b54fc95160"
     },
     {
-      "bytes": 144439,
+      "bytes": 149257,
       "path": "incy/scripts/substore-config-generator.js",
-      "sha256": "ee034b5dcc4e3e2c354fc24e3d86ae2059061ea2d4244f53928347485108fcad"
+      "sha256": "51b5258fd400f663ed72a1bd1c563181fd912edd233cb1364add08b54fc95160"
     },
     {
       "bytes": 7237,
@@ -1767,7 +1767,7 @@
     }
   ],
   "generatedAt": "2026-08-25T18:39:12Z",
-  "manifestHash": "893a138d107b511888a41afec24b3ef53985fd321dd393ecc79e5463b60441f0",
+  "manifestHash": "98a5e2a6c24bb9b89a88f781681fc8031aa44b13d95e4d84e0a434582915efa9",
   "schemaVersion": 2,
   "upstream": {
     "branch": "master",
