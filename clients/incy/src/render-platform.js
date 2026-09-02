@@ -13,7 +13,7 @@ const PLATFORM_PRESETS = Object.freeze({
 
 const COMMON_SNIFFING = Object.freeze({
   enabled: true,
-  destOverride: Object.freeze(["http", "tls", "quic"]),
+  destOverride: Object.freeze(["udp", "http", "tls", "quic"]),
   routeOnly: false,
 });
 
@@ -49,4 +49,3 @@ export function renderIncyInbounds(platform) {
     }),
   ]);
 }
-
