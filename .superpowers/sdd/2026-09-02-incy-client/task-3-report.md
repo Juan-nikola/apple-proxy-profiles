@@ -53,3 +53,19 @@ Passed:
 
 - `renderIncyRouting()` can derive balancer tags from fixed outbounds if a caller does not pass an explicit balancer map, which should make the next task easier to wire up.
 - The generated `dist/` bundles only changed for the shared preset expansion; the new source renderers live in `clients/incy/src/` and are covered by the package tests.
+
+## Follow-Up Fix
+
+Reviewed issues from the task 3 review and tightened the implementation:
+
+- `renderIncyRouting()` now maps every source whose policy resolves to `DIRECT` onto the domestic direct target, so `DomesticCore`, `DomesticGame`, `SteamCN`, and the other direct domestic sources stay on `directTag` instead of falling through to `followTag`.
+- The routing DNS hint path now treats `chinaDns: "system"` as a special resolver and skips URL parsing for it, which keeps the helper compatible with the literal `system` resolver form used elsewhere in the repo.
+
+## Follow-Up Verification
+
+Passed after the fix:
+
+- `npm --workspace @apple-proxy-profiles/incy test -- --test-name-pattern='domestic core service|system China DNS'`
+- `npm --workspace @apple-proxy-profiles/incy test -- --test-name-pattern='dns|routing|balancer'`
+- `npm --workspace @apple-proxy-profiles/incy test`
+- `node --test test/security.test.js`

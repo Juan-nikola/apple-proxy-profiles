@@ -51,3 +51,22 @@ test("uses IPv4 preference only when requested", () => {
   assert.equal(dns.servers[0].address, "https://doh.pub/dns-query");
   assert.equal(dns.servers[1].clientIp, "9.9.9.9");
 });
+
+test("accepts the system China DNS resolver without parsing it as a URL", () => {
+  const dns = renderIncyDns(
+    {
+      chinaDns: "system",
+      globalDns: "cloudflare",
+      ipv6Mode: "ipv4-only",
+    },
+    {
+      followTag: "ap-incy-follow/system",
+      directTag: "ap-incy-direct/system",
+      dnsRulesTag: "ap-incy-dns/system",
+    },
+  );
+
+  assert.equal(dns.servers[0].address, "system");
+  assert.equal(dns.servers[0].tag, "ap-incy-direct/system");
+  assert.equal(dns.servers[1].address, "https://cloudflare-dns.com/dns-query");
+});

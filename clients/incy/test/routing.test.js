@@ -146,6 +146,70 @@ test("renders ordered routing rules with DNS hints between ChinaTLD and ChinaIP"
   assert.equal(routing.rules.find((rule) => rule.ip?.includes("223.5.5.5")).outboundTag, "ap-incy-direct/main");
 });
 
+test("keeps domestic and ChinaTLD direct rules on the direct tag while final stays on follow", () => {
+  const policy = parsePrivatePolicy(JSON.stringify({
+    schemaVersion: 2,
+    targets: {
+      domesticPlatform: "DIRECT",
+      final: "FOLLOW",
+    },
+  }));
+  const resolution = resolveUnifiedPolicy({
+    policy,
+    client: "incy",
+    allNodes: [],
+    eligibleNodes: [],
+  });
+  const routing = renderIncyRouting({
+    options: { platform: "macos", quicMode: "allow" },
+    policyResolution: resolution,
+    fixedOutbounds: [],
+    followTag: "ap-incy-follow/direct",
+    directTag: "ap-incy-direct/direct",
+    blockTag: "ap-incy-block/direct",
+  });
+
+  const domesticRules = [
+    "geosite:CN",
+    "geosite:CATEGORY-GAMES-CN",
+    "geosite:STEAM",
+  ].map((domain) => routing.rules.find((rule) => rule.domain?.includes(domain)));
+  assert.ok(domesticRules.every((rule) => rule?.outboundTag === "ap-incy-direct/direct"));
+  assert.equal(routing.rules.at(-1).outboundTag, "ap-incy-follow/direct");
+});
+
+test("routes domestic core service rules to the direct tag", () => {
+  const routing = renderIncyRouting({
+    options: { platform: "macos", quicMode: "allow" },
+    policyResolution: undefined,
+    fixedOutbounds: [],
+    followTag: "ap-incy-follow/core",
+    directTag: "ap-incy-direct/core",
+    blockTag: "ap-incy-block/core",
+  });
+
+  const domesticCore = routing.rules.find((rule) => rule.domain?.includes("geosite:CN"));
+  const domesticGame = routing.rules.find((rule) => rule.domain?.includes("geosite:CATEGORY-GAMES-CN"));
+  const steam = routing.rules.find((rule) => rule.domain?.includes("geosite:STEAM"));
+
+  assert.equal(domesticCore.outboundTag, "ap-incy-direct/core");
+  assert.equal(domesticGame.outboundTag, "ap-incy-direct/core");
+  assert.equal(steam.outboundTag, "ap-incy-direct/core");
+});
+
+test("supports the system China DNS resolver in routing DNS hints", () => {
+  const routing = renderIncyRouting({
+    options: { platform: "macos", quicMode: "allow", chinaDns: "system" },
+    fixedOutbounds: [],
+    followTag: "ap-incy-follow/system",
+    directTag: "ap-incy-direct/system",
+    blockTag: "ap-incy-block/system",
+  });
+
+  const dnsRule = routing.rules.find((rule) => rule.outboundTag === "ap-incy-direct/system" && rule.domain?.includes("cloudflare-dns.com"));
+  assert.ok(dnsRule);
+});
+
 test("exposes the shared observatory preset for the new INCY platforms", () => {
   assert.deepEqual(platformPolicyPreset("androidtv"), { testInterval: 3600, timeout: 8, tolerance: 200 });
   assert.deepEqual(platformPolicyPreset("windows"), { testInterval: 600, timeout: 5, tolerance: 100 });

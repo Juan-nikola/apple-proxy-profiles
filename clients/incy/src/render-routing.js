@@ -41,7 +41,7 @@ export function routeTargetForPolicy(record, tags = {}) {
 
 function targetIdForSource(sourceId) {
   if (sourceId === "__final__") return "final";
-  if (sourceId === "ChinaTLD" || sourceId === "ChinaIP") return "domesticPlatform";
+  if (policyForRuleSource(sourceId) === "DIRECT") return "domesticPlatform";
   return unifiedPolicyTargetByKey(policyForRuleSource(sourceId))?.id ?? "final";
 }
 
@@ -52,6 +52,7 @@ function buildDnsDirectRules(options) {
   const domains = new Set();
   const ips = new Set();
   for (const provider of providers) {
+    if (provider.doh === "system") continue;
     try {
       const url = new URL(provider.doh);
       if (url.hostname) domains.add(url.hostname);
