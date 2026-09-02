@@ -25,8 +25,8 @@ test("README tutorial keeps the eight-client and current-only contracts visible"
   assert.match(readme, /八个 active 客户端/u);
   assert.match(readme, /10 个手动 collection、38 个 File task/u);
   assert.match(readme, /apple-proxy-incy/u);
-  assert.match(readme, /所有 30 个配置任务均为 `ipv6Mode=ipv4-only`/u);
-  assert.doesNotMatch(readme, /所有 22 个配置任务均为 `ipv6Mode=ipv4-only`/u);
+  assert.match(readme, /所有 30 个配置任务均为 `ipv4-only`/u);
+  assert.doesNotMatch(readme, /所有 22 个配置任务均为 `ipv4-only`/u);
   assert.match(readme, /current\/surge\/scripts\/surge-profile-generator\.js/u);
   assert.match(readme, /ChinaTLD -> ChinaIP -> 漏网之鱼/u);
   assert.doesNotMatch(readme, /https?:\/\/[^\s`]+(?:api|token|uuid|password)=/iu);
@@ -44,6 +44,7 @@ test("catalog docs keep the updated 10 collection and 38 task counts", async () 
   const setup = await readFile(new URL("docs/substore-two-layer-setup.md", root), "utf8");
   assert.match(setup, /canonical catalog 共 38 个 File task/u);
   assert.doesNotMatch(setup, /canonical catalog 共 30 个 File task/u);
-  assert.match(setup, /所有 30 个配置任务均为 `ipv6Mode=ipv4-only`/u);
-  assert.doesNotMatch(setup, /所有 22 个配置任务均为 `ipv6Mode=ipv4-only`/u);
+  assert.match(setup, /当前私密 Sub-Store 的 30 个配置任务已统一设置为 `ipv6Mode=ipv4-only`/u);
+  assert.match(setup, /所有 30 个配置任务 `ipv4-only`/u);
+  assert.doesNotMatch(setup, /所有 22 个配置任务 `ipv4-only`/u);
 });
