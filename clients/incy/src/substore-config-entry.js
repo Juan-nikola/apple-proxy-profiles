@@ -4,11 +4,57 @@ import { normalizeNodes } from "../../../shared/nodes/normalize-nodes.js";
 import { loadSubstorePolicyArtifact } from "../../../shared/substore/policy-artifact.js";
 import { resolveUnifiedPolicy } from "../../../shared/policies/resolve-unified.js";
 import { parseIncyOptions } from "./options.js";
+import { incyAutoroutingUrl } from "./link-encoder.js";
 import { renderIncySubscription } from "./render-subscription.js";
+import { validateIncySubscription } from "./validate-subscription.js";
+
+function requestOptionsFrom(input, context) {
+  const candidates = [context?.requestOptions, input?.$options];
+  return candidates.find((value) => value && typeof value === "object" && !Array.isArray(value));
+}
+
+function setResponseHeader(requestOptions, name, value) {
+  if (!requestOptions) return false;
+  if (!requestOptions._res || typeof requestOptions._res !== "object" || Array.isArray(requestOptions._res)) requestOptions._res = {};
+  const response = requestOptions._res;
+  if (!response.headers || typeof response.headers !== "object" || Array.isArray(response.headers)) response.headers = {};
+  if (typeof response.headers.set === "function") response.headers.set(name, value);
+  else response.headers[name] = value;
+  return true;
+}
+
+function attachResponseHeaders(input, context, options) {
+  const requestOptions = requestOptionsFrom(input, context);
+  if (!requestOptions) return;
+  setResponseHeader(requestOptions, "content-type", "application/json; charset=utf-8");
+  setResponseHeader(requestOptions, "content-disposition", `attachment; filename="incy-${options.platform}.json"`);
+  setResponseHeader(requestOptions, "autorouting", `incy://autorouting/onadd/${incyAutoroutingUrl("current")}`);
+}
+
+function logDiagnostics(context, options, normalized, configs) {
+  const logger = typeof context?.logger === "function"
+    ? context.logger
+    : typeof context?.logger?.info === "function"
+      ? context.logger.info.bind(context.logger)
+      : null;
+  if (!logger) return;
+  try {
+    logger(`[incy-config] ${JSON.stringify({
+      client: "incy",
+      platform: options.platform,
+      schemaVersion: 2,
+      normalized: normalized.diagnostics.total,
+      accepted: configs.length,
+      protocol: normalized.diagnostics.protocol,
+    })}`);
+  } catch {
+    // Diagnostics must never interfere with the generated JSON output.
+  }
+}
 
 export async function operator(input, targetPlatform, context = {}) {
   void targetPlatform;
-  const options = parseIncyOptions({ ...(context.arguments ?? {}), output: "config", type: "collection" });
+  const options = parseIncyOptions(context.arguments ?? {});
   if (typeof context.produceArtifact !== "function") {
     throw new Error("INCY produceArtifact is unavailable");
   }
@@ -43,5 +89,8 @@ export async function operator(input, targetPlatform, context = {}) {
     options,
     policyResolution,
   });
+  validateIncySubscription(configs);
+  logDiagnostics(context, options, normalized, configs);
+  attachResponseHeaders(input, context, options);
   return { ...input, $content: `${JSON.stringify(configs, null, 2)}\n` };
 }

@@ -1893,6 +1893,18 @@ var INCYConfigBundle = (() => {
     return Object.freeze(options);
   }
 
+  // src/link-encoder.js
+  var AUTOROUTING_BASE = "https://juan-nikola.github.io/apple-proxy-profiles";
+  function assertString(value, label2) {
+    if (typeof value !== "string") {
+      throw new TypeError(`${label2} must be a string`);
+    }
+  }
+  function incyAutoroutingUrl(channel = "current") {
+    assertString(channel, "INCY autorouting channel");
+    return `${AUTOROUTING_BASE}/${channel}/incy/routing.json`;
+  }
+
   // ../../shared/nodes/render-xray-outbound.js
   var TAG = /^ap-[a-z0-9][a-z0-9/_-]{0,127}$/u;
   var label = (client) => String(client ?? "Xray");
@@ -3216,9 +3228,44 @@ var INCYConfigBundle = (() => {
   }
 
   // src/substore-config-entry.js
+  function requestOptionsFrom(input, context) {
+    const candidates = [context?.requestOptions, input?.$options];
+    return candidates.find((value) => value && typeof value === "object" && !Array.isArray(value));
+  }
+  function setResponseHeader(requestOptions, name, value) {
+    if (!requestOptions) return false;
+    if (!requestOptions._res || typeof requestOptions._res !== "object" || Array.isArray(requestOptions._res)) requestOptions._res = {};
+    const response = requestOptions._res;
+    if (!response.headers || typeof response.headers !== "object" || Array.isArray(response.headers)) response.headers = {};
+    if (typeof response.headers.set === "function") response.headers.set(name, value);
+    else response.headers[name] = value;
+    return true;
+  }
+  function attachResponseHeaders(input, context, options) {
+    const requestOptions = requestOptionsFrom(input, context);
+    if (!requestOptions) return;
+    setResponseHeader(requestOptions, "content-type", "application/json; charset=utf-8");
+    setResponseHeader(requestOptions, "content-disposition", `attachment; filename="incy-${options.platform}.json"`);
+    setResponseHeader(requestOptions, "autorouting", `incy://autorouting/onadd/${incyAutoroutingUrl("current")}`);
+  }
+  function logDiagnostics(context, options, normalized, configs) {
+    const logger = typeof context?.logger === "function" ? context.logger : typeof context?.logger?.info === "function" ? context.logger.info.bind(context.logger) : null;
+    if (!logger) return;
+    try {
+      logger(`[incy-config] ${JSON.stringify({
+        client: "incy",
+        platform: options.platform,
+        schemaVersion: 2,
+        normalized: normalized.diagnostics.total,
+        accepted: configs.length,
+        protocol: normalized.diagnostics.protocol
+      })}`);
+    } catch {
+    }
+  }
   async function operator(input, targetPlatform, context = {}) {
     void targetPlatform;
-    const options = parseIncyOptions({ ...context.arguments ?? {}, output: "config", type: "collection" });
+    const options = parseIncyOptions(context.arguments ?? {});
     if (typeof context.produceArtifact !== "function") {
       throw new Error("INCY produceArtifact is unavailable");
     }
@@ -3251,11 +3298,14 @@ var INCYConfigBundle = (() => {
       options,
       policyResolution
     });
+    validateIncySubscription(configs);
+    logDiagnostics(context, options, normalized, configs);
+    attachResponseHeaders(input, context, options);
     return { ...input, $content: `${JSON.stringify(configs, null, 2)}
 ` };
   }
   return __toCommonJS(substore_config_entry_exports);
 })();
 async function operator(input, targetPlatform) {
-  return INCYConfigBundle.operator(input, targetPlatform, { arguments: $arguments, produceArtifact, logger: console });
+  return INCYConfigBundle.operator(input, targetPlatform, { arguments: $arguments, produceArtifact, requestOptions: typeof $options === "undefined" ? undefined : $options, logger: console });
 }
