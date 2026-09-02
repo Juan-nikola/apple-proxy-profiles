@@ -321,6 +321,7 @@ function writeResult(result) {
 async function main(args) {
   let urls = args.filter((arg) => arg !== "--stdin");
   const useStdin = args.includes("--stdin");
+  let catalogSummary = null;
   if (useStdin) {
     const input = await new Promise((resolvePromise) => {
       let buffer = "";
@@ -331,7 +332,12 @@ async function main(args) {
     urls = [...urls, ...input.split(/\r?\n/u).map((line) => line.trim()).filter(Boolean)];
   }
   if (urls.length === 0) {
-    throw new Error("Usage: node scripts/check-substore-task.mjs '<task-url>' [more urls...] (or --stdin)");
+    const { canonicalTaskCatalog } = await import("./configure-substore.mjs");
+    const tasks = canonicalTaskCatalog("current");
+    urls = tasks
+      .filter((task) => task.kind === "remote-js" && typeof task.url === "string")
+      .map((task) => task.url);
+    catalogSummary = { taskCount: tasks.length, urlCount: urls.length };
   }
   let allOk = true;
   for (const url of urls) {
@@ -343,6 +349,9 @@ async function main(args) {
       process.stderr.write(`ERROR: ${error instanceof Error ? error.message : String(error)}\n`);
       allOk = false;
     }
+  }
+  if (catalogSummary) {
+    process.stdout.write(`OK: validated ${catalogSummary.taskCount} configured tasks (${catalogSummary.urlCount} URL tasks)\n`);
   }
   if (!allOk) process.exitCode = 1;
 }

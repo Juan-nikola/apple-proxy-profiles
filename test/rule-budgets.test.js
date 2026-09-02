@@ -114,6 +114,24 @@ test("the pinned real Anywhere snapshot remains within the shared entry budget",
   assert.ok(domesticCore.counts.output > 0 && domesticCore.counts.output <= RULE_BUDGETS.domesticCoreEntries);
 });
 
+test("the INCY publication manifest closes over its native scripts and GeoData bytes", async () => {
+  const manifest = JSON.parse(await readFile(new URL("public/current/incy/client-manifest.json", root), "utf8"));
+  assert.equal(manifest.client, "incy");
+  assert.deepEqual(manifest.files.map(({ path }) => path), [
+    "incy/geoip.dat",
+    "incy/geoip.dat.sha256",
+    "incy/geosite.dat",
+    "incy/geosite.dat.sha256",
+    "incy/routing.json",
+    "incy/scripts/incy-config-generator.js",
+    "incy/scripts/substore-config-generator.js",
+  ]);
+  assert.ok(manifest.files.find(({ path }) => path === "incy/geoip.dat").bytes > 0);
+  assert.ok(manifest.files.find(({ path }) => path === "incy/geosite.dat").bytes > 0);
+  assert.equal(nativePolicyGenerators.has("incy/scripts/incy-config-generator.js"), true);
+  assert.equal(nativePolicyGenerators.has("incy/scripts/substore-config-generator.js"), true);
+});
+
 test("default artifacts contain no load-bearing legacy giant rule IDs or URLs", () => {
   const { defaults } = fixtureArtifacts();
   for (const [path, content] of defaults) {

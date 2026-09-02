@@ -6,4 +6,6 @@ INCY 适配器把 Sub-Store collection 转成完整的 Xray JSON 数组。它沿
 
 当前这一步只完成 workspace、参数和平台基础。后续任务会补齐节点渲染、路由、订阅数组和 Sub-Store operator。
 
+本 workspace 的 `npm run verify` 会依次跑测试、构建、fixtures、secret scan 和 JSON 校验，方便在发布前确认生成物和公开 JSON 都仍然是干净的。
+
 部署步骤见 [部署指南](docs/deployment.md)，遇到导入或缓存异常先看 [故障排查](docs/troubleshooting.md)。公开入口和导入说明会继续维护在 `dist/` 和 `examples/`。

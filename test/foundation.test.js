@@ -21,7 +21,7 @@ test("monorepo exposes all client workspaces and root verification", async () =>
   assert.equal(lockfile.packages["clients/incy"].name, "@apple-proxy-profiles/incy");
   assert.equal(lockfile.packages["clients/incy"].version, "0.1.0");
   assert.equal(incy.scripts.test, "node --test");
-  assert.equal(incy.scripts.verify, "npm test && npm run build && npm run fixtures && npm run check:secrets");
+  assert.equal(incy.scripts.verify, "npm test && npm run build && npm run fixtures && npm run check:secrets && npm run check:json");
   assert.equal(root.scripts["verify:shadowrocket"], "npm --workspace @apple-proxy-profiles/shadowrocket run verify");
   assert.equal(root.scripts["verify:egern"], "npm --workspace @apple-proxy-profiles/egern run verify");
   assert.equal(root.scripts["verify:anywhere"], "npm --workspace @apple-proxy-profiles/anywhere run verify");
