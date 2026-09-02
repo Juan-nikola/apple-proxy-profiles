@@ -24,7 +24,19 @@ function isPlainObject(value) {
 }
 
 function clonePlainValue(value, path = "value", seen = new WeakSet()) {
-  if (value === null || typeof value !== "object") return value;
+  if (value === null) return value;
+  const valueType = typeof value;
+  if (valueType === "string" || valueType === "boolean") return value;
+  if (valueType === "number") {
+    if (!Number.isFinite(value)) throw new TypeError(`INCY raw outbound contains non-JSON value at ${path}`);
+    return value;
+  }
+  if (valueType === "undefined" || valueType === "function" || valueType === "symbol" || valueType === "bigint") {
+    throw new TypeError(`INCY raw outbound contains non-JSON value at ${path}`);
+  }
+  if (valueType !== "object") {
+    throw new TypeError(`INCY raw outbound contains non-JSON value at ${path}`);
+  }
   if (seen.has(value)) throw new Error(`INCY raw outbound contains a circular ${path}`);
   seen.add(value);
   if (Array.isArray(value)) {
@@ -86,7 +98,6 @@ function validateRequiredFields(node) {
 
 function validateRawOutboundShape(raw) {
   if (!isPlainObject(raw)) throw new TypeError("INCY raw outbound must be a plain object");
-  requiredTag(raw.tag);
   if (typeof raw.protocol !== "string" || raw.protocol.trim().length === 0) {
     throw new Error("INCY raw outbound protocol is invalid");
   }
@@ -106,10 +117,10 @@ export function renderIncyOutbound(node, { tag, rawOutbound = null } = {}) {
   const raw = rawOutbound === null ? parseRawXrayOutbound(node) : validateRawOutboundShape(clonePlainValue(rawOutbound));
   if (raw !== null) {
     requiredTag(tag);
-    if (raw.tag !== tag) {
+    if (raw.tag !== undefined && raw.tag !== tag) {
       throw new Error("INCY raw outbound tag does not match the caller-supplied tag");
     }
-    return Object.freeze({ ...raw });
+    return Object.freeze({ ...raw, tag });
   }
   validateRequiredFields(node);
   requiredTag(tag);

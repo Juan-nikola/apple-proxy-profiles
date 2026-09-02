@@ -10,7 +10,6 @@ test("accepts a safe raw Xray outbound extension without filtering the node", ()
     type: "future-protocol",
     _incy: {
       xrayOutbound: {
-        tag: "ap-incy-future",
         protocol: "vless",
         settings: { vnext: [] },
       },
@@ -20,6 +19,19 @@ test("accepts a safe raw Xray outbound extension without filtering the node", ()
   const output = renderIncyOutbound(node, { tag: "ap-incy-future" });
   assert.equal(output.protocol, "vless");
   assert.equal(output.tag, "ap-incy-future");
+});
+
+test("rejects a conflicting inner raw tag", () => {
+  assert.throws(() => renderIncyOutbound({
+    type: "future-protocol",
+    _incy: {
+      xrayOutbound: {
+        tag: "ap-incy-other",
+        protocol: "vless",
+        settings: { vnext: [] },
+      },
+    },
+  }, { tag: "ap-incy-future" }), /tag/i);
 });
 
 test("rejects raw outbounds that can inject routing or non-plain values", () => {
@@ -39,6 +51,23 @@ test("rejects raw outbounds that can inject routing or non-plain values", () => 
       settings: new Map(),
     },
   }), /plain|schema/i);
+});
+
+test("rejects raw outbound values that are not JSON-compatible", () => {
+  for (const value of [undefined, Symbol("incy"), () => {}]) {
+    assert.throws(() => parseRawXrayOutbound({
+      xrayOutbound: {
+        protocol: "vless",
+        settings: {
+          vnext: [{
+            address: "example.invalid",
+            port: 443,
+            users: [{ id: value }],
+          }],
+        },
+      },
+    }), /plain|schema|invalid|non-json/i);
+  }
 });
 
 test("validates subscription-level tags and rejects secret metadata", () => {
