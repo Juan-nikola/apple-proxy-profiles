@@ -25,6 +25,9 @@ test("README tutorial keeps the eight-client and current-only contracts visible"
   assert.match(readme, /八个 active 客户端/u);
   assert.match(readme, /10 个手动 collection、38 个 File task/u);
   assert.match(readme, /apple-proxy-incy/u);
+  assert.match(readme, /androidtv/u);
+  assert.match(readme, /windows/u);
+  assert.match(readme, /linux/u);
   assert.match(readme, /所有 30 个配置任务均为 `ipv4-only`/u);
   assert.doesNotMatch(readme, /所有 22 个配置任务均为 `ipv4-only`/u);
   assert.match(readme, /current\/surge\/scripts\/surge-profile-generator\.js/u);

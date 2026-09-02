@@ -235,8 +235,10 @@ OneXray、v2rayN 保持移除。HAPP 的稳定 GeoData URL 为 `public/current/h
 | HAPP | 3 | macOS/iPhone/iPad JSON Config |
 | V2Box | 3 | 节点 + iPhone/iPad Config |
 | Clash Apple | 5 | 节点 + 四个平台 Config |
-| INCY | 8 | JSON 数组 + autorouting |
+| INCY | 8 | JSON 数组 + autorouting，支持 `macos`、`iphone`、`ipad`、`appletv`、`android`、`androidtv`、`windows`、`linux` |
 | Unified policy | 1 | schema v3 按客户端分层的私密 policy |
+
+INCY 的 8 个任务对应 `macos`、`iphone`、`ipad`、`appletv`、`android`、`androidtv`、`windows`、`linux`；它们都使用 JSON 数组 + autorouting，和上面的 Apple/HAPP/Surge Profile 任务是不同的任务族。
 
 后台只保留上述 10 个手动 collection 和 38 个 canonical task；删除旧的 OneXray/v2rayN 对象及其任务。不要在 Sub-Store 使用 `subscriptionTags` 自动识别，所有节点来源通过 collection 手动勾选。
 
