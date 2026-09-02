@@ -70,3 +70,23 @@ test("accepts the system China DNS resolver without parsing it as a URL", () => 
   assert.equal(dns.servers[0].tag, "ap-incy-direct/system");
   assert.equal(dns.servers[1].address, "https://cloudflare-dns.com/dns-query");
 });
+
+test("changes DNS fallback behavior for privacy and speed modes", () => {
+  const privacy = renderIncyDns({ dnsMode: "privacy", ipv6Mode: "auto" }, {
+    followTag: "ap-incy-follow/privacy",
+    directTag: "ap-incy-direct/privacy",
+    dnsRulesTag: "ap-incy-dns/privacy",
+  });
+  assert.deepEqual(privacy.servers[0].domains, ["geosite:PRIVATE"]);
+  assert.deepEqual(privacy.servers[1].domains, []);
+  assert.equal(privacy.servers[1].skipFallback, false);
+  assert.equal(privacy.disableFallback, true);
+
+  const speed = renderIncyDns({ dnsMode: "speed", ipv6Mode: "auto" }, {
+    followTag: "ap-incy-follow/speed",
+    directTag: "ap-incy-direct/speed",
+    dnsRulesTag: "ap-incy-dns/speed",
+  });
+  assert.equal(speed.servers[1].skipFallback, false);
+  assert.equal(speed.disableFallback, false);
+});

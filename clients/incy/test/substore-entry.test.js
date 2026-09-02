@@ -90,6 +90,106 @@ test("Sub-Store INCY config entry returns a JSON array and sets the public respo
   assert.match(result.$content, /\n$/u);
 });
 
+test("Sub-Store INCY config entry keeps nodes whose source uses string ports and padded protocol names", async () => {
+  const { context } = makeContext();
+  context.produceArtifact = async (request) => request.type === "file"
+    ? { $content: JSON.stringify(POLICY) }
+    : [{
+      ...COLLECTION[0],
+      type: " VLESS ",
+      port: "443",
+    }];
+
+  const result = await operator({}, "JSON", context);
+  const configs = JSON.parse(result.$content);
+
+  assert.equal(configs.length, 1);
+  assert.equal(configs[0].outbounds[0].protocol, "vless");
+});
+
+test("Sub-Store INCY config entry preserves the private raw Xray outbound extension", async () => {
+  const { context } = makeContext();
+  context.produceArtifact = async (request) => request.type === "file"
+    ? { $content: JSON.stringify(POLICY) }
+    : [{
+      name: "Raw Extension Node",
+      type: "customxray",
+      server: "raw.example.invalid",
+      port: 443,
+      _incy: {
+        xrayOutbound: {
+          protocol: "vless",
+          settings: {
+            vnext: [{
+              address: "raw.example.invalid",
+              port: 443,
+              users: [{ id: "00000000-0000-4000-8000-000000000001", encryption: "none" }],
+            }],
+          },
+        },
+      },
+    }];
+
+  const result = await operator({}, "JSON", context);
+  const configs = JSON.parse(result.$content);
+
+  assert.equal(configs.length, 1);
+  assert.equal(configs[0].outbounds[0].protocol, "vless");
+  assert.equal(configs[0].outbounds[0].settings.vnext[0].address, "raw.example.invalid");
+});
+
+test("Sub-Store INCY config entry accepts duplicate source nodes after normalization", async () => {
+  const { context } = makeContext();
+  context.produceArtifact = async (request) => request.type === "file"
+    ? { $content: JSON.stringify(POLICY) }
+    : [COLLECTION[0], { ...COLLECTION[0] }];
+
+  const result = await operator({}, "JSON", context);
+  assert.equal(JSON.parse(result.$content).length, 1);
+});
+
+test("Sub-Store INCY config entry supports client-chain normalization without rejecting generated clones", async () => {
+  const { context } = makeContext({ arguments: { clientChain: "on" } });
+  context.produceArtifact = async (request) => request.type === "file"
+    ? { $content: JSON.stringify(POLICY) }
+    : [
+      { ...COLLECTION[0], name: "[机场] Entry Node", _subName: "[机场] Entry Node" },
+      { ...COLLECTION[1], name: "[落地] Landing Node", _subName: "[落地] Landing Node" },
+    ];
+
+  const result = await operator({}, "JSON", context);
+  const configs = JSON.parse(result.$content);
+  assert.equal(configs.length, 3);
+
+  const chained = configs.find((config) => config.remarks.includes("🔗"));
+  assert.ok(chained);
+  const follow = chained.outbounds.find((outbound) => outbound.tag.startsWith("ap-incy-follow/"));
+  const chainEntry = chained.outbounds.find((outbound) => outbound.tag.startsWith("ap-incy-chain-entry/"));
+  assert.ok(chainEntry);
+  assert.deepEqual(follow.proxySettings, { tag: chainEntry.tag });
+});
+
+test("Sub-Store INCY config entry rejects ambiguous generated chains", async () => {
+  const { context } = makeContext({ arguments: { clientChain: "on" } });
+  context.produceArtifact = async (request) => {
+    if (request.type === "file") return { $content: JSON.stringify(POLICY) };
+    const entryB = { ...COLLECTION[0], name: "[机场] Entry B", _subName: "[机场] Entry B", server: "entry-b.example.invalid" };
+    Object.defineProperty(entryB, "uuid", {
+      value: COLLECTION[0].uuid.replace(/1$/u, "2"),
+      enumerable: true,
+      writable: true,
+      configurable: true,
+    });
+    return [
+      { ...COLLECTION[0], name: "[机场] Entry A", _subName: "[机场] Entry A" },
+      entryB,
+      { ...COLLECTION[1], name: "[落地] Landing Node", _subName: "[落地] Landing Node" },
+    ];
+  };
+
+  await assert.rejects(() => operator({}, "JSON", context), /exactly one entry|ambiguous/iu);
+});
+
 test("Sub-Store INCY autorouting header round-trips an encoded public routing URL", async () => {
   const { requestOptions, context } = makeContext();
 

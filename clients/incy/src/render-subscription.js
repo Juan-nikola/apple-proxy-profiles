@@ -7,6 +7,8 @@ import { validateIncySubscription } from "./validate-subscription.js";
 
 const DIRECT_TAG = "ap-incy-direct";
 const BLOCK_TAG = "ap-incy-block";
+const CHAIN_ENTRY_POLICY = "🔗 入口节点";
+const CHAIN_ENTRY_PREFIX = "ap-incy-chain-entry/";
 
 function ensurePlainObject(value, label) {
   if (value === null || typeof value !== "object" || Array.isArray(value)) {
@@ -20,6 +22,10 @@ function nodeIdFor(node) {
     throw new Error("INCY normalized node is missing a stable id");
   }
   return id;
+}
+
+function isGeneratedChain(node) {
+  return node?.["underlying-proxy"] === CHAIN_ENTRY_POLICY && node?._profile?.chained === true;
 }
 
 function summarizePolicy(resolution) {
@@ -54,10 +60,31 @@ function stripOutboundMetadata(outbound) {
   return rest;
 }
 
-function buildConfig(node, options, policyResolution) {
+function buildConfig(node, options, policyResolution, allNodes) {
   const followTag = `ap-incy-follow/${nodeIdFor(node)}`;
   const dnsTag = `ap-incy-dns/${nodeIdFor(node)}`;
   const fixedOutbounds = buildFixedOutbounds(policyResolution);
+  const chainEntries = isGeneratedChain(node)
+    ? allNodes.filter((candidate) => candidate?._profile?.entry === true && candidate?._profile?.chained !== true)
+    : [];
+  if (isGeneratedChain(node) && chainEntries.length !== 1) {
+    throw new Error("INCY generated chains require exactly one entry node");
+  }
+  const chainEntry = chainEntries[0] ?? null;
+  const fixedChainEntry = chainEntry
+    ? fixedOutbounds.find((outbound) => outbound.nodeId === nodeIdFor(chainEntry))
+    : null;
+  const chainEntryTag = fixedChainEntry?.tag ?? (chainEntry ? `${CHAIN_ENTRY_PREFIX}${nodeIdFor(chainEntry)}` : null);
+  if (isGeneratedChain(node) && !chainEntryTag) {
+    throw new Error("INCY generated chain is missing an entry outbound");
+  }
+  const followOutbound = renderIncyOutbound(node, { tag: followTag });
+  const renderedFollow = chainEntryTag
+    ? Object.freeze({ ...followOutbound, proxySettings: { tag: chainEntryTag } })
+    : followOutbound;
+  const chainEntryOutbound = chainEntry && !fixedChainEntry
+    ? renderIncyOutbound(chainEntry, { tag: chainEntryTag })
+    : null;
   const route = renderIncyRouting({
     options,
     policyResolution,
@@ -68,6 +95,7 @@ function buildConfig(node, options, policyResolution) {
   });
   const { balancers, observatory } = renderIncyBalancers(policyResolution, fixedOutbounds, followTag, {
     platform: options.platform,
+    autoGroupMode: options.autoGroupMode,
   });
 
   return {
@@ -75,7 +103,8 @@ function buildConfig(node, options, policyResolution) {
     log: { loglevel: "info" },
     inbounds: renderIncyInbounds(options.platform),
     outbounds: [
-      renderIncyOutbound(node, { tag: followTag }),
+      renderedFollow,
+      ...(chainEntryOutbound ? [chainEntryOutbound] : []),
       ...fixedOutbounds.map(stripOutboundMetadata),
       { tag: DIRECT_TAG, protocol: "freedom", settings: {} },
       { tag: BLOCK_TAG, protocol: "blackhole", settings: {} },
@@ -97,7 +126,7 @@ export function renderIncySubscription({ nodes = [], options, policyResolution }
   }
   ensurePlainObject(options, "INCY options are required");
   const resolution = policyResolution ?? defaultUnifiedPolicyResolution();
-  const configs = nodes.map((node) => buildConfig(node, options, resolution));
+  const configs = nodes.map((node) => buildConfig(node, options, resolution, nodes));
   validateIncySubscription(configs);
   return configs;
 }

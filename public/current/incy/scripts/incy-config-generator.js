@@ -97,59 +97,6 @@ var INCYConfigBundle = (() => {
     return node._profile;
   }
 
-  // ../../shared/nodes/node-identity.js
-  var EXCLUDED_TOP_LEVEL_KEYS = /* @__PURE__ */ new Set(["name"]);
-  var SEMANTIC_UNDERSCORE_KEYS = /* @__PURE__ */ new Set(["_network"]);
-  function isSemanticUnderscoreKey(key) {
-    return SEMANTIC_UNDERSCORE_KEYS.has(key);
-  }
-  function isExcludedTopLevelKey(key) {
-    return EXCLUDED_TOP_LEVEL_KEYS.has(key) || key.startsWith("_") && !isSemanticUnderscoreKey(key);
-  }
-  function stableValue(value, stack = /* @__PURE__ */ new Set(), topLevel = false) {
-    if (value === null) return "null";
-    switch (typeof value) {
-      case "string":
-        return JSON.stringify(value);
-      case "boolean":
-        return value ? "true" : "false";
-      case "number":
-        return Number.isFinite(value) ? String(value) : JSON.stringify(String(value));
-      case "bigint":
-        return JSON.stringify(`${value}n`);
-      case "undefined":
-        return "undefined";
-      case "function":
-      case "symbol":
-        return JSON.stringify(String(value));
-      default:
-        break;
-    }
-    if (stack.has(value)) return JSON.stringify("[Circular]");
-    stack.add(value);
-    let result;
-    if (Array.isArray(value)) {
-      result = `[${value.map((item) => stableValue(item, stack)).join(",")}]`;
-    } else {
-      const entries = Object.keys(value).filter((key) => !(topLevel && isExcludedTopLevelKey(key))).sort().map((key) => `${JSON.stringify(key)}:${stableValue(value[key], stack)}`);
-      result = `{${entries.join(",")}}`;
-    }
-    stack.delete(value);
-    return result;
-  }
-  function identityKey(node) {
-    return stableValue(node, /* @__PURE__ */ new Set(), true);
-  }
-  function fingerprint(node) {
-    const value = identityKey(node);
-    let hash = 2166136261;
-    for (let index = 0; index < value.length; index += 1) {
-      hash ^= value.charCodeAt(index);
-      hash = Math.imul(hash, 16777619);
-    }
-    return (hash >>> 0).toString(36).padStart(7, "0");
-  }
-
   // ../../shared/nodes/diagnostics.js
   function createDiagnostics() {
     return {
@@ -218,6 +165,59 @@ var INCYConfigBundle = (() => {
       clones.push(clone);
     }
     return [...nodes, ...clones];
+  }
+
+  // ../../shared/nodes/node-identity.js
+  var EXCLUDED_TOP_LEVEL_KEYS = /* @__PURE__ */ new Set(["name"]);
+  var SEMANTIC_UNDERSCORE_KEYS = /* @__PURE__ */ new Set(["_network"]);
+  function isSemanticUnderscoreKey(key) {
+    return SEMANTIC_UNDERSCORE_KEYS.has(key);
+  }
+  function isExcludedTopLevelKey(key) {
+    return EXCLUDED_TOP_LEVEL_KEYS.has(key) || key.startsWith("_") && !isSemanticUnderscoreKey(key);
+  }
+  function stableValue(value, stack = /* @__PURE__ */ new Set(), topLevel = false) {
+    if (value === null) return "null";
+    switch (typeof value) {
+      case "string":
+        return JSON.stringify(value);
+      case "boolean":
+        return value ? "true" : "false";
+      case "number":
+        return Number.isFinite(value) ? String(value) : JSON.stringify(String(value));
+      case "bigint":
+        return JSON.stringify(`${value}n`);
+      case "undefined":
+        return "undefined";
+      case "function":
+      case "symbol":
+        return JSON.stringify(String(value));
+      default:
+        break;
+    }
+    if (stack.has(value)) return JSON.stringify("[Circular]");
+    stack.add(value);
+    let result;
+    if (Array.isArray(value)) {
+      result = `[${value.map((item) => stableValue(item, stack)).join(",")}]`;
+    } else {
+      const entries = Object.keys(value).filter((key) => !(topLevel && isExcludedTopLevelKey(key))).sort().map((key) => `${JSON.stringify(key)}:${stableValue(value[key], stack)}`);
+      result = `{${entries.join(",")}}`;
+    }
+    stack.delete(value);
+    return result;
+  }
+  function identityKey(node) {
+    return stableValue(node, /* @__PURE__ */ new Set(), true);
+  }
+  function fingerprint(node) {
+    const value = identityKey(node);
+    let hash = 2166136261;
+    for (let index = 0; index < value.length; index += 1) {
+      hash ^= value.charCodeAt(index);
+      hash = Math.imul(hash, 16777619);
+    }
+    return (hash >>> 0).toString(36).padStart(7, "0");
   }
 
   // ../../shared/nodes/protocol-registry.js
@@ -1023,40 +1023,10 @@ var INCYConfigBundle = (() => {
   // ../../shared/encoding/base64url.js
   var ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
   var REVERSE = new Map([...ALPHABET].map((character, index) => [character, index]));
-  function assertBase64Url(value) {
-    if (typeof value !== "string" || !/^[A-Za-z0-9_-]*$/u.test(value) || value.length % 4 === 1) {
-      throw new TypeError("Base64URL value is invalid");
-    }
-  }
-  function decodeBase64Url(value) {
-    assertBase64Url(value);
-    if (value.length === 0) return new Uint8Array();
-    const remainder = value.length % 4;
-    const last = REVERSE.get(value.at(-1));
-    if (remainder === 2 && (last & 15) !== 0 || remainder === 3 && (last & 3) !== 0) {
-      throw new TypeError("Base64URL value is not canonical");
-    }
-    const bytes = new Uint8Array(Math.floor(value.length * 6 / 8));
-    let accumulator = 0;
-    let bits = 0;
-    let offset = 0;
-    for (const character of value) {
-      accumulator = accumulator << 6 | REVERSE.get(character);
-      bits += 6;
-      if (bits < 8) continue;
-      bits -= 8;
-      bytes[offset] = accumulator >> bits & 255;
-      offset += 1;
-      accumulator &= (1 << bits) - 1;
-    }
-    if (bits !== 0 && accumulator !== 0) throw new TypeError("Base64URL value is not canonical");
-    return bytes;
-  }
 
   // ../../shared/policies/business-targets.js
   var TARGET_KEYWORD = /^(FOLLOW|DIRECT)$/iu;
   var NODE_TARGET = /^(NODE:|NODE~)(.*)$/iu;
-  var BASE64URL = /^[A-Za-z0-9_-]+$/u;
   var LINE_TERMINATOR2 = /[\r\n\u2028\u2029]/u;
   function frozenTarget(id, label2, aliases, defaultTarget) {
     return Object.freeze({ id, label: label2, aliases: Object.freeze([...aliases]), defaultTarget });
@@ -1112,37 +1082,6 @@ var INCYConfigBundle = (() => {
     TARGET_BY_KEY.set(target.label, target);
     for (const alias of target.aliases) TARGET_BY_KEY.set(alias, target);
   }
-  function businessTargetByKey(key) {
-    return typeof key === "string" ? TARGET_BY_KEY.get(key) : void 0;
-  }
-  function policyError(message) {
-    return new Error(`Invalid business policy overrides: ${message}`);
-  }
-  function targetError(target, message) {
-    return policyError(`${target.label}: ${message}`);
-  }
-  function decodePolicy(encoded) {
-    if (typeof encoded !== "string" || encoded !== "" && !BASE64URL.test(encoded) || encoded.length % 4 === 1) {
-      throw policyError("must be a Base64URL string");
-    }
-    if (encoded === "") return Object.freeze({});
-    let bytes;
-    try {
-      bytes = decodeBase64Url(encoded);
-    } catch {
-      throw policyError("must be a Base64URL string");
-    }
-    let values;
-    try {
-      values = parseStrictJson(bytes, { label: "business overrides", maxBytes: 64 * 1024, maxDepth: 8 });
-    } catch {
-      throw policyError("must contain JSON object");
-    }
-    if (values === null || Array.isArray(values) || typeof values !== "object" || Object.getPrototypeOf(values) !== Object.prototype) {
-      throw policyError("must contain a JSON object");
-    }
-    return values;
-  }
   function canonicalBusinessTarget(value) {
     if (typeof value !== "string") throw new TypeError("target must be a string");
     if (TARGET_KEYWORD.test(value)) return value.toUpperCase();
@@ -1152,25 +1091,6 @@ var INCYConfigBundle = (() => {
     }
     const prefix = node[1].toUpperCase();
     return `${prefix}${prefix === "NODE:" ? node[2] : node[2].trim()}`;
-  }
-  function parseBusinessOverrides(encoded) {
-    const values = decodePolicy(encoded);
-    const overrides = {};
-    for (const [key, value] of Object.entries(values)) {
-      const target = businessTargetByKey(key);
-      if (!target) throw policyError("contains an unknown business key");
-      let canonical;
-      try {
-        canonical = canonicalBusinessTarget(value);
-      } catch {
-        throw targetError(target, "target must be FOLLOW, DIRECT, or NODE:<name>");
-      }
-      if (Object.hasOwn(overrides, target.id) && overrides[target.id] !== canonical) {
-        throw targetError(target, "has conflicting aliases");
-      }
-      overrides[target.id] = canonical;
-    }
-    return Object.freeze(overrides);
   }
 
   // ../../shared/policies/unified-policy.js
@@ -1799,8 +1719,7 @@ var INCYConfigBundle = (() => {
     ipv6Mode: "ipv4-only",
     adblockMode: "off",
     autoGroupMode: "auto",
-    clientChain: "off",
-    policyOverrides: ""
+    clientChain: "off"
   });
   var ALLOWED_KEYS = /* @__PURE__ */ new Set([
     "output",
@@ -1817,8 +1736,7 @@ var INCYConfigBundle = (() => {
     "ipv6Mode",
     "adblockMode",
     "autoGroupMode",
-    "clientChain",
-    "policyOverrides"
+    "clientChain"
   ]);
   var PROTOTYPE_KEYS2 = /* @__PURE__ */ new Set(["__proto__", "constructor", "prototype"]);
   var ENUM_VALUES = Object.freeze({
@@ -1869,12 +1787,6 @@ var INCYConfigBundle = (() => {
     }
     return value;
   }
-  function parsePolicyOverrides(values) {
-    const encoded = values.has("policyOverrides") && values.get("policyOverrides") !== void 0 ? values.get("policyOverrides") : DEFAULTS.policyOverrides;
-    if (typeof encoded !== "string") throw new Error("INCY option 'policyOverrides' has an unsupported value");
-    parseBusinessOverrides(encoded);
-    return encoded;
-  }
   function parseIncyOptions(raw) {
     const values = ownOptions(raw);
     literal(values, "output", "config");
@@ -1902,8 +1814,7 @@ var INCYConfigBundle = (() => {
       ipv6Mode: enumValue(values, "ipv6Mode"),
       adblockMode: enumValue(values, "adblockMode"),
       autoGroupMode: enumValue(values, "autoGroupMode"),
-      clientChain: enumValue(values, "clientChain"),
-      policyOverrides: parsePolicyOverrides(values)
+      clientChain: enumValue(values, "clientChain")
     };
     return Object.freeze(options);
   }
@@ -2618,23 +2529,26 @@ var INCYConfigBundle = (() => {
     const value = { ...DEFAULT_OPTIONS, ...options };
     const china = chinaDnsProvider(value.chinaDns);
     const global = globalDnsProvider(value.globalDns);
+    const privacyMode = value.dnsMode === "privacy";
+    const speedMode = value.dnsMode === "speed";
     return Object.freeze({
       tag: dnsRulesTag,
       servers: [
         Object.freeze({
           tag: directTag,
           address: china.doh,
-          domains: Object.freeze(["geosite:CN", "geosite:PRIVATE"]),
+          domains: Object.freeze(privacyMode ? ["geosite:PRIVATE"] : ["geosite:CN", "geosite:PRIVATE"]),
           expectIPs: domesticExpectIPs()
         }),
         Object.freeze({
           tag: followTag,
           address: global.doh,
-          domains: Object.freeze(proxyDomains()),
-          skipFallback: true,
+          domains: Object.freeze(privacyMode ? [] : proxyDomains()),
+          skipFallback: !(privacyMode || speedMode),
           ...global.address ? { clientIp: global.address } : {}
         })
       ],
+      disableFallback: privacyMode,
       queryStrategy: value.ipv6Mode === "ipv4-only" ? "UseIPv4" : "UseIP"
     });
   }
@@ -2664,7 +2578,9 @@ var INCYConfigBundle = (() => {
   var DEFAULT_OPTIONS2 = Object.freeze({
     chinaDns: "alidns",
     globalDns: "cloudflare",
-    adblockMode: "off"
+    adblockMode: "off",
+    quicMode: "proxy-block",
+    autoGroupMode: "auto"
   });
   function asMap(value) {
     if (value instanceof Map) return value;
@@ -2695,7 +2611,10 @@ var INCYConfigBundle = (() => {
   function buildDnsDirectRules(options) {
     const rules = [];
     const value = { ...DEFAULT_OPTIONS2, ...options };
-    const providers = [chinaDnsProvider(value.chinaDns), globalDnsProvider(value.globalDns)];
+    const providers = [
+      chinaDnsProvider(value.chinaDns),
+      ...value.dnsMode === "privacy" ? [] : [globalDnsProvider(value.globalDns)]
+    ];
     const domains = /* @__PURE__ */ new Set();
     const ips = /* @__PURE__ */ new Set();
     for (const provider2 of providers) {
@@ -2764,14 +2683,24 @@ var INCYConfigBundle = (() => {
       });
       subjectSelector.push(candidateTag);
     }
+    const subjectCount = subjectSelector.length;
+    const requestedMode = options.autoGroupMode ?? "auto";
+    const effectiveMode = requestedMode === "auto" ? subjectCount <= 30 ? "full" : subjectCount <= 100 ? "balanced" : "minimal" : requestedMode;
+    if (!["full", "balanced", "minimal"].includes(effectiveMode)) {
+      throw new Error(`INCY autoGroupMode is unsupported: ${requestedMode}`);
+    }
+    const scale = { full: 1, balanced: 2, minimal: 4 }[effectiveMode];
+    const observatoryPreset = {
+      testInterval: preset.testInterval * scale,
+      timeout: preset.timeout,
+      tolerance: preset.tolerance * scale
+    };
     return {
       balancers,
       observatory: {
         subjectSelector,
         probeUrl: "https://www.gstatic.com/generate_204",
-        testInterval: preset.testInterval,
-        timeout: preset.timeout,
-        tolerance: preset.tolerance
+        ...observatoryPreset
       }
     };
   }
@@ -2807,6 +2736,9 @@ var INCYConfigBundle = (() => {
   } = {}) {
     const resolution = policyResolution ?? defaultUnifiedPolicyResolution();
     const value = { ...DEFAULT_OPTIONS2, ...options };
+    if (!["allow", "proxy-block", "all-block"].includes(value.quicMode)) {
+      throw new Error(`INCY quicMode is unsupported: ${value.quicMode}`);
+    }
     const tags = {
       followTag,
       directTag,
@@ -2822,7 +2754,17 @@ var INCYConfigBundle = (() => {
       }
     ];
     let chinaIpRule = null;
+    let quicRuleInserted = false;
     for (const item of orderedRoutingPlan({ adblockMode: value.adblockMode })) {
+      if (!quicRuleInserted && item.phase !== "security" && value.quicMode !== "allow") {
+        rules.push({
+          type: "field",
+          network: "udp",
+          port: 443,
+          outboundTag: value.quicMode === "all-block" ? blockTag : directTag
+        });
+        quicRuleInserted = true;
+      }
       const rule = ruleForItem(item, resolution, tags, value);
       if (item.id === "ChinaIP") {
         chinaIpRule = rule;
@@ -2834,6 +2776,14 @@ var INCYConfigBundle = (() => {
       }
     }
     if (chinaIpRule) rules.push(chinaIpRule);
+    if (!quicRuleInserted && value.quicMode !== "allow") {
+      rules.push({
+        type: "field",
+        network: "udp",
+        port: 443,
+        outboundTag: value.quicMode === "all-block" ? blockTag : directTag
+      });
+    }
     rules.push({ type: "field", network: "tcp,udp", outboundTag: followTag });
     return {
       domainStrategy: "IPIfNonMatch",
@@ -2945,6 +2895,22 @@ var INCYConfigBundle = (() => {
       if (key === "password" || key === "uuid" || key === "cipher" || key === "psk" || key === "username" || key === "private-key" || key === "public-key" || key === "server" || key === "port" || key === "flow" || key === "security" || key === "auth" || key === "method" || key === "id" || key === "key" || key === "token" || key === "secret") {
         throw new Error("INCY outbound contains secret metadata");
       }
+    }
+  }
+  function validateProxySettings(outbound, outboundTags) {
+    if (!Object.hasOwn(outbound, "proxySettings")) return;
+    if (!isPlainObject2(outbound.proxySettings)) {
+      throw new TypeError("INCY outbound proxySettings are invalid");
+    }
+    const keys = Object.keys(outbound.proxySettings);
+    if (keys.some((key) => key !== "tag" && key !== "transportLayer")) {
+      throw new Error("INCY outbound proxySettings contain forbidden fields");
+    }
+    if (typeof outbound.proxySettings.tag !== "string" || !outboundTags.has(outbound.proxySettings.tag)) {
+      throw new Error("INCY outbound proxySettings reference a missing outbound");
+    }
+    if (outbound.proxySettings.transportLayer !== void 0 && typeof outbound.proxySettings.transportLayer !== "boolean") {
+      throw new Error("INCY outbound proxySettings transportLayer is invalid");
     }
   }
   function validateReservedOutbound(outbound, tag, protocol2) {
@@ -3120,6 +3086,7 @@ var INCYConfigBundle = (() => {
     const outboundContainer = { outbounds: config.outbounds };
     assertIncyOutbound(outboundContainer);
     const outboundTags = new Set(config.outbounds.map((outbound) => outbound.tag));
+    config.outbounds.forEach((outbound) => validateProxySettings(outbound, outboundTags));
     const followTags = config.outbounds.filter((outbound) => typeof outbound.tag === "string" && outbound.tag.startsWith(FOLLOW_PREFIX)).map((outbound) => outbound.tag);
     const fixedTags = config.outbounds.filter((outbound) => typeof outbound.tag === "string" && outbound.tag.startsWith(FIXED_PREFIX)).map((outbound) => outbound.tag);
     const balancerTags = new Set((config.routing?.balancers ?? []).map((balancer) => balancer.tag));
@@ -3159,6 +3126,8 @@ var INCYConfigBundle = (() => {
   // src/render-subscription.js
   var DIRECT_TAG2 = "ap-incy-direct";
   var BLOCK_TAG2 = "ap-incy-block";
+  var CHAIN_ENTRY_POLICY = "\u{1F517} \u5165\u53E3\u8282\u70B9";
+  var CHAIN_ENTRY_PREFIX = "ap-incy-chain-entry/";
   function ensurePlainObject(value, label2) {
     if (value === null || typeof value !== "object" || Array.isArray(value)) {
       throw new TypeError(label2);
@@ -3170,6 +3139,9 @@ var INCYConfigBundle = (() => {
       throw new Error("INCY normalized node is missing a stable id");
     }
     return id;
+  }
+  function isGeneratedChain(node) {
+    return node?.["underlying-proxy"] === CHAIN_ENTRY_POLICY && node?._profile?.chained === true;
   }
   function summarizePolicy(resolution) {
     const entries = Object.values(resolution?.targets ?? {}).map((target) => `${target.configured}\u2192${target.resolved}`);
@@ -3197,10 +3169,23 @@ var INCYConfigBundle = (() => {
     const { nodeId, resolved, ...rest } = outbound;
     return rest;
   }
-  function buildConfig(node, options, policyResolution) {
+  function buildConfig(node, options, policyResolution, allNodes) {
     const followTag = `ap-incy-follow/${nodeIdFor(node)}`;
     const dnsTag = `ap-incy-dns/${nodeIdFor(node)}`;
     const fixedOutbounds = buildFixedOutbounds(policyResolution);
+    const chainEntries = isGeneratedChain(node) ? allNodes.filter((candidate) => candidate?._profile?.entry === true && candidate?._profile?.chained !== true) : [];
+    if (isGeneratedChain(node) && chainEntries.length !== 1) {
+      throw new Error("INCY generated chains require exactly one entry node");
+    }
+    const chainEntry = chainEntries[0] ?? null;
+    const fixedChainEntry = chainEntry ? fixedOutbounds.find((outbound) => outbound.nodeId === nodeIdFor(chainEntry)) : null;
+    const chainEntryTag = fixedChainEntry?.tag ?? (chainEntry ? `${CHAIN_ENTRY_PREFIX}${nodeIdFor(chainEntry)}` : null);
+    if (isGeneratedChain(node) && !chainEntryTag) {
+      throw new Error("INCY generated chain is missing an entry outbound");
+    }
+    const followOutbound = renderIncyOutbound(node, { tag: followTag });
+    const renderedFollow = chainEntryTag ? Object.freeze({ ...followOutbound, proxySettings: { tag: chainEntryTag } }) : followOutbound;
+    const chainEntryOutbound = chainEntry && !fixedChainEntry ? renderIncyOutbound(chainEntry, { tag: chainEntryTag }) : null;
     const route = renderIncyRouting({
       options,
       policyResolution,
@@ -3210,14 +3195,16 @@ var INCYConfigBundle = (() => {
       blockTag: BLOCK_TAG2
     });
     const { balancers, observatory } = renderIncyBalancers(policyResolution, fixedOutbounds, followTag, {
-      platform: options.platform
+      platform: options.platform,
+      autoGroupMode: options.autoGroupMode
     });
     return {
       remarks: node.name,
       log: { loglevel: "info" },
       inbounds: renderIncyInbounds(options.platform),
       outbounds: [
-        renderIncyOutbound(node, { tag: followTag }),
+        renderedFollow,
+        ...chainEntryOutbound ? [chainEntryOutbound] : [],
         ...fixedOutbounds.map(stripOutboundMetadata),
         { tag: DIRECT_TAG2, protocol: "freedom", settings: {} },
         { tag: BLOCK_TAG2, protocol: "blackhole", settings: {} }
@@ -3238,12 +3225,32 @@ var INCYConfigBundle = (() => {
     }
     ensurePlainObject(options, "INCY options are required");
     const resolution = policyResolution ?? defaultUnifiedPolicyResolution();
-    const configs = nodes.map((node) => buildConfig(node, options, resolution));
+    const configs = nodes.map((node) => buildConfig(node, options, resolution, nodes));
     validateIncySubscription(configs);
     return configs;
   }
 
   // src/substore-config-entry.js
+  var BENIGN_NORMALIZATION_EXCLUSIONS = /* @__PURE__ */ new Set([
+    "exact-duplicate",
+    "chain-existing",
+    "chain-entry-missing",
+    "chain-protocol-unsupported"
+  ]);
+  function prepareRawNodes(raw) {
+    return raw.map((node) => {
+      const extension = node?._incy?.xrayOutbound;
+      if (extension === void 0) return node;
+      if (!node || typeof node !== "object" || Array.isArray(node)) return node;
+      const { _incy: ignored, ...withoutPrivateMetadata } = node;
+      return { ...withoutPrivateMetadata, xrayOutbound: extension };
+    });
+  }
+  function assertNoInvalidInputNodes(normalized) {
+    const invalid3 = Object.entries(normalized.diagnostics.excluded ?? {}).filter(([reason, count]) => count > 0 && !BENIGN_NORMALIZATION_EXCLUSIONS.has(reason));
+    if (invalid3.length === 0) return;
+    throw new Error(`INCY cannot render selected protocols: ${invalid3.map(([reason, count]) => `${reason}=${count}`).join(",")}`);
+  }
   function requestOptionsFrom(input, context) {
     const candidates = [context?.requestOptions, input?.$options];
     return candidates.find((value) => value && typeof value === "object" && !Array.isArray(value));
@@ -3298,13 +3305,9 @@ var INCYConfigBundle = (() => {
     if (!Array.isArray(raw) || raw.length === 0) {
       throw new Error("INCY source collection is empty");
     }
-    const normalized = normalizeNodes(raw, { clientChain: options.clientChain });
-    if (normalized.nodes.length !== raw.length) {
-      const excluded = Object.entries(normalized.diagnostics.excluded ?? {}).map(([reason, count]) => `${reason}=${count}`).join(",");
-      throw new Error(`INCY cannot render selected protocols: ${excluded || "unknown"}`);
-    }
-    const normalizedById = new Map(normalized.nodes.map((node) => [identityKey(node), node]));
-    const orderedNodes = raw.map((node) => normalizedById.get(identityKey(node))).filter(Boolean);
+    const normalized = normalizeNodes(prepareRawNodes(raw), { clientChain: options.clientChain });
+    assertNoInvalidInputNodes(normalized);
+    const orderedNodes = normalized.nodes;
     const policy = await loadSubstorePolicyArtifact(context);
     const policyResolution = resolveUnifiedPolicy({
       policy,

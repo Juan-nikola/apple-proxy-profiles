@@ -1,5 +1,4 @@
 import { CLIENT } from "../../../shared/contracts.js";
-import { identityKey } from "../../../shared/nodes/node-identity.js";
 import { normalizeNodes } from "../../../shared/nodes/normalize-nodes.js";
 import { loadSubstorePolicyArtifact } from "../../../shared/substore/policy-artifact.js";
 import { resolveUnifiedPolicy } from "../../../shared/policies/resolve-unified.js";
@@ -7,6 +6,30 @@ import { parseIncyOptions } from "./options.js";
 import { incyAutoroutingUrl } from "./link-encoder.js";
 import { renderIncySubscription } from "./render-subscription.js";
 import { validateIncySubscription } from "./validate-subscription.js";
+
+const BENIGN_NORMALIZATION_EXCLUSIONS = new Set([
+  "exact-duplicate",
+  "chain-existing",
+  "chain-entry-missing",
+  "chain-protocol-unsupported",
+]);
+
+function prepareRawNodes(raw) {
+  return raw.map((node) => {
+    const extension = node?._incy?.xrayOutbound;
+    if (extension === undefined) return node;
+    if (!node || typeof node !== "object" || Array.isArray(node)) return node;
+    const { _incy: ignored, ...withoutPrivateMetadata } = node;
+    return { ...withoutPrivateMetadata, xrayOutbound: extension };
+  });
+}
+
+function assertNoInvalidInputNodes(normalized) {
+  const invalid = Object.entries(normalized.diagnostics.excluded ?? {})
+    .filter(([reason, count]) => count > 0 && !BENIGN_NORMALIZATION_EXCLUSIONS.has(reason));
+  if (invalid.length === 0) return;
+  throw new Error(`INCY cannot render selected protocols: ${invalid.map(([reason, count]) => `${reason}=${count}`).join(",")}`);
+}
 
 function requestOptionsFrom(input, context) {
   const candidates = [context?.requestOptions, input?.$options];
@@ -71,15 +94,9 @@ export async function operator(input, targetPlatform, context = {}) {
   if (!Array.isArray(raw) || raw.length === 0) {
     throw new Error("INCY source collection is empty");
   }
-  const normalized = normalizeNodes(raw, { clientChain: options.clientChain });
-  if (normalized.nodes.length !== raw.length) {
-    const excluded = Object.entries(normalized.diagnostics.excluded ?? {})
-      .map(([reason, count]) => `${reason}=${count}`)
-      .join(",");
-    throw new Error(`INCY cannot render selected protocols: ${excluded || "unknown"}`);
-  }
-  const normalizedById = new Map(normalized.nodes.map((node) => [identityKey(node), node]));
-  const orderedNodes = raw.map((node) => normalizedById.get(identityKey(node))).filter(Boolean);
+  const normalized = normalizeNodes(prepareRawNodes(raw), { clientChain: options.clientChain });
+  assertNoInvalidInputNodes(normalized);
+  const orderedNodes = normalized.nodes;
   const policy = await loadSubstorePolicyArtifact(context);
   const policyResolution = resolveUnifiedPolicy({
     policy,

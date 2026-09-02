@@ -22,3 +22,15 @@ test("rejects unknown keys, non-collection output, and unsupported platforms", (
   assert.throws(() => parseIncyOptions({ output: "config", type: "collection", name: "x", subscriptionName: "x", platform: "tvOS" }), /platform/);
   assert.throws(() => parseIncyOptions({ output: "config", type: "collection", name: "x", subscriptionName: "x", platform: "iphone", surprise: true }), /Unknown INCY option/);
 });
+
+test("rejects unsupported policy overrides", () => {
+  const base = {
+    output: "config",
+    type: "collection",
+    name: "x",
+    subscriptionName: "x",
+    platform: "iphone",
+  };
+
+  assert.throws(() => parseIncyOptions({ ...base, policyOverrides: "" }), /Unknown INCY option|policyOverrides.*unsupported/iu);
+});

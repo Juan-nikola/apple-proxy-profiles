@@ -210,6 +210,57 @@ test("supports the system China DNS resolver in routing DNS hints", () => {
   assert.ok(dnsRule);
 });
 
+test("keeps the global DoH endpoint on the follow path in privacy DNS mode", () => {
+  const routing = renderIncyRouting({
+    options: { platform: "macos", quicMode: "allow", dnsMode: "privacy" },
+    fixedOutbounds: [],
+    followTag: "ap-incy-follow/privacy",
+    directTag: "ap-incy-direct/privacy",
+    blockTag: "ap-incy-block/privacy",
+  });
+  const globalDnsRule = routing.rules.find((rule) => rule.domain?.includes("cloudflare-dns.com"));
+  assert.equal(globalDnsRule, undefined);
+});
+
+test("maps QUIC modes to explicit UDP/443 routing rules", () => {
+  const base = {
+    policyResolution: undefined,
+    fixedOutbounds: [],
+    followTag: "ap-incy-follow/quic",
+    directTag: "ap-incy-direct/quic",
+    blockTag: "ap-incy-block/quic",
+  };
+  const proxyBlock = renderIncyRouting({ ...base, options: { quicMode: "proxy-block" } });
+  const proxyRule = proxyBlock.rules.find((rule) => rule.network === "udp" && rule.port === 443);
+  assert.deepEqual(proxyRule, { type: "field", network: "udp", port: 443, outboundTag: base.directTag });
+
+  const allBlock = renderIncyRouting({ ...base, options: { quicMode: "all-block" } });
+  assert.equal(allBlock.rules.find((rule) => rule.network === "udp" && rule.port === 443).outboundTag, base.blockTag);
+
+  const allow = renderIncyRouting({ ...base, options: { quicMode: "allow" } });
+  assert.equal(allow.rules.some((rule) => rule.network === "udp" && rule.port === 443), false);
+});
+
+test("rejects an unsupported QUIC mode instead of silently weakening routing", () => {
+  assert.throws(() => renderIncyRouting({
+    options: { quicMode: "unexpected" },
+    followTag: "ap-incy-follow/invalid",
+    directTag: "ap-incy-direct/invalid",
+    blockTag: "ap-incy-block/invalid",
+  }), /quicMode/i);
+});
+
+test("scales observatory cadence according to the automatic group mode", () => {
+  const fixedNodes = Array.from({ length: 31 }, (_, index) => ({ nodeId: `node-${index}`, name: `Node ${index}` }));
+  const fixedOutbounds = fixedNodes.map(({ nodeId }) => ({ nodeId, tag: `ap-incy-fixed/${nodeId}` }));
+  const { observatory } = renderIncyBalancers({ fixedNodes }, fixedOutbounds, "ap-incy-follow/scale", {
+    platform: "macos",
+    autoGroupMode: "auto",
+  });
+  assert.equal(observatory.testInterval, 1200);
+  assert.equal(observatory.tolerance, 200);
+});
+
 test("exposes the shared observatory preset for the new INCY platforms", () => {
   assert.deepEqual(platformPolicyPreset("androidtv"), { testInterval: 3600, timeout: 8, tolerance: 200 });
   assert.deepEqual(platformPolicyPreset("windows"), { testInterval: 600, timeout: 5, tolerance: 100 });

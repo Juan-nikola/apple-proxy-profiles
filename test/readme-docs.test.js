@@ -49,5 +49,8 @@ test("catalog docs keep the updated 10 collection and 38 task counts", async () 
   assert.doesNotMatch(setup, /canonical catalog 共 30 个 File task/u);
   assert.match(setup, /当前私密 Sub-Store 的 30 个配置任务已统一设置为 `ipv6Mode=ipv4-only`/u);
   assert.match(setup, /所有 30 个配置任务 `ipv4-only`/u);
+  assert.match(setup, /九客户端指南/u);
+  assert.match(setup, /顶层包含 9 个客户端层/u);
+  assert.match(setup, /`clash`、`incy` 七层/u);
   assert.doesNotMatch(setup, /所有 22 个配置任务 `ipv4-only`/u);
 });

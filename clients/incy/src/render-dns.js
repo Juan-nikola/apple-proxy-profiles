@@ -23,6 +23,8 @@ export function renderIncyDns(options = {}, { followTag, directTag, dnsRulesTag 
   const value = { ...DEFAULT_OPTIONS, ...options };
   const china = chinaDnsProvider(value.chinaDns);
   const global = globalDnsProvider(value.globalDns);
+  const privacyMode = value.dnsMode === "privacy";
+  const speedMode = value.dnsMode === "speed";
 
   return Object.freeze({
     tag: dnsRulesTag,
@@ -30,17 +32,18 @@ export function renderIncyDns(options = {}, { followTag, directTag, dnsRulesTag 
       Object.freeze({
         tag: directTag,
         address: china.doh,
-        domains: Object.freeze(["geosite:CN", "geosite:PRIVATE"]),
+        domains: Object.freeze(privacyMode ? ["geosite:PRIVATE"] : ["geosite:CN", "geosite:PRIVATE"]),
         expectIPs: domesticExpectIPs(),
       }),
       Object.freeze({
         tag: followTag,
         address: global.doh,
-        domains: Object.freeze(proxyDomains()),
-        skipFallback: true,
+        domains: Object.freeze(privacyMode ? [] : proxyDomains()),
+        skipFallback: !(privacyMode || speedMode),
         ...(global.address ? { clientIp: global.address } : {}),
       }),
     ],
+    disableFallback: privacyMode,
     queryStrategy: value.ipv6Mode === "ipv4-only" ? "UseIPv4" : "UseIP",
   });
 }

@@ -1,5 +1,4 @@
 import { FRONTIER_CHANNELS } from "../../../shared/release/frontier-manifest.js";
-import { parseBusinessOverrides } from "../../../shared/policies/business-targets.js";
 import { validateCollectionName } from "../../../shared/substore/collection-name.js";
 
 const INCY_PLATFORMS = Object.freeze(["iphone", "ipad", "appletv", "android", "androidtv", "macos", "windows", "linux"]);
@@ -14,7 +13,6 @@ const DEFAULTS = Object.freeze({
   adblockMode: "off",
   autoGroupMode: "auto",
   clientChain: "off",
-  policyOverrides: "",
 });
 
 const ALLOWED_KEYS = new Set([
@@ -33,7 +31,6 @@ const ALLOWED_KEYS = new Set([
   "adblockMode",
   "autoGroupMode",
   "clientChain",
-  "policyOverrides",
 ]);
 const PROTOTYPE_KEYS = new Set(["__proto__", "constructor", "prototype"]);
 const ENUM_VALUES = Object.freeze({
@@ -89,15 +86,6 @@ function enumValue(values, key, fallback = DEFAULTS[key]) {
   return value;
 }
 
-function parsePolicyOverrides(values) {
-  const encoded = values.has("policyOverrides") && values.get("policyOverrides") !== undefined
-    ? values.get("policyOverrides")
-    : DEFAULTS.policyOverrides;
-  if (typeof encoded !== "string") throw new Error("INCY option 'policyOverrides' has an unsupported value");
-  parseBusinessOverrides(encoded);
-  return encoded;
-}
-
 export function parseIncyOptions(raw) {
   const values = ownOptions(raw);
   literal(values, "output", "config");
@@ -126,7 +114,6 @@ export function parseIncyOptions(raw) {
     adblockMode: enumValue(values, "adblockMode"),
     autoGroupMode: enumValue(values, "autoGroupMode"),
     clientChain: enumValue(values, "clientChain"),
-    policyOverrides: parsePolicyOverrides(values),
   };
   return Object.freeze(options);
 }

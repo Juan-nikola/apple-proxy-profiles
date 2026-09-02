@@ -15,8 +15,7 @@
     "ipv6Mode": "ipv4-only",
     "adblockMode": "off",
     "autoGroupMode": "auto",
-    "clientChain": "off",
-    "policyOverrides": ""
+    "clientChain": "off"
   },
   "inbounds": [
     {

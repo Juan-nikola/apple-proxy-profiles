@@ -11,6 +11,8 @@ const DEFAULT_OPTIONS = Object.freeze({
   chinaDns: "alidns",
   globalDns: "cloudflare",
   adblockMode: "off",
+  quicMode: "proxy-block",
+  autoGroupMode: "auto",
 });
 
 function asMap(value) {
@@ -48,7 +50,10 @@ function targetIdForSource(sourceId) {
 function buildDnsDirectRules(options) {
   const rules = [];
   const value = { ...DEFAULT_OPTIONS, ...options };
-  const providers = [chinaDnsProvider(value.chinaDns), globalDnsProvider(value.globalDns)];
+  const providers = [
+    chinaDnsProvider(value.chinaDns),
+    ...(value.dnsMode === "privacy" ? [] : [globalDnsProvider(value.globalDns)]),
+  ];
   const domains = new Set();
   const ips = new Set();
   for (const provider of providers) {
@@ -123,14 +128,27 @@ export function renderIncyBalancers(policyResolution, fixedOutbounds, followTag,
     subjectSelector.push(candidateTag);
   }
 
+  const subjectCount = subjectSelector.length;
+  const requestedMode = options.autoGroupMode ?? "auto";
+  const effectiveMode = requestedMode === "auto"
+    ? subjectCount <= 30 ? "full" : subjectCount <= 100 ? "balanced" : "minimal"
+    : requestedMode;
+  if (!["full", "balanced", "minimal"].includes(effectiveMode)) {
+    throw new Error(`INCY autoGroupMode is unsupported: ${requestedMode}`);
+  }
+  const scale = { full: 1, balanced: 2, minimal: 4 }[effectiveMode];
+  const observatoryPreset = {
+    testInterval: preset.testInterval * scale,
+    timeout: preset.timeout,
+    tolerance: preset.tolerance * scale,
+  };
+
   return {
     balancers,
     observatory: {
       subjectSelector,
       probeUrl: "https://www.gstatic.com/generate_204",
-      testInterval: preset.testInterval,
-      timeout: preset.timeout,
-      tolerance: preset.tolerance,
+      ...observatoryPreset,
     },
   };
 }
@@ -179,6 +197,9 @@ export function renderIncyRouting({
 } = {}) {
   const resolution = policyResolution ?? defaultUnifiedPolicyResolution();
   const value = { ...DEFAULT_OPTIONS, ...options };
+  if (!["allow", "proxy-block", "all-block"].includes(value.quicMode)) {
+    throw new Error(`INCY quicMode is unsupported: ${value.quicMode}`);
+  }
   const tags = {
     followTag,
     directTag,
@@ -195,7 +216,17 @@ export function renderIncyRouting({
   ];
 
   let chinaIpRule = null;
+  let quicRuleInserted = false;
   for (const item of orderedRoutingPlan({ adblockMode: value.adblockMode })) {
+    if (!quicRuleInserted && item.phase !== "security" && value.quicMode !== "allow") {
+      rules.push({
+        type: "field",
+        network: "udp",
+        port: 443,
+        outboundTag: value.quicMode === "all-block" ? blockTag : directTag,
+      });
+      quicRuleInserted = true;
+    }
     const rule = ruleForItem(item, resolution, tags, value);
     if (item.id === "ChinaIP") {
       chinaIpRule = rule;
@@ -208,6 +239,14 @@ export function renderIncyRouting({
   }
 
   if (chinaIpRule) rules.push(chinaIpRule);
+  if (!quicRuleInserted && value.quicMode !== "allow") {
+    rules.push({
+      type: "field",
+      network: "udp",
+      port: 443,
+      outboundTag: value.quicMode === "all-block" ? blockTag : directTag,
+    });
+  }
   rules.push({ type: "field", network: "tcp,udp", outboundTag: followTag });
 
   return {

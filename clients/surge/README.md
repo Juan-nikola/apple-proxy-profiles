@@ -6,7 +6,7 @@ Surge 新任务只读取 `apple-proxy-surge`。客户端 collection 边界、迁
 
 ## 先看这三份文档
 
-1. [Sub-Store 八客户端指南](../../docs/substore-two-layer-setup.md)：创建 `apple-proxy-surge`、加入你已验证的私密来源，以及 30 个私密任务的总表。
+1. [Sub-Store 九客户端指南](../../docs/substore-two-layer-setup.md)：创建 `apple-proxy-surge`、加入你已验证的私密来源，以及 38 个私密任务的总表。
 2. [Surge 部署](docs/deployment.md)：先创建 Surge 节点资源 File，再按 macOS → iPhone → iPad 创建三个远程 Profile File。
 3. [灰度与排障](docs/canary.md)：确认国内 App、DNS、UDP、局域网和回滚顺序。
 

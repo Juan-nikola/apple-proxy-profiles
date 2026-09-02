@@ -109,6 +109,23 @@ function validateOutbound(outbound, seen) {
   }
 }
 
+function validateProxySettings(outbound, outboundTags) {
+  if (!Object.hasOwn(outbound, "proxySettings")) return;
+  if (!isPlainObject(outbound.proxySettings)) {
+    throw new TypeError("INCY outbound proxySettings are invalid");
+  }
+  const keys = Object.keys(outbound.proxySettings);
+  if (keys.some((key) => key !== "tag" && key !== "transportLayer")) {
+    throw new Error("INCY outbound proxySettings contain forbidden fields");
+  }
+  if (typeof outbound.proxySettings.tag !== "string" || !outboundTags.has(outbound.proxySettings.tag)) {
+    throw new Error("INCY outbound proxySettings reference a missing outbound");
+  }
+  if (outbound.proxySettings.transportLayer !== undefined && typeof outbound.proxySettings.transportLayer !== "boolean") {
+    throw new Error("INCY outbound proxySettings transportLayer is invalid");
+  }
+}
+
 function validateReservedOutbound(outbound, tag, protocol) {
   if (outbound.tag !== tag) {
     throw new Error(`INCY reserved outbound '${tag}' is missing`);
@@ -293,6 +310,7 @@ function validateIncyConfig(config) {
   const outboundContainer = { outbounds: config.outbounds };
   assertIncyOutbound(outboundContainer);
   const outboundTags = new Set(config.outbounds.map((outbound) => outbound.tag));
+  config.outbounds.forEach((outbound) => validateProxySettings(outbound, outboundTags));
   const followTags = config.outbounds.filter((outbound) => typeof outbound.tag === "string" && outbound.tag.startsWith(FOLLOW_PREFIX)).map((outbound) => outbound.tag);
   const fixedTags = config.outbounds.filter((outbound) => typeof outbound.tag === "string" && outbound.tag.startsWith(FIXED_PREFIX)).map((outbound) => outbound.tag);
   const balancerTags = new Set((config.routing?.balancers ?? []).map((balancer) => balancer.tag));
