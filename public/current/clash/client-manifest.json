@@ -253,9 +253,9 @@
       "sha256": "1579f4cc64520655de4868d7daf0d251c46a37394c0a8f7f87b33e6d5eaa7468"
     },
     {
-      "bytes": 76004,
+      "bytes": 76548,
       "path": "clash/scripts/clash-node-generator.js",
-      "sha256": "09f23c064bcba59d220c20c0217c2ff0084a2dae02abd407b867cf815e61ba9a"
+      "sha256": "a57f0fbe03b9d0d1b3eba3de9ddcc9484b22bb4de2e977a527015940770c8bab"
     },
     {
       "bytes": 133217,
@@ -263,9 +263,9 @@
       "sha256": "1cbe2e34b2966a7cf2a53b37796fb8165c64bedb280e6dff0c924317fac07a36"
     },
     {
-      "bytes": 76004,
+      "bytes": 76548,
       "path": "clash/scripts/substore-node-generator.js",
-      "sha256": "09f23c064bcba59d220c20c0217c2ff0084a2dae02abd407b867cf815e61ba9a"
+      "sha256": "a57f0fbe03b9d0d1b3eba3de9ddcc9484b22bb4de2e977a527015940770c8bab"
     },
     {
       "bytes": 133217,
@@ -274,7 +274,7 @@
     }
   ],
   "generatedAt": "2026-08-25T18:39:12Z",
-  "manifestHash": "a97e9f2129d4d81a2dea16bd5cab374db6168e7171cbc0202bfe482e9c677bfb",
+  "manifestHash": "3f75ceff637dee7fa434c056f92fc4a1134087fcf86e072970ed0ad9b67f0eb3",
   "optionalPacks": {
     "adblock-full": "e359a7ee4367ed128d93c86e0b74bf99909fce03a488582424e38f9c98c13e26"
   },
