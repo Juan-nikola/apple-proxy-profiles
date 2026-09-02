@@ -1,0 +1,153 @@
+import assert from "node:assert/strict";
+import test from "node:test";
+
+import { parsePrivatePolicy } from "../../../shared/policies/private-policy.js";
+import { platformPolicyPreset } from "../../../shared/policies/platform-presets.js";
+import { resolveUnifiedPolicy } from "../../../shared/policies/resolve-unified.js";
+import { renderIncyBalancers, renderIncyRouting, routeTargetForPolicy } from "../src/render-routing.js";
+
+function node(name, type, extra = {}) {
+  return {
+    name,
+    type,
+    server: `${name.toLowerCase().replace(/\s+/gu, "-")}.example.invalid`,
+    port: 443,
+    ...extra,
+  };
+}
+
+test("maps policy resolution records to follow, direct, block, and fixed balancers", () => {
+  const tags = {
+    followTag: "ap-incy-follow/abc",
+    directTag: "ap-incy-direct/abc",
+    blockTag: "ap-incy-block/abc",
+    balancerTags: new Map([["Node A", "balancer-ap-incy-node-a"]]),
+  };
+
+  assert.equal(routeTargetForPolicy({ resolved: "FOLLOW" }, tags), "ap-incy-follow/abc");
+  assert.equal(routeTargetForPolicy({ resolved: "DIRECT" }, tags), "ap-incy-direct/abc");
+  assert.equal(routeTargetForPolicy({ resolved: "REJECT" }, tags), "ap-incy-block/abc");
+  assert.match(routeTargetForPolicy({ resolved: "Node A", status: "fixed" }, tags), /^balancer-ap-incy-/u);
+});
+
+test("builds one leastPing balancer per fixed node and includes them in observatory selection", () => {
+  const fixedA = node("Fixed AI", "vless", {
+    _profile: { id: "fixed-ai" },
+  });
+  const fixedB = node("Fixed GitHub", "trojan", {
+    _profile: { id: "fixed-github" },
+  });
+  const policy = parsePrivatePolicy(JSON.stringify({
+    schemaVersion: 2,
+    targets: {
+      ai: "NODE:Fixed AI",
+      github: "NODE:Fixed GitHub",
+      final: "FOLLOW",
+    },
+  }));
+  const resolution = resolveUnifiedPolicy({
+    policy,
+    client: "incy",
+    allNodes: [fixedA, fixedB],
+    eligibleNodes: [fixedA, fixedB],
+  });
+  const fixedOutbounds = [
+    { nodeId: "fixed-ai", tag: "ap-incy-fixed/fixed-ai" },
+    { nodeId: "fixed-github", tag: "ap-incy-fixed/fixed-github" },
+  ];
+
+  const { balancers, observatory } = renderIncyBalancers(resolution, fixedOutbounds, "ap-incy-follow/main");
+
+  assert.equal(balancers.length, 2);
+  assert.deepEqual(balancers.map(({ strategy }) => strategy.type), ["leastPing", "leastPing"]);
+  assert.ok(balancers.every(({ fallbackTag }) => fallbackTag === "ap-incy-follow/main"));
+  assert.deepEqual(observatory.subjectSelector, [
+    "ap-incy-follow/main",
+    "ap-incy-fixed/fixed-ai",
+    "ap-incy-fixed/fixed-github",
+  ]);
+});
+
+test("renders ordered routing rules with DNS hints between ChinaTLD and ChinaIP", () => {
+  const fixedA = node("Fixed AI", "vless", {
+    _profile: { id: "fixed-ai" },
+  });
+  const fixedB = node("Fixed GitHub", "trojan", {
+    _profile: { id: "fixed-github" },
+  });
+  const follow = node("Follow", "vless", {
+    _profile: { id: "follow" },
+  });
+  const policy = parsePrivatePolicy(JSON.stringify({
+    schemaVersion: 2,
+    targets: {
+      ai: "NODE:Fixed AI",
+      github: "NODE:Fixed GitHub",
+      youtube: "FOLLOW",
+      dnsAndRules: "FOLLOW",
+      final: "FOLLOW",
+    },
+  }));
+  const resolution = resolveUnifiedPolicy({
+    policy,
+    client: "incy",
+    allNodes: [fixedA, fixedB, follow],
+    eligibleNodes: [fixedA, fixedB, follow],
+  });
+  const fixedOutbounds = [
+    { nodeId: "fixed-ai", tag: "ap-incy-fixed/fixed-ai" },
+    { nodeId: "fixed-github", tag: "ap-incy-fixed/fixed-github" },
+  ];
+  const balancerTags = new Map([
+    ["fixed-ai", "balancer-ap-incy-fixed-ai"],
+    ["Fixed AI", "balancer-ap-incy-fixed-ai"],
+    ["fixed-github", "balancer-ap-incy-fixed-github"],
+    ["Fixed GitHub", "balancer-ap-incy-fixed-github"],
+  ]);
+
+  const routing = renderIncyRouting({
+    options: {
+      platform: "windows",
+      quicMode: "allow",
+      adblockMode: "off",
+      blockMode: "balanced",
+    },
+    policyResolution: resolution,
+    fixedOutbounds,
+    followTag: "ap-incy-follow/main",
+    directTag: "ap-incy-direct/main",
+    blockTag: "ap-incy-block/main",
+    balancerTags,
+  });
+
+  assert.equal(routing.domainStrategy, "IPIfNonMatch");
+  assert.equal(routing.rules[0].outboundTag, "ap-incy-direct/main");
+  assert.ok(routing.rules[0].domain.includes("localhost"));
+  assert.ok(routing.rules[0].domain.includes("geosite:PRIVATE"));
+
+  const openAiIndex = routing.rules.findIndex((rule) => rule.domain?.includes("geosite:OPENAI"));
+  const githubIndex = routing.rules.findIndex((rule) => rule.domain?.includes("geosite:GITHUB"));
+  const youtubeIndex = routing.rules.findIndex((rule) => rule.domain?.includes("geosite:YOUTUBE"));
+  const dnsHintIndex = routing.rules.findIndex((rule) => rule.ip?.includes("223.5.5.5"));
+  const chinaTldIndex = routing.rules.findIndex((rule) => rule.domain?.includes("geosite:CN") && rule.outboundTag === "ap-incy-direct/main");
+  const chinaIpIndex = routing.rules.findIndex((rule) => rule.ip?.includes("geoip:CN") && rule.outboundTag === "ap-incy-direct/main");
+
+  assert.ok(openAiIndex > 0);
+  assert.ok(githubIndex > openAiIndex);
+  assert.ok(youtubeIndex > githubIndex);
+  assert.ok(openAiIndex < dnsHintIndex);
+  assert.ok(githubIndex < dnsHintIndex);
+  assert.ok(youtubeIndex < dnsHintIndex);
+  assert.ok(chinaTldIndex < dnsHintIndex);
+  assert.ok(dnsHintIndex < chinaIpIndex);
+  assert.equal(routing.rules.at(-1).outboundTag, "ap-incy-follow/main");
+  assert.equal(routing.rules.find((rule) => rule.domain?.includes("geosite:OPENAI")).outboundTag, "balancer-ap-incy-fixed-ai");
+  assert.equal(routing.rules.find((rule) => rule.domain?.includes("geosite:GITHUB")).outboundTag, "balancer-ap-incy-fixed-github");
+  assert.equal(routing.rules.find((rule) => rule.ip?.includes("223.5.5.5")).outboundTag, "ap-incy-direct/main");
+});
+
+test("exposes the shared observatory preset for the new INCY platforms", () => {
+  assert.deepEqual(platformPolicyPreset("androidtv"), { testInterval: 3600, timeout: 8, tolerance: 200 });
+  assert.deepEqual(platformPolicyPreset("windows"), { testInterval: 600, timeout: 5, tolerance: 100 });
+  assert.deepEqual(platformPolicyPreset("linux"), { testInterval: 600, timeout: 5, tolerance: 100 });
+});

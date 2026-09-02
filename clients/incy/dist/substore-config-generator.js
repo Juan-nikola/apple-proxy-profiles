@@ -27,6 +27,7 @@ var INCYConfigBundle = (() => {
   var CLIENT = Object.freeze({
     anywhere: "anywhere",
     egern: "egern",
+    incy: "incy",
     shadowrocket: "shadowrocket",
     surge: "surge",
     singbox: "singbox",
