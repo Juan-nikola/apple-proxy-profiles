@@ -49,7 +49,7 @@
   },
   "clients": {
     "anywhere": {
-      "manifestHash": "ed9a9fb23518d11136e9754c17f042fdd5bfa7e650ff30cfe3fdb65e30203905",
+      "manifestHash": "607c669b05f1dd656bc3677d220d96e63cd237c30afa9210964533db417a26b3",
       "referencedDefaultBytes": 6562149
     },
     "clash": {
@@ -57,7 +57,7 @@
       "referencedDefaultBytes": 12781681
     },
     "egern": {
-      "manifestHash": "5b5ff21909fea01412a444657cee698f376efff5dffeb58e0a98142bb9a82ba0",
+      "manifestHash": "8cc70fdadfcff5adee2de1bb4d3f6776b9929552ae1e813adb309768e15a0fd7",
       "referencedDefaultBytes": 7557168
     },
     "happ": {
@@ -65,8 +65,8 @@
       "referencedDefaultBytes": 0
     },
     "incy": {
-      "manifestHash": "138db713844e64f51a95dc0d1db333011d92f81632dd242df5eed18c6a740216",
-      "referencedDefaultBytes": 543164
+      "manifestHash": "f5f4ea29f519f100d93a831ba9a69d3f491166a1a3f1ed1dec166cc69aaf0134",
+      "referencedDefaultBytes": 543252
     },
     "shadowrocket": {
       "manifestHash": "a06ac5adc90b197bebb1eda66b645caa3a6ba5fd6f621dbceea135961e393935",
@@ -288,7 +288,7 @@
     {
       "bytes": 4149,
       "path": "anywhere/client-manifest.json",
-      "sha256": "5eb9e0444461adf5f109585f57ad450b4c9d0fc15c3e376f007c2ff80bd87fd0"
+      "sha256": "5d0a24d7cea94dfdca608f415167da42ff8104fcb91e2d9f64af65e3eaefc3a1"
     },
     {
       "bytes": 12199,
@@ -381,24 +381,24 @@
       "sha256": "dc06cf2b07640c3a28d57453758c76c5d1b875083bca191cea8429fc90e48e6e"
     },
     {
-      "bytes": 89230,
+      "bytes": 88635,
       "path": "anywhere/scripts/anywhere-node-generator.js",
-      "sha256": "6ee82551389c9a28333c38b2c495ea92773cb655ac1b15f96491c13d6d68cfe1"
+      "sha256": "cd7f70c2ebe90060c6b69e10429177b66d9cd9049fa4d6c1b658d04e3a63e67c"
     },
     {
-      "bytes": 138132,
+      "bytes": 137537,
       "path": "anywhere/scripts/anywhere-strategy-generator.js",
-      "sha256": "56b9341b445f80e33adf48af6b60add617bbddcfcd1192301e934dec57ece916"
+      "sha256": "1fda9e1f4903e473519b6a1291be70bd76cbbcff02e84faccb2d5ee7238d126e"
     },
     {
-      "bytes": 89230,
+      "bytes": 88635,
       "path": "anywhere/scripts/substore-node-generator.js",
-      "sha256": "6ee82551389c9a28333c38b2c495ea92773cb655ac1b15f96491c13d6d68cfe1"
+      "sha256": "cd7f70c2ebe90060c6b69e10429177b66d9cd9049fa4d6c1b658d04e3a63e67c"
     },
     {
-      "bytes": 138132,
+      "bytes": 137537,
       "path": "anywhere/scripts/substore-strategy-generator.js",
-      "sha256": "56b9341b445f80e33adf48af6b60add617bbddcfcd1192301e934dec57ece916"
+      "sha256": "1fda9e1f4903e473519b6a1291be70bd76cbbcff02e84faccb2d5ee7238d126e"
     },
     {
       "bytes": 1518,
@@ -408,12 +408,12 @@
     {
       "bytes": 2186,
       "path": "audit/dashboard.html",
-      "sha256": "cf83ab1deb57a7df249a1ec20363c2d3001a235458416d96de30bb02c2c68a59"
+      "sha256": "280097f170b37daeb903d7fb1b19dd59594451491cc1b067ad3a98ec29702ba2"
     },
     {
       "bytes": 4933,
       "path": "audit/dashboard.json",
-      "sha256": "2b794fbe3299665edda96fe846ca3372c7511598ba10696bf384b9dcfe61e54c"
+      "sha256": "725934a757d962753525984cadf81f4bfed4eb0ab74b9a42303646f851aa0690"
     },
     {
       "bytes": 5184,
@@ -703,7 +703,7 @@
     {
       "bytes": 6735,
       "path": "egern/client-manifest.json",
-      "sha256": "5530eb744e2b3dbab978ff1c704dbdfbf0db1859f96aea39e7f36226a9ebfa69"
+      "sha256": "5e00b560d965753b44202c1b9cde2cfb3a7eff527978777bffed3bbfaff1b8be"
     },
     {
       "bytes": 28575,
@@ -881,24 +881,24 @@
       "sha256": "376840d4275a6c1db76ff3804bb0f9c88f03a24376fd6647067b6bf3a46a3a5c"
     },
     {
-      "bytes": 121144,
+      "bytes": 120969,
       "path": "egern/scripts/egern-node-generator.js",
-      "sha256": "c1b608e21233a7c8d7510792551c574250fd945b0ad64348f44761da5b03c37a"
+      "sha256": "6f299a996add3bbe384503385c6c296d8e337e8dbc1efc68423192717f89fc64"
     },
     {
-      "bytes": 251654,
+      "bytes": 250821,
       "path": "egern/scripts/egern-profile-generator.js",
-      "sha256": "dc4331569b9364f6c178b3434309bad4646a37fb0e0605abbf1f2f8065ad5822"
+      "sha256": "f64a74bf4babc893935d35dac92a339b03c58c371e30a992076a46366819e1b9"
     },
     {
-      "bytes": 121144,
+      "bytes": 120969,
       "path": "egern/scripts/substore-node-generator.js",
-      "sha256": "c1b608e21233a7c8d7510792551c574250fd945b0ad64348f44761da5b03c37a"
+      "sha256": "6f299a996add3bbe384503385c6c296d8e337e8dbc1efc68423192717f89fc64"
     },
     {
-      "bytes": 251654,
+      "bytes": 250821,
       "path": "egern/scripts/substore-profile-generator.js",
-      "sha256": "dc4331569b9364f6c178b3434309bad4646a37fb0e0605abbf1f2f8065ad5822"
+      "sha256": "f64a74bf4babc893935d35dac92a339b03c58c371e30a992076a46366819e1b9"
     },
     {
       "bytes": 250970,
@@ -1023,7 +1023,7 @@
     {
       "bytes": 1421,
       "path": "incy/client-manifest.json",
-      "sha256": "1e7a7b8212177a5175189ba65c25a71df4675da26224ab9fea19cdff73441774"
+      "sha256": "c9a684e4dc531894d78de6e7b30c649064c2781207d00405eaa9d39e5f9b571a"
     },
     {
       "bytes": 181466,
@@ -1051,14 +1051,14 @@
       "sha256": "16598e286e9190bf37c31c9467f9f0a3d019797a2247ef284de8ce77ae641624"
     },
     {
-      "bytes": 142961,
+      "bytes": 143005,
       "path": "incy/scripts/incy-config-generator.js",
-      "sha256": "eae9a93e6fbce390482c1b922928e66aec16c54b75bb6cd3c3bf25ab3f81117d"
+      "sha256": "637952b796ec84537e16a8683d959d40fdb34ed9b517f7be22603a5d94253def"
     },
     {
-      "bytes": 142961,
+      "bytes": 143005,
       "path": "incy/scripts/substore-config-generator.js",
-      "sha256": "eae9a93e6fbce390482c1b922928e66aec16c54b75bb6cd3c3bf25ab3f81117d"
+      "sha256": "637952b796ec84537e16a8683d959d40fdb34ed9b517f7be22603a5d94253def"
     },
     {
       "bytes": 7237,
@@ -1767,7 +1767,7 @@
     }
   ],
   "generatedAt": "2026-08-25T18:39:12Z",
-  "manifestHash": "0947f52ebec7305ebe9b351cb3b5d633bd126659dbb84d80a8094e288a2a9277",
+  "manifestHash": "db7156934a3e2b0cadae7e87596fc7620573da5dad0ed73ba944f3d7ccbad819",
   "schemaVersion": 2,
   "upstream": {
     "branch": "master",

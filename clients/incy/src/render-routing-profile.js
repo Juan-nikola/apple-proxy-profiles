@@ -96,5 +96,5 @@ export function renderIncyRoutingDeepLink(profile) {
   if (typeof routingUrl !== "string" || routingUrl.length === 0) {
     throw new TypeError("INCY routing profile is missing a public routing URL");
   }
-  return `incy://autorouting/onadd/${routingUrl}`;
+  return `incy://autorouting/onadd/${encodeURIComponent(routingUrl)}`;
 }

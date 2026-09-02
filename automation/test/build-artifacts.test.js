@@ -324,7 +324,10 @@ test("publishes INCY native scripts, routing profile, and GeoData into the close
   assert.equal(profile.Geositeurl, "https://juan-nikola.github.io/apple-proxy-profiles/current/incy/geosite.dat");
   assert.equal(profile.useChunkFiles, "true");
   assert.equal(profile.LastUpdated, String(Math.floor(Date.parse(upstream.committedAt) / 1000)));
-  assert.equal(renderIncyRoutingDeepLink(profile), `incy://autorouting/onadd/${incyAutoroutingUrl("current")}`);
+  assert.equal(
+    renderIncyRoutingDeepLink(profile),
+    `incy://autorouting/onadd/${encodeURIComponent(incyAutoroutingUrl("current"))}`,
+  );
   assert.deepEqual(renderIncyRoutingProfile({
     baseUrl: "https://juan-nikola.github.io/apple-proxy-profiles/current",
     generatedAt: upstream.committedAt,

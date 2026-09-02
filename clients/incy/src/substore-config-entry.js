@@ -28,7 +28,11 @@ function attachResponseHeaders(input, context, options) {
   if (!requestOptions) return;
   setResponseHeader(requestOptions, "content-type", "application/json; charset=utf-8");
   setResponseHeader(requestOptions, "content-disposition", `attachment; filename="incy-${options.platform}.json"`);
-  setResponseHeader(requestOptions, "autorouting", `incy://autorouting/onadd/${incyAutoroutingUrl("current")}`);
+  setResponseHeader(
+    requestOptions,
+    "autorouting",
+    `incy://autorouting/onadd/${encodeURIComponent(incyAutoroutingUrl("current"))}`,
+  );
 }
 
 function logDiagnostics(context, options, normalized, configs) {

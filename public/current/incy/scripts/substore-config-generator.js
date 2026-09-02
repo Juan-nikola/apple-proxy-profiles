@@ -3261,7 +3261,11 @@ var INCYConfigBundle = (() => {
     if (!requestOptions) return;
     setResponseHeader(requestOptions, "content-type", "application/json; charset=utf-8");
     setResponseHeader(requestOptions, "content-disposition", `attachment; filename="incy-${options.platform}.json"`);
-    setResponseHeader(requestOptions, "autorouting", `incy://autorouting/onadd/${incyAutoroutingUrl("current")}`);
+    setResponseHeader(
+      requestOptions,
+      "autorouting",
+      `incy://autorouting/onadd/${encodeURIComponent(incyAutoroutingUrl("current"))}`
+    );
   }
   function logDiagnostics(context, options, normalized, configs) {
     const logger = typeof context?.logger === "function" ? context.logger : typeof context?.logger?.info === "function" ? context.logger.info.bind(context.logger) : null;

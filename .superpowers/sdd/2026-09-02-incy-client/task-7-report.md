@@ -104,3 +104,24 @@ Fresh verification on the final scoped tree:
 - I restored unrelated regenerated Anywhere/Egern artifacts so the worktree stayed scoped to Task 7.
 - The current publication manifests changed as expected because INCY is now part of the published current tree.
 - I did not merge or push anything.
+
+## Follow-up Fix — September 2, 2026
+
+A review found that the INCY deep-link contract still needed one correction: the public routing URL had to be encoded exactly once inside `incy://autorouting/onadd/<encoded-public-routing-url>`.
+
+I fixed that at the source in:
+
+- `clients/incy/src/render-routing-profile.js`
+- `clients/incy/src/substore-config-entry.js`
+
+I also updated the focused assertions in:
+
+- `automation/test/build-artifacts.test.js`
+- `clients/incy/test/substore-entry.test.js`
+
+Fresh verification after regenerating the artifacts:
+
+- `node --test automation/test/build-artifacts.test.js automation/test/refresh-current.test.js clients/incy/test/substore-entry.test.js` — passed
+- `npm --workspace @apple-proxy-profiles/incy test` — passed
+- `npm --workspace @apple-proxy-profiles/incy run build` — passed
+- `node scripts/update-rules.mjs --channel current` — passed

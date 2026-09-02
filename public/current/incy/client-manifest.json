@@ -28,18 +28,18 @@
       "sha256": "16598e286e9190bf37c31c9467f9f0a3d019797a2247ef284de8ce77ae641624"
     },
     {
-      "bytes": 142961,
+      "bytes": 143005,
       "path": "incy/scripts/incy-config-generator.js",
-      "sha256": "eae9a93e6fbce390482c1b922928e66aec16c54b75bb6cd3c3bf25ab3f81117d"
+      "sha256": "637952b796ec84537e16a8683d959d40fdb34ed9b517f7be22603a5d94253def"
     },
     {
-      "bytes": 142961,
+      "bytes": 143005,
       "path": "incy/scripts/substore-config-generator.js",
-      "sha256": "eae9a93e6fbce390482c1b922928e66aec16c54b75bb6cd3c3bf25ab3f81117d"
+      "sha256": "637952b796ec84537e16a8683d959d40fdb34ed9b517f7be22603a5d94253def"
     }
   ],
   "generatedAt": "2026-08-25T18:39:12Z",
-  "manifestHash": "138db713844e64f51a95dc0d1db333011d92f81632dd242df5eed18c6a740216",
+  "manifestHash": "f5f4ea29f519f100d93a831ba9a69d3f491166a1a3f1ed1dec166cc69aaf0134",
   "optionalPacks": {},
   "schemaVersion": 1
 }
