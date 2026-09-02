@@ -11,3 +11,7 @@ test("the client contract contains all stable client identities", () => {
 test("accepts the final region option set", () => {
   assert.deepEqual(OPTION_VALUES.region, ["cn", "global", "ru", "ir"]);
 });
+
+test("exposes the shared adblock mode option set", () => {
+  assert.deepEqual(OPTION_VALUES.adblockMode, ["off", "full"]);
+});

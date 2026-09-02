@@ -113,6 +113,19 @@ const records = [
     adapterSchema: "clash-v1",
     publicDirectory: "clash",
   },
+  {
+    id: CLIENT.incy,
+    displayName: "INCY",
+    state: "active",
+    platforms: ["iphone", "ipad", "appletv", "android", "androidtv", "macos", "windows", "linux"],
+    configFormat: "xray-json-array",
+    ruleFormat: "xray-geodata",
+    nodeValidator: "incy",
+    separatesProfile: false,
+    supportsPolicyOverrides: false,
+    adapterSchema: "incy-v1",
+    publicDirectory: "incy",
+  },
 ].map((record) => freeze(record));
 
 const byId = new Map(records.map((record) => [record.id, record]));

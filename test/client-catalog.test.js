@@ -19,14 +19,15 @@ const REQUIRED_FIELDS = [
 
 test("registers clients in stable publication order", () => {
   assert.deepEqual(allClientIds(), [
-    "anywhere", "egern", "shadowrocket", "surge", "singbox", "happ", "v2box", "clash",
+    "anywhere", "egern", "shadowrocket", "surge", "singbox", "happ", "v2box", "clash", "incy",
   ]);
-  assert.deepEqual(activeClientIds(), ["anywhere", "egern", "shadowrocket", "surge", "singbox", "happ", "v2box", "clash"]);
+  assert.deepEqual(activeClientIds(), ["anywhere", "egern", "shadowrocket", "surge", "singbox", "happ", "v2box", "clash", "incy"]);
   assert.deepEqual(plannedClientIds(), []);
   assert.equal(publicDirectoryForClient("singbox"), "sing-box");
   assert.deepEqual(clientAdapter("v2box").platforms, ["iphone", "ipad"]);
   assert.deepEqual(clientAdapter("happ").platforms, ["macos", "iphone", "ipad"]);
   assert.deepEqual(clientAdapter("clash").platforms, ["iphone", "ipad", "macos", "appletv"]);
+  assert.deepEqual(clientAdapter("incy").platforms, ["iphone", "ipad", "appletv", "android", "androidtv", "macos", "windows", "linux"]);
   assert.deepEqual(lightweightRuleClientIds(), [
     "anywhere", "egern", "shadowrocket", "surge", "singbox", "clash",
   ]);
@@ -72,6 +73,23 @@ test("unknown capabilities stay explicitly unsupported", () => {
   }
 });
 
+test("INCY exposes the audited active catalog contract", () => {
+  const adapter = clientAdapter("incy");
+  assert.deepEqual(adapter, {
+    id: "incy",
+    displayName: "INCY",
+    state: "active",
+    platforms: ["iphone", "ipad", "appletv", "android", "androidtv", "macos", "windows", "linux"],
+    configFormat: "xray-json-array",
+    ruleFormat: "xray-geodata",
+    nodeValidator: "incy",
+    separatesProfile: false,
+    supportsPolicyOverrides: false,
+    adapterSchema: "incy-v1",
+    publicDirectory: "incy",
+  });
+});
+
 test("V2Box exposes only the common Xray protocol boundary", () => {
   for (const client of ["v2box"]) {
     for (const protocol of ["vless", "vmess", "ss", "shadowsocks", "trojan", "socks5", "http", "hysteria2", "hy2"]) {
@@ -88,4 +106,13 @@ test("Clash exposes its audited Mihomo protocol boundary", () => {
     assert.equal(protocolSupportsClient(protocol, "clash"), true, `clash should support ${protocol}`);
   }
   assert.equal(protocolSupportsClient("sudoku", "clash"), false);
+});
+
+test("INCY exposes only the seven verified Xray protocol categories", () => {
+  for (const protocol of ["ss", "shadowsocks", "vmess", "vless", "trojan", "hysteria2", "hy2", "socks5", "http"]) {
+    assert.equal(protocolSupportsClient(protocol, "incy"), true, `incy should support ${protocol}`);
+  }
+  for (const protocol of ["ssr", "snell", "anytls", "tuic", "ssh", "wireguard", "sudoku"]) {
+    assert.equal(protocolSupportsClient(protocol, "incy"), false, `incy must reject ${protocol}`);
+  }
 });

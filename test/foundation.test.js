@@ -11,11 +11,17 @@ test("monorepo exposes all client workspaces and root verification", async () =>
   await access(new URL("../clients/sing-box/package.json", import.meta.url));
   await access(new URL("../clients/v2box/package.json", import.meta.url));
   await access(new URL("../clients/clash/package.json", import.meta.url));
+  await access(new URL("../clients/incy/package.json", import.meta.url));
   const root = JSON.parse(await readFile(new URL("../package.json", import.meta.url), "utf8"));
+  const incy = JSON.parse(await readFile(new URL("../clients/incy/package.json", import.meta.url), "utf8"));
   const lockfile = JSON.parse(await readFile(new URL("../package-lock.json", import.meta.url), "utf8"));
   assert.deepEqual(root.workspaces, ["clients/*"]);
   assert.equal(lockfile.packages["clients/happ"].name, "@apple-proxy-profiles/happ");
   assert.equal(lockfile.packages["clients/happ"].version, "0.1.0");
+  assert.equal(lockfile.packages["clients/incy"].name, "@apple-proxy-profiles/incy");
+  assert.equal(lockfile.packages["clients/incy"].version, "0.1.0");
+  assert.equal(incy.scripts.test, "node --test");
+  assert.equal(incy.scripts.verify, "npm test && npm run build && npm run fixtures && npm run check:secrets");
   assert.equal(root.scripts["verify:shadowrocket"], "npm --workspace @apple-proxy-profiles/shadowrocket run verify");
   assert.equal(root.scripts["verify:egern"], "npm --workspace @apple-proxy-profiles/egern run verify");
   assert.equal(root.scripts["verify:anywhere"], "npm --workspace @apple-proxy-profiles/anywhere run verify");

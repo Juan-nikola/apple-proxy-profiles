@@ -152,6 +152,7 @@ function expectedForCase(client, routingCase, policies, anywhere) {
 
 test("all five generated client formats implement the shared lightweight behavior cases", async (t) => {
   const anywhere = await anywhereArtifacts();
+  assert.equal(LIGHTWEIGHT_CLIENTS.includes("incy"), false);
   const artifacts = {
     shadowrocket: parseTextPolicies(await readFile(new URL("clients/shadowrocket/examples/shadowrocket-macos.conf", root), "utf8"), "shadowrocket"),
     surge: parseTextPolicies(await readFile(new URL("clients/surge/examples/surge-macos.conf", root), "utf8"), "surge"),
