@@ -1776,7 +1776,7 @@ var SurgeProfileBundle = (() => {
   var ADBLOCK_MODES = /* @__PURE__ */ new Set(["off", "full"]);
   var PARSED = /* @__PURE__ */ new WeakSet();
   var ALLOWED_KEYS = /* @__PURE__ */ new Set([...REQUIRED_KEYS, ...Object.keys(DEFAULTS), "proxyPolicyUrl"]);
-  var NODE_ALLOWED_KEYS = /* @__PURE__ */ new Set([...NODE_REQUIRED_KEYS, "clientChain"]);
+  var NODE_ALLOWED_KEYS = /* @__PURE__ */ new Set([...NODE_REQUIRED_KEYS, "clientChain", "channel"]);
   function requiredString(raw, key) {
     const value = raw[key];
     if (typeof value !== "string" || value.length === 0 || value.trim() !== value || /[\r\n]/u.test(value)) {

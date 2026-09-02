@@ -183,9 +183,9 @@
       "sha256": "b36cfd4603c924a829e6634bdf6a4647f297b371ca029defd332167f372fe7dc"
     },
     {
-      "bytes": 42999,
+      "bytes": 47691,
       "path": "shadowrocket/scripts/shadowrocket-node-subscription.js",
-      "sha256": "38b8adb9677acd62822b32d7329e946c28d55227038302411cc518ff8c45cee6"
+      "sha256": "b77e9a9d0adba09472dbc38f463b51f589562757b99f384fe085374488962344"
     },
     {
       "bytes": 140328,
@@ -204,7 +204,7 @@
     }
   ],
   "generatedAt": "2026-08-25T18:39:12Z",
-  "manifestHash": "ccaaf4e42eda5962413e1af8190d096ade8199e837f4b79d5908f9272355c4c8",
+  "manifestHash": "c2311bc516c05b8dd5b7846e87bc530d9a35984975c2156a475953ae9578ddd1",
   "optionalPacks": {
     "adblock-full": "66513b2ba687a9048e33988dfe8f1d2a6f2836587c5dd42355ac68951f059337"
   },
