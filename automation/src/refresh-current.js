@@ -93,6 +93,11 @@ function parseCanonicalManifest(bytes, label) {
 }
 
 function referencedBytesForClient(records, client) {
+  if (client === "incy") {
+    return records
+      .filter(({ path }) => path.startsWith("incy/") && !path.endsWith("/client-manifest.json"))
+      .reduce((sum, { bytes }) => sum + bytes, 0);
+  }
   const prefixes = CLIENT_RULE_PREFIXES[client];
   if (!prefixes) throw new Error(`Unknown client: ${client}`);
   if (prefixes.length === 0) return 0;

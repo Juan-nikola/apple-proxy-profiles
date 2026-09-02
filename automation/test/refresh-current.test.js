@@ -50,3 +50,19 @@ test("refreshCurrentManifest counts sing-box rule bytes without legacy channels"
     await rm(root, { recursive: true, force: true });
   }
 });
+
+test("refreshCurrentManifest counts INCY publication bytes without treating it as a text-rule client", async () => {
+  const root = await mkdtemp(join(tmpdir(), "apple-proxy-refresh-current-incy-"));
+  const artifacts = buildClientArtifacts({ snapshot: lightweightFixtureSnapshots(), channel: "current" });
+  try {
+    await writeFiles(join(root, "current"), artifacts.defaults);
+    const refreshed = await refreshCurrentManifest({ publicDirectory: root });
+    const incyManifest = JSON.parse(await readFile(join(root, "current/incy/client-manifest.json"), "utf8"));
+    const expectedBytes = incyManifest.files.reduce((sum, { bytes }) => sum + bytes, 0);
+
+    assert.equal(refreshed.clients.incy.referencedDefaultBytes, expectedBytes);
+    assert.ok(refreshed.clients.incy.manifestHash);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});

@@ -44,7 +44,8 @@ var INCYConfigBundle = (() => {
     CLIENT.singbox,
     CLIENT.happ,
     CLIENT.v2box,
-    CLIENT.clash
+    CLIENT.clash,
+    CLIENT.incy
   ]);
   var PRIVATE_POLICY_TARGET_IDS = Object.freeze([
     "ai",
@@ -71,6 +72,7 @@ var INCYConfigBundle = (() => {
     blockMode: Object.freeze(["balanced", "security", "strict", "off"]),
     quicMode: Object.freeze(["allow", "proxy-block", "all-block"]),
     ipv6Mode: Object.freeze(["auto", "ipv4-only"]),
+    adblockMode: Object.freeze(["off", "full"]),
     autoGroupMode: Object.freeze(["auto", "full", "balanced", "minimal"]),
     clientChain: Object.freeze(["off", "on"])
   });
@@ -1740,6 +1742,19 @@ var INCYConfigBundle = (() => {
       supportsPolicyOverrides: false,
       adapterSchema: "clash-v1",
       publicDirectory: "clash"
+    },
+    {
+      id: CLIENT.incy,
+      displayName: "INCY",
+      state: "active",
+      platforms: ["iphone", "ipad", "appletv", "android", "androidtv", "macos", "windows", "linux"],
+      configFormat: "xray-json-array",
+      ruleFormat: "xray-geodata",
+      nodeValidator: "incy",
+      separatesProfile: false,
+      supportsPolicyOverrides: false,
+      adapterSchema: "incy-v1",
+      publicDirectory: "incy"
     }
   ].map((record2) => freeze3(record2));
   var byId = new Map(records.map((record2) => [record2.id, record2]));

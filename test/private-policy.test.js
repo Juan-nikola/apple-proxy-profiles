@@ -142,6 +142,7 @@ test("selects each client layer from unified policy schema v3", () => {
       happ: clientLayer("NODE~🇺🇸qqpw家宽|vless"),
       v2box: clientLayer("NODE~🇺🇸qqpw家宽|vless"),
       clash: clientLayer("NODE~🇺🇸qqpw家宽|vless"),
+      incy: clientLayer("NODE~🇺🇸qqpw家宽|vless"),
     },
   }));
 
@@ -164,6 +165,7 @@ test("requires every unified policy v3 client layer to be complete and unique", 
       ["happ", clientLayer("NODE~🇺🇸qqpw家宽|vless")],
       ["v2box", clientLayer("NODE~🇺🇸qqpw家宽|vless")],
       ["clash", clientLayer("NODE~🇺🇸qqpw家宽|vless")],
+      ["incy", clientLayer("NODE~🇺🇸qqpw家宽|vless")],
     ]),
   };
 

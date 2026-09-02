@@ -45,6 +45,8 @@ const nativePolicyGenerators = new Set([
   "happ/scripts/substore-config-generator.js",
   "happ/scripts/happ-routing-audit.js",
   "happ/scripts/substore-routing-audit.js",
+  "incy/scripts/incy-config-generator.js",
+  "incy/scripts/substore-config-generator.js",
 ]);
 const upstream = Object.freeze({
   repository: "https://github.com/blackmatrix7/ios_rule_script",

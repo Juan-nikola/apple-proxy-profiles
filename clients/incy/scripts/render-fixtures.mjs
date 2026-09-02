@@ -7,6 +7,7 @@ import { renderIncyInbounds } from "../src/render-platform.js";
 const root = resolve(import.meta.dirname, "..");
 const examples = [
   ["incy-config-iphone.json", "iphone"],
+  ["incy-config-windows.json", "windows"],
   ["incy-config-ipad.json", "ipad"],
 ];
 

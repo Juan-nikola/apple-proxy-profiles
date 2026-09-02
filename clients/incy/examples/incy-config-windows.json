@@ -1,11 +1,11 @@
 {
-  "platform": "iphone",
+  "platform": "windows",
   "options": {
     "output": "config",
     "type": "collection",
     "name": "apple-proxy-incy",
     "subscriptionName": "INCY",
-    "platform": "iphone",
+    "platform": "windows",
     "channel": "current",
     "dnsMode": "stable",
     "chinaDns": "alidns",
