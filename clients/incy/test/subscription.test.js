@@ -129,6 +129,47 @@ test("rejects configs that violate inbound, routing, or metadata rules", () => {
   assert.throws(() => validateIncySubscription(invalidMeta), /meta|serverDescription|secret/i);
 });
 
+test("rejects mutations of the reserved direct and block outbounds", () => {
+  const { configs } = renderSubscription();
+  const mutated = structuredClone(configs);
+  const direct = mutated[0].outbounds.find((outbound) => outbound.tag === "ap-incy-direct");
+  const block = mutated[0].outbounds.find((outbound) => outbound.tag === "ap-incy-block");
+  assert.ok(direct);
+  assert.ok(block);
+  direct.protocol = "vless";
+  direct.settings = {
+    vnext: [{
+      address: "mutated.example.invalid",
+      port: 443,
+      users: [{ id: "00000000-0000-4000-8000-000000000001", encryption: "none" }],
+    }],
+  };
+  block.protocol = "vless";
+  block.settings = {
+    vnext: [{
+      address: "mutated.example.invalid",
+      port: 443,
+      users: [{ id: "00000000-0000-4000-8000-000000000001", encryption: "none" }],
+    }],
+  };
+
+  assert.throws(() => validateIncySubscription(mutated), /direct|block|freedom|blackhole|protocol/i);
+});
+
+test("rejects mutations of the standard inbounds and sniffing contract", () => {
+  const { configs } = renderSubscription();
+  const mutated = structuredClone(configs);
+
+  mutated[0].inbounds[0].settings.auth = "password";
+  mutated[0].inbounds[0].settings.udp = false;
+  mutated[0].inbounds[0].sniffing.enabled = false;
+
+  mutated[0].inbounds[1].settings = { host: "127.0.0.1" };
+  mutated[0].inbounds[1].sniffing.routeOnly = true;
+
+  assert.throws(() => validateIncySubscription(mutated), /inbound|socks|http|sniffing|udp|auth|routeOnly/i);
+});
+
 test("fails closed when the source collection mixes valid and unsupported nodes", async () => {
   await assert.rejects(async () => incyOperator({}, "iphone", {
     arguments: {

@@ -2829,6 +2829,11 @@ var INCYConfigBundle = (() => {
     Object.freeze({ tag: "incy-in-socks", port: 10808, protocol: "socks" }),
     Object.freeze({ tag: "incy-in-http", port: 10809, protocol: "http" })
   ]);
+  var STANDARD_SNIFFING = Object.freeze({
+    enabled: true,
+    destOverride: Object.freeze(["udp", "http", "tls", "quic"]),
+    routeOnly: false
+  });
   var DIRECT_TAG = "ap-incy-direct";
   var BLOCK_TAG = "ap-incy-block";
   var FOLLOW_PREFIX = "ap-incy-follow/";
@@ -2914,6 +2919,17 @@ var INCYConfigBundle = (() => {
       }
     }
   }
+  function validateReservedOutbound(outbound, tag, protocol2) {
+    if (outbound.tag !== tag) {
+      throw new Error(`INCY reserved outbound '${tag}' is missing`);
+    }
+    if (outbound.protocol !== protocol2) {
+      throw new Error(`INCY reserved outbound '${tag}' must use protocol '${protocol2}'`);
+    }
+    if (!isPlainObject2(outbound.settings) || Object.keys(outbound.settings).length !== 0) {
+      throw new Error(`INCY reserved outbound '${tag}' has invalid settings`);
+    }
+  }
   function validateInboundShape(inbound, index) {
     if (!isPlainObject2(inbound)) {
       throw new TypeError("INCY inbound must be a plain object");
@@ -2929,6 +2945,22 @@ var INCYConfigBundle = (() => {
     }
     if (inbound.listen !== "127.0.0.1") {
       throw new Error("INCY inbound listen address is invalid");
+    }
+    if (!isPlainObject2(inbound.settings)) {
+      throw new Error("INCY inbound settings are invalid");
+    }
+    if (!isPlainObject2(inbound.sniffing)) {
+      throw new Error("INCY inbound sniffing is invalid");
+    }
+    if (index === 0) {
+      if (inbound.settings.auth !== "noauth" || inbound.settings.udp !== true || Object.keys(inbound.settings).length !== 2) {
+        throw new Error("INCY SOCKS inbound settings are invalid");
+      }
+    } else if (Object.keys(inbound.settings).length !== 0) {
+      throw new Error("INCY HTTP inbound settings are invalid");
+    }
+    if (inbound.sniffing.enabled !== STANDARD_SNIFFING.enabled || inbound.sniffing.routeOnly !== STANDARD_SNIFFING.routeOnly || !Array.isArray(inbound.sniffing.destOverride) || inbound.sniffing.destOverride.length !== STANDARD_SNIFFING.destOverride.length || !STANDARD_SNIFFING.destOverride.every((value) => inbound.sniffing.destOverride.includes(value))) {
+      throw new Error("INCY inbound sniffing is invalid");
     }
   }
   function validateDns(config, outboundTags, followTag) {
@@ -3063,12 +3095,16 @@ var INCYConfigBundle = (() => {
     const followTags = config.outbounds.filter((outbound) => typeof outbound.tag === "string" && outbound.tag.startsWith(FOLLOW_PREFIX)).map((outbound) => outbound.tag);
     const fixedTags = config.outbounds.filter((outbound) => typeof outbound.tag === "string" && outbound.tag.startsWith(FIXED_PREFIX)).map((outbound) => outbound.tag);
     const balancerTags = new Set((config.routing?.balancers ?? []).map((balancer) => balancer.tag));
+    const directOutbound = config.outbounds.find((outbound) => outbound.tag === DIRECT_TAG);
+    const blockOutbound = config.outbounds.find((outbound) => outbound.tag === BLOCK_TAG);
     if (followTags.length !== 1) {
       throw new Error("INCY config requires exactly one follow outbound");
     }
     if (!outboundTags.has(DIRECT_TAG) || !outboundTags.has(BLOCK_TAG)) {
       throw new Error("INCY config is missing direct or block outbounds");
     }
+    validateReservedOutbound(directOutbound, DIRECT_TAG, "freedom");
+    validateReservedOutbound(blockOutbound, BLOCK_TAG, "blackhole");
     validateDns(config, outboundTags, followTags[0]);
     validateRouting(config, outboundTags, balancerTags, followTags[0], config.observatory?.subjectSelector ?? []);
     validateObservatory(config, followTags[0], fixedTags);

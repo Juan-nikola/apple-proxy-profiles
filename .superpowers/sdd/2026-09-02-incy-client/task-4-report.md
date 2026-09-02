@@ -45,3 +45,22 @@ Date: 2026-09-02
 
 - The final implementation keeps the existing shared normalization and policy-resolution helpers intact and only consumes their outputs.
 - No known functional concerns remain after the full test suite passed.
+
+## Follow-up hardening
+
+- Added semantic validation for the reserved safety outbounds:
+  - `ap-incy-direct` must be `freedom` with an empty settings object.
+  - `ap-incy-block` must be `blackhole` with an empty settings object.
+- Added semantic validation for the standard inbounds:
+  - SOCKS inbound must be `127.0.0.1:10808`, protocol `socks`, `settings.auth=noauth`, `settings.udp=true`, and sniffing enabled with the standard `destOverride` set and `routeOnly=false`.
+  - HTTP inbound must be `127.0.0.1:10809`, protocol `http`, have an empty settings object, and the same sniffing shape.
+- Added mutation tests that fail if the reserved outbounds or inbound/sniffing contract are altered.
+
+## Verification output
+
+- `node --test /Users/sunyuze/Documents/ChatGPT/代理开发/.worktrees/incy-adapter/clients/incy/test/subscription.test.js`
+  - Result: 5 tests passed, 0 failed.
+- `npm --workspace @apple-proxy-profiles/incy test`
+  - Result: 35 tests passed, 0 failed.
+- `npm --workspace @apple-proxy-profiles/incy run build`
+  - Result: exited 0.
