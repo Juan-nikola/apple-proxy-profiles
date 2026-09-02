@@ -1,0 +1,58 @@
+{
+  "platform": "ipad",
+  "options": {
+    "output": "config",
+    "type": "collection",
+    "name": "apple-proxy-incy",
+    "subscriptionName": "INCY",
+    "platform": "ipad",
+    "channel": "current",
+    "dnsMode": "stable",
+    "chinaDns": "alidns",
+    "globalDns": "cloudflare",
+    "blockMode": "balanced",
+    "quicMode": "proxy-block",
+    "ipv6Mode": "ipv4-only",
+    "adblockMode": "off",
+    "autoGroupMode": "auto",
+    "clientChain": "off",
+    "policyOverrides": ""
+  },
+  "inbounds": [
+    {
+      "tag": "incy-in-socks",
+      "listen": "127.0.0.1",
+      "port": 10808,
+      "protocol": "socks",
+      "settings": {
+        "auth": "noauth",
+        "udp": true
+      },
+      "sniffing": {
+        "enabled": true,
+        "destOverride": [
+          "http",
+          "tls",
+          "quic"
+        ],
+        "routeOnly": false
+      }
+    },
+    {
+      "tag": "incy-in-http",
+      "listen": "127.0.0.1",
+      "port": 10809,
+      "protocol": "http",
+      "settings": {},
+      "sniffing": {
+        "enabled": true,
+        "destOverride": [
+          "http",
+          "tls",
+          "quic"
+        ],
+        "routeOnly": false
+      }
+    }
+  ]
+}
