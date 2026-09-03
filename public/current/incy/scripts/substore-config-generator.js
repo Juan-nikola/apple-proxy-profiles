@@ -2545,12 +2545,25 @@ var INCYConfigBundle = (() => {
   function domesticExpectIPs() {
     return Object.freeze(["geoip:PRIVATE", "geoip:CN"]);
   }
+  function dnsHosts(providers) {
+    const hosts = {};
+    for (const provider2 of providers) {
+      if (provider2.doh === "system" || provider2.address === "local") continue;
+      const endpoint = new URL(provider2.doh);
+      hosts[endpoint.hostname] = provider2.address;
+      if (typeof provider2.serverName === "string" && provider2.serverName.length > 0) {
+        hosts[provider2.serverName] = provider2.address;
+      }
+    }
+    return Object.freeze(hosts);
+  }
   function renderIncyDns(options = {}, { followTag, directTag, dnsRulesTag } = {}) {
     const value = { ...DEFAULT_OPTIONS, ...options };
     const china = chinaDnsProvider(value.chinaDns);
     const global = globalDnsProvider(value.globalDns);
     const privacyMode = value.dnsMode === "privacy";
     const speedMode = value.dnsMode === "speed";
+    const hosts = dnsHosts([china, global]);
     return Object.freeze({
       tag: dnsRulesTag,
       servers: [
@@ -2568,6 +2581,7 @@ var INCYConfigBundle = (() => {
           ...global.address ? { clientIp: global.address } : {}
         })
       ],
+      ...Object.keys(hosts).length > 0 ? { hosts } : {},
       disableFallback: privacyMode,
       queryStrategy: value.ipv6Mode === "ipv4-only" ? "UseIPv4" : "UseIP"
     });

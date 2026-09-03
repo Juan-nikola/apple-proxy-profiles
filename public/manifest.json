@@ -65,8 +65,8 @@
       "referencedDefaultBytes": 0
     },
     "incy": {
-      "manifestHash": "2706423834123b75d59c6bac207ae8a97955f42786c3fd81dabfd69abcce66cc",
-      "referencedDefaultBytes": 557772
+      "manifestHash": "509d4e228de4887878c539b284ff7d3c99ec90928db4b7f26387fd684a718b49",
+      "referencedDefaultBytes": 558922
     },
     "shadowrocket": {
       "manifestHash": "c2311bc516c05b8dd5b7846e87bc530d9a35984975c2156a475953ae9578ddd1",
@@ -408,12 +408,12 @@
     {
       "bytes": 2186,
       "path": "audit/dashboard.html",
-      "sha256": "624af0111d32b25fa44d7c47828793ce67092aa918272d1845442fa64b91f677"
+      "sha256": "aaf24162a2e34f9e1a2665a3406c1125652abac71fafdbd57b7ce8b56e934664"
     },
     {
       "bytes": 4933,
       "path": "audit/dashboard.json",
-      "sha256": "89834c62bec41d7439d9b486284763b4a8ba1cd4ff2c676ec03d14e3f6df23c0"
+      "sha256": "dc81c6a2f4f0450920ffe8673cf716cddba4685ac8cca793069f236df9e34459"
     },
     {
       "bytes": 5184,
@@ -1023,7 +1023,7 @@
     {
       "bytes": 1421,
       "path": "incy/client-manifest.json",
-      "sha256": "94c7aeba6e41a8ce686963635394861fc344eac4b1b661a9f33660d95e533a64"
+      "sha256": "8cce47db639eb7cb164b73e81c295173490fefea587cccd1704c948fa5a5c0f0"
     },
     {
       "bytes": 181481,
@@ -1051,14 +1051,14 @@
       "sha256": "16598e286e9190bf37c31c9467f9f0a3d019797a2247ef284de8ce77ae641624"
     },
     {
-      "bytes": 150260,
+      "bytes": 150835,
       "path": "incy/scripts/incy-config-generator.js",
-      "sha256": "00ae0656dee69e8978e5288c49d65b83c2ebcb97bb6ad26cd5f7c82a49e6a245"
+      "sha256": "4e1199ca49707de80a04970cac90709b3f99b27eae8fd40da5b557a5db9bd803"
     },
     {
-      "bytes": 150260,
+      "bytes": 150835,
       "path": "incy/scripts/substore-config-generator.js",
-      "sha256": "00ae0656dee69e8978e5288c49d65b83c2ebcb97bb6ad26cd5f7c82a49e6a245"
+      "sha256": "4e1199ca49707de80a04970cac90709b3f99b27eae8fd40da5b557a5db9bd803"
     },
     {
       "bytes": 7237,
@@ -1767,7 +1767,7 @@
     }
   ],
   "generatedAt": "2026-08-25T18:39:12Z",
-  "manifestHash": "b00fbb7736517f85acfdcc9950f76d6e37b3ce591a891ffd9560e3be76fa1369",
+  "manifestHash": "10d74f24825290bd430c4e008ae5a724f72442bf79482a0a88228bb7b3299ac8",
   "schemaVersion": 2,
   "upstream": {
     "branch": "master",
