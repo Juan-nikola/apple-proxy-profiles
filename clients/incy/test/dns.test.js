@@ -30,6 +30,10 @@ test("renders domestic and overseas DNS servers with IPv4-only strategy", () => 
   assert.ok(dns.servers[1].domains.includes("geosite:YOUTUBE"));
   assert.equal(dns.servers[1].skipFallback, true);
   assert.equal(dns.servers[1].clientIp, "1.1.1.1");
+  assert.deepEqual(dns.hosts, {
+    "dns.alidns.com": "223.5.5.5",
+    "cloudflare-dns.com": "1.1.1.1",
+  });
 });
 
 test("uses IPv4 preference only when requested", () => {
@@ -69,6 +73,7 @@ test("accepts the system China DNS resolver without parsing it as a URL", () => 
   assert.equal(dns.servers[0].address, "system");
   assert.equal(dns.servers[0].tag, "ap-incy-direct/system");
   assert.equal(dns.servers[1].address, "https://cloudflare-dns.com/dns-query");
+  assert.deepEqual(dns.hosts, { "cloudflare-dns.com": "1.1.1.1" });
 });
 
 test("changes DNS fallback behavior for privacy and speed modes", () => {

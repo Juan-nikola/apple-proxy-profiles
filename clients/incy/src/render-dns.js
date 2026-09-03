@@ -19,12 +19,26 @@ function domesticExpectIPs() {
   return Object.freeze(["geoip:PRIVATE", "geoip:CN"]);
 }
 
+function dnsHosts(providers) {
+  const hosts = {};
+  for (const provider of providers) {
+    if (provider.doh === "system" || provider.address === "local") continue;
+    const endpoint = new URL(provider.doh);
+    hosts[endpoint.hostname] = provider.address;
+    if (typeof provider.serverName === "string" && provider.serverName.length > 0) {
+      hosts[provider.serverName] = provider.address;
+    }
+  }
+  return Object.freeze(hosts);
+}
+
 export function renderIncyDns(options = {}, { followTag, directTag, dnsRulesTag } = {}) {
   const value = { ...DEFAULT_OPTIONS, ...options };
   const china = chinaDnsProvider(value.chinaDns);
   const global = globalDnsProvider(value.globalDns);
   const privacyMode = value.dnsMode === "privacy";
   const speedMode = value.dnsMode === "speed";
+  const hosts = dnsHosts([china, global]);
 
   return Object.freeze({
     tag: dnsRulesTag,
@@ -43,6 +57,7 @@ export function renderIncyDns(options = {}, { followTag, directTag, dnsRulesTag 
         ...(global.address ? { clientIp: global.address } : {}),
       }),
     ],
+    ...(Object.keys(hosts).length > 0 ? { hosts } : {}),
     disableFallback: privacyMode,
     queryStrategy: value.ipv6Mode === "ipv4-only" ? "UseIPv4" : "UseIP",
   });

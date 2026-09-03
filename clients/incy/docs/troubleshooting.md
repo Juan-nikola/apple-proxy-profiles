@@ -8,7 +8,7 @@
 
 ## 路由、DNS 和协议异常
 
-确认 `DomainStrategy=IPIfNonMatch`；数组第一项的最后一条规则使用 `balancerTag=balancer-ap-incy-follow`，单节点项使用当前 `ap-incy-follow/<id>` 的 `outboundTag`。域名命中 ChinaTLD、业务域名或安全规则后不会继续解析 IP；只有域名未命中才匹配 `geoip:CN`。OpenAI、GitHub、YouTube、海外媒体、社交、游戏、下载和广告目标应与 policy 一致，固定 balancer 故障时回退 follow。DNS 国内/海外服务器、`quicMode=proxy-block` 和 `ipv6Mode=ipv4-only` 不应被手工改写。
+确认 `DomainStrategy=IPIfNonMatch`；数组第一项的最后一条规则使用 `balancerTag=balancer-ap-incy-follow`，单节点项使用当前 `ap-incy-follow/<id>` 的 `outboundTag`。域名命中 ChinaTLD、业务域名或安全规则后不会继续解析 IP；只有域名未命中才匹配 `geoip:CN`。OpenAI、GitHub、YouTube、海外媒体、社交、游戏、下载和广告目标应与 policy 一致，固定 balancer 故障时回退 follow。DNS 国内/海外服务器、`quicMode=proxy-block` 和 `ipv6Mode=ipv4-only` 不应被手工改写。生成配置还会在 `dns.hosts` 中固定所选 DoH 域名到其公开 IP，避免其他 VPN 的 Fake-IP 解析污染 INCY；更新前请刷新订阅并重新连接。
 
 如果只在一个平台出现，对照 `clients/incy/examples/` 中的配置，确认 `127.0.0.1:10808` SOCKS、`127.0.0.1:10809` HTTP、sniffing 的 `destOverride` 仅包含 `http`、`tls`、`quic`，并确认客户端支持官方 JSON 数组。数组第一项是自动选择，后续项是手动节点；若客户端仍只显示一个服务器，可临时使用 `format=single` 验证基础连接，再升级客户端后恢复 `selectionMode=both`。
 
