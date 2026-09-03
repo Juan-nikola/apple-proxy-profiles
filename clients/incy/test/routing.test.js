@@ -141,9 +141,29 @@ test("renders ordered routing rules with DNS hints between ChinaTLD and ChinaIP"
   assert.ok(chinaTldIndex < dnsHintIndex);
   assert.ok(dnsHintIndex < chinaIpIndex);
   assert.equal(routing.rules.at(-1).outboundTag, "ap-incy-follow/main");
-  assert.equal(routing.rules.find((rule) => rule.domain?.includes("geosite:OPENAI")).outboundTag, "balancer-ap-incy-fixed-ai");
-  assert.equal(routing.rules.find((rule) => rule.domain?.includes("geosite:GITHUB")).outboundTag, "balancer-ap-incy-fixed-github");
+  const openAiRule = routing.rules.find((rule) => rule.domain?.includes("geosite:OPENAI"));
+  const githubRule = routing.rules.find((rule) => rule.domain?.includes("geosite:GITHUB"));
+  assert.equal(openAiRule.balancerTag, "balancer-ap-incy-fixed-ai");
+  assert.equal(openAiRule.outboundTag, undefined);
+  assert.equal(githubRule.balancerTag, "balancer-ap-incy-fixed-github");
+  assert.equal(githubRule.outboundTag, undefined);
   assert.equal(routing.rules.find((rule) => rule.ip?.includes("223.5.5.5")).outboundTag, "ap-incy-direct/main");
+});
+
+test("targets the aggregate automatic balancer through balancerTag", () => {
+  const routing = renderIncyRouting({
+    options: { platform: "macos", quicMode: "allow" },
+    policyResolution: undefined,
+    fixedOutbounds: [],
+    followTag: "balancer-ap-incy-follow",
+    directTag: "ap-incy-direct",
+    blockTag: "ap-incy-block",
+    aggregateBalancerTag: "balancer-ap-incy-follow",
+  });
+
+  const finalRule = routing.rules.at(-1);
+  assert.equal(finalRule.balancerTag, "balancer-ap-incy-follow");
+  assert.equal(finalRule.outboundTag, undefined);
 });
 
 test("keeps domestic and ChinaTLD direct rules on the direct tag while final stays on follow", () => {

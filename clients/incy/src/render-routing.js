@@ -25,6 +25,14 @@ function routeTargetKey(record) {
   return record?.nodeId ?? record?.resolved ?? record?.configured ?? null;
 }
 
+function routeRuleTarget(target, tags) {
+  const balancerTargets = new Set(asMap(tags.balancerTags).values());
+  if (target === tags.aggregateBalancerTag || balancerTargets.has(target)) {
+    return { balancerTag: target };
+  }
+  return { outboundTag: target };
+}
+
 export function routeTargetForPolicy(record, tags = {}) {
   const resolved = record?.resolved ?? record?.configured;
   if (resolved === "FOLLOW" || resolved === undefined || resolved === null) return tags.followTag;
@@ -158,8 +166,8 @@ export function renderIncyBalancers(policyResolution, fixedOutbounds, followTag,
 function policyRuleForSource(sourceId, resolution, tags) {
   const targetId = targetIdForSource(sourceId);
   const record = resolution?.targets?.[targetId];
-  if (!record) return { outboundTag: tags.followTag };
-  return { outboundTag: routeTargetForPolicy(record, tags) };
+  const target = record ? routeTargetForPolicy(record, tags) : tags.followTag;
+  return routeRuleTarget(target, tags);
 }
 
 const BLOCKED_SECURITY_SOURCES = new Set(["Hijacking", "BlockHttpDNS", "Advertising", "Advertising_Domain"]);
@@ -196,6 +204,7 @@ export function renderIncyRouting({
   directTag,
   blockTag,
   balancerTags = null,
+  aggregateBalancerTag = null,
 } = {}) {
   const resolution = policyResolution ?? defaultUnifiedPolicyResolution();
   const value = { ...DEFAULT_OPTIONS, ...options };
@@ -207,6 +216,7 @@ export function renderIncyRouting({
     directTag,
     blockTag,
     balancerTags: balancerTags ?? derivedBalancerTags(fixedOutbounds),
+    aggregateBalancerTag,
   };
   const rules = [
     {
@@ -249,7 +259,7 @@ export function renderIncyRouting({
       outboundTag: value.quicMode === "all-block" ? blockTag : directTag,
     });
   }
-  rules.push({ type: "field", network: "tcp,udp", outboundTag: followTag });
+  rules.push({ type: "field", network: "tcp,udp", ...routeRuleTarget(followTag, tags) });
 
   return {
     domainStrategy: "IPIfNonMatch",

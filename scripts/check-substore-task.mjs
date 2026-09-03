@@ -89,8 +89,12 @@ const GENERATOR_SCHEMAS = Object.freeze({
     requiresSubscriptionName: true,
     expectedName: "apple-proxy-incy",
     requiresChannel: true,
-    extraKeys: ["adblockMode", "autoGroupMode", "clientChain", "format"],
-    extraEnums: { format: ["array", "single"] },
+    requiresArrayForSelection: true,
+    extraKeys: ["adblockMode", "autoGroupMode", "clientChain", "format", "selectionMode"],
+    extraEnums: {
+      format: ["array", "single"],
+      selectionMode: ["manual", "both"],
+    },
   }),
 });
 
@@ -122,6 +126,7 @@ function configSchema({
   requiresChannel = false,
   expectedName = null,
   rejectFullAdblockPlatforms = [],
+  requiresArrayForSelection = false,
   extraKeys = [],
   extraEnums = {},
   omitKeys = [],
@@ -145,6 +150,7 @@ function configSchema({
     platforms: Object.freeze(platforms),
     expectedName,
     rejectFullAdblockPlatforms: Object.freeze(rejectFullAdblockPlatforms),
+    requiresArrayForSelection,
     enums: Object.freeze({
       dnsMode: OPTION_VALUES.dnsMode,
       chinaDns: OPTION_VALUES.chinaDns,
@@ -257,6 +263,9 @@ export function checkTaskOptions(schema, params) {
   }
   if (params.adblockMode === "full" && schema.rejectFullAdblockPlatforms?.includes(params.platform)) {
     errors.push(`Option 'adblockMode=full' is not supported on ${params.platform} because of the mobile client memory budget`);
+  }
+  if (schema.requiresArrayForSelection && params.selectionMode === "both" && params.format !== "array") {
+    errors.push("INCY selectionMode=both requires format=array");
   }
   return Object.freeze(errors);
 }

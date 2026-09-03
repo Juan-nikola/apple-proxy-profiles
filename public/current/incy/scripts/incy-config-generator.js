@@ -1719,6 +1719,7 @@ var INCYConfigBundle = (() => {
     ipv6Mode: "ipv4-only",
     adblockMode: "off",
     format: "array",
+    selectionMode: "manual",
     autoGroupMode: "auto",
     clientChain: "off"
   });
@@ -1737,6 +1738,7 @@ var INCYConfigBundle = (() => {
     "ipv6Mode",
     "adblockMode",
     "format",
+    "selectionMode",
     "autoGroupMode",
     "clientChain"
   ]);
@@ -1750,6 +1752,7 @@ var INCYConfigBundle = (() => {
     ipv6Mode: Object.freeze(["auto", "ipv4-only"]),
     adblockMode: Object.freeze(["off", "full"]),
     format: Object.freeze(["array", "single"]),
+    selectionMode: Object.freeze(["manual", "both"]),
     autoGroupMode: Object.freeze(["auto", "full", "balanced", "minimal"]),
     clientChain: Object.freeze(["off", "on"])
   });
@@ -1817,9 +1820,13 @@ var INCYConfigBundle = (() => {
       ipv6Mode: enumValue(values, "ipv6Mode"),
       adblockMode: enumValue(values, "adblockMode"),
       format: enumValue(values, "format"),
+      selectionMode: enumValue(values, "selectionMode"),
       autoGroupMode: enumValue(values, "autoGroupMode"),
       clientChain: enumValue(values, "clientChain")
     };
+    if (options.format === "single" && options.selectionMode === "both") {
+      throw new Error("INCY selectionMode=both requires format=array");
+    }
     return Object.freeze(options);
   }
 
@@ -2603,6 +2610,13 @@ var INCYConfigBundle = (() => {
   function routeTargetKey(record2) {
     return record2?.nodeId ?? record2?.resolved ?? record2?.configured ?? null;
   }
+  function routeRuleTarget(target, tags) {
+    const balancerTargets = new Set(asMap(tags.balancerTags).values());
+    if (target === tags.aggregateBalancerTag || balancerTargets.has(target)) {
+      return { balancerTag: target };
+    }
+    return { outboundTag: target };
+  }
   function routeTargetForPolicy(record2, tags = {}) {
     const resolved = record2?.resolved ?? record2?.configured;
     if (resolved === "FOLLOW" || resolved === void 0 || resolved === null) return tags.followTag;
@@ -2722,8 +2736,8 @@ var INCYConfigBundle = (() => {
   function policyRuleForSource(sourceId, resolution, tags) {
     const targetId = targetIdForSource(sourceId);
     const record2 = resolution?.targets?.[targetId];
-    if (!record2) return { outboundTag: tags.followTag };
-    return { outboundTag: routeTargetForPolicy(record2, tags) };
+    const target = record2 ? routeTargetForPolicy(record2, tags) : tags.followTag;
+    return routeRuleTarget(target, tags);
   }
   var BLOCKED_SECURITY_SOURCES = /* @__PURE__ */ new Set(["Hijacking", "BlockHttpDNS", "Advertising", "Advertising_Domain"]);
   function ruleForItem(item, resolution, tags, options) {
@@ -2747,7 +2761,8 @@ var INCYConfigBundle = (() => {
     followTag,
     directTag,
     blockTag,
-    balancerTags = null
+    balancerTags = null,
+    aggregateBalancerTag = null
   } = {}) {
     const resolution = policyResolution ?? defaultUnifiedPolicyResolution();
     const value = { ...DEFAULT_OPTIONS2, ...options };
@@ -2758,7 +2773,8 @@ var INCYConfigBundle = (() => {
       followTag,
       directTag,
       blockTag,
-      balancerTags: balancerTags ?? derivedBalancerTags(fixedOutbounds)
+      balancerTags: balancerTags ?? derivedBalancerTags(fixedOutbounds),
+      aggregateBalancerTag
     };
     const rules = [
       {
@@ -2799,7 +2815,7 @@ var INCYConfigBundle = (() => {
         outboundTag: value.quicMode === "all-block" ? blockTag : directTag
       });
     }
-    rules.push({ type: "field", network: "tcp,udp", outboundTag: followTag });
+    rules.push({ type: "field", network: "tcp,udp", ...routeRuleTarget(followTag, tags) });
     return {
       domainStrategy: "IPIfNonMatch",
       rules
@@ -3005,7 +3021,8 @@ var INCYConfigBundle = (() => {
       throw new Error("INCY routing rules are invalid");
     }
     const finalRule = config.routing.rules.at(-1);
-    if (finalRule?.network !== "tcp,udp" || finalRule?.outboundTag !== followTag) {
+    const finalTarget = followTag.startsWith("balancer-") ? finalRule?.balancerTag : finalRule?.outboundTag;
+    if (finalRule?.network !== "tcp,udp" || finalTarget !== followTag) {
       throw new Error("INCY routing final rule must target the follow outbound");
     }
     for (const rule of config.routing.rules) {
@@ -3280,7 +3297,8 @@ var INCYConfigBundle = (() => {
       fixedOutbounds,
       followTag: AGGREGATE_FOLLOW_TAG,
       directTag: DIRECT_TAG2,
-      blockTag: BLOCK_TAG2
+      blockTag: BLOCK_TAG2,
+      aggregateBalancerTag: AGGREGATE_FOLLOW_TAG
     });
     const { balancers, observatory } = renderIncyBalancers(policyResolution, fixedOutbounds, uniqueFollowTags[0], {
       platform: options.platform,
@@ -3325,6 +3343,11 @@ var INCYConfigBundle = (() => {
       const aggregate = buildAggregateConfig(configs, options, resolution);
       validateIncySubscription(aggregate);
       return aggregate;
+    }
+    if (options.selectionMode === "both") {
+      const aggregate = buildAggregateConfig(configs, options, resolution);
+      validateIncySubscription(aggregate);
+      return [aggregate, ...configs];
     }
     return configs;
   }
@@ -3371,7 +3394,7 @@ var INCYConfigBundle = (() => {
     setResponseHeader(
       requestOptions,
       "autorouting",
-      `incy://autorouting/onadd/${encodeURIComponent(incyAutoroutingUrl("current"))}`
+      `incy://autorouting/onadd/${incyAutoroutingUrl("current")}`
     );
   }
   function logDiagnostics(context, options, normalized, configs) {

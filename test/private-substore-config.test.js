@@ -59,6 +59,10 @@ test("builds a private Sub-Store config without exposing the source value", () =
     ["incy-config-windows", "windows", "config", "apple-proxy-incy"],
     ["incy-config-linux", "linux", "config", "apple-proxy-incy"],
   ]);
+  for (const task of config.tasks.filter(({ name }) => name.startsWith("incy-config-"))) {
+    assert.match(task.url, /format=array/u, task.name);
+    assert.match(task.url, /selectionMode=both/u, task.name);
+  }
   assert.deepEqual(config.tasks.filter(({ name }) => name.startsWith("happ-")).map(({ name, platform, output }) => [name, platform, output]), [
     ["happ-config-macos", "macos", "config"],
     ["happ-config-iphone", "iphone", "config"],

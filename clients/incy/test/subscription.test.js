@@ -94,7 +94,7 @@ test("renders a single official full-Xray config with every node in one observed
   assert.equal(config.inbounds.length, 2);
   assert.equal(config.outbounds.filter(({ tag }) => tag.startsWith("ap-incy-follow/")).length, nodes.length);
   assert.ok(config.routing.balancers.some(({ tag, selector }) => tag === "balancer-ap-incy-follow" && selector.length === nodes.length));
-  assert.equal(config.routing.rules.at(-1).outboundTag, "balancer-ap-incy-follow");
+  assert.equal(config.routing.rules.at(-1).balancerTag, "balancer-ap-incy-follow");
   assert.equal(config.dns.servers[1].tag, "balancer-ap-incy-follow");
   assert.ok(config.observatory.subjectSelector[0].startsWith("ap-incy-follow/"));
   assert.equal(validateIncySubscription(config), true);

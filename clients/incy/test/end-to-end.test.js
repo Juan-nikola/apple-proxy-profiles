@@ -109,10 +109,10 @@ test("shared policy targets resolve identically for HAPP, sing-box, and INCY", (
   assert.equal(singBox.outbounds.find(({ tag }) => tag === "漏网之鱼").default, "🚀 节点选择");
 
   assert.equal(incyRouting.domainStrategy, "IPIfNonMatch");
-  assert.equal(incyRouting.rules.find((rule) => rule.domain?.includes("geosite:OPENAI")).outboundTag, "balancer-ap-incy-fixed/fixed-ai");
-  assert.equal(incyRouting.rules.find((rule) => rule.domain?.includes("geosite:GITHUB")).outboundTag, "balancer-ap-incy-fixed/fixed-github");
+  assert.equal(incyRouting.rules.find((rule) => rule.domain?.includes("geosite:OPENAI")).balancerTag, "balancer-ap-incy-fixed/fixed-ai");
+  assert.equal(incyRouting.rules.find((rule) => rule.domain?.includes("geosite:GITHUB")).balancerTag, "balancer-ap-incy-fixed/fixed-github");
   assert.equal(incyRouting.rules.find((rule) => rule.domain?.includes("geosite:YOUTUBE")).outboundTag, "ap-incy-follow/follow-node");
-  assert.equal(incyRouting.rules.find((rule) => rule.domain?.includes("geosite:NETFLIX")).outboundTag, "balancer-ap-incy-fixed/fixed-media");
+  assert.equal(incyRouting.rules.find((rule) => rule.domain?.includes("geosite:NETFLIX")).balancerTag, "balancer-ap-incy-fixed/fixed-media");
   assert.equal(incyRouting.rules.find((rule) => rule.domain?.includes("geosite:CN") && rule.outboundTag === "ap-incy-direct").outboundTag, "ap-incy-direct");
   assert.equal(incyRouting.rules.at(-1).outboundTag, "ap-incy-follow/follow-node");
 
@@ -136,7 +136,7 @@ test("shared policy targets resolve identically for HAPP, sing-box, and INCY", (
   for (const request of routeCases) {
     const matched = firstMatchingRule(incyRouting.rules, request);
     assert.ok(matched, `${request.label} must match a routing rule`);
-    assert.equal(matched.outboundTag, request.expected, request.label);
+    assert.equal(matched.balancerTag ?? matched.outboundTag, request.expected, request.label);
   }
   const chinaTldIndex = incyRouting.rules.findIndex((rule) => rule.domain?.includes("geosite:CN") && rule.outboundTag === "ap-incy-direct");
   const chinaIpIndex = incyRouting.rules.findIndex((rule) => rule.ip?.includes("geoip:CN"));

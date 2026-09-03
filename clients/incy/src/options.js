@@ -12,6 +12,7 @@ const DEFAULTS = Object.freeze({
   ipv6Mode: "ipv4-only",
   adblockMode: "off",
   format: "array",
+  selectionMode: "manual",
   autoGroupMode: "auto",
   clientChain: "off",
 });
@@ -31,6 +32,7 @@ const ALLOWED_KEYS = new Set([
   "ipv6Mode",
   "adblockMode",
   "format",
+  "selectionMode",
   "autoGroupMode",
   "clientChain",
 ]);
@@ -44,6 +46,7 @@ const ENUM_VALUES = Object.freeze({
   ipv6Mode: Object.freeze(["auto", "ipv4-only"]),
   adblockMode: Object.freeze(["off", "full"]),
   format: Object.freeze(["array", "single"]),
+  selectionMode: Object.freeze(["manual", "both"]),
   autoGroupMode: Object.freeze(["auto", "full", "balanced", "minimal"]),
   clientChain: Object.freeze(["off", "on"]),
 });
@@ -116,9 +119,13 @@ export function parseIncyOptions(raw) {
     ipv6Mode: enumValue(values, "ipv6Mode"),
     adblockMode: enumValue(values, "adblockMode"),
     format: enumValue(values, "format"),
+    selectionMode: enumValue(values, "selectionMode"),
     autoGroupMode: enumValue(values, "autoGroupMode"),
     clientChain: enumValue(values, "clientChain"),
   };
+  if (options.format === "single" && options.selectionMode === "both") {
+    throw new Error("INCY selectionMode=both requires format=array");
+  }
   return Object.freeze(options);
 }
 

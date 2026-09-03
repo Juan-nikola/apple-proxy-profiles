@@ -160,6 +160,7 @@ function buildAggregateConfig(configs, options, policyResolution) {
     followTag: AGGREGATE_FOLLOW_TAG,
     directTag: DIRECT_TAG,
     blockTag: BLOCK_TAG,
+    aggregateBalancerTag: AGGREGATE_FOLLOW_TAG,
   });
   const { balancers, observatory } = renderIncyBalancers(policyResolution, fixedOutbounds, uniqueFollowTags[0], {
     platform: options.platform,
@@ -206,6 +207,11 @@ export function renderIncySubscription({ nodes = [], options, policyResolution }
     const aggregate = buildAggregateConfig(configs, options, resolution);
     validateIncySubscription(aggregate);
     return aggregate;
+  }
+  if (options.selectionMode === "both") {
+    const aggregate = buildAggregateConfig(configs, options, resolution);
+    validateIncySubscription(aggregate);
+    return [aggregate, ...configs];
   }
   return configs;
 }

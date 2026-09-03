@@ -85,7 +85,7 @@ test("Sub-Store INCY config entry returns a JSON array and sets the public respo
   assert.equal(requestOptions._res.headers["content-disposition"], 'attachment; filename="incy-iphone.json"');
   assert.equal(
     requestOptions._res.headers.autorouting,
-    "incy://autorouting/onadd/https%3A%2F%2Fjuan-nikola.github.io%2Fapple-proxy-profiles%2Fcurrent%2Fincy%2Frouting.json",
+    "incy://autorouting/onadd/https://juan-nikola.github.io/apple-proxy-profiles/current/incy/routing.json",
   );
   assert.match(result.$content, /\n$/u);
 });
@@ -99,6 +99,21 @@ test("Sub-Store INCY config entry returns one official full-Xray object when req
   assert.equal(Array.isArray(config), false);
   assert.equal(config.inbounds.length, 2);
   assert.ok(config.routing.balancers.some(({ tag }) => tag === "balancer-ap-incy-follow"));
+});
+
+test("Sub-Store INCY config entry can return automatic and manual full-Xray servers", async () => {
+  const { context } = makeContext({ arguments: { selectionMode: "both" } });
+
+  const result = await operator({}, "JSON", context);
+  const configs = JSON.parse(result.$content);
+
+  assert.equal(Array.isArray(configs), true);
+  assert.equal(configs.length, 3);
+  assert.equal(configs[0].remarks, "INCY · INCY 自动选择");
+  assert.ok(configs[0].routing.balancers.some(({ tag }) => tag === "balancer-ap-incy-follow"));
+  const manualRemarks = configs.slice(1).map(({ remarks }) => remarks);
+  assert.ok(manualRemarks.some((remarks) => /Follow Node/u.test(remarks)));
+  assert.ok(manualRemarks.some((remarks) => /Fixed Node/u.test(remarks)));
 });
 
 test("Sub-Store INCY config entry keeps nodes whose source uses string ports and padded protocol names", async () => {
@@ -201,7 +216,7 @@ test("Sub-Store INCY config entry rejects ambiguous generated chains", async () 
   await assert.rejects(() => operator({}, "JSON", context), /exactly one entry|ambiguous/iu);
 });
 
-test("Sub-Store INCY autorouting header round-trips an encoded public routing URL", async () => {
+test("Sub-Store INCY autorouting header uses the official direct public routing URL", async () => {
   const { requestOptions, context } = makeContext();
 
   await operator({}, "JSON", context);
@@ -209,10 +224,8 @@ test("Sub-Store INCY autorouting header round-trips an encoded public routing UR
   const header = requestOptions._res.headers.autorouting;
   const prefix = "incy://autorouting/onadd/";
   assert.equal(header.startsWith(prefix), true);
-  const encodedUrl = header.slice(prefix.length);
-  const routingUrl = decodeURIComponent(encodedUrl);
+  const routingUrl = header.slice(prefix.length);
   assert.equal(routingUrl, "https://juan-nikola.github.io/apple-proxy-profiles/current/incy/routing.json");
-  assert.equal(encodedUrl, encodeURIComponent(routingUrl));
 });
 
 test("Sub-Store INCY config entry fails the whole task for an unsupported selected node", async () => {

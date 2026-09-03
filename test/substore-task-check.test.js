@@ -61,7 +61,7 @@ test("accepts the published Anywhere strategy task and rejects extra options", (
 });
 
 test("accepts INCY config tasks and rejects invalid INCY variants", () => {
-  const url = `${PUBLIC}/current/incy/scripts/incy-config-generator.js#output=config&type=collection&name=apple-proxy-incy&subscriptionName=INCY&platform=androidtv&channel=current&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=ipv4-only&adblockMode=off&autoGroupMode=auto&clientChain=off`;
+  const url = `${PUBLIC}/current/incy/scripts/incy-config-generator.js#output=config&type=collection&name=apple-proxy-incy&subscriptionName=INCY&platform=androidtv&channel=current&dnsMode=stable&chinaDns=alidns&globalDns=cloudflare&blockMode=balanced&quicMode=proxy-block&ipv6Mode=ipv4-only&adblockMode=off&autoGroupMode=auto&clientChain=off&format=array&selectionMode=both`;
   const result = checkSubstoreTaskUrl(url);
   assert.equal(result.ok, true, result.errors.join(", "));
   assert.equal(getSubstoreTaskSchema("incy/scripts/incy-config-generator.js").policyInput, "apple-proxy-policy");
@@ -70,6 +70,8 @@ test("accepts INCY config tasks and rejects invalid INCY variants", () => {
   assert.equal(checkSubstoreTaskUrl(url.replace("output=config", "output=nodes")).ok, false);
   assert.equal(checkSubstoreTaskUrl(url.replace("&subscriptionName=INCY", "")).ok, false);
   assert.equal(checkSubstoreTaskUrl(url.replace("&channel=current", "")).ok, false);
+  assert.equal(checkSubstoreTaskUrl(url.replace("&selectionMode=both", "&selectionMode=invalid")).ok, false);
+  assert.equal(checkSubstoreTaskUrl(url.replace("&format=array", "&format=single")).ok, false);
 });
 
 test("accepts a client-specific collection slug and rejects unsafe collection names", () => {

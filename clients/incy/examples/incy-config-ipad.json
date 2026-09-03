@@ -15,6 +15,7 @@
     "ipv6Mode": "ipv4-only",
     "adblockMode": "off",
     "format": "array",
+    "selectionMode": "manual",
     "autoGroupMode": "auto",
     "clientChain": "off"
   },

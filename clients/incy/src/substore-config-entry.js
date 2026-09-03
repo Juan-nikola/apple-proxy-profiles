@@ -54,7 +54,7 @@ function attachResponseHeaders(input, context, options) {
   setResponseHeader(
     requestOptions,
     "autorouting",
-    `incy://autorouting/onadd/${encodeURIComponent(incyAutoroutingUrl("current"))}`,
+    `incy://autorouting/onadd/${incyAutoroutingUrl("current")}`,
   );
 }
 

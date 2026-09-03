@@ -8,9 +8,11 @@
 
 ## 路由、DNS 和协议异常
 
-确认 `DomainStrategy=IPIfNonMatch`，最后一条规则指向当前 `ap-incy-follow/<id>`。域名命中 ChinaTLD、业务域名或安全规则后不会继续解析 IP；只有域名未命中才匹配 `geoip:CN`。OpenAI、GitHub、YouTube、海外媒体、社交、游戏、下载和广告目标应与 policy 一致，固定 balancer 故障时回退 follow。DNS 国内/海外服务器、`quicMode=proxy-block` 和 `ipv6Mode=ipv4-only` 不应被手工改写。
+确认 `DomainStrategy=IPIfNonMatch`；数组第一项的最后一条规则使用 `balancerTag=balancer-ap-incy-follow`，单节点项使用当前 `ap-incy-follow/<id>` 的 `outboundTag`。域名命中 ChinaTLD、业务域名或安全规则后不会继续解析 IP；只有域名未命中才匹配 `geoip:CN`。OpenAI、GitHub、YouTube、海外媒体、社交、游戏、下载和广告目标应与 policy 一致，固定 balancer 故障时回退 follow。DNS 国内/海外服务器、`quicMode=proxy-block` 和 `ipv6Mode=ipv4-only` 不应被手工改写。
 
-如果只在一个平台出现，对照 `clients/incy/examples/` 中的配置，确认 `127.0.0.1:10808` SOCKS、`127.0.0.1:10809` HTTP、sniffing 的 `destOverride` 仅包含 `http`、`tls`、`quic`，且导入内容是单个 JSON 对象而不是数组。
+如果只在一个平台出现，对照 `clients/incy/examples/` 中的配置，确认 `127.0.0.1:10808` SOCKS、`127.0.0.1:10809` HTTP、sniffing 的 `destOverride` 仅包含 `http`、`tls`、`quic`，并确认客户端支持官方 JSON 数组。数组第一项是自动选择，后续项是手动节点；若客户端仍只显示一个服务器，可临时使用 `format=single` 验证基础连接，再升级客户端后恢复 `selectionMode=both`。
+
+系统代理或 TUN 一直转圈时，先在 INCY 中停用旧配置并重新刷新私密 File URL，确认数组第一项已成功解析且至少有一个节点可测速，再在客户端内开启对应模式。不要把本地 Preview 文件直接当订阅导入，因为它没有 `autorouting` 响应头；不要在 JSON 中手工添加未记录的 TUN 字段。
 
 ## GeoData、缓存与回滚
 

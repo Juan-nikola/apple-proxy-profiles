@@ -210,7 +210,8 @@ function validateRouting(config, outboundTags, balancerTags, followTag, observat
     throw new Error("INCY routing rules are invalid");
   }
   const finalRule = config.routing.rules.at(-1);
-  if (finalRule?.network !== "tcp,udp" || finalRule?.outboundTag !== followTag) {
+  const finalTarget = followTag.startsWith("balancer-") ? finalRule?.balancerTag : finalRule?.outboundTag;
+  if (finalRule?.network !== "tcp,udp" || finalTarget !== followTag) {
     throw new Error("INCY routing final rule must target the follow outbound");
   }
   for (const rule of config.routing.rules) {
