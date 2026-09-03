@@ -65,8 +65,8 @@
       "referencedDefaultBytes": 0
     },
     "incy": {
-      "manifestHash": "fb30bb79cfe37edfd4e76af81e38e681859e2a37c6368c407744467cb2423456",
-      "referencedDefaultBytes": 557762
+      "manifestHash": "2706423834123b75d59c6bac207ae8a97955f42786c3fd81dabfd69abcce66cc",
+      "referencedDefaultBytes": 557772
     },
     "shadowrocket": {
       "manifestHash": "c2311bc516c05b8dd5b7846e87bc530d9a35984975c2156a475953ae9578ddd1",
@@ -408,12 +408,12 @@
     {
       "bytes": 2186,
       "path": "audit/dashboard.html",
-      "sha256": "e939c379548c93062b892f3f1cd7104cb434eb0e6a183aee369f1b44c51fbe15"
+      "sha256": "624af0111d32b25fa44d7c47828793ce67092aa918272d1845442fa64b91f677"
     },
     {
       "bytes": 4933,
       "path": "audit/dashboard.json",
-      "sha256": "ba338fc485821e068381ff41c3813c56b5191a7ae1ed25b6601c274257b5115f"
+      "sha256": "89834c62bec41d7439d9b486284763b4a8ba1cd4ff2c676ec03d14e3f6df23c0"
     },
     {
       "bytes": 5184,
@@ -1023,27 +1023,27 @@
     {
       "bytes": 1421,
       "path": "incy/client-manifest.json",
-      "sha256": "32f5d897c3d6e8ef892700eab5e980521997f90849d6436db479397f63bb7285"
+      "sha256": "94c7aeba6e41a8ce686963635394861fc344eac4b1b661a9f33660d95e533a64"
     },
     {
-      "bytes": 181466,
+      "bytes": 181481,
       "path": "incy/geoip.dat",
-      "sha256": "9f7c6fcef4dc3338c1801b190934dae2fb407e1c4a0732d7fd6f65e77576060e"
+      "sha256": "9a4538534cd8610075775ca6b148c117173d37c554b005adcee81f5a79457275"
     },
     {
       "bytes": 65,
       "path": "incy/geoip.dat.sha256",
-      "sha256": "bf0d53b38a0fb58b4d9fa4d87c120feecf8dd80cb251718b566b97c248ff8755"
+      "sha256": "d6df193e25c65ddac8519c7afbc7161f2e14150b0656eaea1873d7189f188362"
     },
     {
-      "bytes": 74223,
+      "bytes": 74218,
       "path": "incy/geosite.dat",
-      "sha256": "4bed4f09fb433437409d6ffd3f8e061f14babca334c64278110320c011ad7eb9"
+      "sha256": "33de8c00cc3affbaf59be30b865e9d163fc2dae0a3c51555834437bd9454eadd"
     },
     {
       "bytes": 65,
       "path": "incy/geosite.dat.sha256",
-      "sha256": "33111cef32b9c8de698e24bf029afb198bfecf6daf854068a6a81bc582cf2e8e"
+      "sha256": "290fbb6707907fff5e83087c0387e7419c647b1522db5eef49cf1cee62cde945"
     },
     {
       "bytes": 1423,
@@ -1767,7 +1767,7 @@
     }
   ],
   "generatedAt": "2026-08-25T18:39:12Z",
-  "manifestHash": "065b337b3b5ceb7f496663b4afbbe5f278d936633ef35a38a17662a96dfa2974",
+  "manifestHash": "b00fbb7736517f85acfdcc9950f76d6e37b3ce591a891ffd9560e3be76fa1369",
   "schemaVersion": 2,
   "upstream": {
     "branch": "master",

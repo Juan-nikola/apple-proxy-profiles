@@ -4,6 +4,7 @@ import test from "node:test";
 import { buildClientArtifacts } from "../src/build-artifacts.js";
 import { artifactSha256 } from "../src/artifact-content.js";
 import { buildChinaIpAudit } from "../src/china-ip-audit.js";
+import { decodeHappGeodata } from "../src/render-happ-geodata.js";
 import { canonicalJson } from "../src/render-anywhere-rules.js";
 import { parseSurgeRules } from "../src/parse-surge.js";
 import { validateRoutingPlanAudit } from "../src/routing-plan-audit.js";
@@ -333,4 +334,19 @@ test("publishes INCY native scripts, routing profile, and GeoData into the close
     generatedAt: upstream.committedAt,
     channel: "current",
   }), profile);
+});
+
+test("publishes INCY GeoData with the standard Xray labels used by its routing rules", () => {
+  const result = buildClientArtifacts({ snapshot: lightweightFixtureSnapshots(), upstream, channel: "current" });
+  const files = new Map([
+    ["happ/geosite.dat", result.defaults.get("incy/geosite.dat")],
+    ["happ/geoip.dat", result.defaults.get("incy/geoip.dat")],
+  ]);
+  const geodata = decodeHappGeodata(files);
+  const geositeCodes = new Set(geodata.geosite.map(({ countryCode }) => countryCode));
+  const geoipCodes = new Set(geodata.geoip.map(({ countryCode }) => countryCode));
+  assert.equal(geositeCodes.has("PRIVATE"), true);
+  assert.equal(geositeCodes.has("CN"), true);
+  assert.equal(geoipCodes.has("PRIVATE"), true);
+  assert.equal(geoipCodes.has("CN"), true);
 });
