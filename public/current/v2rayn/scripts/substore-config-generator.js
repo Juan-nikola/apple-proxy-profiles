@@ -5356,7 +5356,8 @@ var V2rayNConfigBundle = (() => {
         ruleBaseUrl: `https://juan-nikola.github.io/apple-proxy-profiles/${options.channel}/sing-box/rule-sets`,
         policyResolution
       });
-      return { ...input, $content: JSON.stringify(config, null, 2) + "\n" };
+      const selectableOutbounds = config.outbounds.filter(({ type, server }) => server && !["direct", "block", "dns", "selector", "urltest"].includes(type));
+      return { ...input, $content: JSON.stringify([config, ...selectableOutbounds], null, 2) + "\n" };
     }
     const profile = renderV2rayNProfile({
       options,

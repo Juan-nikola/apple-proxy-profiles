@@ -3,9 +3,9 @@
   "client": "v2rayn",
   "files": [
     {
-      "bytes": 260178,
+      "bytes": 260362,
       "path": "v2rayn/scripts/substore-config-generator.js",
-      "sha256": "5350250c5bbc9d553a2df00854f15207a5ddc9f57d5577aed67f22260d0874e9"
+      "sha256": "fa8b5ab3df2e7bf3243e22be4ca3995d061f8fc909711fa47fb93cfaff612afe"
     },
     {
       "bytes": 122352,
@@ -14,7 +14,7 @@
     }
   ],
   "generatedAt": "2026-08-25T18:39:12Z",
-  "manifestHash": "d3ca2ae1a39b0d135fcf67f93ae53c29ee886c7dc4aff5aaff638a23511597b0",
+  "manifestHash": "f149874ff1266a59455b0ad2aa598d599df61faa1a7aa9f3707b8464f42b8851",
   "optionalPacks": {},
   "schemaVersion": 1
 }
