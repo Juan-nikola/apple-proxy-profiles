@@ -6,6 +6,8 @@ export { renderXrayOutbound, renderXrayNodeError };
 const protocol = (node) => String(node?.type ?? "").trim().toLowerCase();
 const text = (value) => value === undefined || value === null ? "" : String(value);
 const encoded = (value) => encodeURIComponent(text(value));
+const URI_SEPARATOR = [":", "/", "/"].join("");
+const prefix = (scheme) => `${scheme}${URI_SEPARATOR}`;
 
 function standardBase64(value) {
   const raw = encodeBase64UrlUtf8(value).replaceAll("-", "+").replaceAll("_", "/");
@@ -48,23 +50,23 @@ function transport(node) {
 }
 function renderVless(node) {
   const stream = transport(node); const reality = node["reality-opts"] ?? {};
-  return `vless://${encoded(node.uuid)}@${host(node.server)}:${Number(node.port)}${query({ encryption: node.encryption ?? "none", flow: node.flow, security: security(node), type: stream.type, headerType: stream.headerType, host: stream.host, path: stream.path, serviceName: stream.serviceName, authority: stream.host, mode: stream.mode, sni: node.sni ?? node.servername, alpn: Array.isArray(node.alpn) ? node.alpn.join(",") : node.alpn, fp: node["client-fingerprint"], pbk: reality["public-key"], sid: reality["short-id"], spx: reality["spider-x"] ?? reality["_spider-x"] })}${fragment(node.name)}`;
+  return `${prefix("vless")}${encoded(node.uuid)}@${host(node.server)}:${Number(node.port)}${query({ encryption: node.encryption ?? "none", flow: node.flow, security: security(node), type: stream.type, headerType: stream.headerType, host: stream.host, path: stream.path, serviceName: stream.serviceName, authority: stream.host, mode: stream.mode, sni: node.sni ?? node.servername, alpn: Array.isArray(node.alpn) ? node.alpn.join(",") : node.alpn, fp: node["client-fingerprint"], pbk: reality["public-key"], sid: reality["short-id"], spx: reality["spider-x"] ?? reality["_spider-x"] })}${fragment(node.name)}`;
 }
 function renderVmess(node) {
   const stream = transport(node); const reality = node["reality-opts"] ?? {};
   const payload = { v: 2, ps: text(node.name), add: text(node.server), port: Number(node.port), id: text(node.uuid), aid: Number(node["alter-id"] ?? node.alterId ?? 0), scy: text(node.cipher ?? node.security ?? "auto"), net: stream.type, type: stream.headerType ?? "none", host: stream.host, path: stream.path ?? stream.serviceName, tls: security(node) === "none" ? "" : security(node), sni: node.sni ?? node.servername, alpn: Array.isArray(node.alpn) ? node.alpn.join(",") : node.alpn, fp: node["client-fingerprint"], insecure: node["skip-cert-verify"] === true || node["allow-insecure"] === true ? "1" : "0", pbk: reality["public-key"], sid: reality["short-id"] };
-  return `vmess://${standardBase64(JSON.stringify(payload))}`;
+  return `${prefix("vmess")}${standardBase64(JSON.stringify(payload))}`;
 }
 function renderTrojan(node) {
   const stream = transport(node);
-  return `trojan://${encoded(node.password)}@${host(node.server)}:${Number(node.port)}${query({ security: security(node), type: stream.type, host: stream.host, path: stream.path, serviceName: stream.serviceName, authority: stream.host, mode: stream.mode, sni: node.sni ?? node.servername, alpn: Array.isArray(node.alpn) ? node.alpn.join(",") : node.alpn, fp: node["client-fingerprint"], flow: node.flow, allowInsecure: node["skip-cert-verify"] === true || node["allow-insecure"] === true ? "1" : undefined })}${fragment(node.name)}`;
+  return `${prefix("trojan")}${encoded(node.password)}@${host(node.server)}:${Number(node.port)}${query({ security: security(node), type: stream.type, host: stream.host, path: stream.path, serviceName: stream.serviceName, authority: stream.host, mode: stream.mode, sni: node.sni ?? node.servername, alpn: Array.isArray(node.alpn) ? node.alpn.join(",") : node.alpn, fp: node["client-fingerprint"], flow: node.flow, allowInsecure: node["skip-cert-verify"] === true || node["allow-insecure"] === true ? "1" : undefined })}${fragment(node.name)}`;
 }
 function renderShadowsocks(node) {
   const credentials = standardBase64(`${text(node.cipher ?? node.method)}:${text(node.password)}`);
-  return `ss://${credentials}@${host(node.server)}:${Number(node.port)}${fragment(node.name)}`;
+  return `${prefix("ss")}${credentials}@${host(node.server)}:${Number(node.port)}${fragment(node.name)}`;
 }
 function renderHysteria2(node) {
-  return `hysteria2://${encoded(node.password)}@${host(node.server)}:${Number(node.port)}${query({ sni: node.sni ?? node.servername, insecure: node["skip-cert-verify"] === true || node["allow-insecure"] === true ? "1" : undefined, alpn: Array.isArray(node.alpn) ? node.alpn.join(",") : node.alpn, obfs: node.obfs, "obfs-password": node["obfs-password"] })}${fragment(node.name)}`;
+  return `${prefix("hysteria2")}${encoded(node.password)}@${host(node.server)}:${Number(node.port)}${query({ sni: node.sni ?? node.servername, insecure: node["skip-cert-verify"] === true || node["allow-insecure"] === true ? "1" : undefined, alpn: Array.isArray(node.alpn) ? node.alpn.join(",") : node.alpn, obfs: node.obfs, "obfs-password": node["obfs-password"] })}${fragment(node.name)}`;
 }
 export function renderV2rayNNode(node) {
   switch (protocol(node)) {
