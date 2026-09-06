@@ -90,7 +90,7 @@
       "referencedDefaultBytes": 0
     },
     "v2rayn": {
-      "manifestHash": "60e9ee90150f11e35e5faf0e8e80708928d922b0bbb7c7a234f3243ba59de402",
+      "manifestHash": "dc1e5b840c2418d0129899d0f938b2b6d409cf6a127f630f1dadacc038ac0611",
       "referencedDefaultBytes": 0
     }
   },
@@ -417,12 +417,12 @@
     {
       "bytes": 2340,
       "path": "audit/dashboard.html",
-      "sha256": "3b18a3e00d023cee44afe626cf838335e20c7877d7dca76d050bad6cb9c953a8"
+      "sha256": "20ba17f34e75b9e54fb17de80bff0422bfea702323a1d79afaabe47eb907c5a2"
     },
     {
       "bytes": 5345,
       "path": "audit/dashboard.json",
-      "sha256": "5b9480b2a1cdbd50eba14a43f2b15cf992c8b4ca7f09d6c091744db7e4963b83"
+      "sha256": "88d6a1d587645e949de069e7f1675a09f6db42b8427fbc926616023b35f6b7fe"
     },
     {
       "bytes": 5184,
@@ -1777,7 +1777,7 @@
     {
       "bytes": 664,
       "path": "v2rayn/client-manifest.json",
-      "sha256": "17e130f41c0a164ba06d8c9db1e1930d2e316eb7fa113092728630627d410351"
+      "sha256": "69bbf6280a360045c6ea99188f025e6c4ad90ab5bd7f1e3c8bca925c0b410f54"
     },
     {
       "bytes": 260416,
@@ -1785,13 +1785,13 @@
       "sha256": "f4f5a157a1c26977117022ce72f183fc3fe4866fd018366aa72ee3c1bb21b602"
     },
     {
-      "bytes": 122064,
+      "bytes": 122186,
       "path": "v2rayn/scripts/substore-node-generator.js",
-      "sha256": "622c9fde8610dd4a940c915ad5f377999593e2846cde5e7e09092a7acc14735e"
+      "sha256": "53a22ebcfadfc75c5636a7b657950f4eb99bfead85edf12015cc658af3095cad"
     }
   ],
   "generatedAt": "2026-08-25T18:39:12Z",
-  "manifestHash": "d83d9b9ad4bb53c20daebd30d7e7449d94a482acd8d95d07d38368affe8bf68e",
+  "manifestHash": "32b9adadd912e4c46114e5e3fd56d109126bdbcef9b2935024e62d7e5d478156",
   "schemaVersion": 2,
   "upstream": {
     "branch": "master",

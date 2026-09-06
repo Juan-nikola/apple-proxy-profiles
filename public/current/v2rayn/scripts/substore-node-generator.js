@@ -313,9 +313,9 @@ var V2rayNNodesBundle = (() => {
     return registry.get(normalizeProtocol(value)) ?? null;
   }
   function protocolSupportsClient(value, client) {
-    const protocol2 = normalizeProtocol(value);
-    const definition = protocolDefinition(protocol2);
-    return definition?.clients.includes(client) === true && (definition.clientNames[client] ?? definition.names).includes(protocol2);
+    const protocol3 = normalizeProtocol(value);
+    const definition = protocolDefinition(protocol3);
+    return definition?.clients.includes(client) === true && (definition.clientNames[client] ?? definition.names).includes(protocol3);
   }
   function diagnosticProtocol(value) {
     const normalized = normalizeProtocol(value);
@@ -336,8 +336,8 @@ var V2rayNNodesBundle = (() => {
   }
   var OPAQUE_AUTH_FIELDS = /* @__PURE__ */ new Set(["password", "psk", "private-key", "public-key", "key"]);
   function isValidPort(value) {
-    const port2 = typeof value === "string" && /^\d+$/.test(value) ? Number(value) : value;
-    return Number.isInteger(port2) && port2 >= 1 && port2 <= 65535;
+    const port = typeof value === "string" && /^\d+$/.test(value) ? Number(value) : value;
+    return Number.isInteger(port) && port >= 1 && port <= 65535;
   }
   function isValidAuthField(field, value) {
     if (field === "version") {
@@ -478,7 +478,7 @@ var V2rayNNodesBundle = (() => {
       latinMatcher: new RegExp(latinTerms.map(latinTermPattern).join("|"), "iu")
     };
   });
-  var REGION_LABELS = new Map(RAW_REGIONS.map(({ flag, label: label2 }) => [flag, label2]));
+  var REGION_LABELS = new Map(RAW_REGIONS.map(({ flag, label }) => [flag, label]));
   function inferRegion(name) {
     return REGIONS.find((region) => region.latinMatcher.test(name) || region.chineseTerms.some((term) => name.includes(term))) ?? null;
   }
@@ -624,8 +624,8 @@ var V2rayNNodesBundle = (() => {
     if (continent !== 0) return continent;
     const flag = nodeMetadata(left).flag.localeCompare(nodeMetadata(right).flag, "zh-Hans-CN");
     if (flag !== 0) return flag;
-    const protocol2 = nodeMetadata(left).protocolLabel.localeCompare(nodeMetadata(right).protocolLabel, "zh-Hans-CN");
-    if (protocol2 !== 0) return protocol2;
+    const protocol3 = nodeMetadata(left).protocolLabel.localeCompare(nodeMetadata(right).protocolLabel, "zh-Hans-CN");
+    if (protocol3 !== 0) return protocol3;
     const name = (CLEANED_DISPLAY_NAMES.get(left) ?? cleanDisplayName(left.name, left.type)).localeCompare(CLEANED_DISPLAY_NAMES.get(right) ?? cleanDisplayName(right.name, right.type), "zh-Hans-CN");
     if (name !== 0) return name;
     return nodeMetadata(left).id.localeCompare(nodeMetadata(right).id, "zh-Hans-CN");
@@ -679,10 +679,10 @@ var V2rayNNodesBundle = (() => {
       if (group.length < 2) continue;
       const byProtocol = /* @__PURE__ */ new Map();
       for (const node of group) {
-        const label2 = protocolDisplayLabel(node.type);
-        const protocolGroup = byProtocol.get(label2) ?? [];
+        const label = protocolDisplayLabel(node.type);
+        const protocolGroup = byProtocol.get(label) ?? [];
         protocolGroup.push(node);
-        byProtocol.set(label2, protocolGroup);
+        byProtocol.set(label, protocolGroup);
       }
       const multipleProtocols = byProtocol.size > 1;
       for (const [protocolLabel, protocolGroup] of byProtocol) {
@@ -1118,9 +1118,9 @@ var V2rayNNodesBundle = (() => {
       return false;
     }
     if (hasOption(options, "host") && hasOption(options, "headers")) {
-      const host = Array.isArray(options.host) ? options.host[0] : options.host;
+      const host2 = Array.isArray(options.host) ? options.host[0] : options.host;
       const headerHost = options.headers.Host ?? options.headers.host;
-      if (headerHost !== void 0 && (Array.isArray(headerHost) ? headerHost[0] : headerHost) !== host) return false;
+      if (headerHost !== void 0 && (Array.isArray(headerHost) ? headerHost[0] : headerHost) !== host2) return false;
     }
     return true;
   }
@@ -1182,8 +1182,8 @@ var V2rayNNodesBundle = (() => {
     if (/^(?:\d{1,3}\.){3}\d{1,3}$/.test(address) && address.split(".").every((part) => Number(part) <= 255) && (prefix === void 0 || Number(prefix) <= 32)) return 4;
     if (address.includes(":") && (prefix === void 0 || Number(prefix) <= 128)) {
       try {
-        const host = new URL(`http://[${address}]/`).hostname;
-        if (host.startsWith("[") && host.endsWith("]")) return 6;
+        const host2 = new URL(`http://[${address}]/`).hostname;
+        if (host2.startsWith("[") && host2.endsWith("]")) return 6;
       } catch {
         return 0;
       }
@@ -1241,11 +1241,11 @@ var V2rayNNodesBundle = (() => {
   function hasHttp2HostConflict(node) {
     const options = node["h2-opts"];
     if (!isPlainObject(options) || !hasOption(options, "host") || !isPlainObject(options.headers)) return false;
-    const host = Array.isArray(options.host) ? options.host[0] : options.host;
+    const host2 = Array.isArray(options.host) ? options.host[0] : options.host;
     const headerValues = Object.entries(options.headers).filter(([key]) => key.toLowerCase() === "host").map(([, value]) => normalizedHeaderValue(value));
-    return headerValues.some((value) => value !== host);
+    return headerValues.some((value) => value !== host2);
   }
-  function hasEgernAliasConflict(node, protocol2) {
+  function hasEgernAliasConflict(node, protocol3) {
     const groups = [
       ["sni", "servername"],
       ["skip-cert-verify", "allow-insecure"],
@@ -1266,27 +1266,27 @@ var V2rayNNodesBundle = (() => {
       ["udp-relay-mode", "udp_relay_mode"]
     ];
     if (groups.some((keys) => conflictingAliases(node, keys))) return true;
-    if (protocol2 === "wireguard" && conflictingAliases(node, ["dns_servers", "dns"])) return true;
+    if (protocol3 === "wireguard" && conflictingAliases(node, ["dns_servers", "dns"])) return true;
     if (headersInNode(node).some(hasHeaderAliasConflict) || hasHttp2HostConflict(node)) return true;
-    if (protocol2 === "vmess" && hasOption(node, "cipher") && EGERN_VMESS_SECURITY.has(node.security) && node.cipher !== node.security) return true;
+    if (protocol3 === "vmess" && hasOption(node, "cipher") && EGERN_VMESS_SECURITY.has(node.security) && node.cipher !== node.security) return true;
     return false;
   }
-  function egernCommonReason(node, protocol2) {
+  function egernCommonReason(node, protocol3) {
     if (!isPlainObject(node) || !isNonblankString(node.name) || !isNonblankString(node.server) || !isValidPort2(node.port)) return "invalid-egern-node-shape";
-    if (hasEgernAliasConflict(node, protocol2)) return "conflicting-egern-alias";
+    if (hasEgernAliasConflict(node, protocol3)) return "conflicting-egern-alias";
     if (!isOptionalBoolean(node, "tfo") || UDP_ALIASES.some((key) => !isOptionalBoolean(node, key))) return "invalid-egern-node-shape";
-    if (hasOption(node, "tfo") && !EGERN_TFO_PROTOCOLS.has(protocol2)) return "unsupported-egern-option";
+    if (hasOption(node, "tfo") && !EGERN_TFO_PROTOCOLS.has(protocol3)) return "unsupported-egern-option";
     for (const key of BLOCK_QUIC_ALIASES) {
       if (hasOption(node, key) && typeof node[key] !== "boolean") return "invalid-egern-node-shape";
     }
     const blockQuic = firstAliasValue(node, BLOCK_QUIC_ALIASES);
-    if (blockQuic !== void 0 && !EGERN_BLOCK_QUIC_PROTOCOLS.has(protocol2)) return "unsupported-egern-option";
+    if (blockQuic !== void 0 && !EGERN_BLOCK_QUIC_PROTOCOLS.has(protocol3)) return "unsupported-egern-option";
     for (const key of IP_VERSION_ALIASES) {
       if (hasOption(node, key) && !EGERN_IP_VERSIONS.has(node[key])) return "invalid-egern-node-shape";
     }
     const shadowTls = firstAliasValue(node, SHADOW_TLS_ALIASES);
     if (shadowTls !== void 0) {
-      if (!EGERN_SHADOW_TLS_PROTOCOLS.has(protocol2)) return "unsupported-egern-option";
+      if (!EGERN_SHADOW_TLS_PROTOCOLS.has(protocol3)) return "unsupported-egern-option";
       if (!validShadowTls(shadowTls) || hasOption(node, "reality-opts")) return "invalid-egern-node-shape";
     }
     return null;
@@ -1324,11 +1324,11 @@ var V2rayNNodesBundle = (() => {
     return !(present.length === 1 && present[0] === GENERATED_CHAIN_FIELD && node[GENERATED_CHAIN_FIELD] === GENERATED_CHAIN_POLICY && node?._profile?.chained === true);
   }
   function egernNodeExclusionReason(node) {
-    const protocol2 = normalizeProtocol(node?.type);
-    const commonReason = egernCommonReason(node, protocol2);
+    const protocol3 = normalizeProtocol(node?.type);
+    const commonReason = egernCommonReason(node, protocol3);
     if (commonReason) return commonReason;
     if (hasArbitraryChain(node)) return "unsupported-existing-chain";
-    if (protocol2 === "ss" || protocol2 === "shadowsocks") {
+    if (protocol3 === "ss" || protocol3 === "shadowsocks") {
       if (!isNonblankString(node.cipher) || !isNonblankOpaqueString2(node.password)) return "invalid-egern-node-shape";
       if (!EGERN_SHADOWSOCKS_METHODS.has(node.cipher)) return "unsupported-egern-method";
       if (hasShadowsocksPlugin(node) || unsupportedPlainTransport(node)) return "unsupported-egern-shadowsocks-shape";
@@ -1339,7 +1339,7 @@ var V2rayNNodesBundle = (() => {
       }
       return null;
     }
-    if (protocol2 === "snell") {
+    if (protocol3 === "snell") {
       if (!isNonblankOpaqueString2(node.psk)) return "invalid-egern-node-shape";
       const version = typeof node.version === "string" && /^\d+$/.test(node.version) ? Number(node.version) : node.version;
       if (!EGERN_SNELL_VERSIONS.has(version)) return "unsupported-egern-version";
@@ -1350,9 +1350,9 @@ var V2rayNNodesBundle = (() => {
       }
       return null;
     }
-    if (protocol2 === "vmess" || protocol2 === "vless") {
+    if (protocol3 === "vmess" || protocol3 === "vless") {
       if (!isNonblankString(node.uuid)) return "invalid-egern-node-shape";
-      if (protocol2 === "vmess") {
+      if (protocol3 === "vmess") {
         const security2 = EGERN_VMESS_SECURITY.has(node.security) ? node.security : node.cipher ?? "auto";
         if (!EGERN_VMESS_SECURITY.has(security2)) return "unsupported-egern-security";
         if (hasOption(node, "legacy") && typeof node.legacy !== "boolean" || hasOption(node, "alter-id") && node["alter-id"] !== 0 || hasOption(node, "alterId") && node.alterId !== 0) {
@@ -1370,7 +1370,7 @@ var V2rayNNodesBundle = (() => {
       if (!isOptionalBoolean(node, "udp") || !isOptionalBoolean(node, "tfo")) return "unsupported-egern-transport";
       return egernVmessVlessTransportReason(node);
     }
-    if (protocol2 === "trojan") {
+    if (protocol3 === "trojan") {
       if (!isNonblankOpaqueString2(node.password)) return "invalid-egern-node-shape";
       if (node.tls === false || node.security === "none") return "unsupported-egern-tls-shape";
       const network = normalizeTransport(node);
@@ -1387,13 +1387,13 @@ var V2rayNNodesBundle = (() => {
       if (["grpc-opts", "h2-opts", "http-opts"].some((key) => hasOption(node, key))) return "unsupported-egern-transport";
       return null;
     }
-    if (protocol2 === "anytls") {
+    if (protocol3 === "anytls") {
       if (!isNonblankOpaqueString2(node.password)) return "invalid-egern-node-shape";
       if (node.tls === false || node.security === "none") return "unsupported-egern-tls-shape";
       if (unsupportedPlainTransport(node)) return "unsupported-egern-transport";
       return egernTlsReason(node, { implicitTls: true, allowAlpn: true, allowClientFingerprint: true }) || (!isOptionalBoolean(node, "udp") || !isOptionalBoolean(node, "tfo") ? "unsupported-egern-anytls-shape" : null);
     }
-    if (protocol2 === "hysteria2" || protocol2 === "hy2") {
+    if (protocol3 === "hysteria2" || protocol3 === "hy2") {
       if (!isNonblankOpaqueString2(node.password)) return "invalid-egern-node-shape";
       const tlsReason = egernTlsReason(node, { allowReality: false, implicitTls: true });
       if (tlsReason) return tlsReason;
@@ -1409,7 +1409,7 @@ var V2rayNNodesBundle = (() => {
       }
       return null;
     }
-    if (protocol2 === "tuic") {
+    if (protocol3 === "tuic") {
       if (!isNonblankString(node.uuid) || !isNonblankOpaqueString2(node.password)) return "invalid-egern-node-shape";
       const tlsReason = egernTlsReason(node, { allowReality: false, allowAlpn: true, implicitTls: true });
       if (tlsReason) return tlsReason;
@@ -1428,14 +1428,14 @@ var V2rayNNodesBundle = (() => {
       }
       return null;
     }
-    if (protocol2 === "socks5") {
+    if (protocol3 === "socks5") {
       if (!validOptionalAuthentication(node)) return "invalid-egern-node-shape";
       const tlsReason = egernTlsReason(node);
       if (tlsReason) return tlsReason;
       if (unsupportedPlainTransport(node) || !isOptionalBoolean(node, "udp") || !isOptionalBoolean(node, "tfo")) return "unsupported-egern-socks5-shape";
       return null;
     }
-    if (protocol2 === "http") {
+    if (protocol3 === "http") {
       if (!validOptionalAuthentication(node)) return "invalid-egern-node-shape";
       const network = normalizeTransport(node);
       if (network !== "tcp" && network !== "raw") return "unsupported-egern-http-shape";
@@ -1447,11 +1447,11 @@ var V2rayNNodesBundle = (() => {
       }
       return null;
     }
-    if (protocol2 === "wireguard") {
+    if (protocol3 === "wireguard") {
       if (unsupportedPlainTransport(node, /* @__PURE__ */ new Set(["udp"]))) return "unsupported-egern-wireguard-shape";
       return egernWireGuardReason(node);
     }
-    if (protocol2 === "ssh") return egernSshReason(node);
+    if (protocol3 === "ssh") return egernSshReason(node);
     return null;
   }
   function hasAnyChain(node) {
@@ -1512,9 +1512,9 @@ var V2rayNNodesBundle = (() => {
   }
   function validAnywhereBandwidth(value) {
     if (value === void 0) return true;
-    const text = typeof value === "number" && Number.isInteger(value) ? String(value) : value;
-    if (typeof text !== "string" || !/^\d+(?:\s+Mbps)?$/u.test(text)) return false;
-    const amount = Number(text.split(/\s+/u, 1)[0]);
+    const text2 = typeof value === "number" && Number.isInteger(value) ? String(value) : value;
+    if (typeof text2 !== "string" || !/^\d+(?:\s+Mbps)?$/u.test(text2)) return false;
+    const amount = Number(text2.split(/\s+/u, 1)[0]);
     return Number.isSafeInteger(amount) && amount >= 0 && amount <= 1e3;
   }
   function validAnywhereWsOptions(value) {
@@ -1575,12 +1575,12 @@ var V2rayNNodesBundle = (() => {
     return anywhereTlsWeakeningReason(node);
   }
   function anywhereNodeExclusionReason(node) {
-    const protocol2 = normalizeProtocol(node?.type);
+    const protocol3 = normalizeProtocol(node?.type);
     const commonReason = anywhereCommonReason(node);
     if (commonReason) return commonReason;
     const network = normalizeTransport(node);
     const transportFields = ["ws-opts", "grpc-opts", "h2-opts", "http-opts", "xhttp-opts"];
-    if (protocol2 === "ss" || protocol2 === "shadowsocks") {
+    if (protocol3 === "ss" || protocol3 === "shadowsocks") {
       if (!isNonblankOpaqueString2(node.password) || !isNonblankString(node.cipher)) return "invalid-anywhere-node-shape";
       if (!ANYWHERE_SHADOWSOCKS_METHODS.has(node.cipher.toLowerCase())) return "unsupported-anywhere-shadowsocks-method";
       if (network !== "tcp" || hasShadowsocksPlugin(node) || node.tls === true || hasOption(node, "security") && node.security !== "none" || transportFields.some((key) => hasOption(node, key))) {
@@ -1588,7 +1588,7 @@ var V2rayNNodesBundle = (() => {
       }
       return null;
     }
-    if (protocol2 === "vless") {
+    if (protocol3 === "vless") {
       if (!validVlessUserId(node.uuid)) return "invalid-anywhere-node-shape";
       if (!ANYWHERE_VLESS_NETWORKS.has(network)) return "unsupported-anywhere-vless-network";
       if (!validAnywhereVlessEncryption(node.encryption)) return "unsupported-anywhere-vless-encryption";
@@ -1615,7 +1615,7 @@ var V2rayNNodesBundle = (() => {
       }
       return null;
     }
-    if (protocol2 === "trojan") {
+    if (protocol3 === "trojan") {
       if (!isNonblankOpaqueString2(node.password)) return "invalid-anywhere-node-shape";
       const tlsReason = anywhereTlsShapeReason(node);
       if (tlsReason) return tlsReason;
@@ -1625,7 +1625,7 @@ var V2rayNNodesBundle = (() => {
       }
       return null;
     }
-    if (protocol2 === "anytls") {
+    if (protocol3 === "anytls") {
       if (!isNonblankOpaqueString2(node.password)) return "invalid-anywhere-node-shape";
       const tlsReason = anywhereTlsShapeReason(node);
       if (tlsReason) return tlsReason;
@@ -1634,7 +1634,7 @@ var V2rayNNodesBundle = (() => {
       }
       return null;
     }
-    if (protocol2 === "hysteria2" || protocol2 === "hy2") {
+    if (protocol3 === "hysteria2" || protocol3 === "hy2") {
       if (!isNonblankOpaqueString2(node.password)) return "invalid-anywhere-node-shape";
       const hysteriaNetwork = hasOption(node, "network") ? network : "quic";
       if (!["udp", "quic"].includes(hysteriaNetwork)) return "unsupported-anywhere-hysteria2-shape";
@@ -1656,14 +1656,14 @@ var V2rayNNodesBundle = (() => {
       }
       return null;
     }
-    if (protocol2 === "socks5") {
+    if (protocol3 === "socks5") {
       if (network !== "tcp" || node.tls === true || hasOption(node, "security") && node.security !== "none") {
         return "unsupported-anywhere-socks5-tls";
       }
       if (!validOptionalAuthentication(node) || hasOption(node, "username") !== hasOption(node, "password")) return "invalid-anywhere-node-shape";
       return null;
     }
-    if (protocol2 === "sudoku") {
+    if (protocol3 === "sudoku") {
       if (!isNonblankString(node.key) || network !== "tcp") return "invalid-anywhere-node-shape";
       if (["tls", "security", "sni", "servername", "alpn", "client-fingerprint", "ech-opts", "reality-opts"].some((key) => hasOption(node, key))) return "unsupported-anywhere-sudoku-shape";
       if (!validAnywhereSudoku(node)) return "unsupported-anywhere-sudoku-shape";
@@ -1677,8 +1677,8 @@ var V2rayNNodesBundle = (() => {
       const reason = evaluateXrayNodeExclusionReason(node ?? {}, client);
       return reason ? { supported: false, reason } : { supported: true, reason: null };
     }
-    const protocol2 = normalizeProtocol(node?.type);
-    if (!protocolSupportsClient(protocol2, client)) {
+    const protocol3 = normalizeProtocol(node?.type);
+    if (!protocolSupportsClient(protocol3, client)) {
       return { supported: false, reason: "unsupported-protocol" };
     }
     let transportReason = null;
@@ -1721,8 +1721,8 @@ var V2rayNNodesBundle = (() => {
       return `invalid-${client}-node-shape`;
     }
     if (hasAnyChain(node)) return XRAY_CHAIN_REASON[client];
-    const protocol2 = normalizeProtocol(node.type);
-    if (!protocolSupportsClient(protocol2, client)) return XRAY_PROTOCOL_REASON[client];
+    const protocol3 = normalizeProtocol(node.type);
+    if (!protocolSupportsClient(protocol3, client)) return XRAY_PROTOCOL_REASON[client];
     return null;
   }
   function xrayTlsReason(node, client) {
@@ -1751,16 +1751,16 @@ var V2rayNNodesBundle = (() => {
     }
     return null;
   }
-  function xrayTransportReason(node, client, protocol2) {
-    if (protocol2 === "hysteria2" || protocol2 === "hy2") {
+  function xrayTransportReason(node, client, protocol3) {
+    if (protocol3 === "hysteria2" || protocol3 === "hy2") {
       const network2 = normalizeTransport(node);
       return network2 !== "tcp" && network2 !== "udp" && network2 !== "quic" ? XRAY_TRANSPORT_REASON[client] : null;
     }
     const network = normalizeTransport(node);
     const allowed = XRAY_TRANSPORTS;
     if (!allowed.has(network)) return XRAY_TRANSPORT_REASON[client];
-    if (protocol2 === "socks5" && network !== "tcp" && network !== "raw") return XRAY_TRANSPORT_REASON[client];
-    if ((protocol2 === "ss" || protocol2 === "shadowsocks") && (hasShadowsocksPlugin(node) || network !== "tcp" && network !== "raw")) {
+    if (protocol3 === "socks5" && network !== "tcp" && network !== "raw") return XRAY_TRANSPORT_REASON[client];
+    if ((protocol3 === "ss" || protocol3 === "shadowsocks") && (hasShadowsocksPlugin(node) || network !== "tcp" && network !== "raw")) {
       return XRAY_TRANSPORT_REASON[client];
     }
     const optionKeys = ["ws-opts", "grpc-opts", "h2-opts", "http-opts", "httpupgrade-opts", "xhttp-opts", "kcp-opts", "hysteria-opts"];
@@ -1773,12 +1773,12 @@ var V2rayNNodesBundle = (() => {
   function evaluateXrayNodeExclusionReason(node, client) {
     const common = xrayCommonReason(node, client);
     if (common) return common;
-    const protocol2 = normalizeProtocol(node.type);
+    const protocol3 = normalizeProtocol(node.type);
     const tls = xrayTlsReason(node, client);
     if (tls) return tls;
-    const transport2 = xrayTransportReason(node, client, protocol2);
+    const transport2 = xrayTransportReason(node, client, protocol3);
     if (transport2) return transport2;
-    if ((client === "v2box" || client === "v2rayn" || client === "happ") && protocol2 === "socks5" && (node.tls === true || node.security === "tls" || node.security === "reality")) {
+    if ((client === "v2box" || client === "v2rayn" || client === "happ") && protocol3 === "socks5" && (node.tls === true || node.security === "tls" || node.security === "reality")) {
       return `unsupported-${client}-tls`;
     }
     return null;
@@ -1980,9 +1980,9 @@ var V2rayNNodesBundle = (() => {
   // ../../shared/substore/collection-name.js
   var SAFE_COLLECTION_NAME = /^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$/u;
   var PROTOTYPE_KEYS = /* @__PURE__ */ new Set(["__proto__", "constructor", "prototype"]);
-  function validateCollectionName(value, label2 = "collection name") {
+  function validateCollectionName(value, label = "collection name") {
     if (typeof value !== "string" || !SAFE_COLLECTION_NAME.test(value) || PROTOTYPE_KEYS.has(value)) {
-      throw new Error(`${label2} must be a safe collection slug`);
+      throw new Error(`${label} must be a safe collection slug`);
     }
     return value;
   }
@@ -2027,20 +2027,38 @@ var V2rayNNodesBundle = (() => {
     if (bits !== 0 && accumulator !== 0) throw new TypeError("Base64URL value is not canonical");
     return bytes;
   }
+  function encodeBase64Url(bytes) {
+    if (!(bytes instanceof Uint8Array)) throw new TypeError("Base64URL input must be bytes");
+    let result = "";
+    for (let index = 0; index < bytes.length; index += 3) {
+      const first = bytes[index];
+      const second = index + 1 < bytes.length ? bytes[index + 1] : 0;
+      const third = index + 2 < bytes.length ? bytes[index + 2] : 0;
+      result += ALPHABET[first >> 2];
+      result += ALPHABET[(first & 3) << 4 | second >> 4];
+      if (index + 1 < bytes.length) result += ALPHABET[(second & 15) << 2 | third >> 6];
+      if (index + 2 < bytes.length) result += ALPHABET[third & 63];
+    }
+    return result;
+  }
+  function encodeBase64UrlUtf8(value) {
+    if (typeof value !== "string") throw new TypeError("Base64URL text input must be a string");
+    return encodeBase64Url(new TextEncoder().encode(value));
+  }
 
   // ../../shared/serialization/strict-json.js
   var DEFAULT_MAX_BYTES = 1 * 1024 * 1024;
   var DEFAULT_MAX_DEPTH = 32;
   var FORBIDDEN_KEYS = /* @__PURE__ */ new Set(["__proto__", "prototype", "constructor"]);
   var WHITESPACE = /* @__PURE__ */ new Set([" ", "	", "\r", "\n"]);
-  function failure(label2, reason) {
-    const prefix = typeof label2 === "string" && label2.length > 0 ? `${label2}: ` : "";
+  function failure(label, reason) {
+    const prefix = typeof label === "string" && label.length > 0 ? `${label}: ` : "";
     return new SyntaxError(`${prefix}${reason}`);
   }
-  function asText(value, label2) {
+  function asText(value, label) {
     if (typeof value === "string") {
       if (/[\uD800-\uDFFF]/u.test(value.replace(/[\uD800-\uDBFF](?=[\uDC00-\uDFFF])/gu, "").replace(/(?<=[\uD800-\uDBFF])[\uDC00-\uDFFF]/gu, ""))) {
-        throw failure(label2, "invalid UTF-8 text");
+        throw failure(label, "invalid UTF-8 text");
       }
       return { text: value, bytes: new TextEncoder().encode(value).byteLength };
     }
@@ -2051,43 +2069,43 @@ var V2rayNNodesBundle = (() => {
           bytes: value.byteLength
         };
       } catch {
-        throw failure(label2, "invalid UTF-8 text");
+        throw failure(label, "invalid UTF-8 text");
       }
     }
-    throw failure(label2, "input must be UTF-8 text");
+    throw failure(label, "input must be UTF-8 text");
   }
-  function validateOptions(options, label2) {
+  function validateOptions(options, label) {
     const { maxBytes = DEFAULT_MAX_BYTES, maxDepth = DEFAULT_MAX_DEPTH } = options ?? {};
-    if (!Number.isSafeInteger(maxBytes) || maxBytes < 0) throw failure(label2, "maxBytes must be a non-negative integer");
-    if (!Number.isSafeInteger(maxDepth) || maxDepth < 0) throw failure(label2, "maxDepth must be a non-negative integer");
+    if (!Number.isSafeInteger(maxBytes) || maxBytes < 0) throw failure(label, "maxBytes must be a non-negative integer");
+    if (!Number.isSafeInteger(maxDepth) || maxDepth < 0) throw failure(label, "maxDepth must be a non-negative integer");
     return { maxBytes, maxDepth };
   }
-  function validateAndParse(text, { label: label2, maxDepth }) {
+  function validateAndParse(text2, { label, maxDepth }) {
     let index = 0;
-    const length = text.length;
+    const length = text2.length;
     const error = (reason) => {
-      throw failure(label2, reason);
+      throw failure(label, reason);
     };
     const skipWhitespace = () => {
-      while (index < length && WHITESPACE.has(text[index])) index += 1;
+      while (index < length && WHITESPACE.has(text2[index])) index += 1;
     };
     const parseString = () => {
-      if (text[index] !== '"') error("invalid JSON");
+      if (text2[index] !== '"') error("invalid JSON");
       const start = index;
       index += 1;
       while (index < length) {
-        const character = text[index++];
+        const character = text2[index++];
         if (character === '"') {
           try {
-            return JSON.parse(text.slice(start, index));
+            return JSON.parse(text2.slice(start, index));
           } catch {
             error("invalid JSON");
           }
         }
         if (character === "\\") {
-          const escape = text[index++];
+          const escape = text2[index++];
           if (escape === "u") {
-            if (!/^[0-9a-f]{4}$/iu.test(text.slice(index, index + 4))) error("invalid JSON");
+            if (!/^[0-9a-f]{4}$/iu.test(text2.slice(index, index + 4))) error("invalid JSON");
             index += 4;
           } else if (!'"\\/bfnrt'.includes(escape)) {
             error("invalid JSON");
@@ -2099,19 +2117,19 @@ var V2rayNNodesBundle = (() => {
       error("invalid JSON");
     };
     const parseNumber = () => {
-      const match = /^-?(?:0|[1-9][0-9]*)(?:\.[0-9]+)?(?:[eE][+-]?[0-9]+)?/u.exec(text.slice(index));
+      const match = /^-?(?:0|[1-9][0-9]*)(?:\.[0-9]+)?(?:[eE][+-]?[0-9]+)?/u.exec(text2.slice(index));
       if (!match) error("invalid JSON");
       index += match[0].length;
     };
     const parseValue = (depth) => {
       skipWhitespace();
-      const character = text[index];
+      const character = text2[index];
       if (character === "{" || character === "[") {
         if (depth > maxDepth) error("maximum JSON depth exceeded");
         const object = character === "{";
         index += 1;
         skipWhitespace();
-        if (text[index] === (object ? "}" : "]")) {
+        if (text2[index] === (object ? "}" : "]")) {
           index += 1;
           return;
         }
@@ -2124,16 +2142,16 @@ var V2rayNNodesBundle = (() => {
             if (FORBIDDEN_KEYS.has(key)) error("unsupported prototype key");
             keys.add(key);
             skipWhitespace();
-            if (text[index++] !== ":") error("invalid JSON");
+            if (text2[index++] !== ":") error("invalid JSON");
           }
           parseValue(depth + 1);
           skipWhitespace();
           const close = object ? "}" : "]";
-          if (text[index] === close) {
+          if (text2[index] === close) {
             index += 1;
             return;
           }
-          if (text[index++] !== ",") error("invalid JSON");
+          if (text2[index++] !== ",") error("invalid JSON");
         }
         error("invalid JSON");
       }
@@ -2141,8 +2159,8 @@ var V2rayNNodesBundle = (() => {
         parseString();
         return;
       }
-      if (text.startsWith("true", index) || text.startsWith("false", index) || text.startsWith("null", index)) {
-        index += text.startsWith("true", index) ? 4 : text.startsWith("false", index) ? 5 : 4;
+      if (text2.startsWith("true", index) || text2.startsWith("false", index) || text2.startsWith("null", index)) {
+        index += text2.startsWith("true", index) ? 4 : text2.startsWith("false", index) ? 5 : 4;
         return;
       }
       parseNumber();
@@ -2152,17 +2170,17 @@ var V2rayNNodesBundle = (() => {
     skipWhitespace();
     if (index !== length) error("invalid JSON");
     try {
-      return JSON.parse(text);
+      return JSON.parse(text2);
     } catch {
       error("invalid JSON");
     }
   }
   function parseStrictJson(value, options = {}) {
-    const label2 = options?.label;
-    const { maxBytes, maxDepth } = validateOptions(options, label2);
-    const { text, bytes } = asText(value, label2);
-    if (bytes > maxBytes) throw failure(label2, "JSON exceeds byte limit");
-    return validateAndParse(text, { label: label2, maxDepth });
+    const label = options?.label;
+    const { maxBytes, maxDepth } = validateOptions(options, label);
+    const { text: text2, bytes } = asText(value, label);
+    if (bytes > maxBytes) throw failure(label, "JSON exceeds byte limit");
+    return validateAndParse(text2, { label, maxDepth });
   }
   var STRICT_JSON_DEFAULTS = Object.freeze({
     maxBytes: DEFAULT_MAX_BYTES,
@@ -2174,8 +2192,8 @@ var V2rayNNodesBundle = (() => {
   var NODE_TARGET = /^(NODE:|NODE~)(.*)$/iu;
   var BASE64URL = /^[A-Za-z0-9_-]+$/u;
   var LINE_TERMINATOR = /[\r\n\u2028\u2029]/u;
-  function frozenTarget(id, label2, aliases, defaultTarget) {
-    return Object.freeze({ id, label: label2, aliases: Object.freeze([...aliases]), defaultTarget });
+  function frozenTarget(id, label, aliases, defaultTarget) {
+    return Object.freeze({ id, label, aliases: Object.freeze([...aliases]), defaultTarget });
   }
   var BUSINESS_TARGETS = Object.freeze([
     frozenTarget("ai", "\u{1F916} AI \u4E13\u7528", ["AI \u4E13\u7528", "ai"], "FOLLOW"),
@@ -2237,14 +2255,14 @@ var V2rayNNodesBundle = (() => {
   function targetError(target, message) {
     return policyError(`${target.label}: ${message}`);
   }
-  function decodePolicy(encoded) {
-    if (typeof encoded !== "string" || encoded !== "" && !BASE64URL.test(encoded) || encoded.length % 4 === 1) {
+  function decodePolicy(encoded2) {
+    if (typeof encoded2 !== "string" || encoded2 !== "" && !BASE64URL.test(encoded2) || encoded2.length % 4 === 1) {
       throw policyError("must be a Base64URL string");
     }
-    if (encoded === "") return Object.freeze({});
+    if (encoded2 === "") return Object.freeze({});
     let bytes;
     try {
-      bytes = decodeBase64Url(encoded);
+      bytes = decodeBase64Url(encoded2);
     } catch {
       throw policyError("must be a Base64URL string");
     }
@@ -2269,8 +2287,8 @@ var V2rayNNodesBundle = (() => {
     const prefix = node[1].toUpperCase();
     return `${prefix}${prefix === "NODE:" ? node[2] : node[2].trim()}`;
   }
-  function parseBusinessOverrides(encoded) {
-    const values = decodePolicy(encoded);
+  function parseBusinessOverrides(encoded2) {
+    const values = decodePolicy(encoded2);
     const overrides = {};
     for (const [key, value] of Object.entries(values)) {
       const target = businessTargetByKey(key);
@@ -2318,99 +2336,93 @@ var V2rayNNodesBundle = (() => {
     return Object.freeze(options);
   }
 
-  // ../../shared/nodes/render-xray-outbound.js
-  var TAG = /^ap-[a-z0-9][a-z0-9/_-]{0,127}$/u;
-  var label = (client) => String(client ?? "Xray");
-  function required2(node, key, client) {
-    const value = node[key];
-    if (typeof value !== "string" || !value || value.trim() !== value) throw new Error(`${label(client)} node field '${key}' is invalid`);
-    return value;
-  }
-  function port(node, client) {
-    const value = Number(node.port);
-    if (!Number.isInteger(value) || value < 1 || value > 65535) throw new Error(`${label(client)} node port is invalid`);
-    return value;
-  }
-  function transport(node, client) {
-    const network = String(node.network ?? "tcp").trim().toLowerCase();
-    if (["tcp", "raw"].includes(network)) return network === "raw" ? { network: "raw", rawSettings: {} } : void 0;
-    if (network === "ws") {
-      const source = node["ws-opts"] ?? {};
-      return { network: "ws", wsSettings: { path: Array.isArray(source.path) ? source.path[0] : source.path ?? "/", ...source.headers ? { headers: { ...source.headers } } : {} } };
-    }
-    if (network === "grpc") {
-      const source = node["grpc-opts"] ?? {};
-      return { network: "grpc", grpcSettings: { serviceName: source["grpc-service-name"] ?? source.service_name ?? "" } };
-    }
-    if (["h2", "http2", "http"].includes(network)) {
-      const source = node["h2-opts"] ?? node["http-opts"] ?? {};
-      return { network: "http", httpSettings: { path: Array.isArray(source.path) ? source.path[0] : source.path ?? "/", ...source.host ? { host: Array.isArray(source.host) ? source.host : [source.host] } : {} } };
-    }
-    if (network === "httpupgrade") {
-      const source = node["httpupgrade-opts"] ?? {};
-      return { network, httpupgradeSettings: { path: source.path ?? "/", ...source.host ? { host: source.host } : {} } };
-    }
-    if (network === "xhttp") {
-      const source = node["xhttp-opts"] ?? {};
-      return { network, xhttpSettings: { path: source.path ?? "/", ...source.mode ? { mode: source.mode } : {} } };
-    }
-    if (["kcp", "mkcp"].includes(network)) return { network: "kcp", kcpSettings: { ...node["kcp-opts"] ?? {} } };
-    if (network === "hysteria") return { network, hysteriaSettings: { ...node["hysteria-opts"] ?? {} } };
-    throw new Error(`unsupported-${client}-transport`);
-  }
-  function security(node, result, client) {
-    const reality = node["reality-opts"];
-    const name = node.security === "reality" || reality ? "reality" : node.tls === true || node.security === "tls" ? "tls" : "none";
-    if (name === "none") return;
-    result.security = name;
-    if (name === "reality") {
-      if (!reality || typeof reality["public-key"] !== "string" || !reality["public-key"]) throw new Error(`incomplete-${client}-reality`);
-      result.realitySettings = { serverName: node.sni ?? node.servername ?? "", fingerprint: node["client-fingerprint"] ?? "chrome", publicKey: reality["public-key"], ...reality["short-id"] ? { shortId: reality["short-id"] } : {}, ...reality["spider-x"] || reality["_spider-x"] ? { spiderX: reality["spider-x"] ?? reality["_spider-x"] } : {} };
-    } else result.tlsSettings = { serverName: node.sni ?? node.servername ?? "", allowInsecure: node["skip-cert-verify"] === true || node["allow-insecure"] === true, ...node.alpn ? { alpn: [...node.alpn] } : {}, ...node["client-fingerprint"] ? { fingerprint: node["client-fingerprint"] } : {} };
-  }
-  function renderXrayOutbound(node, { tag, client = "v2box" } = {}) {
-    if (!node || typeof node !== "object" || Array.isArray(node)) throw new TypeError(`${label(client)} node is invalid`);
-    if (typeof node.name !== "string" || !node.name || /[\r\n]/u.test(node.name)) throw new Error(`${label(client)} node name is invalid`);
-    if (typeof tag !== "string" || !TAG.test(tag)) throw new Error(`${label(client)} outbound tag is invalid`);
-    const protocol2 = normalizeProtocol(node.type);
-    if (!protocolSupportsClient(protocol2, client)) throw new Error(`unsupported-${client}-protocol`);
-    const out = { name: node.name, protocol: protocol2, tag, settings: {} };
-    const server = { address: required2(node, "server", client), port: port(node, client) };
-    if (protocol2 === "vless") out.settings.vnext = [{ ...server, users: [{ id: required2(node, "uuid", client), encryption: node.encryption ?? "none", ...node.flow ? { flow: node.flow } : {} }] }];
-    else if (protocol2 === "vmess") out.settings.vnext = [{ ...server, users: [{ id: required2(node, "uuid", client), alterId: Number(node["alter-id"] ?? node.alterId ?? 0), security: node.security ?? node.cipher ?? "auto" }] }];
-    else if (["ss", "shadowsocks"].includes(protocol2)) {
-      out.protocol = "shadowsocks";
-      out.settings.servers = [{ ...server, method: required2(node, "cipher", client), password: required2(node, "password", client) }];
-    } else if (protocol2 === "trojan") out.settings.servers = [{ ...server, password: required2(node, "password", client), ...node.flow ? { flow: node.flow } : {} }];
-    else if (protocol2 === "socks5") {
-      out.protocol = "socks";
-      out.settings.servers = [{ ...server, ...node.username ? { users: [{ user: node.username, pass: node.password ?? "" }] } : {} }];
-    } else if (protocol2 === "http") out.settings.servers = [{ ...server, ...node.username ? { users: [{ user: node.username, pass: node.password ?? "" }] } : {}, ...node["http-opts"] ? { headers: node["http-opts"].headers ?? {} } : {} }];
-    else if (["hysteria2", "hy2"].includes(protocol2)) {
-      out.protocol = "hysteria";
-      out.settings = { version: 2, ...server, ...node.password ? { auth: node.password } : {} };
-    } else throw new Error(`unsupported-${client}-protocol`);
-    const stream = transport(node, client);
-    if (stream) out.streamSettings = stream;
-    security(node, out.streamSettings ?? (out.streamSettings = {}), client);
-    if (out.streamSettings && Object.keys(out.streamSettings).length === 0) delete out.streamSettings;
-    return out;
-  }
-  function renderXraySubscription({ nodes, client = "v2box" } = {}) {
-    if (!Array.isArray(nodes) || nodes.length === 0) throw new Error(`${label(client)} subscription cannot be empty`);
-    const names = /* @__PURE__ */ new Set();
-    const outbounds = nodes.map((node, index) => {
-      if (names.has(node.name)) throw new Error(`${label(client)} subscription contains duplicate node names`);
-      names.add(node.name);
-      return { ...renderXrayOutbound(node, { tag: `ap-node-${index.toString(36)}`, client }), tag: node.name };
-    });
-    return `${JSON.stringify({ outbounds })}
-`;
-  }
-
   // src/render-node.js
+  var protocol2 = (node) => String(node?.type ?? "").trim().toLowerCase();
+  var text = (value) => value === void 0 || value === null ? "" : String(value);
+  var encoded = (value) => encodeURIComponent(text(value));
+  function standardBase64(value) {
+    const raw = encodeBase64UrlUtf8(value).replaceAll("-", "+").replaceAll("_", "/");
+    return raw + "=".repeat((4 - raw.length % 4) % 4);
+  }
+  function host(value) {
+    const address = text(value);
+    return address.includes(":") && !address.startsWith("[") ? `[${address}]` : address;
+  }
+  function fragment(name) {
+    return name ? `#${encoded(name)}` : "";
+  }
+  function query(parameters) {
+    const values = Object.entries(parameters).filter(([, value]) => value !== void 0 && value !== null && value !== "");
+    return values.length ? `?${values.map(([key, value]) => `${key}=${encoded(value)}`).join("&")}` : "";
+  }
+  function security(node) {
+    if (node["reality-opts"] || node.security === "reality") return "reality";
+    if (node.tls === true || node.security === "tls") return "tls";
+    return "none";
+  }
+  function transport(node) {
+    const network = text(node.network || "tcp").toLowerCase();
+    const source = network === "ws" ? node["ws-opts"] ?? {} : ["h2", "http2", "http"].includes(network) ? node["h2-opts"] ?? node["http-opts"] ?? {} : network === "grpc" ? node["grpc-opts"] ?? {} : network === "httpupgrade" ? node["httpupgrade-opts"] ?? {} : network === "xhttp" ? node["xhttp-opts"] ?? {} : network === "kcp" || network === "mkcp" ? node["kcp-opts"] ?? {} : {};
+    const type = network === "raw" ? "raw" : ["h2", "http2", "http"].includes(network) ? "http" : network;
+    return {
+      type,
+      ...source.path !== void 0 ? { path: Array.isArray(source.path) ? source.path[0] : source.path } : {},
+      ...source.host !== void 0 ? { host: Array.isArray(source.host) ? source.host[0] : source.host } : {},
+      ...network === "grpc" ? { serviceName: source["grpc-service-name"] ?? source.serviceName } : {},
+      ...network === "xhttp" && source.mode ? { mode: source.mode } : {},
+      ...network === "raw" && source.headerType ? { headerType: source.headerType } : {}
+    };
+  }
+  function renderVless(node) {
+    const stream = transport(node);
+    const reality = node["reality-opts"] ?? {};
+    return `vless://${encoded(node.uuid)}@${host(node.server)}:${Number(node.port)}${query({ encryption: node.encryption ?? "none", flow: node.flow, security: security(node), type: stream.type, headerType: stream.headerType, host: stream.host, path: stream.path, serviceName: stream.serviceName, authority: stream.host, mode: stream.mode, sni: node.sni ?? node.servername, alpn: Array.isArray(node.alpn) ? node.alpn.join(",") : node.alpn, fp: node["client-fingerprint"], pbk: reality["public-key"], sid: reality["short-id"], spx: reality["spider-x"] ?? reality["_spider-x"] })}${fragment(node.name)}`;
+  }
+  function renderVmess(node) {
+    const stream = transport(node);
+    const reality = node["reality-opts"] ?? {};
+    const payload = { v: 2, ps: text(node.name), add: text(node.server), port: Number(node.port), id: text(node.uuid), aid: Number(node["alter-id"] ?? node.alterId ?? 0), scy: text(node.cipher ?? node.security ?? "auto"), net: stream.type, type: stream.headerType ?? "none", host: stream.host, path: stream.path ?? stream.serviceName, tls: security(node) === "none" ? "" : security(node), sni: node.sni ?? node.servername, alpn: Array.isArray(node.alpn) ? node.alpn.join(",") : node.alpn, fp: node["client-fingerprint"], insecure: node["skip-cert-verify"] === true || node["allow-insecure"] === true ? "1" : "0", pbk: reality["public-key"], sid: reality["short-id"] };
+    return `vmess://${standardBase64(JSON.stringify(payload))}`;
+  }
+  function renderTrojan(node) {
+    const stream = transport(node);
+    return `trojan://${encoded(node.password)}@${host(node.server)}:${Number(node.port)}${query({ security: security(node), type: stream.type, host: stream.host, path: stream.path, serviceName: stream.serviceName, authority: stream.host, mode: stream.mode, sni: node.sni ?? node.servername, alpn: Array.isArray(node.alpn) ? node.alpn.join(",") : node.alpn, fp: node["client-fingerprint"], flow: node.flow, allowInsecure: node["skip-cert-verify"] === true || node["allow-insecure"] === true ? "1" : void 0 })}${fragment(node.name)}`;
+  }
+  function renderShadowsocks(node) {
+    const credentials = standardBase64(`${text(node.cipher ?? node.method)}:${text(node.password)}`);
+    return `ss://${credentials}@${host(node.server)}:${Number(node.port)}${fragment(node.name)}`;
+  }
+  function renderHysteria2(node) {
+    return `hysteria2://${encoded(node.password)}@${host(node.server)}:${Number(node.port)}${query({ sni: node.sni ?? node.servername, insecure: node["skip-cert-verify"] === true || node["allow-insecure"] === true ? "1" : void 0, alpn: Array.isArray(node.alpn) ? node.alpn.join(",") : node.alpn, obfs: node.obfs, "obfs-password": node["obfs-password"] })}${fragment(node.name)}`;
+  }
+  function renderV2rayNNode(node) {
+    switch (protocol2(node)) {
+      case "vless":
+        return renderVless(node);
+      case "vmess":
+        return renderVmess(node);
+      case "trojan":
+        return renderTrojan(node);
+      case "ss":
+      case "shadowsocks":
+        return renderShadowsocks(node);
+      case "hysteria2":
+      case "hy2":
+        return renderHysteria2(node);
+      default:
+        throw new Error("unsupported-v2rayn-uri-protocol");
+    }
+  }
   function renderV2rayNSubscription({ nodes }) {
-    return renderXraySubscription({ nodes, client: "v2rayn" });
+    if (!Array.isArray(nodes) || nodes.length === 0) throw new Error("v2rayN subscription cannot be empty");
+    const names = /* @__PURE__ */ new Set();
+    const links = nodes.map((node) => {
+      if (names.has(node.name)) throw new Error("v2rayN subscription contains duplicate node names");
+      names.add(node.name);
+      return renderV2rayNNode(node);
+    });
+    return `${standardBase64(links.join("\n"))}
+`;
   }
 
   // src/substore-node-entry.js
