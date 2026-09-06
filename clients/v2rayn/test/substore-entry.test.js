@@ -7,7 +7,9 @@ const EMPTY_POLICY = { $content: JSON.stringify({ schemaVersion: 2, targets: {} 
 
 test("v2rayN node operator uses internal JSON artifact contract", async () => {
   const result = await nodesOperator({}, "JSON", { arguments: { output: "nodes", type: "collection", name: "fixture", platform: "windows" }, produceArtifact: async (request) => { assert.deepEqual(request, { type: "collection", name: "fixture", platform: "JSON", produceType: "internal" }); return [{ name: "fixture", type: "vless", server: "fixture.invalid", port: 443, uuid: "TEST_ONLY_UUID" }]; } });
-  assert.equal(JSON.parse(result.$content).outbounds.length, 1);
+  const decoded = Buffer.from(result.$content.trim(), "base64").toString("utf8");
+  assert.match(decoded, /^vless:\/\/TEST_ONLY_UUID@fixture\.invalid:443\?/u);
+  assert.match(decoded, /#%F0%9F%8C%90%20fixture%20%C2%B7%20VLESS$/u);
   assert.match(result.$content, /\n$/u);
 });
 

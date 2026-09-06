@@ -1,1 +1,1 @@
-{"outbounds":[{"name":"Fixture Windows","protocol":"vless","tag":"Fixture Windows","settings":{"vnext":[{"address":"192.0.2.10","port":443,"users":[{"id":"TEST_ONLY_UUID","encryption":"none"}]}]},"streamSettings":{"security":"tls","tlsSettings":{"serverName":"","allowInsecure":false}}}]}
+dmxlc3M6Ly9URVNUX09OTFlfVVVJREAxOTIuMC4yLjEwOjQ0Mz9lbmNyeXB0aW9uPW5vbmUmc2VjdXJpdHk9dGxzJnR5cGU9dGNwI0ZpeHR1cmUlMjBXaW5kb3dz
