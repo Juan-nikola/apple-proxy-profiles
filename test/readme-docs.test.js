@@ -20,16 +20,16 @@ test("README quick-start guide links to maintained screenshot-style diagrams", a
   }
 });
 
-test("README tutorial keeps the nine-client and current-only contracts visible", async () => {
+test("README tutorial keeps the ten-client and current-only contracts visible", async () => {
   const readme = await readFile(new URL("README.md", root), "utf8");
-  assert.match(readme, /九个 active 客户端/u);
-  assert.match(readme, /10 个手动 collection、38 个 File task/u);
+  assert.match(readme, /十个 active 客户端/u);
+  assert.match(readme, /11 个手动 collection、43 个 File task/u);
   assert.match(readme, /apple-proxy-incy/u);
   assert.match(readme, /androidtv/u);
   assert.match(readme, /windows/u);
   assert.match(readme, /linux/u);
-  assert.match(readme, /所有 30 个配置任务均为 `ipv4-only`/u);
-  assert.doesNotMatch(readme, /所有 22 个配置任务均为 `ipv4-only`/u);
+  assert.match(readme, /所有 34 个配置任务均为 `ipv4-only`/u);
+  assert.doesNotMatch(readme, /所有 30 个配置任务均为 `ipv4-only`/u);
   assert.match(readme, /current\/surge\/scripts\/surge-profile-generator\.js/u);
   assert.match(readme, /ChinaTLD -> ChinaIP -> 漏网之鱼/u);
   assert.doesNotMatch(readme, /https?:\/\/[^\s`]+(?:api|token|uuid|password)=/iu);
@@ -57,22 +57,22 @@ test("Sub-Store policy examples use the Chinese business-group labels", async ()
   }
 });
 
-test("catalog docs keep the updated 10 collection and 38 task counts", async () => {
+test("catalog docs keep the updated 11 collection and 43 task counts", async () => {
   const status = await readFile(new URL("docs/implementation-status.md", root), "utf8");
-  assert.match(status, /10 个手动 collection、38 个 canonical task/u);
-  assert.doesNotMatch(status, /9 个手动 collection、30 个 canonical task/u);
+  assert.match(status, /11 个手动 collection、43 个 canonical task/u);
+  assert.doesNotMatch(status, /10 个手动 collection、38 个 canonical task/u);
 
   const pools = await readFile(new URL("docs/substore-client-pools.md", root), "utf8");
-  assert.match(pools, /当前维护 10 个手动 collection/u);
-  assert.doesNotMatch(pools, /当前维护 9 个手动 collection/u);
+  assert.match(pools, /当前维护 11 个手动 collection/u);
+  assert.doesNotMatch(pools, /当前维护 10 个手动 collection/u);
 
   const setup = await readFile(new URL("docs/substore-two-layer-setup.md", root), "utf8");
-  assert.match(setup, /canonical catalog 共 38 个 File task/u);
-  assert.doesNotMatch(setup, /canonical catalog 共 30 个 File task/u);
-  assert.match(setup, /当前私密 Sub-Store 的 30 个配置任务已统一设置为 `ipv6Mode=ipv4-only`/u);
-  assert.match(setup, /所有 30 个配置任务 `ipv4-only`/u);
-  assert.match(setup, /九客户端指南/u);
-  assert.match(setup, /顶层包含 9 个客户端层/u);
-  assert.match(setup, /`clash`、`incy` 七层/u);
-  assert.doesNotMatch(setup, /所有 22 个配置任务 `ipv4-only`/u);
+  assert.match(setup, /canonical catalog 共 43 个 File task/u);
+  assert.doesNotMatch(setup, /canonical catalog 共 38 个 File task/u);
+  assert.match(setup, /当前私密 Sub-Store 的 34 个配置任务已统一设置为 `ipv6Mode=ipv4-only`/u);
+  assert.match(setup, /所有 34 个配置任务 `ipv4-only`/u);
+  assert.match(setup, /十客户端指南/u);
+  assert.match(setup, /顶层包含 10 个客户端层/u);
+  assert.match(setup, /`v2rayn`、`v2box`、`clash`、`incy` 八层/u);
+  assert.doesNotMatch(setup, /所有 30 个配置任务 `ipv4-only`/u);
 });

@@ -26,7 +26,7 @@
   "channels": {
     "current": {
       "closure": true,
-      "manifestCount": 9
+      "manifestCount": 10
     },
     "edge": {
       "closure": true,
@@ -43,7 +43,7 @@
       "canary": null,
       "current": {
         "closure": true,
-        "manifestHash": "ed9a9fb23518d11136e9754c17f042fdd5bfa7e650ff30cfe3fdb65e30203905"
+        "manifestHash": "b20117be76ae805d01afa0894c0327eac1ceb5aae208acf945e29089543a6986"
       },
       "edge": {
         "closure": true,
@@ -60,7 +60,7 @@
       "canary": null,
       "current": {
         "closure": true,
-        "manifestHash": "039812d1884f40ad7f65d2b8eea3203650bfc768b03a1531b2105628dd2fa8f8"
+        "manifestHash": "71237744b747548e6f51e4ff7b824541869728253c7b0aa76a3cecd5f2cc6a38"
       },
       "edge": {
         "closure": true,
@@ -77,7 +77,7 @@
       "canary": null,
       "current": {
         "closure": true,
-        "manifestHash": "8c1c02a23caae08a13c87c3b70c49a75c7cffaa4182c45910c976390b124d812"
+        "manifestHash": "5c39a79d9c84fce6d09a0b2f9b6327e6597be74c7a94dd98de4e9675ff981d66"
       },
       "edge": {
         "closure": true,
@@ -94,7 +94,7 @@
       "canary": null,
       "current": {
         "closure": true,
-        "manifestHash": "8d9620378ee02b6fb481072efce7a3904e9da89948d3508d0ccaa6967067caf6"
+        "manifestHash": "f7a9c9bc11d24925d95b5ef5845353cc34bc527c5554caeaad521a7fa664e5a7"
       },
       "edge": {
         "closure": true,
@@ -111,7 +111,7 @@
       "canary": null,
       "current": {
         "closure": true,
-        "manifestHash": "2706423834123b75d59c6bac207ae8a97955f42786c3fd81dabfd69abcce66cc"
+        "manifestHash": "3ecb0de194ad63ef4072855986f30d151705c392fd023fed67bb859eb26042d1"
       },
       "edge": {
         "closure": true,
@@ -128,7 +128,7 @@
       "canary": null,
       "current": {
         "closure": true,
-        "manifestHash": "c2311bc516c05b8dd5b7846e87bc530d9a35984975c2156a475953ae9578ddd1"
+        "manifestHash": "d55f924cb63a5f83e9ca8017939ad4293f41aa2477136235347e0de824794bd2"
       },
       "edge": {
         "closure": true,
@@ -145,7 +145,7 @@
       "canary": null,
       "current": {
         "closure": true,
-        "manifestHash": "7ab718aa7cb93cf4269e3f771f86f40d439ed73bbcc6350f65521cfd68d2564e"
+        "manifestHash": "3e0dd982a934f74ecc9851ce1c45882a93b214ab13d02683e7c874e96aa00b95"
       },
       "edge": {
         "closure": true,
@@ -162,7 +162,7 @@
       "canary": null,
       "current": {
         "closure": true,
-        "manifestHash": "988a4fc417b7b6f8a454a70ff915a01a50c161e5eb1a155ab58f94b17e8f6070"
+        "manifestHash": "3b0a8ed763870d31d25502edd799e59b2453ae42565488ba6bf485eb36c3c68c"
       },
       "edge": {
         "closure": true,
@@ -179,7 +179,24 @@
       "canary": null,
       "current": {
         "closure": true,
-        "manifestHash": "f861410cafd65e3bd1f21fbaf83247068d9db6e5a10f45f4bf43fc6b61a2931c"
+        "manifestHash": "543ac75f46a693f91d7c26558797bc542dbc50bc5111abb1c3425af24e2efd24"
+      },
+      "edge": {
+        "closure": true,
+        "manifestHash": null
+      },
+      "previous": {
+        "closure": true,
+        "manifestHash": null
+      },
+      "state": "active"
+    },
+    "v2rayn": {
+      "adapterSchema": "v2rayn-v2",
+      "canary": null,
+      "current": {
+        "closure": true,
+        "manifestHash": "60e9ee90150f11e35e5faf0e8e80708928d922b0bbb7c7a234f3243ba59de402"
       },
       "edge": {
         "closure": true,

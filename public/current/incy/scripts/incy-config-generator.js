@@ -32,6 +32,7 @@ var INCYConfigBundle = (() => {
     surge: "surge",
     singbox: "singbox",
     happ: "happ",
+    v2rayn: "v2rayn",
     v2box: "v2box",
     clash: "clash"
   });
@@ -43,6 +44,7 @@ var INCYConfigBundle = (() => {
     CLIENT.surge,
     CLIENT.singbox,
     CLIENT.happ,
+    CLIENT.v2rayn,
     CLIENT.v2box,
     CLIENT.clash,
     CLIENT.incy
@@ -233,7 +235,7 @@ var INCYConfigBundle = (() => {
     });
   }
   var definitions = Object.freeze([
-    protocol(["ss", "shadowsocks"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.happ, CLIENT.v2box, CLIENT.clash, CLIENT.incy], {
+    protocol(["ss", "shadowsocks"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.happ, CLIENT.v2rayn, CLIENT.v2box, CLIENT.clash, CLIENT.incy], {
       requiredFields: ["cipher", "password"]
     }),
     protocol(["ssr"], [CLIENT.shadowrocket, CLIENT.surge, CLIENT.clash], {
@@ -242,13 +244,13 @@ var INCYConfigBundle = (() => {
     protocol(["snell"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox, CLIENT.clash], {
       requiredFields: ["psk", "version"]
     }),
-    protocol(["vmess"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox, CLIENT.happ, CLIENT.v2box, CLIENT.clash, CLIENT.incy], {
+    protocol(["vmess"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox, CLIENT.happ, CLIENT.v2rayn, CLIENT.v2box, CLIENT.clash, CLIENT.incy], {
       requiredFields: ["uuid"]
     }),
-    protocol(["vless"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.singbox, CLIENT.happ, CLIENT.v2box, CLIENT.clash, CLIENT.incy], {
+    protocol(["vless"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.singbox, CLIENT.happ, CLIENT.v2rayn, CLIENT.v2box, CLIENT.clash, CLIENT.incy], {
       requiredFields: ["uuid"]
     }),
-    protocol(["trojan"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.happ, CLIENT.v2box, CLIENT.clash, CLIENT.incy], {
+    protocol(["trojan"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.happ, CLIENT.v2rayn, CLIENT.v2box, CLIENT.clash, CLIENT.incy], {
       requiredFields: ["password"],
       tls: true
     }),
@@ -256,7 +258,7 @@ var INCYConfigBundle = (() => {
       requiredFields: ["password"],
       tls: true
     }),
-    protocol(["hysteria2", "hy2"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.happ, CLIENT.v2box, CLIENT.clash, CLIENT.incy], {
+    protocol(["hysteria2", "hy2"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.happ, CLIENT.v2rayn, CLIENT.v2box, CLIENT.clash, CLIENT.incy], {
       requiredFields: ["password"],
       tls: true
     }),
@@ -264,8 +266,8 @@ var INCYConfigBundle = (() => {
       requiredFields: ["uuid", "password"],
       tls: true
     }),
-    protocol(["socks5"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.happ, CLIENT.v2box, CLIENT.clash, CLIENT.incy]),
-    protocol(["http"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox, CLIENT.v2box, CLIENT.clash, CLIENT.incy]),
+    protocol(["socks5"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.happ, CLIENT.v2rayn, CLIENT.v2box, CLIENT.clash, CLIENT.incy]),
+    protocol(["http"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox, CLIENT.v2rayn, CLIENT.v2box, CLIENT.clash, CLIENT.incy]),
     protocol(["ssh"], [CLIENT.egern, CLIENT.singbox, CLIENT.clash], {
       requiredFields: ["username"]
     }),
@@ -1638,6 +1640,19 @@ var INCYConfigBundle = (() => {
       publicDirectory: "happ"
     },
     {
+      id: CLIENT.v2rayn,
+      displayName: "v2rayN",
+      state: "active",
+      platforms: ["windows", "macos"],
+      configFormat: "xray-or-singbox-json",
+      ruleFormat: "xray-geodata-or-srs",
+      nodeValidator: "v2rayn",
+      separatesProfile: false,
+      supportsPolicyOverrides: false,
+      adapterSchema: "v2rayn-v2",
+      publicDirectory: "v2rayn"
+    },
+    {
       id: CLIENT.v2box,
       displayName: "V2Box",
       state: "active",
@@ -1694,7 +1709,9 @@ var INCYConfigBundle = (() => {
   var FRONTIER_CHANNELS = Object.freeze(["current"]);
   var FRONTIER_PLATFORMS = Object.freeze({
     [CLIENT.surge]: Object.freeze(["macos", "iphone", "ipad"]),
-    [CLIENT.singbox]: Object.freeze(["macos", "iphone", "ipad", "android", "openwrt"])
+    [CLIENT.singbox]: Object.freeze(["macos", "iphone", "ipad", "android", "openwrt"]),
+    [CLIENT.v2rayn]: Object.freeze(["windows", "macos"]),
+    [CLIENT.v2box]: Object.freeze(["iphone", "ipad"])
   });
 
   // ../../shared/substore/collection-name.js
@@ -2545,12 +2562,25 @@ var INCYConfigBundle = (() => {
   function domesticExpectIPs() {
     return Object.freeze(["geoip:PRIVATE", "geoip:CN"]);
   }
+  function dnsHosts(providers) {
+    const hosts = {};
+    for (const provider2 of providers) {
+      if (provider2.doh === "system" || provider2.address === "local") continue;
+      const endpoint = new URL(provider2.doh);
+      hosts[endpoint.hostname] = provider2.address;
+      if (typeof provider2.serverName === "string" && provider2.serverName.length > 0) {
+        hosts[provider2.serverName] = provider2.address;
+      }
+    }
+    return Object.freeze(hosts);
+  }
   function renderIncyDns(options = {}, { followTag, directTag, dnsRulesTag } = {}) {
     const value = { ...DEFAULT_OPTIONS, ...options };
     const china = chinaDnsProvider(value.chinaDns);
     const global = globalDnsProvider(value.globalDns);
     const privacyMode = value.dnsMode === "privacy";
     const speedMode = value.dnsMode === "speed";
+    const hosts = dnsHosts([china, global]);
     return Object.freeze({
       tag: dnsRulesTag,
       servers: [
@@ -2568,6 +2598,7 @@ var INCYConfigBundle = (() => {
           ...global.address ? { clientIp: global.address } : {}
         })
       ],
+      ...Object.keys(hosts).length > 0 ? { hosts } : {},
       disableFallback: privacyMode,
       queryStrategy: value.ipv6Mode === "ipv4-only" ? "UseIPv4" : "UseIP"
     });

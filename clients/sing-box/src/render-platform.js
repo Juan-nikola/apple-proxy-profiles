@@ -12,7 +12,7 @@ const COMMON_EXCLUDE = Object.freeze([
 ]);
 
 export function renderSingBoxTun(platform, ipv6Mode = "auto") {
-  if (!["macos", "iphone", "ipad", "android"].includes(platform)) {
+  if (!["macos", "windows", "iphone", "ipad", "android"].includes(platform)) {
     throw new Error(`Unsupported sing-box platform: ${platform}`);
   }
   const ipv4Only = ipv6Mode === "ipv4-only";

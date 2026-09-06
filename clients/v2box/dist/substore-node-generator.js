@@ -60,6 +60,7 @@ var V2BoxNodesBundle = (() => {
     surge: "surge",
     singbox: "singbox",
     happ: "happ",
+    v2rayn: "v2rayn",
     v2box: "v2box",
     clash: "clash"
   });
@@ -71,6 +72,7 @@ var V2BoxNodesBundle = (() => {
     CLIENT.surge,
     CLIENT.singbox,
     CLIENT.happ,
+    CLIENT.v2rayn,
     CLIENT.v2box,
     CLIENT.clash,
     CLIENT.incy
@@ -239,7 +241,7 @@ var V2BoxNodesBundle = (() => {
     });
   }
   var definitions = Object.freeze([
-    protocol(["ss", "shadowsocks"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.happ, CLIENT.v2box, CLIENT.clash, CLIENT.incy], {
+    protocol(["ss", "shadowsocks"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.happ, CLIENT.v2rayn, CLIENT.v2box, CLIENT.clash, CLIENT.incy], {
       requiredFields: ["cipher", "password"]
     }),
     protocol(["ssr"], [CLIENT.shadowrocket, CLIENT.surge, CLIENT.clash], {
@@ -248,13 +250,13 @@ var V2BoxNodesBundle = (() => {
     protocol(["snell"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox, CLIENT.clash], {
       requiredFields: ["psk", "version"]
     }),
-    protocol(["vmess"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox, CLIENT.happ, CLIENT.v2box, CLIENT.clash, CLIENT.incy], {
+    protocol(["vmess"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox, CLIENT.happ, CLIENT.v2rayn, CLIENT.v2box, CLIENT.clash, CLIENT.incy], {
       requiredFields: ["uuid"]
     }),
-    protocol(["vless"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.singbox, CLIENT.happ, CLIENT.v2box, CLIENT.clash, CLIENT.incy], {
+    protocol(["vless"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.singbox, CLIENT.happ, CLIENT.v2rayn, CLIENT.v2box, CLIENT.clash, CLIENT.incy], {
       requiredFields: ["uuid"]
     }),
-    protocol(["trojan"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.happ, CLIENT.v2box, CLIENT.clash, CLIENT.incy], {
+    protocol(["trojan"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.happ, CLIENT.v2rayn, CLIENT.v2box, CLIENT.clash, CLIENT.incy], {
       requiredFields: ["password"],
       tls: true
     }),
@@ -262,7 +264,7 @@ var V2BoxNodesBundle = (() => {
       requiredFields: ["password"],
       tls: true
     }),
-    protocol(["hysteria2", "hy2"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.happ, CLIENT.v2box, CLIENT.clash, CLIENT.incy], {
+    protocol(["hysteria2", "hy2"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.happ, CLIENT.v2rayn, CLIENT.v2box, CLIENT.clash, CLIENT.incy], {
       requiredFields: ["password"],
       tls: true
     }),
@@ -270,8 +272,8 @@ var V2BoxNodesBundle = (() => {
       requiredFields: ["uuid", "password"],
       tls: true
     }),
-    protocol(["socks5"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.happ, CLIENT.v2box, CLIENT.clash, CLIENT.incy]),
-    protocol(["http"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox, CLIENT.v2box, CLIENT.clash, CLIENT.incy]),
+    protocol(["socks5"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.happ, CLIENT.v2rayn, CLIENT.v2box, CLIENT.clash, CLIENT.incy]),
+    protocol(["http"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox, CLIENT.v2rayn, CLIENT.v2box, CLIENT.clash, CLIENT.incy]),
     protocol(["ssh"], [CLIENT.egern, CLIENT.singbox, CLIENT.clash], {
       requiredFields: ["username"]
     }),
@@ -1671,7 +1673,7 @@ var V2BoxNodesBundle = (() => {
   }
   function evaluateNodeForClient(node, client) {
     if (!Object.values(CLIENT).includes(client)) return { supported: false, reason: "unsupported-client" };
-    if (client === CLIENT.v2box || client === CLIENT.happ) {
+    if (client === CLIENT.v2box || client === CLIENT.v2rayn || client === CLIENT.happ) {
       const reason = evaluateXrayNodeExclusionReason(node ?? {}, client);
       return reason ? { supported: false, reason } : { supported: true, reason: null };
     }
@@ -1700,14 +1702,17 @@ var V2BoxNodesBundle = (() => {
     "hysteria"
   ]);
   var XRAY_CHAIN_REASON = Object.freeze({
+    v2rayn: "unsupported-v2rayn-chain",
     v2box: "unsupported-v2box-chain",
     happ: "unsupported-happ-chain"
   });
   var XRAY_PROTOCOL_REASON = Object.freeze({
+    v2rayn: "unsupported-v2rayn-protocol",
     v2box: "unsupported-v2box-protocol",
     happ: "unsupported-happ-protocol"
   });
   var XRAY_TRANSPORT_REASON = Object.freeze({
+    v2rayn: "unsupported-v2rayn-transport",
     v2box: "unsupported-v2box-transport",
     happ: "unsupported-happ-transport"
   });
@@ -1773,7 +1778,7 @@ var V2BoxNodesBundle = (() => {
     if (tls) return tls;
     const transport2 = xrayTransportReason(node, client, protocol2);
     if (transport2) return transport2;
-    if ((client === "v2box" || client === "happ") && protocol2 === "socks5" && (node.tls === true || node.security === "tls" || node.security === "reality")) {
+    if ((client === "v2box" || client === "v2rayn" || client === "happ") && protocol2 === "socks5" && (node.tls === true || node.security === "tls" || node.security === "reality")) {
       return `unsupported-${client}-tls`;
     }
     return null;
@@ -1898,6 +1903,19 @@ var V2BoxNodesBundle = (() => {
       publicDirectory: "happ"
     },
     {
+      id: CLIENT.v2rayn,
+      displayName: "v2rayN",
+      state: "active",
+      platforms: ["windows", "macos"],
+      configFormat: "xray-or-singbox-json",
+      ruleFormat: "xray-geodata-or-srs",
+      nodeValidator: "v2rayn",
+      separatesProfile: false,
+      supportsPolicyOverrides: false,
+      adapterSchema: "v2rayn-v2",
+      publicDirectory: "v2rayn"
+    },
+    {
       id: CLIENT.v2box,
       displayName: "V2Box",
       state: "active",
@@ -1954,7 +1972,9 @@ var V2BoxNodesBundle = (() => {
   var FRONTIER_CHANNELS = Object.freeze(["current"]);
   var FRONTIER_PLATFORMS = Object.freeze({
     [CLIENT.surge]: Object.freeze(["macos", "iphone", "ipad"]),
-    [CLIENT.singbox]: Object.freeze(["macos", "iphone", "ipad", "android", "openwrt"])
+    [CLIENT.singbox]: Object.freeze(["macos", "iphone", "ipad", "android", "openwrt"]),
+    [CLIENT.v2rayn]: Object.freeze(["windows", "macos"]),
+    [CLIENT.v2box]: Object.freeze(["iphone", "ipad"])
   });
 
   // ../../shared/substore/collection-name.js

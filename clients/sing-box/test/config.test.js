@@ -163,14 +163,14 @@ test("routes mobile DNS classes through the compact mobile rule bundles", () => 
   }
 });
 
-test("renders Egern-like selectors without pretending urltest is request fallback", () => {
+test("renders Egern-like selectors with a dedicated rule-download probe", () => {
   const config = render();
   const tags = config.outbounds.map(({ tag }) => tag);
   assert.ok(tags.includes("🚀 节点选择"));
   assert.ok(tags.includes("⚡ 全部自动"));
   assert.ok(tags.includes("🌏 亚太"));
   assert.ok(tags.includes("🌍 欧洲"));
-  assert.equal(tags.some((tag) => /故障转移/u.test(tag)), false);
+  assert.equal(tags.some((tag) => tag === "🧭 规则下载故障转移"), true);
   const primary = config.outbounds.find(({ tag }) => tag === "🚀 节点选择");
   assert.equal(primary.default, "⚡ 全部自动");
   assert.equal(primary.outbounds.includes(nodes[0].name), false);
@@ -178,6 +178,33 @@ test("renders Egern-like selectors without pretending urltest is request fallbac
   assert.equal(auto.type, "urltest");
   assert.equal(Object.hasOwn(auto, "timeout"), false);
   assert.equal(auto.url, "https://www.gstatic.com/generate_204");
+});
+
+test("uses a concrete rule-download health probe with DIRECT fallback", () => {
+  const ruleBaseUrl = "https://example.invalid/current/sing-box/rule-sets";
+  const config = renderSingBoxConfig(parseSingBoxOptions(baseOptions), nodes, { ruleBaseUrl });
+  const failover = config.outbounds.find(({ tag }) => tag === "🧭 规则下载故障转移");
+  const download = config.outbounds.find(({ tag }) => tag === "🧭 DNS 与规则下载");
+
+  assert.equal(failover?.type, "urltest");
+  assert.deepEqual(failover?.outbounds, [nodes[0].name, nodes[1].name, "DIRECT"]);
+  assert.equal(failover?.url, `${ruleBaseUrl}/Hijacking.srs`);
+  assert.equal(failover?.interval, "30s");
+  assert.equal(failover?.tolerance, 0);
+  assert.deepEqual(download?.outbounds, ["🧭 规则下载故障转移", "🚀 节点选择", "DIRECT"]);
+  assert.equal(download?.default, "🧭 规则下载故障转移");
+});
+
+test("honors a direct policy for rule-download bootstrap", () => {
+  const policy = parsePrivatePolicy(JSON.stringify({ schemaVersion: 2, targets: { dnsAndRules: "DIRECT" } }));
+  const resolution = resolveUnifiedPolicy({ policy, client: "singbox", allNodes: nodes, eligibleNodes: nodes });
+  const config = renderSingBoxConfig(parseSingBoxOptions(baseOptions), nodes, {
+    ruleBaseUrl: `https://example.invalid/${baseOptions.channel}/sing-box/rule-sets`,
+    policyResolution: resolution,
+  });
+  const download = config.outbounds.find(({ tag }) => tag === "🧭 DNS 与规则下载");
+
+  assert.equal(download?.default, "DIRECT");
 });
 
 test("keeps policy-driven selector defaults inside each selector candidate list", () => {
@@ -209,7 +236,7 @@ test("keeps policy-driven selector defaults inside each selector candidate list"
 test("keeps low-frequency iOS URLTests and the complete compact business catalog", () => {
   for (const platform of ["iphone", "ipad"]) {
     const config = render({ platform });
-    const urltests = config.outbounds.filter(({ type }) => type === "urltest");
+    const urltests = config.outbounds.filter(({ type, tag }) => type === "urltest" && tag !== "🧭 规则下载故障转移");
     assert.ok(urltests.some(({ tag }) => tag === "⚡ 全部自动"), platform);
     assert.ok(urltests.some(({ tag }) => tag === "⚡ 亚太自动"), platform);
     assert.ok(urltests.every(({ interval }) => interval === "1800s"), platform);
@@ -244,7 +271,7 @@ test("keeps low-frequency iOS URLTests and the complete compact business catalog
 
 test("retains Android's complete automatic URLTest graph", () => {
   const config = render({ platform: "android" });
-  assert.deepEqual(config.outbounds.filter(({ type }) => type === "urltest").map(({ tag }) => tag), ["⚡ 全部自动", "⚡ 亚太自动", "⚡ 欧洲自动"]);
+  assert.deepEqual(config.outbounds.filter(({ type }) => type === "urltest").map(({ tag }) => tag), ["🧭 规则下载故障转移", "⚡ 全部自动", "⚡ 亚太自动", "⚡ 欧洲自动"]);
   assert.ok(config.outbounds.some(({ tag }) => tag === "📺 YouTube"));
   assert.ok(config.outbounds.some(({ tag }) => tag === "🤖 AI 专用"));
   assert.deepEqual(validateSingBoxConfig(config), { valid: true, errors: [] });

@@ -55,6 +55,7 @@ var SingBoxConfigBundle = (() => {
     surge: "surge",
     singbox: "singbox",
     happ: "happ",
+    v2rayn: "v2rayn",
     v2box: "v2box",
     clash: "clash"
   });
@@ -66,6 +67,7 @@ var SingBoxConfigBundle = (() => {
     CLIENT.surge,
     CLIENT.singbox,
     CLIENT.happ,
+    CLIENT.v2rayn,
     CLIENT.v2box,
     CLIENT.clash,
     CLIENT.incy
@@ -234,7 +236,7 @@ var SingBoxConfigBundle = (() => {
     });
   }
   var definitions = Object.freeze([
-    protocol(["ss", "shadowsocks"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.happ, CLIENT.v2box, CLIENT.clash, CLIENT.incy], {
+    protocol(["ss", "shadowsocks"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.happ, CLIENT.v2rayn, CLIENT.v2box, CLIENT.clash, CLIENT.incy], {
       requiredFields: ["cipher", "password"]
     }),
     protocol(["ssr"], [CLIENT.shadowrocket, CLIENT.surge, CLIENT.clash], {
@@ -243,13 +245,13 @@ var SingBoxConfigBundle = (() => {
     protocol(["snell"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox, CLIENT.clash], {
       requiredFields: ["psk", "version"]
     }),
-    protocol(["vmess"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox, CLIENT.happ, CLIENT.v2box, CLIENT.clash, CLIENT.incy], {
+    protocol(["vmess"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox, CLIENT.happ, CLIENT.v2rayn, CLIENT.v2box, CLIENT.clash, CLIENT.incy], {
       requiredFields: ["uuid"]
     }),
-    protocol(["vless"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.singbox, CLIENT.happ, CLIENT.v2box, CLIENT.clash, CLIENT.incy], {
+    protocol(["vless"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.singbox, CLIENT.happ, CLIENT.v2rayn, CLIENT.v2box, CLIENT.clash, CLIENT.incy], {
       requiredFields: ["uuid"]
     }),
-    protocol(["trojan"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.happ, CLIENT.v2box, CLIENT.clash, CLIENT.incy], {
+    protocol(["trojan"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.happ, CLIENT.v2rayn, CLIENT.v2box, CLIENT.clash, CLIENT.incy], {
       requiredFields: ["password"],
       tls: true
     }),
@@ -257,7 +259,7 @@ var SingBoxConfigBundle = (() => {
       requiredFields: ["password"],
       tls: true
     }),
-    protocol(["hysteria2", "hy2"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.happ, CLIENT.v2box, CLIENT.clash, CLIENT.incy], {
+    protocol(["hysteria2", "hy2"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.happ, CLIENT.v2rayn, CLIENT.v2box, CLIENT.clash, CLIENT.incy], {
       requiredFields: ["password"],
       tls: true
     }),
@@ -265,8 +267,8 @@ var SingBoxConfigBundle = (() => {
       requiredFields: ["uuid", "password"],
       tls: true
     }),
-    protocol(["socks5"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.happ, CLIENT.v2box, CLIENT.clash, CLIENT.incy]),
-    protocol(["http"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox, CLIENT.v2box, CLIENT.clash, CLIENT.incy]),
+    protocol(["socks5"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.happ, CLIENT.v2rayn, CLIENT.v2box, CLIENT.clash, CLIENT.incy]),
+    protocol(["http"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox, CLIENT.v2rayn, CLIENT.v2box, CLIENT.clash, CLIENT.incy]),
     protocol(["ssh"], [CLIENT.egern, CLIENT.singbox, CLIENT.clash], {
       requiredFields: ["username"]
     }),
@@ -1680,6 +1682,19 @@ var SingBoxConfigBundle = (() => {
       publicDirectory: "happ"
     },
     {
+      id: CLIENT.v2rayn,
+      displayName: "v2rayN",
+      state: "active",
+      platforms: ["windows", "macos"],
+      configFormat: "xray-or-singbox-json",
+      ruleFormat: "xray-geodata-or-srs",
+      nodeValidator: "v2rayn",
+      separatesProfile: false,
+      supportsPolicyOverrides: false,
+      adapterSchema: "v2rayn-v2",
+      publicDirectory: "v2rayn"
+    },
+    {
       id: CLIENT.v2box,
       displayName: "V2Box",
       state: "active",
@@ -1736,7 +1751,9 @@ var SingBoxConfigBundle = (() => {
   var FRONTIER_CHANNELS = Object.freeze(["current"]);
   var FRONTIER_PLATFORMS = Object.freeze({
     [CLIENT.surge]: Object.freeze(["macos", "iphone", "ipad"]),
-    [CLIENT.singbox]: Object.freeze(["macos", "iphone", "ipad", "android", "openwrt"])
+    [CLIENT.singbox]: Object.freeze(["macos", "iphone", "ipad", "android", "openwrt"]),
+    [CLIENT.v2rayn]: Object.freeze(["windows", "macos"]),
+    [CLIENT.v2box]: Object.freeze(["iphone", "ipad"])
   });
 
   // ../../shared/policies/platform-presets.js
@@ -2085,7 +2102,7 @@ var SingBoxConfigBundle = (() => {
     adblockMode: "off",
     nodeErrorMode: "strict"
   });
-  var PLATFORMS = /* @__PURE__ */ new Set(["macos", "iphone", "ipad", "android"]);
+  var PLATFORMS = /* @__PURE__ */ new Set(["macos", "windows", "iphone", "ipad", "android"]);
   var CHANNELS = new Set(FRONTIER_CHANNELS);
   var PROFILE_MODES = /* @__PURE__ */ new Set(["light", "diagnostic"]);
   var ADBLOCK_MODES = /* @__PURE__ */ new Set(["off", "full"]);
@@ -2851,6 +2868,7 @@ var SingBoxConfigBundle = (() => {
 
   // src/render-groups.js
   var RULE_DOWNLOAD_GROUP = "\u{1F9ED} DNS \u4E0E\u89C4\u5219\u4E0B\u8F7D";
+  var RULE_DOWNLOAD_FAILOVER_GROUP = "\u{1F9ED} \u89C4\u5219\u4E0B\u8F7D\u6545\u969C\u8F6C\u79FB";
   var PRIMARY_GROUP = "\u{1F680} \u8282\u70B9\u9009\u62E9";
   var AUTO_GROUP = "\u26A1 \u5168\u90E8\u81EA\u52A8";
   var FALLBACK_GROUP_PATTERN = /故障转移/u;
@@ -2887,17 +2905,37 @@ var SingBoxConfigBundle = (() => {
     ];
     return candidates.filter((item, index, all) => all.indexOf(item) === index);
   }
-  function renderDownloadGroup() {
-    return {
-      type: "selector",
-      tag: RULE_DOWNLOAD_GROUP,
-      outbounds: [AUTO_GROUP, "DIRECT"],
-      default: AUTO_GROUP,
+  function renderRuleDownloadGroups(inventory, ruleProbeUrl, defaultChoice) {
+    const nodeCandidates = filterNodes(NON_CHAINED_FILTER, inventory);
+    const failover = {
+      type: "urltest",
+      tag: RULE_DOWNLOAD_FAILOVER_GROUP,
+      outbounds: [...nodeCandidates, "DIRECT"],
+      url: ruleProbeUrl,
+      interval: "30s",
+      tolerance: 0,
       interrupt_exist_connections: true
     };
+    const selectedDefault = defaultChoice && defaultChoice !== PRIMARY_GROUP ? defaultChoice : RULE_DOWNLOAD_FAILOVER_GROUP;
+    const candidates = [
+      RULE_DOWNLOAD_FAILOVER_GROUP,
+      PRIMARY_GROUP,
+      "DIRECT",
+      ...selectedDefault === RULE_DOWNLOAD_FAILOVER_GROUP || [PRIMARY_GROUP, "DIRECT"].includes(selectedDefault) ? [] : [selectedDefault]
+    ].filter((item, index, all) => all.indexOf(item) === index);
+    const selector = {
+      type: "selector",
+      tag: RULE_DOWNLOAD_GROUP,
+      outbounds: candidates,
+      default: selectedDefault,
+      interrupt_exist_connections: true
+    };
+    return [selector, failover];
   }
-  function renderGroup(group, nodes, { compact = false, ios = false } = {}) {
-    if (group.name === RULE_DOWNLOAD_GROUP) return renderDownloadGroup();
+  function renderGroup(group, nodes, { compact = false, ios = false, ruleProbeUrl } = {}) {
+    if (group.name === RULE_DOWNLOAD_GROUP) {
+      return renderRuleDownloadGroups(nodes, ruleProbeUrl, group.defaultChoice);
+    }
     let candidates = candidateList(group, nodes, { compact, ios });
     if (group.kind === "ai" && candidates[0] !== AUTO_GROUP) candidates.unshift(AUTO_GROUP);
     if (group.defaultChoice !== void 0 && !isDisabledFallback(group.defaultChoice)) {
@@ -2938,14 +2976,19 @@ var SingBoxConfigBundle = (() => {
     }
     return selector;
   }
-  function renderSingBoxGroups(options, nodes, { policyResolution = null } = {}) {
+  function renderSingBoxGroups(options, nodes, { policyResolution = null, ruleProbeUrl = "https://www.gstatic.com/generate_204" } = {}) {
     const inventory = Array.isArray(nodes) ? nodes : [];
     const compact = isMobileMemoryConstrained(options);
     const shared = buildPolicyGroups(options, inventory, policyResolution);
     const rendered = [];
     for (const group of shared) {
       if (group.strategy === "fallback") continue;
-      rendered.push(renderGroup(group, inventory, { compact, ios: isIosMemoryConstrained(options) }));
+      const groupOutbounds = renderGroup(group, inventory, {
+        compact,
+        ios: isIosMemoryConstrained(options),
+        ruleProbeUrl
+      });
+      rendered.push(...Array.isArray(groupOutbounds) ? groupOutbounds : [groupOutbounds]);
     }
     return rendered;
   }
@@ -3342,7 +3385,7 @@ var SingBoxConfigBundle = (() => {
     "ff00::/8"
   ]);
   function renderSingBoxTun(platform, ipv6Mode = "auto") {
-    if (!["macos", "iphone", "ipad", "android"].includes(platform)) {
+    if (!["macos", "windows", "iphone", "ipad", "android"].includes(platform)) {
       throw new Error(`Unsupported sing-box platform: ${platform}`);
     }
     const ipv4Only = ipv6Mode === "ipv4-only";

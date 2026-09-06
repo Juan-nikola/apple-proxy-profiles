@@ -20,13 +20,14 @@ test("builds a private Sub-Store config without exposing the source value", () =
     "apple-proxy-surge",
     "apple-proxy-singbox",
     "apple-proxy-happ",
+    "apple-proxy-v2rayn",
     "apple-proxy-v2box",
     "apple-proxy-clash",
     "apple-proxy-incy",
   ]);
-  assert.equal(config.tasks.length, 38);
-  assert.equal(config.tasks.filter(({ kind }) => kind === "remote-js").length, 37);
-  assert.equal(config.tasks.filter(({ policyInput }) => policyInput === "apple-proxy-policy").length, 31);
+  assert.equal(config.tasks.length, 43);
+  assert.equal(config.tasks.filter(({ kind }) => kind === "remote-js").length, 42);
+  assert.equal(config.tasks.filter(({ policyInput }) => policyInput === "apple-proxy-policy").length, 35);
   assert.deepEqual(config.tasks.find(({ name }) => name === "anywhere-strategy"), {
     name: "anywhere-strategy",
     client: "anywhere",
@@ -41,6 +42,13 @@ test("builds a private Sub-Store config without exposing the source value", () =
     ["v2box-nodes", undefined, "nodes"],
     ["v2box-config-iphone", "iphone", "config"],
     ["v2box-config-ipad", "ipad", "config"],
+  ]);
+  assert.deepEqual(config.tasks.filter(({ name }) => name.startsWith("v2rayn-")).map(({ name, platform, output }) => [name, platform, output]), [
+    ["v2rayn-nodes", undefined, "nodes"],
+    ["v2rayn-singbox-windows", "windows", "config"],
+    ["v2rayn-singbox-macos", "macos", "config"],
+    ["v2rayn-xray-windows", "windows", "config"],
+    ["v2rayn-xray-macos", "macos", "config"],
   ]);
   assert.deepEqual(config.tasks.filter(({ name }) => name.startsWith("clash-")).map(({ name, platform, output }) => [name, platform, output]), [
     ["clash-nodes", undefined, "nodes"],
@@ -93,13 +101,12 @@ test("builds a private Sub-Store config without exposing the source value", () =
 
 test("canonical private task catalog covers retained clients", () => {
   const catalog = canonicalTaskCatalog("current");
-  assert.equal(catalog.length, 38);
+  assert.equal(catalog.length, 43);
   assert.deepEqual(catalog.slice(0, 4).map(({ name }) => name), [
     "egern-nodes", "egern-macos", "egern-iphone", "egern-ipad",
   ]);
   assert.deepEqual(catalog.slice(-20).map(({ name }) => name), [
-    "apple-proxy-policy",
-    "happ-config-macos", "happ-config-iphone", "happ-config-ipad",
+    "v2rayn-singbox-windows", "v2rayn-singbox-macos", "v2rayn-xray-windows", "v2rayn-xray-macos",
     "v2box-nodes",
     "clash-nodes",
     "clash-config-macos",
@@ -126,14 +133,14 @@ test("canonical private task catalog covers retained clients", () => {
 test("binds the shared policy to every config and audit task, never node tasks", () => {
   const catalog = canonicalTaskCatalog("current");
   const policyTasks = catalog.filter(({ output }) => output === "config" || output === "profile" || output === "audit");
-  assert.equal(policyTasks.length, 30);
+  assert.equal(policyTasks.length, 34);
   assert.ok(policyTasks.every((task) => task.policyInput === "apple-proxy-policy"));
-  assert.equal(catalog.filter(({ policyInput }) => policyInput === "apple-proxy-policy").length, 31);
+  assert.equal(catalog.filter(({ policyInput }) => policyInput === "apple-proxy-policy").length, 35);
   assert.equal(catalog.find(({ name }) => name === "anywhere-strategy").output, "strategy");
   assert.ok(catalog.filter(({ output }) => output === "nodes").every((task) => !Object.hasOwn(task, "policyInput")));
   assert.equal(
     catalog.find(({ name }) => name === "apple-proxy-policy").policySchema,
-    "schemaVersion=3; clients=anywhere,egern,shadowrocket,surge,sing-box,happ,v2box,clash,incy; each client has schemaVersion=2 and complete 13-target map; readers accept schemaVersion=1/2",
+    "schemaVersion=3; clients=anywhere,egern,shadowrocket,surge,sing-box,happ,v2rayn,v2box,clash,incy; each client has schemaVersion=2 and complete 13-target map; readers accept schemaVersion=1/2",
   );
 });
 

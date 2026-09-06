@@ -67,6 +67,12 @@ const GENERATOR_SCHEMAS = Object.freeze({
     extraEnums: { region: REGIONS },
     omitKeys: ["autoGroupMode"],
   }),
+  "v2rayn/scripts/substore-node-generator.js": nodeSchema(),
+  "v2rayn/scripts/substore-config-generator.js": configSchema({
+    platforms: ["windows", "macos"],
+    extraKeys: ["core", "region"],
+    extraEnums: { core: ["singbox", "xray"], region: REGIONS },
+  }),
   "clash/scripts/substore-node-generator.js": nodeSchema(),
   "clash/scripts/clash-node-generator.js": nodeSchema(),
   "clash/scripts/substore-profile-generator.js": configSchema({

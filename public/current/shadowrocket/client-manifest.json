@@ -178,33 +178,33 @@
       "sha256": "e76a499b29882e5354107a91a44d60825c1b490e1bfc4d34c03205a6a7744fe8"
     },
     {
-      "bytes": 41310,
+      "bytes": 41456,
       "path": "shadowrocket/scripts/shadowrocket-node-operator.js",
-      "sha256": "b36cfd4603c924a829e6634bdf6a4647f297b371ca029defd332167f372fe7dc"
+      "sha256": "bde9055abdebc4383578462e3ea120381f362d2398682550e30076c74ac61c2f"
     },
     {
-      "bytes": 47691,
+      "bytes": 48330,
       "path": "shadowrocket/scripts/shadowrocket-node-subscription.js",
-      "sha256": "b77e9a9d0adba09472dbc38f463b51f589562757b99f384fe085374488962344"
+      "sha256": "09d6d3d7167f9d5f75446fdc35bbeb771951d61b9d9db66b8c01a62848505f40"
     },
     {
-      "bytes": 140328,
+      "bytes": 140967,
       "path": "shadowrocket/scripts/shadowrocket-profile-generator.js",
-      "sha256": "125c234a2f3f428190e96158df26356d70ffaef8ff78eaa31bcc2fa533bdb502"
+      "sha256": "2b61016242b683256391520ecabac2185dcac8ab3c60f8559221d26e436647a1"
     },
     {
-      "bytes": 41310,
+      "bytes": 41456,
       "path": "shadowrocket/scripts/substore-node-operator.js",
-      "sha256": "b36cfd4603c924a829e6634bdf6a4647f297b371ca029defd332167f372fe7dc"
+      "sha256": "bde9055abdebc4383578462e3ea120381f362d2398682550e30076c74ac61c2f"
     },
     {
-      "bytes": 140328,
+      "bytes": 140967,
       "path": "shadowrocket/scripts/substore-profile-generator.js",
-      "sha256": "125c234a2f3f428190e96158df26356d70ffaef8ff78eaa31bcc2fa533bdb502"
+      "sha256": "2b61016242b683256391520ecabac2185dcac8ab3c60f8559221d26e436647a1"
     }
   ],
   "generatedAt": "2026-08-25T18:39:12Z",
-  "manifestHash": "c2311bc516c05b8dd5b7846e87bc530d9a35984975c2156a475953ae9578ddd1",
+  "manifestHash": "d55f924cb63a5f83e9ca8017939ad4293f41aa2477136235347e0de824794bd2",
   "optionalPacks": {
     "adblock-full": "66513b2ba687a9048e33988dfe8f1d2a6f2836587c5dd42355ac68951f059337"
   },

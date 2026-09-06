@@ -1,7 +1,5 @@
 import { renderXrayOutbound, renderXrayNodeError } from "../../../shared/nodes/render-xray-outbound.js";
-import { CRITICAL_DOMESTIC_DOMAIN_SUFFIXES } from "../../../shared/rules/critical-domestic.js";
-import { publishedSourceIdsForRegion } from "../../../shared/rules/published-source-ids.js";
-import { xrayGeoCode, xrayGeoNames } from "../../../shared/xray-geodata-contract.js";
+import { xrayGeoCode as oneXrayGeoCode, xrayGeoNames as oneXrayGeoNames } from "../../../shared/xray-geodata-contract.js";
 import { businessTargetByKey, parseBusinessOverrides } from "../../../shared/policies/business-targets.js";
 import { policyForRuleSource } from "../../../shared/rules/lightweight-policy.js";
 import { validateAssetUrl, V2BOX_PUBLIC_ROOT } from "./asset-url.js";
@@ -28,8 +26,7 @@ function sha256(input) {
 }
 
 function geoReferences(geoData, options, assetManifest) {
-  const names = xrayGeoNames(options.channel);
-  const sources = publishedSourceIdsForRegion(options.region).map((id) => ({ id, code: xrayGeoCode(id) }));
+  const names = oneXrayGeoNames(options.channel);
   if (assetManifest) {
     if (assetManifest.region !== options.region || assetManifest.channel !== options.channel || !assetManifest.names || assetManifest.names.domain !== names.domain || assetManifest.names.ip !== names.ip) throw new Error("V2Box asset manifest region/channel/names mismatch");
     const base = `${new URL(V2BOX_PUBLIC_ROOT).pathname}/${options.channel}/geodata/${options.region}/`;
@@ -41,21 +38,10 @@ function geoReferences(geoData, options, assetManifest) {
       if (type === "geosite") origin = url.origin;
       else if (origin !== url.origin) throw new Error("V2Box asset manifest origin mismatch");
     }
-    return { sources, assets: { geosite: assetManifest.geosite, geoip: assetManifest.geoip }, domain: [], ip: [] };
+    return { sources: [], assets: { geosite: assetManifest.geosite, geoip: assetManifest.geoip }, domain: [], ip: [] };
   }
   if (geoData === null || geoData === undefined) {
-    const base = `${new URL(V2BOX_PUBLIC_ROOT).pathname}/${options.channel}/geodata/${options.region}`;
-    const geositeUrl = validateAssetUrl(`${new URL(V2BOX_PUBLIC_ROOT).origin}${base}/${names.domain}.dat`, `${base}/${names.domain}.dat`);
-    const geoipUrl = validateAssetUrl(`${new URL(V2BOX_PUBLIC_ROOT).origin}${base}/${names.ip}.dat`, `${base}/${names.ip}.dat`);
-    return {
-      sources,
-      assets: {
-        geosite: { name: names.domain, url: geositeUrl.href },
-        geoip: { name: names.ip, url: geoipUrl.href },
-      },
-      domain: [],
-      ip: [],
-    };
+    return { sources: [], domain: [], ip: [] };
   }
   if (!geoData || typeof geoData !== "object" || Array.isArray(geoData) || !geoData.manifest) throw new TypeError("V2Box GeoData manifest is required");
   const manifest = geoData.manifest;
@@ -72,7 +58,7 @@ function geoReferences(geoData, options, assetManifest) {
   }
   if (!Array.isArray(manifest.sources) || manifest.sources.length === 0) throw new Error("V2Box GeoData manifest sources are missing");
   const codes = manifest.sources.map((source) => {
-    if (!source || typeof source.id !== "string" || source.code !== xrayGeoCode(source.id)) throw new Error("V2Box GeoData manifest source code mismatch");
+    if (!source || typeof source.id !== "string" || source.code !== oneXrayGeoCode(source.id)) throw new Error("V2Box GeoData manifest source code mismatch");
     return source.code;
   });
   if (Array.isArray(manifest.sourceCodes) && JSON.stringify(manifest.sourceCodes.map(({ code }) => code)) !== JSON.stringify(codes)) throw new Error("V2Box GeoData sourceCodes mismatch");
@@ -106,7 +92,7 @@ function actionForSource(sourceId, overrides, nodeTags, nodeTagsById, blockMode,
   return value === "REJECT" ? (blockMode === "off" ? "direct" : "block") : "proxy";
 }
 
-function dns(options) { const queryStrategy = options.ipv6Mode === "ipv4-only" ? "UseIPv4" : "UseIP"; const china = options.chinaDns === "system" ? "localhost" : options.chinaDns === "dnspod" ? "119.29.29.29" : "223.5.5.5"; const global = options.globalDns === "google" ? "8.8.8.8" : options.globalDns === "quad9" ? "9.9.9.9" : "1.1.1.1"; const domesticDomains = ["geosite:cn", "geosite:private", ...CRITICAL_DOMESTIC_DOMAIN_SUFFIXES.map((suffix) => `domain:${suffix}`)]; return { servers: [{ tag: "china-dns", address: china, domains: domesticDomains, queryStrategy }, { tag: "global-dns", address: global, domains: ["geosite:apple-proxy-overseas"], queryStrategy }], queryStrategy, tag: "dnsQuery", mode: options.dnsMode }; }
+function dns(options) { const queryStrategy = options.ipv6Mode === "ipv4-only" ? "UseIPv4" : "UseIP"; const china = options.chinaDns === "system" ? "localhost" : options.chinaDns === "dnspod" ? "119.29.29.29" : "223.5.5.5"; const global = options.globalDns === "google" ? "8.8.8.8" : options.globalDns === "quad9" ? "9.9.9.9" : "1.1.1.1"; return { servers: [{ tag: "china-dns", address: china, domains: ["geosite:cn", "geosite:private"], queryStrategy }, { tag: "global-dns", address: global, domains: ["geosite:apple-proxy-overseas"], queryStrategy }], queryStrategy, tag: "dnsQuery", mode: options.dnsMode }; }
 export function renderV2BoxProfile({ nodes, options, assetManifest = null, geoData = null, filterFailures = {}, policyResolution = null } = {}) {
   if (!options || options.output !== "config") throw new Error("V2Box profile options are required");
   if (!Array.isArray(nodes)) throw new Error("V2Box profile requires compatible nodes");
@@ -116,17 +102,12 @@ export function renderV2BoxProfile({ nodes, options, assetManifest = null, geoDa
   if (Object.values(overrides).some((value) => value.startsWith("NODE:") && !nodeTags.has(value.slice(5)))) throw new Error("V2Box policy target node is unavailable");
   for (const outbound of outbounds) delete outbound.name;
   const references = geoReferences(geoData, options, assetManifest);
-  const rules = [
-    { domain: ["geosite:private"], outboundTag: "direct", ruleTag: "private-direct" },
-    ...CRITICAL_DOMESTIC_DOMAIN_SUFFIXES.map((suffix) => ({
-      domain: [`domain:${suffix}`], outboundTag: "direct", ruleTag: `critical-domestic-${suffix}`,
-    })),
-  ];
-  if (!references.assets && !geoData) rules.push({ domain: ["geosite:apple-proxy-security"], outboundTag: options.blockMode === "off" ? "direct" : "block", ruleTag: "inline-security" }, { domain: ["geosite:apple-proxy-privacy"], outboundTag: "direct", ruleTag: "inline-privacy" }, { domain: ["geosite:cn"], outboundTag: "direct", ruleTag: "inline-domestic" }, { domain: ["geosite:apple-proxy-overseas"], outboundTag: "proxy", ruleTag: "inline-overseas" });
+  const rules = [{ domain: ["geosite:private"], outboundTag: "direct", ruleTag: "private-direct" }];
+  if (!assetManifest && !geoData) rules.push({ domain: ["geosite:apple-proxy-security"], outboundTag: options.blockMode === "off" ? "direct" : "block", ruleTag: "inline-security" }, { domain: ["geosite:apple-proxy-privacy"], outboundTag: "direct", ruleTag: "inline-privacy" }, { domain: ["geosite:cn"], outboundTag: "direct", ruleTag: "inline-domestic" }, { domain: ["geosite:apple-proxy-overseas"], outboundTag: "proxy", ruleTag: "inline-overseas" });
   const sourceRules = references.sources.map((source) => ({ source, outboundTag: actionForSource(source.id, overrides, nodeTags, nodeTagsById, options.blockMode, policyResolution) }));
   const rank = (item) => ["Hijacking", "BlockHttpDNS", "Privacy"].includes(item.source.id) ? 0 : policyForRuleSource(item.source.id) ? 1 : 2;
   sourceRules.sort((a, b) => rank(a) - rank(b));
-  for (const { source, outboundTag } of sourceRules) rules.push({ domain: [`ext:${xrayGeoNames(options.channel).domain}.dat:${source.code}`], ip: [`ext:${xrayGeoNames(options.channel).ip}.dat:${source.code}`], outboundTag, ruleTag: `source-${source.id}` });
+  for (const { source, outboundTag } of sourceRules) rules.push({ domain: [`ext:${oneXrayGeoNames(options.channel).domain}.dat:${source.code}`], ip: [`ext:${oneXrayGeoNames(options.channel).ip}.dat:${source.code}`], outboundTag, ruleTag: `source-${source.id}` });
   if (options.quicMode !== "allow") rules.push({ network: "quic", outboundTag: options.quicMode === "all-block" ? "block" : "direct", ruleTag: "quic-policy" });
   const finalRecord = policyResolution?.targets?.final;
   let finalOutboundTag = outbounds.length === 2 ? "block" : "proxy";
@@ -136,5 +117,5 @@ export function renderV2BoxProfile({ nodes, options, assetManifest = null, geoDa
     if (!finalOutboundTag) throw new Error("V2Box policy target node is unavailable");
   }
   rules.push({ domain: [`geosite:${options.region}`], outboundTag: "direct", ruleTag: "china-domain-direct" }, { ip: [`geoip:${options.region}`], outboundTag: "direct", ruleTag: "china-ip-direct" }, { network: "tcp,udp", outboundTag: finalOutboundTag, ruleTag: "final-fail-closed" });
-  return { name: options.name, dns: dns(options), ...(references.assets ? { assets: references.assets } : {}), inbounds: [{ tag: "tun", protocol: "tun", settings: { mtu: 1500 }, sniffing: { enabled: true, routeOnly: true } }], outbounds: [...outbounds, ...(outbounds.length > 2 ? [{ protocol: "selector", tag: "proxy", settings: { selectors: outbounds.slice(2).map(({ tag }) => tag) } }] : [])], routing: { domainStrategy: "IPIfNonMatch", rules }, ...(Object.keys(failures).length ? { renderFailures: failures } : {}) };
+  return { name: options.name, schemaVersion: 2, core: "xray", capabilityDiagnostics: { fullGroupSemantics: false, supported: ["business-routing", "china-ip", "fixed-node"], degraded: ["runtime-selector", "urltest", "dynamic-rule-set"], unsupported: ["detour"] }, dns: dns(options), ...(references.assets ? { assets: references.assets } : {}), inbounds: [{ tag: "tun", protocol: "tun", settings: { mtu: 1500 }, sniffing: { enabled: true, routeOnly: true } }], outbounds: [...outbounds, ...(outbounds.length > 2 ? [{ protocol: "selector", tag: "proxy", settings: { selectors: outbounds.slice(2).map(({ tag }) => tag) } }] : [])], routing: { domainStrategy: "IPIfNonMatch", rules }, ...(Object.keys(failures).length ? { renderFailures: failures } : {}) };
 }

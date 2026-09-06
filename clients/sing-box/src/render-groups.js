@@ -3,6 +3,7 @@ import { POLICY_TARGET } from "../../../shared/policies/intents.js";
 import { NON_CHAINED_FILTER } from "../../../shared/policies/filters.js";
 
 const RULE_DOWNLOAD_GROUP = "🧭 DNS 与规则下载";
+const RULE_DOWNLOAD_FAILOVER_GROUP = "🧭 规则下载故障转移";
 const PRIMARY_GROUP = "🚀 节点选择";
 const AUTO_GROUP = "⚡ 全部自动";
 const FALLBACK_GROUP_PATTERN = /故障转移/u;
@@ -48,18 +49,42 @@ function candidateList(group, nodes, { compact = false, ios = false } = {}) {
   return candidates.filter((item, index, all) => all.indexOf(item) === index);
 }
 
-function renderDownloadGroup() {
-  return {
-    type: "selector",
-    tag: RULE_DOWNLOAD_GROUP,
-    outbounds: [AUTO_GROUP, "DIRECT"],
-    default: AUTO_GROUP,
+function renderRuleDownloadGroups(inventory, ruleProbeUrl, defaultChoice) {
+  const nodeCandidates = filterNodes(NON_CHAINED_FILTER, inventory);
+  const failover = {
+    type: "urltest",
+    tag: RULE_DOWNLOAD_FAILOVER_GROUP,
+    outbounds: [...nodeCandidates, "DIRECT"],
+    url: ruleProbeUrl,
+    interval: "30s",
+    tolerance: 0,
     interrupt_exist_connections: true,
   };
+  const selectedDefault = defaultChoice && defaultChoice !== PRIMARY_GROUP
+    ? defaultChoice
+    : RULE_DOWNLOAD_FAILOVER_GROUP;
+  const candidates = [
+    RULE_DOWNLOAD_FAILOVER_GROUP,
+    PRIMARY_GROUP,
+    "DIRECT",
+    ...(selectedDefault === RULE_DOWNLOAD_FAILOVER_GROUP || [PRIMARY_GROUP, "DIRECT"].includes(selectedDefault)
+      ? []
+      : [selectedDefault]),
+  ].filter((item, index, all) => all.indexOf(item) === index);
+  const selector = {
+    type: "selector",
+    tag: RULE_DOWNLOAD_GROUP,
+    outbounds: candidates,
+    default: selectedDefault,
+    interrupt_exist_connections: true,
+  };
+  return [selector, failover];
 }
 
-function renderGroup(group, nodes, { compact = false, ios = false } = {}) {
-  if (group.name === RULE_DOWNLOAD_GROUP) return renderDownloadGroup();
+function renderGroup(group, nodes, { compact = false, ios = false, ruleProbeUrl } = {}) {
+  if (group.name === RULE_DOWNLOAD_GROUP) {
+    return renderRuleDownloadGroups(nodes, ruleProbeUrl, group.defaultChoice);
+  }
 
   let candidates = candidateList(group, nodes, { compact, ios });
   if (group.kind === "ai" && candidates[0] !== AUTO_GROUP) candidates.unshift(AUTO_GROUP);
@@ -105,7 +130,7 @@ function renderGroup(group, nodes, { compact = false, ios = false } = {}) {
   return selector;
 }
 
-export function renderSingBoxGroups(options, nodes, { policyResolution = null } = {}) {
+export function renderSingBoxGroups(options, nodes, { policyResolution = null, ruleProbeUrl = "https://www.gstatic.com/generate_204" } = {}) {
   const inventory = Array.isArray(nodes) ? nodes : [];
   const compact = isMobileMemoryConstrained(options);
   const shared = buildPolicyGroups(options, inventory, policyResolution);
@@ -113,7 +138,12 @@ export function renderSingBoxGroups(options, nodes, { policyResolution = null } 
 
   for (const group of shared) {
     if (group.strategy === "fallback") continue;
-    rendered.push(renderGroup(group, inventory, { compact, ios: isIosMemoryConstrained(options) }));
+    const groupOutbounds = renderGroup(group, inventory, {
+      compact,
+      ios: isIosMemoryConstrained(options),
+      ruleProbeUrl,
+    });
+    rendered.push(...(Array.isArray(groupOutbounds) ? groupOutbounds : [groupOutbounds]));
   }
 
   return rendered;

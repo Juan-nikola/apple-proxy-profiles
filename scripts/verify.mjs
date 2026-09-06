@@ -6,6 +6,8 @@ const commands = [
   ["npm", ["run", "fixtures"]],
   ["npm", ["run", "check:secrets"]],
   ["npm", ["run", "verify:incy"]],
+  ["npm", ["run", "verify:v2rayn"]],
+  ["npm", ["run", "verify:v2box"]],
   ["npm", ["run", "check:task"]],
   ["npm", ["run", "check:actions"]],
 ];

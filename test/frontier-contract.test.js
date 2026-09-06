@@ -77,6 +77,8 @@ test("frontier platforms cover only maintained clients", () => {
   assert.deepEqual(FRONTIER_PLATFORMS, {
     surge: ["macos", "iphone", "ipad"],
     singbox: ["macos", "iphone", "ipad", "android", "openwrt"],
+    v2rayn: ["windows", "macos"],
+    v2box: ["iphone", "ipad"],
   });
 });
 

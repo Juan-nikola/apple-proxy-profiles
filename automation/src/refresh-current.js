@@ -39,6 +39,7 @@ const CLIENT_RULE_PREFIXES = Object.freeze({
   anywhere: ["anywhere/rules/"],
   happ: [],
   v2box: [],
+  v2rayn: [],
 });
 const SHA256 = /^[0-9a-f]{64}$/u;
 const PUBLIC_CHANNEL_URL_RE = /(https:\/\/juan-nikola\.github\.io\/apple-proxy-profiles\/)(?:current|previous|edge)(\/)/gu;

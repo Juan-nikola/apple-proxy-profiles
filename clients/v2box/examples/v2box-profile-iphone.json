@@ -1,5 +1,23 @@
 {
   "name": "v2box-fixture",
+  "schemaVersion": 2,
+  "core": "xray",
+  "capabilityDiagnostics": {
+    "fullGroupSemantics": false,
+    "supported": [
+      "business-routing",
+      "china-ip",
+      "fixed-node"
+    ],
+    "degraded": [
+      "runtime-selector",
+      "urltest",
+      "dynamic-rule-set"
+    ],
+    "unsupported": [
+      "detour"
+    ]
+  },
   "dns": {
     "servers": [
       {
@@ -7,14 +25,7 @@
         "address": "223.5.5.5",
         "domains": [
           "geosite:cn",
-          "geosite:private",
-          "domain:baidupcs.com",
-          "domain:baidupcs.net",
-          "domain:baiduyun.com",
-          "domain:baiduyuncdn.com",
-          "domain:baidubce.com",
-          "domain:bcebos.com",
-          "domain:bdstatic.com"
+          "geosite:private"
         ],
         "queryStrategy": "UseIP"
       },
@@ -30,16 +41,6 @@
     "queryStrategy": "UseIP",
     "tag": "dnsQuery",
     "mode": "stable"
-  },
-  "assets": {
-    "geosite": {
-      "name": "AppleProxySiteCurrent",
-      "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/geodata/cn/AppleProxySiteCurrent.dat"
-    },
-    "geoip": {
-      "name": "AppleProxyIPCurrent",
-      "url": "https://juan-nikola.github.io/apple-proxy-profiles/current/geodata/cn/AppleProxyIPCurrent.dat"
-    }
   },
   "inbounds": [
     {
@@ -110,502 +111,31 @@
       },
       {
         "domain": [
-          "domain:baidupcs.com"
-        ],
-        "outboundTag": "direct",
-        "ruleTag": "critical-domestic-baidupcs.com"
-      },
-      {
-        "domain": [
-          "domain:baidupcs.net"
-        ],
-        "outboundTag": "direct",
-        "ruleTag": "critical-domestic-baidupcs.net"
-      },
-      {
-        "domain": [
-          "domain:baiduyun.com"
-        ],
-        "outboundTag": "direct",
-        "ruleTag": "critical-domestic-baiduyun.com"
-      },
-      {
-        "domain": [
-          "domain:baiduyuncdn.com"
-        ],
-        "outboundTag": "direct",
-        "ruleTag": "critical-domestic-baiduyuncdn.com"
-      },
-      {
-        "domain": [
-          "domain:baidubce.com"
-        ],
-        "outboundTag": "direct",
-        "ruleTag": "critical-domestic-baidubce.com"
-      },
-      {
-        "domain": [
-          "domain:bcebos.com"
-        ],
-        "outboundTag": "direct",
-        "ruleTag": "critical-domestic-bcebos.com"
-      },
-      {
-        "domain": [
-          "domain:bdstatic.com"
-        ],
-        "outboundTag": "direct",
-        "ruleTag": "critical-domestic-bdstatic.com"
-      },
-      {
-        "domain": [
-          "ext:AppleProxySiteCurrent.dat:APP-HIJACKING"
-        ],
-        "ip": [
-          "ext:AppleProxyIPCurrent.dat:APP-HIJACKING"
+          "geosite:apple-proxy-security"
         ],
         "outboundTag": "block",
-        "ruleTag": "source-Hijacking"
+        "ruleTag": "inline-security"
       },
       {
         "domain": [
-          "ext:AppleProxySiteCurrent.dat:APP-BLOCKHTTPDNS"
-        ],
-        "ip": [
-          "ext:AppleProxyIPCurrent.dat:APP-BLOCKHTTPDNS"
-        ],
-        "outboundTag": "block",
-        "ruleTag": "source-BlockHttpDNS"
-      },
-      {
-        "domain": [
-          "ext:AppleProxySiteCurrent.dat:APP-PRIVACY"
-        ],
-        "ip": [
-          "ext:AppleProxyIPCurrent.dat:APP-PRIVACY"
+          "geosite:apple-proxy-privacy"
         ],
         "outboundTag": "direct",
-        "ruleTag": "source-Privacy"
+        "ruleTag": "inline-privacy"
       },
       {
         "domain": [
-          "ext:AppleProxySiteCurrent.dat:APP-DOMESTICCORE"
-        ],
-        "ip": [
-          "ext:AppleProxyIPCurrent.dat:APP-DOMESTICCORE"
+          "geosite:cn"
         ],
         "outboundTag": "direct",
-        "ruleTag": "source-DomesticCore"
+        "ruleTag": "inline-domestic"
       },
       {
         "domain": [
-          "ext:AppleProxySiteCurrent.dat:APP-DOMESTICGAME"
-        ],
-        "ip": [
-          "ext:AppleProxyIPCurrent.dat:APP-DOMESTICGAME"
-        ],
-        "outboundTag": "direct",
-        "ruleTag": "source-DomesticGame"
-      },
-      {
-        "domain": [
-          "ext:AppleProxySiteCurrent.dat:APP-STEAMCN"
-        ],
-        "ip": [
-          "ext:AppleProxyIPCurrent.dat:APP-STEAMCN"
-        ],
-        "outboundTag": "direct",
-        "ruleTag": "source-SteamCN"
-      },
-      {
-        "domain": [
-          "ext:AppleProxySiteCurrent.dat:APP-BILIBILI"
-        ],
-        "ip": [
-          "ext:AppleProxyIPCurrent.dat:APP-BILIBILI"
-        ],
-        "outboundTag": "direct",
-        "ruleTag": "source-BiliBili"
-      },
-      {
-        "domain": [
-          "ext:AppleProxySiteCurrent.dat:APP-BYTEDANCE"
-        ],
-        "ip": [
-          "ext:AppleProxyIPCurrent.dat:APP-BYTEDANCE"
-        ],
-        "outboundTag": "direct",
-        "ruleTag": "source-ByteDance"
-      },
-      {
-        "domain": [
-          "ext:AppleProxySiteCurrent.dat:APP-XIAOHONGSHU"
-        ],
-        "ip": [
-          "ext:AppleProxyIPCurrent.dat:APP-XIAOHONGSHU"
-        ],
-        "outboundTag": "direct",
-        "ruleTag": "source-XiaoHongShu"
-      },
-      {
-        "domain": [
-          "ext:AppleProxySiteCurrent.dat:APP-WEIBO"
-        ],
-        "ip": [
-          "ext:AppleProxyIPCurrent.dat:APP-WEIBO"
-        ],
-        "outboundTag": "direct",
-        "ruleTag": "source-Weibo"
-      },
-      {
-        "domain": [
-          "ext:AppleProxySiteCurrent.dat:APP-OPENAI"
-        ],
-        "ip": [
-          "ext:AppleProxyIPCurrent.dat:APP-OPENAI"
+          "geosite:apple-proxy-overseas"
         ],
         "outboundTag": "proxy",
-        "ruleTag": "source-OpenAI"
-      },
-      {
-        "domain": [
-          "ext:AppleProxySiteCurrent.dat:APP-CLAUDE"
-        ],
-        "ip": [
-          "ext:AppleProxyIPCurrent.dat:APP-CLAUDE"
-        ],
-        "outboundTag": "proxy",
-        "ruleTag": "source-Claude"
-      },
-      {
-        "domain": [
-          "ext:AppleProxySiteCurrent.dat:APP-GEMINI"
-        ],
-        "ip": [
-          "ext:AppleProxyIPCurrent.dat:APP-GEMINI"
-        ],
-        "outboundTag": "proxy",
-        "ruleTag": "source-Gemini"
-      },
-      {
-        "domain": [
-          "ext:AppleProxySiteCurrent.dat:APP-COPILOT"
-        ],
-        "ip": [
-          "ext:AppleProxyIPCurrent.dat:APP-COPILOT"
-        ],
-        "outboundTag": "proxy",
-        "ruleTag": "source-Copilot"
-      },
-      {
-        "domain": [
-          "ext:AppleProxySiteCurrent.dat:APP-GITHUB"
-        ],
-        "ip": [
-          "ext:AppleProxyIPCurrent.dat:APP-GITHUB"
-        ],
-        "outboundTag": "proxy",
-        "ruleTag": "source-GitHub"
-      },
-      {
-        "domain": [
-          "ext:AppleProxySiteCurrent.dat:APP-YOUTUBE"
-        ],
-        "ip": [
-          "ext:AppleProxyIPCurrent.dat:APP-YOUTUBE"
-        ],
-        "outboundTag": "proxy",
-        "ruleTag": "source-YouTube"
-      },
-      {
-        "domain": [
-          "ext:AppleProxySiteCurrent.dat:APP-NETFLIX"
-        ],
-        "ip": [
-          "ext:AppleProxyIPCurrent.dat:APP-NETFLIX"
-        ],
-        "outboundTag": "proxy",
-        "ruleTag": "source-Netflix"
-      },
-      {
-        "domain": [
-          "ext:AppleProxySiteCurrent.dat:APP-DISNEY"
-        ],
-        "ip": [
-          "ext:AppleProxyIPCurrent.dat:APP-DISNEY"
-        ],
-        "outboundTag": "proxy",
-        "ruleTag": "source-Disney"
-      },
-      {
-        "domain": [
-          "ext:AppleProxySiteCurrent.dat:APP-SPOTIFY"
-        ],
-        "ip": [
-          "ext:AppleProxyIPCurrent.dat:APP-SPOTIFY"
-        ],
-        "outboundTag": "proxy",
-        "ruleTag": "source-Spotify"
-      },
-      {
-        "domain": [
-          "ext:AppleProxySiteCurrent.dat:APP-GLOBALMEDIA"
-        ],
-        "ip": [
-          "ext:AppleProxyIPCurrent.dat:APP-GLOBALMEDIA"
-        ],
-        "outboundTag": "proxy",
-        "ruleTag": "source-GlobalMedia"
-      },
-      {
-        "domain": [
-          "ext:AppleProxySiteCurrent.dat:APP-TELEGRAM"
-        ],
-        "ip": [
-          "ext:AppleProxyIPCurrent.dat:APP-TELEGRAM"
-        ],
-        "outboundTag": "proxy",
-        "ruleTag": "source-Telegram"
-      },
-      {
-        "domain": [
-          "ext:AppleProxySiteCurrent.dat:APP-FACEBOOK"
-        ],
-        "ip": [
-          "ext:AppleProxyIPCurrent.dat:APP-FACEBOOK"
-        ],
-        "outboundTag": "proxy",
-        "ruleTag": "source-Facebook"
-      },
-      {
-        "domain": [
-          "ext:AppleProxySiteCurrent.dat:APP-INSTAGRAM"
-        ],
-        "ip": [
-          "ext:AppleProxyIPCurrent.dat:APP-INSTAGRAM"
-        ],
-        "outboundTag": "proxy",
-        "ruleTag": "source-Instagram"
-      },
-      {
-        "domain": [
-          "ext:AppleProxySiteCurrent.dat:APP-TWITTER"
-        ],
-        "ip": [
-          "ext:AppleProxyIPCurrent.dat:APP-TWITTER"
-        ],
-        "outboundTag": "proxy",
-        "ruleTag": "source-Twitter"
-      },
-      {
-        "domain": [
-          "ext:AppleProxySiteCurrent.dat:APP-TIKTOK"
-        ],
-        "ip": [
-          "ext:AppleProxyIPCurrent.dat:APP-TIKTOK"
-        ],
-        "outboundTag": "proxy",
-        "ruleTag": "source-TikTok"
-      },
-      {
-        "domain": [
-          "ext:AppleProxySiteCurrent.dat:APP-APPLE"
-        ],
-        "ip": [
-          "ext:AppleProxyIPCurrent.dat:APP-APPLE"
-        ],
-        "outboundTag": "direct",
-        "ruleTag": "source-Apple"
-      },
-      {
-        "domain": [
-          "ext:AppleProxySiteCurrent.dat:APP-MICROSOFT"
-        ],
-        "ip": [
-          "ext:AppleProxyIPCurrent.dat:APP-MICROSOFT"
-        ],
-        "outboundTag": "direct",
-        "ruleTag": "source-Microsoft"
-      },
-      {
-        "domain": [
-          "ext:AppleProxySiteCurrent.dat:APP-DOWNLOAD"
-        ],
-        "ip": [
-          "ext:AppleProxyIPCurrent.dat:APP-DOWNLOAD"
-        ],
-        "outboundTag": "direct",
-        "ruleTag": "source-Download"
-      },
-      {
-        "domain": [
-          "ext:AppleProxySiteCurrent.dat:APP-PRIVATETRACKER"
-        ],
-        "ip": [
-          "ext:AppleProxyIPCurrent.dat:APP-PRIVATETRACKER"
-        ],
-        "outboundTag": "direct",
-        "ruleTag": "source-PrivateTracker"
-      },
-      {
-        "domain": [
-          "ext:AppleProxySiteCurrent.dat:APP-OVERSEASGAME"
-        ],
-        "ip": [
-          "ext:AppleProxyIPCurrent.dat:APP-OVERSEASGAME"
-        ],
-        "outboundTag": "proxy",
-        "ruleTag": "source-OverseasGame"
-      },
-      {
-        "domain": [
-          "ext:AppleProxySiteCurrent.dat:APP-CHINATLD"
-        ],
-        "ip": [
-          "ext:AppleProxyIPCurrent.dat:APP-CHINATLD"
-        ],
-        "outboundTag": "direct",
-        "ruleTag": "source-ChinaTLD"
-      },
-      {
-        "domain": [
-          "ext:AppleProxySiteCurrent.dat:APP-CHINAIP"
-        ],
-        "ip": [
-          "ext:AppleProxyIPCurrent.dat:APP-CHINAIP"
-        ],
-        "outboundTag": "direct",
-        "ruleTag": "source-ChinaIP"
-      },
-      {
-        "domain": [
-          "ext:AppleProxySiteCurrent.dat:APP-V2FLY-DOMAIN-LIST"
-        ],
-        "ip": [
-          "ext:AppleProxyIPCurrent.dat:APP-V2FLY-DOMAIN-LIST"
-        ],
-        "outboundTag": "proxy",
-        "ruleTag": "source-v2fly-domain-list"
-      },
-      {
-        "domain": [
-          "ext:AppleProxySiteCurrent.dat:APP-LOYALSOLDIER-RULES-DAT"
-        ],
-        "ip": [
-          "ext:AppleProxyIPCurrent.dat:APP-LOYALSOLDIER-RULES-DAT"
-        ],
-        "outboundTag": "proxy",
-        "ruleTag": "source-loyalsoldier-rules-dat"
-      },
-      {
-        "domain": [
-          "ext:AppleProxySiteCurrent.dat:APP-LOYALSOLDIER-CLASH-DIRECT"
-        ],
-        "ip": [
-          "ext:AppleProxyIPCurrent.dat:APP-LOYALSOLDIER-CLASH-DIRECT"
-        ],
-        "outboundTag": "proxy",
-        "ruleTag": "source-loyalsoldier-clash-direct"
-      },
-      {
-        "domain": [
-          "ext:AppleProxySiteCurrent.dat:APP-LOYALSOLDIER-CLASH-REJECT"
-        ],
-        "ip": [
-          "ext:AppleProxyIPCurrent.dat:APP-LOYALSOLDIER-CLASH-REJECT"
-        ],
-        "outboundTag": "proxy",
-        "ruleTag": "source-loyalsoldier-clash-reject"
-      },
-      {
-        "domain": [
-          "ext:AppleProxySiteCurrent.dat:APP-LOYALSOLDIER-CLASH-APPLICATIONS"
-        ],
-        "ip": [
-          "ext:AppleProxyIPCurrent.dat:APP-LOYALSOLDIER-CLASH-APPLICATIONS"
-        ],
-        "outboundTag": "proxy",
-        "ruleTag": "source-loyalsoldier-clash-applications"
-      },
-      {
-        "domain": [
-          "ext:AppleProxySiteCurrent.dat:APP-LOYALSOLDIER-CLASH-PRIVATE"
-        ],
-        "ip": [
-          "ext:AppleProxyIPCurrent.dat:APP-LOYALSOLDIER-CLASH-PRIVATE"
-        ],
-        "outboundTag": "proxy",
-        "ruleTag": "source-loyalsoldier-clash-private"
-      },
-      {
-        "domain": [
-          "ext:AppleProxySiteCurrent.dat:APP-LOYALSOLDIER-CLASH-APPLE"
-        ],
-        "ip": [
-          "ext:AppleProxyIPCurrent.dat:APP-LOYALSOLDIER-CLASH-APPLE"
-        ],
-        "outboundTag": "proxy",
-        "ruleTag": "source-loyalsoldier-clash-apple"
-      },
-      {
-        "domain": [
-          "ext:AppleProxySiteCurrent.dat:APP-LOYALSOLDIER-CLASH-ICLOUD"
-        ],
-        "ip": [
-          "ext:AppleProxyIPCurrent.dat:APP-LOYALSOLDIER-CLASH-ICLOUD"
-        ],
-        "outboundTag": "proxy",
-        "ruleTag": "source-loyalsoldier-clash-icloud"
-      },
-      {
-        "domain": [
-          "ext:AppleProxySiteCurrent.dat:APP-LOYALSOLDIER-CLASH-GFW"
-        ],
-        "ip": [
-          "ext:AppleProxyIPCurrent.dat:APP-LOYALSOLDIER-CLASH-GFW"
-        ],
-        "outboundTag": "proxy",
-        "ruleTag": "source-loyalsoldier-clash-gfw"
-      },
-      {
-        "domain": [
-          "ext:AppleProxySiteCurrent.dat:APP-LOYALSOLDIER-CLASH-TLD-NOT-CN"
-        ],
-        "ip": [
-          "ext:AppleProxyIPCurrent.dat:APP-LOYALSOLDIER-CLASH-TLD-NOT-CN"
-        ],
-        "outboundTag": "proxy",
-        "ruleTag": "source-loyalsoldier-clash-tld-not-cn"
-      },
-      {
-        "domain": [
-          "ext:AppleProxySiteCurrent.dat:APP-LOYALSOLDIER-CLASH-TELEGRAMCIDR"
-        ],
-        "ip": [
-          "ext:AppleProxyIPCurrent.dat:APP-LOYALSOLDIER-CLASH-TELEGRAMCIDR"
-        ],
-        "outboundTag": "proxy",
-        "ruleTag": "source-loyalsoldier-clash-telegramcidr"
-      },
-      {
-        "domain": [
-          "ext:AppleProxySiteCurrent.dat:APP-LOYALSOLDIER-CLASH-LANCIDR"
-        ],
-        "ip": [
-          "ext:AppleProxyIPCurrent.dat:APP-LOYALSOLDIER-CLASH-LANCIDR"
-        ],
-        "outboundTag": "proxy",
-        "ruleTag": "source-loyalsoldier-clash-lancidr"
-      },
-      {
-        "domain": [
-          "ext:AppleProxySiteCurrent.dat:APP-LOYALSOLDIER-CLASH-CNCIDR"
-        ],
-        "ip": [
-          "ext:AppleProxyIPCurrent.dat:APP-LOYALSOLDIER-CLASH-CNCIDR"
-        ],
-        "outboundTag": "proxy",
-        "ruleTag": "source-loyalsoldier-clash-cncidr"
+        "ruleTag": "inline-overseas"
       },
       {
         "network": "quic",

@@ -29,7 +29,7 @@ test("public site contains one current snapshot and no legacy publication roots"
 });
 
 test("current client manifests close over their emitted bytes", async () => {
-  const directories = ["anywhere", "clash", "egern", "happ", "incy", "shadowrocket", "sing-box", "surge", "v2box"];
+  const directories = ["anywhere", "clash", "egern", "happ", "incy", "shadowrocket", "sing-box", "surge", "v2box", "v2rayn"];
   for (const directory of directories) {
     const manifest = JSON.parse(await readFile(new URL(directory + "/client-manifest.json", currentRoot), "utf8"));
     assert.match(manifest.manifestHash, /^[0-9a-f]{64}$/u, directory);

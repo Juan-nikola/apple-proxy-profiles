@@ -1,7 +1,7 @@
 import { UPSTREAM_RULE_SOURCE_DEFINITIONS } from "./catalog-data.js";
 import { DEFAULT_RULE_CLIENT_CATALOG } from "./lightweight-policy.js";
 
-const RULE_ROOT = "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Shadowrocket";
+const RULE_ROOT = "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/dab47069a30c4ae70f7f5f4c919d639d9aaf79dc/rule/Shadowrocket";
 
 function rule(id, policy, minEntries, inputFormat = "RULE-SET", directory = id) {
   const sourcePath = `${directory}/${id}.list`;

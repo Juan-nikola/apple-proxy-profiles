@@ -1165,7 +1165,7 @@ export function anywhereNodeExclusionReason(node) {
 export function evaluateNodeForClient(node, client) {
   if (!Object.values(CLIENT).includes(client)) return { supported: false, reason: "unsupported-client" };
 
-  if (client === CLIENT.v2box || client === CLIENT.happ) {
+  if (client === CLIENT.v2box || client === CLIENT.v2rayn || client === CLIENT.happ) {
     const reason = evaluateXrayNodeExclusionReason(node ?? {}, client);
     return reason ? { supported: false, reason } : { supported: true, reason: null };
   }
@@ -1188,14 +1188,17 @@ const XRAY_TRANSPORTS = new Set([
   "tcp", "raw", "ws", "grpc", "h2", "http2", "http", "httpupgrade", "xhttp", "kcp", "mkcp", "hysteria",
 ]);
 const XRAY_CHAIN_REASON = Object.freeze({
+  v2rayn: "unsupported-v2rayn-chain",
   v2box: "unsupported-v2box-chain",
   happ: "unsupported-happ-chain",
 });
 const XRAY_PROTOCOL_REASON = Object.freeze({
+  v2rayn: "unsupported-v2rayn-protocol",
   v2box: "unsupported-v2box-protocol",
   happ: "unsupported-happ-protocol",
 });
 const XRAY_TRANSPORT_REASON = Object.freeze({
+  v2rayn: "unsupported-v2rayn-transport",
   v2box: "unsupported-v2box-transport",
   happ: "unsupported-happ-transport",
 });
@@ -1277,7 +1280,7 @@ function evaluateXrayNodeExclusionReason(node, client) {
   if (tls) return tls;
   const transport = xrayTransportReason(node, client, protocol);
   if (transport) return transport;
-  if ((client === "v2box" || client === "happ") && protocol === "socks5"
+  if ((client === "v2box" || client === "v2rayn" || client === "happ") && protocol === "socks5"
     && (node.tls === true || node.security === "tls" || node.security === "reality")) {
     return `unsupported-${client}-tls`;
   }

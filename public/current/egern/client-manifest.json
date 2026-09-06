@@ -178,28 +178,28 @@
       "sha256": "376840d4275a6c1db76ff3804bb0f9c88f03a24376fd6647067b6bf3a46a3a5c"
     },
     {
-      "bytes": 125830,
+      "bytes": 126596,
       "path": "egern/scripts/egern-node-generator.js",
-      "sha256": "56e54028a22762e05e4fc7ea7cc987a7d5f662a8c26cb32b1d5d1b2ab78d1651"
+      "sha256": "c782fa511de9cf94131ada652cf4a0dd1949d6c0a5ff860ca865e48e79f924a7"
     },
     {
-      "bytes": 251654,
+      "bytes": 252420,
       "path": "egern/scripts/egern-profile-generator.js",
-      "sha256": "dc4331569b9364f6c178b3434309bad4646a37fb0e0605abbf1f2f8065ad5822"
+      "sha256": "051de58fa91f052b8328fb4aaa765e94bb32c68e3b1d4eb94e7d5a0e0726c224"
     },
     {
-      "bytes": 125830,
+      "bytes": 126596,
       "path": "egern/scripts/substore-node-generator.js",
-      "sha256": "56e54028a22762e05e4fc7ea7cc987a7d5f662a8c26cb32b1d5d1b2ab78d1651"
+      "sha256": "c782fa511de9cf94131ada652cf4a0dd1949d6c0a5ff860ca865e48e79f924a7"
     },
     {
-      "bytes": 251654,
+      "bytes": 252420,
       "path": "egern/scripts/substore-profile-generator.js",
-      "sha256": "dc4331569b9364f6c178b3434309bad4646a37fb0e0605abbf1f2f8065ad5822"
+      "sha256": "051de58fa91f052b8328fb4aaa765e94bb32c68e3b1d4eb94e7d5a0e0726c224"
     }
   ],
   "generatedAt": "2026-08-25T18:39:12Z",
-  "manifestHash": "8c1c02a23caae08a13c87c3b70c49a75c7cffaa4182c45910c976390b124d812",
+  "manifestHash": "5c39a79d9c84fce6d09a0b2f9b6327e6597be74c7a94dd98de4e9675ff981d66",
   "optionalPacks": {
     "adblock-full": "a8227f63091e4e112cf0e4e2a6f8b7ff33fcd0bd242ee2067be742aeee8e4090"
   },

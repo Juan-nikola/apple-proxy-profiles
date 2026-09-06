@@ -84,6 +84,8 @@ const OPTIONAL_AWARE_GENERATOR_PATHS = new Set([
   "sing-box/scripts/substore-config-generator.js",
   "v2box/scripts/substore-node-generator.js",
   "v2box/scripts/substore-config-generator.js",
+  "v2rayn/scripts/substore-node-generator.js",
+  "v2rayn/scripts/substore-config-generator.js",
   "clash/scripts/clash-node-generator.js",
   "clash/scripts/substore-node-generator.js",
   "clash/scripts/clash-profile-generator.js",
@@ -97,6 +99,10 @@ const OPTIONAL_AWARE_GENERATOR_PATHS = new Set([
 const V2BOX_SCRIPT_PATHS = Object.freeze([
   "v2box/scripts/substore-node-generator.js",
   "v2box/scripts/substore-config-generator.js",
+]);
+const V2RAYN_SCRIPT_PATHS = Object.freeze([
+  "v2rayn/scripts/substore-node-generator.js",
+  "v2rayn/scripts/substore-config-generator.js",
 ]);
 const CLASH_SCRIPT_PATHS = Object.freeze([
   "clash/scripts/clash-node-generator.js",
@@ -116,6 +122,7 @@ const INCY_SCRIPT_PATHS = Object.freeze([
 ]);
 const NATIVE_POLICY_GENERATOR_PATHS = new Set([
   ...V2BOX_SCRIPT_PATHS,
+  ...V2RAYN_SCRIPT_PATHS,
   ...CLASH_SCRIPT_PATHS,
   ...HAPP_SCRIPT_PATHS,
   ...INCY_SCRIPT_PATHS,
@@ -124,6 +131,9 @@ const REGION_GEO_DATA_REGIONS = Object.freeze(["cn", "global", "ru", "ir"]);
 
 function v2boxPublicScripts() {
   return nativePublicScripts("v2box", V2BOX_SCRIPT_PATHS);
+}
+function v2raynPublicScripts() {
+  return nativePublicScripts("v2rayn", V2RAYN_SCRIPT_PATHS);
 }
 
 function clashPublicScripts() {
@@ -272,6 +282,7 @@ function addSha256Sidecars(target, additions) {
 function addAdditionalFiles(target, additions) {
   const overridable = new Set([
     ...V2BOX_SCRIPT_PATHS,
+    ...V2RAYN_SCRIPT_PATHS,
     ...CLASH_SCRIPT_PATHS,
     ...HAPP_SCRIPT_PATHS,
   ]);
@@ -734,6 +745,7 @@ export function buildClientArtifacts({
   });
   const defaults = rendered.files;
   addFiles(defaults, v2boxPublicScripts());
+  addFiles(defaults, v2raynPublicScripts());
   addFiles(defaults, clashPublicScripts());
   addFiles(defaults, happPublicScripts());
   addFiles(defaults, incyPublicScripts());

@@ -19,7 +19,7 @@ const DEFAULTS = Object.freeze({
   adblockMode: "off",
   nodeErrorMode: "strict",
 });
-const PLATFORMS = new Set(["macos", "iphone", "ipad", "android"]);
+const PLATFORMS = new Set(["macos", "windows", "iphone", "ipad", "android"]);
 const CHANNELS = new Set(FRONTIER_CHANNELS);
 const PROFILE_MODES = new Set(["light", "diagnostic"]);
 const ADBLOCK_MODES = new Set(["off", "full"]);

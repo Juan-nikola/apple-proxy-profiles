@@ -16,6 +16,7 @@ const COLLECTIONS = Object.freeze([
   "apple-proxy-surge",
   "apple-proxy-singbox",
   "apple-proxy-happ",
+  "apple-proxy-v2rayn",
   "apple-proxy-v2box",
   "apple-proxy-clash",
   "apple-proxy-incy",
@@ -58,6 +59,8 @@ function nodeTask(name, client, channel, collection) {
     : client === "surge"
       ? "surge-nodes-generator.js"
       : client === "v2box"
+        ? "substore-node-generator.js"
+      : client === "v2rayn"
         ? "substore-node-generator.js"
       : `${client}-node-generator.js`;
   return remoteTask(
@@ -114,10 +117,15 @@ export function canonicalTaskCatalog(channel = "current") {
     configTask("singbox-config-iphone", "sing-box", "sing-box-config-generator.js", channel, "apple-proxy-singbox", "iphone", "Apple-Proxy-Nodes", { profileMode: "light", nodeErrorMode: "strict" }),
     configTask("singbox-config-ipad", "sing-box", "sing-box-config-generator.js", channel, "apple-proxy-singbox", "ipad", "Apple-Proxy-Nodes", { profileMode: "light", nodeErrorMode: "strict" }),
     configTask("singbox-config-android", "sing-box", "sing-box-config-generator.js", channel, "apple-proxy-singbox", "android", "Apple-Proxy-Nodes", { profileMode: "light", nodeErrorMode: "strict" }),
-    Object.freeze({ name: "apple-proxy-policy", client: "shared", kind: "private-policy", channel, policySchema: "schemaVersion=3; clients=anywhere,egern,shadowrocket,surge,sing-box,happ,v2box,clash,incy; each client has schemaVersion=2 and complete 13-target map; readers accept schemaVersion=1/2", url: null }),
+    Object.freeze({ name: "apple-proxy-policy", client: "shared", kind: "private-policy", channel, policySchema: "schemaVersion=3; clients=anywhere,egern,shadowrocket,surge,sing-box,happ,v2rayn,v2box,clash,incy; each client has schemaVersion=2 and complete 13-target map; readers accept schemaVersion=1/2", url: null }),
     configTask("happ-config-macos", "happ", "happ-config-generator.js", channel, "apple-proxy-happ", "macos", "Apple-Proxy-Happ", {}, { omitKeys: ["autoGroupMode", "clientChain"] }),
     configTask("happ-config-iphone", "happ", "happ-config-generator.js", channel, "apple-proxy-happ", "iphone", "Apple-Proxy-Happ", {}, { omitKeys: ["autoGroupMode", "clientChain"] }),
     configTask("happ-config-ipad", "happ", "happ-config-generator.js", channel, "apple-proxy-happ", "ipad", "Apple-Proxy-Happ", {}, { omitKeys: ["autoGroupMode", "clientChain"] }),
+    nodeTask("v2rayn-nodes", "v2rayn", channel, "apple-proxy-v2rayn"),
+    configTask("v2rayn-singbox-windows", "v2rayn", "substore-config-generator.js", channel, "apple-proxy-v2rayn", "windows", "Apple-Proxy-v2rayN", { core: "singbox", region: "cn" }),
+    configTask("v2rayn-singbox-macos", "v2rayn", "substore-config-generator.js", channel, "apple-proxy-v2rayn", "macos", "Apple-Proxy-v2rayN", { core: "singbox", region: "cn" }),
+    configTask("v2rayn-xray-windows", "v2rayn", "substore-config-generator.js", channel, "apple-proxy-v2rayn", "windows", "Apple-Proxy-v2rayN", { core: "xray", region: "cn" }),
+    configTask("v2rayn-xray-macos", "v2rayn", "substore-config-generator.js", channel, "apple-proxy-v2rayn", "macos", "Apple-Proxy-v2rayN", { core: "xray", region: "cn" }),
     nodeTask("v2box-nodes", "v2box", channel, "apple-proxy-v2box"),
     nodeTask("clash-nodes", "clash", channel, "apple-proxy-clash"),
     configTask("clash-config-macos", "clash", "clash-profile-generator.js", channel, "apple-proxy-clash", "macos", "Apple-Proxy-Clash", { nodeSubscriptionUrl: "<PRIVATE_CLASH_NODES_URL>" }),
@@ -135,7 +143,7 @@ export function canonicalTaskCatalog(channel = "current") {
     configTask("incy-config-windows", "incy", "incy-config-generator.js", channel, "apple-proxy-incy", "windows", "INCY", { adblockMode: "off", format: "array", selectionMode: "both" }),
     configTask("incy-config-linux", "incy", "incy-config-generator.js", channel, "apple-proxy-incy", "linux", "INCY", { adblockMode: "off", format: "array", selectionMode: "both" }),
   ];
-  if (tasks.length !== 38) throw new Error(`Expected 38 canonical tasks, got ${tasks.length}`);
+  if (tasks.length !== 43) throw new Error(`Expected 43 canonical tasks, got ${tasks.length}`);
   return Object.freeze(tasks);
 }
 
@@ -165,7 +173,7 @@ export function validatePrivateSubstoreConfig(config) {
     const result = checkSubstoreTaskUrl(task.url);
     if (!result.ok) return false;
   }
-  return config.tasks.length === 38;
+  return config.tasks.length === 43;
 }
 
 export async function writePrivateSubstoreConfig({ sourceUrl, channel = "current", path = PRIVATE_CONFIG_PATH } = {}) {
