@@ -36,6 +36,13 @@ export async function operator(input, targetPlatform, context = {}) {
       ruleBaseUrl: `https://juan-nikola.github.io/apple-proxy-profiles/${options.channel}/sing-box/rule-sets`,
       policyResolution,
     });
+    // Keep the Custo profile active while allowing local selector changes.
+    // v2rayN has no selector UI, so sing-box's loopback Clash API is the
+    // stable control surface for choosing a node or business group.
+    config.experimental = {
+      ...config.experimental,
+      clash_api: { external_controller: "127.0.0.1:9090" },
+    };
     // v2rayN accepts one JSON profile per config subscription. Its profile list
     // cannot expose sing-box selector members as separate selectable nodes.
     return { ...input, $content: JSON.stringify(config, null, 2) + "\n" };

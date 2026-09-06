@@ -57,6 +57,7 @@ test("sing-box config output is one v2rayN-importable profile with selectors and
   });
   const payload = JSON.parse(result.$content);
   assert.equal(Array.isArray(payload), false);
+  assert.equal(payload.experimental.clash_api.external_controller, "127.0.0.1:9090");
   assert.equal(payload.route.rules.length > 0, true);
   assert.ok(payload.outbounds.some((item) => item.type === "selector" && item.tag));
   assert.ok(payload.outbounds.some((item) => item.type === "vless" && item.tag));
