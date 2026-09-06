@@ -36,8 +36,6 @@ export async function operator(input, targetPlatform, context = {}) {
       ruleBaseUrl: `https://juan-nikola.github.io/apple-proxy-profiles/${options.channel}/sing-box/rule-sets`,
       policyResolution,
     });
-    config.experimental ??= {};
-    config.experimental.apple_proxy = { core: "singbox", capabilityDiagnostics: { fullGroupSemantics: true, supported: ["business-routing", "china-ip", "fixed-node"], degraded: [], unsupported: [] } };
     return { ...input, $content: JSON.stringify(config, null, 2) + "\n" };
   }
   const profile = renderV2rayNProfile({
