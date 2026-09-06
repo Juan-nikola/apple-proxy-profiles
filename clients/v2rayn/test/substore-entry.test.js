@@ -48,7 +48,7 @@ test("config operator accepts the platform omitted by Sub-Store File processing"
   assert.equal(JSON.parse(result.$content).outbounds.length, 3);
 });
 
-test("sing-box config output includes selectable proxy outbounds alongside the full profile", async () => {
+test("sing-box config output is one v2rayN-importable profile with selectors and proxy outbounds", async () => {
   const result = await configOperator({}, "JSON", {
     arguments: { output: "config", type: "collection", name: "fixture", platform: "macos", subscriptionName: "Fixture", core: "singbox" },
     produceArtifact: async (request) => request.type === "file"
@@ -56,9 +56,10 @@ test("sing-box config output includes selectable proxy outbounds alongside the f
       : [{ name: "fixture", type: "vless", server: "fixture.invalid", port: 443, uuid: "TEST_ONLY_UUID" }],
   });
   const payload = JSON.parse(result.$content);
-  assert.ok(Array.isArray(payload));
-  assert.equal(payload[0].route.rules.length > 0, true);
-  assert.ok(payload.some((item) => item.type === "vless" && item.tag));
+  assert.equal(Array.isArray(payload), false);
+  assert.equal(payload.route.rules.length > 0, true);
+  assert.ok(payload.outbounds.some((item) => item.type === "selector" && item.tag));
+  assert.ok(payload.outbounds.some((item) => item.type === "vless" && item.tag));
 });
 
 test("config operator propagates malformed GeoData instead of hiding it", async () => {
