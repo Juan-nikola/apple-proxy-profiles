@@ -90,7 +90,7 @@
       "referencedDefaultBytes": 0
     },
     "v2rayn": {
-      "manifestHash": "f149874ff1266a59455b0ad2aa598d599df61faa1a7aa9f3707b8464f42b8851",
+      "manifestHash": "5ca8b8f055901af8769c5edaeffcfb825a1c89c910ea70342d65f6d4b2adf3b0",
       "referencedDefaultBytes": 0
     }
   },
@@ -417,12 +417,12 @@
     {
       "bytes": 2340,
       "path": "audit/dashboard.html",
-      "sha256": "35d289cdfa84d7352acff872732a093b5d8e644c6bafa8110b82d3e3e5da8166"
+      "sha256": "62ce66f6306fa068892e7cfcfdf66630223b7a08a7fde33337eaf64940c1e991"
     },
     {
       "bytes": 5345,
       "path": "audit/dashboard.json",
-      "sha256": "a7f7237ae6b7d986e11f00a4b09a4b880e87c48503177542e294eb9ef67e3398"
+      "sha256": "2b297550640fa9b79a233519c20be514f70547f4030f1036c17960fad7c630e1"
     },
     {
       "bytes": 5184,
@@ -1777,12 +1777,12 @@
     {
       "bytes": 664,
       "path": "v2rayn/client-manifest.json",
-      "sha256": "72676c6edcd5078ae7240af74ab06796e508b0dc5a6cd611d347d332cbd80f3d"
+      "sha256": "05bc71b4e5298288c575d156cb796a7527ccb730d3c2c52ee740586f71475bf2"
     },
     {
-      "bytes": 260362,
+      "bytes": 260310,
       "path": "v2rayn/scripts/substore-config-generator.js",
-      "sha256": "fa8b5ab3df2e7bf3243e22be4ca3995d061f8fc909711fa47fb93cfaff612afe"
+      "sha256": "630bc578aa469624d393503f71d2b05f74e0b90769bda8fd1aa97b8a149ae43a"
     },
     {
       "bytes": 122352,
@@ -1791,7 +1791,7 @@
     }
   ],
   "generatedAt": "2026-08-25T18:39:12Z",
-  "manifestHash": "d9e645540ad243e9c9a75eff4c3341a4a869fa8361a55e9a99ef55daec44ca25",
+  "manifestHash": "e0be395cf6885234e0331460a9ff85c248095496dd0d2d1ecc3dcda2cd257227",
   "schemaVersion": 2,
   "upstream": {
     "branch": "master",

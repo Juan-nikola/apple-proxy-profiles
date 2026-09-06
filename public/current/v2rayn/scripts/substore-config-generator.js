@@ -5356,8 +5356,11 @@ var V2rayNConfigBundle = (() => {
         ruleBaseUrl: `https://juan-nikola.github.io/apple-proxy-profiles/${options.channel}/sing-box/rule-sets`,
         policyResolution
       });
-      const selectableOutbounds = config.outbounds.filter(({ type, server }) => server && !["direct", "block", "dns", "selector", "urltest"].includes(type));
-      return { ...input, $content: JSON.stringify([config, ...selectableOutbounds], null, 2) + "\n" };
+      config.experimental = {
+        ...config.experimental,
+        clash_api: { external_controller: "127.0.0.1:9090" }
+      };
+      return { ...input, $content: JSON.stringify(config, null, 2) + "\n" };
     }
     const profile = renderV2rayNProfile({
       options,
