@@ -33,6 +33,7 @@ const REAL_IP_DOMAINS = Object.freeze([
   "*.home.arpa",
   "*.push.apple.com",
 ]);
+const PRIMARY_GROUP_NAME = "🚀 节点选择";
 
 function proxyDefaultGroups(groups) {
   const byName = new Map(groups.map((group) => [group.name, group]));
@@ -89,16 +90,16 @@ function movePolicyToFront(policies, value) {
 
 function applyEgernPolicyResolution(rendered, resolution) {
   if (!resolution || typeof resolution !== "object") return rendered;
-  const byName = new Map(rendered.map((record) => {
-    const type = Object.keys(record)[0];
-    return [record[type].name, type];
-  }));
   return rendered.map((record) => {
     const type = Object.keys(record)[0];
     const fields = record[type];
     const target = UNIFIED_POLICY_TARGETS.find(({ id }) => POLICY_GROUP_BY_TARGET[id] === fields.name);
-    if (!target || !byName.has(fields.name)) return record;
-    const value = policyValue(resolution.targets?.[target.id]);
+    const primaryDefault = fields.name === PRIMARY_GROUP_NAME
+      ? resolution.targets?.final?.resolved
+      : null;
+    const value = target ? policyValue(resolution.targets?.[target.id]) : primaryDefault;
+    if (fields.name === PRIMARY_GROUP_NAME && (typeof value !== "string"
+      || ["FOLLOW", "DIRECT", PRIMARY_GROUP_NAME].includes(value))) return record;
     if (value === null) return record;
     const baselinePolicies = [...(fields.policies ?? [])];
     const policies = movePolicyToFront(baselinePolicies, value);

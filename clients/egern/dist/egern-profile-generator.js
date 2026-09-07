@@ -2277,11 +2277,7 @@ var EgernProfileBundle = (() => {
     const type = strategyType(group.strategy);
     const fields = { name: group.name };
     if (group.candidates.length > 0) fields.policies = [...group.candidates];
-    if (group.name === PRIMARY_GROUP_NAME) {
-      fields.urls = [nodeSubscriptionUrl];
-      fields.filter = NON_CHAINED_FILTER;
-      fields.update_interval = UPDATE_INTERVAL;
-    } else if (group.nodeFilter !== null) {
+    if (group.name !== PRIMARY_GROUP_NAME && group.nodeFilter !== null) {
       fields.urls = [nodeSubscriptionUrl];
       fields.filter = group.nodeFilter;
       fields.update_interval = UPDATE_INTERVAL;
@@ -2317,7 +2313,7 @@ var EgernProfileBundle = (() => {
       groups.set(fields.name, fields);
       if (fields.name === PRIMARY_GROUP_NAME) {
         const expectedPolicies = sharedGroups[index].candidates;
-        if (Object.keys(fields).length !== (expectedPolicies.length > 0 ? 5 : 4) || expectedPolicies.length > 0 && (!Array.isArray(fields.policies) || fields.policies.length !== expectedPolicies.length || fields.policies.some((policy, policyIndex) => policy !== expectedPolicies[policyIndex])) || fields.urls?.length !== 1 || fields.urls[0] !== nodeSubscriptionUrl || fields.filter !== NON_CHAINED_FILTER || fields.update_interval !== UPDATE_INTERVAL) {
+        if (Object.keys(fields).length !== (expectedPolicies.length > 0 ? 2 : 1) || expectedPolicies.length > 0 && (!Array.isArray(fields.policies) || fields.policies.length !== expectedPolicies.length || fields.policies.some((policy, policyIndex) => policy !== expectedPolicies[policyIndex]))) {
           throw graphError("has an invalid rendered primary group");
         }
       } else if (fields.urls !== void 0) {
@@ -4680,6 +4676,7 @@ var EgernProfileBundle = (() => {
     "*.home.arpa",
     "*.push.apple.com"
   ]);
+  var PRIMARY_GROUP_NAME3 = "\u{1F680} \u8282\u70B9\u9009\u62E9";
   function proxyDefaultGroups(groups) {
     const byName = new Map(groups.map((group) => [group.name, group]));
     const visiting = /* @__PURE__ */ new Set();
@@ -4728,16 +4725,13 @@ var EgernProfileBundle = (() => {
   }
   function applyEgernPolicyResolution(rendered, resolution) {
     if (!resolution || typeof resolution !== "object") return rendered;
-    const byName = new Map(rendered.map((record2) => {
-      const type = Object.keys(record2)[0];
-      return [record2[type].name, type];
-    }));
     return rendered.map((record2) => {
       const type = Object.keys(record2)[0];
       const fields = record2[type];
       const target = UNIFIED_POLICY_TARGETS.find(({ id }) => POLICY_GROUP_BY_TARGET[id] === fields.name);
-      if (!target || !byName.has(fields.name)) return record2;
-      const value = policyValue(resolution.targets?.[target.id]);
+      const primaryDefault = fields.name === PRIMARY_GROUP_NAME3 ? resolution.targets?.final?.resolved : null;
+      const value = target ? policyValue(resolution.targets?.[target.id]) : primaryDefault;
+      if (fields.name === PRIMARY_GROUP_NAME3 && (typeof value !== "string" || ["FOLLOW", "DIRECT", PRIMARY_GROUP_NAME3].includes(value))) return record2;
       if (value === null) return record2;
       const baselinePolicies = [...fields.policies ?? []];
       const policies = movePolicyToFront(baselinePolicies, value);

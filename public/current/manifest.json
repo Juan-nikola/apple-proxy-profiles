@@ -62,7 +62,7 @@
       "referencedDefaultBytes": 12781681
     },
     "egern": {
-      "manifestHash": "a99e9d5400966a26b10436a564c543560106efff5dac27fb553d1391ab3b6e23",
+      "manifestHash": "a7e99e4a2f7929ae5a7b2a99a7189d318291703ca82e112970056cfc53a7e467",
       "referencedDefaultBytes": 7557168
     },
     "happ": {
@@ -712,22 +712,22 @@
     {
       "bytes": 6735,
       "path": "egern/client-manifest.json",
-      "sha256": "d69d45a54584e255cddf5d39116c8e44a3b940bd1a0c89f0a8c42220e809d909"
+      "sha256": "92460dd772825367ae34fc3c0f8595357c85e8c1808c9ee9e8c244b99aa59135"
     },
     {
-      "bytes": 28702,
+      "bytes": 28575,
       "path": "egern/examples/egern-ipad.yaml",
-      "sha256": "74ab1910bd1f05ff275d9847fd2be5a721a9f15f16873b517c9499c372023561"
+      "sha256": "caa9d5d5989ea21572e9257b99f9bf4e39225a8e3ca45e503952f21a623b374c"
     },
     {
-      "bytes": 28702,
+      "bytes": 28575,
       "path": "egern/examples/egern-iphone.yaml",
-      "sha256": "74ab1910bd1f05ff275d9847fd2be5a721a9f15f16873b517c9499c372023561"
+      "sha256": "caa9d5d5989ea21572e9257b99f9bf4e39225a8e3ca45e503952f21a623b374c"
     },
     {
-      "bytes": 28699,
+      "bytes": 28572,
       "path": "egern/examples/egern-macos.yaml",
-      "sha256": "5ba13bc9d10ddcf79595ebed962020531856377760108325ea9648e464131c8f"
+      "sha256": "dbe74fe63945f7dc907f959ec59e7fce5a6942d56f61c001a594010039502b51"
     },
     {
       "bytes": 1927,
@@ -895,9 +895,9 @@
       "sha256": "c782fa511de9cf94131ada652cf4a0dd1949d6c0a5ff860ca865e48e79f924a7"
     },
     {
-      "bytes": 253010,
+      "bytes": 252851,
       "path": "egern/scripts/egern-profile-generator.js",
-      "sha256": "f545c9705b521dd5cd63262e03172f4404baeb823f0ecf06d5c584b912c9cb01"
+      "sha256": "f40296cd3b50e4da88538d4a0cd8d5f0baab3cc966a51321c4e2c73b08b0695e"
     },
     {
       "bytes": 126596,
@@ -905,9 +905,9 @@
       "sha256": "c782fa511de9cf94131ada652cf4a0dd1949d6c0a5ff860ca865e48e79f924a7"
     },
     {
-      "bytes": 253010,
+      "bytes": 252851,
       "path": "egern/scripts/substore-profile-generator.js",
-      "sha256": "f545c9705b521dd5cd63262e03172f4404baeb823f0ecf06d5c584b912c9cb01"
+      "sha256": "f40296cd3b50e4da88538d4a0cd8d5f0baab3cc966a51321c4e2c73b08b0695e"
     },
     {
       "bytes": 250970,
@@ -1791,7 +1791,7 @@
     }
   ],
   "generatedAt": "2026-08-25T18:39:12Z",
-  "manifestHash": "3184aac2d0198499eb0d955979f08e24c2f2f1e2154f176f4dadb7da0f53c458",
+  "manifestHash": "e26dac10750a3e57ee707bfc832142394e0aa92843b1f301fff8609fed9e7a7c",
   "schemaVersion": 2,
   "upstream": {
     "branch": "master",

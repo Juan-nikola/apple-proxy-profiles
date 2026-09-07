@@ -82,9 +82,6 @@ test("rendered profiles validate with the primary-to-continent hierarchy", () =>
   assert.deepEqual(namedGroup(profile, "🚀 节点选择"), {
     name: "🚀 节点选择",
     policies: ["⚡ 全部自动", "🌏 亚太"],
-    urls: [PRIVATE_URL],
-    filter: "^(?!🔗 ).+$",
-    update_interval: 21600,
     block_quic: true,
   });
   assert.deepEqual(namedGroup(profile, "🌏 亚太"), {
@@ -110,6 +107,24 @@ test("uses the policy-driven leak group as Egern's default subscription group", 
 
   assert.equal(profile.default_subscription_group, "漏网之鱼");
   assert.deepEqual(namedGroup(profile, "漏网之鱼").policies.slice(0, 3), ["DIRECT", "🚀 节点选择", "REJECT"]);
+});
+
+test("puts a policy-selected fixed node first in Egern's primary selector", () => {
+  const selectedNode = { ...allCompatibleNodes.find((node) => node.name === "VLESS Raw"), name: "🇸🇬 VLESS Raw · VLESS" };
+  const inventory = [selectedNode, ...allCompatibleNodes.filter((node) => node.name !== "VLESS Raw")];
+  const options = parseEgernOptions(rawOptions());
+  const policy = parsePrivatePolicy(JSON.stringify({ schemaVersion: 2, targets: { final: "NODE~VLESS Raw" } }));
+  const resolution = resolveUnifiedPolicy({
+    policy,
+    client: "egern",
+    allNodes: inventory,
+    eligibleNodes: inventory,
+  });
+  const profile = rubyParse(renderEgernProfileFromOptions(options, inventory, { policyResolution: resolution }));
+
+  assert.equal(resolution.targets.final.resolved, "🇸🇬 VLESS Raw · VLESS");
+  assert.equal(namedGroup(profile, "🚀 节点选择").policies[0], "🇸🇬 VLESS Raw · VLESS");
+  assert.equal(namedGroup(profile, "漏网之鱼").policies[0], "🇸🇬 VLESS Raw · VLESS");
 });
 
 test("makes a policy-driven AI default selectable in Egern", () => {
