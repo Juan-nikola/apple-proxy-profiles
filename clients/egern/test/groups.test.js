@@ -168,6 +168,9 @@ test("renders every shared catalog variant with exact names, order, and document
               assert.deepEqual(fields, {
                 name: group.name,
                 policies: group.candidates,
+                urls: [PRIVATE_URL],
+                filter: "^(?!🔗 ).+$",
+                update_interval: 21600,
               });
               continue;
             }
@@ -216,11 +219,11 @@ test("mounts the private subscription without leaking semantic or raw node value
     fields: {
       name: "🚀 节点选择",
       policies: ["⚡ 全部自动", "🌏 亚太", "🌍 欧洲", "🌎 美洲", "🌐 其他/未分类"],
+      urls: [PRIVATE_URL],
+      filter: "^(?!🔗 ).+$",
+      update_interval: 21600,
     },
   });
-  assert.equal(Object.hasOwn(root.fields, "urls"), false);
-  assert.equal(Object.hasOwn(root.fields, "filter"), false);
-  assert.equal(Object.hasOwn(root.fields, "update_interval"), false);
 
   const asia = CONTINENTS.find((continent) => continent.key === "asiaPacific");
   assert.deepEqual(renderedFields(rendered, "🌏 亚太"), {

@@ -2277,7 +2277,11 @@ var EgernProfileBundle = (() => {
     const type = strategyType(group.strategy);
     const fields = { name: group.name };
     if (group.candidates.length > 0) fields.policies = [...group.candidates];
-    if (group.nodeFilter !== null) {
+    if (group.name === PRIMARY_GROUP_NAME) {
+      fields.urls = [nodeSubscriptionUrl];
+      fields.filter = NON_CHAINED_FILTER;
+      fields.update_interval = UPDATE_INTERVAL;
+    } else if (group.nodeFilter !== null) {
       fields.urls = [nodeSubscriptionUrl];
       fields.filter = group.nodeFilter;
       fields.update_interval = UPDATE_INTERVAL;
@@ -2312,8 +2316,9 @@ var EgernProfileBundle = (() => {
       names.add(fields.name);
       groups.set(fields.name, fields);
       if (fields.name === PRIMARY_GROUP_NAME) {
-        if (fields.urls !== void 0 || fields.filter !== void 0 || fields.update_interval !== void 0) {
-          throw graphError("has a rendered primary group with a subscription");
+        const expectedPolicies = sharedGroups[index].candidates;
+        if (Object.keys(fields).length !== (expectedPolicies.length > 0 ? 5 : 4) || expectedPolicies.length > 0 && (!Array.isArray(fields.policies) || fields.policies.length !== expectedPolicies.length || fields.policies.some((policy, policyIndex) => policy !== expectedPolicies[policyIndex])) || fields.urls?.length !== 1 || fields.urls[0] !== nodeSubscriptionUrl || fields.filter !== NON_CHAINED_FILTER || fields.update_interval !== UPDATE_INTERVAL) {
+          throw graphError("has an invalid rendered primary group");
         }
       } else if (fields.urls !== void 0) {
         if (fields.urls.length !== 1 || fields.urls[0] !== nodeSubscriptionUrl || typeof fields.filter !== "string" || fields.update_interval !== UPDATE_INTERVAL) {

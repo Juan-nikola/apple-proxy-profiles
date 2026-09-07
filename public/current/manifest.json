@@ -62,7 +62,7 @@
       "referencedDefaultBytes": 12781681
     },
     "egern": {
-      "manifestHash": "5c39a79d9c84fce6d09a0b2f9b6327e6597be74c7a94dd98de4e9675ff981d66",
+      "manifestHash": "a99e9d5400966a26b10436a564c543560106efff5dac27fb553d1391ab3b6e23",
       "referencedDefaultBytes": 7557168
     },
     "happ": {
@@ -90,7 +90,7 @@
       "referencedDefaultBytes": 0
     },
     "v2rayn": {
-      "manifestHash": "5ca8b8f055901af8769c5edaeffcfb825a1c89c910ea70342d65f6d4b2adf3b0",
+      "manifestHash": "f149874ff1266a59455b0ad2aa598d599df61faa1a7aa9f3707b8464f42b8851",
       "referencedDefaultBytes": 0
     }
   },
@@ -417,12 +417,12 @@
     {
       "bytes": 2340,
       "path": "audit/dashboard.html",
-      "sha256": "62ce66f6306fa068892e7cfcfdf66630223b7a08a7fde33337eaf64940c1e991"
+      "sha256": "35d289cdfa84d7352acff872732a093b5d8e644c6bafa8110b82d3e3e5da8166"
     },
     {
       "bytes": 5345,
       "path": "audit/dashboard.json",
-      "sha256": "2b297550640fa9b79a233519c20be514f70547f4030f1036c17960fad7c630e1"
+      "sha256": "a7f7237ae6b7d986e11f00a4b09a4b880e87c48503177542e294eb9ef67e3398"
     },
     {
       "bytes": 5184,
@@ -712,22 +712,22 @@
     {
       "bytes": 6735,
       "path": "egern/client-manifest.json",
-      "sha256": "8296f712e812668a57ebb68fa72e9a6717641bb2aea2065d88b16bc35a810480"
+      "sha256": "d69d45a54584e255cddf5d39116c8e44a3b940bd1a0c89f0a8c42220e809d909"
     },
     {
-      "bytes": 28575,
+      "bytes": 28702,
       "path": "egern/examples/egern-ipad.yaml",
-      "sha256": "caa9d5d5989ea21572e9257b99f9bf4e39225a8e3ca45e503952f21a623b374c"
+      "sha256": "74ab1910bd1f05ff275d9847fd2be5a721a9f15f16873b517c9499c372023561"
     },
     {
-      "bytes": 28575,
+      "bytes": 28702,
       "path": "egern/examples/egern-iphone.yaml",
-      "sha256": "caa9d5d5989ea21572e9257b99f9bf4e39225a8e3ca45e503952f21a623b374c"
+      "sha256": "74ab1910bd1f05ff275d9847fd2be5a721a9f15f16873b517c9499c372023561"
     },
     {
-      "bytes": 28572,
+      "bytes": 28699,
       "path": "egern/examples/egern-macos.yaml",
-      "sha256": "dbe74fe63945f7dc907f959ec59e7fce5a6942d56f61c001a594010039502b51"
+      "sha256": "5ba13bc9d10ddcf79595ebed962020531856377760108325ea9648e464131c8f"
     },
     {
       "bytes": 1927,
@@ -895,9 +895,9 @@
       "sha256": "c782fa511de9cf94131ada652cf4a0dd1949d6c0a5ff860ca865e48e79f924a7"
     },
     {
-      "bytes": 252420,
+      "bytes": 253010,
       "path": "egern/scripts/egern-profile-generator.js",
-      "sha256": "051de58fa91f052b8328fb4aaa765e94bb32c68e3b1d4eb94e7d5a0e0726c224"
+      "sha256": "f545c9705b521dd5cd63262e03172f4404baeb823f0ecf06d5c584b912c9cb01"
     },
     {
       "bytes": 126596,
@@ -905,9 +905,9 @@
       "sha256": "c782fa511de9cf94131ada652cf4a0dd1949d6c0a5ff860ca865e48e79f924a7"
     },
     {
-      "bytes": 252420,
+      "bytes": 253010,
       "path": "egern/scripts/substore-profile-generator.js",
-      "sha256": "051de58fa91f052b8328fb4aaa765e94bb32c68e3b1d4eb94e7d5a0e0726c224"
+      "sha256": "f545c9705b521dd5cd63262e03172f4404baeb823f0ecf06d5c584b912c9cb01"
     },
     {
       "bytes": 250970,
@@ -1777,12 +1777,12 @@
     {
       "bytes": 664,
       "path": "v2rayn/client-manifest.json",
-      "sha256": "05bc71b4e5298288c575d156cb796a7527ccb730d3c2c52ee740586f71475bf2"
+      "sha256": "72676c6edcd5078ae7240af74ab06796e508b0dc5a6cd611d347d332cbd80f3d"
     },
     {
-      "bytes": 260310,
+      "bytes": 260362,
       "path": "v2rayn/scripts/substore-config-generator.js",
-      "sha256": "630bc578aa469624d393503f71d2b05f74e0b90769bda8fd1aa97b8a149ae43a"
+      "sha256": "fa8b5ab3df2e7bf3243e22be4ca3995d061f8fc909711fa47fb93cfaff612afe"
     },
     {
       "bytes": 122352,
@@ -1791,7 +1791,7 @@
     }
   ],
   "generatedAt": "2026-08-25T18:39:12Z",
-  "manifestHash": "e0be395cf6885234e0331460a9ff85c248095496dd0d2d1ecc3dcda2cd257227",
+  "manifestHash": "7c7e38c0f5de35225343d60e09465b20292ea1af4f1f007f77af44529696d836",
   "schemaVersion": 2,
   "upstream": {
     "branch": "master",
