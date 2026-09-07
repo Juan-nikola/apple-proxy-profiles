@@ -417,12 +417,12 @@
     {
       "bytes": 2340,
       "path": "audit/dashboard.html",
-      "sha256": "8f3490d079c6e206a485810cd82934b61761f4f4b47c142996c6a19d151998e6"
+      "sha256": "c68507944acac6b483a86f23328a7beb0bd42463c1ff8fabc8eb09a5281f1a94"
     },
     {
       "bytes": 5345,
       "path": "audit/dashboard.json",
-      "sha256": "4fa446cdcfb1507da95ce942950037a9f16403591269d86f72944df9941b6c25"
+      "sha256": "8183553e28c09afd0b2e88e11de4d506d3b15071e40fb4f47ddb92f36fb81f2a"
     },
     {
       "bytes": 5184,
@@ -1791,7 +1791,7 @@
     }
   ],
   "generatedAt": "2026-08-25T18:39:12Z",
-  "manifestHash": "e26dac10750a3e57ee707bfc832142394e0aa92843b1f301fff8609fed9e7a7c",
+  "manifestHash": "baecd1e77e8b9b258da982a735208b2b2ecf9a8b2890a8e4a5651d4bab5f34a7",
   "schemaVersion": 2,
   "upstream": {
     "branch": "master",
