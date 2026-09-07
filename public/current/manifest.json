@@ -86,11 +86,11 @@
       "referencedDefaultBytes": 10178469
     },
     "v2box": {
-      "manifestHash": "543ac75f46a693f91d7c26558797bc542dbc50bc5111abb1c3425af24e2efd24",
+      "manifestHash": "dc585bd264e60c00ec7b590ff50ed626885589a09248c2b7acf6acd7ed9975f2",
       "referencedDefaultBytes": 0
     },
     "v2rayn": {
-      "manifestHash": "f149874ff1266a59455b0ad2aa598d599df61faa1a7aa9f3707b8464f42b8851",
+      "manifestHash": "fc585209f9d87938f5ee2618f43fa64b4b8378416903f3e70b3701622302ec77",
       "referencedDefaultBytes": 0
     }
   },
@@ -98,17 +98,17 @@
     "defaultEntries": 319556,
     "domesticCoreEntries": 65,
     "external": {
-      "candidateCount": 4434384,
+      "candidateCount": 4430235,
       "conflicts": 6561,
-      "duplicates": 1954643,
-      "parsedCount": 4432897,
+      "duplicates": 1954519,
+      "parsedCount": 4428748,
       "retained": 302716,
       "sources": {
         "iran-v2ray-rules": {
-          "candidateCount": 346881,
+          "candidateCount": 342732,
           "conflicts": 0,
-          "duplicates": 114859,
-          "parsedCount": 346508,
+          "duplicates": 114735,
+          "parsedCount": 342359,
           "retained": 0,
           "supplementary": 0,
           "unsupportedByReason": {
@@ -417,12 +417,12 @@
     {
       "bytes": 2340,
       "path": "audit/dashboard.html",
-      "sha256": "35d289cdfa84d7352acff872732a093b5d8e644c6bafa8110b82d3e3e5da8166"
+      "sha256": "8f3490d079c6e206a485810cd82934b61761f4f4b47c142996c6a19d151998e6"
     },
     {
       "bytes": 5345,
       "path": "audit/dashboard.json",
-      "sha256": "a7f7237ae6b7d986e11f00a4b09a4b880e87c48503177542e294eb9ef67e3398"
+      "sha256": "4fa446cdcfb1507da95ce942950037a9f16403591269d86f72944df9941b6c25"
     },
     {
       "bytes": 5184,
@@ -945,14 +945,14 @@
       "sha256": "5367df50cf24c72a9917ae6700daa77aecaf42fc8ffc9588e895d80c6fd2b80f"
     },
     {
-      "bytes": 20557806,
+      "bytes": 20479338,
       "path": "geodata/ir/AppleProxySiteCurrent.dat",
-      "sha256": "405da6d307e4f987ff90c759acf7e537acd2a64000aaba349ac6b5244ba69f27"
+      "sha256": "13d1f1627959f3de1e4d838ec7f18ece667717fbbd6a8aab5c7d11db0c92652e"
     },
     {
-      "bytes": 34734,
+      "bytes": 34732,
       "path": "geodata/ir/manifest.json",
-      "sha256": "0bd9b2bc0c6bcc26e134f2745208bddcb6af5be2a005b39b05ed5f2d41f280c8"
+      "sha256": "7102f93f0fe005a3487be803393fba41b32084c7496835303bb610a0d13ab132"
     },
     {
       "bytes": 92798,
@@ -1762,7 +1762,7 @@
     {
       "bytes": 2718,
       "path": "v2box/client-manifest.json",
-      "sha256": "84fa1f14e1d78435b65a58b9f73bb94a0a48fc8f4e0ff1cfb77487863d58be64"
+      "sha256": "482b37f6fbf64a3d8c1be2a9e9f6219fa93176fcb7063b9023bb4c12a9bd6127"
     },
     {
       "bytes": 175300,
@@ -1777,12 +1777,12 @@
     {
       "bytes": 664,
       "path": "v2rayn/client-manifest.json",
-      "sha256": "72676c6edcd5078ae7240af74ab06796e508b0dc5a6cd611d347d332cbd80f3d"
+      "sha256": "5c7bc4acb1ce4de7e218da7fff74e5f2c40e456840cb1a7ec1083c1737f878c0"
     },
     {
-      "bytes": 260362,
+      "bytes": 260308,
       "path": "v2rayn/scripts/substore-config-generator.js",
-      "sha256": "fa8b5ab3df2e7bf3243e22be4ca3995d061f8fc909711fa47fb93cfaff612afe"
+      "sha256": "9be80e186ba6b7560c9693f5ffe9476f4a1448bdb3d7943268203260d8a92d5c"
     },
     {
       "bytes": 122352,
@@ -1791,7 +1791,7 @@
     }
   ],
   "generatedAt": "2026-08-25T18:39:12Z",
-  "manifestHash": "7c7e38c0f5de35225343d60e09465b20292ea1af4f1f007f77af44529696d836",
+  "manifestHash": "3184aac2d0198499eb0d955979f08e24c2f2f1e2154f176f4dadb7da0f53c458",
   "schemaVersion": 2,
   "upstream": {
     "branch": "master",

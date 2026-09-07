@@ -62,7 +62,7 @@
       "referencedDefaultBytes": 12781681
     },
     "egern": {
-      "manifestHash": "5c39a79d9c84fce6d09a0b2f9b6327e6597be74c7a94dd98de4e9675ff981d66",
+      "manifestHash": "a99e9d5400966a26b10436a564c543560106efff5dac27fb553d1391ab3b6e23",
       "referencedDefaultBytes": 7557168
     },
     "happ": {
@@ -86,11 +86,11 @@
       "referencedDefaultBytes": 10178469
     },
     "v2box": {
-      "manifestHash": "543ac75f46a693f91d7c26558797bc542dbc50bc5111abb1c3425af24e2efd24",
+      "manifestHash": "dc585bd264e60c00ec7b590ff50ed626885589a09248c2b7acf6acd7ed9975f2",
       "referencedDefaultBytes": 0
     },
     "v2rayn": {
-      "manifestHash": "5ca8b8f055901af8769c5edaeffcfb825a1c89c910ea70342d65f6d4b2adf3b0",
+      "manifestHash": "fc585209f9d87938f5ee2618f43fa64b4b8378416903f3e70b3701622302ec77",
       "referencedDefaultBytes": 0
     }
   },
@@ -98,17 +98,17 @@
     "defaultEntries": 319556,
     "domesticCoreEntries": 65,
     "external": {
-      "candidateCount": 4434384,
+      "candidateCount": 4430235,
       "conflicts": 6561,
-      "duplicates": 1954643,
-      "parsedCount": 4432897,
+      "duplicates": 1954519,
+      "parsedCount": 4428748,
       "retained": 302716,
       "sources": {
         "iran-v2ray-rules": {
-          "candidateCount": 346881,
+          "candidateCount": 342732,
           "conflicts": 0,
-          "duplicates": 114859,
-          "parsedCount": 346508,
+          "duplicates": 114735,
+          "parsedCount": 342359,
           "retained": 0,
           "supplementary": 0,
           "unsupportedByReason": {
@@ -417,12 +417,12 @@
     {
       "bytes": 2340,
       "path": "audit/dashboard.html",
-      "sha256": "62ce66f6306fa068892e7cfcfdf66630223b7a08a7fde33337eaf64940c1e991"
+      "sha256": "8f3490d079c6e206a485810cd82934b61761f4f4b47c142996c6a19d151998e6"
     },
     {
       "bytes": 5345,
       "path": "audit/dashboard.json",
-      "sha256": "2b297550640fa9b79a233519c20be514f70547f4030f1036c17960fad7c630e1"
+      "sha256": "4fa446cdcfb1507da95ce942950037a9f16403591269d86f72944df9941b6c25"
     },
     {
       "bytes": 5184,
@@ -712,22 +712,22 @@
     {
       "bytes": 6735,
       "path": "egern/client-manifest.json",
-      "sha256": "8296f712e812668a57ebb68fa72e9a6717641bb2aea2065d88b16bc35a810480"
+      "sha256": "d69d45a54584e255cddf5d39116c8e44a3b940bd1a0c89f0a8c42220e809d909"
     },
     {
-      "bytes": 28575,
+      "bytes": 28702,
       "path": "egern/examples/egern-ipad.yaml",
-      "sha256": "caa9d5d5989ea21572e9257b99f9bf4e39225a8e3ca45e503952f21a623b374c"
+      "sha256": "74ab1910bd1f05ff275d9847fd2be5a721a9f15f16873b517c9499c372023561"
     },
     {
-      "bytes": 28575,
+      "bytes": 28702,
       "path": "egern/examples/egern-iphone.yaml",
-      "sha256": "caa9d5d5989ea21572e9257b99f9bf4e39225a8e3ca45e503952f21a623b374c"
+      "sha256": "74ab1910bd1f05ff275d9847fd2be5a721a9f15f16873b517c9499c372023561"
     },
     {
-      "bytes": 28572,
+      "bytes": 28699,
       "path": "egern/examples/egern-macos.yaml",
-      "sha256": "dbe74fe63945f7dc907f959ec59e7fce5a6942d56f61c001a594010039502b51"
+      "sha256": "5ba13bc9d10ddcf79595ebed962020531856377760108325ea9648e464131c8f"
     },
     {
       "bytes": 1927,
@@ -895,9 +895,9 @@
       "sha256": "c782fa511de9cf94131ada652cf4a0dd1949d6c0a5ff860ca865e48e79f924a7"
     },
     {
-      "bytes": 252420,
+      "bytes": 253010,
       "path": "egern/scripts/egern-profile-generator.js",
-      "sha256": "051de58fa91f052b8328fb4aaa765e94bb32c68e3b1d4eb94e7d5a0e0726c224"
+      "sha256": "f545c9705b521dd5cd63262e03172f4404baeb823f0ecf06d5c584b912c9cb01"
     },
     {
       "bytes": 126596,
@@ -905,9 +905,9 @@
       "sha256": "c782fa511de9cf94131ada652cf4a0dd1949d6c0a5ff860ca865e48e79f924a7"
     },
     {
-      "bytes": 252420,
+      "bytes": 253010,
       "path": "egern/scripts/substore-profile-generator.js",
-      "sha256": "051de58fa91f052b8328fb4aaa765e94bb32c68e3b1d4eb94e7d5a0e0726c224"
+      "sha256": "f545c9705b521dd5cd63262e03172f4404baeb823f0ecf06d5c584b912c9cb01"
     },
     {
       "bytes": 250970,
@@ -945,14 +945,14 @@
       "sha256": "5367df50cf24c72a9917ae6700daa77aecaf42fc8ffc9588e895d80c6fd2b80f"
     },
     {
-      "bytes": 20557806,
+      "bytes": 20479338,
       "path": "geodata/ir/AppleProxySiteCurrent.dat",
-      "sha256": "405da6d307e4f987ff90c759acf7e537acd2a64000aaba349ac6b5244ba69f27"
+      "sha256": "13d1f1627959f3de1e4d838ec7f18ece667717fbbd6a8aab5c7d11db0c92652e"
     },
     {
-      "bytes": 34734,
+      "bytes": 34732,
       "path": "geodata/ir/manifest.json",
-      "sha256": "0bd9b2bc0c6bcc26e134f2745208bddcb6af5be2a005b39b05ed5f2d41f280c8"
+      "sha256": "7102f93f0fe005a3487be803393fba41b32084c7496835303bb610a0d13ab132"
     },
     {
       "bytes": 92798,
@@ -1762,7 +1762,7 @@
     {
       "bytes": 2718,
       "path": "v2box/client-manifest.json",
-      "sha256": "84fa1f14e1d78435b65a58b9f73bb94a0a48fc8f4e0ff1cfb77487863d58be64"
+      "sha256": "482b37f6fbf64a3d8c1be2a9e9f6219fa93176fcb7063b9023bb4c12a9bd6127"
     },
     {
       "bytes": 175300,
@@ -1777,12 +1777,12 @@
     {
       "bytes": 664,
       "path": "v2rayn/client-manifest.json",
-      "sha256": "05bc71b4e5298288c575d156cb796a7527ccb730d3c2c52ee740586f71475bf2"
+      "sha256": "5c7bc4acb1ce4de7e218da7fff74e5f2c40e456840cb1a7ec1083c1737f878c0"
     },
     {
-      "bytes": 260310,
+      "bytes": 260308,
       "path": "v2rayn/scripts/substore-config-generator.js",
-      "sha256": "630bc578aa469624d393503f71d2b05f74e0b90769bda8fd1aa97b8a149ae43a"
+      "sha256": "9be80e186ba6b7560c9693f5ffe9476f4a1448bdb3d7943268203260d8a92d5c"
     },
     {
       "bytes": 122352,
@@ -1791,7 +1791,7 @@
     }
   ],
   "generatedAt": "2026-08-25T18:39:12Z",
-  "manifestHash": "e0be395cf6885234e0331460a9ff85c248095496dd0d2d1ecc3dcda2cd257227",
+  "manifestHash": "3184aac2d0198499eb0d955979f08e24c2f2f1e2154f176f4dadb7da0f53c458",
   "schemaVersion": 2,
   "upstream": {
     "branch": "master",

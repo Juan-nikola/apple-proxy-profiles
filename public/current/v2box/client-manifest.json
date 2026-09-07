@@ -14,7 +14,7 @@
     }
   ],
   "generatedAt": "2026-08-25T18:39:12Z",
-  "manifestHash": "543ac75f46a693f91d7c26558797bc542dbc50bc5111abb1c3425af24e2efd24",
+  "manifestHash": "dc585bd264e60c00ec7b590ff50ed626885589a09248c2b7acf6acd7ed9975f2",
   "optionalPacks": {},
   "schemaVersion": 1,
   "sharedAssets": [
@@ -54,14 +54,14 @@
       "sha256": "5367df50cf24c72a9917ae6700daa77aecaf42fc8ffc9588e895d80c6fd2b80f"
     },
     {
-      "bytes": 20557806,
+      "bytes": 20479338,
       "path": "geodata/ir/AppleProxySiteCurrent.dat",
-      "sha256": "405da6d307e4f987ff90c759acf7e537acd2a64000aaba349ac6b5244ba69f27"
+      "sha256": "13d1f1627959f3de1e4d838ec7f18ece667717fbbd6a8aab5c7d11db0c92652e"
     },
     {
-      "bytes": 34734,
+      "bytes": 34732,
       "path": "geodata/ir/manifest.json",
-      "sha256": "0bd9b2bc0c6bcc26e134f2745208bddcb6af5be2a005b39b05ed5f2d41f280c8"
+      "sha256": "7102f93f0fe005a3487be803393fba41b32084c7496835303bb610a0d13ab132"
     },
     {
       "bytes": 92798,

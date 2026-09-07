@@ -3435,7 +3435,7 @@ var V2rayNConfigBundle = (() => {
     source({
       id: "iran-v2ray-rules",
       repository: "https://github.com/Chocolate4U/Iran-v2ray-rules",
-      branch: "master",
+      branch: "main",
       commit: "676695ea3b4c95d5cf48a7c4e2e718bac5b8a099",
       license: "MIT",
       format: "geosite-geoip-dat",
@@ -3443,10 +3443,10 @@ var V2rayNConfigBundle = (() => {
       adapter: "iran-v2ray-rules",
       minEntries: 1,
       sourcePath: "geosite.dat",
-      releaseTag: "202608311106",
-      retrievalUrl: "https://github.com/Chocolate4U/Iran-v2ray-rules/releases/download/202608311106/geosite.dat",
-      retrievedAt: "2026-08-31T11:08:56Z",
-      sha256: "994a6f6b725cfecfaa2c95593ae51cec2d4fafe5614f0797044020ce05bb0184"
+      releaseTag: "202609070939",
+      retrievalUrl: "https://github.com/Chocolate4U/Iran-v2ray-rules/releases/download/202609070939/geosite.dat",
+      retrievedAt: "2026-09-07T09:41:05Z",
+      sha256: "1bd1476ade826d29926f0ef3233826562813ed82543b6d0ed7f6a872594442d0"
     }),
     source({
       id: "loyalsoldier-clash-direct",
