@@ -37,6 +37,7 @@ const CLIENT_RULE_PREFIXES = Object.freeze({
     "sing-box/mobile-rule-sets/",
   ],
   anywhere: ["anywhere/rules/"],
+  hiddify: ["hiddify/rules/", "hiddify/mobile-rules/"],
   happ: [],
   v2box: [],
   v2rayn: [],

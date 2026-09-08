@@ -20,6 +20,7 @@ const COLLECTIONS = Object.freeze([
   "apple-proxy-v2box",
   "apple-proxy-clash",
   "apple-proxy-incy",
+  "apple-proxy-hiddify",
 ]);
 
 function assertChannel(channel) {
@@ -117,7 +118,7 @@ export function canonicalTaskCatalog(channel = "current") {
     configTask("singbox-config-iphone", "sing-box", "sing-box-config-generator.js", channel, "apple-proxy-singbox", "iphone", "Apple-Proxy-Nodes", { profileMode: "light", nodeErrorMode: "strict" }),
     configTask("singbox-config-ipad", "sing-box", "sing-box-config-generator.js", channel, "apple-proxy-singbox", "ipad", "Apple-Proxy-Nodes", { profileMode: "light", nodeErrorMode: "strict" }),
     configTask("singbox-config-android", "sing-box", "sing-box-config-generator.js", channel, "apple-proxy-singbox", "android", "Apple-Proxy-Nodes", { profileMode: "light", nodeErrorMode: "strict" }),
-    Object.freeze({ name: "apple-proxy-policy", client: "shared", kind: "private-policy", channel, policySchema: "schemaVersion=3; clients=anywhere,egern,shadowrocket,surge,sing-box,happ,v2rayn,v2box,clash,incy; each client has schemaVersion=2 and complete 13-target map; readers accept schemaVersion=1/2", url: null }),
+    Object.freeze({ name: "apple-proxy-policy", client: "shared", kind: "private-policy", channel, policySchema: "schemaVersion=3; clients=anywhere,egern,shadowrocket,surge,sing-box,happ,v2rayn,v2box,clash,incy,hiddify; each client has schemaVersion=2 and complete 13-target map; readers accept schemaVersion=1/2", url: null }),
     configTask("happ-config-macos", "happ", "happ-config-generator.js", channel, "apple-proxy-happ", "macos", "Apple-Proxy-Happ", {}, { omitKeys: ["autoGroupMode", "clientChain"] }),
     configTask("happ-config-iphone", "happ", "happ-config-generator.js", channel, "apple-proxy-happ", "iphone", "Apple-Proxy-Happ", {}, { omitKeys: ["autoGroupMode", "clientChain"] }),
     configTask("happ-config-ipad", "happ", "happ-config-generator.js", channel, "apple-proxy-happ", "ipad", "Apple-Proxy-Happ", {}, { omitKeys: ["autoGroupMode", "clientChain"] }),
@@ -142,8 +143,14 @@ export function canonicalTaskCatalog(channel = "current") {
     configTask("incy-config-macos", "incy", "incy-config-generator.js", channel, "apple-proxy-incy", "macos", "INCY", { adblockMode: "off", format: "array", selectionMode: "both" }),
     configTask("incy-config-windows", "incy", "incy-config-generator.js", channel, "apple-proxy-incy", "windows", "INCY", { adblockMode: "off", format: "array", selectionMode: "both" }),
     configTask("incy-config-linux", "incy", "incy-config-generator.js", channel, "apple-proxy-incy", "linux", "INCY", { adblockMode: "off", format: "array", selectionMode: "both" }),
+    configTask("hiddify-config-android", "hiddify", "hiddify-config-generator.js", channel, "apple-proxy-hiddify", "android", "Hiddify", { profileMode: "light", nodeErrorMode: "strict" }),
+    configTask("hiddify-config-iphone", "hiddify", "hiddify-config-generator.js", channel, "apple-proxy-hiddify", "iphone", "Hiddify", { profileMode: "light", nodeErrorMode: "strict" }),
+    configTask("hiddify-config-ipad", "hiddify", "hiddify-config-generator.js", channel, "apple-proxy-hiddify", "ipad", "Hiddify", { profileMode: "light", nodeErrorMode: "strict" }),
+    configTask("hiddify-config-macos", "hiddify", "hiddify-config-generator.js", channel, "apple-proxy-hiddify", "macos", "Hiddify", { profileMode: "light", nodeErrorMode: "strict" }),
+    configTask("hiddify-config-windows", "hiddify", "hiddify-config-generator.js", channel, "apple-proxy-hiddify", "windows", "Hiddify", { profileMode: "light", nodeErrorMode: "strict" }),
+    configTask("hiddify-config-linux", "hiddify", "hiddify-config-generator.js", channel, "apple-proxy-hiddify", "linux", "Hiddify", { profileMode: "light", nodeErrorMode: "strict" }),
   ];
-  if (tasks.length !== 43) throw new Error(`Expected 43 canonical tasks, got ${tasks.length}`);
+  if (tasks.length !== 49) throw new Error(`Expected 49 canonical tasks, got ${tasks.length}`);
   return Object.freeze(tasks);
 }
 
@@ -173,7 +180,7 @@ export function validatePrivateSubstoreConfig(config) {
     const result = checkSubstoreTaskUrl(task.url);
     if (!result.ok) return false;
   }
-  return config.tasks.length === 43;
+  return config.tasks.length === 49;
 }
 
 export async function writePrivateSubstoreConfig({ sourceUrl, channel = "current", path = PRIVATE_CONFIG_PATH } = {}) {

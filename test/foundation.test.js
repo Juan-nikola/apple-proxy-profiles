@@ -13,6 +13,7 @@ test("monorepo exposes all client workspaces and root verification", async () =>
   await access(new URL("../clients/v2rayn/package.json", import.meta.url));
   await access(new URL("../clients/clash/package.json", import.meta.url));
   await access(new URL("../clients/incy/package.json", import.meta.url));
+  await access(new URL("../clients/hiddify/package.json", import.meta.url));
   const root = JSON.parse(await readFile(new URL("../package.json", import.meta.url), "utf8"));
   const verifyScript = await readFile(new URL("../scripts/verify.mjs", import.meta.url), "utf8");
   const incy = JSON.parse(await readFile(new URL("../clients/incy/package.json", import.meta.url), "utf8"));
@@ -22,6 +23,7 @@ test("monorepo exposes all client workspaces and root verification", async () =>
   assert.equal(lockfile.packages["clients/happ"].version, "0.1.0");
   assert.equal(lockfile.packages["clients/incy"].name, "@apple-proxy-profiles/incy");
   assert.equal(lockfile.packages["clients/incy"].version, "0.1.0");
+  assert.equal(lockfile.packages["clients/hiddify"]?.name, "@apple-proxy-profiles/hiddify");
   assert.equal(incy.scripts.test, "node --test");
   assert.equal(incy.scripts.verify, "npm test && npm run build && npm run fixtures && npm run check:secrets && npm run check:json");
   assert.equal(root.scripts["verify:shadowrocket"], "npm --workspace @apple-proxy-profiles/shadowrocket run verify");
@@ -32,6 +34,7 @@ test("monorepo exposes all client workspaces and root verification", async () =>
   assert.equal(root.scripts["verify:v2box"], "npm --workspace @apple-proxy-profiles/v2box run verify");
   assert.equal(root.scripts["verify:v2rayn"], "npm --workspace @apple-proxy-profiles/v2rayn run verify");
   assert.equal(root.scripts["verify:clash"], "npm --workspace @apple-proxy-profiles/clash run verify");
+  assert.equal(root.scripts["verify:hiddify"], "npm --workspace @apple-proxy-profiles/hiddify run verify");
   assert.equal(root.scripts["verify:lightweight"], [
     "node --test test/lightweight-policy.test.js test/rule-model.test.js",
     "npm run verify:shadowrocket",
@@ -42,6 +45,7 @@ test("monorepo exposes all client workspaces and root verification", async () =>
     "npm run verify:anywhere",
     "npm run verify:v2box",
     "npm run verify:clash",
+    "npm run verify:hiddify",
     "node --test test/cross-client-routing.test.js test/rule-budgets.test.js",
   ].join(" && "));
   assert.equal(root.scripts.verify, "npm run verify:lightweight && node scripts/verify.mjs");

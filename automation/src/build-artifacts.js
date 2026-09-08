@@ -82,6 +82,8 @@ const OPTIONAL_AWARE_GENERATOR_PATHS = new Set([
   "surge/scripts/substore-profile-generator.js",
   "sing-box/scripts/sing-box-config-generator.js",
   "sing-box/scripts/substore-config-generator.js",
+  "hiddify/scripts/hiddify-config-generator.js",
+  "hiddify/scripts/substore-config-generator.js",
   "v2box/scripts/substore-node-generator.js",
   "v2box/scripts/substore-config-generator.js",
   "v2rayn/scripts/substore-node-generator.js",
@@ -110,6 +112,10 @@ const CLASH_SCRIPT_PATHS = Object.freeze([
   "clash/scripts/clash-profile-generator.js",
   "clash/scripts/substore-profile-generator.js",
 ]);
+const HIDDIFY_SCRIPT_PATHS = Object.freeze([
+  "hiddify/scripts/hiddify-config-generator.js",
+  "hiddify/scripts/substore-config-generator.js",
+]);
 const HAPP_SCRIPT_PATHS = Object.freeze([
   "happ/scripts/happ-config-generator.js",
   "happ/scripts/substore-config-generator.js",
@@ -126,6 +132,7 @@ const NATIVE_POLICY_GENERATOR_PATHS = new Set([
   ...CLASH_SCRIPT_PATHS,
   ...HAPP_SCRIPT_PATHS,
   ...INCY_SCRIPT_PATHS,
+  ...HIDDIFY_SCRIPT_PATHS,
 ]);
 const REGION_GEO_DATA_REGIONS = Object.freeze(["cn", "global", "ru", "ir"]);
 
@@ -138,6 +145,10 @@ function v2raynPublicScripts() {
 
 function clashPublicScripts() {
   return nativePublicScripts("clash", CLASH_SCRIPT_PATHS);
+}
+
+function hiddifyPublicScripts() {
+  return nativePublicScripts("hiddify", HIDDIFY_SCRIPT_PATHS);
 }
 
 function happPublicScripts() {
@@ -285,6 +296,7 @@ function addAdditionalFiles(target, additions) {
     ...V2RAYN_SCRIPT_PATHS,
     ...CLASH_SCRIPT_PATHS,
     ...HAPP_SCRIPT_PATHS,
+    ...HIDDIFY_SCRIPT_PATHS,
   ]);
   for (const [path, content] of additions) {
     if (target.has(path) && !overridable.has(path)) {
@@ -302,6 +314,13 @@ function fileRecords(files) {
   })).sort((left, right) => left.path < right.path ? -1 : left.path > right.path ? 1 : 0);
 }
 
+// Hiddify 4.1.1 bundles a fork that reads rule-set versions up to 4.
+// These matchers are all v3-compatible; never hand it the native v5 SRS files.
+function hiddifySourceContent(content) {
+  const source = JSON.parse(content);
+  return canonicalJson({ ...source, version: 3 });
+}
+
 function renderRuleSetMap({
   ruleSets,
   mobileRuleSets = new Map(),
@@ -315,7 +334,7 @@ function renderRuleSetMap({
   channel = "current",
 }) {
   const files = new Map();
-  const clientSources = { shadowrocket: [], surge: [], egern: [], singbox: [], clash: [] };
+  const clientSources = { shadowrocket: [], surge: [], egern: [], singbox: [], clash: [], hiddify: [] };
   const compiledSnapshot = new Map();
   const compiledCatalog = [];
 
@@ -330,6 +349,7 @@ function renderRuleSetMap({
     files.set(`${prefix}surge/rules/${id}.list`, shadowrocket.content);
     files.set(`${prefix}egern/rules/${id}.yaml`, egern.content);
     files.set(`${prefix}clash/rules/${id}.yaml`, clash.content);
+    files.set(`${prefix}hiddify/rules/${id}.json`, hiddifySourceContent(singbox.content));
     if (singBoxBinaries === null) {
       files.set(`${prefix}sing-box/rules/${id}.json`, singbox.content);
     } else {
@@ -344,6 +364,7 @@ function renderRuleSetMap({
     clientSources.surge.push({ id, ...shadowrocket.counts });
     clientSources.egern.push({ id, ...egern.counts });
     clientSources.singbox.push({ id, ...singbox.counts });
+    clientSources.hiddify.push({ id, ...singbox.counts });
     clientSources.clash.push({ id, ...clash.counts });
     compiledSnapshot.set(id, input.fetched);
     compiledCatalog.push(input.source);
@@ -365,6 +386,8 @@ function renderRuleSetMap({
       files.set(binaryPath, binary);
     }
     files.set(`${prefix}clash/mobile-rules/${id}.yaml`, clash.content);
+    files.set(`${prefix}hiddify/mobile-rules/${id}.json`, hiddifySourceContent(singbox.content));
+    clientSources.hiddify.push({ id, ...singbox.counts });
     clientSources.clash.push({ id, ...clash.counts });
   }
 
@@ -414,6 +437,9 @@ function compactRuleSetMap(ruleSets) {
 function clientRuleRecords(files, client) {
   if (client === "incy") {
     return fileRecords(new Map([...files].filter(([path]) => path.startsWith("incy/") && !path.endsWith("/manifest.json"))));
+  }
+  if (client === "hiddify") {
+    return fileRecords(new Map([...files].filter(([path]) => path.startsWith("hiddify/rules/") || path.startsWith("hiddify/mobile-rules/"))));
   }
   if (!RULE_CLIENT_PATHS[client]) return [];
   const prefixes = client === "anywhere"
@@ -744,11 +770,23 @@ export function buildClientArtifacts({
     channel,
   });
   const defaults = rendered.files;
+  defaults.set("hiddify/compatibility.json", artifactBuffer(canonicalJson({
+    schemaVersion: 1,
+    client: "hiddify",
+    appVersion: "4.1.1",
+    coreCommit: "c9d6f0f00b2eda34e4fb71863e4e0a62b3e931a0",
+    forkCommit: "0a02b7729f6a211436bb8bdcd8696c283eb27767",
+    coreRawModeRequirement: "StartRequest.enable_raw_config=true",
+    appImportPreservesFullConfig: false,
+    releaseReady: false,
+    deviceAcceptance: Object.fromEntries(["android", "iphone", "ipad", "macos", "windows", "linux"].map((platform) => [platform, "pending"])),
+  })));
   addFiles(defaults, v2boxPublicScripts());
   addFiles(defaults, v2raynPublicScripts());
   addFiles(defaults, clashPublicScripts());
   addFiles(defaults, happPublicScripts());
   addFiles(defaults, incyPublicScripts());
+  addFiles(defaults, hiddifyPublicScripts());
   addFiles(defaults, sharedGeoData.files);
   let chinaIpAuditSha256 = null;
 

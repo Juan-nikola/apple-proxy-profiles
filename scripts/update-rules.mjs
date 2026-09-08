@@ -334,6 +334,12 @@ export function selectDefaultStaticFiles(files) {
     "sing-box/examples/sing-box-iphone.json",
     "sing-box/examples/sing-box-ipad.json",
     "sing-box/examples/sing-box-android.json",
+    "hiddify/scripts/hiddify-config-generator.js",
+    "hiddify/scripts/substore-config-generator.js",
+    ...["android", "iphone", "ipad", "macos", "windows", "linux"].flatMap((platform) => [
+      `hiddify/examples/hiddify-${platform}.json`,
+      `hiddify/examples/hiddify-${platform}-diagnostic.json`,
+    ]),
   ]);
   for (const [path, content] of [...selected]) {
     try {
@@ -544,6 +550,8 @@ async function staticFiles(channel = "current") {
     ["surge/examples/surge-ipad.conf", "clients/surge/examples/surge-ipad.conf"],
     ["sing-box/scripts/sing-box-config-generator.js", "clients/sing-box/dist/sing-box-config-generator.js"],
     ["sing-box/scripts/substore-config-generator.js", "clients/sing-box/dist/substore-config-generator.js"],
+    ["hiddify/scripts/hiddify-config-generator.js", "clients/hiddify/dist/hiddify-config-generator.js"],
+    ["hiddify/scripts/substore-config-generator.js", "clients/hiddify/dist/substore-config-generator.js"],
     ["clash/scripts/clash-node-generator.js", "clients/clash/dist/clash-node-generator.js"],
     ["clash/scripts/substore-node-generator.js", "clients/clash/dist/substore-node-generator.js"],
     ["clash/scripts/clash-profile-generator.js", "clients/clash/dist/clash-profile-generator.js"],
@@ -557,6 +565,10 @@ async function staticFiles(channel = "current") {
     ["happ/examples/happ-config-ipad.json", "clients/happ/examples/happ-config-ipad.json"],
     ...["macos", "iphone", "ipad", "appletv"].flatMap((platform) => [
       [`clash/examples/clash-${platform}.yaml`, `clients/clash/examples/clash-${platform}.yaml`],
+    ]),
+     ...["android", "iphone", "ipad", "macos", "windows", "linux"].flatMap((platform) => [
+      [`hiddify/examples/hiddify-${platform}.json`, `clients/hiddify/examples/hiddify-${platform}.json`],
+      [`hiddify/examples/hiddify-${platform}-diagnostic.json`, `clients/hiddify/examples/hiddify-${platform}-diagnostic.json`],
     ]),
      ...["macos", "iphone", "ipad", "android"].flatMap((platform) => [
       [`sing-box/examples/sing-box-${platform}.json`, `clients/sing-box/examples/sing-box-${platform}.json`],

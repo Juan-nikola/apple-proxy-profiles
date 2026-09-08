@@ -1,4 +1,5 @@
 import {
+  CLIENT,
   PRIVATE_POLICY_CHANNELS,
   PRIVATE_POLICY_CLIENTS,
   PRIVATE_POLICY_TARGET_IDS,
@@ -24,6 +25,8 @@ const TARGET_ID_SET = new Set(PRIVATE_POLICY_TARGET_IDS);
 const CHANNEL_SET = new Set(PRIVATE_POLICY_CHANNELS);
 const CLIENT_SET = new Set(PRIVATE_POLICY_CLIENTS);
 const UNIFIED_POLICY_CLIENT_KEYS = new Set([...PRIVATE_POLICY_CLIENTS, "sing-box"]);
+// Existing v3 files predate Hiddify; its own generator requires an explicit layer.
+const REQUIRED_V3_CLIENTS = PRIVATE_POLICY_CLIENTS.filter((client) => client !== CLIENT.hiddify);
 const CHINA_DNS_SET = new Set(OPTION_VALUES.chinaDns);
 const GLOBAL_DNS_SET = new Set(OPTION_VALUES.globalDns);
 const AD_BLOCK_MODES = new Set(["off", "full"]);
@@ -268,7 +271,7 @@ function normalizeUnifiedPolicyByClient(value) {
     seen.add(client);
     clients[client] = normalizeUnifiedPolicyLayer(layer, { complete: true });
   }
-  for (const client of PRIVATE_POLICY_CLIENTS) {
+  for (const client of REQUIRED_V3_CLIENTS) {
     if (!Object.hasOwn(clients, client)) throw invalid("is missing a required policy client");
   }
   return deepFreeze({ schemaVersion: 3, clients });
@@ -313,6 +316,9 @@ export function resolvePrivatePolicy({ policy, channel, client } = {}) {
       : normalized.targets;
     if (normalized.schemaVersion === 3 && !CLIENT_SET.has(client)) {
       throw invalid("contains an unsupported policy client");
+    }
+    if (normalized.schemaVersion === 3 && client === CLIENT.hiddify && !Object.hasOwn(normalized.clients, client)) {
+      throw invalid("is missing a required Hiddify policy client layer");
     }
     return deepFreeze({
       targets: { ...targets },

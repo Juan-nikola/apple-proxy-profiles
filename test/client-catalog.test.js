@@ -19,9 +19,9 @@ const REQUIRED_FIELDS = [
 
 test("registers clients in stable publication order", () => {
   assert.deepEqual(allClientIds(), [
-    "anywhere", "egern", "shadowrocket", "surge", "singbox", "happ", "v2rayn", "v2box", "clash", "incy",
+    "anywhere", "egern", "shadowrocket", "surge", "singbox", "happ", "v2rayn", "v2box", "clash", "incy", "hiddify",
   ]);
-  assert.deepEqual(activeClientIds(), ["anywhere", "egern", "shadowrocket", "surge", "singbox", "happ", "v2rayn", "v2box", "clash", "incy"]);
+  assert.deepEqual(activeClientIds(), ["anywhere", "egern", "shadowrocket", "surge", "singbox", "happ", "v2rayn", "v2box", "clash", "incy", "hiddify"]);
   assert.deepEqual(plannedClientIds(), []);
   assert.equal(publicDirectoryForClient("singbox"), "sing-box");
   assert.deepEqual(clientAdapter("v2box").platforms, ["iphone", "ipad"]);
@@ -29,7 +29,7 @@ test("registers clients in stable publication order", () => {
   assert.deepEqual(clientAdapter("clash").platforms, ["iphone", "ipad", "macos", "appletv"]);
   assert.deepEqual(clientAdapter("incy").platforms, ["iphone", "ipad", "appletv", "android", "androidtv", "macos", "windows", "linux"]);
   assert.deepEqual(lightweightRuleClientIds(), [
-    "anywhere", "egern", "shadowrocket", "surge", "singbox", "clash",
+    "anywhere", "egern", "shadowrocket", "surge", "singbox", "clash", "hiddify",
   ]);
   assert.throws(() => clientAdapter("unknown"), /unknown client/i);
 });

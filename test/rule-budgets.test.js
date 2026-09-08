@@ -35,6 +35,8 @@ const optionalAwareGenerators = new Set([
   "happ/scripts/substore-routing-audit.js",
   "v2rayn/scripts/substore-node-generator.js",
   "v2rayn/scripts/substore-config-generator.js",
+  "hiddify/scripts/hiddify-config-generator.js",
+  "hiddify/scripts/substore-config-generator.js",
 ]);
 const nativePolicyGenerators = new Set([
   "v2box/scripts/substore-node-generator.js",
@@ -51,6 +53,8 @@ const nativePolicyGenerators = new Set([
   "incy/scripts/substore-config-generator.js",
   "v2rayn/scripts/substore-node-generator.js",
   "v2rayn/scripts/substore-config-generator.js",
+  "hiddify/scripts/hiddify-config-generator.js",
+  "hiddify/scripts/substore-config-generator.js",
 ]);
 const upstream = Object.freeze({
   repository: "https://github.com/blackmatrix7/ios_rule_script",
@@ -87,7 +91,7 @@ test("emitted default manifests stay inside all entry and byte budgets", () => {
   assert.deepEqual(artifacts.diagnostics.defaultRuleIds, DEFAULT_RULE_SOURCE_IDS);
 
   const report = {};
-  for (const client of ["shadowrocket", "surge", "egern", "singbox", "anywhere", "clash"]) {
+  for (const client of ["shadowrocket", "surge", "egern", "singbox", "anywhere", "clash", "hiddify"]) {
     const bytes = defaultManifest.clients[client].referencedDefaultBytes;
     assert.ok(bytes > 0 && bytes <= RULE_BUDGETS.defaultBytes, `${client}: ${bytes}`);
     report[client] = { entries: defaultManifest.diagnostics.defaultEntries, bytes };

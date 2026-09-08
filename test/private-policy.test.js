@@ -144,6 +144,7 @@ test("selects each client layer from unified policy schema v3", () => {
       v2box: clientLayer("NODE~🇺🇸qqpw家宽|vless"),
       clash: clientLayer("NODE~🇺🇸qqpw家宽|vless"),
       incy: clientLayer("NODE~🇺🇸qqpw家宽|vless"),
+      hiddify: clientLayer("NODE~🇺🇸qqpw家宽|vless"),
     },
   }));
 
@@ -168,6 +169,7 @@ test("requires every unified policy v3 client layer to be complete and unique", 
       ["v2box", clientLayer("NODE~🇺🇸qqpw家宽|vless")],
       ["clash", clientLayer("NODE~🇺🇸qqpw家宽|vless")],
       ["incy", clientLayer("NODE~🇺🇸qqpw家宽|vless")],
+      ["hiddify", clientLayer("NODE~🇺🇸qqpw家宽|vless")],
     ]),
   };
 
@@ -182,4 +184,19 @@ test("requires every unified policy v3 client layer to be complete and unique", 
   const missingClient = structuredClone(base);
   delete missingClient.clients.anywhere;
   assertRejectedWithoutSecret(JSON.stringify(missingClient), /missing|required|client/iu);
+});
+
+
+test("preserves legacy ten-client v3 policies but requires an explicit Hiddify layer when resolving Hiddify", () => {
+  const legacy = {
+    schemaVersion: 3,
+    clients: Object.fromEntries([
+      "anywhere", "egern", "shadowrocket", "surge", "sing-box", "happ", "v2rayn", "v2box", "clash", "incy",
+    ].map((client) => [client, clientLayer("FOLLOW")])),
+  };
+  const policy = parsePrivatePolicy(JSON.stringify(legacy));
+  assert.equal(resolvePrivatePolicy({ policy, channel: "current", client: "singbox" }).targets.ai, "FOLLOW");
+  assert.throws(() => resolvePrivatePolicy({ policy, channel: "current", client: "hiddify" }), /missing.*Hiddify|Hiddify.*missing/iu);
+  const complete = { ...legacy, clients: { ...legacy.clients, hiddify: clientLayer("DIRECT") } };
+  assert.equal(resolvePrivatePolicy({ policy: complete, channel: "current", client: "hiddify" }).targets.ai, "DIRECT");
 });

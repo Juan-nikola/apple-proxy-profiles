@@ -60,6 +60,15 @@ const GENERATOR_SCHEMAS = Object.freeze({
       nodeErrorMode: NODE_ERROR_MODES,
     },
   }),
+  "hiddify/scripts/hiddify-config-generator.js": configSchema({
+    platforms: ["android", "iphone", "ipad", "macos", "windows", "linux"],
+    requiresSubscriptionName: true,
+    expectedName: "apple-proxy-hiddify",
+    requiresChannel: true,
+    rejectFullAdblockPlatforms: ["iphone", "ipad", "android"],
+    extraKeys: ["profileMode", "nodeErrorMode"],
+    extraEnums: { profileMode: PROFILE_MODES, nodeErrorMode: NODE_ERROR_MODES },
+  }),
   "v2box/scripts/substore-node-generator.js": nodeSchema(),
   "v2box/scripts/substore-config-generator.js": configSchema({
     platforms: ["iphone", "ipad"],

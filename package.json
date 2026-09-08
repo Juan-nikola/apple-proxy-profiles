@@ -3,8 +3,12 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "engines": { "node": ">=22" },
-  "workspaces": ["clients/*"],
+  "engines": {
+    "node": ">=22"
+  },
+  "workspaces": [
+    "clients/*"
+  ],
   "scripts": {
     "test": "node --test test/*.test.js automation/test/*.test.js && npm --workspaces --if-present test",
     "build": "npm --workspaces --if-present run build",
@@ -23,10 +27,15 @@
     "verify:v2box": "npm --workspace @apple-proxy-profiles/v2box run verify",
     "verify:clash": "npm --workspace @apple-proxy-profiles/clash run verify",
     "verify:incy": "npm --workspace @apple-proxy-profiles/incy run verify",
-    "verify:lightweight": "node --test test/lightweight-policy.test.js test/rule-model.test.js && npm run verify:shadowrocket && npm run verify:surge && npm run verify:egern && npm run verify:singbox && npm run verify:v2rayn && npm run verify:anywhere && npm run verify:v2box && npm run verify:clash && node --test test/cross-client-routing.test.js test/rule-budgets.test.js",
+    "verify:lightweight": "node --test test/lightweight-policy.test.js test/rule-model.test.js && npm run verify:shadowrocket && npm run verify:surge && npm run verify:egern && npm run verify:singbox && npm run verify:v2rayn && npm run verify:anywhere && npm run verify:v2box && npm run verify:clash && npm run verify:hiddify && node --test test/cross-client-routing.test.js test/rule-budgets.test.js",
     "verify": "npm run verify:lightweight && node scripts/verify.mjs",
-    "check:task": "node scripts/check-substore-task.mjs"
-    ,"configure:substore": "node scripts/configure-substore.mjs"
+    "check:task": "node scripts/check-substore-task.mjs",
+    "configure:substore": "node scripts/configure-substore.mjs",
+    "verify:hiddify": "npm --workspace @apple-proxy-profiles/hiddify run verify"
   },
-  "devDependencies": { "esbuild": "0.28.1", "protobufjs": "7.6.5", "qrcode": "1.5.4" }
+  "devDependencies": {
+    "esbuild": "0.28.1",
+    "protobufjs": "7.6.5",
+    "qrcode": "1.5.4"
+  }
 }
