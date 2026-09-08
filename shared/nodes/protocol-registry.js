@@ -13,7 +13,7 @@ function protocol(names, clients, { requiredFields = [], tls = false, clientName
 }
 
 const definitions = Object.freeze([
-  protocol(["ss", "shadowsocks"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.happ, CLIENT.v2rayn, CLIENT.v2box, CLIENT.clash, CLIENT.incy], {
+  protocol(["ss", "shadowsocks"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.happ, CLIENT.v2rayn, CLIENT.v2box, CLIENT.clash, CLIENT.incy, CLIENT.hiddify], {
     requiredFields: ["cipher", "password"],
   }),
   protocol(["ssr"], [CLIENT.shadowrocket, CLIENT.surge, CLIENT.clash], {
@@ -22,34 +22,34 @@ const definitions = Object.freeze([
   protocol(["snell"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox, CLIENT.clash], {
     requiredFields: ["psk", "version"],
   }),
-  protocol(["vmess"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox, CLIENT.happ, CLIENT.v2rayn, CLIENT.v2box, CLIENT.clash, CLIENT.incy], {
+  protocol(["vmess"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox, CLIENT.happ, CLIENT.v2rayn, CLIENT.v2box, CLIENT.clash, CLIENT.incy, CLIENT.hiddify], {
     requiredFields: ["uuid"],
   }),
-  protocol(["vless"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.singbox, CLIENT.happ, CLIENT.v2rayn, CLIENT.v2box, CLIENT.clash, CLIENT.incy], {
+  protocol(["vless"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.singbox, CLIENT.happ, CLIENT.v2rayn, CLIENT.v2box, CLIENT.clash, CLIENT.incy, CLIENT.hiddify], {
     requiredFields: ["uuid"],
   }),
-  protocol(["trojan"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.happ, CLIENT.v2rayn, CLIENT.v2box, CLIENT.clash, CLIENT.incy], {
+  protocol(["trojan"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.happ, CLIENT.v2rayn, CLIENT.v2box, CLIENT.clash, CLIENT.incy, CLIENT.hiddify], {
     requiredFields: ["password"],
     tls: true,
   }),
-  protocol(["anytls"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.clash], {
+  protocol(["anytls"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.clash, CLIENT.hiddify], {
     requiredFields: ["password"],
     tls: true,
   }),
-  protocol(["hysteria2", "hy2"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.happ, CLIENT.v2rayn, CLIENT.v2box, CLIENT.clash, CLIENT.incy], {
+  protocol(["hysteria2", "hy2"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.happ, CLIENT.v2rayn, CLIENT.v2box, CLIENT.clash, CLIENT.incy, CLIENT.hiddify], {
     requiredFields: ["password"],
     tls: true,
   }),
-  protocol(["tuic"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox, CLIENT.clash], {
+  protocol(["tuic"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox, CLIENT.clash, CLIENT.hiddify], {
     requiredFields: ["uuid", "password"],
     tls: true,
   }),
-  protocol(["socks5"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.happ, CLIENT.v2rayn, CLIENT.v2box, CLIENT.clash, CLIENT.incy]),
-  protocol(["http"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox, CLIENT.v2rayn, CLIENT.v2box, CLIENT.clash, CLIENT.incy]),
-  protocol(["ssh"], [CLIENT.egern, CLIENT.singbox, CLIENT.clash], {
+  protocol(["socks5"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.happ, CLIENT.v2rayn, CLIENT.v2box, CLIENT.clash, CLIENT.incy, CLIENT.hiddify]),
+  protocol(["http"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox, CLIENT.v2rayn, CLIENT.v2box, CLIENT.clash, CLIENT.incy, CLIENT.hiddify]),
+  protocol(["ssh"], [CLIENT.egern, CLIENT.singbox, CLIENT.clash, CLIENT.hiddify], {
     requiredFields: ["username"],
   }),
-  protocol(["wireguard"], [CLIENT.egern, CLIENT.singbox, CLIENT.clash], {
+  protocol(["wireguard"], [CLIENT.egern, CLIENT.singbox, CLIENT.clash, CLIENT.hiddify], {
     requiredFields: ["private-key", "public-key"],
   }),
   protocol(["sudoku"], [CLIENT.anywhere], {

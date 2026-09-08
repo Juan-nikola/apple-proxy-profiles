@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { checkSubstoreTaskUrl } from "../scripts/check-substore-task.mjs";
 
 import {
   buildPrivateSubstoreConfig,
@@ -24,10 +25,11 @@ test("builds a private Sub-Store config without exposing the source value", () =
     "apple-proxy-v2box",
     "apple-proxy-clash",
     "apple-proxy-incy",
+    "apple-proxy-hiddify",
   ]);
-  assert.equal(config.tasks.length, 43);
-  assert.equal(config.tasks.filter(({ kind }) => kind === "remote-js").length, 42);
-  assert.equal(config.tasks.filter(({ policyInput }) => policyInput === "apple-proxy-policy").length, 35);
+  assert.equal(config.tasks.length, 49);
+  assert.equal(config.tasks.filter(({ kind }) => kind === "remote-js").length, 48);
+  assert.equal(config.tasks.filter(({ policyInput }) => policyInput === "apple-proxy-policy").length, 41);
   assert.deepEqual(config.tasks.find(({ name }) => name === "anywhere-strategy"), {
     name: "anywhere-strategy",
     client: "anywhere",
@@ -101,11 +103,11 @@ test("builds a private Sub-Store config without exposing the source value", () =
 
 test("canonical private task catalog covers retained clients", () => {
   const catalog = canonicalTaskCatalog("current");
-  assert.equal(catalog.length, 43);
+  assert.equal(catalog.length, 49);
   assert.deepEqual(catalog.slice(0, 4).map(({ name }) => name), [
     "egern-nodes", "egern-macos", "egern-iphone", "egern-ipad",
   ]);
-  assert.deepEqual(catalog.slice(-20).map(({ name }) => name), [
+  assert.deepEqual(catalog.slice(-26).map(({ name }) => name), [
     "v2rayn-singbox-windows", "v2rayn-singbox-macos", "v2rayn-xray-windows", "v2rayn-xray-macos",
     "v2box-nodes",
     "clash-nodes",
@@ -123,6 +125,12 @@ test("canonical private task catalog covers retained clients", () => {
     "incy-config-macos",
     "incy-config-windows",
     "incy-config-linux",
+    "hiddify-config-android",
+    "hiddify-config-iphone",
+    "hiddify-config-ipad",
+    "hiddify-config-macos",
+    "hiddify-config-windows",
+    "hiddify-config-linux",
   ]);
   for (const task of catalog.filter(({ name }) => name.startsWith("v2box-"))) {
     assert.match(task.url, /\/\/(?:juan-nikola\.github\.io)\/apple-proxy-profiles\/(?:current)\/v2box\/scripts\//u);
@@ -133,18 +141,38 @@ test("canonical private task catalog covers retained clients", () => {
 test("binds the shared policy to every config and audit task, never node tasks", () => {
   const catalog = canonicalTaskCatalog("current");
   const policyTasks = catalog.filter(({ output }) => output === "config" || output === "profile" || output === "audit");
-  assert.equal(policyTasks.length, 34);
+  assert.equal(policyTasks.length, 40);
   assert.ok(policyTasks.every((task) => task.policyInput === "apple-proxy-policy"));
-  assert.equal(catalog.filter(({ policyInput }) => policyInput === "apple-proxy-policy").length, 35);
+  assert.equal(catalog.filter(({ policyInput }) => policyInput === "apple-proxy-policy").length, 41);
   assert.equal(catalog.find(({ name }) => name === "anywhere-strategy").output, "strategy");
   assert.ok(catalog.filter(({ output }) => output === "nodes").every((task) => !Object.hasOwn(task, "policyInput")));
   assert.equal(
     catalog.find(({ name }) => name === "apple-proxy-policy").policySchema,
-    "schemaVersion=3; clients=anywhere,egern,shadowrocket,surge,sing-box,happ,v2rayn,v2box,clash,incy; each client has schemaVersion=2 and complete 13-target map; readers accept schemaVersion=1/2",
+    "schemaVersion=3; clients=anywhere,egern,shadowrocket,surge,sing-box,happ,v2rayn,v2box,clash,incy,hiddify; each client has schemaVersion=2 and complete 13-target map; readers accept schemaVersion=1/2",
   );
 });
 
 test("rejects invalid channel and source URL", () => {
   assert.throws(() => canonicalTaskCatalog("beta"), /channel/u);
   assert.throws(() => buildPrivateSubstoreConfig({ sourceUrl: "http://example.test" }), /https/u);
+});
+
+test("adds six isolated Hiddify config tasks with conservative shared defaults", () => {
+  const tasks = canonicalTaskCatalog().filter(({ client }) => client === "hiddify");
+  assert.deepEqual(tasks.map(({ name, platform, collection }) => [name, platform, collection]), [
+    ["hiddify-config-android", "android", "apple-proxy-hiddify"],
+    ["hiddify-config-iphone", "iphone", "apple-proxy-hiddify"],
+    ["hiddify-config-ipad", "ipad", "apple-proxy-hiddify"],
+    ["hiddify-config-macos", "macos", "apple-proxy-hiddify"],
+    ["hiddify-config-windows", "windows", "apple-proxy-hiddify"],
+    ["hiddify-config-linux", "linux", "apple-proxy-hiddify"],
+  ]);
+  for (const task of tasks) {
+    const parameters = new URLSearchParams(new URL(task.url).hash.slice(1));
+    assert.equal(parameters.get("channel"), "current");
+    assert.equal(parameters.get("ipv6Mode"), "ipv4-only");
+    assert.equal(parameters.get("nodeErrorMode"), "strict");
+    assert.equal(task.policyInput, "apple-proxy-policy");
+    assert.equal(checkSubstoreTaskUrl(task.url).ok, true);
+  }
 });

@@ -57,7 +57,8 @@ var ShadowrocketNodeSubscriptionBundle = (() => {
     happ: "happ",
     v2rayn: "v2rayn",
     v2box: "v2box",
-    clash: "clash"
+    clash: "clash",
+    hiddify: "hiddify"
   });
   var PRIVATE_POLICY_CHANNELS = Object.freeze(["edge", "current", "previous"]);
   var PRIVATE_POLICY_CLIENTS = Object.freeze([
@@ -70,7 +71,8 @@ var ShadowrocketNodeSubscriptionBundle = (() => {
     CLIENT.v2rayn,
     CLIENT.v2box,
     CLIENT.clash,
-    CLIENT.incy
+    CLIENT.incy,
+    CLIENT.hiddify
   ]);
   var PRIVATE_POLICY_TARGET_IDS = Object.freeze([
     "ai",
@@ -236,7 +238,7 @@ var ShadowrocketNodeSubscriptionBundle = (() => {
     });
   }
   var definitions = Object.freeze([
-    protocol(["ss", "shadowsocks"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.happ, CLIENT.v2rayn, CLIENT.v2box, CLIENT.clash, CLIENT.incy], {
+    protocol(["ss", "shadowsocks"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.happ, CLIENT.v2rayn, CLIENT.v2box, CLIENT.clash, CLIENT.incy, CLIENT.hiddify], {
       requiredFields: ["cipher", "password"]
     }),
     protocol(["ssr"], [CLIENT.shadowrocket, CLIENT.surge, CLIENT.clash], {
@@ -245,34 +247,34 @@ var ShadowrocketNodeSubscriptionBundle = (() => {
     protocol(["snell"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox, CLIENT.clash], {
       requiredFields: ["psk", "version"]
     }),
-    protocol(["vmess"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox, CLIENT.happ, CLIENT.v2rayn, CLIENT.v2box, CLIENT.clash, CLIENT.incy], {
+    protocol(["vmess"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox, CLIENT.happ, CLIENT.v2rayn, CLIENT.v2box, CLIENT.clash, CLIENT.incy, CLIENT.hiddify], {
       requiredFields: ["uuid"]
     }),
-    protocol(["vless"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.singbox, CLIENT.happ, CLIENT.v2rayn, CLIENT.v2box, CLIENT.clash, CLIENT.incy], {
+    protocol(["vless"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.singbox, CLIENT.happ, CLIENT.v2rayn, CLIENT.v2box, CLIENT.clash, CLIENT.incy, CLIENT.hiddify], {
       requiredFields: ["uuid"]
     }),
-    protocol(["trojan"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.happ, CLIENT.v2rayn, CLIENT.v2box, CLIENT.clash, CLIENT.incy], {
+    protocol(["trojan"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.happ, CLIENT.v2rayn, CLIENT.v2box, CLIENT.clash, CLIENT.incy, CLIENT.hiddify], {
       requiredFields: ["password"],
       tls: true
     }),
-    protocol(["anytls"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.clash], {
+    protocol(["anytls"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.clash, CLIENT.hiddify], {
       requiredFields: ["password"],
       tls: true
     }),
-    protocol(["hysteria2", "hy2"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.happ, CLIENT.v2rayn, CLIENT.v2box, CLIENT.clash, CLIENT.incy], {
+    protocol(["hysteria2", "hy2"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.happ, CLIENT.v2rayn, CLIENT.v2box, CLIENT.clash, CLIENT.incy, CLIENT.hiddify], {
       requiredFields: ["password"],
       tls: true
     }),
-    protocol(["tuic"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox, CLIENT.clash], {
+    protocol(["tuic"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox, CLIENT.clash, CLIENT.hiddify], {
       requiredFields: ["uuid", "password"],
       tls: true
     }),
-    protocol(["socks5"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.happ, CLIENT.v2rayn, CLIENT.v2box, CLIENT.clash, CLIENT.incy]),
-    protocol(["http"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox, CLIENT.v2rayn, CLIENT.v2box, CLIENT.clash, CLIENT.incy]),
-    protocol(["ssh"], [CLIENT.egern, CLIENT.singbox, CLIENT.clash], {
+    protocol(["socks5"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.happ, CLIENT.v2rayn, CLIENT.v2box, CLIENT.clash, CLIENT.incy, CLIENT.hiddify]),
+    protocol(["http"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox, CLIENT.v2rayn, CLIENT.v2box, CLIENT.clash, CLIENT.incy, CLIENT.hiddify]),
+    protocol(["ssh"], [CLIENT.egern, CLIENT.singbox, CLIENT.clash, CLIENT.hiddify], {
       requiredFields: ["username"]
     }),
-    protocol(["wireguard"], [CLIENT.egern, CLIENT.singbox, CLIENT.clash], {
+    protocol(["wireguard"], [CLIENT.egern, CLIENT.singbox, CLIENT.clash, CLIENT.hiddify], {
       requiredFields: ["private-key", "public-key"]
     }),
     protocol(["sudoku"], [CLIENT.anywhere], {
@@ -921,6 +923,19 @@ var ShadowrocketNodeSubscriptionBundle = (() => {
       supportsPolicyOverrides: false,
       adapterSchema: "incy-v1",
       publicDirectory: "incy"
+    },
+    {
+      id: CLIENT.hiddify,
+      displayName: "Hiddify Next",
+      state: "active",
+      platforms: ["android", "iphone", "ipad", "macos", "windows", "linux"],
+      configFormat: "hiddify-sing-box-json",
+      ruleFormat: "sing-box-source-json",
+      nodeValidator: "hiddify",
+      separatesProfile: false,
+      supportsPolicyOverrides: false,
+      adapterSchema: "hiddify-v1",
+      publicDirectory: "hiddify"
     }
   ].map((record) => freeze(record));
   var byId = new Map(records.map((record) => [record.id, record]));
@@ -933,7 +948,8 @@ var ShadowrocketNodeSubscriptionBundle = (() => {
     CLIENT.shadowrocket,
     CLIENT.surge,
     CLIENT.singbox,
-    CLIENT.clash
+    CLIENT.clash,
+    CLIENT.hiddify
   ]);
 
   // ../../../shared/release/frontier-manifest.js

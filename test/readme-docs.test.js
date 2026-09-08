@@ -20,15 +20,15 @@ test("README quick-start guide links to maintained screenshot-style diagrams", a
   }
 });
 
-test("README tutorial keeps the ten-client and current-only contracts visible", async () => {
+test("README tutorial keeps the eleven-client and current-only contracts visible", async () => {
   const readme = await readFile(new URL("README.md", root), "utf8");
-  assert.match(readme, /十个 active 客户端/u);
-  assert.match(readme, /11 个手动 collection、43 个 File task/u);
+  assert.match(readme, /十一个 active 客户端/u);
+  assert.match(readme, /12 个手动 collection、49 个 File task/u);
   assert.match(readme, /apple-proxy-incy/u);
   assert.match(readme, /androidtv/u);
   assert.match(readme, /windows/u);
   assert.match(readme, /linux/u);
-  assert.match(readme, /所有 34 个配置任务均为 `ipv4-only`/u);
+  assert.match(readme, /所有 40 个配置任务均为 `ipv4-only`/u);
   assert.doesNotMatch(readme, /所有 30 个配置任务均为 `ipv4-only`/u);
   assert.match(readme, /current\/surge\/scripts\/surge-profile-generator\.js/u);
   assert.match(readme, /ChinaTLD -> ChinaIP -> 漏网之鱼/u);
@@ -57,22 +57,35 @@ test("Sub-Store policy examples use the Chinese business-group labels", async ()
   }
 });
 
-test("catalog docs keep the updated 11 collection and 43 task counts", async () => {
+test("catalog docs keep the updated 12 collection and 49 task counts", async () => {
   const status = await readFile(new URL("docs/implementation-status.md", root), "utf8");
-  assert.match(status, /11 个手动 collection、43 个 canonical task/u);
+  assert.match(status, /12 个手动 collection、49 个 canonical task/u);
   assert.doesNotMatch(status, /10 个手动 collection、38 个 canonical task/u);
 
   const pools = await readFile(new URL("docs/substore-client-pools.md", root), "utf8");
-  assert.match(pools, /当前维护 11 个手动 collection/u);
+  assert.match(pools, /当前维护 12 个手动 collection/u);
   assert.doesNotMatch(pools, /当前维护 10 个手动 collection/u);
 
   const setup = await readFile(new URL("docs/substore-two-layer-setup.md", root), "utf8");
-  assert.match(setup, /canonical catalog 共 43 个 File task/u);
+  assert.match(setup, /canonical catalog 共 49 个 File task/u);
   assert.doesNotMatch(setup, /canonical catalog 共 38 个 File task/u);
-  assert.match(setup, /当前私密 Sub-Store 的 34 个配置任务已统一设置为 `ipv6Mode=ipv4-only`/u);
-  assert.match(setup, /所有 34 个配置任务 `ipv4-only`/u);
-  assert.match(setup, /十客户端指南/u);
-  assert.match(setup, /顶层包含 10 个客户端层/u);
+  assert.match(setup, /canonical catalog 的 40 个配置任务默认设置为 `ipv6Mode=ipv4-only`/u);
+  assert.match(setup, /所有 40 个配置任务 `ipv4-only`/u);
+  assert.match(setup, /十一客户端指南/u);
+  assert.match(setup, /顶层包含 11 个客户端层/u);
   assert.match(setup, /`v2rayn`、`v2box`、`clash`、`incy` 八层/u);
   assert.doesNotMatch(setup, /所有 30 个配置任务 `ipv4-only`/u);
+});
+
+
+test("Hiddify documentation separates generator support from device acceptance", async () => {
+  const readme = await readFile(new URL("README.md", root), "utf8");
+  const maintenance = await readFile(new URL("docs/maintenance.md", root), "utf8");
+  assert.match(readme, /apple-proxy-hiddify/u);
+  assert.match(readme, /raw config/u);
+  assert.match(readme, /未完成六平台真实设备/u);
+  assert.match(readme, /没有国内\/国外两套 DNS 答案比较/u);
+  assert.match(maintenance, /c9d6f0f00b2eda34e4fb71863e4e0a62b3e931a0/u);
+  assert.match(maintenance, /0a02b7729f6a211436bb8bdcd8696c283eb27767/u);
+  assert.match(maintenance, /rule-set version 1–4/u);
 });

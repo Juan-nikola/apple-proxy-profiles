@@ -139,6 +139,19 @@ const records = [
     adapterSchema: "incy-v1",
     publicDirectory: "incy",
   },
+  {
+    id: CLIENT.hiddify,
+    displayName: "Hiddify Next",
+    state: "active",
+    platforms: ["android", "iphone", "ipad", "macos", "windows", "linux"],
+    configFormat: "hiddify-sing-box-json",
+    ruleFormat: "sing-box-source-json",
+    nodeValidator: "hiddify",
+    separatesProfile: false,
+    supportsPolicyOverrides: false,
+    adapterSchema: "hiddify-v1",
+    publicDirectory: "hiddify",
+  },
 ].map((record) => freeze(record));
 
 const byId = new Map(records.map((record) => [record.id, record]));
@@ -152,6 +165,7 @@ const lightweightRuleIds = freeze([
   CLIENT.surge,
   CLIENT.singbox,
   CLIENT.clash,
+  CLIENT.hiddify,
 ]);
 
 export function allClientIds() {
