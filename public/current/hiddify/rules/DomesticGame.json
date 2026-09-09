@@ -1,0 +1,49 @@
+{
+  "rules": [
+    {
+      "domain_suffix": [
+        "4399.com",
+        "battlenet.com.cn",
+        "biligame.com",
+        "blizzard.cn",
+        "blizzardgames.cn",
+        "blzstatic.cn",
+        "csgo.wmsj.cn",
+        "dota2.wmsj.cn",
+        "dungeonkeeper.cn",
+        "dungeonkeeper.com.cn",
+        "duoyi.com",
+        "g-bits.com",
+        "leagueoflegends.cn",
+        "legendofzelda.cn",
+        "legendofzelda.com.cn",
+        "leiting.com",
+        "leitingcn.com",
+        "lpl.com.cn",
+        "mariokart.cn",
+        "mariokart.com.cn",
+        "mihoyo.com",
+        "miitomo.com.cn",
+        "neteasegames.com",
+        "nintendolabo.cn",
+        "nintendoswitch.cn",
+        "nintendoswitch.com.cn",
+        "perfectworld.com",
+        "supermariobros.com.cn",
+        "supersmashbros.cn",
+        "supersmashbros.com.cn",
+        "taptap.cn",
+        "taptap.com",
+        "tencentgames.com",
+        "wangyigames.com",
+        "wanmei.com",
+        "xboxlive.cn",
+        "xd.com",
+        "xindong.com",
+        "xn--mts47c3w9b1qr.cn",
+        "yuanshen.com"
+      ]
+    }
+  ],
+  "version": 3
+}

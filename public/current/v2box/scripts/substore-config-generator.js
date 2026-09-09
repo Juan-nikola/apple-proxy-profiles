@@ -62,7 +62,8 @@ var V2BoxConfigBundle = (() => {
     happ: "happ",
     v2rayn: "v2rayn",
     v2box: "v2box",
-    clash: "clash"
+    clash: "clash",
+    hiddify: "hiddify"
   });
   var PRIVATE_POLICY_CHANNELS = Object.freeze(["edge", "current", "previous"]);
   var PRIVATE_POLICY_CLIENTS = Object.freeze([
@@ -75,7 +76,8 @@ var V2BoxConfigBundle = (() => {
     CLIENT.v2rayn,
     CLIENT.v2box,
     CLIENT.clash,
-    CLIENT.incy
+    CLIENT.incy,
+    CLIENT.hiddify
   ]);
   var PRIVATE_POLICY_TARGET_IDS = Object.freeze([
     "ai",
@@ -241,7 +243,7 @@ var V2BoxConfigBundle = (() => {
     });
   }
   var definitions = Object.freeze([
-    protocol(["ss", "shadowsocks"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.happ, CLIENT.v2rayn, CLIENT.v2box, CLIENT.clash, CLIENT.incy], {
+    protocol(["ss", "shadowsocks"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.happ, CLIENT.v2rayn, CLIENT.v2box, CLIENT.clash, CLIENT.incy, CLIENT.hiddify], {
       requiredFields: ["cipher", "password"]
     }),
     protocol(["ssr"], [CLIENT.shadowrocket, CLIENT.surge, CLIENT.clash], {
@@ -250,34 +252,34 @@ var V2BoxConfigBundle = (() => {
     protocol(["snell"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox, CLIENT.clash], {
       requiredFields: ["psk", "version"]
     }),
-    protocol(["vmess"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox, CLIENT.happ, CLIENT.v2rayn, CLIENT.v2box, CLIENT.clash, CLIENT.incy], {
+    protocol(["vmess"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox, CLIENT.happ, CLIENT.v2rayn, CLIENT.v2box, CLIENT.clash, CLIENT.incy, CLIENT.hiddify], {
       requiredFields: ["uuid"]
     }),
-    protocol(["vless"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.singbox, CLIENT.happ, CLIENT.v2rayn, CLIENT.v2box, CLIENT.clash, CLIENT.incy], {
+    protocol(["vless"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.singbox, CLIENT.happ, CLIENT.v2rayn, CLIENT.v2box, CLIENT.clash, CLIENT.incy, CLIENT.hiddify], {
       requiredFields: ["uuid"]
     }),
-    protocol(["trojan"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.happ, CLIENT.v2rayn, CLIENT.v2box, CLIENT.clash, CLIENT.incy], {
+    protocol(["trojan"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.happ, CLIENT.v2rayn, CLIENT.v2box, CLIENT.clash, CLIENT.incy, CLIENT.hiddify], {
       requiredFields: ["password"],
       tls: true
     }),
-    protocol(["anytls"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.clash], {
+    protocol(["anytls"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.clash, CLIENT.hiddify], {
       requiredFields: ["password"],
       tls: true
     }),
-    protocol(["hysteria2", "hy2"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.happ, CLIENT.v2rayn, CLIENT.v2box, CLIENT.clash, CLIENT.incy], {
+    protocol(["hysteria2", "hy2"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.happ, CLIENT.v2rayn, CLIENT.v2box, CLIENT.clash, CLIENT.incy, CLIENT.hiddify], {
       requiredFields: ["password"],
       tls: true
     }),
-    protocol(["tuic"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox, CLIENT.clash], {
+    protocol(["tuic"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox, CLIENT.clash, CLIENT.hiddify], {
       requiredFields: ["uuid", "password"],
       tls: true
     }),
-    protocol(["socks5"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.happ, CLIENT.v2rayn, CLIENT.v2box, CLIENT.clash, CLIENT.incy]),
-    protocol(["http"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox, CLIENT.v2rayn, CLIENT.v2box, CLIENT.clash, CLIENT.incy]),
-    protocol(["ssh"], [CLIENT.egern, CLIENT.singbox, CLIENT.clash], {
+    protocol(["socks5"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.happ, CLIENT.v2rayn, CLIENT.v2box, CLIENT.clash, CLIENT.incy, CLIENT.hiddify]),
+    protocol(["http"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox, CLIENT.v2rayn, CLIENT.v2box, CLIENT.clash, CLIENT.incy, CLIENT.hiddify]),
+    protocol(["ssh"], [CLIENT.egern, CLIENT.singbox, CLIENT.clash, CLIENT.hiddify], {
       requiredFields: ["username"]
     }),
-    protocol(["wireguard"], [CLIENT.egern, CLIENT.singbox, CLIENT.clash], {
+    protocol(["wireguard"], [CLIENT.egern, CLIENT.singbox, CLIENT.clash, CLIENT.hiddify], {
       requiredFields: ["private-key", "public-key"]
     }),
     protocol(["sudoku"], [CLIENT.anywhere], {
@@ -2270,6 +2272,7 @@ var V2BoxConfigBundle = (() => {
   var CHANNEL_SET = new Set(PRIVATE_POLICY_CHANNELS);
   var CLIENT_SET = new Set(PRIVATE_POLICY_CLIENTS);
   var UNIFIED_POLICY_CLIENT_KEYS = /* @__PURE__ */ new Set([...PRIVATE_POLICY_CLIENTS, "sing-box"]);
+  var REQUIRED_V3_CLIENTS = PRIVATE_POLICY_CLIENTS.filter((client) => client !== CLIENT.hiddify);
   var CHINA_DNS_SET = new Set(OPTION_VALUES.chinaDns);
   var GLOBAL_DNS_SET = new Set(OPTION_VALUES.globalDns);
   var AD_BLOCK_MODES = /* @__PURE__ */ new Set(["off", "full"]);
@@ -2491,7 +2494,7 @@ var V2BoxConfigBundle = (() => {
       seen.add(client);
       clients[client] = normalizeUnifiedPolicyLayer(layer, { complete: true });
     }
-    for (const client of PRIVATE_POLICY_CLIENTS) {
+    for (const client of REQUIRED_V3_CLIENTS) {
       if (!Object.hasOwn(clients, client)) throw invalid2("is missing a required policy client");
     }
     return deepFreeze({ schemaVersion: 3, clients });
@@ -2524,6 +2527,9 @@ var V2BoxConfigBundle = (() => {
       const targets = normalized.schemaVersion === 3 ? normalized.clients[client]?.targets : normalized.targets;
       if (normalized.schemaVersion === 3 && !CLIENT_SET.has(client)) {
         throw invalid2("contains an unsupported policy client");
+      }
+      if (normalized.schemaVersion === 3 && client === CLIENT.hiddify && !Object.hasOwn(normalized.clients, client)) {
+        throw invalid2("is missing a required Hiddify policy client layer");
       }
       return deepFreeze({
         targets: { ...targets },
@@ -2790,6 +2796,19 @@ var V2BoxConfigBundle = (() => {
       supportsPolicyOverrides: false,
       adapterSchema: "incy-v1",
       publicDirectory: "incy"
+    },
+    {
+      id: CLIENT.hiddify,
+      displayName: "Hiddify Next",
+      state: "active",
+      platforms: ["android", "iphone", "ipad", "macos", "windows", "linux"],
+      configFormat: "hiddify-sing-box-json",
+      ruleFormat: "sing-box-source-json",
+      nodeValidator: "hiddify",
+      separatesProfile: false,
+      supportsPolicyOverrides: false,
+      adapterSchema: "hiddify-v1",
+      publicDirectory: "hiddify"
     }
   ].map((record2) => freeze3(record2));
   var byId = new Map(records.map((record2) => [record2.id, record2]));
@@ -2802,7 +2821,8 @@ var V2BoxConfigBundle = (() => {
     CLIENT.shadowrocket,
     CLIENT.surge,
     CLIENT.singbox,
-    CLIENT.clash
+    CLIENT.clash,
+    CLIENT.hiddify
   ]);
 
   // ../../shared/release/frontier-manifest.js

@@ -1,5 +1,5 @@
 {
-  "bytes": 44455192,
+  "bytes": 52916552,
   "clients": {
     "anywhere": {
       "manifestHash": "94c813099b5c53de588899e43b3a37f3e67557afba301b80fab02430fc595b80"
@@ -9,6 +9,9 @@
     },
     "egern": {
       "manifestHash": "a8227f63091e4e112cf0e4e2a6f8b7ff33fcd0bd242ee2067be742aeee8e4090"
+    },
+    "hiddify": {
+      "manifestHash": "a088872be6d24de01d5a4c496335bf79bf2cb6caf7fbdcf151e5a19417ae422f"
     },
     "shadowrocket": {
       "manifestHash": "66513b2ba687a9048e33988dfe8f1d2a6f2836587c5dd42355ac68951f059337"
@@ -88,6 +91,21 @@
       "sha256": "3a67c60732537f7694a2c3fbb8712e6723fb375a4df127afaaa7c7b1ef0e26d4"
     },
     {
+      "bytes": 577,
+      "path": "optional/adblock-full/hiddify/client-manifest.json",
+      "sha256": "39f67f4c97286ad008422819008872e6c74934bae2a8141dac48b6ef69520cd8"
+    },
+    {
+      "bytes": 21028,
+      "path": "optional/adblock-full/hiddify/rules/Advertising.json",
+      "sha256": "b0980ce603deb712e23b8790daf45f843b5673ad5e24de26420d8502fba2ab2a"
+    },
+    {
+      "bytes": 8439755,
+      "path": "optional/adblock-full/hiddify/rules/Advertising_Domain.json",
+      "sha256": "f9f9606ca6e75bcac41f9efb5da00b8a83266ed094921cd22ec3915191fb370d"
+    },
+    {
       "bytes": 592,
       "path": "optional/adblock-full/shadowrocket/client-manifest.json",
       "sha256": "3a717c65c11d7e7e29c33871f1348228c5acb84f73581a27dd5fd7bd92c73b35"
@@ -134,7 +152,7 @@
     }
   ],
   "generatedAt": "2026-08-25T18:39:12Z",
-  "manifestHash": "522ad0b364c9d5a93f50341087415bc20ff9edf71d0e50535e877e77f44083a5",
+  "manifestHash": "9098e0d80a5bc5d936c928241bb7860e2aeff9f9824310427bfffe26604510df",
   "packId": "adblock-full",
   "schemaVersion": 1
 }

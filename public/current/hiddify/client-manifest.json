@@ -1,0 +1,317 @@
+{
+  "chinaIpAuditSha256": "bd8b22453da86ce18f8a0aa819838448b36411ff5446463b6bfe7e155867343d",
+  "client": "hiddify",
+  "files": [
+    {
+      "bytes": 502,
+      "path": "hiddify/compatibility.json",
+      "sha256": "f7c592317fed38d6bac0b12a06093df2b8ada6cb6172c269d26b9912bb2d2a05"
+    },
+    {
+      "bytes": 12045,
+      "path": "hiddify/examples/hiddify-android-diagnostic.json",
+      "sha256": "f768a9e51a9cdd4d95b9599b4326f3530b3043a68a012da4f52a81f8ed923e14"
+    },
+    {
+      "bytes": 19305,
+      "path": "hiddify/examples/hiddify-android.json",
+      "sha256": "86d7b5dc84bcfe9d585103e4192ebfa9541b658710a1ad1c5d752da1fedb73b7"
+    },
+    {
+      "bytes": 12086,
+      "path": "hiddify/examples/hiddify-ipad-diagnostic.json",
+      "sha256": "c2a8dd312da991f3241754c7c859029ade159840f10244d35f435cc2e4917a1a"
+    },
+    {
+      "bytes": 19346,
+      "path": "hiddify/examples/hiddify-ipad.json",
+      "sha256": "20db168a05acbab6dccacb966b7823e555889d7197f90a66d96bfa52858a3e7a"
+    },
+    {
+      "bytes": 12086,
+      "path": "hiddify/examples/hiddify-iphone-diagnostic.json",
+      "sha256": "c2a8dd312da991f3241754c7c859029ade159840f10244d35f435cc2e4917a1a"
+    },
+    {
+      "bytes": 19346,
+      "path": "hiddify/examples/hiddify-iphone.json",
+      "sha256": "20db168a05acbab6dccacb966b7823e555889d7197f90a66d96bfa52858a3e7a"
+    },
+    {
+      "bytes": 12075,
+      "path": "hiddify/examples/hiddify-linux-diagnostic.json",
+      "sha256": "a673adb554efaa46771c18902f85447337c8b4065291138f85b2851467e77078"
+    },
+    {
+      "bytes": 27529,
+      "path": "hiddify/examples/hiddify-linux.json",
+      "sha256": "078e148d5ea220595c425c7c23de0b231858b28250582ff72b277a40f38cf19c"
+    },
+    {
+      "bytes": 12075,
+      "path": "hiddify/examples/hiddify-macos-diagnostic.json",
+      "sha256": "a673adb554efaa46771c18902f85447337c8b4065291138f85b2851467e77078"
+    },
+    {
+      "bytes": 27529,
+      "path": "hiddify/examples/hiddify-macos.json",
+      "sha256": "078e148d5ea220595c425c7c23de0b231858b28250582ff72b277a40f38cf19c"
+    },
+    {
+      "bytes": 12075,
+      "path": "hiddify/examples/hiddify-windows-diagnostic.json",
+      "sha256": "a673adb554efaa46771c18902f85447337c8b4065291138f85b2851467e77078"
+    },
+    {
+      "bytes": 27529,
+      "path": "hiddify/examples/hiddify-windows.json",
+      "sha256": "078e148d5ea220595c425c7c23de0b231858b28250582ff72b277a40f38cf19c"
+    },
+    {
+      "bytes": 2336,
+      "path": "hiddify/mobile-rules/AI.json",
+      "sha256": "a0c638e1bb2c3e0451268f55e0f45ce0f478b3ffe33f31a211f6664b9c2e0c3e"
+    },
+    {
+      "bytes": 670,
+      "path": "hiddify/mobile-rules/Apple.json",
+      "sha256": "36a86a66725a021163b1ba6800cdb17f70e80c401013dd05bef6616c019cacfc"
+    },
+    {
+      "bytes": 308376,
+      "path": "hiddify/mobile-rules/ChinaIP.json",
+      "sha256": "c3848aababc52337fc6ad22f95cc255b023a54f94d7ac7c95851c0ef3aa9655f"
+    },
+    {
+      "bytes": 3136,
+      "path": "hiddify/mobile-rules/DomesticCore.json",
+      "sha256": "d7f384807c27fd4f73111431582681523715824ee6dfec53365c0168d936c0e3"
+    },
+    {
+      "bytes": 13995,
+      "path": "hiddify/mobile-rules/DomesticPlatform.json",
+      "sha256": "0a459d3639a9b3fb69ade123d5fb1531b52cdbbef5facbbbe6a155c00a1d0ae4"
+    },
+    {
+      "bytes": 7006,
+      "path": "hiddify/mobile-rules/Download.json",
+      "sha256": "51231e7a6d95adcfe22fa21e38f0d6f9e32957e4286346eb27d50b9956d2e77b"
+    },
+    {
+      "bytes": 973,
+      "path": "hiddify/mobile-rules/GitHub.json",
+      "sha256": "72e3e61d23dd6104d8193ca6fcb88166ef95e1e93b1555074fed4bbc0dc33b41"
+    },
+    {
+      "bytes": 18420,
+      "path": "hiddify/mobile-rules/Microsoft.json",
+      "sha256": "43f8d20b535a1bb4e49045faf6abedb1866e8152783af6bdb9b7319c2038e2b8"
+    },
+    {
+      "bytes": 16614,
+      "path": "hiddify/mobile-rules/OverseasGame.json",
+      "sha256": "ff8f8f9c682f1c3b9f387de26664c79ec49bad4591d4d96d5f7478b41ecac706"
+    },
+    {
+      "bytes": 61561,
+      "path": "hiddify/mobile-rules/OverseasMedia.json",
+      "sha256": "17654eee2bdd324528f4b9bc2dfb81cfdbac098ef1b26ca963589e1ffef61353"
+    },
+    {
+      "bytes": 18031,
+      "path": "hiddify/mobile-rules/OverseasSocial.json",
+      "sha256": "b05f46837646ea402765c961583c21bae35a918204d24f61d37057a9a6372eb7"
+    },
+    {
+      "bytes": 607,
+      "path": "hiddify/mobile-rules/Privacy.json",
+      "sha256": "a4d17ac77860d89eecbeb14be6acce41a4fd1a432956a6f85769c4e06d94955b"
+    },
+    {
+      "bytes": 7745,
+      "path": "hiddify/mobile-rules/Security.json",
+      "sha256": "7572ab678a8835be45bcd833f6ffce587688a5175ea324d9cc0af98df50ca2c0"
+    },
+    {
+      "bytes": 4620,
+      "path": "hiddify/mobile-rules/YouTube.json",
+      "sha256": "d56361b0bd45960764d1168e41011adbde409d26310ef619d663992917959483"
+    },
+    {
+      "bytes": 2032,
+      "path": "hiddify/rules/Apple.json",
+      "sha256": "c281225b3269c9e7bb4fca971e708a74b5686858bde4e53c4e9f66a2f11b8354"
+    },
+    {
+      "bytes": 4362,
+      "path": "hiddify/rules/BiliBili.json",
+      "sha256": "3175682f6157f8550b2ffc91d3c93a45b5b72f2f72e0ab702d30ecf8b92b1fa3"
+    },
+    {
+      "bytes": 2086,
+      "path": "hiddify/rules/BlockHttpDNS.json",
+      "sha256": "767c6a9fccd7fb06f19041381021398505e42d46ebd8f10d8a41e2d425aaf086"
+    },
+    {
+      "bytes": 9525,
+      "path": "hiddify/rules/ByteDance.json",
+      "sha256": "03b6bd9a68885d8eabbdbee487adb758abc331187e7f1f5cb87403c42d617863"
+    },
+    {
+      "bytes": 308376,
+      "path": "hiddify/rules/ChinaIP.json",
+      "sha256": "c3848aababc52337fc6ad22f95cc255b023a54f94d7ac7c95851c0ef3aa9655f"
+    },
+    {
+      "bytes": 95,
+      "path": "hiddify/rules/ChinaTLD.json",
+      "sha256": "994c0336f080e64fc48019a7e5d2148e9a73b151cd7a817b91bd63dfcff8b80f"
+    },
+    {
+      "bytes": 194,
+      "path": "hiddify/rules/Claude.json",
+      "sha256": "439a5acff1769275563be6d0a3e46cb374cda80f69d1d7d00976992547e2b368"
+    },
+    {
+      "bytes": 1744,
+      "path": "hiddify/rules/Copilot.json",
+      "sha256": "48e10c821d2f06a9c1133ecd92163c15a1f8ff3cbab53026ca36d96afaa8dadb"
+    },
+    {
+      "bytes": 4935,
+      "path": "hiddify/rules/Disney.json",
+      "sha256": "7fa6185dac619cb810f6e28d04a3b8599deefe00bb50372dd60466faa1dc50db"
+    },
+    {
+      "bytes": 2636754,
+      "path": "hiddify/rules/DomesticCore.json",
+      "sha256": "e63fef929319d4fd260245b4714d12298c3c44a17828b319405fd42d4038f49f"
+    },
+    {
+      "bytes": 1120,
+      "path": "hiddify/rules/DomesticGame.json",
+      "sha256": "857312a1779885bdefee45e1d7cdb78e21e44ce8953271d3ea8bee66f6399ae9"
+    },
+    {
+      "bytes": 246,
+      "path": "hiddify/rules/Download.json",
+      "sha256": "77f846fb75c9f2aa57c372ad3a2f315dce2572fe82e932d51a9c643baca8120b"
+    },
+    {
+      "bytes": 15510,
+      "path": "hiddify/rules/Facebook.json",
+      "sha256": "2ae162fd8ea647933b33320c1c8e9f95906997a2dd5cfebc2686761bf9d7e8fa"
+    },
+    {
+      "bytes": 561,
+      "path": "hiddify/rules/Gemini.json",
+      "sha256": "b93901d8e683b808e75b8ddf4dfd31fde1436c24f59c7793633dd1ed66f5e22d"
+    },
+    {
+      "bytes": 973,
+      "path": "hiddify/rules/GitHub.json",
+      "sha256": "72e3e61d23dd6104d8193ca6fcb88166ef95e1e93b1555074fed4bbc0dc33b41"
+    },
+    {
+      "bytes": 144200,
+      "path": "hiddify/rules/GlobalMedia.json",
+      "sha256": "7e6d7cae3e35e5c46a26f197666cbfe6730440f61bab092005a8a3752a57c42d"
+    },
+    {
+      "bytes": 5927736,
+      "path": "hiddify/rules/Hijacking.json",
+      "sha256": "3b1859b0b6af25d3a1be3fa52960aa7e2b34f75b24e0c44129b3480ea664ec25"
+    },
+    {
+      "bytes": 223,
+      "path": "hiddify/rules/Instagram.json",
+      "sha256": "4ab5b04c008adb86ab6a308a45ea50a7c08c6ad47155b7d2c2d96179ff655937"
+    },
+    {
+      "bytes": 18420,
+      "path": "hiddify/rules/Microsoft.json",
+      "sha256": "43f8d20b535a1bb4e49045faf6abedb1866e8152783af6bdb9b7319c2038e2b8"
+    },
+    {
+      "bytes": 31268,
+      "path": "hiddify/rules/Netflix.json",
+      "sha256": "2bdf085efd80f8a9d3d14936948eb6e8d15c38de003aa6c964fa759ce99bf521"
+    },
+    {
+      "bytes": 1255,
+      "path": "hiddify/rules/OpenAI.json",
+      "sha256": "0d02013b51736d9d0c77307c59e34719518228702aac0371ad6e9dd70901a343"
+    },
+    {
+      "bytes": 16614,
+      "path": "hiddify/rules/OverseasGame.json",
+      "sha256": "ff8f8f9c682f1c3b9f387de26664c79ec49bad4591d4d96d5f7478b41ecac706"
+    },
+    {
+      "bytes": 607,
+      "path": "hiddify/rules/Privacy.json",
+      "sha256": "a4d17ac77860d89eecbeb14be6acce41a4fd1a432956a6f85769c4e06d94955b"
+    },
+    {
+      "bytes": 6887,
+      "path": "hiddify/rules/PrivateTracker.json",
+      "sha256": "12f9e24c9b7164414d8c2a5a560f8e03b2665aa4276c9b1c127b721e8084159d"
+    },
+    {
+      "bytes": 1106,
+      "path": "hiddify/rules/Spotify.json",
+      "sha256": "eb8deb2c29688c0c6f9ccd2a51ee8088b5e218e70deddc7b46d50461beaa1dc9"
+    },
+    {
+      "bytes": 644,
+      "path": "hiddify/rules/SteamCN.json",
+      "sha256": "5faf2d8f21797028ce5beaff19e221f4608927c6c4ad6148855d810c1d387080"
+    },
+    {
+      "bytes": 1142,
+      "path": "hiddify/rules/Telegram.json",
+      "sha256": "eabb3722b3f23f0dc85be5fa3a9db332f3777da2290dbb53c98c804e806db67a"
+    },
+    {
+      "bytes": 974,
+      "path": "hiddify/rules/TikTok.json",
+      "sha256": "cc19ed4e30a28e2f5c5993753d4112b98f408adafc9b759213b292bc1c1224cf"
+    },
+    {
+      "bytes": 961,
+      "path": "hiddify/rules/Twitter.json",
+      "sha256": "365629e0fc518deb729feb6c018235c6832faecd664db2eab4a321363abb9a03"
+    },
+    {
+      "bytes": 209,
+      "path": "hiddify/rules/Weibo.json",
+      "sha256": "cb4dfad55c3a8b067adedaf4e34a005344087f91315f27ace64bf746a34f9fb5"
+    },
+    {
+      "bytes": 181,
+      "path": "hiddify/rules/XiaoHongShu.json",
+      "sha256": "802b97c86539b335f10ab5eb9b49efd1a4d995efa9b26bc46087a0ca91024315"
+    },
+    {
+      "bytes": 4620,
+      "path": "hiddify/rules/YouTube.json",
+      "sha256": "d56361b0bd45960764d1168e41011adbde409d26310ef619d663992917959483"
+    },
+    {
+      "bytes": 174173,
+      "path": "hiddify/scripts/hiddify-config-generator.js",
+      "sha256": "5d8b25b859b2dc60c77d8530550167f60d3beb32d36900c0aff42fd91e684909"
+    },
+    {
+      "bytes": 174173,
+      "path": "hiddify/scripts/substore-config-generator.js",
+      "sha256": "5d8b25b859b2dc60c77d8530550167f60d3beb32d36900c0aff42fd91e684909"
+    }
+  ],
+  "generatedAt": "2026-08-25T18:39:12Z",
+  "manifestHash": "62fa5a6a88efdd6ecfc03f33c826607a974d8a114f131805ae9534445d7681f2",
+  "optionalPacks": {
+    "adblock-full": "a088872be6d24de01d5a4c496335bf79bf2cb6caf7fbdcf151e5a19417ae422f"
+  },
+  "schemaVersion": 1
+}

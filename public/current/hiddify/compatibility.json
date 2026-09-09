@@ -1,0 +1,18 @@
+{
+  "appImportPreservesFullConfig": false,
+  "appVersion": "4.1.1",
+  "client": "hiddify",
+  "coreCommit": "c9d6f0f00b2eda34e4fb71863e4e0a62b3e931a0",
+  "coreRawModeRequirement": "StartRequest.enable_raw_config=true",
+  "deviceAcceptance": {
+    "android": "pending",
+    "ipad": "pending",
+    "iphone": "pending",
+    "linux": "pending",
+    "macos": "pending",
+    "windows": "pending"
+  },
+  "forkCommit": "0a02b7729f6a211436bb8bdcd8696c283eb27767",
+  "releaseReady": false,
+  "schemaVersion": 1
+}

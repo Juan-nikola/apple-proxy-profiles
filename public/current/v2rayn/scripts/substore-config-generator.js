@@ -62,7 +62,8 @@ var V2rayNConfigBundle = (() => {
     happ: "happ",
     v2rayn: "v2rayn",
     v2box: "v2box",
-    clash: "clash"
+    clash: "clash",
+    hiddify: "hiddify"
   });
   var PRIVATE_POLICY_CHANNELS = Object.freeze(["edge", "current", "previous"]);
   var PRIVATE_POLICY_CLIENTS = Object.freeze([
@@ -75,7 +76,8 @@ var V2rayNConfigBundle = (() => {
     CLIENT.v2rayn,
     CLIENT.v2box,
     CLIENT.clash,
-    CLIENT.incy
+    CLIENT.incy,
+    CLIENT.hiddify
   ]);
   var PRIVATE_POLICY_TARGET_IDS = Object.freeze([
     "ai",
@@ -241,7 +243,7 @@ var V2rayNConfigBundle = (() => {
     });
   }
   var definitions = Object.freeze([
-    protocol(["ss", "shadowsocks"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.happ, CLIENT.v2rayn, CLIENT.v2box, CLIENT.clash, CLIENT.incy], {
+    protocol(["ss", "shadowsocks"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.happ, CLIENT.v2rayn, CLIENT.v2box, CLIENT.clash, CLIENT.incy, CLIENT.hiddify], {
       requiredFields: ["cipher", "password"]
     }),
     protocol(["ssr"], [CLIENT.shadowrocket, CLIENT.surge, CLIENT.clash], {
@@ -250,34 +252,34 @@ var V2rayNConfigBundle = (() => {
     protocol(["snell"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox, CLIENT.clash], {
       requiredFields: ["psk", "version"]
     }),
-    protocol(["vmess"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox, CLIENT.happ, CLIENT.v2rayn, CLIENT.v2box, CLIENT.clash, CLIENT.incy], {
+    protocol(["vmess"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox, CLIENT.happ, CLIENT.v2rayn, CLIENT.v2box, CLIENT.clash, CLIENT.incy, CLIENT.hiddify], {
       requiredFields: ["uuid"]
     }),
-    protocol(["vless"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.singbox, CLIENT.happ, CLIENT.v2rayn, CLIENT.v2box, CLIENT.clash, CLIENT.incy], {
+    protocol(["vless"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.singbox, CLIENT.happ, CLIENT.v2rayn, CLIENT.v2box, CLIENT.clash, CLIENT.incy, CLIENT.hiddify], {
       requiredFields: ["uuid"]
     }),
-    protocol(["trojan"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.happ, CLIENT.v2rayn, CLIENT.v2box, CLIENT.clash, CLIENT.incy], {
+    protocol(["trojan"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.happ, CLIENT.v2rayn, CLIENT.v2box, CLIENT.clash, CLIENT.incy, CLIENT.hiddify], {
       requiredFields: ["password"],
       tls: true
     }),
-    protocol(["anytls"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.clash], {
+    protocol(["anytls"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.clash, CLIENT.hiddify], {
       requiredFields: ["password"],
       tls: true
     }),
-    protocol(["hysteria2", "hy2"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.happ, CLIENT.v2rayn, CLIENT.v2box, CLIENT.clash, CLIENT.incy], {
+    protocol(["hysteria2", "hy2"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.happ, CLIENT.v2rayn, CLIENT.v2box, CLIENT.clash, CLIENT.incy, CLIENT.hiddify], {
       requiredFields: ["password"],
       tls: true
     }),
-    protocol(["tuic"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox, CLIENT.clash], {
+    protocol(["tuic"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox, CLIENT.clash, CLIENT.hiddify], {
       requiredFields: ["uuid", "password"],
       tls: true
     }),
-    protocol(["socks5"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.happ, CLIENT.v2rayn, CLIENT.v2box, CLIENT.clash, CLIENT.incy]),
-    protocol(["http"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox, CLIENT.v2rayn, CLIENT.v2box, CLIENT.clash, CLIENT.incy]),
-    protocol(["ssh"], [CLIENT.egern, CLIENT.singbox, CLIENT.clash], {
+    protocol(["socks5"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.anywhere, CLIENT.surge, CLIENT.singbox, CLIENT.happ, CLIENT.v2rayn, CLIENT.v2box, CLIENT.clash, CLIENT.incy, CLIENT.hiddify]),
+    protocol(["http"], [CLIENT.shadowrocket, CLIENT.egern, CLIENT.surge, CLIENT.singbox, CLIENT.v2rayn, CLIENT.v2box, CLIENT.clash, CLIENT.incy, CLIENT.hiddify]),
+    protocol(["ssh"], [CLIENT.egern, CLIENT.singbox, CLIENT.clash, CLIENT.hiddify], {
       requiredFields: ["username"]
     }),
-    protocol(["wireguard"], [CLIENT.egern, CLIENT.singbox, CLIENT.clash], {
+    protocol(["wireguard"], [CLIENT.egern, CLIENT.singbox, CLIENT.clash, CLIENT.hiddify], {
       requiredFields: ["private-key", "public-key"]
     }),
     protocol(["sudoku"], [CLIENT.anywhere], {
@@ -2270,6 +2272,7 @@ var V2rayNConfigBundle = (() => {
   var CHANNEL_SET = new Set(PRIVATE_POLICY_CHANNELS);
   var CLIENT_SET = new Set(PRIVATE_POLICY_CLIENTS);
   var UNIFIED_POLICY_CLIENT_KEYS = /* @__PURE__ */ new Set([...PRIVATE_POLICY_CLIENTS, "sing-box"]);
+  var REQUIRED_V3_CLIENTS = PRIVATE_POLICY_CLIENTS.filter((client) => client !== CLIENT.hiddify);
   var CHINA_DNS_SET = new Set(OPTION_VALUES.chinaDns);
   var GLOBAL_DNS_SET = new Set(OPTION_VALUES.globalDns);
   var AD_BLOCK_MODES = /* @__PURE__ */ new Set(["off", "full"]);
@@ -2491,7 +2494,7 @@ var V2rayNConfigBundle = (() => {
       seen.add(client);
       clients[client] = normalizeUnifiedPolicyLayer(layer, { complete: true });
     }
-    for (const client of PRIVATE_POLICY_CLIENTS) {
+    for (const client of REQUIRED_V3_CLIENTS) {
       if (!Object.hasOwn(clients, client)) throw invalid2("is missing a required policy client");
     }
     return deepFreeze({ schemaVersion: 3, clients });
@@ -2524,6 +2527,9 @@ var V2rayNConfigBundle = (() => {
       const targets = normalized.schemaVersion === 3 ? normalized.clients[client]?.targets : normalized.targets;
       if (normalized.schemaVersion === 3 && !CLIENT_SET.has(client)) {
         throw invalid2("contains an unsupported policy client");
+      }
+      if (normalized.schemaVersion === 3 && client === CLIENT.hiddify && !Object.hasOwn(normalized.clients, client)) {
+        throw invalid2("is missing a required Hiddify policy client layer");
       }
       return deepFreeze({
         targets: { ...targets },
@@ -2790,6 +2796,19 @@ var V2rayNConfigBundle = (() => {
       supportsPolicyOverrides: false,
       adapterSchema: "incy-v1",
       publicDirectory: "incy"
+    },
+    {
+      id: CLIENT.hiddify,
+      displayName: "Hiddify Next",
+      state: "active",
+      platforms: ["android", "iphone", "ipad", "macos", "windows", "linux"],
+      configFormat: "hiddify-sing-box-json",
+      ruleFormat: "sing-box-source-json",
+      nodeValidator: "hiddify",
+      separatesProfile: false,
+      supportsPolicyOverrides: false,
+      adapterSchema: "hiddify-v1",
+      publicDirectory: "hiddify"
     }
   ].map((record2) => freeze3(record2));
   var byId = new Map(records.map((record2) => [record2.id, record2]));
@@ -2802,7 +2821,8 @@ var V2rayNConfigBundle = (() => {
     CLIENT.shadowrocket,
     CLIENT.surge,
     CLIENT.singbox,
-    CLIENT.clash
+    CLIENT.clash,
+    CLIENT.hiddify
   ]);
 
   // ../../shared/release/frontier-manifest.js
@@ -3715,10 +3735,10 @@ var V2rayNConfigBundle = (() => {
     const queryStrategy = options.ipv6Mode === "ipv4-only" ? "UseIPv4" : "UseIP";
     const china = options.chinaDns === "system" ? "localhost" : options.chinaDns === "dnspod" ? "119.29.29.29" : "223.5.5.5";
     const global = options.globalDns === "google" ? "8.8.8.8" : options.globalDns === "quad9" ? "9.9.9.9" : "1.1.1.1";
-    return { servers: [{ tag: "china-dns", address: china, domains: ["geosite:cn", "geosite:private"], queryStrategy }, { tag: "global-dns", address: global, queryStrategy }], queryStrategy, tag: "dnsQuery", mode: options.dnsMode };
+    return { servers: [{ tag: "china-dns", address: china, domains: ["geosite:cn", "geosite:private"], queryStrategy }, { tag: "global-dns", address: global, queryStrategy }], queryStrategy, tag: "dnsQuery" };
   }
   function inbound(options) {
-    if (options.platform === "macos") return {
+    return {
       tag: "socks-in",
       listen: "127.0.0.1",
       port: 10808,
@@ -3726,7 +3746,6 @@ var V2rayNConfigBundle = (() => {
       settings: { auth: "noauth", udp: true },
       sniffing: { enabled: true, destOverride: ["http", "tls"], routeOnly: true }
     };
-    return { tag: "tun", protocol: "tun", settings: { mtu: 1500 }, sniffing: { enabled: true, routeOnly: true } };
   }
   function renderV2rayNProfile({ nodes, options, geoData = null, filterFailures = {}, policyResolution = null } = {}) {
     if (!options || options.output !== "config") throw new Error("v2rayN profile options are required");
@@ -3757,7 +3776,6 @@ var V2rayNConfigBundle = (() => {
     const rank = (item) => ["Hijacking", "BlockHttpDNS", "Privacy"].includes(item.source.id) ? 0 : policyForRuleSource(item.source.id) ? 1 : 2;
     sourceRules.sort((a, b) => rank(a) - rank(b));
     for (const { source: source2, outboundTag } of sourceRules) rules.push({ domain: [`ext:${xrayGeoNames(options.channel).domain}.dat:${source2.code}`], ip: [`ext:${xrayGeoNames(options.channel).ip}.dat:${source2.code}`], outboundTag, ruleTag: `source-${source2.id}` });
-    if (options.quicMode !== "allow") rules.push({ network: "quic", outboundTag: options.quicMode === "all-block" ? "block" : "direct", ruleTag: "quic-policy" });
     const finalRecord = policyResolution?.targets?.final;
     let finalOutboundTag = proxyTag;
     if (finalRecord?.resolved === "DIRECT") finalOutboundTag = "direct";
@@ -3766,7 +3784,19 @@ var V2rayNConfigBundle = (() => {
       if (!finalOutboundTag) throw new Error("v2rayN policy target node is unavailable");
     }
     rules.push({ domain: [`geosite:${options.region}`], outboundTag: "direct", ruleTag: "china-domain-direct" }, { ip: [`geoip:${options.region}`], outboundTag: "direct", ruleTag: "china-ip-direct" }, { network: "tcp,udp", outboundTag: finalOutboundTag, ruleTag: "final-fail-closed" });
-    return { name: options.name, dns: dns(options), inbounds: [inbound(options)], outbounds, routing: { domainStrategy: "IPIfNonMatch", rules }, ...Object.keys(failures).length ? { renderFailures: failures } : {} };
+    return { name: options.name, dns: dns(options), inbounds: [inbound(options)], outbounds, routing: { domainStrategy: "IPIfNonMatch", rules: legalXrayRules(rules, options) }, ...Object.keys(failures).length ? { renderFailures: failures } : {} };
+  }
+  function legalXrayRules(rules, options) {
+    return rules.flatMap((rule3) => {
+      const separated = rule3.domain && rule3.ip ? [{ ...rule3, ip: void 0 }, { ...rule3, domain: void 0 }] : [rule3];
+      return separated.flatMap((item) => {
+        const clean = Object.fromEntries(Object.entries(item).filter(([, value]) => value !== void 0));
+        const isProxy = !["direct", "block"].includes(clean.outboundTag);
+        const blockQuic = options.quicMode === "all-block" || options.quicMode === "proxy-block" && isProxy;
+        const regular = { type: "field", ...clean };
+        return blockQuic && !clean.ruleTag?.startsWith("private-") ? [{ ...regular, network: "udp", port: "443", outboundTag: "block", ruleTag: `quic-${clean.ruleTag}` }, regular] : [regular];
+      });
+    });
   }
 
   // ../../shared/policies/platform-presets.js

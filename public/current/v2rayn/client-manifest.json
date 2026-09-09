@@ -3,18 +3,23 @@
   "client": "v2rayn",
   "files": [
     {
-      "bytes": 260308,
+      "bytes": 261773,
       "path": "v2rayn/scripts/substore-config-generator.js",
-      "sha256": "9be80e186ba6b7560c9693f5ffe9476f4a1448bdb3d7943268203260d8a92d5c"
+      "sha256": "e866ebeaa1d9bd7b0f016ffab6a85062c5d245a5fc468ca43b3d73cbbf4dd31e"
     },
     {
-      "bytes": 122352,
+      "bytes": 123022,
       "path": "v2rayn/scripts/substore-node-generator.js",
-      "sha256": "9ec488975c8689ca02d956232592169e9794d2deb361872cd45973bd7f195c5b"
+      "sha256": "8339f98eeaf80eea263d191755e92de1a3d32b3c34dd221a6550a4ff3bc22e3a"
+    },
+    {
+      "bytes": 165941,
+      "path": "v2rayn/scripts/substore-routing-generator.js",
+      "sha256": "3c0e44852fd0270fd08b714ba9a450c376c9e5a673ff2dbf454d12d3bd6ef7e5"
     }
   ],
   "generatedAt": "2026-08-25T18:39:12Z",
-  "manifestHash": "fc585209f9d87938f5ee2618f43fa64b4b8378416903f3e70b3701622302ec77",
+  "manifestHash": "4a763d3dc122a5df473005d00130bb5a28ce09b049bc6d6b033c1ed7a0fa8167",
   "optionalPacks": {},
   "schemaVersion": 1
 }
