@@ -87,7 +87,6 @@ const OPTIONAL_AWARE_GENERATOR_PATHS = new Set([
   "v2box/scripts/substore-node-generator.js",
   "v2box/scripts/substore-config-generator.js",
   "v2rayn/scripts/substore-node-generator.js",
-  "v2rayn/scripts/substore-config-generator.js",
   "clash/scripts/clash-node-generator.js",
   "clash/scripts/substore-node-generator.js",
   "clash/scripts/clash-profile-generator.js",
@@ -104,7 +103,6 @@ const V2BOX_SCRIPT_PATHS = Object.freeze([
 ]);
 const V2RAYN_SCRIPT_PATHS = Object.freeze([
   "v2rayn/scripts/substore-node-generator.js",
-  "v2rayn/scripts/substore-config-generator.js",
   "v2rayn/scripts/substore-routing-generator.js",
 ]);
 const CLASH_SCRIPT_PATHS = Object.freeze([

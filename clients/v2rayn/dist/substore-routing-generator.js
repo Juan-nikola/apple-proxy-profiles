@@ -704,9 +704,9 @@ var V2rayNRoutingBundle = (() => {
           suffixGroup.push(record2);
           suffixGroups.set(record2.suffix, suffixGroup);
         }
-        for (const records2 of suffixGroups.values()) {
-          records2.forEach((record2, index) => {
-            const suffix = records2.length > 1 ? `${record2.suffix}-${index + 1}` : record2.suffix;
+        for (const records of suffixGroups.values()) {
+          records.forEach((record2, index) => {
+            const suffix = records.length > 1 ? `${record2.suffix}-${index + 1}` : record2.suffix;
             record2.node.name = `${protocolBase} #${suffix}`;
           });
         }
@@ -2055,35 +2055,6 @@ var V2rayNRoutingBundle = (() => {
   // ../../shared/encoding/base64url.js
   var ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
   var REVERSE = new Map([...ALPHABET].map((character, index) => [character, index]));
-  function assertBase64Url(value) {
-    if (typeof value !== "string" || !/^[A-Za-z0-9_-]*$/u.test(value) || value.length % 4 === 1) {
-      throw new TypeError("Base64URL value is invalid");
-    }
-  }
-  function decodeBase64Url(value) {
-    assertBase64Url(value);
-    if (value.length === 0) return new Uint8Array();
-    const remainder = value.length % 4;
-    const last = REVERSE.get(value.at(-1));
-    if (remainder === 2 && (last & 15) !== 0 || remainder === 3 && (last & 3) !== 0) {
-      throw new TypeError("Base64URL value is not canonical");
-    }
-    const bytes = new Uint8Array(Math.floor(value.length * 6 / 8));
-    let accumulator = 0;
-    let bits = 0;
-    let offset = 0;
-    for (const character of value) {
-      accumulator = accumulator << 6 | REVERSE.get(character);
-      bits += 6;
-      if (bits < 8) continue;
-      bits -= 8;
-      bytes[offset] = accumulator >> bits & 255;
-      offset += 1;
-      accumulator &= (1 << bits) - 1;
-    }
-    if (bits !== 0 && accumulator !== 0) throw new TypeError("Base64URL value is not canonical");
-    return bytes;
-  }
   function encodeBase64Url(bytes) {
     if (!(bytes instanceof Uint8Array)) throw new TypeError("Base64URL input must be bytes");
     let result = "";
@@ -2106,7 +2077,6 @@ var V2rayNRoutingBundle = (() => {
   // ../../shared/policies/business-targets.js
   var TARGET_KEYWORD = /^(FOLLOW|DIRECT)$/iu;
   var NODE_TARGET = /^(NODE:|NODE~)(.*)$/iu;
-  var BASE64URL = /^[A-Za-z0-9_-]+$/u;
   var LINE_TERMINATOR2 = /[\r\n\u2028\u2029]/u;
   function frozenTarget(id, label, aliases, defaultTarget) {
     return Object.freeze({ id, label, aliases: Object.freeze([...aliases]), defaultTarget });
@@ -2162,37 +2132,6 @@ var V2rayNRoutingBundle = (() => {
     TARGET_BY_KEY.set(target.label, target);
     for (const alias of target.aliases) TARGET_BY_KEY.set(alias, target);
   }
-  function businessTargetByKey(key) {
-    return typeof key === "string" ? TARGET_BY_KEY.get(key) : void 0;
-  }
-  function policyError(message) {
-    return new Error(`Invalid business policy overrides: ${message}`);
-  }
-  function targetError(target, message) {
-    return policyError(`${target.label}: ${message}`);
-  }
-  function decodePolicy(encoded2) {
-    if (typeof encoded2 !== "string" || encoded2 !== "" && !BASE64URL.test(encoded2) || encoded2.length % 4 === 1) {
-      throw policyError("must be a Base64URL string");
-    }
-    if (encoded2 === "") return Object.freeze({});
-    let bytes;
-    try {
-      bytes = decodeBase64Url(encoded2);
-    } catch {
-      throw policyError("must be a Base64URL string");
-    }
-    let values;
-    try {
-      values = parseStrictJson(bytes, { label: "business overrides", maxBytes: 64 * 1024, maxDepth: 8 });
-    } catch {
-      throw policyError("must contain JSON object");
-    }
-    if (values === null || Array.isArray(values) || typeof values !== "object" || Object.getPrototypeOf(values) !== Object.prototype) {
-      throw policyError("must contain a JSON object");
-    }
-    return values;
-  }
   function canonicalBusinessTarget(value) {
     if (typeof value !== "string") throw new TypeError("target must be a string");
     if (TARGET_KEYWORD.test(value)) return value.toUpperCase();
@@ -2202,25 +2141,6 @@ var V2rayNRoutingBundle = (() => {
     }
     const prefix2 = node[1].toUpperCase();
     return `${prefix2}${prefix2 === "NODE:" ? node[2] : node[2].trim()}`;
-  }
-  function parseBusinessOverrides(encoded2) {
-    const values = decodePolicy(encoded2);
-    const overrides = {};
-    for (const [key, value] of Object.entries(values)) {
-      const target = businessTargetByKey(key);
-      if (!target) throw policyError("contains an unknown business key");
-      let canonical;
-      try {
-        canonical = canonicalBusinessTarget(value);
-      } catch {
-        throw targetError(target, "target must be FOLLOW, DIRECT, or NODE:<name>");
-      }
-      if (Object.hasOwn(overrides, target.id) && overrides[target.id] !== canonical) {
-        throw targetError(target, "has conflicting aliases");
-      }
-      overrides[target.id] = canonical;
-    }
-    return Object.freeze(overrides);
   }
 
   // ../../shared/policies/unified-policy.js
@@ -2309,12 +2229,12 @@ var V2rayNRoutingBundle = (() => {
     if (!isRecord(value)) throw invalid2(reason);
     return value;
   }
-  function requireKeys(value, required2, allowed = required2) {
+  function requireKeys(value, required, allowed = required) {
     const allowedSet = allowed instanceof Set ? allowed : new Set(allowed);
     for (const key of Object.keys(value)) {
       if (!allowedSet.has(key)) throw invalid2("contains an unsupported field");
     }
-    for (const key of required2) {
+    for (const key of required) {
       if (!Object.hasOwn(value, key)) throw invalid2("is missing a required field");
     }
   }
@@ -2684,182 +2604,6 @@ var V2rayNRoutingBundle = (() => {
     return freeze2({ targets, fixedNodes, warnings: [] });
   }
 
-  // ../../shared/release/client-catalog.js
-  var freeze3 = (value) => {
-    if (value && typeof value === "object" && !Object.isFrozen(value)) {
-      for (const child of Object.values(value)) freeze3(child);
-      Object.freeze(value);
-    }
-    return value;
-  };
-  var records = [
-    {
-      id: CLIENT.anywhere,
-      displayName: "Anywhere",
-      state: "active",
-      platforms: ["iphone", "ipad", "macos", "appletv"],
-      configFormat: "clash-yaml",
-      ruleFormat: "clash-yaml",
-      nodeValidator: "anywhere",
-      separatesProfile: false,
-      supportsPolicyOverrides: false,
-      adapterSchema: "anywhere-v1",
-      publicDirectory: "anywhere"
-    },
-    {
-      id: CLIENT.egern,
-      displayName: "Egern",
-      state: "active",
-      platforms: ["iphone", "ipad", "macos"],
-      configFormat: "yaml",
-      ruleFormat: "yaml",
-      nodeValidator: "egern",
-      separatesProfile: false,
-      supportsPolicyOverrides: false,
-      adapterSchema: "egern-v1",
-      publicDirectory: "egern"
-    },
-    {
-      id: CLIENT.shadowrocket,
-      displayName: "Shadowrocket",
-      state: "active",
-      platforms: ["iphone", "ipad", "macos"],
-      configFormat: "ini",
-      ruleFormat: "list",
-      nodeValidator: "shadowrocket",
-      separatesProfile: false,
-      supportsPolicyOverrides: false,
-      adapterSchema: "shadowrocket-v1",
-      publicDirectory: "shadowrocket"
-    },
-    {
-      id: CLIENT.surge,
-      displayName: "Surge",
-      state: "active",
-      platforms: ["macos", "iphone", "ipad"],
-      configFormat: "ini",
-      ruleFormat: "list",
-      nodeValidator: "surge",
-      separatesProfile: false,
-      supportsPolicyOverrides: false,
-      adapterSchema: "surge-v1",
-      publicDirectory: "surge"
-    },
-    {
-      id: CLIENT.singbox,
-      displayName: "sing-box",
-      state: "active",
-      platforms: ["macos", "iphone", "ipad", "android"],
-      configFormat: "json",
-      ruleFormat: "srs",
-      nodeValidator: "singbox",
-      separatesProfile: false,
-      supportsPolicyOverrides: false,
-      adapterSchema: "singbox-v1",
-      publicDirectory: "sing-box"
-    },
-    {
-      id: CLIENT.happ,
-      displayName: "HAPP",
-      state: "active",
-      platforms: ["macos", "iphone", "ipad"],
-      configFormat: "happ-json",
-      ruleFormat: "xray-geodata",
-      nodeValidator: "happ",
-      separatesProfile: false,
-      supportsPolicyOverrides: false,
-      adapterSchema: "happ-v1",
-      publicDirectory: "happ"
-    },
-    {
-      id: CLIENT.v2rayn,
-      displayName: "v2rayN",
-      state: "active",
-      platforms: ["windows", "macos"],
-      configFormat: "xray-or-singbox-json",
-      ruleFormat: "xray-geodata-or-srs",
-      nodeValidator: "v2rayn",
-      separatesProfile: false,
-      supportsPolicyOverrides: false,
-      adapterSchema: "v2rayn-v2",
-      publicDirectory: "v2rayn"
-    },
-    {
-      id: CLIENT.v2box,
-      displayName: "V2Box",
-      state: "active",
-      platforms: ["iphone", "ipad"],
-      configFormat: "xray-profile-json",
-      ruleFormat: "xray-geodata",
-      nodeValidator: "v2box",
-      separatesProfile: false,
-      supportsPolicyOverrides: false,
-      adapterSchema: "v2box-v1",
-      publicDirectory: "v2box"
-    },
-    {
-      id: CLIENT.clash,
-      displayName: "Clash Apple",
-      state: "active",
-      platforms: ["iphone", "ipad", "macos", "appletv"],
-      configFormat: "mihomo-yaml",
-      ruleFormat: "mihomo-classical-yaml",
-      nodeValidator: "clash",
-      separatesProfile: false,
-      supportsPolicyOverrides: false,
-      adapterSchema: "clash-v1",
-      publicDirectory: "clash"
-    },
-    {
-      id: CLIENT.incy,
-      displayName: "INCY",
-      state: "active",
-      platforms: ["iphone", "ipad", "appletv", "android", "androidtv", "macos", "windows", "linux"],
-      configFormat: "xray-json-array",
-      ruleFormat: "xray-geodata",
-      nodeValidator: "incy",
-      separatesProfile: false,
-      supportsPolicyOverrides: false,
-      adapterSchema: "incy-v1",
-      publicDirectory: "incy"
-    },
-    {
-      id: CLIENT.hiddify,
-      displayName: "Hiddify Next",
-      state: "active",
-      platforms: ["android", "iphone", "ipad", "macos", "windows", "linux"],
-      configFormat: "hiddify-sing-box-json",
-      ruleFormat: "sing-box-source-json",
-      nodeValidator: "hiddify",
-      separatesProfile: false,
-      supportsPolicyOverrides: false,
-      adapterSchema: "hiddify-v1",
-      publicDirectory: "hiddify"
-    }
-  ].map((record2) => freeze3(record2));
-  var byId = new Map(records.map((record2) => [record2.id, record2]));
-  var ids = freeze3(records.map(({ id }) => id));
-  var activeIds = freeze3(records.filter(({ state }) => state === "active").map(({ id }) => id));
-  var plannedIds = freeze3(records.filter(({ state }) => state === "planned").map(({ id }) => id));
-  var lightweightRuleIds = freeze3([
-    CLIENT.anywhere,
-    CLIENT.egern,
-    CLIENT.shadowrocket,
-    CLIENT.surge,
-    CLIENT.singbox,
-    CLIENT.clash,
-    CLIENT.hiddify
-  ]);
-
-  // ../../shared/release/frontier-manifest.js
-  var FRONTIER_CHANNELS = Object.freeze(["current"]);
-  var FRONTIER_PLATFORMS = Object.freeze({
-    [CLIENT.surge]: Object.freeze(["macos", "iphone", "ipad"]),
-    [CLIENT.singbox]: Object.freeze(["macos", "iphone", "ipad", "android", "openwrt"]),
-    [CLIENT.v2rayn]: Object.freeze(["windows", "macos"]),
-    [CLIENT.v2box]: Object.freeze(["iphone", "ipad"])
-  });
-
   // ../../shared/substore/collection-name.js
   var SAFE_COLLECTION_NAME = /^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$/u;
   var PROTOTYPE_KEYS = /* @__PURE__ */ new Set(["__proto__", "constructor", "prototype"]);
@@ -2879,32 +2623,14 @@ var V2rayNRoutingBundle = (() => {
   }
 
   // src/options.js
-  var DEFAULTS = Object.freeze({ channel: "current", region: "cn", core: "xray", dnsMode: "stable", chinaDns: "alidns", globalDns: "cloudflare", blockMode: "balanced", quicMode: "proxy-block", ipv6Mode: "auto", clientChain: "off", clientChainTarget: "", policyOverrides: "" });
-  var ALLOWED = /* @__PURE__ */ new Set(["output", "type", "name", "subscriptionName", "platform", ...Object.keys(DEFAULTS)]);
-  var required = (raw, key) => {
-    const value = raw[key];
-    if (typeof value !== "string" || !value || value.trim() !== value || /[\r\n]/u.test(value)) throw new Error(`v2rayN option '${key}' is invalid`);
-    return value;
-  };
-  function parseV2rayNOptions(raw) {
+  function parseV2rayNOptions(raw = {}) {
     if (!raw || typeof raw !== "object" || Array.isArray(raw)) throw new TypeError("v2rayN options must be an object");
-    for (const key of Object.keys(raw)) if (!key.startsWith("_") && !ALLOWED.has(key)) throw new Error(`Unknown v2rayN option: ${key}`);
-    for (const key of ["output", "type", "name"]) if (!Object.hasOwn(raw, key)) throw new Error(`v2rayN option '${key}' is required`);
-    const output = required(raw, "output");
-    if (!["nodes", "config"].includes(output)) throw new Error("v2rayN option 'output' is unsupported");
-    if (required(raw, "type") !== "collection") throw new Error("v2rayN option 'type' must be collection");
-    const platform = raw.platform === void 0 ? void 0 : required(raw, "platform");
-    if (output === "config" && platform === void 0) throw new Error("v2rayN option 'platform' is required");
-    if (platform !== void 0 && !["windows", "macos"].includes(platform)) throw new Error("v2rayN option 'platform' is unsupported");
-    const options = { output, type: "collection", name: validateCollectionName(raw.name, "v2rayN option 'name'"), subscriptionName: raw.subscriptionName === void 0 ? "" : required(raw, "subscriptionName"), platform, channel: raw.channel ?? DEFAULTS.channel, region: parseRegion(raw.region ?? DEFAULTS.region), core: raw.core ?? DEFAULTS.core, dnsMode: raw.dnsMode ?? DEFAULTS.dnsMode, chinaDns: raw.chinaDns ?? DEFAULTS.chinaDns, globalDns: raw.globalDns ?? DEFAULTS.globalDns, blockMode: raw.blockMode ?? DEFAULTS.blockMode, quicMode: raw.quicMode ?? DEFAULTS.quicMode, ipv6Mode: raw.ipv6Mode ?? DEFAULTS.ipv6Mode, clientChain: raw.clientChain ?? DEFAULTS.clientChain, clientChainTarget: raw.clientChainTarget ?? DEFAULTS.clientChainTarget, policyOverrides: raw.policyOverrides ?? DEFAULTS.policyOverrides };
-    if (!FRONTIER_CHANNELS.includes(options.channel)) throw new Error("v2rayN option 'channel' is unsupported");
-    if (!["singbox", "xray"].includes(options.core)) throw new Error("v2rayN option 'core' is unsupported");
-    for (const key of ["dnsMode", "chinaDns", "globalDns", "blockMode", "quicMode", "ipv6Mode", "clientChain"]) if (!OPTION_VALUES[key]?.includes(options[key])) throw new Error(`v2rayN option '${key}' is unsupported`);
-    if (options.clientChain === "off" && options.clientChainTarget !== "") throw new Error("v2rayN clientChainTarget requires clientChain=on");
-    if (options.clientChain === "on" && !/^NODE:.+$/u.test(options.clientChainTarget)) throw new Error("v2rayN clientChainTarget is required when clientChain=on");
-    if (typeof options.policyOverrides !== "string" || /[\r\n]/u.test(options.policyOverrides)) throw new Error("v2rayN policyOverrides is invalid");
-    parseBusinessOverrides(options.policyOverrides);
-    return Object.freeze(options);
+    const output = raw.output;
+    if (!["nodes", "routing"].includes(output)) throw new Error("v2rayN output is unsupported");
+    if (raw.type !== "collection") throw new Error("v2rayN type must be collection");
+    if (typeof raw.name !== "string") throw new Error("v2rayN name is required");
+    if (output === "routing" && !["windows", "macos"].includes(raw.platform)) throw new Error("v2rayN routing platform is required");
+    return Object.freeze({ output, type: "collection", name: validateCollectionName(raw.name, "v2rayN name"), platform: raw.platform, channel: raw.channel ?? "current", region: parseRegion(raw.region ?? "cn"), core: raw.core ?? "xray", blockMode: raw.blockMode ?? "balanced", quicMode: raw.quicMode ?? "proxy-block", clientChain: raw.clientChain ?? "off" });
   }
 
   // ../../shared/rules/semantic-intents.js
@@ -3157,7 +2883,7 @@ var V2rayNRoutingBundle = (() => {
     Advertising_Domain: "\u{1F9F1} \u5E38\u89C1\u5E7F\u544A"
   });
   function uniqueMembership(id, memberships, label) {
-    const matches = Object.entries(memberships).filter(([, ids2]) => ids2.includes(id)).map(([name]) => name);
+    const matches = Object.entries(memberships).filter(([, ids]) => ids.includes(id)).map(([name]) => name);
     if (matches.length !== 1) {
       throw new Error(`Lightweight rule source ${id} must have exactly one ${label} membership`);
     }
@@ -3251,19 +2977,19 @@ var V2rayNRoutingBundle = (() => {
   function renderV2rayNNativeRouting({ nodes, options, policyResolution = defaultUnifiedPolicyResolution() }) {
     if (!Array.isArray(nodes) || nodes.length === 0) throw new Error("v2rayN native routing requires nodes");
     if (!["cn", "global"].includes(options?.region)) throw new Error("v2rayN native routing currently supports cn/global regions");
-    const byId2 = /* @__PURE__ */ new Map();
+    const byId = /* @__PURE__ */ new Map();
     const names = /* @__PURE__ */ new Set();
     for (const node of nodes) {
       if (!node.name || names.has(node.name) || ["proxy", "direct", "block"].includes(node.name)) throw new Error("v2rayN native routing requires unique non-reserved node names");
       names.add(node.name);
-      byId2.set(node._profile?.id, node.name);
+      byId.set(node._profile?.id, node.name);
     }
     function target(id) {
       const record2 = policyResolution.targets?.[id];
       if (!record2 || record2.resolved === "FOLLOW") return "proxy";
       if (record2.resolved === "DIRECT") return "direct";
       if (record2.resolved === "REJECT") return "block";
-      const name = byId2.get(record2.nodeId);
+      const name = byId.get(record2.nodeId);
       if (!name) throw new Error("v2rayN fixed policy node is unavailable");
       return name;
     }
