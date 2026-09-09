@@ -99,7 +99,7 @@
       "referencedDefaultBytes": 0
     },
     "v2rayn": {
-      "manifestHash": "8581d2a5e68c025138c8092adb6d28a6ad0d66d47adcb61e38221bb0410bd8c2",
+      "manifestHash": "4a763d3dc122a5df473005d00130bb5a28ce09b049bc6d6b033c1ed7a0fa8167",
       "referencedDefaultBytes": 0
     }
   },
@@ -426,12 +426,12 @@
     {
       "bytes": 2496,
       "path": "audit/dashboard.html",
-      "sha256": "5eacddb83776f41712d5bf1eae16503a1afa21b72c7041541e6254e9d67a92d5"
+      "sha256": "ba44505e5eed5b05537f32235f4f4a710cd4701d4cb797ad445efbdec6a7fcd2"
     },
     {
       "bytes": 5758,
       "path": "audit/dashboard.json",
-      "sha256": "781db558a376df57d5b044f1524c46a69f99d5489f327c306b5bf9e0b8e5eb34"
+      "sha256": "5fb2ab9148c76b63d25d0d8ef3d5c494de3c1438fbf70e3e83116157ab718d74"
     },
     {
       "bytes": 5184,
@@ -2094,23 +2094,28 @@
       "sha256": "f0ac69917f0515dd1b33074a269aa4d877036210bbdfb098fa0a92b77b0fbbee"
     },
     {
-      "bytes": 664,
+      "bytes": 845,
       "path": "v2rayn/client-manifest.json",
-      "sha256": "8c728ea75050e7af7b4a175221b4a233f358904f080402590f1fd3b6bf68a701"
+      "sha256": "cce0345e5d30a8e53c889b6c66a867e687471e2bc95f2037e5908c117d5004f8"
     },
     {
-      "bytes": 261277,
+      "bytes": 261773,
       "path": "v2rayn/scripts/substore-config-generator.js",
-      "sha256": "fed8847c0b993e6a340a40e87f46f089fb2271b82eed668060b6f0a3196cd747"
+      "sha256": "e866ebeaa1d9bd7b0f016ffab6a85062c5d245a5fc468ca43b3d73cbbf4dd31e"
     },
     {
       "bytes": 123022,
       "path": "v2rayn/scripts/substore-node-generator.js",
       "sha256": "8339f98eeaf80eea263d191755e92de1a3d32b3c34dd221a6550a4ff3bc22e3a"
+    },
+    {
+      "bytes": 165941,
+      "path": "v2rayn/scripts/substore-routing-generator.js",
+      "sha256": "3c0e44852fd0270fd08b714ba9a450c376c9e5a673ff2dbf454d12d3bd6ef7e5"
     }
   ],
   "generatedAt": "2026-08-25T18:39:12Z",
-  "manifestHash": "6f7e46929daa9c50df1b95759136fdfa79ea45822e6cefe27ee5d1e1cd9bd81c",
+  "manifestHash": "e783aa267c1cba7194bacb1acecc746ac525ac7c9dfa2c8ecace3bd0d0231e0c",
   "schemaVersion": 2,
   "upstream": {
     "branch": "master",

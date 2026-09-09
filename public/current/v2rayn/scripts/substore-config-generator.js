@@ -3735,10 +3735,10 @@ var V2rayNConfigBundle = (() => {
     const queryStrategy = options.ipv6Mode === "ipv4-only" ? "UseIPv4" : "UseIP";
     const china = options.chinaDns === "system" ? "localhost" : options.chinaDns === "dnspod" ? "119.29.29.29" : "223.5.5.5";
     const global = options.globalDns === "google" ? "8.8.8.8" : options.globalDns === "quad9" ? "9.9.9.9" : "1.1.1.1";
-    return { servers: [{ tag: "china-dns", address: china, domains: ["geosite:cn", "geosite:private"], queryStrategy }, { tag: "global-dns", address: global, queryStrategy }], queryStrategy, tag: "dnsQuery", mode: options.dnsMode };
+    return { servers: [{ tag: "china-dns", address: china, domains: ["geosite:cn", "geosite:private"], queryStrategy }, { tag: "global-dns", address: global, queryStrategy }], queryStrategy, tag: "dnsQuery" };
   }
   function inbound(options) {
-    if (options.platform === "macos") return {
+    return {
       tag: "socks-in",
       listen: "127.0.0.1",
       port: 10808,
@@ -3746,7 +3746,6 @@ var V2rayNConfigBundle = (() => {
       settings: { auth: "noauth", udp: true },
       sniffing: { enabled: true, destOverride: ["http", "tls"], routeOnly: true }
     };
-    return { tag: "tun", protocol: "tun", settings: { mtu: 1500 }, sniffing: { enabled: true, routeOnly: true } };
   }
   function renderV2rayNProfile({ nodes, options, geoData = null, filterFailures = {}, policyResolution = null } = {}) {
     if (!options || options.output !== "config") throw new Error("v2rayN profile options are required");
@@ -3777,7 +3776,6 @@ var V2rayNConfigBundle = (() => {
     const rank = (item) => ["Hijacking", "BlockHttpDNS", "Privacy"].includes(item.source.id) ? 0 : policyForRuleSource(item.source.id) ? 1 : 2;
     sourceRules.sort((a, b) => rank(a) - rank(b));
     for (const { source: source2, outboundTag } of sourceRules) rules.push({ domain: [`ext:${xrayGeoNames(options.channel).domain}.dat:${source2.code}`], ip: [`ext:${xrayGeoNames(options.channel).ip}.dat:${source2.code}`], outboundTag, ruleTag: `source-${source2.id}` });
-    if (options.quicMode !== "allow") rules.push({ network: "quic", outboundTag: options.quicMode === "all-block" ? "block" : "direct", ruleTag: "quic-policy" });
     const finalRecord = policyResolution?.targets?.final;
     let finalOutboundTag = proxyTag;
     if (finalRecord?.resolved === "DIRECT") finalOutboundTag = "direct";
@@ -3786,7 +3784,19 @@ var V2rayNConfigBundle = (() => {
       if (!finalOutboundTag) throw new Error("v2rayN policy target node is unavailable");
     }
     rules.push({ domain: [`geosite:${options.region}`], outboundTag: "direct", ruleTag: "china-domain-direct" }, { ip: [`geoip:${options.region}`], outboundTag: "direct", ruleTag: "china-ip-direct" }, { network: "tcp,udp", outboundTag: finalOutboundTag, ruleTag: "final-fail-closed" });
-    return { name: options.name, dns: dns(options), inbounds: [inbound(options)], outbounds, routing: { domainStrategy: "IPIfNonMatch", rules }, ...Object.keys(failures).length ? { renderFailures: failures } : {} };
+    return { name: options.name, dns: dns(options), inbounds: [inbound(options)], outbounds, routing: { domainStrategy: "IPIfNonMatch", rules: legalXrayRules(rules, options) }, ...Object.keys(failures).length ? { renderFailures: failures } : {} };
+  }
+  function legalXrayRules(rules, options) {
+    return rules.flatMap((rule3) => {
+      const separated = rule3.domain && rule3.ip ? [{ ...rule3, ip: void 0 }, { ...rule3, domain: void 0 }] : [rule3];
+      return separated.flatMap((item) => {
+        const clean = Object.fromEntries(Object.entries(item).filter(([, value]) => value !== void 0));
+        const isProxy = !["direct", "block"].includes(clean.outboundTag);
+        const blockQuic = options.quicMode === "all-block" || options.quicMode === "proxy-block" && isProxy;
+        const regular = { type: "field", ...clean };
+        return blockQuic && !clean.ruleTag?.startsWith("private-") ? [{ ...regular, network: "udp", port: "443", outboundTag: "block", ruleTag: `quic-${clean.ruleTag}` }, regular] : [regular];
+      });
+    });
   }
 
   // ../../shared/policies/platform-presets.js

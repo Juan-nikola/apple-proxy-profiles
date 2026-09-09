@@ -72,6 +72,10 @@ function nodeTask(name, client, channel, collection) {
   );
 }
 
+function routingTask(name, channel, collection) {
+  return remoteTask(name, "v2rayn", `${base(channel, "v2rayn", "substore-routing-generator.js")}#${fragment({ output: "routing", type: "collection", name: collection, platform: "windows", core: "xray", region: "cn", channel })}`, { output: "routing", collection, platform: "windows", channel, policyInput: "apple-proxy-policy" });
+}
+
 function configTask(name, client, script, channel, collection, platform, subscriptionName, extra = {}, metadata = { policyInput: "apple-proxy-policy" }) {
   const options = {
     output: "config",
@@ -123,6 +127,7 @@ export function canonicalTaskCatalog(channel = "current") {
     configTask("happ-config-iphone", "happ", "happ-config-generator.js", channel, "apple-proxy-happ", "iphone", "Apple-Proxy-Happ", {}, { omitKeys: ["autoGroupMode", "clientChain"] }),
     configTask("happ-config-ipad", "happ", "happ-config-generator.js", channel, "apple-proxy-happ", "ipad", "Apple-Proxy-Happ", {}, { omitKeys: ["autoGroupMode", "clientChain"] }),
     nodeTask("v2rayn-nodes", "v2rayn", channel, "apple-proxy-v2rayn"),
+    routingTask("v2rayn-xray-routing", channel, "apple-proxy-v2rayn"),
     configTask("v2rayn-singbox-windows", "v2rayn", "substore-config-generator.js", channel, "apple-proxy-v2rayn", "windows", "Apple-Proxy-v2rayN", { core: "singbox", region: "cn" }, { omitKeys: ["autoGroupMode"] }),
     configTask("v2rayn-singbox-macos", "v2rayn", "substore-config-generator.js", channel, "apple-proxy-v2rayn", "macos", "Apple-Proxy-v2rayN", { core: "singbox", region: "cn" }, { omitKeys: ["autoGroupMode"] }),
     configTask("v2rayn-xray-windows", "v2rayn", "substore-config-generator.js", channel, "apple-proxy-v2rayn", "windows", "Apple-Proxy-v2rayN", { core: "xray", region: "cn" }, { omitKeys: ["autoGroupMode"] }),
@@ -150,7 +155,7 @@ export function canonicalTaskCatalog(channel = "current") {
     configTask("hiddify-config-windows", "hiddify", "hiddify-config-generator.js", channel, "apple-proxy-hiddify", "windows", "Hiddify", { profileMode: "light", nodeErrorMode: "strict" }),
     configTask("hiddify-config-linux", "hiddify", "hiddify-config-generator.js", channel, "apple-proxy-hiddify", "linux", "Hiddify", { profileMode: "light", nodeErrorMode: "strict" }),
   ];
-  if (tasks.length !== 49) throw new Error(`Expected 49 canonical tasks, got ${tasks.length}`);
+  if (tasks.length !== 50) throw new Error(`Expected 50 canonical tasks, got ${tasks.length}`);
   return Object.freeze(tasks);
 }
 
@@ -180,7 +185,7 @@ export function validatePrivateSubstoreConfig(config) {
     const result = checkSubstoreTaskUrl(task.url);
     if (!result.ok) return false;
   }
-  return config.tasks.length === 49;
+  return config.tasks.length === 50;
 }
 
 export async function writePrivateSubstoreConfig({ sourceUrl, channel = "current", path = PRIVATE_CONFIG_PATH } = {}) {

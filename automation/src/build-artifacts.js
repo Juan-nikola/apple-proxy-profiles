@@ -105,6 +105,7 @@ const V2BOX_SCRIPT_PATHS = Object.freeze([
 const V2RAYN_SCRIPT_PATHS = Object.freeze([
   "v2rayn/scripts/substore-node-generator.js",
   "v2rayn/scripts/substore-config-generator.js",
+  "v2rayn/scripts/substore-routing-generator.js",
 ]);
 const CLASH_SCRIPT_PATHS = Object.freeze([
   "clash/scripts/clash-node-generator.js",

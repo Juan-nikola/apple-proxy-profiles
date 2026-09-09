@@ -1,4 +1,4 @@
-var V2rayNConfigBundle = (() => {
+var V2rayNRoutingBundle = (() => {
   var __defProp = Object.defineProperty;
   var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
   var __getOwnPropNames = Object.getOwnPropertyNames;
@@ -17,9 +17,9 @@ var V2rayNConfigBundle = (() => {
   };
   var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
-  // src/substore-config-entry.js
-  var substore_config_entry_exports = {};
-  __export(substore_config_entry_exports, {
+  // src/substore-routing-entry.js
+  var substore_routing_entry_exports = {};
+  __export(substore_routing_entry_exports, {
     operator: () => operator
   });
 
@@ -319,9 +319,9 @@ var V2rayNConfigBundle = (() => {
     return definition?.names[0] ?? null;
   }
   function protocolSupportsClient(value, client) {
-    const protocol2 = normalizeProtocol(value);
-    const definition = protocolDefinition(protocol2);
-    return definition?.clients.includes(client) === true && (definition.clientNames[client] ?? definition.names).includes(protocol2);
+    const protocol3 = normalizeProtocol(value);
+    const definition = protocolDefinition(protocol3);
+    return definition?.clients.includes(client) === true && (definition.clientNames[client] ?? definition.names).includes(protocol3);
   }
   function diagnosticProtocol(value) {
     const normalized = normalizeProtocol(value);
@@ -342,8 +342,8 @@ var V2rayNConfigBundle = (() => {
   }
   var OPAQUE_AUTH_FIELDS = /* @__PURE__ */ new Set(["password", "psk", "private-key", "public-key", "key"]);
   function isValidPort(value) {
-    const port2 = typeof value === "string" && /^\d+$/.test(value) ? Number(value) : value;
-    return Number.isInteger(port2) && port2 >= 1 && port2 <= 65535;
+    const port = typeof value === "string" && /^\d+$/.test(value) ? Number(value) : value;
+    return Number.isInteger(port) && port >= 1 && port <= 65535;
   }
   function isValidAuthField(field, value) {
     if (field === "version") {
@@ -484,7 +484,7 @@ var V2rayNConfigBundle = (() => {
       latinMatcher: new RegExp(latinTerms.map(latinTermPattern).join("|"), "iu")
     };
   });
-  var REGION_LABELS = new Map(RAW_REGIONS.map(({ flag, label: label2 }) => [flag, label2]));
+  var REGION_LABELS = new Map(RAW_REGIONS.map(({ flag, label }) => [flag, label]));
   function inferRegion(name) {
     return REGIONS.find((region) => region.latinMatcher.test(name) || region.chineseTerms.some((term) => name.includes(term))) ?? null;
   }
@@ -525,14 +525,14 @@ var V2rayNConfigBundle = (() => {
   ]);
   var SOURCE_MARKER_PATTERN = /\[(?:\s*未标记\s*|\s*机场\s*|\s*自建\s*|\s*realm\s*|\s*链式代理\s*|\s*落地\s*)\]/giu;
   function sourceFromToken(token) {
-    const source2 = SOURCE_LABELS.get(String(token).trim().toLowerCase());
-    return source2 ? { ...source2, warning: null } : null;
+    const source = SOURCE_LABELS.get(String(token).trim().toLowerCase());
+    return source ? { ...source, warning: null } : null;
   }
   function sourceFromMarkers(value) {
     if (typeof value !== "string" || value.length === 0) return null;
     for (const match of value.matchAll(/\[([^\]]+)\]/gu)) {
-      const source2 = sourceFromToken(match[1]);
-      if (source2) return source2;
+      const source = sourceFromToken(match[1]);
+      if (source) return source;
     }
     return null;
   }
@@ -540,11 +540,11 @@ var V2rayNConfigBundle = (() => {
     for (const field of PROVENANCE_FIELDS) {
       const value = node?.[field];
       if (typeof value !== "string" || !value.trim()) continue;
-      const source3 = sourceFromMarkers(value);
-      if (source3) return { ...source3, warning: null };
+      const source2 = sourceFromMarkers(value);
+      if (source2) return { ...source2, warning: null };
     }
-    const source2 = sourceFromMarkers(node?.name);
-    if (source2) return { ...source2, warning: null };
+    const source = sourceFromMarkers(node?.name);
+    if (source) return { ...source, warning: null };
     return {
       kind: SOURCE_KIND.unknown,
       label: "\u672A\u77E5",
@@ -630,8 +630,8 @@ var V2rayNConfigBundle = (() => {
     if (continent !== 0) return continent;
     const flag = nodeMetadata(left).flag.localeCompare(nodeMetadata(right).flag, "zh-Hans-CN");
     if (flag !== 0) return flag;
-    const protocol2 = nodeMetadata(left).protocolLabel.localeCompare(nodeMetadata(right).protocolLabel, "zh-Hans-CN");
-    if (protocol2 !== 0) return protocol2;
+    const protocol3 = nodeMetadata(left).protocolLabel.localeCompare(nodeMetadata(right).protocolLabel, "zh-Hans-CN");
+    if (protocol3 !== 0) return protocol3;
     const name = (CLEANED_DISPLAY_NAMES.get(left) ?? cleanDisplayName(left.name, left.type)).localeCompare(CLEANED_DISPLAY_NAMES.get(right) ?? cleanDisplayName(right.name, right.type), "zh-Hans-CN");
     if (name !== 0) return name;
     return nodeMetadata(left).id.localeCompare(nodeMetadata(right).id, "zh-Hans-CN");
@@ -685,10 +685,10 @@ var V2rayNConfigBundle = (() => {
       if (group.length < 2) continue;
       const byProtocol = /* @__PURE__ */ new Map();
       for (const node of group) {
-        const label2 = protocolDisplayLabel(node.type);
-        const protocolGroup = byProtocol.get(label2) ?? [];
+        const label = protocolDisplayLabel(node.type);
+        const protocolGroup = byProtocol.get(label) ?? [];
         protocolGroup.push(node);
-        byProtocol.set(label2, protocolGroup);
+        byProtocol.set(label, protocolGroup);
       }
       const multipleProtocols = byProtocol.size > 1;
       for (const [protocolLabel, protocolGroup] of byProtocol) {
@@ -730,13 +730,13 @@ var V2rayNConfigBundle = (() => {
       cloned.type = original.type.trim().toLowerCase();
       cloned.port = Number(original.port);
       const identity = identityKey(cloned);
-      const source2 = classifySource(original);
+      const source = classifySource(original);
       const region = classifyRegion(original.name);
       const group = candidatesByIdentity.get(identity) ?? [];
       group.push({
         original,
         cloned,
-        source: source2,
+        source,
         region,
         validation,
         existingChain: hasExistingChain(original),
@@ -752,19 +752,19 @@ var V2rayNConfigBundle = (() => {
     }
     for (const group of candidatesByIdentity.values()) {
       group.sort(compareDuplicateCandidates);
-      const { original, cloned, source: source2, region, validation, existingChain } = group[0];
+      const { original, cloned, source, region, validation, existingChain } = group[0];
       if (group.length > 1) increment(diagnostics.excluded, "exact-duplicate", group.length - 1);
       increment(diagnostics.protocol, diagnosticProtocol(cloned.type));
-      increment(diagnostics.source, source2.kind);
+      increment(diagnostics.source, source.kind);
       increment(diagnostics.region, region.continent);
-      for (const warning of [...validation.warnings, source2.warning, region.warning]) {
+      for (const warning of [...validation.warnings, source.warning, region.warning]) {
         if (warning) increment(diagnostics.warnings, warning);
       }
       const udp = hasExplicitUdp(original);
       const id = `sr-${fingerprint(cloned)}`;
       const protocolLabel = protocolDisplayLabel(cloned.type);
       const displayName = cleanDisplayName(original.name, cloned.type);
-      const sourceSuffix = source2.kind === SOURCE_KIND.unknown ? "" : "\uFF5C" + source2.label;
+      const sourceSuffix = source.kind === SOURCE_KIND.unknown ? "" : "\uFF5C" + source.label;
       const capabilitySuffix = [
         existingChain ? "\u94FE" : "",
         udp ? "U" : ""
@@ -776,12 +776,12 @@ var V2rayNConfigBundle = (() => {
         originalName: String(original.name),
         protocol: cloned.type,
         protocolLabel,
-        sourceKind: source2.kind,
+        sourceKind: source.kind,
         continent: region.continent,
         flag: region.flag,
         udp,
-        p2p: isP2pSource(source2.kind),
-        entry: isEntrySource(source2.kind) && !existingChain,
+        p2p: isP2pSource(source.kind),
+        entry: isEntrySource(source.kind) && !existingChain,
         chained: false
       };
       normalized.push(cloned);
@@ -1124,9 +1124,9 @@ var V2rayNConfigBundle = (() => {
       return false;
     }
     if (hasOption(options, "host") && hasOption(options, "headers")) {
-      const host = Array.isArray(options.host) ? options.host[0] : options.host;
+      const host2 = Array.isArray(options.host) ? options.host[0] : options.host;
       const headerHost = options.headers.Host ?? options.headers.host;
-      if (headerHost !== void 0 && (Array.isArray(headerHost) ? headerHost[0] : headerHost) !== host) return false;
+      if (headerHost !== void 0 && (Array.isArray(headerHost) ? headerHost[0] : headerHost) !== host2) return false;
     }
     return true;
   }
@@ -1183,13 +1183,13 @@ var V2rayNConfigBundle = (() => {
   }
   function ipFamily(value) {
     if (!isNonblankString(value)) return 0;
-    const [address, prefix, ...extra] = value.split("/");
-    if (extra.length > 0 || prefix !== void 0 && !/^\d+$/.test(prefix)) return 0;
-    if (/^(?:\d{1,3}\.){3}\d{1,3}$/.test(address) && address.split(".").every((part) => Number(part) <= 255) && (prefix === void 0 || Number(prefix) <= 32)) return 4;
-    if (address.includes(":") && (prefix === void 0 || Number(prefix) <= 128)) {
+    const [address, prefix2, ...extra] = value.split("/");
+    if (extra.length > 0 || prefix2 !== void 0 && !/^\d+$/.test(prefix2)) return 0;
+    if (/^(?:\d{1,3}\.){3}\d{1,3}$/.test(address) && address.split(".").every((part) => Number(part) <= 255) && (prefix2 === void 0 || Number(prefix2) <= 32)) return 4;
+    if (address.includes(":") && (prefix2 === void 0 || Number(prefix2) <= 128)) {
       try {
-        const host = new URL(`http://[${address}]/`).hostname;
-        if (host.startsWith("[") && host.endsWith("]")) return 6;
+        const host2 = new URL(`http://[${address}]/`).hostname;
+        if (host2.startsWith("[") && host2.endsWith("]")) return 6;
       } catch {
         return 0;
       }
@@ -1230,8 +1230,8 @@ var V2rayNConfigBundle = (() => {
     if (addresses.length === 0 || families.includes(0) || families.filter((family) => family === 4).length > 1 || families.filter((family) => family === 6).length > 1) {
       return "unsupported-egern-wireguard-shape";
     }
-    const dns2 = node.dns_servers ?? node.dns;
-    if (dns2 !== void 0 && (!Array.isArray(dns2) || dns2.length === 0 || dns2.some((value) => ipFamily(value) === 0)) || !isOptionalPositiveInteger(node, "mtu") || !isOptionalPositiveInteger(node, "keepalive", { allowZero: true })) {
+    const dns = node.dns_servers ?? node.dns;
+    if (dns !== void 0 && (!Array.isArray(dns) || dns.length === 0 || dns.some((value) => ipFamily(value) === 0)) || !isOptionalPositiveInteger(node, "mtu") || !isOptionalPositiveInteger(node, "keepalive", { allowZero: true })) {
       return "unsupported-egern-wireguard-shape";
     }
     return null;
@@ -1247,11 +1247,11 @@ var V2rayNConfigBundle = (() => {
   function hasHttp2HostConflict(node) {
     const options = node["h2-opts"];
     if (!isPlainObject(options) || !hasOption(options, "host") || !isPlainObject(options.headers)) return false;
-    const host = Array.isArray(options.host) ? options.host[0] : options.host;
+    const host2 = Array.isArray(options.host) ? options.host[0] : options.host;
     const headerValues = Object.entries(options.headers).filter(([key]) => key.toLowerCase() === "host").map(([, value]) => normalizedHeaderValue(value));
-    return headerValues.some((value) => value !== host);
+    return headerValues.some((value) => value !== host2);
   }
-  function hasEgernAliasConflict(node, protocol2) {
+  function hasEgernAliasConflict(node, protocol3) {
     const groups = [
       ["sni", "servername"],
       ["skip-cert-verify", "allow-insecure"],
@@ -1272,27 +1272,27 @@ var V2rayNConfigBundle = (() => {
       ["udp-relay-mode", "udp_relay_mode"]
     ];
     if (groups.some((keys) => conflictingAliases(node, keys))) return true;
-    if (protocol2 === "wireguard" && conflictingAliases(node, ["dns_servers", "dns"])) return true;
+    if (protocol3 === "wireguard" && conflictingAliases(node, ["dns_servers", "dns"])) return true;
     if (headersInNode(node).some(hasHeaderAliasConflict) || hasHttp2HostConflict(node)) return true;
-    if (protocol2 === "vmess" && hasOption(node, "cipher") && EGERN_VMESS_SECURITY.has(node.security) && node.cipher !== node.security) return true;
+    if (protocol3 === "vmess" && hasOption(node, "cipher") && EGERN_VMESS_SECURITY.has(node.security) && node.cipher !== node.security) return true;
     return false;
   }
-  function egernCommonReason(node, protocol2) {
+  function egernCommonReason(node, protocol3) {
     if (!isPlainObject(node) || !isNonblankString(node.name) || !isNonblankString(node.server) || !isValidPort2(node.port)) return "invalid-egern-node-shape";
-    if (hasEgernAliasConflict(node, protocol2)) return "conflicting-egern-alias";
+    if (hasEgernAliasConflict(node, protocol3)) return "conflicting-egern-alias";
     if (!isOptionalBoolean(node, "tfo") || UDP_ALIASES.some((key) => !isOptionalBoolean(node, key))) return "invalid-egern-node-shape";
-    if (hasOption(node, "tfo") && !EGERN_TFO_PROTOCOLS.has(protocol2)) return "unsupported-egern-option";
+    if (hasOption(node, "tfo") && !EGERN_TFO_PROTOCOLS.has(protocol3)) return "unsupported-egern-option";
     for (const key of BLOCK_QUIC_ALIASES) {
       if (hasOption(node, key) && typeof node[key] !== "boolean") return "invalid-egern-node-shape";
     }
     const blockQuic = firstAliasValue(node, BLOCK_QUIC_ALIASES);
-    if (blockQuic !== void 0 && !EGERN_BLOCK_QUIC_PROTOCOLS.has(protocol2)) return "unsupported-egern-option";
+    if (blockQuic !== void 0 && !EGERN_BLOCK_QUIC_PROTOCOLS.has(protocol3)) return "unsupported-egern-option";
     for (const key of IP_VERSION_ALIASES) {
       if (hasOption(node, key) && !EGERN_IP_VERSIONS.has(node[key])) return "invalid-egern-node-shape";
     }
     const shadowTls = firstAliasValue(node, SHADOW_TLS_ALIASES);
     if (shadowTls !== void 0) {
-      if (!EGERN_SHADOW_TLS_PROTOCOLS.has(protocol2)) return "unsupported-egern-option";
+      if (!EGERN_SHADOW_TLS_PROTOCOLS.has(protocol3)) return "unsupported-egern-option";
       if (!validShadowTls(shadowTls) || hasOption(node, "reality-opts")) return "invalid-egern-node-shape";
     }
     return null;
@@ -1330,11 +1330,11 @@ var V2rayNConfigBundle = (() => {
     return !(present.length === 1 && present[0] === GENERATED_CHAIN_FIELD && node[GENERATED_CHAIN_FIELD] === GENERATED_CHAIN_POLICY && node?._profile?.chained === true);
   }
   function egernNodeExclusionReason(node) {
-    const protocol2 = normalizeProtocol(node?.type);
-    const commonReason = egernCommonReason(node, protocol2);
+    const protocol3 = normalizeProtocol(node?.type);
+    const commonReason = egernCommonReason(node, protocol3);
     if (commonReason) return commonReason;
     if (hasArbitraryChain(node)) return "unsupported-existing-chain";
-    if (protocol2 === "ss" || protocol2 === "shadowsocks") {
+    if (protocol3 === "ss" || protocol3 === "shadowsocks") {
       if (!isNonblankString(node.cipher) || !isNonblankOpaqueString2(node.password)) return "invalid-egern-node-shape";
       if (!EGERN_SHADOWSOCKS_METHODS.has(node.cipher)) return "unsupported-egern-method";
       if (hasShadowsocksPlugin(node) || unsupportedPlainTransport(node)) return "unsupported-egern-shadowsocks-shape";
@@ -1345,7 +1345,7 @@ var V2rayNConfigBundle = (() => {
       }
       return null;
     }
-    if (protocol2 === "snell") {
+    if (protocol3 === "snell") {
       if (!isNonblankOpaqueString2(node.psk)) return "invalid-egern-node-shape";
       const version = typeof node.version === "string" && /^\d+$/.test(node.version) ? Number(node.version) : node.version;
       if (!EGERN_SNELL_VERSIONS.has(version)) return "unsupported-egern-version";
@@ -1356,9 +1356,9 @@ var V2rayNConfigBundle = (() => {
       }
       return null;
     }
-    if (protocol2 === "vmess" || protocol2 === "vless") {
+    if (protocol3 === "vmess" || protocol3 === "vless") {
       if (!isNonblankString(node.uuid)) return "invalid-egern-node-shape";
-      if (protocol2 === "vmess") {
+      if (protocol3 === "vmess") {
         const security2 = EGERN_VMESS_SECURITY.has(node.security) ? node.security : node.cipher ?? "auto";
         if (!EGERN_VMESS_SECURITY.has(security2)) return "unsupported-egern-security";
         if (hasOption(node, "legacy") && typeof node.legacy !== "boolean" || hasOption(node, "alter-id") && node["alter-id"] !== 0 || hasOption(node, "alterId") && node.alterId !== 0) {
@@ -1376,7 +1376,7 @@ var V2rayNConfigBundle = (() => {
       if (!isOptionalBoolean(node, "udp") || !isOptionalBoolean(node, "tfo")) return "unsupported-egern-transport";
       return egernVmessVlessTransportReason(node);
     }
-    if (protocol2 === "trojan") {
+    if (protocol3 === "trojan") {
       if (!isNonblankOpaqueString2(node.password)) return "invalid-egern-node-shape";
       if (node.tls === false || node.security === "none") return "unsupported-egern-tls-shape";
       const network = normalizeTransport(node);
@@ -1393,13 +1393,13 @@ var V2rayNConfigBundle = (() => {
       if (["grpc-opts", "h2-opts", "http-opts"].some((key) => hasOption(node, key))) return "unsupported-egern-transport";
       return null;
     }
-    if (protocol2 === "anytls") {
+    if (protocol3 === "anytls") {
       if (!isNonblankOpaqueString2(node.password)) return "invalid-egern-node-shape";
       if (node.tls === false || node.security === "none") return "unsupported-egern-tls-shape";
       if (unsupportedPlainTransport(node)) return "unsupported-egern-transport";
       return egernTlsReason(node, { implicitTls: true, allowAlpn: true, allowClientFingerprint: true }) || (!isOptionalBoolean(node, "udp") || !isOptionalBoolean(node, "tfo") ? "unsupported-egern-anytls-shape" : null);
     }
-    if (protocol2 === "hysteria2" || protocol2 === "hy2") {
+    if (protocol3 === "hysteria2" || protocol3 === "hy2") {
       if (!isNonblankOpaqueString2(node.password)) return "invalid-egern-node-shape";
       const tlsReason = egernTlsReason(node, { allowReality: false, implicitTls: true });
       if (tlsReason) return tlsReason;
@@ -1415,7 +1415,7 @@ var V2rayNConfigBundle = (() => {
       }
       return null;
     }
-    if (protocol2 === "tuic") {
+    if (protocol3 === "tuic") {
       if (!isNonblankString(node.uuid) || !isNonblankOpaqueString2(node.password)) return "invalid-egern-node-shape";
       const tlsReason = egernTlsReason(node, { allowReality: false, allowAlpn: true, implicitTls: true });
       if (tlsReason) return tlsReason;
@@ -1434,14 +1434,14 @@ var V2rayNConfigBundle = (() => {
       }
       return null;
     }
-    if (protocol2 === "socks5") {
+    if (protocol3 === "socks5") {
       if (!validOptionalAuthentication(node)) return "invalid-egern-node-shape";
       const tlsReason = egernTlsReason(node);
       if (tlsReason) return tlsReason;
       if (unsupportedPlainTransport(node) || !isOptionalBoolean(node, "udp") || !isOptionalBoolean(node, "tfo")) return "unsupported-egern-socks5-shape";
       return null;
     }
-    if (protocol2 === "http") {
+    if (protocol3 === "http") {
       if (!validOptionalAuthentication(node)) return "invalid-egern-node-shape";
       const network = normalizeTransport(node);
       if (network !== "tcp" && network !== "raw") return "unsupported-egern-http-shape";
@@ -1453,11 +1453,11 @@ var V2rayNConfigBundle = (() => {
       }
       return null;
     }
-    if (protocol2 === "wireguard") {
+    if (protocol3 === "wireguard") {
       if (unsupportedPlainTransport(node, /* @__PURE__ */ new Set(["udp"]))) return "unsupported-egern-wireguard-shape";
       return egernWireGuardReason(node);
     }
-    if (protocol2 === "ssh") return egernSshReason(node);
+    if (protocol3 === "ssh") return egernSshReason(node);
     return null;
   }
   function hasAnyChain(node) {
@@ -1518,9 +1518,9 @@ var V2rayNConfigBundle = (() => {
   }
   function validAnywhereBandwidth(value) {
     if (value === void 0) return true;
-    const text = typeof value === "number" && Number.isInteger(value) ? String(value) : value;
-    if (typeof text !== "string" || !/^\d+(?:\s+Mbps)?$/u.test(text)) return false;
-    const amount = Number(text.split(/\s+/u, 1)[0]);
+    const text2 = typeof value === "number" && Number.isInteger(value) ? String(value) : value;
+    if (typeof text2 !== "string" || !/^\d+(?:\s+Mbps)?$/u.test(text2)) return false;
+    const amount = Number(text2.split(/\s+/u, 1)[0]);
     return Number.isSafeInteger(amount) && amount >= 0 && amount <= 1e3;
   }
   function validAnywhereWsOptions(value) {
@@ -1581,20 +1581,20 @@ var V2rayNConfigBundle = (() => {
     return anywhereTlsWeakeningReason(node);
   }
   function anywhereNodeExclusionReason(node) {
-    const protocol2 = normalizeProtocol(node?.type);
+    const protocol3 = normalizeProtocol(node?.type);
     const commonReason = anywhereCommonReason(node);
     if (commonReason) return commonReason;
     const network = normalizeTransport(node);
-    const transportFields2 = ["ws-opts", "grpc-opts", "h2-opts", "http-opts", "xhttp-opts"];
-    if (protocol2 === "ss" || protocol2 === "shadowsocks") {
+    const transportFields = ["ws-opts", "grpc-opts", "h2-opts", "http-opts", "xhttp-opts"];
+    if (protocol3 === "ss" || protocol3 === "shadowsocks") {
       if (!isNonblankOpaqueString2(node.password) || !isNonblankString(node.cipher)) return "invalid-anywhere-node-shape";
       if (!ANYWHERE_SHADOWSOCKS_METHODS.has(node.cipher.toLowerCase())) return "unsupported-anywhere-shadowsocks-method";
-      if (network !== "tcp" || hasShadowsocksPlugin(node) || node.tls === true || hasOption(node, "security") && node.security !== "none" || transportFields2.some((key) => hasOption(node, key))) {
+      if (network !== "tcp" || hasShadowsocksPlugin(node) || node.tls === true || hasOption(node, "security") && node.security !== "none" || transportFields.some((key) => hasOption(node, key))) {
         return "unsupported-anywhere-shadowsocks-shape";
       }
       return null;
     }
-    if (protocol2 === "vless") {
+    if (protocol3 === "vless") {
       if (!validVlessUserId(node.uuid)) return "invalid-anywhere-node-shape";
       if (!ANYWHERE_VLESS_NETWORKS.has(network)) return "unsupported-anywhere-vless-network";
       if (!validAnywhereVlessEncryption(node.encryption)) return "unsupported-anywhere-vless-encryption";
@@ -1602,10 +1602,10 @@ var V2rayNConfigBundle = (() => {
         return "unsupported-anywhere-vless-flow";
       }
       if (network === "ws") {
-        if (hasOption(node, "ws-opts") && !validAnywhereWsOptions(node["ws-opts"]) || transportFields2.some((key) => key !== "ws-opts" && hasOption(node, key))) {
+        if (hasOption(node, "ws-opts") && !validAnywhereWsOptions(node["ws-opts"]) || transportFields.some((key) => key !== "ws-opts" && hasOption(node, key))) {
           return "unsupported-anywhere-vless-transport";
         }
-      } else if (transportFields2.some((key) => hasOption(node, key))) {
+      } else if (transportFields.some((key) => hasOption(node, key))) {
         return "unsupported-anywhere-vless-transport";
       }
       const tlsReason = anywhereTlsShapeReason(node);
@@ -1621,26 +1621,26 @@ var V2rayNConfigBundle = (() => {
       }
       return null;
     }
-    if (protocol2 === "trojan") {
+    if (protocol3 === "trojan") {
       if (!isNonblankOpaqueString2(node.password)) return "invalid-anywhere-node-shape";
       const tlsReason = anywhereTlsShapeReason(node);
       if (tlsReason) return tlsReason;
       const ssOptions = node["ss-opts"];
-      if (network !== "tcp" || node.tls === false || hasOption(node, "security") && node.security !== "tls" || hasOption(node, "reality-opts") || transportFields2.some((key) => hasOption(node, key)) || hasOption(node, "ss-opts") && (!isPlainObject(ssOptions) || ssOptions.enabled === true)) {
+      if (network !== "tcp" || node.tls === false || hasOption(node, "security") && node.security !== "tls" || hasOption(node, "reality-opts") || transportFields.some((key) => hasOption(node, key)) || hasOption(node, "ss-opts") && (!isPlainObject(ssOptions) || ssOptions.enabled === true)) {
         return "unsupported-anywhere-trojan-shape";
       }
       return null;
     }
-    if (protocol2 === "anytls") {
+    if (protocol3 === "anytls") {
       if (!isNonblankOpaqueString2(node.password)) return "invalid-anywhere-node-shape";
       const tlsReason = anywhereTlsShapeReason(node);
       if (tlsReason) return tlsReason;
-      if (network !== "tcp" || node.tls === false || hasOption(node, "security") && node.security !== "tls" || hasOption(node, "reality-opts") || transportFields2.some((key) => hasOption(node, key)) || !isOptionalBoolean(node, "udp") || ["idle-session-check-interval", "idle-session-timeout"].some((key) => hasOption(node, key) && (!Number.isInteger(node[key]) || node[key] < 30)) || hasOption(node, "min-idle-session") && (!Number.isInteger(node["min-idle-session"]) || node["min-idle-session"] < 0)) {
+      if (network !== "tcp" || node.tls === false || hasOption(node, "security") && node.security !== "tls" || hasOption(node, "reality-opts") || transportFields.some((key) => hasOption(node, key)) || !isOptionalBoolean(node, "udp") || ["idle-session-check-interval", "idle-session-timeout"].some((key) => hasOption(node, key) && (!Number.isInteger(node[key]) || node[key] < 30)) || hasOption(node, "min-idle-session") && (!Number.isInteger(node["min-idle-session"]) || node["min-idle-session"] < 0)) {
         return "unsupported-anywhere-anytls-shape";
       }
       return null;
     }
-    if (protocol2 === "hysteria2" || protocol2 === "hy2") {
+    if (protocol3 === "hysteria2" || protocol3 === "hy2") {
       if (!isNonblankOpaqueString2(node.password)) return "invalid-anywhere-node-shape";
       const hysteriaNetwork = hasOption(node, "network") ? network : "quic";
       if (!["udp", "quic"].includes(hysteriaNetwork)) return "unsupported-anywhere-hysteria2-shape";
@@ -1662,14 +1662,14 @@ var V2rayNConfigBundle = (() => {
       }
       return null;
     }
-    if (protocol2 === "socks5") {
+    if (protocol3 === "socks5") {
       if (network !== "tcp" || node.tls === true || hasOption(node, "security") && node.security !== "none") {
         return "unsupported-anywhere-socks5-tls";
       }
       if (!validOptionalAuthentication(node) || hasOption(node, "username") !== hasOption(node, "password")) return "invalid-anywhere-node-shape";
       return null;
     }
-    if (protocol2 === "sudoku") {
+    if (protocol3 === "sudoku") {
       if (!isNonblankString(node.key) || network !== "tcp") return "invalid-anywhere-node-shape";
       if (["tls", "security", "sni", "servername", "alpn", "client-fingerprint", "ech-opts", "reality-opts"].some((key) => hasOption(node, key))) return "unsupported-anywhere-sudoku-shape";
       if (!validAnywhereSudoku(node)) return "unsupported-anywhere-sudoku-shape";
@@ -1683,8 +1683,8 @@ var V2rayNConfigBundle = (() => {
       const reason = evaluateXrayNodeExclusionReason(node ?? {}, client);
       return reason ? { supported: false, reason } : { supported: true, reason: null };
     }
-    const protocol2 = normalizeProtocol(node?.type);
-    if (!protocolSupportsClient(protocol2, client)) {
+    const protocol3 = normalizeProtocol(node?.type);
+    if (!protocolSupportsClient(protocol3, client)) {
       return { supported: false, reason: "unsupported-protocol" };
     }
     let transportReason = null;
@@ -1727,8 +1727,8 @@ var V2rayNConfigBundle = (() => {
       return `invalid-${client}-node-shape`;
     }
     if (hasAnyChain(node)) return XRAY_CHAIN_REASON[client];
-    const protocol2 = normalizeProtocol(node.type);
-    if (!protocolSupportsClient(protocol2, client)) return XRAY_PROTOCOL_REASON[client];
+    const protocol3 = normalizeProtocol(node.type);
+    if (!protocolSupportsClient(protocol3, client)) return XRAY_PROTOCOL_REASON[client];
     return null;
   }
   function xrayTlsReason(node, client) {
@@ -1757,16 +1757,16 @@ var V2rayNConfigBundle = (() => {
     }
     return null;
   }
-  function xrayTransportReason(node, client, protocol2) {
-    if (protocol2 === "hysteria2" || protocol2 === "hy2") {
+  function xrayTransportReason(node, client, protocol3) {
+    if (protocol3 === "hysteria2" || protocol3 === "hy2") {
       const network2 = normalizeTransport(node);
       return network2 !== "tcp" && network2 !== "udp" && network2 !== "quic" ? XRAY_TRANSPORT_REASON[client] : null;
     }
     const network = normalizeTransport(node);
     const allowed = XRAY_TRANSPORTS;
     if (!allowed.has(network)) return XRAY_TRANSPORT_REASON[client];
-    if (protocol2 === "socks5" && network !== "tcp" && network !== "raw") return XRAY_TRANSPORT_REASON[client];
-    if ((protocol2 === "ss" || protocol2 === "shadowsocks") && (hasShadowsocksPlugin(node) || network !== "tcp" && network !== "raw")) {
+    if (protocol3 === "socks5" && network !== "tcp" && network !== "raw") return XRAY_TRANSPORT_REASON[client];
+    if ((protocol3 === "ss" || protocol3 === "shadowsocks") && (hasShadowsocksPlugin(node) || network !== "tcp" && network !== "raw")) {
       return XRAY_TRANSPORT_REASON[client];
     }
     const optionKeys = ["ws-opts", "grpc-opts", "h2-opts", "http-opts", "httpupgrade-opts", "xhttp-opts", "kcp-opts", "hysteria-opts"];
@@ -1779,12 +1779,12 @@ var V2rayNConfigBundle = (() => {
   function evaluateXrayNodeExclusionReason(node, client) {
     const common = xrayCommonReason(node, client);
     if (common) return common;
-    const protocol2 = normalizeProtocol(node.type);
+    const protocol3 = normalizeProtocol(node.type);
     const tls = xrayTlsReason(node, client);
     if (tls) return tls;
-    const transport2 = xrayTransportReason(node, client, protocol2);
+    const transport2 = xrayTransportReason(node, client, protocol3);
     if (transport2) return transport2;
-    if ((client === "v2box" || client === "v2rayn" || client === "happ") && protocol2 === "socks5" && (node.tls === true || node.security === "tls" || node.security === "reality")) {
+    if ((client === "v2box" || client === "v2rayn" || client === "happ") && protocol3 === "socks5" && (node.tls === true || node.security === "tls" || node.security === "reality")) {
       return `unsupported-${client}-tls`;
     }
     return null;
@@ -1826,14 +1826,14 @@ var V2rayNConfigBundle = (() => {
   var DEFAULT_MAX_DEPTH = 32;
   var FORBIDDEN_KEYS = /* @__PURE__ */ new Set(["__proto__", "prototype", "constructor"]);
   var WHITESPACE = /* @__PURE__ */ new Set([" ", "	", "\r", "\n"]);
-  function failure(label2, reason) {
-    const prefix = typeof label2 === "string" && label2.length > 0 ? `${label2}: ` : "";
-    return new SyntaxError(`${prefix}${reason}`);
+  function failure(label, reason) {
+    const prefix2 = typeof label === "string" && label.length > 0 ? `${label}: ` : "";
+    return new SyntaxError(`${prefix2}${reason}`);
   }
-  function asText(value, label2) {
+  function asText(value, label) {
     if (typeof value === "string") {
       if (/[\uD800-\uDFFF]/u.test(value.replace(/[\uD800-\uDBFF](?=[\uDC00-\uDFFF])/gu, "").replace(/(?<=[\uD800-\uDBFF])[\uDC00-\uDFFF]/gu, ""))) {
-        throw failure(label2, "invalid UTF-8 text");
+        throw failure(label, "invalid UTF-8 text");
       }
       return { text: value, bytes: new TextEncoder().encode(value).byteLength };
     }
@@ -1844,43 +1844,43 @@ var V2rayNConfigBundle = (() => {
           bytes: value.byteLength
         };
       } catch {
-        throw failure(label2, "invalid UTF-8 text");
+        throw failure(label, "invalid UTF-8 text");
       }
     }
-    throw failure(label2, "input must be UTF-8 text");
+    throw failure(label, "input must be UTF-8 text");
   }
-  function validateOptions(options, label2) {
+  function validateOptions(options, label) {
     const { maxBytes = DEFAULT_MAX_BYTES, maxDepth = DEFAULT_MAX_DEPTH } = options ?? {};
-    if (!Number.isSafeInteger(maxBytes) || maxBytes < 0) throw failure(label2, "maxBytes must be a non-negative integer");
-    if (!Number.isSafeInteger(maxDepth) || maxDepth < 0) throw failure(label2, "maxDepth must be a non-negative integer");
+    if (!Number.isSafeInteger(maxBytes) || maxBytes < 0) throw failure(label, "maxBytes must be a non-negative integer");
+    if (!Number.isSafeInteger(maxDepth) || maxDepth < 0) throw failure(label, "maxDepth must be a non-negative integer");
     return { maxBytes, maxDepth };
   }
-  function validateAndParse(text, { label: label2, maxDepth }) {
+  function validateAndParse(text2, { label, maxDepth }) {
     let index = 0;
-    const length = text.length;
+    const length = text2.length;
     const error = (reason) => {
-      throw failure(label2, reason);
+      throw failure(label, reason);
     };
     const skipWhitespace = () => {
-      while (index < length && WHITESPACE.has(text[index])) index += 1;
+      while (index < length && WHITESPACE.has(text2[index])) index += 1;
     };
     const parseString = () => {
-      if (text[index] !== '"') error("invalid JSON");
+      if (text2[index] !== '"') error("invalid JSON");
       const start = index;
       index += 1;
       while (index < length) {
-        const character = text[index++];
+        const character = text2[index++];
         if (character === '"') {
           try {
-            return JSON.parse(text.slice(start, index));
+            return JSON.parse(text2.slice(start, index));
           } catch {
             error("invalid JSON");
           }
         }
         if (character === "\\") {
-          const escape = text[index++];
+          const escape = text2[index++];
           if (escape === "u") {
-            if (!/^[0-9a-f]{4}$/iu.test(text.slice(index, index + 4))) error("invalid JSON");
+            if (!/^[0-9a-f]{4}$/iu.test(text2.slice(index, index + 4))) error("invalid JSON");
             index += 4;
           } else if (!'"\\/bfnrt'.includes(escape)) {
             error("invalid JSON");
@@ -1892,19 +1892,19 @@ var V2rayNConfigBundle = (() => {
       error("invalid JSON");
     };
     const parseNumber = () => {
-      const match = /^-?(?:0|[1-9][0-9]*)(?:\.[0-9]+)?(?:[eE][+-]?[0-9]+)?/u.exec(text.slice(index));
+      const match = /^-?(?:0|[1-9][0-9]*)(?:\.[0-9]+)?(?:[eE][+-]?[0-9]+)?/u.exec(text2.slice(index));
       if (!match) error("invalid JSON");
       index += match[0].length;
     };
     const parseValue = (depth) => {
       skipWhitespace();
-      const character = text[index];
+      const character = text2[index];
       if (character === "{" || character === "[") {
         if (depth > maxDepth) error("maximum JSON depth exceeded");
         const object = character === "{";
         index += 1;
         skipWhitespace();
-        if (text[index] === (object ? "}" : "]")) {
+        if (text2[index] === (object ? "}" : "]")) {
           index += 1;
           return;
         }
@@ -1917,16 +1917,16 @@ var V2rayNConfigBundle = (() => {
             if (FORBIDDEN_KEYS.has(key)) error("unsupported prototype key");
             keys.add(key);
             skipWhitespace();
-            if (text[index++] !== ":") error("invalid JSON");
+            if (text2[index++] !== ":") error("invalid JSON");
           }
           parseValue(depth + 1);
           skipWhitespace();
           const close = object ? "}" : "]";
-          if (text[index] === close) {
+          if (text2[index] === close) {
             index += 1;
             return;
           }
-          if (text[index++] !== ",") error("invalid JSON");
+          if (text2[index++] !== ",") error("invalid JSON");
         }
         error("invalid JSON");
       }
@@ -1934,8 +1934,8 @@ var V2rayNConfigBundle = (() => {
         parseString();
         return;
       }
-      if (text.startsWith("true", index) || text.startsWith("false", index) || text.startsWith("null", index)) {
-        index += text.startsWith("true", index) ? 4 : text.startsWith("false", index) ? 5 : 4;
+      if (text2.startsWith("true", index) || text2.startsWith("false", index) || text2.startsWith("null", index)) {
+        index += text2.startsWith("true", index) ? 4 : text2.startsWith("false", index) ? 5 : 4;
         return;
       }
       parseNumber();
@@ -1945,17 +1945,17 @@ var V2rayNConfigBundle = (() => {
     skipWhitespace();
     if (index !== length) error("invalid JSON");
     try {
-      return JSON.parse(text);
+      return JSON.parse(text2);
     } catch {
       error("invalid JSON");
     }
   }
   function parseStrictJson(value, options = {}) {
-    const label2 = options?.label;
-    const { maxBytes, maxDepth } = validateOptions(options, label2);
-    const { text, bytes: bytes2 } = asText(value, label2);
-    if (bytes2 > maxBytes) throw failure(label2, "JSON exceeds byte limit");
-    return validateAndParse(text, { label: label2, maxDepth });
+    const label = options?.label;
+    const { maxBytes, maxDepth } = validateOptions(options, label);
+    const { text: text2, bytes } = asText(value, label);
+    if (bytes > maxBytes) throw failure(label, "JSON exceeds byte limit");
+    return validateAndParse(text2, { label, maxDepth });
   }
   var STRICT_JSON_DEFAULTS = Object.freeze({
     maxBytes: DEFAULT_MAX_BYTES,
@@ -1992,18 +1992,18 @@ var V2rayNConfigBundle = (() => {
     if (value.length === 0) throw invalid("node name or query is empty");
     const separator = value.lastIndexOf("|");
     let name = value;
-    let protocol2 = null;
+    let protocol3 = null;
     if (separator > 0 && separator < value.length - 1) {
       const qualifier = value.slice(separator + 1);
       if (!PROTOCOL_QUALIFIER.test(qualifier)) throw invalid("protocol qualifier is invalid");
-      protocol2 = canonicalProtocol(qualifier);
-      if (!protocol2) throw invalid("protocol qualifier is unsupported");
+      protocol3 = canonicalProtocol(qualifier);
+      if (!protocol3) throw invalid("protocol qualifier is unsupported");
       name = value.slice(0, separator);
     }
     if (name.length === 0 || mode === "exact" && name.trim() !== name || LINE_TERMINATOR.test(name)) {
       throw invalid("node name is empty or contains a line break");
     }
-    return freeze(mode === "fuzzy" ? { mode, query: name, protocol: protocol2 } : { mode, name, protocol: protocol2 });
+    return freeze(mode === "fuzzy" ? { mode, query: name, protocol: protocol3 } : { mode, name, protocol: protocol3 });
   }
   function metadata(node) {
     return node?._profile && typeof node._profile === "object" ? node._profile : {};
@@ -2020,9 +2020,9 @@ var V2rayNConfigBundle = (() => {
   function normalizedLabel(value) {
     return String(value ?? "").normalize("NFKC").replace(DISPLAY_MARK, "").replace(LABEL_SEPARATOR, " ").toLocaleLowerCase().replace(/\s+/gu, " ").trim();
   }
-  function fuzzyMatches(node, query) {
+  function fuzzyMatches(node, query2) {
     const candidate = normalizedLabel(originalName(node));
-    const terms = normalizedLabel(query).split(" ").filter(Boolean);
+    const terms = normalizedLabel(query2).split(" ").filter(Boolean);
     return terms.length > 0 && terms.every((term) => candidate.includes(term));
   }
   function referenceMatches(node, reference) {
@@ -2068,7 +2068,7 @@ var V2rayNConfigBundle = (() => {
     if (remainder === 2 && (last & 15) !== 0 || remainder === 3 && (last & 3) !== 0) {
       throw new TypeError("Base64URL value is not canonical");
     }
-    const bytes2 = new Uint8Array(Math.floor(value.length * 6 / 8));
+    const bytes = new Uint8Array(Math.floor(value.length * 6 / 8));
     let accumulator = 0;
     let bits = 0;
     let offset = 0;
@@ -2077,12 +2077,30 @@ var V2rayNConfigBundle = (() => {
       bits += 6;
       if (bits < 8) continue;
       bits -= 8;
-      bytes2[offset] = accumulator >> bits & 255;
+      bytes[offset] = accumulator >> bits & 255;
       offset += 1;
       accumulator &= (1 << bits) - 1;
     }
     if (bits !== 0 && accumulator !== 0) throw new TypeError("Base64URL value is not canonical");
-    return bytes2;
+    return bytes;
+  }
+  function encodeBase64Url(bytes) {
+    if (!(bytes instanceof Uint8Array)) throw new TypeError("Base64URL input must be bytes");
+    let result = "";
+    for (let index = 0; index < bytes.length; index += 3) {
+      const first = bytes[index];
+      const second = index + 1 < bytes.length ? bytes[index + 1] : 0;
+      const third = index + 2 < bytes.length ? bytes[index + 2] : 0;
+      result += ALPHABET[first >> 2];
+      result += ALPHABET[(first & 3) << 4 | second >> 4];
+      if (index + 1 < bytes.length) result += ALPHABET[(second & 15) << 2 | third >> 6];
+      if (index + 2 < bytes.length) result += ALPHABET[third & 63];
+    }
+    return result;
+  }
+  function encodeBase64UrlUtf8(value) {
+    if (typeof value !== "string") throw new TypeError("Base64URL text input must be a string");
+    return encodeBase64Url(new TextEncoder().encode(value));
   }
 
   // ../../shared/policies/business-targets.js
@@ -2090,8 +2108,8 @@ var V2rayNConfigBundle = (() => {
   var NODE_TARGET = /^(NODE:|NODE~)(.*)$/iu;
   var BASE64URL = /^[A-Za-z0-9_-]+$/u;
   var LINE_TERMINATOR2 = /[\r\n\u2028\u2029]/u;
-  function frozenTarget(id, label2, aliases, defaultTarget) {
-    return Object.freeze({ id, label: label2, aliases: Object.freeze([...aliases]), defaultTarget });
+  function frozenTarget(id, label, aliases, defaultTarget) {
+    return Object.freeze({ id, label, aliases: Object.freeze([...aliases]), defaultTarget });
   }
   var BUSINESS_TARGETS = Object.freeze([
     frozenTarget("ai", "\u{1F916} AI \u4E13\u7528", ["AI \u4E13\u7528", "ai"], "FOLLOW"),
@@ -2153,20 +2171,20 @@ var V2rayNConfigBundle = (() => {
   function targetError(target, message) {
     return policyError(`${target.label}: ${message}`);
   }
-  function decodePolicy(encoded) {
-    if (typeof encoded !== "string" || encoded !== "" && !BASE64URL.test(encoded) || encoded.length % 4 === 1) {
+  function decodePolicy(encoded2) {
+    if (typeof encoded2 !== "string" || encoded2 !== "" && !BASE64URL.test(encoded2) || encoded2.length % 4 === 1) {
       throw policyError("must be a Base64URL string");
     }
-    if (encoded === "") return Object.freeze({});
-    let bytes2;
+    if (encoded2 === "") return Object.freeze({});
+    let bytes;
     try {
-      bytes2 = decodeBase64Url(encoded);
+      bytes = decodeBase64Url(encoded2);
     } catch {
       throw policyError("must be a Base64URL string");
     }
     let values;
     try {
-      values = parseStrictJson(bytes2, { label: "business overrides", maxBytes: 64 * 1024, maxDepth: 8 });
+      values = parseStrictJson(bytes, { label: "business overrides", maxBytes: 64 * 1024, maxDepth: 8 });
     } catch {
       throw policyError("must contain JSON object");
     }
@@ -2182,11 +2200,11 @@ var V2rayNConfigBundle = (() => {
     if (!node || node[2].trim().length === 0 || LINE_TERMINATOR2.test(node[2])) {
       throw new TypeError("target must be FOLLOW, DIRECT, NODE:<name>, or NODE~<query>");
     }
-    const prefix = node[1].toUpperCase();
-    return `${prefix}${prefix === "NODE:" ? node[2] : node[2].trim()}`;
+    const prefix2 = node[1].toUpperCase();
+    return `${prefix2}${prefix2 === "NODE:" ? node[2] : node[2].trim()}`;
   }
-  function parseBusinessOverrides(encoded) {
-    const values = decodePolicy(encoded);
+  function parseBusinessOverrides(encoded2) {
+    const values = decodePolicy(encoded2);
     const overrides = {};
     for (const [key, value] of Object.entries(values)) {
       const target = businessTargetByKey(key);
@@ -2220,7 +2238,7 @@ var V2rayNConfigBundle = (() => {
     ["download", "\u2B07\uFE0F \u4E0B\u8F7D/P2P", "DIRECT"],
     ["dnsAndRules", "\u{1F9ED} DNS \u4E0E\u89C4\u5219\u4E0B\u8F7D", "FOLLOW"],
     ["final", "\u6F0F\u7F51\u4E4B\u9C7C", "FOLLOW"]
-  ].map(([id, label2, defaultTarget]) => Object.freeze({ id, label: label2, defaultTarget }));
+  ].map(([id, label, defaultTarget]) => Object.freeze({ id, label, defaultTarget }));
   var UNIFIED_POLICY_TARGETS = Object.freeze(TARGETS);
   var UNIFIED_POLICY_TARGET_IDS = Object.freeze(TARGETS.map(({ id }) => id));
   var TARGET_BY_KEY2 = /* @__PURE__ */ new Map();
@@ -2291,12 +2309,12 @@ var V2rayNConfigBundle = (() => {
     if (!isRecord(value)) throw invalid2(reason);
     return value;
   }
-  function requireKeys(value, required3, allowed = required3) {
+  function requireKeys(value, required2, allowed = required2) {
     const allowedSet = allowed instanceof Set ? allowed : new Set(allowed);
     for (const key of Object.keys(value)) {
       if (!allowedSet.has(key)) throw invalid2("contains an unsupported field");
     }
-    for (const key of required3) {
+    for (const key of required2) {
       if (!Object.hasOwn(value, key)) throw invalid2("is missing a required field");
     }
   }
@@ -2506,10 +2524,10 @@ var V2rayNConfigBundle = (() => {
     }
     return value;
   }
-  function parsePrivatePolicy(text) {
+  function parsePrivatePolicy(text2) {
     let parsed;
     try {
-      parsed = parseStrictJson(text, {
+      parsed = parseStrictJson(text2, {
         label: "apple-proxy-policy",
         maxBytes: 256 * 1024,
         maxDepth: 16
@@ -2627,6 +2645,14 @@ var V2rayNConfigBundle = (() => {
     targets.domesticCore = targets.domesticPlatform;
     targets.chinaIp = targets.domesticPlatform;
     return targets;
+  }
+  function defaultUnifiedPolicyResolution() {
+    const values = defaultUnifiedPolicyTargets();
+    return freeze2({
+      targets: addLegacyAliases(Object.fromEntries(Object.entries(values).map(([id, value]) => [id, record(value)]))),
+      fixedNodes: [],
+      warnings: []
+    });
   }
   function resolveUnifiedPolicy({
     policy = null,
@@ -2837,9 +2863,9 @@ var V2rayNConfigBundle = (() => {
   // ../../shared/substore/collection-name.js
   var SAFE_COLLECTION_NAME = /^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$/u;
   var PROTOTYPE_KEYS = /* @__PURE__ */ new Set(["__proto__", "constructor", "prototype"]);
-  function validateCollectionName(value, label2 = "collection name") {
+  function validateCollectionName(value, label = "collection name") {
     if (typeof value !== "string" || !SAFE_COLLECTION_NAME.test(value) || PROTOTYPE_KEYS.has(value)) {
-      throw new Error(`${label2} must be a safe collection slug`);
+      throw new Error(`${label} must be a safe collection slug`);
     }
     return value;
   }
@@ -2881,137 +2907,11 @@ var V2rayNConfigBundle = (() => {
     return Object.freeze(options);
   }
 
-  // ../../shared/nodes/render-xray-outbound.js
-  var TAG = /^ap-[a-z0-9][a-z0-9/_-]{0,127}$/u;
-  var label = (client) => String(client ?? "Xray");
-  function required2(node, key, client) {
-    const value = node[key];
-    if (typeof value !== "string" || !value || value.trim() !== value) throw new Error(`${label(client)} node field '${key}' is invalid`);
-    return value;
-  }
-  function port(node, client) {
-    const value = Number(node.port);
-    if (!Number.isInteger(value) || value < 1 || value > 65535) throw new Error(`${label(client)} node port is invalid`);
-    return value;
-  }
-  function transport(node, client) {
-    const network = String(node.network ?? "tcp").trim().toLowerCase();
-    if (["tcp", "raw"].includes(network)) return network === "raw" ? { network: "raw", rawSettings: {} } : void 0;
-    if (network === "ws") {
-      const source2 = node["ws-opts"] ?? {};
-      return { network: "ws", wsSettings: { path: Array.isArray(source2.path) ? source2.path[0] : source2.path ?? "/", ...source2.headers ? { headers: { ...source2.headers } } : {} } };
-    }
-    if (network === "grpc") {
-      const source2 = node["grpc-opts"] ?? {};
-      return { network: "grpc", grpcSettings: { serviceName: source2["grpc-service-name"] ?? source2.service_name ?? "" } };
-    }
-    if (["h2", "http2", "http"].includes(network)) {
-      const source2 = node["h2-opts"] ?? node["http-opts"] ?? {};
-      return { network: "http", httpSettings: { path: Array.isArray(source2.path) ? source2.path[0] : source2.path ?? "/", ...source2.host ? { host: Array.isArray(source2.host) ? source2.host : [source2.host] } : {} } };
-    }
-    if (network === "httpupgrade") {
-      const source2 = node["httpupgrade-opts"] ?? {};
-      return { network, httpupgradeSettings: { path: source2.path ?? "/", ...source2.host ? { host: source2.host } : {} } };
-    }
-    if (network === "xhttp") {
-      const source2 = node["xhttp-opts"] ?? {};
-      return { network, xhttpSettings: { path: source2.path ?? "/", ...source2.mode ? { mode: source2.mode } : {} } };
-    }
-    if (["kcp", "mkcp"].includes(network)) return { network: "kcp", kcpSettings: { ...node["kcp-opts"] ?? {} } };
-    if (network === "hysteria") return { network, hysteriaSettings: { ...node["hysteria-opts"] ?? {} } };
-    throw new Error(`unsupported-${client}-transport`);
-  }
-  function security(node, result, client) {
-    const reality = node["reality-opts"];
-    const name = node.security === "reality" || reality ? "reality" : node.tls === true || node.security === "tls" ? "tls" : "none";
-    if (name === "none") return;
-    result.security = name;
-    if (name === "reality") {
-      if (!reality || typeof reality["public-key"] !== "string" || !reality["public-key"]) throw new Error(`incomplete-${client}-reality`);
-      result.realitySettings = { serverName: node.sni ?? node.servername ?? "", fingerprint: node["client-fingerprint"] ?? "chrome", publicKey: reality["public-key"], ...reality["short-id"] ? { shortId: reality["short-id"] } : {}, ...reality["spider-x"] || reality["_spider-x"] ? { spiderX: reality["spider-x"] ?? reality["_spider-x"] } : {} };
-    } else result.tlsSettings = { serverName: node.sni ?? node.servername ?? "", allowInsecure: node["skip-cert-verify"] === true || node["allow-insecure"] === true, ...node.alpn ? { alpn: [...node.alpn] } : {}, ...node["client-fingerprint"] ? { fingerprint: node["client-fingerprint"] } : {} };
-  }
-  function renderXrayOutbound(node, { tag, client = "v2box" } = {}) {
-    if (!node || typeof node !== "object" || Array.isArray(node)) throw new TypeError(`${label(client)} node is invalid`);
-    if (typeof node.name !== "string" || !node.name || /[\r\n]/u.test(node.name)) throw new Error(`${label(client)} node name is invalid`);
-    if (typeof tag !== "string" || !TAG.test(tag)) throw new Error(`${label(client)} outbound tag is invalid`);
-    const protocol2 = normalizeProtocol(node.type);
-    if (!protocolSupportsClient(protocol2, client)) throw new Error(`unsupported-${client}-protocol`);
-    const out = { name: node.name, protocol: protocol2, tag, settings: {} };
-    const server = { address: required2(node, "server", client), port: port(node, client) };
-    if (protocol2 === "vless") out.settings.vnext = [{ ...server, users: [{ id: required2(node, "uuid", client), encryption: node.encryption ?? "none", ...node.flow ? { flow: node.flow } : {} }] }];
-    else if (protocol2 === "vmess") out.settings.vnext = [{ ...server, users: [{ id: required2(node, "uuid", client), alterId: Number(node["alter-id"] ?? node.alterId ?? 0), security: node.security ?? node.cipher ?? "auto" }] }];
-    else if (["ss", "shadowsocks"].includes(protocol2)) {
-      out.protocol = "shadowsocks";
-      out.settings.servers = [{ ...server, method: required2(node, "cipher", client), password: required2(node, "password", client) }];
-    } else if (protocol2 === "trojan") out.settings.servers = [{ ...server, password: required2(node, "password", client), ...node.flow ? { flow: node.flow } : {} }];
-    else if (protocol2 === "socks5") {
-      out.protocol = "socks";
-      out.settings.servers = [{ ...server, ...node.username ? { users: [{ user: node.username, pass: node.password ?? "" }] } : {} }];
-    } else if (protocol2 === "http") out.settings.servers = [{ ...server, ...node.username ? { users: [{ user: node.username, pass: node.password ?? "" }] } : {}, ...node["http-opts"] ? { headers: node["http-opts"].headers ?? {} } : {} }];
-    else if (["hysteria2", "hy2"].includes(protocol2)) {
-      out.protocol = "hysteria";
-      out.settings = { version: 2, ...server, ...node.password ? { auth: node.password } : {} };
-    } else throw new Error(`unsupported-${client}-protocol`);
-    const stream = transport(node, client);
-    if (stream) out.streamSettings = stream;
-    security(node, out.streamSettings ?? (out.streamSettings = {}), client);
-    if (out.streamSettings && Object.keys(out.streamSettings).length === 0) delete out.streamSettings;
-    return out;
-  }
-  function renderXrayNodeError(error, client = "v2box") {
-    const reason = error?.message?.match(/^unsupported-[a-z0-9-]+/u)?.[0] ?? `render-failure-${client}`;
-    return Object.freeze({ client, excluded: Object.freeze({ [reason]: 1 }) });
-  }
-
-  // ../../shared/xray-geodata-contract.js
-  var CHANNELS = Object.freeze(["current", "previous", "edge"]);
-  var CHANNEL_SUFFIX = Object.freeze({
-    current: "Current",
-    previous: "Previous",
-    edge: "Edge"
-  });
-  var SOURCE_ID = /^[A-Za-z0-9]+(?:[-_][A-Za-z0-9]+)*$/u;
-  var CODE = /^APP-[A-Z0-9]+(?:-[A-Z0-9]+)*$/u;
-  function requiredChannel(channel) {
-    if (typeof channel !== "string" || !CHANNELS.includes(channel)) {
-      throw new TypeError(`Xray GeoData channel must be current, previous, or edge: ${String(channel)}`);
-    }
-    return channel;
-  }
-  function xrayGeoNames(channel) {
-    const suffix = CHANNEL_SUFFIX[requiredChannel(channel)];
-    const names = {
-      domain: `AppleProxySite${suffix}`,
-      ip: `AppleProxyIP${suffix}`
-    };
-    Object.defineProperties(names, {
-      site: { value: names.domain, enumerable: false },
-      geosite: { value: names.domain, enumerable: false },
-      geoip: { value: names.ip, enumerable: false }
-    });
-    return Object.freeze(names);
-  }
-  function xrayGeoCode(sourceId) {
-    if (typeof sourceId !== "string" || sourceId.trim() !== sourceId || !SOURCE_ID.test(sourceId)) {
-      throw new TypeError("Xray GeoData source ID is invalid");
-    }
-    const normalized = sourceId.toUpperCase().replaceAll("_", "-");
-    const code = `APP-${normalized}`;
-    if (!CODE.test(code)) throw new TypeError("Xray GeoData source ID is invalid");
-    return code;
-  }
-  function xrayGeoReference(channel, type, sourceId) {
-    const names = xrayGeoNames(channel);
-    if (type !== "domain" && type !== "ip") throw new TypeError("Xray GeoData type is invalid");
-    return `ext:${names[type]}.dat:${xrayGeoCode(sourceId)}`;
-  }
-
   // ../../shared/rules/semantic-intents.js
-  var intent = ({ id, ruleId, label: label2, sourceIds, policy, defaultTarget, phase, dnsClass }) => Object.freeze({
+  var intent = ({ id, ruleId, label, sourceIds, policy, defaultTarget, phase, dnsClass }) => Object.freeze({
     id,
     ruleId,
-    label: label2,
+    label,
     sourceIds: Object.freeze([...sourceIds]),
     policy,
     defaultTarget,
@@ -3086,9 +2986,6 @@ var V2rayNConfigBundle = (() => {
     "ipad",
     "android"
   ]);
-  function usesMobileRuleBundles(platform) {
-    return MOBILE_RULE_PLATFORMS.includes(platform);
-  }
   var CLASH_MOBILE_RULE_PLATFORMS = Object.freeze([
     "iphone",
     "ipad",
@@ -3259,13 +3156,10 @@ var V2rayNConfigBundle = (() => {
     Advertising: "\u{1F9F1} \u5E38\u89C1\u5E7F\u544A",
     Advertising_Domain: "\u{1F9F1} \u5E38\u89C1\u5E7F\u544A"
   });
-  function policyForRuleSource(sourceId) {
-    return SOURCE_POLICIES[sourceId];
-  }
-  function uniqueMembership(id, memberships, label2) {
+  function uniqueMembership(id, memberships, label) {
     const matches = Object.entries(memberships).filter(([, ids2]) => ids2.includes(id)).map(([name]) => name);
     if (matches.length !== 1) {
-      throw new Error(`Lightweight rule source ${id} must have exactly one ${label2} membership`);
+      throw new Error(`Lightweight rule source ${id} must have exactly one ${label} membership`);
     }
     return matches[0];
   }
@@ -3293,9 +3187,6 @@ var V2rayNConfigBundle = (() => {
     phase: bundle.phase,
     dnsClass: bundle.dnsClass
   })));
-  function mobileRuleClientCatalog() {
-    return MOBILE_RULE_CLIENT_CATALOG;
-  }
   function ruleClientCatalog({ adblockMode = "off" } = {}) {
     if (adblockMode !== "off" && adblockMode !== "full") {
       throw new TypeError("adblockMode must be either off or full");
@@ -3311,2096 +3202,206 @@ var V2rayNConfigBundle = (() => {
     return Object.freeze([...selected].sort((left, right) => phaseRank.get(left.phase) - phaseRank.get(right.phase) || sourceRank.get(left.id) - sourceRank.get(right.id)));
   }
 
-  // ../../shared/rules/catalog-data.js
-  function rule(id, policy, minEntries, inputFormat = "RULE-SET", directory = id) {
-    return Object.freeze({
-      id,
-      sourcePath: `${directory}/${id}.list`,
-      policy,
-      minEntries,
-      inputFormat
-    });
-  }
-  var UPSTREAM_RULE_SOURCE_DEFINITIONS = Object.freeze([
-    rule("Hijacking", "\u2623\uFE0F \u5B89\u5168\u5A01\u80C1", 150),
-    rule("BlockHttpDNS", "\u2623\uFE0F \u5B89\u5168\u5A01\u80C1", 40),
-    rule("Advertising", "\u{1F9F1} \u5E38\u89C1\u5E7F\u544A", 700),
-    rule("Advertising_Domain", "\u{1F9F1} \u5E38\u89C1\u5E7F\u544A", 25e4, "DOMAIN-SET", "Advertising"),
-    rule("Privacy", "\u{1F575}\uFE0F \u4E25\u683C\u8DDF\u8E2A", 15),
-    rule("BiliBili", "\u{1F4FA} \u54D4\u54E9\u54D4\u54E9", 80),
-    rule("ByteDance", "\u{1F3B5} \u6296\u97F3", 300),
-    rule("XiaoHongShu", "\u{1F4D5} \u5C0F\u7EA2\u4E66", 3),
-    rule("Weibo", "\u{1F9E3} \u5FAE\u535A", 3),
-    rule("OpenAI", "\u{1F916} AI \u4E13\u7528", 20),
-    rule("Claude", "\u{1F916} AI \u4E13\u7528", 2),
-    rule("Gemini", "\u{1F916} AI \u4E13\u7528", 8),
-    rule("Copilot", "\u{1F916} AI \u4E13\u7528", 30),
-    rule("GitHub", "\u{1F419} GitHub", 20),
-    rule("YouTube", "\u{1F4FA} YouTube", 120),
-    rule("Netflix", "\u{1F3AC} Netflix", 800),
-    rule("Disney", "\u{1F3F0} Disney+", 100),
-    rule("Spotify", "\u{1F3B5} Spotify", 20),
-    rule("GlobalMedia", "\u{1F30D} \u56FD\u9645\u5A92\u4F53", 700),
-    rule("Telegram", "\u2708\uFE0F Telegram", 25),
-    rule("Facebook", "\u{1F4AC} \u6D77\u5916\u793E\u4EA4", 350),
-    rule("Instagram", "\u{1F4AC} \u6D77\u5916\u793E\u4EA4", 3),
-    rule("Twitter", "\u{1F4AC} \u6D77\u5916\u793E\u4EA4", 20),
-    rule("TikTok", "\u{1F3B6} TikTok", 20),
-    rule("Apple", "\u{1F34E} Apple", 25),
-    rule("Microsoft", "\u{1FA9F} Microsoft", 400),
-    rule("SteamCN", "DIRECT", 10),
-    rule("ChinaMax_Domain", "DIRECT", 1e5, "DOMAIN-SET", "ChinaMax"),
-    rule("Game", "\u{1F579}\uFE0F \u6E38\u620F\u5E73\u53F0", 400),
-    rule("Download", "\u2B07\uFE0F \u4E0B\u8F7D/P2P", 5),
-    rule("PrivateTracker", "\u2B07\uFE0F \u4E0B\u8F7D/P2P", 150),
-    rule("ChinaMax", "DIRECT", 8e3)
-  ]);
-
-  // ../../shared/rules/catalog.js
-  var RULE_ROOT = "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/dab47069a30c4ae70f7f5f4c919d639d9aaf79dc/rule/Shadowrocket";
-  function rule2(id, policy, minEntries, inputFormat = "RULE-SET", directory = id) {
-    const sourcePath = `${directory}/${id}.list`;
-    return Object.freeze({
-      id,
-      sourcePath,
-      upstreamUrl: `${RULE_ROOT}/${sourcePath}`,
-      policy,
-      minEntries,
-      inputFormat
-    });
-  }
-  var UPSTREAM_RULE_SOURCE_CATALOG = Object.freeze(UPSTREAM_RULE_SOURCE_DEFINITIONS.map((source2) => rule2(source2.id, source2.policy, source2.minEntries, source2.inputFormat, source2.sourcePath.slice(0, source2.sourcePath.lastIndexOf("/")))));
-  var UPSTREAM_BY_ID = new Map(UPSTREAM_RULE_SOURCE_CATALOG.map((source2) => [source2.id, source2]));
-  var COMPILED_SOURCE_INPUTS = Object.freeze({
-    DomesticCore: Object.freeze({ sourcePath: "DomesticCore/DomesticCore.list", minEntries: 1 }),
-    DomesticGame: Object.freeze({ sourcePath: "DomesticGame/DomesticGame.list", minEntries: 1 }),
-    OverseasGame: Object.freeze({ sourceId: "Game" }),
-    ChinaTLD: Object.freeze({ sourcePath: "ChinaTLD/ChinaTLD.list", minEntries: 1 }),
-    ChinaIP: Object.freeze({ sourceId: "ChinaMax" })
+  // ../../shared/xray-geodata-contract.js
+  var CHANNELS = Object.freeze(["current", "previous", "edge"]);
+  var CHANNEL_SUFFIX = Object.freeze({
+    current: "Current",
+    previous: "Previous",
+    edge: "Edge"
   });
-  function compiledRule(source2) {
-    const mapping = COMPILED_SOURCE_INPUTS[source2.id];
-    const upstream = mapping?.sourceId ? UPSTREAM_BY_ID.get(mapping.sourceId) : UPSTREAM_BY_ID.get(source2.id);
-    if (upstream) {
-      return Object.freeze({
-        ...upstream,
-        ...source2
-      });
+  var SOURCE_ID = /^[A-Za-z0-9]+(?:[-_][A-Za-z0-9]+)*$/u;
+  var CODE = /^APP-[A-Z0-9]+(?:-[A-Z0-9]+)*$/u;
+  function requiredChannel(channel) {
+    if (typeof channel !== "string" || !CHANNELS.includes(channel)) {
+      throw new TypeError(`Xray GeoData channel must be current, previous, or edge: ${String(channel)}`);
     }
-    if (!mapping) throw new Error(`Missing compiled rule source mapping: ${source2.id}`);
-    return Object.freeze({
-      ...mapping,
-      ...source2
+    return channel;
+  }
+  function xrayGeoNames(channel) {
+    const suffix = CHANNEL_SUFFIX[requiredChannel(channel)];
+    const names = {
+      domain: `AppleProxySite${suffix}`,
+      ip: `AppleProxyIP${suffix}`
+    };
+    Object.defineProperties(names, {
+      site: { value: names.domain, enumerable: false },
+      geosite: { value: names.domain, enumerable: false },
+      geoip: { value: names.ip, enumerable: false }
     });
+    return Object.freeze(names);
   }
-  var RULE_SOURCE_CATALOG = Object.freeze(DEFAULT_RULE_CLIENT_CATALOG.map(compiledRule));
-
-  // ../../shared/rules/external-sources.js
-  var SHA1_COMMIT = /^[0-9a-f]{40}$/u;
-  var REGIONS2 = /* @__PURE__ */ new Set(["cn", "global", "ru", "ir"]);
-  var SAFE_PATH = /^(?:[A-Za-z0-9_.-]+\/)*[A-Za-z0-9_.-]+$/u;
-  var SHA256 = /^[0-9a-f]{64}$/u;
-  function source(record2) {
-    return Object.freeze({ ...record2 });
-  }
-  var EXTERNAL_RULE_SOURCE_CATALOG = Object.freeze([
-    source({
-      id: "v2fly-domain-list",
-      repository: "https://github.com/v2fly/domain-list-community",
-      branch: "master",
-      commit: "c975ccef9c19f005a3bfa7a33255d1b406deea64",
-      license: "MIT",
-      format: "domain-list-yaml",
-      region: "global",
-      adapter: "v2fly-domain-list",
-      minEntries: 1,
-      sourcePath: "dlc.dat_plain.yml",
-      releaseTag: "20260819144818",
-      retrievalUrl: "https://github.com/v2fly/domain-list-community/releases/download/20260819144818/dlc.dat_plain.yml",
-      retrievedAt: "2026-08-22T00:00:00Z",
-      sha256: "d74dc15311117fe983180bf3245e083633d14bb148ea5cd9db79b1d15a8533c2"
-    }),
-    source({
-      id: "loyalsoldier-rules-dat",
-      repository: "https://github.com/Loyalsoldier/v2ray-rules-dat",
-      branch: "release",
-      commit: "5c20d2eb5a65b171816949010ede67a27326cbe6",
-      license: "MIT",
-      format: "geosite-geoip-dat",
-      region: "global",
-      adapter: "loyalsoldier-rules-dat",
-      minEntries: 1,
-      sourcePath: "geosite.dat",
-      releaseTag: "202608212217",
-      retrievalUrl: "https://github.com/Loyalsoldier/v2ray-rules-dat/releases/download/202608212217/geosite.dat",
-      retrievedAt: "2026-08-22T00:00:00Z",
-      sha256: "b392a98a323777deab59d8208e856df09cf96f3a76d2869eb7a8e5289bc5d9f4"
-    }),
-    source({
-      id: "russia-v2ray-rules",
-      repository: "https://github.com/runetfreedom/russia-v2ray-rules-dat",
-      branch: "master",
-      commit: "f175e3f94891dbc1bb88edfc2d9d85f5a9051a23",
-      license: "MIT",
-      format: "geosite-geoip-dat",
-      region: "ru",
-      adapter: "russia-v2ray-rules",
-      minEntries: 1,
-      sourcePath: "geosite.dat",
-      releaseTag: "202608221547",
-      retrievalUrl: "https://github.com/runetfreedom/russia-v2ray-rules-dat/releases/download/202608221547/geosite.dat",
-      retrievedAt: "2026-08-22T00:00:00Z",
-      sha256: "76fdbe01687a6cc7683b50c38ceea84941458e8371d215918daf555665a537cd"
-    }),
-    source({
-      id: "iran-v2ray-rules",
-      repository: "https://github.com/Chocolate4U/Iran-v2ray-rules",
-      branch: "main",
-      commit: "676695ea3b4c95d5cf48a7c4e2e718bac5b8a099",
-      license: "MIT",
-      format: "geosite-geoip-dat",
-      region: "ir",
-      adapter: "iran-v2ray-rules",
-      minEntries: 1,
-      sourcePath: "geosite.dat",
-      releaseTag: "202609070939",
-      retrievalUrl: "https://github.com/Chocolate4U/Iran-v2ray-rules/releases/download/202609070939/geosite.dat",
-      retrievedAt: "2026-09-07T09:41:05Z",
-      sha256: "1bd1476ade826d29926f0ef3233826562813ed82543b6d0ed7f6a872594442d0"
-    }),
-    source({
-      id: "loyalsoldier-clash-direct",
-      repository: "https://github.com/Loyalsoldier/clash-rules",
-      branch: "release",
-      commit: "6f188ab71421eb1dc5094f8877cd467b256c1a95",
-      tree: "48f825328014eef805065de40be0a25bec604075",
-      blob: "99e83b33316491bb4a312ffa6d2d96c321b7bc53",
-      license: "GPL-3.0",
-      format: "clash-rules-yaml",
-      region: "global",
-      adapter: "clash-rules-yaml",
-      minEntries: 1,
-      sourcePath: "direct.txt",
-      releaseTag: "202608252255",
-      retrievalUrl: "https://github.com/Loyalsoldier/clash-rules/releases/download/202608252255/direct.txt",
-      retrievedAt: "2026-08-26T00:00:00Z",
-      sha256: "555003affe662bc61f668aaa4efba5ede7b43921efc0331faeda33dc8d0852cf"
-    }),
-    source({
-      id: "loyalsoldier-clash-reject",
-      repository: "https://github.com/Loyalsoldier/clash-rules",
-      branch: "release",
-      commit: "6f188ab71421eb1dc5094f8877cd467b256c1a95",
-      tree: "48f825328014eef805065de40be0a25bec604075",
-      blob: "e2b569d2c601a0a48c1c3ea7c3d4cfc0d41a0e4b",
-      license: "GPL-3.0",
-      format: "clash-rules-yaml",
-      region: "global",
-      adapter: "clash-rules-yaml",
-      minEntries: 1,
-      sourcePath: "reject.txt",
-      releaseTag: "202608252255",
-      retrievalUrl: "https://github.com/Loyalsoldier/clash-rules/releases/download/202608252255/reject.txt",
-      retrievedAt: "2026-08-26T00:00:00Z",
-      sha256: "106bc6dfae726634b21bd9112da80f679419b71009af8e6a376915404f6992a5"
-    }),
-    source({
-      id: "loyalsoldier-clash-applications",
-      repository: "https://github.com/Loyalsoldier/clash-rules",
-      branch: "release",
-      commit: "6f188ab71421eb1dc5094f8877cd467b256c1a95",
-      tree: "48f825328014eef805065de40be0a25bec604075",
-      blob: "e409d8e43c33c3b82ca033825a6d6026ac8a9e6e",
-      license: "GPL-3.0",
-      format: "clash-rules-yaml",
-      region: "global",
-      adapter: "clash-rules-yaml",
-      minEntries: 1,
-      sourcePath: "applications.txt",
-      releaseTag: "202608252255",
-      retrievalUrl: "https://github.com/Loyalsoldier/clash-rules/releases/download/202608252255/applications.txt",
-      retrievedAt: "2026-08-26T00:00:00Z",
-      sha256: "33bc8f07bacf74082fcb5f361eded1f6f9d3abcedcbe37ada2eb2ab4ae031732"
-    }),
-    source({
-      id: "loyalsoldier-clash-google",
-      repository: "https://github.com/Loyalsoldier/clash-rules",
-      branch: "release",
-      commit: "6f188ab71421eb1dc5094f8877cd467b256c1a95",
-      tree: "48f825328014eef805065de40be0a25bec604075",
-      blob: "9766421c32efb5ff9442d9998c8b0dc561ab7b04",
-      license: "GPL-3.0",
-      format: "clash-rules-yaml",
-      region: "global",
-      adapter: "clash-rules-yaml",
-      auditOnly: true,
-      minEntries: 1,
-      sourcePath: "google.txt",
-      releaseTag: "202608252255",
-      retrievalUrl: "https://github.com/Loyalsoldier/clash-rules/releases/download/202608252255/google.txt",
-      retrievedAt: "2026-08-26T00:00:00Z",
-      sha256: "21a04f287800943b3fdfdef1f843173086171d9a0b5c9c33c3f73e1ec77d4c9e"
-    }),
-    ...[
-      ["private", "62c87f8501cb221de661dba97a17d3eaba4c9592", "3a04b128200ef8097d73b1496cbb23d24bc1e05d42fffb09f07c51699efb00b2"],
-      ["apple", "3fbaf85c498ce62ec854a370b1919aeb7a6f4cbb", "70f9f77e0022fc1e79d597d2fca5a3bbfa8bfe0f7542694b455f8a70004f5ba3"],
-      ["icloud", "0c0de8fb5b244eb4a24bee6452e255576ec8ab75", "f1fb7e9d17400071bf77d853b2a3148ccb6a13d785cb97e73f1693142682b23f"],
-      ["gfw", "7d3951772d1c25862c4ddc76b999dc571f8c84cc", "841c83b1536777b9088bf879d9ea3516a7a70ea63a4066eeafa5ba2cdf601cbc"],
-      ["tld-not-cn", "f3d8313d7d645c9044eefbce1cefecc32b12e90e", "330816293887779168d577a95f606c33702322654249e4c00051a3827830e310"],
-      ["telegramcidr", "b3d48b7dc56c78089d701a44a86d5ab058a13403", "328fca88c675763111c7f7585ec504e5c21ab9afb7a8ce6df33b7ac01b8a3ee0"],
-      ["lancidr", "43b23b5a34c37cdf3f69f714bd86f1fc6ac59e01", "82920b241dc328f1dc99849cf733ed8675a00a4ee0bdf64c892b332dfb7e1e2e"],
-      ["cncidr", "1c2af0f2b98d4613b21e321558254e7ba44fdd54", "019b753c347b7b06ae8a9f9f74f2443d6b35bc9e4d6db70c134306503621b2d1"]
-    ].map(([name, blob, sha2562]) => source({
-      id: `loyalsoldier-clash-${name}`,
-      repository: "https://github.com/Loyalsoldier/clash-rules",
-      branch: "release",
-      commit: "6f188ab71421eb1dc5094f8877cd467b256c1a95",
-      tree: "48f825328014eef805065de40be0a25bec604075",
-      blob,
-      license: "GPL-3.0",
-      format: "clash-rules-yaml",
-      region: "global",
-      adapter: "clash-rules-yaml",
-      minEntries: 1,
-      sourcePath: `${name}.txt`,
-      releaseTag: "202608252255",
-      retrievalUrl: `https://github.com/Loyalsoldier/clash-rules/releases/download/202608252255/${name}.txt`,
-      retrievedAt: "2026-08-26T00:00:00Z",
-      sha256: sha2562
-    }))
-  ]);
-  function validateExternalSourceCatalog(catalog = EXTERNAL_RULE_SOURCE_CATALOG) {
-    if (!Array.isArray(catalog) || catalog.length === 0) throw new TypeError("External source catalog must not be empty");
-    const ids2 = /* @__PURE__ */ new Set();
-    for (const record2 of catalog) {
-      if (!record2 || typeof record2 !== "object") throw new TypeError("External source must be an object");
-      if (!/^[A-Za-z0-9][A-Za-z0-9_-]*$/u.test(record2.id) || ids2.has(record2.id)) {
-        throw new TypeError(`Duplicate or unsafe external source ID: ${record2.id}`);
-      }
-      ids2.add(record2.id);
-      if (!SHA1_COMMIT.test(record2.commit)) throw new TypeError(`External source ${record2.id} is not pinned to a full commit`);
-      if (typeof record2.repository !== "string" || !/^https:\/\/github\.com\/[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/u.test(record2.repository)) throw new TypeError(`External source ${record2.id} has invalid repository`);
-      if (typeof record2.branch !== "string" || record2.branch.trim() === "") throw new TypeError(`External source ${record2.id} has no branch metadata`);
-      if (typeof record2.retrievalUrl !== "string" || !record2.retrievalUrl.startsWith("https://")) throw new TypeError(`External source ${record2.id} has no retrieval URL`);
-      if (typeof record2.releaseTag !== "string" || !/^[A-Za-z0-9][A-Za-z0-9._-]*$/u.test(record2.releaseTag)) throw new TypeError(`External source ${record2.id} has invalid release tag`);
-      if (typeof record2.sourcePath !== "string" || record2.sourcePath.length === 0 || !SAFE_PATH.test(record2.sourcePath) || record2.sourcePath.split("/").some((segment) => segment === "." || segment === "..")) {
-        throw new TypeError(`External source ${record2.id} has unsafe source path`);
-      }
-      const expectedUrl = `${record2.repository}/releases/download/${record2.releaseTag}/${record2.sourcePath}`;
-      if (record2.retrievalUrl !== expectedUrl) throw new TypeError(`External source ${record2.id} has mismatched release asset URL`);
-      if (typeof record2.retrievedAt !== "string" || Number.isNaN(Date.parse(record2.retrievedAt))) throw new TypeError(`External source ${record2.id} has invalid retrieval timestamp`);
-      if (typeof record2.sha256 !== "string" || !SHA256.test(record2.sha256)) throw new TypeError(`External source ${record2.id} has invalid SHA-256`);
-      if (typeof record2.license !== "string" || record2.license.trim() === "") throw new TypeError(`External source ${record2.id} has no license`);
-      if (!REGIONS2.has(record2.region)) throw new TypeError(`External source ${record2.id} has invalid region`);
-      if (typeof record2.format !== "string" || record2.format.trim() === "") throw new TypeError(`External source ${record2.id} has no format`);
-      if (typeof record2.adapter !== "string" || record2.adapter.trim() === "") throw new TypeError(`External source ${record2.id} has no adapter`);
-      if (!Number.isInteger(record2.minEntries) || record2.minEntries < 1) throw new TypeError(`External source ${record2.id} has invalid minEntries`);
-      if (record2.tree !== void 0 && !SHA1_COMMIT.test(record2.tree)) throw new TypeError(`External source ${record2.id} has invalid tree hash`);
-      if (record2.blob !== void 0 && !SHA1_COMMIT.test(record2.blob)) throw new TypeError(`External source ${record2.id} has invalid blob hash`);
-      if (record2.auditOnly !== void 0 && typeof record2.auditOnly !== "boolean") throw new TypeError(`External source ${record2.id} has invalid auditOnly flag`);
+  function xrayGeoCode(sourceId) {
+    if (typeof sourceId !== "string" || sourceId.trim() !== sourceId || !SOURCE_ID.test(sourceId)) {
+      throw new TypeError("Xray GeoData source ID is invalid");
     }
-    return true;
+    const normalized = sourceId.toUpperCase().replaceAll("_", "-");
+    const code = `APP-${normalized}`;
+    if (!CODE.test(code)) throw new TypeError("Xray GeoData source ID is invalid");
+    return code;
   }
-  validateExternalSourceCatalog();
-
-  // ../../shared/rules/region-profiles.js
-  var BASELINE_IDS = Object.freeze(RULE_SOURCE_CATALOG.map(({ id }) => id));
-  var CHINA_LOCAL_IDS = /* @__PURE__ */ new Set(["DomesticCore", "DomesticGame", "SteamCN", "ChinaTLD", "ChinaIP", "ChinaMax", "ChinaMax_Domain"]);
-  var GLOBAL_BASELINE_IDS = Object.freeze(BASELINE_IDS.filter((id) => !CHINA_LOCAL_IDS.has(id)));
-  var COMMON_EXTERNAL_IDS = Object.freeze(EXTERNAL_RULE_SOURCE_CATALOG.filter(({ region, auditOnly }) => region === "global" && !auditOnly).map(({ id }) => id));
-  var OVERLAY_IDS = Object.freeze({
-    ru: Object.freeze(EXTERNAL_RULE_SOURCE_CATALOG.filter(({ region }) => region === "ru").map(({ id }) => id)),
-    ir: Object.freeze(EXTERNAL_RULE_SOURCE_CATALOG.filter(({ region }) => region === "ir").map(({ id }) => id))
-  });
-  var REGION_PROFILES = Object.freeze({
-    cn: Object.freeze({ region: "cn", sourceIds: Object.freeze([...BASELINE_IDS, ...COMMON_EXTERNAL_IDS]), overlays: Object.freeze([]) }),
-    global: Object.freeze({ region: "global", sourceIds: Object.freeze([...GLOBAL_BASELINE_IDS, ...COMMON_EXTERNAL_IDS]), overlays: Object.freeze([]) }),
-    ru: Object.freeze({ region: "ru", sourceIds: Object.freeze([...GLOBAL_BASELINE_IDS, ...COMMON_EXTERNAL_IDS, ...OVERLAY_IDS.ru]), overlays: OVERLAY_IDS.ru }),
-    ir: Object.freeze({ region: "ir", sourceIds: Object.freeze([...GLOBAL_BASELINE_IDS, ...COMMON_EXTERNAL_IDS, ...OVERLAY_IDS.ir]), overlays: OVERLAY_IDS.ir })
-  });
-  function sourcesForRegion(region, { adblockMode = "off" } = {}) {
-    if (adblockMode !== "off" && adblockMode !== "full") throw new TypeError("adblockMode must be either off or full");
-    const profile = REGION_PROFILES[parseRegion(region)];
-    const sourceIds = adblockMode === "full" ? [...profile.sourceIds, ...FULL_ADBLOCK_SOURCE_IDS] : profile.sourceIds;
-    const ids2 = sourceIds.filter((id) => adblockMode === "full" || !FULL_ADBLOCK_SOURCE_IDS.includes(id));
-    return Object.freeze([...new Set(ids2)]);
-  }
-  for (const profile of Object.values(REGION_PROFILES)) {
-    if (new Set(profile.sourceIds).size !== profile.sourceIds.length) throw new TypeError(`Duplicate source in ${profile.region} profile`);
-    if (profile.region === "cn" && profile.sourceIds.some((id) => OVERLAY_IDS.ru.includes(id) || OVERLAY_IDS.ir.includes(id))) {
-      throw new TypeError("Default cn profile cannot include regional overlays");
-    }
+  function xrayGeoReference(channel, type, sourceId) {
+    const names = xrayGeoNames(channel);
+    if (type !== "domain" && type !== "ip") throw new TypeError("Xray GeoData type is invalid");
+    return `ext:${names[type]}.dat:${xrayGeoCode(sourceId)}`;
   }
 
-  // src/render-profile.js
-  function bytes(value, label2) {
-    if (!(Buffer.isBuffer(value) || value instanceof Uint8Array)) throw new TypeError(`v2rayN GeoData ${label2} asset is missing or invalid`);
-    return Buffer.from(value);
-  }
-  function sha256(input) {
-    const bytes2 = new Uint8Array(input);
-    const words = new Uint32Array(64);
-    const state = new Uint32Array([1779033703, 3144134277, 1013904242, 2773480762, 1359893119, 2600822924, 528734635, 1541459225]);
-    const constants = [1116352408, 1899447441, 3049323471, 3921009573, 961987163, 1508970993, 2453635748, 2870763221, 3624381080, 310598401, 607225278, 1426881987, 1925078388, 2162078206, 2614888103, 3248222580, 3835390401, 4022224774, 264347078, 604807628, 770255983, 1249150122, 1555081692, 1996064986, 2554220882, 2821834349, 2952996808, 3210313671, 3336571891, 3584528711, 113926993, 338241895, 666307205, 773529912, 1294757372, 1396182291, 1695183700, 1986661051, 2177026350, 2456956037, 2730485921, 2820302411, 3259730800, 3345764771, 3516065817, 3600352804, 4094571909, 275423344, 430227734, 506948616, 659060556, 883997877, 958139571, 1322822218, 1537002063, 1747873779, 1955562222, 2024104815, 2227730452, 2361852424, 2428436474, 2756734187, 3204031479, 3329325298];
-    const padded = new Uint8Array(bytes2.length + 9 + 63 >> 6 << 6);
-    padded.set(bytes2);
-    padded[bytes2.length] = 128;
-    const bitLength = bytes2.length * 8;
-    new DataView(padded.buffer).setUint32(padded.length - 4, bitLength, false);
-    for (let offset = 0; offset < padded.length; offset += 64) {
-      for (let i = 0; i < 16; i++) words[i] = new DataView(padded.buffer, offset + i * 4, 4).getUint32(0, false);
-      for (let i = 16; i < 64; i++) {
-        const x = words[i - 15];
-        const y = words[i - 2];
-        words[i] = ((x >>> 7 | x << 25) ^ (x >>> 18 | x << 14) ^ x >>> 3) + words[i - 16] + ((y >>> 17 | y << 15) ^ (y >>> 19 | y << 13) ^ y >>> 10) + words[i - 7] | 0;
-      }
-      let [a, b, c, d, e, f, g, h] = state;
-      for (let i = 0; i < 64; i++) {
-        const s1 = (e >>> 6 | e << 26) ^ (e >>> 11 | e << 21) ^ (e >>> 25 | e << 7);
-        const ch = e & f ^ ~e & g;
-        const t1 = h + s1 + ch + constants[i] + words[i] | 0;
-        const s0 = (a >>> 2 | a << 30) ^ (a >>> 13 | a << 19) ^ (a >>> 22 | a << 10);
-        const maj = a & b ^ a & c ^ b & c;
-        const t2 = s0 + maj | 0;
-        [h, g, f, e, d, c, b, a] = [g, f, e, d + t1 | 0, c, b, a, t1 + t2 | 0];
-      }
-      state[0] = state[0] + a | 0;
-      state[1] = state[1] + b | 0;
-      state[2] = state[2] + c | 0;
-      state[3] = state[3] + d | 0;
-      state[4] = state[4] + e | 0;
-      state[5] = state[5] + f | 0;
-      state[6] = state[6] + g | 0;
-      state[7] = state[7] + h | 0;
+  // src/render-native-routing.js
+  var PRIVATE_IPS = ["10.0.0.0/8", "127.0.0.0/8", "169.254.0.0/16", "172.16.0.0/12", "192.168.0.0/16", "::1/128", "fc00::/7", "fe80::/10"];
+  var SOURCE_TARGET = { DomesticCore: "domesticPlatform", ChinaTLD: "domesticPlatform", ChinaIP: "domesticPlatform", DomesticGame: "game", SteamCN: "game" };
+  function renderV2rayNNativeRouting({ nodes, options, policyResolution = defaultUnifiedPolicyResolution() }) {
+    if (!Array.isArray(nodes) || nodes.length === 0) throw new Error("v2rayN native routing requires nodes");
+    if (!["cn", "global"].includes(options?.region)) throw new Error("v2rayN native routing currently supports cn/global regions");
+    const byId2 = /* @__PURE__ */ new Map();
+    const names = /* @__PURE__ */ new Set();
+    for (const node of nodes) {
+      if (!node.name || names.has(node.name) || ["proxy", "direct", "block"].includes(node.name)) throw new Error("v2rayN native routing requires unique non-reserved node names");
+      names.add(node.name);
+      byId2.set(node._profile?.id, node.name);
     }
-    return [...state].map((word) => (word >>> 0).toString(16).padStart(8, "0")).join("");
-  }
-  function geoReferences(geoData, options) {
-    const names = xrayGeoNames(options.channel);
-    if (geoData === null || geoData === void 0) {
-      const sources = sourcesForRegion(options.region).map((id) => ({ id, code: xrayGeoCode(id) }));
-      return {
-        sources,
-        domain: sources.map(({ id }) => xrayGeoReference(options.channel, "domain", id)),
-        ip: sources.map(({ id }) => xrayGeoReference(options.channel, "ip", id))
-      };
+    function target(id) {
+      const record2 = policyResolution.targets?.[id];
+      if (!record2 || record2.resolved === "FOLLOW") return "proxy";
+      if (record2.resolved === "DIRECT") return "direct";
+      if (record2.resolved === "REJECT") return "block";
+      const name = byId2.get(record2.nodeId);
+      if (!name) throw new Error("v2rayN fixed policy node is unavailable");
+      return name;
     }
-    if (!geoData || typeof geoData !== "object" || Array.isArray(geoData) || !geoData.manifest) throw new TypeError("v2rayN GeoData manifest is required");
-    const manifest = geoData.manifest;
-    if (manifest.schemaVersion !== 1 || manifest.region !== options.region || manifest.channel !== options.channel) throw new Error("v2rayN GeoData manifest region/channel mismatch");
-    if (!manifest.names || manifest.names.domain !== names.domain || manifest.names.ip !== names.ip) throw new Error("v2rayN GeoData manifest names mismatch");
-    const domain = bytes(geoData.geosite ?? geoData.domain, "domain");
-    const ip = bytes(geoData.geoip ?? geoData.ip, "ip");
-    for (const type of ["domain", "ip"]) {
-      const asset = type === "domain" ? domain : ip;
-      const record2 = manifest[type];
-      if (!record2 || record2.name !== names[type] || record2.byteLength !== asset.byteLength || record2.sha256 !== sha256(asset) || manifest.hashes?.[type] !== sha256(asset)) {
-        throw new Error(`v2rayN GeoData ${type} manifest hash or byteLength mismatch`);
+    for (const id of Object.keys(policyResolution.targets ?? {})) target(id);
+    const rules = [];
+    function add(remarks, match, outboundTag, guard = true) {
+      const isProxy = !["direct", "block"].includes(outboundTag);
+      if (guard && (options.quicMode === "all-block" || options.quicMode === "proxy-block" && isProxy)) {
+        rules.push({ type: "field", ...match, network: "udp", port: "443", outboundTag: "block", enabled: true, remarks: `${remarks} / QUIC` });
+      }
+      rules.push({ type: "field", ...match, outboundTag, enabled: true, remarks });
+    }
+    add("Private IP", { ip: PRIVATE_IPS }, "direct", false);
+    add("Private domains", { domain: ["full:localhost", "domain:local", "domain:lan", "domain:home.arpa"] }, "direct", false);
+    for (const entry of orderedRoutingPlan()) {
+      if (options.region === "global" && ["DomesticCore", "DomesticGame", "SteamCN", "ChinaTLD", "ChinaIP"].includes(entry.id)) continue;
+      let outboundTag;
+      const id = SOURCE_TARGET[entry.id] ?? unifiedPolicyTargetByKey(entry.policy)?.id;
+      if (id) outboundTag = target(id);
+      else if (entry.id === "Privacy") outboundTag = options.blockMode === "strict" ? "block" : "direct";
+      else if (entry.policy === "REJECT") outboundTag = options.blockMode === "off" ? "direct" : "block";
+      else throw new Error(`Unmapped v2rayN rule source: ${entry.id}`);
+      for (const kind of ["domain", "ip"]) {
+        add(`${entry.id} / ${kind}`, { [kind]: [xrayGeoReference(options.channel, kind, entry.id)] }, outboundTag);
       }
     }
-    if (!Array.isArray(manifest.sources) || manifest.sources.length === 0) throw new Error("v2rayN GeoData manifest sources are missing");
-    const codes = manifest.sources.map((source2) => {
-      if (!source2 || typeof source2.id !== "string" || source2.code !== xrayGeoCode(source2.id)) throw new Error("v2rayN GeoData manifest source code mismatch");
-      return source2.code;
-    });
-    if (Array.isArray(manifest.sourceCodes) && JSON.stringify(manifest.sourceCodes.map(({ code }) => code)) !== JSON.stringify(codes)) throw new Error("v2rayN GeoData sourceCodes mismatch");
-    return { sources: manifest.sources, domain: codes.map((code) => `ext:${names.domain}.dat:${code}`), ip: codes.map((code) => `ext:${names.ip}.dat:${code}`) };
+    add("Final", { network: "tcp,udp" }, target("final"));
+    return rules;
   }
-  function unifiedTargetId(id) {
-    if (id === "domesticCore" || id === "chinaIp") return "domesticPlatform";
-    return id;
+
+  // src/render-node.js
+  var protocol2 = (node) => String(node?.type ?? "").trim().toLowerCase();
+  var text = (value) => value === void 0 || value === null ? "" : String(value);
+  var encoded = (value) => encodeURIComponent(text(value));
+  var URI_SEPARATOR = [":", "/", "/"].join("");
+  var prefix = (scheme) => `${scheme}${URI_SEPARATOR}`;
+  function standardBase64(value) {
+    const raw = encodeBase64UrlUtf8(value).replaceAll("-", "+").replaceAll("_", "/");
+    return raw + "=".repeat((4 - raw.length % 4) % 4);
   }
-  function actionForSource(sourceId, overrides, nodeTags, nodeTagsById, blockMode, policyResolution, proxyTag) {
-    const configured = policyForRuleSource(sourceId);
-    const target = configured ? businessTargetByKey(configured) : void 0;
-    const domestic = /* @__PURE__ */ new Set(["DomesticCore", "DomesticGame", "SteamCN", "BiliBili", "ByteDance", "XiaoHongShu", "Weibo", "Apple", "Microsoft", "Download", "PrivateTracker", "ChinaTLD", "ChinaIP"]);
-    const security2 = /* @__PURE__ */ new Set(["Hijacking", "BlockHttpDNS", "Advertising", "Advertising_Domain"]);
-    const defaultValue = security2.has(sourceId) ? "REJECT" : sourceId === "Privacy" || domestic.has(sourceId) ? "DIRECT" : "FOLLOW";
-    const unified = target ? policyResolution?.targets?.[unifiedTargetId(target.id)] : void 0;
-    if (unified) {
-      if (unified.resolved === "DIRECT") return "direct";
-      if (unified.resolved === "FOLLOW") return proxyTag;
-      const fixedTag = nodeTagsById.get(unified.nodeId);
-      if (!fixedTag) throw new Error("v2rayN policy target node is unavailable");
-      return fixedTag;
-    }
-    const value = overrides[target?.id] ?? defaultValue;
-    if (value === "DIRECT") return "direct";
-    if (value === "FOLLOW") return proxyTag;
-    if (value === "NODE:".concat(value.slice(5)) && nodeTags.has(value.slice(5))) return nodeTags.get(value.slice(5));
-    if (value === "NODE:".concat(value.slice(5))) throw new Error("v2rayN policy target node is unavailable");
-    return value === "REJECT" ? blockMode === "off" ? "direct" : "block" : proxyTag;
+  function host(value) {
+    const address = text(value);
+    return address.includes(":") && !address.startsWith("[") ? `[${address}]` : address;
   }
-  function dns(options) {
-    const queryStrategy = options.ipv6Mode === "ipv4-only" ? "UseIPv4" : "UseIP";
-    const china = options.chinaDns === "system" ? "localhost" : options.chinaDns === "dnspod" ? "119.29.29.29" : "223.5.5.5";
-    const global = options.globalDns === "google" ? "8.8.8.8" : options.globalDns === "quad9" ? "9.9.9.9" : "1.1.1.1";
-    return { servers: [{ tag: "china-dns", address: china, domains: ["geosite:cn", "geosite:private"], queryStrategy }, { tag: "global-dns", address: global, queryStrategy }], queryStrategy, tag: "dnsQuery" };
+  function fragment(name) {
+    return name ? `#${encoded(name)}` : "";
   }
-  function inbound(options) {
+  function query(parameters) {
+    const values = Object.entries(parameters).filter(([, value]) => value !== void 0 && value !== null && value !== "");
+    return values.length ? `?${values.map(([key, value]) => `${key}=${encoded(value)}`).join("&")}` : "";
+  }
+  function security(node) {
+    if (node["reality-opts"] || node.security === "reality") return "reality";
+    if (node.tls === true || node.security === "tls") return "tls";
+    return "none";
+  }
+  function transport(node) {
+    const network = text(node.network || "tcp").toLowerCase();
+    const source = network === "ws" ? node["ws-opts"] ?? {} : ["h2", "http2", "http"].includes(network) ? node["h2-opts"] ?? node["http-opts"] ?? {} : network === "grpc" ? node["grpc-opts"] ?? {} : network === "httpupgrade" ? node["httpupgrade-opts"] ?? {} : network === "xhttp" ? node["xhttp-opts"] ?? {} : network === "kcp" || network === "mkcp" ? node["kcp-opts"] ?? {} : {};
+    const type = network === "raw" ? "raw" : ["h2", "http2", "http"].includes(network) ? "http" : network;
     return {
-      tag: "socks-in",
-      listen: "127.0.0.1",
-      port: 10808,
-      protocol: "socks",
-      settings: { auth: "noauth", udp: true },
-      sniffing: { enabled: true, destOverride: ["http", "tls"], routeOnly: true }
+      type,
+      ...source.path !== void 0 ? { path: Array.isArray(source.path) ? source.path[0] : source.path } : {},
+      ...source.host !== void 0 ? { host: Array.isArray(source.host) ? source.host[0] : source.host } : {},
+      ...network === "grpc" ? { serviceName: source["grpc-service-name"] ?? source.serviceName } : {},
+      ...network === "xhttp" && source.mode ? { mode: source.mode } : {},
+      ...network === "raw" && source.headerType ? { headerType: source.headerType } : {}
     };
   }
-  function renderV2rayNProfile({ nodes, options, geoData = null, filterFailures = {}, policyResolution = null } = {}) {
-    if (!options || options.output !== "config") throw new Error("v2rayN profile options are required");
-    if (!Array.isArray(nodes)) throw new Error("v2rayN profile requires compatible nodes");
-    const outbounds = [{ protocol: "freedom", tag: "direct" }, { protocol: "blackhole", tag: "block" }];
-    const failures = { ...filterFailures };
-    const nodeTags = /* @__PURE__ */ new Map();
-    const nodeTagsById = /* @__PURE__ */ new Map();
-    nodes.forEach((node, index) => {
-      const tag = `ap-node-${index.toString(36)}`;
-      try {
-        outbounds.push(renderXrayOutbound(node, { tag, client: "v2rayn" }));
-        nodeTags.set(node.name, tag);
-        if (node?._profile?.id) nodeTagsById.set(node._profile.id, tag);
-      } catch (error) {
-        const diagnostic = renderXrayNodeError(error, "v2rayn");
-        Object.entries(diagnostic.excluded).forEach(([key, count]) => {
-          failures[key] = (failures[key] ?? 0) + count;
-        });
-      }
-    });
-    const proxyTag = outbounds[2]?.tag ?? "block";
-    const overrides = policyResolution === null ? parseBusinessOverrides(options.policyOverrides ?? "") : {};
-    if (Object.values(overrides).some((value) => value.startsWith("NODE:") && !nodeTags.has(value.slice(5)))) throw new Error("v2rayN policy target node is unavailable");
-    const references = geoReferences(geoData, options);
-    const rules = [{ domain: ["geosite:private"], outboundTag: "direct", ruleTag: "private-direct" }];
-    const sourceRules = references.sources.map((source2) => ({ source: source2, outboundTag: actionForSource(source2.id, overrides, nodeTags, nodeTagsById, options.blockMode, policyResolution, proxyTag) }));
-    const rank = (item) => ["Hijacking", "BlockHttpDNS", "Privacy"].includes(item.source.id) ? 0 : policyForRuleSource(item.source.id) ? 1 : 2;
-    sourceRules.sort((a, b) => rank(a) - rank(b));
-    for (const { source: source2, outboundTag } of sourceRules) rules.push({ domain: [`ext:${xrayGeoNames(options.channel).domain}.dat:${source2.code}`], ip: [`ext:${xrayGeoNames(options.channel).ip}.dat:${source2.code}`], outboundTag, ruleTag: `source-${source2.id}` });
-    const finalRecord = policyResolution?.targets?.final;
-    let finalOutboundTag = proxyTag;
-    if (finalRecord?.resolved === "DIRECT") finalOutboundTag = "direct";
-    else if (finalRecord?.resolved && finalRecord.resolved !== "FOLLOW") {
-      finalOutboundTag = nodeTagsById.get(finalRecord.nodeId);
-      if (!finalOutboundTag) throw new Error("v2rayN policy target node is unavailable");
-    }
-    rules.push({ domain: [`geosite:${options.region}`], outboundTag: "direct", ruleTag: "china-domain-direct" }, { ip: [`geoip:${options.region}`], outboundTag: "direct", ruleTag: "china-ip-direct" }, { network: "tcp,udp", outboundTag: finalOutboundTag, ruleTag: "final-fail-closed" });
-    return { name: options.name, dns: dns(options), inbounds: [inbound(options)], outbounds, routing: { domainStrategy: "IPIfNonMatch", rules: legalXrayRules(rules, options) }, ...Object.keys(failures).length ? { renderFailures: failures } : {} };
+  function renderVless(node) {
+    const stream = transport(node);
+    const reality = node["reality-opts"] ?? {};
+    return `${prefix("vless")}${encoded(node.uuid)}@${host(node.server)}:${Number(node.port)}${query({ encryption: node.encryption ?? "none", flow: node.flow, security: security(node), type: stream.type, headerType: stream.headerType, host: stream.host, path: stream.path, serviceName: stream.serviceName, authority: stream.host, mode: stream.mode, sni: node.sni ?? node.servername, alpn: Array.isArray(node.alpn) ? node.alpn.join(",") : node.alpn, fp: node["client-fingerprint"], pbk: reality["public-key"], sid: reality["short-id"], spx: reality["spider-x"] ?? reality["_spider-x"] })}${fragment(node.name)}`;
   }
-  function legalXrayRules(rules, options) {
-    return rules.flatMap((rule3) => {
-      const separated = rule3.domain && rule3.ip ? [{ ...rule3, ip: void 0 }, { ...rule3, domain: void 0 }] : [rule3];
-      return separated.flatMap((item) => {
-        const clean = Object.fromEntries(Object.entries(item).filter(([, value]) => value !== void 0));
-        const isProxy = !["direct", "block"].includes(clean.outboundTag);
-        const blockQuic = options.quicMode === "all-block" || options.quicMode === "proxy-block" && isProxy;
-        const regular = { type: "field", ...clean };
-        return blockQuic && !clean.ruleTag?.startsWith("private-") ? [{ ...regular, network: "udp", port: "443", outboundTag: "block", ruleTag: `quic-${clean.ruleTag}` }, regular] : [regular];
-      });
-    });
+  function renderVmess(node) {
+    const stream = transport(node);
+    const reality = node["reality-opts"] ?? {};
+    const payload = { v: 2, ps: text(node.name), add: text(node.server), port: Number(node.port), id: text(node.uuid), aid: Number(node["alter-id"] ?? node.alterId ?? 0), scy: text(node.cipher ?? node.security ?? "auto"), net: stream.type, type: stream.headerType ?? "none", host: stream.host, path: stream.path ?? stream.serviceName, tls: security(node) === "none" ? "" : security(node), sni: node.sni ?? node.servername, alpn: Array.isArray(node.alpn) ? node.alpn.join(",") : node.alpn, fp: node["client-fingerprint"], insecure: node["skip-cert-verify"] === true || node["allow-insecure"] === true ? "1" : "0", pbk: reality["public-key"], sid: reality["short-id"] };
+    return `${prefix("vmess")}${standardBase64(JSON.stringify(payload))}`;
   }
-
-  // ../../shared/policies/platform-presets.js
-  var POLICY_PLATFORM_PRESETS = Object.freeze({
-    macos: Object.freeze({ testInterval: 600, timeout: 5, tolerance: 100 }),
-    iphone: Object.freeze({ testInterval: 1800, timeout: 7, tolerance: 150 }),
-    ipad: Object.freeze({ testInterval: 1800, timeout: 7, tolerance: 150 }),
-    android: Object.freeze({ testInterval: 1800, timeout: 7, tolerance: 150 }),
-    androidtv: Object.freeze({ testInterval: 3600, timeout: 8, tolerance: 200 }),
-    openwrt: Object.freeze({ testInterval: 600, timeout: 5, tolerance: 100 }),
-    appletv: Object.freeze({ testInterval: 3600, timeout: 8, tolerance: 200 }),
-    windows: Object.freeze({ testInterval: 600, timeout: 5, tolerance: 100 }),
-    linux: Object.freeze({ testInterval: 600, timeout: 5, tolerance: 100 })
-  });
-  function platformPolicyPreset(platform) {
-    if (typeof platform !== "string" || !Object.hasOwn(POLICY_PLATFORM_PRESETS, platform)) {
-      throw new Error(`Unsupported platform: ${platform}`);
-    }
-    return POLICY_PLATFORM_PRESETS[platform];
+  function renderTrojan(node) {
+    const stream = transport(node);
+    return `${prefix("trojan")}${encoded(node.password)}@${host(node.server)}:${Number(node.port)}${query({ security: security(node), type: stream.type, host: stream.host, path: stream.path, serviceName: stream.serviceName, authority: stream.host, mode: stream.mode, sni: node.sni ?? node.servername, alpn: Array.isArray(node.alpn) ? node.alpn.join(",") : node.alpn, fp: node["client-fingerprint"], flow: node.flow, allowInsecure: node["skip-cert-verify"] === true || node["allow-insecure"] === true ? "1" : void 0 })}${fragment(node.name)}`;
   }
-
-  // ../sing-box/src/options.js
-  var REQUIRED_KEYS = Object.freeze(["output", "type", "name", "subscriptionName", "platform"]);
-  var DEFAULTS2 = Object.freeze({
-    channel: "current",
-    dnsMode: "stable",
-    chinaDns: "alidns",
-    globalDns: "cloudflare",
-    blockMode: "balanced",
-    quicMode: "proxy-block",
-    ipv6Mode: "auto",
-    autoGroupMode: "auto",
-    clientChain: "off",
-    profileMode: "light",
-    adblockMode: "off",
-    nodeErrorMode: "strict"
-  });
-  var PLATFORMS = /* @__PURE__ */ new Set(["macos", "windows", "iphone", "ipad", "android"]);
-  var CHANNELS2 = new Set(FRONTIER_CHANNELS);
-  var PROFILE_MODES = /* @__PURE__ */ new Set(["light", "diagnostic"]);
-  var ADBLOCK_MODES = /* @__PURE__ */ new Set(["off", "full"]);
-  var NODE_ERROR_MODES = /* @__PURE__ */ new Set(["strict", "compatible"]);
-  var ALLOWED_KEYS = /* @__PURE__ */ new Set([...REQUIRED_KEYS, ...Object.keys(DEFAULTS2)]);
-  var PARSED = /* @__PURE__ */ new WeakSet();
-  function requiredString(raw, key) {
-    const value = raw[key];
-    if (typeof value !== "string" || value.length === 0 || value.trim() !== value || /[\r\n]/u.test(value)) {
-      throw new Error(`Option '${key}' must be a non-empty single-line string`);
-    }
-    return value;
+  function renderShadowsocks(node) {
+    const credentials = standardBase64(`${text(node.cipher ?? node.method)}:${text(node.password)}`);
+    return `${prefix("ss")}${credentials}@${host(node.server)}:${Number(node.port)}${fragment(node.name)}`;
   }
-  function enumValue(raw, key, defaultValue) {
-    const value = raw[key] === void 0 ? defaultValue : raw[key];
-    if (typeof value !== "string" || !OPTION_VALUES[key]?.includes(value)) throw new Error(`Option '${key}' has an unsupported value`);
-    return value;
+  function renderHysteria2(node) {
+    return `${prefix("hysteria2")}${encoded(node.password)}@${host(node.server)}:${Number(node.port)}${query({ sni: node.sni ?? node.servername, insecure: node["skip-cert-verify"] === true || node["allow-insecure"] === true ? "1" : void 0, alpn: Array.isArray(node.alpn) ? node.alpn.join(",") : node.alpn, obfs: node.obfs, "obfs-password": node["obfs-password"] })}${fragment(node.name)}`;
   }
-  function parseSingBoxOptions(raw) {
-    if (!raw || typeof raw !== "object" || Array.isArray(raw)) throw new TypeError("sing-box options must be an object");
-    if (Object.hasOwn(raw, "ruleSetFormat")) {
-      throw new Error("Option 'ruleSetFormat' was removed; migrate to profileMode and adblockMode");
-    }
-    for (const key of Object.keys(raw)) {
-      if (!key.startsWith("_") && !ALLOWED_KEYS.has(key)) throw new Error(`Unknown sing-box option: ${key}`);
-    }
-    for (const key of REQUIRED_KEYS) if (!Object.hasOwn(raw, key)) throw new Error(`Option '${key}' is required`);
-    const platform = requiredString(raw, "platform");
-    if (!PLATFORMS.has(platform)) throw new Error("Option 'platform' has an unsupported value");
-    if (requiredString(raw, "output") !== "config") throw new Error("Option 'output' must be config");
-    if (requiredString(raw, "type") !== "collection") throw new Error("Option 'type' must be collection");
-    const channel = raw.channel === void 0 ? DEFAULTS2.channel : raw.channel;
-    if (typeof channel !== "string" || !CHANNELS2.has(channel)) throw new Error("Option 'channel' has an unsupported value");
-    const profileMode = raw.profileMode === void 0 ? DEFAULTS2.profileMode : raw.profileMode;
-    if (typeof profileMode !== "string" || !PROFILE_MODES.has(profileMode)) throw new Error("Option 'profileMode' has an unsupported value");
-    const adblockMode = raw.adblockMode === void 0 ? DEFAULTS2.adblockMode : raw.adblockMode;
-    if (typeof adblockMode !== "string" || !ADBLOCK_MODES.has(adblockMode)) throw new Error("Option 'adblockMode' has an unsupported value");
-    if (usesMobileRuleBundles(platform) && adblockMode === "full") {
-      throw new Error("Option 'adblockMode=full' exceeds the mobile client memory budget");
-    }
-    const nodeErrorMode = raw.nodeErrorMode === void 0 ? DEFAULTS2.nodeErrorMode : raw.nodeErrorMode;
-    if (typeof nodeErrorMode !== "string" || !NODE_ERROR_MODES.has(nodeErrorMode)) throw new Error("Option 'nodeErrorMode' has an unsupported value");
-    const options = {
-      output: "config",
-      type: "collection",
-      name: validateCollectionName(raw.name, "Option 'name'"),
-      subscriptionName: requiredString(raw, "subscriptionName"),
-      platform,
-      channel,
-      dnsMode: enumValue(raw, "dnsMode", DEFAULTS2.dnsMode),
-      chinaDns: enumValue(raw, "chinaDns", DEFAULTS2.chinaDns),
-      globalDns: enumValue(raw, "globalDns", DEFAULTS2.globalDns),
-      blockMode: enumValue(raw, "blockMode", DEFAULTS2.blockMode),
-      quicMode: enumValue(raw, "quicMode", DEFAULTS2.quicMode),
-      ipv6Mode: enumValue(
-        raw,
-        "ipv6Mode",
-        ["macos", "iphone", "ipad"].includes(platform) ? "ipv4-only" : DEFAULTS2.ipv6Mode
-      ),
-      autoGroupMode: enumValue(raw, "autoGroupMode", DEFAULTS2.autoGroupMode),
-      clientChain: enumValue(raw, "clientChain", DEFAULTS2.clientChain),
-      profileMode,
-      adblockMode,
-      nodeErrorMode
-    };
-    platformPolicyPreset(platform);
-    Object.freeze(options);
-    PARSED.add(options);
-    return options;
-  }
-  function isParsedSingBoxOptions(value) {
-    return value !== null && typeof value === "object" && PARSED.has(value);
-  }
-
-  // ../sing-box/src/render-node.js
-  var ALLOWED_KEYS2 = /* @__PURE__ */ new Set([
-    "name",
-    "type",
-    "server",
-    "port",
-    "udp",
-    "tls",
-    "security",
-    "sni",
-    "servername",
-    "skip-cert-verify",
-    "allow-insecure",
-    "client-fingerprint",
-    "alpn",
-    "reality-opts",
-    "network",
-    "ws-opts",
-    "grpc-opts",
-    "h2-opts",
-    "http-opts",
-    "httpupgrade-opts",
-    "xhttp-opts",
-    "cipher",
-    "password",
-    "uuid",
-    "flow",
-    "encryption",
-    "packet-encoding",
-    "packetEncoding",
-    "xudp",
-    "packet-addr",
-    "alter-id",
-    "alterId",
-    "psk",
-    "version",
-    "username",
-    "private-key",
-    "private_key",
-    "public-key",
-    "pre-shared-key",
-    "peers",
-    "local-address",
-    "local_ipv4",
-    "local-ipv4",
-    "local_ipv6",
-    "local-ipv6",
-    "ip",
-    "ipv6",
-    "dns",
-    "dns_servers",
-    "mtu",
-    "keepalive",
-    "reserved",
-    "address",
-    "allowed-ips",
-    "allowed_ips",
-    "persistent-keepalive",
-    "obfs",
-    "obfs-mode",
-    "obfs_mode",
-    "obfs-host",
-    "obfs_host",
-    "obfs-password",
-    "obfs_password",
-    "mode",
-    "userkey",
-    "user-key",
-    "udp-relay-mode",
-    "udp_relay_mode",
-    "congestion-control",
-    "congestion_control",
-    "heartbeat",
-    "ports",
-    "server-ports",
-    "server_ports",
-    "port-hopping",
-    "port_hopping",
-    "port-hopping-interval",
-    "port_hopping_interval",
-    "hop-interval",
-    "hop_interval",
-    "hop_interval_max",
-    "bandwidth",
-    "up",
-    "down",
-    "up_mbps",
-    "down_mbps",
-    "reuse",
-    "tfo",
-    "udp_relay",
-    "idle-session-check-interval",
-    "idle-session-timeout",
-    "min-idle-session",
-    "client-metadata",
-    "client_metadata",
-    "underlying-proxy",
-    "chain",
-    "dialer-proxy",
-    "detour",
-    "prev_hop"
-  ]);
-  var CHAIN_ALIASES3 = ["underlying-proxy", "chain", "dialer-proxy", "detour", "prev_hop"];
-  var GENERATED_CHAIN_POLICY2 = "\u{1F517} \u5165\u53E3\u8282\u70B9";
-  var ANYTLS_FIELDS = /* @__PURE__ */ new Set([
-    "name",
-    "type",
-    "server",
-    "port",
-    "password",
-    "tls",
-    "security",
-    "sni",
-    "servername",
-    "skip-cert-verify",
-    "allow-insecure",
-    "client-fingerprint",
-    "alpn",
-    "reality-opts",
-    "network",
-    "udp",
-    "idle-session-check-interval",
-    "idle-session-timeout",
-    "min-idle-session",
-    "client-metadata",
-    "client_metadata",
-    ...CHAIN_ALIASES3
-  ]);
-  var ANYTLS_REALITY_FIELDS = /* @__PURE__ */ new Set(["public-key", "short-id", "_spider-x"]);
-  function hasOwn(value, key) {
-    return Object.hasOwn(value, key);
-  }
-  function requiredString2(node, key) {
-    const value = node[key];
-    if (typeof value !== "string" || value.length === 0 || value.trim() !== value) {
-      throw new Error(`sing-box node field '${key}' is invalid`);
-    }
-    return value;
-  }
-  function requiredPort(node) {
-    const port2 = Number(node.port);
-    if (!Number.isInteger(port2) || port2 < 1 || port2 > 65535) throw new Error("sing-box node port is invalid");
-    return port2;
-  }
-  function validateNodeShape(node) {
-    if (!node || typeof node !== "object" || Array.isArray(node)) throw new TypeError("sing-box node is invalid");
-    if (typeof node.name !== "string" || node.name.length === 0 || /[\r\n]/u.test(node.name)) {
-      throw new Error("sing-box node name is invalid");
-    }
-    requiredString2(node, "server");
-    requiredPort(node);
-    for (const key of Object.keys(node)) {
-      if (key.startsWith("_")) continue;
-      if (!ALLOWED_KEYS2.has(key)) throw new Error(`sing-box node contains unsupported field: ${key}`);
-    }
-  }
-  function validateAnyTlsShape(node) {
-    const unsupported = Object.keys(node).find((key) => !key.startsWith("_") && !ANYTLS_FIELDS.has(key));
-    if (unsupported !== void 0) throw new Error(`Unsupported sing-box AnyTLS field: ${unsupported}`);
-    if (node.network !== void 0 && node.network !== "tcp") throw new Error("Unsupported sing-box AnyTLS network");
-    if (node.tls !== void 0 && node.tls !== true) throw new Error("sing-box AnyTLS requires TLS");
-    if (node.security !== void 0 && !["tls", "reality"].includes(node.security)) {
-      throw new Error(`Unsupported sing-box AnyTLS security: ${String(node.security)}`);
-    }
-    for (const key of ["sni", "servername"]) {
-      if (hasOwn(node, key) && (typeof node[key] !== "string" || node[key].length === 0 || node[key].trim() !== node[key])) {
-        throw new Error(`sing-box AnyTLS field '${key}' is invalid`);
-      }
-    }
-    if (hasOwn(node, "sni") && hasOwn(node, "servername") && node.sni !== node.servername) {
-      throw new Error("Conflicting sing-box AnyTLS server name aliases");
-    }
-    for (const key of ["skip-cert-verify", "allow-insecure"]) {
-      if (hasOwn(node, key) && typeof node[key] !== "boolean") throw new Error(`sing-box AnyTLS field '${key}' is invalid`);
-    }
-    if (hasOwn(node, "skip-cert-verify") && hasOwn(node, "allow-insecure") && node["skip-cert-verify"] !== node["allow-insecure"]) {
-      throw new Error("Conflicting sing-box AnyTLS certificate verification aliases");
-    }
-    if (hasOwn(node, "udp") && typeof node.udp !== "boolean") throw new Error("sing-box AnyTLS field 'udp' is invalid");
-    if (hasOwn(node, "client-fingerprint") && (typeof node["client-fingerprint"] !== "string" || node["client-fingerprint"].length === 0 || node["client-fingerprint"].trim() !== node["client-fingerprint"])) {
-      throw new Error("sing-box AnyTLS field 'client-fingerprint' is invalid");
-    }
-    const reality = node["reality-opts"];
-    if (node.security === "reality" && !reality) throw new Error("sing-box AnyTLS Reality options are required");
-    if (node.security === "tls" && reality) throw new Error("sing-box AnyTLS TLS conflicts with Reality options");
-    if (!reality) return;
-    const unsupportedReality = Object.keys(reality).find((key) => !ANYTLS_REALITY_FIELDS.has(key));
-    if (unsupportedReality !== void 0) throw new Error(`Unsupported sing-box AnyTLS Reality field: ${unsupportedReality}`);
-    if (typeof reality["public-key"] !== "string" || reality["public-key"].length === 0 || reality["public-key"].trim() !== reality["public-key"]) {
-      throw new Error("sing-box AnyTLS Reality public key is invalid");
-    }
-    if (reality["short-id"] !== void 0 && (typeof reality["short-id"] !== "string" || !/^[0-9a-f]+$/iu.test(reality["short-id"]))) {
-      throw new Error("sing-box AnyTLS Reality short ID is invalid");
-    }
-  }
-  function setIf(target, key, value) {
-    if (value !== void 0 && value !== null && value !== "") target[key] = value;
-  }
-  function durationSeconds(node, key) {
-    if (!hasOwn(node, key)) return void 0;
-    const value = node[key];
-    if (Number.isSafeInteger(value) && value >= 0) return `${value}s`;
-    if (typeof value === "string" && value.trim() === value && value.length > 0) return value;
-    throw new Error(`sing-box node field '${key}' is invalid`);
-  }
-  function tlsFields(node, required3 = false) {
-    const reality = node["reality-opts"];
-    const enabled = required3 || node.tls === true || node.security === "tls" || node.security === "reality" || reality !== void 0;
-    if (!enabled) return void 0;
-    const tls = { enabled: true };
-    setIf(tls, "server_name", node.sni ?? node.servername);
-    if (node.alpn !== void 0) {
-      if (!Array.isArray(node.alpn) || node.alpn.length === 0 || node.alpn.some((value) => typeof value !== "string" || !value)) {
-        throw new Error("sing-box TLS ALPN is invalid");
-      }
-      tls.alpn = [...node.alpn];
-    }
-    if (node["skip-cert-verify"] === true || node["allow-insecure"] === true) tls.insecure = true;
-    if (node["client-fingerprint"] !== void 0) {
-      tls.utls = { enabled: true, fingerprint: requiredString2(node, "client-fingerprint") };
-    }
-    if (reality !== void 0) {
-      if (!reality || typeof reality !== "object" || typeof reality["public-key"] !== "string") {
-        throw new Error("sing-box Reality options are invalid");
-      }
-      tls.reality = { enabled: true, public_key: reality["public-key"] };
-      setIf(tls.reality, "short_id", reality["short-id"]);
-    }
-    return tls;
-  }
-  function transportFields(node) {
-    const network = String(node.network ?? "tcp").trim().toLowerCase();
-    if (["tcp", "raw"].includes(network)) return void 0;
-    if (network === "ws") {
-      const source2 = node["ws-opts"];
-      if (!source2 || typeof source2 !== "object" || Array.isArray(source2)) throw new Error("sing-box WebSocket options are invalid");
-      const transport2 = { type: "ws", path: Array.isArray(source2.path) ? source2.path[0] : source2.path ?? "/" };
-      if (source2.headers !== void 0) transport2.headers = { ...source2.headers };
-      return transport2;
-    }
-    if (network === "grpc") {
-      const source2 = node["grpc-opts"] ?? {};
-      const transport2 = { type: "grpc" };
-      setIf(transport2, "service_name", source2["grpc-service-name"] ?? source2.service_name);
-      return transport2;
-    }
-    if (["h2", "http2", "http"].includes(network)) {
-      const source2 = node["h2-opts"] ?? node["http-opts"] ?? {};
-      const transport2 = { type: "http" };
-      setIf(transport2, "method", source2.method);
-      setIf(transport2, "path", Array.isArray(source2.path) ? source2.path[0] : source2.path);
-      if (source2.headers !== void 0) transport2.headers = { ...source2.headers };
-      if (source2.host !== void 0) transport2.host = Array.isArray(source2.host) ? source2.host : [source2.host];
-      return transport2;
-    }
-    if (network === "httpupgrade") {
-      const source2 = node["httpupgrade-opts"] ?? {};
-      const transport2 = { type: "httpupgrade", path: source2.path ?? "/" };
-      setIf(transport2, "host", source2.host);
-      return transport2;
-    }
-    throw new Error(`Unsupported sing-box transport: ${network}`);
-  }
-  function packetEncoding(node, outbound) {
-    const raw = node["packet-encoding"] ?? node.packetEncoding ?? (node.xudp === true ? "xudp" : node["packet-addr"] === true ? "packetaddr" : void 0);
-    if (raw === void 0 || raw === "") return;
-    const encoding = String(raw).trim().toLowerCase();
-    if (!["xudp", "packetaddr", "packet"].includes(encoding)) throw new Error(`Unsupported sing-box packet encoding: ${encoding}`);
-    outbound.packet_encoding = encoding === "packet" ? "packetaddr" : encoding;
-  }
-  function base(node, type) {
-    return { type, tag: node.name, server: node.server, server_port: requiredPort(node) };
-  }
-  function appendChain(outbound, node) {
-    const aliases = CHAIN_ALIASES3.filter((key) => hasOwn(node, key) && node[key] !== void 0 && node[key] !== null && node[key] !== "");
-    if (aliases.length === 0) return outbound;
-    if (aliases.length !== 1 || aliases[0] !== "underlying-proxy" || node["underlying-proxy"] !== GENERATED_CHAIN_POLICY2 || node?._profile?.chained !== true) {
-      throw new Error("Unsupported existing sing-box proxy chain");
-    }
-    outbound.detour = GENERATED_CHAIN_POLICY2;
-    return outbound;
-  }
-  function renderWireGuardEndpoint(node) {
-    validateNodeShape(node);
-    const peers = Array.isArray(node.peers) && node.peers.length > 0 ? node.peers : [{}];
-    const localAddress = node["local-address"] ?? node.local_ipv4 ?? node["local-ipv4"] ?? node.ip;
-    if (localAddress === void 0) throw new Error("sing-box WireGuard local address is required");
-    const endpointPeers = peers.map((peer) => {
-      const publicKey = peer["public-key"] ?? node["public-key"];
-      if (typeof publicKey !== "string" || !publicKey) throw new Error("sing-box WireGuard peer public key is required");
-      return {
-        address: peer.address ?? node.server,
-        port: Number(peer.port ?? node.port),
-        public_key: publicKey,
-        allowed_ips: peer["allowed-ips"] ?? peer.allowed_ips ?? ["0.0.0.0/0", "::/0"],
-        ...peer["pre-shared-key"] ?? node["pre-shared-key"] ? { pre_shared_key: peer["pre-shared-key"] ?? node["pre-shared-key"] } : {},
-        ...peer["persistent-keepalive"] ?? node.keepalive ? { persistent_keepalive_interval: Number(peer["persistent-keepalive"] ?? node.keepalive) } : {},
-        ...peer.reserved ?? node.reserved ? { reserved: peer.reserved ?? node.reserved } : {}
-      };
-    });
-    return {
-      type: "wireguard",
-      tag: node.name,
-      system: false,
-      mtu: Number(node.mtu ?? 1408),
-      address: Array.isArray(localAddress) ? localAddress : [localAddress],
-      private_key: requiredString2(node, "private-key"),
-      peers: endpointPeers
-    };
-  }
-  function renderSingBoxOutbound(node) {
-    validateNodeShape(node);
-    const protocol2 = normalizeProtocol(node.type);
-    if (protocol2 === "wireguard") throw new Error("WireGuard is rendered as a sing-box endpoint");
-    let outbound;
-    switch (protocol2) {
+  function renderV2rayNNode(node) {
+    switch (protocol2(node)) {
+      case "vless":
+        return renderVless(node);
+      case "vmess":
+        return renderVmess(node);
+      case "trojan":
+        return renderTrojan(node);
       case "ss":
       case "shadowsocks":
-        outbound = { ...base(node, "shadowsocks"), method: requiredString2(node, "cipher"), password: requiredString2(node, "password") };
-        if (["tcp", "udp"].includes(node.network)) outbound.network = node.network;
-        break;
-      case "vmess":
-        outbound = { ...base(node, "vmess"), uuid: requiredString2(node, "uuid"), security: node.security ?? node.cipher ?? "auto" };
-        if (node["alter-id"] !== void 0 || node.alterId !== void 0) outbound.alter_id = Number(node["alter-id"] ?? node.alterId);
-        outbound.tls = tlsFields(node);
-        outbound.transport = transportFields(node);
-        packetEncoding(node, outbound);
-        break;
-      case "snell": {
-        const version = Number(node.version);
-        if (![4, 5, 6].includes(version)) throw new Error("Unsupported sing-box Snell version");
-        const outputVersion = version === 5 ? 4 : version;
-        outbound = { ...base(node, "snell"), psk: requiredString2(node, "psk"), version: outputVersion };
-        if (["tcp", "udp"].includes(node.network)) outbound.network = node.network;
-        if (outputVersion === 4) {
-          setIf(outbound, "reuse", node.reuse);
-          setIf(outbound, "obfs_mode", node.obfs_mode ?? node["obfs-mode"] ?? node.obfs);
-          setIf(outbound, "obfs_host", node["obfs-host"] ?? node.obfs_host);
-        } else {
-          setIf(outbound, "userkey", node.userkey ?? node["user-key"]);
-          setIf(outbound, "reuse", node.reuse);
-          setIf(outbound, "mode", node.mode);
-        }
-        break;
-      }
-      case "vless":
-        if (node.encryption !== void 0 && !["", "none"].includes(node.encryption)) throw new Error("Unsupported sing-box VLESS encryption");
-        outbound = { ...base(node, "vless"), uuid: requiredString2(node, "uuid") };
-        setIf(outbound, "flow", node.flow);
-        if (["tcp", "udp"].includes(node.network)) outbound.network = node.network;
-        outbound.tls = tlsFields(node);
-        outbound.transport = transportFields(node);
-        packetEncoding(node, outbound);
-        break;
-      case "trojan":
-        outbound = { ...base(node, "trojan"), password: requiredString2(node, "password"), tls: tlsFields(node, true) };
-        outbound.transport = transportFields(node);
-        break;
-      case "anytls":
-        validateAnyTlsShape(node);
-        outbound = { ...base(node, "anytls"), password: requiredString2(node, "password"), tls: tlsFields(node, true) };
-        setIf(outbound, "idle_session_check_interval", durationSeconds(node, "idle-session-check-interval"));
-        setIf(outbound, "idle_session_timeout", durationSeconds(node, "idle-session-timeout"));
-        if (node["min-idle-session"] !== void 0) outbound.min_idle_session = Number(node["min-idle-session"]);
-        setIf(outbound, "client_metadata", node["client-metadata"] ?? node.client_metadata);
-        break;
+        return renderShadowsocks(node);
       case "hysteria2":
       case "hy2":
-        outbound = { ...base(node, "hysteria2"), password: requiredString2(node, "password"), tls: tlsFields(node, true) };
-        setIf(outbound, "server_ports", node.server_ports ?? node["server-ports"] ?? node.ports);
-        setIf(outbound, "hop_interval", node.hop_interval ?? node["hop-interval"] ?? node["port-hopping-interval"]);
-        setIf(outbound, "hop_interval_max", node.hop_interval_max);
-        setIf(outbound, "up_mbps", node.up_mbps ?? node.up);
-        setIf(outbound, "down_mbps", node.down_mbps ?? node.down);
-        if (node.obfs !== void 0) {
-          const type = typeof node.obfs === "string" ? node.obfs : node.obfs.type;
-          outbound.obfs = { type };
-          setIf(outbound.obfs, "password", node["obfs-password"] ?? node["obfs_password"] ?? node.obfs.password);
-        }
-        break;
-      case "tuic":
-        outbound = { ...base(node, "tuic"), uuid: requiredString2(node, "uuid"), password: requiredString2(node, "password"), tls: tlsFields(node, true) };
-        setIf(outbound, "udp_relay_mode", node["udp-relay-mode"] ?? node.udp_relay_mode);
-        setIf(outbound, "congestion_control", node["congestion-control"] ?? node.congestion_control);
-        setIf(outbound, "heartbeat", node.heartbeat);
-        break;
-      case "socks5":
-        outbound = base(node, "socks");
-        setIf(outbound, "username", node.username);
-        setIf(outbound, "password", node.password);
-        break;
-      case "http":
-        outbound = base(node, "http");
-        setIf(outbound, "username", node.username);
-        setIf(outbound, "password", node.password);
-        outbound.tls = tlsFields(node);
-        break;
-      case "ssh":
-        outbound = { ...base(node, "ssh"), user: requiredString2(node, "username") };
-        setIf(outbound, "password", node.password);
-        setIf(outbound, "private_key", node["private-key"] ?? node.private_key);
-        break;
+        return renderHysteria2(node);
       default:
-        throw new Error(`Unsupported sing-box protocol: ${protocol2 || "unknown"}`);
+        throw new Error("unsupported-v2rayn-uri-protocol");
     }
-    for (const key of ["tls", "transport"]) if (outbound[key] === void 0) delete outbound[key];
-    return appendChain(outbound, node);
   }
-  function renderSingBoxNode(node) {
-    const protocol2 = normalizeProtocol(node?.type);
-    if (protocol2 === "wireguard") return { endpoint: renderWireGuardEndpoint(node) };
-    return { outbound: renderSingBoxOutbound(node) };
-  }
-
-  // ../../shared/policies/filters.js
-  var ALL_NODES_FILTER = "^.+$";
-  var NON_CHAINED_FILTER = "^(?!\u{1F517} ).+$";
-  var ENTRY_FILTER = "^(?!\u{1F517} )(?!.*\xB7\u94FE).+\uFF5C(?:\u673A\u573A|\u81EA\u5EFA|Realm)(?:\xB7.*)?$";
-  var P2P_FILTER = "^(?!\u{1F517} ).+\uFF5C(?:\u81EA\u5EFA|Realm|\u94FE\u5F0F\u4EE3\u7406)(?:\xB7.*)?$";
-  var GAME_FILTER = "^(?!\u{1F517} ).+\xB7U$";
-  var CONTINENTS = Object.freeze([
-    Object.freeze({
-      key: CONTINENT.asiaPacific,
-      name: "\u{1F30F} \u4E9A\u592A",
-      helperName: "\u4E9A\u592A",
-      flags: CONTINENT_FLAGS[CONTINENT.asiaPacific]
-    }),
-    Object.freeze({
-      key: CONTINENT.europe,
-      name: "\u{1F30D} \u6B27\u6D32",
-      helperName: "\u6B27\u6D32",
-      flags: CONTINENT_FLAGS[CONTINENT.europe]
-    }),
-    Object.freeze({
-      key: CONTINENT.americas,
-      name: "\u{1F30E} \u7F8E\u6D32",
-      helperName: "\u7F8E\u6D32",
-      flags: CONTINENT_FLAGS[CONTINENT.americas]
-    }),
-    Object.freeze({
-      key: CONTINENT.other,
-      name: "\u{1F310} \u5176\u4ED6/\u672A\u5206\u7C7B",
-      helperName: "\u5176\u4ED6/\u672A\u5206\u7C7B",
-      flags: Object.freeze([])
-    })
-  ]);
-  var SOURCE_GROUPS = Object.freeze([
-    Object.freeze({ kind: SOURCE_KIND.selfHosted, name: "\u{1F3E0} \u81EA\u5EFA\u8282\u70B9", filter: "^.+\uFF5C\u81EA\u5EFA(?:\xB7.*)?$" }),
-    Object.freeze({ kind: SOURCE_KIND.airport, name: "\u{1F3E2} \u673A\u573A\u8282\u70B9", filter: "^.+\uFF5C\u673A\u573A(?:\xB7.*)?$" }),
-    Object.freeze({ kind: SOURCE_KIND.realm, name: "\u21AA\uFE0F Realm \u8F6C\u53D1", filter: "^.+\uFF5CRealm(?:\xB7.*)?$" }),
-    Object.freeze({ kind: SOURCE_KIND.serverChain, name: "\u26D3\uFE0F \u94FE\u5F0F\u4EE3\u7406", filter: "^.+\uFF5C\u94FE\u5F0F\u4EE3\u7406(?:\xB7.*)?$" })
-  ]);
-  function continentFilter(continent) {
-    const record2 = CONTINENTS.find((entry) => entry.key === continent.key) ?? continent;
-    if (record2.key === CONTINENT.other) {
-      const knownFlags = CONTINENTS.flatMap((record3) => record3.flags).join("|");
-      return `^(?!(?:\u{1F517}|${knownFlags})).+$`;
-    }
-    return `^(?:${record2.flags.join("|")}).+$`;
-  }
-
-  // ../../shared/policies/catalog.js
-  var TEST_URL = "http://www.gstatic.com/generate_204";
-  var STRATEGY = Object.freeze({
-    select: "select",
-    autoTest: "auto-test",
-    fallback: "fallback"
-  });
-  var GROUP_KIND = Object.freeze({
-    helper: "helper",
-    primary: "primary",
-    continent: "continent",
-    source: "source",
-    ai: "ai",
-    service: "service",
-    special: "special",
-    security: "security",
-    chain: "chain"
-  });
-  var PROXY_THEN_DIRECT = Object.freeze(["\u{1F680} \u8282\u70B9\u9009\u62E9", "DIRECT"]);
-  var PROXY_FIRST_SERVICE_DEFAULTS = Object.freeze({
-    beforeCandidates: Object.freeze(["\u{1F680} \u8282\u70B9\u9009\u62E9"]),
-    afterCandidates: Object.freeze(["DIRECT"]),
-    defaultChoice: "\u{1F680} \u8282\u70B9\u9009\u62E9"
-  });
-  var DIRECT_FIRST_SERVICE_DEFAULTS = Object.freeze({
-    beforeCandidates: Object.freeze(["DIRECT", "\u{1F680} \u8282\u70B9\u9009\u62E9"]),
-    afterCandidates: Object.freeze([]),
-    defaultChoice: "DIRECT"
-  });
-  var SERVICE_GROUPS = Object.freeze([
-    Object.freeze(["\u{1F419} GitHub", PROXY_FIRST_SERVICE_DEFAULTS]),
-    Object.freeze(["\u{1F4FA} YouTube", PROXY_FIRST_SERVICE_DEFAULTS]),
-    Object.freeze(["\u{1F3AC} \u6D77\u5916\u6D41\u5A92\u4F53", PROXY_FIRST_SERVICE_DEFAULTS]),
-    Object.freeze(["\u{1F4AC} \u6D77\u5916\u793E\u4EA4", PROXY_FIRST_SERVICE_DEFAULTS]),
-    Object.freeze(["\u{1F34E} Apple", DIRECT_FIRST_SERVICE_DEFAULTS]),
-    Object.freeze(["\u{1FA9F} Microsoft", DIRECT_FIRST_SERVICE_DEFAULTS]),
-    Object.freeze(["\u{1F1E8}\u{1F1F3} \u56FD\u5185\u5E73\u53F0", DIRECT_FIRST_SERVICE_DEFAULTS]),
-    Object.freeze(["\u{1F30D} \u6D77\u5916\u6E38\u620F", PROXY_FIRST_SERVICE_DEFAULTS])
-  ]);
-  var LEAK_GROUP_NAME = "\u6F0F\u7F51\u4E4B\u9C7C";
-  function policyGroup({
-    kind,
-    name,
-    strategy = STRATEGY.select,
-    candidates = [],
-    nodeFilter = null,
-    test = null,
-    hidden,
-    defaultChoice
-  }) {
-    return { kind, name, strategy, candidates, nodeFilter, test, hidden, defaultChoice };
-  }
-  function helper(kind, name, strategy, preset, nodeFilter, candidates = []) {
-    return policyGroup({
-      kind,
-      name,
-      strategy,
-      candidates,
-      nodeFilter,
-      test: {
-        url: TEST_URL,
-        interval: preset.testInterval,
-        timeout: preset.timeout,
-        tolerance: preset.tolerance
-      },
-      hidden: true
+  function renderV2rayNSubscription({ nodes }) {
+    if (!Array.isArray(nodes) || nodes.length === 0) throw new Error("v2rayN subscription cannot be empty");
+    const names = /* @__PURE__ */ new Set();
+    const links = nodes.map((node) => {
+      if (names.has(node.name)) throw new Error("v2rayN subscription contains duplicate node names");
+      names.add(node.name);
+      return renderV2rayNNode(node);
     });
-  }
-  function subscriptionGroup(kind, name, nodeFilter, candidates = ["DIRECT"], options = {}) {
-    return policyGroup({ kind, name, candidates, nodeFilter, ...options });
-  }
-  function automaticHelperName(continent) {
-    return `\u26A1 ${continent.helperName}\u81EA\u52A8`;
-  }
-  function continentHelperItems(continent, mode) {
-    void mode;
-    return [automaticHelperName(continent)];
-  }
-  function serviceChoiceItems(defaults, presentContinentNames) {
-    return [
-      ...defaults.beforeCandidates,
-      "\u26A1 \u5168\u90E8\u81EA\u52A8",
-      ...presentContinentNames,
-      ...defaults.afterCandidates
-    ];
-  }
-  function securityGroups(blockMode) {
-    const defaults = {
-      off: ["DIRECT", "DIRECT", "DIRECT"],
-      security: ["REJECT", "DIRECT", "DIRECT"],
-      balanced: ["REJECT", "REJECT", "DIRECT"],
-      strict: ["REJECT", "REJECT", "REJECT"]
-    }[blockMode] ?? ["REJECT", "REJECT", "DIRECT"];
-    return ["\u2623\uFE0F \u5B89\u5168\u5A01\u80C1", "\u{1F9F1} \u5E38\u89C1\u5E7F\u544A", "\u{1F575}\uFE0F \u4E25\u683C\u8DDF\u8E2A"].map((name, index) => {
-      const primary = defaults[index];
-      return policyGroup({
-        kind: GROUP_KIND.security,
-        name,
-        candidates: [primary, primary === "REJECT" ? "DIRECT" : "REJECT"]
-      });
-    });
-  }
-  function effectiveAutoMode(requested, nodeCount) {
-    if (requested !== "auto") return requested;
-    if (nodeCount <= 30) return "full";
-    if (nodeCount <= 100) return "balanced";
-    return "minimal";
-  }
-  function applyUnifiedPolicyDefaults(groups, resolution) {
-    if (!resolution || typeof resolution !== "object") return groups;
-    const byLabel = /* @__PURE__ */ new Map();
-    const targetDefaults = {
-      "\u{1F916} AI \u4E13\u7528": resolution.targets?.ai,
-      "\u{1F419} GitHub": resolution.targets?.github,
-      "\u{1F4FA} YouTube": resolution.targets?.youtube,
-      "\u{1F3AC} \u6D77\u5916\u6D41\u5A92\u4F53": resolution.targets?.overseasMedia,
-      "\u{1F4AC} \u6D77\u5916\u793E\u4EA4": resolution.targets?.globalSocial,
-      "\u{1F34E} Apple": resolution.targets?.apple,
-      "\u{1FA9F} Microsoft": resolution.targets?.microsoft,
-      "\u{1F1E8}\u{1F1F3} \u56FD\u5185\u5E73\u53F0": resolution.targets?.domesticPlatform,
-      "\u{1F30D} \u6D77\u5916\u6E38\u620F": resolution.targets?.overseasGame,
-      "\u{1F3AE} \u6E38\u620F\u8FDE\u63A5": resolution.targets?.game,
-      "\u2B07\uFE0F \u4E0B\u8F7D/P2P": resolution.targets?.download,
-      "\u{1F9ED} DNS \u4E0E\u89C4\u5219\u4E0B\u8F7D": resolution.targets?.dnsAndRules,
-      [LEAK_GROUP_NAME]: resolution.targets?.final
-    };
-    for (const [name, record2] of Object.entries(targetDefaults)) {
-      if (!record2) continue;
-      const value = record2.resolved === "DIRECT" ? "DIRECT" : record2.resolved === "FOLLOW" ? "\u{1F680} \u8282\u70B9\u9009\u62E9" : record2.resolved;
-      byLabel.set(name, value);
-    }
-    return groups.map((group) => {
-      const defaultChoice = byLabel.get(group.name);
-      if (defaultChoice === void 0) return group;
-      return { ...group, defaultChoice };
-    });
-  }
-  function buildPolicyGroups(options, nodes, policyResolution = null) {
-    const normalizedNodes = Array.isArray(nodes) ? nodes : [];
-    const preset = platformPolicyPreset(options.platform);
-    const mode = effectiveAutoMode(options.autoGroupMode, normalizedNodes.length);
-    const presentContinents = CONTINENTS.filter((continent) => normalizedNodes.some((node) => nodeMetadata(node).continent === continent.key && !nodeMetadata(node).chained));
-    const chainEligible = options.clientChain === "on" && normalizedNodes.some((node) => nodeMetadata(node).entry === true && !nodeMetadata(node).chained) && normalizedNodes.some((node) => nodeMetadata(node).chained === true);
-    const helpers = [
-      helper(GROUP_KIND.helper, "\u26A1 \u5168\u90E8\u81EA\u52A8", STRATEGY.autoTest, preset, NON_CHAINED_FILTER)
-    ];
-    if (chainEligible) {
-      helpers.push(helper(GROUP_KIND.chain, "\u26A1 \u5165\u53E3\u81EA\u52A8", STRATEGY.autoTest, preset, ENTRY_FILTER));
-    }
-    for (const continent of presentContinents) {
-      helpers.push(helper(
-        GROUP_KIND.helper,
-        automaticHelperName(continent),
-        STRATEGY.autoTest,
-        preset,
-        continentFilter(continent)
-      ));
-    }
-    const groups = [];
-    groups.push(policyGroup({
-      kind: GROUP_KIND.primary,
-      name: "\u{1F680} \u8282\u70B9\u9009\u62E9",
-      candidates: [
-        "\u26A1 \u5168\u90E8\u81EA\u52A8",
-        ...presentContinents.map((continent) => continent.name)
-      ]
-    }));
-    for (const continent of presentContinents) {
-      groups.push(policyGroup({
-        kind: GROUP_KIND.continent,
-        name: continent.name,
-        candidates: continentHelperItems(continent, mode),
-        nodeFilter: continentFilter(continent)
-      }));
-    }
-    if (chainEligible) {
-      groups.push(subscriptionGroup(GROUP_KIND.chain, "\u{1F3AF} \u5BA2\u6237\u7AEF\u843D\u5730", "^\u{1F517} .+$"));
-    }
-    groups.push(subscriptionGroup(
-      GROUP_KIND.ai,
-      "\u{1F916} AI \u4E13\u7528",
-      ALL_NODES_FILTER,
-      []
-    ));
-    const presentContinentNames = presentContinents.map((continent) => continent.name);
-    for (const [name, defaults] of SERVICE_GROUPS) {
-      groups.push(subscriptionGroup(
-        GROUP_KIND.service,
-        name,
-        ALL_NODES_FILTER,
-        serviceChoiceItems(defaults, presentContinentNames),
-        { defaultChoice: defaults.defaultChoice }
-      ));
-    }
-    if (normalizedNodes.some((node) => nodeMetadata(node).udp === true && !nodeMetadata(node).chained)) {
-      groups.push(subscriptionGroup(GROUP_KIND.special, "\u{1F3AE} \u6E38\u620F\u8FDE\u63A5", GAME_FILTER));
-    } else {
-      groups.push(policyGroup({ kind: GROUP_KIND.special, name: "\u{1F3AE} \u6E38\u620F\u8FDE\u63A5", candidates: ["DIRECT"] }));
-    }
-    if (normalizedNodes.some((node) => nodeMetadata(node).p2p === true && !nodeMetadata(node).chained)) {
-      groups.push(subscriptionGroup(GROUP_KIND.special, "\u2B07\uFE0F \u4E0B\u8F7D/P2P", P2P_FILTER));
-    } else {
-      groups.push(policyGroup({ kind: GROUP_KIND.special, name: "\u2B07\uFE0F \u4E0B\u8F7D/P2P", candidates: ["DIRECT"] }));
-    }
-    groups.push(policyGroup({
-      kind: GROUP_KIND.special,
-      name: "\u{1F9ED} DNS \u4E0E\u89C4\u5219\u4E0B\u8F7D",
-      candidates: [...PROXY_THEN_DIRECT]
-    }));
-    groups.push(subscriptionGroup(
-      GROUP_KIND.special,
-      LEAK_GROUP_NAME,
-      ALL_NODES_FILTER,
-      ["\u{1F680} \u8282\u70B9\u9009\u62E9", "DIRECT", "REJECT"]
-    ));
-    groups.push(...securityGroups(options.blockMode));
-    if (chainEligible) {
-      groups.push(subscriptionGroup(GROUP_KIND.chain, "\u{1F517} \u5165\u53E3\u8282\u70B9", ENTRY_FILTER, ["\u26A1 \u5165\u53E3\u81EA\u52A8"]));
-    }
-    const result = [...groups, ...helpers];
-    return applyUnifiedPolicyDefaults(result, policyResolution);
+    return `${standardBase64(links.join("\n"))}
+`;
   }
 
-  // ../../shared/policies/intents.js
-  var POLICY_TARGET = Object.freeze({
-    primaryProxy: "primary-proxy"
-  });
-
-  // ../sing-box/src/render-groups.js
-  var RULE_DOWNLOAD_GROUP = "\u{1F9ED} DNS \u4E0E\u89C4\u5219\u4E0B\u8F7D";
-  var RULE_DOWNLOAD_FAILOVER_GROUP = "\u{1F9ED} \u89C4\u5219\u4E0B\u8F7D\u6545\u969C\u8F6C\u79FB";
-  var PRIMARY_GROUP = "\u{1F680} \u8282\u70B9\u9009\u62E9";
-  var AUTO_GROUP = "\u26A1 \u5168\u90E8\u81EA\u52A8";
-  var FALLBACK_GROUP_PATTERN = /故障转移/u;
-  var MOBILE_MEMORY_PLATFORMS = /* @__PURE__ */ new Set(["iphone", "ipad", "android"]);
-  var IOS_MEMORY_PLATFORMS = /* @__PURE__ */ new Set(["iphone", "ipad"]);
-  var TEST_URL2 = "https://www.gstatic.com/generate_204";
-  function isMobileMemoryConstrained(options) {
-    return MOBILE_MEMORY_PLATFORMS.has(options.platform);
-  }
-  function isIosMemoryConstrained(options) {
-    return IOS_MEMORY_PLATFORMS.has(options.platform);
-  }
-  function isDisabledFallback(name) {
-    return typeof name === "string" && FALLBACK_GROUP_PATTERN.test(name);
-  }
-  function targetName(value) {
-    if (value === POLICY_TARGET.primaryProxy) return AUTO_GROUP;
-    return value;
-  }
-  function filterNodes(filter, nodes) {
-    if (filter === null) return [];
-    let pattern;
-    try {
-      pattern = new RegExp(filter, "u");
-    } catch {
-      throw new Error("Invalid sing-box policy filter");
-    }
-    return nodes.filter((node) => pattern.test(node.name)).map((node) => node.name);
-  }
-  function candidateList(group, nodes, { compact = false, ios = false } = {}) {
-    const candidates = [
-      ...group.candidates.filter((candidate) => !isDisabledFallback(candidate)).map(targetName),
-      ...filterNodes(group.nodeFilter, nodes)
-    ];
-    return candidates.filter((item, index, all) => all.indexOf(item) === index);
-  }
-  function renderRuleDownloadGroups(inventory, ruleProbeUrl, defaultChoice) {
-    const nodeCandidates = filterNodes(NON_CHAINED_FILTER, inventory);
-    const failover = {
-      type: "urltest",
-      tag: RULE_DOWNLOAD_FAILOVER_GROUP,
-      outbounds: [...nodeCandidates, "DIRECT"],
-      url: ruleProbeUrl,
-      interval: "30s",
-      tolerance: 0,
-      interrupt_exist_connections: true
-    };
-    const selectedDefault = defaultChoice && defaultChoice !== PRIMARY_GROUP ? defaultChoice : RULE_DOWNLOAD_FAILOVER_GROUP;
-    const candidates = [
-      RULE_DOWNLOAD_FAILOVER_GROUP,
-      PRIMARY_GROUP,
-      "DIRECT",
-      ...selectedDefault === RULE_DOWNLOAD_FAILOVER_GROUP || [PRIMARY_GROUP, "DIRECT"].includes(selectedDefault) ? [] : [selectedDefault]
-    ].filter((item, index, all) => all.indexOf(item) === index);
-    const selector = {
-      type: "selector",
-      tag: RULE_DOWNLOAD_GROUP,
-      outbounds: candidates,
-      default: selectedDefault,
-      interrupt_exist_connections: true
-    };
-    return [selector, failover];
-  }
-  function renderGroup(group, nodes, { compact = false, ios = false, ruleProbeUrl } = {}) {
-    if (group.name === RULE_DOWNLOAD_GROUP) {
-      return renderRuleDownloadGroups(nodes, ruleProbeUrl, group.defaultChoice);
-    }
-    let candidates = candidateList(group, nodes, { compact, ios });
-    if (group.kind === "ai" && candidates[0] !== AUTO_GROUP) candidates.unshift(AUTO_GROUP);
-    if (group.defaultChoice !== void 0 && !isDisabledFallback(group.defaultChoice)) {
-      const defaultChoice = targetName(group.defaultChoice);
-      if (!candidates.includes(defaultChoice)) candidates.unshift(defaultChoice);
-      else candidates = [defaultChoice, ...candidates.filter((candidate) => candidate !== defaultChoice)];
-    }
-    const outbounds = candidates.length > 0 ? candidates : ["DIRECT"];
-    if (group.name === PRIMARY_GROUP) {
-      const primary = outbounds.filter((candidate) => candidate !== "DIRECT");
-      return {
-        type: "selector",
-        tag: group.name,
-        outbounds: primary.length > 0 ? primary : ["DIRECT"],
-        default: primary[0] ?? "DIRECT",
-        interrupt_exist_connections: true
-      };
-    }
-    if (group.strategy === "auto-test") {
-      return {
-        type: "urltest",
-        tag: group.name,
-        outbounds,
-        url: TEST_URL2,
-        interval: `${Number(group.test?.interval ?? 600)}s`,
-        tolerance: group.test?.tolerance ?? 100,
-        interrupt_exist_connections: true
-      };
-    }
-    const selector = {
-      type: "selector",
-      tag: group.name,
-      outbounds,
-      interrupt_exist_connections: true
-    };
-    if (group.defaultChoice !== void 0 && !isDisabledFallback(group.defaultChoice)) {
-      selector.default = targetName(group.defaultChoice);
-    }
-    return selector;
-  }
-  function renderSingBoxGroups(options, nodes, { policyResolution = null, ruleProbeUrl = "https://www.gstatic.com/generate_204" } = {}) {
-    const inventory = Array.isArray(nodes) ? nodes : [];
-    const compact = isMobileMemoryConstrained(options);
-    const shared = buildPolicyGroups(options, inventory, policyResolution);
-    const rendered = [];
-    for (const group of shared) {
-      if (group.strategy === "fallback") continue;
-      const groupOutbounds = renderGroup(group, inventory, {
-        compact,
-        ios: isIosMemoryConstrained(options),
-        ruleProbeUrl
-      });
-      rendered.push(...Array.isArray(groupOutbounds) ? groupOutbounds : [groupOutbounds]);
-    }
-    return rendered;
-  }
-
-  // ../../shared/rules/critical-domestic.js
-  var CRITICAL_DOMESTIC_DOMAIN_SUFFIXES = Object.freeze([
-    "baidupcs.com",
-    "baidupcs.net",
-    "baiduyun.com",
-    "baiduyuncdn.com",
-    "baidubce.com",
-    "bcebos.com",
-    "bdstatic.com"
-  ]);
-  var CRITICAL_DOMESTIC_RULES = Object.freeze(
-    CRITICAL_DOMESTIC_DOMAIN_SUFFIXES.map((suffix) => `DOMAIN-SUFFIX,${suffix}`)
-  );
-
-  // ../../shared/rules/custom-rules.js
-  var CUSTOM_RULE_PRECEDENCE_INDEX = ROUTING_PRECEDENCE.indexOf("custom");
-  if (CUSTOM_RULE_PRECEDENCE_INDEX < 0 || CUSTOM_RULE_PRECEDENCE_INDEX > ROUTING_PRECEDENCE.indexOf("domesticCore")) {
-    throw new Error("Custom rules must precede generated lightweight rules");
-  }
-  var CUSTOM_RULES = Object.freeze({
-    block: Object.freeze([]),
-    direct: CRITICAL_DOMESTIC_RULES,
-    proxy: Object.freeze([]),
-    ai: Object.freeze([
-      "DOMAIN-SUFFIX,perplexity.ai",
-      "DOMAIN-SUFFIX,pplx.ai",
-      "DOMAIN-SUFFIX,x.ai",
-      "DOMAIN-SUFFIX,grok.com",
-      "DOMAIN-SUFFIX,poe.com",
-      "DOMAIN-SUFFIX,poecdn.net"
-    ])
-  });
-
-  // ../../shared/rules/overseas-dns.js
-  var PROXY_DNS_DOMAIN_SUFFIXES = Object.freeze([
-    "google.com",
-    "googleapis.com",
-    "googleusercontent.com",
-    "gstatic.com",
-    "ggpht.com",
-    "gvt1.com",
-    "googlevideo.com",
-    "youtube.com",
-    "youtube-nocookie.com",
-    "youtu.be",
-    "ytimg.com"
-  ]);
-
-  // ../../shared/dns/providers.js
-  var CHINA_DNS_PROVIDERS = Object.freeze({
-    alidns: Object.freeze({
-      address: "223.5.5.5",
-      doh: "https://dns.alidns.com/dns-query"
-    }),
-    dnspod: Object.freeze({
-      address: "119.29.29.29",
-      doh: "https://doh.pub/dns-query"
-    }),
-    system: Object.freeze({
-      address: "local",
-      doh: "system"
-    })
-  });
-  var GLOBAL_DNS_PROVIDERS = Object.freeze({
-    cloudflare: Object.freeze({
-      address: "1.1.1.1",
-      serverName: "cloudflare-dns.com",
-      doh: "https://cloudflare-dns.com/dns-query"
-    }),
-    google: Object.freeze({
-      address: "8.8.8.8",
-      serverName: "dns.google",
-      doh: "https://dns.google/dns-query"
-    }),
-    quad9: Object.freeze({
-      address: "9.9.9.9",
-      serverName: "dns.quad9.net",
-      doh: "https://dns.quad9.net/dns-query"
-    })
-  });
-  function provider(providers, id, label2) {
-    const value = providers[id];
-    if (!value) throw new Error(`Unsupported ${label2} DNS provider`);
-    return value;
-  }
-  function chinaDnsProvider(id) {
-    return provider(CHINA_DNS_PROVIDERS, id, "China");
-  }
-  function globalDnsProvider(id) {
-    return provider(GLOBAL_DNS_PROVIDERS, id, "global");
-  }
-
-  // ../sing-box/src/render-rules.js
-  var RULE_DOWNLOAD_HTTP_CLIENT = "\u{1F9ED} \u89C4\u5219\u4E0B\u8F7D HTTP";
-  var MOBILE_RULE_SOURCE_ID_SET = new Set(MOBILE_RULE_SOURCE_IDS);
-  function activeRuleCatalog(platform, adblockMode) {
-    const catalog = ruleClientCatalog({ adblockMode });
-    return usesMobileRuleBundles(platform) ? mobileRuleClientCatalog().filter(({ id }) => MOBILE_RULE_SOURCE_ID_SET.has(id)) : catalog;
-  }
-  function activeRoutingPlan(platform, adblockMode) {
-    const activeIds2 = new Set(activeRuleCatalog(platform, adblockMode).map(({ id }) => id));
-    if (usesMobileRuleBundles(platform)) return mobileRuleClientCatalog();
-    return orderedRoutingPlan({ adblockMode }).filter(({ id }) => activeIds2.has(id));
-  }
-  var LOCAL_RULES = Object.freeze([
-    { ip_is_private: true, action: "route", outbound: "DIRECT" },
-    { domain_suffix: ["local", "lan", "home.arpa"], action: "route", outbound: "DIRECT" }
-  ]);
-  var QUIC_BLOCK_RULE = Object.freeze({ network: "udp", port: 443, action: "reject", method: "drop" });
-  var OVERSEAS_DNS_FALLBACK_RULE = Object.freeze({
-    domain_suffix: PROXY_DNS_DOMAIN_SUFFIXES,
-    action: "route",
-    outbound: "\u{1F680} \u8282\u70B9\u9009\u62E9"
-  });
-  var CUSTOM_TARGETS = Object.freeze({
-    block: "REJECT",
-    direct: "DIRECT",
-    proxy: "\u{1F680} \u8282\u70B9\u9009\u62E9",
-    ai: "\u{1F916} AI \u4E13\u7528"
-  });
-  var CUSTOM_FIELDS = Object.freeze({
-    DOMAIN: "domain",
-    "DOMAIN-SUFFIX": "domain_suffix",
-    "DOMAIN-KEYWORD": "domain_keyword",
-    "IP-CIDR": "ip_cidr",
-    "IP-CIDR6": "ip_cidr"
-  });
-  function baseUrl(value) {
-    if (typeof value !== "string" || !/^https:\/\/[^\s]+$/u.test(value) || /[\r\n]/u.test(value)) {
-      throw new Error("sing-box rule base URL must be an HTTPS URL");
-    }
-    return value.replace(/\/+$/u, "");
-  }
-  function route(outbound) {
-    return { action: "route", outbound };
-  }
-  function reject() {
-    return { action: "reject", method: "default" };
-  }
-  function dnsAddressCidr(address) {
-    if (typeof address !== "string" || address === "local") return null;
-    return address.includes(":") ? `${address}/128` : `${address}/32`;
-  }
-  function renderDnsBootstrapRules({ chinaDns = "alidns", globalDns = "cloudflare", dnsMode = "stable" } = {}) {
-    const addresses = [chinaDnsProvider(chinaDns).address];
-    if (dnsMode === "speed") addresses.push(globalDnsProvider(globalDns).address);
-    return [...new Set(addresses.map(dnsAddressCidr).filter(Boolean))].map((address) => ({ ip_cidr: [address], action: "route", outbound: "DIRECT" }));
-  }
-  function optionalAdblockBase(defaultBase) {
-    const optional = defaultBase.replace(/\/sing-box\/rule-sets$/u, "/optional/adblock-full/sing-box");
-    if (optional === defaultBase) throw new Error("sing-box adblock rule base URL must end in /sing-box/rule-sets");
-    return optional;
-  }
-  function mobileRuleBase(defaultBase) {
-    if (!defaultBase.endsWith("/rule-sets")) throw new Error("sing-box mobile rule base URL must end in /rule-sets");
-    return `${defaultBase.slice(0, -"/rule-sets".length)}/mobile-rule-sets`;
-  }
-  function customRuleFields(entry) {
-    const [type, value, ...modifiers] = entry.split(",");
-    const field = CUSTOM_FIELDS[type];
-    if (!field || !value || modifiers.some((modifier) => modifier !== "no-resolve")) {
-      throw new Error(`Invalid sing-box custom rule: ${entry}`);
-    }
-    return { [field]: [value] };
-  }
-  function renderCustomRules(quicMode) {
-    const grouped = /* @__PURE__ */ new Map();
-    for (const [kind, entries] of Object.entries(CUSTOM_RULES)) {
-      for (const entry of entries) {
-        const fields = customRuleFields(entry);
-        const [field] = Object.keys(fields);
-        const key = `${kind}:${field}`;
-        const values = grouped.get(key) ?? { kind, field, values: [] };
-        values.values.push(...fields[field]);
-        grouped.set(key, values);
-      }
-    }
-    const rendered = [];
-    for (const { kind, field, values } of grouped.values()) {
-      const fields = { [field]: [...new Set(values)] };
-      if (quicMode === "proxy-block" && ["proxy", "ai"].includes(kind) && field !== "ip_cidr") {
-        rendered.push({ ...fields, ...QUIC_BLOCK_RULE });
-      }
-      rendered.push({ ...fields, ...kind === "block" ? reject() : route(CUSTOM_TARGETS[kind]) });
-    }
-    return rendered;
-  }
-  function taggedRule(source2) {
-    if (source2.policy === "REJECT") return { rule_set: [`rule-${source2.id}`], ...reject() };
-    return { rule_set: [`rule-${source2.id}`], ...route(source2.policy) };
-  }
-  function renderSingBoxRuleSets({ ruleBaseUrl, profileMode = "light", adblockMode = "off", platform }) {
-    const base2 = baseUrl(ruleBaseUrl);
-    if (profileMode === "diagnostic") return [];
-    if (profileMode !== "light") throw new Error("Unsupported sing-box profile mode");
-    const sources = activeRuleCatalog(platform, adblockMode);
-    const sourceBase = usesMobileRuleBundles(platform) ? mobileRuleBase(base2) : base2;
-    const adblockBase = adblockMode === "full" ? optionalAdblockBase(base2) : null;
-    return sources.map((source2) => ({
-      type: "remote",
-      tag: `rule-${source2.id}`,
-      format: "binary",
-      url: `${source2.id === "Advertising" || source2.id === "Advertising_Domain" ? adblockBase : sourceBase}/${source2.id}.srs`,
-      http_client: RULE_DOWNLOAD_HTTP_CLIENT,
-      update_interval: "24h"
-    }));
-  }
-  function renderSingBoxRouteRules({
-    ruleBaseUrl,
-    profileMode = "light",
-    adblockMode = "off",
-    blockMode = "balanced",
-    quicMode = "allow",
-    platform,
-    chinaDns = "alidns",
-    globalDns = "cloudflare",
-    dnsMode = "stable"
-  }) {
-    if (!["allow", "proxy-block", "all-block"].includes(quicMode)) {
-      throw new Error(`Unsupported sing-box quicMode: ${quicMode}`);
-    }
-    const ruleSets = renderSingBoxRuleSets({ ruleBaseUrl, profileMode, adblockMode, platform });
-    const rules = [
-      { inbound: "tun-in", action: "sniff" },
-      { protocol: "dns", action: "hijack-dns" },
-      ...LOCAL_RULES,
-      ...renderDnsBootstrapRules({ chinaDns, globalDns, dnsMode })
-    ];
-    if (quicMode === "all-block") rules.push({ ...QUIC_BLOCK_RULE });
-    if (profileMode === "diagnostic") {
-      rules.push(...renderCustomRules(quicMode));
-      return { ruleSets, rules, final: LEAK_GROUP_NAME };
-    }
-    const plan = activeRoutingPlan(platform, adblockMode);
-    const securityIds = new Set({
-      off: [],
-      security: ["Hijacking", "BlockHttpDNS"],
-      balanced: ["Hijacking", "BlockHttpDNS", "Privacy", "Advertising", "Advertising_Domain"],
-      strict: ["Hijacking", "BlockHttpDNS", "Privacy", "Advertising", "Advertising_Domain"]
-    }[blockMode] ?? []);
-    if (usesMobileRuleBundles(platform)) {
-      securityIds.clear();
-      if (blockMode === "security") securityIds.add("Security");
-      if (["balanced", "strict"].includes(blockMode)) {
-        securityIds.add("Security");
-        securityIds.add("Privacy");
-      }
-    }
-    rules.push(...plan.filter(({ phase, id }) => phase === "security" && securityIds.has(id)).map(taggedRule));
-    rules.push(...renderCustomRules(quicMode));
-    if (quicMode === "proxy-block") {
-      const proxyRuleSets = plan.filter(({ dnsClass }) => dnsClass === "proxy").map(({ id }) => `rule-${id}`);
-      if (proxyRuleSets.length > 0) rules.push({ network: "udp", port: 443, rule_set: proxyRuleSets, ...reject() });
-    }
-    for (const phase of ROUTING_PHASES.filter((value) => value !== "security" && value !== "resolvedChinaIp")) {
-      for (const source2 of plan.filter((candidate) => candidate.phase === phase)) {
-        rules.push(taggedRule(source2));
-      }
-      if (phase === "serviceIntent") {
-        if (quicMode === "proxy-block") rules.push({ ...OVERSEAS_DNS_FALLBACK_RULE, ...QUIC_BLOCK_RULE });
-        rules.push({ ...OVERSEAS_DNS_FALLBACK_RULE });
-        if (usesMobileRuleBundles(platform)) {
-          rules.push({ domain_suffix: ["cn"], action: "route", outbound: "DIRECT" });
-        }
-      }
-    }
-    rules.push({ action: "resolve", strategy: "prefer_ipv4" });
-    rules.push(...plan.filter(({ phase }) => phase === "resolvedChinaIp").map(taggedRule));
-    if (quicMode === "proxy-block") rules.push({ ...QUIC_BLOCK_RULE });
-    return { ruleSets, rules, final: LEAK_GROUP_NAME };
-  }
-
-  // ../sing-box/src/render-dns.js
-  var DNS_DIRECT = "dns-direct";
-  var DNS_PROXY = "dns-proxy";
-  var LOCAL_DNS_SUFFIXES = Object.freeze(["local", "lan", "home.arpa"]);
-  var PROXY_DNS_SOURCE_IDS = Object.freeze(
-    orderedRoutingPlan().filter(({ dnsClass }) => dnsClass === "proxy").map(({ id }) => id)
-  );
-  var CHINA_DNS_SOURCE_IDS = Object.freeze(
-    orderedRoutingPlan().filter(({ id, dnsClass }) => dnsClass === "china" && id !== "ChinaIP").map(({ id }) => id)
-  );
-  var MOBILE_PROXY_DNS_SOURCE_IDS = Object.freeze(
-    mobileRuleClientCatalog().filter(({ dnsClass }) => dnsClass === "proxy").map(({ id }) => id)
-  );
-  var MOBILE_CHINA_DNS_SOURCE_IDS = Object.freeze(
-    mobileRuleClientCatalog().filter(({ dnsClass }) => dnsClass === "china").map(({ id }) => id)
-  );
-  function activeSourceIds(options, sourceIds, mobileSourceIds) {
-    return usesMobileRuleBundles(options.platform) ? mobileSourceIds : sourceIds;
-  }
-  function customDnsRules() {
-    const rules = [];
-    const targetByKind = /* @__PURE__ */ new Map([
-      ["direct", DNS_DIRECT],
-      ["proxy", DNS_PROXY],
-      ["ai", DNS_PROXY]
-    ]);
-    for (const [kind, entries] of Object.entries(CUSTOM_RULES)) {
-      const server = targetByKind.get(kind);
-      if (!server) continue;
-      for (const entry of entries) {
-        const [type, value, ...modifiers] = entry.split(",");
-        if (modifiers.some((modifier) => modifier !== "no-resolve")) {
-          throw new Error(`Invalid sing-box custom DNS rule: ${entry}`);
-        }
-        if (type === "DOMAIN") rules.push({ domain: [value], action: "route", server });
-        else if (type === "DOMAIN-SUFFIX") rules.push({ domain_suffix: [value], action: "route", server });
-        else if (type === "DOMAIN-KEYWORD") rules.push({ domain_keyword: [value], action: "route", server });
-        else if (!["IP-CIDR", "IP-CIDR6"].includes(type)) {
-          throw new Error(`Invalid sing-box custom DNS rule: ${entry}`);
-        }
-      }
-    }
-    return rules;
-  }
-  function renderUnknownDnsRules(chinaIpRuleTag) {
-    return [
-      { action: "evaluate", server: DNS_DIRECT, tag: "direct-answer" },
-      {
-        rule_set: [chinaIpRuleTag],
-        match_response: "direct-answer",
-        action: "respond"
-      },
-      { action: "evaluate", server: DNS_PROXY, tag: "proxy-answer" },
-      {
-        match_response: "proxy-answer",
-        ip_accept_any: true,
-        action: "respond"
-      },
-      { action: "route", server: DNS_PROXY }
-    ];
-  }
-  function dnsRules(options) {
-    const rules = [
-      { domain_suffix: LOCAL_DNS_SUFFIXES, action: "route", server: DNS_DIRECT },
-      { domain_suffix: PROXY_DNS_DOMAIN_SUFFIXES, action: "route", server: DNS_PROXY },
-      ...customDnsRules()
-    ];
-    if (options.profileMode !== "diagnostic") {
-      for (const [sourceIds, mobileSourceIds, server] of [
-        [PROXY_DNS_SOURCE_IDS, MOBILE_PROXY_DNS_SOURCE_IDS, DNS_PROXY],
-        [CHINA_DNS_SOURCE_IDS, MOBILE_CHINA_DNS_SOURCE_IDS, DNS_DIRECT]
-      ]) {
-        const ruleSet = activeSourceIds(options, sourceIds, mobileSourceIds).map((id) => `rule-${id}`);
-        if (ruleSet.length > 0) rules.push({ rule_set: ruleSet, action: "route", server });
-      }
-      rules.push(
-        ...options.dnsMode === "privacy" ? [{ action: "route", server: DNS_PROXY }] : renderUnknownDnsRules("rule-ChinaIP")
-      );
-    } else {
-      rules.push({ action: "route", server: DNS_PROXY });
-    }
-    return rules;
-  }
-  function renderSingBoxDns(options) {
-    const chinaDns = chinaDnsProvider(options.chinaDns);
-    const chinaServer = options.chinaDns === "system" ? { type: "local", tag: DNS_DIRECT } : { type: "udp", tag: DNS_DIRECT, server: chinaDns.address };
-    const globalDns = globalDnsProvider(options.globalDns);
-    const proxyServer = {
-      type: "https",
-      tag: DNS_PROXY,
-      server: globalDns.address,
-      server_port: 443,
-      path: "/dns-query",
-      tls: { enabled: true, server_name: globalDns.serverName },
-      // DNS proxying must never depend on a selector that contains DIRECT.
-      ...options.dnsMode === "speed" ? {} : { detour: "\u26A1 \u5168\u90E8\u81EA\u52A8" }
-    };
-    return {
-      servers: [chinaServer, proxyServer],
-      rules: dnsRules(options),
-      final: DNS_PROXY,
-      strategy: options.ipv6Mode === "ipv4-only" ? "ipv4_only" : "prefer_ipv4",
-      cache_capacity: 4096
-    };
-  }
-
-  // ../sing-box/src/render-platform.js
-  var COMMON_EXCLUDE = Object.freeze([
-    "192.168.0.0/16",
-    "172.16.0.0/12",
-    "10.0.0.0/8",
-    "100.64.0.0/10",
-    "127.0.0.0/8",
-    "169.254.0.0/16",
-    "224.0.0.0/4",
-    "fc00::/7",
-    "fe80::/10",
-    "ff00::/8"
-  ]);
-  function renderSingBoxTun(platform, ipv6Mode = "auto") {
-    if (!["macos", "windows", "iphone", "ipad", "android"].includes(platform)) {
-      throw new Error(`Unsupported sing-box platform: ${platform}`);
-    }
-    const ipv4Only = ipv6Mode === "ipv4-only";
-    return {
-      type: "tun",
-      tag: "tun-in",
-      interface_name: platform === "android" ? "sing-box" : "singtun0",
-      address: ipv4Only ? ["172.18.0.1/30"] : ["172.18.0.1/30", "fdfe:dcba:9876::1/126"],
-      auto_route: true,
-      strict_route: true,
-      route_exclude_address: [...COMMON_EXCLUDE],
-      dns_mode: "hijack",
-      dns_address: ipv4Only ? ["172.18.0.2"] : ["172.18.0.2", "fdfe:dcba:9876::2"],
-      ...platform === "android" ? { include_android_user: [0] } : { platform: { http_proxy: { enabled: false } } }
-    };
-  }
-
-  // ../sing-box/src/validate-config.js
-  function uniqueTags(records2, errors, label2) {
-    const tags = /* @__PURE__ */ new Set();
-    for (const record2 of records2 ?? []) {
-      if (!record2 || typeof record2.tag !== "string" || record2.tag.length === 0) {
-        errors.push(`${label2} tag missing`);
-      } else if (tags.has(record2.tag)) {
-        errors.push(`duplicate ${label2} tag`);
-      } else {
-        tags.add(record2.tag);
-      }
-    }
-    return tags;
-  }
-  function actionOutbound(rule3) {
-    return rule3?.action === "route" || rule3?.action === "bypass" ? rule3.outbound : void 0;
-  }
-  function validateDnsServerShape(server, errors) {
-    if (server?.type !== "https") return;
-    if (typeof server.server !== "string" || server.server.length === 0) {
-      errors.push("HTTPS DNS server host missing");
-    } else if (/^(?:https?|tls):\/\//iu.test(server.server) || /[/?#\s]/u.test(server.server)) {
-      errors.push("HTTPS DNS server must be a host without scheme or path");
-    }
-    if (server.server_port !== void 0 && (!Number.isInteger(server.server_port) || server.server_port < 1 || server.server_port > 65535)) {
-      errors.push("HTTPS DNS server_port must be between 1 and 65535");
-    }
-    if (server.path !== void 0 && (typeof server.path !== "string" || !server.path.startsWith("/") || /[\r\n]/u.test(server.path))) {
-      errors.push("HTTPS DNS path must start with '/'");
-    }
-  }
-  function validateDnsRule(rule3, dnsServers, ruleSets, outboundTags, evaluateTags, errors) {
-    if (!rule3 || typeof rule3 !== "object" || typeof rule3.action !== "string") {
-      errors.push("DNS rule action must be a string");
-      return;
-    }
-    for (const tag of rule3.rule_set ?? []) {
-      if (!ruleSets.has(tag)) errors.push("DNS references missing rule-set tag");
-    }
-    if (rule3.action === "route" || rule3.action === "evaluate") {
-      if (typeof rule3.server !== "string" || !dnsServers.has(rule3.server)) errors.push("DNS rule references missing server");
-    }
-    if (rule3.action === "respond" && rule3.server !== void 0) errors.push("DNS respond must not specify a server");
-    if (rule3.action === "evaluate" && rule3.tag !== void 0) {
-      if (typeof rule3.tag !== "string" || evaluateTags.has(rule3.tag)) errors.push("duplicate DNS evaluate tag");
-      else evaluateTags.add(rule3.tag);
-    }
-    if (rule3.match_response !== void 0) {
-      if (rule3.match_response !== true && (typeof rule3.match_response !== "string" || !evaluateTags.has(rule3.match_response))) {
-        errors.push("DNS match_response references missing evaluate tag");
-      }
-      if (rule3.action === "route" && (typeof rule3.server !== "string" || !dnsServers.has(rule3.server))) {
-        errors.push("DNS response route references missing server");
-      }
-    }
-    if (rule3.ip_accept_any === true && rule3.match_response === void 0) errors.push("DNS ip_accept_any requires match_response");
-    if (rule3.race === true && rule3.action !== "evaluate") errors.push("DNS race requires evaluate action");
-    if (rule3.detour !== void 0 && !outboundTags.has(rule3.detour)) errors.push("DNS rule references missing outbound");
-  }
-  function validateSingBoxConfig(config) {
-    const errors = [];
-    if (!config || typeof config !== "object" || Array.isArray(config)) return { valid: false, errors: ["config must be an object"] };
-    const outbounds = config.outbounds;
-    const outboundTags = uniqueTags(outbounds, errors, "outbound");
-    const endpointTags = uniqueTags(config.endpoints, errors, "endpoint");
-    for (const tag of endpointTags) outboundTags.add(tag);
-    const httpClientTags = uniqueTags(config.http_clients, errors, "HTTP client");
-    const ruleSets = uniqueTags(config.route?.rule_set, errors, "rule-set");
-    const dnsServers = uniqueTags(config.dns?.servers, errors, "DNS server");
-    const groupTags = new Set((outbounds ?? []).filter((item) => ["selector", "urltest"].includes(item?.type)).map((item) => item.tag));
-    for (const client of config.http_clients ?? []) {
-      if (client.detour !== void 0 && !outboundTags.has(client.detour)) errors.push("HTTP client references missing outbound tag");
-    }
-    for (const outbound of outbounds ?? []) {
-      for (const target of outbound.outbounds ?? []) if (!outboundTags.has(target)) errors.push("outbound references missing tag");
-      if (outbound.default !== void 0) {
-        if (!outboundTags.has(outbound.default)) errors.push("selector default references missing tag");
-        else if (outbound.type === "selector" && !outbound.outbounds?.includes(outbound.default)) {
-          errors.push("selector default is not an outbound candidate");
-        }
-      }
-      if (outbound.type === "urltest" && typeof outbound.url !== "string") errors.push("urltest URL is missing");
-    }
-    for (const endpoint of config.endpoints ?? []) {
-      if (endpoint.type === "wireguard" && (!Array.isArray(endpoint.address) || endpoint.address.length === 0)) {
-        errors.push("WireGuard endpoint address is missing");
-      }
-    }
-    const routeRules = config.route?.rules;
-    if (!Array.isArray(routeRules)) errors.push("route rules missing");
-    else if (routeRules.length > RULE_BUDGETS.startupInlineEntries) errors.push("route inline rule budget exceeded");
-    for (const rule3 of routeRules ?? []) {
-      if (Object.hasOwn(rule3, "geoip")) errors.push("route contains removed geoip");
-      if (Object.hasOwn(rule3, "geosite")) errors.push("route contains removed geosite");
-      for (const tag of rule3.rule_set ?? []) if (!ruleSets.has(tag)) errors.push("route references missing rule-set tag");
-      const target = actionOutbound(rule3);
-      if (target !== void 0 && !outboundTags.has(target)) errors.push("route references missing outbound tag");
-      if (rule3.action === "resolve" && rule3.server !== void 0 && (typeof rule3.server !== "string" || !dnsServers.has(rule3.server))) {
-        errors.push("route resolve references missing DNS server");
-      }
-      if (rule3.action !== void 0 && typeof rule3.action !== "string") errors.push("route rule action must be a string");
-    }
-    const routeFinal = config.route?.final;
-    if (typeof routeFinal !== "string" || !outboundTags.has(routeFinal)) errors.push("route final references missing outbound tag");
-    if (config.route?.default_domain_resolver !== void 0) {
-      const resolver = typeof config.route.default_domain_resolver === "string" ? config.route.default_domain_resolver : config.route.default_domain_resolver?.server;
-      if (typeof resolver !== "string" || !dnsServers.has(resolver)) errors.push("default domain resolver references missing DNS server");
-    }
-    const defaultHttpClient = config.route?.default_http_client;
-    if (defaultHttpClient !== void 0 && (typeof defaultHttpClient !== "string" || !httpClientTags.has(defaultHttpClient))) {
-      errors.push("route default_http_client references missing HTTP client tag");
-    }
-    for (const ruleSet of config.route?.rule_set ?? []) {
-      if (Object.hasOwn(ruleSet, "download_detour")) errors.push("rule-set contains deprecated download_detour");
-      if (ruleSet.type === "remote" && (typeof ruleSet.http_client !== "string" || !httpClientTags.has(ruleSet.http_client))) {
-        errors.push("remote rule-set references missing http_client tag");
-      }
-      if (ruleSet.type === "remote" && (ruleSet.format !== "binary" || typeof ruleSet.url !== "string" || !/^https:\/\/[^\s]+\.srs$/u.test(ruleSet.url))) {
-        errors.push("remote rule-set must use binary format and an HTTPS .srs URL");
-      }
-    }
-    const dnsFinal = config.dns?.final;
-    if (typeof dnsFinal !== "string" || !dnsServers.has(dnsFinal)) errors.push("DNS final references missing server");
-    const evaluateTags = /* @__PURE__ */ new Set();
-    for (const rule3 of config.dns?.rules ?? []) validateDnsRule(rule3, dnsServers, ruleSets, outboundTags, evaluateTags, errors);
-    for (const server of config.dns?.servers ?? []) {
-      validateDnsServerShape(server, errors);
-      if (server.detour !== void 0 && !outboundTags.has(server.detour)) errors.push("DNS server references missing outbound");
-      if (server.detour === server.tag) errors.push("DNS server loop detected");
-      if (server.detour === "DIRECT") errors.push("DNS server must not detour through the empty DIRECT outbound");
-    }
-    for (const inbound2 of config.inbounds ?? []) {
-      if (inbound2.type === "tun" && !inbound2.auto_route) errors.push("TUN auto_route is required");
-      if (inbound2.type === "tun" && inbound2.platform?.include_android_user && inbound2.auto_redirect) errors.push("Android TUN cannot use auto_redirect");
-    }
-    if (Object.hasOwn(config.experimental?.cache_file ?? {}, "store_rdrc")) errors.push("cache file contains deprecated store_rdrc");
-    if (!groupTags.has("\u{1F680} \u8282\u70B9\u9009\u62E9")) errors.push("primary selector missing");
-    if (!new Set(config.inbounds?.map((item) => item.tag)).has("tun-in")) errors.push("tun-in inbound missing");
-    return { valid: errors.length === 0, errors: [...new Set(errors)] };
-  }
-
-  // ../sing-box/src/render-config.js
-  function renderSingBoxConfig(rawOptions, nodes, rendererOptions = {}) {
-    if (Object.hasOwn(rendererOptions, "ruleSetFormat")) {
-      throw new Error("Renderer option 'ruleSetFormat' was removed; migrate to profileMode and adblockMode");
-    }
-    const { ruleBaseUrl, policyResolution = null } = rendererOptions;
-    const options = isParsedSingBoxOptions(rawOptions) ? rawOptions : parseSingBoxOptions(rawOptions);
-    const inventory = Array.isArray(nodes) ? nodes : [];
-    if (inventory.length === 0) throw new Error("sing-box refuses an empty node inventory");
-    for (const node of inventory) nodeMetadata(node);
-    const renderedNodes = inventory.map(renderSingBoxNode);
-    const groups = renderSingBoxGroups(options, inventory, {
-      policyResolution,
-      ruleProbeUrl: `${ruleBaseUrl.replace(/\/+$/u, "")}/Hijacking.srs`
-    });
-    const { ruleSets, rules, final } = renderSingBoxRouteRules({
-      ruleBaseUrl,
-      profileMode: options.profileMode,
-      adblockMode: options.adblockMode,
-      blockMode: options.blockMode,
-      quicMode: options.quicMode,
-      platform: options.platform,
-      chinaDns: options.chinaDns,
-      globalDns: options.globalDns,
-      dnsMode: options.dnsMode
-    });
-    const config = {
-      log: {
-        level: ["iphone", "ipad"].includes(options.platform) ? "warn" : "info",
-        timestamp: true
-      },
-      dns: renderSingBoxDns(options),
-      http_clients: [{
-        tag: RULE_DOWNLOAD_HTTP_CLIENT,
-        version: 2,
-        detour: "\u{1F9ED} DNS \u4E0E\u89C4\u5219\u4E0B\u8F7D"
-      }],
-      inbounds: [renderSingBoxTun(options.platform, options.ipv6Mode)],
-      outbounds: [
-        { type: "direct", tag: "DIRECT" },
-        { type: "block", tag: "REJECT" },
-        ...groups,
-        ...renderedNodes.flatMap(({ outbound }) => outbound ? [outbound] : [])
-      ],
-      route: {
-        auto_detect_interface: true,
-        default_domain_resolver: "dns-direct",
-        default_http_client: RULE_DOWNLOAD_HTTP_CLIENT,
-        rule_set: ruleSets,
-        rules,
-        final
-      },
-      experimental: {
-        cache_file: {
-          enabled: !["iphone", "ipad"].includes(options.platform),
-          path: "cache.db",
-          store_dns: !["iphone", "ipad"].includes(options.platform)
-        }
-      }
-    };
-    const endpoints = renderedNodes.flatMap(({ endpoint }) => endpoint ? [endpoint] : []);
-    if (endpoints.length > 0) config.endpoints = endpoints;
-    const validation = validateSingBoxConfig(config);
-    if (!validation.valid) throw new Error(`Generated sing-box config failed validation: ${validation.errors.join(",")}`);
-    return config;
-  }
-
-  // src/substore-config-entry.js
+  // src/substore-routing-entry.js
   async function operator(input, targetPlatform, context = {}) {
-    const options = parseV2rayNOptions({ ...context.arguments ?? {}, output: "config" });
-    if (targetPlatform !== void 0 && targetPlatform !== "JSON" && targetPlatform !== options.platform) {
-      throw new Error("v2rayN target platform '" + targetPlatform + "' does not match " + options.platform);
-    }
+    const options = parseV2rayNOptions({ ...context.arguments, output: "config" });
+    if (options.core !== "xray") throw new Error("v2rayN native routing requires core=xray");
+    if (targetPlatform !== void 0 && !["JSON", options.platform].includes(targetPlatform)) throw new Error("v2rayN native routing target platform mismatch");
+    if (options.clientChain !== "off") throw new Error("v2rayN native routing does not support client chain clones");
+    if (options.policyOverrides) throw new Error("Use apple-proxy-policy for native routing overrides");
     if (typeof context.produceArtifact !== "function") throw new Error("v2rayN produceArtifact is unavailable");
     const raw = await context.produceArtifact({ type: "collection", name: options.name, platform: "JSON", produceType: "internal" });
     const normalized = normalizeNodes(raw, { clientChain: options.clientChain });
-    const filtered = filterNodesForClient(normalized.nodes, CLIENT.v2rayn);
+    const filtered = filterNodesForClient(normalized.nodes, "v2rayn");
+    renderV2rayNSubscription({ nodes: filtered.nodes });
     const policy = await loadSubstorePolicyArtifact(context);
-    const policyResolution = resolveUnifiedPolicy({
-      policy,
-      channel: options.channel,
-      client: CLIENT.v2rayn,
-      allNodes: normalized.nodes,
-      eligibleNodes: filtered.nodes
-    });
-    context.logger?.info?.("[v2rayn-config] " + JSON.stringify({ accepted: filtered.nodes.length, renderFailures: filtered.diagnostics.excluded }));
-    if (options.core === "singbox") {
-      const singboxOptions = {
-        output: "config",
-        type: "collection",
-        name: options.name,
-        subscriptionName: options.subscriptionName,
-        platform: options.platform,
-        channel: options.channel,
-        dnsMode: options.dnsMode,
-        chinaDns: options.chinaDns,
-        globalDns: options.globalDns,
-        blockMode: options.blockMode,
-        quicMode: options.quicMode,
-        ipv6Mode: options.ipv6Mode,
-        autoGroupMode: "auto",
-        clientChain: options.clientChain,
-        profileMode: "light",
-        adblockMode: "off",
-        nodeErrorMode: "strict"
-      };
-      const config = renderSingBoxConfig(singboxOptions, filtered.nodes, {
-        ruleBaseUrl: `https://juan-nikola.github.io/apple-proxy-profiles/${options.channel}/sing-box/rule-sets`,
-        policyResolution
-      });
-      config.experimental = {
-        ...config.experimental,
-        clash_api: { external_controller: "127.0.0.1:9090" }
-      };
-      return { ...input, $content: JSON.stringify(config, null, 2) + "\n" };
-    }
-    const profile = renderV2rayNProfile({
-      options,
-      nodes: filtered.nodes,
-      geoData: context.geoData,
-      filterFailures: filtered.diagnostics.excluded,
-      policyResolution
-    });
-    return { ...input, $content: JSON.stringify(profile, null, 2) + "\n" };
+    const policyResolution = resolveUnifiedPolicy({ policy, channel: options.channel, client: "v2rayn", allNodes: normalized.nodes, eligibleNodes: filtered.nodes });
+    const rules = renderV2rayNNativeRouting({ nodes: filtered.nodes, options, policyResolution });
+    return { ...input, $content: JSON.stringify(rules, null, 2) + "\n" };
   }
-  return __toCommonJS(substore_config_entry_exports);
+  return __toCommonJS(substore_routing_entry_exports);
 })();
-async function operator(input, targetPlatform) { return V2rayNConfigBundle.operator(input, targetPlatform, { arguments: $arguments, produceArtifact, logger: console }); }
+async function operator(input, targetPlatform) { return V2rayNRoutingBundle.operator(input, targetPlatform, { arguments: $arguments, produceArtifact, logger: console }); }
