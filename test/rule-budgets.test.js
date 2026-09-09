@@ -35,6 +35,7 @@ const optionalAwareGenerators = new Set([
   "happ/scripts/substore-routing-audit.js",
   "v2rayn/scripts/substore-node-generator.js",
   "v2rayn/scripts/substore-config-generator.js",
+  "v2rayn/scripts/substore-routing-generator.js",
   "hiddify/scripts/hiddify-config-generator.js",
   "hiddify/scripts/substore-config-generator.js",
 ]);
@@ -53,6 +54,7 @@ const nativePolicyGenerators = new Set([
   "incy/scripts/substore-config-generator.js",
   "v2rayn/scripts/substore-node-generator.js",
   "v2rayn/scripts/substore-config-generator.js",
+  "v2rayn/scripts/substore-routing-generator.js",
   "hiddify/scripts/hiddify-config-generator.js",
   "hiddify/scripts/substore-config-generator.js",
 ]);
