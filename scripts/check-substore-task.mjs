@@ -77,11 +77,6 @@ const GENERATOR_SCHEMAS = Object.freeze({
     omitKeys: ["autoGroupMode"],
   }),
   "v2rayn/scripts/substore-node-generator.js": nodeSchema(),
-  "v2rayn/scripts/substore-config-generator.js": configSchema({
-    platforms: ["windows", "macos"],
-    extraKeys: ["core", "region"],
-    extraEnums: { core: ["singbox", "xray"], region: REGIONS },
-  }),
   "v2rayn/scripts/substore-routing-generator.js": configSchema({
     output: "routing", platforms: ["windows", "macos"],
     extraKeys: ["core", "region"],

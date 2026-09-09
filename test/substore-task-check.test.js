@@ -193,6 +193,6 @@ test("runs from the command line", () => {
 test("runs from the command line without arguments by validating the configured task catalog", () => {
   const run = spawnSync(process.execPath, ["scripts/check-substore-task.mjs"], { encoding: "utf8" });
   assert.equal(run.status, 0);
-  assert.equal((run.stdout.match(/^OK:/gmu) ?? []).length, 50);
-  assert.match(run.stdout, /validated 50 configured tasks \(49 URL tasks\)/u);
+  assert.equal((run.stdout.match(/^OK:/gmu) ?? []).length, 46);
+  assert.match(run.stdout, /validated 46 configured tasks \(45 URL tasks\)/u);
 });

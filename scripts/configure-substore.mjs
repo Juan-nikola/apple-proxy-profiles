@@ -128,10 +128,6 @@ export function canonicalTaskCatalog(channel = "current") {
     configTask("happ-config-ipad", "happ", "happ-config-generator.js", channel, "apple-proxy-happ", "ipad", "Apple-Proxy-Happ", {}, { omitKeys: ["autoGroupMode", "clientChain"] }),
     nodeTask("v2rayn-nodes", "v2rayn", channel, "apple-proxy-v2rayn"),
     routingTask("v2rayn-xray-routing", channel, "apple-proxy-v2rayn"),
-    configTask("v2rayn-singbox-windows", "v2rayn", "substore-config-generator.js", channel, "apple-proxy-v2rayn", "windows", "Apple-Proxy-v2rayN", { core: "singbox", region: "cn" }, { omitKeys: ["autoGroupMode"] }),
-    configTask("v2rayn-singbox-macos", "v2rayn", "substore-config-generator.js", channel, "apple-proxy-v2rayn", "macos", "Apple-Proxy-v2rayN", { core: "singbox", region: "cn" }, { omitKeys: ["autoGroupMode"] }),
-    configTask("v2rayn-xray-windows", "v2rayn", "substore-config-generator.js", channel, "apple-proxy-v2rayn", "windows", "Apple-Proxy-v2rayN", { core: "xray", region: "cn" }, { omitKeys: ["autoGroupMode"] }),
-    configTask("v2rayn-xray-macos", "v2rayn", "substore-config-generator.js", channel, "apple-proxy-v2rayn", "macos", "Apple-Proxy-v2rayN", { core: "xray", region: "cn" }, { omitKeys: ["autoGroupMode"] }),
     nodeTask("v2box-nodes", "v2box", channel, "apple-proxy-v2box"),
     nodeTask("clash-nodes", "clash", channel, "apple-proxy-clash"),
     configTask("clash-config-macos", "clash", "clash-profile-generator.js", channel, "apple-proxy-clash", "macos", "Apple-Proxy-Clash", { nodeSubscriptionUrl: "<PRIVATE_CLASH_NODES_URL>" }),
@@ -155,7 +151,7 @@ export function canonicalTaskCatalog(channel = "current") {
     configTask("hiddify-config-windows", "hiddify", "hiddify-config-generator.js", channel, "apple-proxy-hiddify", "windows", "Hiddify", { profileMode: "light", nodeErrorMode: "strict" }),
     configTask("hiddify-config-linux", "hiddify", "hiddify-config-generator.js", channel, "apple-proxy-hiddify", "linux", "Hiddify", { profileMode: "light", nodeErrorMode: "strict" }),
   ];
-  if (tasks.length !== 50) throw new Error(`Expected 50 canonical tasks, got ${tasks.length}`);
+  if (tasks.length !== 46) throw new Error(`Expected 46 canonical tasks, got ${tasks.length}`);
   return Object.freeze(tasks);
 }
 
@@ -185,7 +181,7 @@ export function validatePrivateSubstoreConfig(config) {
     const result = checkSubstoreTaskUrl(task.url);
     if (!result.ok) return false;
   }
-  return config.tasks.length === 50;
+  return config.tasks.length === 46;
 }
 
 export async function writePrivateSubstoreConfig({ sourceUrl, channel = "current", path = PRIVATE_CONFIG_PATH } = {}) {
