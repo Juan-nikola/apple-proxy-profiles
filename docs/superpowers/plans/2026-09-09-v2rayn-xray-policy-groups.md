@@ -1,42 +1,18 @@
-# v2rayN Xray Policy Groups Implementation Plan
+# v2rayN Xray import and routing repair
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
+Goal: import nodes and native routing independently; FOLLOW resolves to v2rayN's selected `proxy`, fixed businesses resolve by unique imported node remark.
 
-**Goal:** Make v2rayN Xray output support business policy groups that follow the default proxy, fixed nodes, direct, block, and automatic selection.
+Confirmed from official tag 7.24.9, `V2rayRoutingService.GenRoutingUserRuleOutbound`, `CoreConfigContextBuilder`, `RoutingRuleSettingViewModel`:
+- Native rule import accepts a JSON array with camel-case RulesItem fields.
+- proxy/direct/block are reserved outputs; other strings resolve by exact node remark.
+- Missing fixed remarks fall back to proxy with an upstream warning. Generation must reject missing/ambiguous policy matches; import instructions must retain the required node subscription and refresh routing after renames. Do not claim runtime fail-closed protection from the native importer.
+- Full custom JSON has no linkage to the selected UI node. Keep it explicitly standalone.
+- Xray supports routing balancers. A balancer selector matches outbound tag prefixes, not nested balancers.
 
-**Architecture:** Keep node subscription generation separate from full JSON profile generation. Add Xray-compatible selector/balancer outbounds and route business GeoData rules to stable policy tags.
-
-**Tech Stack:** Node.js ES modules, JSON, node:test, Xray JSON schema.
-
-**Spec:** `docs/superpowers/specs/2026-08-22-v2rayn-v2box-unified-rule-integration-design.md`
-
-## Global Constraints
-
-- Preserve existing sing-box output and other client renderers.
-- Keep fail-closed behavior for missing or incompatible nodes.
-- Reuse the existing 12 unified business targets.
-
-### Task 1: Inspect and extend Xray renderer
-
-**Files:** `clients/v2rayn/src/render-profile.js`, `clients/v2rayn/test/profile.test.js`
-
-- [ ] Add policy-group tags and node membership generation.
-- [ ] Route business sources to policy tags by default.
-- [ ] Preserve explicit fixed-node/direct/block overrides.
-- [ ] Add tests for group creation and routing targets.
-
-### Task 2: Wire policy defaults and rebuild bundles
-
-**Files:** `clients/v2rayn/src/substore-config-entry.js`, generated `clients/v2rayn/dist/*`
-
-- [ ] Pass policy resolution and group settings through the renderer.
-- [ ] Rebuild workspace bundles.
-- [ ] Run v2rayn and full test suites.
-
-### Task 3: Verify generated Xray profiles
-
-**Files:** existing verification scripts/tests
-
-- [ ] Run targeted tests.
-- [ ] Run `npm run verify:v2rayn` and full `npm test`.
-- [ ] Run Xray `-test` when binary is available and report any environment limitation.
+Tasks:
+- [ ] Add native routing compiler with ordered 32-source catalog, separate domain/IP predicates, proxy-only QUIC guards and fixed/follow/direct policy resolution.
+- [ ] Add Sub-Store routing generator using the existing private policy and node pipeline.
+- [ ] Build a private self-contained import pack from the user's fetched policy/nodes and verified GeoData. Include node links, native rules, audit, instructions and refresh CLI.
+- [ ] Repair standalone renderer's invalid rules/QUIC/inbound defaults, describe its static default honestly.
+- [ ] Test missing/ambiguous/protocol-qualified policies, fixed/FOLLOW behavior and actual Xray forwarding before and after default changes.
+- [ ] Rebuild affected bundles, run workspace/regression checks; keep private credentials outside git. Deliver files without claiming an unperformed deployment or GUI import.

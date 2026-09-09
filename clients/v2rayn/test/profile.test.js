@@ -25,7 +25,7 @@ test("renders importable macOS profile without requiring TUN privileges", () => 
   assert.ok(matchers.includes("ext:AppleProxySiteCurrent.dat:APP-LOYALSOLDIER-RULES-DAT"));
   assert.equal(matchers.some((value) => value.includes("APP-REGION-CN")), false);
   assert.deepEqual(
-    profile.routing.rules.filter(({ ruleTag }) => ruleTag?.startsWith("source-")).map(({ ruleTag }) => ruleTag.slice(7)),
+    [...new Set(profile.routing.rules.filter(({ ruleTag }) => ruleTag?.startsWith("source-")).map(({ ruleTag }) => ruleTag.slice(7)))],
     sourcesForRegion("cn"),
   );
   assert.equal(
@@ -57,3 +57,14 @@ test("uses legal external GeoData references and validates exact assets", () => 
 function requireHash(value) {
   return createHash("sha256").update(value).digest("hex");
 }
+
+test('standalone Xray emits legal field rules, split domain/IP predicates and local SOCKS on Windows', () => {
+  const options = parseV2rayNOptions({ output:'config',type:'collection',name:'fixture',platform:'windows' });
+  const profile = renderV2rayNProfile({ options, nodes:[{name:'fixture',type:'vless',server:'fixture.invalid',port:443,uuid:'00000000-0000-4000-8000-000000000001'}] });
+  assert.ok(profile.routing.rules.every(rule => rule.type === 'field'));
+  assert.ok(profile.routing.rules.every(rule => !(rule.domain && rule.ip)));
+  assert.ok(profile.routing.rules.every(rule => rule.network !== 'quic'));
+  assert.equal(profile.inbounds[0].protocol, 'socks');
+  assert.equal(profile.dns.mode, undefined);
+  assert.ok(profile.routing.rules.some(rule=>rule.network==='udp'&&rule.port==='443'&&rule.outboundTag==='block'));
+});
