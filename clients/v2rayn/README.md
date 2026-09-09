@@ -23,3 +23,5 @@ Example policy values:
   }
 }
 ```
+
+- v2rayN Xray routing task is published through Sub-Store as `v2rayn-xray-routing`.
