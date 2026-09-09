@@ -1,0 +1,18 @@
+{
+  "client": "hiddify",
+  "files": [
+    {
+      "bytes": 21028,
+      "path": "optional/adblock-full/hiddify/rules/Advertising.json",
+      "sha256": "b0980ce603deb712e23b8790daf45f843b5673ad5e24de26420d8502fba2ab2a"
+    },
+    {
+      "bytes": 8439755,
+      "path": "optional/adblock-full/hiddify/rules/Advertising_Domain.json",
+      "sha256": "f9f9606ca6e75bcac41f9efb5da00b8a83266ed094921cd22ec3915191fb370d"
+    }
+  ],
+  "generatedAt": "2026-08-25T18:39:12Z",
+  "manifestHash": "a088872be6d24de01d5a4c496335bf79bf2cb6caf7fbdcf151e5a19417ae422f",
+  "schemaVersion": 1
+}
