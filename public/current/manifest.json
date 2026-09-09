@@ -99,7 +99,7 @@
       "referencedDefaultBytes": 0
     },
     "v2rayn": {
-      "manifestHash": "2d966ae524014e9203eb3a29a20e0b293e0e95ec2c2d99feb246de7189740b2a",
+      "manifestHash": "85ece14593cb4c1826527f8a89cb95a5c905c51fc43eb953234b61d2bc608b82",
       "referencedDefaultBytes": 0
     }
   },
@@ -426,12 +426,12 @@
     {
       "bytes": 2496,
       "path": "audit/dashboard.html",
-      "sha256": "92c0ec0dff394c034175dc075ca36dddd3485a39f8d6a432a3843a9beea4f199"
+      "sha256": "0ec4ca1df509cc3fc15f8622aa6c2595d75e6a89ea082bdd0cf9bdc10007564c"
     },
     {
       "bytes": 5758,
       "path": "audit/dashboard.json",
-      "sha256": "ab8ca148b17602775755fc78fe1e5ef83e3da44f513ae761b6348a3d99a79d2e"
+      "sha256": "e96aec98cae1e775a9873af29a524a2fa7fc519dda1953f3629b5ae60a339416"
     },
     {
       "bytes": 5184,
@@ -2094,23 +2094,28 @@
       "sha256": "f0ac69917f0515dd1b33074a269aa4d877036210bbdfb098fa0a92b77b0fbbee"
     },
     {
-      "bytes": 665,
+      "bytes": 828,
       "path": "v2rayn/client-manifest.json",
-      "sha256": "fd7d325b27b09affe928e73b832d8bb343ae32af93dee3ad3402f9b627b7d9fa"
+      "sha256": "1f3d39348ef1a90f0b0db2e545b97c650ea3f805fbe383678c92a169b44c786c"
     },
     {
-      "bytes": 103940,
+      "bytes": 11433604,
+      "path": "v2rayn/rule-sources.json",
+      "sha256": "3db6b2951d0cf43b42e60750e5fc711f7734ea52b521a72f65095c4f94e060fd"
+    },
+    {
+      "bytes": 103950,
       "path": "v2rayn/scripts/substore-node-generator.js",
-      "sha256": "23d4b4b775df3f6723eaaa19a48627ad907539017ce41c7ec0ac4c9fe6b9c31f"
+      "sha256": "8154039c72c4d4fa3fed3819a543e08a972f5b9bc37331831199955155984ad9"
     },
     {
-      "bytes": 154993,
+      "bytes": 156703,
       "path": "v2rayn/scripts/substore-routing-generator.js",
-      "sha256": "da398546dbbe01fbdfc87792ef6042a5e012d8429d5dea24a29083b80125d222"
+      "sha256": "b8caf2d4160f9368f27aadc5fccf46c5339a46d74ff12d46d49c073c035f9686"
     }
   ],
   "generatedAt": "2026-08-25T18:39:12Z",
-  "manifestHash": "519c4f77e712528cb1f78c526fe2763595ef0d9a397604b0751de4ea610c22d3",
+  "manifestHash": "4e54188bd8596079fd3b23968cfe43c1b3ddf73164f6bee10fab5b8b22657b5a",
   "schemaVersion": 2,
   "upstream": {
     "branch": "master",

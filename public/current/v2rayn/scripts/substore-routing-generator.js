@@ -2626,7 +2626,7 @@ var V2rayNRoutingBundle = (() => {
   function parseV2rayNOptions(raw = {}) {
     if (!raw || typeof raw !== "object" || Array.isArray(raw)) throw new TypeError("v2rayN options must be an object");
     const output = raw.output;
-    if (!["nodes", "routing"].includes(output)) throw new Error("v2rayN output is unsupported");
+    if (!["nodes", "config", "routing"].includes(output)) throw new Error("v2rayN output is unsupported");
     if (raw.type !== "collection") throw new Error("v2rayN type must be collection");
     if (typeof raw.name !== "string") throw new Error("v2rayN name is required");
     if (output === "routing" && !["windows", "macos"].includes(raw.platform)) throw new Error("v2rayN routing platform is required");
@@ -2974,7 +2974,7 @@ var V2rayNRoutingBundle = (() => {
   // src/render-native-routing.js
   var PRIVATE_IPS = ["10.0.0.0/8", "127.0.0.0/8", "169.254.0.0/16", "172.16.0.0/12", "192.168.0.0/16", "::1/128", "fc00::/7", "fe80::/10"];
   var SOURCE_TARGET = { DomesticCore: "domesticPlatform", ChinaTLD: "domesticPlatform", ChinaIP: "domesticPlatform", DomesticGame: "game", SteamCN: "game" };
-  function renderV2rayNNativeRouting({ nodes, options, policyResolution = defaultUnifiedPolicyResolution() }) {
+  function renderV2rayNNativeRouting({ nodes, options, policyResolution = defaultUnifiedPolicyResolution(), ruleSources = null }) {
     if (!Array.isArray(nodes) || nodes.length === 0) throw new Error("v2rayN native routing requires nodes");
     if (!["cn", "global"].includes(options?.region)) throw new Error("v2rayN native routing currently supports cn/global regions");
     const byId = /* @__PURE__ */ new Map();
@@ -3005,6 +3005,8 @@ var V2rayNRoutingBundle = (() => {
     add("Private IP", { ip: PRIVATE_IPS }, "direct", false);
     add("Private domains", { domain: ["full:localhost", "domain:local", "domain:lan", "domain:home.arpa"] }, "direct", false);
     for (const entry of orderedRoutingPlan()) {
+      const source = ruleSources?.[entry.id];
+      if (ruleSources && (!source || !Array.isArray(source.domain) && !Array.isArray(source.ip))) throw new Error(`Missing v2rayN rule source: ${entry.id}`);
       if (options.region === "global" && ["DomesticCore", "DomesticGame", "SteamCN", "ChinaTLD", "ChinaIP"].includes(entry.id)) continue;
       let outboundTag;
       const id = SOURCE_TARGET[entry.id] ?? unifiedPolicyTargetByKey(entry.policy)?.id;
@@ -3013,11 +3015,34 @@ var V2rayNRoutingBundle = (() => {
       else if (entry.policy === "REJECT") outboundTag = options.blockMode === "off" ? "direct" : "block";
       else throw new Error(`Unmapped v2rayN rule source: ${entry.id}`);
       for (const kind of ["domain", "ip"]) {
-        add(`${entry.id} / ${kind}`, { [kind]: [xrayGeoReference(options.channel, kind, entry.id)] }, outboundTag);
+        const values = ruleSources ? source[kind] : [xrayGeoReference(options.channel, kind, entry.id)];
+        if (values.length) add(`${entry.id} / ${kind}`, { [kind]: values }, outboundTag);
       }
     }
     add("Final", { network: "tcp,udp" }, target("final"));
     return rules;
+  }
+
+  // src/parse-rule-snapshot.js
+  var DOMAIN_PREFIX = /^(?:domain:|full:|regexp:|keyword:)/u;
+  var IP_VALUE = /^[0-9a-f:.]+\/[0-9]+(?:,no-resolve)?$/iu;
+  function parseV2rayNRuleSnapshot(value, { channel = "current" } = {}) {
+    let snapshot = value;
+    if (typeof value === "string") {
+      try {
+        snapshot = JSON.parse(value);
+      } catch {
+        throw new Error("v2rayN remote rule snapshot is invalid JSON");
+      }
+    }
+    if (!snapshot || snapshot.schemaVersion !== 1 || snapshot.channel !== channel || !snapshot.sources || Array.isArray(snapshot.sources)) throw new Error("v2rayN remote rule snapshot manifest is invalid");
+    const out = {};
+    for (const [id, source] of Object.entries(snapshot.sources)) {
+      if (!source || typeof source !== "object" || Array.isArray(source)) throw new Error(`Invalid v2rayN rule source: ${id}`);
+      for (const kind of ["domain", "ip"]) if (source[kind] !== void 0 && (!Array.isArray(source[kind]) || source[kind].some((v) => typeof v !== "string" || (kind === "domain" && !DOMAIN_PREFIX.test(v) || kind === "ip" && !IP_VALUE.test(v))))) throw new Error(`Invalid v2rayN ${kind} source: ${id}`);
+      out[id] = { domain: [...source.domain ?? []], ip: [...source.ip ?? []] };
+    }
+    return Object.freeze(out);
   }
 
   // src/render-node.js
@@ -3119,13 +3144,14 @@ var V2rayNRoutingBundle = (() => {
     if (options.clientChain !== "off") throw new Error("v2rayN native routing does not support client chain clones");
     if (options.policyOverrides) throw new Error("Use apple-proxy-policy for native routing overrides");
     if (typeof context.produceArtifact !== "function") throw new Error("v2rayN produceArtifact is unavailable");
+    const ruleSources = parseV2rayNRuleSnapshot(input?.$content, { channel: options.channel });
     const raw = await context.produceArtifact({ type: "collection", name: options.name, platform: "JSON", produceType: "internal" });
     const normalized = normalizeNodes(raw, { clientChain: options.clientChain });
     const filtered = filterNodesForClient(normalized.nodes, "v2rayn");
     renderV2rayNSubscription({ nodes: filtered.nodes });
     const policy = await loadSubstorePolicyArtifact(context);
     const policyResolution = resolveUnifiedPolicy({ policy, channel: options.channel, client: "v2rayn", allNodes: normalized.nodes, eligibleNodes: filtered.nodes });
-    const rules = renderV2rayNNativeRouting({ nodes: filtered.nodes, options, policyResolution });
+    const rules = renderV2rayNNativeRouting({ nodes: filtered.nodes, options, policyResolution, ruleSources });
     return { ...input, $content: JSON.stringify(rules, null, 2) + "\n" };
   }
   return __toCommonJS(substore_routing_entry_exports);

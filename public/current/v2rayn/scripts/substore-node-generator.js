@@ -1839,7 +1839,7 @@ var V2rayNNodesBundle = (() => {
   function parseV2rayNOptions(raw = {}) {
     if (!raw || typeof raw !== "object" || Array.isArray(raw)) throw new TypeError("v2rayN options must be an object");
     const output = raw.output;
-    if (!["nodes", "routing"].includes(output)) throw new Error("v2rayN output is unsupported");
+    if (!["nodes", "config", "routing"].includes(output)) throw new Error("v2rayN output is unsupported");
     if (raw.type !== "collection") throw new Error("v2rayN type must be collection");
     if (typeof raw.name !== "string") throw new Error("v2rayN name is required");
     if (output === "routing" && !["windows", "macos"].includes(raw.platform)) throw new Error("v2rayN routing platform is required");
