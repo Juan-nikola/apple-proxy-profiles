@@ -769,6 +769,18 @@ export function buildClientArtifacts({
     channel,
   });
   const defaults = rendered.files;
+  const v2raynRuleSources = {};
+  for (const [id, compiled] of compactedDefaults.ruleSets) {
+    const source = { domain: [], ip: [] };
+    for (const entry of compiled.entries) {
+      if (entry.kind === RULE_KIND.domain || entry.kind === RULE_KIND.domainKeyword) source.domain.push(entry.kind === RULE_KIND.domainKeyword ? `keyword:${entry.value}` : `domain:${entry.value}`);
+      else if (entry.kind === RULE_KIND.domainSuffix) source.domain.push(`domain:${entry.value}`);
+      else if (entry.kind === RULE_KIND.regexp) source.domain.push(`regexp:${entry.value}`);
+      else if (entry.kind === RULE_KIND.ipv4Cidr || entry.kind === RULE_KIND.ipv6Cidr) source.ip.push(`${entry.value}${entry.noResolve ? ',no-resolve' : ''}`);
+    }
+    v2raynRuleSources[id] = source;
+  }
+  defaults.set(`v2rayn/rule-sources.json`, artifactBuffer(canonicalJson({ schemaVersion: 1, channel, sources: v2raynRuleSources })));
   defaults.set("hiddify/compatibility.json", artifactBuffer(canonicalJson({
     schemaVersion: 1,
     client: "hiddify",
