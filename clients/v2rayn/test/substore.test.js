@@ -8,11 +8,15 @@ const args={output:'config',type:'collection',name:'apple-proxy-v2rayn',platform
 globalThis.fetch=async()=>({ok:true,text:async()=>JSON.stringify(snapshot())});
 const context={arguments:args,produceArtifact:async r=>r.type==='file'?{$content:JSON.stringify({schemaVersion:2,targets:{ai:'NODE~US Home|vless'}})}:nodes};
 test('Sub-Store route task consumes remote rules and private policy into a self-contained RulesItem array',async()=>{
- const out=await operator({$content:JSON.stringify(snapshot())},undefined,context);
+ const rulesSnapshot=snapshot();
+ rulesSnapshot.sources.OpenAI.ip=['103.49.209.27/32,no-resolve'];
+ const out=await operator({$content:JSON.stringify(rulesSnapshot)},undefined,context);
  const rules=JSON.parse(out.$content);
  assert.ok(rules.find(r=>r.remarks==='OpenAI / domain').outboundTag.includes('US Home'));
  assert.equal(rules.find(r=>r.remarks==='GitHub / domain').outboundTag,'proxy');
  assert.equal(JSON.stringify(rules).includes('ext:'),false);
+ assert.equal(JSON.stringify(rules).includes(',no-resolve'),false);
+ assert.deepEqual(rules.find(r=>r.remarks==='OpenAI / ip').ip,['103.49.209.27/32']);
  assert.ok(rules.every(r=>!(r.domain&&r.ip)));
 });
 test('route task rejects incomplete remote rules before output can broaden into catch-all routing',async()=>{
