@@ -3144,7 +3144,13 @@ var V2rayNRoutingBundle = (() => {
     if (options.clientChain !== "off") throw new Error("v2rayN native routing does not support client chain clones");
     if (options.policyOverrides) throw new Error("Use apple-proxy-policy for native routing overrides");
     if (typeof context.produceArtifact !== "function") throw new Error("v2rayN produceArtifact is unavailable");
-    const ruleSources = parseV2rayNRuleSnapshot(input?.$content, { channel: options.channel });
+    let rulePayload = input?.$content;
+    if (!rulePayload && typeof fetch === "function") {
+      const response = await fetch(`https://juan-nikola.github.io/apple-proxy-profiles/${options.channel}/v2rayn/rule-sources.json`);
+      if (!response.ok) throw new Error(`v2rayN rule source fetch failed: ${response.status}`);
+      rulePayload = await response.text();
+    }
+    const ruleSources = parseV2rayNRuleSnapshot(rulePayload, { channel: options.channel });
     const raw = await context.produceArtifact({ type: "collection", name: options.name, platform: "JSON", produceType: "internal" });
     const normalized = normalizeNodes(raw, { clientChain: options.clientChain });
     const filtered = filterNodesForClient(normalized.nodes, "v2rayn");
