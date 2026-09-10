@@ -13,13 +13,13 @@
       "sha256": "8154039c72c4d4fa3fed3819a543e08a972f5b9bc37331831199955155984ad9"
     },
     {
-      "bytes": 156703,
+      "bytes": 157072,
       "path": "v2rayn/scripts/substore-routing-generator.js",
-      "sha256": "b8caf2d4160f9368f27aadc5fccf46c5339a46d74ff12d46d49c073c035f9686"
+      "sha256": "2873bbad8e7e54796bfa43cce08e3479b1d887f344ae2fc22eeccee86a982b48"
     }
   ],
   "generatedAt": "2026-08-25T18:39:12Z",
-  "manifestHash": "85ece14593cb4c1826527f8a89cb95a5c905c51fc43eb953234b61d2bc608b82",
+  "manifestHash": "7fc1288c063d8f9dfc3572eb5d580dfd88545ed1474c6e778fc7635db102c4ed",
   "optionalPacks": {},
   "schemaVersion": 1
 }

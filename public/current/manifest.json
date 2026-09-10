@@ -99,7 +99,7 @@
       "referencedDefaultBytes": 0
     },
     "v2rayn": {
-      "manifestHash": "85ece14593cb4c1826527f8a89cb95a5c905c51fc43eb953234b61d2bc608b82",
+      "manifestHash": "7fc1288c063d8f9dfc3572eb5d580dfd88545ed1474c6e778fc7635db102c4ed",
       "referencedDefaultBytes": 0
     }
   },
@@ -426,12 +426,12 @@
     {
       "bytes": 2496,
       "path": "audit/dashboard.html",
-      "sha256": "0ec4ca1df509cc3fc15f8622aa6c2595d75e6a89ea082bdd0cf9bdc10007564c"
+      "sha256": "c2d7f432fce4e43dd9bf67a3a4d971c16bc47307c9330f972b900e7fd92af9c7"
     },
     {
       "bytes": 5758,
       "path": "audit/dashboard.json",
-      "sha256": "e96aec98cae1e775a9873af29a524a2fa7fc519dda1953f3629b5ae60a339416"
+      "sha256": "a511f549cbd723fe3a6f36f8fe35e0a504a309c1c496ed8c0698eb07bd3270a9"
     },
     {
       "bytes": 5184,
@@ -2096,7 +2096,7 @@
     {
       "bytes": 828,
       "path": "v2rayn/client-manifest.json",
-      "sha256": "1f3d39348ef1a90f0b0db2e545b97c650ea3f805fbe383678c92a169b44c786c"
+      "sha256": "bf5edc647c78bb85d34fff8441f17aaf4abb7d2e8e03965b1ee6529323b653ed"
     },
     {
       "bytes": 11433604,
@@ -2109,13 +2109,13 @@
       "sha256": "8154039c72c4d4fa3fed3819a543e08a972f5b9bc37331831199955155984ad9"
     },
     {
-      "bytes": 156703,
+      "bytes": 157072,
       "path": "v2rayn/scripts/substore-routing-generator.js",
-      "sha256": "b8caf2d4160f9368f27aadc5fccf46c5339a46d74ff12d46d49c073c035f9686"
+      "sha256": "2873bbad8e7e54796bfa43cce08e3479b1d887f344ae2fc22eeccee86a982b48"
     }
   ],
   "generatedAt": "2026-08-25T18:39:12Z",
-  "manifestHash": "4e54188bd8596079fd3b23968cfe43c1b3ddf73164f6bee10fab5b8b22657b5a",
+  "manifestHash": "a27b052bb7dbb85e86424e51f6873d34ff2a93457e71930364eb0f421d17f862",
   "schemaVersion": 2,
   "upstream": {
     "branch": "master",
