@@ -3145,6 +3145,11 @@ var V2rayNRoutingBundle = (() => {
     if (options.policyOverrides) throw new Error("Use apple-proxy-policy for native routing overrides");
     if (typeof context.produceArtifact !== "function") throw new Error("v2rayN produceArtifact is unavailable");
     let rulePayload = input?.$content;
+    if (typeof rulePayload === "string" && /^https:\/\//u.test(rulePayload)) {
+      const response = await fetch(rulePayload);
+      if (!response.ok) throw new Error(`v2rayN rule source fetch failed: ${response.status}`);
+      rulePayload = await response.text();
+    }
     if (!rulePayload && typeof fetch === "function") {
       const response = await fetch(`https://juan-nikola.github.io/apple-proxy-profiles/${options.channel}/v2rayn/rule-sources.json`);
       if (!response.ok) throw new Error(`v2rayN rule source fetch failed: ${response.status}`);
